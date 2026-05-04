@@ -69,6 +69,12 @@ impl WatEmitter<'_> {
     (local.set $len (i32.load (local.get $obj)))
     ;; TODO: reallocate if needed; for now assume enough space
     (i32.store (i32.add (local.get $obj) (i32.add (i32.const {array_header}) (i32.shl (local.get $len) (i32.const {elem_shift})))) (local.get $val))
+    ;; Set presence bitmap bit for this element index
+    (i32.store
+      (i32.add (local.get $obj) (i32.const {presence_words_offset}))
+      (i32.or
+        (i32.load (i32.add (local.get $obj) (i32.const {presence_words_offset})))
+        (i32.shl (i32.const 1) (local.get $len))))
     (local.set $len (i32.add (local.get $len) (i32.const {one})))
     (i32.store (local.get $obj) (local.get $len))
     (i32.or (i32.shl (local.get $len) (i32.const {number_shift})) (i32.const {number_tag})))
@@ -84,6 +90,7 @@ impl WatEmitter<'_> {
             one = RuntimeConst::ONE,
             undefined = ValueTag::UNDEFINED,
             scratch_offset = Layout::SCRATCH_OFFSET,
+            presence_words_offset = Layout::ARRAY_PRESENCE_WORDS_OFFSET,
         ));
     }
 

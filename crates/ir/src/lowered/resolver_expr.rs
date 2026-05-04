@@ -1186,12 +1186,12 @@ impl<'a> Resolver<'a> {
                     && self.is_known_array_expr(object)
                     && !args.is_empty()
                 {
-                    let mut lowered_args = vec![self.lower_expr(object)?];
-                    lowered_args.extend(
-                        args.iter()
-                            .map(|e| self.lower_expr(e))
-                            .collect::<Result<Vec<_>, _>>()?,
-                    );
+                    // Only pass the searchElement (first arg), ignore optional fromIndex
+                    // since our WAT runtime functions don't accept it
+                    let lowered_args = vec![
+                        self.lower_expr(object)?,
+                        self.lower_expr(&args[0])?,
+                    ];
                     Ok(LoweredExpr::RuntimeCall {
                         runtime_fn: if method == "indexOf" {
                             "ArrayIndexOf".to_owned()
@@ -1457,7 +1457,13 @@ impl<'a> Resolver<'a> {
                                 // Identity methods (every/some/find/filter) don't accept
                                 // user callbacks — just pass the receiver for build_smoke
                                 if !is_identity_array_method(method) {
-                                    for arg in args {
+                                    // indexOf/includes only accept searchElement, not fromIndex
+                                    let max_args = if method == "indexOf" || method == "includes" {
+                                        1
+                                    } else {
+                                        args.len()
+                                    };
+                                    for arg in args.iter().take(max_args) {
                                         lowered_args.push(self.lower_expr(arg)?);
                                     }
                                 }
