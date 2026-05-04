@@ -179,6 +179,7 @@ pub(super) fn collection_method_runtime_fn_arg(method: &str) -> Option<&'static 
         "at" => Some("ArrayAt"),
         "fill" => Some("ArrayFill"),
         "flat" => Some("ArrayFlat"),
+        "concat" => Some("ArrayConcat"),
         "with" => Some("ArrayWith"),
         "toReversed" => Some("ArrayToReversed"),
         "toSorted" => Some("ArrayToSorted"),
