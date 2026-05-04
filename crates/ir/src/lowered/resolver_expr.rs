@@ -255,14 +255,11 @@ impl<'a> Resolver<'a> {
                         | BinaryOp::Power
                 ) && (self.resolved_expr_is_bigint(left) || self.resolved_expr_is_bigint(right))
                 {
-                    // For Add, if the non-BigInt operand is a string literal,
-                    // fall through to regular $add which handles string concat
-                    // with BigInt via $value_to_string_into at runtime.
+                    // For Add, emit regular $add which handles string concat
+                    // with BigInt at runtime via $value_to_string_into,
+                    // and BigInt+Number via TypeError check in $add.
                     // For other mixed BigInt/non-BigInt arithmetic, emit TypeError.
-                    if *op == BinaryOp::Add
-                        && (matches!(left.as_ref(), ResolvedExpr::String(_))
-                            || matches!(right.as_ref(), ResolvedExpr::String(_)))
-                    {
+                    if *op == BinaryOp::Add {
                         Ok(LoweredExpr::Binary {
                             left: Box::new(self.lower_expr(left)?),
                             op: LoweredBinaryOp::Add,
@@ -1489,11 +1486,16 @@ impl<'a> Resolver<'a> {
                             });
                         }
                         let mut lowered_args = vec![LoweredExpr::Local(obj_local)];
-                        lowered_args.extend(
-                            args.iter()
-                                .map(|e| self.lower_expr(e))
-                                .collect::<Result<Vec<_>, _>>()?,
-                        );
+                        // Array.prototype.flat defaults depth to 1 when omitted
+                        if class_name == "Array" && method == "flat" && args.is_empty() {
+                            lowered_args.push(LoweredExpr::Number(1));
+                        } else {
+                            lowered_args.extend(
+                                args.iter()
+                                    .map(|e| self.lower_expr(e))
+                                    .collect::<Result<Vec<_>, _>>()?,
+                            );
+                        }
                         return Ok(LoweredExpr::RuntimeCall {
                             runtime_fn: runtime_fn.to_owned(),
                             args: lowered_args,

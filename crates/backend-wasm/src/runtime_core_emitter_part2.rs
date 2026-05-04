@@ -1246,17 +1246,52 @@ impl WatEmitter<'_> {
     }
 
     pub(crate) fn emit_add(&self, wat: &mut String) {
-        wat.push_str(
+        wat.push_str(&format!(
             r#"
   (func $add (param $a i32) (param $b i32) (result i32)
+    (local $obj i32)
     (if (i32.or (call $is_string (local.get $a)) (call $is_string (local.get $b)))
       (then (return (call $concat (local.get $a) (local.get $b)))))
+    ;; Check if either operand is a BigInt (object_tag + gc_kind_bigint).
+    ;; If BigInt+string was already handled by the concat path above,
+    ;; BigInt+non-string should throw TypeError.
+    (if (i32.eq (i32.and (local.get $a) (i32.const {tag_mask})) (i32.const {object_tag}))
+      (then
+        (local.set $obj (i32.and (local.get $a) (i32.const {heap_mask})))
+        (if (i32.eq
+              (i32.and
+                (i32.load
+                  (i32.add
+                    (i32.sub (local.get $obj) (i32.const {gc_header_size}))
+                    (i32.const {gc_flags_and_type_offset})))
+                (i32.const {gc_kind_mask}))
+              (i32.const {gc_kind_bigint}))
+          (then (return (call $bigint_mixed_arithmetic_type_error (local.get $a) (local.get $b)))))))
+    (if (i32.eq (i32.and (local.get $b) (i32.const {tag_mask})) (i32.const {object_tag}))
+      (then
+        (local.set $obj (i32.and (local.get $b) (i32.const {heap_mask})))
+        (if (i32.eq
+              (i32.and
+                (i32.load
+                  (i32.add
+                    (i32.sub (local.get $obj) (i32.const {gc_header_size}))
+                    (i32.const {gc_flags_and_type_offset})))
+                (i32.const {gc_kind_mask}))
+              (i32.const {gc_kind_bigint}))
+          (then (return (call $bigint_mixed_arithmetic_type_error (local.get $a) (local.get $b)))))))
     (call $number_from_i32
       (i32.add
         (call $number_to_i32 (local.get $a))
         (call $number_to_i32 (local.get $b)))))
 "#,
-        );
+            tag_mask = ValueTag::TAG_MASK,
+            object_tag = ValueTag::OBJECT,
+            heap_mask = ValueTag::HEAP_MASK,
+            gc_header_size = Layout::GC_HEADER_SIZE,
+            gc_flags_and_type_offset = Layout::GC_FLAGS_AND_TYPE_OFFSET,
+            gc_kind_mask = Layout::GC_KIND_MASK,
+            gc_kind_bigint = Layout::GC_KIND_BIGINT,
+        ));
     }
 
     pub(crate) fn emit_add_fast(&self, wat: &mut String) {

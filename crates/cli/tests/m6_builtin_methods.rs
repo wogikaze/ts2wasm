@@ -527,6 +527,16 @@ fn build_smoke_array_find_last_index_method() {
 }
 
 #[test]
+fn build_smoke_array_flat_method() {
+    let result = run_fixture("builtins-and-io/array-flat.ts");
+    assert!(
+        result.is_ok(),
+        "Array.flat should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
 fn build_smoke_array_shift_unshift_splice_method() {
     let result = run_fixture("builtins-and-io/array-shift-unshift-splice.ts");
     assert!(

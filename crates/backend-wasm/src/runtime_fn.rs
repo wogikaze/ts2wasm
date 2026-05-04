@@ -945,6 +945,7 @@ const ADD_DEPS: &[RuntimeFn] = &[
     RuntimeFn::Concat,
     RuntimeFn::NumberToI32,
     RuntimeFn::NumberFromI32,
+    RuntimeFn::BigIntMixedArithmeticTypeError,
 ];
 const ADD_FAST_DEPS: &[RuntimeFn] = &[RuntimeFn::Add];
 const SUB_FAST_DEPS: &[RuntimeFn] = &[RuntimeFn::Sub];

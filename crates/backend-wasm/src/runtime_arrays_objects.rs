@@ -2562,6 +2562,12 @@ impl WatEmitter<'_> {
     (local.set $tag (i32.and (local.get $arr) (i32.const {tag_mask})))
     (if (i32.ne (local.get $tag) (i32.const {array_tag})) (then (return (i32.const {undefined}))))
     (local.set $obj (i32.and (local.get $arr) (i32.const {heap_mask})))
+    ;; Untag depth: tagged number → raw value; if not a number, default to 1
+    (local.set $depth
+      (select
+        (i32.shr_u (local.get $depth) (i32.const {number_shift}))
+        (i32.const {one})
+        (i32.eq (i32.and (local.get $depth) (i32.const {tag_mask})) (i32.const {number_tag}))))
     (local.set $len (i32.load (local.get $obj)))
     ;; First pass: count result elements
     (local.set $result_len (i32.const {zero}))
@@ -2678,6 +2684,8 @@ impl WatEmitter<'_> {
             elem_shift = Layout::ARRAY_ELEM_SHIFT,
             zero = RuntimeConst::ZERO,
             one = RuntimeConst::ONE,
+            number_shift = ValueTag::NUMBER_SHIFT,
+            number_tag = ValueTag::NUMBER,
             undefined = ValueTag::UNDEFINED,
         ));
     }

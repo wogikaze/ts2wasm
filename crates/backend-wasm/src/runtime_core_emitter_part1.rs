@@ -799,18 +799,35 @@ impl WatEmitter<'_> {
   (func $bigint_signed_i64 (param $v i32) (result i64)
     (local $obj i32)
     (local $sign i32)
-    (local $mag i64)
+    (local $len i32)
+    (local $ptr i32)
+    (local $end i32)
+    (local $result i64)
+    (local $digit i64)
     (local.set $obj (i32.and (local.get $v) (i32.const {heap_mask})))
     (local.set $sign (i32.load (i32.add (local.get $obj) (i32.const {bigint_sign_offset}))))
-    (local.set $mag
-      (i64.or
-        (i64.extend_i32_u (i32.load (i32.add (local.get $obj) (i32.const {bigint_limb0_low_offset}))))
-        (i64.shl
-          (i64.extend_i32_u (i32.load (i32.add (local.get $obj) (i32.const {bigint_limb0_high_offset}))))
-          (i64.const 32))))
+    (local.set $len (i32.load (i32.add (local.get $obj) (i32.const {bigint_decimal_len_offset}))))
+    (local.set $ptr (i32.add (local.get $obj) (i32.const {bigint_decimal_data_offset})))
+    ;; Skip leading minus sign
+    (if (i32.lt_s (local.get $sign) (i32.const 0))
+      (then
+        (local.set $ptr (i32.add (local.get $ptr) (i32.const 1)))
+        (local.set $len (i32.sub (local.get $len) (i32.const 1)))))
+    (if (i32.eqz (local.get $len))
+      (then (return (i64.const 0))))
+    (local.set $end (i32.add (local.get $ptr) (local.get $len)))
+    (block $parse_done
+      (loop $parse
+        (br_if $parse_done (i32.ge_u (local.get $ptr) (local.get $end)))
+        (local.set $digit
+          (i64.extend_i32_u
+            (i32.sub (i32.load8_u (local.get $ptr)) (i32.const {ascii_zero}))))
+        (local.set $result (i64.add (i64.mul (local.get $result) (i64.const 10)) (local.get $digit)))
+        (local.set $ptr (i32.add (local.get $ptr) (i32.const 1)))
+        (br $parse)))
     (if (result i64) (i32.lt_s (local.get $sign) (i32.const 0))
-      (then (i64.sub (i64.const 0) (local.get $mag)))
-      (else (local.get $mag))))
+      (then (i64.sub (i64.const 0) (local.get $result)))
+      (else (local.get $result))))
 
   (func $bigint_abs_data (param $v i32) (result i32)
     (local $obj i32)
@@ -1093,8 +1110,6 @@ impl WatEmitter<'_> {
             ascii_minus = RuntimeConst::ASCII_MINUS,
             ascii_zero = RuntimeConst::ASCII_ZERO,
             bigint_sign_offset = Layout::BIGINT_SIGN_OFFSET,
-            bigint_limb0_low_offset = Layout::BIGINT_LIMB0_LOW_OFFSET,
-            bigint_limb0_high_offset = Layout::BIGINT_LIMB0_HIGH_OFFSET,
             bigint_decimal_len_offset = Layout::BIGINT_DECIMAL_LEN_OFFSET,
             bigint_decimal_data_offset = Layout::BIGINT_DECIMAL_DATA_OFFSET,
         ));
