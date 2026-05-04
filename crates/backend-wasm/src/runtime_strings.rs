@@ -506,8 +506,11 @@ impl WatEmitter<'_> {
             (call $copy
               (i32.add (i32.add (local.get $s_obj) (i32.const {str_header})) (local.get $prev_end))
               (i32.add (i32.add (local.get $result_ptr) (i32.const {str_header})) (local.get $dst))
-              (local.get $seg_len)))))
-    (i32.or (local.get $result_ptr) (i32.const {string_tag})))
+              (local.get $seg_len))))
+        )
+    )
+    (i32.or (local.get $result_ptr) (i32.const {string_tag}))
+    )
 "#,
             heap_mask = ValueTag::HEAP_MASK,
             string_tag = ValueTag::STRING,
