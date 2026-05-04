@@ -100,6 +100,11 @@ fn array_some_fixture_matches_node_output_under_iwasm() {
 }
 
 #[test]
+fn array_concat_fixture_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/array-concat.ts");
+}
+
+#[test]
 fn abc451_depth8_live_set_fixture_matches_node_output_under_iwasm() {
     assert_fixture_matches_node_with_iwasm_timeout(
         "fixtures/core-semantics/abc451-depth8-live-set.ts",
