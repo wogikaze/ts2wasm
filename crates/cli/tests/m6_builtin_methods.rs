@@ -250,6 +250,26 @@ fn build_smoke_string_index_of_method() {
 }
 
 #[test]
+fn build_smoke_string_last_index_of_method() {
+    let result = run_fixture("builtins-and-io/string-last-index-of.ts");
+    assert!(
+        result.is_ok(),
+        "String.lastIndexOf should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
+fn build_smoke_string_locale_compare_method() {
+    let result = run_fixture("builtins-and-io/string-locale-compare.ts");
+    assert!(
+        result.is_ok(),
+        "String.localeCompare should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
 fn build_smoke_string_includes_method() {
     let result = run_fixture("builtins-and-io/string-includes.ts");
     assert!(

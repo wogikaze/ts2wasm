@@ -129,6 +129,8 @@ impl WatEmitter<'_> {
                 RuntimeFn::StringSubstring => self.emit_string_substring(wat),
                 RuntimeFn::StringSlice => self.emit_string_slice(wat),
                 RuntimeFn::StringIndexOf => self.emit_string_index_of(wat),
+                RuntimeFn::StringLastIndexOf => self.emit_string_last_index_of(wat),
+                RuntimeFn::StringLocaleCompare => self.emit_string_locale_compare(wat),
                 RuntimeFn::StringIncludes => self.emit_string_includes(wat),
                 RuntimeFn::StringPadStart => self.emit_string_pad_start(wat),
                 RuntimeFn::StringPadEnd => self.emit_string_pad_end(wat),

@@ -162,6 +162,10 @@ pub(crate) enum RuntimeFn {
     StringSubstring,
     StringSlice,
     StringIndexOf,
+    /// String.prototype.lastIndexOf
+    StringLastIndexOf,
+    /// String.prototype.localeCompare
+    StringLocaleCompare,
     /// String.prototype.includes
     StringIncludes,
     /// String.prototype.padStart
@@ -676,6 +680,8 @@ pub(crate) fn runtime_fn_from_name(name: &str) -> Option<RuntimeFn> {
         "StringSubstring" => Some(RuntimeFn::StringSubstring),
         "StringSlice" => Some(RuntimeFn::StringSlice),
         "StringIndexOf" => Some(RuntimeFn::StringIndexOf),
+        "StringLastIndexOf" => Some(RuntimeFn::StringLastIndexOf),
+        "StringLocaleCompare" => Some(RuntimeFn::StringLocaleCompare),
         "StringIncludes" => Some(RuntimeFn::StringIncludes),
         "StringPadStart" => Some(RuntimeFn::StringPadStart),
         "StringPadEnd" => Some(RuntimeFn::StringPadEnd),
@@ -1129,6 +1135,8 @@ const STRING_SUBSTRING_DEPS: &[RuntimeFn] =
 const STRING_SLICE_DEPS: &[RuntimeFn] =
     &[RuntimeFn::AllocHeap, RuntimeFn::Copy, RuntimeFn::IsString];
 const STRING_INDEX_OF_DEPS: &[RuntimeFn] = &[RuntimeFn::IsString, RuntimeFn::MemEqual];
+const STRING_LAST_INDEX_OF_DEPS: &[RuntimeFn] = &[RuntimeFn::IsString, RuntimeFn::MemEqual];
+const STRING_LOCALE_COMPARE_DEPS: &[RuntimeFn] = &[RuntimeFn::IsString, RuntimeFn::MemEqual];
 const STRING_INCLUDES_DEPS: &[RuntimeFn] = &[RuntimeFn::IsString, RuntimeFn::MemEqual];
 const STRING_STARTS_WITH_DEPS: &[RuntimeFn] = &[RuntimeFn::IsString, RuntimeFn::MemEqual];
 const STRING_ENDS_WITH_DEPS: &[RuntimeFn] = &[RuntimeFn::IsString, RuntimeFn::MemEqual];

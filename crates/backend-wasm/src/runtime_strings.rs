@@ -208,6 +208,92 @@ impl WatEmitter<'_> {
         ));
     }
 
+    pub(super) fn emit_string_last_index_of(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $string_last_index_of (param $haystack i32) (param $needle i32) (result i32)
+    (local $h_obj i32)
+    (local $n_obj i32)
+    (local $h_len i32)
+    (local $n_len i32)
+    (local $i i32)
+    (if (i32.eqz (call $is_string (local.get $haystack))) (then (return (i32.or (i32.shl (i32.const {neg_one}) (i32.const {number_shift})) (i32.const {number_tag})))))
+    (if (i32.eqz (call $is_string (local.get $needle))) (then (return (i32.or (i32.shl (i32.const {neg_one}) (i32.const {number_shift})) (i32.const {number_tag})))))
+    (local.set $h_obj (i32.and (local.get $haystack) (i32.const {heap_mask})))
+    (local.set $n_obj (i32.and (local.get $needle) (i32.const {heap_mask})))
+    (local.set $h_len (i32.load (local.get $h_obj)))
+    (local.set $n_len (i32.load (local.get $n_obj)))
+    (if (i32.eqz (local.get $n_len)) (then (return (i32.or (i32.shl (local.get $h_len) (i32.const {number_shift})) (i32.const {number_tag})))))
+    (local.set $i (i32.sub (local.get $h_len) (local.get $n_len)))
+    (block $not_found
+      (loop $search
+        (br_if $not_found (i32.lt_s (local.get $i) (i32.const {zero})))
+        (if (call $mem_equal
+              (i32.add (i32.add (local.get $h_obj) (i32.const {header})) (local.get $i))
+              (i32.add (local.get $n_obj) (i32.const {header}))
+              (local.get $n_len))
+          (then (return (i32.or (i32.shl (local.get $i) (i32.const {number_shift})) (i32.const {number_tag})))))
+        (local.set $i (i32.sub (local.get $i) (i32.const {one})))
+        (br $search)))
+    (i32.or (i32.shl (i32.const {neg_one}) (i32.const {number_shift})) (i32.const {number_tag})))
+"#,
+            neg_one = -1i32,
+            number_shift = ValueTag::NUMBER_SHIFT,
+            number_tag = ValueTag::NUMBER,
+            heap_mask = ValueTag::HEAP_MASK,
+            header = Layout::STRING_HEADER_SIZE,
+            zero = RuntimeConst::ZERO,
+            one = RuntimeConst::ONE,
+        ));
+    }
+
+    pub(super) fn emit_string_locale_compare(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $string_locale_compare (param $a i32) (param $b i32) (result i32)
+    (local $a_obj i32)
+    (local $b_obj i32)
+    (local $a_len i32)
+    (local $b_len i32)
+    (local $min_len i32)
+    (local $i i32)
+    (local $a_byte i32)
+    (local $b_byte i32)
+    (if (i32.eqz (call $is_string (local.get $a))) (then (return (i32.const {zero_number}))))
+    (if (i32.eqz (call $is_string (local.get $b))) (then (return (i32.const {zero_number}))))
+    (local.set $a_obj (i32.and (local.get $a) (i32.const {heap_mask})))
+    (local.set $b_obj (i32.and (local.get $b) (i32.const {heap_mask})))
+    (local.set $a_len (i32.load (local.get $a_obj)))
+    (local.set $b_len (i32.load (local.get $b_obj)))
+    (local.set $min_len (local.get $a_len))
+    (if (i32.lt_u (local.get $b_len) (local.get $min_len))
+      (then (local.set $min_len (local.get $b_len))))
+    (block $done
+      (loop $compare
+        (br_if $done (i32.ge_u (local.get $i) (local.get $min_len)))
+        (local.set $a_byte (i32.load8_u (i32.add (i32.add (local.get $a_obj) (i32.const {header})) (local.get $i))))
+        (local.set $b_byte (i32.load8_u (i32.add (i32.add (local.get $b_obj) (i32.const {header})) (local.get $i))))
+        (if (i32.lt_u (local.get $a_byte) (local.get $b_byte))
+          (then (return (i32.const {neg_one}))))
+        (if (i32.gt_u (local.get $a_byte) (local.get $b_byte))
+          (then (return (i32.const {one}))))
+        (local.set $i (i32.add (local.get $i) (i32.const {one_raw})))
+        (br $compare)))
+    (if (i32.lt_u (local.get $a_len) (local.get $b_len))
+      (then (return (i32.const {neg_one}))))
+    (if (i32.gt_u (local.get $a_len) (local.get $b_len))
+      (then (return (i32.const {one}))))
+    (i32.const {zero_number}))
+"#,
+            heap_mask = ValueTag::HEAP_MASK,
+            header = Layout::STRING_HEADER_SIZE,
+            zero_number = ValueTag::NUMBER, // tagged 0: (0 << 3) | 4 = 4
+            one = (1 << ValueTag::NUMBER_SHIFT) | ValueTag::NUMBER, // tagged 1: (1 << 3) | 4 = 12
+            neg_one = ((-1i32) << ValueTag::NUMBER_SHIFT) | ValueTag::NUMBER, // tagged -1
+            one_raw = RuntimeConst::ONE, // raw 1 for i32.add counter
+        ));
+    }
+
     pub(super) fn emit_string_includes(&self, wat: &mut String) {
         wat.push_str(&format!(
             r#"
