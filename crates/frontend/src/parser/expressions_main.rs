@@ -29,20 +29,60 @@ impl Parser {
 
         let expr = self.ternary()?;
         if matches!(self.peek(), Some(Token::Equal)) {
-            if let Expr::Ident { name, span } = expr {
-                self.advance();
-                let value = self.assignment()?;
-                return Ok(Expr::Assign {
-                    name,
-                    span: Span {
-                        start: span.start,
-                        end: value.span().end,
-                    },
-                    expr: Box::new(value),
-                });
-            }
-            if self.is_optional_chain_expr(&expr) {
-                return Err(self.invalid_optional_chain_target(expr.span()));
+            match expr {
+                Expr::Ident { name, span } => {
+                    self.advance();
+                    let value = self.assignment()?;
+                    return Ok(Expr::Assign {
+                        name,
+                        span: Span {
+                            start: span.start,
+                            end: value.span().end,
+                        },
+                        expr: Box::new(value),
+                    });
+                }
+                Expr::Member {
+                    object,
+                    property,
+                    span,
+                } if !property.is_empty() => {
+                    self.advance();
+                    let value = self.assignment()?;
+                    let end = value.span().end;
+                    return Ok(Expr::PropertyAssign {
+                        object,
+                        property,
+                        value: Box::new(value),
+                        span: Span {
+                            start: span.start,
+                            end,
+                        },
+                    });
+                }
+                Expr::Index {
+                    object,
+                    index,
+                    span,
+                } => {
+                    self.advance();
+                    let value = self.assignment()?;
+                    let end = value.span().end;
+                    return Ok(Expr::IndexAssign {
+                        object,
+                        index,
+                        value: Box::new(value),
+                        span: Span {
+                            start: span.start,
+                            end,
+                        },
+                    });
+                }
+                _ => {
+                    if self.is_optional_chain_expr(&expr) {
+                        return Err(self.invalid_optional_chain_target(expr.span()));
+                    }
+                }
             }
         }
         if let Some(op) = self.logical_assignment_operator() {

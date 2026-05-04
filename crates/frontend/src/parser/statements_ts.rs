@@ -404,6 +404,7 @@ impl Parser {
     }
 
     fn consume_module_or_namespace_declaration(&mut self) -> Result<bool, Diagnostic> {
+        let start = self.cursor;
         // consume 'module' or 'namespace' keyword
         self.advance();
         // consume the name (identifier or dotted name, or string literal)
@@ -421,7 +422,13 @@ impl Parser {
             Some(Token::String(_)) => {
                 self.advance();
             }
-            _ => {} // no name (edge case, just continue)
+            _ => {
+                // Not a valid module/namespace name — restore cursor and bail.
+                // This handles the case where `module` is followed by `.` (e.g. `module.exports = ...`)
+                // which is a runtime access, not a TypeScript namespace declaration.
+                self.cursor = start;
+                return Ok(false);
+            }
         }
         // if '{' follows, skip balanced brace block
         if matches!(self.peek(), Some(Token::LeftBrace)) {

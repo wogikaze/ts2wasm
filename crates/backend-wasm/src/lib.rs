@@ -217,7 +217,10 @@ mod tests {
     #[test]
     fn alloc_heap_emits_gc_header_and_trigger_contract() {
         let program = LoweredProgram {
-            top_level_statements: vec![LoweredStmt::Expr(LoweredExpr::ObjectNew { props: vec![] })],
+            top_level_statements: vec![LoweredStmt::Expr(LoweredExpr::ObjectNew {
+                props: vec![],
+                non_enumerable: 0,
+            })],
             top_level_locals: vec![],
             functions: vec![LoweredFunction {
                 id: FuncId(0),
@@ -280,7 +283,10 @@ mod tests {
     #[test]
     fn gc_sweep_and_free_list_reuse_contract_is_emitted() {
         let program = LoweredProgram {
-            top_level_statements: vec![LoweredStmt::Expr(LoweredExpr::ObjectNew { props: vec![] })],
+            top_level_statements: vec![LoweredStmt::Expr(LoweredExpr::ObjectNew {
+                props: vec![],
+                non_enumerable: 0,
+            })],
             top_level_locals: vec![],
             functions: vec![],
             modules: vec![],
@@ -347,7 +353,10 @@ mod tests {
         let program = LoweredProgram {
             top_level_statements: vec![LoweredStmt::Let(
                 LocalId(0),
-                LoweredExpr::ObjectNew { props: vec![] },
+                LoweredExpr::ObjectNew {
+                    props: vec![],
+                    non_enumerable: 0,
+                },
             )],
             top_level_locals: vec![LocalId(0)],
             functions: vec![],
@@ -393,7 +402,13 @@ mod tests {
                 rest_param_index: None,
                 locals: vec![LocalId(0)],
                 body: vec![
-                    LoweredStmt::Let(LocalId(0), LoweredExpr::ObjectNew { props: vec![] }),
+                    LoweredStmt::Let(
+                        LocalId(0),
+                        LoweredExpr::ObjectNew {
+                            props: vec![],
+                            non_enumerable: 0,
+                        },
+                    ),
                     LoweredStmt::Return(LoweredExpr::Local(LocalId(0))),
                 ],
             }],
@@ -555,6 +570,7 @@ mod tests {
                     "child".to_owned(),
                     LoweredExpr::ArrayNew { elements: vec![] },
                 )],
+                non_enumerable: 0,
             })],
             top_level_locals: vec![],
             functions: vec![],
@@ -749,7 +765,13 @@ mod tests {
     fn private_field_runtime_calls_do_not_create_slots_on_plain_objects() {
         let program = LoweredProgram {
             top_level_statements: vec![
-                LoweredStmt::Let(LocalId(0), LoweredExpr::ObjectNew { props: vec![] }),
+                LoweredStmt::Let(
+                    LocalId(0),
+                    LoweredExpr::ObjectNew {
+                        props: vec![],
+                        non_enumerable: 0,
+                    },
+                ),
                 LoweredStmt::Expr(LoweredExpr::RuntimeCall {
                     runtime_fn: "PrivateFieldSet".to_owned(),
                     args: vec![
@@ -977,7 +999,13 @@ mod tests {
     fn private_field_runtime_calls_raise_catchable_type_error() {
         let program = LoweredProgram {
             top_level_statements: vec![
-                LoweredStmt::Let(LocalId(0), LoweredExpr::ObjectNew { props: vec![] }),
+                LoweredStmt::Let(
+                    LocalId(0),
+                    LoweredExpr::ObjectNew {
+                        props: vec![],
+                        non_enumerable: 0,
+                    },
+                ),
                 LoweredStmt::TryCatch {
                     try_body: vec![LoweredStmt::Expr(LoweredExpr::RuntimeCall {
                         runtime_fn: "PrivateFieldGet".to_owned(),

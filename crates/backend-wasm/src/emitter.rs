@@ -1060,7 +1060,7 @@ impl<'a> WatEmitter<'a> {
                     }
                 }
             }
-            LoweredExpr::ObjectNew { props } => {
+            LoweredExpr::ObjectNew { props, .. } => {
                 for (_, value) in props {
                     Self::collect_class_prototypes_from_expr(value, prototypes);
                 }
@@ -1203,7 +1203,7 @@ impl<'a> WatEmitter<'a> {
                     }
                 }
             }
-            LoweredExpr::ObjectNew { props } => {
+            LoweredExpr::ObjectNew { props, .. } => {
                 for (_, value) in props {
                     Self::collect_builtin_error_prototypes_from_expr(value, prototypes);
                 }

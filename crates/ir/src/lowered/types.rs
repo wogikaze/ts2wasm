@@ -274,6 +274,7 @@ pub enum LoweredExpr {
     GetLength(Box<LoweredExpr>),
     ObjectNew {
         props: Vec<(String, LoweredExpr)>,
+        non_enumerable: u32, // bitmask: bit i = property i is non-enumerable
     },
     ErrorNew {
         constructor: BuiltinErrorConstructor,

@@ -131,3 +131,24 @@ Observations from initial investigation:
 - `Object.keys({a:1, b:2})` works correctly (returns `["a", "b"]`).
 - The bug is in how the `arguments` exotic object exposes its indexed
   properties to Object.keys enumeration.
+
+## Completion evidence
+
+Commits:
+
+- (pending commit)
+
+Validation result:
+
+```text
+cargo run -q -- build /tmp/test-arguments-keys2.js -o /tmp/args-keys2.wasm --host-deny && iwasm /tmp/args-keys2.wasm
+result:
+3
+["0","1","2"]
+3
+true
+```
+
+Remaining risks:
+
+- arguments exotic object still does not fully match ES spec (length is the only non-enumerable property tracked)

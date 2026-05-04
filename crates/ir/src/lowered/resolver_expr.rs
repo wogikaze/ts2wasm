@@ -921,6 +921,7 @@ impl<'a> Resolver<'a> {
                         }
                         LoweredExpr::ObjectNew {
                             props: lowered_props,
+                            non_enumerable: 0,
                         }
                     } else {
                         self.lower_expr(&args[0])?

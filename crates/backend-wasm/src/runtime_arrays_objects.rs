@@ -1789,7 +1789,9 @@ impl WatEmitter<'_> {
     (local $tag i32)
     (local $base i32)
     (local $count i32)
+    (local $flags i32)
     (local $i i32)
+    (local $write_i i32)
     (local $entry_base i32)
     (local $key i32)
     (local $result_ptr i32)
@@ -1797,28 +1799,37 @@ impl WatEmitter<'_> {
     (if (i32.ne (local.get $tag) (i32.const {object_tag})) (then (return (i32.const {undefined}))))
     (local.set $base (i32.and (local.get $obj) (i32.const {heap_mask})))
     (local.set $count (i32.load (local.get $base)))
-    ;; Allocate result array
+    (local.set $flags (i32.load (i32.add (local.get $base) (i32.const {obj_flags}))))
+    ;; Allocate result array (max size = count)
     (local.set $result_ptr (call $alloc_heap (i32.add (i32.const {array_header}) (i32.shl (local.get $count) (i32.const {elem_shift})))))
-    (i32.store (local.get $result_ptr) (local.get $count))
-    ;; Extract all keys
+    (local.set $write_i (i32.const {zero}))
     (local.set $i (i32.const {zero}))
     (block $keys_done
       (loop $keys_loop
         (br_if $keys_done (i32.ge_u (local.get $i) (local.get $count)))
-        (local.set $entry_base
-          (i32.add (local.get $base)
-            (i32.add (i32.const {obj_header})
-              (i32.shl (local.get $i) (i32.const {entry_shift})))))
-        (local.set $key (i32.load (local.get $entry_base)))
-        ;; Store key in result array
-        (i32.store (i32.add (local.get $result_ptr) (i32.add (i32.const {array_header}) (i32.shl (local.get $i) (i32.const {elem_shift})))) (local.get $key))
+        ;; Check if property i is non-enumerable (bit (non_enum_shift + i) in flags)
+        (if (i32.eqz (i32.and (local.get $flags) (i32.shl (i32.const 1) (i32.add (local.get $i) (i32.const {non_enum_shift})))))
+          (then
+            ;; Enumerable: copy key to result array
+            (local.set $entry_base
+              (i32.add (local.get $base)
+                (i32.add (i32.const {obj_header})
+                  (i32.shl (local.get $i) (i32.const {entry_shift})))))
+            (local.set $key (i32.load (local.get $entry_base)))
+            (i32.store (i32.add (local.get $result_ptr) (i32.add (i32.const {array_header}) (i32.shl (local.get $write_i) (i32.const {elem_shift})))) (local.get $key))
+            (local.set $write_i (i32.add (local.get $write_i) (i32.const {one}))))
+        )
         (local.set $i (i32.add (local.get $i) (i32.const {one})))
         (br $keys_loop)))
+    ;; Update array length to actual enumerable count
+    (i32.store (local.get $result_ptr) (local.get $write_i))
     (i32.or (local.get $result_ptr) (i32.const {array_tag})))
 "#,
             tag_mask = ValueTag::TAG_MASK,
             object_tag = ValueTag::OBJECT,
             heap_mask = ValueTag::HEAP_MASK,
+            obj_flags = Layout::OBJECT_FLAGS_OFFSET,
+            non_enum_shift = Layout::OBJECT_NON_ENUM_SHIFT,
             array_header = Layout::ARRAY_HEADER_SIZE,
             obj_header = Layout::OBJECT_HEADER_SIZE,
             entry_shift = Layout::OBJECT_ENTRY_SHIFT,

@@ -534,7 +534,10 @@ impl WatEmitter<'_> {
                 self.emit_expr(wat, inner, indent, frame);
                 wat.push_str(&format!("{pad}(call {})\n", RuntimeFn::GetLength.symbol()));
             }
-            LoweredExpr::ObjectNew { props } => {
+            LoweredExpr::ObjectNew {
+                props,
+                non_enumerable,
+            } => {
                 let prop_count = props.len();
                 let prop_capacity = prop_count + 8;
                 let size =
@@ -551,10 +554,12 @@ impl WatEmitter<'_> {
                     frame.heap_base_tmp(),
                     prop_count,
                 ));
+                let flags = non_enumerable << Layout::OBJECT_NON_ENUM_SHIFT;
                 wat.push_str(&format!(
-                    "{pad}(i32.store (i32.add (local.get {}) (i32.const {})) (i32.const 0))\n",
+                    "{pad}(i32.store (i32.add (local.get {}) (i32.const {})) (i32.const {}))\n",
                     frame.heap_base_tmp(),
                     Layout::OBJECT_FLAGS_OFFSET,
+                    flags,
                 ));
                 wat.push_str(&format!(
                     "{pad}(i32.store (i32.add (local.get {}) (i32.const {})) (i32.const 0))\n",

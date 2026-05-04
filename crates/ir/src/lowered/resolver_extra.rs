@@ -359,6 +359,7 @@ impl<'a> Resolver<'a> {
                 if signature.needs_arguments {
                     call_args.push(LoweredExpr::ObjectNew {
                         props: argument_props,
+                        non_enumerable: 0,
                     });
                 }
                 self.append_function_captures(func_id, &mut call_args)?;
@@ -686,7 +687,7 @@ impl<'a> Resolver<'a> {
 
                 let target = result
                     .take()
-                    .unwrap_or_else(|| LoweredExpr::ObjectNew { props: Vec::new() });
+                    .unwrap_or_else(|| LoweredExpr::ObjectNew { props: Vec::new(), non_enumerable: 0 });
                 let target = if pending.is_empty() {
                     target
                 } else {
@@ -696,6 +697,7 @@ impl<'a> Resolver<'a> {
                             target,
                             LoweredExpr::ObjectNew {
                                 props: std::mem::take(&mut pending),
+                                non_enumerable: 0,
                             },
                         ],
                     }
@@ -713,15 +715,15 @@ impl<'a> Resolver<'a> {
             pending.push((key.clone(), self.lower_expr(value)?));
         }
 
-        let target = result.unwrap_or_else(|| LoweredExpr::ObjectNew { props: Vec::new() });
+        let target = result.unwrap_or_else(|| LoweredExpr::ObjectNew { props: Vec::new(), non_enumerable: 0 });
         if pending.is_empty() {
             Ok(target)
-        } else if matches!(target, LoweredExpr::ObjectNew { ref props } if props.is_empty()) {
-            Ok(LoweredExpr::ObjectNew { props: pending })
+        } else if matches!(target, LoweredExpr::ObjectNew { ref props, .. } if props.is_empty()) {
+            Ok(LoweredExpr::ObjectNew { props: pending, non_enumerable: 0 })
         } else {
             Ok(LoweredExpr::RuntimeCall {
                 runtime_fn: "ObjectSpread".to_owned(),
-                args: vec![target, LoweredExpr::ObjectNew { props: pending }],
+                args: vec![target, LoweredExpr::ObjectNew { props: pending, non_enumerable: 0 }],
             })
         }
     }
@@ -908,7 +910,7 @@ impl<'a> Resolver<'a> {
             .collect();
         Ok(vec![LoweredStmt::Let(
             local_id,
-            LoweredExpr::ObjectNew { props: rest_props },
+            LoweredExpr::ObjectNew { props: rest_props, non_enumerable: 0 },
         )])
     }
 
@@ -1063,11 +1065,15 @@ impl<'a> Resolver<'a> {
                 .enumerate()
                 .map(|(index, arg)| (index.to_string(), arg))
                 .collect::<Vec<_>>();
+            let length_index = props.len(); // index of "length" after push
             props.push((
                 "length".to_owned(),
                 LoweredExpr::Number(argument_count as i32),
             ));
-            lowered_args.push(LoweredExpr::ObjectNew { props });
+            lowered_args.push(LoweredExpr::ObjectNew {
+                props,
+                non_enumerable: 1 << length_index, // length is non-enumerable
+            });
         }
 
         self.append_function_captures(func_id, &mut lowered_args)?;
@@ -1190,7 +1196,7 @@ impl<'a> Resolver<'a> {
         span: Span,
     ) -> Result<LoweredExpr, Diagnostic> {
         if Self::is_direct_return_this_iife(params, body, args) {
-            return Ok(LoweredExpr::ObjectNew { props: Vec::new() });
+            return Ok(LoweredExpr::ObjectNew { props: Vec::new(), non_enumerable: 0 });
         }
         if params.iter().any(|param| param.is_rest) {
             return Err(Diagnostic {

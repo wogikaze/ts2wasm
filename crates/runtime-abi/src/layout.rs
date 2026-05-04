@@ -59,7 +59,7 @@ impl Layout {
     // ---- Object heap layout -----------------------------------------------
     /// Bytes before the property entries:
     /// - [0 .. 4): property count (i32)
-    /// - [4 .. 8): flags (i32, bit 0 = FROZEN, bit 1 = SEALED)
+    /// - [4 .. 8): flags (i32, bit 0 = FROZEN, bit 1 = SEALED, bits 2+ = per-property non-enumerable mask)
     /// - [8 .. 12): prototype pointer (raw object heap pointer, i32)
     pub const OBJECT_HEADER_SIZE: u32 = 12;
     /// Offset of the flags field inside the object header.
@@ -78,6 +78,8 @@ impl Layout {
     pub const OBJECT_FLAG_FROZEN: u32 = 1;
     /// Bit 1 of flags: object is sealed (properties non-configurable).
     pub const OBJECT_FLAG_SEALED: u32 = 2;
+    /// Bits 2+ of flags: per-property non-enumerable mask (bit (2+i) = property i is non-enumerable).
+    pub const OBJECT_NON_ENUM_SHIFT: u32 = 2;
 
     // ---- GC layout --------------------------------------------------------
     /// Bytes reserved immediately before each GC-managed heap payload.

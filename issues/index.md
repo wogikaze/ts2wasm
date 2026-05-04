@@ -16,17 +16,17 @@ Issue files are the source of truth for work items. The generated section below 
 | coverage | 10 | 0 | 10 |
 | docs | 2 | 0 | 2 |
 | frontend | 4376 | 3769 | 607 |
-| harness | 1 | 0 | 1 |
+| harness | 2 | 1 | 1 |
 | ir | 18 | 0 | 18 |
 | issues | 4 | 0 | 4 |
 | parser | 1 | 0 | 1 |
 | reference | 211 | 183 | 28 |
-| runtime | 259 | 102 | 157 |
+| runtime | 259 | 101 | 158 |
 | scripts | 2 | 0 | 2 |
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 4928 | 4055 | 873 |
+| total | 4929 | 4055 | 874 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -194,6 +194,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 309 | Reduce ABC451 depth-9 live allocation shape | feature | runtime/memory | class: blocked | Reduce ABC451 depth-9 live allocation shape |
 | 312 | Triage test262 blocked P0 window | spike | reference | class: triage-needed | Triage test262 blocked P0 window |
 | 313 | Implement array-builtin support | feature | runtime/builtins | class: blocked | Implement array-builtin support |
+| 316 | Fix Object.keys backend-io error | feature | harness | class: blocked | Fix Object.keys backend-io error |
 | 335 | Implement full Math.pow number semantics | feature | runtime/builtins | class: blocked | Implement full Math.pow number semantics |
 | 342 | Implement Object builtin method coverage (1,721 test262 cases) | feature | runtime/builtins | class: blocked | Implement Object builtin method coverage (1,721 test262 cases) |
 | 343 | Implement DuplicateLocal diagnostic detection (66 test262 cases) | feature | frontend/resolver | class: blocked | Implement DuplicateLocal diagnostic detection (66 test262 cases) |
@@ -4217,7 +4218,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 5015 | Implement function support | spike | frontend/syntax | class: triage-needed | Implement function support |
 | 5018 | Implement legacy-global-builtin support | spike | frontend/syntax | class: triage-needed | Implement legacy-global-builtin support |
 | 5020 | Implement RegExp literal support | spike | frontend/syntax | class: triage-needed | Implement RegExp literal support |
-| 5124 | Fix Object.keys on arguments exotic object | bug | runtime | class: triage-needed | Fix Object.keys on arguments exotic object |
 <!-- generated:blocked:end -->
 
 ## Done queue
@@ -5100,6 +5100,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 5089 | Implement type-alias support (dup) | spike | frontend/syntax | see `issues/done/5089-implement-type-alias.md` |
 | 5090 | Implement type-system support (dup) | spike | frontend/syntax | see `issues/done/5090-implement-type-system.md` |
 | 5091 | Investigate and classify unknown-unsupported cases (dup) | spike | frontend/syntax | see `issues/done/5091-implement-unknown-unsupported.md` |
+| 5124 | Fix Object.keys on arguments exotic object | bug | runtime | see file |
 <!-- generated:done:end -->
 
 ## Index generation contract

@@ -484,7 +484,7 @@ fn validate_expr(
         LoweredExpr::GetLength(expr) => {
             validate_expr(expr, local_count, num_funcs, program, errors, true);
         }
-        LoweredExpr::ObjectNew { props } => {
+        LoweredExpr::ObjectNew { props, .. } => {
             for (_, val) in props {
                 validate_expr(val, local_count, num_funcs, program, errors, true);
             }

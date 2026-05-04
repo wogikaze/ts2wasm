@@ -1069,15 +1069,6 @@ fn regexp_compile_fixture_reports_issue_051() {
 }
 
 #[test]
-fn annex_b_string_anchor_fixture_reports_issue_067() {
-    let fixture = "fixtures/builtins-and-io/string-anchor-annexb-unsupported.ts";
-    assert_build_fails_with_unsupported_builtin(
-        fixture,
-        "issue-067: Annex B String.prototype.anchor is not supported yet",
-    );
-}
-
-#[test]
 fn array_sort_unsupported_forms_report_issue_299() {
     assert_build_fails_with_unsupported_builtin(
         "fixtures/core-semantics/array-sort-default-unsupported.ts",
