@@ -733,7 +733,6 @@ impl WatEmitter<'_> {
             undefined = ValueTag::UNDEFINED,
         ));
     }
-
     pub(super) fn emit_array_join(&self, wat: &mut String) {
         wat.push_str(&format!(
             r#"
@@ -2875,6 +2874,63 @@ impl WatEmitter<'_> {
             number_shift = ValueTag::NUMBER_SHIFT,
             zero = RuntimeConst::ZERO,
             one = RuntimeConst::ONE,
+            undefined = ValueTag::UNDEFINED,
+        ));
+    }
+
+    // Array.prototype.toReversed() — returns new array with elements in reverse order
+    pub(super) fn emit_array_to_reversed(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $array_to_reversed (param $arr i32) (result i32)
+    (local $tag i32)
+    (local $obj i32)
+    (local $len i32)
+    (local $result_ptr i32)
+    (local $alloc_size i32)
+    (local $i i32)
+    (local $j i32)
+    (local $elem i32)
+    (local.set $tag (i32.and (local.get $arr) (i32.const {tag_mask})))
+    (if (i32.ne (local.get $tag) (i32.const {array_tag})) (then (return (i32.const {undefined}))))
+    (local.set $obj (i32.and (local.get $arr) (i32.const {heap_mask})))
+    (local.set $len (i32.load (local.get $obj)))
+    (local.set $alloc_size
+      (i32.add
+        (i32.const {array_header})
+        (i32.shl (local.get $len) (i32.const {elem_shift}))))
+    (local.set $result_ptr (call $alloc_heap (local.get $alloc_size)))
+    (call $copy (local.get $obj) (local.get $result_ptr) (local.get $alloc_size))
+    (local.set $i (i32.const {zero}))
+    (block $done
+      (loop $loop
+        (br_if $done (i32.ge_u (local.get $i) (i32.shr_u (local.get $len) (i32.const {one}))))
+        (local.set $j (i32.sub (i32.sub (local.get $len) (i32.const {one})) (local.get $i)))
+        (local.set $elem
+          (i32.load
+            (i32.add (local.get $result_ptr)
+              (i32.add (i32.const {array_header}) (i32.shl (local.get $i) (i32.const {elem_shift}))))))
+        (i32.store
+          (i32.add (local.get $result_ptr)
+            (i32.add (i32.const {array_header}) (i32.shl (local.get $i) (i32.const {elem_shift}))))
+          (i32.load
+            (i32.add (local.get $result_ptr)
+              (i32.add (i32.const {array_header}) (i32.shl (local.get $j) (i32.const {elem_shift}))))))
+        (i32.store
+          (i32.add (local.get $result_ptr)
+            (i32.add (i32.const {array_header}) (i32.shl (local.get $j) (i32.const {elem_shift}))))
+          (local.get $elem))
+        (local.set $i (i32.add (local.get $i) (i32.const {one})))
+        (br $loop)))
+    (i32.or (local.get $result_ptr) (i32.const {array_tag})))
+"#,
+            tag_mask = ValueTag::TAG_MASK,
+            array_tag = ValueTag::ARRAY,
+            heap_mask = ValueTag::HEAP_MASK,
+            array_header = Layout::ARRAY_HEADER_SIZE,
+            elem_shift = Layout::ARRAY_ELEM_SHIFT,
+            one = RuntimeConst::ONE,
+            zero = RuntimeConst::ZERO,
             undefined = ValueTag::UNDEFINED,
         ));
     }

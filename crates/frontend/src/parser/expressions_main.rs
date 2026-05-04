@@ -964,6 +964,11 @@ impl Parser {
             self.skip_typescript_expression_type(keyword_span, keyword)?;
         }
 
+        // TypeScript non-null assertion: `x!` — erased at runtime
+        while self.consume(TokenKind::Bang) {
+            // just consume the `!`, expression value unchanged
+        }
+
         if let Some(op_span) = self.consume_span(TokenKind::Increment) {
             if self.is_optional_chain_expr(&expr) {
                 return Err(self.invalid_optional_chain_target(expr.span()));

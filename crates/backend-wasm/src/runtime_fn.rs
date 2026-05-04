@@ -254,6 +254,10 @@ pub(crate) enum RuntimeFn {
     ArrayCopyWithin,
     /// Array.prototype.with(index, value) — returns new array with element at index replaced
     ArrayWith,
+    /// Array.prototype.toReversed() — returns new array with elements in reverse order
+    ArrayToReversed,
+    /// Array.prototype.toSpliced(start, deleteCount) — returns new array with elements removed
+    ArrayToSpliced,
     /// Array.prototype.shift() — removes and returns first element
     ArrayShift,
     /// Array.prototype.unshift(val) — adds element at beginning, returns new length
@@ -719,6 +723,8 @@ pub(crate) fn runtime_fn_from_name(name: &str) -> Option<RuntimeFn> {
         "ArrayPushOrSpread" => Some(RuntimeFn::ArrayPushOrSpread),
         "ArrayCopyWithin" => Some(RuntimeFn::ArrayCopyWithin),
         "ArrayWith" => Some(RuntimeFn::ArrayWith),
+        "ArrayToReversed" => Some(RuntimeFn::ArrayToReversed),
+        "ArrayToSpliced" => Some(RuntimeFn::ArrayToSpliced),
         "ArrayShift" => Some(RuntimeFn::ArrayShift),
         "ArrayUnshift" => Some(RuntimeFn::ArrayUnshift),
         "ArraySplice" => Some(RuntimeFn::ArraySplice),
@@ -1070,7 +1076,10 @@ const TYPEOF_RUNTIME_STRINGS: &[&str] = &[
 const BIGINT_UNARY_MINUS_DEPS: &[RuntimeFn] = &[RuntimeFn::BigIntAdd];
 const BIGINT_ADD_DEPS: &[RuntimeFn] = &[RuntimeFn::MakeBigIntLiteral];
 const BIGINT_SUB_DEPS: &[RuntimeFn] = &[RuntimeFn::BigIntAdd];
-const BIGINT_MUL_DEPS: &[RuntimeFn] = &[RuntimeFn::MakeBigIntLiteral];
+const BIGINT_MUL_DEPS: &[RuntimeFn] = &[
+    RuntimeFn::MakeBigIntLiteral,
+    RuntimeFn::BigIntDiv,
+];
 const BIGINT_POW_DEPS: &[RuntimeFn] = &[RuntimeFn::BigIntAdd];
 const BIGINT_DIV_DEPS: &[RuntimeFn] = &[
     RuntimeFn::MakeBigIntLiteral,
@@ -1215,6 +1224,8 @@ const ARRAY_FLAT_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap, RuntimeFn::Copy];
 const ARRAY_PUSH_OR_SPREAD_DEPS: &[RuntimeFn] = &[RuntimeFn::ArrayPush];
 const ARRAY_COPY_WITHIN_DEPS: &[RuntimeFn] = &[];
 const ARRAY_WITH_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap, RuntimeFn::Copy];
+const ARRAY_TO_REVERSED_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap, RuntimeFn::Copy];
+const ARRAY_TO_SPLICED_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap, RuntimeFn::Copy];
 const ARRAY_SHIFT_DEPS: &[RuntimeFn] = &[];
 const ARRAY_UNSHIFT_DEPS: &[RuntimeFn] = &[];
 const ARRAY_SPLICE_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap, RuntimeFn::Copy];

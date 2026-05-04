@@ -1262,7 +1262,7 @@ impl WatEmitter<'_> {
       (i32.wrap_i64 (local.get $limb))
       (i32.wrap_i64 (i64.shr_u (local.get $limb) (i64.const 32)))
       (local.get $result_ptr)
-      (local.get $result_len)))
+      (local.get $result_len))))
 "#,
             heap_mask = ValueTag::HEAP_MASK,
             bigint_sign_offset = Layout::BIGINT_SIGN_OFFSET,

@@ -872,6 +872,8 @@ impl Parser {
             }
         };
         let binding = self.parse_binding_pattern()?;
+        // TypeScript definite assignment assertion: `let x!: type` — erase `!`
+        self.consume(TokenKind::Bang);
         if self.consume(TokenKind::Colon) {
             self.skip_type_annotation_until(&[
                 TokenKind::Equal,

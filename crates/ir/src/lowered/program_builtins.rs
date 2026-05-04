@@ -140,6 +140,8 @@ pub(super) fn collection_method_runtime_fn(class_name: &str, method: &str) -> Op
         ("Array", "reverse") => Some("ArrayReverse"),
         ("Array", "copyWithin") => Some("ArrayCopyWithin"),
         ("Array", "with") => Some("ArrayWith"),
+        ("Array", "toReversed") => Some("ArrayToReversed"),
+        ("Array", "toSpliced") => Some("ArrayToSpliced"),
         ("Array", "shift") => Some("ArrayShift"),
         ("Array", "unshift") => Some("ArrayUnshift"),
         ("Array", "splice") => Some("ArraySplice"),
@@ -172,6 +174,8 @@ pub(super) fn collection_method_runtime_fn_arg(method: &str) -> Option<&'static 
         "fill" => Some("ArrayFill"),
         "flat" => Some("ArrayFlat"),
         "with" => Some("ArrayWith"),
+        "toReversed" => Some("ArrayToReversed"),
+        "toSpliced" => Some("ArrayToSpliced"),
         _ => None,
     }
 }

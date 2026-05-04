@@ -572,6 +572,16 @@ fn build_smoke_array_with_method() {
 }
 
 #[test]
+fn build_smoke_array_to_reversed_method() {
+    let result = run_fixture("builtins-and-io/array-to-reversed.ts");
+    assert!(
+        result.is_ok(),
+        "Array.toReversed should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
 fn build_smoke_array_shift_unshift_splice_method() {
     let result = run_fixture("builtins-and-io/array-shift-unshift-splice.ts");
     assert!(

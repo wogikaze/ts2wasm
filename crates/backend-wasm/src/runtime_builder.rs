@@ -162,6 +162,7 @@ impl WatEmitter<'_> {
                 RuntimeFn::ArrayMapArrayLikeDouble => self.emit_array_map_array_like_double(wat),
                 RuntimeFn::ArraySortNumeric => self.emit_array_sort_numeric(wat),
                 RuntimeFn::ArrayJoin => self.emit_array_join(wat),
+                RuntimeFn::ArrayToReversed => self.emit_array_to_reversed(wat),
                 RuntimeFn::ArrayReverse => self.emit_array_reverse(wat),
                 RuntimeFn::ObjectKeys => self.emit_object_keys(wat),
                 RuntimeFn::ObjectSpread => self.emit_object_spread(wat),
