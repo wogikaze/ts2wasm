@@ -87,7 +87,6 @@ pub(super) fn resolve_method_to_runtime_fn(object: &ResolvedExpr, method: &str) 
         "hasOwnProperty" => Some("ObjectHasOwnProperty".to_owned()),
         "push" => Some("ArrayPush".to_owned()),
         "pop" => Some("ArrayPop".to_owned()),
-        "join" => Some("ArrayJoin".to_owned()),
         "reverse" => Some("ArrayReverse".to_owned()),
         _ => None,
     }

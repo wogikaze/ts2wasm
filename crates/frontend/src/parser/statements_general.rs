@@ -64,6 +64,38 @@ impl Parser {
             }
             Some(Token::LeftBrace) => self.named_import_statement(import_span),
             Some(Token::Star) => self.namespace_import_statement(import_span),
+            Some(Token::Ident(_)) if matches!(self.peek_n(1), Some(Token::Equal)) => {
+                // TypeScript import-equals: `import X = require(...)` or `import X = N`
+                self.advance(); // consume identifier
+                self.advance(); // consume `=`
+                if self.peek_contextual_keyword("require") {
+                    self.advance();
+                    self.advance(); // `(`
+                    let source = self.expect_module_specifier()?;
+                    self.expect(TokenKind::RightParen)?;
+                    let end = self.statement_terminator_end(source.span.end)?;
+                    return Ok(Stmt::ImportDefault {
+                        specifier: crate::ImportDefaultSpecifier {
+                            local: String::new(),
+                            local_span: import_span,
+                            span: import_span,
+                        },
+                        source,
+                        span: Span { start: import_span.start, end },
+                    });
+                }
+                // `import X = N[.M. ...]` — local alias, skip (erased at runtime)
+                while matches!(self.peek(), Some(Token::Ident(_)))
+                    || matches!(self.peek(), Some(Token::Dot))
+                {
+                    self.advance();
+                }
+                self.expect(TokenKind::Semicolon)?;
+                return Ok(Stmt::Expr {
+                    expr: crate::Expr::Undefined { span: import_span },
+                    span: Span { start: import_span.start, end: import_span.start },
+                });
+            }
             Some(Token::Ident(_)) => self.default_import_statement(import_span),
             Some(Token::LeftParen) => self.unsupported_module_form(import_span, "dynamic import"),
             _ => self.unsupported_module_form(import_span, "static import"),
@@ -1604,5 +1636,60 @@ impl Parser {
         } else {
             Ok(vec![self.statement()?])
         }
+    }
+
+    /// Skip tokens until a semicolon at the top level is found.
+    /// Used for erasing TypeScript-specific constructs (e.g. `import X = N`).
+    fn skip_to_semicolon(&mut self) -> Result<(), Diagnostic> {
+        let mut paren_depth = 0usize;
+        let mut bracket_depth = 0usize;
+        let mut brace_depth = 0usize;
+        while !self.is_at_end() {
+            match self.peek() {
+                Some(Token::LeftParen) => {
+                    paren_depth += 1;
+                    self.advance();
+                }
+                Some(Token::RightParen) => {
+                    if paren_depth > 0 {
+                        paren_depth -= 1;
+                    }
+                    self.advance();
+                }
+                Some(Token::LeftBracket) => {
+                    bracket_depth += 1;
+                    self.advance();
+                }
+                Some(Token::RightBracket) => {
+                    if bracket_depth > 0 {
+                        bracket_depth -= 1;
+                    }
+                    self.advance();
+                }
+                Some(Token::LeftBrace) => {
+                    brace_depth += 1;
+                    self.advance();
+                }
+                Some(Token::RightBrace) => {
+                    if brace_depth > 0 {
+                        brace_depth -= 1;
+                    }
+                    self.advance();
+                }
+                Some(token)
+                    if paren_depth == 0
+                        && bracket_depth == 0
+                        && brace_depth == 0
+                        && TokenKind::Semicolon.matches(token) =>
+                {
+                    self.advance();
+                    return Ok(());
+                }
+                _ => {
+                    self.advance();
+                }
+            }
+        }
+        Ok(())
     }
 }

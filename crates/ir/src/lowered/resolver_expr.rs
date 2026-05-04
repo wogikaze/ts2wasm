@@ -796,6 +796,7 @@ impl<'a> Resolver<'a> {
                 args,
                 span,
             } => {
+                eprintln!("DBG_MCALL: method={}", method);
                 if method == "call" && is_array_prototype_push_expr(object) {
                     let Some((receiver, values)) = args.split_first() else {
                         return Err(Diagnostic {
@@ -1297,6 +1298,7 @@ impl<'a> Resolver<'a> {
                         args: lowered_args,
                     })
                 } else {
+                    eprintln!("DBG_L1300: reached resolve_method_to_runtime_fn else block");
                     if let ResolvedExpr::Ident(receiver_name) = object.as_ref()
                         && let Ok(obj_local) = self.resolve_local(receiver_name)
                         && let Some(method_id) = self
@@ -1441,6 +1443,7 @@ impl<'a> Resolver<'a> {
                         });
                     }
 
+                    eprintln!("DBG_L1445: reached receiver_name extraction");
                     let receiver_name = match object.as_ref() {
                         ResolvedExpr::Ident(name) => name,
                         ResolvedExpr::PropertyAccess {

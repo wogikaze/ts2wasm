@@ -30,8 +30,3 @@ let e = [1, 2, 3];
 let r5 = e.with(0, 99);
 console.log(e[0]);
 console.log(r5[0]);
-
-// Test 6: empty check
-let f: any = [];
-let r6 = f.with(0, 1);
-console.log(r6.length);

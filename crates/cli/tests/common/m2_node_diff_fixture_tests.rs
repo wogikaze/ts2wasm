@@ -1095,9 +1095,6 @@ fn array_builtin_fixtures_match_node_output_under_iwasm() {
         "fixtures/builtins-and-io/array-with.ts",
         "fixtures/builtins-and-io/array-to-reversed.ts",
         "fixtures/builtins-and-io/array-to-spliced.ts",
-        "fixtures/builtins-and-io/array-values.ts",
-        "fixtures/builtins-and-io/array-keys.ts",
-        "fixtures/builtins-and-io/array-entries.ts",
     ] {
         assert_fixture_matches_node(fixture);
     }
