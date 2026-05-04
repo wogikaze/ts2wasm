@@ -13,20 +13,20 @@ Issue files are the source of truth for work items. The generated section below 
 | backend | 13 | 1 | 12 |
 | cli | 15 | 0 | 15 |
 | compiler | 1 | 0 | 1 |
-| coverage | 10 | 0 | 10 |
+| coverage | 42 | 32 | 10 |
 | docs | 2 | 0 | 2 |
-| frontend | 4376 | 3769 | 607 |
+| frontend | 4376 | 3762 | 614 |
 | harness | 1 | 0 | 1 |
 | ir | 18 | 0 | 18 |
 | issues | 4 | 0 | 4 |
 | parser | 1 | 0 | 1 |
 | reference | 211 | 183 | 28 |
-| runtime | 259 | 100 | 159 |
+| runtime | 259 | 98 | 161 |
 | scripts | 2 | 0 | 2 |
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 4928 | 4053 | 875 |
+| total | 4960 | 4076 | 884 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -341,16 +341,10 @@ Issue files are the source of truth for work items. The generated section below 
 | 666 | Implement Arraybindingpatternomittedexpressions | spike | frontend/syntax | class: blocked | Implement Arraybindingpatternomittedexpressions |
 | 667 | Implement Arraybufferisviewnarrowstype | spike | frontend/resolver | class: blocked | Implement Arraybufferisviewnarrowstype |
 | 668 | Implement Arraycast | spike | frontend/syntax | class: triage-needed | Implement Arraycast |
-| 670 | Implement Arrayconcatmap | spike | frontend/syntax | class: blocked | Implement Arrayconcatmap |
 | 671 | Implement Arrayconstructors | spike | frontend/syntax | class: blocked | Implement Arrayconstructors |
 | 672 | Implement Arraydestructuringinswitch | spike | frontend/syntax | class: blocked | Implement Arraydestructuringinswitch |
 | 673 | Implement Arrayevery | spike | frontend/syntax | class: blocked | Implement Arrayevery |
 | 674 | Implement Arrayfakeflatnocrashinferencedeclarations | spike | runtime/builtins | class: triage-needed | Implement Arrayfakeflatnocrashinferencedeclarations |
-| 675 | Implement Arrayfilter | spike | runtime/builtins | class: triage-needed | Implement Arrayfilter |
-| 676 | Implement Arrayfind | spike | frontend/syntax | class: triage-needed | Implement Arrayfind |
-| 677 | Implement Arrayflatmap | spike | frontend/syntax | class: blocked | Implement Arrayflatmap |
-| 678 | Implement Arrayflatnocrashinference | spike | frontend/syntax | class: blocked | Implement Arrayflatnocrashinference |
-| 679 | Implement Arrayflatnocrashinferencedeclarations | spike | frontend/syntax | class: blocked | Implement Arrayflatnocrashinferencedeclarations |
 | 680 | Implement Arrayfrom | spike | runtime/builtins | class: triage-needed | Implement Arrayfrom |
 | 681 | Implement Arrayfromasync | spike | reference/triage | class: triage-needed | Implement Arrayfromasync |
 | 682 | Implement Arrayindexwitharrayfails | spike | frontend/resolver | class: blocked | Implement Arrayindexwitharrayfails |
@@ -363,11 +357,9 @@ Issue files are the source of truth for work items. The generated section below 
 | 689 | Implement Arrayofsubtypeisassignabletoreadonlyarray | spike | frontend/semantics | class: blocked | Implement Arrayofsubtypeisassignabletoreadonlyarray |
 | 690 | Implement Arrayreferencewithouttypeargs | spike | frontend/syntax | class: blocked | Implement Arrayreferencewithouttypeargs |
 | 691 | Implement Arraysigchecking | spike | frontend/syntax | class: blocked | Implement Arraysigchecking |
-| 692 | Implement Arrayslice | spike | frontend/syntax | class: blocked | Implement Arrayslice |
 | 693 | Implement Arraytolocalestringes Name Resolution | spike | frontend/resolver | class: blocked | Implement Arraytolocalestringes Name Resolution |
 | 694 | Implement Arraytolocalestringes Unknown Unsupported | spike | frontend/syntax | class: triage-needed | Implement Arraytolocalestringes Unknown Unsupported |
 | 695 | Implement Arraytypeinsignatureofinterfaceandclass | spike | frontend/syntax | class: blocked | Implement Arraytypeinsignatureofinterfaceandclass |
-| 696 | Implement Arrayconcat | spike | runtime/builtins | class: triage-needed | Implement Arrayconcat |
 | 697 | Implement Arrowfunctioninconstructorargument | spike | frontend/syntax | class: triage-needed | Implement Arrowfunctioninconstructorargument |
 | 698 | Implement Arrowfunctioninexpressionstatement | spike | frontend/syntax | class: blocked | Implement Arrowfunctioninexpressionstatement |
 | 699 | Implement Arrowfunctionmissingcurlywithsemicolon | spike | frontend/syntax | class: triage-needed | Implement Arrowfunctionmissingcurlywithsemicolon |
@@ -1925,7 +1917,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 2488 | Implement Genericarrayassignment | spike | frontend/resolver | class: blocked | Implement Genericarrayassignment |
 | 2489 | Implement Genericarrayassignmentcompaterrors | spike | frontend/resolver | class: blocked | Implement Genericarrayassignmentcompaterrors |
 | 2490 | Implement Genericarrayextenstions | spike | frontend/syntax | class: blocked | Implement Genericarrayextenstions |
-| 2491 | Implement Genericarraywithouttypeannotation | spike | frontend/syntax | class: blocked | Implement Genericarraywithouttypeannotation |
 | 2492 | Implement Genericassignmentcompatoffunctionsignatures | spike | frontend/syntax | class: blocked | Implement Genericassignmentcompatoffunctionsignatures |
 | 2493 | Implement Genericassignmentcompatwithinterfaces | spike | frontend/syntax | class: blocked | Implement Genericassignmentcompatwithinterfaces |
 | 2494 | Implement Genericbaseclassliteralproperty | spike | frontend/syntax | class: blocked | Implement Genericbaseclassliteralproperty |
@@ -4216,6 +4207,38 @@ Issue files are the source of truth for work items. The generated section below 
 | 5015 | Implement function support | spike | frontend/syntax | class: triage-needed | Implement function support |
 | 5018 | Implement legacy-global-builtin support | spike | frontend/syntax | class: triage-needed | Implement legacy-global-builtin support |
 | 5020 | Implement RegExp literal support | spike | frontend/syntax | class: triage-needed | Implement RegExp literal support |
+| 5092 | (filler) Auto-generated gap placeholder #5092 | task | coverage | class: triage-needed | (filler) Auto-generated gap placeholder #5092 |
+| 5093 | (filler) Auto-generated gap placeholder #5093 | task | coverage | class: triage-needed | (filler) Auto-generated gap placeholder #5093 |
+| 5094 | (filler) Auto-generated gap placeholder #5094 | task | coverage | class: triage-needed | (filler) Auto-generated gap placeholder #5094 |
+| 5095 | (filler) Auto-generated gap placeholder #5095 | task | coverage | class: triage-needed | (filler) Auto-generated gap placeholder #5095 |
+| 5096 | (filler) Auto-generated gap placeholder #5096 | task | coverage | class: triage-needed | (filler) Auto-generated gap placeholder #5096 |
+| 5097 | (filler) Auto-generated gap placeholder #5097 | task | coverage | class: triage-needed | (filler) Auto-generated gap placeholder #5097 |
+| 5098 | (filler) Auto-generated gap placeholder #5098 | task | coverage | class: triage-needed | (filler) Auto-generated gap placeholder #5098 |
+| 5099 | (filler) Auto-generated gap placeholder #5099 | task | coverage | class: triage-needed | (filler) Auto-generated gap placeholder #5099 |
+| 5100 | (filler) Auto-generated gap placeholder #5100 | task | coverage | class: triage-needed | (filler) Auto-generated gap placeholder #5100 |
+| 5101 | (filler) Auto-generated gap placeholder #5101 | task | coverage | class: triage-needed | (filler) Auto-generated gap placeholder #5101 |
+| 5102 | (filler) Auto-generated gap placeholder #5102 | task | coverage | class: triage-needed | (filler) Auto-generated gap placeholder #5102 |
+| 5103 | (filler) Auto-generated gap placeholder #5103 | task | coverage | class: triage-needed | (filler) Auto-generated gap placeholder #5103 |
+| 5104 | (filler) Auto-generated gap placeholder #5104 | task | coverage | class: triage-needed | (filler) Auto-generated gap placeholder #5104 |
+| 5105 | (filler) Auto-generated gap placeholder #5105 | task | coverage | class: triage-needed | (filler) Auto-generated gap placeholder #5105 |
+| 5106 | (filler) Auto-generated gap placeholder #5106 | task | coverage | class: triage-needed | (filler) Auto-generated gap placeholder #5106 |
+| 5107 | (filler) Auto-generated gap placeholder #5107 | task | coverage | class: triage-needed | (filler) Auto-generated gap placeholder #5107 |
+| 5108 | (filler) Auto-generated gap placeholder #5108 | task | coverage | class: triage-needed | (filler) Auto-generated gap placeholder #5108 |
+| 5109 | (filler) Auto-generated gap placeholder #5109 | task | coverage | class: triage-needed | (filler) Auto-generated gap placeholder #5109 |
+| 5110 | (filler) Auto-generated gap placeholder #5110 | task | coverage | class: triage-needed | (filler) Auto-generated gap placeholder #5110 |
+| 5111 | (filler) Auto-generated gap placeholder #5111 | task | coverage | class: triage-needed | (filler) Auto-generated gap placeholder #5111 |
+| 5112 | (filler) Auto-generated gap placeholder #5112 | task | coverage | class: triage-needed | (filler) Auto-generated gap placeholder #5112 |
+| 5113 | (filler) Auto-generated gap placeholder #5113 | task | coverage | class: triage-needed | (filler) Auto-generated gap placeholder #5113 |
+| 5114 | (filler) Auto-generated gap placeholder #5114 | task | coverage | class: triage-needed | (filler) Auto-generated gap placeholder #5114 |
+| 5115 | (filler) Auto-generated gap placeholder #5115 | task | coverage | class: triage-needed | (filler) Auto-generated gap placeholder #5115 |
+| 5116 | (filler) Auto-generated gap placeholder #5116 | task | coverage | class: triage-needed | (filler) Auto-generated gap placeholder #5116 |
+| 5117 | (filler) Auto-generated gap placeholder #5117 | task | coverage | class: triage-needed | (filler) Auto-generated gap placeholder #5117 |
+| 5118 | (filler) Auto-generated gap placeholder #5118 | task | coverage | class: triage-needed | (filler) Auto-generated gap placeholder #5118 |
+| 5119 | (filler) Auto-generated gap placeholder #5119 | task | coverage | class: triage-needed | (filler) Auto-generated gap placeholder #5119 |
+| 5120 | (filler) Auto-generated gap placeholder #5120 | task | coverage | class: triage-needed | (filler) Auto-generated gap placeholder #5120 |
+| 5121 | (filler) Auto-generated gap placeholder #5121 | task | coverage | class: triage-needed | (filler) Auto-generated gap placeholder #5121 |
+| 5122 | (filler) Auto-generated gap placeholder #5122 | task | coverage | class: triage-needed | (filler) Auto-generated gap placeholder #5122 |
+| 5123 | (filler) Auto-generated gap placeholder #5123 | task | coverage | class: triage-needed | (filler) Auto-generated gap placeholder #5123 |
 <!-- generated:blocked:end -->
 
 ## Done queue
@@ -4738,6 +4761,14 @@ Issue files are the source of truth for work items. The generated section below 
 | 641 | Implement Anyasreturntypefornewoncall | spike | frontend/syntax | see `issues/done/641-implement-anyAsReturnTypeForNewOnCall.md` |
 | 642 | Implement Anydeclare | spike | frontend/syntax | see `issues/done/642-implement-anyDeclare.md` |
 | 669 | Implement Arrayconcat (dup) | spike | frontend/syntax | see `issues/done/669-implement-arrayConcat.md` |
+| 670 | Implement Arrayconcatmap | spike | frontend/syntax | see `issues/done/670-implement-arrayConcatMap.md` |
+| 675 | Implement Arrayfilter | spike | runtime/builtins | see `issues/done/675-implement-arrayFilter.md` |
+| 676 | Implement Arrayfind | spike | frontend/syntax | see `issues/done/676-implement-arrayFind.md` |
+| 677 | Implement Arrayflatmap | spike | frontend/syntax | see `issues/done/677-implement-arrayFlatMap.md` |
+| 678 | Implement Arrayflatnocrashinference | spike | frontend/syntax | see `issues/done/678-implement-arrayFlatNoCrashInference.md` |
+| 679 | Implement Arrayflatnocrashinferencedeclarations | spike | frontend/syntax | see `issues/done/679-implement-arrayFlatNoCrashInferenceDeclarations.md` |
+| 692 | Implement Arrayslice | spike | frontend/syntax | see `issues/done/692-implement-arraySlice.md` |
+| 696 | Implement Arrayconcat | spike | runtime/builtins | see `issues/done/696-implement-arrayconcat.md` |
 | 776 | Implement Apilibcheck (dup) | spike | frontend/syntax | see `issues/done/776-implement-APILibCheck.md` |
 | 777 | Implement Apisample Arrow Function (dup) | spike | frontend/syntax | see `issues/done/777-implement-APISample-arrow-function.md` |
 | 778 | Implement Apisample Import Export (dup) | spike | frontend/syntax | see `issues/done/778-implement-APISample-import-export.md` |
@@ -4976,6 +5007,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 1010 | Implement Autotypeassignedusingdestructuringfromnevernocrash (dup) | spike | frontend/resolver | see `issues/done/1010-implement-autoTypeAssignedUsingDestructuringFromNeverNoCrash.md` |
 | 1011 | Implement Autolift (dup) | spike | frontend/syntax | see `issues/done/1011-implement-autolift.md` |
 | 2058 | Implement Duplicatepackage Module Resolution | spike | frontend/syntax | see `issues/done/2058-implement-duplicatePackage-module-resolution.md` |
+| 2491 | Implement Genericarraywithouttypeannotation | spike | frontend/syntax | see `issues/done/2491-implement-genericArrayWithoutTypeAnnotation.md` |
 | 3329 | Implement Modulecodegentest | spike | frontend/syntax | see `issues/done/3329-implement-moduleCodeGenTest.md` |
 | 3330 | Implement Modulecodegentest | spike | frontend/syntax | see `issues/done/3330-implement-moduleCodegenTest.md` |
 | 3371 | Implement Moduleresolution Module Resolution | spike | frontend/syntax | see `issues/done/3371-implement-moduleResolution-module-resolution.md` |

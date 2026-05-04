@@ -97,11 +97,8 @@ const KNOWN_FEATURES: &[(&str, &str)] = &[
     ("Object.hasOwn", "issue-5004"),
     // --- string prototype features (implemented / partially supported) ---
     ("String.prototype.at", "issue-5004"),
-    ("String.prototype.endsWith", "issue-5004"),
     ("String.prototype.includes", "issue-5004"),
     ("String.prototype.replaceAll", "issue-5004"),
-    ("String.prototype.trimEnd", "issue-5004"),
-    ("String.prototype.trimStart", "issue-5004"),
     // --- features commonly used by test262 but not yet stubbed ---
     ("change-array-by-copy", "issue-5004"),
     ("exponentiation", "issue-5000"),
