@@ -1394,7 +1394,8 @@ impl<'a> Resolver<'a> {
                         || method == "some"
                         || method == "every"
                         || method == "reduce"
-                        || method == "map")
+                        || method == "map"
+                        || method == "flatMap")
                         && self.is_known_array_expr(object)
                         && !args.is_empty()
                         && matches!(&args[0], ResolvedExpr::ArrowFn { .. })
@@ -1504,6 +1505,8 @@ impl<'a> Resolver<'a> {
                         // Array.prototype.flat defaults depth to 1 when omitted
                         if class_name == "Array" && method == "flat" && args.is_empty() {
                             lowered_args.push(LoweredExpr::Number(1));
+                        } else if class_name == "Array" && method == "join" && args.is_empty() {
+                            lowered_args.push(LoweredExpr::String(",".to_owned()));
                         } else if class_name == "Array" && method == "copyWithin" {
                             // copyWithin(target, start, end) — pad missing args with undefined
                             for arg in args.iter().take(3) {

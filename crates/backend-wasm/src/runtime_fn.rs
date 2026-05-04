@@ -248,8 +248,12 @@ pub(crate) enum RuntimeFn {
     ArrayFill,
     /// Array.prototype.flat(depth) — returns flattened array
     ArrayFlat,
+    /// Array.prototype.flatMap — pushes val if not array, spreads its elements if array
+    ArrayPushOrSpread,
     /// Array.prototype.copyWithin(target, start, end) — copies part of array to another location
     ArrayCopyWithin,
+    /// Array.prototype.with(index, value) — returns new array with element at index replaced
+    ArrayWith,
     /// Array.prototype.shift() — removes and returns first element
     ArrayShift,
     /// Array.prototype.unshift(val) — adds element at beginning, returns new length
@@ -712,7 +716,9 @@ pub(crate) fn runtime_fn_from_name(name: &str) -> Option<RuntimeFn> {
         "ArrayAt" => Some(RuntimeFn::ArrayAt),
         "ArrayFill" => Some(RuntimeFn::ArrayFill),
         "ArrayFlat" => Some(RuntimeFn::ArrayFlat),
+        "ArrayPushOrSpread" => Some(RuntimeFn::ArrayPushOrSpread),
         "ArrayCopyWithin" => Some(RuntimeFn::ArrayCopyWithin),
+        "ArrayWith" => Some(RuntimeFn::ArrayWith),
         "ArrayShift" => Some(RuntimeFn::ArrayShift),
         "ArrayUnshift" => Some(RuntimeFn::ArrayUnshift),
         "ArraySplice" => Some(RuntimeFn::ArraySplice),
@@ -1206,7 +1212,9 @@ const ARRAY_MAP_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap, RuntimeFn::Copy];
 const ARRAY_AT_DEPS: &[RuntimeFn] = &[RuntimeFn::ArrayGet];
 const ARRAY_FILL_DEPS: &[RuntimeFn] = &[];
 const ARRAY_FLAT_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap, RuntimeFn::Copy];
+const ARRAY_PUSH_OR_SPREAD_DEPS: &[RuntimeFn] = &[RuntimeFn::ArrayPush];
 const ARRAY_COPY_WITHIN_DEPS: &[RuntimeFn] = &[];
+const ARRAY_WITH_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap, RuntimeFn::Copy];
 const ARRAY_SHIFT_DEPS: &[RuntimeFn] = &[];
 const ARRAY_UNSHIFT_DEPS: &[RuntimeFn] = &[];
 const ARRAY_SPLICE_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap, RuntimeFn::Copy];

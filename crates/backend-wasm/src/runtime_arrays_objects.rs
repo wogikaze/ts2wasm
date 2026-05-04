@@ -1738,6 +1738,47 @@ impl WatEmitter<'_> {
         ));
     }
 
+    // Array.prototype flatMap helper: push val if not array, spread its elements if array
+    pub(super) fn emit_array_push_or_spread(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $array_push_or_spread (param $result i32) (param $val i32) (result i32)
+    (local $tag i32)
+    (local $obj i32)
+    (local $len i32)
+    (local $i i32)
+    (local $elem i32)
+    (local.set $tag (i32.and (local.get $val) (i32.const {tag_mask})))
+    (if (i32.eq (local.get $tag) (i32.const {array_tag}))
+      (then
+        (local.set $obj (i32.and (local.get $val) (i32.const {heap_mask})))
+        (local.set $len (i32.load (local.get $obj)))
+        (local.set $i (i32.const {zero}))
+        (block $done
+          (loop $loop
+            (br_if $done (i32.ge_u (local.get $i) (local.get $len)))
+            (local.set $elem
+              (i32.load
+                (i32.add (local.get $obj)
+                  (i32.add (i32.const {array_header})
+                    (i32.shl (local.get $i) (i32.const {elem_shift}))))))
+            (drop (call $array_push (local.get $result) (local.get $elem)))
+            (local.set $i (i32.add (local.get $i) (i32.const {one})))
+            (br $loop))))
+      (else
+        (drop (call $array_push (local.get $result) (local.get $val)))))
+    (i32.const {zero}))
+"#,
+            tag_mask = ValueTag::TAG_MASK,
+            array_tag = ValueTag::ARRAY,
+            heap_mask = ValueTag::HEAP_MASK,
+            array_header = Layout::ARRAY_HEADER_SIZE,
+            elem_shift = Layout::ARRAY_ELEM_SHIFT,
+            zero = RuntimeConst::ZERO,
+            one = RuntimeConst::ONE,
+        ));
+    }
+
     // Array.prototype.copyWithin(target, start, end) — copies sequence within array in-place
     pub(super) fn emit_array_copy_within(&self, wat: &mut String) {
         wat.push_str(&format!(
@@ -2787,6 +2828,54 @@ impl WatEmitter<'_> {
             obj_proto = Layout::OBJECT_PROTOTYPE_OFFSET,
             true = ValueTag::TRUE,
             false = ValueTag::FALSE,
+        ));
+    }
+
+    // Array.prototype.with(index, value) — returns new array with element at index replaced
+    pub(super) fn emit_array_with(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $array_with (param $arr i32) (param $idx_tag i32) (param $val i32) (result i32)
+    (local $tag i32)
+    (local $obj i32)
+    (local $len i32)
+    (local $idx i32)
+    (local $result_ptr i32)
+    (local $alloc_size i32)
+    (local.set $tag (i32.and (local.get $arr) (i32.const {tag_mask})))
+    (if (i32.ne (local.get $tag) (i32.const {array_tag})) (then (return (i32.const {undefined}))))
+    (local.set $obj (i32.and (local.get $arr) (i32.const {heap_mask})))
+    (local.set $len (i32.load (local.get $obj)))
+    (local.set $idx (i32.shr_s (local.get $idx_tag) (i32.const {number_shift})))
+    (if (i32.lt_s (local.get $idx) (i32.const {zero}))
+      (then
+        (local.set $idx (i32.add (local.get $len) (local.get $idx)))
+        (if (i32.lt_s (local.get $idx) (i32.const {zero}))
+          (then (local.set $idx (i32.const {zero}))))))
+    (if (i32.ge_s (local.get $idx) (local.get $len))
+      (then (local.set $idx (i32.sub (local.get $len) (i32.const {one})))))
+    (local.set $alloc_size
+      (i32.add
+        (i32.const {array_header})
+        (i32.shl (local.get $len) (i32.const {elem_shift}))))
+    (local.set $result_ptr (call $alloc_heap (local.get $alloc_size)))
+    (call $copy (local.get $obj) (local.get $result_ptr) (local.get $alloc_size))
+    (i32.store
+      (i32.add (local.get $result_ptr)
+        (i32.add (i32.const {array_header})
+          (i32.shl (local.get $idx) (i32.const {elem_shift}))))
+      (local.get $val))
+    (i32.or (local.get $result_ptr) (i32.const {array_tag})))
+"#,
+            tag_mask = ValueTag::TAG_MASK,
+            array_tag = ValueTag::ARRAY,
+            heap_mask = ValueTag::HEAP_MASK,
+            array_header = Layout::ARRAY_HEADER_SIZE,
+            elem_shift = Layout::ARRAY_ELEM_SHIFT,
+            number_shift = ValueTag::NUMBER_SHIFT,
+            zero = RuntimeConst::ZERO,
+            one = RuntimeConst::ONE,
+            undefined = ValueTag::UNDEFINED,
         ));
     }
 

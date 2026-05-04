@@ -1092,6 +1092,7 @@ fn array_builtin_fixtures_match_node_output_under_iwasm() {
         "fixtures/builtins-and-io/array-reverse.ts",
         "fixtures/builtins-and-io/array-flat.ts",
         "fixtures/builtins-and-io/array-copy-within.ts",
+        "fixtures/builtins-and-io/array-with.ts",
     ] {
         assert_fixture_matches_node(fixture);
     }

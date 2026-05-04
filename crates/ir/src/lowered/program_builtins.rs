@@ -125,6 +125,7 @@ pub(super) fn collection_method_runtime_fn(class_name: &str, method: &str) -> Op
         ("Array", "includes") => Some("ArrayIncludes"),
         ("Array", "sort") => Some("ArraySortNumeric"),
         ("Array", "slice") => Some("ArraySlice"),
+        ("Array", "join") => Some("ArrayJoin"),
         ("Array", "every") => Some("ArrayEvery"),
         ("Array", "some") => Some("ArraySome"),
         ("Array", "find") => Some("ArrayFind"),
@@ -136,7 +137,9 @@ pub(super) fn collection_method_runtime_fn(class_name: &str, method: &str) -> Op
         ("Array", "at") => Some("ArrayAt"),
         ("Array", "fill") => Some("ArrayFill"),
         ("Array", "flat") => Some("ArrayFlat"),
+        ("Array", "reverse") => Some("ArrayReverse"),
         ("Array", "copyWithin") => Some("ArrayCopyWithin"),
+        ("Array", "with") => Some("ArrayWith"),
         ("Array", "shift") => Some("ArrayShift"),
         ("Array", "unshift") => Some("ArrayUnshift"),
         ("Array", "splice") => Some("ArraySplice"),
@@ -168,6 +171,7 @@ pub(super) fn collection_method_runtime_fn_arg(method: &str) -> Option<&'static 
         "at" => Some("ArrayAt"),
         "fill" => Some("ArrayFill"),
         "flat" => Some("ArrayFlat"),
+        "with" => Some("ArrayWith"),
         _ => None,
     }
 }

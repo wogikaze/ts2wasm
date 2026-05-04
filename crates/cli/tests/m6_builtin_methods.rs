@@ -407,6 +407,12 @@ fn build_smoke_array_pop_method() {
 }
 
 #[test]
+fn build_smoke_array_at_method() {
+    let result = run_fixture("builtins-and-io/array-at.ts");
+    assert!(result.is_ok(), "Array.at should build: {:?}", result.err());
+}
+
+#[test]
 fn build_smoke_array_slice_method() {
     let result = run_fixture("builtins-and-io/array-slice.ts");
     assert!(
@@ -527,6 +533,15 @@ fn build_smoke_array_find_last_index_method() {
 }
 
 #[test]
+fn build_smoke_array_flat_map_method() {
+    let result = run_fixture("builtins-and-io/array-flat-map.ts");
+    assert!(
+        result.is_ok(),
+        "Array.flatMap should build: {:?}",
+        result.err()
+    );
+}
+#[test]
 fn build_smoke_array_flat_method() {
     let result = run_fixture("builtins-and-io/array-flat.ts");
     assert!(
@@ -542,6 +557,16 @@ fn build_smoke_array_copy_within_method() {
     assert!(
         result.is_ok(),
         "Array.copyWithin should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
+fn build_smoke_array_with_method() {
+    let result = run_fixture("builtins-and-io/array-with.ts");
+    assert!(
+        result.is_ok(),
+        "Array.with should build: {:?}",
         result.err()
     );
 }
