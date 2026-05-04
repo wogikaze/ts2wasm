@@ -1523,6 +1523,23 @@ impl<'a> Resolver<'a> {
                                                 );
                                             }
                                         }
+                                        // For String HTML wrapper methods, route through IR-level Concat lowering
+                                        if class_name == "String"
+                                            && is_html_wrapper_string_method(proto_method)
+                                        {
+                                            let lowered_receiver =
+                                                self.lower_expr(receiver)?;
+                                            let lowered_call_args = call_args
+                                                .iter()
+                                                .map(|a| self.lower_expr(a))
+                                                .collect::<Result<Vec<_>, _>>()?;
+                                            return lower_html_wrapper_string_method(
+                                                proto_method,
+                                                lowered_receiver,
+                                                lowered_call_args,
+                                                *span,
+                                            );
+                                        }
                                         // For non-callback runtime functions, unwrap call
                                         if let Some(runtime_fn) =
                                             collection_method_runtime_fn(
@@ -2109,17 +2126,29 @@ fn lower_html_wrapper_string_method(
 
     let has_arg = !open_suffix.is_empty();
     if has_arg {
-        let arg = args.into_iter().next().unwrap_or(LoweredExpr::String(
+        let needs_escaping = matches!(method, "anchor" | "fontcolor" | "fontsize" | "link");
+        let mut arg = args.into_iter().next().unwrap_or(LoweredExpr::String(
             "undefined".to_owned(),
         ));
+        // Spec requires escaping " as &quot; in attribute values (B.2.3.10, B.2.3.6, etc.)
+        if needs_escaping {
+            arg = LoweredExpr::RuntimeCall {
+                runtime_fn: "StringReplaceAll".to_owned(),
+                args: vec![
+                    arg,
+                    LoweredExpr::String("\"".to_owned()),
+                    LoweredExpr::String("&quot;".to_owned()),
+                ],
+            };
+        }
         result = LoweredExpr::RuntimeCall {
             runtime_fn: "Concat".to_owned(),
             args: vec![
-                LoweredExpr::String(open_suffix.to_owned()),
+                arg,
                 LoweredExpr::RuntimeCall {
                     runtime_fn: "Concat".to_owned(),
                     args: vec![
-                        arg,
+                        LoweredExpr::String(open_suffix.to_owned()),
                         LoweredExpr::RuntimeCall {
                             runtime_fn: "Concat".to_owned(),
                             args: vec![

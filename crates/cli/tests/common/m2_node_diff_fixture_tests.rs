@@ -2156,3 +2156,8 @@ fn array_find_last_index_fixture_matches_node_output_under_iwasm() {
 fn function_declaration_value_fixture_matches_node_output_under_iwasm() {
     assert_fixture_matches_node("fixtures/builtins-and-io/function-declaration-value.ts");
 }
+
+#[test]
+fn string_html_wrappers_fixture_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/string-html-wrappers.ts");
+}
