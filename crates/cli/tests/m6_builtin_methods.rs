@@ -130,6 +130,16 @@ fn build_smoke_object_entries_method() {
 }
 
 #[test]
+fn build_smoke_value_of_method() {
+    let result = run_fixture("builtins-and-io/value-of.ts");
+    assert!(
+        result.is_ok(),
+        "Object.prototype.valueOf should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
 fn build_smoke_object_has_own_property() {
     let result = run_fixture("builtins-and-io/object-has-own-property.ts");
     assert!(
@@ -597,6 +607,16 @@ fn build_smoke_array_to_reversed_method() {
     assert!(
         result.is_ok(),
         "Array.toReversed should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
+fn build_smoke_array_to_sorted_method() {
+    let result = run_fixture("builtins-and-io/array-to-sorted.ts");
+    assert!(
+        result.is_ok(),
+        "Array.toSorted should build: {:?}",
         result.err()
     );
 }

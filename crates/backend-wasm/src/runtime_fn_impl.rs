@@ -1385,6 +1385,14 @@ impl RuntimeFn {
                 runtime_strings: NO_RUNTIME_STRINGS,
                 result: RuntimeResult::Value,
             },
+            Self::ArrayToSorted => RuntimeSpec {
+                symbol: "$array_to_sorted",
+                deps: ARRAY_TO_SORTED_DEPS,
+                imports: NO_IMPORTS,
+                capability: NO_CAPS,
+                runtime_strings: NO_RUNTIME_STRINGS,
+                result: RuntimeResult::Value,
+            },
             Self::ArrayToSpliced => RuntimeSpec {
                 symbol: "$array_to_spliced",
                 deps: ARRAY_TO_SPLICED_DEPS,
@@ -1548,6 +1556,14 @@ impl RuntimeFn {
             Self::ObjectIs => RuntimeSpec {
                 symbol: "$object_is",
                 deps: &[Self::StrictEqual],
+                imports: NO_IMPORTS,
+                capability: NO_CAPS,
+                runtime_strings: NO_RUNTIME_STRINGS,
+                result: RuntimeResult::Value,
+            },
+            Self::ValueOf => RuntimeSpec {
+                symbol: "$value_of",
+                deps: NO_DEPS,
                 imports: NO_IMPORTS,
                 capability: NO_CAPS,
                 runtime_strings: NO_RUNTIME_STRINGS,
@@ -2085,6 +2101,7 @@ impl RuntimeFn {
             Self::ArrayCopyWithin => "array_copy_within",
             Self::ArrayWith => "array_with",
             Self::ArrayToReversed => "array_to_reversed",
+            Self::ArrayToSorted => "array_to_sorted",
             Self::ArrayToSpliced => "array_to_spliced",
             Self::ArrayValues => "array_values",
             Self::ArrayKeys => "array_keys",
@@ -2106,6 +2123,7 @@ impl RuntimeFn {
             Self::ObjectAssign => "object_assign",
             Self::ObjectCreate => "object_create",
             Self::ObjectIs => "object_is",
+            Self::ValueOf => "value_of",
             Self::MathFloor => "math_floor",
             Self::MathCeil => "math_ceil",
             Self::MathRound => "math_round",
@@ -2323,6 +2341,7 @@ impl RuntimeFn {
             Self::ArrayCopyWithin,
             Self::ArrayWith,
             Self::ArrayToReversed,
+            Self::ArrayToSorted,
             Self::ArrayToSpliced,
             Self::ArrayValues,
             Self::ArrayKeys,
@@ -2345,6 +2364,7 @@ impl RuntimeFn {
             Self::ObjectAssign,
             Self::ObjectCreate,
             Self::ObjectIs,
+            Self::ValueOf,
             // Instanceof operator
             Self::InstanceOf,
             // Math functions
@@ -2571,6 +2591,7 @@ impl RuntimeFn {
             Self::ArrayCopyWithin,
             Self::ArrayWith,
             Self::ArrayToReversed,
+            Self::ArrayToSorted,
             Self::ArrayToSpliced,
             Self::ArrayValues,
             Self::ArrayKeys,
@@ -2593,6 +2614,7 @@ impl RuntimeFn {
             Self::ObjectAssign,
             Self::ObjectCreate,
             Self::ObjectIs,
+            Self::ValueOf,
             // Instanceof operator
             Self::InstanceOf,
             // Math functions

@@ -260,6 +260,8 @@ pub(crate) enum RuntimeFn {
     ArrayWith,
     /// Array.prototype.toReversed() — returns new array with elements in reverse order
     ArrayToReversed,
+    /// Array.prototype.toSorted() — returns new array sorted numerically (non-mutating)
+    ArrayToSorted,
     /// Array.prototype.toSpliced(start, deleteCount) — returns new array with elements removed
     ArrayToSpliced,
     /// Array.prototype.values() — returns copy of array
@@ -294,6 +296,8 @@ pub(crate) enum RuntimeFn {
     ObjectCreate,
     /// Object.is(value1, value2) — SameValue comparison
     ObjectIs,
+    /// Object.prototype.valueOf — returns the value unchanged (identity)
+    ValueOf,
     /// Instanceof operator
     InstanceOf,
     /// M10: Math functions
@@ -673,6 +677,7 @@ pub(crate) fn runtime_fn_from_name(name: &str) -> Option<RuntimeFn> {
         "ObjectAssign" => Some(RuntimeFn::ObjectAssign),
         "ObjectCreate" => Some(RuntimeFn::ObjectCreate),
         "ObjectIs" => Some(RuntimeFn::ObjectIs),
+        "ValueOf" => Some(RuntimeFn::ValueOf),
         "$instanceof" => Some(RuntimeFn::InstanceOf),
         "Concat" => Some(RuntimeFn::Concat),
         "StringCharAt" => Some(RuntimeFn::StringCharAt),
@@ -738,6 +743,7 @@ pub(crate) fn runtime_fn_from_name(name: &str) -> Option<RuntimeFn> {
         "ArrayCopyWithin" => Some(RuntimeFn::ArrayCopyWithin),
         "ArrayWith" => Some(RuntimeFn::ArrayWith),
         "ArrayToReversed" => Some(RuntimeFn::ArrayToReversed),
+        "ArrayToSorted" => Some(RuntimeFn::ArrayToSorted),
         "ArrayToSpliced" => Some(RuntimeFn::ArrayToSpliced),
         "ArrayValues" => Some(RuntimeFn::ArrayValues),
         "ArrayKeys" => Some(RuntimeFn::ArrayKeys),
@@ -1242,6 +1248,11 @@ const ARRAY_PUSH_OR_SPREAD_DEPS: &[RuntimeFn] = &[RuntimeFn::ArrayPush];
 const ARRAY_COPY_WITHIN_DEPS: &[RuntimeFn] = &[];
 const ARRAY_WITH_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap, RuntimeFn::Copy];
 const ARRAY_TO_REVERSED_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap, RuntimeFn::Copy];
+const ARRAY_TO_SORTED_DEPS: &[RuntimeFn] = &[
+    RuntimeFn::AllocHeap,
+    RuntimeFn::Copy,
+    RuntimeFn::NumberToI32,
+];
 const ARRAY_TO_SPLICED_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap, RuntimeFn::Copy];
 const ARRAY_VALUES_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap, RuntimeFn::Copy];
 const ARRAY_KEYS_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap];

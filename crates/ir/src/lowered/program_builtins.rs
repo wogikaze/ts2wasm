@@ -90,6 +90,7 @@ pub(super) fn resolve_method_to_runtime_fn(object: &ResolvedExpr, method: &str) 
         "localeCompare" => Some("StringLocaleCompare".to_owned()),
         "charCodeAt" => Some("StringCharCodeAt".to_owned()),
         "hasOwnProperty" => Some("ObjectHasOwnProperty".to_owned()),
+        "valueOf" => Some("ValueOf".to_owned()),
         "push" => Some("ArrayPush".to_owned()),
         "pop" => Some("ArrayPop".to_owned()),
         "reverse" => Some("ArrayReverse".to_owned()),
@@ -145,6 +146,7 @@ pub(super) fn collection_method_runtime_fn(class_name: &str, method: &str) -> Op
         ("Array", "copyWithin") => Some("ArrayCopyWithin"),
         ("Array", "with") => Some("ArrayWith"),
         ("Array", "toReversed") => Some("ArrayToReversed"),
+        ("Array", "toSorted") => Some("ArrayToSorted"),
         ("Array", "toSpliced") => Some("ArrayToSpliced"),
         ("Array", "toString") => Some("ArrayJoin"),
         ("Array", "toLocaleString") => Some("ArrayJoin"),
@@ -154,6 +156,7 @@ pub(super) fn collection_method_runtime_fn(class_name: &str, method: &str) -> Op
         ("Array", "shift") => Some("ArrayShift"),
         ("Array", "unshift") => Some("ArrayUnshift"),
         ("Array", "splice") => Some("ArraySplice"),
+        ("Object", "valueOf") => Some("ValueOf"),
         _ => None,
     }
 }
@@ -184,6 +187,7 @@ pub(super) fn collection_method_runtime_fn_arg(method: &str) -> Option<&'static 
         "flat" => Some("ArrayFlat"),
         "with" => Some("ArrayWith"),
         "toReversed" => Some("ArrayToReversed"),
+        "toSorted" => Some("ArrayToSorted"),
         "toSpliced" => Some("ArrayToSpliced"),
         "toString" => Some("ArrayJoin"),
         "toLocaleString" => Some("ArrayJoin"),
