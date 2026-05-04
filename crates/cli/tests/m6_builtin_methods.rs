@@ -300,6 +300,16 @@ fn build_smoke_string_replace_method() {
 }
 
 #[test]
+fn build_smoke_string_replace_all_method() {
+    let result = run_fixture("builtins-and-io/string-replace-all.ts");
+    assert!(
+        result.is_ok(),
+        "String.replaceAll should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
 fn string_trim_method_emits() {
     let result = run_fixture("builtins-and-io/string-trim.ts");
     assert!(

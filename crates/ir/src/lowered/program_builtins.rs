@@ -68,6 +68,7 @@ pub(super) fn resolve_method_to_runtime_fn(object: &ResolvedExpr, method: &str) 
         "repeat" => Some("StringRepeat".to_owned()),
         "split" => Some("StringSplit".to_owned()),
         "replace" => Some("StringReplace".to_owned()),
+        "replaceAll" => Some("StringReplaceAll".to_owned()),
         "match" => Some("StringMatch".to_owned()),
         "search" => Some("StringSearch".to_owned()),
         "trim" => Some("StringTrim".to_owned()),

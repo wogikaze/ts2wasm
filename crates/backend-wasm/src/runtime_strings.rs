@@ -389,6 +389,134 @@ impl WatEmitter<'_> {
         ));
     }
 
+    pub(super) fn emit_string_replace_all(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $string_replace_all (param $s i32) (param $search i32) (param $replace i32) (result i32)
+    (local $s_obj i32)
+    (local $search_obj i32)
+    (local $replace_obj i32)
+    (local $s_len i32)
+    (local $search_len i32)
+    (local $replace_len i32)
+    (local $pos i32)
+    (local $count i32)
+    (local $result_len i32)
+    (local $result_ptr i32)
+    (local $dst i32)
+    (local $prev_end i32)
+    (local $seg_len i32)
+    (local $is_empty i32)
+    (if (i32.eqz (call $is_string (local.get $s))) (then (return (local.get $s))))
+    (if (i32.eqz (call $is_string (local.get $search))) (then (return (local.get $s))))
+    (local.set $s_obj (i32.and (local.get $s) (i32.const {heap_mask})))
+    (local.set $search_obj (i32.and (local.get $search) (i32.const {heap_mask})))
+    (local.set $replace_obj (i32.and (local.get $replace) (i32.const {heap_mask})))
+    (local.set $s_len (i32.load (local.get $s_obj)))
+    (local.set $search_len (i32.load (local.get $search_obj)))
+    (local.set $replace_len (i32.load (local.get $replace_obj)))
+    (local.set $is_empty (i32.eqz (local.get $search_len)))
+    (if (local.get $is_empty)
+      (then
+        (local.set $count (i32.add (local.get $s_len) (i32.const {one})))
+        (local.set $result_len
+          (i32.add (local.get $s_len)
+            (i32.mul (local.get $count) (local.get $replace_len)))))
+      (else
+        (local.set $pos (i32.const {zero}))
+        (local.set $count (i32.const {zero}))
+        (block $count_done
+          (loop $count_loop
+            (br_if $count_done
+              (i32.gt_u (local.get $pos)
+                (i32.sub (local.get $s_len) (local.get $search_len))))
+            (if (call $mem_equal
+                  (i32.add (i32.add (local.get $s_obj) (i32.const {str_header})) (local.get $pos))
+                  (i32.add (local.get $search_obj) (i32.const {str_header}))
+                  (local.get $search_len))
+              (then
+                (local.set $count (i32.add (local.get $count) (i32.const {one})))
+                (local.set $pos (i32.add (local.get $pos) (local.get $search_len))))
+              (else
+                (local.set $pos (i32.add (local.get $pos) (i32.const {one})))))
+            (br $count_loop)))
+        (if (i32.eqz (local.get $count))
+          (then (return (local.get $s))))
+        (local.set $result_len
+          (i32.add (local.get $s_len)
+            (i32.mul (local.get $count)
+              (i32.sub (local.get $replace_len) (local.get $search_len))))))
+    )
+    (local.set $result_ptr
+      (call $alloc_heap (i32.add (i32.const {str_header}) (local.get $result_len))))
+    (i32.store (local.get $result_ptr) (local.get $result_len))
+    (local.set $dst (i32.const {zero}))
+    (if (local.get $is_empty)
+      (then
+        (local.set $pos (i32.const {zero}))
+        (block $empty_done
+          (loop $empty_loop
+            (call $copy
+              (i32.add (local.get $replace_obj) (i32.const {str_header}))
+              (i32.add (i32.add (local.get $result_ptr) (i32.const {str_header})) (local.get $dst))
+              (local.get $replace_len))
+            (local.set $dst (i32.add (local.get $dst) (local.get $replace_len)))
+            (br_if $empty_done (i32.eq (local.get $pos) (local.get $s_len)))
+            (i32.store8
+              (i32.add (i32.add (local.get $result_ptr) (i32.const {str_header})) (local.get $dst))
+              (i32.load8_u
+                (i32.add (i32.add (local.get $s_obj) (i32.const {str_header})) (local.get $pos))))
+            (local.set $dst (i32.add (local.get $dst) (i32.const {one})))
+            (local.set $pos (i32.add (local.get $pos) (i32.const {one})))
+            (br $empty_loop))))
+      (else
+        (local.set $prev_end (i32.const {zero}))
+        (local.set $pos (i32.const {zero}))
+        (block $build_done
+          (loop $build_loop
+            (br_if $build_done
+              (i32.gt_u (local.get $pos)
+                (i32.sub (local.get $s_len) (local.get $search_len))))
+            (if (call $mem_equal
+                  (i32.add (i32.add (local.get $s_obj) (i32.const {str_header})) (local.get $pos))
+                  (i32.add (local.get $search_obj) (i32.const {str_header}))
+                  (local.get $search_len))
+              (then
+                (local.set $seg_len (i32.sub (local.get $pos) (local.get $prev_end)))
+                (if (i32.gt_u (local.get $seg_len) (i32.const {zero}))
+                  (then
+                    (call $copy
+                      (i32.add (i32.add (local.get $s_obj) (i32.const {str_header})) (local.get $prev_end))
+                      (i32.add (i32.add (local.get $result_ptr) (i32.const {str_header})) (local.get $dst))
+                      (local.get $seg_len))
+                    (local.set $dst (i32.add (local.get $dst) (local.get $seg_len)))))
+                (call $copy
+                  (i32.add (local.get $replace_obj) (i32.const {str_header}))
+                  (i32.add (i32.add (local.get $result_ptr) (i32.const {str_header})) (local.get $dst))
+                  (local.get $replace_len))
+                (local.set $dst (i32.add (local.get $dst) (local.get $replace_len)))
+                (local.set $prev_end (i32.add (local.get $pos) (local.get $search_len)))
+                (local.set $pos (local.get $prev_end)))
+              (else
+                (local.set $pos (i32.add (local.get $pos) (i32.const {one})))))
+            (br $build_loop)))
+        (local.set $seg_len (i32.sub (local.get $s_len) (local.get $prev_end)))
+        (if (i32.gt_u (local.get $seg_len) (i32.const {zero}))
+          (then
+            (call $copy
+              (i32.add (i32.add (local.get $s_obj) (i32.const {str_header})) (local.get $prev_end))
+              (i32.add (i32.add (local.get $result_ptr) (i32.const {str_header})) (local.get $dst))
+              (local.get $seg_len)))))
+    (i32.or (local.get $result_ptr) (i32.const {string_tag})))
+"#,
+            heap_mask = ValueTag::HEAP_MASK,
+            string_tag = ValueTag::STRING,
+            str_header = Layout::STRING_HEADER_SIZE,
+            zero = RuntimeConst::ZERO,
+            one = RuntimeConst::ONE,
+        ));
+    }
+
     pub(super) fn emit_string_trim(&self, wat: &mut String) {
         wat.push_str(&format!(
             r#"

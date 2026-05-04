@@ -170,6 +170,8 @@ pub(crate) enum RuntimeFn {
     StringFromCharCode,
     /// String.prototype.replace
     StringReplace,
+    /// String.prototype.replaceAll
+    StringReplaceAll,
     /// String.prototype.trimStart / trimLeft
     StringTrimStart,
     /// String.prototype.trimEnd / trimRight
@@ -212,6 +214,10 @@ pub(crate) enum RuntimeFn {
     ArrayFind,
     /// Array.prototype.findIndex (identity callback: return index of first truthy element)
     ArrayFindIndex,
+    /// Array.prototype.findLast (identity callback: return last truthy element)
+    ArrayFindLast,
+    /// Array.prototype.findLastIndex (identity callback: return index of last truthy element)
+    ArrayFindLastIndex,
     /// Array.prototype.filter (identity callback: filter truthy elements)
     ArrayFilter,
     /// Array.prototype.every (identity callback: check all truthy)
@@ -616,6 +622,7 @@ pub(crate) fn runtime_fn_from_name(name: &str) -> Option<RuntimeFn> {
         "StringCharCodeAt" => Some(RuntimeFn::StringCharCodeAt),
         "StringFromCharCode" => Some(RuntimeFn::StringFromCharCode),
         "StringReplace" => Some(RuntimeFn::StringReplace),
+        "StringReplaceAll" => Some(RuntimeFn::StringReplaceAll),
         "StringTrimStart" => Some(RuntimeFn::StringTrimStart),
         "StringTrimEnd" => Some(RuntimeFn::StringTrimEnd),
         "StringStartsWith" => Some(RuntimeFn::StringStartsWith),
@@ -643,6 +650,8 @@ pub(crate) fn runtime_fn_from_name(name: &str) -> Option<RuntimeFn> {
         "ArrayIncludes" => Some(RuntimeFn::ArrayIncludes),
         "ArrayFind" => Some(RuntimeFn::ArrayFind),
         "ArrayFindIndex" => Some(RuntimeFn::ArrayFindIndex),
+        "ArrayFindLast" => Some(RuntimeFn::ArrayFindLast),
+        "ArrayFindLastIndex" => Some(RuntimeFn::ArrayFindLastIndex),
         "ArrayFilter" => Some(RuntimeFn::ArrayFilter),
         "ArrayEvery" => Some(RuntimeFn::ArrayEvery),
         "ArraySome" => Some(RuntimeFn::ArraySome),
@@ -1060,6 +1069,13 @@ const STRING_REPLACE_DEPS: &[RuntimeFn] = &[
     RuntimeFn::MemEqual,
 ];
 
+const STRING_REPLACE_ALL_DEPS: &[RuntimeFn] = &[
+    RuntimeFn::AllocHeap,
+    RuntimeFn::Copy,
+    RuntimeFn::IsString,
+    RuntimeFn::MemEqual,
+];
+
 const REGEXP_TEST_DEPS: &[RuntimeFn] = &[RuntimeFn::IsString, RuntimeFn::RegexpMatchInner];
 const REGEXP_MATCH_DEPS: &[RuntimeFn] = &[
     RuntimeFn::IsString,
@@ -1108,6 +1124,8 @@ const ARRAY_INDEX_OF_DEPS: &[RuntimeFn] = &[RuntimeFn::StrictEqual];
 const ARRAY_INCLUDES_DEPS: &[RuntimeFn] = &[RuntimeFn::StrictEqual];
 const ARRAY_FIND_DEPS: &[RuntimeFn] = &[];
 const ARRAY_FIND_INDEX_DEPS: &[RuntimeFn] = &[];
+const ARRAY_FIND_LAST_DEPS: &[RuntimeFn] = &[];
+const ARRAY_FIND_LAST_INDEX_DEPS: &[RuntimeFn] = &[];
 const ARRAY_FILTER_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap, RuntimeFn::Copy];
 const ARRAY_EVERY_DEPS: &[RuntimeFn] = &[];
 const ARRAY_SOME_DEPS: &[RuntimeFn] = &[];
