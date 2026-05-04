@@ -964,11 +964,6 @@ impl Parser {
             self.skip_typescript_expression_type(keyword_span, keyword)?;
         }
 
-        // TypeScript non-null assertion: `x!` — erased at runtime
-        while self.consume(TokenKind::Bang) {
-            // just consume the `!`, expression value unchanged
-        }
-
         if let Some(op_span) = self.consume_span(TokenKind::Increment) {
             if self.is_optional_chain_expr(&expr) {
                 return Err(self.invalid_optional_chain_target(expr.span()));
@@ -1026,6 +1021,8 @@ impl Parser {
 
     fn finish_call_member(&mut self, mut expr: Expr, allow_call: bool) -> Result<Expr, Diagnostic> {
         loop {
+            // TypeScript non-null assertion: consume `!` before continuing member/call chain
+            while self.consume(TokenKind::Bang) {}
             if self.consume(TokenKind::Dot) {
                 let (property, prop_span) = self.expect_member_property_name()?;
                 let start = expr.span().start;

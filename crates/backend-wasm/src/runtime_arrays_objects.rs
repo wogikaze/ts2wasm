@@ -2935,5 +2935,79 @@ impl WatEmitter<'_> {
         ));
     }
 
+    pub(super) fn emit_array_to_spliced(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $array_to_spliced (param $arr i32) (param $start_tag i32) (param $delete_count_tag i32) (result i32)
+    (local $obj i32)
+    (local $tag i32)
+    (local $len i32)
+    (local $s i32)
+    (local $dc i32)
+    (local $new_len i32)
+    (local $i i32)
+    (local $result_ptr i32)
+    (local.set $tag (i32.and (local.get $arr) (i32.const {tag_mask})))
+    (if (i32.ne (local.get $tag) (i32.const {array_tag})) (then (return (i32.const {undefined}))))
+    (local.set $obj (i32.and (local.get $arr) (i32.const {heap_mask})))
+    (local.set $len (i32.load (local.get $obj)))
+    (local.set $s (i32.shr_s (local.get $start_tag) (i32.const {number_shift})))
+    (local.set $dc (i32.shr_s (local.get $delete_count_tag) (i32.const {number_shift})))
+    ;; Clamp start to [0, len]
+    (if (i32.lt_s (local.get $s) (i32.const {zero})) (then (local.set $s (i32.const {zero}))))
+    (if (i32.gt_u (local.get $s) (local.get $len)) (then (local.set $s (local.get $len))))
+    ;; Clamp deleteCount to [0, len - start]
+    (if (i32.lt_s (local.get $dc) (i32.const {zero})) (then (local.set $dc (i32.const {zero}))))
+    (local.set $new_len (i32.sub (local.get $len) (local.get $s)))
+    (if (i32.gt_u (local.get $dc) (local.get $new_len)) (then (local.set $dc (local.get $new_len))))
+    (local.set $new_len (i32.sub (local.get $len) (local.get $dc)))
+    ;; Allocate new array
+    (local.set $result_ptr
+      (call $alloc_heap
+        (i32.add (i32.const {array_header}) (i32.shl (local.get $new_len) (i32.const {elem_shift})))))
+    (i32.store (local.get $result_ptr) (local.get $new_len))
+    (i32.store (i32.add (local.get $result_ptr) (i32.const 4)) (local.get $new_len))
+    (i32.store (i32.add (local.get $result_ptr) (i32.const 8)) (i32.const 1))
+    (i32.store (i32.add (local.get $result_ptr) (i32.const 12)) (i32.const {array_header}))
+    ;; Copy elements 0..start from source
+    (local.set $i (i32.const {zero}))
+    (block $copy1_done
+      (loop $copy1_loop
+        (br_if $copy1_done (i32.ge_u (local.get $i) (local.get $s)))
+        (i32.store
+          (i32.add (local.get $result_ptr) (i32.add (i32.const {array_header})
+            (i32.shl (local.get $i) (i32.const {elem_shift}))))
+          (i32.load
+            (i32.add (local.get $obj) (i32.add (i32.const {array_header})
+              (i32.shl (local.get $i) (i32.const {elem_shift}))))))
+        (local.set $i (i32.add (local.get $i) (i32.const {one})))
+        (br $copy1_loop)))
+    ;; Copy elements start+dc..len from source (shifted left by dc)
+    (local.set $i (local.get $s))
+    (block $copy2_done
+      (loop $copy2_loop
+        (br_if $copy2_done (i32.ge_u (local.get $i) (local.get $new_len)))
+        (i32.store
+          (i32.add (local.get $result_ptr) (i32.add (i32.const {array_header})
+            (i32.shl (local.get $i) (i32.const {elem_shift}))))
+          (i32.load
+            (i32.add (local.get $obj) (i32.add (i32.const {array_header})
+              (i32.shl (i32.add (local.get $i) (local.get $dc)) (i32.const {elem_shift}))))))
+        (local.set $i (i32.add (local.get $i) (i32.const {one})))
+        (br $copy2_loop)))
+    (i32.or (local.get $result_ptr) (i32.const {array_tag})))
+"#,
+            tag_mask = ValueTag::TAG_MASK,
+            array_tag = ValueTag::ARRAY,
+            heap_mask = ValueTag::HEAP_MASK,
+            array_header = Layout::ARRAY_HEADER_SIZE,
+            elem_shift = Layout::ARRAY_ELEM_SHIFT,
+            number_shift = ValueTag::NUMBER_SHIFT,
+            zero = RuntimeConst::ZERO,
+            one = RuntimeConst::ONE,
+            undefined = ValueTag::UNDEFINED,
+        ));
+    }
+
     // Math functions (M10)
 }

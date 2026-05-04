@@ -240,6 +240,7 @@ impl WatEmitter<'_> {
                 RuntimeFn::ArrayPushOrSpread => self.emit_array_push_or_spread(wat),
                 RuntimeFn::ArrayCopyWithin => self.emit_array_copy_within(wat),
                 RuntimeFn::ArrayWith => self.emit_array_with(wat),
+                RuntimeFn::ArrayToSpliced => self.emit_array_to_spliced(wat),
                 RuntimeFn::ArrayShift => self.emit_array_shift(wat),
                 RuntimeFn::ArrayUnshift => self.emit_array_unshift(wat),
                 RuntimeFn::ArraySplice => self.emit_array_splice(wat),

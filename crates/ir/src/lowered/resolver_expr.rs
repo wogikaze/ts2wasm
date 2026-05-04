@@ -1449,6 +1449,7 @@ impl<'a> Resolver<'a> {
                             ..
                         } if matches!(prop_obj.as_ref(), ResolvedExpr::This { .. }) => {
                             // this.field.method(...) — try to use a runtime function
+                            eprintln!("DEBUG: entering collection_method_runtime_fn_arg path, method={}, args.len()={}", method, args.len());
                             if let Some(runtime_fn) =
                                 collection_method_runtime_fn_arg(method)
                             {
@@ -1501,11 +1502,13 @@ impl<'a> Resolver<'a> {
                                 span: Some(*span),
                             });
                         }
+                        eprintln!("DEBUG: class_name={}, method={}, args.len()={}", class_name, method, args.len());
                         let mut lowered_args = vec![LoweredExpr::Local(obj_local)];
                         // Array.prototype.flat defaults depth to 1 when omitted
                         if class_name == "Array" && method == "flat" && args.is_empty() {
                             lowered_args.push(LoweredExpr::Number(1));
                         } else if class_name == "Array" && method == "join" && args.is_empty() {
+                            eprintln!("DEBUG: injecting default separator for join");
                             lowered_args.push(LoweredExpr::String(",".to_owned()));
                         } else if class_name == "Array" && method == "copyWithin" {
                             // copyWithin(target, start, end) — pad missing args with undefined
