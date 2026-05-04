@@ -415,6 +415,8 @@ impl WatEmitter<'_> {
     (local.set $s_len (i32.load (local.get $s_obj)))
     (local.set $search_len (i32.load (local.get $search_obj)))
     (local.set $replace_len (i32.load (local.get $replace_obj)))
+    (if (i32.lt_u (local.get $s_len) (local.get $search_len))
+      (then (return (local.get $s))))
     (local.set $is_empty (i32.eqz (local.get $search_len)))
     (if (local.get $is_empty)
       (then
