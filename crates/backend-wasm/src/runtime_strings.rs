@@ -1002,5 +1002,15 @@ impl WatEmitter<'_> {
         ));
     }
 
+    pub(super) fn emit_string_match(&self, wat: &mut String) {
+        wat.push_str(&format!(r#"  (func $string_match (param $str i32) (param $pattern i32) (result i32)
+    (return (call $regexp_match (local.get $pattern) (local.get $str))))"#,));
+    }
+
+    pub(super) fn emit_string_search(&self, wat: &mut String) {
+        wat.push_str(&format!(r#"  (func $string_search (param $str i32) (param $pattern i32) (result i32)
+    (return (call $regexp_search (local.get $pattern) (local.get $str))))"#,));
+    }
+
     // Array methods (M10)
 }
