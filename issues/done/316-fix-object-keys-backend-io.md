@@ -3,12 +3,12 @@ id: 316
 title: "Fix Object.keys backend-io error"
 type: feature
 area: harness
-class: blocked
+class: done
 priority: P0
-depends_on: [5004, 336]
+depends_on: []
 blocks: []
 created: 2026-04-30
-updated: 2026-04-30
+updated: 2026-05-05
 ---
 
 ## Summary
