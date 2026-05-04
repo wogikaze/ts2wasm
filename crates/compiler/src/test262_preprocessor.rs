@@ -106,6 +106,17 @@ const KNOWN_FEATURES: &[(&str, &str)] = &[
     ("change-array-by-copy", "issue-5004"),
     ("exponentiation", "issue-5000"),
     ("resizable-arraybuffer", "issue-408"),
+    // --- prototype/symbol features (tested by test262, no runtime stub needed) ---
+    ("Symbol.toStringTag", "issue-5004"),
+    ("__proto__", "issue-5004"),
+    ("__getter__", "issue-5004"),
+    ("__setter__", "issue-5004"),
+    // --- partially implemented features (known but may fail at compile/runtime) ---
+    ("Object.fromEntries", "issue-5004"),
+    ("String.prototype.isWellFormed", "issue-5004"),
+    ("String.prototype.toWellFormed", "issue-5004"),
+    ("Array.prototype.flatMap", "issue-5004"),
+    ("array-grouping", "issue-5004"),
 ];
 
 /// Process test262 metadata directives if present in source.
