@@ -617,3 +617,23 @@ fn build_smoke_date_to_string() {
         result.err()
     );
 }
+
+#[test]
+fn build_smoke_string_match_method() {
+    let result = run_fixture("builtins-and-io/string-match.ts");
+    assert!(
+        result.is_ok(),
+        "String.match should compile: {:?}",
+        result.err()
+    );
+}
+
+#[test]
+fn build_smoke_string_search_method() {
+    let result = run_fixture("builtins-and-io/string-search.ts");
+    assert!(
+        result.is_ok(),
+        "String.search should compile: {:?}",
+        result.err()
+    );
+}

@@ -995,7 +995,7 @@ impl<'a> Resolver<'a> {
                         .map(|e| self.lower_expr(e))
                         .collect::<Result<Vec<_>, _>>()?;
                     Ok(LoweredExpr::RuntimeCall {
-                        runtime_fn: "RegExpMatch".to_owned(),
+                        runtime_fn: if method == "search" { "RegExpSearch".to_owned() } else { "RegExpMatch".to_owned() },
                         args: lowered_args,
                     })
                 } else if matches!(method.as_str(), "getTime" | "valueOf")

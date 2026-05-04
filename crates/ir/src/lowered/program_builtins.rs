@@ -646,7 +646,8 @@ pub(super) fn regexp_string_match_runtime(
         return Err(Diagnostic {
             code: DiagCode::ArityMismatch,
             message: format!(
-                "String.prototype.match expects 1 argument, got {}",
+                "String.prototype.{} expects 1 argument, got {}",
+                method,
                 args.len()
             ),
             span: Some(span),
@@ -655,9 +656,10 @@ pub(super) fn regexp_string_match_runtime(
     if !matches!(object, ResolvedExpr::String(_) | ResolvedExpr::Ident(_)) {
         return Ok(None);
     }
+    let context = format!("String.prototype.{method} literal");
     match &args[0] {
         ResolvedExpr::String(raw) if looks_like_regexp_literal(raw) => {
-            validate_regexp_plain_literal(raw, "String.prototype.match literal")?;
+            validate_regexp_plain_literal(raw, &context)?;
         }
         ResolvedExpr::New {
             class_name, args, ..
@@ -668,8 +670,7 @@ pub(super) fn regexp_string_match_runtime(
             return Err(Diagnostic {
                 code: DiagCode::UnsupportedSyntax,
                 message:
-                    "issue-051: String.prototype.match supports only RegExp literal or new RegExp(\"plain\") arguments in this subset"
-                        .to_owned(),
+                    format!("issue-051: String.prototype.{method} supports only RegExp literal or new RegExp(\"plain\") arguments in this subset"),
                 span: Some(span),
             });
         }
