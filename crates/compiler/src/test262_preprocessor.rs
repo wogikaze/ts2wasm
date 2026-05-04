@@ -123,6 +123,8 @@ const KNOWN_FEATURES: &[(&str, &str)] = &[
     ("change-array-by-copy", "issue-5004"),
     ("exponentiation", "issue-5000"),
     ("resizable-arraybuffer", "issue-408"),
+    ("computed-property-names", "issue-5000"),
+    ("numeric-separator-literal", "issue-5000"),
     // --- prototype/symbol features (tested by test262, no runtime stub needed) ---
     ("Symbol.toStringTag", "issue-5004"),
     ("__proto__", "issue-5004"),
