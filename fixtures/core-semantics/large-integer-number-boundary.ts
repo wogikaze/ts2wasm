@@ -1,11 +1,11 @@
-const powers: number[] = [];
+const powers = [];
 
 for (let i = 0; 2 ** i <= 1000000000; i++) {
     powers.push(2 ** i);
 }
 
 const mapped = ["1", "536870912", "819264512", "536870912"].map(n => +n);
-const seen = new Set<number>();
+const seen = new Set();
 
 for (let i = 0; i < mapped.length; i++) {
     seen.add(mapped[i]);

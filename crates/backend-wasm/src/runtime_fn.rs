@@ -178,10 +178,16 @@ pub(crate) enum RuntimeFn {
     StringStartsWith,
     /// String.prototype.endsWith
     StringEndsWith,
+    /// String.prototype.match
+    StringMatch,
+    /// String.prototype.search
+    StringSearch,
     /// Issue 051: RegExp.prototype.test for literal-backed plain byte patterns.
     RegExpTest,
     /// Issue 051: String.prototype.match for literal-backed plain byte patterns.
     RegExpMatch,
+    /// Issue 051: String.prototype.search for literal-backed plain byte patterns.
+    RegExpSearch,
     /// Issue 066: Shared helper for character-level pattern matching (dot, \d, \w, \s, literals).
     RegexpMatchInner,
     /// M10: Array methods
@@ -614,8 +620,11 @@ pub(crate) fn runtime_fn_from_name(name: &str) -> Option<RuntimeFn> {
         "StringTrimEnd" => Some(RuntimeFn::StringTrimEnd),
         "StringStartsWith" => Some(RuntimeFn::StringStartsWith),
         "StringEndsWith" => Some(RuntimeFn::StringEndsWith),
+        "StringMatch" => Some(RuntimeFn::StringMatch),
+        "StringSearch" => Some(RuntimeFn::StringSearch),
         "RegExpTest" => Some(RuntimeFn::RegExpTest),
         "RegExpMatch" => Some(RuntimeFn::RegExpMatch),
+        "RegExpSearch" => Some(RuntimeFn::RegExpSearch),
         "ArrayPush" => Some(RuntimeFn::ArrayPush),
         "ArrayPushGrow" => Some(RuntimeFn::ArrayPushGrow),
         "ArrayIndexPresent" => Some(RuntimeFn::ArrayIndexPresent),
@@ -1057,6 +1066,10 @@ const REGEXP_MATCH_DEPS: &[RuntimeFn] = &[
     RuntimeFn::StringSubstring,
     RuntimeFn::RegexpMatchInner,
 ];
+
+const REGEXP_SEARCH_DEPS: &[RuntimeFn] = &[RuntimeFn::IsString, RuntimeFn::RegexpMatchInner];
+const STRING_MATCH_DEPS: &[RuntimeFn] = &[RuntimeFn::RegExpMatch];
+const STRING_SEARCH_DEPS: &[RuntimeFn] = &[RuntimeFn::RegExpSearch];
 
 // Array method dependencies
 const ARRAY_PUSH_DEPS: &[RuntimeFn] = &[

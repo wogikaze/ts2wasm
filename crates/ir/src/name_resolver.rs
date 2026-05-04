@@ -121,20 +121,7 @@ impl NameResolver {
         }
 
         // Second pass: resolve all statements
-        let result: Result<Vec<Stmt>, Diagnostic> =
-            program.iter().map(|stmt| self.resolve_stmt(stmt)).collect();
-        if let Err(ref diag) = result {
-            eprintln!(
-                "[resolve_program] ERROR: code={:?} msg={} span={:?}",
-                diag.code, diag.message, diag.span
-            );
-        } else {
-            eprintln!(
-                "[resolve_program] OK: {} statements resolved",
-                result.as_ref().unwrap().len()
-            );
-        }
-        result
+        program.iter().map(|stmt| self.resolve_stmt(stmt)).collect()
     }
 
     fn resolve_stmt(&mut self, stmt: &Stmt) -> Result<Stmt, Diagnostic> {
@@ -633,12 +620,6 @@ impl NameResolver {
                     if name == "arguments" {
                         return Err(unsupported_arguments_outside_function(*span));
                     }
-                    eprintln!(
-                        "[resolve_expr/Ident] UNRESOLVED name={name} is_declared={} allowed_globals={} functions_contains={}",
-                        self.is_declared(name),
-                        self.allowed_globals.contains(name),
-                        self.functions.contains_key(name)
-                    );
                     Err(Diagnostic {
                         code: DiagCode::UnresolvedName,
                         message: format!("unresolved name: `{name}`"),
@@ -991,22 +972,16 @@ impl NameResolver {
         match expr {
             Expr::Ident { name, span } => {
                 // Validate the identifier exists (function, class, variable, or allowed global)
-                let in_funcs = self.functions.contains_key(name);
-                let implicit = self.is_implicit_arguments(name);
-                let declared = self.is_declared(name);
-                let global = self.allowed_globals.contains(name);
-                eprintln!(
-                    "[resolve_member_target] name={name} in_funcs={in_funcs} implicit={implicit} declared={declared} global={global}"
-                );
-                if in_funcs || implicit || declared || global {
+                if self.functions.contains_key(name)
+                    || self.is_implicit_arguments(name)
+                    || self.is_declared(name)
+                    || self.allowed_globals.contains(name)
+                {
                     return Ok(Expr::Ident {
                         name: name.clone(),
                         span: *span,
                     });
                 }
-                eprintln!(
-                    "[resolve_member_target] FAILED name={name} in_funcs={in_funcs} implicit={implicit} declared={declared} global={global}"
-                );
                 Err(Diagnostic {
                     code: DiagCode::UnresolvedName,
                     message: format!("unresolved name: `{name}`"),
@@ -1225,13 +1200,6 @@ impl NameResolver {
             if name == "arguments" {
                 return Err(unsupported_arguments_outside_function(span));
             }
-            eprintln!(
-                "[resolve_identifier] UNRESOLVED name={name} is_declared={} functions_contains={} classes_contains={} scopes_count={}",
-                self.is_declared(name),
-                self.functions.contains_key(name),
-                self.classes.contains_key(name),
-                self.scopes.len()
-            );
             Err(Diagnostic {
                 code: DiagCode::UnresolvedName,
                 message: format!("unresolved name: `{name}`"),

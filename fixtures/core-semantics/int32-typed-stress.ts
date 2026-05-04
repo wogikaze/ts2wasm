@@ -1,4 +1,4 @@
-function abs(n: number): number {
+function abs(n) {
   if (n < 0) {
     return -n;
   } else {
@@ -6,26 +6,26 @@ function abs(n: number): number {
   }
 }
 
-function gcd(a: number, b: number): number {
-  let x: number = abs(a);
-  let y: number = abs(b);
+function gcd(a, b) {
+  let x = abs(a);
+  let y = abs(b);
   while (y !== 0) {
-    let t: number = x % y;
+    let t = x % y;
     x = y;
     y = t;
   }
   return x;
 }
 
-function fib(n: number): number {
+function fib(n) {
   if (n <= 1) {
     return n;
   }
-  let a: number = 0;
-  let b: number = 1;
-  let i: number = 2;
+  let a = 0;
+  let b = 1;
+  let i = 2;
   while (i <= n) {
-    let c: number = a + b;
+    let c = a + b;
     a = b;
     b = c;
     i = i + 1;
@@ -33,17 +33,17 @@ function fib(n: number): number {
   return b;
 }
 
-function factMod(n: number, mod: number): number {
-  let acc: number = 1;
-  for (let i: number = 2; i <= n; i = i + 1) {
+function factMod(n, mod) {
+  let acc = 1;
+  for (let i = 2; i <= n; i = i + 1) {
     acc = (acc * i) % mod;
   }
   return acc;
 }
 
-function branchScore(n: number): number {
-  let score: number = 0;
-  for (let i: number = 1; i <= n; i = i + 1) {
+function branchScore(n) {
+  let score = 0;
+  for (let i = 1; i <= n; i = i + 1) {
     if ((i % 15) === 0) {
       score = score + i * 5;
     } else if ((i % 5) === 0) {
@@ -57,9 +57,9 @@ function branchScore(n: number): number {
   return score;
 }
 
-function checksum(limit: number): number {
-  let total: number = 0;
-  for (let row: number = 1; row <= limit; row = row + 1) {
+function checksum(limit) {
+  let total = 0;
+  for (let row = 1; row <= limit; row = row + 1) {
     total = total + fib(row);
     total = total + factMod(row + 3, 997);
     total = total + gcd(row * 17, row + 5);
@@ -67,14 +67,14 @@ function checksum(limit: number): number {
   return total;
 }
 
-const LIMIT: number = 18;
-let total: number = 0;
-let checkpoints: number = 0;
+const LIMIT = 18;
+let total = 0;
+let checkpoints = 0;
 
 console.log("typed stress start");
 console.log("limit " + LIMIT);
 
-for (let i: number = 1; i <= LIMIT; i = i + 1) {
+for (let i = 1; i <= LIMIT; i = i + 1) {
   total = total + checksum(i);
   if ((i % 6) === 0) {
     checkpoints = checkpoints + 1;
@@ -82,9 +82,9 @@ for (let i: number = 1; i <= LIMIT; i = i + 1) {
   }
 }
 
-let divisor: number = gcd(total, 2310);
-let branch: number = branchScore(40);
-let truthy: boolean = (divisor !== 0) && (branch >= 1000);
+let divisor = gcd(total, 2310);
+let branch = branchScore(40);
+let truthy = (divisor !== 0) && (branch >= 1000);
 
 console.log("total " + total);
 console.log("gcd-total-2310 " + divisor);

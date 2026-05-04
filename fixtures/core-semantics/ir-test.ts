@@ -1,8 +1,8 @@
-function add(a: number, b: number): number {
+function add(a, b) {
   return a + b;
 }
 
-const total: number = add(1, 2);
+const total = add(1, 2);
 
 if (total === 3) {
   console.log("ir-ok");

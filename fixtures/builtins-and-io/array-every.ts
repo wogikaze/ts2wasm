@@ -6,6 +6,6 @@ let has_falsy = [1, 0, 3];
 let result2 = has_falsy.every(x => x);
 if (result2) { console.log(1); } else { console.log(0); }
 
-let empty: number[] = [];
+let empty = [];
 let result3 = empty.every(x => x);
 if (result3) { console.log(1); } else { console.log(0); }

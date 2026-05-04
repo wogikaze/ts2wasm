@@ -1,5 +1,5 @@
-function search(before: string, parts: string[]): string[] {
-    const answers: string[] = [];
+function search(before, parts) {
+    const answers = [];
     if (before.length > 0) answers.push(before);
     const remainDigits = 3 - before.length;
     for (let i = 0; i < parts.length; i++) {
@@ -13,7 +13,7 @@ function search(before: string, parts: string[]): string[] {
     return answers;
 }
 
-const powersOfTwoStr: string[] = [
+const powersOfTwoStr = [
     "1",
     "2",
     "4",

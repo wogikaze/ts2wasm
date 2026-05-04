@@ -6,6 +6,6 @@ let all_falsy = [0, 0, 0];
 let result2 = all_falsy.some(x => x);
 if (result2) { console.log(1); } else { console.log(0); }
 
-let empty: number[] = [];
+let empty = [];
 let result3 = empty.some(x => x);
 if (result3) { console.log(1); } else { console.log(0); }
