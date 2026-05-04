@@ -1482,6 +1482,30 @@ impl<'a> Resolver<'a> {
                             });
                         }
                         _ => {
+                            // Non-identifier receiver (e.g. `[1].indexOf(2)`, `"hi".charAt(0)`)
+                            if let Some(runtime_fn) =
+                                collection_method_runtime_fn_arg(method)
+                            {
+                                let receiver_expr = self.lower_expr(object)?;
+                                let mut lowered_args = vec![receiver_expr];
+                                // Identity methods (every/some/find/filter) just pass receiver
+                                if !is_identity_array_method(method) {
+                                    let max_args = if method == "indexOf"
+                                        || method == "includes"
+                                    {
+                                        1
+                                    } else {
+                                        args.len()
+                                    };
+                                    for arg in args.iter().take(max_args) {
+                                        lowered_args.push(self.lower_expr(arg)?);
+                                    }
+                                }
+                                return Ok(LoweredExpr::RuntimeCall {
+                                    runtime_fn: runtime_fn.to_owned(),
+                                    args: lowered_args,
+                                });
+                            }
                             return Err(Diagnostic {
                                 code: DiagCode::UnsupportedSyntax,
                                 message: format!(
