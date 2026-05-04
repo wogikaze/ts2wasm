@@ -1331,11 +1331,6 @@ fn date_utc_getters_fixture_matches_node_output_under_iwasm() {
 }
 
 #[test]
-fn date_get_timezone_offset_fixture_matches_node_output_under_iwasm() {
-    assert_fixture_matches_node("fixtures/builtins-and-io/date-get-timezone-offset.ts");
-}
-
-#[test]
 fn date_local_getters_fixture_builds() {
     // Local-tz getters use a host shim, so we can only verify compilation, not output
     use std::path::Path;

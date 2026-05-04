@@ -1738,6 +1738,113 @@ impl WatEmitter<'_> {
         ));
     }
 
+    // Array.prototype.copyWithin(target, start, end) — copies sequence within array in-place
+    pub(super) fn emit_array_copy_within(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $array_copy_within (param $arr i32) (param $target i32) (param $start i32) (param $end i32) (result i32)
+    (local $tag i32)
+    (local $obj i32)
+    (local $len i32)
+    (local $t_raw i32)
+    (local $s_raw i32)
+    (local $e_raw i32)
+    (local $count i32)
+    (local $i i32)
+    (local $val i32)
+    (local.set $tag (i32.and (local.get $arr) (i32.const {tag_mask})))
+    (if (i32.ne (local.get $tag) (i32.const {array_tag})) (then (return (i32.const {undefined}))))
+    (local.set $obj (i32.and (local.get $arr) (i32.const {heap_mask})))
+    (local.set $len (i32.load (local.get $obj)))
+    (local.set $t_raw (i32.shr_s (local.get $target) (i32.const {number_shift})))
+    (if (i32.lt_s (local.get $t_raw) (i32.const {zero}))
+      (then
+        (local.set $t_raw (i32.add (local.get $t_raw) (local.get $len)))
+        (if (i32.lt_s (local.get $t_raw) (i32.const {zero}))
+          (then (local.set $t_raw (i32.const {zero}))))))
+    (if (i32.gt_s (local.get $t_raw) (local.get $len))
+      (then (local.set $t_raw (local.get $len))))
+    (local.set $s_raw (i32.shr_s (local.get $start) (i32.const {number_shift})))
+    (if (i32.lt_s (local.get $s_raw) (i32.const {zero}))
+      (then
+        (local.set $s_raw (i32.add (local.get $s_raw) (local.get $len)))
+        (if (i32.lt_s (local.get $s_raw) (i32.const {zero}))
+          (then (local.set $s_raw (i32.const {zero}))))))
+    (if (i32.gt_s (local.get $s_raw) (local.get $len))
+      (then (local.set $s_raw (local.get $len))))
+    (block $end_handled
+      (if (i32.eq (i32.and (local.get $end) (i32.const {tag_mask})) (i32.const {undefined}))
+        (then
+          (local.set $e_raw (local.get $len))
+          (br $end_handled)))
+      (local.set $e_raw (i32.shr_s (local.get $end) (i32.const {number_shift})))
+      (if (i32.lt_s (local.get $e_raw) (i32.const {zero}))
+        (then
+          (local.set $e_raw (i32.add (local.get $e_raw) (local.get $len)))
+          (if (i32.lt_s (local.get $e_raw) (i32.const {zero}))
+            (then (local.set $e_raw (i32.const {zero}))))))
+      (if (i32.gt_s (local.get $e_raw) (local.get $len))
+        (then (local.set $e_raw (local.get $len)))))
+    (local.set $count (i32.sub (local.get $e_raw) (local.get $s_raw)))
+    (if (i32.lt_s (local.get $count) (i32.const {zero}))
+      (then (local.set $count (i32.const {zero}))))
+    (local.set $count
+      (select
+        (i32.sub (local.get $len) (local.get $t_raw))
+        (local.get $count)
+        (i32.gt_s (local.get $count) (i32.sub (local.get $len) (local.get $t_raw)))))
+    (if (i32.eqz (local.get $count)) (then (return (local.get $arr))))
+    (block $forward
+      (block $check_direction
+        (if (i32.ge_s (local.get $t_raw) (local.get $s_raw))
+          (then (br $check_direction)))
+        (local.set $i (i32.const {zero}))
+        (block $fwd_done
+          (loop $fwd_loop
+            (br_if $fwd_done (i32.ge_u (local.get $i) (local.get $count)))
+            (local.set $val
+              (i32.load
+                (i32.add (local.get $obj)
+                  (i32.add (i32.const {array_header})
+                    (i32.shl (i32.add (local.get $s_raw) (local.get $i)) (i32.const {elem_shift}))))))
+            (i32.store
+              (i32.add (local.get $obj)
+                (i32.add (i32.const {array_header})
+                  (i32.shl (i32.add (local.get $t_raw) (local.get $i)) (i32.const {elem_shift}))))
+              (local.get $val))
+            (local.set $i (i32.add (local.get $i) (i32.const {one})))
+            (br $fwd_loop)))
+        (br $forward))
+      (local.set $i (i32.sub (local.get $count) (i32.const {one})))
+      (block $bwd_done
+        (loop $bwd_loop
+          (br_if $bwd_done (i32.lt_s (local.get $i) (i32.const {zero})))
+          (local.set $val
+            (i32.load
+              (i32.add (local.get $obj)
+                (i32.add (i32.const {array_header})
+                  (i32.shl (i32.add (local.get $s_raw) (local.get $i)) (i32.const {elem_shift}))))))
+          (i32.store
+            (i32.add (local.get $obj)
+              (i32.add (i32.const {array_header})
+                (i32.shl (i32.add (local.get $t_raw) (local.get $i)) (i32.const {elem_shift}))))
+            (local.get $val))
+          (local.set $i (i32.sub (local.get $i) (i32.const {one})))
+          (br $bwd_loop))))
+    (local.get $arr))
+"#,
+            tag_mask = ValueTag::TAG_MASK,
+            array_tag = ValueTag::ARRAY,
+            heap_mask = ValueTag::HEAP_MASK,
+            array_header = Layout::ARRAY_HEADER_SIZE,
+            elem_shift = Layout::ARRAY_ELEM_SHIFT,
+            number_shift = ValueTag::NUMBER_SHIFT,
+            zero = RuntimeConst::ZERO,
+            one = RuntimeConst::ONE,
+            undefined = ValueTag::UNDEFINED,
+        ));
+    }
+
     // Array.prototype.shift() — removes and returns first element
     pub(super) fn emit_array_shift(&self, wat: &mut String) {
         wat.push_str(&format!(
@@ -2680,89 +2787,6 @@ impl WatEmitter<'_> {
             obj_proto = Layout::OBJECT_PROTOTYPE_OFFSET,
             true = ValueTag::TRUE,
             false = ValueTag::FALSE,
-        ));
-    }
-
-    // Array.prototype.copyWithin(target, start, end) — in-place copy within array
-    pub(super) fn emit_array_copy_within(&self, wat: &mut String) {
-        wat.push_str(&format!(
-            r#"
-  (func $array_copy_within (param $arr i32) (param $target_tag i32) (param $start_tag i32) (param $end_tag i32) (result i32)
-    (local $tag i32)
-    (local $obj i32)
-    (local $len i32)
-    (local $target i32)
-    (local $start i32)
-    (local $end i32)
-    (local $raw i32)
-    (local $count i32)
-    (local $i i32)
-    (local $from i32)
-    (local $to i32)
-    (local $elem i32)
-    (local.set $tag (i32.and (local.get $arr) (i32.const {tag_mask})))
-    (if (i32.ne (local.get $tag) (i32.const {array_tag})) (then (return (i32.const {undefined}))))
-    (local.set $obj (i32.and (local.get $arr) (i32.const {heap_mask})))
-    (local.set $len (i32.load (local.get $obj)))
-    (local.set $raw (i32.shr_s (local.get $target_tag) (i32.const {number_shift})))
-    (local.set $target (select (i32.add (local.get $len) (local.get $raw)) (local.get $raw) (i32.lt_s (local.get $raw) (i32.const {zero}))))
-    (local.set $target (select (i32.const {zero}) (local.get $target) (i32.lt_s (local.get $target) (i32.const {zero}))))
-    (local.set $target (select (local.get $len) (local.get $target) (i32.gt_s (local.get $target) (local.get $len))))
-    (local.set $raw (i32.shr_s (local.get $start_tag) (i32.const {number_shift})))
-    (local.set $start (select (i32.add (local.get $len) (local.get $raw)) (local.get $raw) (i32.lt_s (local.get $raw) (i32.const {zero}))))
-    (local.set $start (select (i32.const {zero}) (local.get $start) (i32.lt_s (local.get $start) (i32.const {zero}))))
-    (local.set $start (select (local.get $len) (local.get $start) (i32.gt_s (local.get $start) (local.get $len))))
-    (local.set $raw (i32.shr_s (local.get $end_tag) (i32.const {number_shift})))
-    (local.set $end (select (local.get $len) (local.get $raw) (i32.eq (local.get $end_tag) (i32.const {zero}))))
-    (local.set $end (select (i32.add (local.get $len) (local.get $end)) (local.get $end) (i32.lt_s (local.get $end) (i32.const {zero}))))
-    (local.set $end (select (i32.const {zero}) (local.get $end) (i32.lt_s (local.get $end) (i32.const {zero}))))
-    (local.set $end (select (local.get $len) (local.get $end) (i32.gt_s (local.get $end) (local.get $len))))
-    (local.set $count (i32.sub (local.get $end) (local.get $start)))
-    (local.set $raw (i32.sub (local.get $len) (local.get $target)))
-    (local.set $count (select (local.get $raw) (local.get $count) (i32.gt_s (local.get $count) (local.get $raw))))
-    (if (i32.le_s (local.get $count) (i32.const {zero})) (then (return (local.get $arr))))
-    (if (i32.le_s (local.get $target) (local.get $start))
-      (then
-        (local.set $i (i32.const {zero}))
-        (block $done
-          (loop $loop
-            (br_if $done (i32.ge_u (local.get $i) (local.get $count)))
-            (local.set $from (i32.add (local.get $start) (local.get $i)))
-            (local.set $to (i32.add (local.get $target) (local.get $i)))
-            (local.set $elem
-              (i32.load
-                (i32.add (local.get $obj) (i32.add (i32.const {array_header}) (i32.shl (local.get $from) (i32.const {elem_shift}))))))
-            (i32.store
-              (i32.add (local.get $obj) (i32.add (i32.const {array_header}) (i32.shl (local.get $to) (i32.const {elem_shift}))))
-              (local.get $elem))
-            (local.set $i (i32.add (local.get $i) (i32.const {one})))
-            (br $loop))))
-      (else
-        (local.set $i (i32.sub (local.get $count) (i32.const {one})))
-        (block $done2
-          (loop $loop2
-            (br_if $done2 (i32.lt_s (local.get $i) (i32.const {zero})))
-            (local.set $from (i32.add (local.get $start) (local.get $i)))
-            (local.set $to (i32.add (local.get $target) (local.get $i)))
-            (local.set $elem
-              (i32.load
-                (i32.add (local.get $obj) (i32.add (i32.const {array_header}) (i32.shl (local.get $from) (i32.const {elem_shift}))))))
-            (i32.store
-              (i32.add (local.get $obj) (i32.add (i32.const {array_header}) (i32.shl (local.get $to) (i32.const {elem_shift}))))
-              (local.get $elem))
-            (local.set $i (i32.sub (local.get $i) (i32.const {one})))
-            (br $loop2)))))
-    (local.get $arr))
-"#,
-            tag_mask = ValueTag::TAG_MASK,
-            array_tag = ValueTag::ARRAY,
-            heap_mask = ValueTag::HEAP_MASK,
-            array_header = Layout::ARRAY_HEADER_SIZE,
-            elem_shift = Layout::ARRAY_ELEM_SHIFT,
-            number_shift = ValueTag::NUMBER_SHIFT,
-            zero = RuntimeConst::ZERO,
-            one = RuntimeConst::ONE,
-            undefined = ValueTag::UNDEFINED,
         ));
     }
 
