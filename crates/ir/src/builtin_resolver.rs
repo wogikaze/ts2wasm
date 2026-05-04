@@ -1579,6 +1579,16 @@ fn resolve_expr(expr: &Expr) -> Result<ResolvedExpr, Diagnostic> {
             {
                 return resolve_bigint_function_call(&resolved_args, *span);
             }
+            if let Expr::Ident { name, .. } = callee.as_ref()
+                && name == "Array"
+            {
+                // Array() called as function (without new) behaves like new Array()
+                return Ok(ResolvedExpr::New {
+                    class_name: "Array".to_owned(),
+                    args: resolved_args,
+                    span: *span,
+                });
+            }
             if let Some(builtin) = resolve_global_identifier_call(callee.as_ref()) {
                 return Ok(ResolvedExpr::BuiltinCall {
                     builtin,

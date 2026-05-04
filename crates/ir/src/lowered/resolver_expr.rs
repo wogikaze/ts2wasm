@@ -1829,6 +1829,11 @@ impl<'a> Resolver<'a> {
                     });
                 }
                 if class_name == "Array" {
+                    if args.is_empty() {
+                        return Ok(LoweredExpr::ArrayNewSparse {
+                            slots: Vec::new(),
+                        });
+                    }
                     let [length] = args.as_slice() else {
                         return Err(Diagnostic {
                             code: DiagCode::UnsupportedSyntax,
