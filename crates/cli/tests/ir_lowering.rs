@@ -146,10 +146,10 @@ fn lowering_splits_functions_and_resolves_ids() {
     let lowered = ts2wasm_ir::lowered::lower_program(&program).unwrap();
 
     assert_eq!(lowered.functions.len(), 1);
-    assert_eq!(lowered.top_level_statements.len(), 2);
-    assert_eq!(lowered.top_level_locals.len(), 1);
+    assert_eq!(lowered.top_level_statements.len(), 3);
+    assert_eq!(lowered.top_level_locals.len(), 2);
 
-    match &lowered.top_level_statements[1] {
+    match &lowered.top_level_statements[2] {
         ts2wasm_ir::lowered::LoweredStmt::Expr(ts2wasm_ir::lowered::LoweredExpr::Call {
             kind,
             args,
@@ -714,7 +714,9 @@ fn lowering_represents_returned_ordinary_closure_as_heap_creation() {
 
 #[test]
 fn lowering_represents_known_heap_closure_local_call_explicitly() {
-    use ts2wasm_ir::lowered::{FunctionCallKind, LocalId, LoweredExpr, LoweredStmt};
+    use ts2wasm_ir::lowered::{
+        ClosureRepresentation, FuncId, FunctionCallKind, LocalId, LoweredExpr, LoweredStmt,
+    };
 
     let program = parse_and_resolve(
         r#"
@@ -732,9 +734,26 @@ fn lowering_represents_known_heap_closure_local_call_explicitly() {
     );
     let lowered = ts2wasm_ir::lowered::lower_program(&program).unwrap();
 
+    // top_level_statements[0] is the function declaration binding
     match &lowered.top_level_statements[0] {
         LoweredStmt::Let(
             LocalId(0),
+            LoweredExpr::ArrowFn {
+                func_id: FuncId(0),
+                captures,
+                representation,
+            },
+        ) => {
+            assert!(captures.is_empty());
+            assert_eq!(*representation, ClosureRepresentation::DirectLocalToken);
+        }
+        other => panic!("unexpected function declaration binding: {other:?}"),
+    }
+
+    // top_level_statements[1] is reader = makeReader()
+    match &lowered.top_level_statements[1] {
+        LoweredStmt::Let(
+            LocalId(1),
             LoweredExpr::Call {
                 kind: FunctionCallKind::User(_),
                 ..
@@ -743,7 +762,7 @@ fn lowering_represents_known_heap_closure_local_call_explicitly() {
         other => panic!("unexpected heap closure local binding: {other:?}"),
     }
 
-    match &lowered.top_level_statements[1] {
+    match &lowered.top_level_statements[2] {
         LoweredStmt::Expr(LoweredExpr::Call {
             kind: FunctionCallKind::Builtin(ts2wasm_ir::builtin::BuiltinId::ConsoleLog),
             args,
@@ -757,7 +776,7 @@ fn lowering_represents_known_heap_closure_local_call_explicitly() {
                 assert_eq!(runtime_fn, "HeapClosureCall");
                 assert!(matches!(
                     call_args.as_slice(),
-                    [LoweredExpr::Local(LocalId(0))]
+                    [LoweredExpr::Local(LocalId(1))]
                 ));
             }
             other => panic!("unexpected console.log argument for heap closure call: {other:?}"),

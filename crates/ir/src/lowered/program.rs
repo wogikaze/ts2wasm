@@ -212,7 +212,22 @@ pub fn lower_program(program: &[ResolvedStmt]) -> Result<LoweredProgram, Diagnos
     let mut top_level_statements = Vec::new();
     for stmt in program {
         match stmt {
-            ResolvedStmt::Function { .. } => {}
+            ResolvedStmt::Function { name, .. } => {
+                // Register function name in the lowered resolver's scope
+                // so it can be referenced as a value (e.g., `let cb = myFunc`)
+                // Call lowering falls through to resolve_func path, which handles
+                // arguments/this correctly — do NOT add to arrow_locals.
+                let local_id = resolver.declare_local(name)?;
+                let func_id = resolver.resolve_func(name)?;
+                top_level_statements.push(LoweredStmt::Let(
+                    local_id,
+                    LoweredExpr::ArrowFn {
+                        func_id,
+                        captures: Vec::new(),
+                        representation: ClosureRepresentation::DirectLocalToken,
+                    },
+                ));
+            }
             ResolvedStmt::ClassDecl {
                 name,
                 extends,

@@ -978,13 +978,8 @@ impl<'a> Resolver<'a> {
                 });
             }
 
-            return Err(Diagnostic {
-                code: DiagCode::UnsupportedSyntax,
-                message: format!(
-                    "issue-253: optional call `{func_name}?.(...)` is supported only for known functions or nullish locals"
-                ),
-                span: Some(span),
-            });
+            // Not a closure or nullish (e.g. function declaration) —
+            // fall through to resolve_func below.
         }
 
         let func_id = self.resolve_func(func_name)?;
