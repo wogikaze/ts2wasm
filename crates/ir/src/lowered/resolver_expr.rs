@@ -1504,6 +1504,14 @@ impl<'a> Resolver<'a> {
                         // Array.prototype.flat defaults depth to 1 when omitted
                         if class_name == "Array" && method == "flat" && args.is_empty() {
                             lowered_args.push(LoweredExpr::Number(1));
+                        } else if class_name == "Array" && method == "copyWithin" && args.len() == 2 {
+                            // copyWithin(target, start) — end defaults to undefined (meaning length)
+                            lowered_args.extend(
+                                args.iter()
+                                    .map(|e| self.lower_expr(e))
+                                    .collect::<Result<Vec<_>, _>>()?,
+                            );
+                            lowered_args.push(LoweredExpr::Undefined);
                         } else {
                             lowered_args.extend(
                                 args.iter()
