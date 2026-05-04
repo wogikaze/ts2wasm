@@ -236,6 +236,7 @@ impl WatEmitter<'_> {
                 RuntimeFn::ArrayAt => self.emit_array_at(wat),
                 RuntimeFn::ArrayFill => self.emit_array_fill(wat),
                 RuntimeFn::ArrayFlat => self.emit_array_flat(wat),
+                RuntimeFn::ArrayCopyWithin => self.emit_array_copy_within(wat),
                 RuntimeFn::ArrayShift => self.emit_array_shift(wat),
                 RuntimeFn::ArrayUnshift => self.emit_array_unshift(wat),
                 RuntimeFn::ArraySplice => self.emit_array_splice(wat),

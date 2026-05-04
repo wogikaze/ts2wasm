@@ -136,6 +136,7 @@ pub(super) fn collection_method_runtime_fn(class_name: &str, method: &str) -> Op
         ("Array", "at") => Some("ArrayAt"),
         ("Array", "fill") => Some("ArrayFill"),
         ("Array", "flat") => Some("ArrayFlat"),
+        ("Array", "copyWithin") => Some("ArrayCopyWithin"),
         ("Array", "shift") => Some("ArrayShift"),
         ("Array", "unshift") => Some("ArrayUnshift"),
         ("Array", "splice") => Some("ArraySplice"),

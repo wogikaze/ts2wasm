@@ -1,5 +1,6 @@
 pub mod ast;
 pub mod diagnostic;
+pub mod resolver;
 pub mod lexer;
 pub mod parser;
 pub mod type_reference_directive;

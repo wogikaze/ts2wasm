@@ -537,6 +537,16 @@ fn build_smoke_array_flat_method() {
 }
 
 #[test]
+fn build_smoke_array_copy_within_method() {
+    let result = run_fixture("builtins-and-io/array-copy-within.ts");
+    assert!(
+        result.is_ok(),
+        "Array.copyWithin should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
 fn build_smoke_array_shift_unshift_splice_method() {
     let result = run_fixture("builtins-and-io/array-shift-unshift-splice.ts");
     assert!(
@@ -664,6 +674,16 @@ fn build_smoke_date_to_iso_string() {
     assert!(
         result.is_ok(),
         "Date.toISOString should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
+fn build_smoke_date_get_timezone_offset() {
+    let result = run_fixture("builtins-and-io/date-get-timezone-offset.ts");
+    assert!(
+        result.is_ok(),
+        "Date.getTimezoneOffset should build: {:?}",
         result.err()
     );
 }

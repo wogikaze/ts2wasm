@@ -1028,6 +1028,21 @@ impl<'a> Resolver<'a> {
                         runtime_fn: "DateGetTime".to_owned(),
                         args: vec![self.lower_expr(object)?],
                     })
+                } else if method == "getTimezoneOffset" && self.is_date_receiver(object) {
+                    if !args.is_empty() {
+                        return Err(Diagnostic {
+                            code: DiagCode::ArityMismatch,
+                            message: format!(
+                                "Date.prototype.{method} expects 0 arguments, got {}",
+                                args.len()
+                            ),
+                            span: Some(*span),
+                        });
+                    }
+                    Ok(LoweredExpr::RuntimeCall {
+                        runtime_fn: "DateGetTimezoneOffset".to_owned(),
+                        args: vec![self.lower_expr(object)?],
+                    })
                 } else if is_local_tz_date_method(method) && self.is_date_receiver(object) {
                     if !args.is_empty() {
                         return Err(Diagnostic {

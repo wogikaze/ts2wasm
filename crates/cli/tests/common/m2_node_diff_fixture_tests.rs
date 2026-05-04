@@ -1091,6 +1091,7 @@ fn array_builtin_fixtures_match_node_output_under_iwasm() {
         "fixtures/builtins-and-io/array-push.ts",
         "fixtures/builtins-and-io/array-reverse.ts",
         "fixtures/builtins-and-io/array-flat.ts",
+        "fixtures/builtins-and-io/array-copy-within.ts",
     ] {
         assert_fixture_matches_node(fixture);
     }
@@ -1327,6 +1328,11 @@ fn date_annex_b_fixtures_report_issue_241() {
 #[test]
 fn date_utc_getters_fixture_matches_node_output_under_iwasm() {
     assert_fixture_matches_node("fixtures/builtins-and-io/date-utc-getters.ts");
+}
+
+#[test]
+fn date_get_timezone_offset_fixture_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/date-get-timezone-offset.ts");
 }
 
 #[test]
