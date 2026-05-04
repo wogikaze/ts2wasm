@@ -1051,6 +1051,8 @@ fn string_builtin_fixtures_match_node_output_under_iwasm() {
         "fixtures/builtins-and-io/string-pad-start.ts",
         "fixtures/builtins-and-io/string-pad-end.ts",
         "fixtures/builtins-and-io/string-repeat.ts",
+        "fixtures/builtins-and-io/array-find-index.ts",
+        "fixtures/builtins-and-io/array-map.ts",
         "fixtures/builtins-and-io/string-search.ts",
         "fixtures/builtins-and-io/string-match.ts",
         "fixtures/builtins-and-io/string-at.ts",
