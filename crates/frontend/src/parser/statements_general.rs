@@ -19,6 +19,10 @@ impl Parser {
             Some(Token::Throw) => self.throw_statement(),
             Some(Token::Break) => self.break_statement(),
             Some(Token::Continue) => self.continue_statement(),
+            Some(Token::Abstract) => {
+            self.advance();
+            self.class_statement()
+        }
             Some(Token::Class) => self.class_statement(),
             Some(Token::Return) => self.return_statement(),
             Some(Token::Async) if matches!(self.peek_n(1), Some(Token::Function)) => {

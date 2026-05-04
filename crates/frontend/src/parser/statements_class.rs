@@ -2,6 +2,7 @@
 
 impl Parser {
     fn class_statement(&mut self) -> Result<Stmt, Diagnostic> {
+        self.consume(TokenKind::Abstract); // TypeScript abstract modifier — erased at runtime
         let start = self.expect(TokenKind::Class)?;
         let (name, _) = self.expect_ident()?;
 
@@ -133,10 +134,10 @@ impl Parser {
 
             while matches!(self.peek(), Some(Token::Ident(name)) if matches!(
                 name.as_str(),
-                "public" | "private" | "protected" | "readonly" | "abstract" | "override" | "accessor"
+                "public" | "private" | "protected" | "readonly" | "override" | "accessor"
             )) || matches!(self.peek(), Some(
                 Token::Const | Token::Var | Token::Let | Token::Export
-            )) {
+            )) || matches!(self.peek(), Some(Token::Abstract)) {
                 self.advance();
             }
 

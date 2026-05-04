@@ -592,6 +592,46 @@ fn build_smoke_array_to_spliced_method() {
 }
 
 #[test]
+fn build_smoke_array_values_method() {
+    let result = run_fixture("builtins-and-io/array-values.ts");
+    assert!(
+        result.is_ok(),
+        "Array.values should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
+fn build_smoke_array_keys_method() {
+    let result = run_fixture("builtins-and-io/array-keys.ts");
+    assert!(
+        result.is_ok(),
+        "Array.keys should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
+fn build_smoke_array_entries_method() {
+    let result = run_fixture("builtins-and-io/array-entries.ts");
+    assert!(
+        result.is_ok(),
+        "Array.entries should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
+fn build_smoke_array_to_string_method() {
+    let result = run_fixture("builtins-and-io/array-to-string.ts");
+    assert!(
+        result.is_ok(),
+        "Array.toString should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
 fn build_smoke_array_shift_unshift_splice_method() {
     let result = run_fixture("builtins-and-io/array-shift-unshift-splice.ts");
     assert!(

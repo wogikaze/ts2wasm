@@ -3009,5 +3009,152 @@ impl WatEmitter<'_> {
         ));
     }
 
+    pub(super) fn emit_array_values(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $array_values (param $arr i32) (result i32)
+    (local $obj i32)
+    (local $tag i32)
+    (local $len i32)
+    (local $alloc_size i32)
+    (local $result_ptr i32)
+    (local.set $tag (i32.and (local.get $arr) (i32.const {tag_mask})))
+    (if (i32.ne (local.get $tag) (i32.const {array_tag})) (then (return (i32.const {undefined}))))
+    (local.set $obj (i32.and (local.get $arr) (i32.const {heap_mask})))
+    (local.set $len (i32.load (local.get $obj)))
+    (local.set $alloc_size
+      (i32.add (i32.const {array_header}) (i32.shl (local.get $len) (i32.const {elem_shift}))))
+    (local.set $result_ptr (call $alloc_heap (local.get $alloc_size)))
+    (call $copy (local.get $obj) (local.get $result_ptr) (local.get $alloc_size))
+    (i32.or (local.get $result_ptr) (i32.const {array_tag})))
+"#,
+            tag_mask = ValueTag::TAG_MASK,
+            array_tag = ValueTag::ARRAY,
+            heap_mask = ValueTag::HEAP_MASK,
+            array_header = Layout::ARRAY_HEADER_SIZE,
+            elem_shift = Layout::ARRAY_ELEM_SHIFT,
+            undefined = ValueTag::UNDEFINED,
+        ));
+    }
+
+    pub(super) fn emit_array_keys(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $array_keys (param $arr i32) (result i32)
+    (local $obj i32)
+    (local $tag i32)
+    (local $len i32)
+    (local $i i32)
+    (local $result_ptr i32)
+    (local.set $tag (i32.and (local.get $arr) (i32.const {tag_mask})))
+    (if (i32.ne (local.get $tag) (i32.const {array_tag})) (then (return (i32.const {undefined}))))
+    (local.set $obj (i32.and (local.get $arr) (i32.const {heap_mask})))
+    (local.set $len (i32.load (local.get $obj)))
+    ;; Allocate new array: header + len * 4
+    (local.set $result_ptr
+      (call $alloc_heap
+        (i32.add (i32.const {array_header}) (i32.shl (local.get $len) (i32.const {elem_shift})))))
+    (i32.store (local.get $result_ptr) (local.get $len))
+    (i32.store (i32.add (local.get $result_ptr) (i32.const 4)) (local.get $len))
+    (i32.store (i32.add (local.get $result_ptr) (i32.const 8)) (i32.const 1))
+    (i32.store (i32.add (local.get $result_ptr) (i32.const 12)) (i32.const {array_header}))
+    ;; Fill with indices 0, 1, 2, ..., len-1 (tagged as numbers)
+    (local.set $i (i32.const {zero}))
+    (block $loop_done
+      (loop $loop
+        (br_if $loop_done (i32.ge_u (local.get $i) (local.get $len)))
+        (i32.store
+          (i32.add (local.get $result_ptr) (i32.add (i32.const {array_header})
+            (i32.shl (local.get $i) (i32.const {elem_shift}))))
+          (i32.or (i32.shl (local.get $i) (i32.const {number_shift})) (i32.const {number_tag})))
+        (local.set $i (i32.add (local.get $i) (i32.const {one})))
+        (br $loop)))
+    (i32.or (local.get $result_ptr) (i32.const {array_tag})))
+"#,
+            tag_mask = ValueTag::TAG_MASK,
+            array_tag = ValueTag::ARRAY,
+            heap_mask = ValueTag::HEAP_MASK,
+            array_header = Layout::ARRAY_HEADER_SIZE,
+            elem_shift = Layout::ARRAY_ELEM_SHIFT,
+            number_shift = ValueTag::NUMBER_SHIFT,
+            number_tag = ValueTag::NUMBER,
+            zero = RuntimeConst::ZERO,
+            one = RuntimeConst::ONE,
+            undefined = ValueTag::UNDEFINED,
+        ));
+    }
+
+    pub(super) fn emit_array_entries(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $array_entries (param $arr i32) (result i32)
+    (local $obj i32)
+    (local $tag i32)
+    (local $len i32)
+    (local $i i32)
+    (local $result_ptr i32)
+    (local $pair_ptr i32)
+    (local $val i32)
+    (local.set $tag (i32.and (local.get $arr) (i32.const {tag_mask})))
+    (if (i32.ne (local.get $tag) (i32.const {array_tag})) (then (return (i32.const {undefined}))))
+    (local.set $obj (i32.and (local.get $arr) (i32.const {heap_mask})))
+    (local.set $len (i32.load (local.get $obj)))
+    ;; Allocate result array: header + len * 4
+    (local.set $result_ptr
+      (call $alloc_heap
+        (i32.add (i32.const {array_header}) (i32.shl (local.get $len) (i32.const {elem_shift})))))
+    (i32.store (local.get $result_ptr) (local.get $len))
+    (i32.store (i32.add (local.get $result_ptr) (i32.const 4)) (local.get $len))
+    (i32.store (i32.add (local.get $result_ptr) (i32.const 8)) (i32.const 1))
+    (i32.store (i32.add (local.get $result_ptr) (i32.const 12)) (i32.const {array_header}))
+    ;; For each index, create a [index, value] pair array
+    (local.set $i (i32.const {zero}))
+    (block $loop_done
+      (loop $loop
+        (br_if $loop_done (i32.ge_u (local.get $i) (local.get $len)))
+        (local.set $val
+          (i32.load
+            (i32.add (local.get $obj) (i32.add (i32.const {array_header})
+              (i32.shl (local.get $i) (i32.const {elem_shift}))))))
+        ;; Allocate 2-element pair array
+        (local.set $pair_ptr
+          (call $alloc_heap
+            (i32.add (i32.const {array_header}) (i32.shl (i32.const 2) (i32.const {elem_shift})))))
+        (i32.store (local.get $pair_ptr) (i32.const 2))
+        (i32.store (i32.add (local.get $pair_ptr) (i32.const 4)) (i32.const 2))
+        (i32.store (i32.add (local.get $pair_ptr) (i32.const 8)) (i32.const 1))
+        (i32.store (i32.add (local.get $pair_ptr) (i32.const 12)) (i32.const {array_header}))
+        ;; pair[0] = i (tagged number)
+        (i32.store
+          (i32.add (local.get $pair_ptr) (i32.add (i32.const {array_header})
+            (i32.shl (i32.const 0) (i32.const {elem_shift}))))
+          (i32.or (i32.shl (local.get $i) (i32.const {number_shift})) (i32.const {number_tag})))
+        ;; pair[1] = val
+        (i32.store
+          (i32.add (local.get $pair_ptr) (i32.add (i32.const {array_header})
+            (i32.shl (i32.const 1) (i32.const {elem_shift}))))
+          (local.get $val))
+        ;; result[i] = pair_ptr | ARRAY_TAG
+        (i32.store
+          (i32.add (local.get $result_ptr) (i32.add (i32.const {array_header})
+            (i32.shl (local.get $i) (i32.const {elem_shift}))))
+          (i32.or (local.get $pair_ptr) (i32.const {array_tag})))
+        (local.set $i (i32.add (local.get $i) (i32.const {one})))
+        (br $loop)))
+    (i32.or (local.get $result_ptr) (i32.const {array_tag})))
+"#,
+            tag_mask = ValueTag::TAG_MASK,
+            array_tag = ValueTag::ARRAY,
+            heap_mask = ValueTag::HEAP_MASK,
+            array_header = Layout::ARRAY_HEADER_SIZE,
+            elem_shift = Layout::ARRAY_ELEM_SHIFT,
+            number_shift = ValueTag::NUMBER_SHIFT,
+            number_tag = ValueTag::NUMBER,
+            zero = RuntimeConst::ZERO,
+            one = RuntimeConst::ONE,
+            undefined = ValueTag::UNDEFINED,
+        ));
+    }
+
     // Math functions (M10)
 }

@@ -142,6 +142,11 @@ pub(super) fn collection_method_runtime_fn(class_name: &str, method: &str) -> Op
         ("Array", "with") => Some("ArrayWith"),
         ("Array", "toReversed") => Some("ArrayToReversed"),
         ("Array", "toSpliced") => Some("ArrayToSpliced"),
+        ("Array", "toString") => Some("ArrayJoin"),
+        ("Array", "toLocaleString") => Some("ArrayJoin"),
+        ("Array", "entries") => Some("ArrayEntries"),
+        ("Array", "keys") => Some("ArrayKeys"),
+        ("Array", "values") => Some("ArrayValues"),
         ("Array", "shift") => Some("ArrayShift"),
         ("Array", "unshift") => Some("ArrayUnshift"),
         ("Array", "splice") => Some("ArraySplice"),
@@ -176,6 +181,11 @@ pub(super) fn collection_method_runtime_fn_arg(method: &str) -> Option<&'static 
         "with" => Some("ArrayWith"),
         "toReversed" => Some("ArrayToReversed"),
         "toSpliced" => Some("ArrayToSpliced"),
+        "toString" => Some("ArrayJoin"),
+        "toLocaleString" => Some("ArrayJoin"),
+        "values" => Some("ArrayValues"),
+        "keys" => Some("ArrayKeys"),
+        "entries" => Some("ArrayEntries"),
         _ => None,
     }
 }

@@ -1735,6 +1735,7 @@ impl<'a> Lexer<'a> {
                 "super" => Token::Super,
                 "static" => Token::Static,
                 "async" => Token::Async,
+                "abstract" => Token::Abstract,
                 "await" => Token::Await,
                 "import" => Token::Import,
                 "export" => Token::Export,

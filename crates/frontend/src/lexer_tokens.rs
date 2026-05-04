@@ -36,6 +36,7 @@ pub enum Token {
     Super,
     Static,
     Async,
+    Abstract,
     Await,
     Import,
     Export,
@@ -135,6 +136,7 @@ pub enum TokenKind {
     Super,
     Static,
     Async,
+    Abstract,
     Await,
     Import,
     Export,
@@ -231,6 +233,7 @@ impl TokenKind {
                 | (Self::Super, Token::Super)
                 | (Self::Static, Token::Static)
                 | (Self::Async, Token::Async)
+                | (Self::Abstract, Token::Abstract)
                 | (Self::Await, Token::Await)
                 | (Self::Import, Token::Import)
                 | (Self::Export, Token::Export)

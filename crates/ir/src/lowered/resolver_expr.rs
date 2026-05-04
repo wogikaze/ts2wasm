@@ -1492,6 +1492,17 @@ impl<'a> Resolver<'a> {
                         && let Some(class_name) = self.local_classes.get(&obj_local)
                         && let Some(runtime_fn) = collection_method_runtime_fn(class_name, method)
                     {
+                        eprintln!("DBG: class-based routing hit: class={class_name}, method={method}, args.len={}, runtime_fn={runtime_fn}", args.len());
+                    } else {
+                        eprintln!("DBG: class-based routing MISS: resolve={:?}, class={:?}, runtime_fn={:?}",
+                            self.resolve_local(receiver_name),
+                            self.resolve_local(receiver_name).ok().and_then(|id| self.local_classes.get(&id)),
+                            self.resolve_local(receiver_name).ok().and_then(|id| self.local_classes.get(&id)).and_then(|c| collection_method_runtime_fn(c, method)));
+                    }
+                    if let Ok(obj_local) = self.resolve_local(receiver_name)
+                        && let Some(class_name) = self.local_classes.get(&obj_local)
+                        && let Some(runtime_fn) = collection_method_runtime_fn(class_name, method)
+                    {
                         if class_name == "RegExp" && args.len() != 1 {
                             return Err(Diagnostic {
                                 code: DiagCode::ArityMismatch,
@@ -1518,6 +1529,9 @@ impl<'a> Resolver<'a> {
                             while lowered_args.len() < 4 {
                                 lowered_args.push(LoweredExpr::Undefined);
                             }
+                        } else if class_name == "Array" && (method == "toString" || method == "toLocaleString") {
+                            // toString/toLocaleString calls join(",") internally
+                            lowered_args.push(LoweredExpr::String(",".to_owned()));
                         } else {
                             lowered_args.extend(
                                 args.iter()

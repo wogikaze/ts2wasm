@@ -1221,44 +1221,51 @@ impl WatEmitter<'_> {
                   (i32.const {ascii_zero}))))
             (i32.store8
               (i32.add (local.get $result_ptr) (local.get $idx))
-              (i32.add
-                (i32.rem_u (local.get $prod) (i32.const 10))
-                (i32.const {ascii_zero})))
+              (i32.add (i32.rem_u (local.get $prod) (i32.const 10)) (i32.const {ascii_zero})))
             (local.set $carry (i32.div_u (local.get $prod) (i32.const 10)))
-            (if (i32.gt_u (local.get $carry) (i32.const 0))
-              (then
-                (i32.store8
-                  (i32.add (local.get $result_ptr) (i32.sub (local.get $idx) (i32.const 1)))
-                  (i32.add
-                    (i32.add
-                      (i32.sub
-                        (i32.load8_u
-                          (i32.add (local.get $result_ptr) (i32.sub (local.get $idx) (i32.const 1))))
-                        (i32.const {ascii_zero}))
-                      (local.get $carry))
-                    (i32.const {ascii_zero})))))
-            (br $mul_b))))
+            (i32.store8
+              (i32.add (local.get $result_ptr) (i32.sub (local.get $idx) (i32.const 1)))
+              (i32.add
+                (i32.add
+                  (i32.sub
+                    (i32.load8_u
+                      (i32.add
+                        (local.get $result_ptr)
+                        (i32.sub (local.get $idx) (i32.const 1))))
+                    (i32.const {ascii_zero}))
+                  (local.get $carry))
+                (i32.const {ascii_zero})))
+            (br $mul_b)))
+        (br $mul_a)))
     (block $trim_done
       (loop $trim
-        (br_if $trim_done (i32.ge_u (local.get $i) (local.get $result_len)))
+        (br_if $trim_done (i32.le_u (local.get $result_len) (i32.const 1)))
         (br_if $trim_done
-          (i32.ne
-            (i32.load8_u (i32.add (local.get $result_ptr) (local.get $i)))
-            (i32.const {ascii_zero})))
+          (i32.ne (i32.load8_u (local.get $result_ptr)) (i32.const {ascii_zero})))
         (local.set $result_ptr (i32.add (local.get $result_ptr) (i32.const 1)))
         (local.set $result_len (i32.sub (local.get $result_len) (i32.const 1)))
         (br $trim)))
+    (local.set $i (i32.const 0))
+    (block $limb_done
+      (loop $limb_digits
+        (br_if $limb_done (i32.ge_u (local.get $i) (local.get $result_len)))
+        (local.set $limb
+          (i64.add
+            (i64.mul (local.get $limb) (i64.const 10))
+            (i64.extend_i32_u
+              (i32.sub
+                (i32.load8_u (i32.add (local.get $result_ptr) (local.get $i)))
+                (i32.const {ascii_zero})))))
+        (local.set $i (i32.add (local.get $i) (i32.const 1)))
+        (br $limb_digits)))
     (if (i32.lt_s (local.get $sign) (i32.const 0))
       (then
         (local.set $result_ptr (i32.sub (local.get $result_ptr) (i32.const 1)))
         (i32.store8 (local.get $result_ptr) (i32.const {ascii_minus}))
         (local.set $result_len (i32.add (local.get $result_len) (i32.const 1)))))
-    (local.set $limb (call $bigint_decimal_u64 (local.get $result_ptr) (local.get $result_len)))
     (call $make_bigint_literal
       (local.get $sign)
-      (if (result i32) (i32.eqz (local.get $sign))
-        (then (i32.const 0))
-        (else (i32.const 1)))
+      (i32.const 1)
       (i32.wrap_i64 (local.get $limb))
       (i32.wrap_i64 (i64.shr_u (local.get $limb) (i64.const 32)))
       (local.get $result_ptr)
