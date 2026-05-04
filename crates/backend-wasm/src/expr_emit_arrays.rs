@@ -133,7 +133,8 @@ impl WatEmitter<'_> {
     ) {
         let pad = " ".repeat(indent);
         let elem_count = elements.len();
-        let size = Layout::ARRAY_HEADER_SIZE + (elem_count as u32) * 4;
+        let capacity = std::cmp::max(4, elem_count);
+        let size = Layout::ARRAY_HEADER_SIZE + (capacity as u32) * 4;
         wat.push_str(&format!(
             "{pad}(local.set {} (call {} (i32.const {})))\n",
             frame.heap_base_tmp(),
@@ -150,7 +151,7 @@ impl WatEmitter<'_> {
             "{pad}(i32.store (i32.add (local.get {}) (i32.const {})) (i32.const {}))\n",
             frame.heap_base_tmp(),
             Layout::ARRAY_CAPACITY_OFFSET,
-            elem_count,
+            capacity,
         ));
         wat.push_str(&format!(
             "{pad}(i32.store (i32.add (local.get {}) (i32.const {})) (i32.const 1))\n",
@@ -200,7 +201,8 @@ impl WatEmitter<'_> {
     ) {
         let pad = " ".repeat(indent);
         let elem_count = slots.len();
-        let size = Layout::ARRAY_HEADER_SIZE + (elem_count as u32) * 4;
+        let capacity = std::cmp::max(4, elem_count);
+        let size = Layout::ARRAY_HEADER_SIZE + (capacity as u32) * 4;
         wat.push_str(&format!(
             "{pad}(local.set {} (call {} (i32.const {})))\n",
             frame.heap_base_tmp(),
@@ -217,7 +219,7 @@ impl WatEmitter<'_> {
             "{pad}(i32.store (i32.add (local.get {}) (i32.const {})) (i32.const {}))\n",
             frame.heap_base_tmp(),
             Layout::ARRAY_CAPACITY_OFFSET,
-            elem_count,
+            capacity,
         ));
         wat.push_str(&format!(
             "{pad}(i32.store (i32.add (local.get {}) (i32.const {})) (i32.const 1))\n",

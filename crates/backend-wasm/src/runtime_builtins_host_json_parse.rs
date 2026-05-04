@@ -1112,7 +1112,20 @@ impl WatEmitter<'_> {
               (i32.add (local.get $obj) (i32.const {str_header}))
               (local.get $pos))))
         (if (i32.eq (local.get $ch) (i32.const {rbracket}))
-          (then (return (i32.or (local.get $result_ptr) (i32.const {array_tag})))))
+          (then
+            (i32.store (i32.add (local.get $result_ptr) (i32.const 4)) (local.get $count))
+            (i32.store (i32.add (local.get $result_ptr) (i32.const 8)) (i32.const 1))
+            (i32.store (i32.add (local.get $result_ptr) (i32.const 12)) (i32.const {array_header}))
+            (if (i32.eqz (local.get $count))
+              (then (return (i32.or (local.get $result_ptr) (i32.const {array_tag})))))
+            (if (i32.gt_u (local.get $count) (i32.const 31))
+              (then
+                (i32.store (i32.add (local.get $result_ptr) (i32.const {presence_words_offset})) (i32.const -1))
+                (return (i32.or (local.get $result_ptr) (i32.const {array_tag})))))
+            (i32.store
+              (i32.add (local.get $result_ptr) (i32.const {presence_words_offset}))
+              (i32.sub (i32.shl (i32.const 1) (local.get $count)) (i32.const 1)))
+            (return (i32.or (local.get $result_ptr) (i32.const {array_tag})))))
         (local.set $parsed_nested (i32.const {zero}))
         (if (i32.eq (local.get $ch) (i32.const {lbrace}))
           (then
@@ -1207,7 +1220,18 @@ impl WatEmitter<'_> {
             (local.set $pos (i32.add (local.get $pos) (i32.const {one})))
             (br $array_loop)))
         (if (i32.eq (local.get $ch) (i32.const {rbracket}))
-          (then (return (i32.or (local.get $result_ptr) (i32.const {array_tag})))))
+          (then
+            (i32.store (i32.add (local.get $result_ptr) (i32.const 4)) (local.get $count))
+            (i32.store (i32.add (local.get $result_ptr) (i32.const 8)) (i32.const 1))
+            (i32.store (i32.add (local.get $result_ptr) (i32.const 12)) (i32.const {array_header}))
+            (if (i32.gt_u (local.get $count) (i32.const 31))
+              (then
+                (i32.store (i32.add (local.get $result_ptr) (i32.const {presence_words_offset})) (i32.const -1))
+                (return (i32.or (local.get $result_ptr) (i32.const {array_tag})))))
+            (i32.store
+              (i32.add (local.get $result_ptr) (i32.const {presence_words_offset}))
+              (i32.sub (i32.shl (i32.const 1) (local.get $count)) (i32.const 1)))
+            (return (i32.or (local.get $result_ptr) (i32.const {array_tag})))))
         (return (i32.const {undefined}))))
     (i32.const {undefined}))
 
@@ -1280,6 +1304,7 @@ impl WatEmitter<'_> {
             obj_flags = Layout::OBJECT_FLAGS_OFFSET,
             obj_proto = Layout::OBJECT_PROTOTYPE_OFFSET,
             obj_entries = Layout::OBJECT_ENTRIES_OFFSET,
+            presence_words_offset = Layout::ARRAY_PRESENCE_WORDS_OFFSET,
             elem_shift = Layout::ARRAY_ELEM_SHIFT,
             entry_shift = Layout::OBJECT_ENTRY_SHIFT,
             value_off = Layout::OBJECT_VALUE_OFFSET,
