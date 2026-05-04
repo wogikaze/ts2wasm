@@ -1252,6 +1252,49 @@ impl WatEmitter<'_> {
         ));
     }
 
+    // Array.prototype.flat (identity stub: returns array as-is for single-level)
+    pub(super) fn emit_array_flat(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $array_flat (param $arr i32) (result i32)
+    (local $obj i32)
+    (local $tag i32)
+    (local $len i32)
+    (local $i i32)
+    (local $elem i32)
+    (local $result_ptr i32)
+    (local.set $tag (i32.and (local.get $arr) (i32.const {tag_mask})))
+    (if (i32.ne (local.get $tag) (i32.const {array_tag}))
+      (then (return (local.get $arr))))
+    (local.set $obj (i32.and (local.get $arr) (i32.const {heap_mask})))
+    (local.set $len (i32.load (local.get $obj)))
+    (local.set $result_ptr
+      (call $alloc_heap (i32.add (i32.const {header}) (i32.shl (local.get $len) (i32.const 2)))))
+    (i32.store (local.get $result_ptr) (local.get $len))
+    (local.set $i (i32.const 0))
+    (block $copy_done
+      (loop $copy_loop
+        (if (i32.ge_u (local.get $i) (local.get $len))
+          (then (br $copy_done)))
+        (i32.store
+          (i32.add
+            (i32.add (local.get $result_ptr) (i32.const {header}))
+            (i32.shl (local.get $i) (i32.const 2)))
+          (i32.load
+            (i32.add
+              (i32.add (local.get $obj) (i32.const {header}))
+              (i32.shl (local.get $i) (i32.const 2)))))
+        (local.set $i (i32.add (local.get $i) (i32.const 1)))
+        (br $copy_loop)))
+    (i32.or (local.get $result_ptr) (i32.const {array_tag})))
+"#,
+            tag_mask = ValueTag::TAG_MASK,
+            array_tag = ValueTag::ARRAY,
+            heap_mask = ValueTag::HEAP_MASK,
+            header = Layout::ARRAY_HEADER_SIZE,
+        ));
+    }
+
     // Array.prototype.some (identity callback: check any truthy)
     pub(super) fn emit_array_some(&self, wat: &mut String) {
         wat.push_str(&format!(
