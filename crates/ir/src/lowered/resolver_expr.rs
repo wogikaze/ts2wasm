@@ -56,6 +56,11 @@ impl<'a> Resolver<'a> {
                     || name == "console" || name == "process" || name == "Buffer"
                     || name == "TypeError" || name == "ReferenceError" || name == "SyntaxError"
                     || name == "RangeError"
+                    // Global functions registered as BuiltinId (callable via builtin_resolver)
+                    // but treated as Undefined when referenced as bare identifiers or property targets
+                    || name == "escape" || name == "unescape"
+                    || name == "isNaN" || name == "parseInt" || name == "parseFloat" || name == "isFinite"
+                    || name == "encodeURI" || name == "decodeURI"
                 {
                     return Ok(LoweredExpr::Undefined);
                 }

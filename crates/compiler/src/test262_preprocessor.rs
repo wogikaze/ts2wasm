@@ -188,21 +188,30 @@ fn rewrite_assert_method_calls(source: &str) -> String {
     }
 
     // Inject stub function definitions after any existing assert function.
-    // These are no-op stubs that prevent runtime errors — test262 assertions that
-    // fail will show up as semantic mismatches (our output != Node reference).
+    // These stubs use the fail-marker sentinel that the test262 runner detects.
+    // When equality checks fail, they print the sentinel instead of throwing,
+    // since full exception handling in WASM is limited.
     let mut stubs = String::from("\n");
     for &stub_name in &inlined_methods {
         match stub_name {
             "__assert_sameValue" => {
-                stubs.push_str("function __assert_sameValue() {}\n");
+                stubs.push_str("function __assert_sameValue(actual, expected, message) {\n");
+                stubs.push_str("  if (actual !== expected) {\n");
+                stubs.push_str("    console.log(\"__TS2WASM_TEST262_ASSERT_FAIL__\");\n");
+                stubs.push_str("  }\n");
+                stubs.push_str("}\n");
             }
             "__assert_throws" => {
-                // No-op stub — prevents UnresolvedName errors. Test262 assertions
-                // that fail will show up as semantic mismatches.
+                // No-op stub — calling func() triggers issue-211 (function-valued locals).
+                // Test262 failures show up as semantic mismatches.
                 stubs.push_str("function __assert_throws() {}\n");
             }
             "__assert_notSameValue" => {
-                stubs.push_str("function __assert_notSameValue() {}\n");
+                stubs.push_str("function __assert_notSameValue(actual, expected, message) {\n");
+                stubs.push_str("  if (actual === expected) {\n");
+                stubs.push_str("    console.log(\"__TS2WASM_TEST262_ASSERT_FAIL__\");\n");
+                stubs.push_str("  }\n");
+                stubs.push_str("}\n");
             }
             "__assert_compareArray" => {
                 stubs.push_str("function __assert_compareArray() {}\n");

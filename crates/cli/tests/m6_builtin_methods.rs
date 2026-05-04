@@ -784,6 +784,30 @@ fn build_smoke_global_isfinite() {
 }
 
 #[test]
+fn build_smoke_global_escape() {
+    let result = run_fixture("builtins-and-io/global-escape.ts");
+    assert!(result.is_ok(), "escape should build: {:?}", result.err());
+}
+
+#[test]
+fn build_smoke_global_unescape() {
+    let result = run_fixture("builtins-and-io/global-unescape.ts");
+    assert!(result.is_ok(), "unescape should build: {:?}", result.err());
+}
+
+#[test]
+fn build_smoke_global_encode_uri() {
+    let result = run_fixture("builtins-and-io/global-encode-uri.ts");
+    assert!(result.is_ok(), "encodeURI should build: {:?}", result.err());
+}
+
+#[test]
+fn build_smoke_global_decode_uri() {
+    let result = run_fixture("builtins-and-io/global-decode-uri.ts");
+    assert!(result.is_ok(), "decodeURI should build: {:?}", result.err());
+}
+
+#[test]
 fn build_smoke_date_to_string() {
     let result = run_fixture("builtins-and-io/date-to-string-timezone-unsupported.ts");
     assert!(
@@ -849,6 +873,16 @@ fn build_smoke_string_at_method() {
     assert!(
         result.is_ok(),
         "String.at should compile: {:?}",
+        result.err()
+    );
+}
+
+#[test]
+fn build_smoke_string_html_wrapper_methods() {
+    let result = run_fixture("builtins-and-io/string-html-wrappers.ts");
+    assert!(
+        result.is_ok(),
+        "String HTML wrappers should compile: {:?}",
         result.err()
     );
 }
