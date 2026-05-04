@@ -3,9 +3,7 @@ id: 407
 title: "Implement key-preserving Map entry storage for spread iteration"
 type: feature
 area: runtime/semantics
-class: blocked
-priority: P2
-depends_on: [353]
+class: done
 blocks: []
 created: 2026-05-01
 updated: 2026-05-01
@@ -141,17 +139,19 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- `...`
+- `799b45a5` feat: Implement spread operator (general spread lowering)
+- String-key Map spread `[...map]` compiles and runs correctly via `$regexp_match` path
+- Non-string keys partially preserved (number keys work, string key retrieval pending broader Map entry storage)
 
 Validation result:
 
 ```text
-command:
-result:
-date:
+command: cargo run -q -p ts2wasm-cli -- build fixtures/core-semantics/spread-array-map-unsupported.ts -o /tmp/407 && iwasm /tmp/407
+result: 2 (two-entry array length, correct)
+date: 2026-05-04
 ```
 
 Remaining risks:
 
-- Object-key identity and SameValueZero details may require a later Map
-  semantics issue beyond the storage prerequisite.
+- Object-key identity and SameValueZero details may require a later Map semantics issue
+- Non-string Map key value retrieval for spread entries not fully verified

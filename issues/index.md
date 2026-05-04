@@ -15,18 +15,18 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 1 | 0 | 1 |
 | coverage | 10 | 0 | 10 |
 | docs | 2 | 0 | 2 |
-| frontend | 4378 | 3771 | 607 |
+| frontend | 4572 | 3965 | 607 |
 | harness | 1 | 1 | 0 |
 | ir | 18 | 0 | 18 |
 | issues | 4 | 0 | 4 |
 | parser | 1 | 0 | 1 |
 | reference | 211 | 183 | 28 |
-| runtime | 258 | 102 | 156 |
+| runtime | 258 | 101 | 157 |
 | scripts | 2 | 0 | 2 |
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 4929 | 4058 | 871 |
+| total | 5123 | 4251 | 872 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -156,10 +156,204 @@ Issue files are the source of truth for work items. The generated section below 
 <!-- generated:ready:start -->
 | ID | Title | Type | Area | Class | Priority | Depends on | Summary |
 |---:|---|---|---|---|---|---|---|
+| 066 | Implement Regexp Literal (stub) | spike | frontend/syntax | superseded | P3 |  | Implement Regexp Literal (stub) |
+| 067 | Implement Unknown Unsupported (stub) | spike | frontend/syntax | superseded | P3 |  | Implement Unknown Unsupported (stub) |
+| 069 | Implement Apilibcheck (stub) | spike | frontend/syntax | superseded | P3 |  | Implement Apilibcheck (stub) |
+| 071 | Implement Arrowfunctionexpression (stub) | spike | frontend/syntax | superseded | P3 |  | Implement Arrowfunctionexpression (stub) |
+| 072 | Implement Classdeclaration (stub) | spike | frontend/syntax | superseded | P3 |  | Implement Classdeclaration (stub) |
+| 073 | Implement Classdeclarationwithinvalidconstonpropertydeclaration (stub) | spike | frontend/syntax | superseded | P3 |  | Implement Classdeclarationwithinvalidconstonpropertydeclaration (stub) |
+| 075 | Implement Exportassignment (stub) | spike | frontend/syntax | superseded | P3 |  | Implement Exportassignment (stub) |
+| 078 | Implement Memberaccessordeclaration (stub) | spike | frontend/syntax | superseded | P3 |  | Implement Memberaccessordeclaration (stub) |
+| 079 | Implement Parameterlist (stub) | spike | frontend/syntax | superseded | P3 |  | Implement Parameterlist (stub) |
+| 081 | Implement Transportstream (stub) | spike | frontend/syntax | superseded | P3 |  | Implement Transportstream (stub) |
+| 082 | Implement Abstractclassinlocalscope (stub) | spike | frontend/syntax | superseded | P3 |  | Implement Abstractclassinlocalscope (stub) |
+| 083 | Implement Abstractclassinlocalscopeisabstract (stub) | spike | frontend/syntax | superseded | P3 |  | Implement Abstractclassinlocalscopeisabstract (stub) |
+| 084 | Implement Abstractclassunioninstantiation (stub) | spike | frontend/syntax | superseded | P3 |  | Implement Abstractclassunioninstantiation (stub) |
+| 086 | Implement Abstractpropertybasics (stub) | spike | frontend/syntax | superseded | P3 |  | Implement Abstractpropertybasics (stub) |
+| 087 | Implement Abstractpropertyinconstructor (stub) | spike | frontend/syntax | superseded | P3 |  | Implement Abstractpropertyinconstructor (stub) |
+| 088 | Implement Abstractpropertynegative (stub) | spike | frontend/syntax | superseded | P3 |  | Implement Abstractpropertynegative (stub) |
+| 089 | Implement Acceptsymbolasweaktype (stub) | spike | frontend/syntax | superseded | P3 |  | Implement Acceptsymbolasweaktype (stub) |
+| 090 | Implement Acceptablealias (stub) | spike | frontend/syntax | superseded | P3 |  | Implement Acceptablealias (stub) |
+| 091 | Implement Accessinstancememberfromstaticmethod (stub) | spike | frontend/syntax | superseded | P3 |  | Implement Accessinstancememberfromstaticmethod (stub) |
+| 092 | Implement Accessoverriddenbaseclassmember (stub) | spike | frontend/syntax | superseded | P3 |  | Implement Accessoverriddenbaseclassmember (stub) |
+| 093 | Implement Accessstaticmemberfrominstancemethod (stub) | spike | frontend/syntax | superseded | P3 |  | Implement Accessstaticmemberfrominstancemethod (stub) |
+| 094 | Implement Accessoraccidentalcalldiagnostic (stub) | spike | frontend/syntax | superseded | P3 |  | Implement Accessoraccidentalcalldiagnostic (stub) |
+| 096 | Implement Accessordeclarationemitjs (stub) | spike | frontend/syntax | superseded | P3 |  | Implement Accessordeclarationemitjs (stub) |
+| 097 | Implement Accessordeclarationemitvisibilityerrors (stub) | spike | frontend/syntax | superseded | P3 |  | Implement Accessordeclarationemitvisibilityerrors (stub) |
+| 098 | Implement Accessordeclarationorder (stub) | spike | frontend/syntax | superseded | P3 |  | Implement Accessordeclarationorder (stub) |
+| 099 | Implement Accessorinambientcontextes (stub) | spike | frontend/syntax | superseded | P3 |  | Implement Accessorinambientcontextes (stub) |
+| 100 | Implement Accessorinferredreturntypeerrorinreturnstatement (stub) | spike | frontend/syntax | superseded | P3 |  | Implement Accessorinferredreturntypeerrorinreturnstatement (stub) |
+| 101 | Implement Accessorparameteraccessibilitymodifier (stub) | spike | frontend/syntax | superseded | P3 |  | Implement Accessorparameteraccessibilitymodifier (stub) |
+| 103 | Implement Accessorwithlineterminator (stub) | spike | frontend/syntax | superseded | P3 |  | Implement Accessorwithlineterminator (stub) |
+| 105 | Implement Accessorwithoutbody (stub) | spike | frontend/syntax | superseded | P3 |  | Implement Accessorwithoutbody (stub) |
+| 106 | Implement Accessors (stub) | spike | frontend/syntax | superseded | P3 |  | Implement Accessors (stub) |
+| 108 | Implement Accessorsinambientcontext (stub) | spike | frontend/syntax | superseded | P3 |  | Implement Accessorsinambientcontext (stub) |
+| 109 | Implement Addmorecallsignaturestobasesignature (stub) | spike | frontend/syntax | superseded | P3 |  | Implement Addmorecallsignaturestobasesignature (stub) |
+| 111 | Implement Aliasassignments (stub) | spike | frontend/syntax | superseded | P3 |  | Implement Aliasassignments (stub) |
+| 112 | Implement Aliasbug (stub) | spike | frontend/syntax | superseded | P3 |  | Implement Aliasbug (stub) |
+| 113 | Implement Aliasdoesnotduplicatesignatures (stub) | spike | frontend/syntax | superseded | P3 |  | Implement Aliasdoesnotduplicatesignatures (stub) |
+| 114 | Implement Aliaserrors (stub) | spike | frontend/syntax | superseded | P3 |  | Implement Aliaserrors (stub) |
+| 115 | Implement Aliasinaccessiblemodule (stub) | spike | frontend/syntax | superseded | P3 |  | Implement Aliasinaccessiblemodule (stub) |
+| 116 | Implement Aliasinstantiationexpressiongenericintersectionnocrash (stub) | spike | frontend/syntax | superseded | P3 |  | Implement Aliasinstantiationexpressiongenericintersectionnocrash (stub) |
+| 118 | Implement Aliasonmergedmoduleinterface (stub) | spike | frontend/syntax | superseded | P3 |  | Implement Aliasonmergedmoduleinterface (stub) |
+| 119 | Implement Aliasusageinaccessorsofclass (stub) | spike | frontend/syntax | superseded | P3 |  | Implement Aliasusageinaccessorsofclass (stub) |
+| 120 | Implement Aliasusageinarray (stub) | spike | frontend/syntax | superseded | P3 |  | Implement Aliasusageinarray (stub) |
+| 121 | Implement Aliasusageinfunctionexpression (stub) | spike | frontend/syntax | superseded | P3 |  | Implement Aliasusageinfunctionexpression (stub) |
+| 122 | Implement Aliasusageingenericfunction (stub) | spike | frontend/syntax | superseded | P3 |  | Implement Aliasusageingenericfunction (stub) |
+| 123 | Implement Aliasusageinindexerofclass (stub) | spike | frontend/syntax | superseded | P3 |  | Implement Aliasusageinindexerofclass (stub) |
+| 124 | Implement Aliasusageinobjectliteral (stub) | spike | frontend/syntax | superseded | P3 |  | Implement Aliasusageinobjectliteral (stub) |
+| 125 | Implement Aliasusageinorexpression (stub) | spike | frontend/syntax | superseded | P3 |  | Implement Aliasusageinorexpression (stub) |
+| 126 | Implement Aliasusageintypeargumentofextendsclause (stub) | spike | frontend/syntax | superseded | P3 |  | Implement Aliasusageintypeargumentofextendsclause (stub) |
+| 127 | Implement Aliasusageinvarassignment (stub) | spike | frontend/syntax | superseded | P3 |  | Implement Aliasusageinvarassignment (stub) |
+| 128 | Implement Aliasusedasnamevalue (stub) | spike | frontend/syntax | superseded | P3 |  | Implement Aliasusedasnamevalue (stub) |
+| 129 | Implement Aliaswithinterfaceexportassignmentusedinvarinitializer (stub) | spike | frontend/syntax | superseded | P3 |  | Implement Aliaswithinterfaceexportassignmentusedinvarinitializer (stub) |
+| 130 | Implement Aliasesinsystemmodule (stub) | spike | frontend/syntax | superseded | P3 |  | Implement Aliasesinsystemmodule (stub) |
+| 131 | Implement Allowimportclausestomergewithtypes (stub) | spike | frontend/syntax | superseded | P3 |  | Implement Allowimportclausestomergewithtypes (stub) |
+| 132 | Implement Allowjsclassthistypecrash (stub) | spike | frontend/syntax | superseded | P3 |  | Implement Allowjsclassthistypecrash (stub) |
+| 133 | Implement Allowjscrossmonorepopackage (stub) | spike | frontend/syntax | superseded | P3 |  | Implement Allowjscrossmonorepopackage (stub) |
+| 134 | Implement Allowjscheckjstypeparameternocrash (stub) | spike | frontend/syntax | superseded | P3 |  | Implement Allowjscheckjstypeparameternocrash (stub) |
+| 135 | Implement Allowsyntheticdefaultimports (stub) | spike | frontend/syntax | superseded | P3 |  | Implement Allowsyntheticdefaultimports (stub) |
+| 136 | Implement Allowsyntheticdefaultimportscanpaintcrossmoduledeclaration (stub) | spike | frontend/syntax | superseded | P3 |  | Implement Allowsyntheticdefaultimportscanpaintcrossmoduledeclaration (stub) |
+| 138 | Implement Alwaysstrictmodule (stub) | spike | frontend/syntax | superseded | P3 |  | Implement Alwaysstrictmodule (stub) |
+| 139 | Implement Alwaysstrictnoimplicitusestrict (stub) | spike | frontend/syntax | superseded | P3 |  | Implement Alwaysstrictnoimplicitusestrict (stub) |
+| 140 | Implement Ambientclassdeclarationwithextends (stub) | spike | frontend/syntax | superseded | P3 |  | Implement Ambientclassdeclarationwithextends (stub) |
+| 141 | Implement Ambientclassdeclaredbeforebase (stub) | spike | frontend/syntax | superseded | P3 |  | Implement Ambientclassdeclaredbeforebase (stub) |
+| 144 | Implement Ambientconstliterals (stub) | spike | frontend/syntax | superseded | P3 |  | Implement Ambientconstliterals (stub) |
+| 146 | Implement Ambientenumelementinitializer (stub) | spike | frontend/syntax | superseded | P3 |  | Implement Ambientenumelementinitializer (stub) |
+| 147 | Implement Ambienterrors (stub) | spike | frontend/syntax | superseded | P3 |  | Implement Ambienterrors (stub) |
+| 148 | Implement Ambientexportdefaulterrors (stub) | spike | frontend/syntax | superseded | P3 |  | Implement Ambientexportdefaulterrors (stub) |
+| 149 | Implement Ambientexternalmoduleinanotherexternalmodule (stub) | spike | frontend/syntax | superseded | P3 |  | Implement Ambientexternalmoduleinanotherexternalmodule (stub) |
+| 150 | Implement Ambientexternalmodulereopen (stub) | spike | frontend/syntax | superseded | P3 |  | Implement Ambientexternalmodulereopen (stub) |
+| 151 | Implement Ambientexternalmodulewithinternalimportdeclaration (stub) | spike | frontend/syntax | superseded | P3 |  | Implement Ambientexternalmodulewithinternalimportdeclaration (stub) |
+| 152 | Implement Ambientexternalmodulewithrelativeexternalimportdeclaration (stub) | spike | frontend/syntax | superseded | P3 |  | Implement Ambientexternalmodulewithrelativeexternalimportdeclaration (stub) |
+| 153 | Implement Ambientexternalmodulewithrelativemodulename (stub) | spike | frontend/syntax | superseded | P3 |  | Implement Ambientexternalmodulewithrelativemodulename (stub) |
+| 154 | Implement Ambientexternalmodulewithoutinternalimportdeclaration (stub) | spike | frontend/syntax | superseded | P3 |  | Implement Ambientexternalmodulewithoutinternalimportdeclaration (stub) |
+| 155 | Implement Ambientfundule (stub) | spike | frontend/syntax | superseded | P3 |  | Implement Ambientfundule (stub) |
+| 157 | Implement Ambientmoduleexports (stub) | spike | frontend/syntax | superseded | P3 |  | Implement Ambientmoduleexports (stub) |
+| 158 | Implement Ambientmodulewithclassdeclarationwithextends (stub) | spike | frontend/syntax | superseded | P3 |  | Implement Ambientmodulewithclassdeclarationwithextends (stub) |
+| 159 | Implement Ambientmodulewithtemplateliterals (stub) | spike | frontend/syntax | superseded | P3 |  | Implement Ambientmodulewithtemplateliterals (stub) |
+| 160 | Implement Ambientmodules (stub) | spike | frontend/syntax | superseded | P3 |  | Implement Ambientmodules (stub) |
+| 161 | Implement Ambientnamerestrictions (stub) | spike | frontend/syntax | superseded | P3 |  | Implement Ambientnamerestrictions (stub) |
+| 163 | Implement Ambientrequirefunction (stub) | spike | frontend/syntax | superseded | P3 |  | Implement Ambientrequirefunction (stub) |
+| 164 | Implement Ambientstatement (stub) | spike | frontend/syntax | superseded | P3 |  | Implement Ambientstatement (stub) |
+| 165 | Implement Ambientwithstatements (stub) | spike | frontend/syntax | superseded | P3 |  | Implement Ambientwithstatements (stub) |
+| 166 | Implement Ambiguouscallswherereturntypesagree (stub) | spike | frontend/syntax | superseded | P3 |  | Implement Ambiguouscallswherereturntypesagree (stub) |
+| 167 | Implement Ambiguousgenericassertion (stub) | spike | frontend/syntax | superseded | P3 |  | Implement Ambiguousgenericassertion (stub) |
+| 169 | Implement Ambiguousoverloadresolution (stub) | spike | frontend/syntax | superseded | P3 |  | Implement Ambiguousoverloadresolution (stub) |
+| 170 | Implement Amddeclarationemitnoextradeclare (stub) | spike | frontend/syntax | superseded | P3 |  | Implement Amddeclarationemitnoextradeclare (stub) |
+| 171 | Implement Amddependencycomment (stub) | spike | frontend/syntax | superseded | P3 |  | Implement Amddependencycomment (stub) |
+| 172 | Implement Amddependencycommentname (stub) | spike | frontend/syntax | superseded | P3 |  | Implement Amddependencycommentname (stub) |
+| 173 | Implement Amdlikeinputdeclarationemit (stub) | spike | frontend/syntax | superseded | P3 |  | Implement Amdlikeinputdeclarationemit (stub) |
+| 174 | Implement Amdmodulebundlenoduplicatedeclarationemitcomments (stub) | spike | frontend/syntax | superseded | P3 |  | Implement Amdmodulebundlenoduplicatedeclarationemitcomments (stub) |
+| 175 | Implement Amdmoduleconstenumusage (stub) | spike | frontend/syntax | superseded | P3 |  | Implement Amdmoduleconstenumusage (stub) |
+| 176 | Implement Amdmodulename (stub) | spike | frontend/syntax | superseded | P3 |  | Implement Amdmodulename (stub) |
+| 177 | Implement Anonclassdeclarationemitisanon (stub) | spike | frontend/syntax | superseded | P3 |  | Implement Anonclassdeclarationemitisanon (stub) |
+| 178 | Implement Anonterface (stub) | spike | frontend/syntax | superseded | P3 |  | Implement Anonterface (stub) |
+| 179 | Implement Anonymousclassdeclarationdoesntprintwithreadonly (stub) | spike | frontend/syntax | superseded | P3 |  | Implement Anonymousclassdeclarationdoesntprintwithreadonly (stub) |
+| 180 | Implement Anonymousclassexpression (stub) | spike | frontend/syntax | superseded | P3 |  | Implement Anonymousclassexpression (stub) |
+| 181 | Implement Anonymousmodules (stub) | spike | frontend/syntax | superseded | P3 |  | Implement Anonymousmodules (stub) |
+| 182 | Implement Anyandunknownhavefalsycomponents (stub) | spike | frontend/syntax | superseded | P3 |  | Implement Anyandunknownhavefalsycomponents (stub) |
+| 183 | Implement Anyasreturntypefornewoncall (stub) | spike | frontend/syntax | superseded | P3 |  | Implement Anyasreturntypefornewoncall (stub) |
+| 184 | Implement Anydeclare (stub) | spike | frontend/syntax | superseded | P3 |  | Implement Anydeclare (stub) |
+| 185 | Implement Anyidenticaltoitself (stub) | spike | frontend/syntax | superseded | P3 |  | Implement Anyidenticaltoitself (stub) |
+| 187 | Implement Anyinferenceanonymousfunctions (stub) | spike | frontend/syntax | superseded | P3 |  | Implement Anyinferenceanonymousfunctions (stub) |
+| 192 | Implement Argsinscope (stub) | spike | frontend/syntax | superseded | P3 |  | Implement Argsinscope (stub) |
+| 193 | Implement Arguments (stub) | spike | frontend/syntax | superseded | P3 |  | Implement Arguments (stub) |
+| 195 | Implement Argumentsbindstofunctionscopeargumentlist (stub) | spike | frontend/syntax | superseded | P3 |  | Implement Argumentsbindstofunctionscopeargumentlist (stub) |
+| 196 | Implement Argumentsobjectcreatesrestforjs (stub) | spike | frontend/syntax | superseded | P3 |  | Implement Argumentsobjectcreatesrestforjs (stub) |
+| 197 | Implement Argumentsobjectiterator (stub) | spike | frontend/syntax | superseded | P3 |  | Implement Argumentsobjectiterator (stub) |
+| 198 | Implement Argumentspropertynameinjsmode (stub) | spike | frontend/syntax | superseded | P3 |  | Implement Argumentspropertynameinjsmode (stub) |
+| 200 | Implement Parser Syntax (stub) | spike | frontend/syntax | superseded | P3 |  | Implement Parser Syntax (stub) |
+| 201 | Implement Unknown Unsupported (stub) | spike | frontend/syntax | superseded | P3 |  | Implement Unknown Unsupported (stub) |
+| 314 | Implement String Builtin (stub) | spike | frontend/syntax | superseded | P3 |  | Implement String Builtin (stub) |
+| 408 | Implement Tsgo Declaration Emit Asconst And Generic Methods (stub) | spike | frontend/syntax | superseded | P3 |  | Implement Tsgo Declaration Emit Asconst And Generic Methods (stub) |
+| 414 | Implement Array Builtin (stub) | spike | frontend/syntax | superseded | P3 |  | Implement Array Builtin (stub) |
+| 415 | Implement Arrow Function (stub) | spike | frontend/syntax | superseded | P3 |  | Implement Arrow Function (stub) |
+| 423 | Implement Date (stub) | spike | frontend/syntax | superseded | P3 |  | Implement Date (stub) |
+| 427 | Implement Duplicate Local (stub) | spike | frontend/syntax | superseded | P3 |  | Implement Duplicate Local (stub) |
+| 430 | Implement Function (stub) | spike | frontend/syntax | superseded | P3 |  | Implement Function (stub) |
+| 433 | Implement Legacy Global Builtin (stub) | spike | frontend/syntax | superseded | P3 |  | Implement Legacy Global Builtin (stub) |
+| 436 | Implement Module Resolution (stub) | spike | frontend/syntax | superseded | P3 |  | Implement Module Resolution (stub) |
+| 447 | Implement Spread (stub) | spike | frontend/syntax | superseded | P3 |  | Implement Spread (stub) |
+| 448 | Implement String Builtin (stub) | spike | frontend/syntax | superseded | P3 |  | Implement String Builtin (stub) |
+| 455 | Implement Apilibcheck (stub) | spike | frontend/syntax | superseded | P3 |  | Implement Apilibcheck (stub) |
+| 456 | Implement Apisample Arrow Function (stub) | spike | frontend/syntax | superseded | P3 |  | Implement Apisample Arrow Function (stub) |
+| 457 | Implement Apisample Import Export (stub) | spike | frontend/syntax | superseded | P3 |  | Implement Apisample Import Export (stub) |
+| 458 | Implement Apisample Jsdoc (stub) | spike | frontend/syntax | superseded | P3 |  | Implement Apisample Jsdoc (stub) |
+| 462 | Implement Exportassignment (stub) | spike | frontend/syntax | superseded | P3 |  | Implement Exportassignment (stub) |
 | 463 | Implement FunctionDeclaration import-export (stub) | spike | frontend/syntax | superseded | P3 |  | Implement FunctionDeclaration import-export (stub) |
 | 464 | Implement FunctionDeclaration parser-syntax (stub) | spike | frontend/syntax | superseded | P3 |  | Implement FunctionDeclaration parser-syntax (stub) |
+| 466 | Implement Parameterlist (stub) | spike | frontend/syntax | superseded | P3 |  | Implement Parameterlist (stub) |
+| 467 | Implement Transportstream (stub) | spike | frontend/syntax | superseded | P3 |  | Implement Transportstream (stub) |
+| 468 | Implement Abstractclassinlocalscope (stub) | spike | frontend/syntax | superseded | P3 |  | Implement Abstractclassinlocalscope (stub) |
+| 469 | Implement Abstractclassinlocalscopeisabstract (stub) | spike | frontend/syntax | superseded | P3 |  | Implement Abstractclassinlocalscopeisabstract (stub) |
+| 470 | Implement Abstractclassunioninstantiation (stub) | spike | frontend/syntax | superseded | P3 |  | Implement Abstractclassunioninstantiation (stub) |
+| 471 | Implement Abstractpropertybasics (stub) | spike | frontend/syntax | superseded | P3 |  | Implement Abstractpropertybasics (stub) |
+| 472 | Implement Abstractpropertyinconstructor (stub) | spike | frontend/syntax | superseded | P3 |  | Implement Abstractpropertyinconstructor (stub) |
+| 473 | Implement Abstractpropertynegative (stub) | spike | frontend/syntax | superseded | P3 |  | Implement Abstractpropertynegative (stub) |
+| 474 | Implement Acceptsymbolasweaktype (stub) | spike | frontend/syntax | superseded | P3 |  | Implement Acceptsymbolasweaktype (stub) |
+| 475 | Implement Acceptablealias (stub) | spike | frontend/syntax | superseded | P3 |  | Implement Acceptablealias (stub) |
+| 476 | Implement Accessinstancememberfromstaticmethod (stub) | spike | frontend/syntax | superseded | P3 |  | Implement Accessinstancememberfromstaticmethod (stub) |
+| 478 | Implement Accessstaticmemberfrominstancemethod (stub) | spike | frontend/syntax | superseded | P3 |  | Implement Accessstaticmemberfrominstancemethod (stub) |
+| 479 | Implement Accessoraccidentalcalldiagnostic (stub) | spike | frontend/syntax | superseded | P3 |  | Implement Accessoraccidentalcalldiagnostic (stub) |
+| 480 | Implement Accessordeclarationemitjs (stub) | spike | frontend/syntax | superseded | P3 |  | Implement Accessordeclarationemitjs (stub) |
+| 481 | Implement Accessordeclarationemitvisibilityerrors (stub) | spike | frontend/syntax | superseded | P3 |  | Implement Accessordeclarationemitvisibilityerrors (stub) |
+| 484 | Implement Accessorinferredreturntypeerrorinreturnstatement (stub) | spike | frontend/syntax | superseded | P3 |  | Implement Accessorinferredreturntypeerrorinreturnstatement (stub) |
+| 486 | Implement Accessorwithlineterminator (stub) | spike | frontend/syntax | superseded | P3 |  | Implement Accessorwithlineterminator (stub) |
+| 488 | Implement Accessors (stub) | spike | frontend/syntax | superseded | P3 |  | Implement Accessors (stub) |
+| 490 | Implement Addmorecallsignaturestobasesignature (stub) | spike | frontend/syntax | superseded | P3 |  | Implement Addmorecallsignaturestobasesignature (stub) |
+| 491 | Implement Aliasassignments (stub) | spike | frontend/syntax | superseded | P3 |  | Implement Aliasassignments (stub) |
+| 492 | Implement Aliasbug (stub) | spike | frontend/syntax | superseded | P3 |  | Implement Aliasbug (stub) |
+| 493 | Implement Aliasdoesnotduplicatesignatures (stub) | spike | frontend/syntax | superseded | P3 |  | Implement Aliasdoesnotduplicatesignatures (stub) |
+| 494 | Implement Aliaserrors (stub) | spike | frontend/syntax | superseded | P3 |  | Implement Aliaserrors (stub) |
+| 496 | Implement Aliasinstantiationexpressiongenericintersectionnocrash (stub) | spike | frontend/syntax | superseded | P3 |  | Implement Aliasinstantiationexpressiongenericintersectionnocrash (stub) |
+| 497 | Implement Aliasonmergedmoduleinterface (stub) | spike | frontend/syntax | superseded | P3 |  | Implement Aliasonmergedmoduleinterface (stub) |
+| 498 | Implement Aliasusageinaccessorsofclass (stub) | spike | frontend/syntax | superseded | P3 |  | Implement Aliasusageinaccessorsofclass (stub) |
+| 499 | Implement Aliasusageinarray (stub) | spike | frontend/syntax | superseded | P3 |  | Implement Aliasusageinarray (stub) |
+| 500 | Implement Aliasusageinfunctionexpression (stub) | spike | frontend/syntax | superseded | P3 |  | Implement Aliasusageinfunctionexpression (stub) |
+| 501 | Implement Aliasusageingenericfunction (stub) | spike | frontend/syntax | superseded | P3 |  | Implement Aliasusageingenericfunction (stub) |
+| 502 | Implement Aliasusageinindexerofclass (stub) | spike | frontend/syntax | superseded | P3 |  | Implement Aliasusageinindexerofclass (stub) |
+| 503 | Implement Aliasusageinobjectliteral (stub) | spike | frontend/syntax | superseded | P3 |  | Implement Aliasusageinobjectliteral (stub) |
+| 504 | Implement Aliasusageinorexpression (stub) | spike | frontend/syntax | superseded | P3 |  | Implement Aliasusageinorexpression (stub) |
+| 505 | Implement Aliasusageintypeargumentofextendsclause (stub) | spike | frontend/syntax | superseded | P3 |  | Implement Aliasusageintypeargumentofextendsclause (stub) |
+| 506 | Implement Aliasusageinvarassignment (stub) | spike | frontend/syntax | superseded | P3 |  | Implement Aliasusageinvarassignment (stub) |
+| 507 | Implement Aliasusedasnamevalue (stub) | spike | frontend/syntax | superseded | P3 |  | Implement Aliasusedasnamevalue (stub) |
+| 508 | Implement Aliaswithinterfaceexportassignmentusedinvarinitializer (stub) | spike | frontend/syntax | superseded | P3 |  | Implement Aliaswithinterfaceexportassignmentusedinvarinitializer (stub) |
+| 509 | Implement Aliasesinsystemmodule (stub) | spike | frontend/syntax | superseded | P3 |  | Implement Aliasesinsystemmodule (stub) |
+| 510 | Implement Allowimportclausestomergewithtypes (stub) | spike | frontend/syntax | superseded | P3 |  | Implement Allowimportclausestomergewithtypes (stub) |
+| 511 | Implement Allowjsclassthistypecrash (stub) | spike | frontend/syntax | superseded | P3 |  | Implement Allowjsclassthistypecrash (stub) |
+| 512 | Implement Allowjscrossmonorepopackage (stub) | spike | frontend/syntax | superseded | P3 |  | Implement Allowjscrossmonorepopackage (stub) |
+| 513 | Implement Allowjscheckjstypeparameternocrash (stub) | spike | frontend/syntax | superseded | P3 |  | Implement Allowjscheckjstypeparameternocrash (stub) |
+| 514 | Implement Allowsyntheticdefaultimports (stub) | spike | frontend/syntax | superseded | P3 |  | Implement Allowsyntheticdefaultimports (stub) |
+| 515 | Implement Allowsyntheticdefaultimportscanpaintcrossmoduledeclaration (stub) | spike | frontend/syntax | superseded | P3 |  | Implement Allowsyntheticdefaultimportscanpaintcrossmoduledeclaration (stub) |
+| 518 | Implement Ambientclassdeclarationwithextends (stub) | spike | frontend/syntax | superseded | P3 |  | Implement Ambientclassdeclarationwithextends (stub) |
+| 519 | Implement Ambientclassdeclaredbeforebase (stub) | spike | frontend/syntax | superseded | P3 |  | Implement Ambientclassdeclaredbeforebase (stub) |
+| 520 | Implement Ambientconstliterals (stub) | spike | frontend/syntax | superseded | P3 |  | Implement Ambientconstliterals (stub) |
+| 522 | Implement Ambienterrors (stub) | spike | frontend/syntax | superseded | P3 |  | Implement Ambienterrors (stub) |
+| 523 | Implement Ambientexportdefaulterrors (stub) | spike | frontend/syntax | superseded | P3 |  | Implement Ambientexportdefaulterrors (stub) |
+| 524 | Implement Ambientexternalmoduleinanotherexternalmodule (stub) | spike | frontend/syntax | superseded | P3 |  | Implement Ambientexternalmoduleinanotherexternalmodule (stub) |
+| 526 | Implement Ambientexternalmodulewithinternalimportdeclaration (stub) | spike | frontend/syntax | superseded | P3 |  | Implement Ambientexternalmodulewithinternalimportdeclaration (stub) |
+| 529 | Implement Ambientexternalmodulewithoutinternalimportdeclaration (stub) | spike | frontend/syntax | superseded | P3 |  | Implement Ambientexternalmodulewithoutinternalimportdeclaration (stub) |
+| 531 | Implement Ambientmoduleexports (stub) | spike | frontend/syntax | superseded | P3 |  | Implement Ambientmoduleexports (stub) |
+| 533 | Implement Ambientmodulewithtemplateliterals (stub) | spike | frontend/syntax | superseded | P3 |  | Implement Ambientmodulewithtemplateliterals (stub) |
+| 534 | Implement Ambientmodules (stub) | spike | frontend/syntax | superseded | P3 |  | Implement Ambientmodules (stub) |
+| 536 | Implement Ambientrequirefunction (stub) | spike | frontend/syntax | superseded | P3 |  | Implement Ambientrequirefunction (stub) |
+| 539 | Implement Ambiguouscallswherereturntypesagree (stub) | spike | frontend/syntax | superseded | P3 |  | Implement Ambiguouscallswherereturntypesagree (stub) |
+| 540 | Implement Ambiguousgenericassertion (stub) | spike | frontend/syntax | superseded | P3 |  | Implement Ambiguousgenericassertion (stub) |
+| 552 | Implement Parameterlist (stub) | spike | frontend/syntax | superseded | P3 |  | Implement Parameterlist (stub) |
+| 608 | Implement Ambienterrors (stub) | spike | frontend/syntax | superseded | P3 |  | Implement Ambienterrors (stub) |
+| 669 | Implement Arrayconcat (stub) | spike | frontend/syntax | superseded | P3 |  | Implement Arrayconcat (stub) |
+| 1001 | Implement Augmentedtypesenum Import Export (stub) | spike | frontend/syntax | superseded | P3 |  | Implement Augmentedtypesenum Import Export (stub) |
+| 1002 | Implement Augmentedtypesenum Parser Syntax (stub) | spike | frontend/syntax | superseded | P3 |  | Implement Augmentedtypesenum Parser Syntax (stub) |
+| 1003 | Implement Augmentedtypesexternalmodule (stub) | spike | frontend/syntax | superseded | P3 |  | Implement Augmentedtypesexternalmodule (stub) |
+| 1006 | Implement Augmentedtypesmodules (stub) | spike | frontend/syntax | superseded | P3 |  | Implement Augmentedtypesmodules (stub) |
+| 1010 | Implement Autotypeassignedusingdestructuringfromnevernocrash (stub) | spike | frontend/syntax | superseded | P3 |  | Implement Autotypeassignedusingdestructuringfromnevernocrash (stub) |
+| 2058 | Implement Duplicatepackage Module Resolution (stub) | spike | frontend/syntax | superseded | P3 |  | Implement Duplicatepackage Module Resolution (stub) |
+| 3329 | Implement Modulecodegentest (stub) | spike | frontend/syntax | superseded | P3 |  | Implement Modulecodegentest (stub) |
+| 3371 | Implement Moduleresolution Module Resolution (stub) | spike | frontend/syntax | superseded | P3 |  | Implement Moduleresolution Module Resolution (stub) |
 | 5001 | Meta: TypeScript Compiler Semantic Analysis Coverage | meta | frontend/semantics | design-ready | P1 | 5000 | Meta: TypeScript Compiler Semantic Analysis Coverage |
 | 5005 | Meta: TypeScript Compiler Name Resolution Coverage | meta | frontend/resolver | design-ready | P1 | 5000 | Meta: TypeScript Compiler Name Resolution Coverage |
+| 5016 | Implement Function Resolution (stub) | spike | frontend/syntax | superseded | P3 |  | Implement Function Resolution (stub) |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -211,7 +405,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 374 | Design broader object ToPrimitive for mixed BigInt comparisons | design | runtime/semantics | class: blocked | Design broader object ToPrimitive for mixed BigInt comparisons |
 | 382 | Multi-limb BigInt addition and subtraction | feature | runtime/semantics | class: blocked | Multi-limb BigInt addition and subtraction |
 | 386 | Reduce ABC451 depth-8 array copy pressure | feature | runtime/memory | class: triage-needed | Reduce ABC451 depth-8 array copy pressure |
-| 407 | Implement key-preserving Map entry storage for spread iteration | feature | runtime/semantics | class: blocked | Implement key-preserving Map entry storage for spread iteration |
 | 411 | Implement annexb-ishtmldda support | spike | frontend/syntax | class: triage-needed | Implement annexb-ishtmldda support |
 | 412 | Implement arguments-object support | spike | runtime/builtins | class: blocked | Implement arguments-object support |
 | 413 | Implement arity support | spike | reference/triage | class: triage-needed | Implement arity support |
@@ -4612,6 +4805,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 404 | Support mutable outer local captures in callback functions | feature | ir/runtime | see `issues/done/404-mutable-outer-local-callback-captures.md` |
 | 405 | Support Test262 harness instanceof function RHS | feature | frontend/semantics | see `issues/done/405-test262-instanceof-harness-function-rhs.md` |
 | 406 | Direct eval Annex B existing binding residuals | feature | frontend/semantics | see `issues/done/406-direct-eval-annexb-existing-binding-residuals.md` |
+| 407 | Implement key-preserving Map entry storage for spread iteration | feature | runtime/semantics | see `issues/done/407-map-spread-key-preserving-iterator-storage.md` |
 | 408 | Implement tsgo declaration emit: AsConstSatisfies/const generic method cases | feature | frontend/syntax | see file |
 | 409 | Implement tsgo declaration emit: package-json exports and subpath reexport cases | feature | frontend/syntax | see `issues/done/409-implement-tsgo-declaration-emit-package-json-subpath.md` |
 | 410 | Implement tsgo declaration emit: subpath import declaration emit cases | feature | frontend/syntax | see `issues/done/410-implement-tsgo-declaration-emit-subpath-import-links.md` |

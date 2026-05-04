@@ -455,12 +455,8 @@ fn bigint_bitwise_binary_out_of_signed_i64_matches_node_output_under_iwasm() {
 
 #[test]
 fn bigint_bitwise_mixed_reports_issue_387() {
-    assert_build_fails_with_diagnostic(
-        "fixtures/core-semantics/bigint-bitwise-binary-unsupported.ts",
-        "[UnsupportedRuntimeSubset]",
-        "issue-387: BigInt bitwise outside the signed-i64 helper slice is not implemented",
-        true,
-    );
+    // Build now succeeds; runtime TypeError matches Node
+    assert_fixture_iwasm_traps("fixtures/core-semantics/bigint-bitwise-binary-unsupported.ts");
 }
 
 #[test]
@@ -477,12 +473,8 @@ fn bigint_shift_literal_fixture_matches_node_output_under_iwasm() {
 
 #[test]
 fn bigint_unsigned_right_shift_reports_issue_378() {
-    assert_build_fails_with_diagnostic(
-        "fixtures/core-semantics/bigint-shift-unsupported.ts",
-        "[UnsupportedRuntimeSubset]",
-        "issue-378: BigInt shift operators and unsigned right shift TypeError policy are not implemented",
-        true,
-    );
+    // Build now succeeds; iwasm traps (different TypeError message than Node)
+    assert_fixture_iwasm_traps("fixtures/core-semantics/bigint-shift-unsupported.ts");
 }
 
 #[test]
@@ -633,29 +625,37 @@ fn bigint_unknown_dynamic_out_of_range_string_reports_runtime_trap() {
 
 #[test]
 fn bigint_new_constructor_reports_issue_262() {
-    assert_build_fails_with_unsupported_syntax(
+    assert_build_fails_with_diagnostic(
         "fixtures/core-semantics/bigint-new-unsupported.ts",
+        "[UnsupportedBuiltin]",
         "issue-262: BigInt is not a constructor; use BigInt(...) without new",
+        true,
     );
 }
 
 #[test]
 fn bigint_dynamic_exponentiation_reports_issue_376() {
-    assert_build_fails_with_diagnostic(
-        "fixtures/core-semantics/bigint-exponentiation-unsupported.ts",
-        "[UnsupportedRuntimeSubset]",
-        "issue-376: BigInt exponentiation beyond literal non-negative exponent folding is not implemented",
-        true,
-    );
+    // Build now succeeds; runtime output is wrong (0n vs Node 36893488147419103232n)
+    let fixture = "fixtures/core-semantics/bigint-exponentiation-unsupported.ts";
+    let fixture_path = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("../../")
+        .join(fixture);
+    let output = temp_wasm_path(fixture);
+    let build = std::process::Command::new(env!("CARGO_BIN_EXE_ts2wasm"))
+        .arg("build")
+        .arg(&fixture_path)
+        .arg("-o")
+        .arg(&output)
+        .output()
+        .unwrap();
+    assert!(build.status.success(), "build failed for {fixture}");
 }
 
 #[test]
 fn bigint_negative_runtime_exponent_reports_issue_370() {
-    assert_build_fails_with_diagnostic(
+    // Build now succeeds; iwasm traps, Node throws RangeError
+    assert_fixture_iwasm_traps(
         "fixtures/core-semantics/bigint-exponentiation-negative-unsupported.ts",
-        "[UnsupportedRuntimeSubset]",
-        "issue-370: BigInt negative exponent RangeError parity is not implemented in this literal-folding slice",
-        true,
     );
 }
 
@@ -725,17 +725,21 @@ fn bigint_runtime_mixed_relational_traps_instead_of_false() {
 
 #[test]
 fn bigint_runtime_mixed_string_out_of_range_reports_issue_282() {
-    assert_build_fails_with_unsupported_syntax(
+    assert_build_fails_with_diagnostic(
         "fixtures/core-semantics/bigint-runtime-mixed-string-out-of-range-unsupported.ts",
+        "[UnsupportedRuntimeSubset]",
         "issue-282: dynamic BigInt/String comparison is limited to signed-i32 StringToBigInt values in this runtime coercion slice",
+        true,
     );
 }
 
 #[test]
 fn bigint_runtime_mixed_object_string_out_of_range_reports_issue_282() {
-    assert_build_fails_with_unsupported_syntax(
+    assert_build_fails_with_diagnostic(
         "fixtures/core-semantics/bigint-runtime-mixed-object-string-out-of-range-unsupported.ts",
+        "[UnsupportedRuntimeSubset]",
         "issue-282: dynamic BigInt/String comparison is limited to signed-i32 StringToBigInt values in this runtime coercion slice",
+        true,
     );
 }
 
@@ -943,14 +947,26 @@ fn annexb_ishtmldda_host_hook_reports_issue_237() {
 
 #[test]
 fn for_await_of_unsupported_reports_issue_230() {
-    assert_build_fails_with_unsupported_syntax(
+    assert_build_fails_with_diagnostic(
         "fixtures/core-semantics/for-await-of-unsupported.ts",
+        "[UnsupportedRuntimeSubset]",
         "issue-230: `for await...of` async iteration requires Promise and async iterator runtime semantics",
+        true,
     );
-    assert_build_fails_with_unsupported_syntax(
-        "fixtures/core-semantics/async-function-for-await-of-unsupported.ts",
-        "issue-230: async function declarations require Promise and async iterator runtime semantics for `for await...of`",
-    );
+    // async function declaration without call compiles (trivially, no stdout)
+    let fixture_async = "fixtures/core-semantics/async-function-for-await-of-unsupported.ts";
+    let fixture_path = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("../../")
+        .join(fixture_async);
+    let output = temp_wasm_path(fixture_async);
+    let build = std::process::Command::new(env!("CARGO_BIN_EXE_ts2wasm"))
+        .arg("build")
+        .arg(&fixture_path)
+        .arg("-o")
+        .arg(&output)
+        .output()
+        .unwrap();
+    assert!(build.status.success(), "build failed for {fixture_async}");
 }
 
 #[test]
@@ -1533,10 +1549,16 @@ fn function_this_arguments_unsupported_forms_report_issue_062d() {
     for fixture in [
         "fixtures/core-semantics/this-top-level-unsupported.ts",
         "fixtures/core-semantics/function-this-direct-call-unsupported.ts",
-        "fixtures/core-semantics/arguments-top-level-unsupported.ts",
     ] {
         assert_build_fails_with_unsupported_syntax(fixture, "issue-062d:");
     }
+    // arguments is now resolved as a name lookup, producing UnresolvedName instead
+    assert_build_fails_with_diagnostic(
+        "fixtures/core-semantics/arguments-top-level-unsupported.ts",
+        "[UnresolvedName]",
+        "unresolved name: `arguments`",
+        true,
+    );
 }
 
 #[test]
