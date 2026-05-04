@@ -916,3 +916,65 @@ fn build_smoke_test_math_pow() {
         result.err()
     );
 }
+
+// --- Core-semantics build smoke tests ---
+
+#[test]
+fn build_smoke_core_default_params() {
+    let result = run_fixture("core-semantics/default-params.ts");
+    assert!(
+        result.is_ok(),
+        "default-params should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
+fn build_smoke_core_for_loop_prefix_increment() {
+    let result = run_fixture("core-semantics/for-loop-prefix-increment.ts");
+    assert!(
+        result.is_ok(),
+        "for-loop-prefix-increment should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
+fn build_smoke_core_in_operator() {
+    let result = run_fixture("core-semantics/in-operator.ts");
+    assert!(
+        result.is_ok(),
+        "in-operator should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
+fn build_smoke_core_private_class_setter_same_class_receiver_brand() {
+    let result = run_fixture("core-semantics/private-class-setter-same-class-receiver-brand.ts");
+    assert!(
+        result.is_ok(),
+        "private-class-setter-same-class-receiver-brand should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
+fn build_smoke_core_private_class_setter_same_class_receiver() {
+    let result = run_fixture("core-semantics/private-class-setter-same-class-receiver.ts");
+    assert!(
+        result.is_ok(),
+        "private-class-setter-same-class-receiver should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
+fn build_smoke_string_substr() {
+    let result = run_fixture("builtins-and-io/string-substr.ts");
+    assert!(
+        result.is_ok(),
+        "String.prototype.substr should build: {:?}",
+        result.err()
+    );
+}

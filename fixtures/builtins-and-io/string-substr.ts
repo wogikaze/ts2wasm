@@ -1,31 +1,16 @@
-// Test: String.prototype.substr (Annex B legacy method)
-// Basic cases
-console.log("hello".substr(1, 2));
-console.log("hello".substr(1, 3));
-console.log("hello".substr(0, 5));
-
-// Negative start
-console.log("hello".substr(-3, 2));
-console.log("hello".substr(-1, 1));
-
-// Length beyond string
-console.log("hello".substr(1, 10));
-
-// No length (returns rest of string - but we need explicit length arg)
-console.log("hello".substr(2, 3));
-
-// Start beyond length
-console.log("hello".substr(10, 2));
-
-// Zero length
-console.log("hello".substr(0, 0));
-
-// Start exactly 0
-console.log("hello".substr(0, 3));
-
-// Start negative, length negative (spec: returns "")
-console.log("hello".substr(1, -1));
-
-// Empty string
-console.log("".substr(0, 0));
-console.log("".substr(0, 1));
+// String.prototype.substr (Annex B legacy method)
+console.log("'" + 'abc'.substr(0, false) + "'");
+console.log("'" + 'abc'.substr(0, NaN) + "'");
+console.log("'" + 'abc'.substr(0, '') + "'");
+console.log("'" + 'abc'.substr(0, null) + "'");
+console.log("'" + 'abc'.substr(0, -1) + "'");
+console.log("'" + 'abc'.substr(1, -1) + "'");
+console.log("'" + 'abc'.substr(2, -1) + "'");
+console.log("'" + 'abc'.substr(3, -1) + "'");
+console.log("'" + 'abc'.substr(1) + "'");
+console.log("'" + 'abc'.substr(1, 1) + "'");
+console.log("'" + 'abc'.substr(0, 3) + "'");
+console.log("'" + 'abc'.substr(0, 100) + "'");
+console.log("'" + 'abc'.substr(-1, 1) + "'");
+console.log("'" + 'abc'.substr(-2, 2) + "'");
+console.log("'" + 'abc'.substr(-5) + "'");

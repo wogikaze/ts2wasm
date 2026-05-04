@@ -31,6 +31,9 @@ fn m3_semantic_fixtures_match_node_output_under_iwasm() {
         "fixtures/core-semantics/ir-test.ts",
         "fixtures/core-semantics/prototype.ts",
         "fixtures/core-semantics/int32-typed-stress.ts",
+        "fixtures/core-semantics/default-params.ts",
+        "fixtures/core-semantics/for-loop-prefix-increment.ts",
+        "fixtures/core-semantics/in-operator.ts",
     ] {
         assert_fixture_matches_node(fixture);
     }
@@ -2168,4 +2171,9 @@ fn function_declaration_value_fixture_matches_node_output_under_iwasm() {
 #[test]
 fn string_html_wrappers_fixture_matches_node_output_under_iwasm() {
     assert_fixture_matches_node("fixtures/builtins-and-io/string-html-wrappers.ts");
+}
+
+#[test]
+fn string_substr_fixture_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/string-substr.ts");
 }

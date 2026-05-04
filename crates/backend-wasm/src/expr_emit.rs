@@ -749,6 +749,12 @@ impl WatEmitter<'_> {
                         self.emit_expr(wat, arg, indent, frame);
                     }
                     wat.push_str(&format!("{pad}(i32.const {})\n", 0));
+                } else if runtime_fn == "StringSubstr" && args.len() == 2 {
+                    // No length specified: pad with undefined (0) → means "go to end"
+                    for arg in args {
+                        self.emit_expr(wat, arg, indent, frame);
+                    }
+                    wat.push_str(&format!("{pad}(i32.const 0)\n")); // undefined
                 } else {
                     for arg in args {
                         self.emit_expr(wat, arg, indent, frame);

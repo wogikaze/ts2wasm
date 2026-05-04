@@ -127,6 +127,7 @@ impl WatEmitter<'_> {
     (local $obj i32)
     (local $s_len i32)
     (local $s_pos i32)
+    (local $len_val i32)
     (local $e_pos i32)
     (if (i32.eqz (call $is_string (local.get $s))) (then (return (i32.const {undefined}))))
     (local.set $obj (i32.and (local.get $s) (i32.const {heap_mask})))
@@ -140,22 +141,41 @@ impl WatEmitter<'_> {
           (then (local.set $s_pos (i32.const {zero}))))))
     (if (i32.gt_u (local.get $s_pos) (local.get $s_len))
       (then (local.set $s_pos (local.get $s_len))))
-    ;; If start >= len or length <= 0, return empty string
+    ;; If start >= len, return empty string (call substring with 0,0)
     (if (i32.ge_u (local.get $s_pos) (local.get $s_len))
       (then
-        (local.set $s_pos (i32.const {zero}))
-        (local.set $e_pos (i32.const {zero}))
-        (return (call $string_substring (local.get $s) (i32.shl (local.get $s_pos) (i32.const {number_shift})) (i32.shl (local.get $e_pos) (i32.const {number_shift}))))))
-    (local.set $e_pos (i32.add (local.get $s_pos) (i32.shr_s (local.get $len) (i32.const {number_shift}))))
+        (return (call $string_substring (local.get $s) (i32.const {zero}) (i32.const {zero})))))
+    ;; Decode length parameter
+    ;; Check if $len has the number tag (tag == 4)
+    (if (i32.eq (i32.and (local.get $len) (i32.const {tag_mask})) (i32.const {number_tag}))
+      (then
+        (local.set $len_val (i32.shr_s (local.get $len) (i32.const {number_shift})))
+        ;; If decoded length <= 0, return empty string
+        (if (i32.le_s (local.get $len_val) (i32.const {zero}))
+          (then
+            (return (call $string_substring (local.get $s) (i32.const {zero}) (i32.const {zero}))))))
+      (else
+        ;; Non-number length
+        ;; If undefined (tagged 0): go to end of string (s_pos to end)
+        ;; Otherwise: treat as 0 (return empty string)
+        (if (i32.eqz (local.get $len))
+          (then
+            (local.set $len_val (i32.sub (local.get $s_len) (local.get $s_pos))))
+          (else
+            (return (call $string_substring (local.get $s) (i32.const {zero}) (i32.const {zero})))))))
+    ;; Compute end position and delegate to substring
+    (local.set $e_pos (i32.add (local.get $s_pos) (local.get $len_val)))
     (if (i32.gt_u (local.get $e_pos) (local.get $s_len))
       (then (local.set $e_pos (local.get $s_len))))
-    (local.set $s_pos (i32.shl (local.get $s_pos) (i32.const {number_shift})))
-    (local.set $e_pos (i32.shl (local.get $e_pos) (i32.const {number_shift})))
-    (return (call $string_substring (local.get $s) (local.get $s_pos) (local.get $e_pos))))
+    (return (call $string_substring (local.get $s)
+      (i32.shl (local.get $s_pos) (i32.const {number_shift}))
+      (i32.shl (local.get $e_pos) (i32.const {number_shift})))))
 "#,
             undefined = ValueTag::UNDEFINED,
             heap_mask = ValueTag::HEAP_MASK,
             number_shift = ValueTag::NUMBER_SHIFT,
+            tag_mask = ValueTag::TAG_MASK,
+            number_tag = ValueTag::NUMBER,
             zero = RuntimeConst::ZERO,
         ));
     }
