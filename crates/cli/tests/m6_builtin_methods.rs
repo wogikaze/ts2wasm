@@ -647,3 +647,13 @@ fn build_smoke_string_search_method() {
         result.err()
     );
 }
+
+#[test]
+fn build_smoke_string_at_method() {
+    let result = run_fixture("builtins-and-io/string-at.ts");
+    assert!(
+        result.is_ok(),
+        "String.at should compile: {:?}",
+        result.err()
+    );
+}

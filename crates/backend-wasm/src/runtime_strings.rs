@@ -37,6 +37,45 @@ impl WatEmitter<'_> {
         ));
     }
 
+    pub(super) fn emit_string_at(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $string_at (param $s i32) (param $idx i32) (result i32)
+    (local $obj i32)
+    (local $len i32)
+    (local $i i32)
+    (if (i32.eqz (call $is_string (local.get $s))) (then (return (i32.const {undefined}))))
+    (local.set $obj (i32.and (local.get $s) (i32.const {heap_mask})))
+    (local.set $len (i32.load (local.get $obj)))
+    (local.set $i (i32.shr_s (local.get $idx) (i32.const {number_shift})))
+    (if (i32.lt_s (local.get $i) (i32.const {zero}))
+      (then
+        (local.set $i (i32.add (local.get $len) (local.get $i)))
+        (if (i32.lt_s (local.get $i) (i32.const {zero}))
+          (then (local.set $i (i32.const {zero}))))))
+    (if (i32.ge_u (local.get $i) (local.get $len))
+      (then (return (i32.const {undefined}))))
+    (local.set $obj (call $alloc_heap (i32.const {char_size})))
+    (i32.store (local.get $obj) (i32.const {one}))
+    (i32.store8
+      (i32.add (local.get $obj) (i32.const {header}))
+      (i32.load8_u
+        (i32.add
+          (i32.and (local.get $s) (i32.const {heap_mask}))
+          (i32.add (i32.const {header}) (local.get $i)))))
+    (i32.or (local.get $obj) (i32.const {string_tag})))
+"#,
+            undefined = ValueTag::UNDEFINED,
+            heap_mask = ValueTag::HEAP_MASK,
+            number_shift = ValueTag::NUMBER_SHIFT,
+            zero = RuntimeConst::ZERO,
+            one = RuntimeConst::ONE,
+            char_size = Layout::STRING_HEADER_SIZE + 1,
+            header = Layout::STRING_HEADER_SIZE,
+            string_tag = ValueTag::STRING,
+        ));
+    }
+
     pub(super) fn emit_string_substring(&self, wat: &mut String) {
         wat.push_str(&format!(
             r#"

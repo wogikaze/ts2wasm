@@ -59,6 +59,7 @@ pub(super) fn resolve_method_to_runtime_fn(object: &ResolvedExpr, method: &str) 
     match method {
         "concat" => Some("Concat".to_owned()),
         "charAt" => Some("StringCharAt".to_owned()),
+        "at" => Some("StringAt".to_owned()),
         "substring" => Some("StringSubstring".to_owned()),
         "slice" => Some("StringSlice".to_owned()),
         "indexOf" => Some("StringIndexOf".to_owned()),

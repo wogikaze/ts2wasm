@@ -865,6 +865,14 @@ impl RuntimeFn {
                 runtime_strings: NO_RUNTIME_STRINGS,
                 result: RuntimeResult::Value,
             },
+            Self::StringAt => RuntimeSpec {
+                symbol: "$string_at",
+                deps: STRING_AT_DEPS,
+                imports: NO_IMPORTS,
+                capability: NO_CAPS,
+                runtime_strings: NO_RUNTIME_STRINGS,
+                result: RuntimeResult::Value,
+            },
             Self::StringSubstring => RuntimeSpec {
                 symbol: "$string_substring",
                 deps: STRING_SUBSTRING_DEPS,
@@ -1876,6 +1884,7 @@ impl RuntimeFn {
             Self::DateGetUtcMonth => "date_get_utc_month",
             Self::DateGetUtcFullYear => "date_get_utc_full_year",
             Self::StringCharAt => "string_char_at",
+            Self::StringAt => "string_at",
             Self::StringSubstring => "string_substring",
             Self::StringSlice => "string_slice",
             Self::StringIndexOf => "string_index_of",
@@ -2095,6 +2104,7 @@ impl RuntimeFn {
             Self::DateGetUtcFullYear,
             // String methods
             Self::StringCharAt,
+            Self::StringAt,
             Self::StringSubstring,
             Self::StringSlice,
             Self::StringIndexOf,
@@ -2325,6 +2335,7 @@ impl RuntimeFn {
             Self::DateGetUtcFullYear,
             // String methods
             Self::StringCharAt,
+            Self::StringAt,
             Self::StringSubstring,
             Self::StringSlice,
             Self::StringIndexOf,

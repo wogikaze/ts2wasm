@@ -122,6 +122,7 @@ impl WatEmitter<'_> {
                 RuntimeFn::DateGetUtcMonth => self.emit_date_get_utc_month(wat),
                 RuntimeFn::DateGetUtcFullYear => self.emit_date_get_utc_full_year(wat),
                 RuntimeFn::StringCharAt => self.emit_string_char_at(wat),
+                RuntimeFn::StringAt => self.emit_string_at(wat),
                 RuntimeFn::StringSubstring => self.emit_string_substring(wat),
                 RuntimeFn::StringSlice => self.emit_string_slice(wat),
                 RuntimeFn::StringIndexOf => self.emit_string_index_of(wat),

@@ -151,6 +151,8 @@ pub(crate) enum RuntimeFn {
     DateGetUtcFullYear,
     /// M10: String methods
     StringCharAt,
+    /// String.prototype.at
+    StringAt,
     StringSubstring,
     StringSlice,
     StringIndexOf,
@@ -608,6 +610,7 @@ pub(crate) fn runtime_fn_from_name(name: &str) -> Option<RuntimeFn> {
         "$instanceof" => Some(RuntimeFn::InstanceOf),
         "Concat" => Some(RuntimeFn::Concat),
         "StringCharAt" => Some(RuntimeFn::StringCharAt),
+        "StringAt" => Some(RuntimeFn::StringAt),
         "StringSubstring" => Some(RuntimeFn::StringSubstring),
         "StringSlice" => Some(RuntimeFn::StringSlice),
         "StringIndexOf" => Some(RuntimeFn::StringIndexOf),
@@ -1075,6 +1078,8 @@ const STRING_REPLACE_ALL_DEPS: &[RuntimeFn] = &[
     RuntimeFn::IsString,
     RuntimeFn::MemEqual,
 ];
+
+const STRING_AT_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap, RuntimeFn::Copy, RuntimeFn::IsString];
 
 const REGEXP_TEST_DEPS: &[RuntimeFn] = &[RuntimeFn::IsString, RuntimeFn::RegexpMatchInner];
 const REGEXP_MATCH_DEPS: &[RuntimeFn] = &[
