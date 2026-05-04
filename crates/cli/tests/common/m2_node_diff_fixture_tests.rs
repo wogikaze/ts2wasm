@@ -1080,6 +1080,7 @@ fn string_builtin_fixtures_match_node_output_under_iwasm() {
         "fixtures/builtins-and-io/string-from-char-code.ts",
         "fixtures/builtins-and-io/string-replace.ts",
         "fixtures/builtins-and-io/string-replace-all.ts",
+        "fixtures/builtins-and-io/string-indexing.ts",
     ] {
         assert_fixture_matches_node(fixture);
     }
@@ -1271,6 +1272,11 @@ fn set_identity_number_string_fixture_matches_node_output_under_iwasm() {
 #[test]
 fn set_iteration_fixture_matches_node_output_under_iwasm() {
     assert_fixture_matches_node("fixtures/builtins-and-io/set-iteration.ts");
+}
+
+#[test]
+fn test_set_samevaluezero_fixture_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/test-set-samevaluezero.ts");
 }
 
 #[test]
@@ -1985,6 +1991,7 @@ fn math_builtin_fixtures_match_node_output_under_iwasm() {
         "fixtures/builtins-and-io/math-max.ts",
         "fixtures/builtins-and-io/math-min.ts",
         "fixtures/builtins-and-io/math-pow.ts",
+        "fixtures/builtins-and-io/test-math-pow.ts",
         // math-random.ts: skip — WASM i32 vs Node float mismatch
         "fixtures/builtins-and-io/math-round.ts",
     ] {

@@ -886,3 +886,33 @@ fn build_smoke_string_html_wrapper_methods() {
         result.err()
     );
 }
+
+#[test]
+fn build_smoke_string_indexing_syntax() {
+    let result = run_fixture("builtins-and-io/string-indexing.ts");
+    assert!(
+        result.is_ok(),
+        "String indexing (s[0]) should compile: {:?}",
+        result.err()
+    );
+}
+
+#[test]
+fn build_smoke_set_samevaluezero() {
+    let result = run_fixture("builtins-and-io/test-set-samevaluezero.ts");
+    assert!(
+        result.is_ok(),
+        "Set SameValueZero should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
+fn build_smoke_test_math_pow() {
+    let result = run_fixture("builtins-and-io/test-math-pow.ts");
+    assert!(
+        result.is_ok(),
+        "test-math-pow should build: {:?}",
+        result.err()
+    );
+}
