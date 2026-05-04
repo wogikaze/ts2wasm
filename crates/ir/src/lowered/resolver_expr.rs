@@ -255,10 +255,25 @@ impl<'a> Resolver<'a> {
                         | BinaryOp::Power
                 ) && (self.resolved_expr_is_bigint(left) || self.resolved_expr_is_bigint(right))
                 {
-                    Ok(LoweredExpr::RuntimeCall {
-                        runtime_fn: "BigIntMixedArithmeticTypeError".to_owned(),
-                        args: vec![self.lower_expr(left)?, self.lower_expr(right)?],
-                    })
+                    // For Add, if the non-BigInt operand is a string literal,
+                    // fall through to regular $add which handles string concat
+                    // with BigInt via $value_to_string_into at runtime.
+                    // For other mixed BigInt/non-BigInt arithmetic, emit TypeError.
+                    if *op == BinaryOp::Add
+                        && (matches!(left.as_ref(), ResolvedExpr::String(_))
+                            || matches!(right.as_ref(), ResolvedExpr::String(_)))
+                    {
+                        Ok(LoweredExpr::Binary {
+                            left: Box::new(self.lower_expr(left)?),
+                            op: LoweredBinaryOp::Add,
+                            right: Box::new(self.lower_expr(right)?),
+                        })
+                    } else {
+                        Ok(LoweredExpr::RuntimeCall {
+                            runtime_fn: "BigIntMixedArithmeticTypeError".to_owned(),
+                            args: vec![self.lower_expr(left)?, self.lower_expr(right)?],
+                        })
+                    }
                 } else if matches!(
                     op,
                     BinaryOp::BitwiseAnd | BinaryOp::BitwiseOr | BinaryOp::BitwiseXor
