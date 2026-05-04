@@ -80,7 +80,8 @@ fn canonical_manifest_from_link_plan(plan: &RuntimeLinkPlan) -> CapabilityManife
             | Capability::HostUnescape
             | Capability::HostDateToString
             | Capability::HostDateGetLocalTimeField
-            | Capability::HostDateToISOString => {
+            | Capability::HostDateToISOString
+            | Capability::HostDateGetTimezoneOffset => {
                 // Node host capabilities for URI encoding/decoding and Date
             }
         }

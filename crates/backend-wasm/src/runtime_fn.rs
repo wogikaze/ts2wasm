@@ -153,6 +153,8 @@ pub(crate) enum RuntimeFn {
     DateGetLocalTimeField,
     /// Date.prototype.toISOString via host shim.
     DateToISOString,
+    /// Date.prototype.getTimezoneOffset via host shim.
+    DateGetTimezoneOffset,
     /// M10: String methods
     StringCharAt,
     /// String.prototype.at
@@ -369,6 +371,7 @@ pub(crate) enum HostImport {
     DateToString,
     DateGetLocalTimeField,
     DateToISOString,
+    DateGetTimezoneOffset,
 }
 
 impl HostImport {
@@ -551,6 +554,14 @@ impl HostImport {
                 params: "param i32",
                 result: "result i32",
             },
+            Self::DateGetTimezoneOffset => HostImportSpec {
+                module: "host",
+                name: "dateGetTimezoneOffset",
+                wat_symbol: "$host_date_get_timezone_offset",
+                abi: HostAbi::NodeShim,
+                params: "param i32",
+                result: "result i32",
+            },
         }
     }
 
@@ -581,6 +592,7 @@ impl HostImport {
             Self::DateToString => "host.dateToString",
             Self::DateGetLocalTimeField => "host.dateGetLocalTimeField",
             Self::DateToISOString => "host.dateToISOString",
+            Self::DateGetTimezoneOffset => "host.dateGetTimezoneOffset",
         }
     }
 }
@@ -729,6 +741,7 @@ pub(crate) fn runtime_fn_from_name(name: &str) -> Option<RuntimeFn> {
         "DateGetUtcFullYear" => Some(RuntimeFn::DateGetUtcFullYear),
         "DateGetLocalTimeField" => Some(RuntimeFn::DateGetLocalTimeField),
         "DateToISOString" => Some(RuntimeFn::DateToISOString),
+        "DateGetTimezoneOffset" => Some(RuntimeFn::DateGetTimezoneOffset),
         "IsNaN" => Some(RuntimeFn::IsNaN),
         "ParseInt" => Some(RuntimeFn::ParseInt),
         "ParseFloat" => Some(RuntimeFn::ParseFloat),
@@ -771,6 +784,7 @@ pub(crate) enum Capability {
     HostDateToString,
     HostDateGetLocalTimeField,
     HostDateToISOString,
+    HostDateGetTimezoneOffset,
 }
 
 impl Capability {
@@ -799,6 +813,7 @@ impl Capability {
             Self::HostDateToString => "host.dateToString",
             Self::HostDateGetLocalTimeField => "host.dateGetLocalTimeField",
             Self::HostDateToISOString => "host.dateToISOString",
+            Self::HostDateGetTimezoneOffset => "host.dateGetTimezoneOffset",
         }
     }
 }
@@ -1000,6 +1015,7 @@ const IMPORT_UNESCAPE: &[HostImport] = &[HostImport::Unescape];
 const IMPORT_DATE_TO_STRING: &[HostImport] = &[HostImport::DateToString];
 const IMPORT_DATE_GET_LOCAL_TIME_FIELD: &[HostImport] = &[HostImport::DateGetLocalTimeField];
 const IMPORT_DATE_TO_ISO_STRING: &[HostImport] = &[HostImport::DateToISOString];
+const IMPORT_DATE_GET_TIMEZONE_OFFSET: &[HostImport] = &[HostImport::DateGetTimezoneOffset];
 const CAP_STDIN_READ: &[Capability] = &[Capability::StdinRead];
 const CAP_STDOUT_WRITE: &[Capability] = &[Capability::StdoutWrite];
 const CAP_WASI_CLOCK_REALTIME: &[Capability] = &[Capability::WasiClockRealtime];
@@ -1022,6 +1038,7 @@ const CAP_HOST_UNESCAPE: &[Capability] = &[Capability::HostUnescape];
 const CAP_HOST_DATE_TO_STRING: &[Capability] = &[Capability::HostDateToString];
 const CAP_HOST_DATE_GET_LOCAL_TIME_FIELD: &[Capability] = &[Capability::HostDateGetLocalTimeField];
 const CAP_HOST_DATE_TO_ISO_STRING: &[Capability] = &[Capability::HostDateToISOString];
+const CAP_HOST_DATE_GET_TIMEZONE_OFFSET: &[Capability] = &[Capability::HostDateGetTimezoneOffset];
 const VTS_RUNTIME_STRINGS: &[&str] = &[
     RuntimeString::UNDEFINED,
     RuntimeString::NULL,

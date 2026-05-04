@@ -5100,7 +5100,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 5089 | Implement type-alias support (dup) | spike | frontend/syntax | see `issues/done/5089-implement-type-alias.md` |
 | 5090 | Implement type-system support (dup) | spike | frontend/syntax | see `issues/done/5090-implement-type-system.md` |
 | 5091 | Investigate and classify unknown-unsupported cases (dup) | spike | frontend/syntax | see `issues/done/5091-implement-unknown-unsupported.md` |
-| 5124 | Fix Object.keys on arguments exotic object | bug | runtime | see file |
+| 5124 | Fix Object.keys on arguments exotic object | bug | runtime | see `issues/done/5124-fix-object-keys-on-arguments.md` |
 <!-- generated:done:end -->
 
 ## Index generation contract
