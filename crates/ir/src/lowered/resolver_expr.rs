@@ -1119,7 +1119,21 @@ impl<'a> Resolver<'a> {
                         args: vec![self.lower_expr(object)?],
                     })
                 } else if matches!(object.as_ref(), ResolvedExpr::String(_)) {
-                    if let Some(diagnostic) = unsupported_annex_b_string_method(method, *span) {
+                    if is_html_wrapper_string_method(method) {
+                        let lowered_object = self.lower_expr(object)?;
+                        let mut lowered_args = Vec::new();
+                        for arg in args {
+                            lowered_args.push(self.lower_expr(arg)?);
+                        }
+                        lower_html_wrapper_string_method(
+                            method,
+                            lowered_object,
+                            lowered_args,
+                            *span,
+                        )
+                    } else if let Some(diagnostic) =
+                        unsupported_annex_b_string_method(method, *span)
+                    {
                         Err(diagnostic)
                     } else if let Some(runtime_fn) = resolve_method_to_runtime_fn(object, method) {
                         let mut lowered_args = vec![self.lower_expr(object)?];
@@ -1855,4 +1869,97 @@ impl<'a> Resolver<'a> {
         }
     }
 
+}
+
+/// Returns true if `method` is an HTML wrapper (Annex B String.prototype method
+/// that can be lowered to Concat calls at the IR level).
+fn is_html_wrapper_string_method(method: &str) -> bool {
+    matches!(
+        method,
+        "anchor"
+            | "big"
+            | "blink"
+            | "bold"
+            | "fixed"
+            | "fontcolor"
+            | "fontsize"
+            | "italics"
+            | "link"
+            | "small"
+            | "strike"
+            | "sub"
+            | "sup"
+    )
+}
+
+/// Lower an HTML wrapper String.prototype method to nested Concat runtime calls.
+fn lower_html_wrapper_string_method(
+    method: &str,
+    object: LoweredExpr,
+    args: Vec<LoweredExpr>,
+    span: Span,
+) -> Result<LoweredExpr, Diagnostic> {
+    let (open_prefix, open_suffix, close_tag) = match method {
+        "anchor" => ("<a name=\"", "\"", "</a>"),
+        "big" => ("<big>", "", "</big>"),
+        "blink" => ("<blink>", "", "</blink>"),
+        "bold" => ("<b>", "", "</b>"),
+        "fixed" => ("<tt>", "", "</tt>"),
+        "fontcolor" => ("<font color=\"", "\"", "</font>"),
+        "fontsize" => ("<font size=\"", "\"", "</font>"),
+        "italics" => ("<i>", "", "</i>"),
+        "link" => ("<a href=\"", "\"", "</a>"),
+        "small" => ("<small>", "", "</small>"),
+        "strike" => ("<strike>", "", "</strike>"),
+        "sub" => ("<sub>", "", "</sub>"),
+        "sup" => ("<sup>", "", "</sup>"),
+        _ => {
+            return Err(Diagnostic {
+                code: DiagCode::UnsupportedSyntax,
+                message: format!(
+                    "String.prototype.{method} is not supported in this milestone"
+                ),
+                span: Some(span),
+            })
+        }
+    };
+
+    let mut result = LoweredExpr::RuntimeCall {
+        runtime_fn: "Concat".to_owned(),
+        args: vec![object, LoweredExpr::String(close_tag.to_owned())],
+    };
+
+    let has_arg = !open_suffix.is_empty();
+    if has_arg {
+        let arg = args.into_iter().next().unwrap_or(LoweredExpr::String(
+            "undefined".to_owned(),
+        ));
+        result = LoweredExpr::RuntimeCall {
+            runtime_fn: "Concat".to_owned(),
+            args: vec![
+                LoweredExpr::String(open_suffix.to_owned()),
+                LoweredExpr::RuntimeCall {
+                    runtime_fn: "Concat".to_owned(),
+                    args: vec![
+                        arg,
+                        LoweredExpr::RuntimeCall {
+                            runtime_fn: "Concat".to_owned(),
+                            args: vec![
+                                LoweredExpr::String(">".to_owned()),
+                                result,
+                            ],
+                        },
+                    ],
+                },
+            ],
+        };
+    }
+
+    Ok(LoweredExpr::RuntimeCall {
+        runtime_fn: "Concat".to_owned(),
+        args: vec![
+            LoweredExpr::String(open_prefix.to_owned()),
+            result,
+        ],
+    })
 }
