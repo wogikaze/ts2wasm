@@ -114,6 +114,15 @@ const KNOWN_FEATURES: &[(&str, &str)] = &[
 /// # Returns
 /// * `Ok(String)` - Processed source code with directive-generated snippets inserted
 /// * `Err(Diagnostic)` - Error if directives cannot be resolved/loaded or are unsupported
+/// Check if the source already contains a function definition of the given name.
+///
+/// This prevents DuplicateFunction errors when the test262 Python harness has already
+/// wrapped the source with shim functions before passing it to ts2wasm build.
+fn source_has_function(source: &str, name: &str) -> bool {
+    let pattern = format!("function {}(", name);
+    source.contains(&pattern)
+}
+
 pub fn process_test262_includes(input: &Path, source: &str) -> Result<String, Diagnostic> {
     // Check if this is a test262 file by looking for YAML frontmatter
     let Some(frontmatter_end) = source.find("---*/") else {
@@ -126,11 +135,22 @@ pub fn process_test262_includes(input: &Path, source: &str) -> Result<String, Di
     if metadata.includes.is_empty() && metadata.features.is_empty() && metadata.negative.is_none() {
         // Always inject common test262 global helper stubs for files with frontmatter,
         // since many older tests use `assert(...)` without an explicit `includes:` directive.
+        // Skip injection if the functions are already present (e.g. from Python harness wrap).
         let body = &source[frontmatter_end + 5..];
-        return Ok(format!(
-            "{}\nfunction assert() {{}}\nfunction verifyProperty() {{}}\nfunction verifyCallableProperty() {{}}\n{}",
-            frontmatter, body
-        ));
+        let mut stubs = String::new();
+        if !source_has_function(source, "assert") {
+            stubs.push_str("function assert() {}\n");
+        }
+        if !source_has_function(source, "verifyProperty") {
+            stubs.push_str("function verifyProperty() {}\n");
+        }
+        if !source_has_function(source, "verifyCallableProperty") {
+            stubs.push_str("function verifyCallableProperty() {}\n");
+        }
+        if stubs.is_empty() {
+            return Ok(source.to_string());
+        }
+        return Ok(format!("{}\n{}\n{}", frontmatter, stubs.trim(), body));
     }
 
     let mut injected = String::new();
@@ -171,7 +191,7 @@ pub fn process_test262_includes(input: &Path, source: &str) -> Result<String, Di
             let helper_source = remove_frontmatter(&helper_source);
 
             // Extract function stubs instead of full helper file
-            let stubs = extract_function_stubs(helper_source);
+            let stubs = extract_function_stubs(helper_source, source);
             if !injected.is_empty() {
                 injected.push('\n');
             }
@@ -377,13 +397,25 @@ fn extract_features_from_frontmatter(frontmatter: &str) -> Vec<String> {
 ///
 /// This is a simplified approach: extract function declarations
 /// and create stub implementations that the parser can handle.
-fn extract_function_stubs(_helper_source: &str) -> String {
+/// Skips functions already present in `full_source` to avoid DuplicateFunction
+/// when the Python harness has already wrapped the source with shim functions.
+fn extract_function_stubs(_helper_source: &str, full_source: &str) -> String {
     // For now, return hardcoded stubs for common test262 helper functions
     // This is a temporary solution until we can properly parse helper files
-    "function verifyProperty() {}
-function verifyCallableProperty() {}
-function assert() {}"
-        .to_string()
+    let candidate_stubs = [
+        ("function verifyProperty() {}", "verifyProperty"),
+        (
+            "function verifyCallableProperty() {}",
+            "verifyCallableProperty",
+        ),
+        ("function assert() {}", "assert"),
+    ];
+    candidate_stubs
+        .iter()
+        .filter(|(_, name)| !source_has_function(full_source, name))
+        .map(|(stub, _)| *stub)
+        .collect::<Vec<_>>()
+        .join("\n")
 }
 
 /// Resolve test262 harness directory from input file path
