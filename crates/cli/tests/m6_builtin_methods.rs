@@ -629,6 +629,26 @@ fn build_smoke_date_to_string() {
 }
 
 #[test]
+fn build_smoke_date_local_getters() {
+    let result = run_fixture("builtins-and-io/date-local-getters.ts");
+    assert!(
+        result.is_ok(),
+        "Date local-tz getters should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
+fn build_smoke_date_to_iso_string() {
+    let result = run_fixture("builtins-and-io/date-to-iso-string.ts");
+    assert!(
+        result.is_ok(),
+        "Date.toISOString should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
 fn build_smoke_string_match_method() {
     let result = run_fixture("builtins-and-io/string-match.ts");
     assert!(

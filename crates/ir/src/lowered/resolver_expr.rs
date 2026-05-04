@@ -1016,10 +1016,34 @@ impl<'a> Resolver<'a> {
                         args: vec![self.lower_expr(object)?],
                     })
                 } else if is_local_tz_date_method(method) && self.is_date_receiver(object) {
-                    Err(unsupported_local_tz_date_method_diagnostic(
-                        method,
-                        Some(*span),
-                    ))
+                    if !args.is_empty() {
+                        return Err(Diagnostic {
+                            code: DiagCode::ArityMismatch,
+                            message: format!(
+                                "Date.prototype.{method} expects 0 arguments, got {}",
+                                args.len()
+                            ),
+                            span: Some(*span),
+                        });
+                    }
+                    let field_index: i32 = match method.as_str() {
+                        "getFullYear" => 0,
+                        "getMonth" => 1,
+                        "getDate" => 2,
+                        "getHours" => 3,
+                        "getMinutes" => 4,
+                        "getSeconds" => 5,
+                        "getMilliseconds" => 6,
+                        "getDay" => 7,
+                        _ => unreachable!(),
+                    };
+                    Ok(LoweredExpr::RuntimeCall {
+                        runtime_fn: "DateGetLocalTimeField".to_owned(),
+                        args: vec![
+                            self.lower_expr(object)?,
+                            LoweredExpr::Number(field_index),
+                        ],
+                    })
                 } else if is_annex_b_date_method(method) && self.is_date_receiver(object) {
                     Err(unsupported_annex_b_date_method_diagnostic(
                         method,
@@ -1075,6 +1099,23 @@ impl<'a> Resolver<'a> {
                     };
                     Ok(LoweredExpr::RuntimeCall {
                         runtime_fn: runtime_fn.to_owned(),
+                        args: vec![self.lower_expr(object)?],
+                    })
+                } else if self.is_date_receiver(object)
+                    && matches!(method.as_str(), "toISOString" | "toJSON")
+                {
+                    if !args.is_empty() {
+                        return Err(Diagnostic {
+                            code: DiagCode::ArityMismatch,
+                            message: format!(
+                                "Date.prototype.{method} expects 0 arguments, got {}",
+                                args.len()
+                            ),
+                            span: Some(*span),
+                        });
+                    }
+                    Ok(LoweredExpr::RuntimeCall {
+                        runtime_fn: "DateToISOString".to_owned(),
                         args: vec![self.lower_expr(object)?],
                     })
                 } else if matches!(object.as_ref(), ResolvedExpr::String(_)) {

@@ -104,7 +104,10 @@ fn lowering_passes_immutable_class_method_outer_local_capture() {
             ..
         } => {
             assert_eq!(name, "Reader");
-            assert!(constructor.is_none());
+            assert!(
+                constructor.is_some(),
+                "constructor FuncId should always be set"
+            );
             assert_eq!(methods.len(), 1);
             assert_eq!(methods[0].0, "read");
         }
@@ -1125,7 +1128,10 @@ fn lowering_represents_static_private_field_access_as_same_class_env_cell() {
             ..
         } => {
             assert_eq!(name, "C");
-            assert!(constructor.is_none());
+            assert!(
+                constructor.is_some(),
+                "constructor FuncId should always be set"
+            );
             assert_eq!(methods.len(), 0);
             assert_eq!(static_methods.len(), 2);
             assert_eq!(static_methods[0].0, "read");

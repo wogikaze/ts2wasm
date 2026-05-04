@@ -1274,9 +1274,6 @@ impl<'a> WatEmitter<'a> {
                         prototypes.entry(parent_id).or_insert(None);
                     }
                 }
-                LoweredStmt::ClassDecl {
-                    constructor: None, ..
-                } => {}
                 LoweredStmt::Block(statements) => {
                     Self::collect_class_decl_prototypes(statements, prototypes, class_name_to_ctor);
                 }
@@ -1301,9 +1298,6 @@ impl<'a> WatEmitter<'a> {
                     class_name_to_ctor.insert(name.clone(), *ctor_id);
                     method_counts.insert(*ctor_id, methods.len());
                 }
-                LoweredStmt::ClassDecl {
-                    constructor: None, ..
-                } => {}
                 LoweredStmt::Block(statements) => {
                     Self::compute_class_decl_metadata(
                         statements,

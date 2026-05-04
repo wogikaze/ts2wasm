@@ -216,7 +216,7 @@ pub fn lower_program(program: &[ResolvedStmt]) -> Result<LoweredProgram, Diagnos
             ResolvedStmt::ClassDecl {
                 name,
                 extends,
-                constructor,
+                constructor: _,
                 methods,
                 private_fields,
                 static_private_fields,
@@ -224,10 +224,9 @@ pub fn lower_program(program: &[ResolvedStmt]) -> Result<LoweredProgram, Diagnos
                 ..
             } => {
                 // Look up FuncIds for constructor and methods (pre-computed in phase 1)
-                let ctor_id = constructor.as_ref().map(|_| {
-                    let key = class_constructor_key(name);
-                    function_ids[&key]
-                });
+                // constructor is always Some because Phase 1 always allocates a FuncId
+                let ctor_key = class_constructor_key(name);
+                let ctor_id = Some(function_ids[&ctor_key]);
                 let mut instance_methods = Vec::new();
                 let mut static_methods = Vec::new();
                 for method in methods {

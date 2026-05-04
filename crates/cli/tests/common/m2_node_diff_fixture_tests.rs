@@ -1312,12 +1312,25 @@ fn date_utc_getters_fixture_matches_node_output_under_iwasm() {
 }
 
 #[test]
-fn date_local_getters_fixture_reports_unsupported() {
-    assert_build_fails_with_diagnostic(
-        "fixtures/builtins-and-io/date-local-getters-unsupported.ts",
-        "[UnsupportedDate]",
-        "Date.prototype.getFullYear requires host timezone support",
-        true,
+fn date_local_getters_fixture_builds() {
+    // Local-tz getters use a host shim, so we can only verify compilation, not output
+    use std::path::Path;
+    let fixture = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("../..")
+        .join("fixtures/builtins-and-io/date-local-getters.ts");
+    let output_wasm =
+        std::env::temp_dir().join(format!("ts2wasm-local-getters-{}.wasm", std::process::id()));
+    let output = std::process::Command::new(env!("CARGO_BIN_EXE_ts2wasm"))
+        .arg("build")
+        .arg(&fixture)
+        .arg("-o")
+        .arg(&output_wasm)
+        .output()
+        .expect("Failed to execute ts2wasm");
+    assert!(
+        output.status.success(),
+        "date-local-getters should build successfully:\n{}",
+        String::from_utf8_lossy(&output.stderr)
     );
 }
 
@@ -1380,6 +1393,16 @@ fn class_expression_fixture_matches_node_output_under_iwasm() {
 #[test]
 fn class_extends_fixture_matches_node_output_under_iwasm() {
     assert_fixture_matches_node("fixtures/classes-and-inheritance/class-extends.ts");
+}
+
+#[test]
+fn class_basic_fixture_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node("fixtures/classes-and-inheritance/class-basic.ts");
+}
+
+#[test]
+fn class_static_fixture_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node("fixtures/classes-and-inheritance/class-static.ts");
 }
 
 #[test]

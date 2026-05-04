@@ -283,8 +283,8 @@ impl RuntimeLinkPlan {
                     self.add_required_runtime(RuntimeFn::ModuleExportsAssign);
                 }
                 LoweredStmt::ClassDecl { methods, .. } => {
+                    self.add_required_runtime(RuntimeFn::AllocHeap);
                     if !methods.is_empty() {
-                        self.add_required_runtime(RuntimeFn::AllocHeap);
                         self.add_required_runtime(RuntimeFn::PropertySet);
                     }
                 }

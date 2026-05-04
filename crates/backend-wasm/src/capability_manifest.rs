@@ -78,7 +78,9 @@ fn canonical_manifest_from_link_plan(plan: &RuntimeLinkPlan) -> CapabilityManife
             | Capability::HostDecodeURI
             | Capability::HostEscape
             | Capability::HostUnescape
-            | Capability::HostDateToString => {
+            | Capability::HostDateToString
+            | Capability::HostDateGetLocalTimeField
+            | Capability::HostDateToISOString => {
                 // Node host capabilities for URI encoding/decoding and Date
             }
         }

@@ -620,10 +620,8 @@ impl WatEmitter<'_> {
                 methods,
                 ..
             } => {
-                let Some(constructor_id) = constructor else {
-                    return;
-                };
-                let proto_global = super::emitter::class_prototype_global(*constructor_id);
+                let constructor_id = constructor.expect("constructor is always Some");
+                let proto_global = super::emitter::class_prototype_global(constructor_id);
                 for (method_name, func_id) in methods {
                     // Allocate no-capture closure
                     wat.push_str(&format!(

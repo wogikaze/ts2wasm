@@ -551,16 +551,6 @@ pub(super) fn is_local_tz_date_method(method: &str) -> bool {
     )
 }
 
-pub(super) fn unsupported_local_tz_date_method_diagnostic(method: &str, span: Option<Span>) -> Diagnostic {
-    Diagnostic {
-        code: DiagCode::UnsupportedSyntax,
-        message: format!(
-            "issue-NNN: Date.prototype.{method} requires host timezone support and is not yet available in WASM targets"
-        ),
-        span,
-    }
-}
-
 pub(super) fn regexp_constructor_literal(args: &[ResolvedExpr]) -> Result<String, Diagnostic> {
     if !(1..=2).contains(&args.len()) {
         return Err(Diagnostic {

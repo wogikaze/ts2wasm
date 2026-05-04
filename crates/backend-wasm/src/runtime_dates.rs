@@ -456,4 +456,51 @@ impl WatEmitter<'_> {
             epoch_offset = Layout::OBJECT_ENTRIES_OFFSET,
         ));
     }
+
+    pub(super) fn emit_date_get_local_time_field(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $date_get_local_time_field (param $date i32) (param $field i32) (result i32)
+    (local $epoch_ms i32)
+    (if (i32.ne (i32.and (local.get $date) (i32.const {tag_mask})) (i32.const {object_tag}))
+      (then (return (i32.const {undefined}))))
+    (local.set $epoch_ms
+      (i32.shr_s
+        (i32.load
+          (i32.add (i32.and (local.get $date) (i32.const {heap_mask})) (i32.const {epoch_offset})))
+        (i32.const {number_shift})))
+    (i32.or (i32.shl (call $host_date_get_local_time_field (local.get $epoch_ms) (local.get $field)) (i32.const {number_shift})) (i32.const {number_tag})))
+"#,
+            tag_mask = ValueTag::TAG_MASK,
+            object_tag = ValueTag::OBJECT,
+            undefined = ValueTag::UNDEFINED,
+            heap_mask = ValueTag::HEAP_MASK,
+            epoch_offset = Layout::OBJECT_ENTRIES_OFFSET,
+            number_shift = ValueTag::NUMBER_SHIFT,
+            number_tag = ValueTag::NUMBER,
+        ));
+    }
+
+    pub(super) fn emit_date_to_iso_string(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $date_to_iso_string (param $date i32) (result i32)
+    (local $epoch_ms i32)
+    (if (i32.ne (i32.and (local.get $date) (i32.const {tag_mask})) (i32.const {object_tag}))
+      (then (return (i32.const {undefined}))))
+    (local.set $epoch_ms
+      (i32.shr_s
+        (i32.load
+          (i32.add (i32.and (local.get $date) (i32.const {heap_mask})) (i32.const {epoch_offset})))
+        (i32.const {number_shift})))
+    (call $host_date_to_iso_string (local.get $epoch_ms)))
+"#,
+            tag_mask = ValueTag::TAG_MASK,
+            object_tag = ValueTag::OBJECT,
+            undefined = ValueTag::UNDEFINED,
+            heap_mask = ValueTag::HEAP_MASK,
+            epoch_offset = Layout::OBJECT_ENTRIES_OFFSET,
+            number_shift = ValueTag::NUMBER_SHIFT,
+        ));
+    }
 }

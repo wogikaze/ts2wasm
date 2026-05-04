@@ -149,6 +149,10 @@ pub(crate) enum RuntimeFn {
     DateGetUtcDate,
     DateGetUtcMonth,
     DateGetUtcFullYear,
+    /// Local-tz Date getters via host shim (single shim for all 8 getters).
+    DateGetLocalTimeField,
+    /// Date.prototype.toISOString via host shim.
+    DateToISOString,
     /// M10: String methods
     StringCharAt,
     /// String.prototype.at
@@ -359,6 +363,8 @@ pub(crate) enum HostImport {
     Escape,
     Unescape,
     DateToString,
+    DateGetLocalTimeField,
+    DateToISOString,
 }
 
 impl HostImport {
@@ -525,6 +531,22 @@ impl HostImport {
                 params: "param i32",
                 result: "result i32",
             },
+            Self::DateGetLocalTimeField => HostImportSpec {
+                module: "host",
+                name: "dateGetLocalTimeField",
+                wat_symbol: "$host_date_get_local_time_field",
+                abi: HostAbi::NodeShim,
+                params: "param i32 i32",
+                result: "result i32",
+            },
+            Self::DateToISOString => HostImportSpec {
+                module: "host",
+                name: "dateToISOString",
+                wat_symbol: "$host_date_to_iso_string",
+                abi: HostAbi::NodeShim,
+                params: "param i32",
+                result: "result i32",
+            },
         }
     }
 
@@ -553,6 +575,8 @@ impl HostImport {
             Self::Escape => "host.escape",
             Self::Unescape => "host.unescape",
             Self::DateToString => "host.dateToString",
+            Self::DateGetLocalTimeField => "host.dateGetLocalTimeField",
+            Self::DateToISOString => "host.dateToISOString",
         }
     }
 }
@@ -697,6 +721,8 @@ pub(crate) fn runtime_fn_from_name(name: &str) -> Option<RuntimeFn> {
         "DateGetUtcDate" => Some(RuntimeFn::DateGetUtcDate),
         "DateGetUtcMonth" => Some(RuntimeFn::DateGetUtcMonth),
         "DateGetUtcFullYear" => Some(RuntimeFn::DateGetUtcFullYear),
+        "DateGetLocalTimeField" => Some(RuntimeFn::DateGetLocalTimeField),
+        "DateToISOString" => Some(RuntimeFn::DateToISOString),
         "IsNaN" => Some(RuntimeFn::IsNaN),
         "ParseInt" => Some(RuntimeFn::ParseInt),
         "ParseFloat" => Some(RuntimeFn::ParseFloat),
@@ -737,6 +763,8 @@ pub(crate) enum Capability {
     HostEscape,
     HostUnescape,
     HostDateToString,
+    HostDateGetLocalTimeField,
+    HostDateToISOString,
 }
 
 impl Capability {
@@ -763,6 +791,8 @@ impl Capability {
             Self::HostEscape => "host.escape",
             Self::HostUnescape => "host.unescape",
             Self::HostDateToString => "host.dateToString",
+            Self::HostDateGetLocalTimeField => "host.dateGetLocalTimeField",
+            Self::HostDateToISOString => "host.dateToISOString",
         }
     }
 }
@@ -962,6 +992,8 @@ const IMPORT_DECODE_URI: &[HostImport] = &[HostImport::DecodeURI];
 const IMPORT_ESCAPE: &[HostImport] = &[HostImport::Escape];
 const IMPORT_UNESCAPE: &[HostImport] = &[HostImport::Unescape];
 const IMPORT_DATE_TO_STRING: &[HostImport] = &[HostImport::DateToString];
+const IMPORT_DATE_GET_LOCAL_TIME_FIELD: &[HostImport] = &[HostImport::DateGetLocalTimeField];
+const IMPORT_DATE_TO_ISO_STRING: &[HostImport] = &[HostImport::DateToISOString];
 const CAP_STDIN_READ: &[Capability] = &[Capability::StdinRead];
 const CAP_STDOUT_WRITE: &[Capability] = &[Capability::StdoutWrite];
 const CAP_WASI_CLOCK_REALTIME: &[Capability] = &[Capability::WasiClockRealtime];
@@ -982,6 +1014,8 @@ const CAP_HOST_DECODE_URI: &[Capability] = &[Capability::HostDecodeURI];
 const CAP_HOST_ESCAPE: &[Capability] = &[Capability::HostEscape];
 const CAP_HOST_UNESCAPE: &[Capability] = &[Capability::HostUnescape];
 const CAP_HOST_DATE_TO_STRING: &[Capability] = &[Capability::HostDateToString];
+const CAP_HOST_DATE_GET_LOCAL_TIME_FIELD: &[Capability] = &[Capability::HostDateGetLocalTimeField];
+const CAP_HOST_DATE_TO_ISO_STRING: &[Capability] = &[Capability::HostDateToISOString];
 const VTS_RUNTIME_STRINGS: &[&str] = &[
     RuntimeString::UNDEFINED,
     RuntimeString::NULL,
