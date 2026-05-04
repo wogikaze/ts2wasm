@@ -114,6 +114,22 @@ impl RuntimeLinkPlan {
     }
 
     fn populate_derived_sets(&mut self) {
+        // Recursively add transitive deps from RuntimeSpec (e.g. ArrayEvery needs TruthyBool)
+        let mut changed = true;
+        while changed {
+            changed = false;
+            let deps: Vec<RuntimeFn> = self
+                .required_runtime
+                .iter()
+                .flat_map(|rf| rf.spec().deps.iter().copied())
+                .collect();
+            for dep in deps {
+                if self.required_runtime.insert(dep) {
+                    changed = true;
+                }
+            }
+        }
+
         // Collect capability reasons first to avoid borrow conflicts
         let mut capability_reasons_to_add: Vec<(String, String)> = Vec::new();
 

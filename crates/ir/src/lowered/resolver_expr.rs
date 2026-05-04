@@ -1483,6 +1483,74 @@ impl<'a> Resolver<'a> {
                         }
                         _ => {
                             // Non-identifier receiver (e.g. `[1].indexOf(2)`, `"hi".charAt(0)`)
+                            // Handle ClassName.prototype.method.call(thisArg, ...args) pattern
+                            if method == "call" {
+                                if let Some((class_name, proto_method)) =
+                                    extract_prototype_method_name(object)
+                                {
+                                    if let Some((receiver, call_args)) = args.split_first() {
+                                        // For Array callback methods (every, some, find, filter, etc.)
+                                        // with an ArrowFn as first call arg, route through
+                                        // lower_array_callback_method
+                                        if class_name == "Array"
+                                            && !call_args.is_empty()
+                                            && matches!(
+                                                call_args[0],
+                                                ResolvedExpr::ArrowFn { .. }
+                                            )
+                                            && (proto_method == "every"
+                                                || proto_method == "some"
+                                                || proto_method == "find"
+                                                || proto_method == "findIndex"
+                                                || proto_method == "findLast"
+                                                || proto_method == "findLastIndex"
+                                                || proto_method == "filter"
+                                                || proto_method == "forEach"
+                                                || proto_method == "map"
+                                                || proto_method == "reduce"
+                                                || proto_method == "reduceRight"
+                                                || proto_method == "flatMap")
+                                        {
+                                            if self.is_known_array_expr(receiver) {
+                                                let lowered_receiver =
+                                                    self.lower_expr(receiver)?;
+                                                return self.lower_array_callback_method(
+                                                    proto_method,
+                                                    lowered_receiver,
+                                                    receiver,
+                                                    call_args,
+                                                    *span,
+                                                );
+                                            }
+                                        }
+                                        // For non-callback runtime functions, unwrap call
+                                        if let Some(runtime_fn) =
+                                            collection_method_runtime_fn(
+                                                class_name,
+                                                proto_method,
+                                            )
+                                        {
+                                            let mut lowered_args =
+                                                vec![self.lower_expr(receiver)?];
+                                            for arg in call_args {
+                                                lowered_args.push(self.lower_expr(arg)?);
+                                            }
+                                            return Ok(LoweredExpr::RuntimeCall {
+                                                runtime_fn: runtime_fn.to_owned(),
+                                                args: lowered_args,
+                                            });
+                                        }
+                                    }
+                                    return Err(Diagnostic {
+                                        code: DiagCode::UnsupportedSyntax,
+                                        message: format!(
+                                            "issue-211: {class_name}.prototype.{proto_method}.call is not supported"
+                                        ),
+                                        span: Some(*span),
+                                    });
+                                }
+                                // Fall through to issue-211 error below
+                            }
                             if let Some(runtime_fn) =
                                 collection_method_runtime_fn_arg(method)
                             {
@@ -1951,6 +2019,34 @@ impl<'a> Resolver<'a> {
         }
     }
 
+}
+
+/// Extract `(class_name, method_name)` from `ClassName.prototype.methodName` patterns.
+/// Used for unwrapping `Array.prototype.every.call(obj, fn)` into `ArrayEvery`.
+fn extract_prototype_method_name<'a>(expr: &'a ResolvedExpr) -> Option<(&'a str, &'a str)> {
+    let ResolvedExpr::PropertyAccess {
+        object,
+        key: method_name,
+        ..
+    } = expr
+    else {
+        return None;
+    };
+    let ResolvedExpr::PropertyAccess {
+        object: class_expr,
+        key: proto_key,
+        ..
+    } = object.as_ref()
+    else {
+        return None;
+    };
+    if proto_key != "prototype" {
+        return None;
+    }
+    let ResolvedExpr::Ident(class_name) = class_expr.as_ref() else {
+        return None;
+    };
+    Some((class_name, method_name))
 }
 
 /// Returns true if `method` is an HTML wrapper (Annex B String.prototype method
