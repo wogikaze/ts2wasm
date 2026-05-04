@@ -52,7 +52,7 @@ impl WatEmitter<'_> {
       (then
         (local.set $i (i32.add (local.get $len) (local.get $i)))
         (if (i32.lt_s (local.get $i) (i32.const {zero}))
-          (then (local.set $i (i32.const {zero}))))))
+          (then (return (i32.const {undefined}))))))
     (if (i32.ge_u (local.get $i) (local.get $len))
       (then (return (i32.const {undefined}))))
     (local.set $obj (call $alloc_heap (i32.const {char_size})))
