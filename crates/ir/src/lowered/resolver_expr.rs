@@ -796,7 +796,6 @@ impl<'a> Resolver<'a> {
                 args,
                 span,
             } => {
-                eprintln!("DBG_MCALL: method={}", method);
                 if method == "call" && is_array_prototype_push_expr(object) {
                     let Some((receiver, values)) = args.split_first() else {
                         return Err(Diagnostic {
@@ -1298,7 +1297,6 @@ impl<'a> Resolver<'a> {
                         args: lowered_args,
                     })
                 } else {
-                    eprintln!("DBG_L1300: reached resolve_method_to_runtime_fn else block");
                     if let ResolvedExpr::Ident(receiver_name) = object.as_ref()
                         && let Ok(obj_local) = self.resolve_local(receiver_name)
                         && let Some(method_id) = self
@@ -1443,7 +1441,6 @@ impl<'a> Resolver<'a> {
                         });
                     }
 
-                    eprintln!("DBG_L1445: reached receiver_name extraction");
                     let receiver_name = match object.as_ref() {
                         ResolvedExpr::Ident(name) => name,
                         ResolvedExpr::PropertyAccess {
@@ -1452,7 +1449,6 @@ impl<'a> Resolver<'a> {
                             ..
                         } if matches!(prop_obj.as_ref(), ResolvedExpr::This { .. }) => {
                             // this.field.method(...) — try to use a runtime function
-                            eprintln!("DEBUG: entering collection_method_runtime_fn_arg path, method={}, args.len()={}", method, args.len());
                             if let Some(runtime_fn) =
                                 collection_method_runtime_fn_arg(method)
                             {
@@ -1495,17 +1491,6 @@ impl<'a> Resolver<'a> {
                         && let Some(class_name) = self.local_classes.get(&obj_local)
                         && let Some(runtime_fn) = collection_method_runtime_fn(class_name, method)
                     {
-                        eprintln!("DBG: class-based routing hit: class={class_name}, method={method}, args.len={}, runtime_fn={runtime_fn}", args.len());
-                    } else {
-                        eprintln!("DBG: class-based routing MISS: resolve={:?}, class={:?}, runtime_fn={:?}",
-                            self.resolve_local(receiver_name),
-                            self.resolve_local(receiver_name).ok().and_then(|id| self.local_classes.get(&id)),
-                            self.resolve_local(receiver_name).ok().and_then(|id| self.local_classes.get(&id)).and_then(|c| collection_method_runtime_fn(c, method)));
-                    }
-                    if let Ok(obj_local) = self.resolve_local(receiver_name)
-                        && let Some(class_name) = self.local_classes.get(&obj_local)
-                        && let Some(runtime_fn) = collection_method_runtime_fn(class_name, method)
-                    {
                         if class_name == "RegExp" && args.len() != 1 {
                             return Err(Diagnostic {
                                 code: DiagCode::ArityMismatch,
@@ -1516,13 +1501,11 @@ impl<'a> Resolver<'a> {
                                 span: Some(*span),
                             });
                         }
-                        eprintln!("DEBUG: class_name={}, method={}, args.len()={}", class_name, method, args.len());
                         let mut lowered_args = vec![LoweredExpr::Local(obj_local)];
                         // Array.prototype.flat defaults depth to 1 when omitted
                         if class_name == "Array" && method == "flat" && args.is_empty() {
                             lowered_args.push(LoweredExpr::Number(1));
                         } else if class_name == "Array" && method == "join" && args.is_empty() {
-                            eprintln!("DEBUG: injecting default separator for join");
                             lowered_args.push(LoweredExpr::String(",".to_owned()));
                         } else if class_name == "Array" && method == "copyWithin" {
                             // copyWithin(target, start, end) — pad missing args with undefined

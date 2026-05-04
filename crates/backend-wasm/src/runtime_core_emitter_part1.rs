@@ -1269,18 +1269,17 @@ impl WatEmitter<'_> {
       (i32.wrap_i64 (local.get $limb))
       (i32.wrap_i64 (i64.shr_u (local.get $limb) (i64.const 32)))
       (local.get $result_ptr)
-      (local.get $result_len))))
+      (local.get $result_len)))
 "#,
-            heap_mask = ValueTag::HEAP_MASK,
-            bigint_sign_offset = Layout::BIGINT_SIGN_OFFSET,
-            bigint_decimal_data_offset = Layout::BIGINT_DECIMAL_DATA_OFFSET,
-            bigint_decimal_len_offset = Layout::BIGINT_DECIMAL_LEN_OFFSET,
-            scratch = Layout::SCRATCH_OFFSET,
             ascii_zero = RuntimeConst::ASCII_ZERO,
             ascii_minus = RuntimeConst::ASCII_MINUS,
+            scratch = Layout::SCRATCH_OFFSET,
+            heap_mask = ValueTag::HEAP_MASK,
+            bigint_sign_offset = Layout::BIGINT_SIGN_OFFSET,
+            bigint_decimal_len_offset = Layout::BIGINT_DECIMAL_LEN_OFFSET,
+            bigint_decimal_data_offset = Layout::BIGINT_DECIMAL_DATA_OFFSET,
         ));
     }
-
     pub(crate) fn emit_bigint_pow(&self, wat: &mut String) {
         wat.push_str(
             r#"

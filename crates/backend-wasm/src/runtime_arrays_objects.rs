@@ -2969,6 +2969,19 @@ impl WatEmitter<'_> {
     (i32.store (i32.add (local.get $result_ptr) (i32.const 4)) (local.get $new_len))
     (i32.store (i32.add (local.get $result_ptr) (i32.const 8)) (i32.const 1))
     (i32.store (i32.add (local.get $result_ptr) (i32.const 12)) (i32.const {array_header}))
+    ;; Set presence bitmap (dense: bits 0..new_len-1 = 1)
+    (block $presence
+      (if (i32.eqz (local.get $new_len))
+        (then
+          (i32.store (i32.add (local.get $result_ptr) (i32.const 16)) (i32.const 0))
+          (br $presence)))
+      (if (i32.gt_u (local.get $new_len) (i32.const 31))
+        (then
+          (i32.store (i32.add (local.get $result_ptr) (i32.const 16)) (i32.const -1))
+          (br $presence)))
+      (i32.store
+        (i32.add (local.get $result_ptr) (i32.const 16))
+        (i32.sub (i32.shl (i32.const 1) (local.get $new_len)) (i32.const 1))))
     ;; Copy elements 0..start from source
     (local.set $i (i32.const {zero}))
     (block $copy1_done
@@ -3058,6 +3071,19 @@ impl WatEmitter<'_> {
     (i32.store (i32.add (local.get $result_ptr) (i32.const 4)) (local.get $len))
     (i32.store (i32.add (local.get $result_ptr) (i32.const 8)) (i32.const 1))
     (i32.store (i32.add (local.get $result_ptr) (i32.const 12)) (i32.const {array_header}))
+    ;; Set presence bitmap (dense: bits 0..len-1 = 1)
+    (block $presence
+      (if (i32.eqz (local.get $len))
+        (then
+          (i32.store (i32.add (local.get $result_ptr) (i32.const 16)) (i32.const 0))
+          (br $presence)))
+      (if (i32.gt_u (local.get $len) (i32.const 31))
+        (then
+          (i32.store (i32.add (local.get $result_ptr) (i32.const 16)) (i32.const -1))
+          (br $presence)))
+      (i32.store
+        (i32.add (local.get $result_ptr) (i32.const 16))
+        (i32.sub (i32.shl (i32.const 1) (local.get $len)) (i32.const 1))))
     ;; Fill with indices 0, 1, 2, ..., len-1 (tagged as numbers)
     (local.set $i (i32.const {zero}))
     (block $loop_done
@@ -3107,6 +3133,19 @@ impl WatEmitter<'_> {
     (i32.store (i32.add (local.get $result_ptr) (i32.const 4)) (local.get $len))
     (i32.store (i32.add (local.get $result_ptr) (i32.const 8)) (i32.const 1))
     (i32.store (i32.add (local.get $result_ptr) (i32.const 12)) (i32.const {array_header}))
+    ;; Set presence bitmap (dense: bits 0..len-1 = 1)
+    (block $presence
+      (if (i32.eqz (local.get $len))
+        (then
+          (i32.store (i32.add (local.get $result_ptr) (i32.const 16)) (i32.const 0))
+          (br $presence)))
+      (if (i32.gt_u (local.get $len) (i32.const 31))
+        (then
+          (i32.store (i32.add (local.get $result_ptr) (i32.const 16)) (i32.const -1))
+          (br $presence)))
+      (i32.store
+        (i32.add (local.get $result_ptr) (i32.const 16))
+        (i32.sub (i32.shl (i32.const 1) (local.get $len)) (i32.const 1))))
     ;; For each index, create a [index, value] pair array
     (local.set $i (i32.const {zero}))
     (block $loop_done
@@ -3124,6 +3163,8 @@ impl WatEmitter<'_> {
         (i32.store (i32.add (local.get $pair_ptr) (i32.const 4)) (i32.const 2))
         (i32.store (i32.add (local.get $pair_ptr) (i32.const 8)) (i32.const 1))
         (i32.store (i32.add (local.get $pair_ptr) (i32.const 12)) (i32.const {array_header}))
+        ;; Pair presence: 2 elements, bits 0 and 1 set
+        (i32.store (i32.add (local.get $pair_ptr) (i32.const 16)) (i32.const 3))
         ;; pair[0] = i (tagged number)
         (i32.store
           (i32.add (local.get $pair_ptr) (i32.add (i32.const {array_header})
