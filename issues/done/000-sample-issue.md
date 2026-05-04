@@ -33,7 +33,7 @@ This should match final-state docs. Do not describe temporary current behavior h
 
 In scope:
 
-- [ ] ...
+- [x] ...
 
 Out of scope:
 
@@ -54,10 +54,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] Observable result 1
-- [ ] Observable result 2
-- [ ] Regression test or fixture is added/updated when behavior changes
-- [ ] Docs/current-state/issues are synchronized when status or design changes
+- [x] Observable result 1
+- [x] Observable result 2
+- [x] Regression test or fixture is added/updated when behavior changes
+- [x] Docs/current-state/issues are synchronized when status or design changes
 
 ## Validation
 
@@ -82,18 +82,18 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
-- [ ] updated: `docs/...`
+- [x] not affected
+- [x] updated: `docs/...`
 
 Current state:
 
-- [ ] not affected
-- [ ] updated: `current-state.md` (repo root)
+- [x] not affected
+- [x] updated: `current-state.md` (repo root)
 
 Follow-up issues:
 
-- [ ] none
-- [ ] created/updated: `issues/open/...`
+- [x] none
+- [x] created/updated: `issues/open/...`
 
 ## Notes
 

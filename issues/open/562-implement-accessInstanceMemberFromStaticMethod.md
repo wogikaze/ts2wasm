@@ -116,8 +116,8 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/open/091-implement-accessInstanceMemberFromStaticMethod.md` - Implement Accessinstancememberfromstaticmethod (same reference path, same group key, title overlap)
-- `issues/open/476-implement-accessInstanceMemberFromStaticMethod.md` - Implement Accessinstancememberfromstaticmethod (same reference path, same feature label, same group key, title overlap)
+- `issues/done/091-implement-accessInstanceMemberFromStaticMethod.md` - Implement Accessinstancememberfromstaticmethod (same reference path, same group key, title overlap)
+- `issues/done/476-implement-accessInstanceMemberFromStaticMethod.md` - Implement Accessinstancememberfromstaticmethod (same reference path, same feature label, same group key, title overlap)
 
 ## Smart triage
 
@@ -206,7 +206,7 @@ Duplicate candidates:
   },
   {
     "state": "open",
-    "path": "issues/open/091-implement-accessInstanceMemberFromStaticMethod.md",
+    "path": "issues/done/091-implement-accessInstanceMemberFromStaticMethod.md",
     "title": "Implement Accessinstancememberfromstaticmethod",
     "reason": "same reference path"
   },
@@ -218,7 +218,7 @@ Duplicate candidates:
   },
   {
     "state": "open",
-    "path": "issues/open/476-implement-accessInstanceMemberFromStaticMethod.md",
+    "path": "issues/done/476-implement-accessInstanceMemberFromStaticMethod.md",
     "title": "Implement Accessinstancememberfromstaticmethod",
     "reason": "same reference path, same feature label"
   }

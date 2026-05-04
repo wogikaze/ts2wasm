@@ -43,10 +43,10 @@ This generated bucket is either split into implementation-ready child issues or 
 
 In scope:
 
-- [ ] Inspect the smart triage report below
-- [ ] Confirm whether existing open/done issues already cover this bucket
-- [ ] Split one feature family, one observable behavior, or one fixed reference window into child issues
-- [ ] Preserve exact reproduction commands and representative AST/diagnostic evidence in each child issue
+- [x] Inspect the smart triage report below
+- [x] Confirm whether existing open/done issues already cover this bucket
+- [x] Split one feature family, one observable behavior, or one fixed reference window into child issues
+- [x] Preserve exact reproduction commands and representative AST/diagnostic evidence in each child issue
 
 Out of scope:
 
@@ -68,10 +68,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] Duplicate candidates below are confirmed as no-match or this issue is superseded
-- [ ] At least one child issue contains an exact `mise run reference-triage -- ...` command
-- [ ] Child issue includes failing path, diagnostic code, source context, visible symbols, and parser/TypeScript AST evidence
-- [ ] Child issue acceptance names the exact fixture/reference path and diagnostic/stdout change
+- [x] Duplicate candidates below are confirmed as no-match or this issue is superseded
+- [x] At least one child issue contains an exact `mise run reference-triage -- ...` command
+- [x] Child issue includes failing path, diagnostic code, source context, visible symbols, and parser/TypeScript AST evidence
+- [x] Child issue acceptance names the exact fixture/reference path and diagnostic/stdout change
 
 ## Validation
 
@@ -98,15 +98,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] updated: `current-state.md` (repo root)
+- [x] updated: `current-state.md` (repo root)
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 
@@ -126,11 +126,11 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/open/096-implement-accessorDeclarationEmitJs.md` - Implement Accessordeclarationemitjs (same feature label, same group key, title overlap)
-- `issues/open/097-implement-accessorDeclarationEmitVisibilityErrors.md` - Implement Accessordeclarationemitvisibilityerrors (same feature label, same group key, title overlap)
+- `issues/done/096-implement-accessorDeclarationEmitJs.md` - Implement Accessordeclarationemitjs (same feature label, same group key, title overlap)
+- `issues/done/097-implement-accessorDeclarationEmitVisibilityErrors.md` - Implement Accessordeclarationemitvisibilityerrors (same feature label, same group key, title overlap)
 - `issues/open/1179-implement-classDeclaredBeforeClassFactory.md` - Implement Classdeclaredbeforeclassfactory (same feature label, same group key, title overlap)
 - `issues/open/1249-implement-classdecl.md` - Implement Classdecl (same feature label, same group key, title overlap)
-- `issues/open/141-implement-ambientClassDeclaredBeforeBase.md` - Implement Ambientclassdeclaredbeforebase (same feature label, same group key, title overlap)
+- `issues/done/141-implement-ambientClassDeclaredBeforeBase.md` - Implement Ambientclassdeclaredbeforebase (same feature label, same group key, title overlap)
 - `issues/open/1599-implement-crashDeclareGlobalTypeofExport.md` - Implement Crashdeclareglobaltypeofexport (same feature label, same group key, title overlap)
 - `issues/open/1683-implement-declarationEmitAliasInlineing.md` - Implement Declarationemitaliasinlineing (same feature label, same group key, title overlap)
 - `issues/open/1687-implement-declarationEmitArrowFunctionNoRenaming.md` - Implement Declarationemitarrowfunctionnorenaming (same feature label, same group key, title overlap)

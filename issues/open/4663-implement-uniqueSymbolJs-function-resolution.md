@@ -116,7 +116,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/open/430-implement-function.md` - Implement function support (same feature label, title overlap)
+- `issues/done/430-implement-function.md` - Implement function support (same feature label, title overlap)
 - `issues/open/431-implement-function-resolution.md` - Implement function resolution (same feature label, title overlap)
 - `issues/done/063-implement-function-resolution.md` - Implement function resolution (same feature label, title overlap)
 

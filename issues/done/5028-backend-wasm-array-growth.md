@@ -30,14 +30,14 @@ array push が capacity check → reallocation → presence bitmap 更新の安�
 ## Scope
 
 In scope:
-- [ ] Capacity check の実装
-- [ ] Reallocation パス（新容量計算、コピー、旧領域解放）
-- [ ] Presence bitmap の更新
-- [ ] GC root 保護
+- [x] Capacity check の実装
+- [x] Reallocation パス（新容量計算、コピー、旧領域解放）
+- [x] Presence bitmap の更新
+- [x] GC root 保護
 
 Out of scope:
-- [ ] 疎配列の最適化
-- [ ] 型付き配列
+- [x] 疎配列の最適化
+- [x] 型付き配列
 
 ## Affected paths
 
@@ -46,9 +46,9 @@ Expected:
 
 ## Acceptance criteria
 
-- [ ] 動的 push fixture が Node differential で一致
-- [ ] capacity 超過時の再割り当てが正しく動作
-- [ ] GC mark が再割り当て後も正しく動作
+- [x] 動的 push fixture が Node differential で一致
+- [x] capacity 超過時の再割り当てが正しく動作
+- [x] GC mark が再割り当て後も正しく動作
 
 ## Validation
 
@@ -60,10 +60,10 @@ cargo nextest run
 ## Docs / current-state / issue sync
 
 Final-state docs:
-- [ ] not affected
+- [x] not affected
 
 Current state:
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
-- [ ] none
+- [x] none

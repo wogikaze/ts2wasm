@@ -116,7 +116,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/open/170-implement-amdDeclarationEmitNoExtraDeclare.md` - Implement Amddeclarationemitnoextradeclare (same reference path, same feature label, same group key, title overlap)
+- `issues/done/170-implement-amdDeclarationEmitNoExtraDeclare.md` - Implement Amddeclarationemitnoextradeclare (same reference path, same feature label, same group key, title overlap)
 - `issues/open/424-implement-declaration-emit.md` - Implement declaration-emit support (same feature label, same group key, title overlap)
 
 ## Smart triage
@@ -192,13 +192,13 @@ Duplicate candidates:
 [
   {
     "state": "open",
-    "path": "issues/open/170-implement-amdDeclarationEmitNoExtraDeclare.md",
+    "path": "issues/done/170-implement-amdDeclarationEmitNoExtraDeclare.md",
     "title": "Implement Amddeclarationemitnoextradeclare",
     "reason": "same reference path, same feature label, title overlap"
   },
   {
     "state": "open",
-    "path": "issues/open/408-implement-tsgo-declaration-emit-asconst-and-generic-methods.md",
+    "path": "issues/done/408-implement-tsgo-declaration-emit-asconst-and-generic-methods.md",
     "title": "Implement tsgo declaration emit: AsConstSatisfies/const generic method cases",
     "reason": "same feature label, title overlap"
   },

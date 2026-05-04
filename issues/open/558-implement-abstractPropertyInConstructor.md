@@ -116,8 +116,8 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/open/087-implement-abstractPropertyInConstructor.md` - Implement Abstractpropertyinconstructor (same reference path, same feature label, same group key, title overlap)
-- `issues/open/472-implement-abstractPropertyInConstructor.md` - Implement Abstractpropertyinconstructor (same reference path, same feature label, same group key, title overlap)
+- `issues/done/087-implement-abstractPropertyInConstructor.md` - Implement Abstractpropertyinconstructor (same reference path, same feature label, same group key, title overlap)
+- `issues/done/472-implement-abstractPropertyInConstructor.md` - Implement Abstractpropertyinconstructor (same reference path, same feature label, same group key, title overlap)
 
 ## Smart triage
 
@@ -206,7 +206,7 @@ Duplicate candidates:
 [
   {
     "state": "open",
-    "path": "issues/open/087-implement-abstractPropertyInConstructor.md",
+    "path": "issues/done/087-implement-abstractPropertyInConstructor.md",
     "title": "Implement Abstractpropertyinconstructor",
     "reason": "same reference path, same feature label, title overlap"
   },
@@ -218,13 +218,13 @@ Duplicate candidates:
   },
   {
     "state": "open",
-    "path": "issues/open/464-implement-FunctionDeclaration-parser-syntax.md",
+    "path": "issues/done/464-implement-FunctionDeclaration-parser-syntax.md",
     "title": "Implement Functiondeclaration Parser Syntax",
     "reason": "same feature label, title overlap"
   },
   {
     "state": "open",
-    "path": "issues/open/472-implement-abstractPropertyInConstructor.md",
+    "path": "issues/done/472-implement-abstractPropertyInConstructor.md",
     "title": "Implement Abstractpropertyinconstructor",
     "reason": "same reference path, same feature label, title overlap"
   },
@@ -254,7 +254,7 @@ Duplicate candidates:
   },
   {
     "state": "done",
-    "path": "issues/open/200-implement-parser-syntax.md",
+    "path": "issues/done/200-implement-parser-syntax.md",
     "title": "Implement parser syntax extensions",
     "reason": "same feature label, title overlap"
   },

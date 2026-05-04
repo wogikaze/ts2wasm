@@ -126,9 +126,9 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/open/067-implement-unknown-unsupported.md` - Investigate and classify unknown-unsupported cases (same reference path)
+- `issues/done/067-implement-unknown-unsupported.md` - Investigate and classify unknown-unsupported cases (same reference path)
 - `issues/open/2615-implement-global.md` - Implement Global (same feature label, same group key, title overlap)
-- `issues/open/433-implement-legacy-global-builtin.md` - Implement legacy-global-builtin support (same reference path, same feature label, same group key, title overlap)
+- `issues/done/433-implement-legacy-global-builtin.md` - Implement legacy-global-builtin support (same reference path, same feature label, same group key, title overlap)
 - `issues/done/060-investigate-unknown-unsupported-cases.md` - Investigate and classify unknown-unsupported diagnostic cases (same feature label, same group key)
 - `issues/done/224-implement-annexb-html-comments.md` - Implement Annex B HTML-like comments (same feature label, same group key, title overlap)
 - `issues/done/228-implement-logical-assignment-operators.md` - Implement logical assignment operators (same feature label, same group key, title overlap)
@@ -255,7 +255,7 @@ Duplicate candidates:
 [
   {
     "state": "open",
-    "path": "issues/open/067-implement-unknown-unsupported.md",
+    "path": "issues/done/067-implement-unknown-unsupported.md",
     "title": "Investigate and classify unknown-unsupported cases",
     "reason": "same reference path, same feature label"
   },

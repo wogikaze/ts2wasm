@@ -116,7 +116,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/open/169-implement-ambiguousOverloadResolution.md` - Implement Ambiguousoverloadresolution (same reference path, same group key, title overlap)
+- `issues/done/169-implement-ambiguousOverloadResolution.md` - Implement Ambiguousoverloadresolution (same reference path, same group key, title overlap)
 
 ## Smart triage
 
@@ -226,7 +226,7 @@ Duplicate candidates:
   },
   {
     "state": "open",
-    "path": "issues/open/169-implement-ambiguousOverloadResolution.md",
+    "path": "issues/done/169-implement-ambiguousOverloadResolution.md",
     "title": "Implement Ambiguousoverloadresolution",
     "reason": "same reference path, title overlap"
   },

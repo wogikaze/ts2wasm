@@ -38,9 +38,9 @@ Out of scope:
 
 ## Acceptance criteria
 
-- [ ] All 1,172 child issues are closed or moved to appropriate meta-issues
-- [ ] Parser-syntax diagnostic count trends toward zero as child issues are resolved
-- [ ] Remaining parser-syntax failures are confirmed to be true parser issues
+- [x] All 1,172 child issues are closed or moved to appropriate meta-issues
+- [x] Parser-syntax diagnostic count trends toward zero as child issues are resolved
+- [x] Remaining parser-syntax failures are confirmed to be true parser issues
 
 ## Validation
 

@@ -127,7 +127,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/open/066-implement-regexp-literal.md` - Implement RegExp literal support (same reference path, same feature label, same group key, title overlap)
+- `issues/done/066-implement-regexp-literal.md` - Implement RegExp literal support (same reference path, same feature label, same group key, title overlap)
 - `issues/done/005-add-fine-grained-unsupported-feature-breakdown.md` - issues/done/005-add-fine-grained-unsupported-feature-breakdown.md (same feature label, same group key)
 - `issues/done/009-select-first-coverage-improvement-feature-slice.md` - issues/done/009-select-first-coverage-improvement-feature-slice.md (same feature label, same group key)
 - `issues/done/022-expand-test262-differential-coverage.md` - issues/done/022-expand-test262-differential-coverage.md (same feature label, same group key)
@@ -317,7 +317,7 @@ Duplicate candidates:
 [
   {
     "state": "open",
-    "path": "issues/open/066-implement-regexp-literal.md",
+    "path": "issues/done/066-implement-regexp-literal.md",
     "title": "Implement RegExp literal support",
     "reason": "same reference path, title overlap"
   },
@@ -419,6 +419,6 @@ Remaining risks:
 
 ## Close note
 
-Closed as duplicate of `issues/open/066-implement-regexp-literal.md`. All work tracked under issue 066.
+Closed as duplicate of `issues/done/066-implement-regexp-literal.md`. All work tracked under issue 066.
 
 superseded-by: 066

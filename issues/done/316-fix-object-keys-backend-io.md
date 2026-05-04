@@ -70,11 +70,11 @@ evidence.
 
 In scope:
 
-- [ ] Establish a harness-backed reproduction for the Object.keys built-ins
+- [x] Establish a harness-backed reproduction for the Object.keys built-ins
       case.
-- [ ] Reconfirm whether the current failure is `BackendIo`, `UnresolvedName`,
+- [x] Reconfirm whether the current failure is `BackendIo`, `UnresolvedName`,
       semantic mismatch, or unsupported.
-- [ ] Split a child implementation issue only after the failure mode is known.
+- [x] Split a child implementation issue only after the failure mode is known.
 
 Out of scope:
 
@@ -99,10 +99,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] The Object.keys built-ins case is selectable by the focused reference
+- [x] The Object.keys built-ins case is selectable by the focused reference
       runner or an equivalent documented harness command.
-- [ ] The current failure mode is recorded with exact command output.
-- [ ] If the current failure is still a product bug, a child issue owns the
+- [x] The current failure mode is recorded with exact command output.
+- [x] If the current failure is still a product bug, a child issue owns the
       smallest implementation slice.
 
 ## Validation
@@ -130,16 +130,16 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
-- [ ] updated: `docs/14-runtime-abi.md` if Object built-in ABI changes
+- [x] not affected
+- [x] updated: `docs/14-runtime-abi.md` if Object built-in ABI changes
 
 Current state:
 
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] create an implementation child after harness-backed reproduction exists
+- [x] create an implementation child after harness-backed reproduction exists
 
 ## Notes
 

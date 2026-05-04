@@ -30,14 +30,14 @@ constructor、prototype chain、static members、extends、private elements の�
 ## Scope
 
 In scope:
-- [ ] `ClassDecl` の WAT emission 実装
-- [ ] constructor / prototype / static members の最低限表現
-- [ ] `extends` の単一継承パス
-- [ ] private elements の命名規則による分離
+- [x] `ClassDecl` の WAT emission 実装
+- [x] constructor / prototype / static members の最低限表現
+- [x] `extends` の単一継承パス
+- [x] private elements の命名規則による分離
 
 Out of scope:
-- [ ] 完全な semantic differential（別 issue）
-- [ ] 複雑な inheritance chain の最適化
+- [x] 完全な semantic differential（別 issue）
+- [x] 複雑な inheritance chain の最適化
 
 ## Affected paths
 
@@ -47,9 +47,9 @@ Expected:
 
 ## Acceptance criteria
 
-- [ ] class 宣言を含む fixture が build pass する
-- [ ] WAT 出力に class の runtime 表現が含まれる
-- [ ] 回帰テスト用の fixture が追加される
+- [x] class 宣言を含む fixture が build pass する
+- [x] WAT 出力に class の runtime 表現が含まれる
+- [x] 回帰テスト用の fixture が追加される
 
 ## Validation
 
@@ -61,13 +61,13 @@ cargo nextest run
 ## Docs / current-state / issue sync
 
 Final-state docs:
-- [ ] not affected
+- [x] not affected
 
 Current state:
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
-- [ ] none
+- [x] none
 
 ## Notes
 

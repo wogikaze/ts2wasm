@@ -116,8 +116,8 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/open/167-implement-ambiguousGenericAssertion.md` - Implement Ambiguousgenericassertion (same reference path, same feature label, same group key, title overlap)
-- `issues/open/540-implement-ambiguousGenericAssertion.md` - Implement Ambiguousgenericassertion (same reference path, same feature label, same group key, title overlap)
+- `issues/done/167-implement-ambiguousGenericAssertion.md` - Implement Ambiguousgenericassertion (same reference path, same feature label, same group key, title overlap)
+- `issues/done/540-implement-ambiguousGenericAssertion.md` - Implement Ambiguousgenericassertion (same reference path, same feature label, same group key, title overlap)
 
 ## Smart triage
 
@@ -192,13 +192,13 @@ Duplicate candidates:
 [
   {
     "state": "open",
-    "path": "issues/open/167-implement-ambiguousGenericAssertion.md",
+    "path": "issues/done/167-implement-ambiguousGenericAssertion.md",
     "title": "Implement Ambiguousgenericassertion",
     "reason": "same reference path, same feature label"
   },
   {
     "state": "open",
-    "path": "issues/open/540-implement-ambiguousGenericAssertion.md",
+    "path": "issues/done/540-implement-ambiguousGenericAssertion.md",
     "title": "Implement Ambiguousgenericassertion",
     "reason": "same reference path, same feature label"
   }

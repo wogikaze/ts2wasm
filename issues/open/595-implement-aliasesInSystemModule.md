@@ -117,8 +117,8 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/open/130-implement-aliasesInSystemModule.md` - Implement Aliasesinsystemmodule (same reference path, same group key, title overlap)
-- `issues/open/509-implement-aliasesInSystemModule.md` - Implement Aliasesinsystemmodule (same reference path, same feature label, same group key, title overlap)
+- `issues/done/130-implement-aliasesInSystemModule.md` - Implement Aliasesinsystemmodule (same reference path, same group key, title overlap)
+- `issues/done/509-implement-aliasesInSystemModule.md` - Implement Aliasesinsystemmodule (same reference path, same feature label, same group key, title overlap)
 
 ## Smart triage
 
@@ -193,7 +193,7 @@ Duplicate candidates:
 [
   {
     "state": "open",
-    "path": "issues/open/130-implement-aliasesInSystemModule.md",
+    "path": "issues/done/130-implement-aliasesInSystemModule.md",
     "title": "Implement Aliasesinsystemmodule",
     "reason": "same reference path"
   },
@@ -205,19 +205,19 @@ Duplicate candidates:
   },
   {
     "state": "open",
-    "path": "issues/open/457-implement-APISample-import-export.md",
+    "path": "issues/done/457-implement-APISample-import-export.md",
     "title": "Implement Apisample Import Export",
     "reason": "same feature label, title overlap"
   },
   {
     "state": "open",
-    "path": "issues/open/463-implement-FunctionDeclaration-import-export.md",
+    "path": "issues/done/463-implement-FunctionDeclaration-import-export.md",
     "title": "Implement Functiondeclaration Import Export",
     "reason": "same feature label, title overlap"
   },
   {
     "state": "open",
-    "path": "issues/open/509-implement-aliasesInSystemModule.md",
+    "path": "issues/done/509-implement-aliasesInSystemModule.md",
     "title": "Implement Aliasesinsystemmodule",
     "reason": "same reference path, same feature label"
   },

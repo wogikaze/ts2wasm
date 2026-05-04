@@ -126,13 +126,13 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/open/067-implement-unknown-unsupported.md` - Investigate and classify unknown-unsupported cases (same feature label, same group key, title overlap)
-- `issues/open/106-implement-accessors.md` - Implement Accessors (same feature label, same group key)
-- `issues/open/193-implement-arguments.md` - Implement Arguments (same feature label, same group key)
-- `issues/open/201-implement-unknown-unsupported.md` - Investigate and classify unknown-unsupported cases (same feature label, same group key, title overlap)
+- `issues/done/067-implement-unknown-unsupported.md` - Investigate and classify unknown-unsupported cases (same feature label, same group key, title overlap)
+- `issues/done/106-implement-accessors.md` - Implement Accessors (same feature label, same group key)
+- `issues/done/193-implement-arguments.md` - Implement Arguments (same feature label, same group key)
+- `issues/done/201-implement-unknown-unsupported.md` - Investigate and classify unknown-unsupported cases (same feature label, same group key, title overlap)
 - `issues/done/225-implement-eval-annexb-function-declarations.md` - Implement eval and Annex B function declaration semantics (same feature label, same group key)
 - `issues/open/313-implement-array-builtin.md` - Implement array-builtin support (same feature label, same group key)
-- `issues/open/314-implement-string-builtin.md` - Implement string-builtin support (same feature label, same group key)
+- `issues/done/314-implement-string-builtin.md` - Implement string-builtin support (same feature label, same group key)
 - `issues/done/060-investigate-unknown-unsupported-cases.md` - Investigate and classify unknown-unsupported diagnostic cases (same feature label, same group key, title overlap)
 - `issues/done/060a-close-unknown-unsupported-fixed-window-spike.md` - Close unknown-unsupported fixed-window spike (same feature label, same group key, title overlap)
 - `issues/done/226-implement-parameter-properties.md` - Implement TypeScript parameter properties (same feature label, same group key)

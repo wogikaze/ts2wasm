@@ -116,7 +116,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/open/200-implement-parser-syntax.md` - Implement parser syntax extensions (same feature label, same group key, title overlap)
+- `issues/done/200-implement-parser-syntax.md` - Implement parser syntax extensions (same feature label, same group key, title overlap)
 
 ## Smart triage
 

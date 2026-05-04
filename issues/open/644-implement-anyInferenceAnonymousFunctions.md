@@ -116,7 +116,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/open/187-implement-anyInferenceAnonymousFunctions.md` - Implement Anyinferenceanonymousfunctions (same reference path, same feature label, same group key, title overlap)
+- `issues/done/187-implement-anyInferenceAnonymousFunctions.md` - Implement Anyinferenceanonymousfunctions (same reference path, same feature label, same group key, title overlap)
 - `issues/open/453-implement-type-system.md` - Implement type-system support (same feature label, same group key, title overlap)
 
 ## Smart triage
@@ -192,7 +192,7 @@ Duplicate candidates:
 [
   {
     "state": "open",
-    "path": "issues/open/187-implement-anyInferenceAnonymousFunctions.md",
+    "path": "issues/done/187-implement-anyInferenceAnonymousFunctions.md",
     "title": "Implement Anyinferenceanonymousfunctions",
     "reason": "same reference path, same feature label, title overlap"
   },

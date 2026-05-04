@@ -116,9 +116,9 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/open/089-implement-acceptSymbolAsWeakType.md` - Implement Acceptsymbolasweaktype (same reference path, same feature label, same group key, title overlap)
+- `issues/done/089-implement-acceptSymbolAsWeakType.md` - Implement Acceptsymbolasweaktype (same reference path, same feature label, same group key, title overlap)
 - `issues/open/437-implement-name-resolution.md` - Implement name resolution (same feature label, same group key, title overlap)
-- `issues/open/474-implement-acceptSymbolAsWeakType.md` - Implement Acceptsymbolasweaktype (same reference path, same feature label, same group key, title overlap)
+- `issues/done/474-implement-acceptSymbolAsWeakType.md` - Implement Acceptsymbolasweaktype (same reference path, same feature label, same group key, title overlap)
 
 ## Smart triage
 
@@ -206,7 +206,7 @@ Duplicate candidates:
   },
   {
     "state": "open",
-    "path": "issues/open/089-implement-acceptSymbolAsWeakType.md",
+    "path": "issues/done/089-implement-acceptSymbolAsWeakType.md",
     "title": "Implement Acceptsymbolasweaktype",
     "reason": "same reference path, same feature label, title overlap"
   },
@@ -218,7 +218,7 @@ Duplicate candidates:
   },
   {
     "state": "open",
-    "path": "issues/open/474-implement-acceptSymbolAsWeakType.md",
+    "path": "issues/done/474-implement-acceptSymbolAsWeakType.md",
     "title": "Implement Acceptsymbolasweaktype",
     "reason": "same reference path, same feature label, title overlap"
   }

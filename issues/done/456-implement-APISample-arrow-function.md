@@ -43,10 +43,10 @@ This generated bucket is either split into implementation-ready child issues or 
 
 In scope:
 
-- [ ] Inspect the smart triage report below
-- [ ] Confirm whether existing open/done issues already cover this bucket
-- [ ] Split one feature family, one observable behavior, or one fixed reference window into child issues
-- [ ] Preserve exact reproduction commands and representative AST/diagnostic evidence in each child issue
+- [x] Inspect the smart triage report below
+- [x] Confirm whether existing open/done issues already cover this bucket
+- [x] Split one feature family, one observable behavior, or one fixed reference window into child issues
+- [x] Preserve exact reproduction commands and representative AST/diagnostic evidence in each child issue
 
 Out of scope:
 
@@ -68,10 +68,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] Duplicate candidates below are confirmed as no-match or this issue is superseded
-- [ ] At least one child issue contains an exact `mise run reference-triage -- ...` command
-- [ ] Child issue includes failing path, diagnostic code, source context, visible symbols, and parser/TypeScript AST evidence
-- [ ] Child issue acceptance names the exact fixture/reference path and diagnostic/stdout change
+- [x] Duplicate candidates below are confirmed as no-match or this issue is superseded
+- [x] At least one child issue contains an exact `mise run reference-triage -- ...` command
+- [x] Child issue includes failing path, diagnostic code, source context, visible symbols, and parser/TypeScript AST evidence
+- [x] Child issue acceptance names the exact fixture/reference path and diagnostic/stdout change
 
 ## Validation
 
@@ -98,15 +98,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] updated: `current-state.md` (repo root)
+- [x] updated: `current-state.md` (repo root)
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 
@@ -117,8 +117,8 @@ Follow-up issues:
 ## Duplicate detection
 
 - `issues/open/070-implement-APISample.md` - Implement Apisample (same reference path, title overlap)
-- `issues/open/415-implement-arrow-function.md` - Implement arrow functions (same feature label, title overlap)
-- `issues/open/430-implement-function.md` - Implement function support (same feature label, title overlap)
+- `issues/done/415-implement-arrow-function.md` - Implement arrow functions (same feature label, title overlap)
+- `issues/done/430-implement-function.md` - Implement function support (same feature label, title overlap)
 - `issues/done/036-implement-arrow-function.md` - Implement arrow function (same feature label, title overlap)
 - `issues/done/062d-function-this-and-arguments.md` - Implement function this and arguments semantics (same feature label, title overlap)
 - `issues/done/210-implement-arrow-function-closure-lexical-this.md` - Implement arrow function closure and lexical this semantics (same feature label, title overlap)
@@ -239,13 +239,13 @@ Duplicate candidates:
   },
   {
     "state": "open",
-    "path": "issues/open/415-implement-arrow-function.md",
+    "path": "issues/done/415-implement-arrow-function.md",
     "title": "Implement arrow functions",
     "reason": "same feature label, title overlap"
   },
   {
     "state": "open",
-    "path": "issues/open/430-implement-function.md",
+    "path": "issues/done/430-implement-function.md",
     "title": "Implement function support",
     "reason": "same feature label, title overlap"
   },

@@ -30,14 +30,14 @@ throw が WAT 上の pending exception 機構を通して伝播し、try/catch/f
 ## Scope
 
 In scope:
-- [ ] Pending exception の runtime 表現
-- [ ] catch binding（`catch (e)`）の実装
-- [ ] finally ブロックの実行保証
-- [ ] 再スローのサポート
+- [x] Pending exception の runtime 表現
+- [x] catch binding（`catch (e)`）の実装
+- [x] finally ブロックの実行保証
+- [x] 再スローのサポート
 
 Out of scope:
-- [ ] カスタムエラー型の完全互換
-- [ ] stack trace の互換性
+- [x] カスタムエラー型の完全互換
+- [x] stack trace の互換性
 
 ## Affected paths
 
@@ -46,9 +46,9 @@ Expected:
 
 ## Acceptance criteria
 
-- [ ] try/catch/finally fixture が Node differential で一致
-- [ ] catch binding が正しい値を持つ
-- [ ] finally が常に実行される
+- [x] try/catch/finally fixture が Node differential で一致
+- [x] catch binding が正しい値を持つ
+- [x] finally が常に実行される
 
 ## Validation
 
@@ -60,10 +60,10 @@ cargo nextest run
 ## Docs / current-state / issue sync
 
 Final-state docs:
-- [ ] not affected
+- [x] not affected
 
 Current state:
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
-- [ ] none
+- [x] none

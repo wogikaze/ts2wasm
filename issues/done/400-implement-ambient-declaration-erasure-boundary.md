@@ -25,13 +25,13 @@ Problem: `tsc` coverage reports `ambient-declaration` as a top TypeScript-only u
 
 Representative generated issues with `feature_label: ambient-declaration` include:
 
-- `issues/open/140-implement-ambientClassDeclarationWithExtends.md`
+- `issues/done/140-implement-ambientClassDeclarationWithExtends.md`
 - `issues/open/142-implement-ambientClassMergesOverloadsWithInterface.md`
-- `issues/open/144-implement-ambientConstLiterals.md`
+- `issues/done/144-implement-ambientConstLiterals.md`
 - `issues/open/145-implement-ambientEnum.md`
-- `issues/open/148-implement-ambientExportDefaultErrors.md`
-- `issues/open/150-implement-ambientExternalModuleReopen.md`
-- `issues/open/160-implement-ambientModules.md`
+- `issues/done/148-implement-ambientExportDefaultErrors.md`
+- `issues/done/150-implement-ambientExternalModuleReopen.md`
+- `issues/done/160-implement-ambientModules.md`
 - `issues/open/162-implement-ambientPropertyDeclarationInJs.md`
 
 Issue 399 records the coverage window with `tsc --limit 200` at `ambient-declaration:30` and the broader `tsc --limit 500` window at `ambient-declaration:29`.
@@ -138,10 +138,10 @@ Progress 2026-05-01:
 
 Representative generated buckets re-triaged into this boundary slice:
 
-- `issues/open/140-implement-ambientClassDeclarationWithExtends.md`: `declare class A { }` / `declare class B extends A { }` is declaration-only and now parses/erases before runtime lowering.
+- `issues/done/140-implement-ambientClassDeclarationWithExtends.md`: `declare class A { }` / `declare class B extends A { }` is declaration-only and now parses/erases before runtime lowering.
 - `issues/open/145-implement-ambientEnum.md`: `declare enum E1 { ... }` is declaration-only and now parses/erases before runtime lowering.
-- `issues/open/150-implement-ambientExternalModuleReopen.md`: `declare module "fs" { ... }` is module-shaped and now routes to `UnsupportedModule` instead of a generic parser error.
-- `issues/open/160-implement-ambientModules.md`: `declare namespace Foo.Bar { ... }` is module-shaped and now routes to `UnsupportedModule`.
+- `issues/done/150-implement-ambientExternalModuleReopen.md`: `declare module "fs" { ... }` is module-shaped and now routes to `UnsupportedModule` instead of a generic parser error.
+- `issues/done/160-implement-ambientModules.md`: `declare namespace Foo.Bar { ... }` is module-shaped and now routes to `UnsupportedModule`.
 - `issues/open/162-implement-ambientPropertyDeclarationInJs.md`: `declare prop: string;` inside a class is declaration-only and now parses/erases without adding a runtime class element.
 
 ## Completion evidence

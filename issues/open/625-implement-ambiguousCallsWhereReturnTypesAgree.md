@@ -116,9 +116,9 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/open/166-implement-ambiguousCallsWhereReturnTypesAgree.md` - Implement Ambiguouscallswherereturntypesagree (same reference path, same feature label, same group key, title overlap)
+- `issues/done/166-implement-ambiguousCallsWhereReturnTypesAgree.md` - Implement Ambiguouscallswherereturntypesagree (same reference path, same feature label, same group key, title overlap)
 - `issues/done/460-implement-ClassDeclaration.md` - Implement Classdeclaration (same feature label, same group key, title overlap)
-- `issues/open/539-implement-ambiguousCallsWhereReturnTypesAgree.md` - Implement Ambiguouscallswherereturntypesagree (same reference path, same feature label, same group key, title overlap)
+- `issues/done/539-implement-ambiguousCallsWhereReturnTypesAgree.md` - Implement Ambiguouscallswherereturntypesagree (same reference path, same feature label, same group key, title overlap)
 
 ## Smart triage
 
@@ -192,7 +192,7 @@ Duplicate candidates:
 [
   {
     "state": "open",
-    "path": "issues/open/166-implement-ambiguousCallsWhereReturnTypesAgree.md",
+    "path": "issues/done/166-implement-ambiguousCallsWhereReturnTypesAgree.md",
     "title": "Implement Ambiguouscallswherereturntypesagree",
     "reason": "same reference path, same feature label, title overlap"
   },
@@ -204,13 +204,13 @@ Duplicate candidates:
   },
   {
     "state": "open",
-    "path": "issues/open/464-implement-FunctionDeclaration-parser-syntax.md",
+    "path": "issues/done/464-implement-FunctionDeclaration-parser-syntax.md",
     "title": "Implement Functiondeclaration Parser Syntax",
     "reason": "same feature label, title overlap"
   },
   {
     "state": "open",
-    "path": "issues/open/539-implement-ambiguousCallsWhereReturnTypesAgree.md",
+    "path": "issues/done/539-implement-ambiguousCallsWhereReturnTypesAgree.md",
     "title": "Implement Ambiguouscallswherereturntypesagree",
     "reason": "same reference path, same feature label, title overlap"
   },
@@ -240,7 +240,7 @@ Duplicate candidates:
   },
   {
     "state": "done",
-    "path": "issues/open/200-implement-parser-syntax.md",
+    "path": "issues/done/200-implement-parser-syntax.md",
     "title": "Implement parser syntax extensions",
     "reason": "same feature label, title overlap"
   },

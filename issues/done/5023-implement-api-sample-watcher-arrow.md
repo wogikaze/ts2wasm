@@ -37,8 +37,8 @@ Failure: issue-062k — arrow function with block body/multiple statements is no
 
 In scope:
 
-- [ ] Extend arrow function support to block bodies
-- [ ] Verify with `APISample_watcher.ts` fixture
+- [x] Extend arrow function support to block bodies
+- [x] Verify with `APISample_watcher.ts` fixture
 
 Out of scope:
 
@@ -53,8 +53,8 @@ Expected:
 
 ## Acceptance criteria
 
-- [ ] `APISample_watcher.ts` compiles without issue-062k diagnostic
-- [ ] Existing arrow function fixtures continue to pass
+- [x] `APISample_watcher.ts` compiles without issue-062k diagnostic
+- [x] Existing arrow function fixtures continue to pass
 
 ## Validation
 

@@ -186,7 +186,7 @@ Duplicate candidates:
 [
   {
     "state": "open",
-    "path": "issues/open/180-implement-anonymousClassExpression.md",
+    "path": "issues/done/180-implement-anonymousClassExpression.md",
     "title": "Implement Anonymousclassexpression",
     "reason": "same reference path, same feature label"
   },

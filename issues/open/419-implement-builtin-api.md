@@ -127,7 +127,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/open/067-implement-unknown-unsupported.md` - Investigate and classify unknown-unsupported cases (same reference path)
+- `issues/done/067-implement-unknown-unsupported.md` - Investigate and classify unknown-unsupported cases (same reference path)
 - `issues/done/341-implement-core-builtin-api-coverage.md` - Implement core builtin API coverage (3,190 test262 cases) (same feature label, same group key, title overlap)
 - `issues/done/060-investigate-unknown-unsupported-cases.md` - Investigate and classify unknown-unsupported diagnostic cases (same feature label, same group key)
 - `issues/done/065-implement-parser-syntax.md` - Implement parser syntax extensions (same reference path, title overlap)
@@ -256,7 +256,7 @@ Duplicate candidates:
 [
   {
     "state": "open",
-    "path": "issues/open/067-implement-unknown-unsupported.md",
+    "path": "issues/done/067-implement-unknown-unsupported.md",
     "title": "Investigate and classify unknown-unsupported cases",
     "reason": "same reference path"
   },

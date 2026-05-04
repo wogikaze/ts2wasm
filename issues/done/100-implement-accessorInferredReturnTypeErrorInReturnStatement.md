@@ -187,7 +187,7 @@ Duplicate candidates:
 [
   {
     "state": "open",
-    "path": "issues/open/100-implement-accessorInferredReturnTypeErrorInReturnStatement.md",
+    "path": "issues/done/100-implement-accessorInferredReturnTypeErrorInReturnStatement.md",
     "title": "Implement Accessorinferredreturntypeerrorinreturnstatement",
     "reason": "same reference path, title overlap"
   }

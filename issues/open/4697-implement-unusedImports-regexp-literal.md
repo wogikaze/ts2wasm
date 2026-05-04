@@ -120,7 +120,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/open/066-implement-regexp-literal.md` - Implement RegExp literal support (same feature label, title overlap)
+- `issues/done/066-implement-regexp-literal.md` - Implement RegExp literal support (same feature label, title overlap)
 - `issues/done/444-implement-regexp-literal.md` - Implement RegExp literal support (same feature label, title overlap)
 - `issues/done/051-implement-regexp.md` - Implement RegExp (same feature label, title overlap)
 

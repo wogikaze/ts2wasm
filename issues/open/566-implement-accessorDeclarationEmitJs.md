@@ -116,9 +116,9 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/open/096-implement-accessorDeclarationEmitJs.md` - Implement Accessordeclarationemitjs (same reference path, same feature label, same group key, title overlap)
+- `issues/done/096-implement-accessorDeclarationEmitJs.md` - Implement Accessordeclarationemitjs (same reference path, same feature label, same group key, title overlap)
 - `issues/open/424-implement-declaration-emit.md` - Implement declaration-emit support (same feature label, same group key, title overlap)
-- `issues/open/480-implement-accessorDeclarationEmitJs.md` - Implement Accessordeclarationemitjs (same reference path, same feature label, same group key, title overlap)
+- `issues/done/480-implement-accessorDeclarationEmitJs.md` - Implement Accessordeclarationemitjs (same reference path, same feature label, same group key, title overlap)
 
 ## Smart triage
 
@@ -194,7 +194,7 @@ Duplicate candidates:
 [
   {
     "state": "open",
-    "path": "issues/open/096-implement-accessorDeclarationEmitJs.md",
+    "path": "issues/done/096-implement-accessorDeclarationEmitJs.md",
     "title": "Implement Accessordeclarationemitjs",
     "reason": "same reference path, same feature label, title overlap"
   },
@@ -218,7 +218,7 @@ Duplicate candidates:
   },
   {
     "state": "open",
-    "path": "issues/open/480-implement-accessorDeclarationEmitJs.md",
+    "path": "issues/done/480-implement-accessorDeclarationEmitJs.md",
     "title": "Implement Accessordeclarationemitjs",
     "reason": "same reference path, same feature label, title overlap"
   },

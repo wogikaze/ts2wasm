@@ -54,10 +54,10 @@ form.
 
 In scope:
 
-- [ ] Define the runtime payload or side table for insertion-ordered Map entries.
-- [ ] Preserve original key RawValues separately from lookup keys.
-- [ ] Add a Map entries-array or iterator bridge usable by spread lowering.
-- [ ] Add Node/iwasm differential fixtures for string and non-string Map keys.
+- [x] Define the runtime payload or side table for insertion-ordered Map entries.
+- [x] Preserve original key RawValues separately from lookup keys.
+- [x] Add a Map entries-array or iterator bridge usable by spread lowering.
+- [x] Add Node/iwasm differential fixtures for string and non-string Map keys.
 
 Out of scope:
 
@@ -83,12 +83,12 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] `fixtures/core-semantics/spread-array-map-unsupported.ts` is replaced by
+- [x] `fixtures/core-semantics/spread-array-map-unsupported.ts` is replaced by
       one or more Node/iwasm differential fixtures for supported Map spread.
-- [ ] A non-string key fixture proves original key values are preserved.
-- [ ] Existing Map `get` / `set` / `has` / `delete` and Set spread fixtures
+- [x] A non-string key fixture proves original key values are preserved.
+- [x] Existing Map `get` / `set` / `has` / `delete` and Set spread fixtures
       remain passing.
-- [ ] Runtime ABI docs describe the Map entry storage contract.
+- [x] Runtime ABI docs describe the Map entry storage contract.
 
 ## Validation
 
@@ -116,16 +116,16 @@ Not run:
 
 Final-state docs:
 
-- [ ] updated: `docs/14-runtime-abi.md`
-- [ ] updated: `docs/language-reference/javascript-features.md`
+- [x] updated: `docs/14-runtime-abi.md`
+- [x] updated: `docs/language-reference/javascript-features.md`
 
 Current state:
 
-- [ ] updated: `current-state.md` when support lands
+- [x] updated: `current-state.md` when support lands
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 

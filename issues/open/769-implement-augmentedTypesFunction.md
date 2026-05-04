@@ -252,7 +252,7 @@ Duplicate candidates:
   },
   {
     "state": "open",
-    "path": "issues/open/464-implement-FunctionDeclaration-parser-syntax.md",
+    "path": "issues/done/464-implement-FunctionDeclaration-parser-syntax.md",
     "title": "Implement Functiondeclaration Parser Syntax",
     "reason": "same feature label, title overlap"
   },

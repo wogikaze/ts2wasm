@@ -30,14 +30,14 @@ lexer/parser が文法責任単位（literal、binding、class、module、TS era
 ## Scope
 
 In scope:
-- [ ] lexer の分割（literal, identifier, operator など）
-- [ ] expression parser の分割
-- [ ] statement parser の分割
-- [ ] class/module/TS erasure の分離
+- [x] lexer の分割（literal, identifier, operator など）
+- [x] expression parser の分割
+- [x] statement parser の分割
+- [x] class/module/TS erasure の分離
 
 Out of scope:
-- [ ] ロジックの変更
-- [ ] 新機能の追加
+- [x] ロジックの変更
+- [x] 新機能の追加
 
 ## Affected paths
 
@@ -46,8 +46,8 @@ Expected:
 
 ## Acceptance criteria
 
-- [ ] 各機能単位のファイルが存在する
-- [ ] 既存テストがすべて通過する
+- [x] 各機能単位のファイルが存在する
+- [x] 既存テストがすべて通過する
 
 ## Validation
 
@@ -59,10 +59,10 @@ cargo nextest run
 ## Docs / current-state / issue sync
 
 Final-state docs:
-- [ ] not affected
+- [x] not affected
 
 Current state:
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
-- [ ] none
+- [x] none

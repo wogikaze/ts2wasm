@@ -116,7 +116,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/open/427-implement-duplicate-local.md` - Implement duplicate-local support (same feature label, same group key, title overlap)
+- `issues/done/427-implement-duplicate-local.md` - Implement duplicate-local support (same feature label, same group key, title overlap)
 
 ## Smart triage
 

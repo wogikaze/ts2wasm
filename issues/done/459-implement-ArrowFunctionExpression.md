@@ -116,7 +116,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/open/071-implement-ArrowFunctionExpression.md` - Implement Arrowfunctionexpression (same reference path, same feature label, same group key, title overlap)
+- `issues/done/071-implement-ArrowFunctionExpression.md` - Implement Arrowfunctionexpression (same reference path, same feature label, same group key, title overlap)
 - `issues/open/199-implement-reference-typescript-tests-cases-compiler.md` - Implement Compiler (same feature label, same group key, title overlap)
 - `issues/open/442-implement-parser-syntax.md` - Implement parser syntax extensions (same feature label, same group key, title overlap)
 
@@ -189,7 +189,7 @@ Duplicate candidates:
 [
   {
     "state": "open",
-    "path": "issues/open/071-implement-ArrowFunctionExpression.md",
+    "path": "issues/done/071-implement-ArrowFunctionExpression.md",
     "title": "Implement Arrowfunctionexpression",
     "reason": "same reference path, same feature label"
   },
@@ -219,7 +219,7 @@ Duplicate candidates:
   },
   {
     "state": "done",
-    "path": "issues/open/200-implement-parser-syntax.md",
+    "path": "issues/done/200-implement-parser-syntax.md",
     "title": "Implement parser syntax extensions",
     "reason": "same feature label, title overlap"
   },

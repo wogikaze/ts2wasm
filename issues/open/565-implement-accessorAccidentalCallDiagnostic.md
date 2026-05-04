@@ -116,9 +116,9 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/open/094-implement-accessorAccidentalCallDiagnostic.md` - Implement Accessoraccidentalcalldiagnostic (same reference path, same feature label, same group key, title overlap)
+- `issues/done/094-implement-accessorAccidentalCallDiagnostic.md` - Implement Accessoraccidentalcalldiagnostic (same reference path, same feature label, same group key, title overlap)
 - `issues/open/422-implement-class-accessor.md` - Implement class-accessor support (same feature label, same group key, title overlap)
-- `issues/open/479-implement-accessorAccidentalCallDiagnostic.md` - Implement Accessoraccidentalcalldiagnostic (same reference path, same feature label, same group key, title overlap)
+- `issues/done/479-implement-accessorAccidentalCallDiagnostic.md` - Implement Accessoraccidentalcalldiagnostic (same reference path, same feature label, same group key, title overlap)
 
 ## Smart triage
 
@@ -198,13 +198,13 @@ Duplicate candidates:
 [
   {
     "state": "open",
-    "path": "issues/open/094-implement-accessorAccidentalCallDiagnostic.md",
+    "path": "issues/done/094-implement-accessorAccidentalCallDiagnostic.md",
     "title": "Implement Accessoraccidentalcalldiagnostic",
     "reason": "same reference path, same feature label, title overlap"
   },
   {
     "state": "open",
-    "path": "issues/open/479-implement-accessorAccidentalCallDiagnostic.md",
+    "path": "issues/done/479-implement-accessorAccidentalCallDiagnostic.md",
     "title": "Implement Accessoraccidentalcalldiagnostic",
     "reason": "same reference path, same feature label, title overlap"
   }

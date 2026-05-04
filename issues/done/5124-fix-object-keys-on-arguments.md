@@ -58,9 +58,9 @@ Object.keys on the `arguments` object returns correct string indices.
 
 In scope:
 
-- [ ] Fix Object.keys WAT runtime function to correctly enumerate `arguments`
+- [x] Fix Object.keys WAT runtime function to correctly enumerate `arguments`
       exotic object properties
-- [ ] Or fix `arguments` object property enumeration in WASM backend
+- [x] Or fix `arguments` object property enumeration in WASM backend
 
 Out of scope:
 
@@ -83,9 +83,9 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] `Object.keys(arguments)` returns correct string indices
-- [ ] Regression test in fixtures/ for Object.keys on arguments
-- [ ] test262 case `built-ins/Object/keys/15.2.3.14-3-4.js` passes through
+- [x] `Object.keys(arguments)` returns correct string indices
+- [x] Regression test in fixtures/ for Object.keys on arguments
+- [x] test262 case `built-ins/Object/keys/15.2.3.14-3-4.js` passes through
       harness
 
 ## Validation
@@ -120,7 +120,7 @@ Current state:
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 

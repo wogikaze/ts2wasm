@@ -116,8 +116,8 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/open/084-implement-abstractClassUnionInstantiation.md` - Implement Abstractclassunioninstantiation (same reference path, same group key, title overlap)
-- `issues/open/470-implement-abstractClassUnionInstantiation.md` - Implement Abstractclassunioninstantiation (same reference path, same feature label, same group key, title overlap)
+- `issues/done/084-implement-abstractClassUnionInstantiation.md` - Implement Abstractclassunioninstantiation (same reference path, same group key, title overlap)
+- `issues/done/470-implement-abstractClassUnionInstantiation.md` - Implement Abstractclassunioninstantiation (same reference path, same feature label, same group key, title overlap)
 
 ## Smart triage
 
@@ -204,7 +204,7 @@ Duplicate candidates:
   },
   {
     "state": "open",
-    "path": "issues/open/084-implement-abstractClassUnionInstantiation.md",
+    "path": "issues/done/084-implement-abstractClassUnionInstantiation.md",
     "title": "Implement Abstractclassunioninstantiation",
     "reason": "same reference path, title overlap"
   },
@@ -216,7 +216,7 @@ Duplicate candidates:
   },
   {
     "state": "open",
-    "path": "issues/open/470-implement-abstractClassUnionInstantiation.md",
+    "path": "issues/done/470-implement-abstractClassUnionInstantiation.md",
     "title": "Implement Abstractclassunioninstantiation",
     "reason": "same reference path, same feature label, title overlap"
   }

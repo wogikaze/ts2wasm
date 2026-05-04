@@ -116,7 +116,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/open/161-implement-ambientNameRestrictions.md` - Implement Ambientnamerestrictions (same reference path, same group key, title overlap)
+- `issues/done/161-implement-ambientNameRestrictions.md` - Implement Ambientnamerestrictions (same reference path, same group key, title overlap)
 - `issues/done/535-implement-ambientNameRestrictions.md` - Implement Ambientnamerestrictions (same reference path, same feature label, same group key, title overlap)
 - `issues/done/621-implement-ambientNameRestrictions.md` - Implement Ambientnamerestrictions (same reference path, same feature label, same group key, title overlap)
 

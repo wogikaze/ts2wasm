@@ -116,10 +116,10 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/open/131-implement-allowImportClausesToMergeWithTypes.md` - Implement Allowimportclausestomergewithtypes (same reference path, same feature label, same group key, title overlap)
+- `issues/done/131-implement-allowImportClausesToMergeWithTypes.md` - Implement Allowimportclausestomergewithtypes (same reference path, same feature label, same group key, title overlap)
 - `issues/open/432-implement-import-export.md` - Implement import/export module syntax (same feature label, same group key, title overlap)
-- `issues/open/462-implement-ExportAssignment.md` - Implement Exportassignment (same feature label, same group key, title overlap)
-- `issues/open/510-implement-allowImportClausesToMergeWithTypes.md` - Implement Allowimportclausestomergewithtypes (same reference path, same feature label, same group key, title overlap)
+- `issues/done/462-implement-ExportAssignment.md` - Implement Exportassignment (same feature label, same group key, title overlap)
+- `issues/done/510-implement-allowImportClausesToMergeWithTypes.md` - Implement Allowimportclausestomergewithtypes (same reference path, same feature label, same group key, title overlap)
 
 ## Smart triage
 
@@ -195,7 +195,7 @@ Duplicate candidates:
 [
   {
     "state": "open",
-    "path": "issues/open/131-implement-allowImportClausesToMergeWithTypes.md",
+    "path": "issues/done/131-implement-allowImportClausesToMergeWithTypes.md",
     "title": "Implement Allowimportclausestomergewithtypes",
     "reason": "same reference path, same feature label, title overlap"
   },
@@ -207,19 +207,19 @@ Duplicate candidates:
   },
   {
     "state": "open",
-    "path": "issues/open/457-implement-APISample-import-export.md",
+    "path": "issues/done/457-implement-APISample-import-export.md",
     "title": "Implement Apisample Import Export",
     "reason": "same feature label, title overlap"
   },
   {
     "state": "open",
-    "path": "issues/open/463-implement-FunctionDeclaration-import-export.md",
+    "path": "issues/done/463-implement-FunctionDeclaration-import-export.md",
     "title": "Implement Functiondeclaration Import Export",
     "reason": "same feature label, title overlap"
   },
   {
     "state": "open",
-    "path": "issues/open/510-implement-allowImportClausesToMergeWithTypes.md",
+    "path": "issues/done/510-implement-allowImportClausesToMergeWithTypes.md",
     "title": "Implement Allowimportclausestomergewithtypes",
     "reason": "same reference path, same feature label, title overlap"
   },

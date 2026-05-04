@@ -117,9 +117,9 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/open/116-implement-aliasInstantiationExpressionGenericIntersectionNoCrash.md` - Implement Aliasinstantiationexpressiongenericintersectionnocrash (same reference path, same feature label, same group key, title overlap)
+- `issues/done/116-implement-aliasInstantiationExpressionGenericIntersectionNoCrash.md` - Implement Aliasinstantiationexpressiongenericintersectionnocrash (same reference path, same feature label, same group key, title overlap)
 - `issues/open/452-implement-type-alias.md` - Implement type-alias support (same feature label, same group key, title overlap)
-- `issues/open/496-implement-aliasInstantiationExpressionGenericIntersectionNoCrash.md` - Implement Aliasinstantiationexpressiongenericintersectionnocrash (same reference path, same feature label, same group key, title overlap)
+- `issues/done/496-implement-aliasInstantiationExpressionGenericIntersectionNoCrash.md` - Implement Aliasinstantiationexpressiongenericintersectionnocrash (same reference path, same feature label, same group key, title overlap)
 
 ## Smart triage
 
@@ -194,7 +194,7 @@ Duplicate candidates:
 [
   {
     "state": "open",
-    "path": "issues/open/116-implement-aliasInstantiationExpressionGenericIntersectionNoCrash.md",
+    "path": "issues/done/116-implement-aliasInstantiationExpressionGenericIntersectionNoCrash.md",
     "title": "Implement Aliasinstantiationexpressiongenericintersectionnocrash",
     "reason": "same reference path, same feature label"
   },
@@ -206,7 +206,7 @@ Duplicate candidates:
   },
   {
     "state": "open",
-    "path": "issues/open/496-implement-aliasInstantiationExpressionGenericIntersectionNoCrash.md",
+    "path": "issues/done/496-implement-aliasInstantiationExpressionGenericIntersectionNoCrash.md",
     "title": "Implement Aliasinstantiationexpressiongenericintersectionnocrash",
     "reason": "same reference path, same feature label"
   }

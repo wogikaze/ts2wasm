@@ -116,16 +116,16 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/open/075-implement-ExportAssignment.md` - Implement Exportassignment (same feature label, same group key, title overlap)
-- `issues/open/135-implement-allowSyntheticDefaultImports.md` - Implement Allowsyntheticdefaultimports (same feature label, same group key, title overlap)
+- `issues/done/075-implement-ExportAssignment.md` - Implement Exportassignment (same feature label, same group key, title overlap)
+- `issues/done/135-implement-allowSyntheticDefaultImports.md` - Implement Allowsyntheticdefaultimports (same feature label, same group key, title overlap)
 - `issues/open/432-implement-import-export.md` - Implement import/export module syntax (same feature label, same group key, title overlap)
-- `issues/open/462-implement-ExportAssignment.md` - Implement Exportassignment (same feature label, same group key, title overlap)
+- `issues/done/462-implement-ExportAssignment.md` - Implement Exportassignment (same feature label, same group key, title overlap)
 - `issues/done/483-implement-accessorInAmbientContextES.md` - Implement Accessorinambientcontextes (same feature label, same group key, title overlap)
-- `issues/open/491-implement-aliasAssignments.md` - Implement Aliasassignments (same feature label, same group key, title overlap)
-- `issues/open/493-implement-aliasDoesNotDuplicateSignatures.md` - Implement Aliasdoesnotduplicatesignatures (same feature label, same group key, title overlap)
-- `issues/open/498-implement-aliasUsageInAccessorsOfClass.md` - Implement Aliasusageinaccessorsofclass (same feature label, same group key, title overlap)
-- `issues/open/499-implement-aliasUsageInArray.md` - Implement Aliasusageinarray (same feature label, same group key, title overlap)
-- `issues/open/500-implement-aliasUsageInFunctionExpression.md` - Implement Aliasusageinfunctionexpression (same feature label, same group key, title overlap)
+- `issues/done/491-implement-aliasAssignments.md` - Implement Aliasassignments (same feature label, same group key, title overlap)
+- `issues/done/493-implement-aliasDoesNotDuplicateSignatures.md` - Implement Aliasdoesnotduplicatesignatures (same feature label, same group key, title overlap)
+- `issues/done/498-implement-aliasUsageInAccessorsOfClass.md` - Implement Aliasusageinaccessorsofclass (same feature label, same group key, title overlap)
+- `issues/done/499-implement-aliasUsageInArray.md` - Implement Aliasusageinarray (same feature label, same group key, title overlap)
+- `issues/done/500-implement-aliasUsageInFunctionExpression.md` - Implement Aliasusageinfunctionexpression (same feature label, same group key, title overlap)
 
 ## Smart triage
 
@@ -197,13 +197,13 @@ Duplicate candidates:
   },
   {
     "state": "open",
-    "path": "issues/open/457-implement-APISample-import-export.md",
+    "path": "issues/done/457-implement-APISample-import-export.md",
     "title": "Implement Apisample Import Export",
     "reason": "same feature label, title overlap"
   },
   {
     "state": "open",
-    "path": "issues/open/463-implement-FunctionDeclaration-import-export.md",
+    "path": "issues/done/463-implement-FunctionDeclaration-import-export.md",
     "title": "Implement Functiondeclaration Import Export",
     "reason": "same feature label, title overlap"
   },

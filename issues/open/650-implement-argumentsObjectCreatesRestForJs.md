@@ -116,7 +116,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/open/196-implement-argumentsObjectCreatesRestForJs.md` - Implement Argumentsobjectcreatesrestforjs (same reference path, same group key, title overlap)
+- `issues/done/196-implement-argumentsObjectCreatesRestForJs.md` - Implement Argumentsobjectcreatesrestforjs (same reference path, same group key, title overlap)
 
 ## Smart triage
 
@@ -214,7 +214,7 @@ Duplicate candidates:
 [
   {
     "state": "open",
-    "path": "issues/open/196-implement-argumentsObjectCreatesRestForJs.md",
+    "path": "issues/done/196-implement-argumentsObjectCreatesRestForJs.md",
     "title": "Implement Argumentsobjectcreatesrestforjs",
     "reason": "same reference path, title overlap"
   },

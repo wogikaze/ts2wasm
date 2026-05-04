@@ -180,7 +180,7 @@ Duplicate candidates:
 [
   {
     "state": "open",
-    "path": "issues/open/133-implement-allowJsCrossMonorepoPackage.md",
+    "path": "issues/done/133-implement-allowJsCrossMonorepoPackage.md",
     "title": "Implement Allowjscrossmonorepopackage",
     "reason": "same reference path, title overlap"
   }

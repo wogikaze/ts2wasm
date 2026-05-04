@@ -117,8 +117,8 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/open/109-implement-addMoreCallSignaturesToBaseSignature.md` - Implement Addmorecallsignaturestobasesignature (same reference path, same group key, title overlap)
-- `issues/open/490-implement-addMoreCallSignaturesToBaseSignature.md` - Implement Addmorecallsignaturestobasesignature (same reference path, same group key, title overlap)
+- `issues/done/109-implement-addMoreCallSignaturesToBaseSignature.md` - Implement Addmorecallsignaturestobasesignature (same reference path, same group key, title overlap)
+- `issues/done/490-implement-addMoreCallSignaturesToBaseSignature.md` - Implement Addmorecallsignaturestobasesignature (same reference path, same group key, title overlap)
 
 ## Smart triage
 
@@ -201,13 +201,13 @@ Duplicate candidates:
 [
   {
     "state": "open",
-    "path": "issues/open/109-implement-addMoreCallSignaturesToBaseSignature.md",
+    "path": "issues/done/109-implement-addMoreCallSignaturesToBaseSignature.md",
     "title": "Implement Addmorecallsignaturestobasesignature",
     "reason": "same reference path, same feature label, title overlap"
   },
   {
     "state": "open",
-    "path": "issues/open/430-implement-function.md",
+    "path": "issues/done/430-implement-function.md",
     "title": "Implement function support",
     "reason": "same feature label, title overlap"
   },
@@ -219,7 +219,7 @@ Duplicate candidates:
   },
   {
     "state": "open",
-    "path": "issues/open/490-implement-addMoreCallSignaturesToBaseSignature.md",
+    "path": "issues/done/490-implement-addMoreCallSignaturesToBaseSignature.md",
     "title": "Implement Addmorecallsignaturestobasesignature",
     "reason": "same reference path, same feature label, title overlap"
   },

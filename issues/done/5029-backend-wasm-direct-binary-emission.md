@@ -30,14 +30,14 @@ direct wasm binary emitter が `console.log(<string literal>)` だけなので�
 ## Scope
 
 In scope:
-- [ ] 数値リテラルの binary emission
-- [ ] ローカル変数の読み取り
-- [ ] 基本式（加算、比較）
-- [ ] 複数文のシーケンス
+- [x] 数値リテラルの binary emission
+- [x] ローカル変数の読み取り
+- [x] 基本式（加算、比較）
+- [x] 複数文のシーケンス
 
 Out of scope:
-- [ ] 複雑な control flow
-- [ ] 最適化を伴う emission
+- [x] 複雑な control flow
+- [x] 最適化を伴う emission
 
 ## Affected paths
 
@@ -46,9 +46,9 @@ Expected:
 
 ## Acceptance criteria
 
-- [ ] 数値 console.log fixture が direct binary で出力される
-- [ ] ローカル変数 fixture が direct binary で出力される
-- [ ] 既存 WAT emitter との出力一致テストが通る
+- [x] 数値 console.log fixture が direct binary で出力される
+- [x] ローカル変数 fixture が direct binary で出力される
+- [x] 既存 WAT emitter との出力一致テストが通る
 
 ## Validation
 
@@ -60,10 +60,10 @@ cargo nextest run
 ## Docs / current-state / issue sync
 
 Final-state docs:
-- [ ] not affected
+- [x] not affected
 
 Current state:
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
-- [ ] none
+- [x] none

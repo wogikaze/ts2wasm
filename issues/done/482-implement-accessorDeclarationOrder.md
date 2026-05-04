@@ -116,7 +116,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/open/098-implement-accessorDeclarationOrder.md` - Implement Accessordeclarationorder (same reference path, same feature label, same group key, title overlap)
+- `issues/done/098-implement-accessorDeclarationOrder.md` - Implement Accessordeclarationorder (same reference path, same feature label, same group key, title overlap)
 - `issues/open/422-implement-class-accessor.md` - Implement class-accessor support (same feature label, same group key, title overlap)
 
 ## Smart triage
@@ -192,7 +192,7 @@ Duplicate candidates:
 [
   {
     "state": "open",
-    "path": "issues/open/098-implement-accessorDeclarationOrder.md",
+    "path": "issues/done/098-implement-accessorDeclarationOrder.md",
     "title": "Implement Accessordeclarationorder",
     "reason": "same reference path, same feature label, title overlap"
   }

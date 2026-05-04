@@ -195,7 +195,7 @@ Duplicate candidates:
   },
   {
     "state": "open",
-    "path": "issues/open/464-implement-FunctionDeclaration-parser-syntax.md",
+    "path": "issues/done/464-implement-FunctionDeclaration-parser-syntax.md",
     "title": "Implement Functiondeclaration Parser Syntax",
     "reason": "same feature label, title overlap"
   },
@@ -231,7 +231,7 @@ Duplicate candidates:
   },
   {
     "state": "done",
-    "path": "issues/open/200-implement-parser-syntax.md",
+    "path": "issues/done/200-implement-parser-syntax.md",
     "title": "Implement parser syntax extensions",
     "reason": "same feature label, title overlap"
   },

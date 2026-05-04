@@ -30,12 +30,12 @@ BigInt/Number mixed, shift, bitwise, exponentiation, and StringToBigInt lowering
 ## Scope
 
 In scope:
-- [ ] BigInt/Number mixed operation lowering
-- [ ] BigInt shift/bitwise/exponentiation lowering
-- [ ] StringToBigInt boundary implementation
+- [x] BigInt/Number mixed operation lowering
+- [x] BigInt shift/bitwise/exponentiation lowering
+- [x] StringToBigInt boundary implementation
 
 Out of scope:
-- [ ] arbitrary precision full compatibility
+- [x] arbitrary precision full compatibility
 
 ## Affected paths
 
@@ -44,8 +44,8 @@ Expected:
 
 ## Acceptance criteria
 
-- [ ] BigInt/Number mixed fixture lowering passes
-- [ ] BigInt shift/bitwise/exponentiation fixture lowering passes
+- [x] BigInt/Number mixed fixture lowering passes
+- [x] BigInt shift/bitwise/exponentiation fixture lowering passes
 
 ## Validation
 
@@ -57,13 +57,13 @@ cargo nextest run
 ## Docs / current-state / issue sync
 
 Final-state docs:
-- [ ] not affected
+- [x] not affected
 
 Current state:
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
-- [ ] none
+- [x] none
 
 ---
 

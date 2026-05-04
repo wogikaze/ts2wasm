@@ -116,8 +116,8 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/open/127-implement-aliasUsageInVarAssignment.md` - Implement Aliasusageinvarassignment (same reference path, same group key, title overlap)
-- `issues/open/506-implement-aliasUsageInVarAssignment.md` - Implement Aliasusageinvarassignment (same reference path, same feature label, same group key, title overlap)
+- `issues/done/127-implement-aliasUsageInVarAssignment.md` - Implement Aliasusageinvarassignment (same reference path, same group key, title overlap)
+- `issues/done/506-implement-aliasUsageInVarAssignment.md` - Implement Aliasusageinvarassignment (same reference path, same feature label, same group key, title overlap)
 
 ## Smart triage
 
@@ -185,7 +185,7 @@ Duplicate candidates:
 [
   {
     "state": "open",
-    "path": "issues/open/127-implement-aliasUsageInVarAssignment.md",
+    "path": "issues/done/127-implement-aliasUsageInVarAssignment.md",
     "title": "Implement Aliasusageinvarassignment",
     "reason": "same reference path, title overlap"
   },
@@ -197,19 +197,19 @@ Duplicate candidates:
   },
   {
     "state": "open",
-    "path": "issues/open/457-implement-APISample-import-export.md",
+    "path": "issues/done/457-implement-APISample-import-export.md",
     "title": "Implement Apisample Import Export",
     "reason": "same feature label, title overlap"
   },
   {
     "state": "open",
-    "path": "issues/open/463-implement-FunctionDeclaration-import-export.md",
+    "path": "issues/done/463-implement-FunctionDeclaration-import-export.md",
     "title": "Implement Functiondeclaration Import Export",
     "reason": "same feature label, title overlap"
   },
   {
     "state": "open",
-    "path": "issues/open/506-implement-aliasUsageInVarAssignment.md",
+    "path": "issues/done/506-implement-aliasUsageInVarAssignment.md",
     "title": "Implement Aliasusageinvarassignment",
     "reason": "same reference path, same feature label, title overlap"
   },

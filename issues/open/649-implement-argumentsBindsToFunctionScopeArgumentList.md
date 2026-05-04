@@ -116,8 +116,8 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/open/193-implement-arguments.md` - Implement Arguments (same feature label, same group key, title overlap)
-- `issues/open/195-implement-argumentsBindsToFunctionScopeArgumentList.md` - Implement Argumentsbindstofunctionscopeargumentlist (same reference path, same feature label, same group key, title overlap)
+- `issues/done/193-implement-arguments.md` - Implement Arguments (same feature label, same group key, title overlap)
+- `issues/done/195-implement-argumentsBindsToFunctionScopeArgumentList.md` - Implement Argumentsbindstofunctionscopeargumentlist (same reference path, same feature label, same group key, title overlap)
 - `issues/open/437-implement-name-resolution.md` - Implement name resolution (same feature label, same group key, title overlap)
 
 ## Smart triage
@@ -208,7 +208,7 @@ Duplicate candidates:
   },
   {
     "state": "open",
-    "path": "issues/open/195-implement-argumentsBindsToFunctionScopeArgumentList.md",
+    "path": "issues/done/195-implement-argumentsBindsToFunctionScopeArgumentList.md",
     "title": "Implement Argumentsbindstofunctionscopeargumentlist",
     "reason": "same reference path, same feature label, title overlap"
   },

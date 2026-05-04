@@ -125,12 +125,12 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/open/135-implement-allowSyntheticDefaultImports.md` - Implement Allowsyntheticdefaultimports (same reference path, same feature label, same group key, title overlap)
-- `issues/open/136-implement-allowSyntheticDefaultImportsCanPaintCrossModuleDeclaration.md` - Implement Allowsyntheticdefaultimportscanpaintcrossmoduledeclaration (same feature label, same group key, title overlap)
+- `issues/done/135-implement-allowSyntheticDefaultImports.md` - Implement Allowsyntheticdefaultimports (same reference path, same feature label, same group key, title overlap)
+- `issues/done/136-implement-allowSyntheticDefaultImportsCanPaintCrossModuleDeclaration.md` - Implement Allowsyntheticdefaultimportscanpaintcrossmoduledeclaration (same feature label, same group key, title overlap)
 - `issues/open/432-implement-import-export.md` - Implement import/export module syntax (same feature label, same group key, title overlap)
-- `issues/open/462-implement-ExportAssignment.md` - Implement Exportassignment (same feature label, same group key, title overlap)
-- `issues/open/514-implement-allowSyntheticDefaultImports.md` - Implement Allowsyntheticdefaultimports (same reference path, same feature label, same group key, title overlap)
-- `issues/open/515-implement-allowSyntheticDefaultImportsCanPaintCrossModuleDeclaration.md` - Implement Allowsyntheticdefaultimportscanpaintcrossmoduledeclaration (same feature label, same group key, title overlap)
+- `issues/done/462-implement-ExportAssignment.md` - Implement Exportassignment (same feature label, same group key, title overlap)
+- `issues/done/514-implement-allowSyntheticDefaultImports.md` - Implement Allowsyntheticdefaultimports (same reference path, same feature label, same group key, title overlap)
+- `issues/done/515-implement-allowSyntheticDefaultImportsCanPaintCrossModuleDeclaration.md` - Implement Allowsyntheticdefaultimportscanpaintcrossmoduledeclaration (same feature label, same group key, title overlap)
 
 ## Smart triage
 
@@ -205,7 +205,7 @@ Duplicate candidates:
 [
   {
     "state": "open",
-    "path": "issues/open/135-implement-allowSyntheticDefaultImports.md",
+    "path": "issues/done/135-implement-allowSyntheticDefaultImports.md",
     "title": "Implement Allowsyntheticdefaultimports",
     "reason": "same reference path, same feature label"
   },
@@ -217,19 +217,19 @@ Duplicate candidates:
   },
   {
     "state": "open",
-    "path": "issues/open/457-implement-APISample-import-export.md",
+    "path": "issues/done/457-implement-APISample-import-export.md",
     "title": "Implement Apisample Import Export",
     "reason": "same feature label, title overlap"
   },
   {
     "state": "open",
-    "path": "issues/open/463-implement-FunctionDeclaration-import-export.md",
+    "path": "issues/done/463-implement-FunctionDeclaration-import-export.md",
     "title": "Implement Functiondeclaration Import Export",
     "reason": "same feature label, title overlap"
   },
   {
     "state": "open",
-    "path": "issues/open/514-implement-allowSyntheticDefaultImports.md",
+    "path": "issues/done/514-implement-allowSyntheticDefaultImports.md",
     "title": "Implement Allowsyntheticdefaultimports",
     "reason": "same reference path, same feature label"
   },

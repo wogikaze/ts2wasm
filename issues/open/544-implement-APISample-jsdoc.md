@@ -117,7 +117,7 @@ Follow-up issues:
 ## Duplicate detection
 
 - `issues/open/070-implement-APISample.md` - Implement Apisample (same reference path, same feature label, title overlap)
-- `issues/open/458-implement-APISample-jsdoc.md` - Implement Apisample Jsdoc (same reference path, same feature label, same group key, title overlap)
+- `issues/done/458-implement-APISample-jsdoc.md` - Implement Apisample Jsdoc (same reference path, same feature label, same group key, title overlap)
 
 ## Smart triage
 
@@ -204,7 +204,7 @@ Duplicate candidates:
   },
   {
     "state": "open",
-    "path": "issues/open/458-implement-APISample-jsdoc.md",
+    "path": "issues/done/458-implement-APISample-jsdoc.md",
     "title": "Implement Apisample Jsdoc",
     "reason": "same reference path, same feature label, title overlap"
   }

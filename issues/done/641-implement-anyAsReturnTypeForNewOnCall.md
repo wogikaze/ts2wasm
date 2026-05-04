@@ -116,7 +116,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/open/183-implement-anyAsReturnTypeForNewOnCall.md` - Implement Anyasreturntypefornewoncall (same reference path, same feature label, same group key, title overlap)
+- `issues/done/183-implement-anyAsReturnTypeForNewOnCall.md` - Implement Anyasreturntypefornewoncall (same reference path, same feature label, same group key, title overlap)
 
 ## Smart triage
 
@@ -206,7 +206,7 @@ Duplicate candidates:
 [
   {
     "state": "open",
-    "path": "issues/open/183-implement-anyAsReturnTypeForNewOnCall.md",
+    "path": "issues/done/183-implement-anyAsReturnTypeForNewOnCall.md",
     "title": "Implement Anyasreturntypefornewoncall",
     "reason": "same reference path, same feature label, title overlap"
   },

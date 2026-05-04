@@ -126,15 +126,15 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/open/096-implement-accessorDeclarationEmitJs.md` - Implement Accessordeclarationemitjs (same feature label, same group key, title overlap)
-- `issues/open/097-implement-accessorDeclarationEmitVisibilityErrors.md` - Implement Accessordeclarationemitvisibilityerrors (same feature label, same group key, title overlap)
-- `issues/open/141-implement-ambientClassDeclaredBeforeBase.md` - Implement Ambientclassdeclaredbeforebase (same feature label, same group key, title overlap)
-- `issues/open/170-implement-amdDeclarationEmitNoExtraDeclare.md` - Implement Amddeclarationemitnoextradeclare (same feature label, same group key, title overlap)
-- `issues/open/173-implement-amdLikeInputDeclarationEmit.md` - Implement Amdlikeinputdeclarationemit (same feature label, same group key, title overlap)
-- `issues/open/174-implement-amdModuleBundleNoDuplicateDeclarationEmitComments.md` - Implement Amdmodulebundlenoduplicatedeclarationemitcomments (same feature label, same group key, title overlap)
-- `issues/open/177-implement-anonClassDeclarationEmitIsAnon.md` - Implement Anonclassdeclarationemitisanon (same feature label, same group key, title overlap)
-- `issues/open/184-implement-anyDeclare.md` - Implement Anydeclare (same feature label, same group key, title overlap)
-- `issues/open/408-implement-tsgo-declaration-emit-asconst-and-generic-methods.md` - Implement tsgo declaration emit: AsConstSatisfies/const generic method cases (same feature label, same group key, title overlap)
+- `issues/done/096-implement-accessorDeclarationEmitJs.md` - Implement Accessordeclarationemitjs (same feature label, same group key, title overlap)
+- `issues/done/097-implement-accessorDeclarationEmitVisibilityErrors.md` - Implement Accessordeclarationemitvisibilityerrors (same feature label, same group key, title overlap)
+- `issues/done/141-implement-ambientClassDeclaredBeforeBase.md` - Implement Ambientclassdeclaredbeforebase (same feature label, same group key, title overlap)
+- `issues/done/170-implement-amdDeclarationEmitNoExtraDeclare.md` - Implement Amddeclarationemitnoextradeclare (same feature label, same group key, title overlap)
+- `issues/done/173-implement-amdLikeInputDeclarationEmit.md` - Implement Amdlikeinputdeclarationemit (same feature label, same group key, title overlap)
+- `issues/done/174-implement-amdModuleBundleNoDuplicateDeclarationEmitComments.md` - Implement Amdmodulebundlenoduplicatedeclarationemitcomments (same feature label, same group key, title overlap)
+- `issues/done/177-implement-anonClassDeclarationEmitIsAnon.md` - Implement Anonclassdeclarationemitisanon (same feature label, same group key, title overlap)
+- `issues/done/184-implement-anyDeclare.md` - Implement Anydeclare (same feature label, same group key, title overlap)
+- `issues/done/408-implement-tsgo-declaration-emit-asconst-and-generic-methods.md` - Implement tsgo declaration emit: AsConstSatisfies/const generic method cases (same feature label, same group key, title overlap)
 - `issues/done/409-implement-tsgo-declaration-emit-package-json-subpath.md` - Implement tsgo declaration emit: package-json exports and subpath reexport cases (same feature label, same group key, title overlap)
 
 ## Smart triage
@@ -288,7 +288,7 @@ Duplicate candidates:
   },
   {
     "state": "done",
-    "path": "issues/open/200-implement-parser-syntax.md",
+    "path": "issues/done/200-implement-parser-syntax.md",
     "title": "Implement parser syntax extensions",
     "reason": "same feature label, title overlap"
   },

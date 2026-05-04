@@ -116,8 +116,8 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/open/144-implement-ambientConstLiterals.md` - Implement Ambientconstliterals (same reference path, same group key, title overlap)
-- `issues/open/520-implement-ambientConstLiterals.md` - Implement Ambientconstliterals (same reference path, same feature label, same group key, title overlap)
+- `issues/done/144-implement-ambientConstLiterals.md` - Implement Ambientconstliterals (same reference path, same group key, title overlap)
+- `issues/done/520-implement-ambientConstLiterals.md` - Implement Ambientconstliterals (same reference path, same feature label, same group key, title overlap)
 
 ## Smart triage
 
@@ -185,7 +185,7 @@ Duplicate candidates:
 [
   {
     "state": "open",
-    "path": "issues/open/144-implement-ambientConstLiterals.md",
+    "path": "issues/done/144-implement-ambientConstLiterals.md",
     "title": "Implement Ambientconstliterals",
     "reason": "same reference path, title overlap"
   },
@@ -197,13 +197,13 @@ Duplicate candidates:
   },
   {
     "state": "open",
-    "path": "issues/open/464-implement-FunctionDeclaration-parser-syntax.md",
+    "path": "issues/done/464-implement-FunctionDeclaration-parser-syntax.md",
     "title": "Implement Functiondeclaration Parser Syntax",
     "reason": "same feature label, title overlap"
   },
   {
     "state": "open",
-    "path": "issues/open/520-implement-ambientConstLiterals.md",
+    "path": "issues/done/520-implement-ambientConstLiterals.md",
     "title": "Implement Ambientconstliterals",
     "reason": "same reference path, same feature label, title overlap"
   },
@@ -233,7 +233,7 @@ Duplicate candidates:
   },
   {
     "state": "done",
-    "path": "issues/open/200-implement-parser-syntax.md",
+    "path": "issues/done/200-implement-parser-syntax.md",
     "title": "Implement parser syntax extensions",
     "reason": "same feature label, title overlap"
   },

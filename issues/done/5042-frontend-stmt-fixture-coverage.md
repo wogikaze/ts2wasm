@@ -30,12 +30,12 @@ updated: 2026-05-03
 ## Scope
 
 In scope:
-- [ ] 全 Stmt variant の列挙と現状確認
-- [ ] parse → AST snapshot fixture の追加
-- [ ] class/module/try-catch 構文境界の固定
+- [x] 全 Stmt variant の列挙と現状確認
+- [x] parse → AST snapshot fixture の追加
+- [x] class/module/try-catch 構文境界の固定
 
 Out of scope:
-- [ ] semantic analysis
+- [x] semantic analysis
 
 ## Affected paths
 
@@ -44,8 +44,8 @@ Expected:
 
 ## Acceptance criteria
 
-- [ ] 全 Stmt variant に fixture が存在する
-- [ ] 不足 variant が可視化される
+- [x] 全 Stmt variant に fixture が存在する
+- [x] 不足 variant が可視化される
 
 ## Validation
 
@@ -57,10 +57,10 @@ cargo nextest run
 ## Docs / current-state / issue sync
 
 Final-state docs:
-- [ ] not affected
+- [x] not affected
 
 Current state:
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
-- [ ] none
+- [x] none

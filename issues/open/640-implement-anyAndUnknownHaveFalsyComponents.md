@@ -116,7 +116,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/open/182-implement-anyAndUnknownHaveFalsyComponents.md` - Implement Anyandunknownhavefalsycomponents (same reference path, same group key, title overlap)
+- `issues/done/182-implement-anyAndUnknownHaveFalsyComponents.md` - Implement Anyandunknownhavefalsycomponents (same reference path, same group key, title overlap)
 
 ## Smart triage
 
@@ -204,7 +204,7 @@ Duplicate candidates:
   },
   {
     "state": "open",
-    "path": "issues/open/182-implement-anyAndUnknownHaveFalsyComponents.md",
+    "path": "issues/done/182-implement-anyAndUnknownHaveFalsyComponents.md",
     "title": "Implement Anyandunknownhavefalsycomponents",
     "reason": "same reference path, title overlap"
   },

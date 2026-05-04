@@ -116,8 +116,8 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/open/140-implement-ambientClassDeclarationWithExtends.md` - Implement Ambientclassdeclarationwithextends (same reference path, same group key, title overlap)
-- `issues/open/518-implement-ambientClassDeclarationWithExtends.md` - Implement Ambientclassdeclarationwithextends (same reference path, same feature label, same group key, title overlap)
+- `issues/done/140-implement-ambientClassDeclarationWithExtends.md` - Implement Ambientclassdeclarationwithextends (same reference path, same group key, title overlap)
+- `issues/done/518-implement-ambientClassDeclarationWithExtends.md` - Implement Ambientclassdeclarationwithextends (same reference path, same feature label, same group key, title overlap)
 - `issues/done/604-implement-ambientClassDeclarationWithExtends.md` - Implement Ambientclassdeclarationwithextends (same reference path, same feature label, same group key, title overlap)
 
 ## Smart triage
