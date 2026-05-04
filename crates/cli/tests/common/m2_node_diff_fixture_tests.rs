@@ -2068,3 +2068,13 @@ fn object_builtin_method_fixtures_match_node_output_under_iwasm() {
         assert_fixture_matches_node(fixture);
     }
 }
+
+#[test]
+fn array_find_last_fixture_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/array-find-last.ts");
+}
+
+#[test]
+fn array_find_last_index_fixture_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/array-find-last-index.ts");
+}
