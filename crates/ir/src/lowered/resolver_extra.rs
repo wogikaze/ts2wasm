@@ -3034,6 +3034,97 @@ impl<'a> Resolver<'a> {
                 ));
                 result_expr = LoweredExpr::Local(result);
             }
+            "flatMap" => {
+                let result = self.alloc_temp();
+                stmts.push(LoweredStmt::Let(
+                    result,
+                    LoweredExpr::ArrayNew {
+                        elements: vec![],
+                    },
+                ));
+
+                let elem = self.alloc_temp();
+                while_body.push(LoweredStmt::Let(
+                    elem,
+                    LoweredExpr::ArrayGet {
+                        arr: Box::new(arr_ref()),
+                        index: Box::new(LoweredExpr::Local(i)),
+                    },
+                ));
+
+                let mapped = self.alloc_temp();
+                let call_args = {
+                    let explicit_args = vec![
+                        LoweredExpr::Local(elem),
+                        LoweredExpr::Local(i),
+                        arr_ref(),
+                    ];
+                    let mut call_args: Vec<LoweredExpr> = explicit_args
+                        .into_iter()
+                        .take(param_count)
+                        .collect();
+                    call_args.extend(captures.iter().copied().map(LoweredExpr::Local));
+                    LoweredExpr::Call {
+                        kind: FunctionCallKind::User(func_id),
+                        args: call_args,
+                    }
+                };
+                while_body.push(LoweredStmt::Let(mapped, call_args));
+                // Spread each element of the callback's returned array into result
+                let j = self.alloc_temp();
+                let mapped_len = self.alloc_temp();
+                let flat_elem = self.alloc_temp();
+                while_body.push(LoweredStmt::Let(
+                    j,
+                    LoweredExpr::Number(0),
+                ));
+                while_body.push(LoweredStmt::Let(
+                    mapped_len,
+                    LoweredExpr::GetLength(Box::new(LoweredExpr::Local(mapped))),
+                ));
+                let mut spread_body = Vec::new();
+                spread_body.push(LoweredStmt::Let(
+                    flat_elem,
+                    LoweredExpr::ArrayGet {
+                        arr: Box::new(LoweredExpr::Local(mapped)),
+                        index: Box::new(LoweredExpr::Local(j)),
+                    },
+                ));
+                spread_body.push(LoweredStmt::Expr(LoweredExpr::RuntimeCall {
+                    runtime_fn: "ArrayPush".to_owned(),
+                    args: vec![
+                        LoweredExpr::Local(result),
+                        LoweredExpr::Local(flat_elem),
+                    ],
+                }));
+                spread_body.push(LoweredStmt::Assign(
+                    j,
+                    LoweredExpr::Binary {
+                        left: Box::new(LoweredExpr::Local(j)),
+                        op: LoweredBinaryOp::Add,
+                        right: Box::new(LoweredExpr::Number(1)),
+                    },
+                ));
+                let spread_loop = LoweredStmt::While {
+                    condition: LoweredExpr::Binary {
+                        left: Box::new(LoweredExpr::Local(j)),
+                        op: LoweredBinaryOp::Less,
+                        right: Box::new(LoweredExpr::Local(mapped_len)),
+                    },
+                    body: spread_body,
+                };
+                while_body.push(spread_loop);
+                while_body.push(LoweredStmt::Assign(
+                    i,
+                    LoweredExpr::Binary {
+                        left: Box::new(LoweredExpr::Local(i)),
+                        op: LoweredBinaryOp::Add,
+                        right: Box::new(LoweredExpr::Number(1)),
+                    },
+                ));
+
+                result_expr = LoweredExpr::Local(result);
+            }
             "map" => {
                 let result = self.alloc_temp();
                 stmts.push(LoweredStmt::Let(

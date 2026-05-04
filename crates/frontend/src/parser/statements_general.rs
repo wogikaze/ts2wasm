@@ -85,12 +85,7 @@ impl Parser {
                     });
                 }
                 // `import X = N[.M. ...]` — local alias, skip (erased at runtime)
-                while matches!(self.peek(), Some(Token::Ident(_)))
-                    || matches!(self.peek(), Some(Token::Dot))
-                {
-                    self.advance();
-                }
-                self.expect(TokenKind::Semicolon)?;
+                self.skip_to_semicolon()?;
                 return Ok(Stmt::Expr {
                     expr: crate::Expr::Undefined { span: import_span },
                     span: Span { start: import_span.start, end: import_span.start },
