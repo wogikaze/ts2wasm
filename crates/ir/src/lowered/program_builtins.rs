@@ -166,6 +166,7 @@ pub(super) fn collection_method_runtime_fn_arg(method: &str) -> Option<&'static 
         "sort" => Some("ArraySortNumeric"),
         "at" => Some("ArrayAt"),
         "fill" => Some("ArrayFill"),
+        "flat" => Some("ArrayFlat"),
         _ => None,
     }
 }

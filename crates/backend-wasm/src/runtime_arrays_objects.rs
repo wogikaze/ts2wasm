@@ -1597,6 +1597,147 @@ impl WatEmitter<'_> {
         ));
     }
 
+    // Array.prototype.flat(depth) — returns new array with sub-array elements concatenated
+    // Supports arbitrary depth via recursion
+    pub(super) fn emit_array_flat(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $array_flat (param $arr i32) (param $depth i32) (result i32)
+    (local $tag i32)
+    (local $obj i32)
+    (local $len i32)
+    (local $i i32)
+    (local $elem i32)
+    (local $elem_tag i32)
+    (local $elem_obj i32)
+    (local $result_len i32)
+    (local $result_ptr i32)
+    (local $j i32)
+    (local $flat_sub i32)
+    (local $flat_obj i32)
+    (local $flat_len i32)
+    (local $flat_elem i32)
+    (local $depth_raw i32)
+    (local.set $tag (i32.and (local.get $arr) (i32.const {tag_mask})))
+    (if (i32.ne (local.get $tag) (i32.const {array_tag})) (then (return (i32.const {undefined}))))
+    (local.set $depth
+      (select
+        (local.get $depth)
+        (i32.const {one_tagged})
+        (i32.eq (i32.and (local.get $depth) (i32.const {tag_mask})) (i32.const {number_tag}))))
+    (local.set $depth_raw (i32.shr_s (local.get $depth) (i32.const {number_shift})))
+    (if (i32.le_s (local.get $depth_raw) (i32.const {zero})) (then (return (local.get $arr))))
+    (local.set $obj (i32.and (local.get $arr) (i32.const {heap_mask})))
+    (local.set $len (i32.load (local.get $obj)))
+    (local.set $i (i32.const {zero}))
+    (local.set $result_len (i32.const {zero}))
+    (block $count_done
+      (loop $count_loop
+        (br_if $count_done (i32.ge_u (local.get $i) (local.get $len)))
+        (local.set $elem
+          (i32.load
+            (i32.add (local.get $obj)
+              (i32.add (i32.const {array_header})
+                (i32.shl (local.get $i) (i32.const {elem_shift}))))))
+        (local.set $elem_tag (i32.and (local.get $elem) (i32.const {tag_mask})))
+        (block $count_skip_simple
+          (block $count_try_recursion
+            (if (i32.ne (local.get $elem_tag) (i32.const {array_tag}))
+              (then (br $count_try_recursion)))
+            (if (i32.le_s (local.get $depth_raw) (i32.const {zero}))
+              (then (br $count_try_recursion)))
+            (local.set $flat_sub
+              (call $array_flat (local.get $elem) (i32.sub (local.get $depth) (i32.const {one_tagged}))))
+            (local.set $result_len
+              (i32.add (local.get $result_len)
+                (i32.load (i32.and (local.get $flat_sub) (i32.const {heap_mask})))))
+            (br $count_skip_simple))
+          (local.set $result_len (i32.add (local.get $result_len) (i32.const {one}))))
+        (local.set $i (i32.add (local.get $i) (i32.const {one})))
+        (br $count_loop)))
+    (local.set $result_ptr
+      (call $alloc_heap
+        (i32.add (i32.const {array_header})
+          (i32.shl (local.get $result_len) (i32.const {elem_shift})))))
+    (i32.store (local.get $result_ptr) (local.get $result_len))
+    (i32.store (i32.add (local.get $result_ptr) (i32.const 4)) (local.get $result_len))
+    (i32.store (i32.add (local.get $result_ptr) (i32.const 8)) (i32.const 1))
+    (i32.store (i32.add (local.get $result_ptr) (i32.const 12)) (i32.const {array_header}))
+    (block $presence
+      (if (i32.eqz (local.get $result_len))
+        (then
+          (i32.store (i32.add (local.get $result_ptr) (i32.const 16)) (i32.const 0))
+          (br $presence)))
+      (if (i32.gt_u (local.get $result_len) (i32.const 31))
+        (then
+          (i32.store (i32.add (local.get $result_ptr) (i32.const 16)) (i32.const -1))
+          (br $presence)))
+      (i32.store
+        (i32.add (local.get $result_ptr) (i32.const 16))
+        (i32.sub (i32.shl (i32.const 1) (local.get $result_len)) (i32.const 1))))
+    (local.set $i (i32.const {zero}))
+    (local.set $result_len (i32.const {zero}))
+    (block $copy_done
+      (loop $copy_loop
+        (br_if $copy_done (i32.ge_u (local.get $i) (local.get $len)))
+        (local.set $elem
+          (i32.load
+            (i32.add (local.get $obj)
+              (i32.add (i32.const {array_header})
+                (i32.shl (local.get $i) (i32.const {elem_shift}))))))
+        (local.set $elem_tag (i32.and (local.get $elem) (i32.const {tag_mask})))
+        (block $copy_skip_simple
+          (block $copy_try_recursion
+            (if (i32.ne (local.get $elem_tag) (i32.const {array_tag}))
+              (then (br $copy_try_recursion)))
+            (if (i32.le_s (local.get $depth_raw) (i32.const {zero}))
+              (then (br $copy_try_recursion)))
+            (local.set $flat_sub
+              (call $array_flat (local.get $elem) (i32.sub (local.get $depth) (i32.const {one_tagged}))))
+            (local.set $flat_obj (i32.and (local.get $flat_sub) (i32.const {heap_mask})))
+            (local.set $flat_len (i32.load (local.get $flat_obj)))
+            (local.set $j (i32.const {zero}))
+            (block $flat_done
+              (loop $flat_loop
+                (br_if $flat_done (i32.ge_u (local.get $j) (local.get $flat_len)))
+                (local.set $flat_elem
+                  (i32.load
+                    (i32.add (local.get $flat_obj)
+                      (i32.add (i32.const {array_header})
+                        (i32.shl (local.get $j) (i32.const {elem_shift}))))))
+                (i32.store
+                  (i32.add (local.get $result_ptr)
+                    (i32.add (i32.const {array_header})
+                      (i32.shl (local.get $result_len) (i32.const {elem_shift}))))
+                  (local.get $flat_elem))
+                (local.set $result_len (i32.add (local.get $result_len) (i32.const {one})))
+                (local.set $j (i32.add (local.get $j) (i32.const {one})))
+                (br $flat_loop)))
+            (br $copy_skip_simple))
+          (i32.store
+            (i32.add (local.get $result_ptr)
+              (i32.add (i32.const {array_header})
+                (i32.shl (local.get $result_len) (i32.const {elem_shift}))))
+            (local.get $elem))
+          (local.set $result_len (i32.add (local.get $result_len) (i32.const {one}))))
+        (local.set $i (i32.add (local.get $i) (i32.const {one})))
+        (br $copy_loop)))
+    (i32.or (local.get $result_ptr) (i32.const {array_tag})))
+"#,
+            tag_mask = ValueTag::TAG_MASK,
+            array_tag = ValueTag::ARRAY,
+            heap_mask = ValueTag::HEAP_MASK,
+            array_header = Layout::ARRAY_HEADER_SIZE,
+            elem_shift = Layout::ARRAY_ELEM_SHIFT,
+            number_shift = ValueTag::NUMBER_SHIFT,
+            number_tag = ValueTag::NUMBER,
+            zero = RuntimeConst::ZERO,
+            one = RuntimeConst::ONE,
+            one_tagged = (RuntimeConst::ONE << ValueTag::NUMBER_SHIFT) | ValueTag::NUMBER,
+            undefined = ValueTag::UNDEFINED,
+        ));
+    }
+
     // Array.prototype.shift() — removes and returns first element
     pub(super) fn emit_array_shift(&self, wat: &mut String) {
         wat.push_str(&format!(
@@ -2539,155 +2680,6 @@ impl WatEmitter<'_> {
             obj_proto = Layout::OBJECT_PROTOTYPE_OFFSET,
             true = ValueTag::TRUE,
             false = ValueTag::FALSE,
-        ));
-    }
-
-    // Array.prototype.flat(depth) — returns flattened array
-    pub(super) fn emit_array_flat(&self, wat: &mut String) {
-        wat.push_str(&format!(
-            r#"
-  (func $array_flat (param $arr i32) (param $depth i32) (result i32)
-    (local $obj i32)
-    (local $tag i32)
-    (local $len i32)
-    (local $i i32)
-    (local $elem i32)
-    (local $result_len i32)
-    (local $result_ptr i32)
-    (local $flat_sub i32)
-    (local $flat_obj i32)
-    (local $flat_len i32)
-    (local $j i32)
-    (local $flat_elem i32)
-    (local.set $tag (i32.and (local.get $arr) (i32.const {tag_mask})))
-    (if (i32.ne (local.get $tag) (i32.const {array_tag})) (then (return (i32.const {undefined}))))
-    (local.set $obj (i32.and (local.get $arr) (i32.const {heap_mask})))
-    ;; Validate depth: if not a tagged number, default to depth=1 (tagged)
-    (local.set $depth
-      (select
-        (local.get $depth)
-        (i32.const {one_tagged})
-        (i32.eq (i32.and (local.get $depth) (i32.const {tag_mask})) (i32.const {number_tag}))))
-    (local.set $len (i32.load (local.get $obj)))
-    ;; First pass: count result elements
-    (local.set $result_len (i32.const {zero}))
-    (local.set $i (i32.const {zero}))
-    (block $count_done
-      (loop $count_loop
-        (br_if $count_done (i32.ge_u (local.get $i) (local.get $len)))
-        (local.set $elem
-          (i32.load
-            (i32.add
-              (local.get $obj)
-              (i32.add
-                (i32.const {array_header})
-                (i32.shl (local.get $i) (i32.const {elem_shift}))))))
-        (local.set $tag (i32.and (local.get $elem) (i32.const {tag_mask})))
-        (if (i32.eq (local.get $tag) (i32.const {array_tag}))
-          (then
-            (if (i32.gt_s (i32.shr_u (local.get $depth) (i32.const {number_shift})) (i32.const {zero}))
-              (then
-                (local.set $flat_sub
-                  (call $array_flat (local.get $elem) (i32.sub (local.get $depth) (i32.const {one_tagged}))))
-                (local.set $result_len
-                  (i32.add
-                    (local.get $result_len)
-                    (i32.load (i32.and (local.get $flat_sub) (i32.const {heap_mask}))))))
-              (else
-                (local.set $result_len (i32.add (local.get $result_len) (i32.const {one}))))))
-          (else
-            (local.set $result_len (i32.add (local.get $result_len) (i32.const {one})))))
-        (local.set $i (i32.add (local.get $i) (i32.const {one})))
-        (br $count_loop)))
-    ;; Allocate result array
-    (local.set $result_ptr
-      (call $alloc_heap
-        (i32.add
-          (i32.const {array_header})
-          (i32.shl (local.get $result_len) (i32.const {elem_shift})))))
-    (i32.store (local.get $result_ptr) (local.get $result_len))
-    (i32.store (i32.add (local.get $result_ptr) (i32.const 4)) (local.get $result_len))
-    (i32.store (i32.add (local.get $result_ptr) (i32.const 8)) (i32.const 1))
-    (i32.store (i32.add (local.get $result_ptr) (i32.const 12)) (i32.const {array_header}))
-    (i32.store
-      (i32.add (local.get $result_ptr) (i32.const 16))
-      (i32.sub (i32.shl (i32.const 1) (local.get $result_len)) (i32.const 1)))
-    ;; Second pass: copy elements into result
-    (local.set $result_len (i32.const {zero}))
-    (local.set $i (i32.const {zero}))
-    (block $copy_done
-      (loop $copy_loop
-        (br_if $copy_done (i32.ge_u (local.get $i) (local.get $len)))
-        (local.set $elem
-          (i32.load
-            (i32.add
-              (local.get $obj)
-              (i32.add
-                (i32.const {array_header})
-                (i32.shl (local.get $i) (i32.const {elem_shift}))))))
-        (local.set $tag (i32.and (local.get $elem) (i32.const {tag_mask})))
-        (if (i32.eq (local.get $tag) (i32.const {array_tag}))
-          (then
-            (if (i32.gt_s (i32.shr_u (local.get $depth) (i32.const {number_shift})) (i32.const {zero}))
-              (then
-                (local.set $flat_sub
-                  (call $array_flat (local.get $elem) (i32.sub (local.get $depth) (i32.const {one_tagged}))))
-                (local.set $flat_obj (i32.and (local.get $flat_sub) (i32.const {heap_mask})))
-                (local.set $flat_len (i32.load (local.get $flat_obj)))
-                (local.set $j (i32.const {zero}))
-                (block $flat_done
-                  (loop $flat_loop
-                    (br_if $flat_done (i32.ge_u (local.get $j) (local.get $flat_len)))
-                    (local.set $flat_elem
-                      (i32.load
-                        (i32.add
-                          (local.get $flat_obj)
-                          (i32.add
-                            (i32.const {array_header})
-                            (i32.shl (local.get $j) (i32.const {elem_shift}))))))
-                    (i32.store
-                      (i32.add
-                        (local.get $result_ptr)
-                        (i32.add
-                          (i32.const {array_header})
-                          (i32.shl (local.get $result_len) (i32.const {elem_shift}))))
-                      (local.get $flat_elem))
-                    (local.set $result_len (i32.add (local.get $result_len) (i32.const {one})))
-                    (local.set $j (i32.add (local.get $j) (i32.const {one})))
-                    (br $flat_loop))))
-              (else
-                (i32.store
-                  (i32.add
-                    (local.get $result_ptr)
-                    (i32.add
-                      (i32.const {array_header})
-                      (i32.shl (local.get $result_len) (i32.const {elem_shift}))))
-                  (local.get $elem))
-                (local.set $result_len (i32.add (local.get $result_len) (i32.const {one}))))))
-          (else
-            (i32.store
-              (i32.add
-                (local.get $result_ptr)
-                (i32.add
-                  (i32.const {array_header})
-                  (i32.shl (local.get $result_len) (i32.const {elem_shift}))))
-              (local.get $elem))
-            (local.set $result_len (i32.add (local.get $result_len) (i32.const {one})))))
-        (local.set $i (i32.add (local.get $i) (i32.const {one})))
-        (br $copy_loop)))
-    (i32.or (local.get $result_ptr) (i32.const {array_tag})))
-"#,
-            tag_mask = ValueTag::TAG_MASK,
-            array_tag = ValueTag::ARRAY,
-            heap_mask = ValueTag::HEAP_MASK,
-            array_header = Layout::ARRAY_HEADER_SIZE,
-            elem_shift = Layout::ARRAY_ELEM_SHIFT,
-            zero = RuntimeConst::ZERO,
-            one = RuntimeConst::ONE,
-            number_shift = ValueTag::NUMBER_SHIFT,
-            number_tag = ValueTag::NUMBER,
-            one_tagged = (RuntimeConst::ONE << ValueTag::NUMBER_SHIFT) | ValueTag::NUMBER,
-            undefined = ValueTag::UNDEFINED,
         ));
     }
 

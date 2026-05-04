@@ -95,7 +95,6 @@ const KNOWN_FEATURES: &[(&str, &str)] = &[
     ("Array.prototype.values", "issue-5004"),
     // --- features commonly used by test262 but not yet stubbed ---
     ("change-array-by-copy", "issue-5004"),
-    ("Array.prototype.flat", "issue-5004"),
     ("Array.prototype.flatMap", "issue-5004"),
     ("exponentiation", "issue-5000"),
     ("resizable-arraybuffer", "issue-408"),
