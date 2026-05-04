@@ -3,9 +3,9 @@ id: 076
 title: "Implement Functiondeclaration"
 type: spike
 area: frontend/syntax
-class: blocked
+class: triage-needed
 priority: P1
-depends_on: [5000]
+depends_on: []
 blocks: []
 created: 2026-04-29
 updated: 2026-04-29

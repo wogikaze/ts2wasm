@@ -3,9 +3,9 @@ id: 050
 title: "Implement Date"
 type: feature
 area: runtime/builtins
-class: blocked
+class: triage-needed
 priority: P1
-depends_on: [5004]
+depends_on: []
 blocks: []
 created: 2026-04-26
 updated: 2026-04-26

@@ -3,9 +3,9 @@ id: 342
 title: "Implement Object builtin method coverage (1,721 test262 cases)"
 type: feature
 area: runtime/builtins
-class: blocked
+class: triage-needed
 priority: P1
-depends_on: [5004]
+depends_on: []
 blocks: []
 created: 2026-04-30
 updated: 2026-05-02

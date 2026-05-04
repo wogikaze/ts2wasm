@@ -3,9 +3,9 @@ id: 335
 title: "Implement full Math.pow number semantics"
 type: feature
 area: runtime/builtins
-class: blocked
+class: triage-needed
 priority: P2
-depends_on: [5004]
+depends_on: []
 blocks: []
 created: 2026-04-30
 updated: 2026-04-30

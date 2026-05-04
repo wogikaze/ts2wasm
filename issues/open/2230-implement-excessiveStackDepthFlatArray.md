@@ -3,9 +3,9 @@ id: 2230
 title: "Implement Excessivestackdepthflatarray"
 type: spike
 area: reference/triage
-class: blocked
+class: triage-needed
 priority: P1
-depends_on: [5004]
+depends_on: []
 blocks: []
 created: 2026-05-01
 updated: 2026-05-01

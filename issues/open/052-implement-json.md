@@ -3,9 +3,9 @@ id: 052
 title: "Implement JSON"
 type: feature
 area: runtime/builtins
-class: blocked
+class: triage-needed
 priority: P1
-depends_on: [5004]
+depends_on: []
 blocks: [052d]
 created: 2026-04-26
 updated: 2026-04-29

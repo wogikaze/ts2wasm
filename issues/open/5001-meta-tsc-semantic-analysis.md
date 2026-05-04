@@ -5,7 +5,7 @@ type: meta
 area: frontend/semantics
 class: design-ready
 priority: P1
-depends_on: [5000]
+depends_on: []
 blocks: []
 created: 2026-05-02
 updated: 2026-05-02

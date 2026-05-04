@@ -3,9 +3,9 @@ id: 742
 title: "Implement Assignmenttoexpandingarraytype"
 type: spike
 area: frontend/syntax
-class: blocked
+class: triage-needed
 priority: P1
-depends_on: [5000]
+depends_on: []
 blocks: []
 created: 2026-05-01
 updated: 2026-05-01

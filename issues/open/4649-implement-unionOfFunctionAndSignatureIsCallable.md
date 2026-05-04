@@ -3,9 +3,9 @@ id: 4649
 title: "Implement Unionoffunctionandsignatureiscallable"
 type: spike
 area: frontend/syntax
-class: blocked
+class: triage-needed
 priority: P1
-depends_on: [5000]
+depends_on: []
 blocks: []
 created: 2026-05-01
 updated: 2026-05-01

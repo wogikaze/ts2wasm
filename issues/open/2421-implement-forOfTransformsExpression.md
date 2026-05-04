@@ -3,9 +3,9 @@ id: 2421
 title: "Implement Foroftransformsexpression"
 type: spike
 area: reference/triage
-class: blocked
+class: triage-needed
 priority: P1
-depends_on: [5004]
+depends_on: []
 blocks: []
 created: 2026-05-01
 updated: 2026-05-01

@@ -3,9 +3,9 @@ id: 553
 title: "Implement Transportstream"
 type: spike
 area: frontend/syntax
-class: blocked
+class: triage-needed
 priority: P1
-depends_on: [5000]
+depends_on: []
 blocks: []
 created: 2026-05-01
 updated: 2026-05-01
@@ -418,7 +418,7 @@ Remaining risks:
 
 ## ⚠️ False-done audit (re-opened from `issues/done/`)
 
-**Why this was false-done**: This generated triage spike issue was moved to `issues/done/` without actual triage or implementation. It has `type: spike` and `class: blocked` depending on meta-issues (`depends_on: [5000]` or `[5001]`), with zero implementation commits referencing this issue, empty completion evidence (commits `...`), and no Status note or Close note documenting triage results.
+**Why this was false-done**: This generated triage spike issue was moved to `issues/done/` without actual triage or implementation. It has `type: spike` and `class: blocked` depending on meta-issues (`depends_on: []` or `[5001]`), with zero implementation commits referencing this issue, empty completion evidence (commits `...`), and no Status note or Close note documenting triage results.
 
 **True-done checklist** (all must pass):
 1. Perform actual triage review of the reference failure case(s)

@@ -3,9 +3,9 @@ id: 070
 title: "Implement Apisample"
 type: spike
 area: runtime/builtins
-class: blocked
+class: triage-needed
 priority: P1
-depends_on: [5004]
+depends_on: []
 blocks: []
 created: 2026-04-29
 updated: 2026-04-29
