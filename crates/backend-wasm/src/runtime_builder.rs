@@ -229,6 +229,9 @@ impl WatEmitter<'_> {
                 RuntimeFn::ArrayShift => self.emit_array_shift(wat),
                 RuntimeFn::ArrayUnshift => self.emit_array_unshift(wat),
                 RuntimeFn::ArraySplice => self.emit_array_splice(wat),
+                RuntimeFn::StringMatch => self.emit_string_match(wat),
+                RuntimeFn::StringSearch => self.emit_string_search(wat),
+                RuntimeFn::RegExpSearch => self.emit_regexp_search(wat),
             }
         }
     }
