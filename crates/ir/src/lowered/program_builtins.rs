@@ -180,6 +180,8 @@ pub(super) fn collection_method_runtime_fn_arg(method: &str) -> Option<&'static 
         "fill" => Some("ArrayFill"),
         "flat" => Some("ArrayFlat"),
         "concat" => Some("ArrayConcat"),
+        "copyWithin" => Some("ArrayCopyWithin"),
+        "lastIndexOf" => Some("ArrayLastIndexOf"),
         "with" => Some("ArrayWith"),
         "toReversed" => Some("ArrayToReversed"),
         "toSorted" => Some("ArrayToSorted"),
