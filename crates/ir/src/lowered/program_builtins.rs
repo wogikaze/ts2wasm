@@ -31,6 +31,7 @@ pub(super) fn resolve_method_to_runtime_fn(object: &ResolvedExpr, method: &str) 
                 "values" => Some("ObjectValues".to_owned()),
                 "entries" => Some("ObjectEntries".to_owned()),
                 "hasOwnProperty" => Some("ObjectHasOwnProperty".to_owned()),
+                "hasOwn" => Some("ObjectHasOwn".to_owned()),
                 "getOwnPropertyDescriptor" => Some("ObjectGetOwnPropertyDescriptor".to_owned()),
                 "getPrototypeOf" => Some("ObjectGetPrototypeOf".to_owned()),
                 "setPrototypeOf" => Some("ObjectSetPrototypeOf".to_owned()),

@@ -94,6 +94,7 @@ const KNOWN_FEATURES: &[(&str, &str)] = &[
     ("Array.prototype.flat", "issue-5004"),
     ("Array.prototype.includes", "issue-5004"),
     ("array-find-from-last", "issue-5004"),
+    ("Object.hasOwn", "issue-5004"),
     // --- string prototype features (implemented / partially supported) ---
     ("String.prototype.at", "issue-5004"),
     ("String.prototype.endsWith", "issue-5004"),

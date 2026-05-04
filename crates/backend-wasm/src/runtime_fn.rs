@@ -276,6 +276,7 @@ pub(crate) enum RuntimeFn {
     ObjectValues,
     ObjectEntries,
     ObjectHasOwnProperty,
+    ObjectHasOwn,
     ObjectGetOwnPropertyDescriptor,
     ObjectGetPrototypeOf,
     ObjectSetPrototypeOf,
@@ -659,6 +660,7 @@ pub(crate) fn runtime_fn_from_name(name: &str) -> Option<RuntimeFn> {
         "ObjectValues" => Some(RuntimeFn::ObjectValues),
         "ObjectEntries" => Some(RuntimeFn::ObjectEntries),
         "ObjectHasOwnProperty" => Some(RuntimeFn::ObjectHasOwnProperty),
+        "ObjectHasOwn" => Some(RuntimeFn::ObjectHasOwn),
         "ObjectGetOwnPropertyDescriptor" => Some(RuntimeFn::ObjectGetOwnPropertyDescriptor),
         "ObjectGetPrototypeOf" => Some(RuntimeFn::ObjectGetPrototypeOf),
         "ObjectSetPrototypeOf" => Some(RuntimeFn::ObjectSetPrototypeOf),
@@ -1248,6 +1250,7 @@ const OBJECT_SPREAD_DEPS: &[RuntimeFn] = &[
 ];
 const OBJECT_VALUES_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap];
 const OBJECT_ENTRIES_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap, RuntimeFn::Copy];
+const OBJECT_HAS_OWN_DEPS: &[RuntimeFn] = &[RuntimeFn::ObjectHasOwnProperty];
 const OBJECT_HAS_OWN_PROPERTY_DEPS: &[RuntimeFn] =
     &[RuntimeFn::ValueToStringInto, RuntimeFn::PropertyHas];
 const OBJECT_GET_OWN_PROPERTY_DESCRIPTOR_DEPS: &[RuntimeFn] = &[
