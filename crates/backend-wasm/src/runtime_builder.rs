@@ -115,6 +115,7 @@ impl WatEmitter<'_> {
                 RuntimeFn::DateToString => self.emit_date_to_string(wat),
                 RuntimeFn::DateGetLocalTimeField => self.emit_date_get_local_time_field(wat),
                 RuntimeFn::DateToISOString => self.emit_date_to_iso_string(wat),
+                RuntimeFn::DateGetTimezoneOffset => self.emit_date_get_timezone_offset(wat),
                 RuntimeFn::DateGetUtcMilliseconds => self.emit_date_get_utc_milliseconds(wat),
                 RuntimeFn::DateGetUtcSeconds => self.emit_date_get_utc_seconds(wat),
                 RuntimeFn::DateGetUtcMinutes => self.emit_date_get_utc_minutes(wat),
