@@ -122,6 +122,11 @@ impl WatEmitter<'_> {
             (i32.add (i32.const {array_header}) (i32.shl (local.get $old_len) (i32.const {elem_shift}))))
           (local.get $val))
         (i32.store
+          (i32.add (i32.and (local.get $arr) (i32.const {heap_mask})) (i32.const {presence_words_offset}))
+          (i32.or
+            (i32.load (i32.add (i32.and (local.get $arr) (i32.const {heap_mask})) (i32.const {presence_words_offset})))
+            (i32.shl (i32.const 1) (local.get $old_len))))
+        (i32.store
           (i32.and (local.get $arr) (i32.const {heap_mask}))
           (i32.add (local.get $old_len) (i32.const {one})))
         (local.get $arr))
@@ -161,6 +166,11 @@ impl WatEmitter<'_> {
                 (i32.and (local.get $arr) (i32.const {heap_mask}))
                 (i32.add (i32.const {array_header}) (i32.shl (local.get $old_len) (i32.const {elem_shift}))))
               (local.get $val))
+            (i32.store
+              (i32.add (i32.and (local.get $arr) (i32.const {heap_mask})) (i32.const {presence_words_offset}))
+              (i32.or
+                (i32.load (i32.add (i32.and (local.get $arr) (i32.const {heap_mask})) (i32.const {presence_words_offset})))
+                (i32.shl (i32.const 1) (local.get $old_len))))
             (i32.store
               (i32.and (local.get $arr) (i32.const {heap_mask}))
               (i32.add (local.get $old_len) (i32.const {one})))
@@ -219,6 +229,11 @@ impl WatEmitter<'_> {
                 (local.get $new_array)
                 (i32.add (i32.const {array_header}) (i32.shl (local.get $old_len) (i32.const {elem_shift}))))
               (local.get $val))
+            (i32.store
+              (i32.add (local.get $new_array) (i32.const {presence_words_offset}))
+              (i32.or
+                (i32.load (i32.add (i32.and (local.get $arr) (i32.const {heap_mask})) (i32.const {presence_words_offset})))
+                (i32.shl (i32.const 1) (local.get $old_len))))
             (i32.or (local.get $new_array) (i32.const {array_tag})))))))
 "#,
             heap_mask = ValueTag::HEAP_MASK,
@@ -231,6 +246,7 @@ impl WatEmitter<'_> {
             align_mask = Layout::ALIGN_MASK,
             page_size = Layout::WASM_PAGE_SIZE,
             array_tag = ValueTag::ARRAY,
+            presence_words_offset = Layout::ARRAY_PRESENCE_WORDS_OFFSET,
         ));
     }
 

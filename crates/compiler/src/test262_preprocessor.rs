@@ -86,21 +86,22 @@ const KNOWN_FEATURES: &[(&str, &str)] = &[
     ("Symbol.split", "issue-5025"),
     ("Symbol.iterator", "issue-5052"),
     ("Symbol.toPrimitive", "issue-5025"),
-    // --- array / iterator prototype features (partially supported) ---
+    // --- array prototype features (implemented / partially supported) ---
     ("Symbol.isConcatSpreadable", "issue-5004"),
     ("stable-array-sort", "issue-5004"),
     ("Array.prototype.values", "issue-5004"),
-    // --- features commonly used by test262 but not yet stubbed ---
     ("Array.prototype.at", "issue-5004"),
     ("Array.prototype.flat", "issue-5004"),
     ("Array.prototype.includes", "issue-5004"),
     ("array-find-from-last", "issue-5004"),
+    // --- string prototype features (implemented / partially supported) ---
     ("String.prototype.at", "issue-5004"),
     ("String.prototype.endsWith", "issue-5004"),
     ("String.prototype.includes", "issue-5004"),
     ("String.prototype.replaceAll", "issue-5004"),
     ("String.prototype.trimEnd", "issue-5004"),
     ("String.prototype.trimStart", "issue-5004"),
+    // --- features commonly used by test262 but not yet stubbed ---
     ("change-array-by-copy", "issue-5004"),
     ("exponentiation", "issue-5000"),
     ("resizable-arraybuffer", "issue-408"),

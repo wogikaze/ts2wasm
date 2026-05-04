@@ -163,7 +163,7 @@ pub(super) fn collection_method_runtime_fn_arg(method: &str) -> Option<&'static 
         "findLast" => Some("ArrayFindLast"),
         "findLastIndex" => Some("ArrayFindLastIndex"),
         "filter" => Some("ArrayFilter"),
-        "push" => Some("ArrayPush"),
+        "push" => Some("ArrayPushGrow"),
         "pop" => Some("ArrayPop"),
         "shift" => Some("ArrayShift"),
         "unshift" => Some("ArrayUnshift"),

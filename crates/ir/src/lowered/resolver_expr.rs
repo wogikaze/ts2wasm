@@ -1226,7 +1226,7 @@ impl<'a> Resolver<'a> {
                         args: vec![self.lower_expr(object)?],
                     })
                 } else if let Some(runtime_fn) = resolve_method_to_runtime_fn(object, method) {
-                    if runtime_fn == "ArrayPush" && args.len() != 1 {
+                    if (runtime_fn == "ArrayPush" || runtime_fn == "ArrayPushGrow") && args.len() != 1 {
                         if !matches!(object.as_ref(), ResolvedExpr::Ident(_)) {
                             return Err(Diagnostic {
                                 code: DiagCode::UnsupportedSyntax,

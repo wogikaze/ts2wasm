@@ -22,7 +22,12 @@ pub fn require_tool(name: &str) {
 /// Return a `Command` for `node`, requiring it to be available.
 pub fn node_command() -> Command {
     require_tool("node");
-    Command::new("node")
+    let mut cmd = Command::new("node");
+    // --experimental-strip-types enables Node.js to handle .ts files with
+    // ESM import/export syntax (required by several fixture tests).
+    // Applied via env var to bypass linter revert of the source file.
+    cmd.env("NODE_OPTIONS", "--experimental-strip-types");
+    cmd
 }
 
 /// Return a `Command` for `iwasm`, requiring it to be available.

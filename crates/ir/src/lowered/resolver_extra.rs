@@ -2588,7 +2588,7 @@ impl<'a> Resolver<'a> {
                 while_body.push(LoweredStmt::If {
                     condition: LoweredExpr::Local(pred),
                     then_body: vec![LoweredStmt::Expr(LoweredExpr::RuntimeCall {
-                        runtime_fn: "ArrayPush".to_owned(),
+                        runtime_fn: "ArrayPushGrow".to_owned(),
                         args: vec![
                             LoweredExpr::Local(result),
                             LoweredExpr::Local(elem),
@@ -3071,7 +3071,7 @@ impl<'a> Resolver<'a> {
                 };
                 while_body.push(LoweredStmt::Let(mapped, call_args));
                 while_body.push(LoweredStmt::Expr(LoweredExpr::RuntimeCall {
-                    runtime_fn: "ArrayPush".to_owned(),
+                    runtime_fn: "ArrayPushGrow".to_owned(),
                     args: vec![
                         LoweredExpr::Local(result),
                         LoweredExpr::Local(mapped),
