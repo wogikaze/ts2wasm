@@ -120,6 +120,46 @@ impl WatEmitter<'_> {
         ));
     }
 
+    pub(super) fn emit_string_substr(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $string_substr (param $s i32) (param $start i32) (param $len i32) (result i32)
+    (local $obj i32)
+    (local $s_len i32)
+    (local $s_pos i32)
+    (local $e_pos i32)
+    (if (i32.eqz (call $is_string (local.get $s))) (then (return (i32.const {undefined}))))
+    (local.set $obj (i32.and (local.get $s) (i32.const {heap_mask})))
+    (local.set $s_len (i32.load (local.get $obj)))
+    (local.set $s_pos (i32.shr_s (local.get $start) (i32.const {number_shift})))
+    ;; Handle negative start: max(len + start, 0)
+    (if (i32.lt_s (local.get $s_pos) (i32.const {zero}))
+      (then
+        (local.set $s_pos (i32.add (local.get $s_len) (local.get $s_pos)))
+        (if (i32.lt_s (local.get $s_pos) (i32.const {zero}))
+          (then (local.set $s_pos (i32.const {zero}))))))
+    (if (i32.gt_u (local.get $s_pos) (local.get $s_len))
+      (then (local.set $s_pos (local.get $s_len))))
+    ;; If start >= len or length <= 0, return empty string
+    (if (i32.ge_u (local.get $s_pos) (local.get $s_len))
+      (then
+        (local.set $s_pos (i32.const {zero}))
+        (local.set $e_pos (i32.const {zero}))
+        (return (call $string_substring (local.get $s) (i32.shl (local.get $s_pos) (i32.const {number_shift})) (i32.shl (local.get $e_pos) (i32.const {number_shift}))))))
+    (local.set $e_pos (i32.add (local.get $s_pos) (i32.shr_s (local.get $len) (i32.const {number_shift}))))
+    (if (i32.gt_u (local.get $e_pos) (local.get $s_len))
+      (then (local.set $e_pos (local.get $s_len))))
+    (local.set $s_pos (i32.shl (local.get $s_pos) (i32.const {number_shift})))
+    (local.set $e_pos (i32.shl (local.get $e_pos) (i32.const {number_shift})))
+    (return (call $string_substring (local.get $s) (local.get $s_pos) (local.get $e_pos))))
+"#,
+            undefined = ValueTag::UNDEFINED,
+            heap_mask = ValueTag::HEAP_MASK,
+            number_shift = ValueTag::NUMBER_SHIFT,
+            zero = RuntimeConst::ZERO,
+        ));
+    }
+
     pub(super) fn emit_string_slice(&self, wat: &mut String) {
         // ES slice: negative indices count from end, defaults applied
         wat.push_str(&format!(

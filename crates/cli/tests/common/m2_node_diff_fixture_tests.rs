@@ -1075,6 +1075,7 @@ fn string_builtin_fixtures_match_node_output_under_iwasm() {
         "fixtures/builtins-and-io/string-split.ts",
         "fixtures/builtins-and-io/string-slice.ts",
         "fixtures/builtins-and-io/string-substring.ts",
+        "fixtures/builtins-and-io/string-substr.ts",
         "fixtures/builtins-and-io/string-char-code-at.ts",
         "fixtures/builtins-and-io/string-from-char-code.ts",
         "fixtures/builtins-and-io/string-replace.ts",

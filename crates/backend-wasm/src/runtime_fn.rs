@@ -160,6 +160,8 @@ pub(crate) enum RuntimeFn {
     /// String.prototype.at
     StringAt,
     StringSubstring,
+    /// String.prototype.substr (Annex B legacy method)
+    StringSubstr,
     StringSlice,
     StringIndexOf,
     /// String.prototype.lastIndexOf
@@ -683,6 +685,7 @@ pub(crate) fn runtime_fn_from_name(name: &str) -> Option<RuntimeFn> {
         "StringCharAt" => Some(RuntimeFn::StringCharAt),
         "StringAt" => Some(RuntimeFn::StringAt),
         "StringSubstring" => Some(RuntimeFn::StringSubstring),
+        "StringSubstr" => Some(RuntimeFn::StringSubstr),
         "StringSlice" => Some(RuntimeFn::StringSlice),
         "StringIndexOf" => Some(RuntimeFn::StringIndexOf),
         "StringLastIndexOf" => Some(RuntimeFn::StringLastIndexOf),
@@ -1138,6 +1141,7 @@ const STRING_CHAR_AT_DEPS: &[RuntimeFn] =
     &[RuntimeFn::AllocHeap, RuntimeFn::Copy, RuntimeFn::IsString];
 const STRING_SUBSTRING_DEPS: &[RuntimeFn] =
     &[RuntimeFn::AllocHeap, RuntimeFn::Copy, RuntimeFn::IsString];
+const STRING_SUBSTR_DEPS: &[RuntimeFn] = &[RuntimeFn::StringSubstring];
 const STRING_SLICE_DEPS: &[RuntimeFn] =
     &[RuntimeFn::AllocHeap, RuntimeFn::Copy, RuntimeFn::IsString];
 const STRING_INDEX_OF_DEPS: &[RuntimeFn] = &[RuntimeFn::IsString, RuntimeFn::MemEqual];

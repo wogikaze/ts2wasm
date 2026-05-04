@@ -240,6 +240,16 @@ fn build_smoke_string_substring_method() {
 }
 
 #[test]
+fn build_smoke_string_substr_method() {
+    let result = run_fixture("builtins-and-io/string-substr.ts");
+    assert!(
+        result.is_ok(),
+        "String.substr should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
 fn build_smoke_string_slice_method() {
     let result = run_fixture("builtins-and-io/string-slice.ts");
     assert!(
