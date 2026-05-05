@@ -43,20 +43,28 @@ def load_result(suite_key: str) -> dict | None:
         return None
 
 
-def format_diagcodes(diagcodes: dict) -> str:
-    """Format diagcodes dict as comma-separated string."""
-    if not diagcodes:
-        return "-"
-    items = sorted(diagcodes.items(), key=lambda x: (-x[1], x[0]))
-    return ",".join(f"{k}:{v}" for k, v in items)
+def load_all_results() -> dict[str, dict]:
+    """Load all configured suite results."""
+    return {
+        suite_key: result
+        for suite_key in SUITE_CONFIG
+        if (result := load_result(suite_key)) is not None
+    }
 
 
-def format_features(features: dict) -> str:
-    """Format feature-label counts as comma-separated string."""
-    if not features:
-        return "-"
-    items = sorted(features.items(), key=lambda x: (-x[1], x[0]))
-    return ",".join(f"{k}:{v}" for k, v in items)
+def suite_rows(result: dict, suite_key: str) -> list[dict]:
+    """Return the canonical suite row plus optional additive evidence rows."""
+    return [result] + result.get("evidence_rows", [])
+
+
+def breakdown_columns(results: dict[str, dict], field: str) -> list[str]:
+    """Return stable breakdown columns ordered by total descending."""
+    totals: dict[str, int] = {}
+    for suite_key, result in results.items():
+        for row in suite_rows(result, suite_key):
+            for key, value in row.get(field, {}).items():
+                totals[key] = totals.get(key, 0) + int(value)
+    return [key for key, _ in sorted(totals.items(), key=lambda item: (-item[1], item[0]))]
 
 
 def render_row(result: dict, suite_key: str) -> str:
@@ -72,65 +80,136 @@ def render_row(result: dict, suite_key: str) -> str:
     unsupported = result.get("unsupported", 0)
     blocked = result.get("blocked", 0)
     skip = result.get("skip_with_reason", 0)
-    diagcodes = format_diagcodes(result.get("unsupported_diagcodes", {}))
-    features = format_features(result.get("unsupported_features", {}))
     status = result.get("status", "in-progress")
     evidence = result.get("evidence", f"scripts/manager reference-coverage {suite_key} --limit {executed}")
 
-    return f"| {suite_name} | {denominator} | {executed} | {build_cov} | {semantic_cov} | {build_pass} | {semantic_pass} | {fail} | {unsupported} | {blocked} | {skip} | {diagcodes} | {features} | {status} | `{evidence}` |"
+    return f"| {suite_name} | {denominator} | {executed} | {build_cov} | {semantic_cov} | {build_pass} | {semantic_pass} | {fail} | {unsupported} | {blocked} | {skip} | {status} | `{evidence}` |"
+
+
+def render_breakdown_row(result: dict, suite_key: str, field: str, columns: list[str]) -> str:
+    """Render unsupported breakdown counts as one column per breakdown key."""
+    suite_name = result.get("suite_name", suite_key)
+    executed = result.get("executed", 0)
+    unsupported = result.get("unsupported", 0)
+    breakdown = result.get(field, {})
+    counts = [str(breakdown.get(column, 0)) for column in columns]
+    count_cells = f" | {' | '.join(counts)}" if counts else ""
+    evidence = result.get("evidence", f"scripts/manager reference-coverage {suite_key} --limit {executed}")
+
+    return f"| {suite_name} | {executed} | {unsupported}{count_cells} | `{evidence}` |"
 
 
 def render_result_rows(result: dict, suite_key: str) -> list[str]:
     """Render the canonical suite row plus optional additive evidence rows."""
-    rows = [render_row(result, suite_key)]
-    for evidence_row in result.get("evidence_rows", []):
-        rows.append(render_row(evidence_row, suite_key))
-    return rows
+    return [render_row(row, suite_key) for row in suite_rows(result, suite_key)]
 
 
 def render_empty_row(suite_key: str, config: dict) -> str:
     """Render an empty row when no result exists."""
     suite_name = config["name"]
     step = config["step"]
-    return f"| {suite_name} | 0 | 0 | 0.00 | 0.00 | 0 | 0 | 0 | 0 | 0 | 0 | - | - | in-progress | `scripts/manager reference-coverage {suite_key} --limit {step}` |"
+    return f"| {suite_name} | 0 | 0 | 0.00 | 0.00 | 0 | 0 | 0 | 0 | 0 | 0 | in-progress | `scripts/manager reference-coverage {suite_key} --limit {step}` |"
 
 
-def generate_matrix() -> str:
-    """Generate the full matrix markdown."""
+def render_empty_breakdown_row(suite_key: str, config: dict, columns: list[str]) -> str:
+    """Render an empty unsupported breakdown row when no result exists."""
+    suite_name = config["name"]
+    step = config["step"]
+    counts = ["0" for _ in columns]
+    count_cells = f" | {' | '.join(counts)}" if counts else ""
+    return f"| {suite_name} | 0 | 0{count_cells} | `scripts/manager reference-coverage {suite_key} --limit {step}` |"
+
+
+def generate_matrix(results: dict[str, dict]) -> str:
+    """Generate the main coverage matrix markdown."""
     rows = []
     for suite_key, config in SUITE_CONFIG.items():
-        result = load_result(suite_key)
+        result = results.get(suite_key)
         if result:
             rows.extend(render_result_rows(result, suite_key))
         else:
             rows.append(render_empty_row(suite_key, config))
 
-    header = "| suite | denominator | executed | build_coverage% | semantic_coverage% | build_pass | semantic_pass | fail | unsupported | blocked | skip-with-reason | unsupported (DiagCode breakdown) | unsupported (feature breakdown) | status | evidence |"
-    separator = "|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---|---|---|---|"
+    header = "| suite | denominator | executed | build_coverage% | semantic_coverage% | build_pass | semantic_pass | fail | unsupported | blocked | skip-with-reason | status | evidence |"
+    separator = "|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---|---|"
 
     return "\n".join([header, separator] + rows)
 
 
-def replace_table(content: str, new_table: str) -> str:
-    """Replace the coverage table in the content."""
+def generate_breakdown_table(
+    results: dict[str, dict],
+    field: str,
+    columns: list[str],
+) -> str:
+    """Generate an unsupported breakdown table with one column per breakdown key."""
+    rows = []
+    for suite_key, config in SUITE_CONFIG.items():
+        result = results.get(suite_key)
+        if result:
+            rows.extend(
+                render_breakdown_row(row, suite_key, field, columns)
+                for row in suite_rows(result, suite_key)
+            )
+        else:
+            rows.append(render_empty_breakdown_row(suite_key, config, columns))
+
+    column_headers = f" | {' | '.join(columns)}" if columns else ""
+    column_separators = f"|{'|'.join(['---:' for _ in columns])}" if columns else ""
+    header = f"| suite | executed | unsupported{column_headers} | evidence |"
+    separator = f"|---|---:|---:{column_separators}|---|"
+
+    return "\n".join([header, separator] + rows)
+
+
+def replace_section(content: str, start_marker: str, end_marker: str, replacement: str) -> str:
+    """Replace a generated section in the content."""
     lines = content.splitlines()
     result = []
-    in_table = False
+    in_section = False
+    found = False
 
     for line in lines:
-        if "<!-- coverage-table:start -->" in line:
+        if start_marker in line:
             result.append(line)
-            result.append(new_table)
-            in_table = True
+            result.append(replacement)
+            in_section = True
+            found = True
             continue
-        if "<!-- coverage-table:end -->" in line:
-            in_table = False
+        if end_marker in line:
+            in_section = False
             result.append(line)
             continue
-        if not in_table:
+        if not in_section:
             result.append(line)
 
+    if not found:
+        return content
     return "\n".join(result)
+
+
+def render_document(main_table: str, diagcode_table: str, feature_table: str) -> str:
+    """Render the complete generated matrix document."""
+    return f"""# Reference Coverage Matrix (generated)
+
+Generated by scripts/manager update-coverage-matrix.
+Do not edit manually.
+
+<!-- coverage-table:start -->
+{main_table}
+<!-- coverage-table:end -->
+
+## Unsupported Diagnostic Codes
+
+<!-- diagcode-table:start -->
+{diagcode_table}
+<!-- diagcode-table:end -->
+
+## Unsupported Features
+
+<!-- feature-table:start -->
+{feature_table}
+<!-- feature-table:end -->
+"""
 
 
 def ensure_matrix_file() -> None:
@@ -146,9 +225,23 @@ Generated by scripts/manager update-coverage-matrix.
 Do not edit manually.
 
 <!-- coverage-table:start -->
-| suite | denominator | executed | build_coverage% | semantic_coverage% | build_pass | semantic_pass | fail | unsupported | blocked | skip-with-reason | unsupported (DiagCode breakdown) | unsupported (feature breakdown) | status | evidence |
-|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---|---|---|---|
+| suite | denominator | executed | build_coverage% | semantic_coverage% | build_pass | semantic_pass | fail | unsupported | blocked | skip-with-reason | status | evidence |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---|---|
 <!-- coverage-table:end -->
+
+## Unsupported Diagnostic Codes
+
+<!-- diagcode-table:start -->
+| suite | executed | unsupported | unsupported (DiagCode breakdown) | evidence |
+|---|---:|---:|---|---|
+<!-- diagcode-table:end -->
+
+## Unsupported Features
+
+<!-- feature-table:start -->
+| suite | executed | unsupported | evidence |
+|---|---:|---:|---|
+<!-- feature-table:end -->
 """,
         encoding="utf-8",
     )
@@ -162,8 +255,38 @@ def main() -> int:
     ensure_matrix_file()
 
     current_content = MATRIX_PATH.read_text(encoding="utf-8")
-    new_table = generate_matrix()
-    new_content = replace_table(current_content, new_table)
+    results = load_all_results()
+    diagcode_columns = breakdown_columns(results, "unsupported_diagcodes")
+    feature_columns = breakdown_columns(results, "unsupported_features")
+    main_table = generate_matrix(results)
+    diagcode_table = generate_breakdown_table(results, "unsupported_diagcodes", diagcode_columns)
+    feature_table = generate_breakdown_table(results, "unsupported_features", feature_columns)
+    required_markers = (
+        "<!-- coverage-table:start -->",
+        "<!-- diagcode-table:start -->",
+        "<!-- feature-table:start -->",
+    )
+    if any(marker not in current_content for marker in required_markers):
+        new_content = render_document(main_table, diagcode_table, feature_table)
+    else:
+        new_content = replace_section(
+            current_content,
+            "<!-- coverage-table:start -->",
+            "<!-- coverage-table:end -->",
+            main_table,
+        )
+        new_content = replace_section(
+            new_content,
+            "<!-- diagcode-table:start -->",
+            "<!-- diagcode-table:end -->",
+            diagcode_table,
+        )
+        new_content = replace_section(
+            new_content,
+            "<!-- feature-table:start -->",
+            "<!-- feature-table:end -->",
+            feature_table,
+        )
     if not new_content.endswith("\n"):
         new_content += "\n"
 
