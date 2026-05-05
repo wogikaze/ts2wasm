@@ -150,7 +150,7 @@ Follow-up issues:
 - `issues/done/099-implement-accessorInAmbientContextES.md` - Implement Accessorinambientcontextes (same feature label, same group key, title overlap)
 - `issues/done/100-implement-accessorInferredReturnTypeErrorInReturnStatement.md` - Implement Accessorinferredreturntypeerrorinreturnstatement (same feature label, same group key, title overlap)
 - `issues/done/101-implement-accessorParameterAccessibilityModifier.md` - Implement Accessorparameteraccessibilitymodifier (same feature label, same group key, title overlap)
-- `issues/open/102-implement-accessorWithInitializer.md` - Implement Accessorwithinitializer (same feature label, same group key, title overlap)
+- `issues/done/102-implement-accessorWithInitializer.md` - Implement Accessorwithinitializer (same feature label, same group key, title overlap)
 - `issues/done/103-implement-accessorWithLineTerminator.md` - Implement Accessorwithlineterminator (same feature label, same group key, title overlap)
 - `issues/open/104-implement-accessorWithRestParam.md` - Implement Accessorwithrestparam (same feature label, same group key, title overlap)
 - `issues/done/105-implement-accessorWithoutBody.md` - Implement Accessorwithoutbody (same feature label, same group key, title overlap)

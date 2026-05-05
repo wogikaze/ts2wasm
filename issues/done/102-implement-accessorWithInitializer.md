@@ -3,23 +3,25 @@ id: 102
 title: "Implement Accessorwithinitializer"
 type: spike
 area: frontend/syntax
-class: blocked
+class: superseded
 priority: P1
-depends_on: [5001]
+depends_on: []
 blocks: []
 created: 2026-04-29
-updated: 2026-04-29
+updated: 2026-05-06
+completed: 2026-05-06
+status: done
 ---
 
 ## Summary
 
-Triage accessorWithInitializer across 1 failing reference test cases and split this bucket into implementation-ready child issues.
+Triage accessorWithInitializer across 1 generated reference bucket entry and close it if current evidence shows no implementation blocker.
 
 ## Problem
 
-Reference test results show 1 cases fail in directory `accessorWithInitializer` with diagnostics: class-accessor. The compiler cannot handle these syntax/semantics, preventing compilation of code in this category.
+Older reference test results showed 1 case failing in directory `accessorWithInitializer` with diagnostics: class-accessor. Fresh smart triage on 2026-05-06 shows the case now builds successfully, so this generated bucket is stale.
 
-Problem: accessorWithInitializer has 1 reference failures and needs smart-triage evidence before implementation starts.
+Problem: accessorWithInitializer no longer has a current compiler blocker; no child implementation issue is needed for this generated bucket.
 
 ## Current failure
 
@@ -37,16 +39,16 @@ mise run reference-coverage -- tsc --path-filter reference/typescript/tests/case
 
 ## Desired final state
 
-This generated bucket is either split into implementation-ready child issues or superseded by an existing open/done issue with matching evidence. Do not implement directly from this bucket.
+This generated bucket is closed as stale because the only affected reference case currently reports `BuildPass` / `pass`.
 
 ## Scope
 
 In scope:
 
-- [ ] Inspect the smart triage report below
-- [ ] Confirm whether existing open/done issues already cover this bucket
-- [ ] Split one feature family, one observable behavior, or one fixed reference window into child issues
-- [ ] Preserve exact reproduction commands and representative AST/diagnostic evidence in each child issue
+- [x] Inspect the smart triage report below
+- [x] Confirm whether existing open/done issues already cover this bucket
+- [x] No child issue created because fresh triage found no current compiler blocker
+- [x] Preserve exact reproduction commands and representative diagnostic evidence in this closed issue
 
 Out of scope:
 
@@ -68,18 +70,20 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] Duplicate candidates below are confirmed as no-match or this issue is superseded
-- [ ] At least one child issue contains an exact `mise run reference-triage -- ...` command
-- [ ] Child issue includes failing path, diagnostic code, source context, visible symbols, and parser/TypeScript AST evidence
-- [ ] Child issue acceptance names the exact fixture/reference path and diagnostic/stdout change
+- [x] Duplicate candidates below are confirmed as no-match or this issue is superseded
+- [x] This closed issue contains an exact `mise run reference-triage -- ...` command
+- [x] This closed issue includes the reference path, diagnostic code, source context, visible symbols, and parser/TypeScript AST evidence
+- [x] Completion evidence records the exact fixture/reference path and diagnostic result
 
 ## Validation
 
 Required commands:
 
 ```sh
-cargo fmt --all --check
-cargo nextest run
+python scripts/manager.py update-issue-index --check
+python scripts/manager.py check-issue-health
+python scripts/manager.py check-issue-readiness -- --fail-ready-below 80
+git diff --check
 ```
 
 Impacted commands:
@@ -91,21 +95,22 @@ mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/acces
 
 Not run:
 
-- none
+- `cargo fmt --all --check`; issue cleanup only, no Rust code changed
+- `cargo nextest run`; issue cleanup only, no implementation changed
 
 ## Docs / current-state / issue sync
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] updated: `current-state.md` (repo root)
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 
@@ -117,11 +122,11 @@ Follow-up issues:
 
 ## Smart triage
 
-### Smart triage: Triage class accessor: accessorWithInitializer
+### Smart triage: Build pass: accessorWithInitializer
 
-- Issue class: `triage-needed`
-- Feature label: `class-accessor`
-- Diagnostic: `UnsupportedSyntax` / `parser-or-frontend-unsupported`
+- Issue class: `none`
+- Feature label: `build-pass`
+- Diagnostic: `BuildPass` / `pass`
 - Path: `reference/typescript/tests/cases/compiler/accessorWithInitializer.ts`
 
 Reproduction:
@@ -146,14 +151,14 @@ Failure location:
 
 ```json
 {
-  "code": "UnsupportedSyntax",
-  "message": "expected LeftParen, got Some(Ident(\"X\")) at 65..66",
-  "span_start": 65,
-  "span_end": 66,
-  "line": 5,
-  "column": 13,
-  "feature_label": "class-accessor",
-  "error_type": "parser-or-frontend-unsupported"
+  "code": "BuildPass",
+  "message": "ts2wasm build succeeded",
+  "span_start": null,
+  "span_end": null,
+  "line": null,
+  "column": null,
+  "feature_label": "build-pass",
+  "error_type": "pass"
 }
 ```
 
@@ -181,48 +186,12 @@ Visible symbols before failure:
 ]
 ```
 
-Duplicate candidates:
+Current compiler evidence:
 
-```json
-[
-  {
-    "state": "open",
-    "path": "issues/open/102-implement-accessorWithInitializer.md",
-    "title": "Implement Accessorwithinitializer",
-    "reason": "same reference path, title overlap"
-  }
-]
-```
-
-Error-specific suggestions:
-
-- Start at lexer/parser support and add a minimal fixture for the exact source construct at the failing span.
-- Use `dump --tokens` and the TypeScript AST path to decide whether this is tokenization, precedence, or statement dispatch.
-
-Automatic repair sketch:
-
-```rust
-// Rough sketch only: make class syntax observable before lowering full semantics.
-// Candidate source class: C
-#[derive(Debug, Clone, PartialEq)]
-pub struct ClassDecl {
-    pub name: String,
-    pub constructor: Option<FunctionDecl>,
-    pub methods: Vec<MethodDecl>,
-    pub span: Span,
-}
-
-fn class_statement(&mut self) -> Result<Stmt, Diagnostic> {
-    let span = self.expect(TokenKind::Class)?;
-    let name = self.expect_ident()?;
-    self.expect(TokenKind::LeftBrace)?;
-    let mut methods = Vec::new();
-    while !self.consume(TokenKind::RightBrace) {
-        methods.push(self.class_method()?);
-    }
-    Ok(Stmt::ClassDecl(ClassDecl { name, constructor: None, methods, span }))
-}
-```
+- tokens: `set X(v = 0)` and `static set X(v2 = 0)` tokenize successfully.
+- AST: class methods are represented as `set X` and `static::set X` with defaulted parameters.
+- resolved: class declaration resolves successfully.
+- TypeScript oracle still reports TS1052 diagnostics for setter parameter initializers, but there is no current compiler build blocker on this path.
 
 Compiler dumps:
 
@@ -340,20 +309,35 @@ Compiler dumps:
 
 #### ast
 
-- ok: `False`
+- ok: `True`
 - truncated: `False`
 
 ```text
-error: [UnsupportedSyntax] expected LeftParen, got Some(Ident("X")) at 65..66
+== ast ==
+[
+    ClassDecl {
+        name: "C",
+        body: [
+            Function { name: "set X", params: [("v", Some(Number(0)), false)], body: [] },
+            Function { name: "static::set X", params: [("v2", Some(Number(0)), false)], body: [] },
+        ],
+    },
+]
 ```
 
 #### resolved
 
-- ok: `False`
+- ok: `True`
 - truncated: `False`
 
 ```text
-error: [UnsupportedSyntax] expected LeftParen, got Some(Ident("X")) at 65..66
+== resolved ==
+[
+    ClassDecl {
+        name: "C",
+        methods: ["set X", "static::set X"],
+    },
+]
 ```
 
 TypeScript/JavaScript oracle:
@@ -449,15 +433,22 @@ TypeScript/JavaScript oracle:
 }
 ```
 
-Stack trace:
-
-```text
-error: [UnsupportedSyntax] expected LeftParen, got Some(Ident("X")) at 65..66
-```
-
 ## Completion evidence
 
-Fill only when moving to `done/`.
+Commits:
+
+- pending local commit
+
+Validation result:
+
+```text
+command:
+python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/accessorWithInitializer.ts
+result:
+pass; emitted BuildPass / pass smart-triage report for the only affected reference path
+date:
+2026-05-06
+```
 
 Commits:
 

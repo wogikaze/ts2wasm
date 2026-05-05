@@ -15,7 +15,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 1 | 0 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4382 | 3789 | 593 |
+| frontend | 4382 | 3788 | 594 |
 | harness | 1 | 0 | 1 |
 | ir | 26 | 5 | 21 |
 | issues | 4 | 0 | 4 |
@@ -26,7 +26,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 4981 | 4068 | 913 |
+| total | 4981 | 4067 | 914 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -181,7 +181,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 052d | Implement broader JSON.stringify replacer semantics (audit reopened #052d) | feature | runtime/builtins | class: blocked | Implement broader JSON.stringify replacer semantics (audit reopened #052d) |
 | 059 | Implement parser syntax extensions for TypeScript and advanced JS (audit reopened #059) | feature | frontend | class: blocked | Implement parser syntax extensions for TypeScript and advanced JS (audit reopened #059) |
 | 064 | Implement name resolution (triaged - superseded by test262 metadata issues) | spike | frontend/resolver | class: blocked | Implement name resolution (triaged - superseded by test262 metadata issues) |
-| 102 | Implement Accessorwithinitializer | spike | frontend/syntax | class: blocked | Implement Accessorwithinitializer |
 | 104 | Implement Accessorwithrestparam | spike | frontend/syntax | class: blocked | Implement Accessorwithrestparam |
 | 107 | Implement Accessorsemit | spike | frontend/syntax | class: blocked | Implement Accessorsemit |
 | 117 | Implement Aliasofgenericfunctionwithrestbehavedsameasunaliased | spike | frontend/syntax | class: blocked | Implement Aliasofgenericfunctionwithrestbehavedsameasunaliased |
@@ -4363,6 +4362,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 099 | Implement Accessorinambientcontextes | spike | frontend/syntax | see `issues/done/099-implement-accessorInAmbientContextES.md` |
 | 100 | Implement Accessorinferredreturntypeerrorinreturnstatement (dup) | spike | frontend/syntax | see `issues/done/100-implement-accessorInferredReturnTypeErrorInReturnStatement.md` |
 | 101 | Implement Accessorparameteraccessibilitymodifier | spike | frontend/syntax | see `issues/done/101-implement-accessorParameterAccessibilityModifier.md` |
+| 102 | Implement Accessorwithinitializer | spike | frontend/syntax | see `issues/done/102-implement-accessorWithInitializer.md` |
 | 103 | Implement Accessorwithlineterminator (dup) | spike | frontend/syntax | see `issues/done/103-implement-accessorWithLineTerminator.md` |
 | 105 | Implement Accessorwithoutbody | spike | frontend/syntax | see `issues/done/105-implement-accessorWithoutBody.md` |
 | 106 | Implement Accessors (dup) | spike | frontend/syntax | see `issues/done/106-implement-accessors.md` |
