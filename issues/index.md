@@ -157,7 +157,6 @@ Issue files are the source of truth for work items. The generated section below 
 | ID | Title | Type | Area | Class | Priority | Depends on | Summary |
 |---:|---|---|---|---|---|---|---|
 | 009 | Select first coverage-improvement feature slice (audit reopened #009) | spike | frontend/ir/runtime | design-ready | P1 | 005 | After coverage breakdown exists, the next implementation should be chosen by data. The goal is to increase semantic p... |
-| 017 | Design and implement GC strategy (audit reopened #017) | feature | runtime/memory | implementation-ready | P1 | 013 | Current runtime has no GC. Long-running programs and programs with closure escape will leak memory. docs/04 specifies... |
 | 022 | Expand test262 differential coverage (audit reopened #022) | feature | tests/coverage | implementation-ready | P1 | 005 | test262 full differential operation is incomplete. Current coverage uses sample/ramp approach. docs/11 Gate D require... |
 | 264 | Add broad expression fixture coverage (audit reopened #264) | feature | frontend/syntax | implementation-ready | P2 |  | Add broad expression fixture coverage (audit reopened #264) |
 | 265 | Add broad statement fixture coverage (audit reopened #265) | feature | frontend/syntax | implementation-ready | P2 |  | Add broad statement fixture coverage (audit reopened #265) |
@@ -4388,6 +4387,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 014 | Implement dynamic property key support | feature | runtime/semantics | see `issues/done/014-implement-dynamic-property-key-support.md` |
 | 015 | Implement object literal string key support (audit reopened #015) | feature | parser/semantics | see `issues/done/015-implement-object-literal-string-key-support.md` |
 | 016 | Implement prototype and method call support | feature | runtime/semantics | see `issues/done/016-implement-prototype-and-method-call-support.md` |
+| 017 | Design and implement GC strategy #017 | feature | runtime/memory | see `issues/done/017-design-and-implement-gc-strategy.md` |
 | 017a | Design GC strategy | feature | runtime/memory | see `issues/done/017a-design-gc-strategy.md` |
 | 017b | Implement GC strategy | feature | runtime/memory | see `issues/done/017b-implement-gc-strategy.md` |
 | 018 | Implement UTF-8 string support (audit reopened #018) | feature | runtime/semantics | see `issues/done/018-implement-utf-8-string-support.md` |
