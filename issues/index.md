@@ -15,7 +15,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 1 | 0 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4378 | 3784 | 594 |
+| frontend | 4378 | 3781 | 597 |
 | harness | 1 | 0 | 1 |
 | ir | 21 | 0 | 21 |
 | issues | 4 | 0 | 4 |
@@ -26,7 +26,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 4969 | 4061 | 908 |
+| total | 4969 | 4058 | 911 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -238,7 +238,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 453 | Implement type-system support | spike | frontend/semantics | class: blocked | Implement type-system support |
 | 454 | Investigate and classify unknown-unsupported cases | spike | frontend/syntax | class: triage-needed | Investigate and classify unknown-unsupported cases |
 | 521 | Implement Ambientenumelementinitializer | spike | frontend/syntax | class: blocked | Implement Ambientenumelementinitializer |
-| 538 | Implement Ambientwithstatements (audit reopened #538) | spike | frontend/syntax | class: blocked | Implement Ambientwithstatements (audit reopened #538) |
 | 541 | Implement Apilibcheck | spike | frontend/syntax | class: blocked | Implement Apilibcheck |
 | 542 | Implement Apisample Arrow Function | spike | frontend/syntax | class: blocked | Implement Apisample Arrow Function |
 | 543 | Implement Apisample Import Export | spike | frontend/syntax | class: blocked | Implement Apisample Import Export |
@@ -300,7 +299,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 619 | Implement Ambientmodulewithtemplateliterals | spike | frontend/syntax | class: blocked | Implement Ambientmodulewithtemplateliterals |
 | 620 | Implement Ambientmodules | spike | frontend/syntax | class: blocked | Implement Ambientmodules |
 | 622 | Implement Ambientrequirefunction | spike | frontend/syntax | class: blocked | Implement Ambientrequirefunction |
-| 624 | Implement Ambientwithstatements (audit reopened #624) | spike | frontend/syntax | class: blocked | Implement Ambientwithstatements (audit reopened #624) |
 | 625 | Implement Ambiguouscallswherereturntypesagree | spike | frontend/syntax | class: triage-needed | Implement Ambiguouscallswherereturntypesagree |
 | 626 | Implement Ambiguousgenericassertion | spike | frontend/syntax | class: blocked | Implement Ambiguousgenericassertion |
 | 627 | Implement Ambiguousoverloadresolution | spike | frontend/resolver | class: blocked | Implement Ambiguousoverloadresolution |
@@ -450,7 +448,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 775 | Implement Autotypeassignedusingdestructuringfromnevernocrash | spike | frontend/resolver | class: blocked | Implement Autotypeassignedusingdestructuringfromnevernocrash |
 | 784 | Implement Functiondeclaration Import Export (audit reopened #784) | spike | frontend/syntax | class: blocked | Implement Functiondeclaration Import Export (audit reopened #784) |
 | 839 | Implement Ambientclassdeclarationwithextends (audit reopened #839) | spike | frontend/syntax | class: blocked | Implement Ambientclassdeclarationwithextends (audit reopened #839) |
-| 859 | Implement Ambientwithstatements (audit reopened #859) | spike | frontend/syntax | class: blocked | Implement Ambientwithstatements (audit reopened #859) |
 | 874 | Implement Anonymousmodules (audit reopened #874) | spike | frontend/syntax | class: blocked | Implement Anonymousmodules (audit reopened #874) |
 | 877 | Implement Anydeclare (audit reopened #877) | spike | frontend/syntax | class: blocked | Implement Anydeclare (audit reopened #877) |
 | 1012 | Implement Autonumberinginenums | spike | frontend/syntax | class: triage-needed | Implement Autonumberinginenums |
@@ -4716,6 +4713,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 535 | Implement Ambientnamerestrictions (audit reopened #535) | spike | frontend/syntax | see `issues/done/535-implement-ambientNameRestrictions.md` |
 | 536 | Implement Ambientrequirefunction (dup) | spike | frontend/syntax | see `issues/done/536-implement-ambientRequireFunction.md` |
 | 537 | Implement Ambientstatement (audit reopened #537) | spike | frontend/syntax | see `issues/done/537-implement-ambientStatement.md` |
+| 538 | Implement Ambientwithstatements (audit reopened #538) | spike | frontend/syntax | see `issues/done/538-implement-ambientWithStatements.md` |
 | 539 | Implement Ambiguouscallswherereturntypesagree (dup) | spike | frontend/syntax | see `issues/done/539-implement-ambiguousCallsWhereReturnTypesAgree.md` |
 | 540 | Implement Ambiguousgenericassertion (dup) | spike | frontend/syntax | see `issues/done/540-implement-ambiguousGenericAssertion.md` |
 | 545 | Implement Arrowfunctionexpression (audit reopened #545) | spike | frontend/syntax | see `issues/done/545-implement-ArrowFunctionExpression.md` |
@@ -4740,6 +4738,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 618 | Implement Ambientmodulewithclassdeclarationwithextends (audit reopened #618) | spike | frontend/syntax | see `issues/done/618-implement-ambientModuleWithClassDeclarationWithExtends.md` |
 | 621 | Implement Ambientnamerestrictions (audit reopened #621) | spike | frontend/syntax | see `issues/done/621-implement-ambientNameRestrictions.md` |
 | 623 | Implement Ambientstatement (audit reopened #623) | spike | frontend/syntax | see `issues/done/623-implement-ambientStatement.md` |
+| 624 | Implement Ambientwithstatements (audit reopened #624) | spike | frontend/syntax | see `issues/done/624-implement-ambientWithStatements.md` |
 | 638 | Implement Anonymousclassexpression (audit reopened #638) | spike | frontend/syntax | see `issues/done/638-implement-anonymousClassExpression.md` |
 | 669 | Implement Arrayconcat (dup) | spike | frontend/syntax | see `issues/done/669-implement-arrayConcat.md` |
 | 707 | Implement Asibreak | spike | frontend/syntax | see `issues/done/707-implement-asiBreak.md` |
@@ -4825,6 +4824,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 856 | Implement Ambientnamerestrictions (audit reopened #856) | spike | frontend/syntax | see `issues/done/856-implement-ambientNameRestrictions.md` |
 | 857 | Implement Ambientrequirefunction (dup) | spike | frontend/syntax | see `issues/done/857-implement-ambientRequireFunction.md` |
 | 858 | Implement Ambientstatement (audit reopened #858) | spike | frontend/syntax | see `issues/done/858-implement-ambientStatement.md` |
+| 859 | Implement Ambientwithstatements (audit reopened #859) | spike | frontend/syntax | see `issues/done/859-implement-ambientWithStatements.md` |
 | 860 | Implement Ambiguouscallswherereturntypesagree (dup) | spike | frontend/syntax | see `issues/done/860-implement-ambiguousCallsWhereReturnTypesAgree.md` |
 | 861 | Implement Ambiguousgenericassertion (dup) | spike | frontend/syntax | see `issues/done/861-implement-ambiguousGenericAssertion.md` |
 | 862 | Implement Ambiguousoverloadresolution (dup) | spike | frontend/resolver | see `issues/done/862-implement-ambiguousOverloadResolution.md` |
