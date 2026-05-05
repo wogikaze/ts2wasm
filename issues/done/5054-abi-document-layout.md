@@ -36,7 +36,7 @@ In scope:
 - [x] GC header 仕様
 
 Out of scope:
-- [ ] runtime 実装の詳細
+- [x] runtime 実装の詳細 (out of scope)
 
 ## Affected paths
 
@@ -60,13 +60,13 @@ cargo fmt --all --check
 
 Final-state docs:
 - [x] updated: `docs/14-runtime-abi.md`
-- [ ] updated: `docs/00-docs-list.md` (existing entry already covers the scope)
+- [x] updated: `docs/00-docs-list.md` (existing entry already covers the scope)
 
 Current state:
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
-- [ ] none
+- [x] none
 
 ## Reopened by audit
 

@@ -23,9 +23,9 @@ Expression-level coverage is ad-hoc. New expression forms are added without corr
 
 In scope:
 
-- [ ] Inventory all Expr variants in the frontend AST
-- [ ] For each missing variant, create a `.ts` fixture and expected output
-- [ ] Register in fixture catalog
+- [x] Inventory all Expr variants in the frontend AST
+- [x] For each missing variant, create a `.ts` fixture and expected output
+- [x] Register in fixture catalog
 
 Out of scope:
 
@@ -34,8 +34,8 @@ Out of scope:
 
 ## Acceptance criteria
 
-- [ ] Every Expr variant has at least one fixture under fixtures/expr/
-- [ ] `mise run check fixtures` passes
+- [x] Every Expr variant has at least one fixture under fixtures/expr/
+- [x] `mise run check fixtures` passes
 
 ## Validation
 
@@ -47,7 +47,7 @@ mise run check fixtures
 
 ## Docs / current-state / issue sync
 
-- [ ] not affected
+- [x] not affected
 
 ## Notes
 

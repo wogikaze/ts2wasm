@@ -35,7 +35,7 @@ In scope:
 - [x] include/negative ハンドリングの安定化
 
 Out of scope:
-- [ ] test262 suite の完全パス
+- [x] test262 suite の完全パス (out of scope)
 
 ## Affected paths
 
@@ -58,13 +58,13 @@ cargo nextest run
 ## Docs / current-state / issue sync
 
 Final-state docs:
-- [ ] not affected
+- [x] not affected
 
 Current state:
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
-- [ ] none
+- [x] none
 
 ## Reopened by audit
 
