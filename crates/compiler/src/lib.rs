@@ -248,27 +248,13 @@ fn populate_static_module_exports_for_build(
             continue;
         }
 
-        let exports = collect_literal_named_exports(module.path())?;
-        if exports.is_empty() {
-            continue;
+        if let Some(module_info) = lower_static_module_body_for_build(
+            module.path(),
+            module.id(),
+            module_specifier(module_graph, module.id()),
+        )? {
+            lowered.modules.push(module_info);
         }
-
-        let statements = exports
-            .into_iter()
-            .map(|(name, initializer)| {
-                Ok(lowered::LoweredStmt::Export {
-                    name,
-                    expr: lower_static_export_literal_expr(&initializer)?,
-                })
-            })
-            .collect::<Result<Vec<_>, Diagnostic>>()?;
-
-        lowered.modules.push(lowered::ModuleInfo {
-            id: module.id(),
-            specifier: module_specifier(module_graph, module.id()),
-            statements,
-            locals_count: 0,
-        });
     }
 
     Ok(lowered)
@@ -284,6 +270,12 @@ struct ModuleExport {
 struct StaticModuleBindingLowering {
     rewritten_program: Vec<Stmt>,
     named_imports: Vec<StaticNamedImportBinding>,
+    module_exports: Vec<ModuleExport>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+struct StaticModuleBodyLowering {
+    rewritten_program: Vec<Stmt>,
     module_exports: Vec<ModuleExport>,
 }
 
@@ -855,6 +847,200 @@ fn lower_static_named_import_reads_for_build(
     Ok(lowered)
 }
 
+fn lower_static_module_body_for_build(
+    path: &Path,
+    module_id: usize,
+    specifier: String,
+) -> Result<Option<lowered::ModuleInfo>, Diagnostic> {
+    let source = fs::read_to_string(path).map_err(|error| Diagnostic {
+        code: DiagCode::BackendIo,
+        message: format!("failed to read {}: {error}", path.display()),
+        span: None,
+    })?;
+    validate_type_reference_directives(&source)?;
+    let program = parse_program(&source)?;
+    validate_ast(&program)?;
+
+    let body = rewrite_static_module_body_for_build(&program)?;
+    if body.rewritten_program.is_empty() && body.module_exports.is_empty() {
+        return Ok(None);
+    }
+
+    let name_resolved = name_resolver::resolve_names(&body.rewritten_program)?;
+    let resolved = builtin_resolver::resolve_builtins(&name_resolved)?;
+    validate_optimized_hir_slice(&resolved, OptimizationLevel::O0)?;
+    let lowered_module = lowered::lower_program(&resolved)?;
+
+    let mut statements = lowered_module.top_level_statements;
+    for export in &body.module_exports {
+        let stmt = statements
+            .get(export.lowered_statement_index)
+            .ok_or_else(|| Diagnostic {
+                code: DiagCode::InvariantViolation,
+                message: format!(
+                    "module export `{}` lowered statement index {} out of range",
+                    export.name, export.lowered_statement_index
+                ),
+                span: None,
+            })?;
+        match stmt {
+            lowered::LoweredStmt::Let(_, expr) => {
+                statements.push(lowered::LoweredStmt::Export {
+                    name: export.name.clone(),
+                    expr: expr.clone(),
+                });
+            }
+            other => {
+                return Err(Diagnostic {
+                    code: DiagCode::InvariantViolation,
+                    message: format!(
+                        "module export `{}` maps to non-let statement: {other:?}",
+                        export.name
+                    ),
+                    span: None,
+                });
+            }
+        }
+    }
+
+    if statements.is_empty() {
+        return Ok(None);
+    }
+
+    Ok(Some(lowered::ModuleInfo {
+        id: module_id,
+        specifier,
+        statements,
+        locals_count: lowered_module.top_level_locals.len(),
+    }))
+}
+
+fn rewrite_static_module_body_for_build(
+    program: &[Stmt],
+) -> Result<StaticModuleBodyLowering, Diagnostic> {
+    let mut rewritten = Vec::new();
+    let mut module_exports = Vec::new();
+    let mut lowered_statement_index = 0;
+    let mut local_name_to_index: HashMap<String, usize> = HashMap::new();
+    let mut exported_names: HashSet<String> = HashSet::new();
+
+    for stmt in program {
+        match stmt {
+            Stmt::ExportDecl {
+                declaration,
+                specifier,
+                ..
+            } => {
+                let index = lowered_statement_index;
+                let name = specifier.exported.clone();
+                if !exported_names.insert(name.clone()) {
+                    return Err(Diagnostic {
+                        code: DiagCode::UnsupportedSyntax,
+                        message: format!("issue-5005: duplicate export name `{name}`"),
+                        span: Some(specifier.local_span),
+                    });
+                }
+                rewritten.push(*declaration.clone());
+                let is_let_like = lowers_to_top_level_statement(declaration);
+                if let Stmt::Let {
+                    name: local_name, ..
+                } = declaration.as_ref()
+                {
+                    local_name_to_index.insert(local_name.clone(), index);
+                }
+                module_exports.push(ModuleExport {
+                    name,
+                    lowered_statement_index: index,
+                });
+                if !is_let_like {
+                    return Err(Diagnostic {
+                        code: DiagCode::UnsupportedSyntax,
+                        message:
+                            "issue-5005: dependency module declaration export uses a form outside the current static export slice"
+                                .to_owned(),
+                        span: Some(declaration.span()),
+                    });
+                }
+                lowered_statement_index += 1;
+            }
+            Stmt::ExportNamed { specifiers, .. } => {
+                for specifier in specifiers {
+                    if !exported_names.insert(specifier.exported.clone()) {
+                        return Err(Diagnostic {
+                            code: DiagCode::UnsupportedSyntax,
+                            message: format!(
+                                "issue-5005: duplicate export name `{}`",
+                                specifier.exported
+                            ),
+                            span: Some(specifier.span),
+                        });
+                    }
+                    let local_index = local_name_to_index
+                        .get(&specifier.local)
+                        .copied()
+                        .ok_or_else(|| Diagnostic {
+                            code: DiagCode::UnsupportedSyntax,
+                            message: format!(
+                                "issue-5005: dependency module `export {{ {} }}` references unknown local binding `{}`",
+                                specifier.exported, specifier.local
+                            ),
+                            span: Some(specifier.span),
+                        })?;
+                    module_exports.push(ModuleExport {
+                        name: specifier.exported.clone(),
+                        lowered_statement_index: local_index,
+                    });
+                }
+            }
+            Stmt::ExportDefault { expr, span, .. } => {
+                if !exported_names.insert("default".to_owned()) {
+                    return Err(Diagnostic {
+                        code: DiagCode::UnsupportedSyntax,
+                        message: "issue-5005: duplicate export name `default`".to_owned(),
+                        span: Some(*span),
+                    });
+                }
+                let index = lowered_statement_index;
+                rewritten.push(Stmt::Let {
+                    name: "__ts2wasm_default".to_owned(),
+                    expr: expr.clone(),
+                    span: *span,
+                    is_var: false,
+                });
+                local_name_to_index.insert("__ts2wasm_default".to_owned(), index);
+                module_exports.push(ModuleExport {
+                    name: "default".to_owned(),
+                    lowered_statement_index: index,
+                });
+                lowered_statement_index += 1;
+            }
+            Stmt::ImportNamed { .. }
+            | Stmt::ImportDefault { .. }
+            | Stmt::ImportDefaultNamed { .. }
+            | Stmt::ImportNamespace { .. }
+            | Stmt::ImportDefaultNamespace { .. }
+            | Stmt::ImportSideEffect { .. } => {
+                // Dependency-first module initialization is driven by ModuleGraph.
+                // Imported bindings inside dependency module bodies remain outside this narrow slice.
+            }
+            other => {
+                if let Stmt::Let { name, .. } = other {
+                    local_name_to_index.insert(name.clone(), lowered_statement_index);
+                }
+                rewritten.push(other.clone());
+                if lowers_to_top_level_statement(other) {
+                    lowered_statement_index += 1;
+                }
+            }
+        }
+    }
+
+    Ok(StaticModuleBodyLowering {
+        rewritten_program: rewritten,
+        module_exports,
+    })
+}
+
 fn lowers_to_top_level_statement(stmt: &Stmt) -> bool {
     !matches!(stmt, Stmt::Function { .. } | Stmt::ClassDecl { .. })
 }
@@ -870,6 +1056,7 @@ fn collect_literal_named_exports(path: &Path) -> Result<BTreeMap<String, Expr>, 
     validate_ast(&program)?;
 
     let mut exports = BTreeMap::new();
+    let mut literal_locals = BTreeMap::new();
     for stmt in &program {
         if let Stmt::ExportDecl {
             declaration,
@@ -890,6 +1077,7 @@ fn collect_literal_named_exports(path: &Path) -> Result<BTreeMap<String, Expr>, 
                     });
                 }
                 exports.insert(specifier.exported.clone(), expr.clone());
+                literal_locals.insert(specifier.local.clone(), expr.clone());
             }
         } else if let Stmt::ExportDefault { expr, .. } = stmt {
             if !is_static_export_literal(expr) {
@@ -903,34 +1091,26 @@ fn collect_literal_named_exports(path: &Path) -> Result<BTreeMap<String, Expr>, 
                 });
             }
             exports.insert("default".to_owned(), expr.clone());
+        } else if let Stmt::Let { name, expr, .. } = stmt {
+            if is_static_export_literal(expr) {
+                literal_locals.insert(name.clone(), expr.clone());
+            }
+        } else if let Stmt::ExportNamed { specifiers, .. } = stmt {
+            for specifier in specifiers {
+                let expr = literal_locals.get(&specifier.local).ok_or_else(|| Diagnostic {
+                    code: DiagCode::UnsupportedSyntax,
+                    message: format!(
+                        "issue-5005: dependency module `export {{ {} }}` references unknown or non-literal local binding `{}`",
+                        specifier.exported, specifier.local
+                    ),
+                    span: Some(specifier.span),
+                })?;
+                exports.insert(specifier.exported.clone(), expr.clone());
+            }
         }
     }
 
     Ok(exports)
-}
-
-fn lower_static_export_literal_expr(expr: &Expr) -> Result<lowered::LoweredExpr, Diagnostic> {
-    match expr {
-        Expr::Number { value, .. } => Ok(lowered::LoweredExpr::Number(*value)),
-        Expr::BigInt { raw, span } => Err(Diagnostic {
-            code: DiagCode::UnsupportedSyntax,
-            message: format!(
-                "issue-259: BigInt literal `{raw}` in static module exports is not implemented in the literal runtime slice"
-            ),
-            span: Some(*span),
-        }),
-        Expr::String { value, .. } => Ok(lowered::LoweredExpr::String(value.clone())),
-        Expr::Bool { value, .. } => Ok(lowered::LoweredExpr::Bool(*value)),
-        Expr::Null { .. } => Ok(lowered::LoweredExpr::Null),
-        Expr::Undefined { .. } => Ok(lowered::LoweredExpr::Undefined),
-        other => Err(Diagnostic {
-            code: DiagCode::InvariantViolation,
-            message: format!(
-                "non-literal static export initializer reached lowered module population: {other:?}"
-            ),
-            span: None,
-        }),
-    }
 }
 
 fn module_specifier(module_graph: &ModuleGraph, module_id: usize) -> String {
@@ -1673,13 +1853,16 @@ console.log(value);
         let module = &lowered_program.modules[0];
         assert_eq!(module.id, 1);
         assert_eq!(module.specifier, "./source");
-        assert_eq!(module.locals_count, 0);
+        assert_eq!(module.locals_count, 1);
         assert_eq!(
             module.statements,
-            vec![lowered::LoweredStmt::Export {
-                name: "value".to_owned(),
-                expr: lowered::LoweredExpr::Number(1),
-            }]
+            vec![
+                lowered::LoweredStmt::Let(lowered::LocalId(0), lowered::LoweredExpr::Number(1)),
+                lowered::LoweredStmt::Export {
+                    name: "value".to_owned(),
+                    expr: lowered::LoweredExpr::Number(1),
+                },
+            ]
         );
         lowered::validate_lowered(&lowered_program)
             .expect("module statements should validate as lowered IR");

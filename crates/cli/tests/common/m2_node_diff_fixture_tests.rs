@@ -300,6 +300,54 @@ fn static_default_module_import_fixture_matches_node_output_under_iwasm() {
 }
 
 #[test]
+fn static_namespace_module_import_fixture_matches_node_output_under_iwasm() {
+    super::assert_static_module_fixture_matches_node_variant_with_sources(
+        "fixtures/module-system/static-namespace-import-entry.ts",
+        "import * as ns from './static-namespace-import-source.ts';\nconsole.log(ns.x);\n",
+        &[(
+            "static-namespace-import-source.ts",
+            "export const x = 1;\nexport const y = 2;\n",
+        )],
+    );
+}
+
+#[test]
+fn static_combined_named_module_import_fixture_matches_node_output_under_iwasm() {
+    super::assert_static_module_fixture_matches_node_variant_with_sources(
+        "fixtures/module-system/static-combined-named-import-entry.ts",
+        "import value, { x } from './static-combined-named-import-source.ts';\nconsole.log(value);\nconsole.log(x);\n",
+        &[(
+            "static-combined-named-import-source.ts",
+            "export const x = 1;\nexport default 42;\n",
+        )],
+    );
+}
+
+#[test]
+fn static_named_export_list_import_fixture_matches_node_output_under_iwasm() {
+    super::assert_static_module_fixture_matches_node_variant_with_sources(
+        "fixtures/module-system/static-named-list-import-entry.ts",
+        "import { a, c } from './static-named-list-import-source.ts';\nconsole.log(a);\nconsole.log(c);\n",
+        &[(
+            "static-named-list-import-source.ts",
+            "const a = 1;\nconst b = 2;\nexport { a, b as c };\n",
+        )],
+    );
+}
+
+#[test]
+fn static_side_effect_module_import_fixture_matches_node_output_under_iwasm() {
+    super::assert_static_module_fixture_matches_node_variant_with_sources(
+        "fixtures/module-system/static-side-effect-import-entry.ts",
+        "import './static-side-effect-source.ts';\nconsole.log(1);\n",
+        &[(
+            "static-side-effect-source.ts",
+            "console.log(2);\nexport const x = 1;\n",
+        )],
+    );
+}
+
+#[test]
 fn regexp_literal_fixture_matches_node_output_under_iwasm() {
     assert_fixture_matches_node("fixtures/core-semantics/regexp-literal.ts");
 }
