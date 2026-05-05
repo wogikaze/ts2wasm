@@ -15,7 +15,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 1 | 0 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4377 | 3853 | 524 |
+| frontend | 4377 | 3852 | 525 |
 | harness | 1 | 0 | 1 |
 | ir | 21 | 0 | 21 |
 | issues | 4 | 0 | 4 |
@@ -26,7 +26,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 4965 | 4136 | 829 |
+| total | 4965 | 4135 | 830 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -158,7 +158,6 @@ Issue files are the source of truth for work items. The generated section below 
 |---:|---|---|---|---|---|---|---|
 | 5001 | Meta: TypeScript Compiler Semantic Analysis Coverage | meta | frontend/semantics | design-ready | P1 |  | tsc semantic-analysis failures currently need classified child work orders so implementers can select one diagnostic ... |
 | 5002 | Meta: TypeScript Compiler Type System Coverage | meta | frontend/semantics | design-ready | P1 | 5000, 5005 | type-system reference failures currently need dependency and scope cleanup so each child issue is a concrete type inf... |
-| 5006 | Meta: TypeScript Compiler Scope Analysis Coverage | meta | frontend/resolver | design-ready | P2 | 5005 | scope-analysis failures currently need child issue classification by block scope, hoisting, lexical lookup, or tempor... |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -280,8 +279,8 @@ Issue files are the source of truth for work items. The generated section below 
 | 550 | Implement Functiondeclaration Parser Syntax | spike | frontend/syntax | class: triage-needed | Implement Functiondeclaration Parser Syntax |
 | 551 | Implement Memberaccessordeclaration (audit reopened #551) | spike | frontend/syntax | class: blocked | Implement Memberaccessordeclaration (audit reopened #551) |
 | 553 | Implement Transportstream | spike | frontend/syntax | class: triage-needed | Implement Transportstream |
-| 554 | Implement Abstractclassinlocalscope | spike | frontend/syntax | class: blocked | Implement Abstractclassinlocalscope |
-| 555 | Implement Abstractclassinlocalscopeisabstract | spike | frontend/syntax | class: blocked | Implement Abstractclassinlocalscopeisabstract |
+| 554 | Implement Abstractclassinlocalscope | spike | frontend/resolver | class: blocked | Implement Abstractclassinlocalscope |
+| 555 | Implement Abstractclassinlocalscopeisabstract | spike | frontend/resolver | class: blocked | Implement Abstractclassinlocalscopeisabstract |
 | 556 | Implement Abstractclassunioninstantiation | spike | frontend/resolver | class: blocked | Implement Abstractclassunioninstantiation |
 | 557 | Implement Abstractpropertybasics | spike | frontend/syntax | class: triage-needed | Implement Abstractpropertybasics |
 | 558 | Implement Abstractpropertyinconstructor | spike | frontend/syntax | class: triage-needed | Implement Abstractpropertyinconstructor |
@@ -369,7 +368,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 642 | Implement Anydeclare (audit reopened #642) | spike | frontend/syntax | class: blocked | Implement Anydeclare (audit reopened #642) |
 | 643 | Implement Anyidenticaltoitself | spike | frontend/syntax | class: triage-needed | Implement Anyidenticaltoitself |
 | 644 | Implement Anyinferenceanonymousfunctions | spike | frontend/syntax | class: blocked | Implement Anyinferenceanonymousfunctions |
-| 645 | Implement Argsinscope | spike | frontend/syntax | class: blocked | Implement Argsinscope |
+| 645 | Implement Argsinscope | spike | frontend/resolver | class: blocked | Implement Argsinscope |
 | 646 | Implement Arguments | spike | frontend/syntax | class: blocked | Implement Arguments |
 | 647 | Implement Argumentsaspropertyname Arguments Object | spike | frontend/syntax | class: blocked | Implement Argumentsaspropertyname Arguments Object |
 | 648 | Implement Argumentsaspropertyname Name Resolution | spike | frontend/resolver | class: blocked | Implement Argumentsaspropertyname Name Resolution |
@@ -580,9 +579,9 @@ Issue files are the source of truth for work items. The generated section below 
 | 1064 | Implement Binopassignmentshouldhavetype | spike | frontend/syntax | class: blocked | Implement Binopassignmentshouldhavetype |
 | 1065 | Implement Bitwisecompoundassignmentoperators | spike | frontend/syntax | class: triage-needed | Implement Bitwisecompoundassignmentoperators |
 | 1066 | Implement Blockscopedbindingcapturethisinfunction | spike | reference/triage | class: triage-needed | Implement Blockscopedbindingcapturethisinfunction |
-| 1067 | Implement Blockscopedbindingusedbeforedef | spike | frontend/syntax | class: blocked | Implement Blockscopedbindingusedbeforedef |
+| 1067 | Implement Blockscopedbindingusedbeforedef | spike | frontend/resolver | class: blocked | Implement Blockscopedbindingusedbeforedef |
 | 1068 | Implement Blockscopedbindingsreassignedinloop Name Resolution | spike | frontend/resolver | class: blocked | Implement Blockscopedbindingsreassignedinloop Name Resolution |
-| 1069 | Implement Blockscopedbindingsreassignedinloop Scope Analysis | spike | frontend/syntax | class: blocked | Implement Blockscopedbindingsreassignedinloop Scope Analysis |
+| 1069 | Implement Blockscopedbindingsreassignedinloop Scope Analysis | spike | frontend/resolver | class: blocked | Implement Blockscopedbindingsreassignedinloop Scope Analysis |
 | 1070 | Implement Blockscopedenumvariablesusebeforedef Enum | spike | frontend/syntax | class: blocked | Implement Blockscopedenumvariablesusebeforedef Enum |
 | 1071 | Implement Blockscopedenumvariablesusebeforedef Import Export | spike | frontend/syntax | class: blocked | Implement Blockscopedenumvariablesusebeforedef Import Export |
 | 1072 | Implement Blockscopedfunctiondeclarationes | spike | frontend/resolver | class: blocked | Implement Blockscopedfunctiondeclarationes |
@@ -592,7 +591,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 1076 | Implement Blockscopednamespacedifferentfile | spike | frontend/syntax | class: blocked | Implement Blockscopednamespacedifferentfile |
 | 1077 | Implement Blockscopedsamenamefunctiondeclarationes | spike | reference/triage | class: triage-needed | Implement Blockscopedsamenamefunctiondeclarationes |
 | 1078 | Implement Blockscopedsamenamefunctiondeclarationstrictes | spike | reference/triage | class: triage-needed | Implement Blockscopedsamenamefunctiondeclarationstrictes |
-| 1079 | Implement Blockscopedvariablesusebeforedef | spike | frontend/syntax | class: blocked | Implement Blockscopedvariablesusebeforedef |
+| 1079 | Implement Blockscopedvariablesusebeforedef | spike | frontend/resolver | class: blocked | Implement Blockscopedvariablesusebeforedef |
 | 1080 | Implement Bluebirdstaticthis | spike | frontend/syntax | class: triage-needed | Implement Bluebirdstaticthis |
 | 1081 | Implement Booleanassignment | spike | frontend/resolver | class: blocked | Implement Booleanassignment |
 | 1082 | Implement Booleanfilteranyarray | spike | frontend/syntax | class: triage-needed | Implement Booleanfilteranyarray |
@@ -691,7 +690,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 1175 | Implement Classdeclarationblockscoping | spike | frontend/syntax | class: triage-needed | Implement Classdeclarationblockscoping |
 | 1176 | Implement Classdeclarationcheckusedbeforedefinitioninitself | spike | frontend/syntax | class: triage-needed | Implement Classdeclarationcheckusedbeforedefinitioninitself |
 | 1177 | Implement Classdeclarationmergedinmodulewithcontinuation | spike | frontend/syntax | class: blocked | Implement Classdeclarationmergedinmodulewithcontinuation |
-| 1178 | Implement Classdeclarationshouldbeoutofscopeincomputednames | spike | frontend/syntax | class: blocked | Implement Classdeclarationshouldbeoutofscopeincomputednames |
+| 1178 | Implement Classdeclarationshouldbeoutofscopeincomputednames | spike | frontend/resolver | class: blocked | Implement Classdeclarationshouldbeoutofscopeincomputednames |
 | 1179 | Implement Classdeclaredbeforeclassfactory | spike | frontend/syntax | class: blocked | Implement Classdeclaredbeforeclassfactory |
 | 1180 | Implement Classexpressionassignment | spike | frontend/syntax | class: triage-needed | Implement Classexpressionassignment |
 | 1181 | Implement Classexpressionextendingabstractclass | spike | frontend/syntax | class: triage-needed | Implement Classexpressionextendingabstractclass |
@@ -956,7 +955,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 1440 | Implement Constdeclarations Import Export | spike | frontend/syntax | class: blocked | Implement Constdeclarations Import Export |
 | 1441 | Implement Constdeclarations Name Resolution | spike | frontend/resolver | class: blocked | Implement Constdeclarations Name Resolution |
 | 1442 | Implement Constdeclarations Parser Syntax | spike | frontend/syntax | class: triage-needed | Implement Constdeclarations Parser Syntax |
-| 1443 | Implement Constdeclarations Scope Analysis | spike | frontend/syntax | class: blocked | Implement Constdeclarations Scope Analysis |
+| 1443 | Implement Constdeclarations Scope Analysis | spike | frontend/resolver | class: blocked | Implement Constdeclarations Scope Analysis |
 | 1444 | Implement Constdeclarations Unknown Unsupported | spike | frontend/syntax | class: triage-needed | Implement Constdeclarations Unknown Unsupported |
 | 1445 | Implement Constenumbadpropertynames | spike | frontend/syntax | class: blocked | Implement Constenumbadpropertynames |
 | 1446 | Implement Constenumdeclarations | spike | frontend/syntax | class: blocked | Implement Constenumdeclarations |
@@ -1064,7 +1063,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 1548 | Implement Contextuallytypedsymbolnamedproperties | spike | frontend/syntax | class: triage-needed | Implement Contextuallytypedsymbolnamedproperties |
 | 1549 | Implement Contextuallytypingrestparameters | spike | reference/triage | class: triage-needed | Implement Contextuallytypingrestparameters |
 | 1550 | Implement Continueiniterationstatement | spike | frontend/resolver | class: blocked | Implement Continueiniterationstatement |
-| 1551 | Implement Continueinloopswithcapturedblockscopedbindings | spike | frontend/syntax | class: blocked | Implement Continueinloopswithcapturedblockscopedbindings |
+| 1551 | Implement Continueinloopswithcapturedblockscopedbindings | spike | frontend/resolver | class: blocked | Implement Continueinloopswithcapturedblockscopedbindings |
 | 1552 | Implement Continuenotiniterationstatement Arrow Function | spike | frontend/syntax | class: blocked | Implement Continuenotiniterationstatement Arrow Function |
 | 1553 | Implement Continuenotiniterationstatement Break Continue | spike | frontend/syntax | class: blocked | Implement Continuenotiniterationstatement Break Continue |
 | 1554 | Implement Continuetarget | spike | frontend/syntax | class: blocked | Implement Continuetarget |
@@ -1495,7 +1494,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 1979 | Implement Didyoumeanelaborationsforexpressionswhichcouldbecalled | spike | frontend/syntax | class: triage-needed | Implement Didyoumeanelaborationsforexpressionswhichcouldbecalled |
 | 1980 | Implement Didyoumeansuggestionerrors | spike | frontend/syntax | class: blocked | Implement Didyoumeansuggestionerrors |
 | 1981 | Implement Differenttypeswithsamename | spike | frontend/syntax | class: blocked | Implement Differenttypeswithsamename |
-| 1982 | Implement Disallowedblockscopedinpresenceofparseerrors | spike | frontend/syntax | class: blocked | Implement Disallowedblockscopedinpresenceofparseerrors |
+| 1982 | Implement Disallowedblockscopedinpresenceofparseerrors | spike | frontend/resolver | class: blocked | Implement Disallowedblockscopedinpresenceofparseerrors |
 | 1983 | Implement Discriminableunionwithintersectedmembers | spike | frontend/syntax | class: triage-needed | Implement Discriminableunionwithintersectedmembers |
 | 1984 | Implement Discriminantnarrowingcouldbecircular | spike | frontend/syntax | class: triage-needed | Implement Discriminantnarrowingcouldbecircular |
 | 1985 | Implement Discriminantorderindependence | spike | frontend/resolver | class: blocked | Implement Discriminantorderindependence |
@@ -2679,7 +2678,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 3165 | Implement Letdeclarations Import Export | spike | frontend/syntax | class: blocked | Implement Letdeclarations Import Export |
 | 3166 | Implement Letdeclarations Name Resolution | spike | frontend/resolver | class: blocked | Implement Letdeclarations Name Resolution |
 | 3167 | Implement Letdeclarations Parser Syntax | spike | frontend/syntax | class: triage-needed | Implement Letdeclarations Parser Syntax |
-| 3168 | Implement Letdeclarations Scope Analysis | spike | frontend/syntax | class: blocked | Implement Letdeclarations Scope Analysis |
+| 3168 | Implement Letdeclarations Scope Analysis | spike | frontend/resolver | class: blocked | Implement Letdeclarations Scope Analysis |
 | 3169 | Implement Letinconstdeclarations | spike | frontend/syntax | class: triage-needed | Implement Letinconstdeclarations |
 | 3170 | Implement Letinletconstdeclofforofandforin | spike | frontend/syntax | class: triage-needed | Implement Letinletconstdeclofforofandforin |
 | 3171 | Implement Letinletdeclarations | spike | frontend/syntax | class: triage-needed | Implement Letinletdeclarations |
@@ -2949,7 +2948,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 3443 | Implement Narrowbyparenthesizedswitchexpression | spike | frontend/semantics | class: blocked | Implement Narrowbyparenthesizedswitchexpression |
 | 3444 | Implement Narrowbyswitchdiscriminantundefinedcase | spike | frontend/semantics | class: blocked | Implement Narrowbyswitchdiscriminantundefinedcase |
 | 3445 | Implement Narrowcommaoperatornestedwithinlhs | spike | frontend/semantics | class: blocked | Implement Narrowcommaoperatornestedwithinlhs |
-| 3446 | Implement Narrowrefinedconstlikeparameterbindingelementnameininnerscope | spike | frontend/syntax | class: blocked | Implement Narrowrefinedconstlikeparameterbindingelementnameininnerscope |
+| 3446 | Implement Narrowrefinedconstlikeparameterbindingelementnameininnerscope | spike | frontend/resolver | class: blocked | Implement Narrowrefinedconstlikeparameterbindingelementnameininnerscope |
 | 3447 | Implement Narrowswitchoptionalchaincontainmentevolvingarraynocrash | spike | frontend/semantics | class: blocked | Implement Narrowswitchoptionalchaincontainmentevolvingarraynocrash |
 | 3448 | Implement Narrowtypebyinstanceof | spike | frontend/semantics | class: blocked | Implement Narrowtypebyinstanceof |
 | 3449 | Implement Narrowunknownbytypepredicate | spike | frontend/resolver | class: blocked | Implement Narrowunknownbytypepredicate |
@@ -2978,7 +2977,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 3472 | Implement Nativetoboxedtypes | spike | frontend/syntax | class: blocked | Implement Nativetoboxedtypes |
 | 3473 | Implement Nearbyidenticalgenericlambdasassignable | spike | frontend/syntax | class: blocked | Implement Nearbyidenticalgenericlambdasassignable |
 | 3474 | Implement Negativezero | spike | frontend/syntax | class: triage-needed | Implement Negativezero |
-| 3475 | Implement Nestedblockscopedbindings | spike | frontend/syntax | class: blocked | Implement Nestedblockscopedbindings |
+| 3475 | Implement Nestedblockscopedbindings | spike | frontend/resolver | class: blocked | Implement Nestedblockscopedbindings |
 | 3476 | Implement Nestedcallbackerrornotflattened | spike | frontend/resolver | class: blocked | Implement Nestedcallbackerrornotflattened |
 | 3477 | Implement Nestedexcesspropertychecking | spike | frontend/semantics | class: blocked | Implement Nestedexcesspropertychecking |
 | 3478 | Implement Nestedfreshliteral | spike | frontend/syntax | class: triage-needed | Implement Nestedfreshliteral |
@@ -3593,13 +3592,13 @@ Issue files are the source of truth for work items. The generated section below 
 | 4099 | Implement Reversemappedunioninference | spike | frontend/syntax | class: blocked | Implement Reversemappedunioninference |
 | 4100 | Implement Reversedrecusivetypeinstantiation | spike | frontend/syntax | class: triage-needed | Implement Reversedrecusivetypeinstantiation |
 | 4101 | Implement Satisfiesemit | spike | frontend/syntax | class: blocked | Implement Satisfiesemit |
-| 4102 | Implement Scopecheckclassproperty | spike | frontend/syntax | class: blocked | Implement Scopecheckclassproperty |
-| 4103 | Implement Scopecheckextendedclassinsidepublicmethod | spike | frontend/syntax | class: blocked | Implement Scopecheckextendedclassinsidepublicmethod |
-| 4104 | Implement Scopecheckextendedclassinsidestaticmethod | spike | frontend/syntax | class: blocked | Implement Scopecheckextendedclassinsidestaticmethod |
-| 4105 | Implement Scopecheckinsidepublicmethod | spike | frontend/syntax | class: blocked | Implement Scopecheckinsidepublicmethod |
-| 4106 | Implement Scopecheckinsidestaticmethod | spike | frontend/syntax | class: blocked | Implement Scopecheckinsidestaticmethod |
-| 4107 | Implement Scopecheckstaticinitializer | spike | frontend/syntax | class: blocked | Implement Scopecheckstaticinitializer |
-| 4108 | Implement Scopetests | spike | frontend/syntax | class: blocked | Implement Scopetests |
+| 4102 | Implement Scopecheckclassproperty | spike | frontend/resolver | class: blocked | Implement Scopecheckclassproperty |
+| 4103 | Implement Scopecheckextendedclassinsidepublicmethod | spike | frontend/resolver | class: blocked | Implement Scopecheckextendedclassinsidepublicmethod |
+| 4104 | Implement Scopecheckextendedclassinsidestaticmethod | spike | frontend/resolver | class: blocked | Implement Scopecheckextendedclassinsidestaticmethod |
+| 4105 | Implement Scopecheckinsidepublicmethod | spike | frontend/resolver | class: blocked | Implement Scopecheckinsidepublicmethod |
+| 4106 | Implement Scopecheckinsidestaticmethod | spike | frontend/resolver | class: blocked | Implement Scopecheckinsidestaticmethod |
+| 4107 | Implement Scopecheckstaticinitializer | spike | frontend/resolver | class: blocked | Implement Scopecheckstaticinitializer |
+| 4108 | Implement Scopetests | spike | frontend/resolver | class: blocked | Implement Scopetests |
 | 4109 | Implement Scopingincatchblocks | spike | frontend/resolver | class: blocked | Implement Scopingincatchblocks |
 | 4110 | Implement Selfincallback | spike | frontend/syntax | class: triage-needed | Implement Selfincallback |
 | 4111 | Implement Selfinlambdas | spike | frontend/syntax | class: blocked | Implement Selfinlambdas |
@@ -3615,7 +3614,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 4121 | Implement Setterbeforegetter | spike | frontend/semantics | class: blocked | Implement Setterbeforegetter |
 | 4122 | Implement Setterwithreturn | spike | frontend/semantics | class: blocked | Implement Setterwithreturn |
 | 4123 | Implement Shadowprivatemembers | spike | frontend/semantics | class: blocked | Implement Shadowprivatemembers |
-| 4124 | Implement Shadowedfunctionscopedvariablesbyblockscopedones | spike | frontend/syntax | class: blocked | Implement Shadowedfunctionscopedvariablesbyblockscopedones |
+| 4124 | Implement Shadowedfunctionscopedvariablesbyblockscopedones | spike | frontend/resolver | class: blocked | Implement Shadowedfunctionscopedvariablesbyblockscopedones |
 | 4125 | Implement Shadowedreservedcompilerdeclarationswithnoemit | spike | frontend/syntax | class: blocked | Implement Shadowedreservedcompilerdeclarationswithnoemit |
 | 4126 | Implement Shadowingvialocalvalue | spike | frontend/syntax | class: blocked | Implement Shadowingvialocalvalue |
 | 4127 | Implement Shadowingvialocalvalueorbindingelement | spike | reference/triage | class: triage-needed | Implement Shadowingvialocalvalueorbindingelement |
@@ -3753,7 +3752,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 4260 | Implement Statics | spike | frontend/syntax | class: blocked | Implement Statics |
 | 4261 | Implement Staticsinafunction | spike | frontend/syntax | class: triage-needed | Implement Staticsinafunction |
 | 4262 | Implement Staticsinconstructorbodies | spike | frontend/syntax | class: triage-needed | Implement Staticsinconstructorbodies |
-| 4263 | Implement Staticsnotinscopeinclodule | spike | frontend/syntax | class: blocked | Implement Staticsnotinscopeinclodule |
+| 4263 | Implement Staticsnotinscopeinclodule | spike | frontend/resolver | class: blocked | Implement Staticsnotinscopeinclodule |
 | 4264 | Implement Stradac | spike | frontend/resolver | class: blocked | Implement Stradac |
 | 4265 | Implement Strictfunctiontypes | spike | frontend/resolver | class: blocked | Implement Strictfunctiontypes |
 | 4266 | Implement Strictfunctiontypeserrors | spike | runtime/builtins | class: triage-needed | Implement Strictfunctiontypeserrors |
@@ -4095,7 +4094,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 4605 | Implement Typeofthisinmethodsignature | spike | frontend/syntax | class: blocked | Implement Typeofthisinmethodsignature |
 | 4606 | Implement Typeofundefined | spike | reference/triage | class: triage-needed | Implement Typeofundefined |
 | 4607 | Implement Typeofunknownsymbol | spike | frontend/syntax | class: triage-needed | Implement Typeofunknownsymbol |
-| 4608 | Implement Typeofusedbeforeblockscoped | spike | frontend/syntax | class: blocked | Implement Typeofusedbeforeblockscoped |
+| 4608 | Implement Typeofusedbeforeblockscoped | spike | frontend/resolver | class: blocked | Implement Typeofusedbeforeblockscoped |
 | 4609 | Implement Umddependencycomment | spike | frontend/syntax | class: blocked | Implement Umddependencycomment |
 | 4610 | Implement Umddependencycommentname | spike | frontend/syntax | class: blocked | Implement Umddependencycommentname |
 | 4611 | Implement Umdglobalaugmentationnocrash | spike | frontend/syntax | class: triage-needed | Implement Umdglobalaugmentationnocrash |
@@ -4288,7 +4287,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 4798 | Implement Withstatement | spike | frontend/syntax | class: triage-needed | Implement Withstatement |
 | 4799 | Implement Withstatementerrors | spike | runtime/builtins | class: triage-needed | Implement Withstatementerrors |
 | 4800 | Implement Withstatementinternalcomments | spike | frontend/resolver | class: blocked | Implement Withstatementinternalcomments |
-| 4801 | Implement Withstatementnestedscope | spike | frontend/syntax | class: blocked | Implement Withstatementnestedscope |
+| 4801 | Implement Withstatementnestedscope | spike | frontend/resolver | class: blocked | Implement Withstatementnestedscope |
 | 4802 | Implement Wrappedincovations | spike | frontend/syntax | class: blocked | Implement Wrappedincovations |
 | 4803 | Implement Wrappedrecursivegenerictype | spike | frontend/resolver | class: blocked | Implement Wrappedrecursivegenerictype |
 | 4804 | Implement Yieldstarcontextualtype | spike | frontend/semantics | class: blocked | Implement Yieldstarcontextualtype |
@@ -5018,6 +5017,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 5000 | Meta: TypeScript Compiler Parser Syntax Coverage | meta | frontend/syntax | see file |
 | 5004 | Meta: Runtime Builtins Coverage (test262) (audit reopened #5004) | meta | runtime/builtins | see `issues/done/5004-meta-runtime-builtins.md` |
 | 5005 | Meta: TypeScript Compiler Name Resolution Coverage | meta | frontend/resolver | see `issues/done/5005-meta-tsc-name-resolution.md` |
+| 5006 | Meta: TypeScript Compiler Scope Analysis Coverage | meta | frontend/resolver | see `issues/done/5006-meta-tsc-scope-analysis.md` |
 | 5007 | Meta: TypeScript Compiler Module Resolution Coverage (audit reopened #5007) | meta | frontend/resolver | see `issues/done/5007-meta-tsc-module-resolution.md` |
 | 5008 | Implement static ES module export forms (default, named, namespace, re-export) (audit reopened #5008) | feature | ir/compiler | see `issues/done/5008-static-es-module-export-default-namespace-reexport.md` |
 | 5009 | Remaining static ES module export forms (named list, default import, namespace, re-export, side-effect) (audit reopened #5009) | feature | ir/compiler | see `issues/done/5009-remaining-es-module-export-forms.md` |

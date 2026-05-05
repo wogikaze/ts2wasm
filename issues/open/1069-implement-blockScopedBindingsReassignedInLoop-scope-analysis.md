@@ -2,7 +2,7 @@
 id: 1069
 title: "Implement Blockscopedbindingsreassignedinloop Scope Analysis"
 type: spike
-area: frontend/syntax
+area: frontend/resolver
 class: blocked
 priority: P2
 depends_on: [5006]

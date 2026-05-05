@@ -2,7 +2,7 @@
 id: 1443
 title: "Implement Constdeclarations Scope Analysis"
 type: spike
-area: frontend/syntax
+area: frontend/resolver
 class: blocked
 priority: P2
 depends_on: [5006]

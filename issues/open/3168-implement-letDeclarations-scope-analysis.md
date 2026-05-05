@@ -2,7 +2,7 @@
 id: 3168
 title: "Implement Letdeclarations Scope Analysis"
 type: spike
-area: frontend/syntax
+area: frontend/resolver
 class: blocked
 priority: P2
 depends_on: [5006]

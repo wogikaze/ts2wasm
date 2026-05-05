@@ -2,7 +2,7 @@
 id: 4608
 title: "Implement Typeofusedbeforeblockscoped"
 type: spike
-area: frontend/syntax
+area: frontend/resolver
 class: blocked
 priority: P2
 depends_on: [5006]
