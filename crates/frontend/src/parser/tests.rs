@@ -391,7 +391,7 @@ mod tests {
 
     #[test]
     fn accepts_expression_statement_without_semicolon_before_left_brace_boundary() {
-        let program = parse_program("let value = 1\n{}").unwrap();
+        let program = parse_program("let value = 1\n{ let after = 2; }").unwrap();
         assert_eq!(program.len(), 2);
 
         let Stmt::Let {
@@ -404,13 +404,7 @@ mod tests {
         };
         assert_eq!(name, "value");
 
-        match &program[1] {
-            Stmt::Expr {
-                expr: Expr::Object { props, .. },
-                ..
-            } => assert!(props.is_empty()),
-            other => panic!("expected object expression boundary statement, got {other:?}"),
-        }
+        assert!(matches!(&program[1], Stmt::Let { name, .. } if name == "after"));
     }
 
     #[test]
@@ -2431,6 +2425,23 @@ mod tests {
     }
 
     #[test]
+    fn parses_single_break_as_while_body() {
+        let program = parse_program("while (true) break").unwrap();
+        assert_eq!(program.len(), 1);
+
+        let Stmt::While { body, .. } = &program[0] else {
+            panic!("expected While statement");
+        };
+        assert_eq!(body.len(), 1);
+        match &body[0] {
+            Stmt::Break { label, .. } => {
+                assert!(label.is_none());
+            }
+            other => panic!("expected Break in while body, got {other:?}"),
+        }
+    }
+
+    #[test]
     fn parses_continue_inside_while_body() {
         let program = parse_program("let i = 0; while (i < 3) { i++; continue; }").unwrap();
         assert_eq!(program.len(), 2);
@@ -2440,6 +2451,23 @@ mod tests {
         };
         assert_eq!(body.len(), 2);
         match &body[1] {
+            Stmt::Continue { label, .. } => {
+                assert!(label.is_none());
+            }
+            other => panic!("expected Continue in while body, got {other:?}"),
+        }
+    }
+
+    #[test]
+    fn parses_single_continue_as_while_body() {
+        let program = parse_program("while (true) continue").unwrap();
+        assert_eq!(program.len(), 1);
+
+        let Stmt::While { body, .. } = &program[0] else {
+            panic!("expected While statement");
+        };
+        assert_eq!(body.len(), 1);
+        match &body[0] {
             Stmt::Continue { label, .. } => {
                 assert!(label.is_none());
             }

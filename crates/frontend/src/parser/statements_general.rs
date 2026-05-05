@@ -1086,7 +1086,7 @@ impl Parser {
         self.expect(TokenKind::LeftParen)?;
         let condition = self.expression()?;
         self.expect(TokenKind::RightParen)?;
-        let body = self.block()?;
+        let body = self.while_statement_body()?;
         let end = body
             .last()
             .map(|stmt| stmt.span().end)
@@ -1099,6 +1099,16 @@ impl Parser {
                 end,
             },
         })
+    }
+
+    fn while_statement_body(&mut self) -> Result<Vec<Stmt>, Diagnostic> {
+        if matches!(self.peek(), Some(Token::LeftBrace)) {
+            return self.block();
+        }
+        if matches!(self.peek(), Some(Token::Break | Token::Continue)) {
+            return Ok(vec![self.statement()?]);
+        }
+        self.block()
     }
 
     fn function_statement(&mut self) -> Result<Stmt, Diagnostic> {
@@ -1294,25 +1304,39 @@ impl Parser {
     }
 
     fn break_statement(&mut self) -> Result<Stmt, Diagnostic> {
-        let span = self.expect(TokenKind::Break)?;
-        let label = if matches!(self.peek(), Some(Token::Ident(_))) {
-            Some(self.expect_ident()?.0)
+        let start = self.expect(TokenKind::Break)?;
+        let (label, fallback_end) = if matches!(self.peek(), Some(Token::Ident(_))) {
+            let (label, label_span) = self.expect_ident()?;
+            (Some(label), label_span.end)
         } else {
-            None
+            (None, start.end)
         };
-        self.expect(TokenKind::Semicolon)?;
-        Ok(Stmt::Break { label, span })
+        let end = self.statement_terminator_end(fallback_end)?;
+        Ok(Stmt::Break {
+            label,
+            span: Span {
+                start: start.start,
+                end,
+            },
+        })
     }
 
     fn continue_statement(&mut self) -> Result<Stmt, Diagnostic> {
-        let span = self.expect(TokenKind::Continue)?;
-        let label = if matches!(self.peek(), Some(Token::Ident(_))) {
-            Some(self.expect_ident()?.0)
+        let start = self.expect(TokenKind::Continue)?;
+        let (label, fallback_end) = if matches!(self.peek(), Some(Token::Ident(_))) {
+            let (label, label_span) = self.expect_ident()?;
+            (Some(label), label_span.end)
         } else {
-            None
+            (None, start.end)
         };
-        self.expect(TokenKind::Semicolon)?;
-        Ok(Stmt::Continue { label, span })
+        let end = self.statement_terminator_end(fallback_end)?;
+        Ok(Stmt::Continue {
+            label,
+            span: Span {
+                start: start.start,
+                end,
+            },
+        })
     }
 
     fn labeled_statement(&mut self) -> Result<Stmt, Diagnostic> {
