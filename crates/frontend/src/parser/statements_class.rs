@@ -69,6 +69,24 @@ impl Parser {
 
     fn class_extends(&mut self) -> Result<Option<Box<Expr>>, Diagnostic> {
         if self.consume(TokenKind::Extends) {
+            // Handle TypeScript type arguments in class heritage clauses:
+            //   class C<T> extends Base<T> { }
+            // Without this, `<T>` is consumed as Less/Greater binary operators,
+            // producing `Base < T > { }` and consuming the class body brace.
+            if matches!(self.peek(), Some(Token::Ident(_)))
+                && matches!(self.peek_n(1), Some(Token::Less))
+            {
+                let (name, name_span) = self.expect_ident()?;
+                let _ = self.consume_typescript_generic_parameter_list()?;
+                let expr = self.finish_call_member(
+                    Expr::Ident {
+                        name,
+                        span: name_span,
+                    },
+                    true,
+                )?;
+                return Ok(Some(Box::new(expr)));
+            }
             let expr = self.expression()?;
             Ok(Some(Box::new(expr)))
         } else {

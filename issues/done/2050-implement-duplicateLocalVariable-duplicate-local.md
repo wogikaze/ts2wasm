@@ -1,11 +1,11 @@
 ---
-id: 1044
-title: "Implement Bestcommontypewithcontextualtyping"
+id: 2050
+title: "Implement Duplicatelocalvariable Duplicate Local"
 type: spike
-area: frontend/resolver
-class: blocked
-priority: P1
-depends_on: [5005]
+area: reference/triage
+class: triage-needed
+priority: P2
+depends_on: []
 blocks: []
 created: 2026-05-01
 updated: 2026-05-01
@@ -13,26 +13,26 @@ updated: 2026-05-01
 
 ## Summary
 
-Triage bestCommonTypeWithContextualTyping across 1 failing reference test cases and split this bucket into implementation-ready child issues.
+Triage duplicateLocalVariable-duplicate-local across 1 failing reference test cases and split this bucket into implementation-ready child issues.
 
 ## Problem
 
-Reference test results show 1 cases fail in directory `bestCommonTypeWithContextualTyping` with diagnostics: name-resolution. The compiler cannot handle these syntax/semantics, preventing compilation of code in this category.
+Reference test results show 1 cases fail in directory `duplicateLocalVariable-duplicate-local` with diagnostics: duplicate-local. The compiler cannot handle these syntax/semantics, preventing compilation of code in this category.
 
-Problem: bestCommonTypeWithContextualTyping has 1 reference failures and needs smart-triage evidence before implementation starts.
+Problem: duplicateLocalVariable-duplicate-local has 1 reference failures and needs smart-triage evidence before implementation starts.
 
 ## Current failure
 
 Representative reproduction:
 
 ```sh
-mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/bestCommonTypeWithContextualTyping.ts
+mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/duplicateLocalVariable3.ts
 ```
 
 Coverage window:
 
 ```sh
-mise run reference-coverage -- tsc --path-filter reference/typescript/tests/cases/compiler/bestCommonTypeWithContextualTyping.ts --detail
+mise run reference-coverage -- tsc --path-filter reference/typescript/tests/cases/compiler/duplicateLocalVariable3.ts --detail
 ```
 
 ## Desired final state
@@ -57,14 +57,13 @@ Out of scope:
 
 Expected:
 
-- `crates/frontend/src/`
-- `crates/cli/src/`
-- `fixtures/`
+- `issues/open/`
 - `scripts/run/reference-triage.py`
+- `fixtures/`
 
 Do not touch:
 
-- unrelated runtime/backend code unless `reference-triage` proves the failure is not frontend-owned
+- implementation code until the triage report assigns a concrete frontend/runtime/backend owner
 
 ## Acceptance criteria
 
@@ -86,8 +85,8 @@ Impacted commands:
 
 ```sh
 mise run reference-coverage -- tsc --limit 2
-mise run reference-coverage -- tsc --path-filter reference/typescript/tests/cases/compiler/bestCommonTypeWithContextualTyping.ts --detail
-mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/bestCommonTypeWithContextualTyping.ts
+mise run reference-coverage -- tsc --path-filter reference/typescript/tests/cases/compiler/duplicateLocalVariable3.ts --detail
+mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/duplicateLocalVariable3.ts
 ```
 
 Not run:
@@ -112,7 +111,7 @@ Follow-up issues:
 
 ## Affected test files
 
-- `reference/typescript/tests/cases/compiler/bestCommonTypeWithContextualTyping.ts`
+- `reference/typescript/tests/cases/compiler/duplicateLocalVariable3.ts`
 
 ## Duplicate detection
 
@@ -141,3 +140,15 @@ date:
 Remaining risks:
 
 - none
+## Completion evidence
+
+This issue is resolved. The `duplicateLocalVariable3.ts` test case (var redeclaration) now compiles successfully. The var redeclaration tolerance was implemented in commit `fe2e3f00` (compiler/ir: fix remaining DuplicateLocal checks for var redeclaration) and the test was further verified by the InvariantViolation fixes (commit `607529df` — extra args for user calls, JS semantics).
+
+Validation:
+```sh
+ts2wasm build -o /tmp/test.wasm reference/typescript/tests/cases/compiler/duplicateLocalVariable3.ts
+# => exits with code 0 (PASS)
+```
+
+The duplicate-local feature is handled by the existing var redeclation support.
+

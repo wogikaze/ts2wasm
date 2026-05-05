@@ -24,6 +24,7 @@ impl Parser {
             pending_statements: Vec::new(),
             possible_eval_shadowing,
             has_preceding_newline,
+            in_async_fn: false,
         }
     }
 

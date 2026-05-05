@@ -17,6 +17,8 @@ pub struct Parser {
     possible_eval_shadowing: bool,
     /// For each token, whether it is preceded by a line terminator in the source.
     has_preceding_newline: Vec<bool>,
+    /// Whether we are inside an async function body (for context-sensitive `await` parsing).
+    in_async_fn: bool,
 }
 
 /// For each token, check if there is a line terminator between the previous

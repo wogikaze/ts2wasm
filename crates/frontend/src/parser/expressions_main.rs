@@ -915,15 +915,43 @@ impl Parser {
         {
             self.unary()
         } else if let Some(await_span) = self.consume_span(TokenKind::Await) {
-            let expr = self.unary()?;
-            let end = expr.span().end;
-            Ok(Expr::Await {
-                expr: Box::new(expr),
-                span: Span {
-                    start: await_span.start,
-                    end,
-                },
-            })
+            // Outside async functions, `await(...)` is a call expression whose
+            // callee is the identifier `await`, matching TypeScript semantics.
+            if !self.in_async_fn && matches!(self.peek(), Some(Token::LeftParen)) {
+                self.advance(); // consume `(`
+                let mut args = Vec::new();
+                if !self.consume(TokenKind::RightParen) {
+                    loop {
+                        args.push(self.expression()?);
+                        if self.consume(TokenKind::RightParen) {
+                            break;
+                        }
+                        self.expect(TokenKind::Comma)?;
+                    }
+                }
+                let end = self.prev_span().map(|s| s.end).unwrap_or(await_span.end);
+                Ok(Expr::Call {
+                    callee: Box::new(Expr::Ident {
+                        name: "await".to_string(),
+                        span: await_span,
+                    }),
+                    args,
+                    span: Span {
+                        start: await_span.start,
+                        end,
+                    },
+                })
+            } else {
+                let expr = self.unary()?;
+                let end = expr.span().end;
+                Ok(Expr::Await {
+                    expr: Box::new(expr),
+                    span: Span {
+                        start: await_span.start,
+                        end,
+                    },
+                })
+            }
         } else if matches!(self.peek(), Some(Token::Async))
             && matches!(self.peek_n(1), Some(Token::Function))
         {

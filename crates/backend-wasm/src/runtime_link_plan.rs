@@ -46,6 +46,14 @@ impl RuntimeLinkPlan {
     pub(crate) fn from_program(program: &LoweredProgram) -> Self {
         let mut plan = Self::default();
         plan.collect_required_runtime_stmts(&program.top_level_statements);
+        // emit_top_level_statements unconditionally emits a $exception_pending
+        // guard after each top-level statement. Declare the exception globals
+        // whenever there are top-level statements so that WAT never references
+        // an undeclared global (e.g. after ClassDecl, If, or similar statements
+        // that do not themselves select exception globals).
+        if !program.top_level_statements.is_empty() {
+            plan.add_required_globals(GLOBALS_EXCEPTION_RUNTIME);
+        }
         for function in &program.functions {
             plan.collect_required_runtime_stmts(&function.body);
         }
@@ -663,10 +671,10 @@ impl RuntimeLinkPlan {
 #[cfg(test)]
 mod tests {
     use ts2wasm_ir::lowered::{
-        LoweredBinaryOp, LoweredExpr, LoweredProgram, LoweredStmt, ModuleInfo,
+        FuncId, LocalId, LoweredBinaryOp, LoweredExpr, LoweredProgram, LoweredStmt, ModuleInfo,
     };
 
-    use super::{HostImport, RuntimeFn, RuntimeLinkPlan};
+    use super::{HostImport, RuntimeFn, RuntimeGlobal, RuntimeLinkPlan};
 
     #[test]
     fn empty_module_metadata_does_not_select_es_module_export_helpers() {
@@ -968,6 +976,36 @@ mod tests {
         assert!(
             plan.required_imports().is_empty(),
             "BigInt string conversion must remain standalone"
+        );
+    }
+
+    #[test]
+    fn class_decl_at_top_level_selects_exception_globals() {
+        let program = LoweredProgram {
+            top_level_statements: vec![LoweredStmt::ClassDecl {
+                name: "Foo".to_owned(),
+                extends: None,
+                constructor: Some(FuncId(0)),
+                methods: vec![("bar".to_owned(), FuncId(1))],
+                static_methods: vec![],
+                private_fields: vec![],
+            }],
+            top_level_locals: vec![],
+            functions: vec![],
+            modules: vec![],
+        };
+
+        let plan = RuntimeLinkPlan::from_program(&program);
+
+        assert!(
+            plan.required_globals()
+                .contains(&RuntimeGlobal::ExceptionPending),
+            "ClassDecl at top level must select ExceptionPending global"
+        );
+        assert!(
+            plan.required_globals()
+                .contains(&RuntimeGlobal::ExceptionHandlerDepth),
+            "ClassDecl at top level must select ExceptionHandlerDepth global"
         );
     }
 }

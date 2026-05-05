@@ -16,18 +16,18 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 1 | 0 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4393 | 3776 | 617 |
+| frontend | 4394 | 3776 | 618 |
 | harness | 1 | 0 | 1 |
 | ir | 27 | 5 | 22 |
 | issues | 4 | 0 | 4 |
 | parser | 1 | 0 | 1 |
-| reference | 211 | 170 | 41 |
+| reference | 212 | 170 | 42 |
 | runtime | 265 | 96 | 169 |
 | scripts | 3 | 1 | 2 |
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 4995 | 4050 | 945 |
+| total | 4997 | 4050 | 947 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -178,6 +178,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 5158 | Report interface private member clashes | feature | frontend/resolver | implementation-ready | P1 |  | `reference/typescript/tests/cases/compiler/baseTypePrivateMemberClash.ts` currently reports `BackendIo` instead of a ... |
 | 5159 | Recover colon type annotations after expression statements | feature | frontend/syntax | implementation-ready | P1 |  | constructor-body statements of the form `this.<name>: any;` currently fail as parser-unsupported before the reference... |
 | 5160 | Lower plain ternary conditional expressions | feature | frontend/semantics | implementation-ready | P2 |  | `reference/typescript/tests/cases/compiler/bestChoiceType.ts` currently stops in builtin resolution on `let y = x ? x... |
+| 5161 | Model ambient value declarations for name resolution | feature | frontend/resolver | implementation-ready | P1 |  | `reference/typescript/tests/cases/compiler/bestCommonTypeWithContextualTyping.ts` currently reports `UnresolvedName` ... |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -454,7 +455,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 772 | Implement Augmentedtypesvar | spike | frontend/syntax | class: blocked | Implement Augmentedtypesvar |
 | 773 | Implement Autoasiforstaticsinclassdeclaration | spike | frontend/syntax | class: triage-needed | Implement Autoasiforstaticsinclassdeclaration |
 | 775 | Implement Autotypeassignedusingdestructuringfromnevernocrash | spike | frontend/resolver | class: blocked | Implement Autotypeassignedusingdestructuringfromnevernocrash |
-| 1044 | Implement Bestcommontypewithcontextualtyping | spike | frontend/resolver | class: blocked | Implement Bestcommontypewithcontextualtyping |
 | 1045 | Implement Bettererrorforaccidentalcall | spike | frontend/syntax | class: triage-needed | Implement Bettererrorforaccidentalcall |
 | 1046 | Implement Bigintwithtargetes | spike | runtime/builtins | class: triage-needed | Implement Bigintwithtargetes |
 | 1047 | Implement Bigintwithtargetlessthanes | spike | runtime/builtins | class: triage-needed | Implement Bigintwithtargetlessthanes |
@@ -5018,6 +5018,8 @@ Issue files are the source of truth for work items. The generated section below 
 | 1041 | Implement Basetypewrappinginstantiationchain | spike | frontend/syntax | see `issues/done/1041-implement-baseTypeWrappingInstantiationChain.md` |
 | 1042 | Implement Bases | spike | frontend/syntax | see `issues/done/1042-implement-bases.md` |
 | 1043 | Implement Bestchoicetype | spike | frontend/syntax | see `issues/done/1043-implement-bestChoiceType.md` |
+| 1044 | Implement Bestcommontypewithcontextualtyping | spike | frontend/resolver | see `issues/done/1044-implement-bestCommonTypeWithContextualTyping.md` |
+| 2050 | Implement Duplicatelocalvariable Duplicate Local | spike | reference/triage | see `issues/done/2050-implement-duplicateLocalVariable-duplicate-local.md` |
 | 3002 | Implement Isolateddeclarationerrorsdefault | spike | runtime/builtins | see `issues/done/3002-implement-isolatedDeclarationErrorsDefault.md` |
 | 3131 | Implement Jsxfactorynotidentifierorqualifiedname | spike | reference/triage | see `issues/done/3131-implement-jsxFactoryNotIdentifierOrQualifiedName.md` |
 | 3329 | Implement Modulecodegentest | spike | frontend/syntax | see `issues/done/3329-implement-moduleCodeGenTest.md` |

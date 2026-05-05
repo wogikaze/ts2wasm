@@ -579,6 +579,21 @@ mod tests {
     }
 
     #[test]
+    fn erases_angle_bracket_type_assertion_at_expression_statement_start() {
+        let source = "<string>Spec.prop;";
+        let program = parse_program(source).unwrap();
+        assert_eq!(program.len(), 1);
+        let Stmt::Expr { expr, .. } = &program[0] else {
+            panic!("expected expression statement");
+        };
+        // The type assertion is erased; the expression should be `Spec.prop`
+        assert!(
+            matches!(expr, Expr::Member { object, property, .. } if property == "prop"),
+            "expected property access expression, got {expr:?}"
+        );
+    }
+
+    #[test]
     fn preserves_adjacent_relational_expression_that_resembles_generic_call() {
         let program = parse_program("let result = a<b>(c);").unwrap();
         let Stmt::Let { expr, .. } = &program[0] else {
@@ -928,6 +943,38 @@ mod tests {
             }
             other => panic!("unexpected statement: {other:?}"),
         }
+    }
+
+    #[test]
+    fn parses_class_with_generic_heritage() {
+        // TypeScript generic type arguments in class heritage clauses
+        // must not be consumed as runtime comparison operators.
+        let program = parse_program(
+            "class Class3<T> { memberVariable: Class2; }\nclass Class4<T> extends Class3<T> { }",
+        )
+        .unwrap();
+        assert_eq!(program.len(), 2);
+        let Stmt::ClassDecl {
+            name,
+            extends,
+            body,
+            ..
+        } = &program[1]
+        else {
+            panic!("expected class declaration at index 1");
+        };
+        assert_eq!(name, "Class4");
+        assert!(extends.is_some(), "Class4 should have an extends clause");
+        assert!(
+            body.is_empty(),
+            "generic class with empty body should parse"
+        );
+        // Verify the extends expression resolves to an identifier (type args erased)
+        let extends_expr = extends.as_ref().unwrap();
+        assert!(
+            matches!(extends_expr.as_ref(), Expr::Ident { name, .. } if name == "Class3"),
+            "extends expression should be Ident(Class3) with type args erased, got {extends_expr:?}"
+        );
     }
 
     #[test]
@@ -2690,100 +2737,6 @@ class Foo {
                 interface Inner { x: number }
                 type Alias = string;
                 function fn(): void;
-            }
-            let after = 1;
-        "#;
-        let program = parse_program(source).expect("declare namespace with type syntax should be erased");
-        assert_eq!(program.len(), 1);
-        assert!(matches!(program[0], Stmt::Let { ref name, .. } if name == "after"));
-    }
-
-    #[test]
-    fn parses_ambient_enum_empty_body() {
-        let source = r#"
-            declare enum Empty { }
-            let x = 1;
-        "#;
-        let program = parse_program(source).unwrap();
-        assert_eq!(program.len(), 1);
-        assert!(matches!(program[0], Stmt::Let { .. }));
-    }
-
-    #[test]
-    fn parses_ambient_class_with_generic_type_params() {
-        let source = r#"
-            declare class Container<T> {
-                value: T;
-                get(): T;
-            }
-            let x = 1;
-        "#;
-        let program = parse_program(source).unwrap();
-        assert_eq!(program.len(), 1);
-        assert!(matches!(program[0], Stmt::Let { .. }));
-    }
-
-    #[test]
-    fn erases_non_declare_enum() {
-        let source = r#"
-            enum NonDeclareEnum { A, B }
-            let after = 1;
-        "#;
-        let program = parse_program(source).unwrap();
-        assert_eq!(program.len(), 1);
-        assert!(matches!(program[0], Stmt::Let { ref name, .. } if name == "after"));
-    }
-}
-
-    #[test]
-    fn asi_after_multiline_const_initializer() {
-        // const result = (() => ({ a: 1 }))
-        // result.BLAH;
-        // ASI should insert a semicolon after the const declaration.
-        let source = "const result = (() => ({ a: 1 }))\nresult.BLAH;";
-        let program = parse_program(source).unwrap();
-        assert_eq!(program.len(), 2);
-        let Stmt::Let { name, expr: Expr::ArrowFn { .. }, .. } = &program[0] else {
-            panic!("expected Let with arrow fn initializer, got {:?}", program[0]);
-        };
-        assert_eq!(name, "result");
-        match &program[1] {
-            Stmt::Expr { expr: Expr::Member { object, property, .. }, .. } => {
-                assert!(matches!(object.as_ref(), Expr::Ident { name, .. } if name == "result"));
-                assert_eq!(property, "BLAH");
-            }
-            other => panic!("expected expression statement with member access, got {other:?}"),
-        }
-    }
-
-    #[test]
-    fn asi_after_multiline_const_object_initializer() {
-        let source = "const result = { a: 1 }\nresult.BLAH;";
-        let program = parse_program(source).unwrap();
-        assert_eq!(program.len(), 2);
-        match &program[0] {
-            Stmt::Let { name, expr, .. } => {
-                assert_eq!(name, "result");
-                assert!(matches!(expr, Expr::Object { .. }));
-            }
-            other => panic!("expected Let, got {other:?}"),
-        }
-        match &program[1] {
-            Stmt::Expr { expr: Expr::Member { object, property, .. }, .. } => {
-                assert!(matches!(object.as_ref(), Expr::Ident { name, .. } if name == "result"));
-                assert_eq!(property, "BLAH");
-            }
-            other => panic!("expected member expression, got {other:?}"),
-        }
-    }
-
-    #[test]
-    fn rejects_missing_semicolon_for_same_line_const_initializer() {
-        let source = "const result = 1 result.BLAH;";
-        let err = parse_program(source).unwrap_err();
-        assert_eq!(err.code, DiagCode::UnsupportedSyntax);
-        assert!(err.message.contains("expected Semicolon"), "{err:?}");
-    }
 
     #[test]
     fn asi_after_multiline_const_initializer() {
