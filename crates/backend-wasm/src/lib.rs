@@ -1364,7 +1364,7 @@ mod tests {
         let tokens = Lexer::new(&source)
             .tokenize()
             .expect("fixture should tokenize");
-        let parsed = Parser::new(tokens)
+        let parsed = Parser::new(tokens, &source)
             .parse_program()
             .expect("fixture should parse");
         let named = name_resolver::resolve_names(&parsed).expect("fixture should resolve names");

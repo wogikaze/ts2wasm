@@ -609,7 +609,7 @@ mod tests {
 
     fn parse_to_hir(source: &str) -> HirProgram {
         let tokens = ts2wasm_frontend::Lexer::new(source).tokenize().unwrap();
-        let ast = ts2wasm_frontend::Parser::new(tokens)
+        let ast = ts2wasm_frontend::Parser::new(tokens, source)
             .parse_program()
             .unwrap();
         let named = crate::name_resolver::resolve_names(&ast).unwrap();
