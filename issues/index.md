@@ -15,7 +15,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 1 | 0 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4378 | 3772 | 606 |
+| frontend | 4378 | 3771 | 607 |
 | harness | 1 | 0 | 1 |
 | ir | 23 | 2 | 21 |
 | issues | 4 | 0 | 4 |
@@ -26,7 +26,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 4972 | 4048 | 924 |
+| total | 4972 | 4047 | 925 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -158,6 +158,7 @@ Issue files are the source of truth for work items. The generated section below 
 |---:|---|---|---|---|---|---|---|
 | 353 | Implement iterator protocol integration for spread operator | feature | runtime/semantics | unstarted | P2 |  | General iterator protocol is not implemented for spread operator. |
 | 5132 | Add ABC451 non-top array separation attribution | infra | runtime/memory | implementation-ready | P1 | 5131 | issue 365 proves the dominant array-growth pressure is |
+| 5134 | Admit generators and async-functions features through Python test262 harness | spike | scripts | design-ready | P2 | 416 | The Python test262 harness rejects generator and async-function metadata before these cases can reach compiler diagno... |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -204,7 +205,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 363 | Reduce ABC451 allocation and sweep volume after bulk copy narrowing | bug | runtime/memory | class: blocked | Reduce ABC451 allocation and sweep volume after bulk copy narrowing |
 | 365 | Reduce ABC451 array-growth allocation and copy pressure | bug | runtime/memory | class: blocked | Reduce ABC451 array-growth allocation and copy pressure |
 | 411 | Implement annexb-ishtmldda support | spike | frontend/syntax | class: triage-needed | Implement annexb-ishtmldda support |
-| 416 | Implement async/await support | spike | frontend/syntax | class: triage-needed | Implement async/await support |
 | 417 | Implement async-iteration support | spike | frontend/syntax | class: triage-needed | Implement async-iteration support |
 | 418 | Implement break/continue | spike | frontend/syntax | class: blocked | Implement break/continue |
 | 419 | Implement built-in API support | spike | runtime/builtins | class: triage-needed | Implement built-in API support |
@@ -4208,7 +4208,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 5015 | Implement function support | spike | frontend/syntax | class: triage-needed | Implement function support |
 | 5018 | Implement legacy-global-builtin support | spike | frontend/syntax | class: triage-needed | Implement legacy-global-builtin support |
 | 5020 | Implement RegExp literal support | spike | frontend/syntax | class: triage-needed | Implement RegExp literal support |
-| 5134 | Admit generators and async-functions features through Python test262 harness | spike | scripts | 416 | Admit generators and async-functions features through Python test262 harness |
 | 5135 | Fix builtin arity validation for coercion/math globals | bug | ir | class: blocked | Fix builtin arity validation for coercion/math globals |
 | 5136 | Fix arity validation for RegExp/String prototype methods | bug | ir | class: blocked | Fix arity validation for RegExp/String prototype methods |
 <!-- generated:blocked:end -->
@@ -4615,6 +4614,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 413 | Implement arity support | spike | reference/triage | see `issues/done/413-implement-arity.md` |
 | 414 | Implement array-builtin support (dup) | spike | frontend/syntax | see `issues/done/414-implement-array-builtin.md` |
 | 415 | Implement arrow functions | spike | frontend/syntax | see `issues/done/415-implement-arrow-function.md` |
+| 416 | Implement async/await support | spike | frontend/syntax | see `issues/done/416-implement-async.md` |
 | 421 | Implement class syntax | spike | frontend/syntax | see `issues/done/421-implement-class.md` |
 | 423 | Implement Date object support (dup) | spike | runtime/builtins | see `issues/done/423-implement-date.md` |
 | 427 | Implement duplicate-local support | spike | reference/triage | see `issues/done/427-implement-duplicate-local.md` |
