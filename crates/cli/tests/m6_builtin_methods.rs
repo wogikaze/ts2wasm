@@ -612,6 +612,16 @@ fn build_smoke_array_with_method() {
 }
 
 #[test]
+fn build_smoke_array_is_array_method() {
+    let result = run_fixture("builtins-and-io/array-is-array.ts");
+    assert!(
+        result.is_ok(),
+        "Array.isArray should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
 fn build_smoke_array_to_reversed_method() {
     let result = run_fixture("builtins-and-io/array-to-reversed.ts");
     assert!(
