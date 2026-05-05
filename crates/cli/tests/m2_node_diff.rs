@@ -524,6 +524,18 @@ fn assert_fixture_matches_js_baseline(fixture: &str, js_baseline: &str) {
 }
 
 fn assert_static_module_fixture_matches_node_variant(fixture: &str, node_entry_source: &str) {
+    assert_static_module_fixture_matches_node_variant_with_sources(
+        fixture,
+        node_entry_source,
+        &[("static-entry-source.ts", "export const value = 1;\n")],
+    );
+}
+
+fn assert_static_module_fixture_matches_node_variant_with_sources(
+    fixture: &str,
+    node_entry_source: &str,
+    node_sources: &[(&str, &str)],
+) {
     let fixture_path = Path::new(env!("CARGO_MANIFEST_DIR"))
         .join("../..")
         .join(fixture);
@@ -532,11 +544,9 @@ fn assert_static_module_fixture_matches_node_variant(fixture: &str, node_entry_s
     fs::create_dir_all(&node_dir).expect("node module temp dir should be created");
     fs::write(node_dir.join("entry.ts"), node_entry_source)
         .expect("node module entry should be written");
-    fs::write(
-        node_dir.join("static-entry-source.ts"),
-        "export const value = 1;\n",
-    )
-    .expect("node module source should be written");
+    for (path, source) in node_sources {
+        fs::write(node_dir.join(path), source).expect("node module source should be written");
+    }
 
     let node = node_command()
         .arg(node_dir.join("entry.ts"))

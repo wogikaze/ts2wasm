@@ -291,6 +291,15 @@ fn static_named_module_import_fixtures_match_node_output_under_iwasm() {
 }
 
 #[test]
+fn static_default_module_import_fixture_matches_node_output_under_iwasm() {
+    super::assert_static_module_fixture_matches_node_variant_with_sources(
+        "fixtures/module-system/static-default-import-entry.ts",
+        "import value from './static-default-import-source.ts';\nconsole.log(value);\n",
+        &[("static-default-import-source.ts", "export default 42;\n")],
+    );
+}
+
+#[test]
 fn regexp_literal_fixture_matches_node_output_under_iwasm() {
     assert_fixture_matches_node("fixtures/core-semantics/regexp-literal.ts");
 }
