@@ -122,6 +122,17 @@ cargo fmt --all --check
 date: 2026-05-06
 ```
 
+Revalidated during audit follow-up on 2026-05-06:
+
+```text
+cargo nextest run -p ts2wasm-frontend parses_logical_assignment_expression parses_index_assignment_expression parses_class_expression
+=> pass (3 tests run: 3 passed)
+```
+
+### Audit reclosure note
+
+The audit gap was missing citeable close evidence. The current issue body now lists the Expr variants, parser tests, and focused validation that support the done state.
+
 Remaining risks:
 
 - none for the named Expr coverage gap.

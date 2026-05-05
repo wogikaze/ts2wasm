@@ -79,12 +79,31 @@ Follow-up issues:
 ### Changed files
 
 - crates/compiler/src/module_graph.rs (cycle detection, cycle_diagnostics())
+- crates/cli/tests/m9_modules.rs (module graph diagnostic smoke tests)
+
+### Acceptance evidence
+
+- Missing module diagnostics: `crates/compiler/src/module_graph.rs` rejects missing relative modules at the import specifier span; `crates/cli/tests/m9_modules.rs` covers named, side-effect, namespace, default, combined, and re-export missing-module diagnostics.
+- Cycle diagnostics: `crates/compiler/src/module_graph.rs` records direct and self-import cycle diagnostics; `crates/cli/tests/m9_modules.rs` surfaces cycle diagnostics as build errors for `static-cycle-entry.ts` and `static-side-effect-self-import.ts`.
+- Default/named export mismatch diagnostics: `crates/cli/tests/m9_modules.rs` covers missing named import diagnostics and default/named module import build smoke coverage.
+- Graph order validation: `crates/compiler/src/module_graph.rs` implements `validate_init_order` and dependency-first initialization tests.
 
 ### Validation
 
 ```sh
 cargo nextest run -p ts2wasm-cli -E 'test(module)' => PASS
 ```
+
+Revalidated during audit follow-up on 2026-05-06:
+
+```text
+cargo nextest run -p ts2wasm-cli -E 'test(module)'
+=> pass (27 tests run: 27 passed)
+```
+
+### Audit reclosure note
+
+The audit gap was missing citeable close evidence, not a missing implementation slice. The evidence above maps each checked acceptance criterion to current repo files and the focused module gate.
 
 ## Reopened by audit
 
