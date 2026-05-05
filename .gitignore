@@ -22,7 +22,6 @@ tmp/
 reports/
 .discord-report-sent.json
 artifacts/coverage/results/
-<<<<<<< HEAD
 
 # build/test cache
 .cache/
@@ -33,9 +32,6 @@ artifacts/*
 
 # git worktrees
 _worktrees/
-||||||| merged common ancestors
-=======
->>>>>>> origin/master
 
 # instant-grep index
 .ig/
