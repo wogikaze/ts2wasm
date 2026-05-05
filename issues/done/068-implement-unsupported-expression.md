@@ -102,11 +102,11 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] updated: `current-state.md` (repo root)
+- [x] updated: `current-state.md` (repo root)
 
 Follow-up issues:
 
@@ -152,7 +152,7 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- `...`
+- issue-state commit closing this generated bucket after child issue 5138 split
 
 Validation result:
 
