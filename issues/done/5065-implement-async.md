@@ -127,7 +127,7 @@ Follow-up issues:
 ## Duplicate detection
 
 - `issues/done/1002-implement-augmentedTypesEnum-parser-syntax.md` - Implement Augmentedtypesenum Parser Syntax (same feature label, same group key, title overlap)
-- `issues/open/1018-implement-awaitInClassInAsyncFunction.md` - Implement Awaitinclassinasyncfunction (same feature label, same group key, title overlap)
+- `issues/done/1018-implement-awaitInClassInAsyncFunction.md` - Implement Awaitinclassinasyncfunction (same feature label, same group key, title overlap)
 - `issues/open/1019-implement-awaitInNonAsyncFunction.md` - Implement Awaitinnonasyncfunction (same feature label, same group key, title overlap)
 - `issues/open/1099-implement-callOverloads-parser-syntax.md` - Implement Calloverloads Parser Syntax (same feature label, same group key, title overlap)
 - `issues/open/1111-implement-capturedLetConstInLoop-parser-syntax.md` - Implement Capturedletconstinloop Parser Syntax (same feature label, same group key, title overlap)
