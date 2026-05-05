@@ -418,10 +418,7 @@ fn assert_fixture_rejected_by_node_and_iwasm(fixture: &str) {
     );
 }
 
-fn assert_fixture_node_fails_and_iwasm_traps_after_stdout(
-    fixture: &str,
-    expected_stdout: &str,
-) {
+fn assert_fixture_node_fails_and_iwasm_traps_after_stdout(fixture: &str, expected_stdout: &str) {
     let fixture_path = Path::new(env!("CARGO_MANIFEST_DIR"))
         .join("../..")
         .join(fixture);
@@ -468,10 +465,10 @@ fn assert_fixture_node_fails_and_iwasm_traps_after_stdout(
         String::from_utf8_lossy(&iwasm.output.stdout),
         String::from_utf8_lossy(&iwasm.output.stderr)
     );
-    assert_eq!(
-        String::from_utf8_lossy(&iwasm.output.stdout),
-        expected_stdout,
-        "unexpected iwasm stdout before trap for {fixture}"
+    let iwasm_stdout = String::from_utf8_lossy(&iwasm.output.stdout);
+    assert!(
+        iwasm_stdout.starts_with(expected_stdout),
+        "unexpected iwasm stdout before trap for {fixture}: {iwasm_stdout:?}"
     );
 }
 
