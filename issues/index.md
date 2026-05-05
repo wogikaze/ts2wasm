@@ -15,7 +15,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 1 | 0 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4378 | 3839 | 539 |
+| frontend | 4378 | 3836 | 542 |
 | harness | 1 | 0 | 1 |
 | ir | 21 | 0 | 21 |
 | issues | 4 | 0 | 4 |
@@ -26,7 +26,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 4969 | 4116 | 853 |
+| total | 4969 | 4113 | 856 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -238,7 +238,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 452 | Implement type-alias support | spike | frontend/syntax | class: blocked | Implement type-alias support |
 | 453 | Implement type-system support | spike | frontend/semantics | class: blocked | Implement type-system support |
 | 454 | Investigate and classify unknown-unsupported cases | spike | frontend/syntax | class: triage-needed | Investigate and classify unknown-unsupported cases |
-| 459 | Implement Arrowfunctionexpression (audit reopened #459) | spike | frontend/syntax | class: blocked | Implement Arrowfunctionexpression (audit reopened #459) |
 | 461 | Implement Classdeclarationwithinvalidconstonpropertydeclaration (audit reopened #461) | spike | frontend/syntax | class: blocked | Implement Classdeclarationwithinvalidconstonpropertydeclaration (audit reopened #461) |
 | 465 | Implement Memberaccessordeclaration (audit reopened #465) | spike | frontend/syntax | class: blocked | Implement Memberaccessordeclaration (audit reopened #465) |
 | 477 | Implement Accessoverriddenbaseclassmember (audit reopened #477) | spike | frontend/syntax | class: blocked | Implement Accessoverriddenbaseclassmember (audit reopened #477) |
@@ -262,7 +261,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 542 | Implement Apisample Arrow Function | spike | frontend/syntax | class: blocked | Implement Apisample Arrow Function |
 | 543 | Implement Apisample Import Export | spike | frontend/syntax | class: blocked | Implement Apisample Import Export |
 | 544 | Implement Apisample Jsdoc | spike | frontend/syntax | class: blocked | Implement Apisample Jsdoc |
-| 545 | Implement Arrowfunctionexpression (audit reopened #545) | spike | frontend/syntax | class: blocked | Implement Arrowfunctionexpression (audit reopened #545) |
 | 546 | Implement Classdeclaration | spike | frontend/syntax | class: triage-needed | Implement Classdeclaration |
 | 547 | Implement Classdeclarationwithinvalidconstonpropertydeclaration (audit reopened #547) | spike | frontend/syntax | class: blocked | Implement Classdeclarationwithinvalidconstonpropertydeclaration (audit reopened #547) |
 | 548 | Implement Exportassignment | spike | frontend/syntax | class: blocked | Implement Exportassignment |
@@ -485,7 +483,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 773 | Implement Autoasiforstaticsinclassdeclaration | spike | frontend/syntax | class: triage-needed | Implement Autoasiforstaticsinclassdeclaration |
 | 774 | Implement Autolift | spike | frontend/syntax | class: triage-needed | Implement Autolift |
 | 775 | Implement Autotypeassignedusingdestructuringfromnevernocrash | spike | frontend/resolver | class: blocked | Implement Autotypeassignedusingdestructuringfromnevernocrash |
-| 780 | Implement Arrowfunctionexpression (audit reopened #780) | spike | frontend/syntax | class: blocked | Implement Arrowfunctionexpression (audit reopened #780) |
 | 782 | Implement Classdeclarationwithinvalidconstonpropertydeclaration (audit reopened #782) | spike | frontend/syntax | class: blocked | Implement Classdeclarationwithinvalidconstonpropertydeclaration (audit reopened #782) |
 | 784 | Implement Functiondeclaration Import Export (audit reopened #784) | spike | frontend/syntax | class: blocked | Implement Functiondeclaration Import Export (audit reopened #784) |
 | 786 | Implement Memberaccessordeclaration (audit reopened #786) | spike | frontend/syntax | class: blocked | Implement Memberaccessordeclaration (audit reopened #786) |
@@ -4693,6 +4690,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 456 | Implement Apisample Arrow Function (dup) | spike | frontend/syntax | see `issues/done/456-implement-APISample-arrow-function.md` |
 | 457 | Implement Apisample Import Export (dup) | spike | frontend/syntax | see `issues/done/457-implement-APISample-import-export.md` |
 | 458 | Implement Apisample Jsdoc (dup) | spike | frontend/syntax | see `issues/done/458-implement-APISample-jsdoc.md` |
+| 459 | Implement Arrowfunctionexpression (audit reopened #459) | spike | frontend/syntax | see `issues/done/459-implement-ArrowFunctionExpression.md` |
 | 460 | Implement Classdeclaration (dup) | spike | frontend/syntax | see `issues/done/460-implement-ClassDeclaration.md` |
 | 462 | Implement Exportassignment (dup) | spike | frontend/syntax | see `issues/done/462-implement-ExportAssignment.md` |
 | 463 | Implement Functiondeclaration Import Export | spike | frontend/syntax | see `issues/done/463-implement-FunctionDeclaration-import-export.md` |
@@ -4755,6 +4753,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 536 | Implement Ambientrequirefunction (dup) | spike | frontend/syntax | see `issues/done/536-implement-ambientRequireFunction.md` |
 | 539 | Implement Ambiguouscallswherereturntypesagree (dup) | spike | frontend/syntax | see `issues/done/539-implement-ambiguousCallsWhereReturnTypesAgree.md` |
 | 540 | Implement Ambiguousgenericassertion (dup) | spike | frontend/syntax | see `issues/done/540-implement-ambiguousGenericAssertion.md` |
+| 545 | Implement Arrowfunctionexpression (audit reopened #545) | spike | frontend/syntax | see `issues/done/545-implement-ArrowFunctionExpression.md` |
 | 552 | Implement Parameterlist | spike | frontend/syntax | see `issues/done/552-implement-ParameterList.md` |
 | 573 | Implement Accessorwithoutbody (audit reopened #573) | spike | frontend/syntax | see `issues/done/573-implement-accessorWithoutBody.md` |
 | 607 | Implement Ambientenumelementinitializer (dup) | spike | frontend/syntax | see `issues/done/607-implement-ambientEnumElementInitializer.md` |
@@ -4767,6 +4766,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 777 | Implement Apisample Arrow Function (dup) | spike | frontend/syntax | see `issues/done/777-implement-APISample-arrow-function.md` |
 | 778 | Implement Apisample Import Export (dup) | spike | frontend/syntax | see `issues/done/778-implement-APISample-import-export.md` |
 | 779 | Implement Apisample Jsdoc (dup) | spike | frontend/syntax | see `issues/done/779-implement-APISample-jsdoc.md` |
+| 780 | Implement Arrowfunctionexpression (audit reopened #780) | spike | frontend/syntax | see `issues/done/780-implement-ArrowFunctionExpression.md` |
 | 781 | Implement Classdeclaration (dup) | spike | frontend/syntax | see `issues/done/781-implement-ClassDeclaration.md` |
 | 783 | Implement Exportassignment (dup) | spike | frontend/syntax | see `issues/done/783-implement-ExportAssignment.md` |
 | 785 | Implement Functiondeclaration Parser Syntax (dup) | spike | frontend/syntax | see `issues/done/785-implement-FunctionDeclaration-parser-syntax.md` |
