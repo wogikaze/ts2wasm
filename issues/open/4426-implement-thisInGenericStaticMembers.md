@@ -2,7 +2,7 @@
 id: 4426
 title: "Implement Thisingenericstaticmembers"
 type: spike
-area: frontend/syntax
+area: frontend/semantics
 class: blocked
 priority: P1
 depends_on: [5002]

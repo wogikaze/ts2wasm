@@ -2,7 +2,7 @@
 id: 2503
 title: "Implement Genericcallwithinownbodycasttypeparameteridentity"
 type: spike
-area: frontend/syntax
+area: frontend/semantics
 class: blocked
 priority: P1
 depends_on: [5002]

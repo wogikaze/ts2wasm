@@ -2,7 +2,7 @@
 id: 2563
 title: "Implement Genericobjectcreationwithouttypeargs"
 type: spike
-area: frontend/syntax
+area: frontend/semantics
 class: blocked
 priority: P1
 depends_on: [5002]

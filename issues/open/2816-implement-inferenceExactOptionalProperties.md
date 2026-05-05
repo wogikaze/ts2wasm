@@ -2,7 +2,7 @@
 id: 2816
 title: "Implement Inferenceexactoptionalproperties"
 type: spike
-area: frontend/syntax
+area: frontend/semantics
 class: blocked
 priority: P1
 depends_on: [5002]

@@ -2,7 +2,7 @@
 id: 2820
 title: "Implement Inferenceofnullableobjecttypeswithcommonbase"
 type: spike
-area: frontend/syntax
+area: frontend/semantics
 class: blocked
 priority: P1
 depends_on: [5002]

@@ -15,7 +15,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 1 | 0 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4377 | 3852 | 525 |
+| frontend | 4377 | 3851 | 526 |
 | harness | 1 | 0 | 1 |
 | ir | 21 | 0 | 21 |
 | issues | 4 | 0 | 4 |
@@ -26,7 +26,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 4965 | 4135 | 830 |
+| total | 4965 | 4134 | 831 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -157,7 +157,6 @@ Issue files are the source of truth for work items. The generated section below 
 | ID | Title | Type | Area | Class | Priority | Depends on | Summary |
 |---:|---|---|---|---|---|---|---|
 | 5001 | Meta: TypeScript Compiler Semantic Analysis Coverage | meta | frontend/semantics | design-ready | P1 |  | tsc semantic-analysis failures currently need classified child work orders so implementers can select one diagnostic ... |
-| 5002 | Meta: TypeScript Compiler Type System Coverage | meta | frontend/semantics | design-ready | P1 | 5000, 5005 | type-system reference failures currently need dependency and scope cleanup so each child issue is a concrete type inf... |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -244,7 +243,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 450 | Implement template literals | spike | frontend/syntax | class: triage-needed | Implement template literals |
 | 451 | Implement try-catch-finally | spike | frontend/syntax | class: blocked | Implement try-catch-finally |
 | 452 | Implement type-alias support | spike | frontend/syntax | class: blocked | Implement type-alias support |
-| 453 | Implement type-system support | spike | frontend/syntax | class: blocked | Implement type-system support |
+| 453 | Implement type-system support | spike | frontend/semantics | class: blocked | Implement type-system support |
 | 454 | Investigate and classify unknown-unsupported cases | spike | frontend/syntax | class: triage-needed | Investigate and classify unknown-unsupported cases |
 | 459 | Implement Arrowfunctionexpression (audit reopened #459) | spike | frontend/syntax | class: blocked | Implement Arrowfunctionexpression (audit reopened #459) |
 | 461 | Implement Classdeclarationwithinvalidconstonpropertydeclaration (audit reopened #461) | spike | frontend/syntax | class: blocked | Implement Classdeclarationwithinvalidconstonpropertydeclaration (audit reopened #461) |
@@ -367,7 +366,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 641 | Implement Anyasreturntypefornewoncall (audit reopened #641) | spike | frontend/syntax | class: blocked | Implement Anyasreturntypefornewoncall (audit reopened #641) |
 | 642 | Implement Anydeclare (audit reopened #642) | spike | frontend/syntax | class: blocked | Implement Anydeclare (audit reopened #642) |
 | 643 | Implement Anyidenticaltoitself | spike | frontend/syntax | class: triage-needed | Implement Anyidenticaltoitself |
-| 644 | Implement Anyinferenceanonymousfunctions | spike | frontend/syntax | class: blocked | Implement Anyinferenceanonymousfunctions |
+| 644 | Implement Anyinferenceanonymousfunctions | spike | frontend/semantics | class: blocked | Implement Anyinferenceanonymousfunctions |
 | 645 | Implement Argsinscope | spike | frontend/resolver | class: blocked | Implement Argsinscope |
 | 646 | Implement Arguments | spike | frontend/syntax | class: blocked | Implement Arguments |
 | 647 | Implement Argumentsaspropertyname Arguments Object | spike | frontend/syntax | class: blocked | Implement Argumentsaspropertyname Arguments Object |
@@ -400,8 +399,8 @@ Issue files are the source of truth for work items. The generated section below 
 | 675 | Implement Arrayfilter (audit reopened #675) | spike | runtime/builtins | class: triage-needed | Implement Arrayfilter (audit reopened #675) |
 | 676 | Implement Arrayfind (audit reopened #676) | spike | frontend/syntax | class: triage-needed | Implement Arrayfind (audit reopened #676) |
 | 677 | Implement Arrayflatmap (audit reopened #677) | spike | frontend/syntax | class: blocked | Implement Arrayflatmap (audit reopened #677) |
-| 678 | Implement Arrayflatnocrashinference (audit reopened #678) | spike | frontend/syntax | class: blocked | Implement Arrayflatnocrashinference (audit reopened #678) |
-| 679 | Implement Arrayflatnocrashinferencedeclarations (audit reopened #679) | spike | frontend/syntax | class: blocked | Implement Arrayflatnocrashinferencedeclarations (audit reopened #679) |
+| 678 | Implement Arrayflatnocrashinference (audit reopened #678) | spike | frontend/semantics | class: blocked | Implement Arrayflatnocrashinference (audit reopened #678) |
+| 679 | Implement Arrayflatnocrashinferencedeclarations (audit reopened #679) | spike | frontend/semantics | class: blocked | Implement Arrayflatnocrashinferencedeclarations (audit reopened #679) |
 | 680 | Implement Arrayfrom | spike | runtime/builtins | class: triage-needed | Implement Arrayfrom |
 | 681 | Implement Arrayfromasync | spike | reference/triage | class: triage-needed | Implement Arrayfromasync |
 | 682 | Implement Arrayindexwitharrayfails | spike | frontend/resolver | class: blocked | Implement Arrayindexwitharrayfails |
@@ -409,7 +408,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 684 | Implement Arrayliteralandarrayconstructorequivalence | spike | frontend/resolver | class: blocked | Implement Arrayliteralandarrayconstructorequivalence |
 | 685 | Implement Arrayliteralcomments | spike | frontend/syntax | class: triage-needed | Implement Arrayliteralcomments |
 | 686 | Implement Arrayliteralcontextualtype | spike | frontend/semantics | class: blocked | Implement Arrayliteralcontextualtype |
-| 687 | Implement Arrayliteraltypeinference | spike | frontend/syntax | class: blocked | Implement Arrayliteraltypeinference |
+| 687 | Implement Arrayliteraltypeinference | spike | frontend/semantics | class: blocked | Implement Arrayliteraltypeinference |
 | 688 | Implement Arrayofexportedclass | spike | frontend/syntax | class: blocked | Implement Arrayofexportedclass |
 | 689 | Implement Arrayofsubtypeisassignabletoreadonlyarray | spike | frontend/semantics | class: blocked | Implement Arrayofsubtypeisassignabletoreadonlyarray |
 | 690 | Implement Arrayreferencewithouttypeargs | spike | frontend/syntax | class: blocked | Implement Arrayreferencewithouttypeargs |
@@ -423,7 +422,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 698 | Implement Arrowfunctioninexpressionstatement | spike | frontend/syntax | class: blocked | Implement Arrowfunctioninexpressionstatement |
 | 699 | Implement Arrowfunctionmissingcurlywithsemicolon | spike | frontend/syntax | class: triage-needed | Implement Arrowfunctionmissingcurlywithsemicolon |
 | 700 | Implement Arrowfunctionparsingdoesnotconfuseparenthesizedobjectforarrowhead | spike | frontend/syntax | class: blocked | Implement Arrowfunctionparsingdoesnotconfuseparenthesizedobjectforarrowhead |
-| 701 | Implement Arrowfunctionparsinggenericinobject | spike | frontend/syntax | class: blocked | Implement Arrowfunctionparsinggenericinobject |
+| 701 | Implement Arrowfunctionparsinggenericinobject | spike | frontend/semantics | class: blocked | Implement Arrowfunctionparsinggenericinobject |
 | 702 | Implement Arrowfunctionwithobjectliteralbody | spike | frontend/syntax | class: blocked | Implement Arrowfunctionwithobjectliteralbody |
 | 703 | Implement Arrowfunctionsmissingtokens | spike | frontend/syntax | class: blocked | Implement Arrowfunctionsmissingtokens |
 | 704 | Implement Asiabstract | spike | frontend/syntax | class: triage-needed | Implement Asiabstract |
@@ -463,7 +462,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 738 | Implement Assignmentrestelementwitherrorsourcetype | spike | frontend/resolver | class: blocked | Implement Assignmentrestelementwitherrorsourcetype |
 | 739 | Implement Assignmentstricterconstraints | spike | frontend/semantics | class: blocked | Implement Assignmentstricterconstraints |
 | 740 | Implement Assignmenttoanyarrayrestparameters | spike | frontend/semantics | class: blocked | Implement Assignmenttoanyarrayrestparameters |
-| 741 | Implement Assignmenttoconditionalbrandedstringtemplateormapping | spike | frontend/syntax | class: blocked | Implement Assignmenttoconditionalbrandedstringtemplateormapping |
+| 741 | Implement Assignmenttoconditionalbrandedstringtemplateormapping | spike | frontend/semantics | class: blocked | Implement Assignmenttoconditionalbrandedstringtemplateormapping |
 | 742 | Implement Assignmenttoexpandingarraytype | spike | frontend/syntax | class: triage-needed | Implement Assignmenttoexpandingarraytype |
 | 743 | Implement Assignmenttofunction | spike | frontend/syntax | class: blocked | Implement Assignmenttofunction |
 | 744 | Implement Assignmenttoinstantiationexpression | spike | frontend/syntax | class: triage-needed | Implement Assignmenttoinstantiationexpression |
@@ -541,7 +540,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 1026 | Implement Badarrayindex | spike | frontend/syntax | class: triage-needed | Implement Badarrayindex |
 | 1027 | Implement Badarraysyntax | spike | frontend/syntax | class: triage-needed | Implement Badarraysyntax |
 | 1028 | Implement Badexternalmodulereference | spike | frontend/syntax | class: blocked | Implement Badexternalmodulereference |
-| 1029 | Implement Badinferencelowerprioritythangoodinference | spike | frontend/syntax | class: blocked | Implement Badinferencelowerprioritythangoodinference |
+| 1029 | Implement Badinferencelowerprioritythangoodinference | spike | frontend/semantics | class: blocked | Implement Badinferencelowerprioritythangoodinference |
 | 1030 | Implement Badoverloaderror | spike | frontend/syntax | class: triage-needed | Implement Badoverloaderror |
 | 1031 | Implement Badthisbinding | spike | frontend/syntax | class: blocked | Implement Badthisbinding |
 | 1032 | Implement Banginmodulename | spike | frontend/syntax | class: blocked | Implement Banginmodulename |
@@ -606,7 +605,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 1091 | Implement Callconstructassignment | spike | frontend/syntax | class: triage-needed | Implement Callconstructassignment |
 | 1092 | Implement Callexpressionwithmissingtypeargument | spike | frontend/semantics | class: blocked | Implement Callexpressionwithmissingtypeargument |
 | 1093 | Implement Callexpressionwithtypeparameterconstrainedtooutertypeparameter | spike | frontend/syntax | class: blocked | Implement Callexpressionwithtypeparameterconstrainedtooutertypeparameter |
-| 1094 | Implement Callofconditionaltypewithconcretebranches | spike | frontend/syntax | class: blocked | Implement Callofconditionaltypewithconcretebranches |
+| 1094 | Implement Callofconditionaltypewithconcretebranches | spike | frontend/semantics | class: blocked | Implement Callofconditionaltypewithconcretebranches |
 | 1095 | Implement Callonclass | spike | frontend/resolver | class: blocked | Implement Callonclass |
 | 1096 | Implement Calloninstance | spike | frontend/resolver | class: blocked | Implement Calloninstance |
 | 1097 | Implement Calloverloadviaelementaccessexpression | spike | frontend/syntax | class: blocked | Implement Calloverloadviaelementaccessexpression |
@@ -657,7 +656,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 1142 | Implement Checksupercallbeforethisaccessing Class | spike | frontend/syntax | class: blocked | Implement Checksupercallbeforethisaccessing Class |
 | 1143 | Implement Checksupercallbeforethisaccessing Parser Syntax | spike | frontend/syntax | class: triage-needed | Implement Checksupercallbeforethisaccessing Parser Syntax |
 | 1144 | Implement Checkswitchstatementifcasetypeisstring | spike | frontend/syntax | class: blocked | Implement Checkswitchstatementifcasetypeisstring |
-| 1145 | Implement Checktypepredicateforredundantproperties | spike | frontend/syntax | class: blocked | Implement Checktypepredicateforredundantproperties |
+| 1145 | Implement Checktypepredicateforredundantproperties | spike | frontend/semantics | class: blocked | Implement Checktypepredicateforredundantproperties |
 | 1146 | Implement Checkerinitializationcrash | spike | frontend/syntax | class: triage-needed | Implement Checkerinitializationcrash |
 | 1147 | Implement Checkingobjectdefinepropertyonfunctionnonexistentpropertynocrash | spike | frontend/syntax | class: blocked | Implement Checkingobjectdefinepropertyonfunctionnonexistentpropertynocrash |
 | 1148 | Implement Checkingobjectwiththisinnamepositionnocrash | spike | frontend/syntax | class: blocked | Implement Checkingobjectwiththisinnamepositionnocrash |
@@ -667,8 +666,8 @@ Issue files are the source of truth for work items. The generated section below 
 | 1152 | Implement Circularconstructorwithreturn | spike | frontend/syntax | class: blocked | Implement Circularconstructorwithreturn |
 | 1153 | Implement Circularcontextualmappedtype | spike | frontend/resolver | class: blocked | Implement Circularcontextualmappedtype |
 | 1154 | Implement Circularcontextualreturntype | spike | frontend/resolver | class: blocked | Implement Circularcontextualreturntype |
-| 1155 | Implement Circularinferredtypeofvariable | spike | frontend/syntax | class: blocked | Implement Circularinferredtypeofvariable |
-| 1156 | Implement Circularinlinemappedgenerictupletypenocrash | spike | frontend/syntax | class: blocked | Implement Circularinlinemappedgenerictupletypenocrash |
+| 1155 | Implement Circularinferredtypeofvariable | spike | frontend/semantics | class: blocked | Implement Circularinferredtypeofvariable |
+| 1156 | Implement Circularinlinemappedgenerictupletypenocrash | spike | frontend/semantics | class: blocked | Implement Circularinlinemappedgenerictupletypenocrash |
 | 1157 | Implement Circularinstantiationexpression | spike | frontend/resolver | class: blocked | Implement Circularinstantiationexpression |
 | 1158 | Implement Circularmappedtypeconstraint | spike | frontend/syntax | class: blocked | Implement Circularmappedtypeconstraint |
 | 1159 | Implement Circularmoduleimports | spike | frontend/syntax | class: blocked | Implement Circularmoduleimports |
@@ -680,12 +679,12 @@ Issue files are the source of truth for work items. The generated section below 
 | 1165 | Implement Circularresolvedsignature | spike | frontend/syntax | class: blocked | Implement Circularresolvedsignature |
 | 1166 | Implement Circulartypeargumentslocalandouternocrash | spike | frontend/syntax | class: blocked | Implement Circulartypeargumentslocalandouternocrash |
 | 1167 | Implement Circulartypeofwithfunctionmodule | spike | frontend/syntax | class: blocked | Implement Circulartypeofwithfunctionmodule |
-| 1168 | Implement Circularlyconstrainedmappedtypecontainingconditionalnoinfiniteinstantiationdepth | spike | frontend/syntax | class: blocked | Implement Circularlyconstrainedmappedtypecontainingconditionalnoinfiniteinstantiationdepth |
-| 1169 | Implement Circularlysimplifyingconditionaltypesnocrash | spike | frontend/syntax | class: blocked | Implement Circularlysimplifyingconditionaltypesnocrash |
+| 1168 | Implement Circularlyconstrainedmappedtypecontainingconditionalnoinfiniteinstantiationdepth | spike | frontend/semantics | class: blocked | Implement Circularlyconstrainedmappedtypecontainingconditionalnoinfiniteinstantiationdepth |
+| 1169 | Implement Circularlysimplifyingconditionaltypesnocrash | spike | frontend/semantics | class: blocked | Implement Circularlysimplifyingconditionaltypesnocrash |
 | 1170 | Implement Class | spike | frontend/syntax | class: triage-needed | Implement Class |
 | 1171 | Implement Classaccessorinitializationinferencewithelementaccess | spike | frontend/syntax | class: blocked | Implement Classaccessorinitializationinferencewithelementaccess |
-| 1172 | Implement Classattributeinferencetemplate | spike | frontend/syntax | class: blocked | Implement Classattributeinferencetemplate |
-| 1173 | Implement Classattributeinferencetemplatejs | spike | frontend/syntax | class: blocked | Implement Classattributeinferencetemplatejs |
+| 1172 | Implement Classattributeinferencetemplate | spike | frontend/semantics | class: blocked | Implement Classattributeinferencetemplate |
+| 1173 | Implement Classattributeinferencetemplatejs | spike | frontend/semantics | class: blocked | Implement Classattributeinferencetemplatejs |
 | 1174 | Implement Classblockscoping | spike | frontend/syntax | class: triage-needed | Implement Classblockscoping |
 | 1175 | Implement Classdeclarationblockscoping | spike | frontend/syntax | class: triage-needed | Implement Classdeclarationblockscoping |
 | 1176 | Implement Classdeclarationcheckusedbeforedefinitioninitself | spike | frontend/syntax | class: triage-needed | Implement Classdeclarationcheckusedbeforedefinitioninitself |
@@ -746,7 +745,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 1231 | Implement Classorderbug | spike | frontend/syntax | class: triage-needed | Implement Classorderbug |
 | 1232 | Implement Classpropinitializationinferencewithelementaccess | spike | frontend/syntax | class: blocked | Implement Classpropinitializationinferencewithelementaccess |
 | 1233 | Implement Classpropertyerroronnameonly | spike | runtime/builtins | class: triage-needed | Implement Classpropertyerroronnameonly |
-| 1234 | Implement Classpropertyinferencefrombroadertypeconst | spike | frontend/syntax | class: blocked | Implement Classpropertyinferencefrombroadertypeconst |
+| 1234 | Implement Classpropertyinferencefrombroadertypeconst | spike | frontend/semantics | class: blocked | Implement Classpropertyinferencefrombroadertypeconst |
 | 1235 | Implement Classreferencedincontextualparameterwithinitsownbaseexpression | spike | frontend/syntax | class: blocked | Implement Classreferencedincontextualparameterwithinitsownbaseexpression |
 | 1236 | Implement Classsideinheritance Name Resolution | spike | frontend/resolver | class: blocked | Implement Classsideinheritance Name Resolution |
 | 1237 | Implement Classsideinheritance Parser Syntax | spike | frontend/semantics | class: blocked | Implement Classsideinheritance Parser Syntax |
@@ -765,7 +764,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 1250 | Implement Clinterfaces | spike | frontend/syntax | class: blocked | Implement Clinterfaces |
 | 1251 | Implement Cloduleacrossmoduledefinitions | spike | frontend/syntax | class: blocked | Implement Cloduleacrossmoduledefinitions |
 | 1252 | Implement Cloduleandtypeparameters | spike | frontend/semantics | class: blocked | Implement Cloduleandtypeparameters |
-| 1253 | Implement Clodulegenericonselfmember | spike | frontend/syntax | class: blocked | Implement Clodulegenericonselfmember |
+| 1253 | Implement Clodulegenericonselfmember | spike | frontend/semantics | class: blocked | Implement Clodulegenericonselfmember |
 | 1254 | Implement Clodulesplitacrossfiles | spike | frontend/syntax | class: blocked | Implement Clodulesplitacrossfiles |
 | 1255 | Implement Clodulestaticmembers | spike | frontend/syntax | class: triage-needed | Implement Clodulestaticmembers |
 | 1256 | Implement Cloduletest | spike | frontend/syntax | class: blocked | Implement Cloduletest |
@@ -776,7 +775,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 1261 | Implement Clodulesderivedclasses | spike | frontend/syntax | class: blocked | Implement Clodulesderivedclasses |
 | 1262 | Implement Coandcontravariantinferences Name Resolution | spike | frontend/resolver | class: blocked | Implement Coandcontravariantinferences Name Resolution |
 | 1263 | Implement Coandcontravariantinferences Parser Syntax | spike | frontend/syntax | class: triage-needed | Implement Coandcontravariantinferences Parser Syntax |
-| 1264 | Implement Coandcontravariantinferences Type System | spike | frontend/syntax | class: blocked | Implement Coandcontravariantinferences Type System |
+| 1264 | Implement Coandcontravariantinferences Type System | spike | frontend/semantics | class: blocked | Implement Coandcontravariantinferences Type System |
 | 1265 | Implement Collectionpatternnoerror | spike | runtime/builtins | class: triage-needed | Implement Collectionpatternnoerror |
 | 1266 | Implement Collisionargumentsarrowfunctions | spike | frontend/syntax | class: blocked | Implement Collisionargumentsarrowfunctions |
 | 1267 | Implement Collisionargumentsclassconstructor | spike | frontend/syntax | class: blocked | Implement Collisionargumentsclassconstructor |
@@ -849,7 +848,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 1334 | Implement Collisionthisexpressionandpropertynameasconstuctorparameter | spike | frontend/syntax | class: blocked | Implement Collisionthisexpressionandpropertynameasconstuctorparameter |
 | 1335 | Implement Collisionthisexpressionandvaringlobal | spike | frontend/syntax | class: blocked | Implement Collisionthisexpressionandvaringlobal |
 | 1336 | Implement Commaoperator | spike | frontend/syntax | class: triage-needed | Implement Commaoperator |
-| 1337 | Implement Commaoperatorinconditionalexpression | spike | frontend/syntax | class: blocked | Implement Commaoperatorinconditionalexpression |
+| 1337 | Implement Commaoperatorinconditionalexpression | spike | frontend/semantics | class: blocked | Implement Commaoperatorinconditionalexpression |
 | 1338 | Implement Commaoperatorleftsideunused | spike | frontend/syntax | class: blocked | Implement Commaoperatorleftsideunused |
 | 1339 | Implement Commentbeforestaticmethod | spike | frontend/syntax | class: triage-needed | Implement Commentbeforestaticmethod |
 | 1340 | Implement Commentemitatendoffile | spike | frontend/syntax | class: triage-needed | Implement Commentemitatendoffile |
@@ -909,9 +908,9 @@ Issue files are the source of truth for work items. The generated section below 
 | 1394 | Implement Complexclassrelationships | spike | frontend/syntax | class: triage-needed | Implement Complexclassrelationships |
 | 1395 | Implement Complexnarrowingwithany | spike | frontend/syntax | class: blocked | Implement Complexnarrowingwithany |
 | 1396 | Implement Complexrecursivecollections | spike | frontend/syntax | class: blocked | Implement Complexrecursivecollections |
-| 1397 | Implement Complicatedgenericrecursivebaseclassreference | spike | frontend/syntax | class: blocked | Implement Complicatedgenericrecursivebaseclassreference |
+| 1397 | Implement Complicatedgenericrecursivebaseclassreference | spike | frontend/semantics | class: blocked | Implement Complicatedgenericrecursivebaseclassreference |
 | 1398 | Implement Complicatedindexedaccesskeyofreliesonkeyofneverupperbound | spike | frontend/syntax | class: blocked | Implement Complicatedindexedaccesskeyofreliesonkeyofneverupperbound |
-| 1399 | Implement Complicatedindexesofintersectionsareinferencable | spike | frontend/syntax | class: blocked | Implement Complicatedindexesofintersectionsareinferencable |
+| 1399 | Implement Complicatedindexesofintersectionsareinferencable | spike | frontend/semantics | class: blocked | Implement Complicatedindexesofintersectionsareinferencable |
 | 1400 | Implement Complicatedprivacy | spike | frontend/syntax | class: blocked | Implement Complicatedprivacy |
 | 1401 | Implement Compositecontextualsignature | spike | frontend/syntax | class: blocked | Implement Compositecontextualsignature |
 | 1402 | Implement Compositegenericfunction | spike | reference/triage | class: triage-needed | Implement Compositegenericfunction |
@@ -929,19 +928,19 @@ Issue files are the source of truth for work items. The generated section below 
 | 1414 | Implement Computedpropertynamewithimportedkey | spike | frontend/syntax | class: blocked | Implement Computedpropertynamewithimportedkey |
 | 1415 | Implement Computerpropertiesines | spike | frontend/syntax | class: blocked | Implement Computerpropertiesines |
 | 1416 | Implement Concatclassandstring | spike | frontend/resolver | class: blocked | Implement Concatclassandstring |
-| 1417 | Implement Conditionalequalityonliteralobjects | spike | frontend/syntax | class: blocked | Implement Conditionalequalityonliteralobjects |
-| 1418 | Implement Conditionalexpression | spike | frontend/syntax | class: blocked | Implement Conditionalexpression |
+| 1417 | Implement Conditionalequalityonliteralobjects | spike | frontend/semantics | class: blocked | Implement Conditionalequalityonliteralobjects |
+| 1418 | Implement Conditionalexpression | spike | frontend/semantics | class: blocked | Implement Conditionalexpression |
 | 1419 | Implement Conditionalexpressionnewline | spike | frontend/resolver | class: blocked | Implement Conditionalexpressionnewline |
-| 1420 | Implement Conditionalexpressions | spike | frontend/syntax | class: blocked | Implement Conditionalexpressions |
+| 1420 | Implement Conditionalexpressions | spike | frontend/semantics | class: blocked | Implement Conditionalexpressions |
 | 1421 | Implement Conditionalreturnexpression | spike | frontend/resolver | class: blocked | Implement Conditionalreturnexpression |
 | 1422 | Implement Conditionaltypeassignabilitywhendeferred | spike | frontend/syntax | class: blocked | Implement Conditionaltypeassignabilitywhendeferred |
-| 1423 | Implement Conditionaltypebasedcontextualtypereturntypewidening | spike | frontend/syntax | class: blocked | Implement Conditionaltypebasedcontextualtypereturntypewidening |
-| 1424 | Implement Conditionaltypeclassmembers | spike | frontend/syntax | class: blocked | Implement Conditionaltypeclassmembers |
+| 1423 | Implement Conditionaltypebasedcontextualtypereturntypewidening | spike | frontend/semantics | class: blocked | Implement Conditionaltypebasedcontextualtypereturntypewidening |
+| 1424 | Implement Conditionaltypeclassmembers | spike | frontend/semantics | class: blocked | Implement Conditionaltypeclassmembers |
 | 1425 | Implement Conditionaltypediscriminatinglargeunionregulartypefetchingspeedreasonable | spike | frontend/syntax | class: blocked | Implement Conditionaltypediscriminatinglargeunionregulartypefetchingspeedreasonable |
 | 1426 | Implement Conditionaltypedoesntspinforever | spike | frontend/syntax | class: blocked | Implement Conditionaltypedoesntspinforever |
 | 1427 | Implement Conditionaltyperelaxingconstraintassignability | spike | frontend/syntax | class: blocked | Implement Conditionaltyperelaxingconstraintassignability |
-| 1428 | Implement Conditionaltypesubclassextendstypeparam | spike | frontend/syntax | class: blocked | Implement Conditionaltypesubclassextendstypeparam |
-| 1429 | Implement Conditionaltypessimplifywhentrivial | spike | frontend/syntax | class: blocked | Implement Conditionaltypessimplifywhentrivial |
+| 1428 | Implement Conditionaltypesubclassextendstypeparam | spike | frontend/semantics | class: blocked | Implement Conditionaltypesubclassextendstypeparam |
+| 1429 | Implement Conditionaltypessimplifywhentrivial | spike | frontend/semantics | class: blocked | Implement Conditionaltypessimplifywhentrivial |
 | 1430 | Implement Conditionallyduplicateoverloadscausedbyoverloadresolution | spike | frontend/syntax | class: blocked | Implement Conditionallyduplicateoverloadscausedbyoverloadresolution |
 | 1431 | Implement Conflictmarkerdiff Parser Syntax | spike | frontend/syntax | class: blocked | Implement Conflictmarkerdiff Parser Syntax |
 | 1432 | Implement Conflictmarkerdiff Unknown Unsupported | spike | frontend/syntax | class: triage-needed | Implement Conflictmarkerdiff Unknown Unsupported |
@@ -977,7 +976,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 1462 | Implement Constindexedaccess | spike | frontend/syntax | class: triage-needed | Implement Constindexedaccess |
 | 1463 | Implement Constwithnonnull | spike | frontend/semantics | class: blocked | Implement Constwithnonnull |
 | 1464 | Implement Constantenumassert | spike | frontend/syntax | class: triage-needed | Implement Constantenumassert |
-| 1465 | Implement Constraintcheckingenericbasetypereference | spike | frontend/syntax | class: blocked | Implement Constraintcheckingenericbasetypereference |
+| 1465 | Implement Constraintcheckingenericbasetypereference | spike | frontend/semantics | class: blocked | Implement Constraintcheckingenericbasetypereference |
 | 1466 | Implement Constraints | spike | frontend/resolver | class: blocked | Implement Constraints |
 | 1467 | Implement Constraintsthatreferenceothercontstraints | spike | frontend/semantics | class: blocked | Implement Constraintsthatreferenceothercontstraints |
 | 1468 | Implement Constraintsusedinprototypeproperty | spike | frontend/semantics | class: blocked | Implement Constraintsusedinprototypeproperty |
@@ -1003,13 +1002,13 @@ Issue files are the source of truth for work items. The generated section below 
 | 1488 | Implement Contextualexpressiontypecheckingdoesntblowstack | spike | frontend/syntax | class: blocked | Implement Contextualexpressiontypecheckingdoesntblowstack |
 | 1489 | Implement Contextualoutertypeparameters | spike | frontend/semantics | class: blocked | Implement Contextualoutertypeparameters |
 | 1490 | Implement Contextualoverloadlistfromarrayunion | spike | frontend/syntax | class: blocked | Implement Contextualoverloadlistfromarrayunion |
-| 1491 | Implement Contextualparamtypevsnestedreturntypeinference | spike | frontend/syntax | class: blocked | Implement Contextualparamtypevsnestedreturntypeinference |
+| 1491 | Implement Contextualparamtypevsnestedreturntypeinference | spike | frontend/semantics | class: blocked | Implement Contextualparamtypevsnestedreturntypeinference |
 | 1492 | Implement Contextualparameterandselfreferentialconstraint | spike | frontend/syntax | class: triage-needed | Implement Contextualparameterandselfreferentialconstraint |
-| 1493 | Implement Contextualpropertyofgenericfilteringmappedtype | spike | frontend/syntax | class: blocked | Implement Contextualpropertyofgenericfilteringmappedtype |
+| 1493 | Implement Contextualpropertyofgenericfilteringmappedtype | spike | frontend/semantics | class: blocked | Implement Contextualpropertyofgenericfilteringmappedtype |
 | 1494 | Implement Contextualpropertyofgenericmappedtype | spike | frontend/resolver | class: blocked | Implement Contextualpropertyofgenericmappedtype |
 | 1495 | Implement Contextualreturntypeofiife Import Export | spike | frontend/syntax | class: blocked | Implement Contextualreturntypeofiife Import Export |
 | 1496 | Implement Contextualreturntypeofiife Unknown Unsupported | spike | frontend/syntax | class: triage-needed | Implement Contextualreturntypeofiife Unknown Unsupported |
-| 1497 | Implement Contextualsignatureconditionaltypeinstantiationusingdefault | spike | frontend/syntax | class: blocked | Implement Contextualsignatureconditionaltypeinstantiationusingdefault |
+| 1497 | Implement Contextualsignatureconditionaltypeinstantiationusingdefault | spike | frontend/semantics | class: blocked | Implement Contextualsignatureconditionaltypeinstantiationusingdefault |
 | 1498 | Implement Contextualsignatureinarrayelementlibes | spike | frontend/syntax | class: blocked | Implement Contextualsignatureinarrayelementlibes |
 | 1499 | Implement Contextualsignatureinobjectfreeze | spike | frontend/resolver | class: blocked | Implement Contextualsignatureinobjectfreeze |
 | 1500 | Implement Contextualsignatureinstantiation Duplicate Local | spike | reference/triage | class: triage-needed | Implement Contextualsignatureinstantiation Duplicate Local |
@@ -1037,16 +1036,16 @@ Issue files are the source of truth for work items. The generated section below 
 | 1522 | Implement Contextualtypingfunctionreturningfunction | spike | frontend/syntax | class: blocked | Implement Contextualtypingfunctionreturningfunction |
 | 1523 | Implement Contextualtypingofaccessors | spike | frontend/syntax | class: blocked | Implement Contextualtypingofaccessors |
 | 1524 | Implement Contextualtypingofarrayliterals | spike | frontend/syntax | class: blocked | Implement Contextualtypingofarrayliterals |
-| 1525 | Implement Contextualtypingofconditionalexpression | spike | frontend/syntax | class: blocked | Implement Contextualtypingofconditionalexpression |
-| 1526 | Implement Contextualtypingofgenericfunctiontypedarguments | spike | frontend/syntax | class: blocked | Implement Contextualtypingofgenericfunctiontypedarguments |
+| 1525 | Implement Contextualtypingofconditionalexpression | spike | frontend/semantics | class: blocked | Implement Contextualtypingofconditionalexpression |
+| 1526 | Implement Contextualtypingofgenericfunctiontypedarguments | spike | frontend/semantics | class: blocked | Implement Contextualtypingofgenericfunctiontypedarguments |
 | 1527 | Implement Contextualtypingoflambdareturnexpression | spike | frontend/syntax | class: triage-needed | Implement Contextualtypingoflambdareturnexpression |
 | 1528 | Implement Contextualtypingoflambdawithmultiplesignatures | spike | frontend/syntax | class: triage-needed | Implement Contextualtypingoflambdawithmultiplesignatures |
 | 1529 | Implement Contextualtypingoftooshortoverloads | spike | frontend/syntax | class: blocked | Implement Contextualtypingoftooshortoverloads |
 | 1530 | Implement Contextualtypingreturnstatementwithreturntypeannotation | spike | frontend/resolver | class: blocked | Implement Contextualtypingreturnstatementwithreturntypeannotation |
 | 1531 | Implement Contextualtypingtwoinstancesofsametypeparameter | spike | frontend/semantics | class: blocked | Implement Contextualtypingtwoinstancesofsametypeparameter |
 | 1532 | Implement Contextualtypingwithfixedtypeparameters | spike | frontend/syntax | class: blocked | Implement Contextualtypingwithfixedtypeparameters |
-| 1533 | Implement Contextualtypingwithgenericandnongenericsignature | spike | frontend/syntax | class: blocked | Implement Contextualtypingwithgenericandnongenericsignature |
-| 1534 | Implement Contextualtypingwithgenericsignature | spike | frontend/syntax | class: blocked | Implement Contextualtypingwithgenericsignature |
+| 1533 | Implement Contextualtypingwithgenericandnongenericsignature | spike | frontend/semantics | class: blocked | Implement Contextualtypingwithgenericandnongenericsignature |
+| 1534 | Implement Contextualtypingwithgenericsignature | spike | frontend/semantics | class: blocked | Implement Contextualtypingwithgenericsignature |
 | 1535 | Implement Contextuallytypeargumentskeyword | spike | frontend/syntax | class: blocked | Implement Contextuallytypeargumentskeyword |
 | 1536 | Implement Contextuallytypeasyncfunctionreturntypefromunion | spike | runtime/builtins | class: triage-needed | Implement Contextuallytypeasyncfunctionreturntypefromunion |
 | 1537 | Implement Contextuallytypegeneratorreturntypefromunion | spike | runtime/builtins | class: triage-needed | Implement Contextuallytypegeneratorreturntypefromunion |
@@ -1067,7 +1066,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 1552 | Implement Continuenotiniterationstatement Arrow Function | spike | frontend/syntax | class: blocked | Implement Continuenotiniterationstatement Arrow Function |
 | 1553 | Implement Continuenotiniterationstatement Break Continue | spike | frontend/syntax | class: blocked | Implement Continuenotiniterationstatement Break Continue |
 | 1554 | Implement Continuetarget | spike | frontend/syntax | class: blocked | Implement Continuetarget |
-| 1555 | Implement Contravariantinferenceandtypeguard | spike | frontend/syntax | class: blocked | Implement Contravariantinferenceandtypeguard |
+| 1555 | Implement Contravariantinferenceandtypeguard | spike | frontend/semantics | class: blocked | Implement Contravariantinferenceandtypeguard |
 | 1556 | Implement Contravariantonlyinferencewithannotatedoptionalparameter | spike | frontend/resolver | class: blocked | Implement Contravariantonlyinferencewithannotatedoptionalparameter |
 | 1557 | Implement Contravarianttypealiasinference | spike | frontend/resolver | class: blocked | Implement Contravarianttypealiasinference |
 | 1558 | Implement Controlflowaliaseddiscriminants | spike | frontend/syntax | class: blocked | Implement Controlflowaliaseddiscriminants |
@@ -1150,7 +1149,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 1635 | Implement Declfileforfunctiontypeastypeparameter | spike | frontend/semantics | class: blocked | Implement Declfileforfunctiontypeastypeparameter |
 | 1636 | Implement Declfilefortypeparameters | spike | frontend/semantics | class: blocked | Implement Declfilefortypeparameters |
 | 1637 | Implement Declfilefunctions | spike | frontend/syntax | class: blocked | Implement Declfilefunctions |
-| 1638 | Implement Declfilegenericclasswithgenericextendedclass | spike | frontend/syntax | class: blocked | Implement Declfilegenericclasswithgenericextendedclass |
+| 1638 | Implement Declfilegenericclasswithgenericextendedclass | spike | frontend/semantics | class: blocked | Implement Declfilegenericclasswithgenericextendedclass |
 | 1639 | Implement Declfilegenerictype | spike | frontend/syntax | class: blocked | Implement Declfilegenerictype |
 | 1640 | Implement Declfileimportchaininexportassignment | spike | frontend/syntax | class: blocked | Implement Declfileimportchaininexportassignment |
 | 1641 | Implement Declfileimportmodulewithexportassignment | spike | frontend/syntax | class: blocked | Implement Declfileimportmodulewithexportassignment |
@@ -1385,7 +1384,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 1870 | Implement Declarationmapswithoutdeclaration | spike | frontend/syntax | class: blocked | Implement Declarationmapswithoutdeclaration |
 | 1871 | Implement Declarationmerging Import Export | spike | frontend/syntax | class: blocked | Implement Declarationmerging Import Export |
 | 1872 | Implement Declarationmerging Parser Syntax | spike | frontend/syntax | class: blocked | Implement Declarationmerging Parser Syntax |
-| 1873 | Implement Declarationnodanglinggenerics | spike | frontend/syntax | class: blocked | Implement Declarationnodanglinggenerics |
+| 1873 | Implement Declarationnodanglinggenerics | spike | frontend/semantics | class: blocked | Implement Declarationnodanglinggenerics |
 | 1874 | Implement Declarationquotedmembers | spike | frontend/syntax | class: triage-needed | Implement Declarationquotedmembers |
 | 1875 | Implement Declarationtypechecknousebeforereferencecheck | spike | frontend/syntax | class: blocked | Implement Declarationtypechecknousebeforereferencecheck |
 | 1876 | Implement Declarationsforfileshadowingglobalnoerror | spike | frontend/syntax | class: blocked | Implement Declarationsforfileshadowingglobalnoerror |
@@ -1454,7 +1453,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 1939 | Implement Defaultvalueinconstructoroverload | spike | frontend/semantics | class: blocked | Implement Defaultvalueinconstructoroverload |
 | 1940 | Implement Defaultvalueinfunctionoverload | spike | frontend/semantics | class: blocked | Implement Defaultvalueinfunctionoverload |
 | 1941 | Implement Defaultvalueinfunctiontypes | spike | frontend/syntax | class: triage-needed | Implement Defaultvalueinfunctiontypes |
-| 1942 | Implement Deferredconditionaltypes | spike | frontend/syntax | class: blocked | Implement Deferredconditionaltypes |
+| 1942 | Implement Deferredconditionaltypes | spike | frontend/semantics | class: blocked | Implement Deferredconditionaltypes |
 | 1943 | Implement Deferredlookuptyperesolution | spike | frontend/resolver | class: blocked | Implement Deferredlookuptyperesolution |
 | 1944 | Implement Definevariables | spike | frontend/syntax | class: blocked | Implement Definevariables |
 | 1945 | Implement Definiteassignmentofdestructuredvariable | spike | frontend/syntax | class: blocked | Implement Definiteassignmentofdestructuredvariable |
@@ -1530,7 +1529,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 2015 | Implement Doesnotnarrowunionofconstructorswithinstanceof | spike | frontend/syntax | class: triage-needed | Implement Doesnotnarrowunionofconstructorswithinstanceof |
 | 2016 | Implement Dottedmodulename | spike | frontend/syntax | class: blocked | Implement Dottedmodulename |
 | 2017 | Implement Dottednamesinsystem | spike | frontend/syntax | class: blocked | Implement Dottednamesinsystem |
-| 2018 | Implement Doublemixinconditionaltypebaseclassworks | spike | frontend/syntax | class: blocked | Implement Doublemixinconditionaltypebaseclassworks |
+| 2018 | Implement Doublemixinconditionaltypebaseclassworks | spike | frontend/semantics | class: blocked | Implement Doublemixinconditionaltypebaseclassworks |
 | 2019 | Implement Doubleunderscoreenumemit | spike | frontend/syntax | class: triage-needed | Implement Doubleunderscoreenumemit |
 | 2020 | Implement Doubleunderscoreexportstarconflict | spike | frontend/syntax | class: blocked | Implement Doubleunderscoreexportstarconflict |
 | 2021 | Implement Doubleunderscorereactnamespace | spike | frontend/syntax | class: triage-needed | Implement Doubleunderscorereactnamespace |
@@ -1619,7 +1618,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 2105 | Implement Emptyarraydestructuringexpressionvisitedbytransformer | spike | frontend/resolver | class: blocked | Implement Emptyarraydestructuringexpressionvisitedbytransformer |
 | 2106 | Implement Emptydeclarationemitismodule | spike | frontend/syntax | class: blocked | Implement Emptydeclarationemitismodule |
 | 2107 | Implement Emptyenum | spike | frontend/syntax | class: triage-needed | Implement Emptyenum |
-| 2108 | Implement Emptygenericparamlist | spike | frontend/syntax | class: blocked | Implement Emptygenericparamlist |
+| 2108 | Implement Emptygenericparamlist | spike | frontend/semantics | class: blocked | Implement Emptygenericparamlist |
 | 2109 | Implement Emptyindexer | spike | frontend/syntax | class: blocked | Implement Emptyindexer |
 | 2110 | Implement Emptymemberaccess | spike | frontend/syntax | class: triage-needed | Implement Emptymemberaccess |
 | 2111 | Implement Emptymodulename | spike | frontend/syntax | class: blocked | Implement Emptymodulename |
@@ -1694,7 +1693,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 2180 | Implement Errorwithsamenametype | spike | runtime/builtins | class: triage-needed | Implement Errorwithsamenametype |
 | 2181 | Implement Errorwithtruncatedtype | spike | frontend/resolver | class: blocked | Implement Errorwithtruncatedtype |
 | 2182 | Implement Errorsforcallandassignmentaresimilar | spike | runtime/builtins | class: triage-needed | Implement Errorsforcallandassignmentaresimilar |
-| 2183 | Implement Errorsingenerictypereference | spike | frontend/syntax | class: blocked | Implement Errorsingenerictypereference |
+| 2183 | Implement Errorsingenerictypereference | spike | frontend/semantics | class: blocked | Implement Errorsingenerictypereference |
 | 2184 | Implement Errorsonimportedsymbol | spike | frontend/syntax | class: blocked | Implement Errorsonimportedsymbol |
 | 2185 | Implement Errorsonunionsofoverlappingobjects | spike | frontend/syntax | class: blocked | Implement Errorsonunionsofoverlappingobjects |
 | 2186 | Implement Errorswithinvokablesinunions | spike | frontend/syntax | class: blocked | Implement Errorswithinvokablesinunions |
@@ -1738,7 +1737,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 2224 | Implement Excesspropertycheckwithnestedarrayintersection | spike | frontend/semantics | class: blocked | Implement Excesspropertycheckwithnestedarrayintersection |
 | 2225 | Implement Excesspropertycheckwithspread | spike | frontend/resolver | class: blocked | Implement Excesspropertycheckwithspread |
 | 2226 | Implement Excesspropertycheckwithunions | spike | frontend/semantics | class: blocked | Implement Excesspropertycheckwithunions |
-| 2227 | Implement Excesspropertycheckingintersectionwithconditional | spike | frontend/syntax | class: blocked | Implement Excesspropertycheckingintersectionwithconditional |
+| 2227 | Implement Excesspropertycheckingintersectionwithconditional | spike | frontend/semantics | class: blocked | Implement Excesspropertycheckingintersectionwithconditional |
 | 2228 | Implement Excesspropertycheckswithnestedintersections | spike | frontend/syntax | class: blocked | Implement Excesspropertycheckswithnestedintersections |
 | 2229 | Implement Excesspropertyerrorforfunctiontypes | spike | frontend/semantics | class: blocked | Implement Excesspropertyerrorforfunctiontypes |
 | 2230 | Implement Excessivestackdepthflatarray | spike | reference/triage | class: triage-needed | Implement Excessivestackdepthflatarray |
@@ -1868,13 +1867,13 @@ Issue files are the source of truth for work items. The generated section below 
 | 2354 | Implement Extendarray | spike | frontend/syntax | class: blocked | Implement Extendarray |
 | 2355 | Implement Extendconstructsignatureininterface | spike | frontend/syntax | class: blocked | Implement Extendconstructsignatureininterface |
 | 2356 | Implement Extendfromany | spike | frontend/syntax | class: triage-needed | Implement Extendfromany |
-| 2357 | Implement Extendgenericarray | spike | frontend/syntax | class: blocked | Implement Extendgenericarray |
+| 2357 | Implement Extendgenericarray | spike | frontend/semantics | class: blocked | Implement Extendgenericarray |
 | 2358 | Implement Extendglobalthis Import Export | spike | frontend/syntax | class: blocked | Implement Extendglobalthis Import Export |
 | 2359 | Implement Extendglobalthis Parser Syntax | spike | frontend/syntax | class: triage-needed | Implement Extendglobalthis Parser Syntax |
 | 2360 | Implement Extendnonclasssymbol Class | spike | frontend/syntax | class: blocked | Implement Extendnonclasssymbol Class |
 | 2361 | Implement Extendnonclasssymbol Name Resolution | spike | frontend/resolver | class: blocked | Implement Extendnonclasssymbol Name Resolution |
 | 2362 | Implement Extendprivateconstructorclass | spike | frontend/syntax | class: blocked | Implement Extendprivateconstructorclass |
-| 2363 | Implement Extendedinterfacegenerictype | spike | frontend/syntax | class: blocked | Implement Extendedinterfacegenerictype |
+| 2363 | Implement Extendedinterfacegenerictype | spike | frontend/semantics | class: blocked | Implement Extendedinterfacegenerictype |
 | 2364 | Implement Extendedunicodeplaneidentifiers | spike | frontend/syntax | class: triage-needed | Implement Extendedunicodeplaneidentifiers |
 | 2365 | Implement Extendedunicodeplaneidentifiersjsdoc | spike | frontend/syntax | class: blocked | Implement Extendedunicodeplaneidentifiersjsdoc |
 | 2366 | Implement Extendingclassfromaliasandusageinindexer | spike | frontend/syntax | class: blocked | Implement Extendingclassfromaliasandusageinindexer |
@@ -1895,7 +1894,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 2381 | Implement Externalmodulerefernceresolutionorderinimportdeclaration | spike | frontend/syntax | class: blocked | Implement Externalmodulerefernceresolutionorderinimportdeclaration |
 | 2382 | Implement Externalmoduleresolution | spike | frontend/syntax | class: blocked | Implement Externalmoduleresolution |
 | 2383 | Implement Externalmodulewithoutcompilerflag | spike | frontend/syntax | class: blocked | Implement Externalmodulewithoutcompilerflag |
-| 2384 | Implement Extractinferenceimprovement | spike | frontend/syntax | class: blocked | Implement Extractinferenceimprovement |
+| 2384 | Implement Extractinferenceimprovement | spike | frontend/semantics | class: blocked | Implement Extractinferenceimprovement |
 | 2385 | Implement Fakeinfinity | spike | frontend/syntax | class: triage-needed | Implement Fakeinfinity |
 | 2386 | Implement Fallfromlastcase | spike | frontend/resolver | class: blocked | Implement Fallfromlastcase |
 | 2387 | Implement Fallbacktobindingpatternfortypeinference | spike | frontend/resolver | class: blocked | Implement Fallbacktobindingpatternfortypeinference |
@@ -1970,7 +1969,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 2456 | Implement Functionoverloads Parser Syntax | spike | frontend/semantics | class: blocked | Implement Functionoverloads Parser Syntax |
 | 2457 | Implement Functionoverloads Unknown Unsupported | spike | frontend/syntax | class: triage-needed | Implement Functionoverloads Unknown Unsupported |
 | 2458 | Implement Functionoverloadsoutoforder | spike | frontend/semantics | class: blocked | Implement Functionoverloadsoutoforder |
-| 2459 | Implement Functionoverloadsrecursivegenericreturntype | spike | frontend/syntax | class: blocked | Implement Functionoverloadsrecursivegenericreturntype |
+| 2459 | Implement Functionoverloadsrecursivegenericreturntype | spike | frontend/semantics | class: blocked | Implement Functionoverloadsrecursivegenericreturntype |
 | 2460 | Implement Functionparameteraritymismatch | spike | frontend/resolver | class: blocked | Implement Functionparameteraritymismatch |
 | 2461 | Implement Functionreturningitself | spike | frontend/resolver | class: blocked | Implement Functionreturningitself |
 | 2462 | Implement Functionsignatureassignmentcompat | spike | frontend/resolver | class: blocked | Implement Functionsignatureassignmentcompat |
@@ -2001,114 +2000,114 @@ Issue files are the source of truth for work items. The generated section below 
 | 2487 | Implement Genericargumentcallsigassignmentcompat | spike | frontend/syntax | class: blocked | Implement Genericargumentcallsigassignmentcompat |
 | 2488 | Implement Genericarrayassignment | spike | frontend/resolver | class: blocked | Implement Genericarrayassignment |
 | 2489 | Implement Genericarrayassignmentcompaterrors | spike | frontend/resolver | class: blocked | Implement Genericarrayassignmentcompaterrors |
-| 2490 | Implement Genericarrayextenstions | spike | frontend/syntax | class: blocked | Implement Genericarrayextenstions |
-| 2491 | Implement Genericarraywithouttypeannotation (audit reopened #2491) | spike | frontend/syntax | class: blocked | Implement Genericarraywithouttypeannotation (audit reopened #2491) |
-| 2492 | Implement Genericassignmentcompatoffunctionsignatures | spike | frontend/syntax | class: blocked | Implement Genericassignmentcompatoffunctionsignatures |
-| 2493 | Implement Genericassignmentcompatwithinterfaces | spike | frontend/syntax | class: blocked | Implement Genericassignmentcompatwithinterfaces |
-| 2494 | Implement Genericbaseclassliteralproperty | spike | frontend/syntax | class: blocked | Implement Genericbaseclassliteralproperty |
-| 2495 | Implement Genericcallatyieldexpressioningenericcall | spike | frontend/syntax | class: blocked | Implement Genericcallatyieldexpressioningenericcall |
+| 2490 | Implement Genericarrayextenstions | spike | frontend/semantics | class: blocked | Implement Genericarrayextenstions |
+| 2491 | Implement Genericarraywithouttypeannotation (audit reopened #2491) | spike | frontend/semantics | class: blocked | Implement Genericarraywithouttypeannotation (audit reopened #2491) |
+| 2492 | Implement Genericassignmentcompatoffunctionsignatures | spike | frontend/semantics | class: blocked | Implement Genericassignmentcompatoffunctionsignatures |
+| 2493 | Implement Genericassignmentcompatwithinterfaces | spike | frontend/semantics | class: blocked | Implement Genericassignmentcompatwithinterfaces |
+| 2494 | Implement Genericbaseclassliteralproperty | spike | frontend/semantics | class: blocked | Implement Genericbaseclassliteralproperty |
+| 2495 | Implement Genericcallatyieldexpressioningenericcall | spike | frontend/semantics | class: blocked | Implement Genericcallatyieldexpressioningenericcall |
 | 2496 | Implement Genericcallinferenceconditionaltype Name Resolution | spike | frontend/resolver | class: blocked | Implement Genericcallinferenceconditionaltype Name Resolution |
-| 2497 | Implement Genericcallinferenceconditionaltype Type System | spike | frontend/syntax | class: blocked | Implement Genericcallinferenceconditionaltype Type System |
-| 2498 | Implement Genericcallinferenceinconditionaltypes | spike | frontend/syntax | class: blocked | Implement Genericcallinferenceinconditionaltypes |
+| 2497 | Implement Genericcallinferenceconditionaltype Type System | spike | frontend/semantics | class: blocked | Implement Genericcallinferenceconditionaltype Type System |
+| 2498 | Implement Genericcallinferenceinconditionaltypes | spike | frontend/semantics | class: blocked | Implement Genericcallinferenceinconditionaltypes |
 | 2499 | Implement Genericcallinferenceusingthistypenoinvalidcachereuseaftermappedtypeapplication | spike | frontend/semantics | class: blocked | Implement Genericcallinferenceusingthistypenoinvalidcachereuseaftermappedtypeapplication |
-| 2500 | Implement Genericcallinferencewithgenericlocalfunction | spike | frontend/syntax | class: blocked | Implement Genericcallinferencewithgenericlocalfunction |
-| 2501 | Implement Genericcallonmemberreturningclosedoverobject | spike | frontend/syntax | class: blocked | Implement Genericcallonmemberreturningclosedoverobject |
-| 2502 | Implement Genericcallspecializedtotypearg | spike | frontend/syntax | class: blocked | Implement Genericcallspecializedtotypearg |
-| 2503 | Implement Genericcallwithinownbodycasttypeparameteridentity | spike | frontend/syntax | class: blocked | Implement Genericcallwithinownbodycasttypeparameteridentity |
-| 2504 | Implement Genericcallwithoutargs | spike | frontend/syntax | class: blocked | Implement Genericcallwithoutargs |
+| 2500 | Implement Genericcallinferencewithgenericlocalfunction | spike | frontend/semantics | class: blocked | Implement Genericcallinferencewithgenericlocalfunction |
+| 2501 | Implement Genericcallonmemberreturningclosedoverobject | spike | frontend/semantics | class: blocked | Implement Genericcallonmemberreturningclosedoverobject |
+| 2502 | Implement Genericcallspecializedtotypearg | spike | frontend/semantics | class: blocked | Implement Genericcallspecializedtotypearg |
+| 2503 | Implement Genericcallwithinownbodycasttypeparameteridentity | spike | frontend/semantics | class: blocked | Implement Genericcallwithinownbodycasttypeparameteridentity |
+| 2504 | Implement Genericcallwithoutargs | spike | frontend/semantics | class: blocked | Implement Genericcallwithoutargs |
 | 2505 | Implement Genericcallbackinvokedinsideitscontainingfunction | spike | frontend/resolver | class: blocked | Implement Genericcallbackinvokedinsideitscontainingfunction |
 | 2506 | Implement Genericcallbacksandclasshierarchy | spike | frontend/syntax | class: blocked | Implement Genericcallbacksandclasshierarchy |
 | 2507 | Implement Genericcapturingfunctionnarrowing | spike | frontend/resolver | class: blocked | Implement Genericcapturingfunctionnarrowing |
-| 2508 | Implement Genericchainedcalls | spike | frontend/syntax | class: blocked | Implement Genericchainedcalls |
+| 2508 | Implement Genericchainedcalls | spike | frontend/semantics | class: blocked | Implement Genericchainedcalls |
 | 2509 | Implement Genericclassimplementinggenericinterfacefromanothermodule | spike | frontend/syntax | class: blocked | Implement Genericclassimplementinggenericinterfacefromanothermodule |
-| 2510 | Implement Genericclassinheritsconstructorfromnongenericclass | spike | frontend/syntax | class: blocked | Implement Genericclassinheritsconstructorfromnongenericclass |
+| 2510 | Implement Genericclassinheritsconstructorfromnongenericclass | spike | frontend/semantics | class: blocked | Implement Genericclassinheritsconstructorfromnongenericclass |
 | 2511 | Implement Genericclasspropertyinheritancespecialization | spike | frontend/syntax | class: blocked | Implement Genericclasspropertyinheritancespecialization |
-| 2512 | Implement Genericclassstaticmethod | spike | frontend/syntax | class: blocked | Implement Genericclassstaticmethod |
+| 2512 | Implement Genericclassstaticmethod | spike | frontend/semantics | class: blocked | Implement Genericclassstaticmethod |
 | 2513 | Implement Genericclasswithstaticfactory | spike | frontend/syntax | class: blocked | Implement Genericclasswithstaticfactory |
-| 2514 | Implement Genericclasswithstaticsusingtypearguments | spike | frontend/syntax | class: blocked | Implement Genericclasswithstaticsusingtypearguments |
-| 2515 | Implement Genericclasses | spike | frontend/syntax | class: blocked | Implement Genericclasses |
+| 2514 | Implement Genericclasswithstaticsusingtypearguments | spike | frontend/semantics | class: blocked | Implement Genericclasswithstaticsusingtypearguments |
+| 2515 | Implement Genericclasses | spike | frontend/semantics | class: blocked | Implement Genericclasses |
 | 2516 | Implement Genericclassesinmodule | spike | frontend/syntax | class: blocked | Implement Genericclassesinmodule |
 | 2517 | Implement Genericclassesredeclaration | spike | frontend/syntax | class: blocked | Implement Genericclassesredeclaration |
 | 2518 | Implement Genericcloduleinmodule | spike | frontend/syntax | class: blocked | Implement Genericcloduleinmodule |
-| 2519 | Implement Genericclonereturntypes | spike | frontend/syntax | class: blocked | Implement Genericclonereturntypes |
+| 2519 | Implement Genericclonereturntypes | spike | frontend/semantics | class: blocked | Implement Genericclonereturntypes |
 | 2520 | Implement Genericcombinators | spike | frontend/semantics | class: blocked | Implement Genericcombinators |
 | 2521 | Implement Genericconditionalconstrainedtounknownnotassignabletoconcreteobject | spike | frontend/resolver | class: blocked | Implement Genericconditionalconstrainedtounknownnotassignabletoconcreteobject |
-| 2522 | Implement Genericconstraint | spike | frontend/syntax | class: blocked | Implement Genericconstraint |
-| 2523 | Implement Genericconstraintdeclaration | spike | frontend/syntax | class: blocked | Implement Genericconstraintdeclaration |
+| 2522 | Implement Genericconstraint | spike | frontend/semantics | class: blocked | Implement Genericconstraint |
+| 2523 | Implement Genericconstraintdeclaration | spike | frontend/semantics | class: blocked | Implement Genericconstraintdeclaration |
 | 2524 | Implement Genericconstraintonextendedbuiltintypes | spike | frontend/syntax | class: blocked | Implement Genericconstraintonextendedbuiltintypes |
 | 2525 | Implement Genericconstraintsatisfaction | spike | frontend/semantics | class: blocked | Implement Genericconstraintsatisfaction |
 | 2526 | Implement Genericconstructinvocationwithnotypearg | spike | frontend/resolver | class: blocked | Implement Genericconstructinvocationwithnotypearg |
-| 2527 | Implement Genericconstructsignatureininterface | spike | frontend/syntax | class: blocked | Implement Genericconstructsignatureininterface |
-| 2528 | Implement Genericconstructorfunction | spike | frontend/syntax | class: blocked | Implement Genericconstructorfunction |
-| 2529 | Implement Genericcontextualtypingspecialization | spike | frontend/syntax | class: blocked | Implement Genericcontextualtypingspecialization |
-| 2530 | Implement Genericdefaults | spike | frontend/syntax | class: blocked | Implement Genericdefaults |
-| 2531 | Implement Genericdefaultserrors | spike | frontend/syntax | class: blocked | Implement Genericdefaultserrors |
-| 2532 | Implement Genericdefaultsjs | spike | frontend/syntax | class: blocked | Implement Genericdefaultsjs |
-| 2533 | Implement Genericderivedtypewithspecializedbase | spike | frontend/syntax | class: blocked | Implement Genericderivedtypewithspecializedbase |
+| 2527 | Implement Genericconstructsignatureininterface | spike | frontend/semantics | class: blocked | Implement Genericconstructsignatureininterface |
+| 2528 | Implement Genericconstructorfunction | spike | frontend/semantics | class: blocked | Implement Genericconstructorfunction |
+| 2529 | Implement Genericcontextualtypingspecialization | spike | frontend/semantics | class: blocked | Implement Genericcontextualtypingspecialization |
+| 2530 | Implement Genericdefaults | spike | frontend/semantics | class: blocked | Implement Genericdefaults |
+| 2531 | Implement Genericdefaultserrors | spike | frontend/semantics | class: blocked | Implement Genericdefaultserrors |
+| 2532 | Implement Genericdefaultsjs | spike | frontend/semantics | class: blocked | Implement Genericdefaultsjs |
+| 2533 | Implement Genericderivedtypewithspecializedbase | spike | frontend/semantics | class: blocked | Implement Genericderivedtypewithspecializedbase |
 | 2534 | Implement Genericfunctioncallsignaturereturntypemismatch | spike | frontend/resolver | class: blocked | Implement Genericfunctioncallsignaturereturntypemismatch |
-| 2535 | Implement Genericfunctionhasfreshtypeargs | spike | frontend/syntax | class: blocked | Implement Genericfunctionhasfreshtypeargs |
-| 2536 | Implement Genericfunctioninference | spike | frontend/syntax | class: blocked | Implement Genericfunctioninference |
-| 2537 | Implement Genericfunctionspecializations | spike | frontend/syntax | class: blocked | Implement Genericfunctionspecializations |
+| 2535 | Implement Genericfunctionhasfreshtypeargs | spike | frontend/semantics | class: blocked | Implement Genericfunctionhasfreshtypeargs |
+| 2536 | Implement Genericfunctioninference | spike | frontend/semantics | class: blocked | Implement Genericfunctioninference |
+| 2537 | Implement Genericfunctionspecializations | spike | frontend/semantics | class: blocked | Implement Genericfunctionspecializations |
 | 2538 | Implement Genericfunctiontypedargumentsarefixed | spike | frontend/resolver | class: blocked | Implement Genericfunctiontypedargumentsarefixed |
 | 2539 | Implement Genericfunctions | spike | frontend/resolver | class: blocked | Implement Genericfunctions |
-| 2540 | Implement Genericfunctionsandconditionalinference | spike | frontend/syntax | class: blocked | Implement Genericfunctionsandconditionalinference |
-| 2541 | Implement Genericfunctionsnotcontextsensitive | spike | frontend/syntax | class: blocked | Implement Genericfunctionsnotcontextsensitive |
+| 2540 | Implement Genericfunctionsandconditionalinference | spike | frontend/semantics | class: blocked | Implement Genericfunctionsandconditionalinference |
+| 2541 | Implement Genericfunctionsnotcontextsensitive | spike | frontend/semantics | class: blocked | Implement Genericfunctionsnotcontextsensitive |
 | 2542 | Implement Genericfunctionswithoptionalparameters Name Resolution | spike | frontend/resolver | class: blocked | Implement Genericfunctionswithoptionalparameters Name Resolution |
-| 2543 | Implement Genericfunctionswithoptionalparameters Type System | spike | frontend/syntax | class: blocked | Implement Genericfunctionswithoptionalparameters Type System |
+| 2543 | Implement Genericfunctionswithoptionalparameters Type System | spike | frontend/semantics | class: blocked | Implement Genericfunctionswithoptionalparameters Type System |
 | 2544 | Implement Genericfunduleinmodule | spike | frontend/syntax | class: blocked | Implement Genericfunduleinmodule |
-| 2545 | Implement Genericgetter | spike | frontend/syntax | class: blocked | Implement Genericgetter |
-| 2546 | Implement Genericimplements | spike | frontend/syntax | class: blocked | Implement Genericimplements |
-| 2547 | Implement Genericindexedaccessmethodintersectioncanbeaccessed | spike | frontend/syntax | class: blocked | Implement Genericindexedaccessmethodintersectioncanbeaccessed |
+| 2545 | Implement Genericgetter | spike | frontend/semantics | class: blocked | Implement Genericgetter |
+| 2546 | Implement Genericimplements | spike | frontend/semantics | class: blocked | Implement Genericimplements |
+| 2547 | Implement Genericindexedaccessmethodintersectioncanbeaccessed | spike | frontend/semantics | class: blocked | Implement Genericindexedaccessmethodintersectioncanbeaccessed |
 | 2548 | Implement Genericindexedaccessvariancecomparisonresultcorrect | spike | frontend/resolver | class: blocked | Implement Genericindexedaccessvariancecomparisonresultcorrect |
 | 2549 | Implement Genericinference | spike | frontend/syntax | class: blocked | Implement Genericinference |
 | 2550 | Implement Genericinferencedefaulttypeparameter | spike | frontend/resolver | class: blocked | Implement Genericinferencedefaulttypeparameter |
-| 2551 | Implement Genericinheriteddefaultconstructors | spike | frontend/syntax | class: blocked | Implement Genericinheriteddefaultconstructors |
-| 2552 | Implement Genericinstanceof | spike | frontend/syntax | class: blocked | Implement Genericinstanceof |
+| 2551 | Implement Genericinheriteddefaultconstructors | spike | frontend/semantics | class: blocked | Implement Genericinheriteddefaultconstructors |
+| 2552 | Implement Genericinstanceof | spike | frontend/semantics | class: blocked | Implement Genericinstanceof |
 | 2553 | Implement Genericinterfacefunctiontypeparameter | spike | frontend/syntax | class: blocked | Implement Genericinterfacefunctiontypeparameter |
-| 2554 | Implement Genericinterfaceimplementation | spike | frontend/syntax | class: blocked | Implement Genericinterfaceimplementation |
+| 2554 | Implement Genericinterfaceimplementation | spike | frontend/semantics | class: blocked | Implement Genericinterfaceimplementation |
 | 2555 | Implement Genericinterfacetypecall | spike | frontend/resolver | class: blocked | Implement Genericinterfacetypecall |
-| 2556 | Implement Genericinterfaceswithouttypearguments | spike | frontend/syntax | class: blocked | Implement Genericinterfaceswithouttypearguments |
+| 2556 | Implement Genericinterfaceswithouttypearguments | spike | frontend/semantics | class: blocked | Implement Genericinterfaceswithouttypearguments |
 | 2557 | Implement Genericisneveremptyobject | spike | reference/triage | class: triage-needed | Implement Genericisneveremptyobject |
 | 2558 | Implement Genericmemberfunction | spike | frontend/syntax | class: blocked | Implement Genericmemberfunction |
 | 2559 | Implement Genericmergeddeclarationusingtypeparameter Import Export | spike | frontend/syntax | class: blocked | Implement Genericmergeddeclarationusingtypeparameter Import Export |
-| 2560 | Implement Genericmergeddeclarationusingtypeparameter Type System | spike | frontend/syntax | class: blocked | Implement Genericmergeddeclarationusingtypeparameter Type System |
+| 2560 | Implement Genericmergeddeclarationusingtypeparameter Type System | spike | frontend/semantics | class: blocked | Implement Genericmergeddeclarationusingtypeparameter Type System |
 | 2561 | Implement Genericmethodoverspecialization | spike | frontend/resolver | class: blocked | Implement Genericmethodoverspecialization |
-| 2562 | Implement Genericnewinterface | spike | frontend/syntax | class: blocked | Implement Genericnewinterface |
-| 2563 | Implement Genericobjectcreationwithouttypeargs | spike | frontend/syntax | class: blocked | Implement Genericobjectcreationwithouttypeargs |
-| 2564 | Implement Genericobjectlitreturntype | spike | frontend/syntax | class: blocked | Implement Genericobjectlitreturntype |
-| 2565 | Implement Genericobjectspreadresultinswitch | spike | frontend/syntax | class: blocked | Implement Genericobjectspreadresultinswitch |
-| 2566 | Implement Genericofacloduletype | spike | frontend/syntax | class: blocked | Implement Genericofacloduletype |
-| 2567 | Implement Genericoverloadsignatures | spike | frontend/syntax | class: blocked | Implement Genericoverloadsignatures |
-| 2568 | Implement Genericparameterassignability | spike | frontend/syntax | class: blocked | Implement Genericparameterassignability |
-| 2569 | Implement Genericprototypeproperty | spike | frontend/syntax | class: blocked | Implement Genericprototypeproperty |
+| 2562 | Implement Genericnewinterface | spike | frontend/semantics | class: blocked | Implement Genericnewinterface |
+| 2563 | Implement Genericobjectcreationwithouttypeargs | spike | frontend/semantics | class: blocked | Implement Genericobjectcreationwithouttypeargs |
+| 2564 | Implement Genericobjectlitreturntype | spike | frontend/semantics | class: blocked | Implement Genericobjectlitreturntype |
+| 2565 | Implement Genericobjectspreadresultinswitch | spike | frontend/semantics | class: blocked | Implement Genericobjectspreadresultinswitch |
+| 2566 | Implement Genericofacloduletype | spike | frontend/semantics | class: blocked | Implement Genericofacloduletype |
+| 2567 | Implement Genericoverloadsignatures | spike | frontend/semantics | class: blocked | Implement Genericoverloadsignatures |
+| 2568 | Implement Genericparameterassignability | spike | frontend/semantics | class: blocked | Implement Genericparameterassignability |
+| 2569 | Implement Genericprototypeproperty | spike | frontend/semantics | class: blocked | Implement Genericprototypeproperty |
 | 2570 | Implement Genericrecursiveimplicitconstructorerrors | spike | frontend/syntax | class: blocked | Implement Genericrecursiveimplicitconstructorerrors |
-| 2571 | Implement Genericreduce | spike | frontend/syntax | class: blocked | Implement Genericreduce |
+| 2571 | Implement Genericreduce | spike | frontend/semantics | class: blocked | Implement Genericreduce |
 | 2572 | Implement Genericreturntypefromgetter | spike | frontend/syntax | class: blocked | Implement Genericreturntypefromgetter |
-| 2573 | Implement Genericreversingtypeparameters | spike | frontend/syntax | class: blocked | Implement Genericreversingtypeparameters |
+| 2573 | Implement Genericreversingtypeparameters | spike | frontend/semantics | class: blocked | Implement Genericreversingtypeparameters |
 | 2574 | Implement Genericsignatureidentity | spike | reference/triage | class: triage-needed | Implement Genericsignatureidentity |
-| 2575 | Implement Genericspecializations | spike | frontend/syntax | class: blocked | Implement Genericspecializations |
-| 2576 | Implement Genericstaticanytypefunction | spike | frontend/syntax | class: blocked | Implement Genericstaticanytypefunction |
+| 2575 | Implement Genericspecializations | spike | frontend/semantics | class: blocked | Implement Genericspecializations |
+| 2576 | Implement Genericstaticanytypefunction | spike | frontend/semantics | class: blocked | Implement Genericstaticanytypefunction |
 | 2577 | Implement Generictemplateoverloadresolution | spike | frontend/resolver | class: blocked | Implement Generictemplateoverloadresolution |
-| 2578 | Implement Generictuplewithsimplifiableelements | spike | frontend/syntax | class: blocked | Implement Generictuplewithsimplifiableelements |
+| 2578 | Implement Generictuplewithsimplifiableelements | spike | frontend/semantics | class: blocked | Implement Generictuplewithsimplifiableelements |
 | 2579 | Implement Generictypeargumentinference | spike | frontend/syntax | class: blocked | Implement Generictypeargumentinference |
 | 2580 | Implement Generictypeassertions | spike | frontend/syntax | class: blocked | Implement Generictypeassertions |
-| 2581 | Implement Generictypeconstraints | spike | frontend/syntax | class: blocked | Implement Generictypeconstraints |
-| 2582 | Implement Generictypeparameterequivalence | spike | frontend/syntax | class: blocked | Implement Generictypeparameterequivalence |
-| 2583 | Implement Generictypereferencesrequiretypeargs | spike | frontend/syntax | class: blocked | Implement Generictypereferencesrequiretypeargs |
-| 2584 | Implement Generictypeusedwithouttypearguments | spike | frontend/syntax | class: blocked | Implement Generictypeusedwithouttypearguments |
-| 2585 | Implement Generictypewithcallablemembers | spike | frontend/syntax | class: blocked | Implement Generictypewithcallablemembers |
-| 2586 | Implement Generictypewithmultiplebases | spike | frontend/syntax | class: blocked | Implement Generictypewithmultiplebases |
-| 2587 | Implement Generictypewithnongenericbasemismatch | spike | frontend/syntax | class: blocked | Implement Generictypewithnongenericbasemismatch |
-| 2588 | Implement Genericunboundedtypeparamassignability | spike | frontend/syntax | class: blocked | Implement Genericunboundedtypeparamassignability |
-| 2589 | Implement Genericwithcallsignaturereturningspecialization | spike | frontend/syntax | class: blocked | Implement Genericwithcallsignaturereturningspecialization |
-| 2590 | Implement Genericwithcallsignatures | spike | frontend/syntax | class: blocked | Implement Genericwithcallsignatures |
+| 2581 | Implement Generictypeconstraints | spike | frontend/semantics | class: blocked | Implement Generictypeconstraints |
+| 2582 | Implement Generictypeparameterequivalence | spike | frontend/semantics | class: blocked | Implement Generictypeparameterequivalence |
+| 2583 | Implement Generictypereferencesrequiretypeargs | spike | frontend/semantics | class: blocked | Implement Generictypereferencesrequiretypeargs |
+| 2584 | Implement Generictypeusedwithouttypearguments | spike | frontend/semantics | class: blocked | Implement Generictypeusedwithouttypearguments |
+| 2585 | Implement Generictypewithcallablemembers | spike | frontend/semantics | class: blocked | Implement Generictypewithcallablemembers |
+| 2586 | Implement Generictypewithmultiplebases | spike | frontend/semantics | class: blocked | Implement Generictypewithmultiplebases |
+| 2587 | Implement Generictypewithnongenericbasemismatch | spike | frontend/semantics | class: blocked | Implement Generictypewithnongenericbasemismatch |
+| 2588 | Implement Genericunboundedtypeparamassignability | spike | frontend/semantics | class: blocked | Implement Genericunboundedtypeparamassignability |
+| 2589 | Implement Genericwithcallsignaturereturningspecialization | spike | frontend/semantics | class: blocked | Implement Genericwithcallsignaturereturningspecialization |
+| 2590 | Implement Genericwithcallsignatures | spike | frontend/semantics | class: blocked | Implement Genericwithcallsignatures |
 | 2591 | Implement Genericwithindexeroftypeparametertype Import Export | spike | frontend/syntax | class: blocked | Implement Genericwithindexeroftypeparametertype Import Export |
-| 2592 | Implement Genericwithindexeroftypeparametertype Type System | spike | frontend/syntax | class: blocked | Implement Genericwithindexeroftypeparametertype Type System |
-| 2593 | Implement Genericwithopentypeparameters | spike | frontend/syntax | class: blocked | Implement Genericwithopentypeparameters |
-| 2594 | Implement Generics | spike | frontend/syntax | class: blocked | Implement Generics |
-| 2595 | Implement Genericsandhigherorderfunctions | spike | frontend/syntax | class: blocked | Implement Genericsandhigherorderfunctions |
-| 2596 | Implement Genericswithduplicatetypeparameters | spike | frontend/syntax | class: blocked | Implement Genericswithduplicatetypeparameters |
-| 2597 | Implement Genericswithouttypeparameters | spike | frontend/syntax | class: blocked | Implement Genericswithouttypeparameters |
+| 2592 | Implement Genericwithindexeroftypeparametertype Type System | spike | frontend/semantics | class: blocked | Implement Genericwithindexeroftypeparametertype Type System |
+| 2593 | Implement Genericwithopentypeparameters | spike | frontend/semantics | class: blocked | Implement Genericwithopentypeparameters |
+| 2594 | Implement Generics | spike | frontend/semantics | class: blocked | Implement Generics |
+| 2595 | Implement Genericsandhigherorderfunctions | spike | frontend/semantics | class: blocked | Implement Genericsandhigherorderfunctions |
+| 2596 | Implement Genericswithduplicatetypeparameters | spike | frontend/semantics | class: blocked | Implement Genericswithduplicatetypeparameters |
+| 2597 | Implement Genericswithouttypeparameters | spike | frontend/semantics | class: blocked | Implement Genericswithouttypeparameters |
 | 2598 | Implement Getaccessorwithimpliedreturntypeandfunctionclassmerge | spike | frontend/syntax | class: blocked | Implement Getaccessorwithimpliedreturntypeandfunctionclassmerge |
 | 2599 | Implement Getandsetasmembernames | spike | frontend/syntax | class: triage-needed | Implement Getandsetasmembernames |
 | 2600 | Implement Getandsetnotidenticaltype Duplicate Function | spike | reference/triage | class: triage-needed | Implement Getandsetnotidenticaltype Duplicate Function |
@@ -2135,12 +2134,12 @@ Issue files are the source of truth for work items. The generated section below 
 | 2621 | Implement Heterogeneousarrayandoverloads | spike | frontend/semantics | class: blocked | Implement Heterogeneousarrayandoverloads |
 | 2622 | Implement Hidingcallsignatures | spike | frontend/syntax | class: blocked | Implement Hidingcallsignatures |
 | 2623 | Implement Hidingconstructsignatures | spike | frontend/syntax | class: blocked | Implement Hidingconstructsignatures |
-| 2624 | Implement Higherordermappedindexlookupinference | spike | frontend/syntax | class: blocked | Implement Higherordermappedindexlookupinference |
+| 2624 | Implement Higherordermappedindexlookupinference | spike | frontend/semantics | class: blocked | Implement Higherordermappedindexlookupinference |
 | 2625 | Implement Homomorphicmappedtypewithnonhomomorphicinstantiationspreadable | spike | frontend/resolver | class: blocked | Implement Homomorphicmappedtypewithnonhomomorphicinstantiationspreadable |
 | 2626 | Implement Hugedeclarationoutputgetstruncatedwitherror | spike | runtime/builtins | class: triage-needed | Implement Hugedeclarationoutputgetstruncatedwitherror |
 | 2627 | Implement I | spike | frontend/resolver | class: blocked | Implement I |
 | 2628 | Implement Icomparable | spike | frontend/resolver | class: blocked | Implement Icomparable |
-| 2629 | Implement Identicalgenericconditionalswithinferrelated | spike | frontend/syntax | class: blocked | Implement Identicalgenericconditionalswithinferrelated |
+| 2629 | Implement Identicalgenericconditionalswithinferrelated | spike | frontend/semantics | class: blocked | Implement Identicalgenericconditionalswithinferrelated |
 | 2630 | Implement Identifierstartafternumericliteral | spike | frontend/syntax | class: triage-needed | Implement Identifierstartafternumericliteral |
 | 2631 | Implement Identityanddivergentnormalizedtypes | spike | frontend/syntax | class: triage-needed | Implement Identityanddivergentnormalizedtypes |
 | 2632 | Implement Identityforsignatureswithtypeparametersandany | spike | frontend/semantics | class: blocked | Implement Identityforsignatureswithtypeparametersandany |
@@ -2151,7 +2150,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 2637 | Implement Illegalsupercallsinconstructor | spike | frontend/syntax | class: blocked | Implement Illegalsupercallsinconstructor |
 | 2638 | Implement Implementarrayinterface | spike | frontend/syntax | class: triage-needed | Implement Implementarrayinterface |
 | 2639 | Implement Implementclauseprecedingextends | spike | frontend/syntax | class: triage-needed | Implement Implementclauseprecedingextends |
-| 2640 | Implement Implementgenericwithmismatchedtypes | spike | frontend/syntax | class: blocked | Implement Implementgenericwithmismatchedtypes |
+| 2640 | Implement Implementgenericwithmismatchedtypes | spike | frontend/semantics | class: blocked | Implement Implementgenericwithmismatchedtypes |
 | 2641 | Implement Implementinterfaceanymemberwithvoid | spike | frontend/syntax | class: triage-needed | Implement Implementinterfaceanymemberwithvoid |
 | 2642 | Implement Implementpublicpropertyasprivate | spike | frontend/semantics | class: blocked | Implement Implementpublicpropertyasprivate |
 | 2643 | Implement Implementsclausealreadyseen | spike | frontend/syntax | class: triage-needed | Implement Implementsclausealreadyseen |
@@ -2163,10 +2162,10 @@ Issue files are the source of truth for work items. The generated section below 
 | 2649 | Implement Implicitanydeclarefunctionexprwithoutformaltype | spike | frontend/syntax | class: blocked | Implement Implicitanydeclarefunctionexprwithoutformaltype |
 | 2650 | Implement Implicitanydeclarememberwithouttype | spike | frontend/syntax | class: blocked | Implement Implicitanydeclarememberwithouttype |
 | 2651 | Implement Implicitanydeclarevariableswithouttypeandinit | spike | frontend/resolver | class: blocked | Implement Implicitanydeclarevariableswithouttypeandinit |
-| 2652 | Implement Implicitanyfromcircularinference | spike | frontend/syntax | class: blocked | Implement Implicitanyfromcircularinference |
+| 2652 | Implement Implicitanyfromcircularinference | spike | frontend/semantics | class: blocked | Implement Implicitanyfromcircularinference |
 | 2653 | Implement Implicitanyfunctioninvocationwithanyarguements | spike | frontend/syntax | class: triage-needed | Implement Implicitanyfunctioninvocationwithanyarguements |
-| 2654 | Implement Implicitanygenerictypeinference | spike | frontend/syntax | class: blocked | Implement Implicitanygenerictypeinference |
-| 2655 | Implement Implicitanygenerics | spike | frontend/syntax | class: blocked | Implement Implicitanygenerics |
+| 2654 | Implement Implicitanygenerictypeinference | spike | frontend/semantics | class: blocked | Implement Implicitanygenerictypeinference |
+| 2655 | Implement Implicitanygenerics | spike | frontend/semantics | class: blocked | Implement Implicitanygenerics |
 | 2656 | Implement Implicitanygetandsetaccessorwithanyreturntype | spike | frontend/syntax | class: blocked | Implement Implicitanygetandsetaccessorwithanyreturntype |
 | 2657 | Implement Implicitanyinambientdeclaration | spike | frontend/syntax | class: blocked | Implement Implicitanyinambientdeclaration |
 | 2658 | Implement Implicitanyincatch | spike | frontend/syntax | class: triage-needed | Implement Implicitanyincatch |
@@ -2256,7 +2255,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 2742 | Implement Inkeywordtypeguard | spike | frontend/semantics | class: blocked | Implement Inkeywordtypeguard |
 | 2743 | Implement Inoperator | spike | frontend/resolver | class: blocked | Implement Inoperator |
 | 2744 | Implement Inoperatorwithfunction | spike | frontend/syntax | class: triage-needed | Implement Inoperatorwithfunction |
-| 2745 | Implement Inoperatorwithgeneric | spike | frontend/syntax | class: blocked | Implement Inoperatorwithgeneric |
+| 2745 | Implement Inoperatorwithgeneric | spike | frontend/semantics | class: blocked | Implement Inoperatorwithgeneric |
 | 2746 | Implement Incompatibleassignmentofidenticallynamedtypes | spike | frontend/semantics | class: blocked | Implement Incompatibleassignmentofidenticallynamedtypes |
 | 2747 | Implement Incompatibleexports | spike | frontend/syntax | class: blocked | Implement Incompatibleexports |
 | 2748 | Implement Incompatibletypes | spike | frontend/syntax | class: triage-needed | Implement Incompatibletypes |
@@ -2278,7 +2277,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 2764 | Implement Indexsignaturewithinitializer | spike | frontend/syntax | class: triage-needed | Implement Indexsignaturewithinitializer |
 | 2765 | Implement Indexsignaturewithtrailingcomma | spike | frontend/syntax | class: triage-needed | Implement Indexsignaturewithtrailingcomma |
 | 2766 | Implement Indexsignaturewithouttypeannotation | spike | frontend/syntax | class: triage-needed | Implement Indexsignaturewithouttypeannotation |
-| 2767 | Implement Indexsignaturesinferentialtyping | spike | frontend/syntax | class: blocked | Implement Indexsignaturesinferentialtyping |
+| 2767 | Implement Indexsignaturesinferentialtyping | spike | frontend/semantics | class: blocked | Implement Indexsignaturesinferentialtyping |
 | 2768 | Implement Indextypecheck | spike | frontend/syntax | class: triage-needed | Implement Indextypecheck |
 | 2769 | Implement Indextypenosubstitutiontemplateliteral | spike | frontend/resolver | class: blocked | Implement Indextypenosubstitutiontemplateliteral |
 | 2770 | Implement Indexwithoutparamtype | spike | frontend/syntax | class: triage-needed | Implement Indexwithoutparamtype |
@@ -2287,7 +2286,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 2773 | Implement Indexedaccessconstraints | spike | frontend/syntax | class: blocked | Implement Indexedaccessconstraints |
 | 2774 | Implement Indexedaccessimplicitlyany | spike | frontend/resolver | class: blocked | Implement Indexedaccessimplicitlyany |
 | 2775 | Implement Indexedaccessnormalization | spike | frontend/resolver | class: blocked | Implement Indexedaccessnormalization |
-| 2776 | Implement Indexedaccessprivatememberofgenericconstraint | spike | frontend/syntax | class: blocked | Implement Indexedaccessprivatememberofgenericconstraint |
+| 2776 | Implement Indexedaccessprivatememberofgenericconstraint | spike | frontend/semantics | class: blocked | Implement Indexedaccessprivatememberofgenericconstraint |
 | 2777 | Implement Indexedaccessrelation | spike | frontend/semantics | class: blocked | Implement Indexedaccessrelation |
 | 2778 | Implement Indexedaccesstypeconstraints | spike | frontend/semantics | class: blocked | Implement Indexedaccesstypeconstraints |
 | 2779 | Implement Indexedaccesswithfreshobjectliteral | spike | frontend/syntax | class: blocked | Implement Indexedaccesswithfreshobjectliteral |
@@ -2302,61 +2301,61 @@ Issue files are the source of truth for work items. The generated section below 
 | 2788 | Implement Indexingtypeswithnever | spike | frontend/syntax | class: triage-needed | Implement Indexingtypeswithnever |
 | 2789 | Implement Indirectdiscriminantandexcessproperty | spike | frontend/resolver | class: blocked | Implement Indirectdiscriminantandexcessproperty |
 | 2790 | Implement Indirectglobalsymbolpartofobjecttype | spike | frontend/syntax | class: blocked | Implement Indirectglobalsymbolpartofobjecttype |
-| 2791 | Implement Indirectselfreferencegeneric | spike | frontend/syntax | class: blocked | Implement Indirectselfreferencegeneric |
+| 2791 | Implement Indirectselfreferencegeneric | spike | frontend/semantics | class: blocked | Implement Indirectselfreferencegeneric |
 | 2792 | Implement Indirecttypeparameterreferences | spike | frontend/syntax | class: triage-needed | Implement Indirecttypeparameterreferences |
 | 2793 | Implement Indirectuniquesymboldeclarationemit | spike | frontend/syntax | class: blocked | Implement Indirectuniquesymboldeclarationemit |
 | 2794 | Implement Inexistentpropertyinsidetostringtype | spike | frontend/syntax | class: triage-needed | Implement Inexistentpropertyinsidetostringtype |
-| 2795 | Implement Inferfromannotatedreturn | spike | frontend/syntax | class: blocked | Implement Inferfromannotatedreturn |
-| 2796 | Implement Inferfromgenericfunctionreturntypes | spike | frontend/syntax | class: blocked | Implement Inferfromgenericfunctionreturntypes |
+| 2795 | Implement Inferfromannotatedreturn | spike | frontend/semantics | class: blocked | Implement Inferfromannotatedreturn |
+| 2796 | Implement Inferfromgenericfunctionreturntypes | spike | frontend/semantics | class: blocked | Implement Inferfromgenericfunctionreturntypes |
 | 2797 | Implement Inferfromnestedsameshapetuple | spike | frontend/syntax | class: triage-needed | Implement Inferfromnestedsameshapetuple |
 | 2798 | Implement Inferobjecttypefromstringliteraltokeyof | spike | frontend/resolver | class: blocked | Implement Inferobjecttypefromstringliteraltokeyof |
-| 2799 | Implement Inferparameterwithmethodcallinitializer | spike | frontend/syntax | class: blocked | Implement Inferparameterwithmethodcallinitializer |
+| 2799 | Implement Inferparameterwithmethodcallinitializer | spike | frontend/semantics | class: blocked | Implement Inferparameterwithmethodcallinitializer |
 | 2800 | Implement Inferpropertywithcontextsensitivereturnstatement | spike | frontend/resolver | class: blocked | Implement Inferpropertywithcontextsensitivereturnstatement |
 | 2801 | Implement Inferrestargumentsmappedtuple | spike | frontend/resolver | class: blocked | Implement Inferrestargumentsmappedtuple |
-| 2802 | Implement Infersecondaryparameter | spike | frontend/syntax | class: blocked | Implement Infersecondaryparameter |
+| 2802 | Implement Infersecondaryparameter | spike | frontend/semantics | class: blocked | Implement Infersecondaryparameter |
 | 2803 | Implement Infersetterparamtype | spike | reference/triage | class: triage-needed | Implement Infersetterparamtype |
-| 2804 | Implement Inferstringliteralunionforbindingelement | spike | frontend/syntax | class: blocked | Implement Inferstringliteralunionforbindingelement |
+| 2804 | Implement Inferstringliteralunionforbindingelement | spike | frontend/semantics | class: blocked | Implement Inferstringliteralunionforbindingelement |
 | 2805 | Implement Infertuplefrombindingpattern | spike | frontend/resolver | class: blocked | Implement Infertuplefrombindingpattern |
-| 2806 | Implement Infertypeconstraintinstantiationcircularity | spike | frontend/syntax | class: blocked | Implement Infertypeconstraintinstantiationcircularity |
-| 2807 | Implement Infertypeparameterconstraints | spike | frontend/syntax | class: blocked | Implement Infertypeparameterconstraints |
-| 2808 | Implement Infertypepredicates | spike | frontend/syntax | class: blocked | Implement Infertypepredicates |
+| 2806 | Implement Infertypeconstraintinstantiationcircularity | spike | frontend/semantics | class: blocked | Implement Infertypeconstraintinstantiationcircularity |
+| 2807 | Implement Infertypeparameterconstraints | spike | frontend/semantics | class: blocked | Implement Infertypeparameterconstraints |
+| 2808 | Implement Infertypepredicates | spike | frontend/semantics | class: blocked | Implement Infertypepredicates |
 | 2809 | Implement Inferenceandhkts | spike | frontend/syntax | class: triage-needed | Implement Inferenceandhkts |
 | 2810 | Implement Inferencecontextualreturntypeunion Import Export | spike | frontend/syntax | class: blocked | Implement Inferencecontextualreturntypeunion Import Export |
 | 2811 | Implement Inferencecontextualreturntypeunion Name Resolution | spike | frontend/resolver | class: blocked | Implement Inferencecontextualreturntypeunion Name Resolution |
-| 2812 | Implement Inferencecontextualreturntypeunion Type System | spike | frontend/syntax | class: blocked | Implement Inferencecontextualreturntypeunion Type System |
-| 2813 | Implement Inferencedoesnotaddundefinedornull | spike | frontend/syntax | class: blocked | Implement Inferencedoesnotaddundefinedornull |
-| 2814 | Implement Inferencedoesntcompareagainstuninstantiatedtypeparameter | spike | frontend/syntax | class: blocked | Implement Inferencedoesntcompareagainstuninstantiatedtypeparameter |
-| 2815 | Implement Inferenceerasedsignatures | spike | frontend/syntax | class: blocked | Implement Inferenceerasedsignatures |
-| 2816 | Implement Inferenceexactoptionalproperties | spike | frontend/syntax | class: blocked | Implement Inferenceexactoptionalproperties |
-| 2817 | Implement Inferencefromgenericclassnocrash | spike | frontend/syntax | class: blocked | Implement Inferencefromgenericclassnocrash |
+| 2812 | Implement Inferencecontextualreturntypeunion Type System | spike | frontend/semantics | class: blocked | Implement Inferencecontextualreturntypeunion Type System |
+| 2813 | Implement Inferencedoesnotaddundefinedornull | spike | frontend/semantics | class: blocked | Implement Inferencedoesnotaddundefinedornull |
+| 2814 | Implement Inferencedoesntcompareagainstuninstantiatedtypeparameter | spike | frontend/semantics | class: blocked | Implement Inferencedoesntcompareagainstuninstantiatedtypeparameter |
+| 2815 | Implement Inferenceerasedsignatures | spike | frontend/semantics | class: blocked | Implement Inferenceerasedsignatures |
+| 2816 | Implement Inferenceexactoptionalproperties | spike | frontend/semantics | class: blocked | Implement Inferenceexactoptionalproperties |
+| 2817 | Implement Inferencefromgenericclassnocrash | spike | frontend/semantics | class: blocked | Implement Inferencefromgenericclassnocrash |
 | 2818 | Implement Inferencefromincompletesource | spike | frontend/syntax | class: triage-needed | Implement Inferencefromincompletesource |
 | 2819 | Implement Inferencelimit | spike | frontend/syntax | class: blocked | Implement Inferencelimit |
-| 2820 | Implement Inferenceofnullableobjecttypeswithcommonbase | spike | frontend/syntax | class: blocked | Implement Inferenceofnullableobjecttypeswithcommonbase |
+| 2820 | Implement Inferenceofnullableobjecttypeswithcommonbase | spike | frontend/semantics | class: blocked | Implement Inferenceofnullableobjecttypeswithcommonbase |
 | 2821 | Implement Inferenceoptionalproperties | spike | reference/triage | class: triage-needed | Implement Inferenceoptionalproperties |
 | 2822 | Implement Inferenceoptionalpropertiesstrict | spike | reference/triage | class: triage-needed | Implement Inferenceoptionalpropertiesstrict |
-| 2823 | Implement Inferenceoptionalpropertiestoindexsignatures | spike | frontend/syntax | class: blocked | Implement Inferenceoptionalpropertiestoindexsignatures |
+| 2823 | Implement Inferenceoptionalpropertiestoindexsignatures | spike | frontend/semantics | class: blocked | Implement Inferenceoptionalpropertiestoindexsignatures |
 | 2824 | Implement Inferenceouterresultnotincorrectlyinstantiatedwithinnerresult | spike | frontend/syntax | class: blocked | Implement Inferenceouterresultnotincorrectlyinstantiatedwithinnerresult |
-| 2825 | Implement Inferenceunionofobjectsmappedcontextualtype | spike | frontend/syntax | class: blocked | Implement Inferenceunionofobjectsmappedcontextualtype |
+| 2825 | Implement Inferenceunionofobjectsmappedcontextualtype | spike | frontend/semantics | class: blocked | Implement Inferenceunionofobjectsmappedcontextualtype |
 | 2826 | Implement Inferentialtypingobjectliteralmethod | spike | frontend/resolver | class: blocked | Implement Inferentialtypingobjectliteralmethod |
-| 2827 | Implement Inferentialtypingusingapparenttype | spike | frontend/syntax | class: blocked | Implement Inferentialtypingusingapparenttype |
+| 2827 | Implement Inferentialtypingusingapparenttype | spike | frontend/semantics | class: blocked | Implement Inferentialtypingusingapparenttype |
 | 2828 | Implement Inferentialtypingwithfunctiontype | spike | frontend/resolver | class: blocked | Implement Inferentialtypingwithfunctiontype |
 | 2829 | Implement Inferentialtypingwithfunctiontypenested | spike | frontend/resolver | class: blocked | Implement Inferentialtypingwithfunctiontypenested |
-| 2830 | Implement Inferentialtypingwithfunctiontypesyntacticscenarios | spike | frontend/syntax | class: blocked | Implement Inferentialtypingwithfunctiontypesyntacticscenarios |
-| 2831 | Implement Inferentialtypingwithfunctiontypezip | spike | frontend/syntax | class: blocked | Implement Inferentialtypingwithfunctiontypezip |
-| 2832 | Implement Inferentialtypingwithobjectliteralproperties | spike | frontend/syntax | class: blocked | Implement Inferentialtypingwithobjectliteralproperties |
+| 2830 | Implement Inferentialtypingwithfunctiontypesyntacticscenarios | spike | frontend/semantics | class: blocked | Implement Inferentialtypingwithfunctiontypesyntacticscenarios |
+| 2831 | Implement Inferentialtypingwithfunctiontypezip | spike | frontend/semantics | class: blocked | Implement Inferentialtypingwithfunctiontypezip |
+| 2832 | Implement Inferentialtypingwithobjectliteralproperties | spike | frontend/semantics | class: blocked | Implement Inferentialtypingwithobjectliteralproperties |
 | 2833 | Implement Inferentiallytypinganemptyarray | spike | frontend/resolver | class: blocked | Implement Inferentiallytypinganemptyarray |
 | 2834 | Implement Inferredindexeronnamespaceimport | spike | frontend/syntax | class: blocked | Implement Inferredindexeronnamespaceimport |
-| 2835 | Implement Inferrednonidentifiertypesgetquotes | spike | frontend/syntax | class: blocked | Implement Inferrednonidentifiertypesgetquotes |
+| 2835 | Implement Inferrednonidentifiertypesgetquotes | spike | frontend/semantics | class: blocked | Implement Inferrednonidentifiertypesgetquotes |
 | 2836 | Implement Inferredresttypefixedonce | spike | reference/triage | class: triage-needed | Implement Inferredresttypefixedonce |
 | 2837 | Implement Inferredreturntypeincorrectreuse | spike | frontend/syntax | class: triage-needed | Implement Inferredreturntypeincorrectreuse |
 | 2838 | Implement Inferrenceinfiniteloopwithsubtyping | spike | frontend/syntax | class: blocked | Implement Inferrenceinfiniteloopwithsubtyping |
-| 2839 | Implement Inferringreturntypefromconstructsignaturegeneric | spike | frontend/syntax | class: blocked | Implement Inferringreturntypefromconstructsignaturegeneric |
+| 2839 | Implement Inferringreturntypefromconstructsignaturegeneric | spike | frontend/semantics | class: blocked | Implement Inferringreturntypefromconstructsignaturegeneric |
 | 2840 | Implement Infiniteconstraints | spike | frontend/resolver | class: blocked | Implement Infiniteconstraints |
 | 2841 | Implement Infinitelyexpandingbasetypes | spike | frontend/syntax | class: triage-needed | Implement Infinitelyexpandingbasetypes |
 | 2842 | Implement Infinitelyexpandingoverloads | spike | frontend/semantics | class: blocked | Implement Infinitelyexpandingoverloads |
 | 2843 | Implement Infinitelyexpandingtypeassignability | spike | frontend/syntax | class: triage-needed | Implement Infinitelyexpandingtypeassignability |
-| 2844 | Implement Infinitelyexpandingtypesnongenericbase | spike | frontend/syntax | class: blocked | Implement Infinitelyexpandingtypesnongenericbase |
-| 2845 | Implement Inheritfromgenerictypeparameter | spike | frontend/syntax | class: blocked | Implement Inheritfromgenerictypeparameter |
+| 2844 | Implement Infinitelyexpandingtypesnongenericbase | spike | frontend/semantics | class: blocked | Implement Infinitelyexpandingtypesnongenericbase |
+| 2845 | Implement Inheritfromgenerictypeparameter | spike | frontend/semantics | class: blocked | Implement Inheritfromgenerictypeparameter |
 | 2846 | Implement Inheritsamenameprivatepropertiesfromdifferentorigins | spike | frontend/semantics | class: blocked | Implement Inheritsamenameprivatepropertiesfromdifferentorigins |
 | 2847 | Implement Inheritsamenameprivatepropertiesfromsameorigin | spike | frontend/semantics | class: blocked | Implement Inheritsamenameprivatepropertiesfromsameorigin |
 | 2848 | Implement Inheritsamenamepropertieswithdifferentvisibility | spike | frontend/syntax | class: triage-needed | Implement Inheritsamenamepropertieswithdifferentvisibility |
@@ -2370,7 +2369,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 2856 | Implement Inheritancememberfuncoverridingaccessor | spike | reference/triage | class: triage-needed | Implement Inheritancememberfuncoverridingaccessor |
 | 2857 | Implement Inheritancememberpropertyoverridingaccessor | spike | frontend/syntax | class: blocked | Implement Inheritancememberpropertyoverridingaccessor |
 | 2858 | Implement Inheritanceofgenericconstructormethod Import Export | spike | frontend/syntax | class: blocked | Implement Inheritanceofgenericconstructormethod Import Export |
-| 2859 | Implement Inheritanceofgenericconstructormethod Type System | spike | frontend/syntax | class: blocked | Implement Inheritanceofgenericconstructormethod Type System |
+| 2859 | Implement Inheritanceofgenericconstructormethod Type System | spike | frontend/semantics | class: blocked | Implement Inheritanceofgenericconstructormethod Type System |
 | 2860 | Implement Inheritancestaticaccessoroverridingaccessor | spike | reference/triage | class: triage-needed | Implement Inheritancestaticaccessoroverridingaccessor |
 | 2861 | Implement Inheritancestaticaccessoroverridingmethod | spike | reference/triage | class: triage-needed | Implement Inheritancestaticaccessoroverridingmethod |
 | 2862 | Implement Inheritancestaticaccessoroverridingproperty | spike | reference/triage | class: triage-needed | Implement Inheritancestaticaccessoroverridingproperty |
@@ -2379,13 +2378,13 @@ Issue files are the source of truth for work items. The generated section below 
 | 2865 | Implement Inheritedconstructorpropertycontextualtype | spike | frontend/semantics | class: blocked | Implement Inheritedconstructorpropertycontextualtype |
 | 2866 | Implement Inheritedconstructorwithrestparams Arity | spike | reference/triage | class: triage-needed | Implement Inheritedconstructorwithrestparams Arity |
 | 2867 | Implement Inheritedconstructorwithrestparams Parser Syntax | spike | frontend/semantics | class: blocked | Implement Inheritedconstructorwithrestparams Parser Syntax |
-| 2868 | Implement Inheritedgenericcallsignature | spike | frontend/syntax | class: blocked | Implement Inheritedgenericcallsignature |
+| 2868 | Implement Inheritedgenericcallsignature | spike | frontend/semantics | class: blocked | Implement Inheritedgenericcallsignature |
 | 2869 | Implement Inheritedmodulemembersforclodule | spike | frontend/syntax | class: blocked | Implement Inheritedmodulemembersforclodule |
 | 2870 | Implement Inheritedoverloadedspecializedsignatures | spike | frontend/syntax | class: blocked | Implement Inheritedoverloadedspecializedsignatures |
 | 2871 | Implement Initializepropertieswithrenamedlet | spike | frontend/syntax | class: triage-needed | Implement Initializepropertieswithrenamedlet |
 | 2872 | Implement Initializeddestructuringassignmenttypes | spike | reference/triage | class: triage-needed | Implement Initializeddestructuringassignmenttypes |
 | 2873 | Implement Initializerwiththispropertyaccess | spike | frontend/syntax | class: triage-needed | Implement Initializerwiththispropertyaccess |
-| 2874 | Implement Inlineconditionalhassimilarassignability | spike | frontend/syntax | class: blocked | Implement Inlineconditionalhassimilarassignability |
+| 2874 | Implement Inlineconditionalhassimilarassignability | spike | frontend/semantics | class: blocked | Implement Inlineconditionalhassimilarassignability |
 | 2875 | Implement Inlinemappedtypemodifierdeclarationemit | spike | frontend/syntax | class: blocked | Implement Inlinemappedtypemodifierdeclarationemit |
 | 2876 | Implement Inneraliases | spike | frontend/syntax | class: blocked | Implement Inneraliases |
 | 2877 | Implement Innerboundlambdaemit | spike | frontend/syntax | class: blocked | Implement Innerboundlambdaemit |
@@ -2402,7 +2401,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 2888 | Implement Instanceoftypealiastogenericclass | spike | frontend/syntax | class: blocked | Implement Instanceoftypealiastogenericclass |
 | 2889 | Implement Instanceofwithprimitiveunion | spike | frontend/syntax | class: blocked | Implement Instanceofwithprimitiveunion |
 | 2890 | Implement Instantiatecontextualtypes | spike | frontend/semantics | class: blocked | Implement Instantiatecontextualtypes |
-| 2891 | Implement Instantiatecontextuallytypedgenericthis | spike | frontend/syntax | class: blocked | Implement Instantiatecontextuallytypedgenericthis |
+| 2891 | Implement Instantiatecontextuallytypedgenericthis | spike | frontend/semantics | class: blocked | Implement Instantiatecontextuallytypedgenericthis |
 | 2892 | Implement Instantiatecrossfilemerge | spike | frontend/syntax | class: triage-needed | Implement Instantiatecrossfilemerge |
 | 2893 | Implement Instantiatedbasetypeconstraints | spike | frontend/semantics | class: blocked | Implement Instantiatedbasetypeconstraints |
 | 2894 | Implement Instantiatedtypealiasdisplay | spike | frontend/syntax | class: blocked | Implement Instantiatedtypealiasdisplay |
@@ -2484,7 +2483,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 2970 | Implement Intersectionpropertycheck | spike | frontend/resolver | class: blocked | Implement Intersectionpropertycheck |
 | 2971 | Implement Intersectionsatisfiesconstraint | spike | frontend/syntax | class: blocked | Implement Intersectionsatisfiesconstraint |
 | 2972 | Implement Intersectiontype | spike | frontend/syntax | class: blocked | Implement Intersectiontype |
-| 2973 | Implement Intersectiontypeinference | spike | frontend/syntax | class: blocked | Implement Intersectiontypeinference |
+| 2973 | Implement Intersectiontypeinference | spike | frontend/semantics | class: blocked | Implement Intersectiontypeinference |
 | 2974 | Implement Intersectiontypenormalization | spike | frontend/syntax | class: blocked | Implement Intersectiontypenormalization |
 | 2975 | Implement Intersectionwithconflictingprivates | spike | frontend/semantics | class: blocked | Implement Intersectionwithconflictingprivates |
 | 2976 | Implement Intersectionsandoptionalproperties | spike | frontend/resolver | class: blocked | Implement Intersectionsandoptionalproperties |
@@ -2503,7 +2502,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 2989 | Implement Invalidunicodeescapesequance Parser Syntax | spike | frontend/syntax | class: triage-needed | Implement Invalidunicodeescapesequance Parser Syntax |
 | 2990 | Implement Invalidunicodeescapesequance Unknown Unsupported | spike | frontend/syntax | class: triage-needed | Implement Invalidunicodeescapesequance Unknown Unsupported |
 | 2991 | Implement Invariantgenericerrorelaboration | spike | frontend/semantics | class: blocked | Implement Invariantgenericerrorelaboration |
-| 2992 | Implement Invokingnongenericmethodwithtypearguments | spike | frontend/syntax | class: blocked | Implement Invokingnongenericmethodwithtypearguments |
+| 2992 | Implement Invokingnongenericmethodwithtypearguments | spike | frontend/semantics | class: blocked | Implement Invokingnongenericmethodwithtypearguments |
 | 2993 | Implement Ipromise Class | spike | frontend/syntax | class: blocked | Implement Ipromise Class |
 | 2994 | Implement Ipromise Import Export | spike | frontend/syntax | class: blocked | Implement Ipromise Import Export |
 | 2995 | Implement Isarray | spike | frontend/resolver | class: blocked | Implement Isarray |
@@ -2649,12 +2648,12 @@ Issue files are the source of truth for work items. The generated section below 
 | 3136 | Implement Jsxruntimepragma | spike | reference/triage | class: triage-needed | Implement Jsxruntimepragma |
 | 3137 | Implement Jsxspreadtag | spike | reference/triage | class: triage-needed | Implement Jsxspreadtag |
 | 3138 | Implement Keepimportsindts | spike | frontend/syntax | class: blocked | Implement Keepimportsindts |
-| 3139 | Implement Keyremappingkeyofresult | spike | frontend/syntax | class: blocked | Implement Keyremappingkeyofresult |
-| 3140 | Implement Keyofdoesntcontainsymbols | spike | frontend/syntax | class: blocked | Implement Keyofdoesntcontainsymbols |
-| 3141 | Implement Keyofgenericextendingclassdoublelayer | spike | frontend/syntax | class: blocked | Implement Keyofgenericextendingclassdoublelayer |
+| 3139 | Implement Keyremappingkeyofresult | spike | frontend/semantics | class: blocked | Implement Keyremappingkeyofresult |
+| 3140 | Implement Keyofdoesntcontainsymbols | spike | frontend/semantics | class: blocked | Implement Keyofdoesntcontainsymbols |
+| 3141 | Implement Keyofgenericextendingclassdoublelayer | spike | frontend/semantics | class: blocked | Implement Keyofgenericextendingclassdoublelayer |
 | 3142 | Implement Keyofisliteralcontexualtype | spike | frontend/resolver | class: blocked | Implement Keyofisliteralcontexualtype |
 | 3143 | Implement Keyofmoduleobjecthascorrectkeys | spike | frontend/syntax | class: blocked | Implement Keyofmoduleobjecthascorrectkeys |
-| 3144 | Implement Keyofobjectwithglobalsymbolincluded | spike | frontend/syntax | class: blocked | Implement Keyofobjectwithglobalsymbolincluded |
+| 3144 | Implement Keyofobjectwithglobalsymbolincluded | spike | frontend/semantics | class: blocked | Implement Keyofobjectwithglobalsymbolincluded |
 | 3145 | Implement Keywordexpressioninternalcomments | spike | frontend/syntax | class: blocked | Implement Keywordexpressioninternalcomments |
 | 3146 | Implement Keywordfield | spike | frontend/syntax | class: triage-needed | Implement Keywordfield |
 | 3147 | Implement Knockout | spike | frontend/syntax | class: blocked | Implement Knockout |
@@ -2704,7 +2703,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 3191 | Implement Localclassesinloop | spike | frontend/resolver | class: blocked | Implement Localclassesinloop |
 | 3192 | Implement Localimportnamevsglobalname | spike | frontend/syntax | class: blocked | Implement Localimportnamevsglobalname |
 | 3193 | Implement Localrequirefunction | spike | frontend/syntax | class: blocked | Implement Localrequirefunction |
-| 3194 | Implement Localtypeparameterinferencepriority | spike | frontend/syntax | class: blocked | Implement Localtypeparameterinferencepriority |
+| 3194 | Implement Localtypeparameterinferencepriority | spike | frontend/semantics | class: blocked | Implement Localtypeparameterinferencepriority |
 | 3195 | Implement Logicalnotexpression | spike | frontend/resolver | class: blocked | Implement Logicalnotexpression |
 | 3196 | Implement Longobjectinstantiationchain Name Resolution | spike | frontend/resolver | class: blocked | Implement Longobjectinstantiationchain Name Resolution |
 | 3197 | Implement Longobjectinstantiationchain Parser Syntax | spike | frontend/syntax | class: triage-needed | Implement Longobjectinstantiationchain Parser Syntax |
@@ -2718,22 +2717,22 @@ Issue files are the source of truth for work items. The generated section below 
 | 3205 | Implement Mapupsert | spike | frontend/syntax | class: triage-needed | Implement Mapupsert |
 | 3206 | Implement Mappedtotoindexsignatureinference | spike | frontend/syntax | class: triage-needed | Implement Mappedtotoindexsignatureinference |
 | 3207 | Implement Mappedtypecontextualtypesapplied | spike | frontend/resolver | class: blocked | Implement Mappedtypecontextualtypesapplied |
-| 3208 | Implement Mappedtypegenericindexedaccess | spike | frontend/syntax | class: blocked | Implement Mappedtypegenericindexedaccess |
-| 3209 | Implement Mappedtypegenericinstantiationpreserveshomomorphism | spike | frontend/syntax | class: blocked | Implement Mappedtypegenericinstantiationpreserveshomomorphism |
-| 3210 | Implement Mappedtypegenericinstantiationpreservesinlineform | spike | frontend/syntax | class: blocked | Implement Mappedtypegenericinstantiationpreservesinlineform |
-| 3211 | Implement Mappedtypegenericwithknownkeys | spike | frontend/syntax | class: blocked | Implement Mappedtypegenericwithknownkeys |
+| 3208 | Implement Mappedtypegenericindexedaccess | spike | frontend/semantics | class: blocked | Implement Mappedtypegenericindexedaccess |
+| 3209 | Implement Mappedtypegenericinstantiationpreserveshomomorphism | spike | frontend/semantics | class: blocked | Implement Mappedtypegenericinstantiationpreserveshomomorphism |
+| 3210 | Implement Mappedtypegenericinstantiationpreservesinlineform | spike | frontend/semantics | class: blocked | Implement Mappedtypegenericinstantiationpreservesinlineform |
+| 3211 | Implement Mappedtypegenericwithknownkeys | spike | frontend/semantics | class: blocked | Implement Mappedtypegenericwithknownkeys |
 | 3212 | Implement Mappedtypeindexedaccessconstraint | spike | frontend/syntax | class: triage-needed | Implement Mappedtypeindexedaccessconstraint |
 | 3213 | Implement Mappedtypeinferencealiassubstitution | spike | frontend/syntax | class: blocked | Implement Mappedtypeinferencealiassubstitution |
 | 3214 | Implement Mappedtypeinferencecircularity | spike | frontend/resolver | class: blocked | Implement Mappedtypeinferencecircularity |
 | 3215 | Implement Mappedtypeinferencefromapparenttype | spike | frontend/resolver | class: blocked | Implement Mappedtypeinferencefromapparenttype |
-| 3216 | Implement Mappedtypeinferencetomappedtype | spike | frontend/syntax | class: blocked | Implement Mappedtypeinferencetomappedtype |
-| 3217 | Implement Mappedtypemultiinference | spike | frontend/syntax | class: blocked | Implement Mappedtypemultiinference |
+| 3216 | Implement Mappedtypeinferencetomappedtype | spike | frontend/semantics | class: blocked | Implement Mappedtypeinferencetomappedtype |
+| 3217 | Implement Mappedtypemultiinference | spike | frontend/semantics | class: blocked | Implement Mappedtypemultiinference |
 | 3218 | Implement Mappedtypenestedgenericinstantiation | spike | frontend/resolver | class: blocked | Implement Mappedtypenestedgenericinstantiation |
 | 3219 | Implement Mappedtypenotmistakenlyhomomorphic | spike | frontend/semantics | class: blocked | Implement Mappedtypenotmistakenlyhomomorphic |
 | 3220 | Implement Mappedtypepartialconstraints | spike | frontend/semantics | class: blocked | Implement Mappedtypepartialconstraints |
 | 3221 | Implement Mappedtypepartialnonhomomorphicbaseconstraint | spike | frontend/semantics | class: blocked | Implement Mappedtypepartialnonhomomorphicbaseconstraint |
 | 3222 | Implement Mappedtyperecursiveinference Parser Syntax | spike | frontend/semantics | class: blocked | Implement Mappedtyperecursiveinference Parser Syntax |
-| 3223 | Implement Mappedtyperecursiveinference Type System | spike | frontend/syntax | class: blocked | Implement Mappedtyperecursiveinference Type System |
+| 3223 | Implement Mappedtyperecursiveinference Type System | spike | frontend/semantics | class: blocked | Implement Mappedtyperecursiveinference Type System |
 | 3224 | Implement Mappedtypetupleconstraintassignability | spike | frontend/semantics | class: blocked | Implement Mappedtypetupleconstraintassignability |
 | 3225 | Implement Mappedtypeunionconstraintupletreatedasarraylike | spike | frontend/syntax | class: triage-needed | Implement Mappedtypeunionconstraintupletreatedasarraylike |
 | 3226 | Implement Mappedtypeunionconstraintinferences | spike | frontend/syntax | class: blocked | Implement Mappedtypeunionconstraintinferences |
@@ -2777,7 +2776,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 3264 | Implement Methodcontaininglocalfunction | spike | frontend/syntax | class: triage-needed | Implement Methodcontaininglocalfunction |
 | 3265 | Implement Methodsignaturedeclarationemit | spike | frontend/syntax | class: blocked | Implement Methodsignaturedeclarationemit |
 | 3266 | Implement Mismatchedexplicittypeparameterandargumenttype | spike | frontend/syntax | class: blocked | Implement Mismatchedexplicittypeparameterandargumenttype |
-| 3267 | Implement Mismatchedgenericarguments | spike | frontend/syntax | class: blocked | Implement Mismatchedgenericarguments |
+| 3267 | Implement Mismatchedgenericarguments | spike | frontend/semantics | class: blocked | Implement Mismatchedgenericarguments |
 | 3268 | Implement Missingargument | spike | frontend/syntax | class: triage-needed | Implement Missingargument |
 | 3269 | Implement Missingclosebrace | spike | frontend/syntax | class: triage-needed | Implement Missingclosebrace |
 | 3270 | Implement Missingclosebraceinobjectliteral | spike | frontend/syntax | class: blocked | Implement Missingclosebraceinobjectliteral |
@@ -2920,8 +2919,8 @@ Issue files are the source of truth for work items. The generated section below 
 | 3415 | Implement Multipleinheritance | spike | frontend/syntax | class: triage-needed | Implement Multipleinheritance |
 | 3416 | Implement Multivar | spike | frontend/syntax | class: blocked | Implement Multivar |
 | 3417 | Implement Mutuallyrecursivecallbacks | spike | frontend/resolver | class: blocked | Implement Mutuallyrecursivecallbacks |
-| 3418 | Implement Mutuallyrecursivegenericbasetypes | spike | frontend/syntax | class: blocked | Implement Mutuallyrecursivegenericbasetypes |
-| 3419 | Implement Mutuallyrecursiveinference | spike | frontend/syntax | class: blocked | Implement Mutuallyrecursiveinference |
+| 3418 | Implement Mutuallyrecursivegenericbasetypes | spike | frontend/semantics | class: blocked | Implement Mutuallyrecursivegenericbasetypes |
+| 3419 | Implement Mutuallyrecursiveinference | spike | frontend/semantics | class: blocked | Implement Mutuallyrecursiveinference |
 | 3420 | Implement Mutuallyrecursiveinterfacedeclaration | spike | frontend/syntax | class: triage-needed | Implement Mutuallyrecursiveinterfacedeclaration |
 | 3421 | Implement Namecollisionwithblockscopedvariable | spike | frontend/syntax | class: blocked | Implement Namecollisionwithblockscopedvariable |
 | 3422 | Implement Namecollisions | spike | frontend/syntax | class: blocked | Implement Namecollisions |
@@ -2960,13 +2959,13 @@ Issue files are the source of truth for work items. The generated section below 
 | 3455 | Implement Narrowingdestructuring | spike | reference/triage | class: triage-needed | Implement Narrowingdestructuring |
 | 3456 | Implement Narrowingincaseclauseaftercaseclausewithreturn | spike | frontend/semantics | class: blocked | Implement Narrowingincaseclauseaftercaseclausewithreturn |
 | 3457 | Implement Narrowingmutualsubtypes | spike | frontend/semantics | class: blocked | Implement Narrowingmutualsubtypes |
-| 3458 | Implement Narrowingnoinfer | spike | frontend/syntax | class: blocked | Implement Narrowingnoinfer |
+| 3458 | Implement Narrowingnoinfer | spike | frontend/semantics | class: blocked | Implement Narrowingnoinfer |
 | 3459 | Implement Narrowingofdottednames | spike | frontend/semantics | class: blocked | Implement Narrowingofdottednames |
 | 3460 | Implement Narrowingofqualifiednames | spike | frontend/semantics | class: blocked | Implement Narrowingofqualifiednames |
 | 3461 | Implement Narrowingpastlastassignment | spike | frontend/syntax | class: blocked | Implement Narrowingpastlastassignment |
 | 3462 | Implement Narrowingpastlastassignmentinmodule | spike | frontend/syntax | class: blocked | Implement Narrowingpastlastassignmentinmodule |
 | 3463 | Implement Narrowingplainjsnocrash | spike | frontend/semantics | class: blocked | Implement Narrowingplainjsnocrash |
-| 3464 | Implement Narrowingrestgenericcall | spike | frontend/syntax | class: blocked | Implement Narrowingrestgenericcall |
+| 3464 | Implement Narrowingrestgenericcall | spike | frontend/semantics | class: blocked | Implement Narrowingrestgenericcall |
 | 3465 | Implement Narrowingtruthyobject | spike | frontend/syntax | class: blocked | Implement Narrowingtruthyobject |
 | 3466 | Implement Narrowingtypeofparenthesized | spike | frontend/resolver | class: blocked | Implement Narrowingtypeofparenthesized |
 | 3467 | Implement Narrowingtypeofundefined Name Resolution | spike | frontend/resolver | class: blocked | Implement Narrowingtypeofundefined Name Resolution |
@@ -2975,13 +2974,13 @@ Issue files are the source of truth for work items. The generated section below 
 | 3470 | Implement Narrowingunionwithbang | spike | frontend/semantics | class: blocked | Implement Narrowingunionwithbang |
 | 3471 | Implement Narrowingwithnonnullexpression | spike | frontend/semantics | class: blocked | Implement Narrowingwithnonnullexpression |
 | 3472 | Implement Nativetoboxedtypes | spike | frontend/syntax | class: blocked | Implement Nativetoboxedtypes |
-| 3473 | Implement Nearbyidenticalgenericlambdasassignable | spike | frontend/syntax | class: blocked | Implement Nearbyidenticalgenericlambdasassignable |
+| 3473 | Implement Nearbyidenticalgenericlambdasassignable | spike | frontend/semantics | class: blocked | Implement Nearbyidenticalgenericlambdasassignable |
 | 3474 | Implement Negativezero | spike | frontend/syntax | class: triage-needed | Implement Negativezero |
 | 3475 | Implement Nestedblockscopedbindings | spike | frontend/resolver | class: blocked | Implement Nestedblockscopedbindings |
 | 3476 | Implement Nestedcallbackerrornotflattened | spike | frontend/resolver | class: blocked | Implement Nestedcallbackerrornotflattened |
 | 3477 | Implement Nestedexcesspropertychecking | spike | frontend/semantics | class: blocked | Implement Nestedexcesspropertychecking |
 | 3478 | Implement Nestedfreshliteral | spike | frontend/syntax | class: triage-needed | Implement Nestedfreshliteral |
-| 3479 | Implement Nestedgenericspreadinference | spike | frontend/syntax | class: blocked | Implement Nestedgenericspreadinference |
+| 3479 | Implement Nestedgenericspreadinference | spike | frontend/semantics | class: blocked | Implement Nestedgenericspreadinference |
 | 3480 | Implement Nestedglobalnamespaceinclass | spike | frontend/syntax | class: triage-needed | Implement Nestedglobalnamespaceinclass |
 | 3481 | Implement Nestedindexer | spike | frontend/syntax | class: triage-needed | Implement Nestedindexer |
 | 3482 | Implement Nestedloopwithonlyinnerletcaptured | spike | frontend/syntax | class: triage-needed | Implement Nestedloopwithonlyinnerletcaptured |
@@ -3093,19 +3092,19 @@ Issue files are the source of truth for work items. The generated section below 
 | 3589 | Implement Nodenextpackageselfnamewithoutdirrootdir | spike | frontend/syntax | class: blocked | Implement Nodenextpackageselfnamewithoutdirrootdir |
 | 3590 | Implement Noderesolution | spike | frontend/syntax | class: blocked | Implement Noderesolution |
 | 3591 | Implement Nonexportedelementsofmergedmodules | spike | frontend/syntax | class: blocked | Implement Nonexportedelementsofmergedmodules |
-| 3592 | Implement Nongenericclassextendinggenericclasswithany | spike | frontend/syntax | class: blocked | Implement Nongenericclassextendinggenericclasswithany |
+| 3592 | Implement Nongenericclassextendinggenericclasswithany | spike | frontend/semantics | class: blocked | Implement Nongenericclassextendinggenericclasswithany |
 | 3593 | Implement Nonidenticaltypeconstraints | spike | frontend/semantics | class: blocked | Implement Nonidenticaltypeconstraints |
 | 3594 | Implement Noninferrabletypepropagation Parser Syntax | spike | frontend/syntax | class: triage-needed | Implement Noninferrabletypepropagation Parser Syntax |
-| 3595 | Implement Noninferrabletypepropagation Type System | spike | frontend/syntax | class: blocked | Implement Noninferrabletypepropagation Type System |
+| 3595 | Implement Noninferrabletypepropagation Type System | spike | frontend/semantics | class: blocked | Implement Noninferrabletypepropagation Type System |
 | 3596 | Implement Nonmergedoverloads | spike | frontend/syntax | class: blocked | Implement Nonmergedoverloads |
-| 3597 | Implement Nonnullfullinference | spike | frontend/syntax | class: blocked | Implement Nonnullfullinference |
+| 3597 | Implement Nonnullfullinference | spike | frontend/semantics | class: blocked | Implement Nonnullfullinference |
 | 3598 | Implement Nonnullmappedtype | spike | frontend/semantics | class: blocked | Implement Nonnullmappedtype |
 | 3599 | Implement Nonnullparameterextendingstringassignabletostring | spike | frontend/semantics | class: blocked | Implement Nonnullparameterextendingstringassignabletostring |
 | 3600 | Implement Nonnullreferencematching | spike | frontend/semantics | class: blocked | Implement Nonnullreferencematching |
 | 3601 | Implement Nonnullablereduction | spike | frontend/semantics | class: blocked | Implement Nonnullablereduction |
 | 3602 | Implement Nonnullablereductionnonstrict | spike | frontend/semantics | class: blocked | Implement Nonnullablereductionnonstrict |
 | 3603 | Implement Nonnullabletypes | spike | frontend/semantics | class: blocked | Implement Nonnullabletypes |
-| 3604 | Implement Nonnullablewithnullablegenericindexedaccessarg | spike | frontend/syntax | class: blocked | Implement Nonnullablewithnullablegenericindexedaccessarg |
+| 3604 | Implement Nonnullablewithnullablegenericindexedaccessarg | spike | frontend/semantics | class: blocked | Implement Nonnullablewithnullablegenericindexedaccessarg |
 | 3605 | Implement Nongenericpartialinstantiationsrelatedinbothdirections | spike | frontend/resolver | class: blocked | Implement Nongenericpartialinstantiationsrelatedinbothdirections |
 | 3606 | Implement Nonnullassertionpropegatescontextualtype | spike | frontend/syntax | class: blocked | Implement Nonnullassertionpropegatescontextualtype |
 | 3607 | Implement Normalizedintersectiontoocomplex | spike | frontend/resolver | class: blocked | Implement Normalizedintersectiontoocomplex |
@@ -3167,7 +3166,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 3663 | Implement Objectrestbindingcontextualinference | spike | frontend/resolver | class: blocked | Implement Objectrestbindingcontextualinference |
 | 3664 | Implement Objectrestspread | spike | frontend/syntax | class: blocked | Implement Objectrestspread |
 | 3665 | Implement Objecttypewithoptionalproperty | spike | frontend/syntax | class: blocked | Implement Objecttypewithoptionalproperty |
-| 3666 | Implement Observableinferencecanbemade | spike | frontend/syntax | class: blocked | Implement Observableinferencecanbemade |
+| 3666 | Implement Observableinferencecanbemade | spike | frontend/semantics | class: blocked | Implement Observableinferencecanbemade |
 | 3667 | Implement Octalliteralandescapesequence | spike | frontend/syntax | class: blocked | Implement Octalliteralandescapesequence |
 | 3668 | Implement Omittypetesterrors | spike | frontend/syntax | class: blocked | Implement Omittypetesterrors |
 | 3669 | Implement Omittypetests | spike | frontend/syntax | class: blocked | Implement Omittypetests |
@@ -3213,7 +3212,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 3710 | Implement Overloadcrash | spike | frontend/resolver | class: blocked | Implement Overloadcrash |
 | 3711 | Implement Overloadequivalencewithstatics | spike | frontend/semantics | class: blocked | Implement Overloadequivalencewithstatics |
 | 3712 | Implement Overloaderrormatchesimplementationelaboaration | spike | frontend/resolver | class: blocked | Implement Overloaderrormatchesimplementationelaboaration |
-| 3713 | Implement Overloadgenericfunctionwithrestargs | spike | frontend/syntax | class: blocked | Implement Overloadgenericfunctionwithrestargs |
+| 3713 | Implement Overloadgenericfunctionwithrestargs | spike | frontend/semantics | class: blocked | Implement Overloadgenericfunctionwithrestargs |
 | 3714 | Implement Overloadmodifiersmustagree | spike | frontend/semantics | class: blocked | Implement Overloadmodifiersmustagree |
 | 3715 | Implement Overloadonconstconstraintchecks | spike | frontend/semantics | class: blocked | Implement Overloadonconstconstraintchecks |
 | 3716 | Implement Overloadonconstduplicateoverloads | spike | frontend/semantics | class: blocked | Implement Overloadonconstduplicateoverloads |
@@ -3223,14 +3222,14 @@ Issue files are the source of truth for work items. The generated section below 
 | 3720 | Implement Overloadonconstnoanyimplementation | spike | frontend/semantics | class: blocked | Implement Overloadonconstnoanyimplementation |
 | 3721 | Implement Overloadonconstnononspecializedsignature | spike | frontend/semantics | class: blocked | Implement Overloadonconstnononspecializedsignature |
 | 3722 | Implement Overloadonconstnostringimplementation | spike | frontend/semantics | class: blocked | Implement Overloadonconstnostringimplementation |
-| 3723 | Implement Overloadongenericclassandnongenericclass | spike | frontend/syntax | class: blocked | Implement Overloadongenericclassandnongenericclass |
+| 3723 | Implement Overloadongenericclassandnongenericclass | spike | frontend/semantics | class: blocked | Implement Overloadongenericclassandnongenericclass |
 | 3724 | Implement Overloadresolutionondefaultconstructor | spike | frontend/syntax | class: blocked | Implement Overloadresolutionondefaultconstructor |
 | 3725 | Implement Overloadresolutionovernonctlambdas | spike | frontend/syntax | class: blocked | Implement Overloadresolutionovernonctlambdas |
 | 3726 | Implement Overloadresolutionovernonctobjectlit | spike | frontend/syntax | class: blocked | Implement Overloadresolutionovernonctobjectlit |
 | 3727 | Implement Overloadresolutionwithany | spike | frontend/syntax | class: blocked | Implement Overloadresolutionwithany |
 | 3728 | Implement Overloadreturntypes | spike | frontend/resolver | class: blocked | Implement Overloadreturntypes |
 | 3729 | Implement Overloadwithcallbackswithdifferingoptionalityonargs | spike | frontend/syntax | class: blocked | Implement Overloadwithcallbackswithdifferingoptionalityonargs |
-| 3730 | Implement Overloadedconstructorfixesinferencesappropriately | spike | frontend/syntax | class: blocked | Implement Overloadedconstructorfixesinferencesappropriately |
+| 3730 | Implement Overloadedconstructorfixesinferencesappropriately | spike | frontend/semantics | class: blocked | Implement Overloadedconstructorfixesinferencesappropriately |
 | 3731 | Implement Overloadedstaticmethodspecialization | spike | frontend/semantics | class: blocked | Implement Overloadedstaticmethodspecialization |
 | 3732 | Implement Overloadingonconstants | spike | frontend/semantics | class: blocked | Implement Overloadingonconstants |
 | 3733 | Implement Overloadingonconstantsinimplementation | spike | frontend/semantics | class: blocked | Implement Overloadingonconstantsinimplementation |
@@ -3272,7 +3271,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 3769 | Implement Parseerrordoublecommaincall | spike | runtime/builtins | class: triage-needed | Implement Parseerrordoublecommaincall |
 | 3770 | Implement Parseerrorinheritageclause | spike | runtime/builtins | class: triage-needed | Implement Parseerrorinheritageclause |
 | 3771 | Implement Parseerrorincorrectreturntoken | spike | frontend/syntax | class: blocked | Implement Parseerrorincorrectreturntoken |
-| 3772 | Implement Parsegenericarrowratherthanleftshift | spike | frontend/syntax | class: blocked | Implement Parsegenericarrowratherthanleftshift |
+| 3772 | Implement Parsegenericarrowratherthanleftshift | spike | frontend/semantics | class: blocked | Implement Parsegenericarrowratherthanleftshift |
 | 3773 | Implement Parseimportattributeserror | spike | runtime/builtins | class: triage-needed | Implement Parseimportattributeserror |
 | 3774 | Implement Parseinvalidnames | spike | frontend/syntax | class: blocked | Implement Parseinvalidnames |
 | 3775 | Implement Parseinvalidnullabletypes | spike | frontend/syntax | class: triage-needed | Implement Parseinvalidnullabletypes |
@@ -3380,13 +3379,13 @@ Issue files are the source of truth for work items. The generated section below 
 | 3878 | Implement Promisepermutations | spike | frontend/resolver | class: blocked | Implement Promisepermutations |
 | 3879 | Implement Promisetry | spike | runtime/builtins | class: triage-needed | Implement Promisetry |
 | 3880 | Implement Promisetype | spike | reference/triage | class: triage-needed | Implement Promisetype |
-| 3881 | Implement Promisetypeinference | spike | frontend/syntax | class: blocked | Implement Promisetypeinference |
+| 3881 | Implement Promisetypeinference | spike | frontend/semantics | class: blocked | Implement Promisetypeinference |
 | 3882 | Implement Promisetypeinferenceunion | spike | frontend/resolver | class: blocked | Implement Promisetypeinferenceunion |
 | 3883 | Implement Promisetypestrictnull | spike | reference/triage | class: triage-needed | Implement Promisetypestrictnull |
 | 3884 | Implement Promisevoiderrorcallback | spike | frontend/syntax | class: blocked | Implement Promisevoiderrorcallback |
 | 3885 | Implement Promisewithresolvers | spike | frontend/syntax | class: triage-needed | Implement Promisewithresolvers |
 | 3886 | Implement Promiseswithconstraints | spike | frontend/syntax | class: triage-needed | Implement Promiseswithconstraints |
-| 3887 | Implement Proptypevalidatorinference | spike | frontend/syntax | class: blocked | Implement Proptypevalidatorinference |
+| 3887 | Implement Proptypevalidatorinference | spike | frontend/semantics | class: blocked | Implement Proptypevalidatorinference |
 | 3888 | Implement Propagatenoninferrabletype | spike | frontend/resolver | class: blocked | Implement Propagatenoninferrabletype |
 | 3889 | Implement Propagationofpromiseinitialization | spike | frontend/syntax | class: blocked | Implement Propagationofpromiseinitialization |
 | 3890 | Implement Properties | spike | frontend/syntax | class: triage-needed | Implement Properties |
@@ -3437,7 +3436,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 3935 | Implement Reachabilitychecks Unknown Unsupported | spike | frontend/syntax | class: triage-needed | Implement Reachabilitychecks Unknown Unsupported |
 | 3936 | Implement Reachabilitychecksnocrash | spike | frontend/syntax | class: blocked | Implement Reachabilitychecksnocrash |
 | 3937 | Implement Reactimportdropped | spike | frontend/syntax | class: blocked | Implement Reactimportdropped |
-| 3938 | Implement Reactreduxlikedeferredinferenceallowsassignment | spike | frontend/syntax | class: blocked | Implement Reactreduxlikedeferredinferenceallowsassignment |
+| 3938 | Implement Reactreduxlikedeferredinferenceallowsassignment | spike | frontend/semantics | class: blocked | Implement Reactreduxlikedeferredinferenceallowsassignment |
 | 3939 | Implement Reacttransitiveimporthasvaliddeclaration | spike | frontend/syntax | class: triage-needed | Implement Reacttransitiveimporthasvaliddeclaration |
 | 3940 | Implement Readonlyassignmentinsubclassofclassexpression | spike | frontend/syntax | class: triage-needed | Implement Readonlyassignmentinsubclassofclassexpression |
 | 3941 | Implement Readonlyfloat | spike | frontend/resolver | class: blocked | Implement Readonlyfloat |
@@ -3461,17 +3460,17 @@ Issue files are the source of truth for work items. The generated section below 
 | 3959 | Implement Recursiveclassreferencetest | spike | frontend/syntax | class: blocked | Implement Recursiveclassreferencetest |
 | 3960 | Implement Recursiveclodulereference | spike | frontend/syntax | class: blocked | Implement Recursiveclodulereference |
 | 3961 | Implement Recursivecomplicatedclasses | spike | frontend/syntax | class: triage-needed | Implement Recursivecomplicatedclasses |
-| 3962 | Implement Recursiveconditionalcrash | spike | frontend/syntax | class: blocked | Implement Recursiveconditionalcrash |
+| 3962 | Implement Recursiveconditionalcrash | spike | frontend/semantics | class: blocked | Implement Recursiveconditionalcrash |
 | 3963 | Implement Recursiveconditionalevaluationnoninfinite | spike | frontend/resolver | class: blocked | Implement Recursiveconditionalevaluationnoninfinite |
-| 3964 | Implement Recursiveconditionaltypes | spike | frontend/syntax | class: blocked | Implement Recursiveconditionaltypes |
+| 3964 | Implement Recursiveconditionaltypes | spike | frontend/semantics | class: blocked | Implement Recursiveconditionaltypes |
 | 3965 | Implement Recursiveexportassignmentandfindaliasedtype | spike | frontend/syntax | class: blocked | Implement Recursiveexportassignmentandfindaliasedtype |
 | 3966 | Implement Recursivefieldsetting | spike | frontend/syntax | class: triage-needed | Implement Recursivefieldsetting |
 | 3967 | Implement Recursivefunctiontypes | spike | frontend/resolver | class: blocked | Implement Recursivefunctiontypes |
 | 3968 | Implement Recursivegenericuniontype | spike | frontend/syntax | class: blocked | Implement Recursivegenericuniontype |
 | 3969 | Implement Recursiveidenticalassignment | spike | frontend/syntax | class: triage-needed | Implement Recursiveidenticalassignment |
 | 3970 | Implement Recursiveidenticaloverloadresolution | spike | frontend/syntax | class: blocked | Implement Recursiveidenticaloverloadresolution |
-| 3971 | Implement Recursiveinference | spike | frontend/syntax | class: blocked | Implement Recursiveinference |
-| 3972 | Implement Recursiveinferencebug | spike | frontend/syntax | class: blocked | Implement Recursiveinferencebug |
+| 3971 | Implement Recursiveinference | spike | frontend/semantics | class: blocked | Implement Recursiveinference |
+| 3972 | Implement Recursiveinferencebug | spike | frontend/semantics | class: blocked | Implement Recursiveinferencebug |
 | 3973 | Implement Recursiveinheritance Name Resolution | spike | frontend/resolver | class: blocked | Implement Recursiveinheritance Name Resolution |
 | 3974 | Implement Recursiveinheritance Parser Syntax | spike | frontend/syntax | class: triage-needed | Implement Recursiveinheritance Parser Syntax |
 | 3975 | Implement Recursiveletconst | spike | frontend/syntax | class: triage-needed | Implement Recursiveletconst |
@@ -3564,7 +3563,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 4071 | Implement Restparamswithnonrestparams | spike | reference/triage | class: triage-needed | Implement Restparamswithnonrestparams |
 | 4072 | Implement Resttyperetainsmappyness | spike | frontend/syntax | class: triage-needed | Implement Resttyperetainsmappyness |
 | 4073 | Implement Restunion | spike | reference/triage | class: triage-needed | Implement Restunion |
-| 4074 | Implement Returnconditionalexpressionjsdoccast | spike | frontend/syntax | class: blocked | Implement Returnconditionalexpressionjsdoccast |
+| 4074 | Implement Returnconditionalexpressionjsdoccast | spike | frontend/semantics | class: blocked | Implement Returnconditionalexpressionjsdoccast |
 | 4075 | Implement Returninconstructor | spike | frontend/syntax | class: triage-needed | Implement Returninconstructor |
 | 4076 | Implement Returninfiniteintersection | spike | frontend/syntax | class: triage-needed | Implement Returninfiniteintersection |
 | 4077 | Implement Returntypeinferencecontextualparametertypesingenerator | spike | frontend/semantics | class: blocked | Implement Returntypeinferencecontextualparametertypesingenerator |
@@ -3575,21 +3574,21 @@ Issue files are the source of truth for work items. The generated section below 
 | 4082 | Implement Returntypetypearguments | spike | frontend/syntax | class: blocked | Implement Returntypetypearguments |
 | 4083 | Implement Reuseinnermodulemember | spike | frontend/syntax | class: blocked | Implement Reuseinnermodulemember |
 | 4084 | Implement Reusetypeannotationimporttypeinglobalthistypeargument | spike | frontend/syntax | class: blocked | Implement Reusetypeannotationimporttypeinglobalthistypeargument |
-| 4085 | Implement Reverseinferenceincontextualinstantiation | spike | frontend/syntax | class: blocked | Implement Reverseinferenceincontextualinstantiation |
+| 4085 | Implement Reverseinferenceincontextualinstantiation | spike | frontend/semantics | class: blocked | Implement Reverseinferenceincontextualinstantiation |
 | 4086 | Implement Reversemappedcontravariantinference | spike | frontend/resolver | class: blocked | Implement Reversemappedcontravariantinference |
-| 4087 | Implement Reversemappedintersectioninference | spike | frontend/syntax | class: blocked | Implement Reversemappedintersectioninference |
-| 4088 | Implement Reversemappedpartiallyinferabletypes | spike | frontend/syntax | class: blocked | Implement Reversemappedpartiallyinferabletypes |
+| 4087 | Implement Reversemappedintersectioninference | spike | frontend/semantics | class: blocked | Implement Reversemappedintersectioninference |
+| 4088 | Implement Reversemappedpartiallyinferabletypes | spike | frontend/semantics | class: blocked | Implement Reversemappedpartiallyinferabletypes |
 | 4089 | Implement Reversemappedtuplecontext | spike | frontend/resolver | class: blocked | Implement Reversemappedtuplecontext |
 | 4090 | Implement Reversemappedtypecontextualtypenotcircular | spike | frontend/resolver | class: blocked | Implement Reversemappedtypecontextualtypenotcircular |
 | 4091 | Implement Reversemappedtypecontextualtypesperelementoftupleconstraint | spike | frontend/resolver | class: blocked | Implement Reversemappedtypecontextualtypesperelementoftupleconstraint |
 | 4092 | Implement Reversemappedtypedeepdeclarationemit | spike | frontend/syntax | class: blocked | Implement Reversemappedtypedeepdeclarationemit |
-| 4093 | Implement Reversemappedtypeinferencesamesource | spike | frontend/syntax | class: blocked | Implement Reversemappedtypeinferencesamesource |
+| 4093 | Implement Reversemappedtypeinferencesamesource | spike | frontend/semantics | class: blocked | Implement Reversemappedtypeinferencesamesource |
 | 4094 | Implement Reversemappedtypeinferencewidening Name Resolution | spike | frontend/resolver | class: blocked | Implement Reversemappedtypeinferencewidening Name Resolution |
-| 4095 | Implement Reversemappedtypeinferencewidening Type System | spike | frontend/syntax | class: blocked | Implement Reversemappedtypeinferencewidening Type System |
+| 4095 | Implement Reversemappedtypeinferencewidening Type System | spike | frontend/semantics | class: blocked | Implement Reversemappedtypeinferencewidening Type System |
 | 4096 | Implement Reversemappedtypeintersectionconstraint | spike | frontend/syntax | class: triage-needed | Implement Reversemappedtypeintersectionconstraint |
 | 4097 | Implement Reversemappedtypelimitedconstraint | spike | frontend/syntax | class: triage-needed | Implement Reversemappedtypelimitedconstraint |
 | 4098 | Implement Reversemappedtypeprimitiveconstraintproperty | spike | frontend/resolver | class: blocked | Implement Reversemappedtypeprimitiveconstraintproperty |
-| 4099 | Implement Reversemappedunioninference | spike | frontend/syntax | class: blocked | Implement Reversemappedunioninference |
+| 4099 | Implement Reversemappedunioninference | spike | frontend/semantics | class: blocked | Implement Reversemappedunioninference |
 | 4100 | Implement Reversedrecusivetypeinstantiation | spike | frontend/syntax | class: triage-needed | Implement Reversedrecusivetypeinstantiation |
 | 4101 | Implement Satisfiesemit | spike | frontend/syntax | class: blocked | Implement Satisfiesemit |
 | 4102 | Implement Scopecheckclassproperty | spike | frontend/resolver | class: blocked | Implement Scopecheckclassproperty |
@@ -3640,7 +3639,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 4147 | Implement Simplerecursionwithbasecase Name Resolution | spike | frontend/resolver | class: blocked | Implement Simplerecursionwithbasecase Name Resolution |
 | 4148 | Implement Simplerecursionwithbasecase Parser Syntax | spike | frontend/syntax | class: triage-needed | Implement Simplerecursionwithbasecase Parser Syntax |
 | 4149 | Implement Simplerecursionwithbasecase Runtime Subset | spike | reference/triage | class: triage-needed | Implement Simplerecursionwithbasecase Runtime Subset |
-| 4150 | Implement Simplifyingconditionalwithinteriorconditionalisrelated | spike | frontend/syntax | class: blocked | Implement Simplifyingconditionalwithinteriorconditionalisrelated |
+| 4150 | Implement Simplifyingconditionalwithinteriorconditionalisrelated | spike | frontend/semantics | class: blocked | Implement Simplifyingconditionalwithinteriorconditionalisrelated |
 | 4151 | Implement Slashbeforevariabledeclaration | spike | frontend/syntax | class: triage-needed | Implement Slashbeforevariabledeclaration |
 | 4152 | Implement Sliceresultcast | spike | frontend/resolver | class: blocked | Implement Sliceresultcast |
 | 4153 | Implement Slightlyindirecteddeepobjectliteralelaborations | spike | frontend/syntax | class: blocked | Implement Slightlyindirecteddeepobjectliteralelaborations |
@@ -3799,10 +3798,10 @@ Issue files are the source of truth for work items. The generated section below 
 | 4310 | Implement Superaccess | spike | frontend/syntax | class: triage-needed | Implement Superaccess |
 | 4311 | Implement Superaccessinfatarrow | spike | frontend/syntax | class: blocked | Implement Superaccessinfatarrow |
 | 4312 | Implement Supercallargsmustmatch | spike | frontend/syntax | class: blocked | Implement Supercallargsmustmatch |
-| 4313 | Implement Supercallfromclassthatderivesfromgenerictype | spike | frontend/syntax | class: blocked | Implement Supercallfromclassthatderivesfromgenerictype |
-| 4314 | Implement Supercallfromclassthatderivesfromgenerictypebutwithincorrectnumberoftypearguments | spike | frontend/syntax | class: blocked | Implement Supercallfromclassthatderivesfromgenerictypebutwithincorrectnumberoftypearguments |
-| 4315 | Implement Supercallfromclassthatderivesfromgenerictypebutwithnotypearguments | spike | frontend/syntax | class: blocked | Implement Supercallfromclassthatderivesfromgenerictypebutwithnotypearguments |
-| 4316 | Implement Supercallfromclassthatderivesnongenerictypebutwithtypearguments | spike | frontend/syntax | class: blocked | Implement Supercallfromclassthatderivesnongenerictypebutwithtypearguments |
+| 4313 | Implement Supercallfromclassthatderivesfromgenerictype | spike | frontend/semantics | class: blocked | Implement Supercallfromclassthatderivesfromgenerictype |
+| 4314 | Implement Supercallfromclassthatderivesfromgenerictypebutwithincorrectnumberoftypearguments | spike | frontend/semantics | class: blocked | Implement Supercallfromclassthatderivesfromgenerictypebutwithincorrectnumberoftypearguments |
+| 4315 | Implement Supercallfromclassthatderivesfromgenerictypebutwithnotypearguments | spike | frontend/semantics | class: blocked | Implement Supercallfromclassthatderivesfromgenerictypebutwithnotypearguments |
+| 4316 | Implement Supercallfromclassthatderivesnongenerictypebutwithtypearguments | spike | frontend/semantics | class: blocked | Implement Supercallfromclassthatderivesnongenerictypebutwithtypearguments |
 | 4317 | Implement Supercallfromclassthathasnobasetype | spike | frontend/syntax | class: blocked | Implement Supercallfromclassthathasnobasetype |
 | 4318 | Implement Supercallfromfunction | spike | frontend/resolver | class: blocked | Implement Supercallfromfunction |
 | 4319 | Implement Supercallinnonstaticmethod | spike | frontend/syntax | class: blocked | Implement Supercallinnonstaticmethod |
@@ -3824,8 +3823,8 @@ Issue files are the source of truth for work items. The generated section below 
 | 4335 | Implement Superpropertyaccessincomputedpropertiesofnestedtype | spike | frontend/syntax | class: triage-needed | Implement Superpropertyaccessincomputedpropertiesofnestedtype |
 | 4336 | Implement Superpropertyaccessinsupercall | spike | frontend/syntax | class: triage-needed | Implement Superpropertyaccessinsupercall |
 | 4337 | Implement Superpropertyelementnounusedlexicalthiscapture | spike | frontend/syntax | class: blocked | Implement Superpropertyelementnounusedlexicalthiscapture |
-| 4338 | Implement Superwithgenericspecialization | spike | frontend/syntax | class: blocked | Implement Superwithgenericspecialization |
-| 4339 | Implement Superwithgenerics | spike | frontend/syntax | class: blocked | Implement Superwithgenerics |
+| 4338 | Implement Superwithgenericspecialization | spike | frontend/semantics | class: blocked | Implement Superwithgenericspecialization |
+| 4339 | Implement Superwithgenerics | spike | frontend/semantics | class: blocked | Implement Superwithgenerics |
 | 4340 | Implement Superwithtypeargument | spike | frontend/semantics | class: blocked | Implement Superwithtypeargument |
 | 4341 | Implement Switchassignmentcompat | spike | frontend/resolver | class: blocked | Implement Switchassignmentcompat |
 | 4342 | Implement Switchcasenarrowsmatchingclausesevenwhennonmatchingclausesexist | spike | frontend/semantics | class: blocked | Implement Switchcasenarrowsmatchingclausesevenwhennonmatchingclausesexist |
@@ -3904,15 +3903,15 @@ Issue files are the source of truth for work items. The generated section below 
 | 4415 | Implement Thisbinding Import Export | spike | frontend/syntax | class: blocked | Implement Thisbinding Import Export |
 | 4416 | Implement Thisbinding Parser Syntax | spike | frontend/syntax | class: triage-needed | Implement Thisbinding Parser Syntax |
 | 4417 | Implement Thiscapture | spike | frontend/syntax | class: triage-needed | Implement Thiscapture |
-| 4418 | Implement Thisconditionalonmethodreturnofgenericinstance | spike | frontend/syntax | class: blocked | Implement Thisconditionalonmethodreturnofgenericinstance |
+| 4418 | Implement Thisconditionalonmethodreturnofgenericinstance | spike | frontend/semantics | class: blocked | Implement Thisconditionalonmethodreturnofgenericinstance |
 | 4419 | Implement Thisexpressionincallexpressionwithtypearguments | spike | frontend/syntax | class: blocked | Implement Thisexpressionincallexpressionwithtypearguments |
-| 4420 | Implement Thisexpressionofgenericobject | spike | frontend/syntax | class: blocked | Implement Thisexpressionofgenericobject |
+| 4420 | Implement Thisexpressionofgenericobject | spike | frontend/semantics | class: blocked | Implement Thisexpressionofgenericobject |
 | 4421 | Implement Thisinaccessors | spike | reference/triage | class: triage-needed | Implement Thisinaccessors |
 | 4422 | Implement Thisinarrowfunctioninstaticinitializer | spike | frontend/semantics | class: blocked | Implement Thisinarrowfunctioninstaticinitializer |
 | 4423 | Implement Thisinclassbodystaticesnext | spike | frontend/syntax | class: triage-needed | Implement Thisinclassbodystaticesnext |
 | 4424 | Implement Thisinconstructorparameter | spike | frontend/semantics | class: blocked | Implement Thisinconstructorparameter |
 | 4425 | Implement Thisinfunctioncalljs | spike | frontend/syntax | class: blocked | Implement Thisinfunctioncalljs |
-| 4426 | Implement Thisingenericstaticmembers | spike | frontend/syntax | class: blocked | Implement Thisingenericstaticmembers |
+| 4426 | Implement Thisingenericstaticmembers | spike | frontend/semantics | class: blocked | Implement Thisingenericstaticmembers |
 | 4427 | Implement Thisininnerfunctions | spike | frontend/syntax | class: triage-needed | Implement Thisininnerfunctions |
 | 4428 | Implement Thisinlambda | spike | frontend/syntax | class: triage-needed | Implement Thisinlambda |
 | 4429 | Implement Thisinmodule | spike | frontend/syntax | class: blocked | Implement Thisinmodule |
@@ -3937,7 +3936,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 4448 | Implement Throwwithoutnewline Name Resolution | spike | frontend/resolver | class: blocked | Implement Throwwithoutnewline Name Resolution |
 | 4449 | Implement Throwwithoutnewline Unknown Unsupported | spike | frontend/syntax | class: triage-needed | Implement Throwwithoutnewline Unknown Unsupported |
 | 4450 | Implement Tostringonprimitives | spike | frontend/syntax | class: triage-needed | Implement Tostringonprimitives |
-| 4451 | Implement Toofewargumentsingenericfunctiontypedargument | spike | frontend/syntax | class: blocked | Implement Toofewargumentsingenericfunctiontypedargument |
+| 4451 | Implement Toofewargumentsingenericfunctiontypedargument | spike | frontend/semantics | class: blocked | Implement Toofewargumentsingenericfunctiontypedargument |
 | 4452 | Implement Toomanytypeparameters | spike | frontend/syntax | class: triage-needed | Implement Toomanytypeparameters |
 | 4453 | Implement Topfunctiontypenotcallable | spike | frontend/resolver | class: blocked | Implement Topfunctiontypenotcallable |
 | 4454 | Implement Toplevel | spike | frontend/syntax | class: triage-needed | Implement Toplevel |
@@ -3948,9 +3947,9 @@ Issue files are the source of truth for work items. The generated section below 
 | 4459 | Implement Toplevellambda Import Export | spike | frontend/syntax | class: blocked | Implement Toplevellambda Import Export |
 | 4460 | Implement Trackedsymbolsnocrash | spike | frontend/syntax | class: blocked | Implement Trackedsymbolsnocrash |
 | 4461 | Implement Transformnestedgeneratorswithtry | spike | reference/triage | class: triage-needed | Implement Transformnestedgeneratorswithtry |
-| 4462 | Implement Transformparenthesizesconditionalsubexpression | spike | frontend/syntax | class: blocked | Implement Transformparenthesizesconditionalsubexpression |
+| 4462 | Implement Transformparenthesizesconditionalsubexpression | spike | frontend/semantics | class: blocked | Implement Transformparenthesizesconditionalsubexpression |
 | 4463 | Implement Transformselidenullundefinedtype | spike | frontend/syntax | class: triage-needed | Implement Transformselidenullundefinedtype |
-| 4464 | Implement Transitivetypeargumentinference | spike | frontend/syntax | class: blocked | Implement Transitivetypeargumentinference |
+| 4464 | Implement Transitivetypeargumentinference | spike | frontend/semantics | class: blocked | Implement Transitivetypeargumentinference |
 | 4465 | Implement Tripleslashincommentnotparsed | spike | frontend/syntax | class: blocked | Implement Tripleslashincommentnotparsed |
 | 4466 | Implement Tripleslashtypesreferencewithmissingexports | spike | frontend/syntax | class: triage-needed | Implement Tripleslashtypesreferencewithmissingexports |
 | 4467 | Implement Trivialsubtypereductionnostructuralcheck | spike | frontend/syntax | class: blocked | Implement Trivialsubtypereductionnostructuralcheck |
@@ -3969,7 +3968,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 4480 | Implement Tsxresolveexternalmoduleexportstypes | spike | reference/triage | class: triage-needed | Implement Tsxresolveexternalmoduleexportstypes |
 | 4481 | Implement Tsxtypeargumentpartialdefinitionstillerrors | spike | frontend/syntax | class: blocked | Implement Tsxtypeargumentpartialdefinitionstillerrors |
 | 4482 | Implement Tupletypeinference Name Resolution | spike | frontend/resolver | class: blocked | Implement Tupletypeinference Name Resolution |
-| 4483 | Implement Tupletypeinference Type System | spike | frontend/syntax | class: blocked | Implement Tupletypeinference Type System |
+| 4483 | Implement Tupletypeinference Type System | spike | frontend/semantics | class: blocked | Implement Tupletypeinference Type System |
 | 4484 | Implement Tupletypes | spike | reference/triage | class: triage-needed | Implement Tupletypes |
 | 4485 | Implement Twicenestedkeyofindexinference | spike | frontend/resolver | class: blocked | Implement Twicenestedkeyofindexinference |
 | 4486 | Implement Typealiasdeclarationemit | spike | frontend/syntax | class: blocked | Implement Typealiasdeclarationemit |
@@ -3977,7 +3976,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 4488 | Implement Typealiasexport | spike | frontend/syntax | class: blocked | Implement Typealiasexport |
 | 4489 | Implement Typealiasfunctiontypesharedsymbol | spike | frontend/syntax | class: blocked | Implement Typealiasfunctiontypesharedsymbol |
 | 4490 | Implement Typearginference Name Resolution | spike | frontend/resolver | class: blocked | Implement Typearginference Name Resolution |
-| 4491 | Implement Typearginference Type System | spike | frontend/syntax | class: blocked | Implement Typearginference Type System |
+| 4491 | Implement Typearginference Type System | spike | frontend/semantics | class: blocked | Implement Typearginference Type System |
 | 4492 | Implement Typeargumentconstraintresolution | spike | frontend/syntax | class: blocked | Implement Typeargumentconstraintresolution |
 | 4493 | Implement Typeargumentdefaultusesconstraintoncirculardefault | spike | frontend/semantics | class: blocked | Implement Typeargumentdefaultusesconstraintoncirculardefault |
 | 4494 | Implement Typeargumentinferencewithconstraintascommonroot | spike | frontend/resolver | class: blocked | Implement Typeargumentinferencewithconstraintascommonroot |
@@ -4002,14 +4001,14 @@ Issue files are the source of truth for work items. The generated section below 
 | 4513 | Implement Typeguardnarrowsindexedaccessofknownproperty Parser Syntax | spike | frontend/semantics | class: blocked | Implement Typeguardnarrowsindexedaccessofknownproperty Parser Syntax |
 | 4514 | Implement Typeguardoncontainertypenohang | spike | frontend/syntax | class: blocked | Implement Typeguardoncontainertypenohang |
 | 4515 | Implement Typeidentityconsidersbrands | spike | frontend/syntax | class: triage-needed | Implement Typeidentityconsidersbrands |
-| 4516 | Implement Typeinfer | spike | frontend/syntax | class: blocked | Implement Typeinfer |
+| 4516 | Implement Typeinfer | spike | frontend/semantics | class: blocked | Implement Typeinfer |
 | 4517 | Implement Typeinferencecacheinvalidation | spike | frontend/resolver | class: blocked | Implement Typeinferencecacheinvalidation |
 | 4518 | Implement Typeinferenceconflictingcandidates | spike | frontend/resolver | class: blocked | Implement Typeinferenceconflictingcandidates |
 | 4519 | Implement Typeinferencefixearly | spike | frontend/resolver | class: blocked | Implement Typeinferencefixearly |
-| 4520 | Implement Typeinferenceliteralunion | spike | frontend/syntax | class: blocked | Implement Typeinferenceliteralunion |
-| 4521 | Implement Typeinferencereturntypecallback | spike | frontend/syntax | class: blocked | Implement Typeinferencereturntypecallback |
+| 4520 | Implement Typeinferenceliteralunion | spike | frontend/semantics | class: blocked | Implement Typeinferenceliteralunion |
+| 4521 | Implement Typeinferencereturntypecallback | spike | frontend/semantics | class: blocked | Implement Typeinferencereturntypecallback |
 | 4522 | Implement Typeinferencetypepredicate Name Resolution | spike | frontend/resolver | class: blocked | Implement Typeinferencetypepredicate Name Resolution |
-| 4523 | Implement Typeinferencetypepredicate Type System | spike | frontend/syntax | class: blocked | Implement Typeinferencetypepredicate Type System |
+| 4523 | Implement Typeinferencetypepredicate Type System | spike | frontend/semantics | class: blocked | Implement Typeinferencetypepredicate Type System |
 | 4524 | Implement Typeinferencewithtypeannotation | spike | frontend/resolver | class: blocked | Implement Typeinferencewithtypeannotation |
 | 4525 | Implement Typeinterfacedeclarationsinblockstatements | spike | frontend/syntax | class: triage-needed | Implement Typeinterfacedeclarationsinblockstatements |
 | 4526 | Implement Typeliteralcallback | spike | frontend/resolver | class: blocked | Implement Typeliteralcallback |
@@ -4047,17 +4046,17 @@ Issue files are the source of truth for work items. The generated section below 
 | 4558 | Implement Typeparametersinstaticproperties | spike | frontend/semantics | class: blocked | Implement Typeparametersinstaticproperties |
 | 4559 | Implement Typeparametersshouldnotbeequal | spike | frontend/semantics | class: blocked | Implement Typeparametersshouldnotbeequal |
 | 4560 | Implement Typepartameterconstraintinstantiatedwithdefaultwhencheckingdefault | spike | frontend/semantics | class: blocked | Implement Typepartameterconstraintinstantiatedwithdefaultwhencheckingdefault |
-| 4561 | Implement Typepredicatefreshliteralwidening | spike | frontend/syntax | class: blocked | Implement Typepredicatefreshliteralwidening |
+| 4561 | Implement Typepredicatefreshliteralwidening | spike | frontend/semantics | class: blocked | Implement Typepredicatefreshliteralwidening |
 | 4562 | Implement Typepredicateinloop | spike | frontend/syntax | class: blocked | Implement Typepredicateinloop |
-| 4563 | Implement Typepredicateinherit | spike | frontend/syntax | class: blocked | Implement Typepredicateinherit |
-| 4564 | Implement Typepredicatestructuralmatch | spike | frontend/syntax | class: blocked | Implement Typepredicatestructuralmatch |
-| 4565 | Implement Typepredicatetopleveltypeparameter | spike | frontend/syntax | class: blocked | Implement Typepredicatetopleveltypeparameter |
-| 4566 | Implement Typepredicatewiththisparameter | spike | frontend/syntax | class: blocked | Implement Typepredicatewiththisparameter |
+| 4563 | Implement Typepredicateinherit | spike | frontend/semantics | class: blocked | Implement Typepredicateinherit |
+| 4564 | Implement Typepredicatestructuralmatch | spike | frontend/semantics | class: blocked | Implement Typepredicatestructuralmatch |
+| 4565 | Implement Typepredicatetopleveltypeparameter | spike | frontend/semantics | class: blocked | Implement Typepredicatetopleveltypeparameter |
+| 4566 | Implement Typepredicatewiththisparameter | spike | frontend/semantics | class: blocked | Implement Typepredicatewiththisparameter |
 | 4567 | Implement Typepredicatescannarrowbydiscriminant | spike | frontend/semantics | class: blocked | Implement Typepredicatescannarrowbydiscriminant |
 | 4568 | Implement Typepredicatesinunion Name Resolution | spike | frontend/resolver | class: blocked | Implement Typepredicatesinunion Name Resolution |
-| 4569 | Implement Typepredicatesinunion Type System | spike | frontend/syntax | class: blocked | Implement Typepredicatesinunion Type System |
+| 4569 | Implement Typepredicatesinunion Type System | spike | frontend/semantics | class: blocked | Implement Typepredicatesinunion Type System |
 | 4570 | Implement Typepredicatesoptionalchaining Name Resolution | spike | frontend/resolver | class: blocked | Implement Typepredicatesoptionalchaining Name Resolution |
-| 4571 | Implement Typepredicatesoptionalchaining Type System | spike | frontend/syntax | class: blocked | Implement Typepredicatesoptionalchaining Type System |
+| 4571 | Implement Typepredicatesoptionalchaining Type System | spike | frontend/semantics | class: blocked | Implement Typepredicatesoptionalchaining Type System |
 | 4572 | Implement Typereferencedirectivescopedpackagecustomtyperoot | spike | frontend/resolver | class: blocked | Implement Typereferencedirectivescopedpackagecustomtyperoot |
 | 4573 | Implement Typereferencedirectivewithfailedfromtyperoot | spike | frontend/syntax | class: triage-needed | Implement Typereferencedirectivewithfailedfromtyperoot |
 | 4574 | Implement Typereferencedirectivewithtypeasfile | spike | frontend/resolver | class: blocked | Implement Typereferencedirectivewithtypeasfile |
@@ -4080,14 +4079,14 @@ Issue files are the source of truth for work items. The generated section below 
 | 4591 | Implement Typedarrays Parser Syntax | spike | runtime/builtins | class: triage-needed | Implement Typedarrays Parser Syntax |
 | 4592 | Implement Typedarrayscrossassignability | spike | frontend/resolver | class: blocked | Implement Typedarrayscrossassignability |
 | 4593 | Implement Typedarrayssubarray | spike | frontend/resolver | class: blocked | Implement Typedarrayssubarray |
-| 4594 | Implement Typedgenericprototypemember | spike | frontend/syntax | class: blocked | Implement Typedgenericprototypemember |
+| 4594 | Implement Typedgenericprototypemember | spike | frontend/semantics | class: blocked | Implement Typedgenericprototypemember |
 | 4595 | Implement Typeofambientexternalmodules | spike | frontend/syntax | class: blocked | Implement Typeofambientexternalmodules |
 | 4596 | Implement Typeofclass | spike | frontend/resolver | class: blocked | Implement Typeofclass |
 | 4597 | Implement Typeofenum | spike | frontend/syntax | class: triage-needed | Implement Typeofenum |
 | 4598 | Implement Typeofexternalmodules | spike | frontend/syntax | class: blocked | Implement Typeofexternalmodules |
 | 4599 | Implement Typeofimportinstantiationexpression | spike | frontend/syntax | class: blocked | Implement Typeofimportinstantiationexpression |
 | 4600 | Implement Typeofinternalmodules | spike | frontend/syntax | class: blocked | Implement Typeofinternalmodules |
-| 4601 | Implement Typeofobjectinference | spike | frontend/syntax | class: blocked | Implement Typeofobjectinference |
+| 4601 | Implement Typeofobjectinference | spike | frontend/semantics | class: blocked | Implement Typeofobjectinference |
 | 4602 | Implement Typeofproperty | spike | frontend/syntax | class: triage-needed | Implement Typeofproperty |
 | 4603 | Implement Typeofsimple | spike | frontend/resolver | class: blocked | Implement Typeofsimple |
 | 4604 | Implement Typeofstripsfreshness | spike | frontend/resolver | class: blocked | Implement Typeofstripsfreshness |
@@ -4105,7 +4104,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 4616 | Implement Unaryoperatorsinstrictmode | spike | reference/triage | class: triage-needed | Implement Unaryoperatorsinstrictmode |
 | 4617 | Implement Unaryplus | spike | frontend/syntax | class: triage-needed | Implement Unaryplus |
 | 4618 | Implement Uncalledfunctionchecksinconditional Name Resolution | spike | frontend/resolver | class: blocked | Implement Uncalledfunctionchecksinconditional Name Resolution |
-| 4619 | Implement Uncalledfunctionchecksinconditional Type System | spike | frontend/syntax | class: blocked | Implement Uncalledfunctionchecksinconditional Type System |
+| 4619 | Implement Uncalledfunctionchecksinconditional Type System | spike | frontend/semantics | class: blocked | Implement Uncalledfunctionchecksinconditional Type System |
 | 4620 | Implement Uncalledfunctionchecksinconditionalperf | spike | frontend/resolver | class: blocked | Implement Uncalledfunctionchecksinconditionalperf |
 | 4621 | Implement Uncaughtcompilererror Name Resolution | spike | frontend/resolver | class: blocked | Implement Uncaughtcompilererror Name Resolution |
 | 4622 | Implement Uncaughtcompilererror Unknown Unsupported | spike | frontend/syntax | class: triage-needed | Implement Uncaughtcompilererror Unknown Unsupported |
@@ -4115,7 +4114,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 4626 | Implement Undeclaredmoduleerror | spike | frontend/syntax | class: blocked | Implement Undeclaredmoduleerror |
 | 4627 | Implement Undeclaredvaremit | spike | frontend/resolver | class: blocked | Implement Undeclaredvaremit |
 | 4628 | Implement Undefinedasdiscriminantwithunknown | spike | frontend/syntax | class: triage-needed | Implement Undefinedasdiscriminantwithunknown |
-| 4629 | Implement Undefinedassignabletogenericmappedintersection | spike | frontend/syntax | class: blocked | Implement Undefinedassignabletogenericmappedintersection |
+| 4629 | Implement Undefinedassignabletogenericmappedintersection | spike | frontend/semantics | class: blocked | Implement Undefinedassignabletogenericmappedintersection |
 | 4630 | Implement Undefinedsymbolreferencedinarrayliteral | spike | frontend/resolver | class: blocked | Implement Undefinedsymbolreferencedinarrayliteral |
 | 4631 | Implement Undefinedtypeargument | spike | frontend/syntax | class: blocked | Implement Undefinedtypeargument |
 | 4632 | Implement Undefinedtypeassignment Operator | spike | frontend/syntax | class: blocked | Implement Undefinedtypeassignment Operator |
@@ -4153,7 +4152,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 4664 | Implement Uniquesymboljs Parser Syntax | spike | frontend/syntax | class: triage-needed | Implement Uniquesymboljs Parser Syntax |
 | 4665 | Implement Uniquesymbolpropertydeclarationemit | spike | frontend/syntax | class: blocked | Implement Uniquesymbolpropertydeclarationemit |
 | 4666 | Implement Unknownlikeunionobjectflagsnotpropagated | spike | reference/triage | class: triage-needed | Implement Unknownlikeunionobjectflagsnotpropagated |
-| 4667 | Implement Unknownsymbolingenericreturntype | spike | frontend/syntax | class: blocked | Implement Unknownsymbolingenericreturntype |
+| 4667 | Implement Unknownsymbolingenericreturntype | spike | frontend/semantics | class: blocked | Implement Unknownsymbolingenericreturntype |
 | 4668 | Implement Unknownsymboloffcontextualtype | spike | frontend/resolver | class: blocked | Implement Unknownsymboloffcontextualtype |
 | 4669 | Implement Unknownsymbols Import Export | spike | frontend/syntax | class: blocked | Implement Unknownsymbols Import Export |
 | 4670 | Implement Unknownsymbols Unknown Unsupported | spike | frontend/syntax | class: triage-needed | Implement Unknownsymbols Unknown Unsupported |
@@ -4275,7 +4274,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 4786 | Implement Voidreturnindexunioninference | spike | frontend/syntax | class: blocked | Implement Voidreturnindexunioninference |
 | 4787 | Implement Voidreturnlambdavalue | spike | frontend/syntax | class: blocked | Implement Voidreturnlambdavalue |
 | 4788 | Implement Voidundefinedreduction | spike | frontend/resolver | class: blocked | Implement Voidundefinedreduction |
-| 4789 | Implement Vuelikedataandpropsinference | spike | frontend/syntax | class: blocked | Implement Vuelikedataandpropsinference |
+| 4789 | Implement Vuelikedataandpropsinference | spike | frontend/semantics | class: blocked | Implement Vuelikedataandpropsinference |
 | 4790 | Implement Weaktype | spike | frontend/semantics | class: blocked | Implement Weaktype |
 | 4791 | Implement Weaktypeandprimitivenarrowing | spike | frontend/syntax | class: blocked | Implement Weaktypeandprimitivenarrowing |
 | 4792 | Implement Webworkeriterable | spike | runtime/builtins | class: triage-needed | Implement Webworkeriterable |
@@ -5015,6 +5014,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 4813 | Implement type-system support (dup) | spike | frontend/syntax | see `issues/done/4813-implement-type-system.md` |
 | 4814 | Investigate and classify unknown-unsupported cases (dup) | spike | frontend/syntax | see `issues/done/4814-implement-unknown-unsupported.md` |
 | 5000 | Meta: TypeScript Compiler Parser Syntax Coverage | meta | frontend/syntax | see file |
+| 5002 | Meta: TypeScript Compiler Type System Coverage | meta | frontend/semantics | see `issues/done/5002-meta-tsc-type-system.md` |
 | 5004 | Meta: Runtime Builtins Coverage (test262) (audit reopened #5004) | meta | runtime/builtins | see `issues/done/5004-meta-runtime-builtins.md` |
 | 5005 | Meta: TypeScript Compiler Name Resolution Coverage | meta | frontend/resolver | see `issues/done/5005-meta-tsc-name-resolution.md` |
 | 5006 | Meta: TypeScript Compiler Scope Analysis Coverage | meta | frontend/resolver | see `issues/done/5006-meta-tsc-scope-analysis.md` |

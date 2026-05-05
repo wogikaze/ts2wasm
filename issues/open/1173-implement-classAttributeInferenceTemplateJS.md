@@ -2,7 +2,7 @@
 id: 1173
 title: "Implement Classattributeinferencetemplatejs"
 type: spike
-area: frontend/syntax
+area: frontend/semantics
 class: blocked
 priority: P1
 depends_on: [5002]

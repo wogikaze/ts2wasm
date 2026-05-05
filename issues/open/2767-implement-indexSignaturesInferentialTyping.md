@@ -2,7 +2,7 @@
 id: 2767
 title: "Implement Indexsignaturesinferentialtyping"
 type: spike
-area: frontend/syntax
+area: frontend/semantics
 class: blocked
 priority: P1
 depends_on: [5002]

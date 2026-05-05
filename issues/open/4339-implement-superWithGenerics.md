@@ -2,7 +2,7 @@
 id: 4339
 title: "Implement Superwithgenerics"
 type: spike
-area: frontend/syntax
+area: frontend/semantics
 class: blocked
 priority: P1
 depends_on: [5002]

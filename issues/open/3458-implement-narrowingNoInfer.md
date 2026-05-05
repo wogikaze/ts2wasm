@@ -2,7 +2,7 @@
 id: 3458
 title: "Implement Narrowingnoinfer"
 type: spike
-area: frontend/syntax
+area: frontend/semantics
 class: blocked
 priority: P1
 depends_on: [5002]

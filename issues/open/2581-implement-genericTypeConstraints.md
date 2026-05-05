@@ -2,7 +2,7 @@
 id: 2581
 title: "Implement Generictypeconstraints"
 type: spike
-area: frontend/syntax
+area: frontend/semantics
 class: blocked
 priority: P1
 depends_on: [5002]

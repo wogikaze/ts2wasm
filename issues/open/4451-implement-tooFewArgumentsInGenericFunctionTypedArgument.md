@@ -2,7 +2,7 @@
 id: 4451
 title: "Implement Toofewargumentsingenericfunctiontypedargument"
 type: spike
-area: frontend/syntax
+area: frontend/semantics
 class: blocked
 priority: P1
 depends_on: [5002]

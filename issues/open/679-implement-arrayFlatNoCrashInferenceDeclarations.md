@@ -2,7 +2,7 @@
 id: 679
 title: "Implement Arrayflatnocrashinferencedeclarations (audit reopened #679)"
 type: spike
-area: frontend/syntax
+area: frontend/semantics
 class: blocked
 priority: P1
 depends_on: [5002]
