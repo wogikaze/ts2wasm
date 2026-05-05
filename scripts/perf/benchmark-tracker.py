@@ -2,7 +2,7 @@
 """Stream G: Performance Baseline Tracker (optional)
 
 Usage:
-  python scripts/manager.py benchmark-tracker [--output path/to/benchmark-results.json]
+  python scripts/manager.py benchmark-tracker [--output artifacts/benchmark-results.json]
 
 Tracks per-build metrics:
 - Wasm file size (bytes)
@@ -19,11 +19,12 @@ from pathlib import Path
 from datetime import datetime
 
 REPO_ROOT = Path(__file__).parent.parent.parent.resolve()
+DEFAULT_OUTPUT_FILE = "artifacts/benchmark-results.json"
 
 def main():
     args = sys.argv[1:]
     
-    output_file = "benchmark-results.json"
+    output_file = DEFAULT_OUTPUT_FILE
     i = 0
     while i < len(args):
         if args[i] == "--output":
@@ -41,6 +42,7 @@ def main():
             sys.exit(1)
     
     output_path = REPO_ROOT / output_file
+    output_path.parent.mkdir(parents=True, exist_ok=True)
     
     print("Starting benchmark tracking...", file=sys.stderr)
     

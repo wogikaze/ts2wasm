@@ -21,7 +21,7 @@ from typing import Any, Optional
 import requests
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
-DEFAULT_SENT_REGISTRY = REPO_ROOT / ".discord-report-sent.json"
+DEFAULT_SENT_REGISTRY = REPO_ROOT / "artifacts/.discord-report-sent.json"
 CONTENT_LIMIT = 1900
 EMBED_TOTAL_LIMIT = 5600
 FIELD_VALUE_LIMIT = 900
@@ -359,6 +359,7 @@ def mark_sent(
         "run_id": run_id,
         "kind": payload_kind,
     }
+    registry_path.parent.mkdir(parents=True, exist_ok=True)
     tmp_path = registry_path.with_suffix(registry_path.suffix + ".tmp")
     tmp_path.write_text(json.dumps(registry, indent=2, sort_keys=True, ensure_ascii=False) + "\n")
     tmp_path.replace(registry_path)
