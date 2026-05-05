@@ -15,7 +15,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 1 | 0 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4378 | 3814 | 564 |
+| frontend | 4378 | 3811 | 567 |
 | harness | 1 | 0 | 1 |
 | ir | 21 | 0 | 21 |
 | issues | 4 | 0 | 4 |
@@ -26,7 +26,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 4969 | 4091 | 878 |
+| total | 4969 | 4088 | 881 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -237,7 +237,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 452 | Implement type-alias support | spike | frontend/syntax | class: blocked | Implement type-alias support |
 | 453 | Implement type-system support | spike | frontend/semantics | class: blocked | Implement type-system support |
 | 454 | Investigate and classify unknown-unsupported cases | spike | frontend/syntax | class: triage-needed | Investigate and classify unknown-unsupported cases |
-| 495 | Implement Aliasinaccessiblemodule (audit reopened #495) | spike | frontend/syntax | class: blocked | Implement Aliasinaccessiblemodule (audit reopened #495) |
 | 516 | Implement Alwaysstrictmodule (audit reopened #516) | spike | frontend/syntax | class: blocked | Implement Alwaysstrictmodule (audit reopened #516) |
 | 517 | Implement Alwaysstrictnoimplicitusestrict (audit reopened #517) | spike | frontend/syntax | class: blocked | Implement Alwaysstrictnoimplicitusestrict (audit reopened #517) |
 | 521 | Implement Ambientenumelementinitializer | spike | frontend/syntax | class: blocked | Implement Ambientenumelementinitializer |
@@ -279,7 +278,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 578 | Implement Aliasbug | spike | frontend/syntax | class: blocked | Implement Aliasbug |
 | 579 | Implement Aliasdoesnotduplicatesignatures | spike | frontend/syntax | class: blocked | Implement Aliasdoesnotduplicatesignatures |
 | 580 | Implement Aliaserrors | spike | frontend/syntax | class: blocked | Implement Aliaserrors |
-| 581 | Implement Aliasinaccessiblemodule (audit reopened #581) | spike | frontend/syntax | class: blocked | Implement Aliasinaccessiblemodule (audit reopened #581) |
 | 582 | Implement Aliasinstantiationexpressiongenericintersectionnocrash | spike | frontend/syntax | class: blocked | Implement Aliasinstantiationexpressiongenericintersectionnocrash |
 | 583 | Implement Aliasonmergedmoduleinterface | spike | frontend/syntax | class: blocked | Implement Aliasonmergedmoduleinterface |
 | 584 | Implement Aliasusageinaccessorsofclass | spike | frontend/syntax | class: blocked | Implement Aliasusageinaccessorsofclass |
@@ -469,7 +467,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 774 | Implement Autolift | spike | frontend/syntax | class: triage-needed | Implement Autolift |
 | 775 | Implement Autotypeassignedusingdestructuringfromnevernocrash | spike | frontend/resolver | class: blocked | Implement Autotypeassignedusingdestructuringfromnevernocrash |
 | 784 | Implement Functiondeclaration Import Export (audit reopened #784) | spike | frontend/syntax | class: blocked | Implement Functiondeclaration Import Export (audit reopened #784) |
-| 816 | Implement Aliasinaccessiblemodule (audit reopened #816) | spike | frontend/syntax | class: blocked | Implement Aliasinaccessiblemodule (audit reopened #816) |
 | 837 | Implement Alwaysstrictmodule (audit reopened #837) | spike | frontend/syntax | class: blocked | Implement Alwaysstrictmodule (audit reopened #837) |
 | 838 | Implement Alwaysstrictnoimplicitusestrict (audit reopened #838) | spike | frontend/syntax | class: blocked | Implement Alwaysstrictnoimplicitusestrict (audit reopened #838) |
 | 839 | Implement Ambientclassdeclarationwithextends (audit reopened #839) | spike | frontend/syntax | class: blocked | Implement Ambientclassdeclarationwithextends (audit reopened #839) |
@@ -4704,6 +4701,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 492 | Implement Aliasbug (dup) | spike | frontend/syntax | see `issues/done/492-implement-aliasBug.md` |
 | 493 | Implement Aliasdoesnotduplicatesignatures (dup) | spike | frontend/syntax | see `issues/done/493-implement-aliasDoesNotDuplicateSignatures.md` |
 | 494 | Implement Aliaserrors (dup) | spike | frontend/syntax | see `issues/done/494-implement-aliasErrors.md` |
+| 495 | Implement Aliasinaccessiblemodule (audit reopened #495) | spike | frontend/syntax | see `issues/done/495-implement-aliasInaccessibleModule.md` |
 | 496 | Implement Aliasinstantiationexpressiongenericintersectionnocrash (dup) | spike | frontend/syntax | see `issues/done/496-implement-aliasInstantiationExpressionGenericIntersectionNoCrash.md` |
 | 497 | Implement Aliasonmergedmoduleinterface (dup) | spike | frontend/syntax | see `issues/done/497-implement-aliasOnMergedModuleInterface.md` |
 | 498 | Implement Aliasusageinaccessorsofclass (dup) | spike | frontend/syntax | see `issues/done/498-implement-aliasUsageInAccessorsOfClass.md` |
@@ -4748,6 +4746,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 571 | Implement Accessorparameteraccessibilitymodifier (audit reopened #571) | spike | frontend/syntax | see `issues/done/571-implement-accessorParameterAccessibilityModifier.md` |
 | 573 | Implement Accessorwithoutbody (audit reopened #573) | spike | frontend/syntax | see `issues/done/573-implement-accessorWithoutBody.md` |
 | 575 | Implement Accessorsinambientcontext (audit reopened #575) | spike | frontend/syntax | see `issues/done/575-implement-accessorsInAmbientContext.md` |
+| 581 | Implement Aliasinaccessiblemodule (audit reopened #581) | spike | frontend/syntax | see `issues/done/581-implement-aliasInaccessibleModule.md` |
 | 607 | Implement Ambientenumelementinitializer (dup) | spike | frontend/syntax | see `issues/done/607-implement-ambientEnumElementInitializer.md` |
 | 608 | Implement Ambienterrors | spike | runtime/builtins | see `issues/done/608-implement-ambientErrors.md` |
 | 638 | Implement Anonymousclassexpression (audit reopened #638) | spike | frontend/syntax | see `issues/done/638-implement-anonymousClassExpression.md` |
@@ -4793,6 +4792,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 813 | Implement Aliasbug (dup) | spike | frontend/syntax | see `issues/done/813-implement-aliasBug.md` |
 | 814 | Implement Aliasdoesnotduplicatesignatures (dup) | spike | frontend/syntax | see `issues/done/814-implement-aliasDoesNotDuplicateSignatures.md` |
 | 815 | Implement Aliaserrors (dup) | spike | frontend/syntax | see `issues/done/815-implement-aliasErrors.md` |
+| 816 | Implement Aliasinaccessiblemodule (audit reopened #816) | spike | frontend/syntax | see `issues/done/816-implement-aliasInaccessibleModule.md` |
 | 817 | Implement Aliasinstantiationexpressiongenericintersectionnocrash (dup) | spike | frontend/syntax | see `issues/done/817-implement-aliasInstantiationExpressionGenericIntersectionNoCrash.md` |
 | 818 | Implement Aliasonmergedmoduleinterface (dup) | spike | frontend/syntax | see `issues/done/818-implement-aliasOnMergedModuleInterface.md` |
 | 819 | Implement Aliasusageinaccessorsofclass (dup) | spike | frontend/syntax | see `issues/done/819-implement-aliasUsageInAccessorsOfClass.md` |
