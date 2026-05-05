@@ -1,22 +1,19 @@
 #!/usr/bin/env python3
-"""Detect trivial assert(true) replacements in fixture files and test scripts.
+"""Detect trivial assert(true) in fixture files and test scripts.
 
 Complex test cases (eval, legacy RegExp, generators, Date, TypedArray,
 HTML-like comments, etc.) must not be replaced with assert(true) as a lazy
 way to make tests pass.
 
-Scans:
-  - fixtures/**/*.ts should never contain assert(true) (full scan / --diff-only)
-  - scripts/**/*.py is checked ONLY via --diff-only (detects new additions)
+Scans both fixtures/**/*.ts and scripts/**/*.py for assert(true).
 
 Usage:
-  mise run check assert-true
+  mise run check assert-true        # full scan (both fixtures/ and scripts/)
   python scripts/check/assert-true-detect.py [--diff-only]
 
 Options:
-  --diff-only   Only check staged additions (pre-commit mode).
-                Uses git diff --cached to find newly added assert(true) lines.
-                Works for both .ts fixtures and .py scripts.
+  --diff-only   Only check staged target files (pre-commit mode).
+                Checks ALL content in staged files, not just new additions.
 
 Dependencies: python3, rg (ripgrep)
 """
@@ -26,14 +23,6 @@ import subprocess
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).parent.parent.parent.resolve()
-FIXTURES_DIR = REPO_ROOT / "fixtures"
-
-# File patterns to check in --diff-only mode
-DIFF_TARGET_PATTERNS = (
-    "fixtures/*.ts",
-    "fixtures/**/*.ts",
-    "scripts/**/*.py",
-)
 
 
 def usage():
@@ -41,12 +30,11 @@ def usage():
     print("  mise run check assert-true")
     print("  python scripts/check/assert-true-detect.py [--diff-only]")
     print()
-    print("Full scan: checks fixtures/**/*.ts (files must never contain assert(true)).")
-    print("--diff-only: checks staged additions in fixtures/ and scripts/ for new assert(true).")
+    print("Full scan: checks fixtures/**/*.ts and scripts/**/*.py for assert(true).")
+    print("--diff-only: checks same patterns but only for staged files.")
 
 
 def is_target_file(rel_path):
-    """Check if a file path should be scanned."""
     return (
         rel_path.startswith("fixtures/") and rel_path.endswith(".ts")
     ) or (
@@ -54,12 +42,16 @@ def is_target_file(rel_path):
     )
 
 
-def get_staged_new_assert_true():
-    """Return list of (file, line) for newly added assert(true) in staged files.
+def find_all_target_files():
+    """Return all target files under repo."""
+    paths = []
+    for pattern in ["fixtures/**/*.ts", "scripts/**/*.py"]:
+        paths.extend(REPO_ROOT.glob(pattern))
+    return sorted(paths)
 
-    Uses git diff --cached to extract only lines being ADDED (prefixed with +).
-    This naturally skips existing assert(true) instances in scripts.
-    """
+
+def get_staged_target_files():
+    """Return list of staged target files."""
     result = subprocess.run(
         ["git", "diff", "--cached", "--name-only", "--diff-filter=ACM"],
         capture_output=True, text=True, cwd=REPO_ROOT,
@@ -67,65 +59,37 @@ def get_staged_new_assert_true():
     if result.returncode != 0:
         print("check_assert_true_detect: git diff failed", file=sys.stderr)
         sys.exit(1)
+    paths = []
+    for line in result.stdout.strip().splitlines():
+        line = line.strip()
+        if line and is_target_file(line):
+            paths.append(REPO_ROOT / line)
+    return paths
 
-    staged_files = [line.strip() for line in result.stdout.strip().splitlines() if line.strip()]
-    target_files = [f for f in staged_files if is_target_file(f)]
 
-    if not target_files:
-        return []
+def scan_files(file_paths):
+    """Scan files for assert(true). Return list of (file, line) tuples.
 
+    Uses different patterns per file type:
+      - .ts: assert(true) as a statement (^\s*assert\(true\))
+      - .py: double-quoted "ASSERT_TRUE_STMT" as a string literal (matches code, not docstrings)
+    """
     hits = []
-    for rel_path in target_files:
-        abs_path = REPO_ROOT / rel_path
-        if not abs_path.exists():
-            continue
-
-        # Get only the added lines from the staged diff
-        diff_result = subprocess.run(
-            ["git", "diff", "--cached", "-U0", "--", rel_path],
-            capture_output=True, text=True, cwd=REPO_ROOT,
-        )
-        if diff_result.returncode != 0:
-            continue
-
-        for line in diff_result.stdout.splitlines():
-            # Added lines start with '+' (but not '+++' which is the file header)
-            if line.startswith("+") and not line.startswith("+++"):
-                added_content = line[1:]  # strip the leading '+'
-                if "assert(true)" in added_content:
-                    hits.append((rel_path, added_content.strip()))
-
-    return hits
-
-
-def find_all_fixture_files():
-    """Return list of all .ts files under fixtures/."""
-    return sorted(FIXTURES_DIR.rglob("*.ts"))
-
-
-def scan_fixtures_for_assert_true(files):
-    """Scan fixture files for assert(true). Return list of (path, line) tuples."""
-    hits = []
-    for f in files:
+    for f in file_paths:
         if not f.exists():
             continue
+        if f.suffix == ".py":
+            pattern = r'"assert\(true\);"'
+        else:
+            pattern = r"assert\(true\)"
         result = subprocess.run(
-            ["rg", "-n", r"assert\(true\)", str(f)],
+            ["rg", "-n", pattern, str(f)],
             capture_output=True, text=True, cwd=REPO_ROOT,
         )
         if result.returncode == 0:
             for line in result.stdout.strip().splitlines():
                 hits.append((f, line))
     return hits
-
-
-def report_hits(hits, label):
-    """Print hits and return True if any found."""
-    if not hits:
-        return False
-    for path, line in hits:
-        print(f"  {path}:{line}", file=sys.stderr)
-    return True
 
 
 def main():
@@ -136,44 +100,29 @@ def main():
         sys.exit(0)
 
     if diff_only:
-        # Pre-commit mode: detect NEW assert(true) additions in staged files
-        hits = get_staged_new_assert_true()
-        if hits:
-            print("check_assert_true_detect: FAIL", file=sys.stderr)
-            print("", file=sys.stderr)
-            print("New assert(true) detected in staged changes.", file=sys.stderr)
-            print("Complex test cases must not be simplified to assert(true).", file=sys.stderr)
-            print("Either implement real assertions or mark the test as intentionally", file=sys.stderr)
-            print("trivial (e.g. assert(true, 'intentionally empty')).", file=sys.stderr)
-            print("", file=sys.stderr)
-            for path, line in hits:
-                print(f"  {path}: {line}", file=sys.stderr)
-            print(file=sys.stderr)
-            sys.exit(1)
-        print("check_assert_true_detect: OK (no new assert(true) in staged files)", file=sys.stderr)
-        sys.exit(0)
+        files = get_staged_target_files()
+        if not files:
+            print("check_assert_true_detect: no staged target files — skipping", file=sys.stderr)
+            sys.exit(0)
+    else:
+        files = find_all_target_files()
 
-    # Full scan mode: fixtures/ must never contain assert(true)
-    if not FIXTURES_DIR.exists():
-        print("check_assert_true_detect: fixtures/ directory not found", file=sys.stderr)
-        sys.exit(1)
-
-    files = find_all_fixture_files()
-    hits = scan_fixtures_for_assert_true(files)
+    hits = scan_files(files)
     if hits:
         print("check_assert_true_detect: FAIL", file=sys.stderr)
         print("", file=sys.stderr)
-        print("Found assert(true) in fixture files — complex test cases must not be", file=sys.stderr)
-        print("simplified to assert(true). Either implement real assertions or mark", file=sys.stderr)
-        print("the test as intentionally trivial (e.g. assert(true, 'intentionally empty')).", file=sys.stderr)
+        print("Found assert(true) — complex test cases must not be simplified", file=sys.stderr)
+        print("to assert(true). Either implement real assertions or mark the test", file=sys.stderr)
+        print("as intentionally trivial (e.g. assert(true, 'intentionally empty')).", file=sys.stderr)
         print("", file=sys.stderr)
         for f, line in hits:
-            rel = f.relative_to(REPO_ROOT)
+            rel = f.relative_to(REPO_ROOT) if isinstance(f, Path) else f
             print(f"  {rel}:{line}", file=sys.stderr)
         print(file=sys.stderr)
         sys.exit(1)
 
-    print("check_assert_true_detect: OK (no assert(true) in fixtures)", file=sys.stderr)
+    label = "staged target files" if diff_only else "target files"
+    print(f"check_assert_true_detect: OK (no assert(true) in {label})", file=sys.stderr)
 
 
 if __name__ == "__main__":
