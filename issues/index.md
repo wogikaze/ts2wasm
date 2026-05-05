@@ -9,24 +9,24 @@ Issue files are the source of truth for work items. The generated section below 
 <!-- generated:summary:start -->
 | Area | Total | Open | Resolved |
 |---|---:|---:|---:|
-| abi | 7 | 2 | 5 |
+| abi | 7 | 1 | 6 |
 | backend | 13 | 5 | 8 |
-| cli | 15 | 3 | 12 |
+| cli | 15 | 2 | 13 |
 | compiler | 1 | 0 | 1 |
 | coverage | 42 | 32 | 10 |
 | docs | 2 | 0 | 2 |
-| frontend | 4377 | 3865 | 512 |
+| frontend | 4377 | 3864 | 513 |
 | harness | 1 | 0 | 1 |
 | ir | 20 | 4 | 16 |
 | issues | 4 | 0 | 4 |
 | parser | 1 | 0 | 1 |
 | reference | 211 | 182 | 29 |
-| runtime | 259 | 108 | 151 |
+| runtime | 259 | 107 | 152 |
 | scripts | 2 | 0 | 2 |
 | security | 1 | 0 | 1 |
 | tests | 6 | 1 | 5 |
 | wasi | 1 | 0 | 1 |
-| total | 4963 | 4202 | 761 |
+| total | 4963 | 4198 | 765 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -158,7 +158,6 @@ Issue files are the source of truth for work items. The generated section below 
 |---:|---|---|---|---|---|---|---|
 | 009 | Select first coverage-improvement feature slice (audit reopened #009) | spike | frontend/ir/runtime | design-ready | P1 | 005 | After coverage breakdown exists, the next implementation should be chosen by data. The goal is to increase semantic p... |
 | 022 | Expand test262 differential coverage (audit reopened #022) | feature | tests/coverage | implementation-ready | P1 | 005 | test262 full differential operation is incomplete. Current coverage uses sample/ramp approach. docs/11 Gate D require... |
-| 264 | Add broad expression fixture coverage (audit reopened #264) | feature | frontend/syntax | implementation-ready | P2 |  | Add broad expression fixture coverage (audit reopened #264) |
 | 265 | Add broad statement fixture coverage (audit reopened #265) | feature | frontend/syntax | implementation-ready | P2 |  | Add broad statement fixture coverage (audit reopened #265) |
 | 268 | Implement for loop increment operator (audit reopened #268) | feature | frontend/semantics | done | P2 |  | Implement for loop increment operator (audit reopened #268) |
 | 1001e | Annex B eval-code function declaration residuals (existing-binding/no-skip/skip-early-err patterns) (audit reopened #1001e) | feature | frontend/semantics | ready | P3 | 225 | Annex B eval-code function declaration residuals (existing-binding/no-skip/skip-early-err patterns) (audit reopened #... |
@@ -173,13 +172,11 @@ Issue files are the source of truth for work items. The generated section below 
 | 5029 | [backend-wasm] Expand direct wasm binary emission beyond console.log string literal MVP (audit reopened #5029) | feature | backend | implementation-ready | P1 |  | [backend-wasm] Expand direct wasm binary emission beyond console.log string literal MVP (audit reopened #5029) |
 | 5030 | [backend-wasm] Split large runtime/WAT emitters into testable components (audit reopened #5030) | refactor | backend | implementation-ready | P1 |  | [backend-wasm] Split large runtime/WAT emitters into testable components (audit reopened #5030) |
 | 5035 | [cli] Add --explain-unsupported diagnostics mode (audit reopened #5035) | feature | cli | implementation-ready | P2 |  | [cli] Add --explain-unsupported diagnostics mode (audit reopened #5035) |
-| 5039 | [compiler] Stabilize test262 preprocessor feature handling (audit reopened #5039) | feature | cli | implementation-ready | P1 |  | [compiler] Stabilize test262 preprocessor feature handling (audit reopened #5039) |
 | 5040 | [compiler] Add resource limits and cancellation to server batch compilation (audit reopened #5040) | feature | cli | implementation-ready | P2 |  | [compiler] Add resource limits and cancellation to server batch compilation (audit reopened #5040) |
 | 5042 | [frontend] Complete Stmt AST fixture coverage (audit reopened #5042) | test | frontend | implementation-ready | P0 |  | [frontend] Complete Stmt AST fixture coverage (audit reopened #5042) |
 | 5043 | [frontend] Split large lexer/parser files by grammar responsibility (audit reopened #5043) | refactor | frontend | implementation-ready | P1 |  | [frontend] Split large lexer/parser files by grammar responsibility (audit reopened #5043) |
 | 5044 | [frontend] Define and test TypeScript ambient declaration erasure boundaries (audit reopened #5044) | feature | frontend | implementation-ready | P1 |  | [frontend] Define and test TypeScript ambient declaration erasure boundaries (audit reopened #5044) |
 | 5045 | [frontend] Improve syntax error recovery and source spans (audit reopened #5045) | feature | frontend | implementation-ready | P2 |  | [frontend] Improve syntax error recovery and source spans (audit reopened #5045) |
-| 5054 | [runtime-abi] Document value tags and object layout as public ABI (audit reopened #5054) | docs | abi | implementation-ready | P2 |  | [runtime-abi] Document value tags and object layout as public ABI (audit reopened #5054) |
 | 5055 | [runtime-abi] Add backward-compatibility tests for ABI constants (audit reopened #5055) | test | abi | implementation-ready | P3 |  | [runtime-abi] Add backward-compatibility tests for ABI constants (audit reopened #5055) |
 | 5125 | Implement as type assertion expression parsing | feature | frontend/parser | implementation | P1 |  | Implement as type assertion expression parsing |
 <!-- generated:ready:end -->
@@ -4635,6 +4632,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 261 | Implement BigInt equality comparison and coercion boundaries | feature | runtime/semantics | see `issues/done/261-implement-bigint-equality-comparison-coercion.md` |
 | 262 | Implement BigInt builtins and string conversion | feature | runtime/builtins | see `issues/done/262-implement-bigint-builtins-and-string-conversion.md` |
 | 263 | Implement BigInt dynamic mul/div/rem signed-i64 runtime slice | feature | runtime/semantics | see `issues/done/263-implement-bigint-dynamic-mul-div-rem-signed-i64-slice.md` |
+| 264 | Add broad expression fixture coverage (audit reopened #264) | feature | frontend/syntax | see `issues/done/264-implement-broad-expression-fixture-coverage.md` |
 | 266 | Implement test262 test harness and host-defined functions (audit reopened #266) | feature | tests/harness | see `issues/done/266-implement-test262-harness.md` |
 | 267 | Implement interactive web UI for test results | feature | coverage | see `issues/done/267-implement-interactive-web-ui-for-test-results.md` |
 | 267a | Implement web UI data generation and script integration | feature | coverage | see `issues/done/267a-web-ui-data-generation-and-script-integration.md` |
@@ -5089,6 +5087,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 5036 | [compiler] Introduce CompileReport<T> for non-fatal diagnostics | feature | cli | see `issues/done/5036-compiler-compile-report.md` |
 | 5037 | [compiler] Complete entry module export lowering for local references | feature | cli | see `issues/done/5037-compiler-module-export-lowering.md` |
 | 5038 | [compiler] Harden module graph resolution and diagnostics (audit reopened #5038) | feature | cli | see `issues/done/5038-compiler-module-graph-resolution.md` |
+| 5039 | [compiler] Stabilize test262 preprocessor feature handling (audit reopened #5039) | feature | cli | see `issues/done/5039-compiler-test262-preprocessor.md` |
 | 5041 | [frontend] Complete Expr AST fixture coverage (audit reopened #5041) | test | frontend | see `issues/done/5041-frontend-expr-fixture-coverage.md` |
 | 5046 | [ir] Design full class runtime IR representation | feature | ir | see `issues/done/5046-ir-class-ir.md` |
 | 5047 | [ir] Implement env-cell lowering for outer-scope mutation | feature | ir | see `issues/done/5047-ir-env-cell.md` |
@@ -5098,6 +5097,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 5051 | [runtime-abi] Add ABI layout golden tests and versioning | test | abi | see file |
 | 5052 | [runtime-abi] Validate runtime memory map for overlap and headroom | feature | abi | see `issues/done/5052-abi-memory-map.md` |
 | 5053 | [runtime-abi] Add typed wrappers for tagged values and heap pointers (audit reopened #5053) | refactor | abi | see `issues/done/5053-abi-typed-wrappers.md` |
+| 5054 | [runtime-abi] Document value tags and object layout as public ABI (audit reopened #5054) | docs | abi | see `issues/done/5054-abi-document-layout.md` |
 | 5056 | [shared] Replace manual TestRecord JSON construction with serde serialization | refactor | coverage | see `issues/done/5056-shared-serde-serialization.md` |
 | 5057 | [shared] Version capability manifest schema and migration policy | feature | coverage | see `issues/done/5057-shared-manifest-versioning.md` |
 | 5058 | [shared] Deduplicate and canonicalize capability reasons/imports | refactor | coverage | see `issues/done/5058-shared-deduplicate-capabilities.md` |
