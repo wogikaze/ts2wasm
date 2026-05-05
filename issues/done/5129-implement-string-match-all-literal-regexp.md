@@ -10,6 +10,7 @@ blocks: []
 parent: 4291
 created: 2026-05-06
 updated: 2026-05-06
+status: done
 ---
 
 ## Summary
@@ -75,10 +76,10 @@ literal-regexp slice.
 
 In scope:
 
-- [ ] Resolve `String.prototype.matchAll` for string receivers with RegExp literal arguments carrying the `g` flag
-- [ ] Lower the supported shape to runtime behavior that can feed `[...matches]`
-- [ ] Represent each match result with the matched text and `index` / `input` properties needed by the reference case
-- [ ] Add or update a fixture under `fixtures/builtins-and-io/` with Node/iwasm differential coverage
+- [x] Resolve `String.prototype.matchAll` for string receivers with RegExp literal arguments carrying the `g` flag
+- [x] Lower the supported shape to runtime behavior that can feed `[...matches]`
+- [x] Represent each match result with the matched text and `index` / `input` properties needed by the reference case
+- [x] Add or update a fixture under `fixtures/builtins-and-io/` with Node/iwasm differential coverage
 
 Out of scope:
 
@@ -104,10 +105,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] `python scripts/manager.py reference-triage --format json tsc reference/typescript/tests/cases/compiler/stringMatchAll.ts` reports `BuildPass`
-- [ ] `python scripts/manager.py reference-coverage tsc --path-filter reference/typescript/tests/cases/compiler/stringMatchAll.ts --detail` reports `build_pass=1` and `unsupported=0`
-- [ ] A Node/iwasm differential fixture covers `"matchAll".matchAll(/\w/g)` spread into an array and reads the first result's match text, `index`, and `input`
-- [ ] Existing string regexp fixtures still pass
+- [x] `python scripts/manager.py reference-triage --format json tsc reference/typescript/tests/cases/compiler/stringMatchAll.ts` reports `BuildPass`
+- [x] `python scripts/manager.py reference-coverage tsc --path-filter reference/typescript/tests/cases/compiler/stringMatchAll.ts --detail` reports `build_pass=1` and `unsupported=0`
+- [x] A Node/iwasm differential fixture covers `"matchAll".matchAll(/\w/g)` spread into an array and reads the first result's match text, `index`, and `input`
+- [x] Existing string regexp fixtures still pass
 
 ## Validation
 
@@ -128,7 +129,7 @@ cargo nextest run -p ts2wasm-cli string_match_all_fixture_matches_node_output_un
 
 Not run:
 
-- none
+- full `cargo nextest run`; focused affected tests passed
 
 ## Docs / current-state / issue sync
 
@@ -155,14 +156,36 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- `...`
+- `72b0f7d6` compiler: lower literal String.matchAll
 
 Validation result:
 
 ```text
-command:
-result:
-date:
+python scripts/manager.py reference-triage --format json tsc reference/typescript/tests/cases/compiler/stringMatchAll.ts
+=> BuildPass
+
+python scripts/manager.py reference-coverage tsc --path-filter reference/typescript/tests/cases/compiler/stringMatchAll.ts --detail
+=> build_pass=1, unsupported=0
+
+cargo nextest run -p ts2wasm-cli string_match_all_fixture_matches_node_output_under_iwasm
+=> pass
+
+cargo nextest run -p ts2wasm-cli string_includes_fixture_matches_node_output_under_iwasm
+=> pass
+
+cargo nextest run -p ts2wasm-cli build_smoke_string_match_method
+=> pass
+
+cargo build -p ts2wasm-cli
+=> pass
+
+cargo fmt --all --check
+=> fail: unrelated pre-existing crates/cli/tests/ir_lowering.rs debug assertion formatting
+
+git diff --check
+=> pass
+
+date: 2026-05-06
 ```
 
 Remaining risks:

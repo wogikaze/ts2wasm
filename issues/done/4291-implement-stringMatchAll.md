@@ -117,7 +117,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] created: `issues/open/5129-implement-string-match-all-literal-regexp.md`
+- [x] completed: `issues/done/5129-implement-string-match-all-literal-regexp.md`
 
 ## Notes
 
@@ -197,4 +197,4 @@ date: 2026-05-06
 
 Remaining risks:
 
-- Implementation remains open in child issue #5129.
+- none for the triaged child issue; #5129 is complete.
