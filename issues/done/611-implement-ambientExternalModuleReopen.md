@@ -3,12 +3,14 @@ id: 611
 title: "Implement Ambientexternalmodulereopen (audit reopened #611)"
 type: spike
 area: frontend/syntax
-class: blocked
+class: superseded
 priority: P1
 depends_on: [432]
 blocks: []
 created: 2026-05-01
-updated: 2026-05-05status: open
+updated: 2026-05-06
+status: done
+completed: 2026-05-06
 ---
 
 ## Summary
@@ -43,10 +45,10 @@ This generated bucket is either split into implementation-ready child issues or 
 
 In scope:
 
-- [ ] Inspect the smart triage report below
-- [ ] Confirm whether existing open/done issues already cover this bucket
-- [ ] Split one feature family, one observable behavior, or one fixed reference window into child issues
-- [ ] Preserve exact reproduction commands and representative AST/diagnostic evidence in each child issue
+- [x] Inspect the smart triage report below
+- [x] Confirm whether existing open/done issues already cover this bucket
+- [x] Split one feature family, one observable behavior, or one fixed reference window into child issues
+- [x] Preserve exact reproduction commands and representative AST/diagnostic evidence in each child issue
 
 Out of scope:
 
@@ -68,10 +70,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] Duplicate candidates below are confirmed as no-match or this issue is superseded
-- [ ] At least one child issue contains an exact `mise run reference-triage -- ...` command
-- [ ] Child issue includes failing path, diagnostic code, source context, visible symbols, and parser/TypeScript AST evidence
-- [ ] Child issue acceptance names the exact fixture/reference path and diagnostic/stdout change
+- [x] Duplicate candidates below are confirmed as no-match or this issue is superseded
+- [x] At least one child issue contains an exact `mise run reference-triage -- ...` command
+- [x] Child issue includes failing path, diagnostic code, source context, visible symbols, and parser/TypeScript AST evidence
+- [x] Child issue acceptance names the exact fixture/reference path and diagnostic/stdout change
 
 ## Validation
 
@@ -98,15 +100,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] updated: `current-state.md` (repo root)
+- [x] updated: `current-state.md` (repo root)
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 
@@ -117,7 +119,7 @@ Follow-up issues:
 ## Duplicate detection
 
 - `issues/done/150-implement-ambientExternalModuleReopen.md` - Implement Ambientexternalmodulereopen (same reference path, same group key, title overlap)
-- `issues/open/525-implement-ambientExternalModuleReopen.md` - Implement Ambientexternalmodulereopen (same reference path, same feature label, same group key, title overlap)
+- `issues/done/525-implement-ambientExternalModuleReopen.md` - Implement Ambientexternalmodulereopen (same reference path, same feature label, same group key, title overlap)
 
 ## Smart triage
 
@@ -207,7 +209,7 @@ Duplicate candidates:
   },
   {
     "state": "open",
-    "path": "issues/open/525-implement-ambientExternalModuleReopen.md",
+    "path": "issues/done/525-implement-ambientExternalModuleReopen.md",
     "title": "Implement Ambientexternalmodulereopen",
     "reason": "same reference path, same feature label, title overlap"
   },
@@ -505,14 +507,14 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- `...`
+- pending closure commit
 
 Validation result:
 
 ```text
-command:
-result:
-date:
+command: python scripts/manager.py update-issue-index --check
+result: pass
+date: 2026-05-06
 ```
 
 Remaining risks:
@@ -534,7 +536,7 @@ Reopen reason: frontmatter still says `class: blocked`, which is incompatible wi
 Violated acceptance: the issue cannot provide repo-local close evidence for its checked acceptance criteria while it remains in this state. Acceptance checkboxes were reset for re-verification.
 
 Evidence files:
-- `issues/open/611-implement-ambientExternalModuleReopen.md` before this move
-- `issues/open/611-implement-ambientExternalModuleReopen.md` after this move
+- open issue file before this move
+- `issues/done/611-implement-ambientExternalModuleReopen.md` after this move
 
 Split follow-up: none created in this audit wave; this reopened issue remains the tracking item.
