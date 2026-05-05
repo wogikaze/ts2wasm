@@ -168,7 +168,7 @@ Issue files are the source of truth for work items. The generated section below 
 |---:|---|---|---|---|---|
 | 021 | Implement full wasm backend | feature | backend | class: blocked | Implement full wasm backend |
 | 050 | Implement Date | feature | runtime/builtins | class: triage-needed | Implement Date |
-| 052 | Implement JSON | feature | runtime/builtins | class: triage-needed | Implement JSON |
+| 052 | Implement JSON | feature | runtime/builtins | class: blocked | Implement JSON |
 | 052d | Implement broader JSON.stringify replacer semantics (audit reopened #052d) | feature | runtime/builtins | class: blocked | Implement broader JSON.stringify replacer semantics (audit reopened #052d) |
 | 059 | Implement parser syntax extensions for TypeScript and advanced JS (audit reopened #059) | feature | frontend | class: blocked | Implement parser syntax extensions for TypeScript and advanced JS (audit reopened #059) |
 | 064 | Implement name resolution (triaged - superseded by test262 metadata issues) | spike | frontend/resolver | class: blocked | Implement name resolution (triaged - superseded by test262 metadata issues) |

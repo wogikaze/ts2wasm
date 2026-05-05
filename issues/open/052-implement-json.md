@@ -3,10 +3,10 @@ id: 052
 title: "Implement JSON"
 type: feature
 area: runtime/builtins
-class: triage-needed
+class: blocked
 priority: P1
-depends_on: []
-blocks: [052d]
+depends_on: [052d]
+blocks: []
 created: 2026-04-26
 updated: 2026-04-29
 ---
@@ -56,7 +56,18 @@ Close decision: issue 052 remains open as a blocked parent epic for full JSON co
 
 ## Problem
 
-Full JSON compatibility is not implemented. JSON support is essential for data serialization, and the current subset is documented above.
+Full JSON compatibility is currently unsupported outside the validated `JSON.parse` and `JSON.stringify` subset documented above. Broader replacer and object-coercion semantics remain blocked on child issue 052d, so this parent must not be selected as direct implementation work.
+
+## Current failure
+
+Representative remaining JSON gaps are still tracked through child issue 052d rather than this parent:
+
+```sh
+cargo run -p ts2wasm-cli -- build fixtures/builtins-and-io/json-stringify-replacer-function.ts -o /tmp/ts2wasm-json-replacer.wasm
+iwasm /tmp/ts2wasm-json-replacer.wasm
+```
+
+The validated callback/static-property-list subset has pass evidence in closed child issues. This parent remains open because broader dynamic property-list and object-coercion replacer forms are still unsupported outside the child issue scope.
 
 ## Desired final state
 
@@ -89,10 +100,9 @@ Do not touch:
 ## Acceptance criteria
 
 - [ ] Child issue 052d is closed or superseded by narrower follow-ups.
-- [ ] JSON.parse works correctly for the full supported final-state contract.
-- [ ] JSON.stringify works correctly for the full supported final-state contract.
-- [ ] Fixtures cover completed JSON behavior.
-- [ ] No regression in existing fixtures.
+- [ ] `JSON.parse` final-state coverage names the exact fixtures and stdout/stderr evidence that define the supported contract.
+- [ ] `JSON.stringify` final-state coverage names the exact replacer, `space`, and object-coercion fixtures or issue-linked diagnostics that define the supported contract.
+- [ ] Existing JSON fixtures under `fixtures/builtins-and-io/` still pass under the JSON Node/iwasm differential nextest filters.
 
 ## Validation
 
