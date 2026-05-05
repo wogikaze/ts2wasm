@@ -16,18 +16,18 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 1 | 0 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4397 | 3776 | 621 |
+| frontend | 4398 | 3777 | 621 |
 | harness | 1 | 0 | 1 |
 | ir | 28 | 6 | 22 |
 | issues | 4 | 0 | 4 |
 | parser | 1 | 0 | 1 |
 | reference | 211 | 169 | 42 |
-| runtime | 265 | 93 | 172 |
+| runtime | 265 | 92 | 173 |
 | scripts | 3 | 1 | 2 |
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5000 | 4047 | 953 |
+| total | 5001 | 4047 | 954 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -120,6 +120,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5163 | Lower nested call expression callees | feature | frontend/semantics | implementation-ready | P2 |  | `reference/typescript/tests/cases/compiler/betterErrorForAccidentalCall.ts` currently reports `UnsupportedSyntax: onl... |
 | 5164 | Parse exponentiation compound assignment | feature | frontend/syntax | implementation-ready | P1 |  | the BigInt target reference cases currently report `UnsupportedSyntax: expected Semicolon, got Some(PowerEqual)` for ... |
 | 5165 | Support typed array subarray builtins | feature | ir/builtin-resolver | implementation-ready | P1 |  | Support typed array subarray builtins |
+| 5166 | Parse string-literal module specifier aliases | feature | frontend/syntax | implementation-ready | P1 |  | `reference/typescript/tests/cases/compiler/bigintArbirtraryIdentifier.ts` currently reports `UnsupportedSyntax: expec... |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -396,7 +397,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 772 | Implement Augmentedtypesvar | spike | frontend/syntax | class: blocked | Implement Augmentedtypesvar |
 | 773 | Implement Autoasiforstaticsinclassdeclaration | spike | frontend/syntax | class: triage-needed | Implement Autoasiforstaticsinclassdeclaration |
 | 775 | Implement Autotypeassignedusingdestructuringfromnevernocrash | spike | frontend/resolver | class: blocked | Implement Autotypeassignedusingdestructuringfromnevernocrash |
-| 1050 | Implement Bigintarbirtraryidentifier | spike | runtime/builtins | class: triage-needed | Implement Bigintarbirtraryidentifier |
 | 1051 | Implement Bigintindex | spike | frontend/resolver | class: blocked | Implement Bigintindex |
 | 1052 | Implement Bigintpropertyname | spike | runtime/builtins | class: triage-needed | Implement Bigintpropertyname |
 | 1053 | Implement Bigintwithlib | spike | runtime/builtins | class: triage-needed | Implement Bigintwithlib |
@@ -4958,6 +4958,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1047 | Implement Bigintwithtargetlessthanes | spike | runtime/builtins | see `issues/done/1047-implement-bigIntWithTargetLessThanES.md` |
 | 1048 | Implement Bigint | spike | frontend/resolver | see `issues/done/1048-implement-bigint.md` |
 | 1049 | Implement Bigintambientminimal | spike | runtime/builtins | see `issues/done/1049-implement-bigintAmbientMinimal.md` |
+| 1050 | Implement Bigintarbirtraryidentifier | spike | runtime/builtins | see `issues/done/1050-implement-bigintArbirtraryIdentifier.md` |
 | 2050 | Implement Duplicatelocalvariable Duplicate Local | spike | reference/triage | see `issues/done/2050-implement-duplicateLocalVariable-duplicate-local.md` |
 | 3002 | Implement Isolateddeclarationerrorsdefault | spike | runtime/builtins | see `issues/done/3002-implement-isolatedDeclarationErrorsDefault.md` |
 | 3131 | Implement Jsxfactorynotidentifierorqualifiedname | spike | reference/triage | see `issues/done/3131-implement-jsxFactoryNotIdentifierOrQualifiedName.md` |
