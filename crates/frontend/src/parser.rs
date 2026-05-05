@@ -15,6 +15,25 @@ pub struct Parser {
     parenthesized_expr_spans: HashSet<(usize, usize)>,
     pending_statements: Vec<Stmt>,
     possible_eval_shadowing: bool,
+    /// For each token, whether it is preceded by a line terminator in the source.
+    has_preceding_newline: Vec<bool>,
+}
+
+/// For each token, check if there is a line terminator between the previous
+/// token's end and this token's start. The first token is always `false`.
+fn compute_newline_flags(source: &str, tokens: &[SpannedToken]) -> Vec<bool> {
+    let mut flags = Vec::with_capacity(tokens.len());
+    let mut prev_end = 0usize;
+    for token in tokens {
+        let nl = if token.span.start > prev_end {
+            source[prev_end..token.span.start].contains('\n')
+        } else {
+            false
+        };
+        flags.push(nl);
+        prev_end = token.span.end;
+    }
+    flags
 }
 
 struct ParsedParam {

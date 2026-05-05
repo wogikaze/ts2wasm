@@ -468,7 +468,7 @@ fn lower_source_text(path: &Path, source: &str) -> Result<LoweredProgram, Diagno
     use ts2wasm_frontend::DiagCode;
 
     let tokens = Lexer::new(source).tokenize()?;
-    let program = Parser::new(tokens).parse_program()?;
+    let program = Parser::new(tokens, source).parse_program()?;
     validate_ast(&program)?;
     let module_graph = module_graph::build_entry_module_graph(path, &program)?;
     let static_module_binding =

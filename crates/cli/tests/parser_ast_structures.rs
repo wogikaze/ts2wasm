@@ -1,6 +1,6 @@
 use ts2wasm_frontend::{BinaryOp, Expr, Lexer, Parser, Stmt, UnaryOp};
 fn parse(s: &str) -> Vec<Stmt> {
-    Parser::new(Lexer::new(s).tokenize().unwrap())
+    Parser::new(Lexer::new(s).tokenize().unwrap(), s)
         .parse_program()
         .unwrap()
 }

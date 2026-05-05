@@ -143,7 +143,7 @@ pub fn dump_file_with_options(input: &Path, options: DumpOptions) -> Result<Stri
 
 fn parse_ast(source: &str) -> Result<Vec<Stmt>, Diagnostic> {
     let tokens = Lexer::new(source).tokenize()?;
-    Parser::new(tokens).parse_program()
+    Parser::new(tokens, source).parse_program()
 }
 
 fn build_dump_pipeline(
@@ -152,7 +152,7 @@ fn build_dump_pipeline(
     optimization_level: OptimizationLevel,
 ) -> Result<DumpPipeline, Diagnostic> {
     let tokens = Lexer::new(source).tokenize()?;
-    let ast = Parser::new(tokens.clone()).parse_program()?;
+    let ast = Parser::new(tokens.clone(), source).parse_program()?;
     eprintln!("[pipeline] validate_ast");
     super::validate_ast(&ast)?;
     eprintln!("[pipeline] module_graph");

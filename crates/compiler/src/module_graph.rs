@@ -336,7 +336,7 @@ impl ModuleGraphBuilder {
 fn parse_module_source(source: &str) -> Result<Vec<Stmt>, Diagnostic> {
     validate_type_reference_directives(source)?;
     let tokens = Lexer::new(source).tokenize()?;
-    let program = Parser::new(tokens).parse_program()?;
+    let program = Parser::new(tokens, source).parse_program()?;
     super::validate_ast(&program)?;
     Ok(program)
 }

@@ -222,7 +222,7 @@ fn parse_template_expression(
     strict_mode: bool,
 ) -> Result<Expr, Diagnostic> {
     let tokens = crate::Lexer::new_with_strict_mode(source, strict_mode).tokenize()?;
-    let mut parser = Parser::new_with_strict_mode(tokens, strict_mode);
+    let mut parser = Parser::new_with_strict_mode(tokens, strict_mode, source);
     let expr = parser.expression()?;
     if !parser.is_at_end() {
         return Err(Diagnostic {

@@ -4,7 +4,7 @@ mod tests {
 
     fn parse_program(source: &str) -> Result<Vec<Stmt>, Diagnostic> {
         let tokens = Lexer::new(source).tokenize()?;
-        Parser::new(tokens).parse_program()
+        Parser::new(tokens, source).parse_program()
     }
 
     #[test]

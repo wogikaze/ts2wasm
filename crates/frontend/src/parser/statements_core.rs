@@ -1,10 +1,15 @@
 impl Parser {
-    pub fn new(tokens: Vec<SpannedToken>) -> Self {
+    pub fn new(tokens: Vec<SpannedToken>, source: &str) -> Self {
         let strict_mode = tokens_start_with_use_strict_directive(&tokens);
-        Self::new_with_strict_mode(tokens, strict_mode)
+        Self::new_with_strict_mode(tokens, strict_mode, source)
     }
 
-    pub fn new_with_strict_mode(tokens: Vec<SpannedToken>, strict_mode: bool) -> Self {
+    pub fn new_with_strict_mode(
+        tokens: Vec<SpannedToken>,
+        strict_mode: bool,
+        source: &str,
+    ) -> Self {
+        let has_preceding_newline = compute_newline_flags(source, &tokens);
         let possible_eval_shadowing = tokens
             .iter()
             .filter(|token| matches!(&token.kind, Token::Ident(name) if name == "eval"))
@@ -18,6 +23,7 @@ impl Parser {
             parenthesized_expr_spans: HashSet::new(),
             pending_statements: Vec::new(),
             possible_eval_shadowing,
+            has_preceding_newline,
         }
     }
 

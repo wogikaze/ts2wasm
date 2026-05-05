@@ -774,7 +774,8 @@ impl Parser {
                 diagnostic.span = Some(eval_span);
                 diagnostic
             })?;
-        let mut parser = Parser::new_with_strict_mode(tokens, self.strict_mode);
+        let mut parser =
+            Parser::new_with_strict_mode(tokens, self.strict_mode, inner_source);
         let mut statements = parser.parse_program().map_err(|mut diagnostic| {
             diagnostic.span = Some(eval_span);
             diagnostic
@@ -815,7 +816,7 @@ impl Parser {
                 diagnostic.span = Some(eval_span);
                 diagnostic
             })?;
-        let mut parser = Parser::new_with_strict_mode(tokens, self.strict_mode);
+        let mut parser = Parser::new_with_strict_mode(tokens, self.strict_mode, source);
         parser.parse_program().map_err(|mut diagnostic| {
             diagnostic.span = Some(eval_span);
             diagnostic

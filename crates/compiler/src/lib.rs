@@ -99,7 +99,7 @@ pub fn build_file_with_host_deny(
 
     validate_type_reference_directives(&source)?;
     let tokens = Lexer::new(&source).tokenize()?;
-    let program = Parser::new(tokens).parse_program()?;
+    let program = Parser::new(tokens, &source).parse_program()?;
     validate_ast(&program)?;
     let module_graph = module_graph::build_entry_module_graph(input, &program)?;
     // Surface cycle diagnostics: report first cycle diagnostic as error.
@@ -1536,7 +1536,7 @@ fn is_static_export_literal(expr: &Expr) -> bool {
 
 pub fn parse_program(source: &str) -> Result<Vec<Stmt>, Diagnostic> {
     let tokens = Lexer::new(source).tokenize()?;
-    Parser::new(tokens).parse_program()
+    Parser::new(tokens, source).parse_program()
 }
 
 fn validate_ast(program: &[Stmt]) -> Result<(), Diagnostic> {
