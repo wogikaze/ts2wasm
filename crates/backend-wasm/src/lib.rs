@@ -38,7 +38,9 @@ pub fn emit_wat(program: &LoweredProgram) -> Result<String, Diagnostic> {
     if let Err(errors) = ts2wasm_ir::lowered::validate_lowered(program) {
         // Only fatal errors (InvariantViolation) block WAT emission.
         // UnsupportedModule etc. produce valid WAT (runtime handles the issue).
-        let fatal = errors.into_iter().find(|e| e.code == DiagCode::InvariantViolation);
+        let fatal = errors
+            .into_iter()
+            .find(|e| e.code == DiagCode::InvariantViolation);
         if let Some(fatal) = fatal {
             return Err(Diagnostic {
                 code: DiagCode::InvariantViolation,
@@ -55,7 +57,9 @@ pub fn emit_wat(program: &LoweredProgram) -> Result<String, Diagnostic> {
 
 pub fn emit_wasm_binary_mvp(program: &LoweredProgram) -> Result<Vec<u8>, Diagnostic> {
     if let Err(errors) = ts2wasm_ir::lowered::validate_lowered(program) {
-        let fatal = errors.into_iter().find(|e| e.code == DiagCode::InvariantViolation);
+        let fatal = errors
+            .into_iter()
+            .find(|e| e.code == DiagCode::InvariantViolation);
         if let Some(fatal) = fatal {
             return Err(Diagnostic {
                 code: DiagCode::InvariantViolation,

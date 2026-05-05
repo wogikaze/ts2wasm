@@ -658,9 +658,7 @@ fn validate_rejects_arity_mismatch() {
     };
     let call = LoweredStmt::Expr(LoweredExpr::Call {
         kind: FunctionCallKind::User(FuncId(0)),
-        args: vec![
-            LoweredExpr::Number(1),
-        ],
+        args: vec![LoweredExpr::Number(1)],
     });
     let program = LoweredProgram {
         top_level_statements: vec![call],
