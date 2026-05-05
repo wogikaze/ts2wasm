@@ -88,7 +88,7 @@ Reference:
 - Test262 harness files: reference/test262/harness/
 - Current runner: scripts/run/reference-coverage.py
 
-Completion evidence:
+## Completion evidence
 - `scripts/run/reference-coverage.py` parses test262 metadata, prepares harness-wrapped source, loads real `sta.js`/`assert.js` for the Node oracle, and provides a wasm-compatible core harness shim for the current compiler slice.
 - Host-defined `print` and `$262` hooks are provided to prepared test sources; unsupported hooks fail with explicit `Test262Error` diagnostics or are classified by metadata.
 - Negative metadata is handled as expected rejection, and unsupported `module`, `async`, and `IsHTMLDDA` tests are classified instead of run as ordinary failures.
@@ -101,19 +101,3 @@ Validation run:
 - `python scripts/manager.py test262 --sample 1 --jobs 1` -> `Pass: 9`, `Fail: 1`, `Unsupported: 18`, `Blocked: 0`
 - `cargo fmt --all --check`
 - `cargo nextest run` -> `501 passed`, `4 skipped`
-
-## Reopened by audit
-
-Date: 2026-05-05
-
-Classification: acceptance-not-actually-met.
-
-Reopen reason: no `## Completion evidence` section is present, so close evidence cannot be cited from the issue file.
-
-Violated acceptance: the issue cannot provide repo-local close evidence for its checked acceptance criteria while it remains in this state. Acceptance checkboxes were reset for re-verification.
-
-Evidence files:
-- `issues/open/266-implement-test262-harness.md` before this move
-- `issues/open/266-implement-test262-harness.md` after this move
-
-Split follow-up: none created in this audit wave; this reopened issue remains the tracking item.

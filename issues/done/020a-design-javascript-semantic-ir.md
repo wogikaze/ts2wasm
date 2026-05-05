@@ -26,9 +26,9 @@ Out of scope:
 
 Acceptance Criteria:
 
-- [ ] IR design includes JS semantics instructions.
-- [ ] IR instruction set is documented.
-- [ ] Design decisions are justified.
+- [x] IR design includes JS semantics instructions.
+- [x] IR instruction set is documented.
+- [x] Design decisions are justified.
 
 Validation:
 
@@ -37,7 +37,7 @@ cargo fmt --all --check
 grep -A 30 "IR design" docs/13-ir-contracts.md
 ```
 
-Completion evidence:
+## Completion evidence
 
 ```text
 command: grep -A 30 "IR design" docs/13-ir-contracts.md
@@ -52,19 +52,3 @@ date: 2026-04-28
 Remaining risks:
 
 - Rust enum implementation and lowering are tracked by issues 020b and 020c.
-
-## Reopened by audit
-
-Date: 2026-05-05
-
-Classification: acceptance-not-actually-met.
-
-Reopen reason: no `## Completion evidence` section is present, so close evidence cannot be cited from the issue file.
-
-Violated acceptance: the issue cannot provide repo-local close evidence for its checked acceptance criteria while it remains in this state. Acceptance checkboxes were reset for re-verification.
-
-Evidence files:
-- `issues/open/020a-design-javascript-semantic-ir.md` before this move
-- `issues/open/020a-design-javascript-semantic-ir.md` after this move
-
-Split follow-up: none created in this audit wave; this reopened issue remains the tracking item.

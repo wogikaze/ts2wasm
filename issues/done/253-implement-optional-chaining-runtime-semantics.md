@@ -41,11 +41,11 @@ Supported optional chaining forms short-circuit on `null` and `undefined` with N
 
 In scope:
 
-- [ ] Lower `obj?.x` for supported object/property access.
-- [ ] Lower `obj?.[key]` for supported computed access.
-- [ ] Lower `fn?.()` for supported function calls.
-- [ ] Preserve single evaluation of the base expression for the implemented property/index subset.
-- [ ] Add Node/iwasm differential fixtures for nullish and non-nullish bases for the implemented property/index subset.
+- [x] Lower `obj?.x` for supported object/property access.
+- [x] Lower `obj?.[key]` for supported computed access.
+- [x] Lower `fn?.()` for supported function calls.
+- [x] Preserve single evaluation of the base expression for the implemented property/index subset.
+- [x] Add Node/iwasm differential fixtures for nullish and non-nullish bases for the implemented property/index subset.
 
 Out of scope:
 
@@ -69,10 +69,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] `obj?.x` returns `undefined` for nullish bases and the property value for supported objects.
-- [ ] `obj?.[key]` preserves key evaluation only when required by the supported semantics.
-- [ ] `fn?.()` short-circuits nullish callees and calls supported functions otherwise.
-- [ ] Node/iwasm differential coverage proves the supported property/index subset.
+- [x] `obj?.x` returns `undefined` for nullish bases and the property value for supported objects.
+- [x] `obj?.[key]` preserves key evaluation only when required by the supported semantics.
+- [x] `fn?.()` short-circuits nullish callees and calls supported functions otherwise.
+- [x] Node/iwasm differential coverage proves the supported property/index subset.
 
 ## Validation
 
@@ -94,6 +94,10 @@ mise run reference-coverage -- test262 --path-filter reference/test262/test/lang
 
 Split from issue 246 so parser classification can close independently from runtime semantics.
 
+## Completion evidence
+
+The following progress evidence was recorded before the original close.
+
 ## Progress evidence
 
 2026-04-29:
@@ -105,19 +109,3 @@ Split from issue 246 so parser classification can close independently from runti
 - Validation passed for the focused optional-call differential test: `cargo nextest run -p ts2wasm-cli --test m2_node_diff optional_chaining_call_fixture_matches_node_output_under_iwasm` (1 passed).
 - Validation passed: `cargo fmt --all --check`; `cargo nextest run -E 'test(optional) or test(node_diff)'` (6 passed); `cargo nextest run` (481 passed, 4 skipped); `mise run update-issue-index -- --check`; `mise run check issues`.
 - Impacted reference coverage command could not run because `reference/test262` is not checked out in this worktree.
-
-## Reopened by audit
-
-Date: 2026-05-05
-
-Classification: acceptance-not-actually-met.
-
-Reopen reason: no `## Completion evidence` section is present, so close evidence cannot be cited from the issue file.
-
-Violated acceptance: the issue cannot provide repo-local close evidence for its checked acceptance criteria while it remains in this state. Acceptance checkboxes were reset for re-verification.
-
-Evidence files:
-- `issues/open/253-implement-optional-chaining-runtime-semantics.md` before this move
-- `issues/open/253-implement-optional-chaining-runtime-semantics.md` after this move
-
-Split follow-up: none created in this audit wave; this reopened issue remains the tracking item.

@@ -116,7 +116,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] created `issues/open/255-implement-private-class-element-runtime-semantics.md`
+- [x] created `issues/done/255-implement-private-class-element-runtime-semantics.md`
 
 ## Notes
 

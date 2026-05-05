@@ -116,7 +116,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/open/255-implement-private-class-element-runtime-semantics.md` - Implement private class element runtime semantics (same feature label, title overlap)
+- `issues/done/255-implement-private-class-element-runtime-semantics.md` - Implement private class element runtime semantics (same feature label, title overlap)
 - `issues/open/421-implement-class.md` - Implement class syntax (same feature label, title overlap)
 - `issues/done/045-implement-class-syntax.md` - Implement class declaration and expression (same feature label, title overlap)
 - `issues/done/248-implement-private-class-element-parser.md` - Implement private class element parser support (same feature label, title overlap)

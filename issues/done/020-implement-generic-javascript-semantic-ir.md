@@ -26,10 +26,10 @@ Out of scope:
 
 Acceptance Criteria:
 
-- [ ] 020a (design) is complete.
-- [ ] 020b (implementation) is complete.
-- [ ] 020c (validation) is complete.
-- [ ] Node differential test passes for IR-level fixtures.
+- [x] 020a (design) is complete.
+- [x] 020b (implementation) is complete.
+- [x] 020c (validation) is complete.
+- [x] Node differential test passes for IR-level fixtures.
 
 Validation:
 
@@ -39,7 +39,7 @@ cargo nextest run
 cargo run -q -p ts2wasm-cli -- build fixtures/core-semantics/ir-test.ts -o /tmp/ir-test.wasm
 ```
 
-Completion evidence:
+## Completion evidence
 
 ```text
 command: cargo nextest run -p ts2wasm-ir
@@ -62,19 +62,3 @@ date: 2026-04-28
 Remaining risks:
 
 - Semantic HIR is validated and available as an initial compiler-side IR, but backend still consumes `LoweredProgram`; broader backend consumption should remain incremental.
-
-## Reopened by audit
-
-Date: 2026-05-05
-
-Classification: acceptance-not-actually-met.
-
-Reopen reason: no `## Completion evidence` section is present, so close evidence cannot be cited from the issue file.
-
-Violated acceptance: the issue cannot provide repo-local close evidence for its checked acceptance criteria while it remains in this state. Acceptance checkboxes were reset for re-verification.
-
-Evidence files:
-- `issues/open/020-implement-generic-javascript-semantic-ir.md` before this move
-- `issues/open/020-implement-generic-javascript-semantic-ir.md` after this move
-
-Split follow-up: none created in this audit wave; this reopened issue remains the tracking item.

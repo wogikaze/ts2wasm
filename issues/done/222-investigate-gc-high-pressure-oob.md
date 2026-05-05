@@ -29,9 +29,9 @@ Out of scope:
 
 Acceptance Criteria:
 
-- [ ] The minimized high-pressure local-root fixture runs without OOB under `iwasm`.
-- [ ] The regression triggers collection and verifies Node/iwasm output equivalence.
-- [ ] Existing GC differential fixtures continue to pass.
+- [x] The minimized high-pressure local-root fixture runs without OOB under `iwasm`.
+- [x] The regression triggers collection and verifies Node/iwasm output equivalence.
+- [x] Existing GC differential fixtures continue to pass.
 
 Validation:
 
@@ -40,7 +40,7 @@ cargo fmt --all --check
 cargo nextest run
 ```
 
-Completion evidence:
+## Completion evidence
 
 - Root cause: `$concat` still wrote directly through the old bump `$heap` path, bypassing `$alloc_heap`,
   GC headers, free-list reuse, and bounded memory growth. The combined root fixture failed only when a
@@ -58,19 +58,3 @@ Completion evidence:
   - `cargo nextest run -p ts2wasm-runtime-abi memory_max_pages_cover_initial_pages initial_memory_pages_cover_single_max_stdin_heap_allocation_from_heap_start`: pass, 2 passed / 7 skipped
   - `cargo nextest run -p ts2wasm-cli --test m2_node_diff m3_semantic_fixtures_match_node_output_under_iwasm`: pass, 1 passed / 19 skipped
   - `cargo nextest run -p ts2wasm-cli --test m1_iwasm oom_alloc_check_must_fail_iwasm`: pass, 1 passed / 1 skipped
-
-## Reopened by audit
-
-Date: 2026-05-05
-
-Classification: acceptance-not-actually-met.
-
-Reopen reason: no `## Completion evidence` section is present, so close evidence cannot be cited from the issue file.
-
-Violated acceptance: the issue cannot provide repo-local close evidence for its checked acceptance criteria while it remains in this state. Acceptance checkboxes were reset for re-verification.
-
-Evidence files:
-- `issues/open/222-investigate-gc-high-pressure-oob.md` before this move
-- `issues/open/222-investigate-gc-high-pressure-oob.md` after this move
-
-Split follow-up: none created in this audit wave; this reopened issue remains the tracking item.

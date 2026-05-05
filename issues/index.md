@@ -15,18 +15,18 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 1 | 0 | 1 |
 | coverage | 42 | 32 | 10 |
 | docs | 2 | 1 | 1 |
-| frontend | 4376 | 3871 | 505 |
+| frontend | 4376 | 3865 | 511 |
 | harness | 1 | 0 | 1 |
-| ir | 18 | 8 | 10 |
+| ir | 18 | 4 | 14 |
 | issues | 4 | 0 | 4 |
 | parser | 1 | 0 | 1 |
 | reference | 211 | 183 | 28 |
-| runtime | 259 | 119 | 140 |
+| runtime | 259 | 111 | 148 |
 | scripts | 2 | 0 | 2 |
 | security | 1 | 0 | 1 |
-| tests | 6 | 2 | 4 |
-| wasi | 1 | 1 | 0 |
-| total | 4960 | 4232 | 728 |
+| tests | 6 | 1 | 5 |
+| wasi | 1 | 0 | 1 |
+| total | 4960 | 4212 | 748 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -156,23 +156,16 @@ Issue files are the source of truth for work items. The generated section below 
 <!-- generated:ready:start -->
 | ID | Title | Type | Area | Class | Priority | Depends on | Summary |
 |---:|---|---|---|---|---|---|---|
-| 003 | Verify manifest against emitted WAT imports (audit reopened #003) | test | wasi/tests | implementation-ready | P0 | 002 | A manifest is only useful as a gate if it matches emitted WAT/wasm imports. The current project needs a test that cro... |
+| 006 | Remove stale milestone and transitional docs (audit reopened #006) | cleanup | docs | docs-ready | P0 | 002, 003 | Several docs appeared to mix stale milestone notes, transitional manifest schema, and current implementation claims. ... |
 | 009 | Select first coverage-improvement feature slice (audit reopened #009) | spike | frontend/ir/runtime | design-ready | P1 | 005 | After coverage breakdown exists, the next implementation should be chosen by data. The goal is to increase semantic p... |
 | 017 | Design and implement GC strategy (audit reopened #017) | feature | runtime/memory | implementation-ready | P1 | 013 | Current runtime has no GC. Long-running programs and programs with closure escape will leak memory. docs/04 specifies... |
 | 018 | Implement UTF-8 string support (audit reopened #018) | feature | runtime/semantics | implementation-ready | P1 |  | Non-ASCII string literals are intentionally unsupported. UTF-8 support is incomplete. docs/04 specifies UTF-8 decode/... |
 | 022 | Expand test262 differential coverage (audit reopened #022) | feature | tests/coverage | implementation-ready | P1 | 005 | test262 full differential operation is incomplete. Current coverage uses sample/ramp approach. docs/11 Gate D require... |
-| 217 | Implement GC heap header and trigger accounting (audit reopened #217) | feature | runtime/memory | implementation-ready | P1 | 017a | Runtime allocation still returns raw bump-allocated payload blocks with no GC object header or allocation trigger acc... |
-| 223 | Add spans to receiver this diagnostics (audit reopened #223) | bug | frontend/diagnostics | implementation-ready | P1 | 211 | Issue 211 added issue-linked diagnostics for unsupported receiver/`this` forms, but those |
-| 253 | Implement optional chaining runtime semantics (audit reopened #253) | feature | frontend/semantics | implementation-ready | P2 |  | Issue 246 classifies `obj?.x`, `obj?.[key]`, and `fn?.()` in the frontend parser, but name resolution currently repor... |
-| 255 | Implement private class element runtime semantics (audit reopened #255) | meta | runtime/semantics | done | P2 |  | Issue 248 tokenizes `#name` and parses private fields, methods, getters, and setters. The runtime slices now support ... |
 | 264 | Add broad expression fixture coverage (audit reopened #264) | feature | frontend/syntax | implementation-ready | P2 |  | Add broad expression fixture coverage (audit reopened #264) |
 | 265 | Add broad statement fixture coverage (audit reopened #265) | feature | frontend/syntax | implementation-ready | P2 |  | Add broad statement fixture coverage (audit reopened #265) |
-| 266 | Implement test262 test harness and host-defined functions (audit reopened #266) | feature | tests/harness |  | P1 |  | Current test262 runner (scripts/run/reference-coverage.py) doesn't load required test harness files or provide host-d... |
 | 268 | Implement for loop increment operator (audit reopened #268) | feature | frontend/semantics | done | P2 |  | Implement for loop increment operator (audit reopened #268) |
-| 274 | Implement spread operator (audit reopened #274) | meta | frontend/semantics | done | P2 |  | Implement spread operator (audit reopened #274) |
 | 341 | Implement core builtin API coverage (3,190 test262 cases) (audit reopened #341) | meta | runtime/builtins | ready | P1 |  | 3,190 test262 cases fail due to missing core builtin API implementations. |
 | 341e | Implement encodeURI, decodeURI, escape, unescape (audit reopened #341e) | feature | runtime/builtins | implementation-ready | P2 |  | Implement encodeURI, decodeURI, escape, unescape (audit reopened #341e) |
-| 359 | Reduce ABC451 free-list scan cost (audit reopened #359) | bug | runtime/memory | done | P1 | 358 | the current allocator repeatedly scans the free list enough times to dominate the diagnostic budget, so the ABC451 fi... |
 | 1001e | Annex B eval-code function declaration residuals (existing-binding/no-skip/skip-early-err patterns) (audit reopened #1001e) | feature | frontend/semantics | ready | P3 | 225 | Annex B eval-code function declaration residuals (existing-binding/no-skip/skip-early-err patterns) (audit reopened #... |
 | 5001 | Meta: TypeScript Compiler Semantic Analysis Coverage | meta | frontend/semantics | design-ready | P1 |  | Meta: TypeScript Compiler Semantic Analysis Coverage |
 | 5004 | Meta: Runtime Builtins Coverage (test262) (audit reopened #5004) | meta | runtime/builtins | design-ready | P1 |  | Meta: Runtime Builtins Coverage (test262) (audit reopened #5004) |
@@ -207,15 +200,6 @@ Issue files are the source of truth for work items. The generated section below 
 <!-- generated:blocked:start -->
 | ID | Title | Type | Area | Blocker | Summary |
 |---:|---|---|---|---|---|
-| 006 | Remove stale milestone and transitional docs (audit reopened #006) | cleanup | docs | 002, 003 | Remove stale milestone and transitional docs (audit reopened #006) |
-| 010 | Extract frontend module from crates/cli (audit reopened #010) | refactor | frontend | 003, 004 | Extract frontend module from crates/cli (audit reopened #010) |
-| 019 | Integrate TypeScript parser/checker (audit reopened #019) | feature | frontend | 010 | Integrate TypeScript parser/checker (audit reopened #019) |
-| 019a | Integrate TypeScript compiler API for type checking (audit reopened #019a) | feature | frontend | 010 | Integrate TypeScript compiler API for type checking (audit reopened #019a) |
-| 019b | Extract type information for optimization hints (audit reopened #019b) | feature | frontend | 019a | Extract type information for optimization hints (audit reopened #019b) |
-| 020 | Implement generic JavaScript semantic IR (audit reopened #020) | feature | ir/semantics | 019 | Implement generic JavaScript semantic IR (audit reopened #020) |
-| 020a | Design JavaScript semantic IR (audit reopened #020a) | feature | ir/semantics | 019 | Design JavaScript semantic IR (audit reopened #020a) |
-| 020b | Implement IR lowering from TypeScript AST (audit reopened #020b) | feature | ir/semantics | 020a | Implement IR lowering from TypeScript AST (audit reopened #020b) |
-| 020c | Add IR validation passes and document contracts (audit reopened #020c) | feature | ir/semantics | 020b | Add IR validation passes and document contracts (audit reopened #020c) |
 | 021 | Implement full wasm backend | feature | backend | class: blocked | Implement full wasm backend |
 | 050 | Implement Date | feature | runtime/builtins | class: triage-needed | Implement Date |
 | 052 | Implement JSON | feature | runtime/builtins | class: triage-needed | Implement JSON |
@@ -242,11 +226,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 168 | Implement Ambiguousoverload | spike | frontend/semantics | class: blocked | Implement Ambiguousoverload |
 | 194 | Implement Argumentsaspropertyname | spike | frontend/semantics | class: blocked | Implement Argumentsaspropertyname |
 | 199 | Implement Compiler | spike | frontend/syntax | class: triage-needed | Implement Compiler |
-| 218 | Implement GC mark root scanning (audit reopened #218) | feature | runtime/memory | 217 | Implement GC mark root scanning (audit reopened #218) |
-| 219 | Implement GC sweep reuse and fixtures (audit reopened #219) | feature | runtime/memory | 218 | Implement GC sweep reuse and fixtures (audit reopened #219) |
-| 220 | Implement GC top-level local roots for object escape fixtures (audit reopened #220) | feature | runtime/memory | 219 | Implement GC top-level local roots for object escape fixtures (audit reopened #220) |
-| 221 | Implement GC call-frame roots for closure escape (audit reopened #221) | feature | runtime/memory | 220 | Implement GC call-frame roots for closure escape (audit reopened #221) |
-| 222 | Investigate GC high-pressure OOB under repeated local-root allocation (audit reopened #222) | bug | runtime/memory | 220 | Investigate GC high-pressure OOB under repeated local-root allocation (audit reopened #222) |
+| 274 | Implement spread operator (audit reopened #274) | meta | frontend/semantics | class: blocked | Implement spread operator (audit reopened #274) |
 | 294 | Support ABC451 D original submission without source rewrite | feature | frontend/runtime | class: blocked | Support ABC451 D original submission without source rewrite |
 | 300 | Support ABC451 large integer number boundary | feature | runtime | class: blocked | Support ABC451 large integer number boundary |
 | 308 | Implement ABC451 depth-9 GC cadence policy | feature | runtime/memory | class: blocked | Implement ABC451 depth-9 GC cadence policy |
@@ -4405,10 +4385,12 @@ Issue files are the source of truth for work items. The generated section below 
 | 000 | Short imperative title | feature | bug | refactor | docs | test | infra | cleanup | spike | frontend | ir | runtime | abi | wasi | cli | fixtures | scripts | docs | tests | coverage | reference | see `issues/done/000-sample-issue.md` |
 | 001 | Fix issue infrastructure and current-state path references | infra | issues/docs | see `issues/done/001-fix-issue-infrastructure-and-current-state-path-references.md` |
 | 002 | Emit canonical capability manifest schema | feature | abi/wasi | see `issues/done/002-emit-canonical-capability-manifest-schema.md` |
+| 003 | Verify manifest against emitted WAT imports (audit reopened #003) | test | wasi/tests | see `issues/done/003-verify-manifest-against-emitted-wat-imports.md` |
 | 004 | Reclassify compile-only compatibility tests | test | tests/coverage | see `issues/done/004-reclassify-compile-only-compatibility-tests.md` |
 | 005 | Add fine-grained unsupported feature breakdown | infra | scripts/coverage | see `issues/done/005-add-fine-grained-unsupported-feature-breakdown.md` |
 | 007 | Harden reference coverage prerequisites (audit reopened #007) | infra | scripts/reference | see `issues/done/007-harden-reference-coverage-prerequisites.md` |
 | 008 | Introduce typed WAT writer skeleton | refactor | backend | see `issues/done/008-introduce-typed-wat-writer-skeleton.md` |
+| 010 | Extract frontend module from crates/cli (audit reopened #010) | refactor | frontend | see `issues/done/010-extract-frontend-module-from-crates-cli.md` |
 | 011 | Enable `RUSTFLAGS=-D warnings` for nextest / harness (warning-clean tree) | infra | tests | see `issues/done/011-enable-cargo-deny-warnings-in-ci-and-harnesses.md` |
 | 012 | Fix computed property semantics bug | bug | runtime/semantics | see `issues/done/012-fix-computed-property-semantics-bug.md` |
 | 013 | Implement heap OOM check (audit reopened #013) | feature | runtime/memory | see `issues/done/013-implement-heap-oom-check.md` |
@@ -4417,6 +4399,13 @@ Issue files are the source of truth for work items. The generated section below 
 | 016 | Implement prototype and method call support | feature | runtime/semantics | see `issues/done/016-implement-prototype-and-method-call-support.md` |
 | 017a | Design GC strategy | feature | runtime/memory | see `issues/done/017a-design-gc-strategy.md` |
 | 017b | Implement GC strategy | feature | runtime/memory | see `issues/done/017b-implement-gc-strategy.md` |
+| 019 | Integrate TypeScript parser/checker (audit reopened #019) | feature | frontend | see `issues/done/019-integrate-typescript-parser-checker.md` |
+| 019a | Integrate TypeScript compiler API for type checking (audit reopened #019a) | feature | frontend | see `issues/done/019a-integrate-typescript-compiler-api.md` |
+| 019b | Extract type information for optimization hints (audit reopened #019b) | feature | frontend | see `issues/done/019b-extract-type-information-for-optimization.md` |
+| 020 | Implement generic JavaScript semantic IR (audit reopened #020) | feature | ir/semantics | see `issues/done/020-implement-generic-javascript-semantic-ir.md` |
+| 020a | Design JavaScript semantic IR (audit reopened #020a) | feature | ir/semantics | see `issues/done/020a-design-javascript-semantic-ir.md` |
+| 020b | Implement IR lowering from TypeScript AST (audit reopened #020b) | feature | ir/semantics | see `issues/done/020b-implement-ir-lowering-from-typescript-ast.md` |
+| 020c | Add IR validation passes and document contracts (audit reopened #020c) | feature | ir/semantics | see `issues/done/020c-add-ir-validation-passes-and-document-contracts.md` |
 | 021a | Implement wasm-encoder hello binary MVP | feature | backend | see `issues/done/021a-implement-wasm-encoder-hello-binary-mvp.md` |
 | 023 | Implement host-deny and auditable E2E manifest | feature | security/capability | see `issues/done/023-implement-host-deny-and-auditable-e2e-manifest.md` |
 | 024 | Migrate runtime module to runtime-abi crate | refactor | abi | see `issues/done/024-migrate-runtime-module-to-runtime-abi-crate.md` |
@@ -4607,6 +4596,13 @@ Issue files are the source of truth for work items. The generated section below 
 | 214 | Replace string method placeholders | feature | runtime/builtins | see `issues/done/214-replace-string-method-placeholders.md` |
 | 215 | Define Math.random capability policy | feature | runtime/builtins | see `issues/done/215-define-math-random-capability-policy.md` |
 | 216 | Implement abstract equality coercion | feature | runtime/semantics | see `issues/done/216-implement-abstract-equality-coercion.md` |
+| 217 | Implement GC heap header and trigger accounting (audit reopened #217) | feature | runtime/memory | see `issues/done/217-implement-gc-heap-header-and-trigger-accounting.md` |
+| 218 | Implement GC mark root scanning (audit reopened #218) | feature | runtime/memory | see `issues/done/218-implement-gc-mark-root-scanning.md` |
+| 219 | Implement GC sweep reuse and fixtures (audit reopened #219) | feature | runtime/memory | see `issues/done/219-implement-gc-sweep-reuse-and-fixtures.md` |
+| 220 | Implement GC top-level local roots for object escape fixtures (audit reopened #220) | feature | runtime/memory | see `issues/done/220-implement-gc-top-level-local-roots-for-object-escape-fixtures.md` |
+| 221 | Implement GC call-frame roots for closure escape (audit reopened #221) | feature | runtime/memory | see `issues/done/221-implement-gc-call-frame-roots-for-closure-escape.md` |
+| 222 | Investigate GC high-pressure OOB under repeated local-root allocation (audit reopened #222) | bug | runtime/memory | see `issues/done/222-investigate-gc-high-pressure-oob.md` |
+| 223 | Add spans to receiver this diagnostics (audit reopened #223) | bug | frontend/diagnostics | see `issues/done/223-add-spans-to-receiver-this-diagnostics.md` |
 | 224 | Implement Annex B HTML-like comments | feature | frontend | see `issues/done/224-implement-annexb-html-comments.md` |
 | 225 | Implement eval and Annex B function declaration semantics | meta | frontend/semantics | see `issues/done/225-implement-eval-annexb-function-declarations.md` |
 | 226 | Implement TypeScript parameter properties | feature | frontend/semantics | see `issues/done/226-implement-parameter-properties.md` |
@@ -4636,7 +4632,9 @@ Issue files are the source of truth for work items. The generated section below 
 | 250 | Design BigInt runtime value support | feature | runtime/semantics | see `issues/done/250-design-bigint-runtime-value-support.md` |
 | 251 | Implement destructuring binding runtime semantics | feature | frontend/semantics | see `issues/done/251-implement-destructuring-binding-runtime-semantics.md` |
 | 252 | Implement destructuring assignment pattern parser support | feature | frontend/syntax | see `issues/done/252-implement-destructuring-assignment-pattern-parser.md` |
+| 253 | Implement optional chaining runtime semantics (audit reopened #253) | feature | frontend/semantics | see `issues/done/253-implement-optional-chaining-runtime-semantics.md` |
 | 254 | Implement class static block runtime semantics | feature | runtime/semantics | see `issues/done/254-implement-class-static-block-runtime-semantics.md` |
+| 255 | Implement private class element runtime semantics (audit reopened #255) | meta | runtime/semantics | see `issues/done/255-implement-private-class-element-runtime-semantics.md` |
 | 256 | Lower returned immutable closures to heap closure values | feature | ir | see `issues/done/256-lower-returned-immutable-closures-to-heap-values.md` |
 | 257 | Emit heap closure allocation and dispatch | feature | backend | see `issues/done/257-emit-heap-closure-allocation-and-dispatch.md` |
 | 258 | Mark heap closure captures and add allocation-pressure fixture | feature | runtime | see `issues/done/258-mark-heap-closure-captures-and-add-allocation-pressure-fixture.md` |
@@ -4645,6 +4643,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 261 | Implement BigInt equality comparison and coercion boundaries | feature | runtime/semantics | see `issues/done/261-implement-bigint-equality-comparison-coercion.md` |
 | 262 | Implement BigInt builtins and string conversion | feature | runtime/builtins | see `issues/done/262-implement-bigint-builtins-and-string-conversion.md` |
 | 263 | Implement BigInt dynamic mul/div/rem signed-i64 runtime slice | feature | runtime/semantics | see `issues/done/263-implement-bigint-dynamic-mul-div-rem-signed-i64-slice.md` |
+| 266 | Implement test262 test harness and host-defined functions (audit reopened #266) | feature | tests/harness | see `issues/done/266-implement-test262-harness.md` |
 | 267 | Implement interactive web UI for test results | feature | coverage | see `issues/done/267-implement-interactive-web-ui-for-test-results.md` |
 | 267a | Implement web UI data generation and script integration | feature | coverage | see `issues/done/267a-web-ui-data-generation-and-script-integration.md` |
 | 267b | Implement web UI interactive charts, regression detection, and performance trends | feature | coverage | see `issues/done/267b-web-ui-interactive-charts-regression-and-performance-trends.md` |
@@ -4712,6 +4711,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 355 | Implement dynamic object property enumeration spread | feature | runtime/semantics | see `issues/done/355-dynamic-object-enumeration-spread.md` |
 | 356 | Fix array-push growth WAT format compile blocker | bug | backend | see `issues/done/356-fix-array-push-growth-wat-format-compile-blocker.md` |
 | 358 | Instrument ABC451 depth-8 runtime costs | test | runtime/performance | see `issues/done/358-instrument-abc451-depth8-runtime-costs.md` |
+| 359 | Reduce ABC451 free-list scan cost (audit reopened #359) | bug | runtime/memory | see `issues/done/359-reduce-abc451-free-list-scan-cost.md` |
 | 360 | Reduce ABC451 sweep and copy pressure after free-list fix | bug | runtime/memory | see `issues/done/360-reduce-abc451-sweep-and-copy-pressure-after-free-list-fix.md` |
 | 361 | Reduce ABC451 array copy pressure after GC cadence fix | bug | runtime/memory | see `issues/done/361-reduce-abc451-array-copy-pressure-after-gc-cadence-fix.md` |
 | 362 | Drive ABC451 depth-8 under iwasm timeout after copy reductions | bug | runtime/memory | see `issues/done/362-drive-abc451-depth8-under-iwasm-timeout-after-copy-reductions.md` |

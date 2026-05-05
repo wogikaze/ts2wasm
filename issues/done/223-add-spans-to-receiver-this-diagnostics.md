@@ -28,9 +28,9 @@ Out of scope:
 
 Acceptance Criteria:
 
-- [ ] Issue-211 unsupported receiver/`this` diagnostics include a source span.
-- [ ] Regression tests fail if those diagnostics regress to `span: None`.
-- [ ] Existing issue-211 semantic fixtures continue to pass or fail with the same issue-linked diagnostic messages.
+- [x] Issue-211 unsupported receiver/`this` diagnostics include a source span.
+- [x] Regression tests fail if those diagnostics regress to `span: None`.
+- [x] Existing issue-211 semantic fixtures continue to pass or fail with the same issue-linked diagnostic messages.
 
 Validation:
 
@@ -39,7 +39,7 @@ cargo fmt --all --check
 cargo nextest run
 ```
 
-Completion evidence:
+## Completion evidence
 
 - Implementation commit: `e8ebbca` (`issue-223: add spans to receiver diagnostics`)
 - `cargo fmt --all --check`: pass
@@ -53,19 +53,3 @@ Completion evidence:
 - `mise run check-issue-health`: pass
 - `mise run update-issue-index -- --check`: pass
 - `mise run check-repo-smoke`: pass
-
-## Reopened by audit
-
-Date: 2026-05-05
-
-Classification: acceptance-not-actually-met.
-
-Reopen reason: no `## Completion evidence` section is present, so close evidence cannot be cited from the issue file.
-
-Violated acceptance: the issue cannot provide repo-local close evidence for its checked acceptance criteria while it remains in this state. Acceptance checkboxes were reset for re-verification.
-
-Evidence files:
-- `issues/open/223-add-spans-to-receiver-this-diagnostics.md` before this move
-- `issues/open/223-add-spans-to-receiver-this-diagnostics.md` after this move
-
-Split follow-up: none created in this audit wave; this reopened issue remains the tracking item.

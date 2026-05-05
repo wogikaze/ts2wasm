@@ -3,12 +3,12 @@ id: 274
 title: "Implement spread operator (audit reopened #274)"
 type: meta
 area: frontend/semantics
-class: done
+class: blocked
 status: open
 priority: P2
 tracking: feature:spread-operator
 blocks: []
-completed: 2026-05-02
+blocked_by: [353]
 children:
   - id: 353
     status: unstarted
@@ -161,19 +161,3 @@ Child issues:
   - `mise run reference-triage -- test262 reference/test262/test/built-ins/Array/prototype/map/15.4.4.19-2-19.js` now advances past `UnresolvedName: assert` and reports `BuildPass`;
   - validation passed: `cargo fmt --all --check`, `mise run update-issue-index -- --check`, `mise run check issues`, and `mise run check scripts`;
   - no broad spread child scope is closed; iterator protocol integration, sparse arrays, dynamic object enumeration, and broad Test262 spread coverage remain open.
-
-## Reopened by audit
-
-Date: 2026-05-05
-
-Classification: acceptance-not-actually-met.
-
-Reopen reason: no `## Completion evidence` section is present, so close evidence cannot be cited from the issue file.
-
-Violated acceptance: the issue cannot provide repo-local close evidence for its checked acceptance criteria while it remains in this state. Acceptance checkboxes were reset for re-verification.
-
-Evidence files:
-- `issues/open/274-implement-spread-operator.md` before this move
-- `issues/open/274-implement-spread-operator.md` after this move
-
-Split follow-up: none created in this audit wave; this reopened issue remains the tracking item.
