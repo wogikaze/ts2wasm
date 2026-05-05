@@ -1100,6 +1100,18 @@ impl<'a> Resolver<'a> {
                         method,
                         Some(*span),
                     ))
+                } else if method == "getYear" && self.is_invalid_date_expr(object) {
+                    if !args.is_empty() {
+                        return Err(Diagnostic {
+                            code: DiagCode::ArityMismatch,
+                            message: format!(
+                                "Date.prototype.{method} expects 0 arguments, got {}",
+                                args.len()
+                            ),
+                            span: Some(*span),
+                        });
+                    }
+                    Ok(LoweredExpr::Number(0))
                 } else if method == "getYear" && self.is_date_receiver(object) {
                     if !args.is_empty() {
                         return Err(Diagnostic {
@@ -1937,6 +1949,12 @@ impl<'a> Resolver<'a> {
                         return Ok(LoweredExpr::RuntimeCall {
                             runtime_fn: "DateNewLive".to_owned(),
                             args: vec![],
+                        });
+                    }
+                    if is_invalid_date_constructor_expr(expr) {
+                        return Ok(LoweredExpr::RuntimeCall {
+                            runtime_fn: "DateNew".to_owned(),
+                            args: vec![LoweredExpr::Number(0)],
                         });
                     }
                     if args.len() != 1 {

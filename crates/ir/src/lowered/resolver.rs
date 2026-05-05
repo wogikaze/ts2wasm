@@ -31,6 +31,7 @@ struct Resolver<'a> {
     local_classes: HashMap<LocalId, String>,
     object_function_props: HashMap<LocalId, HashMap<String, FuncId>>,
     regexp_literal_locals: HashSet<LocalId>,
+    invalid_date_locals: HashSet<LocalId>,
     bigint_locals: HashSet<LocalId>,
     control_flow_bigint_div_rem_locals: HashSet<LocalId>,
     control_flow_mixed_bigint_locals: HashSet<LocalId>,
@@ -116,6 +117,7 @@ impl<'a> Resolver<'a> {
             local_classes: HashMap::new(),
             object_function_props: HashMap::new(),
             regexp_literal_locals: HashSet::new(),
+            invalid_date_locals: HashSet::new(),
             bigint_locals: HashSet::new(),
             control_flow_bigint_div_rem_locals: HashSet::new(),
             control_flow_mixed_bigint_locals: HashSet::new(),
@@ -182,6 +184,7 @@ impl<'a> Resolver<'a> {
             local_classes: HashMap::new(),
             object_function_props: HashMap::new(),
             regexp_literal_locals: HashSet::new(),
+            invalid_date_locals: HashSet::new(),
             bigint_locals: HashSet::new(),
             control_flow_bigint_div_rem_locals: HashSet::new(),
             control_flow_mixed_bigint_locals: HashSet::new(),
@@ -354,6 +357,7 @@ impl<'a> Resolver<'a> {
                 self.update_static_function_array_like_local_on_let(local_id, expr);
                 self.update_string_literal_local(local_id, expr);
                 self.update_native_set_add_local(local_id, expr);
+                self.update_invalid_date_local(local_id, expr);
                 if let Some(props) = function_props {
                     self.object_function_props.insert(local_id, props);
                 } else {
@@ -396,6 +400,7 @@ impl<'a> Resolver<'a> {
                 self.invalidate_static_function_array_like_local(local_id);
                 self.update_string_literal_local(local_id, expr);
                 self.update_native_set_add_local(local_id, expr);
+                self.update_invalid_date_local(local_id, expr);
                 if let Some(props) = function_props {
                     self.object_function_props.insert(local_id, props);
                 } else {
@@ -862,6 +867,17 @@ fn unsupported_array_sort_diagnostic(span: Option<Span>) -> Diagnostic {
 
 fn is_static_date_constructor_expr(expr: &ResolvedExpr) -> bool {
     matches!(expr, ResolvedExpr::New { class_name, .. } if class_name == "Date")
+}
+
+fn is_invalid_date_constructor_expr(expr: &ResolvedExpr) -> bool {
+    matches!(
+        expr,
+        ResolvedExpr::New {
+            class_name,
+            args,
+            ..
+        } if class_name == "Date" && matches!(args.as_slice(), [ResolvedExpr::Object(_)])
+    )
 }
 
 fn is_array_prototype_map_call_receiver(object: &ResolvedExpr, method: &str) -> bool {

@@ -2252,6 +2252,25 @@ impl<'a> Resolver<'a> {
         }
     }
 
+    pub(super) fn update_invalid_date_local(&mut self, local_id: LocalId, expr: &ResolvedExpr) {
+        if is_invalid_date_constructor_expr(expr) {
+            self.invalid_date_locals.insert(local_id);
+        } else {
+            self.invalid_date_locals.remove(&local_id);
+        }
+    }
+
+    pub(super) fn is_invalid_date_expr(&self, expr: &ResolvedExpr) -> bool {
+        match expr {
+            ResolvedExpr::New { .. } => is_invalid_date_constructor_expr(expr),
+            ResolvedExpr::Ident(name) => self
+                .resolve_local(name)
+                .ok()
+                .is_some_and(|local_id| self.invalid_date_locals.contains(&local_id)),
+            _ => false,
+        }
+    }
+
     pub(super) fn is_known_array_expr(&self, expr: &ResolvedExpr) -> bool {
         match expr {
             ResolvedExpr::Array(_) => true,
