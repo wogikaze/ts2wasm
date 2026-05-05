@@ -87,6 +87,36 @@ mod tests {
     }
 
     #[test]
+    fn accepts_semicolonless_type_alias_object_followed_by_export_interface() {
+        let source = r#"
+            type T = { x : number }
+            export interface I {
+                f: T;
+            }
+            let val = 1;
+        "#;
+        let program = parse_program(source).unwrap();
+        assert_eq!(program.len(), 1);
+        assert!(matches!(program[0], Stmt::Let { ref name, .. } if name == "val"));
+    }
+
+    #[test]
+    fn rejects_unterminated_type_alias_with_no_type_body() {
+        let source = r#"
+            type T =
+            let val = 1;
+        "#;
+        let result = parse_program(source);
+        assert!(result.is_err());
+        let err = result.unwrap_err();
+        assert!(
+            err.message.contains("unterminated"),
+            "expected unterminated diagnostic, got: {}",
+            err.message
+        );
+    }
+
+    #[test]
     fn parses_typescript_type_alias_declarations_as_erased_syntax() {
         let source = r#"
             type Id = number;

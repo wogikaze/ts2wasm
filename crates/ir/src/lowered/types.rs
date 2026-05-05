@@ -379,6 +379,7 @@ pub enum LoweredUnaryOp {
     Negate,
     TypeOf,
     Delete,
+    Void,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]

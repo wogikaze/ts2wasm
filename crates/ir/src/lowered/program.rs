@@ -1858,10 +1858,11 @@ fn lower_unary_op(op: UnaryOp) -> Result<LoweredUnaryOp, Diagnostic> {
             message: format!("issue-268: unary operator {:?} not yet supported", op),
             span: None,
         }),
-        UnaryOp::BitwiseNot | UnaryOp::Void => Err(Diagnostic {
+        UnaryOp::BitwiseNot => Err(Diagnostic {
             code: DiagCode::UnsupportedSyntax,
             message: format!("unary operator {:?} not yet supported", op),
             span: None,
         }),
+        UnaryOp::Void => Ok(LoweredUnaryOp::Void),
     }
 }
