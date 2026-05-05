@@ -15,7 +15,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 1 | 0 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4377 | 3855 | 522 |
+| frontend | 4377 | 3854 | 523 |
 | harness | 1 | 0 | 1 |
 | ir | 21 | 0 | 21 |
 | issues | 4 | 0 | 4 |
@@ -26,7 +26,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 4965 | 4138 | 827 |
+| total | 4965 | 4137 | 828 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -157,7 +157,9 @@ Issue files are the source of truth for work items. The generated section below 
 | ID | Title | Type | Area | Class | Priority | Depends on | Summary |
 |---:|---|---|---|---|---|---|---|
 | 5001 | Meta: TypeScript Compiler Semantic Analysis Coverage | meta | frontend/semantics | design-ready | P1 |  | tsc semantic-analysis failures currently need classified child work orders so implementers can select one diagnostic ... |
-| 5005 | Meta: TypeScript Compiler Name Resolution Coverage | meta | frontend/resolver | design-ready | P1 |  | name-resolution failures currently need child issue classification by resolver behavior so implementers can select on... |
+| 5002 | Meta: TypeScript Compiler Type System Coverage | meta | frontend/semantics | design-ready | P1 | 5000, 5005 | type-system reference failures currently need dependency and scope cleanup so each child issue is a concrete type inf... |
+| 5006 | Meta: TypeScript Compiler Scope Analysis Coverage | meta | frontend/resolver | design-ready | P2 | 5005 | scope-analysis failures currently need child issue classification by block scope, hoisting, lexical lookup, or tempor... |
+| 5007 | Meta: TypeScript Compiler Module Resolution Coverage (audit reopened #5007) | meta | frontend/resolver | design-ready | P2 | 5005 | module-resolution failures currently need child issue classification by import/export path behavior before resolver i... |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -4293,10 +4295,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 4804 | Implement Yieldstarcontextualtype | spike | frontend/semantics | class: blocked | Implement Yieldstarcontextualtype |
 | 4805 | Implement Yieldstringliteral | spike | runtime/builtins | class: triage-needed | Implement Yieldstringliteral |
 | 4807 | Implement decorator support | spike | frontend/syntax | class: blocked | Implement decorator support |
-| 5002 | Meta: TypeScript Compiler Type System Coverage | meta | frontend/semantics | 5000, 5005 | Meta: TypeScript Compiler Type System Coverage |
 | 5003 | Meta: TypeScript Compiler Declaration Emit Coverage | meta | frontend/syntax | 5000, 5001 | Meta: TypeScript Compiler Declaration Emit Coverage |
-| 5006 | Meta: TypeScript Compiler Scope Analysis Coverage | meta | frontend/resolver | 5005 | Meta: TypeScript Compiler Scope Analysis Coverage |
-| 5007 | Meta: TypeScript Compiler Module Resolution Coverage (audit reopened #5007) | meta | frontend/resolver | 5005 | Meta: TypeScript Compiler Module Resolution Coverage (audit reopened #5007) |
 | 5012 | Implement Date object support | spike | frontend/syntax | class: triage-needed | Implement Date object support |
 | 5015 | Implement function support | spike | frontend/syntax | class: triage-needed | Implement function support |
 | 5018 | Implement legacy-global-builtin support | spike | frontend/syntax | class: triage-needed | Implement legacy-global-builtin support |
@@ -5019,6 +5018,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 4814 | Investigate and classify unknown-unsupported cases (dup) | spike | frontend/syntax | see `issues/done/4814-implement-unknown-unsupported.md` |
 | 5000 | Meta: TypeScript Compiler Parser Syntax Coverage | meta | frontend/syntax | see file |
 | 5004 | Meta: Runtime Builtins Coverage (test262) (audit reopened #5004) | meta | runtime/builtins | see `issues/done/5004-meta-runtime-builtins.md` |
+| 5005 | Meta: TypeScript Compiler Name Resolution Coverage | meta | frontend/resolver | see `issues/done/5005-meta-tsc-name-resolution.md` |
 | 5008 | Implement static ES module export forms (default, named, namespace, re-export) (audit reopened #5008) | feature | ir/compiler | see `issues/done/5008-static-es-module-export-default-namespace-reexport.md` |
 | 5009 | Remaining static ES module export forms (named list, default import, namespace, re-export, side-effect) (audit reopened #5009) | feature | ir/compiler | see `issues/done/5009-remaining-es-module-export-forms.md` |
 | 5010 | Implement local named export (export { value } and export { value as alias }) for entry module (audit reopened #5010) | feature | ir/compiler | see `issues/done/5010-remaining-es-module-export-forms.md` |

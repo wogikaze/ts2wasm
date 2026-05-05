@@ -3,12 +3,13 @@ id: 5005
 title: "Meta: TypeScript Compiler Name Resolution Coverage"
 type: meta
 area: frontend/resolver
-class: design-ready
+class: done
 priority: P1
 depends_on: []
 blocks: []
 created: 2026-05-02
-updated: 2026-05-02
+completed: 2026-05-06
+updated: 2026-05-06
 ---
 
 ## Summary
@@ -29,9 +30,9 @@ Current failure: `mise run reference-coverage -- tsc --limit 50 --detail` report
 
 In scope:
 
-- [ ] Review child issues currently dependency-linked to `5005`.
-- [ ] Keep symbol table, scope chain, identifier binding, shadowing, and name lookup children under `5005`.
-- [ ] Move pure scope-analysis or module-resolution children to `5006` or `5007` when narrower.
+- [x] Review child issues currently dependency-linked to `5005`.
+- [x] Keep symbol table, scope chain, identifier binding, shadowing, and name lookup children under `5005`.
+- [x] Move pure scope-analysis or module-resolution children to `5006` or `5007` when narrower.
 
 Out of scope:
 
@@ -52,9 +53,9 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] Name-resolution child issues are dependency-linked to `5005` only when resolver behavior is the primary blocker.
-- [ ] Scope-analysis and module-resolution children are linked to `5006` or `5007` where appropriate.
-- [ ] `issues/index.md` is regenerated after dependency or class edits.
+- [x] Name-resolution child issues are dependency-linked to `5005` only when resolver behavior is the primary blocker.
+- [x] Scope-analysis and module-resolution children are linked to `5006` or `5007` where appropriate.
+- [x] `issues/index.md` is regenerated after dependency or class edits.
 
 ## Validation
 
@@ -96,4 +97,47 @@ Validation result:
 python scripts/manager.py update-issue-index: pass
 python scripts/manager.py update-issue-index --check: pass
 python scripts/manager.py check issues: pass
+```
+
+## Completion evidence
+
+Date: 2026-05-06
+
+This meta issue is closed as the name-resolution classification/design gate,
+not as a claim that all resolver failures are implemented.
+
+After the parser-diagnostic relinks, direct open children that still depend on
+`5005` have these recorded diagnostics:
+
+```text
+7 function-resolution
+1 method-call
+10 module-resolution
+381 name-resolution
+```
+
+The remaining `module-resolution` direct children are overload/type-argument
+resolution buckets such as `overloadResolutionOnDefaultConstructor`,
+`functionDeclarationWithResolutionOfTypeNamedArguments`, and
+`typeArgumentConstraintResolution`. Those match the existing `5007` note that
+overload/type-resolution buckets belong under `5005`, while import/export path
+module-resolution cleanup remains under `5007`.
+
+Validation:
+
+```text
+rg -l 'depends_on: \[[^\]]*5005' issues/open -g '*.md' | xargs rg -n 'Reference test results show .* diagnostics:' | sed -E 's/.*diagnostics: ([^.]+).*/\1/' | sort | uniq -c
+result: no parser-syntax or scope-analysis diagnostics remain directly linked to 5005
+
+python scripts/manager.py update-issue-index
+result: pass
+
+python scripts/manager.py update-issue-index --check
+result: pass
+
+python scripts/manager.py check issue-index
+result: pass
+
+python scripts/manager.py check issues
+result: pass
 ```
