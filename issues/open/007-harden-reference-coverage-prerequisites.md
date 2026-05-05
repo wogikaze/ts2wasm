@@ -77,3 +77,15 @@ Evidence files:
 - `issues/open/007-harden-reference-coverage-prerequisites.md` after this move
 
 Split follow-up: none created in this audit wave; this reopened issue remains the tracking item.
+
+## Reverification evidence
+
+Date: 2026-05-05
+
+- `python scripts/manager.py check-scripts`: passed.
+- `python scripts/manager.py reference-coverage test262 --limit 1`: failed early before compiler binary resolution with clear missing-reference remediation text and clone/pull commands for `reference/test262`.
+- `python scripts/manager.py update-coverage-matrix --check`: failed because `artifacts/coverage/results/test262.json` is an older/invalid result shape without `denominator`, `executed`, coverage percentages, `status`, `evidence`, and breakdown objects. `scripts/gen/coverage-matrix.py` now refuses to update the matrix from that invalid input instead of rendering a misleading zero-denominator row.
+
+Remaining blocker:
+
+- The required `update-coverage-matrix --check` pass still needs refreshed valid coverage result artifacts and a clean generated matrix artifact. Those artifacts are outside this child assignment's allowed file scope, so this issue remains open for parent coordination.
