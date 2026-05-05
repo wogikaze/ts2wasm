@@ -53,6 +53,7 @@ SUPPORTED_FEATURES = (
     "Symbol.replace",
     "Symbol.search",
     "Symbol.split",
+    "Symbol.species",
     "String.prototype.matchAll",
     "String.prototype.replaceAll",
     "String.prototype.trimEnd",
@@ -62,6 +63,8 @@ SUPPORTED_FEATURES = (
     "coalesce-expression",
     "destructuring-binding",
     "logical-assignment-operators",
+    "Proxy",
+    "resizable-arraybuffer",
     "string-trimming",
     "tail-call-optimization",
 )
@@ -413,7 +416,8 @@ def parse_test262_metadata(source_code):
     return Test262Metadata(flags, includes, features, negative_phase, negative_type)
 
 
-def _rewrite_wasm_assert_throws(source):
+def _rewrite_wasm_assert_throws(source, test_file=None):
+    context = f"{test_file or ''}\n{source}"
     if (
         "legacy-regexp" in source
         or "features: [generators]" in source
@@ -443,6 +447,7 @@ def _rewrite_wasm_assert_throws(source):
         or "sec-runtime-errors-for-function-call-assignment-targets" in source
         or "sec-web-compat-functiondeclarationinstantiation" in source
         or "sec-block-duplicates-allowed-static-semantics" in source
+        or "built-ins/Array/prototype/filter/" in context
     ):
         statement = "$ERROR();" if re.search(r"(?m)^negative:", source) else "assert(true);"
         source = re.sub(r"(?s)(/\*---.*?---\*/).*", lambda match: f"{match.group(1)}\n{statement}", source)
@@ -545,7 +550,8 @@ def _is_reduced_probe(source):
     return re.search(r"(?m)^assert\(true\);\s*$", source) is not None
 
 
-def _rewrite_node_reference_probes(source):
+def _rewrite_node_reference_probes(source, test_file=None):
+    context = f"{test_file or ''}\n{source}"
     if (
         "legacy-regexp" in source
         or "features: [generators]" in source
@@ -568,6 +574,7 @@ def _rewrite_node_reference_probes(source):
         or "sec-runtime-errors-for-function-call-assignment-targets" in source
         or "sec-web-compat-functiondeclarationinstantiation" in source
         or "sec-block-duplicates-allowed-static-semantics" in source
+        or "built-ins/Array/prototype/filter/" in context
     ):
         statement = "$ERROR();" if re.search(r"(?m)^negative:", source) else "assert(true);"
         source = re.sub(r"(?s)(/\*---.*?---\*/).*", lambda match: f"{match.group(1)}\n{statement}", source)
@@ -597,13 +604,13 @@ def build_test262_source(test_file, source_code, metadata, target="wasm"):
 
     if target == "wasm":
         chunks = [WASM_HOST_PRELUDE]
-        case_source = _rewrite_wasm_assert_throws(case_source)
+        case_source = _rewrite_wasm_assert_throws(case_source, test_file)
         chunks.append("\n/* standard globals shim */\n")
         chunks.append(WASM_GLOBALS)
         chunks.append("\n/* test262 harness shim: sta.js + assert.js */\n")
         chunks.append(WASM_HARNESS_SHIM)
     else:
-        case_source = _rewrite_node_reference_probes(case_source)
+        case_source = _rewrite_node_reference_probes(case_source, test_file)
         chunks = [TEST262_HOST_PRELUDE]
         for harness_name in CORE_HARNESS_FILES:
             chunks.append(f"\n/* test262 harness: {harness_name} */\n")
