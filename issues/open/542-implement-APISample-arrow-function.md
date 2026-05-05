@@ -116,7 +116,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/open/070-implement-APISample.md` - Implement Apisample (same reference path, title overlap)
+- `issues/done/070-implement-APISample.md` - Implement Apisample (same reference path, title overlap)
 - `issues/done/415-implement-arrow-function.md` - Implement arrow functions (same feature label, title overlap)
 - `issues/done/430-implement-function.md` - Implement function support (same feature label, title overlap)
 - `issues/done/456-implement-APISample-arrow-function.md` - Implement Apisample Arrow Function (same reference path, same feature label, same group key, title overlap)
@@ -234,7 +234,7 @@ Duplicate candidates:
 [
   {
     "state": "open",
-    "path": "issues/open/070-implement-APISample.md",
+    "path": "issues/done/070-implement-APISample.md",
     "title": "Implement Apisample",
     "reason": "same reference path, title overlap"
   },

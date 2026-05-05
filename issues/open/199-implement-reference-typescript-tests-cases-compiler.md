@@ -116,7 +116,7 @@ Follow-up issues:
 ## Duplicate detection
 
 - `issues/done/069-implement-APILibCheck.md` - Implement Apilibcheck (same feature label, same group key, title overlap)
-- `issues/open/070-implement-APISample.md` - Implement Apisample (same feature label, same group key, title overlap)
+- `issues/done/070-implement-APISample.md` - Implement Apisample (same feature label, same group key, title overlap)
 - `issues/done/071-implement-ArrowFunctionExpression.md` - Implement Arrowfunctionexpression (same feature label, same group key, title overlap)
 - `issues/done/072-implement-ClassDeclaration.md` - Implement Classdeclaration (same feature label, same group key, title overlap)
 - `issues/done/073-implement-ClassDeclarationWithInvalidConstOnPropertyDeclaration.md` - Implement Classdeclarationwithinvalidconstonpropertydeclaration (same feature label, same group key, title overlap)

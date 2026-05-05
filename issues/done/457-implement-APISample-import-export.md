@@ -122,7 +122,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/open/070-implement-APISample.md` - Implement Apisample (same reference path, title overlap)
+- `issues/done/070-implement-APISample.md` - Implement Apisample (same reference path, title overlap)
 - `issues/open/432-implement-import-export.md` - Implement import/export module syntax (same feature label, title overlap)
 - `issues/done/055-implement-import-export.md` - Umbrella: implement import and export (same feature label, title overlap)
 
@@ -211,7 +211,7 @@ Duplicate candidates:
 [
   {
     "state": "open",
-    "path": "issues/open/070-implement-APISample.md",
+    "path": "issues/done/070-implement-APISample.md",
     "title": "Implement Apisample",
     "reason": "same reference path, title overlap"
   },

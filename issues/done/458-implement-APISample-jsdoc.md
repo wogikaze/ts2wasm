@@ -116,7 +116,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/open/070-implement-APISample.md` - Implement Apisample (same reference path, same feature label, title overlap)
+- `issues/done/070-implement-APISample.md` - Implement Apisample (same reference path, same feature label, title overlap)
 
 ## Smart triage
 
@@ -197,7 +197,7 @@ Duplicate candidates:
 [
   {
     "state": "open",
-    "path": "issues/open/070-implement-APISample.md",
+    "path": "issues/done/070-implement-APISample.md",
     "title": "Implement Apisample",
     "reason": "same reference path, same feature label, title overlap"
   }

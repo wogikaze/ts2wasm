@@ -3,12 +3,14 @@ id: 070
 title: "Implement Apisample"
 type: spike
 area: runtime/builtins
-class: triage-needed
+class: superseded
 priority: P1
 depends_on: []
 blocks: []
 created: 2026-04-29
 updated: 2026-04-29
+completed: 2026-05-06
+status: done
 ---
 
 ## Summary
@@ -75,10 +77,10 @@ This generated bucket is either split into implementation-ready child issues or 
 
 In scope:
 
-- [ ] Inspect the smart triage report below
-- [ ] Confirm whether existing open/done issues already cover this bucket
-- [ ] Split one feature family, one observable behavior, or one fixed reference window into child issues
-- [ ] Preserve exact reproduction commands and representative AST/diagnostic evidence in each child issue
+- [x] Inspect the smart triage report below
+- [x] Confirm whether existing open/done issues already cover this bucket
+- [x] Split one feature family, one observable behavior, or one fixed reference window into child issues
+- [x] Preserve exact reproduction commands and representative AST/diagnostic evidence in each child issue
 
 Out of scope:
 
@@ -100,10 +102,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] Duplicate candidates below are confirmed as no-match or this issue is superseded
-- [ ] At least one child issue contains an exact `mise run reference-triage -- ...` command
-- [ ] Child issue includes failing path, diagnostic code, source context, visible symbols, and parser/TypeScript AST evidence
-- [ ] Child issue acceptance names the exact fixture/reference path and diagnostic/stdout change
+- [x] Duplicate candidates below are confirmed as no-match or this issue is superseded
+- [x] At least one child issue contains an exact `mise run reference-triage -- ...` command
+- [x] Child issue includes failing path, diagnostic code, source context, visible symbols, and parser/TypeScript AST evidence
+- [x] Child issue acceptance names the exact fixture/reference path and diagnostic/stdout change
 
 ## Validation
 
@@ -129,17 +131,31 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] updated: `current-state.md` (repo root)
+- [x] updated: `current-state.md` (repo root)
 
 Follow-up issues:
 
-- [ ] none
+- [x] existing: `issues/open/543-implement-APISample-import-export.md`
+- [x] existing: `issues/open/544-implement-APISample-jsdoc.md`
+- [x] existing: `issues/open/542-implement-APISample-arrow-function.md`
+- [x] done: `issues/done/5023-implement-api-sample-watcher-arrow.md`
+- [x] created: `issues/open/5139-split-apisample-parser-leftovers.md`
 
 ## Notes
+
+## Triage findings
+
+2026-05-06:
+
+- The APISample parent is a generated bucket with mixed causes and must not be selected directly.
+- Existing issue 543 owns the import/export APISample bucket and already lists `APISample_Watch*.ts`, `APISample_compile.ts`, `APISample_parseConfig.ts`, `APISample_linter.ts`, and `APISample_transform.ts`.
+- Existing issue 544 owns the JSDoc APISample bucket.
+- Existing issue 542 and done issue 5023 cover the `APISample_watcher.ts` arrow-function split; issue 5023 records that the original arrow-body diagnostic is gone and a separate parser diagnostic remains.
+- New issue 5139 owns the remaining APISample parser-window decision for `APISample_linter.ts` and `APISample_transform.ts`, so this parent is closed as a superseded generated bucket.
 
 ## Affected test files
 
@@ -234,7 +250,7 @@ Duplicate candidates:
   },
   {
     "state": "open",
-    "path": "issues/open/070-implement-APISample.md",
+    "path": "issues/done/070-implement-APISample.md",
     "title": "Implement Apisample",
     "reason": "same reference path, same feature label, title overlap"
   },
@@ -676,16 +692,24 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- `...`
+- issue-state commit closing this generated bucket after child issue 5139 split
 
 Validation result:
 
 ```text
-command:
-result:
-date:
+command: python scripts/manager.py update-issue-index --check
+result: pass
+date: 2026-05-06
+
+command: python scripts/manager.py check-issue-health
+result: pass
+date: 2026-05-06
+
+command: python scripts/manager.py check-issue-readiness -- --fail-ready-below 80
+result: pass
+date: 2026-05-06
 ```
 
 Remaining risks:
 
-- none
+- APISample implementation remains open in child issues 542, 543, 544, and 5139.
