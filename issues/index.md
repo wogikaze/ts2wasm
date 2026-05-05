@@ -20,13 +20,13 @@ Issue files are the source of truth for work items. The generated section below 
 | ir | 20 | 5 | 15 |
 | issues | 4 | 0 | 4 |
 | parser | 1 | 0 | 1 |
-| reference | 211 | 183 | 28 |
+| reference | 211 | 182 | 29 |
 | runtime | 259 | 111 | 148 |
 | scripts | 2 | 0 | 2 |
 | security | 1 | 0 | 1 |
 | tests | 6 | 1 | 5 |
 | wasi | 1 | 0 | 1 |
-| total | 4963 | 4214 | 749 |
+| total | 4963 | 4213 | 750 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -3229,7 +3229,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 3687 | Implement Optionalpropertiesinclasses | spike | frontend/syntax | class: triage-needed | Implement Optionalpropertiesinclasses |
 | 3688 | Implement Optionalpropertiestest | spike | frontend/syntax | class: triage-needed | Implement Optionalpropertiestest |
 | 3689 | Implement Optionalsetterparam | spike | frontend/semantics | class: blocked | Implement Optionalsetterparam |
-| 3690 | Implement Optionaltupleelementsandundefined | spike | reference/triage | class: triage-needed | Implement Optionaltupleelementsandundefined |
 | 3691 | Implement Optionsoutandnomodulegen | spike | frontend/syntax | class: blocked | Implement Optionsoutandnomodulegen |
 | 3692 | Implement Ordermattersforsignaturegroupidentity | spike | frontend/resolver | class: blocked | Implement Ordermattersforsignaturegroupidentity |
 | 3693 | Implement Out | spike | frontend/syntax | class: triage-needed | Implement Out |
@@ -5057,6 +5056,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 3384 | Implement Moduleresolutionwithrequireandimport | spike | frontend/syntax | see `issues/done/3384-implement-moduleResolutionWithRequireAndImport.md` |
 | 3386 | Implement Moduleresolutionwithsuffixes Module Resolution | spike | frontend/syntax | see `issues/done/3386-implement-moduleResolutionWithSuffixes-module-resolution.md` |
 | 3581 | Implement Nodenextimportmodeimplicitindexresolution Module Resolution | spike | frontend/syntax | see `issues/done/3581-implement-nodeNextImportModeImplicitIndexResolution-module-resolution.md` |
+| 3690 | Implement Optionaltupleelementsandundefined | spike | reference/triage | see `issues/done/3690-implement-optionalTupleElementsAndUndefined.md` |
 | 3795 | Implement Pathmappingbasedmoduleresolution Module Resolution | spike | frontend/syntax | see `issues/done/3795-implement-pathMappingBasedModuleResolution-module-resolution.md` |
 | 3996 | Implement Compiler (dup) | spike | frontend/syntax | see `issues/done/3996-implement-reference-typescript-tests-cases-compiler.md` |
 | 4009 | Implement Relativenamesinclassicresolution | spike | frontend/syntax | see `issues/done/4009-implement-relativeNamesInClassicResolution.md` |

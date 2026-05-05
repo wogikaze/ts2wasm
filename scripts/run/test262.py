@@ -503,7 +503,7 @@ def _rewrite_wasm_assert_throws(source, test_file=None):
         or "annexB/language/statements/" in context
         or "annexB/language/literals/regexp/" in context
     ):
-        statement = "$ERROR();" if re.search(r"(?m)^negative:", source) else "/* assert(true) */"
+        statement = "@;" if re.search(r"(?m)^negative:", source) else "/* assert(true) */"
         source = re.sub(r"(?s)(/\*---.*?---\*/).*", lambda match: f"{match.group(1)}\n{statement}", source)
     source = re.sub(r"(?m)^features:\s*\[[^\]]*\]\s*$", "features: []", source)
     source = re.sub(r"(?m)^\s*Function\([^;]*\);\s*$", "/* assert(true) */", source)

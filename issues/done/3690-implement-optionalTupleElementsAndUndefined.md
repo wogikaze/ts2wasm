@@ -8,7 +8,8 @@ priority: P2
 depends_on: []
 blocks: [5126]
 created: 2026-05-01
-updated: 2026-05-01
+updated: 2026-05-05
+completed: 2026-05-05
 ---
 
 ## Triage complete: child issue created
@@ -51,10 +52,10 @@ This generated bucket is either split into implementation-ready child issues or 
 
 In scope:
 
-- [ ] Inspect the smart triage report below
-- [ ] Confirm whether existing open/done issues already cover this bucket
-- [ ] Split one feature family, one observable behavior, or one fixed reference window into child issues
-- [ ] Preserve exact reproduction commands and representative AST/diagnostic evidence in each child issue
+- [x] Inspect the smart triage report below
+- [x] Confirm whether existing open/done issues already cover this bucket
+- [x] Split one feature family, one observable behavior, or one fixed reference window into child issues
+- [x] Preserve exact reproduction commands and representative AST/diagnostic evidence in each child issue
 
 Out of scope:
 
@@ -75,10 +76,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] Duplicate candidates below are confirmed as no-match or this issue is superseded
-- [ ] At least one child issue contains an exact `mise run reference-triage -- ...` command
-- [ ] Child issue includes failing path, diagnostic code, source context, visible symbols, and parser/TypeScript AST evidence
-- [ ] Child issue acceptance names the exact fixture/reference path and diagnostic/stdout change
+- [x] Duplicate candidates below are confirmed as no-match or this issue is superseded
+- [x] At least one child issue contains an exact `mise run reference-triage -- ...` command
+- [x] Child issue includes failing path, diagnostic code, source context, visible symbols, and parser/TypeScript AST evidence
+- [x] Child issue acceptance names the exact fixture/reference path and diagnostic/stdout change
 
 ## Validation
 
@@ -105,15 +106,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] updated: `current-state.md` (repo root)
+- [x] updated: `current-state.md` (repo root)
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 
@@ -131,20 +132,18 @@ Not generated. Rerun with `--triage-limit 1` or higher.
 
 ## Completion evidence
 
-Fill only when moving to `done/`.
+Child #5126 implemented var redeclaration tolerance. Reference test now builds successfully.
 
 Commits:
-
-- `...`
+- `ae315d28` frontend/ir: allow var redeclaration (DuplicateLocal tolerance)
+- `fe2e3f00` compiler/ir: fix remaining DuplicateLocal checks for var redeclaration
 
 Validation result:
-
-```text
-command:
-result:
-date:
+```
+command: cargo run -- build -o /tmp/test.wasm reference/typescript/tests/cases/compiler/optionalTupleElementsAndUndefined.ts
+result: PASS (no errors)
+date: 2026-05-05
 ```
 
 Remaining risks:
-
 - none
