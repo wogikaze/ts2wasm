@@ -924,6 +924,12 @@ impl Parser {
                     end,
                 },
             })
+        } else if matches!(self.peek(), Some(Token::Async))
+            && matches!(self.peek_n(1), Some(Token::Function))
+        {
+            self.advance();
+            let fn_span = self.expect(TokenKind::Function)?;
+            self.function_expression(fn_span)
         } else if let Some(new_span) = self.consume_span(TokenKind::New) {
             let expr = self.call_member_no_call()?;
             self.try_consume_typescript_new_type_arguments(&expr)?;
