@@ -263,6 +263,26 @@ fn static_export_named_list_entry_build_smoke() {
 }
 
 #[test]
+fn static_local_named_export_missing_reports_issue_5005() {
+    assert_build_fails_with_diagnostic_span_at(
+        "module-system/static-local-named-export-missing-unsupported.ts",
+        "[UnsupportedSyntax]",
+        "issue-5005: entry module `export { missing }` references unknown local binding `missing`",
+        "missing",
+    );
+}
+
+#[test]
+fn static_local_named_export_duplicate_reports_issue_5005() {
+    assert_build_fails_with_diagnostic_span_at(
+        "module-system/static-local-named-export-duplicate-unsupported.ts",
+        "[UnsupportedModule]",
+        "issue-5005: duplicate export name `value`",
+        "b as value",
+    );
+}
+
+#[test]
 fn static_default_import_entry_build_smoke() {
     assert_fixture_build_smoke("module-system/static-default-import-entry.ts");
 }
