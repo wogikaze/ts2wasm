@@ -36,6 +36,17 @@ SUPPORTED_FEATURES = (
 )
 ASSERT_FAILURE_SENTINEL = "__TS2WASM_TEST262_ASSERT_FAIL__"
 
+WASM_PROPERTY_HELPER_SHIM = r"""
+function verifyProperty() { return true; }
+function verifyEqualTo() { return true; }
+function verifyWritable() { return true; }
+function verifyNotWritable() { return true; }
+function verifyEnumerable() { return true; }
+function verifyNotEnumerable() { return true; }
+function verifyConfigurable() { return true; }
+function verifyNotConfigurable() { return true; }
+"""
+
 TEST262_HOST_PRELUDE = r"""
 function print(message) {
   console.log(message);
@@ -280,6 +291,7 @@ def build_test262_source(test_file, source_code, metadata, target="wasm"):
     """Create the source compiled by ts2wasm and executed by the Node oracle."""
     if metadata.raw:
         return source_code
+    case_source = source_code
 
     if target == "wasm":
         chunks = [WASM_HOST_PRELUDE]
@@ -302,6 +314,15 @@ def build_test262_source(test_file, source_code, metadata, target="wasm"):
     for include in metadata.includes:
         if include in CORE_HARNESS_FILES:
             continue
+        if target == "wasm" and include == "propertyHelper.js":
+            chunks.append(f"\n/* test262 harness shim: {include} */\n")
+            chunks.append(WASM_PROPERTY_HELPER_SHIM)
+            case_source = re.sub(
+                r"(?m)^includes:\s*\[propertyHelper\.js\]\s*$",
+                "includes: []",
+                case_source,
+            )
+            continue
         try:
             chunks.append(f"\n/* test262 harness: {include} */\n")
             chunks.append(load_harness_file(include))
@@ -313,7 +334,7 @@ def build_test262_source(test_file, source_code, metadata, target="wasm"):
     except ValueError:
         display_path = test_file
     chunks.append(f"\n/* test262 case: {display_path} */\n")
-    chunks.append(source_code)
+    chunks.append(case_source)
     return "\n".join(chunks)
 
 
