@@ -1385,21 +1385,34 @@ impl<'a> Resolver<'a> {
             .iter()
             .map(|name| self.resolve_local(name))
             .collect::<Result<Vec<_>, _>>()?;
-        let mut lowered_params = params
-            .iter()
-            .map(|name| ResolvedParam {
-                name: name.clone(),
+        // Split explicit params into non-rest + rest (rest must be the final parameter
+        // when captures are appended, so the WAT emitter and validator handle it correctly).
+        let mut lowered_params: Vec<ResolvedParam> = Vec::new();
+        let mut rest_param: Option<ResolvedParam> = None;
+        for param in params {
+            let rp = ResolvedParam {
+                name: param.clone(),
                 default: None,
-                is_rest: name.starts_with("..."),
+                is_rest: param.starts_with("..."),
                 span: None,
-            })
-            .collect::<Vec<_>>();
+            };
+            if rp.is_rest {
+                rest_param = Some(rp);
+            } else {
+                lowered_params.push(rp);
+            }
+        }
+        // Append captures (non-rest) before the rest param
         lowered_params.extend(capture_names.iter().map(|name| ResolvedParam {
             name: name.clone(),
             default: None,
             is_rest: false,
             span: None,
         }));
+        // Rest param goes last
+        if let Some(rp) = rest_param {
+            lowered_params.push(rp);
+        }
 
         let func_id = FuncId(self.next_func_id);
         self.next_func_id += 1;
