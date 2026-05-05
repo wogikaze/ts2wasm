@@ -2040,6 +2040,7 @@ fn core_expression_fixtures_match_node_output_under_iwasm() {
         "fixtures/core-expressions/optional-call.ts",
         "fixtures/core-expressions/optional-index.ts",
         "fixtures/core-expressions/logical-property-assign.ts",
+        "fixtures/core-expressions/type-assertion.ts",
     ] {
         assert_fixture_matches_node(fixture);
     }
