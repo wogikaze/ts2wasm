@@ -22,10 +22,10 @@ Scope:
 
 Acceptance Criteria:
 
-- [ ] Docs do not simultaneously claim a feature is both missing and implemented.
-- [ ] Canonical schema is not duplicated inconsistently.
-- [ ] Future work is represented in issues.
-- [ ] Remaining TODO/deferred mentions are intentional and explainable.
+- [x] Docs do not simultaneously claim a feature is both missing and implemented.
+- [x] Canonical schema is not duplicated inconsistently.
+- [x] Future work is represented in issues.
+- [x] Remaining TODO/deferred mentions are intentional and explainable.
 
 Validation:
 
