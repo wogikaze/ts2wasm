@@ -91,6 +91,10 @@ Not run:
   to `frontend/syntax`.
 - Relinked 23 direct children with recorded `type-alias` diagnostics to the
   open TypeScript type-alias parent `345`.
+- Relinked 78 direct children with syntax-family diagnostics
+  (`ambient-declaration`, `decorator`, `jsx`, `parameter-property`,
+  `rest-parameter`, `template-literal`, `type-annotation`, `type-assertion`) to
+  parser-extension epic `059` and normalized their area to `frontend/syntax`.
 
 Validation result:
 

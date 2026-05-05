@@ -5,7 +5,7 @@ type: spike
 area: frontend/syntax
 class: triage-needed
 priority: P1
-depends_on: [5001]
+depends_on: [059]
 blocks: []
 created: 2026-05-01
 updated: 2026-05-06
