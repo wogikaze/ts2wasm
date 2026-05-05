@@ -21,12 +21,12 @@ Issue files are the source of truth for work items. The generated section below 
 | issues | 4 | 0 | 4 |
 | parser | 1 | 0 | 1 |
 | reference | 211 | 182 | 29 |
-| runtime | 259 | 105 | 154 |
+| runtime | 259 | 104 | 155 |
 | scripts | 2 | 0 | 2 |
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 4964 | 4175 | 789 |
+| total | 4964 | 4174 | 790 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -3775,7 +3775,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 4281 | Implement Strictoptionalproperties | spike | frontend/syntax | class: triage-needed | Implement Strictoptionalproperties |
 | 4282 | Implement Strictsubtypeandnarrowing | spike | frontend/semantics | class: blocked | Implement Strictsubtypeandnarrowing |
 | 4283 | Implement Stricttypeofunionnarrowing | spike | frontend/syntax | class: triage-needed | Implement Stricttypeofunionnarrowing |
-| 4284 | Implement Stringincludes (audit reopened #4284) | spike | runtime/builtins | class: blocked | Implement Stringincludes (audit reopened #4284) |
 | 4285 | Implement Stringindexerandconstructor | spike | frontend/syntax | class: triage-needed | Implement Stringindexerandconstructor |
 | 4286 | Implement Stringindexerassignments Name Resolution | spike | frontend/resolver | class: blocked | Implement Stringindexerassignments Name Resolution |
 | 4287 | Implement Stringindexerassignments Parser Syntax | spike | frontend/syntax | class: triage-needed | Implement Stringindexerassignments Parser Syntax |
@@ -5042,6 +5041,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 4037 | Implement Requireofjsonfilewithmodulenoderesolutionemitundefined | spike | frontend/syntax | see `issues/done/4037-implement-requireOfJsonFileWithModuleNodeResolutionEmitUndefined.md` |
 | 4056 | Implement Resolutioncandidatefrompackagejsonfield Module Resolution | spike | frontend/syntax | see `issues/done/4056-implement-resolutionCandidateFromPackageJsonField-module-resolution.md` |
 | 4241 | Implement Staticinstanceresolution Module Resolution | spike | frontend/syntax | see `issues/done/4241-implement-staticInstanceResolution-module-resolution.md` |
+| 4284 | Implement Stringincludes (audit reopened #4284) | spike | runtime/builtins | see `issues/done/4284-implement-stringIncludes.md` |
 | 4294 | Implement Stringtrim | spike | runtime/builtins | see `issues/done/4294-implement-stringTrim.md` |
 | 4806 | Implement class syntax (dup) | spike | frontend/syntax | see `issues/done/4806-implement-class.md` |
 | 4808 | Implement import/export module syntax (dup) | spike | frontend/syntax | see `issues/done/4808-implement-import-export.md` |
