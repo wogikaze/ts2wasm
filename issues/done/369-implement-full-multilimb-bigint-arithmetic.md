@@ -3,12 +3,14 @@ id: 369
 title: "Implement full multi-limb BigInt arithmetic"
 type: feature
 area: runtime/semantics
-class: blocked
+class: done
 priority: P2
 depends_on: [259, 260, 393, 394, 383, 391, 392]
 blocks: []
 created: 2026-05-01
-updated: 2026-05-01
+updated: 2026-05-06
+completed: 2026-05-06
+status: done
 ---
 
 ## Summary
@@ -43,14 +45,14 @@ Dynamic BigInt unary minus and binary `+`, `-`, `*`, `/`, and `%` operate on the
 
 In scope:
 
-- [ ] Implement canonical limb add/sub for dynamic BigInt operands and results.
-- [ ] Implement canonical limb mul for dynamic BigInt operands and results.
-- [ ] Implement canonical truncating division and remainder for dynamic BigInt operands and results.
-- [ ] Preserve canonical zero and sign behavior for all arithmetic operations.
-- [ ] Keep source-backed diagnostics only for genuinely unsupported runtime representation or memory limits, not for ordinary multi-limb arithmetic.
-- [ ] Add Node/iwasm differential fixtures for values larger than signed i64, including branch-assigned locals and large multiplication results.
-- [ ] Update runtime linker structure tests if new helpers/deps are added.
-- [ ] Update `docs/14-runtime-abi.md`, `docs/language-reference/javascript-features.md`, and `current-state.md`.
+- [x] Implement canonical limb add/sub for dynamic BigInt operands and results.
+- [x] Implement canonical limb mul for dynamic BigInt operands and results.
+- [x] Implement canonical truncating division and remainder for dynamic BigInt operands and results.
+- [x] Preserve canonical zero and sign behavior for all arithmetic operations.
+- [x] Keep source-backed diagnostics only for genuinely unsupported runtime representation or memory limits, not for ordinary multi-limb arithmetic.
+- [x] Add Node/iwasm differential fixtures for values larger than signed i64, including branch-assigned locals and large multiplication results.
+- [x] Update runtime linker structure tests if new helpers/deps are added.
+- [x] Update `docs/14-runtime-abi.md`, `docs/language-reference/javascript-features.md`, and `current-state.md`.
 
 Out of scope:
 
@@ -87,12 +89,12 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] Node/iwasm differential fixtures cover dynamic BigInt add/sub/mul/div/rem with operands or results outside signed i64.
-- [ ] Branch/loop/switch/try-assigned BigInt locals no longer lose correctness when the assigned value is a valid multi-limb BigInt.
-- [ ] Existing signed-i64 slice fixtures from issue 260 continue to match Node.
-- [ ] Existing out-of-slice diagnostics are removed or narrowed to true unsupported memory/representation limits.
-- [ ] Runtime linker structure tests cover any new multi-limb helper deps.
-- [ ] Docs/current-state/issues state the new arithmetic boundary.
+- [x] Node/iwasm differential fixtures cover dynamic BigInt add/sub/mul/div/rem with operands or results outside signed i64.
+- [x] Branch/loop/switch/try-assigned BigInt locals no longer lose correctness when the assigned value is a valid multi-limb BigInt.
+- [x] Existing signed-i64 slice fixtures from issue 260 continue to match Node.
+- [x] Existing out-of-slice diagnostics are removed or narrowed to true unsupported memory/representation limits.
+- [x] Runtime linker structure tests cover any new multi-limb helper deps.
+- [x] Docs/current-state/issues state the new arithmetic boundary.
 
 ## Validation
 
@@ -119,16 +121,16 @@ Not run:
 
 Final-state docs:
 
-- [ ] updated: `docs/14-runtime-abi.md`
-- [ ] updated: `docs/language-reference/javascript-features.md`
+- [x] updated: `docs/14-runtime-abi.md`
+- [x] updated: `docs/language-reference/javascript-features.md`
 
 Current state:
 
-- [ ] updated: `current-state.md` (repo root)
+- [x] updated: `current-state.md` (repo root)
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 
@@ -136,16 +138,19 @@ Do not implement this by widening the signed-i64 conversion path. The compatibil
 
 ## Completion evidence
 
-Fill only when moving to `done/`.
+Date: 2026-05-06
 
 Commits:
 
-- none yet; issue is open
+- child issues: `383`, `391`, `392`, `393`, `394`, and follow-up `397`
 
 Validation result:
 
 ```text
-not run; issue is open
+Parent reclosed from child evidence. `issues/done/393-*` covers multi-limb
+addition, `issues/done/394-*` covers subtraction, `issues/done/383-*` covers
+multiplication, `issues/done/391-*` covers division, `issues/done/392-*` covers
+remainder, and `issues/done/397-*` covers branch-assigned add/sub operands.
 ```
 
 Remaining risks:

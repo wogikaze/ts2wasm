@@ -92,7 +92,7 @@ The fixture covers the required subtraction behavior:
 
 Commits:
 
-- issue 382 implementation evidence recorded in `issues/open/382-multilimb-bigint-add-sub.md`
+- issue 382 implementation evidence recorded in `issues/done/382-multilimb-bigint-add-sub.md`
 - `7d27d84a` issue-397: preserve branch bigint add sub tracking
 - close commit: filled by commit that moves this issue to `done/`
 

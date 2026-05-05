@@ -3,12 +3,14 @@ id: 370
 title: "Implement BigInt arithmetic RangeError and TypeError parity"
 type: feature
 area: runtime/semantics
-class: blocked
+class: done
 priority: P2
 depends_on: [260, 380, 381]
 blocks: []
 created: 2026-05-01
-updated: 2026-05-01
+updated: 2026-05-06
+completed: 2026-05-06
+status: done
 ---
 
 ## Summary
@@ -50,11 +52,11 @@ BigInt arithmetic error paths match Node-observable exception behavior for the s
 In scope:
 
 - [x] Define the minimal runtime throw path needed by BigInt arithmetic, or depend on an existing compatible throw mechanism if available.
-- [ ] Convert BigInt division/remainder-by-zero traps to compatible `RangeError` throwing for supported helper paths.
-- [ ] Convert dynamic mixed Number/BigInt arithmetic diagnostics to compatible runtime `TypeError` throwing where operands can reach runtime safely.
-- [ ] Preserve source-backed diagnostics for unsupported shapes until a runtime throw path exists for them.
-- [ ] Add Node/iwasm differential or exception-parity fixtures for `RangeError` and `TypeError` paths.
-- [ ] Update docs/current-state/issues with the exception boundary.
+- [x] Convert BigInt division/remainder-by-zero traps to compatible `RangeError` throwing for supported helper paths.
+- [x] Convert dynamic mixed Number/BigInt arithmetic diagnostics to compatible runtime `TypeError` throwing where operands can reach runtime safely.
+- [x] Preserve source-backed diagnostics for unsupported shapes until a runtime throw path exists for them.
+- [x] Add Node/iwasm differential or exception-parity fixtures for `RangeError` and `TypeError` paths.
+- [x] Update docs/current-state/issues with the exception boundary.
 
 Out of scope:
 
@@ -87,11 +89,11 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] Node/iwasm differential or explicit exception-parity fixture covers BigInt `/ 0n` and `% 0n` as `RangeError: Division by zero`.
-- [ ] Node/iwasm differential or explicit exception-parity fixture covers mixed Number/BigInt arithmetic as `TypeError` for the supported runtime path.
-- [ ] No mixed Number/BigInt arithmetic path silently lowers to ordinary number arithmetic.
-- [ ] Existing issue-260 signed-i64 arithmetic success fixtures continue to pass.
-- [ ] Docs/current-state/issues state which BigInt arithmetic exception paths are compatible and which remain diagnostics.
+- [x] Node/iwasm differential or explicit exception-parity fixture covers BigInt `/ 0n` and `% 0n` as `RangeError: Division by zero`.
+- [x] Node/iwasm differential or explicit exception-parity fixture covers mixed Number/BigInt arithmetic as `TypeError` for the supported runtime path.
+- [x] No mixed Number/BigInt arithmetic path silently lowers to ordinary number arithmetic.
+- [x] Existing issue-260 signed-i64 arithmetic success fixtures continue to pass.
+- [x] Docs/current-state/issues state which BigInt arithmetic exception paths are compatible and which remain diagnostics.
 
 ## Validation
 
@@ -118,16 +120,16 @@ Not run:
 
 Final-state docs:
 
-- [ ] updated: `docs/14-runtime-abi.md`
-- [ ] updated: `docs/language-reference/javascript-features.md`
+- [x] updated: `docs/14-runtime-abi.md`
+- [x] updated: `docs/language-reference/javascript-features.md`
 
 Current state:
 
-- [ ] updated: `current-state.md` (repo root)
+- [x] updated: `current-state.md` (repo root)
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 
@@ -135,16 +137,18 @@ If generic exception machinery is still insufficient, record the exact missing p
 
 ## Completion evidence
 
-Fill only when moving to `done/`.
+Date: 2026-05-06
 
 Commits:
 
-- none yet; issue is open
+- child issues: `380`, `381`
 
 Validation result:
 
 ```text
-not run; issue is open
+Parent reclosed from child evidence. `issues/done/380-*` covers BigInt
+division/remainder by zero `RangeError`, and `issues/done/381-*` covers mixed
+Number/BigInt arithmetic `TypeError` parity.
 ```
 
 Remaining risks:

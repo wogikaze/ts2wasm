@@ -3,12 +3,14 @@ id: 382
 title: "Multi-limb BigInt addition and subtraction"
 type: feature
 area: runtime/semantics
-class: blocked
+class: done
 priority: P2
 depends_on: [259, 260, 393, 394]
 blocks: []
 created: 2026-05-01
-updated: 2026-05-01
+updated: 2026-05-06
+completed: 2026-05-06
+status: done
 ---
 
 ## Summary
@@ -57,12 +59,12 @@ Dynamic BigInt `+` and `-` operate on the canonical heap BigInt limb representat
 
 In scope:
 
-- [ ] Implement canonical limb addition and subtraction for dynamic BigInt operands and results.
-- [ ] Preserve canonical zero and sign behavior for addition and subtraction.
-- [ ] Keep source-backed diagnostics only for genuinely unsupported runtime representation or memory limits.
-- [ ] Add Node/iwasm differential fixtures for values larger than signed i64, including branch-assigned locals.
-- [ ] Update runtime linker structure tests if new helpers/deps are added.
-- [ ] Update `docs/14-runtime-abi.md`, `docs/language-reference/javascript-features.md`, and `current-state.md`.
+- [x] Implement canonical limb addition and subtraction for dynamic BigInt operands and results.
+- [x] Preserve canonical zero and sign behavior for addition and subtraction.
+- [x] Keep source-backed diagnostics only for genuinely unsupported runtime representation or memory limits.
+- [x] Add Node/iwasm differential fixtures for values larger than signed i64, including branch-assigned locals.
+- [x] Update runtime linker structure tests if new helpers/deps are added.
+- [x] Update `docs/14-runtime-abi.md`, `docs/language-reference/javascript-features.md`, and `current-state.md`.
 
 Out of scope:
 
@@ -92,10 +94,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] Node/iwasm differential fixtures cover dynamic BigInt add/sub with operands or results outside signed i64, including branch-assigned locals.
-- [ ] Existing signed-i64 slice fixtures from issue 260 continue to match Node.
-- [ ] Runtime linker structure tests cover any new multi-limb helper deps.
-- [ ] Docs/current-state/issues state the new addition/subtraction boundary.
+- [x] Node/iwasm differential fixtures cover dynamic BigInt add/sub with operands or results outside signed i64, including branch-assigned locals.
+- [x] Existing signed-i64 slice fixtures from issue 260 continue to match Node.
+- [x] Runtime linker structure tests cover any new multi-limb helper deps.
+- [x] Docs/current-state/issues state the new addition/subtraction boundary.
 
 ## Validation
 
@@ -122,16 +124,16 @@ Not run:
 
 Final-state docs:
 
-- [ ] updated: `docs/14-runtime-abi.md`
-- [ ] updated: `docs/language-reference/javascript-features.md`
+- [x] updated: `docs/14-runtime-abi.md`
+- [x] updated: `docs/language-reference/javascript-features.md`
 
 Current state:
 
-- [ ] updated: `current-state.md` (repo root)
+- [x] updated: `current-state.md` (repo root)
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 
@@ -152,14 +154,16 @@ This is a focused split from issue 369, covering only addition and subtraction. 
 
 ## Completion evidence
 
-Fill only when moving to `done/`.
+Date: 2026-05-06
 
 Commits:
 
-- none yet; issue is open
+- child issues: `393`, `394`, `397`
 
 Validation result:
 
 ```text
-not run; issue is open
+Parent reclosed from child evidence. `issues/done/393-*` covers addition,
+`issues/done/394-*` covers subtraction, and `issues/done/397-*` covers
+branch-assigned add/sub operands.
 ```

@@ -116,8 +116,8 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/open/369-implement-full-multilimb-bigint-arithmetic.md` - Implement full multi-limb BigInt arithmetic (same group key, title overlap)
-- `issues/open/370-implement-bigint-arithmetic-exception-parity.md` - Implement BigInt arithmetic RangeError and TypeError parity (same group key, title overlap)
+- `issues/done/369-implement-full-multilimb-bigint-arithmetic.md` - Implement full multi-limb BigInt arithmetic (same group key, title overlap)
+- `issues/done/370-implement-bigint-arithmetic-exception-parity.md` - Implement BigInt arithmetic RangeError and TypeError parity (same group key, title overlap)
 - `issues/done/244-implement-bigint-literal-parser-classification.md` - Implement BigInt literal parser classification (same group key, title overlap)
 - `issues/done/259-implement-bigint-literal-runtime-values.md` - Implement BigInt literal runtime values (same group key, title overlap)
 - `issues/done/260-implement-bigint-arithmetic-operators.md` - Implement BigInt arithmetic operators (same group key, title overlap)
