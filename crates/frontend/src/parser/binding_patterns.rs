@@ -78,6 +78,14 @@ impl Parser {
                     is_identifier: true,
                 })
             }
+            Some(Token::Abstract) => {
+                let token = self.advance().expect("peek returned Abstract but advance failed");
+                Ok(ParsedBindingPattern {
+                    text: "abstract".to_owned(),
+                    span: token.span,
+                    is_identifier: true,
+                })
+            }
             Some(Token::LeftBracket) => self.parse_array_binding_pattern(),
             Some(Token::LeftBrace) => self.parse_object_binding_pattern(),
             other => Err(Diagnostic {
