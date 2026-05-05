@@ -432,12 +432,12 @@ impl Parser {
                 span: specifier.span,
             })
             .collect();
-        let semi = self.expect(TokenKind::Semicolon)?;
+        let end = self.statement_terminator_end(export_span.start)?;
         Ok(Stmt::ExportNamed {
             specifiers,
             span: Span {
                 start: export_span.start,
-                end: semi.end,
+                end: end,
             },
         })
     }
