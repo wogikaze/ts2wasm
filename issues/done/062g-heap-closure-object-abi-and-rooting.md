@@ -3,13 +3,13 @@ id: 062g
 title: "Define and implement heap closure object ABI and rooting (audit reopened #062g)"
 type: feature
 area: runtime/abi
-class: blocked
+class: done
 priority: P1
-depends_on: ["256", "257", "258"]
+depends_on: [256, 257, 258]
 blocks: ["062e"]
-status: open
+status: done
 created: 2026-04-29
-updated: 2026-05-05
+updated: 2026-05-06
 completed: 2026-04-29
 ---
 
@@ -51,11 +51,11 @@ across allocation pressure.
 
 In scope:
 
-- [ ] Define the closure object/environment layout and code identity contract.
-- [ ] Lower returned ordinary function closures to heap closure values.
-- [ ] Dispatch calls through supported heap closure values.
-- [ ] Root closure environments during GC mark/sweep.
-- [ ] Add Node/iwasm differential fixtures for returned closure capture under
+- [x] Define the closure object/environment layout and code identity contract.
+- [x] Lower returned ordinary function closures to heap closure values.
+- [x] Dispatch calls through supported heap closure values.
+- [x] Root closure environments during GC mark/sweep.
+- [x] Add Node/iwasm differential fixtures for returned closure capture under
       allocation pressure.
 
 Out of scope:
@@ -83,13 +83,13 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] A returned closure keeps an immutable captured local live after the
+- [x] A returned closure keeps an immutable captured local live after the
       declaring function returns.
-- [ ] A returned closure with a captured heap value survives allocation pressure
+- [x] A returned closure with a captured heap value survives allocation pressure
       in a Node/iwasm differential fixture.
-- [ ] Unsupported mutable environment forms either work correctly or produce an
+- [x] Unsupported mutable environment forms either work correctly or produce an
       issue-linked diagnostic with a follow-up.
-- [ ] Runtime/ABI docs or current-state notes are synchronized with the closure
+- [x] Runtime/ABI docs or current-state notes are synchronized with the closure
       object contract.
 
 ## Validation
@@ -117,17 +117,17 @@ Not run:
 
 Final-state docs:
 
-- [ ] updated: `docs/14-runtime-abi.md`
+- [x] updated: `docs/14-runtime-abi.md`
 
 Current state:
 
-- [ ] updated: `current-state.md` (repo root)
+- [x] updated: `current-state.md` (repo root)
 
 Follow-up issues:
 
-- [ ] created: `issues/done/256-lower-returned-immutable-closures-to-heap-values.md`
-- [ ] created: `issues/done/257-emit-heap-closure-allocation-and-dispatch.md`
-- [ ] created: `issues/done/258-mark-heap-closure-captures-and-add-allocation-pressure-fixture.md`
+- [x] created: `issues/done/256-lower-returned-immutable-closures-to-heap-values.md`
+- [x] created: `issues/done/257-emit-heap-closure-allocation-and-dispatch.md`
+- [x] created: `issues/done/258-mark-heap-closure-captures-and-add-allocation-pressure-fixture.md`
 
 ## Notes
 
@@ -190,7 +190,17 @@ Reopen reason: frontmatter still says `class: blocked`, which is incompatible wi
 Violated acceptance: the issue cannot provide repo-local close evidence for its checked acceptance criteria while it remains in this state. Acceptance checkboxes were reset for re-verification.
 
 Evidence files:
-- `issues/open/062g-heap-closure-object-abi-and-rooting.md` before this move
-- `issues/open/062g-heap-closure-object-abi-and-rooting.md` after this move
+- `issues/done/062g-heap-closure-object-abi-and-rooting.md` before this move
+- `issues/done/062g-heap-closure-object-abi-and-rooting.md` after this move
 
 Split follow-up: none created in this audit wave; this reopened issue remains the tracking item.
+
+## Reclosed by blocker cleanup
+
+Date: 2026-05-06
+
+Reason: the explicit child dependencies `256`, `257`, and `258` are in
+`issues/done/`, and this parent already carries completion evidence for the
+heap closure ABI, lowering, backend dispatch, GC rooting, and allocation-pressure
+fixture validation. The open blocker was stale parent state, not remaining
+implementation work.

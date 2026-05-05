@@ -21,12 +21,12 @@ Issue files are the source of truth for work items. The generated section below 
 | issues | 4 | 0 | 4 |
 | parser | 1 | 0 | 1 |
 | reference | 211 | 181 | 30 |
-| runtime | 260 | 101 | 159 |
+| runtime | 260 | 100 | 160 |
 | scripts | 2 | 0 | 2 |
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 4965 | 4132 | 833 |
+| total | 4965 | 4131 | 834 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -170,7 +170,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 052d | Implement broader JSON.stringify replacer semantics (audit reopened #052d) | feature | runtime/builtins | class: blocked | Implement broader JSON.stringify replacer semantics (audit reopened #052d) |
 | 059 | Implement parser syntax extensions for TypeScript and advanced JS (audit reopened #059) | feature | frontend | class: blocked | Implement parser syntax extensions for TypeScript and advanced JS (audit reopened #059) |
 | 060 | Investigate and classify unknown-unsupported diagnostic cases (audit reopened #060) | spike | frontend | class: blocked | Investigate and classify unknown-unsupported diagnostic cases (audit reopened #060) |
-| 062g | Define and implement heap closure object ABI and rooting (audit reopened #062g) | feature | runtime/abi | class: blocked | Define and implement heap closure object ABI and rooting (audit reopened #062g) |
 | 064 | Implement name resolution (triaged - superseded by test262 metadata issues) | spike | frontend/resolver | class: blocked | Implement name resolution (triaged - superseded by test262 metadata issues) |
 | 068 | Implement unsupported expression types | spike | frontend/semantics | class: blocked | Implement unsupported expression types |
 | 070 | Implement Apisample | spike | runtime/builtins | class: triage-needed | Implement Apisample |
@@ -4384,6 +4383,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 062d | Implement function this and arguments semantics | feature | frontend/semantics | see `issues/done/062d-function-this-and-arguments.md` |
 | 062e | Implement function closures | feature | frontend/semantics | see `issues/done/062e-function-closures.md` |
 | 062f | Implement function object metadata | feature | frontend/semantics | see `issues/done/062f-function-object-metadata.md` |
+| 062g | Define and implement heap closure object ABI and rooting (audit reopened #062g) | feature | runtime/abi | see `issues/done/062g-heap-closure-object-abi-and-rooting.md` |
 | 063 | Implement function resolution (dup) | feature | frontend/resolver | see `issues/done/063-implement-function-resolution.md` |
 | 064a | Resolve Date global builtin namespace | feature | frontend | see `issues/done/064a-resolve-date-global-builtin-namespace.md` |
 | 065 | Implement parser syntax extensions (dup) | feature | frontend/syntax | see `issues/done/065-implement-parser-syntax.md` |

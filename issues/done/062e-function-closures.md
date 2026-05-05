@@ -62,7 +62,7 @@ Do not touch:
 - Mutable captured outer locals remain rejected with `issue-062e` because the
   current narrow slice passes captures as hidden values, not as a shared mutable
   heap environment.
-- Follow-up issue `issues/open/062g-heap-closure-object-abi-and-rooting.md`
+- Follow-up issue `issues/done/062g-heap-closure-object-abi-and-rooting.md`
   completed returned closure object ABI, dispatch, and GC rooting.
 
 ## Acceptance criteria
