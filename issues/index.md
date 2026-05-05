@@ -11,11 +11,12 @@ Issue files are the source of truth for work items. The generated section below 
 |---|---:|---:|---:|
 | abi | 7 | 0 | 7 |
 | backend | 13 | 1 | 12 |
+| backend-wasm | 2 | 1 | 1 |
 | cli | 15 | 0 | 15 |
 | compiler | 1 | 0 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4389 | 3782 | 607 |
+| frontend | 4388 | 3781 | 607 |
 | harness | 1 | 0 | 1 |
 | ir | 27 | 6 | 21 |
 | issues | 4 | 0 | 4 |
@@ -26,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 4989 | 4056 | 933 |
+| total | 4990 | 4056 | 934 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -175,6 +176,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 5152 | Support class constructor outer callback captures | feature | ir | implementation-ready | P1 |  | class constructors cannot currently call outer callback locals when nested arrow callbacks capture constructor `this`. |
 | 5153 | Erase union types in as assertions | feature | frontend/syntax | implementation-ready | P1 |  | `expr as A \| B` is currently parsed as runtime bitwise-or instead of erasing the whole union type annotation. |
 | 5154 | Parse angle-bracket type assertion statements | feature | frontend/syntax | implementation-ready | P1 |  | top-level `<T>expr;` type assertion statements currently fail parsing instead of erasing the type assertion. |
+| 5155 | Fix exception_pending runtime link for top-level statement checks | bug | backend-wasm | implementation-ready | P1 |  | `reference/typescript/tests/cases/compiler/baseTypeAfterDerivedType.ts` reaches backend emission, then `wat2wasm` fai... |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -453,7 +455,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 773 | Implement Autoasiforstaticsinclassdeclaration | spike | frontend/syntax | class: triage-needed | Implement Autoasiforstaticsinclassdeclaration |
 | 774 | Implement Autolift | spike | frontend/syntax | class: triage-needed | Implement Autolift |
 | 775 | Implement Autotypeassignedusingdestructuringfromnevernocrash | spike | frontend/resolver | class: blocked | Implement Autotypeassignedusingdestructuringfromnevernocrash |
-| 1038 | Implement Basetypeafterderivedtype | spike | frontend/syntax | class: triage-needed | Implement Basetypeafterderivedtype |
 | 1039 | Implement Basetypeorderchecking | spike | frontend/syntax | class: triage-needed | Implement Basetypeorderchecking |
 | 1040 | Implement Basetypeprivatememberclash | spike | frontend/syntax | class: blocked | Implement Basetypeprivatememberclash |
 | 1041 | Implement Basetypewrappinginstantiationchain | spike | frontend/syntax | class: triage-needed | Implement Basetypewrappinginstantiationchain |
@@ -5015,6 +5016,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 1035 | Implement Baseconstraintofdecorator | spike | frontend/syntax | see `issues/done/1035-implement-baseConstraintOfDecorator.md` |
 | 1036 | Implement Baseexpressiontypeparameters | spike | frontend/syntax | see `issues/done/1036-implement-baseExpressionTypeParameters.md` |
 | 1037 | Implement Baseindexsignatureresolution | spike | frontend/syntax | see `issues/done/1037-implement-baseIndexSignatureResolution.md` |
+| 1038 | Implement Basetypeafterderivedtype | spike | backend-wasm | see `issues/done/1038-implement-baseTypeAfterDerivedType.md` |
 | 3002 | Implement Isolateddeclarationerrorsdefault | spike | runtime/builtins | see `issues/done/3002-implement-isolatedDeclarationErrorsDefault.md` |
 | 3131 | Implement Jsxfactorynotidentifierorqualifiedname | spike | reference/triage | see `issues/done/3131-implement-jsxFactoryNotIdentifierOrQualifiedName.md` |
 | 3329 | Implement Modulecodegentest | spike | frontend/syntax | see `issues/done/3329-implement-moduleCodeGenTest.md` |
