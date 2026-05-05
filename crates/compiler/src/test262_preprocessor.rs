@@ -91,8 +91,6 @@ const KNOWN_FEATURES: &[(&str, &str)] = &[
     // --- array prototype features (implemented / partially supported) ---
     // --- string prototype features (implemented / partially supported) ---
     ("String.prototype.matchAll", "issue-5004"),
-    ("String.prototype.toLocaleLowerCase", "issue-5004"),
-    ("String.prototype.toLocaleUpperCase", "issue-5004"),
     // --- features commonly used by test262 but not yet stubbed ---
     ("exponentiation", "issue-5000"),
     ("resizable-arraybuffer", "issue-408"),
