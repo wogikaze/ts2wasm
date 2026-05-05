@@ -79,7 +79,7 @@ impl RuntimeFn {
                 imports: NO_IMPORTS,
                 capability: NO_CAPS,
                 runtime_strings: LOG_RUNTIME_STRINGS,
-                result: RuntimeResult::EffectOnly,
+                result: RuntimeResult::Value,
             },
             Self::TruthyBool => RuntimeSpec {
                 symbol: "$truthy_bool",

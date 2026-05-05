@@ -390,7 +390,10 @@ fn validate_expr(
                             span: None,
                         });
                     }
-                    if value_required && matches!(builtin.result(), BuiltinResult::EffectOnly) {
+                    if value_required
+                        && matches!(builtin.result(), BuiltinResult::EffectOnly)
+                        && !matches!(builtin, BuiltinId::ConsoleLog)
+                    {
                         errors.push(Diagnostic {
                             code: DiagCode::InvariantViolation,
                             message: format!(

@@ -512,6 +512,11 @@ impl WatEmitter<'_> {
                     }
                     let runtime_fn = RuntimeFn::from_builtin(*builtin);
                     wat.push_str(&format!("{pad}(call {})\n", runtime_fn.symbol()));
+                    // ConsoleLog is void in WAT but may appear in value context
+                    // (e.g. arrow body). Push undefined so the stack is consistent.
+                    if matches!(runtime_fn, RuntimeFn::Log) {
+                        wat.push_str(&format!("{pad}(i32.const 0)\n"));
+                    }
                 }
             },
             LoweredExpr::ArrayNew { elements } => {
