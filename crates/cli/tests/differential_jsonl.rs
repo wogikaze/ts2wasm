@@ -8,10 +8,36 @@
 /// detection pipelines can consume structured results without parsing Rust
 /// test assertion output.
 ///
-/// Output schema:
+/// # JSONL Output Schema
+///
+/// Each line is a JSON object with the following fields:
+///
+/// | Field     | Type            | Required | Description |
+/// |-----------|-----------------|----------|-------------|
+/// | `suite`   | string          | always   | Test suite path, e.g. `"fixtures/arrays-objects"` |
+/// | `case`    | string          | always   | Test case filename, e.g. `"array.ts"` |
+/// | `target`  | string          | always   | Target runtime, e.g. `"wasm32-wasi"` |
+/// | `status`  | string          | always   | One of `"pass"`, `"fail"`, `"unsupported"`, `"blocked"`, `"skip-with-reason"` |
+/// | `expected`| string or null  | on fail  | Node.js stdout, present when status=`"fail"` with stdout mismatch |
+/// | `actual`  | string or null  | on fail  | iwasm stdout, present when status=`"fail"` with stdout mismatch |
+/// | `reason`  | string or null  | on unsupported/blocked | Human-readable explanation |
+/// | `tracking`| string or null  | on unsupported/blocked | Tracking ID: `issue-NNN` (GitHub issue) or `feature:xxx` (feature label) |
+///
+/// ### Status values
+///
+/// - `"pass"`: Node and iwasm stdout match exactly
+/// - `"fail"`: Build failed (compiler bug), iwasm timed out, iwasm crashed, or stdout mismatch
+/// - `"unsupported"`: Compiler rejected the fixture with `[UnsupportedSyntax]` or `[UnsupportedBuiltin]` diagnostic
+/// - `"blocked"`: I/O error, missing runtime, or command execution failure
+/// - `"skip-with-reason"`: Skipped test with an explicit reason
+///
+/// ### Example records
+///
 /// ```jsonl
-/// {"suite":"fixtures/...","case":"fixture.ts","target":"wasm32-wasi","status":"pass","expected":null,"actual":null,"reason":null,"tracking":null}
-/// {"suite":"fixtures/...","case":"fixture.ts","target":"wasm32-wasi","status":"unsupported","expected":null,"actual":null,"reason":"Unsupported syntax: ...","tracking":"feature:..."}
+/// {"suite":"fixtures/arrays-objects","case":"array.ts","target":"wasm32-wasi","status":"pass","expected":null,"actual":null,"reason":null,"tracking":null}
+/// {"suite":"fixtures/test-infrastructure","case":"unsupported-fixture.ts","target":"wasm32-wasi","status":"unsupported","expected":null,"actual":null,"reason":"Unsupported syntax: UnsupportedSyntax/async","tracking":"feature:async"}
+/// {"suite":"fixtures/core-semantics","case":"bigint-runtime-add-sub.ts","target":"wasm32-wasi","status":"fail","expected":"3\n","actual":"5\n","reason":"stdout mismatch: node=\"3\\n\", iwasm=\"5\\n\"","tracking":"feature:stdout-mismatch"}
+/// {"suite":"fixtures/module-system","case":"require-cache.ts","target":"wasm32-wasi","status":"blocked","expected":null,"actual":null,"reason":"I/O or command execution failure","tracking":"feature:backend-io"}
 /// ```
 use std::fs;
 use std::path::Path;
@@ -457,5 +483,55 @@ fn differential_jsonl_test_infrastructure_smoke() {
                 record.to_json_line()
             )
         });
+    }
+}
+
+/// Quick-check: validates JSONL output format for a representative sample.
+///
+/// Runs a small batch (10 fixtures) through the differential test runner to
+/// verify that each produces a valid JSONL record. This is NOT an assertion on
+/// fixture semantics (pass/fail depends on runtime environment), but rather a
+/// format and continuity check ensuring the JSONL pipeline produces valid,
+/// parseable output for every fixture category.
+///
+/// Fixtures are selected to cover multiple fixture directories so that
+/// structural JSONL integrity is validated across the full directory tree
+/// without running the entire (expensive) sweep.
+#[test]
+fn differential_jsonl_quick_check_formats() {
+    let paths = collect_fixture_paths();
+    let sample: Vec<&str> = paths
+        .iter()
+        .step_by(paths.len().max(1) / 10)
+        .take(10)
+        .map(|s| s.as_str())
+        .collect();
+
+    let mut validated = 0usize;
+    let mut errors: Vec<String> = Vec::new();
+
+    for fixture in &sample {
+        let record = run_and_emit_jsonl(fixture);
+        if let Err(err) = record.validate() {
+            errors.push(format!(
+                "{fixture}: {err}\n  record={}",
+                record.to_json_line()
+            ));
+        }
+        validated += 1;
+    }
+
+    // Report summary to stderr for downstream tooling
+    eprintln!(
+        "differential-jsonl-quick-check: validated={validated} errors={}",
+        errors.len()
+    );
+
+    if !errors.is_empty() {
+        panic!(
+            "differential-jsonl-quick-check: {} validation errors in sample:\n  {}",
+            errors.len(),
+            errors.join("\n  ")
+        );
     }
 }
