@@ -21,12 +21,12 @@ Issue files are the source of truth for work items. The generated section below 
 | issues | 4 | 0 | 4 |
 | parser | 1 | 0 | 1 |
 | reference | 211 | 181 | 30 |
-| runtime | 260 | 105 | 155 |
+| runtime | 260 | 104 | 156 |
 | scripts | 2 | 0 | 2 |
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 4965 | 4174 | 791 |
+| total | 4965 | 4173 | 792 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -159,7 +159,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 5001 | Meta: TypeScript Compiler Semantic Analysis Coverage | meta | frontend/semantics | design-ready | P1 |  | Meta: TypeScript Compiler Semantic Analysis Coverage |
 | 5004 | Meta: Runtime Builtins Coverage (test262) (audit reopened #5004) | meta | runtime/builtins | design-ready | P1 |  | Meta: Runtime Builtins Coverage (test262) (audit reopened #5004) |
 | 5005 | Meta: TypeScript Compiler Name Resolution Coverage | meta | frontend/resolver | design-ready | P1 |  | Meta: TypeScript Compiler Name Resolution Coverage |
-| 5129 | Implement String.prototype.matchAll literal RegExp lowering | feature | runtime/builtins | implementation-ready | P1 |  | `String.prototype.matchAll` is rejected before lowering/runtime, so the |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -5137,6 +5136,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 5126 | Implement name resolver var redeclaration tolerance | feature | ir/lowering | see `issues/done/5126-implement-name-resolver-var-redeclaration.md` |
 | 5127 | Implement export default multi-file lowering deduplication | feature | ir/lowering | see `issues/done/5127-implement-export-default-multifile-lowering.md` |
 | 5128 | Add semantic parity for static re-export module forms | test | ir/compiler | see `issues/done/5128-static-re-export-semantic-parity.md` |
+| 5129 | Implement String.prototype.matchAll literal RegExp lowering | feature | runtime/builtins | see `issues/done/5129-implement-string-match-all-literal-regexp.md` |
 <!-- generated:done:end -->
 
 ## Index generation contract
