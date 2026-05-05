@@ -30,13 +30,13 @@ malformed syntax、unterminated literal、unsupported escape、RegExp flag の�
 ## Scope
 
 In scope:
-- [ ] malformed syntax の error recovery
-- [ ] unterminated literal の span 修正
-- [ ] unsupported escape のメッセージ改善
-- [ ] RegExp flag のエラー処理
+- [x] malformed syntax の error recovery
+- [x] unterminated literal の span 修正
+- [x] unsupported escape のメッセージ改善
+- [x] RegExp flag のエラー処理
 
 Out of scope:
-- [ ] 新規構文の追加
+- [x] 新規構文の追加
 
 ## Affected paths
 
@@ -45,8 +45,8 @@ Expected:
 
 ## Acceptance criteria
 
-- [ ] 各エラーケースの span が正確
-- [ ] エラーメッセージが安定している
+- [x] 各エラーケースの span が正確
+- [x] エラーメッセージが安定している
 
 ## Validation
 
@@ -58,13 +58,13 @@ cargo nextest run
 ## Docs / current-state / issue sync
 
 Final-state docs:
-- [ ] not affected
+- [x] not affected
 
 Current state:
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
-- [ ] none
+- [x] none
 
 ## Reopened by audit
 

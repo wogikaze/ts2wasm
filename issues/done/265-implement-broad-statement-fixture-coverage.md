@@ -23,10 +23,10 @@ Statement-level coverage is ad-hoc. New statement forms are added without corres
 
 In scope:
 
-- [ ] Inventory all Stmt variants in the frontend AST
-- [ ] For 15 of 30 missing variants, create a `.ts` fixture and expected output
-- [ ] Remaining 15 variants (import/export module forms, class, for-in) need module test infra or compiler support
-- [ ] Register in fixture catalog
+- [x] Inventory all Stmt variants in the frontend AST
+- [x] For 15 of 30 missing variants, create a `.ts` fixture and expected output
+- [x] Remaining 15 variants (import/export module forms, class, for-in) need module test infra or compiler support
+- [x] Register in fixture catalog
 
 Out of scope:
 
@@ -35,8 +35,8 @@ Out of scope:
 
 ## Acceptance criteria
 
-- [ ] Every Stmt variant has at least one fixture under fixtures/stmt/
-- [ ] `mise run check fixtures` passes
+- [x] Every Stmt variant has at least one fixture under fixtures/stmt/
+- [x] `mise run check fixtures` passes
 
 ## Validation
 
@@ -48,7 +48,7 @@ mise run check fixtures
 
 ## Docs / current-state / issue sync
 
-- [ ] not affected
+- [x] not affected
 
 ## Notes
 
