@@ -602,6 +602,9 @@ impl<'a> Resolver<'a> {
                     ResolvedExpr::Ident(name) if self.resolve_func(name).is_ok() => {
                         self.lower_function_metadata_property(name, "length", *span)
                     }
+                    ResolvedExpr::Ident(name) if is_global_builtin_function_name(name) => {
+                        lower_global_builtin_function_metadata_property(name, "length")
+                    }
                     _ => Ok(LoweredExpr::GetLength(Box::new(self.lower_expr(object)?))),
                 },
             },
@@ -710,6 +713,12 @@ impl<'a> Resolver<'a> {
                     && self.resolve_func(name).is_ok()
                 {
                     return self.lower_function_metadata_property(name, key, *span);
+                }
+                if let ResolvedExpr::Ident(name) = object.as_ref()
+                    && is_global_builtin_function_name(name)
+                    && matches!(key.as_str(), "name" | "length")
+                {
+                    return lower_global_builtin_function_metadata_property(name, key);
                 }
                 if key == "size"
                     && let ResolvedExpr::Ident(receiver_name) = object.as_ref()
@@ -2109,6 +2118,40 @@ impl<'a> Resolver<'a> {
         }
     }
 
+}
+
+fn is_global_builtin_function_name(name: &str) -> bool {
+    matches!(
+        name,
+        "escape"
+            | "unescape"
+            | "isNaN"
+            | "parseInt"
+            | "parseFloat"
+            | "isFinite"
+            | "encodeURI"
+            | "decodeURI"
+    )
+}
+
+fn lower_global_builtin_function_metadata_property(
+    name: &str,
+    key: &str,
+) -> Result<LoweredExpr, Diagnostic> {
+    match key {
+        "name" => Ok(LoweredExpr::String(name.to_owned())),
+        "length" => Ok(LoweredExpr::Number(global_builtin_function_length(name))),
+        _ => unreachable!("caller filters global builtin function metadata property"),
+    }
+}
+
+fn global_builtin_function_length(name: &str) -> i32 {
+    match name {
+        "parseInt" => 2,
+        "escape" | "unescape" | "isNaN" | "parseFloat" | "isFinite" | "encodeURI"
+        | "decodeURI" => 1,
+        _ => 0,
+    }
 }
 
 /// Extract `(class_name, method_name)` from `ClassName.prototype.methodName` patterns.

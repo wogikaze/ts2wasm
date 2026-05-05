@@ -842,6 +842,26 @@ fn build_smoke_global_unescape() {
 }
 
 #[test]
+fn build_smoke_global_escape_value_metadata() {
+    let result = run_fixture("builtins-and-io/global-escape-value.ts");
+    assert!(
+        result.is_ok(),
+        "escape value metadata should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
+fn build_smoke_global_unescape_value_metadata() {
+    let result = run_fixture("builtins-and-io/global-unescape-value.ts");
+    assert!(
+        result.is_ok(),
+        "unescape value metadata should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
 fn build_smoke_global_encode_uri() {
     let result = run_fixture("builtins-and-io/global-encode-uri.ts");
     assert!(result.is_ok(), "encodeURI should build: {:?}", result.err());
