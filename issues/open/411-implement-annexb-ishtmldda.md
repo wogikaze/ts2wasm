@@ -119,7 +119,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/open/060-investigate-unknown-unsupported-cases.md` - Investigate and classify unknown-unsupported diagnostic cases (same feature label, same group key)
+- `issues/done/060-investigate-unknown-unsupported-cases.md` - Investigate and classify unknown-unsupported diagnostic cases (same feature label, same group key)
 - `issues/done/228-implement-logical-assignment-operators.md` - Implement logical assignment operators (same reference path, same feature label, same group key, title overlap)
 - `issues/done/237-implement-annexb-ishtmldda-compatibility.md` - Implement Annex B IsHTMLDDA compatibility (same reference path, same feature label, same group key, title overlap)
 

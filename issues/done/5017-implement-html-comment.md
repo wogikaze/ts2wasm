@@ -129,7 +129,7 @@ Follow-up issues:
 - `issues/open/419-implement-builtin-api.md` - Implement built-in API support (same feature label, same group key, title overlap)
 - `issues/done/433-implement-legacy-global-builtin.md` - Implement legacy-global-builtin support (same feature label, same group key, title overlap)
 - `issues/done/448-implement-string-builtin.md` - Implement string-builtin support (same feature label, same group key, title overlap)
-- `issues/open/060-investigate-unknown-unsupported-cases.md` - Investigate and classify unknown-unsupported diagnostic cases (same feature label, same group key)
+- `issues/done/060-investigate-unknown-unsupported-cases.md` - Investigate and classify unknown-unsupported diagnostic cases (same feature label, same group key)
 - `issues/done/224-implement-annexb-html-comments.md` - Implement Annex B HTML-like comments (same reference path, same feature label, same group key, title overlap)
 - `issues/done/444-implement-regexp-literal.md` - Implement RegExp literal support (same feature label, same group key, title overlap)
 

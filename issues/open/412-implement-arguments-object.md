@@ -130,7 +130,7 @@ Follow-up issues:
 - `issues/done/197-implement-argumentsObjectIterator.md` - Implement Argumentsobjectiterator (same feature label, same group key, title overlap)
 - `issues/done/198-implement-argumentsPropertyNameInJsMode.md` - Implement Argumentspropertynameinjsmode (same feature label, same group key, title overlap)
 - `issues/done/311-fix-test262-arguments-object-index-assignment.md` - Fix test262 arguments object index assignment semantics (same feature label, same group key)
-- `issues/open/060-investigate-unknown-unsupported-cases.md` - Investigate and classify unknown-unsupported diagnostic cases (same feature label, same group key)
+- `issues/done/060-investigate-unknown-unsupported-cases.md` - Investigate and classify unknown-unsupported diagnostic cases (same feature label, same group key)
 - `issues/done/284-support-test262-async-flag-runner-coverage.md` - Support test262 async flag in reference coverage (same feature label, same group key, title overlap)
 - `issues/done/285-support-test262-module-flag-runner-coverage.md` - Support test262 module flag in reference coverage (same feature label, same group key, title overlap)
 - `issues/done/287-fix-arguments-object-arity-mismatch.md` - Fix arguments-object arity mismatch bucket (same feature label, same group key, title overlap)

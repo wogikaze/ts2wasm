@@ -37,7 +37,7 @@ Out of scope:
 
 Expected:
 
-- `issues/open/060-investigate-unknown-unsupported-cases.md`
+- `issues/done/060-investigate-unknown-unsupported-cases.md`
 - `issues/done/060a-close-unknown-unsupported-fixed-window-spike.md`
 - `issues/index.md`
 - `current-state.md`

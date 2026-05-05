@@ -120,7 +120,7 @@ Follow-up issues:
 - `issues/open/428-implement-enum.md` - Implement enum support (same feature label, same group key, title overlap)
 - `issues/open/450-implement-template-literal.md` - Implement template literals (same feature label, same group key, title overlap)
 - `issues/done/041-implement-template-literals.md` - Implement template literals (same group key, title overlap)
-- `issues/open/060-investigate-unknown-unsupported-cases.md` - Investigate and classify unknown-unsupported diagnostic cases (same feature label, same group key)
+- `issues/done/060-investigate-unknown-unsupported-cases.md` - Investigate and classify unknown-unsupported diagnostic cases (same feature label, same group key)
 - `issues/done/229-implement-legacy-octal-escape-handling.md` - Implement legacy octal escape handling (same feature label, same group key, title overlap)
 
 ## Smart triage

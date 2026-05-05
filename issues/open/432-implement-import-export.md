@@ -133,7 +133,7 @@ Follow-up issues:
 - `issues/done/138-implement-alwaysStrictModule.md` - Implement Alwaysstrictmodule (same feature label, same group key, title overlap)
 - `issues/done/181-implement-anonymousModules.md` - Implement Anonymousmodules (same feature label, same group key, title overlap)
 - `issues/done/055-implement-import-export.md` - Umbrella: implement import and export (same feature label, same group key, title overlap)
-- `issues/open/060-investigate-unknown-unsupported-cases.md` - Investigate and classify unknown-unsupported diagnostic cases (same feature label, same group key)
+- `issues/done/060-investigate-unknown-unsupported-cases.md` - Investigate and classify unknown-unsupported diagnostic cases (same feature label, same group key)
 - `issues/done/227-implement-type-reference-directive-resolution.md` - Implement type reference directive resolution (same feature label, same group key, title overlap)
 - `issues/done/233-emit-static-es-module-bindings.md` - Emit static ES module bindings (same feature label, same group key, title overlap)
 

@@ -15,7 +15,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 1 | 0 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4377 | 3849 | 528 |
+| frontend | 4377 | 3848 | 529 |
 | harness | 1 | 0 | 1 |
 | ir | 21 | 0 | 21 |
 | issues | 4 | 0 | 4 |
@@ -26,7 +26,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 4966 | 4128 | 838 |
+| total | 4966 | 4127 | 839 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -169,7 +169,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 052 | Implement JSON | feature | runtime/builtins | class: triage-needed | Implement JSON |
 | 052d | Implement broader JSON.stringify replacer semantics (audit reopened #052d) | feature | runtime/builtins | class: blocked | Implement broader JSON.stringify replacer semantics (audit reopened #052d) |
 | 059 | Implement parser syntax extensions for TypeScript and advanced JS (audit reopened #059) | feature | frontend | class: blocked | Implement parser syntax extensions for TypeScript and advanced JS (audit reopened #059) |
-| 060 | Investigate and classify unknown-unsupported diagnostic cases (audit reopened #060) | spike | frontend | class: blocked | Investigate and classify unknown-unsupported diagnostic cases (audit reopened #060) |
 | 064 | Implement name resolution (triaged - superseded by test262 metadata issues) | spike | frontend/resolver | class: blocked | Implement name resolution (triaged - superseded by test262 metadata issues) |
 | 068 | Implement unsupported expression types | spike | frontend/semantics | class: blocked | Implement unsupported expression types |
 | 070 | Implement Apisample | spike | runtime/builtins | class: triage-needed | Implement Apisample |
@@ -4370,6 +4369,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 057 | Implement function resolution for function calls | feature | frontend | see `issues/done/057-implement-function-resolution.md` |
 | 058 | Implement equality operators (==, !=, ===, !==) | feature | runtime/semantics | see `issues/done/058-implement-equality-operators.md` |
 | 059a | Implement TypeScript satisfies and const assertion erasure | feature | frontend | see `issues/done/059a-implement-typescript-satisfies-and-const-assertion-erasure.md` |
+| 060 | Investigate and classify unknown-unsupported diagnostic cases (audit reopened #060) | spike | frontend | see `issues/done/060-investigate-unknown-unsupported-cases.md` |
 | 060a | Close unknown-unsupported fixed-window spike | spike | frontend | see `issues/done/060a-close-unknown-unsupported-fixed-window-spike.md` |
 | 061 | Implement Date object support (dup) | feature | runtime/builtins | see `issues/done/061-implement-date.md` |
 | 061a | Merge Date reference issue into Date epic | cleanup | issues | see `issues/done/061a-merge-date-reference-issue-into-date-epic.md` |

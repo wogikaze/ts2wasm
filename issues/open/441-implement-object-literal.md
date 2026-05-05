@@ -131,7 +131,7 @@ Follow-up issues:
 - `issues/open/274-implement-spread-operator.md` - Implement spread operator (same feature label, same group key, title overlap)
 - `issues/done/374-design-broader-object-toprimitive-for-bigint-comparisons.md` - Design broader object ToPrimitive for mixed BigInt comparisons (same feature label, same group key, title overlap)
 - `issues/open/059-implement-parser-syntax-extensions.md` - Implement parser syntax extensions for TypeScript and advanced JS (same feature label, same group key, title overlap)
-- `issues/open/060-investigate-unknown-unsupported-cases.md` - Investigate and classify unknown-unsupported diagnostic cases (same feature label, same group key)
+- `issues/done/060-investigate-unknown-unsupported-cases.md` - Investigate and classify unknown-unsupported diagnostic cases (same feature label, same group key)
 - `issues/done/062d-function-this-and-arguments.md` - Implement function this and arguments semantics (same feature label, same group key, title overlap)
 - `issues/done/228-implement-logical-assignment-operators.md` - Implement logical assignment operators (same feature label, same group key, title overlap)
 - `issues/done/340-array-map-generic-call.md` - Generic call for Array.prototype.map (static dense receiver slice) (same feature label, same group key)

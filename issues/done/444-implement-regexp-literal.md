@@ -132,7 +132,7 @@ Follow-up issues:
 - `issues/done/009-select-first-coverage-improvement-feature-slice.md` - issues/done/009-select-first-coverage-improvement-feature-slice.md (same feature label, same group key)
 - `issues/done/022-expand-test262-differential-coverage.md` - issues/done/022-expand-test262-differential-coverage.md (same feature label, same group key)
 - `issues/done/051-implement-regexp.md` - Implement RegExp (same feature label, same group key, title overlap)
-- `issues/open/060-investigate-unknown-unsupported-cases.md` - Investigate and classify unknown-unsupported diagnostic cases (same feature label, same group key)
+- `issues/done/060-investigate-unknown-unsupported-cases.md` - Investigate and classify unknown-unsupported diagnostic cases (same feature label, same group key)
 - `issues/done/202-implement-regexp-literal-support.md` - issues/done/202-implement-regexp-literal-support.md (same feature label, same group key)
 - `issues/done/224-implement-annexb-html-comments.md` - Implement Annex B HTML-like comments (same feature label, same group key, title overlap)
 - `issues/done/228-implement-logical-assignment-operators.md` - Implement logical assignment operators (same feature label, same group key, title overlap)

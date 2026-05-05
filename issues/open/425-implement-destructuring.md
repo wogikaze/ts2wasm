@@ -128,7 +128,7 @@ Follow-up issues:
 
 - `issues/done/005-add-fine-grained-unsupported-feature-breakdown.md` - issues/done/005-add-fine-grained-unsupported-feature-breakdown.md (same feature label, same group key)
 - `issues/open/059-implement-parser-syntax-extensions.md` - Implement parser syntax extensions for TypeScript and advanced JS (same feature label, same group key, title overlap)
-- `issues/open/060-investigate-unknown-unsupported-cases.md` - Investigate and classify unknown-unsupported diagnostic cases (same feature label, same group key)
+- `issues/done/060-investigate-unknown-unsupported-cases.md` - Investigate and classify unknown-unsupported diagnostic cases (same feature label, same group key)
 - `issues/done/247-implement-destructuring-binding-pattern-parser.md` - Implement destructuring binding pattern parser support (same feature label, same group key, title overlap)
 - `issues/done/251-implement-destructuring-binding-runtime-semantics.md` - Implement destructuring binding runtime semantics (same feature label, same group key, title overlap)
 - `issues/done/252-implement-destructuring-assignment-pattern-parser.md` - Implement destructuring assignment pattern parser support (same feature label, same group key, title overlap)

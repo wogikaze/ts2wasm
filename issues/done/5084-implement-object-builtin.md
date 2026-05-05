@@ -128,7 +128,7 @@ Follow-up issues:
 
 - `issues/open/342-implement-object-builtin-coverage.md` - Implement Object builtin method coverage (1,721 test262 cases) (same feature label, same group key, title overlap)
 - `issues/open/440-implement-object-builtin.md` - Implement object-builtin support (same reference path, same feature label, same group key, title overlap)
-- `issues/open/060-investigate-unknown-unsupported-cases.md` - Investigate and classify unknown-unsupported diagnostic cases (same feature label, same group key)
+- `issues/done/060-investigate-unknown-unsupported-cases.md` - Investigate and classify unknown-unsupported diagnostic cases (same feature label, same group key)
 
 ## Smart triage
 

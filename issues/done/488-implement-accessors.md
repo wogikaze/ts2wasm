@@ -201,7 +201,7 @@ Duplicate candidates:
   },
   {
     "state": "done",
-    "path": "issues/open/060-investigate-unknown-unsupported-cases.md",
+    "path": "issues/done/060-investigate-unknown-unsupported-cases.md",
     "title": "Investigate and classify unknown-unsupported diagnostic cases",
     "reason": "same feature label, title overlap"
   }

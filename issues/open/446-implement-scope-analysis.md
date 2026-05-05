@@ -129,7 +129,7 @@ Follow-up issues:
 - `issues/done/082-implement-abstractClassInLocalScope.md` - Implement Abstractclassinlocalscope (same feature label, same group key, title overlap)
 - `issues/done/083-implement-abstractClassInLocalScopeIsAbstract.md` - Implement Abstractclassinlocalscopeisabstract (same feature label, same group key, title overlap)
 - `issues/done/192-implement-argsInScope.md` - Implement Argsinscope (same feature label, same group key, title overlap)
-- `issues/open/060-investigate-unknown-unsupported-cases.md` - Investigate and classify unknown-unsupported diagnostic cases (same feature label, same group key)
+- `issues/done/060-investigate-unknown-unsupported-cases.md` - Investigate and classify unknown-unsupported diagnostic cases (same feature label, same group key)
 
 ## Smart triage
 

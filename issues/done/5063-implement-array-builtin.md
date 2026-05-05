@@ -133,7 +133,7 @@ Follow-up issues:
 - `issues/done/414-implement-array-builtin.md` - Implement array-builtin support (same reference path, same feature label, same group key, title overlap)
 - `issues/open/434-implement-loop.md` - Implement loop constructs (same feature label, same group key, title overlap)
 - `issues/open/454-implement-unknown-unsupported.md` - Investigate and classify unknown-unsupported cases (same feature label, same group key)
-- `issues/open/060-investigate-unknown-unsupported-cases.md` - Investigate and classify unknown-unsupported diagnostic cases (same feature label, same group key)
+- `issues/done/060-investigate-unknown-unsupported-cases.md` - Investigate and classify unknown-unsupported diagnostic cases (same feature label, same group key)
 - `issues/done/224-implement-annexb-html-comments.md` - Implement Annex B HTML-like comments (same feature label, same group key, title overlap)
 - `issues/done/406-direct-eval-annexb-existing-binding-residuals.md` - Direct eval Annex B existing binding residuals (same feature label, same group key)
 

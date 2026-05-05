@@ -126,7 +126,7 @@ Follow-up issues:
 ## Duplicate detection
 
 - `issues/open/064-implement-name-resolution.md` - Implement name resolution (triaged - superseded by test262 metadata issues) (same reference path, title overlap)
-- `issues/open/060-investigate-unknown-unsupported-cases.md` - Investigate and classify unknown-unsupported diagnostic cases (same feature label, same group key)
+- `issues/done/060-investigate-unknown-unsupported-cases.md` - Investigate and classify unknown-unsupported diagnostic cases (same feature label, same group key)
 - `issues/done/237-implement-annexb-ishtmldda-compatibility.md` - Implement Annex B IsHTMLDDA compatibility (same reference path, title overlap)
 - `issues/done/298-allow-reused-for-loop-local-names.md` - Allow reused for-loop local names in separate loop scopes (same feature label, same group key)
 - `issues/done/337-implement-test262-features-directive.md` - Implement test262 features directive and $262 object (same reference path, title overlap)
