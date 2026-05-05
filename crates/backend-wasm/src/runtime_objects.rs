@@ -22,6 +22,11 @@ impl WatEmitter<'_> {
     (local.set $flags (i32.load (i32.add (local.get $base) (i32.const {obj_flags}))))
     ;; Allocate result array (max size = count)
     (local.set $result_ptr (call $alloc_heap (i32.add (i32.const {array_header}) (i32.shl (local.get $count) (i32.const {elem_shift})))))
+    ;; Initialize array header fields (required for $array_get presence check)
+    (i32.store (i32.add (local.get $result_ptr) (i32.const {capacity_offset})) (local.get $count))
+    (i32.store (i32.add (local.get $result_ptr) (i32.const {presence_word_count_offset})) (i32.const 1))
+    (i32.store (i32.add (local.get $result_ptr) (i32.const {elements_offset_offset})) (i32.const {array_header}))
+    (i32.store (i32.add (local.get $result_ptr) (i32.const {presence_words_offset})) (i32.const 0))
     (local.set $write_i (i32.const {zero}))
     (local.set $i (i32.const {zero}))
     (block $keys_done
@@ -41,6 +46,14 @@ impl WatEmitter<'_> {
         )
         (local.set $i (i32.add (local.get $i) (i32.const {one})))
         (br $keys_loop)))
+    ;; Compute presence mask = (1 << write_i) - 1 (or -1 if write_i >= 32)
+    (if (i32.ge_u (local.get $write_i) (i32.const 32))
+      (then
+        (i32.store (i32.add (local.get $result_ptr) (i32.const {presence_words_offset})) (i32.const -1)))
+      (else
+        (local.set $i (i32.shl (i32.const 1) (local.get $write_i)))
+        (local.set $i (i32.sub (local.get $i) (i32.const 1)))
+        (i32.store (i32.add (local.get $result_ptr) (i32.const {presence_words_offset})) (local.get $i))))
     ;; Update array length to actual enumerable count
     (i32.store (local.get $result_ptr) (local.get $write_i))
     (i32.store (i32.add (local.get $result_ptr) (i32.const {array_capacity_offset})) (local.get $count))
@@ -73,6 +86,10 @@ impl WatEmitter<'_> {
             obj_header = Layout::OBJECT_HEADER_SIZE,
             entry_shift = Layout::OBJECT_ENTRY_SHIFT,
             elem_shift = Layout::ARRAY_ELEM_SHIFT,
+            capacity_offset = Layout::ARRAY_CAPACITY_OFFSET,
+            presence_word_count_offset = Layout::ARRAY_PRESENCE_WORD_COUNT_OFFSET,
+            elements_offset_offset = Layout::ARRAY_ELEMENTS_OFFSET_OFFSET,
+            presence_words_offset = Layout::ARRAY_PRESENCE_WORDS_OFFSET,
             zero = RuntimeConst::ZERO,
             one = RuntimeConst::ONE,
             array_tag = ValueTag::ARRAY,
