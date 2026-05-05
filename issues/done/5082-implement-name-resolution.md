@@ -128,7 +128,7 @@ Follow-up issues:
 
 - `issues/open/064-implement-name-resolution.md` - Implement name resolution (triaged - superseded by test262 metadata issues) (same feature label, same group key, title overlap)
 - `issues/done/066-implement-regexp-literal.md` - Implement RegExp literal support (same reference path, title overlap)
-- `issues/open/068-implement-unsupported-expression.md` - Implement unsupported expression types (same reference path, title overlap)
+- `issues/done/068-implement-unsupported-expression.md` - Implement unsupported expression types (same reference path, title overlap)
 - `issues/done/089-implement-acceptSymbolAsWeakType.md` - Implement Acceptsymbolasweaktype (same feature label, same group key, title overlap)
 - `issues/done/1010-implement-autoTypeAssignedUsingDestructuringFromNeverNoCrash.md` - Implement Autotypeassignedusingdestructuringfromnevernocrash (same feature label, same group key, title overlap)
 - `issues/open/1033-implement-baseCheck.md` - Implement Basecheck (same feature label, same group key, title overlap)

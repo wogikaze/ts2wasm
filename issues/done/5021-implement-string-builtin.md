@@ -127,7 +127,7 @@ Follow-up issues:
 ## Duplicate detection
 
 - `issues/done/067-implement-unknown-unsupported.md` - Investigate and classify unknown-unsupported cases (same reference path, same feature label, same group key)
-- `issues/open/068-implement-unsupported-expression.md` - Implement unsupported expression types (same reference path, title overlap)
+- `issues/done/068-implement-unsupported-expression.md` - Implement unsupported expression types (same reference path, title overlap)
 - `issues/open/1170-implement-class.md` - Implement Class (same feature label, same group key, title overlap)
 - `issues/open/2410-implement-for.md` - Implement For (same feature label, same group key, title overlap)
 - `issues/open/2627-implement-i.md` - Implement I (same feature label, same group key, title overlap)

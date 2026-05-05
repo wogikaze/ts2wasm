@@ -3,12 +3,14 @@ id: 068
 title: "Implement unsupported expression types"
 type: spike
 area: frontend/semantics
-class: blocked
+class: superseded
 priority: P1
-depends_on: [5005]
+depends_on: []
 blocks: []
 created: 2026-04-26
 updated: 2026-04-29
+completed: 2026-05-06
+status: done
 ---
 
 ## Summary
@@ -46,10 +48,10 @@ This generated bucket is not used as a direct implementation work order. It is e
 
 In scope:
 
-- [ ] Run the representative `mise run reference-triage -- ...` command
-- [ ] Confirm whether duplicate candidates already cover this failure
-- [ ] Split one observable behavior or fixed reference window into child issues
-- [ ] Carry source context, diagnostic code, AST evidence, and validation commands into each child issue
+- [x] Run the representative `mise run reference-triage -- ...` command
+- [x] Confirm whether duplicate candidates already cover this failure
+- [x] Split one observable behavior or fixed reference window into child issues
+- [x] Carry source context, diagnostic code, AST evidence, and validation commands into each child issue
 
 Out of scope:
 
@@ -71,10 +73,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] Duplicate candidates are confirmed as no-match, duplicate, or superseding issue
-- [ ] At least one child issue contains an exact `mise run reference-triage -- ...` command
-- [ ] Child issue includes failing path, diagnostic code, source context, visible symbols, and AST evidence
-- [ ] Child issue acceptance names the exact fixture/reference path and diagnostic/stdout change
+- [x] Duplicate candidates are confirmed as no-match, duplicate, or superseding issue
+- [x] At least one child issue contains an exact `mise run reference-triage -- ...` command
+- [x] Child issue includes failing path, diagnostic code, source context, visible symbols, and AST evidence
+- [x] Child issue acceptance names the exact fixture/reference path and diagnostic/stdout change
 
 ## Validation
 
@@ -108,9 +110,23 @@ Current state:
 
 Follow-up issues:
 
-- [ ] none
+- [x] created: `issues/open/5138-split-reflect-construct-isconstructor-window.md`
 
 ## Notes
+
+## Triage findings
+
+2026-05-06:
+
+- The representative path no longer reproduces as generic `unsupported-expression`.
+- `mise run reference-triage -- test262 reference/test262/test/annexB/built-ins/String/prototype/anchor/not-a-constructor.js` emitted a smart triage report with:
+  - Issue class: `triage-needed`
+  - Feature label: `name-resolution`
+  - Diagnostic: `UnresolvedName` / `resolver-symbol`
+  - Failure: `unresolved name: Reflect at 1548..1555`
+  - Visible symbols before failure include `print`, `NaN`, `Infinity`, `$262`, `$ERROR`, `$DONOTEVALUATE`, `assert`, and `isConstructor`.
+- The fixed reference window is the Annex B String HTML-method `not-a-constructor` group, which uses test262 `isConstructor.js` and `Reflect.construct`.
+- Child issue 5138 owns the remaining decision/implementation split for `Reflect.construct`/`isConstructor` support or an explicit issue-linked diagnostic. This generated bucket should not be selected directly.
 
 ## Affected test files
 
@@ -141,11 +157,23 @@ Commits:
 Validation result:
 
 ```text
-command:
-result:
-date:
+command: mise run reference-triage -- test262 reference/test262/test/annexB/built-ins/String/prototype/anchor/not-a-constructor.js
+result: emitted smart triage report classifying the failure as UnresolvedName/resolver-symbol for Reflect at 1548..1555; tool session did not close cleanly after emitting the report
+date: 2026-05-06
+
+command: python scripts/manager.py update-issue-index --check
+result: pass
+date: 2026-05-06
+
+command: python scripts/manager.py check-issue-health
+result: pass
+date: 2026-05-06
+
+command: python scripts/manager.py check-issue-readiness -- --fail-ready-below 80
+result: pass
+date: 2026-05-06
 ```
 
 Remaining risks:
 
-- none
+- The remaining reference behavior is intentionally open in issue 5138.
