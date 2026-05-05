@@ -949,6 +949,7 @@ def main():
     if suite != "test262":
         semantic_check = False
     semantic_enabled = bool(semantic_check and shutil.which("node") and shutil.which("iwasm"))
+    server_emit_wasm = semantic_enabled and os.environ.get("TS2WASM_SERVER_EMIT_WASM") == "1"
     
     if jobs is None:
         jobs = os.cpu_count() or 4
@@ -1402,10 +1403,14 @@ def main():
                     _parallel_subprocess_batch(batch, semantic_enabled, tmp_dir)
                     continue
 
-                req = json.dumps({
+                request = {
                     "id": -1,
+                    "emit": "wasm" if server_emit_wasm else "check",
                     "items": [{"id": item["id"], "source": item["build_source"]} for item in batch]
-                })
+                }
+                if server_emit_wasm:
+                    request["jobs"] = jobs
+                req = json.dumps(request)
                 try:
                     server_proc.stdin.write(req.encode("utf-8") + b"\n")
                     server_proc.stdin.flush()
@@ -1468,8 +1473,11 @@ def main():
                 
                 classified_results = []
                 for item in batch:
+                    build_response = results_by_id[item["id"]]
+                    if build_response.get("wasm_path"):
+                        item["wasm_path"] = build_response["wasm_path"]
                     result = _classify_build_response(
-                        results_by_id[item["id"]], item, False, tmp_dir
+                        build_response, item, False, tmp_dir
                     )
                     classified_results.append((item, result))
 

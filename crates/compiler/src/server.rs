@@ -1,6 +1,6 @@
 use std::fs;
 use std::io::{self, BufRead, Write};
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
 use std::sync::{Arc, Mutex};
 use std::time::Instant;
@@ -11,9 +11,11 @@ use ts2wasm_frontend::{Diagnostic, Lexer, Parser};
 use ts2wasm_ir::OptimizationLevel;
 use ts2wasm_ir::builtin_resolver;
 use ts2wasm_ir::lowered;
+use ts2wasm_ir::lowered::LoweredProgram;
 use ts2wasm_ir::name_resolver;
 
 use crate::module_graph;
+use crate::write_wasm_from_wat;
 use crate::{
     ensure_runtime_feature_gates, lower_static_named_import_bindings_for_build,
     lower_static_named_import_reads_for_build, populate_static_module_exports_for_build,
@@ -39,6 +41,13 @@ struct ServerRequest {
     /// Batch of files for parallel processing (empty for single-file).
     #[serde(default)]
     items: Vec<BatchItem>,
+    /// Optional batch/single output mode. "wasm" writes a wasm file and
+    /// includes its path in the response; any other value is compile-only.
+    #[serde(default)]
+    emit: Option<String>,
+    /// Optional worker count hint for batch mode.
+    #[serde(default)]
+    jobs: Option<usize>,
 }
 
 /// An item in a batch request.
@@ -57,6 +66,8 @@ struct ServerResponse {
     code: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     message: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    wasm_path: Option<String>,
 }
 
 /// Run the ts2wasm build server.
@@ -104,7 +115,7 @@ pub fn run_server() -> Result<(), String> {
 
         if !req.items.is_empty() {
             // Batch mode: process all items in parallel using a thread pool
-            let results = process_batch(&tmpdir, &req.items);
+            let results = process_batch(&tmpdir, &req.items, request_emit_mode(&req), req.jobs);
             let json =
                 serde_json::to_string(&results).map_err(|e| format!("serialization error: {e}"))?;
             let mut out = stdout.lock();
@@ -127,7 +138,8 @@ pub fn run_server() -> Result<(), String> {
                 continue;
             }
 
-            let result = compile_source(&tmpfile);
+            let result =
+                compile_source_with_emit(&tmpfile, &tmpdir, req.id, request_emit_mode(&req));
             let _ = fs::remove_file(&tmpfile);
             emit_response(&stdout, &make_response(req.id, result))?;
         }
@@ -149,7 +161,25 @@ pub fn run_server() -> Result<(), String> {
 ///   `std::panic::catch_unwind` and reported as internal error responses.
 ///
 /// Returns one `ServerResponse` per item, in the same order as `items`.
-fn process_batch(tmpdir: &Path, items: &[BatchItem]) -> Vec<ServerResponse> {
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum EmitMode {
+    Check,
+    Wasm,
+}
+
+fn request_emit_mode(req: &ServerRequest) -> EmitMode {
+    match req.emit.as_deref() {
+        Some("wasm") => EmitMode::Wasm,
+        _ => EmitMode::Check,
+    }
+}
+
+fn process_batch(
+    tmpdir: &Path,
+    items: &[BatchItem],
+    emit_mode: EmitMode,
+    requested_workers: Option<usize>,
+) -> Vec<ServerResponse> {
     let n = items.len();
     if n == 0 {
         return vec![];
@@ -170,10 +200,13 @@ fn process_batch(tmpdir: &Path, items: &[BatchItem]) -> Vec<ServerResponse> {
     let shared_tmpdir = Arc::new(tmpdir.to_path_buf());
 
     // Number of worker threads: up to CPU count and MAX_WORKERS, capped at batch size.
+    let worker_limit = requested_workers
+        .unwrap_or(MAX_WORKERS)
+        .clamp(1, MAX_WORKERS);
     let n_workers = std::thread::available_parallelism()
         .map(|c| c.get())
         .unwrap_or(4)
-        .min(MAX_WORKERS)
+        .min(worker_limit)
         .min(n)
         .max(1);
 
@@ -214,7 +247,8 @@ fn process_batch(tmpdir: &Path, items: &[BatchItem]) -> Vec<ServerResponse> {
                         let write_result = fs::write(&tmpfile, &item.source);
                         match write_result {
                             Ok(()) => {
-                                let r = compile_source(&tmpfile);
+                                let r =
+                                    compile_source_with_emit(&tmpfile, &tmpdir, item.id, emit_mode);
                                 let _ = fs::remove_file(&tmpfile);
                                 r
                             }
@@ -227,7 +261,7 @@ fn process_batch(tmpdir: &Path, items: &[BatchItem]) -> Vec<ServerResponse> {
                     });
 
                     let resp = match compile_result {
-                        Ok(Ok(())) => make_response(item.id, Ok(())),
+                        Ok(Ok(wasm_path)) => make_response(item.id, Ok(wasm_path)),
                         Ok(Err(diag)) => make_response(item.id, Err(diag)),
                         Err(panic_payload) => {
                             let msg = if let Some(s) = panic_payload.downcast_ref::<&str>() {
@@ -294,19 +328,21 @@ fn process_batch(tmpdir: &Path, items: &[BatchItem]) -> Vec<ServerResponse> {
         .collect()
 }
 
-fn make_response(id: i64, result: Result<(), Diagnostic>) -> ServerResponse {
+fn make_response(id: i64, result: Result<Option<PathBuf>, Diagnostic>) -> ServerResponse {
     match result {
-        Ok(()) => ServerResponse {
+        Ok(wasm_path) => ServerResponse {
             id,
             status: "ok".into(),
             code: None,
             message: None,
+            wasm_path: wasm_path.map(|path| path.display().to_string()),
         },
         Err(diag) => ServerResponse {
             id,
             status: "error".into(),
             code: Some(format!("{:?}", diag.code)),
             message: Some(diag.message),
+            wasm_path: None,
         },
     }
 }
@@ -328,7 +364,30 @@ fn emit_response(stdout: &io::Stdout, resp: &ServerResponse) -> Result<(), Strin
 /// test262 `// includes:` directives already resolved). We skip
 /// `test262_preprocessor::process_test262_includes` and
 /// `validate_type_reference_directives`.
-fn compile_source(path: &Path) -> Result<(), Diagnostic> {
+fn compile_source_with_emit(
+    path: &Path,
+    tmpdir: &Path,
+    id: i64,
+    emit_mode: EmitMode,
+) -> Result<Option<PathBuf>, Diagnostic> {
+    let lowered = lower_source(path)?;
+    ensure_runtime_feature_gates(&lowered)?;
+
+    match emit_mode {
+        EmitMode::Check => Ok(None),
+        EmitMode::Wasm => {
+            let output = tmpdir.join(format!("{}.wasm", id));
+            match ts2wasm_backend_wasm::emit_wat(&lowered)
+                .and_then(|wat| write_wasm_from_wat(&wat, &output))
+            {
+                Ok(()) => Ok(Some(output)),
+                Err(_) => Ok(None),
+            }
+        }
+    }
+}
+
+fn lower_source(path: &Path) -> Result<LoweredProgram, Diagnostic> {
     use ts2wasm_frontend::DiagCode;
 
     let source = fs::read_to_string(path).map_err(|error| Diagnostic {
@@ -362,6 +421,5 @@ fn compile_source(path: &Path) -> Result<(), Diagnostic> {
         })
     })?;
 
-    ensure_runtime_feature_gates(&lowered)?;
-    Ok(())
+    Ok(lowered)
 }
