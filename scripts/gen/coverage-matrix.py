@@ -29,6 +29,60 @@ SUITE_CONFIG = {
     "tsgo": {"name": "typescript-go testdata", "step": 20},
 }
 
+REQUIRED_NUMERIC_FIELDS = (
+    "denominator",
+    "executed",
+    "build_pass",
+    "semantic_pass",
+    "fail",
+    "unsupported",
+    "blocked",
+    "skip_with_reason",
+)
+
+
+def validate_result(result_path: Path, result: dict) -> None:
+    """Reject incomplete coverage results instead of rendering zeroed rows."""
+    suite = result_path.stem
+    errors: list[str] = []
+
+    for field in REQUIRED_NUMERIC_FIELDS:
+        value = result.get(field)
+        if not isinstance(value, int):
+            errors.append(f"{field} must be an integer")
+
+    denominator = result.get("denominator")
+    executed = result.get("executed")
+    if isinstance(denominator, int) and denominator <= 0:
+        errors.append("denominator must be greater than zero")
+    if (
+        isinstance(denominator, int)
+        and isinstance(executed, int)
+        and not 0 <= executed <= denominator
+    ):
+        errors.append("executed must be between zero and denominator")
+
+    for field in ("build_coverage_percent", "semantic_coverage_percent", "status", "evidence"):
+        if not isinstance(result.get(field), str) or not result.get(field):
+            errors.append(f"{field} must be a non-empty string")
+
+    for field in ("unsupported_diagcodes", "unsupported_features"):
+        if not isinstance(result.get(field), dict):
+            errors.append(f"{field} must be an object")
+
+    if errors:
+        print(
+            f"invalid coverage result for {suite}: {result_path}",
+            file=sys.stderr,
+        )
+        for error in errors:
+            print(f"  - {error}", file=sys.stderr)
+        print(
+            "refusing to update coverage matrix from invalid inputs; rerun reference-coverage for this suite",
+            file=sys.stderr,
+        )
+        sys.exit(1)
+
 
 def load_result(suite_key: str) -> dict | None:
     """Load JSON result for a suite."""
@@ -37,10 +91,12 @@ def load_result(suite_key: str) -> dict | None:
         return None
     try:
         with open(result_path, "r", encoding="utf-8") as f:
-            return json.load(f)
+            result = json.load(f)
     except (json.JSONDecodeError, IOError) as e:
         print(f"Error loading {result_path}: {e}", file=sys.stderr)
         return None
+    validate_result(result_path, result)
+    return result
 
 
 def load_all_results() -> dict[str, dict]:

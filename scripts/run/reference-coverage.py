@@ -77,10 +77,18 @@ from ts2wasm_binary import resolve_ts2wasm_binary
 from path_env import resolve_env_path
 
 REPO_ROOT = Path(__file__).parent.parent.parent.resolve()
-TS2WASM_BINARY = resolve_ts2wasm_binary()
+TS2WASM_BINARY = None
 REFERENCE_ROOT = Path(os.environ.get("TS2WASM_REFERENCE_ROOT", REPO_ROOT / "reference")).resolve()
 COVERAGE_RESULTS_DIR = REPO_ROOT / "artifacts" / "coverage" / "results"
 SERVER_BATCH_RESPONSE_TIMEOUT_SECS = 35
+
+
+def ts2wasm_binary():
+    """Resolve the compiler binary only after reference prerequisites pass."""
+    global TS2WASM_BINARY
+    if TS2WASM_BINARY is None:
+        TS2WASM_BINARY = resolve_ts2wasm_binary()
+    return TS2WASM_BINARY
 
 SUITE_METADATA = {
     "test262": {
@@ -1499,7 +1507,7 @@ def main():
 
         def start_jsonl_server():
             return subprocess.Popen(
-                [str(TS2WASM_BINARY), "server"],
+                [str(ts2wasm_binary()), "server"],
                 stdin=subprocess.PIPE,
                 stdout=subprocess.PIPE,
                 stderr=sys.stderr,
@@ -1797,7 +1805,7 @@ def main():
     def _start_server():
         """Start (or restart) the ts2wasm batch server process."""
         proc = subprocess.Popen(
-            [str(TS2WASM_BINARY), "server"],
+            [str(ts2wasm_binary()), "server"],
             stdin=subprocess.PIPE,
             stdout=subprocess.PIPE,
             stderr=sys.stderr,
@@ -1941,7 +1949,7 @@ def main():
             out_wasm = thread_tmp / "out.wasm"
 
             build_result = subprocess.run(
-                ["timeout", "8s", str(TS2WASM_BINARY), "build", str(build_input), "-o", str(out_wasm)],
+                ["timeout", "8s", str(ts2wasm_binary()), "build", str(build_input), "-o", str(out_wasm)],
                 capture_output=True,
                 cwd=REPO_ROOT
             )
@@ -2018,7 +2026,7 @@ def main():
             out_wasm = thread_tmp / "out.wasm"
 
             build_result = subprocess.run(
-                ["timeout", "8s", str(TS2WASM_BINARY), "build", str(build_input), "-o", str(out_wasm)],
+                ["timeout", "8s", str(ts2wasm_binary()), "build", str(build_input), "-o", str(out_wasm)],
                 capture_output=True,
                 cwd=REPO_ROOT,
             )
@@ -2148,7 +2156,7 @@ def main():
             out_wasm = thread_tmp / "out.wasm"
             
             build_result = subprocess.run(
-                ["timeout", "8s", str(TS2WASM_BINARY), "build", str(build_input), "-o", str(out_wasm)],
+                ["timeout", "8s", str(ts2wasm_binary()), "build", str(build_input), "-o", str(out_wasm)],
                 capture_output=True,
                 cwd=REPO_ROOT
             )
