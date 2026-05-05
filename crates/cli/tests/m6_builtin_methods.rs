@@ -200,6 +200,16 @@ fn build_smoke_object_create() {
 }
 
 #[test]
+fn build_smoke_object_is_method() {
+    let result = run_fixture("builtins-and-io/object-is.ts");
+    assert!(
+        result.is_ok(),
+        "Object.is should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
 fn build_smoke_json_stringify_method() {
     let result = run_fixture("builtins-and-io/json-stringify.ts");
     assert!(
