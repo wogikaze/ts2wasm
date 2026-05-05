@@ -43,6 +43,21 @@ impl WatEmitter<'_> {
         (br $keys_loop)))
     ;; Update array length to actual enumerable count
     (i32.store (local.get $result_ptr) (local.get $write_i))
+    (i32.store (i32.add (local.get $result_ptr) (i32.const {array_capacity_offset})) (local.get $count))
+    (i32.store (i32.add (local.get $result_ptr) (i32.const {presence_word_count_offset})) (i32.const {one}))
+    (i32.store (i32.add (local.get $result_ptr) (i32.const {array_elements_offset_offset})) (i32.const {array_header}))
+    (block $presence
+      (if (i32.eqz (local.get $write_i))
+        (then
+          (i32.store (i32.add (local.get $result_ptr) (i32.const {presence_words_offset})) (i32.const 0))
+          (br $presence)))
+      (if (i32.gt_u (local.get $write_i) (i32.const 31))
+        (then
+          (i32.store (i32.add (local.get $result_ptr) (i32.const {presence_words_offset})) (i32.const -1))
+          (br $presence)))
+      (i32.store
+        (i32.add (local.get $result_ptr) (i32.const {presence_words_offset}))
+        (i32.sub (i32.shl (i32.const 1) (local.get $write_i)) (i32.const 1))))
     (i32.or (local.get $result_ptr) (i32.const {array_tag})))
 "#,
             tag_mask = ValueTag::TAG_MASK,
@@ -51,6 +66,10 @@ impl WatEmitter<'_> {
             obj_flags = Layout::OBJECT_FLAGS_OFFSET,
             non_enum_shift = Layout::OBJECT_NON_ENUM_SHIFT,
             array_header = Layout::ARRAY_HEADER_SIZE,
+            array_capacity_offset = Layout::ARRAY_CAPACITY_OFFSET,
+            presence_word_count_offset = Layout::ARRAY_PRESENCE_WORD_COUNT_OFFSET,
+            array_elements_offset_offset = Layout::ARRAY_ELEMENTS_OFFSET_OFFSET,
+            presence_words_offset = Layout::ARRAY_PRESENCE_WORDS_OFFSET,
             obj_header = Layout::OBJECT_HEADER_SIZE,
             entry_shift = Layout::OBJECT_ENTRY_SHIFT,
             elem_shift = Layout::ARRAY_ELEM_SHIFT,
