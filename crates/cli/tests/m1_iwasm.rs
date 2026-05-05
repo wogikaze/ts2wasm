@@ -52,20 +52,10 @@ fn oom_alloc_check_must_fail_iwasm() {
     let temp = std::env::temp_dir().join(format!("ts2wasm-m1-oom-check-{}", std::process::id()));
     fs::create_dir_all(&temp).unwrap();
 
-    let input = temp.join("oom-fast.ts");
     let output = temp.join("oom-fast.wasm");
-    fs::write(
-        &input,
-        r#"let s = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx";
-let i = 0;
-while (i < 25) {
-    s = s + s;
-    i = i + 1;
-}
-console.log(s.length);
-"#,
-    )
-    .unwrap();
+    let input = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("../..")
+        .join("fixtures/basics-oom/oom-test.ts");
 
     let build = Command::new(env!("CARGO_BIN_EXE_ts2wasm"))
         .arg("build")
