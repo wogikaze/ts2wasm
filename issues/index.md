@@ -16,9 +16,9 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 1 | 0 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4390 | 3779 | 611 |
+| frontend | 4391 | 3778 | 613 |
 | harness | 1 | 0 | 1 |
-| ir | 27 | 6 | 21 |
+| ir | 27 | 5 | 22 |
 | issues | 4 | 0 | 4 |
 | parser | 1 | 0 | 1 |
 | reference | 211 | 170 | 41 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 4992 | 4054 | 938 |
+| total | 4993 | 4052 | 941 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -162,8 +162,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 5137 | Split remaining Date API scope | cleanup | runtime/builtins | design-ready | P1 |  | Date issue 050 currently stays open after its named child issues 240 and 241 are done, but non-literal constructor in... |
 | 5138 | Split Reflect.construct isConstructor reference window | spike | runtime/builtins | design-ready | P1 |  | `reference/test262/test/annexB/built-ins/String/prototype/anchor/not-a-constructor.js` currently fails with `Unresolv... |
 | 5139 | Split APISample parser leftovers | cleanup | frontend/syntax | design-ready | P1 |  | issue 070 identified `APISample_linter.ts` and `APISample_transform.ts` as remaining parser/frontend leftovers, but t... |
-| 5141 | Implement prefix increment in for update clauses | feature | frontend/syntax | implementation-ready | P1 |  | `SystemModuleForStatementNoInitializer.ts` currently fails with `UnsupportedSyntax` because the parser rejects `++i` ... |
-| 5142 | Support class method calls on new-expression receivers | feature | ir/lowered | implementation-ready | P1 |  | method calls on new-expression receivers currently fail with `UnsupportedSyntax`, even when the class and method are ... |
 | 5143 | Implement unary void operator lowering | feature | ir/lowered | implementation-ready | P1 |  | unary `void` currently fails with `UnsupportedSyntax` in lowering even though TypeScript accepts the reference case w... |
 | 5144 | Support entry-module export function declarations | feature | ir/compiler | implementation-ready | P1 |  | entry-module `export function` declarations currently fail with `UnsupportedModule`, even though nearby static export... |
 | 5145 | Parse await as an identifier call outside async contexts | feature | frontend/syntax | implementation-ready | P2 |  | `await(...)` in a sync function currently fails with `UnsupportedRuntimeSubset` instead of preserving the TypeScript ... |
@@ -177,6 +175,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 5155 | Fix exception_pending runtime link for top-level statement checks | bug | backend-wasm | implementation-ready | P1 |  | `reference/typescript/tests/cases/compiler/baseTypeAfterDerivedType.ts` reaches backend emission, then `wat2wasm` fai... |
 | 5156 | Parse generic type arguments in class heritage clauses | feature | frontend/syntax | implementation-ready | P1 |  | `reference/typescript/tests/cases/compiler/baseTypeOrderChecking.ts` fails parsing on `class Class4<T> extends Class3... |
 | 5157 | Report set accessor rest parameter diagnostics | feature | frontend/syntax | implementation-ready | P1 |  | `reference/typescript/tests/cases/compiler/accessorWithRestParam.ts` currently reaches backend emission and fails wit... |
+| 5158 | Report interface private member clashes | feature | frontend/resolver | implementation-ready | P1 |  | `reference/typescript/tests/cases/compiler/baseTypePrivateMemberClash.ts` currently reports `BackendIo` instead of a ... |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -454,7 +453,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 773 | Implement Autoasiforstaticsinclassdeclaration | spike | frontend/syntax | class: triage-needed | Implement Autoasiforstaticsinclassdeclaration |
 | 774 | Implement Autolift | spike | frontend/syntax | class: triage-needed | Implement Autolift |
 | 775 | Implement Autotypeassignedusingdestructuringfromnevernocrash | spike | frontend/resolver | class: blocked | Implement Autotypeassignedusingdestructuringfromnevernocrash |
-| 1040 | Implement Basetypeprivatememberclash | spike | frontend/syntax | class: blocked | Implement Basetypeprivatememberclash |
 | 1041 | Implement Basetypewrappinginstantiationchain | spike | frontend/syntax | class: triage-needed | Implement Basetypewrappinginstantiationchain |
 | 1042 | Implement Bases | spike | frontend/syntax | class: triage-needed | Implement Bases |
 | 1043 | Implement Bestchoicetype | spike | frontend/syntax | class: triage-needed | Implement Bestchoicetype |
@@ -5017,6 +5015,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 1037 | Implement Baseindexsignatureresolution | spike | frontend/syntax | see `issues/done/1037-implement-baseIndexSignatureResolution.md` |
 | 1038 | Implement Basetypeafterderivedtype | spike | backend-wasm | see `issues/done/1038-implement-baseTypeAfterDerivedType.md` |
 | 1039 | Implement Basetypeorderchecking | spike | frontend/syntax | see `issues/done/1039-implement-baseTypeOrderChecking.md` |
+| 1040 | Implement Basetypeprivatememberclash | spike | frontend/resolver | see `issues/done/1040-implement-baseTypePrivateMemberClash.md` |
 | 3002 | Implement Isolateddeclarationerrorsdefault | spike | runtime/builtins | see `issues/done/3002-implement-isolatedDeclarationErrorsDefault.md` |
 | 3131 | Implement Jsxfactorynotidentifierorqualifiedname | spike | reference/triage | see `issues/done/3131-implement-jsxFactoryNotIdentifierOrQualifiedName.md` |
 | 3329 | Implement Modulecodegentest | spike | frontend/syntax | see `issues/done/3329-implement-moduleCodeGenTest.md` |
@@ -5164,6 +5163,8 @@ Issue files are the source of truth for work items. The generated section below 
 | 5131 | Design ABC451 non-top array growth strategy | design | runtime/memory | see `issues/done/5131-design-abc451-non-top-array-growth-strategy.md` |
 | 5133 | Implement single-statement loop bodies for break and continue | feature | frontend/syntax | see `issues/done/5133-implement-single-statement-loop-body-break-continue.md` |
 | 5140 | Implement type alias object parsing before exported interface | feature | frontend/syntax | see file |
+| 5141 | Implement prefix increment in for update clauses | feature | frontend/syntax | see `issues/done/5141-implement-for-update-prefix-increment.md` |
+| 5142 | Support class method calls on new-expression receivers | feature | ir/lowered | see `issues/done/5142-support-class-method-call-on-new-expression-receiver.md` |
 | 5148 | Parse generic async generator declarations | feature | frontend/syntax | see `issues/done/5148-parse-generic-async-generator-declarations.md` |
 | 5150 | Report empty element access diagnostics | feature | frontend/syntax | see `issues/done/5150-report-empty-element-access-diagnostics.md` |
 <!-- generated:done:end -->

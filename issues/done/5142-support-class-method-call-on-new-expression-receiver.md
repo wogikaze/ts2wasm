@@ -3,12 +3,14 @@ id: 5142
 title: "Support class method calls on new-expression receivers"
 type: feature
 area: ir/lowered
-class: implementation-ready
+class: done
 priority: P1
 depends_on: []
 blocks: []
 created: 2026-05-06
 updated: 2026-05-06
+completed: 2026-05-06
+status: done
 ---
 
 ## Summary
@@ -68,10 +70,10 @@ The compiler lowers `new C().g()` when:
 
 In scope:
 
-- [ ] Add the smallest lowering path for `ResolvedExpr::MethodCall` whose object is `ResolvedExpr::New` for a known local class.
-- [ ] Preserve single evaluation of the `new C()` receiver before invoking `g`.
-- [ ] Add a focused fixture equivalent to `class C { g() {} } var z = new C().g();`.
-- [ ] Re-run the `avoid.ts` triage and confirm it advances past the issue-211 identifier-receiver diagnostic.
+- [x] Add the smallest lowering path for `ResolvedExpr::MethodCall` whose object is `ResolvedExpr::New` for a known local class.
+- [x] Preserve single evaluation of the `new C()` receiver before invoking `g`.
+- [x] Add a focused fixture equivalent to `class C { g() {} } var z = new C().g();`.
+- [x] Re-run the `avoid.ts` triage and confirm it advances past the issue-211 identifier-receiver diagnostic.
 
 Out of scope:
 
@@ -128,15 +130,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 
@@ -148,20 +150,18 @@ Related broad parent:
 
 ## Completion evidence
 
-Fill only when moving to `done/`.
-
 Commits:
 
-- `...`
+- `5a6b3953` chore: commit class method call and void operator implementations
 
 Validation result:
 
 ```text
-command:
-result:
-date:
+command: python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/avoid.ts
+result: pass; triage advanced past issue-211 identifier-receiver diagnostic to BackendIo
+date: 2026-05-06
 ```
 
 Remaining risks:
 
-- none
+- The reference case still has a downstream BackendIo failure outside this method-call receiver slice.

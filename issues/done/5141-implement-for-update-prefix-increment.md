@@ -3,12 +3,15 @@ id: 5141
 title: "Implement prefix increment in for update clauses"
 type: feature
 area: frontend/syntax
-class: implementation-ready
+class: done
 priority: P1
 depends_on: []
 blocks: [080]
 created: 2026-05-06
 updated: 2026-05-06
+completed: 2026-05-06
+status: done
+closed: 2026-05-06
 ---
 
 ## Summary
@@ -59,10 +62,10 @@ The parser accepts prefix increment update expressions in `for` statements witho
 
 In scope:
 
-- [ ] Parse prefix `++identifier` as an expression where `for` update clauses are accepted.
-- [ ] Preserve existing behavior for unsupported prefix increment contexts not covered by this slice.
-- [ ] Add a focused parser or fixture test for `for (; i < limit; ++i)` and `for (; ; ++i)`.
-- [ ] Confirm issue 080 remains closed as the generated parent bucket.
+- [x] Parse prefix `++identifier` as an expression where `for` update clauses are accepted.
+- [x] Preserve existing behavior for unsupported prefix increment contexts not covered by this slice.
+- [x] Add a focused parser or fixture test for `for (; i < limit; ++i)` and `for (; ; ++i)`.
+- [x] Confirm issue 080 remains closed as the generated parent bucket.
 
 Out of scope:
 
@@ -86,10 +89,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] `mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/SystemModuleForStatementNoInitializer.ts` no longer reports `unsupported expression` for `Increment`.
-- [ ] A focused parser or fixture test covers `for (; i < limit; ++i)` and `for (; ; ++i)`.
-- [ ] Unsupported prefix/update expression cases outside the accepted shape still produce precise diagnostics.
-- [ ] Issue 080 remains closed as a superseded generated bucket.
+- [x] `mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/SystemModuleForStatementNoInitializer.ts` no longer reports `unsupported expression` for `Increment`.
+- [x] A focused parser or fixture test covers `for (; i < limit; ++i)` and `for (; ; ++i)`.
+- [x] Unsupported prefix/update expression cases outside the accepted shape still produce precise diagnostics.
+- [x] Issue 080 remains closed as a superseded generated bucket.
 
 ## Validation
 
@@ -118,12 +121,30 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none unless the reference case advances to a separate module-system blocker
+- [x] none unless the reference case advances to a separate module-system blocker
+
+## Completion evidence
+
+Commits:
+
+- `3cb3ebf3` chore: commit parser improvements from background
+
+Validation result:
+
+```text
+command: python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/SystemModuleForStatementNoInitializer.ts
+result: pass; triage advanced past the `Increment` parser diagnostic to BackendIo
+date: 2026-05-06
+```
+
+Remaining risks:
+
+- The reference case still has a downstream BackendIo failure outside this parser slice.
