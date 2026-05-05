@@ -20,6 +20,7 @@ from path_env import resolve_env_path
 
 DEFAULT_COVERAGE_DIR = REPO_ROOT / "artifacts" / "coverage" / "results"
 DEFAULT_SITE_DOCS_ROOT = REPO_ROOT / "site" / "docs"
+DEFAULT_VITE_DATA_DIR = REPO_ROOT / "web-ui" / "public" / "data"
 DEFAULT_HISTORY_FILE = REPO_ROOT / "artifacts" / "coverage" / "history" / "runs.jsonl"
 
 
@@ -41,6 +42,28 @@ def resolve_output_dir() -> Path:
         DEFAULT_SITE_DOCS_ROOT,
     )
     return docs_repo / "coverage" / "web-ui" / "public" / "data"
+
+
+def resolve_output_dirs() -> list[Path]:
+    """Resolve default output directories for dashboard JSON artifacts.
+
+    The docs data directory is the deployable source. The Vite public data
+    directories are also refreshed for local dev-server polling.
+    """
+    primary = resolve_output_dir()
+    out_dirs = [primary]
+    explicit_path = resolve_env_path(os.environ.get("TS2WASM_WEB_UI_DATA_DIR"), REPO_ROOT)
+    if explicit_path is None and DEFAULT_VITE_DATA_DIR != primary:
+        out_dirs.append(DEFAULT_VITE_DATA_DIR)
+        docs_repo = resolve_env_path(
+            os.environ.get("TS2WASM_DOCS_REPO_PATH"),
+            REPO_ROOT,
+            DEFAULT_SITE_DOCS_ROOT,
+        )
+        published_dashboard_data_dir = docs_repo / "public" / "dashboard" / "data"
+        if published_dashboard_data_dir not in out_dirs:
+            out_dirs.append(published_dashboard_data_dir)
+    return out_dirs
 
 STATUS_MAP = {
     "pass": "pass",
@@ -577,7 +600,7 @@ def main():
     args = parse_args()
     coverage_dir = args.coverage_dir if args.coverage_dir.is_absolute() else REPO_ROOT / args.coverage_dir
     if args.out_dir is None:
-        out_dirs = [resolve_output_dir()]
+        out_dirs = resolve_output_dirs()
     else:
         out_dir = args.out_dir if args.out_dir.is_absolute() else REPO_ROOT / args.out_dir
         out_dirs = [out_dir]

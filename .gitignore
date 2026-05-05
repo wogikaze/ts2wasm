@@ -21,7 +21,7 @@ __pycache__
 tmp/
 reports/
 artifacts/*
-!artifacts/benchmark-results.json
+web-ui/public/data
 
 # build/test cache
 .cache/
