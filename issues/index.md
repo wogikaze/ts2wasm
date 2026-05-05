@@ -11,7 +11,7 @@ Issue files are the source of truth for work items. The generated section below 
 |---|---:|---:|---:|
 | abi | 7 | 1 | 6 |
 | backend | 13 | 3 | 10 |
-| cli | 15 | 1 | 14 |
+| cli | 15 | 0 | 15 |
 | compiler | 1 | 0 | 1 |
 | coverage | 42 | 32 | 10 |
 | docs | 2 | 0 | 2 |
@@ -26,7 +26,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 4965 | 4177 | 788 |
+| total | 4965 | 4176 | 789 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -161,7 +161,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 5005 | Meta: TypeScript Compiler Name Resolution Coverage | meta | frontend/resolver | design-ready | P1 |  | Meta: TypeScript Compiler Name Resolution Coverage |
 | 5029 | [backend-wasm] Expand direct wasm binary emission beyond console.log string literal MVP (audit reopened #5029) | feature | backend | implementation-ready | P1 |  | [backend-wasm] Expand direct wasm binary emission beyond console.log string literal MVP (audit reopened #5029) |
 | 5030 | [backend-wasm] Split large runtime/WAT emitters into testable components (audit reopened #5030) | refactor | backend | implementation-ready | P1 |  | [backend-wasm] Split large runtime/WAT emitters into testable components (audit reopened #5030) |
-| 5038 | [compiler] Harden module graph resolution and diagnostics (audit reopened #5038) | feature | cli | implementation-ready | P1 |  | [compiler] Harden module graph resolution and diagnostics (audit reopened #5038) |
 | 5042 | [frontend] Complete Stmt AST fixture coverage (audit reopened #5042) | test | frontend | implementation-ready | P0 |  | [frontend] Complete Stmt AST fixture coverage (audit reopened #5042) |
 | 5045 | [frontend] Improve syntax error recovery and source spans (audit reopened #5045) | feature | frontend | implementation-ready | P2 |  | [frontend] Improve syntax error recovery and source spans (audit reopened #5045) |
 | 5052 | [runtime-abi] Validate runtime memory map for overlap and headroom | feature | abi | implementation-ready | P1 |  | [runtime-abi] Validate runtime memory map for overlap and headroom |
@@ -5081,6 +5080,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 5035 | [cli] Add --explain-unsupported diagnostics mode (audit reopened #5035) | feature | cli | see `issues/done/5035-cli-explain-unsupported.md` |
 | 5036 | [compiler] Introduce CompileReport<T> for non-fatal diagnostics | feature | cli | see `issues/done/5036-compiler-compile-report.md` |
 | 5037 | [compiler] Complete entry module export lowering for local references | feature | cli | see `issues/done/5037-compiler-module-export-lowering.md` |
+| 5038 | [compiler] Harden module graph resolution and diagnostics (audit reopened #5038) | feature | cli | see `issues/done/5038-compiler-module-graph-resolution.md` |
 | 5039 | [compiler] Stabilize test262 preprocessor feature handling (audit reopened #5039) | feature | cli | see `issues/done/5039-compiler-test262-preprocessor.md` |
 | 5040 | [compiler] Add resource limits and cancellation to server batch compilation (audit reopened #5040) | feature | cli | see `issues/done/5040-compiler-resource-limits.md` |
 | 5041 | [frontend] Complete Expr AST fixture coverage (audit reopened #5041) | test | frontend | see `issues/done/5041-frontend-expr-fixture-coverage.md` |
