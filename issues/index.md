@@ -21,12 +21,12 @@ Issue files are the source of truth for work items. The generated section below 
 | issues | 4 | 0 | 4 |
 | parser | 1 | 0 | 1 |
 | reference | 211 | 181 | 30 |
-| runtime | 261 | 104 | 157 |
+| runtime | 260 | 103 | 157 |
 | scripts | 2 | 0 | 2 |
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 4966 | 4180 | 786 |
+| total | 4965 | 4179 | 786 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -4310,7 +4310,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 5015 | Implement function support | spike | frontend/syntax | class: triage-needed | Implement function support |
 | 5018 | Implement legacy-global-builtin support | spike | frontend/syntax | class: triage-needed | Implement legacy-global-builtin support |
 | 5020 | Implement RegExp literal support | spike | frontend/syntax | class: triage-needed | Implement RegExp literal support |
-| 5022 | Implement Array.prototype.every receiver semantics for 2dArrays (audit reopened #5022) | feature | runtime/builtins | class: blocked | Implement Array.prototype.every receiver semantics for 2dArrays (audit reopened #5022) |
 | 5092 | (filler) Auto-generated gap placeholder #5092 | task | coverage | class: triage-needed | (filler) Auto-generated gap placeholder #5092 |
 | 5093 | (filler) Auto-generated gap placeholder #5093 | task | coverage | class: triage-needed | (filler) Auto-generated gap placeholder #5093 |
 | 5094 | (filler) Auto-generated gap placeholder #5094 | task | coverage | class: triage-needed | (filler) Auto-generated gap placeholder #5094 |

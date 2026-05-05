@@ -8,7 +8,8 @@ priority: P1
 depends_on: []
 blocks: []
 created: 2026-05-03
-updated: 2026-05-05status: open
+updated: 2026-05-05
+status: open
 ---
 
 ## Summary
@@ -79,6 +80,6 @@ Reopen reason: no `## Completion evidence` section is present, so close evidence
 Violated acceptance: the issue cannot provide repo-local close evidence for its checked acceptance criteria while it remains in this state. Acceptance checkboxes were reset for re-verification.
 
 Evidence files:
-- `issues/done/5029-backend-wasm-direct-binary-emission.md` (moved from open/ per close evidence)
+- `issues/open/5029-backend-wasm-direct-binary-emission.md` (moved back from done/ per audit, no completion evidence added)
 
 Split follow-up: none created in this audit wave; this reopened issue remains the tracking item.
