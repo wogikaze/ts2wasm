@@ -199,18 +199,52 @@ fn populate_static_module_exports_for_build(
                     ),
                     span: None,
                 })?;
-            match stmt {
+            // Unwrap Block wrappers around Let statements (e.g. empty destructuring)
+            let effective = match stmt {
+                lowered::LoweredStmt::Block(stmts) if stmts.len() == 1 => &stmts[0],
+                _ => stmt,
+            };
+            match effective {
                 lowered::LoweredStmt::Let(_, expr) => {
                     statements.push(lowered::LoweredStmt::Export {
                         name: export.name.clone(),
                         expr: expr.clone(),
                     });
                 }
-                other => {
+                lowered::LoweredStmt::Block(stmts) => {
+                    // Multi-stmt Block from destructuring — export each binding
+                    for s in stmts {
+                        if let lowered::LoweredStmt::Let(local_id, expr) = s {
+                            statements.push(lowered::LoweredStmt::Export {
+                                name: format!("local_{}", local_id.0),
+                                expr: expr.clone(),
+                            });
+                        } else {
+                            return Err(Diagnostic {
+                                code: DiagCode::UnsupportedSyntax,
+                                message: format!(
+                                    "issue-5005: entry module `export const {{...}}` contains non-let statement"
+                                ),
+                                span: None,
+                            });
+                        }
+                    }
+                }
+                lowered::LoweredStmt::ClassDecl { name, .. } => {
                     return Err(Diagnostic {
-                        code: DiagCode::InvariantViolation,
+                        code: DiagCode::UnsupportedSyntax,
                         message: format!(
-                            "entry module export `{}` maps to non-let statement: {other:?}",
+                            "issue-5005: entry module `export {}` references a class declaration; only simple exported expressions are supported in module mode",
+                            export.name
+                        ),
+                        span: None,
+                    });
+                }
+                _ => {
+                    return Err(Diagnostic {
+                        code: DiagCode::UnsupportedSyntax,
+                        message: format!(
+                            "issue-5005: entry module `export {}` uses an unsupported declaration form",
                             export.name
                         ),
                         span: None,
