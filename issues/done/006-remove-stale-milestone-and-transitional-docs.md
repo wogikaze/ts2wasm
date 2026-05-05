@@ -58,7 +58,6 @@ Violated acceptance: the issue cannot provide repo-local close evidence for its 
 
 Evidence files:
 - `issues/open/006-remove-stale-milestone-and-transitional-docs.md` before this move
-- `issues/open/006-remove-stale-milestone-and-transitional-docs.md` after this move
 
 Split follow-up: none created in this audit wave; this reopened issue remains the tracking item.
 
