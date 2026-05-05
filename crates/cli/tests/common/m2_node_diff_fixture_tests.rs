@@ -348,6 +348,60 @@ fn static_side_effect_module_import_fixture_matches_node_output_under_iwasm() {
 }
 
 #[test]
+fn static_star_re_export_module_import_fixture_matches_node_output_under_iwasm() {
+    super::assert_static_module_fixture_matches_node_variant_with_sources(
+        "fixtures/module-system/static-star-re-export-import-entry.ts",
+        "import { x, y } from './static-star-re-export-entry.ts';\nconsole.log(x);\nconsole.log(y);\n",
+        &[
+            (
+                "static-star-re-export-entry.ts",
+                "export * from './static-star-re-export-source.ts';\n",
+            ),
+            (
+                "static-star-re-export-source.ts",
+                "export const x = 1;\nexport const y = 2;\n",
+            ),
+        ],
+    );
+}
+
+#[test]
+fn static_named_re_export_module_import_fixture_matches_node_output_under_iwasm() {
+    super::assert_static_module_fixture_matches_node_variant_with_sources(
+        "fixtures/module-system/static-named-re-export-import-entry.ts",
+        "import { x } from './static-named-re-export-from-entry.ts';\nconsole.log(x);\n",
+        &[
+            (
+                "static-named-re-export-from-entry.ts",
+                "export { x } from './static-named-re-export-from-source.ts';\n",
+            ),
+            (
+                "static-named-re-export-from-source.ts",
+                "export const x = 1;\nexport const y = 2;\n",
+            ),
+        ],
+    );
+}
+
+#[test]
+fn static_namespace_re_export_module_import_fixture_matches_node_output_under_iwasm() {
+    super::assert_static_module_fixture_matches_node_variant_with_sources(
+        "fixtures/module-system/static-namespace-re-export-import-entry.ts",
+        "import { ns } from './static-namespace-re-export-from-entry.ts';\nconsole.log(ns.x);\n",
+        &[
+            (
+                "static-namespace-re-export-from-entry.ts",
+                "export * as ns from './static-namespace-re-export-from-source.ts';\n",
+            ),
+            (
+                "static-namespace-re-export-from-source.ts",
+                "export const x = 1;\nexport const y = 2;\n",
+            ),
+        ],
+    );
+}
+
+#[test]
 fn regexp_literal_fixture_matches_node_output_under_iwasm() {
     assert_fixture_matches_node("fixtures/core-semantics/regexp-literal.ts");
 }

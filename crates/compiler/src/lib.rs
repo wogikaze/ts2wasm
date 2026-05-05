@@ -11,7 +11,7 @@ use std::process::Command;
 use ts2wasm_backend_wasm as backend;
 #[cfg(test)]
 use ts2wasm_frontend::BinaryOp;
-use ts2wasm_frontend::{Expr, Lexer, Parser, Stmt, validate_type_reference_directives};
+use ts2wasm_frontend::{Expr, Lexer, Parser, Span, Stmt, validate_type_reference_directives};
 use ts2wasm_ir::builtin_resolver;
 use ts2wasm_ir::lowered;
 use ts2wasm_ir::name_resolver;
@@ -861,7 +861,7 @@ fn lower_static_module_body_for_build(
     let program = parse_program(&source)?;
     validate_ast(&program)?;
 
-    let body = rewrite_static_module_body_for_build(&program)?;
+    let body = rewrite_static_module_body_for_build(path, &program)?;
     if body.rewritten_program.is_empty() && body.module_exports.is_empty() {
         return Ok(None);
     }
@@ -916,6 +916,7 @@ fn lower_static_module_body_for_build(
 }
 
 fn rewrite_static_module_body_for_build(
+    path: &Path,
     program: &[Stmt],
 ) -> Result<StaticModuleBodyLowering, Diagnostic> {
     let mut rewritten = Vec::new();
@@ -1014,6 +1015,107 @@ fn rewrite_static_module_body_for_build(
                 });
                 lowered_statement_index += 1;
             }
+            Stmt::ExportAllFrom { source, .. } => {
+                let source_path =
+                    resolve_static_re_export_source_path(path, &source.value, source.span)?;
+                let exports = collect_literal_named_exports(&source_path)?;
+                for (export_name, expr) in exports {
+                    if !exported_names.insert(export_name.clone()) {
+                        return Err(Diagnostic {
+                            code: DiagCode::UnsupportedSyntax,
+                            message: format!("issue-5005: duplicate export name `{export_name}`"),
+                            span: Some(source.span),
+                        });
+                    }
+                    let local_name = format!("__ts2wasm_re_{export_name}");
+                    rewritten.push(Stmt::Let {
+                        name: local_name.clone(),
+                        expr,
+                        span: source.span,
+                        is_var: false,
+                    });
+                    local_name_to_index.insert(local_name, lowered_statement_index);
+                    module_exports.push(ModuleExport {
+                        name: export_name,
+                        lowered_statement_index,
+                    });
+                    lowered_statement_index += 1;
+                }
+            }
+            Stmt::ExportNamedFrom {
+                specifiers, source, ..
+            } => {
+                let source_path =
+                    resolve_static_re_export_source_path(path, &source.value, source.span)?;
+                let exports = collect_literal_named_exports(&source_path)?;
+                for specifier in specifiers {
+                    if !exported_names.insert(specifier.exported.clone()) {
+                        return Err(Diagnostic {
+                            code: DiagCode::UnsupportedSyntax,
+                            message: format!(
+                                "issue-5005: duplicate export name `{}`",
+                                specifier.exported
+                            ),
+                            span: Some(specifier.span),
+                        });
+                    }
+                    let expr = exports.get(&specifier.imported).ok_or_else(|| Diagnostic {
+                        code: DiagCode::UnsupportedSyntax,
+                        message: format!(
+                            "issue-233: module `{}` does not export named binding `{}`",
+                            source.value, specifier.imported
+                        ),
+                        span: Some(specifier.imported_span),
+                    })?;
+                    let local_name = format!("__ts2wasm_re_{}", specifier.exported);
+                    rewritten.push(Stmt::Let {
+                        name: local_name.clone(),
+                        expr: expr.clone(),
+                        span: specifier.span,
+                        is_var: false,
+                    });
+                    local_name_to_index.insert(local_name, lowered_statement_index);
+                    module_exports.push(ModuleExport {
+                        name: specifier.exported.clone(),
+                        lowered_statement_index,
+                    });
+                    lowered_statement_index += 1;
+                }
+            }
+            Stmt::ExportNamespaceFrom {
+                namespace,
+                source,
+                span,
+            } => {
+                let source_path =
+                    resolve_static_re_export_source_path(path, &source.value, source.span)?;
+                let props = collect_literal_named_exports(&source_path)?
+                    .into_iter()
+                    .collect::<Vec<_>>();
+                if !exported_names.insert(namespace.exported.clone()) {
+                    return Err(Diagnostic {
+                        code: DiagCode::UnsupportedSyntax,
+                        message: format!(
+                            "issue-5005: duplicate export name `{}`",
+                            namespace.exported
+                        ),
+                        span: Some(namespace.span),
+                    });
+                }
+                let local_name = format!("__ts2wasm_ns_{}", namespace.exported);
+                rewritten.push(Stmt::Let {
+                    name: local_name.clone(),
+                    expr: Expr::Object { props, span: *span },
+                    span: namespace.span,
+                    is_var: false,
+                });
+                local_name_to_index.insert(local_name, lowered_statement_index);
+                module_exports.push(ModuleExport {
+                    name: namespace.exported.clone(),
+                    lowered_statement_index,
+                });
+                lowered_statement_index += 1;
+            }
             Stmt::ImportNamed { .. }
             | Stmt::ImportDefault { .. }
             | Stmt::ImportDefaultNamed { .. }
@@ -1107,10 +1209,102 @@ fn collect_literal_named_exports(path: &Path) -> Result<BTreeMap<String, Expr>, 
                 })?;
                 exports.insert(specifier.exported.clone(), expr.clone());
             }
+        } else if let Stmt::ExportAllFrom { source, .. } = stmt {
+            let source_path =
+                resolve_static_re_export_source_path(path, &source.value, source.span)?;
+            for (name, expr) in collect_literal_named_exports(&source_path)? {
+                exports.insert(name, expr);
+            }
+        } else if let Stmt::ExportNamedFrom {
+            specifiers, source, ..
+        } = stmt
+        {
+            let source_path =
+                resolve_static_re_export_source_path(path, &source.value, source.span)?;
+            let source_exports = collect_literal_named_exports(&source_path)?;
+            for specifier in specifiers {
+                let expr = source_exports
+                    .get(&specifier.imported)
+                    .ok_or_else(|| Diagnostic {
+                        code: DiagCode::UnsupportedSyntax,
+                        message: format!(
+                            "issue-233: module `{}` does not export named binding `{}`",
+                            source.value, specifier.imported
+                        ),
+                        span: Some(specifier.imported_span),
+                    })?;
+                exports.insert(specifier.exported.clone(), expr.clone());
+            }
+        } else if let Stmt::ExportNamespaceFrom {
+            namespace,
+            source,
+            span,
+        } = stmt
+        {
+            let source_path =
+                resolve_static_re_export_source_path(path, &source.value, source.span)?;
+            let props = collect_literal_named_exports(&source_path)?
+                .into_iter()
+                .collect::<Vec<_>>();
+            exports.insert(
+                namespace.exported.clone(),
+                Expr::Object { props, span: *span },
+            );
         }
     }
 
     Ok(exports)
+}
+
+fn resolve_static_re_export_source_path(
+    importer_path: &Path,
+    specifier: &str,
+    span: Span,
+) -> Result<PathBuf, Diagnostic> {
+    if !specifier.starts_with("./") && !specifier.starts_with("../") {
+        return Err(Diagnostic {
+            code: DiagCode::UnsupportedModule,
+            message: format!(
+                "issue-232: unsupported non-local module specifier `{specifier}` in static re-export"
+            ),
+            span: Some(span),
+        });
+    }
+
+    let base_dir = importer_path.parent().unwrap_or_else(|| Path::new("."));
+    let raw_candidate = base_dir.join(specifier);
+    let candidates = if raw_candidate.extension().is_some() {
+        vec![raw_candidate]
+    } else {
+        vec![
+            raw_candidate.with_extension("ts"),
+            raw_candidate.with_extension("js"),
+        ]
+    };
+
+    for candidate in &candidates {
+        if candidate.exists() {
+            return candidate.canonicalize().map_err(|error| Diagnostic {
+                code: DiagCode::BackendIo,
+                message: format!("failed to canonicalize {}: {error}", candidate.display()),
+                span: Some(span),
+            });
+        }
+    }
+
+    Err(Diagnostic {
+        code: DiagCode::UnsupportedModule,
+        message: format!(
+            "issue-232: missing local module `{specifier}` re-exported from {}; tried {}",
+            importer_path.display(),
+            candidates
+                .iter()
+                .map(|path| path.display().to_string())
+                .collect::<Vec<_>>()
+                .join(", ")
+        ),
+        span: Some(span),
+    })
 }
 
 fn module_specifier(module_graph: &ModuleGraph, module_id: usize) -> String {
