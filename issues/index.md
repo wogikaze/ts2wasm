@@ -15,9 +15,9 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 1 | 0 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4387 | 3788 | 599 |
+| frontend | 4387 | 3787 | 600 |
 | harness | 1 | 0 | 1 |
-| ir | 26 | 5 | 21 |
+| ir | 27 | 6 | 21 |
 | issues | 4 | 0 | 4 |
 | parser | 1 | 0 | 1 |
 | reference | 211 | 170 | 41 |
@@ -26,7 +26,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 4986 | 4061 | 925 |
+| total | 4987 | 4061 | 926 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -173,6 +173,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 5149 | Parse trailing comma in typed class method parameters | feature | frontend/syntax | implementation-ready | P1 |  | class method parameter lists with a trailing comma currently fail with `UnsupportedSyntax`, even though TypeScript ac... |
 | 5150 | Report empty element access diagnostics | feature | frontend/syntax | implementation-ready | P2 |  | empty element access `expr[]` currently fails with generic `UnsupportedSyntax` instead of a targeted missing-index di... |
 | 5151 | Parse ASI after multiline const initializer | feature | frontend/syntax | implementation-ready | P1 |  | semicolonless `const` declarations with multi-line call/object initializers currently fail before the next expression... |
+| 5152 | Support class constructor outer callback captures | feature | ir | implementation-ready | P1 |  | class constructors cannot currently call outer callback locals when nested arrow callbacks capture constructor `this`. |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -451,7 +452,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 773 | Implement Autoasiforstaticsinclassdeclaration | spike | frontend/syntax | class: triage-needed | Implement Autoasiforstaticsinclassdeclaration |
 | 774 | Implement Autolift | spike | frontend/syntax | class: triage-needed | Implement Autolift |
 | 775 | Implement Autotypeassignedusingdestructuringfromnevernocrash | spike | frontend/resolver | class: blocked | Implement Autotypeassignedusingdestructuringfromnevernocrash |
-| 1031 | Implement Badthisbinding | spike | frontend/syntax | class: blocked | Implement Badthisbinding |
 | 1032 | Implement Banginmodulename | spike | frontend/syntax | class: blocked | Implement Banginmodulename |
 | 1033 | Implement Basecheck | spike | frontend/resolver | class: blocked | Implement Basecheck |
 | 1034 | Implement Baseclassimprovedmismatcherrors | spike | frontend/syntax | class: blocked | Implement Baseclassimprovedmismatcherrors |
@@ -5013,6 +5013,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 1028 | Implement Badexternalmodulereference | spike | frontend/syntax | see `issues/done/1028-implement-badExternalModuleReference.md` |
 | 1029 | Implement Badinferencelowerprioritythangoodinference | spike | frontend/semantics | see `issues/done/1029-implement-badInferenceLowerPriorityThanGoodInference.md` |
 | 1030 | Implement Badoverloaderror | spike | frontend/syntax | see `issues/done/1030-implement-badOverloadError.md` |
+| 1031 | Implement Badthisbinding | spike | frontend/syntax | see `issues/done/1031-implement-badThisBinding.md` |
 | 3002 | Implement Isolateddeclarationerrorsdefault | spike | runtime/builtins | see `issues/done/3002-implement-isolatedDeclarationErrorsDefault.md` |
 | 3131 | Implement Jsxfactorynotidentifierorqualifiedname | spike | reference/triage | see `issues/done/3131-implement-jsxFactoryNotIdentifierOrQualifiedName.md` |
 | 3329 | Implement Modulecodegentest | spike | frontend/syntax | see `issues/done/3329-implement-moduleCodeGenTest.md` |

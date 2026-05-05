@@ -126,7 +126,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/open/1031-implement-badThisBinding.md` - Implement Badthisbinding (same feature label, same group key, title overlap)
+- `issues/done/1031-implement-badThisBinding.md` - Implement Badthisbinding (same feature label, same group key, title overlap; split to issue 5152)
 - `issues/open/1107-implement-capturedLetConstInLoop-arrow-function.md` - Implement Capturedletconstinloop Arrow Function (same feature label, same group key, title overlap)
 - `issues/open/1144-implement-checkSwitchStatementIfCaseTypeIsString.md` - Implement Checkswitchstatementifcasetypeisstring (same feature label, same group key, title overlap)
 - `issues/open/1196-implement-classExtendsAcrossFiles.md` - Implement Classextendsacrossfiles (same feature label, same group key, title overlap)
