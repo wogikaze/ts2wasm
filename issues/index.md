@@ -17,7 +17,7 @@ Issue files are the source of truth for work items. The generated section below 
 | docs | 2 | 1 | 1 |
 | frontend | 4377 | 3866 | 511 |
 | harness | 1 | 0 | 1 |
-| ir | 20 | 6 | 14 |
+| ir | 20 | 5 | 15 |
 | issues | 4 | 0 | 4 |
 | parser | 1 | 0 | 1 |
 | reference | 211 | 183 | 28 |
@@ -26,7 +26,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 1 | 5 |
 | wasi | 1 | 0 | 1 |
-| total | 4963 | 4215 | 748 |
+| total | 4963 | 4214 | 749 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -4376,7 +4376,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 5122 | (filler) Auto-generated gap placeholder #5122 | task | coverage | class: triage-needed | (filler) Auto-generated gap placeholder #5122 |
 | 5123 | (filler) Auto-generated gap placeholder #5123 | task | coverage | class: triage-needed | (filler) Auto-generated gap placeholder #5123 |
 | 5124 | Fix Object.keys on arguments exotic object (audit reopened #5124) | bug | runtime | class: triage-needed | Fix Object.keys on arguments exotic object (audit reopened #5124) |
-| 5126 | Implement name resolver var redeclaration tolerance | feature | ir/lowering | 3690 | Implement name resolver var redeclaration tolerance |
 | 5127 | Implement export default multi-file lowering deduplication | feature | ir/lowering | 3002 | Implement export default multi-file lowering deduplication |
 <!-- generated:blocked:end -->
 
@@ -5135,6 +5134,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 5089 | Implement type-alias support (dup) | spike | frontend/syntax | see `issues/done/5089-implement-type-alias.md` |
 | 5090 | Implement type-system support (dup) | spike | frontend/syntax | see `issues/done/5090-implement-type-system.md` |
 | 5091 | Investigate and classify unknown-unsupported cases (dup) | spike | frontend/syntax | see `issues/done/5091-implement-unknown-unsupported.md` |
+| 5126 | Implement name resolver var redeclaration tolerance | feature | ir/lowering | see `issues/done/5126-implement-name-resolver-var-redeclaration.md` |
 <!-- generated:done:end -->
 
 ## Index generation contract

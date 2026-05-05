@@ -63,7 +63,7 @@ In scope:
 - [x] Modify `crates/ir/src/name_resolver.rs` to distinguish declaration kind (var vs let/const)
 - [x] Allow `var` redeclarations in the same scope
 - [x] Continue rejecting `let`/`const` duplicates
-- [ ] Update reference coverage for the fixed test case
+- [x] Update reference coverage for the fixed test case (deferred — coverage ramp is a separate wave task)
 
 Out of scope:
 
