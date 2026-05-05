@@ -935,6 +935,9 @@ impl Parser {
                         break;
                     }
                     self.expect(TokenKind::Comma)?;
+                    if self.consume(TokenKind::RightParen) {
+                        break;
+                    }
                 }
             }
             let end = self.prev_span().map(|s| s.end).unwrap_or(expr.span().end);
@@ -1165,6 +1168,9 @@ impl Parser {
                     break;
                 }
                 self.expect(TokenKind::Comma)?;
+                if self.consume(TokenKind::RightParen) {
+                    break;
+                }
             }
         }
         let end = self.prev_span().map(|span| span.end).unwrap_or(0);

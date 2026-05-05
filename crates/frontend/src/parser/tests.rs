@@ -1969,4 +1969,28 @@ mod tests {
         let stmts = parse_program("var v = (private x: number) => x + 1;").unwrap();
         assert_eq!(stmts.len(), 1);
     }
+
+    #[test]
+    fn parses_trailing_commas_in_call_and_new_arguments() {
+        let stmts = parse_program("foo(1, 2,); new Date(0,);").unwrap();
+        assert_eq!(stmts.len(), 2);
+
+        let Stmt::Expr {
+            expr: Expr::Call { args, .. },
+            ..
+        } = &stmts[0]
+        else {
+            panic!("expected call expression");
+        };
+        assert_eq!(args.len(), 2);
+
+        let Stmt::Expr {
+            expr: Expr::New { args, .. },
+            ..
+        } = &stmts[1]
+        else {
+            panic!("expected new expression");
+        };
+        assert_eq!(args.len(), 1);
+    }
 }
