@@ -130,7 +130,7 @@ Follow-up issues:
 - `issues/done/066-implement-regexp-literal.md` - Implement RegExp literal support (same reference path, title overlap)
 - `issues/done/089-implement-acceptSymbolAsWeakType.md` - Implement Acceptsymbolasweaktype (same feature label, same group key, title overlap)
 - `issues/done/1010-implement-autoTypeAssignedUsingDestructuringFromNeverNoCrash.md` - Implement Autotypeassignedusingdestructuringfromnevernocrash (same feature label, same group key, title overlap)
-- `issues/open/1033-implement-baseCheck.md` - Implement Basecheck (same feature label, same group key, title overlap)
+- `issues/done/1033-implement-baseCheck.md` - Implement Basecheck (same feature label, same group key, title overlap; superseded by issue 056)
 - `issues/open/1044-implement-bestCommonTypeWithContextualTyping.md` - Implement Bestcommontypewithcontextualtyping (same feature label, same group key, title overlap)
 - `issues/open/1048-implement-bigint.md` - Implement Bigint (same feature label, same group key, title overlap)
 - `issues/open/1051-implement-bigintIndex.md` - Implement Bigintindex (same feature label, same group key, title overlap)
