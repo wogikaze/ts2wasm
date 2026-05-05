@@ -224,34 +224,6 @@ fn split_file_name_sections(source: &str) -> Vec<(String, String)> {
 /// Split source by `// @fileName:` or `// @filename:` directives.
 /// Returns `(name, body)` pairs for each section, preserving original line
 /// ordering. Returns an empty vec when no directive is found.
-fn split_file_name_sections(source: &str) -> Vec<(String, String)> {
-    let mut sections: Vec<(String, String)> = Vec::new();
-    let mut current_name = String::new();
-    let mut current_body = String::new();
-
-    for line in source.lines() {
-        let trimmed = line.trim_start();
-        if let Some(rest) = trimmed
-            .strip_prefix("// @fileName: ")
-            .or_else(|| trimmed.strip_prefix("// @filename: "))
-        {
-            if !current_name.is_empty() {
-                sections.push((current_name.clone(), current_body.clone()));
-            }
-            current_name = rest.trim().to_string();
-            current_body = String::new();
-        } else if !current_name.is_empty() {
-            if !current_body.is_empty() {
-                current_body.push('\n');
-            }
-            current_body.push_str(line);
-        }
-    }
-    if !current_name.is_empty() {
-        sections.push((current_name, current_body));
-    }
-
-    sections
 }
 
 fn populate_static_module_exports_for_build(
@@ -1048,6 +1020,13 @@ fn lower_source_as_module_body(
                 span: None,
             })?;
         match stmt {
+            lowered::LoweredStmt::Let(_, expr) => {
+                statements.push(lowered::LoweredStmt::Export {
+                    name: export.name.clone(),
+                    expr: expr.clone(),
+                });
+            }
+            other => {
             lowered::LoweredStmt::Let(_, expr) => {
                 statements.push(lowered::LoweredStmt::Export {
                     name: export.name.clone(),
