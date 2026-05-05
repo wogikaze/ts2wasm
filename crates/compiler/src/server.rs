@@ -1,5 +1,6 @@
 use std::fs;
 use std::io::{self, BufRead, Write};
+use std::panic::{RefUnwindSafe, UnwindSafe};
 use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
 use std::sync::{Arc, Mutex};
@@ -33,6 +34,35 @@ const BATCH_TIMEOUT_SECS: u64 = 30;
 /// machines, so the cap is now configurable while still bounded by CPU count.
 const DEFAULT_MAX_WORKERS_CAP: usize = 32;
 const DEFAULT_SERVER_WORKER_STACK_BYTES: usize = 256 * 1024 * 1024;
+
+#[derive(Debug, Clone, Copy)]
+struct BatchLimits {
+    timeout_secs: u64,
+    max_workers_cap: usize,
+    worker_stack_bytes: usize,
+}
+
+impl BatchLimits {
+    fn from_env(available_workers: usize) -> Self {
+        let max_workers_cap = std::env::var("TS2WASM_SERVER_MAX_WORKERS")
+            .ok()
+            .and_then(|value| value.parse::<usize>().ok())
+            .filter(|value| *value > 0)
+            .unwrap_or(DEFAULT_MAX_WORKERS_CAP)
+            .min(available_workers)
+            .max(1);
+        let worker_stack_bytes = std::env::var("TS2WASM_SERVER_WORKER_STACK_BYTES")
+            .ok()
+            .and_then(|value| value.parse::<usize>().ok())
+            .filter(|value| *value > 0)
+            .unwrap_or(DEFAULT_SERVER_WORKER_STACK_BYTES);
+        Self {
+            timeout_secs: BATCH_TIMEOUT_SECS,
+            max_workers_cap,
+            worker_stack_bytes,
+        }
+    }
+}
 
 /// A single build request from the client (one JSON line on stdin).
 #[derive(Debug, Deserialize)]
@@ -177,6 +207,47 @@ fn process_batch(
     emit_mode: EmitMode,
     requested_workers: Option<usize>,
 ) -> Vec<ServerResponse> {
+    let available_workers = std::thread::available_parallelism()
+        .map(|c| c.get())
+        .unwrap_or(4)
+        .max(1);
+    let limits = BatchLimits::from_env(available_workers);
+    process_batch_with_compiler(tmpdir, items, emit_mode, requested_workers, limits)
+}
+
+fn process_batch_with_compiler(
+    tmpdir: &Path,
+    items: &[BatchItem],
+    emit_mode: EmitMode,
+    requested_workers: Option<usize>,
+    limits: BatchLimits,
+) -> Vec<ServerResponse> {
+    process_batch_with_compile(
+        tmpdir,
+        items,
+        requested_workers,
+        limits,
+        move |item, virtual_path, tmpdir| {
+            compile_source_text_with_emit(&item.source, virtual_path, tmpdir, item.id, emit_mode)
+        },
+    )
+}
+
+fn process_batch_with_compile<F>(
+    tmpdir: &Path,
+    items: &[BatchItem],
+    requested_workers: Option<usize>,
+    limits: BatchLimits,
+    compile_item: F,
+) -> Vec<ServerResponse>
+where
+    F: Fn(&BatchItem, &Path, &Path) -> Result<Option<PathBuf>, Diagnostic>
+        + Send
+        + Sync
+        + UnwindSafe
+        + RefUnwindSafe
+        + 'static,
+{
     let n = items.len();
     if n == 0 {
         return vec![];
@@ -196,28 +267,11 @@ fn process_batch(
     let items: Arc<Vec<BatchItem>> = Arc::new(items.to_vec());
     let shared_tmpdir = Arc::new(tmpdir.to_path_buf());
 
-    // Number of worker threads: honor the client request, capped by CPU count
-    // and an optional TS2WASM_SERVER_MAX_WORKERS override.
-    let available_workers = std::thread::available_parallelism()
-        .map(|c| c.get())
-        .unwrap_or(4)
-        .max(1);
-    let configured_cap = std::env::var("TS2WASM_SERVER_MAX_WORKERS")
-        .ok()
-        .and_then(|value| value.parse::<usize>().ok())
-        .filter(|value| *value > 0)
-        .unwrap_or(DEFAULT_MAX_WORKERS_CAP)
-        .min(available_workers)
-        .max(1);
     let worker_limit = requested_workers
-        .unwrap_or(configured_cap)
-        .clamp(1, configured_cap);
+        .unwrap_or(limits.max_workers_cap)
+        .clamp(1, limits.max_workers_cap);
     let n_workers = worker_limit.min(n).max(1);
-    let worker_stack_bytes = std::env::var("TS2WASM_SERVER_WORKER_STACK_BYTES")
-        .ok()
-        .and_then(|value| value.parse::<usize>().ok())
-        .filter(|value| *value > 0)
-        .unwrap_or(DEFAULT_SERVER_WORKER_STACK_BYTES);
+    let compile_item = Arc::new(compile_item);
 
     let mut handles = Vec::with_capacity(n_workers);
     for worker_id in 0..n_workers {
@@ -226,17 +280,18 @@ fn process_batch(
         let next_idx = Arc::clone(&next_idx);
         let timed_out = Arc::clone(&timed_out);
         let tmpdir = Arc::clone(&shared_tmpdir);
+        let compile_item = Arc::clone(&compile_item);
 
         let handle = std::thread::Builder::new()
             .name(format!("ts2wasm-server-worker-{worker_id}"))
-            .stack_size(worker_stack_bytes)
+            .stack_size(limits.worker_stack_bytes)
             .spawn(move || {
                 loop {
                     // Check timeout before claiming next item.
                     if timed_out.load(Ordering::Relaxed) {
                         break;
                     }
-                    if deadline.elapsed().as_secs() >= BATCH_TIMEOUT_SECS {
+                    if deadline.elapsed().as_secs() >= limits.timeout_secs {
                         timed_out.store(true, Ordering::Relaxed);
                         break;
                     }
@@ -254,15 +309,8 @@ fn process_batch(
                     // the previous implementation wrote every source to a temp
                     // file and then read it back in `lower_source`, which adds a
                     // large amount of filesystem churn for test262 batches.
-                    let compile_result = std::panic::catch_unwind(|| {
-                        compile_source_text_with_emit(
-                            &item.source,
-                            &virtual_path,
-                            &tmpdir,
-                            item.id,
-                            emit_mode,
-                        )
-                    });
+                    let compile_result =
+                        std::panic::catch_unwind(|| compile_item(item, &virtual_path, &tmpdir));
 
                     let resp = match compile_result {
                         Ok(Ok(wasm_path)) => make_response(item.id, Ok(wasm_path)),
@@ -315,7 +363,7 @@ fn process_batch(
                     message: if timed_out.load(Ordering::Relaxed) {
                         format!(
                             "batch timed out after {}s (item {})",
-                            BATCH_TIMEOUT_SECS, idx
+                            limits.timeout_secs, idx
                         )
                     } else {
                         format!("internal error: item {idx} was skipped")
@@ -446,4 +494,155 @@ fn lower_source_text(path: &Path, source: &str) -> Result<LoweredProgram, Diagno
     })?;
 
     Ok(lowered)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::sync::atomic::Ordering;
+    use std::time::Duration;
+
+    fn test_tmpdir(name: &str) -> PathBuf {
+        let path = std::env::temp_dir().join(format!(
+            "ts2wasm_server_test_{}_{}",
+            std::process::id(),
+            name
+        ));
+        let _ = fs::remove_dir_all(&path);
+        fs::create_dir_all(&path).expect("test temp dir should be created");
+        path
+    }
+
+    fn test_limits(timeout_secs: u64, max_workers_cap: usize) -> BatchLimits {
+        BatchLimits {
+            timeout_secs,
+            max_workers_cap,
+            worker_stack_bytes: 2 * 1024 * 1024,
+        }
+    }
+
+    fn batch_items(count: usize) -> Vec<BatchItem> {
+        (0..count)
+            .map(|idx| BatchItem {
+                id: idx as i64,
+                source: format!("item-{idx}"),
+            })
+            .collect()
+    }
+
+    #[test]
+    fn batch_timeout_reports_unprocessed_items() {
+        let tmpdir = test_tmpdir("timeout");
+        let items = batch_items(3);
+
+        let results = process_batch_with_compile(
+            &tmpdir,
+            &items,
+            Some(2),
+            test_limits(0, 2),
+            |_item, _path, _tmpdir| panic!("timeout should stop before compiling"),
+        );
+
+        assert_eq!(results.len(), items.len());
+        for (idx, response) in results.iter().enumerate() {
+            assert_eq!(response.id, idx as i64);
+            assert_eq!(response.status, "error");
+            assert_eq!(response.code.as_deref(), Some("InvariantViolation"));
+            assert!(
+                response
+                    .message
+                    .as_deref()
+                    .unwrap_or_default()
+                    .contains("batch timed out after 0s"),
+                "unexpected timeout response: {:?}",
+                response.message
+            );
+        }
+
+        let _ = fs::remove_dir_all(tmpdir);
+    }
+
+    #[test]
+    fn batch_worker_count_is_capped() {
+        let tmpdir = test_tmpdir("worker-cap");
+        let items = batch_items(6);
+        let active = Arc::new(AtomicUsize::new(0));
+        let max_active = Arc::new(AtomicUsize::new(0));
+        let active_for_compile = Arc::clone(&active);
+        let max_for_compile = Arc::clone(&max_active);
+
+        let results = process_batch_with_compile(
+            &tmpdir,
+            &items,
+            Some(99),
+            test_limits(30, 2),
+            move |_item, _path, _tmpdir| {
+                let current = active_for_compile.fetch_add(1, Ordering::SeqCst) + 1;
+                max_for_compile.fetch_max(current, Ordering::SeqCst);
+                std::thread::sleep(Duration::from_millis(20));
+                active_for_compile.fetch_sub(1, Ordering::SeqCst);
+                Ok(None)
+            },
+        );
+
+        assert_eq!(results.len(), items.len());
+        assert!(results.iter().all(|response| response.status == "ok"));
+        assert!(
+            max_active.load(Ordering::SeqCst) <= 2,
+            "batch exceeded worker cap: max_active={}",
+            max_active.load(Ordering::SeqCst)
+        );
+
+        let _ = fs::remove_dir_all(tmpdir);
+    }
+
+    #[test]
+    fn batch_panic_is_reported_per_item() {
+        let tmpdir = test_tmpdir("panic");
+        let items = vec![
+            BatchItem {
+                id: 1,
+                source: "ok".to_owned(),
+            },
+            BatchItem {
+                id: 2,
+                source: "panic".to_owned(),
+            },
+            BatchItem {
+                id: 3,
+                source: "ok".to_owned(),
+            },
+        ];
+
+        let results = process_batch_with_compile(
+            &tmpdir,
+            &items,
+            Some(1),
+            test_limits(30, 1),
+            |item, _path, _tmpdir| {
+                if item.source == "panic" {
+                    panic!("synthetic batch panic");
+                }
+                Ok(None)
+            },
+        );
+
+        assert_eq!(results.len(), items.len());
+        assert_eq!(results[0].status, "ok");
+        assert_eq!(results[1].id, 2);
+        assert_eq!(results[1].status, "error");
+        assert_eq!(results[1].code.as_deref(), Some("InvariantViolation"));
+        assert!(
+            results[1]
+                .message
+                .as_deref()
+                .unwrap_or_default()
+                .contains("synthetic batch panic"),
+            "unexpected panic response: {:?}",
+            results[1].message
+        );
+        assert_eq!(results[2].status, "ok");
+
+        let _ = fs::remove_dir_all(tmpdir);
+    }
 }
