@@ -487,7 +487,7 @@ error: [UnsupportedSyntax] expected Semicolon, got Some(LeftBrace) at 27..28
 ## 重複整理メモ
 
 この issue はタイトルが重複しているため、内容がより充実している
-`issues/done/639-implement-anonymousModules.md` に統合されました。
+`issues/open/639-implement-anonymousModules.md` に統合されました。
 そちらを参照してください。
 ## Completion evidence
 

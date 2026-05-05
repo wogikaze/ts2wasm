@@ -75,3 +75,17 @@ Implementation:
 3. ir_lowering.rs: Three tests updated to account for ClassDecl emission shifting top_level_statements indices, with assertions verifying ClassDecl fields.
 
 Validation: `cargo nextest run` — 56 ir_lowering tests pass, 0 regressions from this change (2 pre-existing m2_node_diff failures confirmed on base commit).
+
+## False-done audit
+
+Date: 2026-05-05
+
+Classification: truly-done.
+
+Audit result: retained in `issues/done/`. The issue has repo-local completion evidence, is not marked `blocked` or `triage-needed`, and `python scripts/manager.py check issues` validates the resulting issue graph.
+
+Evidence files:
+- `issues/done/5046-ir-class-ir.md`
+- `issues/index.md` after regeneration
+
+Future-work tracking: no untracked future-work item was identified in this issue during this metadata/evidence audit.

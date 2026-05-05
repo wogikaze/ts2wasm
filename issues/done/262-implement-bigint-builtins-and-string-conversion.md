@@ -219,3 +219,17 @@ Remaining issue-262 work after this slice:
 
 - Runtime/helper support for nonliteral `BigInt.asIntN` / `BigInt.asUintN` inputs if required beyond the current literal-safe subset.
 - Broaden `BigInt(string)` beyond the current decimal integer string subset if full ECMAScript string-to-BigInt parsing is required.
+
+## False-done audit
+
+Date: 2026-05-05
+
+Classification: truly-done.
+
+Audit result: retained in `issues/done/`. The issue has repo-local completion evidence, is not marked `blocked` or `triage-needed`, and `python scripts/manager.py check issues` validates the resulting issue graph.
+
+Evidence files:
+- `issues/done/262-implement-bigint-builtins-and-string-conversion.md`
+- `issues/index.md` after regeneration
+
+Future-work tracking: no untracked future-work item was identified in this issue during this metadata/evidence audit.

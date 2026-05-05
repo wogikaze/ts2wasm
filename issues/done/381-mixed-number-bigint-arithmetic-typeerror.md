@@ -179,3 +179,17 @@ Remaining risks:
 
 - Source-backed unsupported mixed shapes still produce issue-linked diagnostics where runtime execution cannot be proven safe.
 - Full ECMAScript completion-record unwinding beyond the issue-396 supported statement-boundary helper path remains out of scope.
+
+## False-done audit
+
+Date: 2026-05-05
+
+Classification: truly-done.
+
+Audit result: retained in `issues/done/`. The issue has repo-local completion evidence, is not marked `blocked` or `triage-needed`, and `python scripts/manager.py check issues` validates the resulting issue graph.
+
+Evidence files:
+- `issues/done/381-mixed-number-bigint-arithmetic-typeerror.md`
+- `issues/index.md` after regeneration
+
+Future-work tracking: no untracked future-work item was identified in this issue during this metadata/evidence audit.

@@ -269,7 +269,7 @@ Duplicate candidates:
   },
   {
     "state": "done",
-    "path": "issues/done/341-implement-core-builtin-api-coverage.md",
+    "path": "issues/open/341-implement-core-builtin-api-coverage.md",
     "title": "Implement core builtin API coverage (3,190 test262 cases)",
     "reason": "same feature label, title overlap"
   }
@@ -841,3 +841,17 @@ date: 2026-05-03
 Remaining risks:
 
 - none (tracked by issue 067)
+
+## False-done audit
+
+Date: 2026-05-05
+
+Classification: truly-done.
+
+Audit result: retained in `issues/done/`. The issue has repo-local completion evidence, is not marked `blocked` or `triage-needed`, and `python scripts/manager.py check issues` validates the resulting issue graph.
+
+Evidence files:
+- `issues/done/5021-implement-string-builtin.md`
+- `issues/index.md` after regeneration
+
+Future-work tracking: no untracked future-work item was identified in this issue during this metadata/evidence audit.

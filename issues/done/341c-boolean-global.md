@@ -54,3 +54,17 @@ Implement the `Boolean()` global function as a coercion/conversion callable.
 - Node differential matches Node output for all inputs
 - Implemented as `$boolean_coerce` WAT function in `runtime_builtins_host.rs`, dispatched via `RuntimeFn::BooleanCoerce`
 - `Boolean` was already in `allowed_globals` (name_resolver.rs); added support in `builtin_resolver.rs` and lowered resolver
+
+## False-done audit
+
+Date: 2026-05-05
+
+Classification: truly-done.
+
+Audit result: retained in `issues/done/`. The issue has repo-local completion evidence, is not marked `blocked` or `triage-needed`, and `python scripts/manager.py check issues` validates the resulting issue graph.
+
+Evidence files:
+- `issues/done/341c-boolean-global.md`
+- `issues/index.md` after regeneration
+
+Future-work tracking: no untracked future-work item was identified in this issue during this metadata/evidence audit.

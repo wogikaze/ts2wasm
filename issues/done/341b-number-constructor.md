@@ -57,3 +57,17 @@ Implement `Number()` as a callable coercion function and its static methods (`Nu
 - Implemented as BuiltinId::NumberCoerce (global call), plus RuntimeFn::NumberIsNaN/IsFinite/IsInteger/IsSafeInteger (static methods)
 - `$number_coerce` depends on `$parse_int_string` (RuntimeFn::ParseInt) for string-to-number coercion
 - Node differential: behavior matches Node except for `NaN`/`Infinity` (pre-existing issue-281)
+
+## False-done audit
+
+Date: 2026-05-05
+
+Classification: truly-done.
+
+Audit result: retained in `issues/done/`. The issue has repo-local completion evidence, is not marked `blocked` or `triage-needed`, and `python scripts/manager.py check issues` validates the resulting issue graph.
+
+Evidence files:
+- `issues/done/341b-number-constructor.md`
+- `issues/index.md` after regeneration
+
+Future-work tracking: no untracked future-work item was identified in this issue during this metadata/evidence audit.

@@ -127,7 +127,7 @@ Follow-up issues:
 ## Duplicate detection
 
 - `issues/done/041-implement-template-literals.md` - Implement template literals (same feature label, same group key, title overlap)
-- `issues/done/060-investigate-unknown-unsupported-cases.md` - Investigate and classify unknown-unsupported diagnostic cases (same feature label, same group key)
+- `issues/open/060-investigate-unknown-unsupported-cases.md` - Investigate and classify unknown-unsupported diagnostic cases (same feature label, same group key)
 - `issues/done/203-reconcile-partial-feature-semantics.md` - Reconcile partial feature semantics and placeholder completions (same feature label, same group key)
 - `issues/done/213-implement-template-literal-interpolation.md` - Implement template literal interpolation (same feature label, same group key, title overlap)
 - `issues/done/229-implement-legacy-octal-escape-handling.md` - Implement legacy octal escape handling (same feature label, same group key, title overlap)

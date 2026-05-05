@@ -47,3 +47,17 @@ iwasm fixtures/arrays-objects/dynamic-property-assignment.wasm
 - 2026-04-26: `cargo nextest run` passed with 135/201 passing and one known environment-specific skip/fail due missing `reference/test262`.
 - 2026-04-26: `iwasm fixtures/arrays-objects/dynamic-property.wasm` outputs `2` and `20`.
 - 2026-04-26: `iwasm fixtures/arrays-objects/dynamic-property-assignment.wasm` outputs `9` and `99`.
+
+## False-done audit
+
+Date: 2026-05-05
+
+Classification: truly-done.
+
+Audit result: retained in `issues/done/`. The issue has repo-local completion evidence, is not marked `blocked` or `triage-needed`, and `python scripts/manager.py check issues` validates the resulting issue graph.
+
+Evidence files:
+- `issues/done/014-implement-dynamic-property-key-support.md`
+- `issues/index.md` after regeneration
+
+Future-work tracking: no untracked future-work item was identified in this issue during this metadata/evidence audit.

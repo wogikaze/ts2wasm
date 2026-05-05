@@ -270,7 +270,7 @@ Duplicate candidates:
 [
   {
     "state": "done",
-    "path": "issues/done/268-implement-for-loop-increment-operator.md",
+    "path": "issues/open/268-implement-for-loop-increment-operator.md",
     "title": "Implement for loop increment operator",
     "reason": "same feature label, title overlap"
   },

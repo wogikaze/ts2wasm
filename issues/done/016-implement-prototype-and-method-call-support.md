@@ -52,3 +52,17 @@ iwasm fixtures/core-semantics/prototype.wasm
 - 2026-04-27: Full `cargo nextest run` passed with one environment-specific failure in `official_corpora_smoke_gate_finds_reference_shards` (missing `reference/test262` test corpus).
 - 2026-04-27: `cargo run -p ts2wasm-cli -- build fixtures/core-semantics/prototype.ts -o <tmp>.wasm` + `iwasm <tmp>.wasm` outputs `11`, `18`, `10`, matching Node output.
 - 2026-04-27: `cargo run -p ts2wasm-cli -- build fixtures/classes-and-inheritance/class-super-method.ts -o <tmp>.wasm` + `iwasm <tmp>.wasm` outputs `4`, matching Node output.
+
+## False-done audit
+
+Date: 2026-05-05
+
+Classification: truly-done.
+
+Audit result: retained in `issues/done/`. The issue has repo-local completion evidence, is not marked `blocked` or `triage-needed`, and `python scripts/manager.py check issues` validates the resulting issue graph.
+
+Evidence files:
+- `issues/done/016-implement-prototype-and-method-call-support.md`
+- `issues/index.md` after regeneration
+
+Future-work tracking: no untracked future-work item was identified in this issue during this metadata/evidence audit.

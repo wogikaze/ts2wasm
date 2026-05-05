@@ -127,7 +127,7 @@ Follow-up issues:
 ## Duplicate detection
 
 - `issues/open/342-implement-object-builtin-coverage.md` - Implement Object builtin method coverage (1,721 test262 cases) (same feature label, same group key, title overlap)
-- `issues/done/060-investigate-unknown-unsupported-cases.md` - Investigate and classify unknown-unsupported diagnostic cases (same feature label, same group key)
+- `issues/open/060-investigate-unknown-unsupported-cases.md` - Investigate and classify unknown-unsupported diagnostic cases (same feature label, same group key)
 
 ## Smart triage
 
@@ -262,13 +262,13 @@ Duplicate candidates:
 [
   {
     "state": "done",
-    "path": "issues/done/059-implement-parser-syntax-extensions.md",
+    "path": "issues/open/059-implement-parser-syntax-extensions.md",
     "title": "Implement parser syntax extensions for TypeScript and advanced JS",
     "reason": "same feature label, title overlap"
   },
   {
     "state": "done",
-    "path": "issues/done/065-implement-parser-syntax.md",
+    "path": "issues/open/065-implement-parser-syntax.md",
     "title": "Implement parser syntax extensions",
     "reason": "same feature label, title overlap"
   },

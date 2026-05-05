@@ -209,3 +209,17 @@ Remaining blockers:
 
 - issue 336 / its dependency chain or environment must make `reference/test262/harness` available for the broad preprocessor test.
 - issue 357 must resolve the unrelated ABC451 depth-8 iwasm timeout.
+
+## False-done audit
+
+Date: 2026-05-05
+
+Classification: truly-done.
+
+Audit result: retained in `issues/done/`. The issue has repo-local completion evidence, is not marked `blocked` or `triage-needed`, and `python scripts/manager.py check issues` validates the resulting issue graph.
+
+Evidence files:
+- `issues/done/347-parser-resolver-direct-eval-scope.md`
+- `issues/index.md` after regeneration
+
+Future-work tracking: no untracked future-work item was identified in this issue during this metadata/evidence audit.

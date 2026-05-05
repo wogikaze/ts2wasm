@@ -167,3 +167,17 @@ Remaining risks:
 
 - Full generator object execution and iterator protocol integration remain issue 353 scope.
 - The broader `cargo nextest run -E 'test(spread) or test(node_diff)'` gate still intersects known unrelated BigInt/GC node-diff baseline failures, so closure uses the focused spread gate evidence above.
+
+## False-done audit
+
+Date: 2026-05-05
+
+Classification: truly-done.
+
+Audit result: retained in `issues/done/`. The issue has repo-local completion evidence, is not marked `blocked` or `triage-needed`, and `python scripts/manager.py check issues` validates the resulting issue graph.
+
+Evidence files:
+- `issues/done/401-generator-function-syntax-prerequisite-for-iterator-spread.md`
+- `issues/index.md` after regeneration
+
+Future-work tracking: no untracked future-work item was identified in this issue during this metadata/evidence audit.

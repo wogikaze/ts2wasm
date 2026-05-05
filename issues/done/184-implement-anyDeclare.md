@@ -435,7 +435,7 @@ error: [UnsupportedSyntax] expected Semicolon, got Some(Var) at 28..31
 ## 重複整理メモ
 
 この issue はタイトルが重複しているため、内容がより充実している
-`issues/done/642-implement-anyDeclare.md` に統合されました。
+`issues/open/642-implement-anyDeclare.md` に統合されました。
 そちらを参照してください。
 ## Completion evidence
 

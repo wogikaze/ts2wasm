@@ -175,3 +175,17 @@ Remaining risks:
   BigInt(string) inputs remains unimplemented. This is a known limitation
   documented in issue-333 and requires full JavaScript exception object
   construction and throwing infrastructure in the runtime.
+
+## False-done audit
+
+Date: 2026-05-05
+
+Classification: truly-done.
+
+Audit result: retained in `issues/done/`. The issue has repo-local completion evidence, is not marked `blocked` or `triage-needed`, and `python scripts/manager.py check issues` validates the resulting issue graph.
+
+Evidence files:
+- `issues/done/333-implement-bigint-dynamic-string-exception-parity.md`
+- `issues/index.md` after regeneration
+
+Future-work tracking: no untracked future-work item was identified in this issue during this metadata/evidence audit.

@@ -233,3 +233,17 @@ result: pass; 17 passed
 Remaining risks:
 
 - The representative is still not semantically passing; it is now stopped by issue-211 receiver support rather than issue-289 `callCount` binding.
+
+## False-done audit
+
+Date: 2026-05-05
+
+Classification: truly-done.
+
+Audit result: retained in `issues/done/`. The issue has repo-local completion evidence, is not marked `blocked` or `triage-needed`, and `python scripts/manager.py check issues` validates the resulting issue graph.
+
+Evidence files:
+- `issues/done/289-resolve-callcount-binding-in-class-destructuring.md`
+- `issues/index.md` after regeneration
+
+Future-work tracking: no untracked future-work item was identified in this issue during this metadata/evidence audit.

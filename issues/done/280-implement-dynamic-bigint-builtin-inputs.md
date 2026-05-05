@@ -240,3 +240,17 @@ Remaining risks:
 - The only broad-filter failure observed during close validation is `m2_node_diff_fixture_tests::abc451_depth8_live_set_fixture_matches_node_output_under_iwasm`, which timed out under `iwasm` and is tracked by issue 357.
 - Unknown dynamic invalid/out-of-range StringToBigInt runtime exception parity is intentionally not part of this closure and was tracked by issue 333 (done).
 - Dynamic builtin semantics must stay within the current runtime BigInt representation or retain source diagnostics.
+
+## False-done audit
+
+Date: 2026-05-05
+
+Classification: truly-done.
+
+Audit result: retained in `issues/done/`. The issue has repo-local completion evidence, is not marked `blocked` or `triage-needed`, and `python scripts/manager.py check issues` validates the resulting issue graph.
+
+Evidence files:
+- `issues/done/280-implement-dynamic-bigint-builtin-inputs.md`
+- `issues/index.md` after regeneration
+
+Future-work tracking: no untracked future-work item was identified in this issue during this metadata/evidence audit.

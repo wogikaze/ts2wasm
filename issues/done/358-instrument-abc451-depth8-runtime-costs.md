@@ -213,3 +213,17 @@ date: 2026-04-30
 Remaining risks:
 
 - Counter labels are emitted by the Python diagnostic runner; the instrumented WAT prints numeric values in a fixed order and intentionally traps after reporting when the budget is reached.
+
+## False-done audit
+
+Date: 2026-05-05
+
+Classification: truly-done.
+
+Audit result: retained in `issues/done/`. The issue has repo-local completion evidence, is not marked `blocked` or `triage-needed`, and `python scripts/manager.py check issues` validates the resulting issue graph.
+
+Evidence files:
+- `issues/done/358-instrument-abc451-depth8-runtime-costs.md`
+- `issues/index.md` after regeneration
+
+Future-work tracking: no untracked future-work item was identified in this issue during this metadata/evidence audit.

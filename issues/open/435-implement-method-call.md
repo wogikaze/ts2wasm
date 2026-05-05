@@ -126,7 +126,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/255-implement-private-class-element-runtime-semantics.md` - Implement private class element runtime semantics (same feature label, same group key, title overlap)
+- `issues/open/255-implement-private-class-element-runtime-semantics.md` - Implement private class element runtime semantics (same feature label, same group key, title overlap)
 - `issues/done/016-implement-prototype-and-method-call-support.md` - issues/done/016-implement-prototype-and-method-call-support.md (same feature label, same group key)
 - `issues/done/211-complete-this-receiver-binding-semantics.md` - Complete this receiver binding semantics (same feature label, same group key)
 - `issues/done/350-derived-class-private-element-init.md` - Implement derived-class private element initialization (same feature label, same group key, title overlap)

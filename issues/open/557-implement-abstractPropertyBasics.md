@@ -118,7 +118,7 @@ Follow-up issues:
 
 - `issues/done/086-implement-abstractPropertyBasics.md` - Implement Abstractpropertybasics (same reference path, same feature label, same group key, title overlap)
 - `issues/open/442-implement-parser-syntax.md` - Implement parser syntax extensions (same feature label, same group key, title overlap)
-- `issues/done/460-implement-ClassDeclaration.md` - Implement Classdeclaration (same feature label, same group key, title overlap)
+- `issues/open/460-implement-ClassDeclaration.md` - Implement Classdeclaration (same feature label, same group key, title overlap)
 - `issues/done/471-implement-abstractPropertyBasics.md` - Implement Abstractpropertybasics (same reference path, same feature label, same group key, title overlap)
 
 ## Smart triage
@@ -224,13 +224,13 @@ Duplicate candidates:
   },
   {
     "state": "done",
-    "path": "issues/done/059-implement-parser-syntax-extensions.md",
+    "path": "issues/open/059-implement-parser-syntax-extensions.md",
     "title": "Implement parser syntax extensions for TypeScript and advanced JS",
     "reason": "same feature label, title overlap"
   },
   {
     "state": "done",
-    "path": "issues/done/065-implement-parser-syntax.md",
+    "path": "issues/open/065-implement-parser-syntax.md",
     "title": "Implement parser syntax extensions",
     "reason": "same feature label, title overlap"
   },

@@ -235,3 +235,17 @@ result: pass; free_list_scan_visits=0; gc_collections=6; sweep_visits=62313; arr
 
 action: created issue 361 for remaining array/copy pressure because issue 357 still times out.
 ```
+
+## False-done audit
+
+Date: 2026-05-05
+
+Classification: truly-done.
+
+Audit result: retained in `issues/done/`. The issue has repo-local completion evidence, is not marked `blocked` or `triage-needed`, and `python scripts/manager.py check issues` validates the resulting issue graph.
+
+Evidence files:
+- `issues/done/360-reduce-abc451-sweep-and-copy-pressure-after-free-list-fix.md`
+- `issues/index.md` after regeneration
+
+Future-work tracking: no untracked future-work item was identified in this issue during this metadata/evidence audit.

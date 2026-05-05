@@ -345,3 +345,17 @@ cargo test -p ts2wasm-backend-wasm private_brand_check -- --nocapture: pass (1 b
 Remaining blockers:
 
 - Issue 351 remains open: top-level external private method/accessor syntax, extracted private method/accessor values, private setter non-`this` receiver brand checks, accessor duplicate-pair semantics, and expression-nested exception propagation remain issue-351/issue-255 work.
+
+## False-done audit
+
+Date: 2026-05-05
+
+Classification: truly-done.
+
+Audit result: retained in `issues/done/`. The issue has repo-local completion evidence, is not marked `blocked` or `triage-needed`, and `python scripts/manager.py check issues` validates the resulting issue graph.
+
+Evidence files:
+- `issues/done/351-private-brand-storage-brand-checks.md`
+- `issues/index.md` after regeneration
+
+Future-work tracking: no untracked future-work item was identified in this issue during this metadata/evidence audit.

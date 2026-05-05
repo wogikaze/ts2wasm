@@ -74,3 +74,17 @@ Follow-up issues:
 - Updated CLI test `class_destructuring_initcount_default_now_blocked_by_destructuring_issue_251` in `crates/cli/tests/common/m2_node_diff_fixture_tests.rs`
 - All 23 IR tests pass, no regressions in full test suite
 - `class-method-mutable-outer-capture` and `class-method-immutable-outer-capture` fixtures pass
+
+## False-done audit
+
+Date: 2026-05-05
+
+Classification: truly-done.
+
+Audit result: retained in `issues/done/`. The issue has repo-local completion evidence, is not marked `blocked` or `triage-needed`, and `python scripts/manager.py check issues` validates the resulting issue graph.
+
+Evidence files:
+- `issues/done/5047-ir-env-cell.md`
+- `issues/index.md` after regeneration
+
+Future-work tracking: no untracked future-work item was identified in this issue during this metadata/evidence audit.

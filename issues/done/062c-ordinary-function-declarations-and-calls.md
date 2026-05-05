@@ -116,3 +116,17 @@ Evidence notes:
 - `fixtures/core-semantics/ordinary-function-direct-call.ts` verifies top-level named function declarations, direct identifier calls, declaration-order positional binding, and scalar return values against Node/iwasm output.
 - `fixtures/core-semantics/nested-function-declaration-unsupported.ts` verifies nested function declarations remain out of scope with an `issue-062c` diagnostic.
 - Existing `fixtures/primitives-control-flow/function.ts` continues to verify the basic `add(2, 3)` direct-call path.
+
+## False-done audit
+
+Date: 2026-05-05
+
+Classification: truly-done.
+
+Audit result: retained in `issues/done/`. The issue has repo-local completion evidence, is not marked `blocked` or `triage-needed`, and `python scripts/manager.py check issues` validates the resulting issue graph.
+
+Evidence files:
+- `issues/done/062c-ordinary-function-declarations-and-calls.md`
+- `issues/index.md` after regeneration
+
+Future-work tracking: no untracked future-work item was identified in this issue during this metadata/evidence audit.

@@ -253,3 +253,17 @@ result: pass; free_list_scan_visits=0; gc_collections=13; sweep_visits=241504; a
 
 action: created issue 363 for remaining allocation/copy volume plus sweep visits because issue 357 still times out.
 ```
+
+## False-done audit
+
+Date: 2026-05-05
+
+Classification: truly-done.
+
+Audit result: retained in `issues/done/`. The issue has repo-local completion evidence, is not marked `blocked` or `triage-needed`, and `python scripts/manager.py check issues` validates the resulting issue graph.
+
+Evidence files:
+- `issues/done/362-drive-abc451-depth8-under-iwasm-timeout-after-copy-reductions.md`
+- `issues/index.md` after regeneration
+
+Future-work tracking: no untracked future-work item was identified in this issue during this metadata/evidence audit.

@@ -267,3 +267,17 @@ result: pass; array_copy_bytes=182008; allocation_requested_bytes=521193; gc_col
 
 action: created issue 362 for remaining post-copy timeout pressure because issue 357 still times out.
 ```
+
+## False-done audit
+
+Date: 2026-05-05
+
+Classification: truly-done.
+
+Audit result: retained in `issues/done/`. The issue has repo-local completion evidence, is not marked `blocked` or `triage-needed`, and `python scripts/manager.py check issues` validates the resulting issue graph.
+
+Evidence files:
+- `issues/done/361-reduce-abc451-array-copy-pressure-after-gc-cadence-fix.md`
+- `issues/index.md` after regeneration
+
+Future-work tracking: no untracked future-work item was identified in this issue during this metadata/evidence audit.

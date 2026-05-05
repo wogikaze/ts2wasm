@@ -1,0 +1,86 @@
+# Implement GC mark root scanning (audit reopened #218)
+
+**Status**: open
+**Created**: 2026-04-28
+**Updated**: 2026-04-28
+**Completed**: 2026-04-28
+**ID**: 218
+**Type**: feature
+**Area**: runtime/memory
+**Priority**: P1
+**Depends on**: 217
+**Orchestration class**: implementation-ready
+
+Problem: GC can only reclaim safely after reachable heap objects are marked from runtime roots.
+
+Scope:
+
+- Define the initial root set for globals, module cache, and runtime-held heap values.
+- Implement mark helpers for string/array/object payload layouts.
+- Mark object prototype and property values, plus array elements.
+- Add tests that validate mark bit updates for representative heap graphs.
+
+Out of scope:
+
+- Sweep/free-list reuse and long-running leak fixtures (219)
+
+Acceptance Criteria:
+
+- [ ] Mark phase visits reachable heap objects from runtime roots.
+- [ ] Object prototype/property references and array elements are recursively marked.
+- [ ] Tests cover reachable and unreachable object graphs.
+
+Validation:
+
+```sh
+cargo fmt --all --check
+cargo nextest run -p ts2wasm-backend-wasm
+```
+
+Completion evidence:
+
+```text
+command: cargo fmt --all --check
+result: PASS
+date: 2026-04-28
+
+command: cargo nextest run -p ts2wasm-backend-wasm
+result: PASS (8 passed)
+date: 2026-04-28
+
+command: cargo nextest run -p ts2wasm-cli --test m8_oop_classes --test m9_modules
+result: PASS (10 passed)
+date: 2026-04-28
+
+command: cargo nextest run -p ts2wasm-cli --test m2_node_diff instanceof_fixture_matches_node_output_under_iwasm m5_array_object_fixtures_match_node_output_under_iwasm
+result: PASS (2 passed, 16 skipped)
+date: 2026-04-28
+
+command: mise run check-repo-smoke
+result: PASS
+date: 2026-04-28
+
+command: cargo nextest run --no-fail-fast
+result: PASS (222 passed, 4 skipped)
+date: 2026-04-28
+```
+
+Remaining risks:
+
+- Sweep/free-list reuse is still tracked by 219; mark bits are set but not yet consumed for reclamation.
+
+## Reopened by audit
+
+Date: 2026-05-05
+
+Classification: acceptance-not-actually-met.
+
+Reopen reason: no `## Completion evidence` section is present, so close evidence cannot be cited from the issue file.
+
+Violated acceptance: the issue cannot provide repo-local close evidence for its checked acceptance criteria while it remains in this state. Acceptance checkboxes were reset for re-verification.
+
+Evidence files:
+- `issues/open/218-implement-gc-mark-root-scanning.md` before this move
+- `issues/open/218-implement-gc-mark-root-scanning.md` after this move
+
+Split follow-up: none created in this audit wave; this reopened issue remains the tracking item.

@@ -116,8 +116,8 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/678-implement-arrayFlatNoCrashInference.md` - Implement Arrayflatnocrashinference (same reference path, same feature label, same group key, title overlap)
-- `issues/done/679-implement-arrayFlatNoCrashInferenceDeclarations.md` - Implement Arrayflatnocrashinferencedeclarations (same feature label, same group key, title overlap)
+- `issues/open/678-implement-arrayFlatNoCrashInference.md` - Implement Arrayflatnocrashinference (same reference path, same feature label, same group key, title overlap)
+- `issues/open/679-implement-arrayFlatNoCrashInferenceDeclarations.md` - Implement Arrayflatnocrashinferencedeclarations (same feature label, same group key, title overlap)
 
 ## Smart triage
 
@@ -127,7 +127,7 @@ Not generated. Rerun with `--triage-limit 1` or higher.
 ## 重複整理メモ
 
 この issue はタイトルが重複しているため、内容がより充実している
-`issues/done/678-implement-arrayFlatNoCrashInference.md` に統合されました。
+`issues/open/678-implement-arrayFlatNoCrashInference.md` に統合されました。
 そちらを参照してください。
 ## Completion evidence
 
@@ -148,3 +148,17 @@ date:
 Remaining risks:
 
 - none
+
+## False-done audit
+
+Date: 2026-05-05
+
+Classification: truly-done.
+
+Audit result: retained in `issues/done/`. The issue has repo-local completion evidence, is not marked `blocked` or `triage-needed`, and `python scripts/manager.py check issues` validates the resulting issue graph.
+
+Evidence files:
+- `issues/done/913-implement-arrayFlatNoCrashInference.md`
+- `issues/index.md` after regeneration
+
+Future-work tracking: no untracked future-work item was identified in this issue during this metadata/evidence audit.

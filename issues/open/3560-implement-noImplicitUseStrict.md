@@ -120,8 +120,8 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/517-implement-alwaysStrictNoImplicitUseStrict.md` - Implement Alwaysstrictnoimplicitusestrict (same feature label, same group key, title overlap)
-- `issues/done/603-implement-alwaysStrictNoImplicitUseStrict.md` - Implement Alwaysstrictnoimplicitusestrict (same feature label, same group key, title overlap)
+- `issues/open/517-implement-alwaysStrictNoImplicitUseStrict.md` - Implement Alwaysstrictnoimplicitusestrict (same feature label, same group key, title overlap)
+- `issues/open/603-implement-alwaysStrictNoImplicitUseStrict.md` - Implement Alwaysstrictnoimplicitusestrict (same feature label, same group key, title overlap)
 
 ## Smart triage
 

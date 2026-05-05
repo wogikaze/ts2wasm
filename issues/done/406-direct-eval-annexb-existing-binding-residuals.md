@@ -186,3 +186,17 @@ Remaining risks:
 - Issue 225 remains open because the limit-300 window still reports `eval:28`
   and `UnsupportedEval:6`; this issue only closed the selected existing-binding
   representative and parser/frontend blocker.
+
+## False-done audit
+
+Date: 2026-05-05
+
+Classification: truly-done.
+
+Audit result: retained in `issues/done/`. The issue has repo-local completion evidence, is not marked `blocked` or `triage-needed`, and `python scripts/manager.py check issues` validates the resulting issue graph.
+
+Evidence files:
+- `issues/done/406-direct-eval-annexb-existing-binding-residuals.md`
+- `issues/index.md` after regeneration
+
+Future-work tracking: no untracked future-work item was identified in this issue during this metadata/evidence audit.

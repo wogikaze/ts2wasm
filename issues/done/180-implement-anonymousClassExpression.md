@@ -456,7 +456,7 @@ error: [UnsupportedSyntax] unsupported expression: Some(SpannedToken { kind: Cla
 ## 重複整理メモ
 
 この issue はタイトルが重複しているため、内容がより充実している
-`issues/done/638-implement-anonymousClassExpression.md` に統合されました。
+`issues/open/638-implement-anonymousClassExpression.md` に統合されました。
 そちらを参照してください。
 ## Completion evidence
 
@@ -482,7 +482,7 @@ Remaining risks:
 ## 重複整理メモ
 
 この issue はタイトルが重複しているため、内容がより充実している
-`issues/done/638-implement-anonymousClassExpression.md` に統合されました。
+`issues/open/638-implement-anonymousClassExpression.md` に統合されました。
 そちらを参照してください。
 ## Completion evidence
 
@@ -492,7 +492,7 @@ Test  now build_pass. Fix implemented by Agent 1 (parallel session): anonymous c
 ## 重複整理メモ
 
 この issue はタイトルが重複しているため、内容がより充実している
-`issues/done/638-implement-anonymousClassExpression.md` に統合されました。
+`issues/open/638-implement-anonymousClassExpression.md` に統合されました。
 そちらを参照してください。
 ## Completion evidence
 

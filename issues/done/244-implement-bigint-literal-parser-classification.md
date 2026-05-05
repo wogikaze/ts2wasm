@@ -164,3 +164,17 @@ Remaining risks:
 
 - BigInt runtime representation and operations are out of scope and tracked by issue 250.
 - BigInt numeric separator syntax is out of scope and tracked by issue 243.
+
+## False-done audit
+
+Date: 2026-05-05
+
+Classification: truly-done.
+
+Audit result: retained in `issues/done/`. The issue has repo-local completion evidence, is not marked `blocked` or `triage-needed`, and `python scripts/manager.py check issues` validates the resulting issue graph.
+
+Evidence files:
+- `issues/done/244-implement-bigint-literal-parser-classification.md`
+- `issues/index.md` after regeneration
+
+Future-work tracking: no untracked future-work item was identified in this issue during this metadata/evidence audit.

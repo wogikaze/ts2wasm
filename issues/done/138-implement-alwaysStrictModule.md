@@ -422,7 +422,7 @@ error: [UnsupportedSyntax] expected Semicolon, got Some(Ident("M")) at 74..75
 ## 重複整理メモ
 
 この issue はタイトルが重複しているため、内容がより充実している
-`issues/done/602-implement-alwaysStrictModule.md` に統合されました。
+`issues/open/602-implement-alwaysStrictModule.md` に統合されました。
 そちらを参照してください。
 ## Completion evidence
 

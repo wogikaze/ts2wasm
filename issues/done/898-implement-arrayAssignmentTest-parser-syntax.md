@@ -123,7 +123,7 @@ Follow-up issues:
 - `issues/open/550-implement-FunctionDeclaration-parser-syntax.md` - Implement Functiondeclaration Parser Syntax (same feature label, title overlap)
 - `issues/open/663-implement-arrayAssignmentTest-parser-syntax.md` - Implement Arrayassignmenttest Parser Syntax (same reference path, same feature label, same group key, title overlap)
 - `issues/open/674-implement-arrayFakeFlatNoCrashInferenceDeclarations.md` - Implement Arrayfakeflatnocrashinferencedeclarations (same feature label, same group key, title overlap)
-- `issues/done/675-implement-arrayFilter.md` - Implement Arrayfilter (same feature label, same group key, title overlap)
+- `issues/open/675-implement-arrayFilter.md` - Implement Arrayfilter (same feature label, same group key, title overlap)
 - `issues/open/680-implement-arrayFrom.md` - Implement Arrayfrom (same feature label, same group key, title overlap)
 - `issues/open/685-implement-arrayLiteralComments.md` - Implement Arrayliteralcomments (same feature label, same group key, title overlap)
 - `issues/open/686-implement-arrayLiteralContextualType.md` - Implement Arrayliteralcontextualtype (same feature label, same group key, title overlap)
@@ -158,3 +158,17 @@ date:
 Remaining risks:
 
 - none
+
+## False-done audit
+
+Date: 2026-05-05
+
+Classification: truly-done.
+
+Audit result: retained in `issues/done/`. The issue has repo-local completion evidence, is not marked `blocked` or `triage-needed`, and `python scripts/manager.py check issues` validates the resulting issue graph.
+
+Evidence files:
+- `issues/done/898-implement-arrayAssignmentTest-parser-syntax.md`
+- `issues/index.md` after regeneration
+
+Future-work tracking: no untracked future-work item was identified in this issue during this metadata/evidence audit.

@@ -403,7 +403,7 @@ error: [UnsupportedSyntax] expected Semicolon, got Some(Ident("namespace")) at 3
 ## 重複整理メモ
 
 この issue はタイトルが重複しているため、内容がより充実している
-`issues/done/623-implement-ambientStatement.md` に統合されました。
+`issues/open/623-implement-ambientStatement.md` に統合されました。
 そちらを参照してください。
 ## Completion evidence
 

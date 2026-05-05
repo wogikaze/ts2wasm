@@ -164,3 +164,17 @@ date: 2026-05-01
 Remaining risks:
 
 - Compatible comparison for all out-of-range values may require broader BigInt representation work; this issue closes the no-silent-normal-boolean boundary with an explicit runtime marker/trap.
+
+## False-done audit
+
+Date: 2026-05-05
+
+Classification: truly-done.
+
+Audit result: retained in `issues/done/`. The issue has repo-local completion evidence, is not marked `blocked` or `triage-needed`, and `python scripts/manager.py check issues` validates the resulting issue graph.
+
+Evidence files:
+- `issues/done/375-handle-non-source-backed-out-of-range-bigint-string-comparisons.md`
+- `issues/index.md` after regeneration
+
+Future-work tracking: no untracked future-work item was identified in this issue during this metadata/evidence audit.

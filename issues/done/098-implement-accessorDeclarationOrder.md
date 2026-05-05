@@ -407,7 +407,7 @@ error: [UnsupportedSyntax] unsupported character: # at 35..36
 ## 重複整理メモ
 
 この issue はタイトルが重複しているため、内容がより充実している
-`issues/done/568-implement-accessorDeclarationOrder.md` に統合されました。
+`issues/open/568-implement-accessorDeclarationOrder.md` に統合されました。
 そちらを参照してください。
 ## Completion evidence
 

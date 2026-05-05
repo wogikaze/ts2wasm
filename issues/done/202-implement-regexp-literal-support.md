@@ -50,3 +50,17 @@ mise run reference-coverage -- test262 --limit 50 --detail
 - 2026-04-28: Parent-authorized close updated issue 009's historical reference from the open path to this done path.
 - 2026-04-28: `mise run update-issue-index -- --check` passed after moving this issue to done.
 - 2026-04-28: `mise run check-issue-health` passed after moving this issue to done.
+
+## False-done audit
+
+Date: 2026-05-05
+
+Classification: truly-done.
+
+Audit result: retained in `issues/done/`. The issue has repo-local completion evidence, is not marked `blocked` or `triage-needed`, and `python scripts/manager.py check issues` validates the resulting issue graph.
+
+Evidence files:
+- `issues/done/202-implement-regexp-literal-support.md`
+- `issues/index.md` after regeneration
+
+Future-work tracking: no untracked future-work item was identified in this issue during this metadata/evidence audit.

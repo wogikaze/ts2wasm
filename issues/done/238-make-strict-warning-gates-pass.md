@@ -183,3 +183,17 @@ Remaining risks:
   - `issues/done/228-implement-logical-assignment-operators.md`: missing historical report artifact path.
 
 Parent re-validation on 2026-04-29 used the parent checkout with local report artifacts present; `mise run gate-fast`, `cargo nextest run`, `mise run gate-all`, and `mise run check issues` all passed, so the earlier child-worktree report-artifact blocker no longer applies.
+
+## False-done audit
+
+Date: 2026-05-05
+
+Classification: truly-done.
+
+Audit result: retained in `issues/done/`. The issue has repo-local completion evidence, is not marked `blocked` or `triage-needed`, and `python scripts/manager.py check issues` validates the resulting issue graph.
+
+Evidence files:
+- `issues/done/238-make-strict-warning-gates-pass.md`
+- `issues/index.md` after regeneration
+
+Future-work tracking: no untracked future-work item was identified in this issue during this metadata/evidence audit.

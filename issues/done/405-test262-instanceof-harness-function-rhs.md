@@ -168,3 +168,17 @@ Remaining risks:
 
 - `reference-triage` is build-focused for this command. Issue 338 records the
   semantic/reference-coverage pass evidence for the sparse map representative.
+
+## False-done audit
+
+Date: 2026-05-05
+
+Classification: truly-done.
+
+Audit result: retained in `issues/done/`. The issue has repo-local completion evidence, is not marked `blocked` or `triage-needed`, and `python scripts/manager.py check issues` validates the resulting issue graph.
+
+Evidence files:
+- `issues/done/405-test262-instanceof-harness-function-rhs.md`
+- `issues/index.md` after regeneration
+
+Future-work tracking: no untracked future-work item was identified in this issue during this metadata/evidence audit.

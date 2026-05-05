@@ -127,7 +127,7 @@ Follow-up issues:
 ## Duplicate detection
 
 - `issues/done/193-implement-arguments.md` - Implement Arguments (same feature label, same group key, title overlap)
-- `issues/done/274-implement-spread-operator.md` - Implement spread operator (same feature label, same group key, title overlap)
+- `issues/open/274-implement-spread-operator.md` - Implement spread operator (same feature label, same group key, title overlap)
 - `issues/open/294-support-abc451-d-original-submission-without-source-rewrite.md` - Support ABC451 D original submission without source rewrite (same feature label, same group key)
 - `issues/open/300-support-abc451-large-integer-number-boundary.md` - Support ABC451 large integer number boundary (same feature label, same group key)
 - `issues/open/309-reduce-abc451-depth9-live-allocation-shape.md` - Reduce ABC451 depth-9 live allocation shape (same feature label, same group key)
@@ -264,7 +264,7 @@ Duplicate candidates:
 [
   {
     "state": "open",
-    "path": "issues/done/274-implement-spread-operator.md",
+    "path": "issues/open/274-implement-spread-operator.md",
     "title": "Implement spread operator",
     "reason": "same feature label, title overlap"
   },
@@ -372,7 +372,7 @@ TypeScript/JavaScript oracle:
 ## 重複整理メモ
 
 この issue はタイトルが重複しているため、内容がより充実している
-`issues/done/274-implement-spread-operator.md` に統合されました。
+`issues/open/274-implement-spread-operator.md` に統合されました。
 そちらを参照してください。
 ## Completion evidence
 
@@ -393,3 +393,17 @@ date:
 Remaining risks:
 
 - none
+
+## False-done audit
+
+Date: 2026-05-05
+
+Classification: truly-done.
+
+Audit result: retained in `issues/done/`. The issue has repo-local completion evidence, is not marked `blocked` or `triage-needed`, and `python scripts/manager.py check issues` validates the resulting issue graph.
+
+Evidence files:
+- `issues/done/447-implement-spread.md`
+- `issues/index.md` after regeneration
+
+Future-work tracking: no untracked future-work item was identified in this issue during this metadata/evidence audit.

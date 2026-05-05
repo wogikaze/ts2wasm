@@ -160,3 +160,17 @@ Remaining risks:
 
 - Infinity and NaN are approximated as max/min representable numbers due to small-int number model. Proper Infinity/NaN support requires broader number-model support (issue-281).
 - The zeros.js tests mentioned in the issue description were already compiling successfully; the actual issue was with zero-argument tests (S15.8.2.11_A1.js and S15.8.2.12_A1.js) which failed with UnresolvedName errors for Infinity.
+
+## False-done audit
+
+Date: 2026-05-05
+
+Classification: truly-done.
+
+Audit result: retained in `issues/done/`. The issue has repo-local completion evidence, is not marked `blocked` or `triage-needed`, and `python scripts/manager.py check issues` validates the resulting issue graph.
+
+Evidence files:
+- `issues/done/315-fix-math-max-min-backend-io.md`
+- `issues/index.md` after regeneration
+
+Future-work tracking: no untracked future-work item was identified in this issue during this metadata/evidence audit.

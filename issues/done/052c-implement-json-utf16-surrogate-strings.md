@@ -144,3 +144,17 @@ date: 2026-04-29
 Remaining risks:
 
 - Lone surrogate escapes cannot be preserved as UTF-16 code units in the current byte-backed string representation; they materialize as U+FFFD for current observable stdout/string behavior. Full UTF-16 string storage remains outside this child issue.
+
+## False-done audit
+
+Date: 2026-05-05
+
+Classification: truly-done.
+
+Audit result: retained in `issues/done/`. The issue has repo-local completion evidence, is not marked `blocked` or `triage-needed`, and `python scripts/manager.py check issues` validates the resulting issue graph.
+
+Evidence files:
+- `issues/done/052c-implement-json-utf16-surrogate-strings.md`
+- `issues/index.md` after regeneration
+
+Future-work tracking: no untracked future-work item was identified in this issue during this metadata/evidence audit.

@@ -185,3 +185,17 @@ result: 581 passed, 2 unrelated failures, 4 skipped. Unrelated failures: `ts2was
 Remaining risks:
 
 - Full-suite baseline still has the two unrelated failures listed above; issue 301 scoped validation passes.
+
+## False-done audit
+
+Date: 2026-05-05
+
+Classification: truly-done.
+
+Audit result: retained in `issues/done/`. The issue has repo-local completion evidence, is not marked `blocked` or `triage-needed`, and `python scripts/manager.py check issues` validates the resulting issue graph.
+
+Evidence files:
+- `issues/done/301-implement-mutable-class-method-outer-environment-cells.md`
+- `issues/index.md` after regeneration
+
+Future-work tracking: no untracked future-work item was identified in this issue during this metadata/evidence audit.

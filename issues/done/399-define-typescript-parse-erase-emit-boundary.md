@@ -185,3 +185,17 @@ date: 2026-05-01
 Remaining risks:
 
 - `cargo fmt --all --check` was not used as completion evidence in the parent worktree because unrelated unstaged Rust changes are present; this issue changes docs/issues only. Child implementation merges must run their own clean-worktree gates.
+
+## False-done audit
+
+Date: 2026-05-05
+
+Classification: truly-done.
+
+Audit result: retained in `issues/done/`. The issue has repo-local completion evidence, is not marked `blocked` or `triage-needed`, and `python scripts/manager.py check issues` validates the resulting issue graph.
+
+Evidence files:
+- `issues/done/399-define-typescript-parse-erase-emit-boundary.md`
+- `issues/index.md` after regeneration
+
+Future-work tracking: no untracked future-work item was identified in this issue during this metadata/evidence audit.

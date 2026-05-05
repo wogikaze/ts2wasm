@@ -117,3 +117,17 @@ Remaining risks:
 ## Notes
 
 Issue 057 was already resolved by issue 056 (name resolution). The name_resolver module added in issue 056 handles function declarations with hoisting, which resolves the UnresolvedFunction diagnostic. No additional implementation was needed.
+
+## False-done audit
+
+Date: 2026-05-05
+
+Classification: truly-done.
+
+Audit result: retained in `issues/done/`. The issue has repo-local completion evidence, is not marked `blocked` or `triage-needed`, and `python scripts/manager.py check issues` validates the resulting issue graph.
+
+Evidence files:
+- `issues/done/057-implement-function-resolution.md`
+- `issues/index.md` after regeneration
+
+Future-work tracking: no untracked future-work item was identified in this issue during this metadata/evidence audit.

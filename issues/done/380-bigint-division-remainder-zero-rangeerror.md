@@ -184,3 +184,17 @@ Remaining risks:
 - Superseded by the 2026-05-01 completion evidence above: issue 396 now
   provides the runtime exception substrate, and `/ 0n` plus `% 0n` have
   supported `try/catch` RangeError-like message parity coverage.
+
+## False-done audit
+
+Date: 2026-05-05
+
+Classification: truly-done.
+
+Audit result: retained in `issues/done/`. The issue has repo-local completion evidence, is not marked `blocked` or `triage-needed`, and `python scripts/manager.py check issues` validates the resulting issue graph.
+
+Evidence files:
+- `issues/done/380-bigint-division-remainder-zero-rangeerror.md`
+- `issues/index.md` after regeneration
+
+Future-work tracking: no untracked future-work item was identified in this issue during this metadata/evidence audit.

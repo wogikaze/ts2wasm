@@ -130,9 +130,9 @@ Follow-up issues:
 - `issues/done/109-implement-addMoreCallSignaturesToBaseSignature.md` - Implement Addmorecallsignaturestobasesignature (same feature label, same group key, title overlap)
 - `issues/done/132-implement-allowJsClassThisTypeCrash.md` - Implement Allowjsclassthistypecrash (same feature label, same group key, title overlap)
 - `issues/done/005-add-fine-grained-unsupported-feature-breakdown.md` - issues/done/005-add-fine-grained-unsupported-feature-breakdown.md (same feature label, same group key)
-- `issues/done/060-investigate-unknown-unsupported-cases.md` - Investigate and classify unknown-unsupported diagnostic cases (same feature label, same group key)
+- `issues/open/060-investigate-unknown-unsupported-cases.md` - Investigate and classify unknown-unsupported diagnostic cases (same feature label, same group key)
 - `issues/done/062a-split-function-epic-into-callable-child-issues.md` - Split function epic into callable child issues (same feature label, same group key, title overlap)
-- `issues/done/063-implement-function-resolution.md` - Implement function resolution (same feature label, same group key, title overlap)
+- `issues/open/063-implement-function-resolution.md` - Implement function resolution (same feature label, same group key, title overlap)
 - `issues/done/406-direct-eval-annexb-existing-binding-residuals.md` - Direct eval Annex B existing binding residuals (same feature label, same group key)
 
 ## Smart triage
@@ -268,7 +268,7 @@ Duplicate candidates:
   },
   {
     "state": "done",
-    "path": "issues/done/063-implement-function-resolution.md",
+    "path": "issues/open/063-implement-function-resolution.md",
     "title": "Implement function resolution",
     "reason": "same feature label, title overlap"
   }

@@ -148,3 +148,17 @@ date: 2026-04-28
 Remaining risks:
 
 - Map/Set key identity remains limited by the current runtime string-key normalization noted above; no follow-up was created because that limitation was already recorded before this delete completion slice and is outside issue 049's basic-operation closure.
+
+## False-done audit
+
+Date: 2026-05-05
+
+Classification: truly-done.
+
+Audit result: retained in `issues/done/`. The issue has repo-local completion evidence, is not marked `blocked` or `triage-needed`, and `python scripts/manager.py check issues` validates the resulting issue graph.
+
+Evidence files:
+- `issues/done/049-implement-map-set.md`
+- `issues/index.md` after regeneration
+
+Future-work tracking: no untracked future-work item was identified in this issue during this metadata/evidence audit.

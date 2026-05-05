@@ -228,7 +228,7 @@ Duplicate candidates:
 [
   {
     "state": "open",
-    "path": "issues/done/059-implement-parser-syntax-extensions.md",
+    "path": "issues/open/059-implement-parser-syntax-extensions.md",
     "title": "Implement parser syntax extensions for TypeScript and advanced JS",
     "reason": "same feature label, title overlap"
   },
@@ -246,7 +246,7 @@ Duplicate candidates:
   },
   {
     "state": "done",
-    "path": "issues/done/065-implement-parser-syntax.md",
+    "path": "issues/open/065-implement-parser-syntax.md",
     "title": "Implement parser syntax extensions",
     "reason": "same feature label, title overlap"
   },

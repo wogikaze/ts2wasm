@@ -52,3 +52,17 @@ Validation result (local):
   - Added `assert_fixture_not_semantically_pass(...)` helper and 3 gap assertions, requiring non-`pass` status + tracking.
 - `docs/06-testing-and-coverage.md` and `docs/15-coverage-matrix.md` updated to distinguish `build_smoke` vs `semantic_pass`.
 - `current-state.md` now explicitly tracks class/module/node-api semantic gaps and references `m2_node_diff.rs`.
+
+## False-done audit
+
+Date: 2026-05-05
+
+Classification: truly-done.
+
+Audit result: retained in `issues/done/`. The issue has repo-local completion evidence, is not marked `blocked` or `triage-needed`, and `python scripts/manager.py check issues` validates the resulting issue graph.
+
+Evidence files:
+- `issues/done/004-reclassify-compile-only-compatibility-tests.md`
+- `issues/index.md` after regeneration
+
+Future-work tracking: no untracked future-work item was identified in this issue during this metadata/evidence audit.

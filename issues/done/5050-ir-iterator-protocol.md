@@ -75,3 +75,17 @@ Validation:
 - `spread_operator_map_spread_fixture_matches_node_output_under_iwasm` — passes
 - Map-related spread/for-of tests pass
 - `cargo nextest run` — clean (2 pre-existing failures unrelated: array_push_multi_argument, abc451_depth8_live_set_timeout)
+
+## False-done audit
+
+Date: 2026-05-05
+
+Classification: truly-done.
+
+Audit result: retained in `issues/done/`. The issue has repo-local completion evidence, is not marked `blocked` or `triage-needed`, and `python scripts/manager.py check issues` validates the resulting issue graph.
+
+Evidence files:
+- `issues/done/5050-ir-iterator-protocol.md`
+- `issues/index.md` after regeneration
+
+Future-work tracking: no untracked future-work item was identified in this issue during this metadata/evidence audit.

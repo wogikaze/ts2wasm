@@ -128,9 +128,9 @@ Follow-up issues:
 
 - `issues/open/416-implement-async.md` - Implement async/await support (same feature label, same group key, title overlap)
 - `issues/open/417-implement-async-iteration.md` - Implement async-iteration support (same reference path, same feature label, same group key, title overlap)
-- `issues/done/060-investigate-unknown-unsupported-cases.md` - Investigate and classify unknown-unsupported diagnostic cases (same feature label, same group key)
+- `issues/open/060-investigate-unknown-unsupported-cases.md` - Investigate and classify unknown-unsupported diagnostic cases (same feature label, same group key)
 - `issues/done/230-implement-async-iteration-for-await-of.md` - Implement async iteration and for-await-of (same feature label, same group key, title overlap)
-- `issues/done/444-implement-regexp-literal.md` - Implement RegExp literal support (same feature label, same group key, title overlap)
+- `issues/open/444-implement-regexp-literal.md` - Implement RegExp literal support (same feature label, same group key, title overlap)
 
 ## Smart triage
 
@@ -174,3 +174,17 @@ date:
 Remaining risks:
 
 - none
+
+## False-done audit
+
+Date: 2026-05-05
+
+Classification: truly-done.
+
+Audit result: retained in `issues/done/`. The issue has repo-local completion evidence, is not marked `blocked` or `triage-needed`, and `python scripts/manager.py check issues` validates the resulting issue graph.
+
+Evidence files:
+- `issues/done/5066-implement-async-iteration.md`
+- `issues/index.md` after regeneration
+
+Future-work tracking: no untracked future-work item was identified in this issue during this metadata/evidence audit.

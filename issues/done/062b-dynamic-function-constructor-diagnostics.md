@@ -45,7 +45,7 @@ Expected:
 - `crates/frontend/src/`
 - `crates/cli/tests/`
 - `fixtures/`
-- `issues/done/062-implement-function.md`
+- `issues/open/062-implement-function.md`
 
 Do not touch:
 
@@ -138,3 +138,17 @@ Remaining risks:
 
 - Reference coverage was not rerun locally because the assigned worktree lacks
   `reference/test262`, and the assignment forbids editing `reference/`.
+
+## False-done audit
+
+Date: 2026-05-05
+
+Classification: truly-done.
+
+Audit result: retained in `issues/done/`. The issue has repo-local completion evidence, is not marked `blocked` or `triage-needed`, and `python scripts/manager.py check issues` validates the resulting issue graph.
+
+Evidence files:
+- `issues/done/062b-dynamic-function-constructor-diagnostics.md`
+- `issues/index.md` after regeneration
+
+Future-work tracking: no untracked future-work item was identified in this issue during this metadata/evidence audit.

@@ -123,3 +123,17 @@ Remaining risks:
 
 - Proper this binding requires method call implementation evidence - currently emits undefined as placeholder and is tracked by `issues/done/211-complete-this-receiver-binding-semantics.md`
 - Arrow function lexical this (issue 036) is out of scope for this issue and was completed by `issues/done/210-implement-arrow-function-closure-lexical-this.md`
+
+## False-done audit
+
+Date: 2026-05-05
+
+Classification: truly-done.
+
+Audit result: retained in `issues/done/`. The issue has repo-local completion evidence, is not marked `blocked` or `triage-needed`, and `python scripts/manager.py check issues` validates the resulting issue graph.
+
+Evidence files:
+- `issues/done/037-implement-this-binding.md`
+- `issues/index.md` after regeneration
+
+Future-work tracking: no untracked future-work item was identified in this issue during this metadata/evidence audit.

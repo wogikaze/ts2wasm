@@ -159,3 +159,17 @@ Remaining risks:
 
 - GC marking for closure capture slots remains issue 258. This issue does not
   claim closure retention under later allocation pressure.
+
+## False-done audit
+
+Date: 2026-05-05
+
+Classification: truly-done.
+
+Audit result: retained in `issues/done/`. The issue has repo-local completion evidence, is not marked `blocked` or `triage-needed`, and `python scripts/manager.py check issues` validates the resulting issue graph.
+
+Evidence files:
+- `issues/done/257-emit-heap-closure-allocation-and-dispatch.md`
+- `issues/index.md` after regeneration
+
+Future-work tracking: no untracked future-work item was identified in this issue during this metadata/evidence audit.

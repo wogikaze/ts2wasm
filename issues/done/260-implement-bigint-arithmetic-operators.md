@@ -207,3 +207,17 @@ Remaining risks:
 - BigInt bitwise/exponentiation policy is tracked by issue 371; complete runtime `TypeError` behavior for mixed Number/BigInt arithmetic is tracked by issue 370.
 
 Close/split decision (2026-05-01, commit `bb28f4a4`): issue 260 is closed as the implemented BigInt arithmetic slice: literal arbitrary-size folding plus signed-i64-backed dynamic unary/add/sub/mul/div/rem helpers, diagnostics for out-of-slice values and mixed arithmetic, and runtime trap evidence for zero division/remainder with Node `RangeError` baseline. Remaining future work is split to issue 369 (full multi-limb runtime arithmetic), issue 370 (`RangeError`/`TypeError` exception parity), and issue 371 (BigInt bitwise/exponentiation policy).
+
+## False-done audit
+
+Date: 2026-05-05
+
+Classification: truly-done.
+
+Audit result: retained in `issues/done/`. The issue has repo-local completion evidence, is not marked `blocked` or `triage-needed`, and `python scripts/manager.py check issues` validates the resulting issue graph.
+
+Evidence files:
+- `issues/done/260-implement-bigint-arithmetic-operators.md`
+- `issues/index.md` after regeneration
+
+Future-work tracking: no untracked future-work item was identified in this issue during this metadata/evidence audit.

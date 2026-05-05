@@ -52,3 +52,17 @@ grep -A 20 "GC strategy" docs/14-runtime-abi.md
 - 2026-04-27: `docs/14-runtime-abi.md` に GC 設計（ヘッダ、戦略、トリガー条件）を追加。
 - 2026-04-27: `cargo fmt --all --check` 合格（docs 修正後）。
 - 2026-04-27: `grep -A 20 "GC strategy" docs/14-runtime-abi.md` で設計節が確認可能。
+
+## False-done audit
+
+Date: 2026-05-05
+
+Classification: truly-done.
+
+Audit result: retained in `issues/done/`. The issue has repo-local completion evidence, is not marked `blocked` or `triage-needed`, and `python scripts/manager.py check issues` validates the resulting issue graph.
+
+Evidence files:
+- `issues/done/017a-design-gc-strategy.md`
+- `issues/index.md` after regeneration
+
+Future-work tracking: no untracked future-work item was identified in this issue during this metadata/evidence audit.

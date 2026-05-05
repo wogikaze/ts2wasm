@@ -116,7 +116,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] created `issues/done/255-implement-private-class-element-runtime-semantics.md`
+- [x] created `issues/open/255-implement-private-class-element-runtime-semantics.md`
 
 ## Notes
 
@@ -153,3 +153,17 @@ date: 2026-04-29
 Remaining risks:
 
 - Runtime storage/access semantics are not implemented; tracked by issue 255.
+
+## False-done audit
+
+Date: 2026-05-05
+
+Classification: truly-done.
+
+Audit result: retained in `issues/done/`. The issue has repo-local completion evidence, is not marked `blocked` or `triage-needed`, and `python scripts/manager.py check issues` validates the resulting issue graph.
+
+Evidence files:
+- `issues/done/248-implement-private-class-element-parser.md`
+- `issues/index.md` after regeneration
+
+Future-work tracking: no untracked future-work item was identified in this issue during this metadata/evidence audit.

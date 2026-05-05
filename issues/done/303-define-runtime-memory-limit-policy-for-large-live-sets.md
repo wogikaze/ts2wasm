@@ -227,3 +227,17 @@ Remaining risks:
 
 - The full ABC451 official sample path still traps in runtime allocation under
   the new cap; issue 300 remains open with the recorded blocker.
+
+## False-done audit
+
+Date: 2026-05-05
+
+Classification: truly-done.
+
+Audit result: retained in `issues/done/`. The issue has repo-local completion evidence, is not marked `blocked` or `triage-needed`, and `python scripts/manager.py check issues` validates the resulting issue graph.
+
+Evidence files:
+- `issues/done/303-define-runtime-memory-limit-policy-for-large-live-sets.md`
+- `issues/index.md` after regeneration
+
+Future-work tracking: no untracked future-work item was identified in this issue during this metadata/evidence audit.

@@ -458,7 +458,7 @@ error: [UnsupportedSyntax] expected LeftParen, got Some(Ident("X")) at 65..66
 ## 重複整理メモ
 
 この issue はタイトルが重複しているため、内容がより充実している
-`issues/done/571-implement-accessorParameterAccessibilityModifier.md` に統合されました。
+`issues/open/571-implement-accessorParameterAccessibilityModifier.md` に統合されました。
 そちらを参照してください。
 ## Completion evidence
 

@@ -134,8 +134,8 @@ Follow-up issues:
 - `issues/done/196-implement-argumentsObjectCreatesRestForJs.md` - Implement Argumentsobjectcreatesrestforjs (same feature label, same group key, title overlap)
 - `issues/done/314-implement-string-builtin.md` - Implement string-builtin support (same feature label, same group key, title overlap)
 - `issues/done/005-add-fine-grained-unsupported-feature-breakdown.md` - issues/done/005-add-fine-grained-unsupported-feature-breakdown.md (same feature label, same group key)
-- `issues/done/022-expand-test262-differential-coverage.md` - issues/done/022-expand-test262-differential-coverage.md (same feature label, same group key)
-- `issues/done/060-investigate-unknown-unsupported-cases.md` - Investigate and classify unknown-unsupported diagnostic cases (same feature label, same group key)
+- `issues/open/022-expand-test262-differential-coverage.md` - issues/open/022-expand-test262-differential-coverage.md (same feature label, same group key)
+- `issues/open/060-investigate-unknown-unsupported-cases.md` - Investigate and classify unknown-unsupported diagnostic cases (same feature label, same group key)
 
 ## Smart triage
 
@@ -279,7 +279,7 @@ Duplicate candidates:
   },
   {
     "state": "done",
-    "path": "issues/done/061-implement-date.md",
+    "path": "issues/open/061-implement-date.md",
     "title": "Implement Date object support",
     "reason": "same reference path, title overlap"
   },

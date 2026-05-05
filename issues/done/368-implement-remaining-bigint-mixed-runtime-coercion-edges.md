@@ -156,3 +156,17 @@ Remaining risks:
 - Invalid/out-of-range object `toString` returns are issue 373.
 - Broader object-model-dependent coercion is issue 374.
 - Non-source-backed unknown out-of-range runtime strings are issue 375.
+
+## False-done audit
+
+Date: 2026-05-05
+
+Classification: truly-done.
+
+Audit result: retained in `issues/done/`. The issue has repo-local completion evidence, is not marked `blocked` or `triage-needed`, and `python scripts/manager.py check issues` validates the resulting issue graph.
+
+Evidence files:
+- `issues/done/368-implement-remaining-bigint-mixed-runtime-coercion-edges.md`
+- `issues/index.md` after regeneration
+
+Future-work tracking: no untracked future-work item was identified in this issue during this metadata/evidence audit.

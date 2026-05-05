@@ -195,3 +195,17 @@ cargo nextest run -p ts2wasm-cli abc451_depth8_live_set_fixture_matches_node_out
 Remaining risks:
 
 - This is a refactor slice only. Issue 365 remains the behavior-changing target for reducing non-top array growth allocation/copy pressure.
+
+## False-done audit
+
+Date: 2026-05-05
+
+Classification: truly-done.
+
+Audit result: retained in `issues/done/`. The issue has repo-local completion evidence, is not marked `blocked` or `triage-needed`, and `python scripts/manager.py check issues` validates the resulting issue graph.
+
+Evidence files:
+- `issues/done/367-extract-arraypushgrow-runtime-helper.md`
+- `issues/index.md` after regeneration
+
+Future-work tracking: no untracked future-work item was identified in this issue during this metadata/evidence audit.
