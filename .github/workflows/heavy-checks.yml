@@ -46,8 +46,8 @@ jobs:
 
       - name: Install iwasm (WAMR)
         run: |
-          wget -q https://github.com/bytecodealliance/wasm-micro-runtime/releases/download/WAMR-2.4.3/iwasm-2.4.3-linux-x86_64.tar.gz
-          tar -xzf iwasm-2.4.3-linux-x86_64.tar.gz
+          wget -q https://github.com/bytecodealliance/wasm-micro-runtime/releases/download/WAMR-2.4.3/iwasm-2.4.3-x86_64-ubuntu-22.04.tar.gz
+          tar -xzf iwasm-2.4.3-x86_64-ubuntu-22.04.tar.gz
           sudo mv iwasm /usr/local/bin/
           chmod +x /usr/local/bin/iwasm
 
