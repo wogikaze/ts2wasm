@@ -2,10 +2,10 @@
 id: 2052
 title: "Implement Duplicatelocalvariable Parser Syntax"
 type: spike
-area: frontend/resolver
+area: frontend/syntax
 class: blocked
 priority: P1
-depends_on: [5005]
+depends_on: [5000]
 blocks: []
 created: 2026-05-01
 updated: 2026-05-01

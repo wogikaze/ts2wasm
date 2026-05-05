@@ -489,7 +489,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 764 | Implement Augmentedclasswithprototypepropertyonmodule | spike | frontend/syntax | class: blocked | Implement Augmentedclasswithprototypepropertyonmodule |
 | 765 | Implement Augmentedtypesclass | spike | frontend/resolver | class: blocked | Implement Augmentedtypesclass |
 | 766 | Implement Augmentedtypesenum Import Export | spike | frontend/syntax | class: blocked | Implement Augmentedtypesenum Import Export |
-| 767 | Implement Augmentedtypesenum Parser Syntax | spike | frontend/resolver | class: blocked | Implement Augmentedtypesenum Parser Syntax |
+| 767 | Implement Augmentedtypesenum Parser Syntax | spike | frontend/syntax | class: blocked | Implement Augmentedtypesenum Parser Syntax |
 | 768 | Implement Augmentedtypesexternalmodule | spike | frontend/syntax | class: blocked | Implement Augmentedtypesexternalmodule |
 | 769 | Implement Augmentedtypesfunction | spike | frontend/resolver | class: blocked | Implement Augmentedtypesfunction |
 | 770 | Implement Augmentedtypesinterface | spike | frontend/resolver | class: blocked | Implement Augmentedtypesinterface |
@@ -943,9 +943,9 @@ Issue files are the source of truth for work items. The generated section below 
 | 1428 | Implement Conditionaltypesubclassextendstypeparam | spike | frontend/syntax | class: blocked | Implement Conditionaltypesubclassextendstypeparam |
 | 1429 | Implement Conditionaltypessimplifywhentrivial | spike | frontend/syntax | class: blocked | Implement Conditionaltypessimplifywhentrivial |
 | 1430 | Implement Conditionallyduplicateoverloadscausedbyoverloadresolution | spike | frontend/syntax | class: blocked | Implement Conditionallyduplicateoverloadscausedbyoverloadresolution |
-| 1431 | Implement Conflictmarkerdiff Parser Syntax | spike | frontend/resolver | class: blocked | Implement Conflictmarkerdiff Parser Syntax |
+| 1431 | Implement Conflictmarkerdiff Parser Syntax | spike | frontend/syntax | class: blocked | Implement Conflictmarkerdiff Parser Syntax |
 | 1432 | Implement Conflictmarkerdiff Unknown Unsupported | spike | frontend/syntax | class: triage-needed | Implement Conflictmarkerdiff Unknown Unsupported |
-| 1433 | Implement Conflictmarkertrivia Parser Syntax | spike | frontend/resolver | class: blocked | Implement Conflictmarkertrivia Parser Syntax |
+| 1433 | Implement Conflictmarkertrivia Parser Syntax | spike | frontend/syntax | class: blocked | Implement Conflictmarkertrivia Parser Syntax |
 | 1434 | Implement Conflictmarkertrivia Unknown Unsupported | spike | frontend/syntax | class: triage-needed | Implement Conflictmarkertrivia Unknown Unsupported |
 | 1435 | Implement Conflictingdeclarationsimportfromnamespace | spike | frontend/syntax | class: blocked | Implement Conflictingdeclarationsimportfromnamespace |
 | 1436 | Implement Conflictingtypeannotatedvar | spike | reference/triage | class: triage-needed | Implement Conflictingtypeannotatedvar |
@@ -1211,7 +1211,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 1696 | Implement Declarationemitclassaccessorsjs | spike | frontend/syntax | class: blocked | Implement Declarationemitclassaccessorsjs |
 | 1697 | Implement Declarationemitclassinherritsany | spike | frontend/syntax | class: blocked | Implement Declarationemitclassinherritsany |
 | 1698 | Implement Declarationemitclassmembernameconflict Import Export | spike | frontend/syntax | class: blocked | Implement Declarationemitclassmembernameconflict Import Export |
-| 1699 | Implement Declarationemitclassmembernameconflict Parser Syntax | spike | frontend/resolver | class: blocked | Implement Declarationemitclassmembernameconflict Parser Syntax |
+| 1699 | Implement Declarationemitclassmembernameconflict Parser Syntax | spike | frontend/syntax | class: blocked | Implement Declarationemitclassmembernameconflict Parser Syntax |
 | 1700 | Implement Declarationemitclassmemberwithcomputedpropertyname | spike | frontend/syntax | class: triage-needed | Implement Declarationemitclassmemberwithcomputedpropertyname |
 | 1701 | Implement Declarationemitclassmixinlocalclassdeclaration | spike | frontend/syntax | class: blocked | Implement Declarationemitclassmixinlocalclassdeclaration |
 | 1702 | Implement Declarationemitclassprivateconstructor | spike | frontend/syntax | class: blocked | Implement Declarationemitclassprivateconstructor |
@@ -1384,7 +1384,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 1869 | Implement Declarationmapsoutfile | spike | frontend/syntax | class: blocked | Implement Declarationmapsoutfile |
 | 1870 | Implement Declarationmapswithoutdeclaration | spike | frontend/syntax | class: blocked | Implement Declarationmapswithoutdeclaration |
 | 1871 | Implement Declarationmerging Import Export | spike | frontend/syntax | class: blocked | Implement Declarationmerging Import Export |
-| 1872 | Implement Declarationmerging Parser Syntax | spike | frontend/resolver | class: blocked | Implement Declarationmerging Parser Syntax |
+| 1872 | Implement Declarationmerging Parser Syntax | spike | frontend/syntax | class: blocked | Implement Declarationmerging Parser Syntax |
 | 1873 | Implement Declarationnodanglinggenerics | spike | frontend/syntax | class: blocked | Implement Declarationnodanglinggenerics |
 | 1874 | Implement Declarationquotedmembers | spike | frontend/syntax | class: triage-needed | Implement Declarationquotedmembers |
 | 1875 | Implement Declarationtypechecknousebeforereferencecheck | spike | frontend/syntax | class: blocked | Implement Declarationtypechecknousebeforereferencecheck |
@@ -1557,20 +1557,20 @@ Issue files are the source of truth for work items. The generated section below 
 | 2042 | Implement Duplicateidentifierincatchblock | spike | reference/triage | class: triage-needed | Implement Duplicateidentifierincatchblock |
 | 2043 | Implement Duplicateidentifierrelatedspans Duplicate Function | spike | reference/triage | class: triage-needed | Implement Duplicateidentifierrelatedspans Duplicate Function |
 | 2044 | Implement Duplicateidentifierrelatedspans Import Export | spike | frontend/syntax | class: blocked | Implement Duplicateidentifierrelatedspans Import Export |
-| 2045 | Implement Duplicateidentifierrelatedspans Parser Syntax | spike | frontend/resolver | class: blocked | Implement Duplicateidentifierrelatedspans Parser Syntax |
+| 2045 | Implement Duplicateidentifierrelatedspans Parser Syntax | spike | frontend/syntax | class: blocked | Implement Duplicateidentifierrelatedspans Parser Syntax |
 | 2046 | Implement Duplicateidentifiershouldnotshortcircuitbasetypebinding | spike | frontend/syntax | class: blocked | Implement Duplicateidentifiershouldnotshortcircuitbasetypebinding |
 | 2047 | Implement Duplicateidentifiersacrosscontainerboundaries | spike | frontend/syntax | class: blocked | Implement Duplicateidentifiersacrosscontainerboundaries |
 | 2048 | Implement Duplicateidentifiersacrossfileboundaries | spike | frontend/syntax | class: blocked | Implement Duplicateidentifiersacrossfileboundaries |
 | 2049 | Implement Duplicatelabel | spike | frontend/syntax | class: triage-needed | Implement Duplicatelabel |
 | 2050 | Implement Duplicatelocalvariable Duplicate Local | spike | reference/triage | class: triage-needed | Implement Duplicatelocalvariable Duplicate Local |
 | 2051 | Implement Duplicatelocalvariable Import Export | spike | frontend/syntax | class: blocked | Implement Duplicatelocalvariable Import Export |
-| 2052 | Implement Duplicatelocalvariable Parser Syntax | spike | frontend/resolver | class: blocked | Implement Duplicatelocalvariable Parser Syntax |
+| 2052 | Implement Duplicatelocalvariable Parser Syntax | spike | frontend/syntax | class: blocked | Implement Duplicatelocalvariable Parser Syntax |
 | 2053 | Implement Duplicateobjectliteralproperty Import Export | spike | frontend/syntax | class: blocked | Implement Duplicateobjectliteralproperty Import Export |
 | 2054 | Implement Duplicateobjectliteralproperty Object Literal | spike | frontend/syntax | class: blocked | Implement Duplicateobjectliteralproperty Object Literal |
-| 2055 | Implement Duplicateobjectliteralproperty Parser Syntax | spike | frontend/resolver | class: blocked | Implement Duplicateobjectliteralproperty Parser Syntax |
+| 2055 | Implement Duplicateobjectliteralproperty Parser Syntax | spike | frontend/syntax | class: blocked | Implement Duplicateobjectliteralproperty Parser Syntax |
 | 2056 | Implement Duplicateoverloadintypeaugmentation | spike | frontend/syntax | class: blocked | Implement Duplicateoverloadintypeaugmentation |
 | 2057 | Implement Duplicatepackage Import Export | spike | frontend/syntax | class: blocked | Implement Duplicatepackage Import Export |
-| 2059 | Implement Duplicatepackage Parser Syntax | spike | frontend/resolver | class: blocked | Implement Duplicatepackage Parser Syntax |
+| 2059 | Implement Duplicatepackage Parser Syntax | spike | frontend/syntax | class: blocked | Implement Duplicatepackage Parser Syntax |
 | 2060 | Implement Duplicatepropertiesinstrictmode | spike | frontend/resolver | class: blocked | Implement Duplicatepropertiesinstrictmode |
 | 2061 | Implement Duplicatesymbolsexportmatching | spike | frontend/syntax | class: blocked | Implement Duplicatesymbolsexportmatching |
 | 2062 | Implement Duplicatetypeparameters | spike | frontend/semantics | class: blocked | Implement Duplicatetypeparameters |
@@ -2228,7 +2228,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 2714 | Implement Importintypeposition | spike | frontend/syntax | class: blocked | Implement Importintypeposition |
 | 2715 | Implement Importinsidemodule | spike | frontend/syntax | class: blocked | Implement Importinsidemodule |
 | 2716 | Implement Importnonexportedmember Import Export | spike | frontend/syntax | class: blocked | Implement Importnonexportedmember Import Export |
-| 2717 | Implement Importnonexportedmember Parser Syntax | spike | frontend/resolver | class: blocked | Implement Importnonexportedmember Parser Syntax |
+| 2717 | Implement Importnonexportedmember Parser Syntax | spike | frontend/syntax | class: blocked | Implement Importnonexportedmember Parser Syntax |
 | 2718 | Implement Importnotelidedwhennotfound | spike | frontend/syntax | class: blocked | Implement Importnotelidedwhennotfound |
 | 2719 | Implement Importonaliasedidentifiers | spike | frontend/syntax | class: blocked | Implement Importonaliasedidentifiers |
 | 2720 | Implement Importpropertyfrommappedtype | spike | frontend/syntax | class: blocked | Implement Importpropertyfrommappedtype |
@@ -2759,7 +2759,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 3246 | Implement Mergedclasswithnamespaceprototype | spike | frontend/syntax | class: blocked | Implement Mergedclasswithnamespaceprototype |
 | 3247 | Implement Mergeddeclarationexports | spike | frontend/syntax | class: blocked | Implement Mergeddeclarationexports |
 | 3248 | Implement Mergeddeclarations Import Export | spike | frontend/syntax | class: blocked | Implement Mergeddeclarations Import Export |
-| 3249 | Implement Mergeddeclarations Parser Syntax | spike | frontend/resolver | class: blocked | Implement Mergeddeclarations Parser Syntax |
+| 3249 | Implement Mergeddeclarations Parser Syntax | spike | frontend/syntax | class: blocked | Implement Mergeddeclarations Parser Syntax |
 | 3250 | Implement Mergedenumdeclarationcodegen | spike | frontend/resolver | class: blocked | Implement Mergedenumdeclarationcodegen |
 | 3251 | Implement Mergedinstantiationassignment | spike | frontend/syntax | class: triage-needed | Implement Mergedinstantiationassignment |
 | 3252 | Implement Mergedinterfacefrommultiplefiles | spike | frontend/syntax | class: blocked | Implement Mergedinterfacefrommultiplefiles |
@@ -2890,7 +2890,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 3383 | Implement Moduleresolutionwithrequire (audit reopened #3383) | spike | frontend/syntax | class: blocked | Implement Moduleresolutionwithrequire (audit reopened #3383) |
 | 3385 | Implement Moduleresolutionwithsuffixes Import Export (audit reopened #3385) | spike | frontend/syntax | class: blocked | Implement Moduleresolutionwithsuffixes Import Export (audit reopened #3385) |
 | 3387 | Implement Moduleresolutionwithsymlinks Import Export | spike | frontend/syntax | class: blocked | Implement Moduleresolutionwithsymlinks Import Export |
-| 3388 | Implement Moduleresolutionwithsymlinks Parser Syntax | spike | frontend/resolver | class: blocked | Implement Moduleresolutionwithsymlinks Parser Syntax |
+| 3388 | Implement Moduleresolutionwithsymlinks Parser Syntax | spike | frontend/syntax | class: blocked | Implement Moduleresolutionwithsymlinks Parser Syntax |
 | 3389 | Implement Modulesamevalueduplicateexportedbindings | spike | frontend/syntax | class: blocked | Implement Modulesamevalueduplicateexportedbindings |
 | 3390 | Implement Modulescopingbug | spike | frontend/syntax | class: blocked | Implement Modulescopingbug |
 | 3391 | Implement Modulesharesnamewithimportdeclarationinsideit | spike | frontend/syntax | class: blocked | Implement Modulesharesnamewithimportdeclarationinsideit |
@@ -3076,7 +3076,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 3571 | Implement Nounusedlocals Destructuring | spike | frontend/syntax | class: blocked | Implement Nounusedlocals Destructuring |
 | 3572 | Implement Nounusedlocals Import Export | spike | frontend/syntax | class: blocked | Implement Nounusedlocals Import Export |
 | 3573 | Implement Nounusedlocals Name Resolution | spike | frontend/resolver | class: blocked | Implement Nounusedlocals Name Resolution |
-| 3574 | Implement Nounusedlocals Parser Syntax | spike | frontend/resolver | class: blocked | Implement Nounusedlocals Parser Syntax |
+| 3574 | Implement Nounusedlocals Parser Syntax | spike | frontend/syntax | class: blocked | Implement Nounusedlocals Parser Syntax |
 | 3575 | Implement Nousedbeforedefinederrorintypecontext | spike | frontend/syntax | class: triage-needed | Implement Nousedbeforedefinederrorintypecontext |
 | 3576 | Implement Nodecolonmoduleresolution | spike | frontend/syntax | class: blocked | Implement Nodecolonmoduleresolution |
 | 3577 | Implement Nodemodulereexportfromdottedpath | spike | frontend/syntax | class: blocked | Implement Nodemodulereexportfromdottedpath |
@@ -3295,7 +3295,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 3792 | Implement Partiallyambientfundule | spike | frontend/syntax | class: blocked | Implement Partiallyambientfundule |
 | 3793 | Implement Partiallydiscriminantedunions | spike | frontend/syntax | class: triage-needed | Implement Partiallydiscriminantedunions |
 | 3794 | Implement Pathmappingbasedmoduleresolution Import Export | spike | frontend/syntax | class: blocked | Implement Pathmappingbasedmoduleresolution Import Export |
-| 3796 | Implement Pathmappingbasedmoduleresolution Parser Syntax | spike | frontend/resolver | class: blocked | Implement Pathmappingbasedmoduleresolution Parser Syntax |
+| 3796 | Implement Pathmappingbasedmoduleresolution Parser Syntax | spike | frontend/syntax | class: blocked | Implement Pathmappingbasedmoduleresolution Parser Syntax |
 | 3797 | Implement Pathmappinginheritedbaseurl | spike | frontend/syntax | class: blocked | Implement Pathmappinginheritedbaseurl |
 | 3798 | Implement Pathmappingwithoutbaseurl | spike | frontend/syntax | class: blocked | Implement Pathmappingwithoutbaseurl |
 | 3799 | Implement Pathsvalidation | spike | frontend/syntax | class: blocked | Implement Pathsvalidation |
@@ -3427,12 +3427,12 @@ Issue files are the source of truth for work items. The generated section below 
 | 3925 | Implement Quotedpropertyname | spike | frontend/syntax | class: triage-needed | Implement Quotedpropertyname |
 | 3926 | Implement Ramdatoolsnoinfinite | spike | frontend/syntax | class: blocked | Implement Ramdatoolsnoinfinite |
 | 3927 | Implement Reexportglobaldeclaration Import Export | spike | frontend/syntax | class: blocked | Implement Reexportglobaldeclaration Import Export |
-| 3928 | Implement Reexportglobaldeclaration Parser Syntax | spike | frontend/resolver | class: blocked | Implement Reexportglobaldeclaration Parser Syntax |
+| 3928 | Implement Reexportglobaldeclaration Parser Syntax | spike | frontend/syntax | class: blocked | Implement Reexportglobaldeclaration Parser Syntax |
 | 3929 | Implement Reexportundefined | spike | frontend/syntax | class: blocked | Implement Reexportundefined |
 | 3930 | Implement Reachabilitychecks Arrow Function | spike | frontend/syntax | class: blocked | Implement Reachabilitychecks Arrow Function |
 | 3931 | Implement Reachabilitychecks Import Export | spike | frontend/syntax | class: blocked | Implement Reachabilitychecks Import Export |
 | 3932 | Implement Reachabilitychecks Name Resolution | spike | frontend/resolver | class: blocked | Implement Reachabilitychecks Name Resolution |
-| 3933 | Implement Reachabilitychecks Parser Syntax | spike | frontend/resolver | class: blocked | Implement Reachabilitychecks Parser Syntax |
+| 3933 | Implement Reachabilitychecks Parser Syntax | spike | frontend/syntax | class: blocked | Implement Reachabilitychecks Parser Syntax |
 | 3934 | Implement Reachabilitychecks Runtime Subset | spike | reference/triage | class: triage-needed | Implement Reachabilitychecks Runtime Subset |
 | 3935 | Implement Reachabilitychecks Unknown Unsupported | spike | frontend/syntax | class: triage-needed | Implement Reachabilitychecks Unknown Unsupported |
 | 3936 | Implement Reachabilitychecksnocrash | spike | frontend/syntax | class: blocked | Implement Reachabilitychecksnocrash |

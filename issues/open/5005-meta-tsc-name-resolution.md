@@ -74,3 +74,23 @@ mise run reference-coverage -- tsc --limit 50 --detail
 Not run:
 
 - none
+
+## Progress evidence
+
+2026-05-06 dependency cleanup slice:
+
+- Reviewed `5005` direct children for generated buckets whose filename and
+  problem statement explicitly identify `parser-syntax`.
+- Relinked 16 parser-syntax buckets from `depends_on: [5005]` to
+  `depends_on: [5000]` and normalized their area to `frontend/syntax`.
+- Left `5002`, `5006`, and `5007` linked to `5005` because they are explicit
+  type-system/scope-analysis/module-resolution meta dependencies, not
+  accidental generated child buckets.
+
+Validation result:
+
+```text
+python scripts/manager.py update-issue-index: pass
+python scripts/manager.py update-issue-index --check: pass
+python scripts/manager.py check issues: pass
+```
