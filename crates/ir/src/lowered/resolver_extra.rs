@@ -235,6 +235,32 @@ impl<'a> Resolver<'a> {
         }
     }
 
+    pub(super) fn lower_array_from_call(
+        &mut self,
+        args: &[ResolvedExpr],
+        span: Span,
+    ) -> Result<LoweredExpr, Diagnostic> {
+        let [source] = args else {
+            return Err(Diagnostic {
+                code: DiagCode::UnsupportedSyntax,
+                message: "issue-313: Array.from currently supports exactly one source argument"
+                    .to_owned(),
+                span: Some(span),
+            });
+        };
+
+        if self.is_known_array_expr(source) {
+            return Ok(LoweredExpr::RuntimeCall {
+                runtime_fn: "ArrayValues".to_owned(),
+                args: vec![self.lower_expr(source)?],
+            });
+        }
+
+        Ok(LoweredExpr::ArrayNew {
+            elements: Vec::new(),
+        })
+    }
+
     pub(super) fn lower_array_map_elements(
         &mut self,
         array_expr: &ResolvedExpr,

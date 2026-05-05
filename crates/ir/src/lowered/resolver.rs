@@ -864,6 +864,10 @@ fn is_array_prototype_map_call_receiver(object: &ResolvedExpr, method: &str) -> 
     method == "call" && matches_array_prototype_map_property(object)
 }
 
+fn is_array_from_call_receiver(object: &ResolvedExpr, method: &str) -> bool {
+    method == "from" && matches!(object, ResolvedExpr::Ident(name) if name == "Array")
+}
+
 fn matches_array_prototype_map_property(expr: &ResolvedExpr) -> bool {
     let ResolvedExpr::PropertyAccess { object, key, .. } = expr else {
         return false;

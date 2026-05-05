@@ -822,6 +822,9 @@ impl<'a> Resolver<'a> {
                         args: lowered_args,
                     });
                 }
+                if is_array_from_call_receiver(object, method) {
+                    return self.lower_array_from_call(args, *span);
+                }
                 if is_array_prototype_map_call_receiver(object, method) {
                     return self.lower_array_prototype_map_call(args, *span);
                 }
