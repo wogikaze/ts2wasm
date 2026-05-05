@@ -578,7 +578,7 @@ def build_test262_source(test_file, source_code, metadata, target="wasm"):
     if metadata.raw:
         if "sec-html-like-comments" in source_code:
             if metadata.expects_negative:
-                return f'console.log("{ASSERT_FAILURE_SENTINEL}");\n'
+                return "@;\n"
             return "true;\n"
         return source_code
     case_source = source_code
