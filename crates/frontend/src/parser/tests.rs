@@ -497,6 +497,7 @@ mod tests {
         for source in [
             "globalThis.eval(\"x\");",
             "globalThis[\"eval\"](\"x\");",
+            "(0, eval)(\"x\");",
             "eval?.(\"x\");",
         ] {
             let err = parse_program(source).unwrap_err();

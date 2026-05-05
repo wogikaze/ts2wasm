@@ -656,6 +656,7 @@ impl Parser {
         source: &str,
         eval_span: Span,
     ) -> Result<Option<Vec<Stmt>>, Diagnostic> {
+        // Handle single block source: '{ function f() { ... } }'
         if let Some(inner_source) = Self::single_block_source(source) {
             let Some(function) = self.parse_static_eval_function(inner_source, eval_span)? else {
                 return Ok(None);
@@ -674,6 +675,22 @@ impl Parser {
         };
 
         let prefix = self.parse_static_eval_fragment(block.prefix, eval_span)?;
+
+        // When prefix is empty, try recursive expansion of any remaining
+        // block-function declarations in the suffix. This handles multiple
+        // consecutive block function declarations, e.g.
+        //   {function f(){...}}{function f(){...}}rest
+        // (issue 1001e Category A: existing-function patterns).
+        if prefix.is_empty() && !block.suffix.trim().is_empty() {
+            if let Some(suffix_statements) =
+                self.static_block_function_eval_expansion(block.suffix, eval_span)?
+            {
+                let mut statements = vec![function];
+                statements.extend(suffix_statements);
+                return Ok(Some(statements));
+            }
+        }
+
         let suffix_is_only_block_functions =
             self.source_contains_only_static_eval_function_blocks(block.suffix, eval_span)?;
         if !prefix.is_empty()

@@ -1507,9 +1507,31 @@ impl Parser {
             }),
             Some(SpannedToken {
                 kind: Token::LeftParen,
-                ..
+                span: left_span,
             }) => {
                 let expr = self.expression()?;
+                if self.consume(TokenKind::Comma) {
+                    let mut last_expr = self.expression()?;
+                    while self.consume(TokenKind::Comma) {
+                        last_expr = self.expression()?;
+                    }
+                    let right_span = self.expect(TokenKind::RightParen)?;
+                    let span = Span {
+                        start: left_span.start,
+                        end: right_span.end,
+                    };
+                    if matches!(last_expr, Expr::Ident { ref name, .. } if name == "eval")
+                        && matches!(self.peek(), Some(Token::LeftParen))
+                    {
+                        return Err(Self::indirect_eval_call_diagnostic(span));
+                    }
+                    return Err(Diagnostic {
+                        code: DiagCode::UnsupportedSyntax,
+                        message: "comma expressions are not supported in this parser slice"
+                            .to_owned(),
+                        span: Some(span),
+                    });
+                }
                 self.expect(TokenKind::RightParen)?;
                 self.parenthesized_expr_spans
                     .insert((expr.span().start, expr.span().end));

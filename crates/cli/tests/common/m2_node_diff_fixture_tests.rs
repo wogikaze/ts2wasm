@@ -1380,7 +1380,7 @@ fn eval_fixture_reports_unsupported() {
     assert_build_fails_with_diagnostic(
         "fixtures/builtins-and-io/eval-unsupported.ts",
         "[UnsupportedEval]",
-        "issue-429: direct eval is not supported; runtime code evaluation is intentionally not implemented",
+        "issue-347: indirect eval calls are not supported",
         true,
     );
 }
