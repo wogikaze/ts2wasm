@@ -360,6 +360,26 @@ fn build_smoke_string_replace_all_method() {
 }
 
 #[test]
+fn build_smoke_string_is_well_formed_method() {
+    let result = run_fixture("builtins-and-io/string-is-well-formed.ts");
+    assert!(
+        result.is_ok(),
+        "String.isWellFormed should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
+fn build_smoke_string_to_well_formed_method() {
+    let result = run_fixture("builtins-and-io/string-to-well-formed.ts");
+    assert!(
+        result.is_ok(),
+        "String.toWellFormed should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
 fn string_trim_method_emits() {
     let result = run_fixture("builtins-and-io/string-trim.ts");
     assert!(

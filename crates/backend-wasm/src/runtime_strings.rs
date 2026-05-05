@@ -1336,12 +1336,11 @@ impl WatEmitter<'_> {
 
     pub(super) fn emit_string_is_well_formed(&self, wat: &mut String) {
         // Strings are byte-level (no UTF-16 surrogates), so all strings are well-formed.
+        // String.isWellFormed returns boolean per spec.
         wat.push_str(&format!(
             r#"  (func $string_is_well_formed (param $s i32) (result i32)
-    (i32.or (i32.shl (i32.const {one}) (i32.const {number_shift})) (i32.const {number_tag})))"#,
-            one = RuntimeConst::ONE,
-            number_shift = ValueTag::NUMBER_SHIFT,
-            number_tag = ValueTag::NUMBER,
+    (i32.const {true_tag}))"#,
+            true_tag = ValueTag::TRUE,
         ));
     }
 

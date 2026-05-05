@@ -1066,7 +1066,7 @@ impl RuntimeFn {
                 result: RuntimeResult::Value,
             },
             Self::StringIsWellFormed => RuntimeSpec {
-                symbol: "",
+                symbol: "$string_is_well_formed",
                 deps: NO_DEPS,
                 imports: NO_IMPORTS,
                 capability: NO_CAPS,
@@ -1074,7 +1074,7 @@ impl RuntimeFn {
                 result: RuntimeResult::Value,
             },
             Self::StringToWellFormed => RuntimeSpec {
-                symbol: "",
+                symbol: "$string_to_well_formed",
                 deps: NO_DEPS,
                 imports: NO_IMPORTS,
                 capability: NO_CAPS,
