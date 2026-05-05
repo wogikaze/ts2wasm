@@ -988,6 +988,8 @@ impl<'a> Resolver<'a> {
                     Err(unsupported_regexp_compile_diagnostic(Some(*span)))
                 } else if self.is_object_key_enumeration_leak(object, method, args) {
                     Err(private_storage_observable_access_diagnostic(Some(*span)))
+                } else if method == "matchAll" {
+                    self.lower_string_match_all_literal(object, args, *span)
                 } else if let Some(regexp_args) = regexp_test_runtime(object, method, args, *span)?
                 {
                     let lowered_args = regexp_args

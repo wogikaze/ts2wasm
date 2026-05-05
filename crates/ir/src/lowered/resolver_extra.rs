@@ -830,6 +830,100 @@ impl<'a> Resolver<'a> {
         }
     }
 
+    pub(super) fn lower_string_match_all_literal(
+        &mut self,
+        object: &ResolvedExpr,
+        args: &[ResolvedExpr],
+        span: Span,
+    ) -> Result<LoweredExpr, Diagnostic> {
+        if args.len() != 1 {
+            return Err(Diagnostic {
+                code: DiagCode::ArityMismatch,
+                message: format!(
+                    "String.prototype.matchAll expects 1 argument, got {}",
+                    args.len()
+                ),
+                span: Some(span),
+            });
+        }
+
+        let Some(input) = self.resolved_expr_static_string_value(object) else {
+            return Err(Diagnostic {
+                code: DiagCode::UnsupportedSyntax,
+                message: "issue-5129: String.prototype.matchAll currently requires a static string receiver"
+                    .to_owned(),
+                span: Some(span),
+            });
+        };
+        if !input.is_ascii() {
+            return Err(Diagnostic {
+                code: DiagCode::UnsupportedSyntax,
+                message: "issue-5129: String.prototype.matchAll currently supports ASCII input only"
+                    .to_owned(),
+                span: Some(span),
+            });
+        }
+
+        let ResolvedExpr::String(raw_pattern) = &args[0] else {
+            return Err(Diagnostic {
+                code: DiagCode::UnsupportedSyntax,
+                message: "issue-5129: String.prototype.matchAll currently requires a RegExp literal argument"
+                    .to_owned(),
+                span: Some(span),
+            });
+        };
+        if !looks_like_regexp_literal(raw_pattern) {
+            return Err(Diagnostic {
+                code: DiagCode::UnsupportedSyntax,
+                message: "issue-5129: String.prototype.matchAll currently requires a RegExp literal argument"
+                    .to_owned(),
+                span: Some(span),
+            });
+        }
+        validate_regexp_plain_literal(raw_pattern, "String.prototype.matchAll literal")?;
+        let delimiter = raw_pattern.rfind('/').expect("regexp literal has delimiter");
+        let flags = &raw_pattern[delimiter + 1..];
+        if !flags.contains('g') {
+            return Err(Diagnostic {
+                code: DiagCode::UnsupportedSyntax,
+                message: "issue-5129: String.prototype.matchAll requires a global RegExp literal in this slice"
+                    .to_owned(),
+                span: Some(span),
+            });
+        }
+
+        let pattern = &raw_pattern[1..delimiter];
+        let mut elements = Vec::new();
+        for (index, ch) in input.char_indices() {
+            let matches = match pattern {
+                r"\w" => ch.is_ascii_alphanumeric() || ch == '_',
+                "." => ch != '\n' && ch != '\r',
+                literal if literal.len() == 1 => literal.as_bytes()[0] == ch as u8,
+                _ => {
+                    return Err(Diagnostic {
+                        code: DiagCode::UnsupportedSyntax,
+                        message:
+                            "issue-5129: String.prototype.matchAll currently supports /\\w/g, /./g, and one-byte literal patterns"
+                                .to_owned(),
+                        span: Some(span),
+                    });
+                }
+            };
+            if matches {
+                elements.push(LoweredExpr::ObjectNew {
+                    props: vec![
+                        ("0".to_owned(), LoweredExpr::String(ch.to_string())),
+                        ("index".to_owned(), LoweredExpr::Number(index as i32)),
+                        ("input".to_owned(), LoweredExpr::String(input.clone())),
+                    ],
+                    non_enumerable: 0,
+                });
+            }
+        }
+
+        Ok(LoweredExpr::ArrayNew { elements })
+    }
+
     pub(super) fn lower_array_binding_declaration(
         &mut self,
         binding: &ArrayBinding,
@@ -2240,6 +2334,10 @@ impl<'a> Resolver<'a> {
             ResolvedExpr::MethodCall { object, method, args, .. } if method == "map" => {
                 self.is_known_array_expr(object)
                     && (string_constructor_arrow_callback(args) || unary_plus_arrow_callback(args))
+            }
+            ResolvedExpr::MethodCall { object, method, args, .. } if method == "matchAll" => {
+                self.resolved_expr_static_string_value(object).is_some()
+                    && matches!(args.as_slice(), [ResolvedExpr::String(raw)] if looks_like_regexp_literal(raw))
             }
             ResolvedExpr::Call { callee, .. } => match callee.as_ref() {
                 ResolvedExpr::Ident(name) => self
