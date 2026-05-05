@@ -450,6 +450,113 @@ HEAP_MASK=-8 HEAP_TAG=7";
     }
     #[test]
     #[allow(clippy::assertions_on_constants)]
+    fn memory_map_static_regions_are_non_overlapping_with_headroom() {
+        // Define every static memory region as [start, end).
+        // DATA_START is the base of the data segment table - its payload grows
+        // toward SCRATCH_OFFSET.  HEAP_START is the base of the dynamic heap
+        // which grows upward through GC headroom.
+        struct Region {
+            name: &'static str,
+            start: u32,
+            end: u32,
+        }
+
+        let iovec_end = Layout::STDIN_NREAD_OFFSET + 4;
+        let scratch_end = Layout::SCRATCH_OFFSET + Layout::SCRATCH_SIZE;
+        let stdin_end = Layout::STDIN_BUFFER_OFFSET + Layout::STDIN_BUFFER_SIZE;
+
+        let regions: [Region; 5] = [
+            Region {
+                name: "STDIN_IOVEC_AND_NREAD",
+                start: Layout::STDIN_IOVEC_OFFSET,
+                end: iovec_end,
+            },
+            Region {
+                name: "DATA_SEGMENT_TABLE",
+                start: Layout::DATA_START,
+                end: Layout::SCRATCH_OFFSET,
+            },
+            Region {
+                name: "SCRATCH",
+                start: Layout::SCRATCH_OFFSET,
+                end: scratch_end,
+            },
+            Region {
+                name: "STDIN_BUFFER",
+                start: Layout::STDIN_BUFFER_OFFSET,
+                end: stdin_end,
+            },
+            Region {
+                name: "HEAP_START",
+                start: Layout::HEAP_START,
+                end: Layout::HEAP_START + 1,
+            },
+        ];
+
+        // ---- 1. Pairwise non-overlap
+        for (i, a) in regions.iter().enumerate() {
+            for b in regions.iter().skip(i + 1) {
+                assert!(
+                    a.end <= b.start || b.end <= a.start,
+                    "region `{}` [{}, {}) overlaps `{}` [{}, {})",
+                    a.name,
+                    a.start,
+                    a.end,
+                    b.name,
+                    b.start,
+                    b.end,
+                );
+            }
+        }
+
+        // ---- 2. Headroom between adjacent low-memory regions
+        assert!(
+            iovec_end <= Layout::DATA_START,
+            "STDIN_IOVEC_AND_NREAD end ({iovec_end}) must not reach DATA_START ({})",
+            Layout::DATA_START,
+        );
+
+        assert!(
+            Layout::SCRATCH_OFFSET - Layout::DATA_START >= 4,
+            "DATA_SEGMENT_TABLE capacity must be at least 4 bytes",
+        );
+
+        assert!(
+            scratch_end <= Layout::STDIN_BUFFER_OFFSET,
+            "SCRATCH end ({scratch_end}) must not reach STDIN_BUFFER_OFFSET ({})",
+            Layout::STDIN_BUFFER_OFFSET,
+        );
+
+        assert!(
+            stdin_end <= Layout::HEAP_START,
+            "STDIN_BUFFER end ({stdin_end}) must not extend past HEAP_START ({})",
+            Layout::HEAP_START,
+        );
+
+        // ---- 3. Internal consistency
+        assert_eq!(
+            Layout::SCRATCH_SIZE % Layout::ALIGN,
+            0,
+            "SCRATCH_SIZE must be ALIGN-aligned",
+        );
+        assert_eq!(
+            Layout::STDIN_BUFFER_SIZE % Layout::ALIGN,
+            0,
+            "STDIN_BUFFER_SIZE must be ALIGN-aligned",
+        );
+        assert!(
+            Layout::HEAP_START <= Layout::WASM_PAGE_SIZE,
+            "HEAP_START must be within the first WASM page (page={}, heap_start={})",
+            Layout::WASM_PAGE_SIZE,
+            Layout::HEAP_START,
+        );
+        assert!(
+            Layout::MEMORY_MIN_PAGES >= 1,
+            "MEMORY_MIN_PAGES must be >= 1",
+        );
+    }
+    #[test]
+    #[allow(clippy::assertions_on_constants)]
     fn backward_compat_v1_archive_matches_current() {
         use crate::consts::RuntimeConst;
         use crate::value::ValueTag;

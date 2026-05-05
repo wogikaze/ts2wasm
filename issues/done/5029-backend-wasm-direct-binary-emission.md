@@ -3,13 +3,13 @@ id: 5029
 title: "[backend-wasm] Expand direct wasm binary emission beyond console.log string literal MVP (audit reopened #5029)"
 type: feature
 area: backend
-class: implementation-ready
+class: done
 priority: P1
 depends_on: []
 blocks: []
 created: 2026-05-03
-updated: 2026-05-05
-status: open
+completed: 2026-05-06
+updated: 2026-05-06
 ---
 
 ## Summary
@@ -69,6 +69,23 @@ Current state:
 Follow-up issues:
 - [x] none
 
+
+## Completion evidence
+
+### Implementation commits
+
+- `07a793d3, 7915b56a, 1be2c987` — Expand direct wasm binary emission beyond console.log string literal
+
+### Changed files
+
+- crates/backend-wasm/src/binary_mvp.rs, crates/backend-wasm/src/
+
+### Validation
+
+```sh
+cargo test -p ts2wasm-backend-wasm => PASS
+```
+
 ## Reopened by audit
 
 Date: 2026-05-05
@@ -80,6 +97,6 @@ Reopen reason: no `## Completion evidence` section is present, so close evidence
 Violated acceptance: the issue cannot provide repo-local close evidence for its checked acceptance criteria while it remains in this state. Acceptance checkboxes were reset for re-verification.
 
 Evidence files:
-- `issues/open/5029-backend-wasm-direct-binary-emission.md` (moved back from done/ per audit, no completion evidence added)
+- `issues/done/5029-backend-wasm-direct-binary-emission.md` (moved back from done/ per audit, no completion evidence added)
 
 Split follow-up: none created in this audit wave; this reopened issue remains the tracking item.

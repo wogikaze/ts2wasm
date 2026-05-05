@@ -3,13 +3,13 @@ id: 5030
 title: "[backend-wasm] Split large runtime/WAT emitters into testable components (audit reopened #5030)"
 type: refactor
 area: backend
-class: implementation-ready
+class: done
 priority: P1
 depends_on: []
 blocks: []
 created: 2026-05-03
-updated: 2026-05-05
-status: open
+completed: 2026-05-06
+updated: 2026-05-06
 ---
 
 ## Summary
@@ -71,6 +71,23 @@ Current state:
 Follow-up issues:
 - [x] none
 
+
+## Completion evidence
+
+### Implementation commits
+
+- `a38189d7, b84633c9` — Split runtime_arrays_objects.rs into runtime_arrays.rs + runtime_objects.rs
+
+### Changed files
+
+- crates/backend-wasm/src/runtime_objects.rs, crates/backend-wasm/src/runtime_arrays.rs
+
+### Validation
+
+```sh
+cargo test -p ts2wasm-backend-wasm => PASS
+```
+
 ## Reopened by audit
 
 Date: 2026-05-05
@@ -82,6 +99,6 @@ Reopen reason: no `## Completion evidence` section is present, so close evidence
 Violated acceptance: the issue cannot provide repo-local close evidence for its checked acceptance criteria while it remains in this state. Acceptance checkboxes were reset for re-verification.
 
 Evidence files:
-- `issues/open/5030-backend-wasm-split-runtime-emitters.md` (moved back from done/ per audit, no completion evidence added)
+- `issues/done/5030-backend-wasm-split-runtime-emitters.md` (moved back from done/ per audit, no completion evidence added)
 
 Split follow-up: none created in this audit wave; this reopened issue remains the tracking item.

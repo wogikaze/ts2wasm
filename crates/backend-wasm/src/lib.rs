@@ -115,6 +115,7 @@ mod tests {
     use std::process::Command;
     use ts2wasm_frontend::DiagCode;
     use ts2wasm_frontend::{Lexer, Parser};
+    use ts2wasm_ir::builtin::BuiltinId;
     use ts2wasm_ir::lowered::{
         ClassPrototypeRef, FuncId, FunctionCallKind, LocalId, LoweredBinaryOp, LoweredExpr,
         LoweredFunction, LoweredProgram, LoweredStmt, ModuleInfo,
@@ -214,7 +215,182 @@ mod tests {
 
         let err = emit_wasm_binary_mvp(&program).expect_err("non-console.log shape is out of MVP");
         assert_eq!(err.code, DiagCode::UnsupportedSyntax);
-        assert!(err.message.contains("console.log(<string literal>)"));
+        assert!(err.message.contains("direct wasm binary MVP"));
+    }
+
+    #[test]
+    fn direct_wasm_binary_mvp_number_literal() {
+        let program = LoweredProgram {
+            top_level_statements: vec![LoweredStmt::Expr(LoweredExpr::Call {
+                kind: FunctionCallKind::Builtin(BuiltinId::ConsoleLog),
+                args: vec![LoweredExpr::Number(42)],
+            })],
+            top_level_locals: vec![],
+            functions: vec![],
+            modules: vec![],
+        };
+        let direct_wasm =
+            emit_wasm_binary_mvp(&program).expect("number literal should emit direct wasm binary");
+        let wat = emit_wat(&program).expect("should emit WAT");
+        let temp_dir = unique_temp_dir("direct-wasm-binary-mvp-number");
+        fs::create_dir_all(&temp_dir).expect("temp dir should be created");
+        let direct_path = temp_dir.join("direct.wasm");
+        let wat_wasm_path = temp_dir.join("wat.wasm");
+        fs::write(&direct_path, &direct_wasm).expect("direct wasm should be written");
+        let wat_path = temp_dir.join("out.wat");
+        fs::write(&wat_path, &wat).expect("wat should be written");
+        let wat2wasm = Command::new("wat2wasm")
+            .arg(&wat_path)
+            .arg("-o")
+            .arg(&wat_wasm_path)
+            .output()
+            .expect("wat2wasm should run");
+        assert!(
+            wat2wasm.status.success(),
+            "wat2wasm failed\nstdout:\n{}\nstderr:\n{}",
+            String::from_utf8_lossy(&wat2wasm.stdout),
+            String::from_utf8_lossy(&wat2wasm.stderr)
+        );
+        let direct_out = run_iwasm(&direct_path);
+        let wat_out = run_iwasm(&wat_wasm_path);
+        assert_eq!(direct_out, "42\n");
+        assert_eq!(direct_out, wat_out);
+        let _ = fs::remove_dir_all(temp_dir);
+    }
+
+    #[test]
+    fn direct_wasm_binary_mvp_local_variable() {
+        let program = LoweredProgram {
+            top_level_statements: vec![
+                LoweredStmt::Let(LocalId(0), LoweredExpr::Number(42)),
+                LoweredStmt::Expr(LoweredExpr::Call {
+                    kind: FunctionCallKind::Builtin(BuiltinId::ConsoleLog),
+                    args: vec![LoweredExpr::Local(LocalId(0))],
+                }),
+            ],
+            top_level_locals: vec![LocalId(0)],
+            functions: vec![],
+            modules: vec![],
+        };
+        let direct_wasm =
+            emit_wasm_binary_mvp(&program).expect("local variable should emit direct wasm binary");
+        let wat = emit_wat(&program).expect("should emit WAT");
+        let temp_dir = unique_temp_dir("direct-wasm-binary-mvp-local");
+        fs::create_dir_all(&temp_dir).expect("temp dir should be created");
+        let direct_path = temp_dir.join("direct.wasm");
+        let wat_wasm_path = temp_dir.join("wat.wasm");
+        fs::write(&direct_path, &direct_wasm).expect("direct wasm should be written");
+        let wat_path = temp_dir.join("out.wat");
+        fs::write(&wat_path, &wat).expect("wat should be written");
+        let wat2wasm = Command::new("wat2wasm")
+            .arg(&wat_path)
+            .arg("-o")
+            .arg(&wat_wasm_path)
+            .output()
+            .expect("wat2wasm should run");
+        assert!(
+            wat2wasm.status.success(),
+            "wat2wasm failed\nstdout:\n{}\nstderr:\n{}",
+            String::from_utf8_lossy(&wat2wasm.stdout),
+            String::from_utf8_lossy(&wat2wasm.stderr)
+        );
+        let direct_out = run_iwasm(&direct_path);
+        let wat_out = run_iwasm(&wat_wasm_path);
+        // WAT emitter produces runtime output; direct binary produces compile-time string.
+        // When Let is const-initialized, both should match.
+        assert_eq!(direct_out, "42\n");
+        assert_eq!(direct_out, wat_out);
+        let _ = fs::remove_dir_all(temp_dir);
+    }
+
+    #[test]
+    fn direct_wasm_binary_mvp_binary_expression() {
+        let program = LoweredProgram {
+            top_level_statements: vec![LoweredStmt::Expr(LoweredExpr::Call {
+                kind: FunctionCallKind::Builtin(BuiltinId::ConsoleLog),
+                args: vec![LoweredExpr::Binary {
+                    left: Box::new(LoweredExpr::Number(10)),
+                    op: LoweredBinaryOp::Add,
+                    right: Box::new(LoweredExpr::Number(32)),
+                }],
+            })],
+            top_level_locals: vec![],
+            functions: vec![],
+            modules: vec![],
+        };
+        let direct_wasm = emit_wasm_binary_mvp(&program)
+            .expect("binary expression should emit direct wasm binary");
+        let wat = emit_wat(&program).expect("should emit WAT");
+        let temp_dir = unique_temp_dir("direct-wasm-binary-mvp-binary");
+        fs::create_dir_all(&temp_dir).expect("temp dir should be created");
+        let direct_path = temp_dir.join("direct.wasm");
+        let wat_wasm_path = temp_dir.join("wat.wasm");
+        fs::write(&direct_path, &direct_wasm).expect("direct wasm should be written");
+        let wat_path = temp_dir.join("out.wat");
+        fs::write(&wat_path, &wat).expect("wat should be written");
+        let wat2wasm = Command::new("wat2wasm")
+            .arg(&wat_path)
+            .arg("-o")
+            .arg(&wat_wasm_path)
+            .output()
+            .expect("wat2wasm should run");
+        assert!(
+            wat2wasm.status.success(),
+            "wat2wasm failed\nstdout:\n{}\nstderr:\n{}",
+            String::from_utf8_lossy(&wat2wasm.stdout),
+            String::from_utf8_lossy(&wat2wasm.stderr)
+        );
+        let direct_out = run_iwasm(&direct_path);
+        let wat_out = run_iwasm(&wat_wasm_path);
+        assert_eq!(direct_out, "42\n");
+        assert_eq!(direct_out, wat_out);
+        let _ = fs::remove_dir_all(temp_dir);
+    }
+
+    #[test]
+    fn direct_wasm_binary_mvp_multiple_statements() {
+        let program = LoweredProgram {
+            top_level_statements: vec![
+                LoweredStmt::Expr(LoweredExpr::Call {
+                    kind: FunctionCallKind::Builtin(BuiltinId::ConsoleLog),
+                    args: vec![LoweredExpr::String("hello".to_owned())],
+                }),
+                LoweredStmt::Expr(LoweredExpr::Call {
+                    kind: FunctionCallKind::Builtin(BuiltinId::ConsoleLog),
+                    args: vec![LoweredExpr::Number(42)],
+                }),
+            ],
+            top_level_locals: vec![],
+            functions: vec![],
+            modules: vec![],
+        };
+        let direct_wasm = emit_wasm_binary_mvp(&program)
+            .expect("multiple statements should emit direct wasm binary");
+        let wat = emit_wat(&program).expect("should emit WAT");
+        let temp_dir = unique_temp_dir("direct-wasm-binary-mvp-multi");
+        fs::create_dir_all(&temp_dir).expect("temp dir should be created");
+        let direct_path = temp_dir.join("direct.wasm");
+        let wat_wasm_path = temp_dir.join("wat.wasm");
+        fs::write(&direct_path, &direct_wasm).expect("direct wasm should be written");
+        let wat_path = temp_dir.join("out.wat");
+        fs::write(&wat_path, &wat).expect("wat should be written");
+        let wat2wasm = Command::new("wat2wasm")
+            .arg(&wat_path)
+            .arg("-o")
+            .arg(&wat_wasm_path)
+            .output()
+            .expect("wat2wasm should run");
+        assert!(
+            wat2wasm.status.success(),
+            "wat2wasm failed\nstdout:\n{}\nstderr:\n{}",
+            String::from_utf8_lossy(&wat2wasm.stdout),
+            String::from_utf8_lossy(&wat2wasm.stderr)
+        );
+        let direct_out = run_iwasm(&direct_path);
+        let wat_out = run_iwasm(&wat_wasm_path);
+        assert_eq!(direct_out, "hello\n42\n");
+        assert_eq!(direct_out, wat_out);
+        let _ = fs::remove_dir_all(temp_dir);
     }
 
     #[test]

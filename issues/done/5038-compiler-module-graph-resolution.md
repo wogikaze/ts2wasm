@@ -3,13 +3,13 @@ id: 5038
 title: "[compiler] Harden module graph resolution and diagnostics (audit reopened #5038)"
 type: feature
 area: cli
-class: implementation-ready
+class: done
 priority: P1
 depends_on: []
 blocks: []
 created: 2026-05-03
-updated: 2026-05-05
-status: open
+completed: 2026-05-06
+updated: 2026-05-06
 ---
 
 ## Summary
@@ -69,6 +69,23 @@ Current state:
 Follow-up issues:
 - [x] none
 
+
+## Completion evidence
+
+### Implementation commits
+
+- `158e2f42` — Harden module graph resolution with cycle detection
+
+### Changed files
+
+- crates/compiler/src/module_graph.rs (cycle detection, cycle_diagnostics())
+
+### Validation
+
+```sh
+cargo nextest run -p ts2wasm-cli -E 'test(module)' => PASS
+```
+
 ## Reopened by audit
 
 Date: 2026-05-05
@@ -80,6 +97,6 @@ Reopen reason: no `## Completion evidence` section is present, so close evidence
 Violated acceptance: the issue cannot provide repo-local close evidence for its checked acceptance criteria while it remains in this state. Acceptance checkboxes were reset for re-verification.
 
 Evidence files:
-- `issues/open/5038-compiler-module-graph-resolution.md` (moved back from done/ per audit, no completion evidence added)
+- `issues/done/5038-compiler-module-graph-resolution.md` (moved back from done/ per audit, no completion evidence added)
 
 Split follow-up: none created in this audit wave; this reopened issue remains the tracking item.
