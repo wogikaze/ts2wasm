@@ -74,8 +74,13 @@ impl WatEmitter<'_> {
         indent: usize,
         frame: &LocalFrame,
     ) {
+        let pad = " ".repeat(indent);
         for statement in &self.program.top_level_statements {
             self.emit_statement(wat, statement, indent, &mut LoopContext::default(), frame);
+            self.emit_gc_backend_temp_roots_clear(wat, &pad, frame);
+            wat.push_str(&format!(
+                "{pad}(if (global.get $exception_pending)\n{pad}  (then (unreachable)))\n"
+            ));
         }
     }
 
