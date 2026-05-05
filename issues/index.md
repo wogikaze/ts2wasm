@@ -17,7 +17,7 @@ Issue files are the source of truth for work items. The generated section below 
 | docs | 2 | 1 | 1 |
 | frontend | 4377 | 3866 | 511 |
 | harness | 1 | 0 | 1 |
-| ir | 20 | 5 | 15 |
+| ir | 20 | 4 | 16 |
 | issues | 4 | 0 | 4 |
 | parser | 1 | 0 | 1 |
 | reference | 211 | 182 | 29 |
@@ -172,7 +172,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 5008 | Implement static ES module export forms (default, named, namespace, re-export) (audit reopened #5008) | feature | ir/compiler | done | P1 |  | `export const x = 1` (ExportDecl) currently hits `issue-055` when the file has no `import` from another module, becau... |
 | 5009 | Remaining static ES module export forms (named list, default import, namespace, re-export, side-effect) (audit reopened #5009) | feature | ir/compiler | done | P1 |  | Remaining static ES module export forms (named list, default import, namespace, re-export, side-effect) (audit reopen... |
 | 5010 | Implement local named export (export { value } and export { value as alias }) for entry module (audit reopened #5010) | feature | ir/compiler | done | P1 |  | `export { ... }` references local bindings by name, but the compiler's module rewrite path only handles `ExportDecl` ... |
-| 5011 | Represent or reject class runtime values in lowered IR (audit reopened #5011) | feature | ir/backend | design | P3 |  | Represent or reject class runtime values in lowered IR (audit reopened #5011) |
 | 5026 | [backend-wasm] Implement real class declaration emission (audit reopened #5026) | feature | backend | implementation-ready | P0 |  | [backend-wasm] Implement real class declaration emission (audit reopened #5026) |
 | 5027 | [backend-wasm] Replace throw-as-return with catchable exception runtime (audit reopened #5027) | feature | backend | implementation-ready | P0 |  | [backend-wasm] Replace throw-as-return with catchable exception runtime (audit reopened #5027) |
 | 5028 | [backend-wasm] Implement array growth and reallocation for push/write paths (audit reopened #5028) | feature | backend | implementation-ready | P0 |  | [backend-wasm] Implement array growth and reallocation for push/write paths (audit reopened #5028) |
@@ -5077,6 +5076,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 4813 | Implement type-system support (dup) | spike | frontend/syntax | see `issues/done/4813-implement-type-system.md` |
 | 4814 | Investigate and classify unknown-unsupported cases (dup) | spike | frontend/syntax | see `issues/done/4814-implement-unknown-unsupported.md` |
 | 5000 | Meta: TypeScript Compiler Parser Syntax Coverage | meta | frontend/syntax | see file |
+| 5011 | Represent or reject class runtime values in lowered IR (audit reopened #5011) | feature | ir/backend | see `issues/done/5011-class-runtime-value-semantics.md` |
 | 5013 | Implement duplicate-local support | spike | reference/triage | see `issues/done/5013-implement-duplicate-local.md` |
 | 5014 | Implement eval support (dup) | spike | frontend/syntax | see `issues/done/5014-implement-eval.md` |
 | 5016 | Implement function resolution (dup) | spike | frontend/resolver | see `issues/done/5016-implement-function-resolution.md` |

@@ -8,7 +8,7 @@ priority: P3
 depends_on: []
 blocks: []
 created: 2026-05-02
-updated: 2026-05-05status: open
+updated: 2026-05-05
 ---
 
 ## Summary
@@ -72,10 +72,10 @@ Implement constructor function objects, prototype chain, `extends`, `new`, `supe
 
 ## Acceptance criteria
 
-- [ ] Class name used as pure value (`const y = C`, `export { C }`) rejected with UnsupportedSyntax diagnostic
-- [ ] `new C()` and `C.staticMethod()` continue to work
-- [ ] Class method/constructor compilation continues to work
-- [ ] No silent runtime correctness bugs from erased class values (rejected at name resolution)
+- [x] Class name used as pure value (`const y = C`, `export { C }`) rejected with UnsupportedSyntax diagnostic
+- [x] `new C()` and `C.staticMethod()` continue to work
+- [x] Class method/constructor compilation continues to work
+- [x] No silent runtime correctness bugs from erased class values (rejected at name resolution)
 
 ## Reopened by audit
 
@@ -88,7 +88,31 @@ Reopen reason: no `## Completion evidence` section is present, so close evidence
 Violated acceptance: the issue cannot provide repo-local close evidence for its checked acceptance criteria while it remains in this state. Acceptance checkboxes were reset for re-verification.
 
 Evidence files:
-- `issues/open/5011-class-runtime-value-semantics.md` before this move
-- `issues/open/5011-class-runtime-value-semantics.md` after this move
+- `issues/done/5011-class-runtime-value-semantics.md` -- issue file as of close (contains completion evidence)
 
 Split follow-up: none created in this audit wave; this reopened issue remains the tracking item.
+
+## Completion evidence
+
+### Chosen approach: Design option B (reject class-value usage structurally)
+
+Class names used as pure values (e.g. `const y = C`, `export { C }`) are rejected at name resolution with an `UnsupportedSyntax` diagnostic. Member access patterns (`C.staticMethod()`) and `new C()` continue to work because they are routed through `resolve_member_target` and the `Expr::New` handler respectively, which bypass the class-value check.
+
+### Implementation commit
+
+- `e3ff73ab feat(ir): reject class runtime values at name resolution (issue 5011)`
+
+### Files changed
+
+- `crates/ir/src/name_resolver.rs`: Added `classes` tracking map (hoisting + scope), `is_class_only()` helper, `resolve_name()` with class-value error dispatch, `resolve_member_target()` exemption path, and `Expr::New` callee extraction to bypass check
+- `fixtures/core-semantics/class-value-unsupported.ts`: Fixture for `const y = C` class value rejection
+- `crates/cli/tests/common/m2_node_diff_fixture_tests.rs`: Added `class_value_unsupported_reports_issue_5011` test
+
+### Verification
+
+All 62 class-related tests pass:
+- `class_value_unsupported_reports_issue_5011` — verifies `const y = C` is rejected with `issue-5011:` diagnostic
+- `build_smoke_class_basic`, `build_smoke_class_static`, `build_smoke_class_extends`, `build_smoke_class_super`, `build_smoke_class_super_method`, `build_smoke_class_expression` — verify `new C()` and `C.staticMethod()` work
+- All node_diff class fixture tests pass, confirming no regression in class method/constructor compilation
+
+Validation command: `cargo nextest run -E 'test(class)'` — 62 passed, 0 failed.
