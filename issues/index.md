@@ -16,18 +16,18 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 1 | 0 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4396 | 3777 | 619 |
+| frontend | 4397 | 3778 | 619 |
 | harness | 1 | 0 | 1 |
 | ir | 27 | 5 | 22 |
 | issues | 4 | 0 | 4 |
 | parser | 1 | 0 | 1 |
 | reference | 211 | 169 | 42 |
-| runtime | 265 | 96 | 169 |
+| runtime | 265 | 95 | 170 |
 | scripts | 3 | 1 | 2 |
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 4998 | 4050 | 948 |
+| total | 4999 | 4050 | 949 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -181,6 +181,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 5161 | Model ambient value declarations for name resolution | feature | frontend/resolver | implementation-ready | P1 |  | `reference/typescript/tests/cases/compiler/bestCommonTypeWithContextualTyping.ts` currently reports `UnresolvedName` ... |
 | 5162 | Allow compatible var redeclarations | feature | frontend/syntax | implementation-ready | P2 |  | `reference/typescript/tests/cases/compiler/duplicateLocalVariable3.ts` reports `DuplicateLocal` for `var x = 1; var x... |
 | 5163 | Lower nested call expression callees | feature | frontend/semantics | implementation-ready | P2 |  | `reference/typescript/tests/cases/compiler/betterErrorForAccidentalCall.ts` currently reports `UnsupportedSyntax: onl... |
+| 5164 | Parse exponentiation compound assignment | feature | frontend/syntax | implementation-ready | P1 |  | `reference/typescript/tests/cases/compiler/bigIntWithTargetES2016.ts` currently reports `UnsupportedSyntax: expected ... |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -457,7 +458,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 772 | Implement Augmentedtypesvar | spike | frontend/syntax | class: blocked | Implement Augmentedtypesvar |
 | 773 | Implement Autoasiforstaticsinclassdeclaration | spike | frontend/syntax | class: triage-needed | Implement Autoasiforstaticsinclassdeclaration |
 | 775 | Implement Autotypeassignedusingdestructuringfromnevernocrash | spike | frontend/resolver | class: blocked | Implement Autotypeassignedusingdestructuringfromnevernocrash |
-| 1046 | Implement Bigintwithtargetes | spike | runtime/builtins | class: triage-needed | Implement Bigintwithtargetes |
 | 1047 | Implement Bigintwithtargetlessthanes | spike | runtime/builtins | class: triage-needed | Implement Bigintwithtargetlessthanes |
 | 1048 | Implement Bigint | spike | frontend/resolver | class: blocked | Implement Bigint |
 | 1049 | Implement Bigintambientminimal | spike | runtime/builtins | class: triage-needed | Implement Bigintambientminimal |
@@ -5020,6 +5020,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 1043 | Implement Bestchoicetype | spike | frontend/syntax | see `issues/done/1043-implement-bestChoiceType.md` |
 | 1044 | Implement Bestcommontypewithcontextualtyping | spike | frontend/resolver | see `issues/done/1044-implement-bestCommonTypeWithContextualTyping.md` |
 | 1045 | Implement Bettererrorforaccidentalcall | spike | frontend/syntax | see `issues/done/1045-implement-betterErrorForAccidentalCall.md` |
+| 1046 | Implement Bigintwithtargetes | spike | runtime/builtins | see `issues/done/1046-implement-bigIntWithTargetES.md` |
 | 2050 | Implement Duplicatelocalvariable Duplicate Local | spike | reference/triage | see `issues/done/2050-implement-duplicateLocalVariable-duplicate-local.md` |
 | 3002 | Implement Isolateddeclarationerrorsdefault | spike | runtime/builtins | see `issues/done/3002-implement-isolatedDeclarationErrorsDefault.md` |
 | 3131 | Implement Jsxfactorynotidentifierorqualifiedname | spike | reference/triage | see `issues/done/3131-implement-jsxFactoryNotIdentifierOrQualifiedName.md` |
