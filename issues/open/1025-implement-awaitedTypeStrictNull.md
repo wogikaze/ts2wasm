@@ -13,6 +13,15 @@ completed: 2026-05-06
 status: done
 ---
 
+> **Reopened by audit** (2026-05-06)
+> Classification: false-done (triage-needed)
+> Reason: triage-needed bucket with all acceptance criteria unchecked, empty completion evidence, zero implementation commits. No triage work was performed before moving to done/.
+>
+> True-done checklist:
+> 1. Inspect the smart triage report and confirm/update duplicates
+> 2. Split into implementation-ready child issue(s) or supersede by existing issue
+> 3. Fill completion evidence with commits and validation results
+
 ## Summary
 
 Triage awaitedTypeStrictNull across 1 generated reference bucket entry and close it if current evidence shows no implementation blocker.
