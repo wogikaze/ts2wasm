@@ -132,6 +132,7 @@ SUPPORTED_FEATURES = (
     "new.target",
     "numeric-separator-literal",
     "Object.fromEntries",
+    "Object.hasOwn",
     "Proxy",
     "Promise",
     "Promise.allSettled",
