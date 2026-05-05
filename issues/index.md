@@ -15,7 +15,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 1 | 0 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4378 | 3796 | 582 |
+| frontend | 4378 | 3793 | 585 |
 | harness | 1 | 0 | 1 |
 | ir | 21 | 0 | 21 |
 | issues | 4 | 0 | 4 |
@@ -26,7 +26,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 4969 | 4073 | 896 |
+| total | 4969 | 4070 | 899 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -238,7 +238,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 453 | Implement type-system support | spike | frontend/semantics | class: blocked | Implement type-system support |
 | 454 | Investigate and classify unknown-unsupported cases | spike | frontend/syntax | class: triage-needed | Investigate and classify unknown-unsupported cases |
 | 521 | Implement Ambientenumelementinitializer | spike | frontend/syntax | class: blocked | Implement Ambientenumelementinitializer |
-| 530 | Implement Ambientfundule (audit reopened #530) | spike | frontend/syntax | class: blocked | Implement Ambientfundule (audit reopened #530) |
 | 532 | Implement Ambientmodulewithclassdeclarationwithextends (audit reopened #532) | spike | frontend/syntax | class: blocked | Implement Ambientmodulewithclassdeclarationwithextends (audit reopened #532) |
 | 535 | Implement Ambientnamerestrictions (audit reopened #535) | spike | frontend/syntax | class: blocked | Implement Ambientnamerestrictions (audit reopened #535) |
 | 537 | Implement Ambientstatement (audit reopened #537) | spike | frontend/syntax | class: blocked | Implement Ambientstatement (audit reopened #537) |
@@ -300,7 +299,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 610 | Implement Ambientexternalmoduleinanotherexternalmodule | spike | frontend/syntax | class: blocked | Implement Ambientexternalmoduleinanotherexternalmodule |
 | 612 | Implement Ambientexternalmodulewithinternalimportdeclaration | spike | frontend/syntax | class: blocked | Implement Ambientexternalmodulewithinternalimportdeclaration |
 | 615 | Implement Ambientexternalmodulewithoutinternalimportdeclaration | spike | frontend/syntax | class: blocked | Implement Ambientexternalmodulewithoutinternalimportdeclaration |
-| 616 | Implement Ambientfundule (audit reopened #616) | spike | frontend/syntax | class: blocked | Implement Ambientfundule (audit reopened #616) |
 | 617 | Implement Ambientmoduleexports | spike | frontend/syntax | class: blocked | Implement Ambientmoduleexports |
 | 618 | Implement Ambientmodulewithclassdeclarationwithextends (audit reopened #618) | spike | frontend/syntax | class: blocked | Implement Ambientmodulewithclassdeclarationwithextends (audit reopened #618) |
 | 619 | Implement Ambientmodulewithtemplateliterals | spike | frontend/syntax | class: blocked | Implement Ambientmodulewithtemplateliterals |
@@ -458,7 +456,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 775 | Implement Autotypeassignedusingdestructuringfromnevernocrash | spike | frontend/resolver | class: blocked | Implement Autotypeassignedusingdestructuringfromnevernocrash |
 | 784 | Implement Functiondeclaration Import Export (audit reopened #784) | spike | frontend/syntax | class: blocked | Implement Functiondeclaration Import Export (audit reopened #784) |
 | 839 | Implement Ambientclassdeclarationwithextends (audit reopened #839) | spike | frontend/syntax | class: blocked | Implement Ambientclassdeclarationwithextends (audit reopened #839) |
-| 851 | Implement Ambientfundule (audit reopened #851) | spike | frontend/syntax | class: blocked | Implement Ambientfundule (audit reopened #851) |
 | 853 | Implement Ambientmodulewithclassdeclarationwithextends (audit reopened #853) | spike | frontend/syntax | class: blocked | Implement Ambientmodulewithclassdeclarationwithextends (audit reopened #853) |
 | 856 | Implement Ambientnamerestrictions (audit reopened #856) | spike | frontend/syntax | class: blocked | Implement Ambientnamerestrictions (audit reopened #856) |
 | 858 | Implement Ambientstatement (audit reopened #858) | spike | frontend/syntax | class: blocked | Implement Ambientstatement (audit reopened #858) |
@@ -4720,6 +4717,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 527 | Implement Ambientexternalmodulewithrelativeexternalimportdeclaration (audit reopened #527) | spike | frontend/syntax | see `issues/done/527-implement-ambientExternalModuleWithRelativeExternalImportDeclaration.md` |
 | 528 | Implement Ambientexternalmodulewithrelativemodulename (audit reopened #528) | spike | frontend/syntax | see `issues/done/528-implement-ambientExternalModuleWithRelativeModuleName.md` |
 | 529 | Implement Ambientexternalmodulewithoutinternalimportdeclaration (dup) | spike | frontend/syntax | see `issues/done/529-implement-ambientExternalModuleWithoutInternalImportDeclaration.md` |
+| 530 | Implement Ambientfundule (audit reopened #530) | spike | frontend/syntax | see `issues/done/530-implement-ambientFundule.md` |
 | 531 | Implement Ambientmoduleexports (dup) | spike | frontend/syntax | see `issues/done/531-implement-ambientModuleExports.md` |
 | 533 | Implement Ambientmodulewithtemplateliterals (dup) | spike | frontend/syntax | see `issues/done/533-implement-ambientModuleWithTemplateLiterals.md` |
 | 534 | Implement Ambientmodules (dup) | spike | frontend/syntax | see `issues/done/534-implement-ambientModules.md` |
@@ -4744,6 +4742,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 611 | Implement Ambientexternalmodulereopen (audit reopened #611) | spike | frontend/syntax | see `issues/done/611-implement-ambientExternalModuleReopen.md` |
 | 613 | Implement Ambientexternalmodulewithrelativeexternalimportdeclaration (audit reopened #613) | spike | frontend/syntax | see `issues/done/613-implement-ambientExternalModuleWithRelativeExternalImportDeclaration.md` |
 | 614 | Implement Ambientexternalmodulewithrelativemodulename (audit reopened #614) | spike | frontend/syntax | see `issues/done/614-implement-ambientExternalModuleWithRelativeModuleName.md` |
+| 616 | Implement Ambientfundule (audit reopened #616) | spike | frontend/syntax | see `issues/done/616-implement-ambientFundule.md` |
 | 638 | Implement Anonymousclassexpression (audit reopened #638) | spike | frontend/syntax | see `issues/done/638-implement-anonymousClassExpression.md` |
 | 669 | Implement Arrayconcat (dup) | spike | frontend/syntax | see `issues/done/669-implement-arrayConcat.md` |
 | 707 | Implement Asibreak | spike | frontend/syntax | see `issues/done/707-implement-asiBreak.md` |
@@ -4821,6 +4820,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 848 | Implement Ambientexternalmodulewithrelativeexternalimportdeclaration (audit reopened #848) | spike | frontend/syntax | see `issues/done/848-implement-ambientExternalModuleWithRelativeExternalImportDeclaration.md` |
 | 849 | Implement Ambientexternalmodulewithrelativemodulename (audit reopened #849) | spike | frontend/syntax | see `issues/done/849-implement-ambientExternalModuleWithRelativeModuleName.md` |
 | 850 | Implement Ambientexternalmodulewithoutinternalimportdeclaration (dup) | spike | frontend/syntax | see `issues/done/850-implement-ambientExternalModuleWithoutInternalImportDeclaration.md` |
+| 851 | Implement Ambientfundule (audit reopened #851) | spike | frontend/syntax | see `issues/done/851-implement-ambientFundule.md` |
 | 852 | Implement Ambientmoduleexports (dup) | spike | frontend/syntax | see `issues/done/852-implement-ambientModuleExports.md` |
 | 854 | Implement Ambientmodulewithtemplateliterals (dup) | spike | frontend/syntax | see `issues/done/854-implement-ambientModuleWithTemplateLiterals.md` |
 | 855 | Implement Ambientmodules (dup) | spike | frontend/syntax | see `issues/done/855-implement-ambientModules.md` |

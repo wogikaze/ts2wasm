@@ -424,7 +424,7 @@ error: [UnsupportedSyntax] expected Semicolon, got Some(Function) at 47..55
 ## 重複整理メモ
 
 この issue はタイトルが重複しているため、内容がより充実している
-`issues/open/616-implement-ambientFundule.md` に統合されました。
+`issues/done/616-implement-ambientFundule.md` に統合されました。
 そちらを参照してください。
 ## Completion evidence
 
