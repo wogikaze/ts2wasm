@@ -15,7 +15,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 1 | 0 | 1 |
 | coverage | 42 | 32 | 10 |
 | docs | 2 | 0 | 2 |
-| frontend | 4377 | 3860 | 517 |
+| frontend | 4377 | 3858 | 519 |
 | harness | 1 | 0 | 1 |
 | ir | 20 | 4 | 16 |
 | issues | 4 | 0 | 4 |
@@ -26,7 +26,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 4963 | 4190 | 773 |
+| total | 4963 | 4188 | 775 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -156,7 +156,6 @@ Issue files are the source of truth for work items. The generated section below 
 <!-- generated:ready:start -->
 | ID | Title | Type | Area | Class | Priority | Depends on | Summary |
 |---:|---|---|---|---|---|---|---|
-| 265 | Add broad statement fixture coverage (audit reopened #265) | feature | frontend/syntax | implementation-ready | P2 |  | Add broad statement fixture coverage (audit reopened #265) |
 | 268 | Implement for loop increment operator (audit reopened #268) | feature | frontend/semantics | done | P2 |  | Implement for loop increment operator (audit reopened #268) |
 | 1001e | Annex B eval-code function declaration residuals (existing-binding/no-skip/skip-early-err patterns) (audit reopened #1001e) | feature | frontend/semantics | ready | P3 | 225 | Annex B eval-code function declaration residuals (existing-binding/no-skip/skip-early-err patterns) (audit reopened #... |
 | 5001 | Meta: TypeScript Compiler Semantic Analysis Coverage | meta | frontend/semantics | design-ready | P1 |  | Meta: TypeScript Compiler Semantic Analysis Coverage |
@@ -170,7 +169,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 5030 | [backend-wasm] Split large runtime/WAT emitters into testable components (audit reopened #5030) | refactor | backend | implementation-ready | P1 |  | [backend-wasm] Split large runtime/WAT emitters into testable components (audit reopened #5030) |
 | 5040 | [compiler] Add resource limits and cancellation to server batch compilation (audit reopened #5040) | feature | cli | implementation-ready | P2 |  | [compiler] Add resource limits and cancellation to server batch compilation (audit reopened #5040) |
 | 5043 | [frontend] Split large lexer/parser files by grammar responsibility (audit reopened #5043) | refactor | frontend | implementation-ready | P1 |  | [frontend] Split large lexer/parser files by grammar responsibility (audit reopened #5043) |
-| 5045 | [frontend] Improve syntax error recovery and source spans (audit reopened #5045) | feature | frontend | implementation-ready | P2 |  | [frontend] Improve syntax error recovery and source spans (audit reopened #5045) |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -4627,6 +4625,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 262 | Implement BigInt builtins and string conversion | feature | runtime/builtins | see `issues/done/262-implement-bigint-builtins-and-string-conversion.md` |
 | 263 | Implement BigInt dynamic mul/div/rem signed-i64 runtime slice | feature | runtime/semantics | see `issues/done/263-implement-bigint-dynamic-mul-div-rem-signed-i64-slice.md` |
 | 264 | Add broad expression fixture coverage (audit reopened #264) | feature | frontend/syntax | see `issues/done/264-implement-broad-expression-fixture-coverage.md` |
+| 265 | Add broad statement fixture coverage (audit reopened #265) | feature | frontend/syntax | see `issues/done/265-implement-broad-statement-fixture-coverage.md` |
 | 266 | Implement test262 test harness and host-defined functions (audit reopened #266) | feature | tests/harness | see `issues/done/266-implement-test262-harness.md` |
 | 267 | Implement interactive web UI for test results | feature | coverage | see `issues/done/267-implement-interactive-web-ui-for-test-results.md` |
 | 267a | Implement web UI data generation and script integration | feature | coverage | see `issues/done/267a-web-ui-data-generation-and-script-integration.md` |
@@ -5087,6 +5086,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 5041 | [frontend] Complete Expr AST fixture coverage (audit reopened #5041) | test | frontend | see `issues/done/5041-frontend-expr-fixture-coverage.md` |
 | 5042 | [frontend] Complete Stmt AST fixture coverage (audit reopened #5042) | test | frontend | see `issues/done/5042-frontend-stmt-fixture-coverage.md` |
 | 5044 | [frontend] Define and test TypeScript ambient declaration erasure boundaries (audit reopened #5044) | feature | frontend | see `issues/done/5044-frontend-ambient-erasure.md` |
+| 5045 | [frontend] Improve syntax error recovery and source spans (audit reopened #5045) | feature | frontend | see `issues/done/5045-frontend-error-recovery.md` |
 | 5046 | [ir] Design full class runtime IR representation | feature | ir | see `issues/done/5046-ir-class-ir.md` |
 | 5047 | [ir] Implement env-cell lowering for outer-scope mutation | feature | ir | see `issues/done/5047-ir-env-cell.md` |
 | 5048 | [ir] Broaden BigInt lowering beyond signed-i64/first-limb slice | feature | ir | see `issues/done/5048-ir-bigint-lowering.md` |
