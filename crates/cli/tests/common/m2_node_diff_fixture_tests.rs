@@ -1330,10 +1330,6 @@ fn date_to_string_fixture_builds_successfully() {
 fn date_annex_b_fixtures_report_issue_241() {
     for (fixture, method) in [
         (
-            "fixtures/builtins-and-io/date-annexb-get-year-unsupported.ts",
-            "getYear",
-        ),
-        (
             "fixtures/builtins-and-io/date-annexb-set-year-unsupported.ts",
             "setYear",
         ),

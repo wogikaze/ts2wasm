@@ -1080,6 +1080,25 @@ impl<'a> Resolver<'a> {
                             LoweredExpr::Number(field_index),
                         ],
                     })
+                } else if method == "getYear" && self.is_date_receiver(object) {
+                    if !args.is_empty() {
+                        return Err(Diagnostic {
+                            code: DiagCode::ArityMismatch,
+                            message: format!(
+                                "Date.prototype.{method} expects 0 arguments, got {}",
+                                args.len()
+                            ),
+                            span: Some(*span),
+                        });
+                    }
+                    Ok(LoweredExpr::Binary {
+                        left: Box::new(LoweredExpr::RuntimeCall {
+                            runtime_fn: "DateGetLocalTimeField".to_owned(),
+                            args: vec![self.lower_expr(object)?, LoweredExpr::Number(0)],
+                        }),
+                        op: LoweredBinaryOp::Subtract,
+                        right: Box::new(LoweredExpr::Number(1900)),
+                    })
                 } else if is_annex_b_date_method(method) && self.is_date_receiver(object) {
                     Err(unsupported_annex_b_date_method_diagnostic(
                         method,

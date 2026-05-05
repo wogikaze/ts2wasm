@@ -874,6 +874,16 @@ fn build_smoke_date_local_getters() {
 }
 
 #[test]
+fn build_smoke_date_annex_b_get_year() {
+    let result = run_fixture("builtins-and-io/date-annexb-get-year.ts");
+    assert!(
+        result.is_ok(),
+        "Date.getYear should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
 fn build_smoke_date_to_iso_string() {
     let result = run_fixture("builtins-and-io/date-to-iso-string.ts");
     assert!(
