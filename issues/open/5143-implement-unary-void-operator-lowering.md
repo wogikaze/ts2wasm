@@ -1,0 +1,159 @@
+---
+id: 5143
+title: "Implement unary void operator lowering"
+type: feature
+area: ir/lowered
+class: implementation-ready
+priority: P1
+depends_on: []
+blocks: []
+created: 2026-05-06
+updated: 2026-05-06
+---
+
+## Summary
+
+Implement the narrow unary `void` operator slice after parsing, so expressions such as `() => void instance.once("unlock", () => {})` lower successfully.
+
+## Problem
+
+The frontend already tokenizes and parses `void` as `UnaryOp::Void`. The representative reference case reaches lowering, then fails because `lower_unary_op` currently rejects `UnaryOp::Void`.
+
+Problem: unary `void` currently fails with `UnsupportedSyntax` in lowering even though TypeScript accepts the reference case with no diagnostics.
+
+## Current failure
+
+Representative reproduction:
+
+```sh
+mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/avoidCycleWithVoidExpressionReturnedFromArrow.ts
+```
+
+Current diagnostic:
+
+```text
+error: [UnsupportedSyntax] unary operator Void not yet supported
+```
+
+Source context:
+
+```text
+// @target: es2015
+// @strict: true
+// @noEmit: true
+
+type HowlErrorCallback = (soundId: number, error: unknown) => void;
+```
+
+Relevant compiler evidence:
+
+```text
+tokens: Token::Void is emitted for the `void` keyword
+AST: object literal callback contains Unary { op: Void, expr: Call(Member(Ident("instance"), "once"), ...) }
+Pipeline: validate_ast -> module_graph -> resolve_names -> resolve_builtins -> build_typed_ir -> lower_program
+Failure: lower_program reports `unary operator Void not yet supported`
+TypeScript oracle: ok, no diagnostics
+```
+
+## Desired final state
+
+The compiler lowers unary `void expr` by evaluating `expr` for side effects and producing `undefined`, matching JavaScript/TypeScript semantics for the supported expression subset.
+
+## Scope
+
+In scope:
+
+- [ ] Add a `LoweredUnaryOp::Void` or equivalent lowering path that preserves operand side effects.
+- [ ] Ensure the expression result is `undefined` regardless of operand value.
+- [ ] Add a focused fixture for `void sideEffect()` in an arrow/function body.
+- [ ] Re-run the representative `avoidCycleWithVoidExpressionReturnedFromArrow.ts` triage and confirm it advances past the unary `Void` diagnostic.
+
+Out of scope:
+
+- `void` in unsupported expression forms that fail earlier for independent reasons.
+- Broad callback or class-constructor semantics not needed for the focused fixture.
+- Other unsupported unary operators such as bigint bitwise-not.
+
+## Affected paths
+
+Expected:
+
+- `crates/ir/src/lowered/program.rs`
+- `crates/ir/src/lowered/types.rs`
+- `crates/backend-wasm/src/`
+- `crates/cli/tests/common/m2_node_diff_fixture_tests.rs`
+- `fixtures/core-semantics/`
+
+Do not touch:
+
+- frontend lexer/parser unless a focused regression proves the existing `UnaryOp::Void` AST is no longer produced
+- unrelated operator implementations
+
+## Acceptance criteria
+
+- [ ] A focused Node/iwasm fixture for `void sideEffect()` matches Node output and proves the side effect ran.
+- [ ] The fixture proves the expression result is `undefined`.
+- [ ] `mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/avoidCycleWithVoidExpressionReturnedFromArrow.ts` no longer reports `unary operator Void not yet supported`.
+- [ ] Existing supported unary operators still pass their focused tests.
+
+## Validation
+
+Required commands:
+
+```sh
+cargo fmt --all --check
+cargo nextest run -p ts2wasm-cli unary_void_operator
+python scripts/manager.py update-issue-index --check
+python scripts/manager.py check-issue-health
+python scripts/manager.py check-issue-readiness -- --fail-ready-below 80
+git diff --check
+```
+
+Impacted commands:
+
+```sh
+mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/avoidCycleWithVoidExpressionReturnedFromArrow.ts
+mise run reference-coverage -- tsc --path-filter reference/typescript/tests/cases/compiler/avoidCycleWithVoidExpressionReturnedFromArrow.ts --detail
+```
+
+Not run:
+
+- none
+
+## Docs / current-state / issue sync
+
+Final-state docs:
+
+- [ ] not affected
+
+Current state:
+
+- [ ] not affected
+
+Follow-up issues:
+
+- [ ] none
+
+## Notes
+
+Split from generated bucket `issues/done/1014-implement-avoidCycleWithVoidExpressionReturnedFromArrow.md`.
+
+## Completion evidence
+
+Fill only when moving to `done/`.
+
+Commits:
+
+- `...`
+
+Validation result:
+
+```text
+command:
+result:
+date:
+```
+
+Remaining risks:
+
+- none
