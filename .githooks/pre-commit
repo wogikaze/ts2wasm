@@ -32,9 +32,9 @@ else
   echo "pre-commit: skip markdownlint; no staged markdown files"
 fi
 
-if printf '%s\n' "$staged_files" | grep -Eq '^fixtures/.*\.ts$'; then
-  echo "pre-commit: assert(true) detection in fixture files"
+if printf '%s\n' "$staged_files" | grep -Eq '^(fixtures/.*\.ts|scripts/.*\.py)$'; then
+  echo "pre-commit: assert(true) detection in staged fixture/script files"
   python3 scripts/check/assert-true-detect.py --diff-only
 else
-  echo "pre-commit: skip assert(true) check; no staged fixture changes"
+  echo "pre-commit: skip assert(true) check; no staged fixture or script changes"
 fi
