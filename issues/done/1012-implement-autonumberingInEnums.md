@@ -80,8 +80,10 @@ Do not touch:
 Required commands:
 
 ```sh
-cargo fmt --all --check
-cargo nextest run
+python scripts/manager.py update-issue-index --check
+python scripts/manager.py check-issue-health
+python scripts/manager.py check-issue-readiness -- --fail-ready-below 80
+git diff --check
 ```
 
 Impacted commands:
@@ -94,7 +96,8 @@ mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/auton
 
 Not run:
 
-- none
+- `cargo fmt --all --check`; no Rust code changed
+- `cargo nextest run`; no implementation changed
 
 ## Docs / current-state / issue sync
 
