@@ -9,6 +9,7 @@ depends_on: []
 blocks: []
 created: 2026-05-06
 updated: 2026-05-06
+status: done
 ---
 
 ## Summary
@@ -37,10 +38,10 @@ Re-export forms have semantic parity tests that exercise observable imports thro
 
 In scope:
 
-- [ ] Add fixtures or generated Node variants for `export * from "./source"` read through a downstream import.
-- [ ] Add fixtures or generated Node variants for `export { x } from "./source"` read through a downstream import.
-- [ ] Add fixtures or generated Node variants for `export * as ns from "./source"` read through a downstream import.
-- [ ] Preserve existing build-smoke coverage for entry-module re-export forms.
+- [x] Add fixtures or generated Node variants for `export * from "./source"` read through a downstream import.
+- [x] Add fixtures or generated Node variants for `export { x } from "./source"` read through a downstream import.
+- [x] Add fixtures or generated Node variants for `export * as ns from "./source"` read through a downstream import.
+- [x] Preserve existing build-smoke coverage for entry-module re-export forms.
 
 Out of scope:
 
@@ -63,11 +64,11 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] Star re-export import-through fixture matches Node stdout under iwasm.
-- [ ] Named re-export import-through fixture matches Node stdout under iwasm.
-- [ ] Namespace re-export import-through fixture matches Node stdout under iwasm.
-- [ ] `cargo nextest run -p ts2wasm-cli module` passes.
-- [ ] Issue evidence records the exact focused differential command.
+- [x] Star re-export import-through fixture matches Node stdout under iwasm.
+- [x] Named re-export import-through fixture matches Node stdout under iwasm.
+- [x] Namespace re-export import-through fixture matches Node stdout under iwasm.
+- [x] `cargo nextest run -p ts2wasm-cli module` passes.
+- [x] Issue evidence records the exact focused differential command.
 
 ## Validation
 
@@ -108,18 +109,30 @@ Split from audit-reopened issue 5010 so local named export evidence can close se
 
 ## Completion evidence
 
-Fill only when moving to `done/`.
+Completed on 2026-05-06.
 
 Commits:
 
-- `...`
+- `762fe17b` compiler: support static re-export parity
 
 Validation result:
 
 ```text
-command:
-result:
-date:
+command: cargo nextest run -p ts2wasm-cli static_star_re_export_module_import_fixture_matches_node_output_under_iwasm static_named_re_export_module_import_fixture_matches_node_output_under_iwasm static_namespace_re_export_module_import_fixture_matches_node_output_under_iwasm
+result: pass (3 tests run: 3 passed, 654 skipped)
+date: 2026-05-06
+
+command: cargo nextest run -p ts2wasm-cli module
+result: pass (27 tests run: 27 passed, 630 skipped)
+date: 2026-05-06
+
+command: cargo nextest run -p ts2wasm-compiler
+result: pass (58 tests run: 58 passed, 0 skipped)
+date: 2026-05-06
+
+command: cargo fmt --all --check
+result: pass
+date: 2026-05-06
 ```
 
 Remaining risks:

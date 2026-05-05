@@ -17,7 +17,7 @@ Issue files are the source of truth for work items. The generated section below 
 | docs | 2 | 0 | 2 |
 | frontend | 4377 | 3855 | 522 |
 | harness | 1 | 0 | 1 |
-| ir | 21 | 2 | 19 |
+| ir | 21 | 1 | 20 |
 | issues | 4 | 0 | 4 |
 | parser | 1 | 0 | 1 |
 | reference | 211 | 182 | 29 |
@@ -26,7 +26,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 4964 | 4179 | 785 |
+| total | 4964 | 4178 | 786 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -159,7 +159,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 5001 | Meta: TypeScript Compiler Semantic Analysis Coverage | meta | frontend/semantics | design-ready | P1 |  | Meta: TypeScript Compiler Semantic Analysis Coverage |
 | 5004 | Meta: Runtime Builtins Coverage (test262) (audit reopened #5004) | meta | runtime/builtins | design-ready | P1 |  | Meta: Runtime Builtins Coverage (test262) (audit reopened #5004) |
 | 5005 | Meta: TypeScript Compiler Name Resolution Coverage | meta | frontend/resolver | design-ready | P1 |  | Meta: TypeScript Compiler Name Resolution Coverage |
-| 5128 | Add semantic parity for static re-export module forms | test | ir/compiler | implementation-ready | P1 |  | `export * from`, `export { x } from`, and `export * as ns from` fixtures build, but the semantic test suite does not ... |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -5136,6 +5135,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 5091 | Investigate and classify unknown-unsupported cases (dup) | spike | frontend/syntax | see `issues/done/5091-implement-unknown-unsupported.md` |
 | 5125 | Implement as type assertion expression parsing | feature | frontend/parser | see `issues/done/5125-implement-as-type-assertion-expression.md` |
 | 5126 | Implement name resolver var redeclaration tolerance | feature | ir/lowering | see `issues/done/5126-implement-name-resolver-var-redeclaration.md` |
+| 5128 | Add semantic parity for static re-export module forms | test | ir/compiler | see `issues/done/5128-static-re-export-semantic-parity.md` |
 <!-- generated:done:end -->
 
 ## Index generation contract

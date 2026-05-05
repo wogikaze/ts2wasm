@@ -125,7 +125,7 @@ Implemented behavior:
 - Local named export values are observable through a supported static import when the exporting module is used as a dependency.
 - Unknown local export names produce a source-spanned issue-5005 diagnostic.
 - Duplicate export names produce a source-spanned issue-5005 diagnostic.
-- Re-export import-through semantic parity is tracked separately by `issues/open/5128-static-re-export-semantic-parity.md`.
+- Re-export import-through semantic parity is tracked separately by `issues/done/5128-static-re-export-semantic-parity.md`.
 
 Repo-local evidence:
 
@@ -138,7 +138,7 @@ Repo-local evidence:
 - `fixtures/module-system/static-named-list-import-source.ts`
 - `fixtures/module-system/static-local-named-export-missing-unsupported.ts`
 - `fixtures/module-system/static-local-named-export-duplicate-unsupported.ts`
-- `issues/open/5128-static-re-export-semantic-parity.md`
+- `issues/done/5128-static-re-export-semantic-parity.md`
 
 Validation:
 
