@@ -91,7 +91,12 @@ The autonomous loop is considered complete when:
 - **REQUIRED**: If new failure pattern discovered, add to `failure_patterns.md` with mechanical guards
 - **REQUIRED**: If new guard needed, add to `review_checklist.md`
 - **REQUIRED**: Run `mise run check agent-state` to validate state files
+<<<<<<< HEAD
 - **REQUIRED**: Run `mise run dev-loop --advance` to advance RETRO → SYNC (restart loop)
+||||||| merged common ancestors
+- **REQUIRED**: Run `scripts/manager check-agent-state` to validate state files
+=======
+>>>>>>> origin/master
 
 ## Read order
 
@@ -126,6 +131,7 @@ mise run dev-loop
 ### After: Follow autonomous loop
 
 ```bash
+<<<<<<< HEAD
 # Start every session
 mise run dev-loop
 
@@ -137,22 +143,60 @@ mise run gate                   # full validation
 mise run update-issue-index     # after closing issues
 mise run dev-loop --check       # validate consistency
 mise run dev-loop --advance     # RETRO → SYNC, loop restarts
+||||||| merged common ancestors
+# Read current_task.json for FSM state
+# Run required gates
+scripts/manager fmt
+scripts/manager nextest
+scripts/manager check-issue-health
+# Generate test report to reports/runs/<run_id>/test_report.json
+# Write cycle report with evidence
+# Update current_task.json with verification results
+=======
+# Read current_task.json for FSM state
+# Run required gates
+mise run fmt
+mise run nextest
+mise run check issues
+# Generate test report to reports/runs/<run_id>/test_report.json
+# Write cycle report with evidence
+# Update current_task.json with verification results
+>>>>>>> origin/master
 ```
 
 ### Commands run per cycle
 
 ```bash
+<<<<<<< HEAD
 mise run dev-loop
 mise run dev-loop --advance   # SYNC → TRIAGE
 mise run dev-loop --advance   # TRIAGE → TASK_SELECT
 # ... through all FSM states ...
 mise run dev-loop --advance   # RETRO → SYNC
+||||||| merged common ancestors
+scripts/manager fmt
+scripts/manager nextest
+scripts/manager check-issue-health
+scripts/manager check-repo-smoke
+=======
+mise run fmt
+mise run nextest
+mise run check issues
+mise run check
+>>>>>>> origin/master
 ```
 
 ## Post-change auto-execution
 
 After completing issue work (code changes, issue file updates, cycle report), automatically:
 1. Run `mise run fmt`, `mise run nextest`, and `mise run check issues`
+<<<<<<< HEAD
 2. Run `mise run dev-loop --check` to validate state
 3. Run `mise run dev-loop --advance` to progress the FSM
 4. Commit changes with auto-generated commit message based on issue completion evidence
+||||||| merged common ancestors
+1. Run `scripts/manager fmt`, `scripts/manager nextest`, and `scripts/manager check-issue-health`
+2. Commit changes with auto-generated commit message based on issue completion evidence
+=======
+2. Commit changes with auto-generated commit message based on issue completion evidence
+>>>>>>> origin/master

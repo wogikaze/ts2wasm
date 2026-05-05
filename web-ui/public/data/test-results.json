@@ -1,0 +1,65 @@
+{
+  "metadata": {
+    "generated_at": "2026-04-30T01:01:51Z",
+    "generator": "scripts/gen/web-ui-data.py",
+    "record_mode": "jsonl",
+    "row_limit": 1000,
+    "schema_version": 2,
+    "shown_records": 3,
+    "sources": [
+      "artifacts/coverage/results/test262-summary.json",
+      "artifacts/coverage/results/test262.json",
+      "artifacts/coverage/results/tsc.json",
+      "artifacts/coverage/results/tsgo.json",
+      "artifacts/coverage/results/test262-results.jsonl"
+    ],
+    "total_records": 3,
+    "truncated": false
+  },
+  "summary": {
+    "failed": 1,
+    "passed": 0,
+    "skipped": 2,
+    "total": 3
+  },
+  "tests": [
+    {
+      "actual": "__TS2WASM_TEST262_ASSERT_FAIL__\n",
+      "case": "/home/wogikaze/wgkz/ts2wasm/reference/test262/test/language/arguments-object/10.5-7-b-2-s.js",
+      "error": "__TS2WASM_TEST262_ASSERT_FAIL__\n",
+      "id": "1",
+      "name": "10.5-7-b-2-s.js",
+      "reason": "Test262AssertionFailure: test262 assertion failed",
+      "source_code": "// Copyright (c) 2012 Ecma International.  All rights reserved.\n// This code is governed by the BSD license found in the LICENSE file.\n\n/*---\nes5id: 10.5-7-b-2-s\ndescription: Arguments object index assignment is allowed\n---*/\n\nfunction _10_5_7_b_2_fun() {\n    arguments[7] = 12;\n    return arguments[7] === 12;\n};\n\nassert(_10_5_7_b_2_fun(30), '_10_5_7_b_2_fun(30) !== true');\n",
+      "status": "fail",
+      "suite": "test262",
+      "target": "wasm-iwasm"
+    },
+    {
+      "case": "/home/wogikaze/wgkz/ts2wasm/reference/test262/test/language/arguments-object/10.6-12-2.js",
+      "error": "error: [UnsupportedSyntax] issue-291: Object.getOwnPropertyDescriptor is not implemented in the current Object global binding slice at 1518..1569\n",
+      "error_line": 20,
+      "id": "2",
+      "name": "10.6-12-2.js",
+      "reason": "UnsupportedSyntax/feature-unsupported: [UnsupportedSyntax]",
+      "source_code": "// Copyright (c) 2012 Ecma International.  All rights reserved.\n// This code is governed by the BSD license found in the LICENSE file.\n\n/*---\nes5id: 10.6-12-2\ndescription: arguments.callee has correct attributes\nflags: [noStrict]\n---*/\n\nfunction testcase() {\n  var desc = Object.getOwnPropertyDescriptor(arguments,\\\"callee\\\");\n\n  assert.sameValue(desc.configurable, true, 'desc.configurable');\n  assert.sameValue(desc.enumerable, false, 'desc.enumerable');\n  assert.sameValue(desc.writable, true, 'desc.writable');\n  assert.sameValue(desc.hasOwnProperty('get'), false, 'desc.hasOwnProperty(\\\"get\\\")');\n  assert.sameValue(desc.hasOwnProperty('set'), false, 'desc.hasOwnProperty(\\\"set\\\")');\n}\ntestcase();\n",
+      "status": "skip",
+      "stderr": "error: [UnsupportedSyntax] issue-291: Object.getOwnPropertyDescriptor is not implemented in the current Object global binding slice at 1518..1569\n",
+      "suite": "test262",
+      "target": "wasm-iwasm"
+    },
+    {
+      "case": "/home/wogikaze/wgkz/ts2wasm/reference/test262/test/language/expressions/class/dstr/meth-ary-ptrn-elem-id-init-skipped.js",
+      "error": "error: [UnsupportedSyntax] issue-292: top-level function mutation of outer binding `initCount` requires mutable outer environment lowering at 3745..3760\n",
+      "error_line": 89,
+      "id": "3",
+      "name": "meth-ary-ptrn-elem-id-init-skipped.js",
+      "reason": "UnsupportedSyntax/feature-unsupported: [UnsupportedSyntax]",
+      "source_code": "// This file was procedurally generated from the following sources:\n// - src/dstr-binding/ary-ptrn-elem-id-init-skipped.case\n// - src/dstr-binding/default/cls-expr-meth.template\n/*---\ndescription: Destructuring initializer is not evaluated when value is not `undefined` (class expression method)\nesid: sec-class-definitions-runtime-semantics-evaluation\nfeatures: [destructuring-binding]\nflags: [generated]\ninfo: |\n    ClassExpression : class BindingIdentifieropt ClassTail\n\n    1. If BindingIdentifieropt is not present, let className be undefined.\n    2. Else, let className be StringValue of BindingIdentifier.\n    3. Let value be the result of ClassDefinitionEvaluation of ClassTail\n       with argument className.\n    [...]\n\n    14.5.14 Runtime Semantics: ClassDefinitionEvaluation\n\n    21. For each ClassElement m in order from methods\n        a. If IsStatic of m is false, then\n           i. Let status be the result of performing\n              PropertyDefinitionEvaluation for m with arguments proto and\n              false.\n        [...]\n\n    14.3.8 Runtime Semantics: DefineMethod\n\n    MethodDefinition : PropertyName ( StrictFormalParameters ) { FunctionBody }\n\n    [...]\n    6. Let closure be FunctionCreate(kind, StrictFormalParameters, FunctionBody,\n       scope, strict). If functionPrototype was passed as a parameter then pass its\n       value as the functionPrototype optional argument of FunctionCreate.\n    [...]\n\n    9.2.1 [[Call]] ( thisArgument, argumentsList)\n\n    [...]\n    7. Let result be OrdinaryCallEvaluateBody(F, argumentsList).\n    [...]\n\n    9.2.1.3 OrdinaryCallEvaluateBody ( F, argumentsList )\n\n    1. Let status be FunctionDeclarationInstantiation(F, argumentsList).\n    [...]\n\n    9.2.12 FunctionDeclarationInstantiation(func, argumentsList)\n\n    [...]\n    23. Let iteratorRecord be Record {[[iterator]]:\n        CreateListIterator(argumentsList), [[done]]: false}.\n    24. If hasDuplicates is true, then\n        [...]\n    25. Else,\n        b. Let formalStatus be IteratorBindingInitialization for formals with\n           iteratorRecord and env as arguments.\n    [...]\n\n    13.3.3.6 Runtime Semantics: IteratorBindingInitialization\n\n    SingleNameBinding : BindingIdentifier Initializeropt\n\n    [...]\n    6. If Initializer is present and v is undefined, then\n       [...]\n    7. If environment is undefined, return PutValue(lhs, v).\n    8. Return InitializeReferencedBinding(lhs, v).\n---*/\nvar initCount = 0;\nfunction counter() {\n  initCount += 1;\n}\n\nvar callCount = 0;\nvar C = class {\n  method([w = counter(), x = counter(), y = counter(), z = counter()]) {\n    assert.sameValue(w, null);\n    assert.sameValue(x, 0);\n    assert.sameValue(y, false);\n    assert.sameValue(z, '');\n    assert.sameValue(initCount, 0);\n    callCount = callCount + 1;\n  }\n};\n\nnew C().method([null, 0, false, '']);\nassert.sameValue(callCount, 1, 'method invoked exactly once');\n",
+      "status": "skip",
+      "stderr": "error: [UnsupportedSyntax] issue-292: top-level function mutation of outer binding `initCount` requires mutable outer environment lowering at 3745..3760\n",
+      "suite": "test262",
+      "target": "wasm-iwasm"
+    }
+  ]
+}

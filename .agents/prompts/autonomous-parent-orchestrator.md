@@ -490,6 +490,7 @@ Include:
 - queue sizes
 - next assignments
 
+<<<<<<< HEAD
 ## Webhook push
 
 After writing the parent cycle report, send it to Discord before any user-facing response:
@@ -514,6 +515,12 @@ mise run discord-report -- reports/runs/<run_id>/discord_payload.json --run-id <
 
 Parent cycle reports are loop artifacts, not user-facing completion messages.
 After writing and sending (or deferring) the Discord report:
+||||||| merged common ancestors
+End every parent cycle with exactly one line:
+=======
+Parent cycle reports are loop artifacts, not user-facing completion messages.
+After writing and sending or deferring the Discord report:
+>>>>>>> origin/master
 
 - If more work is safe to dispatch, do not send a user-facing summary and do not stop; immediately continue to `QUEUE_SCAN`.
 - If a child is still active, do not send a user-facing summary and do not stop; keep supervising or assign non-conflicting work.

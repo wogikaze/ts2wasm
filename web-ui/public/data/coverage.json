@@ -1,0 +1,59 @@
+{
+  "byPriority": {
+    "future": 41710,
+    "p0": 45,
+    "p1": 15968,
+    "p2": 1779,
+    "p3": 293
+  },
+  "future": 41710,
+  "implemented": 235,
+  "suites": [
+    {
+      "blocked": 0,
+      "build_pass": 0,
+      "denominator": 0,
+      "executed": 0,
+      "fail": 0,
+      "semantic_pass": 0,
+      "source": "artifacts/coverage/results/test262-summary.json",
+      "suite": "test262",
+      "unsupported": 2
+    },
+    {
+      "blocked": 44,
+      "build_pass": 209,
+      "denominator": 53445,
+      "executed": 18000,
+      "fail": 1,
+      "semantic_pass": 150,
+      "source": "artifacts/coverage/results/test262.json",
+      "suite": "test262",
+      "unsupported": 17746
+    },
+    {
+      "blocked": 0,
+      "build_pass": 17,
+      "denominator": 6419,
+      "executed": 200,
+      "fail": 0,
+      "semantic_pass": 10,
+      "source": "artifacts/coverage/results/tsc.json",
+      "suite": "tsc",
+      "unsupported": 183
+    },
+    {
+      "blocked": 0,
+      "build_pass": 9,
+      "denominator": 166,
+      "executed": 120,
+      "fail": 0,
+      "semantic_pass": 7,
+      "source": "artifacts/coverage/results/tsgo.json",
+      "suite": "tsgo",
+      "unsupported": 111
+    }
+  ],
+  "total": 60030,
+  "unimplemented": 18087
+}

@@ -1,0 +1,53 @@
+{
+  "suite": "test262",
+  "suite_name": "test262",
+  "denominator": 53445,
+  "executed": 18000,
+  "build_coverage_percent": "0.39",
+  "semantic_coverage_percent": "0.28",
+  "build_pass": 209,
+  "semantic_pass": 150,
+  "fail": 1,
+  "unsupported": 17746,
+  "blocked": 44,
+  "skip_with_reason": 0,
+  "unsupported_diagcodes": {
+    "UnsupportedSyntax": 9578,
+    "UnresolvedName": 7609,
+    "UnresolvedFunction": 285,
+    "ArityMismatch": 9,
+    "DuplicateLocal": 66,
+    "ExpectedNegativeSyntax": 199
+  },
+  "unsupported_features": {
+    "array-builtin": 1826,
+    "name-resolution": 7609,
+    "date": 398,
+    "function-resolution": 285,
+    "function": 332,
+    "object-builtin": 1721,
+    "regexp-literal": 972,
+    "string-builtin": 745,
+    "builtin-api": 3190,
+    "legacy-global-builtin": 8,
+    "arity": 9,
+    "eval": 195,
+    "duplicate-local": 66,
+    "unknown-unsupported": 60,
+    "object-literal": 2,
+    "parser-syntax": 106,
+    "annexb-ishtmldda": 13,
+    "negative-parse-syntaxerror": 199,
+    "arguments-object": 1,
+    "switch": 1,
+    "rest-parameter": 5,
+    "class": 2,
+    "async-iteration": 1
+  },
+  "status": "in-progress",
+  "selection": {
+    "paths_file": null,
+    "path_filters": []
+  },
+  "evidence": "mise run reference-coverage -- test262 --limit 18000"
+}
