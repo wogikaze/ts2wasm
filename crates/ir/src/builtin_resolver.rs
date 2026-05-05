@@ -58,7 +58,12 @@ impl BigIntStaticBuiltinFolder {
 
     fn fold_stmt(&mut self, stmt: &Stmt) -> Stmt {
         match stmt {
-            Stmt::Let { name, expr, span } => {
+            Stmt::Let {
+                name,
+                expr,
+                span,
+                is_var,
+            } => {
                 let expr = self.fold_expr(expr);
                 if let Some(value) = static_bigint_builtin_const_expr(&expr) {
                     self.locals.insert(name.clone(), value);
@@ -74,6 +79,7 @@ impl BigIntStaticBuiltinFolder {
                     name: name.clone(),
                     expr,
                     span: *span,
+                    is_var: *is_var,
                 }
             }
             Stmt::Assign { name, expr, span } => {
@@ -914,7 +920,7 @@ fn resolve_stmt_with_outer_bindings(
         // Import/export forms are handled by the compiler's module rewrite path
         // (lower_static_named_import_bindings_for_build) before reaching the resolver.
         // They are still listed in the catch-all below for exhaustive matching and dump paths.
-        Stmt::Let { name, expr, span } => {
+        Stmt::Let { name, expr, span, is_var: _ } => {
             if let Some(pattern) = parse_binding_pattern(name, Some(*span))? {
                 Ok(ResolvedStmt::DestructureLet {
                     pattern,

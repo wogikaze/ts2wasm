@@ -1732,6 +1732,7 @@ mod tests {
                         name,
                         expr: Expr::Number { value, span },
                         span: decl_span,
+                        ..
                     } => {
                         assert_eq!(name, "value");
                         assert_eq!(*value, 1);

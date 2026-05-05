@@ -167,12 +167,18 @@ impl NameResolver {
             Stmt::ExportDefault { span, .. } => {
                 Err(unsupported_module_decl(*span, "default export"))
             }
-            Stmt::Let { name, expr, span } => {
-                self.declare_binding(name, Some(*span))?;
+            Stmt::Let {
+                name,
+                expr,
+                span,
+                is_var,
+            } => {
+                self.declare_binding(name, Some(*span), *is_var)?;
                 Ok(Stmt::Let {
                     name: name.clone(),
                     expr: self.resolve_expr(expr)?,
                     span: *span,
+                    is_var: *is_var,
                 })
             }
             Stmt::Assign { name, expr, span } => {
@@ -235,7 +241,7 @@ impl NameResolver {
                 self.enter_scope();
                 self.function_depth += 1;
                 for (param_name, default, is_rest) in params {
-                    self.declare_binding(param_name, Some(*span))?;
+                    self.declare_binding(param_name, Some(*span), false)?;
                     if *is_rest {
                         // For rest params with binding patterns like (...[value]),
                         // also declare the inner names from the pattern
@@ -243,7 +249,7 @@ impl NameResolver {
                             && let Some(pattern) = parse_binding_pattern(inner, Some(*span))?
                         {
                             for name in pattern.names() {
-                                self.declare_variable(name, Some(*span))?;
+                                self.declare_variable(name, Some(*span), false)?;
                             }
                         }
                     }
@@ -280,7 +286,7 @@ impl NameResolver {
                 let resolved_try = self.resolve_block(try_block)?;
                 let resolved_catch = if let Some(param) = catch_param {
                     self.enter_scope();
-                    self.declare_variable(param, None)?;
+                    self.declare_variable(param, None, false)?;
                     let resolved = self
                         .resolve_block(catch_block.as_ref().map(|b| b.as_slice()).unwrap_or(&[]))?;
                     self.exit_scope();
@@ -379,7 +385,7 @@ impl NameResolver {
                 span,
             } => {
                 self.enter_scope();
-                self.declare_variable(var, None)?;
+                self.declare_variable(var, None, false)?;
                 let resolved_iter = self.resolve_expr(iter)?;
                 self.enter_loop();
                 let resolved_body = self.resolve_block(body)?;
@@ -399,7 +405,7 @@ impl NameResolver {
                 span,
             } => {
                 self.enter_scope();
-                self.declare_variable(var, None)?;
+                self.declare_variable(var, None, false)?;
                 let resolved_iter = self.resolve_expr(iter)?;
                 self.enter_loop();
                 let resolved_body = self.resolve_block(body)?;
@@ -537,7 +543,7 @@ impl NameResolver {
             } => {
                 self.enter_scope();
                 if !name.is_empty() {
-                    self.declare_binding(name, Some(*span))?;
+                    self.declare_binding(name, Some(*span), false)?;
                 }
                 let resolved_extends =
                     extends.as_ref().map(|e| self.resolve_expr(e)).transpose()?;
@@ -563,10 +569,10 @@ impl NameResolver {
                 self.enter_scope();
                 self.function_depth += 1;
                 if !name.is_empty() {
-                    self.declare_binding(name, Some(*span))?;
+                    self.declare_binding(name, Some(*span), false)?;
                 }
                 for (param_name, default, is_rest) in params {
-                    self.declare_binding(param_name, Some(*span))?;
+                    self.declare_binding(param_name, Some(*span), false)?;
                     if *is_rest {
                         // For rest params with binding patterns like (...[value]),
                         // also declare the inner names from the pattern
@@ -574,7 +580,7 @@ impl NameResolver {
                             && let Some(pattern) = parse_binding_pattern(inner, Some(*span))?
                         {
                             for name in pattern.names() {
-                                self.declare_variable(name, Some(*span))?;
+                                self.declare_variable(name, Some(*span), false)?;
                             }
                         }
                     }
@@ -879,14 +885,14 @@ impl NameResolver {
             } => {
                 self.enter_scope();
                 for param in params {
-                    self.declare_binding(param, Some(*span))?;
+                    self.declare_binding(param, Some(*span), false)?;
                     // For rest params with binding patterns like (...[value]),
                     // also declare the inner names from the pattern
                     if let Some(inner) = param.strip_prefix("...")
                         && let Some(pattern) = parse_binding_pattern(inner, Some(*span))?
                     {
                         for name in pattern.names() {
-                            self.declare_variable(name, Some(*span))?;
+                            self.declare_variable(name, Some(*span), false)?;
                         }
                     }
                 }
@@ -997,7 +1003,7 @@ impl NameResolver {
         self.enter_scope();
         for stmt in block {
             if let Stmt::Function { name, span, .. } = stmt {
-                self.declare_variable(name, Some(*span))?;
+                self.declare_variable(name, Some(*span), false)?;
             }
         }
         let result = block.iter().map(|s| self.resolve_stmt(s)).collect();
@@ -1013,18 +1019,28 @@ impl NameResolver {
         self.scopes.pop();
     }
 
-    fn declare_binding(&mut self, binding: &str, span: Option<Span>) -> Result<(), Diagnostic> {
+    fn declare_binding(
+        &mut self,
+        binding: &str,
+        span: Option<Span>,
+        is_var: bool,
+    ) -> Result<(), Diagnostic> {
         if let Some(pattern) = parse_binding_pattern(binding, span)? {
             for name in pattern.names() {
-                self.declare_variable(name, span)?;
+                self.declare_variable(name, span, is_var)?;
             }
             Ok(())
         } else {
-            self.declare_variable(binding, span)
+            self.declare_variable(binding, span, is_var)
         }
     }
 
-    fn declare_variable(&mut self, name: &str, span: Option<Span>) -> Result<(), Diagnostic> {
+    fn declare_variable(
+        &mut self,
+        name: &str,
+        span: Option<Span>,
+        is_var: bool,
+    ) -> Result<(), Diagnostic> {
         // In the top-level scope, check hoisted declarations (functions, classes) for conflicts.
         // Nested scopes can shadow outer functions/classes.
         if self.scopes.len() == 1
@@ -1038,11 +1054,15 @@ impl NameResolver {
         }
         let current_scope = self.scopes.last_mut().unwrap();
         if current_scope.contains_key(name) {
-            Err(Diagnostic {
-                code: DiagCode::DuplicateLocal,
-                message: format!("duplicate local variable: `{name}`"),
-                span,
-            })
+            if is_var {
+                Ok(())
+            } else {
+                Err(Diagnostic {
+                    code: DiagCode::DuplicateLocal,
+                    message: format!("duplicate local variable: `{name}`"),
+                    span,
+                })
+            }
         } else {
             current_scope.insert(name.to_string(), span);
             Ok(())

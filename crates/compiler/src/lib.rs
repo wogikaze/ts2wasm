@@ -343,6 +343,7 @@ fn lower_static_named_import_bindings_for_build(
                         name: binding.local_name.clone(),
                         expr: binding.initializer.clone(),
                         span: specifier.local_span,
+                        is_var: false,
                     });
                     named_imports.push(binding);
                     lowered_statement_index += 1;
@@ -388,6 +389,7 @@ fn lower_static_named_import_bindings_for_build(
                     name: binding.local_name.clone(),
                     expr: binding.initializer.clone(),
                     span: default_specifier.local_span,
+                    is_var: false,
                 });
                 local_name_to_index.insert(binding.local_name.clone(), lowered_statement_index);
                 named_imports.push(binding);
@@ -463,6 +465,7 @@ fn lower_static_named_import_bindings_for_build(
                     name: "__ts2wasm_default".to_owned(),
                     expr: expr.clone(),
                     span: *span,
+                    is_var: false,
                 });
                 local_name_to_index.insert("__ts2wasm_default".to_owned(), index);
                 module_exports.push(ModuleExport {
@@ -510,6 +513,7 @@ fn lower_static_named_import_bindings_for_build(
                 rewritten.push(Stmt::Let {
                     name: ns_specifier.local.clone(),
                     expr: Expr::Object { props, span: *span },
+                    is_var: false,
                     span: ns_specifier.local_span,
                 });
                 local_name_to_index.insert(ns_specifier.local.clone(), lowered_statement_index);
@@ -558,6 +562,7 @@ fn lower_static_named_import_bindings_for_build(
                     name: default.local.clone(),
                     expr: default_expr.clone(),
                     span: default.local_span,
+                    is_var: false,
                 });
                 local_name_to_index.insert(default.local.clone(), lowered_statement_index);
                 named_imports.push(default_binding);
@@ -586,6 +591,7 @@ fn lower_static_named_import_bindings_for_build(
                         name: binding.local_name.clone(),
                         expr: binding.initializer.clone(),
                         span: specifier.local_span,
+                        is_var: false,
                     });
                     local_name_to_index.insert(binding.local_name.clone(), lowered_statement_index);
                     named_imports.push(binding);
@@ -613,6 +619,7 @@ fn lower_static_named_import_bindings_for_build(
                         name: local_name.clone(),
                         expr: expr.clone(),
                         span: source.span,
+                        is_var: false,
                     });
                     local_name_to_index.insert(local_name.clone(), lowered_statement_index);
                     named_imports.push(StaticNamedImportBinding {
@@ -662,6 +669,7 @@ fn lower_static_named_import_bindings_for_build(
                         name: local_name.clone(),
                         expr: expr.clone(),
                         span: specifier.span,
+                        is_var: false,
                     });
                     local_name_to_index.insert(local_name.clone(), lowered_statement_index);
                     named_imports.push(StaticNamedImportBinding {
@@ -705,6 +713,7 @@ fn lower_static_named_import_bindings_for_build(
                 rewritten.push(Stmt::Let {
                     name: local_name.clone(),
                     expr: Expr::Object { props, span: *span },
+                    is_var: false,
                     span: namespace.span,
                 });
                 local_name_to_index.insert(local_name.clone(), lowered_statement_index);
@@ -758,6 +767,7 @@ fn lower_static_named_import_bindings_for_build(
                     name: default.local.clone(),
                     expr: default_expr.clone(),
                     span: default.local_span,
+                    is_var: false,
                 });
                 local_name_to_index.insert(default.local.clone(), lowered_statement_index);
                 named_imports.push(default_binding);
@@ -772,6 +782,7 @@ fn lower_static_named_import_bindings_for_build(
                 rewritten.push(Stmt::Let {
                     name: namespace.local.clone(),
                     expr: Expr::Object { props, span: *span },
+                    is_var: false,
                     span: namespace.span,
                 });
                 local_name_to_index.insert(namespace.local.clone(), lowered_statement_index);

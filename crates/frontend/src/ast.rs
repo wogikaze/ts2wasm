@@ -214,6 +214,7 @@ pub enum Stmt {
         name: String,
         expr: Expr,
         span: Span,
+        is_var: bool,
     },
     Assign {
         name: String,

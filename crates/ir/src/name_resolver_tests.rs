@@ -6,6 +6,7 @@ mod tests {
     #[test]
     fn test_resolve_variable_declaration() {
         let program = vec![Stmt::Let {
+                    is_var: false,
             name: "x".to_string(),
             expr: Expr::Number {
                 value: 42,
@@ -21,6 +22,7 @@ mod tests {
     fn test_resolve_variable_reference() {
         let program = vec![
             Stmt::Let {
+                        is_var: false,
                 name: "x".to_string(),
                 expr: Expr::Number {
                     value: 42,
@@ -58,6 +60,7 @@ mod tests {
     #[test]
     fn resolves_date_global_namespace_for_deterministic_constructor() {
         let program = vec![Stmt::Let {
+                    is_var: false,
             name: "epoch".to_string(),
             expr: Expr::New {
                 expr: Box::new(Expr::Ident {
@@ -236,6 +239,7 @@ mod tests {
     fn test_duplicate_local_error() {
         let program = vec![
             Stmt::Let {
+                        is_var: false,
                 name: "x".to_string(),
                 expr: Expr::Number {
                     value: 1,
@@ -244,6 +248,7 @@ mod tests {
                 span: Span { start: 0, end: 5 },
             },
             Stmt::Let {
+                        is_var: false,
                 name: "x".to_string(),
                 expr: Expr::Number {
                     value: 2,
@@ -262,6 +267,7 @@ mod tests {
     fn test_scope_isolation() {
         let program = vec![
             Stmt::Let {
+                        is_var: false,
                 name: "x".to_string(),
                 expr: Expr::Number {
                     value: 1,
@@ -279,6 +285,7 @@ mod tests {
                             value: 2,
                             span: Span { start: 20, end: 25 },
                         },
+                        is_var: false,
                         span: Span { start: 20, end: 25 },
                     },
                     Stmt::Expr {
@@ -301,6 +308,7 @@ mod tests {
     fn accepts_top_level_function_outer_mutation_with_env_cell() {
         let program = vec![
             Stmt::Let {
+                        is_var: false,
                 name: "initCount".to_string(),
                 expr: Expr::Number {
                     value: 0,
@@ -392,6 +400,7 @@ mod tests {
     fn allows_shadowed_function_identifier_call() {
         let program = vec![
             Stmt::Let {
+                        is_var: false,
                 name: "Function".to_string(),
                 expr: Expr::Number {
                     value: 1,
@@ -418,6 +427,7 @@ mod tests {
     #[test]
     fn rejects_unshadowed_test262_ishtmldda_marker_with_issue_237_diagnostic() {
         let program = vec![Stmt::Let {
+                    is_var: false,
             name: "value".to_string(),
             expr: Expr::Member {
                 object: Box::new(Expr::Ident {
@@ -441,6 +451,7 @@ mod tests {
     fn allows_shadowed_test262_like_member_name_resolution() {
         let program = vec![
             Stmt::Let {
+                        is_var: false,
                 name: "$262".to_string(),
                 expr: Expr::Object {
                     props: vec![(

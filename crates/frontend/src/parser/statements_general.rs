@@ -698,6 +698,7 @@ impl Parser {
                 name: name.clone(),
                 expr: Expr::Undefined { span: eval_span },
                 span: eval_span,
+                is_var: false,
             }];
             statements.extend(prefix);
             return Ok(Some(statements));
@@ -885,15 +886,19 @@ impl Parser {
     }
 
     fn let_statement_with_name_span(&mut self) -> Result<(Stmt, String, Span), Diagnostic> {
-        let (start, is_const) = match self.advance() {
+        let (start, is_const, kind) = match self.advance() {
             Some(SpannedToken {
-                kind: Token::Let | Token::Var,
+                kind: Token::Let,
                 span,
-            }) => (span, false),
+            }) => (span, false, Token::Let),
+            Some(SpannedToken {
+                kind: Token::Var,
+                span,
+            }) => (span, false, Token::Var),
             Some(SpannedToken {
                 kind: Token::Const,
                 span,
-            }) => (span, true),
+            }) => (span, true, Token::Const),
             other => {
                 return Err(Diagnostic {
                     code: DiagCode::UnsupportedSyntax,
@@ -970,6 +975,7 @@ impl Parser {
                     start: start.start,
                     end: extra_binding.span.end,
                 },
+                is_var: kind == Token::Var,
             });
         }
         let end = self.statement_terminator_end(expr.span().end)?;
@@ -980,6 +986,7 @@ impl Parser {
                 start: start.start,
                 end,
             },
+            is_var: kind == Token::Var,
         };
         Ok((stmt, binding.text, binding.span))
     }
