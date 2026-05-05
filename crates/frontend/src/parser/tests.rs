@@ -2460,4 +2460,102 @@ mod tests {
             other => panic!("expected labeled Break, got {other:?}"),
         }
     }
+
+    #[test]
+    fn parses_export_declare_function_as_erased_syntax() {
+        let source = r#"
+            export declare function exportedDeclared(): void;
+            let after = 1;
+        "#;
+        let program = parse_program(source).unwrap();
+        assert_eq!(program.len(), 2);
+        assert!(matches!(program[0], Stmt::Function { ref name, .. } if name == "exportedDeclared"));
+        assert!(matches!(program[1], Stmt::Let { .. }));
+    }
+
+    #[test]
+    fn parses_ambient_class_with_static_declare_element() {
+        let source = r#"
+            declare class AmbientBase { }
+            class RuntimeBox {
+                declare static prop: number;
+                declare readonly name: string;
+                read() { return 1; }
+            }
+            let x = 1;
+        "#;
+        let program = parse_program(source).unwrap();
+        assert_eq!(program.len(), 2);
+        let Some(Stmt::ClassDecl { body, .. }) = program
+            .iter()
+            .find(|stmt| matches!(stmt, Stmt::ClassDecl { .. }))
+        else {
+            panic!("expected class declaration");
+        };
+        // Only the `read()` method should remain; declare fields are erased
+        assert_eq!(body.len(), 1);
+        assert!(matches!(&body[0], Stmt::Function { name, .. } if name == "read"));
+    }
+
+    #[test]
+    fn parses_multiple_ambient_variable_declarators() {
+        let source = r#"
+            declare const a: number, b: string, c: boolean;
+            let runtime = 1;
+        "#;
+        let program = parse_program(source).unwrap();
+        assert_eq!(program.len(), 1);
+        assert!(matches!(program[0], Stmt::Let { ref name, .. } if name == "runtime"));
+    }
+
+    #[test]
+    fn parses_declare_with_type_syntax_inside_declare_block() {
+        let source = r#"
+            declare namespace NS {
+                interface Inner { x: number }
+                type Alias = string;
+                function fn(): void;
+            }
+            let after = 1;
+        "#;
+        let program = parse_program(source).expect("declare namespace with type syntax should be erased");
+        assert_eq!(program.len(), 1);
+        assert!(matches!(program[0], Stmt::Let { ref name, .. } if name == "after"));
+    }
+
+    #[test]
+    fn parses_ambient_enum_empty_body() {
+        let source = r#"
+            declare enum Empty { }
+            let x = 1;
+        "#;
+        let program = parse_program(source).unwrap();
+        assert_eq!(program.len(), 1);
+        assert!(matches!(program[0], Stmt::Let { .. }));
+    }
+
+    #[test]
+    fn parses_ambient_class_with_generic_type_params() {
+        let source = r#"
+            declare class Container<T> {
+                value: T;
+                get(): T;
+            }
+            let x = 1;
+        "#;
+        let program = parse_program(source).unwrap();
+        assert_eq!(program.len(), 1);
+        assert!(matches!(program[0], Stmt::Let { .. }));
+    }
+
+    #[test]
+    fn erases_non_declare_enum() {
+        let source = r#"
+            enum NonDeclareEnum { A, B }
+            let after = 1;
+        "#;
+        let program = parse_program(source).unwrap();
+        assert_eq!(program.len(), 1);
+        assert!(matches!(program[0], Stmt::Let { ref name, .. } if name == "after"));
+    }
 }

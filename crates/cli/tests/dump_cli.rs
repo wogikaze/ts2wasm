@@ -389,6 +389,11 @@ fn build_accepts_erasable_typescript_ambient_declarations() {
 }
 
 #[test]
+fn build_accepts_erasable_typescript_ambient_erasure_comprehensive() {
+    build_fixture("basics-types/ambient-erasure-comprehensive.ts");
+}
+
+#[test]
 fn build_accepts_erasable_typescript_generics() {
     build_fixture("basics-types/generic-erasure.ts");
 }
