@@ -21,12 +21,12 @@ Issue files are the source of truth for work items. The generated section below 
 | issues | 4 | 0 | 4 |
 | parser | 1 | 0 | 1 |
 | reference | 211 | 181 | 30 |
-| runtime | 261 | 97 | 164 |
+| runtime | 262 | 97 | 165 |
 | scripts | 2 | 0 | 2 |
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 4966 | 4127 | 839 |
+| total | 4967 | 4127 | 840 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -156,7 +156,7 @@ Issue files are the source of truth for work items. The generated section below 
 <!-- generated:ready:start -->
 | ID | Title | Type | Area | Class | Priority | Depends on | Summary |
 |---:|---|---|---|---|---|---|---|
-| 5130 | Implement own method ToPrimitive for mixed BigInt comparisons | feature | runtime/semantics | implementation-ready | P2 |  | `{ valueOf() { return 1n; } } == 1n` is Node-compatible and |
+| 5131 | Design ABC451 non-top array growth strategy | design | runtime/memory | design-ready | P1 |  | issue 365 remains blocked because the dominant measured array-growth |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -5138,6 +5138,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 5127 | Implement export default multi-file lowering deduplication | feature | ir/lowering | see `issues/done/5127-implement-export-default-multifile-lowering.md` |
 | 5128 | Add semantic parity for static re-export module forms | test | ir/compiler | see `issues/done/5128-static-re-export-semantic-parity.md` |
 | 5129 | Implement String.prototype.matchAll literal RegExp lowering | feature | runtime/builtins | see `issues/done/5129-implement-string-match-all-literal-regexp.md` |
+| 5130 | Implement own method ToPrimitive for mixed BigInt comparisons | feature | runtime/semantics | see `issues/done/5130-implement-object-method-toprimitive-for-bigint-comparisons.md` |
 <!-- generated:done:end -->
 
 ## Index generation contract

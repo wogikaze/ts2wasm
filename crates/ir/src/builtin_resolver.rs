@@ -813,25 +813,42 @@ fn object_toprimitive_supported_primitive_expr(expr: &Expr) -> Option<Expr> {
 
     let value_of = props.iter().find(|(key, _)| key == "valueOf");
     if let Some((_, value)) = value_of {
-        return match value {
-            Expr::ArrowFn { params, body, .. } if params.is_empty() => match body.as_ref() {
-                body if object_toprimitive_supported_return_expr(body) => Some(body.clone()),
-                _ => None,
-            },
-            _ => None,
-        };
+        match object_toprimitive_return_expr(value) {
+            Some(Ok(expr)) => return Some(expr),
+            Some(Err(())) => {}
+            None => return None,
+        }
     }
 
     props
         .iter()
         .find(|(key, _)| key == "toString")
-        .and_then(|(_, value)| match value {
-            Expr::ArrowFn { params, body, .. } if params.is_empty() => match body.as_ref() {
-                body if object_toprimitive_supported_return_expr(body) => Some(body.clone()),
-                _ => None,
-            },
-            _ => None,
-        })
+        .and_then(|(_, value)| object_toprimitive_return_expr(value).and_then(Result::ok))
+}
+
+fn object_toprimitive_return_expr(value: &Expr) -> Option<Result<Expr, ()>> {
+    match value {
+        Expr::ArrowFn { params, body, .. } if params.is_empty() => {
+            object_toprimitive_return_value(body)
+        }
+        Expr::FunctionExpr { params, body, .. } if params.is_empty() => {
+            let [Stmt::Return { expr, .. }] = body.as_slice() else {
+                return None;
+            };
+            object_toprimitive_return_value(expr)
+        }
+        _ => None,
+    }
+}
+
+fn object_toprimitive_return_value(expr: &Expr) -> Option<Result<Expr, ()>> {
+    if object_toprimitive_supported_return_expr(expr) {
+        return Some(Ok(expr.clone()));
+    }
+    if matches!(expr, Expr::Object { .. }) {
+        return Some(Err(()));
+    }
+    None
 }
 
 fn object_toprimitive_supported_return_expr(expr: &Expr) -> bool {

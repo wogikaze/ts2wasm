@@ -3,12 +3,14 @@ id: 5130
 title: "Implement own method ToPrimitive for mixed BigInt comparisons"
 type: feature
 area: runtime/semantics
-class: implementation-ready
+class: done
 priority: P2
 depends_on: []
 blocks: []
+status: done
 created: 2026-05-06
 updated: 2026-05-06
+completed: 2026-05-06
 ---
 
 ## Summary
@@ -52,12 +54,12 @@ comparison coercion.
 
 In scope:
 
-- [ ] Own object-literal method syntax: `{ valueOf() { return 1n; } } == 1n`.
-- [ ] Own object-literal/local `toString() { return "1"; }` for supported
+- [x] Own object-literal method syntax: `{ valueOf() { return 1n; } } == 1n`.
+- [x] Own object-literal/local `toString() { return "1"; }` for supported
       StringToBigInt strings.
-- [ ] `valueOf` before `toString` ordering when `valueOf` returns a
+- [x] `valueOf` before `toString` ordering when `valueOf` returns a
       non-primitive object and `toString` returns a supported primitive.
-- [ ] Source-spanned issue diagnostics for method bodies outside the single
+- [x] Source-spanned issue diagnostics for method bodies outside the single
       primitive-return subset.
 
 Out of scope:
@@ -85,15 +87,15 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] A bigint runtime mixed object ToPrimitive method fixture is added under
+- [x] A bigint runtime mixed object ToPrimitive method fixture is added under
       `fixtures/core-semantics/` and matches Node/iwasm output for own `valueOf() { return 1n; }`
       and `toString() { return "1"; }`.
-- [ ] A fixture covers `valueOf` returning a non-primitive object followed by
+- [x] A fixture covers `valueOf` returning a non-primitive object followed by
       `toString` returning a supported primitive, preserving Node ordering.
-- [ ] Unsupported method bodies that read `this`, mutate state, throw, or return
+- [x] Unsupported method bodies that read `this`, mutate state, throw, or return
       unsupported dynamic values still produce issue-linked diagnostics.
-- [ ] Existing arrow-property fixtures remain passing.
-- [ ] Docs/current-state/issues are synchronized if the boundary changes.
+- [x] Existing arrow-property fixtures remain passing.
+- [x] Docs/current-state/issues are synchronized if the boundary changes.
 
 ## Validation
 
@@ -120,17 +122,16 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
-- [ ] updated: `docs/05-compatibility-and-semantics.md`
-- [ ] updated: `docs/language-reference/javascript-features.md`
+- [x] updated: `docs/05-compatibility-and-semantics.md`
+- [x] updated: `docs/language-reference/javascript-features.md`
 
 Current state:
 
-- [ ] updated: `current-state.md` (repo root)
+- [x] updated: `current-state.md` (repo root)
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 
@@ -146,14 +147,24 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- `...`
+- pending closure commit
 
 Validation result:
 
 ```text
-command:
-result:
-date:
+cargo test -p ts2wasm-cli --test m2_node_diff bigint_runtime_mixed_object_toprimitive -- --nocapture
+=> pass (3 tests passed)
+
+cargo nextest run -E 'test(bigint_runtime_mixed_object_toprimitive)'
+=> pass (3 tests passed)
+
+cargo test -p ts2wasm-cli --test m2_node_diff bigint -- --nocapture
+=> pass (62 tests passed)
+
+cargo fmt --all --check
+=> pass
+
+date: 2026-05-06
 ```
 
 Remaining risks:

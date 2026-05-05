@@ -1541,6 +1541,21 @@ fn object_toprimitive_string_boundary_return(props: &[(String, Expr)]) -> Option
                 },
                 _ => None,
             },
+            Expr::FunctionExpr { params, body, .. } if params.is_empty() => {
+                let [
+                    Stmt::Return {
+                        expr: Expr::String { value, span },
+                        ..
+                    },
+                ] = body.as_slice()
+                else {
+                    return None;
+                };
+                match bigint_from_string_builtin(value, *span) {
+                    Ok(parsed) if bigint_fits_runtime_mixed_string(&parsed) => None,
+                    Ok(_) | Err(_) => Some(()),
+                }
+            }
             _ => None,
         })
 }

@@ -902,6 +902,9 @@ fn bigint_runtime_mixed_object_toprimitive_primitive_matches_node_output_under_i
     assert_fixture_matches_node(
         "fixtures/core-semantics/bigint-runtime-mixed-object-toprimitive-primitive.ts",
     );
+    assert_fixture_matches_node(
+        "fixtures/core-semantics/bigint-runtime-mixed-object-toprimitive-method.ts",
+    );
 }
 
 #[test]
@@ -924,6 +927,7 @@ fn bigint_runtime_mixed_object_toprimitive_reports_issue_374() {
     for fixture in [
         "fixtures/core-semantics/bigint-runtime-mixed-object-toprimitive-unsupported.ts",
         "fixtures/core-semantics/bigint-runtime-mixed-object-toprimitive-string-unsupported.ts",
+        "fixtures/core-semantics/bigint-runtime-mixed-object-toprimitive-method-unsupported.ts",
     ] {
         assert_build_fails_with_unsupported_syntax(
             fixture,

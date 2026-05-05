@@ -116,7 +116,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] created: `issues/open/5130-implement-object-method-toprimitive-for-bigint-comparisons.md`
+- [x] created: `issues/done/5130-implement-object-method-toprimitive-for-bigint-comparisons.md`
 
 ## Notes
 
