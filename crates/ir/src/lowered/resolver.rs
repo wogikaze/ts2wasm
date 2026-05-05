@@ -876,7 +876,9 @@ fn is_invalid_date_constructor_expr(expr: &ResolvedExpr) -> bool {
             class_name,
             args,
             ..
-        } if class_name == "Date" && matches!(args.as_slice(), [ResolvedExpr::Object(_)])
+        } if class_name == "Date"
+            && (matches!(args.as_slice(), [ResolvedExpr::Object(_)])
+                || matches!(args.as_slice(), [ResolvedExpr::Ident(name)] if name == "NaN"))
     )
 }
 
