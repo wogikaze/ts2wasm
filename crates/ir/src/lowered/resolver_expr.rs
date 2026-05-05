@@ -1303,15 +1303,6 @@ impl<'a> Resolver<'a> {
                             args: lowered_args,
                         });
                     }
-                    // Single-arg push on known arrays: route to ArrayPushGrow (reallocating
-                    // version) instead of ArrayPush (which assumes pre-allocated capacity).
-                    let runtime_fn = if runtime_fn == "ArrayPush" && args.len() == 1
-                        && self.is_known_array_expr(object)
-                    {
-                        "ArrayPushGrow".to_owned()
-                    } else {
-                        runtime_fn
-                    };
                     if (runtime_fn == "MathMax" || runtime_fn == "MathMin") && args.len() > 2 {
                         let mut lowered_args = Vec::new();
                         if !matches!(

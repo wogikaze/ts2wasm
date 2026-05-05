@@ -391,7 +391,7 @@ fn lowering_routes_string_match_new_regexp_to_runtime_call() {
 }
 
 #[test]
-fn lowering_routes_known_array_push_expression_to_growing_runtime() {
+fn lowering_keeps_array_push_expression_length_returning() {
     let program = parse_and_resolve("let arr = [1, 2, 3]; let n = arr.push(4); console.log(n);");
     let lowered = ts2wasm_ir::lowered::lower_program(&program).unwrap();
 
@@ -400,7 +400,7 @@ fn lowering_routes_known_array_push_expression_to_growing_runtime() {
             _,
             ts2wasm_ir::lowered::LoweredExpr::RuntimeCall { runtime_fn, args },
         ) => {
-            assert_eq!(runtime_fn, "ArrayPushGrow");
+            assert_eq!(runtime_fn, "ArrayPush");
             assert_eq!(args.len(), 2);
         }
         other => panic!("unexpected lowered Array.prototype.push statement: {other:?}"),
