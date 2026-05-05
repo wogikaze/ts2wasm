@@ -1033,7 +1033,9 @@ fn validate_stmt(
     top_functions: &HashMap<String, ()>,
 ) -> Result<(), Diagnostic> {
     match stmt {
-        Stmt::Let { name, span, is_var, .. } => {
+        Stmt::Let {
+            name, span, is_var, ..
+        } => {
             if in_top_level && top_functions.contains_key(name) {
                 return Err(Diagnostic {
                     code: DiagCode::DuplicateLocal,

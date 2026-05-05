@@ -61,3 +61,44 @@ Evidence files:
 - `issues/open/006-remove-stale-milestone-and-transitional-docs.md` after this move
 
 Split follow-up: none created in this audit wave; this reopened issue remains the tracking item.
+
+## Completion evidence
+
+The following changes were made in the previous implementation to address the acceptance criteria:
+
+### Changes applied (committed in prior work on this issue)
+
+1. **`current-state.md`**: Top priority list updated to reference `issues/index.md` ready queue instead of a hardcoded list of issues. See "Next Priority Steps" section.
+
+2. **`docs/06-testing-and-coverage.md`**: Path reference typo fixed from `current-state` to `current-state.md`.
+
+3. **`docs/09-security-and-capability-model.md`**: Transitional manifest schema (legacy `target/imports/capabilities/runtime` shape) replaced with canonical capability manifest example from `docs/11-shared-definitions.md`. Added `clock.realtime` field to the manifest example for consistency with the canonical schema.
+
+4. **Future work**: No scattered TODO sections remain in the modified docs. Future work references point to `issues/index.md` and individual issue links.
+
+### Acceptance verification
+
+- [x] Docs do not simultaneously claim a feature is both missing and implemented.
+  - No contradictory claims found. docs/09 references canonical schema from docs/11.
+- [x] Canonical schema is not duplicated inconsistently.
+  - docs/09 manifest example matches docs/11 schema (both include `clock`).
+- [x] Future work is represented in issues.
+  - No scattered future-TODO sections; all future work references point to `issues/index.md`.
+- [x] Remaining TODO/deferred mentions are intentional and explainable.
+  - Remaining matches are inside test fixture strings, guidelines, or documented scope decisions in done issues.
+
+### Validation command output
+
+```sh
+rg -n "transitional|未完|TODO|deferred|wrong current-state path" docs/ README.md issues/
+```
+
+Result: all matches are either:
+- The issue file itself (references to "transitional" in its title and problem statement)
+- Inside test fixture string data (issues/open/593, issues/done/128, issues/done/507)
+- Guideline/template text (issues/README.md, issues/templates/issue.md)
+- Legitimate scope-deferred decisions in done issues
+- Feature names containing "deferred" (e.g., deferredLookupTypeResolution, issues/open/1943)
+- The word "deferred" as a document term (docs/12-coding-standard.md gate rule, docs/19-parallel-development.md Discord send rule)
+
+No stale `transitional` schema references remain in docs/. The `docs/12-coding-standard.md` reference to "stale milestone and transitional docs cleanup (done)" correctly reflects that the cleanup task was performed.
