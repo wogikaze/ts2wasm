@@ -65,7 +65,8 @@ Expected:
 - `crates/ir/src/builtin.rs`
 - `crates/ir/src/builtin_resolver.rs`
 - `crates/frontend/src/parser/`
-- `crates/backend-wasm/src/runtime_arrays_objects.rs`
+- `crates/backend-wasm/src/runtime_arrays.rs`
+- `crates/backend-wasm/src/runtime_objects.rs`
 - `fixtures/`
 
 Do not touch:
