@@ -127,6 +127,7 @@ fn m5_array_object_fixtures_match_node_output_under_iwasm() {
         "fixtures/arrays-objects/array.ts",
         "fixtures/arrays-objects/string-length.ts",
         "fixtures/arrays-objects/object.ts",
+        "fixtures/arrays-objects/string-key-literal.ts",
         "fixtures/arrays-objects/dynamic-property.ts",
         "fixtures/arrays-objects/dynamic-property-assignment.ts",
     ] {

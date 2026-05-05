@@ -751,6 +751,25 @@ mod tests {
     }
 
     #[test]
+    fn parses_string_literal_object_property_names() {
+        let stmts = parse_program(r#"let obj = { "name": "Alice", "age": 30 };"#).unwrap();
+
+        match &stmts[0] {
+            Stmt::Let {
+                expr: Expr::Object { props, .. },
+                ..
+            } => {
+                assert_eq!(props.len(), 2);
+                assert_eq!(props[0].0, "name");
+                assert!(matches!(&props[0].1, Expr::String { value, .. } if value == "Alice"));
+                assert_eq!(props[1].0, "age");
+                assert!(matches!(props[1].1, Expr::Number { value: 30, .. }));
+            }
+            other => panic!("unexpected statement: {other:?}"),
+        }
+    }
+
+    #[test]
     fn parses_keyword_tokens_as_member_property_names() {
         let stmts = parse_program("let a = obj.if; let b = obj.class; let c = obj.for;")
             .unwrap();
