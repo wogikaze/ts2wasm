@@ -127,24 +127,17 @@ pub fn run_server() -> Result<(), String> {
             out.flush()
                 .map_err(|e| format!("stdout flush error: {e}"))?;
         } else {
-            // Single-file mode
-            let tmpfile = tmpdir.join(format!("{}.js", req.id));
-            if let Err(e) = fs::write(&tmpfile, &req.source) {
-                let resp = make_response(
-                    req.id,
-                    Err(Diagnostic {
-                        code: ts2wasm_frontend::DiagCode::BackendIo,
-                        message: format!("failed to write temp file: {e}"),
-                        span: None,
-                    }),
-                );
-                emit_response(&stdout, &resp)?;
-                continue;
-            }
-
-            let result =
-                compile_source_with_emit(&tmpfile, &tmpdir, req.id, request_emit_mode(&req));
-            let _ = fs::remove_file(&tmpfile);
+            // Single-file mode.  Keep a stable virtual path for diagnostics and
+            // relative module graph bookkeeping, but avoid writing then reading
+            // the source back from disk for every server request.
+            let virtual_path = tmpdir.join(format!("{}.js", req.id));
+            let result = compile_source_text_with_emit(
+                &req.source,
+                &virtual_path,
+                &tmpdir,
+                req.id,
+                request_emit_mode(&req),
+            );
             emit_response(&stdout, &make_response(req.id, result))?;
         }
     }
@@ -254,26 +247,21 @@ fn process_batch(
                     }
 
                     let item = &items[idx];
-                    let tmpfile = tmpdir.join(format!("b_{}_{}.js", idx, item.id));
+                    let virtual_path = tmpdir.join(format!("b_{}_{}.js", idx, item.id));
 
                     // Catch panics per-item so one bad compilation can't crash
-                    // the entire batch.
+                    // the entire batch.  Compile directly from the JSON payload;
+                    // the previous implementation wrote every source to a temp
+                    // file and then read it back in `lower_source`, which adds a
+                    // large amount of filesystem churn for test262 batches.
                     let compile_result = std::panic::catch_unwind(|| {
-                        // Write source, compile, clean up.
-                        let write_result = fs::write(&tmpfile, &item.source);
-                        match write_result {
-                            Ok(()) => {
-                                let r =
-                                    compile_source_with_emit(&tmpfile, &tmpdir, item.id, emit_mode);
-                                let _ = fs::remove_file(&tmpfile);
-                                r
-                            }
-                            Err(err) => Err(Diagnostic {
-                                code: ts2wasm_frontend::DiagCode::BackendIo,
-                                message: format!("failed to write temp file: {err}"),
-                                span: None,
-                            }),
-                        }
+                        compile_source_text_with_emit(
+                            &item.source,
+                            &virtual_path,
+                            &tmpdir,
+                            item.id,
+                            emit_mode,
+                        )
                     });
 
                     let resp = match compile_result {
@@ -386,7 +374,24 @@ fn compile_source_with_emit(
     id: i64,
     emit_mode: EmitMode,
 ) -> Result<Option<PathBuf>, Diagnostic> {
-    let lowered = lower_source(path)?;
+    use ts2wasm_frontend::DiagCode;
+
+    let source = fs::read_to_string(path).map_err(|error| Diagnostic {
+        code: DiagCode::BackendIo,
+        message: format!("failed to read {}: {error}", path.display()),
+        span: None,
+    })?;
+    compile_source_text_with_emit(&source, path, tmpdir, id, emit_mode)
+}
+
+fn compile_source_text_with_emit(
+    source: &str,
+    path: &Path,
+    tmpdir: &Path,
+    id: i64,
+    emit_mode: EmitMode,
+) -> Result<Option<PathBuf>, Diagnostic> {
+    let lowered = lower_source_text(path, source)?;
     ensure_runtime_feature_gates(&lowered)?;
 
     match emit_mode {
@@ -400,15 +405,10 @@ fn compile_source_with_emit(
     }
 }
 
-fn lower_source(path: &Path) -> Result<LoweredProgram, Diagnostic> {
+fn lower_source_text(path: &Path, source: &str) -> Result<LoweredProgram, Diagnostic> {
     use ts2wasm_frontend::DiagCode;
 
-    let source = fs::read_to_string(path).map_err(|error| Diagnostic {
-        code: DiagCode::BackendIo,
-        message: format!("failed to read {}: {error}", path.display()),
-        span: None,
-    })?;
-    let tokens = Lexer::new(&source).tokenize()?;
+    let tokens = Lexer::new(source).tokenize()?;
     let program = Parser::new(tokens).parse_program()?;
     validate_ast(&program)?;
     let module_graph = module_graph::build_entry_module_graph(path, &program)?;

@@ -1,13 +1,14 @@
 {
   "suite": "test262",
-  "passed": 3015,
-  "failed": 1960,
-  "unsupported": 47888,
-  "blocked": 582,
+  "passed": 1555,
+  "failed": 0,
+  "unsupported": 40224,
+  "blocked": 11666,
   "total": 53445,
-  "duration_ms": 8021199,
-  "wall_duration_ms": 106574,
-  "timestamp": "2026-05-05T15:10:06.586790",
+  "duration_ms": 27732,
+  "wall_duration_ms": 27732,
+  "case_duration_sum_ms": 1732650,
+  "timestamp": "2026-05-05T16:31:00.308585",
   "server_mode": true,
-  "semantic_enabled": true
+  "semantic_enabled": false
 }

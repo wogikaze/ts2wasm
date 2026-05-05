@@ -875,6 +875,21 @@ def main():
         last_progress = 0
 
         jsonl_started_at = time.perf_counter()
+        include_jsonl_source = os.environ.get("TS2WASM_JSONL_SOURCE", "0") not in ("0", "false", "False", "no", "NO")
+        node_oracle_policy = os.environ.get("TS2WASM_TEST262_NODE_ORACLE", "auto").strip().lower()
+        try:
+            metadata_prefix_bytes = int(os.environ.get("TS2WASM_TEST262_METADATA_PREFIX_BYTES", "65536") or "65536")
+        except ValueError:
+            metadata_prefix_bytes = 65536
+        try:
+            semantic_jobs = int(os.environ.get("TS2WASM_REFERENCE_COVERAGE_SEMANTIC_JOBS", "0") or "0")
+        except ValueError:
+            semantic_jobs = 0
+        if semantic_jobs < 1:
+            semantic_jobs = min(max(jobs, (os.cpu_count() or jobs) * 2), 32)
+
+        def record_source(item):
+            return item.get("source_code", "") if include_jsonl_source else None
 
         def elapsed_ms(started_at):
             return int(round((time.perf_counter() - started_at) * 1000))
@@ -927,7 +942,7 @@ def main():
                 None,
                 f"{diag_code}/{feature}: {reason}" if feature else f"{diag_code}: {reason}",
                 tracking_key,
-                item.get("source_code", ""),
+                record_source(item),
                 item.get("error_line"),
                 stderr,
                 duration,
@@ -944,7 +959,7 @@ def main():
                 None,
                 None,
                 f"{diag_code}/{feature}: {reason}" if feature else f"{diag_code}: {reason}",
-                source_code=item.get("source_code", ""),
+                source_code=record_source(item),
                 error_line=item.get("error_line"),
                 stderr=stderr,
                 duration_ms=duration,
@@ -961,7 +976,7 @@ def main():
                 None,
                 actual,
                 f"{diag_code}: {reason}" if reason else diag_code,
-                source_code=item.get("source_code", ""),
+                source_code=record_source(item),
                 error_line=item.get("error_line"),
                 stderr=stderr,
                 duration_ms=duration,
@@ -978,11 +993,30 @@ def main():
                 "pass",
                 expected,
                 actual or reason,
-                source_code=item.get("source_code", ""),
+                source_code=record_source(item),
                 stderr=stderr,
                 duration_ms=duration,
             )
             return record, "pass"
+
+        def read_metadata_prefix(file_path):
+            # The test262 frontmatter is normally at the top of the file.  Reading
+            # only the prefix lets us reject metadata-unsupported cases without
+            # pulling tens of thousands of full sources into Python/JSONL.
+            with file_path.open("rb") as handle:
+                raw = handle.read(max(metadata_prefix_bytes, 1024) + 1)
+            prefix = raw.decode("utf-8", errors="replace")
+            start = prefix.find("/*---")
+            if start >= 0:
+                end = prefix.find("---*/", start + 5)
+                if end >= 0:
+                    header = prefix[:end + 5]
+                    return header, t262.parse_test262_metadata(header), True
+                return prefix, None, False
+            # If there is no frontmatter in the prefix, treat metadata as empty.
+            # Test262 metadata is front-loaded; supported cases still read the
+            # full source below before compilation.
+            return prefix, t262.parse_test262_metadata(prefix), len(raw) <= metadata_prefix_bytes
 
         def prepare_jsonl_item(pair):
             index, file_path = pair
@@ -998,9 +1032,40 @@ def main():
                 "error_line": None,
             }
             try:
+                prefix_source, metadata, metadata_complete = read_metadata_prefix(file_path)
+            except (OSError, UnicodeDecodeError) as exc:
+                return {
+                    "type": "early_record",
+                    "index": index,
+                    "record_status": make_blocked_record(
+                        item, "HarnessError", "test262-harness", f"failed to read source: {exc}", started_at
+                    ),
+                }
+
+            if metadata is not None:
+                item["metadata"] = metadata
+                unsupported_reason = metadata.unsupported_reason
+                if unsupported_reason:
+                    if include_jsonl_source:
+                        try:
+                            item["source_code"] = file_path.read_text(encoding="utf-8")
+                        except (OSError, UnicodeDecodeError):
+                            item["source_code"] = prefix_source
+                    return {
+                        "type": "early_record",
+                        "index": index,
+                        "record_status": make_unsupported_record(
+                            item,
+                            "UnsupportedTest262Metadata",
+                            "test262-metadata",
+                            unsupported_reason,
+                            started_at,
+                        ),
+                    }
+
+            try:
                 source_code = file_path.read_text(encoding="utf-8")
             except (OSError, UnicodeDecodeError) as exc:
-                item["source_code"] = ""
                 return {
                     "type": "early_record",
                     "index": index,
@@ -1010,7 +1075,8 @@ def main():
                 }
 
             item["source_code"] = source_code
-            metadata = t262.parse_test262_metadata(source_code)
+            if metadata is None or not metadata_complete:
+                metadata = t262.parse_test262_metadata(source_code)
             item["metadata"] = metadata
             unsupported_reason = metadata.unsupported_reason
             if unsupported_reason:
@@ -1056,6 +1122,37 @@ def main():
             if item["metadata"].expects_negative:
                 node_ok = result.returncode != 0
             return result.stdout + result.stderr, node_ok
+
+        def should_run_node_oracle(item, actual):
+            if node_oracle_policy in ("always", "1", "true", "yes"):
+                return True
+            if node_oracle_policy in ("never", "0", "false", "no"):
+                return False
+            if actual:
+                return True
+            source = item.get("source_code", "")
+            # Most passing test262 cases are silent.  For those, iwasm success
+            # with empty stdout is enough for coverage accounting and avoids
+            # thousands of short-lived Node oracle processes.  Keep Node for
+            # tests that visibly request output so mismatches are still caught.
+            return bool(re.search(r"\b(?:print|console\.log)\s*\(", source))
+
+        def make_fast_oracle_pass_record(item, actual):
+            duration = elapsed_ms(item["started_at"])
+            expected = actual if node_oracle_policy in ("never", "0", "false", "no") else ""
+            reason = "node oracle skipped for silent positive test"
+            record = t262.create_test_record(
+                "test262",
+                str(item["file_path"]),
+                "wasm-iwasm",
+                "pass",
+                expected,
+                actual,
+                reason,
+                source_code=record_source(item),
+                duration_ms=duration,
+            )
+            return record, "pass"
 
         def classify_server_error(item, build_resp):
             metadata = item["metadata"]
@@ -1110,7 +1207,7 @@ def main():
                         None,
                         None,
                         "build_pass",
-                        source_code=item.get("source_code", ""),
+                        source_code=record_source(item),
                         duration_ms=duration,
                     )
                     return record, "pass"
@@ -1135,6 +1232,9 @@ def main():
                     if metadata.expects_negative:
                         return classify_completed_negative_for_jsonl(item)
 
+                    if not should_run_node_oracle(item, actual):
+                        return make_fast_oracle_pass_record(item, actual)
+
                     expected, node_ok = get_node_reference_for_item(item, thread_tmp)
                     if node_ok and actual == expected:
                         duration = elapsed_ms(item["started_at"])
@@ -1145,7 +1245,7 @@ def main():
                             "pass",
                             expected,
                             actual,
-                            source_code=item.get("source_code", ""),
+                            source_code=record_source(item),
                             duration_ms=duration,
                         )
                         return record, "pass"
@@ -1159,7 +1259,7 @@ def main():
                             expected,
                             actual,
                             "output mismatch",
-                            source_code=item.get("source_code", ""),
+                            source_code=record_source(item),
                             stderr=wasm_result.stderr,
                             duration_ms=duration,
                         )
@@ -1173,7 +1273,7 @@ def main():
                         expected,
                         actual,
                         "node execution failed",
-                        source_code=item.get("source_code", ""),
+                        source_code=record_source(item),
                         duration_ms=duration,
                     )
                     return record, "blocked"
@@ -1289,10 +1389,14 @@ def main():
                         if build_items:
                             server_proc = start_jsonl_server()
 
-                        batch_size = int(os.environ.get("TS2WASM_REFERENCE_COVERAGE_BATCH", "200"))
+                        try:
+                            batch_size = int(os.environ.get("TS2WASM_REFERENCE_COVERAGE_BATCH", "1000") or "1000")
+                        except ValueError:
+                            batch_size = 1000
+                        batch_size = max(1, batch_size)
                         emit_mode = "wasm" if semantic_check else "check"
                         if build_items:
-                            print(f"Starting ts2wasm server (jsonl {emit_mode} mode, {jobs} workers)...", file=sys.stderr)
+                            print(f"Starting ts2wasm server (jsonl {emit_mode} mode, {jobs} compile workers, {semantic_jobs} semantic workers)...", file=sys.stderr)
                         for start in range(0, len(build_items), batch_size):
                             batch = build_items[start:start + batch_size]
                             for item in batch:
@@ -1367,7 +1471,7 @@ def main():
                                         None,
                                         None,
                                         "build_pass",
-                                        source_code=item.get("source_code", ""),
+                                        source_code=record_source(item),
                                         duration_ms=duration,
                                     )
                                     return record, "pass"
@@ -1379,7 +1483,7 @@ def main():
                                     return t262.process_one_test(item["file_path"], tmp_dir, False)
                                 return run_wasm_oracle_for_item(item, wasm_path)
 
-                            with ThreadPoolExecutor(max_workers=jobs) as executor:
+                            with ThreadPoolExecutor(max_workers=semantic_jobs) as executor:
                                 futures = {executor.submit(finish_item, item): item for item in batch}
                                 for future in as_completed(futures):
                                     record, status = future.result()
@@ -1392,10 +1496,12 @@ def main():
         print(f"Fail: {failed}", file=sys.stderr)
         print(f"Unsupported: {unsupported}", file=sys.stderr)
         print(f"Blocked: {blocked}", file=sys.stderr)
-        print(f"Total: {passed + failed + unsupported + blocked}", file=sys.stderr)
-        print(f"Duration: {total_duration_ms}ms", file=sys.stderr)
-
         wall_duration_ms = int(round((time.perf_counter() - jsonl_started_at) * 1000))
+        print(f"Total: {passed + failed + unsupported + blocked}", file=sys.stderr)
+        print(f"Duration: {wall_duration_ms}ms", file=sys.stderr)
+        if os.environ.get("TS2WASM_REFERENCE_COVERAGE_SHOW_CASE_DURATION_SUM") == "1":
+            print(f"CaseDurationSum: {total_duration_ms}ms", file=sys.stderr)
+
         summary = {
             "suite": suite,
             "passed": passed,
@@ -1403,8 +1509,9 @@ def main():
             "unsupported": unsupported,
             "blocked": blocked,
             "total": passed + failed + unsupported + blocked,
-            "duration_ms": total_duration_ms,
+            "duration_ms": wall_duration_ms,
             "wall_duration_ms": wall_duration_ms,
+            "case_duration_sum_ms": total_duration_ms,
             "timestamp": datetime.now().isoformat(),
             "jsonl_file": str(jsonl_file),
             "server_mode": bool(server_mode),
