@@ -11,11 +11,11 @@ Issue files are the source of truth for work items. The generated section below 
 |---|---:|---:|---:|
 | abi | 7 | 1 | 6 |
 | backend | 13 | 5 | 8 |
-| cli | 15 | 2 | 13 |
+| cli | 15 | 1 | 14 |
 | compiler | 1 | 0 | 1 |
 | coverage | 42 | 32 | 10 |
 | docs | 2 | 0 | 2 |
-| frontend | 4377 | 3864 | 513 |
+| frontend | 4377 | 3863 | 514 |
 | harness | 1 | 0 | 1 |
 | ir | 20 | 4 | 16 |
 | issues | 4 | 0 | 4 |
@@ -24,9 +24,9 @@ Issue files are the source of truth for work items. The generated section below 
 | runtime | 259 | 107 | 152 |
 | scripts | 2 | 0 | 2 |
 | security | 1 | 0 | 1 |
-| tests | 6 | 1 | 5 |
+| tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 4963 | 4198 | 765 |
+| total | 4963 | 4195 | 768 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -157,7 +157,6 @@ Issue files are the source of truth for work items. The generated section below 
 | ID | Title | Type | Area | Class | Priority | Depends on | Summary |
 |---:|---|---|---|---|---|---|---|
 | 009 | Select first coverage-improvement feature slice (audit reopened #009) | spike | frontend/ir/runtime | design-ready | P1 | 005 | After coverage breakdown exists, the next implementation should be chosen by data. The goal is to increase semantic p... |
-| 022 | Expand test262 differential coverage (audit reopened #022) | feature | tests/coverage | implementation-ready | P1 | 005 | test262 full differential operation is incomplete. Current coverage uses sample/ramp approach. docs/11 Gate D require... |
 | 265 | Add broad statement fixture coverage (audit reopened #265) | feature | frontend/syntax | implementation-ready | P2 |  | Add broad statement fixture coverage (audit reopened #265) |
 | 268 | Implement for loop increment operator (audit reopened #268) | feature | frontend/semantics | done | P2 |  | Implement for loop increment operator (audit reopened #268) |
 | 1001e | Annex B eval-code function declaration residuals (existing-binding/no-skip/skip-early-err patterns) (audit reopened #1001e) | feature | frontend/semantics | ready | P3 | 225 | Annex B eval-code function declaration residuals (existing-binding/no-skip/skip-early-err patterns) (audit reopened #... |
@@ -171,9 +170,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 5028 | [backend-wasm] Implement array growth and reallocation for push/write paths (audit reopened #5028) | feature | backend | implementation-ready | P0 |  | [backend-wasm] Implement array growth and reallocation for push/write paths (audit reopened #5028) |
 | 5029 | [backend-wasm] Expand direct wasm binary emission beyond console.log string literal MVP (audit reopened #5029) | feature | backend | implementation-ready | P1 |  | [backend-wasm] Expand direct wasm binary emission beyond console.log string literal MVP (audit reopened #5029) |
 | 5030 | [backend-wasm] Split large runtime/WAT emitters into testable components (audit reopened #5030) | refactor | backend | implementation-ready | P1 |  | [backend-wasm] Split large runtime/WAT emitters into testable components (audit reopened #5030) |
-| 5035 | [cli] Add --explain-unsupported diagnostics mode (audit reopened #5035) | feature | cli | implementation-ready | P2 |  | [cli] Add --explain-unsupported diagnostics mode (audit reopened #5035) |
 | 5040 | [compiler] Add resource limits and cancellation to server batch compilation (audit reopened #5040) | feature | cli | implementation-ready | P2 |  | [compiler] Add resource limits and cancellation to server batch compilation (audit reopened #5040) |
-| 5042 | [frontend] Complete Stmt AST fixture coverage (audit reopened #5042) | test | frontend | implementation-ready | P0 |  | [frontend] Complete Stmt AST fixture coverage (audit reopened #5042) |
 | 5043 | [frontend] Split large lexer/parser files by grammar responsibility (audit reopened #5043) | refactor | frontend | implementation-ready | P1 |  | [frontend] Split large lexer/parser files by grammar responsibility (audit reopened #5043) |
 | 5044 | [frontend] Define and test TypeScript ambient declaration erasure boundaries (audit reopened #5044) | feature | frontend | implementation-ready | P1 |  | [frontend] Define and test TypeScript ambient declaration erasure boundaries (audit reopened #5044) |
 | 5045 | [frontend] Improve syntax error recovery and source spans (audit reopened #5045) | feature | frontend | implementation-ready | P2 |  | [frontend] Improve syntax error recovery and source spans (audit reopened #5045) |
@@ -4396,6 +4393,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 020b | Implement IR lowering from TypeScript AST (audit reopened #020b) | feature | ir/semantics | see `issues/done/020b-implement-ir-lowering-from-typescript-ast.md` |
 | 020c | Add IR validation passes and document contracts (audit reopened #020c) | feature | ir/semantics | see `issues/done/020c-add-ir-validation-passes-and-document-contracts.md` |
 | 021a | Implement wasm-encoder hello binary MVP | feature | backend | see `issues/done/021a-implement-wasm-encoder-hello-binary-mvp.md` |
+| 022 | Expand test262 differential coverage (audit reopened #022) | feature | tests/coverage | see `issues/done/022-expand-test262-differential-coverage.md` |
 | 023 | Implement host-deny and auditable E2E manifest | feature | security/capability | see `issues/done/023-implement-host-deny-and-auditable-e2e-manifest.md` |
 | 024 | Migrate runtime module to runtime-abi crate | refactor | abi | see `issues/done/024-migrate-runtime-module-to-runtime-abi-crate.md` |
 | 025 | Migrate ir module to ir crate | refactor | ir | see `issues/done/025-migrate-ir-module-to-ir-crate.md` |
@@ -5084,11 +5082,13 @@ Issue files are the source of truth for work items. The generated section below 
 | 5032 | [cli] Add deterministic external tool capability detection | feature | cli | see `issues/done/5032-cli-tool-capability-detection.md` |
 | 5033 | [cli] Normalize node-diff fixture reporting into structured records (audit reopened #5033) | feature | cli | see `issues/done/5033-cli-structured-node-diff-report.md` |
 | 5034 | [cli] Add command contract tests for build/check/dump/server (audit reopened #5034) | test | cli | see `issues/done/5034-cli-command-contract-tests.md` |
+| 5035 | [cli] Add --explain-unsupported diagnostics mode (audit reopened #5035) | feature | cli | see `issues/done/5035-cli-explain-unsupported.md` |
 | 5036 | [compiler] Introduce CompileReport<T> for non-fatal diagnostics | feature | cli | see `issues/done/5036-compiler-compile-report.md` |
 | 5037 | [compiler] Complete entry module export lowering for local references | feature | cli | see `issues/done/5037-compiler-module-export-lowering.md` |
 | 5038 | [compiler] Harden module graph resolution and diagnostics (audit reopened #5038) | feature | cli | see `issues/done/5038-compiler-module-graph-resolution.md` |
 | 5039 | [compiler] Stabilize test262 preprocessor feature handling (audit reopened #5039) | feature | cli | see `issues/done/5039-compiler-test262-preprocessor.md` |
 | 5041 | [frontend] Complete Expr AST fixture coverage (audit reopened #5041) | test | frontend | see `issues/done/5041-frontend-expr-fixture-coverage.md` |
+| 5042 | [frontend] Complete Stmt AST fixture coverage (audit reopened #5042) | test | frontend | see `issues/done/5042-frontend-stmt-fixture-coverage.md` |
 | 5046 | [ir] Design full class runtime IR representation | feature | ir | see `issues/done/5046-ir-class-ir.md` |
 | 5047 | [ir] Implement env-cell lowering for outer-scope mutation | feature | ir | see `issues/done/5047-ir-env-cell.md` |
 | 5048 | [ir] Broaden BigInt lowering beyond signed-i64/first-limb slice | feature | ir | see `issues/done/5048-ir-bigint-lowering.md` |
