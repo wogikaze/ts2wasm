@@ -37,8 +37,8 @@ In scope:
 - [x] private elements の命名規則による分離
 
 Out of scope:
-- [ ] 完全な semantic differential（別 issue）
-- [ ] 複雑な inheritance chain の最適化
+- [x] 完全な semantic differential（別 issue）(out of scope)
+- [x] 複雑な inheritance chain の最適化 (out of scope)
 
 ## Affected paths
 
@@ -62,13 +62,13 @@ cargo nextest run
 ## Docs / current-state / issue sync
 
 Final-state docs:
-- [ ] not affected
+- [x] not affected
 
 Current state:
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
-- [ ] none
+- [x] none
 
 ## Notes
 
