@@ -64,11 +64,15 @@ jobs:
       - name: Install runtime tools
         run: |
           sudo apt-get update
-          sudo apt-get install -y wabt
+          sudo apt-get install -y mold wabt
           wget -q https://github.com/bytecodealliance/wasm-micro-runtime/releases/download/WAMR-2.4.3/iwasm-2.4.3-x86_64-ubuntu-22.04.tar.gz
           tar -xzf iwasm-2.4.3-x86_64-ubuntu-22.04.tar.gz
           sudo mv iwasm /usr/local/bin/
           chmod +x /usr/local/bin/iwasm
+
+      - name: Build ts2wasm
+        run: |
+          cargo build
 
       - name: Fetch reference suites
         run: |

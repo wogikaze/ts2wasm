@@ -58,7 +58,7 @@ jobs:
       - name: Install wabt
         run: |
           sudo apt-get update
-          sudo apt-get install -y wabt
+          sudo apt-get install -y mold wabt
 
       - name: Install iwasm (WAMR)
         run: |
@@ -70,6 +70,10 @@ jobs:
       - name: Check shell scripts
         run: |
           ./scripts/manager check-scripts
+
+      - name: Build ts2wasm
+        run: |
+          cargo build
 
       - name: Run test262 runner with sample
         run: |
