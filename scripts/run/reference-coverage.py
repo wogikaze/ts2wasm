@@ -75,6 +75,7 @@ REPO_ROOT = Path(__file__).parent.parent.parent.resolve()
 TS2WASM_BINARY = resolve_ts2wasm_binary()
 REFERENCE_ROOT = Path(os.environ.get("TS2WASM_REFERENCE_ROOT", REPO_ROOT / "reference")).resolve()
 COVERAGE_RESULTS_DIR = REPO_ROOT / "artifacts" / "coverage" / "results"
+SERVER_BATCH_RESPONSE_TIMEOUT_SECS = 35
 
 SUITE_METADATA = {
     "test262": {
@@ -839,6 +840,100 @@ def main():
         files = sampled
         print(f"Sample mode: {len(files)} files selected (max {sample} per category)", file=sys.stderr)
 
+    # JSONL output mode (test262 only) uses the full differential harness.
+    # Keep it before the aggregate coverage path so `mise run test262` does
+    # not first compile the same selected files through server mode.
+    if jsonl_output and suite == "test262":
+        if not files:
+            print(f"No files selected for {suite}", file=sys.stderr)
+            sys.exit(0)
+        if jobs is None:
+            jobs = os.cpu_count() or 4
+        if jobs < 1:
+            jobs = 1
+
+        results_dir = REPO_ROOT / "artifacts" / "coverage" / "results"
+        results_dir.mkdir(parents=True, exist_ok=True)
+        jsonl_file = results_dir / f"{suite}-results.jsonl"
+
+        passed = 0
+        failed = 0
+        unsupported = 0
+        blocked = 0
+        total_duration_ms = 0
+
+        jsonl_started_at = time.perf_counter()
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            tmp_dir = Path(tmp_dir)
+            with open(jsonl_file, 'w', encoding='utf-8') as jsonl_out:
+                with ThreadPoolExecutor(max_workers=jobs) as executor:
+                    futures = {executor.submit(_ensure_test262_runner().process_one_test, f, tmp_dir, False): f for f in files}
+                    completed = 0
+                    total = len(files)
+                    last_progress = 0
+
+                    for future in as_completed(futures):
+                        record, status = future.result()
+                        if record:
+                            jsonl_out.write(record + "\n")
+                            try:
+                                total_duration_ms += int(json.loads(record).get("duration_ms", 0) or 0)
+                            except json.JSONDecodeError:
+                                pass
+                        if status == "pass":
+                            passed += 1
+                        elif status in ("fail", "mismatch", "runtime_error"):
+                            failed += 1
+                        elif status == "unsupported":
+                            unsupported += 1
+                        elif status == "blocked":
+                            blocked += 1
+                        completed += 1
+                        progress = int((completed / total) * 100)
+                        if progress >= last_progress + 5:
+                            print(f"Progress: {progress}% ({completed}/{total})", file=sys.stderr)
+                            last_progress = progress
+
+        print(f"\n=== {suite} Summary ===", file=sys.stderr)
+        print(f"Pass: {passed}", file=sys.stderr)
+        print(f"Fail: {failed}", file=sys.stderr)
+        print(f"Unsupported: {unsupported}", file=sys.stderr)
+        print(f"Blocked: {blocked}", file=sys.stderr)
+        print(f"Total: {passed + failed + unsupported + blocked}", file=sys.stderr)
+        print(f"Duration: {total_duration_ms}ms", file=sys.stderr)
+
+        wall_duration_ms = int(round((time.perf_counter() - jsonl_started_at) * 1000))
+        summary = {
+            "suite": suite,
+            "passed": passed,
+            "failed": failed,
+            "unsupported": unsupported,
+            "blocked": blocked,
+            "total": passed + failed + unsupported + blocked,
+            "duration_ms": total_duration_ms,
+            "wall_duration_ms": wall_duration_ms,
+            "timestamp": datetime.now().isoformat(),
+            "jsonl_file": str(jsonl_file),
+        }
+        summary_file = results_dir / f"{suite}-summary.json"
+        summary_file.write_text(json.dumps(summary, indent=2), encoding="utf-8")
+
+        legacy = dict(summary)
+        legacy.pop("jsonl_file", None)
+        legacy_file = results_dir / f"{suite}.json"
+        legacy_file.write_text(json.dumps(legacy, indent=2), encoding="utf-8")
+
+        if notify_new_passes is not None:
+            try:
+                notify_new_passes(jsonl_file, suite=suite)
+            except Exception as e:
+                print(f"WARNING: notification failed: {e}", file=sys.stderr)
+
+        if web_ui:
+            refresh_web_ui_data()
+
+        return
+
     coverage_started_at = time.perf_counter()
 
     executed = 0
@@ -1160,6 +1255,14 @@ def main():
             
             t262 = _ensure_test262_runner()
             metadata = t262.parse_test262_metadata(source_code)
+            unsupported_reason = metadata.unsupported_reason
+            if unsupported_reason:
+                result_metrics["unsupported"] = True
+                result_metrics["diag_code"] = "UnsupportedTest262Metadata"
+                result_metrics["feature_label"] = "test262-metadata"
+                if detail_output:
+                    result_metrics["detail_line"] = f"{detail_path}: UnsupportedTest262Metadata: test262-metadata"
+                return result_metrics
             t262.HARNESS_DIR = test262_harness_dir_for(file_path)
             build_source = t262.build_test262_source(
                 file_path, source_code, metadata, target="wasm"
@@ -1323,7 +1426,7 @@ def main():
                         _read_err[0] = e
                 _reader = threading.Thread(target=_do_read, daemon=True)
                 _reader.start()
-                _reader.join(timeout=2)
+                _reader.join(timeout=SERVER_BATCH_RESPONSE_TIMEOUT_SECS)
                 if _reader.is_alive():
                     # Server likely crashed; kill and fall back
                     if server_proc is not None:
@@ -1366,15 +1469,10 @@ def main():
             
             # Phase 3: Process early results (negative-parse-syntaxerror etc.)
             for result in early_results:
-                executed += 1
-                if detail_output:
-                    _append_suite_detail(result)
-                if result["unsupported"] and result["diag_code"] == "ExpectedNegativeSyntax":
-                    unsupported_count += 1
-                    unsupported_diag_counts["ExpectedNegativeSyntax"] = unsupported_diag_counts.get("ExpectedNegativeSyntax", 0) + 1
-                    unsupported_feature_counts["negative-parse-syntaxerror"] = unsupported_feature_counts.get("negative-parse-syntaxerror", 0) + 1
-                    if result["detail_line"]:
-                        file_details.append(result["detail_line"])
+                _accumulate_case_result(result, {
+                    "file_path": Path(result["file_path"]),
+                    "detail_path": result["detail_path"],
+                })
         else:
             # === Legacy subprocess mode ===
             with ThreadPoolExecutor(max_workers=jobs) as executor:
@@ -1444,103 +1542,6 @@ def main():
                 server_proc.kill()
                 server_proc.wait()
     
-    # JSONL output mode (test262 only, uses full harness with parallel execution)
-    if jsonl_output and suite == "test262":
-        if not files:
-            print(f"No files selected for {suite}", file=sys.stderr)
-            sys.exit(0)
-        if jobs is None:
-            jobs = os.cpu_count() or 4
-        if jobs < 1:
-            jobs = 1
-
-        results_dir = REPO_ROOT / "artifacts" / "coverage" / "results"
-        results_dir.mkdir(parents=True, exist_ok=True)
-        jsonl_file = results_dir / f"{suite}-results.jsonl"
-
-        passed = 0
-        failed = 0
-        unsupported = 0
-        blocked = 0
-        total_duration_ms = 0
-
-        jsonl_started_at = time.perf_counter()
-        with tempfile.TemporaryDirectory() as tmp_dir:
-            tmp_dir = Path(tmp_dir)
-            with open(jsonl_file, 'w', encoding='utf-8') as jsonl_out:
-                with ThreadPoolExecutor(max_workers=jobs) as executor:
-                    futures = {executor.submit(_ensure_test262_runner().process_one_test, f, tmp_dir, False): f for f in files}
-                    completed = 0
-                    total = len(files)
-                    last_progress = 0
-
-                    for future in as_completed(futures):
-                        record, status = future.result()
-                        if record:
-                            jsonl_out.write(record + "\n")
-                            try:
-                                total_duration_ms += int(json.loads(record).get("duration_ms", 0) or 0)
-                            except json.JSONDecodeError:
-                                pass
-                        if status == "pass":
-                            passed += 1
-                        elif status in ("fail", "mismatch", "runtime_error"):
-                            failed += 1
-                        elif status == "unsupported":
-                            unsupported += 1
-                        elif status == "blocked":
-                            blocked += 1
-                        completed += 1
-                        progress = int((completed / total) * 100)
-                        if progress >= last_progress + 5:
-                            print(f"Progress: {progress}% ({completed}/{total})", file=sys.stderr)
-                            last_progress = progress
-
-        print(f"\n=== {suite} Summary ===", file=sys.stderr)
-        print(f"Pass: {passed}", file=sys.stderr)
-        print(f"Fail: {failed}", file=sys.stderr)
-        print(f"Unsupported: {unsupported}", file=sys.stderr)
-        print(f"Blocked: {blocked}", file=sys.stderr)
-        print(f"Total: {passed + failed + unsupported + blocked}", file=sys.stderr)
-        print(f"Duration: {total_duration_ms}ms", file=sys.stderr)
-
-        # Save summary files
-        wall_duration_ms = int(round((time.perf_counter() - jsonl_started_at) * 1000))
-        summary = {
-            "suite": suite,
-            "passed": passed,
-            "failed": failed,
-            "unsupported": unsupported,
-            "blocked": blocked,
-            "total": passed + failed + unsupported + blocked,
-            "duration_ms": total_duration_ms,
-            "wall_duration_ms": wall_duration_ms,
-            "timestamp": datetime.now().isoformat(),
-            "jsonl_file": str(jsonl_file),
-        }
-        summary_file = results_dir / f"{suite}-summary.json"
-        summary_file.write_text(json.dumps(summary, indent=2), encoding="utf-8")
-
-        # Legacy format
-        legacy = dict(summary)
-        legacy.pop("jsonl_file", None)
-        legacy_file = results_dir / f"{suite}.json"
-        legacy_file.write_text(json.dumps(legacy, indent=2), encoding="utf-8")
-
-        # Notify new passes
-        if notify_new_passes is not None:
-            try:
-                notify_new_passes(jsonl_file, suite=suite)
-            except Exception as e:
-                print(f"WARNING: notification failed: {e}", file=sys.stderr)
-
-        # Web UI refresh
-        if web_ui:
-            refresh_web_ui_data()
-
-        # Don't execute the sequential code path below
-        return
-
     # Build unsupported diagcodes string
     unsupported_diagcodes = ",".join(
         f"{code}:{count}" for code, count in 
