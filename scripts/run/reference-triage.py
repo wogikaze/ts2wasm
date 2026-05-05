@@ -39,6 +39,7 @@ def load_reference_coverage_module() -> Any:
 
 
 REFERENCE_COVERAGE = load_reference_coverage_module()
+REFERENCE_COVERAGE._ensure_test262_runner()  # lazy init for test262_runner
 
 
 @dataclass

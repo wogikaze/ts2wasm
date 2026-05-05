@@ -6,7 +6,7 @@ area: frontend/syntax
 class: triage-needed
 priority: P2
 depends_on: []
-blocks: []
+blocks: [5134]
 created: 2026-05-01
 updated: 2026-05-01
 ---
@@ -360,16 +360,44 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- `...`
+- `<pending: parent orchestrator merge commit>`
 
 Validation result:
 
 ```text
-command:
-result:
-date:
+command: mise run check issues
+result: pass (parent orchestrator)
+date: 2026-05-06
 ```
 
 Remaining risks:
 
-- none
+- Child issue 5134 must be completed to forward `generators` and `async-functions` tests through the Python harness.
+
+## Triage result
+
+**Investigation date**: 2026-05-06
+
+**Root cause**: All 2054 failures are Python test262 harness metadata rejections,
+not async/await syntax issues. The Python harness at `scripts/lib/test262_harness.py`
+line 27 defines `SUPPORTED_FEATURES = ("class",)`, which rejects test cases with
+features `generators`, `async-functions`, etc. before they reach the Rust compiler.
+
+**Classification**: The representative case fails with "test262 feature `generators`
+is not supported by this runner slice" — this is a Python-level false negative.
+The Rust preprocessor already knows about `generators` (mapped to issue-401,
+parser-level impl done) and would pass it through.
+
+**Existing coverage**:
+- Issue 230 (done): async iteration — NOT a match, covers `for await...of`
+- Issue 284 (done): async flag runner support — NOT a match, covers `// async` flag
+- Issue 401 (done): generator function syntax — PARTIAL match (parser done, but Python harness still blocks the metadata)
+
+**Duplicate verdict**: Issues 230 and 284 confirmed as no-match. Issue 401 is
+a partial match covering the `generators` parser implementation but not the
+Python harness metadata gap.
+
+**Action**: Split into child issue 5134 (Python harness feature whitelist).
+Close 416 as triage-spike completed. Remaining async/await lowering work is
+not yet scoped — child issue 5134 will unblock the metadata layer and reveal
+the actual compiler diagnostic for async function syntax.

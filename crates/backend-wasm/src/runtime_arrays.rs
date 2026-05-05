@@ -882,7 +882,7 @@ impl WatEmitter<'_> {
     pub(super) fn emit_array_index_of(&self, wat: &mut String) {
         wat.push_str(&format!(
             r#"
-  (func $array_index_of (param $arr i32) (param $search i32) (result i32)
+  (func $array_index_of (param $arr i32) (param $search i32) (param $from_idx i32) (result i32)
     (local $obj i32)
     (local $tag i32)
     (local $len i32)
@@ -892,7 +892,12 @@ impl WatEmitter<'_> {
     (if (i32.ne (local.get $tag) (i32.const {array_tag})) (then (return (i32.const {neg_one_tagged}))))
     (local.set $obj (i32.and (local.get $arr) (i32.const {heap_mask})))
     (local.set $len (i32.load (local.get $obj)))
-    (local.set $i (i32.const {zero}))
+    ;; Clamp fromIndex: untag number, if < 0 use 0, if >= len return -1
+    (local.set $i (i32.shr_s (local.get $from_idx) (i32.const {number_shift})))
+    (if (i32.lt_s (local.get $i) (i32.const {zero}))
+      (then (local.set $i (i32.const {zero}))))
+    (if (i32.ge_u (local.get $i) (local.get $len))
+      (then (return (i32.const {neg_one_tagged}))))
     (block $done
       (loop $scan
         (br_if $done (i32.ge_u (local.get $i) (local.get $len)))

@@ -1256,12 +1256,16 @@ impl<'a> Resolver<'a> {
                     && self.is_known_array_expr(object)
                     && !args.is_empty()
                 {
-                    // Only pass the searchElement (first arg), ignore optional fromIndex
-                    // since our WAT runtime functions don't accept it
-                    let lowered_args = vec![
+                    let mut lowered_args = vec![
                         self.lower_expr(object)?,
                         self.lower_expr(&args[0])?,
                     ];
+                    // Pass fromIndex if provided, otherwise default to 0
+                    if args.len() > 1 {
+                        lowered_args.push(self.lower_expr(&args[1])?);
+                    } else {
+                        lowered_args.push(LoweredExpr::Number(0));
+                    }
                     Ok(LoweredExpr::RuntimeCall {
                         runtime_fn: if method == "indexOf" {
                             "ArrayIndexOf".to_owned()
@@ -1648,7 +1652,7 @@ impl<'a> Resolver<'a> {
                                     let max_args = if method == "indexOf"
                                         || method == "includes"
                                     {
-                                        1
+                                        2
                                     } else {
                                         args.len()
                                     };

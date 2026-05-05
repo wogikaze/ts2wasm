@@ -22,11 +22,11 @@ Issue files are the source of truth for work items. The generated section below 
 | parser | 1 | 0 | 1 |
 | reference | 211 | 179 | 32 |
 | runtime | 263 | 95 | 168 |
-| scripts | 2 | 0 | 2 |
+| scripts | 3 | 1 | 2 |
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 4969 | 4052 | 917 |
+| total | 4970 | 4053 | 917 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -4215,6 +4215,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 5015 | Implement function support | spike | frontend/syntax | class: triage-needed | Implement function support |
 | 5018 | Implement legacy-global-builtin support | spike | frontend/syntax | class: triage-needed | Implement legacy-global-builtin support |
 | 5020 | Implement RegExp literal support | spike | frontend/syntax | class: triage-needed | Implement RegExp literal support |
+| 5134 | Admit generators and async-functions features through Python test262 harness | spike | scripts | 416 | Admit generators and async-functions features through Python test262 harness |
 <!-- generated:blocked:end -->
 
 ## Done queue
