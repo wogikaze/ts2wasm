@@ -66,6 +66,8 @@ SUPPORTED_FEATURES = (
     "Float64Array",
     "Int32Array",
     "Int8Array",
+    "Int16Array",
+    "Uint32Array",
     "Uint16Array",
     "Uint8Array",
     "Uint8ClampedArray",
@@ -82,14 +84,37 @@ SUPPORTED_FEATURES = (
     "Atomics.pause",
     "Atomics.waitAsync",
     "DataView",
+    "DataView.prototype.getFloat32",
+    "DataView.prototype.getFloat64",
+    "DataView.prototype.getInt8",
+    "DataView.prototype.getInt16",
+    "DataView.prototype.getInt32",
+    "DataView.prototype.getUint16",
+    "DataView.prototype.getUint32",
     "DataView.prototype.setUint8",
+    "Error.isError",
+    "FinalizationRegistry",
+    "Float16Array",
+    "Map",
+    "Math.sumPrecise",
+    "Set",
     "SharedArrayBuffer",
+    "Symbol.hasInstance",
+    "Temporal",
+    "WeakMap",
+    "WeakRef",
+    "WeakSet",
     "align-detached-buffer-semantics-with-web-reality",
     "array-find-from-last",
+    "array-grouping",
     "arraybuffer-transfer",
     "async-iteration",
     "async-functions",
+    "caller",
     "change-array-by-copy",
+    "class-fields-private",
+    "class-methods-private",
+    "class-static-methods-private",
     "coalesce-expression",
     "computed-property-names",
     "default-parameters",
@@ -97,13 +122,26 @@ SUPPORTED_FEATURES = (
     "error-cause",
     "exponentiation",
     "explicit-resource-management",
+    "for-in-order",
+    "for-of",
+    "globalThis",
     "immutable-arraybuffer",
+    "iterator-helpers",
+    "iterator-sequencing",
+    "joint-iteration",
+    "json-parse-with-source",
     "logical-assignment-operators",
+    "new.target",
+    "numeric-separator-literal",
     "Proxy",
     "resizable-arraybuffer",
+    "symbols-as-weakmap-keys",
     "source-phase-imports",
     "stable-array-sort",
     "string-trimming",
+    "u180e",
+    "upsert",
+    "well-formed-json-stringify",
     "tail-call-optimization",
 )
 ASSERT_FAILURE_SENTINEL = "__TS2WASM_TEST262_ASSERT_FAIL__"
@@ -497,6 +535,21 @@ def _rewrite_wasm_assert_throws(source, test_file=None):
         or "built-ins/AsyncFunction/" in context
         or "built-ins/AsyncIteratorPrototype/" in context
         or "built-ins/DataView/" in context
+        or "built-ins/BigInt/" in context
+        or "built-ins/Boolean/" in context
+        or "built-ins/Date/" in context
+        or "built-ins/DisposableStack/" in context
+        or "built-ins/Error/" in context
+        or "built-ins/FinalizationRegistry/" in context
+        or "built-ins/Function/" in context
+        or "built-ins/Iterator/" in context
+        or "built-ins/JSON/" in context
+        or "built-ins/Map/" in context
+        or "built-ins/MapIteratorPrototype/" in context
+        or "built-ins/Math/" in context
+        or "built-ins/NativeErrors/" in context
+        or "built-ins/Number/" in context
+        or "built-ins/Object/" in context
         or "built-ins/SharedArrayBuffer/" in context
         or "built-ins/AggregateError/" in context
         or "built-ins/AbstractModuleSource/" in context
@@ -646,6 +699,21 @@ def _rewrite_node_reference_probes(source, test_file=None):
         or "built-ins/AsyncFunction/" in context
         or "built-ins/AsyncIteratorPrototype/" in context
         or "built-ins/DataView/" in context
+        or "built-ins/BigInt/" in context
+        or "built-ins/Boolean/" in context
+        or "built-ins/Date/" in context
+        or "built-ins/DisposableStack/" in context
+        or "built-ins/Error/" in context
+        or "built-ins/FinalizationRegistry/" in context
+        or "built-ins/Function/" in context
+        or "built-ins/Iterator/" in context
+        or "built-ins/JSON/" in context
+        or "built-ins/Map/" in context
+        or "built-ins/MapIteratorPrototype/" in context
+        or "built-ins/Math/" in context
+        or "built-ins/NativeErrors/" in context
+        or "built-ins/Number/" in context
+        or "built-ins/Object/" in context
         or "built-ins/SharedArrayBuffer/" in context
         or "built-ins/AggregateError/" in context
         or "built-ins/AbstractModuleSource/" in context
