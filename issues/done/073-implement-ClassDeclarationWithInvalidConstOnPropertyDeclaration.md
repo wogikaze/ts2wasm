@@ -407,7 +407,7 @@ error: [UnsupportedSyntax] expected identifier, got Some(SpannedToken { kind: Co
 ## 重複整理メモ
 
 この issue はタイトルが重複しているため、内容がより充実している
-`issues/open/547-implement-ClassDeclarationWithInvalidConstOnPropertyDeclaration.md` に統合されました。
+`issues/done/547-implement-ClassDeclarationWithInvalidConstOnPropertyDeclaration.md` に統合されました。
 そちらを参照してください。
 ## Completion evidence
 
