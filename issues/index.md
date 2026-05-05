@@ -16,9 +16,9 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 1 | 0 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4397 | 3778 | 619 |
+| frontend | 4397 | 3776 | 621 |
 | harness | 1 | 0 | 1 |
-| ir | 27 | 5 | 22 |
+| ir | 28 | 6 | 22 |
 | issues | 4 | 0 | 4 |
 | parser | 1 | 0 | 1 |
 | reference | 211 | 169 | 42 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 4999 | 4049 | 950 |
+| total | 5000 | 4048 | 952 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -182,6 +182,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 5162 | Allow compatible var redeclarations | feature | frontend/syntax | implementation-ready | P2 |  | `reference/typescript/tests/cases/compiler/duplicateLocalVariable3.ts` reports `DuplicateLocal` for `var x = 1; var x... |
 | 5163 | Lower nested call expression callees | feature | frontend/semantics | implementation-ready | P2 |  | `reference/typescript/tests/cases/compiler/betterErrorForAccidentalCall.ts` currently reports `UnsupportedSyntax: onl... |
 | 5164 | Parse exponentiation compound assignment | feature | frontend/syntax | implementation-ready | P1 |  | the BigInt target reference cases currently report `UnsupportedSyntax: expected Semicolon, got Some(PowerEqual)` for ... |
+| 5165 | Support typed array subarray builtins | feature | ir/builtin-resolver | implementation-ready | P1 |  | Support typed array subarray builtins |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -458,7 +459,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 772 | Implement Augmentedtypesvar | spike | frontend/syntax | class: blocked | Implement Augmentedtypesvar |
 | 773 | Implement Autoasiforstaticsinclassdeclaration | spike | frontend/syntax | class: triage-needed | Implement Autoasiforstaticsinclassdeclaration |
 | 775 | Implement Autotypeassignedusingdestructuringfromnevernocrash | spike | frontend/resolver | class: blocked | Implement Autotypeassignedusingdestructuringfromnevernocrash |
-| 1048 | Implement Bigint | spike | frontend/resolver | class: blocked | Implement Bigint |
 | 1049 | Implement Bigintambientminimal | spike | runtime/builtins | class: triage-needed | Implement Bigintambientminimal |
 | 1050 | Implement Bigintarbirtraryidentifier | spike | runtime/builtins | class: triage-needed | Implement Bigintarbirtraryidentifier |
 | 1051 | Implement Bigintindex | spike | frontend/resolver | class: blocked | Implement Bigintindex |
@@ -3992,7 +3992,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 4590 | Implement Typedarrays Name Resolution | spike | frontend/resolver | class: blocked | Implement Typedarrays Name Resolution |
 | 4591 | Implement Typedarrays Parser Syntax | spike | runtime/builtins | class: triage-needed | Implement Typedarrays Parser Syntax |
 | 4592 | Implement Typedarrayscrossassignability | spike | frontend/resolver | class: blocked | Implement Typedarrayscrossassignability |
-| 4593 | Implement Typedarrayssubarray | spike | frontend/resolver | class: blocked | Implement Typedarrayssubarray |
 | 4594 | Implement Typedgenericprototypemember | spike | frontend/semantics | class: blocked | Implement Typedgenericprototypemember |
 | 4595 | Implement Typeofambientexternalmodules | spike | frontend/syntax | class: blocked | Implement Typeofambientexternalmodules |
 | 4596 | Implement Typeofclass | spike | frontend/resolver | class: blocked | Implement Typeofclass |
@@ -5021,6 +5020,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 1045 | Implement Bettererrorforaccidentalcall | spike | frontend/syntax | see `issues/done/1045-implement-betterErrorForAccidentalCall.md` |
 | 1046 | Implement Bigintwithtargetes | spike | runtime/builtins | see `issues/done/1046-implement-bigIntWithTargetES.md` |
 | 1047 | Implement Bigintwithtargetlessthanes | spike | runtime/builtins | see `issues/done/1047-implement-bigIntWithTargetLessThanES.md` |
+| 1048 | Implement Bigint | spike | frontend/resolver | see `issues/done/1048-implement-bigint.md` |
 | 2050 | Implement Duplicatelocalvariable Duplicate Local | spike | reference/triage | see `issues/done/2050-implement-duplicateLocalVariable-duplicate-local.md` |
 | 3002 | Implement Isolateddeclarationerrorsdefault | spike | runtime/builtins | see `issues/done/3002-implement-isolatedDeclarationErrorsDefault.md` |
 | 3131 | Implement Jsxfactorynotidentifierorqualifiedname | spike | reference/triage | see `issues/done/3131-implement-jsxFactoryNotIdentifierOrQualifiedName.md` |
@@ -5032,6 +5032,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 4284 | Implement Stringincludes (audit reopened #4284) | spike | runtime/builtins | see `issues/done/4284-implement-stringIncludes.md` |
 | 4291 | Implement Stringmatchall | spike | reference/triage | see `issues/done/4291-implement-stringMatchAll.md` |
 | 4294 | Implement Stringtrim | spike | runtime/builtins | see `issues/done/4294-implement-stringTrim.md` |
+| 4593 | Implement Typedarrayssubarray | spike | frontend/resolver | see `issues/done/4593-implement-typedArraysSubarray.md` |
 | 4806 | Implement class syntax (dup) | spike | frontend/syntax | see `issues/done/4806-implement-class.md` |
 | 4808 | Implement import/export module syntax (dup) | spike | frontend/syntax | see `issues/done/4808-implement-import-export.md` |
 | 4809 | Implement name resolution (dup) | spike | frontend/resolver | see `issues/done/4809-implement-name-resolution.md` |

@@ -125,7 +125,7 @@ Follow-up issues:
 - `issues/done/1010-implement-autoTypeAssignedUsingDestructuringFromNeverNoCrash.md` - Implement Autotypeassignedusingdestructuringfromnevernocrash (same feature label, same group key, title overlap)
 - `issues/done/1033-implement-baseCheck.md` - Implement Basecheck (same feature label, same group key, title overlap; superseded by issue 056)
 - `issues/done/1044-implement-bestCommonTypeWithContextualTyping.md` - Implement Bestcommontypewithcontextualtyping (same feature label, same group key, title overlap)
-- `issues/open/1048-implement-bigint.md` - Implement Bigint (same feature label, same group key, title overlap)
+- `issues/done/1048-implement-bigint.md` - Implement Bigint (same feature label, same group key, title overlap)
 - `issues/open/1051-implement-bigintIndex.md` - Implement Bigintindex (same feature label, same group key, title overlap)
 - `issues/open/1061-implement-bindingPatternContextualTypeDoesNotCauseWidening.md` - Implement Bindingpatterncontextualtypedoesnotcausewidening (same feature label, same group key, title overlap)
 - `issues/open/1068-implement-blockScopedBindingsReassignedInLoop-name-resolution.md` - Implement Blockscopedbindingsreassignedinloop Name Resolution (same feature label, same group key, title overlap)

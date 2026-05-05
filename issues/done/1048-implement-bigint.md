@@ -3,12 +3,14 @@ id: 1048
 title: "Implement Bigint"
 type: spike
 area: frontend/resolver
-class: blocked
+class: superseded
 priority: P1
-depends_on: [5005]
+depends_on: [5165]
 blocks: []
 created: 2026-05-01
-updated: 2026-05-01
+updated: 2026-05-06
+status: done
+completed: 2026-05-06
 ---
 
 ## Summary
@@ -43,10 +45,10 @@ This generated bucket is either split into implementation-ready child issues or 
 
 In scope:
 
-- [ ] Inspect the smart triage report below
-- [ ] Confirm whether existing open/done issues already cover this bucket
-- [ ] Split one feature family, one observable behavior, or one fixed reference window into child issues
-- [ ] Preserve exact reproduction commands and representative AST/diagnostic evidence in each child issue
+- [x] Inspect the smart triage report below
+- [x] Confirm whether existing open/done issues already cover this bucket
+- [x] Split one feature family, one observable behavior, or one fixed reference window into child issues
+- [x] Preserve exact reproduction commands and representative AST/diagnostic evidence in each child issue
 
 Out of scope:
 
@@ -68,10 +70,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] Duplicate candidates below are confirmed as no-match or this issue is superseded
-- [ ] At least one child issue contains an exact `mise run reference-triage -- ...` command
-- [ ] Child issue includes failing path, diagnostic code, source context, visible symbols, and parser/TypeScript AST evidence
-- [ ] Child issue acceptance names the exact fixture/reference path and diagnostic/stdout change
+- [x] Duplicate candidates below are confirmed as no-match or this issue is superseded
+- [x] At least one child issue contains an exact `mise run reference-triage -- ...` command
+- [x] Child issue includes failing path, diagnostic code, source context, visible symbols, and parser/TypeScript AST evidence
+- [x] Child issue acceptance names the exact fixture/reference path and diagnostic/stdout change
 
 ## Validation
 
@@ -98,15 +100,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] updated: `current-state.md` (repo root)
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] created: `issues/open/5165-support-typed-array-subarray-builtins.md`
 
 ## Notes
 
@@ -129,7 +131,16 @@ Follow-up issues:
 
 ## Smart triage
 
-Not generated. Rerun with `--triage-limit 1` or higher.
+Generated on 2026-05-06.
+
+- Path: `reference/typescript/tests/cases/compiler/bigint64ArraySubarray.ts`
+- Diagnostic: `UnsupportedSyntax` / `parser-or-frontend-unsupported`
+- Failure: `method BigInt64Array.subarray not found at 96..110`
+- Source context: `arr.subarray();`, `arr.subarray(0);`, `arr.subarray(0, 10);`
+- Visible symbol: `arr: BigInt64Array<ArrayBuffer>`
+- Compiler stage: tokens and AST succeed; `resolve_builtins` / `lower_program` fails during method-call lowering.
+- TypeScript AST path: `FunctionDeclaration -> Block -> ExpressionStatement -> CallExpression -> PropertyAccessExpression`
+- Split child: `issues/open/5165-support-typed-array-subarray-builtins.md`
 
 ## Completion evidence
 
@@ -137,16 +148,16 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- `...`
+- `pending`
 
 Validation result:
 
 ```text
-command:
-result:
-date:
+command: python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/bigint64ArraySubarray.ts
+result: pass; current blocker identified as missing `BigInt64Array.subarray` built-in method binding, split to issue 5165
+date: 2026-05-06
 ```
 
 Remaining risks:
 
-- none
+- BigInt64Array runtime behavior needs follow-up triage after issue 5165 advances beyond the current method lookup blocker.
