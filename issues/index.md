@@ -21,12 +21,12 @@ Issue files are the source of truth for work items. The generated section below 
 | issues | 4 | 0 | 4 |
 | parser | 1 | 0 | 1 |
 | reference | 211 | 182 | 29 |
-| runtime | 259 | 109 | 150 |
+| runtime | 259 | 108 | 151 |
 | scripts | 2 | 0 | 2 |
 | security | 1 | 0 | 1 |
 | tests | 6 | 1 | 5 |
 | wasi | 1 | 0 | 1 |
-| total | 4963 | 4203 | 760 |
+| total | 4963 | 4202 | 761 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -162,7 +162,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 264 | Add broad expression fixture coverage (audit reopened #264) | feature | frontend/syntax | implementation-ready | P2 |  | Add broad expression fixture coverage (audit reopened #264) |
 | 265 | Add broad statement fixture coverage (audit reopened #265) | feature | frontend/syntax | implementation-ready | P2 |  | Add broad statement fixture coverage (audit reopened #265) |
 | 268 | Implement for loop increment operator (audit reopened #268) | feature | frontend/semantics | done | P2 |  | Implement for loop increment operator (audit reopened #268) |
-| 341 | Implement core builtin API coverage (3,190 test262 cases) (audit reopened #341) | meta | runtime/builtins | ready | P1 |  | 3,190 test262 cases fail due to missing core builtin API implementations. |
 | 1001e | Annex B eval-code function declaration residuals (existing-binding/no-skip/skip-early-err patterns) (audit reopened #1001e) | feature | frontend/semantics | ready | P3 | 225 | Annex B eval-code function declaration residuals (existing-binding/no-skip/skip-early-err patterns) (audit reopened #... |
 | 5001 | Meta: TypeScript Compiler Semantic Analysis Coverage | meta | frontend/semantics | design-ready | P1 |  | Meta: TypeScript Compiler Semantic Analysis Coverage |
 | 5004 | Meta: Runtime Builtins Coverage (test262) (audit reopened #5004) | meta | runtime/builtins | design-ready | P1 |  | Meta: Runtime Builtins Coverage (test262) (audit reopened #5004) |
@@ -4690,6 +4689,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 338 | Sparse array holes handling for Array.prototype.map | feature | runtime/builtins | see `issues/done/338-array-map-sparse-array-holes.md` |
 | 339 | Callback thisArg for Array.prototype.map | feature | runtime/builtins | see `issues/done/339-array-map-thisarg.md` |
 | 340 | Generic call for Array.prototype.map (static dense receiver slice) | feature | runtime/builtins | see `issues/done/340-array-map-generic-call.md` |
+| 341 | Implement core builtin API coverage (3,190 test262 cases) (audit reopened #341) | meta | runtime/builtins | see `issues/done/341-implement-core-builtin-api-coverage.md` |
 | 341a | Implement isNaN, parseInt, parseFloat, isFinite global functions | feature | runtime/builtins | see `issues/done/341a-global-number-functions.md` |
 | 341b | Implement Number constructor and static methods | feature | runtime/builtins | see `issues/done/341b-number-constructor.md` |
 | 341c | Implement Boolean global | feature | runtime/builtins | see `issues/done/341c-boolean-global.md` |

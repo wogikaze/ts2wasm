@@ -116,6 +116,5 @@ Violated acceptance: the issue cannot provide repo-local close evidence for its 
 
 Evidence files:
 - `issues/open/341-implement-core-builtin-api-coverage.md` before this move
-- `issues/open/341-implement-core-builtin-api-coverage.md` after this move
 
 Split follow-up: none created in this audit wave; this reopened issue remains the tracking item.
