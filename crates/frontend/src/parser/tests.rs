@@ -68,6 +68,7 @@ mod tests {
                 name: string;
                 meta: { created: number };
             }
+            interface abstract { marker: number; }
             function read(point: Point): number { return point.x; }
             let origin: Point = { x: 1 };
         "#;

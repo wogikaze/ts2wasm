@@ -58,7 +58,18 @@ impl Parser {
         &mut self,
         interface_span: Span,
     ) -> Result<(), Diagnostic> {
-        self.expect_ident()?;
+        // Accept both identifiers and TS-only keywords (e.g. `interface abstract { }`)
+        match self.peek() {
+            Some(Token::Ident(_)) => { self.expect_ident()?; }
+            Some(Token::Abstract) => { self.advance(); }
+            other => {
+                return Err(Diagnostic {
+                    code: DiagCode::UnsupportedSyntax,
+                    message: format!("expected identifier for interface name, got {other:?}"),
+                    span: self.peek_span(),
+                });
+            }
+        }
         while !self.is_at_end() && !matches!(self.peek(), Some(Token::LeftBrace)) {
             self.advance();
         }
