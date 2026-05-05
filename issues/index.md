@@ -15,7 +15,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 1 | 0 | 1 |
 | coverage | 42 | 32 | 10 |
 | docs | 2 | 0 | 2 |
-| frontend | 4377 | 3857 | 520 |
+| frontend | 4377 | 3856 | 521 |
 | harness | 1 | 0 | 1 |
 | ir | 21 | 0 | 21 |
 | issues | 4 | 0 | 4 |
@@ -26,7 +26,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 4965 | 4177 | 788 |
+| total | 4965 | 4176 | 789 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -162,7 +162,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 5029 | [backend-wasm] Expand direct wasm binary emission beyond console.log string literal MVP (audit reopened #5029) | feature | backend | implementation-ready | P1 |  | [backend-wasm] Expand direct wasm binary emission beyond console.log string literal MVP (audit reopened #5029) |
 | 5030 | [backend-wasm] Split large runtime/WAT emitters into testable components (audit reopened #5030) | refactor | backend | implementation-ready | P1 |  | [backend-wasm] Split large runtime/WAT emitters into testable components (audit reopened #5030) |
 | 5038 | [compiler] Harden module graph resolution and diagnostics (audit reopened #5038) | feature | cli | implementation-ready | P1 |  | [compiler] Harden module graph resolution and diagnostics (audit reopened #5038) |
-| 5042 | [frontend] Complete Stmt AST fixture coverage (audit reopened #5042) | test | frontend | implementation-ready | P0 |  | [frontend] Complete Stmt AST fixture coverage (audit reopened #5042) |
 | 5045 | [frontend] Improve syntax error recovery and source spans (audit reopened #5045) | feature | frontend | implementation-ready | P2 |  | [frontend] Improve syntax error recovery and source spans (audit reopened #5045) |
 | 5052 | [runtime-abi] Validate runtime memory map for overlap and headroom | feature | abi | implementation-ready | P1 |  | [runtime-abi] Validate runtime memory map for overlap and headroom |
 <!-- generated:ready:end -->
@@ -5084,6 +5083,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 5039 | [compiler] Stabilize test262 preprocessor feature handling (audit reopened #5039) | feature | cli | see `issues/done/5039-compiler-test262-preprocessor.md` |
 | 5040 | [compiler] Add resource limits and cancellation to server batch compilation (audit reopened #5040) | feature | cli | see `issues/done/5040-compiler-resource-limits.md` |
 | 5041 | [frontend] Complete Expr AST fixture coverage (audit reopened #5041) | test | frontend | see `issues/done/5041-frontend-expr-fixture-coverage.md` |
+| 5042 | [frontend] Complete Stmt AST fixture coverage (audit reopened #5042) | test | frontend | see `issues/done/5042-frontend-stmt-fixture-coverage.md` |
 | 5043 | [frontend] Split large lexer/parser files by grammar responsibility (audit reopened #5043) | refactor | frontend | see `issues/done/5043-frontend-split-parser.md` |
 | 5044 | [frontend] Define and test TypeScript ambient declaration erasure boundaries (audit reopened #5044) | feature | frontend | see `issues/done/5044-frontend-ambient-erasure.md` |
 | 5046 | [ir] Design full class runtime IR representation | feature | ir | see `issues/done/5046-ir-class-ir.md` |
