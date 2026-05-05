@@ -9,8 +9,13 @@ type LiveStatus = 'static' | 'connecting' | 'connected' | 'error'
 
 function liveModeEnabled() {
   if (typeof window === 'undefined') return false
+  if (import.meta.env.DEV) return true
   const value = new URLSearchParams(window.location.search).get('live')
   return value === '1' || value === 'true'
+}
+
+function liveFetchSuffix(mode: 'static' | 'live') {
+  return mode === 'live' ? `?t=${Date.now()}` : ''
 }
 
 function livePollIntervalMs() {
@@ -36,8 +41,7 @@ export function useTestData() {
     async function loadData(mode: 'static' | 'live') {
       try {
         if (mode === 'live') setLiveStatus(current => current === 'connected' ? current : 'connecting')
-        const cacheBust = mode === 'live' ? `?t=${Date.now()}` : ''
-        const response = await fetch(`${DATA_ROOT}test-results.json${cacheBust}`, { cache: 'no-store' })
+        const response = await fetch(`${DATA_ROOT}test-results.json${liveFetchSuffix(mode)}`, { cache: 'no-store' })
         if (!response.ok) throw new Error('Failed to load test results')
         const data = await response.json()
         if (cancelled) return
@@ -85,20 +89,38 @@ export function useCoverageData() {
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    async function loadData() {
+    let cancelled = false
+    const liveMode = liveModeEnabled()
+    const intervalMs = livePollIntervalMs()
+
+    async function loadData(mode: 'static' | 'live') {
       try {
-        const response = await fetch(`${DATA_ROOT}coverage.json`)
+        const response = await fetch(`${DATA_ROOT}coverage.json${liveFetchSuffix(mode)}`, { cache: 'no-store' })
         if (!response.ok) throw new Error('Failed to load coverage data')
         const data = await response.json()
+        if (cancelled) return
         setCoverage(data)
+        setError(null)
       } catch (err) {
+        if (cancelled) return
         setError(err instanceof Error ? err.message : 'Unknown error')
       } finally {
-        setLoading(false)
+        if (!cancelled) setLoading(false)
       }
     }
 
-    loadData()
+    loadData(liveMode ? 'live' : 'static')
+    if (!liveMode) {
+      return () => {
+        cancelled = true
+      }
+    }
+
+    const interval = window.setInterval(() => loadData('live'), intervalMs)
+    return () => {
+      cancelled = true
+      window.clearInterval(interval)
+    }
   }, [])
 
   return { coverage, loading, error }
@@ -110,20 +132,38 @@ export function useHistoricalData() {
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    async function loadData() {
+    let cancelled = false
+    const liveMode = liveModeEnabled()
+    const intervalMs = livePollIntervalMs()
+
+    async function loadData(mode: 'static' | 'live') {
       try {
-        const response = await fetch(`${DATA_ROOT}history.json`)
+        const response = await fetch(`${DATA_ROOT}history.json${liveFetchSuffix(mode)}`, { cache: 'no-store' })
         if (!response.ok) throw new Error('Failed to load historical data')
         const data = await response.json()
+        if (cancelled) return
         setHistory(data || [])
+        setError(null)
       } catch (err) {
+        if (cancelled) return
         setError(err instanceof Error ? err.message : 'Unknown error')
       } finally {
-        setLoading(false)
+        if (!cancelled) setLoading(false)
       }
     }
 
-    loadData()
+    loadData(liveMode ? 'live' : 'static')
+    if (!liveMode) {
+      return () => {
+        cancelled = true
+      }
+    }
+
+    const interval = window.setInterval(() => loadData('live'), intervalMs)
+    return () => {
+      cancelled = true
+      window.clearInterval(interval)
+    }
   }, [])
 
   return { history, loading, error }

@@ -199,7 +199,10 @@ function trendDenominatorCount(run: HistoricalData) {
 }
 
 function isFullCaseTrendRun(run: TrendRun) {
-  return run.denominator > 0 && run.executed === run.denominator
+  if (run.denominator <= 0) {
+    return false
+  }
+  return run.executed / run.denominator >= 0.95
 }
 
 function trendSeriesKey(run: HistoricalData) {
