@@ -3,12 +3,13 @@ id: 5001
 title: "Meta: TypeScript Compiler Semantic Analysis Coverage"
 type: meta
 area: frontend/semantics
-class: design-ready
+class: done
 priority: P1
 depends_on: []
 blocks: []
 created: 2026-05-02
-updated: 2026-05-02
+completed: 2026-05-06
+updated: 2026-05-06
 ---
 
 ## Summary
@@ -29,9 +30,9 @@ Current failure: `mise run reference-coverage -- tsc --limit 100 --detail` repor
 
 In scope:
 
-- [ ] Review semantic-analysis child issues that depend on this meta issue.
-- [ ] Ensure each child issue has one concrete diagnostic, source pattern, or semantic family.
-- [ ] Update dependency links when a child belongs under a narrower meta issue.
+- [x] Review semantic-analysis child issues that depend on this meta issue.
+- [x] Ensure each child issue has one concrete diagnostic, source pattern, or semantic family.
+- [x] Update dependency links when a child belongs under a narrower meta issue.
 
 Out of scope:
 
@@ -53,9 +54,9 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] Semantic-analysis child issues are dependency-linked to `5001` only when they need frontend semantic or diagnostic work.
-- [ ] Child issues that are parser, declaration-emit, name-resolution, or runtime gaps are moved to the narrower meta dependency.
-- [ ] `issues/index.md` is regenerated after dependency or class edits.
+- [x] Semantic-analysis child issues are dependency-linked to `5001` only when they need frontend semantic or diagnostic work.
+- [x] Child issues that are parser, declaration-emit, name-resolution, or runtime gaps are moved to the narrower meta dependency.
+- [x] `issues/index.md` is regenerated after dependency or class edits.
 
 ## Validation
 
@@ -104,4 +105,56 @@ Validation result:
 python scripts/manager.py update-issue-index: pass
 python scripts/manager.py update-issue-index --check: pass
 python scripts/manager.py check issues: pass
+```
+
+## Completion evidence
+
+Date: 2026-05-06
+
+This meta issue is closed as the semantic-analysis classification/design gate,
+not as a claim that semantic-analysis behavior is implemented.
+
+After moving narrower parser/import/type-alias/syntax/module-system buckets to
+their existing parents, `5001` has 393 direct open children. The 382 direct
+children with recorded current-failure diagnostics are all frontend
+semantic/control-flow/runtime-value diagnostic families:
+
+```text
+44 arguments-object
+52 arrow-function
+7 break-continue
+5 call-expression
+71 class
+35 class-accessor
+32 destructuring
+18 enum
+1 loop
+26 method-call
+5 new-expression
+71 object-literal
+8 operator
+2 spread
+2 super
+2 switch
+1 try-catch
+```
+
+The remaining direct children without a generated diagnostic line are retained
+under `5001` because they still need semantic-analysis triage and do not point
+to a narrower existing parent in their issue metadata.
+
+Validation:
+
+```text
+python scripts/manager.py update-issue-index
+result: pass
+
+python scripts/manager.py update-issue-index --check
+result: pass
+
+python scripts/manager.py check issue-index
+result: pass
+
+python scripts/manager.py check issues
+result: pass
 ```
