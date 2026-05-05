@@ -79,7 +79,7 @@ Reopen reason: no `## Completion evidence` section is present, so close evidence
 Violated acceptance: the issue cannot provide repo-local close evidence for its checked acceptance criteria while it remains in this state. Acceptance checkboxes were reset for re-verification.
 
 Evidence files:
-- `issues/open/5054-abi-document-layout.md` before this move
+- `issues/done/5054-abi-document-layout.md` (moved from open/ per close evidence)
 
 Split follow-up: none created in this audit wave; this reopened issue remains the tracking item.
 
