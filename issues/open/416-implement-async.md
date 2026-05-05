@@ -3,12 +3,14 @@ id: 416
 title: "Implement async/await support"
 type: spike
 area: frontend/syntax
-class: triage-needed
+class: done
 priority: P2
 depends_on: []
 blocks: [5134]
 created: 2026-05-01
-updated: 2026-05-01
+updated: 2026-05-06
+completed: 2026-05-06
+status: done
 ---
 
 ## Summary

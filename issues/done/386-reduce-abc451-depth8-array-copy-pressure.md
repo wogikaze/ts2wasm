@@ -37,9 +37,9 @@ The depth-8 ABC451 fixture completes under iwasm within the test timeout and pri
 
 In scope:
 
-- [ ] Implement copy reduction strategies based on issue 385's instrumentation findings.
-- [ ] Preserve the committed 185-page memory policy and explicit OOM regression behavior.
-- [ ] Record exact before/after timeout or runtime evidence.
+- [x] Implement copy reduction strategies based on issue 385's instrumentation findings.
+- [x] Preserve the committed 185-page memory policy and explicit OOM regression behavior.
+- [x] Record exact before/after timeout or runtime evidence.
 
 Out of scope:
 
@@ -66,11 +66,11 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] `cargo nextest run -p ts2wasm-cli abc451_depth8_live_set_fixture_matches_node_output_under_iwasm` passes under iwasm within timeout.
-- [ ] Node output matches.
-- [ ] Memory policy unchanged (185-page max).
-- [ ] OOM regression behavior preserved.
-- [ ] Issue 357 is closed.
+- [x] `cargo nextest run -p ts2wasm-cli abc451_depth8_live_set_fixture_matches_node_output_under_iwasm` passes under iwasm within timeout.
+- [x] Node output matches.
+- [x] Memory policy unchanged (185-page max).
+- [x] OOM regression behavior preserved.
+- [x] Issue 357 is closed.
 
 ## Validation
 
@@ -97,15 +97,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected unless runtime memory policy changes
+- [x] not affected unless runtime memory policy changes
 
 Current state:
 
-- [ ] updated only if runtime facts change
+- [x] updated only if runtime facts change
 
 Follow-up issues:
 
-- [ ] none unless instrumentation findings require other follow-up
+- [x] none unless instrumentation findings require other follow-up
 
 ## Notes
 

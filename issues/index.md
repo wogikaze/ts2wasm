@@ -15,18 +15,18 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 1 | 0 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4378 | 3774 | 604 |
+| frontend | 4378 | 3772 | 606 |
 | harness | 1 | 0 | 1 |
-| ir | 22 | 1 | 21 |
+| ir | 23 | 2 | 21 |
 | issues | 4 | 0 | 4 |
 | parser | 1 | 0 | 1 |
 | reference | 211 | 179 | 32 |
-| runtime | 263 | 95 | 168 |
+| runtime | 263 | 94 | 169 |
 | scripts | 3 | 1 | 2 |
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 4971 | 4051 | 920 |
+| total | 4972 | 4049 | 923 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -159,6 +159,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 353 | Implement iterator protocol integration for spread operator | feature | runtime/semantics | unstarted | P2 |  | General iterator protocol is not implemented for spread operator. |
 | 5132 | Add ABC451 non-top array separation attribution | infra | runtime/memory | implementation-ready | P1 | 5131 | issue 365 proves the dominant array-growth pressure is |
 | 5135 | Fix builtin arity validation for coercion/math globals | bug | ir | implementation-ready | P1 |  | Fix builtin arity validation for coercion/math globals |
+| 5136 | Fix arity validation for RegExp/String prototype methods | bug | ir | implementation-ready | P1 |  | Fix arity validation for RegExp/String prototype methods |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -204,7 +205,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 357 | Fix ABC451 depth-8 iwasm timeout | bug | runtime/memory | class: blocked | Fix ABC451 depth-8 iwasm timeout |
 | 363 | Reduce ABC451 allocation and sweep volume after bulk copy narrowing | bug | runtime/memory | class: blocked | Reduce ABC451 allocation and sweep volume after bulk copy narrowing |
 | 365 | Reduce ABC451 array-growth allocation and copy pressure | bug | runtime/memory | class: blocked | Reduce ABC451 array-growth allocation and copy pressure |
-| 386 | Reduce ABC451 depth-8 array copy pressure | feature | runtime/memory | class: triage-needed | Reduce ABC451 depth-8 array copy pressure |
 | 411 | Implement annexb-ishtmldda support | spike | frontend/syntax | class: triage-needed | Implement annexb-ishtmldda support |
 | 413 | Implement arity support | spike | reference/triage | class: triage-needed | Implement arity support |
 | 416 | Implement async/await support | spike | frontend/syntax | class: triage-needed | Implement async/await support |
@@ -310,7 +310,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 636 | Implement Anonterface | spike | frontend/syntax | class: triage-needed | Implement Anonterface |
 | 637 | Implement Anonymousclassdeclarationdoesntprintwithreadonly | spike | frontend/syntax | class: blocked | Implement Anonymousclassdeclarationdoesntprintwithreadonly |
 | 640 | Implement Anyandunknownhavefalsycomponents | spike | frontend/resolver | class: blocked | Implement Anyandunknownhavefalsycomponents |
-| 642 | Implement Anydeclare (audit reopened #642) | spike | frontend/syntax | class: blocked | Implement Anydeclare (audit reopened #642) |
 | 643 | Implement Anyidenticaltoitself | spike | frontend/syntax | class: triage-needed | Implement Anyidenticaltoitself |
 | 644 | Implement Anyinferenceanonymousfunctions | spike | frontend/semantics | class: blocked | Implement Anyinferenceanonymousfunctions |
 | 645 | Implement Argsinscope | spike | frontend/resolver | class: blocked | Implement Argsinscope |
@@ -441,7 +440,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 773 | Implement Autoasiforstaticsinclassdeclaration | spike | frontend/syntax | class: triage-needed | Implement Autoasiforstaticsinclassdeclaration |
 | 774 | Implement Autolift | spike | frontend/syntax | class: triage-needed | Implement Autolift |
 | 775 | Implement Autotypeassignedusingdestructuringfromnevernocrash | spike | frontend/resolver | class: blocked | Implement Autotypeassignedusingdestructuringfromnevernocrash |
-| 877 | Implement Anydeclare (audit reopened #877) | spike | frontend/syntax | class: blocked | Implement Anydeclare (audit reopened #877) |
 | 1012 | Implement Autonumberinginenums | spike | frontend/syntax | class: triage-needed | Implement Autonumberinginenums |
 | 1013 | Implement Avoid | spike | frontend/syntax | class: blocked | Implement Avoid |
 | 1014 | Implement Avoidcyclewithvoidexpressionreturnedfromarrow | spike | frontend/syntax | class: blocked | Implement Avoidcyclewithvoidexpressionreturnedfromarrow |
@@ -4589,6 +4587,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 383 | Multi-limb BigInt multiplication | feature | runtime/semantics | see `issues/done/383-multilimb-bigint-multiplication.md` |
 | 384 | Multi-limb BigInt division and remainder | feature | runtime/semantics | see `issues/done/384-multilimb-bigint-division-remainder.md` |
 | 385 | Instrument ABC451 depth-8 copy vs GC time | feature | runtime/memory | see `issues/done/385-instrument-abc451-depth8-copy-vs-gc-time.md` |
+| 386 | Reduce ABC451 depth-8 array copy pressure | feature | runtime/memory | see `issues/done/386-reduce-abc451-depth8-array-copy-pressure.md` |
 | 387 | Implement BigInt bitwise outside signed-i64 helper slice | feature | runtime/semantics | see `issues/done/387-implement-bigint-bitwise-outside-signed-i64-slice.md` |
 | 388 | Runtime array-like generic call for Array.prototype.map | feature | runtime/builtins | see `issues/done/388-array-map-generic-runtime-array-like.md` |
 | 389 | Unblock Array.map generic Test262 representative with function-expression initializer | bug | frontend/parser | see `issues/done/389-array-map-generic-test262-function-expression-blocker.md` |
@@ -4739,6 +4738,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 638 | Implement Anonymousclassexpression (audit reopened #638) | spike | frontend/syntax | see `issues/done/638-implement-anonymousClassExpression.md` |
 | 639 | Implement Anonymousmodules (audit reopened #639) | spike | frontend/syntax | see `issues/done/639-implement-anonymousModules.md` |
 | 641 | Implement Anyasreturntypefornewoncall (audit reopened #641) | spike | frontend/syntax | see `issues/done/641-implement-anyAsReturnTypeForNewOnCall.md` |
+| 642 | Implement Anydeclare (audit reopened #642) | spike | frontend/syntax | see `issues/done/642-implement-anyDeclare.md` |
 | 669 | Implement Arrayconcat (dup) | spike | frontend/syntax | see `issues/done/669-implement-arrayConcat.md` |
 | 707 | Implement Asibreak | spike | frontend/syntax | see `issues/done/707-implement-asiBreak.md` |
 | 708 | Implement Asicontinue | spike | frontend/syntax | see `issues/done/708-implement-asiContinue.md` |
@@ -4843,6 +4843,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 874 | Implement Anonymousmodules (audit reopened #874) | spike | frontend/syntax | see `issues/done/874-implement-anonymousModules.md` |
 | 875 | Implement Anyandunknownhavefalsycomponents (dup) | spike | frontend/resolver | see `issues/done/875-implement-anyAndUnknownHaveFalsyComponents.md` |
 | 876 | Implement Anyasreturntypefornewoncall (audit reopened #876) | spike | frontend/syntax | see `issues/done/876-implement-anyAsReturnTypeForNewOnCall.md` |
+| 877 | Implement Anydeclare (audit reopened #877) | spike | frontend/syntax | see `issues/done/877-implement-anyDeclare.md` |
 | 878 | Implement Anyidenticaltoitself (dup) | spike | frontend/syntax | see `issues/done/878-implement-anyIdenticalToItself.md` |
 | 879 | Implement Anyinferenceanonymousfunctions (dup) | spike | frontend/syntax | see `issues/done/879-implement-anyInferenceAnonymousFunctions.md` |
 | 880 | Implement Argsinscope (dup) | spike | frontend/syntax | see `issues/done/880-implement-argsInScope.md` |
