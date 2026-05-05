@@ -126,7 +126,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/open/1029-implement-badInferenceLowerPriorityThanGoodInference.md` - Implement Badinferencelowerprioritythangoodinference (same feature label, same group key, title overlap)
+- `issues/done/1029-implement-badInferenceLowerPriorityThanGoodInference.md` - Implement Badinferencelowerprioritythangoodinference (same feature label, same group key, title overlap; split to issue 5151)
 - `issues/open/1094-implement-callOfConditionalTypeWithConcreteBranches.md` - Implement Callofconditionaltypewithconcretebranches (same feature label, same group key, title overlap)
 - `issues/open/1145-implement-checkTypePredicateForRedundantProperties.md` - Implement Checktypepredicateforredundantproperties (same feature label, same group key, title overlap)
 - `issues/open/1155-implement-circularInferredTypeOfVariable.md` - Implement Circularinferredtypeofvariable (same feature label, same group key, title overlap)
