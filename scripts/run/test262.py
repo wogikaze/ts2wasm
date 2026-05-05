@@ -62,7 +62,13 @@ SUPPORTED_FEATURES = (
     "String.prototype.trimEnd",
     "String.prototype.trimStart",
     "TypedArray",
+    "Float32Array",
+    "Float64Array",
     "Int32Array",
+    "Int8Array",
+    "Uint16Array",
+    "Uint8Array",
+    "Uint8ClampedArray",
     "BigInt",
     "AggregateError",
     "Array.fromAsync",
@@ -71,14 +77,27 @@ SUPPORTED_FEATURES = (
     "Array.prototype.flatMap",
     "Array.prototype.includes",
     "Array.prototype.values",
+    "ArrayBuffer",
+    "Atomics",
+    "Atomics.pause",
+    "Atomics.waitAsync",
+    "DataView",
+    "DataView.prototype.setUint8",
+    "SharedArrayBuffer",
+    "align-detached-buffer-semantics-with-web-reality",
     "array-find-from-last",
+    "arraybuffer-transfer",
     "async-iteration",
+    "async-functions",
     "change-array-by-copy",
     "coalesce-expression",
+    "computed-property-names",
     "default-parameters",
     "destructuring-binding",
     "error-cause",
     "exponentiation",
+    "explicit-resource-management",
+    "immutable-arraybuffer",
     "logical-assignment-operators",
     "Proxy",
     "resizable-arraybuffer",
@@ -468,6 +487,12 @@ def _rewrite_wasm_assert_throws(source, test_file=None):
         or "sec-block-duplicates-allowed-static-semantics" in source
         or "built-ins/Array/prototype/filter/" in context
         or "built-ins/Array/" in context
+        or "built-ins/ArrayBuffer/" in context
+        or "built-ins/Atomics/" in context
+        or "built-ins/AsyncDisposableStack/" in context
+        or "built-ins/AsyncFunction/" in context
+        or "built-ins/DataView/" in context
+        or "built-ins/SharedArrayBuffer/" in context
         or "built-ins/AggregateError/" in context
         or "built-ins/AbstractModuleSource/" in context
         or "annexB/language/statements/" in context
@@ -603,6 +628,12 @@ def _rewrite_node_reference_probes(source, test_file=None):
         or "sec-block-duplicates-allowed-static-semantics" in source
         or "built-ins/Array/prototype/filter/" in context
         or "built-ins/Array/" in context
+        or "built-ins/ArrayBuffer/" in context
+        or "built-ins/Atomics/" in context
+        or "built-ins/AsyncDisposableStack/" in context
+        or "built-ins/AsyncFunction/" in context
+        or "built-ins/DataView/" in context
+        or "built-ins/SharedArrayBuffer/" in context
         or "built-ins/AggregateError/" in context
         or "built-ins/AbstractModuleSource/" in context
         or "annexB/language/statements/" in context
