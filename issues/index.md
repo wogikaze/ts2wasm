@@ -15,7 +15,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 1 | 0 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4387 | 3786 | 601 |
+| frontend | 4387 | 3785 | 602 |
 | harness | 1 | 0 | 1 |
 | ir | 27 | 6 | 21 |
 | issues | 4 | 0 | 4 |
@@ -26,7 +26,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 4987 | 4060 | 927 |
+| total | 4987 | 4059 | 928 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -171,7 +171,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 5147 | Report await expression context errors before runtime diagnostics | feature | frontend/syntax | implementation-ready | P2 |  | `await <literal>` in a non-async function currently fails with `UnsupportedRuntimeSubset` instead of a TypeScript-ali... |
 | 5148 | Parse generic async generator declarations | feature | frontend/syntax | implementation-ready | P2 |  | generic async generator declarations currently fail with `UnsupportedSyntax` at the type parameter list. |
 | 5149 | Parse trailing comma in typed class method parameters | feature | frontend/syntax | implementation-ready | P1 |  | class method parameter lists with a trailing comma currently fail with `UnsupportedSyntax`, even though TypeScript ac... |
-| 5150 | Report empty element access diagnostics | feature | frontend/syntax | implementation-ready | P2 |  | empty element access `expr[]` currently fails with generic `UnsupportedSyntax` instead of a targeted missing-index di... |
 | 5151 | Parse ASI after multiline const initializer | feature | frontend/syntax | implementation-ready | P1 |  | semicolonless `const` declarations with multi-line call/object initializers currently fail before the next expression... |
 | 5152 | Support class constructor outer callback captures | feature | ir | implementation-ready | P1 |  | class constructors cannot currently call outer callback locals when nested arrow callbacks capture constructor `this`. |
 <!-- generated:ready:end -->
@@ -5160,6 +5159,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 5130 | Implement own method ToPrimitive for mixed BigInt comparisons | feature | runtime/semantics | see `issues/done/5130-implement-object-method-toprimitive-for-bigint-comparisons.md` |
 | 5131 | Design ABC451 non-top array growth strategy | design | runtime/memory | see `issues/done/5131-design-abc451-non-top-array-growth-strategy.md` |
 | 5133 | Implement single-statement loop bodies for break and continue | feature | frontend/syntax | see `issues/done/5133-implement-single-statement-loop-body-break-continue.md` |
+| 5150 | Report empty element access diagnostics | feature | frontend/syntax | see `issues/done/5150-report-empty-element-access-diagnostics.md` |
 <!-- generated:done:end -->
 
 ## Index generation contract

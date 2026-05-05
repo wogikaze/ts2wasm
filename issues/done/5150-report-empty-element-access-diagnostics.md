@@ -3,11 +3,12 @@ id: 5150
 title: "Report empty element access diagnostics"
 type: feature
 area: frontend/syntax
-class: implementation-ready
+class: done
 priority: P2
 depends_on: []
 blocks: []
 created: 2026-05-06
+completed: 2026-05-06
 updated: 2026-05-06
 ---
 
@@ -65,10 +66,10 @@ The parser recognizes an empty element access expression enough to emit a source
 
 In scope:
 
-- [ ] Detect `expr[]` in expression parsing after the element-access opening bracket.
-- [ ] Emit a targeted diagnostic for the missing element access argument.
-- [ ] Add a focused parser or diagnostic regression for `var results = number[];`.
-- [ ] Re-run the representative triage and confirm it no longer reports `unsupported expression: Some(... RightBracket ...)`.
+- [x] Detect `expr[]` in expression parsing after the element-access opening bracket.
+- [x] Emit a targeted diagnostic for the missing element access argument.
+- [x] Add a focused parser or diagnostic regression for `var results = number[];`.
+- [x] Re-run the representative triage and confirm it no longer reports `unsupported expression: Some(... RightBracket ...)`.
 
 Out of scope:
 
@@ -92,10 +93,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] A focused parser or diagnostic test covers `var results = number[];`.
-- [ ] The diagnostic for the focused case names the missing element access argument or empty element access, rather than generic unsupported expression.
-- [ ] `python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/badArrayIndex.ts` no longer reports `unsupported expression: Some(... RightBracket ...)`.
-- [ ] Existing valid element access and array type syntax tests continue to pass.
+- [x] A focused parser or diagnostic test covers `var results = number[];`.
+- [x] The diagnostic for the focused case names the missing element access argument or empty element access, rather than generic unsupported expression.
+- [x] `python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/badArrayIndex.ts` no longer reports `unsupported expression: Some(... RightBracket ...)`.
+- [x] Existing valid element access and array type syntax tests continue to pass.
 
 ## Validation
 
@@ -125,15 +126,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 
@@ -158,3 +159,10 @@ date:
 Remaining risks:
 
 - none
+
+## Completion evidence
+
+Implemented empty element access diagnostic in parser:
+- Added RightBracket peek after LeftBracket consume in expression parsing
+- Returns issue-5150 diagnostic instead of generic unsupported expression
+- Tested: number[] → issue-5150, a[1] → works correctly (2)

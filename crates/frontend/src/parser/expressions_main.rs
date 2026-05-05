@@ -1089,6 +1089,13 @@ impl Parser {
                 continue;
             }
             if self.consume(TokenKind::LeftBracket) {
+                if matches!(self.peek(), Some(Token::RightBracket)) {
+                    return Err(Diagnostic {
+                        code: DiagCode::UnsupportedSyntax,
+                        message: "issue-5150: empty element access `expr[]` requires an index expression".to_owned(),
+                        span: None,
+                    });
+                }
                 let index = self.expression()?;
                 let right_span = self.expect(TokenKind::RightBracket)?;
                 let start = expr.span().start;
