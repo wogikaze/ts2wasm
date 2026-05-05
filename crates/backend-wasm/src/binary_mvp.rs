@@ -1,7 +1,11 @@
+use std::collections::HashMap;
+
 use crate::{DiagCode, Diagnostic};
 use ts2wasm_ir::{
     builtin::BuiltinId,
-    lowered::{FunctionCallKind, LoweredExpr, LoweredProgram, LoweredStmt},
+    lowered::{
+        FunctionCallKind, LocalId, LoweredBinaryOp, LoweredExpr, LoweredProgram, LoweredStmt,
+    },
 };
 use ts2wasm_runtime_abi::{Layout, RuntimeConst};
 
@@ -48,36 +52,172 @@ pub(crate) fn emit_wasm_binary_mvp(program: &LoweredProgram) -> Result<Vec<u8>, 
     Ok(encode_stdout_module(&stdout))
 }
 
+/// Resolve all console.log statements to a single stdout byte buffer.
+///
+/// Supports:
+/// - String literals ("hi")
+/// - Number literals (42, -1)
+/// - Bool literals (true, false)
+/// - Null / Undefined
+/// - Local variable reads (via compile-time initializer tracing)
+/// - Basic binary expressions (arithmetic and comparison)
+/// - Multiple sequential console.log statements
+/// - Const locals (`let x = 5; console.log(x)`)
 fn hello_stdout(program: &LoweredProgram) -> Result<Vec<u8>, Diagnostic> {
-    if !program.top_level_locals.is_empty()
-        || !program.functions.is_empty()
-        || !program.modules.is_empty()
-    {
-        return Err(unsupported());
+    if !program.functions.is_empty() || !program.modules.is_empty() {
+        return Err(unsupported(
+            "functions and modules are not supported in MVP",
+        ));
     }
 
-    let [
-        LoweredStmt::Expr(LoweredExpr::Call {
-            kind: FunctionCallKind::Builtin(BuiltinId::ConsoleLog),
-            args,
-        }),
-    ] = program.top_level_statements.as_slice()
-    else {
-        return Err(unsupported());
-    };
-    let [LoweredExpr::String(value)] = args.as_slice() else {
-        return Err(unsupported());
-    };
+    let mut initializers: HashMap<LocalId, i32> = HashMap::new();
+    let mut stdout: Vec<u8> = Vec::new();
 
-    let mut stdout = value.as_bytes().to_vec();
-    stdout.push(b'\n');
+    for stmt in &program.top_level_statements {
+        match stmt {
+            LoweredStmt::Let(id, expr) | LoweredStmt::Assign(id, expr) => {
+                if let Ok(val) = resolve_const_i32(expr, &initializers) {
+                    initializers.insert(*id, val);
+                }
+            }
+            LoweredStmt::Expr(LoweredExpr::Call {
+                kind: FunctionCallKind::Builtin(BuiltinId::ConsoleLog),
+                args,
+            }) => {
+                let line = resolve_console_log_line(args, &initializers)?;
+                stdout.extend_from_slice(&line);
+                stdout.push(b'\n');
+            }
+            _ => {
+                return Err(unsupported(
+                    "only let/assign and console.log are supported in MVP",
+                ));
+            }
+        }
+    }
+
+    if stdout.is_empty() {
+        return Err(unsupported("no console.log calls found"));
+    }
     Ok(stdout)
 }
 
-fn unsupported() -> Diagnostic {
+/// Resolve console.log arguments into a string byte buffer.
+///
+/// JavaScript `console.log(a, b)` prints "a b\n" with a space between arguments.
+fn resolve_console_log_line(
+    args: &[LoweredExpr],
+    initializers: &HashMap<LocalId, i32>,
+) -> Result<Vec<u8>, Diagnostic> {
+    let mut line = Vec::new();
+    for (i, arg) in args.iter().enumerate() {
+        if i > 0 {
+            line.push(b' ');
+        }
+        let part = resolve_expr_to_string(arg, initializers)?;
+        line.extend_from_slice(&part);
+    }
+    Ok(line)
+}
+
+/// Resolve an expression to its string representation for console.log output.
+fn resolve_expr_to_string(
+    expr: &LoweredExpr,
+    initializers: &HashMap<LocalId, i32>,
+) -> Result<Vec<u8>, Diagnostic> {
+    match expr {
+        LoweredExpr::String(s) => Ok(s.as_bytes().to_vec()),
+        LoweredExpr::Number(n) => Ok(n.to_string().as_bytes().to_vec()),
+        LoweredExpr::Bool(b) => Ok(if *b {
+            b"true".to_vec()
+        } else {
+            b"false".to_vec()
+        }),
+        LoweredExpr::Null => Ok(b"null".to_vec()),
+        LoweredExpr::Undefined => Ok(b"undefined".to_vec()),
+        LoweredExpr::Local(id) => {
+            let n = initializers
+                .get(id)
+                .copied()
+                .ok_or_else(|| unsupported("local variable without compile-time known value"))?;
+            Ok(n.to_string().as_bytes().to_vec())
+        }
+        LoweredExpr::Binary { left, op, right } => {
+            let l = resolve_const_i32(left, initializers)?;
+            let r = resolve_const_i32(right, initializers)?;
+            let result = eval_binary_i32(*op, l, r)?;
+            Ok(result.to_string().as_bytes().to_vec())
+        }
+        _ => Err(unsupported("unsupported expression type in console.log")),
+    }
+}
+
+/// Resolve an expression to a compile-time known i32 value.
+fn resolve_const_i32(
+    expr: &LoweredExpr,
+    initializers: &HashMap<LocalId, i32>,
+) -> Result<i32, Diagnostic> {
+    match expr {
+        LoweredExpr::Number(n) => Ok(*n),
+        LoweredExpr::Bool(b) => Ok(if *b { 1 } else { 0 }),
+        LoweredExpr::Null => Ok(0),
+        LoweredExpr::Undefined => Ok(0),
+        LoweredExpr::Local(id) => initializers
+            .get(id)
+            .copied()
+            .ok_or_else(|| unsupported("local variable without compile-time known value")),
+        LoweredExpr::Binary { left, op, right } => {
+            let l = resolve_const_i32(left, initializers)?;
+            let r = resolve_const_i32(right, initializers)?;
+            eval_binary_i32(*op, l, r)
+        }
+        _ => Err(unsupported("unsupported expression for i32 evaluation")),
+    }
+}
+
+/// Evaluate a binary operation on i32 values at compile time.
+fn eval_binary_i32(op: LoweredBinaryOp, l: i32, r: i32) -> Result<i32, Diagnostic> {
+    Ok(match op {
+        LoweredBinaryOp::Add => l.wrapping_add(r),
+        LoweredBinaryOp::Subtract => l.wrapping_sub(r),
+        LoweredBinaryOp::Multiply => l.wrapping_mul(r),
+        LoweredBinaryOp::Divide => l.checked_div(r).unwrap_or(0),
+        LoweredBinaryOp::Modulo => l.checked_rem(r).unwrap_or(0),
+        LoweredBinaryOp::Power => l.wrapping_pow(r as u32),
+        LoweredBinaryOp::And => {
+            if l != 0 {
+                r
+            } else {
+                0
+            }
+        }
+        LoweredBinaryOp::Or => {
+            if l != 0 {
+                l
+            } else {
+                r
+            }
+        }
+        LoweredBinaryOp::Less => (l < r) as i32,
+        LoweredBinaryOp::LessEqual => (l <= r) as i32,
+        LoweredBinaryOp::Greater => (l > r) as i32,
+        LoweredBinaryOp::GreaterEqual => (l >= r) as i32,
+        LoweredBinaryOp::EqualEqual | LoweredBinaryOp::StrictEqual => (l == r) as i32,
+        LoweredBinaryOp::BangEqual | LoweredBinaryOp::StrictNotEqual => (l != r) as i32,
+        LoweredBinaryOp::NullishCoalesce => {
+            if l != 0 {
+                l
+            } else {
+                r
+            }
+        }
+    })
+}
+
+fn unsupported(detail: &str) -> Diagnostic {
     Diagnostic {
         code: DiagCode::UnsupportedSyntax,
-        message: "direct wasm binary MVP only supports `console.log(<string literal>)`".to_owned(),
+        message: format!("direct wasm binary MVP: {detail}"),
         span: None,
     }
 }
