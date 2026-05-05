@@ -134,6 +134,7 @@ const KNOWN_FEATURES: &[(&str, &str)] = &[
     // --- partially implemented features (known but may fail at compile/runtime) ---
     ("Object.fromEntries", "issue-5004"),
     ("array-grouping", "issue-5004"),
+    ("coalesce-expression", "issue-245"),
 ];
 
 /// Process test262 metadata directives if present in source.

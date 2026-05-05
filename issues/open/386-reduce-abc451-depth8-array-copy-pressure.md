@@ -3,12 +3,12 @@ id: 386
 title: "Reduce ABC451 depth-8 array copy pressure"
 type: feature
 area: runtime/memory
-class: triage-needed
+class: done
 priority: P2
 depends_on: [385]
 blocks: [357]
 created: 2026-05-01
-updated: 2026-05-01
+updated: 2026-05-06
 ---
 
 ## Summary
@@ -54,7 +54,7 @@ Expected:
 
 - `crates/backend-wasm/src/`
 - `fixtures/core-semantics/abc451-depth8-live-set.ts` (only for instrumentation-safe comments)
-- `issues/open/386-reduce-abc451-depth8-array-copy-pressure.md`
+- `issues/done/386-reduce-abc451-depth8-array-copy-pressure.md`
 - `issues/index.md`
 
 Do not touch:

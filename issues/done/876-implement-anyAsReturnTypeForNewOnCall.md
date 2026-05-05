@@ -112,7 +112,7 @@ Follow-up issues:
 
 ## Notes
 
-Superseded by `issues/open/641-implement-anyAsReturnTypeForNewOnCall.md`, which
+Superseded by `issues/done/641-implement-anyAsReturnTypeForNewOnCall.md`, which
 tracks the same reference path and contains the smart-triage evidence for the
 remaining work.
 
@@ -123,7 +123,7 @@ remaining work.
 ## Duplicate detection
 
 - `issues/done/183-implement-anyAsReturnTypeForNewOnCall.md` - Implement Anyasreturntypefornewoncall (same reference path, same feature label, same group key, title overlap)
-- `issues/open/641-implement-anyAsReturnTypeForNewOnCall.md` - Implement Anyasreturntypefornewoncall (same reference path, same feature label, same group key, title overlap)
+- `issues/done/641-implement-anyAsReturnTypeForNewOnCall.md` - Implement Anyasreturntypefornewoncall (same reference path, same feature label, same group key, title overlap)
 
 ## Smart triage
 

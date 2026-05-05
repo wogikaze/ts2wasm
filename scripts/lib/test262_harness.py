@@ -24,7 +24,7 @@ TS2WASM_BINARY = resolve_ts2wasm_binary()
 
 CORE_HARNESS_FILES = ("sta.js", "assert.js")
 UNSUPPORTED_FLAGS = ("IsHTMLDDA",)
-SUPPORTED_FEATURES = ("class",)
+SUPPORTED_FEATURES = ("class", "async-iteration")
 ASSERT_FAILURE_SENTINEL = "__TS2WASM_TEST262_ASSERT_FAIL__"
 
 TEST262_HOST_PRELUDE = r"""

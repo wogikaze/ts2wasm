@@ -15,9 +15,9 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 1 | 0 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4378 | 3775 | 603 |
+| frontend | 4378 | 3774 | 604 |
 | harness | 1 | 0 | 1 |
-| ir | 21 | 0 | 21 |
+| ir | 22 | 1 | 21 |
 | issues | 4 | 0 | 4 |
 | parser | 1 | 0 | 1 |
 | reference | 211 | 179 | 32 |
@@ -26,7 +26,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 4970 | 4051 | 919 |
+| total | 4971 | 4051 | 920 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -158,6 +158,7 @@ Issue files are the source of truth for work items. The generated section below 
 |---:|---|---|---|---|---|---|---|
 | 353 | Implement iterator protocol integration for spread operator | feature | runtime/semantics | unstarted | P2 |  | General iterator protocol is not implemented for spread operator. |
 | 5132 | Add ABC451 non-top array separation attribution | infra | runtime/memory | implementation-ready | P1 | 5131 | issue 365 proves the dominant array-growth pressure is |
+| 5135 | Fix builtin arity validation for coercion/math globals | bug | ir | implementation-ready | P1 |  | Fix builtin arity validation for coercion/math globals |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -309,7 +310,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 636 | Implement Anonterface | spike | frontend/syntax | class: triage-needed | Implement Anonterface |
 | 637 | Implement Anonymousclassdeclarationdoesntprintwithreadonly | spike | frontend/syntax | class: blocked | Implement Anonymousclassdeclarationdoesntprintwithreadonly |
 | 640 | Implement Anyandunknownhavefalsycomponents | spike | frontend/resolver | class: blocked | Implement Anyandunknownhavefalsycomponents |
-| 641 | Implement Anyasreturntypefornewoncall (audit reopened #641) | spike | frontend/syntax | class: blocked | Implement Anyasreturntypefornewoncall (audit reopened #641) |
 | 642 | Implement Anydeclare (audit reopened #642) | spike | frontend/syntax | class: blocked | Implement Anydeclare (audit reopened #642) |
 | 643 | Implement Anyidenticaltoitself | spike | frontend/syntax | class: triage-needed | Implement Anyidenticaltoitself |
 | 644 | Implement Anyinferenceanonymousfunctions | spike | frontend/semantics | class: blocked | Implement Anyinferenceanonymousfunctions |
@@ -4738,6 +4738,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 624 | Implement Ambientwithstatements (audit reopened #624) | spike | frontend/syntax | see `issues/done/624-implement-ambientWithStatements.md` |
 | 638 | Implement Anonymousclassexpression (audit reopened #638) | spike | frontend/syntax | see `issues/done/638-implement-anonymousClassExpression.md` |
 | 639 | Implement Anonymousmodules (audit reopened #639) | spike | frontend/syntax | see `issues/done/639-implement-anonymousModules.md` |
+| 641 | Implement Anyasreturntypefornewoncall (audit reopened #641) | spike | frontend/syntax | see `issues/done/641-implement-anyAsReturnTypeForNewOnCall.md` |
 | 669 | Implement Arrayconcat (dup) | spike | frontend/syntax | see `issues/done/669-implement-arrayConcat.md` |
 | 707 | Implement Asibreak | spike | frontend/syntax | see `issues/done/707-implement-asiBreak.md` |
 | 708 | Implement Asicontinue | spike | frontend/syntax | see `issues/done/708-implement-asiContinue.md` |
