@@ -17,7 +17,7 @@ Issue files are the source of truth for work items. The generated section below 
 | docs | 2 | 0 | 2 |
 | frontend | 4377 | 3855 | 522 |
 | harness | 1 | 0 | 1 |
-| ir | 20 | 2 | 18 |
+| ir | 21 | 2 | 19 |
 | issues | 4 | 0 | 4 |
 | parser | 1 | 0 | 1 |
 | reference | 211 | 182 | 29 |
@@ -26,7 +26,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 4963 | 4179 | 784 |
+| total | 4964 | 4179 | 785 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -159,7 +159,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 5001 | Meta: TypeScript Compiler Semantic Analysis Coverage | meta | frontend/semantics | design-ready | P1 |  | Meta: TypeScript Compiler Semantic Analysis Coverage |
 | 5004 | Meta: Runtime Builtins Coverage (test262) (audit reopened #5004) | meta | runtime/builtins | design-ready | P1 |  | Meta: Runtime Builtins Coverage (test262) (audit reopened #5004) |
 | 5005 | Meta: TypeScript Compiler Name Resolution Coverage | meta | frontend/resolver | design-ready | P1 |  | Meta: TypeScript Compiler Name Resolution Coverage |
-| 5010 | Implement local named export (export { value } and export { value as alias }) for entry module (audit reopened #5010) | feature | ir/compiler | done | P1 |  | `export { ... }` references local bindings by name, but the compiler's module rewrite path only handles `ExportDecl` ... |
+| 5128 | Add semantic parity for static re-export module forms | test | ir/compiler | implementation-ready | P1 |  | `export * from`, `export { x } from`, and `export * as ns from` fixtures build, but the semantic test suite does not ... |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -5057,6 +5057,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 5000 | Meta: TypeScript Compiler Parser Syntax Coverage | meta | frontend/syntax | see file |
 | 5008 | Implement static ES module export forms (default, named, namespace, re-export) (audit reopened #5008) | feature | ir/compiler | see `issues/done/5008-static-es-module-export-default-namespace-reexport.md` |
 | 5009 | Remaining static ES module export forms (named list, default import, namespace, re-export, side-effect) (audit reopened #5009) | feature | ir/compiler | see `issues/done/5009-remaining-es-module-export-forms.md` |
+| 5010 | Implement local named export (export { value } and export { value as alias }) for entry module (audit reopened #5010) | feature | ir/compiler | see `issues/done/5010-remaining-es-module-export-forms.md` |
 | 5011 | Represent or reject class runtime values in lowered IR (audit reopened #5011) | feature | ir/backend | see `issues/done/5011-class-runtime-value-semantics.md` |
 | 5013 | Implement duplicate-local support | spike | reference/triage | see `issues/done/5013-implement-duplicate-local.md` |
 | 5014 | Implement eval support (dup) | spike | frontend/syntax | see `issues/done/5014-implement-eval.md` |
