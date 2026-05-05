@@ -1668,6 +1668,9 @@ impl Parser {
             if self.consume(TokenKind::Semicolon) {
                 continue;
             }
+            if self.consume_erasable_typescript_declaration()? {
+                continue;
+            }
             statements.push(self.statement()?);
         }
         Ok(statements)
