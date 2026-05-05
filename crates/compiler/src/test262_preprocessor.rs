@@ -81,13 +81,15 @@ const KNOWN_FEATURES: &[(&str, &str)] = &[
     ("BigInt", "issue-5000"),
     ("regexp-named-groups", "issue-5024"),
     ("regexp-dotall", "issue-5024"),
-    ("Symbol.replace", "issue-5025"),
-    ("Symbol.match", "issue-5025"),
-    ("Symbol.search", "issue-5025"),
-    ("Symbol.matchAll", "issue-5025"),
-    ("Symbol.split", "issue-5025"),
-    ("Symbol.iterator", "issue-5052"),
-    ("Symbol.toPrimitive", "issue-5025"),
+    ("Symbol.species", "issue-5000"),
+    ("Symbol.unscopables", "issue-5000"),
+    ("Symbol.replace", "issue-5000"),
+    ("Symbol.match", "issue-5000"),
+    ("Symbol.search", "issue-5000"),
+    ("Symbol.matchAll", "issue-5000"),
+    ("Symbol.split", "issue-5000"),
+    ("Symbol.iterator", "issue-5000"),
+    ("Symbol.toPrimitive", "issue-5000"),
     // --- array prototype features (implemented / partially supported) ---
     ("Symbol.isConcatSpreadable", "issue-5000"),
     ("stable-array-sort", "issue-5000"),
@@ -456,6 +458,17 @@ fn build_feature_stubs(features: &[String]) -> Result<String, Diagnostic> {
                 );
                 stubs.push_str("  if (Symbol.asyncIterator === undefined) {\n");
                 stubs.push_str("    Symbol.asyncIterator = Symbol('Symbol.asyncIterator');\n");
+                stubs.push_str("  }\n}");
+            }
+            "Symbol.species" | "Symbol.unscopables" | "Symbol.replace"
+            | "Symbol.match" | "Symbol.search" | "Symbol.matchAll"
+            | "Symbol.split" | "Symbol.toPrimitive" | "Symbol.iterator" => {
+                let name = feature.strip_prefix("Symbol.").unwrap_or(feature);
+                stubs.push_str(
+                    "if (typeof Symbol === 'object' || typeof Symbol === 'function') {\n",
+                );
+                stubs.push_str(&format!("  if (Symbol.{name} === undefined) {{\n"));
+                stubs.push_str(&format!("    Symbol.{name} = Symbol('Symbol.{name}');\n"));
                 stubs.push_str("  }\n}");
             }
             _ => {
