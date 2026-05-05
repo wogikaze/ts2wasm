@@ -111,20 +111,32 @@ Follow-up issues:
 
 This issue is blocked on issue 385's instrumentation findings. Do not start until issue 385 is done and identifies copy as the bottleneck.
 
+Issue 385 found that GC sweep traversal (sweep_visits=58859) dominates over array copy (all_copy_calls=20549) at the 100000-event diagnostic budget. The original assumption that copy pressure is the bottleneck was incorrect. This issue is therefore closed — the bottleneck is GC sweep, not array copy.
+
+A new issue should be created to address GC sweep pressure in the ABC451 depth-8 fixture.
+
 ## Completion evidence
 
-Fill only when moving to `done/`.
+Completed: 2026-05-06
+
+Issue 385 instrumentation findings show GC sweep (sweep_visits=58859) dominates over array copy (all_copy_calls=20549) at 100000 events. Copy pressure reduction is not the correct approach for the timeout.
 
 Commits:
 
-- none yet; issue is open
+- none; issue scope obviated by instrumentation evidence
 
 Validation result:
 
 ```text
-not run; issue is open
+command: mise run abc451-runtime-costs -- --event-budget 100000 --timeout 30
+result: pass; diagnostic_stop=true; timed_out=false
+date: 2026-05-01 (from issue 385)
+
+Finding: GC sweep traversal dominates (58859 visits) over all copy calls (20549 calls).
+Copy pressure is not the bottleneck. Array copy reduction target is obviated.
 ```
 
 Remaining risks:
 
-- Instrumentation may show that copy is not the bottleneck; this issue may be closed or re-scoped.
+- Instrumentation timing-budget may not represent full-run cost distribution.
+- GC sweep reduction remains as an unaddressed timeout cause.
