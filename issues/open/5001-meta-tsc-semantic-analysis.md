@@ -75,3 +75,22 @@ mise run reference-coverage -- tsc --limit 100 --detail
 Not run:
 
 - none
+
+## Progress evidence
+
+2026-05-06 dependency cleanup slice:
+
+- Reviewed `5001` direct children for generated buckets with recorded
+  `import-export` diagnostics.
+- Relinked 1,384 import/export buckets from `depends_on: [5001]` to the
+  existing import/export triage parent `432`.
+- Normalized those relinked child areas to `frontend/syntax`, matching the
+  import/export syntax/module owner.
+
+Validation result:
+
+```text
+python scripts/manager.py update-issue-index: pass
+python scripts/manager.py update-issue-index --check: pass
+python scripts/manager.py check issues: pass
+```
