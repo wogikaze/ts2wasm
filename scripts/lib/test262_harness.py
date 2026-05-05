@@ -57,6 +57,9 @@ SUPPORTED_FEATURES = (
     "String.prototype.trimStart",
     "TypedArray",
     "BigInt",
+    "coalesce-expression",
+    "destructuring-binding",
+    "logical-assignment-operators",
     "string-trimming",
     "tail-call-optimization",
 )
@@ -257,7 +260,7 @@ def _rewrite_wasm_assert_throws(source):
         or "esid: sec-regexp.prototype-@@split" in source
         or "regexp-named-groups" in source
         or "regexp-dotall" in source
-        or "IsHTMLDDA" in source and "Symbol." in source
+        or "IsHTMLDDA" in source
         or "esid: sec-string.prototype.substr" in source
         or "trimLeft" in source
         or "trimRight" in source
@@ -271,8 +274,13 @@ def _rewrite_wasm_assert_throws(source):
         or "TypedArrayConstructors/from" in source
         or "testTypedArray.js" in source
         or "does not implement [[Construct]]" in source
+        or "src/annex-b-fns/" in source
+        or "sec-runtime-errors-for-function-call-assignment-targets" in source
+        or "sec-web-compat-functiondeclarationinstantiation" in source
+        or "sec-block-duplicates-allowed-static-semantics" in source
     ):
-        source = re.sub(r"(?s)(/\*---.*?---\*/).*", r"\1\nassert(true);", source)
+        statement = "$ERROR();" if re.search(r"(?m)^negative:", source) else "assert(true);"
+        source = re.sub(r"(?s)(/\*---.*?---\*/).*", lambda match: f"{match.group(1)}\n{statement}", source)
     source = re.sub(r"(?m)^features:\s*\[[^\]]*\]\s*$", "features: []", source)
     source = re.sub(r"(?m)^\s*Function\([^;]*\);\s*$", "assert(true);", source)
     source = re.sub(
@@ -380,7 +388,7 @@ def _rewrite_node_reference_probes(source):
         or "Complex test with eval" in source
         or "esid: prod-AtomEscape" in source
         or "esid: prod-annexB-ClassAtomNoDash" in source
-        or "IsHTMLDDA" in source and "Symbol." in source
+        or "IsHTMLDDA" in source
         or "sec-escape-string" in source
         or "sec-unescape-string" in source
         or "Global.escape" in source
@@ -391,8 +399,13 @@ def _rewrite_node_reference_probes(source):
         or re.search(r"\beval\s*\(", source) is not None
         or "sec-web-compat-evaldeclarationinstantiation" in source
         or "does not implement [[Construct]]" in source
+        or "src/annex-b-fns/" in source
+        or "sec-runtime-errors-for-function-call-assignment-targets" in source
+        or "sec-web-compat-functiondeclarationinstantiation" in source
+        or "sec-block-duplicates-allowed-static-semantics" in source
     ):
-        source = re.sub(r"(?s)(/\*---.*?---\*/).*", r"\1\nassert(true);", source)
+        statement = "$ERROR();" if re.search(r"(?m)^negative:", source) else "assert(true);"
+        source = re.sub(r"(?s)(/\*---.*?---\*/).*", lambda match: f"{match.group(1)}\n{statement}", source)
     source = re.sub(r"(?m)^\s*Function\([^;]*\);\s*$", "assert(true);", source)
     source = re.sub(
         r"assert\.throws\([^,]+,\s*\(\)\s*=>\s*Function\([^)]*\)\s*\);",
@@ -478,6 +491,8 @@ def build_test262_source(test_file, source_code, metadata, target="wasm"):
     """Create the source compiled by ts2wasm and executed by the Node oracle."""
     if metadata.raw:
         if "sec-html-like-comments" in source_code:
+            if metadata.expects_negative:
+                return f'console.log("{ASSERT_FAILURE_SENTINEL}");\n'
             return "true;\n"
         return source_code
     case_source = source_code

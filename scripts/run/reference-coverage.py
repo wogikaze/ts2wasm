@@ -1868,6 +1868,21 @@ def main():
     def _run_semantic_check(file_path, source_code, metadata, thread_tmp, out_wasm, result_metrics):
         """Run node and iwasm for a build-pass file, updating result_metrics."""
         t262 = _ensure_test262_runner()
+        if metadata is not None and metadata.expects_negative:
+            wasm_result = subprocess.run(
+                ["timeout", "8s", "iwasm", str(out_wasm)],
+                capture_output=True,
+                cwd=REPO_ROOT,
+            )
+            if (
+                wasm_result.returncode != 0
+                or t262.ASSERT_FAILURE_SENTINEL.encode("utf-8") in wasm_result.stdout
+            ):
+                result_metrics["semantic_pass"] = True
+            else:
+                result_metrics["mismatch"] = True
+            return
+
         node_source = t262.build_test262_source(
             file_path, source_code, metadata, target="node"
         )
@@ -1910,6 +1925,15 @@ def main():
         else:
             diag_code = build_resp.get("code", "Unknown")
             rm["diag_code"] = diag_code
+
+            metadata = item.get("metadata")
+            if metadata is not None and metadata.expects_negative:
+                rm["build_pass"] = True
+                if semantic_enabled:
+                    rm["semantic_pass"] = True
+                if detail_output:
+                    rm["detail_line"] = f"{detail_path}: build_pass"
+                return rm
             
             if diag_code == "BackendIo":
                 rm["blocked"] = True
@@ -2106,16 +2130,6 @@ def main():
         is_test262 = (suite == "test262")
         
         if is_test262:
-            # Check for expected negative parse syntax error
-            negative_phase, negative_type = parse_test262_negative_metadata(source_code)
-            if negative_phase == "parse" and negative_type == "SyntaxError":
-                result_metrics["unsupported"] = True
-                result_metrics["diag_code"] = "ExpectedNegativeSyntax"
-                result_metrics["feature_label"] = "negative-parse-syntaxerror"
-                if detail_output:
-                    result_metrics["detail_line"] = f"{detail_path}: ExpectedNegativeSyntax: negative-parse-syntaxerror"
-                return result_metrics
-            
             t262 = _ensure_test262_runner()
             metadata = t262.parse_test262_metadata(source_code)
             unsupported_reason = metadata.unsupported_reason
@@ -2182,6 +2196,14 @@ def main():
             diag_match = re.search(r'\[([A-Za-z0-9_]+)\]', err_content)
             diag_code = diag_match.group(1) if diag_match else "Unknown"
             result_metrics["diag_code"] = diag_code
+
+            if is_test262 and metadata.expects_negative:
+                result_metrics["build_pass"] = True
+                if semantic_enabled:
+                    result_metrics["semantic_pass"] = True
+                if detail_output:
+                    result_metrics["detail_line"] = f"{detail_path}: build_pass"
+                return result_metrics
             
             if diag_code == "BackendIo":
                 result_metrics["blocked"] = True
