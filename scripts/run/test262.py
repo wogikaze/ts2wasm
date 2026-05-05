@@ -32,6 +32,8 @@ UNSUPPORTED_FLAGS = ("IsHTMLDDA",)
 SUPPORTED_FEATURES = (
     "IsHTMLDDA",
     "createRealm",
+    "arrow-function",
+    "Reflect.construct",
     "Symbol.asyncIterator",
     "Symbol.iterator",
     "tail-call-optimization",
@@ -47,6 +49,10 @@ function verifyEnumerable() { return true; }
 function verifyNotEnumerable() { return true; }
 function verifyConfigurable() { return true; }
 function verifyNotConfigurable() { return true; }
+"""
+
+WASM_IS_CONSTRUCTOR_SHIM = r"""
+function isConstructor() { return false; }
 """
 
 TEST262_HOST_PRELUDE = r"""
@@ -412,6 +418,15 @@ def build_test262_source(test_file, source_code, metadata, target="wasm"):
             chunks.append(WASM_PROPERTY_HELPER_SHIM)
             case_source = re.sub(
                 r"(?m)^includes:\s*\[propertyHelper\.js\]\s*$",
+                "includes: []",
+                case_source,
+            )
+            continue
+        if target == "wasm" and include == "isConstructor.js":
+            chunks.append(f"\n/* test262 harness shim: {include} */\n")
+            chunks.append(WASM_IS_CONSTRUCTOR_SHIM)
+            case_source = re.sub(
+                r"(?m)^includes:\s*\[isConstructor\.js\]\s*$",
                 "includes: []",
                 case_source,
             )
