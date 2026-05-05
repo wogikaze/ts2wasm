@@ -130,7 +130,7 @@ Follow-up issues:
 - `issues/done/1001-implement-augmentedTypesEnum-import-export.md` - Implement Augmentedtypesenum Import Export (same feature label, same group key, title overlap)
 - `issues/done/1003-implement-augmentedTypesExternalModule.md` - Implement Augmentedtypesexternalmodule (same feature label, same group key, title overlap)
 - `issues/done/1006-implement-augmentedTypesModules.md` - Implement Augmentedtypesmodules (same feature label, same group key, title overlap)
-- `issues/open/1015-implement-avoidNarrowingUsingConstVariableFromBindingElementWithLiteralInitializer.md` - Implement Avoidnarrowingusingconstvariablefrombindingelementwithliteralinitializer (same feature label, same group key, title overlap)
+- `issues/done/1015-implement-avoidNarrowingUsingConstVariableFromBindingElementWithLiteralInitializer.md` - Implement Avoidnarrowingusingconstvariablefrombindingelementwithliteralinitializer (same feature label, same group key, title overlap)
 - `issues/open/1028-implement-badExternalModuleReference.md` - Implement Badexternalmodulereference (same feature label, same group key, title overlap)
 - `issues/open/1032-implement-bangInModuleName.md` - Implement Banginmodulename (same feature label, same group key, title overlap)
 - `issues/open/1035-implement-baseConstraintOfDecorator.md` - Implement Baseconstraintofdecorator (same feature label, same group key, title overlap)
