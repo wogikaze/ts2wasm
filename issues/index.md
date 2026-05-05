@@ -15,18 +15,18 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 1 | 0 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4382 | 3788 | 594 |
+| frontend | 4383 | 3789 | 594 |
 | harness | 1 | 0 | 1 |
 | ir | 26 | 5 | 21 |
 | issues | 4 | 0 | 4 |
 | parser | 1 | 0 | 1 |
-| reference | 211 | 174 | 37 |
+| reference | 211 | 173 | 38 |
 | runtime | 265 | 98 | 167 |
 | scripts | 3 | 1 | 2 |
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 4981 | 4067 | 914 |
+| total | 4982 | 4067 | 915 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -168,6 +168,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 5144 | Support entry-module export function declarations | feature | ir/compiler | implementation-ready | P1 |  | entry-module `export function` declarations currently fail with `UnsupportedModule`, even though nearby static export... |
 | 5145 | Parse await as an identifier call outside async contexts | feature | frontend/syntax | implementation-ready | P2 |  | `await(...)` in a sync function currently fails with `UnsupportedRuntimeSubset` instead of preserving the TypeScript ... |
 | 5146 | Report for-await context errors before async runtime diagnostics | feature | frontend/syntax | implementation-ready | P2 |  | `for await...of` outside async/top-level-allowed contexts currently reports the broad async runtime unsupported messa... |
+| 5147 | Report await expression context errors before runtime diagnostics | feature | frontend/syntax | implementation-ready | P2 |  | `await <literal>` in a non-async function currently fails with `UnsupportedRuntimeSubset` instead of a TypeScript-ali... |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -446,7 +447,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 773 | Implement Autoasiforstaticsinclassdeclaration | spike | frontend/syntax | class: triage-needed | Implement Autoasiforstaticsinclassdeclaration |
 | 774 | Implement Autolift | spike | frontend/syntax | class: triage-needed | Implement Autolift |
 | 775 | Implement Autotypeassignedusingdestructuringfromnevernocrash | spike | frontend/resolver | class: blocked | Implement Autotypeassignedusingdestructuringfromnevernocrash |
-| 1020 | Implement Awaitliteralvalues | spike | reference/triage | class: triage-needed | Implement Awaitliteralvalues |
 | 1021 | Implement Awaitunionpromise | spike | reference/triage | class: triage-needed | Implement Awaitunionpromise |
 | 1022 | Implement Awaitedtype | spike | reference/triage | class: triage-needed | Implement Awaitedtype |
 | 1023 | Implement Awaitedtypecrash | spike | reference/triage | class: triage-needed | Implement Awaitedtypecrash |
@@ -5008,6 +5008,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 1017 | Implement Awaitexpressioninnercommentemit | spike | reference/triage | see `issues/done/1017-implement-awaitExpressionInnerCommentEmit.md` |
 | 1018 | Implement Awaitinclassinasyncfunction | spike | reference/triage | see `issues/done/1018-implement-awaitInClassInAsyncFunction.md` |
 | 1019 | Implement Awaitinnonasyncfunction | spike | reference/triage | see `issues/done/1019-implement-awaitInNonAsyncFunction.md` |
+| 1020 | Implement Awaitliteralvalues | spike | reference/triage | see `issues/done/1020-implement-awaitLiteralValues.md` |
 | 3002 | Implement Isolateddeclarationerrorsdefault | spike | runtime/builtins | see `issues/done/3002-implement-isolatedDeclarationErrorsDefault.md` |
 | 3131 | Implement Jsxfactorynotidentifierorqualifiedname | spike | reference/triage | see `issues/done/3131-implement-jsxFactoryNotIdentifierOrQualifiedName.md` |
 | 3329 | Implement Modulecodegentest | spike | frontend/syntax | see `issues/done/3329-implement-moduleCodeGenTest.md` |
