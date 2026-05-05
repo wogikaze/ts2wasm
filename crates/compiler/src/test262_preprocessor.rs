@@ -72,7 +72,7 @@ const KNOWN_FEATURES: &[(&str, &str)] = &[
     ("Reflect.construct", "issue-5025"),
     ("string-trimming", "issue-5000"),
     ("cross-realm", "issue-5023"),
-    ("class", "issue-5011"),
+    ("class", "issue-421"),
     ("generators", "issue-401"),
     ("BigInt", "issue-5000"),
     ("regexp-named-groups", "issue-5024"),

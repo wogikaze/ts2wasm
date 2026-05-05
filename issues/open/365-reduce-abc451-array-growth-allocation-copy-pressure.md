@@ -138,7 +138,8 @@ Current state:
 
 Follow-up issues:
 
-- [x] split design child: `issues/open/5131-design-abc451-non-top-array-growth-strategy.md`
+- [x] split design child: `issues/done/5131-design-abc451-non-top-array-growth-strategy.md`
+- [x] split attribution child: `issues/open/5132-add-abc451-non-top-array-separation-attribution.md`
 
 ## Notes
 
@@ -428,6 +429,11 @@ The dedicated `$array_push_grow` helper made local experimentation safer, but th
 Issue 5131 is the next narrow design-ready child. It must choose a mergeable
 non-top array-growth strategy or create a smaller implementation/attribution
 child, while this broad parent remains blocked.
+
+Issue 5131 chose `add deeper attribution` and created issue 5132. The next
+slice must explain why measured result arrays become non-top before
+`$array_push_grow` fallback, while preserving current contiguous-array aliasing,
+mutation ordering, and OOM behavior.
 
 Validation for the final evidence-only state:
 

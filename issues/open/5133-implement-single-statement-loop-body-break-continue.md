@@ -1,5 +1,5 @@
 ---
-id: 5132
+id: 5133
 title: "Implement single-statement loop bodies for break and continue"
 type: feature
 area: frontend/syntax
@@ -66,7 +66,7 @@ Expected:
 - `crates/frontend/src/parser/`
 - `crates/frontend/src/parser/tests.rs`
 - `fixtures/` only if a compiler-level regression fixture is needed
-- `issues/open/5132-implement-single-statement-loop-body-break-continue.md`
+- `issues/open/5133-implement-single-statement-loop-body-break-continue.md`
 
 Do not touch:
 

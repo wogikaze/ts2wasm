@@ -15,18 +15,18 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 1 | 0 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4378 | 3841 | 537 |
+| frontend | 4378 | 3839 | 539 |
 | harness | 1 | 0 | 1 |
 | ir | 21 | 0 | 21 |
 | issues | 4 | 0 | 4 |
 | parser | 1 | 0 | 1 |
-| reference | 211 | 181 | 30 |
-| runtime | 262 | 97 | 165 |
+| reference | 211 | 180 | 31 |
+| runtime | 263 | 96 | 167 |
 | scripts | 2 | 0 | 2 |
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 4968 | 4120 | 848 |
+| total | 4969 | 4116 | 853 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -156,8 +156,8 @@ Issue files are the source of truth for work items. The generated section below 
 <!-- generated:ready:start -->
 | ID | Title | Type | Area | Class | Priority | Depends on | Summary |
 |---:|---|---|---|---|---|---|---|
-| 5131 | Design ABC451 non-top array growth strategy | design | runtime/memory | design-ready | P1 |  | issue 365 remains blocked because the dominant measured array-growth |
-| 5132 | Implement single-statement loop bodies for break and continue | feature | frontend/syntax | implementation-ready | P1 |  | `asiBreak.ts` and `asiContinue.ts` fail with `expected LeftBrace` at |
+| 5132 | Add ABC451 non-top array separation attribution | infra | runtime/memory | implementation-ready | P1 | 5131 | issue 365 proves the dominant array-growth pressure is |
+| 5133 | Implement single-statement loop bodies for break and continue | feature | frontend/syntax | implementation-ready | P1 |  | `asiBreak.ts` and `asiContinue.ts` fail with `expected LeftBrace` at |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -195,7 +195,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 308 | Implement ABC451 depth-9 GC cadence policy | feature | runtime/memory | class: blocked | Implement ABC451 depth-9 GC cadence policy |
 | 309 | Reduce ABC451 depth-9 live allocation shape | feature | runtime/memory | class: blocked | Reduce ABC451 depth-9 live allocation shape |
 | 312 | Triage test262 blocked P0 window | spike | reference | class: triage-needed | Triage test262 blocked P0 window |
-| 313 | Implement array-builtin support | feature | runtime/builtins | class: triage-needed | Implement array-builtin support |
 | 335 | Implement full Math.pow number semantics | feature | runtime/builtins | class: triage-needed | Implement full Math.pow number semantics |
 | 342 | Implement Object builtin method coverage (1,721 test262 cases) | feature | runtime/builtins | class: triage-needed | Implement Object builtin method coverage (1,721 test262 cases) |
 | 343 | Implement DuplicateLocal diagnostic detection (66 test262 cases) | feature | frontend/resolver | class: blocked | Implement DuplicateLocal diagnostic detection (66 test262 cases) |
@@ -214,7 +213,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 418 | Implement break/continue | spike | frontend/syntax | class: blocked | Implement break/continue |
 | 419 | Implement built-in API support | spike | runtime/builtins | class: triage-needed | Implement built-in API support |
 | 420 | Implement call expression support | spike | frontend/syntax | class: blocked | Implement call expression support |
-| 421 | Implement class syntax | spike | frontend/syntax | class: triage-needed | Implement class syntax |
 | 422 | Implement class-accessor support | spike | frontend/syntax | class: triage-needed | Implement class-accessor support |
 | 424 | Implement declaration-emit support | spike | frontend/syntax | class: triage-needed | Implement declaration-emit support |
 | 425 | Implement destructuring | spike | frontend/syntax | class: triage-needed | Implement destructuring |
@@ -2627,7 +2625,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 3128 | Implement Jsxfactoryidentifierasparameter | spike | frontend/syntax | class: blocked | Implement Jsxfactoryidentifierasparameter |
 | 3129 | Implement Jsxfactoryidentifierwithabsentparameter | spike | frontend/syntax | class: blocked | Implement Jsxfactoryidentifierwithabsentparameter |
 | 3130 | Implement Jsxfactorymissingerrorinsideaclass | spike | reference/triage | class: triage-needed | Implement Jsxfactorymissingerrorinsideaclass |
-| 3131 | Implement Jsxfactorynotidentifierorqualifiedname | spike | reference/triage | class: triage-needed | Implement Jsxfactorynotidentifierorqualifiedname |
 | 3132 | Implement Jsxfactoryqualifiedname | spike | reference/triage | class: triage-needed | Implement Jsxfactoryqualifiedname |
 | 3133 | Implement Jsxfactoryqualifiednameresolutionerror | spike | frontend/syntax | class: blocked | Implement Jsxfactoryqualifiednameresolutionerror |
 | 3134 | Implement Jsxfactoryqualifiednamewithes | spike | reference/triage | class: triage-needed | Implement Jsxfactoryqualifiednamewithes |
@@ -3686,7 +3683,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 4207 | Implement Spellingsuggestionglobal | spike | frontend/syntax | class: triage-needed | Implement Spellingsuggestionglobal |
 | 4208 | Implement Spellingsuggestionleadingunderscores | spike | frontend/syntax | class: triage-needed | Implement Spellingsuggestionleadingunderscores |
 | 4209 | Implement Spellingsuggestionmodule | spike | frontend/syntax | class: blocked | Implement Spellingsuggestionmodule |
-| 4210 | Implement Splicetuples | spike | frontend/resolver | class: blocked | Implement Splicetuples |
 | 4211 | Implement Spreadbooleanrespectsfreshness | spike | frontend/resolver | class: blocked | Implement Spreadbooleanrespectsfreshness |
 | 4212 | Implement Spreadexpressioncontainingobjectexpressioncontextualtype | spike | frontend/syntax | class: blocked | Implement Spreadexpressioncontainingobjectexpressioncontextualtype |
 | 4213 | Implement Spreadexpressioncontextualtypewithnamespace | spike | frontend/syntax | class: blocked | Implement Spreadexpressioncontextualtypewithnamespace |
@@ -4605,6 +4601,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 307 | Investigate ABC451 depth-9 allocation performance | spike | runtime/performance | see `issues/done/307-investigate-abc451-depth9-allocation-performance.md` |
 | 310 | Fix activation-frame root liveness depth-8 regression | feature | runtime/memory | see `issues/done/310-fix-activation-frame-root-liveness-depth8-regression.md` |
 | 311 | Fix test262 arguments object index assignment semantics | bug | runtime/semantics | see `issues/done/311-fix-test262-arguments-object-index-assignment.md` |
+| 313 | Implement array-builtin support | feature | runtime/builtins | see `issues/done/313-implement-array-builtin.md` |
 | 314 | Implement string-builtin support | feature | runtime/builtins | see `issues/done/314-implement-string-builtin.md` |
 | 315 | Fix Math.max/min backend-io errors | feature | runtime/builtins | see `issues/done/315-fix-math-max-min-backend-io.md` |
 | 316 | Fix Object.keys backend-io error | feature | harness | see `issues/done/316-fix-object-keys-backend-io.md` |
@@ -4683,6 +4680,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 410 | Implement tsgo declaration emit: subpath import declaration emit cases | feature | frontend/syntax | see `issues/done/410-implement-tsgo-declaration-emit-subpath-import-links.md` |
 | 414 | Implement array-builtin support (dup) | spike | frontend/syntax | see `issues/done/414-implement-array-builtin.md` |
 | 415 | Implement arrow functions | spike | frontend/syntax | see `issues/done/415-implement-arrow-function.md` |
+| 421 | Implement class syntax | spike | frontend/syntax | see `issues/done/421-implement-class.md` |
 | 423 | Implement Date object support (dup) | spike | runtime/builtins | see `issues/done/423-implement-date.md` |
 | 427 | Implement duplicate-local support | spike | reference/triage | see `issues/done/427-implement-duplicate-local.md` |
 | 430 | Implement function support (dup) | spike | frontend/syntax | see `issues/done/430-implement-function.md` |
@@ -4981,6 +4979,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 1011 | Implement Autolift (dup) | spike | frontend/syntax | see `issues/done/1011-implement-autolift.md` |
 | 2058 | Implement Duplicatepackage Module Resolution | spike | frontend/syntax | see `issues/done/2058-implement-duplicatePackage-module-resolution.md` |
 | 3002 | Implement Isolateddeclarationerrorsdefault | spike | runtime/builtins | see `issues/done/3002-implement-isolatedDeclarationErrorsDefault.md` |
+| 3131 | Implement Jsxfactorynotidentifierorqualifiedname | spike | reference/triage | see `issues/done/3131-implement-jsxFactoryNotIdentifierOrQualifiedName.md` |
 | 3329 | Implement Modulecodegentest | spike | frontend/syntax | see `issues/done/3329-implement-moduleCodeGenTest.md` |
 | 3330 | Implement Modulecodegentest | spike | frontend/syntax | see `issues/done/3330-implement-moduleCodegenTest.md` |
 | 3371 | Implement Moduleresolution Module Resolution | spike | frontend/syntax | see `issues/done/3371-implement-moduleResolution-module-resolution.md` |
@@ -5001,6 +5000,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 4036 | Implement Requireofjsonfilewithmodulenoderesolutionemitumd | spike | frontend/syntax | see `issues/done/4036-implement-requireOfJsonFileWithModuleNodeResolutionEmitUmd.md` |
 | 4037 | Implement Requireofjsonfilewithmodulenoderesolutionemitundefined | spike | frontend/syntax | see `issues/done/4037-implement-requireOfJsonFileWithModuleNodeResolutionEmitUndefined.md` |
 | 4056 | Implement Resolutioncandidatefrompackagejsonfield Module Resolution | spike | frontend/syntax | see `issues/done/4056-implement-resolutionCandidateFromPackageJsonField-module-resolution.md` |
+| 4210 | Implement Splicetuples | spike | frontend/resolver | see `issues/done/4210-implement-spliceTuples.md` |
 | 4241 | Implement Staticinstanceresolution Module Resolution | spike | frontend/syntax | see `issues/done/4241-implement-staticInstanceResolution-module-resolution.md` |
 | 4284 | Implement Stringincludes (audit reopened #4284) | spike | runtime/builtins | see `issues/done/4284-implement-stringIncludes.md` |
 | 4291 | Implement Stringmatchall | spike | reference/triage | see `issues/done/4291-implement-stringMatchAll.md` |
@@ -5140,6 +5140,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 5128 | Add semantic parity for static re-export module forms | test | ir/compiler | see `issues/done/5128-static-re-export-semantic-parity.md` |
 | 5129 | Implement String.prototype.matchAll literal RegExp lowering | feature | runtime/builtins | see `issues/done/5129-implement-string-match-all-literal-regexp.md` |
 | 5130 | Implement own method ToPrimitive for mixed BigInt comparisons | feature | runtime/semantics | see `issues/done/5130-implement-object-method-toprimitive-for-bigint-comparisons.md` |
+| 5131 | Design ABC451 non-top array growth strategy | design | runtime/memory | see `issues/done/5131-design-abc451-non-top-array-growth-strategy.md` |
 <!-- generated:done:end -->
 
 ## Index generation contract
