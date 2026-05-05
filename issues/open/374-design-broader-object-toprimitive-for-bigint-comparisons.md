@@ -3,12 +3,12 @@ id: 374
 title: "Design broader object ToPrimitive for mixed BigInt comparisons"
 type: design
 area: runtime/semantics
-class: blocked
+class: design-ready
 priority: P2
-depends_on: [259, 261]
+depends_on: []
 blocks: []
 created: 2026-05-01
-updated: 2026-05-01
+updated: 2026-05-06
 ---
 
 ## Summary
@@ -118,7 +118,7 @@ Follow-up issues:
 
 ## Notes
 
-This issue is blocked because executable implementation requires an accepted object-model policy. Do not use it to implement broad prototype or Proxy behavior directly.
+Unblocked on 2026-05-06: dependencies `259` and `261` are in `issues/done/`, and this issue's output is the accepted object-model policy plus implementation-ready child issues. Do not use it to implement broad prototype or Proxy behavior directly.
 
 ## Completion evidence
 
