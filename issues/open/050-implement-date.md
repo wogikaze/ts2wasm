@@ -29,7 +29,18 @@ Queue design note:
 
 ## Problem
 
-Full Date is not implemented. Deterministic epoch-millisecond Date slices and WASI-backed live host time exist, but timezone formatting, non-integer/non-literal inputs, and broader Date API behavior remain separate policy-backed child work.
+Full Date is currently unsupported outside the implemented deterministic epoch-millisecond Date slices and WASI-backed live host time entry points. Timezone formatting, non-integer/non-literal inputs, and broader Date API behavior remain separate policy-backed child work.
+
+## Current failure
+
+Representative remaining Date gaps are still tracked through child issues rather than this parent:
+
+```sh
+cargo run -q -p ts2wasm-cli -- build fixtures/builtins-and-io/date-epoch-get-time.ts -o /tmp/ts2wasm-date-epoch-get-time.wasm
+iwasm /tmp/ts2wasm-date-epoch-get-time.wasm
+```
+
+That deterministic epoch fixture passes today, so it is not the blocker. The parent remains open because timezone-aware formatting, non-integer/non-literal Date inputs, and Annex B legacy methods (`getYear`, `setYear`, `toGMTString`) are intentionally split into child work. Live-time `Date.now()` and no-argument `new Date()` are already implemented by issue 242 and should not be reworked from this parent.
 
 ## Desired final state
 
@@ -62,10 +73,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] Date constructor works correctly
-- [ ] Basic Date methods work correctly
-- [ ] Fixtures cover Date behavior
-- [ ] No regression in existing fixtures
+- [ ] Deterministic `new Date(<epoch-ms integer>)` fixtures still match Node/iwasm stdout for `fixtures/builtins-and-io/date-epoch-get-time.ts` and `fixtures/builtins-and-io/date-epoch-value-of.ts`.
+- [ ] Live-time `Date.now()` and no-argument `new Date()` fixtures still emit the audited `wasi.clock.realtime` manifest reason and `wasi_snapshot_preview1.clock_time_get` import.
+- [ ] Issue 240 closes with timezone-aware `Date.prototype.toString()` pass evidence or a final documented reject policy.
+- [ ] Issue 241 closes with Annex B `getYear`, `setYear`, and `toGMTString` diagnostic or implementation evidence.
 
 ## Validation
 
