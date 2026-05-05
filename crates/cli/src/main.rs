@@ -88,7 +88,11 @@ fn run() -> Result<(), String> {
             match result {
                 Ok(report) => {
                     for diag in &report.diagnostics {
-                        eprintln!("warning: {diag}");
+                        if explain_unsupported {
+                            explain_unsupported_diagnostic(diag, &input);
+                        } else {
+                            eprintln!("warning: {diag}");
+                        }
                     }
                     Ok(())
                 }

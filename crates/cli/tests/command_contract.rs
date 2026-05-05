@@ -144,6 +144,59 @@ fn build_with_host_deny_rejects_host_imports() {
     );
 }
 
+#[test]
+fn build_explain_unsupported_shows_tracking_and_fixture() {
+    let input = write_temp_source("contract-explain", "let x = eval('1+1');");
+    let output =
+        std::env::temp_dir().join(format!("contract-explain-out-{}.wasm", unique_suffix()));
+
+    // Without --explain-unsupported: only the error line appears
+    let result_plain = Command::new(cli_binary())
+        .arg("build")
+        .arg(&input)
+        .arg("-o")
+        .arg(&output)
+        .output()
+        .expect("ts2wasm build should execute");
+    assert!(!result_plain.status.success(), "build should fail for eval");
+    let stderr_plain = String::from_utf8_lossy(&result_plain.stderr);
+    assert!(
+        !stderr_plain.contains("explain-unsupported"),
+        "no explain block expected without flag"
+    );
+
+    // With --explain-unsupported: tracking issue and fixture path should appear
+    let result_explain = Command::new(cli_binary())
+        .arg("build")
+        .arg(&input)
+        .arg("-o")
+        .arg(&output)
+        .arg("--explain-unsupported")
+        .output()
+        .expect("ts2wasm build should execute");
+    assert!(
+        !result_explain.status.success(),
+        "build should still fail for eval"
+    );
+    let stderr_explain = String::from_utf8_lossy(&result_explain.stderr);
+    assert!(
+        stderr_explain.contains("explain-unsupported"),
+        "explain block should appear: {stderr_explain}"
+    );
+    assert!(
+        stderr_explain.contains("tracking:"),
+        "tracking issue should be shown: {stderr_explain}"
+    );
+    assert!(
+        stderr_explain.contains("fixture:"),
+        "fixture path should be shown: {stderr_explain}"
+    );
+    assert!(
+        stderr_explain.contains("next crate:"),
+        "next crate suggestion should appear: {stderr_explain}"
+    );
+}
+
 // ---------------------------------------------------------------------------
 // check command contract tests
 // ---------------------------------------------------------------------------
