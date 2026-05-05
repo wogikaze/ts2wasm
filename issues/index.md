@@ -20,13 +20,13 @@ Issue files are the source of truth for work items. The generated section below 
 | ir | 26 | 5 | 21 |
 | issues | 4 | 0 | 4 |
 | parser | 1 | 0 | 1 |
-| reference | 211 | 177 | 34 |
+| reference | 211 | 176 | 35 |
 | runtime | 265 | 98 | 167 |
 | scripts | 3 | 1 | 2 |
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 4980 | 4070 | 910 |
+| total | 4980 | 4069 | 911 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -446,7 +446,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 773 | Implement Autoasiforstaticsinclassdeclaration | spike | frontend/syntax | class: triage-needed | Implement Autoasiforstaticsinclassdeclaration |
 | 774 | Implement Autolift | spike | frontend/syntax | class: triage-needed | Implement Autolift |
 | 775 | Implement Autotypeassignedusingdestructuringfromnevernocrash | spike | frontend/resolver | class: blocked | Implement Autotypeassignedusingdestructuringfromnevernocrash |
-| 1017 | Implement Awaitexpressioninnercommentemit | spike | reference/triage | class: triage-needed | Implement Awaitexpressioninnercommentemit |
 | 1018 | Implement Awaitinclassinasyncfunction | spike | reference/triage | class: triage-needed | Implement Awaitinclassinasyncfunction |
 | 1019 | Implement Awaitinnonasyncfunction | spike | reference/triage | class: triage-needed | Implement Awaitinnonasyncfunction |
 | 1020 | Implement Awaitliteralvalues | spike | reference/triage | class: triage-needed | Implement Awaitliteralvalues |
@@ -5007,6 +5006,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 1014 | Implement Avoidcyclewithvoidexpressionreturnedfromarrow | spike | frontend/syntax | see `issues/done/1014-implement-avoidCycleWithVoidExpressionReturnedFromArrow.md` |
 | 1015 | Implement Avoidnarrowingusingconstvariablefrombindingelementwithliteralinitializer | spike | frontend/syntax | see `issues/done/1015-implement-avoidNarrowingUsingConstVariableFromBindingElementWithLiteralInitializer.md` |
 | 1016 | Implement Awaitcallexpressioninsyncfunction | spike | reference/triage | see `issues/done/1016-implement-awaitCallExpressionInSyncFunction.md` |
+| 1017 | Implement Awaitexpressioninnercommentemit | spike | reference/triage | see `issues/done/1017-implement-awaitExpressionInnerCommentEmit.md` |
 | 3002 | Implement Isolateddeclarationerrorsdefault | spike | runtime/builtins | see `issues/done/3002-implement-isolatedDeclarationErrorsDefault.md` |
 | 3131 | Implement Jsxfactorynotidentifierorqualifiedname | spike | reference/triage | see `issues/done/3131-implement-jsxFactoryNotIdentifierOrQualifiedName.md` |
 | 3329 | Implement Modulecodegentest | spike | frontend/syntax | see `issues/done/3329-implement-moduleCodeGenTest.md` |
