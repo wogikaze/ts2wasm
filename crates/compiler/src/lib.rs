@@ -493,13 +493,14 @@ fn lower_static_named_import_bindings_for_build(
             }
             Stmt::ExportDefault { expr, span, .. } => {
                 let index = lowered_statement_index;
+                let local_name = format!("__ts2wasm_default_{index}");
                 rewritten.push(Stmt::Let {
-                    name: "__ts2wasm_default".to_owned(),
+                    name: local_name.clone(),
                     expr: expr.clone(),
                     span: *span,
                     is_var: false,
                 });
-                local_name_to_index.insert("__ts2wasm_default".to_owned(), index);
+                local_name_to_index.insert(local_name, index);
                 module_exports.push(ModuleExport {
                     name: "default".to_owned(),
                     lowered_statement_index: index,
@@ -1036,13 +1037,14 @@ fn rewrite_static_module_body_for_build(
                     });
                 }
                 let index = lowered_statement_index;
+                let local_name = format!("__ts2wasm_default_{index}");
                 rewritten.push(Stmt::Let {
-                    name: "__ts2wasm_default".to_owned(),
+                    name: local_name.clone(),
                     expr: expr.clone(),
                     span: *span,
                     is_var: false,
                 });
-                local_name_to_index.insert("__ts2wasm_default".to_owned(), index);
+                local_name_to_index.insert(local_name, index);
                 module_exports.push(ModuleExport {
                     name: "default".to_owned(),
                     lowered_statement_index: index,
@@ -2100,6 +2102,38 @@ console.log(value);
         assert!(wat.contains("$module_require"));
         assert!(wat.contains("$property_get"));
         assert!(wat.contains("$module_exports_set"));
+
+        let _ = std::fs::remove_dir_all(&dir);
+    }
+
+    #[test]
+    fn static_default_export_rewrite_uses_unique_synthetic_locals() {
+        let dir = unique_temp_dir("static-default-export-unique");
+        std::fs::create_dir_all(&dir).expect("temp dir should be created");
+        let entry = dir.join("entry.ts");
+        let source = r#"
+export default 1;
+export default 2;
+"#;
+        std::fs::write(&entry, source).expect("entry should be written");
+
+        let program = parse_program(source).expect("entry should parse");
+        let graph = build_entry_module_graph(&entry, &program).expect("graph should build");
+        let static_module_binding = lower_static_named_import_bindings_for_build(&program, &graph)
+            .expect("static default export binding should lower");
+        let name_resolved = name_resolver::resolve_names(&static_module_binding.rewritten_program)
+            .expect("synthetic default locals should not collide");
+
+        let names = static_module_binding
+            .rewritten_program
+            .iter()
+            .filter_map(|stmt| match stmt {
+                Stmt::Let { name, .. } => Some(name.as_str()),
+                _ => None,
+            })
+            .collect::<Vec<_>>();
+        assert_eq!(names, vec!["__ts2wasm_default_0", "__ts2wasm_default_1"]);
+        assert_eq!(name_resolved.len(), 2);
 
         let _ = std::fs::remove_dir_all(&dir);
     }
