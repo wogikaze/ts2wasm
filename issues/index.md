@@ -11,7 +11,7 @@ Issue files are the source of truth for work items. The generated section below 
 |---|---:|---:|---:|
 | abi | 7 | 0 | 7 |
 | backend | 13 | 1 | 12 |
-| cli | 15 | 1 | 14 |
+| cli | 15 | 0 | 15 |
 | compiler | 1 | 0 | 1 |
 | coverage | 42 | 32 | 10 |
 | docs | 2 | 0 | 2 |
@@ -26,7 +26,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 4963 | 4183 | 780 |
+| total | 4963 | 4182 | 781 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -163,7 +163,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 5008 | Implement static ES module export forms (default, named, namespace, re-export) (audit reopened #5008) | feature | ir/compiler | done | P1 |  | `export const x = 1` (ExportDecl) currently hits `issue-055` when the file has no `import` from another module, becau... |
 | 5009 | Remaining static ES module export forms (named list, default import, namespace, re-export, side-effect) (audit reopened #5009) | feature | ir/compiler | done | P1 |  | Remaining static ES module export forms (named list, default import, namespace, re-export, side-effect) (audit reopen... |
 | 5010 | Implement local named export (export { value } and export { value as alias }) for entry module (audit reopened #5010) | feature | ir/compiler | done | P1 |  | `export { ... }` references local bindings by name, but the compiler's module rewrite path only handles `ExportDecl` ... |
-| 5040 | [compiler] Add resource limits and cancellation to server batch compilation (audit reopened #5040) | feature | cli | implementation-ready | P2 |  | [compiler] Add resource limits and cancellation to server batch compilation (audit reopened #5040) |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -5082,6 +5081,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 5037 | [compiler] Complete entry module export lowering for local references | feature | cli | see `issues/done/5037-compiler-module-export-lowering.md` |
 | 5038 | [compiler] Harden module graph resolution and diagnostics (audit reopened #5038) | feature | cli | see `issues/done/5038-compiler-module-graph-resolution.md` |
 | 5039 | [compiler] Stabilize test262 preprocessor feature handling (audit reopened #5039) | feature | cli | see `issues/done/5039-compiler-test262-preprocessor.md` |
+| 5040 | [compiler] Add resource limits and cancellation to server batch compilation (audit reopened #5040) | feature | cli | see `issues/done/5040-compiler-resource-limits.md` |
 | 5041 | [frontend] Complete Expr AST fixture coverage (audit reopened #5041) | test | frontend | see `issues/done/5041-frontend-expr-fixture-coverage.md` |
 | 5042 | [frontend] Complete Stmt AST fixture coverage (audit reopened #5042) | test | frontend | see `issues/done/5042-frontend-stmt-fixture-coverage.md` |
 | 5043 | [frontend] Split large lexer/parser files by grammar responsibility (audit reopened #5043) | refactor | frontend | see `issues/done/5043-frontend-split-parser.md` |
