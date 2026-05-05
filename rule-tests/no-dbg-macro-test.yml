@@ -1,0 +1,7 @@
+id: no-dbg-macro
+valid:
+  - println!("{value}");
+  - tracing::debug!("{value}");
+invalid:
+  - dbg!(value);
+  - dbg!(left, right);

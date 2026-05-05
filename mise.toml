@@ -177,6 +177,10 @@ description = "Verify required CLI tools (cargo, node, wasm-tools, …)"
 hide = true
 run = "python scripts/manager.py check-toolchain"
 
+[tasks."check-ast-grep"]
+description = "Run ast-grep rule tests and repository scan"
+run = "python scripts/manager.py check-ast-grep"
+
 [tasks."check-host-deny"]
 description = "Standalone fixtures must not import wasm module name host"
 hide = true

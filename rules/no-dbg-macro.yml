@@ -1,0 +1,10 @@
+id: no-dbg-macro
+language: Rust
+severity: warning
+rule:
+  pattern: dbg!($$$ARGS)
+message: Do not commit dbg! diagnostics.
+note: Use structured diagnostics, logging, or focused assertions instead of temporary dbg! output.
+files:
+  - "crates/**/*.rs"
+  - "scripts/**/*.rs"
