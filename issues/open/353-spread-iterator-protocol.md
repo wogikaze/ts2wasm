@@ -3,12 +3,12 @@ id: 353
 title: "Implement iterator protocol integration for spread operator"
 type: feature
 area: runtime/semantics
-class: blocked
+class: unstarted
 priority: P2
-depends_on: [274]
-blocks: []
+depends_on: []
+blocks: [274]
 created: 2026-04-30
-updated: 2026-05-01
+updated: 2026-05-06
 ---
 
 ## Summary
@@ -36,7 +36,7 @@ printf 'function* gen() { yield 1; yield 2; }\nconst arr = [...gen()];\nconsole.
 cargo run -q -p ts2wasm-cli -- build "$tmp" -o /tmp/ts2wasm-353-iterator-spread.wasm
 ```
 
-Current result: `[UnsupportedSyntax] issue-274: general iterator protocol spread is not supported`
+Current result: `[UnsupportedRuntimeSubset] issue-353: generator result spread requires iterator protocol runtime lowering in this milestone`
 
 Additional blocker evidence from 2026-05-01:
 

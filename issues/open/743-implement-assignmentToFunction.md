@@ -216,7 +216,7 @@ Duplicate candidates:
   },
   {
     "state": "open",
-    "path": "issues/open/549-implement-FunctionDeclaration-import-export.md",
+    "path": "issues/done/549-implement-FunctionDeclaration-import-export.md",
     "title": "Implement Functiondeclaration Import Export",
     "reason": "same feature label, title overlap"
   },

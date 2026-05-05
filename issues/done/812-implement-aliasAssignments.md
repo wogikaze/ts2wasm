@@ -118,7 +118,7 @@ Follow-up issues:
 
 - `issues/done/111-implement-aliasAssignments.md` - Implement Aliasassignments (same reference path, same group key, title overlap)
 - `issues/done/491-implement-aliasAssignments.md` - Implement Aliasassignments (same reference path, same feature label, same group key, title overlap)
-- `issues/open/549-implement-FunctionDeclaration-import-export.md` - Implement Functiondeclaration Import Export (same feature label, same group key, title overlap)
+- `issues/done/549-implement-FunctionDeclaration-import-export.md` - Implement Functiondeclaration Import Export (same feature label, same group key, title overlap)
 - `issues/open/577-implement-aliasAssignments.md` - Implement Aliasassignments (same reference path, same feature label, same group key, title overlap)
 - `issues/open/715-implement-assign.md` - Implement Assign (same feature label, same group key, title overlap)
 

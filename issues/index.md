@@ -15,7 +15,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 1 | 0 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4378 | 3781 | 597 |
+| frontend | 4378 | 3779 | 599 |
 | harness | 1 | 0 | 1 |
 | ir | 21 | 0 | 21 |
 | issues | 4 | 0 | 4 |
@@ -26,7 +26,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 4969 | 4058 | 911 |
+| total | 4969 | 4056 | 913 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -156,6 +156,7 @@ Issue files are the source of truth for work items. The generated section below 
 <!-- generated:ready:start -->
 | ID | Title | Type | Area | Class | Priority | Depends on | Summary |
 |---:|---|---|---|---|---|---|---|
+| 353 | Implement iterator protocol integration for spread operator | feature | runtime/semantics | unstarted | P2 |  | General iterator protocol is not implemented for spread operator. |
 | 5132 | Add ABC451 non-top array separation attribution | infra | runtime/memory | implementation-ready | P1 | 5131 | issue 365 proves the dominant array-growth pressure is |
 <!-- generated:ready:end -->
 
@@ -199,7 +200,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 343 | Implement DuplicateLocal diagnostic detection (66 test262 cases) | feature | frontend/resolver | class: blocked | Implement DuplicateLocal diagnostic detection (66 test262 cases) |
 | 345 | Implement TypeScript type alias coverage for tsc suite (23 cases) | feature | frontend/syntax | class: blocked | Implement TypeScript type alias coverage for tsc suite (23 cases) |
 | 346 | Implement TypeScript declaration emit coverage for tsgo suite (16 cases) | feature | frontend/syntax | class: triage-needed | Implement TypeScript declaration emit coverage for tsgo suite (16 cases) |
-| 353 | Implement iterator protocol integration for spread operator | feature | runtime/semantics | class: blocked | Implement iterator protocol integration for spread operator |
 | 357 | Fix ABC451 depth-8 iwasm timeout | bug | runtime/memory | class: blocked | Fix ABC451 depth-8 iwasm timeout |
 | 363 | Reduce ABC451 allocation and sweep volume after bulk copy narrowing | bug | runtime/memory | class: blocked | Reduce ABC451 allocation and sweep volume after bulk copy narrowing |
 | 365 | Reduce ABC451 array-growth allocation and copy pressure | bug | runtime/memory | class: blocked | Reduce ABC451 array-growth allocation and copy pressure |
@@ -244,7 +244,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 544 | Implement Apisample Jsdoc | spike | frontend/syntax | class: blocked | Implement Apisample Jsdoc |
 | 546 | Implement Classdeclaration | spike | frontend/syntax | class: triage-needed | Implement Classdeclaration |
 | 548 | Implement Exportassignment | spike | frontend/syntax | class: blocked | Implement Exportassignment |
-| 549 | Implement Functiondeclaration Import Export (audit reopened #549) | spike | frontend/syntax | class: blocked | Implement Functiondeclaration Import Export (audit reopened #549) |
 | 550 | Implement Functiondeclaration Parser Syntax | spike | frontend/syntax | class: triage-needed | Implement Functiondeclaration Parser Syntax |
 | 553 | Implement Transportstream | spike | frontend/syntax | class: triage-needed | Implement Transportstream |
 | 554 | Implement Abstractclassinlocalscope | spike | frontend/resolver | class: blocked | Implement Abstractclassinlocalscope |
@@ -446,7 +445,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 773 | Implement Autoasiforstaticsinclassdeclaration | spike | frontend/syntax | class: triage-needed | Implement Autoasiforstaticsinclassdeclaration |
 | 774 | Implement Autolift | spike | frontend/syntax | class: triage-needed | Implement Autolift |
 | 775 | Implement Autotypeassignedusingdestructuringfromnevernocrash | spike | frontend/resolver | class: blocked | Implement Autotypeassignedusingdestructuringfromnevernocrash |
-| 784 | Implement Functiondeclaration Import Export (audit reopened #784) | spike | frontend/syntax | class: blocked | Implement Functiondeclaration Import Export (audit reopened #784) |
 | 839 | Implement Ambientclassdeclarationwithextends (audit reopened #839) | spike | frontend/syntax | class: blocked | Implement Ambientclassdeclarationwithextends (audit reopened #839) |
 | 874 | Implement Anonymousmodules (audit reopened #874) | spike | frontend/syntax | class: blocked | Implement Anonymousmodules (audit reopened #874) |
 | 877 | Implement Anydeclare (audit reopened #877) | spike | frontend/syntax | class: blocked | Implement Anydeclare (audit reopened #877) |
@@ -4718,6 +4716,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 540 | Implement Ambiguousgenericassertion (dup) | spike | frontend/syntax | see `issues/done/540-implement-ambiguousGenericAssertion.md` |
 | 545 | Implement Arrowfunctionexpression (audit reopened #545) | spike | frontend/syntax | see `issues/done/545-implement-ArrowFunctionExpression.md` |
 | 547 | Implement Classdeclarationwithinvalidconstonpropertydeclaration (audit reopened #547) | spike | frontend/syntax | see `issues/done/547-implement-ClassDeclarationWithInvalidConstOnPropertyDeclaration.md` |
+| 549 | Implement Functiondeclaration Import Export (audit reopened #549) | spike | frontend/syntax | see `issues/done/549-implement-FunctionDeclaration-import-export.md` |
 | 551 | Implement Memberaccessordeclaration (audit reopened #551) | spike | frontend/syntax | see `issues/done/551-implement-MemberAccessorDeclaration.md` |
 | 552 | Implement Parameterlist | spike | frontend/syntax | see `issues/done/552-implement-ParameterList.md` |
 | 563 | Implement Accessoverriddenbaseclassmember (audit reopened #563) | spike | frontend/syntax | see `issues/done/563-implement-accessOverriddenBaseClassMember.md` |
@@ -4751,6 +4750,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 781 | Implement Classdeclaration (dup) | spike | frontend/syntax | see `issues/done/781-implement-ClassDeclaration.md` |
 | 782 | Implement Classdeclarationwithinvalidconstonpropertydeclaration (audit reopened #782) | spike | frontend/syntax | see `issues/done/782-implement-ClassDeclarationWithInvalidConstOnPropertyDeclaration.md` |
 | 783 | Implement Exportassignment (dup) | spike | frontend/syntax | see `issues/done/783-implement-ExportAssignment.md` |
+| 784 | Implement Functiondeclaration Import Export (audit reopened #784) | spike | frontend/syntax | see `issues/done/784-implement-FunctionDeclaration-import-export.md` |
 | 785 | Implement Functiondeclaration Parser Syntax (dup) | spike | frontend/syntax | see `issues/done/785-implement-FunctionDeclaration-parser-syntax.md` |
 | 786 | Implement Memberaccessordeclaration (audit reopened #786) | spike | frontend/syntax | see `issues/done/786-implement-MemberAccessorDeclaration.md` |
 | 787 | Implement Parameterlist | spike | frontend/syntax | see `issues/done/787-implement-ParameterList.md` |
