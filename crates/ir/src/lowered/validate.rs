@@ -358,22 +358,7 @@ fn validate_expr(
                                 ),
                                 span: None,
                             });
-                        } else if func.rest_param_index.is_none() {
-                            let max_allowed = func.params.len();
-                            if args.len() > max_allowed {
-                                errors.push(Diagnostic {
-                                    code: DiagCode::ArityMismatch,
-                                    message: format!(
-                                        "function {} expects between {} and {} argument(s), got {}",
-                                        func_id.0,
-                                        min_required,
-                                        max_allowed,
-                                        args.len()
-                                    ),
-                                    span: None,
-                                });
-                            }
-                        }
+                        } // Extra args beyond params are allowed (JS semantics)
                     }
                 }
                 FunctionCallKind::Builtin(builtin) => {

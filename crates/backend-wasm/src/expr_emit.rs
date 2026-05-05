@@ -953,7 +953,7 @@ impl WatEmitter<'_> {
         }
 
         let param_count = func.map(|f| f.params.len()).unwrap_or(0);
-        for arg in args {
+        for arg in args.iter().take(param_count) {
             self.emit_expr(wat, arg, indent, frame);
         }
         for _ in args.len()..param_count {

@@ -660,8 +660,6 @@ fn validate_rejects_arity_mismatch() {
         kind: FunctionCallKind::User(FuncId(0)),
         args: vec![
             LoweredExpr::Number(1),
-            LoweredExpr::Number(2),
-            LoweredExpr::Number(3),
         ],
     });
     let program = LoweredProgram {
