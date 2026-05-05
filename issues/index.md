@@ -15,7 +15,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 1 | 0 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4378 | 3779 | 599 |
+| frontend | 4378 | 3777 | 601 |
 | harness | 1 | 0 | 1 |
 | ir | 21 | 0 | 21 |
 | issues | 4 | 0 | 4 |
@@ -26,7 +26,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 4969 | 4054 | 915 |
+| total | 4969 | 4052 | 917 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -285,7 +285,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 599 | Implement Allowjscheckjstypeparameternocrash | spike | frontend/syntax | class: blocked | Implement Allowjscheckjstypeparameternocrash |
 | 600 | Implement Allowsyntheticdefaultimports | spike | frontend/syntax | class: blocked | Implement Allowsyntheticdefaultimports |
 | 601 | Implement Allowsyntheticdefaultimportscanpaintcrossmoduledeclaration | spike | frontend/syntax | class: blocked | Implement Allowsyntheticdefaultimportscanpaintcrossmoduledeclaration |
-| 604 | Implement Ambientclassdeclarationwithextends (audit reopened #604) | spike | frontend/syntax | class: blocked | Implement Ambientclassdeclarationwithextends (audit reopened #604) |
 | 605 | Implement Ambientclassdeclaredbeforebase | spike | frontend/syntax | class: blocked | Implement Ambientclassdeclaredbeforebase |
 | 606 | Implement Ambientconstliterals | spike | frontend/syntax | class: triage-needed | Implement Ambientconstliterals |
 | 609 | Implement Ambientexportdefaulterrors | spike | frontend/syntax | class: blocked | Implement Ambientexportdefaulterrors |
@@ -443,7 +442,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 773 | Implement Autoasiforstaticsinclassdeclaration | spike | frontend/syntax | class: triage-needed | Implement Autoasiforstaticsinclassdeclaration |
 | 774 | Implement Autolift | spike | frontend/syntax | class: triage-needed | Implement Autolift |
 | 775 | Implement Autotypeassignedusingdestructuringfromnevernocrash | spike | frontend/resolver | class: blocked | Implement Autotypeassignedusingdestructuringfromnevernocrash |
-| 839 | Implement Ambientclassdeclarationwithextends (audit reopened #839) | spike | frontend/syntax | class: blocked | Implement Ambientclassdeclarationwithextends (audit reopened #839) |
 | 874 | Implement Anonymousmodules (audit reopened #874) | spike | frontend/syntax | class: blocked | Implement Anonymousmodules (audit reopened #874) |
 | 877 | Implement Anydeclare (audit reopened #877) | spike | frontend/syntax | class: blocked | Implement Anydeclare (audit reopened #877) |
 | 1012 | Implement Autonumberinginenums | spike | frontend/syntax | class: triage-needed | Implement Autonumberinginenums |
@@ -4728,6 +4726,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 581 | Implement Aliasinaccessiblemodule (audit reopened #581) | spike | frontend/syntax | see `issues/done/581-implement-aliasInaccessibleModule.md` |
 | 602 | Implement Alwaysstrictmodule (audit reopened #602) | spike | frontend/syntax | see `issues/done/602-implement-alwaysStrictModule.md` |
 | 603 | Implement Alwaysstrictnoimplicitusestrict (audit reopened #603) | spike | frontend/syntax | see `issues/done/603-implement-alwaysStrictNoImplicitUseStrict.md` |
+| 604 | Implement Ambientclassdeclarationwithextends (audit reopened #604) | spike | frontend/syntax | see `issues/done/604-implement-ambientClassDeclarationWithExtends.md` |
 | 607 | Implement Ambientenumelementinitializer (dup) | spike | frontend/syntax | see `issues/done/607-implement-ambientEnumElementInitializer.md` |
 | 608 | Implement Ambienterrors | spike | runtime/builtins | see `issues/done/608-implement-ambientErrors.md` |
 | 611 | Implement Ambientexternalmodulereopen (audit reopened #611) | spike | frontend/syntax | see `issues/done/611-implement-ambientExternalModuleReopen.md` |
@@ -4805,6 +4804,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 836 | Implement Allowsyntheticdefaultimportscanpaintcrossmoduledeclaration (dup) | spike | frontend/syntax | see `issues/done/836-implement-allowSyntheticDefaultImportsCanPaintCrossModuleDeclaration.md` |
 | 837 | Implement Alwaysstrictmodule (audit reopened #837) | spike | frontend/syntax | see `issues/done/837-implement-alwaysStrictModule.md` |
 | 838 | Implement Alwaysstrictnoimplicitusestrict (audit reopened #838) | spike | frontend/syntax | see `issues/done/838-implement-alwaysStrictNoImplicitUseStrict.md` |
+| 839 | Implement Ambientclassdeclarationwithextends (audit reopened #839) | spike | frontend/syntax | see `issues/done/839-implement-ambientClassDeclarationWithExtends.md` |
 | 840 | Implement Ambientclassdeclaredbeforebase (dup) | spike | frontend/syntax | see `issues/done/840-implement-ambientClassDeclaredBeforeBase.md` |
 | 841 | Implement Ambientconstliterals (dup) | spike | frontend/syntax | see `issues/done/841-implement-ambientConstLiterals.md` |
 | 842 | Implement Ambientenumelementinitializer (dup) | spike | frontend/syntax | see `issues/done/842-implement-ambientEnumElementInitializer.md` |
