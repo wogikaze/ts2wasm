@@ -5,7 +5,7 @@ type: spike
 area: frontend/syntax
 class: blocked
 priority: P2
-depends_on: [5003]
+depends_on: [432]
 blocks: []
 created: 2026-05-01
 updated: 2026-05-01

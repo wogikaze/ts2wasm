@@ -15,7 +15,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 1 | 0 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4377 | 3850 | 527 |
+| frontend | 4377 | 3849 | 528 |
 | harness | 1 | 0 | 1 |
 | ir | 21 | 0 | 21 |
 | issues | 4 | 0 | 4 |
@@ -26,7 +26,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 4965 | 4133 | 832 |
+| total | 4965 | 4132 | 833 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -156,7 +156,7 @@ Issue files are the source of truth for work items. The generated section below 
 <!-- generated:ready:start -->
 | ID | Title | Type | Area | Class | Priority | Depends on | Summary |
 |---:|---|---|---|---|---|---|---|
-| 5003 | Meta: TypeScript Compiler Declaration Emit Coverage | meta | frontend/syntax | design-ready | P2 | 5000, 5001 | declaration-emit failures currently need child issue classification by emitted declaration shape before implementers ... |
+| — | No ready issues (all blocked) | — | — | — | — | — | See Blocked queue |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -5015,6 +5015,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 5000 | Meta: TypeScript Compiler Parser Syntax Coverage | meta | frontend/syntax | see file |
 | 5001 | Meta: TypeScript Compiler Semantic Analysis Coverage | meta | frontend/semantics | see `issues/done/5001-meta-tsc-semantic-analysis.md` |
 | 5002 | Meta: TypeScript Compiler Type System Coverage | meta | frontend/semantics | see `issues/done/5002-meta-tsc-type-system.md` |
+| 5003 | Meta: TypeScript Compiler Declaration Emit Coverage | meta | frontend/syntax | see `issues/done/5003-meta-tsc-declaration-emit.md` |
 | 5004 | Meta: Runtime Builtins Coverage (test262) (audit reopened #5004) | meta | runtime/builtins | see `issues/done/5004-meta-runtime-builtins.md` |
 | 5005 | Meta: TypeScript Compiler Name Resolution Coverage | meta | frontend/resolver | see `issues/done/5005-meta-tsc-name-resolution.md` |
 | 5006 | Meta: TypeScript Compiler Scope Analysis Coverage | meta | frontend/resolver | see `issues/done/5006-meta-tsc-scope-analysis.md` |
