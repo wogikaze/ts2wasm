@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 1 | 0 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4391 | 3778 | 613 |
+| frontend | 4391 | 3777 | 614 |
 | harness | 1 | 0 | 1 |
 | ir | 27 | 5 | 22 |
 | issues | 4 | 0 | 4 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 4993 | 4052 | 941 |
+| total | 4993 | 4051 | 942 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -453,7 +453,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 773 | Implement Autoasiforstaticsinclassdeclaration | spike | frontend/syntax | class: triage-needed | Implement Autoasiforstaticsinclassdeclaration |
 | 774 | Implement Autolift | spike | frontend/syntax | class: triage-needed | Implement Autolift |
 | 775 | Implement Autotypeassignedusingdestructuringfromnevernocrash | spike | frontend/resolver | class: blocked | Implement Autotypeassignedusingdestructuringfromnevernocrash |
-| 1041 | Implement Basetypewrappinginstantiationchain | spike | frontend/syntax | class: triage-needed | Implement Basetypewrappinginstantiationchain |
 | 1042 | Implement Bases | spike | frontend/syntax | class: triage-needed | Implement Bases |
 | 1043 | Implement Bestchoicetype | spike | frontend/syntax | class: triage-needed | Implement Bestchoicetype |
 | 1044 | Implement Bestcommontypewithcontextualtyping | spike | frontend/resolver | class: blocked | Implement Bestcommontypewithcontextualtyping |
@@ -5016,6 +5015,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 1038 | Implement Basetypeafterderivedtype | spike | backend-wasm | see `issues/done/1038-implement-baseTypeAfterDerivedType.md` |
 | 1039 | Implement Basetypeorderchecking | spike | frontend/syntax | see `issues/done/1039-implement-baseTypeOrderChecking.md` |
 | 1040 | Implement Basetypeprivatememberclash | spike | frontend/resolver | see `issues/done/1040-implement-baseTypePrivateMemberClash.md` |
+| 1041 | Implement Basetypewrappinginstantiationchain | spike | frontend/syntax | see `issues/done/1041-implement-baseTypeWrappingInstantiationChain.md` |
 | 3002 | Implement Isolateddeclarationerrorsdefault | spike | runtime/builtins | see `issues/done/3002-implement-isolatedDeclarationErrorsDefault.md` |
 | 3131 | Implement Jsxfactorynotidentifierorqualifiedname | spike | reference/triage | see `issues/done/3131-implement-jsxFactoryNotIdentifierOrQualifiedName.md` |
 | 3329 | Implement Modulecodegentest | spike | frontend/syntax | see `issues/done/3329-implement-moduleCodeGenTest.md` |
