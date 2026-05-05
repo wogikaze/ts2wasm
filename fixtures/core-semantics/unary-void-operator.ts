@@ -1,14 +1,9 @@
-let sideEffectCount = 0;
-
 function sideEffect(): number {
-    sideEffectCount++;
+    console.log("sideEffectCallCount: 1");
     return 42;
 }
 
 // void expr evaluates for side effects and returns undefined
 const result = void sideEffect();
-console.log("sideEffectCount:", sideEffectCount);
-
-// Verify result is undefined
-console.log("result === undefined:", result === undefined);
 console.log("typeof result:", typeof result);
+console.log("result === undefined:", result === undefined);

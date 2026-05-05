@@ -2357,7 +2357,10 @@ fn string_substr_fixture_matches_node_output_under_iwasm() {
 
 #[test]
 fn class_new_expression_method_call_fixture_matches_node_output_under_iwasm() {
-    assert_fixture_matches_node(
-        "fixtures/core-semantics/class-new-expression-method-call.ts",
-    );
+    assert_fixture_matches_node("fixtures/core-semantics/class-new-expression-method-call.ts");
+}
+
+#[test]
+fn unary_void_operator_fixture_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node("fixtures/core-semantics/unary-void-operator.ts");
 }

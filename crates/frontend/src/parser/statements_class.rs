@@ -217,7 +217,7 @@ impl Parser {
                         return Err(self.invalid_rest_binding_diagnostic(param.span));
                     }
                     self.expect(TokenKind::Comma)?;
-                    if matches!(self.peek(), Some(Token::RightParen)) {
+                    if self.consume(TokenKind::RightParen) {
                         break;
                     }
                 }
@@ -380,7 +380,7 @@ impl Parser {
                         return Err(self.invalid_rest_binding_diagnostic(param.span));
                     }
                     self.expect(TokenKind::Comma)?;
-                    if matches!(self.peek(), Some(Token::RightParen)) {
+                    if self.consume(TokenKind::RightParen) {
                         break;
                     }
                 }

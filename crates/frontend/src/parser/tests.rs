@@ -2480,6 +2480,54 @@ class Foo {
     }
 
     #[test]
+    fn parses_for_loop_without_init_prefix_increment() {
+        let program =
+            parse_program("let i = 0; let limit = 10; for (; i < limit; ++i) { break; }")
+                .unwrap();
+        assert_eq!(program.len(), 3);
+
+        match &program[2] {
+            Stmt::For {
+                init,
+                condition,
+                update,
+                body,
+                ..
+            } => {
+                assert!(init.is_none());
+                assert!(condition.is_some());
+                assert!(update.is_some());
+                assert_eq!(body.len(), 1);
+                assert!(matches!(update.as_ref().unwrap(), Expr::Unary { op: UnaryOp::PreIncrement, .. }));
+            }
+            other => panic!("expected For statement with prefix increment, got {other:?}"),
+        }
+    }
+
+    #[test]
+    fn parses_for_loop_without_init_or_condition_prefix_increment() {
+        let program = parse_program("let i = 0; for (; ; ++i) { break; }").unwrap();
+        assert_eq!(program.len(), 2);
+
+        match &program[1] {
+            Stmt::For {
+                init,
+                condition,
+                update,
+                body,
+                ..
+            } => {
+                assert!(init.is_none());
+                assert!(condition.is_none());
+                assert!(update.is_some());
+                assert_eq!(body.len(), 1);
+                assert!(matches!(update.as_ref().unwrap(), Expr::Unary { op: UnaryOp::PreIncrement, .. }));
+            }
+            other => panic!("expected For statement with no init/condition, got {other:?}"),
+        }
+    }
+
+    #[test]
     fn parses_labeled_statement() {
         let program = parse_program("label: while (true) { }").unwrap();
         assert_eq!(program.len(), 1);

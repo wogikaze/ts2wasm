@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 1 | 0 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4389 | 3780 | 609 |
+| frontend | 4389 | 3779 | 610 |
 | harness | 1 | 0 | 1 |
 | ir | 27 | 6 | 21 |
 | issues | 4 | 0 | 4 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 4991 | 4055 | 936 |
+| total | 4991 | 4054 | 937 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -169,7 +169,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 5145 | Parse await as an identifier call outside async contexts | feature | frontend/syntax | implementation-ready | P2 |  | `await(...)` in a sync function currently fails with `UnsupportedRuntimeSubset` instead of preserving the TypeScript ... |
 | 5146 | Report for-await context errors before async runtime diagnostics | feature | frontend/syntax | implementation-ready | P2 |  | `for await...of` outside async/top-level-allowed contexts currently reports the broad async runtime unsupported messa... |
 | 5147 | Report await expression context errors before runtime diagnostics | feature | frontend/syntax | implementation-ready | P2 |  | `await <literal>` in a non-async function currently fails with `UnsupportedRuntimeSubset` instead of a TypeScript-ali... |
-| 5148 | Parse generic async generator declarations | feature | frontend/syntax | implementation-ready | P2 |  | generic async generator declarations currently fail with `UnsupportedSyntax` at the type parameter list. |
 | 5149 | Parse trailing comma in typed class method parameters | feature | frontend/syntax | implementation-ready | P1 |  | class method parameter lists with a trailing comma currently fail with `UnsupportedSyntax`, even though TypeScript ac... |
 | 5151 | Parse ASI after multiline const initializer | feature | frontend/syntax | implementation-ready | P1 |  | semicolonless `const` declarations with multi-line call/object initializers currently fail before the next expression... |
 | 5152 | Support class constructor outer callback captures | feature | ir | implementation-ready | P1 |  | class constructors cannot currently call outer callback locals when nested arrow callbacks capture constructor `this`. |
@@ -5164,6 +5163,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 5131 | Design ABC451 non-top array growth strategy | design | runtime/memory | see `issues/done/5131-design-abc451-non-top-array-growth-strategy.md` |
 | 5133 | Implement single-statement loop bodies for break and continue | feature | frontend/syntax | see `issues/done/5133-implement-single-statement-loop-body-break-continue.md` |
 | 5140 | Implement type alias object parsing before exported interface | feature | frontend/syntax | see file |
+| 5148 | Parse generic async generator declarations | feature | frontend/syntax | see `issues/done/5148-parse-generic-async-generator-declarations.md` |
 | 5150 | Report empty element access diagnostics | feature | frontend/syntax | see `issues/done/5150-report-empty-element-access-diagnostics.md` |
 <!-- generated:done:end -->
 
