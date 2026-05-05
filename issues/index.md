@@ -15,7 +15,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 1 | 0 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4386 | 3790 | 596 |
+| frontend | 4386 | 3789 | 597 |
 | harness | 1 | 0 | 1 |
 | ir | 26 | 5 | 21 |
 | issues | 4 | 0 | 4 |
@@ -26,7 +26,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 4985 | 4063 | 922 |
+| total | 4985 | 4062 | 923 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -450,7 +450,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 773 | Implement Autoasiforstaticsinclassdeclaration | spike | frontend/syntax | class: triage-needed | Implement Autoasiforstaticsinclassdeclaration |
 | 774 | Implement Autolift | spike | frontend/syntax | class: triage-needed | Implement Autolift |
 | 775 | Implement Autotypeassignedusingdestructuringfromnevernocrash | spike | frontend/resolver | class: blocked | Implement Autotypeassignedusingdestructuringfromnevernocrash |
-| 1028 | Implement Badexternalmodulereference | spike | frontend/syntax | class: blocked | Implement Badexternalmodulereference |
 | 1029 | Implement Badinferencelowerprioritythangoodinference | spike | frontend/semantics | class: blocked | Implement Badinferencelowerprioritythangoodinference |
 | 1030 | Implement Badoverloaderror | spike | frontend/syntax | class: triage-needed | Implement Badoverloaderror |
 | 1031 | Implement Badthisbinding | spike | frontend/syntax | class: blocked | Implement Badthisbinding |
@@ -5012,6 +5011,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 1025 | Implement Awaitedtypestrictnull | spike | runtime/builtins | see `issues/done/1025-implement-awaitedTypeStrictNull.md` |
 | 1026 | Implement Badarrayindex | spike | frontend/syntax | see `issues/done/1026-implement-badArrayIndex.md` |
 | 1027 | Implement Badarraysyntax | spike | frontend/syntax | see `issues/done/1027-implement-badArraySyntax.md` |
+| 1028 | Implement Badexternalmodulereference | spike | frontend/syntax | see `issues/done/1028-implement-badExternalModuleReference.md` |
 | 3002 | Implement Isolateddeclarationerrorsdefault | spike | runtime/builtins | see `issues/done/3002-implement-isolatedDeclarationErrorsDefault.md` |
 | 3131 | Implement Jsxfactorynotidentifierorqualifiedname | spike | reference/triage | see `issues/done/3131-implement-jsxFactoryNotIdentifierOrQualifiedName.md` |
 | 3329 | Implement Modulecodegentest | spike | frontend/syntax | see `issues/done/3329-implement-moduleCodeGenTest.md` |
