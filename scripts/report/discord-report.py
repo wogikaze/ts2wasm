@@ -141,10 +141,10 @@ def collect_payload_text(data: Any) -> list[str]:
 def create_discord_embed(fields: dict[str, str], run_id: Optional[str]) -> dict[str, Any]:
     """Create Japanese Discord embed from report fields."""
     embed = {
-        "username": "ts2wasm-dev-loop",
+        "username": "ts2wasm-report",
         "embeds": [
             {
-                "title": "ts2wasm 開発ループレポート",
+                "title": "ts2wasm 開発レポート",
                 "color": 5814783,  # Blue
                 "fields": [
                     {
@@ -206,7 +206,7 @@ def create_json_payload(content: str, source_path: Path) -> dict[str, Any]:
 
     if isinstance(data, dict) and ("content" in data or "embeds" in data):
         payload = dict(data)
-        payload.setdefault("username", "ts2wasm-dev-loop")
+        payload.setdefault("username", "ts2wasm-report")
         reject_non_japanese_text("\n".join(collect_payload_text(payload)))
         return payload
 
@@ -214,7 +214,7 @@ def create_json_payload(content: str, source_path: Path) -> dict[str, Any]:
     reject_non_japanese_text(text)
     rel = display_path(source_path)
     return {
-        "username": "ts2wasm-dev-loop",
+        "username": "ts2wasm-report",
         "content": f"Discord JSON レポート: {rel}\n```json\n{text}\n```",
     }
 

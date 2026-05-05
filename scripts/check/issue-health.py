@@ -10,7 +10,6 @@ Checks:
 - Sub-issue validity
 - Depends on references exist
 - Backticked paths exist
-- JSON validity in .agents/state
 - Index tables are up to date and consistent
 
 Replaces legacy issue queue/index checks for <1s performance.
@@ -18,7 +17,6 @@ Replaces legacy issue queue/index checks for <1s performance.
 
 from __future__ import annotations
 
-import json
 import re
 import sys
 from pathlib import Path
@@ -84,17 +82,6 @@ def should_skip_path(p: str) -> bool:
     if p.startswith("artifacts/coverage/results/"):
         return True
     return False
-
-
-def check_json(errors: list[str]) -> None:
-    for base in [REPO / ".agents" / "state", REPO / ".agents" / "state" / "examples"]:
-        if not base.exists():
-            continue
-        for path in base.glob("*.json"):
-            try:
-                json.loads(path.read_text(encoding="utf-8"))
-            except Exception as e:
-                err(errors, f"{path.relative_to(REPO)}: invalid JSON ({e})")
 
 
 def extract_table_ids(content: str, start_marker: str, end_marker: str) -> set[str]:
@@ -239,9 +226,6 @@ def main() -> int:
                     continue
                 if not (REPO / p).exists():
                     err(errors, f"{issue.path.relative_to(REPO)}: missing path: {p}")
-
-    # JSON validity
-    check_json(errors)
 
     # Index consistency
     if not INDEX_PATH.exists():

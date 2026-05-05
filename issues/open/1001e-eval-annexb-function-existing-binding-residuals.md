@@ -97,7 +97,7 @@ TS2WASM_REFERENCE_ROOT=./reference mise run reference-coverage -- test262 --limi
 
 Parent issue: 225
 
-Analysis performed 2026-05-02 during dev-loop cycle. Created as split from meta-issue 225.
+Analysis performed 2026-05-02. Created as split from meta-issue 225.
 
 Related diagnostics: All 22 cases emit `UnsupportedSyntax` which gets classified as `UnsupportedEval` by `diagnostic.rs` `display_code()` because the message contains the word "eval" (either from the original eval source or from the expansion error message).
 

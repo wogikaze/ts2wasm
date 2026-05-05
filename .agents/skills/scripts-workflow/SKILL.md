@@ -13,7 +13,6 @@ description: Use when adding/editing scripts under scripts/. Covers layout conve
 - [Mise / Entry Point Rules](#mise--entry-point-rules)
 - [Migration / Old Reference Rules](#migration--old-reference-rules)
 - [Issue / Index Script Rules](#issue--index-script-rules)
-- [Agent State and Run Report Rules](#agent-state-and-run-report-rules)
 - [Repo Root and Script Location Rules](#repo-root-and-script-location-rules)
 - [Scope](#scope)
 - [Core Rules](#core-rules)
@@ -57,7 +56,6 @@ Required rules:
 3. After task or script command changes, run:
    - `mise run check scripts`
    - `mise run check`
-   - `mise run check agent-state`
 4. After adding a `mise.toml` task, run:
    - `mise tasks`
 
@@ -126,37 +124,6 @@ Unsupported unless explicitly implemented:
 depends_on:
   - 024
   - 025
-```
-
-## Agent State and Run Report Rules
-
-Autonomous-loop scripts must preserve auditable state.
-
-Required preflight:
-
-```sh
-mise run check agent-state
-mise run check
-```
-
-Rules:
-
-1. `check-agent-state` must fail when required schema validation dependencies are missing.
-2. `jsonschema` must be available through the documented dev environment.
-3. State schemas and examples must stay consistent.
-4. Run/cycle scripts must write under `reports/runs/<run_id>/`.
-5. Report generators must not overwrite unrelated runs.
-6. Human-readable cycle notes and machine-readable test reports are separate artifacts.
-
-Minimum run directory shape:
-
-```text
-reports/runs/<run_id>/
-  cycle_report.md
-  test_report.json        # when command execution is captured
-  commands/
-    001.stdout
-    001.stderr
 ```
 
 ## Repo Root and Script Location Rules
@@ -373,12 +340,11 @@ bash -n <touched-shell-script>   # only when a shell script changed
 mise run check
 ```
 
-For manager, issue, state, or generated-index scripts:
+For manager, issue, or generated-index scripts:
 
 ```sh
 mise run update-issue-index -- --check
 mise run check issues
-mise run check agent-state
 mise run check
 ```
 
@@ -443,7 +409,6 @@ cargo nextest run
 - checker and generator parse the same file with different logic
 - issue index check only checks ID presence, not table content drift
 - `reference/**` is treated as required repo-owned content
-- `check-agent-state` silently passes without schema validation dependency
 - `repo_root` is computed as `scripts/` instead of repository root
 - `source scripts/lib/common.sh` is relative to the wrong tier directory
 - `replace_generated_block()` drops final newline and causes endless stale-index diffs

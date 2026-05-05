@@ -1,7 +1,0 @@
-{
-  "run_id": "060-coverage-ramp7000-20260428T051924Z",
-  "ended_at": "2026-04-28T05:55:00Z",
-  "task_id": "issue-060",
-  "summary": "progress: test262 limit 7000 coverage artifact refreshed with unknown-unsupported=0",
-  "test_report_path": ".agents/state/examples/test_report.json"
-}

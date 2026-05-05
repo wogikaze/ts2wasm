@@ -52,7 +52,6 @@ Completion evidence:
 - `cargo nextest run`: pass (239 passed, 4 skipped)
 - `mise run check-issue-health`: pass
 - `mise run update-issue-index -- --check`: pass
-- `mise run check-agent-state`: pass
 - `mise run check-repo-smoke`: pass
 
 ## Reopened by audit

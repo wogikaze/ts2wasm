@@ -222,9 +222,6 @@ result: pass; issues/index.md updated
 
 mise run check issues
 result: pass
-
-mise run check agent-state
-result: pass
 ```
 
 This later ramp evidence exceeds the close boundary above and remains useful context, but issue 060 is closed by the fixed `test262 --limit 17000` contract rather than by an unbounded coverage ramp.
@@ -634,7 +631,6 @@ result: pass; coverage matrix OK
 mise run check issues
 result: pass
 
-mise run check agent-state
 result: pass
 ```
 
@@ -784,8 +780,8 @@ command: TS2WASM_REFERENCE_ROOT=./reference mise run reference-coverage -- test2
 result: pass; executed=17000; build_pass=5; semantic_pass=3; unsupported=16994; blocked=1; unsupported_features=name-resolution:5224,builtin-api:3740,array-builtin:2120,object-builtin:2058,regexp-literal:1476,string-builtin:698,function:595,eval:460,date:405,parser-syntax:131,duplicate-local:45,legacy-global-builtin:16,annexb-ishtmldda:12,declaration-emit:4,class:2,destructuring:2,object-literal:2,arguments-object:1,async-iteration:1,function-resolution:1,switch:1; unknown-unsupported=0
 date: 2026-04-29
 
-command: mise run update-issue-index && mise run update-issue-index -- --check && mise run check issue-index && mise run check issues && mise run check-agent-state
-result: partial; update-issue-index passed; update-issue-index -- --check passed; check-agent-state passed; check issue-index and check issues failed on pre-existing missing report paths in issue 052 and issue 228, outside child-060a allowed paths
+command: mise run update-issue-index && mise run update-issue-index -- --check && mise run check issue-index && mise run check issues
+result: partial; update-issue-index passed; update-issue-index -- --check passed; check issue-index and check issues failed on pre-existing missing report paths in issue 052 and issue 228, outside child-060a allowed paths
 date: 2026-04-29
 ```
 

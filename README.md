@@ -133,7 +133,9 @@ curl -LsSf https://get.nexte.st/latest/linux | tar zxf - -C ${CARGO_HOME:-~/.car
 
 `pre-commit` では `cargo fmt --all --check`、ステージした Markdown 向け `markdownlint`、必要に応じた `issues/index.md` の再生成、および `mise run check issues`（`issues/` の番号・パス等の不変条件）を実行する。hook を有効にするには init 時に `scripts/dev/install-git-hooks.sh` を実行する。
 
-**Note**: `mise run check agent-state` requires `jsonschema` for validating `.agents/state/` JSON files. This is included in the Nix devshell (`python3Packages.jsonschema`). Without Nix, install with: `python -m pip install jsonschema`.
+### parent/child worktree 開発
+
+複数 child に分ける開発では `mise run spawn-worktrees` で issue ごとの worktree と assignment を作成し、`mise run worktree-status` で状態を集約する。prompt は `.agents/prompts/autonomous-parent-orchestrator.md` と `.agents/prompts/autonomous-child-worker.md`。この loop は tracked state を持たず、Discord 報告は `mise run discord-report` で行う。
 
 ## FAQ
 

@@ -166,8 +166,6 @@ null
   - `node fixtures/builtins-and-io/json-parse-array.ts`
   - `cargo nextest run`
   - `mise run check issues`
-  - `mise run check agent-state`
-  - `python -m jsonschema -i reports/runs/052-json-next-20260428T013435Z/test_report.json .agents/state/schemas/test_report.schema.json`
   - `mise run check`
 - Remaining gaps before close: escaped strings, decimals/exponents, nested arrays/objects in parsed values, arrays inside parsed object values, object elements inside parsed arrays, replacer/space arguments, and throw-compatible parse diagnostics remain outside this slice.
 
@@ -192,7 +190,6 @@ null
   - `iwasm /tmp/ts2wasm-json-parse-nested-array.wasm`
   - `node fixtures/builtins-and-io/json-parse-nested-array.ts`
   - `mise run check issues`
-  - `mise run check agent-state`
 - Full `cargo nextest run` was skipped for this PROGRESS slice because the change is scoped to the JSON runtime helper and the assignment only requires full nextest before merge when the runtime parsing change is broad enough to justify it. The JSON-targeted nextest filters and direct Node/iwasm fixture evidence passed.
 - Remaining gaps before close: escaped strings, decimals/exponents, nested objects, arrays inside parsed object values, object elements inside parsed arrays, `JSON.stringify` replacer/space arguments, and throw-compatible parse diagnostics remain outside this slice.
 
@@ -216,7 +213,6 @@ null
   - `node fixtures/builtins-and-io/json-parse-object-nested.ts`
   - `cargo run -p ts2wasm-cli -- build fixtures/builtins-and-io/json-parse-object-nested.ts -o /tmp/ts2wasm-json-parse-object-nested.wasm && iwasm /tmp/ts2wasm-json-parse-object-nested.wasm`
   - `mise run check issues`
-  - `mise run check agent-state`
 - Full `cargo nextest run` was skipped for this PROGRESS slice because no runtime parser code changed; the assignment-specific JSON filters and direct Node/iwasm fixture evidence passed.
 - Remaining gaps before close: escaped strings, decimals/exponents, object elements inside parsed arrays, stricter top-level/trailing-token parse validation, `JSON.stringify` replacer/space arguments, and throw-compatible parse diagnostics remain outside this slice.
 
@@ -232,7 +228,6 @@ null
   - `node fixtures/builtins-and-io/json-parse-trailing-invalid.ts` (expected rejection: status 1, JSON `SyntaxError`)
   - `cargo run -p ts2wasm-cli -- build fixtures/builtins-and-io/json-parse-trailing-invalid.ts -o /tmp/ts2wasm-json-parse-trailing-invalid.wasm && iwasm /tmp/ts2wasm-json-parse-trailing-invalid.wasm` (expected rejection at iwasm: `Exception: unreachable`, status 1)
   - `mise run check issues`
-  - `mise run check agent-state`
 - Remaining gaps before close: escaped strings, decimals/exponents, stricter incomplete-token validation, object elements inside parsed arrays as explicit regression coverage, `JSON.stringify` replacer/space arguments, and throw-compatible parse diagnostics remain outside this slice.
 
 2026-04-28:
@@ -258,7 +253,6 @@ c\d
   - `node fixtures/builtins-and-io/json-parse-escaped-nested.ts`
   - `cargo run -p ts2wasm-cli -- build fixtures/builtins-and-io/json-parse-escaped-nested.ts -o /tmp/ts2wasm-json-parse-escaped-nested.wasm && iwasm /tmp/ts2wasm-json-parse-escaped-nested.wasm`
   - `mise run check issues`
-  - `mise run check agent-state`
 - Full `cargo nextest run` was skipped for this PROGRESS slice because the issue remains open and the assignment allows focused validation for narrow runtime progress.
 - Remaining gaps before close: decimal/exponent number parsing, `\uXXXX` string escapes, stricter incomplete-token validation, explicit object-elements-inside-arrays coverage, `JSON.stringify` replacer/space arguments, and throw-compatible parse diagnostics remain outside this slice.
 
@@ -305,7 +299,6 @@ x/y
   - `node fixtures/builtins-and-io/json-parse-unicode-escape.ts`
   - `cargo run -q -p ts2wasm-cli -- build fixtures/builtins-and-io/json-parse-unicode-escape.ts -o /tmp/ts2wasm-json-parse-unicode-escape.wasm && iwasm /tmp/ts2wasm-json-parse-unicode-escape.wasm`
   - `mise run check issues`
-  - `mise run check agent-state`
 - Full `cargo nextest run` was skipped for this PROGRESS slice because the issue remains open and the assignment explicitly allows focused validated progress.
 - Remaining gaps before close: arbitrary non-integer JSON number representation, non-ASCII `\uXXXX`/surrogate handling, stricter incomplete-token validation, explicit object-elements-inside-arrays coverage, `JSON.stringify` replacer/space arguments, and throw-compatible parse diagnostics remain outside this slice.
 
@@ -329,7 +322,6 @@ x/y
   - `node fixtures/builtins-and-io/json-parse-array-object.ts`
   - `cargo run -q -p ts2wasm-cli -- build fixtures/builtins-and-io/json-parse-array-object.ts -o /tmp/ts2wasm-json-parse-array-object.wasm && iwasm /tmp/ts2wasm-json-parse-array-object.wasm`
   - `mise run check issues`
-  - `mise run check agent-state`
 - Full `cargo nextest run` was skipped for this PROGRESS slice because no runtime parser code changed and the assignment explicitly allows focused validated progress.
 - Remaining gaps before close: arbitrary non-integer JSON number representation, non-ASCII `\uXXXX`/surrogate handling, stricter incomplete-token validation, `JSON.stringify` replacer/space arguments, and throw-compatible parse diagnostics remain outside this slice.
 
@@ -346,7 +338,6 @@ x/y
   - `cargo nextest run -E 'test(json)'`
   - `cargo nextest run -p ts2wasm-cli json`
   - `mise run check issues`
-  - `mise run check agent-state`
   - `cargo nextest run`
 - Remaining gaps before close: arbitrary non-integer JSON number representation, non-ASCII `\uXXXX`/surrogate handling, `JSON.stringify` replacer/space arguments, and throw-compatible parse diagnostics remain outside this slice.
 
@@ -375,7 +366,6 @@ x/y
   - `node fixtures/builtins-and-io/json-stringify-space.ts`
   - `cargo run -q -p ts2wasm-cli -- build fixtures/builtins-and-io/json-stringify-space.ts -o /tmp/ts2wasm-json-stringify-space.wasm && iwasm /tmp/ts2wasm-json-stringify-space.wasm`
   - `mise run check issues`
-  - `mise run check agent-state`
 - Full `cargo nextest run` was skipped for this PROGRESS slice because the issue remains open and the assignment requires the JSON-filtered nextest commands plus direct Node/iwasm evidence.
 - Remaining gaps before close: arbitrary non-integer JSON number representation, non-ASCII `\uXXXX`/surrogate handling, nested object literal value preservation for `JSON.stringify`, full replacer semantics, string `space` semantics, and throw-compatible parse diagnostics remain outside this slice.
 
@@ -404,7 +394,6 @@ abcdefghij1
   - `node fixtures/builtins-and-io/json-stringify-space-string.ts`
   - `cargo run -q -p ts2wasm-cli -- build fixtures/builtins-and-io/json-stringify-space-string.ts -o /tmp/ts2wasm-json-stringify-space-string.wasm && iwasm /tmp/ts2wasm-json-stringify-space-string.wasm`
   - `mise run check issues`
-  - `mise run check agent-state`
 - Remaining gaps before close: arbitrary non-integer JSON number representation, non-ASCII `\uXXXX`/surrogate handling, nested object literal value preservation for `JSON.stringify`, full replacer semantics, and throw-compatible parse diagnostics remain outside this slice.
 
 2026-04-28:
@@ -453,7 +442,6 @@ abcdefghij1
   - `cargo nextest run -E 'test(json)'`
   - `cargo nextest run -p ts2wasm-cli json`
   - `mise run check issues`
-  - `mise run check agent-state`
   - `cargo nextest run`
 - Remaining gaps before close: arbitrary non-integer JSON number representation, non-ASCII `\uXXXX`/surrogate handling, full replacer semantics, and broader throw-compatible parse diagnostics remain outside this slice.
 
@@ -481,7 +469,6 @@ abcdefghij1
   - `cargo nextest run -E 'test(json)'`
   - `cargo nextest run -p ts2wasm-cli json`
   - `mise run check issues`
-  - `mise run check agent-state`
   - `cargo nextest run`
 - Remaining gaps before close: arbitrary non-integer JSON number representation, non-ASCII `\uXXXX`/surrogate handling, full replacer semantics, and broader throw-compatible parse diagnostics remain outside this slice.
 
@@ -508,7 +495,6 @@ abcdefghij1
   - `iwasm /tmp/ts2wasm-json-parse-unsupported-unicode-array.wasm` (expected `Exception: unreachable`, status 1)
   - `iwasm /tmp/ts2wasm-json-parse-unsupported-unicode-object.wasm` (expected `Exception: unreachable`, status 1)
   - `mise run check issues`
-  - `mise run check agent-state`
   - `cargo nextest run`
 - Additional gate note: `cargo clippy --all-targets --all-features -- -D warnings` was run and failed on pre-existing `clippy::assertions_on_constants` diagnostics in `crates/runtime-abi/src/layout.rs`, outside this child assignment's allowed files.
 - Remaining gaps before close: arbitrary non-integer JSON number representation, full UTF-16/non-ASCII string representation, full surrogate-pair support, full replacer semantics, and broader throw-compatible parse diagnostics remain outside this slice.
@@ -532,7 +518,6 @@ abcdefghij1
   - `node fixtures/builtins-and-io/json-parse-array-object-properties.ts`
   - `cargo run -q -p ts2wasm-cli -- build fixtures/builtins-and-io/json-parse-array-object-properties.ts -o /tmp/ts2wasm-json-parse-array-object-properties.wasm && iwasm /tmp/ts2wasm-json-parse-array-object-properties.wasm`
   - `mise run check issues`
-  - `mise run check agent-state`
   - `cargo nextest run`
 - Full validation report was recorded for run `052-json-array-object-20260428T074900Z`.
 - Remaining gaps before close: arbitrary non-integer JSON number representation, full UTF-16/non-ASCII string representation, full surrogate-pair support, full replacer semantics, and broader throw-compatible parse diagnostics remain outside this slice.
@@ -571,7 +556,6 @@ abcdefghij1
   - `cargo nextest run -p ts2wasm-cli json`
   - `mise run update-issue-index -- --check`
   - `mise run check issues`
-  - `mise run check agent-state`
   - `cargo nextest run`
 - Full validation report was recorded for run `052-json-stringify-nested-20260428T080100Z`.
 - Remaining gaps before close: arbitrary non-integer JSON number representation, full UTF-16/non-ASCII string representation, full surrogate-pair support, full replacer semantics, and broader throw-compatible parse diagnostics remain outside this slice.
@@ -594,7 +578,6 @@ abcdefghij1
   - `cargo nextest run -p ts2wasm-cli json`
   - `mise run update-issue-index -- --check`
   - `mise run check issues`
-  - `mise run check agent-state`
   - `cargo nextest run`
 - Remaining gaps before close: arbitrary non-integer JSON number representation, full UTF-16/non-ASCII string representation, full surrogate-pair support, full replacer semantics, and broader throw-compatible parse diagnostics remain outside this slice.
 
@@ -619,7 +602,6 @@ abcdefghij1
   - `iwasm /tmp/ts2wasm-json-replacer-array.wasm`
   - `cargo run -q -p ts2wasm-cli -- build fixtures/builtins-and-io/json-stringify-replacer-array-unsupported.ts -o /tmp/ts2wasm-json-replacer-array-unsupported.wasm` (expected `UnsupportedSyntax`, status 1)
   - `mise run check issues`
-  - `mise run check agent-state`
   - `cargo nextest run`
 - Full validation report was recorded for run `052-json-replacer-array-20260428T083349Z`.
 - Remaining gaps before close: arbitrary non-integer JSON number representation, full UTF-16/non-ASCII string representation, full surrogate-pair support, broader replacer semantics beyond the single string-literal object-literal subset, and broader throw-compatible parse diagnostics remain outside this slice.
@@ -646,7 +628,6 @@ abcdefghij1
   - `cargo run -q -p ts2wasm-cli -- build fixtures/builtins-and-io/json-stringify-replacer-array-unsupported.ts -o /tmp/ts2wasm-json-replacer-array-unsupported.wasm` (expected `UnsupportedSyntax`, status 1)
   - `mise run update-issue-index -- --check`
   - `mise run check issues`
-  - `mise run check agent-state`
   - `cargo nextest run`
 - Remaining gaps before close: arbitrary non-integer JSON number representation, full UTF-16/non-ASCII string representation, full surrogate-pair support, broader replacer semantics beyond the string-literal object-literal subset, and broader throw-compatible parse diagnostics remain outside this slice.
 
@@ -696,7 +677,6 @@ abcdefghij1
   - `node fixtures/builtins-and-io/json-parse-array-object-nested.ts`
   - `cargo run -q -p ts2wasm-cli -- build fixtures/builtins-and-io/json-parse-array-object-nested.ts -o /tmp/ts2wasm-052-json-array-object-nested.wasm && iwasm /tmp/ts2wasm-052-json-array-object-nested.wasm`
   - `mise run check issues`
-  - `mise run check agent-state`
 - Full `cargo nextest run` was skipped for this PROGRESS slice because no backend runtime code changed and issue 052 remains open.
 - Remaining gaps before close: arbitrary non-integer JSON number representation, full UTF-16/non-ASCII string representation, full surrogate-pair support, broader replacer semantics beyond the string-literal object-literal subset, non-stringify `space` ignored-value parity requiring IR validation work, and broader throw-compatible parse diagnostics remain outside this slice.
 
@@ -736,7 +716,6 @@ abcdefghij1
   - `cargo nextest run -E 'test(json)'`
   - `cargo nextest run -p ts2wasm-cli json`
   - `mise run check issues`
-  - `mise run check agent-state`
 - Full `cargo nextest run` was skipped for this PROGRESS slice because issue 052 remains open and this was a narrow IR validation/lowering change for `JSON.stringify` `space` arguments.
 - Remaining gaps before close: arbitrary non-integer JSON number representation, full UTF-16/non-ASCII string representation, full surrogate-pair support, broader replacer semantics beyond the string-literal object-literal subset, symbol and boxed Number/String `space` parity, and broader throw-compatible parse diagnostics remain outside this slice.
 
@@ -772,7 +751,6 @@ abcdefghij1
   - `cargo nextest run -p ts2wasm-cli json`
   - `mise run update-issue-index -- --check`
   - `mise run check issues`
-  - `mise run check agent-state`
   - `cargo nextest run`
 - Full validation report was recorded for run `052-json-close-slice-20260428T133852Z`.
 - Remaining gaps before close: arbitrary non-integer JSON number representation, full UTF-16/non-ASCII string representation, full surrogate-pair support, broader replacer semantics beyond the string-literal object-literal subset, boxed `space` forms beyond the narrow Number/String/Boolean literals covered here, and broader throw-compatible parse diagnostics remain outside this slice.
@@ -819,7 +797,6 @@ abcdefghij1
   - `cargo nextest run -p ts2wasm-cli json`
   - `cargo nextest run`
   - `mise run update-issue-index -- --check`
-  - `mise run check agent-state`
   - `mise run check issues`
 - Gate note: initial `mise run check issues` failed because this fresh worktree lacked gitignored `reports/` paths referenced by prior issue evidence; recreating those local report placeholders made the tracked issue state pass without committing reports.
 - Remaining gaps before close: arbitrary non-integer JSON number representation, full UTF-16/non-ASCII string representation, full surrogate-pair support, broader replacer semantics beyond the string/numeric-literal object-literal subset, boxed `space` forms beyond the narrow Number/String/Boolean literals covered here, and broader throw-compatible parse diagnostics remain outside this slice.
@@ -844,7 +821,6 @@ abcdefghij1
   - `cargo nextest run -E 'test(json)'`
   - `cargo nextest run -p ts2wasm-cli json`
   - `mise run update-issue-index -- --check`
-  - `mise run check agent-state`
 - Gate note: `mise run check issues` failed only because this fresh child worktree lacks gitignored `reports/runs/...` evidence paths referenced by existing issue history, matching the assignment's documented acceptable failure mode.
 - Parent validation note: after rebasing onto master `d8b8919` and syncing the referenced local `reports/runs/...` artifacts into the merge-review worktree, `mise run check issues` and `mise run check` passed. Parent focused validation also passed:
   - `cargo fmt --all --check`
@@ -852,7 +828,6 @@ abcdefghij1
   - `cargo nextest run -E 'test(json)'`
   - `cargo nextest run -p ts2wasm-cli json`
   - `mise run update-issue-index -- --check`
-  - `mise run check agent-state`
 - Full `cargo nextest run` was skipped for this regression-only PROGRESS slice because no runtime code changed and the assignment allows focused validation for regression-only progress.
 
 ## Completion evidence

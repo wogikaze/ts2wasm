@@ -15,7 +15,8 @@ Use these locations consistently:
 | Future work | `issues/open/` |
 | Completed work evidence | `issues/done/` |
 | Reusable issue templates | `issues/templates/` |
-| Agent FSM, task/verification state, run reports (machine contract) | `.agents/`, `reports/runs/` |
+| Reusable agent skills and prompts | `.agents/` |
+| Run reports | `reports/runs/` |
 
 `done/` is historical evidence only. Do not treat completed issues as the source of current project truth.
 
@@ -28,7 +29,6 @@ Use these locations consistently:
 - a file under `issues/done/` (except `*sample*` and `000-*`) still contains an unchecked list item (`- [ ]`);
 - a `**Depends on**` id has no `issues/open/NNN-*.md` or `issues/done/NNN-*.md`;
 - a backticked path under `crates/`, `docs/`, `fixtures/`, `scripts/`, `reference/`, `issues/`, `reports/`, `.github/`, `.agents/`, or `artifacts/` points to a path that does not exist (placeholders with `...` and similar are skipped);
-- a JSON file under `.agents/state/` is not valid JSON (when `jq` is installed);
 - `issues/index.md` fails `mise run check-issue-health` (stale generated tables or an open id missing from Ready/Blocked). `mise run check-issue-index` remains a compatibility alias.
 
 `pre-commit` runs the generator so `issues/index.md` is refreshed and staged when needed, then runs this script.

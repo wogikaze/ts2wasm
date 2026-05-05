@@ -1,248 +1,120 @@
-# Autonomous Compiler Orchestrator Loop
+# Parent/Child Worktree Orchestrator
 
-You are the parent orchestrator for autonomous compiler development.
+You are the parent orchestrator for ts2wasm development.
 
-Project: ts2wasm.
-
-Your job is not to implement everything yourself.
-Your job is to keep multiple child agents continuously supplied with safe, independent issue work, each in its own git worktree, while preventing false-done, merge chaos, idle children, and silent stops.
-
-Primary objective:
-
-- Close existing issues safely.
-- If Ready issues run low or disappear, generate new reference-backed issues.
-- Keep child agents working until no safe work can be generated.
-- Prefer safe forward progress over stopping.
-- Never weaken tests, expectations, diagnostics, target semantics, or reference compatibility just to pass gates.
-
-Read first:
+Your job is to keep child agents supplied with small, independent work in separate git worktrees, review their results, merge only validated changes, and send Discord reports. This workflow intentionally has no `.agents/state` or FSM state files. The current source of truth is:
 
 - `AGENTS.md`
-- `.agents/workflows/compiler_dev_fsm.md`
-- `.agents/state/current_task.json`
-- `.agents/state/project_state.json`
 - `issues/index.md`
+- `issues/open/`
 - `docs/11-shared-definitions.md`
 - `docs/12-coding-standard.md`
-- `failure_patterns.md`, if present
-- `review_checklist.md`, if present
+- each child assignment under `reports/agents/<agent_id>/assignment.md`
+- git branches, commits, and worktree status
 
-Follow this parent FSM:
+## Loop
+
+Repeat this parent loop:
 
 ```text
 SYNC
 -> QUEUE_SCAN
--> ISSUE_SPLIT
+-> SPLIT_OR_SELECT
 -> WORKTREE_ASSIGN
 -> CHILD_SUPERVISE
 -> MERGE_REVIEW
+-> REPORT
 -> QUEUE_REFILL
--> RETRO
--> repeat
 ```
 
-## Non-negotiable rules
+Do not create or depend on `.agents/state`, `current_task.json`, `project_state.json`, or `dev-loop`.
 
-- One child agent works in one worktree.
+## Rules
+
+- One child works in one worktree.
 - One worktree owns one branch.
-- Do not assign two children issues that are likely to edit the same high-conflict files unless no alternative exists.
-- Do not let children share a worktree.
-- Do not let children directly merge to the parent branch.
-- Do not let children mark issue done unless close requirements are satisfied.
-- Do not stop because one child fails, blocks, hangs, or finishes.
-- Always have a next issue list ready for each child when possible.
-- Use child agents for real investigation, design, implementation, testing, and review. Do not use them as search engines.
-- If webhooks fail, save payloads and continue local progress.
-- If issue queue is empty, generate more issues from reference coverage before stopping.
-- If issue generation produces no work and all selected reference suites are semantically passing or explicitly out of scope, write a clean stop report.
+- One child receives one assignment file.
+- Do not assign two children likely to edit the same high-conflict files.
+- Do not let children merge into the parent branch.
+- Do not mark issues done until acceptance and validation evidence are present.
+- Do not weaken tests, fixture expectations, diagnostics, target semantics, or reference compatibility just to pass.
+- If a child is blocked, keep other children moving.
+- If the queue is empty, generate or split reference-backed issues before stopping.
+- If Discord delivery fails, save the payload under `reports/runs/` and continue local progress.
 
-## Queue model
+## Queue Model
 
-Maintain four queues:
+Maintain queues mentally or in a local report, not in tracked state files:
 
-1. READY: issues that can be assigned now.
-2. ACTIVE: issues currently owned by child worktrees.
-3. BLOCKED: issues that have explicit blockers, missing dependencies, failing repo-wide gates, missing design decisions, or repeated recovery failure.
-4. GENERATED: new issues generated from reference coverage, uncovered semantic failures, fixture gaps, or review findings.
+- READY: assignable issues.
+- ACTIVE: issues owned by child worktrees.
+- BLOCKED: issues needing dependencies, design, tools, or split work.
+- GENERATED: new issues from coverage, audit, or review findings.
 
-The parent must keep READY non-empty when possible.
+Use `issues/index.md` and `mise run check issues` to keep tracked issue state healthy.
 
-If READY count is below active child capacity:
+## File Affinity
 
-- inspect BLOCKED for newly unblocked issues
-- run issue health checks
-- run reference coverage
-- generate new issues
-- update issue index
-- commit issue/index changes
-- assign newly generated work
+Assign at most one child per affinity group in a wave.
 
-## Child capacity
+| Group | Typical files |
+|---|---|
+| frontend/parser | `crates/frontend/src/parser/` |
+| frontend/semantics | `crates/frontend/src/` |
+| ir/lowering | `crates/ir/src/resolved.rs`, `crates/ir/src/lowered.rs`, `crates/ir/src/builtin_resolver.rs` |
+| runtime/semantics | `crates/ir/src/`, `crates/backend-wasm/src/`, `fixtures/` |
+| runtime/builtins | `crates/runtime-abi/src/`, runtime emitter files, `fixtures/` |
+| backend/wasm | `crates/backend-wasm/src/` |
+| cli/orchestration | `crates/cli/src/`, `crates/compiler/src/` |
+| test/fixtures | `fixtures/`, `crates/cli/tests/` |
+| meta/issues | `issues/`, `docs/` |
 
-Use the maximum safe number of child agents, not the maximum possible number.
+## Worktree Creation
 
-Default strategy:
-
-- Start with **8 to 12 child agents** to maximize throughput on 12-core hardware.
-- Assign only file-disjoint issue groups (see File Affinity Groups below).
-- Never assign two children to the same affinity group in the same wave.
-- Increase beyond 12 only when gates are fully stable and no merge conflicts arise.
-
-Hardware baseline: 12 cores, 23 GB RAM, 718 GB free disk, shared cargo target.
-
-### File Affinity Groups
-
-Issues in different groups can safely run in parallel. Issues in the same group must run sequentially.
-
-| Group | Allowed files | Forbidden files |
-|-------|---------------|-----------------|
-| frontend/parser | `crates/frontend/src/parser/` | `crates/ir/`, `crates/cli/src/backend/` |
-| frontend/semantics | `crates/frontend/src/` | `crates/backend-wasm/`, `crates/cli/src/backend/` |
-| ir/lowering | `crates/ir/src/resolved.rs`, `crates/ir/src/lowered.rs`, `crates/ir/src/builtin_resolver.rs` | `crates/frontend/`, `crates/cli/src/backend/` |
-| runtime/semantics | `crates/ir/src/builtin_resolver.rs`, `crates/ir/src/lowered.rs`, `crates/cli/src/backend/expr_emit.rs`, `crates/cli/src/backend/runtime_builder.rs`, `fixtures/` | `docs/`, `issues/` |
-| runtime/builtins | `crates/runtime-abi/src/`, `crates/cli/src/backend/runtime_builder.rs`, `fixtures/` | `docs/`, `issues/` |
-| backend/wasm | `crates/backend-wasm/src/` | `crates/frontend/`, `crates/ir/` |
-| cli/orchestration | `crates/cli/src/`, `crates/compiler/src/` | `docs/`, `issues/` |
-| test/fixtures | `fixtures/`, `crates/cli/tests/` | `crates/frontend/`, `crates/backend-wasm/` |
-| meta/issues | `issues/`, `docs/` | `crates/`, `fixtures/` |
-
-### Shared cargo target
-
-All worktrees share the parent repo's `target/` directory via `.cargo/config.toml`. This saves ~20 GB of disk per 12 worktrees. Created automatically by `setup-worktree.py` and `spawn-worktrees.sh`.
-
-### Batch worktree creation
-
-Instead of creating worktrees one by one, use:
+Prefer batch creation:
 
 ```bash
-./scripts/dev/spawn-worktrees.sh \
-  issues/open/225-*.md \
-  issues/open/255-*.md \
-  issues/open/274-*.md
-```
-
-Outputs a JSON manifest of created worktrees.
-
-### Batch status collection
-
-```bash
-./scripts/dev/worktree-batch-status.sh --format json
-```
-
-Collects `git status/log/diff` from all active worktrees in parallel using background processes. Use this for the 15-minute supervision cycle — one command covers all children.
-
-## Issue splitting
-
-For each candidate issue, classify:
-
-- issue_id
-- title
-- priority
-- dependencies
-- likely files
-- risk level
-- expected narrow validation
-- expected close gate
-- whether it can run in parallel
-- whether it should be split
-
-Split issues when:
-
-- one issue contains multiple independent acceptance criteria
-- it touches unrelated compiler layers
-- it requires both implementation and large test harness changes
-- it has more than one obvious failure class
-- it is likely to exceed one child cycle
-
-When splitting:
-
-- create new issue files under `issues/open/`
-- keep the original issue as parent or umbrella if useful
-- add dependency links
-- update `issues/index.md`
-- commit the split before assigning children
-
-Do not split merely to create noise. Split only when it improves parallelism or reduces stall risk.
-
-## Mandatory large-issue breakdown
-
-Some issues are large but unavoidable for project goals. Do not avoid or indefinitely block them because they are heavy. When a required issue is too large for one child cycle, decompose it and keep driving it through implementation:
-
-1. Overview: identify the goal, accepted decisions from README/docs, current failures, and close gate.
-2. File structure design: assign ownership boundaries and likely files.
-3. Code design: choose the smallest architecture-preserving implementation path.
-4. Implementation slices: create child issues or child assignments for independently verifiable slices.
-5. Integration: merge validated slices, rerun the close gate, and continue until done or a concrete external blocker remains.
-
-Apply this rule especially to backend wasm emission, dynamic JavaScript semantics such as `eval`, and strict gate debt. ADR-level decisions in README/docs are binding inputs; do not re-litigate them as blockers.
-
-## Worktree assignment
-
-For batch worktree creation (preferred for high-parallel waves):
-
-```bash
-manifest=$(./scripts/dev/spawn-worktrees.sh \
+mise run spawn-worktrees -- \
   --base master \
-  issues/open/225-*.md issues/open/255-*.md \
-  issues/open/274-*.md issues/open/341-*.md)
+  issues/open/225-*.md \
+  issues/open/255-*.md
 ```
 
-`spawn-worktrees.sh` handles: git worktree add, reference linking, shared cargo
-target, dev-loop state setup. Outputs a JSON manifest with worktree paths,
-branch names, and issue IDs. Parse with `jq` or `python3 -c "import json..."`.
+The command creates:
 
-For individual worktree creation (when only one child is needed):
+- a git worktree per issue
+- a branch per worktree
+- a shared `.cargo/config.toml` pointing to the parent `target/`
+- a local assignment file under `reports/agents/<agent_id>/assignment.md`
+- a JSON manifest on stdout
+
+It must not write `.agents/state`.
+
+Collect status with:
 
 ```bash
-git worktree add ../ts2wasm-<issue-id>-<short-title>-<timestamp> \
-  -b agent/<issue-id>-<short-title>-<timestamp>
-mise run link-reference -- ../ts2wasm-<issue-id>-<short-title>-<timestamp>
+mise run worktree-status -- --format json
 ```
 
-Always verify the reference corpus is linked: `ls <worktree>/reference/test262`.
+## Assignment File
 
-For each child, write an assignment file:
-
-```text
-reports/agents/<agent_id>/assignment.md
-```
-
-It must contain:
+Every child assignment must contain:
 
 - child id
 - worktree path
-- branch name
-- assigned issue list
-- issue order
+- branch
+- issue path and issue id
 - allowed files
 - forbidden files
 - expected validation commands
-- webhook/reporting requirement
-- merge request protocol
+- Discord reporting requirement
 - parent event protocol
 
-1. Launch the child with `.agents/prompts/autonomous-child-worker.md`.
+Launch the child with `.agents/prompts/autonomous-child-worker.md` and its assignment file.
 
-## Assignment policy
+## Child Supervision
 
-Each child receives a small issue list, not one huge vague task.
-
-Preferred bundle size:
-
-- 1 high-risk issue, or
-- 2 to 4 small independent issues, or
-- a sequence of reference-derived micro-issues in the same feature area
-
-The child must:
-
-- close all assigned issues if possible
-- record PROGRESS or BLOCKED for any issue that cannot be closed
-- continue to the next assigned issue instead of stopping
-- request more work when its queue becomes empty or unsafe
-
-## Parent event protocol
-
-Every child must end each cycle or issue with one line:
+Every child must report one parent event:
 
 ```text
 PARENT_EVENT: DONE issue=<id> branch=<branch> commit=<hash> merge_request=yes
@@ -252,285 +124,39 @@ PARENT_EVENT: NEED_WORK agent=<id> branch=<branch>
 PARENT_EVENT: FAILED issue=<id-or-none> branch=<branch> reason=<short-reason>
 ```
 
-The parent must parse these events and respond by:
+Respond by reviewing merge requests, assigning more work, splitting blockers, or generating new issues.
 
-- reviewing merge requests
-- assigning more work
-- moving blocked issues out of active queue
-- generating new work when children need work
-- continuing the loop
+## Merge Review
 
-## Child supervision
+For each merge request:
 
-For every active child:
+1. Inspect `git status --short`, `git diff --stat`, and the child commits.
+2. Confirm the diff matches the assignment scope.
+3. Confirm issue evidence and validation commands are present.
+4. Run the relevant narrow validation.
+5. Run `mise run check`.
+6. Merge or cherry-pick into the parent branch only after review passes.
+7. Run `mise run update-issue-index` and `mise run check issues` if issues moved.
 
-- check whether it produced commits
-- check whether it produced issue notes
-- check whether it produced a report
-- check whether it requested merge
-- check whether it requested more work
-- check whether it is stuck
+Reject or send back changes that weaken tests, edit unrelated files, omit evidence, or leave issue/index drift.
 
-A child is considered stuck if:
+## Discord Report
 
-- no commit, report, or issue update appears after a bounded cycle
-- it repeats the same failure without new evidence
-- it keeps changing unrelated files
-- it cannot produce a narrow reproduction
-- it blocks on full-suite failure without isolating it
+A Discord report is required after each parent cycle and after any issue close wave.
 
-If a child is stuck:
-
-1. collect its logs
-2. preserve useful commits if any
-3. mark its issue PROGRESS or BLOCKED
-4. assign the child a smaller issue or different issue
-5. do not stop other children
-
-## Merge review
-
-When a child requests merge:
-
-1. Inspect child branch:
-
-```bash
-git status --short
-git log --oneline --decorate --max-count=20
-git diff --stat <parent-branch>...HEAD
-git diff <parent-branch>...HEAD
-```
-
-1. Verify:
-
-- scope matches assigned issues
-- no forbidden files changed
-- no test weakening
-- no unsupported skip/xfail abuse
-- no fixture expectation change without evidence
-- issue close notes are backed by commits
-- validation evidence exists
-- webhook payload or deferred report exists
-
-1. Run layered validation:
-
-- narrow commands from the issue
-- `mise run fmt`
-- `mise run check agent-state`
-- `mise run check issues`
-- `mise run check`
-- full `mise run nextest` only when close/merge risk warrants it
-
-1. Merge only if safe.
-
-Preferred merge:
-
-```bash
-git merge --no-ff <child-branch>
-```
-
-Cherry-pick is acceptable when it keeps the parent history simpler or avoids broad merge conflicts, but record that the child was integrated by cherry-pick rather than by a Git merge commit.
-
-If conflict occurs:
-
-- do not resolve blindly
-- classify conflict
-- if local and simple, resolve and validate
-- if semantic or broad, create a merge-fix issue
-- reassign merge-fix to a child or handle as parent
-- keep other children working
-
-**Common high-parallel conflict: `issues/index.md`**
-
-When merging multiple parallel branches, `issues/index.md` (generated section)
-conflicts on every merge. Resolution:
-
-1. Accept the first cherry-pick/merge as-is.
-2. For subsequent merges, if `issues/index.md` conflicts, checkout our version
-   and regenerate:
-
-   ```bash
-   git checkout --ours -- issues/index.md
-   mise run update-issue-index
-   git add issues/index.md
-   git merge --continue  # or cherry-pick --continue
-   ```
-
-3. Run `mise run update-issue-index -- --check` and `mise run check issues`
-   after each merge to keep the index consistent.
-
-**Batch status collection** (for 15-min supervision cycle):
-
-```bash
-./scripts/dev/worktree-batch-status.sh --format text --dirty-only
-```
-
-Collects `git status/log/diff` from all active worktrees in parallel. One
-command covers all children. JSON output also available (`--format json`).
-
-1. After successful merge:
-
-- write merge report to `reports/runs/<run_id>/merge_report.md`
-- send merge report via webhook:
-
-  ```bash
-  mise run discord-report -- reports/runs/<run_id>/merge_report.md --run-id <run_id>
-  ```
-
-  If webhook fails, save payload to `reports/runs/<run_id>/discord_payload.json`, retry once, then mark `DEFERRED` and continue.
-- update parent reports
-- update queues
-- clean up the child git worktree and `agent/*` branch after the integration is verified
-- before cleanup, make sure the child has no uncommitted useful work and that required local reports were copied or recorded
-- remove the worktree first, then delete the branch; branches checked out by a worktree cannot be deleted directly
-- do not delete branches with unintegrated commits unless the parent explicitly rejected or superseded them and recorded that decision
-- assign the child another issue list
-
-Cleanup commands:
-
-```bash
-git worktree remove ../ts2wasm-<issue-id>-<short-title>-<timestamp>
-git branch -d agent/<issue-id>-<short-title>-<timestamp>
-```
-
-## Queue refill
-
-When READY is low, run:
-
-```bash
-mise run reference-coverage -- test262 --limit 500 --detail
-```
-
-Then generate issues:
-
-```bash
-mise run reference-coverage -- test262 --limit 500 --detail | \
-  mise run gen-issues-from-coverage -- --suite test262
-```
-
-Then:
-
-```bash
-mise run update-issue-index
-mise run update-issue-index -- --check
-mise run check issues
-git add issues/ .agents/state/ || true
-git commit -m "issues: add reference-derived work" || true
-```
-
-If the same coverage limit yields no useful work:
-
-- increase the limit: 500 -> 1000 -> 2000 -> full
-- try another configured reference suite if project policy allows it
-- inspect blocked issues for dependencies now satisfied
-- write `reports/runs/<run_id>/queue_refill.md`
-
-Do not stop merely because current issues are done.
-
-Stop only when:
-
-- no READY issue exists
-- no ACTIVE child exists
-- no BLOCKED issue can be unblocked
-- reference coverage cannot generate new work
-- selected reference suites are at 100% semantic pass or remaining exclusions are explicitly accepted by policy
-- a clean stop report is written
-
-## Anti-stall policy
-
-The parent must not stop on:
-
-- one child failure
-- webhook failure
-- full-suite failure after narrow progress
-- dirty worktree in a child branch
-- merge conflict
-- missing optional report
-- no Ready issue before coverage generation
-- one issue being too large
-- one issue being blocked
-- one validation command timing out
-
-Recovery actions:
-
-- retry transient failures once
-- narrow the failing command
-- split the issue
-- reassign to a smaller worktree
-- mark BLOCKED and continue
-- generate more issues
-- merge safe subsets only
-- preserve useful commits
-- save deferred webhook payloads
-- continue supervising other children
-
-## Parent cycle output
-
-At the end of each parent cycle, write:
-
-```text
-reports/runs/<run_id>/parent_cycle_report.md
-```
-
-`reports/` is local and git-ignored. Send the report to Discord before push, but do not commit it.
-Keep Discord reports very brief: status, closed/progress issue IDs, validation, blockers, queue size, next assignments.
-Write Discord report content in Japanese; keep commands, paths, and issue IDs as literals only.
-Do not leave sections as `未記入`; `discord-report` rejects placeholder-heavy reports.
-`discord-report` automatically splits oversized messages into two sends.
-
-Include:
-
-- active children
-- assigned issues
-- closed issues
-- merged branches
-- blocked issues
-- generated issues
-- validation run
-- webhook/reporting status
-- queue sizes
-- next assignments
-
-<<<<<<< HEAD
-## Webhook push
-
-After writing the parent cycle report, send it to Discord before any user-facing response:
+Use:
 
 ```bash
 mise run discord-report -- reports/runs/<run_id>/cycle_report.md --run-id <run_id>
 ```
 
-If the webhook push fails:
+The report should include:
 
-- save payload to `reports/runs/<run_id>/discord_payload.json`
-- save error to `reports/runs/<run_id>/reporting_error.log`
-- retry once
-- if retry fails, mark `DEFERRED` in `reports/runs/<run_id>/webhook_status.txt`
-- continue the loop regardless; do not stop on webhook failure
+- active children and branches
+- done/progress/blocked issue ids
+- validation commands and outcomes
+- merge decisions
+- next assignments
+- blockers requiring human attention
 
-To retry a saved payload later:
-
-```bash
-mise run discord-report -- reports/runs/<run_id>/discord_payload.json --run-id <run_id>
-```
-
-Parent cycle reports are loop artifacts, not user-facing completion messages.
-After writing and sending (or deferring) the Discord report:
-||||||| merged common ancestors
-End every parent cycle with exactly one line:
-=======
-Parent cycle reports are loop artifacts, not user-facing completion messages.
-After writing and sending or deferring the Discord report:
->>>>>>> origin/master
-
-- If more work is safe to dispatch, do not send a user-facing summary and do not stop; immediately continue to `QUEUE_SCAN`.
-- If a child is still active, do not send a user-facing summary and do not stop; keep supervising or assign non-conflicting work.
-- Send a user-facing final response only for a clean stop, explicit unsafe state, explicit human-review request, or explicit user pause/stop request.
-- When stopping, the local/Discord report must state one terminal status:
-
-```text
-ORCHESTRATOR_STATUS: CLEAN_STOP
-ORCHESTRATOR_STATUS: NEED_HUMAN_REVIEW
-ORCHESTRATOR_STATUS: FAILED_RECOVERABLE
-```
-
-Do not use `ORCHESTRATOR_STATUS: CONTINUE` as a report line or user-facing response. Continuation is represented by immediately starting the next cycle, not by announcing continuation.
+If webhook sending is unavailable, write the markdown and payload under `reports/runs/<run_id>/` and mention the deferred report in the parent summary.

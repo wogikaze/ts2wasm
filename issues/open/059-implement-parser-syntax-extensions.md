@@ -156,7 +156,6 @@ Start with basic TypeScript type annotations before adding advanced features.
   - `cargo nextest run`
   - `mise run update-issue-index -- --check`
   - `mise run check issues`
-  - `mise run check agent-state`
   - `mise run check`
 - Issue 059 remains open. Interfaces, generics, decorators, private fields, broader parser-syntax diagnostic reduction, and reference-ramp evidence remain outside this slice.
 
@@ -176,7 +175,6 @@ Start with basic TypeScript type annotations before adding advanced features.
   - `cargo nextest run -p ts2wasm-frontend`
   - `cargo nextest run -p ts2wasm-cli --test dump_cli`
   - `mise run update-issue-index -- --check`
-  - `mise run check agent-state`
 - Validation not clean due unrelated pre-existing local-report references:
   - `mise run check issues` failed because issue 052 and done issue 228 reference missing `reports/runs/...` paths. `reports/` is local/gitignored and those issue files are outside this assignment.
   - `mise run check` failed at the same issue health step after shell syntax checks passed.
@@ -200,7 +198,6 @@ Start with basic TypeScript type annotations before adding advanced features.
   - `cargo nextest run -p ts2wasm-frontend`
   - `cargo nextest run -p ts2wasm-cli --test dump_cli`
   - `mise run update-issue-index -- --check`
-  - `mise run check agent-state`
 - Validation not clean due unrelated pre-existing local-report references:
   - `mise run check issues` failed because issue 052 and done issue 228 reference missing `reports/runs/...` paths. `reports/` is local/gitignored and those issue files are outside this assignment.
   - `mise run check` failed at the same issue health step after shell syntax checks passed.
@@ -226,7 +223,6 @@ Start with basic TypeScript type annotations before adding advanced features.
   - `cargo run -q -p ts2wasm-cli -- build fixtures/basics-types/generic-erasure.ts -o /tmp/ts2wasm-059-generic-erasure.wasm`
   - `iwasm /tmp/ts2wasm-059-generic-erasure.wasm` (stdout: `3`, `7`)
   - `mise run update-issue-index -- --check`
-  - `mise run check agent-state`
   - `cargo nextest run`
 - Validation not clean due unrelated pre-existing local-report references:
   - `mise run check issues` failed because issue 052 and done issue 228 reference missing `reports/runs/...` paths. `reports/` is local/gitignored and those issue files are outside this assignment.
@@ -269,7 +265,6 @@ Start with basic TypeScript type annotations before adding advanced features.
   - `cargo run -q -p ts2wasm-cli -- build fixtures/basics-types/as-assertion-erasure.ts -o /tmp/ts2wasm-059-as-erasure.parent.wasm`
   - `iwasm /tmp/ts2wasm-059-as-erasure.parent.wasm`
   - `mise run update-issue-index -- --check`
-  - `mise run check agent-state`
   - `mise run check issues`
   - `mise run check`
 - Issue 059 remains open. Decorators, private fields, broader parser-syntax diagnostic reduction, and reference-ramp evidence remain outside this slice.
@@ -294,7 +289,6 @@ Start with basic TypeScript type annotations before adding advanced features.
   - `cargo run -q -p ts2wasm-cli -- build fixtures/basics-types/satisfies-erasure.ts -o /tmp/ts2wasm-059-satisfies-erasure.wasm`
   - `iwasm /tmp/ts2wasm-059-satisfies-erasure.wasm` (stdout: `3`)
   - `mise run update-issue-index -- --check`
-  - `mise run check agent-state`
   - `cargo nextest run`
 - Validation not clean due unrelated pre-existing local-report references:
   - `mise run check issues` failed because issue 052 and done issue 228 reference missing `reports/runs/...` paths. `reports/` is local/gitignored and those issue files are outside this assignment.

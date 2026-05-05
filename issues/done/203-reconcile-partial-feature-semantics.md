@@ -61,7 +61,6 @@ Expected:
 - `docs/language-reference/javascript-features.md`
 - `docs/05-compatibility-and-semantics.md`
 - `current-state.md`
-- `.agents/skills/compiler-autonomy/references/review_checklist.md`
 
 Do not touch:
 

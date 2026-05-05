@@ -13,7 +13,6 @@ description: scripts/以下のスクリプト追加/編集時に使用。レイ�
 - [Manager / Entry Point Rules](#manager--entry-point-rules)
 - [Migration / Old Reference Rules](#migration--old-reference-rules)
 - [Issue / Index Script Rules](#issue--index-script-rules)
-- [Agent State and Run Report Rules](#agent-state-and-run-report-rules)
 - [Repo Root and Script Location Rules](#repo-root-and-script-location-rules)
 - [スコープ](#スコープ)
 - [コアルール](#コアルール)
@@ -60,7 +59,6 @@ description: scripts/以下のスクリプト追加/編集時に使用。レイ�
 4. manager またはスクリプトコマンド変更後、実行:
    - `mise run check scripts`
    - `mise run check`
-   - `mise run check agent-state`
 5. `mise.toml` タスク追加後、実行:
    - `mise tasks`
 
@@ -129,37 +127,6 @@ depends_on: [024, 025]
 depends_on:
   - 024
   - 025
-```
-
-## Agent State and Run Report Rules
-
-Autonomous-loopスクリプトは監査可能なstateを保持しなければならない。
-
-必須preflight:
-
-```sh
-mise run check agent-state
-mise run check
-```
-
-ルール:
-
-1. `check-agent-state` は必須schema検証依存が欠落している場合に失敗しなければならない。
-2. `jsonschema` はドキュメント化されたdev環境を通じて利用可能でなければならない。
-3. State schemaとexampleは一貫性を保たなければならない。
-4. Run/cycleスクリプトは `reports/runs/<run_id>/` の下に書かなければならない。
-5. Report generatorは無関係なrunを上書きしてはならない。
-6. 人間可読cycleノートと機械可読test reportは別のアーティファクト。
-
-最小run directory形状:
-
-```text
-reports/runs/<run_id>/
-  cycle_report.md
-  test_report.json        # コマンド実行がキャプチャされるとき
-  commands/
-    001.stdout
-    001.stderr
 ```
 
 ## Repo Root and Script Location Rules
@@ -375,12 +342,11 @@ bash -n <touched-shell-script>   # シェルスクリプトが変更された場
 mise run check
 ```
 
-manager、issue、state、または生成indexスクリプトの場合:
+manager、issue、または生成indexスクリプトの場合:
 
 ```sh
 mise run update-issue-index -- --check
 mise run check issues
-mise run check agent-state
 mise run check
 ```
 
@@ -445,7 +411,6 @@ cargo nextest run
 - checker と generator が同じファイルを異なるロジックでparse
 - issue index check はID存在のみチェックし、テーブル内容driftをチェックしない
 - `reference/**` が必須repo-ownedコンテンツとして扱われる
-- `check-agent-state` はschema検証依存なしで静かにpass
 - `repo_root` がrepository rootではなく `scripts/` として計算される
 - `source scripts/lib/common.sh` が誤ったtierディレクトリに相対的
 - `replace_generated_block()` が最終改行を落とし、無限stale-index diffを引き起こす

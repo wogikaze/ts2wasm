@@ -27,10 +27,6 @@ jobs:
         with:
           python-version: '3.x'
 
-      - name: Install jsonschema
-        run: |
-          python -m pip install jsonschema
-
       - name: Run repo smoke check
         run: |
           cd "${GITHUB_WORKSPACE}"

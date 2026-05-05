@@ -48,6 +48,18 @@ run = "python scripts/manager.py install-hooks"
 description = "Symlink ignored reference/ corpus into worktrees"
 run = "python scripts/manager.py link-reference"
 
+[tasks."spawn-worktrees"]
+description = "Create child worktrees and local assignment files"
+run = "python scripts/manager.py spawn-worktrees"
+
+[tasks."worktree-status"]
+description = "Collect status from child worktrees"
+run = "python scripts/manager.py worktree-status"
+
+[tasks."git-worktree"]
+description = "Small git worktree helper"
+run = "python scripts/manager.py git-worktree"
+
 [tasks."check-coverage-gate"]
 description = "Compare two coverage matrix documents (see script for args)"
 hide = true
@@ -180,11 +192,6 @@ description = "wasm-tools validate on representative build outputs"
 hide = true
 run = "python scripts/manager.py check-wasm-validation"
 
-[tasks."check-agent-state"]
-description = "Validate .agents/state JSON files against schemas"
-hide = true
-run = "python scripts/manager.py check-agent-state"
-
 [tasks."check-issue-health"]
 description = "Mechanical invariants: ids, paths, index+tables"
 hide = true
@@ -220,8 +227,3 @@ run = "python scripts/gen-site.py && python scripts/build-dashboard-site.py && c
 [tasks."serve-site"]
 description = "Serve documentation site locally for development"
 run = "python scripts/gen-site.py && python scripts/build-dashboard-site.py && cd site && npm run dev"
-
-
-[tasks."dev-loop"]
-description = "Autonomous compiler development loop driver: status, advance, reset, check"
-run = "scripts/dev/dev-loop.sh"

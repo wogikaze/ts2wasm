@@ -28,8 +28,6 @@ cargo nextest run
 
 スクリプト: `mise` または `mise tasks` / `mise run <task>`。
 
-**Note**: `mise run check agent-state` requires `jsonschema` for validating `.agents/state/` JSON files. This is included in the Nix devshell (`python3Packages.jsonschema`). Without Nix, install with: `python -m pip install jsonschema`.
-
 ## 3) ファイル構成
 
 実装は `crates/cli` に集約。`crates/shared` は共有定義。`crates/frontend`, `crates/ir`, `crates/runtime-abi` は移行済み（issues 024, 025, 027 done）。`crates/backend-wasm` は issue 026 で進行中。
@@ -170,71 +168,9 @@ ast-grep scan                         # プロジェクトスキャン
 - commit/push: docs/16-commit-and-push-policy.md
 - push hook / pre-push gate は `--no-verify` 等で bypass しない（理由: 既知 baseline 失敗でも gate を迂回すると監査不能な push になるため、失敗時は修正または blocker 報告で止める）
 
-## Autonomous development loop (FSM-driven)
+## 8) parent/child worktree loop
 
-The loop is driven by `mise run dev-loop` (see `scripts/dev/dev-loop.sh`).  
-FSM reference: `.agents/workflows/compiler_dev_fsm.md`.
-
-### Entry point
-
-```bash
-mise run dev-loop          # Show current FSM state and suggested actions
-mise run dev-loop --check  # Validate state consistency
-```
-
-### Loop traversal
-
-Each FSM state has a corresponding action. Advance with `mise run dev-loop --advance`.  
-Commit with `mise run dev-loop --commit` or pass a custom message: `mise run dev-loop --commit "feat: implement X"`.
-
-```
-SYNC             → Read current-state.md, docs/11, issues/index.md; check for drift
-TRIAGE           → Review open issues, ensure Ready queue is current
-TASK_SELECT      → Pick one Ready issue; set scope in current_task.json
-PLAN             → Create implementation plan; set plan_path in project_state.json
-PLAN_REVIEW_GATE → Review plan against review_checklist.md; revise if needed
-IMPLEMENT        → Implement the smallest slice of the plan
-                   → mise run dev-loop --commit    (commit code)
-SELF_REVIEW_GATE → Self-review code against review_checklist.md
-                   → mise run dev-loop --commit    (commit review fixes)
-VERIFY_FAST      → mise run fmt && mise run nextest (fast gates)
-VERIFY_FULL      → mise run gate; verify all acceptance criteria with evidence
-CLOSE_OR_SPLIT   → Move issue to issues/done/ or split into follow-ups
-                   → mise run dev-loop --commit    (commit index update)
-RETRO            → Write cycle report; log failure patterns; update guardrails
-                   → mise run dev-loop --advance   (auto-commits, resets to SYNC)
-→ back to SYNC (loop restarts)
-```
-
-### Failure branches (from FSM)
-
-- **VERIFY_FAST fails**: Go to DIAGNOSE → PATCH → re-run VERIFY_FAST.  
-  3 consecutive fails → SPLIT_TASK (file blocker issue, reset streak).
-- **VERIFY_FULL fails**: Classify (regression/flaky/perf/unsupported); patch in scope or file follow-up.
-- **PLAN_REVIEW_GATE fails**: Return to PLAN — rewrite the plan, not the code.
-- **SELF_REVIEW_GATE fails**: Patch against review_checklist.md before verification.
-
-### Close conditions (all required)
-
-- current_task.acceptance satisfied and recorded
-- VERIFY_FAST passed for final patch set
-- VERIFY_FULL passed (or documented, approved skip reason)
-- test_report.fixtures.newly_failed is empty
-- No unintended docs drift
-- Issue moved to issues/done/ and index regenerated
-
-### Issue addition workflow (when Ready queue is low)
-
-```bash
-mise run reference-coverage -- test262 --limit 500 --detail | \
-  mise run gen-issues-from-coverage -- --suite test262
-mise run update-issue-index
-```
-
-### Coverage expansion (when implementation targets decrease)
-
-- Increase --limit in reference-coverage (e.g., 50 → 100 → 500 → 1000)
-- Add new test suites if needed
-- Auto-generate issues from expanded coverage
-
-Semantic compatibility: Node differential evidence required unless parser/build-only.
+- parent/child 並列開発は `.agents/prompts/autonomous-parent-orchestrator.md` と `.agents/prompts/autonomous-child-worker.md` を使う。
+- worktree 作成は `mise run spawn-worktrees`、状況確認は `mise run worktree-status`。
+- `.agents/state`、`current_task.json`、`project_state.json`、`dev-loop` は使わない。
+- Discord 報告は必須。`mise run discord-report` を使い、送信できない場合は `reports/runs/` に payload を保存する。

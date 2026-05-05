@@ -19,6 +19,8 @@ Options:
   --base <ref>      Base git ref for worktrees (default: master)
   --prefix <str>    Worktree name prefix (default: child)
   --target-dir <d>  Parent directory for worktrees (default: parent of repo root)
+  --assignment-dir <d>
+                   Directory for local child assignment files (default: reports/agents)
   --dry-run         Print what would be done without doing it
   -h, --help        Show this help
 USAGE
@@ -29,6 +31,7 @@ BASE="master"
 PREFIX="child"
 COUNT=""
 DRY_RUN=0
+ASSIGNMENT_DIR="reports/agents"
 ISSUE_FILES=()
 
 while [[ $# -gt 0 ]]; do
@@ -37,6 +40,7 @@ while [[ $# -gt 0 ]]; do
     --base) BASE="$2"; shift 2 ;;
     --prefix) PREFIX="$2"; shift 2 ;;
     --target-dir) TARGET_DIR="$2"; shift 2 ;;
+    --assignment-dir) ASSIGNMENT_DIR="$2"; shift 2 ;;
     --dry-run) DRY_RUN=1; shift ;;
     -h|--help) ts2wasm_usage ;;
     *) ISSUE_FILES+=("$1"); shift ;;
@@ -74,22 +78,31 @@ fi
 # Parent directory for worktrees
 PARENT_DIR="${TARGET_DIR:-"$(dirname "$R")"}"
 mkdir -p "$PARENT_DIR"
+mkdir -p "$ASSIGNMENT_DIR"
 
 MANIFEST='{"worktrees":[]}'
 
 for issue_file in "${RESOLVED[@]}"; do
   issue_file="$(realpath "$issue_file")"
 
-  # Extract issue ID and title from YAML frontmatter
-  ISSUE_ID=$(awk -F': ' '/^id:/{print $2;exit}' "$issue_file" 2>/dev/null || echo "unknown")
-  ISSUE_TITLE=$(awk -F': ' '/^title:/{print $2;exit}' "$issue_file" 2>/dev/null | tr -d '"' | sed 's/[^a-zA-Z0-9_-]/_/g' || echo "unknown")
+  # Extract issue ID and title from YAML frontmatter, with filename fallback.
+  ISSUE_ID=$(awk -F': ' '/^id:/{print $2;exit}' "$issue_file" 2>/dev/null | tr -d '"' || true)
+  if [[ -z "$ISSUE_ID" ]]; then
+    ISSUE_ID="$(basename "$issue_file" | sed -E 's/^([0-9]+[a-z]?).*/\1/')"
+  fi
+  ISSUE_TITLE=$(awk -F': ' '/^title:/{print $2;exit}' "$issue_file" 2>/dev/null | tr -d '"' | sed 's/[^a-zA-Z0-9_-]/_/g' || true)
+  if [[ -z "$ISSUE_TITLE" ]]; then
+    ISSUE_TITLE="$(basename "$issue_file" .md | sed -E 's/^[0-9]+[a-z]?[-_]//' | sed 's/[^a-zA-Z0-9_-]/_/g')"
+  fi
 
   TIMESTAMP=$(date +%Y%m%d%H%M%S)
   BRANCH="agent/${PREFIX}-${ISSUE_ID}-${TIMESTAMP}"
   WT_DIR="$PARENT_DIR/ts2wasm-${PREFIX}-${ISSUE_ID}-${TIMESTAMP}"
+  AGENT_ID="${PREFIX}-${ISSUE_ID}-${TIMESTAMP}"
+  ASSIGNMENT_PATH="$ASSIGNMENT_DIR/$AGENT_ID/assignment.md"
 
   if [[ "$DRY_RUN" -eq 1 ]]; then
-    echo "[DRY-RUN] would create: $WT_DIR (branch: $BRANCH, base: $BASE, issue: $issue_file)"
+    echo "[DRY-RUN] would create: $WT_DIR (branch: $BRANCH, base: $BASE, issue: $issue_file, assignment: $ASSIGNMENT_PATH)"
     continue
   fi
 
@@ -111,26 +124,41 @@ target-dir = "${R}/target"
 rustflags = ["-C", "link-arg=-fuse-ld=mold"]
 TOML
 
-  # Set up dev-loop state
-  SETUP_PY="$R/scripts/dev/setup-worktree.py"
-  [[ -f "$SETUP_PY" ]] || SETUP_PY="$R/_worktrees/setup-worktree.py"
-  if [[ -f "$SETUP_PY" ]]; then
-    ISSUE_AREA=$(awk -F': ' '/^area:/{print $2;exit}' "$issue_file" 2>/dev/null || echo "runtime/semantics")
-    ISSUE_AREA="${ISSUE_AREA//\"/}"
-    ACCEPTANCE=$(awk '/^## Acceptance/{f=1;next} /^##/{f=0} f && /^-/{gsub(/- \[.\] /,"");printf "%s|",$0}' "$issue_file" 2>/dev/null || echo "verify gate passes")
-    python3 "$SETUP_PY" \
-      "$WT_DIR" \
-      "$ISSUE_ID" \
-      "$ISSUE_TITLE" \
-      "$issue_file" \
-      "$ISSUE_AREA" \
-      "$ACCEPTANCE" \
-      "" "" 2>&1 | sed 's/^/  /' >&2
-  fi
+  mkdir -p "$(dirname "$ASSIGNMENT_PATH")"
+  ISSUE_AREA=$(awk -F': ' '/^area:/{print $2;exit}' "$issue_file" 2>/dev/null || echo "unknown")
+  ISSUE_AREA="${ISSUE_AREA//\"/}"
+  cat > "$ASSIGNMENT_PATH" << MD
+# Child Assignment: $AGENT_ID
+
+- child id: $AGENT_ID
+- worktree: $WT_DIR
+- branch: $BRANCH
+- base: $BASE
+- issue: $issue_file
+- issue id: $ISSUE_ID
+- title: $ISSUE_TITLE
+- area: $ISSUE_AREA
+
+## Required Prompt
+
+Use \`.agents/prompts/autonomous-child-worker.md\`.
+
+## Scope
+
+Read the issue for allowed files, forbidden files, acceptance criteria, and validation commands.
+
+Do not use \`.agents/state\`, \`current_task.json\`, \`project_state.json\`, or \`dev-loop\`.
+
+## Reporting
+
+End each cycle with one \`PARENT_EVENT:\` line and include validation evidence.
+
+Discord reporting is required. Use \`mise run discord-report\` when sending is available; otherwise save the markdown/payload under \`reports/runs/\` and tell the parent.
+MD
 
   # Build manifest entry
   ENTRY=$(cat <<JSON
-{"worktree":"$WT_DIR","branch":"$BRANCH","issue_id":"$ISSUE_ID","issue_file":"$issue_file","base":"$BASE"}
+{"agent_id":"$AGENT_ID","worktree":"$WT_DIR","branch":"$BRANCH","issue_id":"$ISSUE_ID","issue_file":"$issue_file","base":"$BASE","assignment":"$ASSIGNMENT_PATH"}
 JSON
 )
   MANIFEST=$(echo "$MANIFEST" | python3 -c "
