@@ -10,7 +10,7 @@ Issue files are the source of truth for work items. The generated section below 
 | Area | Total | Open | Resolved |
 |---|---:|---:|---:|
 | abi | 7 | 0 | 7 |
-| backend | 13 | 3 | 10 |
+| backend | 13 | 1 | 12 |
 | cli | 15 | 1 | 14 |
 | compiler | 1 | 0 | 1 |
 | coverage | 42 | 32 | 10 |
@@ -26,7 +26,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 4963 | 4187 | 776 |
+| total | 4963 | 4185 | 778 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -164,8 +164,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 5008 | Implement static ES module export forms (default, named, namespace, re-export) (audit reopened #5008) | feature | ir/compiler | done | P1 |  | `export const x = 1` (ExportDecl) currently hits `issue-055` when the file has no `import` from another module, becau... |
 | 5009 | Remaining static ES module export forms (named list, default import, namespace, re-export, side-effect) (audit reopened #5009) | feature | ir/compiler | done | P1 |  | Remaining static ES module export forms (named list, default import, namespace, re-export, side-effect) (audit reopen... |
 | 5010 | Implement local named export (export { value } and export { value as alias }) for entry module (audit reopened #5010) | feature | ir/compiler | done | P1 |  | `export { ... }` references local bindings by name, but the compiler's module rewrite path only handles `ExportDecl` ... |
-| 5027 | [backend-wasm] Replace throw-as-return with catchable exception runtime (audit reopened #5027) | feature | backend | implementation-ready | P0 |  | [backend-wasm] Replace throw-as-return with catchable exception runtime (audit reopened #5027) |
-| 5030 | [backend-wasm] Split large runtime/WAT emitters into testable components (audit reopened #5030) | refactor | backend | implementation-ready | P1 |  | [backend-wasm] Split large runtime/WAT emitters into testable components (audit reopened #5030) |
 | 5040 | [compiler] Add resource limits and cancellation to server batch compilation (audit reopened #5040) | feature | cli | implementation-ready | P2 |  | [compiler] Add resource limits and cancellation to server batch compilation (audit reopened #5040) |
 | 5043 | [frontend] Split large lexer/parser files by grammar responsibility (audit reopened #5043) | refactor | frontend | implementation-ready | P1 |  | [frontend] Split large lexer/parser files by grammar responsibility (audit reopened #5043) |
 <!-- generated:ready:end -->
@@ -5072,8 +5070,10 @@ Issue files are the source of truth for work items. The generated section below 
 | 5024 | Implement anonymous interface new expression identifier | feature | runtime/builtins | see file |
 | 5025 | Implement any as return type instanceof constructor RHS | feature | runtime/builtins | see file |
 | 5026 | [backend-wasm] Implement real class declaration emission (audit reopened #5026) | feature | backend | see `issues/done/5026-backend-wasm-real-class-declaration.md` |
+| 5027 | [backend-wasm] Replace throw-as-return with catchable exception runtime (audit reopened #5027) | feature | backend | see `issues/done/5027-backend-wasm-catchable-exception.md` |
 | 5028 | [backend-wasm] Implement array growth and reallocation for push/write paths (audit reopened #5028) | feature | backend | see `issues/done/5028-backend-wasm-array-growth.md` |
 | 5029 | [backend-wasm] Expand direct wasm binary emission beyond console.log string literal MVP (audit reopened #5029) | feature | backend | see `issues/done/5029-backend-wasm-direct-binary-emission.md` |
+| 5030 | [backend-wasm] Split large runtime/WAT emitters into testable components (audit reopened #5030) | refactor | backend | see `issues/done/5030-backend-wasm-split-runtime-emitters.md` |
 | 5031 | [cli] Replace placeholder parser keyword/operator tests with real assertions | test | cli | see `issues/done/5031-cli-real-parser-assertions.md` |
 | 5032 | [cli] Add deterministic external tool capability detection | feature | cli | see `issues/done/5032-cli-tool-capability-detection.md` |
 | 5033 | [cli] Normalize node-diff fixture reporting into structured records (audit reopened #5033) | feature | cli | see `issues/done/5033-cli-structured-node-diff-report.md` |
