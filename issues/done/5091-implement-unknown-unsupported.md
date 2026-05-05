@@ -130,7 +130,7 @@ Follow-up issues:
 - `issues/done/1026-implement-badArrayIndex.md` - Implement Badarrayindex (same feature label, same group key; superseded by issue 5150)
 - `issues/done/1030-implement-badOverloadError.md` - Implement Badoverloaderror (same feature label, same group key; stale build-pass bucket)
 - `issues/done/1043-implement-bestChoiceType.md` - Implement Bestchoicetype (same feature label, same group key)
-- `issues/open/1045-implement-betterErrorForAccidentalCall.md` - Implement Bettererrorforaccidentalcall (same feature label, same group key)
+- `issues/done/1045-implement-betterErrorForAccidentalCall.md` - Implement Bettererrorforaccidentalcall (same feature label, same group key)
 - `issues/open/1058-implement-binderBinaryExpressionStress.md` - Implement Binderbinaryexpressionstress (same feature label, same group key)
 - `issues/open/1059-implement-binderBinaryExpressionStressJs.md` - Implement Binderbinaryexpressionstressjs (same feature label, same group key)
 - `issues/done/106-implement-accessors.md` - Implement Accessors (same feature label, same group key)
