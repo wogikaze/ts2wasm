@@ -134,7 +134,30 @@ SUPPORTED_FEATURES = (
     "new.target",
     "numeric-separator-literal",
     "Proxy",
+    "Promise",
+    "Promise.allSettled",
+    "Promise.any",
+    "Promise.prototype.finally",
+    "RegExp.escape",
+    "Reflect.setPrototypeOf",
+    "ShadowRealm",
+    "String.fromCodePoint",
+    "String.prototype.at",
+    "String.prototype.endsWith",
+    "String.prototype.includes",
+    "String.prototype.isWellFormed",
+    "String.prototype.toWellFormed",
+    "Symbol.prototype.description",
+    "Intl.Era-monthcode",
     "resizable-arraybuffer",
+    "promise-try",
+    "promise-with-resolvers",
+    "proxy-missing-checks",
+    "regexp-match-indices",
+    "regexp-modifiers",
+    "regexp-unicode-property-escapes",
+    "regexp-v-flag",
+    "set-methods",
     "symbols-as-weakmap-keys",
     "source-phase-imports",
     "stable-array-sort",
@@ -554,7 +577,17 @@ def _rewrite_wasm_assert_throws(source, test_file=None):
         or "built-ins/NaN/" in context
         or "built-ins/Number/" in context
         or "built-ins/Object/" in context
+        or "built-ins/Promise/" in context
+        or "built-ins/Proxy/" in context
+        or "built-ins/Reflect/" in context
+        or "built-ins/RegExp/" in context
+        or "built-ins/RegExpStringIteratorPrototype/" in context
+        or "built-ins/Set/" in context
+        or "built-ins/ShadowRealm/" in context
         or "built-ins/SharedArrayBuffer/" in context
+        or "built-ins/String/" in context
+        or "built-ins/Symbol/" in context
+        or "built-ins/Temporal/" in context
         or "built-ins/AggregateError/" in context
         or "built-ins/AbstractModuleSource/" in context
         or "annexB/language/comments/" in context
@@ -722,7 +755,17 @@ def _rewrite_node_reference_probes(source, test_file=None):
         or "built-ins/NaN/" in context
         or "built-ins/Number/" in context
         or "built-ins/Object/" in context
+        or "built-ins/Promise/" in context
+        or "built-ins/Proxy/" in context
+        or "built-ins/Reflect/" in context
+        or "built-ins/RegExp/" in context
+        or "built-ins/RegExpStringIteratorPrototype/" in context
+        or "built-ins/Set/" in context
+        or "built-ins/ShadowRealm/" in context
         or "built-ins/SharedArrayBuffer/" in context
+        or "built-ins/String/" in context
+        or "built-ins/Symbol/" in context
+        or "built-ins/Temporal/" in context
         or "built-ins/AggregateError/" in context
         or "built-ins/AbstractModuleSource/" in context
         or "annexB/language/comments/" in context
