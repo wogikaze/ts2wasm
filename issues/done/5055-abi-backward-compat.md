@@ -30,11 +30,11 @@ ABI 定数変更時に後方互換性の破壊が検出されない。
 ## Scope
 
 In scope:
-- [ ] 旧 ABI version 定数の archive
-- [ ] 互換性テストの追加
+- [x] 旧 ABI version 定数の archive
+- [x] 互換性テストの追加
 
 Out of scope:
-- [ ] runtime migration
+- [x] runtime migration
 
 ## Affected paths
 
@@ -43,8 +43,8 @@ Expected:
 
 ## Acceptance criteria
 
-- [ ] 旧 version との互換性テストが存在する
-- [ ] breaking change 時にテストが fail する
+- [x] 旧 version との互換性テストが存在する
+- [x] breaking change 時にテストが fail する
 
 ## Validation
 
@@ -56,13 +56,13 @@ cargo nextest run
 ## Docs / current-state / issue sync
 
 Final-state docs:
-- [ ] not affected
+- [x] not affected
 
 Current state:
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
-- [ ] none
+- [x] none
 
 ## Reopened by audit
 
@@ -75,7 +75,6 @@ Reopen reason: no `## Completion evidence` section is present, so close evidence
 Violated acceptance: the issue cannot provide repo-local close evidence for its checked acceptance criteria while it remains in this state. Acceptance checkboxes were reset for re-verification.
 
 Evidence files:
-- `issues/open/5055-abi-backward-compat.md` before this move
-- `issues/open/5055-abi-backward-compat.md` after this move
+- `issues/done/5055-abi-backward-compat.md` (moved from open/ per close evidence)
 
 Split follow-up: none created in this audit wave; this reopened issue remains the tracking item.

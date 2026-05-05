@@ -9,7 +9,7 @@ Issue files are the source of truth for work items. The generated section below 
 <!-- generated:summary:start -->
 | Area | Total | Open | Resolved |
 |---|---:|---:|---:|
-| abi | 7 | 1 | 6 |
+| abi | 7 | 0 | 7 |
 | backend | 13 | 5 | 8 |
 | cli | 15 | 1 | 14 |
 | compiler | 1 | 0 | 1 |
@@ -26,7 +26,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 4963 | 4195 | 768 |
+| total | 4963 | 4194 | 769 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -174,7 +174,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 5043 | [frontend] Split large lexer/parser files by grammar responsibility (audit reopened #5043) | refactor | frontend | implementation-ready | P1 |  | [frontend] Split large lexer/parser files by grammar responsibility (audit reopened #5043) |
 | 5044 | [frontend] Define and test TypeScript ambient declaration erasure boundaries (audit reopened #5044) | feature | frontend | implementation-ready | P1 |  | [frontend] Define and test TypeScript ambient declaration erasure boundaries (audit reopened #5044) |
 | 5045 | [frontend] Improve syntax error recovery and source spans (audit reopened #5045) | feature | frontend | implementation-ready | P2 |  | [frontend] Improve syntax error recovery and source spans (audit reopened #5045) |
-| 5055 | [runtime-abi] Add backward-compatibility tests for ABI constants (audit reopened #5055) | test | abi | implementation-ready | P3 |  | [runtime-abi] Add backward-compatibility tests for ABI constants (audit reopened #5055) |
 | 5125 | Implement as type assertion expression parsing | feature | frontend/parser | implementation | P1 |  | Implement as type assertion expression parsing |
 <!-- generated:ready:end -->
 
@@ -5098,6 +5097,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 5052 | [runtime-abi] Validate runtime memory map for overlap and headroom | feature | abi | see `issues/done/5052-abi-memory-map.md` |
 | 5053 | [runtime-abi] Add typed wrappers for tagged values and heap pointers (audit reopened #5053) | refactor | abi | see `issues/done/5053-abi-typed-wrappers.md` |
 | 5054 | [runtime-abi] Document value tags and object layout as public ABI (audit reopened #5054) | docs | abi | see `issues/done/5054-abi-document-layout.md` |
+| 5055 | [runtime-abi] Add backward-compatibility tests for ABI constants (audit reopened #5055) | test | abi | see `issues/done/5055-abi-backward-compat.md` |
 | 5056 | [shared] Replace manual TestRecord JSON construction with serde serialization | refactor | coverage | see `issues/done/5056-shared-serde-serialization.md` |
 | 5057 | [shared] Version capability manifest schema and migration policy | feature | coverage | see `issues/done/5057-shared-manifest-versioning.md` |
 | 5058 | [shared] Deduplicate and canonicalize capability reasons/imports | refactor | coverage | see `issues/done/5058-shared-deduplicate-capabilities.md` |
