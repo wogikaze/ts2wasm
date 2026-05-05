@@ -15,9 +15,9 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 1 | 0 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4380 | 3790 | 590 |
+| frontend | 4380 | 3789 | 591 |
 | harness | 1 | 0 | 1 |
-| ir | 23 | 2 | 21 |
+| ir | 24 | 3 | 21 |
 | issues | 4 | 0 | 4 |
 | parser | 1 | 0 | 1 |
 | reference | 211 | 178 | 33 |
@@ -26,7 +26,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 4976 | 4070 | 906 |
+| total | 4977 | 4070 | 907 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -163,6 +163,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 5139 | Split APISample parser leftovers | cleanup | frontend/syntax | design-ready | P1 |  | issue 070 identified `APISample_linter.ts` and `APISample_transform.ts` as remaining parser/frontend leftovers, but t... |
 | 5140 | Implement type alias object parsing before exported interface | feature | frontend/syntax | implementation-ready | P1 |  | `DeclarationErrorsNoEmitOnError.ts` currently fails with `UnsupportedSyntax` because the parser treats `type T = { x ... |
 | 5141 | Implement prefix increment in for update clauses | feature | frontend/syntax | implementation-ready | P1 |  | `SystemModuleForStatementNoInitializer.ts` currently fails with `UnsupportedSyntax` because the parser rejects `++i` ... |
+| 5142 | Support class method calls on new-expression receivers | feature | ir/lowered | implementation-ready | P1 |  | method calls on new-expression receivers currently fail with `UnsupportedSyntax`, even when the class and method are ... |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -442,7 +443,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 773 | Implement Autoasiforstaticsinclassdeclaration | spike | frontend/syntax | class: triage-needed | Implement Autoasiforstaticsinclassdeclaration |
 | 774 | Implement Autolift | spike | frontend/syntax | class: triage-needed | Implement Autolift |
 | 775 | Implement Autotypeassignedusingdestructuringfromnevernocrash | spike | frontend/resolver | class: blocked | Implement Autotypeassignedusingdestructuringfromnevernocrash |
-| 1013 | Implement Avoid | spike | frontend/syntax | class: blocked | Implement Avoid |
 | 1014 | Implement Avoidcyclewithvoidexpressionreturnedfromarrow | spike | frontend/syntax | class: blocked | Implement Avoidcyclewithvoidexpressionreturnedfromarrow |
 | 1015 | Implement Avoidnarrowingusingconstvariablefrombindingelementwithliteralinitializer | spike | frontend/syntax | class: blocked | Implement Avoidnarrowingusingconstvariablefrombindingelementwithliteralinitializer |
 | 1016 | Implement Awaitcallexpressioninsyncfunction | spike | reference/triage | class: triage-needed | Implement Awaitcallexpressioninsyncfunction |
@@ -5003,6 +5003,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 1010 | Implement Autotypeassignedusingdestructuringfromnevernocrash (dup) | spike | frontend/resolver | see `issues/done/1010-implement-autoTypeAssignedUsingDestructuringFromNeverNoCrash.md` |
 | 1011 | Implement Autolift (dup) | spike | frontend/syntax | see `issues/done/1011-implement-autolift.md` |
 | 1012 | Implement Autonumberinginenums | spike | frontend/syntax | see `issues/done/1012-implement-autonumberingInEnums.md` |
+| 1013 | Implement Avoid | spike | frontend/syntax | see `issues/done/1013-implement-avoid.md` |
 | 3002 | Implement Isolateddeclarationerrorsdefault | spike | runtime/builtins | see `issues/done/3002-implement-isolatedDeclarationErrorsDefault.md` |
 | 3131 | Implement Jsxfactorynotidentifierorqualifiedname | spike | reference/triage | see `issues/done/3131-implement-jsxFactoryNotIdentifierOrQualifiedName.md` |
 | 3329 | Implement Modulecodegentest | spike | frontend/syntax | see `issues/done/3329-implement-moduleCodeGenTest.md` |
