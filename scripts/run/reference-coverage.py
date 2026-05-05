@@ -246,6 +246,17 @@ def repo_relative(path):
         reference_relative = path.resolve().relative_to(REFERENCE_ROOT).as_posix()
         return f"reference/{reference_relative}"
     except ValueError:
+        pass
+
+    # Worktree-compatible fallback: use unresolved absolute path.
+    # path.resolve() follows symlinks (e.g. reference/test262 -> parent repo)
+    # which breaks .relative_to(REFERENCE_ROOT) in worktrees.
+    # os.path.abspath does NOT follow symlinks, keeping the worktree-relative path.
+    try:
+        abspath = Path(os.path.abspath(path))
+        reference_relative = abspath.relative_to(REFERENCE_ROOT).as_posix()
+        return f"reference/{reference_relative}"
+    except ValueError:
         return path.as_posix()
 
 def _parse_yaml_scalar(value):
