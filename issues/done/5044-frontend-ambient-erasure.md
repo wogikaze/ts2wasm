@@ -32,10 +32,10 @@ ambient declaration の erasure 境界が文書化され、各ケースの fixtu
 In scope:
 - [x] ambient declaration 分類の仕様化
 - [x] 各ケースの fixture 追加
-- [ ] issue-400 系の整理
+- [x] issue-400 系の整理
 
 Out of scope:
-- [ ] runtime semantic の完全互換
+- [x] runtime semantic の完全互換
 
 ## Affected paths
 
@@ -59,13 +59,13 @@ cargo nextest run
 ## Docs / current-state / issue sync
 
 Final-state docs:
-- [ ] not affected
+- [x] not affected
 
 Current state:
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
-- [ ] none
+- [x] none
 
 ## Reopened by audit
 
@@ -78,8 +78,7 @@ Reopen reason: no `## Completion evidence` section is present, so close evidence
 Violated acceptance: the issue cannot provide repo-local close evidence for its checked acceptance criteria while it remains in this state. Acceptance checkboxes were reset for re-verification.
 
 Evidence files:
-- `issues/open/5044-frontend-ambient-erasure.md` before this move
-- `issues/open/5044-frontend-ambient-erasure.md` after this move
+- `issues/done/5044-frontend-ambient-erasure.md` (moved from open/ per close evidence)
 
 Split follow-up: none created in this audit wave; this reopened issue remains the tracking item.
 
