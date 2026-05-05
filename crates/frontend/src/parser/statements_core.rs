@@ -34,6 +34,11 @@ impl Parser {
             if self.consume_erasable_typescript_declaration()? {
                 continue;
             }
+            if matches!(self.peek(), Some(Token::LeftBrace)) {
+                let block_stmts = self.block()?;
+                statements.extend(block_stmts);
+                continue;
+            }
             statements.push(self.statement()?);
         }
         Ok(statements)

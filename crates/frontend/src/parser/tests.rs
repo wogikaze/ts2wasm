@@ -79,6 +79,14 @@ mod tests {
     }
 
     #[test]
+    fn parses_top_level_block_by_flattening_statements() {
+        let program = parse_program("{ let x = 1; } let y = 2;").unwrap();
+        assert_eq!(program.len(), 2);
+        assert!(matches!(program[0], Stmt::Let { ref name, .. } if name == "x"));
+        assert!(matches!(program[1], Stmt::Let { ref name, .. } if name == "y"));
+    }
+
+    #[test]
     fn parses_typescript_type_alias_declarations_as_erased_syntax() {
         let source = r#"
             type Id = number;
