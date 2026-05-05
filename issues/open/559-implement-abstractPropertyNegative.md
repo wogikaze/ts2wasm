@@ -117,7 +117,7 @@ Follow-up issues:
 ## Duplicate detection
 
 - `issues/done/088-implement-abstractPropertyNegative.md` - Implement Abstractpropertynegative (same reference path, same feature label, same group key, title overlap)
-- `issues/open/460-implement-ClassDeclaration.md` - Implement Classdeclaration (same feature label, same group key, title overlap)
+- `issues/done/460-implement-ClassDeclaration.md` - Implement Classdeclaration (same feature label, same group key, title overlap)
 - `issues/done/473-implement-abstractPropertyNegative.md` - Implement Abstractpropertynegative (same reference path, same feature label, same group key, title overlap)
 
 ## Smart triage
@@ -229,7 +229,7 @@ Duplicate candidates:
   },
   {
     "state": "done",
-    "path": "issues/open/065-implement-parser-syntax.md",
+    "path": "issues/done/065-implement-parser-syntax.md",
     "title": "Implement parser syntax extensions",
     "reason": "same feature label, title overlap"
   },

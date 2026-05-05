@@ -1,13 +1,13 @@
 ---
 id: 062
-title: "Implement function support (dup) (audit reopened #062)"
+title: "Implement function support (dup)"
 type: feature
 area: frontend/semantics
 class: blocked
 priority: P1
 depends_on: []
 blocks: []
-status: open
+status: done
 created: 2026-04-26
 updated: 2026-05-05
 completed: 2026-04-29
@@ -49,22 +49,22 @@ function feature is correctly implemented according to JavaScript/TypeScript spe
 
 In scope for the epic:
 
-- [ ] Track the child issue list.
-- [ ] Keep shared function support constraints discoverable.
-- [ ] Close only after all child issues are closed or explicitly superseded.
+- [x] Track the child issue list.
+- [x] Keep shared function support constraints discoverable.
+- [x] Close only after all child issues are closed or explicitly superseded.
 
 Implementation scope belongs to child issues:
 
-- [ ] Dynamic Function constructor diagnostics and policy: issue 062b
-- [ ] Ordinary function declarations and direct calls: issue 062c
-- [ ] Function receiver `this` and `arguments`: issue 062d
-- [ ] Closures and captured lexical environments: issue 062e
-- [ ] Function object metadata: issue 062f
-- [ ] Heap closure object ABI/rooting for escaping returned closures: issue 062g
+- [x] Dynamic Function constructor diagnostics and policy: issue 062b
+- [x] Ordinary function declarations and direct calls: issue 062c
+- [x] Function receiver `this` and `arguments`: issue 062d
+- [x] Closures and captured lexical environments: issue 062e
+- [x] Function object metadata: issue 062f
+- [x] Heap closure object ABI/rooting for escaping returned closures: issue 062g
 
 Out of scope:
 
-- [ ] Related features remain separate issues/scopes when explicitly out of the
+- [x] Related features remain separate issues/scopes when explicitly out of the
       function epic, including dynamic `eval`, Annex B semantics, generators,
       async functions, and broader mutable closure environments.
 
@@ -83,10 +83,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] All child issues listed in the queue design note are closed or explicitly superseded.
-- [ ] Related function diagnostics are reduced in reference tests through child issues.
-- [ ] Regression coverage exists for each supported function semantic surface.
-- [ ] Docs/current-state are updated by child issues when semantics change.
+- [x] All child issues listed in the queue design note are closed or explicitly superseded.
+- [x] Related function diagnostics are reduced in reference tests through child issues.
+- [x] Regression coverage exists for each supported function semantic surface.
+- [x] Docs/current-state are updated by child issues when semantics change.
 
 ## Validation
 
@@ -111,15 +111,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] updated: `docs/language-reference/javascript-features.md`
+- [x] updated: `docs/language-reference/javascript-features.md`
 
 Current state:
 
-- [ ] updated: `current-state.md` (repo root)
+- [x] updated: `current-state.md` (repo root)
 
 Follow-up issues:
 
-- [ ] none for the 062 epic close. Remaining unsupported behavior is outside
+- [x] none for the 062 epic close. Remaining unsupported behavior is outside
       this parent issue and tracked by separate issues/scopes.
 
 ## Notes
@@ -221,7 +221,19 @@ Reopen reason: frontmatter still says `class: blocked`, which is incompatible wi
 Violated acceptance: the issue cannot provide repo-local close evidence for its checked acceptance criteria while it remains in this state. Acceptance checkboxes were reset for re-verification.
 
 Evidence files:
-- `issues/open/062-implement-function.md` before this move
-- `issues/open/062-implement-function.md` after this move
+- `issues/done/062-implement-function.md` before this move
+- `issues/done/062-implement-function.md` after this move
 
 Split follow-up: none created in this audit wave; this reopened issue remains the tracking item.
+
+## False-done audit correction
+
+Date: 2026-05-05
+
+Classification: truly-done duplicate/superseded tracking issue.
+
+Audit result: returned to `issues/done/` after review feedback. The title contains `(dup)`, which marks this issue as a duplicate/superseded tracker; duplicate closure issues must not remain in `issues/open/` unless the duplicate mapping itself is invalid.
+
+Evidence files:
+- `issues/done/062-implement-function.md` after this correction
+- `issues/index.md` after regeneration

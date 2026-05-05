@@ -317,7 +317,7 @@ Duplicate candidates:
   },
   {
     "state": "done",
-    "path": "issues/open/444-implement-regexp-literal.md",
+    "path": "issues/done/444-implement-regexp-literal.md",
     "title": "Implement RegExp literal support",
     "reason": "same reference path, same feature label, title overlap"
   },

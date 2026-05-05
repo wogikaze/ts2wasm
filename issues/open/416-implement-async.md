@@ -128,7 +128,7 @@ Follow-up issues:
 
 - `issues/done/005-add-fine-grained-unsupported-feature-breakdown.md` - issues/done/005-add-fine-grained-unsupported-feature-breakdown.md (same feature label, same group key)
 - `issues/open/060-investigate-unknown-unsupported-cases.md` - Investigate and classify unknown-unsupported diagnostic cases (same feature label, same group key)
-- `issues/open/062-implement-function.md` - Implement function support (same feature label, same group key, title overlap)
+- `issues/done/062-implement-function.md` - Implement function support (same feature label, same group key, title overlap)
 - `issues/done/062c-ordinary-function-declarations-and-calls.md` - Implement ordinary function declarations and direct calls (same feature label, same group key, title overlap)
 - `issues/done/062e-function-closures.md` - Implement function closures (same feature label, same group key, title overlap)
 - `issues/open/062g-heap-closure-object-abi-and-rooting.md` - Define and implement heap closure object ABI and rooting (same feature label, same group key, title overlap)

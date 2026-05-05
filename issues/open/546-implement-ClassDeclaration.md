@@ -220,7 +220,7 @@ Duplicate candidates:
   },
   {
     "state": "open",
-    "path": "issues/open/460-implement-ClassDeclaration.md",
+    "path": "issues/done/460-implement-ClassDeclaration.md",
     "title": "Implement Classdeclaration",
     "reason": "same reference path, same feature label"
   },
@@ -238,7 +238,7 @@ Duplicate candidates:
   },
   {
     "state": "done",
-    "path": "issues/open/065-implement-parser-syntax.md",
+    "path": "issues/done/065-implement-parser-syntax.md",
     "title": "Implement parser syntax extensions",
     "reason": "same feature label, title overlap"
   },

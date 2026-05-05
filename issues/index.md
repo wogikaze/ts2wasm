@@ -15,18 +15,18 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 1 | 0 | 1 |
 | coverage | 42 | 32 | 10 |
 | docs | 2 | 1 | 1 |
-| frontend | 4376 | 3879 | 497 |
+| frontend | 4376 | 3871 | 505 |
 | harness | 1 | 0 | 1 |
 | ir | 18 | 8 | 10 |
 | issues | 4 | 0 | 4 |
 | parser | 1 | 1 | 0 |
 | reference | 211 | 183 | 28 |
-| runtime | 259 | 122 | 137 |
+| runtime | 259 | 120 | 139 |
 | scripts | 2 | 1 | 1 |
 | security | 1 | 0 | 1 |
 | tests | 6 | 2 | 4 |
 | wasi | 1 | 1 | 0 |
-| total | 4960 | 4245 | 715 |
+| total | 4960 | 4235 | 725 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -225,12 +225,8 @@ Issue files are the source of truth for work items. The generated section below 
 | 052d | Implement broader JSON.stringify replacer semantics (audit reopened #052d) | feature | runtime/builtins | class: blocked | Implement broader JSON.stringify replacer semantics (audit reopened #052d) |
 | 059 | Implement parser syntax extensions for TypeScript and advanced JS (audit reopened #059) | feature | frontend | class: blocked | Implement parser syntax extensions for TypeScript and advanced JS (audit reopened #059) |
 | 060 | Investigate and classify unknown-unsupported diagnostic cases (audit reopened #060) | spike | frontend | class: blocked | Investigate and classify unknown-unsupported diagnostic cases (audit reopened #060) |
-| 061 | Implement Date object support (dup) (audit reopened #061) | feature | runtime/builtins | class: blocked | Implement Date object support (dup) (audit reopened #061) |
-| 062 | Implement function support (dup) (audit reopened #062) | feature | frontend/semantics | class: blocked | Implement function support (dup) (audit reopened #062) |
 | 062g | Define and implement heap closure object ABI and rooting (audit reopened #062g) | feature | runtime/abi | class: blocked | Define and implement heap closure object ABI and rooting (audit reopened #062g) |
-| 063 | Implement function resolution (dup) (audit reopened #063) | feature | frontend/resolver | class: blocked | Implement function resolution (dup) (audit reopened #063) |
 | 064 | Implement name resolution (triaged - superseded by test262 metadata issues) | spike | frontend/resolver | class: blocked | Implement name resolution (triaged - superseded by test262 metadata issues) |
-| 065 | Implement parser syntax extensions (dup) (audit reopened #065) | feature | frontend/syntax | class: blocked | Implement parser syntax extensions (dup) (audit reopened #065) |
 | 068 | Implement unsupported expression types | spike | frontend/semantics | class: blocked | Implement unsupported expression types |
 | 070 | Implement Apisample | spike | runtime/builtins | class: triage-needed | Implement Apisample |
 | 074 | Implement Declarationerrorsnoemitonerror | spike | frontend/syntax | class: blocked | Implement Declarationerrorsnoemitonerror |
@@ -301,7 +297,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 441 | Implement object literal enhancements | spike | frontend/syntax | class: triage-needed | Implement object literal enhancements |
 | 442 | Implement parser syntax extensions | spike | frontend/syntax | class: triage-needed | Implement parser syntax extensions |
 | 443 | Implement property access support | spike | frontend/syntax | class: blocked | Implement property access support |
-| 444 | Implement RegExp literal support (dup) (audit reopened #444) | spike | runtime/builtins | class: blocked | Implement RegExp literal support (dup) (audit reopened #444) |
 | 445 | Implement runtime-subset support | spike | reference/triage | class: triage-needed | Implement runtime-subset support |
 | 446 | Implement scope-analysis support | spike | frontend/syntax | class: triage-needed | Implement scope-analysis support |
 | 449 | Implement super keyword | spike | frontend/syntax | class: triage-needed | Implement super keyword |
@@ -311,7 +306,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 453 | Implement type-system support | spike | frontend/syntax | class: blocked | Implement type-system support |
 | 454 | Investigate and classify unknown-unsupported cases | spike | frontend/syntax | class: triage-needed | Investigate and classify unknown-unsupported cases |
 | 459 | Implement Arrowfunctionexpression (audit reopened #459) | spike | frontend/syntax | class: blocked | Implement Arrowfunctionexpression (audit reopened #459) |
-| 460 | Implement Classdeclaration (dup) (audit reopened #460) | spike | frontend/syntax | class: blocked | Implement Classdeclaration (dup) (audit reopened #460) |
 | 461 | Implement Classdeclarationwithinvalidconstonpropertydeclaration (audit reopened #461) | spike | frontend/syntax | class: blocked | Implement Classdeclarationwithinvalidconstonpropertydeclaration (audit reopened #461) |
 | 465 | Implement Memberaccessordeclaration (audit reopened #465) | spike | frontend/syntax | class: blocked | Implement Memberaccessordeclaration (audit reopened #465) |
 | 477 | Implement Accessoverriddenbaseclassmember (audit reopened #477) | spike | frontend/semantics | class: blocked | Implement Accessoverriddenbaseclassmember (audit reopened #477) |
@@ -397,7 +391,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 604 | Implement Ambientclassdeclarationwithextends (audit reopened #604) | spike | frontend/syntax | class: blocked | Implement Ambientclassdeclarationwithextends (audit reopened #604) |
 | 605 | Implement Ambientclassdeclaredbeforebase | spike | frontend/syntax | class: blocked | Implement Ambientclassdeclaredbeforebase |
 | 606 | Implement Ambientconstliterals | spike | frontend/syntax | class: triage-needed | Implement Ambientconstliterals |
-| 607 | Implement Ambientenumelementinitializer (dup) (audit reopened #607) | spike | frontend/syntax | class: blocked | Implement Ambientenumelementinitializer (dup) (audit reopened #607) |
 | 609 | Implement Ambientexportdefaulterrors | spike | frontend/syntax | class: blocked | Implement Ambientexportdefaulterrors |
 | 610 | Implement Ambientexternalmoduleinanotherexternalmodule | spike | frontend/syntax | class: blocked | Implement Ambientexternalmoduleinanotherexternalmodule |
 | 611 | Implement Ambientexternalmodulereopen (audit reopened #611) | spike | frontend/syntax | class: blocked | Implement Ambientexternalmodulereopen (audit reopened #611) |
@@ -565,7 +558,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 774 | Implement Autolift | spike | frontend/syntax | class: triage-needed | Implement Autolift |
 | 775 | Implement Autotypeassignedusingdestructuringfromnevernocrash | spike | frontend/resolver | class: blocked | Implement Autotypeassignedusingdestructuringfromnevernocrash |
 | 780 | Implement Arrowfunctionexpression (audit reopened #780) | spike | frontend/syntax | class: blocked | Implement Arrowfunctionexpression (audit reopened #780) |
-| 781 | Implement Classdeclaration (dup) (audit reopened #781) | spike | frontend/syntax | class: blocked | Implement Classdeclaration (dup) (audit reopened #781) |
 | 782 | Implement Classdeclarationwithinvalidconstonpropertydeclaration (audit reopened #782) | spike | frontend/syntax | class: blocked | Implement Classdeclarationwithinvalidconstonpropertydeclaration (audit reopened #782) |
 | 784 | Implement Functiondeclaration Import Export (audit reopened #784) | spike | frontend/syntax | class: blocked | Implement Functiondeclaration Import Export (audit reopened #784) |
 | 786 | Implement Memberaccessordeclaration (audit reopened #786) | spike | frontend/syntax | class: blocked | Implement Memberaccessordeclaration (audit reopened #786) |
@@ -579,7 +571,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 837 | Implement Alwaysstrictmodule (audit reopened #837) | spike | frontend/syntax | class: blocked | Implement Alwaysstrictmodule (audit reopened #837) |
 | 838 | Implement Alwaysstrictnoimplicitusestrict (audit reopened #838) | spike | frontend/syntax | class: blocked | Implement Alwaysstrictnoimplicitusestrict (audit reopened #838) |
 | 839 | Implement Ambientclassdeclarationwithextends (audit reopened #839) | spike | frontend/syntax | class: blocked | Implement Ambientclassdeclarationwithextends (audit reopened #839) |
-| 842 | Implement Ambientenumelementinitializer (dup) (audit reopened #842) | spike | frontend/syntax | class: blocked | Implement Ambientenumelementinitializer (dup) (audit reopened #842) |
 | 846 | Implement Ambientexternalmodulereopen (audit reopened #846) | spike | frontend/syntax | class: blocked | Implement Ambientexternalmodulereopen (audit reopened #846) |
 | 848 | Implement Ambientexternalmodulewithrelativeexternalimportdeclaration (audit reopened #848) | spike | frontend/syntax | class: blocked | Implement Ambientexternalmodulewithrelativeexternalimportdeclaration (audit reopened #848) |
 | 849 | Implement Ambientexternalmodulewithrelativemodulename (audit reopened #849) | spike | frontend/syntax | class: blocked | Implement Ambientexternalmodulewithrelativemodulename (audit reopened #849) |
@@ -3565,7 +3556,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 3993 | Implement Reexportnamealiasedandhoisted | spike | frontend/syntax | class: blocked | Implement Reexportnamealiasedandhoisted |
 | 3994 | Implement Reexportwrittencorrectlyindeclaration | spike | frontend/syntax | class: blocked | Implement Reexportwrittencorrectlyindeclaration |
 | 3995 | Implement Reexportedmissingalias | spike | frontend/syntax | class: blocked | Implement Reexportedmissingalias |
-| 3996 | Implement Compiler (dup) (audit reopened #3996) | spike | frontend/syntax | class: blocked | Implement Compiler (dup) (audit reopened #3996) |
 | 3997 | Implement Referencesatisfiesexpression | spike | frontend/syntax | class: blocked | Implement Referencesatisfiesexpression |
 | 3998 | Implement Referencetypespreferedtopathifpossible | spike | frontend/syntax | class: blocked | Implement Referencetypespreferedtopathifpossible |
 | 3999 | Implement Regexpwithopenbracketincharclass | spike | reference/triage | class: triage-needed | Implement Regexpwithopenbracketincharclass |
@@ -4471,14 +4461,18 @@ Issue files are the source of truth for work items. The generated section below 
 | 058 | Implement equality operators (==, !=, ===, !==) | feature | runtime/semantics | see `issues/done/058-implement-equality-operators.md` |
 | 059a | Implement TypeScript satisfies and const assertion erasure | feature | frontend | see `issues/done/059a-implement-typescript-satisfies-and-const-assertion-erasure.md` |
 | 060a | Close unknown-unsupported fixed-window spike | spike | frontend | see `issues/done/060a-close-unknown-unsupported-fixed-window-spike.md` |
+| 061 | Implement Date object support (dup) | feature | runtime/builtins | see `issues/done/061-implement-date.md` |
 | 061a | Merge Date reference issue into Date epic | cleanup | issues | see `issues/done/061a-merge-date-reference-issue-into-date-epic.md` |
+| 062 | Implement function support (dup) | feature | frontend/semantics | see `issues/done/062-implement-function.md` |
 | 062a | Split function epic into callable child issues | cleanup | issues | see `issues/done/062a-split-function-epic-into-callable-child-issues.md` |
 | 062b | Own dynamic Function constructor diagnostics | feature | frontend/semantics | see `issues/done/062b-dynamic-function-constructor-diagnostics.md` |
 | 062c | Implement ordinary function declarations and direct calls | feature | frontend/semantics | see `issues/done/062c-ordinary-function-declarations-and-calls.md` |
 | 062d | Implement function this and arguments semantics | feature | frontend/semantics | see `issues/done/062d-function-this-and-arguments.md` |
 | 062e | Implement function closures | feature | frontend/semantics | see `issues/done/062e-function-closures.md` |
 | 062f | Implement function object metadata | feature | frontend/semantics | see `issues/done/062f-function-object-metadata.md` |
+| 063 | Implement function resolution (dup) | feature | frontend/resolver | see `issues/done/063-implement-function-resolution.md` |
 | 064a | Resolve Date global builtin namespace | feature | frontend | see `issues/done/064a-resolve-date-global-builtin-namespace.md` |
+| 065 | Implement parser syntax extensions (dup) | feature | frontend/syntax | see `issues/done/065-implement-parser-syntax.md` |
 | 065a | Merge duplicate parser syntax issue into 059 | cleanup | issues | see `issues/done/065a-merge-duplicate-parser-syntax-issue-into-059.md` |
 | 066 | Implement RegExp literal support (dup) | spike | runtime/builtins | see `issues/done/066-implement-regexp-literal.md` |
 | 067 | Investigate and classify unknown-unsupported cases (dup) | spike | reference/triage | see `issues/done/067-implement-unknown-unsupported.md` |
@@ -4769,12 +4763,14 @@ Issue files are the source of truth for work items. The generated section below 
 | 430 | Implement function support (dup) | spike | frontend/syntax | see `issues/done/430-implement-function.md` |
 | 433 | Implement legacy-global-builtin support (dup) | spike | frontend/syntax | see `issues/done/433-implement-legacy-global-builtin.md` |
 | 436 | Implement module-resolution support | spike | frontend/syntax | see `issues/done/436-implement-module-resolution.md` |
+| 444 | Implement RegExp literal support (dup) | spike | runtime/builtins | see `issues/done/444-implement-regexp-literal.md` |
 | 447 | Implement spread operator | spike | frontend/syntax | see `issues/done/447-implement-spread.md` |
 | 448 | Implement string-builtin support | spike | frontend/syntax | see `issues/done/448-implement-string-builtin.md` |
 | 455 | Implement Apilibcheck (dup) | spike | frontend/syntax | see `issues/done/455-implement-APILibCheck.md` |
 | 456 | Implement Apisample Arrow Function (dup) | spike | frontend/syntax | see `issues/done/456-implement-APISample-arrow-function.md` |
 | 457 | Implement Apisample Import Export (dup) | spike | frontend/syntax | see `issues/done/457-implement-APISample-import-export.md` |
 | 458 | Implement Apisample Jsdoc (dup) | spike | frontend/syntax | see `issues/done/458-implement-APISample-jsdoc.md` |
+| 460 | Implement Classdeclaration (dup) | spike | frontend/syntax | see `issues/done/460-implement-ClassDeclaration.md` |
 | 462 | Implement Exportassignment (dup) | spike | frontend/syntax | see `issues/done/462-implement-ExportAssignment.md` |
 | 463 | Implement Functiondeclaration Import Export | spike | frontend/syntax | see `issues/done/463-implement-FunctionDeclaration-import-export.md` |
 | 464 | Implement Functiondeclaration Parser Syntax (dup) | spike | frontend/syntax | see `issues/done/464-implement-FunctionDeclaration-parser-syntax.md` |
@@ -4836,12 +4832,14 @@ Issue files are the source of truth for work items. The generated section below 
 | 539 | Implement Ambiguouscallswherereturntypesagree (dup) | spike | frontend/syntax | see `issues/done/539-implement-ambiguousCallsWhereReturnTypesAgree.md` |
 | 540 | Implement Ambiguousgenericassertion (dup) | spike | frontend/syntax | see `issues/done/540-implement-ambiguousGenericAssertion.md` |
 | 552 | Implement Parameterlist | spike | frontend/syntax | see `issues/done/552-implement-ParameterList.md` |
+| 607 | Implement Ambientenumelementinitializer (dup) | spike | frontend/syntax | see `issues/done/607-implement-ambientEnumElementInitializer.md` |
 | 608 | Implement Ambienterrors | spike | runtime/builtins | see `issues/done/608-implement-ambientErrors.md` |
 | 669 | Implement Arrayconcat (dup) | spike | frontend/syntax | see `issues/done/669-implement-arrayConcat.md` |
 | 776 | Implement Apilibcheck (dup) | spike | frontend/syntax | see `issues/done/776-implement-APILibCheck.md` |
 | 777 | Implement Apisample Arrow Function (dup) | spike | frontend/syntax | see `issues/done/777-implement-APISample-arrow-function.md` |
 | 778 | Implement Apisample Import Export (dup) | spike | frontend/syntax | see `issues/done/778-implement-APISample-import-export.md` |
 | 779 | Implement Apisample Jsdoc (dup) | spike | frontend/syntax | see `issues/done/779-implement-APISample-jsdoc.md` |
+| 781 | Implement Classdeclaration (dup) | spike | frontend/syntax | see `issues/done/781-implement-ClassDeclaration.md` |
 | 783 | Implement Exportassignment (dup) | spike | frontend/syntax | see `issues/done/783-implement-ExportAssignment.md` |
 | 785 | Implement Functiondeclaration Parser Syntax (dup) | spike | frontend/syntax | see `issues/done/785-implement-FunctionDeclaration-parser-syntax.md` |
 | 787 | Implement Parameterlist | spike | frontend/syntax | see `issues/done/787-implement-ParameterList.md` |
@@ -4889,6 +4887,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 836 | Implement Allowsyntheticdefaultimportscanpaintcrossmoduledeclaration (dup) | spike | frontend/syntax | see `issues/done/836-implement-allowSyntheticDefaultImportsCanPaintCrossModuleDeclaration.md` |
 | 840 | Implement Ambientclassdeclaredbeforebase (dup) | spike | frontend/syntax | see `issues/done/840-implement-ambientClassDeclaredBeforeBase.md` |
 | 841 | Implement Ambientconstliterals (dup) | spike | frontend/syntax | see `issues/done/841-implement-ambientConstLiterals.md` |
+| 842 | Implement Ambientenumelementinitializer (dup) | spike | frontend/syntax | see `issues/done/842-implement-ambientEnumElementInitializer.md` |
 | 843 | Implement Ambienterrors | spike | runtime/builtins | see `issues/done/843-implement-ambientErrors.md` |
 | 844 | Implement Ambientexportdefaulterrors (dup) | spike | frontend/syntax | see `issues/done/844-implement-ambientExportDefaultErrors.md` |
 | 845 | Implement Ambientexternalmoduleinanotherexternalmodule (dup) | spike | frontend/syntax | see `issues/done/845-implement-ambientExternalModuleInAnotherExternalModule.md` |
@@ -5057,6 +5056,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 3386 | Implement Moduleresolutionwithsuffixes Module Resolution | spike | frontend/syntax | see `issues/done/3386-implement-moduleResolutionWithSuffixes-module-resolution.md` |
 | 3581 | Implement Nodenextimportmodeimplicitindexresolution Module Resolution | spike | frontend/syntax | see `issues/done/3581-implement-nodeNextImportModeImplicitIndexResolution-module-resolution.md` |
 | 3795 | Implement Pathmappingbasedmoduleresolution Module Resolution | spike | frontend/syntax | see `issues/done/3795-implement-pathMappingBasedModuleResolution-module-resolution.md` |
+| 3996 | Implement Compiler (dup) | spike | frontend/syntax | see `issues/done/3996-implement-reference-typescript-tests-cases-compiler.md` |
 | 4009 | Implement Relativenamesinclassicresolution | spike | frontend/syntax | see `issues/done/4009-implement-relativeNamesInClassicResolution.md` |
 | 4032 | Implement Requireofjsonfilewithmodulenoderesolutionemites | spike | frontend/syntax | see `issues/done/4032-implement-requireOfJsonFileWithModuleNodeResolutionEmitEs.md` |
 | 4033 | Implement Requireofjsonfilewithmodulenoderesolutionemitesnext | spike | frontend/syntax | see `issues/done/4033-implement-requireOfJsonFileWithModuleNodeResolutionEmitEsNext.md` |

@@ -130,7 +130,7 @@ Follow-up issues:
 - `issues/open/417-implement-async-iteration.md` - Implement async-iteration support (same reference path, same feature label, same group key, title overlap)
 - `issues/open/060-investigate-unknown-unsupported-cases.md` - Investigate and classify unknown-unsupported diagnostic cases (same feature label, same group key)
 - `issues/done/230-implement-async-iteration-for-await-of.md` - Implement async iteration and for-await-of (same feature label, same group key, title overlap)
-- `issues/open/444-implement-regexp-literal.md` - Implement RegExp literal support (same feature label, same group key, title overlap)
+- `issues/done/444-implement-regexp-literal.md` - Implement RegExp literal support (same feature label, same group key, title overlap)
 
 ## Smart triage
 

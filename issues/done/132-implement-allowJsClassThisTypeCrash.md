@@ -189,7 +189,7 @@ Duplicate candidates:
 [
   {
     "state": "open",
-    "path": "issues/open/062-implement-function.md",
+    "path": "issues/done/062-implement-function.md",
     "title": "Implement function support",
     "reason": "same feature label, title overlap"
   },

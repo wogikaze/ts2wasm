@@ -279,7 +279,7 @@ Duplicate candidates:
   },
   {
     "state": "done",
-    "path": "issues/open/061-implement-date.md",
+    "path": "issues/done/061-implement-date.md",
     "title": "Implement Date object support",
     "reason": "same reference path, title overlap"
   },

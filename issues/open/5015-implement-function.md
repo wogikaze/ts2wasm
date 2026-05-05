@@ -269,7 +269,7 @@ Duplicate candidates:
   },
   {
     "state": "done",
-    "path": "issues/open/063-implement-function-resolution.md",
+    "path": "issues/done/063-implement-function-resolution.md",
     "title": "Implement function resolution",
     "reason": "same reference path"
   },
