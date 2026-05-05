@@ -15,7 +15,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 1 | 0 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4377 | 3848 | 529 |
+| frontend | 4377 | 3847 | 530 |
 | harness | 1 | 0 | 1 |
 | ir | 21 | 0 | 21 |
 | issues | 4 | 0 | 4 |
@@ -26,7 +26,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 4967 | 4127 | 840 |
+| total | 4967 | 4126 | 841 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -515,7 +515,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 859 | Implement Ambientwithstatements (audit reopened #859) | spike | frontend/syntax | class: blocked | Implement Ambientwithstatements (audit reopened #859) |
 | 873 | Implement Anonymousclassexpression (audit reopened #873) | spike | frontend/syntax | class: blocked | Implement Anonymousclassexpression (audit reopened #873) |
 | 874 | Implement Anonymousmodules (audit reopened #874) | spike | frontend/syntax | class: blocked | Implement Anonymousmodules (audit reopened #874) |
-| 876 | Implement Anyasreturntypefornewoncall (audit reopened #876) | spike | frontend/syntax | class: blocked | Implement Anyasreturntypefornewoncall (audit reopened #876) |
 | 877 | Implement Anydeclare (audit reopened #877) | spike | frontend/syntax | class: blocked | Implement Anydeclare (audit reopened #877) |
 | 1012 | Implement Autonumberinginenums | spike | frontend/syntax | class: triage-needed | Implement Autonumberinginenums |
 | 1013 | Implement Avoid | spike | frontend/syntax | class: blocked | Implement Avoid |
@@ -4843,6 +4842,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 871 | Implement Anonterface (dup) | spike | frontend/syntax | see `issues/done/871-implement-anonterface.md` |
 | 872 | Implement Anonymousclassdeclarationdoesntprintwithreadonly (dup) | spike | frontend/syntax | see `issues/done/872-implement-anonymousClassDeclarationDoesntPrintWithReadonly.md` |
 | 875 | Implement Anyandunknownhavefalsycomponents (dup) | spike | frontend/resolver | see `issues/done/875-implement-anyAndUnknownHaveFalsyComponents.md` |
+| 876 | Implement Anyasreturntypefornewoncall (audit reopened #876) | spike | frontend/syntax | see `issues/done/876-implement-anyAsReturnTypeForNewOnCall.md` |
 | 878 | Implement Anyidenticaltoitself (dup) | spike | frontend/syntax | see `issues/done/878-implement-anyIdenticalToItself.md` |
 | 879 | Implement Anyinferenceanonymousfunctions (dup) | spike | frontend/syntax | see `issues/done/879-implement-anyInferenceAnonymousFunctions.md` |
 | 880 | Implement Argsinscope (dup) | spike | frontend/syntax | see `issues/done/880-implement-argsInScope.md` |
