@@ -34,6 +34,7 @@ fn m3_semantic_fixtures_match_node_output_under_iwasm() {
         "fixtures/core-semantics/default-params.ts",
         "fixtures/core-semantics/for-loop-prefix-increment.ts",
         "fixtures/core-semantics/in-operator.ts",
+        "fixtures/core-semantics/unary-void-operator.ts",
     ] {
         assert_fixture_matches_node(fixture);
     }
@@ -2352,4 +2353,11 @@ fn string_html_wrappers_fixture_matches_node_output_under_iwasm() {
 #[test]
 fn string_substr_fixture_matches_node_output_under_iwasm() {
     assert_fixture_matches_node("fixtures/builtins-and-io/string-substr.ts");
+}
+
+#[test]
+fn class_new_expression_method_call_fixture_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node(
+        "fixtures/core-semantics/class-new-expression-method-call.ts",
+    );
 }

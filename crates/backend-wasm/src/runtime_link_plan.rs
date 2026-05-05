@@ -320,6 +320,9 @@ impl RuntimeLinkPlan {
                     LoweredUnaryOp::Delete => {
                         // Delete is handled specially, no runtime function needed
                     }
+                    LoweredUnaryOp::Void => {
+                        // Void evaluates inner expr for side effects, no runtime function needed
+                    }
                 }
             }
             LoweredExpr::Assign { expr, .. } => {

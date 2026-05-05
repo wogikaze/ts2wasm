@@ -1665,6 +1665,28 @@ impl<'a> Resolver<'a> {
                                     args: lowered_args,
                                 });
                             }
+                            // new C().method() — lower through class method dispatch
+                            if let ResolvedExpr::New { class_name, .. } = object.as_ref() {
+                                if let Some(method_id) =
+                                    self.resolve_class_method(class_name, method)
+                                {
+                                    let lowered_receiver = self.lower_expr(object)?;
+                                    let mut lowered_args = vec![lowered_receiver];
+                                    lowered_args.extend(
+                                        args.iter()
+                                            .map(|e| self.lower_expr(e))
+                                            .collect::<Result<Vec<_>, _>>()?,
+                                    );
+                                    self.append_class_method_captures(
+                                        method_id,
+                                        &mut lowered_args,
+                                    )?;
+                                    return Ok(LoweredExpr::Call {
+                                        kind: FunctionCallKind::User(method_id),
+                                        args: lowered_args,
+                                    });
+                                }
+                            }
                             return Err(Diagnostic {
                                 code: DiagCode::UnsupportedSyntax,
                                 message: format!(

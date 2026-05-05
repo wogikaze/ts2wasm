@@ -267,6 +267,11 @@ impl WatEmitter<'_> {
                         // This should not be reached if delete is properly lowered
                         wat.push_str(&format!("{pad}(i32.const 0)\n"))
                     }
+                    LoweredUnaryOp::Void => {
+                        // Evaluate expr for side effects, drop result, produce undefined
+                        wat.push_str(&format!("{pad}(drop)\n"));
+                        wat.push_str(&format!("{pad}(i32.const 0)\n"));
+                    }
                 }
             }
             LoweredExpr::Assign { local, expr } => {

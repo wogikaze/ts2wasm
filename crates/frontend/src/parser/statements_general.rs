@@ -1207,6 +1207,7 @@ impl Parser {
         self.expect(TokenKind::Function)?;
         if self.consume(TokenKind::Star) {
             let (name, _) = self.expect_ident()?;
+            let _ = self.consume_typescript_generic_parameter_list()?;
             self.expect(TokenKind::LeftParen)?;
             let mut params = Vec::new();
             if !self.consume(TokenKind::RightParen) {
