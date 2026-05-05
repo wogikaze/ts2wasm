@@ -391,6 +391,23 @@ fn lowering_routes_string_match_new_regexp_to_runtime_call() {
 }
 
 #[test]
+fn lowering_routes_known_array_push_expression_to_growing_runtime() {
+    let program = parse_and_resolve("let arr = [1, 2, 3]; let n = arr.push(4); console.log(n);");
+    let lowered = ts2wasm_ir::lowered::lower_program(&program).unwrap();
+
+    match &lowered.top_level_statements[1] {
+        ts2wasm_ir::lowered::LoweredStmt::Let(
+            _,
+            ts2wasm_ir::lowered::LoweredExpr::RuntimeCall { runtime_fn, args },
+        ) => {
+            assert_eq!(runtime_fn, "ArrayPushGrow");
+            assert_eq!(args.len(), 2);
+        }
+        other => panic!("unexpected lowered Array.prototype.push statement: {other:?}"),
+    }
+}
+
+#[test]
 fn lowering_routes_regexp_literal_exec_to_runtime_call() {
     let program = parse_and_resolve("let hit = /abc/.exec(\"zabcx\");");
     let lowered = ts2wasm_ir::lowered::lower_program(&program).unwrap();
