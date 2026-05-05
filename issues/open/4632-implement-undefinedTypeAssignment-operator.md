@@ -123,7 +123,7 @@ Follow-up issues:
 - `issues/done/030-implement-instanceof-operator.md` - Implement instanceof operator (same feature label, title overlap)
 - `issues/done/031-implement-in-operator.md` - Implement in operator (same feature label, title overlap)
 - `issues/done/032-implement-delete-operator.md` - Implement delete operator (same feature label, title overlap)
-- `issues/open/268-implement-for-loop-increment-operator.md` - Implement for loop increment operator (same feature label, title overlap)
+- `issues/done/268-implement-for-loop-increment-operator.md` - Implement for loop increment operator (same feature label, title overlap)
 
 ## Smart triage
 

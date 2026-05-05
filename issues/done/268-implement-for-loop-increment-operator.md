@@ -5,7 +5,9 @@ type: feature
 area: frontend/semantics
 class: done
 priority: P2
-tracking: feature:for-loopupdated: 2026-05-05status: open
+tracking: feature:for-loop
+updated: 2026-05-06
+status: done
 ---
 
 ## Summary
@@ -118,7 +120,32 @@ Reopen reason: no `## Completion evidence` section is present, so close evidence
 Violated acceptance: the issue cannot provide repo-local close evidence for its checked acceptance criteria while it remains in this state. Acceptance checkboxes were reset for re-verification.
 
 Evidence files:
-- `issues/open/268-implement-for-loop-increment-operator.md` before this move
-- `issues/open/268-implement-for-loop-increment-operator.md` after this move
+- `issues/done/268-implement-for-loop-increment-operator.md` before this move
+- `issues/done/268-implement-for-loop-increment-operator.md` after this move
 
 Split follow-up: none created in this audit wave; this reopened issue remains the tracking item.
+
+## Completion evidence
+
+Completed in earlier implementation slices and re-verified on 2026-05-06.
+
+Implemented behavior:
+
+- Parser accepts for-loop update expressions using postfix `i++` and `i--`, plus prefix `++i` and `--i`.
+- Name resolution and lowering preserve loop-local update semantics for identifier update targets.
+- Runtime behavior for supported increment/decrement for-loop updates matches Node output under `iwasm`.
+- Non-identifier update targets remain rejected with the clear issue-268 diagnostic.
+
+Repo-local evidence:
+
+- `fixtures/core-semantics/for-loop-post-increment.ts`
+- `fixtures/core-semantics/for-loop-post-decrement.ts`
+- `fixtures/core-semantics/for-loop-prefix-inc-dec.ts`
+- `fixtures/core-semantics/for-loop-nonidentifier-update-unsupported.ts`
+- `crates/cli/tests/common/m2_node_diff_fixture_tests.rs`
+
+Validation:
+
+- `cargo nextest run -p ts2wasm-cli for_loop_increment_update_fixtures_match_node_output_under_iwasm for_loop_non_identifier_increment_update_reports_issue_268` => pass (`2 tests run: 2 passed, 645 skipped`)
+- `cargo fmt --all --check` => pass
+- `python scripts/manager.py gate` => pass on 2026-05-06 after this audit wave (`968 tests run: 968 passed, 9 skipped`)
