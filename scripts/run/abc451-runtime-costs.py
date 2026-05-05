@@ -72,6 +72,10 @@ ARRAY_PUSH_GROW_COUNTERS = [
     "array_push_top_heap_hits",
     "array_push_top_heap_miss_non_top",
     "array_push_top_heap_miss_memory",
+    "array_push_non_top_after_array_block",
+    "array_push_non_top_after_non_array_block",
+    "array_push_non_top_after_unknown_block",
+    "array_push_non_top_unknown_separation",
     "array_push_growth_double_capacity",
     "array_push_growth_linear_capacity",
     "array_push_growth_min_capacity",
@@ -135,6 +139,20 @@ def replace_expected(text: str, old: str, new: str, *, expected: int, label: str
     count = text.count(old)
     if count != expected:
         raise RuntimeError(f"expected {expected} occurrences for {label}, found {count}")
+    return text.replace(old, new)
+
+
+def replace_optional_once(text: str, old: str, new: str, *, label: str) -> str:
+    count = text.count(old)
+    if count > 1:
+        raise RuntimeError(f"expected at most 1 occurrence for {label}, found {count}")
+    return text.replace(old, new)
+
+
+def replace_at_most(text: str, old: str, new: str, *, max_expected: int, label: str) -> str:
+    count = text.count(old)
+    if count > max_expected:
+        raise RuntimeError(f"expected at most {max_expected} occurrences for {label}, found {count}")
     return text.replace(old, new)
 
 
@@ -238,6 +256,7 @@ def array_push_grow_helpers() -> str:
     (local $memory_bytes i32)
     (local $is_top i32)
     (local $fits_memory i32)
+    (local $next_kind i32)
     (local.set $old_body_size
       (i32.load
         (i32.add
@@ -258,16 +277,36 @@ def array_push_grow_helpers() -> str:
         (if (i32.and (local.get $is_top) (local.get $fits_memory))
           (then
             (global.set $abc451_diag_array_push_top_heap_hits
-              (i32.add (global.get $abc451_diag_array_push_top_heap_hits) (i32.const 1))))
-          (else
-            (if (i32.eqz (local.get $is_top))
+              (i32.add (global.get $abc451_diag_array_push_top_heap_hits) (i32.const 1)))))
+        (if (i32.eqz (local.get $is_top))
+          (then
+            (global.set $abc451_diag_array_push_top_heap_miss_non_top
+              (i32.add (global.get $abc451_diag_array_push_top_heap_miss_non_top) (i32.const 1)))
+            (if (i32.gt_u (global.get $heap) (local.get $current_end))
               (then
-                (global.set $abc451_diag_array_push_top_heap_miss_non_top
-                  (i32.add (global.get $abc451_diag_array_push_top_heap_miss_non_top) (i32.const 1)))))
-            (if (i32.and (local.get $is_top) (i32.eqz (local.get $fits_memory)))
-              (then
-                (global.set $abc451_diag_array_push_top_heap_miss_memory
-                  (i32.add (global.get $abc451_diag_array_push_top_heap_miss_memory) (i32.const 1)))))))))
+                (local.set $next_kind
+                  (i32.and
+                    (i32.load (local.get $current_end))
+                    (i32.const 28)))
+                (if (i32.eq (local.get $next_kind) (i32.const 8))
+                  (then
+                    (global.set $abc451_diag_array_push_non_top_after_array_block
+                      (i32.add (global.get $abc451_diag_array_push_non_top_after_array_block) (i32.const 1))))
+                  (else
+                    (if (i32.eqz (local.get $next_kind))
+                      (then
+                        (global.set $abc451_diag_array_push_non_top_after_unknown_block
+                          (i32.add (global.get $abc451_diag_array_push_non_top_after_unknown_block) (i32.const 1))))
+                      (else
+                        (global.set $abc451_diag_array_push_non_top_after_non_array_block
+                          (i32.add (global.get $abc451_diag_array_push_non_top_after_non_array_block) (i32.const 1))))))))
+              (else
+                (global.set $abc451_diag_array_push_non_top_unknown_separation
+                  (i32.add (global.get $abc451_diag_array_push_non_top_unknown_separation) (i32.const 1)))))))
+        (if (i32.and (local.get $is_top) (i32.eqz (local.get $fits_memory)))
+          (then
+            (global.set $abc451_diag_array_push_top_heap_miss_memory
+              (i32.add (global.get $abc451_diag_array_push_top_heap_miss_memory) (i32.const 1))))))))
     (i32.and (local.get $is_top) (local.get $fits_memory)))
 """
 
@@ -309,7 +348,7 @@ def instrument_array_push_grow_attribution(wat: str) -> str:
                 (i32.and
                   (i32.add
                     (i32.add
-                      (i32.const 4)
+                      (i32.const 20)
                       (i32.shl (local.get $new_capacity) (i32.const 2)))
                     (i32.const 7))
                   (i32.const -8)))
@@ -317,7 +356,7 @@ def instrument_array_push_grow_attribution(wat: str) -> str:
         """          (call $abc451_diag_array_push_top_check
             (i32.and (local.get $arr) (i32.const -8))
             (i32.add
-              (i32.const 4)
+              (i32.const 20)
               (i32.shl (local.get $new_capacity) (i32.const 2))))""",
         expected=1,
         label="array push top check helper",
@@ -326,32 +365,28 @@ def instrument_array_push_grow_attribution(wat: str) -> str:
 
 
 def instrument_callsite_attribution(wat: str) -> str:
-    wat = replace_expected(
+    wat = replace_optional_once(
         wat,
         "        (call $copy (i32.const 300) (local.get $ptr) (i32.const 9))",
         "        (call $abc451_diag_copy_value_to_string (i32.const 300) (local.get $ptr) (i32.const 9))",
-        expected=1,
         label="value_to_string undefined copy",
     )
-    wat = replace_expected(
+    wat = replace_optional_once(
         wat,
         "        (call $copy (i32.const 284) (local.get $ptr) (i32.const 4))",
         "        (call $abc451_diag_copy_value_to_string (i32.const 284) (local.get $ptr) (i32.const 4))",
-        expected=1,
         label="value_to_string true copy",
     )
-    wat = replace_expected(
+    wat = replace_optional_once(
         wat,
         "        (call $copy (i32.const 268) (local.get $ptr) (i32.const 5))",
         "        (call $abc451_diag_copy_value_to_string (i32.const 268) (local.get $ptr) (i32.const 5))",
-        expected=1,
         label="value_to_string false copy",
     )
-    wat = replace_expected(
+    wat = replace_optional_once(
         wat,
         "        (call $copy (i32.const 292) (local.get $ptr) (i32.const 4))",
         "        (call $abc451_diag_copy_value_to_string (i32.const 292) (local.get $ptr) (i32.const 4))",
-        expected=1,
         label="value_to_string null copy",
     )
     wat = replace_expected(
@@ -463,12 +498,12 @@ def instrument_callsite_attribution(wat: str) -> str:
     wat = replace_expected(
         wat,
         """            (call $copy
-              (i32.add (i32.and (local.get $arr) (i32.const -8)) (i32.const 4))
-              (i32.add (local.get $new_array) (i32.const 4))
+              (i32.add (i32.and (local.get $arr) (i32.const -8)) (i32.const 20))
+              (i32.add (local.get $new_array) (i32.const 20))
               (i32.shl (local.get $old_len) (i32.const 2)))""",
         """            (call $abc451_diag_copy_array_growth
-              (i32.add (i32.and (local.get $arr) (i32.const -8)) (i32.const 4))
-              (i32.add (local.get $new_array) (i32.const 4))
+              (i32.add (i32.and (local.get $arr) (i32.const -8)) (i32.const 20))
+              (i32.add (local.get $new_array) (i32.const 20))
               (i32.shl (local.get $old_len) (i32.const 2)))""",
         expected=1,
         label="array growth copy helper",
@@ -500,11 +535,11 @@ def instrument_callsite_attribution(wat: str) -> str:
         wat,
         """      (call $alloc_heap
         (i32.add
-          (i32.const 4)
+          (i32.const 20)
           (i32.shl (local.get $len) (i32.const 2))))""",
         """      (call $abc451_diag_alloc_array_map_result
         (i32.add
-          (i32.const 4)
+          (i32.const 20)
           (i32.shl (local.get $len) (i32.const 2))))""",
         expected=1,
         label="array_map result allocation",
@@ -518,17 +553,17 @@ def instrument_callsite_attribution(wat: str) -> str:
         expected=1,
         label="array_map string allocation",
     )
-    wat = replace_expected(
+    wat = replace_at_most(
         wat,
         "(call $alloc_heap (i32.const 4))",
         "(call $abc451_diag_alloc_scratch_array (i32.const 4))",
-        expected=2,
+        max_expected=2,
         label="scratch array allocation",
     )
     wat = replace_expected(
         wat,
-        "(call $alloc_heap (i32.const 16448))",
-        "(call $abc451_diag_alloc_gc_roots (i32.const 16448))",
+        "(call $alloc_heap (i32.const 16452))",
+        "(call $abc451_diag_alloc_gc_roots (i32.const 16452))",
         expected=1,
         label="gc roots allocation",
     )
@@ -575,11 +610,11 @@ def instrument_callsite_attribution(wat: str) -> str:
         wat,
         """              (call $alloc_heap
                 (i32.add
-                  (i32.const 4)
+                  (i32.const 20)
                   (i32.shl (local.get $new_capacity) (i32.const 2))))""",
         """              (call $abc451_diag_alloc_array_growth
                 (i32.add
-                  (i32.const 4)
+                  (i32.const 20)
                   (i32.shl (local.get $new_capacity) (i32.const 2))))""",
         expected=1,
         label="array growth allocation helper",
@@ -805,6 +840,29 @@ def build_attribution(counters: dict[str, int]) -> dict[str, Any]:
         },
     ]
     array_push_miss_reasons = sorted(array_push_miss_reasons, key=lambda entry: int(entry["calls"]), reverse=True)
+    array_push_separation_reasons = [
+        {
+            "reason": "recursive_or_result_array_after_current_array",
+            "calls": counters["array_push_non_top_after_array_block"],
+        },
+        {
+            "reason": "retained_live_non_array_after_current_array",
+            "calls": counters["array_push_non_top_after_non_array_block"],
+        },
+        {
+            "reason": "intervening_unknown_heap_block_after_current_array",
+            "calls": counters["array_push_non_top_after_unknown_block"],
+        },
+        {
+            "reason": "unknown_or_non_forward_heap_separation",
+            "calls": counters["array_push_non_top_unknown_separation"],
+        },
+    ]
+    array_push_separation_reasons = sorted(
+        array_push_separation_reasons,
+        key=lambda entry: int(entry["calls"]),
+        reverse=True,
+    )
     return {
         "copy": {
             "top": copy_categories[:5],
@@ -844,6 +902,12 @@ def build_attribution(counters: dict[str, int]) -> dict[str, Any]:
             + counters["array_push_top_heap_miss_memory"],
             "miss_reasons": array_push_miss_reasons,
             "top_miss_reason": array_push_miss_reasons[0]["reason"] if array_push_miss_reasons else "none",
+            "non_top_separation_reasons": array_push_separation_reasons,
+            "intervening_allocation_after_array": {
+                "calls": counters["array_push_non_top_after_array_block"]
+                + counters["array_push_non_top_after_non_array_block"]
+                + counters["array_push_non_top_after_unknown_block"],
+            },
             "growth_capacity_paths": {
                 "double_capacity": counters["array_push_growth_double_capacity"],
                 "linear_capacity": counters["array_push_growth_linear_capacity"],
