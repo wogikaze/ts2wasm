@@ -452,12 +452,60 @@ HEAP_MASK=-8 HEAP_TAG=7";
     #[allow(clippy::assertions_on_constants)]
     fn backward_compat_v1_archive_matches_current() {
         use crate::consts::RuntimeConst;
-        assert!(
-            RuntimeConst::ABI_VERSION <= 1,
-            "ABI v{} backward-compat archive needed: constants changed since v1.
-             When v1 modules exist in CI artifacts, create a `compat/v1-snapshot.txt`
-             reference file and compare current constants against it.",
-            RuntimeConst::ABI_VERSION
+        use crate::value::ValueTag;
+
+        let snapshot = format!(
+            "ABI_VERSION={abi_version}\n\
+             WASM_PAGE_SIZE={wasm_page}\n\
+             MEMORY_MIN_PAGES={min_pages} MEMORY_MAX_PAGES={max_pages}\n\
+             DATA_START={data_start} HEAP_START={heap_start}\n\
+             SCRATCH_OFFSET={scratch_off} SCRATCH_SIZE={scratch_sz}\n\
+             STDIN_BUFFER_OFFSET={stdin_buf_off} STDIN_BUFFER_SIZE={stdin_buf_sz}\n\
+             STDIN_IOVEC_OFFSET={iovec_off} STDIN_NREAD_OFFSET={nread_off}\n\
+             GC_HEADER_SIZE={gc_hdr} GC_THRESHOLD={gc_thresh}\n\
+             GC_HEADROOM_PAGES={gc_headroom} HEAP_GROW_MIN_PAGES={heap_grow}\n\
+             ARRAY_HEADER_SIZE={arr_hdr} OBJECT_HEADER_SIZE={obj_hdr}\n\
+             ALIGN={align}\n\
+             TAG_SHIFT={tag_shift} TAG_MASK={tag_mask}\n\
+             HEAP_MASK={hm}",
+            abi_version = RuntimeConst::ABI_VERSION,
+            wasm_page = Layout::WASM_PAGE_SIZE,
+            min_pages = Layout::MEMORY_MIN_PAGES,
+            max_pages = Layout::MEMORY_MAX_PAGES,
+            data_start = Layout::DATA_START,
+            heap_start = Layout::HEAP_START,
+            scratch_off = Layout::SCRATCH_OFFSET,
+            scratch_sz = Layout::SCRATCH_SIZE,
+            stdin_buf_off = Layout::STDIN_BUFFER_OFFSET,
+            stdin_buf_sz = Layout::STDIN_BUFFER_SIZE,
+            iovec_off = Layout::STDIN_IOVEC_OFFSET,
+            nread_off = Layout::STDIN_NREAD_OFFSET,
+            gc_hdr = Layout::GC_HEADER_SIZE,
+            gc_thresh = Layout::GC_THRESHOLD,
+            gc_headroom = Layout::GC_HEADROOM_PAGES,
+            heap_grow = Layout::HEAP_GROW_MIN_PAGES,
+            arr_hdr = Layout::ARRAY_HEADER_SIZE,
+            obj_hdr = Layout::OBJECT_HEADER_SIZE,
+            align = Layout::ALIGN,
+            tag_shift = ValueTag::NUMBER_SHIFT,
+            tag_mask = ValueTag::TAG_MASK,
+            hm = ValueTag::HEAP_MASK,
+        );
+
+        let archive = include_str!("../compat/v1-snapshot.txt");
+
+        assert_eq!(
+            snapshot,
+            archive.trim_end(),
+            "ABI v1 backward-compat archive mismatch!\n\
+             Current constants differ from the v1 archive at\n\
+             `crates/runtime-abi/compat/v1-snapshot.txt`.\n\n\
+             If you intentionally bumped ABI_VERSION, create a new\n\
+             `compat/v2-snapshot.txt` and leave the v1 archive unchanged.\n\n\
+             If constants were modified without bumping ABI_VERSION, restore\n\
+             the v1 baseline or create a new archive for the new constants.\n\n\
+             Got:\n{snapshot}\n\n\
+             Archive:\n{archive}"
         );
     }
 }
