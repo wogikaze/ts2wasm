@@ -1,6 +1,6 @@
 # Implement heap OOM check (audit reopened #013)
 
-**Status**: open
+**Status**: done
 **Created**: 2026-04-26
 **Updated**: 2026-04-26
 **Completed**: 2026-04-26
@@ -57,8 +57,8 @@ Reopen reason: no `## Completion evidence` section is present, so close evidence
 Violated acceptance: the issue cannot provide repo-local close evidence for its checked acceptance criteria while it remains in this state. Acceptance checkboxes were reset for re-verification.
 
 Evidence files:
-- `issues/open/013-implement-heap-oom-check.md` before this move
-- `issues/open/013-implement-heap-oom-check.md` after this move
+- `issues/done/013-implement-heap-oom-check.md` before this close move
+- `issues/done/013-implement-heap-oom-check.md` after this close move
 
 Split follow-up: none created in this audit wave; this reopened issue remains the tracking item.
 

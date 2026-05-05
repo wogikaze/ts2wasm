@@ -21,12 +21,12 @@ Issue files are the source of truth for work items. The generated section below 
 | issues | 4 | 0 | 4 |
 | parser | 1 | 1 | 0 |
 | reference | 211 | 183 | 28 |
-| runtime | 259 | 120 | 139 |
+| runtime | 259 | 119 | 140 |
 | scripts | 2 | 1 | 1 |
 | security | 1 | 0 | 1 |
 | tests | 6 | 2 | 4 |
 | wasi | 1 | 1 | 0 |
-| total | 4960 | 4235 | 725 |
+| total | 4960 | 4234 | 726 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -159,8 +159,8 @@ Issue files are the source of truth for work items. The generated section below 
 | 003 | Verify manifest against emitted WAT imports (audit reopened #003) | test | wasi/tests | implementation-ready | P0 | 002 | A manifest is only useful as a gate if it matches emitted WAT/wasm imports. The current project needs a test that cro... |
 | 007 | Harden reference coverage prerequisites (audit reopened #007) | infra | scripts/reference | implementation-ready | P1 | 005 | Reference coverage scripts depend on external reference repositories. If those repositories are missing, failures can... |
 | 009 | Select first coverage-improvement feature slice (audit reopened #009) | spike | frontend/ir/runtime | design-ready | P1 | 005 | After coverage breakdown exists, the next implementation should be chosen by data. The goal is to increase semantic p... |
-| 013 | Implement heap OOM check (audit reopened #013) | feature | runtime/memory | implementation-ready | P0 |  | `$alloc_heap` does not check `memory.size` before allocation. Large allocations can cause undefined behavior or memor... |
 | 015 | Implement object literal string key support (audit reopened #015) | feature | parser/semantics | implementation-ready | P1 |  | Object literal with string literal keys `{"x": v}` is not implemented. Currently only identifier keys `{x: v}` are su... |
+| 017 | Design and implement GC strategy (audit reopened #017) | feature | runtime/memory | implementation-ready | P1 | 013 | Current runtime has no GC. Long-running programs and programs with closure escape will leak memory. docs/04 specifies... |
 | 018 | Implement UTF-8 string support (audit reopened #018) | feature | runtime/semantics | implementation-ready | P1 |  | Non-ASCII string literals are intentionally unsupported. UTF-8 support is incomplete. docs/04 specifies UTF-8 decode/... |
 | 022 | Expand test262 differential coverage (audit reopened #022) | feature | tests/coverage | implementation-ready | P1 | 005 | test262 full differential operation is incomplete. Current coverage uses sample/ramp approach. docs/11 Gate D require... |
 | 217 | Implement GC heap header and trigger accounting (audit reopened #217) | feature | runtime/memory | implementation-ready | P1 | 017a | Runtime allocation still returns raw bump-allocated payload blocks with no GC object header or allocation trigger acc... |
@@ -211,7 +211,6 @@ Issue files are the source of truth for work items. The generated section below 
 |---:|---|---|---|---|---|
 | 006 | Remove stale milestone and transitional docs (audit reopened #006) | cleanup | docs | 002, 003 | Remove stale milestone and transitional docs (audit reopened #006) |
 | 010 | Extract frontend module from crates/cli (audit reopened #010) | refactor | frontend | 003, 004 | Extract frontend module from crates/cli (audit reopened #010) |
-| 017 | Design and implement GC strategy (audit reopened #017) | feature | runtime/memory | 013 | Design and implement GC strategy (audit reopened #017) |
 | 019 | Integrate TypeScript parser/checker (audit reopened #019) | feature | frontend | 010 | Integrate TypeScript parser/checker (audit reopened #019) |
 | 019a | Integrate TypeScript compiler API for type checking (audit reopened #019a) | feature | frontend | 010 | Integrate TypeScript compiler API for type checking (audit reopened #019a) |
 | 019b | Extract type information for optimization hints (audit reopened #019b) | feature | frontend | 019a | Extract type information for optimization hints (audit reopened #019b) |
@@ -4413,6 +4412,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 008 | Introduce typed WAT writer skeleton | refactor | backend | see `issues/done/008-introduce-typed-wat-writer-skeleton.md` |
 | 011 | Enable `RUSTFLAGS=-D warnings` for nextest / harness (warning-clean tree) | infra | tests | see `issues/done/011-enable-cargo-deny-warnings-in-ci-and-harnesses.md` |
 | 012 | Fix computed property semantics bug | bug | runtime/semantics | see `issues/done/012-fix-computed-property-semantics-bug.md` |
+| 013 | Implement heap OOM check (audit reopened #013) | feature | runtime/memory | see `issues/done/013-implement-heap-oom-check.md` |
 | 014 | Implement dynamic property key support | feature | runtime/semantics | see `issues/done/014-implement-dynamic-property-key-support.md` |
 | 016 | Implement prototype and method call support | feature | runtime/semantics | see `issues/done/016-implement-prototype-and-method-call-support.md` |
 | 017a | Design GC strategy | feature | runtime/memory | see `issues/done/017a-design-gc-strategy.md` |
