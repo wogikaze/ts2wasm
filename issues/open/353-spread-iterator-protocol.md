@@ -30,15 +30,7 @@ can resume from that boundary.
 
 ## Current failure
 
-```sh
-tmp=/tmp/ts2wasm-353-iterator-spread.ts
-printf 'function* gen() { yield 1; yield 2; }\nconst arr = [...gen()];\nconsole.log(arr);\n' > "$tmp"
-cargo run -q -p ts2wasm-cli -- build "$tmp" -o /tmp/ts2wasm-353-iterator-spread.wasm
-```
-
-Current result: `[UnsupportedRuntimeSubset] issue-353: generator result spread requires iterator protocol runtime lowering in this milestone`
-
-Additional blocker evidence from 2026-05-01:
+### Generator function spread
 
 ```sh
 tmp=/tmp/ts2wasm-353-generator-spread.ts
@@ -58,7 +50,30 @@ Node result:
 ts2wasm result:
 
 ```text
-error: [UnsupportedSyntax] expected identifier, got Some(SpannedToken { kind: Star, span: Span { start: 8, end: 9 } }) at 10..13
+error: [UnsupportedRuntimeSubset] issue-353: generator result spread requires iterator protocol runtime lowering in this milestone
+```
+
+### Custom iterable spread
+
+```sh
+tmp=/tmp/ts2wasm-353-custom-iterable-spread.ts
+printf 'const iterable = { [Symbol.iterator]: function() { let i = 0; return { next: function() { i = i + 1; return { value: i, done: i > 2 }; } }; } };\nconst arr = [...iterable];\nconsole.log(arr.length);\nconsole.log(arr[0]);\nconsole.log(arr[1]);\n' > "$tmp"
+node "$tmp"
+cargo run -q -p ts2wasm-cli -- build "$tmp" -o /tmp/ts2wasm-353-custom-iterable-spread.wasm
+```
+
+Node result:
+
+```text
+2
+1
+2
+```
+
+ts2wasm result:
+
+```text
+error: [UnsupportedSyntax] issue-353: custom iterable spread via Symbol.iterator requires iterator protocol runtime support in this milestone
 ```
 
 ```sh

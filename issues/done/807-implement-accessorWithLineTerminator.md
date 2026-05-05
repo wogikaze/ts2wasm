@@ -117,7 +117,7 @@ Follow-up issues:
 
 - `issues/done/103-implement-accessorWithLineTerminator.md` - Implement Accessorwithlineterminator (same reference path, same group key, title overlap)
 - `issues/done/486-implement-accessorWithLineTerminator.md` - Implement Accessorwithlineterminator (same reference path, same feature label, same group key, title overlap)
-- `issues/open/572-implement-accessorWithLineTerminator.md` - Implement Accessorwithlineterminator (same reference path, same feature label, same group key, title overlap)
+- `issues/done/572-implement-accessorWithLineTerminator.md` - Implement Accessorwithlineterminator (same reference path, same feature label, same group key, title overlap)
 
 ## Smart triage
 
@@ -127,7 +127,7 @@ Not generated. Rerun with `--triage-limit 1` or higher.
 ## 重複整理メモ
 
 この issue はタイトルが重複しているため、内容がより充実している
-`issues/open/572-implement-accessorWithLineTerminator.md` に統合されました。
+`issues/done/572-implement-accessorWithLineTerminator.md` に統合されました。
 そちらを参照してください。
 ## Completion evidence
 

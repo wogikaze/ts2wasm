@@ -3,12 +3,14 @@ id: 572
 title: "Implement Accessorwithlineterminator"
 type: spike
 area: reference/triage
-class: triage-needed
+class: superseded
 priority: P2
 depends_on: []
 blocks: []
 created: 2026-05-01
-updated: 2026-05-01
+updated: 2026-05-06
+status: done
+completed: 2026-05-06
 ---
 
 ## Summary
@@ -469,18 +471,16 @@ TypeScript/JavaScript oracle:
 
 ## Completion evidence
 
-Fill only when moving to `done/`.
-
 Commits:
 
-- `...`
+- pending closure commit
 
 Validation result:
 
 ```text
-command:
-result:
-date:
+command: python scripts/manager.py update-issue-index --check
+result: pass
+date: 2026-05-06
 ```
 
 Remaining risks:

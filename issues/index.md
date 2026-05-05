@@ -20,13 +20,13 @@ Issue files are the source of truth for work items. The generated section below 
 | ir | 21 | 0 | 21 |
 | issues | 4 | 0 | 4 |
 | parser | 1 | 0 | 1 |
-| reference | 211 | 180 | 31 |
-| runtime | 263 | 96 | 167 |
+| reference | 211 | 179 | 32 |
+| runtime | 263 | 95 | 168 |
 | scripts | 2 | 0 | 2 |
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 4969 | 4056 | 913 |
+| total | 4969 | 4054 | 915 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -205,7 +205,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 365 | Reduce ABC451 array-growth allocation and copy pressure | bug | runtime/memory | class: blocked | Reduce ABC451 array-growth allocation and copy pressure |
 | 386 | Reduce ABC451 depth-8 array copy pressure | feature | runtime/memory | class: triage-needed | Reduce ABC451 depth-8 array copy pressure |
 | 411 | Implement annexb-ishtmldda support | spike | frontend/syntax | class: triage-needed | Implement annexb-ishtmldda support |
-| 412 | Implement arguments-object support | spike | runtime/builtins | class: triage-needed | Implement arguments-object support |
 | 413 | Implement arity support | spike | reference/triage | class: triage-needed | Implement arity support |
 | 416 | Implement async/await support | spike | frontend/syntax | class: triage-needed | Implement async/await support |
 | 417 | Implement async-iteration support | spike | frontend/syntax | class: triage-needed | Implement async-iteration support |
@@ -260,7 +259,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 566 | Implement Accessordeclarationemitjs | spike | frontend/syntax | class: blocked | Implement Accessordeclarationemitjs |
 | 567 | Implement Accessordeclarationemitvisibilityerrors | spike | frontend/syntax | class: blocked | Implement Accessordeclarationemitvisibilityerrors |
 | 570 | Implement Accessorinferredreturntypeerrorinreturnstatement | spike | frontend/syntax | class: blocked | Implement Accessorinferredreturntypeerrorinreturnstatement |
-| 572 | Implement Accessorwithlineterminator | spike | reference/triage | class: triage-needed | Implement Accessorwithlineterminator |
 | 574 | Implement Accessors | spike | frontend/syntax | class: triage-needed | Implement Accessors |
 | 576 | Implement Addmorecallsignaturestobasesignature | spike | frontend/syntax | class: blocked | Implement Addmorecallsignaturestobasesignature |
 | 577 | Implement Aliasassignments | spike | frontend/syntax | class: blocked | Implement Aliasassignments |
@@ -4618,6 +4616,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 408 | Implement tsgo declaration emit: AsConstSatisfies/const generic method cases | feature | frontend/syntax | see file |
 | 409 | Implement tsgo declaration emit: package-json exports and subpath reexport cases | feature | frontend/syntax | see `issues/done/409-implement-tsgo-declaration-emit-package-json-subpath.md` |
 | 410 | Implement tsgo declaration emit: subpath import declaration emit cases | feature | frontend/syntax | see `issues/done/410-implement-tsgo-declaration-emit-subpath-import-links.md` |
+| 412 | Implement arguments-object support | spike | runtime/builtins | see `issues/done/412-implement-arguments-object.md` |
 | 414 | Implement array-builtin support (dup) | spike | frontend/syntax | see `issues/done/414-implement-array-builtin.md` |
 | 415 | Implement arrow functions | spike | frontend/syntax | see `issues/done/415-implement-arrow-function.md` |
 | 421 | Implement class syntax | spike | frontend/syntax | see `issues/done/421-implement-class.md` |
@@ -4723,6 +4722,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 568 | Implement Accessordeclarationorder (audit reopened #568) | spike | frontend/syntax | see `issues/done/568-implement-accessorDeclarationOrder.md` |
 | 569 | Implement Accessorinambientcontextes (audit reopened #569) | spike | frontend/syntax | see `issues/done/569-implement-accessorInAmbientContextES.md` |
 | 571 | Implement Accessorparameteraccessibilitymodifier (audit reopened #571) | spike | frontend/syntax | see `issues/done/571-implement-accessorParameterAccessibilityModifier.md` |
+| 572 | Implement Accessorwithlineterminator | spike | reference/triage | see `issues/done/572-implement-accessorWithLineTerminator.md` |
 | 573 | Implement Accessorwithoutbody (audit reopened #573) | spike | frontend/syntax | see `issues/done/573-implement-accessorWithoutBody.md` |
 | 575 | Implement Accessorsinambientcontext (audit reopened #575) | spike | frontend/syntax | see `issues/done/575-implement-accessorsInAmbientContext.md` |
 | 581 | Implement Aliasinaccessiblemodule (audit reopened #581) | spike | frontend/syntax | see `issues/done/581-implement-aliasInaccessibleModule.md` |

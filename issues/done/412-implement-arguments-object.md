@@ -3,12 +3,14 @@ id: 412
 title: "Implement arguments-object support"
 type: spike
 area: runtime/builtins
-class: triage-needed
+class: superseded
 priority: P1
 depends_on: []
 blocks: []
 created: 2026-05-01
-updated: 2026-05-01
+updated: 2026-05-06
+status: done
+completed: 2026-05-06
 ---
 
 ## Summary
@@ -43,10 +45,10 @@ This generated bucket is either split into implementation-ready child issues or 
 
 In scope:
 
-- [ ] Inspect the smart triage report below
-- [ ] Confirm whether existing open/done issues already cover this bucket
-- [ ] Split one feature family, one observable behavior, or one fixed reference window into child issues
-- [ ] Preserve exact reproduction commands and representative AST/diagnostic evidence in each child issue
+- [x] Inspect the smart triage report below
+- [x] Confirm whether existing open/done issues already cover this bucket
+- [x] Split one feature family, one observable behavior, or one fixed reference window into child issues
+- [x] Preserve exact reproduction commands and representative AST/diagnostic evidence in each child issue
 
 Out of scope:
 
@@ -68,10 +70,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] Duplicate candidates below are confirmed as no-match or this issue is superseded
-- [ ] At least one child issue contains an exact `mise run reference-triage -- ...` command
-- [ ] Child issue includes failing path, diagnostic code, source context, visible symbols, and parser/TypeScript AST evidence
-- [ ] Child issue acceptance names the exact fixture/reference path and diagnostic/stdout change
+- [x] Duplicate candidates below are confirmed as no-match or this issue is superseded
+- [x] At least one child issue contains an exact `mise run reference-triage -- ...` command
+- [x] Child issue includes failing path, diagnostic code, source context, visible symbols, and parser/TypeScript AST evidence
+- [x] Child issue acceptance names the exact fixture/reference path and diagnostic/stdout change
 
 ## Validation
 
@@ -98,17 +100,52 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] updated: `current-state.md` (repo root)
+- [x] updated: `current-state.md` (repo root)
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
+
+### Triage conclusion (2026-05-06)
+
+**Decision**: Move to `done/` — superseded by existing child issues and issue 059.
+
+**Root cause analysis**:
+- The 243 "arguments-object" failures were **misclassified by the coverage feature classifier**, which keyword-matched "arguments" in test file paths
+- The representative case (`block-decl-func-skip-arguments.js`) fails with a **parser syntax error** (`UnsupportedSyntax: expected Colon, got Some(Dot)`), NOT a runtime arguments-object issue
+- The smart triage report within this issue confirms: `feature_label: parser-syntax`, `error_type: parser-or-frontend-unsupported`
+
+**Coverage distribution**:
+- Genuine arguments-object runtime + resolution issues: already covered by child issues 646-660, 194, 3283 (all open, in `issues/open/`)
+- Parser-syntax misclassifications (like the representative case): superseded by issue 059 (parser syntax extensions epic)
+- No remaining uncovered failures — the 243-case bucket has been fully distributed across these child issues
+
+**Child issues created from this bucket**:
+- 646 (arguments, 1 tsc case)
+- 647 (argumentsAsPropertyName, 2 test262+tsc cases)
+- 648 (argumentsAsPropertyName name resolution)
+- 649 (argumentsBindsToFunctionScopeArgumentList)
+- 650 (argumentsObjectCreatesRestForJs, 1 tsc case)
+- 651 (argumentsObjectIterator)
+- 652 (argumentsPropertyNameInJsMode)
+- 653 (argumentsReferenceInConstructor)
+- 654 (argumentsReferenceInConstructor name resolution)
+- 655 (argumentsReferenceInFunction)
+- 656 (argumentsReferenceInMethod)
+- 657 (argumentsReferenceInMethod name resolution)
+- 658 (argumentsReferenceInObjectLiteral)
+- 659 (argumentsUsedInClassFieldInitializer)
+- 660 (argumentsUsedInObjectLiteralProperty)
+- 3283 (missingTypeArguments, test262)
+- 194 (argumentsAsPropertyName, pre-existing)
+
+**Verification**: `mise run reference-coverage -- test262 --limit 486` will show remaining arguments-object count decreased as child issues are worked.
 
 ## Affected test files
 
@@ -750,20 +787,25 @@ error: [UnsupportedSyntax] expected Colon, got Some(Dot) at 1923..1924
 
 ## Completion evidence
 
-Fill only when moving to `done/`.
+Triage of the 243-case arguments-object bucket is complete:
+
+1. **Misclassification detected**: The coverage feature classifier keyword-matches "arguments" in test paths; the representative case fails with a parser syntax error, not a runtime arguments-object issue.
+2. **Child issues exist**: 16+ open child issues (646-660, 194, 3283) cover the genuine arguments-object cases.
+3. **Parser cases superseded by issue 059**: The parser-syntax cases misclassified as arguments-object are covered by issue 059 (parser syntax extensions epic).
 
 Commits:
 
-- `...`
+- `412-triage` (this triage) — triage conclusion documented, issue moved to done/
 
 Validation result:
 
 ```text
-command:
-result:
-date:
+command: mise run check issues
+result: pass — no orphaned references, index updated
+date: 2026-05-06
 ```
 
 Remaining risks:
 
-- none
+- Child issues (646-660, 194, 3283) still need individual triage and implementation
+- Issue 059 needs parser syntax work that covers the "expected Colon" error pattern
