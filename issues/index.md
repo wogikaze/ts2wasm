@@ -15,7 +15,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 1 | 0 | 1 |
 | coverage | 42 | 32 | 10 |
 | docs | 2 | 0 | 2 |
-| frontend | 4377 | 3858 | 519 |
+| frontend | 4377 | 3857 | 520 |
 | harness | 1 | 0 | 1 |
 | ir | 20 | 4 | 16 |
 | issues | 4 | 0 | 4 |
@@ -26,7 +26,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 4963 | 4185 | 778 |
+| total | 4963 | 4184 | 779 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -157,7 +157,6 @@ Issue files are the source of truth for work items. The generated section below 
 | ID | Title | Type | Area | Class | Priority | Depends on | Summary |
 |---:|---|---|---|---|---|---|---|
 | 268 | Implement for loop increment operator (audit reopened #268) | feature | frontend/semantics | done | P2 |  | Implement for loop increment operator (audit reopened #268) |
-| 1001e | Annex B eval-code function declaration residuals (existing-binding/no-skip/skip-early-err patterns) (audit reopened #1001e) | feature | frontend/semantics | ready | P3 | 225 | Annex B eval-code function declaration residuals (existing-binding/no-skip/skip-early-err patterns) (audit reopened #... |
 | 5001 | Meta: TypeScript Compiler Semantic Analysis Coverage | meta | frontend/semantics | design-ready | P1 |  | Meta: TypeScript Compiler Semantic Analysis Coverage |
 | 5004 | Meta: Runtime Builtins Coverage (test262) (audit reopened #5004) | meta | runtime/builtins | design-ready | P1 |  | Meta: Runtime Builtins Coverage (test262) (audit reopened #5004) |
 | 5005 | Meta: TypeScript Compiler Name Resolution Coverage | meta | frontend/resolver | design-ready | P1 |  | Meta: TypeScript Compiler Name Resolution Coverage |
@@ -5017,6 +5016,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 999 | Implement Augmentedclasswithprototypepropertyonmodule (dup) | spike | frontend/syntax | see `issues/done/999-implement-augmentedClassWithPrototypePropertyOnModule.md` |
 | 1000 | Implement Augmentedtypesclass (dup) | spike | frontend/resolver | see `issues/done/1000-implement-augmentedTypesClass.md` |
 | 1001 | Implement Augmentedtypesenum Import Export (dup) | spike | frontend/syntax | see `issues/done/1001-implement-augmentedTypesEnum-import-export.md` |
+| 1001e | Annex B eval-code function declaration residuals (existing-binding/no-skip/skip-early-err patterns) (audit reopened #1001e) | feature | frontend/semantics | see `issues/done/1001e-eval-annexb-function-existing-binding-residuals.md` |
 | 1002 | Implement Augmentedtypesenum Parser Syntax (dup) | spike | frontend/resolver | see `issues/done/1002-implement-augmentedTypesEnum-parser-syntax.md` |
 | 1003 | Implement Augmentedtypesexternalmodule (dup) | spike | frontend/syntax | see `issues/done/1003-implement-augmentedTypesExternalModule.md` |
 | 1004 | Implement Augmentedtypesfunction (dup) | spike | frontend/resolver | see `issues/done/1004-implement-augmentedTypesFunction.md` |
