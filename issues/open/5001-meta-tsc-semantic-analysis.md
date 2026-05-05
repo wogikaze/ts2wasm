@@ -89,6 +89,8 @@ Not run:
 - Follow-up scan found 348 direct children with recorded `parser-syntax`
   diagnostics; relinked those to parser meta `5000` and normalized their area
   to `frontend/syntax`.
+- Relinked 23 direct children with recorded `type-alias` diagnostics to the
+  open TypeScript type-alias parent `345`.
 
 Validation result:
 
