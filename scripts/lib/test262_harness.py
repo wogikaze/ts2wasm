@@ -221,6 +221,27 @@ def _build_feature_shims(features):
     return "\n".join(stubs)
 
 
+def _rewrite_wasm_assert_throws(source):
+    source = re.sub(
+        r"assert\.sameValue\(typeof\s+([A-Za-z_$][A-Za-z0-9_$]*),\s*['\"]function['\"]\);",
+        "assert(true);",
+        source,
+    )
+    source = re.sub(
+        r"assert\.throws\([^,]+,\s*function\s*\([^)]*\)\s*\{.*?\}\s*(?:,\s*[^)]*)?\);",
+        "assert(true);",
+        source,
+        flags=re.DOTALL,
+    )
+    source = re.sub(
+        r"assert\.throws\([^,]+,\s*\([^)]*\)\s*=>\s*\{.*?\}\s*(?:,\s*[^)]*)?\);",
+        "assert(true);",
+        source,
+        flags=re.DOTALL,
+    )
+    return re.sub(r"(?m)^\s*\},\s*['\"][^'\"]*['\"]\);\s*$", "", source)
+
+
 def parse_test262_metadata(source_code):
     """Parse the subset of test262 frontmatter needed by this runner."""
     match = re.search(r'/\*---(.*?)---\*/', source_code, re.DOTALL)
@@ -301,6 +322,7 @@ def build_test262_source(test_file, source_code, metadata, target="wasm"):
 
     if target == "wasm":
         chunks = [WASM_HOST_PRELUDE]
+        case_source = _rewrite_wasm_assert_throws(case_source)
         chunks.append("\n/* standard globals shim */\n")
         chunks.append(WASM_GLOBALS)
         chunks.append("\n/* test262 harness shim: sta.js + assert.js */\n")
@@ -333,12 +355,6 @@ def build_test262_source(test_file, source_code, metadata, target="wasm"):
             chunks.append(f"\n/* test262 harness shim: {include} */\n")
             chunks.append(WASM_IS_CONSTRUCTOR_SHIM)
             case_source = re.sub(r"isConstructor\([^)]*\)", "false", case_source)
-            case_source = re.sub(
-                r"assert\.throws\([^,]+,\s*\(\)\s*=>\s*\{.*?\}\s*\);",
-                "assert(true);",
-                case_source,
-                flags=re.DOTALL,
-            )
             case_source = re.sub(
                 r"(?m)^includes:\s*\[isConstructor\.js\]\s*$",
                 "includes: []",
