@@ -2128,4 +2128,336 @@ mod tests {
             other => panic!("expected ClassExpr in let initializer, got {other:?}"),
         }
     }
+
+    #[test]
+    fn parses_if_else_statement() {
+        let program = parse_program("let x = 0; if (true) { x = 1; } else { x = 2; }").unwrap();
+        assert_eq!(program.len(), 2);
+
+        match &program[1] {
+            Stmt::If {
+                condition,
+                then_body,
+                else_body,
+                ..
+            } => {
+                assert!(matches!(condition, Expr::Bool { value: true, .. }));
+                assert_eq!(then_body.len(), 1);
+                assert_eq!(else_body.len(), 1);
+                assert!(matches!(
+                    &then_body[0],
+                    Stmt::Assign { name, .. } if name == "x"
+                ));
+                assert!(matches!(
+                    &else_body[0],
+                    Stmt::Assign { name, .. } if name == "x"
+                ));
+            }
+            other => panic!("expected If statement, got {other:?}"),
+        }
+    }
+
+    #[test]
+    fn parses_if_without_else() {
+        let program = parse_program("let x = 0; if (true) { x = 1; }").unwrap();
+        assert_eq!(program.len(), 2);
+
+        match &program[1] {
+            Stmt::If {
+                condition,
+                then_body,
+                else_body,
+                ..
+            } => {
+                assert!(matches!(condition, Expr::Bool { value: true, .. }));
+                assert_eq!(then_body.len(), 1);
+                assert!(else_body.is_empty());
+            }
+            other => panic!("expected If statement, got {other:?}"),
+        }
+    }
+
+    #[test]
+    fn parses_while_statement() {
+        let program = parse_program("let i = 0; while (i < 3) { i++; }").unwrap();
+        assert_eq!(program.len(), 2);
+
+        match &program[1] {
+            Stmt::While { condition, body, .. } => {
+                assert!(matches!(
+                    condition,
+                    Expr::Binary {
+                        op: BinaryOp::Less,
+                        ..
+                    }
+                ));
+                assert_eq!(body.len(), 1);
+            }
+            other => panic!("expected While statement, got {other:?}"),
+        }
+    }
+
+    #[test]
+    fn parses_try_catch_statement() {
+        let program = parse_program("try { throw 42; } catch (e) { }").unwrap();
+        assert_eq!(program.len(), 1);
+
+        match &program[0] {
+            Stmt::TryCatch {
+                try_block,
+                catch_param,
+                catch_block,
+                finally_block,
+                ..
+            } => {
+                assert_eq!(try_block.len(), 1);
+                assert!(matches!(&try_block[0], Stmt::Throw { .. }));
+                assert_eq!(catch_param, &Some("e".to_owned()));
+                assert!(catch_block.is_some());
+                assert!(catch_block.as_ref().unwrap().is_empty());
+                assert!(finally_block.is_none());
+            }
+            other => panic!("expected TryCatch statement, got {other:?}"),
+        }
+    }
+
+    #[test]
+    fn parses_try_catch_finally_statement() {
+        let program = parse_program("try { } catch (e) { } finally { }").unwrap();
+        assert_eq!(program.len(), 1);
+
+        match &program[0] {
+            Stmt::TryCatch {
+                try_block,
+                catch_param,
+                catch_block,
+                finally_block,
+                ..
+            } => {
+                assert!(try_block.is_empty());
+                assert_eq!(catch_param, &Some("e".to_owned()));
+                assert!(catch_block.is_some());
+                assert!(catch_block.as_ref().unwrap().is_empty());
+                assert!(finally_block.is_some());
+                assert!(finally_block.as_ref().unwrap().is_empty());
+            }
+            other => panic!("expected TryCatch statement, got {other:?}"),
+        }
+    }
+
+    #[test]
+    fn parses_try_finally_statement() {
+        let program = parse_program("try { } finally { }").unwrap();
+        assert_eq!(program.len(), 1);
+
+        match &program[0] {
+            Stmt::TryCatch {
+                try_block,
+                catch_param,
+                catch_block,
+                finally_block,
+                ..
+            } => {
+                assert!(try_block.is_empty());
+                assert!(catch_param.is_none());
+                assert!(catch_block.is_none());
+                assert!(finally_block.is_some());
+                assert!(finally_block.as_ref().unwrap().is_empty());
+            }
+            other => panic!("expected TryCatch statement, got {other:?}"),
+        }
+    }
+
+    #[test]
+    fn parses_throw_inside_function_body() {
+        let program = parse_program("function f() { throw 42; }").unwrap();
+        assert_eq!(program.len(), 1);
+
+        let Stmt::Function { body, .. } = &program[0] else {
+            panic!("expected Function declaration");
+        };
+        assert_eq!(body.len(), 1);
+        match &body[0] {
+            Stmt::Throw {
+                expr: Expr::Number { value: 42, .. },
+                ..
+            } => {}
+            other => panic!("expected Throw statement in function body, got {other:?}"),
+        }
+    }
+
+    #[test]
+    fn parses_switch_statement() {
+        let program = parse_program("let x = 1; switch (x) { case 1: break; default: break; }")
+            .unwrap();
+        assert_eq!(program.len(), 2);
+
+        match &program[1] {
+            Stmt::Switch { expr, cases, .. } => {
+                assert!(matches!(expr, Expr::Ident { name, .. } if name == "x"));
+                assert_eq!(cases.len(), 2);
+                // First case: case 1:
+                assert!(cases[0].0.is_some());
+                assert!(matches!(
+                    &cases[0].0,
+                    Some(Expr::Number { value: 1, .. })
+                ));
+                assert_eq!(cases[0].1.len(), 1);
+                // Second case: default:
+                assert!(cases[1].0.is_none());
+                assert_eq!(cases[1].1.len(), 1);
+            }
+            other => panic!("expected Switch statement, got {other:?}"),
+        }
+    }
+
+    #[test]
+    fn parses_do_while_statement() {
+        let program = parse_program("let i = 0; do { i++; } while (i < 3);").unwrap();
+        assert_eq!(program.len(), 2);
+
+        match &program[1] {
+            Stmt::DoWhile { body, condition, .. } => {
+                assert_eq!(body.len(), 1);
+                assert!(matches!(
+                    condition,
+                    Expr::Binary {
+                        op: BinaryOp::Less,
+                        ..
+                    }
+                ));
+            }
+            other => panic!("expected DoWhile statement, got {other:?}"),
+        }
+    }
+
+    #[test]
+    fn parses_for_loop_statement() {
+        let program = parse_program("for (let i = 0; i < 3; i++) { }").unwrap();
+        assert_eq!(program.len(), 1);
+
+        match &program[0] {
+            Stmt::For {
+                init,
+                condition,
+                update,
+                body,
+                ..
+            } => {
+                assert!(init.is_some());
+                assert!(matches!(
+                    init.as_ref().unwrap().as_ref(),
+                    Stmt::Let { name, .. } if name == "i"
+                ));
+                assert!(condition.is_some());
+                assert!(matches!(
+                    condition.as_ref().unwrap(),
+                    Expr::Binary {
+                        op: BinaryOp::Less,
+                        ..
+                    }
+                ));
+                assert!(update.is_some());
+                assert!(body.is_empty());
+            }
+            other => panic!("expected For statement, got {other:?}"),
+        }
+    }
+
+    #[test]
+    fn parses_for_loop_without_init() {
+        let program = parse_program("let i = 0; for (; i < 3; i++) { }").unwrap();
+        assert_eq!(program.len(), 2);
+
+        match &program[1] {
+            Stmt::For {
+                init,
+                condition,
+                update,
+                body,
+                ..
+            } => {
+                assert!(init.is_none());
+                assert!(condition.is_some());
+                assert!(update.is_some());
+                assert!(body.is_empty());
+            }
+            other => panic!("expected For statement, got {other:?}"),
+        }
+    }
+
+    #[test]
+    fn parses_labeled_statement() {
+        let program = parse_program("label: while (true) { }").unwrap();
+        assert_eq!(program.len(), 1);
+
+        match &program[0] {
+            Stmt::Labeled { label, body, .. } => {
+                assert_eq!(label, "label");
+                assert!(matches!(
+                    body.as_ref(),
+                    Stmt::While { .. }
+                ));
+            }
+            other => panic!("expected Labeled statement, got {other:?}"),
+        }
+    }
+
+    #[test]
+    fn parses_break_inside_while_body() {
+        let program = parse_program("let i = 0; while (i < 3) { break; }").unwrap();
+        assert_eq!(program.len(), 2);
+
+        let Stmt::While { body, .. } = &program[1] else {
+            panic!("expected While statement");
+        };
+        assert_eq!(body.len(), 1);
+        match &body[0] {
+            Stmt::Break { label, .. } => {
+                assert!(label.is_none());
+            }
+            other => panic!("expected Break in while body, got {other:?}"),
+        }
+    }
+
+    #[test]
+    fn parses_continue_inside_while_body() {
+        let program = parse_program("let i = 0; while (i < 3) { i++; continue; }").unwrap();
+        assert_eq!(program.len(), 2);
+
+        let Stmt::While { body, .. } = &program[1] else {
+            panic!("expected While statement");
+        };
+        assert_eq!(body.len(), 2);
+        match &body[1] {
+            Stmt::Continue { label, .. } => {
+                assert!(label.is_none());
+            }
+            other => panic!("expected Continue in while body, got {other:?}"),
+        }
+    }
+
+    #[test]
+    fn parses_break_with_label() {
+        let program = parse_program("outer: while (true) { while (true) { break outer; } }")
+            .unwrap();
+        assert_eq!(program.len(), 1);
+
+        let Stmt::Labeled { body, .. } = &program[0] else {
+            panic!("expected Labeled statement");
+        };
+        let Stmt::While { body: outer_body, .. } = body.as_ref() else {
+            panic!("expected outer While statement");
+        };
+        let Stmt::While { body: inner_body, .. } = &outer_body[0] else {
+            panic!("expected inner While statement");
+        };
+        match &inner_body[0] {
+            Stmt::Break {
+                label: Some(target),
+                ..
+            } => assert_eq!(target, "outer"),
+            other => panic!("expected labeled Break, got {other:?}"),
+        }
+    }
 }

@@ -2162,6 +2162,9 @@ fn stmt_fixtures_match_node_output_under_iwasm() {
         "fixtures/stmt/break.ts",
         "fixtures/stmt/continue.ts",
         "fixtures/stmt/export-named.ts",
+        "fixtures/stmt/class-decl.ts",
+        "fixtures/stmt/throw.ts",
+        "fixtures/stmt/try-catch.ts",
     ] {
         assert_fixture_matches_node(fixture);
     }
