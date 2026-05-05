@@ -185,6 +185,14 @@ def version_key(issue_id: str) -> tuple[int, str]:
     return (int(number), suffix)
 
 
+def issue_sort_key(issue_id: str) -> tuple[int, str]:
+    match = re.fullmatch(r"([0-9]+)([a-z]?)", issue_id)
+    if not match:
+        return (10**9, issue_id)
+    number, suffix = match.groups()
+    return (int(number), suffix)
+
+
 def compute_blocked_ids(issues: list[Issue], open_ids: set[str]) -> set[str]:
     blocked = set()
     for issue in issues:
@@ -248,6 +256,187 @@ def render_summary_table(issues: list[Issue]) -> str:
         f"| total | {grand_total['total']} | {grand_total['open']} | {grand_total['resolved']} |"
     )
     return "\n".join(lines)
+
+
+META_ISSUE_IDS = {str(issue_id) for issue_id in range(5000, 5008)}
+
+
+def direct_child_stats(issues: list[Issue], parent_id: str) -> tuple[int, int, int]:
+    direct_children = [
+        issue
+        for issue in issues
+        if issue.name_id != parent_id and parent_id in issue.depends
+    ]
+    open_count = sum(1 for issue in direct_children if issue.state == "open")
+    done_count = sum(1 for issue in direct_children if issue.state == "done")
+    return len(direct_children), open_count, done_count
+
+
+def render_meta_tree_node(
+    issue: Issue,
+    issues: list[Issue],
+    children_by_parent: dict[str, list[Issue]],
+    primary_parent: dict[str, str],
+    level: int,
+) -> list[str]:
+    total_children, open_children, done_children = direct_child_stats(issues, issue.name_id)
+    state_class = f"{issue.state}/{issue.orch_class or '-'}"
+    suffix = ""
+    secondary_parents = [
+        dep
+        for dep in issue.depends
+        if dep in META_ISSUE_IDS and dep != primary_parent.get(issue.name_id)
+    ]
+    if secondary_parents:
+        suffix = f" (also ← {', '.join(secondary_parents)})"
+
+    connector = ""
+    if level > 0:
+        connector = "│   " * (level - 1) + "├── "
+
+    lines = [
+        f"{connector}{issue.name_id} ({issue.title}) [{state_class}] "
+        f"ch:{total_children} open:{open_children} done:{done_children}{suffix}"
+    ]
+    for child in children_by_parent.get(issue.name_id, []):
+        lines.extend(
+            render_meta_tree_node(
+                child,
+                issues,
+                children_by_parent,
+                primary_parent,
+                level + 1,
+            )
+        )
+    return lines
+
+
+def meta_issue_order(meta_issues: list[Issue]) -> list[Issue]:
+    by_id = {issue.name_id: issue for issue in meta_issues}
+    remaining = set(by_id)
+    ordered: list[Issue] = []
+
+    while remaining:
+        ready = [
+            issue_id
+            for issue_id in remaining
+            if all(dep not in remaining for dep in by_id[issue_id].depends if dep in by_id)
+        ]
+        if not ready:
+            ready = list(remaining)
+        for issue_id in sorted(ready, key=issue_sort_key):
+            ordered.append(by_id[issue_id])
+            remaining.remove(issue_id)
+
+    return ordered
+
+
+def render_dependency_graph(issues: list[Issue]) -> str:
+    meta_issues = [
+        issue
+        for issue in issues
+        if issue.name_id in META_ISSUE_IDS and issue.type_val == "meta"
+    ]
+    if not meta_issues:
+        return "No meta issues found."
+
+    meta_by_id = {issue.name_id: issue for issue in meta_issues}
+    primary_parent: dict[str, str] = {}
+    children_by_parent: dict[str, list[Issue]] = {}
+
+    for issue in meta_issues:
+        meta_deps = [dep for dep in issue.depends if dep in meta_by_id]
+        if not meta_deps:
+            continue
+        primary = sorted(meta_deps, key=issue_sort_key)[0]
+        primary_parent[issue.name_id] = primary
+        children_by_parent.setdefault(primary, []).append(issue)
+
+    for children in children_by_parent.values():
+        children.sort(key=lambda issue: issue_sort_key(issue.name_id))
+
+    roots = [
+        issue
+        for issue in sorted(meta_issues, key=lambda issue: issue_sort_key(issue.name_id))
+        if issue.name_id not in primary_parent
+    ]
+
+    tree_lines: list[str] = []
+    for root in roots:
+        tree_lines.extend(
+            render_meta_tree_node(root, issues, children_by_parent, primary_parent, 0)
+        )
+
+    multi_parent_notes = []
+    for issue in sorted(meta_issues, key=lambda issue: issue_sort_key(issue.name_id)):
+        meta_deps = [dep for dep in issue.depends if dep in meta_by_id]
+        if len(meta_deps) > 1:
+            primary = primary_parent.get(issue.name_id, sorted(meta_deps, key=issue_sort_key)[0])
+            also = [dep for dep in meta_deps if dep != primary]
+            multi_parent_notes.append(
+                f"- **{issue.name_id}** ({issue.title}) also depends on "
+                f"**{', '.join(also)}** - shown under primary parent **{primary}** in tree above"
+            )
+
+    overview_lines = [
+        "| Order | ID | Title | State | Class | Area | Priority | Depends on | Direct children | Open children | Done children |",
+        "|-----:|---:|------|-------|-------|------|--------:|-----------:|----------------:|--------------:|--------------:|",
+    ]
+    for order, issue in enumerate(meta_issue_order(meta_issues), start=1):
+        total_children, open_children, done_children = direct_child_stats(issues, issue.name_id)
+        depends = ", ".join(issue.depends) if issue.depends else "-"
+        overview_lines.append(
+            f"| {order} | {issue.name_id} | {escape_cell(issue.title)} | {issue.state} | "
+            f"{issue.orch_class or '-'} | {issue.area} | {issue.priority} | {depends} | "
+            f"{total_children} | {open_children} | {done_children} |"
+        )
+
+    topo_lines = [
+        "| Order | ID | Title | State | Class | Priority | Level | Depends on |",
+        "|-----:|---:|------|-------|-------|--------:|------:|-----------:|",
+    ]
+    levels: dict[str, int] = {}
+    ordered_meta = meta_issue_order(meta_issues)
+    for issue in ordered_meta:
+        meta_deps = [dep for dep in issue.depends if dep in meta_by_id]
+        levels[issue.name_id] = 0 if not meta_deps else 1 + max(levels.get(dep, 0) for dep in meta_deps)
+
+    for order, issue in enumerate(ordered_meta, start=1):
+        depends = ", ".join(issue.depends) if issue.depends else "-"
+        topo_lines.append(
+            f"| {order} | {issue.name_id} | {escape_cell(issue.title)} | {issue.state} | "
+            f"{issue.orch_class or '-'} | {issue.priority} | {levels[issue.name_id]} | {depends} |"
+        )
+
+    sections = [
+        "### Meta issue dependency tree",
+        "",
+        "Direct child counts are derived from issue-file `depends_on` links. A meta issue can be `done` as a classification/design umbrella while implementation child issues remain open.",
+        "",
+        "```",
+        *tree_lines,
+        "```",
+        "",
+        "### Multi-parent notes",
+        "",
+    ]
+    if multi_parent_notes:
+        sections.extend(multi_parent_notes)
+    else:
+        sections.append("- none")
+    sections.extend(
+        [
+            "",
+            "### Meta issue overview",
+            "",
+            *overview_lines,
+            "",
+            "### Topological order",
+            "",
+            *topo_lines,
+        ]
+    )
+    return "\n".join(sections)
 
 
 def render_ready_table(issues: list[Issue], open_ids: set[str], blocked_ids: set[str]) -> str:
@@ -350,6 +539,18 @@ def replace_generated_block(content: str, start_marker: str, end_marker: str, ne
     in_block = False
 
     for line in lines:
+        if start_marker in line and not in_fence:
+            result.append(line)
+            result.append(new_content)
+            in_block = True
+            continue
+
+        if in_block:
+            if end_marker in line:
+                in_block = False
+                result.append(line)
+            continue
+
         if line.strip() == "```":
             in_fence = not in_fence
             result.append(line)
@@ -359,18 +560,6 @@ def replace_generated_block(content: str, start_marker: str, end_marker: str, ne
             result.append(line)
             continue
 
-        if start_marker in line:
-            result.append(line)
-            result.append(new_content)
-            in_block = True
-            continue
-
-        if end_marker in line:
-            in_block = False
-            result.append(line)
-            continue
-
-        if not in_block:
-            result.append(line)
+        result.append(line)
 
     return "\n".join(result) + "\n"
