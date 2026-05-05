@@ -15,7 +15,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 1 | 0 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4378 | 3820 | 558 |
+| frontend | 4378 | 3817 | 561 |
 | harness | 1 | 0 | 1 |
 | ir | 21 | 0 | 21 |
 | issues | 4 | 0 | 4 |
@@ -26,7 +26,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 4969 | 4097 | 872 |
+| total | 4969 | 4094 | 875 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -237,7 +237,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 452 | Implement type-alias support | spike | frontend/syntax | class: blocked | Implement type-alias support |
 | 453 | Implement type-system support | spike | frontend/semantics | class: blocked | Implement type-system support |
 | 454 | Investigate and classify unknown-unsupported cases | spike | frontend/syntax | class: triage-needed | Investigate and classify unknown-unsupported cases |
-| 485 | Implement Accessorparameteraccessibilitymodifier (audit reopened #485) | spike | frontend/syntax | class: blocked | Implement Accessorparameteraccessibilitymodifier (audit reopened #485) |
 | 489 | Implement Accessorsinambientcontext (audit reopened #489) | spike | frontend/syntax | class: blocked | Implement Accessorsinambientcontext (audit reopened #489) |
 | 495 | Implement Aliasinaccessiblemodule (audit reopened #495) | spike | frontend/syntax | class: blocked | Implement Aliasinaccessiblemodule (audit reopened #495) |
 | 516 | Implement Alwaysstrictmodule (audit reopened #516) | spike | frontend/syntax | class: blocked | Implement Alwaysstrictmodule (audit reopened #516) |
@@ -274,7 +273,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 566 | Implement Accessordeclarationemitjs | spike | frontend/syntax | class: blocked | Implement Accessordeclarationemitjs |
 | 567 | Implement Accessordeclarationemitvisibilityerrors | spike | frontend/syntax | class: blocked | Implement Accessordeclarationemitvisibilityerrors |
 | 570 | Implement Accessorinferredreturntypeerrorinreturnstatement | spike | frontend/syntax | class: blocked | Implement Accessorinferredreturntypeerrorinreturnstatement |
-| 571 | Implement Accessorparameteraccessibilitymodifier (audit reopened #571) | spike | frontend/syntax | class: blocked | Implement Accessorparameteraccessibilitymodifier (audit reopened #571) |
 | 572 | Implement Accessorwithlineterminator | spike | reference/triage | class: triage-needed | Implement Accessorwithlineterminator |
 | 574 | Implement Accessors | spike | frontend/syntax | class: triage-needed | Implement Accessors |
 | 575 | Implement Accessorsinambientcontext (audit reopened #575) | spike | frontend/syntax | class: blocked | Implement Accessorsinambientcontext (audit reopened #575) |
@@ -473,7 +471,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 774 | Implement Autolift | spike | frontend/syntax | class: triage-needed | Implement Autolift |
 | 775 | Implement Autotypeassignedusingdestructuringfromnevernocrash | spike | frontend/resolver | class: blocked | Implement Autotypeassignedusingdestructuringfromnevernocrash |
 | 784 | Implement Functiondeclaration Import Export (audit reopened #784) | spike | frontend/syntax | class: blocked | Implement Functiondeclaration Import Export (audit reopened #784) |
-| 806 | Implement Accessorparameteraccessibilitymodifier (audit reopened #806) | spike | frontend/syntax | class: blocked | Implement Accessorparameteraccessibilitymodifier (audit reopened #806) |
 | 810 | Implement Accessorsinambientcontext (audit reopened #810) | spike | frontend/syntax | class: blocked | Implement Accessorsinambientcontext (audit reopened #810) |
 | 816 | Implement Aliasinaccessiblemodule (audit reopened #816) | spike | frontend/syntax | class: blocked | Implement Aliasinaccessiblemodule (audit reopened #816) |
 | 837 | Implement Alwaysstrictmodule (audit reopened #837) | spike | frontend/syntax | class: blocked | Implement Alwaysstrictmodule (audit reopened #837) |
@@ -4700,6 +4697,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 482 | Implement Accessordeclarationorder (audit reopened #482) | spike | frontend/syntax | see `issues/done/482-implement-accessorDeclarationOrder.md` |
 | 483 | Implement Accessorinambientcontextes (audit reopened #483) | spike | frontend/syntax | see `issues/done/483-implement-accessorInAmbientContextES.md` |
 | 484 | Implement Accessorinferredreturntypeerrorinreturnstatement (dup) | spike | frontend/syntax | see `issues/done/484-implement-accessorInferredReturnTypeErrorInReturnStatement.md` |
+| 485 | Implement Accessorparameteraccessibilitymodifier (audit reopened #485) | spike | frontend/syntax | see `issues/done/485-implement-accessorParameterAccessibilityModifier.md` |
 | 486 | Implement Accessorwithlineterminator (dup) | spike | reference/triage | see `issues/done/486-implement-accessorWithLineTerminator.md` |
 | 487 | Implement Accessorwithoutbody (audit reopened #487) | spike | frontend/syntax | see `issues/done/487-implement-accessorWithoutBody.md` |
 | 488 | Implement Accessors (dup) | spike | frontend/syntax | see `issues/done/488-implement-accessors.md` |
@@ -4749,6 +4747,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 563 | Implement Accessoverriddenbaseclassmember (audit reopened #563) | spike | frontend/syntax | see `issues/done/563-implement-accessOverriddenBaseClassMember.md` |
 | 568 | Implement Accessordeclarationorder (audit reopened #568) | spike | frontend/syntax | see `issues/done/568-implement-accessorDeclarationOrder.md` |
 | 569 | Implement Accessorinambientcontextes (audit reopened #569) | spike | frontend/syntax | see `issues/done/569-implement-accessorInAmbientContextES.md` |
+| 571 | Implement Accessorparameteraccessibilitymodifier (audit reopened #571) | spike | frontend/syntax | see `issues/done/571-implement-accessorParameterAccessibilityModifier.md` |
 | 573 | Implement Accessorwithoutbody (audit reopened #573) | spike | frontend/syntax | see `issues/done/573-implement-accessorWithoutBody.md` |
 | 607 | Implement Ambientenumelementinitializer (dup) | spike | frontend/syntax | see `issues/done/607-implement-ambientEnumElementInitializer.md` |
 | 608 | Implement Ambienterrors | spike | runtime/builtins | see `issues/done/608-implement-ambientErrors.md` |
@@ -4785,6 +4784,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 803 | Implement Accessordeclarationorder (audit reopened #803) | spike | frontend/syntax | see `issues/done/803-implement-accessorDeclarationOrder.md` |
 | 804 | Implement Accessorinambientcontextes (audit reopened #804) | spike | frontend/syntax | see `issues/done/804-implement-accessorInAmbientContextES.md` |
 | 805 | Implement Accessorinferredreturntypeerrorinreturnstatement (dup) | spike | frontend/syntax | see `issues/done/805-implement-accessorInferredReturnTypeErrorInReturnStatement.md` |
+| 806 | Implement Accessorparameteraccessibilitymodifier (audit reopened #806) | spike | frontend/syntax | see `issues/done/806-implement-accessorParameterAccessibilityModifier.md` |
 | 807 | Implement Accessorwithlineterminator (dup) | spike | reference/triage | see `issues/done/807-implement-accessorWithLineTerminator.md` |
 | 808 | Implement Accessorwithoutbody (audit reopened #808) | spike | frontend/syntax | see `issues/done/808-implement-accessorWithoutBody.md` |
 | 809 | Implement Accessors (dup) | spike | frontend/syntax | see `issues/done/809-implement-accessors.md` |
