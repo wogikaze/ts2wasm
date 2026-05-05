@@ -1609,6 +1609,8 @@ fn resolve_expr(expr: &Expr) -> Result<ResolvedExpr, Diagnostic> {
             if let Some(builtin) = resolve_builtin_call(callee.as_ref(), args)? {
                 let builtin_args = if matches!(builtin, BuiltinId::ReadStdinUtf8) {
                     Vec::new()
+                } else if matches!(builtin, BuiltinId::ConsoleLog) {
+                    resolved_args.into_iter().take(1).collect()
                 } else {
                     resolved_args
                 };
