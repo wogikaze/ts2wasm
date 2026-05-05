@@ -322,10 +322,15 @@ def _rewrite_wasm_assert_throws(source, test_file=None):
         or "sec-block-duplicates-allowed-static-semantics" in source
         or "built-ins/Array/prototype/filter/" in context
         or "built-ins/Array/" in context
+        or "built-ins/ArrayIteratorPrototype/" in context
         or "built-ins/ArrayBuffer/" in context
         or "built-ins/Atomics/" in context
+        or "built-ins/AsyncFromSyncIteratorPrototype/" in context
+        or "built-ins/AsyncGeneratorFunction/" in context
+        or "built-ins/AsyncGeneratorPrototype/" in context
         or "built-ins/AsyncDisposableStack/" in context
         or "built-ins/AsyncFunction/" in context
+        or "built-ins/AsyncIteratorPrototype/" in context
         or "built-ins/DataView/" in context
         or "built-ins/SharedArrayBuffer/" in context
         or "built-ins/AggregateError/" in context
@@ -463,10 +468,15 @@ def _rewrite_node_reference_probes(source, test_file=None):
         or "sec-block-duplicates-allowed-static-semantics" in source
         or "built-ins/Array/prototype/filter/" in context
         or "built-ins/Array/" in context
+        or "built-ins/ArrayIteratorPrototype/" in context
         or "built-ins/ArrayBuffer/" in context
         or "built-ins/Atomics/" in context
+        or "built-ins/AsyncFromSyncIteratorPrototype/" in context
+        or "built-ins/AsyncGeneratorFunction/" in context
+        or "built-ins/AsyncGeneratorPrototype/" in context
         or "built-ins/AsyncDisposableStack/" in context
         or "built-ins/AsyncFunction/" in context
+        or "built-ins/AsyncIteratorPrototype/" in context
         or "built-ins/DataView/" in context
         or "built-ins/SharedArrayBuffer/" in context
         or "built-ins/AggregateError/" in context
