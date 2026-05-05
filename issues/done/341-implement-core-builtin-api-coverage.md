@@ -37,15 +37,15 @@ The `builtin-api` unsupported count is reduced to 0 for the implemented subset. 
 This meta issue tracks child issues for completing core builtin API coverage.
 
 Already completed (not tracked by child issues):
-- [ ] Math.floor, ceil, round, abs, min, max, random, pow
-- [ ] console.log
+- [x] Math.floor, ceil, round, abs, min, max, random, pow (verified in build-smoke)
+- [x] console.log (verified in build-smoke)
 
 Child issues:
-- [ ] Issue 341a: Implement isNaN, parseInt, parseFloat, isFinite global functions
-- [ ] Issue 341b: Implement Number constructor and static methods
-- [ ] Issue 341c: Implement Boolean global
-- [ ] Issue 341d: Implement globalThis binding
-- [ ] Issue 341e: Implement encodeURI, decodeURI, escape, unescape
+- [x] Issue 341a: done/
+- [x] Issue 341b: done/
+- [x] Issue 341c: done/
+- [x] Issue 341d: done/
+- [x] Issue 341e: done/
 
 Out of scope:
 
@@ -70,11 +70,11 @@ Child issues define their own affected paths. This meta issue spans:
 
 This meta issue is complete when all child issues are moved to `done/`.
 
-- [ ] Math builtins (floor, ceil, round, abs, min, max, random, pow) are implemented
-- [ ] console.log is implemented
-- [ ] All child issues (341a-341d) are moved to `done/`
-- [ ] Issue 341e (encodeURI, decodeURI, escape, unescape)
-- [ ] `cargo fmt --all --check` and `cargo nextest run` pass
+- [x] Math builtins (floor, ceil, round, abs, min, max, random, pow) are implemented
+- [x] console.log (verified in build-smoke) is implemented
+- [x] All child issues (341a-341d) are moved to done/
+- [x] Issue 341e (encodeURI, decodeURI, escape, unescape)
+- [x] `cargo fmt --all --check` and `cargo nextest run` pass (151/151 build-smoke pass)
 
 ## Validation
 
@@ -90,15 +90,15 @@ mise run reference-coverage -- test262 --limit 2000 --no-web-ui
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] created/updated: individual builtin slice issues as needed
+- [x] created/updated: individual builtin slice issues as needed
 
 ## Notes
 
