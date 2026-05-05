@@ -72,6 +72,7 @@ def main():
     # Run checks
     run(["cargo", "fmt", "--all", "--check"])
     run([PYTHON_BIN, str(REPO_ROOT / "scripts/check/issue-health.py")])
+    run([PYTHON_BIN, str(REPO_ROOT / "scripts/check/assert-true-detect.py")])
     run([PYTHON_BIN, str(REPO_ROOT / "scripts/check/architecture-rules.py")])
     
     if not skip_nextest:

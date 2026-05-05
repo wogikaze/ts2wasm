@@ -31,6 +31,7 @@ COMMANDS = {
     "check-ast-grep": ("python", "scripts/check/ast-grep.py"),
     "check-fixture-differential": ("python", "scripts/check/fixture-differential.py"),
     "check-host-deny": ("python", "scripts/check/host-deny.py"),
+    "check-assert-true-detect": ("python", "scripts/check/assert-true-detect.py"),
     "check-runtimefn-invariants": ("python", "scripts/check/runtimefn-invariants.py"),
     "check-wasm-validation": ("python", "scripts/check/wasm-validation.py"),
     "check-issue-index": ("python", "scripts/check/issue-health.py"),
@@ -94,6 +95,8 @@ CHECK_PARTS = {
     "runtimefn-invariants": "check-runtimefn-invariants",
     "wasm": "check-wasm-validation",
     "wasm-validation": "check-wasm-validation",
+    "assert-true": "check-assert-true-detect",
+    "assert-true-detect": "check-assert-true-detect",
 }
 
 def usage():
