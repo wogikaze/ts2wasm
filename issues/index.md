@@ -15,18 +15,18 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 1 | 0 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4385 | 3791 | 594 |
+| frontend | 4386 | 3791 | 595 |
 | harness | 1 | 0 | 1 |
 | ir | 26 | 5 | 21 |
 | issues | 4 | 0 | 4 |
 | parser | 1 | 0 | 1 |
 | reference | 211 | 170 | 41 |
-| runtime | 265 | 97 | 168 |
+| runtime | 265 | 96 | 169 |
 | scripts | 3 | 1 | 2 |
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 4984 | 4065 | 919 |
+| total | 4985 | 4064 | 921 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -157,7 +157,6 @@ Issue files are the source of truth for work items. The generated section below 
 | ID | Title | Type | Area | Class | Priority | Depends on | Summary |
 |---:|---|---|---|---|---|---|---|
 | 353 | Implement iterator protocol integration for spread operator | feature | runtime/semantics | unstarted | P2 |  | General iterator protocol is not implemented for spread operator. |
-| 1025 | Implement Awaitedtypestrictnull | spike | runtime/builtins | superseded | P1 |  | awaitedTypeStrictNull no longer has a current compiler blocker; no child implementation issue is needed for this gene... |
 | 5132 | Add ABC451 non-top array separation attribution | infra | runtime/memory | implementation-ready | P1 | 5131 | issue 365 proves the dominant array-growth pressure is |
 | 5137 | Split remaining Date API scope | cleanup | runtime/builtins | design-ready | P1 |  | Date issue 050 currently stays open after its named child issues 240 and 241 are done, but non-literal constructor in... |
 | 5138 | Split Reflect.construct isConstructor reference window | spike | runtime/builtins | design-ready | P1 |  | `reference/test262/test/annexB/built-ins/String/prototype/anchor/not-a-constructor.js` currently fails with `Unresolv... |
@@ -172,6 +171,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 5147 | Report await expression context errors before runtime diagnostics | feature | frontend/syntax | implementation-ready | P2 |  | `await <literal>` in a non-async function currently fails with `UnsupportedRuntimeSubset` instead of a TypeScript-ali... |
 | 5148 | Parse generic async generator declarations | feature | frontend/syntax | implementation-ready | P2 |  | generic async generator declarations currently fail with `UnsupportedSyntax` at the type parameter list. |
 | 5149 | Parse trailing comma in typed class method parameters | feature | frontend/syntax | implementation-ready | P1 |  | class method parameter lists with a trailing comma currently fail with `UnsupportedSyntax`, even though TypeScript ac... |
+| 5150 | Report empty element access diagnostics | feature | frontend/syntax | implementation-ready | P2 |  | empty element access `expr[]` currently fails with generic `UnsupportedSyntax` instead of a targeted missing-index di... |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -450,7 +450,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 773 | Implement Autoasiforstaticsinclassdeclaration | spike | frontend/syntax | class: triage-needed | Implement Autoasiforstaticsinclassdeclaration |
 | 774 | Implement Autolift | spike | frontend/syntax | class: triage-needed | Implement Autolift |
 | 775 | Implement Autotypeassignedusingdestructuringfromnevernocrash | spike | frontend/resolver | class: blocked | Implement Autotypeassignedusingdestructuringfromnevernocrash |
-| 1026 | Implement Badarrayindex | spike | frontend/syntax | class: triage-needed | Implement Badarrayindex |
 | 1027 | Implement Badarraysyntax | spike | frontend/syntax | class: triage-needed | Implement Badarraysyntax |
 | 1028 | Implement Badexternalmodulereference | spike | frontend/syntax | class: blocked | Implement Badexternalmodulereference |
 | 1029 | Implement Badinferencelowerprioritythangoodinference | spike | frontend/semantics | class: blocked | Implement Badinferencelowerprioritythangoodinference |
@@ -5011,6 +5010,8 @@ Issue files are the source of truth for work items. The generated section below 
 | 1022 | Implement Awaitedtype | spike | reference/triage | see `issues/done/1022-implement-awaitedType.md` |
 | 1023 | Implement Awaitedtypecrash | spike | reference/triage | see `issues/done/1023-implement-awaitedTypeCrash.md` |
 | 1024 | Implement Awaitedtypenolib | spike | runtime/builtins | see `issues/done/1024-implement-awaitedTypeNoLib.md` |
+| 1025 | Implement Awaitedtypestrictnull | spike | runtime/builtins | see `issues/done/1025-implement-awaitedTypeStrictNull.md` |
+| 1026 | Implement Badarrayindex | spike | frontend/syntax | see `issues/done/1026-implement-badArrayIndex.md` |
 | 3002 | Implement Isolateddeclarationerrorsdefault | spike | runtime/builtins | see `issues/done/3002-implement-isolatedDeclarationErrorsDefault.md` |
 | 3131 | Implement Jsxfactorynotidentifierorqualifiedname | spike | reference/triage | see `issues/done/3131-implement-jsxFactoryNotIdentifierOrQualifiedName.md` |
 | 3329 | Implement Modulecodegentest | spike | frontend/syntax | see `issues/done/3329-implement-moduleCodeGenTest.md` |

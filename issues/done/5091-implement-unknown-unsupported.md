@@ -127,7 +127,7 @@ Follow-up issues:
 ## Duplicate detection
 
 - `issues/done/067-implement-unknown-unsupported.md` - Investigate and classify unknown-unsupported cases (same feature label, same group key, title overlap)
-- `issues/open/1026-implement-badArrayIndex.md` - Implement Badarrayindex (same feature label, same group key)
+- `issues/done/1026-implement-badArrayIndex.md` - Implement Badarrayindex (same feature label, same group key; superseded by issue 5150)
 - `issues/open/1030-implement-badOverloadError.md` - Implement Badoverloaderror (same feature label, same group key)
 - `issues/open/1043-implement-bestChoiceType.md` - Implement Bestchoicetype (same feature label, same group key)
 - `issues/open/1045-implement-betterErrorForAccidentalCall.md` - Implement Bettererrorforaccidentalcall (same feature label, same group key)

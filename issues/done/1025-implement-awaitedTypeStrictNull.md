@@ -21,6 +21,8 @@ status: done
 > 1. Inspect the smart triage report and confirm/update duplicates
 > 2. Split into implementation-ready child issue(s) or supersede by existing issue
 > 3. Fill completion evidence with commits and validation results
+>
+> Rechecked on 2026-05-06 with `python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/awaitedTypeStrictNull.ts`; the build still passes, so this stale generated bucket remains closed.
 
 ## Summary
 
