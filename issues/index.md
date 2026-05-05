@@ -20,13 +20,13 @@ Issue files are the source of truth for work items. The generated section below 
 | ir | 21 | 0 | 21 |
 | issues | 4 | 0 | 4 |
 | parser | 1 | 0 | 1 |
-| reference | 211 | 182 | 29 |
-| runtime | 259 | 104 | 155 |
+| reference | 211 | 181 | 30 |
+| runtime | 260 | 105 | 155 |
 | scripts | 2 | 0 | 2 |
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 4964 | 4174 | 790 |
+| total | 4965 | 4174 | 791 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -159,6 +159,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 5001 | Meta: TypeScript Compiler Semantic Analysis Coverage | meta | frontend/semantics | design-ready | P1 |  | Meta: TypeScript Compiler Semantic Analysis Coverage |
 | 5004 | Meta: Runtime Builtins Coverage (test262) (audit reopened #5004) | meta | runtime/builtins | design-ready | P1 |  | Meta: Runtime Builtins Coverage (test262) (audit reopened #5004) |
 | 5005 | Meta: TypeScript Compiler Name Resolution Coverage | meta | frontend/resolver | design-ready | P1 |  | Meta: TypeScript Compiler Name Resolution Coverage |
+| 5129 | Implement String.prototype.matchAll literal RegExp lowering | feature | runtime/builtins | implementation-ready | P1 |  | `String.prototype.matchAll` is rejected before lowering/runtime, so the |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -3781,7 +3782,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 4288 | Implement Stringliteralobjectliteraldeclaration | spike | frontend/syntax | class: blocked | Implement Stringliteralobjectliteraldeclaration |
 | 4289 | Implement Stringliteralpropertynamewithlinecontinuation | spike | frontend/syntax | class: triage-needed | Implement Stringliteralpropertynamewithlinecontinuation |
 | 4290 | Implement Stringliteralserrors | spike | frontend/syntax | class: triage-needed | Implement Stringliteralserrors |
-| 4291 | Implement Stringmatchall | spike | reference/triage | class: triage-needed | Implement Stringmatchall |
 | 4292 | Implement Stringpropcodegen | spike | frontend/syntax | class: blocked | Implement Stringpropcodegen |
 | 4293 | Implement Stringrawtype | spike | frontend/resolver | class: blocked | Implement Stringrawtype |
 | 4295 | Implement Stripmembersoptionality | spike | frontend/resolver | class: blocked | Implement Stripmembersoptionality |
@@ -5042,6 +5042,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 4056 | Implement Resolutioncandidatefrompackagejsonfield Module Resolution | spike | frontend/syntax | see `issues/done/4056-implement-resolutionCandidateFromPackageJsonField-module-resolution.md` |
 | 4241 | Implement Staticinstanceresolution Module Resolution | spike | frontend/syntax | see `issues/done/4241-implement-staticInstanceResolution-module-resolution.md` |
 | 4284 | Implement Stringincludes (audit reopened #4284) | spike | runtime/builtins | see `issues/done/4284-implement-stringIncludes.md` |
+| 4291 | Implement Stringmatchall | spike | reference/triage | see `issues/done/4291-implement-stringMatchAll.md` |
 | 4294 | Implement Stringtrim | spike | runtime/builtins | see `issues/done/4294-implement-stringTrim.md` |
 | 4806 | Implement class syntax (dup) | spike | frontend/syntax | see `issues/done/4806-implement-class.md` |
 | 4808 | Implement import/export module syntax (dup) | spike | frontend/syntax | see `issues/done/4808-implement-import-export.md` |

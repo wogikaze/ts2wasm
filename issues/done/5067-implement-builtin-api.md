@@ -130,7 +130,7 @@ Follow-up issues:
 - `issues/open/2421-implement-forOfTransformsExpression.md` - Implement Foroftransformsexpression (same feature label, same group key, title overlap)
 - `issues/open/4000-implement-regExpWithSlashInCharClass.md` - Implement Regexpwithslashincharclass (same feature label, same group key, title overlap)
 - `issues/open/419-implement-builtin-api.md` - Implement built-in API support (same feature label, same group key, title overlap)
-- `issues/open/4291-implement-stringMatchAll.md` - Implement Stringmatchall (same feature label, same group key, title overlap)
+- `issues/done/4291-implement-stringMatchAll.md` - Implement Stringmatchall (same feature label, same group key, title overlap)
 - `issues/open/060-investigate-unknown-unsupported-cases.md` - Investigate and classify unknown-unsupported diagnostic cases (same feature label, same group key)
 - `issues/done/224-implement-annexb-html-comments.md` - Implement Annex B HTML-like comments (same feature label, same group key, title overlap)
 - `issues/done/228-implement-logical-assignment-operators.md` - Implement logical assignment operators (same feature label, same group key, title overlap)
