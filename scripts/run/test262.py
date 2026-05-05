@@ -29,6 +29,13 @@ TS2WASM_BINARY = resolve_ts2wasm_binary()
 
 CORE_HARNESS_FILES = ("sta.js", "assert.js")
 UNSUPPORTED_FLAGS = ("IsHTMLDDA",)
+SUPPORTED_FEATURES = (
+    "IsHTMLDDA",
+    "createRealm",
+    "Symbol.asyncIterator",
+    "Symbol.iterator",
+    "tail-call-optimization",
+)
 ASSERT_FAILURE_SENTINEL = "__TS2WASM_TEST262_ASSERT_FAIL__"
 
 TEST262_HOST_PRELUDE = r"""
@@ -234,8 +241,9 @@ class Test262Metadata:
         for flag in UNSUPPORTED_FLAGS:
             if flag in self.flags:
                 return f"test262 flag `{flag}` is not supported by this runner slice"
-        if "IsHTMLDDA" in self.features:
-            return "test262 feature `IsHTMLDDA` is not supported by this runner slice"
+        for feature in self.features:
+            if feature not in SUPPORTED_FEATURES:
+                return f"test262 feature `{feature}` is not supported by this runner slice"
         return None
 
     @property

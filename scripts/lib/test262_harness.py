@@ -27,7 +27,13 @@ TS2WASM_BINARY = resolve_ts2wasm_binary()
 
 CORE_HARNESS_FILES = ("sta.js", "assert.js")
 UNSUPPORTED_FLAGS = ("IsHTMLDDA",)
-SUPPORTED_FEATURES = ("IsHTMLDDA", "createRealm", "Symbol.asyncIterator", "tail-call-optimization")
+SUPPORTED_FEATURES = (
+    "IsHTMLDDA",
+    "createRealm",
+    "Symbol.asyncIterator",
+    "Symbol.iterator",
+    "tail-call-optimization",
+)
 ASSERT_FAILURE_SENTINEL = "__TS2WASM_TEST262_ASSERT_FAIL__"
 
 TEST262_HOST_PRELUDE = r"""
@@ -183,11 +189,12 @@ def _build_feature_shims(features):
             stubs.append("$262.IsHTMLDDA = {};")
         elif feature == "createRealm":
             stubs.append("$262.createRealm = function () { return {}; };")
-        elif feature == "Symbol.asyncIterator":
+        elif feature in ("Symbol.asyncIterator", "Symbol.iterator"):
+            symbol_name = feature.split(".", 1)[1]
             stubs.append(
                 "if (typeof Symbol === 'object' || typeof Symbol === 'function') {\n"
-                "  if (Symbol.asyncIterator === undefined) {\n"
-                "    Symbol.asyncIterator = Symbol('Symbol.asyncIterator');\n"
+                f"  if (Symbol.{symbol_name} === undefined) {{\n"
+                f"    Symbol.{symbol_name} = Symbol('Symbol.{symbol_name}');\n"
                 "  }\n"
                 "}"
             )
