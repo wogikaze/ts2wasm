@@ -49,7 +49,7 @@ impl<'a> Resolver<'a> {
                 // These resolve to Undefined since their value semantics aren't needed
                 // for standalone references (they're meaningful only as call targets or member containers)
                 if name == "Number" || name == "Boolean" || name == "Math"
-                    || name == "Object" || name == "String" || name == "JSON"
+                    || name == "Object" || name == "String" || name == "Function" || name == "JSON"
                     || name == "Array" || name == "BigInt" || name == "Date"
                     || name == "RegExp" || name == "Error" || name == "Map"
                     || name == "Set" || name == "Symbol" || name == "Promise"
