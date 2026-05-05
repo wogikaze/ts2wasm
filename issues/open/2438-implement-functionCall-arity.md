@@ -117,7 +117,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/open/413-implement-arity.md` - Implement arity support (same feature label, title overlap)
+- `issues/done/413-implement-arity.md` - Implement arity support (same feature label, title overlap)
 
 ## Smart triage
 

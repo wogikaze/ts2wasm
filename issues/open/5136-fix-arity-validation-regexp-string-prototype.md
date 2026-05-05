@@ -3,7 +3,7 @@ id: 5136
 title: "Fix arity validation for RegExp/String prototype methods"
 type: bug
 area: ir
-class: implementation-ready
+class: blocked
 priority: P1
 depends_on: []
 blocks: []
@@ -115,6 +115,10 @@ Follow-up issues:
 - [x] none
 
 ## Notes
+
+Blocked until split or narrowed below the issue-readiness L-size threshold. The
+current scope combines RegExp and String prototype arity behavior and should be
+broken into smaller implementation-ready slices before assignment.
 
 The fix pattern for each check:
 

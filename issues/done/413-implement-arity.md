@@ -3,13 +3,14 @@ id: 413
 title: "Implement arity support"
 type: spike
 area: reference/triage
-class: triage-needed
+class: superseded
 priority: P2
 depends_on: []
 blocks: []
 created: 2026-05-01
 updated: 2026-05-06
 completed: 2026-05-06
+status: done
 ---
 
 ## Summary

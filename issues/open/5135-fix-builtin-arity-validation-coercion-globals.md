@@ -3,7 +3,7 @@ id: 5135
 title: "Fix builtin arity validation for coercion/math globals"
 type: bug
 area: ir
-class: implementation-ready
+class: blocked
 priority: P1
 depends_on: []
 blocks: []
@@ -133,6 +133,10 @@ Follow-up issues:
 - [x] none
 
 ## Notes
+
+Blocked until split or narrowed below the issue-readiness L-size threshold. The
+current scope covers multiple builtin families and should be broken into smaller
+implementation-ready slices before assignment.
 
 The fix pattern:
 1. Add `min_arity()` to `BuiltinId` — most global builtins have `min_arity=0` (JS allows calling without args), console log has `min_arity=1` (must have at least 1), etc.
