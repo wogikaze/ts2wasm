@@ -1630,10 +1630,8 @@ impl Parser {
                                     }
                                     // Try to consume function body; if absent (ambient/getter without body),
                                     // use an empty body
-                                    let body = if self.consume(TokenKind::LeftBrace) {
-                                        let stmts = self.statement_body()?;
-                                        self.expect(TokenKind::RightBrace)?;
-                                        stmts
+                                    let body = if matches!(self.peek(), Some(Token::LeftBrace)) {
+                                        self.block()?
                                     } else {
                                         Vec::new()
                                     };
