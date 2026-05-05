@@ -21,12 +21,12 @@ Issue files are the source of truth for work items. The generated section below 
 | issues | 4 | 0 | 4 |
 | parser | 1 | 0 | 1 |
 | reference | 211 | 170 | 41 |
-| runtime | 265 | 97 | 168 |
+| runtime | 265 | 96 | 169 |
 | scripts | 3 | 1 | 2 |
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 4984 | 4065 | 919 |
+| total | 4984 | 4064 | 920 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -449,7 +449,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 773 | Implement Autoasiforstaticsinclassdeclaration | spike | frontend/syntax | class: triage-needed | Implement Autoasiforstaticsinclassdeclaration |
 | 774 | Implement Autolift | spike | frontend/syntax | class: triage-needed | Implement Autolift |
 | 775 | Implement Autotypeassignedusingdestructuringfromnevernocrash | spike | frontend/resolver | class: blocked | Implement Autotypeassignedusingdestructuringfromnevernocrash |
-| 1025 | Implement Awaitedtypestrictnull | spike | runtime/builtins | class: triage-needed | Implement Awaitedtypestrictnull |
 | 1026 | Implement Badarrayindex | spike | frontend/syntax | class: triage-needed | Implement Badarrayindex |
 | 1027 | Implement Badarraysyntax | spike | frontend/syntax | class: triage-needed | Implement Badarraysyntax |
 | 1028 | Implement Badexternalmodulereference | spike | frontend/syntax | class: blocked | Implement Badexternalmodulereference |
@@ -5011,6 +5010,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 1022 | Implement Awaitedtype | spike | reference/triage | see `issues/done/1022-implement-awaitedType.md` |
 | 1023 | Implement Awaitedtypecrash | spike | reference/triage | see `issues/done/1023-implement-awaitedTypeCrash.md` |
 | 1024 | Implement Awaitedtypenolib | spike | runtime/builtins | see `issues/done/1024-implement-awaitedTypeNoLib.md` |
+| 1025 | Implement Awaitedtypestrictnull | spike | runtime/builtins | see `issues/done/1025-implement-awaitedTypeStrictNull.md` |
 | 3002 | Implement Isolateddeclarationerrorsdefault | spike | runtime/builtins | see `issues/done/3002-implement-isolatedDeclarationErrorsDefault.md` |
 | 3131 | Implement Jsxfactorynotidentifierorqualifiedname | spike | reference/triage | see `issues/done/3131-implement-jsxFactoryNotIdentifierOrQualifiedName.md` |
 | 3329 | Implement Modulecodegentest | spike | frontend/syntax | see `issues/done/3329-implement-moduleCodeGenTest.md` |
