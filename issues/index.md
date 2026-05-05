@@ -15,7 +15,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 1 | 0 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4388 | 3784 | 604 |
+| frontend | 4388 | 3783 | 605 |
 | harness | 1 | 0 | 1 |
 | ir | 27 | 6 | 21 |
 | issues | 4 | 0 | 4 |
@@ -26,7 +26,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 4988 | 4058 | 930 |
+| total | 4988 | 4057 | 931 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -452,7 +452,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 773 | Implement Autoasiforstaticsinclassdeclaration | spike | frontend/syntax | class: triage-needed | Implement Autoasiforstaticsinclassdeclaration |
 | 774 | Implement Autolift | spike | frontend/syntax | class: triage-needed | Implement Autolift |
 | 775 | Implement Autotypeassignedusingdestructuringfromnevernocrash | spike | frontend/resolver | class: blocked | Implement Autotypeassignedusingdestructuringfromnevernocrash |
-| 1035 | Implement Baseconstraintofdecorator | spike | frontend/syntax | class: blocked | Implement Baseconstraintofdecorator |
 | 1036 | Implement Baseexpressiontypeparameters | spike | frontend/syntax | class: blocked | Implement Baseexpressiontypeparameters |
 | 1037 | Implement Baseindexsignatureresolution | spike | frontend/syntax | class: blocked | Implement Baseindexsignatureresolution |
 | 1038 | Implement Basetypeafterderivedtype | spike | frontend/syntax | class: triage-needed | Implement Basetypeafterderivedtype |
@@ -5014,6 +5013,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 1032 | Implement Banginmodulename | spike | frontend/syntax | see `issues/done/1032-implement-bangInModuleName.md` |
 | 1033 | Implement Basecheck | spike | frontend/resolver | see `issues/done/1033-implement-baseCheck.md` |
 | 1034 | Implement Baseclassimprovedmismatcherrors | spike | frontend/syntax | see `issues/done/1034-implement-baseClassImprovedMismatchErrors.md` |
+| 1035 | Implement Baseconstraintofdecorator | spike | frontend/syntax | see `issues/done/1035-implement-baseConstraintOfDecorator.md` |
 | 3002 | Implement Isolateddeclarationerrorsdefault | spike | runtime/builtins | see `issues/done/3002-implement-isolatedDeclarationErrorsDefault.md` |
 | 3131 | Implement Jsxfactorynotidentifierorqualifiedname | spike | reference/triage | see `issues/done/3131-implement-jsxFactoryNotIdentifierOrQualifiedName.md` |
 | 3329 | Implement Modulecodegentest | spike | frontend/syntax | see `issues/done/3329-implement-moduleCodeGenTest.md` |
