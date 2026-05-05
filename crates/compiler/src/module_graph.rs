@@ -202,6 +202,25 @@ pub(crate) fn validate_init_order(graph: &ModuleGraph) -> Result<(), Diagnostic>
     }
 
     // Every dependency must be initialized before the dependent.
+    let n = graph.modules.len();
+    // Validate that all resolved module IDs are in bounds.
+    for (_mid, module) in graph.modules.iter().enumerate() {
+        for dep in &module.dependencies {
+            if dep.resolved_module_id >= n {
+                return Err(Diagnostic {
+                    code: DiagCode::InvariantViolation,
+                    message: format!(
+                        "issue-5038: module {} dependency `{}` references out-of-bounds module id {} (max {})",
+                        module.path.display(),
+                        dep.specifier,
+                        dep.resolved_module_id,
+                        n - 1,
+                    ),
+                    span: None,
+                });
+            }
+        }
+    }
     for (mid, module) in graph.modules.iter().enumerate() {
         let my_pos = position[mid];
         for dep in &module.dependencies {
@@ -848,6 +867,145 @@ export const value = nested;
         assert_eq!(err.span, Some(span_of(source, "\"./missing\"")));
 
         let _ = fs::remove_dir_all(&dir);
+    }
+
+    #[test]
+    fn validate_init_order_rejects_duplicate_module_in_init_steps() {
+        // Build a diamond pattern graph that should produce a valid init
+        // order with each module appearing once.
+        let graph = ModuleGraph {
+            modules: vec![
+                ModuleNode {
+                    id: 0,
+                    path: PathBuf::from("entry.ts"),
+                    dependencies: vec![
+                        ModuleDependency {
+                            specifier: "./a".into(),
+                            resolved_module_id: 1,
+                            resolved_path: PathBuf::from("a.ts"),
+                        },
+                        ModuleDependency {
+                            specifier: "./b".into(),
+                            resolved_module_id: 2,
+                            resolved_path: PathBuf::from("b.ts"),
+                        },
+                    ],
+                },
+                ModuleNode {
+                    id: 1,
+                    path: PathBuf::from("a.ts"),
+                    dependencies: vec![ModuleDependency {
+                        specifier: "./lib".into(),
+                        resolved_module_id: 3,
+                        resolved_path: PathBuf::from("lib.ts"),
+                    }],
+                },
+                ModuleNode {
+                    id: 2,
+                    path: PathBuf::from("b.ts"),
+                    dependencies: vec![ModuleDependency {
+                        specifier: "./lib".into(),
+                        resolved_module_id: 3,
+                        resolved_path: PathBuf::from("lib.ts"),
+                    }],
+                },
+                ModuleNode {
+                    id: 3,
+                    path: PathBuf::from("lib.ts"),
+                    dependencies: vec![],
+                },
+            ],
+            cycle_diagnostics: vec![],
+        };
+
+        // Diamond graph: each module should appear exactly once.
+        assert!(
+            validate_init_order(&graph).is_ok(),
+            "diamond graph should produce valid init order"
+        );
+
+        // Corrupt by creating a self-dependency on the leaf that makes
+        // a module unreachable in the DFS traversal.
+        let mut corrupt = graph.clone();
+        corrupt.modules[3].dependencies.push(ModuleDependency {
+            specifier: "./entry".into(),
+            resolved_module_id: 0,
+            resolved_path: PathBuf::from("entry.ts"),
+        });
+        let result = validate_init_order(&corrupt);
+        assert!(
+            result.is_err(),
+            "self-dependency on leaf should cause missing module"
+        );
+        assert_eq!(result.unwrap_err().code, DiagCode::InvariantViolation);
+    }
+
+    #[test]
+    fn validate_init_order_rejects_out_of_bounds_module_id() {
+        // Create a graph where a dependency references a non-existent module id.
+        // validate_init_order should detect this and return a diagnostic.
+        let graph = ModuleGraph {
+            modules: vec![ModuleNode {
+                id: 0,
+                path: PathBuf::from("entry.ts"),
+                dependencies: vec![ModuleDependency {
+                    specifier: "./ghost".into(),
+                    resolved_module_id: 99,
+                    resolved_path: PathBuf::from("ghost.ts"),
+                }],
+            }],
+            cycle_diagnostics: vec![],
+        };
+
+        let result = validate_init_order(&graph);
+        assert!(
+            result.is_err(),
+            "OOB dependency should cause validate_init_order to error"
+        );
+        let diag = result.unwrap_err();
+        assert_eq!(diag.code, DiagCode::InvariantViolation);
+        assert!(diag.message.contains("out-of-bounds module id"));
+    }
+
+    #[test]
+    fn validate_init_order_rejects_dependency_after_dependent() {
+        // Create a cyclic graph (0 -> 1, 1 -> 0). DFS visits module 1
+        // first (position 0), then module 0 (position 1). Module 1's
+        // dependency on module 0 means the dependency appears after
+        // the dependent, which is an init order violation.
+        let graph = ModuleGraph {
+            modules: vec![
+                ModuleNode {
+                    id: 0,
+                    path: PathBuf::from("entry.ts"),
+                    dependencies: vec![ModuleDependency {
+                        specifier: "./a".into(),
+                        resolved_module_id: 1,
+                        resolved_path: PathBuf::from("a.ts"),
+                    }],
+                },
+                ModuleNode {
+                    id: 1,
+                    path: PathBuf::from("a.ts"),
+                    dependencies: vec![ModuleDependency {
+                        specifier: "./entry".into(),
+                        resolved_module_id: 0,
+                        resolved_path: PathBuf::from("entry.ts"),
+                    }],
+                },
+            ],
+            cycle_diagnostics: vec![],
+        };
+
+        let result = validate_init_order(&graph);
+        assert!(
+            result.is_err(),
+            "cyclic dependency should cause init order violation"
+        );
+        let diag = result.unwrap_err();
+        assert_eq!(diag.code, DiagCode::InvariantViolation);
+        assert!(diag.message.contains("depends on"));
+        assert!(diag.message.contains("appears after dependent"));
     }
 
     fn unique_temp_dir(label: &str) -> PathBuf {
