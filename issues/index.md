@@ -15,7 +15,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 1 | 0 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4378 | 3817 | 561 |
+| frontend | 4378 | 3814 | 564 |
 | harness | 1 | 0 | 1 |
 | ir | 21 | 0 | 21 |
 | issues | 4 | 0 | 4 |
@@ -26,7 +26,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 4969 | 4094 | 875 |
+| total | 4969 | 4091 | 878 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -237,7 +237,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 452 | Implement type-alias support | spike | frontend/syntax | class: blocked | Implement type-alias support |
 | 453 | Implement type-system support | spike | frontend/semantics | class: blocked | Implement type-system support |
 | 454 | Investigate and classify unknown-unsupported cases | spike | frontend/syntax | class: triage-needed | Investigate and classify unknown-unsupported cases |
-| 489 | Implement Accessorsinambientcontext (audit reopened #489) | spike | frontend/syntax | class: blocked | Implement Accessorsinambientcontext (audit reopened #489) |
 | 495 | Implement Aliasinaccessiblemodule (audit reopened #495) | spike | frontend/syntax | class: blocked | Implement Aliasinaccessiblemodule (audit reopened #495) |
 | 516 | Implement Alwaysstrictmodule (audit reopened #516) | spike | frontend/syntax | class: blocked | Implement Alwaysstrictmodule (audit reopened #516) |
 | 517 | Implement Alwaysstrictnoimplicitusestrict (audit reopened #517) | spike | frontend/syntax | class: blocked | Implement Alwaysstrictnoimplicitusestrict (audit reopened #517) |
@@ -275,7 +274,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 570 | Implement Accessorinferredreturntypeerrorinreturnstatement | spike | frontend/syntax | class: blocked | Implement Accessorinferredreturntypeerrorinreturnstatement |
 | 572 | Implement Accessorwithlineterminator | spike | reference/triage | class: triage-needed | Implement Accessorwithlineterminator |
 | 574 | Implement Accessors | spike | frontend/syntax | class: triage-needed | Implement Accessors |
-| 575 | Implement Accessorsinambientcontext (audit reopened #575) | spike | frontend/syntax | class: blocked | Implement Accessorsinambientcontext (audit reopened #575) |
 | 576 | Implement Addmorecallsignaturestobasesignature | spike | frontend/syntax | class: blocked | Implement Addmorecallsignaturestobasesignature |
 | 577 | Implement Aliasassignments | spike | frontend/syntax | class: blocked | Implement Aliasassignments |
 | 578 | Implement Aliasbug | spike | frontend/syntax | class: blocked | Implement Aliasbug |
@@ -471,7 +469,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 774 | Implement Autolift | spike | frontend/syntax | class: triage-needed | Implement Autolift |
 | 775 | Implement Autotypeassignedusingdestructuringfromnevernocrash | spike | frontend/resolver | class: blocked | Implement Autotypeassignedusingdestructuringfromnevernocrash |
 | 784 | Implement Functiondeclaration Import Export (audit reopened #784) | spike | frontend/syntax | class: blocked | Implement Functiondeclaration Import Export (audit reopened #784) |
-| 810 | Implement Accessorsinambientcontext (audit reopened #810) | spike | frontend/syntax | class: blocked | Implement Accessorsinambientcontext (audit reopened #810) |
 | 816 | Implement Aliasinaccessiblemodule (audit reopened #816) | spike | frontend/syntax | class: blocked | Implement Aliasinaccessiblemodule (audit reopened #816) |
 | 837 | Implement Alwaysstrictmodule (audit reopened #837) | spike | frontend/syntax | class: blocked | Implement Alwaysstrictmodule (audit reopened #837) |
 | 838 | Implement Alwaysstrictnoimplicitusestrict (audit reopened #838) | spike | frontend/syntax | class: blocked | Implement Alwaysstrictnoimplicitusestrict (audit reopened #838) |
@@ -4701,6 +4698,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 486 | Implement Accessorwithlineterminator (dup) | spike | reference/triage | see `issues/done/486-implement-accessorWithLineTerminator.md` |
 | 487 | Implement Accessorwithoutbody (audit reopened #487) | spike | frontend/syntax | see `issues/done/487-implement-accessorWithoutBody.md` |
 | 488 | Implement Accessors (dup) | spike | frontend/syntax | see `issues/done/488-implement-accessors.md` |
+| 489 | Implement Accessorsinambientcontext (audit reopened #489) | spike | frontend/syntax | see `issues/done/489-implement-accessorsInAmbientContext.md` |
 | 490 | Implement Addmorecallsignaturestobasesignature (dup) | spike | frontend/resolver | see `issues/done/490-implement-addMoreCallSignaturesToBaseSignature.md` |
 | 491 | Implement Aliasassignments (dup) | spike | frontend/syntax | see `issues/done/491-implement-aliasAssignments.md` |
 | 492 | Implement Aliasbug (dup) | spike | frontend/syntax | see `issues/done/492-implement-aliasBug.md` |
@@ -4749,6 +4747,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 569 | Implement Accessorinambientcontextes (audit reopened #569) | spike | frontend/syntax | see `issues/done/569-implement-accessorInAmbientContextES.md` |
 | 571 | Implement Accessorparameteraccessibilitymodifier (audit reopened #571) | spike | frontend/syntax | see `issues/done/571-implement-accessorParameterAccessibilityModifier.md` |
 | 573 | Implement Accessorwithoutbody (audit reopened #573) | spike | frontend/syntax | see `issues/done/573-implement-accessorWithoutBody.md` |
+| 575 | Implement Accessorsinambientcontext (audit reopened #575) | spike | frontend/syntax | see `issues/done/575-implement-accessorsInAmbientContext.md` |
 | 607 | Implement Ambientenumelementinitializer (dup) | spike | frontend/syntax | see `issues/done/607-implement-ambientEnumElementInitializer.md` |
 | 608 | Implement Ambienterrors | spike | runtime/builtins | see `issues/done/608-implement-ambientErrors.md` |
 | 638 | Implement Anonymousclassexpression (audit reopened #638) | spike | frontend/syntax | see `issues/done/638-implement-anonymousClassExpression.md` |
@@ -4788,6 +4787,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 807 | Implement Accessorwithlineterminator (dup) | spike | reference/triage | see `issues/done/807-implement-accessorWithLineTerminator.md` |
 | 808 | Implement Accessorwithoutbody (audit reopened #808) | spike | frontend/syntax | see `issues/done/808-implement-accessorWithoutBody.md` |
 | 809 | Implement Accessors (dup) | spike | frontend/syntax | see `issues/done/809-implement-accessors.md` |
+| 810 | Implement Accessorsinambientcontext (audit reopened #810) | spike | frontend/syntax | see `issues/done/810-implement-accessorsInAmbientContext.md` |
 | 811 | Implement Addmorecallsignaturestobasesignature (dup) | spike | frontend/syntax | see `issues/done/811-implement-addMoreCallSignaturesToBaseSignature.md` |
 | 812 | Implement Aliasassignments (dup) | spike | frontend/syntax | see `issues/done/812-implement-aliasAssignments.md` |
 | 813 | Implement Aliasbug (dup) | spike | frontend/syntax | see `issues/done/813-implement-aliasBug.md` |
