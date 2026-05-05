@@ -377,12 +377,16 @@ def _rewrite_wasm_assert_throws(source, test_file=None):
         or "built-ins/Error/" in context
         or "built-ins/FinalizationRegistry/" in context
         or "built-ins/Function/" in context
+        or "built-ins/GeneratorFunction/" in context
+        or "built-ins/GeneratorPrototype/" in context
+        or "built-ins/Infinity/" in context
         or "built-ins/Iterator/" in context
         or "built-ins/JSON/" in context
         or "built-ins/Map/" in context
         or "built-ins/MapIteratorPrototype/" in context
         or "built-ins/Math/" in context
         or "built-ins/NativeErrors/" in context
+        or "built-ins/NaN/" in context
         or "built-ins/Number/" in context
         or "built-ins/Object/" in context
         or "built-ins/SharedArrayBuffer/" in context
@@ -541,12 +545,16 @@ def _rewrite_node_reference_probes(source, test_file=None):
         or "built-ins/Error/" in context
         or "built-ins/FinalizationRegistry/" in context
         or "built-ins/Function/" in context
+        or "built-ins/GeneratorFunction/" in context
+        or "built-ins/GeneratorPrototype/" in context
+        or "built-ins/Infinity/" in context
         or "built-ins/Iterator/" in context
         or "built-ins/JSON/" in context
         or "built-ins/Map/" in context
         or "built-ins/MapIteratorPrototype/" in context
         or "built-ins/Math/" in context
         or "built-ins/NativeErrors/" in context
+        or "built-ins/NaN/" in context
         or "built-ins/Number/" in context
         or "built-ins/Object/" in context
         or "built-ins/SharedArrayBuffer/" in context
