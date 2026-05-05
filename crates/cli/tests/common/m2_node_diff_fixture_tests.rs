@@ -2059,6 +2059,30 @@ fn ternary_fixture_reports_unsupported_syntax() {
 }
 
 #[test]
+fn core_expression_await_fixture_builds_successfully() {
+    // Await expressions are parsed and compiled but async runtime semantics
+    // (Promise) are not yet supported, so we only verify compilation.
+    use std::path::Path;
+    let fixture = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("../..")
+        .join("fixtures/core-expressions/await.ts");
+    let output_wasm =
+        std::env::temp_dir().join(format!("ts2wasm-await-{}.wasm", std::process::id()));
+    let output = std::process::Command::new(env!("CARGO_BIN_EXE_ts2wasm"))
+        .arg("build")
+        .arg(&fixture)
+        .arg("-o")
+        .arg(&output_wasm)
+        .output()
+        .expect("Failed to execute ts2wasm");
+    assert!(
+        output.status.success(),
+        "await fixture should build successfully:\n{}",
+        String::from_utf8_lossy(&output.stderr)
+    );
+}
+
+#[test]
 fn core_expression_ternary_fixture_reports_unsupported_syntax() {
     assert_build_fails_with_diagnostic(
         "fixtures/core-expressions/ternary.ts",
