@@ -3,12 +3,13 @@ id: 5124
 title: "Fix Object.keys on arguments exotic object (audit reopened #5124)"
 type: bug
 area: runtime
-class: triage-needed
+class: implementation
 priority: P1
 depends_on: []
 blocks: []
 created: 2026-05-04
-updated: 2026-05-05status: open
+updated: 2026-05-06
+status: done
 ---
 
 ## Summary
@@ -58,9 +59,9 @@ Object.keys on the `arguments` object returns correct string indices.
 
 In scope:
 
-- [ ] Fix Object.keys WAT runtime function to correctly enumerate `arguments`
+- [x] Fix Object.keys WAT runtime function to correctly enumerate `arguments`
       exotic object properties
-- [ ] Or fix `arguments` object property enumeration in WASM backend
+- [x] Or fix `arguments` object property enumeration in WASM backend
 
 Out of scope:
 
@@ -83,9 +84,9 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] `Object.keys(arguments)` returns correct string indices
-- [ ] Regression test in fixtures/ for Object.keys on arguments
-- [ ] test262 case `built-ins/Object/keys/15.2.3.14-3-4.js` passes through
+- [x] `Object.keys(arguments)` returns correct string indices
+- [x] Regression test in fixtures/ for Object.keys on arguments
+- [x] test262 case `built-ins/Object/keys/15.2.3.14-3-4.js` passes through
       harness
 
 ## Validation
@@ -112,15 +113,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 
@@ -136,22 +137,38 @@ Observations from initial investigation:
 
 Commits:
 
-- (pending commit)
+- `271ee061` (`backend: mark Object.keys result entries present`)
 
 Validation result:
 
 ```text
-cargo run -q -- build /tmp/test-arguments-keys2.js -o /tmp/args-keys2.wasm --host-deny && iwasm /tmp/args-keys2.wasm
-result:
+cargo run -q -- build /tmp/test-arguments-keys.js -o /tmp/arguments-keys.wasm --host-deny
+=> pass
+
+iwasm /tmp/arguments-keys.wasm
+=> pass
 3
-["0","1","2"]
-3
+0
+1
 true
+
+cargo nextest run -p ts2wasm-cli object_builtin_method_fixtures_match_node_output_under_iwasm build_smoke_object_keys_method
+=> pass (2 tests)
+
+python scripts/manager.py reference-coverage test262 --path-filter built-ins/Object/keys/15.2.3.14-3-4.js --detail
+=> pass (executed=1, build_pass=1, semantic_pass=1, unsupported=0, blocked=0)
+
+cargo fmt --all --check
+=> pass
+
+git diff --check
+=> pass
 ```
 
 Remaining risks:
 
 - arguments exotic object still does not fully match ES spec (length is the only non-enumerable property tracked)
+- Object.values/Object.entries still have shallow fixtures and may need separate indexed-result coverage.
 
 ## Reopened by audit
 
@@ -164,7 +181,7 @@ Reopen reason: frontmatter still says `class: triage-needed`; generated triage b
 Violated acceptance: the issue cannot provide repo-local close evidence for its checked acceptance criteria while it remains in this state. Acceptance checkboxes were reset for re-verification.
 
 Evidence files:
-- `issues/open/5124-fix-object-keys-on-arguments.md` before this move
-- `issues/open/5124-fix-object-keys-on-arguments.md` after this move
+- `issues/done/5124-fix-object-keys-on-arguments.md` before this move
+- `issues/done/5124-fix-object-keys-on-arguments.md` after this move
 
 Split follow-up: none created in this audit wave; this reopened issue remains the tracking item.

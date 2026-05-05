@@ -21,12 +21,12 @@ Issue files are the source of truth for work items. The generated section below 
 | issues | 4 | 0 | 4 |
 | parser | 1 | 0 | 1 |
 | reference | 211 | 182 | 29 |
-| runtime | 259 | 106 | 153 |
+| runtime | 259 | 105 | 154 |
 | scripts | 2 | 0 | 2 |
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 4964 | 4176 | 788 |
+| total | 4964 | 4175 | 789 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -4338,7 +4338,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 5121 | (filler) Auto-generated gap placeholder #5121 | task | coverage | class: triage-needed | (filler) Auto-generated gap placeholder #5121 |
 | 5122 | (filler) Auto-generated gap placeholder #5122 | task | coverage | class: triage-needed | (filler) Auto-generated gap placeholder #5122 |
 | 5123 | (filler) Auto-generated gap placeholder #5123 | task | coverage | class: triage-needed | (filler) Auto-generated gap placeholder #5123 |
-| 5124 | Fix Object.keys on arguments exotic object (audit reopened #5124) | bug | runtime | class: triage-needed | Fix Object.keys on arguments exotic object (audit reopened #5124) |
 <!-- generated:blocked:end -->
 
 ## Done queue
@@ -5132,6 +5131,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 5089 | Implement type-alias support (dup) | spike | frontend/syntax | see `issues/done/5089-implement-type-alias.md` |
 | 5090 | Implement type-system support (dup) | spike | frontend/syntax | see `issues/done/5090-implement-type-system.md` |
 | 5091 | Investigate and classify unknown-unsupported cases (dup) | spike | frontend/syntax | see `issues/done/5091-implement-unknown-unsupported.md` |
+| 5124 | Fix Object.keys on arguments exotic object (audit reopened #5124) | bug | runtime | see `issues/done/5124-fix-object-keys-on-arguments.md` |
 | 5125 | Implement as type assertion expression parsing | feature | frontend/parser | see `issues/done/5125-implement-as-type-assertion-expression.md` |
 | 5126 | Implement name resolver var redeclaration tolerance | feature | ir/lowering | see `issues/done/5126-implement-name-resolver-var-redeclaration.md` |
 | 5127 | Implement export default multi-file lowering deduplication | feature | ir/lowering | see `issues/done/5127-implement-export-default-multifile-lowering.md` |
