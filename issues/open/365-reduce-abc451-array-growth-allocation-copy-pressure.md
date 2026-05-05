@@ -8,7 +8,7 @@ priority: P1
 depends_on: [364, 366, 367]
 blocks: [363, 357, 309]
 created: 2026-05-01
-updated: 2026-05-01
+updated: 2026-05-06
 ---
 
 ## Summary
@@ -138,7 +138,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] create only if this slice isolates a smaller remaining blocker
+- [x] split design child: `issues/open/5131-design-abc451-non-top-array-growth-strategy.md`
 
 ## Notes
 
@@ -422,6 +422,12 @@ Remaining blocker:
 ```text
 The dedicated `$array_push_grow` helper made local experimentation safer, but the remaining non-top fallback pressure does not have a safe local policy change under the current contiguous-array representation. The next executable slice should either implement a representation-level append strategy with explicit alias semantics, or add deeper attribution for why non-top result arrays are separated from the heap top before growth.
 ```
+
+## Blocker split: 2026-05-06
+
+Issue 5131 is the next narrow design-ready child. It must choose a mergeable
+non-top array-growth strategy or create a smaller implementation/attribution
+child, while this broad parent remains blocked.
 
 Validation for the final evidence-only state:
 
