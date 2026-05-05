@@ -20,13 +20,13 @@ Issue files are the source of truth for work items. The generated section below 
 | ir | 26 | 5 | 21 |
 | issues | 4 | 0 | 4 |
 | parser | 1 | 0 | 1 |
-| reference | 211 | 173 | 38 |
+| reference | 211 | 172 | 39 |
 | runtime | 265 | 98 | 167 |
 | scripts | 3 | 1 | 2 |
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 4982 | 4067 | 915 |
+| total | 4982 | 4066 | 916 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -447,7 +447,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 773 | Implement Autoasiforstaticsinclassdeclaration | spike | frontend/syntax | class: triage-needed | Implement Autoasiforstaticsinclassdeclaration |
 | 774 | Implement Autolift | spike | frontend/syntax | class: triage-needed | Implement Autolift |
 | 775 | Implement Autotypeassignedusingdestructuringfromnevernocrash | spike | frontend/resolver | class: blocked | Implement Autotypeassignedusingdestructuringfromnevernocrash |
-| 1021 | Implement Awaitunionpromise | spike | reference/triage | class: triage-needed | Implement Awaitunionpromise |
 | 1022 | Implement Awaitedtype | spike | reference/triage | class: triage-needed | Implement Awaitedtype |
 | 1023 | Implement Awaitedtypecrash | spike | reference/triage | class: triage-needed | Implement Awaitedtypecrash |
 | 1024 | Implement Awaitedtypenolib | spike | runtime/builtins | class: triage-needed | Implement Awaitedtypenolib |
@@ -5009,6 +5008,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 1018 | Implement Awaitinclassinasyncfunction | spike | reference/triage | see `issues/done/1018-implement-awaitInClassInAsyncFunction.md` |
 | 1019 | Implement Awaitinnonasyncfunction | spike | reference/triage | see `issues/done/1019-implement-awaitInNonAsyncFunction.md` |
 | 1020 | Implement Awaitliteralvalues | spike | reference/triage | see `issues/done/1020-implement-awaitLiteralValues.md` |
+| 1021 | Implement Awaitunionpromise | spike | reference/triage | see `issues/done/1021-implement-awaitUnionPromise.md` |
 | 3002 | Implement Isolateddeclarationerrorsdefault | spike | runtime/builtins | see `issues/done/3002-implement-isolatedDeclarationErrorsDefault.md` |
 | 3131 | Implement Jsxfactorynotidentifierorqualifiedname | spike | reference/triage | see `issues/done/3131-implement-jsxFactoryNotIdentifierOrQualifiedName.md` |
 | 3329 | Implement Modulecodegentest | spike | frontend/syntax | see `issues/done/3329-implement-moduleCodeGenTest.md` |
