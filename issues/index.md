@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 1 | 0 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4389 | 3779 | 610 |
+| frontend | 4390 | 3779 | 611 |
 | harness | 1 | 0 | 1 |
 | ir | 27 | 6 | 21 |
 | issues | 4 | 0 | 4 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 4991 | 4054 | 937 |
+| total | 4992 | 4054 | 938 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -176,6 +176,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 5154 | Parse angle-bracket type assertion statements | feature | frontend/syntax | implementation-ready | P1 |  | top-level `<T>expr;` type assertion statements currently fail parsing instead of erasing the type assertion. |
 | 5155 | Fix exception_pending runtime link for top-level statement checks | bug | backend-wasm | implementation-ready | P1 |  | `reference/typescript/tests/cases/compiler/baseTypeAfterDerivedType.ts` reaches backend emission, then `wat2wasm` fai... |
 | 5156 | Parse generic type arguments in class heritage clauses | feature | frontend/syntax | implementation-ready | P1 |  | `reference/typescript/tests/cases/compiler/baseTypeOrderChecking.ts` fails parsing on `class Class4<T> extends Class3... |
+| 5157 | Report set accessor rest parameter diagnostics | feature | frontend/syntax | implementation-ready | P1 |  | `reference/typescript/tests/cases/compiler/accessorWithRestParam.ts` currently reaches backend emission and fails wit... |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -189,7 +190,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 052d | Implement broader JSON.stringify replacer semantics (audit reopened #052d) | feature | runtime/builtins | class: blocked | Implement broader JSON.stringify replacer semantics (audit reopened #052d) |
 | 059 | Implement parser syntax extensions for TypeScript and advanced JS (audit reopened #059) | feature | frontend | class: blocked | Implement parser syntax extensions for TypeScript and advanced JS (audit reopened #059) |
 | 064 | Implement name resolution (triaged - superseded by test262 metadata issues) | spike | frontend/resolver | class: blocked | Implement name resolution (triaged - superseded by test262 metadata issues) |
-| 104 | Implement Accessorwithrestparam | spike | frontend/syntax | class: blocked | Implement Accessorwithrestparam |
 | 107 | Implement Accessorsemit | spike | frontend/syntax | class: blocked | Implement Accessorsemit |
 | 117 | Implement Aliasofgenericfunctionwithrestbehavedsameasunaliased | spike | frontend/syntax | class: blocked | Implement Aliasofgenericfunctionwithrestbehavedsameasunaliased |
 | 133 | Implement Allowjscrossmonorepopackage (dup) | spike | frontend/syntax | class: blocked | Implement Allowjscrossmonorepopackage (dup) |
@@ -4352,6 +4352,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 101 | Implement Accessorparameteraccessibilitymodifier | spike | frontend/syntax | see `issues/done/101-implement-accessorParameterAccessibilityModifier.md` |
 | 102 | Implement Accessorwithinitializer | spike | frontend/syntax | see `issues/done/102-implement-accessorWithInitializer.md` |
 | 103 | Implement Accessorwithlineterminator (dup) | spike | frontend/syntax | see `issues/done/103-implement-accessorWithLineTerminator.md` |
+| 104 | Implement Accessorwithrestparam | spike | frontend/syntax | see `issues/done/104-implement-accessorWithRestParam.md` |
 | 105 | Implement Accessorwithoutbody | spike | frontend/syntax | see `issues/done/105-implement-accessorWithoutBody.md` |
 | 106 | Implement Accessors (dup) | spike | frontend/syntax | see `issues/done/106-implement-accessors.md` |
 | 108 | Implement Accessorsinambientcontext | spike | frontend/syntax | see `issues/done/108-implement-accessorsInAmbientContext.md` |
