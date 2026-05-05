@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 1 | 0 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4388 | 3781 | 607 |
+| frontend | 4389 | 3780 | 609 |
 | harness | 1 | 0 | 1 |
 | ir | 27 | 6 | 21 |
 | issues | 4 | 0 | 4 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 4990 | 4056 | 934 |
+| total | 4991 | 4055 | 936 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -162,7 +162,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 5137 | Split remaining Date API scope | cleanup | runtime/builtins | design-ready | P1 |  | Date issue 050 currently stays open after its named child issues 240 and 241 are done, but non-literal constructor in... |
 | 5138 | Split Reflect.construct isConstructor reference window | spike | runtime/builtins | design-ready | P1 |  | `reference/test262/test/annexB/built-ins/String/prototype/anchor/not-a-constructor.js` currently fails with `Unresolv... |
 | 5139 | Split APISample parser leftovers | cleanup | frontend/syntax | design-ready | P1 |  | issue 070 identified `APISample_linter.ts` and `APISample_transform.ts` as remaining parser/frontend leftovers, but t... |
-| 5140 | Implement type alias object parsing before exported interface | feature | frontend/syntax | implementation-ready | P1 |  | `DeclarationErrorsNoEmitOnError.ts` currently fails with `UnsupportedSyntax` because the parser treats `type T = { x ... |
 | 5141 | Implement prefix increment in for update clauses | feature | frontend/syntax | implementation-ready | P1 |  | `SystemModuleForStatementNoInitializer.ts` currently fails with `UnsupportedSyntax` because the parser rejects `++i` ... |
 | 5142 | Support class method calls on new-expression receivers | feature | ir/lowered | implementation-ready | P1 |  | method calls on new-expression receivers currently fail with `UnsupportedSyntax`, even when the class and method are ... |
 | 5143 | Implement unary void operator lowering | feature | ir/lowered | implementation-ready | P1 |  | unary `void` currently fails with `UnsupportedSyntax` in lowering even though TypeScript accepts the reference case w... |
@@ -177,6 +176,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 5153 | Erase union types in as assertions | feature | frontend/syntax | implementation-ready | P1 |  | `expr as A \| B` is currently parsed as runtime bitwise-or instead of erasing the whole union type annotation. |
 | 5154 | Parse angle-bracket type assertion statements | feature | frontend/syntax | implementation-ready | P1 |  | top-level `<T>expr;` type assertion statements currently fail parsing instead of erasing the type assertion. |
 | 5155 | Fix exception_pending runtime link for top-level statement checks | bug | backend-wasm | implementation-ready | P1 |  | `reference/typescript/tests/cases/compiler/baseTypeAfterDerivedType.ts` reaches backend emission, then `wat2wasm` fai... |
+| 5156 | Parse generic type arguments in class heritage clauses | feature | frontend/syntax | implementation-ready | P1 |  | `reference/typescript/tests/cases/compiler/baseTypeOrderChecking.ts` fails parsing on `class Class4<T> extends Class3... |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -455,7 +455,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 773 | Implement Autoasiforstaticsinclassdeclaration | spike | frontend/syntax | class: triage-needed | Implement Autoasiforstaticsinclassdeclaration |
 | 774 | Implement Autolift | spike | frontend/syntax | class: triage-needed | Implement Autolift |
 | 775 | Implement Autotypeassignedusingdestructuringfromnevernocrash | spike | frontend/resolver | class: blocked | Implement Autotypeassignedusingdestructuringfromnevernocrash |
-| 1039 | Implement Basetypeorderchecking | spike | frontend/syntax | class: triage-needed | Implement Basetypeorderchecking |
 | 1040 | Implement Basetypeprivatememberclash | spike | frontend/syntax | class: blocked | Implement Basetypeprivatememberclash |
 | 1041 | Implement Basetypewrappinginstantiationchain | spike | frontend/syntax | class: triage-needed | Implement Basetypewrappinginstantiationchain |
 | 1042 | Implement Bases | spike | frontend/syntax | class: triage-needed | Implement Bases |
@@ -5017,6 +5016,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 1036 | Implement Baseexpressiontypeparameters | spike | frontend/syntax | see `issues/done/1036-implement-baseExpressionTypeParameters.md` |
 | 1037 | Implement Baseindexsignatureresolution | spike | frontend/syntax | see `issues/done/1037-implement-baseIndexSignatureResolution.md` |
 | 1038 | Implement Basetypeafterderivedtype | spike | backend-wasm | see `issues/done/1038-implement-baseTypeAfterDerivedType.md` |
+| 1039 | Implement Basetypeorderchecking | spike | frontend/syntax | see `issues/done/1039-implement-baseTypeOrderChecking.md` |
 | 3002 | Implement Isolateddeclarationerrorsdefault | spike | runtime/builtins | see `issues/done/3002-implement-isolatedDeclarationErrorsDefault.md` |
 | 3131 | Implement Jsxfactorynotidentifierorqualifiedname | spike | reference/triage | see `issues/done/3131-implement-jsxFactoryNotIdentifierOrQualifiedName.md` |
 | 3329 | Implement Modulecodegentest | spike | frontend/syntax | see `issues/done/3329-implement-moduleCodeGenTest.md` |
@@ -5163,6 +5163,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 5130 | Implement own method ToPrimitive for mixed BigInt comparisons | feature | runtime/semantics | see `issues/done/5130-implement-object-method-toprimitive-for-bigint-comparisons.md` |
 | 5131 | Design ABC451 non-top array growth strategy | design | runtime/memory | see `issues/done/5131-design-abc451-non-top-array-growth-strategy.md` |
 | 5133 | Implement single-statement loop bodies for break and continue | feature | frontend/syntax | see `issues/done/5133-implement-single-statement-loop-body-break-continue.md` |
+| 5140 | Implement type alias object parsing before exported interface | feature | frontend/syntax | see file |
 | 5150 | Report empty element access diagnostics | feature | frontend/syntax | see `issues/done/5150-report-empty-element-access-diagnostics.md` |
 <!-- generated:done:end -->
 

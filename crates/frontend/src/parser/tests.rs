@@ -1579,6 +1579,29 @@ class Foo {
     }
 
     #[test]
+    fn parses_generic_async_generator_declaration() {
+        // TypeScript generic async generator: type params and return type should be erased
+        let program = parse_program(
+            "async function* f<T extends Promise<never>>(): AsyncGenerator<T, void, void> { }",
+        )
+        .unwrap();
+        assert_eq!(program.len(), 1);
+        match &program[0] {
+            Stmt::Function {
+                name,
+                body,
+                is_generator,
+                ..
+            } => {
+                assert_eq!(name, "f");
+                assert!(body.is_empty());
+                assert!(*is_generator);
+            }
+            other => panic!("expected Function, got {other:?}"),
+        }
+    }
+
+    #[test]
     fn parses_named_import_with_specifier_spans() {
         let program =
             parse_program("import { value, original as alias } from './module-source';").unwrap();
