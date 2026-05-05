@@ -2,10 +2,10 @@
 id: 3715
 title: "Implement Overloadonconstconstraintchecks"
 type: spike
-area: frontend/semantics
+area: frontend/syntax
 class: blocked
 priority: P1
-depends_on: [5001]
+depends_on: [5000]
 blocks: []
 created: 2026-05-01
 updated: 2026-05-01

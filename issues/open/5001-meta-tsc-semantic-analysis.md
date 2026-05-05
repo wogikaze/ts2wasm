@@ -86,6 +86,9 @@ Not run:
   existing import/export triage parent `432`.
 - Normalized those relinked child areas to `frontend/syntax`, matching the
   import/export syntax/module owner.
+- Follow-up scan found 348 direct children with recorded `parser-syntax`
+  diagnostics; relinked those to parser meta `5000` and normalized their area
+  to `frontend/syntax`.
 
 Validation result:
 
