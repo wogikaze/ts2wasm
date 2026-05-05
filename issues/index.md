@@ -21,12 +21,12 @@ Issue files are the source of truth for work items. The generated section below 
 | issues | 4 | 0 | 4 |
 | parser | 1 | 0 | 1 |
 | reference | 211 | 181 | 30 |
-| runtime | 260 | 102 | 158 |
+| runtime | 260 | 101 | 159 |
 | scripts | 2 | 0 | 2 |
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 4965 | 4139 | 826 |
+| total | 4965 | 4138 | 827 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -157,7 +157,6 @@ Issue files are the source of truth for work items. The generated section below 
 | ID | Title | Type | Area | Class | Priority | Depends on | Summary |
 |---:|---|---|---|---|---|---|---|
 | 5001 | Meta: TypeScript Compiler Semantic Analysis Coverage | meta | frontend/semantics | design-ready | P1 |  | tsc semantic-analysis failures currently need classified child work orders so implementers can select one diagnostic ... |
-| 5004 | Meta: Runtime Builtins Coverage (test262) (audit reopened #5004) | meta | runtime/builtins | design-ready | P1 |  | runtime builtin reference buckets currently need child issue classification by builtin family and observable Node/iwa... |
 | 5005 | Meta: TypeScript Compiler Name Resolution Coverage | meta | frontend/resolver | design-ready | P1 |  | name-resolution failures currently need child issue classification by resolver behavior so implementers can select on... |
 <!-- generated:ready:end -->
 
@@ -5019,6 +5018,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 4813 | Implement type-system support (dup) | spike | frontend/syntax | see `issues/done/4813-implement-type-system.md` |
 | 4814 | Investigate and classify unknown-unsupported cases (dup) | spike | frontend/syntax | see `issues/done/4814-implement-unknown-unsupported.md` |
 | 5000 | Meta: TypeScript Compiler Parser Syntax Coverage | meta | frontend/syntax | see file |
+| 5004 | Meta: Runtime Builtins Coverage (test262) (audit reopened #5004) | meta | runtime/builtins | see `issues/done/5004-meta-runtime-builtins.md` |
 | 5008 | Implement static ES module export forms (default, named, namespace, re-export) (audit reopened #5008) | feature | ir/compiler | see `issues/done/5008-static-es-module-export-default-namespace-reexport.md` |
 | 5009 | Remaining static ES module export forms (named list, default import, namespace, re-export, side-effect) (audit reopened #5009) | feature | ir/compiler | see `issues/done/5009-remaining-es-module-export-forms.md` |
 | 5010 | Implement local named export (export { value } and export { value as alias }) for entry module (audit reopened #5010) | feature | ir/compiler | see `issues/done/5010-remaining-es-module-export-forms.md` |
