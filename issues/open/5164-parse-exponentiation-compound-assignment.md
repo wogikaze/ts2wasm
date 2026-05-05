@@ -13,11 +13,14 @@ updated: 2026-05-06
 
 ## Summary
 
-`bigIntWithTargetES2016.ts` parses ordinary BigInt exponentiation `BigInt(1) ** BigInt(1)`, but stops at `num **= BigInt(2)` because the parser does not handle the `PowerEqual` token as an assignment expression.
+`bigIntWithTargetES2016.ts` and `bigIntWithTargetLessThanES2016.ts` parse ordinary BigInt exponentiation `BigInt(1) ** BigInt(1)`, but stop at `num **= BigInt(2)` / `foo **= BigInt(2)` because the parser does not handle the `PowerEqual` token as an assignment expression.
 
 ## Problem
 
-Problem: `reference/typescript/tests/cases/compiler/bigIntWithTargetES2016.ts` currently reports `UnsupportedSyntax: expected Semicolon, got Some(PowerEqual)` for `num **= BigInt(2)`.
+Problem: the BigInt target reference cases currently report `UnsupportedSyntax: expected Semicolon, got Some(PowerEqual)` for exponentiation compound assignment:
+
+- `reference/typescript/tests/cases/compiler/bigIntWithTargetES2016.ts`: `num **= BigInt(2)`
+- `reference/typescript/tests/cases/compiler/bigIntWithTargetLessThanES2016.ts`: `foo **= BigInt(2)`
 
 ## Current failure
 
@@ -25,12 +28,14 @@ Reference triage:
 
 ```sh
 python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/bigIntWithTargetES2016.ts
+python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/bigIntWithTargetLessThanES2016.ts
 ```
 
 Current compiler diagnostic:
 
 ```text
 UnsupportedSyntax: expected Semicolon, got Some(PowerEqual) at 106..109
+UnsupportedSyntax: expected Semicolon, got Some(PowerEqual) at 102..105
 ```
 
 Representative source:
@@ -40,6 +45,9 @@ BigInt(1) ** BigInt(1);
 
 let num = BigInt(2);
 num **= BigInt(2);
+
+let foo = BigInt(2);
+foo **= BigInt(2);
 ```
 
 Current compiler evidence:
@@ -53,6 +61,8 @@ TypeScript oracle evidence:
 ```text
 bigIntWithTargetES2016.ts: no diagnostics
 num: bigint
+bigIntWithTargetLessThanES2016.ts: no diagnostics
+foo: bigint
 ```
 
 TypeScript AST path at the failing operator:
@@ -99,6 +109,7 @@ Do not touch:
 - [ ] `num **= BigInt(2);` parses without `expected Semicolon, got Some(PowerEqual)`.
 - [ ] `BigInt(1) ** BigInt(1);` remains parsed as exponentiation.
 - [ ] `python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/bigIntWithTargetES2016.ts` no longer reports the `PowerEqual` parser diagnostic.
+- [ ] `python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/bigIntWithTargetLessThanES2016.ts` no longer reports the `PowerEqual` parser diagnostic.
 - [ ] A focused parser/frontend regression covers the `PowerEqual` token path.
 
 ## Validation
@@ -110,6 +121,7 @@ cargo fmt --all --check
 cargo nextest run -p ts2wasm-frontend
 cargo nextest run -p ts2wasm-ir
 python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/bigIntWithTargetES2016.ts
+python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/bigIntWithTargetLessThanES2016.ts
 ```
 
 Impacted commands:
@@ -138,7 +150,7 @@ Follow-up issues:
 
 ## Notes
 
-Split from generated bucket `1046` on 2026-05-06. Issue 376 already covers dynamic BigInt `**`; this issue is specifically the parser boundary for `**=`.
+Split from generated bucket `1046` on 2026-05-06 and expanded with generated bucket `1047` after both triage runs stopped at the same `PowerEqual` parser boundary. Issue 376 already covers dynamic BigInt `**`; this issue is specifically the parser boundary for `**=`.
 
 ## Completion evidence
 

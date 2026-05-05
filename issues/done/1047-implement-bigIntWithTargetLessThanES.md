@@ -3,12 +3,14 @@ id: 1047
 title: "Implement Bigintwithtargetlessthanes"
 type: spike
 area: runtime/builtins
-class: triage-needed
+class: superseded
 priority: P1
-depends_on: []
+depends_on: [5164]
 blocks: []
 created: 2026-05-01
-updated: 2026-05-01
+updated: 2026-05-06
+status: done
+completed: 2026-05-06
 ---
 
 ## Summary
@@ -43,10 +45,10 @@ This generated bucket is either split into implementation-ready child issues or 
 
 In scope:
 
-- [ ] Inspect the smart triage report below
-- [ ] Confirm whether existing open/done issues already cover this bucket
-- [ ] Split one feature family, one observable behavior, or one fixed reference window into child issues
-- [ ] Preserve exact reproduction commands and representative AST/diagnostic evidence in each child issue
+- [x] Inspect the smart triage report below
+- [x] Confirm whether existing open/done issues already cover this bucket
+- [x] Split one feature family, one observable behavior, or one fixed reference window into child issues
+- [x] Preserve exact reproduction commands and representative AST/diagnostic evidence in each child issue
 
 Out of scope:
 
@@ -68,10 +70,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] Duplicate candidates below are confirmed as no-match or this issue is superseded
-- [ ] At least one child issue contains an exact `mise run reference-triage -- ...` command
-- [ ] Child issue includes failing path, diagnostic code, source context, visible symbols, and parser/TypeScript AST evidence
-- [ ] Child issue acceptance names the exact fixture/reference path and diagnostic/stdout change
+- [x] Duplicate candidates below are confirmed as no-match or this issue is superseded
+- [x] At least one child issue contains an exact `mise run reference-triage -- ...` command
+- [x] Child issue includes failing path, diagnostic code, source context, visible symbols, and parser/TypeScript AST evidence
+- [x] Child issue acceptance names the exact fixture/reference path and diagnostic/stdout change
 
 ## Validation
 
@@ -98,15 +100,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] updated: `current-state.md` (repo root)
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] updated: `issues/open/5164-parse-exponentiation-compound-assignment.md`
 
 ## Notes
 
@@ -120,7 +122,15 @@ Follow-up issues:
 
 ## Smart triage
 
-Not generated. Rerun with `--triage-limit 1` or higher.
+Generated on 2026-05-06.
+
+- Path: `reference/typescript/tests/cases/compiler/bigIntWithTargetLessThanES2016.ts`
+- Diagnostic: `UnsupportedSyntax` / `parser-or-frontend-unsupported`
+- Failure: `expected Semicolon, got Some(PowerEqual) at 102..105`
+- Source context: `foo **= BigInt(2);`
+- Visible symbol: `foo: bigint`
+- TypeScript AST path: `ExpressionStatement -> BinaryExpression -> AsteriskAsteriskEqualsToken`
+- Superseding child: `issues/open/5164-parse-exponentiation-compound-assignment.md`
 
 ## Completion evidence
 
@@ -128,16 +138,16 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- `...`
+- `pending`
 
 Validation result:
 
 ```text
-command:
-result:
-date:
+command: python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/bigIntWithTargetLessThanES2016.ts
+result: pass; current blocker identified as parser rejection of `PowerEqual`, covered by issue 5164
+date: 2026-05-06
 ```
 
 Remaining risks:
 
-- none
+- BigInt target diagnostics and runtime behavior need follow-up triage after issue 5164 advances the pipeline beyond the current parser blocker.
