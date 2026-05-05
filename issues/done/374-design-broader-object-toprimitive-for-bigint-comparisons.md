@@ -3,12 +3,14 @@ id: 374
 title: "Design broader object ToPrimitive for mixed BigInt comparisons"
 type: design
 area: runtime/semantics
-class: design-ready
+class: done
 priority: P2
 depends_on: []
 blocks: []
 created: 2026-05-01
 updated: 2026-05-06
+completed: 2026-05-06
+status: done
 ---
 
 ## Summary
@@ -43,10 +45,10 @@ The project has a documented, source-backed policy for broader object `ToPrimiti
 
 In scope:
 
-- [ ] Decide which broader `ToPrimitive` shapes are supported, diagnosed, or deferred.
-- [ ] Define ordering requirements for `valueOf`/`toString`, receiver binding, side effects, and exception behavior.
-- [ ] Split implementation-ready child issues for safe narrow slices after the policy is accepted.
-- [ ] Keep current direct object-literal/local issue-368 behavior unchanged.
+- [x] Decide which broader `ToPrimitive` shapes are supported, diagnosed, or deferred.
+- [x] Define ordering requirements for `valueOf`/`toString`, receiver binding, side effects, and exception behavior.
+- [x] Split implementation-ready child issues for safe narrow slices after the policy is accepted.
+- [x] Keep current direct object-literal/local issue-368 behavior unchanged.
 
 Out of scope:
 
@@ -63,7 +65,7 @@ Expected:
 - `current-state.md`
 - `issues/done/372-implement-bigint-object-toprimitive-non-bigint-primitive-returns.md`
 - `issues/done/373-handle-bigint-object-toprimitive-invalid-out-of-range-string-returns.md`
-- `issues/open/374-design-broader-object-toprimitive-for-bigint-comparisons.md`
+- `issues/done/374-design-broader-object-toprimitive-for-bigint-comparisons.md`
 - `issues/done/375-handle-non-source-backed-out-of-range-bigint-string-comparisons.md`
 - `crates/cli/tests/` only for diagnostic characterization if needed
 - `fixtures/core-semantics/*bigint*` only for diagnostic characterization if needed
@@ -76,10 +78,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] Broader object `ToPrimitive` shapes are classified into supported, diagnostic, and deferred categories with Node evidence for representative cases.
-- [ ] At least one implementation-ready child issue is created if a safe narrow slice exists.
-- [ ] Existing direct object-literal/local issue-368 fixtures remain the boundary for implemented behavior until child issues land.
-- [ ] Docs/current-state/issues no longer point to issue 368 for broad object coercion.
+- [x] Broader object `ToPrimitive` shapes are classified into supported, diagnostic, and deferred categories with Node evidence for representative cases.
+- [x] At least one implementation-ready child issue is created if a safe narrow slice exists.
+- [x] Existing direct object-literal/local issue-368 fixtures remain the boundary for implemented behavior until child issues land.
+- [x] Docs/current-state/issues no longer point to issue 368 for broad object coercion.
 
 ## Validation
 
@@ -105,16 +107,16 @@ Not run:
 
 Final-state docs:
 
-- [ ] updated: `docs/05-compatibility-and-semantics.md`
-- [ ] updated: `docs/language-reference/javascript-features.md`
+- [x] updated: `docs/05-compatibility-and-semantics.md`
+- [x] updated: `docs/language-reference/javascript-features.md`
 
 Current state:
 
-- [ ] updated: `current-state.md` (repo root)
+- [x] updated: `current-state.md` (repo root)
 
 Follow-up issues:
 
-- [ ] created/updated: `issues/open/...`
+- [x] created: `issues/open/5130-implement-object-method-toprimitive-for-bigint-comparisons.md`
 
 ## Notes
 
@@ -122,16 +124,20 @@ Unblocked on 2026-05-06: dependencies `259` and `261` are in `issues/done/`, and
 
 ## Completion evidence
 
-Fill only when moving to `done/`.
+Date: 2026-05-06
 
 Commits:
 
-- none yet; issue is open
+- child issue: `5130`
 
 Validation result:
 
 ```text
-not run; issue is open
+Design parent closed by classifying broad object ToPrimitive shapes:
+direct source-backed own method syntax with single primitive returns is split to
+issue 5130; prototype lookup, accessors/descriptors, Proxy traps,
+receiver-sensitive `this`, side effects, throwing coercion, and
+Symbol.toPrimitive remain deferred until broader object-model support exists.
 ```
 
 Remaining risks:

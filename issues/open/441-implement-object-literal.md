@@ -129,7 +129,7 @@ Follow-up issues:
 - `issues/open/052-implement-json.md` - Implement JSON (same feature label, same group key, title overlap)
 - `issues/open/052d-implement-json-stringify-broader-replacer-semantics.md` - Implement broader JSON.stringify replacer semantics (same feature label, same group key, title overlap)
 - `issues/open/274-implement-spread-operator.md` - Implement spread operator (same feature label, same group key, title overlap)
-- `issues/open/374-design-broader-object-toprimitive-for-bigint-comparisons.md` - Design broader object ToPrimitive for mixed BigInt comparisons (same feature label, same group key, title overlap)
+- `issues/done/374-design-broader-object-toprimitive-for-bigint-comparisons.md` - Design broader object ToPrimitive for mixed BigInt comparisons (same feature label, same group key, title overlap)
 - `issues/open/059-implement-parser-syntax-extensions.md` - Implement parser syntax extensions for TypeScript and advanced JS (same feature label, same group key, title overlap)
 - `issues/open/060-investigate-unknown-unsupported-cases.md` - Investigate and classify unknown-unsupported diagnostic cases (same feature label, same group key)
 - `issues/done/062d-function-this-and-arguments.md` - Implement function this and arguments semantics (same feature label, same group key, title overlap)

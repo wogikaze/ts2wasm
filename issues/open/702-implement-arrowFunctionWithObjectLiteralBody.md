@@ -193,7 +193,7 @@ Duplicate candidates:
 [
   {
     "state": "open",
-    "path": "issues/open/374-design-broader-object-toprimitive-for-bigint-comparisons.md",
+    "path": "issues/done/374-design-broader-object-toprimitive-for-bigint-comparisons.md",
     "title": "Design broader object ToPrimitive for mixed BigInt comparisons",
     "reason": "same feature label, title overlap"
   },

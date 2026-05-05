@@ -21,12 +21,12 @@ Issue files are the source of truth for work items. The generated section below 
 | issues | 4 | 0 | 4 |
 | parser | 1 | 0 | 1 |
 | reference | 211 | 181 | 30 |
-| runtime | 260 | 97 | 163 |
+| runtime | 261 | 97 | 164 |
 | scripts | 2 | 0 | 2 |
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 4965 | 4128 | 837 |
+| total | 4966 | 4128 | 838 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -156,7 +156,7 @@ Issue files are the source of truth for work items. The generated section below 
 <!-- generated:ready:start -->
 | ID | Title | Type | Area | Class | Priority | Depends on | Summary |
 |---:|---|---|---|---|---|---|---|
-| 374 | Design broader object ToPrimitive for mixed BigInt comparisons | design | runtime/semantics | design-ready | P2 |  | Non-arrow methods, function bodies, prototype lookup, Proxy traps, getters, receiver-sensitive calls, and side-effect... |
+| 5130 | Implement own method ToPrimitive for mixed BigInt comparisons | feature | runtime/semantics | implementation-ready | P2 |  | `{ valueOf() { return 1n; } } == 1n` is Node-compatible and |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -4652,6 +4652,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 371 | Define BigInt bitwise and exponentiation policy | feature | runtime/semantics | see `issues/done/371-define-bigint-bitwise-and-exponentiation-policy.md` |
 | 372 | Implement BigInt object ToPrimitive non-BigInt primitive returns | feature | runtime/semantics | see `issues/done/372-implement-bigint-object-toprimitive-non-bigint-primitive-returns.md` |
 | 373 | Handle BigInt object ToPrimitive invalid and out-of-range string returns | feature | runtime/semantics | see `issues/done/373-handle-bigint-object-toprimitive-invalid-out-of-range-string-returns.md` |
+| 374 | Design broader object ToPrimitive for mixed BigInt comparisons | design | runtime/semantics | see `issues/done/374-design-broader-object-toprimitive-for-bigint-comparisons.md` |
 | 375 | Handle non-source-backed out-of-range BigInt/String comparisons | feature | runtime/semantics | see `issues/done/375-handle-non-source-backed-out-of-range-bigint-string-comparisons.md` |
 | 376 | Implement dynamic BigInt exponentiation | feature | runtime/semantics | see `issues/done/376-implement-dynamic-bigint-exponentiation.md` |
 | 377 | Implement BigInt bitwise NOT/AND/OR/XOR | feature | runtime/semantics | see `issues/done/377-implement-bigint-bitwise-not-and-or-xor.md` |

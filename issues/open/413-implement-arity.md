@@ -130,7 +130,7 @@ Follow-up issues:
 - `issues/open/274-implement-spread-operator.md` - Implement spread operator (same feature label, same group key, title overlap)
 - `issues/open/300-support-abc451-large-integer-number-boundary.md` - Support ABC451 large integer number boundary (same feature label, same group key, title overlap)
 - `issues/done/370-implement-bigint-arithmetic-exception-parity.md` - Implement BigInt arithmetic RangeError and TypeError parity (same feature label, same group key, title overlap)
-- `issues/open/374-design-broader-object-toprimitive-for-bigint-comparisons.md` - Design broader object ToPrimitive for mixed BigInt comparisons (same feature label, same group key)
+- `issues/done/374-design-broader-object-toprimitive-for-bigint-comparisons.md` - Design broader object ToPrimitive for mixed BigInt comparisons (same feature label, same group key)
 - `issues/done/407-map-spread-key-preserving-iterator-storage.md` - Implement key-preserving Map entry storage for spread iteration (same feature label, same group key, title overlap)
 - `issues/done/021a-implement-wasm-encoder-hello-binary-mvp.md` - Implement wasm-encoder hello binary MVP (same feature label, same group key, title overlap)
 - `issues/done/033-implement-switch-statement.md` - Implement switch statement (same feature label, same group key, title overlap)
