@@ -2,6 +2,7 @@
 """Build the web-ui dashboard and publish it to site dashboard route."""
 
 from pathlib import Path
+import sys
 import shutil
 import subprocess
 import os
@@ -12,15 +13,20 @@ import os
 # ///
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(PROJECT_ROOT / "scripts" / "lib"))
+from path_env import normalize_env_path, resolve_env_path
+
 WEB_UI_DIR = PROJECT_ROOT / "web-ui"
-DOCS_REPO_PATH = os.environ.get("TS2WASM_DOCS_REPO_PATH", str(PROJECT_ROOT / "site" / "docs"))
-DOCS_REPO = Path(DOCS_REPO_PATH) if Path(DOCS_REPO_PATH).is_absolute() else PROJECT_ROOT / DOCS_REPO_PATH
+DOCS_REPO = resolve_env_path(
+    os.environ.get("TS2WASM_DOCS_REPO_PATH"),
+    PROJECT_ROOT,
+    PROJECT_ROOT / "site" / "docs",
+)
 SITE_DASHBOARD_DIR = DOCS_REPO / "public" / "dashboard"
-DATA_SRC_DIR = Path(
-    os.environ.get(
-        "TS2WASM_WEB_UI_DATA_DIR",
-        str(DOCS_REPO / "coverage" / "web-ui" / "public" / "data"),
-    )
+DATA_SRC_DIR = resolve_env_path(
+    os.environ.get("TS2WASM_WEB_UI_DATA_DIR"),
+    PROJECT_ROOT,
+    DOCS_REPO / "coverage" / "web-ui" / "public" / "data",
 )
 DATA_DST_DIR = SITE_DASHBOARD_DIR / "data"
 
@@ -39,7 +45,7 @@ def detect_base() -> str:
     explicit = os.environ.get("TS2WASM_PAGES_BASE")
     if explicit:
         return explicit
-    docs_repo_path = os.environ.get("TS2WASM_DOCS_REPO_PATH")
+    docs_repo_path = normalize_env_path(os.environ.get("TS2WASM_DOCS_REPO_PATH"))
     if docs_repo_path:
         # Determine Pages subpath from the docs repo name.
         # e.g. wogikaze/ts2wasm-docs → /ts2wasm-docs/dashboard/

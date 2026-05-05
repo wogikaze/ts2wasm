@@ -9,11 +9,15 @@ do not silently fall back to aggregate rows like semantic-pass/build-pass.
 import argparse
 import json
 import os
+import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(REPO_ROOT / "scripts" / "lib"))
+from path_env import resolve_env_path
+
 DEFAULT_COVERAGE_DIR = REPO_ROOT / "artifacts" / "coverage" / "results"
 DEFAULT_SITE_DOCS_ROOT = REPO_ROOT / "site" / "docs"
 DEFAULT_HISTORY_FILE = REPO_ROOT / "artifacts" / "coverage" / "history" / "runs.jsonl"
@@ -27,14 +31,15 @@ def resolve_output_dir() -> Path:
     2. TS2WASM_DOCS_REPO_PATH + coverage/web-ui/public/data
     3. site/docs/coverage/web-ui/public/data (default)
     """
-    explicit = os.environ.get("TS2WASM_WEB_UI_DATA_DIR")
-    if explicit:
-        explicit_path = Path(explicit)
-        return explicit_path if explicit_path.is_absolute() else REPO_ROOT / explicit_path
+    explicit_path = resolve_env_path(os.environ.get("TS2WASM_WEB_UI_DATA_DIR"), REPO_ROOT)
+    if explicit_path is not None:
+        return explicit_path
 
-    docs_repo = Path(os.environ.get("TS2WASM_DOCS_REPO_PATH", str(DEFAULT_SITE_DOCS_ROOT)))
-    if not docs_repo.is_absolute():
-        docs_repo = REPO_ROOT / docs_repo
+    docs_repo = resolve_env_path(
+        os.environ.get("TS2WASM_DOCS_REPO_PATH"),
+        REPO_ROOT,
+        DEFAULT_SITE_DOCS_ROOT,
+    )
     return docs_repo / "coverage" / "web-ui" / "public" / "data"
 
 STATUS_MAP = {

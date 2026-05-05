@@ -2,6 +2,7 @@
 
 <script>
 (function() {
+  if (typeof window === 'undefined') return;
   const pathname = window.location.pathname;
   const dashboardStart = pathname.indexOf('/dashboard');
   const rootPrefix = dashboardStart === -1 ? '' : pathname.slice(0, dashboardStart);

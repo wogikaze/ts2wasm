@@ -33,7 +33,7 @@ Notes:
     validation from isolated git worktrees.
    - TS2WASM_SERVER_EMIT_WASM=0 disables server-side wasm emission for semantic runs.
    - TS2WASM_SERVER_MAX_WORKERS caps server workers (default: min(CPU, 32)).
-   - TS2WASM_REFERENCE_COVERAGE_BATCH controls server batch size (default: 200).
+   - TS2WASM_REFERENCE_COVERAGE_BATCH controls server batch size (default: 1000).
    - TS2WASM_NOTIFY_NEW_PASSES=0 skips baseline/new-pass notification work.
 """
 
@@ -48,7 +48,7 @@ import threading
 import itertools
 import time
 from pathlib import Path
-from concurrent.futures import ThreadPoolExecutor, as_completed
+from concurrent.futures import ThreadPoolExecutor, as_completed, wait, FIRST_COMPLETED
 from datetime import datetime
 
 # Path for auto-issue generation subprocess
@@ -74,6 +74,7 @@ except ImportError:
     notify_new_passes = None
 
 from ts2wasm_binary import resolve_ts2wasm_binary
+from path_env import resolve_env_path
 
 REPO_ROOT = Path(__file__).parent.parent.parent.resolve()
 TS2WASM_BINARY = resolve_ts2wasm_binary()
@@ -380,7 +381,7 @@ def refresh_web_ui_data():
     command = [sys.executable, str(REPO_ROOT / "scripts/gen/web-ui-data.py")]
     out_dir = os.environ.get("TS2WASM_WEB_UI_DATA_DIR")
     if not out_dir:
-        docs_repo = os.environ.get("TS2WASM_DOCS_REPO_PATH")
+        docs_repo = resolve_env_path(os.environ.get("TS2WASM_DOCS_REPO_PATH"), REPO_ROOT)
         if docs_repo:
             out_dir = str(Path(docs_repo) / "coverage" / "web-ui" / "public" / "data")
     if out_dir:
@@ -878,15 +879,147 @@ def main():
         include_jsonl_source = os.environ.get("TS2WASM_JSONL_SOURCE", "0") not in ("0", "false", "False", "no", "NO")
         node_oracle_policy = os.environ.get("TS2WASM_TEST262_NODE_ORACLE", "auto").strip().lower()
         try:
-            metadata_prefix_bytes = int(os.environ.get("TS2WASM_TEST262_METADATA_PREFIX_BYTES", "65536") or "65536")
+            metadata_prefix_bytes = int(os.environ.get("TS2WASM_TEST262_METADATA_PREFIX_BYTES", "8192") or "8192")
         except ValueError:
-            metadata_prefix_bytes = 65536
+            metadata_prefix_bytes = 8192
         try:
             semantic_jobs = int(os.environ.get("TS2WASM_REFERENCE_COVERAGE_SEMANTIC_JOBS", "0") or "0")
         except ValueError:
             semantic_jobs = 0
         if semantic_jobs < 1:
             semantic_jobs = min(max(jobs, (os.cpu_count() or jobs) * 2), 32)
+        try:
+            prepare_jobs = int(os.environ.get("TS2WASM_REFERENCE_COVERAGE_PREPARE_JOBS", "0") or "0")
+        except ValueError:
+            prepare_jobs = 0
+        if prepare_jobs < 1:
+            prepare_jobs = min(max(jobs * 4, jobs), 64)
+
+        metadata_cache_enabled = os.environ.get("TS2WASM_TEST262_METADATA_CACHE", "1") not in (
+            "0", "false", "False", "no", "NO"
+        )
+        metadata_cache_file = REPO_ROOT / "artifacts" / "coverage" / "cache" / "test262-metadata-v2.json"
+        metadata_cache_signature = {
+            "version": 2,
+            "unsupported_flags": list(t262.UNSUPPORTED_FLAGS),
+            "supported_features": list(t262.SUPPORTED_FEATURES),
+        }
+        metadata_cache_entries = {}
+        metadata_cache_dirty = [False]
+        metadata_cache_lock = threading.Lock()
+
+        def cache_key(file_path):
+            return str(file_path.resolve())
+
+        def load_metadata_cache():
+            if not metadata_cache_enabled or not metadata_cache_file.is_file():
+                return
+            try:
+                data = json.loads(metadata_cache_file.read_text(encoding="utf-8"))
+            except (OSError, json.JSONDecodeError):
+                return
+            if data.get("signature") != metadata_cache_signature:
+                return
+            entries = data.get("entries")
+            if isinstance(entries, dict):
+                metadata_cache_entries.update(entries)
+
+        def metadata_from_cache(entry):
+            return t262.Test262Metadata(
+                flags=set(entry.get("flags") or []),
+                includes=list(entry.get("includes") or []),
+                features=list(entry.get("features") or []),
+                negative_phase=entry.get("negative_phase"),
+                negative_type=entry.get("negative_type"),
+            )
+
+        def cache_entry_valid(entry, stat_result):
+            return (
+                entry
+                and entry.get("mtime_ns") == getattr(stat_result, "st_mtime_ns", None)
+                and entry.get("size") == getattr(stat_result, "st_size", None)
+            )
+
+        def update_metadata_cache(file_path, stat_result, metadata, unsupported_reason):
+            if not metadata_cache_enabled or stat_result is None or metadata is None:
+                return
+            entry = {
+                "mtime_ns": getattr(stat_result, "st_mtime_ns", None),
+                "size": getattr(stat_result, "st_size", None),
+                "flags": sorted(metadata.flags),
+                "includes": list(metadata.includes),
+                "features": list(metadata.features),
+                "negative_phase": metadata.negative_phase,
+                "negative_type": metadata.negative_type,
+                "unsupported_reason": unsupported_reason,
+            }
+            with metadata_cache_lock:
+                metadata_cache_entries[cache_key(file_path)] = entry
+                metadata_cache_dirty[0] = True
+
+        def seed_metadata_cache_from_previous_jsonl():
+            # If a previous run already produced metadata-unsupported records,
+            # reuse those path classifications without opening tens of thousands
+            # of test files on the next run.  The stat guard below keeps the seed
+            # safe when the corpus changes.
+            if not metadata_cache_enabled or not jsonl_file.is_file():
+                return
+            seeded = 0
+            prefix = "UnsupportedTest262Metadata/test262-metadata: "
+            try:
+                with jsonl_file.open("r", encoding="utf-8") as handle:
+                    for line in handle:
+                        try:
+                            record = json.loads(line)
+                        except json.JSONDecodeError:
+                            continue
+                        if record.get("status") != "unsupported":
+                            continue
+                        reason = record.get("reason") or ""
+                        if not reason.startswith(prefix):
+                            continue
+                        case_path = record.get("case")
+                        if not case_path:
+                            continue
+                        file_path = Path(case_path)
+                        if not file_path.is_absolute():
+                            file_path = REPO_ROOT / file_path
+                        try:
+                            stat_result = file_path.stat()
+                        except OSError:
+                            continue
+                        entry = {
+                            "mtime_ns": getattr(stat_result, "st_mtime_ns", None),
+                            "size": getattr(stat_result, "st_size", None),
+                            "flags": [],
+                            "includes": [],
+                            "features": [],
+                            "negative_phase": None,
+                            "negative_type": None,
+                            "unsupported_reason": reason[len(prefix):],
+                        }
+                        metadata_cache_entries[cache_key(file_path)] = entry
+                        seeded += 1
+            except OSError:
+                return
+            if seeded:
+                metadata_cache_dirty[0] = True
+
+        def save_metadata_cache():
+            if not metadata_cache_enabled or not metadata_cache_dirty[0]:
+                return
+            metadata_cache_file.parent.mkdir(parents=True, exist_ok=True)
+            with metadata_cache_lock:
+                payload = {
+                    "signature": metadata_cache_signature,
+                    "entries": metadata_cache_entries,
+                }
+            tmp_cache_file = metadata_cache_file.with_suffix(".tmp")
+            tmp_cache_file.write_text(json.dumps(payload, separators=(",", ":")), encoding="utf-8")
+            tmp_cache_file.replace(metadata_cache_file)
+
+        load_metadata_cache()
+        seed_metadata_cache_from_previous_jsonl()
 
         def record_source(item):
             return item.get("source_code", "") if include_jsonl_source else None
@@ -1031,6 +1164,65 @@ def main():
                 "started_at": started_at,
                 "error_line": None,
             }
+
+            try:
+                stat_result = file_path.stat()
+            except OSError as exc:
+                return {
+                    "type": "early_record",
+                    "index": index,
+                    "record_status": make_blocked_record(
+                        item, "HarnessError", "test262-harness", f"failed to stat source: {exc}", started_at
+                    ),
+                }
+
+            cached_metadata_entry = metadata_cache_entries.get(cache_key(file_path)) if metadata_cache_enabled else None
+            if cache_entry_valid(cached_metadata_entry, stat_result):
+                metadata = metadata_from_cache(cached_metadata_entry)
+                item["metadata"] = metadata
+                unsupported_reason = cached_metadata_entry.get("unsupported_reason") or metadata.unsupported_reason
+                if unsupported_reason:
+                    if include_jsonl_source:
+                        try:
+                            item["source_code"] = file_path.read_text(encoding="utf-8")
+                        except (OSError, UnicodeDecodeError):
+                            item["source_code"] = ""
+                    return {
+                        "type": "early_record",
+                        "index": index,
+                        "record_status": make_unsupported_record(
+                            item,
+                            "UnsupportedTest262Metadata",
+                            "test262-metadata",
+                            unsupported_reason,
+                            started_at,
+                        ),
+                    }
+                try:
+                    source_code = file_path.read_text(encoding="utf-8")
+                except (OSError, UnicodeDecodeError) as exc:
+                    return {
+                        "type": "early_record",
+                        "index": index,
+                        "record_status": make_blocked_record(
+                            item, "HarnessError", "test262-harness", f"failed to read source: {exc}", started_at
+                        ),
+                    }
+                item["source_code"] = source_code
+                try:
+                    item["build_source"] = t262.build_test262_source(
+                        file_path, source_code, metadata, target="wasm"
+                    )
+                except Exception as exc:
+                    return {
+                        "type": "early_record",
+                        "index": index,
+                        "record_status": make_blocked_record(
+                            item, "HarnessError", "test262-harness", str(exc), started_at
+                        ),
+                    }
+                return {"type": "build_item", "index": index, "item": item}
+
             try:
                 prefix_source, metadata, metadata_complete = read_metadata_prefix(file_path)
             except (OSError, UnicodeDecodeError) as exc:
@@ -1046,6 +1238,7 @@ def main():
                 item["metadata"] = metadata
                 unsupported_reason = metadata.unsupported_reason
                 if unsupported_reason:
+                    update_metadata_cache(file_path, stat_result, metadata, unsupported_reason)
                     if include_jsonl_source:
                         try:
                             item["source_code"] = file_path.read_text(encoding="utf-8")
@@ -1079,6 +1272,7 @@ def main():
                 metadata = t262.parse_test262_metadata(source_code)
             item["metadata"] = metadata
             unsupported_reason = metadata.unsupported_reason
+            update_metadata_cache(file_path, stat_result, metadata, unsupported_reason)
             if unsupported_reason:
                 return {
                     "type": "early_record",
@@ -1367,7 +1561,7 @@ def main():
                     )
                 else:
                     prepared = [None] * len(files)
-                    with ThreadPoolExecutor(max_workers=jobs) as executor:
+                    with ThreadPoolExecutor(max_workers=prepare_jobs) as executor:
                         futures = {
                             executor.submit(prepare_jsonl_item, pair): pair[0]
                             for pair in enumerate(files)
@@ -1385,9 +1579,30 @@ def main():
                             build_items.append(result["item"])
 
                     server_proc = None
+                    semantic_executor = None
+                    pending_semantic = set()
+                    max_pending_semantic = max(semantic_jobs * 4, 1)
+
+                    def drain_semantic(block=False):
+                        while pending_semantic:
+                            if block:
+                                done, _ = wait(pending_semantic, return_when=FIRST_COMPLETED)
+                            else:
+                                done, _ = wait(pending_semantic, timeout=0, return_when=FIRST_COMPLETED)
+                                if not done:
+                                    return
+                            for future in done:
+                                pending_semantic.remove(future)
+                                record, status = future.result()
+                                consume_record(jsonl_out, record, status)
+                            if not block:
+                                return
+
                     try:
                         if build_items:
                             server_proc = start_jsonl_server()
+                            if semantic_check:
+                                semantic_executor = ThreadPoolExecutor(max_workers=semantic_jobs)
 
                         try:
                             batch_size = int(os.environ.get("TS2WASM_REFERENCE_COVERAGE_BATCH", "1000") or "1000")
@@ -1396,7 +1611,12 @@ def main():
                         batch_size = max(1, batch_size)
                         emit_mode = "wasm" if semantic_check else "check"
                         if build_items:
-                            print(f"Starting ts2wasm server (jsonl {emit_mode} mode, {jobs} compile workers, {semantic_jobs} semantic workers)...", file=sys.stderr)
+                            print(
+                                f"Starting ts2wasm server (jsonl {emit_mode} mode, "
+                                f"{jobs} compile workers, {semantic_jobs} semantic workers, "
+                                f"{prepare_jobs} prepare workers)...",
+                                file=sys.stderr,
+                            )
                         for start in range(0, len(build_items), batch_size):
                             batch = build_items[start:start + batch_size]
                             for item in batch:
@@ -1483,13 +1703,23 @@ def main():
                                     return t262.process_one_test(item["file_path"], tmp_dir, False)
                                 return run_wasm_oracle_for_item(item, wasm_path)
 
-                            with ThreadPoolExecutor(max_workers=semantic_jobs) as executor:
-                                futures = {executor.submit(finish_item, item): item for item in batch}
-                                for future in as_completed(futures):
-                                    record, status = future.result()
+                            for item in batch:
+                                if semantic_executor is None:
+                                    record, status = finish_item(item)
                                     consume_record(jsonl_out, record, status)
+                                else:
+                                    pending_semantic.add(semantic_executor.submit(finish_item, item))
+                                    if len(pending_semantic) >= max_pending_semantic:
+                                        drain_semantic(block=True)
+                            drain_semantic(block=False)
+
+                        drain_semantic(block=True)
                     finally:
+                        if semantic_executor is not None:
+                            semantic_executor.shutdown(wait=True)
                         stop_jsonl_server(server_proc)
+
+        save_metadata_cache()
 
         print(f"\n=== {suite} Summary ===", file=sys.stderr)
         print(f"Pass: {passed}", file=sys.stderr)

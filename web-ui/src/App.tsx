@@ -50,6 +50,8 @@ interface RunDeltas {
 }
 
 interface TrendRun extends HistoricalData {
+  executed: number
+  denominator: number
   displayTime: string
   trendLabel: string
   seriesKey: string
@@ -196,6 +198,10 @@ function trendDenominatorCount(run: HistoricalData) {
   return Number(run.denominator ?? executed)
 }
 
+function isFullCaseTrendRun(run: TrendRun) {
+  return run.denominator > 0 && run.executed === run.denominator
+}
+
 function trendSeriesKey(run: HistoricalData) {
   const suite = trendSuiteName(run)
   const executed = trendExecutedCount(run)
@@ -240,6 +246,8 @@ function buildTrendRuns(history: HistoricalData[]): TrendRun[] {
 
     const trendRun = {
       ...run,
+      executed,
+      denominator: trendDenominatorCount(run),
       displayTime: new Date(run.timestamp).toLocaleString(),
       trendLabel: new Date(run.timestamp).toLocaleString(),
       seriesKey,
@@ -408,21 +416,25 @@ function App() {
   const trendRuns = useMemo(() => buildTrendRuns(history), [history])
   const historyRows = useMemo(() => [...trendRuns].reverse(), [trendRuns])
   const latestTrend = trendRuns[trendRuns.length - 1]
+  const fullCaseTrendRuns = useMemo(() => (
+    trendRuns.filter(isFullCaseTrendRun)
+  ), [trendRuns])
   const trendSeries = useMemo(() => (
-    Array.from(new Set(trendRuns.map(run => run.seriesKey))).sort()
-  ), [trendRuns])
+    Array.from(new Set(fullCaseTrendRuns.map(run => run.seriesKey))).sort()
+  ), [fullCaseTrendRuns])
   const resultTrendRows = useMemo(() => (
-    buildTrendChartRows(trendRuns, run => run.passRate)
-  ), [trendRuns])
+    buildTrendChartRows(fullCaseTrendRuns, run => run.passRate)
+  ), [fullCaseTrendRuns])
+  const hasResultTrend = fullCaseTrendRuns.length > 0
   const hasPerformanceTrend = useMemo(() => (
-    trendRuns.some(run => run.duration_ms !== null)
-  ), [trendRuns])
+    fullCaseTrendRuns.some(run => run.duration_ms !== null)
+  ), [fullCaseTrendRuns])
   const performanceTrendRows = useMemo(() => (
     buildTrendChartRows(
-      trendRuns.filter(run => run.duration_ms !== null),
+      fullCaseTrendRuns.filter(run => run.duration_ms !== null),
       run => run.duration_ms ?? 0,
     )
-  ), [trendRuns])
+  ), [fullCaseTrendRuns])
 
   const currentExportName = `ts2wasm-${activeTab}`
   const nextTheme = theme === 'dark' ? 'light' : 'dark'
@@ -1010,44 +1022,17 @@ function App() {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 xl:grid-cols-2 gap-5 mb-5">
-              <div className="bg-gray-800 rounded-lg p-6 border border-gray-700">
-                <h3 className="text-lg font-semibold mb-4">Result Trend</h3>
-                <div className="h-72">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <LineChart data={resultTrendRows} margin={{ top: 8, right: 16, bottom: 8, left: 8 }}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-                      <XAxis dataKey="displayTime" stroke="#9ca3af" minTickGap={24} />
-                      <YAxis stroke="#9ca3af" domain={[0, 100]} tickFormatter={(value) => `${value}%`} />
-                      <Tooltip contentStyle={chartTooltipContentStyle} labelStyle={chartTooltipLabelStyle} itemStyle={chartTooltipItemStyle} formatter={(value) => [formatPercent(chartNumber(value)), 'pass rate']} />
-                      <Legend />
-                      {trendSeries.map((series, index) => (
-                        <Line
-                          key={series}
-                          type="monotone"
-                          dataKey={series}
-                          name={series}
-                          stroke={trendColors[index % trendColors.length]}
-                          strokeWidth={2}
-                          dot
-                          connectNulls={false}
-                        />
-                      ))}
-                    </LineChart>
-                  </ResponsiveContainer>
-                </div>
-              </div>
-
-              <div className="bg-gray-800 rounded-lg p-6 border border-gray-700">
-                <h3 className="text-lg font-semibold mb-4">Performance Trend</h3>
-                <div className="h-72">
-                  {hasPerformanceTrend ? (
+            {hasResultTrend && (
+              <div className="grid grid-cols-1 xl:grid-cols-2 gap-5 mb-5">
+                <div className="bg-gray-800 rounded-lg p-6 border border-gray-700">
+                  <h3 className="text-lg font-semibold mb-4">Result Trend</h3>
+                  <div className="h-72">
                     <ResponsiveContainer width="100%" height="100%">
-                      <LineChart data={performanceTrendRows} margin={{ top: 8, right: 16, bottom: 8, left: 8 }}>
+                      <LineChart data={resultTrendRows} margin={{ top: 8, right: 16, bottom: 8, left: 8 }}>
                         <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
                         <XAxis dataKey="displayTime" stroke="#9ca3af" minTickGap={24} />
-                        <YAxis stroke="#9ca3af" tickFormatter={(value) => `${value}ms`} />
-                        <Tooltip contentStyle={chartTooltipContentStyle} labelStyle={chartTooltipLabelStyle} itemStyle={chartTooltipItemStyle} formatter={(value) => [`${Math.round(chartNumber(value)).toLocaleString()}ms`, 'duration']} />
+                        <YAxis stroke="#9ca3af" domain={[0, 100]} tickFormatter={(value) => `${value}%`} />
+                        <Tooltip contentStyle={chartTooltipContentStyle} labelStyle={chartTooltipLabelStyle} itemStyle={chartTooltipItemStyle} formatter={(value) => [formatPercent(chartNumber(value)), 'pass rate']} />
                         <Legend />
                         {trendSeries.map((series, index) => (
                           <Line
@@ -1058,19 +1043,48 @@ function App() {
                             stroke={trendColors[index % trendColors.length]}
                             strokeWidth={2}
                             dot
-                            connectNulls={false}
+                            connectNulls
                           />
                         ))}
                       </LineChart>
                     </ResponsiveContainer>
-                  ) : (
-                    <div className="flex h-full items-center justify-center rounded-md border border-dashed border-gray-700 text-sm text-gray-400">
-                      No timing data in current history artifacts.
-                    </div>
-                  )}
+                  </div>
+                </div>
+
+                <div className="bg-gray-800 rounded-lg p-6 border border-gray-700">
+                  <h3 className="text-lg font-semibold mb-4">Performance Trend</h3>
+                  <div className="h-72">
+                    {hasPerformanceTrend ? (
+                      <ResponsiveContainer width="100%" height="100%">
+                        <LineChart data={performanceTrendRows} margin={{ top: 8, right: 16, bottom: 8, left: 8 }}>
+                          <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+                          <XAxis dataKey="displayTime" stroke="#9ca3af" minTickGap={24} />
+                          <YAxis stroke="#9ca3af" tickFormatter={(value) => `${value}ms`} />
+                          <Tooltip contentStyle={chartTooltipContentStyle} labelStyle={chartTooltipLabelStyle} itemStyle={chartTooltipItemStyle} formatter={(value) => [`${Math.round(chartNumber(value)).toLocaleString()}ms`, 'duration']} />
+                          <Legend />
+                          {trendSeries.map((series, index) => (
+                            <Line
+                              key={series}
+                              type="monotone"
+                              dataKey={series}
+                              name={series}
+                              stroke={trendColors[index % trendColors.length]}
+                              strokeWidth={2}
+                              dot
+                              connectNulls
+                            />
+                          ))}
+                        </LineChart>
+                      </ResponsiveContainer>
+                    ) : (
+                      <div className="flex h-full items-center justify-center rounded-md border border-dashed border-gray-700 text-sm text-gray-400">
+                        No timing data in current history artifacts.
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
-            </div>
+            )}
 
             <div className="bg-gray-800 rounded-lg border border-gray-700 overflow-hidden">
               <div className="overflow-x-auto">

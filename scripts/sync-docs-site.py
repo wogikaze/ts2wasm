@@ -13,9 +13,12 @@ import sys
 
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(REPO_ROOT / "scripts" / "lib"))
+from path_env import normalize_env_path
 
 
 def resolve_path(raw, fallback):
+    raw = normalize_env_path(raw)
     if not raw:
         return fallback
     path = Path(raw)

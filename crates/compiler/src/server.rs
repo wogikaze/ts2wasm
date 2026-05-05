@@ -391,6 +391,17 @@ fn compile_source_text_with_emit(
     id: i64,
     emit_mode: EmitMode,
 ) -> Result<Option<PathBuf>, Diagnostic> {
+    // `module_graph::build_entry_module_graph` canonicalizes the entry path.
+    // The server compiles from the in-memory JSON payload, but the virtual
+    // entry still has to exist on disk for canonicalization and relative
+    // import bookkeeping.  Create an empty placeholder instead of writing the
+    // full source and reading it back.
+    fs::File::create(path).map_err(|error| Diagnostic {
+        code: ts2wasm_frontend::DiagCode::BackendIo,
+        message: format!("failed to create virtual entry {}: {error}", path.display()),
+        span: None,
+    })?;
+
     let lowered = lower_source_text(path, source)?;
     ensure_runtime_feature_gates(&lowered)?;
 
