@@ -1391,6 +1391,24 @@ fn switch_fallthrough_fixture_matches_node_output_under_iwasm() {
 }
 
 #[test]
+fn throw_catch_finally_fixture_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node("fixtures/control-flow-and-exceptions/throw-catch-finally.ts");
+}
+
+#[test]
+fn throw_rethrow_nested_fixture_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node("fixtures/control-flow-and-exceptions/throw-rethrow-nested.ts");
+}
+
+#[test]
+fn try_finally_uncaught_throw_traps_after_finally_output() {
+    assert_fixture_node_fails_and_iwasm_traps_after_stdout(
+        "fixtures/control-flow-and-exceptions/try-finally-throw.ts",
+        "finally\n",
+    );
+}
+
+#[test]
 fn labeled_control_fixtures_match_node_output_under_iwasm() {
     for fixture in [
         "fixtures/control-flow-and-exceptions/labeled-break.ts",
