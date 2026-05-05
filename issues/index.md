@@ -15,7 +15,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 1 | 0 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4378 | 3830 | 548 |
+| frontend | 4378 | 3827 | 551 |
 | harness | 1 | 0 | 1 |
 | ir | 21 | 0 | 21 |
 | issues | 4 | 0 | 4 |
@@ -26,7 +26,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 4969 | 4107 | 862 |
+| total | 4969 | 4104 | 865 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -238,7 +238,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 452 | Implement type-alias support | spike | frontend/syntax | class: blocked | Implement type-alias support |
 | 453 | Implement type-system support | spike | frontend/semantics | class: blocked | Implement type-system support |
 | 454 | Investigate and classify unknown-unsupported cases | spike | frontend/syntax | class: triage-needed | Investigate and classify unknown-unsupported cases |
-| 477 | Implement Accessoverriddenbaseclassmember (audit reopened #477) | spike | frontend/syntax | class: blocked | Implement Accessoverriddenbaseclassmember (audit reopened #477) |
 | 482 | Implement Accessordeclarationorder (audit reopened #482) | spike | frontend/syntax | class: blocked | Implement Accessordeclarationorder (audit reopened #482) |
 | 483 | Implement Accessorinambientcontextes (audit reopened #483) | spike | frontend/syntax | class: blocked | Implement Accessorinambientcontextes (audit reopened #483) |
 | 485 | Implement Accessorparameteraccessibilitymodifier (audit reopened #485) | spike | frontend/syntax | class: blocked | Implement Accessorparameteraccessibilitymodifier (audit reopened #485) |
@@ -273,7 +272,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 560 | Implement Acceptsymbolasweaktype | spike | frontend/resolver | class: blocked | Implement Acceptsymbolasweaktype |
 | 561 | Implement Acceptablealias | spike | frontend/syntax | class: blocked | Implement Acceptablealias |
 | 562 | Implement Accessinstancememberfromstaticmethod | spike | frontend/resolver | class: blocked | Implement Accessinstancememberfromstaticmethod |
-| 563 | Implement Accessoverriddenbaseclassmember (audit reopened #563) | spike | frontend/syntax | class: blocked | Implement Accessoverriddenbaseclassmember (audit reopened #563) |
 | 564 | Implement Accessstaticmemberfrominstancemethod | spike | frontend/resolver | class: blocked | Implement Accessstaticmemberfrominstancemethod |
 | 565 | Implement Accessoraccidentalcalldiagnostic | spike | frontend/syntax | class: blocked | Implement Accessoraccidentalcalldiagnostic |
 | 566 | Implement Accessordeclarationemitjs | spike | frontend/syntax | class: blocked | Implement Accessordeclarationemitjs |
@@ -480,7 +478,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 774 | Implement Autolift | spike | frontend/syntax | class: triage-needed | Implement Autolift |
 | 775 | Implement Autotypeassignedusingdestructuringfromnevernocrash | spike | frontend/resolver | class: blocked | Implement Autotypeassignedusingdestructuringfromnevernocrash |
 | 784 | Implement Functiondeclaration Import Export (audit reopened #784) | spike | frontend/syntax | class: blocked | Implement Functiondeclaration Import Export (audit reopened #784) |
-| 798 | Implement Accessoverriddenbaseclassmember (audit reopened #798) | spike | frontend/syntax | class: blocked | Implement Accessoverriddenbaseclassmember (audit reopened #798) |
 | 803 | Implement Accessordeclarationorder (audit reopened #803) | spike | frontend/syntax | class: blocked | Implement Accessordeclarationorder (audit reopened #803) |
 | 804 | Implement Accessorinambientcontextes (audit reopened #804) | spike | frontend/syntax | class: blocked | Implement Accessorinambientcontextes (audit reopened #804) |
 | 806 | Implement Accessorparameteraccessibilitymodifier (audit reopened #806) | spike | frontend/syntax | class: blocked | Implement Accessorparameteraccessibilitymodifier (audit reopened #806) |
@@ -4702,6 +4699,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 474 | Implement Acceptsymbolasweaktype (dup) | spike | frontend/resolver | see `issues/done/474-implement-acceptSymbolAsWeakType.md` |
 | 475 | Implement Acceptablealias (dup) | spike | frontend/syntax | see `issues/done/475-implement-acceptableAlias.md` |
 | 476 | Implement Accessinstancememberfromstaticmethod (dup) | spike | frontend/resolver | see `issues/done/476-implement-accessInstanceMemberFromStaticMethod.md` |
+| 477 | Implement Accessoverriddenbaseclassmember (audit reopened #477) | spike | frontend/syntax | see `issues/done/477-implement-accessOverriddenBaseClassMember.md` |
 | 478 | Implement Accessstaticmemberfrominstancemethod (dup) | spike | frontend/resolver | see `issues/done/478-implement-accessStaticMemberFromInstanceMethod.md` |
 | 479 | Implement Accessoraccidentalcalldiagnostic (dup) | spike | frontend/syntax | see `issues/done/479-implement-accessorAccidentalCallDiagnostic.md` |
 | 480 | Implement Accessordeclarationemitjs (dup) | spike | frontend/syntax | see `issues/done/480-implement-accessorDeclarationEmitJs.md` |
@@ -4753,6 +4751,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 547 | Implement Classdeclarationwithinvalidconstonpropertydeclaration (audit reopened #547) | spike | frontend/syntax | see `issues/done/547-implement-ClassDeclarationWithInvalidConstOnPropertyDeclaration.md` |
 | 551 | Implement Memberaccessordeclaration (audit reopened #551) | spike | frontend/syntax | see `issues/done/551-implement-MemberAccessorDeclaration.md` |
 | 552 | Implement Parameterlist | spike | frontend/syntax | see `issues/done/552-implement-ParameterList.md` |
+| 563 | Implement Accessoverriddenbaseclassmember (audit reopened #563) | spike | frontend/syntax | see `issues/done/563-implement-accessOverriddenBaseClassMember.md` |
 | 573 | Implement Accessorwithoutbody (audit reopened #573) | spike | frontend/syntax | see `issues/done/573-implement-accessorWithoutBody.md` |
 | 607 | Implement Ambientenumelementinitializer (dup) | spike | frontend/syntax | see `issues/done/607-implement-ambientEnumElementInitializer.md` |
 | 608 | Implement Ambienterrors | spike | runtime/builtins | see `issues/done/608-implement-ambientErrors.md` |
@@ -4781,6 +4780,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 795 | Implement Acceptsymbolasweaktype (dup) | spike | frontend/resolver | see `issues/done/795-implement-acceptSymbolAsWeakType.md` |
 | 796 | Implement Acceptablealias (dup) | spike | frontend/syntax | see `issues/done/796-implement-acceptableAlias.md` |
 | 797 | Implement Accessinstancememberfromstaticmethod (dup) | spike | frontend/resolver | see `issues/done/797-implement-accessInstanceMemberFromStaticMethod.md` |
+| 798 | Implement Accessoverriddenbaseclassmember (audit reopened #798) | spike | frontend/syntax | see `issues/done/798-implement-accessOverriddenBaseClassMember.md` |
 | 799 | Implement Accessstaticmemberfrominstancemethod (dup) | spike | frontend/resolver | see `issues/done/799-implement-accessStaticMemberFromInstanceMethod.md` |
 | 800 | Implement Accessoraccidentalcalldiagnostic (dup) | spike | frontend/syntax | see `issues/done/800-implement-accessorAccidentalCallDiagnostic.md` |
 | 801 | Implement Accessordeclarationemitjs (dup) | spike | frontend/syntax | see `issues/done/801-implement-accessorDeclarationEmitJs.md` |

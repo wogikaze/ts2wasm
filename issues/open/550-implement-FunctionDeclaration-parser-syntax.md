@@ -126,7 +126,7 @@ Follow-up issues:
 - `issues/done/471-implement-abstractPropertyBasics.md` - Implement Abstractpropertybasics (same feature label, same group key, title overlap)
 - `issues/done/472-implement-abstractPropertyInConstructor.md` - Implement Abstractpropertyinconstructor (same feature label, same group key, title overlap)
 - `issues/done/473-implement-abstractPropertyNegative.md` - Implement Abstractpropertynegative (same feature label, same group key, title overlap)
-- `issues/open/477-implement-accessOverriddenBaseClassMember.md` - Implement Accessoverriddenbaseclassmember (same feature label, same group key, title overlap)
+- `issues/done/477-implement-accessOverriddenBaseClassMember.md` - Implement Accessoverriddenbaseclassmember (same feature label, same group key, title overlap)
 - `issues/done/520-implement-ambientConstLiterals.md` - Implement Ambientconstliterals (same feature label, same group key, title overlap)
 
 ## Smart triage
