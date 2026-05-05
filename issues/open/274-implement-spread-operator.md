@@ -15,12 +15,17 @@ children:
   - id: 354
     status: done
   - id: 355
-    status: doneupdated: 2026-05-05
+    status: done
+updated: 2026-05-06
 ---
 
 ## Summary
 
 Spread operator (`...`) is not implemented. This prevents expanding iterables into function arguments, array literals, and object literals.
+
+## Problem
+
+Problem: Spread operator support is now blocked only by general iterator protocol integration in issue 353; sparse array spread and dynamic object spread are already completed in issues 354 and 355.
 
 ## Evidence
 
@@ -60,13 +65,12 @@ Already completed (not tracked by child issues):
 
 Child issues:
 - [ ] Issue 353: Iterator protocol integration (separate feature, tracked independently)
-- [ ] Issue 354: Implement sparse array spread support
-- [ ] Issue 355: Implement dynamic object property enumeration spread
+- [x] Issue 354: Implement sparse array spread support
+- [x] Issue 355: Implement dynamic object property enumeration spread
 
 Remaining acceptance criteria:
 5. Iterator protocol integration (issue 353)
-6. Handles sparse arrays correctly (issue 354)
-7. Test262 spread operator tests pass (all child issues)
+6. Test262 spread operator tests pass after issue 353 is complete
 
 ## Validation
 
