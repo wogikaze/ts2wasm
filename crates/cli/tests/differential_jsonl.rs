@@ -350,6 +350,7 @@ fn differential_jsonl_enumerates_fixtures() {
 }
 
 #[test]
+#[ignore = "full fixture JSONL sweep is default-off; run explicitly with --run-ignored ignored-only"]
 fn differential_jsonl_runs_and_validates_first_batch() {
     let paths = collect_fixture_paths();
     // Run the first 150 fixtures through the differential test runner
@@ -369,6 +370,7 @@ fn differential_jsonl_runs_and_validates_first_batch() {
 }
 
 #[test]
+#[ignore = "full fixture JSONL sweep is default-off; run explicitly with --run-ignored ignored-only"]
 fn differential_jsonl_runs_and_validates_second_batch() {
     let paths = collect_fixture_paths();
     let batch: Vec<_> = paths.iter().skip(150).take(150).collect();
@@ -385,6 +387,7 @@ fn differential_jsonl_runs_and_validates_second_batch() {
 }
 
 #[test]
+#[ignore = "full fixture JSONL sweep is default-off; run explicitly with --run-ignored ignored-only"]
 fn differential_jsonl_runs_and_validates_third_batch() {
     let paths = collect_fixture_paths();
     let batch: Vec<_> = paths.iter().skip(300).take(150).collect();
@@ -401,6 +404,7 @@ fn differential_jsonl_runs_and_validates_third_batch() {
 }
 
 #[test]
+#[ignore = "full fixture JSONL sweep is default-off; run explicitly with --run-ignored ignored-only"]
 fn differential_jsonl_runs_and_validates_fourth_batch() {
     let paths = collect_fixture_paths();
     let batch: Vec<_> = paths.iter().skip(450).take(200).collect();

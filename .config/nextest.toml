@@ -1,3 +1,3 @@
 [profile.default]
-max-test-runner-count = 8
-slow-timeout = { period = "120s", max-event-count = 1000 }
+test-threads = 8
+slow-timeout = { period = "120s", terminate-after = 2 }

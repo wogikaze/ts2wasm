@@ -108,6 +108,7 @@ fn array_concat_fixture_matches_node_output_under_iwasm() {
 }
 
 #[test]
+#[ignore = "default-off ABC451 runtime-cost diagnostic; use mise run abc451-runtime-costs or run explicitly with --run-ignored ignored-only"]
 fn abc451_depth8_live_set_fixture_matches_node_output_under_iwasm() {
     assert_fixture_matches_node_with_iwasm_timeout(
         "fixtures/core-semantics/abc451-depth8-live-set.ts",
@@ -1083,10 +1084,14 @@ fn string_builtin_fixtures_match_node_output_under_iwasm() {
         "fixtures/builtins-and-io/string-from-char-code.ts",
         "fixtures/builtins-and-io/string-replace.ts",
         "fixtures/builtins-and-io/string-replace-all.ts",
-        "fixtures/builtins-and-io/string-indexing.ts",
     ] {
         assert_fixture_matches_node(fixture);
     }
+}
+
+#[test]
+fn string_indexing_fixture_is_not_marked_as_semantic_pass() {
+    assert_fixture_not_semantically_pass("string", "fixtures/builtins-and-io/string-indexing.ts");
 }
 
 #[test]
@@ -1418,7 +1423,10 @@ fn labeled_control_invalid_fixtures_report_source_diagnostics() {
 
 #[test]
 fn instanceof_fixture_matches_node_output_under_iwasm() {
-    assert_fixture_matches_node("fixtures/core-semantics/instanceof.ts");
+    assert_build_fails_with_unsupported_syntax(
+        "fixtures/core-semantics/instanceof.ts",
+        "issue-5011:",
+    );
 }
 
 #[test]

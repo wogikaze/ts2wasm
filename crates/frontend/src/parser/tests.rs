@@ -126,8 +126,10 @@ mod tests {
             let value = 1;
         "#;
         let program = parse_program(source).unwrap();
-        assert_eq!(program.len(), 1);
-        assert!(matches!(program[0], Stmt::Let { .. }));
+        assert_eq!(program.len(), 3);
+        assert!(matches!(program[0], Stmt::Function { ref name, .. } if name == "consume"));
+        assert!(matches!(program[1], Stmt::Function { ref name, .. } if name == "identity"));
+        assert!(matches!(program[2], Stmt::Let { .. }));
     }
 
     #[test]
@@ -165,11 +167,17 @@ mod tests {
             let runtimeValue = 1;
         "#;
         let program = parse_program(source).unwrap();
-        assert_eq!(program.len(), 2);
-        assert!(matches!(program[0], Stmt::ClassDecl { .. }));
-        assert!(matches!(program[1], Stmt::Let { .. }));
+        assert_eq!(program.len(), 3);
+        assert!(program
+            .iter()
+            .any(|stmt| matches!(stmt, Stmt::Function { name, .. } if name == "readAmbient")));
+        assert!(program.iter().any(|stmt| matches!(stmt, Stmt::ClassDecl { .. })));
+        assert!(program.iter().any(|stmt| matches!(stmt, Stmt::Let { .. })));
 
-        let Stmt::ClassDecl { body, .. } = &program[0] else {
+        let Some(Stmt::ClassDecl { body, .. }) = program
+            .iter()
+            .find(|stmt| matches!(stmt, Stmt::ClassDecl { .. }))
+        else {
             panic!("expected class declaration");
         };
         assert_eq!(body.len(), 1);
@@ -343,14 +351,19 @@ mod tests {
             let result = parse({ x: 3 });
         "#;
         let program = parse_program(source).unwrap();
-        assert_eq!(program.len(), 2);
+        assert_eq!(program.len(), 3);
 
         let Stmt::Let { name, expr: _, .. } = &program[0] else {
             panic!("expected let statement");
         };
         assert_eq!(name, "value");
 
-        let Stmt::Let { name, .. } = &program[1] else {
+        assert!(matches!(
+            &program[1],
+            Stmt::Function { name, .. } if name == "parse"
+        ));
+
+        let Stmt::Let { name, .. } = &program[2] else {
             panic!("expected call let statement");
         };
         assert_eq!(name, "result");
