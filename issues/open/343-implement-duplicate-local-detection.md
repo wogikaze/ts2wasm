@@ -3,12 +3,11 @@ id: 343
 title: "Implement DuplicateLocal diagnostic detection (66 test262 cases)"
 type: feature
 area: frontend/resolver
-class: done
+class: blocked
 priority: P2
 depends_on: [5005]
 blocks: []
 created: 2026-04-30
-completed: 2026-05-06
 updated: 2026-05-06
 ---
 
@@ -37,11 +36,11 @@ The `DuplicateLocal` unsupported count is reduced to 0. The compiler detects dup
 
 In scope:
 
-- [x] Implement duplicate local variable detection in the resolver/frontend
-- [x] Report appropriate diagnostic for duplicate declarations
-- [x] Support all declaration forms (var, let, const)
-- [x] Differentiate between strict mode and non-strict mode rules
-- [x] Add fixture tests for common duplicate local patterns
+- [ ] Implement duplicate local variable detection in the resolver/frontend
+- [ ] Report appropriate diagnostic for duplicate declarations
+- [ ] Support all declaration forms (var, let, const)
+- [ ] Differentiate between strict mode and non-strict mode rules
+- [ ] Add fixture tests for common duplicate local patterns
 
 Out of scope:
 
@@ -63,10 +62,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [x] DuplicateLocal unsupported count in coverage matrix decreases from 66
-- [x] Fixture tests cover basic duplicate var/let/const in same scope
-- [x] Existing test262 cases that now pass are updated in the baseline
-- [x] Docs/current-state/issues are synchronized when status or design changes
+- [ ] DuplicateLocal unsupported count in coverage matrix decreases from 66
+- [ ] Fixture tests cover basic duplicate var/let/const in same scope
+- [ ] Existing test262 cases that now pass are updated in the baseline
+- [ ] Docs/current-state/issues are synchronized when status or design changes
 
 ## Validation
 
@@ -88,12 +87,12 @@ Not run:
 Final-state docs:
 
 - [x] not affected
-- [x] updated: `docs/...`
+- [ ] updated: `docs/...`
 
 Current state:
 
 - [x] not affected
-- [x] updated: `current-state.md` (repo root)
+- [ ] updated: `current-state.md` (repo root)
 
 Follow-up issues:
 
@@ -103,16 +102,12 @@ Follow-up issues:
 
 This is a relatively contained feature. The resolver already tracks variable names; duplicate detection should be added as a validation pass after scoped resolution.
 
-## Completion evidence
+## Reopened by audit
 
-### Implementation commits
-- `fe2e3f00` compiler/ir: fix remaining DuplicateLocal checks for var redeclaration
-- `ae315d28` frontend/ir: allow var redeclaration (DuplicateLocal tolerance)
+Date: 2026-05-06
 
-### Changed files
-- crates/ir/src/lowered/, crates/frontend/src/
-
-### Validation
-```sh
-cargo nextest run => DuplicateLocal tests pass
-```
+The 2026-05-06 close recorded focused DuplicateLocal tests for narrower
+var-redeclaration slices (`5126`, `5127`) but did not include the required
+`mise run reference-coverage -- test262 --limit 53445` evidence proving this
+66-case parent bucket is reduced to zero. This parent remains open/blocked
+under `5005`.

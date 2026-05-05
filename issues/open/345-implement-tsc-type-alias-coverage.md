@@ -3,12 +3,11 @@ id: 345
 title: "Implement TypeScript type alias coverage for tsc suite (23 cases)"
 type: feature
 area: frontend/syntax
-class: done
+class: blocked
 priority: P2
 depends_on: [399]
 blocks: []
 created: 2026-04-30
-completed: 2026-05-06
 updated: 2026-05-06
 ---
 
@@ -44,8 +43,8 @@ In scope:
 - [x] `type X = ...` parse/erase implemented via tsc oracle (issue 399)
 - [x] Generic type aliases (`type Container<T> = { value: T }`) work
 - [x] Union/intersection type aliases work
-- [x] Remaining 15 cases fail for non-type-alias reasons - need individual triage
-- [x] Add fixture tests
+- [ ] Remaining 15 cases fail for non-type-alias reasons - need individual triage
+- [ ] Add fixture tests
 
 Out of scope:
 
@@ -69,10 +68,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [x] Type alias unsupported count in tsc coverage decreases from 23
-- [x] Fixture tests cover basic, generic, and union type aliases
-- [x] Existing tsc suite cases that now pass are updated
-- [x] Docs/current-state/issues are synchronized when status or design changes
+- [ ] Type alias unsupported count in tsc coverage decreases from 23
+- [ ] Fixture tests cover basic, generic, and union type aliases
+- [ ] Existing tsc suite cases that now pass are updated
+- [ ] Docs/current-state/issues are synchronized when status or design changes
 
 ## Validation
 
@@ -94,12 +93,12 @@ Not run:
 Final-state docs:
 
 - [x] not affected
-- [x] updated: `docs/...`
+- [ ] updated: `docs/...`
 
 Current state:
 
 - [x] not affected
-- [x] updated: `current-state.md` (repo root)
+- [ ] updated: `current-state.md` (repo root)
 
 Follow-up issues:
 
@@ -187,16 +186,12 @@ Remaining:
   alias-named cases overlap module, declaration emit, parser syntax, and name
   resolution boundaries.
 
-## Completion evidence
+## Reopened by audit
 
-### Implementation commits
-- `f23bdc92` issue-345: parse semicolonless type aliases
-- `2becc2ec` issue-345: parse semicolonless type aliases
+Date: 2026-05-06
 
-### Changed files
-- crates/frontend/src/parser/
-
-### Validation
-```sh
-cargo test -p ts2wasm-frontend => PASS
-```
+The 2026-05-06 close did not provide new full-suite evidence and contradicted
+the existing progress evidence above, which records nonzero `type-alias`
+unsupported counts (`41`, then `2541`) for `mise run reference-coverage -- tsc
+--limit 6419 --no-web-ui`. This parent bucket remains open/blocked until the
+required coverage evidence proves the remaining cases are split or resolved.

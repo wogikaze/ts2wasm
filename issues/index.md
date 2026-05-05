@@ -15,7 +15,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 1 | 0 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4377 | 3853 | 524 |
+| frontend | 4377 | 3855 | 522 |
 | harness | 1 | 0 | 1 |
 | ir | 21 | 0 | 21 |
 | issues | 4 | 0 | 4 |
@@ -26,7 +26,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 4965 | 4137 | 828 |
+| total | 4965 | 4139 | 826 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -201,6 +201,8 @@ Issue files are the source of truth for work items. The generated section below 
 | 313 | Implement array-builtin support | feature | runtime/builtins | class: triage-needed | Implement array-builtin support |
 | 335 | Implement full Math.pow number semantics | feature | runtime/builtins | class: triage-needed | Implement full Math.pow number semantics |
 | 342 | Implement Object builtin method coverage (1,721 test262 cases) | feature | runtime/builtins | class: triage-needed | Implement Object builtin method coverage (1,721 test262 cases) |
+| 343 | Implement DuplicateLocal diagnostic detection (66 test262 cases) | feature | frontend/resolver | class: blocked | Implement DuplicateLocal diagnostic detection (66 test262 cases) |
+| 345 | Implement TypeScript type alias coverage for tsc suite (23 cases) | feature | frontend/syntax | class: blocked | Implement TypeScript type alias coverage for tsc suite (23 cases) |
 | 346 | Implement TypeScript declaration emit coverage for tsgo suite (16 cases) | feature | frontend/syntax | class: triage-needed | Implement TypeScript declaration emit coverage for tsgo suite (16 cases) |
 | 353 | Implement iterator protocol integration for spread operator | feature | runtime/semantics | class: blocked | Implement iterator protocol integration for spread operator |
 | 357 | Fix ABC451 depth-8 iwasm timeout | bug | runtime/memory | class: blocked | Fix ABC451 depth-8 iwasm timeout |
@@ -4636,9 +4638,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 341c | Implement Boolean global | feature | runtime/builtins | see `issues/done/341c-boolean-global.md` |
 | 341d | Implement globalThis binding | feature | runtime/builtins | see `issues/done/341d-globalthis-binding.md` |
 | 341e | Implement encodeURI, decodeURI, escape, unescape (audit reopened #341e) | feature | runtime/builtins | see `issues/done/341e-encode-uri.md` |
-| 343 | Implement DuplicateLocal diagnostic detection (66 test262 cases) | feature | frontend/resolver | see `issues/done/343-implement-duplicate-local-detection.md` |
 | 344 | Implement legacy global builtin bindings (8 test262 cases) (audit reopened #344) | feature | runtime/builtins | see `issues/done/344-implement-legacy-global-builtin-bindings.md` |
-| 345 | Implement TypeScript type alias coverage for tsc suite (23 cases) | feature | frontend/syntax | see `issues/done/345-implement-tsc-type-alias-coverage.md` |
 | 347 | Parser and resolver support for direct eval and eval-code scope | feature | frontend/semantics | see `issues/done/347-parser-resolver-direct-eval-scope.md` |
 | 348 | Lowering block-level function declarations in direct eval code | feature | ir | see `issues/done/348-lowering-eval-block-function-declarations.md` |
 | 349 | Runtime helper or shim JavaScript emission for direct eval execution | feature | backend | see `issues/done/349-runtime-shim-direct-eval-execution.md` |

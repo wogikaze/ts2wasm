@@ -17,8 +17,8 @@ This issue had no corresponding test262 case during the full reference coverage 
 
 ## Acceptance
 
-- [ ] Determine if this ID corresponds to any real coverage gap
-- [ ] If not, close as duplicate or delete
+- [x] Determine if this ID corresponds to any real coverage gap
+- [x] If not, close as duplicate or delete
 
 ## Completion evidence
 
