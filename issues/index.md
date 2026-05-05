@@ -11,7 +11,7 @@ Issue files are the source of truth for work items. The generated section below 
 |---|---:|---:|---:|
 | abi | 7 | 2 | 5 |
 | backend | 13 | 6 | 7 |
-| cli | 15 | 6 | 9 |
+| cli | 15 | 5 | 10 |
 | compiler | 1 | 0 | 1 |
 | coverage | 42 | 32 | 10 |
 | docs | 2 | 1 | 1 |
@@ -26,7 +26,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 1 | 5 |
 | wasi | 1 | 0 | 1 |
-| total | 4963 | 4212 | 751 |
+| total | 4963 | 4209 | 754 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -178,7 +178,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 5029 | [backend-wasm] Expand direct wasm binary emission beyond console.log string literal MVP (audit reopened #5029) | feature | backend | implementation-ready | P1 |  | [backend-wasm] Expand direct wasm binary emission beyond console.log string literal MVP (audit reopened #5029) |
 | 5030 | [backend-wasm] Split large runtime/WAT emitters into testable components (audit reopened #5030) | refactor | backend | implementation-ready | P1 |  | [backend-wasm] Split large runtime/WAT emitters into testable components (audit reopened #5030) |
 | 5033 | [cli] Normalize node-diff fixture reporting into structured records (audit reopened #5033) | feature | cli | implementation-ready | P1 |  | [cli] Normalize node-diff fixture reporting into structured records (audit reopened #5033) |
-| 5034 | [cli] Add command contract tests for build/check/dump/server (audit reopened #5034) | test | cli | implementation-ready | P1 |  | [cli] Add command contract tests for build/check/dump/server (audit reopened #5034) |
 | 5035 | [cli] Add --explain-unsupported diagnostics mode (audit reopened #5035) | feature | cli | implementation-ready | P2 |  | [cli] Add --explain-unsupported diagnostics mode (audit reopened #5035) |
 | 5038 | [compiler] Harden module graph resolution and diagnostics (audit reopened #5038) | feature | cli | implementation-ready | P1 |  | [compiler] Harden module graph resolution and diagnostics (audit reopened #5038) |
 | 5039 | [compiler] Stabilize test262 preprocessor feature handling (audit reopened #5039) | feature | cli | implementation-ready | P1 |  | [compiler] Stabilize test262 preprocessor feature handling (audit reopened #5039) |
@@ -5088,6 +5087,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 5025 | Implement any as return type instanceof constructor RHS | feature | runtime/builtins | see file |
 | 5031 | [cli] Replace placeholder parser keyword/operator tests with real assertions | test | cli | see `issues/done/5031-cli-real-parser-assertions.md` |
 | 5032 | [cli] Add deterministic external tool capability detection | feature | cli | see `issues/done/5032-cli-tool-capability-detection.md` |
+| 5034 | [cli] Add command contract tests for build/check/dump/server (audit reopened #5034) | test | cli | see `issues/done/5034-cli-command-contract-tests.md` |
 | 5036 | [compiler] Introduce CompileReport<T> for non-fatal diagnostics | feature | cli | see `issues/done/5036-compiler-compile-report.md` |
 | 5037 | [compiler] Complete entry module export lowering for local references | feature | cli | see `issues/done/5037-compiler-module-export-lowering.md` |
 | 5046 | [ir] Design full class runtime IR representation | feature | ir | see `issues/done/5046-ir-class-ir.md` |

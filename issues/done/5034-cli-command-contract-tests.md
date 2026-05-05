@@ -30,10 +30,10 @@ CLI の出力形式変更がテストで捕捉されず、ユーザーに影響�
 ## Scope
 
 In scope:
-- [ ] build コマンドの契約テスト
-- [ ] check コマンドの契約テスト
-- [ ] dump コマンドの契約テスト
-- [ ] server コマンドの契約テスト
+- [x] build コマンドの契約テスト
+- [x] check コマンドの契約テスト
+- [x] dump コマンドの契約テスト
+- [x] server コマンドの契約テスト
 
 Out of scope:
 - [ ] CLI の新機能追加
@@ -45,8 +45,8 @@ Expected:
 
 ## Acceptance criteria
 
-- [ ] 各サブコマンドの契約テストが存在する
-- [ ] 出力変更時にテストが fail する
+- [x] 各サブコマンドの契約テストが存在する
+- [x] 出力変更時にテストが fail する
 
 ## Validation
 
@@ -81,3 +81,25 @@ Evidence files:
 - `issues/open/5034-cli-command-contract-tests.md` after this move
 
 Split follow-up: none created in this audit wave; this reopened issue remains the tracking item.
+
+## Completion evidence
+
+All four CLI subcommand contract tests were implemented in commit `d8be4677`:
+
+- **build**: 4 tests (valid TS, invalid TS, manifest emit, host deny)
+- **check**: 2 tests (valid TS, invalid TS)
+- **dump**: 3 tests (all phases, invalid TS, no phase)
+- **server**: 2 tests (help, unknown flags)
+- **unknown subcommand**: 1 test
+
+### Acceptance verification
+
+- [x] 各サブコマンドの契約テストが存在する — 12 tests covering build/check/dump/server
+- [x] 出力変更時にテストが fail する — Contract tests assert specific exit codes, stderr, and output files
+
+### Validation
+
+```sh
+cargo nextest run --package ts2wasm-cli --test command_contract
+```
+Result: 12 passed, 0 failed (requires `npm install` for TypeScript dependency used by `check` command).
