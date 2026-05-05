@@ -61,3 +61,14 @@ Evidence files:
 - `issues/open/015-implement-object-literal-string-key-support.md` after this move
 
 Split follow-up: none created in this audit wave; this reopened issue remains the tracking item.
+
+## Child progress evidence
+
+Date: 2026-05-05
+
+- Parser implementation already uses `parse_object_key()` for object literal keys and accepts `Token::String`.
+- Added parser regression coverage for `let obj = { "name": "Alice", "age": 30 };`.
+- Added `fixtures/arrays-objects/string-key-literal.ts` to the M5 Node/iwasm differential fixture list.
+- Verified Node-side fixture output with `node fixtures/arrays-objects/string-key-literal.ts`: `Alice` and `30`.
+- Re-verification is blocked in this child shell because `cargo`, `iwasm`, `cargo-nextest`, and `wasm-tools` are not on PATH; `python scripts/manager.py fmt`, `python scripts/manager.py check`, targeted cargo tests, and `python scripts/manager.py check fixture-differential` cannot run to completion.
+- Issue health checks passed: `python scripts/manager.py check issues` and `python scripts/manager.py update-issue-index --check`.
