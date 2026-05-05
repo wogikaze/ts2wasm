@@ -162,6 +162,12 @@ fn source_has_function(source: &str, name: &str) -> bool {
     source.contains(&pattern)
 }
 
+fn source_has_var_binding(source: &str, name: &str) -> bool {
+    source.contains(&format!("var {name} "))
+        || source.contains(&format!("var {name}="))
+        || source.contains(&format!("var {name};"))
+}
+
 /// Rewrite `assert.method(...)` calls to `__assert_method(...)` standalone calls.
 ///
 /// This works around issue-211 where method calls on function-valued locals (`assert`)
@@ -278,7 +284,7 @@ pub fn process_test262_includes(input: &Path, source: &str) -> Result<String, Di
     }
 
     // Insert feature-backed stubs (e.g. `$262`) when supported by metadata.
-    let feature_stubs = build_feature_stubs(&metadata.features)?;
+    let feature_stubs = build_feature_stubs(&metadata.features, source)?;
     if !feature_stubs.is_empty() {
         if !injected.is_empty() {
             injected.push('\n');
@@ -434,7 +440,7 @@ fn parse_yaml_list(value: &str) -> Vec<String> {
 
 /// Build stubs for supported `features:` values. Returns unsupported feature
 /// diagnostic for unsupported metadata values.
-fn build_feature_stubs(features: &[String]) -> Result<String, Diagnostic> {
+fn build_feature_stubs(features: &[String], source: &str) -> Result<String, Diagnostic> {
     let mut unsupported_feature = None;
     let mut needs_262 = false;
     let mut stubs = String::new();
@@ -457,7 +463,7 @@ fn build_feature_stubs(features: &[String]) -> Result<String, Diagnostic> {
                     "if (typeof Symbol === 'object' || typeof Symbol === 'function') {\n",
                 );
                 stubs.push_str("  if (Symbol.asyncIterator === undefined) {\n");
-                stubs.push_str("    Symbol.asyncIterator = Symbol('Symbol.asyncIterator');\n");
+                stubs.push_str("    Symbol.asyncIterator = 'Symbol.asyncIterator';\n");
                 stubs.push_str("  }\n}");
             }
             "Symbol.species" | "Symbol.unscopables" | "Symbol.replace" | "Symbol.match"
@@ -468,7 +474,7 @@ fn build_feature_stubs(features: &[String]) -> Result<String, Diagnostic> {
                     "if (typeof Symbol === 'object' || typeof Symbol === 'function') {\n",
                 );
                 stubs.push_str(&format!("  if (Symbol.{name} === undefined) {{\n"));
-                stubs.push_str(&format!("    Symbol.{name} = Symbol('Symbol.{name}');\n"));
+                stubs.push_str(&format!("    Symbol.{name} = 'Symbol.{name}';\n"));
                 stubs.push_str("  }\n}");
             }
             _ => {
@@ -499,7 +505,7 @@ fn build_feature_stubs(features: &[String]) -> Result<String, Diagnostic> {
         });
     }
 
-    if needs_262 {
+    if needs_262 && !source_has_var_binding(source, "$262") {
         stubs.insert_str(0, "var $262 = {};\n");
     }
 
@@ -673,6 +679,27 @@ var realm = $262.createRealm();"#;
 
         assert!(processed.contains("var $262 = {};"));
         assert!(processed.contains("$262.createRealm = function createRealm()"));
+    }
+
+    #[test]
+    fn test_process_features_reuses_existing_262_declaration() {
+        let source = r#"/*---
+features: [IsHTMLDDA, Symbol.iterator]
+---*/
+
+var $262 = {};
+$262.IsHTMLDDA = undefined;
+var items = {};
+items[Symbol.iterator] = $262.IsHTMLDDA;"#;
+        let input = Path::new(env!("CARGO_MANIFEST_DIR")).join(
+            "../../reference/test262/test/annexB/built-ins/Array/from/iterator-method-emulates-undefined.js",
+        );
+        let processed = process_test262_includes(&input, source)
+            .expect("feature processing should reuse existing $262 binding");
+
+        assert_eq!(processed.matches("var $262").count(), 1);
+        assert!(processed.contains("$262.IsHTMLDDA = {};"));
+        assert!(processed.contains("Symbol.iterator"));
     }
 
     #[test]

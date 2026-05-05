@@ -194,7 +194,7 @@ def _build_feature_shims(features):
             stubs.append(
                 "if (typeof Symbol === 'object' || typeof Symbol === 'function') {\n"
                 f"  if (Symbol.{symbol_name} === undefined) {{\n"
-                f"    Symbol.{symbol_name} = Symbol('Symbol.{symbol_name}');\n"
+                f"    Symbol.{symbol_name} = 'Symbol.{symbol_name}';\n"
                 "  }\n"
                 "}"
             )
