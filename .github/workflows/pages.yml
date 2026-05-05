@@ -49,7 +49,7 @@ jobs:
           fi
         env:
           TS2WASM_DOCS_REPO: ${{ vars.TS2WASM_DOCS_REPO }}
-          TS2WASM_DOCS_REPO_TOKEN: ${{ secrets.TS2WASM_DOCS_REPO_TOKEN }}
+          TS2WASM_DOCS_REPO_TOKEN: ${{ secrets.TS2WASM_DOCS_PAT }}
 
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@stable
