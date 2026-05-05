@@ -4,6 +4,7 @@ reference/*
 
 # whats this
 .codex
+docs/superpowers
 
 # js
 node_modules
