@@ -35,7 +35,7 @@ In scope:
 - [x] 該当 fixture の表示
 
 Out of scope:
-- [ ] unsupported ケースの自動修正
+- [x] unsupported ケースの自動修正
 
 ## Affected paths
 
@@ -57,13 +57,13 @@ cargo nextest run
 ## Docs / current-state / issue sync
 
 Final-state docs:
-- [ ] not affected
+- [x] not affected
 
 Current state:
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
-- [ ] none
+- [x] none
 
 ## Reopened by audit
 
