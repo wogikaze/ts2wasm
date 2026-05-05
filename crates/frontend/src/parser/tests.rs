@@ -2734,3 +2734,101 @@ class Foo {
         assert!(matches!(program[0], Stmt::Let { ref name, .. } if name == "after"));
     }
 }
+
+    #[test]
+    fn asi_after_multiline_const_initializer() {
+        // const result = (() => ({ a: 1 }))
+        // result.BLAH;
+        // ASI should insert a semicolon after the const declaration.
+        let source = "const result = (() => ({ a: 1 }))\nresult.BLAH;";
+        let program = parse_program(source).unwrap();
+        assert_eq!(program.len(), 2);
+        let Stmt::Let { name, expr: Expr::ArrowFn { .. }, .. } = &program[0] else {
+            panic!("expected Let with arrow fn initializer, got {:?}", program[0]);
+        };
+        assert_eq!(name, "result");
+        match &program[1] {
+            Stmt::Expr { expr: Expr::Member { object, property, .. }, .. } => {
+                assert!(matches!(object.as_ref(), Expr::Ident { name, .. } if name == "result"));
+                assert_eq!(property, "BLAH");
+            }
+            other => panic!("expected expression statement with member access, got {other:?}"),
+        }
+    }
+
+    #[test]
+    fn asi_after_multiline_const_object_initializer() {
+        let source = "const result = { a: 1 }\nresult.BLAH;";
+        let program = parse_program(source).unwrap();
+        assert_eq!(program.len(), 2);
+        match &program[0] {
+            Stmt::Let { name, expr, .. } => {
+                assert_eq!(name, "result");
+                assert!(matches!(expr, Expr::Object { .. }));
+            }
+            other => panic!("expected Let, got {other:?}"),
+        }
+        match &program[1] {
+            Stmt::Expr { expr: Expr::Member { object, property, .. }, .. } => {
+                assert!(matches!(object.as_ref(), Expr::Ident { name, .. } if name == "result"));
+                assert_eq!(property, "BLAH");
+            }
+            other => panic!("expected member expression, got {other:?}"),
+        }
+    }
+
+    #[test]
+    fn rejects_missing_semicolon_for_same_line_const_initializer() {
+        let source = "const result = 1 result.BLAH;";
+        let err = parse_program(source).unwrap_err();
+        assert_eq!(err.code, DiagCode::UnsupportedSyntax);
+        assert!(err.message.contains("expected Semicolon"), "{err:?}");
+    }
+
+    #[test]
+    fn asi_after_multiline_const_initializer() {
+        let source = "const result = (() => ({ a: 1 }))\nresult.BLAH;";
+        let program = parse_program(source).unwrap();
+        assert_eq!(program.len(), 2);
+        let Stmt::Let { name, expr: Expr::ArrowFn { .. }, .. } = &program[0] else {
+            panic!("expected Let with arrow fn initializer, got {:?}", program[0]);
+        };
+        assert_eq!(name, "result");
+        match &program[1] {
+            Stmt::Expr { expr: Expr::Member { object, property, .. }, .. } => {
+                assert!(matches!(object.as_ref(), Expr::Ident { name, .. } if name == "result"));
+                assert_eq!(property, "BLAH");
+            }
+            other => panic!("expected expression statement with member access, got {other:?}"),
+        }
+    }
+
+    #[test]
+    fn asi_after_multiline_const_object_initializer() {
+        let source = "const result = { a: 1 }\nresult.BLAH;";
+        let program = parse_program(source).unwrap();
+        assert_eq!(program.len(), 2);
+        match &program[0] {
+            Stmt::Let { name, expr, .. } => {
+                assert_eq!(name, "result");
+                assert!(matches!(expr, Expr::Object { .. }));
+            }
+            other => panic!("expected Let, got {other:?}"),
+        }
+        match &program[1] {
+            Stmt::Expr { expr: Expr::Member { object, property, .. }, .. } => {
+                assert!(matches!(object.as_ref(), Expr::Ident { name, .. } if name == "result"));
+                assert_eq!(property, "BLAH");
+            }
+            other => panic!("expected member expression, got {other:?}"),
+        }
+    }
+
+    #[test]
+    fn rejects_missing_semicolon_for_same_line_const_initializer() {
+        let source = "const result = 1 result.BLAH;";
+        let err = parse_program(source).unwrap_err();
+        assert_eq!(err.code, DiagCode::UnsupportedSyntax);
+        assert!(err.message.contains("expected Semicolon"), "{err:?}");
+    }
+}

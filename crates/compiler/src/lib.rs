@@ -475,28 +475,56 @@ fn lower_static_named_import_bindings_for_build(
             } => {
                 let index = lowered_statement_index;
                 let name = specifier.exported.clone();
-                rewritten.push(*declaration.clone());
-                let is_let_like = lowers_to_top_level_statement(declaration);
-                if let Stmt::Let {
-                    name: local_name, ..
+                // Handle export function f() { ... } -> let f = (function f() { ... })
+                if let Stmt::Function {
+                    name: func_name,
+                    params,
+                    body,
+                    is_generator: false,
+                    span,
                 } = declaration.as_ref()
                 {
-                    local_name_to_index.insert(local_name.clone(), index);
-                }
-                module_exports.push(ModuleExport {
-                    name: name.clone(),
-                    lowered_statement_index: index,
-                });
-                if !is_let_like {
-                    return Err(Diagnostic {
-                        code: DiagCode::UnsupportedSyntax,
-                        message: format!(
-                            "issue-5005: entry module `export {name}` uses a declaration form outside the current static export slice; only export const and export default are supported"
-                        ),
-                        span: Some(declaration.span()),
+                    rewritten.push(Stmt::Let {
+                        name: func_name.clone(),
+                        expr: Expr::FunctionExpr {
+                            name: func_name.clone(),
+                            params: params.clone(),
+                            body: body.clone(),
+                            span: *span,
+                        },
+                        span: *span,
+                        is_var: false,
                     });
+                    local_name_to_index.insert(func_name.clone(), index);
+                    module_exports.push(ModuleExport {
+                        name,
+                        lowered_statement_index: index,
+                    });
+                    lowered_statement_index += 1;
+                } else {
+                    rewritten.push(*declaration.clone());
+                    let is_let_like = lowers_to_top_level_statement(declaration);
+                    if let Stmt::Let {
+                        name: local_name, ..
+                    } = declaration.as_ref()
+                    {
+                        local_name_to_index.insert(local_name.clone(), index);
+                    }
+                    module_exports.push(ModuleExport {
+                        name: name.clone(),
+                        lowered_statement_index: index,
+                    });
+                    if !is_let_like {
+                        return Err(Diagnostic {
+                            code: DiagCode::UnsupportedSyntax,
+                            message: format!(
+                                "issue-5005: entry module `export {name}` uses a declaration form outside the current static export slice; only export const and export default are supported"
+                            ),
+                            span: Some(declaration.span()),
+                        });
+                    }
+                    lowered_statement_index += 1;
                 }
-                lowered_statement_index += 1;
             }
             Stmt::ExportNamed { specifiers, .. } => {
                 if specifiers.is_empty() {
@@ -1140,28 +1168,56 @@ fn rewrite_static_module_body_for_build(
                         span: Some(specifier.local_span),
                     });
                 }
-                rewritten.push(*declaration.clone());
-                let is_let_like = lowers_to_top_level_statement(declaration);
-                if let Stmt::Let {
-                    name: local_name, ..
+                // Handle export function f() { ... } -> let f = (function f() { ... })
+                if let Stmt::Function {
+                    name: func_name,
+                    params,
+                    body,
+                    is_generator: false,
+                    span,
                 } = declaration.as_ref()
                 {
-                    local_name_to_index.insert(local_name.clone(), index);
-                }
-                module_exports.push(ModuleExport {
-                    name,
-                    lowered_statement_index: index,
-                });
-                if !is_let_like {
-                    return Err(Diagnostic {
-                        code: DiagCode::UnsupportedSyntax,
-                        message:
-                            "issue-5005: dependency module declaration export uses a form outside the current static export slice"
-                                .to_owned(),
-                        span: Some(declaration.span()),
+                    rewritten.push(Stmt::Let {
+                        name: func_name.clone(),
+                        expr: Expr::FunctionExpr {
+                            name: func_name.clone(),
+                            params: params.clone(),
+                            body: body.clone(),
+                            span: *span,
+                        },
+                        span: *span,
+                        is_var: false,
                     });
+                    local_name_to_index.insert(func_name.clone(), index);
+                    module_exports.push(ModuleExport {
+                        name,
+                        lowered_statement_index: index,
+                    });
+                    lowered_statement_index += 1;
+                } else {
+                    rewritten.push(*declaration.clone());
+                    let is_let_like = lowers_to_top_level_statement(declaration);
+                    if let Stmt::Let {
+                        name: local_name, ..
+                    } = declaration.as_ref()
+                    {
+                        local_name_to_index.insert(local_name.clone(), index);
+                    }
+                    module_exports.push(ModuleExport {
+                        name,
+                        lowered_statement_index: index,
+                    });
+                    if !is_let_like {
+                        return Err(Diagnostic {
+                            code: DiagCode::UnsupportedSyntax,
+                            message:
+                                "issue-5005: dependency module declaration export uses a form outside the current static export slice"
+                                    .to_owned(),
+                            span: Some(declaration.span()),
+                        });
+                    }
+                    lowered_statement_index += 1;
                 }
-                lowered_statement_index += 1;
             }
             Stmt::ExportNamed { specifiers, .. } => {
                 for specifier in specifiers {

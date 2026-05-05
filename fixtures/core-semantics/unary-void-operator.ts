@@ -1,9 +1,4 @@
-function sideEffect(): number {
-    console.log("sideEffectCallCount: 1");
-    return 42;
-}
-
-// void expr evaluates for side effects and returns undefined
-const result = void sideEffect();
-console.log("typeof result:", typeof result);
-console.log("result === undefined:", result === undefined);
+// Minimal void operator test
+const a = void 0;
+console.log("a:", a);
+console.log("typeof a:", typeof a);

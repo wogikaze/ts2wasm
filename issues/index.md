@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 1 | 0 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4391 | 3777 | 614 |
+| frontend | 4392 | 3776 | 616 |
 | harness | 1 | 0 | 1 |
 | ir | 27 | 5 | 22 |
 | issues | 4 | 0 | 4 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 4993 | 4051 | 942 |
+| total | 4994 | 4050 | 944 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -176,6 +176,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 5156 | Parse generic type arguments in class heritage clauses | feature | frontend/syntax | implementation-ready | P1 |  | `reference/typescript/tests/cases/compiler/baseTypeOrderChecking.ts` fails parsing on `class Class4<T> extends Class3... |
 | 5157 | Report set accessor rest parameter diagnostics | feature | frontend/syntax | implementation-ready | P1 |  | `reference/typescript/tests/cases/compiler/accessorWithRestParam.ts` currently reaches backend emission and fails wit... |
 | 5158 | Report interface private member clashes | feature | frontend/resolver | implementation-ready | P1 |  | `reference/typescript/tests/cases/compiler/baseTypePrivateMemberClash.ts` currently reports `BackendIo` instead of a ... |
+| 5159 | Recover colon type annotations after expression statements | feature | frontend/syntax | implementation-ready | P1 |  | constructor-body statements of the form `this.<name>: any;` currently fail as parser-unsupported before the reference... |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -451,9 +452,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 771 | Implement Augmentedtypesmodules | spike | frontend/syntax | class: blocked | Implement Augmentedtypesmodules |
 | 772 | Implement Augmentedtypesvar | spike | frontend/syntax | class: blocked | Implement Augmentedtypesvar |
 | 773 | Implement Autoasiforstaticsinclassdeclaration | spike | frontend/syntax | class: triage-needed | Implement Autoasiforstaticsinclassdeclaration |
-| 774 | Implement Autolift | spike | frontend/syntax | class: triage-needed | Implement Autolift |
 | 775 | Implement Autotypeassignedusingdestructuringfromnevernocrash | spike | frontend/resolver | class: blocked | Implement Autotypeassignedusingdestructuringfromnevernocrash |
-| 1042 | Implement Bases | spike | frontend/syntax | class: triage-needed | Implement Bases |
 | 1043 | Implement Bestchoicetype | spike | frontend/syntax | class: triage-needed | Implement Bestchoicetype |
 | 1044 | Implement Bestcommontypewithcontextualtyping | spike | frontend/resolver | class: blocked | Implement Bestcommontypewithcontextualtyping |
 | 1045 | Implement Bettererrorforaccidentalcall | spike | frontend/syntax | class: triage-needed | Implement Bettererrorforaccidentalcall |
@@ -4749,6 +4748,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 669 | Implement Arrayconcat (dup) | spike | frontend/syntax | see `issues/done/669-implement-arrayConcat.md` |
 | 707 | Implement Asibreak | spike | frontend/syntax | see `issues/done/707-implement-asiBreak.md` |
 | 708 | Implement Asicontinue | spike | frontend/syntax | see `issues/done/708-implement-asiContinue.md` |
+| 774 | Implement Autolift | spike | frontend/syntax | see `issues/done/774-implement-autoLift.md` |
 | 776 | Implement Apilibcheck (dup) | spike | frontend/syntax | see `issues/done/776-implement-APILibCheck.md` |
 | 777 | Implement Apisample Arrow Function (dup) | spike | frontend/syntax | see `issues/done/777-implement-APISample-arrow-function.md` |
 | 778 | Implement Apisample Import Export (dup) | spike | frontend/syntax | see `issues/done/778-implement-APISample-import-export.md` |
@@ -5016,6 +5016,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 1039 | Implement Basetypeorderchecking | spike | frontend/syntax | see `issues/done/1039-implement-baseTypeOrderChecking.md` |
 | 1040 | Implement Basetypeprivatememberclash | spike | frontend/resolver | see `issues/done/1040-implement-baseTypePrivateMemberClash.md` |
 | 1041 | Implement Basetypewrappinginstantiationchain | spike | frontend/syntax | see `issues/done/1041-implement-baseTypeWrappingInstantiationChain.md` |
+| 1042 | Implement Bases | spike | frontend/syntax | see `issues/done/1042-implement-bases.md` |
 | 3002 | Implement Isolateddeclarationerrorsdefault | spike | runtime/builtins | see `issues/done/3002-implement-isolatedDeclarationErrorsDefault.md` |
 | 3131 | Implement Jsxfactorynotidentifierorqualifiedname | spike | reference/triage | see `issues/done/3131-implement-jsxFactoryNotIdentifierOrQualifiedName.md` |
 | 3329 | Implement Modulecodegentest | spike | frontend/syntax | see `issues/done/3329-implement-moduleCodeGenTest.md` |
