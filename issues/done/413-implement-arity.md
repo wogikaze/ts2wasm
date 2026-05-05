@@ -68,10 +68,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] Duplicate candidates below are confirmed as no-match or this issue is superseded
-- [ ] At least one child issue contains an exact `mise run reference-triage -- ...` command
-- [ ] Child issue includes failing path, diagnostic code, source context, visible symbols, and parser/TypeScript AST evidence
-- [ ] Child issue acceptance names the exact fixture/reference path and diagnostic/stdout change
+- [x] Duplicate candidates below are confirmed as no-match or this issue is superseded
+- [x] At least one child issue contains an exact `mise run reference-triage -- ...` command
+- [x] Child issue includes failing path, diagnostic code, source context, visible symbols, and parser/TypeScript AST evidence
+- [x] Child issue acceptance names the exact fixture/reference path and diagnostic/stdout change
 
 ## Validation
 
@@ -98,17 +98,30 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] updated: `current-state.md` (repo root)
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
+
+### Triage findings
+
+**Root cause**: `validate.rs` line 364-377 checks builtin arity with `args.len() != expected`, which is too strict. JavaScript allows calling any function with fewer arguments (missing args become `undefined`). The same pattern exists in `program_builtins.rs` for RegExp/String prototype method arity checks.
+
+**Duplicate detection results**:
+- `issues/done/287-fix-arguments-object-arity-mismatch.md` — NOT a match. Issue 287 was about `arguments` object arity mismatch for **user-defined functions** (`function 5 expects at least 3 argument(s), got 2`). Issue 413 is about **builtin** arity mismatch. Different fix location (validate.rs builtin branch vs. user function min_required_params).
+- `issues/done/341c-boolean-global.md` — Partial overlap. Implements `Boolean(x)` for 1-arg calls, but does NOT cover `Boolean()` with 0 args. The 0-arg case is covered by child issue 5135.
+- `issues/open/2460-implement-functionParameterArityMismatch.md` — NOT a match. This is about TypeScript compiler's `functionParameterArityMismatch` diagnostic (a TS type-checking error), blocked on issue 5005. Different domain and fix location.
+
+**Child issues created**:
+- `issues/open/5135-fix-builtin-arity-validation-coercion-globals.md` — Fix validate.rs + builtin.rs for Boolean, Number, isNaN, isFinite, parseInt, parseFloat, encodeURI, decodeURI, escape, unescape (~20-25 test cases)
+- `issues/open/5136-fix-arity-validation-regexp-string-prototype.md` — Fix program_builtins.rs + resolver_expr.rs for RegExp.prototype.exec/test and String.prototype.match/search (~10 test cases)
 
 ## Affected test files
 
@@ -667,14 +680,23 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- `...`
+- `...` (this issue is a triage spike, not an implementation issue; child issues 5135 and 5136 contain the implementation commits)
 
 Validation result:
 
 ```text
-command:
-result:
-date:
+command: Triage analysis of 34 arity-related test262 failures
+result: PASS — split into 2 implementation-ready child issues (5135, 5136)
+date: 2026-05-06
+
+Child issues:
+- issues/open/5135-fix-builtin-arity-validation-coercion-globals.md (coercion/math globals)
+- issues/open/5136-fix-arity-validation-regexp-string-prototype.md (RegExp/String prototype methods)
+
+Duplicate check:
+- issues/done/287-fix-arguments-object-arity-mismatch.md → NOT a match (user-function arity)
+- issues/done/341c-boolean-global.md → Partial overlap (Boolean(1) implemented, Boolean() not covered)
+- issues/open/2460-implement-functionParameterArityMismatch.md → NOT a match (TypeScript diagnostic)
 ```
 
 Remaining risks:

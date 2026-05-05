@@ -17,6 +17,8 @@ Relax the arity checks for RegExp.prototype.exec/test and String.prototype.match
 
 ## Problem
 
+Problem: RegExp and String prototype arity checks reject zero-argument calls that JavaScript treats as calls with `undefined`.
+
 Three functions in `crates/ir/src/lowered/program_builtins.rs` check `args.len() != 1` for RegExp and String prototype methods, producing `ArityMismatch` when called with 0 arguments:
 
 - `regexp_test_runtime` (line 649): `args.len() != 1` for `RegExp.prototype.test`

@@ -17,6 +17,8 @@ Relax the builtin arity check in `validate.rs` from exact-match (`!=`) to minimu
 
 ## Problem
 
+Problem: Builtin arity validation rejects JavaScript global coercion/math calls with optional or missing arguments before runtime coercion can handle them.
+
 The `validate_lowered` function in `crates/ir/src/lowered/validate.rs` (line 364-377) checks builtin call arity with `args.len() != expected`, which is too strict for JavaScript semantics. Builtins should accept fewer arguments (missing args become `undefined`).
 
 Affected builtins (all at `builtin.rs` line 64-69, each with `expected_arity`):
