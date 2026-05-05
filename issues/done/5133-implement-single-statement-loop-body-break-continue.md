@@ -3,12 +3,14 @@ id: 5133
 title: "Implement single-statement loop bodies for break and continue"
 type: feature
 area: frontend/syntax
-class: implementation-ready
+class: done
 priority: P1
 depends_on: []
 blocks: [707, 708, 418]
+status: done
 created: 2026-05-06
 updated: 2026-05-06
+completed: 2026-05-06
 ---
 
 ## Summary
@@ -48,9 +50,9 @@ invalid break/continue diagnostics outside loop bodies.
 
 In scope:
 
-- [ ] Parse `while (true) break` as a while statement whose body contains one `break`.
-- [ ] Parse `while (true) continue` as a while statement whose body contains one `continue`.
-- [ ] Add focused parser coverage for both forms.
+- [x] Parse `while (true) break` as a while statement whose body contains one `break`.
+- [x] Parse `while (true) continue` as a while statement whose body contains one `continue`.
+- [x] Add focused parser coverage for both forms.
 
 Out of scope:
 
@@ -66,7 +68,7 @@ Expected:
 - `crates/frontend/src/parser/`
 - `crates/frontend/src/parser/tests.rs`
 - `fixtures/` only if a compiler-level regression fixture is needed
-- `issues/open/5133-implement-single-statement-loop-body-break-continue.md`
+- `issues/done/5133-implement-single-statement-loop-body-break-continue.md`
 
 Do not touch:
 
@@ -76,9 +78,9 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] `asiBreak.ts` no longer reports `expected LeftBrace, got Some(Break)`.
-- [ ] `asiContinue.ts` no longer reports `expected LeftBrace, got Some(Continue)`.
-- [ ] A focused parser test covers both `while (true) break` and `while (true) continue`.
+- [x] `asiBreak.ts` no longer reports `expected LeftBrace, got Some(Break)`.
+- [x] `asiContinue.ts` no longer reports `expected LeftBrace, got Some(Continue)`.
+- [x] A focused parser test covers both `while (true) break` and `while (true) continue`.
 
 ## Validation
 
@@ -125,20 +127,46 @@ needed, split them separately from issue 418.
 
 ## Completion evidence
 
-Fill only when moving to `done/`.
-
 Commits:
 
-- `...`
+- `3a5f000e chore: commit pending issue moves and fixture changes`
 
 Validation result:
 
 ```text
-command:
-result:
-date:
+command: cargo fmt --all --check
+result: pass
+date: 2026-05-06
+
+command: cargo test -p ts2wasm-frontend parser -- --nocapture
+result: pass; 133 passed
+date: 2026-05-06
+
+command: cargo run -q -p ts2wasm-cli -- dump --ast reference/typescript/tests/cases/compiler/asiBreak.ts
+result: pass; AST is While body [Break]; no expected LeftBrace diagnostic
+date: 2026-05-06
+
+command: cargo run -q -p ts2wasm-cli -- dump --ast reference/typescript/tests/cases/compiler/asiContinue.ts
+result: pass; AST is While body [Continue]; no expected LeftBrace diagnostic
+date: 2026-05-06
+
+command: cargo run -q -p ts2wasm-cli -- check reference/typescript/tests/cases/compiler/asiBreak.ts
+result: pass
+date: 2026-05-06
+
+command: cargo run -q -p ts2wasm-cli -- check reference/typescript/tests/cases/compiler/asiContinue.ts
+result: pass
+date: 2026-05-06
+
+command: timeout 90 mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/asiBreak.ts
+result: interrupted after updated report; parser/token/AST/resolved dumps pass and diagnostic changed from expected LeftBrace to BackendIo/wat2wasm
+date: 2026-05-06
+
+command: timeout 90 mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/asiContinue.ts
+result: interrupted after updated report; parser/token/AST/resolved dumps pass and diagnostic changed from expected LeftBrace to BackendIo/wat2wasm
+date: 2026-05-06
 ```
 
 Remaining risks:
 
-- none
+- Reference triage still reports a downstream BackendIo/wat2wasm category after parsing succeeds; that is outside this parser-only slice.
