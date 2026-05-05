@@ -59,10 +59,10 @@ The parser accepts `expr as Type` expressions (TypeScript type assertion syntax)
 
 In scope:
 
-- [ ] Add `as` keyword token in the lexer
-- [ ] Add `AsExpression` AST node or equivalent
-- [ ] Parse `expr as Type` in the expression parser
-- [ ] Update reference coverage for the fixed test case
+- [x] Add `as` keyword token in the lexer
+- [x] Add `AsExpression` AST node or equivalent
+- [x] Parse `expr as Type` in the expression parser
+- [x] Update reference coverage for the fixed test case
 
 Out of scope:
 
@@ -81,9 +81,9 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] `mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/arrayFind.ts` passes
-- [ ] New fixture with `expr as Type` syntax compiles and produces valid WASM
-- [ ] No regression in existing tests (`cargo nextest run`)
+- [x] `mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/arrayFind.ts` passes
+- [x] New fixture with `expr as Type` syntax compiles and produces valid WASM
+- [x] No regression in existing tests (`cargo nextest run`)
 
 ## Validation
 

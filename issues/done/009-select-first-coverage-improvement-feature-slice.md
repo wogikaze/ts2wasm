@@ -23,9 +23,9 @@ Scope:
 
 Acceptance criteria:
 
-- [ ] One implementation issue is created from coverage data.
-- [ ] The issue targets semantic pass improvement.
-- [ ] The issue identifies affected workstream and exact fixtures.
+- [x] One implementation issue is created from coverage data.
+- [x] The issue targets semantic pass improvement.
+- [x] The issue identifies affected workstream and exact fixtures.
 
 Validation result:
 
