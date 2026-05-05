@@ -83,6 +83,9 @@ Not run:
   problem statement explicitly identify `parser-syntax`.
 - Relinked 16 parser-syntax buckets from `depends_on: [5005]` to
   `depends_on: [5000]` and normalized their area to `frontend/syntax`.
+- Follow-up scan found 70 more direct children whose recorded current
+  diagnostic is `parser-syntax`; relinked those to `5000` and normalized their
+  area to `frontend/syntax`.
 - Left `5002`, `5006`, and `5007` linked to `5005` because they are explicit
   type-system/scope-analysis/module-resolution meta dependencies, not
   accidental generated child buckets.
