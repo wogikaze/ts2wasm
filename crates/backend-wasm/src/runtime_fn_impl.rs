@@ -1587,7 +1587,12 @@ impl RuntimeFn {
             },
             Self::ObjectIs => RuntimeSpec {
                 symbol: "$object_is",
-                deps: &[Self::StrictEqual],
+                deps: &[
+                    Self::IsString,
+                    Self::StringEqual,
+                    Self::BigIntCompare,
+                    Self::NumberToI32,
+                ],
                 imports: NO_IMPORTS,
                 capability: NO_CAPS,
                 runtime_strings: NO_RUNTIME_STRINGS,

@@ -2814,12 +2814,63 @@ impl WatEmitter<'_> {
     }
 
     pub(super) fn emit_object_is(&self, wat: &mut String) {
-        wat.push_str(
+        wat.push_str(&format!(
             r#"
   (func $object_is (param $a i32) (param $b i32) (result i32)
-    (return (call $strict_equal (local.get $a) (local.get $b))))
+    (local $a_tag i32)
+    (local $b_tag i32)
+    (local $a_is_number i32)
+    (local $b_is_number i32)
+    (local.set $a_tag (i32.and (local.get $a) (i32.const {tag_mask})))
+    (local.set $b_tag (i32.and (local.get $b) (i32.const {tag_mask})))
+    (if (i32.and (call $is_bigint (local.get $a)) (call $is_bigint (local.get $b)))
+      (then
+        (if (i32.eq (call $bigint_compare (local.get $a) (local.get $b)) (i32.const {zero}))
+          (then (return (i32.const {true_tag}))))
+        (return (i32.const {false_tag}))))
+    (if (i32.or (call $is_bigint (local.get $a)) (call $is_bigint (local.get $b)))
+      (then (return (i32.const {false_tag}))))
+    (if (i32.and (call $is_string (local.get $a)) (call $is_string (local.get $b)))
+      (then (return (call $string_equal (local.get $a) (local.get $b)))))
+    (if (i32.or (call $is_string (local.get $a)) (call $is_string (local.get $b)))
+      (then (return (i32.const {false_tag}))))
+    (local.set $a_is_number (i32.eq (local.get $a_tag) (i32.const {number_tag})))
+    (local.set $b_is_number (i32.eq (local.get $b_tag) (i32.const {number_tag})))
+    (if (i32.eq (local.get $a_tag) (i32.const {object_tag}))
+      (then
+        (local.set $a_is_number
+          (i32.eq
+            (i32.load (i32.and (local.get $a) (i32.const {heap_mask})))
+            (i32.const {heap_number_sentinel})))))
+    (if (i32.eq (local.get $b_tag) (i32.const {object_tag}))
+      (then
+        (local.set $b_is_number
+          (i32.eq
+            (i32.load (i32.and (local.get $b) (i32.const {heap_mask})))
+            (i32.const {heap_number_sentinel})))))
+    (if (i32.and (local.get $a_is_number) (local.get $b_is_number))
+      (then
+        ;; SameValue differs from strict equality for NaN and signed zero.
+        ;; The current number model does not encode either distinction, so
+        ;; numeric SameValue reduces to payload equality here.
+        (return
+          (if (result i32)
+            (i32.eq (call $number_to_i32 (local.get $a)) (call $number_to_i32 (local.get $b)))
+            (then (i32.const {true_tag}))
+            (else (i32.const {false_tag}))))))
+    (if (result i32) (i32.eq (local.get $a) (local.get $b))
+      (then (i32.const {true_tag}))
+      (else (i32.const {false_tag}))))
 "#,
-        );
+            tag_mask = ValueTag::TAG_MASK,
+            number_tag = ValueTag::NUMBER,
+            object_tag = ValueTag::OBJECT,
+            heap_mask = ValueTag::HEAP_MASK,
+            heap_number_sentinel = Layout::HEAP_NUMBER_SENTINEL,
+            zero = RuntimeConst::ZERO,
+            true_tag = ValueTag::TRUE,
+            false_tag = ValueTag::FALSE,
+        ));
     }
 
     pub(super) fn emit_value_of(&self, wat: &mut String) {
