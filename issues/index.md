@@ -15,7 +15,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 1 | 0 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4378 | 3792 | 586 |
+| frontend | 4379 | 3792 | 587 |
 | harness | 1 | 0 | 1 |
 | ir | 23 | 2 | 21 |
 | issues | 4 | 0 | 4 |
@@ -26,7 +26,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 4974 | 4072 | 902 |
+| total | 4975 | 4072 | 903 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -161,6 +161,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 5137 | Split remaining Date API scope | cleanup | runtime/builtins | design-ready | P1 |  | Date issue 050 currently stays open after its named child issues 240 and 241 are done, but non-literal constructor in... |
 | 5138 | Split Reflect.construct isConstructor reference window | spike | runtime/builtins | design-ready | P1 |  | `reference/test262/test/annexB/built-ins/String/prototype/anchor/not-a-constructor.js` currently fails with `Unresolv... |
 | 5139 | Split APISample parser leftovers | cleanup | frontend/syntax | design-ready | P1 |  | issue 070 identified `APISample_linter.ts` and `APISample_transform.ts` as remaining parser/frontend leftovers, but t... |
+| 5140 | Implement type alias object parsing before exported interface | feature | frontend/syntax | implementation-ready | P1 |  | `DeclarationErrorsNoEmitOnError.ts` currently fails with `UnsupportedSyntax` because the parser treats `type T = { x ... |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -174,7 +175,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 052d | Implement broader JSON.stringify replacer semantics (audit reopened #052d) | feature | runtime/builtins | class: blocked | Implement broader JSON.stringify replacer semantics (audit reopened #052d) |
 | 059 | Implement parser syntax extensions for TypeScript and advanced JS (audit reopened #059) | feature | frontend | class: blocked | Implement parser syntax extensions for TypeScript and advanced JS (audit reopened #059) |
 | 064 | Implement name resolution (triaged - superseded by test262 metadata issues) | spike | frontend/resolver | class: blocked | Implement name resolution (triaged - superseded by test262 metadata issues) |
-| 074 | Implement Declarationerrorsnoemitonerror | spike | frontend/syntax | class: blocked | Implement Declarationerrorsnoemitonerror |
 | 076 | Implement Functiondeclaration | spike | frontend/syntax | class: triage-needed | Implement Functiondeclaration |
 | 080 | Implement Systemmoduleforstatementnoinitializer | spike | frontend/syntax | class: blocked | Implement Systemmoduleforstatementnoinitializer |
 | 102 | Implement Accessorwithinitializer | spike | frontend/syntax | class: blocked | Implement Accessorwithinitializer |
@@ -4339,6 +4339,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 071 | Implement Arrowfunctionexpression | spike | frontend/syntax | see `issues/done/071-implement-ArrowFunctionExpression.md` |
 | 072 | Implement Classdeclaration (dup) | spike | frontend/syntax | see `issues/done/072-implement-ClassDeclaration.md` |
 | 073 | Implement Classdeclarationwithinvalidconstonpropertydeclaration | spike | frontend/syntax | see `issues/done/073-implement-ClassDeclarationWithInvalidConstOnPropertyDeclaration.md` |
+| 074 | Implement Declarationerrorsnoemitonerror | spike | frontend/syntax | see `issues/done/074-implement-DeclarationErrorsNoEmitOnError.md` |
 | 075 | Implement Exportassignment (dup) | spike | frontend/syntax | see `issues/done/075-implement-ExportAssignment.md` |
 | 077 | Implement Interfacedeclaration | spike | frontend/syntax | see `issues/done/077-implement-InterfaceDeclaration.md` |
 | 078 | Implement Memberaccessordeclaration | spike | frontend/syntax | see `issues/done/078-implement-MemberAccessorDeclaration.md` |
