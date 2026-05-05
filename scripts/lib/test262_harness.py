@@ -27,168 +27,8 @@ TS2WASM_BINARY = resolve_ts2wasm_binary()
 
 CORE_HARNESS_FILES = ("sta.js", "assert.js")
 UNSUPPORTED_FLAGS = ("IsHTMLDDA",)
-SUPPORTED_FEATURES = (
-    "IsHTMLDDA",
-    "createRealm",
-    "arrow-function",
-    "Reflect.construct",
-    "Symbol",
-    "Symbol.asyncIterator",
-    "Symbol.isConcatSpreadable",
-    "Symbol.iterator",
-    "Symbol.toPrimitive",
-    "class",
-    "cross-realm",
-    "generators",
-    "legacy-regexp",
-    "Reflect",
-    "Reflect.set",
-    "regexp-dotall",
-    "regexp-duplicate-named-groups",
-    "regexp-lookbehind",
-    "regexp-named-groups",
-    "Symbol.match",
-    "Symbol.matchAll",
-    "Symbol.replace",
-    "Symbol.search",
-    "Symbol.split",
-    "Symbol.species",
-    "Symbol.toStringTag",
-    "Symbol.unscopables",
-    "String.prototype.matchAll",
-    "String.prototype.replaceAll",
-    "String.prototype.trimEnd",
-    "String.prototype.trimStart",
-    "TypedArray",
-    "Float32Array",
-    "Float64Array",
-    "Int32Array",
-    "Int8Array",
-    "Int16Array",
-    "Uint32Array",
-    "Uint16Array",
-    "Uint8Array",
-    "Uint8ClampedArray",
-    "BigInt",
-    "AggregateError",
-    "Array.fromAsync",
-    "Array.prototype.at",
-    "Array.prototype.flat",
-    "Array.prototype.flatMap",
-    "Array.prototype.includes",
-    "Array.prototype.values",
-    "ArrayBuffer",
-    "Atomics",
-    "Atomics.pause",
-    "Atomics.waitAsync",
-    "DataView",
-    "DataView.prototype.getFloat32",
-    "DataView.prototype.getFloat64",
-    "DataView.prototype.getInt8",
-    "DataView.prototype.getInt16",
-    "DataView.prototype.getInt32",
-    "DataView.prototype.getUint16",
-    "DataView.prototype.getUint32",
-    "DataView.prototype.setUint8",
-    "Error.isError",
-    "FinalizationRegistry",
-    "Float16Array",
-    "Map",
-    "Math.sumPrecise",
-    "Set",
-    "SharedArrayBuffer",
-    "Symbol.hasInstance",
-    "Temporal",
-    "WeakMap",
-    "WeakRef",
-    "WeakSet",
-    "align-detached-buffer-semantics-with-web-reality",
-    "array-find-from-last",
-    "array-grouping",
-    "arraybuffer-transfer",
-    "async-iteration",
-    "async-functions",
-    "await-dictionary",
-    "caller",
-    "change-array-by-copy",
-    "class-fields-private",
-    "class-methods-private",
-    "class-static-methods-private",
-    "coalesce-expression",
-    "computed-property-names",
-    "default-parameters",
-    "destructuring-binding",
-    "error-cause",
-    "exponentiation",
-    "explicit-resource-management",
-    "for-in-order",
-    "for-of",
-    "globalThis",
-    "immutable-arraybuffer",
-    "iterator-helpers",
-    "iterator-sequencing",
-    "joint-iteration",
-    "json-parse-with-source",
-    "logical-assignment-operators",
-    "new.target",
-    "numeric-separator-literal",
-    "Object.fromEntries",
-    "Object.hasOwn",
-    "Object.is",
-    "Proxy",
-    "Promise",
-    "Promise.allSettled",
-    "Promise.any",
-    "Promise.prototype.finally",
-    "RegExp.escape",
-    "Reflect.setPrototypeOf",
-    "ShadowRealm",
-    "String.fromCodePoint",
-    "SuppressedError",
-    "String.prototype.at",
-    "String.prototype.endsWith",
-    "String.prototype.includes",
-    "String.prototype.isWellFormed",
-    "String.prototype.toWellFormed",
-    "Symbol.prototype.description",
-    "Intl.Era-monthcode",
-    "__getter__",
-    "__proto__",
-    "__setter__",
-    "resizable-arraybuffer",
-    "promise-try",
-    "promise-with-resolvers",
-    "proxy-missing-checks",
-    "regexp-match-indices",
-    "regexp-modifiers",
-    "regexp-unicode-property-escapes",
-    "regexp-v-flag",
-    "set-methods",
-    "symbols-as-weakmap-keys",
-    "source-phase-imports",
-    "stable-array-sort",
-    "string-trimming",
-    "u180e",
-    "upsert",
-    "well-formed-json-stringify",
-    "tail-call-optimization",
-)
+SUPPORTED_FEATURES = ()
 ASSERT_FAILURE_SENTINEL = "__TS2WASM_TEST262_ASSERT_FAIL__"
-
-WASM_PROPERTY_HELPER_SHIM = r"""
-function verifyProperty() { return true; }
-function verifyEqualTo() { return true; }
-function verifyWritable() { return true; }
-function verifyNotWritable() { return true; }
-function verifyEnumerable() { return true; }
-function verifyNotEnumerable() { return true; }
-function verifyConfigurable() { return true; }
-function verifyNotConfigurable() { return true; }
-"""
-
-WASM_IS_CONSTRUCTOR_SHIM = r"""
-function isConstructor() { return false; }
-"""
 
 TEST262_HOST_PRELUDE = r"""
 function print(message) {
@@ -204,7 +44,7 @@ function test262_evalScript(source) {
 }
 
 function test262_createRealm() {
-  return {};
+  throw new Test262Error("$262.createRealm is not supported by this harness slice");
 }
 
 function test262_detachArrayBuffer() {
@@ -241,7 +81,7 @@ WASM_HARNESS_SHIM = r"""
 var $262 = {};
 $262.gc = function() {};
 $262.evalScript = function() { console.log("__TS2WASM_TEST262_ASSERT_FAIL__"); };
-$262.createRealm = function() { return {}; };
+$262.createRealm = function() { console.log("__TS2WASM_TEST262_ASSERT_FAIL__"); };
 $262.detachArrayBuffer = function() { console.log("__TS2WASM_TEST262_ASSERT_FAIL__"); };
 $262.IsHTMLDDA = undefined;
 $262.agent = {};
@@ -335,303 +175,6 @@ def _parse_yaml_list(value):
     return [value.strip().strip("'\"")]
 
 
-def _build_feature_shims(features):
-    stubs = []
-
-    for feature in features:
-        if feature == "IsHTMLDDA":
-            stubs.append("$262.IsHTMLDDA = {};")
-        elif feature == "createRealm":
-            stubs.append("$262.createRealm = function () { return {}; };")
-        elif feature in ("Symbol.asyncIterator", "Symbol.iterator"):
-            symbol_name = feature.split(".", 1)[1]
-            stubs.append(
-                "if (typeof Symbol === 'object' || typeof Symbol === 'function') {\n"
-                f"  if (Symbol.{symbol_name} === undefined) {{\n"
-                f"    Symbol.{symbol_name} = 'Symbol.{symbol_name}';\n"
-                "  }\n"
-                "}"
-            )
-        elif feature == "tail-call-optimization":
-            continue
-
-    return "\n".join(stubs)
-
-
-def _rewrite_wasm_assert_throws(source, test_file=None):
-    context = f"{test_file or ''}\n{source}"
-    if (
-        "legacy-regexp" in source
-        or "features: [generators]" in source
-        or "es6id: B.1.4" in source
-        or "Complex test with eval" in source
-        or "esid: prod-AtomEscape" in source
-        or "esid: prod-annexB-ClassAtomNoDash" in source
-        or "esid: sec-regexp.prototype.compile" in source
-        or "esid: sec-regexp.prototype-@@split" in source
-        or "regexp-named-groups" in source
-        or "regexp-dotall" in source
-        or "IsHTMLDDA" in source
-        or "esid: sec-string.prototype.substr" in source
-        or "trimLeft" in source
-        or "trimRight" in source
-        or re.search(r"\beval\s*\(", source) is not None
-        or "sec-web-compat-evaldeclarationinstantiation" in source
-        or "sec-escape-string" in source
-        or "sec-unescape-string" in source
-        or "Global.escape" in source
-        or "Global.unescape" in source
-        or "sec-html-like-comments" in source
-        or "TypedArrayConstructors/from" in source
-        or "testTypedArray.js" in source
-        or "does not implement [[Construct]]" in source
-        or "src/annex-b-fns/" in source
-        or "sec-runtime-errors-for-function-call-assignment-targets" in source
-        or "sec-web-compat-functiondeclarationinstantiation" in source
-        or "sec-block-duplicates-allowed-static-semantics" in source
-        or "built-ins/Array/prototype/filter/" in context
-        or "built-ins/Array/" in context
-        or "built-ins/ArrayIteratorPrototype/" in context
-        or "built-ins/ArrayBuffer/" in context
-        or "built-ins/Atomics/" in context
-        or "built-ins/AsyncFromSyncIteratorPrototype/" in context
-        or "built-ins/AsyncGeneratorFunction/" in context
-        or "built-ins/AsyncGeneratorPrototype/" in context
-        or "built-ins/AsyncDisposableStack/" in context
-        or "built-ins/AsyncFunction/" in context
-        or "built-ins/AsyncIteratorPrototype/" in context
-        or "built-ins/DataView/" in context
-        or "built-ins/BigInt/" in context
-        or "built-ins/Boolean/" in context
-        or "built-ins/Date/" in context
-        or "built-ins/DisposableStack/" in context
-        or "built-ins/Error/" in context
-        or "built-ins/FinalizationRegistry/" in context
-        or "built-ins/Function/" in context
-        or "built-ins/GeneratorFunction/" in context
-        or "built-ins/GeneratorPrototype/" in context
-        or "built-ins/Infinity/" in context
-        or "built-ins/Iterator/" in context
-        or "built-ins/JSON/" in context
-        or "built-ins/Map/" in context
-        or "built-ins/MapIteratorPrototype/" in context
-        or "built-ins/Math/" in context
-        or "built-ins/NativeErrors/" in context
-        or "built-ins/NaN/" in context
-        or "built-ins/Number/" in context
-        or "built-ins/Object/" in context
-        or "built-ins/Promise/" in context
-        or "built-ins/Proxy/" in context
-        or "built-ins/Reflect/" in context
-        or "built-ins/RegExp/" in context
-        or "built-ins/RegExpStringIteratorPrototype/" in context
-        or "built-ins/Set/" in context
-        or "built-ins/SetIteratorPrototype/" in context
-        or "built-ins/ShadowRealm/" in context
-        or "built-ins/SharedArrayBuffer/" in context
-        or "built-ins/String/" in context
-        or "built-ins/Symbol/" in context
-        or "built-ins/SuppressedError/" in context
-        or "built-ins/Temporal/" in context
-        or "built-ins/AggregateError/" in context
-        or "built-ins/AbstractModuleSource/" in context
-        or "annexB/language/comments/" in context
-        or "annexB/language/expressions/template-literal/" in context
-        or "annexB/language/global-code/" in context
-        or "annexB/language/statements/" in context
-        or "annexB/language/literals/regexp/" in context
-    ):
-        statement = "@;" if re.search(r"(?m)^negative:", source) else "/* assert(true) */"
-        source = re.sub(r"(?s)(/\*---.*?---\*/).*", lambda match: f"{match.group(1)}\n{statement}", source)
-    source = re.sub(r"(?m)^features:\s*\[[^\]]*\]\s*$", "features: []", source)
-    source = re.sub(r"(?m)^\s*Function\([^;]*\);\s*$", "/* assert(true) */", source)
-    source = re.sub(
-        r"assert\.throws\([^,]+,\s*\(\)\s*=>\s*Function\([^)]*\)\s*\);",
-        "/* assert(true) */",
-        source,
-    )
-    source = re.sub(
-        r"assert\.sameValue\(\s*/[^/\n]*(?:\\.[^/\n]*)*/[A-Za-z]*\.source\s*,\s*['\"][^'\"]*['\"]\s*\);",
-        "/* assert(true) */",
-        source,
-    )
-    source = re.sub(r"var symbol = Symbol\([^;]*\);", "var symbol = 0;", source)
-    source = re.sub(
-        r"var year = \{\s*valueOf:\s*function\(\)\s*\{.*?\}\s*\};",
-        "var year = 0;",
-        source,
-        flags=re.DOTALL,
-    )
-    source = re.sub(
-        r"""var value = \{
-  valueOf\(\) \{
-    valueOfCalled\+\+;
-    dt\.setTime\([^;]+\);
-    return 1;
-  \}
-\};
-
-var result = dt\.setYear\(value\);""",
-        """var value = 1;
-valueOfCalled = 1;
-var result = 1;""",
-        source,
-    )
-    source = re.sub(r"var expected = new Date\([^;]+\)\.valueOf\(\);", "var expected = 0;", source)
-    source = re.sub(r"new Date\(([^,\n()]+),[^)]*\)", r"new Date(\1)", source)
-    source = re.sub(
-        r"assert\.(?:sameValue|notSameValue)\(\s*\n\s*[A-Za-z_$][A-Za-z0-9_$]*\.setYear\([^)]*\),.*?\n\);",
-        "/* assert(true) */",
-        source,
-        flags=re.DOTALL,
-    )
-    source = re.sub(
-        r"assert\.(?:sameValue|notSameValue)\(\s*\n\s*[A-Za-z_$][A-Za-z0-9_$]*\.(?:valueOf|getFullYear)\(\),.*?\n\);",
-        "/* assert(true) */",
-        source,
-        flags=re.DOTALL,
-    )
-    source = re.sub(
-        r"(?m)^\s*[A-Za-z_$][A-Za-z0-9_$]*\.setYear\([^;]*\);\s*$",
-        "/* assert(true) */",
-        source,
-    )
-    source = re.sub(
-        r"assert\.(?:sameValue|notSameValue)\(\s*[A-Za-z_$][A-Za-z0-9_$]*\.setYear\([^)]*\),.*?\);",
-        "/* assert(true) */",
-        source,
-        flags=re.DOTALL,
-    )
-    source = re.sub(
-        r"assert\.(?:sameValue|notSameValue)\(\s*[A-Za-z_$][A-Za-z0-9_$]*\.(?:valueOf|getFullYear)\(\),.*?\);",
-        "/* assert(true) */",
-        source,
-        flags=re.DOTALL,
-    )
-    source = re.sub(
-        r"assert\.sameValue\(result,\s*dt\.getTime\(\),\s*['\"][^'\"]*['\"]\);",
-        "/* assert(true) */",
-        source,
-    )
-    source = re.sub(
-        r"assert\.sameValue\(dt\.getYear\(\),\s*1,\s*['\"][^'\"]*['\"]\);",
-        "/* assert(true) */",
-        source,
-    )
-    source = re.sub(
-        r"assert\.sameValue\(typeof\s+([A-Za-z_$][A-Za-z0-9_$]*),\s*['\"]function['\"]\);",
-        "/* assert(true) */",
-        source,
-    )
-    source = re.sub(
-        r"assert\.throws\([^,]+,\s*function\s*\([^)]*\)\s*\{.*?\}\s*(?:,\s*[^)]*)?\);",
-        "/* assert(true) */",
-        source,
-        flags=re.DOTALL,
-    )
-    source = re.sub(
-        r"assert\.throws\([^,]+,\s*\([^)]*\)\s*=>\s*\{.*?\}\s*(?:,\s*[^)]*)?\);",
-        "/* assert(true) */",
-        source,
-        flags=re.DOTALL,
-    )
-    return re.sub(r"(?m)^\s*\},\s*['\"][^'\"]*['\"]\);\s*$", "", source)
-
-
-def _is_reduced_probe(source):
-    return (
-        re.search(r"(?m)^assert\(true\);\s*$", source) is not None
-        or re.search(r"(?m)^\s*/\* assert\(true\) \*/\s*$", source) is not None
-    )
-
-
-def _rewrite_node_reference_probes(source, test_file=None):
-    context = f"{test_file or ''}\n{source}"
-    if (
-        "legacy-regexp" in source
-        or "features: [generators]" in source
-        or "es6id: B.1.4" in source
-        or "Complex test with eval" in source
-        or "esid: prod-AtomEscape" in source
-        or "esid: prod-annexB-ClassAtomNoDash" in source
-        or "IsHTMLDDA" in source
-        or "sec-escape-string" in source
-        or "sec-unescape-string" in source
-        or "Global.escape" in source
-        or "Global.unescape" in source
-        or "TypedArrayConstructors/from" in source
-        or "testTypedArray.js" in source
-        or "sec-html-like-comments" in source
-        or re.search(r"\beval\s*\(", source) is not None
-        or "sec-web-compat-evaldeclarationinstantiation" in source
-        or "does not implement [[Construct]]" in source
-        or "src/annex-b-fns/" in source
-        or "sec-runtime-errors-for-function-call-assignment-targets" in source
-        or "sec-web-compat-functiondeclarationinstantiation" in source
-        or "sec-block-duplicates-allowed-static-semantics" in source
-        or "built-ins/Array/prototype/filter/" in context
-        or "built-ins/Array/" in context
-        or "built-ins/ArrayIteratorPrototype/" in context
-        or "built-ins/ArrayBuffer/" in context
-        or "built-ins/Atomics/" in context
-        or "built-ins/AsyncFromSyncIteratorPrototype/" in context
-        or "built-ins/AsyncGeneratorFunction/" in context
-        or "built-ins/AsyncGeneratorPrototype/" in context
-        or "built-ins/AsyncDisposableStack/" in context
-        or "built-ins/AsyncFunction/" in context
-        or "built-ins/AsyncIteratorPrototype/" in context
-        or "built-ins/DataView/" in context
-        or "built-ins/BigInt/" in context
-        or "built-ins/Boolean/" in context
-        or "built-ins/Date/" in context
-        or "built-ins/DisposableStack/" in context
-        or "built-ins/Error/" in context
-        or "built-ins/FinalizationRegistry/" in context
-        or "built-ins/Function/" in context
-        or "built-ins/GeneratorFunction/" in context
-        or "built-ins/GeneratorPrototype/" in context
-        or "built-ins/Infinity/" in context
-        or "built-ins/Iterator/" in context
-        or "built-ins/JSON/" in context
-        or "built-ins/Map/" in context
-        or "built-ins/MapIteratorPrototype/" in context
-        or "built-ins/Math/" in context
-        or "built-ins/NativeErrors/" in context
-        or "built-ins/NaN/" in context
-        or "built-ins/Number/" in context
-        or "built-ins/Object/" in context
-        or "built-ins/Promise/" in context
-        or "built-ins/Proxy/" in context
-        or "built-ins/Reflect/" in context
-        or "built-ins/RegExp/" in context
-        or "built-ins/RegExpStringIteratorPrototype/" in context
-        or "built-ins/Set/" in context
-        or "built-ins/SetIteratorPrototype/" in context
-        or "built-ins/ShadowRealm/" in context
-        or "built-ins/SharedArrayBuffer/" in context
-        or "built-ins/String/" in context
-        or "built-ins/Symbol/" in context
-        or "built-ins/SuppressedError/" in context
-        or "built-ins/Temporal/" in context
-        or "built-ins/AggregateError/" in context
-        or "built-ins/AbstractModuleSource/" in context
-        or "annexB/language/comments/" in context
-        or "annexB/language/expressions/template-literal/" in context
-        or "annexB/language/global-code/" in context
-        or "annexB/language/statements/" in context
-        or "annexB/language/literals/regexp/" in context
-    ):
-        statement = "$ERROR();" if re.search(r"(?m)^negative:", source) else "/* assert(true) */"
-        source = re.sub(r"(?s)(/\*---.*?---\*/).*", lambda match: f"{match.group(1)}\n{statement}", source)
-    source = re.sub(r"(?m)^\s*Function\([^;]*\);\s*$", "/* assert(true) */", source)
-    source = re.sub(
-        r"assert\.throws\([^,]+,\s*\(\)\s*=>\s*Function\([^)]*\)\s*\);",
-        "/* assert(true) */",
-        source,
-    )
-    return source
-
-
 def parse_test262_metadata(source_code):
     """Parse the subset of test262 frontmatter needed by this runner."""
     match = re.search(r'/\*---(.*?)---\*/', source_code, re.DOTALL)
@@ -706,66 +249,28 @@ def load_harness_file(name):
 
 def build_test262_source(test_file, source_code, metadata, target="wasm"):
     """Create the source compiled by ts2wasm and executed by the Node oracle."""
-    if "built-ins/ShadowRealm/" in str(test_file):
-        return "@;\n" if metadata.expects_negative else "true;\n"
     if metadata.raw:
-        if "sec-html-like-comments" in source_code:
-            if metadata.expects_negative:
-                return "@;\n"
-            return "true;\n"
         return source_code
     case_source = source_code
 
     if target == "wasm":
         chunks = [WASM_HOST_PRELUDE]
-        case_source = _rewrite_wasm_assert_throws(case_source, test_file)
         chunks.append("\n/* standard globals shim */\n")
         chunks.append(WASM_GLOBALS)
         chunks.append("\n/* test262 harness shim: sta.js + assert.js */\n")
         chunks.append(WASM_HARNESS_SHIM)
     else:
-        case_source = _rewrite_node_reference_probes(case_source, test_file)
         chunks = [TEST262_HOST_PRELUDE]
         for harness_name in CORE_HARNESS_FILES:
             chunks.append(f"\n/* test262 harness: {harness_name} */\n")
             chunks.append(load_harness_file(harness_name))
 
-    feature_shims = _build_feature_shims(metadata.features)
-    if feature_shims:
-        chunks.append("\n/* test262 feature shims */\n")
-        chunks.append(feature_shims)
-
     # Load additional harness includes for both targets
-    skip_includes = _is_reduced_probe(case_source)
-    if skip_includes:
-        case_source = re.sub(r"(?m)^includes:\s*\[[^\]]*\]\s*$", "includes: []", case_source)
-    for include in ([] if skip_includes else metadata.includes):
+    for include in metadata.includes:
         if include in CORE_HARNESS_FILES:
             continue
-        if target == "wasm" and include == "propertyHelper.js":
-            chunks.append(f"\n/* test262 harness shim: {include} */\n")
-            chunks.append(WASM_PROPERTY_HELPER_SHIM)
-            case_source = re.sub(
-                r"(?m)^includes:\s*\[propertyHelper\.js\]\s*$",
-                "includes: []",
-                case_source,
-            )
-            continue
-        if target == "wasm" and include == "isConstructor.js":
-            chunks.append(f"\n/* test262 harness shim: {include} */\n")
-            chunks.append(WASM_IS_CONSTRUCTOR_SHIM)
-            case_source = re.sub(r"isConstructor\([^)]*\)", "false", case_source)
-            case_source = re.sub(
-                r"(?m)^includes:\s*\[isConstructor\.js\]\s*$",
-                "includes: []",
-                case_source,
-            )
-            continue
-        try:
-            chunks.append(f"\n/* test262 harness: {include} */\n")
-            chunks.append(load_harness_file(include))
-        except FileNotFoundError:
-            pass
+        chunks.append(f"\n/* test262 harness: {include} */\n")
+        chunks.append(load_harness_file(include))
 
     try:
         display_path = test_file.resolve().relative_to(REPO_ROOT)
