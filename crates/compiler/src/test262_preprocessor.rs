@@ -460,9 +460,9 @@ fn build_feature_stubs(features: &[String]) -> Result<String, Diagnostic> {
                 stubs.push_str("    Symbol.asyncIterator = Symbol('Symbol.asyncIterator');\n");
                 stubs.push_str("  }\n}");
             }
-            "Symbol.species" | "Symbol.unscopables" | "Symbol.replace"
-            | "Symbol.match" | "Symbol.search" | "Symbol.matchAll"
-            | "Symbol.split" | "Symbol.toPrimitive" | "Symbol.iterator" => {
+            "Symbol.species" | "Symbol.unscopables" | "Symbol.replace" | "Symbol.match"
+            | "Symbol.search" | "Symbol.matchAll" | "Symbol.split" | "Symbol.toPrimitive"
+            | "Symbol.iterator" => {
                 let name = feature.strip_prefix("Symbol.").unwrap_or(feature);
                 stubs.push_str(
                     "if (typeof Symbol === 'object' || typeof Symbol === 'function') {\n",
