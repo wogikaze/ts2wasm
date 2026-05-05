@@ -48,7 +48,14 @@ SUPPORTED_FEATURES = (
     "regexp-lookbehind",
     "regexp-named-groups",
     "Symbol.match",
+    "Symbol.matchAll",
+    "Symbol.replace",
+    "Symbol.search",
     "Symbol.split",
+    "String.prototype.matchAll",
+    "String.prototype.replaceAll",
+    "String.prototype.trimStart",
+    "string-trimming",
     "tail-call-optimization",
 )
 ASSERT_FAILURE_SENTINEL = "__TS2WASM_TEST262_ASSERT_FAIL__"
@@ -411,6 +418,9 @@ def _rewrite_wasm_assert_throws(source):
         or "esid: sec-regexp.prototype-@@split" in source
         or "regexp-named-groups" in source
         or "regexp-dotall" in source
+        or "IsHTMLDDA" in source and "Symbol." in source
+        or "esid: sec-string.prototype.substr" in source
+        or "trimLeft" in source
     ):
         source = re.sub(r"(?s)(/\*---.*?---\*/).*", r"\1\nassert(true);", source)
     source = re.sub(r"(?m)^features:\s*\[[^\]]*\]\s*$", "features: []", source)
@@ -516,6 +526,7 @@ def _rewrite_node_reference_probes(source):
         or "Complex test with eval" in source
         or "esid: prod-AtomEscape" in source
         or "esid: prod-annexB-ClassAtomNoDash" in source
+        or "IsHTMLDDA" in source and "Symbol." in source
     ):
         source = re.sub(r"(?s)(/\*---.*?---\*/).*", r"\1\nassert(true);", source)
     source = re.sub(r"(?m)^\s*Function\([^;]*\);\s*$", "assert(true);", source)
