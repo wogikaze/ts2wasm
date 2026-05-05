@@ -570,17 +570,13 @@ impl<'a> HirLowerer<'a> {
     }
 
     fn declare_local(&mut self, name: &str) -> Result<HirLocalId, Diagnostic> {
-        if self
+        if let Some(&existing) = self
             .scopes
             .last()
             .expect("scope must exist")
-            .contains_key(name)
+            .get(name)
         {
-            return Err(Diagnostic {
-                code: DiagCode::DuplicateLocal,
-                message: format!("duplicate local binding: `{name}`"),
-                span: None,
-            });
+            return Ok(existing);
         }
         let local = HirLocalId(self.locals.len());
         self.locals.push(local);

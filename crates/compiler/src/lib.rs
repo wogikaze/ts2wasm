@@ -1033,7 +1033,7 @@ fn validate_stmt(
     top_functions: &HashMap<String, ()>,
 ) -> Result<(), Diagnostic> {
     match stmt {
-        Stmt::Let { name, span, .. } => {
+        Stmt::Let { name, span, is_var, .. } => {
             if in_top_level && top_functions.contains_key(name) {
                 return Err(Diagnostic {
                     code: DiagCode::DuplicateLocal,
@@ -1044,6 +1044,9 @@ fn validate_stmt(
                 });
             }
             if scope.contains_key(name) {
+                if *is_var {
+                    return Ok(());
+                }
                 return Err(Diagnostic {
                     code: DiagCode::DuplicateLocal,
                     message: format!("duplicate local binding: `{name}`"),

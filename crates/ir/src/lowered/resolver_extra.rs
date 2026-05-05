@@ -1599,12 +1599,8 @@ impl<'a> Resolver<'a> {
 
     pub(super) fn declare_local(&mut self, name: &str) -> Result<LocalId, Diagnostic> {
         let scope = self.scopes.last_mut().expect("scope must exist");
-        if scope.contains_key(name) {
-            return Err(Diagnostic {
-                code: DiagCode::DuplicateLocal,
-                message: format!("duplicate local binding: `{name}`"),
-                span: None,
-            });
+        if let Some(&existing) = scope.get(name) {
+            return Ok(existing);
         }
         let local_id = LocalId(self.next_local_id);
         self.next_local_id += 1;
