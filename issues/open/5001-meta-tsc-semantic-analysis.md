@@ -95,6 +95,8 @@ Not run:
   (`ambient-declaration`, `decorator`, `jsx`, `parameter-property`,
   `rest-parameter`, `template-literal`, `type-annotation`, `type-assertion`) to
   parser-extension epic `059` and normalized their area to `frontend/syntax`.
+- Relinked 11 `module-system-amd` children to import/export parent `432` and
+  6 `jsdoc` children to parser-extension epic `059`.
 
 Validation result:
 
