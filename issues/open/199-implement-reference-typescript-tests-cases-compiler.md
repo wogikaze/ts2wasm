@@ -121,7 +121,7 @@ Follow-up issues:
 - `issues/done/072-implement-ClassDeclaration.md` - Implement Classdeclaration (same feature label, same group key, title overlap)
 - `issues/done/073-implement-ClassDeclarationWithInvalidConstOnPropertyDeclaration.md` - Implement Classdeclarationwithinvalidconstonpropertydeclaration (same feature label, same group key, title overlap)
 - `issues/done/074-implement-DeclarationErrorsNoEmitOnError.md` - Implement Declarationerrorsnoemitonerror (same feature label, same group key, title overlap)
-- `issues/open/076-implement-FunctionDeclaration.md` - Implement Functiondeclaration (same feature label, same group key, title overlap)
+- `issues/done/076-implement-FunctionDeclaration.md` - Implement Functiondeclaration (same feature label, same group key, title overlap)
 - `issues/done/077-implement-InterfaceDeclaration.md` - Implement Interfacedeclaration (same feature label, same group key, title overlap)
 - `issues/done/078-implement-MemberAccessorDeclaration.md` - Implement Memberaccessordeclaration (same feature label, same group key, title overlap)
 - `issues/done/079-implement-ParameterList.md` - Implement Parameterlist (same feature label, same group key, title overlap)

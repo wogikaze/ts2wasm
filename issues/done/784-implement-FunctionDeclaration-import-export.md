@@ -118,7 +118,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/open/076-implement-FunctionDeclaration.md` - Implement Functiondeclaration (same reference path, title overlap)
+- `issues/done/076-implement-FunctionDeclaration.md` - Implement Functiondeclaration (same reference path, title overlap)
 - `issues/open/432-implement-import-export.md` - Implement import/export module syntax (same feature label, title overlap)
 - `issues/done/457-implement-APISample-import-export.md` - Implement Apisample Import Export (same feature label, title overlap)
 - `issues/done/463-implement-FunctionDeclaration-import-export.md` - Implement Functiondeclaration Import Export (same reference path, same feature label, same group key, title overlap)

@@ -118,7 +118,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/open/076-implement-FunctionDeclaration.md` - Implement Functiondeclaration (same reference path, same feature label, title overlap)
+- `issues/done/076-implement-FunctionDeclaration.md` - Implement Functiondeclaration (same reference path, same feature label, title overlap)
 - `issues/open/442-implement-parser-syntax.md` - Implement parser syntax extensions (same feature label, title overlap)
 - `issues/open/059-implement-parser-syntax-extensions.md` - Implement parser syntax extensions for TypeScript and advanced JS (same feature label, title overlap)
 - `issues/done/065-implement-parser-syntax.md` - Implement parser syntax extensions (same feature label, title overlap)
@@ -198,7 +198,7 @@ Duplicate candidates:
 [
   {
     "state": "open",
-    "path": "issues/open/076-implement-FunctionDeclaration.md",
+    "path": "issues/done/076-implement-FunctionDeclaration.md",
     "title": "Implement Functiondeclaration",
     "reason": "same reference path, same feature label"
   },

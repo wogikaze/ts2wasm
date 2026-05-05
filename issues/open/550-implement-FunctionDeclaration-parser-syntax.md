@@ -118,7 +118,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/open/076-implement-FunctionDeclaration.md` - Implement Functiondeclaration (same reference path, same feature label, title overlap)
+- `issues/done/076-implement-FunctionDeclaration.md` - Implement Functiondeclaration (same reference path, same feature label, title overlap)
 - `issues/open/442-implement-parser-syntax.md` - Implement parser syntax extensions (same feature label, title overlap)
 - `issues/done/464-implement-FunctionDeclaration-parser-syntax.md` - Implement Functiondeclaration Parser Syntax (same reference path, same feature label, same group key, title overlap)
 - `issues/done/466-implement-ParameterList.md` - Implement Parameterlist (same feature label, same group key, title overlap)
@@ -199,7 +199,7 @@ Duplicate candidates:
 [
   {
     "state": "open",
-    "path": "issues/open/076-implement-FunctionDeclaration.md",
+    "path": "issues/done/076-implement-FunctionDeclaration.md",
     "title": "Implement Functiondeclaration",
     "reason": "same reference path, same feature label"
   },
