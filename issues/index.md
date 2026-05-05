@@ -15,7 +15,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 1 | 0 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4377 | 3847 | 530 |
+| frontend | 4378 | 3846 | 532 |
 | harness | 1 | 0 | 1 |
 | ir | 21 | 0 | 21 |
 | issues | 4 | 0 | 4 |
@@ -26,7 +26,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 4967 | 4126 | 841 |
+| total | 4968 | 4125 | 843 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -157,6 +157,7 @@ Issue files are the source of truth for work items. The generated section below 
 | ID | Title | Type | Area | Class | Priority | Depends on | Summary |
 |---:|---|---|---|---|---|---|---|
 | 5131 | Design ABC451 non-top array growth strategy | design | runtime/memory | design-ready | P1 |  | issue 365 remains blocked because the dominant measured array-growth |
+| 5132 | Implement single-statement loop bodies for break and continue | feature | frontend/syntax | implementation-ready | P1 |  | `asiBreak.ts` and `asiContinue.ts` fail with `expected LeftBrace` at |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -422,8 +423,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 704 | Implement Asiabstract | spike | frontend/syntax | class: triage-needed | Implement Asiabstract |
 | 705 | Implement Asiambientfunctiondeclaration | spike | frontend/syntax | class: triage-needed | Implement Asiambientfunctiondeclaration |
 | 706 | Implement Asiarith | spike | frontend/syntax | class: triage-needed | Implement Asiarith |
-| 707 | Implement Asibreak | spike | frontend/syntax | class: blocked | Implement Asibreak |
-| 708 | Implement Asicontinue | spike | frontend/syntax | class: blocked | Implement Asicontinue |
 | 709 | Implement Asiines | spike | frontend/syntax | class: triage-needed | Implement Asiines |
 | 710 | Implement Asipublicprivateprotected | spike | frontend/syntax | class: blocked | Implement Asipublicprivateprotected |
 | 711 | Implement Asireturn | spike | reference/triage | class: triage-needed | Implement Asireturn |
@@ -4766,6 +4765,8 @@ Issue files are the source of truth for work items. The generated section below 
 | 607 | Implement Ambientenumelementinitializer (dup) | spike | frontend/syntax | see `issues/done/607-implement-ambientEnumElementInitializer.md` |
 | 608 | Implement Ambienterrors | spike | runtime/builtins | see `issues/done/608-implement-ambientErrors.md` |
 | 669 | Implement Arrayconcat (dup) | spike | frontend/syntax | see `issues/done/669-implement-arrayConcat.md` |
+| 707 | Implement Asibreak | spike | frontend/syntax | see `issues/done/707-implement-asiBreak.md` |
+| 708 | Implement Asicontinue | spike | frontend/syntax | see `issues/done/708-implement-asiContinue.md` |
 | 776 | Implement Apilibcheck (dup) | spike | frontend/syntax | see `issues/done/776-implement-APILibCheck.md` |
 | 777 | Implement Apisample Arrow Function (dup) | spike | frontend/syntax | see `issues/done/777-implement-APISample-arrow-function.md` |
 | 778 | Implement Apisample Import Export (dup) | spike | frontend/syntax | see `issues/done/778-implement-APISample-import-export.md` |
