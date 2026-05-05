@@ -17,16 +17,16 @@ Issue files are the source of truth for work items. The generated section below 
 | docs | 2 | 0 | 2 |
 | frontend | 4377 | 3855 | 522 |
 | harness | 1 | 0 | 1 |
-| ir | 21 | 1 | 20 |
+| ir | 21 | 0 | 21 |
 | issues | 4 | 0 | 4 |
 | parser | 1 | 0 | 1 |
 | reference | 211 | 182 | 29 |
-| runtime | 259 | 107 | 152 |
+| runtime | 259 | 106 | 153 |
 | scripts | 2 | 0 | 2 |
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 4964 | 4178 | 786 |
+| total | 4964 | 4176 | 788 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -2515,7 +2515,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 2999 | Implement Isolateddeclarationerrorsaugmentation | spike | frontend/syntax | class: blocked | Implement Isolateddeclarationerrorsaugmentation |
 | 3000 | Implement Isolateddeclarationerrorsclasses | spike | frontend/syntax | class: blocked | Implement Isolateddeclarationerrorsclasses |
 | 3001 | Implement Isolateddeclarationerrorsclassesexpressions | spike | runtime/builtins | class: triage-needed | Implement Isolateddeclarationerrorsclassesexpressions |
-| 3002 | Implement Isolateddeclarationerrorsdefault | spike | runtime/builtins | class: triage-needed | Implement Isolateddeclarationerrorsdefault |
 | 3003 | Implement Isolateddeclarationerrorsenums | spike | runtime/builtins | class: triage-needed | Implement Isolateddeclarationerrorsenums |
 | 3004 | Implement Isolateddeclarationerrorsexpandofunctions | spike | frontend/syntax | class: blocked | Implement Isolateddeclarationerrorsexpandofunctions |
 | 3005 | Implement Isolateddeclarationerrorsexpressions | spike | frontend/syntax | class: blocked | Implement Isolateddeclarationerrorsexpressions |
@@ -4340,7 +4339,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 5122 | (filler) Auto-generated gap placeholder #5122 | task | coverage | class: triage-needed | (filler) Auto-generated gap placeholder #5122 |
 | 5123 | (filler) Auto-generated gap placeholder #5123 | task | coverage | class: triage-needed | (filler) Auto-generated gap placeholder #5123 |
 | 5124 | Fix Object.keys on arguments exotic object (audit reopened #5124) | bug | runtime | class: triage-needed | Fix Object.keys on arguments exotic object (audit reopened #5124) |
-| 5127 | Implement export default multi-file lowering deduplication | feature | ir/lowering | 3002 | Implement export default multi-file lowering deduplication |
 <!-- generated:blocked:end -->
 
 ## Done queue
@@ -5023,6 +5021,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 1010 | Implement Autotypeassignedusingdestructuringfromnevernocrash (dup) | spike | frontend/resolver | see `issues/done/1010-implement-autoTypeAssignedUsingDestructuringFromNeverNoCrash.md` |
 | 1011 | Implement Autolift (dup) | spike | frontend/syntax | see `issues/done/1011-implement-autolift.md` |
 | 2058 | Implement Duplicatepackage Module Resolution | spike | frontend/syntax | see `issues/done/2058-implement-duplicatePackage-module-resolution.md` |
+| 3002 | Implement Isolateddeclarationerrorsdefault | spike | runtime/builtins | see `issues/done/3002-implement-isolatedDeclarationErrorsDefault.md` |
 | 3329 | Implement Modulecodegentest | spike | frontend/syntax | see `issues/done/3329-implement-moduleCodeGenTest.md` |
 | 3330 | Implement Modulecodegentest | spike | frontend/syntax | see `issues/done/3330-implement-moduleCodegenTest.md` |
 | 3371 | Implement Moduleresolution Module Resolution | spike | frontend/syntax | see `issues/done/3371-implement-moduleResolution-module-resolution.md` |
@@ -5135,6 +5134,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 5091 | Investigate and classify unknown-unsupported cases (dup) | spike | frontend/syntax | see `issues/done/5091-implement-unknown-unsupported.md` |
 | 5125 | Implement as type assertion expression parsing | feature | frontend/parser | see `issues/done/5125-implement-as-type-assertion-expression.md` |
 | 5126 | Implement name resolver var redeclaration tolerance | feature | ir/lowering | see `issues/done/5126-implement-name-resolver-var-redeclaration.md` |
+| 5127 | Implement export default multi-file lowering deduplication | feature | ir/lowering | see `issues/done/5127-implement-export-default-multifile-lowering.md` |
 | 5128 | Add semantic parity for static re-export module forms | test | ir/compiler | see `issues/done/5128-static-re-export-semantic-parity.md` |
 <!-- generated:done:end -->
 
