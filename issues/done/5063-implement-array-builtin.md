@@ -128,7 +128,7 @@ Follow-up issues:
 
 - `issues/open/1170-implement-class.md` - Implement Class (same feature label, same group key, title overlap)
 - `issues/open/2410-implement-for.md` - Implement For (same feature label, same group key, title overlap)
-- `issues/open/313-implement-array-builtin.md` - Implement array-builtin support (same feature label, same group key, title overlap)
+- `issues/done/313-implement-array-builtin.md` - Implement array-builtin support (same feature label, same group key, title overlap)
 - `issues/open/3198-implement-m.md` - Implement M (same feature label, same group key, title overlap)
 - `issues/done/414-implement-array-builtin.md` - Implement array-builtin support (same reference path, same feature label, same group key, title overlap)
 - `issues/open/434-implement-loop.md` - Implement loop constructs (same feature label, same group key, title overlap)
@@ -158,7 +158,7 @@ AttributeError: 'NoneType' object has no attribute 'parse_test262_metadata'
 ## 重複整理メモ
 
 この issue はタイトルが重複しているため、内容がより充実している
-`issues/open/313-implement-array-builtin.md` に統合されました。
+`issues/done/313-implement-array-builtin.md` に統合されました。
 そちらを参照してください。
 ## Completion evidence
 

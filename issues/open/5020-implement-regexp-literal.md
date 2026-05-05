@@ -135,7 +135,7 @@ Follow-up issues:
 - `issues/open/3126-implement-jsxFactoryAndReactNamespace.md` - Implement Jsxfactoryandreactnamespace (same feature label, same group key, title overlap)
 - `issues/open/3127-implement-jsxFactoryIdentifier.md` - Implement Jsxfactoryidentifier (same feature label, same group key, title overlap)
 - `issues/open/3130-implement-jsxFactoryMissingErrorInsideAClass.md` - Implement Jsxfactorymissingerrorinsideaclass (same feature label, same group key, title overlap)
-- `issues/open/3131-implement-jsxFactoryNotIdentifierOrQualifiedName.md` - Implement Jsxfactorynotidentifierorqualifiedname (same feature label, same group key, title overlap)
+- `issues/done/3131-implement-jsxFactoryNotIdentifierOrQualifiedName.md` - Implement Jsxfactorynotidentifierorqualifiedname (same feature label, same group key, title overlap)
 
 ## Smart triage
 
@@ -293,7 +293,7 @@ Duplicate candidates:
   },
   {
     "state": "open",
-    "path": "issues/open/421-implement-class.md",
+    "path": "issues/done/421-implement-class.md",
     "title": "Implement class syntax",
     "reason": "same feature label, title overlap"
   },

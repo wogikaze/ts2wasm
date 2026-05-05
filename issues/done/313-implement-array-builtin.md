@@ -42,9 +42,9 @@ This generated bucket is either split into implementation-ready child issues or 
 This issue tracks Array builtin API implementation. Generated child fixture-bucket issues (3130-3139) have been consolidated back into this parent and archived (now in `issues/open/`).
 
 In scope:
-- [ ] Implement Array.prototype.indexOf, Array.prototype.lastIndexOf, Array.prototype.every, etc.
-- [ ] Add Node/iwasm differential fixture coverage for supported Array methods
-- [ ] Reduce test262 `array-builtin` unsupported count
+- [x] Implement Array.prototype.indexOf, Array.prototype.lastIndexOf, Array.prototype.every, etc.
+- [x] Add Node/iwasm differential fixture coverage for supported Array methods
+- [x] Reduce test262 `array-builtin` unsupported count
 
 Out of scope:
 - String builtins (tracked by issue 314)
@@ -67,10 +67,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] Duplicate candidates below are confirmed as no-match or this issue is superseded
-- [ ] At least one child issue contains an exact `mise run reference-triage -- ...` command
-- [ ] Child issue includes failing path, diagnostic code, source context, visible symbols, and parser/TypeScript AST evidence
-- [ ] Child issue acceptance names the exact fixture/reference path and diagnostic/stdout change
+- [x] Duplicate candidates below are confirmed as no-match or this issue is superseded
+- [x] At least one child issue contains an exact `mise run reference-triage -- ...` command
+- [x] Child issue includes failing path, diagnostic code, source context, visible symbols, and parser/TypeScript AST evidence
+- [x] Child issue acceptance names the exact fixture/reference path and diagnostic/stdout change
 
 ## Validation
 
@@ -97,15 +97,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] updated: `current-state.md` (repo root)
+- [x] updated: `current-state.md` (repo root)
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 
