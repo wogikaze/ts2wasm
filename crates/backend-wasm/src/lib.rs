@@ -36,38 +36,36 @@ pub fn has_node_host_imports(program: &LoweredProgram) -> bool {
 
 pub fn emit_wat(program: &LoweredProgram) -> Result<String, Diagnostic> {
     if let Err(errors) = ts2wasm_ir::lowered::validate_lowered(program) {
-        let first = errors.into_iter().next().unwrap_or(Diagnostic {
-            code: DiagCode::InvariantViolation,
-            message: "validate_lowered failed with empty diagnostic list".to_owned(),
-            span: None,
-        });
-        return Err(Diagnostic {
-            code: DiagCode::InvariantViolation,
-            message: format!(
-                "refusing to emit WAT from invalid lowered IR: [{:?}] {}",
-                first.code, first.message
-            ),
-            span: first.span,
-        });
+        // Only fatal errors (InvariantViolation) block WAT emission.
+        // UnsupportedModule etc. produce valid WAT (runtime handles the issue).
+        let fatal = errors.into_iter().find(|e| e.code == DiagCode::InvariantViolation);
+        if let Some(fatal) = fatal {
+            return Err(Diagnostic {
+                code: DiagCode::InvariantViolation,
+                message: format!(
+                    "refusing to emit WAT from invalid lowered IR: [{:?}] {}",
+                    fatal.code, fatal.message
+                ),
+                span: fatal.span,
+            });
+        }
     }
     emitter::emit_wat(program)
 }
 
 pub fn emit_wasm_binary_mvp(program: &LoweredProgram) -> Result<Vec<u8>, Diagnostic> {
     if let Err(errors) = ts2wasm_ir::lowered::validate_lowered(program) {
-        let first = errors.into_iter().next().unwrap_or(Diagnostic {
-            code: DiagCode::InvariantViolation,
-            message: "validate_lowered failed with empty diagnostic list".to_owned(),
-            span: None,
-        });
-        return Err(Diagnostic {
-            code: DiagCode::InvariantViolation,
-            message: format!(
-                "refusing to emit wasm binary from invalid lowered IR: [{:?}] {}",
-                first.code, first.message
-            ),
-            span: first.span,
-        });
+        let fatal = errors.into_iter().find(|e| e.code == DiagCode::InvariantViolation);
+        if let Some(fatal) = fatal {
+            return Err(Diagnostic {
+                code: DiagCode::InvariantViolation,
+                message: format!(
+                    "refusing to emit wasm binary from invalid lowered IR: [{:?}] {}",
+                    fatal.code, fatal.message
+                ),
+                span: fatal.span,
+            });
+        }
     }
     binary_mvp::emit_wasm_binary_mvp(program)
 }

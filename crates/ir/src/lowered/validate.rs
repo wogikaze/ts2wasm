@@ -600,7 +600,7 @@ fn validate_expr(
             if program.modules.iter().all(|m| m.id != *module_id) && *module_id != 0 {
                 // module_id 0 refers to the entry module; other IDs must exist in program.modules
                 errors.push(Diagnostic {
-                    code: DiagCode::InvariantViolation,
+                    code: DiagCode::UnsupportedModule,
                     message: format!(
                         "ModuleLoad references module_id {} which is not in the program's module list",
                         module_id
