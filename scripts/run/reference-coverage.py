@@ -1058,24 +1058,7 @@ def main():
             rm["build_pass"] = True
             
             if semantic_enabled:
-                thread_tmp = Path(tempfile.mkdtemp(dir=tmp_dir))
-                try:
-                    build_input = thread_tmp / "in.js"
-                    build_input.write_text(item["build_source"], encoding="utf-8")
-                    out_wasm = thread_tmp / "out.wasm"
-                    
-                    build_result = subprocess.run(
-                        ["timeout", "8s", str(TS2WASM_BINARY), "build", str(build_input), "-o", str(out_wasm)],
-                        capture_output=True,
-                        cwd=REPO_ROOT
-                    )
-                    if build_result.returncode == 0:
-                        _run_semantic_check(
-                            item["file_path"], item["source_code"], item["metadata"],
-                            thread_tmp, out_wasm, rm
-                        )
-                finally:
-                    shutil.rmtree(thread_tmp, ignore_errors=True)
+                _complete_semantic_for_build_item(item, rm, tmp_dir)
             
             if detail_output and not rm.get("detail_line"):
                 rm["detail_line"] = f"{detail_path}: build_pass"
@@ -1098,6 +1081,28 @@ def main():
                     rm["detail_line"] = f"{detail_path}: {diag_code}: {rm['feature_label']}"
         
         return rm
+
+    def _complete_semantic_for_build_item(item, result_metrics, tmp_dir):
+        """Build wasm and run Node/iwasm comparison for one server build-pass item."""
+        thread_tmp = Path(tempfile.mkdtemp(dir=tmp_dir))
+        try:
+            build_input = thread_tmp / "in.js"
+            build_input.write_text(item["build_source"], encoding="utf-8")
+            out_wasm = thread_tmp / "out.wasm"
+
+            build_result = subprocess.run(
+                ["timeout", "8s", str(TS2WASM_BINARY), "build", str(build_input), "-o", str(out_wasm)],
+                capture_output=True,
+                cwd=REPO_ROOT
+            )
+            if build_result.returncode == 0:
+                _run_semantic_check(
+                    item["file_path"], item["source_code"], item["metadata"],
+                    thread_tmp, out_wasm, result_metrics
+                )
+            return result_metrics
+        finally:
+            shutil.rmtree(thread_tmp, ignore_errors=True)
 
     def _accumulate_case_result(result, item):
         """Update counters/detail output from a normalized result dict."""
@@ -1461,10 +1466,24 @@ def main():
                     continue
                 results_by_id = {r["id"]: r for r in build_results}
                 
+                classified_results = []
                 for item in batch:
                     result = _classify_build_response(
-                        results_by_id[item["id"]], item, semantic_enabled, tmp_dir
+                        results_by_id[item["id"]], item, False, tmp_dir
                     )
+                    classified_results.append((item, result))
+
+                if semantic_enabled:
+                    def _complete_pair(pair):
+                        item, result = pair
+                        if result["build_pass"]:
+                            result = _complete_semantic_for_build_item(item, result, tmp_dir)
+                        return item, result
+
+                    with ThreadPoolExecutor(max_workers=jobs) as pool:
+                        classified_results = list(pool.map(_complete_pair, classified_results))
+
+                for item, result in classified_results:
                     _accumulate_case_result(result, item)
             
             # Phase 3: Process early results (negative-parse-syntaxerror etc.)
