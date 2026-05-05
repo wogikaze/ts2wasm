@@ -326,3 +326,19 @@ fn static_class_export_reports_issue_5005() {
 fn static_default_export_local_ref_build_smoke() {
     assert_fixture_build_smoke("module-system/static-default-export-unsupported.ts");
 }
+
+#[test]
+fn static_cycle_import_reports_cycle_diagnostic() {
+    assert_build_fails_with_module_graph_diagnostic(
+        "module-system/static-cycle-entry.ts",
+        "issue-5038: module cycle detected involving",
+    );
+}
+
+#[test]
+fn static_self_import_reports_cycle_diagnostic() {
+    assert_build_fails_with_module_graph_diagnostic(
+        "module-system/static-side-effect-self-import.ts",
+        "issue-5038: module cycle detected involving",
+    );
+}

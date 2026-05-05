@@ -135,11 +135,93 @@ impl ModuleInitializationStep {
     }
 }
 
-pub(crate) fn validate_entry_module_graph(
+pub fn validate_entry_module_graph(
     entry_path: &Path,
     entry_program: &[Stmt],
-) -> Result<(), Diagnostic> {
-    build_entry_module_graph(entry_path, entry_program).map(|_| ())
+) -> Result<ModuleGraph, Diagnostic> {
+    let graph = build_entry_module_graph(entry_path, entry_program)?;
+    // Surface cycle diagnostics as hard errors during validation.
+    validate_cycle_free(&graph)?;
+    Ok(graph)
+}
+
+/// Returns an error if the graph contains any cycle diagnostics.
+fn validate_cycle_free(graph: &ModuleGraph) -> Result<(), Diagnostic> {
+    if let Some(diag) = graph.cycle_diagnostics.first() {
+        return Err(diag.clone());
+    }
+    Ok(())
+}
+
+/// Validates that the dependency-first initialization steps are consistent:
+/// every dependency appears before the dependent, no module appears twice,
+/// and every module in the graph appears exactly once.
+pub(crate) fn validate_init_order(graph: &ModuleGraph) -> Result<(), Diagnostic> {
+    let n = graph.modules.len();
+    let steps = graph.dependency_first_initialization_steps();
+    let mut seen = vec![false; n];
+    let mut position = vec![usize::MAX; n];
+
+    for (i, step) in steps.iter().enumerate() {
+        let mid = step.module_id();
+        if mid >= n {
+            return Err(Diagnostic {
+                code: DiagCode::InvariantViolation,
+                message: format!(
+                    "issue-5038: init step references module id {mid} but graph has {n} modules"
+                ),
+                span: None,
+            });
+        }
+        if seen[mid] {
+            return Err(Diagnostic {
+                code: DiagCode::InvariantViolation,
+                message: format!(
+                    "issue-5038: module {} appears twice in init order",
+                    graph.modules[mid].path.display()
+                ),
+                span: None,
+            });
+        }
+        seen[mid] = true;
+        position[mid] = i;
+    }
+
+    // Every module must appear in the init steps.
+    for (mid, module) in graph.modules.iter().enumerate() {
+        if !seen[mid] {
+            return Err(Diagnostic {
+                code: DiagCode::InvariantViolation,
+                message: format!(
+                    "issue-5038: module {} missing from init order",
+                    module.path.display()
+                ),
+                span: None,
+            });
+        }
+    }
+
+    // Every dependency must be initialized before the dependent.
+    for (mid, module) in graph.modules.iter().enumerate() {
+        let my_pos = position[mid];
+        for dep in &module.dependencies {
+            let dep_pos = position[dep.resolved_module_id];
+            if dep_pos >= my_pos {
+                return Err(Diagnostic {
+                    code: DiagCode::InvariantViolation,
+                    message: format!(
+                        "issue-5038: module {} depends on {} but dependency {} appears after dependent in init order",
+                        module.path.display(),
+                        dep.specifier,
+                        graph.modules[dep.resolved_module_id].path.display()
+                    ),
+                    span: None,
+                });
+            }
+        }
+    }
+
+    Ok(())
 }
 
 pub fn build_entry_module_graph(
