@@ -92,7 +92,7 @@ jobs:
           ./scripts/manager reference-coverage test262 --jsonl --jobs 4 --dashboard-data
           ./scripts/manager reference-coverage tsc --jobs 4 --detail --dashboard-data
           ./scripts/manager reference-coverage tsgo --jobs 4 --detail --dashboard-data
-          ./scripts/manager web-ui-data
+          ./scripts/manager coverage-dashboard-data
 
       - name: Install dashboard dependencies
         run: |
