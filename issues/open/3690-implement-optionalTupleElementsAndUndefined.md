@@ -6,10 +6,18 @@ area: reference/triage
 class: triage-needed
 priority: P2
 depends_on: []
-blocks: []
+blocks: [5126]
 created: 2026-05-01
 updated: 2026-05-01
 ---
+
+## Triage complete: child issue created
+
+Child: #5126 (implement name resolver var redeclaration tolerance)
+
+Root cause: 8 `var v` declarations in same scope trigger DuplicateLocal. TypeScript allows legal `var` redeclarations.
+
+Smart triage rerun with evidence above.
 
 ## Summary
 

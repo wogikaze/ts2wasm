@@ -6,10 +6,18 @@ area: runtime/builtins
 class: triage-needed
 priority: P1
 depends_on: []
-blocks: []
+blocks: [5127]
 created: 2026-05-01
 updated: 2026-05-01
 ---
+
+## Triage complete: child issue created
+
+Child: #5127 (implement export default multi-file lowering deduplication)
+
+Root cause: `export default` lowering generates duplicate `__ts2wasm_default` bindings across `@fileName:` multi-file sections. Not a frontend parser issue — the parser handles the syntax via TypeScript AST.
+
+Smart triage rerun with evidence above.
 
 ## Summary
 

@@ -15,9 +15,9 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 1 | 0 | 1 |
 | coverage | 42 | 32 | 10 |
 | docs | 2 | 1 | 1 |
-| frontend | 4376 | 3865 | 511 |
+| frontend | 4377 | 3866 | 511 |
 | harness | 1 | 0 | 1 |
-| ir | 18 | 4 | 14 |
+| ir | 20 | 6 | 14 |
 | issues | 4 | 0 | 4 |
 | parser | 1 | 0 | 1 |
 | reference | 211 | 183 | 28 |
@@ -26,7 +26,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 1 | 5 |
 | wasi | 1 | 0 | 1 |
-| total | 4960 | 4212 | 748 |
+| total | 4963 | 4215 | 748 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -193,6 +193,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 5053 | [runtime-abi] Add typed wrappers for tagged values and heap pointers (audit reopened #5053) | refactor | abi | implementation-ready | P2 |  | [runtime-abi] Add typed wrappers for tagged values and heap pointers (audit reopened #5053) |
 | 5054 | [runtime-abi] Document value tags and object layout as public ABI (audit reopened #5054) | docs | abi | implementation-ready | P2 |  | [runtime-abi] Document value tags and object layout as public ABI (audit reopened #5054) |
 | 5055 | [runtime-abi] Add backward-compatibility tests for ABI constants (audit reopened #5055) | test | abi | implementation-ready | P3 |  | [runtime-abi] Add backward-compatibility tests for ABI constants (audit reopened #5055) |
+| 5125 | Implement as type assertion expression parsing | feature | frontend/parser | implementation | P1 |  | Implement as type assertion expression parsing |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -4375,6 +4376,8 @@ Issue files are the source of truth for work items. The generated section below 
 | 5122 | (filler) Auto-generated gap placeholder #5122 | task | coverage | class: triage-needed | (filler) Auto-generated gap placeholder #5122 |
 | 5123 | (filler) Auto-generated gap placeholder #5123 | task | coverage | class: triage-needed | (filler) Auto-generated gap placeholder #5123 |
 | 5124 | Fix Object.keys on arguments exotic object (audit reopened #5124) | bug | runtime | class: triage-needed | Fix Object.keys on arguments exotic object (audit reopened #5124) |
+| 5126 | Implement name resolver var redeclaration tolerance | feature | ir/lowering | 3690 | Implement name resolver var redeclaration tolerance |
+| 5127 | Implement export default multi-file lowering deduplication | feature | ir/lowering | 3002 | Implement export default multi-file lowering deduplication |
 <!-- generated:blocked:end -->
 
 ## Done queue

@@ -6,10 +6,16 @@ area: frontend/syntax
 class: triage-needed
 priority: P2
 depends_on: []
-blocks: []
+blocks: [5125]
 created: 2026-05-01
 updated: 2026-05-05status: open
 ---
+
+## Triage complete: child issue created
+
+Child: #5125 (implement as type assertion expression parsing)
+
+Root cause: Array.find() already implemented. Failure is `as` type assertion parsing on line 12. `const readonlyArrayOfStringsNumbersAndBooleans = arrayOfStringsNumbersAndBooleans as ReadonlyArray<string | number | boolean>`.
 
 ## Summary
 
@@ -43,10 +49,10 @@ This generated bucket is either split into implementation-ready child issues or 
 
 In scope:
 
-- [ ] Inspect the smart triage report below
-- [ ] Confirm whether existing open/done issues already cover this bucket
-- [ ] Split one feature family, one observable behavior, or one fixed reference window into child issues
-- [ ] Preserve exact reproduction commands and representative AST/diagnostic evidence in each child issue
+- [x] Inspect the smart triage report below
+- [x] Confirm whether existing open/done issues already cover this bucket — #911 superseded by this issue
+- [x] Split one feature family, one observable behavior, or one fixed reference window into child issues → #5125
+- [x] Preserve exact reproduction commands and representative AST/diagnostic evidence in each child issue
 
 Out of scope:
 

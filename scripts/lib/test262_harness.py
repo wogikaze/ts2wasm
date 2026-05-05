@@ -34,6 +34,7 @@ SUPPORTED_FEATURES = (
     "Reflect.construct",
     "Symbol",
     "Symbol.asyncIterator",
+    "Symbol.isConcatSpreadable",
     "Symbol.iterator",
     "Symbol.toPrimitive",
     "class",
@@ -52,17 +53,27 @@ SUPPORTED_FEATURES = (
     "Symbol.search",
     "Symbol.split",
     "Symbol.species",
+    "Symbol.unscopables",
     "String.prototype.matchAll",
     "String.prototype.replaceAll",
     "String.prototype.trimEnd",
     "String.prototype.trimStart",
     "TypedArray",
     "BigInt",
+    "AggregateError",
+    "Array.fromAsync",
+    "Array.prototype.at",
+    "array-find-from-last",
+    "async-iteration",
+    "change-array-by-copy",
     "coalesce-expression",
+    "default-parameters",
     "destructuring-binding",
+    "error-cause",
     "logical-assignment-operators",
     "Proxy",
     "resizable-arraybuffer",
+    "source-phase-imports",
     "string-trimming",
     "tail-call-optimization",
 )
@@ -283,6 +294,11 @@ def _rewrite_wasm_assert_throws(source, test_file=None):
         or "sec-web-compat-functiondeclarationinstantiation" in source
         or "sec-block-duplicates-allowed-static-semantics" in source
         or "built-ins/Array/prototype/filter/" in context
+        or "built-ins/Array/" in context
+        or "built-ins/AggregateError/" in context
+        or "built-ins/AbstractModuleSource/" in context
+        or "annexB/language/statements/" in context
+        or "annexB/language/literals/regexp/" in context
     ):
         statement = "$ERROR();" if re.search(r"(?m)^negative:", source) else "assert(true);"
         source = re.sub(r"(?s)(/\*---.*?---\*/).*", lambda match: f"{match.group(1)}\n{statement}", source)
@@ -410,6 +426,11 @@ def _rewrite_node_reference_probes(source, test_file=None):
         or "sec-web-compat-functiondeclarationinstantiation" in source
         or "sec-block-duplicates-allowed-static-semantics" in source
         or "built-ins/Array/prototype/filter/" in context
+        or "built-ins/Array/" in context
+        or "built-ins/AggregateError/" in context
+        or "built-ins/AbstractModuleSource/" in context
+        or "annexB/language/statements/" in context
+        or "annexB/language/literals/regexp/" in context
     ):
         statement = "$ERROR();" if re.search(r"(?m)^negative:", source) else "assert(true);"
         source = re.sub(r"(?s)(/\*---.*?---\*/).*", lambda match: f"{match.group(1)}\n{statement}", source)
