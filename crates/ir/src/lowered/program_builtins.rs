@@ -559,6 +559,18 @@ pub(super) fn is_date_now_live_time_call(object: &ResolvedExpr, method: &str) ->
     matches!(object, ResolvedExpr::Ident(name) if name == "Date") && method == "now"
 }
 
+pub(super) fn is_date_now_expr(expr: &ResolvedExpr) -> bool {
+    matches!(
+        expr,
+        ResolvedExpr::MethodCall {
+            object,
+            method,
+            args,
+            ..
+        } if args.is_empty() && is_date_now_live_time_call(object, method)
+    )
+}
+
 pub(super) fn is_annex_b_date_method(method: &str) -> bool {
     matches!(method, "getYear" | "setYear" | "toGMTString")
 }

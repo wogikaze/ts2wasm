@@ -1909,6 +1909,12 @@ impl<'a> Resolver<'a> {
                         });
                     }
                     let epoch_ms = &args[0];
+                    if is_date_now_expr(epoch_ms) {
+                        return Ok(LoweredExpr::RuntimeCall {
+                            runtime_fn: "DateNew".to_owned(),
+                            args: vec![self.lower_expr(epoch_ms)?],
+                        });
+                    }
                     if !is_date_constructor_epoch_arg(epoch_ms) {
                         return Err(Diagnostic {
                             code: DiagCode::UnsupportedSyntax,
