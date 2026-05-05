@@ -434,7 +434,7 @@ error: [UnsupportedSyntax] expected Semicolon, got Some(Ident("M")) at 104..105
 ## 重複整理メモ
 
 この issue はタイトルが重複しているため、内容がより充実している
-`issues/open/603-implement-alwaysStrictNoImplicitUseStrict.md` に統合されました。
+`issues/done/603-implement-alwaysStrictNoImplicitUseStrict.md` に統合されました。
 そちらを参照してください。
 ## Completion evidence
 
