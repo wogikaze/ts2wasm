@@ -19,12 +19,19 @@ Covers TypeScript compiler test cases for declaration emit (~104 issues). Primar
 
 ~104 tsc test cases fail due to declaration emit (`.d.ts` generation) missing or incorrect.
 
+Problem: declaration-emit failures currently need child issue classification by emitted declaration shape before implementers can safely change frontend emit contracts.
+
+## Current failure
+
+Current failure: `mise run reference-coverage -- tsc --limit 50 --detail` reports declaration-emit gaps, but this meta issue does not yet define the child issue review contract.
+
 ## Scope
 
 In scope:
 
-- Declaration emit for TypeScript syntax constructs
-- `.d.ts` file generation
+- [ ] Review declaration-emit child issues for the emitted `.d.ts` construct or diagnostic they cover.
+- [ ] Keep declaration output, visibility, and `.d.ts` generation children under `5003`.
+- [ ] Move parser, runtime emit, name-resolution, or type-system children to the correct meta issue.
 
 Out of scope:
 
@@ -36,13 +43,34 @@ Out of scope:
 Expected:
 
 - `crates/frontend/src/`
+- `issues/open/`
+
+Do not touch:
+
+- `crates/backend-wasm/`
+- `crates/runtime-abi/`
 
 ## Acceptance criteria
 
-- [ ] All 104 child issues are dependency-linked to this meta
+- [ ] Declaration-emit child issues are dependency-linked to `5003` only when the observable output is `.d.ts` or declaration diagnostics.
+- [ ] Non-declaration children are linked to the correct narrower meta issue.
+- [ ] `issues/index.md` is regenerated after dependency or class edits.
 
 ## Validation
+
+Required commands:
+
+```sh
+mise run update-issue-index
+mise run check issues
+```
+
+Impacted commands:
 
 ```sh
 mise run reference-coverage -- tsc --limit 50 --detail
 ```
+
+Not run:
+
+- none

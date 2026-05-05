@@ -19,14 +19,19 @@ Covers TypeScript compiler test cases requiring name resolution and scope analys
 
 ~462 tsc test cases fail due to missing or incomplete name resolution, scope management, and symbol table logic.
 
+Problem: name-resolution failures currently need child issue classification by resolver behavior so implementers can select one symbol lookup, binding, or module-name slice.
+
+## Current failure
+
+Current failure: `mise run reference-coverage -- tsc --limit 50 --detail` reports name-resolution families that are too broad to implement directly from this meta issue.
+
 ## Scope
 
 In scope:
 
-- Symbol table and scope chain implementation
-- Name lookup and resolution algorithms
-- Module resolution
-- Identifier binding and shadowing
+- [ ] Review child issues currently dependency-linked to `5005`.
+- [ ] Keep symbol table, scope chain, identifier binding, shadowing, and name lookup children under `5005`.
+- [ ] Move pure scope-analysis or module-resolution children to `5006` or `5007` when narrower.
 
 Out of scope:
 
@@ -38,13 +43,34 @@ Out of scope:
 Expected:
 
 - `crates/frontend/src/`
+- `issues/open/`
+
+Do not touch:
+
+- `crates/backend-wasm/`
+- `crates/runtime-abi/`
 
 ## Acceptance criteria
 
-- [ ] All ~462 child issues dependency-linked to this meta
+- [ ] Name-resolution child issues are dependency-linked to `5005` only when resolver behavior is the primary blocker.
+- [ ] Scope-analysis and module-resolution children are linked to `5006` or `5007` where appropriate.
+- [ ] `issues/index.md` is regenerated after dependency or class edits.
 
 ## Validation
+
+Required commands:
+
+```sh
+mise run update-issue-index
+mise run check issues
+```
+
+Impacted commands:
 
 ```sh
 mise run reference-coverage -- tsc --limit 50 --detail
 ```
+
+Not run:
+
+- none

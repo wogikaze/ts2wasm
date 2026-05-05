@@ -8,7 +8,8 @@ priority: P2
 depends_on: [5005]
 blocks: []
 created: 2026-05-02
-updated: 2026-05-05status: open
+updated: 2026-05-05
+status: open
 ---
 
 ## Summary
@@ -19,13 +20,19 @@ Covers TypeScript compiler test cases for module resolution (~18 issues; 11 over
 
 ~18 tsc test cases (~30 originally, 11 reclassified as overload/type resolution → 5005, 3 bucket issues → done/) fail due to module resolution gaps including base URL, paths, and module-name resolution.
 
+Problem: module-resolution failures currently need child issue classification by import/export path behavior before resolver implementation work can be selected.
+
+## Current failure
+
+Current failure: `mise run reference-coverage -- tsc --limit 20 --detail` reports module-resolution gaps, but this reopened meta issue lacks a concrete dependency cleanup contract.
+
 ## Scope
 
 In scope:
 
-- Module resolution algorithms
-- Import/export path resolution
-- Base URL and path mapping
+- [ ] Review child issues currently labeled or dependency-linked as module-resolution.
+- [ ] Keep import/export path resolution, base URL, path mapping, and module-name lookup children under `5007`.
+- [ ] Move overload, type-resolution, and general name-resolution children to narrower meta issues.
 
 Out of scope:
 
@@ -37,16 +44,37 @@ Out of scope:
 Expected:
 
 - `crates/frontend/src/`
+- `issues/open/`
+
+Do not touch:
+
+- `crates/backend-wasm/`
+- `crates/runtime-abi/`
 
 ## Acceptance criteria
 
-- [ ] All ~18 child issues dependency-linked to this meta
+- [ ] Module-resolution child issues are dependency-linked to `5007` only when module path or module-name lookup behavior is the primary blocker.
+- [ ] Overload/type-resolution/name-resolution children are linked to the correct meta issue.
+- [ ] `issues/index.md` is regenerated after dependency or class edits.
 
 ## Validation
+
+Required commands:
+
+```sh
+mise run update-issue-index
+mise run check issues
+```
+
+Impacted commands:
 
 ```sh
 mise run reference-coverage -- tsc --limit 20 --detail
 ```
+
+Not run:
+
+- none
 
 ## Reopened by audit
 
