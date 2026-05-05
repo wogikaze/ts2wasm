@@ -1287,7 +1287,7 @@ impl<'a> Resolver<'a> {
                     let mut lowered_args = Vec::new();
                     let is_static_call = matches!(
                         object.as_ref(),
-                        ResolvedExpr::Ident(name) if name == "Math" || name == "JSON" || name == "Object" || name == "String" || name == "Number" || name == "Boolean"
+                        ResolvedExpr::Ident(name) if name == "Math" || name == "JSON" || name == "Object" || name == "String" || name == "Number" || name == "Boolean" || name == "Array"
                     );
                     if !is_static_call {
                         lowered_args.push(self.lower_expr(object)?);

@@ -182,6 +182,8 @@ pub(crate) enum RuntimeFn {
     StringToLowerCase,
     StringCharCodeAt,
     StringFromCharCode,
+    StringIsWellFormed,
+    StringToWellFormed,
     /// String.prototype.replace
     StringReplace,
     /// String.prototype.replaceAll
@@ -278,6 +280,8 @@ pub(crate) enum RuntimeFn {
     ArrayUnshift,
     /// Array.prototype.splice(start, deleteCount) — removes elements, returns removed array
     ArraySplice,
+    /// Array.isArray(val) — returns 1 if tagged as array, 0 otherwise
+    ArrayIsArray,
     /// M10: Object statics
     ObjectKeys,
     ObjectSpread,
@@ -700,6 +704,8 @@ pub(crate) fn runtime_fn_from_name(name: &str) -> Option<RuntimeFn> {
         "StringToLowerCase" => Some(RuntimeFn::StringToLowerCase),
         "StringCharCodeAt" => Some(RuntimeFn::StringCharCodeAt),
         "StringFromCharCode" => Some(RuntimeFn::StringFromCharCode),
+        "StringIsWellFormed" => Some(RuntimeFn::StringIsWellFormed),
+        "StringToWellFormed" => Some(RuntimeFn::StringToWellFormed),
         "StringReplace" => Some(RuntimeFn::StringReplace),
         "StringReplaceAll" => Some(RuntimeFn::StringReplaceAll),
         "StringTrimStart" => Some(RuntimeFn::StringTrimStart),
@@ -754,6 +760,7 @@ pub(crate) fn runtime_fn_from_name(name: &str) -> Option<RuntimeFn> {
         "ArrayShift" => Some(RuntimeFn::ArrayShift),
         "ArrayUnshift" => Some(RuntimeFn::ArrayUnshift),
         "ArraySplice" => Some(RuntimeFn::ArraySplice),
+        "ArrayIsArray" => Some(RuntimeFn::ArrayIsArray),
         "MapNew" => Some(RuntimeFn::MapNew),
         "MapGet" => Some(RuntimeFn::MapGet),
         "MapSet" => Some(RuntimeFn::MapSet),

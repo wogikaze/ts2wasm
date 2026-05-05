@@ -99,8 +99,6 @@ const KNOWN_FEATURES: &[(&str, &str)] = &[
     // --- prototype/symbol features (tested by test262, no runtime stub needed) ---
     // --- partially implemented features (known but may fail at compile/runtime) ---
     ("Object.fromEntries", "issue-5004"),
-    ("String.prototype.isWellFormed", "issue-5004"),
-    ("String.prototype.toWellFormed", "issue-5004"),
     ("array-grouping", "issue-5004"),
 ];
 

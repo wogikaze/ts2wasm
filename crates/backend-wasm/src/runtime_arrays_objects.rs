@@ -3306,4 +3306,20 @@ impl WatEmitter<'_> {
     }
 
     // Math functions (M10)
+
+    pub(super) fn emit_array_is_array(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $array_is_array (param $val i32) (result i32)
+    (if (i32.eq (i32.and (local.get $val) (i32.const {tag_mask})) (i32.const {array_tag}))
+      (then (return (i32.const {true})))
+      (else (return (i32.const {false}))))
+  )
+"#,
+            tag_mask = ValueTag::TAG_MASK,
+            array_tag = ValueTag::ARRAY,
+            true = ValueTag::TRUE,
+            false = ValueTag::FALSE,
+        ));
+    }
 }

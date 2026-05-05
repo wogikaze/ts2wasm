@@ -58,6 +58,12 @@ pub(super) fn resolve_method_to_runtime_fn(object: &ResolvedExpr, method: &str) 
                 _ => None,
             };
         }
+        if name == "Array" {
+            return match method {
+                "isArray" => Some("ArrayIsArray".to_owned()),
+                _ => None,
+            };
+        }
     }
     match method {
         "concat" => Some("Concat".to_owned()),
@@ -90,6 +96,8 @@ pub(super) fn resolve_method_to_runtime_fn(object: &ResolvedExpr, method: &str) 
         "toLocaleLowerCase" => Some("StringToLowerCase".to_owned()),
         "localeCompare" => Some("StringLocaleCompare".to_owned()),
         "charCodeAt" => Some("StringCharCodeAt".to_owned()),
+        "isWellFormed" => Some("StringIsWellFormed".to_owned()),
+        "toWellFormed" => Some("StringToWellFormed".to_owned()),
         "hasOwnProperty" => Some("ObjectHasOwnProperty".to_owned()),
         "valueOf" => Some("ValueOf".to_owned()),
         "push" => Some("ArrayPush".to_owned()),
