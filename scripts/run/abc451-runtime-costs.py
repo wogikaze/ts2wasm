@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 import shutil
 import subprocess
 import sys
@@ -161,6 +162,26 @@ def insert_before_function_end(text: str, func_name: str, insertion: str) -> str
     return text[: end - 1] + insertion + text[end - 1 :]
 
 
+def replace_diag_call_names_with_indices(wat: str) -> str:
+    indices: dict[str, int] = {}
+    next_index = 0
+    for line in wat.splitlines():
+        import_match = re.match(r'\s*\(import\s+"[^"]+"\s+"[^"]+"\s+\(func\s+(\$[^\s()]+)', line)
+        if import_match:
+            indices[import_match.group(1)] = next_index
+            next_index += 1
+            continue
+        func_match = re.match(r"\s*\(func\s+(\$[^\s()]+)", line)
+        if func_match:
+            indices[func_match.group(1)] = next_index
+            next_index += 1
+
+    for name, index in indices.items():
+        if name.startswith("$abc451_diag_"):
+            wat = wat.replace(f"(call {name}", f"(call {index}")
+    return wat
+
+
 def counter_globals(names: list[str]) -> str:
     return "".join(f"  (global $abc451_diag_{name} (mut i32) (i32.const 0))\n" for name in names)
 
@@ -306,7 +327,7 @@ def array_push_grow_helpers() -> str:
         (if (i32.and (local.get $is_top) (i32.eqz (local.get $fits_memory)))
           (then
             (global.set $abc451_diag_array_push_top_heap_miss_memory
-              (i32.add (global.get $abc451_diag_array_push_top_heap_miss_memory) (i32.const 1))))))))
+              (i32.add (global.get $abc451_diag_array_push_top_heap_miss_memory) (i32.const 1)))))))
     (i32.and (local.get $is_top) (local.get $fits_memory)))
 """
 
@@ -777,6 +798,7 @@ def instrument_wat(wat: str, event_budget: int) -> str:
     wat = wat.replace(start_marker, attribution_wrappers() + report_fn + start_marker, 1)
     wat = wat.replace(attribution_wrappers(), attribution_wrappers() + array_push_grow_helpers(), 1)
     wat = insert_before_function_end(wat, "$_start", "\n    (call $abc451_diag_report)\n")
+    wat = replace_diag_call_names_with_indices(wat)
     return wat
 
 
