@@ -10,7 +10,7 @@ Issue files are the source of truth for work items. The generated section below 
 | Area | Total | Open | Resolved |
 |---|---:|---:|---:|
 | abi | 7 | 1 | 6 |
-| backend | 13 | 1 | 12 |
+| backend | 13 | 3 | 10 |
 | cli | 15 | 1 | 14 |
 | compiler | 1 | 0 | 1 |
 | coverage | 42 | 32 | 10 |
@@ -21,12 +21,12 @@ Issue files are the source of truth for work items. The generated section below 
 | issues | 4 | 0 | 4 |
 | parser | 1 | 0 | 1 |
 | reference | 211 | 181 | 30 |
-| runtime | 260 | 104 | 156 |
+| runtime | 261 | 104 | 157 |
 | scripts | 2 | 0 | 2 |
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 4965 | 4178 | 787 |
+| total | 4966 | 4180 | 786 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -159,6 +159,8 @@ Issue files are the source of truth for work items. The generated section below 
 | 5001 | Meta: TypeScript Compiler Semantic Analysis Coverage | meta | frontend/semantics | design-ready | P1 |  | Meta: TypeScript Compiler Semantic Analysis Coverage |
 | 5004 | Meta: Runtime Builtins Coverage (test262) (audit reopened #5004) | meta | runtime/builtins | design-ready | P1 |  | Meta: Runtime Builtins Coverage (test262) (audit reopened #5004) |
 | 5005 | Meta: TypeScript Compiler Name Resolution Coverage | meta | frontend/resolver | design-ready | P1 |  | Meta: TypeScript Compiler Name Resolution Coverage |
+| 5029 | [backend-wasm] Expand direct wasm binary emission beyond console.log string literal MVP (audit reopened #5029) | feature | backend | implementation-ready | P1 |  | [backend-wasm] Expand direct wasm binary emission beyond console.log string literal MVP (audit reopened #5029) |
+| 5030 | [backend-wasm] Split large runtime/WAT emitters into testable components (audit reopened #5030) | refactor | backend | implementation-ready | P1 |  | [backend-wasm] Split large runtime/WAT emitters into testable components (audit reopened #5030) |
 | 5038 | [compiler] Harden module graph resolution and diagnostics (audit reopened #5038) | feature | cli | implementation-ready | P1 |  | [compiler] Harden module graph resolution and diagnostics (audit reopened #5038) |
 | 5041 | [frontend] Complete Expr AST fixture coverage (audit reopened #5041) | test | frontend | implementation-ready | P0 |  | [frontend] Complete Expr AST fixture coverage (audit reopened #5041) |
 | 5042 | [frontend] Complete Stmt AST fixture coverage (audit reopened #5042) | test | frontend | implementation-ready | P0 |  | [frontend] Complete Stmt AST fixture coverage (audit reopened #5042) |
@@ -5067,14 +5069,13 @@ Issue files are the source of truth for work items. The generated section below 
 | 5017 | Implement html-comment support | spike | frontend/syntax | see `issues/done/5017-implement-html-comment.md` |
 | 5019 | Implement name resolution (dup) | spike | frontend/resolver | see `issues/done/5019-implement-name-resolution.md` |
 | 5021 | Implement string-builtin support | feature | frontend/syntax | see `issues/done/5021-implement-string-builtin.md` |
+| 5022 | Implement Array.prototype.every receiver semantics for 2dArrays (audit reopened #5022) | feature | runtime/builtins | see `issues/done/5022-implement-array-every-receiver.md` |
 | 5023 | Implement API Sample watcher arrow function return | feature | runtime/builtins | see `issues/done/5023-implement-api-sample-watcher-arrow.md` |
 | 5024 | Implement anonymous interface new expression identifier | feature | runtime/builtins | see file |
 | 5025 | Implement any as return type instanceof constructor RHS | feature | runtime/builtins | see file |
 | 5026 | [backend-wasm] Implement real class declaration emission (audit reopened #5026) | feature | backend | see `issues/done/5026-backend-wasm-real-class-declaration.md` |
 | 5027 | [backend-wasm] Replace throw-as-return with catchable exception runtime (audit reopened #5027) | feature | backend | see `issues/done/5027-backend-wasm-catchable-exception.md` |
 | 5028 | [backend-wasm] Implement array growth and reallocation for push/write paths (audit reopened #5028) | feature | backend | see `issues/done/5028-backend-wasm-array-growth.md` |
-| 5029 | [backend-wasm] Expand direct wasm binary emission beyond console.log string literal MVP (audit reopened #5029) | feature | backend | see `issues/done/5029-backend-wasm-direct-binary-emission.md` |
-| 5030 | [backend-wasm] Split large runtime/WAT emitters into testable components (audit reopened #5030) | refactor | backend | see `issues/done/5030-backend-wasm-split-runtime-emitters.md` |
 | 5031 | [cli] Replace placeholder parser keyword/operator tests with real assertions | test | cli | see `issues/done/5031-cli-real-parser-assertions.md` |
 | 5032 | [cli] Add deterministic external tool capability detection | feature | cli | see `issues/done/5032-cli-tool-capability-detection.md` |
 | 5033 | [cli] Normalize node-diff fixture reporting into structured records (audit reopened #5033) | feature | cli | see `issues/done/5033-cli-structured-node-diff-report.md` |

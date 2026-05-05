@@ -1,10 +1,10 @@
-function keysForArgs(x, y, z) {
-    let keys = Object.keys(arguments);
-    console.log(keys.length);
-    console.log(keys[0]);
-    console.log(keys[1]);
-    console.log(keys[2]);
-    console.log(keys.length === 3);
+function test(x: number, y: number, z: number): boolean {
+  var a = Object.keys(arguments);
+  console.log(a.length);
+  console.log(a[0]);
+  console.log(a[1]);
+  console.log(a[2]);
+  return a.length === 3;
 }
-
-keysForArgs(1, 2, 3);
+var result = test(1, 2, 3);
+console.log(result);
