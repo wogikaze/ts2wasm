@@ -87,7 +87,7 @@ Expected for the eventual implementation child issue:
 
 - `crates/ir/src/lowered/program_builtins.rs`
 - `crates/backend-wasm/src/runtime_builder.rs`
-- `crates/backend-wasm/src/runtime_arrays_objects.rs`
+- `crates/backend-wasm/src/runtime_arrays.rs`
 - `crates/backend-wasm/src/runtime_fn.rs`
 - `crates/backend-wasm/src/runtime_fn_impl.rs`
 - `crates/backend-wasm/src/runtime_link_plan.rs`

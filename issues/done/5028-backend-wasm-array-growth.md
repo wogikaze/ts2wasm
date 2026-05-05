@@ -93,7 +93,7 @@ Commits:
 
 Evidence:
 
-- `crates/backend-wasm/src/runtime_arrays_objects.rs`: `$array_push_grow` computes old length/capacity from the GC body size, uses the in-capacity write path when possible, otherwise calculates a new capacity, extends in place when the array is top-of-heap and memory is committed, or allocates a replacement array via `$alloc_heap`, copies old elements with `$copy`, stores the pushed value, and preserves/updates the presence bitmap.
+- `crates/backend-wasm/src/runtime_arrays.rs`: `$array_push_grow` computes old length/capacity from the GC body size, uses the in-capacity write path when possible, otherwise calculates a new capacity, extends in place when the array is top-of-heap and memory is committed, or allocates a replacement array via `$alloc_heap`, copies old elements with `$copy`, stores the pushed value, and preserves/updates the presence bitmap.
 - `crates/backend-wasm/src/expr_emit_arrays.rs`: `ArrayPushGrow` call emission mirrors array/value operands through backend temporary locals before the runtime helper call, preserving evaluated values across helper-side allocation/GC.
 - `crates/backend-wasm/src/runtime_link_plan.rs` and `crates/backend-wasm/src/runtime_fn_impl.rs`: `ArrayPushGrow` is cataloged and included through the runtime link plan, including `ArrayPushMany` dependency handling.
 - `crates/backend-wasm/src/lib.rs`: `array_push_grow_emits_dedicated_helper_boundary` verifies the dedicated helper, call site, capacity local, `$alloc_heap`, and `$copy` are emitted, then compiles the WAT with `wat2wasm`.
