@@ -7,7 +7,7 @@ Current checks:
   - ts2wasm-shared must not depend on ts2wasm-cli (inverted crate boundary).
   - crates/cli/src/backend must not be reintroduced after backend-wasm extraction.
   - crates/cli/src must not declare local backend/parser/compiler implementation modules.
-  - Error when a repo-owned source/document file exceeds 2000 lines.
+  - Error when a repo-owned source/document file exceeds the documented line limit.
 """
 
 import os
@@ -28,6 +28,7 @@ LINE_COUNT_SUFFIXES = {
     ".yml",
 }
 EXCLUDED_PATH_PARTS = {
+    ".claude",
     ".git",
     ".mypy_cache",
     "__pycache__",
