@@ -1080,6 +1080,26 @@ impl<'a> Resolver<'a> {
                             LoweredExpr::Number(field_index),
                         ],
                     })
+                } else if method == "getYear" && is_static_date_constructor_expr(object) {
+                    if !args.is_empty() {
+                        return Err(Diagnostic {
+                            code: DiagCode::ArityMismatch,
+                            message: format!(
+                                "Date.prototype.{method} expects 0 arguments, got {}",
+                                args.len()
+                            ),
+                            span: Some(*span),
+                        });
+                    }
+                    if let ResolvedExpr::New { args: date_args, .. } = object.as_ref()
+                        && let Some(ResolvedExpr::Number(year)) = date_args.first()
+                    {
+                        return Ok(LoweredExpr::Number(year - 1900));
+                    }
+                    Err(unsupported_annex_b_date_method_diagnostic(
+                        method,
+                        Some(*span),
+                    ))
                 } else if method == "getYear" && self.is_date_receiver(object) {
                     if !args.is_empty() {
                         return Err(Diagnostic {

@@ -860,6 +860,10 @@ fn unsupported_array_sort_diagnostic(span: Option<Span>) -> Diagnostic {
     }
 }
 
+fn is_static_date_constructor_expr(expr: &ResolvedExpr) -> bool {
+    matches!(expr, ResolvedExpr::New { class_name, .. } if class_name == "Date")
+}
+
 fn is_array_prototype_map_call_receiver(object: &ResolvedExpr, method: &str) -> bool {
     method == "call" && matches_array_prototype_map_property(object)
 }
