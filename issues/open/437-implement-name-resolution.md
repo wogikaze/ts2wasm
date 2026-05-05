@@ -273,7 +273,7 @@ Duplicate candidates:
   },
   {
     "state": "open",
-    "path": "issues/done/423-implement-date.md",
+    "path": "issues/open/423-implement-date.md",
     "title": "Implement Date object support",
     "reason": "same feature label, title overlap"
   },

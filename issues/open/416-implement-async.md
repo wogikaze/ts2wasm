@@ -3,16 +3,23 @@ id: 416
 title: "Implement async/await support"
 type: spike
 area: frontend/syntax
-class: done
+class: triage-needed
 priority: P2
 depends_on: []
 blocks: [5134]
 created: 2026-05-01
 updated: 2026-05-06
-completed: 2026-05-06
-status: done
+
+
 ---
 
+> **Reopened by audit** (2026-05-06)
+> Classification: false-done (done)
+> Reason: Marked as class:done and status:done but no implementation evidence found for async/await support in this crate.
+>
+> True-done checklist:
+> 1. Implementation commits in the repo that satisfy the acceptance criteria
+> 2. Filled completion evidence section with commits and validation results
 ## Summary
 
 Triage async feature across 2054 failing reference test cases and split this bucket into implementation-ready child issues.

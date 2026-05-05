@@ -131,7 +131,7 @@ Follow-up issues:
 - `issues/done/193-implement-arguments.md` - Implement Arguments (same feature label, same group key)
 - `issues/done/201-implement-unknown-unsupported.md` - Investigate and classify unknown-unsupported cases (same feature label, same group key, title overlap)
 - `issues/done/225-implement-eval-annexb-function-declarations.md` - Implement eval and Annex B function declaration semantics (same feature label, same group key)
-- `issues/done/313-implement-array-builtin.md` - Implement array-builtin support (same feature label, same group key)
+- `issues/open/313-implement-array-builtin.md` - Implement array-builtin support (same feature label, same group key)
 - `issues/done/314-implement-string-builtin.md` - Implement string-builtin support (same feature label, same group key)
 - `issues/done/060-investigate-unknown-unsupported-cases.md` - Investigate and classify unknown-unsupported diagnostic cases (same feature label, same group key, title overlap)
 - `issues/done/060a-close-unknown-unsupported-fixed-window-spike.md` - Close unknown-unsupported fixed-window spike (same feature label, same group key, title overlap)

@@ -8,8 +8,17 @@ priority: P1
 depends_on: []
 blocks: []
 created: 2026-04-30
-updated: 2026-05-02
+updated: 2026-05-06
 ---
+
+> **Reopened by audit** (2026-05-06)
+> Classification: false-done (triage-needed)
+> Reason: triage-needed bucket for array-builtin; no implementation commits, empty completion evidence
+>
+> True-done checklist:
+> 1. Implementation commits in the repo that satisfy the acceptance criteria
+> 2. Filled completion evidence section with commits and validation results
+> 3. No relapsed false-done pattern (previously reopened but re-closed without evidence)
 
 ## Summary
 

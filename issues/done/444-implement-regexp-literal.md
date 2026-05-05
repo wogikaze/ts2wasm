@@ -323,7 +323,7 @@ Duplicate candidates:
   },
   {
     "state": "open",
-    "path": "issues/done/416-implement-async.md",
+    "path": "issues/open/416-implement-async.md",
     "title": "Implement async/await support",
     "reason": "same feature label, title overlap"
   },

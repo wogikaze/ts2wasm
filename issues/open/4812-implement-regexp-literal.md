@@ -3,13 +3,22 @@ id: 4812
 title: "Implement RegExp literal support (dup)"
 type: spike
 area: runtime/builtins
-class: superseded
+class: blocked
 priority: P1
 depends_on: [5004]
 blocks: []
 created: 2026-05-01
-updated: 2026-05-04
+updated: 2026-05-06
 ---
+
+> **Reopened by audit** (2026-05-06)
+> Classification: false-done (blocked)
+> Reason: relapsed false-done: reopened in df7621e3, re-closed without implementation. No implementation commits.
+>
+> True-done checklist:
+> 1. Implementation commits in the repo that satisfy the acceptance criteria
+> 2. Filled completion evidence section with commits and validation results
+> 3. No relapsed false-done pattern (previously reopened but re-closed without evidence)
 
 ## Summary
 

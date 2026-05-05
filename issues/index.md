@@ -15,18 +15,18 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 1 | 0 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4378 | 3771 | 607 |
+| frontend | 4378 | 3793 | 585 |
 | harness | 1 | 0 | 1 |
 | ir | 23 | 2 | 21 |
 | issues | 4 | 0 | 4 |
 | parser | 1 | 0 | 1 |
 | reference | 211 | 178 | 33 |
-| runtime | 263 | 94 | 169 |
+| runtime | 264 | 98 | 166 |
 | scripts | 3 | 1 | 2 |
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 4972 | 4047 | 925 |
+| total | 4973 | 4073 | 900 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -158,7 +158,7 @@ Issue files are the source of truth for work items. The generated section below 
 |---:|---|---|---|---|---|---|---|
 | 353 | Implement iterator protocol integration for spread operator | feature | runtime/semantics | unstarted | P2 |  | General iterator protocol is not implemented for spread operator. |
 | 5132 | Add ABC451 non-top array separation attribution | infra | runtime/memory | implementation-ready | P1 | 5131 | issue 365 proves the dominant array-growth pressure is |
-| 5134 | Admit generators and async-functions features through Python test262 harness | spike | scripts | design-ready | P2 | 416 | The Python test262 harness rejects generator and async-function metadata before these cases can reach compiler diagno... |
+| 5137 | Split remaining Date API scope | cleanup | runtime/builtins | design-ready | P1 |  | Date issue 050 currently stays open after its named child issues 240 and 241 are done, but non-literal constructor in... |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -167,7 +167,7 @@ Issue files are the source of truth for work items. The generated section below 
 | ID | Title | Type | Area | Blocker | Summary |
 |---:|---|---|---|---|---|
 | 021 | Implement full wasm backend | feature | backend | class: blocked | Implement full wasm backend |
-| 050 | Implement Date | feature | runtime/builtins | class: triage-needed | Implement Date |
+| 050 | Implement Date | feature | runtime/builtins | class: blocked | Implement Date |
 | 052 | Implement JSON | feature | runtime/builtins | class: blocked | Implement JSON |
 | 052d | Implement broader JSON.stringify replacer semantics (audit reopened #052d) | feature | runtime/builtins | class: blocked | Implement broader JSON.stringify replacer semantics (audit reopened #052d) |
 | 059 | Implement parser syntax extensions for TypeScript and advanced JS (audit reopened #059) | feature | frontend | class: blocked | Implement parser syntax extensions for TypeScript and advanced JS (audit reopened #059) |
@@ -181,6 +181,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 104 | Implement Accessorwithrestparam | spike | frontend/syntax | class: blocked | Implement Accessorwithrestparam |
 | 107 | Implement Accessorsemit | spike | frontend/syntax | class: blocked | Implement Accessorsemit |
 | 117 | Implement Aliasofgenericfunctionwithrestbehavedsameasunaliased | spike | frontend/syntax | class: blocked | Implement Aliasofgenericfunctionwithrestbehavedsameasunaliased |
+| 133 | Implement Allowjscrossmonorepopackage (dup) | spike | frontend/syntax | class: blocked | Implement Allowjscrossmonorepopackage (dup) |
 | 137 | Implement Alwaysstrictalreadyusestrict | spike | frontend/syntax | class: triage-needed | Implement Alwaysstrictalreadyusestrict |
 | 142 | Implement Ambientclassmergesoverloadswithinterface | spike | frontend/syntax | class: blocked | Implement Ambientclassmergesoverloadswithinterface |
 | 143 | Implement Ambientclassoverloadforfunction | spike | frontend/syntax | class: blocked | Implement Ambientclassoverloadforfunction |
@@ -196,6 +197,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 308 | Implement ABC451 depth-9 GC cadence policy | feature | runtime/memory | class: blocked | Implement ABC451 depth-9 GC cadence policy |
 | 309 | Reduce ABC451 depth-9 live allocation shape | feature | runtime/memory | class: blocked | Reduce ABC451 depth-9 live allocation shape |
 | 312 | Triage test262 blocked P0 window | spike | reference | class: triage-needed | Triage test262 blocked P0 window |
+| 313 | Implement array-builtin support | feature | runtime/builtins | class: triage-needed | Implement array-builtin support |
 | 335 | Implement full Math.pow number semantics | feature | runtime/builtins | class: triage-needed | Implement full Math.pow number semantics |
 | 342 | Implement Object builtin method coverage (1,721 test262 cases) | feature | runtime/builtins | class: triage-needed | Implement Object builtin method coverage (1,721 test262 cases) |
 | 343 | Implement DuplicateLocal diagnostic detection (66 test262 cases) | feature | frontend/resolver | class: blocked | Implement DuplicateLocal diagnostic detection (66 test262 cases) |
@@ -205,11 +207,14 @@ Issue files are the source of truth for work items. The generated section below 
 | 363 | Reduce ABC451 allocation and sweep volume after bulk copy narrowing | bug | runtime/memory | class: blocked | Reduce ABC451 allocation and sweep volume after bulk copy narrowing |
 | 365 | Reduce ABC451 array-growth allocation and copy pressure | bug | runtime/memory | class: blocked | Reduce ABC451 array-growth allocation and copy pressure |
 | 411 | Implement annexb-ishtmldda support | spike | frontend/syntax | class: triage-needed | Implement annexb-ishtmldda support |
+| 416 | Implement async/await support | spike | frontend/syntax | class: triage-needed | Implement async/await support |
 | 417 | Implement async-iteration support | spike | frontend/syntax | class: triage-needed | Implement async-iteration support |
 | 418 | Implement break/continue | spike | frontend/syntax | class: blocked | Implement break/continue |
 | 419 | Implement built-in API support | spike | runtime/builtins | class: triage-needed | Implement built-in API support |
 | 420 | Implement call expression support | spike | frontend/syntax | class: blocked | Implement call expression support |
+| 421 | Implement class syntax | spike | frontend/syntax | class: triage-needed | Implement class syntax |
 | 422 | Implement class-accessor support | spike | frontend/syntax | class: triage-needed | Implement class-accessor support |
+| 423 | Implement Date object support (dup) | spike | runtime/builtins | class: blocked | Implement Date object support (dup) |
 | 424 | Implement declaration-emit support | spike | frontend/syntax | class: triage-needed | Implement declaration-emit support |
 | 425 | Implement destructuring | spike | frontend/syntax | class: triage-needed | Implement destructuring |
 | 426 | Implement duplicate-function support | spike | reference/triage | class: triage-needed | Implement duplicate-function support |
@@ -219,6 +224,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 432 | Implement import/export module syntax | spike | frontend/syntax | class: triage-needed | Implement import/export module syntax |
 | 434 | Implement loop constructs | spike | frontend/syntax | class: blocked | Implement loop constructs |
 | 435 | Implement method call support | spike | frontend/syntax | class: blocked | Implement method call support |
+| 436 | Implement module-resolution support | spike | frontend/syntax | class: triage-needed | Implement module-resolution support |
 | 437 | Implement name resolution | spike | frontend/resolver | class: blocked | Implement name resolution |
 | 438 | Implement negative-parse-syntaxerror support | spike | reference/triage | class: triage-needed | Implement negative-parse-syntaxerror support |
 | 439 | Implement new expression | spike | frontend/syntax | class: blocked | Implement new expression |
@@ -1483,6 +1489,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 2055 | Implement Duplicateobjectliteralproperty Parser Syntax | spike | frontend/syntax | class: blocked | Implement Duplicateobjectliteralproperty Parser Syntax |
 | 2056 | Implement Duplicateoverloadintypeaugmentation | spike | frontend/syntax | class: blocked | Implement Duplicateoverloadintypeaugmentation |
 | 2057 | Implement Duplicatepackage Import Export | spike | frontend/syntax | class: blocked | Implement Duplicatepackage Import Export |
+| 2058 | Implement Duplicatepackage Module Resolution | spike | frontend/syntax | class: blocked | Implement Duplicatepackage Module Resolution |
 | 2059 | Implement Duplicatepackage Parser Syntax | spike | frontend/syntax | class: blocked | Implement Duplicatepackage Parser Syntax |
 | 2060 | Implement Duplicatepropertiesinstrictmode | spike | frontend/syntax | class: blocked | Implement Duplicatepropertiesinstrictmode |
 | 2061 | Implement Duplicatesymbolsexportmatching | spike | frontend/syntax | class: blocked | Implement Duplicatesymbolsexportmatching |
@@ -2791,16 +2798,22 @@ Issue files are the source of truth for work items. The generated section below 
 | 3368 | Implement Modulereopenedtypeotherblock | spike | frontend/syntax | class: blocked | Implement Modulereopenedtypeotherblock |
 | 3369 | Implement Modulereopenedtypesameblock | spike | frontend/syntax | class: blocked | Implement Modulereopenedtypesameblock |
 | 3370 | Implement Moduleresolution Import Export | spike | frontend/syntax | class: blocked | Implement Moduleresolution Import Export |
+| 3371 | Implement Moduleresolution Module Resolution | spike | frontend/syntax | class: blocked | Implement Moduleresolution Module Resolution |
 | 3372 | Implement Moduleresolution Name Resolution (audit reopened #3372) | spike | frontend/resolver | class: blocked | Implement Moduleresolution Name Resolution (audit reopened #3372) |
+| 3373 | Implement Moduleresolutionastypereferencedirective | spike | frontend/syntax | class: blocked | Implement Moduleresolutionastypereferencedirective |
 | 3374 | Implement Moduleresolutionastypereferencedirectiveambient (audit reopened #3374) | spike | frontend/syntax | class: blocked | Implement Moduleresolutionastypereferencedirectiveambient (audit reopened #3374) |
+| 3375 | Implement Moduleresolutionastypereferencedirectivescoped | spike | frontend/syntax | class: blocked | Implement Moduleresolutionastypereferencedirectivescoped |
 | 3376 | Implement Moduleresolutionnoresolve (audit reopened #3376) | spike | frontend/syntax | class: blocked | Implement Moduleresolutionnoresolve (audit reopened #3376) |
 | 3377 | Implement Moduleresolutionnotscjs (audit reopened #3377) | spike | frontend/syntax | class: blocked | Implement Moduleresolutionnotscjs (audit reopened #3377) |
 | 3378 | Implement Moduleresolutionnotsesm (audit reopened #3378) | spike | frontend/syntax | class: blocked | Implement Moduleresolutionnotsesm (audit reopened #3378) |
 | 3379 | Implement Moduleresolutionpackageidwithrelativeandabsolutepath (audit reopened #3379) | spike | frontend/syntax | class: blocked | Implement Moduleresolutionpackageidwithrelativeandabsolutepath (audit reopened #3379) |
 | 3380 | Implement Moduleresolutionwithextensions Import Export (audit reopened #3380) | spike | frontend/syntax | class: blocked | Implement Moduleresolutionwithextensions Import Export (audit reopened #3380) |
+| 3381 | Implement Moduleresolutionwithextensions Module Resolution | spike | frontend/syntax | class: blocked | Implement Moduleresolutionwithextensions Module Resolution |
 | 3382 | Implement Moduleresolutionwithmodule (audit reopened #3382) | spike | frontend/syntax | class: blocked | Implement Moduleresolutionwithmodule (audit reopened #3382) |
 | 3383 | Implement Moduleresolutionwithrequire (audit reopened #3383) | spike | frontend/syntax | class: blocked | Implement Moduleresolutionwithrequire (audit reopened #3383) |
+| 3384 | Implement Moduleresolutionwithrequireandimport | spike | frontend/syntax | class: blocked | Implement Moduleresolutionwithrequireandimport |
 | 3385 | Implement Moduleresolutionwithsuffixes Import Export (audit reopened #3385) | spike | frontend/syntax | class: blocked | Implement Moduleresolutionwithsuffixes Import Export (audit reopened #3385) |
+| 3386 | Implement Moduleresolutionwithsuffixes Module Resolution | spike | frontend/syntax | class: blocked | Implement Moduleresolutionwithsuffixes Module Resolution |
 | 3387 | Implement Moduleresolutionwithsymlinks Import Export | spike | frontend/syntax | class: blocked | Implement Moduleresolutionwithsymlinks Import Export |
 | 3388 | Implement Moduleresolutionwithsymlinks Parser Syntax | spike | frontend/syntax | class: blocked | Implement Moduleresolutionwithsymlinks Parser Syntax |
 | 3389 | Implement Modulesamevalueduplicateexportedbindings | spike | frontend/syntax | class: blocked | Implement Modulesamevalueduplicateexportedbindings |
@@ -2995,6 +3008,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 3578 | Implement Nodenextcjsnamespaceimportdefault | spike | frontend/syntax | class: blocked | Implement Nodenextcjsnamespaceimportdefault |
 | 3579 | Implement Nodenextesmimportsofpackageswithextensionlessmains | spike | frontend/syntax | class: blocked | Implement Nodenextesmimportsofpackageswithextensionlessmains |
 | 3580 | Implement Nodenextimportmodeimplicitindexresolution Import Export | spike | frontend/syntax | class: blocked | Implement Nodenextimportmodeimplicitindexresolution Import Export |
+| 3581 | Implement Nodenextimportmodeimplicitindexresolution Module Resolution | spike | frontend/syntax | class: blocked | Implement Nodenextimportmodeimplicitindexresolution Module Resolution |
 | 3582 | Implement Nodenextpackageimportmaprootdir | spike | frontend/syntax | class: blocked | Implement Nodenextpackageimportmaprootdir |
 | 3583 | Implement Nodenextpackageselfnamewithoutdir | spike | frontend/syntax | class: blocked | Implement Nodenextpackageselfnamewithoutdir |
 | 3584 | Implement Nodenextpackageselfnamewithoutdirdecldir | spike | frontend/syntax | class: blocked | Implement Nodenextpackageselfnamewithoutdirdecldir |
@@ -3207,6 +3221,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 3792 | Implement Partiallyambientfundule | spike | frontend/syntax | class: blocked | Implement Partiallyambientfundule |
 | 3793 | Implement Partiallydiscriminantedunions | spike | frontend/syntax | class: triage-needed | Implement Partiallydiscriminantedunions |
 | 3794 | Implement Pathmappingbasedmoduleresolution Import Export | spike | frontend/syntax | class: blocked | Implement Pathmappingbasedmoduleresolution Import Export |
+| 3795 | Implement Pathmappingbasedmoduleresolution Module Resolution | spike | frontend/syntax | class: blocked | Implement Pathmappingbasedmoduleresolution Module Resolution |
 | 3796 | Implement Pathmappingbasedmoduleresolution Parser Syntax | spike | frontend/syntax | class: blocked | Implement Pathmappingbasedmoduleresolution Parser Syntax |
 | 3797 | Implement Pathmappinginheritedbaseurl | spike | frontend/syntax | class: blocked | Implement Pathmappinginheritedbaseurl |
 | 3798 | Implement Pathmappingwithoutbaseurl | spike | frontend/syntax | class: blocked | Implement Pathmappingwithoutbaseurl |
@@ -3419,6 +3434,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 4006 | Implement Regularexpressionwithnonbmpflags | spike | frontend/syntax | class: triage-needed | Implement Regularexpressionwithnonbmpflags |
 | 4007 | Implement Relatedviadiscriminatedtypenoerror Name Resolution | spike | frontend/resolver | class: blocked | Implement Relatedviadiscriminatedtypenoerror Name Resolution |
 | 4008 | Implement Relatedviadiscriminatedtypenoerror Parser Syntax | spike | frontend/syntax | class: blocked | Implement Relatedviadiscriminatedtypenoerror Parser Syntax |
+| 4009 | Implement Relativenamesinclassicresolution | spike | frontend/syntax | class: blocked | Implement Relativenamesinclassicresolution |
 | 4010 | Implement Renamingdestructuredpropertyinfunctiontype | spike | frontend/syntax | class: blocked | Implement Renamingdestructuredpropertyinfunctiontype |
 | 4011 | Implement Reorderproperties | spike | frontend/syntax | class: triage-needed | Implement Reorderproperties |
 | 4012 | Implement Requireasfunctioninexternalmodule | spike | frontend/syntax | class: blocked | Implement Requireasfunctioninexternalmodule |
@@ -3441,6 +3457,12 @@ Issue files are the source of truth for work items. The generated section below 
 | 4029 | Implement Requireofjsonfilewithmoduleemitundefined | spike | frontend/syntax | class: blocked | Implement Requireofjsonfilewithmoduleemitundefined |
 | 4030 | Implement Requireofjsonfilewithmodulenoderesolutionemitamd | spike | frontend/syntax | class: blocked | Implement Requireofjsonfilewithmodulenoderesolutionemitamd |
 | 4031 | Implement Requireofjsonfilewithmodulenoderesolutionemitamdoutfile | spike | frontend/syntax | class: blocked | Implement Requireofjsonfilewithmodulenoderesolutionemitamdoutfile |
+| 4032 | Implement Requireofjsonfilewithmodulenoderesolutionemites | spike | frontend/syntax | class: blocked | Implement Requireofjsonfilewithmodulenoderesolutionemites |
+| 4033 | Implement Requireofjsonfilewithmodulenoderesolutionemitesnext | spike | frontend/syntax | class: blocked | Implement Requireofjsonfilewithmodulenoderesolutionemitesnext |
+| 4034 | Implement Requireofjsonfilewithmodulenoderesolutionemitnone | spike | frontend/syntax | class: blocked | Implement Requireofjsonfilewithmodulenoderesolutionemitnone |
+| 4035 | Implement Requireofjsonfilewithmodulenoderesolutionemitsystem | spike | frontend/syntax | class: blocked | Implement Requireofjsonfilewithmodulenoderesolutionemitsystem |
+| 4036 | Implement Requireofjsonfilewithmodulenoderesolutionemitumd | spike | frontend/syntax | class: blocked | Implement Requireofjsonfilewithmodulenoderesolutionemitumd |
+| 4037 | Implement Requireofjsonfilewithmodulenoderesolutionemitundefined | spike | frontend/syntax | class: blocked | Implement Requireofjsonfilewithmodulenoderesolutionemitundefined |
 | 4038 | Implement Requireofjsonfilewithnocontent | spike | frontend/syntax | class: blocked | Implement Requireofjsonfilewithnocontent |
 | 4039 | Implement Requireofjsonfilewithsourcemap | spike | frontend/syntax | class: blocked | Implement Requireofjsonfilewithsourcemap |
 | 4040 | Implement Requireofjsonfilewithtraillingcomma | spike | frontend/syntax | class: blocked | Implement Requireofjsonfilewithtraillingcomma |
@@ -3459,6 +3481,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 4053 | Implement Reservedwords Import Export | spike | frontend/syntax | class: blocked | Implement Reservedwords Import Export |
 | 4054 | Implement Reservedwords Parser Syntax | spike | frontend/syntax | class: triage-needed | Implement Reservedwords Parser Syntax |
 | 4055 | Implement Resolutioncandidatefrompackagejsonfield Import Export | spike | frontend/syntax | class: blocked | Implement Resolutioncandidatefrompackagejsonfield Import Export |
+| 4056 | Implement Resolutioncandidatefrompackagejsonfield Module Resolution | spike | frontend/syntax | class: blocked | Implement Resolutioncandidatefrompackagejsonfield Module Resolution |
 | 4057 | Implement Resolvemodulenamewithsameletdeclarationname | spike | frontend/syntax | class: blocked | Implement Resolvemodulenamewithsameletdeclarationname |
 | 4058 | Implement Resolvenamewithnamspace | spike | frontend/syntax | class: blocked | Implement Resolvenamewithnamspace |
 | 4059 | Implement Resolvingclassdeclarationwheninbasetyperesolution | spike | frontend/syntax | class: blocked | Implement Resolvingclassdeclarationwheninbasetyperesolution |
@@ -3642,6 +3665,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 4238 | Implement Staticinheritance | spike | frontend/syntax | class: triage-needed | Implement Staticinheritance |
 | 4239 | Implement Staticinitializersandlegacyclassdecorators | spike | frontend/syntax | class: blocked | Implement Staticinitializersandlegacyclassdecorators |
 | 4240 | Implement Staticinstanceresolution Import Export | spike | frontend/syntax | class: blocked | Implement Staticinstanceresolution Import Export |
+| 4241 | Implement Staticinstanceresolution Module Resolution | spike | frontend/syntax | class: blocked | Implement Staticinstanceresolution Module Resolution |
 | 4242 | Implement Staticinstanceresolution Name Resolution | spike | frontend/resolver | class: blocked | Implement Staticinstanceresolution Name Resolution |
 | 4243 | Implement Staticinterfaceassignmentcompat | spike | frontend/resolver | class: blocked | Implement Staticinterfaceassignmentcompat |
 | 4244 | Implement Staticmemberaccessoffderivedtype | spike | frontend/syntax | class: triage-needed | Implement Staticmemberaccessoffderivedtype |
@@ -4204,10 +4228,12 @@ Issue files are the source of truth for work items. The generated section below 
 | 4804 | Implement Yieldstarcontextualtype | spike | frontend/syntax | class: blocked | Implement Yieldstarcontextualtype |
 | 4805 | Implement Yieldstringliteral | spike | runtime/builtins | class: triage-needed | Implement Yieldstringliteral |
 | 4807 | Implement decorator support | spike | frontend/syntax | class: blocked | Implement decorator support |
+| 4812 | Implement RegExp literal support (dup) | spike | runtime/builtins | class: blocked | Implement RegExp literal support (dup) |
 | 5012 | Implement Date object support | spike | frontend/syntax | class: triage-needed | Implement Date object support |
 | 5015 | Implement function support | spike | frontend/syntax | class: triage-needed | Implement function support |
 | 5018 | Implement legacy-global-builtin support | spike | frontend/syntax | class: triage-needed | Implement legacy-global-builtin support |
 | 5020 | Implement RegExp literal support | spike | frontend/syntax | class: triage-needed | Implement RegExp literal support |
+| 5134 | Admit generators and async-functions features through Python test262 harness | spike | scripts | 416 | Admit generators and async-functions features through Python test262 harness |
 | 5135 | Fix builtin arity validation for coercion/math globals | bug | ir | class: blocked | Fix builtin arity validation for coercion/math globals |
 | 5136 | Fix arity validation for RegExp/String prototype methods | bug | ir | class: blocked | Fix arity validation for RegExp/String prototype methods |
 <!-- generated:blocked:end -->
@@ -4363,7 +4389,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 130 | Implement Aliasesinsystemmodule (dup) | spike | frontend/syntax | see `issues/done/130-implement-aliasesInSystemModule.md` |
 | 131 | Implement Allowimportclausestomergewithtypes (dup) | spike | frontend/syntax | see `issues/done/131-implement-allowImportClausesToMergeWithTypes.md` |
 | 132 | Implement Allowjsclassthistypecrash (dup) | spike | runtime/builtins | see `issues/done/132-implement-allowJsClassThisTypeCrash.md` |
-| 133 | Implement Allowjscrossmonorepopackage (dup) | spike | frontend/syntax | see `issues/done/133-implement-allowJsCrossMonorepoPackage.md` |
 | 134 | Implement Allowjscheckjstypeparameternocrash (dup) | spike | frontend/syntax | see `issues/done/134-implement-allowJscheckJsTypeParameterNoCrash.md` |
 | 135 | Implement Allowsyntheticdefaultimports (dup) | spike | frontend/syntax | see `issues/done/135-implement-allowSyntheticDefaultImports.md` |
 | 136 | Implement Allowsyntheticdefaultimportscanpaintcrossmoduledeclaration (dup) | spike | frontend/syntax | see `issues/done/136-implement-allowSyntheticDefaultImportsCanPaintCrossModuleDeclaration.md` |
@@ -4532,7 +4557,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 307 | Investigate ABC451 depth-9 allocation performance | spike | runtime/performance | see `issues/done/307-investigate-abc451-depth9-allocation-performance.md` |
 | 310 | Fix activation-frame root liveness depth-8 regression | feature | runtime/memory | see `issues/done/310-fix-activation-frame-root-liveness-depth8-regression.md` |
 | 311 | Fix test262 arguments object index assignment semantics | bug | runtime/semantics | see `issues/done/311-fix-test262-arguments-object-index-assignment.md` |
-| 313 | Implement array-builtin support | feature | runtime/builtins | see `issues/done/313-implement-array-builtin.md` |
 | 314 | Implement string-builtin support | feature | runtime/builtins | see `issues/done/314-implement-string-builtin.md` |
 | 315 | Fix Math.max/min backend-io errors | feature | runtime/builtins | see `issues/done/315-fix-math-max-min-backend-io.md` |
 | 316 | Fix Object.keys backend-io error | feature | harness | see `issues/done/316-fix-object-keys-backend-io.md` |
@@ -4614,13 +4638,9 @@ Issue files are the source of truth for work items. The generated section below 
 | 413 | Implement arity support | spike | reference/triage | see `issues/done/413-implement-arity.md` |
 | 414 | Implement array-builtin support (dup) | spike | frontend/syntax | see `issues/done/414-implement-array-builtin.md` |
 | 415 | Implement arrow functions | spike | frontend/syntax | see `issues/done/415-implement-arrow-function.md` |
-| 416 | Implement async/await support | spike | frontend/syntax | see `issues/done/416-implement-async.md` |
-| 421 | Implement class syntax | spike | frontend/syntax | see `issues/done/421-implement-class.md` |
-| 423 | Implement Date object support (dup) | spike | runtime/builtins | see `issues/done/423-implement-date.md` |
 | 427 | Implement duplicate-local support | spike | reference/triage | see `issues/done/427-implement-duplicate-local.md` |
 | 430 | Implement function support (dup) | spike | frontend/syntax | see `issues/done/430-implement-function.md` |
 | 433 | Implement legacy-global-builtin support (dup) | spike | frontend/syntax | see `issues/done/433-implement-legacy-global-builtin.md` |
-| 436 | Implement module-resolution support | spike | frontend/syntax | see `issues/done/436-implement-module-resolution.md` |
 | 444 | Implement RegExp literal support (dup) | spike | runtime/builtins | see `issues/done/444-implement-regexp-literal.md` |
 | 447 | Implement spread operator | spike | frontend/syntax | see `issues/done/447-implement-spread.md` |
 | 448 | Implement string-builtin support | spike | frontend/syntax | see `issues/done/448-implement-string-builtin.md` |
@@ -4979,31 +4999,13 @@ Issue files are the source of truth for work items. The generated section below 
 | 1009 | Implement Autolift (dup) | spike | frontend/syntax | see `issues/done/1009-implement-autoLift.md` |
 | 1010 | Implement Autotypeassignedusingdestructuringfromnevernocrash (dup) | spike | frontend/resolver | see `issues/done/1010-implement-autoTypeAssignedUsingDestructuringFromNeverNoCrash.md` |
 | 1011 | Implement Autolift (dup) | spike | frontend/syntax | see `issues/done/1011-implement-autolift.md` |
-| 2058 | Implement Duplicatepackage Module Resolution | spike | frontend/syntax | see `issues/done/2058-implement-duplicatePackage-module-resolution.md` |
 | 3002 | Implement Isolateddeclarationerrorsdefault | spike | runtime/builtins | see `issues/done/3002-implement-isolatedDeclarationErrorsDefault.md` |
 | 3131 | Implement Jsxfactorynotidentifierorqualifiedname | spike | reference/triage | see `issues/done/3131-implement-jsxFactoryNotIdentifierOrQualifiedName.md` |
 | 3329 | Implement Modulecodegentest | spike | frontend/syntax | see `issues/done/3329-implement-moduleCodeGenTest.md` |
 | 3330 | Implement Modulecodegentest | spike | frontend/syntax | see `issues/done/3330-implement-moduleCodegenTest.md` |
-| 3371 | Implement Moduleresolution Module Resolution | spike | frontend/syntax | see `issues/done/3371-implement-moduleResolution-module-resolution.md` |
-| 3373 | Implement Moduleresolutionastypereferencedirective | spike | frontend/syntax | see `issues/done/3373-implement-moduleResolutionAsTypeReferenceDirective.md` |
-| 3375 | Implement Moduleresolutionastypereferencedirectivescoped | spike | frontend/syntax | see `issues/done/3375-implement-moduleResolutionAsTypeReferenceDirectiveScoped.md` |
-| 3381 | Implement Moduleresolutionwithextensions Module Resolution | spike | frontend/syntax | see `issues/done/3381-implement-moduleResolutionWithExtensions-module-resolution.md` |
-| 3384 | Implement Moduleresolutionwithrequireandimport | spike | frontend/syntax | see `issues/done/3384-implement-moduleResolutionWithRequireAndImport.md` |
-| 3386 | Implement Moduleresolutionwithsuffixes Module Resolution | spike | frontend/syntax | see `issues/done/3386-implement-moduleResolutionWithSuffixes-module-resolution.md` |
-| 3581 | Implement Nodenextimportmodeimplicitindexresolution Module Resolution | spike | frontend/syntax | see `issues/done/3581-implement-nodeNextImportModeImplicitIndexResolution-module-resolution.md` |
 | 3690 | Implement Optionaltupleelementsandundefined | spike | reference/triage | see `issues/done/3690-implement-optionalTupleElementsAndUndefined.md` |
-| 3795 | Implement Pathmappingbasedmoduleresolution Module Resolution | spike | frontend/syntax | see `issues/done/3795-implement-pathMappingBasedModuleResolution-module-resolution.md` |
 | 3996 | Implement Compiler (dup) | spike | frontend/syntax | see `issues/done/3996-implement-reference-typescript-tests-cases-compiler.md` |
-| 4009 | Implement Relativenamesinclassicresolution | spike | frontend/syntax | see `issues/done/4009-implement-relativeNamesInClassicResolution.md` |
-| 4032 | Implement Requireofjsonfilewithmodulenoderesolutionemites | spike | frontend/syntax | see `issues/done/4032-implement-requireOfJsonFileWithModuleNodeResolutionEmitEs.md` |
-| 4033 | Implement Requireofjsonfilewithmodulenoderesolutionemitesnext | spike | frontend/syntax | see `issues/done/4033-implement-requireOfJsonFileWithModuleNodeResolutionEmitEsNext.md` |
-| 4034 | Implement Requireofjsonfilewithmodulenoderesolutionemitnone | spike | frontend/syntax | see `issues/done/4034-implement-requireOfJsonFileWithModuleNodeResolutionEmitNone.md` |
-| 4035 | Implement Requireofjsonfilewithmodulenoderesolutionemitsystem | spike | frontend/syntax | see `issues/done/4035-implement-requireOfJsonFileWithModuleNodeResolutionEmitSystem.md` |
-| 4036 | Implement Requireofjsonfilewithmodulenoderesolutionemitumd | spike | frontend/syntax | see `issues/done/4036-implement-requireOfJsonFileWithModuleNodeResolutionEmitUmd.md` |
-| 4037 | Implement Requireofjsonfilewithmodulenoderesolutionemitundefined | spike | frontend/syntax | see `issues/done/4037-implement-requireOfJsonFileWithModuleNodeResolutionEmitUndefined.md` |
-| 4056 | Implement Resolutioncandidatefrompackagejsonfield Module Resolution | spike | frontend/syntax | see `issues/done/4056-implement-resolutionCandidateFromPackageJsonField-module-resolution.md` |
 | 4210 | Implement Splicetuples | spike | frontend/resolver | see `issues/done/4210-implement-spliceTuples.md` |
-| 4241 | Implement Staticinstanceresolution Module Resolution | spike | frontend/syntax | see `issues/done/4241-implement-staticInstanceResolution-module-resolution.md` |
 | 4284 | Implement Stringincludes (audit reopened #4284) | spike | runtime/builtins | see `issues/done/4284-implement-stringIncludes.md` |
 | 4291 | Implement Stringmatchall | spike | reference/triage | see `issues/done/4291-implement-stringMatchAll.md` |
 | 4294 | Implement Stringtrim | spike | runtime/builtins | see `issues/done/4294-implement-stringTrim.md` |
@@ -5012,7 +5014,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 4809 | Implement name resolution (dup) | spike | frontend/resolver | see `issues/done/4809-implement-name-resolution.md` |
 | 4810 | Implement object literal enhancements (dup) | spike | frontend/syntax | see `issues/done/4810-implement-object-literal.md` |
 | 4811 | Implement parser syntax extensions (dup) | spike | frontend/syntax | see `issues/done/4811-implement-parser-syntax.md` |
-| 4812 | Implement RegExp literal support (dup) | spike | runtime/builtins | see `issues/done/4812-implement-regexp-literal.md` |
 | 4813 | Implement type-system support (dup) | spike | frontend/syntax | see `issues/done/4813-implement-type-system.md` |
 | 4814 | Investigate and classify unknown-unsupported cases (dup) | spike | frontend/syntax | see `issues/done/4814-implement-unknown-unsupported.md` |
 | 5000 | Meta: TypeScript Compiler Parser Syntax Coverage | meta | frontend/syntax | see file |

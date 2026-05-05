@@ -123,7 +123,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/313-implement-array-builtin.md` - Implement array-builtin support (same feature label, same group key, title overlap)
+- `issues/open/313-implement-array-builtin.md` - Implement array-builtin support (same feature label, same group key, title overlap)
 - `issues/done/314-implement-string-builtin.md` - Implement string-builtin support (same feature label, same group key, title overlap)
 - `issues/done/414-implement-array-builtin.md` - Implement array-builtin support (same feature label, same group key, title overlap)
 - `issues/open/419-implement-builtin-api.md` - Implement built-in API support (same feature label, same group key, title overlap)
@@ -315,7 +315,7 @@ Duplicate candidates:
   },
   {
     "state": "open",
-    "path": "issues/done/421-implement-class.md",
+    "path": "issues/open/421-implement-class.md",
     "title": "Implement class syntax",
     "reason": "same feature label, title overlap"
   },

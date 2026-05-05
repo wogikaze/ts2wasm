@@ -226,7 +226,7 @@ Duplicate candidates:
   },
   {
     "state": "open",
-    "path": "issues/done/421-implement-class.md",
+    "path": "issues/open/421-implement-class.md",
     "title": "Implement class syntax",
     "reason": "same feature label, title overlap"
   },

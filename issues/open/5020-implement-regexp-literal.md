@@ -293,7 +293,7 @@ Duplicate candidates:
   },
   {
     "state": "open",
-    "path": "issues/done/421-implement-class.md",
+    "path": "issues/open/421-implement-class.md",
     "title": "Implement class syntax",
     "reason": "same feature label, title overlap"
   },
@@ -323,7 +323,7 @@ Duplicate candidates:
   },
   {
     "state": "done",
-    "path": "issues/done/4812-implement-regexp-literal.md",
+    "path": "issues/open/4812-implement-regexp-literal.md",
     "title": "Implement RegExp literal support",
     "reason": "same feature label, title overlap"
   }

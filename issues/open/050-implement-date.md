@@ -3,9 +3,9 @@ id: 050
 title: "Implement Date"
 type: feature
 area: runtime/builtins
-class: triage-needed
+class: blocked
 priority: P1
-depends_on: []
+depends_on: [5137]
 blocks: []
 created: 2026-04-26
 updated: 2026-04-26
@@ -24,8 +24,9 @@ Queue design note:
 - Current child slices:
   - issue 239: live-time capability policy for `new Date()` / `Date.now()` (done)
   - issue 242: implement live-time Date entry points after issue 239 (done)
-  - issue 240: timezone-aware `Date.prototype.toString()` policy/implementation
-  - issue 241: Annex B legacy `getYear` / `setYear` / `toGMTString` diagnostics
+  - issue 240: timezone-aware `Date.prototype.toString()` policy/implementation (done)
+  - issue 241: Annex B legacy `getYear` / `setYear` / `toGMTString` diagnostics (done)
+  - issue 5137: split remaining non-literal constructor and broader Date API scope
 
 ## Problem
 
@@ -75,8 +76,7 @@ Do not touch:
 
 - [ ] Deterministic `new Date(<epoch-ms integer>)` fixtures still match Node/iwasm stdout for `fixtures/builtins-and-io/date-epoch-get-time.ts` and `fixtures/builtins-and-io/date-epoch-value-of.ts`.
 - [ ] Live-time `Date.now()` and no-argument `new Date()` fixtures still emit the audited `wasi.clock.realtime` manifest reason and `wasi_snapshot_preview1.clock_time_get` import.
-- [ ] Issue 240 closes with timezone-aware `Date.prototype.toString()` pass evidence or a final documented reject policy.
-- [ ] Issue 241 closes with Annex B `getYear`, `setYear`, and `toGMTString` diagnostic or implementation evidence.
+- [ ] Issue 5137 closes with a concrete remaining-Date API issue split or evidence that no open Date child work remains.
 
 ## Validation
 

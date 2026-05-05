@@ -1,6 +1,6 @@
 ---
-id: 3795
-title: "Implement Pathmappingbasedmoduleresolution Module Resolution"
+id: 4032
+title: "Implement Requireofjsonfilewithmodulenoderesolutionemites"
 type: spike
 area: frontend/syntax
 class: blocked
@@ -8,31 +8,40 @@ priority: P2
 depends_on: [5007]
 blocks: []
 created: 2026-05-01
-updated: 2026-05-01
+updated: 2026-05-06
 ---
+
+> **Reopened by audit** (2026-05-06)
+> Classification: false-done (blocked)
+> Reason: relapsed false-done: reopened in df7621e3, re-closed without implementation. No implementation commits.
+>
+> True-done checklist:
+> 1. Implementation commits in the repo that satisfy the acceptance criteria
+> 2. Filled completion evidence section with commits and validation results
+> 3. No relapsed false-done pattern (previously reopened but re-closed without evidence)
 
 ## Summary
 
-Triage pathMappingBasedModuleResolution-module-resolution across 5 failing reference test cases and split this bucket into implementation-ready child issues.
+Triage requireOfJsonFileWithModuleNodeResolutionEmitEs across 1 failing reference test cases and split this bucket into implementation-ready child issues.
 
 ## Problem
 
-Reference test results show 5 cases fail in directory `pathMappingBasedModuleResolution-module-resolution` with diagnostics: module-resolution. The compiler cannot handle these syntax/semantics, preventing compilation of code in this category.
+Reference test results show 1 cases fail in directory `requireOfJsonFileWithModuleNodeResolutionEmitEs` with diagnostics: module-resolution. The compiler cannot handle these syntax/semantics, preventing compilation of code in this category.
 
-Problem: pathMappingBasedModuleResolution-module-resolution has 5 reference failures and needs smart-triage evidence before implementation starts.
+Problem: requireOfJsonFileWithModuleNodeResolutionEmitEs has 1 reference failures and needs smart-triage evidence before implementation starts.
 
 ## Current failure
 
 Representative reproduction:
 
 ```sh
-mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/pathMappingBasedModuleResolution5_classic.ts
+mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/requireOfJsonFileWithModuleNodeResolutionEmitEs2015.ts
 ```
 
 Coverage window:
 
 ```sh
-mise run reference-coverage -- tsc --path-filter reference/typescript/tests/cases/compiler/pathMappingBasedModuleResolution5_classic.ts --detail
+mise run reference-coverage -- tsc --path-filter reference/typescript/tests/cases/compiler/requireOfJsonFileWithModuleNodeResolutionEmitEs2015.ts --detail
 ```
 
 ## Desired final state
@@ -85,9 +94,9 @@ cargo nextest run
 Impacted commands:
 
 ```sh
-mise run reference-coverage -- tsc --limit 10
-mise run reference-coverage -- tsc --path-filter reference/typescript/tests/cases/compiler/pathMappingBasedModuleResolution5_classic.ts --detail
-mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/pathMappingBasedModuleResolution5_classic.ts
+mise run reference-coverage -- tsc --limit 2
+mise run reference-coverage -- tsc --path-filter reference/typescript/tests/cases/compiler/requireOfJsonFileWithModuleNodeResolutionEmitEs2015.ts --detail
+mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/requireOfJsonFileWithModuleNodeResolutionEmitEs2015.ts
 ```
 
 Not run:
@@ -112,11 +121,7 @@ Follow-up issues:
 
 ## Affected test files
 
-- `reference/typescript/tests/cases/compiler/pathMappingBasedModuleResolution5_classic.ts`
-- `reference/typescript/tests/cases/compiler/pathMappingBasedModuleResolution5_node.ts`
-- `reference/typescript/tests/cases/compiler/pathMappingBasedModuleResolution8_classic.ts`
-- `reference/typescript/tests/cases/compiler/pathMappingBasedModuleResolution8_node.ts`
-- `reference/typescript/tests/cases/compiler/pathMappingBasedModuleResolution_withExtensionInName.ts`
+- `reference/typescript/tests/cases/compiler/requireOfJsonFileWithModuleNodeResolutionEmitEs2015.ts`
 
 ## Duplicate detection
 

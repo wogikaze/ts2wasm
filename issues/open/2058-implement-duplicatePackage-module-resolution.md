@@ -1,6 +1,6 @@
 ---
-id: 4032
-title: "Implement Requireofjsonfilewithmodulenoderesolutionemites"
+id: 2058
+title: "Implement Duplicatepackage Module Resolution"
 type: spike
 area: frontend/syntax
 class: blocked
@@ -8,31 +8,40 @@ priority: P2
 depends_on: [5007]
 blocks: []
 created: 2026-05-01
-updated: 2026-05-01
+updated: 2026-05-06
 ---
+
+> **Reopened by audit** (2026-05-06)
+> Classification: false-done (blocked)
+> Reason: relapsed false-done: reopened in df7621e3, re-closed without implementation. No implementation commits.
+>
+> True-done checklist:
+> 1. Implementation commits in the repo that satisfy the acceptance criteria
+> 2. Filled completion evidence section with commits and validation results
+> 3. No relapsed false-done pattern (previously reopened but re-closed without evidence)
 
 ## Summary
 
-Triage requireOfJsonFileWithModuleNodeResolutionEmitEs across 1 failing reference test cases and split this bucket into implementation-ready child issues.
+Triage duplicatePackage-module-resolution across 2 failing reference test cases and split this bucket into implementation-ready child issues.
 
 ## Problem
 
-Reference test results show 1 cases fail in directory `requireOfJsonFileWithModuleNodeResolutionEmitEs` with diagnostics: module-resolution. The compiler cannot handle these syntax/semantics, preventing compilation of code in this category.
+Reference test results show 2 cases fail in directory `duplicatePackage-module-resolution` with diagnostics: module-resolution. The compiler cannot handle these syntax/semantics, preventing compilation of code in this category.
 
-Problem: requireOfJsonFileWithModuleNodeResolutionEmitEs has 1 reference failures and needs smart-triage evidence before implementation starts.
+Problem: duplicatePackage-module-resolution has 2 reference failures and needs smart-triage evidence before implementation starts.
 
 ## Current failure
 
 Representative reproduction:
 
 ```sh
-mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/requireOfJsonFileWithModuleNodeResolutionEmitEs2015.ts
+mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/duplicatePackage_subModule.ts
 ```
 
 Coverage window:
 
 ```sh
-mise run reference-coverage -- tsc --path-filter reference/typescript/tests/cases/compiler/requireOfJsonFileWithModuleNodeResolutionEmitEs2015.ts --detail
+mise run reference-coverage -- tsc --path-filter reference/typescript/tests/cases/compiler/duplicatePackage_subModule.ts --detail
 ```
 
 ## Desired final state
@@ -85,9 +94,9 @@ cargo nextest run
 Impacted commands:
 
 ```sh
-mise run reference-coverage -- tsc --limit 2
-mise run reference-coverage -- tsc --path-filter reference/typescript/tests/cases/compiler/requireOfJsonFileWithModuleNodeResolutionEmitEs2015.ts --detail
-mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/requireOfJsonFileWithModuleNodeResolutionEmitEs2015.ts
+mise run reference-coverage -- tsc --limit 4
+mise run reference-coverage -- tsc --path-filter reference/typescript/tests/cases/compiler/duplicatePackage_subModule.ts --detail
+mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/duplicatePackage_subModule.ts
 ```
 
 Not run:
@@ -112,7 +121,8 @@ Follow-up issues:
 
 ## Affected test files
 
-- `reference/typescript/tests/cases/compiler/requireOfJsonFileWithModuleNodeResolutionEmitEs2015.ts`
+- `reference/typescript/tests/cases/compiler/duplicatePackage_subModule.ts`
+- `reference/typescript/tests/cases/compiler/duplicatePackage_withErrors.ts`
 
 ## Duplicate detection
 

@@ -1,6 +1,6 @@
 ---
-id: 3373
-title: "Implement Moduleresolutionastypereferencedirective"
+id: 4036
+title: "Implement Requireofjsonfilewithmodulenoderesolutionemitumd"
 type: spike
 area: frontend/syntax
 class: blocked
@@ -8,31 +8,40 @@ priority: P2
 depends_on: [5007]
 blocks: []
 created: 2026-05-01
-updated: 2026-05-01
+updated: 2026-05-06
 ---
+
+> **Reopened by audit** (2026-05-06)
+> Classification: false-done (blocked)
+> Reason: relapsed false-done: reopened in df7621e3, re-closed without implementation. No implementation commits.
+>
+> True-done checklist:
+> 1. Implementation commits in the repo that satisfy the acceptance criteria
+> 2. Filled completion evidence section with commits and validation results
+> 3. No relapsed false-done pattern (previously reopened but re-closed without evidence)
 
 ## Summary
 
-Triage moduleResolutionAsTypeReferenceDirective across 1 failing reference test cases and split this bucket into implementation-ready child issues.
+Triage requireOfJsonFileWithModuleNodeResolutionEmitUmd across 1 failing reference test cases and split this bucket into implementation-ready child issues.
 
 ## Problem
 
-Reference test results show 1 cases fail in directory `moduleResolutionAsTypeReferenceDirective` with diagnostics: module-resolution. The compiler cannot handle these syntax/semantics, preventing compilation of code in this category.
+Reference test results show 1 cases fail in directory `requireOfJsonFileWithModuleNodeResolutionEmitUmd` with diagnostics: module-resolution. The compiler cannot handle these syntax/semantics, preventing compilation of code in this category.
 
-Problem: moduleResolutionAsTypeReferenceDirective has 1 reference failures and needs smart-triage evidence before implementation starts.
+Problem: requireOfJsonFileWithModuleNodeResolutionEmitUmd has 1 reference failures and needs smart-triage evidence before implementation starts.
 
 ## Current failure
 
 Representative reproduction:
 
 ```sh
-mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/moduleResolutionAsTypeReferenceDirective.ts
+mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/requireOfJsonFileWithModuleNodeResolutionEmitUmd.ts
 ```
 
 Coverage window:
 
 ```sh
-mise run reference-coverage -- tsc --path-filter reference/typescript/tests/cases/compiler/moduleResolutionAsTypeReferenceDirective.ts --detail
+mise run reference-coverage -- tsc --path-filter reference/typescript/tests/cases/compiler/requireOfJsonFileWithModuleNodeResolutionEmitUmd.ts --detail
 ```
 
 ## Desired final state
@@ -86,8 +95,8 @@ Impacted commands:
 
 ```sh
 mise run reference-coverage -- tsc --limit 2
-mise run reference-coverage -- tsc --path-filter reference/typescript/tests/cases/compiler/moduleResolutionAsTypeReferenceDirective.ts --detail
-mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/moduleResolutionAsTypeReferenceDirective.ts
+mise run reference-coverage -- tsc --path-filter reference/typescript/tests/cases/compiler/requireOfJsonFileWithModuleNodeResolutionEmitUmd.ts --detail
+mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/requireOfJsonFileWithModuleNodeResolutionEmitUmd.ts
 ```
 
 Not run:
@@ -112,7 +121,7 @@ Follow-up issues:
 
 ## Affected test files
 
-- `reference/typescript/tests/cases/compiler/moduleResolutionAsTypeReferenceDirective.ts`
+- `reference/typescript/tests/cases/compiler/requireOfJsonFileWithModuleNodeResolutionEmitUmd.ts`
 
 ## Duplicate detection
 

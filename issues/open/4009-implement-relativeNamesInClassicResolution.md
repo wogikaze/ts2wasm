@@ -1,6 +1,6 @@
 ---
-id: 3371
-title: "Implement Moduleresolution Module Resolution"
+id: 4009
+title: "Implement Relativenamesinclassicresolution"
 type: spike
 area: frontend/syntax
 class: blocked
@@ -8,31 +8,40 @@ priority: P2
 depends_on: [5007]
 blocks: []
 created: 2026-05-01
-updated: 2026-05-01
+updated: 2026-05-06
 ---
+
+> **Reopened by audit** (2026-05-06)
+> Classification: false-done (blocked)
+> Reason: relapsed false-done: reopened in df7621e3, re-closed without implementation. No implementation commits.
+>
+> True-done checklist:
+> 1. Implementation commits in the repo that satisfy the acceptance criteria
+> 2. Filled completion evidence section with commits and validation results
+> 3. No relapsed false-done pattern (previously reopened but re-closed without evidence)
 
 ## Summary
 
-Triage moduleResolution-module-resolution across 7 failing reference test cases and split this bucket into implementation-ready child issues.
+Triage relativeNamesInClassicResolution across 1 failing reference test cases and split this bucket into implementation-ready child issues.
 
 ## Problem
 
-Reference test results show 7 cases fail in directory `moduleResolution-module-resolution` with diagnostics: module-resolution. The compiler cannot handle these syntax/semantics, preventing compilation of code in this category.
+Reference test results show 1 cases fail in directory `relativeNamesInClassicResolution` with diagnostics: module-resolution. The compiler cannot handle these syntax/semantics, preventing compilation of code in this category.
 
-Problem: moduleResolution-module-resolution has 7 reference failures and needs smart-triage evidence before implementation starts.
+Problem: relativeNamesInClassicResolution has 1 reference failures and needs smart-triage evidence before implementation starts.
 
 ## Current failure
 
 Representative reproduction:
 
 ```sh
-mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/moduleResolution_packageJson_scopedPackage.ts
+mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/relativeNamesInClassicResolution.ts
 ```
 
 Coverage window:
 
 ```sh
-mise run reference-coverage -- tsc --path-filter reference/typescript/tests/cases/compiler/moduleResolution_packageJson_scopedPackage.ts --detail
+mise run reference-coverage -- tsc --path-filter reference/typescript/tests/cases/compiler/relativeNamesInClassicResolution.ts --detail
 ```
 
 ## Desired final state
@@ -85,9 +94,9 @@ cargo nextest run
 Impacted commands:
 
 ```sh
-mise run reference-coverage -- tsc --limit 14
-mise run reference-coverage -- tsc --path-filter reference/typescript/tests/cases/compiler/moduleResolution_packageJson_scopedPackage.ts --detail
-mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/moduleResolution_packageJson_scopedPackage.ts
+mise run reference-coverage -- tsc --limit 2
+mise run reference-coverage -- tsc --path-filter reference/typescript/tests/cases/compiler/relativeNamesInClassicResolution.ts --detail
+mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/relativeNamesInClassicResolution.ts
 ```
 
 Not run:
@@ -112,13 +121,7 @@ Follow-up issues:
 
 ## Affected test files
 
-- `reference/typescript/tests/cases/compiler/moduleResolution_packageJson_scopedPackage.ts`
-- `reference/typescript/tests/cases/compiler/moduleResolution_packageJson_notAtPackageRoot.ts`
-- `reference/typescript/tests/cases/compiler/moduleResolution_packageJson_notAtPackageRoot_fakeScopedPackage.ts`
-- `reference/typescript/tests/cases/compiler/moduleResolution_noLeadingDot.ts`
-- `reference/typescript/tests/cases/compiler/moduleResolution_packageJson_yesAtPackageRoot.ts`
-- `reference/typescript/tests/cases/compiler/moduleResolution_packageJson_yesAtPackageRoot_mainFieldInSubDirectory.ts`
-- `reference/typescript/tests/cases/compiler/moduleResolution_packageJson_yesAtPackageRoot_fakeScopedPackage.ts`
+- `reference/typescript/tests/cases/compiler/relativeNamesInClassicResolution.ts`
 
 ## Duplicate detection
 

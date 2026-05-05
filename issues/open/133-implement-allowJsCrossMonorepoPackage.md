@@ -3,13 +3,22 @@ id: 133
 title: "Implement Allowjscrossmonorepopackage (dup)"
 type: spike
 area: frontend/syntax
-class: superseded
+class: blocked
 priority: P2
 depends_on: [5007]
 blocks: []
 created: 2026-04-29
-updated: 2026-05-04
+updated: 2026-05-06
 ---
+
+> **Reopened by audit** (2026-05-06)
+> Classification: false-done (blocked)
+> Reason: relapsed false-done: reopened in df7621e3 as child of meta-issue 5007, re-closed without implementation. No implementation commits.
+>
+> True-done checklist:
+> 1. Implementation commits in the repo that satisfy the acceptance criteria
+> 2. Filled completion evidence section with commits and validation results
+> 3. No relapsed false-done pattern (previously reopened but re-closed without evidence)
 
 ## Summary
 
@@ -180,7 +189,7 @@ Duplicate candidates:
 [
   {
     "state": "open",
-    "path": "issues/done/133-implement-allowJsCrossMonorepoPackage.md",
+    "path": "issues/open/133-implement-allowJsCrossMonorepoPackage.md",
     "title": "Implement Allowjscrossmonorepopackage",
     "reason": "same reference path, title overlap"
   }
