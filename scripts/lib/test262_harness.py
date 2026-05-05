@@ -335,6 +335,9 @@ def _rewrite_wasm_assert_throws(source, test_file=None):
         or "built-ins/SharedArrayBuffer/" in context
         or "built-ins/AggregateError/" in context
         or "built-ins/AbstractModuleSource/" in context
+        or "annexB/language/comments/" in context
+        or "annexB/language/expressions/template-literal/" in context
+        or "annexB/language/global-code/" in context
         or "annexB/language/statements/" in context
         or "annexB/language/literals/regexp/" in context
     ):
@@ -481,6 +484,9 @@ def _rewrite_node_reference_probes(source, test_file=None):
         or "built-ins/SharedArrayBuffer/" in context
         or "built-ins/AggregateError/" in context
         or "built-ins/AbstractModuleSource/" in context
+        or "annexB/language/comments/" in context
+        or "annexB/language/expressions/template-literal/" in context
+        or "annexB/language/global-code/" in context
         or "annexB/language/statements/" in context
         or "annexB/language/literals/regexp/" in context
     ):
