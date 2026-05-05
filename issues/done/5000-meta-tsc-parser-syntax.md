@@ -61,4 +61,4 @@ mise run reference-coverage -- tsc --limit 100 --detail
 
 ## Notes
 
-See `docs/superpowers/plans/2026-05-02-tsc-parser-syntax.md` for the full implementation plan.
+Implementation history is captured in the status table above and in the child meta-issues.

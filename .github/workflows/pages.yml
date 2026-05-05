@@ -30,9 +30,10 @@ jobs:
       - name: Checkout public docs repository
         uses: actions/checkout@v4
         with:
-          repository: ${{ vars.TS2WASM_DOCS_REPO || 'wogikaze/ts2wasm-docs' }}
+          repository: wogikaze/ts2wasm-docs
+          ref: ${{ env.TS2WASM_DOCS_BRANCH }}
           path: docs-repo
-          token: ${{ secrets.TS2WASM_DOCS_REPO_TOKEN }}
+          token: ${{ secrets.TS2WASM_DOCS_PAT }}
           fetch-depth: 1
 
       - name: Configure Pages

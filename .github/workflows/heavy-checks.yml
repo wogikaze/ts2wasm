@@ -36,15 +36,20 @@ jobs:
         run: |
           cargo install wasm-tools
 
+      - name: Install cargo-nextest
+        uses: taiki-e/install-action@nextest
+
       - name: Install Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
 
-      - name: Install WasmEdge
+      - name: Install iwasm (WAMR)
         run: |
-          wget -qO- https://raw.githubusercontent.com/WasmEdge/WasmEdge/master/utils/install.sh | bash -s -- -e all
-          echo "$HOME/.wasmedge/bin" >> $GITHUB_PATH
+          wget -q https://github.com/bytecodealliance/wasm-micro-runtime/releases/download/WAMR-2.4.3/iwasm-2.4.3-linux-x86_64.tar.gz
+          tar -xzf iwasm-2.4.3-linux-x86_64.tar.gz
+          sudo mv iwasm /usr/local/bin/
+          chmod +x /usr/local/bin/iwasm
 
       - name: Fixture differential check
         run: |
