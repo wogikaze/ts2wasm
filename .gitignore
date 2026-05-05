@@ -5,6 +5,9 @@ reference/*
 # whats this
 .codex
 docs/superpowers
+.commandcode
+.claude
+
 
 # js
 node_modules
