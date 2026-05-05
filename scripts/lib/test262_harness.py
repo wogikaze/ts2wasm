@@ -1,7 +1,4 @@
-"""Shared test262 harness module — reusable functions for test262 test runner operations.
-
-Originally extracted from the test262 runner (formerly scripts/run/test262.py, now merged into reference-coverage.py).
-"""
+"""Shared test262 harness module for reference-coverage test262 operations."""
 
 import functools
 import json
