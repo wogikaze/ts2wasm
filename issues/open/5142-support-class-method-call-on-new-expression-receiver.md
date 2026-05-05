@@ -95,10 +95,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] A focused Node/iwasm fixture for `new C().g()` builds and matches Node output.
-- [ ] The fixture proves the receiver is evaluated once before method invocation.
-- [ ] `mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/avoid.ts` no longer reports `method \`g\` requires an identifier receiver`.
-- [ ] Existing unsupported diagnostics for extracted method calls remain source-spanned.
+- [x] A focused Node/iwasm fixture for `new C().g()` builds and matches Node output.
+- [x] The fixture proves the receiver is evaluated once before method invocation.
+- [x] `mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/avoid.ts` no longer reports `method \`g\` requires an identifier receiver`.
+- [x] Existing unsupported diagnostics for extracted method calls remain source-spanned.
 
 ## Validation
 
@@ -106,7 +106,7 @@ Required commands:
 
 ```sh
 cargo fmt --all --check
-cargo nextest run -p ts2wasm-cli class_method_new_expression_receiver
+cargo nextest run -p ts2wasm-cli class_new_expression_method_call
 python scripts/manager.py update-issue-index --check
 python scripts/manager.py check-issue-health
 python scripts/manager.py check-issue-readiness -- --fail-ready-below 80

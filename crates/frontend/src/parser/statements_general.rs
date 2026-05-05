@@ -889,6 +889,7 @@ impl Parser {
             || self
                 .peek()
                 .is_some_and(is_statement_boundary_token)
+            || self.next_token_has_preceding_newline()
         {
             return Ok(fallback_end);
         }

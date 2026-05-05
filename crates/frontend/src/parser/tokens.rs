@@ -389,4 +389,14 @@ impl Parser {
     fn is_at_end(&self) -> bool {
         self.cursor >= self.tokens.len()
     }
+
+    /// Returns `true` if the next token (at `cursor`) is preceded by a line
+    /// terminator in the source text, indicating ASI may apply.
+    fn next_token_has_preceding_newline(&self) -> bool {
+        self.tokens
+            .get(self.cursor)
+            .and_then(|_| self.has_preceding_newline.get(self.cursor))
+            .copied()
+            .unwrap_or(false)
+    }
 }
