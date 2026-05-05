@@ -16,12 +16,12 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 1 | 0 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4394 | 3776 | 618 |
+| frontend | 4395 | 3777 | 618 |
 | harness | 1 | 0 | 1 |
 | ir | 27 | 5 | 22 |
 | issues | 4 | 0 | 4 |
 | parser | 1 | 0 | 1 |
-| reference | 212 | 170 | 42 |
+| reference | 211 | 169 | 42 |
 | runtime | 265 | 96 | 169 |
 | scripts | 3 | 1 | 2 |
 | security | 1 | 0 | 1 |
@@ -179,6 +179,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 5159 | Recover colon type annotations after expression statements | feature | frontend/syntax | implementation-ready | P1 |  | constructor-body statements of the form `this.<name>: any;` currently fail as parser-unsupported before the reference... |
 | 5160 | Lower plain ternary conditional expressions | feature | frontend/semantics | implementation-ready | P2 |  | `reference/typescript/tests/cases/compiler/bestChoiceType.ts` currently stops in builtin resolution on `let y = x ? x... |
 | 5161 | Model ambient value declarations for name resolution | feature | frontend/resolver | implementation-ready | P1 |  | `reference/typescript/tests/cases/compiler/bestCommonTypeWithContextualTyping.ts` currently reports `UnresolvedName` ... |
+| 5162 | Allow compatible var redeclarations | feature | frontend/syntax | implementation-ready | P2 |  | `reference/typescript/tests/cases/compiler/duplicateLocalVariable3.ts` reports `DuplicateLocal` for `var x = 1; var x... |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -1460,7 +1461,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 2047 | Implement Duplicateidentifiersacrosscontainerboundaries | spike | frontend/syntax | class: blocked | Implement Duplicateidentifiersacrosscontainerboundaries |
 | 2048 | Implement Duplicateidentifiersacrossfileboundaries | spike | frontend/syntax | class: blocked | Implement Duplicateidentifiersacrossfileboundaries |
 | 2049 | Implement Duplicatelabel | spike | frontend/syntax | class: triage-needed | Implement Duplicatelabel |
-| 2050 | Implement Duplicatelocalvariable Duplicate Local | spike | reference/triage | class: triage-needed | Implement Duplicatelocalvariable Duplicate Local |
 | 2051 | Implement Duplicatelocalvariable Import Export | spike | frontend/syntax | class: blocked | Implement Duplicatelocalvariable Import Export |
 | 2052 | Implement Duplicatelocalvariable Parser Syntax | spike | frontend/syntax | class: blocked | Implement Duplicatelocalvariable Parser Syntax |
 | 2053 | Implement Duplicateobjectliteralproperty Import Export | spike | frontend/syntax | class: blocked | Implement Duplicateobjectliteralproperty Import Export |

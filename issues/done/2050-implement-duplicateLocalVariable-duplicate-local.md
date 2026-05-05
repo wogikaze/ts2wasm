@@ -3,12 +3,14 @@ id: 2050
 title: "Implement Duplicatelocalvariable Duplicate Local"
 type: spike
 area: reference/triage
-class: triage-needed
+class: superseded
 priority: P2
-depends_on: []
+depends_on: [5162]
 blocks: []
 created: 2026-05-01
-updated: 2026-05-01
+updated: 2026-05-06
+status: done
+completed: 2026-05-06
 ---
 
 ## Summary
@@ -43,10 +45,10 @@ This generated bucket is either split into implementation-ready child issues or 
 
 In scope:
 
-- [ ] Inspect the smart triage report below
-- [ ] Confirm whether existing open/done issues already cover this bucket
-- [ ] Split one feature family, one observable behavior, or one fixed reference window into child issues
-- [ ] Preserve exact reproduction commands and representative AST/diagnostic evidence in each child issue
+- [x] Inspect the smart triage report below
+- [x] Confirm whether existing open/done issues already cover this bucket
+- [x] Split one feature family, one observable behavior, or one fixed reference window into child issues
+- [x] Preserve exact reproduction commands and representative AST/diagnostic evidence in each child issue
 
 Out of scope:
 
@@ -67,10 +69,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] Duplicate candidates below are confirmed as no-match or this issue is superseded
-- [ ] At least one child issue contains an exact `mise run reference-triage -- ...` command
-- [ ] Child issue includes failing path, diagnostic code, source context, visible symbols, and parser/TypeScript AST evidence
-- [ ] Child issue acceptance names the exact fixture/reference path and diagnostic/stdout change
+- [x] Duplicate candidates below are confirmed as no-match or this issue is superseded
+- [x] At least one child issue contains an exact `mise run reference-triage -- ...` command
+- [x] Child issue includes failing path, diagnostic code, source context, visible symbols, and parser/TypeScript AST evidence
+- [x] Child issue acceptance names the exact fixture/reference path and diagnostic/stdout change
 
 ## Validation
 
@@ -97,15 +99,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] updated: `current-state.md` (repo root)
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 
@@ -119,36 +121,29 @@ Follow-up issues:
 
 ## Smart triage
 
-Not generated. Rerun with `--triage-limit 1` or higher.
+Generated on 2026-05-06.
+
+- Path: `reference/typescript/tests/cases/compiler/duplicateLocalVariable3.ts`
+- Diagnostic: `DuplicateLocal` / `compiler-diagnostic`
+- Failure: `duplicate local binding: \`x\` at 32..42`
+- Source context: `var x = 1;` followed by `var x = 2;`
+- TypeScript oracle: compatible `var x` and `var y` redeclarations are accepted; incompatible `var z` later reports TS2403.
+- Split child: `issues/open/5162-allow-compatible-var-redeclarations.md`
 
 ## Completion evidence
 
-Fill only when moving to `done/`.
-
 Commits:
 
-- `...`
+- `pending`
 
 Validation result:
 
 ```text
-command:
-result:
-date:
+command: python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/duplicateLocalVariable3.ts
+result: pass; current blocker identified as duplicate `var` redeclaration handling, split to issue 5162
+date: 2026-05-06
 ```
 
 Remaining risks:
 
-- none
-## Completion evidence
-
-This issue is resolved. The `duplicateLocalVariable3.ts` test case (var redeclaration) now compiles successfully. The var redeclaration tolerance was implemented in commit `fe2e3f00` (compiler/ir: fix remaining DuplicateLocal checks for var redeclaration) and the test was further verified by the InvariantViolation fixes (commit `607529df` — extra args for user calls, JS semantics).
-
-Validation:
-```sh
-ts2wasm build -o /tmp/test.wasm reference/typescript/tests/cases/compiler/duplicateLocalVariable3.ts
-# => exits with code 0 (PASS)
-```
-
-The duplicate-local feature is handled by the existing var redeclation support.
-
+- Incompatible redeclaration type diagnostics remain future work after issue 5162 advances past the current duplicate-local blocker.
