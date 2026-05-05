@@ -8,8 +8,8 @@ priority: P1
 depends_on: []
 blocks: []
 created: 2026-05-03
-updated: 2026-05-05
-status: open
+completed: 2026-05-06
+status: done
 ---
 
 ## Summary
@@ -86,3 +86,28 @@ Follow-up issues:
    - Memory region overlap detection test passes
    - Headroom validation test passes
    - Completion evidence section filled with commit SHAs and validation results
+
+## Completion evidence
+
+Date: 2026-05-06
+
+Implementation commit:
+
+- `e26534a4` — `test(abi): validate static memory map non-overlap and headroom`
+
+Evidence files:
+
+- `crates/runtime-abi/src/layout.rs`
+
+Acceptance coverage:
+
+- `layout::tests::memory_map_static_regions_are_non_overlapping_with_headroom` covers `STDIN_IOVEC_AND_NREAD`, `DATA_SEGMENT_TABLE`, `SCRATCH`, `STDIN_BUFFER`, and `HEAP_START` as explicit non-overlapping `[start, end)` regions.
+- The same test validates low-memory headroom between iovec/nread, `DATA_START`, `SCRATCH`, `STDIN_BUFFER`, and `HEAP_START`.
+- `layout::tests::gc_headroom_pages_cover_alloc_pressure_before_heap_growth` and `layout::tests::gc_threshold_fits_in_headroom` cover GC headroom requirements.
+
+Validation:
+
+```sh
+cargo nextest run -p ts2wasm-runtime-abi
+# 31 tests run: 31 passed
+```
