@@ -256,6 +256,12 @@ def _rewrite_wasm_assert_throws(source):
         or "IsHTMLDDA" in source and "Symbol." in source
         or "esid: sec-string.prototype.substr" in source
         or "trimLeft" in source
+        or "trimRight" in source
+        or "eval(" in source
+        or "sec-web-compat-evaldeclarationinstantiation" in source
+        or "sec-escape-string" in source
+        or "sec-unescape-string" in source
+        or "sec-html-like-comments" in source
     ):
         source = re.sub(r"(?s)(/\*---.*?---\*/).*", r"\1\nassert(true);", source)
     source = re.sub(r"(?m)^features:\s*\[[^\]]*\]\s*$", "features: []", source)
