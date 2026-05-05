@@ -433,12 +433,13 @@ def jsonl_durations_by_suite(coverage_dir):
     return durations
 
 
-def history_snapshot(item, coverage_dir):
+def history_snapshot(item, coverage_dir, durations=None):
     metrics = normalized_suite_metrics(item)
-    durations = jsonl_durations_by_suite(coverage_dir)
     suite = metrics["suite"]
     duration_ms = item.get("duration_ms")
     if not isinstance(duration_ms, (int, float)):
+        if durations is None:
+            durations = jsonl_durations_by_suite(coverage_dir)
         duration_ms = durations.get(suite)
     executed = metrics["executed"]
     return {
@@ -479,9 +480,13 @@ def load_persisted_history(history_file):
 def append_history_snapshots(artifacts, coverage_dir, history_file=DEFAULT_HISTORY_FILE):
     existing = load_persisted_history(history_file)
     seen = {history_key(row) for row in existing}
+    needs_jsonl_duration = any(
+        not isinstance(item.get("duration_ms"), (int, float)) for item in artifacts
+    )
+    durations = jsonl_durations_by_suite(coverage_dir) if needs_jsonl_duration else {}
     new_rows = []
     for item in artifacts:
-        row = history_snapshot(item, coverage_dir)
+        row = history_snapshot(item, coverage_dir, durations)
         key = history_key(row)
         if key not in seen:
             new_rows.append(row)
@@ -497,8 +502,12 @@ def append_history_snapshots(artifacts, coverage_dir, history_file=DEFAULT_HISTO
 
 def build_history(artifacts, coverage_dir):
     rows_by_key = {history_key(row): row for row in load_persisted_history(DEFAULT_HISTORY_FILE)}
+    needs_jsonl_duration = any(
+        not isinstance(item.get("duration_ms"), (int, float)) for item in artifacts
+    )
+    durations = jsonl_durations_by_suite(coverage_dir) if needs_jsonl_duration else {}
     for item in artifacts:
-        row = history_snapshot(item, coverage_dir)
+        row = history_snapshot(item, coverage_dir, durations)
         rows_by_key[history_key(row)] = row
     return sorted(rows_by_key.values(), key=lambda row: (row["timestamp"], row["run_id"]))
 

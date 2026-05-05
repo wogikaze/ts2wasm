@@ -23,7 +23,7 @@ Notes:
   - --paths-file: run a deterministic subset listed as repo-relative or suite-relative paths
   - --path-filter: run only files whose repo-relative path contains TEXT (repeatable)
   - --dashboard-data: refresh dashboard data after writing this suite coverage result
-  - --jsonl: output results as JSONL (test262 only, enables full harness with parallel exec)
+  - --jsonl: output results as JSONL (test262 only, uses server batch builds unless --no-server)
   - --no-semantic: skip Node/iwasm semantic comparison (compile-only, faster for local full runs)
   - --jobs N: number of parallel jobs (default: CPU count)
   - --sample N: max files per category (test262 only, uses category-based sampling)
@@ -31,6 +31,10 @@ Notes:
    - --no-server: use legacy subprocess mode (default: server mode with batch parallel build)
    - TS2WASM_REFERENCE_ROOT may point at an external reference/ directory for
     validation from isolated git worktrees.
+   - TS2WASM_SERVER_EMIT_WASM=0 disables server-side wasm emission for semantic runs.
+   - TS2WASM_SERVER_MAX_WORKERS caps server workers (default: min(CPU, 32)).
+   - TS2WASM_REFERENCE_COVERAGE_BATCH controls server batch size (default: 200).
+   - TS2WASM_NOTIFY_NEW_PASSES=0 skips baseline/new-pass notification work.
 """
 
 import sys
@@ -216,7 +220,7 @@ def usage():
     print("  tsgo      -> reference/typescript-go/testdata/tests/**")
     print()
     print("Flags:")
-    print("  --jsonl      Output results as JSONL (test262 only, enables full harness with parallel exec)")
+    print("  --jsonl      Output results as JSONL (test262 only, server batch mode by default)")
     print("  --jobs N     Number of parallel jobs (default: CPU count)")
     print("  --no-semantic disable semantic check (skip Node/iwasm execution after build)")
     print("  --sample N   Max files per category (test262 only, uses category-based sampling)")
@@ -852,6 +856,11 @@ def main():
         if jobs < 1:
             jobs = 1
 
+        t262 = _ensure_test262_runner()
+        # The harness loader is cached by file name; set the root once for the
+        # selected corpus before building sources in parallel.
+        t262.HARNESS_DIR = test262_harness_dir_for(files[0])
+
         results_dir = REPO_ROOT / "artifacts" / "coverage" / "results"
         results_dir.mkdir(parents=True, exist_ok=True)
         jsonl_file = results_dir / f"{suite}-results.jsonl"
@@ -861,38 +870,522 @@ def main():
         unsupported = 0
         blocked = 0
         total_duration_ms = 0
+        completed = 0
+        total = len(files)
+        last_progress = 0
 
         jsonl_started_at = time.perf_counter()
-        with tempfile.TemporaryDirectory() as tmp_dir:
-            tmp_dir = Path(tmp_dir)
-            with open(jsonl_file, 'w', encoding='utf-8') as jsonl_out:
-                with ThreadPoolExecutor(max_workers=jobs) as executor:
-                    futures = {executor.submit(_ensure_test262_runner().process_one_test, f, tmp_dir, False): f for f in files}
-                    completed = 0
-                    total = len(files)
-                    last_progress = 0
 
-                    for future in as_completed(futures):
-                        record, status = future.result()
-                        if record:
-                            jsonl_out.write(record + "\n")
+        def elapsed_ms(started_at):
+            return int(round((time.perf_counter() - started_at) * 1000))
+
+        def extract_error_line(text, source_code):
+            line_match = re.search(r"(?:at line |:)(\d+)(?::|$)", text or "")
+            if line_match:
+                return int(line_match.group(1))
+            pos_match = re.search(r"at (\d+)\.\.(\d+)", text or "")
+            if pos_match and source_code:
+                try:
+                    byte_pos = int(pos_match.group(1))
+                    return source_code[:byte_pos].count("\n") + 1
+                except ValueError:
+                    return None
+            return None
+
+        def consume_record(jsonl_out, record, status):
+            nonlocal passed, failed, unsupported, blocked, total_duration_ms
+            nonlocal completed, last_progress
+            if record:
+                jsonl_out.write(record + "\n")
+                try:
+                    total_duration_ms += int(json.loads(record).get("duration_ms", 0) or 0)
+                except json.JSONDecodeError:
+                    pass
+            if status == "pass":
+                passed += 1
+            elif status in ("fail", "mismatch", "runtime_error"):
+                failed += 1
+            elif status == "unsupported":
+                unsupported += 1
+            elif status == "blocked":
+                blocked += 1
+            completed += 1
+            progress = int((completed / total) * 100)
+            if progress >= last_progress + 5:
+                print(f"Progress: {progress}% ({completed}/{total})", file=sys.stderr)
+                last_progress = progress
+
+        def make_unsupported_record(item, diag_code, feature, reason, started_at=None, stderr=None):
+            tracking_key = f"feature:{feature}" if feature else None
+            duration = elapsed_ms(started_at or item["started_at"])
+            record = t262.create_test_record(
+                "test262",
+                str(item["file_path"]),
+                "wasm-iwasm",
+                "unsupported",
+                None,
+                None,
+                f"{diag_code}/{feature}: {reason}" if feature else f"{diag_code}: {reason}",
+                tracking_key,
+                item.get("source_code", ""),
+                item.get("error_line"),
+                stderr,
+                duration,
+            )
+            return record, "unsupported"
+
+        def make_blocked_record(item, diag_code, feature, reason, started_at=None, stderr=None):
+            duration = elapsed_ms(started_at or item["started_at"])
+            record = t262.create_test_record(
+                "test262",
+                str(item["file_path"]),
+                "wasm-iwasm",
+                "blocked",
+                None,
+                None,
+                f"{diag_code}/{feature}: {reason}" if feature else f"{diag_code}: {reason}",
+                source_code=item.get("source_code", ""),
+                error_line=item.get("error_line"),
+                stderr=stderr,
+                duration_ms=duration,
+            )
+            return record, "blocked"
+
+        def make_fail_record(item, diag_code, reason, actual=None, started_at=None, stderr=None):
+            duration = elapsed_ms(started_at or item["started_at"])
+            record = t262.create_test_record(
+                "test262",
+                str(item["file_path"]),
+                "wasm-iwasm",
+                "fail",
+                None,
+                actual,
+                f"{diag_code}: {reason}" if reason else diag_code,
+                source_code=item.get("source_code", ""),
+                error_line=item.get("error_line"),
+                stderr=stderr,
+                duration_ms=duration,
+            )
+            return record, "fail"
+
+        def make_negative_pass_record(item, phase, typ, reason, actual=None, started_at=None, stderr=None):
+            duration = elapsed_ms(started_at or item["started_at"])
+            expected = f"negative {phase}/{typ or 'error'}"
+            record = t262.create_test_record(
+                "test262",
+                str(item["file_path"]),
+                "wasm-iwasm",
+                "pass",
+                expected,
+                actual or reason,
+                source_code=item.get("source_code", ""),
+                stderr=stderr,
+                duration_ms=duration,
+            )
+            return record, "pass"
+
+        def prepare_jsonl_item(pair):
+            index, file_path = pair
+            started_at = time.perf_counter()
+            item = {
+                "type": "build_item",
+                "id": index,
+                "file_path": file_path,
+                "source_code": "",
+                "metadata": None,
+                "build_source": "",
+                "started_at": started_at,
+                "error_line": None,
+            }
+            try:
+                source_code = file_path.read_text(encoding="utf-8")
+            except (OSError, UnicodeDecodeError) as exc:
+                item["source_code"] = ""
+                return {
+                    "type": "early_record",
+                    "index": index,
+                    "record_status": make_blocked_record(
+                        item, "HarnessError", "test262-harness", f"failed to read source: {exc}", started_at
+                    ),
+                }
+
+            item["source_code"] = source_code
+            metadata = t262.parse_test262_metadata(source_code)
+            item["metadata"] = metadata
+            unsupported_reason = metadata.unsupported_reason
+            if unsupported_reason:
+                return {
+                    "type": "early_record",
+                    "index": index,
+                    "record_status": make_unsupported_record(
+                        item,
+                        "UnsupportedTest262Metadata",
+                        "test262-metadata",
+                        unsupported_reason,
+                        started_at,
+                    ),
+                }
+
+            try:
+                item["build_source"] = t262.build_test262_source(
+                    file_path, source_code, metadata, target="wasm"
+                )
+            except Exception as exc:
+                return {
+                    "type": "early_record",
+                    "index": index,
+                    "record_status": make_blocked_record(
+                        item, "HarnessError", "test262-harness", str(exc), started_at
+                    ),
+                }
+            return {"type": "build_item", "index": index, "item": item}
+
+        def get_node_reference_for_item(item, thread_tmp):
+            node_source = t262.build_test262_source(
+                item["file_path"], item["source_code"], item["metadata"], target="node"
+            )
+            tmp_source = thread_tmp / "node-source.js"
+            tmp_source.write_text(node_source, encoding="utf-8")
+            result = subprocess.run(
+                ["timeout", "5s", "node", str(tmp_source)],
+                capture_output=True,
+                text=True,
+                cwd=REPO_ROOT,
+            )
+            node_ok = result.returncode == 0
+            if item["metadata"].expects_negative:
+                node_ok = result.returncode != 0
+            return result.stdout + result.stderr, node_ok
+
+        def classify_server_error(item, build_resp):
+            metadata = item["metadata"]
+            diag_code = build_resp.get("code") or "CompilationError"
+            message = build_resp.get("message") or diag_code
+            stderr = f"[{diag_code}] {message}"
+            item["error_line"] = extract_error_line(message, item.get("source_code", ""))
+
+            if metadata.expects_negative:
+                reason = (
+                    f"negative {metadata.negative_phase}/{metadata.negative_type or 'error'} "
+                    "rejected during compilation"
+                )
+                return make_negative_pass_record(
+                    item,
+                    metadata.negative_phase,
+                    metadata.negative_type,
+                    reason,
+                    actual=reason,
+                    stderr=stderr,
+                )
+
+            feature = t262.feature_label(diag_code, message, str(item["file_path"]))
+            if diag_code == "BackendIo":
+                return make_blocked_record(item, diag_code, feature, message, stderr=stderr)
+            if diag_code == "InvariantViolation":
+                return make_fail_record(item, diag_code, message, stderr=stderr)
+            return make_unsupported_record(item, diag_code, feature, message, stderr=stderr)
+
+        def classify_completed_negative_for_jsonl(item):
+            metadata = item["metadata"]
+            status, diag_code, feature, reason = t262.classify_completed_negative(metadata)
+            if status == "unsupported":
+                return make_unsupported_record(item, diag_code, feature, reason)
+            if status == "fail":
+                return make_fail_record(item, diag_code, reason)
+            return make_negative_pass_record(
+                item, metadata.negative_phase, metadata.negative_type, reason, actual=reason
+            )
+
+        def run_wasm_oracle_for_item(item, wasm_path):
+            metadata = item["metadata"]
+            thread_tmp = Path(tempfile.mkdtemp(dir=tmp_dir))
+            try:
+                if not semantic_check:
+                    duration = elapsed_ms(item["started_at"])
+                    record = t262.create_test_record(
+                        "test262",
+                        str(item["file_path"]),
+                        "wasm-build",
+                        "pass",
+                        None,
+                        None,
+                        "build_pass",
+                        source_code=item.get("source_code", ""),
+                        duration_ms=duration,
+                    )
+                    return record, "pass"
+
+                wasm_result = subprocess.run(
+                    ["timeout", "5s", "iwasm", str(wasm_path)],
+                    capture_output=True,
+                    text=True,
+                    cwd=REPO_ROOT,
+                )
+
+                if wasm_result.returncode == 0:
+                    actual = wasm_result.stdout
+                    if t262.ASSERT_FAILURE_SENTINEL in actual:
+                        return make_fail_record(
+                            item,
+                            "Test262AssertionFailure",
+                            "test262 assertion failed",
+                            actual=actual,
+                            stderr=wasm_result.stderr,
+                        )
+                    if metadata.expects_negative:
+                        return classify_completed_negative_for_jsonl(item)
+
+                    expected, node_ok = get_node_reference_for_item(item, thread_tmp)
+                    if node_ok and actual == expected:
+                        duration = elapsed_ms(item["started_at"])
+                        record = t262.create_test_record(
+                            "test262",
+                            str(item["file_path"]),
+                            "wasm-iwasm",
+                            "pass",
+                            expected,
+                            actual,
+                            source_code=item.get("source_code", ""),
+                            duration_ms=duration,
+                        )
+                        return record, "pass"
+                    if node_ok:
+                        duration = elapsed_ms(item["started_at"])
+                        record = t262.create_test_record(
+                            "test262",
+                            str(item["file_path"]),
+                            "wasm-iwasm",
+                            "mismatch",
+                            expected,
+                            actual,
+                            "output mismatch",
+                            source_code=item.get("source_code", ""),
+                            stderr=wasm_result.stderr,
+                            duration_ms=duration,
+                        )
+                        return record, "mismatch"
+                    duration = elapsed_ms(item["started_at"])
+                    record = t262.create_test_record(
+                        "test262",
+                        str(item["file_path"]),
+                        "wasm-iwasm",
+                        "blocked",
+                        expected,
+                        actual,
+                        "node execution failed",
+                        source_code=item.get("source_code", ""),
+                        duration_ms=duration,
+                    )
+                    return record, "blocked"
+
+                if metadata.expects_negative:
+                    reason = (
+                        f"negative {metadata.negative_phase}/{metadata.negative_type or 'error'} "
+                        "rejected during execution"
+                    )
+                    return make_negative_pass_record(
+                        item,
+                        metadata.negative_phase,
+                        metadata.negative_type,
+                        reason,
+                        actual=reason,
+                        stderr=wasm_result.stderr,
+                    )
+
+                item["error_line"] = extract_error_line(wasm_result.stderr, item.get("source_code", ""))
+                return make_fail_record(
+                    item,
+                    f"RuntimeError:{wasm_result.returncode}",
+                    wasm_result.stderr[:200] if wasm_result.stderr else "runtime execution failed",
+                    actual=wasm_result.stdout,
+                    stderr=wasm_result.stderr,
+                )
+            finally:
+                shutil.rmtree(thread_tmp, ignore_errors=True)
+
+        def start_jsonl_server():
+            return subprocess.Popen(
+                [str(TS2WASM_BINARY), "server"],
+                stdin=subprocess.PIPE,
+                stdout=subprocess.PIPE,
+                stderr=sys.stderr,
+                cwd=REPO_ROOT,
+            )
+
+        def stop_jsonl_server(proc):
+            if proc is None:
+                return
+            try:
+                proc.stdin.write(json.dumps({"id": -1, "source": ""}).encode("utf-8") + b"\n")
+                proc.stdin.flush()
+            except (BrokenPipeError, OSError):
+                pass
+            try:
+                proc.wait(timeout=5)
+            except subprocess.TimeoutExpired:
+                proc.kill()
+                proc.wait()
+
+        def read_server_line_with_timeout(proc):
+            read_err = [None]
+            read_result = [None]
+
+            def do_read():
+                try:
+                    read_result[0] = proc.stdout.readline()
+                except Exception as exc:
+                    read_err[0] = exc
+
+            reader = threading.Thread(target=do_read, daemon=True)
+            reader.start()
+            reader.join(timeout=SERVER_BATCH_RESPONSE_TIMEOUT_SECS)
+            if reader.is_alive():
+                return None, TimeoutError("server batch response timed out")
+            if read_err[0] is not None:
+                return None, read_err[0]
+            if not read_result[0]:
+                return None, EOFError("server disconnected")
+            return read_result[0], None
+
+        def run_legacy_jsonl_batch(jsonl_out, batch_items):
+            with ThreadPoolExecutor(max_workers=jobs) as executor:
+                futures = {
+                    executor.submit(t262.process_one_test, item["file_path"], tmp_dir, False): item
+                    for item in batch_items
+                }
+                for future in as_completed(futures):
+                    record, status = future.result()
+                    consume_record(jsonl_out, record, status)
+
+        with tempfile.TemporaryDirectory() as tmp_dir_name:
+            tmp_dir = Path(tmp_dir_name)
+            with open(jsonl_file, "w", encoding="utf-8") as jsonl_out:
+                if not server_mode:
+                    run_legacy_jsonl_batch(
+                        jsonl_out,
+                        [{"file_path": file_path} for file_path in files],
+                    )
+                else:
+                    prepared = [None] * len(files)
+                    with ThreadPoolExecutor(max_workers=jobs) as executor:
+                        futures = {
+                            executor.submit(prepare_jsonl_item, pair): pair[0]
+                            for pair in enumerate(files)
+                        }
+                        for future in as_completed(futures):
+                            result = future.result()
+                            prepared[result["index"]] = result
+
+                    build_items = []
+                    for result in prepared:
+                        if result["type"] == "early_record":
+                            record, status = result["record_status"]
+                            consume_record(jsonl_out, record, status)
+                        else:
+                            build_items.append(result["item"])
+
+                    server_proc = None
+                    try:
+                        if build_items:
+                            server_proc = start_jsonl_server()
+
+                        batch_size = int(os.environ.get("TS2WASM_REFERENCE_COVERAGE_BATCH", "200"))
+                        emit_mode = "wasm" if semantic_check else "check"
+                        if build_items:
+                            print(f"Starting ts2wasm server (jsonl {emit_mode} mode, {jobs} workers)...", file=sys.stderr)
+                        for start in range(0, len(build_items), batch_size):
+                            batch = build_items[start:start + batch_size]
+                            for item in batch:
+                                item["started_at"] = time.perf_counter()
+
+                            if server_proc is None:
+                                run_legacy_jsonl_batch(jsonl_out, batch)
+                                continue
+
+                            request = {
+                                "id": -1,
+                                "emit": emit_mode,
+                                "jobs": jobs,
+                                "items": [
+                                    {"id": item["id"], "source": item["build_source"]}
+                                    for item in batch
+                                ],
+                            }
                             try:
-                                total_duration_ms += int(json.loads(record).get("duration_ms", 0) or 0)
+                                server_proc.stdin.write(json.dumps(request).encode("utf-8") + b"\n")
+                                server_proc.stdin.flush()
+                            except (BrokenPipeError, OSError):
+                                try:
+                                    server_proc.kill()
+                                except OSError:
+                                    pass
+                                server_proc = None
+                                run_legacy_jsonl_batch(jsonl_out, batch)
+                                continue
+
+                            resp_line, err = read_server_line_with_timeout(server_proc)
+                            if err is not None:
+                                try:
+                                    server_proc.kill()
+                                except OSError:
+                                    pass
+                                server_proc = None
+                                run_legacy_jsonl_batch(jsonl_out, batch)
+                                continue
+
+                            try:
+                                build_results = json.loads(resp_line.decode("utf-8"))
                             except json.JSONDecodeError:
-                                pass
-                        if status == "pass":
-                            passed += 1
-                        elif status in ("fail", "mismatch", "runtime_error"):
-                            failed += 1
-                        elif status == "unsupported":
-                            unsupported += 1
-                        elif status == "blocked":
-                            blocked += 1
-                        completed += 1
-                        progress = int((completed / total) * 100)
-                        if progress >= last_progress + 5:
-                            print(f"Progress: {progress}% ({completed}/{total})", file=sys.stderr)
-                            last_progress = progress
+                                try:
+                                    server_proc.kill()
+                                except OSError:
+                                    pass
+                                server_proc = None
+                                run_legacy_jsonl_batch(jsonl_out, batch)
+                                continue
+
+                            results_by_id = {result["id"]: result for result in build_results}
+
+                            def finish_item(item):
+                                build_resp = results_by_id.get(item["id"])
+                                if build_resp is None:
+                                    return make_blocked_record(
+                                        item,
+                                        "ServerProtocolError",
+                                        "test262-harness",
+                                        "server response missing item id",
+                                    )
+                                if build_resp.get("status") != "ok":
+                                    return classify_server_error(item, build_resp)
+                                if not semantic_check:
+                                    duration = elapsed_ms(item["started_at"])
+                                    record = t262.create_test_record(
+                                        "test262",
+                                        str(item["file_path"]),
+                                        "wasm-build",
+                                        "pass",
+                                        None,
+                                        None,
+                                        "build_pass",
+                                        source_code=item.get("source_code", ""),
+                                        duration_ms=duration,
+                                    )
+                                    return record, "pass"
+                                wasm_path = build_resp.get("wasm_path")
+                                if not wasm_path:
+                                    # Older or failed server-side emit path. Re-run the item through
+                                    # the legacy harness to preserve JSONL semantics instead of
+                                    # misclassifying a build-only success as a runtime pass.
+                                    return t262.process_one_test(item["file_path"], tmp_dir, False)
+                                return run_wasm_oracle_for_item(item, wasm_path)
+
+                            with ThreadPoolExecutor(max_workers=jobs) as executor:
+                                futures = {executor.submit(finish_item, item): item for item in batch}
+                                for future in as_completed(futures):
+                                    record, status = future.result()
+                                    consume_record(jsonl_out, record, status)
+                    finally:
+                        stop_jsonl_server(server_proc)
 
         print(f"\n=== {suite} Summary ===", file=sys.stderr)
         print(f"Pass: {passed}", file=sys.stderr)
@@ -914,6 +1407,8 @@ def main():
             "wall_duration_ms": wall_duration_ms,
             "timestamp": datetime.now().isoformat(),
             "jsonl_file": str(jsonl_file),
+            "server_mode": bool(server_mode),
+            "semantic_enabled": bool(semantic_check),
         }
         summary_file = results_dir / f"{suite}-summary.json"
         summary_file.write_text(json.dumps(summary, indent=2), encoding="utf-8")
@@ -923,7 +1418,11 @@ def main():
         legacy_file = results_dir / f"{suite}.json"
         legacy_file.write_text(json.dumps(legacy, indent=2), encoding="utf-8")
 
-        if notify_new_passes is not None:
+        if (
+            semantic_check
+            and notify_new_passes is not None
+            and os.environ.get("TS2WASM_NOTIFY_NEW_PASSES", "1") != "0"
+        ):
             try:
                 notify_new_passes(jsonl_file, suite=suite)
             except Exception as e:
@@ -949,7 +1448,7 @@ def main():
     if suite != "test262":
         semantic_check = False
     semantic_enabled = bool(semantic_check and shutil.which("node") and shutil.which("iwasm"))
-    server_emit_wasm = semantic_enabled and os.environ.get("TS2WASM_SERVER_EMIT_WASM") == "1"
+    server_emit_wasm = semantic_enabled and os.environ.get("TS2WASM_SERVER_EMIT_WASM", "1") != "0"
     
     if jobs is None:
         jobs = os.cpu_count() or 4
@@ -1084,9 +1583,22 @@ def main():
         return rm
 
     def _complete_semantic_for_build_item(item, result_metrics, tmp_dir):
-        """Build wasm and run Node/iwasm comparison for one server build-pass item."""
+        """Run Node/iwasm comparison for one server build-pass item.
+
+        When server-side wasm emission is enabled, reuse the wasm_path returned
+        by the batch server.  The old path rebuilt every passing item with a
+        separate `ts2wasm build` subprocess, which doubled the expensive work.
+        """
         thread_tmp = Path(tempfile.mkdtemp(dir=tmp_dir))
         try:
+            server_wasm_path = item.get("wasm_path")
+            if server_wasm_path:
+                _run_semantic_check(
+                    item["file_path"], item["source_code"], item["metadata"],
+                    thread_tmp, Path(server_wasm_path), result_metrics
+                )
+                return result_metrics
+
             build_input = thread_tmp / "in.js"
             build_input.write_text(item["build_source"], encoding="utf-8")
             out_wasm = thread_tmp / "out.wasm"
@@ -1408,8 +1920,7 @@ def main():
                     "emit": "wasm" if server_emit_wasm else "check",
                     "items": [{"id": item["id"], "source": item["build_source"]} for item in batch]
                 }
-                if server_emit_wasm:
-                    request["jobs"] = jobs
+                request["jobs"] = jobs
                 req = json.dumps(request)
                 try:
                     server_proc.stdin.write(req.encode("utf-8") + b"\n")

@@ -3,6 +3,7 @@
 Originally extracted from the test262 runner (formerly scripts/run/test262.py, now merged into reference-coverage.py).
 """
 
+import functools
 import json
 import os
 import re
@@ -256,6 +257,7 @@ def parse_test262_metadata(source_code):
 # Harness file loading
 # ---------------------------------------------------------------------------
 
+@functools.lru_cache(maxsize=None)
 def load_harness_file(name):
     path = HARNESS_DIR / name
     if not path.is_file():

@@ -26,9 +26,13 @@ use crate::{
 /// items are reported as timed out rather than processed.
 const BATCH_TIMEOUT_SECS: u64 = 30;
 
-/// Maximum number of worker threads for batch processing. Capped at CPU count.
-const MAX_WORKERS: usize = 8;
-const SERVER_WORKER_STACK_BYTES: usize = 256 * 1024 * 1024;
+/// Default upper bound for batch workers when no environment override is set.
+///
+/// The Python coverage runner passes its `--jobs` value to the server.  The old
+/// fixed cap of 8 made large reference batches artificially slow on 16+ core
+/// machines, so the cap is now configurable while still bounded by CPU count.
+const DEFAULT_MAX_WORKERS_CAP: usize = 32;
+const DEFAULT_SERVER_WORKER_STACK_BYTES: usize = 256 * 1024 * 1024;
 
 /// A single build request from the client (one JSON line on stdin).
 #[derive(Debug, Deserialize)]
@@ -199,16 +203,28 @@ fn process_batch(
     let items: Arc<Vec<BatchItem>> = Arc::new(items.to_vec());
     let shared_tmpdir = Arc::new(tmpdir.to_path_buf());
 
-    // Number of worker threads: up to CPU count and MAX_WORKERS, capped at batch size.
-    let worker_limit = requested_workers
-        .unwrap_or(MAX_WORKERS)
-        .clamp(1, MAX_WORKERS);
-    let n_workers = std::thread::available_parallelism()
+    // Number of worker threads: honor the client request, capped by CPU count
+    // and an optional TS2WASM_SERVER_MAX_WORKERS override.
+    let available_workers = std::thread::available_parallelism()
         .map(|c| c.get())
         .unwrap_or(4)
-        .min(worker_limit)
-        .min(n)
         .max(1);
+    let configured_cap = std::env::var("TS2WASM_SERVER_MAX_WORKERS")
+        .ok()
+        .and_then(|value| value.parse::<usize>().ok())
+        .filter(|value| *value > 0)
+        .unwrap_or(DEFAULT_MAX_WORKERS_CAP)
+        .min(available_workers)
+        .max(1);
+    let worker_limit = requested_workers
+        .unwrap_or(configured_cap)
+        .clamp(1, configured_cap);
+    let n_workers = worker_limit.min(n).max(1);
+    let worker_stack_bytes = std::env::var("TS2WASM_SERVER_WORKER_STACK_BYTES")
+        .ok()
+        .and_then(|value| value.parse::<usize>().ok())
+        .filter(|value| *value > 0)
+        .unwrap_or(DEFAULT_SERVER_WORKER_STACK_BYTES);
 
     let mut handles = Vec::with_capacity(n_workers);
     for worker_id in 0..n_workers {
@@ -220,7 +236,7 @@ fn process_batch(
 
         let handle = std::thread::Builder::new()
             .name(format!("ts2wasm-server-worker-{worker_id}"))
-            .stack_size(SERVER_WORKER_STACK_BYTES)
+            .stack_size(worker_stack_bytes)
             .spawn(move || {
                 loop {
                     // Check timeout before claiming next item.
@@ -377,12 +393,9 @@ fn compile_source_with_emit(
         EmitMode::Check => Ok(None),
         EmitMode::Wasm => {
             let output = tmpdir.join(format!("{}.wasm", id));
-            match ts2wasm_backend_wasm::emit_wat(&lowered)
-                .and_then(|wat| write_wasm_from_wat(&wat, &output))
-            {
-                Ok(()) => Ok(Some(output)),
-                Err(_) => Ok(None),
-            }
+            ts2wasm_backend_wasm::emit_wat(&lowered)
+                .and_then(|wat| write_wasm_from_wat(&wat, &output))?;
+            Ok(Some(output))
         }
     }
 }
