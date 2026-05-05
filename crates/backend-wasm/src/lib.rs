@@ -417,6 +417,7 @@ mod tests {
         };
 
         let wat = emit_wat(&program).expect("function local root should emit WAT");
+        let func_wat = wat_function(&wat, "func_0");
         let backend_root_count = LocalFrame::new(0, None).backend_local_count();
         let static_root_bytes = backend_root_count * std::mem::size_of::<u32>();
         let root_bytes = static_root_bytes + Layout::GC_CALL_FRAME_ROOT_STACK_BYTES as usize;
@@ -443,29 +444,30 @@ mod tests {
         assert!(wat.contains(&format!(
             "(global.set $gc_call_frame_top (i32.add (global.get $gc_call_frame_top) (i32.const {activation_frame_bytes})))"
         )));
-        assert!(wat.contains(
+        assert!(func_wat.contains(
             "(i32.store (i32.add (global.get $gc_call_frame_current) (i32.const 8)) (local.get 0))"
         ));
-        assert!(wat.contains(
+        assert!(func_wat.contains(
             "(i32.store (i32.add (global.get $gc_call_frame_current) (i32.const 12)) (local.get 1))"
         ));
-        assert!(wat.contains(&format!(
+        assert!(func_wat.contains(&format!(
             "(i32.store (i32.add (global.get $gc_call_frame_current) (i32.const {backend_last_offset})) (local.get {backend_last_local}))"
         )));
-        assert!(wat.contains(&format!(
+        assert!(func_wat.contains(&format!(
             "(local.set 1 (i32.const {}))",
             ValueTag::UNDEFINED
         )));
-        assert!(!wat.contains(&format!(
+        assert!(!func_wat.contains(&format!(
             "(local.set 0 (i32.const {}))",
             ValueTag::UNDEFINED
         )));
-        assert!(wat.contains(
+        assert!(func_wat.contains(
             "(i32.store (i32.add (global.get $gc_call_frame_current) (i32.const 12)) (local.get 1))"
         ));
         assert!(wat.contains("(call $gc_mark_call_frame_roots"));
         assert!(
-            wat.contains("(global.set $gc_call_frame_top (global.get $gc_call_frame_current))")
+            func_wat
+                .contains("(global.set $gc_call_frame_top (global.get $gc_call_frame_current))")
         );
     }
 
@@ -1193,6 +1195,19 @@ mod tests {
         let lowered = lowered::lower_program(&resolved).expect("fixture should lower");
         lowered::validate_lowered(&lowered).expect("fixture lowered IR should validate");
         lowered
+    }
+
+    fn wat_function<'a>(wat: &'a str, symbol: &str) -> &'a str {
+        let marker = format!("  (func ${symbol}");
+        let start = wat
+            .find(&marker)
+            .unwrap_or_else(|| panic!("WAT should contain function ${symbol}"));
+        let rest = &wat[start..];
+        let end = rest[1..]
+            .find("\n  (func $")
+            .map(|offset| offset + 1)
+            .unwrap_or(rest.len());
+        &rest[..end]
     }
 
     fn assert_binary_imports_fd_write(wasm: &[u8]) {
