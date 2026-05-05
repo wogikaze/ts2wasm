@@ -3,12 +3,14 @@ id: 5148
 title: "Parse generic async generator declarations"
 type: feature
 area: frontend/syntax
-class: implementation-ready
+class: done
 priority: P2
 depends_on: []
 blocks: []
 created: 2026-05-06
 updated: 2026-05-06
+completed: 2026-05-06
+status: done
 ---
 
 ## Summary
@@ -66,10 +68,10 @@ The parser erases TypeScript type parameters and return annotations on async gen
 
 In scope:
 
-- [ ] Allow a balanced TypeScript generic parameter list after `async function* f`.
-- [ ] Allow and erase the return type annotation after the parameter list.
-- [ ] Add a focused parser test for `async function* f<T extends Promise<never>>(): AsyncGenerator<T, void, void> { }`.
-- [ ] Re-run the representative triage and confirm it no longer reports `expected LeftParen`.
+- [x] Allow a balanced TypeScript generic parameter list after `async function* f`.
+- [x] Allow and erase the return type annotation after the parameter list.
+- [x] Add a focused parser test for `async function* f<T extends Promise<never>>(): AsyncGenerator<T, void, void> { }`.
+- [x] Re-run the representative triage and confirm it no longer reports `expected LeftParen`.
 
 Out of scope:
 
@@ -93,10 +95,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] A focused parser test shows the generic async generator declaration parses or reaches the existing async-generator boundary without the `<` parser error.
-- [ ] The representative triage no longer reports `expected LeftParen, got Some(Less)`.
-- [ ] Return type `AsyncGenerator<T, void, void>` is erased without corrupting the following function body.
-- [ ] Existing non-generic async/generator diagnostics remain source-spanned.
+- [x] A focused parser test shows the generic async generator declaration parses or reaches the existing async-generator boundary without the `<` parser error.
+- [x] The representative triage no longer reports `expected LeftParen, got Some(Less)`.
+- [x] Return type `AsyncGenerator<T, void, void>` is erased without corrupting the following function body.
+- [x] Existing non-generic async/generator diagnostics remain source-spanned.
 
 ## Validation
 
@@ -126,15 +128,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 
@@ -147,18 +149,20 @@ Related broader issues:
 
 ## Completion evidence
 
-Fill only when moving to `done/`.
-
 Commits:
 
-- `...`
+- `5a6b3953` chore: commit class method call and void operator implementations
 
 Validation result:
 
 ```text
-command:
-result:
-date:
+command: python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/awaitedTypeCrash.ts
+result: pass; BuildPass, AST/resolved dumps succeed, TypeScript oracle has no diagnostics
+date: 2026-05-06
+
+command: git diff --check
+result: pass
+date: 2026-05-06
 ```
 
 Remaining risks:
