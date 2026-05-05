@@ -8,7 +8,7 @@ priority: P1
 depends_on: []
 blocks: []
 created: 2026-05-03
-updated: 2026-05-05status: open
+updated: 2026-05-05
 ---
 
 ## Summary
