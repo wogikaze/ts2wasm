@@ -91,6 +91,12 @@ pub fn build_file_with_host_deny(
         span: None,
     })?;
     let source = test262_preprocessor::process_test262_includes(input, &source)?;
+    // Check for @fileName: multi-section file -- compile each section as its own module.
+    let sections = split_file_name_sections(&source);
+    if !sections.is_empty() {
+        return build_multi_section_file(&sections, output, capability_manifest_output, host_deny);
+    }
+
     validate_type_reference_directives(&source)?;
     let tokens = Lexer::new(&source).tokenize()?;
     let program = Parser::new(tokens).parse_program()?;
@@ -178,6 +184,74 @@ fn validate_host_deny(lowered: &lowered::LoweredProgram) -> Result<(), Diagnosti
     }
 
     Ok(())
+}
+
+/// Split source by `@fileName:` or `@filename:` (case-insensitive) directives.
+/// Returns `(name, body)` pairs for each section, preserving original line
+/// ordering. Returns an empty vec when no directive is found.
+fn split_file_name_sections(source: &str) -> Vec<(String, String)> {
+    let mut sections: Vec<(String, String)> = Vec::new();
+    let mut current_name = String::new();
+    let mut current_body = String::new();
+
+    for line in source.lines() {
+        let trimmed = line.trim_start();
+        if let Some(rest) = trimmed
+            .strip_prefix("// @fileName: ")
+            .or_else(|| trimmed.strip_prefix("// @filename: "))
+            .or_else(|| trimmed.strip_prefix("// @FileName: "))
+            .or_else(|| trimmed.strip_prefix("// @Filename: "))
+        {
+            if !current_name.is_empty() {
+                sections.push((current_name.clone(), current_body.clone()));
+            }
+            current_name = rest.trim().to_string();
+            current_body = String::new();
+        } else if !current_name.is_empty() {
+            if !current_body.is_empty() {
+                current_body.push('\n');
+            }
+            current_body.push_str(line);
+        }
+    }
+    if !current_name.is_empty() {
+        sections.push((current_name, current_body));
+    }
+
+    sections
+}
+
+/// Split source by `// @fileName:` or `// @filename:` directives.
+/// Returns `(name, body)` pairs for each section, preserving original line
+/// ordering. Returns an empty vec when no directive is found.
+fn split_file_name_sections(source: &str) -> Vec<(String, String)> {
+    let mut sections: Vec<(String, String)> = Vec::new();
+    let mut current_name = String::new();
+    let mut current_body = String::new();
+
+    for line in source.lines() {
+        let trimmed = line.trim_start();
+        if let Some(rest) = trimmed
+            .strip_prefix("// @fileName: ")
+            .or_else(|| trimmed.strip_prefix("// @filename: "))
+        {
+            if !current_name.is_empty() {
+                sections.push((current_name.clone(), current_body.clone()));
+            }
+            current_name = rest.trim().to_string();
+            current_body = String::new();
+        } else if !current_name.is_empty() {
+            if !current_body.is_empty() {
+                current_body.push('\n');
+            }
+            current_body.push_str(line);
+        }
+    }
+    if !current_name.is_empty() {
+        sections.push((current_name, current_body));
+    }
+
+    sections
 }
 
 fn populate_static_module_exports_for_build(
@@ -880,6 +954,129 @@ fn lower_static_named_import_reads_for_build(
     }
 
     Ok(lowered)
+}
+
+/// Compile a multi-section test file where one source file defines multiple
+/// virtual modules via `// @fileName:` directives. Each section is compiled
+/// as a separate module body with its own scope.
+fn build_multi_section_file(
+    sections: &[(String, String)],
+    output: &Path,
+    capability_manifest_output: Option<&Path>,
+    host_deny: bool,
+) -> Result<CompileReport<()>, Diagnostic> {
+    let mut modules = Vec::new();
+    for (i, (name, section_source)) in sections.iter().enumerate() {
+        if let Some(module_info) = lower_source_as_module_body(section_source, i + 1, name.clone())?
+        {
+            modules.push(module_info);
+        }
+    }
+
+    if modules.is_empty() {
+        return Err(Diagnostic {
+            code: DiagCode::UnsupportedSyntax,
+            message: "multi-section file has no module bodies".to_owned(),
+            span: None,
+        });
+    }
+
+    let lowered = lowered::LoweredProgram {
+        top_level_statements: vec![],
+        top_level_locals: vec![],
+        functions: vec![],
+        modules,
+    };
+
+    let diagnostics = match lowered::validate_lowered(&lowered) {
+        Ok(()) => vec![],
+        Err(errs) => errs,
+    };
+    ensure_runtime_feature_gates(&lowered)?;
+
+    if host_deny {
+        validate_host_deny(&lowered)?;
+    }
+
+    if let Some(path) = capability_manifest_output {
+        let manifest = backend::emit_canonical_manifest_json(&lowered);
+        fs::write(path, manifest).map_err(|error| Diagnostic {
+            code: DiagCode::BackendIo,
+            message: format!("failed to write {}: {error}", path.display()),
+            span: None,
+        })?;
+    }
+    let wat = backend::emit_wat(&lowered)?;
+    write_wasm_from_wat(&wat, output)?;
+    Ok(CompileReport {
+        value: (),
+        diagnostics,
+    })
+}
+
+/// Compile a source string as a module body, producing a ModuleInfo.
+/// Similar to lower_static_module_body_for_build but takes source directly.
+fn lower_source_as_module_body(
+    source: &str,
+    module_id: usize,
+    specifier: String,
+) -> Result<Option<lowered::ModuleInfo>, Diagnostic> {
+    validate_type_reference_directives(source)?;
+    let program = parse_program(source)?;
+    validate_ast(&program)?;
+
+    let body = rewrite_static_module_body_for_build(Path::new(&specifier), &program)?;
+    if body.rewritten_program.is_empty() && body.module_exports.is_empty() {
+        return Ok(None);
+    }
+
+    let name_resolved = name_resolver::resolve_names(&body.rewritten_program)?;
+    let resolved = builtin_resolver::resolve_builtins(&name_resolved)?;
+    validate_optimized_hir_slice(&resolved, OptimizationLevel::O0)?;
+    let lowered_module = lowered::lower_program(&resolved)?;
+
+    let mut statements = lowered_module.top_level_statements;
+    for export in &body.module_exports {
+        let stmt = statements
+            .get(export.lowered_statement_index)
+            .ok_or_else(|| Diagnostic {
+                code: DiagCode::InvariantViolation,
+                message: format!(
+                    "module export `{}` lowered statement index {} out of range",
+                    export.name, export.lowered_statement_index
+                ),
+                span: None,
+            })?;
+        match stmt {
+            lowered::LoweredStmt::Let(_, expr) => {
+                statements.push(lowered::LoweredStmt::Export {
+                    name: export.name.clone(),
+                    expr: expr.clone(),
+                });
+            }
+            other => {
+                return Err(Diagnostic {
+                    code: DiagCode::InvariantViolation,
+                    message: format!(
+                        "module export `{}` maps to non-let statement: {other:?}",
+                        export.name
+                    ),
+                    span: None,
+                });
+            }
+        }
+    }
+
+    if statements.is_empty() {
+        return Ok(None);
+    }
+
+    Ok(Some(lowered::ModuleInfo {
+        id: module_id,
+        specifier,
+        statements,
+        locals_count: lowered_module.top_level_locals.len(),
+    }))
 }
 
 fn lower_static_module_body_for_build(
