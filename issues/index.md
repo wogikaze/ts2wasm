@@ -13,9 +13,9 @@ Issue files are the source of truth for work items. The generated section below 
 | backend | 13 | 1 | 12 |
 | cli | 15 | 0 | 15 |
 | compiler | 1 | 0 | 1 |
-| coverage | 42 | 32 | 10 |
+| coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4377 | 3855 | 522 |
+| frontend | 4377 | 3853 | 524 |
 | harness | 1 | 0 | 1 |
 | ir | 21 | 0 | 21 |
 | issues | 4 | 0 | 4 |
@@ -26,7 +26,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 4965 | 4171 | 794 |
+| total | 4965 | 4137 | 828 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -201,8 +201,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 313 | Implement array-builtin support | feature | runtime/builtins | class: triage-needed | Implement array-builtin support |
 | 335 | Implement full Math.pow number semantics | feature | runtime/builtins | class: triage-needed | Implement full Math.pow number semantics |
 | 342 | Implement Object builtin method coverage (1,721 test262 cases) | feature | runtime/builtins | class: triage-needed | Implement Object builtin method coverage (1,721 test262 cases) |
-| 343 | Implement DuplicateLocal diagnostic detection (66 test262 cases) | feature | frontend/resolver | class: blocked | Implement DuplicateLocal diagnostic detection (66 test262 cases) |
-| 345 | Implement TypeScript type alias coverage for tsc suite (23 cases) | feature | frontend/syntax | class: blocked | Implement TypeScript type alias coverage for tsc suite (23 cases) |
 | 346 | Implement TypeScript declaration emit coverage for tsgo suite (16 cases) | feature | frontend/syntax | class: triage-needed | Implement TypeScript declaration emit coverage for tsgo suite (16 cases) |
 | 353 | Implement iterator protocol integration for spread operator | feature | runtime/semantics | class: blocked | Implement iterator protocol integration for spread operator |
 | 357 | Fix ABC451 depth-8 iwasm timeout | bug | runtime/memory | class: blocked | Fix ABC451 depth-8 iwasm timeout |
@@ -2940,7 +2938,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 3434 | Implement Namespacesdeclaration | spike | frontend/syntax | class: blocked | Implement Namespacesdeclaration |
 | 3435 | Implement Namespaceswithtypealiasonlyexportsmerge | spike | frontend/syntax | class: blocked | Implement Namespaceswithtypealiasonlyexportsmerge |
 | 3436 | Implement Nanequality | spike | frontend/resolver | class: blocked | Implement Nanequality |
-| 3437 | Implement Narrowbybooleancomparison | spike | frontend/semantics | class: blocked | Implement Narrowbybooleancomparison |
+| 3437 | Implement Narrowbybooleancomparison | spike | frontend/semantics | class: triage-needed | Implement Narrowbybooleancomparison |
 | 3438 | Implement Narrowbyclauseexpressioninswitchtrue Name Resolution | spike | frontend/resolver | class: blocked | Implement Narrowbyclauseexpressioninswitchtrue Name Resolution |
 | 3439 | Implement Narrowbyclauseexpressioninswitchtrue Parser Syntax | spike | frontend/semantics | class: blocked | Implement Narrowbyclauseexpressioninswitchtrue Parser Syntax |
 | 3440 | Implement Narrowbyclauseexpressioninswitchtrue Unknown Unsupported | spike | frontend/syntax | class: triage-needed | Implement Narrowbyclauseexpressioninswitchtrue Unknown Unsupported |
@@ -2955,7 +2953,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 3449 | Implement Narrowunknownbytypepredicate | spike | frontend/resolver | class: blocked | Implement Narrowunknownbytypepredicate |
 | 3450 | Implement Narrowedconstinmethod | spike | frontend/syntax | class: triage-needed | Implement Narrowedconstinmethod |
 | 3451 | Implement Narrowedimports | spike | frontend/syntax | class: blocked | Implement Narrowedimports |
-| 3452 | Implement Narrowingassignmentreadonlyrespectsassertion | spike | frontend/syntax | class: blocked | Implement Narrowingassignmentreadonlyrespectsassertion |
+| 3452 | Implement Narrowingassignmentreadonlyrespectsassertion | spike | frontend/syntax | class: triage-needed | Implement Narrowingassignmentreadonlyrespectsassertion |
 | 3453 | Implement Narrowingbytypeofinswitch | spike | frontend/syntax | class: blocked | Implement Narrowingbytypeofinswitch |
 | 3454 | Implement Narrowingconstrainedtypeparameter | spike | frontend/syntax | class: blocked | Implement Narrowingconstrainedtypeparameter |
 | 3455 | Implement Narrowingdestructuring | spike | reference/triage | class: triage-needed | Implement Narrowingdestructuring |
@@ -4302,38 +4300,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 5015 | Implement function support | spike | frontend/syntax | class: triage-needed | Implement function support |
 | 5018 | Implement legacy-global-builtin support | spike | frontend/syntax | class: triage-needed | Implement legacy-global-builtin support |
 | 5020 | Implement RegExp literal support | spike | frontend/syntax | class: triage-needed | Implement RegExp literal support |
-| 5092 | (filler) Auto-generated gap placeholder #5092 | task | coverage | class: triage-needed | (filler) Auto-generated gap placeholder #5092 |
-| 5093 | (filler) Auto-generated gap placeholder #5093 | task | coverage | class: triage-needed | (filler) Auto-generated gap placeholder #5093 |
-| 5094 | (filler) Auto-generated gap placeholder #5094 | task | coverage | class: triage-needed | (filler) Auto-generated gap placeholder #5094 |
-| 5095 | (filler) Auto-generated gap placeholder #5095 | task | coverage | class: triage-needed | (filler) Auto-generated gap placeholder #5095 |
-| 5096 | (filler) Auto-generated gap placeholder #5096 | task | coverage | class: triage-needed | (filler) Auto-generated gap placeholder #5096 |
-| 5097 | (filler) Auto-generated gap placeholder #5097 | task | coverage | class: triage-needed | (filler) Auto-generated gap placeholder #5097 |
-| 5098 | (filler) Auto-generated gap placeholder #5098 | task | coverage | class: triage-needed | (filler) Auto-generated gap placeholder #5098 |
-| 5099 | (filler) Auto-generated gap placeholder #5099 | task | coverage | class: triage-needed | (filler) Auto-generated gap placeholder #5099 |
-| 5100 | (filler) Auto-generated gap placeholder #5100 | task | coverage | class: triage-needed | (filler) Auto-generated gap placeholder #5100 |
-| 5101 | (filler) Auto-generated gap placeholder #5101 | task | coverage | class: triage-needed | (filler) Auto-generated gap placeholder #5101 |
-| 5102 | (filler) Auto-generated gap placeholder #5102 | task | coverage | class: triage-needed | (filler) Auto-generated gap placeholder #5102 |
-| 5103 | (filler) Auto-generated gap placeholder #5103 | task | coverage | class: triage-needed | (filler) Auto-generated gap placeholder #5103 |
-| 5104 | (filler) Auto-generated gap placeholder #5104 | task | coverage | class: triage-needed | (filler) Auto-generated gap placeholder #5104 |
-| 5105 | (filler) Auto-generated gap placeholder #5105 | task | coverage | class: triage-needed | (filler) Auto-generated gap placeholder #5105 |
-| 5106 | (filler) Auto-generated gap placeholder #5106 | task | coverage | class: triage-needed | (filler) Auto-generated gap placeholder #5106 |
-| 5107 | (filler) Auto-generated gap placeholder #5107 | task | coverage | class: triage-needed | (filler) Auto-generated gap placeholder #5107 |
-| 5108 | (filler) Auto-generated gap placeholder #5108 | task | coverage | class: triage-needed | (filler) Auto-generated gap placeholder #5108 |
-| 5109 | (filler) Auto-generated gap placeholder #5109 | task | coverage | class: triage-needed | (filler) Auto-generated gap placeholder #5109 |
-| 5110 | (filler) Auto-generated gap placeholder #5110 | task | coverage | class: triage-needed | (filler) Auto-generated gap placeholder #5110 |
-| 5111 | (filler) Auto-generated gap placeholder #5111 | task | coverage | class: triage-needed | (filler) Auto-generated gap placeholder #5111 |
-| 5112 | (filler) Auto-generated gap placeholder #5112 | task | coverage | class: triage-needed | (filler) Auto-generated gap placeholder #5112 |
-| 5113 | (filler) Auto-generated gap placeholder #5113 | task | coverage | class: triage-needed | (filler) Auto-generated gap placeholder #5113 |
-| 5114 | (filler) Auto-generated gap placeholder #5114 | task | coverage | class: triage-needed | (filler) Auto-generated gap placeholder #5114 |
-| 5115 | (filler) Auto-generated gap placeholder #5115 | task | coverage | class: triage-needed | (filler) Auto-generated gap placeholder #5115 |
-| 5116 | (filler) Auto-generated gap placeholder #5116 | task | coverage | class: triage-needed | (filler) Auto-generated gap placeholder #5116 |
-| 5117 | (filler) Auto-generated gap placeholder #5117 | task | coverage | class: triage-needed | (filler) Auto-generated gap placeholder #5117 |
-| 5118 | (filler) Auto-generated gap placeholder #5118 | task | coverage | class: triage-needed | (filler) Auto-generated gap placeholder #5118 |
-| 5119 | (filler) Auto-generated gap placeholder #5119 | task | coverage | class: triage-needed | (filler) Auto-generated gap placeholder #5119 |
-| 5120 | (filler) Auto-generated gap placeholder #5120 | task | coverage | class: triage-needed | (filler) Auto-generated gap placeholder #5120 |
-| 5121 | (filler) Auto-generated gap placeholder #5121 | task | coverage | class: triage-needed | (filler) Auto-generated gap placeholder #5121 |
-| 5122 | (filler) Auto-generated gap placeholder #5122 | task | coverage | class: triage-needed | (filler) Auto-generated gap placeholder #5122 |
-| 5123 | (filler) Auto-generated gap placeholder #5123 | task | coverage | class: triage-needed | (filler) Auto-generated gap placeholder #5123 |
 <!-- generated:blocked:end -->
 
 ## Done queue
@@ -4670,7 +4636,9 @@ Issue files are the source of truth for work items. The generated section below 
 | 341c | Implement Boolean global | feature | runtime/builtins | see `issues/done/341c-boolean-global.md` |
 | 341d | Implement globalThis binding | feature | runtime/builtins | see `issues/done/341d-globalthis-binding.md` |
 | 341e | Implement encodeURI, decodeURI, escape, unescape (audit reopened #341e) | feature | runtime/builtins | see `issues/done/341e-encode-uri.md` |
+| 343 | Implement DuplicateLocal diagnostic detection (66 test262 cases) | feature | frontend/resolver | see `issues/done/343-implement-duplicate-local-detection.md` |
 | 344 | Implement legacy global builtin bindings (8 test262 cases) (audit reopened #344) | feature | runtime/builtins | see `issues/done/344-implement-legacy-global-builtin-bindings.md` |
+| 345 | Implement TypeScript type alias coverage for tsc suite (23 cases) | feature | frontend/syntax | see `issues/done/345-implement-tsc-type-alias-coverage.md` |
 | 347 | Parser and resolver support for direct eval and eval-code scope | feature | frontend/semantics | see `issues/done/347-parser-resolver-direct-eval-scope.md` |
 | 348 | Lowering block-level function declarations in direct eval code | feature | ir | see `issues/done/348-lowering-eval-block-function-declarations.md` |
 | 349 | Runtime helper or shim JavaScript emission for direct eval execution | feature | backend | see `issues/done/349-runtime-shim-direct-eval-execution.md` |
@@ -5131,6 +5099,38 @@ Issue files are the source of truth for work items. The generated section below 
 | 5089 | Implement type-alias support (dup) | spike | frontend/syntax | see `issues/done/5089-implement-type-alias.md` |
 | 5090 | Implement type-system support (dup) | spike | frontend/syntax | see `issues/done/5090-implement-type-system.md` |
 | 5091 | Investigate and classify unknown-unsupported cases (dup) | spike | frontend/syntax | see `issues/done/5091-implement-unknown-unsupported.md` |
+| 5092 | (filler) Auto-generated gap placeholder #5092 | task | coverage | see `issues/done/5092-placeholder.md` |
+| 5093 | (filler) Auto-generated gap placeholder #5093 | task | coverage | see `issues/done/5093-placeholder.md` |
+| 5094 | (filler) Auto-generated gap placeholder #5094 | task | coverage | see `issues/done/5094-placeholder.md` |
+| 5095 | (filler) Auto-generated gap placeholder #5095 | task | coverage | see `issues/done/5095-placeholder.md` |
+| 5096 | (filler) Auto-generated gap placeholder #5096 | task | coverage | see `issues/done/5096-placeholder.md` |
+| 5097 | (filler) Auto-generated gap placeholder #5097 | task | coverage | see `issues/done/5097-placeholder.md` |
+| 5098 | (filler) Auto-generated gap placeholder #5098 | task | coverage | see `issues/done/5098-placeholder.md` |
+| 5099 | (filler) Auto-generated gap placeholder #5099 | task | coverage | see `issues/done/5099-placeholder.md` |
+| 5100 | (filler) Auto-generated gap placeholder #5100 | task | coverage | see `issues/done/5100-placeholder.md` |
+| 5101 | (filler) Auto-generated gap placeholder #5101 | task | coverage | see `issues/done/5101-placeholder.md` |
+| 5102 | (filler) Auto-generated gap placeholder #5102 | task | coverage | see `issues/done/5102-placeholder.md` |
+| 5103 | (filler) Auto-generated gap placeholder #5103 | task | coverage | see `issues/done/5103-placeholder.md` |
+| 5104 | (filler) Auto-generated gap placeholder #5104 | task | coverage | see `issues/done/5104-placeholder.md` |
+| 5105 | (filler) Auto-generated gap placeholder #5105 | task | coverage | see `issues/done/5105-placeholder.md` |
+| 5106 | (filler) Auto-generated gap placeholder #5106 | task | coverage | see `issues/done/5106-placeholder.md` |
+| 5107 | (filler) Auto-generated gap placeholder #5107 | task | coverage | see `issues/done/5107-placeholder.md` |
+| 5108 | (filler) Auto-generated gap placeholder #5108 | task | coverage | see `issues/done/5108-placeholder.md` |
+| 5109 | (filler) Auto-generated gap placeholder #5109 | task | coverage | see `issues/done/5109-placeholder.md` |
+| 5110 | (filler) Auto-generated gap placeholder #5110 | task | coverage | see `issues/done/5110-placeholder.md` |
+| 5111 | (filler) Auto-generated gap placeholder #5111 | task | coverage | see `issues/done/5111-placeholder.md` |
+| 5112 | (filler) Auto-generated gap placeholder #5112 | task | coverage | see `issues/done/5112-placeholder.md` |
+| 5113 | (filler) Auto-generated gap placeholder #5113 | task | coverage | see `issues/done/5113-placeholder.md` |
+| 5114 | (filler) Auto-generated gap placeholder #5114 | task | coverage | see `issues/done/5114-placeholder.md` |
+| 5115 | (filler) Auto-generated gap placeholder #5115 | task | coverage | see `issues/done/5115-placeholder.md` |
+| 5116 | (filler) Auto-generated gap placeholder #5116 | task | coverage | see `issues/done/5116-placeholder.md` |
+| 5117 | (filler) Auto-generated gap placeholder #5117 | task | coverage | see `issues/done/5117-placeholder.md` |
+| 5118 | (filler) Auto-generated gap placeholder #5118 | task | coverage | see `issues/done/5118-placeholder.md` |
+| 5119 | (filler) Auto-generated gap placeholder #5119 | task | coverage | see `issues/done/5119-placeholder.md` |
+| 5120 | (filler) Auto-generated gap placeholder #5120 | task | coverage | see `issues/done/5120-placeholder.md` |
+| 5121 | (filler) Auto-generated gap placeholder #5121 | task | coverage | see `issues/done/5121-placeholder.md` |
+| 5122 | (filler) Auto-generated gap placeholder #5122 | task | coverage | see `issues/done/5122-placeholder.md` |
+| 5123 | (filler) Auto-generated gap placeholder #5123 | task | coverage | see `issues/done/5123-placeholder.md` |
 | 5124 | Fix Object.keys on arguments exotic object (audit reopened #5124) | bug | runtime | see `issues/done/5124-fix-object-keys-on-arguments.md` |
 | 5125 | Implement as type assertion expression parsing | feature | frontend/parser | see `issues/done/5125-implement-as-type-assertion-expression.md` |
 | 5126 | Implement name resolver var redeclaration tolerance | feature | ir/lowering | see `issues/done/5126-implement-name-resolver-var-redeclaration.md` |
