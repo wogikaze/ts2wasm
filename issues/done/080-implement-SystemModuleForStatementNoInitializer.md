@@ -3,12 +3,14 @@ id: 080
 title: "Implement Systemmoduleforstatementnoinitializer"
 type: spike
 area: frontend/syntax
-class: blocked
+class: superseded
 priority: P1
-depends_on: [432]
+depends_on: []
 blocks: []
 created: 2026-04-29
 updated: 2026-04-29
+completed: 2026-05-06
+status: done
 ---
 
 ## Summary
@@ -43,10 +45,10 @@ This generated bucket is either split into implementation-ready child issues or 
 
 In scope:
 
-- [ ] Inspect the smart triage report below
-- [ ] Confirm whether existing open/done issues already cover this bucket
-- [ ] Split one feature family, one observable behavior, or one fixed reference window into child issues
-- [ ] Preserve exact reproduction commands and representative AST/diagnostic evidence in each child issue
+- [x] Inspect the smart triage report below
+- [x] Confirm whether existing open/done issues already cover this bucket
+- [x] Split one feature family, one observable behavior, or one fixed reference window into child issues
+- [x] Preserve exact reproduction commands and representative AST/diagnostic evidence in each child issue
 
 Out of scope:
 
@@ -68,10 +70,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] Duplicate candidates below are confirmed as no-match or this issue is superseded
-- [ ] At least one child issue contains an exact `mise run reference-triage -- ...` command
-- [ ] Child issue includes failing path, diagnostic code, source context, visible symbols, and parser/TypeScript AST evidence
-- [ ] Child issue acceptance names the exact fixture/reference path and diagnostic/stdout change
+- [x] Duplicate candidates below are confirmed as no-match or this issue is superseded
+- [x] At least one child issue contains an exact `mise run reference-triage -- ...` command
+- [x] Child issue includes failing path, diagnostic code, source context, visible symbols, and parser/TypeScript AST evidence
+- [x] Child issue acceptance names the exact fixture/reference path and diagnostic/stdout change
 
 ## Validation
 
@@ -97,17 +99,29 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] updated: `current-state.md` (repo root)
+- [x] updated: `current-state.md` (repo root)
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
+
+## Triage findings
+
+2026-05-06:
+
+- This generated bucket is not a direct module-system implementation work order.
+- The embedded smart triage evidence shows the current blocker is parser/frontend handling for prefix increment in a `for` update clause:
+  - Path: `reference/typescript/tests/cases/compiler/SystemModuleForStatementNoInitializer.ts`
+  - Diagnostic: `UnsupportedSyntax` / `parser-or-frontend-unsupported`
+  - Failure: `unsupported expression: Some(SpannedToken { kind: Increment, span: Span { start: 105, end: 107 } })`
+  - Source context: `for (; i < limit; ++i) { break; }`
+- Child issue 5141 owns the executable parser slice for prefix increment update expressions in `for` statements without initializers.
 
 ## Affected test files
 
@@ -196,7 +210,7 @@ Duplicate candidates:
 [
   {
     "state": "open",
-    "path": "issues/open/080-implement-SystemModuleForStatementNoInitializer.md",
+    "path": "issues/done/080-implement-SystemModuleForStatementNoInitializer.md",
     "title": "Implement Systemmoduleforstatementnoinitializer",
     "reason": "same reference path, title overlap"
   }
@@ -455,19 +469,27 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- `...`
+- issue-state commit closing this generated bucket after child issue 5141 split
 
 Validation result:
 
 ```text
-command:
-result:
-date:
+command: python scripts/manager.py update-issue-index --check
+result: pass
+date: 2026-05-06
+
+command: python scripts/manager.py check-issue-health
+result: pass
+date: 2026-05-06
+
+command: python scripts/manager.py check-issue-readiness -- --fail-ready-below 80
+result: pass
+date: 2026-05-06
 ```
 
 Remaining risks:
 
-- none
+- Parser implementation remains open in issue 5141.
 ---
 
 ## ⚠️ False-done audit (re-opened from issues/done/)
