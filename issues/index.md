@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 3 | 2 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4487 | 3672 | 815 |
+| frontend | 4487 | 3671 | 816 |
 | harness | 1 | 0 | 1 |
 | ir | 57 | 35 | 22 |
 | issues | 4 | 0 | 4 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5122 | 3956 | 1166 |
+| total | 5122 | 3955 | 1167 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -633,7 +633,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1344 | Implement Commentleadingclosebrace | spike | frontend/resolver | class: blocked | Implement Commentleadingclosebrace |
 | 1345 | Implement Commentonambientmodule | spike | frontend/syntax | class: blocked | Implement Commentonambientmodule |
 | 1346 | Implement Commentonambientvariable | spike | frontend/resolver | class: blocked | Implement Commentonambientvariable |
-| 1376 | Implement Commentsonrequirestatement | spike | frontend/syntax | class: blocked | Implement Commentsonrequirestatement |
 | 1377 | Implement Commentsonreturnstatement | spike | frontend/syntax | class: triage-needed | Implement Commentsonreturnstatement |
 | 1378 | Implement Commentsonstaticmembers | spike | frontend/syntax | class: triage-needed | Implement Commentsonstaticmembers |
 | 1379 | Implement Commentsoverloads | spike | frontend/syntax | class: blocked | Implement Commentsoverloads |
@@ -5078,6 +5077,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1373 | Implement Commentsmultimodulesinglefile | spike | frontend/syntax | see `issues/done/1373-implement-commentsMultiModuleSingleFile.md` |
 | 1374 | Implement Commentsonobjectliteral Name Resolution | spike | frontend/resolver | see `issues/done/1374-implement-commentsOnObjectLiteral-name-resolution.md` |
 | 1375 | Implement Commentsonobjectliteral Object Literal | spike | frontend/syntax | see `issues/done/1375-implement-commentsOnObjectLiteral-object-literal.md` |
+| 1376 | Implement Commentsonrequirestatement | spike | frontend/syntax | see `issues/done/1376-implement-commentsOnRequireStatement.md` |
 | 2050 | Implement Duplicatelocalvariable Duplicate Local | spike | reference/triage | see `issues/done/2050-implement-duplicateLocalVariable-duplicate-local.md` |
 | 3002 | Implement Isolateddeclarationerrorsdefault | spike | runtime/builtins | see `issues/done/3002-implement-isolatedDeclarationErrorsDefault.md` |
 | 3131 | Implement Jsxfactorynotidentifierorqualifiedname | spike | reference/triage | see `issues/done/3131-implement-jsxFactoryNotIdentifierOrQualifiedName.md` |
