@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 3 | 2 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4487 | 3670 | 817 |
+| frontend | 4488 | 3670 | 818 |
 | harness | 1 | 0 | 1 |
 | ir | 57 | 35 | 22 |
 | issues | 4 | 0 | 4 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5122 | 3954 | 1168 |
+| total | 5123 | 3954 | 1169 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -242,6 +242,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5285 | Support export var initializer declarations | feature | frontend/module-syntax | implementation-ready | P1 |  | `export var newVar = new extMod.m1.m2.c();` currently cannot be |
 | 5286 | Preserve class constructor parameters for new arity | feature | ir | implementation-ready | P1 |  | `new c2(10)` reports `ArityMismatch` because the lowered constructor |
 | 5287 | Bind namespace declarations for qualified value access | feature | frontend/name-resolution | implementation-ready | P1 |  | a same-file non-ambient namespace declaration is erased before it |
+| 5288 | Parse typed modified static class fields | feature | frontend/parser | implementation-ready | P1 |  | `reference/typescript/tests/cases/compiler/commentsOnStaticMembers.ts` |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -633,7 +634,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1344 | Implement Commentleadingclosebrace | spike | frontend/resolver | class: blocked | Implement Commentleadingclosebrace |
 | 1345 | Implement Commentonambientmodule | spike | frontend/syntax | class: blocked | Implement Commentonambientmodule |
 | 1346 | Implement Commentonambientvariable | spike | frontend/resolver | class: blocked | Implement Commentonambientvariable |
-| 1378 | Implement Commentsonstaticmembers | spike | frontend/syntax | class: triage-needed | Implement Commentsonstaticmembers |
 | 1379 | Implement Commentsoverloads | spike | frontend/syntax | class: blocked | Implement Commentsoverloads |
 | 1380 | Implement Commentstypeparameters | spike | frontend/syntax | class: blocked | Implement Commentstypeparameters |
 | 1381 | Implement Commentsdonotemitcomments | spike | frontend/syntax | class: triage-needed | Implement Commentsdonotemitcomments |
@@ -5078,6 +5078,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1375 | Implement Commentsonobjectliteral Object Literal | spike | frontend/syntax | see `issues/done/1375-implement-commentsOnObjectLiteral-object-literal.md` |
 | 1376 | Implement Commentsonrequirestatement | spike | frontend/syntax | see `issues/done/1376-implement-commentsOnRequireStatement.md` |
 | 1377 | Implement Commentsonreturnstatement | spike | frontend/syntax | see `issues/done/1377-implement-commentsOnReturnStatement.md` |
+| 1378 | Implement Commentsonstaticmembers | spike | frontend/syntax | see `issues/done/1378-implement-commentsOnStaticMembers.md` |
 | 2050 | Implement Duplicatelocalvariable Duplicate Local | spike | reference/triage | see `issues/done/2050-implement-duplicateLocalVariable-duplicate-local.md` |
 | 3002 | Implement Isolateddeclarationerrorsdefault | spike | runtime/builtins | see `issues/done/3002-implement-isolatedDeclarationErrorsDefault.md` |
 | 3131 | Implement Jsxfactorynotidentifierorqualifiedname | spike | reference/triage | see `issues/done/3131-implement-jsxFactoryNotIdentifierOrQualifiedName.md` |
