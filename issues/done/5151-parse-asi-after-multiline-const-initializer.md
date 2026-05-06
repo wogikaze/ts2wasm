@@ -61,9 +61,9 @@ The parser accepts automatic semicolon insertion after a completed variable decl
 
 In scope:
 
-- [ ] Accept ASI after `const name = <expression>` when the initializer is complete and the next token is on a later line.
-- [ ] Add a focused parser regression for a multi-line call returning an object literal followed by a property access statement.
-- [ ] Re-run the representative triage and confirm it no longer reports `expected Semicolon, got Some(Ident("result"))`.
+- [x] Accept ASI after `const name = <expression>` when the initializer is complete and the next token is on a later line.
+- [x] Add a focused parser regression for a multi-line call returning an object literal followed by a property access statement.
+- [x] Re-run the representative triage and confirm it no longer reports `expected Semicolon, got Some(Ident("result"))`.
 
 Out of scope:
 
@@ -86,10 +86,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] A focused parser test accepts `const result = call(() => ({ value: 1 }))` followed by a newline property access statement.
-- [ ] The representative triage no longer reports the semicolon expectation at `result.BLAH`.
-- [ ] Existing explicit-semicolon variable declaration tests continue to pass.
-- [ ] Any next blocker in `badInferenceLowerPriorityThanGoodInference.ts` is recorded separately if outside this ASI slice.
+- [x] A focused parser test accepts `const result = call(() => ({ value: 1 }))` followed by a newline property access statement.
+- [x] The representative triage no longer reports the semicolon expectation at `result.BLAH`.
+- [x] Existing explicit-semicolon variable declaration tests continue to pass.
+- [x] Any next blocker in `badInferenceLowerPriorityThanGoodInference.ts` is recorded separately if outside this ASI slice.
 
 ## Validation
 
@@ -119,15 +119,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] created: `issues/open/5220-preserve-ambient-function-parameters-for-arity.md`
 
 ## Notes
 
@@ -139,16 +139,24 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- `...`
+- pending local commit
 
 Validation result:
 
 ```text
-command:
-result:
-date:
+command: cargo fmt --all --check
+result: pass
+date: 2026-05-06
+
+command: cargo nextest run -p ts2wasm-frontend asi_after_multiline_const_initializer
+result: pass
+date: 2026-05-06
+
+command: python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/badInferenceLowerPriorityThanGoodInference.ts
+result: pass for issue 5151; advanced past semicolon expectation to ambient function arity, tracked by issue 5220
+date: 2026-05-06
 ```
 
 Remaining risks:
 
-- none
+- Ambient function arity metadata is tracked by issue 5220.

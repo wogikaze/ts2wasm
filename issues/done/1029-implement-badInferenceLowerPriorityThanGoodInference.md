@@ -111,7 +111,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] created: `issues/open/5151-parse-asi-after-multiline-const-initializer.md`
+- [x] created: `issues/done/5151-parse-asi-after-multiline-const-initializer.md`
 
 ## Notes
 
@@ -174,7 +174,7 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- split to `issues/open/5151-parse-asi-after-multiline-const-initializer.md`
+- split to `issues/done/5151-parse-asi-after-multiline-const-initializer.md`
 
 Validation result:
 
