@@ -132,7 +132,7 @@ impl Parser {
             match self.peek() {
                 Some(Token::LeftBrace) => self.named_export_statement(export_span),
                 Some(Token::Star) => self.star_re_export_statement(export_span),
-                Some(Token::Const) => self.const_export_statement(export_span),
+                Some(Token::Const | Token::Let) => self.variable_export_statement(export_span),
                 _ => {
                     let form = match self.peek() {
                         Some(Token::Const | Token::Let | Token::Var) => "variable export",
@@ -177,7 +177,7 @@ impl Parser {
         })
     }
 
-    fn const_export_statement(&mut self, export_span: Span) -> Result<Stmt, Diagnostic> {
+    fn variable_export_statement(&mut self, export_span: Span) -> Result<Stmt, Diagnostic> {
         let (declaration, local, local_span) = self.let_statement_with_name_span()?;
         if !matches!(declaration, Stmt::Let { .. }) {
             return self.unsupported_module_form(export_span, "class export");

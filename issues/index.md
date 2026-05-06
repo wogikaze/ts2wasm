@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 3 | 1 | 2 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4437 | 3749 | 688 |
+| frontend | 4437 | 3748 | 689 |
 | harness | 1 | 0 | 1 |
 | ir | 39 | 12 | 27 |
 | issues | 5 | 0 | 5 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5059 | 4018 | 1041 |
+| total | 5059 | 4017 | 1042 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -118,7 +118,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5172 | Report unresolved implements in erased namespace | feature | frontend/semantics | implementation-ready | P1 |  | erased namespace declarations can hide unresolved class `implements` clauses and produce a false build pass. |
 | 5173 | Avoid stack overflow on deep binary expressions | feature | ir/builtin-resolver | implementation-ready | P1 |  | recursive expression folding in builtin resolution cannot process the deep binary-expression stress references. |
 | 5174 | Ignore empty binding pattern synthetic names | feature | frontend/name-resolution | implementation-ready | P1 |  | empty binding patterns do not declare a local binding, but the compiler currently registers their display text as if ... |
-| 5175 | Support export let declarations | feature | frontend/module-syntax | implementation-ready | P1 |  | the parser has an `export const <ident> = ...` slice, but `export let` declarations still stop at the generic variabl... |
 | 5176 | Report ambient var lib redeclaration diagnostics | feature | frontend/semantics | implementation-ready | P1 |  | ambient `declare var` declarations can conflict with lib globals, but ts2wasm currently erases the declaration and re... |
 | 5177 | Report strict-null diagnostics in erased namespace methods | feature | frontend/semantics | implementation-ready | P1 |  | erased namespace class method bodies can hide typed local declaration diagnostics and produce a false build pass. |
 | 5179 | Report implicit this before closure runtime guard | feature | frontend/semantics | implementation-ready | P1 |  | a TypeScript implicit-`this` diagnostic is hidden by the nested-function closure runtime-subset guard. |
@@ -5153,6 +5152,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5161 | Model ambient value declarations for name resolution | feature | frontend/resolver | see `issues/done/5161-model-ambient-value-declarations-for-name-resolution.md` |
 | 5164 | Parse exponentiation compound assignment | feature | frontend/syntax | see `issues/done/5164-parse-exponentiation-compound-assignment.md` |
 | 5171 | Accept unsigned 32-bit hex literals | feature | frontend/lexer | see `issues/done/5171-accept-unsigned-32-bit-hex-literals.md` |
+| 5175 | Support export let declarations | feature | frontend/module-syntax | see `issues/done/5175-support-export-let-destructuring-declarations.md` |
 | 5178 | Parse bitwise compound assignment operators | feature | frontend/syntax | see `issues/done/5178-parse-bitwise-compound-assignment-operators.md` |
 | 5184 | Parse const enum declarations | feature | frontend/syntax | see `issues/done/5184-parse-const-enum-declarations.md` |
 | 5186 | Parse export assignment expressions | feature | frontend/syntax | see `issues/done/5186-parse-export-assignment-for-diagnostics.md` |

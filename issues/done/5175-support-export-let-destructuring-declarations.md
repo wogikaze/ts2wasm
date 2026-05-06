@@ -59,11 +59,11 @@ The parser/module frontend accepts exported `let` declarations far enough that t
 
 In scope:
 
-- [ ] Parse `export let <identifier> = <expr>;`.
-- [ ] Parse `export let <binding-pattern> = <expr>;` for array binding patterns with elisions.
-- [ ] Preserve the existing `export const <identifier> = <expr>` behavior.
-- [ ] Add focused coverage for `export let x = 1;`.
-- [ ] Add focused coverage for `export let [,,[,[],,[],]] = undefined as any;`.
+- [x] Parse `export let <identifier> = <expr>;`.
+- [x] Parse `export let <binding-pattern> = <expr>;` for array binding patterns with elisions.
+- [x] Preserve the existing `export const <identifier> = <expr>` behavior.
+- [x] Add focused coverage for `export let x = 1;`.
+- [x] Add focused coverage for `export let [,,[,[],,[],]] = undefined as any;`.
 
 Out of scope:
 
@@ -87,11 +87,11 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] A focused parser test accepts `export let [,,[,[],,[],]] = undefined as any;`.
-- [ ] A focused parser test accepts `export let x = 1;`.
-- [ ] Existing `export const value = 1;` tests still pass.
-- [ ] `python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/bindingPatternOmittedExpressionNesting.ts` no longer reports `unsupported variable export`.
-- [ ] `python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/cacheResolutions.ts` no longer reports `unsupported variable export`.
+- [x] A focused parser test accepts `export let [,,[,[],,[],]] = undefined as any;`.
+- [x] A focused parser test accepts `export let x = 1;`.
+- [x] Existing `export const value = 1;` tests still pass.
+- [x] `python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/bindingPatternOmittedExpressionNesting.ts` no longer reports `unsupported variable export`.
+- [x] `python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/cacheResolutions.ts` no longer reports `unsupported variable export`.
 
 ## Validation
 
@@ -118,15 +118,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 
@@ -134,18 +134,32 @@ Split from generated bucket `1063` on 2026-05-06. Generated bucket `1088` was fo
 
 ## Completion evidence
 
-Fill only when moving to `done/`.
-
 Commits:
 
-- `...`
+- `HEAD (final issue commit)`
 
 Validation result:
 
 ```text
-command:
-result:
-date:
+command: cargo fmt --all --check
+result: pass
+date: 2026-05-06
+
+command: cargo nextest run -p ts2wasm-frontend export_let
+result: 2 passed, 0 failed
+date: 2026-05-06
+
+command: cargo build -q -p ts2wasm-cli
+result: pass (warning: compile_source_with_emit is dead code)
+date: 2026-05-06
+
+command: python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/bindingPatternOmittedExpressionNesting.ts
+result: BuildPass; unsupported variable export no longer reported
+date: 2026-05-06
+
+command: python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/cacheResolutions.ts
+result: BuildPass; parser advances to duplicate local binding evidence matching TypeScript TS2451
+date: 2026-05-06
 ```
 
 Remaining risks:

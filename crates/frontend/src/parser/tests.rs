@@ -2140,12 +2140,20 @@ class Foo {
     }
 
     #[test]
-    fn keeps_let_declaration_export_unsupported_for_narrow_slice() {
-        let err = parse_program("export let value = 1;").unwrap_err();
-        assert_eq!(err.code, DiagCode::UnsupportedSyntax);
-        assert!(err.message.contains("issue-055"));
-        assert!(err.message.contains("unsupported variable export"));
-        assert_eq!(err.span, Some(Span { start: 0, end: 6 }));
+    fn parses_export_let_forward_slice() {
+        let program = parse_program("export let x = 1;").unwrap();
+        assert_eq!(program.len(), 1);
+        match &program[0] {
+            Stmt::ExportDecl {
+                declaration,
+                specifier,
+                ..
+            } => {
+                assert_eq!(specifier.local, "x");
+                assert!(matches!(declaration.as_ref(), Stmt::Let { name, .. } if name == "x"));
+            }
+            other => panic!("expected ExportDecl, got {other:?}"),
+        }
     }
 
     #[test]
@@ -3097,6 +3105,12 @@ class Foo {
             err.message.contains("expected member property name"),
             "{err:?}"
         );
+    }
+
+    #[test]
+    fn parses_export_let_destructuring() {
+        let program = parse_program("export let [,,[,[],,[],]] = undefined as any;");
+        assert!(program.is_ok(), "expected export let destructuring to parse, got err: {program:?}");
     }
 
     #[test]
