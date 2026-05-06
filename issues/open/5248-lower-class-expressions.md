@@ -90,3 +90,11 @@ Additional duplicate/superseded buckets:
   appears as a call argument (`arr.push(class C { ... })`). If the first
   assignment/initializer implementation slice does not cover call-argument
   expression positions, split that narrower follow-up after 5248 advances.
+- `issues/done/1191-implement-classExpressionWithStaticPropertiesES-unknown-unsupported.md`
+  contributes ES-target representatives for the same lowering boundary:
+  `classExpressionWithStaticPropertiesES63.ts` uses
+  `arr.push(class C { ... })`, and `classExpressionWithStaticPropertiesES64.ts`
+  uses an anonymous parenthesized class expression statement
+  (`(class { static x = 0; });`). If anonymous or non-assignment expression
+  positions remain after the first 5248 slice, split them from this owner with
+  the ES63/ES64 triage evidence.
