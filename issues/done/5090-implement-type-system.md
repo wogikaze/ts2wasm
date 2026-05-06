@@ -135,7 +135,7 @@ Follow-up issues:
 - `issues/done/1169-implement-circularlySimplifyingConditionalTypesNoCrash.md` - Implement Circularlysimplifyingconditionaltypesnocrash (same feature label, same group key, title overlap; stale build-pass)
 - `issues/done/1172-implement-classAttributeInferenceTemplate.md` - stale build-pass; no longer open
 - `issues/done/1173-implement-classAttributeInferenceTemplateJS.md` - split to `issues/open/5247-fix-js-noemit-class-constructor-funcid-invariant.md`
-- `issues/open/1234-implement-classPropertyInferenceFromBroaderTypeConst.md` - Implement Classpropertyinferencefrombroadertypeconst (same feature label, same group key, title overlap)
+- `issues/done/1234-implement-classPropertyInferenceFromBroaderTypeConst.md` - Implement Classpropertyinferencefrombroadertypeconst (same feature label, same group key, title overlap)
 
 ## Smart triage
 
