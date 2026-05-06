@@ -39,7 +39,7 @@ mise run reference-coverage -- tsc --path-filter reference/typescript/tests/case
 
 ## Desired final state
 
-This generated bucket is superseded by `issues/open/5145-parse-await-as-call-outside-async-context.md`.
+This generated bucket is superseded by `issues/done/5145-parse-await-as-call-outside-async-context.md`.
 
 ## Scope
 
@@ -110,7 +110,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] created: `issues/open/5145-parse-await-as-call-outside-async-context.md`
+- [x] created: `issues/done/5145-parse-await-as-call-outside-async-context.md`
 
 ## Notes
 

@@ -118,7 +118,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/open/5169-parse-asi-after-expression-statement.md` is not a match; this failure is a variable declaration initializer, not a completed expression statement.
+- `issues/done/5169-parse-asi-after-expression-statement.md` is not a match; this failure is a variable declaration initializer, not a completed expression statement.
 - Generic scope-analysis buckets are not matches because the current blocker is parser ASI before scope diagnostics.
 
 ## Smart triage

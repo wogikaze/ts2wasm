@@ -63,10 +63,10 @@ The parser accepts ASI after a completed expression statement when the next toke
 
 In scope:
 
-- [ ] Accept ASI after a completed expression statement before `let`, `const`, `var`, `function`, `class`, `import`, `export`, or other established statement starters when separated by a line terminator.
-- [ ] Preserve required semicolon behavior where ASI must not apply, especially postfix/continuation tokens.
-- [ ] Add focused parser coverage for a method-call assignment expression followed by `let`.
-- [ ] Re-run representative triage and confirm the current `Some(Let)` parser blocker is gone.
+- [x] Accept ASI after a completed expression statement before `let`, `const`, `var`, `function`, `class`, `import`, `export`, or other established statement starters when separated by a line terminator.
+- [x] Preserve required semicolon behavior where ASI must not apply, especially postfix/continuation tokens.
+- [x] Add focused parser coverage for a method-call assignment expression followed by `let`.
+- [x] Re-run representative triage and confirm the current `Some(Let)` parser blocker is gone.
 
 Out of scope:
 
@@ -90,11 +90,11 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] `parse_program("a = b.c()\\nlet x = 1;")` succeeds as two statements.
-- [ ] Parser tests cover line-terminator ASI after a completed call/member expression statement.
-- [ ] Existing invalid continuation cases remain rejected.
-- [ ] `python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/bigintWithLib.ts` no longer reports `expected Semicolon, got Some(Let)`.
-- [ ] `python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/bigintWithoutLib.ts` no longer reports `expected Semicolon, got Some(Let)`.
+- [x] `parse_program("a = b.c()\\nlet x = 1;")` succeeds as two statements.
+- [x] Parser tests cover line-terminator ASI after a completed call/member expression statement.
+- [x] Existing invalid continuation cases remain rejected.
+- [x] `python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/bigintWithLib.ts` no longer reports `expected Semicolon, got Some(Let)`.
+- [x] `python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/bigintWithoutLib.ts` no longer reports `expected Semicolon, got Some(Let)`.
 
 ## Validation
 
@@ -121,15 +121,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 

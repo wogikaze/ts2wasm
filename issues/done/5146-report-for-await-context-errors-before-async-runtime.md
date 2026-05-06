@@ -68,10 +68,10 @@ When `for await...of` appears in a non-async function or other disallowed contex
 
 In scope:
 
-- [ ] Track enough parser statement context to know when `for await...of` is outside an async/top-level-allowed context.
-- [ ] Emit a clear source-spanned diagnostic for the disallowed non-async context.
-- [ ] Add a focused parser/diagnostic fixture for `function f() { for await (const x of []); }`.
-- [ ] Re-run the representative triage and confirm it no longer reports the generic issue-230 message for the first non-async `for await`.
+- [x] Track enough parser statement context to know when `for await...of` is outside an async/top-level-allowed context.
+- [x] Emit a clear source-spanned diagnostic for the disallowed non-async context.
+- [x] Add a focused parser/diagnostic fixture for `function f() { for await (const x of []); }`.
+- [x] Re-run the representative triage and confirm it no longer reports the generic issue-230 message for the first non-async `for await`.
 
 Out of scope:
 
@@ -95,10 +95,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] A focused diagnostic test for `for await` inside an ordinary function reports the new context diagnostic.
-- [ ] The diagnostic span covers the `await` keyword in `for await`.
-- [ ] `mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/awaitInNonAsyncFunction.ts` no longer reports the generic issue-230 async-iteration message as the first blocker.
-- [ ] Existing valid-context async/for-await unsupported diagnostics remain source-spanned and issue-linked.
+- [x] A focused diagnostic test for `for await` inside an ordinary function reports the new context diagnostic.
+- [x] The diagnostic span covers the `await` keyword in `for await`.
+- [x] `mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/awaitInNonAsyncFunction.ts` no longer reports the generic issue-230 async-iteration message as the first blocker.
+- [x] Existing valid-context async/for-await unsupported diagnostics remain source-spanned and issue-linked.
 
 ## Validation
 
@@ -128,15 +128,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 
@@ -144,7 +144,7 @@ Split from generated bucket `issues/done/1019-implement-awaitInNonAsyncFunction.
 
 Related follow-up for ordinary `await(...)` call parsing:
 
-- `issues/open/5145-parse-await-as-call-outside-async-context.md`
+- `issues/done/5145-parse-await-as-call-outside-async-context.md`
 
 ## Completion evidence
 

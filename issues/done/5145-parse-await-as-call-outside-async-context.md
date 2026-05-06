@@ -69,10 +69,10 @@ Inside ordinary non-async functions, `await(...)` is parsed as a call expression
 
 In scope:
 
-- [ ] Track enough parser function context to distinguish ordinary functions from async functions for unary `await`.
-- [ ] Parse `await(...)` in ordinary functions as `Call(Ident("await"), ...)`.
-- [ ] Preserve existing `Expr::Await` parsing where async contexts are explicitly supported or intentionally diagnosed.
-- [ ] Add a focused parser/triage regression for `function foo() { const x = await(Promise.resolve(1)); }`.
+- [x] Track enough parser function context to distinguish ordinary functions from async functions for unary `await`.
+- [x] Parse `await(...)` in ordinary functions as `Call(Ident("await"), ...)`.
+- [x] Preserve existing `Expr::Await` parsing where async contexts are explicitly supported or intentionally diagnosed.
+- [x] Add a focused parser/triage regression for `function foo() { const x = await(Promise.resolve(1)); }`.
 
 Out of scope:
 
@@ -96,10 +96,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] A focused parser test shows `await(Promise.resolve(1))` inside `function foo()` parses as a call whose callee is identifier `await`.
-- [ ] The representative triage no longer reports `issue-294: await is only supported for Bun.file`.
-- [ ] The new diagnostic remains source-spanned at the `await` call site.
-- [ ] Existing async/for-await unsupported diagnostics still point to issue 230 or the current async-runtime issue.
+- [x] A focused parser test shows `await(Promise.resolve(1))` inside `function foo()` parses as a call whose callee is identifier `await`.
+- [x] The representative triage no longer reports `issue-294: await is only supported for Bun.file`.
+- [x] The new diagnostic remains source-spanned at the `await` call site.
+- [x] Existing async/for-await unsupported diagnostics still point to issue 230 or the current async-runtime issue.
 
 ## Validation
 
@@ -129,15 +129,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 
