@@ -18,16 +18,16 @@ Issue files are the source of truth for work items. The generated section below 
 | docs | 2 | 0 | 2 |
 | frontend | 4475 | 3694 | 781 |
 | harness | 1 | 0 | 1 |
-| ir | 53 | 31 | 22 |
+| ir | 54 | 32 | 22 |
 | issues | 4 | 0 | 4 |
 | parser | 1 | 0 | 1 |
 | reference | 212 | 159 | 53 |
-| runtime | 265 | 87 | 178 |
+| runtime | 265 | 86 | 179 |
 | scripts | 3 | 1 | 2 |
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5106 | 3976 | 1130 |
+| total | 5107 | 3976 | 1131 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -226,6 +226,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5269 | Parse optional class property declarations | feature | frontend | implementation-ready | P1 |  | `reference/typescript/tests/cases/compiler/classUsedBeforeInitializedVariables.ts` |
 | 5270 | Parse modified class accessor declarations | feature | frontend | implementation-ready | P1 |  | `reference/typescript/tests/cases/compiler/classdecl.ts` reports |
 | 5271 | Parse modified static class fields | feature | frontend | implementation-ready | P1 |  | `reference/typescript/tests/cases/compiler/cloduleStaticMembers.ts` |
+| 5272 | Support generic return interface method receivers | feature | ir/lowering | implementation-ready | P1 |  | Support generic return interface method receivers |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -542,7 +543,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1261 | Implement Clodulesderivedclasses | spike | frontend/syntax | class: blocked | Implement Clodulesderivedclasses |
 | 1262 | Implement Coandcontravariantinferences Name Resolution | spike | frontend/resolver | class: blocked | Implement Coandcontravariantinferences Name Resolution |
 | 1264 | Implement Coandcontravariantinferences Type System | spike | frontend/semantics | class: blocked | Implement Coandcontravariantinferences Type System |
-| 1265 | Implement Collectionpatternnoerror | spike | runtime/builtins | class: triage-needed | Implement Collectionpatternnoerror |
 | 1266 | Implement Collisionargumentsarrowfunctions | spike | frontend/syntax | class: blocked | Implement Collisionargumentsarrowfunctions |
 | 1267 | Implement Collisionargumentsclassconstructor | spike | frontend/syntax | class: blocked | Implement Collisionargumentsclassconstructor |
 | 1268 | Implement Collisionargumentsclassmethod | spike | frontend/syntax | class: blocked | Implement Collisionargumentsclassmethod |
@@ -5062,6 +5062,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1249 | Implement Classdecl | spike | frontend/syntax | see `issues/done/1249-implement-classdecl.md` |
 | 1255 | Implement Clodulestaticmembers | spike | frontend/syntax | see `issues/done/1255-implement-cloduleStaticMembers.md` |
 | 1263 | Implement Coandcontravariantinferences Parser Syntax | spike | frontend/syntax | see `issues/done/1263-implement-coAndContraVariantInferences-parser-syntax.md` |
+| 1265 | Implement Collectionpatternnoerror | spike | runtime/builtins | see `issues/done/1265-implement-collectionPatternNoError.md` |
 | 2050 | Implement Duplicatelocalvariable Duplicate Local | spike | reference/triage | see `issues/done/2050-implement-duplicateLocalVariable-duplicate-local.md` |
 | 3002 | Implement Isolateddeclarationerrorsdefault | spike | runtime/builtins | see `issues/done/3002-implement-isolatedDeclarationErrorsDefault.md` |
 | 3131 | Implement Jsxfactorynotidentifierorqualifiedname | spike | reference/triage | see `issues/done/3131-implement-jsxFactoryNotIdentifierOrQualifiedName.md` |
