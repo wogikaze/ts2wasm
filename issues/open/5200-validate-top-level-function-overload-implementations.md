@@ -25,6 +25,12 @@ bodyless function declarations, but `validate_ast` stops at a
 signature immediately followed by one implementation is valid, while multiple
 function bodies produce specific implementation diagnostics.
 
+Additional representative `callbackArgsDifferByOptionality.ts` contains two
+bodyless overload signatures for `x3` followed by one implementation with a
+function-typed callback parameter. It currently stops at the same
+`DuplicateFunction` boundary before reaching TypeScript's real unresolved `cb`
+diagnostic.
+
 Problem: top-level function overload implementation groups are currently classified as duplicate concrete functions.
 
 ## Current failure
@@ -32,6 +38,7 @@ Problem: top-level function overload implementation groups are currently classif
 ```sh
 mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/callOverloads1.ts
 mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/callOverloads2.ts
+mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/callbackArgsDifferByOptionality.ts
 ```
 
 Current diagnostics:
@@ -39,6 +46,7 @@ Current diagnostics:
 ```text
 callOverloads1.ts: error: [DuplicateFunction] duplicate function definition: `F1` at 257..287
 callOverloads2.ts: error: [DuplicateFunction] duplicate function definition: `F1` at 283..313
+callbackArgsDifferByOptionality.ts: error: [DuplicateFunction] duplicate function definition: `x3` at 85..93
 ```
 
 Representative sources:
@@ -54,6 +62,14 @@ function F1(a:any) { return a; } // error
 function Goo(s:string); // error - no implementation
 ```
 
+```ts
+function x3(callback: (x?: 'hi') => number);
+function x3(callback: (x: string) => number);
+function x3(callback: (x: any) => number) {
+    cb();
+}
+```
+
 Triage evidence:
 
 - Tokens and AST succeed for both reference files.
@@ -61,10 +77,15 @@ Triage evidence:
   implemented `Function F1(a)`.
 - `callOverloads2.ts` AST contains two implemented `Function F1` declarations
   and a bodyless `Function Goo(s)` with no implementation.
+- `callbackArgsDifferByOptionality.ts` AST contains two bodyless `Function x3`
+  overload signatures followed by one implemented `Function x3`.
 - TypeScript oracle reports no `F1` diagnostic for the valid overload group in
   `callOverloads1.ts`.
 - TypeScript oracle reports TS2389/TS2393 for the invalid `F1` implementations
   and TS2391 for missing `Goo` implementation in `callOverloads2.ts`.
+- TypeScript oracle reports only TS2304 for unresolved `cb` in
+  `callbackArgsDifferByOptionality.ts`, proving the overload group itself is
+  accepted.
 
 ## Desired final state
 
@@ -81,6 +102,8 @@ In scope:
 - [ ] Distinguish bodyless top-level function overload signatures from
   implemented function declarations
 - [ ] Accept a bodyless overload signature immediately followed by one
+  implementation for the same name
+- [ ] Accept multiple bodyless overload signatures immediately followed by one
   implementation for the same name
 - [ ] Preserve/report duplicate implementation diagnostics for multiple
   function bodies with the same name
@@ -114,8 +137,14 @@ Do not touch:
   `F1` overload signature plus implementation
 - [ ] `callOverloads2.ts` reports a narrower duplicate implementation
   diagnostic for the two implemented `F1` declarations
+- [ ] `callbackArgsDifferByOptionality.ts` no longer reports
+  `DuplicateFunction` for the valid `x3` overload signatures plus
+  implementation
 - [ ] A focused fixture covers one bodyless overload signature followed by one
   implementation for the same name
+- [ ] A focused fixture covers two bodyless overload signatures followed by one
+  implementation, including a function-typed callback parameter with an
+  optional string-literal parameter
 - [ ] A focused fixture covers two implemented function declarations with the
   same name and preserves a duplicate implementation diagnostic
 - [ ] A focused fixture covers one bodyless overload signature with no
@@ -135,6 +164,7 @@ Impacted commands:
 ```sh
 mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/callOverloads1.ts
 mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/callOverloads2.ts
+mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/callbackArgsDifferByOptionality.ts
 ```
 
 Not run:
