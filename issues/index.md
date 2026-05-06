@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 2 | 1 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4436 | 3764 | 672 |
+| frontend | 4436 | 3763 | 673 |
 | harness | 1 | 0 | 1 |
 | ir | 34 | 12 | 22 |
 | issues | 4 | 0 | 4 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5047 | 4031 | 1016 |
+| total | 5047 | 4030 | 1017 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -442,7 +442,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 772 | Implement Augmentedtypesvar | spike | frontend/syntax | class: blocked | Implement Augmentedtypesvar |
 | 773 | Implement Autoasiforstaticsinclassdeclaration | spike | frontend/syntax | class: triage-needed | Implement Autoasiforstaticsinclassdeclaration |
 | 775 | Implement Autotypeassignedusingdestructuringfromnevernocrash | spike | frontend/resolver | class: blocked | Implement Autotypeassignedusingdestructuringfromnevernocrash |
-| 1111 | Implement Capturedletconstinloop Parser Syntax | spike | frontend/syntax | class: triage-needed | Implement Capturedletconstinloop Parser Syntax |
 | 1112 | Implement Capturedparametersininitializers | spike | frontend/syntax | class: triage-needed | Implement Capturedparametersininitializers |
 | 1113 | Implement Capturedshorthandpropertyassignmentnocheck | spike | frontend/syntax | class: triage-needed | Implement Capturedshorthandpropertyassignmentnocheck |
 | 1114 | Implement Capturedvarinloop | spike | frontend/syntax | class: blocked | Implement Capturedvarinloop |
@@ -5004,6 +5003,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1108 | Implement Capturedletconstinloop Duplicate Local | spike | reference/triage | see `issues/done/1108-implement-capturedLetConstInLoop-duplicate-local.md` |
 | 1109 | Implement Capturedletconstinloop Import Export | spike | reference/triage | see `issues/done/1109-implement-capturedLetConstInLoop-import-export.md` |
 | 1110 | Implement Capturedletconstinloop Name Resolution | spike | frontend/resolver | see `issues/done/1110-implement-capturedLetConstInLoop-name-resolution.md` |
+| 1111 | Implement Capturedletconstinloop Parser Syntax | spike | frontend/syntax | see `issues/done/1111-implement-capturedLetConstInLoop-parser-syntax.md` |
 | 2050 | Implement Duplicatelocalvariable Duplicate Local | spike | reference/triage | see `issues/done/2050-implement-duplicateLocalVariable-duplicate-local.md` |
 | 3002 | Implement Isolateddeclarationerrorsdefault | spike | runtime/builtins | see `issues/done/3002-implement-isolatedDeclarationErrorsDefault.md` |
 | 3131 | Implement Jsxfactorynotidentifierorqualifiedname | spike | reference/triage | see `issues/done/3131-implement-jsxFactoryNotIdentifierOrQualifiedName.md` |

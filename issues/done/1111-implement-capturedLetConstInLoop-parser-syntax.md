@@ -3,12 +3,13 @@ id: 1111
 title: "Implement Capturedletconstinloop Parser Syntax"
 type: spike
 area: frontend/syntax
-class: triage-needed
+class: done
 priority: P1
 depends_on: []
 blocks: []
 created: 2026-05-01
 updated: 2026-05-06
+completed: 2026-05-06
 ---
 
 ## Summary
@@ -43,10 +44,10 @@ This generated bucket is either split into implementation-ready child issues or 
 
 In scope:
 
-- [ ] Inspect the smart triage report below
-- [ ] Confirm whether existing open/done issues already cover this bucket
-- [ ] Split one feature family, one observable behavior, or one fixed reference window into child issues
-- [ ] Preserve exact reproduction commands and representative AST/diagnostic evidence in each child issue
+- [x] Inspect the smart triage report below
+- [x] Confirm whether existing open/done issues already cover this bucket
+- [x] Split one feature family, one observable behavior, or one fixed reference window into child issues
+- [x] Preserve exact reproduction commands and representative AST/diagnostic evidence in each child issue
 
 Out of scope:
 
@@ -68,10 +69,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] Duplicate candidates below are confirmed as no-match or this issue is superseded
-- [ ] At least one child issue contains an exact `mise run reference-triage -- ...` command
-- [ ] Child issue includes failing path, diagnostic code, source context, visible symbols, and parser/TypeScript AST evidence
-- [ ] Child issue acceptance names the exact fixture/reference path and diagnostic/stdout change
+- [x] Duplicate candidates below are confirmed as no-match or this issue is superseded
+- [x] At least one child issue contains an exact `mise run reference-triage -- ...` command
+- [x] Child issue includes failing path, diagnostic code, source context, visible symbols, and parser/TypeScript AST evidence
+- [x] Child issue acceptance names the exact fixture/reference path and diagnostic/stdout change
 
 ## Validation
 
@@ -98,20 +99,20 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] updated: `current-state.md` (repo root)
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] `issues/open/5207-parse-do-while-asi-before-following-for.md`
-- [ ] `issues/open/5208-parse-arrow-body-destructuring-assignments.md`
-- [ ] `issues/open/5209-parse-computed-object-literal-property-expressions.md`
-- [ ] `issues/open/5210-parse-do-while-asi-before-block-end-or-expression.md`
-- [ ] `issues/open/5211-parse-do-while-asi-before-labeled-statement.md`
-- [ ] `issues/open/5212-parse-function-expression-statements-in-nested-blocks.md`
+- [x] `issues/open/5207-parse-do-while-asi-before-following-for.md`
+- [x] `issues/open/5208-parse-arrow-body-destructuring-assignments.md`
+- [x] `issues/open/5209-parse-computed-object-literal-property-expressions.md`
+- [x] `issues/open/5210-parse-do-while-asi-before-block-end-or-expression.md`
+- [x] `issues/open/5211-parse-do-while-asi-before-labeled-statement.md`
+- [x] `issues/open/5212-parse-function-expression-statements-in-nested-blocks.md`
 
 ## Notes
 
@@ -737,18 +738,42 @@ ASI slice.
 
 ## Completion evidence
 
-Fill only when moving to `done/`.
+capturedLetConstInLoop parser-syntax triage is complete. All current parser
+failures in the bucket are represented by focused implementation issues
+5207-5212, with the import/export misbucket folded into the same evidence.
 
 Commits:
 
-- `...`
+- `2ebf81da` issues: split captured loop do-while asi parser blocker
+- `2e78774a` issues: split captured loop arrow assignment parser blocker
+- `2215a150` issues: split captured loop computed property parser blocker
+- `1de05874` issues: split captured loop do-while asi expression blocker
+- `14657477` issues: split captured loop labeled asi parser blocker
+- `bba271ed` issues: split captured loop nested function parser blocker
+- `d88eeccf` issues: fold captured loop asi variants into child issues
 
 Validation result:
 
 ```text
-command:
-result:
-date:
+command: python scripts/manager.py update-issue-index
+result: pass
+date: 2026-05-06
+
+command: python scripts/manager.py update-issue-index --check
+result: pass
+date: 2026-05-06
+
+command: python scripts/manager.py check-issue-health
+result: pass
+date: 2026-05-06
+
+command: python scripts/manager.py check-issue-readiness -- --fail-ready-below 80
+result: pass; child issues 5207-5212 are M-sized and ready
+date: 2026-05-06
+
+command: git diff --check
+result: pass
+date: 2026-05-06
 ```
 
 Remaining risks:

@@ -106,7 +106,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] `issues/open/1111-implement-capturedLetConstInLoop-parser-syntax.md`
+- [x] `issues/done/1111-implement-capturedLetConstInLoop-parser-syntax.md`
 
 ## Notes
 
@@ -132,7 +132,7 @@ Follow-up issues:
 Fresh triage shows this bucket is stale/misclassified. The current blocker is
 not import/export; both affected paths parse the leading `export function` and
 fail later as `parser-syntax`. The evidence was folded into
-`issues/open/1111-implement-capturedLetConstInLoop-parser-syntax.md`.
+`issues/done/1111-implement-capturedLetConstInLoop-parser-syntax.md`.
 
 ### Smart triage: capturedLetConstInLoop4
 
