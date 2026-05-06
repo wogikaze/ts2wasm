@@ -75,6 +75,7 @@ impl NameResolver {
             "decodeURI",
             "escape",
             "unescape",
+            "Reflect",
             "globalThis",
         ]
         .iter()

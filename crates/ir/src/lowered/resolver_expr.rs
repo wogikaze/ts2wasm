@@ -59,6 +59,7 @@ impl<'a> Resolver<'a> {
                     // Global functions registered as BuiltinId (callable via builtin_resolver)
                     // but treated as Undefined when referenced as bare identifiers or property targets
                     || name == "escape" || name == "unescape"
+                    || name == "Reflect"
                     || name == "isNaN" || name == "parseInt" || name == "parseFloat" || name == "isFinite"
                     || name == "encodeURI" || name == "decodeURI"
                 {
