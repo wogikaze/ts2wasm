@@ -74,21 +74,15 @@ impl WatEmitter<'_> {
         match expr {
             LoweredExpr::Number(value, _) => {
                 if ValueTag::can_encode_number(*value) {
-                    writer.push_str(&format!(
-                        "{pad}(i32.const {})\n",
-                        ValueTag::encode_number(*value)
-                    ));
+                    writer.i32_const(indent, ValueTag::encode_number(*value));
                 } else {
                     writer.i32_const(indent, *value);
 
-                    writer.push_str(&format!(
-                        "{pad}(call {})\n",
-                        RuntimeFn::NumberFromI32.symbol()
-                    ));
+                    writer.call(indent, RuntimeFn::NumberFromI32.symbol());
                 }
             }
             LoweredExpr::String(value, _) => {
-                writer.push_str(&format!("{pad}(i32.const {})\n", self.string_value(value)))
+                writer.i32_const(indent, self.string_value(value) as i32);
             }
             LoweredExpr::BigIntLiteral {
                 decimal,
@@ -106,10 +100,7 @@ impl WatEmitter<'_> {
                 writer.i32_const(indent, *limb_high as i32);
                 writer.i32_const(indent, decimal_src as i32);
                 writer.i32_const(indent, decimal_len as i32);
-                writer.push_str(&format!(
-                    "{pad}(call {})\n",
-                    RuntimeFn::MakeBigIntLiteral.symbol()
-                ));
+                writer.call(indent, RuntimeFn::MakeBigIntLiteral.symbol());
             }
             LoweredExpr::Bool(true, _) => writer.i32_const(indent, ValueTag::TRUE),
             LoweredExpr::Bool(false, _) => writer.i32_const(indent, ValueTag::FALSE),
@@ -128,10 +119,7 @@ impl WatEmitter<'_> {
                 ClosureRepresentation::DirectLocalToken => {
                     // Local-arrow calls are devirtualized during lowering; this opaque
                     // token prevents local initialization from becoming `undefined`.
-                    writer.push_str(&format!(
-                        "{pad}(i32.const {})\n",
-                        ValueTag::encode_number(func_id.0 as i32)
-                    ))
+                    writer.i32_const(indent, ValueTag::encode_number(func_id.0 as i32));
                 }
                 ClosureRepresentation::HeapObject => {
                     self.emit_heap_closure_alloc(writer, *func_id, captures, indent, frame);
@@ -203,10 +191,7 @@ impl WatEmitter<'_> {
                 let key_len = self.string_len(key);
                 writer.i32_const(indent, key_ptr as i32);
                 writer.i32_const(indent, key_len as i32);
-                writer.push_str(&format!(
-                    "{pad}(call {})\n",
-                    RuntimeFn::PropertyDelete.symbol()
-                ));
+                writer.call(indent, RuntimeFn::PropertyDelete.symbol());
             }
             LoweredExpr::PropertyDeleteDynamic { object, key, .. } => {
                 self.emit_expr(writer, object, indent, frame);
@@ -219,18 +204,12 @@ impl WatEmitter<'_> {
                 );
                 self.emit_expr(writer, key, indent, frame);
                 writer.i32_const(indent, Layout::SCRATCH_OFFSET as i32);
-                writer.push_str(&format!(
-                    "{pad}(call {})\n",
-                    RuntimeFn::ValueToStringInto.symbol()
-                ));
+                writer.call(indent, RuntimeFn::ValueToStringInto.symbol());
                 writer.local_set(indent, frame.heap_value_tmp());
                 writer.local_get(indent, frame.heap_base_tmp());
                 writer.i32_const(indent, Layout::SCRATCH_OFFSET as i32);
                 writer.local_get(indent, frame.heap_value_tmp());
-                writer.push_str(&format!(
-                    "{pad}(call {})\n",
-                    RuntimeFn::PropertyDelete.symbol()
-                ));
+                writer.call(indent, RuntimeFn::PropertyDelete.symbol());
             }
             LoweredExpr::PropertyIn { obj, key, .. } => {
                 self.emit_expr(writer, obj, indent, frame);
@@ -238,10 +217,7 @@ impl WatEmitter<'_> {
                 let key_len = self.string_len(key);
                 writer.i32_const(indent, key_ptr as i32);
                 writer.i32_const(indent, key_len as i32);
-                writer.push_str(&format!(
-                    "{pad}(call {})\n",
-                    RuntimeFn::PropertyHas.symbol()
-                ));
+                writer.call(indent, RuntimeFn::PropertyHas.symbol());
             }
             LoweredExpr::PropertyInDynamic { obj, key, .. } => {
                 self.emit_expr(writer, obj, indent, frame);
@@ -254,18 +230,12 @@ impl WatEmitter<'_> {
                 );
                 self.emit_expr(writer, key, indent, frame);
                 writer.i32_const(indent, Layout::SCRATCH_OFFSET as i32);
-                writer.push_str(&format!(
-                    "{pad}(call {})\n",
-                    RuntimeFn::ValueToStringInto.symbol()
-                ));
+                writer.call(indent, RuntimeFn::ValueToStringInto.symbol());
                 writer.local_set(indent, frame.heap_value_tmp());
                 writer.local_get(indent, frame.heap_base_tmp());
                 writer.i32_const(indent, Layout::SCRATCH_OFFSET as i32);
                 writer.local_get(indent, frame.heap_value_tmp());
-                writer.push_str(&format!(
-                    "{pad}(call {})\n",
-                    RuntimeFn::PropertyHas.symbol()
-                ));
+                writer.call(indent, RuntimeFn::PropertyHas.symbol());
             }
             LoweredExpr::Unary { op, expr, .. } => {
                 self.emit_expr(writer, expr, indent, frame);
@@ -274,7 +244,7 @@ impl WatEmitter<'_> {
                         writer.line_fmt(indent, format_args!("(call {})", RuntimeFn::Not.symbol()))
                     }
                     LoweredUnaryOp::Plus => {
-                        writer.push_str(&format!("{pad}(call $primitive_to_number_for_equality)\n"))
+                        writer.call(indent, "$primitive_to_number_for_equality");
                     }
                     LoweredUnaryOp::Negate => writer.line_fmt(
                         indent,
@@ -498,30 +468,21 @@ impl WatEmitter<'_> {
                     {
                         self.emit_expr(writer, left, indent, frame);
                         self.emit_expr(writer, right, indent, frame);
-                        writer.push_str(&format!(
-                            "{pad}(call {})\n",
-                            RuntimeFn::LessEqualFast.symbol()
-                        ));
+                        writer.call(indent, RuntimeFn::LessEqualFast.symbol());
                     }
                     LoweredBinaryOp::Greater
                         if left_ty == InferredType::Number && right_ty == InferredType::Number =>
                     {
                         self.emit_expr(writer, left, indent, frame);
                         self.emit_expr(writer, right, indent, frame);
-                        writer.push_str(&format!(
-                            "{pad}(call {})\n",
-                            RuntimeFn::GreaterFast.symbol()
-                        ));
+                        writer.call(indent, RuntimeFn::GreaterFast.symbol());
                     }
                     LoweredBinaryOp::GreaterEqual
                         if left_ty == InferredType::Number && right_ty == InferredType::Number =>
                     {
                         self.emit_expr(writer, left, indent, frame);
                         self.emit_expr(writer, right, indent, frame);
-                        writer.push_str(&format!(
-                            "{pad}(call {})\n",
-                            RuntimeFn::GreaterEqualFast.symbol()
-                        ));
+                        writer.call(indent, RuntimeFn::GreaterEqualFast.symbol());
                     }
                     _ => {
                         let runtime_fn = match op {
@@ -560,12 +521,12 @@ impl WatEmitter<'_> {
                             );
                             writer.local_get(indent, lhs_tmp);
                             self.emit_expr(writer, right, indent, frame);
-                            writer.push_str(&format!("{pad}(call {})\n", runtime_fn.symbol()));
+                            writer.call(indent, runtime_fn.symbol());
                             return;
                         }
                         self.emit_expr(writer, left, indent, frame);
                         self.emit_expr(writer, right, indent, frame);
-                        writer.push_str(&format!("{pad}(call {})\n", runtime_fn.symbol()));
+                        writer.call(indent, runtime_fn.symbol());
                     }
                 }
             }
@@ -578,7 +539,7 @@ impl WatEmitter<'_> {
                         self.emit_expr(writer, arg, indent, frame);
                     }
                     let runtime_fn = RuntimeFn::from_builtin(*builtin);
-                    writer.push_str(&format!("{pad}(call {})\n", runtime_fn.symbol()));
+                    writer.call(indent, runtime_fn.symbol());
                     // ConsoleLog is void in WAT but may appear in value context
                     // (e.g. arrow body). Push undefined so the stack is consistent.
                     if matches!(runtime_fn, RuntimeFn::Log) {
@@ -662,10 +623,7 @@ impl WatEmitter<'_> {
                         key_raw,
                     ));
                     self.emit_expr(writer, val, indent, &child_frame);
-                    writer.push_str(&format!(
-                        "{pad}(local.set {})\n",
-                        child_frame.heap_value_tmp(),
-                    ));
+                    writer.local_set(indent, child_frame.heap_value_tmp());
                     writer.push_str(&format!(
                         "{pad}(i32.store (i32.add (local.get {}) (i32.const {})) (local.get {}))\n",
                         frame.heap_base_tmp(),
@@ -777,10 +735,7 @@ impl WatEmitter<'_> {
                 self.emit_expr(writer, obj, indent, frame);
                 writer.i32_const(indent, key_ptr as i32);
                 writer.i32_const(indent, key_len as i32);
-                writer.push_str(&format!(
-                    "{pad}(call {})\n",
-                    RuntimeFn::PropertyGet.symbol()
-                ));
+                writer.call(indent, RuntimeFn::PropertyGet.symbol());
             }
             LoweredExpr::OptionalPropertyGet { obj, key, .. } => {
                 self.emit_optional_property_get(writer, obj, key, indent, frame);
@@ -796,18 +751,12 @@ impl WatEmitter<'_> {
                 );
                 self.emit_expr(writer, key, indent, frame);
                 writer.i32_const(indent, Layout::SCRATCH_OFFSET as i32);
-                writer.push_str(&format!(
-                    "{pad}(call {})\n",
-                    RuntimeFn::ValueToStringInto.symbol()
-                ));
+                writer.call(indent, RuntimeFn::ValueToStringInto.symbol());
                 writer.local_set(indent, frame.heap_value_tmp());
                 writer.local_get(indent, frame.heap_base_tmp());
                 writer.i32_const(indent, Layout::SCRATCH_OFFSET as i32);
                 writer.local_get(indent, frame.heap_value_tmp());
-                writer.push_str(&format!(
-                    "{pad}(call {})\n",
-                    RuntimeFn::PropertyGet.symbol()
-                ));
+                writer.call(indent, RuntimeFn::PropertyGet.symbol());
             }
             LoweredExpr::OptionalIndex { object, index, .. } => {
                 self.emit_optional_index(writer, object, index, indent, frame);
@@ -885,10 +834,7 @@ impl WatEmitter<'_> {
                 writer.i32_const(indent, key_ptr as i32);
                 writer.i32_const(indent, key_len as i32);
                 self.emit_expr(writer, value, indent, frame);
-                writer.push_str(&format!(
-                    "{pad}(call {})\n",
-                    RuntimeFn::PropertySet.symbol(),
-                ));
+                writer.call(indent, RuntimeFn::PropertySet.symbol());
             }
             LoweredExpr::PropertySetDynamic {
                 object,
@@ -906,19 +852,13 @@ impl WatEmitter<'_> {
                 );
                 self.emit_expr(writer, index, indent, frame);
                 writer.i32_const(indent, Layout::SCRATCH_OFFSET as i32);
-                writer.push_str(&format!(
-                    "{pad}(call {})\n",
-                    RuntimeFn::ValueToStringInto.symbol()
-                ));
+                writer.call(indent, RuntimeFn::ValueToStringInto.symbol());
                 writer.local_set(indent, frame.heap_value_tmp());
                 writer.local_get(indent, frame.heap_base_tmp());
                 writer.i32_const(indent, Layout::SCRATCH_OFFSET as i32);
                 writer.local_get(indent, frame.heap_value_tmp());
                 self.emit_expr(writer, value, indent, frame);
-                writer.push_str(&format!(
-                    "{pad}(call {})\n",
-                    RuntimeFn::PropertySet.symbol(),
-                ));
+                writer.call(indent, RuntimeFn::PropertySet.symbol());
             }
             LoweredExpr::ModuleLoad { module_id, .. } => {
                 writer.push_str(&format!(
@@ -1532,10 +1472,7 @@ impl WatEmitter<'_> {
         writer.push_str(&format!("{pad}(local.get {object})\n"));
         writer.i32_const(indent, key_ptr as i32);
         writer.i32_const(indent, key_len as i32);
-        writer.push_str(&format!(
-            "{pad}(call {})\n",
-            RuntimeFn::PropertyGet.symbol()
-        ));
+        writer.call(indent, RuntimeFn::PropertyGet.symbol());
         writer.push_str(&format!("{pad}(local.set {tmp})\n"));
         self.emit_gc_root_mirror_index(writer.output_mut(), &pad, tmp, frame);
     }
@@ -1727,10 +1664,7 @@ impl WatEmitter<'_> {
         writer.i32_const(indent, key_ptr as i32);
         writer.i32_const(indent, key_len as i32);
         writer.push_str(&format!("{pad}(local.get {rhs})\n"));
-        writer.push_str(&format!(
-            "{pad}(call {})\n",
-            RuntimeFn::PropertySet.symbol()
-        ));
+        writer.call(indent, RuntimeFn::PropertySet.symbol());
     }
 
     fn emit_logical_property_assign_rhs(
@@ -1749,10 +1683,7 @@ impl WatEmitter<'_> {
         writer.i32_const(indent, key_ptr as i32);
         writer.i32_const(indent, key_len as i32);
         self.emit_expr(writer, expr, indent, frame);
-        writer.push_str(&format!(
-            "{pad}(call {})\n",
-            RuntimeFn::PropertySet.symbol()
-        ));
+        writer.call(indent, RuntimeFn::PropertySet.symbol());
     }
 
     #[allow(clippy::too_many_arguments)]
@@ -1779,10 +1710,7 @@ impl WatEmitter<'_> {
         writer.push_str(&format!("{pad}(local.get {object})\n"));
         writer.i32_const(indent, Layout::SCRATCH_OFFSET as i32);
         writer.push_str(&format!("{pad}(local.get {key_len})\n"));
-        writer.push_str(&format!(
-            "{pad}(call {})\n",
-            RuntimeFn::PropertyGet.symbol()
-        ));
+        writer.call(indent, RuntimeFn::PropertyGet.symbol());
         writer.push_str(&format!("{pad}(local.set {current})\n"));
         self.emit_gc_root_mirror_index(writer.output_mut(), &pad, current, frame);
 
@@ -1878,10 +1806,7 @@ impl WatEmitter<'_> {
         writer.push_str(&format!("{pad}(local.get {object})\n"));
         writer.i32_const(indent, Layout::SCRATCH_OFFSET as i32);
         writer.push_str(&format!("{pad}(local.get {key_len})\n"));
-        writer.push_str(&format!(
-            "{pad}(call {})\n",
-            RuntimeFn::PropertyGet.symbol()
-        ));
+        writer.call(indent, RuntimeFn::PropertyGet.symbol());
         writer.push_str(&format!("{pad}(local.set {current})\n"));
         self.emit_gc_root_mirror_index(writer.output_mut(), &pad, current, &current_frame);
 
@@ -1958,10 +1883,7 @@ impl WatEmitter<'_> {
         let pad = " ".repeat(indent);
         writer.push_str(&format!("{pad}(local.get {key_value})\n"));
         writer.i32_const(indent, Layout::SCRATCH_OFFSET as i32);
-        writer.push_str(&format!(
-            "{pad}(call {})\n",
-            RuntimeFn::ValueToStringInto.symbol()
-        ));
+        writer.call(indent, RuntimeFn::ValueToStringInto.symbol());
         writer.push_str(&format!("{pad}(local.set {key_len})\n"));
     }
 
@@ -1987,9 +1909,6 @@ impl WatEmitter<'_> {
         writer.i32_const(indent, Layout::SCRATCH_OFFSET as i32);
         writer.push_str(&format!("{pad}(local.get {key_len})\n"));
         writer.push_str(&format!("{pad}(local.get {rhs})\n"));
-        writer.push_str(&format!(
-            "{pad}(call {})\n",
-            RuntimeFn::PropertySet.symbol()
-        ));
+        writer.call(indent, RuntimeFn::PropertySet.symbol());
     }
 }
