@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 2 | 1 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4441 | 3757 | 684 |
+| frontend | 4441 | 3756 | 685 |
 | harness | 1 | 0 | 1 |
 | ir | 37 | 15 | 22 |
 | issues | 4 | 0 | 4 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5055 | 4025 | 1030 |
+| total | 5055 | 4024 | 1031 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -450,7 +450,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 772 | Implement Augmentedtypesvar | spike | frontend/syntax | class: blocked | Implement Augmentedtypesvar |
 | 773 | Implement Autoasiforstaticsinclassdeclaration | spike | frontend/syntax | class: triage-needed | Implement Autoasiforstaticsinclassdeclaration |
 | 775 | Implement Autotypeassignedusingdestructuringfromnevernocrash | spike | frontend/resolver | class: blocked | Implement Autotypeassignedusingdestructuringfromnevernocrash |
-| 1125 | Implement Chainedassignment | spike | frontend/syntax | class: triage-needed | Implement Chainedassignment |
 | 1126 | Implement Chainedcallswithtypeparameterconstrainedtoothertypeparameter | spike | frontend/syntax | class: blocked | Implement Chainedcallswithtypeparameterconstrainedtoothertypeparameter |
 | 1127 | Implement Chainedimportalias | spike | frontend/syntax | class: blocked | Implement Chainedimportalias |
 | 1128 | Implement Chainedspecializationtoobjecttypeliteral | spike | frontend/syntax | class: blocked | Implement Chainedspecializationtoobjecttypeliteral |
@@ -5012,6 +5011,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1122 | Implement Catch | spike | reference/triage | see `issues/done/1122-implement-catch.md` |
 | 1123 | Implement Catchclausewithinitializer | spike | frontend/syntax | see `issues/done/1123-implement-catchClauseWithInitializer.md` |
 | 1124 | Implement Cf | spike | frontend/resolver | see `issues/done/1124-implement-cf.md` |
+| 1125 | Implement Chainedassignment | spike | frontend/syntax | see `issues/done/1125-implement-chainedAssignment.md` |
 | 2050 | Implement Duplicatelocalvariable Duplicate Local | spike | reference/triage | see `issues/done/2050-implement-duplicateLocalVariable-duplicate-local.md` |
 | 3002 | Implement Isolateddeclarationerrorsdefault | spike | runtime/builtins | see `issues/done/3002-implement-isolatedDeclarationErrorsDefault.md` |
 | 3131 | Implement Jsxfactorynotidentifierorqualifiedname | spike | reference/triage | see `issues/done/3131-implement-jsxFactoryNotIdentifierOrQualifiedName.md` |
