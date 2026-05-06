@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 2 | 1 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4439 | 3761 | 678 |
+| frontend | 4439 | 3760 | 679 |
 | harness | 1 | 0 | 1 |
 | ir | 36 | 14 | 22 |
 | issues | 4 | 0 | 4 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5052 | 4030 | 1022 |
+| total | 5052 | 4029 | 1023 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -50,7 +50,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 5000 (Meta: TypeScript Compiler Parser Syntax Coverage) [done/design] ch:498 open:431 done:67
 ├── 5002 (Meta: TypeScript Compiler Type System Coverage) [done/done] ch:241 open:233 done:8 (also ← 5005)
 ├── 5003 (Meta: TypeScript Compiler Declaration Emit Coverage) [done/done] ch:103 open:92 done:11 (also ← 5001)
-5001 (Meta: TypeScript Compiler Semantic Analysis Coverage) [done/done] ch:605 open:357 done:248
+5001 (Meta: TypeScript Compiler Semantic Analysis Coverage) [done/done] ch:605 open:356 done:249
 5004 (Meta: Runtime Builtins Coverage (test262) (audit reopened #5004)) [done/done] ch:24 open:3 done:21
 5005 (Meta: TypeScript Compiler Name Resolution Coverage) [done/done] ch:431 open:384 done:47
 ├── 5006 (Meta: TypeScript Compiler Scope Analysis Coverage) [done/done] ch:30 open:22 done:8
@@ -67,7 +67,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | Order | ID | Title | State | Class | Area | Priority | Depends on | Direct children | Open children | Done children |
 |-----:|---:|------|-------|-------|------|--------:|-----------:|----------------:|--------------:|--------------:|
 | 1 | 5000 | Meta: TypeScript Compiler Parser Syntax Coverage | done | design | frontend/syntax | P1 | - | 498 | 431 | 67 |
-| 2 | 5001 | Meta: TypeScript Compiler Semantic Analysis Coverage | done | done | frontend/semantics | P1 | - | 605 | 357 | 248 |
+| 2 | 5001 | Meta: TypeScript Compiler Semantic Analysis Coverage | done | done | frontend/semantics | P1 | - | 605 | 356 | 249 |
 | 3 | 5004 | Meta: Runtime Builtins Coverage (test262) (audit reopened #5004) | done | done | runtime/builtins | P1 | - | 24 | 3 | 21 |
 | 4 | 5005 | Meta: TypeScript Compiler Name Resolution Coverage | done | done | frontend/resolver | P1 | - | 431 | 384 | 47 |
 | 5 | 5002 | Meta: TypeScript Compiler Type System Coverage | done | done | frontend/semantics | P1 | 5000, 5005 | 241 | 233 | 8 |
@@ -447,7 +447,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 772 | Implement Augmentedtypesvar | spike | frontend/syntax | class: blocked | Implement Augmentedtypesvar |
 | 773 | Implement Autoasiforstaticsinclassdeclaration | spike | frontend/syntax | class: triage-needed | Implement Autoasiforstaticsinclassdeclaration |
 | 775 | Implement Autotypeassignedusingdestructuringfromnevernocrash | spike | frontend/resolver | class: blocked | Implement Autotypeassignedusingdestructuringfromnevernocrash |
-| 1117 | Implement Castfunctionexpressionshouldbeparenthesized | spike | frontend/syntax | class: triage-needed | Implement Castfunctionexpressionshouldbeparenthesized |
 | 1118 | Implement Castnewobjectbug | spike | frontend/syntax | class: blocked | Implement Castnewobjectbug |
 | 1119 | Implement Castofawait | spike | reference/triage | class: triage-needed | Implement Castofawait |
 | 1120 | Implement Castparentheses | spike | frontend/syntax | class: triage-needed | Implement Castparentheses |
@@ -5009,6 +5008,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1114 | Implement Capturedvarinloop | spike | frontend/syntax | see `issues/done/1114-implement-capturedVarInLoop.md` |
 | 1115 | Implement Caseinsensitivefilesystemwithcapsimporttypedeclarations | spike | frontend/syntax | see `issues/done/1115-implement-caseInsensitiveFileSystemWithCapsImportTypeDeclarations.md` |
 | 1116 | Implement Castexpressionparentheses | spike | frontend/syntax | see `issues/done/1116-implement-castExpressionParentheses.md` |
+| 1117 | Implement Castfunctionexpressionshouldbeparenthesized | spike | frontend/syntax | see `issues/done/1117-implement-castFunctionExpressionShouldBeParenthesized.md` |
 | 2050 | Implement Duplicatelocalvariable Duplicate Local | spike | reference/triage | see `issues/done/2050-implement-duplicateLocalVariable-duplicate-local.md` |
 | 3002 | Implement Isolateddeclarationerrorsdefault | spike | runtime/builtins | see `issues/done/3002-implement-isolatedDeclarationErrorsDefault.md` |
 | 3131 | Implement Jsxfactorynotidentifierorqualifiedname | spike | reference/triage | see `issues/done/3131-implement-jsxFactoryNotIdentifierOrQualifiedName.md` |
