@@ -108,7 +108,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] created: `issues/open/5168-report-bigint-property-name-diagnostics.md`
+- [x] created: `issues/done/5168-report-bigint-property-name-diagnostics.md`
 
 ## Notes
 
@@ -131,7 +131,7 @@ Generated on 2026-05-06.
 - Visible symbols before failure: none
 - Compiler evidence: lexer recognizes `BigIntLiteral("1n")`; AST/resolved fail before representing the object literal.
 - TypeScript oracle: reports TS1539 (`A 'bigint' literal cannot be used as a property name.`), TS2464, and TS2538 diagnostics.
-- Split child: `issues/open/5168-report-bigint-property-name-diagnostics.md`
+- Split child: `issues/done/5168-report-bigint-property-name-diagnostics.md`
 
 ## Completion evidence
 

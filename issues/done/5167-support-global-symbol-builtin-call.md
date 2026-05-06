@@ -64,10 +64,10 @@ The global `Symbol()` call is recognized as a builtin boundary so `bigintIndex.t
 
 In scope:
 
-- [ ] Recognize global `Symbol()` in builtin resolution/lowering.
-- [ ] Preserve existing bare `Symbol` identifier handling where it is used as a namespace/global value.
-- [ ] Add focused resolver coverage for `let key; key = Symbol();`.
-- [ ] Re-run `bigintIndex.ts` triage and confirm the `UnresolvedFunction` blocker is gone.
+- [x] Recognize global `Symbol()` in builtin resolution/lowering.
+- [x] Preserve existing bare `Symbol` identifier handling where it is used as a namespace/global value.
+- [x] Add focused resolver coverage for `let key; key = Symbol();`.
+- [x] Re-run `bigintIndex.ts` triage and confirm the `UnresolvedFunction` blocker is gone.
 
 Out of scope:
 
@@ -92,10 +92,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] `key = Symbol();` no longer reports `UnresolvedFunction`.
-- [ ] `python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/bigintIndex.ts` no longer reports `unresolved function: Symbol`.
-- [ ] A focused resolver/lowering regression covers a global `Symbol()` call.
-- [ ] Any remaining unsupported Symbol semantics are source-spanned and issue-linked.
+- [x] `key = Symbol();` no longer reports `UnresolvedFunction`.
+- [x] `python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/bigintIndex.ts` no longer reports `unresolved function: Symbol`.
+- [x] A focused resolver/lowering regression covers a global `Symbol()` call.
+- [x] Any remaining unsupported Symbol semantics are source-spanned and issue-linked.
 
 ## Validation
 
@@ -122,15 +122,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 

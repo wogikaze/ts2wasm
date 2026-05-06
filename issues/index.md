@@ -18,7 +18,7 @@ Issue files are the source of truth for work items. The generated section below 
 | docs | 2 | 0 | 2 |
 | frontend | 4438 | 3734 | 704 |
 | harness | 1 | 0 | 1 |
-| ir | 41 | 10 | 31 |
+| ir | 41 | 9 | 32 |
 | issues | 5 | 0 | 5 |
 | parser | 1 | 0 | 1 |
 | reference | 211 | 163 | 48 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5065 | 4002 | 1063 |
+| total | 5065 | 4001 | 1064 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -106,7 +106,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5158 | Report interface private member clashes | feature | frontend/resolver | implementation-ready | P1 |  | `reference/typescript/tests/cases/compiler/baseTypePrivateMemberClash.ts` currently reports `BackendIo` instead of a ... |
 | 5163 | Lower nested call expression callees | feature | frontend/semantics | implementation-ready | P2 |  | `reference/typescript/tests/cases/compiler/betterErrorForAccidentalCall.ts` currently reports `UnsupportedSyntax: onl... |
 | 5165 | Support typed array subarray builtins | feature | ir/builtin-resolver | implementation-ready | P1 |  | Support typed array subarray builtins |
-| 5167 | Support global Symbol builtin call | feature | ir/builtin-resolver | implementation-ready | P1 |  | `reference/typescript/tests/cases/compiler/bigintIndex.ts` currently reports `UnresolvedFunction: unresolved function... |
 | 5169 | Parse ASI after expression statement | feature | frontend/syntax | implementation-ready | P1 |  | the BigInt lib reference cases report `UnsupportedSyntax: expected Semicolon, got Some(Let)` after: |
 | 5176 | Report ambient var lib redeclaration diagnostics | feature | frontend/semantics | implementation-ready | P1 |  | ambient `declare var` declarations can conflict with lib globals, but ts2wasm currently erases the declaration and re... |
 | 5177 | Report strict-null diagnostics in erased namespace methods | feature | frontend/semantics | implementation-ready | P1 |  | erased namespace class method bodies can hide typed local declaration diagnostics and produce a false build pass. |
@@ -5140,6 +5139,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5162 | Allow compatible var redeclarations | feature | frontend/syntax | see `issues/done/5162-allow-compatible-var-redeclarations.md` |
 | 5164 | Parse exponentiation compound assignment | feature | frontend/syntax | see `issues/done/5164-parse-exponentiation-compound-assignment.md` |
 | 5166 | Parse string-literal module specifier aliases | feature | frontend/syntax | see `issues/done/5166-parse-string-literal-module-specifier-aliases.md` |
+| 5167 | Support global Symbol builtin call | feature | ir/builtin-resolver | see `issues/done/5167-support-global-symbol-builtin-call.md` |
 | 5168 | Report BigInt property-name diagnostics | feature | frontend/syntax | see `issues/done/5168-report-bigint-property-name-diagnostics.md` |
 | 5170 | Support bitwise OR binary lowering | feature | ir/lowering | see `issues/done/5170-support-bitwise-or-binary-lowering.md` |
 | 5171 | Accept unsigned 32-bit hex literals | feature | frontend/lexer | see `issues/done/5171-accept-unsigned-32-bit-hex-literals.md` |
