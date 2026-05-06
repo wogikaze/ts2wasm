@@ -16,18 +16,18 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 4 | 3 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4505 | 3631 | 874 |
+| frontend | 4506 | 3632 | 874 |
 | harness | 1 | 0 | 1 |
 | ir | 57 | 35 | 22 |
 | issues | 4 | 0 | 4 |
 | parser | 1 | 0 | 1 |
-| reference | 212 | 156 | 56 |
+| reference | 212 | 155 | 57 |
 | runtime | 265 | 86 | 179 |
 | scripts | 3 | 1 | 2 |
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5141 | 3914 | 1227 |
+| total | 5142 | 3914 | 1228 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -261,6 +261,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5304 | Parse generic arrow functions with typed parameters | feature | frontend/syntax | implementation-ready | P1 |  | generic arrow functions with typed parameters currently fail with |
 | 5305 | Report merge conflict marker diagnostics | feature | frontend/syntax | implementation-ready | P1 |  | merge conflict marker source currently reports generic parser syntax |
 | 5306 | Report export assignment with other exports | bug | frontend/syntax | implementation-ready | P1 |  | `ExportAssignment8.ts` stops at generic issue-055 instead of reporting the specific `export =` plus other exports rule. |
+| 5307 | Report var/function duplicate identifier diagnostics | bug | frontend/resolver | implementation-ready | P2 |  | `conflictingTypeAnnotatedVar.ts` reports a generic `DuplicateLocal` at the function declaration span instead of sourc... |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -651,7 +652,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1344 | Implement Commentleadingclosebrace | spike | frontend/resolver | class: blocked | Implement Commentleadingclosebrace |
 | 1345 | Implement Commentonambientmodule | spike | frontend/syntax | class: blocked | Implement Commentonambientmodule |
 | 1346 | Implement Commentonambientvariable | spike | frontend/resolver | class: blocked | Implement Commentonambientvariable |
-| 1436 | Implement Conflictingtypeannotatedvar | spike | reference/triage | class: triage-needed | Implement Conflictingtypeannotatedvar |
 | 1437 | Implement Conflictingtypeparametersymboltransfer | spike | frontend/syntax | class: blocked | Implement Conflictingtypeparametersymboltransfer |
 | 1438 | Implement Consistentaliasvsnonaliasrecordbehavior | spike | frontend/syntax | class: blocked | Implement Consistentaliasvsnonaliasrecordbehavior |
 | 1439 | Implement Constdeclarationshadowedbyvardeclaration | spike | frontend/syntax | class: blocked | Implement Constdeclarationshadowedbyvardeclaration |
@@ -5097,6 +5097,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1433 | Implement Conflictmarkertrivia Parser Syntax | spike | frontend/syntax | see `issues/done/1433-implement-conflictMarkerTrivia-parser-syntax.md` |
 | 1434 | Implement Conflictmarkertrivia Unknown Unsupported | spike | frontend/syntax | see `issues/done/1434-implement-conflictMarkerTrivia-unknown-unsupported.md` |
 | 1435 | Implement Conflictingdeclarationsimportfromnamespace | spike | frontend/syntax | see `issues/done/1435-implement-conflictingDeclarationsImportFromNamespace.md` |
+| 1436 | Implement Conflictingtypeannotatedvar | spike | reference/triage | see `issues/done/1436-implement-conflictingTypeAnnotatedVar.md` |
 | 2050 | Implement Duplicatelocalvariable Duplicate Local | spike | reference/triage | see `issues/done/2050-implement-duplicateLocalVariable-duplicate-local.md` |
 | 3002 | Implement Isolateddeclarationerrorsdefault | spike | runtime/builtins | see `issues/done/3002-implement-isolatedDeclarationErrorsDefault.md` |
 | 3131 | Implement Jsxfactorynotidentifierorqualifiedname | spike | reference/triage | see `issues/done/3131-implement-jsxFactoryNotIdentifierOrQualifiedName.md` |
