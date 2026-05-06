@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 3 | 2 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4461 | 3725 | 736 |
+| frontend | 4461 | 3724 | 737 |
 | harness | 1 | 0 | 1 |
 | ir | 46 | 24 | 22 |
 | issues | 4 | 0 | 4 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5085 | 4002 | 1083 |
+| total | 5085 | 4001 | 1084 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -479,7 +479,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 772 | Implement Augmentedtypesvar | spike | frontend/syntax | class: blocked | Implement Augmentedtypesvar |
 | 773 | Implement Autoasiforstaticsinclassdeclaration | spike | frontend/syntax | class: triage-needed | Implement Autoasiforstaticsinclassdeclaration |
 | 775 | Implement Autotypeassignedusingdestructuringfromnevernocrash | spike | frontend/resolver | class: blocked | Implement Autotypeassignedusingdestructuringfromnevernocrash |
-| 1176 | Implement Classdeclarationcheckusedbeforedefinitioninitself | spike | frontend/syntax | class: triage-needed | Implement Classdeclarationcheckusedbeforedefinitioninitself |
 | 1177 | Implement Classdeclarationmergedinmodulewithcontinuation | spike | frontend/syntax | class: blocked | Implement Classdeclarationmergedinmodulewithcontinuation |
 | 1178 | Implement Classdeclarationshouldbeoutofscopeincomputednames | spike | frontend/resolver | class: blocked | Implement Classdeclarationshouldbeoutofscopeincomputednames |
 | 1179 | Implement Classdeclaredbeforeclassfactory | spike | frontend/syntax | class: blocked | Implement Classdeclaredbeforeclassfactory |
@@ -5041,6 +5040,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1173 | Implement Classattributeinferencetemplatejs | spike | frontend/semantics | see `issues/done/1173-implement-classAttributeInferenceTemplateJS.md` |
 | 1174 | Implement Classblockscoping | spike | frontend/syntax | see `issues/done/1174-implement-classBlockScoping.md` |
 | 1175 | Implement Classdeclarationblockscoping | spike | frontend/syntax | see `issues/done/1175-implement-classDeclarationBlockScoping.md` |
+| 1176 | Implement Classdeclarationcheckusedbeforedefinitioninitself | spike | frontend/syntax | see `issues/done/1176-implement-classDeclarationCheckUsedBeforeDefinitionInItself.md` |
 | 2050 | Implement Duplicatelocalvariable Duplicate Local | spike | reference/triage | see `issues/done/2050-implement-duplicateLocalVariable-duplicate-local.md` |
 | 3002 | Implement Isolateddeclarationerrorsdefault | spike | runtime/builtins | see `issues/done/3002-implement-isolatedDeclarationErrorsDefault.md` |
 | 3131 | Implement Jsxfactorynotidentifierorqualifiedname | spike | reference/triage | see `issues/done/3131-implement-jsxFactoryNotIdentifierOrQualifiedName.md` |
