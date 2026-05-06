@@ -321,6 +321,13 @@ impl<'a> Resolver<'a> {
             }
             ResolvedStmt::Let(name, expr) => {
                 let local_id = self.declare_local(name)?;
+                // Infer class before lowering so closures inside the initializer
+                // can resolve the class of this local (e.g. `new Howl(...)` with a
+                // callback that calls `instance.once(...)`).
+                let expr_class = self.infer_class_for_expr(expr);
+                if let Some(class_name) = &expr_class {
+                    self.local_classes.insert(local_id, class_name.clone());
+                }
                 let function_props = self.function_props_for_object_expr(expr);
                 let lowered = if let ResolvedExpr::ArrowFn {
                     params,
@@ -371,18 +378,20 @@ impl<'a> Resolver<'a> {
                 } else {
                     self.object_function_props.remove(&local_id);
                 }
-                let expr_class = self.infer_class_for_expr(expr);
-                if let Some(class_name) = expr_class {
-                    self.local_classes.insert(local_id, class_name);
-                } else {
-                    self.local_classes.remove(&local_id);
-                }
                 self.update_regexp_literal_local(local_id, expr);
                 Ok(LoweredStmt::Let(local_id, lowered, Span::generated("let_stmt")))
             }
             ResolvedStmt::Assign(name, expr) => {
                 let local_id = self.resolve_local(name)?;
                 self.invalidate_static_object_literal_local(local_id);
+                // Infer class before lowering so closures inside the RHS
+                // can resolve the class of this local.
+                let expr_class = self.infer_class_for_expr(expr);
+                if let Some(class_name) = &expr_class {
+                    self.local_classes.insert(local_id, class_name.clone());
+                } else {
+                    self.local_classes.remove(&local_id);
+                }
                 let function_props = self.function_props_for_object_expr(expr);
                 let lowered = self.lower_expr(expr)?;
                 if let LoweredExpr::ArrowFn {
@@ -413,12 +422,6 @@ impl<'a> Resolver<'a> {
                     self.object_function_props.insert(local_id, props);
                 } else {
                     self.object_function_props.remove(&local_id);
-                }
-                let expr_class = self.infer_class_for_expr(expr);
-                if let Some(class_name) = expr_class {
-                    self.local_classes.insert(local_id, class_name);
-                } else {
-                    self.local_classes.remove(&local_id);
                 }
                 self.update_regexp_literal_local(local_id, expr);
                 if self.env_cell_locals.contains(&local_id) {

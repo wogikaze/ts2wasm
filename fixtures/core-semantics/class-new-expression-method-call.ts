@@ -25,3 +25,8 @@ console.log(c);
 // new C().method().method() — chained (new C() evaluated once per chain)
 let d = new Greeter().greet("Alice");
 console.log(d);
+
+// Local variable holding class instance — method call on local
+let greeter = new Greeter();
+console.log(greeter.greet("from local"));
+console.log(greeter.double(100));
