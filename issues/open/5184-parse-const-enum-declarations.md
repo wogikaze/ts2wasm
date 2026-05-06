@@ -143,7 +143,7 @@ Follow-up issues:
 
 ## Notes
 
-Split from generated bucket `1070` on 2026-05-06. Sibling buckets such as `1446`, `633`, and `737` also show the same `const enum` parser boundary in different reference contexts; this child issue names the shared parser slice.
+Split from generated bucket `1070` on 2026-05-06. Bucket `1071` was later superseded by the same child after fresh triage of `blockScopedEnumVariablesUseBeforeDef_isolatedModules.ts` showed the identical `const enum` parser boundary. Sibling buckets such as `1446`, `633`, and `737` also show the same boundary in different reference contexts; this child issue names the shared parser slice.
 
 ## Completion evidence
 

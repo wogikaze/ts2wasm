@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 1 | 0 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4413 | 3778 | 635 |
+| frontend | 4413 | 3777 | 636 |
 | harness | 1 | 0 | 1 |
 | ir | 31 | 9 | 22 |
 | issues | 4 | 0 | 4 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5019 | 4044 | 975 |
+| total | 5019 | 4043 | 976 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -414,7 +414,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 772 | Implement Augmentedtypesvar | spike | frontend/syntax | class: blocked | Implement Augmentedtypesvar |
 | 773 | Implement Autoasiforstaticsinclassdeclaration | spike | frontend/syntax | class: triage-needed | Implement Autoasiforstaticsinclassdeclaration |
 | 775 | Implement Autotypeassignedusingdestructuringfromnevernocrash | spike | frontend/resolver | class: blocked | Implement Autotypeassignedusingdestructuringfromnevernocrash |
-| 1071 | Implement Blockscopedenumvariablesusebeforedef Import Export | spike | frontend/syntax | class: blocked | Implement Blockscopedenumvariablesusebeforedef Import Export |
 | 1072 | Implement Blockscopedfunctiondeclarationes | spike | frontend/resolver | class: blocked | Implement Blockscopedfunctiondeclarationes |
 | 1073 | Implement Blockscopedfunctiondeclarationinstrictclass | spike | frontend/resolver | class: blocked | Implement Blockscopedfunctiondeclarationinstrictclass |
 | 1074 | Implement Blockscopedfunctiondeclarationinstrictmodule | spike | frontend/syntax | class: blocked | Implement Blockscopedfunctiondeclarationinstrictmodule |
@@ -4977,6 +4976,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1068 | Implement Blockscopedbindingsreassignedinloop Name Resolution | spike | frontend/resolver | see `issues/done/1068-implement-blockScopedBindingsReassignedInLoop-name-resolution.md` |
 | 1069 | Implement Blockscopedbindingsreassignedinloop Scope Analysis | spike | frontend/resolver | see `issues/done/1069-implement-blockScopedBindingsReassignedInLoop-scope-analysis.md` |
 | 1070 | Implement Blockscopedenumvariablesusebeforedef Enum | spike | frontend/syntax | see `issues/done/1070-implement-blockScopedEnumVariablesUseBeforeDef-enum.md` |
+| 1071 | Implement Blockscopedenumvariablesusebeforedef Import Export | spike | frontend/syntax | see `issues/done/1071-implement-blockScopedEnumVariablesUseBeforeDef-import-export.md` |
 | 2050 | Implement Duplicatelocalvariable Duplicate Local | spike | reference/triage | see `issues/done/2050-implement-duplicateLocalVariable-duplicate-local.md` |
 | 3002 | Implement Isolateddeclarationerrorsdefault | spike | runtime/builtins | see `issues/done/3002-implement-isolatedDeclarationErrorsDefault.md` |
 | 3131 | Implement Jsxfactorynotidentifierorqualifiedname | spike | reference/triage | see `issues/done/3131-implement-jsxFactoryNotIdentifierOrQualifiedName.md` |

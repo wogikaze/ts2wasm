@@ -3,12 +3,14 @@ id: 1071
 title: "Implement Blockscopedenumvariablesusebeforedef Import Export"
 type: spike
 area: frontend/syntax
-class: blocked
+class: superseded
 priority: P1
-depends_on: [432]
+depends_on: [5184]
 blocks: []
 created: 2026-05-01
-updated: 2026-05-01
+updated: 2026-05-06
+status: done
+completed: 2026-05-06
 ---
 
 ## Summary
@@ -43,10 +45,10 @@ This generated bucket is either split into implementation-ready child issues or 
 
 In scope:
 
-- [ ] Inspect the smart triage report below
-- [ ] Confirm whether existing open/done issues already cover this bucket
-- [ ] Split one feature family, one observable behavior, or one fixed reference window into child issues
-- [ ] Preserve exact reproduction commands and representative AST/diagnostic evidence in each child issue
+- [x] Inspect the smart triage report below
+- [x] Confirm whether existing open/done issues already cover this bucket
+- [x] Split one feature family, one observable behavior, or one fixed reference window into child issues
+- [x] Preserve exact reproduction commands and representative AST/diagnostic evidence in each child issue
 
 Out of scope:
 
@@ -68,10 +70,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] Duplicate candidates below are confirmed as no-match or this issue is superseded
-- [ ] At least one child issue contains an exact `mise run reference-triage -- ...` command
-- [ ] Child issue includes failing path, diagnostic code, source context, visible symbols, and parser/TypeScript AST evidence
-- [ ] Child issue acceptance names the exact fixture/reference path and diagnostic/stdout change
+- [x] Duplicate candidates below are confirmed as no-match or this issue is superseded
+- [x] At least one child issue contains an exact `mise run reference-triage -- ...` command
+- [x] Child issue includes failing path, diagnostic code, source context, visible symbols, and parser/TypeScript AST evidence
+- [x] Child issue acceptance names the exact fixture/reference path and diagnostic/stdout change
 
 ## Validation
 
@@ -98,15 +100,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] updated: `current-state.md` (repo root)
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] superseded by: `issues/open/5184-parse-const-enum-declarations.md`
 
 ## Notes
 
@@ -126,10 +128,21 @@ Follow-up issues:
 - `issues/open/732-implement-assignmentCompatability-import-export.md` - Implement Assignmentcompatability Import Export (same feature label, title overlap)
 - `issues/open/766-implement-augmentedTypesEnum-import-export.md` - Implement Augmentedtypesenum Import Export (same feature label, title overlap)
 - `issues/done/055-implement-import-export.md` - Umbrella: implement import and export (same feature label, title overlap)
+- `issues/open/5184-parse-const-enum-declarations.md` is an exact match for the current compiler blocker. The current failure is not import/export module loading; it is the same `const enum` parser boundary split from bucket `1070`.
 
 ## Smart triage
 
-Not generated. Rerun with `--triage-limit 1` or higher.
+Generated on 2026-05-06.
+
+- Path: `reference/typescript/tests/cases/compiler/blockScopedEnumVariablesUseBeforeDef_isolatedModules.ts`
+- Diagnostic: `UnsupportedSyntax` / `parser-or-frontend-unsupported`
+- Current compiler message: `const declarations require an initializer at 147..151`
+- First failing source line: `const enum E { A }`
+- Visible symbols before failure: functions `foo1`, `foo2`
+- Compiler evidence: token dump includes `Const`, `Ident("enum")`, `Ident("E")`, `{`, member `A`, and `}`; AST/resolved construction fails before representing the enum declaration.
+- TypeScript oracle: `TS2450: Enum 'E' used before its declaration.`
+- TypeScript AST path at the current blocker: `FunctionDeclaration -> Block -> EnumDeclaration`
+- Superseded by child: `issues/open/5184-parse-const-enum-declarations.md`
 
 ## Completion evidence
 
@@ -137,16 +150,16 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- `...`
+- `pending`
 
 Validation result:
 
 ```text
-command:
-result:
-date:
+command: python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/blockScopedEnumVariablesUseBeforeDef_isolatedModules.ts
+result: pass; current blocker is the same const enum parser support tracked by issue 5184
+date: 2026-05-06
 ```
 
 Remaining risks:
 
-- none
+- The sibling `verbatimModuleSyntax` path should be re-triaged after issue 5184 advances past the shared `const enum` parser boundary.
