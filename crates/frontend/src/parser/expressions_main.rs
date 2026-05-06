@@ -972,6 +972,13 @@ impl Parser {
                     },
                 })
             } else {
+                if !self.in_async_fn {
+                    return Err(Diagnostic {
+                        code: DiagCode::UnsupportedSyntax,
+                        message: "'await' expressions are only allowed within async functions and at the top levels of modules".to_owned(),
+                        span: Some(await_span),
+                    });
+                }
                 let expr = self.unary()?;
                 let end = expr.span().end;
                 Ok(Expr::Await {

@@ -2626,7 +2626,7 @@ impl<'a> Resolver<'a> {
 
         // For now, only handle Ident receivers (variable arrays)
         let receiver_local = match &receiver {
-            LoweredExpr::Local(id, Span::generated("local")) => *id,
+            LoweredExpr::Local(id, _, Span::generated("local")) => *id,
             _ => {
                 let temp = self.alloc_temp();
                 // receiver is a literal array: store in temp
@@ -3390,7 +3390,8 @@ impl<'a> Resolver<'a> {
                     left: Box::new(result_expr.clone()),
                     op: LoweredBinaryOp::StrictEqual,
                     right: Box::new(LoweredExpr::Number(-1, Span::generated("num"))),
-                }),
+                
+                    span: Span::generated("binary"),}),
             
                 span: Span::generated("binary"),},
             "some" => LoweredExpr::Binary {
