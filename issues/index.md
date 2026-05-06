@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 2 | 1 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4418 | 3769 | 649 |
+| frontend | 4419 | 3769 | 650 |
 | harness | 1 | 0 | 1 |
 | ir | 31 | 9 | 22 |
 | issues | 4 | 0 | 4 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5025 | 4034 | 991 |
+| total | 5026 | 4034 | 992 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -145,6 +145,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5188 | Report block-scoped function call arity diagnostics | feature | frontend/semantics | implementation-ready | P1 |  | user-defined function calls that resolve to block-scoped same-name declarations can build even when TypeScript report... |
 | 5189 | Parse ASI after class expression variable initializer | feature | frontend/syntax | implementation-ready | P1 |  | semicolonless variable declarations whose initializer is an anonymous class expression do not accept ASI before the n... |
 | 5190 | Skip implements in ambient class declarations | feature | frontend/syntax | implementation-ready | P1 |  | ambient class declaration parsing does not skip `implements` heritage clauses. |
+| 5191 | Parse leading decimal numeric literals | feature | frontend/syntax | implementation-ready | P1 |  | `builtinIterator.ts` stops at a generic `unsupported expression` parser diagnostic before it can reach the intended `... |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -420,7 +421,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 772 | Implement Augmentedtypesvar | spike | frontend/syntax | class: blocked | Implement Augmentedtypesvar |
 | 773 | Implement Autoasiforstaticsinclassdeclaration | spike | frontend/syntax | class: triage-needed | Implement Autoasiforstaticsinclassdeclaration |
 | 775 | Implement Autotypeassignedusingdestructuringfromnevernocrash | spike | frontend/resolver | class: blocked | Implement Autotypeassignedusingdestructuringfromnevernocrash |
-| 1086 | Implement Builtiniterator | spike | frontend/syntax | class: triage-needed | Implement Builtiniterator |
 | 1087 | Implement Bundleddtslateexportrenaming | spike | frontend/syntax | class: blocked | Implement Bundleddtslateexportrenaming |
 | 1088 | Implement Cacheresolutions | spike | frontend/syntax | class: blocked | Implement Cacheresolutions |
 | 1089 | Implement Cachedcontextualtypes | spike | frontend/syntax | class: blocked | Implement Cachedcontextualtypes |
@@ -4982,6 +4982,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1083 | Implement Breakiniterationorswitchstatement | spike | frontend/resolver | see `issues/done/1083-implement-breakInIterationOrSwitchStatement.md` |
 | 1084 | Implement Breaknotiniterationorswitchstatement | spike | frontend/syntax | see `issues/done/1084-implement-breakNotInIterationOrSwitchStatement.md` |
 | 1085 | Implement Breaktarget | spike | frontend/syntax | see `issues/done/1085-implement-breakTarget.md` |
+| 1086 | Implement Builtiniterator | spike | frontend/syntax | see `issues/done/1086-implement-builtinIterator.md` |
 | 2050 | Implement Duplicatelocalvariable Duplicate Local | spike | reference/triage | see `issues/done/2050-implement-duplicateLocalVariable-duplicate-local.md` |
 | 3002 | Implement Isolateddeclarationerrorsdefault | spike | runtime/builtins | see `issues/done/3002-implement-isolatedDeclarationErrorsDefault.md` |
 | 3131 | Implement Jsxfactorynotidentifierorqualifiedname | spike | reference/triage | see `issues/done/3131-implement-jsxFactoryNotIdentifierOrQualifiedName.md` |
