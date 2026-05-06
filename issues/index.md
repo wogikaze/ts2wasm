@@ -13,10 +13,10 @@ Issue files are the source of truth for work items. The generated section below 
 | backend | 13 | 1 | 12 |
 | backend-wasm | 2 | 1 | 1 |
 | cli | 15 | 0 | 15 |
-| compiler | 2 | 1 | 1 |
+| compiler | 3 | 2 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4446 | 3749 | 697 |
+| frontend | 4446 | 3748 | 698 |
 | harness | 1 | 0 | 1 |
 | ir | 40 | 18 | 22 |
 | issues | 4 | 0 | 4 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5063 | 4020 | 1043 |
+| total | 5064 | 4020 | 1044 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -183,6 +183,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5226 | Allow ambient function overload declarations | feature | frontend/resolver | implementation-ready | P1 |  | Allow ambient function overload declarations |
 | 5227 | Honor @ts-ignore for JavaScript call diagnostics | feature | frontend/diagnostics | implementation-ready | P1 |  | the representative reports issue-211 at byte span `130..133` for an |
 | 5228 | Parse simple computed object literal keys | feature | frontend/parser | implementation-ready | P1 |  | `{ [n]: 1 }` reports `UnsupportedSyntax: expected Dot, got Some(RightBracket)` at `190..191`. |
+| 5229 | Resolve imports between @Filename sections | feature | compiler/module-graph | implementation-ready | P1 |  | `import b from "./b"` in a `// @Filename: c.js` section reports `issue-232: missing local module ./b`. |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -458,7 +459,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 772 | Implement Augmentedtypesvar | spike | frontend/syntax | class: blocked | Implement Augmentedtypesvar |
 | 773 | Implement Autoasiforstaticsinclassdeclaration | spike | frontend/syntax | class: triage-needed | Implement Autoasiforstaticsinclassdeclaration |
 | 775 | Implement Autotypeassignedusingdestructuringfromnevernocrash | spike | frontend/resolver | class: blocked | Implement Autotypeassignedusingdestructuringfromnevernocrash |
-| 1138 | Implement Checkjsdoctypetagonexportassignment | spike | frontend/syntax | class: blocked | Implement Checkjsdoctypetagonexportassignment |
 | 1139 | Implement Checkjsxnotseterror | spike | reference/triage | class: triage-needed | Implement Checkjsxnotseterror |
 | 1140 | Implement Checkmergedglobalumdsymbol | spike | frontend/syntax | class: blocked | Implement Checkmergedglobalumdsymbol |
 | 1141 | Implement Checksupercallbeforethisaccess | spike | frontend/syntax | class: triage-needed | Implement Checksupercallbeforethisaccess |
@@ -5020,6 +5020,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1135 | Implement Checkjsfiles | spike | frontend/syntax | see `issues/done/1135-implement-checkJsFiles.md` |
 | 1136 | Implement Checkjsobjectliteralindexsignatures | spike | frontend/syntax | see `issues/done/1136-implement-checkJsObjectLiteralIndexSignatures.md` |
 | 1137 | Implement Checkjstypedefnounusedlocalmarked | spike | frontend/syntax | see `issues/done/1137-implement-checkJsTypeDefNoUnusedLocalMarked.md` |
+| 1138 | Implement Checkjsdoctypetagonexportassignment | spike | frontend/syntax | see `issues/done/1138-implement-checkJsdocTypeTagOnExportAssignment.md` |
 | 2050 | Implement Duplicatelocalvariable Duplicate Local | spike | reference/triage | see `issues/done/2050-implement-duplicateLocalVariable-duplicate-local.md` |
 | 3002 | Implement Isolateddeclarationerrorsdefault | spike | runtime/builtins | see `issues/done/3002-implement-isolatedDeclarationErrorsDefault.md` |
 | 3131 | Implement Jsxfactorynotidentifierorqualifiedname | spike | reference/triage | see `issues/done/3131-implement-jsxFactoryNotIdentifierOrQualifiedName.md` |
