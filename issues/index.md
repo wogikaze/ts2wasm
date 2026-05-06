@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 5 | 4 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4521 | 3604 | 917 |
+| frontend | 4522 | 3604 | 918 |
 | harness | 1 | 0 | 1 |
 | ir | 64 | 42 | 22 |
 | issues | 4 | 0 | 4 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5165 | 3894 | 1271 |
+| total | 5166 | 3894 | 1272 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -285,6 +285,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5328 | Share script globals across @Filename sections for class namespace merge | feature | compiler/name-resolution | implementation-ready | P1 |  | cross-section global script declarations are not shared, so the second |
 | 5329 | Report class namespace duplicate member diagnostics | feature | frontend/semantics | implementation-ready | P1 |  | class/namespace duplicate member names currently produce a false build |
 | 5330 | Report namespace before class merge diagnostic | feature | frontend/semantics | implementation-ready | P1 |  | prior instantiated namespace/class merge ordering currently produces a |
+| 5331 | Report class namespace static side inheritance diagnostic | feature | frontend/semantics | implementation-ready | P1 |  | namespace-augmented static-side inheritance compatibility currently |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -558,7 +559,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 772 | Implement Augmentedtypesvar | spike | frontend/syntax | class: blocked | Implement Augmentedtypesvar |
 | 773 | Implement Autoasiforstaticsinclassdeclaration | spike | frontend/syntax | class: triage-needed | Implement Autoasiforstaticsinclassdeclaration |
 | 775 | Implement Autotypeassignedusingdestructuringfromnevernocrash | spike | frontend/resolver | class: blocked | Implement Autotypeassignedusingdestructuringfromnevernocrash |
-| 1261 | Implement Clodulesderivedclasses | spike | frontend/syntax | class: blocked | Implement Clodulesderivedclasses |
 | 1262 | Implement Coandcontravariantinferences Name Resolution | spike | frontend/resolver | class: blocked | Implement Coandcontravariantinferences Name Resolution |
 | 1264 | Implement Coandcontravariantinferences Type System | spike | frontend/semantics | class: blocked | Implement Coandcontravariantinferences Type System |
 | 1266 | Implement Collisionargumentsarrowfunctions | spike | frontend/syntax | class: blocked | Implement Collisionargumentsarrowfunctions |
@@ -5019,6 +5019,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1258 | Implement Clodulewithpriorinstantiatedmodule | spike | frontend/syntax | see `issues/done/1258-implement-cloduleWithPriorInstantiatedModule.md` |
 | 1259 | Implement Clodulewithprioruninstantiatedmodule | spike | frontend/syntax | see `issues/done/1259-implement-cloduleWithPriorUninstantiatedModule.md` |
 | 1260 | Implement Clodulewithrecursivereference | spike | frontend/syntax | see `issues/done/1260-implement-cloduleWithRecursiveReference.md` |
+| 1261 | Implement Clodulesderivedclasses | spike | frontend/syntax | see `issues/done/1261-implement-clodulesDerivedClasses.md` |
 | 1263 | Implement Coandcontravariantinferences Parser Syntax | spike | frontend/syntax | see `issues/done/1263-implement-coAndContraVariantInferences-parser-syntax.md` |
 | 1265 | Implement Collectionpatternnoerror | spike | runtime/builtins | see `issues/done/1265-implement-collectionPatternNoError.md` |
 | 1325 | Implement Collisionthisexpressionandlocalvarinconstructor | spike | frontend/syntax | see `issues/done/1325-implement-collisionThisExpressionAndLocalVarInConstructor.md` |
