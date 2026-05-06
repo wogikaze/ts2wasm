@@ -18,7 +18,7 @@ Issue files are the source of truth for work items. The generated section below 
 | docs | 4 | 2 | 2 |
 | frontend | 4438 | 3718 | 720 |
 | harness | 1 | 0 | 1 |
-| ir | 42 | 7 | 35 |
+| ir | 42 | 6 | 36 |
 | issues | 5 | 0 | 5 |
 | parser | 1 | 0 | 1 |
 | reference | 211 | 163 | 48 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 8 | 1 | 7 |
 | wasi | 4 | 3 | 1 |
-| total | 5076 | 3989 | 1087 |
+| total | 5076 | 3988 | 1088 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -98,7 +98,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5132 | Add ABC451 non-top array separation attribution | infra | runtime/memory | implementation-ready | P1 | 5131 | issue 365 proves the dominant array-growth pressure is |
 | 5137 | Split remaining Date API scope | cleanup | runtime/builtins | design-ready | P1 |  | Date issue 050 currently stays open after its named child issues 240 and 241 are done, but non-literal constructor in... |
 | 5138 | Split Reflect.construct isConstructor reference window | spike | runtime/builtins | design-ready | P1 |  | `reference/test262/test/annexB/built-ins/String/prototype/anchor/not-a-constructor.js` currently fails with `Unresolv... |
-| 5152 | Support class constructor outer callback captures | feature | ir | implementation-ready | P1 |  | class constructors cannot currently call outer callback locals when nested arrow callbacks capture constructor `this`. |
 | 5158 | Report interface private member clashes | feature | frontend/resolver | implementation-ready | P1 |  | `reference/typescript/tests/cases/compiler/baseTypePrivateMemberClash.ts` currently reports `BackendIo` instead of a ... |
 | 5163 | Lower nested call expression callees | feature | frontend/semantics | implementation-ready | P2 |  | `reference/typescript/tests/cases/compiler/betterErrorForAccidentalCall.ts` currently reports `UnsupportedSyntax: onl... |
 | 5179 | Report implicit this before closure runtime guard | feature | frontend/semantics | implementation-ready | P1 |  | a TypeScript implicit-`this` diagnostic is hidden by the nested-function closure runtime-subset guard. |
@@ -5121,6 +5120,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5149 | Parse trailing comma in typed class method parameters | feature | frontend/syntax | see `issues/done/5149-parse-trailing-comma-in-typed-class-method-parameters.md` |
 | 5150 | Report empty element access diagnostics | feature | frontend/syntax | see `issues/done/5150-report-empty-element-access-diagnostics.md` |
 | 5151 | Parse ASI after multiline const initializer | feature | frontend/syntax | see `issues/done/5151-parse-asi-after-multiline-const-initializer.md` |
+| 5152 | Support class constructor outer callback captures | feature | ir | see `issues/done/5152-support-class-constructor-outer-callback-captures.md` |
 | 5153 | Erase union types in as assertions | feature | frontend/syntax | see `issues/done/5153-erase-union-types-in-as-assertions.md` |
 | 5154 | Parse angle-bracket type assertion statements | feature | frontend/syntax | see `issues/done/5154-parse-angle-bracket-type-assertion-statements.md` |
 | 5156 | Parse generic type arguments in class heritage clauses | feature | frontend/syntax | see `issues/done/5156-parse-generic-type-arguments-in-class-heritage.md` |
