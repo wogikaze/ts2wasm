@@ -126,7 +126,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/open/1073-implement-blockScopedFunctionDeclarationInStrictClass.md` - Implement Blockscopedfunctiondeclarationinstrictclass (same feature label, same group key, title overlap)
+- `issues/done/1073-implement-blockScopedFunctionDeclarationInStrictClass.md` - Implement Blockscopedfunctiondeclarationinstrictclass (same feature label, same group key, title overlap)
 - `issues/done/109-implement-addMoreCallSignaturesToBaseSignature.md` - Implement Addmorecallsignaturestobasesignature (same feature label, same group key, title overlap)
 - `issues/open/1095-implement-callOnClass.md` - Implement Callonclass (same feature label, same group key, title overlap)
 - `issues/done/132-implement-allowJsClassThisTypeCrash.md` - Implement Allowjsclassthistypecrash (same feature label, same group key, title overlap)

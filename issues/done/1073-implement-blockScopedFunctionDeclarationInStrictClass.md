@@ -3,12 +3,14 @@ id: 1073
 title: "Implement Blockscopedfunctiondeclarationinstrictclass"
 type: spike
 area: frontend/resolver
-class: blocked
+class: superseded
 priority: P1
-depends_on: [5005]
+depends_on: [5185]
 blocks: []
 created: 2026-05-01
-updated: 2026-05-01
+updated: 2026-05-06
+status: done
+completed: 2026-05-06
 ---
 
 ## Summary
@@ -43,10 +45,10 @@ This generated bucket is either split into implementation-ready child issues or 
 
 In scope:
 
-- [ ] Inspect the smart triage report below
-- [ ] Confirm whether existing open/done issues already cover this bucket
-- [ ] Split one feature family, one observable behavior, or one fixed reference window into child issues
-- [ ] Preserve exact reproduction commands and representative AST/diagnostic evidence in each child issue
+- [x] Inspect the smart triage report below
+- [x] Confirm whether existing open/done issues already cover this bucket
+- [x] Split one feature family, one observable behavior, or one fixed reference window into child issues
+- [x] Preserve exact reproduction commands and representative AST/diagnostic evidence in each child issue
 
 Out of scope:
 
@@ -68,10 +70,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] Duplicate candidates below are confirmed as no-match or this issue is superseded
-- [ ] At least one child issue contains an exact `mise run reference-triage -- ...` command
-- [ ] Child issue includes failing path, diagnostic code, source context, visible symbols, and parser/TypeScript AST evidence
-- [ ] Child issue acceptance names the exact fixture/reference path and diagnostic/stdout change
+- [x] Duplicate candidates below are confirmed as no-match or this issue is superseded
+- [x] At least one child issue contains an exact `mise run reference-triage -- ...` command
+- [x] Child issue includes failing path, diagnostic code, source context, visible symbols, and parser/TypeScript AST evidence
+- [x] Child issue acceptance names the exact fixture/reference path and diagnostic/stdout change
 
 ## Validation
 
@@ -98,15 +100,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] updated: `current-state.md` (repo root)
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] added: `issues/open/5185-source-span-unresolved-class-method-function-calls.md`
 
 ## Notes
 
@@ -116,11 +118,20 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- none found by path/title/feature scan
+- Generic `function-resolution` buckets are not matches; they share only the broad feature label.
+- Existing completed function-resolution issues do not cover this unspanned class-method unresolved-call diagnostic.
 
 ## Smart triage
 
-Not generated. Rerun with `--triage-limit 1` or higher.
+Generated on 2026-05-06.
+
+- Path: `reference/typescript/tests/cases/compiler/blockScopedFunctionDeclarationInStrictClass.ts`
+- Diagnostic: `UnresolvedFunction` / `resolver-symbol`
+- Current compiler message: `unresolved function: `foo``
+- Source context: `class c { method() { if (true) { function foo() { } foo(); } foo(); } }`
+- Compiler evidence: tokens and AST succeed; the in-block `foo()` call is represented inside the `if`, and the out-of-block `foo()` call is represented at byte span `150..155`; lowering later emits an unspanned `UnresolvedFunction`.
+- TypeScript oracle: `TS2304: Cannot find name 'foo'.` at the out-of-block `foo` identifier.
+- Superseding child: `issues/open/5185-source-span-unresolved-class-method-function-calls.md`
 
 ## Completion evidence
 
@@ -128,16 +139,16 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- `...`
+- `pending`
 
 Validation result:
 
 ```text
-command:
-result:
-date:
+command: python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/blockScopedFunctionDeclarationInStrictClass.ts
+result: pass; current blocker identified as unspanned unresolved function diagnostic in a class method, split to issue 5185
+date: 2026-05-06
 ```
 
 Remaining risks:
 
-- none
+- none for this generated bucket; issue 5185 owns the diagnostic quality gap.
