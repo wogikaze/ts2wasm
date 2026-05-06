@@ -67,10 +67,10 @@ The parser accepts a trailing comma immediately before `)` in function/class met
 
 In scope:
 
-- [ ] Accept trailing comma before `)` in class method parameter lists.
-- [ ] Preserve existing support for TypeScript parameter type annotations and generic class method type parameters.
-- [ ] Add a focused parser test for `private handleResolve<TResult>(result: T, resolve: R,) {}`.
-- [ ] Re-run the representative triage and confirm it no longer reports `expected binding identifier or pattern, got Some(RightParen)`.
+- [x] Accept trailing comma before `)` in class method parameter lists.
+- [x] Preserve existing support for TypeScript parameter type annotations and generic class method type parameters.
+- [x] Add a focused parser test for `private handleResolve<TResult>(result: T, resolve: R,) {}`.
+- [x] Re-run the representative triage and confirm it no longer reports `expected binding identifier or pattern, got Some(RightParen)`.
 
 Out of scope:
 
@@ -93,10 +93,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] A focused parser test accepts a class method parameter list with a trailing comma after typed parameters.
-- [ ] The representative triage no longer reports the issue-247 RightParen parameter-list diagnostic.
-- [ ] Existing parameter-list parser tests continue to pass.
-- [ ] Any next blocker from the representative case is recorded separately if it is outside this trailing-comma slice.
+- [x] A focused parser test accepts a class method parameter list with a trailing comma after typed parameters.
+- [x] The representative triage no longer reports the issue-247 RightParen parameter-list diagnostic.
+- [x] Existing parameter-list parser tests continue to pass.
+- [x] Any next blocker from the representative case is recorded separately if it is outside this trailing-comma slice.
 
 ## Validation
 
@@ -126,15 +126,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 
@@ -146,14 +146,22 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- `...`
+- pending local commit
 
 Validation result:
 
 ```text
-command:
-result:
-date:
+command: cargo fmt --all --check
+result: pass
+date: 2026-05-06
+
+command: cargo nextest run -p ts2wasm-frontend typed_class_method_parameter_trailing_comma
+result: pass
+date: 2026-05-06
+
+command: python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/awaitedTypeNoLib.ts
+result: pass; BuildPass, no issue-247 RightParen parameter-list diagnostic
+date: 2026-05-06
 ```
 
 Remaining risks:

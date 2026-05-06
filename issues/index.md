@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 2 | 1 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4434 | 3756 | 678 |
+| frontend | 4434 | 3755 | 679 |
 | harness | 1 | 0 | 1 |
 | ir | 38 | 12 | 26 |
 | issues | 5 | 0 | 5 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5054 | 4026 | 1028 |
+| total | 5054 | 4025 | 1029 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -102,7 +102,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5145 | Parse await as an identifier call outside async contexts | feature | frontend/syntax | implementation-ready | P2 |  | `await(...)` in a sync function currently fails with `UnsupportedRuntimeSubset` instead of preserving the TypeScript ... |
 | 5146 | Report for-await context errors before async runtime diagnostics | feature | frontend/syntax | implementation-ready | P2 |  | `for await...of` outside async/top-level-allowed contexts currently reports the broad async runtime unsupported messa... |
 | 5147 | Report await expression context errors before runtime diagnostics | feature | frontend/syntax | implementation-ready | P2 |  | `await <literal>` in a non-async function currently fails with `UnsupportedRuntimeSubset` instead of a TypeScript-ali... |
-| 5149 | Parse trailing comma in typed class method parameters | feature | frontend/syntax | implementation-ready | P1 |  | class method parameter lists with a trailing comma currently fail with `UnsupportedSyntax`, even though TypeScript ac... |
 | 5151 | Parse ASI after multiline const initializer | feature | frontend/syntax | implementation-ready | P1 |  | semicolonless `const` declarations with multi-line call/object initializers currently fail before the next expression... |
 | 5152 | Support class constructor outer callback captures | feature | ir | implementation-ready | P1 |  | class constructors cannot currently call outer callback locals when nested arrow callbacks capture constructor `this`. |
 | 5154 | Parse angle-bracket type assertion statements | feature | frontend/syntax | implementation-ready | P1 |  | top-level `<T>expr;` type assertion statements currently fail parsing instead of erasing the type assertion. |
@@ -5152,6 +5151,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5143 | Implement unary void operator lowering | feature | ir/lowered | see `issues/done/5143-implement-unary-void-operator-lowering.md` |
 | 5144 | Support entry-module export function declarations | feature | ir/compiler | see `issues/done/5144-support-entry-export-function-declarations.md` |
 | 5148 | Parse generic async generator declarations | feature | frontend/syntax | see `issues/done/5148-parse-generic-async-generator-declarations.md` |
+| 5149 | Parse trailing comma in typed class method parameters | feature | frontend/syntax | see `issues/done/5149-parse-trailing-comma-in-typed-class-method-parameters.md` |
 | 5150 | Report empty element access diagnostics | feature | frontend/syntax | see `issues/done/5150-report-empty-element-access-diagnostics.md` |
 | 5153 | Erase union types in as assertions | feature | frontend/syntax | see `issues/done/5153-erase-union-types-in-as-assertions.md` |
 | 5160 | Lower plain ternary conditional expressions | feature | frontend/semantics | see `issues/done/5160-lower-plain-ternary-conditional-expressions.md` |
