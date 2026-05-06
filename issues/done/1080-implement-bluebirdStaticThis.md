@@ -108,7 +108,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] added: `issues/open/5190-skip-implements-in-ambient-class-declarations.md`
+- [x] added: `issues/done/5190-skip-implements-in-ambient-class-declarations.md`
 
 ## Notes
 
@@ -131,7 +131,7 @@ Generated on 2026-05-06.
 - Source context: `export declare class Promise<R> implements Promise.Thenable<R> { ... }`
 - Compiler evidence: tokens include `implements Promise.Thenable<R>` and the following `{`; AST/resolved construction fails before the ambient class body is skipped.
 - TypeScript oracle: `TS2420: Class 'Promise<R>' incorrectly implements interface 'Thenable<R>'.`
-- Superseding child: `issues/open/5190-skip-implements-in-ambient-class-declarations.md`
+- Superseding child: `issues/done/5190-skip-implements-in-ambient-class-declarations.md`
 
 ## Completion evidence
 

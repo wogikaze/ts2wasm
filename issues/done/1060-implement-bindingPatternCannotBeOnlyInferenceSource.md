@@ -107,7 +107,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] added: `issues/open/5174-ignore-empty-binding-pattern-synthetic-names.md`
+- [x] added: `issues/done/5174-ignore-empty-binding-pattern-synthetic-names.md`
 
 ## Notes
 
@@ -130,7 +130,7 @@ Generated on 2026-05-06.
 - Visible symbols before failure: `funcs1`
 - Compiler evidence: tokens and AST succeed; AST stores empty patterns as `Let { name: "{}" }` and `Let { name: "[]" }`; validation treats repeated `{}` as a real duplicate local.
 - TypeScript oracle: reports type/inference diagnostics on unknown destructuring, not duplicate local declarations.
-- Superseding child: `issues/open/5174-ignore-empty-binding-pattern-synthetic-names.md`
+- Superseding child: `issues/done/5174-ignore-empty-binding-pattern-synthetic-names.md`
 
 ## Completion evidence
 

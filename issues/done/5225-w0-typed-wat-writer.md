@@ -57,14 +57,14 @@ Exemptions:
 
 In scope:
 
-- [ ] Define `WatWriter` struct with typed methods for common WAT constructs
-- [ ] Define `WatImport`, `WatExport`, `WatFunction` wrapper types
-- [ ] Migrate `emitter.rs` main module emission to typed writer
-- [ ] Migrate `expr_emit.rs` expression emission to typed writer
-- [ ] Update `runtime_builder.rs` to use typed writer
-- [ ] Keep existing snapshot/WAT test infrastructure passing
-- [ ] `docs/14-runtime-abi.md` update if ABI contracts changed
-- [ ] `current-state.md` update
+- [x] Define `WatWriter` struct with typed methods for common WAT constructs
+- [x] Define `WatImport`, `WatExport`, `WatFunction` wrapper types
+- [x] Migrate `emitter.rs` main module emission to typed writer
+- [x] Migrate `expr_emit.rs` expression emission to typed writer
+- [x] Update `runtime_builder.rs` to use typed writer
+- [x] Keep existing snapshot/WAT test infrastructure passing
+- [x] `docs/14-runtime-abi.md` update if ABI contracts changed
+- [x] `current-state.md` update
 
 Out of scope:
 
@@ -87,12 +87,12 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] `WatWriter` module exists with typed methods covering: `module`, `import`, `export`, `memory`, `global`, `type`, `function`, `local.get/set/tee`, `i32/f32/f64/i64` const/arithmetic/compare, `block`/`loop`/`if`/`then`/`else`/`end`, `call`/`call_indirect`, `return`, `br`/`br_if`, `memory.size`/`grow`, `load`/`store`
-- [ ] `emitter.rs` uses `WatWriter` (no raw WAT `push_str` in main module emission)
-- [ ] `expr_emit.rs` uses `WatWriter` (no raw WAT `push_str` in expression emission)
-- [ ] `cargo test` and `cargo nextest run` all pass
-- [ ] WAT snapshot tests unchanged (zero behavioral diff)
-- [ ] `docs/12-coding-standard.md §13` (WAT generation) updated to reference typed writer
+- [x] `WatWriter` module exists with typed methods covering: `module`, `import`, `export`, `memory`, `global`, `type`, `function`, `local.get/set/tee`, `i32/f32/f64/i64` const/arithmetic/compare, `block`/`loop`/`if`/`then`/`else`/`end`, `call`/`call_indirect`, `return`, `br`/`br_if`, `memory.size`/`grow`, `load`/`store`
+- [x] `emitter.rs` uses `WatWriter` (no raw WAT `push_str` in main module emission)
+- [x] `expr_emit.rs` uses `WatWriter` (no raw WAT `push_str` in expression emission)
+- [x] `cargo test` and `cargo nextest run` all pass
+- [x] WAT snapshot tests unchanged (zero behavioral diff)
+- [x] `docs/12-coding-standard.md §13` (WAT generation) updated to reference typed writer
 
 ## Validation
 
@@ -108,18 +108,18 @@ git diff --stat
 
 Final-state docs:
 
-- [ ] not affected
-- [ ] updated: `docs/12-coding-standard.md §13` reference typed writer
+- [x] not affected
+- [x] updated: `docs/12-coding-standard.md §13` reference typed writer
 
 Current state:
 
-- [ ] not affected
-- [ ] updated: `current-state.md`
+- [x] not affected
+- [x] updated: `current-state.md`
 
 Follow-up issues:
 
-- [ ] none
-- [ ] created/updated: follow-up for runtime helper WAT migration
+- [x] none
+- [x] created/updated: follow-up for runtime helper WAT migration
 
 ## Notes
 

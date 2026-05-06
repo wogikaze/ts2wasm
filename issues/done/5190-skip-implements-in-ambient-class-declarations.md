@@ -65,9 +65,9 @@ The parser erases/skips `implements` clauses in ambient class declarations and a
 
 In scope:
 
-- [ ] Skip one or more `implements` heritage types in `declare class` parsing.
-- [ ] Support qualified names with generic type arguments in the skipped implements list.
-- [ ] Add focused parser coverage for `declare class C<T> implements NS.I<T> {}`.
+- [x] Skip one or more `implements` heritage types in `declare class` parsing.
+- [x] Support qualified names with generic type arguments in the skipped implements list.
+- [x] Add focused parser coverage for `declare class C<T> implements NS.I<T> {}`.
 
 Out of scope:
 
@@ -91,9 +91,9 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] `parse_program("declare class C<T> implements NS.I<T> {}")` succeeds and erases the ambient class.
-- [ ] Parser tests cover qualified generic implements clauses in ambient classes.
-- [ ] `python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/bluebirdStaticThis.ts` no longer reports `expected LeftBrace` at `implements`.
+- [x] `parse_program("declare class C<T> implements NS.I<T> {}")` succeeds and erases the ambient class.
+- [x] Parser tests cover qualified generic implements clauses in ambient classes.
+- [x] `python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/bluebirdStaticThis.ts` no longer reports `expected LeftBrace` at `implements`.
 
 ## Validation
 
@@ -119,15 +119,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 
