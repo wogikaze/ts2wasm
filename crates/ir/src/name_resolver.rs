@@ -130,9 +130,6 @@ impl NameResolver {
         // Second pass: resolve all statements
         let mut resolved = Vec::new();
         for stmt in program {
-            if matches!(stmt, Stmt::AmbientValueDecl { .. }) {
-                continue;
-            }
             resolved.push(self.resolve_stmt(stmt)?);
         }
         Ok(resolved)

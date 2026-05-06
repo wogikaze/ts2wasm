@@ -18,7 +18,7 @@ Issue files are the source of truth for work items. The generated section below 
 | docs | 2 | 0 | 2 |
 | frontend | 4433 | 3758 | 675 |
 | harness | 1 | 0 | 1 |
-| ir | 37 | 12 | 25 |
+| ir | 37 | 11 | 26 |
 | issues | 5 | 0 | 5 |
 | parser | 1 | 0 | 1 |
 | reference | 211 | 163 | 48 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5052 | 4028 | 1024 |
+| total | 5052 | 4027 | 1025 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -158,7 +158,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5209 | Support class instance method receiver calls | feature | ir/lowered | implementation-ready | P1 |  | class instance method calls such as `instance.once(...)` currently fail with `issue-211: unknown receiver class for m... |
 | 5210 | Sparse array holes handling for Array.prototype.map | feature | runtime/builtins | implementation-ready | P2 |  | current `Array.prototype.map` implementation only supports dense |
 | 5213 | Implement generator function syntax prerequisite for iterator spread | feature | frontend/syntax | implementation-ready | P2 |  | Generator function declarations are rejected before iterator spread can be tested. |
-| 5217 | Align ambient value name resolver test counts | bug | ir/name-resolution | implementation-ready | P1 |  | full `cargo nextest run` now reaches two ambient value tests whose expected lowered local/statement counts predate th... |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -5163,6 +5162,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5206 | Resolve issue ID collisions and open/done conflicts | cleanup | issues | see `issues/done/5206-resolve-issue-id-collisions-and-open-done-conflicts.md` |
 | 5215 | Fix array includes WAT stack mismatch | bug | runtime/builtins | see `issues/done/5215-fix-array-includes-wat-stack-mismatch.md` |
 | 5216 | Allow extra arguments for functions reading arguments object | bug | ir/semantics | see `issues/done/5216-allow-extra-arguments-for-functions-reading-arguments-object.md` |
+| 5217 | Preserve ambient value declarations through name resolution | bug | ir/name-resolution | see `issues/done/5217-preserve-ambient-value-declarations-through-name-resolution.md` |
 <!-- generated:done:end -->
 
 ## Index generation contract
