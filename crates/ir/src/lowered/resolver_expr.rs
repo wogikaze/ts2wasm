@@ -167,7 +167,7 @@ impl<'a> Resolver<'a> {
                                 LoweredExpr::BuiltinErrorPrototype(constructor, Span::generated("builtin_error_proto"))
                             } else {
                                 self.class_prototype_ref(name)
-                                    .map(LoweredExpr::ClassPrototype)?
+                                    .map(|p| LoweredExpr::ClassPrototype(p, Span::generated("class_proto")))?
                             }
                         }
                         _ => {
@@ -585,11 +585,11 @@ impl<'a> Resolver<'a> {
                         span: Span::generated("runtime_call"),});
                 }
 
-                if func_name == Boolean
+                if func_name == "Boolean"
                     && let [ResolvedExpr::BigIntLiteral { .. }] = args.as_slice()
                 {
                     return Ok(LoweredExpr::RuntimeCall {
-                        runtime_fn: BigIntToBoolean.to_owned(),
+                        runtime_fn: "BigIntToBoolean".to_owned(),
                         args: vec![self.lower_expr(&args[0])?],
                     
                         span: Span::generated("runtime_call"),});
@@ -598,7 +598,7 @@ impl<'a> Resolver<'a> {
                 // Global Symbol() call: Symbol runtime values are outside
                 // the WASM subset. Return Undefined to advance past the
                 // UnresolvedFunction blocker.
-                if func_name == Symbol {
+                if func_name == "Symbol" {
                     return Ok(LoweredExpr::Undefined(Span::generated("undef")));
                 }
 
