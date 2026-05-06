@@ -1425,6 +1425,64 @@ impl WatEmitter<'_> {
         ));
     }
 
+    pub(crate) fn emit_bitwise_to_i32(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $bitwise_to_i32 (param $v i32) (result i32)
+    (local $tag i32)
+    (local.set $tag (i32.and (local.get $v) (i32.const {tag_mask})))
+    (if
+      (i32.or
+        (i32.eq (local.get $tag) (i32.const {number_tag}))
+        (i32.eq (local.get $tag) (i32.const {object_tag})))
+      (then (return (call $number_to_i32 (local.get $v)))))
+    (if (i32.eq (local.get $v) (i32.const {true_tag}))
+      (then (return (i32.const {one}))))
+    (if
+      (i32.or
+        (i32.eq (local.get $v) (i32.const {false_tag}))
+        (i32.or
+          (i32.eq (local.get $v) (i32.const {null_tag}))
+          (i32.eq (local.get $v) (i32.const {undefined_tag}))))
+      (then (return (i32.const {zero}))))
+    unreachable)
+"#,
+            tag_mask = ValueTag::TAG_MASK,
+            number_tag = ValueTag::NUMBER,
+            object_tag = ValueTag::OBJECT,
+            true_tag = ValueTag::TRUE,
+            false_tag = ValueTag::FALSE,
+            null_tag = ValueTag::NULL,
+            undefined_tag = ValueTag::UNDEFINED,
+            one = RuntimeConst::ONE,
+            zero = RuntimeConst::ZERO,
+        ));
+    }
+
+    pub(crate) fn emit_bitwise_and(&self, wat: &mut String) {
+        wat.push_str(
+            r#"
+  (func $bitwise_and (param $a i32) (param $b i32) (result i32)
+    (call $number_from_i32
+      (i32.and
+        (call $bitwise_to_i32 (local.get $a))
+        (call $bitwise_to_i32 (local.get $b)))))
+"#,
+        );
+    }
+
+    pub(crate) fn emit_bitwise_xor(&self, wat: &mut String) {
+        wat.push_str(
+            r#"
+  (func $bitwise_xor (param $a i32) (param $b i32) (result i32)
+    (call $number_from_i32
+      (i32.xor
+        (call $bitwise_to_i32 (local.get $a))
+        (call $bitwise_to_i32 (local.get $b)))))
+"#,
+        );
+    }
+
     pub(crate) fn emit_negate(&self, wat: &mut String) {
         wat.push_str(
             r#"

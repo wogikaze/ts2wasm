@@ -574,6 +574,11 @@ fn bigint_bitwise_runtime_fixture_matches_node_output_under_iwasm() {
 }
 
 #[test]
+fn ordinary_bitwise_and_xor_fixture_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node("fixtures/core-semantics/ordinary-bitwise-and-xor.ts");
+}
+
+#[test]
 fn bigint_bitwise_unary_out_of_signed_i64_matches_node_output_under_iwasm() {
     assert_fixture_matches_node(
         "fixtures/core-semantics/bigint-bitwise-unary-out-of-signed-i64.ts",

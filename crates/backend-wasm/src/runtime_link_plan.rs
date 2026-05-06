@@ -445,6 +445,8 @@ impl RuntimeLinkPlan {
                             self.add_required_runtime(RuntimeFn::Mod);
                         }
                     }
+                    LoweredBinaryOp::BitwiseAnd => self.add_required_runtime(RuntimeFn::BitwiseAnd),
+                    LoweredBinaryOp::BitwiseXor => self.add_required_runtime(RuntimeFn::BitwiseXor),
                     LoweredBinaryOp::Less => {
                         if left.inferred_type() == ts2wasm_ir::lowered::InferredType::Number
                             && right.inferred_type() == ts2wasm_ir::lowered::InferredType::Number

@@ -1852,6 +1852,8 @@ fn lower_binary_op(op: BinaryOp) -> Result<LoweredBinaryOp, Diagnostic> {
         BinaryOp::Power => Ok(LoweredBinaryOp::Power),
         BinaryOp::Divide => Ok(LoweredBinaryOp::Divide),
         BinaryOp::Modulo => Ok(LoweredBinaryOp::Modulo),
+        BinaryOp::BitwiseAnd => Ok(LoweredBinaryOp::BitwiseAnd),
+        BinaryOp::BitwiseXor => Ok(LoweredBinaryOp::BitwiseXor),
         BinaryOp::Less => Ok(LoweredBinaryOp::Less),
         BinaryOp::LessEqual => Ok(LoweredBinaryOp::LessEqual),
         BinaryOp::Greater => Ok(LoweredBinaryOp::Greater),
@@ -1863,9 +1865,7 @@ fn lower_binary_op(op: BinaryOp) -> Result<LoweredBinaryOp, Diagnostic> {
         BinaryOp::And => Ok(LoweredBinaryOp::And),
         BinaryOp::Or => Ok(LoweredBinaryOp::Or),
         BinaryOp::NullishCoalesce => Ok(LoweredBinaryOp::NullishCoalesce),
-        BinaryOp::BitwiseAnd
-        | BinaryOp::BitwiseOr
-        | BinaryOp::BitwiseXor
+        BinaryOp::BitwiseOr
         | BinaryOp::LeftShift
         | BinaryOp::RightShift
         | BinaryOp::UnsignedRightShift

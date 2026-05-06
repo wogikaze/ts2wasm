@@ -477,6 +477,8 @@ impl WatEmitter<'_> {
                             LoweredBinaryOp::Power => RuntimeFn::MathPow,
                             LoweredBinaryOp::Divide => RuntimeFn::Div,
                             LoweredBinaryOp::Modulo => RuntimeFn::Mod,
+                            LoweredBinaryOp::BitwiseAnd => RuntimeFn::BitwiseAnd,
+                            LoweredBinaryOp::BitwiseXor => RuntimeFn::BitwiseXor,
                             LoweredBinaryOp::Less => RuntimeFn::Less,
                             LoweredBinaryOp::LessEqual => RuntimeFn::LessEqual,
                             LoweredBinaryOp::Greater => RuntimeFn::Greater,

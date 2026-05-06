@@ -80,6 +80,9 @@ pub(crate) enum RuntimeFn {
     DivFast,
     Mod,
     ModFast,
+    BitwiseToI32,
+    BitwiseAnd,
+    BitwiseXor,
     Negate,
     Less,
     LessFast,
@@ -1000,6 +1003,7 @@ const SUB_FAST_DEPS: &[RuntimeFn] = &[RuntimeFn::Sub];
 const MUL_FAST_DEPS: &[RuntimeFn] = &[RuntimeFn::Mul];
 const DIV_FAST_DEPS: &[RuntimeFn] = &[RuntimeFn::Div];
 const MOD_FAST_DEPS: &[RuntimeFn] = &[RuntimeFn::Mod];
+const BITWISE_DEPS: &[RuntimeFn] = &[RuntimeFn::BitwiseToI32, RuntimeFn::NumberFromI32];
 const LESS_DEPS: &[RuntimeFn] = &[
     RuntimeFn::BigIntCompare,
     RuntimeFn::EqualEqual,

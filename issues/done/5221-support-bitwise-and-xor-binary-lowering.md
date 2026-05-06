@@ -3,7 +3,7 @@ id: 5221
 title: "Support bitwise AND/XOR binary lowering"
 type: feature
 area: ir/lowering
-class: implementation-ready
+class: done
 priority: P1
 depends_on: []
 blocks: []
@@ -49,9 +49,9 @@ diagnostics in the same phase as existing bitwise OR work.
 
 In scope:
 
-- [ ] Define the ordinary number lowering behavior for `BitwiseXor` and `BitwiseAnd`.
-- [ ] Add focused lowering/runtime or diagnostic coverage for `a ^ b` and `c & d`.
-- [ ] Re-run the representative bitwise compound assignment triage.
+- [x] Define the ordinary number lowering behavior for `BitwiseXor` and `BitwiseAnd`.
+- [x] Add focused lowering/runtime or diagnostic coverage for `a ^ b` and `c & d`.
+- [x] Re-run the representative bitwise compound assignment triage.
 
 Out of scope:
 
@@ -74,10 +74,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] `BinaryOp::BitwiseXor` no longer reports `binary operator BitwiseXor not yet supported`.
-- [ ] `BinaryOp::BitwiseAnd` is covered with the same ordinary-number policy.
-- [ ] The representative `bitwiseCompoundAssignmentOperators.ts` triage advances past the current lowering diagnostic or records the next narrower blocker.
-- [ ] Regression coverage proves `^` and `&` behavior or source-backed diagnostics.
+- [x] `BinaryOp::BitwiseXor` no longer reports `binary operator BitwiseXor not yet supported`.
+- [x] `BinaryOp::BitwiseAnd` is covered with the same ordinary-number policy.
+- [x] The representative `bitwiseCompoundAssignmentOperators.ts` triage advances past the current lowering diagnostic or records the next narrower blocker.
+- [x] Regression coverage proves `^` and `&` behavior or source-backed diagnostics.
 
 ## Validation
 
@@ -105,15 +105,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] Existing issue 5170 owns the next `BitwiseOr` blocker surfaced by triage.
 
 ## Notes
 
@@ -126,16 +126,24 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- `...`
+- this commit
 
 Validation result:
 
 ```text
-command:
-result:
-date:
+command: cargo fmt --all --check
+result: pass
+date: 2026-05-06
+
+command: cargo nextest run -p ts2wasm-cli bitwise
+result: pass; 9 tests passed
+date: 2026-05-06
+
+command: cargo build -q -p ts2wasm-cli && python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/bitwiseCompoundAssignmentOperators.ts
+result: pass; advanced from BitwiseXor to the existing BitwiseOr blocker tracked by issue 5170
+date: 2026-05-06
 ```
 
 Remaining risks:
 
-- none
+- ordinary BitwiseOr remains open under issue 5170

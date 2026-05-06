@@ -184,6 +184,8 @@ fn eval_binary_i32(op: LoweredBinaryOp, l: i32, r: i32) -> Result<i32, Diagnosti
         LoweredBinaryOp::Divide => l.checked_div(r).unwrap_or(0),
         LoweredBinaryOp::Modulo => l.checked_rem(r).unwrap_or(0),
         LoweredBinaryOp::Power => l.wrapping_pow(r as u32),
+        LoweredBinaryOp::BitwiseAnd => l & r,
+        LoweredBinaryOp::BitwiseXor => l ^ r,
         LoweredBinaryOp::And => {
             if l != 0 {
                 r
