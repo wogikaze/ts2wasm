@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 2 | 1 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4441 | 3755 | 686 |
+| frontend | 4441 | 3754 | 687 |
 | harness | 1 | 0 | 1 |
 | ir | 38 | 16 | 22 |
 | issues | 4 | 0 | 4 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5056 | 4024 | 1032 |
+| total | 5056 | 4023 | 1033 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -451,7 +451,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 772 | Implement Augmentedtypesvar | spike | frontend/syntax | class: blocked | Implement Augmentedtypesvar |
 | 773 | Implement Autoasiforstaticsinclassdeclaration | spike | frontend/syntax | class: triage-needed | Implement Autoasiforstaticsinclassdeclaration |
 | 775 | Implement Autotypeassignedusingdestructuringfromnevernocrash | spike | frontend/resolver | class: blocked | Implement Autotypeassignedusingdestructuringfromnevernocrash |
-| 1127 | Implement Chainedimportalias | spike | frontend/syntax | class: blocked | Implement Chainedimportalias |
 | 1128 | Implement Chainedspecializationtoobjecttypeliteral | spike | frontend/syntax | class: blocked | Implement Chainedspecializationtoobjecttypeliteral |
 | 1129 | Implement Checkdestructuringshorthandassigment Destructuring | spike | frontend/syntax | class: blocked | Implement Checkdestructuringshorthandassigment Destructuring |
 | 1130 | Implement Checkdestructuringshorthandassigment Name Resolution | spike | frontend/resolver | class: blocked | Implement Checkdestructuringshorthandassigment Name Resolution |
@@ -5013,6 +5012,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1124 | Implement Cf | spike | frontend/resolver | see `issues/done/1124-implement-cf.md` |
 | 1125 | Implement Chainedassignment | spike | frontend/syntax | see `issues/done/1125-implement-chainedAssignment.md` |
 | 1126 | Implement Chainedcallswithtypeparameterconstrainedtoothertypeparameter | spike | frontend/syntax | see `issues/done/1126-implement-chainedCallsWithTypeParameterConstrainedToOtherTypeParameter.md` |
+| 1127 | Implement Chainedimportalias | spike | frontend/syntax | see `issues/done/1127-implement-chainedImportAlias.md` |
 | 2050 | Implement Duplicatelocalvariable Duplicate Local | spike | reference/triage | see `issues/done/2050-implement-duplicateLocalVariable-duplicate-local.md` |
 | 3002 | Implement Isolateddeclarationerrorsdefault | spike | runtime/builtins | see `issues/done/3002-implement-isolatedDeclarationErrorsDefault.md` |
 | 3131 | Implement Jsxfactorynotidentifierorqualifiedname | spike | reference/triage | see `issues/done/3131-implement-jsxFactoryNotIdentifierOrQualifiedName.md` |
