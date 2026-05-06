@@ -250,6 +250,16 @@ impl Parser {
                 ])?;
             }
 
+            // TypeScript TS1053: A 'set' accessor cannot have rest parameter.
+            if (method_name.starts_with("set ") || method_name.starts_with("static::set "))
+                && params.iter().any(|(_, _, is_rest)| *is_rest)
+            {
+                return Err(self.unsupported_typescript_syntax(
+                    method_span,
+                    "issue-5157: a 'set' accessor cannot have rest parameter",
+                ));
+            }
+
             let parsed_name = if is_static {
                 format!("static::{method_name}")
             } else {
