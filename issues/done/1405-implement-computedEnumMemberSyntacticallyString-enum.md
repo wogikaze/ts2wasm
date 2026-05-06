@@ -128,7 +128,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-Fresh smart triage listed `issues/open/1406-implement-computedEnumMemberSyntacticallyString-parser-syntax.md`,
+Fresh smart triage listed `issues/done/1406-implement-computedEnumMemberSyntacticallyString-parser-syntax.md`,
 `issues/open/428-implement-enum.md`, and enum-related done issues. Issue 1406
 tracks the sibling `computedEnumMemberSyntacticallyString2.ts` reference path,
 which does not start with `2..toFixed(0)`. Issue 428 is a broad generated enum
