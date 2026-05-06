@@ -10,13 +10,13 @@ Issue files are the source of truth for work items. The generated section below 
 | Area | Total | Open | Resolved |
 |---|---:|---:|---:|
 | abi | 7 | 0 | 7 |
-| backend | 16 | 4 | 12 |
+| backend | 16 | 3 | 13 |
 | backend-wasm | 3 | 0 | 3 |
 | cli | 15 | 0 | 15 |
 | compiler | 3 | 0 | 3 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4438 | 3742 | 696 |
+| frontend | 4438 | 3741 | 697 |
 | harness | 1 | 0 | 1 |
 | ir | 40 | 11 | 29 |
 | issues | 5 | 0 | 5 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5064 | 4012 | 1052 |
+| total | 5064 | 4010 | 1054 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -118,7 +118,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5181 | Support prefix update expressions in call arguments | feature | frontend/semantics | implementation-ready | P1 |  | identifier prefix update expressions in call arguments are parser-accepted but resolver/lowering-unsupported. |
 | 5183 | Report typed getter null return diagnostics | feature | frontend/semantics | implementation-ready | P1 |  | typed class getter return annotations are erased before return-expression diagnostics are checked. |
 | 5185 | Source-span unresolved class method function calls | feature | frontend/resolver | implementation-ready | P1 |  | unresolved function calls from class method bodies lose source-span information and should report the out-of-scope ca... |
-| 5190 | Skip implements in ambient class declarations | feature | frontend/syntax | implementation-ready | P1 |  | ambient class declaration parsing does not skip `implements` heritage clauses. |
 | 5192 | Support first-class class constructor values | feature | ir/runtime | implementation-ready | P1 |  | class constructor bindings used as expression values still fail with `issue-5011`, blocking reference cases that pass... |
 | 5194 | Report empty call type arguments | feature | frontend/syntax | implementation-ready | P1 |  | `Foo<a,,b>();` currently reports `expected Semicolon, got Some(Comma)` instead of a source-spanned missing type-argum... |
 | 5195 | Support callable interface-typed local calls | feature | ir/lowering | implementation-ready | P1 |  | callable interface-typed locals currently lower to `Undefined` values and calls to them stop with `issue-211`. |
@@ -137,9 +136,9 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5210 | Sparse array holes handling for Array.prototype.map | feature | runtime/builtins | implementation-ready | P2 |  | current `Array.prototype.map` implementation only supports dense |
 | 5213 | Implement generator function syntax prerequisite for iterator spread | feature | frontend/syntax | implementation-ready | P2 |  | Generator function declarations are rejected before iterator spread can be tested. |
 | 5219 | Support explicit this-parameter function expression lowering | feature | ir/runtime | implementation-ready | P1 |  | function expressions that declare an erased TypeScript `this` parameter and read `this` in the body currently fail wi... |
-| 5225 | W0: introduce typed WAT writer | refactor | backend | design-ready | P1 |  | Raw WAT string concatenation is the primary emission path, preventing compile-time validation of WAT structure and ru... |
 | 5226 | W0: mandatory span on all AST nodes and source diagnostics | refactor | frontend | design-ready | P0 |  | Source-originating diagnostics without `span` make error location impossible, degrading user experience. |
 | 5227 | W0: complete validate_lowered checks and sync IR contract docs | cleanup | ir | design-ready | P0 |  | Stale IR contract docs cause confusion about what the backend can rely on and what new contributors should implement. |
+| 5228 | W0: wasm binary backend — primary emission path | feature | backend | design-ready | P1 | 5225 | The WAT→wasm subprocess pipeline is fragile, slow, and adds an external toolchain dependency for every build. |
 | 5229 | W0: implement user/runtime string origin tracking | feature | backend | design-ready | P1 |  | Without origin tracking, wasm binary size includes unnecessary runtime strings, and there is no audit trail for data ... |
 <!-- generated:ready:end -->
 
@@ -4112,7 +4111,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5211 | Implement sparse array spread support | feature | runtime/semantics | 274 | Implement sparse array spread support |
 | 5212 | Implement remaining BigInt mixed runtime coercion edges | feature | runtime/semantics | class: blocked | Implement remaining BigInt mixed runtime coercion edges |
 | 5214 | Implement computed Symbol.iterator prerequisite for spread | feature | frontend/syntax | class: blocked | Implement computed Symbol.iterator prerequisite for spread |
-| 5228 | W0: wasm binary backend — primary emission path | feature | backend | 5225 | W0: wasm binary backend — primary emission path |
 <!-- generated:blocked:end -->
 
 ## Done queue
@@ -5162,6 +5160,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5187 | Lower namespace-only multi-section files | feature | compiler | see `issues/done/5187-lower-namespace-only-multi-section-files.md` |
 | 5188 | Report block-scoped function call arity diagnostics | feature | frontend/semantics | see `issues/done/5188-report-block-scoped-function-call-arity-diagnostics.md` |
 | 5189 | Parse ASI after class expression variable initializer | feature | frontend/syntax | see `issues/done/5189-parse-asi-after-class-expression-variable-initializer.md` |
+| 5190 | Skip implements in ambient class declarations | feature | frontend/syntax | see `issues/done/5190-skip-implements-in-ambient-class-declarations.md` |
 | 5191 | Parse leading decimal numeric literals | feature | frontend/syntax | see `issues/done/5191-parse-leading-decimal-numeric-literals.md` |
 | 5193 | Parse ASI after ambient variable declarations | feature | frontend/syntax | see `issues/done/5193-parse-asi-after-ambient-variable-declarations.md` |
 | 5205 | Restore backend residual expression rejection | bug | backend-wasm | see `issues/done/5205-restore-backend-residual-expression-rejection.md` |
@@ -5175,6 +5174,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5222 | Parse ambient generic variable type annotations | feature | frontend/syntax | see `issues/done/5222-parse-ambient-generic-variable-type-annotations.md` |
 | 5223 | Report Iterator type-only value-use diagnostics | feature | frontend/resolver | see `issues/done/5223-report-iterator-type-only-value-use-diagnostics.md` |
 | 5224 | Handle package.json virtual sections in multi-file references | feature | compiler/reference | see `issues/done/5224-handle-package-json-virtual-sections-in-multifile-references.md` |
+| 5225 | W0: introduce typed WAT writer | refactor | backend | see file |
 <!-- generated:done:end -->
 
 ## Index generation contract
