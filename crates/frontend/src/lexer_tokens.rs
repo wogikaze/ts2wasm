@@ -80,6 +80,9 @@ pub enum Token {
     SlashEqual,
     PercentEqual,
     PowerEqual,
+    AmpersandEqual,
+    PipeEqual,
+    CaretEqual,
     Percent,
     Slash,
     Star,
@@ -179,6 +182,9 @@ pub enum TokenKind {
     SlashEqual,
     PercentEqual,
     PowerEqual,
+    AmpersandEqual,
+    PipeEqual,
+    CaretEqual,
     Percent,
     Slash,
     Star,
@@ -276,6 +282,9 @@ impl TokenKind {
                 | (Self::SlashEqual, Token::SlashEqual)
                 | (Self::PercentEqual, Token::PercentEqual)
                 | (Self::PowerEqual, Token::PowerEqual)
+                | (Self::AmpersandEqual, Token::AmpersandEqual)
+                | (Self::PipeEqual, Token::PipeEqual)
+                | (Self::CaretEqual, Token::CaretEqual)
                 | (Self::Percent, Token::Percent)
                 | (Self::Slash, Token::Slash)
                 | (Self::Star, Token::Star)

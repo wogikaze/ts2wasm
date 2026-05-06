@@ -633,6 +633,18 @@ impl<'a> Lexer<'a> {
                                 },
                             );
                         }
+                    } else if self.peek_char() == Some('=') {
+                        self.advance_char();
+                        self.add_token(
+                            &mut tokens,
+                            SpannedToken {
+                                kind: Token::AmpersandEqual,
+                                span: Span {
+                                    start,
+                                    end: self.cursor,
+                                },
+                            },
+                        );
                     } else {
                         self.add_token(
                             &mut tokens,
@@ -674,6 +686,18 @@ impl<'a> Lexer<'a> {
                                 },
                             );
                         }
+                    } else if self.peek_char() == Some('=') {
+                        self.advance_char();
+                        self.add_token(
+                            &mut tokens,
+                            SpannedToken {
+                                kind: Token::PipeEqual,
+                                span: Span {
+                                    start,
+                                    end: self.cursor,
+                                },
+                            },
+                        );
                     } else {
                         self.add_token(
                             &mut tokens,
@@ -689,16 +713,30 @@ impl<'a> Lexer<'a> {
                 }
                 '^' => {
                     self.advance_char();
-                    self.add_token(
-                        &mut tokens,
-                        SpannedToken {
-                            kind: Token::Caret,
-                            span: Span {
-                                start,
-                                end: self.cursor,
+                    if self.peek_char() == Some('=') {
+                        self.advance_char();
+                        self.add_token(
+                            &mut tokens,
+                            SpannedToken {
+                                kind: Token::CaretEqual,
+                                span: Span {
+                                    start,
+                                    end: self.cursor,
+                                },
                             },
-                        },
-                    );
+                        );
+                    } else {
+                        self.add_token(
+                            &mut tokens,
+                            SpannedToken {
+                                kind: Token::Caret,
+                                span: Span {
+                                    start,
+                                    end: self.cursor,
+                                },
+                            },
+                        );
+                    }
                 }
                 '~' => {
                     self.advance_char();

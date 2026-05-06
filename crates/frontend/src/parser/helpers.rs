@@ -99,6 +99,9 @@ fn is_typescript_expression_type_stop(token: &Token) -> bool {
             | Token::SlashEqual
             | Token::PercentEqual
             | Token::PowerEqual
+            | Token::AmpersandEqual
+            | Token::PipeEqual
+            | Token::CaretEqual
             | Token::AndAndEqual
             | Token::OrOrEqual
             | Token::NullishCoalesceEqual
