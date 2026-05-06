@@ -15,9 +15,9 @@ enum Command {
         /// Path to emit capability manifest JSON (alias: --emit-capabilities)
         #[arg(long = "emit-manifest", alias = "emit-capabilities")]
         manifest: Option<PathBuf>,
-        /// Reject node host imports
-        #[arg(long)]
-        host_deny: bool,
+        /// Reject specified host imports (e.g., "node")
+        #[arg(long = "host-deny", value_name = "HOST")]
+        host_deny: Option<String>,
         /// Explain unsupported diagnostics in detail (tracking issue, fixture
         /// path, workaround, next crate to implement)
         #[arg(long)]
@@ -80,8 +80,13 @@ fn run() -> Result<(), String> {
             host_deny,
             explain_unsupported,
         } => {
-            let result = if host_deny {
-                ts2wasm_cli::build_file_with_host_deny(&input, &output, manifest.as_deref(), true)
+            let result = if let Some(ref host) = host_deny {
+                ts2wasm_cli::build_file_with_host_deny(
+                    &input,
+                    &output,
+                    manifest.as_deref(),
+                    Some(host.as_str()),
+                )
             } else {
                 ts2wasm_cli::build_file_with_options(&input, &output, manifest.as_deref())
             };

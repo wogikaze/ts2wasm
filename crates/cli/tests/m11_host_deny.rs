@@ -29,6 +29,7 @@ fn compile_fixture_with_host_deny(fixture_path: &str) -> Result<String, String> 
         .arg("-o")
         .arg(&output_wasm)
         .arg("--host-deny")
+        .arg("node")
         .output()
         .map_err(|e| format!("Failed to execute ts2wasm: {}", e))?;
 
@@ -66,6 +67,7 @@ fn assert_host_deny_rejects(fixture_path: &str) {
         .arg("-o")
         .arg(&output_wasm)
         .arg("--host-deny")
+        .arg("node")
         .output()
         .expect("Failed to execute ts2wasm");
 
@@ -124,6 +126,7 @@ fn host_deny_with_manifest_emission() {
         .arg("--emit-manifest")
         .arg(&output_manifest)
         .arg("--host-deny")
+        .arg("node")
         .output()
         .expect("Failed to execute ts2wasm");
 
@@ -167,6 +170,7 @@ fn math_random_declares_wasi_random_without_node_host() {
         .arg("--emit-manifest")
         .arg(&output_manifest)
         .arg("--host-deny")
+        .arg("node")
         .output()
         .expect("Failed to execute ts2wasm");
 
@@ -230,6 +234,7 @@ fn date_live_time_declares_wasi_realtime_without_node_host() {
             .arg("--emit-manifest")
             .arg(&output_manifest)
             .arg("--host-deny")
+            .arg("node")
             .output()
             .expect("Failed to execute ts2wasm");
 
@@ -288,6 +293,7 @@ fn date_deterministic_epoch_omits_wasi_realtime() {
         .arg("--emit-manifest")
         .arg(&output_manifest)
         .arg("--host-deny")
+        .arg("node")
         .output()
         .expect("Failed to execute ts2wasm");
 
@@ -341,6 +347,7 @@ fn static_direct_eval_declares_no_node_host_eval_capability() {
         .arg("--emit-manifest")
         .arg(&output_manifest)
         .arg("--host-deny")
+        .arg("node")
         .output()
         .expect("Failed to execute ts2wasm");
 
