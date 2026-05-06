@@ -3,12 +3,13 @@ id: 1112
 title: "Implement Capturedparametersininitializers"
 type: spike
 area: frontend/syntax
-class: triage-needed
+class: done
 priority: P2
 depends_on: []
 blocks: []
 created: 2026-05-01
 updated: 2026-05-06
+completed: 2026-05-06
 ---
 
 ## Summary
@@ -43,10 +44,10 @@ This generated bucket is either split into implementation-ready child issues or 
 
 In scope:
 
-- [ ] Inspect the smart triage report below
-- [ ] Confirm whether existing open/done issues already cover this bucket
-- [ ] Split one feature family, one observable behavior, or one fixed reference window into child issues
-- [ ] Preserve exact reproduction commands and representative AST/diagnostic evidence in each child issue
+- [x] Inspect the smart triage report below
+- [x] Confirm whether existing open/done issues already cover this bucket
+- [x] Split one feature family, one observable behavior, or one fixed reference window into child issues
+- [x] Preserve exact reproduction commands and representative AST/diagnostic evidence in each child issue
 
 Out of scope:
 
@@ -68,10 +69,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] Duplicate candidates below are confirmed as no-match or this issue is superseded
-- [ ] At least one child issue contains an exact `mise run reference-triage -- ...` command
-- [ ] Child issue includes failing path, diagnostic code, source context, visible symbols, and parser/TypeScript AST evidence
-- [ ] Child issue acceptance names the exact fixture/reference path and diagnostic/stdout change
+- [x] Duplicate candidates below are confirmed as no-match or this issue is superseded
+- [x] At least one child issue contains an exact `mise run reference-triage -- ...` command
+- [x] Child issue includes failing path, diagnostic code, source context, visible symbols, and parser/TypeScript AST evidence
+- [x] Child issue acceptance names the exact fixture/reference path and diagnostic/stdout change
 
 ## Validation
 
@@ -98,16 +99,16 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] updated: `current-state.md` (repo root)
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] `issues/open/5213-parse-generator-function-expressions-in-parameter-initializers.md`
-- [ ] `issues/open/5214-parse-computed-class-members-in-class-expression-initializers.md`
+- [x] `issues/open/5213-parse-generator-function-expressions-in-parameter-initializers.md`
+- [x] `issues/open/5214-parse-computed-class-members-in-class-expression-initializers.md`
 
 ## Notes
 
@@ -208,18 +209,47 @@ owns this parser slice.
 
 ## Completion evidence
 
-Fill only when moving to `done/`.
+capturedParametersInInitializers triage is complete. The two current parser
+failures are represented by focused implementation issues 5213 and 5214.
 
 Commits:
 
-- `...`
+- `6a121a10` issues: split captured parameter initializer parser blockers
 
 Validation result:
 
 ```text
-command:
-result:
-date:
+command: python scripts/manager.py reference-coverage tsc --path-filter reference/typescript/tests/cases/compiler/capturedParametersInInitializers --detail --no-dashboard-data
+result: pass on the main checkout; 2 executed, 2 UnsupportedSyntax parser-syntax failures recorded
+date: 2026-05-06
+
+command: python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/capturedParametersInInitializers1.ts
+result: pass; recorded expected LeftParen, got Some(Star)
+date: 2026-05-06
+
+command: python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/capturedParametersInInitializers2.ts
+result: pass; recorded expected LeftParen, got Some(LeftBracket)
+date: 2026-05-06
+
+command: python scripts/manager.py update-issue-index
+result: pass
+date: 2026-05-06
+
+command: python scripts/manager.py update-issue-index --check
+result: pass
+date: 2026-05-06
+
+command: python scripts/manager.py check-issue-health
+result: pass
+date: 2026-05-06
+
+command: python scripts/manager.py check-issue-readiness -- --fail-ready-below 80
+result: pass; child issues 5213 and 5214 are M-sized and ready
+date: 2026-05-06
+
+command: git diff --check
+result: pass
+date: 2026-05-06
 ```
 
 Remaining risks:
