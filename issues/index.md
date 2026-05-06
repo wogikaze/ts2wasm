@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 4 | 3 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4517 | 3622 | 895 |
+| frontend | 4518 | 3622 | 896 |
 | harness | 1 | 0 | 1 |
 | ir | 64 | 42 | 22 |
 | issues | 4 | 0 | 4 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5160 | 3911 | 1249 |
+| total | 5161 | 3911 | 1250 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -280,6 +280,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5323 | Report missing constructor parameter list | feature | frontend/parser | implementation-ready | P1 |  | `classFieldsBrokenConstructorEmitNoCrash1.ts` currently reports a |
 | 5324 | Support dependency-module export class declarations | feature | ir/compiler | implementation-ready | P1 |  | dependency-module `export class Test1 { ... }` currently reports |
 | 5325 | Fix multifile class constructor FuncId invariant | feature | ir/compiler | implementation-ready | P1 |  | a class with a constructor in the second virtual file can produce a |
+| 5326 | Parse anonymous default class export | feature | frontend/module-syntax | implementation-ready | P1 |  | this single anonymous default class form is still treated as an |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -553,7 +554,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 772 | Implement Augmentedtypesvar | spike | frontend/syntax | class: blocked | Implement Augmentedtypesvar |
 | 773 | Implement Autoasiforstaticsinclassdeclaration | spike | frontend/syntax | class: triage-needed | Implement Autoasiforstaticsinclassdeclaration |
 | 775 | Implement Autotypeassignedusingdestructuringfromnevernocrash | spike | frontend/resolver | class: blocked | Implement Autotypeassignedusingdestructuringfromnevernocrash |
-| 1226 | Implement Classmergedwithinterfacemultiplebasesnoerror | spike | frontend/syntax | class: blocked | Implement Classmergedwithinterfacemultiplebasesnoerror |
 | 1229 | Implement Classnonuniquesymbolmethodhassymbolindexer | spike | frontend/syntax | class: blocked | Implement Classnonuniquesymbolmethodhassymbolindexer |
 | 1232 | Implement Classpropinitializationinferencewithelementaccess | spike | frontend/syntax | class: blocked | Implement Classpropinitializationinferencewithelementaccess |
 | 1234 | Implement Classpropertyinferencefrombroadertypeconst | spike | frontend/semantics | class: blocked | Implement Classpropertyinferencefrombroadertypeconst |
@@ -5001,6 +5001,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1223 | Implement Classmemberinitializerwithlamdascoping Import Export | spike | frontend/syntax | see `issues/done/1223-implement-classMemberInitializerWithLamdaScoping-import-export.md` |
 | 1224 | Implement Classmemberinitializerwithlamdascoping Module System Amd | spike | frontend/syntax | see `issues/done/1224-implement-classMemberInitializerWithLamdaScoping-module-system-amd.md` |
 | 1225 | Implement Classmemberwithmissingidentifier | spike | frontend/syntax | see `issues/done/1225-implement-classMemberWithMissingIdentifier.md` |
+| 1226 | Implement Classmergedwithinterfacemultiplebasesnoerror | spike | frontend/syntax | see `issues/done/1226-implement-classMergedWithInterfaceMultipleBasesNoError.md` |
 | 1227 | Implement Classmethodwithkeywordname | spike | frontend/syntax | see `issues/done/1227-implement-classMethodWithKeywordName.md` |
 | 1228 | Implement Classnamereferencesinstaticelements | spike | frontend/syntax | see `issues/done/1228-implement-classNameReferencesInStaticElements.md` |
 | 1230 | Implement Classorder | spike | frontend/syntax | see `issues/done/1230-implement-classOrder.md` |
