@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 3 | 2 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4482 | 3688 | 794 |
+| frontend | 4482 | 3687 | 795 |
 | harness | 1 | 0 | 1 |
 | ir | 55 | 33 | 22 |
 | issues | 4 | 0 | 4 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5115 | 3970 | 1145 |
+| total | 5115 | 3969 | 1146 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -626,7 +626,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1344 | Implement Commentleadingclosebrace | spike | frontend/resolver | class: blocked | Implement Commentleadingclosebrace |
 | 1345 | Implement Commentonambientmodule | spike | frontend/syntax | class: blocked | Implement Commentonambientmodule |
 | 1346 | Implement Commentonambientvariable | spike | frontend/resolver | class: blocked | Implement Commentonambientvariable |
-| 1355 | Implement Commentwithunreasonableindentationlevel | spike | frontend/syntax | class: blocked | Implement Commentwithunreasonableindentationlevel |
 | 1356 | Implement Commentsafterfunctionexpression | spike | frontend/syntax | class: triage-needed | Implement Commentsafterfunctionexpression |
 | 1357 | Implement Commentsafterspread | spike | frontend/syntax | class: blocked | Implement Commentsafterspread |
 | 1358 | Implement Commentsatendoffile | spike | frontend/syntax | class: triage-needed | Implement Commentsatendoffile |
@@ -5071,6 +5070,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1352 | Implement Commentonparameter | spike | frontend/syntax | see `issues/done/1352-implement-commentOnParameter.md` |
 | 1353 | Implement Commentonparenthesizedexpressionopenparen | spike | frontend/syntax | see `issues/done/1353-implement-commentOnParenthesizedExpressionOpenParen.md` |
 | 1354 | Implement Commentonsignature | spike | frontend/syntax | see `issues/done/1354-implement-commentOnSignature.md` |
+| 1355 | Implement Commentwithunreasonableindentationlevel | spike | frontend/syntax | see `issues/done/1355-implement-commentWithUnreasonableIndentationLevel.md` |
 | 2050 | Implement Duplicatelocalvariable Duplicate Local | spike | reference/triage | see `issues/done/2050-implement-duplicateLocalVariable-duplicate-local.md` |
 | 3002 | Implement Isolateddeclarationerrorsdefault | spike | runtime/builtins | see `issues/done/3002-implement-isolatedDeclarationErrorsDefault.md` |
 | 3131 | Implement Jsxfactorynotidentifierorqualifiedname | spike | reference/triage | see `issues/done/3131-implement-jsxFactoryNotIdentifierOrQualifiedName.md` |
