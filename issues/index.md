@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 2 | 1 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4417 | 3775 | 642 |
+| frontend | 4418 | 3775 | 643 |
 | harness | 1 | 0 | 1 |
 | ir | 31 | 9 | 22 |
 | issues | 4 | 0 | 4 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5024 | 4040 | 984 |
+| total | 5025 | 4040 | 985 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -144,6 +144,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5187 | Lower namespace-only multi-section files | feature | compiler | implementation-ready | P1 |  | multi-section TypeScript reference files that contain namespace declarations but no static imports/exports are reduce... |
 | 5188 | Report block-scoped function call arity diagnostics | feature | frontend/semantics | implementation-ready | P1 |  | user-defined function calls that resolve to block-scoped same-name declarations can build even when TypeScript report... |
 | 5189 | Parse ASI after class expression variable initializer | feature | frontend/syntax | implementation-ready | P1 |  | semicolonless variable declarations whose initializer is an anonymous class expression do not accept ASI before the n... |
+| 5190 | Skip implements in ambient class declarations | feature | frontend/syntax | implementation-ready | P1 |  | ambient class declaration parsing does not skip `implements` heritage clauses. |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -419,7 +420,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 772 | Implement Augmentedtypesvar | spike | frontend/syntax | class: blocked | Implement Augmentedtypesvar |
 | 773 | Implement Autoasiforstaticsinclassdeclaration | spike | frontend/syntax | class: triage-needed | Implement Autoasiforstaticsinclassdeclaration |
 | 775 | Implement Autotypeassignedusingdestructuringfromnevernocrash | spike | frontend/resolver | class: blocked | Implement Autotypeassignedusingdestructuringfromnevernocrash |
-| 1080 | Implement Bluebirdstaticthis | spike | frontend/syntax | class: triage-needed | Implement Bluebirdstaticthis |
 | 1081 | Implement Booleanassignment | spike | frontend/resolver | class: blocked | Implement Booleanassignment |
 | 1082 | Implement Booleanfilteranyarray | spike | frontend/syntax | class: triage-needed | Implement Booleanfilteranyarray |
 | 1083 | Implement Breakiniterationorswitchstatement | spike | frontend/resolver | class: blocked | Implement Breakiniterationorswitchstatement |
@@ -4982,6 +4982,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1077 | Implement Blockscopedsamenamefunctiondeclarationes | spike | reference/triage | see `issues/done/1077-implement-blockScopedSameNameFunctionDeclarationES.md` |
 | 1078 | Implement Blockscopedsamenamefunctiondeclarationstrictes | spike | reference/triage | see `issues/done/1078-implement-blockScopedSameNameFunctionDeclarationStrictES.md` |
 | 1079 | Implement Blockscopedvariablesusebeforedef | spike | frontend/resolver | see `issues/done/1079-implement-blockScopedVariablesUseBeforeDef.md` |
+| 1080 | Implement Bluebirdstaticthis | spike | frontend/syntax | see `issues/done/1080-implement-bluebirdStaticThis.md` |
 | 2050 | Implement Duplicatelocalvariable Duplicate Local | spike | reference/triage | see `issues/done/2050-implement-duplicateLocalVariable-duplicate-local.md` |
 | 3002 | Implement Isolateddeclarationerrorsdefault | spike | runtime/builtins | see `issues/done/3002-implement-isolatedDeclarationErrorsDefault.md` |
 | 3131 | Implement Jsxfactorynotidentifierorqualifiedname | spike | reference/triage | see `issues/done/3131-implement-jsxFactoryNotIdentifierOrQualifiedName.md` |
