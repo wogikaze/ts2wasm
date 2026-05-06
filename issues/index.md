@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 3 | 2 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4490 | 3670 | 820 |
+| frontend | 4490 | 3669 | 821 |
 | harness | 1 | 0 | 1 |
 | ir | 57 | 35 | 22 |
 | issues | 4 | 0 | 4 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5125 | 3954 | 1171 |
+| total | 5125 | 3953 | 1172 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -636,7 +636,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1344 | Implement Commentleadingclosebrace | spike | frontend/resolver | class: blocked | Implement Commentleadingclosebrace |
 | 1345 | Implement Commentonambientmodule | spike | frontend/syntax | class: blocked | Implement Commentonambientmodule |
 | 1346 | Implement Commentonambientvariable | spike | frontend/resolver | class: blocked | Implement Commentonambientvariable |
-| 1381 | Implement Commentsdonotemitcomments | spike | frontend/syntax | class: triage-needed | Implement Commentsdonotemitcomments |
 | 1382 | Implement Commentsemitcomments | spike | frontend/syntax | class: triage-needed | Implement Commentsemitcomments |
 | 1383 | Implement Commonjsexporttypedeclarationerror | spike | frontend/syntax | class: blocked | Implement Commonjsexporttypedeclarationerror |
 | 1384 | Implement Commonjsimportclassexpression | spike | frontend/syntax | class: blocked | Implement Commonjsimportclassexpression |
@@ -5081,6 +5080,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1378 | Implement Commentsonstaticmembers | spike | frontend/syntax | see `issues/done/1378-implement-commentsOnStaticMembers.md` |
 | 1379 | Implement Commentsoverloads | spike | frontend/syntax | see `issues/done/1379-implement-commentsOverloads.md` |
 | 1380 | Implement Commentstypeparameters | spike | frontend/syntax | see `issues/done/1380-implement-commentsTypeParameters.md` |
+| 1381 | Implement Commentsdonotemitcomments | spike | frontend/syntax | see `issues/done/1381-implement-commentsdoNotEmitComments.md` |
 | 2050 | Implement Duplicatelocalvariable Duplicate Local | spike | reference/triage | see `issues/done/2050-implement-duplicateLocalVariable-duplicate-local.md` |
 | 3002 | Implement Isolateddeclarationerrorsdefault | spike | runtime/builtins | see `issues/done/3002-implement-isolatedDeclarationErrorsDefault.md` |
 | 3131 | Implement Jsxfactorynotidentifierorqualifiedname | spike | reference/triage | see `issues/done/3131-implement-jsxFactoryNotIdentifierOrQualifiedName.md` |

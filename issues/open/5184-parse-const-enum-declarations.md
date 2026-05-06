@@ -8,7 +8,7 @@ priority: P1
 depends_on: []
 blocks: []
 created: 2026-05-06
-updated: 2026-05-06
+updated: 2026-05-07
 ---
 
 ## Summary
@@ -121,6 +121,7 @@ Impacted commands:
 
 ```sh
 python scripts/manager.py check-issue-readiness -- --fail-ready-below 80
+python scripts/manager.py reference-coverage tsc --path-filter reference/typescript/tests/cases/compiler/commentsdoNotEmitComments.ts --detail --no-dashboard-data
 ```
 
 Not run:
@@ -144,6 +145,15 @@ Follow-up issues:
 ## Notes
 
 Split from generated bucket `1070` on 2026-05-06. Bucket `1071` was later superseded by the same child after fresh triage of `blockScopedEnumVariablesUseBeforeDef_isolatedModules.ts` showed the identical `const enum` parser boundary. Sibling buckets such as `1446`, `633`, and `737` also show the same boundary in different reference contexts; this child issue names the shared parser slice.
+
+Additional superseded bucket:
+
+- `issues/done/1381-implement-commentsdoNotEmitComments.md` reaches the same
+  `const enum` misclassification family at
+  `const enum color { red, green, blue }`. Fresh triage on 2026-05-07 shows a
+  bogus visible binding named `enum`, then `var shade: color = color.green`
+  fails with `UnresolvedName` for `color`. Comment emit behavior is not reached
+  before this const-enum parser/binding boundary.
 
 ## Completion evidence
 
