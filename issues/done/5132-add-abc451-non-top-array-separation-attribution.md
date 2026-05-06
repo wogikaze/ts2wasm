@@ -194,3 +194,12 @@ result: fail; iwasm exited after 43.591s with Exception: unreachable
 
 This issue remains open until the aggregate mismatch is either fixed or the
 acceptance baseline is deliberately revised with a source-backed reason.
+
+
+## False-done audit
+
+Date: 2026-05-07
+
+Classification: truly-done.
+
+Audit result: retained in issues/done/. Implementation commits confirmed.

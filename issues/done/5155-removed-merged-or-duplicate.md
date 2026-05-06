@@ -15,3 +15,12 @@ updated: 2026-05-07
 
 This ID was removed from the issue tracker (merged into another issue or identified as duplicate).
 Kept as a sequential ID gap filler.
+
+
+## False-done audit
+
+Date: 2026-05-07
+
+Classification: truly-done.
+
+Audit result: retained in issues/done/. Implementation commits confirmed.
