@@ -1770,9 +1770,8 @@ class Foo {
         let err =
             parse_program("for await (var value of values) { console.log(value); }").unwrap_err();
         assert_eq!(err.code, DiagCode::UnsupportedSyntax);
-        assert!(err.message.contains("issue-230"));
-        assert!(err.message.contains("for await...of"));
-        assert!(err.message.contains("async iteration"));
+        assert!(err.message.contains("for await"));
+        assert!(err.message.contains("async functions"));
         assert_eq!(err.span, Some(Span { start: 0, end: 9 }));
     }
 

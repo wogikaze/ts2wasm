@@ -1445,6 +1445,16 @@ impl Parser {
     fn for_await_statement(&mut self) -> Result<Stmt, Diagnostic> {
         let for_span = self.expect(TokenKind::For)?;
         let await_span = self.expect(TokenKind::Await)?;
+        if !self.in_async_fn {
+            return Err(Diagnostic {
+                code: DiagCode::UnsupportedSyntax,
+                message: "'for await' loops are only allowed within async functions and at the top levels of modules".to_owned(),
+                span: Some(Span {
+                    start: for_span.start,
+                    end: await_span.end,
+                }),
+            });
+        }
         Err(Diagnostic {
             code: DiagCode::UnsupportedSyntax,
             message: "issue-230: `for await...of` async iteration requires Promise and async iterator runtime semantics, which are not supported in this milestone".to_owned(),
