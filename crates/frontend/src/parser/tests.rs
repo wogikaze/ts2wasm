@@ -790,6 +790,116 @@ mod tests {
     }
 
     #[test]
+    fn parses_member_call_with_explicit_type_arguments() {
+        let program =
+            parse_program("let result = _.map<number, string>(c2, rf1);").unwrap();
+        let Stmt::Let { expr, .. } = &program[0] else {
+            panic!("expected let statement");
+        };
+        match expr {
+            Expr::Call {
+                callee, args, ..
+            } => {
+                match callee.as_ref() {
+                    Expr::Member { object, property, .. } => {
+                        assert!(
+                            matches!(object.as_ref(), Expr::Ident { name, .. } if name == "_"),
+                            "expected member object `_`, got {object:?}"
+                        );
+                        assert_eq!(property, "map", "expected member property `map`");
+                    }
+                    other => panic!("expected Member callee, got {other:?}"),
+                }
+                assert_eq!(args.len(), 2, "expected 2 arguments");
+                assert!(
+                    matches!(&args[0], Expr::Ident { name, .. } if name == "c2"),
+                    "expected first arg `c2`, got {:?}", args[0]
+                );
+                assert!(
+                    matches!(&args[1], Expr::Ident { name, .. } if name == "rf1"),
+                    "expected second arg `rf1`, got {:?}", args[1]
+                );
+            }
+            other => panic!("expected Call expression, got {other:?}"),
+        }
+    }
+
+    #[test]
+    fn parses_plain_member_call_without_type_arguments() {
+        let program = parse_program("let result = _.map(c2, rf1);").unwrap();
+        let Stmt::Let { expr, .. } = &program[0] else {
+            panic!("expected let statement");
+        };
+        match expr {
+            Expr::Call {
+                callee, args, ..
+            } => {
+                match callee.as_ref() {
+                    Expr::Member { object, property, .. } => {
+                        assert!(
+                            matches!(object.as_ref(), Expr::Ident { name, .. } if name == "_"),
+                            "expected member object `_`, got {object:?}"
+                        );
+                        assert_eq!(property, "map", "expected member property `map`");
+                    }
+                    other => panic!("expected Member callee, got {other:?}"),
+                }
+                assert_eq!(args.len(), 2, "expected 2 arguments");
+                assert!(
+                    matches!(&args[0], Expr::Ident { name, .. } if name == "c2"),
+                    "expected first arg `c2`, got {:?}", args[0]
+                );
+                assert!(
+                    matches!(&args[1], Expr::Ident { name, .. } if name == "rf1"),
+                    "expected second arg `rf1`, got {:?}", args[1]
+                );
+            }
+            other => panic!("expected Call expression, got {other:?}"),
+        }
+    }
+
+    #[test]
+    fn parses_member_relational_as_comparison_not_generic_call() {
+        // `a.b < c > d` must NOT be reclassified as a generic member call;
+        // the `>` is not followed by `(`, so it must remain a comparison chain.
+        let program = parse_program("let result = a.b < c > d;").unwrap();
+        let Stmt::Let { expr, .. } = &program[0] else {
+            panic!("expected let statement");
+        };
+        match expr {
+            Expr::Binary {
+                left, op, right, ..
+            } => {
+                assert_eq!(*op, BinaryOp::Greater);
+                match left.as_ref() {
+                    Expr::Binary {
+                        left: inner_left,
+                        op: inner_op,
+                        right: inner_right,
+                        ..
+                    } => {
+                        assert_eq!(*inner_op, BinaryOp::Less);
+                        assert!(
+                            matches!(inner_left.as_ref(), Expr::Member { property, .. } if property == "b"),
+                            "expected a.b as left operand, got {inner_left:?}"
+                        );
+                        assert!(
+                            matches!(inner_right.as_ref(), Expr::Ident { name, .. } if name == "c"),
+                            "expected `c` as inner right, got {inner_right:?}"
+                        );
+                    }
+                    other => panic!("expected Binary(Less) as left, got {other:?}"),
+                }
+                assert!(
+                    matches!(right.as_ref(), Expr::Ident { name, .. } if name == "d"),
+                    "expected `d` as right, got {right:?}"
+                );
+            }
+            other => panic!("expected Binary expression (comparison chain), got {other:?}"),
+        }
+    }
+
+    #[test]
     fn parses_nullish_coalescing_expression() {
         let program = parse_program("let result = null ?? fallback;").unwrap();
         let Stmt::Let { expr, .. } = &program[0] else {
