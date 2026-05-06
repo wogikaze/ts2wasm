@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 3 | 2 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4451 | 3743 | 708 |
+| frontend | 4452 | 3743 | 709 |
 | harness | 1 | 0 | 1 |
 | ir | 43 | 21 | 22 |
 | issues | 4 | 0 | 4 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5072 | 4017 | 1055 |
+| total | 5073 | 4017 | 1056 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -192,6 +192,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5235 | Erase type predicate object return types | feature | frontend/parser | implementation-ready | P1 |  | `function f(x: any): x is { a: string; a: string; } { return true; }` reports `InvalidTopLevelReturn` because the ret... |
 | 5236 | Support nested function rest parameters in closure lowering | feature | ir | implementation-ready | P1 |  | nested function expressions with rest parameters report |
 | 5237 | Parse this-property computed object literal keys | feature | frontend/parser | implementation-ready | P1 |  | `{ [this.a]: "" }` reports `UnsupportedSyntax: expected identifier, |
+| 5238 | Preserve template interpolation expression spans | feature | frontend/parser | implementation-ready | P1 |  | `` `${a}` `` reports `UnresolvedName: unresolved name: a at 0..1` |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -467,7 +468,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 772 | Implement Augmentedtypesvar | spike | frontend/syntax | class: blocked | Implement Augmentedtypesvar |
 | 773 | Implement Autoasiforstaticsinclassdeclaration | spike | frontend/syntax | class: triage-needed | Implement Autoasiforstaticsinclassdeclaration |
 | 775 | Implement Autotypeassignedusingdestructuringfromnevernocrash | spike | frontend/resolver | class: blocked | Implement Autotypeassignedusingdestructuringfromnevernocrash |
-| 1150 | Implement Circularbaseconstraint | spike | frontend/syntax | class: triage-needed | Implement Circularbaseconstraint |
 | 1151 | Implement Circularconstraintyieldsappropriateerror | spike | frontend/syntax | class: blocked | Implement Circularconstraintyieldsappropriateerror |
 | 1152 | Implement Circularconstructorwithreturn | spike | frontend/syntax | class: blocked | Implement Circularconstructorwithreturn |
 | 1153 | Implement Circularcontextualmappedtype | spike | frontend/resolver | class: blocked | Implement Circularcontextualmappedtype |
@@ -5029,6 +5029,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1147 | Implement Checkingobjectdefinepropertyonfunctionnonexistentpropertynocrash | spike | frontend/syntax | see `issues/done/1147-implement-checkingObjectDefinePropertyOnFunctionNonexistentPropertyNoCrash.md` |
 | 1148 | Implement Checkingobjectwiththisinnamepositionnocrash | spike | frontend/syntax | see `issues/done/1148-implement-checkingObjectWithThisInNamePositionNoCrash.md` |
 | 1149 | Implement Circularaccessorannotations | spike | frontend/syntax | see `issues/done/1149-implement-circularAccessorAnnotations.md` |
+| 1150 | Implement Circularbaseconstraint | spike | frontend/syntax | see `issues/done/1150-implement-circularBaseConstraint.md` |
 | 2050 | Implement Duplicatelocalvariable Duplicate Local | spike | reference/triage | see `issues/done/2050-implement-duplicateLocalVariable-duplicate-local.md` |
 | 3002 | Implement Isolateddeclarationerrorsdefault | spike | runtime/builtins | see `issues/done/3002-implement-isolatedDeclarationErrorsDefault.md` |
 | 3131 | Implement Jsxfactorynotidentifierorqualifiedname | spike | reference/triage | see `issues/done/3131-implement-jsxFactoryNotIdentifierOrQualifiedName.md` |
