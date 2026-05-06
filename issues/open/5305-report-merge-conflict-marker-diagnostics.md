@@ -164,6 +164,9 @@ Split from generated bucket `issues/done/1431-implement-conflictMarkerDiff-parse
 Also supersedes sibling generated bucket
 `issues/done/1432-implement-conflictMarkerDiff-unknown-unsupported.md`, where
 the same marker diagnostic gap appears inside a method body.
+Also supersedes generated bucket
+`issues/done/1433-implement-conflictMarkerTrivia-parser-syntax.md`, where the
+same marker diagnostic gap appears for non-diff3 markers in a class body.
 
 ## Completion evidence
 
