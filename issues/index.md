@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 4 | 3 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4492 | 3654 | 838 |
+| frontend | 4493 | 3654 | 839 |
 | harness | 1 | 0 | 1 |
 | ir | 57 | 35 | 22 |
 | issues | 4 | 0 | 4 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5128 | 3938 | 1190 |
+| total | 5129 | 3938 | 1191 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -248,6 +248,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5291 | Report malformed export type declarations | feature | frontend/parser | implementation-ready | P1 |  | malformed `export type` declarations are not diagnosed or recovered |
 | 5292 | Skip tsconfig @Filename sections in reference harness | feature | compiler/multi-section | implementation-ready | P1 |  | reference-style `tsconfig.json` virtual sections are treated as module |
 | 5293 | Handle recursive generic self-heritage class lowering | bug | frontend/semantics | implementation-ready | P1 |  | recursive generic self-heritage classes fail with an opaque |
+| 5294 | Resolve sibling namespaces in nested namespace scopes | feature | frontend/name-resolution | implementation-ready | P1 |  | nested namespace resolution does not predeclare or look up sibling |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -639,7 +640,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1344 | Implement Commentleadingclosebrace | spike | frontend/resolver | class: blocked | Implement Commentleadingclosebrace |
 | 1345 | Implement Commentonambientmodule | spike | frontend/syntax | class: blocked | Implement Commentonambientmodule |
 | 1346 | Implement Commentonambientvariable | spike | frontend/resolver | class: blocked | Implement Commentonambientvariable |
-| 1400 | Implement Complicatedprivacy | spike | frontend/syntax | class: blocked | Implement Complicatedprivacy |
 | 1401 | Implement Compositecontextualsignature | spike | frontend/syntax | class: blocked | Implement Compositecontextualsignature |
 | 1402 | Implement Compositegenericfunction | spike | reference/triage | class: triage-needed | Implement Compositegenericfunction |
 | 1403 | Implement Compositewithnodemodulessourcefile | spike | frontend/syntax | class: blocked | Implement Compositewithnodemodulessourcefile |
@@ -5084,6 +5084,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1397 | Implement Complicatedgenericrecursivebaseclassreference | spike | frontend/semantics | see `issues/done/1397-implement-complicatedGenericRecursiveBaseClassReference.md` |
 | 1398 | Implement Complicatedindexedaccesskeyofreliesonkeyofneverupperbound | spike | frontend/syntax | see `issues/done/1398-implement-complicatedIndexedAccessKeyofReliesOnKeyofNeverUpperBound.md` |
 | 1399 | Implement Complicatedindexesofintersectionsareinferencable | spike | frontend/semantics | see `issues/done/1399-implement-complicatedIndexesOfIntersectionsAreInferencable.md` |
+| 1400 | Implement Complicatedprivacy | spike | frontend/syntax | see `issues/done/1400-implement-complicatedPrivacy.md` |
 | 2050 | Implement Duplicatelocalvariable Duplicate Local | spike | reference/triage | see `issues/done/2050-implement-duplicateLocalVariable-duplicate-local.md` |
 | 3002 | Implement Isolateddeclarationerrorsdefault | spike | runtime/builtins | see `issues/done/3002-implement-isolatedDeclarationErrorsDefault.md` |
 | 3131 | Implement Jsxfactorynotidentifierorqualifiedname | spike | reference/triage | see `issues/done/3131-implement-jsxFactoryNotIdentifierOrQualifiedName.md` |
