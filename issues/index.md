@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 3 | 2 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4464 | 3711 | 753 |
+| frontend | 4465 | 3711 | 754 |
 | harness | 1 | 0 | 1 |
 | ir | 47 | 25 | 22 |
 | issues | 4 | 0 | 4 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5089 | 3989 | 1100 |
+| total | 5090 | 3989 | 1101 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -209,6 +209,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5252 | Support call-expression class heritage | feature | ir/resolver | implementation-ready | P1 |  | `classDeclaredBeforeClassFactory.ts` parses successfully but name |
 | 5253 | Report class expression decorator boundary | feature | frontend/lexer | implementation-ready | P1 |  | `classExpressionWithDecorator1.ts` stops in tokenization at |
 | 5254 | Parse ASI between static class fields | feature | frontend/parser | implementation-ready | P1 |  | `classExpressionWithStaticProperties2.ts` parses `static b` as the |
+| 5255 | Resolve super property accesses | feature | frontend/resolver | implementation-ready | P1 |  | `classExtendingAny.ts` parses class declarations, `extends Err`, and |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -484,7 +485,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 773 | Implement Autoasiforstaticsinclassdeclaration | spike | frontend/syntax | class: triage-needed | Implement Autoasiforstaticsinclassdeclaration |
 | 775 | Implement Autotypeassignedusingdestructuringfromnevernocrash | spike | frontend/resolver | class: blocked | Implement Autotypeassignedusingdestructuringfromnevernocrash |
 | 1193 | Implement Classextendingabstractclasswithmembercalledthesameasitsowntypeparam | spike | frontend/syntax | class: blocked | Implement Classextendingabstractclasswithmembercalledthesameasitsowntypeparam |
-| 1194 | Implement Classextendingany | spike | frontend/syntax | class: triage-needed | Implement Classextendingany |
 | 1195 | Implement Classextendingqualifiedname | spike | frontend/syntax | class: blocked | Implement Classextendingqualifiedname |
 | 1196 | Implement Classextendsacrossfiles | spike | frontend/syntax | class: blocked | Implement Classextendsacrossfiles |
 | 1197 | Implement Classextendsclauseclassmergedwithmodulenotreferingconstructor | spike | frontend/syntax | class: blocked | Implement Classextendsclauseclassmergedwithmodulenotreferingconstructor |
@@ -5045,6 +5045,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1190 | Implement Classexpressionwithstaticpropertieses Parser Syntax | spike | frontend/syntax | see `issues/done/1190-implement-classExpressionWithStaticPropertiesES-parser-syntax.md` |
 | 1191 | Implement Classexpressionwithstaticpropertieses Unknown Unsupported | spike | frontend/syntax | see `issues/done/1191-implement-classExpressionWithStaticPropertiesES-unknown-unsupported.md` |
 | 1192 | Implement Classexpressions | spike | frontend/syntax | see `issues/done/1192-implement-classExpressions.md` |
+| 1194 | Implement Classextendingany | spike | frontend/syntax | see `issues/done/1194-implement-classExtendingAny.md` |
 | 2050 | Implement Duplicatelocalvariable Duplicate Local | spike | reference/triage | see `issues/done/2050-implement-duplicateLocalVariable-duplicate-local.md` |
 | 3002 | Implement Isolateddeclarationerrorsdefault | spike | runtime/builtins | see `issues/done/3002-implement-isolatedDeclarationErrorsDefault.md` |
 | 3131 | Implement Jsxfactorynotidentifierorqualifiedname | spike | reference/triage | see `issues/done/3131-implement-jsxFactoryNotIdentifierOrQualifiedName.md` |
