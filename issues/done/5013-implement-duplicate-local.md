@@ -119,7 +119,7 @@ Follow-up issues:
 
 - `issues/done/1060-implement-bindingPatternCannotBeOnlyInferenceSource.md` - Implement Bindingpatterncannotbeonlyinferencesource (same feature label, same group key, title overlap)
 - `issues/done/1108-implement-capturedLetConstInLoop-duplicate-local.md` - Implement Capturedletconstinloop Duplicate Local (same feature label, same group key, title overlap)
-- `issues/open/1122-implement-catch.md` - Implement Catch (same feature label, same group key, title overlap)
+- `issues/done/1122-implement-catch.md` - Implement Catch (same feature label, same group key, title overlap)
 - `issues/open/1124-implement-cf.md` - Implement Cf (same feature label, same group key, title overlap)
 - `issues/open/1402-implement-compositeGenericFunction.md` - Implement Compositegenericfunction (same feature label, same group key, title overlap)
 - `issues/open/1436-implement-conflictingTypeAnnotatedVar.md` - Implement Conflictingtypeannotatedvar (same feature label, same group key, title overlap)

@@ -21,13 +21,13 @@ Issue files are the source of truth for work items. The generated section below 
 | ir | 37 | 15 | 22 |
 | issues | 4 | 0 | 4 |
 | parser | 1 | 0 | 1 |
-| reference | 212 | 161 | 51 |
+| reference | 212 | 160 | 52 |
 | runtime | 265 | 89 | 176 |
 | scripts | 3 | 1 | 2 |
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5053 | 4026 | 1027 |
+| total | 5053 | 4025 | 1028 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -448,7 +448,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 772 | Implement Augmentedtypesvar | spike | frontend/syntax | class: blocked | Implement Augmentedtypesvar |
 | 773 | Implement Autoasiforstaticsinclassdeclaration | spike | frontend/syntax | class: triage-needed | Implement Autoasiforstaticsinclassdeclaration |
 | 775 | Implement Autotypeassignedusingdestructuringfromnevernocrash | spike | frontend/resolver | class: blocked | Implement Autotypeassignedusingdestructuringfromnevernocrash |
-| 1122 | Implement Catch | spike | reference/triage | class: triage-needed | Implement Catch |
 | 1123 | Implement Catchclausewithinitializer | spike | frontend/syntax | class: triage-needed | Implement Catchclausewithinitializer |
 | 1124 | Implement Cf | spike | frontend/resolver | class: blocked | Implement Cf |
 | 1125 | Implement Chainedassignment | spike | frontend/syntax | class: triage-needed | Implement Chainedassignment |
@@ -5010,6 +5009,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1119 | Implement Castofawait | spike | reference/triage | see `issues/done/1119-implement-castOfAwait.md` |
 | 1120 | Implement Castparentheses | spike | frontend/syntax | see `issues/done/1120-implement-castParentheses.md` |
 | 1121 | Implement Casttest | spike | frontend/syntax | see `issues/done/1121-implement-castTest.md` |
+| 1122 | Implement Catch | spike | reference/triage | see `issues/done/1122-implement-catch.md` |
 | 2050 | Implement Duplicatelocalvariable Duplicate Local | spike | reference/triage | see `issues/done/2050-implement-duplicateLocalVariable-duplicate-local.md` |
 | 3002 | Implement Isolateddeclarationerrorsdefault | spike | runtime/builtins | see `issues/done/3002-implement-isolatedDeclarationErrorsDefault.md` |
 | 3131 | Implement Jsxfactorynotidentifierorqualifiedname | spike | reference/triage | see `issues/done/3131-implement-jsxFactoryNotIdentifierOrQualifiedName.md` |
