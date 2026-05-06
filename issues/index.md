@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 3 | 2 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4462 | 3722 | 740 |
+| frontend | 4462 | 3721 | 741 |
 | harness | 1 | 0 | 1 |
 | ir | 47 | 25 | 22 |
 | issues | 4 | 0 | 4 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5087 | 4000 | 1087 |
+| total | 5087 | 3999 | 1088 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -481,7 +481,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 772 | Implement Augmentedtypesvar | spike | frontend/syntax | class: blocked | Implement Augmentedtypesvar |
 | 773 | Implement Autoasiforstaticsinclassdeclaration | spike | frontend/syntax | class: triage-needed | Implement Autoasiforstaticsinclassdeclaration |
 | 775 | Implement Autotypeassignedusingdestructuringfromnevernocrash | spike | frontend/resolver | class: blocked | Implement Autotypeassignedusingdestructuringfromnevernocrash |
-| 1180 | Implement Classexpressionassignment | spike | frontend/syntax | class: triage-needed | Implement Classexpressionassignment |
 | 1181 | Implement Classexpressionextendingabstractclass | spike | frontend/syntax | class: triage-needed | Implement Classexpressionextendingabstractclass |
 | 1182 | Implement Classexpressioninclassstaticdeclarations | spike | frontend/syntax | class: triage-needed | Implement Classexpressioninclassstaticdeclarations |
 | 1183 | Implement Classexpressionnames | spike | frontend/syntax | class: triage-needed | Implement Classexpressionnames |
@@ -5043,6 +5042,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1177 | Implement Classdeclarationmergedinmodulewithcontinuation | spike | frontend/syntax | see `issues/done/1177-implement-classDeclarationMergedInModuleWithContinuation.md` |
 | 1178 | Implement Classdeclarationshouldbeoutofscopeincomputednames | spike | frontend/resolver | see `issues/done/1178-implement-classDeclarationShouldBeOutOfScopeInComputedNames.md` |
 | 1179 | Implement Classdeclaredbeforeclassfactory | spike | frontend/syntax | see `issues/done/1179-implement-classDeclaredBeforeClassFactory.md` |
+| 1180 | Implement Classexpressionassignment | spike | frontend/syntax | see `issues/done/1180-implement-classExpressionAssignment.md` |
 | 2050 | Implement Duplicatelocalvariable Duplicate Local | spike | reference/triage | see `issues/done/2050-implement-duplicateLocalVariable-duplicate-local.md` |
 | 3002 | Implement Isolateddeclarationerrorsdefault | spike | runtime/builtins | see `issues/done/3002-implement-isolatedDeclarationErrorsDefault.md` |
 | 3131 | Implement Jsxfactorynotidentifierorqualifiedname | spike | reference/triage | see `issues/done/3131-implement-jsxFactoryNotIdentifierOrQualifiedName.md` |
