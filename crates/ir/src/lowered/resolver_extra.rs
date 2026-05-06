@@ -3470,11 +3470,13 @@ impl<'a> Resolver<'a> {
             LoweredExpr::Block {
                 stmts: inner_stmts,
                 result,
-                ..} =>Ok(inner),
+                ..
+            } => {
+                stmts.extend(inner_stmts);
                 Ok(LoweredExpr::Block {
                     stmts,
                     result,
-                
+
                     span: Span::generated("block"),})
             }
             _ => Ok(inner),

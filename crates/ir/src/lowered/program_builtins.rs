@@ -159,8 +159,29 @@ pub(super) fn collection_method_runtime_fn(class_name: &str, method: &str) -> Op
         ("Array", "unshift") => Some("ArrayUnshift"),
         ("Array", "splice") => Some("ArraySplice"),
         ("Object", "valueOf") => Some("ValueOf"),
+        // Typed array methods
+        _ if is_typed_array_class(class_name) => match method {
+            "subarray" => Some("TypedArraySubarray"),
+            _ => None,
+        },
         _ => None,
     }
+}
+
+fn is_typed_array_class(class_name: &str) -> bool {
+    matches!(
+        class_name,
+        "Int8Array"
+            | "Uint8Array"
+            | "Uint8ClampedArray"
+            | "Int16Array"
+            | "Uint16Array"
+            | "Int32Array"
+            | "Uint32Array"
+            | "Float32Array"
+            | "Float64Array"
+            | "BigInt64Array"
+    )
 }
 
 pub(super) fn collection_method_runtime_fn_arg(method: &str) -> Option<&'static str> {
