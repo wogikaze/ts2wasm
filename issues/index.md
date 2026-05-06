@@ -16,9 +16,9 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 3 | 0 | 3 |
 | coverage | 44 | 1 | 43 |
 | docs | 4 | 2 | 2 |
-| frontend | 4447 | 3728 | 719 |
+| frontend | 4447 | 3729 | 718 |
 | harness | 1 | 0 | 1 |
-| ir | 43 | 9 | 34 |
+| ir | 43 | 8 | 35 |
 | issues | 5 | 0 | 5 |
 | parser | 1 | 0 | 1 |
 | reference | 211 | 163 | 48 |
@@ -108,7 +108,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5179 | Report implicit this before closure runtime guard | feature | frontend/semantics | implementation-ready | P1 |  | a TypeScript implicit-`this` diagnostic is hidden by the nested-function closure runtime-subset guard. |
 | 5183 | Report typed getter null return diagnostics | feature | frontend/semantics | implementation-ready | P1 |  | typed class getter return annotations are erased before return-expression diagnostics are checked. |
 | 5185 | Source-span unresolved class method function calls | feature | frontend/resolver | implementation-ready | P1 |  | unresolved function calls from class method bodies lose source-span information and should report the out-of-scope ca... |
-| 5196 | Support callable conditional-typed parameter calls | feature | ir/lowering | implementation-ready | P1 |  | callable parameters typed through conditional type aliases currently fall into the generic `issue-211` function-value... |
 | 5197 | Report class called without new | feature | frontend/resolver | implementation-ready | P1 |  | direct calls to class constructors without `new` currently report generic `issue-5011` class-value unsupported diagno... |
 | 5198 | Support class method overload signatures for element access calls | feature | frontend/resolver | implementation-ready | P1 |  | class method overload signatures are currently treated as duplicate method definitions. |
 | 5199 | Report function overload list class merge diagnostics | feature | frontend/resolver | implementation-ready | P1 |  | top-level bodyless function overload declarations are currently handled as duplicate concrete function implementations. |
@@ -689,6 +688,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1386 | Implement Commonmissingsemicolons | spike | reference/triage | class: triage-needed | Implement Commonmissingsemicolons |
 | 1387 | Implement Commonsourcedir | spike | frontend/syntax | class: blocked | Implement Commonsourcedir |
 | 1388 | Implement Commonsourcedirectory | spike | frontend/syntax | class: blocked | Implement Commonsourcedirectory |
+| 1389 | Implement Commonjsaccessexports | spike | frontend/syntax | class: blocked | Implement Commonjsaccessexports |
 | 1390 | Implement Commonjssafeimport | spike | frontend/syntax | class: blocked | Implement Commonjssafeimport |
 | 1391 | Implement Comparabilitytypeparametersrelatedbyunion | spike | frontend/syntax | class: blocked | Implement Comparabilitytypeparametersrelatedbyunion |
 | 1392 | Implement Comparablerelationbidirectional | spike | frontend/syntax | class: triage-needed | Implement Comparablerelationbidirectional |
@@ -4974,7 +4974,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1105 | Implement Cannotinvokenewonindexexpression | spike | frontend/resolver | see `issues/done/1105-implement-cannotInvokeNewOnIndexExpression.md` |
 | 1106 | Implement Capturesuperpropertyaccessinsupercall | spike | frontend/syntax | see `issues/done/1106-implement-captureSuperPropertyAccessInSuperCall.md` |
 | 1107 | Implement Capturedletconstinloop Arrow Function | spike | frontend/syntax | see `issues/done/1107-implement-capturedLetConstInLoop-arrow-function.md` |
-| 1389 | Implement Commonjsaccessexports | spike | frontend/syntax | see `issues/done/1389-implement-commonjsAccessExports.md` |
 | 2050 | Implement Duplicatelocalvariable Duplicate Local | spike | reference/triage | see `issues/done/2050-implement-duplicateLocalVariable-duplicate-local.md` |
 | 3002 | Implement Isolateddeclarationerrorsdefault | spike | runtime/builtins | see `issues/done/3002-implement-isolatedDeclarationErrorsDefault.md` |
 | 3131 | Implement Jsxfactorynotidentifierorqualifiedname | spike | reference/triage | see `issues/done/3131-implement-jsxFactoryNotIdentifierOrQualifiedName.md` |
@@ -5175,6 +5174,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5193 | Parse ASI after ambient variable declarations | feature | frontend/syntax | see `issues/done/5193-parse-asi-after-ambient-variable-declarations.md` |
 | 5194 | Report empty call type arguments | feature | frontend/syntax | see `issues/done/5194-report-empty-call-type-arguments.md` |
 | 5195 | Support callable interface-typed local calls | feature | ir/lowering | see `issues/done/5195-support-callable-interface-typed-local-calls.md` |
+| 5196 | Support callable conditional-typed parameter calls | feature | ir/lowering | see `issues/done/5196-support-callable-conditional-typed-parameter-calls.md` |
 | 5197 | Report class called without new | feature | frontend/resolver | see `issues/done/5197-report-class-called-without-new.md` |
 | 5198 | Support class method overload signatures for element access calls | feature | frontend/resolver | see `issues/done/5198-support-class-method-overload-signatures-for-element-access-calls.md` |
 | 5200 | Validate top-level function overload implementations | feature | frontend/resolver | see `issues/done/5200-validate-top-level-function-overload-implementations.md` |
