@@ -1,0 +1,26 @@
+{
+  "runtime_functions": [
+    "copy",
+    "log",
+    "value_to_string_into",
+    "write"
+  ],
+  "globals": [
+    "$exception_handler_depth",
+    "$exception_pending"
+  ],
+  "imports": [
+    "wasi_snapshot_preview1.fd_write"
+  ],
+  "capabilities": [
+    "stdout.write"
+  ],
+  "runtime_strings": [
+    "\n",
+    "false",
+    "null",
+    "true",
+    "undefined"
+  ],
+  "manifest_target": "wasm32-wasi-p1"
+}

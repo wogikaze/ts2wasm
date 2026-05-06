@@ -1,0 +1,42 @@
+{
+  "runtime_functions": [
+    "add",
+    "add_fast",
+    "alloc_heap",
+    "concat",
+    "copy",
+    "log",
+    "number_from_i32",
+    "number_to_i32",
+    "value_to_string_into",
+    "write"
+  ],
+  "globals": [
+    "$alloc_bytes_since_last_gc",
+    "$exception_handler_depth",
+    "$exception_pending",
+    "$gc_call_frame_base",
+    "$gc_call_frame_current",
+    "$gc_call_frame_limit",
+    "$gc_call_frame_top",
+    "$gc_free_list",
+    "$gc_free_list_max_body_size",
+    "$gc_free_list_second_max_body_size",
+    "$gc_root_base",
+    "$gc_root_count"
+  ],
+  "imports": [
+    "wasi_snapshot_preview1.fd_write"
+  ],
+  "capabilities": [
+    "stdout.write"
+  ],
+  "runtime_strings": [
+    "\n",
+    "false",
+    "null",
+    "true",
+    "undefined"
+  ],
+  "manifest_target": "wasm32-wasi-p1"
+}
