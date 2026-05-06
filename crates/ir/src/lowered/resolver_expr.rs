@@ -477,6 +477,19 @@ impl<'a> Resolver<'a> {
 
                 let func_name = match callee.as_ref() {
                     ResolvedExpr::Ident(name) => name,
+                    expr @ (ResolvedExpr::Call { .. } | ResolvedExpr::New { .. }) => {
+                        return Err(Diagnostic {
+                            code: DiagCode::UnsupportedSyntax,
+                            message: format!(
+                                "nested call expression is not supported; {} has no call signatures",
+                                match expr {
+                                    ResolvedExpr::Call { .. } => "the return value of the outer call",
+                                    _ => "the constructed instance",
+                                }
+                            ),
+                            span: Some(*span),
+                        });
+                    }
                     _ => {
                         return Err(Diagnostic {
                             code: DiagCode::UnsupportedSyntax,

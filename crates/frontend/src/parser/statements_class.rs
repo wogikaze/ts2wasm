@@ -118,6 +118,7 @@ impl Parser {
         let mut body = Vec::new();
         let mut static_blocks = Vec::new();
         let mut private_elements = Vec::new();
+        let mut ts_private_field_names = Vec::<String>::new();
         while !matches!(self.peek(), Some(Token::RightBrace)) {
             if self.is_at_end() {
                 return Err(Diagnostic {
@@ -154,6 +155,7 @@ impl Parser {
                 continue;
             }
 
+            let modifier_start = self.cursor;
             while matches!(self.peek(), Some(Token::Ident(name)) if matches!(
                 name.as_str(),
                 "public" | "private" | "protected" | "readonly" | "override" | "accessor"
@@ -162,6 +164,9 @@ impl Parser {
             )) || matches!(self.peek(), Some(Token::Abstract)) {
                 self.advance();
             }
+            let has_private_modifier = self.tokens[modifier_start..self.cursor]
+                .iter()
+                .any(|t| matches!(&t.kind, Token::Ident(name) if name == "private"));
 
             if matches!(self.peek(), Some(Token::LeftBracket)) {
                 self.skip_balanced_bracket_block()?;
@@ -202,6 +207,9 @@ impl Parser {
                         "issue-400: unterminated class field declaration type annotation",
                     )
                 })?;
+                if has_private_modifier {
+                    ts_private_field_names.push(method_name.clone());
+                }
                 if self.consume(TokenKind::Equal) {
                     let _ = self.expression()?;
                 }
@@ -210,12 +218,18 @@ impl Parser {
             }
 
             if matches!(self.peek(), Some(Token::Equal)) {
+                if has_private_modifier {
+                    ts_private_field_names.push(method_name.clone());
+                }
                 self.expect(TokenKind::Equal)?;
                 let _ = self.expression()?;
                 self.consume(TokenKind::Semicolon);
                 continue;
             }
             if matches!(self.peek(), Some(Token::Semicolon)) {
+                if has_private_modifier {
+                    ts_private_field_names.push(method_name.clone());
+                }
                 self.expect(TokenKind::Semicolon)?;
                 continue;
             }
