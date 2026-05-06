@@ -109,6 +109,7 @@ Follow-up issues:
 - [ ] `issues/open/5207-parse-do-while-asi-before-following-for.md`
 - [ ] `issues/open/5208-parse-arrow-body-destructuring-assignments.md`
 - [ ] `issues/open/5209-parse-computed-object-literal-property-expressions.md`
+- [ ] `issues/open/5210-parse-do-while-asi-before-block-end-or-expression.md`
 
 ## Notes
 
@@ -291,6 +292,65 @@ TypeScript AST sees `PropertyAssignment -> ComputedPropertyName ->
 BinaryExpression` for `name + ".a"` and reports no diagnostics. Child issue
 `issues/open/5209-parse-computed-object-literal-property-expressions.md` owns
 this parser slice.
+
+### Smart triage: capturedLetConstInLoop2
+
+- Issue class: `triage-needed`
+- Feature label: `parser-syntax`
+- Diagnostic: `UnsupportedSyntax` / `parser-or-frontend-unsupported`
+- Path: `reference/typescript/tests/cases/compiler/capturedLetConstInLoop2.ts`
+
+Reproduction:
+
+```sh
+mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/capturedLetConstInLoop2.ts
+```
+
+Failure location:
+
+```json
+{
+  "code": "UnsupportedSyntax",
+  "message": "expected Semicolon, got Some(RightBrace) at 861..862",
+  "line": 48,
+  "column": 23
+}
+```
+
+Source context includes the preceding `do { ... } while (1 === 1)` with no
+explicit semicolon before the enclosing function closes. Child issue
+`issues/open/5210-parse-do-while-asi-before-block-end-or-expression.md` owns
+this ASI slice.
+
+### Smart triage: capturedLetConstInLoop5
+
+- Issue class: `triage-needed`
+- Feature label: `parser-syntax`
+- Diagnostic: `UnsupportedSyntax` / `parser-or-frontend-unsupported`
+- Path: `reference/typescript/tests/cases/compiler/capturedLetConstInLoop5.ts`
+
+Reproduction:
+
+```sh
+mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/capturedLetConstInLoop5.ts
+```
+
+Failure location:
+
+```json
+{
+  "code": "UnsupportedSyntax",
+  "message": "expected Semicolon, got Some(Ident(\"use\")) at 1176..1179",
+  "line": 75,
+  "column": 6
+}
+```
+
+Source context includes a preceding `do { ... } while (1 === 1)` with no
+explicit semicolon before the following `use(v);` expression. TypeScript
+advances and reports TS2454 use-before-assigned diagnostics. Child issue
+`issues/open/5210-parse-do-while-asi-before-block-end-or-expression.md` owns
+this ASI slice.
 
 ### Folded triage from #1109: capturedLetConstInLoop4
 
