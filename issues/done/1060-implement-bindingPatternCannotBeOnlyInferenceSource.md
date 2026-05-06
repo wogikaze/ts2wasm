@@ -3,12 +3,14 @@ id: 1060
 title: "Implement Bindingpatterncannotbeonlyinferencesource"
 type: spike
 area: reference/triage
-class: triage-needed
+class: superseded
 priority: P2
-depends_on: []
+depends_on: [5174]
 blocks: []
 created: 2026-05-01
-updated: 2026-05-01
+updated: 2026-05-06
+status: done
+completed: 2026-05-06
 ---
 
 ## Summary
@@ -43,10 +45,10 @@ This generated bucket is either split into implementation-ready child issues or 
 
 In scope:
 
-- [ ] Inspect the smart triage report below
-- [ ] Confirm whether existing open/done issues already cover this bucket
-- [ ] Split one feature family, one observable behavior, or one fixed reference window into child issues
-- [ ] Preserve exact reproduction commands and representative AST/diagnostic evidence in each child issue
+- [x] Inspect the smart triage report below
+- [x] Confirm whether existing open/done issues already cover this bucket
+- [x] Split one feature family, one observable behavior, or one fixed reference window into child issues
+- [x] Preserve exact reproduction commands and representative AST/diagnostic evidence in each child issue
 
 Out of scope:
 
@@ -67,10 +69,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] Duplicate candidates below are confirmed as no-match or this issue is superseded
-- [ ] At least one child issue contains an exact `mise run reference-triage -- ...` command
-- [ ] Child issue includes failing path, diagnostic code, source context, visible symbols, and parser/TypeScript AST evidence
-- [ ] Child issue acceptance names the exact fixture/reference path and diagnostic/stdout change
+- [x] Duplicate candidates below are confirmed as no-match or this issue is superseded
+- [x] At least one child issue contains an exact `mise run reference-triage -- ...` command
+- [x] Child issue includes failing path, diagnostic code, source context, visible symbols, and parser/TypeScript AST evidence
+- [x] Child issue acceptance names the exact fixture/reference path and diagnostic/stdout change
 
 ## Validation
 
@@ -97,15 +99,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] updated: `current-state.md` (repo root)
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] added: `issues/open/5174-ignore-empty-binding-pattern-synthetic-names.md`
 
 ## Notes
 
@@ -115,11 +117,20 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- none found by path/title/feature scan
+- No open issue was found for the repeated empty binding-pattern synthetic-name duplicate-local failure.
 
 ## Smart triage
 
-Not generated. Rerun with `--triage-limit 1` or higher.
+Generated on 2026-05-06.
+
+- Path: `reference/typescript/tests/cases/compiler/bindingPatternCannotBeOnlyInferenceSource.ts`
+- Diagnostic: `DuplicateLocal` / `compiler-diagnostic`
+- Failure: `duplicate local binding: {}` at `937..1148`
+- Source context: repeated `const {} = ...` destructuring declarations
+- Visible symbols before failure: `funcs1`
+- Compiler evidence: tokens and AST succeed; AST stores empty patterns as `Let { name: "{}" }` and `Let { name: "[]" }`; validation treats repeated `{}` as a real duplicate local.
+- TypeScript oracle: reports type/inference diagnostics on unknown destructuring, not duplicate local declarations.
+- Superseding child: `issues/open/5174-ignore-empty-binding-pattern-synthetic-names.md`
 
 ## Completion evidence
 
@@ -127,16 +138,16 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- `...`
+- `pending`
 
 Validation result:
 
 ```text
-command:
-result:
-date:
+command: python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/bindingPatternCannotBeOnlyInferenceSource.ts
+result: pass; current blocker identified as false duplicate-local for empty binding patterns, split to issue 5174
+date: 2026-05-06
 ```
 
 Remaining risks:
 
-- none
+- The intended TypeScript type-inference diagnostics need follow-up triage after issue 5174 removes the false duplicate-local blocker.
