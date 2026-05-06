@@ -5,10 +5,10 @@ type: spike
 area: reference/triage
 class: triage-needed
 priority: P2
-depends_on: []
+depends_on: [5205]
 blocks: []
 created: 2026-05-01
-updated: 2026-05-01
+updated: 2026-05-06
 ---
 
 ## Summary
@@ -43,10 +43,10 @@ This generated bucket is either split into implementation-ready child issues or 
 
 In scope:
 
-- [ ] Inspect the smart triage report below
-- [ ] Confirm whether existing open/done issues already cover this bucket
-- [ ] Split one feature family, one observable behavior, or one fixed reference window into child issues
-- [ ] Preserve exact reproduction commands and representative AST/diagnostic evidence in each child issue
+- [x] Inspect the smart triage report below
+- [x] Confirm whether existing open/done issues already cover this bucket
+- [x] Split one feature family, one observable behavior, or one fixed reference window into child issues
+- [x] Preserve exact reproduction commands and representative AST/diagnostic evidence in each child issue
 
 Out of scope:
 
@@ -67,10 +67,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] Duplicate candidates below are confirmed as no-match or this issue is superseded
-- [ ] At least one child issue contains an exact `mise run reference-triage -- ...` command
-- [ ] Child issue includes failing path, diagnostic code, source context, visible symbols, and parser/TypeScript AST evidence
-- [ ] Child issue acceptance names the exact fixture/reference path and diagnostic/stdout change
+- [x] Duplicate candidates below are confirmed as no-match or this issue is superseded
+- [x] At least one child issue contains an exact `mise run reference-triage -- ...` command
+- [x] Child issue includes failing path, diagnostic code, source context, visible symbols, and parser/TypeScript AST evidence
+- [x] Child issue acceptance names the exact fixture/reference path and diagnostic/stdout change
 
 ## Validation
 
@@ -97,15 +97,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] updated: `current-state.md` (repo root)
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] `issues/open/5205-report-incompatible-var-redeclaration-type-diagnostics.md`
 
 ## Notes
 
@@ -119,7 +119,44 @@ Follow-up issues:
 
 ## Smart triage
 
-Not generated. Rerun with `--triage-limit 1` or higher.
+### Smart triage: Build pass: capturedLetConstInLoop14
+
+- Issue class: `none`
+- Feature label: `build-pass`
+- Diagnostic: `BuildPass` / `pass`
+- Path: `reference/typescript/tests/cases/compiler/capturedLetConstInLoop14.ts`
+
+Reproduction:
+
+```sh
+mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/capturedLetConstInLoop14.ts
+```
+
+Current compiler result:
+
+```text
+ts2wasm build succeeded
+```
+
+TypeScript oracle diagnostic:
+
+```text
+TS2403: Subsequent variable declarations must have the same type.
+Variable 'v' must be of type 'number', but here has type 'any'.
+```
+
+Evidence:
+
+- Tokens, AST, and resolved dumps succeed.
+- The reference file contains `var v = 1`, then a nested `do` body with
+  bodyless `var v` and `var v = 2`.
+- Existing issue `issues/open/5162-allow-compatible-var-redeclarations.md` is
+  related but no-match: it removes false duplicate-local blockers for
+  compatible redeclarations, while this bucket now needs the incompatible
+  redeclaration diagnostic after build pass.
+- Child issue
+  `issues/open/5205-report-incompatible-var-redeclaration-type-diagnostics.md`
+  owns the diagnostic implementation slice.
 
 ## Completion evidence
 
@@ -127,14 +164,14 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- `...`
+- `...` pending
 
 Validation result:
 
 ```text
-command:
-result:
-date:
+command: python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/capturedLetConstInLoop14.ts
+result: pass; compiler build succeeded while TypeScript reports TS2403 for incompatible `var v`
+date: 2026-05-06
 ```
 
 Remaining risks:
