@@ -1,0 +1,216 @@
+---
+id: 117
+title: "Implement Aliasofgenericfunctionwithrestbehavedsameasunaliased"
+type: spike
+area: frontend/syntax
+class: done
+priority: P1
+depends_on: []
+blocks: []
+created: 2026-04-29
+updated: 2026-05-06
+completed: 2026-05-06
+status: done
+---
+
+## Summary
+
+Triage `aliasOfGenericFunctionWithRestBehavedSameAsUnaliased` across 1
+reference test case.
+
+## Problem
+
+Reference test results previously showed this case failing with diagnostics:
+type-alias. Fresh coverage now builds the representative successfully.
+
+Problem: the generated blocker is stale in the current runner view. There is no
+current ts2wasm build blocker for
+`aliasOfGenericFunctionWithRestBehavedSameAsUnaliased.ts`.
+
+## Current failure
+
+Representative reproduction:
+
+```sh
+python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/aliasOfGenericFunctionWithRestBehavedSameAsUnaliased.ts
+```
+
+Coverage window:
+
+```sh
+python scripts/manager.py reference-coverage tsc --path-filter reference/typescript/tests/cases/compiler/aliasOfGenericFunctionWithRestBehavedSameAsUnaliased.ts --detail --no-dashboard-data
+```
+
+## Desired final state
+
+This generated bucket is closed as stale build-pass evidence. Do not implement
+directly from this bucket.
+
+## Scope
+
+In scope:
+
+- [x] Inspect the smart triage report below
+- [x] Confirm whether existing open/done issues already cover this bucket
+- [x] Confirm the current runner has no build blocker for this bucket
+- [x] Preserve exact reproduction commands and representative AST/diagnostic
+  evidence in this closed issue
+
+Out of scope:
+
+- Direct implementation from this generated bucket
+- Broad multi-feature fixes without child issue split
+
+## Affected paths
+
+Expected:
+
+- `crates/frontend/src/`
+- `crates/cli/src/`
+- `fixtures/`
+- `scripts/run/reference-triage.py`
+
+Do not touch:
+
+- unrelated runtime/backend code unless `reference-triage` proves the failure
+  is not frontend-owned
+
+## Acceptance criteria
+
+- [x] Duplicate candidates below are confirmed as no-match or this issue is stale
+- [x] This closed issue contains an exact `python scripts/manager.py reference-triage ...` command
+- [x] This closed issue includes the reference path, build-pass result, source
+  context, and TypeScript oracle evidence
+- [x] Completion evidence names the exact fixture/reference path and diagnostic/stdout change
+
+## Validation
+
+Required commands:
+
+```sh
+python scripts/manager.py update-issue-index --check
+python scripts/manager.py check-issue-health
+python scripts/manager.py check-issue-readiness -- --fail-ready-below 80
+git diff --check
+```
+
+Impacted commands:
+
+```sh
+python scripts/manager.py reference-coverage tsc --path-filter reference/typescript/tests/cases/compiler/aliasOfGenericFunctionWithRestBehavedSameAsUnaliased.ts --detail --no-dashboard-data
+python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/aliasOfGenericFunctionWithRestBehavedSameAsUnaliased.ts
+```
+
+Not run:
+
+- `cargo fmt --all --check`; issue cleanup only, no Rust code changed
+- `cargo nextest run`; issue cleanup only, no implementation changed
+
+## Docs / current-state / issue sync
+
+Final-state docs:
+
+- [x] not affected
+
+Current state:
+
+- [x] not affected
+
+Follow-up issues:
+
+- [x] none
+
+## Notes
+
+## Affected test files
+
+- `reference/typescript/tests/cases/compiler/aliasOfGenericFunctionWithRestBehavedSameAsUnaliased.ts`
+
+## Duplicate detection
+
+- No matching implementation-ready blocker issue is needed because the current build passes.
+
+## Smart triage
+
+### Smart triage: Build pass: aliasOfGenericFunctionWithRestBehavedSameAsUnaliased
+
+- Issue class: `none`
+- Feature label: `build-pass`
+- Diagnostic: `BuildPass` / `pass`
+- Path: `reference/typescript/tests/cases/compiler/aliasOfGenericFunctionWithRestBehavedSameAsUnaliased.ts`
+
+Reproduction:
+
+```sh
+python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/aliasOfGenericFunctionWithRestBehavedSameAsUnaliased.ts
+```
+
+Coverage:
+
+```sh
+python scripts/manager.py reference-coverage tsc --path-filter reference/typescript/tests/cases/compiler/aliasOfGenericFunctionWithRestBehavedSameAsUnaliased.ts --detail --no-dashboard-data
+```
+
+Coverage result:
+
+```text
+executed=1
+build_pass=1
+unsupported=0
+```
+
+Source context:
+
+```ts
+type ExtendedMapper<HandledInputT, OutputT, ArgsT extends any[]> =
+  (name: string, mixed: HandledInputT, ...args: ArgsT) => OutputT;
+type test = a extends b ? "y" : "n";
+let check: test = "y";
+```
+
+Compiler evidence:
+
+```text
+tokens: ok
+ast: ok; runtime declarations are the four `let check* = "y"` bindings
+resolved: ok; four string literal bindings
+build: pass
+```
+
+TypeScript oracle evidence:
+
+```text
+typescript ok: true
+diagnostics: []
+```
+
+Resolution:
+
+```text
+There is no current ts2wasm build blocker to split. This bucket is stale.
+```
+
+## Completion evidence
+
+The `aliasOfGenericFunctionWithRestBehavedSameAsUnaliased` bucket is complete as
+stale build-pass evidence.
+
+Commits:
+
+- no child issue required
+
+Validation result:
+
+```text
+command: python scripts/manager.py reference-coverage tsc --path-filter reference/typescript/tests/cases/compiler/aliasOfGenericFunctionWithRestBehavedSameAsUnaliased.ts --detail --no-dashboard-data
+result: pass on the main checkout; 1 executed, build_pass=1, unsupported=0
+date: 2026-05-06
+
+command: python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/aliasOfGenericFunctionWithRestBehavedSameAsUnaliased.ts
+result: pass; ts2wasm build succeeded
+date: 2026-05-06
+```
+
+Remaining risks:
+
+- none
