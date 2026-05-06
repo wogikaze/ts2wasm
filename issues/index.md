@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 3 | 2 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4473 | 3696 | 777 |
+| frontend | 4473 | 3695 | 778 |
 | harness | 1 | 0 | 1 |
 | ir | 53 | 31 | 22 |
 | issues | 4 | 0 | 4 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5104 | 3978 | 1126 |
+| total | 5104 | 3977 | 1127 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -524,7 +524,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1237 | Implement Classsideinheritance Parser Syntax | spike | frontend/syntax | class: blocked | Implement Classsideinheritance Parser Syntax |
 | 1240 | Implement Classstaticpropertytypeguard | spike | frontend/syntax | class: blocked | Implement Classstaticpropertytypeguard |
 | 1241 | Implement Classtypeparametersinstatics | spike | frontend/syntax | class: blocked | Implement Classtypeparametersinstatics |
-| 1245 | Implement Classvarianceresolvecircularity | spike | frontend/syntax | class: triage-needed | Implement Classvarianceresolvecircularity |
 | 1246 | Implement Classwithemptytypeparameter | spike | frontend/syntax | class: blocked | Implement Classwithemptytypeparameter |
 | 1247 | Implement Classwithmultiplebaseclasses | spike | frontend/syntax | class: blocked | Implement Classwithmultiplebaseclasses |
 | 1248 | Implement Classwithoverloadimplementationofwrongname | spike | frontend/syntax | class: blocked | Implement Classwithoverloadimplementationofwrongname |
@@ -5060,6 +5059,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1242 | Implement Classupdatetests | spike | runtime/builtins | see `issues/done/1242-implement-classUpdateTests.md` |
 | 1243 | Implement Classusedbeforeinitializedvariables | spike | frontend/syntax | see `issues/done/1243-implement-classUsedBeforeInitializedVariables.md` |
 | 1244 | Implement Classvariancecircularity | spike | frontend/syntax | see `issues/done/1244-implement-classVarianceCircularity.md` |
+| 1245 | Implement Classvarianceresolvecircularity | spike | frontend/syntax | see `issues/done/1245-implement-classVarianceResolveCircularity.md` |
 | 2050 | Implement Duplicatelocalvariable Duplicate Local | spike | reference/triage | see `issues/done/2050-implement-duplicateLocalVariable-duplicate-local.md` |
 | 3002 | Implement Isolateddeclarationerrorsdefault | spike | runtime/builtins | see `issues/done/3002-implement-isolatedDeclarationErrorsDefault.md` |
 | 3131 | Implement Jsxfactorynotidentifierorqualifiedname | spike | reference/triage | see `issues/done/3131-implement-jsxFactoryNotIdentifierOrQualifiedName.md` |
