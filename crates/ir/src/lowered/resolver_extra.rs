@@ -2092,8 +2092,7 @@ impl<'a> Resolver<'a> {
                 lowered,
                 LoweredExpr::ArrowFn {
                     representation: ClosureRepresentation::HeapObject,
-                    ..
-                    span: Span::generated("arrow_fn"),}
+                    ..}
             )
         {
             self.heap_closure_locals.insert(local_id);
@@ -2739,7 +2738,7 @@ impl<'a> Resolver<'a> {
                         elements: vec![],
                     
                         span: Span::generated("array_new"),},
-                , Span::generated("let_stmt")));
+                    Span::generated("let_stmt")));
 
                 let elem = self.alloc_temp();
                 while_body.push(LoweredStmt::Let(
@@ -3471,10 +3470,7 @@ impl<'a> Resolver<'a> {
             LoweredExpr::Block {
                 stmts: inner_stmts,
                 result,
-                ..
-            ,
-                span: Span::generated("block"),} => {
-                stmts.extend(inner_stmts);
+                ..} =>Ok(inner),
                 Ok(LoweredExpr::Block {
                     stmts,
                     result,
