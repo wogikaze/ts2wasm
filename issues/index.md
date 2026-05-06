@@ -16,9 +16,9 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 4 | 3 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4516 | 3626 | 890 |
+| frontend | 4516 | 3625 | 891 |
 | harness | 1 | 0 | 1 |
-| ir | 61 | 39 | 22 |
+| ir | 62 | 40 | 22 |
 | issues | 4 | 0 | 4 |
 | parser | 1 | 0 | 1 |
 | reference | 212 | 155 | 57 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5156 | 3912 | 1244 |
+| total | 5157 | 3912 | 1245 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -50,7 +50,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 5000 (Meta: TypeScript Compiler Parser Syntax Coverage) [done/design] ch:485 open:412 done:73
 ├── 5002 (Meta: TypeScript Compiler Type System Coverage) [done/done] ch:234 open:217 done:17 (also ← 5005)
 ├── 5003 (Meta: TypeScript Compiler Declaration Emit Coverage) [done/done] ch:102 open:91 done:11 (also ← 5001)
-5001 (Meta: TypeScript Compiler Semantic Analysis Coverage) [done/done] ch:590 open:336 done:254
+5001 (Meta: TypeScript Compiler Semantic Analysis Coverage) [done/done] ch:589 open:335 done:254
 5004 (Meta: Runtime Builtins Coverage (test262) (audit reopened #5004)) [done/done] ch:24 open:3 done:21
 5005 (Meta: TypeScript Compiler Name Resolution Coverage) [done/done] ch:421 open:369 done:52
 ├── 5006 (Meta: TypeScript Compiler Scope Analysis Coverage) [done/done] ch:29 open:21 done:8
@@ -67,7 +67,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | Order | ID | Title | State | Class | Area | Priority | Depends on | Direct children | Open children | Done children |
 |-----:|---:|------|-------|-------|------|--------:|-----------:|----------------:|--------------:|--------------:|
 | 1 | 5000 | Meta: TypeScript Compiler Parser Syntax Coverage | done | design | frontend/syntax | P1 | - | 485 | 412 | 73 |
-| 2 | 5001 | Meta: TypeScript Compiler Semantic Analysis Coverage | done | done | frontend/semantics | P1 | - | 590 | 336 | 254 |
+| 2 | 5001 | Meta: TypeScript Compiler Semantic Analysis Coverage | done | done | frontend/semantics | P1 | - | 589 | 335 | 254 |
 | 3 | 5004 | Meta: Runtime Builtins Coverage (test262) (audit reopened #5004) | done | done | runtime/builtins | P1 | - | 24 | 3 | 21 |
 | 4 | 5005 | Meta: TypeScript Compiler Name Resolution Coverage | done | done | frontend/resolver | P1 | - | 421 | 369 | 52 |
 | 5 | 5002 | Meta: TypeScript Compiler Type System Coverage | done | done | frontend/semantics | P1 | 5000, 5005 | 234 | 217 | 17 |
@@ -276,6 +276,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5319 | Support super property reads in class static blocks | feature | ir/runtime | implementation-ready | P1 |  | `classFieldSuperAccessibleJs1.ts` parses successfully, but resolver |
 | 5320 | Support class prototype method call dispatch | feature | ir/runtime | implementation-ready | P1 |  | `classFieldSuperAccessibleJs2.ts` parses and lowers through ordinary |
 | 5321 | Report super class field access diagnostic | feature | ir/resolver | implementation-ready | P1 |  | `classFieldSuperNotAccessible.ts` currently reaches lowering and |
+| 5322 | Support callable class auto-accessor fields | feature | ir/runtime | implementation-ready | P1 |  | `classFieldSuperNotAccessibleJs.ts` parses successfully, but lowering |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -549,7 +550,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 772 | Implement Augmentedtypesvar | spike | frontend/syntax | class: blocked | Implement Augmentedtypesvar |
 | 773 | Implement Autoasiforstaticsinclassdeclaration | spike | frontend/syntax | class: triage-needed | Implement Autoasiforstaticsinclassdeclaration |
 | 775 | Implement Autotypeassignedusingdestructuringfromnevernocrash | spike | frontend/resolver | class: blocked | Implement Autotypeassignedusingdestructuringfromnevernocrash |
-| 1210 | Implement Classfieldsupernotaccessiblejs | spike | frontend/syntax | class: blocked | Implement Classfieldsupernotaccessiblejs |
 | 1211 | Implement Classfieldsbrokenconstructoremitnocrash | spike | frontend/syntax | class: blocked | Implement Classfieldsbrokenconstructoremitnocrash |
 | 1212 | Implement Classfunctionmerging Import Export | spike | frontend/syntax | class: blocked | Implement Classfunctionmerging Import Export |
 | 1223 | Implement Classmemberinitializerwithlamdascoping Import Export | spike | frontend/syntax | class: blocked | Implement Classmemberinitializerwithlamdascoping Import Export |
@@ -4986,6 +4986,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1207 | Implement Classfieldsuperaccessible | spike | frontend/syntax | see `issues/done/1207-implement-classFieldSuperAccessible.md` |
 | 1208 | Implement Classfieldsuperaccessiblejs | spike | frontend/syntax | see `issues/done/1208-implement-classFieldSuperAccessibleJs.md` |
 | 1209 | Implement Classfieldsupernotaccessible | spike | frontend/syntax | see `issues/done/1209-implement-classFieldSuperNotAccessible.md` |
+| 1210 | Implement Classfieldsupernotaccessiblejs | spike | frontend/syntax | see `issues/done/1210-implement-classFieldSuperNotAccessibleJs.md` |
 | 1213 | Implement Classfunctionmerging Parser Syntax | spike | frontend/syntax | see `issues/done/1213-implement-classFunctionMerging-parser-syntax.md` |
 | 1214 | Implement Classheritagewithtrailingseparator | spike | frontend/syntax | see `issues/done/1214-implement-classHeritageWithTrailingSeparator.md` |
 | 1215 | Implement Classimplementinginterfaceindexer | spike | frontend/syntax | see `issues/done/1215-implement-classImplementingInterfaceIndexer.md` |
