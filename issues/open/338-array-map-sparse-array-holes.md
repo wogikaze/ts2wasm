@@ -3,9 +3,9 @@ id: 338
 title: "Sparse array holes handling for Array.prototype.map"
 type: feature
 area: runtime/builtins
-class: blocked
+class: implementation-ready
 priority: P2
-depends_on: [403]
+depends_on: []
 blocks: []
 created: 2026-04-30
 updated: 2026-05-01
@@ -98,12 +98,15 @@ Final-state docs:
 
 Current state:
 
-- [x] updated: `current-state.md` records this issue as blocked on sparse array representation work
+- [x] updated: `current-state.md` records this issue as open sparse map execution work using the accepted sparse array representation contract
 
 ## Notes
 
-Sparse array representation may require changes to the array layout contract.
-Coordinate with runtime-abi team if array representation changes are needed.
+Sparse array representation is defined by `docs/14-runtime-abi.md`. Issue 403
+accepted a presence-bitmap array contract, frontend slot representation for
+elisions, lowered present/hole slots, numeric `index in array` presence checks,
+and map/spread observability. This issue should implement map behavior without
+redefining the representation.
 
 ## Completion evidence
 
@@ -146,3 +149,14 @@ Remaining:
 - Parser evidence: `crates/frontend/src/ast.rs` represents array literals as `Expr::Array { elements: Vec<Expr> }`, and `crates/frontend/src/parser/expressions.rs` pushes `self.expression()?` for each comma-separated element. There is no elision/hole node for `[1, , 3]`.
 - IR/backend evidence: `crates/ir/src/lowered/types.rs` represents arrays as dense `LoweredExpr::ArrayNew { elements: Vec<LoweredExpr> }`; `crates/ir/src/lowered/resolver_extra.rs` maps `Array.prototype.map` by iterating every dense element and callback-lowering each one; `crates/backend-wasm/src/expr_emit.rs` emits dense array literals through `emit_array_literal`.
 - Follow-up issue 403 was created for the sparse array representation contract. Issue 338 should remain blocked until that contract defines how frontend holes, lowered IR, runtime layout, `in` checks, and map result holes are represented.
+
+2026-05-01 child-403-sparse-hole-contract:
+
+- READY. Issue 403 moved the representation decision to `docs/14-runtime-abi.md`.
+- Implement this issue against `ArrayLiteralElement::Hole` / lowered present-hole
+  slots or an equivalent `ArrayNewSparse` path, presence-bit array layout, and
+  numeric `index in array` checks. Do not encode holes as ordinary `undefined`.
+- Exact fixture target: create fixture `array-map-sparse-holes.ts` under the existing core-semantics array fixture group; it should
+  cover callback call count, `0 in mapped`, `1 in mapped`, `2 in mapped`, mapped
+  values, and `mapped.length`.
+- Targeted validation: `cargo fmt --all --check`; `cargo nextest run -p ts2wasm-cli array_map`; `mise run update-issue-index -- --check`; `mise run check issues`.
