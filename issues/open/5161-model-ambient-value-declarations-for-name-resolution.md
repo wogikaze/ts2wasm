@@ -13,7 +13,7 @@ updated: 2026-05-06
 
 ## Summary
 
-The parser erases declaration-only ambient variables such as `declare var e: Ellement;` and `declare var b2: boolean;`, but the name resolver then rejects later runtime expressions that reference those names. This blocks references before the compiler can reach later contextual typing or assignment diagnostics.
+The parser erases declaration-only ambient variables such as `declare var e: Ellement;`, `declare var b2: boolean;`, and `declare let anys: Ari<any>;`, but the name resolver then rejects later runtime expressions that reference those names. This blocks references before the compiler can reach later contextual typing, assignment, or array filter diagnostics.
 
 ## Problem
 
@@ -26,6 +26,7 @@ Reference triage:
 ```sh
 python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/bestCommonTypeWithContextualTyping.ts
 python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/booleanAssignment.ts
+python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/booleanFilterAnyArray.ts
 ```
 
 Current compiler diagnostic:
@@ -33,6 +34,7 @@ Current compiler diagnostic:
 ```text
 UnresolvedName: unresolved name: `e` at 414..415
 UnresolvedName: unresolved name: `b2` at 177..179
+UnresolvedName: unresolved name: `anys` at 388..392
 ```
 
 Representative source:
@@ -54,6 +56,7 @@ Current compiler evidence:
 - AST erases the ambient variable declaration and keeps `arr`, `obj`, `conditional`, and `contextualOr`.
 - Smart triage visible symbols list `e` at line 13, but `resolve_names` reports `UnresolvedName` for the `e` inside `[e]`.
 - `booleanAssignment.ts` has the same shape: visible-symbol extraction lists `b2` from `declare var b2:boolean;`, but `resolve_names` reports `UnresolvedName` for `b2` in `b = b2`.
+- `booleanFilterAnyArray.ts` has the same shape with `declare let anys: Ari<any>;`: tokens and AST succeed, visible-symbol extraction lists `anys`, and `resolve_names` reports `UnresolvedName` for `anys` in `anys.filter(Bullean)`.
 
 TypeScript oracle evidence:
 
@@ -105,6 +108,7 @@ Do not touch:
 - [ ] `declare var e: Ellement; var arr = [e];` no longer reports `UnresolvedName` for `e`.
 - [ ] `declare const c: number; var obj = { c };` resolves the ambient value name without emitting a runtime declaration.
 - [ ] `declare var b2: boolean; b = b2;` resolves the ambient value name without emitting a runtime declaration.
+- [ ] `declare let anys: Ari<any>; var xs = anys.filter(Bullean);` resolves the ambient value name before later filter/type-predicate behavior is evaluated.
 - [ ] Ambient declarations with initializers, such as `declare var e = 1;`, remain rejected.
 - [ ] `python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/bestCommonTypeWithContextualTyping.ts` no longer reports `UnresolvedName: unresolved name: \`e\``.
 
@@ -118,6 +122,7 @@ cargo nextest run -p ts2wasm-frontend
 cargo nextest run -p ts2wasm-ir
 python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/bestCommonTypeWithContextualTyping.ts
 python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/booleanAssignment.ts
+python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/booleanFilterAnyArray.ts
 ```
 
 Impacted commands:
@@ -146,7 +151,7 @@ Follow-up issues:
 
 ## Notes
 
-Split from generated bucket `1044` on 2026-05-06. Generated bucket `1081` was folded in on the same date after fresh triage showed the same ambient value declaration name-resolution gap for `declare var b2:boolean;`. Existing ambient-erasure work made declaration-only syntax parseable; this slice is specifically about preserving enough erased metadata for name resolution.
+Split from generated bucket `1044` on 2026-05-06. Generated buckets `1081` and `1082` were folded in on the same date after fresh triage showed the same ambient value declaration name-resolution gap for `declare var b2:boolean;` and `declare let anys: Ari<any>;`. Existing ambient-erasure work made declaration-only syntax parseable; this slice is specifically about preserving enough erased metadata for name resolution.
 
 ## Completion evidence
 
