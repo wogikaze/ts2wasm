@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 4 | 3 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4494 | 3652 | 842 |
+| frontend | 4495 | 3652 | 843 |
 | harness | 1 | 0 | 1 |
 | ir | 57 | 35 | 22 |
 | issues | 4 | 0 | 4 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5130 | 3935 | 1195 |
+| total | 5131 | 3935 | 1196 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -50,7 +50,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 5000 (Meta: TypeScript Compiler Parser Syntax Coverage) [done/design] ch:490 open:420 done:70
 ├── 5002 (Meta: TypeScript Compiler Type System Coverage) [done/done] ch:234 open:224 done:10 (also ← 5005)
 ├── 5003 (Meta: TypeScript Compiler Declaration Emit Coverage) [done/done] ch:102 open:91 done:11 (also ← 5001)
-5001 (Meta: TypeScript Compiler Semantic Analysis Coverage) [done/done] ch:594 open:342 done:252
+5001 (Meta: TypeScript Compiler Semantic Analysis Coverage) [done/done] ch:594 open:341 done:253
 5004 (Meta: Runtime Builtins Coverage (test262) (audit reopened #5004)) [done/done] ch:24 open:3 done:21
 5005 (Meta: TypeScript Compiler Name Resolution Coverage) [done/done] ch:421 open:373 done:48
 ├── 5006 (Meta: TypeScript Compiler Scope Analysis Coverage) [done/done] ch:29 open:21 done:8
@@ -67,7 +67,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | Order | ID | Title | State | Class | Area | Priority | Depends on | Direct children | Open children | Done children |
 |-----:|---:|------|-------|-------|------|--------:|-----------:|----------------:|--------------:|--------------:|
 | 1 | 5000 | Meta: TypeScript Compiler Parser Syntax Coverage | done | design | frontend/syntax | P1 | - | 490 | 420 | 70 |
-| 2 | 5001 | Meta: TypeScript Compiler Semantic Analysis Coverage | done | done | frontend/semantics | P1 | - | 594 | 342 | 252 |
+| 2 | 5001 | Meta: TypeScript Compiler Semantic Analysis Coverage | done | done | frontend/semantics | P1 | - | 594 | 341 | 253 |
 | 3 | 5004 | Meta: Runtime Builtins Coverage (test262) (audit reopened #5004) | done | done | runtime/builtins | P1 | - | 24 | 3 | 21 |
 | 4 | 5005 | Meta: TypeScript Compiler Name Resolution Coverage | done | done | frontend/resolver | P1 | - | 421 | 373 | 48 |
 | 5 | 5002 | Meta: TypeScript Compiler Type System Coverage | done | done | frontend/semantics | P1 | 5000, 5005 | 234 | 224 | 10 |
@@ -250,6 +250,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5293 | Handle recursive generic self-heritage class lowering | bug | frontend/semantics | implementation-ready | P1 |  | recursive generic self-heritage classes fail with an opaque |
 | 5294 | Resolve sibling namespaces in nested namespace scopes | feature | frontend/name-resolution | implementation-ready | P1 |  | nested namespace resolution does not predeclare or look up sibling |
 | 5295 | Resolve import-equals require to virtual node_modules class export | feature | frontend/module-resolution | implementation-ready | P1 |  | bare `require("myModule")` aliases do not bind to a virtual |
+| 5296 | Parse double-dot numeric literal property access | feature | frontend/parser | implementation-ready | P1 |  | the parser treats the first dot as member access and rejects the |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -641,7 +642,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1344 | Implement Commentleadingclosebrace | spike | frontend/resolver | class: blocked | Implement Commentleadingclosebrace |
 | 1345 | Implement Commentonambientmodule | spike | frontend/syntax | class: blocked | Implement Commentonambientmodule |
 | 1346 | Implement Commentonambientvariable | spike | frontend/resolver | class: blocked | Implement Commentonambientvariable |
-| 1405 | Implement Computedenummembersyntacticallystring Enum | spike | frontend/syntax | class: blocked | Implement Computedenummembersyntacticallystring Enum |
 | 1406 | Implement Computedenummembersyntacticallystring Parser Syntax | spike | frontend/syntax | class: triage-needed | Implement Computedenummembersyntacticallystring Parser Syntax |
 | 1407 | Implement Computedenumtypewidening | spike | frontend/syntax | class: triage-needed | Implement Computedenumtypewidening |
 | 1408 | Implement Computedpropertiesindestructuring | spike | frontend/syntax | class: blocked | Implement Computedpropertiesindestructuring |
@@ -5086,6 +5086,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1402 | Implement Compositegenericfunction | spike | reference/triage | see `issues/done/1402-implement-compositeGenericFunction.md` |
 | 1403 | Implement Compositewithnodemodulessourcefile | spike | frontend/syntax | see `issues/done/1403-implement-compositeWithNodeModulesSourceFile.md` |
 | 1404 | Implement Compoundvardecl | spike | frontend/syntax | see `issues/done/1404-implement-compoundVarDecl.md` |
+| 1405 | Implement Computedenummembersyntacticallystring Enum | spike | frontend/syntax | see `issues/done/1405-implement-computedEnumMemberSyntacticallyString-enum.md` |
 | 2050 | Implement Duplicatelocalvariable Duplicate Local | spike | reference/triage | see `issues/done/2050-implement-duplicateLocalVariable-duplicate-local.md` |
 | 3002 | Implement Isolateddeclarationerrorsdefault | spike | runtime/builtins | see `issues/done/3002-implement-isolatedDeclarationErrorsDefault.md` |
 | 3131 | Implement Jsxfactorynotidentifierorqualifiedname | spike | reference/triage | see `issues/done/3131-implement-jsxFactoryNotIdentifierOrQualifiedName.md` |
