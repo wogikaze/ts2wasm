@@ -13,7 +13,7 @@ updated: 2026-05-06
 
 ## Summary
 
-`blockScopedSameNameFunctionDeclarationES5.ts` and `blockScopedSameNameFunctionDeclarationES6.ts` now build successfully, but TypeScript reports TS2554 arity diagnostics for calls that resolve to the wrong same-name function signature.
+The `blockScopedSameNameFunctionDeclarationES*` and `blockScopedSameNameFunctionDeclarationStrictES*` cases now pass frontend resolution, but TypeScript reports TS2554 arity diagnostics for calls that resolve to the wrong same-name function signature.
 
 ## Problem
 
@@ -42,19 +42,22 @@ Reference triage:
 ```sh
 python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/blockScopedSameNameFunctionDeclarationES5.ts
 python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/blockScopedSameNameFunctionDeclarationES6.ts
+python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/blockScopedSameNameFunctionDeclarationStrictES5.ts
+python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/blockScopedSameNameFunctionDeclarationStrictES6.ts
 ```
 
 Current compiler diagnostic:
 
 ```text
 BuildPass: ts2wasm build succeeded
+BackendIo: wat2wasm failed
 ```
 
 Compiler evidence:
 
-- Tokens, AST, and resolved IR succeed for both files.
+- Tokens, AST, and resolved IR succeed for all four files.
 - Resolved IR contains calls to `foo()` and `foo(10)` inside nested branches and after the outer function.
-- No compiler diagnostic is emitted for wrong argument counts.
+- No compiler diagnostic is emitted for wrong argument counts; strict ES6 reaches a later backend failure instead.
 
 TypeScript oracle evidence:
 
@@ -75,7 +78,7 @@ In scope:
 
 - [ ] Check resolved direct calls against the resolved user function's required parameter count.
 - [ ] Preserve the call-site span for wrong-arity diagnostics.
-- [ ] Add focused coverage for ES5 and ES6 same-name block-scoped function declarations.
+- [ ] Add focused coverage for non-strict and strict ES5/ES6 same-name block-scoped function declarations.
 
 Out of scope:
 
@@ -113,6 +116,8 @@ cargo fmt --all --check
 cargo nextest run -p ts2wasm-cli --test ir_lowering
 python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/blockScopedSameNameFunctionDeclarationES5.ts
 python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/blockScopedSameNameFunctionDeclarationES6.ts
+python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/blockScopedSameNameFunctionDeclarationStrictES5.ts
+python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/blockScopedSameNameFunctionDeclarationStrictES6.ts
 ```
 
 Impacted commands:
@@ -141,7 +146,7 @@ Follow-up issues:
 
 ## Notes
 
-Split from generated bucket `1077` on 2026-05-06. This is separate from builtin arity issues because the calls resolve to user-defined functions.
+Split from generated bucket `1077` on 2026-05-06. Generated bucket `1078` was folded in on the same date after fresh triage showed the strict-mode sibling has the same TS2554 user-function arity gap. This is separate from builtin arity issues because the calls resolve to user-defined functions.
 
 ## Completion evidence
 
