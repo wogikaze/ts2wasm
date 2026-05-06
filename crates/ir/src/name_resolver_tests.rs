@@ -1,7 +1,7 @@
 #[cfg(test)]
 mod tests {
     use crate::name_resolver;
-    use ts2wasm_frontend::{DiagCode, Expr, Span, Stmt};
+    use ts2wasm_frontend::{ArrayLiteralElement, DiagCode, Expr, Span, Stmt};
 
     #[test]
     fn test_resolve_variable_declaration() {
@@ -147,6 +147,40 @@ mod tests {
         assert!(result.is_err());
         let err = result.unwrap_err();
         assert!(err.message.contains("unresolved name"));
+    }
+
+    #[test]
+    fn rejects_iterator_type_only_member_value_use() {
+        let iterator_span = Span { start: 18, end: 26 };
+        let program = vec![Stmt::Let {
+            is_var: false,
+            name: "iterator".to_string(),
+            expr: Expr::Call {
+                callee: Box::new(Expr::Member {
+                    object: Box::new(Expr::Ident {
+                        name: "Iterator".to_string(),
+                        span: iterator_span,
+                    }),
+                    property: "from".to_string(),
+                    span: Span { start: 18, end: 31 },
+                }),
+                args: vec![Expr::Array {
+                    elements: vec![ArrayLiteralElement::Present(Expr::Number {
+                        value: 0,
+                        span: Span { start: 33, end: 34 },
+                    })],
+                    span: Span { start: 32, end: 35 },
+                }],
+                span: Span { start: 18, end: 36 },
+            },
+            span: Span { start: 0, end: 37 },
+        }];
+
+        let err = name_resolver::resolve_names(&program).unwrap_err();
+        assert_eq!(err.code, DiagCode::TypeScriptTypeCheck);
+        assert!(err.message.contains("TS2693"));
+        assert!(err.message.contains("'Iterator' only refers to a type"));
+        assert_eq!(err.span, Some(iterator_span));
     }
 
     #[test]

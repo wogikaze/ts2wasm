@@ -65,10 +65,10 @@ distinguish TypeScript type/value errors from genuine missing runtime globals.
 
 In scope:
 
-- [ ] Add a type-only value-use diagnostic path for `Iterator` value-position identifiers.
-- [ ] Preserve ordinary `UnresolvedName` for genuinely unknown identifiers.
-- [ ] Add focused resolver or CLI coverage for `Iterator.from([0])`.
-- [ ] Re-run `builtinIterator.ts` triage and record the next narrower blocker.
+- [x] Add a type-only value-use diagnostic path for `Iterator` value-position identifiers.
+- [x] Preserve ordinary `UnresolvedName` for genuinely unknown identifiers.
+- [x] Add focused resolver or CLI coverage for `Iterator.from([0])`.
+- [x] Re-run `builtinIterator.ts` triage and record the next narrower blocker.
 
 Out of scope:
 
@@ -91,10 +91,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] `builtinIterator.ts` no longer reports generic `UnresolvedName` for the first `Iterator` value use.
-- [ ] A focused test covers `Iterator.from([0])` and asserts the narrower diagnostic.
-- [ ] Existing unresolved-name coverage for unknown identifiers still passes.
-- [ ] Follow-up work is represented if triage advances to iterator helper runtime or member diagnostics.
+- [x] `builtinIterator.ts` no longer reports generic `UnresolvedName` for the first `Iterator` value use.
+- [x] A focused test covers `Iterator.from([0])` and asserts the narrower diagnostic.
+- [x] Existing unresolved-name coverage for unknown identifiers still passes.
+- [x] Follow-up work is represented if triage advances to iterator helper runtime or member diagnostics.
 
 ## Validation
 
@@ -120,15 +120,16 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] not affected
+- [x] not affected
+- [x] diagnostic state recorded in this issue
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 
@@ -142,16 +143,24 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- `...`
+- this commit: ir: report Iterator type-only value use
 
 Validation result:
 
 ```text
-command:
-result:
-date:
+command: cargo fmt --all --check
+result: pass
+date: 2026-05-06
+
+command: cargo nextest run -p ts2wasm-ir name_resolver
+result: pass; 20 tests passed
+date: 2026-05-06
+
+command: cargo build -q -p ts2wasm-cli && python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/builtinIterator.ts
+result: pass for issue 5223; first Iterator value use now reports TypeScriptTypeCheck TS2693 instead of generic UnresolvedName
+date: 2026-05-06
 ```
 
 Remaining risks:
 
-- none
+- `builtinIterator.ts` still contains later iterator helper and interface diagnostics from the TypeScript oracle; those are not runtime support tasks in this diagnostic slice.

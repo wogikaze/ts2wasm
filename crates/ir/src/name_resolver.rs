@@ -640,6 +640,8 @@ impl NameResolver {
                         name: name.clone(),
                         span: *span,
                     })
+                } else if is_type_only_ambient_global(name) {
+                    Err(type_only_value_use_diagnostic(name, *span))
                 } else {
                     if name == "arguments" {
                         return Err(unsupported_arguments_outside_function(*span));
@@ -1006,6 +1008,9 @@ impl NameResolver {
                         span: *span,
                     });
                 }
+                if is_type_only_ambient_global(name) {
+                    return Err(type_only_value_use_diagnostic(name, *span));
+                }
                 Err(Diagnostic {
                     code: DiagCode::UnresolvedName,
                     message: format!("unresolved name: `{name}`"),
@@ -1238,6 +1243,9 @@ impl NameResolver {
             if name == "arguments" {
                 return Err(unsupported_arguments_outside_function(span));
             }
+            if is_type_only_ambient_global(name) {
+                return Err(type_only_value_use_diagnostic(name, span));
+            }
             Err(Diagnostic {
                 code: DiagCode::UnresolvedName,
                 message: format!("unresolved name: `{name}`"),
@@ -1304,6 +1312,20 @@ fn unsupported_class_value(name: &str, span: Span) -> Diagnostic {
         code: DiagCode::UnsupportedSyntax,
         message: format!(
             "issue-5011: class `{name}` cannot be used as a value — class runtime is not yet supported"
+        ),
+        span: Some(span),
+    }
+}
+
+fn is_type_only_ambient_global(name: &str) -> bool {
+    matches!(name, "Iterator")
+}
+
+fn type_only_value_use_diagnostic(name: &str, span: Span) -> Diagnostic {
+    Diagnostic {
+        code: DiagCode::TypeScriptTypeCheck,
+        message: format!(
+            "typescript TS2693 Error: '{name}' only refers to a type, but is being used as a value here."
         ),
         span: Some(span),
     }
