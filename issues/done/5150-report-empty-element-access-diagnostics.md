@@ -166,3 +166,9 @@ Implemented empty element access diagnostic in parser:
 - Added RightBracket peek after LeftBracket consume in expression parsing
 - Returns issue-5150 diagnostic instead of generic unsupported expression
 - Tested: number[] → issue-5150, a[1] → works correctly (2)
+
+Additional stale bucket closed against this completed diagnostic:
+
+- `issues/done/1104-implement-cannotInvokeNewOnErrorExpression.md`:
+  `new M.ClassA[]` now reproduces the targeted `issue-5150` empty element
+  access diagnostic, matching TypeScript TS1011 for the empty `[]` portion.

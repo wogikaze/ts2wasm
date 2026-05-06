@@ -129,7 +129,7 @@ Follow-up issues:
 - `issues/done/1059-implement-binderBinaryExpressionStressJs.md` - Implement Binderbinaryexpressionstressjs (same feature label, same group key)
 - `issues/done/106-implement-accessors.md` - Implement Accessors (same feature label, same group key)
 - `issues/done/1065-implement-bitwiseCompoundAssignmentOperators.md` - Implement Bitwisecompoundassignmentoperators (same feature label, same group key)
-- `issues/open/1086-implement-builtinIterator.md` - Implement Builtiniterator (same feature label, same group key)
+- `issues/done/1086-implement-builtinIterator.md` - Implement Builtiniterator (same feature label, same group key; superseded by issue 5191)
 
 ## Smart triage
 

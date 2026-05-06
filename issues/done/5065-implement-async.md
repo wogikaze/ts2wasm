@@ -129,7 +129,7 @@ Follow-up issues:
 - `issues/done/1002-implement-augmentedTypesEnum-parser-syntax.md` - Implement Augmentedtypesenum Parser Syntax (same feature label, same group key, title overlap)
 - `issues/done/1018-implement-awaitInClassInAsyncFunction.md` - Implement Awaitinclassinasyncfunction (same feature label, same group key, title overlap)
 - `issues/done/1019-implement-awaitInNonAsyncFunction.md` - Implement Awaitinnonasyncfunction (same feature label, same group key, title overlap)
-- `issues/open/1099-implement-callOverloads-parser-syntax.md` - Implement Calloverloads Parser Syntax (same feature label, same group key, title overlap)
+- `issues/done/1099-implement-callOverloads-parser-syntax.md` - Implement Calloverloads Parser Syntax (same feature label, same group key, title overlap; closed into issues 5199 and 5200)
 - `issues/open/1111-implement-capturedLetConstInLoop-parser-syntax.md` - Implement Capturedletconstinloop Parser Syntax (same feature label, same group key, title overlap)
 - `issues/open/1143-implement-checkSuperCallBeforeThisAccessing-parser-syntax.md` - Implement Checksupercallbeforethisaccessing Parser Syntax (same feature label, same group key, title overlap)
 - `issues/open/1164-implement-circularReferenceInReturnType-parser-syntax.md` - Implement Circularreferenceinreturntype Parser Syntax (same feature label, same group key, title overlap)

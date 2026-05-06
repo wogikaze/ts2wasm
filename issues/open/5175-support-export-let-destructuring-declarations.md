@@ -1,6 +1,6 @@
 ---
 id: 5175
-title: "Support export let destructuring declarations"
+title: "Support export let declarations"
 type: feature
 area: frontend/module-syntax
 class: implementation-ready
@@ -13,13 +13,13 @@ updated: 2026-05-06
 
 ## Summary
 
-Support the narrow `export let` destructuring declaration form that blocks `bindingPatternOmittedExpressionNesting.ts`.
+Support narrow `export let` declaration forms that currently stop at the generic variable-export parser/module boundary, including the destructuring form from `bindingPatternOmittedExpressionNesting.ts` and the identifier declarations from `cacheResolutions.ts`.
 
 ## Problem
 
-`bindingPatternOmittedExpressionNesting.ts` starts with `export let [,,[,[],,[],]] = undefined as any;`. Tokens succeed, but the parser stops immediately with `issue-055: unsupported variable export` before the destructuring pattern can be parsed or triaged.
+`bindingPatternOmittedExpressionNesting.ts` starts with `export let [,,[,[],,[],]] = undefined as any;`. `cacheResolutions.ts` contains repeated `export let x = 1;` declarations. In both cases, tokens succeed but the parser stops immediately with `issue-055: unsupported variable export` before the declaration can be parsed or triaged.
 
-Problem: the parser has an `export const <ident> = ...` slice, but `export let` destructuring declarations still stop at the generic variable-export boundary.
+Problem: the parser has an `export const <ident> = ...` slice, but `export let` declarations still stop at the generic variable-export boundary.
 
 ## Current failure
 
@@ -27,36 +27,42 @@ Representative reference triage:
 
 ```sh
 python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/bindingPatternOmittedExpressionNesting.ts
+python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/cacheResolutions.ts
 ```
 
 Current compiler diagnostic:
 
 ```text
 UnsupportedModule: issue-055: unsupported variable export; module resolution and loading are not implemented at 64..70
+UnsupportedModule: issue-055: unsupported variable export; module resolution and loading are not implemented at 114..120
 ```
 
 Source context:
 
 ```ts
 export let [,,[,[],,[],]] = undefined as any;
+export let x = 1;
 ```
 
 Compiler evidence:
 
-- Tokens succeed for `export`, `let`, nested array elisions, and `undefined as any`.
+- Tokens succeed for `export`, `let`, nested array elisions, `undefined as any`, and repeated `export let x = 1;` declarations.
 - AST construction fails at `export` before building a declaration node.
-- TypeScript oracle accepts the file with no diagnostics.
+- TypeScript oracle accepts `bindingPatternOmittedExpressionNesting.ts` with no diagnostics.
+- TypeScript oracle accepts the `export let` syntax in `cacheResolutions.ts` and reports later TS2451 duplicate block-scoped variable diagnostics for `x`.
 
 ## Desired final state
 
-The parser/module frontend accepts this exported `let` destructuring declaration far enough that the current `unsupported variable export` blocker is gone.
+The parser/module frontend accepts exported `let` declarations far enough that the current `unsupported variable export` blockers are gone.
 
 ## Scope
 
 In scope:
 
+- [ ] Parse `export let <identifier> = <expr>;`.
 - [ ] Parse `export let <binding-pattern> = <expr>;` for array binding patterns with elisions.
 - [ ] Preserve the existing `export const <identifier> = <expr>` behavior.
+- [ ] Add focused coverage for `export let x = 1;`.
 - [ ] Add focused coverage for `export let [,,[,[],,[],]] = undefined as any;`.
 
 Out of scope:
@@ -82,8 +88,10 @@ Do not touch:
 ## Acceptance criteria
 
 - [ ] A focused parser test accepts `export let [,,[,[],,[],]] = undefined as any;`.
+- [ ] A focused parser test accepts `export let x = 1;`.
 - [ ] Existing `export const value = 1;` tests still pass.
 - [ ] `python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/bindingPatternOmittedExpressionNesting.ts` no longer reports `unsupported variable export`.
+- [ ] `python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/cacheResolutions.ts` no longer reports `unsupported variable export`.
 
 ## Validation
 
@@ -93,6 +101,7 @@ Required commands:
 cargo fmt --all --check
 cargo nextest run -p ts2wasm-frontend export_let
 python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/bindingPatternOmittedExpressionNesting.ts
+python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/cacheResolutions.ts
 ```
 
 Impacted commands:
@@ -121,7 +130,7 @@ Follow-up issues:
 
 ## Notes
 
-Split from generated bucket `1063` on 2026-05-06. Later declaration emit or module export metadata gaps should be triaged separately after this parser boundary advances.
+Split from generated bucket `1063` on 2026-05-06. Generated bucket `1088` was folded in on the same date after fresh triage showed the same `export let` variable-export boundary for `export let x = 1;`. Later declaration emit, duplicate binding diagnostics, or module export metadata gaps should be triaged separately after this parser boundary advances.
 
 ## Completion evidence
 

@@ -5,10 +5,10 @@ type: spike
 area: frontend/resolver
 class: blocked
 priority: P1
-depends_on: [5005]
+depends_on: [5203]
 blocks: []
 created: 2026-05-01
-updated: 2026-05-01
+updated: 2026-05-06
 ---
 
 ## Summary
@@ -43,10 +43,10 @@ This generated bucket is either split into implementation-ready child issues or 
 
 In scope:
 
-- [ ] Inspect the smart triage report below
-- [ ] Confirm whether existing open/done issues already cover this bucket
-- [ ] Split one feature family, one observable behavior, or one fixed reference window into child issues
-- [ ] Preserve exact reproduction commands and representative AST/diagnostic evidence in each child issue
+- [x] Inspect the smart triage report below
+- [x] Confirm whether existing open/done issues already cover this bucket
+- [x] Split one feature family, one observable behavior, or one fixed reference window into child issues
+- [x] Preserve exact reproduction commands and representative AST/diagnostic evidence in each child issue
 
 Out of scope:
 
@@ -68,10 +68,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] Duplicate candidates below are confirmed as no-match or this issue is superseded
-- [ ] At least one child issue contains an exact `mise run reference-triage -- ...` command
-- [ ] Child issue includes failing path, diagnostic code, source context, visible symbols, and parser/TypeScript AST evidence
-- [ ] Child issue acceptance names the exact fixture/reference path and diagnostic/stdout change
+- [x] Duplicate candidates below are confirmed as no-match or this issue is superseded
+- [x] At least one child issue contains an exact `mise run reference-triage -- ...` command
+- [x] Child issue includes failing path, diagnostic code, source context, visible symbols, and parser/TypeScript AST evidence
+- [x] Child issue acceptance names the exact fixture/reference path and diagnostic/stdout change
 
 ## Validation
 
@@ -98,15 +98,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] updated: `current-state.md` (repo root)
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] `issues/open/5203-report-indexed-new-type-only-callee-diagnostics.md`
 
 ## Notes
 
@@ -120,7 +120,42 @@ Follow-up issues:
 
 ## Smart triage
 
-Not generated. Rerun with `--triage-limit 1` or higher.
+### Smart triage: Triage class: cannotInvokeNewOnIndexExpression
+
+- Issue class: `triage-needed`
+- Feature label: `class`
+- Diagnostic: `UnsupportedSyntax` / `issue-062`
+- Path: `reference/typescript/tests/cases/compiler/cannotInvokeNewOnIndexExpression.ts`
+
+Reproduction:
+
+```sh
+mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/cannotInvokeNewOnIndexExpression.ts
+```
+
+Failure:
+
+```text
+error: [UnsupportedSyntax] issue-062: new requires a class name identifier at 37..47
+```
+
+Source context:
+
+```ts
+var test: any[] = new any[1];
+```
+
+Evidence:
+
+- Tokens and AST succeed.
+- AST contains `New { expr: Index { object: Ident any, index: Number 1 } }`.
+- TypeScript oracle reports TS2693: `'any' only refers to a type, but is being
+  used as a value here.`
+- Existing class buckets are no-match owners because this blocker is the
+  indexed `new` callee hiding a type-only value-use diagnostic.
+- Child issue
+  `issues/open/5203-report-indexed-new-type-only-callee-diagnostics.md` owns
+  the implementation slice.
 
 ## Completion evidence
 
@@ -128,14 +163,14 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- `...`
+- `...` pending
 
 Validation result:
 
 ```text
-command:
-result:
-date:
+command: python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/cannotInvokeNewOnIndexExpression.ts
+result: pass; reproduced issue-062 generic new callee guard for indexed type-only callee
+date: 2026-05-06
 ```
 
 Remaining risks:

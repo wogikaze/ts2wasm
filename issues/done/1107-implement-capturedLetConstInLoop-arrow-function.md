@@ -5,10 +5,10 @@ type: spike
 area: frontend/syntax
 class: blocked
 priority: P1
-depends_on: [5001]
+depends_on: []
 blocks: []
 created: 2026-05-01
-updated: 2026-05-01
+updated: 2026-05-06
 ---
 
 ## Summary
@@ -43,10 +43,10 @@ This generated bucket is either split into implementation-ready child issues or 
 
 In scope:
 
-- [ ] Inspect the smart triage report below
-- [ ] Confirm whether existing open/done issues already cover this bucket
-- [ ] Split one feature family, one observable behavior, or one fixed reference window into child issues
-- [ ] Preserve exact reproduction commands and representative AST/diagnostic evidence in each child issue
+- [x] Inspect the smart triage report below
+- [x] Confirm whether existing open/done issues already cover this bucket
+- [x] Split one feature family, one observable behavior, or one fixed reference window into child issues
+- [x] Preserve exact reproduction commands and representative AST/diagnostic evidence in each child issue
 
 Out of scope:
 
@@ -68,10 +68,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] Duplicate candidates below are confirmed as no-match or this issue is superseded
-- [ ] At least one child issue contains an exact `mise run reference-triage -- ...` command
-- [ ] Child issue includes failing path, diagnostic code, source context, visible symbols, and parser/TypeScript AST evidence
-- [ ] Child issue acceptance names the exact fixture/reference path and diagnostic/stdout change
+- [x] Duplicate candidates below are confirmed as no-match or this issue is superseded
+- [x] At least one child issue contains an exact `mise run reference-triage -- ...` command
+- [x] Child issue includes failing path, diagnostic code, source context, visible symbols, and parser/TypeScript AST evidence
+- [x] Child issue acceptance names the exact fixture/reference path and diagnostic/stdout change
 
 ## Validation
 
@@ -98,15 +98,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] updated: `current-state.md` (repo root)
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] none; both affected reference files now build
 
 ## Notes
 
@@ -127,7 +127,50 @@ Follow-up issues:
 
 ## Smart triage
 
-Not generated. Rerun with `--triage-limit 1` or higher.
+### Smart triage: Build pass: capturedLetConstInLoop10
+
+- Issue class: `none`
+- Feature label: `build-pass`
+- Diagnostic: `BuildPass` / `pass`
+- Path: `reference/typescript/tests/cases/compiler/capturedLetConstInLoop10.ts`
+
+Reproduction:
+
+```sh
+mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/capturedLetConstInLoop10.ts
+```
+
+Result:
+
+```text
+ts2wasm build succeeded
+```
+
+### Smart triage: Build pass: capturedLetConstInLoop10_ES6
+
+- Issue class: `none`
+- Feature label: `build-pass`
+- Diagnostic: `BuildPass` / `pass`
+- Path: `reference/typescript/tests/cases/compiler/capturedLetConstInLoop10_ES6.ts`
+
+Reproduction:
+
+```sh
+mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/capturedLetConstInLoop10_ES6.ts
+```
+
+Result:
+
+```text
+ts2wasm build succeeded
+```
+
+Evidence:
+
+- Tokens, AST, and resolved dumps succeed for both affected files.
+- TypeScript oracle reports no diagnostics for both affected files.
+- No implementation-ready child issue is needed because no compiler blocker
+  remains in this generated bucket.
 
 ## Completion evidence
 
@@ -135,14 +178,18 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- `...`
+- `...` pending
 
 Validation result:
 
 ```text
-command:
-result:
-date:
+command: python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/capturedLetConstInLoop10.ts
+result: pass; build succeeded
+date: 2026-05-06
+
+command: python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/capturedLetConstInLoop10_ES6.ts
+result: pass; build succeeded
+date: 2026-05-06
 ```
 
 Remaining risks:

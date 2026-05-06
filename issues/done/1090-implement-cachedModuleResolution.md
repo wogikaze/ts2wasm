@@ -5,10 +5,10 @@ type: spike
 area: frontend/syntax
 class: blocked
 priority: P1
-depends_on: [432]
+depends_on: [5193]
 blocks: []
 created: 2026-05-01
-updated: 2026-05-01
+updated: 2026-05-06
 ---
 
 ## Summary
@@ -43,10 +43,10 @@ This generated bucket is either split into implementation-ready child issues or 
 
 In scope:
 
-- [ ] Inspect the smart triage report below
-- [ ] Confirm whether existing open/done issues already cover this bucket
-- [ ] Split one feature family, one observable behavior, or one fixed reference window into child issues
-- [ ] Preserve exact reproduction commands and representative AST/diagnostic evidence in each child issue
+- [x] Inspect the smart triage report below
+- [x] Confirm whether existing open/done issues already cover this bucket
+- [x] Split one feature family, one observable behavior, or one fixed reference window into child issues
+- [x] Preserve exact reproduction commands and representative AST/diagnostic evidence in each child issue
 
 Out of scope:
 
@@ -68,10 +68,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] Duplicate candidates below are confirmed as no-match or this issue is superseded
-- [ ] At least one child issue contains an exact `mise run reference-triage -- ...` command
-- [ ] Child issue includes failing path, diagnostic code, source context, visible symbols, and parser/TypeScript AST evidence
-- [ ] Child issue acceptance names the exact fixture/reference path and diagnostic/stdout change
+- [x] Duplicate candidates below are confirmed as no-match or this issue is superseded
+- [x] At least one child issue contains an exact `mise run reference-triage -- ...` command
+- [x] Child issue includes failing path, diagnostic code, source context, visible symbols, and parser/TypeScript AST evidence
+- [x] Child issue acceptance names the exact fixture/reference path and diagnostic/stdout change
 
 ## Validation
 
@@ -98,17 +98,24 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] updated: `current-state.md` (repo root)
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] created: `issues/open/5193-parse-asi-after-ambient-variable-declarations.md`
 
 ## Notes
+
+Superseded by `issues/open/5193-parse-asi-after-ambient-variable-declarations.md`.
+Fresh triage shows the generated bucket's first actionable blocker is ASI after
+`export declare let x: number` in the virtual `foo.d.ts` section. The resolved
+dump also shows a downstream `issue-232` unsupported non-local module specifier
+for `foo`, which matches the existing module-graph boundary after the parser
+advances.
 
 ## Affected test files
 
@@ -128,24 +135,32 @@ Follow-up issues:
 
 ## Smart triage
 
-Not generated. Rerun with `--triage-limit 1` or higher.
+Generated on 2026-05-06:
+
+- command: `python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/cachedModuleResolution2.ts`
+- top diagnostic: `UnsupportedTypeScriptSyntax`, `issue-400: unterminated ambient variable declaration type at 7..14`
+- parser tokens: `export declare let x: number` followed by `import` with no semicolon token
+- resolved dump: reaches `UnsupportedModule`, `issue-232: unsupported non-local module specifier foo`
+- TypeScript oracle: reports duplicate identifier `x`, exported/local merge diagnostics, and TS2307 for `foo`
+- follow-up: `issues/open/5193-parse-asi-after-ambient-variable-declarations.md`
 
 ## Completion evidence
 
-Fill only when moving to `done/`.
+Closed as a generated triage bucket. The first actionable blocker is tracked by
+`issues/open/5193-parse-asi-after-ambient-variable-declarations.md`.
 
 Commits:
 
-- `...`
+- this close/split commit
 
 Validation result:
 
 ```text
-command:
-result:
-date:
+command: python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/cachedModuleResolution2.ts
+result: fail with issue-400 ambient variable ASI diagnostic; downstream dump reaches issue-232 for foo
+date: 2026-05-06
 ```
 
 Remaining risks:
 
-- none
+- Follow-up issue 5193 still needs implementation.
