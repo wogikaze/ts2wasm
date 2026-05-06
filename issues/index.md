@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 1 | 0 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4412 | 3778 | 634 |
+| frontend | 4413 | 3778 | 635 |
 | harness | 1 | 0 | 1 |
 | ir | 31 | 9 | 22 |
 | issues | 4 | 0 | 4 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5018 | 4044 | 974 |
+| total | 5019 | 4044 | 975 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -50,7 +50,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 5000 (Meta: TypeScript Compiler Parser Syntax Coverage) [done/design] ch:494 open:427 done:67
 ├── 5002 (Meta: TypeScript Compiler Type System Coverage) [done/done] ch:242 open:234 done:8 (also ← 5005)
 ├── 5003 (Meta: TypeScript Compiler Declaration Emit Coverage) [done/done] ch:103 open:92 done:11 (also ← 5001)
-5001 (Meta: TypeScript Compiler Semantic Analysis Coverage) [done/done] ch:612 open:365 done:247
+5001 (Meta: TypeScript Compiler Semantic Analysis Coverage) [done/done] ch:611 open:364 done:247
 5004 (Meta: Runtime Builtins Coverage (test262) (audit reopened #5004)) [done/done] ch:24 open:3 done:21
 5005 (Meta: TypeScript Compiler Name Resolution Coverage) [done/done] ch:440 open:393 done:47
 ├── 5006 (Meta: TypeScript Compiler Scope Analysis Coverage) [done/done] ch:30 open:22 done:8
@@ -67,7 +67,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | Order | ID | Title | State | Class | Area | Priority | Depends on | Direct children | Open children | Done children |
 |-----:|---:|------|-------|-------|------|--------:|-----------:|----------------:|--------------:|--------------:|
 | 1 | 5000 | Meta: TypeScript Compiler Parser Syntax Coverage | done | design | frontend/syntax | P1 | - | 494 | 427 | 67 |
-| 2 | 5001 | Meta: TypeScript Compiler Semantic Analysis Coverage | done | done | frontend/semantics | P1 | - | 612 | 365 | 247 |
+| 2 | 5001 | Meta: TypeScript Compiler Semantic Analysis Coverage | done | done | frontend/semantics | P1 | - | 611 | 364 | 247 |
 | 3 | 5004 | Meta: Runtime Builtins Coverage (test262) (audit reopened #5004) | done | done | runtime/builtins | P1 | - | 24 | 3 | 21 |
 | 4 | 5005 | Meta: TypeScript Compiler Name Resolution Coverage | done | done | frontend/resolver | P1 | - | 440 | 393 | 47 |
 | 5 | 5002 | Meta: TypeScript Compiler Type System Coverage | done | done | frontend/semantics | P1 | 5000, 5005 | 242 | 234 | 8 |
@@ -138,6 +138,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5181 | Support prefix update expressions in call arguments | feature | frontend/semantics | implementation-ready | P1 |  | identifier prefix update expressions in call arguments are parser-accepted but resolver/lowering-unsupported. |
 | 5182 | Parse comma-separated for update expressions | feature | frontend/syntax | implementation-ready | P1 |  | comma-separated for-loop update expressions are parser-unsupported, blocking the block-scoped loop reassignment refer... |
 | 5183 | Report typed getter null return diagnostics | feature | frontend/semantics | implementation-ready | P1 |  | typed class getter return annotations are erased before return-expression diagnostics are checked. |
+| 5184 | Parse const enum declarations | feature | frontend/syntax | implementation-ready | P1 |  | `const enum` declarations are parser-unsupported and are misclassified as malformed `const` variable declarations. |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -413,7 +414,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 772 | Implement Augmentedtypesvar | spike | frontend/syntax | class: blocked | Implement Augmentedtypesvar |
 | 773 | Implement Autoasiforstaticsinclassdeclaration | spike | frontend/syntax | class: triage-needed | Implement Autoasiforstaticsinclassdeclaration |
 | 775 | Implement Autotypeassignedusingdestructuringfromnevernocrash | spike | frontend/resolver | class: blocked | Implement Autotypeassignedusingdestructuringfromnevernocrash |
-| 1070 | Implement Blockscopedenumvariablesusebeforedef Enum | spike | frontend/syntax | class: blocked | Implement Blockscopedenumvariablesusebeforedef Enum |
 | 1071 | Implement Blockscopedenumvariablesusebeforedef Import Export | spike | frontend/syntax | class: blocked | Implement Blockscopedenumvariablesusebeforedef Import Export |
 | 1072 | Implement Blockscopedfunctiondeclarationes | spike | frontend/resolver | class: blocked | Implement Blockscopedfunctiondeclarationes |
 | 1073 | Implement Blockscopedfunctiondeclarationinstrictclass | spike | frontend/resolver | class: blocked | Implement Blockscopedfunctiondeclarationinstrictclass |
@@ -4976,6 +4976,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1067 | Implement Blockscopedbindingusedbeforedef | spike | frontend/resolver | see `issues/done/1067-implement-blockScopedBindingUsedBeforeDef.md` |
 | 1068 | Implement Blockscopedbindingsreassignedinloop Name Resolution | spike | frontend/resolver | see `issues/done/1068-implement-blockScopedBindingsReassignedInLoop-name-resolution.md` |
 | 1069 | Implement Blockscopedbindingsreassignedinloop Scope Analysis | spike | frontend/resolver | see `issues/done/1069-implement-blockScopedBindingsReassignedInLoop-scope-analysis.md` |
+| 1070 | Implement Blockscopedenumvariablesusebeforedef Enum | spike | frontend/syntax | see `issues/done/1070-implement-blockScopedEnumVariablesUseBeforeDef-enum.md` |
 | 2050 | Implement Duplicatelocalvariable Duplicate Local | spike | reference/triage | see `issues/done/2050-implement-duplicateLocalVariable-duplicate-local.md` |
 | 3002 | Implement Isolateddeclarationerrorsdefault | spike | runtime/builtins | see `issues/done/3002-implement-isolatedDeclarationErrorsDefault.md` |
 | 3131 | Implement Jsxfactorynotidentifierorqualifiedname | spike | reference/triage | see `issues/done/3131-implement-jsxFactoryNotIdentifierOrQualifiedName.md` |
