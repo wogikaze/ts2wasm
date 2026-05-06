@@ -1252,13 +1252,9 @@ impl NameResolver {
                 span: Some(span),
             })
         } else if self.is_class_only(name) {
-            Err(Diagnostic {
-                code: DiagCode::UnsupportedSyntax,
-                message: format!(
-                    "issue-5011: class `{name}` used as a value is not yet supported; class declarations are partially supported (methods work, constructor/prototype/class-value not yet implemented)"
-                ),
-                span: Some(span),
-            })
+            // Class constructor used as expression value — let through to lowered resolver
+            // which will produce a ClassPrototype reference. Do not return an error here.
+            Ok(())
         } else {
             Ok(())
         }

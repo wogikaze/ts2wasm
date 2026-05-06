@@ -72,6 +72,9 @@ impl<'a> Resolver<'a> {
                         message: "issue-062d: `arguments` is only supported inside non-arrow functions in this milestone".to_owned(),
                         span: None,
                     }),
+                    Err(_) if self.class_constructor_ids.contains_key(name.as_str()) => {
+                        Ok(LoweredExpr::ClassPrototype(self.class_prototype_ref(name)?))
+                    }
                     Err(err) => Err(err),
                 }
             }
