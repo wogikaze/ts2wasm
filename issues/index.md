@@ -18,16 +18,16 @@ Issue files are the source of truth for work items. The generated section below 
 | docs | 2 | 0 | 2 |
 | frontend | 4472 | 3697 | 775 |
 | harness | 1 | 0 | 1 |
-| ir | 52 | 30 | 22 |
+| ir | 53 | 31 | 22 |
 | issues | 4 | 0 | 4 |
 | parser | 1 | 0 | 1 |
 | reference | 212 | 159 | 53 |
-| runtime | 265 | 88 | 177 |
+| runtime | 265 | 87 | 178 |
 | scripts | 3 | 1 | 2 |
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5102 | 3979 | 1123 |
+| total | 5103 | 3979 | 1124 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -222,6 +222,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5265 | Report missing class member identifier after modifier | feature | frontend/parser | implementation-ready | P1 |  | Report missing class member identifier after modifier |
 | 5266 | Support class constructor new of later class binding | feature | ir | implementation-ready | P1 |  | `reference/typescript/tests/cases/compiler/classOrderBug.ts` reports |
 | 5267 | Parse string literal class member names | feature | frontend | implementation-ready | P1 |  | `reference/typescript/tests/cases/compiler/classStaticPropertyAccess.ts` |
+| 5268 | Support derived constructor parameter properties after super | feature | ir | implementation-ready | P1 |  | `reference/typescript/tests/cases/compiler/classUpdateTests.ts` reports |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -522,7 +523,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1237 | Implement Classsideinheritance Parser Syntax | spike | frontend/syntax | class: blocked | Implement Classsideinheritance Parser Syntax |
 | 1240 | Implement Classstaticpropertytypeguard | spike | frontend/syntax | class: blocked | Implement Classstaticpropertytypeguard |
 | 1241 | Implement Classtypeparametersinstatics | spike | frontend/syntax | class: blocked | Implement Classtypeparametersinstatics |
-| 1242 | Implement Classupdatetests | spike | runtime/builtins | class: triage-needed | Implement Classupdatetests |
 | 1243 | Implement Classusedbeforeinitializedvariables | spike | frontend/syntax | class: triage-needed | Implement Classusedbeforeinitializedvariables |
 | 1244 | Implement Classvariancecircularity | spike | frontend/syntax | class: triage-needed | Implement Classvariancecircularity |
 | 1245 | Implement Classvarianceresolvecircularity | spike | frontend/syntax | class: triage-needed | Implement Classvarianceresolvecircularity |
@@ -5058,6 +5058,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1233 | Implement Classpropertyerroronnameonly | spike | runtime/builtins | see `issues/done/1233-implement-classPropertyErrorOnNameOnly.md` |
 | 1238 | Implement Classstaticinitializersusepropertiesbeforedeclaration | spike | frontend/syntax | see `issues/done/1238-implement-classStaticInitializersUsePropertiesBeforeDeclaration.md` |
 | 1239 | Implement Classstaticpropertyaccess | spike | frontend/syntax | see `issues/done/1239-implement-classStaticPropertyAccess.md` |
+| 1242 | Implement Classupdatetests | spike | runtime/builtins | see `issues/done/1242-implement-classUpdateTests.md` |
 | 2050 | Implement Duplicatelocalvariable Duplicate Local | spike | reference/triage | see `issues/done/2050-implement-duplicateLocalVariable-duplicate-local.md` |
 | 3002 | Implement Isolateddeclarationerrorsdefault | spike | runtime/builtins | see `issues/done/3002-implement-isolatedDeclarationErrorsDefault.md` |
 | 3131 | Implement Jsxfactorynotidentifierorqualifiedname | spike | reference/triage | see `issues/done/3131-implement-jsxFactoryNotIdentifierOrQualifiedName.md` |
