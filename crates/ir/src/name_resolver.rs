@@ -299,11 +299,60 @@ impl NameResolver {
                     span: *span,
                 })
             }
-            Stmt::ClassDecl { .. } => {
-                // Pass-through at the name resolution level — class methods are lowered as
-                // standalone functions by the lowered program builder (program.rs). The class
-                // statement itself is dropped. See the LIMITATION comment in program.rs.
-                Ok(stmt.clone())
+            Stmt::ClassDecl {
+                name,
+                extends,
+                body,
+                static_blocks,
+                private_elements,
+                span,
+            } => {
+                // Class methods are lowered as standalone functions by the lowered program
+                // builder (program.rs). The class statement itself is dropped. See the LIMITATION
+                // comment in program.rs.
+                //
+                // Filter out TypeScript overload signatures from the class body before they
+                // reach the function-name collection pass. An overload signature is a function
+                // declaration with an empty body whose name matches a concrete implementation
+                // (non-empty body) later in the class body.
+                let concrete_names: std::collections::HashSet<&str> = body
+                    .iter()
+                    .filter_map(|item| match item {
+                        Stmt::Function {
+                            name: method_name,
+                            body: method_body,
+                            ..
+                        } if !method_body.is_empty() => Some(method_name.as_str()),
+                        _ => None,
+                    })
+                    .collect();
+
+                let filtered_body: Vec<Stmt> = body
+                    .iter()
+                    .filter(|item| match item {
+                        Stmt::Function {
+                            name: method_name,
+                            body: method_body,
+                            ..
+                        } if method_body.is_empty()
+                            && concrete_names.contains(method_name.as_str()) =>
+                        {
+                            // Overload signature — skip; the concrete implementation follows.
+                            false
+                        }
+                        _ => true,
+                    })
+                    .cloned()
+                    .collect();
+
+                Ok(Stmt::ClassDecl {
+                    name: name.clone(),
+                    extends: extends.clone(),
+                    body: filtered_body,
+                    static_blocks: static_blocks.clone(),
+                    private_elements: private_elements.clone(),
+                    span: *span,
+                })
             }
             Stmt::TryCatch {
                 try_block,
