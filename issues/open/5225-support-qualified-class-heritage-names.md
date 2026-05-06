@@ -120,7 +120,7 @@ Not run:
 
 Split from generated bucket `issues/done/1131-implement-checkForObjectTooStrict.md`.
 
-The broader generated bucket `issues/open/1195-implement-classExtendingQualifiedName.md` is related, but this issue records the exact current blocker exposed by `checkForObjectTooStrict.ts`.
+The broader generated bucket `issues/done/1195-implement-classExtendingQualifiedName.md` is related, but this issue records the exact current blocker exposed by `checkForObjectTooStrict.ts`.
 
 ## Completion evidence
 
