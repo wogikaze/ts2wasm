@@ -71,11 +71,11 @@ The frontend preserves enough getter return type information to report the repre
 
 In scope:
 
-- [ ] Preserve class getter return type annotations for the focused `get Property(): Result` pattern.
-- [ ] Report a source-spanned diagnostic when a typed getter returning a class type directly returns `null`.
-- [ ] Keep unannotated getters such as `get Property() { return null; }` outside this diagnostic.
-- [ ] Add focused parser/frontend or compiler coverage for the annotated getter and unannotated sibling.
-- [ ] Re-run representative triage and confirm it no longer reports `BuildPass` for this hidden `TS2322`.
+- [x] Preserve class getter return type annotations for the focused `get Property(): Result` pattern.
+- [x] Report a source-spanned diagnostic when a typed getter returning a class type directly returns `null`.
+- [x] Keep unannotated getters such as `get Property() { return null; }` outside this diagnostic.
+- [x] Add focused parser/frontend or compiler coverage for the annotated getter and unannotated sibling.
+- [x] Re-run representative triage and confirm it no longer reports `BuildPass` for this hidden `TS2322`.
 
 Out of scope:
 
@@ -102,10 +102,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] A focused test covers `class Result {} class Test { get Property(): Result { return null; } }`.
-- [ ] The diagnostic is source-spanned at the `return null` statement or `null` expression.
-- [ ] A sibling unannotated getter `get Property() { return null; }` does not report this typed-return diagnostic.
-- [ ] `python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/accessorsEmit.ts` no longer reports `BuildPass` while TypeScript reports `TS2322`.
+- [x] A focused test covers `class Result {} class Test { get Property(): Result { return null; } }`.
+- [x] The diagnostic is source-spanned at the `return null` statement or `null` expression.
+- [x] A sibling unannotated getter `get Property() { return null; }` does not report this typed-return diagnostic.
+- [x] `python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/accessorsEmit.ts` no longer reports `BuildPass` while TypeScript reports `TS2322`.
 
 ## Validation
 
@@ -132,15 +132,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 

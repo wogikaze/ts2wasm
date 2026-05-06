@@ -147,7 +147,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] created/updated: `issues/open/5207-support-ambient-interface-filter-receiver.md`
+- [x] created/updated: `issues/done/5207-support-ambient-interface-filter-receiver.md`
 
 ## Notes
 

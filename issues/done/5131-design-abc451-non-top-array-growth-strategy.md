@@ -124,7 +124,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] created: `issues/open/5132-add-abc451-non-top-array-separation-attribution.md`
+- [x] created: `issues/done/5132-add-abc451-non-top-array-separation-attribution.md`
 
 ## Notes
 

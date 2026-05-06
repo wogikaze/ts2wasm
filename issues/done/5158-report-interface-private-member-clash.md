@@ -70,10 +70,10 @@ The frontend reports a source-spanned diagnostic for the `interface Z extends X,
 
 In scope:
 
-- [ ] Track enough erased TypeScript class/interface metadata to detect `interface ... extends A, B` when `A` and `B` declare same-named private members from different classes.
-- [ ] Report a source-spanned diagnostic at the interface declaration or offending heritage name.
-- [ ] Add a focused regression for `class X { private m: number } class Y { private m: string } interface Z extends X, Y {}`.
-- [ ] Re-run representative triage and confirm it no longer reports `BackendIo`.
+- [x] Track enough erased TypeScript class/interface metadata to detect `interface ... extends A, B` when `A` and `B` declare same-named private members from different classes.
+- [x] Report a source-spanned diagnostic at the interface declaration or offending heritage name.
+- [x] Add a focused regression for `class X { private m: number } class Y { private m: string } interface Z extends X, Y {}`.
+- [x] Re-run representative triage and confirm it no longer reports `BackendIo`.
 
 Out of scope:
 
@@ -98,10 +98,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] The representative `interface Z extends X, Y {}` case reports a source-spanned frontend/resolver diagnostic for incompatible private member `m`.
-- [ ] `python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/baseTypePrivateMemberClash.ts` no longer reports `BackendIo`.
-- [ ] Private member metadata from erased TypeScript declarations is covered by a focused parser/resolver regression.
-- [ ] Definite-assignment diagnostics remain out of scope and are not required to close this issue.
+- [x] The representative `interface Z extends X, Y {}` case reports a source-spanned frontend/resolver diagnostic for incompatible private member `m`.
+- [x] `python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/baseTypePrivateMemberClash.ts` no longer reports `BackendIo`.
+- [x] Private member metadata from erased TypeScript declarations is covered by a focused parser/resolver regression.
+- [x] Definite-assignment diagnostics remain out of scope and are not required to close this issue.
 
 ## Validation
 
@@ -128,15 +128,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 

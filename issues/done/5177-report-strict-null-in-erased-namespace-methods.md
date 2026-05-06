@@ -72,10 +72,10 @@ The frontend preserves enough namespace class method body information to report 
 
 In scope:
 
-- [ ] Detect typed local declarations inside erased namespace class methods for the representative pattern.
-- [ ] Report a source-spanned diagnostic for `var name: string = null` in that namespace class method body.
-- [ ] Add focused coverage that omits `declare var console;` so this issue can be verified independently of issue `5176`.
-- [ ] Re-run the representative triage and confirm this diagnostic is no longer silently erased once earlier diagnostics are handled.
+- [x] Detect typed local declarations inside erased namespace class methods for the representative pattern.
+- [x] Report a source-spanned diagnostic for `var name: string = null` in that namespace class method body.
+- [x] Add focused coverage that omits `declare var console;` so this issue can be verified independently of issue `5176`.
+- [x] Re-run the representative triage and confirm this diagnostic is no longer silently erased once earlier diagnostics are handled.
 
 Out of scope:
 
@@ -102,10 +102,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] A focused frontend/compiler test covers `namespace Test { export class Bug { bug() { var name: string = null; } } }`.
-- [ ] The diagnostic is source-spanned at the local `name` binding and no longer disappears because the namespace body was erased.
-- [ ] A reduced reference-style fixture without `declare var console;` reports the `string = null` diagnostic rather than `BuildPass`.
-- [ ] `python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/binopAssignmentShouldHaveType.ts` no longer hides the namespace-method `TS2322` after issue `5176` handles the earlier ambient redeclaration diagnostic.
+- [x] A focused frontend/compiler test covers `namespace Test { export class Bug { bug() { var name: string = null; } } }`.
+- [x] The diagnostic is source-spanned at the local `name` binding and no longer disappears because the namespace body was erased.
+- [x] A reduced reference-style fixture without `declare var console;` reports the `string = null` diagnostic rather than `BuildPass`.
+- [x] `python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/binopAssignmentShouldHaveType.ts` no longer hides the namespace-method `TS2322` after issue `5176` handles the earlier ambient redeclaration diagnostic.
 
 ## Validation
 
@@ -132,15 +132,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 

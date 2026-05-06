@@ -64,10 +64,10 @@ The supported class-constructor lowering path can resolve and lower direct calls
 
 In scope:
 
-- [ ] Allow class constructor bodies to reference direct outer callback locals such as `foo` and `bar` in the representative shape.
-- [ ] Preserve lexical `this` inside nested arrow callbacks under the constructor body.
-- [ ] Add a focused regression for `class Greeter { constructor() { foo(() => { bar(() => { var x = this; }); }); } }`.
-- [ ] Re-run the representative triage and record any next blocker separately if it is outside this capture slice.
+- [x] Allow class constructor bodies to reference direct outer callback locals such as `foo` and `bar` in the representative shape.
+- [x] Preserve lexical `this` inside nested arrow callbacks under the constructor body.
+- [x] Add a focused regression for `class Greeter { constructor() { foo(() => { bar(() => { var x = this; }); }); } }`.
+- [x] Re-run the representative triage and record any next blocker separately if it is outside this capture slice.
 
 Out of scope:
 
@@ -91,10 +91,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] A focused class-constructor callback capture test no longer emits the issue-289 constructor outer-local diagnostic.
-- [ ] The nested arrow callback sees the constructor `this` binding instead of creating a separate callback `this`.
-- [ ] `python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/badThisBinding.ts` no longer reports `class constructor lexical captures require environment support`.
-- [ ] Any later unsupported runtime/lowering blocker from the same reference path is split separately.
+- [x] A focused class-constructor callback capture test no longer emits the issue-289 constructor outer-local diagnostic.
+- [x] The nested arrow callback sees the constructor `this` binding instead of creating a separate callback `this`.
+- [x] `python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/badThisBinding.ts` no longer reports `class constructor lexical captures require environment support`.
+- [x] Any later unsupported runtime/lowering blocker from the same reference path is split separately.
 
 ## Validation
 
@@ -124,15 +124,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 

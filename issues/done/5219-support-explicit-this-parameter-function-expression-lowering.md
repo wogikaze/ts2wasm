@@ -57,10 +57,10 @@ or by emitting a more specific source-backed diagnostic before runtime lowering.
 
 In scope:
 
-- [ ] Decide the narrow contract for explicit `this` parameters in function expressions
-- [ ] Implement the chosen lowering or source-backed diagnostic for `this` reads in this shape
-- [ ] Add a focused fixture/test covering `function (this: any) { return this.value; }`
-- [ ] Re-run the representative triage and confirm it advances past the current `issue-062e` guard
+- [x] Decide the narrow contract for explicit `this` parameters in function expressions
+- [x] Implement the chosen lowering or source-backed diagnostic for `this` reads in this shape
+- [x] Add a focused fixture/test covering `function (this: any) { return this.value; }`
+- [x] Re-run the representative triage and confirm it advances past the current `issue-062e` guard
 
 Out of scope:
 
@@ -83,10 +83,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] A focused explicit-`this` function-expression test no longer reports the generic `issue-062e` closure guard
-- [ ] The representative reference triage no longer stops at `issue-062e: nested function ... closures with this or arguments`
-- [ ] Existing closure and implicit-this diagnostics still pass
-- [ ] Issue index and readiness checks pass
+- [x] A focused explicit-`this` function-expression test no longer reports the generic `issue-062e` closure guard
+- [x] The representative reference triage no longer stops at `issue-062e: nested function ... closures with this or arguments`
+- [x] Existing closure and implicit-this diagnostics still pass
+- [x] Issue index and readiness checks pass
 
 ## Validation
 
@@ -118,15 +118,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 

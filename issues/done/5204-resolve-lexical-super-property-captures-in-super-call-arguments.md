@@ -72,12 +72,12 @@ context. The representative file no longer fails with an unresolved synthetic
 
 In scope:
 
-- [ ] Preserve derived-constructor context while resolving arrow functions
+- [x] Preserve derived-constructor context while resolving arrow functions
   passed as `super(...)` arguments
-- [ ] Resolve `super.method()` in that arrow body against the base class method
+- [x] Resolve `super.method()` in that arrow body against the base class method
   surface
-- [ ] Avoid emitting unresolved synthetic `this` for the lexical super access
-- [ ] Preserve existing diagnostics for invalid `super` use outside class or
+- [x] Avoid emitting unresolved synthetic `this` for the lexical super access
+- [x] Preserve existing diagnostics for invalid `super` use outside class or
   derived-constructor contexts
 
 Out of scope:
@@ -103,13 +103,13 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] `captureSuperPropertyAccessInSuperCall01.ts` no longer reports
+- [x] `captureSuperPropertyAccessInSuperCall01.ts` no longer reports
   `UnresolvedName: unresolved name: this`
-- [ ] A focused fixture covers `class B extends A { constructor() { super(() =>
+- [x] A focused fixture covers `class B extends A { constructor() { super(() =>
   super.blah()); } }`
-- [ ] Invalid `super` use outside a class/derived constructor still reports a
+- [x] Invalid `super` use outside a class/derived constructor still reports a
   diagnostic
-- [ ] The diagnostic or supported path is source-spanned at the `super.blah()`
+- [x] The diagnostic or supported path is source-spanned at the `super.blah()`
   expression if full support is deferred
 
 ## Validation
@@ -135,15 +135,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 

@@ -56,9 +56,9 @@ The compiler has a deliberate supported behavior or issue-linked diagnostic for 
 
 In scope:
 
-- [ ] Triage whether ambient interface receivers should lower through the existing array-filter path, a typed placeholder, or a narrower diagnostic.
-- [ ] Add focused coverage for `declare let anys: Ari<any>; var xs = anys.filter(Bullean);`.
-- [ ] Re-run `booleanFilterAnyArray.ts` triage and record the next blocker or pass state.
+- [x] Triage whether ambient interface receivers should lower through the existing array-filter path, a typed placeholder, or a narrower diagnostic.
+- [x] Add focused coverage for `declare let anys: Ari<any>; var xs = anys.filter(Bullean);`.
+- [x] Re-run `booleanFilterAnyArray.ts` triage and record the next blocker or pass state.
 
 Out of scope:
 
@@ -81,10 +81,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] `python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/booleanFilterAnyArray.ts` no longer reports `UnresolvedName` for `anys`.
-- [ ] The same triage no longer reports the generic `issue-211: unknown receiver class for method \`filter\`` blocker for `anys.filter(Bullean)`, or it reports a narrower issue-linked diagnostic with a new owner.
-- [ ] Existing concrete array `.filter(...)` fixtures and tests continue to pass.
-- [ ] Docs/current-state/issues are synchronized when status or design changes.
+- [x] `python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/booleanFilterAnyArray.ts` no longer reports `UnresolvedName` for `anys`.
+- [x] The same triage no longer reports the generic `issue-211: unknown receiver class for method \`filter\`` blocker for `anys.filter(Bullean)`, or it reports a narrower issue-linked diagnostic with a new owner.
+- [x] Existing concrete array `.filter(...)` fixtures and tests continue to pass.
+- [x] Docs/current-state/issues are synchronized when status or design changes.
 
 ## Validation
 
@@ -114,15 +114,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 

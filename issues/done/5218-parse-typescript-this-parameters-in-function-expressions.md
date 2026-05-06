@@ -127,7 +127,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] created: `issues/open/5219-support-explicit-this-parameter-function-expression-lowering.md`
+- [x] created: `issues/done/5219-support-explicit-this-parameter-function-expression-lowering.md`
 
 ## Notes
 

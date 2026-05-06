@@ -139,7 +139,7 @@ Current state:
 Follow-up issues:
 
 - [x] split design child: `issues/done/5131-design-abc451-non-top-array-growth-strategy.md`
-- [x] split attribution child: `issues/open/5132-add-abc451-non-top-array-separation-attribution.md`
+- [x] split attribution child: `issues/done/5132-add-abc451-non-top-array-separation-attribution.md`
 
 ## Notes
 

@@ -106,7 +106,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] `issues/open/5203-report-indexed-new-type-only-callee-diagnostics.md`
+- [x] `issues/done/5203-report-indexed-new-type-only-callee-diagnostics.md`
 
 ## Notes
 
@@ -154,7 +154,7 @@ Evidence:
 - Existing class buckets are no-match owners because this blocker is the
   indexed `new` callee hiding a type-only value-use diagnostic.
 - Child issue
-  `issues/open/5203-report-indexed-new-type-only-callee-diagnostics.md` owns
+  `issues/done/5203-report-indexed-new-type-only-callee-diagnostics.md` owns
   the implementation slice.
 
 ## Completion evidence

@@ -51,10 +51,10 @@ The compiler classifies supported `new Class(...)` locals as class instance rece
 
 In scope:
 
-- [ ] Track enough class constructor result information for direct local instance receiver classification.
-- [ ] Lower direct class instance method calls without falling into the generic unknown receiver diagnostic.
-- [ ] Add or update a focused fixture that proves `new Class(...).method(...)` or local instance method calls match Node output.
-- [ ] Re-run the representative `avoidCycleWithVoidExpressionReturnedFromArrow.ts` triage and confirm it advances past `unknown receiver class for method`.
+- [x] Track enough class constructor result information for direct local instance receiver classification.
+- [x] Lower direct class instance method calls without falling into the generic unknown receiver diagnostic.
+- [x] Add or update a focused fixture that proves `new Class(...).method(...)` or local instance method calls match Node output.
+- [x] Re-run the representative `avoidCycleWithVoidExpressionReturnedFromArrow.ts` triage and confirm it advances past `unknown receiver class for method`.
 
 Out of scope:
 
@@ -77,10 +77,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] A focused class instance method receiver fixture matches Node output under iwasm.
-- [ ] `python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/avoidCycleWithVoidExpressionReturnedFromArrow.ts` no longer reports `issue-211: unknown receiver class for method`.
-- [ ] Existing object method receiver fixtures still pass.
-- [ ] Issue index and readiness checks pass.
+- [x] A focused class instance method receiver fixture matches Node output under iwasm.
+- [x] `python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/avoidCycleWithVoidExpressionReturnedFromArrow.ts` no longer reports `issue-211: unknown receiver class for method`.
+- [x] Existing object method receiver fixtures still pass.
+- [x] Issue index and readiness checks pass.
 
 ## Validation
 
@@ -110,15 +110,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 

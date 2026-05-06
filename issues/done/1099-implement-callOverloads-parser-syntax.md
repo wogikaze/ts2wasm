@@ -106,8 +106,8 @@ Current state:
 
 Follow-up issues:
 
-- [x] `issues/open/5199-report-function-overload-list-class-merge-diagnostics.md`
-- [x] `issues/open/5200-validate-top-level-function-overload-implementations.md`
+- [x] `issues/done/5199-report-function-overload-list-class-merge-diagnostics.md`
+- [x] `issues/done/5200-validate-top-level-function-overload-implementations.md`
 
 ## Notes
 
@@ -172,9 +172,9 @@ Evidence:
 - TypeScript oracle reports class/function merge diagnostics for `Foo`; it also
   reports duplicate implementation and missing implementation diagnostics for
   the invalid top-level function overload shapes.
-- Child issue `issues/open/5199-report-function-overload-list-class-merge-diagnostics.md`
+- Child issue `issues/done/5199-report-function-overload-list-class-merge-diagnostics.md`
   owns the `Foo` class/function merge blocker.
-- Child issue `issues/open/5200-validate-top-level-function-overload-implementations.md`
+- Child issue `issues/done/5200-validate-top-level-function-overload-implementations.md`
   owns the `F1` and `Goo` top-level function overload implementation blockers.
 - Duplicate candidates `issues/open/442-implement-parser-syntax.md`,
   `issues/open/550-implement-FunctionDeclaration-parser-syntax.md`, and broad

@@ -69,10 +69,10 @@ The frontend reports a source-spanned implicit-`this` diagnostic for this TSC pa
 
 In scope:
 
-- [ ] Detect `this` use in the representative nested ordinary function without an explicit `this` parameter/type context.
-- [ ] Report a source-spanned diagnostic at the `this` token before lowering emits `issue-062e`.
-- [ ] Preserve the existing `issue-062e` runtime guard for JavaScript closure cases that have no earlier TypeScript diagnostic.
-- [ ] Add focused coverage for `() => function () { this.helloWorld(); };`.
+- [x] Detect `this` use in the representative nested ordinary function without an explicit `this` parameter/type context.
+- [x] Report a source-spanned diagnostic at the `this` token before lowering emits `issue-062e`.
+- [x] Preserve the existing `issue-062e` runtime guard for JavaScript closure cases that have no earlier TypeScript diagnostic.
+- [x] Add focused coverage for `() => function () { this.helloWorld(); };`.
 
 Out of scope:
 
@@ -99,10 +99,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] A focused frontend/compiler test covers `() => function () { this.helloWorld(); };`.
-- [ ] The diagnostic is source-spanned at the `this` token.
-- [ ] The existing nested-function `this`/`arguments` runtime-subset guard remains available for runtime-only cases without an earlier implicit-`this` diagnostic.
-- [ ] `python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/blockScopedBindingCaptureThisInFunction.ts` no longer reports `UnsupportedRuntimeSubset: issue-062e` as the first blocker.
+- [x] A focused frontend/compiler test covers `() => function () { this.helloWorld(); };`.
+- [x] The diagnostic is source-spanned at the `this` token.
+- [x] The existing nested-function `this`/`arguments` runtime-subset guard remains available for runtime-only cases without an earlier implicit-`this` diagnostic.
+- [x] `python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/blockScopedBindingCaptureThisInFunction.ts` no longer reports `UnsupportedRuntimeSubset: issue-062e` as the first blocker.
 
 ## Validation
 
@@ -129,15 +129,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 

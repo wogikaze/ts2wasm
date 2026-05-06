@@ -106,7 +106,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] `issues/open/5199-report-function-overload-list-class-merge-diagnostics.md`
+- [x] `issues/done/5199-report-function-overload-list-class-merge-diagnostics.md`
 
 ## Notes
 
@@ -174,7 +174,7 @@ Evidence:
   no-match buckets for different duplicate-function windows.
 - Related `issues/open/769-implement-augmentedTypesFunction.md` is a different
   parser-syntax bucket; child issue
-  `issues/open/5199-report-function-overload-list-class-merge-diagnostics.md`
+  `issues/done/5199-report-function-overload-list-class-merge-diagnostics.md`
   owns this already-parsed callOverloads blocker.
 
 ## Completion evidence

@@ -106,7 +106,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] `issues/open/5200-validate-top-level-function-overload-implementations.md`
+- [x] `issues/done/5200-validate-top-level-function-overload-implementations.md`
 
 ## Notes
 
@@ -162,7 +162,7 @@ Evidence:
   and `issues/open/4258-implement-staticVisibility-duplicate-function.md` are
   no-match buckets for other duplicate-function windows.
 - Existing child issue
-  `issues/open/5200-validate-top-level-function-overload-implementations.md`
+  `issues/done/5200-validate-top-level-function-overload-implementations.md`
   owns the top-level overload implementation grouping blocker and has been
   expanded with this reference path.
 

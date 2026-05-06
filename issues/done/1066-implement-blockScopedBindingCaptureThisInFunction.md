@@ -107,7 +107,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] added: `issues/open/5179-report-implicit-this-before-closure-runtime-guard.md`
+- [x] added: `issues/done/5179-report-implicit-this-before-closure-runtime-guard.md`
 
 ## Notes
 
@@ -132,7 +132,7 @@ Generated on 2026-05-06.
 - Visible symbols before failure: binding `someKey`
 - Compiler evidence: token dump includes `This`, member `helloWorld`, `for-in` binding `someKey`, and nested arrow `() => someKey`; AST construction succeeds; resolved/lowered pipeline fails at `issue-062e`.
 - TypeScript oracle: `TS2683: 'this' implicitly has type 'any' because it does not have a type annotation.` at the `this` token.
-- Superseding child: `issues/open/5179-report-implicit-this-before-closure-runtime-guard.md`
+- Superseding child: `issues/done/5179-report-implicit-this-before-closure-runtime-guard.md`
 
 ## Completion evidence
 

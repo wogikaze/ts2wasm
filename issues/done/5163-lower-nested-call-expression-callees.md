@@ -81,11 +81,11 @@ Lowering supports, or explicitly diagnoses, call expressions whose callee is ano
 
 In scope:
 
-- [ ] Handle `Expr::Call { callee: Expr::Call { ... } }` in expression lowering with a source-spanned diagnostic or runtime-supported callable path.
-- [ ] Handle `Expr::Call { callee: Expr::New { ... } }` in expression lowering with the same source-spanned diagnostic family.
-- [ ] Preserve existing identifier-call behavior.
-- [ ] Add focused coverage for `foo()(1).toString()` and the whitespace/newline accidental-call variants.
-- [ ] Re-run the representative triage and confirm the current generic unsupported diagnostic is gone.
+- [x] Handle `Expr::Call { callee: Expr::Call { ... } }` in expression lowering with a source-spanned diagnostic or runtime-supported callable path.
+- [x] Handle `Expr::Call { callee: Expr::New { ... } }` in expression lowering with the same source-spanned diagnostic family.
+- [x] Preserve existing identifier-call behavior.
+- [x] Add focused coverage for `foo()(1).toString()` and the whitespace/newline accidental-call variants.
+- [x] Re-run the representative triage and confirm the current generic unsupported diagnostic is gone.
 
 Out of scope:
 
@@ -109,11 +109,11 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] `foo()(1).toString()` no longer reports `only identifier calls are supported in expression context`.
-- [ ] `(new D(1))()` no longer reports `only identifier calls are supported in expression context`.
-- [ ] Whitespace and newline accidental-call variants from `betterErrorForAccidentalCall.ts` reach the same new diagnostic or lowered path.
-- [ ] Existing simple identifier calls continue to pass.
-- [ ] `python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/betterErrorForAccidentalCall.ts` no longer reports the current generic unsupported diagnostic.
+- [x] `foo()(1).toString()` no longer reports `only identifier calls are supported in expression context`.
+- [x] `(new D(1))()` no longer reports `only identifier calls are supported in expression context`.
+- [x] Whitespace and newline accidental-call variants from `betterErrorForAccidentalCall.ts` reach the same new diagnostic or lowered path.
+- [x] Existing simple identifier calls continue to pass.
+- [x] `python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/betterErrorForAccidentalCall.ts` no longer reports the current generic unsupported diagnostic.
 
 ## Validation
 
@@ -141,15 +141,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 

@@ -83,13 +83,13 @@ matches the declaration-merge problem instead of the generic
 
 In scope:
 
-- [ ] Distinguish bodyless top-level function overload signatures from concrete
+- [x] Distinguish bodyless top-level function overload signatures from concrete
   duplicate function implementations
-- [ ] Detect a class declaration with the same name as a pending function
+- [x] Detect a class declaration with the same name as a pending function
   overload list
-- [ ] Emit a source-spanned diagnostic for the invalid class/function overload
+- [x] Emit a source-spanned diagnostic for the invalid class/function overload
   merge
-- [ ] Preserve duplicate-function diagnostics for multiple concrete function
+- [x] Preserve duplicate-function diagnostics for multiple concrete function
   bodies
 
 Out of scope:
@@ -115,21 +115,21 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] `callOverloads3.ts` no longer reports generic `DuplicateFunction` for
+- [x] `callOverloads3.ts` no longer reports generic `DuplicateFunction` for
   the second `function Foo` overload declaration
-- [ ] `callOverloads4.ts` no longer reports generic `DuplicateFunction` for
+- [x] `callOverloads4.ts` no longer reports generic `DuplicateFunction` for
   the second `function Foo` overload declaration
-- [ ] `callOverloads5.ts` no longer reports generic `DuplicateFunction` for
+- [x] `callOverloads5.ts` no longer reports generic `DuplicateFunction` for
   the second `function Foo` overload declaration
-- [ ] After issue 5200 removes the `F1` blocker, `callOverloads1.ts` and
+- [x] After issue 5200 removes the `F1` blocker, `callOverloads1.ts` and
   `callOverloads2.ts` reach a class/function merge diagnostic for `Foo`
-- [ ] A focused fixture covers two bodyless `function Foo` declarations followed
+- [x] A focused fixture covers two bodyless `function Foo` declarations followed
   by `class Foo`
-- [ ] A focused fixture covers `class Foo` followed by bodyless
+- [x] A focused fixture covers `class Foo` followed by bodyless
   `function Foo();`
-- [ ] Multiple concrete function bodies with the same name still report the
+- [x] Multiple concrete function bodies with the same name still report the
   existing duplicate-function diagnostic
-- [ ] The new diagnostic is source-spanned at the offending function or class
+- [x] The new diagnostic is source-spanned at the offending function or class
   name
 
 ## Validation
@@ -157,15 +157,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 

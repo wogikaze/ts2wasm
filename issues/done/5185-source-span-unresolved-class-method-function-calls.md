@@ -71,10 +71,10 @@ The compiler reports a source-spanned unresolved-function/name diagnostic at the
 
 In scope:
 
-- [ ] Preserve the call-site span for unresolved direct function calls in class method bodies.
-- [ ] Report the diagnostic at the out-of-block `foo` identifier or call expression span.
-- [ ] Keep the in-block `foo()` call resolved.
-- [ ] Add focused coverage for a strict class method with a block-scoped function declaration and an out-of-block call.
+- [x] Preserve the call-site span for unresolved direct function calls in class method bodies.
+- [x] Report the diagnostic at the out-of-block `foo` identifier or call expression span.
+- [x] Keep the in-block `foo()` call resolved.
+- [x] Add focused coverage for a strict class method with a block-scoped function declaration and an out-of-block call.
 
 Out of scope:
 
@@ -100,10 +100,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] A focused test covers `class c { method() { if (true) { function foo(){} foo(); } foo(); } }`.
-- [ ] The in-block `foo()` call remains accepted.
-- [ ] The out-of-block `foo()` diagnostic includes a source span at `foo` or the `foo()` call expression.
-- [ ] `python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/blockScopedFunctionDeclarationInStrictClass.ts` no longer reports an unspanned `UnresolvedFunction`.
+- [x] A focused test covers `class c { method() { if (true) { function foo(){} foo(); } foo(); } }`.
+- [x] The in-block `foo()` call remains accepted.
+- [x] The out-of-block `foo()` diagnostic includes a source span at `foo` or the `foo()` call expression.
+- [x] `python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/blockScopedFunctionDeclarationInStrictClass.ts` no longer reports an unspanned `UnresolvedFunction`.
 
 ## Validation
 
@@ -129,15 +129,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 

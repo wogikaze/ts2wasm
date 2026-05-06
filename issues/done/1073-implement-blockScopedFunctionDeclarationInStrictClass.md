@@ -108,7 +108,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] added: `issues/open/5185-source-span-unresolved-class-method-function-calls.md`
+- [x] added: `issues/done/5185-source-span-unresolved-class-method-function-calls.md`
 
 ## Notes
 
@@ -131,7 +131,7 @@ Generated on 2026-05-06.
 - Source context: `class c { method() { if (true) { function foo() { } foo(); } foo(); } }`
 - Compiler evidence: tokens and AST succeed; the in-block `foo()` call is represented inside the `if`, and the out-of-block `foo()` call is represented at byte span `150..155`; lowering later emits an unspanned `UnresolvedFunction`.
 - TypeScript oracle: `TS2304: Cannot find name 'foo'.` at the out-of-block `foo` identifier.
-- Superseding child: `issues/open/5185-source-span-unresolved-class-method-function-calls.md`
+- Superseding child: `issues/done/5185-source-span-unresolved-class-method-function-calls.md`
 
 ## Completion evidence
 

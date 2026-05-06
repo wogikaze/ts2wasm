@@ -64,9 +64,9 @@ source-spanned unsupported conditional-call diagnostic.
 
 In scope:
 
-- [ ] Preserve enough callable metadata for function parameters annotated with conditional function type aliases
-- [ ] Classify `arg(10)` before the generic extracted-method issue-211 path
-- [ ] Keep ordinary unsupported extracted method diagnostics unchanged
+- [x] Preserve enough callable metadata for function parameters annotated with conditional function type aliases
+- [x] Classify `arg(10)` before the generic extracted-method issue-211 path
+- [x] Keep ordinary unsupported extracted method diagnostics unchanged
 
 Out of scope:
 
@@ -90,10 +90,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] `callOfConditionalTypeWithConcreteBranches.ts` no longer reports generic `issue-211` for the first `arg(10)` call
-- [ ] A focused fixture covers `type Q<T> = number extends T ? (n: number) => void : never; function fn<T>(arg: Q<T>) { arg(10); }`
-- [ ] Existing issue-211 extracted method fixtures keep their unsupported diagnostics
-- [ ] The new diagnostic or support path is source-spanned at the callable parameter use
+- [x] `callOfConditionalTypeWithConcreteBranches.ts` no longer reports generic `issue-211` for the first `arg(10)` call
+- [x] A focused fixture covers `type Q<T> = number extends T ? (n: number) => void : never; function fn<T>(arg: Q<T>) { arg(10); }`
+- [x] Existing issue-211 extracted method fixtures keep their unsupported diagnostics
+- [x] The new diagnostic or support path is source-spanned at the callable parameter use
 
 ## Validation
 
@@ -118,19 +118,19 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 
-This is related to `issues/open/5195-support-callable-interface-typed-local-calls.md`
+This is related to `issues/done/5195-support-callable-interface-typed-local-calls.md`
 but covers parameters whose callability comes from a conditional type alias. Keep
 the implementation slice narrow enough to avoid taking on full type-system
 evaluation.

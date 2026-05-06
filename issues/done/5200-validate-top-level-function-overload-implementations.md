@@ -99,20 +99,20 @@ implementation names, or missing implementations.
 
 In scope:
 
-- [ ] Distinguish bodyless top-level function overload signatures from
+- [x] Distinguish bodyless top-level function overload signatures from
   implemented function declarations
-- [ ] Accept a bodyless overload signature immediately followed by one
+- [x] Accept a bodyless overload signature immediately followed by one
   implementation for the same name
-- [ ] Accept multiple bodyless overload signatures immediately followed by one
+- [x] Accept multiple bodyless overload signatures immediately followed by one
   implementation for the same name
-- [ ] Preserve/report duplicate implementation diagnostics for multiple
+- [x] Preserve/report duplicate implementation diagnostics for multiple
   function bodies with the same name
-- [ ] Report a source-spanned missing-implementation diagnostic for a bodyless
+- [x] Report a source-spanned missing-implementation diagnostic for a bodyless
   overload declaration with no following implementation
 
 Out of scope:
 
-- Class/function merge diagnostics, tracked by `issues/open/5199-report-function-overload-list-class-merge-diagnostics.md`
+- Class/function merge diagnostics, tracked by `issues/done/5199-report-function-overload-list-class-merge-diagnostics.md`
 - Ambient declaration merging
 - Full overload compatibility checking between signatures and implementation
   body types
@@ -133,21 +133,21 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] `callOverloads1.ts` no longer reports `DuplicateFunction` for the valid
+- [x] `callOverloads1.ts` no longer reports `DuplicateFunction` for the valid
   `F1` overload signature plus implementation
-- [ ] `callOverloads2.ts` reports a narrower duplicate implementation
+- [x] `callOverloads2.ts` reports a narrower duplicate implementation
   diagnostic for the two implemented `F1` declarations
-- [ ] `callbackArgsDifferByOptionality.ts` no longer reports
+- [x] `callbackArgsDifferByOptionality.ts` no longer reports
   `DuplicateFunction` for the valid `x3` overload signatures plus
   implementation
-- [ ] A focused fixture covers one bodyless overload signature followed by one
+- [x] A focused fixture covers one bodyless overload signature followed by one
   implementation for the same name
-- [ ] A focused fixture covers two bodyless overload signatures followed by one
+- [x] A focused fixture covers two bodyless overload signatures followed by one
   implementation, including a function-typed callback parameter with an
   optional string-literal parameter
-- [ ] A focused fixture covers two implemented function declarations with the
+- [x] A focused fixture covers two implemented function declarations with the
   same name and preserves a duplicate implementation diagnostic
-- [ ] A focused fixture covers one bodyless overload signature with no
+- [x] A focused fixture covers one bodyless overload signature with no
   implementation and reports a missing implementation diagnostic
 
 ## Validation
@@ -175,15 +175,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 

@@ -78,7 +78,7 @@ Out of scope:
 Expected:
 
 - `crates/runtime-abi/src/value.rs` (ValueTag sentinels)
-- `crates/backend-wasm/src/runtime_core_emitter_part*.rs` (arithmetic helpers)
+- `crates/backend-wasm/src/runtime_core_emitter_part1.rs` (arithmetic helpers)
 - `crates/backend-wasm/src/runtime_core_comparison_alloc.rs` (strict_equal, abstract_equal)
 - `crates/ir/src/lowered/resolver_expr.rs` (literal NaN/Infinity lowering)
 - `crates/ir/src/builtin_resolver.rs` (Number.NaN / Infinity resolution)

@@ -54,9 +54,9 @@ The compiler recognizes the supported RegExp-match-or-empty-array receiver patte
 
 In scope:
 
-- [ ] Track locals initialized from `''.match(/ /) || []` as supported array-like receivers for `.map(...)`.
-- [ ] Track locals initialized from `x ? x : []` where `x` is a supported RegExp match result.
-- [ ] Preserve existing dense-array `.map(...)` behavior.
+- [x] Track locals initialized from `''.match(/ /) || []` as supported array-like receivers for `.map(...)`.
+- [x] Track locals initialized from `x ? x : []` where `x` is a supported RegExp match result.
+- [x] Preserve existing dense-array `.map(...)` behavior.
 
 Out of scope:
 
@@ -78,10 +78,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] `python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/bestChoiceType.ts` no longer reports `issue-211: unknown receiver class for method \`map\``.
-- [ ] A focused test or fixture covers `let y = x || []; y.map(...)` for RegExp match fallback.
-- [ ] A focused test or fixture covers `let y = x ? x : []; y.map(...)` for RegExp match fallback.
-- [ ] Existing array map fixtures remain passing.
+- [x] `python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/bestChoiceType.ts` no longer reports `issue-211: unknown receiver class for method \`map\``.
+- [x] A focused test or fixture covers `let y = x || []; y.map(...)` for RegExp match fallback.
+- [x] A focused test or fixture covers `let y = x ? x : []; y.map(...)` for RegExp match fallback.
+- [x] Existing array map fixtures remain passing.
 
 ## Validation
 
@@ -109,15 +109,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 

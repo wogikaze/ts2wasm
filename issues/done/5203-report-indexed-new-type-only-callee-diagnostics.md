@@ -62,12 +62,12 @@ paths remain unchanged.
 
 In scope:
 
-- [ ] Detect `New` expressions whose callee is an indexed expression rooted at
+- [x] Detect `New` expressions whose callee is an indexed expression rooted at
   a type-only identifier
-- [ ] Emit a source-spanned type-only value-use diagnostic for `any` in
+- [x] Emit a source-spanned type-only value-use diagnostic for `any` in
   `new any[1]`
-- [ ] Preserve existing supported class-name and member-name constructor paths
-- [ ] Preserve a narrower unsupported diagnostic for genuinely dynamic indexed
+- [x] Preserve existing supported class-name and member-name constructor paths
+- [x] Preserve a narrower unsupported diagnostic for genuinely dynamic indexed
   constructor callees
 
 Out of scope:
@@ -92,11 +92,11 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] `cannotInvokeNewOnIndexExpression.ts` no longer reports generic
+- [x] `cannotInvokeNewOnIndexExpression.ts` no longer reports generic
   `issue-062` for `new any[1]`
-- [ ] A focused fixture covers `var test: any[] = new any[1];`
-- [ ] The diagnostic is source-spanned at the type-only `any` identifier
-- [ ] Existing `new ClassName(...)` and `new namespace.ClassName(...)` fixtures
+- [x] A focused fixture covers `var test: any[] = new any[1];`
+- [x] The diagnostic is source-spanned at the type-only `any` identifier
+- [x] Existing `new ClassName(...)` and `new namespace.ClassName(...)` fixtures
   keep passing
 
 ## Validation
@@ -122,15 +122,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 

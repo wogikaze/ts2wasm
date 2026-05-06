@@ -133,7 +133,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] created: `issues/open/5209-support-class-instance-method-receiver-calls.md`
+- [x] created: `issues/done/5209-support-class-instance-method-receiver-calls.md`
 
 ## Notes
 

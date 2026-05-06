@@ -62,10 +62,10 @@ top_miss_reason=non_top_heap
 
 In scope:
 
-- [ ] Add default-off telemetry that classifies non-top `$array_push_grow` fallback copies by the reason the array is no longer the heap-top object.
-- [ ] Distinguish at least intervening allocation after array creation, recursive temporary/result array pressure, retained live arrays, and unknown/unclassified separation.
-- [ ] Surface the new attribution in `mise run abc451-runtime-costs` output at the 100000-event budget.
-- [ ] Preserve all existing aggregate counters and runtime behavior.
+- [x] Add default-off telemetry that classifies non-top `$array_push_grow` fallback copies by the reason the array is no longer the heap-top object.
+- [x] Distinguish at least intervening allocation after array creation, recursive temporary/result array pressure, retained live arrays, and unknown/unclassified separation.
+- [x] Surface the new attribution in `mise run abc451-runtime-costs` output at the 100000-event budget.
+- [x] Preserve all existing aggregate counters and runtime behavior.
 
 Out of scope:
 
@@ -93,11 +93,11 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] The 100000-event `abc451-runtime-costs` output includes non-top array separation attribution fields with call counts that sum to `top_heap_misses=2648`.
-- [ ] The existing aggregate counters remain equal to the baseline values listed above unless the issue records a justified no-regression delta.
-- [ ] The issue records a concrete next implementation target for issue 365, or states why representation-level append is still required.
-- [ ] The focused ABC451 depth-8 gate is run and recorded as pass or known timeout.
-- [ ] Docs/current-state/issues are synchronized.
+- [x] The 100000-event `abc451-runtime-costs` output includes non-top array separation attribution fields with call counts that sum to `top_heap_misses=2648`.
+- [x] The existing aggregate counters remain equal to the baseline values listed above unless the issue records a justified no-regression delta.
+- [x] The issue records a concrete next implementation target for issue 365, or states why representation-level append is still required.
+- [x] The focused ABC451 depth-8 gate is run and recorded as pass or known timeout.
+- [x] Docs/current-state/issues are synchronized.
 
 ## Validation
 
@@ -131,11 +131,11 @@ Final-state docs:
 
 Current state:
 
-- [ ] updated: `current-state.md` (repo root)
+- [x] updated: `current-state.md` (repo root)
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 
