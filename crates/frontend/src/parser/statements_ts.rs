@@ -509,6 +509,7 @@ impl Parser {
                 end: self.cursor,
             });
             self.validate_erased_namespace_implements(span)?;
+            self.validate_erased_namespace_typed_locals(span)?;
             self.skip_balanced_brace_block(span)?;
         } else if matches!(self.peek(), Some(Token::Semicolon)) {
             self.consume(TokenKind::Semicolon);
@@ -619,6 +620,42 @@ impl Parser {
                     expecting_root_type = false;
                 }
                 _ => {}
+            }
+            index += 1;
+        }
+        Ok(())
+    }
+
+    /// Scan erased namespace body tokens for typed local declarations initialized with `null`.
+    /// Reports TS2322: Type 'null' is not assignable to type '<type>'.
+    fn validate_erased_namespace_typed_locals(&self, start_span: Span) -> Result<(), Diagnostic> {
+        let left_brace = self.cursor;
+        let Some(right_brace) = self.matching_token_right_brace(left_brace) else {
+            return Err(Diagnostic {
+                code: DiagCode::UnsupportedSyntax,
+                message: "unterminated TypeScript namespace declaration".to_owned(),
+                span: Some(start_span),
+            });
+        };
+        let mut index = left_brace + 1;
+        while index < right_brace {
+            // Seek declarations: var/let/const <name> : <type> = null
+            if matches!(
+                self.tokens[index].kind,
+                Token::Var | Token::Let | Token::Const
+            ) && let Some(name) = self.ident_at(index + 1)
+                && matches!(self.tokens.get(index + 2), Some(SpannedToken { kind: Token::Colon, .. }))
+                && let Some((type_name, _)) = self.ident_at(index + 3)
+                && matches!(self.tokens.get(index + 4), Some(SpannedToken { kind: Token::Equal, .. }))
+                && matches!(self.tokens.get(index + 5), Some(SpannedToken { kind: Token::Null, .. }))
+            {
+                return Err(Diagnostic {
+                    code: DiagCode::TypeScriptTypeCheck,
+                    message: format!(
+                        "TS2322: Type 'null' is not assignable to type '{type_name}'."
+                    ),
+                    span: Some(name.1),
+                });
             }
             index += 1;
         }

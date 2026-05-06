@@ -429,6 +429,42 @@ mod tests {
     }
 
     #[test]
+    fn reports_typed_null_local_in_erased_namespace_class_method() {
+        let err = parse_program(
+            "namespace Test { export class Bug { bug() { var name: string = null; } } }",
+        )
+        .expect_err(
+            "typed local declaration with null in erased namespace should report TS2322",
+        );
+        assert_eq!(err.code, DiagCode::TypeScriptTypeCheck);
+        assert!(err.message.contains("TS2322"));
+        assert!(err.message.contains("Type 'null' is not assignable to type 'string'"));
+        assert_eq!(err.span, Some(Span { start: 48, end: 52 }));
+    }
+
+    #[test]
+    fn allows_untyped_null_in_erased_namespace_class_method() {
+        let stmts = parse_program(
+            "namespace Test { export class Bug { bug() { var name = null; } } }",
+        )
+        .expect("untyped null in erased namespace should not report TS2322");
+        assert!(stmts.is_empty());
+    }
+
+    #[test]
+    fn reports_typed_null_let_in_erased_namespace() {
+        let err = parse_program(
+            "namespace Test { export class Bug { bug() { let name: number = null; } } }",
+        )
+        .expect_err(
+            "typed null local with let in erased namespace should report TS2322",
+        );
+        assert_eq!(err.code, DiagCode::TypeScriptTypeCheck);
+        assert!(err.message.contains("TS2322"));
+        assert!(err.message.contains("Type 'null' is not assignable to type 'number'"));
+    }
+
+    #[test]
     fn rejects_unsupported_typescript_ambient_forms_with_source_span() {
         let err = parse_program("declare global { interface Window { value: string; } }")
             .expect_err("declare global is outside the erasure slice");
