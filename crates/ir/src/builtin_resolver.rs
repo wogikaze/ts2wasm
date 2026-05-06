@@ -192,8 +192,8 @@ impl BigIntStaticBuiltinFolder {
                 span,
             } => Stmt::ClassDecl {
                 name: name.clone(),
-                ts_private_field_names,
-                interface_heritage,
+                ts_private_field_names: ts_private_field_names.clone(),
+                interface_heritage: interface_heritage.clone(),
                 extends: extends
                     .as_ref()
                     .map(|extends| Box::new(self.fold_expr(extends))),
@@ -700,6 +700,7 @@ impl BigIntStaticBuiltinFolder {
                 static_blocks,
                 private_elements,
                 span,
+                ..
             } => Expr::ClassExpr {
                 name: name.clone(),
                 extends: extends.as_ref().map(|e| Box::new(self.fold_expr(e))),
