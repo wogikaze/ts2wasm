@@ -3,7 +3,7 @@ id: 5186
 title: "Parse export assignment expressions"
 type: feature
 area: frontend/syntax
-class: implementation-ready
+class: done
 priority: P1
 depends_on: []
 blocks: []
@@ -165,19 +165,3 @@ date: 2026-05-06
 Remaining risks:
 
 - `export default = expr` is not handled (TypeScript does not use this form).
-
-Commits:
-
-- `...`
-
-Validation result:
-
-```text
-command:
-result:
-date:
-```
-
-Remaining risks:
-
-- none
