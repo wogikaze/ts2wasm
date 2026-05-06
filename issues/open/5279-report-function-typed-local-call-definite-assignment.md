@@ -8,7 +8,7 @@ priority: P2
 depends_on: []
 blocks: []
 created: 2026-05-06
-updated: 2026-05-06
+updated: 2026-05-07
 ---
 
 ## Summary
@@ -130,3 +130,12 @@ python scripts/manager.py reference-coverage tsc --path-filter reference/typescr
 
 Split from `issues/done/1353-implement-commentOnParenthesizedExpressionOpenParen.md`.
 Related broad method-call bucket: `issues/open/435-implement-method-call.md`.
+
+Additional superseded bucket:
+
+- `issues/done/1382-implement-commentsemitComments.md` reaches the same
+  function-typed local call definite-assignment boundary at
+  `var fooVar: () => void; fooVar();`. Fresh triage on 2026-05-07 reports
+  unspanned `UnresolvedFunction` for `fooVar`, while TypeScript reports TS2454
+  at the `fooVar` call. Comment emit behavior is not reached before this
+  resolver/lowering boundary.
