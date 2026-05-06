@@ -502,11 +502,151 @@ impl Parser {
                 start: self.cursor,
                 end: self.cursor,
             });
+            self.validate_erased_namespace_implements(span)?;
             self.skip_balanced_brace_block(span)?;
         } else if matches!(self.peek(), Some(Token::Semicolon)) {
             self.consume(TokenKind::Semicolon);
         }
         Ok(true)
+    }
+
+    fn validate_erased_namespace_implements(&self, start_span: Span) -> Result<(), Diagnostic> {
+        let left_brace = self.cursor;
+        let Some(right_brace) = self.matching_token_right_brace(left_brace) else {
+            return Err(Diagnostic {
+                code: DiagCode::UnsupportedSyntax,
+                message: "unterminated TypeScript namespace declaration".to_owned(),
+                span: Some(start_span),
+            });
+        };
+        let declared_type_names = self.collect_erased_namespace_type_names(left_brace + 1, right_brace);
+        let mut index = left_brace + 1;
+        while index < right_brace {
+            if matches!(self.tokens[index].kind, Token::Class) {
+                self.validate_erased_namespace_class_implements(
+                    index + 1,
+                    right_brace,
+                    &declared_type_names,
+                )?;
+            }
+            index += 1;
+        }
+        Ok(())
+    }
+
+    fn collect_erased_namespace_type_names(
+        &self,
+        start: usize,
+        end: usize,
+    ) -> HashSet<String> {
+        let mut names = HashSet::new();
+        let mut index = start;
+        while index < end {
+            match &self.tokens[index].kind {
+                Token::Class => {
+                    if let Some((name, _)) = self.ident_at(index + 1) {
+                        names.insert(name.to_owned());
+                    }
+                }
+                Token::Ident(keyword) if matches!(keyword.as_str(), "interface" | "type" | "enum") => {
+                    if let Some((name, _)) = self.ident_at(index + 1) {
+                        names.insert(name.to_owned());
+                    }
+                }
+                _ => {}
+            }
+            index += 1;
+        }
+        names
+    }
+
+    fn validate_erased_namespace_class_implements(
+        &self,
+        mut index: usize,
+        end: usize,
+        declared_type_names: &HashSet<String>,
+    ) -> Result<(), Diagnostic> {
+        let mut angle_depth = 0usize;
+        while index < end {
+            match &self.tokens[index].kind {
+                Token::LeftBrace if angle_depth == 0 => return Ok(()),
+                Token::Less => angle_depth += 1,
+                Token::Greater if angle_depth > 0 => angle_depth -= 1,
+                Token::Ident(keyword) if keyword == "implements" && angle_depth == 0 => {
+                    return self.validate_erased_namespace_implements_clause(
+                        index + 1,
+                        end,
+                        declared_type_names,
+                    );
+                }
+                _ => {}
+            }
+            index += 1;
+        }
+        Ok(())
+    }
+
+    fn validate_erased_namespace_implements_clause(
+        &self,
+        mut index: usize,
+        end: usize,
+        declared_type_names: &HashSet<String>,
+    ) -> Result<(), Diagnostic> {
+        let mut angle_depth = 0usize;
+        let mut expecting_root_type = true;
+        while index < end {
+            match &self.tokens[index].kind {
+                Token::LeftBrace if angle_depth == 0 => return Ok(()),
+                Token::Comma if angle_depth == 0 => expecting_root_type = true,
+                Token::Less => angle_depth += 1,
+                Token::Greater if angle_depth > 0 => angle_depth -= 1,
+                Token::Ident(name) if expecting_root_type && angle_depth == 0 => {
+                    if !declared_type_names.contains(name.as_str())
+                        && !is_global_implements_type_name(name)
+                    {
+                        return Err(Diagnostic {
+                            code: DiagCode::UnresolvedName,
+                            message: format!("unresolved name: `{name}`"),
+                            span: Some(self.tokens[index].span),
+                        });
+                    }
+                    expecting_root_type = false;
+                }
+                _ => {}
+            }
+            index += 1;
+        }
+        Ok(())
+    }
+
+    fn matching_token_right_brace(&self, left_brace: usize) -> Option<usize> {
+        if !matches!(self.tokens.get(left_brace)?.kind, Token::LeftBrace) {
+            return None;
+        }
+        let mut depth = 0usize;
+        for index in left_brace..self.tokens.len() {
+            match self.tokens[index].kind {
+                Token::LeftBrace => depth += 1,
+                Token::RightBrace => {
+                    depth -= 1;
+                    if depth == 0 {
+                        return Some(index);
+                    }
+                }
+                _ => {}
+            }
+        }
+        None
+    }
+
+    fn ident_at(&self, index: usize) -> Option<(&str, Span)> {
+        match self.tokens.get(index)? {
+            SpannedToken {
+                kind: Token::Ident(name),
+                span,
+            } => Some((name.as_str(), *span)),
+            _ => None,
+        }
     }
 
     fn unsupported_typescript_syntax(&self, span: Span, message: &str) -> Diagnostic {
@@ -540,4 +680,30 @@ impl Parser {
         })
     }
 
+}
+
+fn is_global_implements_type_name(name: &str) -> bool {
+    matches!(
+        name,
+        "Array"
+            | "AsyncIterable"
+            | "AsyncIterator"
+            | "Boolean"
+            | "Date"
+            | "Error"
+            | "Function"
+            | "Iterable"
+            | "Iterator"
+            | "Map"
+            | "Number"
+            | "Object"
+            | "Promise"
+            | "ReadonlyArray"
+            | "RegExp"
+            | "Set"
+            | "String"
+            | "Symbol"
+            | "WeakMap"
+            | "WeakSet"
+    )
 }

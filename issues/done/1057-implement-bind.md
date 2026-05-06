@@ -108,7 +108,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] added: `issues/open/5172-report-unresolved-implements-in-erased-namespace.md`
+- [x] added: `issues/done/5172-report-unresolved-implements-in-erased-namespace.md`
 
 ## Notes
 
@@ -132,7 +132,7 @@ Generated on 2026-05-06.
 - Visible symbols before mismatch: class `C`
 - Compiler evidence: tokens include `namespace`, `export`, `class`, `implements`, and `I`; AST and resolved dumps are empty because the namespace body is erased.
 - TypeScript oracle: reports `TS2304` at the `I` token.
-- Superseding child: `issues/open/5172-report-unresolved-implements-in-erased-namespace.md`
+- Superseding child: `issues/done/5172-report-unresolved-implements-in-erased-namespace.md`
 
 ## Completion evidence
 

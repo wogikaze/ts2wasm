@@ -413,6 +413,22 @@ mod tests {
     }
 
     #[test]
+    fn reports_unresolved_implements_in_erased_namespace() {
+        let err = parse_program("namespace M { export class C implements I {} }")
+            .expect_err("missing implements type in erased namespace should be reported");
+        assert_eq!(err.code, DiagCode::UnresolvedName);
+        assert!(err.message.contains("unresolved name: `I`"));
+        assert_eq!(err.span, Some(Span { start: 40, end: 41 }));
+    }
+
+    #[test]
+    fn allows_local_implements_type_in_erased_namespace() {
+        let program = parse_program("namespace M { interface I {} export class C implements I {} }")
+            .expect("local namespace interface should satisfy erased implements reference");
+        assert!(program.is_empty());
+    }
+
+    #[test]
     fn rejects_unsupported_typescript_ambient_forms_with_source_span() {
         let err = parse_program("declare global { interface Window { value: string; } }")
             .expect_err("declare global is outside the erasure slice");

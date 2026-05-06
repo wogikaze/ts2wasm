@@ -57,9 +57,9 @@ The frontend preserves enough evidence from erased namespace bodies to report th
 
 In scope:
 
-- [ ] Detect `class ... implements <Ident>` inside erased namespace declarations.
-- [ ] Report a source-spanned unresolved-name diagnostic for missing `implements` type names.
-- [ ] Add focused coverage for `namespace M { export class C implements I {} }`.
+- [x] Detect `class ... implements <Ident>` inside erased namespace declarations.
+- [x] Report a source-spanned unresolved-name diagnostic for missing `implements` type names.
+- [x] Add focused coverage for `namespace M { export class C implements I {} }`.
 
 Out of scope:
 
@@ -83,9 +83,9 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] A focused frontend test covers `namespace M { export class C implements I {} }`.
-- [ ] The diagnostic is source-spanned at `I` and no longer produces an empty AST/resolved build pass for the representative case.
-- [ ] `python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/bind1.ts` no longer reports `BuildPass` when TypeScript reports `TS2304`.
+- [x] A focused frontend test covers `namespace M { export class C implements I {} }`.
+- [x] The diagnostic is source-spanned at `I` and no longer produces an empty AST/resolved build pass for the representative case.
+- [x] `python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/bind1.ts` no longer reports `BuildPass` when TypeScript reports `TS2304`.
 
 ## Validation
 
@@ -111,15 +111,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 
@@ -127,18 +127,28 @@ Split from generated bucket `1057` on 2026-05-06. The bucket title is `Bind`, bu
 
 ## Completion evidence
 
-Fill only when moving to `done/`.
-
 Commits:
 
-- `...`
+- `HEAD (final issue commit)`
 
 Validation result:
 
 ```text
-command:
-result:
-date:
+command: cargo fmt --all --check
+result: pass
+date: 2026-05-06
+
+command: cargo nextest run -p ts2wasm-frontend implements
+result: 2 passed, 0 failed
+date: 2026-05-06
+
+command: cargo build -q -p ts2wasm-cli
+result: pass (warning: compile_source_with_emit is dead code)
+date: 2026-05-06
+
+command: python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/bind1.ts
+result: UnresolvedName at 65..66; no longer BuildPass
+date: 2026-05-06
 ```
 
 Remaining risks:
