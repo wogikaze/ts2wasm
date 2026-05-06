@@ -26,9 +26,8 @@ Issue files are the source of truth for work items. The generated section below 
 | scripts | 3 | 0 | 3 |
 | security | 1 | 0 | 1 |
 | tests | 8 | 2 | 6 |
-| unspecified | 1 | 1 | 0 |
 | wasi | 4 | 3 | 1 |
-| total | 5073 | 4008 | 1065 |
+| total | 5072 | 4007 | 1065 |
 <!-- generated:summary:end -->
 
 ## Reading rules
