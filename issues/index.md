@@ -16,9 +16,9 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 3 | 2 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4462 | 3723 | 739 |
+| frontend | 4462 | 3722 | 740 |
 | harness | 1 | 0 | 1 |
-| ir | 46 | 24 | 22 |
+| ir | 47 | 25 | 22 |
 | issues | 4 | 0 | 4 |
 | parser | 1 | 0 | 1 |
 | reference | 212 | 159 | 53 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5086 | 4000 | 1086 |
+| total | 5087 | 4000 | 1087 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -49,7 +49,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 ```
 5000 (Meta: TypeScript Compiler Parser Syntax Coverage) [done/design] ch:494 open:427 done:67
 ├── 5002 (Meta: TypeScript Compiler Type System Coverage) [done/done] ch:234 open:226 done:8 (also ← 5005)
-├── 5003 (Meta: TypeScript Compiler Declaration Emit Coverage) [done/done] ch:103 open:92 done:11 (also ← 5001)
+├── 5003 (Meta: TypeScript Compiler Declaration Emit Coverage) [done/done] ch:102 open:91 done:11 (also ← 5001)
 5001 (Meta: TypeScript Compiler Semantic Analysis Coverage) [done/done] ch:595 open:346 done:249
 5004 (Meta: Runtime Builtins Coverage (test262) (audit reopened #5004)) [done/done] ch:24 open:3 done:21
 5005 (Meta: TypeScript Compiler Name Resolution Coverage) [done/done] ch:422 open:375 done:47
@@ -71,7 +71,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 3 | 5004 | Meta: Runtime Builtins Coverage (test262) (audit reopened #5004) | done | done | runtime/builtins | P1 | - | 24 | 3 | 21 |
 | 4 | 5005 | Meta: TypeScript Compiler Name Resolution Coverage | done | done | frontend/resolver | P1 | - | 422 | 375 | 47 |
 | 5 | 5002 | Meta: TypeScript Compiler Type System Coverage | done | done | frontend/semantics | P1 | 5000, 5005 | 234 | 226 | 8 |
-| 6 | 5003 | Meta: TypeScript Compiler Declaration Emit Coverage | done | done | frontend/syntax | P2 | 5000, 5001 | 103 | 92 | 11 |
+| 6 | 5003 | Meta: TypeScript Compiler Declaration Emit Coverage | done | done | frontend/syntax | P2 | 5000, 5001 | 102 | 91 | 11 |
 | 7 | 5006 | Meta: TypeScript Compiler Scope Analysis Coverage | done | done | frontend/resolver | P2 | 5005 | 29 | 21 | 8 |
 | 8 | 5007 | Meta: TypeScript Compiler Module Resolution Coverage (audit reopened #5007) | done | done | frontend/resolver | P2 | 5005 | 21 | 19 | 2 |
 
@@ -206,6 +206,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5249 | Scope block-local class declarations | feature | frontend/resolver | implementation-ready | P1 |  | `classDeclarationBlockScoping1.ts` reports `DuplicateLocal` for an inner block-local `class C {}` that TypeScript acc... |
 | 5250 | Parse class declarations in nested block statements | feature | frontend/parser | implementation-ready | P1 |  | `classDeclarationBlockScoping2.ts` reports `UnsupportedSyntax: expected Comma, got Some(Ident("C"))` at a nested `{ c... |
 | 5251 | Parse computed class member names in class declarations | feature | frontend/parser | implementation-ready | P1 |  | `classDeclarationShouldBeOutOfScopeInComputedNames.ts` stops during |
+| 5252 | Support call-expression class heritage | feature | ir/resolver | implementation-ready | P1 |  | `classDeclaredBeforeClassFactory.ts` parses successfully but name |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -480,7 +481,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 772 | Implement Augmentedtypesvar | spike | frontend/syntax | class: blocked | Implement Augmentedtypesvar |
 | 773 | Implement Autoasiforstaticsinclassdeclaration | spike | frontend/syntax | class: triage-needed | Implement Autoasiforstaticsinclassdeclaration |
 | 775 | Implement Autotypeassignedusingdestructuringfromnevernocrash | spike | frontend/resolver | class: blocked | Implement Autotypeassignedusingdestructuringfromnevernocrash |
-| 1179 | Implement Classdeclaredbeforeclassfactory | spike | frontend/syntax | class: blocked | Implement Classdeclaredbeforeclassfactory |
 | 1180 | Implement Classexpressionassignment | spike | frontend/syntax | class: triage-needed | Implement Classexpressionassignment |
 | 1181 | Implement Classexpressionextendingabstractclass | spike | frontend/syntax | class: triage-needed | Implement Classexpressionextendingabstractclass |
 | 1182 | Implement Classexpressioninclassstaticdeclarations | spike | frontend/syntax | class: triage-needed | Implement Classexpressioninclassstaticdeclarations |
@@ -5042,6 +5042,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1176 | Implement Classdeclarationcheckusedbeforedefinitioninitself | spike | frontend/syntax | see `issues/done/1176-implement-classDeclarationCheckUsedBeforeDefinitionInItself.md` |
 | 1177 | Implement Classdeclarationmergedinmodulewithcontinuation | spike | frontend/syntax | see `issues/done/1177-implement-classDeclarationMergedInModuleWithContinuation.md` |
 | 1178 | Implement Classdeclarationshouldbeoutofscopeincomputednames | spike | frontend/resolver | see `issues/done/1178-implement-classDeclarationShouldBeOutOfScopeInComputedNames.md` |
+| 1179 | Implement Classdeclaredbeforeclassfactory | spike | frontend/syntax | see `issues/done/1179-implement-classDeclaredBeforeClassFactory.md` |
 | 2050 | Implement Duplicatelocalvariable Duplicate Local | spike | reference/triage | see `issues/done/2050-implement-duplicateLocalVariable-duplicate-local.md` |
 | 3002 | Implement Isolateddeclarationerrorsdefault | spike | runtime/builtins | see `issues/done/3002-implement-isolatedDeclarationErrorsDefault.md` |
 | 3131 | Implement Jsxfactorynotidentifierorqualifiedname | spike | reference/triage | see `issues/done/3131-implement-jsxFactoryNotIdentifierOrQualifiedName.md` |
