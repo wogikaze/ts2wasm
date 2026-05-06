@@ -3,6 +3,7 @@ pub fn validate_lowered(program: &LoweredProgram) -> Result<(), Vec<Diagnostic>>
     let num_funcs = program.functions.len();
 
     validate_functions(program, &mut errors);
+    validate_top_level_locals(program, &mut errors);
 
     validate_stmts(
         &program.top_level_statements,
@@ -96,6 +97,21 @@ fn validate_functions(program: &LoweredProgram, errors: &mut Vec<Diagnostic>) {
                     span: None,
                 });
             }
+        }
+    }
+}
+
+fn validate_top_level_locals(program: &LoweredProgram, errors: &mut Vec<Diagnostic>) {
+    for (index, local_id) in program.top_level_locals.iter().enumerate() {
+        if local_id.0 != index {
+            errors.push(Diagnostic {
+                code: DiagCode::InvariantViolation,
+                message: format!(
+                    "top_level_locals LocalId {} must match its index {}",
+                    local_id.0, index
+                ),
+                span: None,
+            });
         }
     }
 }

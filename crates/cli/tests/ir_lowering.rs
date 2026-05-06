@@ -674,6 +674,21 @@ fn validate_rejects_arity_mismatch() {
 }
 
 #[test]
+fn validate_rejects_non_contiguous_top_level_locals() {
+    use ts2wasm_ir::lowered::{FuncId, LocalId, LoweredFunction, LoweredProgram};
+    let program = LoweredProgram {
+        top_level_statements: vec![],
+        top_level_locals: vec![LocalId(0), LocalId(2)], // non-contiguous: 1 is missing
+        functions: vec![],
+        modules: vec![],
+    };
+    let errs = ts2wasm_ir::lowered::validate_lowered(&program).unwrap_err();
+    assert_eq!(errs.len(), 1);
+    assert_eq!(errs[0].code, DiagCode::InvariantViolation);
+    assert!(errs[0].message.contains("top_level_locals"));
+}
+
+#[test]
 fn typescript_semantics_rejects_block_scoped_same_name_extra_argument() {
     let program = parse_and_resolve(
         r#"
