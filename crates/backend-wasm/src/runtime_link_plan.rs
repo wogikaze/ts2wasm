@@ -8,6 +8,7 @@ use ts2wasm_runtime_abi::ValueTag;
 
 use super::runtime_fn::{
     Capability, GLOBALS_EXCEPTION_RUNTIME, HostAbi, HostImport, RuntimeFn, RuntimeGlobal,
+    StringOrigin,
 };
 
 #[derive(Debug, Clone)]
@@ -17,6 +18,9 @@ pub(crate) struct RuntimeLinkPlan {
     required_imports: BTreeSet<HostImport>,
     required_capabilities: BTreeSet<Capability>,
     required_runtime_strings: BTreeSet<&'static str>,
+    /// Maps each runtime string to the RuntimeFn variants that declare it.
+    /// Preserves origin information for auditing and conditional interning.
+    string_origins: BTreeMap<&'static str, Vec<RuntimeFn>>,
     manifest_target: &'static str,
     capability_reasons: BTreeMap<String, Vec<String>>,
 }
@@ -29,6 +33,7 @@ impl Default for RuntimeLinkPlan {
             required_imports: BTreeSet::new(),
             required_capabilities: BTreeSet::new(),
             required_runtime_strings: BTreeSet::new(),
+            string_origins: BTreeMap::new(),
             manifest_target: "wasm32-wasi-p1",
             capability_reasons: BTreeMap::new(),
         }
@@ -93,6 +98,10 @@ impl RuntimeLinkPlan {
 
     pub(crate) fn required_runtime_strings(&self) -> &BTreeSet<&'static str> {
         &self.required_runtime_strings
+    }
+
+    pub(crate) fn string_origins(&self) -> &BTreeMap<&'static str, Vec<RuntimeFn>> {
+        &self.string_origins
     }
 
     pub(crate) fn capability_reasons(&self) -> &BTreeMap<String, Vec<String>> {
@@ -175,6 +184,10 @@ impl RuntimeLinkPlan {
             }
             for value in runtime_fn.spec().runtime_strings {
                 self.required_runtime_strings.insert(*value);
+                self.string_origins
+                    .entry(*value)
+                    .or_default()
+                    .push(*runtime_fn);
             }
         }
 
@@ -674,7 +687,9 @@ impl RuntimeLinkPlan {
 mod tests {
     use ts2wasm_ir::lowered::{
         FuncId, LocalId, LoweredBinaryOp, LoweredExpr, LoweredProgram, LoweredStmt, ModuleInfo,
+        FunctionCallKind,
     };
+    use ts2wasm_ir::builtin::BuiltinId;
 
     use super::{HostImport, RuntimeFn, RuntimeGlobal, RuntimeLinkPlan};
 
@@ -1008,6 +1023,136 @@ mod tests {
             plan.required_globals()
                 .contains(&RuntimeGlobal::ExceptionHandlerDepth),
             "ClassDecl at top level must select ExceptionHandlerDepth global"
+        );
+    }
+
+    #[test]
+    fn no_console_log_no_log_write_runtime_strings() {
+        let program = LoweredProgram {
+            top_level_statements: vec![LoweredStmt::Expr(LoweredExpr::Number(42))],
+            top_level_locals: vec![],
+            functions: vec![],
+            modules: vec![],
+        };
+
+        let plan = RuntimeLinkPlan::from_program(&program);
+
+        assert!(
+            !plan.required_runtime_functions().contains(&RuntimeFn::Log),
+            "no console.log → Log must not be selected"
+        );
+        assert!(
+            !plan
+                .required_runtime_functions()
+                .contains(&RuntimeFn::Write),
+            "no console.log → Write must not be selected"
+        );
+        assert!(
+            !plan
+                .required_runtime_functions()
+                .contains(&RuntimeFn::ValueToStringInto),
+            "no console.log → ValueToStringInto must not be selected"
+        );
+        // Verify no runtime strings for Log/Write/VTS
+        let log_related: Vec<&str> = plan
+            .required_runtime_strings()
+            .iter()
+            .copied()
+            .filter(|s| {
+                *s == "\n" || *s == "undefined" || *s == "null" || *s == "false" || *s == "true"
+            })
+            .collect();
+        assert!(
+            log_related.is_empty(),
+            "no console.log → expected zero Log/Write/VTS runtime strings, got: {:?}",
+            log_related
+        );
+        // Verify string_origins are also empty for these strings
+        let origin_keys: Vec<&&str> = plan.string_origins().keys().collect();
+        let log_origin_keys: Vec<&&str> = origin_keys
+            .into_iter()
+            .filter(|s| {
+                **s == "\n"
+                    || **s == "undefined"
+                    || **s == "null"
+                    || **s == "false"
+                    || **s == "true"
+            })
+            .collect();
+        assert!(
+            log_origin_keys.is_empty(),
+            "no console.log → expected zero Log/Write/VTS origins, got: {:?}",
+            log_origin_keys
+        );
+    }
+
+    #[test]
+    fn console_log_selects_log_write_runtime_strings() {
+        let program = LoweredProgram {
+            top_level_statements: vec![LoweredStmt::Expr(LoweredExpr::Call {
+                kind: FunctionCallKind::Builtin(BuiltinId::ConsoleLog),
+                args: vec![LoweredExpr::Number(42)],
+            })],
+            top_level_locals: vec![],
+            functions: vec![],
+            modules: vec![],
+        };
+
+        let plan = RuntimeLinkPlan::from_program(&program);
+
+        assert!(
+            plan.required_runtime_functions().contains(&RuntimeFn::Log),
+            "console.log → Log must be selected"
+        );
+        assert!(
+            plan.required_runtime_functions()
+                .contains(&RuntimeFn::ValueToStringInto),
+            "console.log → ValueToStringInto (transitive dep of Log) must be selected"
+        );
+
+        // Log declares "\n", ValueToStringInto declares "undefined"/"null"/"false"/"true"
+        assert!(
+            plan.required_runtime_strings().contains("\n"),
+            "console.log → newline runtime string must be interned"
+        );
+        assert!(
+            plan.required_runtime_strings().contains("undefined"),
+            "console.log → 'undefined' runtime string must be interned (via ValueToStringInto)"
+        );
+        assert!(
+            plan.required_runtime_strings().contains("null"),
+            "console.log → 'null' runtime string must be interned"
+        );
+        assert!(
+            plan.required_runtime_strings().contains("false"),
+            "console.log → 'false' runtime string must be interned"
+        );
+        assert!(
+            plan.required_runtime_strings().contains("true"),
+            "console.log → 'true' runtime string must be interned"
+        );
+
+        // Verify string_origins tracks origins
+        let origins = plan.string_origins();
+        assert!(
+            origins.contains_key("\n"),
+            "string_origins must contain newline"
+        );
+        assert!(
+            origins.contains_key("undefined"),
+            "string_origins must contain 'undefined'"
+        );
+        // Verify the RuntimeFn origin for "\n" includes Log
+        let newline_origins = origins.get("\n").unwrap();
+        assert!(
+            newline_origins.contains(&RuntimeFn::Log),
+            "'\\n' must originate from Log"
+        );
+        // Verify the RuntimeFn origin for "undefined" includes ValueToStringInto
+        let undefined_origins = origins.get("undefined").unwrap();
+        assert!(
+            undefined_origins.contains(&RuntimeFn::ValueToStringInto),
+            "'undefined' must originate from ValueToStringInto"
         );
     }
 }

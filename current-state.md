@@ -1,6 +1,6 @@
 # Current State
 
-Last updated: 2026-05-01
+Last updated: 2026-05-06
 
 この文書は、現在の実装状態と検証の事実だけを記録する。設計は `docs/` 側に置き、ここでは「今何が動くか」「何が未実装か」「何を確認すればよいか」を扱う。
 
@@ -105,6 +105,7 @@ Compile-only tests for class/module/Node API are explicitly marked as build_smok
 - Destructuring binding runtime support is implemented for the current simple identifier-only subset: dense array declarations, object shorthand/identifier alias declarations, ordinary function parameter patterns, arrow parameter patterns, array elisions, array rest bindings, nested array/object bindings, static object-literal rest declarations, literal default initializers, and ordinary function whole-pattern parameter defaults have Node/iwasm differential coverage. Dynamic-source/parameter object rest binding, non-literal default initializers, and broad iterator semantics remain issue-251 unsupported diagnostics.
 - Backend runtime-link planning now scans explicit lowered `ModuleInfo.statements`, so future ES module export statements select module export helpers through the runtime catalog, while empty module metadata does not select ES module export helpers. This is a link-plan contract only; runtime module execution parity remains tracked by issues 233 and 234.
 - runtime-abi crate（`crates/runtime-abi`）: RawValue/layout/ABI
+- `StringOrigin` enum implemented (`StringOrigin::UserLiteral` / `StringOrigin::Runtime(RuntimeFn)`) with origin tracking through `RuntimeLinkPlan::string_origins()`. All interned strings carry origin metadata; `is_runtime_string()` enables audit of data segment contents. Linker structure tests verify conditional interning: no console.log → zero Log/Write runtime strings, console.log present → Log/Write runtime strings present.
 - reference coverage パイプライン（`mise run reference-coverage`, `mise run update-coverage-matrix`, `mise run update-coverage-matrix -- --check`）
 - generated coverage table（`artifacts/coverage/reference-coverage-matrix.md`）
 - issue queue index（`issues/index.md` の Ready/Blocked/Done 表は `mise run update-issue-index` が生成、`mise run check-issue-health` で整合検証。`mise run check-issue-index` は互換 alias）

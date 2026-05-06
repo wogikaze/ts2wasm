@@ -5,6 +5,17 @@ use ts2wasm_runtime_abi::RuntimeString;
 
 pub(crate) const NATIVE_SET_ADD_SENTINEL: i32 = -4;
 
+/// Origin of an interned string in the wasm data segment.
+/// Tracks whether a string comes from user source code or from a runtime
+/// dependency, enabling audit of data segment contents.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub(crate) enum StringOrigin {
+    /// String originated from user source code (literal, property key, etc.)
+    UserLiteral,
+    /// String originated from a RuntimeFn's runtime_strings declaration
+    Runtime(RuntimeFn),
+}
+
 /// ABI contract type for host imports.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub(crate) enum HostAbi {

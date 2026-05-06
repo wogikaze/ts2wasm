@@ -1,4 +1,4 @@
-use std::collections::{BTreeMap, BTreeSet, HashMap};
+use std::collections::{BTreeMap, BTreeSet, HashMap, HashSet};
 
 use crate::{DiagCode, Diagnostic};
 use ts2wasm_ir::lowered::{
@@ -8,7 +8,7 @@ use ts2wasm_ir::lowered::{
 use ts2wasm_runtime_abi::Layout;
 use ts2wasm_runtime_abi::ValueTag;
 
-use super::runtime_fn::{NATIVE_SET_ADD_SENTINEL, RuntimeFn, RuntimeGlobal};
+use super::runtime_fn::{NATIVE_SET_ADD_SENTINEL, RuntimeFn, RuntimeGlobal, StringOrigin};
 use super::runtime_link_plan::RuntimeLinkPlan;
 use super::wat_writer::WatModuleBuilder;
 
@@ -20,8 +20,10 @@ pub(super) struct WatEmitter<'a> {
     pub(super) program: &'a LoweredProgram,
     pub(super) link_plan: RuntimeLinkPlan,
     pub(super) strings: HashMap<String, u32>,
-    pub(super) string_data: Vec<(u32, String)>,
+    pub(super) string_data: Vec<(u32, String, StringOrigin)>,
     pub(super) next_data_offset: u32,
+    /// Set of strings that were interned as runtime-originated (from RuntimeFn spec).
+    pub(super) runtime_string_set: HashSet<String>,
     class_name_to_ctor: HashMap<String, FuncId>,
     method_counts: HashMap<FuncId, usize>,
 }
@@ -140,6 +142,7 @@ impl<'a> WatEmitter<'a> {
             link_plan,
             strings: HashMap::new(),
             string_data: Vec::new(),
+            runtime_string_set: HashSet::new(),
             next_data_offset: Layout::DATA_START,
             class_name_to_ctor,
             method_counts,
@@ -376,7 +379,15 @@ impl<'a> WatEmitter<'a> {
             .copied()
             .collect();
         for value in runtime_strings {
-            self.intern_string(value);
+            // Use the first origin from the RuntimeFn catalog as the representative origin.
+            let origin = self
+                .link_plan
+                .string_origins()
+                .get(value)
+                .and_then(|origins| origins.first())
+                .map(|rf| StringOrigin::Runtime(*rf))
+                .unwrap_or(StringOrigin::UserLiteral);
+            self.intern_string_with_origin(value, origin);
         }
     }
 
