@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 4 | 3 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4491 | 3662 | 829 |
+| frontend | 4491 | 3661 | 830 |
 | harness | 1 | 0 | 1 |
 | ir | 57 | 35 | 22 |
 | issues | 4 | 0 | 4 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5127 | 3946 | 1181 |
+| total | 5127 | 3945 | 1182 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -47,7 +47,7 @@ Issue files are the source of truth for work items. The generated section below 
 Direct child counts are derived from issue-file `depends_on` links. A meta issue can be `done` as a classification/design umbrella while implementation child issues remain open.
 
 ```
-5000 (Meta: TypeScript Compiler Parser Syntax Coverage) [done/design] ch:490 open:421 done:69
+5000 (Meta: TypeScript Compiler Parser Syntax Coverage) [done/design] ch:490 open:420 done:70
 ├── 5002 (Meta: TypeScript Compiler Type System Coverage) [done/done] ch:234 open:226 done:8 (also ← 5005)
 ├── 5003 (Meta: TypeScript Compiler Declaration Emit Coverage) [done/done] ch:102 open:91 done:11 (also ← 5001)
 5001 (Meta: TypeScript Compiler Semantic Analysis Coverage) [done/done] ch:594 open:343 done:251
@@ -66,7 +66,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 
 | Order | ID | Title | State | Class | Area | Priority | Depends on | Direct children | Open children | Done children |
 |-----:|---:|------|-------|-------|------|--------:|-----------:|----------------:|--------------:|--------------:|
-| 1 | 5000 | Meta: TypeScript Compiler Parser Syntax Coverage | done | design | frontend/syntax | P1 | - | 490 | 421 | 69 |
+| 1 | 5000 | Meta: TypeScript Compiler Parser Syntax Coverage | done | design | frontend/syntax | P1 | - | 490 | 420 | 70 |
 | 2 | 5001 | Meta: TypeScript Compiler Semantic Analysis Coverage | done | done | frontend/semantics | P1 | - | 594 | 343 | 251 |
 | 3 | 5004 | Meta: Runtime Builtins Coverage (test262) (audit reopened #5004) | done | done | runtime/builtins | P1 | - | 24 | 3 | 21 |
 | 4 | 5005 | Meta: TypeScript Compiler Name Resolution Coverage | done | done | frontend/resolver | P1 | - | 421 | 373 | 48 |
@@ -638,7 +638,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1344 | Implement Commentleadingclosebrace | spike | frontend/resolver | class: blocked | Implement Commentleadingclosebrace |
 | 1345 | Implement Commentonambientmodule | spike | frontend/syntax | class: blocked | Implement Commentonambientmodule |
 | 1346 | Implement Commentonambientvariable | spike | frontend/resolver | class: blocked | Implement Commentonambientvariable |
-| 1391 | Implement Comparabilitytypeparametersrelatedbyunion | spike | frontend/syntax | class: blocked | Implement Comparabilitytypeparametersrelatedbyunion |
 | 1392 | Implement Comparablerelationbidirectional | spike | frontend/syntax | class: triage-needed | Implement Comparablerelationbidirectional |
 | 1393 | Implement Comparisonofpartialdeepandindexedaccessterminateswithouterror | spike | frontend/syntax | class: triage-needed | Implement Comparisonofpartialdeepandindexedaccessterminateswithouterror |
 | 1394 | Implement Complexclassrelationships | spike | frontend/syntax | class: triage-needed | Implement Complexclassrelationships |
@@ -5083,6 +5082,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1388 | Implement Commonsourcedirectory | spike | frontend/syntax | see `issues/done/1388-implement-commonSourceDirectory.md` |
 | 1389 | Implement Commonjsaccessexports | spike | frontend/syntax | see `issues/done/1389-implement-commonjsAccessExports.md` |
 | 1390 | Implement Commonjssafeimport | spike | frontend/syntax | see `issues/done/1390-implement-commonjsSafeImport.md` |
+| 1391 | Implement Comparabilitytypeparametersrelatedbyunion | spike | frontend/syntax | see `issues/done/1391-implement-comparabilityTypeParametersRelatedByUnion.md` |
 | 2050 | Implement Duplicatelocalvariable Duplicate Local | spike | reference/triage | see `issues/done/2050-implement-duplicateLocalVariable-duplicate-local.md` |
 | 3002 | Implement Isolateddeclarationerrorsdefault | spike | runtime/builtins | see `issues/done/3002-implement-isolatedDeclarationErrorsDefault.md` |
 | 3131 | Implement Jsxfactorynotidentifierorqualifiedname | spike | reference/triage | see `issues/done/3131-implement-jsxFactoryNotIdentifierOrQualifiedName.md` |
