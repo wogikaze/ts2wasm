@@ -24,7 +24,7 @@ The ambient declaration erasure boundary supports declaration-only
 `issue-400` when an ambient variable declaration has no explicit semicolon and
 the next token starts another statement.
 
-Problem: `export declare let x: number` followed by a newline and the next virtual-file statement still reports `issue-400: unterminated ambient variable declaration type`.
+Problem: declaration-only ambient variables followed by a newline and another statement can still report `issue-400` instead of accepting ASI.
 
 ## Current failure
 
@@ -48,9 +48,20 @@ export declare let x: number
 import {x} from "foo";
 ```
 
+Additional representative:
+
+```ts
+declare var foo:{ ( ):void; }
+declare var bar:{ new ( ):any; }
+
+foo = bar; // error
+bar = foo; // error
+```
+
 Triage notes:
 
 - Tokens include `Export`, `declare`, `Let`, `x`, `:`, `number`, then `Import` with no semicolon token between them.
+- `callConstructAssignment.ts` has the same ASI shape after ambient variable type literals: tokens include `declare var foo:{ ( ):void; }`, then `declare var bar:{ new ( ):any; }`, then assignment expressions; the parser reports the first `=` as an ambient initializer.
 - TypeScript accepts ASI after the ambient variable declaration, then reports downstream duplicate identifier and missing-module diagnostics.
 - Separate dumps can already construct an `AmbientValueDecl` and then reach the `issue-232` module specifier boundary for `foo`, so this issue is only about the first parser/build diagnostic.
 
@@ -67,6 +78,7 @@ In scope:
 
 - [ ] Accept ASI after `declare var`, `declare let`, and `declare const`
 - [ ] Accept ASI after exported declaration-only ambient variables, such as `export declare let x: number`
+- [ ] Accept ASI after ambient variable type literals with call and construct signatures
 - [ ] Preserve rejection for ambient variable declarations with initializers
 - [ ] Add a focused parser/build regression fixture without relying on broad module resolution
 
@@ -93,9 +105,11 @@ Do not touch:
 ## Acceptance criteria
 
 - [ ] `export declare let x: number` followed by a newline parses as an erased ambient value declaration without `issue-400`
+- [ ] `declare var foo:{ ( ):void; }` followed by `foo = bar;` parses the assignment as a separate expression, not an ambient initializer
 - [ ] `declare const c: number` followed by EOF or another statement parses without requiring an explicit semicolon
 - [ ] `declare var x = 1` remains rejected as an ambient initializer
 - [ ] `cachedModuleResolution2.ts` no longer stops at `issue-400: unterminated ambient variable declaration type`
+- [ ] `callConstructAssignment.ts` no longer stops at `issue-400: ambient variable declarations with initializers would affect runtime bindings`
 
 ## Validation
 
@@ -110,6 +124,7 @@ Impacted commands:
 
 ```sh
 mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/cachedModuleResolution2.ts
+mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/callConstructAssignment.ts
 cargo nextest run -p ts2wasm-cli -E 'test(ambient|parser|module)'
 ```
 
@@ -135,6 +150,10 @@ Follow-up issues:
 
 Issue 400 is closed for the ambient-erasure boundary. This issue is the narrower
 parser completion slice for ASI on declaration-only ambient variables.
+
+Generated bucket `1091` was folded in on 2026-05-06 after fresh triage showed
+the same `issue-400` ambient variable ASI gap for call/construct signature type
+literals.
 
 ## Completion evidence
 
