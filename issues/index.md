@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 4 | 3 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4491 | 3658 | 833 |
+| frontend | 4491 | 3657 | 834 |
 | harness | 1 | 0 | 1 |
 | ir | 57 | 35 | 22 |
 | issues | 4 | 0 | 4 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5127 | 3942 | 1185 |
+| total | 5127 | 3941 | 1186 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -638,7 +638,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1344 | Implement Commentleadingclosebrace | spike | frontend/resolver | class: blocked | Implement Commentleadingclosebrace |
 | 1345 | Implement Commentonambientmodule | spike | frontend/syntax | class: blocked | Implement Commentonambientmodule |
 | 1346 | Implement Commentonambientvariable | spike | frontend/resolver | class: blocked | Implement Commentonambientvariable |
-| 1395 | Implement Complexnarrowingwithany | spike | frontend/syntax | class: blocked | Implement Complexnarrowingwithany |
 | 1396 | Implement Complexrecursivecollections | spike | frontend/syntax | class: blocked | Implement Complexrecursivecollections |
 | 1397 | Implement Complicatedgenericrecursivebaseclassreference | spike | frontend/semantics | class: blocked | Implement Complicatedgenericrecursivebaseclassreference |
 | 1398 | Implement Complicatedindexedaccesskeyofreliesonkeyofneverupperbound | spike | frontend/syntax | class: blocked | Implement Complicatedindexedaccesskeyofreliesonkeyofneverupperbound |
@@ -5083,6 +5082,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1392 | Implement Comparablerelationbidirectional | spike | frontend/syntax | see `issues/done/1392-implement-comparableRelationBidirectional.md` |
 | 1393 | Implement Comparisonofpartialdeepandindexedaccessterminateswithouterror | spike | frontend/syntax | see `issues/done/1393-implement-comparisonOfPartialDeepAndIndexedAccessTerminatesWithoutError.md` |
 | 1394 | Implement Complexclassrelationships | spike | frontend/syntax | see `issues/done/1394-implement-complexClassRelationships.md` |
+| 1395 | Implement Complexnarrowingwithany | spike | frontend/syntax | see `issues/done/1395-implement-complexNarrowingWithAny.md` |
 | 2050 | Implement Duplicatelocalvariable Duplicate Local | spike | reference/triage | see `issues/done/2050-implement-duplicateLocalVariable-duplicate-local.md` |
 | 3002 | Implement Isolateddeclarationerrorsdefault | spike | runtime/builtins | see `issues/done/3002-implement-isolatedDeclarationErrorsDefault.md` |
 | 3131 | Implement Jsxfactorynotidentifierorqualifiedname | spike | reference/triage | see `issues/done/3131-implement-jsxFactoryNotIdentifierOrQualifiedName.md` |
