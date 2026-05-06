@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 3 | 0 | 3 |
 | coverage | 43 | 0 | 43 |
 | docs | 4 | 2 | 2 |
-| frontend | 4438 | 3716 | 722 |
+| frontend | 4438 | 3714 | 724 |
 | harness | 1 | 0 | 1 |
 | ir | 42 | 5 | 37 |
 | issues | 5 | 0 | 5 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 8 | 1 | 7 |
 | wasi | 4 | 3 | 1 |
-| total | 5076 | 3985 | 1091 |
+| total | 5076 | 3983 | 1093 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -98,8 +98,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5132 | Add ABC451 non-top array separation attribution | infra | runtime/memory | implementation-ready | P1 | 5131 | issue 365 proves the dominant array-growth pressure is |
 | 5137 | Split remaining Date API scope | cleanup | runtime/builtins | design-ready | P1 |  | Date issue 050 currently stays open after its named child issues 240 and 241 are done, but non-literal constructor in... |
 | 5138 | Split Reflect.construct isConstructor reference window | spike | runtime/builtins | design-ready | P1 |  | `reference/test262/test/annexB/built-ins/String/prototype/anchor/not-a-constructor.js` currently fails with `Unresolv... |
-| 5158 | Report interface private member clashes | feature | frontend/resolver | implementation-ready | P1 |  | `reference/typescript/tests/cases/compiler/baseTypePrivateMemberClash.ts` currently reports `BackendIo` instead of a ... |
-| 5163 | Lower nested call expression callees | feature | frontend/semantics | implementation-ready | P2 |  | `reference/typescript/tests/cases/compiler/betterErrorForAccidentalCall.ts` currently reports `UnsupportedSyntax: onl... |
 | 5204 | Resolve lexical super property captures in super call arguments | feature | frontend/resolver | implementation-ready | P1 |  | lexical `super` property access inside arrow arguments to `super(...)` is not resolved against the derived instance c... |
 | 5207 | Support ambient interface filter receivers | feature | frontend/semantics | implementation-ready | P2 |  | `reference/typescript/tests/cases/compiler/booleanFilterAnyArray.ts` now reports `issue-211: unknown receiver class f... |
 | 5208 | Support RegExp match fallback array map receivers | feature | frontend/semantics | implementation-ready | P2 |  | locals initialized from RegExp match fallback expressions are not classified as array-like receivers for supported `.... |
@@ -5122,10 +5120,12 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5154 | Parse angle-bracket type assertion statements | feature | frontend/syntax | see `issues/done/5154-parse-angle-bracket-type-assertion-statements.md` |
 | 5156 | Parse generic type arguments in class heritage clauses | feature | frontend/syntax | see `issues/done/5156-parse-generic-type-arguments-in-class-heritage.md` |
 | 5157 | Report set accessor rest parameter diagnostics | feature | frontend/syntax | see `issues/done/5157-report-set-accessor-rest-parameter-diagnostic.md` |
+| 5158 | Report interface private member clashes | feature | frontend/resolver | see `issues/done/5158-report-interface-private-member-clash.md` |
 | 5159 | Recover colon type annotations after expression statements | feature | frontend/syntax | see `issues/done/5159-recover-colon-type-annotation-after-expression-statement.md` |
 | 5160 | Lower plain ternary conditional expressions | feature | frontend/semantics | see `issues/done/5160-lower-plain-ternary-conditional-expressions.md` |
 | 5161 | Model ambient value declarations for name resolution | feature | frontend/resolver | see `issues/done/5161-model-ambient-value-declarations-for-name-resolution.md` |
 | 5162 | Allow compatible var redeclarations | feature | frontend/syntax | see `issues/done/5162-allow-compatible-var-redeclarations.md` |
+| 5163 | Lower nested call expression callees | feature | frontend/semantics | see `issues/done/5163-lower-nested-call-expression-callees.md` |
 | 5164 | Parse exponentiation compound assignment | feature | frontend/syntax | see `issues/done/5164-parse-exponentiation-compound-assignment.md` |
 | 5165 | Support typed array subarray builtins | feature | ir/builtin-resolver | see `issues/done/5165-support-typed-array-subarray-builtins.md` |
 | 5166 | Parse string-literal module specifier aliases | feature | frontend/syntax | see `issues/done/5166-parse-string-literal-module-specifier-aliases.md` |
