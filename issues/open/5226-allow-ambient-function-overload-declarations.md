@@ -126,6 +126,10 @@ where `classVarianceResolveCircularity1.ts` and
 `classVarianceResolveCircularity2.ts` both currently stop at
 `DuplicateFunction` for ambient `declare function callme(...)` overload
 declarations.
+Also supersedes `issues/done/1263-implement-coAndContraVariantInferences-parser-syntax.md`,
+where fresh triage shows `coAndContraVariantInferences2.ts` now parses and
+stops at `DuplicateFunction` for ambient `declare function assertNode(...)`
+overload declarations.
 
 ## Completion evidence
 
