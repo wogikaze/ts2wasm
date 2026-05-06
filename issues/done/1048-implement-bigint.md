@@ -108,7 +108,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] created: `issues/open/5165-support-typed-array-subarray-builtins.md`
+- [x] created: `issues/done/5165-support-typed-array-subarray-builtins.md`
 
 ## Notes
 
@@ -140,7 +140,7 @@ Generated on 2026-05-06.
 - Visible symbol: `arr: BigInt64Array<ArrayBuffer>`
 - Compiler stage: tokens and AST succeed; `resolve_builtins` / `lower_program` fails during method-call lowering.
 - TypeScript AST path: `FunctionDeclaration -> Block -> ExpressionStatement -> CallExpression -> PropertyAccessExpression`
-- Split child: `issues/open/5165-support-typed-array-subarray-builtins.md`
+- Split child: `issues/done/5165-support-typed-array-subarray-builtins.md`
 
 ## Completion evidence
 

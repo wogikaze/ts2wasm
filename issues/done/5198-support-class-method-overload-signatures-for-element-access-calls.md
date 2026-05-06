@@ -80,13 +80,13 @@ method blocker is removed.
 
 In scope:
 
-- [ ] Distinguish bodyless class method overload signatures from duplicate
+- [x] Distinguish bodyless class method overload signatures from duplicate
   concrete method implementations
-- [ ] Merge overload signatures with the following concrete implementation for
+- [x] Merge overload signatures with the following concrete implementation for
   the same method name
-- [ ] Preserve duplicate-method diagnostics for multiple concrete
+- [x] Preserve duplicate-method diagnostics for multiple concrete
   implementations
-- [ ] Keep the element-access call expression `c["foo"](...)` source-spanned
+- [x] Keep the element-access call expression `c["foo"](...)` source-spanned
   after overload merging
 
 Out of scope:
@@ -111,13 +111,13 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] `callOverloadViaElementAccessExpression.ts` no longer reports
+- [x] `callOverloadViaElementAccessExpression.ts` no longer reports
   `DuplicateFunction` for `C.foo`
-- [ ] A focused fixture covers a class with two overload signatures plus one
+- [x] A focused fixture covers a class with two overload signatures plus one
   implementation and calls through `instance["method"](...)`
-- [ ] Duplicate concrete class methods still report a duplicate-method
+- [x] Duplicate concrete class methods still report a duplicate-method
   diagnostic
-- [ ] The resulting diagnostic or supported behavior is source-spanned at the
+- [x] The resulting diagnostic or supported behavior is source-spanned at the
   element-access call or assignment being checked
 
 ## Validation
@@ -143,15 +143,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 
@@ -178,3 +178,12 @@ date:
 Remaining risks:
 
 - none
+
+
+## False-done audit
+
+Date: 2026-05-07
+
+Classification: truly-done.
+
+Audit result: retained in issues/done/. Implementation commits confirmed.

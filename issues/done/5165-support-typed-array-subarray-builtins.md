@@ -75,11 +75,11 @@ Typed array `subarray` calls for the supported typed-array constructors are reco
 
 In scope:
 
-- [ ] Recognize `subarray` on `Int8Array`, `Uint8Array`, `Uint8ClampedArray`, `Int16Array`, `Uint16Array`, `Int32Array`, `Uint32Array`, `Float32Array`, `Float64Array`, and `BigInt64Array`.
-- [ ] Preserve ordinary user-class method lookup for non-typed-array classes.
-- [ ] Cover the zero-, one-, and two-argument forms used by the TypeScript reference tests.
-- [ ] Add focused IR/builtin resolver coverage for typed-array `subarray` method binding.
-- [ ] Re-run representative triage and confirm the current method-not-found blocker is gone.
+- [x] Recognize `subarray` on `Int8Array`, `Uint8Array`, `Uint8ClampedArray`, `Int16Array`, `Uint16Array`, `Int32Array`, `Uint32Array`, `Float32Array`, `Float64Array`, and `BigInt64Array`.
+- [x] Preserve ordinary user-class method lookup for non-typed-array classes.
+- [x] Cover the zero-, one-, and two-argument forms used by the TypeScript reference tests.
+- [x] Add focused IR/builtin resolver coverage for typed-array `subarray` method binding.
+- [x] Re-run representative triage and confirm the current method-not-found blocker is gone.
 
 Out of scope:
 
@@ -105,10 +105,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] `python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/typedArraysSubarray.ts` no longer reports `method Int8Array.subarray not found`.
-- [ ] `python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/bigint64ArraySubarray.ts` no longer reports `method BigInt64Array.subarray not found`.
-- [ ] Focused IR/builtin resolver tests cover `arr.subarray()`, `arr.subarray(0)`, and `arr.subarray(0, 10)`.
-- [ ] Any downstream unsupported typed-array runtime behavior is source-spanned and tracked separately instead of hidden behind method lookup.
+- [x] `python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/typedArraysSubarray.ts` no longer reports `method Int8Array.subarray not found`.
+- [x] `python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/bigint64ArraySubarray.ts` no longer reports `method BigInt64Array.subarray not found`.
+- [x] Focused IR/builtin resolver tests cover `arr.subarray()`, `arr.subarray(0)`, and `arr.subarray(0, 10)`.
+- [x] Any downstream unsupported typed-array runtime behavior is source-spanned and tracked separately instead of hidden behind method lookup.
 
 ## Validation
 
@@ -136,15 +136,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 
@@ -169,3 +169,12 @@ date:
 Remaining risks:
 
 - none
+
+
+## False-done audit
+
+Date: 2026-05-07
+
+Classification: truly-done.
+
+Audit result: retained in issues/done/. Implementation commits confirmed.
