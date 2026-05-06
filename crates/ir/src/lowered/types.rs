@@ -451,11 +451,11 @@ pub enum InferredType {
 impl LoweredExpr {
     pub fn inferred_type(&self) -> InferredType {
         match self {
-            Self::Number(_) => InferredType::Number,
+            Self::Number(_, _) => InferredType::Number,
             Self::BigIntLiteral { .. } => InferredType::Unknown,
-            Self::String(_) => InferredType::String,
-            Self::Bool(_) => InferredType::Boolean,
-            Self::Unary { op, expr } => match op {
+            Self::String(_, _) => InferredType::String,
+            Self::Bool(_, _) => InferredType::Boolean,
+            Self::Unary { op, expr, .. } => match op {
                 LoweredUnaryOp::Plus if expr.inferred_type() == InferredType::Number => {
                     InferredType::Number
                 }
@@ -465,7 +465,7 @@ impl LoweredExpr {
                 LoweredUnaryOp::Not => InferredType::Boolean,
                 _ => InferredType::Unknown,
             },
-            Self::Binary { left, op, right } => match op {
+            Self::Binary { left, op, right, .. } => match op {
                 LoweredBinaryOp::Add => match (left.inferred_type(), right.inferred_type()) {
                     (InferredType::Number, InferredType::Number) => InferredType::Number,
                     (InferredType::String, InferredType::String) => InferredType::String,
