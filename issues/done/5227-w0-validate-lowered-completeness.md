@@ -121,3 +121,12 @@ Evidence files:
 Split follow-up: none created in this audit wave; this reopened issue remains the
 tracking item.
 
+
+## False-done audit
+
+Date: 2026-05-06
+
+Classification: truly-done.
+
+Audit result: retained in issues/done/. Implementation commits confirmed.
+Future-work tracking: none identified.

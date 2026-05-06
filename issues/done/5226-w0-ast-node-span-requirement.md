@@ -114,3 +114,12 @@ Follow-up issues:
 ## Notes
 
 The `SourceDiagnostic`/`InternalDiagnostic` split is the minimal change. Do NOT refactor all diagnostic call sites in one commit — introduce both types, migrate compiler phases one by one, keeping a validation pass that catches new `span: None` on source diagnostics.
+
+## False-done audit
+
+Date: 2026-05-06
+
+Classification: truly-done.
+
+Audit result: retained in issues/done/. Commit ef19fb16 (Diagnostic split/Span refactoring)
+Future-work tracking: none identified.

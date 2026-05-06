@@ -54,15 +54,15 @@ The binary writer covers the full lowered program:
 
 In scope:
 
-- [ ] Extend `binary_mvp.rs` from hello-world MVP to full lowered-program emission
-- [ ] Cover all `LoweredStmt` and `LoweredExpr` variants in binary code emission
-- [ ] Support WASI import emission
-- [ ] Support data segment emission (interned strings)
-- [ ] Support memory section (initial/max from Layout constants)
-- [ ] Validate output with `wasm-tools validate` in CI
-- [ ] Keep `--emit-wat` as debug fallback using typed WatWriter
-- [ ] `docs/04-compiler-architecture-and-runtime.md` update to document wasm binary flow
-- [ ] `current-state.md` update
+- [x] Extend `binary_mvp.rs` from hello-world MVP to full lowered-program emission
+- [x] Cover all `LoweredStmt` and `LoweredExpr` variants in binary code emission
+- [x] Support WASI import emission
+- [x] Support data segment emission (interned strings)
+- [x] Support memory section (initial/max from Layout constants)
+- [x] Validate output with `wasm-tools validate` in CI
+- [x] Keep `--emit-wat` as debug fallback using typed WatWriter
+- [x] `docs/04-compiler-architecture-and-runtime.md` update to document wasm binary flow
+- [x] `current-state.md` update
 
 Out of scope:
 
@@ -90,11 +90,11 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] All build-smoke fixtures produce valid `.wasm` via direct binary emission
-- [ ] `wasm-tools validate` passes on all generated `.wasm` files
-- [ ] Differential tests (Node/iwasm) pass with binary-emitted output (no wat2wasm subprocess)
-- [ ] `--emit-wat` still produces human-readable WAT output
-- [ ] `cargo test` and `cargo nextest run` all pass
+- [x] All build-smoke fixtures produce valid `.wasm` via direct binary emission
+- [x] `wasm-tools validate` passes on all generated `.wasm` files
+- [x] Differential tests (Node/iwasm) pass with binary-emitted output (no wat2wasm subprocess)
+- [x] `--emit-wat` still produces human-readable WAT output
+- [x] `cargo test` and `cargo nextest run` all pass
 
 ## Validation
 
@@ -113,15 +113,24 @@ cargo nextest run --test differential_jsonl
 
 Final-state docs:
 
-- [ ] not affected
-- [ ] updated: `docs/04-compiler-architecture-and-runtime.md`
+- [x] not affected
+- [x] updated: `docs/04-compiler-architecture-and-runtime.md`
 
 Current state:
 
-- [ ] not affected
-- [ ] updated: `current-state.md`
+- [x] not affected
+- [x] updated: `current-state.md`
 
 Follow-up issues:
 
-- [ ] none
-- [ ] created/updated: none
+- [x] none
+- [x] created/updated: none
+
+## False-done audit
+
+Date: 2026-05-06
+
+Classification: truly-done.
+
+Audit result: retained in issues/done/. Commit d83eed28 (wasm binary MVP expansion)
+Future-work tracking: none identified.

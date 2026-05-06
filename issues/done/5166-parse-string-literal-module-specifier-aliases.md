@@ -164,3 +164,12 @@ date:
 Remaining risks:
 
 - none
+
+## False-done audit
+
+Date: 2026-05-06
+
+Classification: truly-done.
+
+Audit result: retained in issues/done/. Commit 2555793f
+Future-work tracking: none identified.
