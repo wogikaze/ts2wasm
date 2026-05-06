@@ -89,10 +89,10 @@ The parser erases TypeScript type arguments in class heritage expressions before
 
 In scope:
 
-- [ ] Parse or skip TypeScript type-argument lists in `extends` heritage expressions such as `extends Class3<T>` and nested `extends CBaseBase<Wrapper<T2>>`.
-- [ ] Preserve existing parsing for plain runtime heritage expressions such as `extends Base` and `extends mixin(Base)`.
-- [ ] Add focused parser regressions for `class Class4<T> extends Class3<T> {}` and a nested `RightShift` generic heritage clause.
-- [ ] Re-run the exact `baseTypeOrderChecking.ts` triage and record the new diagnostic if a downstream blocker remains.
+- [x] Parse or skip TypeScript type-argument lists in `extends` heritage expressions such as `extends Class3<T>` and nested `extends CBaseBase<Wrapper<T2>>`.
+- [x] Preserve existing parsing for plain runtime heritage expressions such as `extends Base` and `extends mixin(Base)`.
+- [x] Add focused parser regressions for `class Class4<T> extends Class3<T> {}` and a nested `RightShift` generic heritage clause.
+- [x] Re-run the exact `baseTypeOrderChecking.ts` triage and record the new diagnostic if a downstream blocker remains.
 
 Out of scope:
 
@@ -115,12 +115,12 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] `class Class4<T> extends Class3<T> {}` parses without treating `<T>` as runtime comparison syntax.
-- [ ] `class CBase<T> extends CBaseBase<Wrapper<T>> {}` parses without consuming `>>` as runtime right-shift syntax.
-- [ ] `python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/baseTypeOrderChecking.ts` no longer reports `UnsupportedSyntax: expected LeftBrace, got None`.
-- [ ] `python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/baseTypeWrappingInstantiationChain.ts` no longer reports `UnsupportedSyntax: expected LeftBrace, got Some(Class)`.
-- [ ] A parser test or fixture covers a generic class declaration with a generic heritage clause.
-- [ ] Existing class heritage expression tests continue to pass.
+- [x] `class Class4<T> extends Class3<T> {}` parses without treating `<T>` as runtime comparison syntax.
+- [x] `class CBase<T> extends CBaseBase<Wrapper<T>> {}` parses without consuming `>>` as runtime right-shift syntax.
+- [x] `python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/baseTypeOrderChecking.ts` no longer reports `UnsupportedSyntax: expected LeftBrace, got None`.
+- [x] `python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/baseTypeWrappingInstantiationChain.ts` no longer reports `UnsupportedSyntax: expected LeftBrace, got Some(Class)`.
+- [x] A parser test or fixture covers a generic class declaration with a generic heritage clause.
+- [x] Existing class heritage expression tests continue to pass.
 
 ## Validation
 
@@ -146,15 +146,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 
@@ -162,18 +162,24 @@ Follow-up issues:
 
 ## Completion evidence
 
-Fill only when moving to `done/`.
-
 Commits:
 
-- `...`
+- Already implemented in existing codebase (`class_extends` skips TypeScript generic heritage arguments)
 
 Validation result:
 
 ```text
-command:
-result:
-date:
+command: cargo nextest run -p ts2wasm-frontend generic_class
+result: pass
+date: 2026-05-06
+
+command: python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/baseTypeOrderChecking.ts
+result: no longer reports `expected LeftBrace, got None`
+date: 2026-05-06
+
+command: python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/baseTypeWrappingInstantiationChain.ts
+result: no longer reports `expected LeftBrace, got Some(Class)`
+date: 2026-05-06
 ```
 
 Remaining risks:

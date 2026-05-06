@@ -61,10 +61,10 @@ parsing.
 
 In scope:
 
-- [ ] Parse `<Identifier>expr` as an erased TypeScript type assertion when it appears at expression statement start.
-- [ ] Preserve normal JSX-less TypeScript parsing behavior for property access after the assertion.
-- [ ] Add a focused parser regression for `<string>Spec.prop;`.
-- [ ] Re-run the representative triage and confirm it no longer reports `expected LeftBrace, got Some(Semicolon)`.
+- [x] Parse `<Identifier>expr` as an erased TypeScript type assertion when it appears at expression statement start.
+- [x] Preserve normal JSX-less TypeScript parsing behavior for property access after the assertion.
+- [x] Add a focused parser regression for `<string>Spec.prop;`.
+- [x] Re-run the representative triage and confirm it no longer reports `expected LeftBrace, got Some(Semicolon)`.
 
 Out of scope:
 
@@ -87,10 +87,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] A focused parser test erases `<string>Spec.prop;` to an expression statement for `Spec.prop`.
-- [ ] The representative triage no longer reports `expected LeftBrace, got Some(Semicolon)`.
-- [ ] Existing `as` assertion and generic class heritage parser tests continue to pass.
-- [ ] Any next blocker from `baseExpressionTypeParameters.ts` is recorded separately if outside this assertion syntax slice.
+- [x] A focused parser test erases `<string>Spec.prop;` to an expression statement for `Spec.prop`.
+- [x] The representative triage no longer reports `expected LeftBrace, got Some(Semicolon)`.
+- [x] Existing `as` assertion and generic class heritage parser tests continue to pass.
+- [x] Any next blocker from `baseExpressionTypeParameters.ts` is recorded separately if outside this assertion syntax slice.
 
 ## Validation
 
@@ -120,15 +120,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 
@@ -136,18 +136,20 @@ Split from generated bucket `issues/done/1036-implement-baseExpressionTypeParame
 
 ## Completion evidence
 
-Fill only when moving to `done/`.
-
 Commits:
 
-- `...`
+- Already implemented in existing codebase (`try_consume_typescript_angle_type_assertion` + `skip_typescript_angle_list_after_less` in unary parsing)
 
 Validation result:
 
 ```text
-command:
-result:
-date:
+command: cargo nextest run erases_angle_bracket_type_assertion_at_expression_statement_start
+result: PASS
+date: 2026-05-06
+
+command: python reference-triage baseExpressionTypeParameters.ts
+result: ok, returncode 0 (no LeftBrace/Semicolon error)
+date: 2026-05-06
 ```
 
 Remaining risks:
