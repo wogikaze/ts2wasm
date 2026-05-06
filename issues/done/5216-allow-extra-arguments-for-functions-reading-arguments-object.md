@@ -44,7 +44,7 @@ Supported ordinary functions that need the `arguments` object keep the real call
 
 In scope:
 
-- [ ] Preserve strict arity diagnostics for ordinary user calls while allowing the supported `arguments` object fixture to receive extra arguments.
+- [x] Preserve strict arity diagnostics for ordinary user calls while allowing the supported `arguments` object fixture to receive extra arguments.
 
 Out of scope:
 
@@ -65,8 +65,8 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] `cargo nextest run -p ts2wasm-cli function_arguments_fixture_matches_node_output_under_iwasm` passes.
-- [ ] Existing TS2554 diagnostics for issue 5188 representatives do not regress.
+- [x] `cargo nextest run -p ts2wasm-cli function_arguments_fixture_matches_node_output_under_iwasm` passes.
+- [x] Existing TS2554 diagnostics for issue 5188 representatives do not regress.
 
 ## Validation
 
@@ -94,15 +94,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] 5217 tracks the next unrelated full-gate failure found after the function arguments fixture passed.
 
 ## Notes
 
@@ -114,16 +114,32 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- `...`
+- This commit.
 
 Validation result:
 
 ```text
-command:
-result:
-date:
+command: cargo fmt --all --check
+result: pass
+date: 2026-05-06
+
+command: cargo nextest run -p ts2wasm-cli function_arguments_fixture_matches_node_output_under_iwasm
+result: pass
+date: 2026-05-06
+
+command: cargo nextest run -p ts2wasm-cli validate_rejects_arity_mismatch
+result: pass
+date: 2026-05-06
+
+command: cargo nextest run -p ts2wasm-cli typescript_semantics_
+result: pass
+date: 2026-05-06
+
+command: cargo nextest run
+result: fail after the 5216 function-arguments failure was cleared; stopped at issue 5217 (`resolves_ambient*` count assertions)
+date: 2026-05-06
 ```
 
 Remaining risks:
 
-- none
+- Full `cargo nextest run` still fails on unrelated issue 5217.

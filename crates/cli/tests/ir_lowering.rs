@@ -695,6 +695,20 @@ fn typescript_semantics_rejects_block_scoped_same_name_extra_argument() {
 }
 
 #[test]
+fn typescript_semantics_allows_extra_arguments_when_function_reads_arguments() {
+    let program = parse_and_resolve(
+        r#"
+        function first() {
+          return arguments[0];
+        }
+        first(7);
+        "#,
+    );
+
+    ts2wasm_ir::validate_typescript_call_arity(&program).unwrap();
+}
+
+#[test]
 fn typescript_semantics_rejects_outer_same_name_missing_argument() {
     let program = parse_and_resolve(
         r#"

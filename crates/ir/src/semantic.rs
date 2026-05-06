@@ -435,7 +435,7 @@ impl TypeScriptCallArityValidator {
             ResolvedExpr::FunctionExpr { name, params, body } => {
                 let mut scope = HashMap::new();
                 if !name.is_empty() {
-                    scope.insert(name.clone(), function_arity(params));
+                    scope.insert(name.clone(), function_arity(params, body));
                 }
                 self.validate_with_scope(scope, |validator| {
                     validator.validate_lexical_block(body)
@@ -498,25 +498,181 @@ fn collect_function_arities(
     statements
         .iter()
         .filter_map(|statement| match statement {
-            ResolvedStmt::Function { name, params, .. } => {
-                Some((name.clone(), function_arity(params)))
-            }
+            ResolvedStmt::Function {
+                name, params, body, ..
+            } => Some((name.clone(), function_arity(params, body))),
             _ => None,
         })
         .collect()
 }
 
-fn function_arity(params: &[ResolvedParam]) -> TypeScriptFunctionArity {
+fn function_arity(params: &[ResolvedParam], body: &[ResolvedStmt]) -> TypeScriptFunctionArity {
+    let reads_implicit_arguments =
+        block_contains_arguments(body) && !params.iter().any(|param| param.name == "arguments");
     TypeScriptFunctionArity {
         required: params
             .iter()
             .filter(|param| param.default.is_none() && !param.is_rest)
             .count(),
-        max: if params.iter().any(|param| param.is_rest) {
+        max: if reads_implicit_arguments || params.iter().any(|param| param.is_rest) {
             None
         } else {
             Some(params.len())
         },
+    }
+}
+
+fn block_contains_arguments(stmts: &[ResolvedStmt]) -> bool {
+    stmts.iter().any(stmt_contains_arguments)
+}
+
+fn stmt_contains_arguments(stmt: &ResolvedStmt) -> bool {
+    match stmt {
+        ResolvedStmt::AmbientValue(_)
+        | ResolvedStmt::Break { .. }
+        | ResolvedStmt::Continue { .. } => false,
+        ResolvedStmt::Let(_, expr)
+        | ResolvedStmt::Assign(_, expr)
+        | ResolvedStmt::Expr(expr)
+        | ResolvedStmt::Return(expr)
+        | ResolvedStmt::Throw(expr)
+        | ResolvedStmt::DestructureLet { expr, .. } => expr_contains_arguments(expr),
+        ResolvedStmt::Export { expr, .. } | ResolvedStmt::ModuleExportsAssign { expr } => {
+            expr_contains_arguments(expr)
+        }
+        ResolvedStmt::Function { .. } => false,
+        ResolvedStmt::If {
+            condition,
+            then_body,
+            else_body,
+        } => {
+            expr_contains_arguments(condition)
+                || block_contains_arguments(then_body)
+                || block_contains_arguments(else_body)
+        }
+        ResolvedStmt::While { condition, body } | ResolvedStmt::DoWhile { condition, body } => {
+            expr_contains_arguments(condition) || block_contains_arguments(body)
+        }
+        ResolvedStmt::For {
+            init,
+            condition,
+            update,
+            body,
+        } => {
+            init.as_ref()
+                .is_some_and(|stmt| stmt_contains_arguments(stmt))
+                || condition.as_ref().is_some_and(expr_contains_arguments)
+                || update.as_ref().is_some_and(expr_contains_arguments)
+                || block_contains_arguments(body)
+        }
+        ResolvedStmt::ForIn { iter, body, .. } | ResolvedStmt::ForOf { iter, body, .. } => {
+            expr_contains_arguments(iter) || block_contains_arguments(body)
+        }
+        ResolvedStmt::TryCatch {
+            try_block,
+            catch_block,
+            finally_block,
+            ..
+        } => {
+            block_contains_arguments(try_block)
+                || catch_block
+                    .as_ref()
+                    .is_some_and(|block| block_contains_arguments(block))
+                || finally_block
+                    .as_ref()
+                    .is_some_and(|block| block_contains_arguments(block))
+        }
+        ResolvedStmt::Switch { expr, cases } => {
+            expr_contains_arguments(expr)
+                || cases.iter().any(|(case_expr, body)| {
+                    case_expr.as_ref().is_some_and(expr_contains_arguments)
+                        || block_contains_arguments(body)
+                })
+        }
+        ResolvedStmt::Labeled { body, .. } => stmt_contains_arguments(body),
+        ResolvedStmt::Block { statements, .. } => block_contains_arguments(statements),
+        ResolvedStmt::ClassDecl { .. } => false,
+    }
+}
+
+fn expr_contains_arguments(expr: &ResolvedExpr) -> bool {
+    match expr {
+        ResolvedExpr::Ident(name) => name == "arguments",
+        ResolvedExpr::This { .. }
+        | ResolvedExpr::Number(_)
+        | ResolvedExpr::BigIntLiteral { .. }
+        | ResolvedExpr::String(_)
+        | ResolvedExpr::Bool(_)
+        | ResolvedExpr::Null
+        | ResolvedExpr::Undefined
+        | ResolvedExpr::ModuleLoad { .. } => false,
+        ResolvedExpr::Unary { expr, .. } => expr_contains_arguments(expr),
+        ResolvedExpr::Binary { left, right, .. } => {
+            expr_contains_arguments(left) || expr_contains_arguments(right)
+        }
+        ResolvedExpr::Ternary {
+            condition,
+            then_expr,
+            else_expr,
+            ..
+        } => {
+            expr_contains_arguments(condition)
+                || expr_contains_arguments(then_expr)
+                || expr_contains_arguments(else_expr)
+        }
+        ResolvedExpr::Call { callee, args, .. }
+        | ResolvedExpr::OptionalCall { callee, args, .. } => {
+            expr_contains_arguments(callee) || args.iter().any(expr_contains_arguments)
+        }
+        ResolvedExpr::New { args, .. } => args.iter().any(expr_contains_arguments),
+        ResolvedExpr::Assign { name, expr } => name == "arguments" || expr_contains_arguments(expr),
+        ResolvedExpr::PropertyAssign { object, value, .. } => {
+            expr_contains_arguments(object) || expr_contains_arguments(value)
+        }
+        ResolvedExpr::PropertyAssignDynamic { object, key, value } => {
+            expr_contains_arguments(object)
+                || expr_contains_arguments(key)
+                || expr_contains_arguments(value)
+        }
+        ResolvedExpr::Array(elements) => elements.iter().any(|element| match element {
+            ResolvedArrayElement::Present(expr) => expr_contains_arguments(expr),
+            ResolvedArrayElement::Hole => false,
+        }),
+        ResolvedExpr::Object(props) => props
+            .iter()
+            .any(|(_, value)| expr_contains_arguments(value)),
+        ResolvedExpr::PropertyAccess { object, .. }
+        | ResolvedExpr::OptionalPropertyAccess { object, .. } => expr_contains_arguments(object),
+        ResolvedExpr::ComputedIndex { object, index }
+        | ResolvedExpr::OptionalComputedIndex { object, index, .. } => {
+            expr_contains_arguments(object) || expr_contains_arguments(index)
+        }
+        ResolvedExpr::BuiltinCall { args, .. } => args.iter().any(expr_contains_arguments),
+        ResolvedExpr::BuiltinProperty { object, .. } => expr_contains_arguments(object),
+        ResolvedExpr::MethodCall { object, args, .. } => {
+            expr_contains_arguments(object) || args.iter().any(expr_contains_arguments)
+        }
+        ResolvedExpr::LogicalAssign { expr, .. } => expr_contains_arguments(expr),
+        ResolvedExpr::LogicalPropertyAssign {
+            object, key, expr, ..
+        } => object == "arguments" || key == "arguments" || expr_contains_arguments(expr),
+        ResolvedExpr::LogicalComputedPropertyAssign {
+            object, key, expr, ..
+        } => object == "arguments" || expr_contains_arguments(key) || expr_contains_arguments(expr),
+        ResolvedExpr::LogicalMemberAssign { object, expr, .. } => {
+            expr_contains_arguments(object) || expr_contains_arguments(expr)
+        }
+        ResolvedExpr::LogicalComputedMemberAssign {
+            object, key, expr, ..
+        } => {
+            expr_contains_arguments(object)
+                || expr_contains_arguments(key)
+                || expr_contains_arguments(expr)
+        }
+        ResolvedExpr::Spread(expr) => expr_contains_arguments(expr),
+        ResolvedExpr::FunctionExpr { .. } => false,
+        ResolvedExpr::ArrowFn { body, .. } => expr_contains_arguments(body),
+        ResolvedExpr::ClassExpr { .. } => false,
     }
 }
 
