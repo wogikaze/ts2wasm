@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 4 | 3 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4518 | 3615 | 903 |
+| frontend | 4518 | 3614 | 904 |
 | harness | 1 | 0 | 1 |
 | ir | 64 | 42 | 22 |
 | issues | 4 | 0 | 4 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5161 | 3904 | 1257 |
+| total | 5161 | 3903 | 1258 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -554,7 +554,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 772 | Implement Augmentedtypesvar | spike | frontend/syntax | class: blocked | Implement Augmentedtypesvar |
 | 773 | Implement Autoasiforstaticsinclassdeclaration | spike | frontend/syntax | class: triage-needed | Implement Autoasiforstaticsinclassdeclaration |
 | 775 | Implement Autotypeassignedusingdestructuringfromnevernocrash | spike | frontend/resolver | class: blocked | Implement Autotypeassignedusingdestructuringfromnevernocrash |
-| 1241 | Implement Classtypeparametersinstatics | spike | frontend/syntax | class: blocked | Implement Classtypeparametersinstatics |
 | 1246 | Implement Classwithemptytypeparameter | spike | frontend/syntax | class: blocked | Implement Classwithemptytypeparameter |
 | 1247 | Implement Classwithmultiplebaseclasses | spike | frontend/syntax | class: blocked | Implement Classwithmultiplebaseclasses |
 | 1248 | Implement Classwithoverloadimplementationofwrongname | spike | frontend/syntax | class: blocked | Implement Classwithoverloadimplementationofwrongname |
@@ -5009,6 +5008,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1238 | Implement Classstaticinitializersusepropertiesbeforedeclaration | spike | frontend/syntax | see `issues/done/1238-implement-classStaticInitializersUsePropertiesBeforeDeclaration.md` |
 | 1239 | Implement Classstaticpropertyaccess | spike | frontend/syntax | see `issues/done/1239-implement-classStaticPropertyAccess.md` |
 | 1240 | Implement Classstaticpropertytypeguard | spike | frontend/syntax | see `issues/done/1240-implement-classStaticPropertyTypeGuard.md` |
+| 1241 | Implement Classtypeparametersinstatics | spike | frontend/syntax | see `issues/done/1241-implement-classTypeParametersInStatics.md` |
 | 1242 | Implement Classupdatetests | spike | runtime/builtins | see `issues/done/1242-implement-classUpdateTests.md` |
 | 1243 | Implement Classusedbeforeinitializedvariables | spike | frontend/syntax | see `issues/done/1243-implement-classUsedBeforeInitializedVariables.md` |
 | 1244 | Implement Classvariancecircularity | spike | frontend/syntax | see `issues/done/1244-implement-classVarianceCircularity.md` |
