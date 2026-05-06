@@ -143,7 +143,7 @@ Follow-up issues:
 - [x] existing: `issues/open/544-implement-APISample-jsdoc.md`
 - [x] existing: `issues/open/542-implement-APISample-arrow-function.md`
 - [x] done: `issues/done/5023-implement-api-sample-watcher-arrow.md`
-- [x] created: `issues/open/5139-split-apisample-parser-leftovers.md`
+- [x] completed: `issues/done/5139-split-apisample-parser-leftovers.md`
 
 ## Notes
 
@@ -155,7 +155,7 @@ Follow-up issues:
 - Existing issue 543 owns the import/export APISample bucket and already lists `APISample_Watch*.ts`, `APISample_compile.ts`, `APISample_parseConfig.ts`, `APISample_linter.ts`, and `APISample_transform.ts`.
 - Existing issue 544 owns the JSDoc APISample bucket.
 - Existing issue 542 and done issue 5023 cover the `APISample_watcher.ts` arrow-function split; issue 5023 records that the original arrow-body diagnostic is gone and a separate parser diagnostic remains.
-- New issue 5139 owns the remaining APISample parser-window decision for `APISample_linter.ts` and `APISample_transform.ts`, so this parent is closed as a superseded generated bucket.
+- Issue 5139 completed the remaining APISample parser-window decision for `APISample_linter.ts` and `APISample_transform.ts`; the shared `node_modules/typescript/package.json` virtual-section blocker is split to issue 5224.
 
 ## Affected test files
 

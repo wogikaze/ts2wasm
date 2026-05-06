@@ -53,10 +53,10 @@ Each remaining APISample parser leftover is either assigned to an existing open 
 
 In scope:
 
-- [ ] Run targeted triage for `APISample_linter.ts`.
-- [ ] Run targeted triage for `APISample_transform.ts`.
-- [ ] Decide whether each case belongs to issue 543, issue 059, or a new parser child.
-- [ ] Update duplicate references so issue 070 stays closed.
+- [x] Run targeted triage for `APISample_linter.ts`.
+- [x] Run targeted triage for `APISample_transform.ts`.
+- [x] Decide whether each case belongs to issue 543, issue 059, or a new parser child.
+- [x] Update duplicate references so issue 070 stays closed.
 
 Out of scope:
 
@@ -80,10 +80,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] `APISample_linter.ts` has an exact triage result and assigned owner issue.
-- [ ] `APISample_transform.ts` has an exact triage result and assigned owner issue.
-- [ ] Any new child issue names the exact reference path, diagnostic/stdout change, and impacted commands.
-- [ ] Issue 070 remains closed as a superseded APISample parent.
+- [x] `APISample_linter.ts` has an exact triage result and assigned owner issue.
+- [x] `APISample_transform.ts` has an exact triage result and assigned owner issue.
+- [x] Any new child issue names the exact reference path, diagnostic/stdout change, and impacted commands.
+- [x] Issue 070 remains closed as a superseded APISample parent.
 
 ## Validation
 
@@ -110,12 +110,62 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] create only after targeted triage proves a narrower implementation-ready parser slice
+- [x] created: `issues/open/5224-handle-package-json-virtual-sections-in-multifile-references.md`
+
+## Resolution
+
+Fresh triage showed both remaining APISample parser leftovers have the same
+earliest blocker: the raw TypeScript reference file contains a virtual
+`node_modules/typescript/package.json` section, and the compiler parses that
+JSON body as TypeScript. Both files fail before their actual APISample source
+section is reached.
+
+`APISample_linter.ts`:
+
+```text
+command: python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/APISample_linter.ts
+result: UnsupportedSyntax: expected Semicolon, got Some(Colon) at 216..217
+owner: issues/open/5224-handle-package-json-virtual-sections-in-multifile-references.md
+```
+
+`APISample_transform.ts`:
+
+```text
+command: python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/APISample_transform.ts
+result: UnsupportedSyntax: expected Semicolon, got Some(Colon) at 216..217
+owner: issues/open/5224-handle-package-json-virtual-sections-in-multifile-references.md
+```
+
+This is not issue 543 yet because the import/export boundary is hidden behind
+the earlier JSON virtual-section parser boundary. It is not the broad issue 059
+because the failing construct is a concrete multi-file reference harness case.
+
+## Completion evidence
+
+Commits:
+
+- this commit: issues: split APISample package-json virtual sections
+
+Validation result:
+
+```text
+command: python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/APISample_linter.ts
+result: pass for issue 5139; exact blocker recorded and assigned to issue 5224
+date: 2026-05-06
+
+command: python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/APISample_transform.ts
+result: pass for issue 5139; exact blocker recorded and assigned to issue 5224
+date: 2026-05-06
+```
+
+Remaining risks:
+
+- issue 5224 must still implement or classify JSON virtual-section handling.
