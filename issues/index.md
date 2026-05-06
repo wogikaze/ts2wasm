@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 4 | 3 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4519 | 3610 | 909 |
+| frontend | 4519 | 3609 | 910 |
 | harness | 1 | 0 | 1 |
 | ir | 64 | 42 | 22 |
 | issues | 4 | 0 | 4 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5162 | 3899 | 1263 |
+| total | 5162 | 3898 | 1264 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -47,7 +47,7 @@ Issue files are the source of truth for work items. The generated section below 
 Direct child counts are derived from issue-file `depends_on` links. A meta issue can be `done` as a classification/design umbrella while implementation child issues remain open.
 
 ```
-5000 (Meta: TypeScript Compiler Parser Syntax Coverage) [done/design] ch:480 open:407 done:73
+5000 (Meta: TypeScript Compiler Parser Syntax Coverage) [done/design] ch:479 open:406 done:73
 ├── 5002 (Meta: TypeScript Compiler Type System Coverage) [done/done] ch:233 open:216 done:17 (also ← 5005)
 ├── 5003 (Meta: TypeScript Compiler Declaration Emit Coverage) [done/done] ch:102 open:91 done:11 (also ← 5001)
 5001 (Meta: TypeScript Compiler Semantic Analysis Coverage) [done/done] ch:588 open:334 done:254
@@ -66,7 +66,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 
 | Order | ID | Title | State | Class | Area | Priority | Depends on | Direct children | Open children | Done children |
 |-----:|---:|------|-------|-------|------|--------:|-----------:|----------------:|--------------:|--------------:|
-| 1 | 5000 | Meta: TypeScript Compiler Parser Syntax Coverage | done | design | frontend/syntax | P1 | - | 480 | 407 | 73 |
+| 1 | 5000 | Meta: TypeScript Compiler Parser Syntax Coverage | done | design | frontend/syntax | P1 | - | 479 | 406 | 73 |
 | 2 | 5001 | Meta: TypeScript Compiler Semantic Analysis Coverage | done | done | frontend/semantics | P1 | - | 588 | 334 | 254 |
 | 3 | 5004 | Meta: Runtime Builtins Coverage (test262) (audit reopened #5004) | done | done | runtime/builtins | P1 | - | 24 | 3 | 21 |
 | 4 | 5005 | Meta: TypeScript Compiler Name Resolution Coverage | done | done | frontend/resolver | P1 | - | 420 | 368 | 52 |
@@ -555,7 +555,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 772 | Implement Augmentedtypesvar | spike | frontend/syntax | class: blocked | Implement Augmentedtypesvar |
 | 773 | Implement Autoasiforstaticsinclassdeclaration | spike | frontend/syntax | class: triage-needed | Implement Autoasiforstaticsinclassdeclaration |
 | 775 | Implement Autotypeassignedusingdestructuringfromnevernocrash | spike | frontend/resolver | class: blocked | Implement Autotypeassignedusingdestructuringfromnevernocrash |
-| 1252 | Implement Cloduleandtypeparameters | spike | frontend/syntax | class: blocked | Implement Cloduleandtypeparameters |
 | 1253 | Implement Clodulegenericonselfmember | spike | frontend/semantics | class: blocked | Implement Clodulegenericonselfmember |
 | 1254 | Implement Clodulesplitacrossfiles | spike | frontend/syntax | class: blocked | Implement Clodulesplitacrossfiles |
 | 1256 | Implement Cloduletest | spike | frontend/syntax | class: blocked | Implement Cloduletest |
@@ -5015,6 +5014,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1249 | Implement Classdecl | spike | frontend/syntax | see `issues/done/1249-implement-classdecl.md` |
 | 1250 | Implement Clinterfaces | spike | frontend/syntax | see `issues/done/1250-implement-clinterfaces.md` |
 | 1251 | Implement Cloduleacrossmoduledefinitions | spike | frontend/syntax | see `issues/done/1251-implement-cloduleAcrossModuleDefinitions.md` |
+| 1252 | Implement Cloduleandtypeparameters | spike | frontend/syntax | see `issues/done/1252-implement-cloduleAndTypeParameters.md` |
 | 1255 | Implement Clodulestaticmembers | spike | frontend/syntax | see `issues/done/1255-implement-cloduleStaticMembers.md` |
 | 1263 | Implement Coandcontravariantinferences Parser Syntax | spike | frontend/syntax | see `issues/done/1263-implement-coAndContraVariantInferences-parser-syntax.md` |
 | 1265 | Implement Collectionpatternnoerror | spike | runtime/builtins | see `issues/done/1265-implement-collectionPatternNoError.md` |
