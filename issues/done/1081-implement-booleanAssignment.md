@@ -3,12 +3,14 @@ id: 1081
 title: "Implement Booleanassignment"
 type: spike
 area: frontend/resolver
-class: blocked
+class: superseded
 priority: P1
-depends_on: [5005]
+depends_on: [5161]
 blocks: []
 created: 2026-05-01
-updated: 2026-05-01
+updated: 2026-05-06
+status: done
+completed: 2026-05-06
 ---
 
 ## Summary
@@ -43,10 +45,10 @@ This generated bucket is either split into implementation-ready child issues or 
 
 In scope:
 
-- [ ] Inspect the smart triage report below
-- [ ] Confirm whether existing open/done issues already cover this bucket
-- [ ] Split one feature family, one observable behavior, or one fixed reference window into child issues
-- [ ] Preserve exact reproduction commands and representative AST/diagnostic evidence in each child issue
+- [x] Inspect the smart triage report below
+- [x] Confirm whether existing open/done issues already cover this bucket
+- [x] Split one feature family, one observable behavior, or one fixed reference window into child issues
+- [x] Preserve exact reproduction commands and representative AST/diagnostic evidence in each child issue
 
 Out of scope:
 
@@ -68,10 +70,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] Duplicate candidates below are confirmed as no-match or this issue is superseded
-- [ ] At least one child issue contains an exact `mise run reference-triage -- ...` command
-- [ ] Child issue includes failing path, diagnostic code, source context, visible symbols, and parser/TypeScript AST evidence
-- [ ] Child issue acceptance names the exact fixture/reference path and diagnostic/stdout change
+- [x] Duplicate candidates below are confirmed as no-match or this issue is superseded
+- [x] At least one child issue contains an exact `mise run reference-triage -- ...` command
+- [x] Child issue includes failing path, diagnostic code, source context, visible symbols, and parser/TypeScript AST evidence
+- [x] Child issue acceptance names the exact fixture/reference path and diagnostic/stdout change
 
 ## Validation
 
@@ -98,15 +100,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] updated: `current-state.md` (repo root)
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] folded into `issues/open/5161-model-ambient-value-declarations-for-name-resolution.md`
 
 ## Notes
 
@@ -116,11 +118,20 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- none found by path/title/feature scan
+- `issues/open/5161-model-ambient-value-declarations-for-name-resolution.md` is an exact implementation-ready owner for this ambient `declare var` name-resolution gap.
+- Generic name-resolution buckets are not matches; they share only the broad feature label.
 
 ## Smart triage
 
-Not generated. Rerun with `--triage-limit 1` or higher.
+Generated on 2026-05-06.
+
+- Path: `reference/typescript/tests/cases/compiler/booleanAssignment.ts`
+- Diagnostic: `UnresolvedName` / `resolver-symbol`
+- Current compiler message: `unresolved name b2 at 177..179`
+- Source context: `declare var b2:boolean; b = b2;`
+- Compiler evidence: tokens and AST succeed; the ambient variable declaration is erased from AST, visible-symbol extraction lists `b2`, and name resolution rejects `b2` in the assignment expression.
+- TypeScript oracle: no unresolved-name diagnostic for `b2`; instead TypeScript reports earlier assignment type errors.
+- Superseded by child: `issues/open/5161-model-ambient-value-declarations-for-name-resolution.md`
 
 ## Completion evidence
 
@@ -128,14 +139,14 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- `...`
+- `pending`
 
 Validation result:
 
 ```text
-command:
-result:
-date:
+command: python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/booleanAssignment.ts
+result: pass; current blocker is ambient declare-var name resolution, folded into issue 5161
+date: 2026-05-06
 ```
 
 Remaining risks:

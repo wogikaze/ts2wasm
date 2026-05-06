@@ -13,7 +13,7 @@ updated: 2026-05-06
 
 ## Summary
 
-The parser erases declaration-only ambient variables such as `declare var e: Ellement;`, but the name resolver then rejects later runtime expressions that reference `e`. This blocks `bestCommonTypeWithContextualTyping.ts` before the compiler can reach the contextual typing and ternary checks in the reference case.
+The parser erases declaration-only ambient variables such as `declare var e: Ellement;` and `declare var b2: boolean;`, but the name resolver then rejects later runtime expressions that reference those names. This blocks references before the compiler can reach later contextual typing or assignment diagnostics.
 
 ## Problem
 
@@ -25,12 +25,14 @@ Reference triage:
 
 ```sh
 python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/bestCommonTypeWithContextualTyping.ts
+python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/booleanAssignment.ts
 ```
 
 Current compiler diagnostic:
 
 ```text
 UnresolvedName: unresolved name: `e` at 414..415
+UnresolvedName: unresolved name: `b2` at 177..179
 ```
 
 Representative source:
@@ -51,6 +53,7 @@ Current compiler evidence:
 - Tokens include `declare var e: Ellement;`.
 - AST erases the ambient variable declaration and keeps `arr`, `obj`, `conditional`, and `contextualOr`.
 - Smart triage visible symbols list `e` at line 13, but `resolve_names` reports `UnresolvedName` for the `e` inside `[e]`.
+- `booleanAssignment.ts` has the same shape: visible-symbol extraction lists `b2` from `declare var b2:boolean;`, but `resolve_names` reports `UnresolvedName` for `b2` in `b = b2`.
 
 TypeScript oracle evidence:
 
@@ -101,6 +104,7 @@ Do not touch:
 
 - [ ] `declare var e: Ellement; var arr = [e];` no longer reports `UnresolvedName` for `e`.
 - [ ] `declare const c: number; var obj = { c };` resolves the ambient value name without emitting a runtime declaration.
+- [ ] `declare var b2: boolean; b = b2;` resolves the ambient value name without emitting a runtime declaration.
 - [ ] Ambient declarations with initializers, such as `declare var e = 1;`, remain rejected.
 - [ ] `python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/bestCommonTypeWithContextualTyping.ts` no longer reports `UnresolvedName: unresolved name: \`e\``.
 
@@ -113,6 +117,7 @@ cargo fmt --all --check
 cargo nextest run -p ts2wasm-frontend
 cargo nextest run -p ts2wasm-ir
 python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/bestCommonTypeWithContextualTyping.ts
+python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/booleanAssignment.ts
 ```
 
 Impacted commands:
@@ -141,7 +146,7 @@ Follow-up issues:
 
 ## Notes
 
-Split from generated bucket `1044` on 2026-05-06. Existing ambient-erasure work made declaration-only syntax parseable; this slice is specifically about preserving enough erased metadata for name resolution.
+Split from generated bucket `1044` on 2026-05-06. Generated bucket `1081` was folded in on the same date after fresh triage showed the same ambient value declaration name-resolution gap for `declare var b2:boolean;`. Existing ambient-erasure work made declaration-only syntax parseable; this slice is specifically about preserving enough erased metadata for name resolution.
 
 ## Completion evidence
 
