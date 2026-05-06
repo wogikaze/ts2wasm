@@ -271,6 +271,12 @@ impl Parser {
     }
 
     fn parse_binding_property_key(&mut self) -> Result<(String, bool), Diagnostic> {
+        if matches!(self.peek(), Some(Token::LeftBracket)) {
+            let _ = self.advance();
+            let expr = self.expression()?;
+            self.expect(TokenKind::RightBracket)?;
+            return Ok((format!("[{:?}]", expr), false));
+        }
         match self.advance() {
             Some(SpannedToken {
                 kind: Token::Ident(name),
