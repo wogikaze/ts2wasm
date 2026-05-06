@@ -11,14 +11,14 @@ Issue files are the source of truth for work items. The generated section below 
 |---|---:|---:|---:|
 | abi | 7 | 0 | 7 |
 | backend | 16 | 2 | 14 |
-| backend-wasm | 3 | 0 | 3 |
+| backend-wasm | 2 | 0 | 2 |
 | cli | 15 | 0 | 15 |
 | compiler | 3 | 0 | 3 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4438 | 3738 | 700 |
+| frontend | 4438 | 3737 | 701 |
 | harness | 1 | 0 | 1 |
-| ir | 40 | 11 | 29 |
+| ir | 41 | 12 | 29 |
 | issues | 5 | 0 | 5 |
 | parser | 1 | 0 | 1 |
 | reference | 211 | 163 | 48 |
@@ -133,9 +133,9 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5210 | Sparse array holes handling for Array.prototype.map | feature | runtime/builtins | implementation-ready | P2 |  | current `Array.prototype.map` implementation only supports dense |
 | 5213 | Implement generator function syntax prerequisite for iterator spread | feature | frontend/syntax | implementation-ready | P2 |  | Generator function declarations are rejected before iterator spread can be tested. |
 | 5219 | Support explicit this-parameter function expression lowering | feature | ir/runtime | implementation-ready | P1 |  | function expressions that declare an erased TypeScript `this` parameter and read `this` in the body currently fail wi... |
-| 5226 | W0: mandatory span on all AST nodes and source diagnostics | refactor | frontend | design-ready | P0 |  | Source-originating diagnostics without `span` make error location impossible, degrading user experience. |
 | 5227 | W0: complete validate_lowered checks and sync IR contract docs | cleanup | ir | design-ready | P0 |  | Stale IR contract docs cause confusion about what the backend can rely on and what new contributors should implement. |
 | 5228 | W0: wasm binary backend — primary emission path | feature | backend | design-ready | P1 | 5225 | The WAT→wasm subprocess pipeline is fragile, slow, and adds an external toolchain dependency for every build. |
+| 5230 | W0: mandatory span on LoweredExpr and LoweredStmt variants | refactor | ir | design-ready | P1 |  | W0: mandatory span on LoweredExpr and LoweredStmt variants |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -5137,7 +5137,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5151 | Parse ASI after multiline const initializer | feature | frontend/syntax | see `issues/done/5151-parse-asi-after-multiline-const-initializer.md` |
 | 5153 | Erase union types in as assertions | feature | frontend/syntax | see `issues/done/5153-erase-union-types-in-as-assertions.md` |
 | 5154 | Parse angle-bracket type assertion statements | feature | frontend/syntax | see `issues/done/5154-parse-angle-bracket-type-assertion-statements.md` |
-| 5155 | Fix exception_pending runtime link for top-level statement checks | bug | backend-wasm | see `issues/done/5155-fix-exception-pending-runtime-link-for-top-level-statements.md` |
 | 5156 | Parse generic type arguments in class heritage clauses | feature | frontend/syntax | see `issues/done/5156-parse-generic-type-arguments-in-class-heritage.md` |
 | 5160 | Lower plain ternary conditional expressions | feature | frontend/semantics | see `issues/done/5160-lower-plain-ternary-conditional-expressions.md` |
 | 5161 | Model ambient value declarations for name resolution | feature | frontend/resolver | see `issues/done/5161-model-ambient-value-declarations-for-name-resolution.md` |
@@ -5174,6 +5173,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5223 | Report Iterator type-only value-use diagnostics | feature | frontend/resolver | see `issues/done/5223-report-iterator-type-only-value-use-diagnostics.md` |
 | 5224 | Handle package.json virtual sections in multi-file references | feature | compiler/reference | see `issues/done/5224-handle-package-json-virtual-sections-in-multifile-references.md` |
 | 5225 | W0: introduce typed WAT writer | refactor | backend | see file |
+| 5226 | W0: mandatory span on all AST nodes and source diagnostics | refactor | frontend | see file |
 | 5229 | W0: implement user/runtime string origin tracking | feature | backend | see `issues/done/5229-w0-user-runtime-string-origin.md` |
 <!-- generated:done:end -->
 

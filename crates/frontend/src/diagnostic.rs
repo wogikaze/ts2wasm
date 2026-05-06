@@ -1,9 +1,86 @@
+/// Source-originating diagnostic with mandatory span.
+/// Used for user-facing errors (unsupported syntax, unresolved names, etc.).
+#[derive(Debug, Clone)]
+pub struct SourceDiagnostic {
+    pub span: Span,
+    pub code: DiagCode,
+    pub message: String,
+}
+
+impl SourceDiagnostic {
+    pub fn new(span: Span, code: DiagCode, message: impl Into<String>) -> Self {
+        Self {
+            span,
+            code,
+            message: message.into(),
+        }
+    }
+}
+
+/// Internal diagnostic (compiler bug / invariant violation / backend I/O).
+/// Span is optional because these errors are not always source-originating.
+#[derive(Debug, Clone)]
+pub struct InternalDiagnostic {
+    pub span: Option<Span>,
+    pub code: DiagCode,
+    pub message: String,
+}
+
+impl InternalDiagnostic {
+    pub fn new(code: DiagCode, message: impl Into<String>) -> Self {
+        Self {
+            span: None,
+            code,
+            message: message.into(),
+        }
+    }
+
+    pub fn with_span(code: DiagCode, span: Span, message: impl Into<String>) -> Self {
+        Self {
+            span: Some(span),
+            code,
+            message: message.into(),
+        }
+    }
+}
+
 /// Structured diagnostic emitted by compiler phases.
+/// This is the legacy common type; new code should prefer `SourceDiagnostic`
+/// for user-facing errors and `InternalDiagnostic` for compiler-internal errors.
 #[derive(Debug, Clone)]
 pub struct Diagnostic {
     pub code: DiagCode,
     pub message: String,
     pub span: Option<Span>,
+}
+
+impl Diagnostic {
+    /// Create a source-originating diagnostic with a mandatory span.
+    pub fn source(span: Span, code: DiagCode, message: impl Into<String>) -> Self {
+        Self {
+            code,
+            message: message.into(),
+            span: Some(span),
+        }
+    }
+
+    /// Create an invariant violation diagnostic (compiler bug).
+    pub fn invariant(message: impl Into<String>) -> Self {
+        Self {
+            code: DiagCode::InvariantViolation,
+            message: message.into(),
+            span: None,
+        }
+    }
+
+    /// Create a backend I/O diagnostic.
+    pub fn backend_io(message: impl Into<String>) -> Self {
+        Self {
+            code: DiagCode::BackendIo,
+            message: message.into(),
+            span: None,
+        }
+    }
 }
 
 impl std::fmt::Display for Diagnostic {
