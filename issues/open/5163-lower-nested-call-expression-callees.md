@@ -13,13 +13,25 @@ updated: 2026-05-06
 
 ## Summary
 
-The parser already builds AST for nested call expressions such as `foo()(1).toString()` and `(new C(1))()`, but lowering rejects call expressions whose callee is not a simple identifier. This blocks reference cases before the compiler can report TypeScript-compatible accidental call diagnostics.
+The parser already builds AST for nested call expressions such as
+`foo()(1).toString()`, `(new C(1))()`, and `(() => {})()`, but lowering rejects
+call expressions whose callee is not a simple identifier. This blocks reference
+cases before the compiler can report TypeScript-compatible accidental call
+diagnostics or advance through supported IIFE shapes.
 
 ## Problem
 
 Problem: `reference/typescript/tests/cases/compiler/betterErrorForAccidentalCall.ts` currently reports `UnsupportedSyntax: only identifier calls are supported in expression context` for `foo()(1 as number)`.
 
 Additional representative: `reference/typescript/tests/cases/compiler/callOnInstance.ts` reports the same diagnostic for `(new D(1))()` before it can report TS2349 for calling an instance with no call signatures.
+
+Additional representative: `reference/typescript/tests/cases/compiler/checkSuperCallBeforeThisAccessing4.ts` reports the same diagnostic for an arrow-function IIFE inside a derived-class constructor:
+
+```ts
+(() => {
+    this;  // No error
+})();
+```
 
 ## Current failure
 
@@ -56,10 +68,23 @@ declare class C { constructor(value: number); }
 (new C(1))();
 ```
 
+Additional source:
+
+```ts
+class Derived extends Based {
+    constructor() {
+        (() => {
+            this;
+        })();
+        super();
+    }
+}
+```
+
 Current compiler evidence:
 
 - Tokens and AST succeed.
-- The AST records nested `Call` expressions where the outer call callee is another `Call` or a `New` expression.
+- The AST records nested `Call` expressions where the outer call callee is another `Call`, a `New` expression, or an `ArrowFn` expression.
 - The pipeline reaches `lower_program` and fails in `crates/ir/src/lowered/resolver_expr.rs`.
 
 TypeScript oracle evidence:
@@ -83,6 +108,7 @@ In scope:
 
 - [ ] Handle `Expr::Call { callee: Expr::Call { ... } }` in expression lowering with a source-spanned diagnostic or runtime-supported callable path.
 - [ ] Handle `Expr::Call { callee: Expr::New { ... } }` in expression lowering with the same source-spanned diagnostic family.
+- [ ] Handle `Expr::Call { callee: Expr::ArrowFn { ... } }` for arrow-function IIFE shapes with the same source-spanned diagnostic family or supported callable path.
 - [ ] Preserve existing identifier-call behavior.
 - [ ] Add focused coverage for `foo()(1).toString()` and the whitespace/newline accidental-call variants.
 - [ ] Re-run the representative triage and confirm the current generic unsupported diagnostic is gone.
@@ -111,6 +137,7 @@ Do not touch:
 
 - [ ] `foo()(1).toString()` no longer reports `only identifier calls are supported in expression context`.
 - [ ] `(new D(1))()` no longer reports `only identifier calls are supported in expression context`.
+- [ ] `(() => { this; })()` in `checkSuperCallBeforeThisAccessing4.ts` no longer reports `only identifier calls are supported in expression context`.
 - [ ] Whitespace and newline accidental-call variants from `betterErrorForAccidentalCall.ts` reach the same new diagnostic or lowered path.
 - [ ] Existing simple identifier calls continue to pass.
 - [ ] `python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/betterErrorForAccidentalCall.ts` no longer reports the current generic unsupported diagnostic.
@@ -125,6 +152,7 @@ cargo nextest run -p ts2wasm-ir
 cargo nextest run -p ts2wasm-cli call
 python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/betterErrorForAccidentalCall.ts
 python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/callOnInstance.ts
+python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/checkSuperCallBeforeThisAccessing4.ts
 ```
 
 Impacted commands:
@@ -155,9 +183,10 @@ Follow-up issues:
 
 Split from generated bucket `1045` on 2026-05-06. Generated bucket `1096`
 was folded in on the same date after fresh triage showed the same lowering
-boundary for new-expression callees. The broad call-expression parent `420`
-remains blocked for unrelated `super[...]()` and other call-expression feature
-families.
+boundary for new-expression callees. Generated bucket `1143` was folded in
+after fresh triage showed the same lowering boundary for arrow-function IIFE
+callees. The broad call-expression parent `420` remains blocked for unrelated
+`super[...]()` and other call-expression feature families.
 
 ## Completion evidence
 
