@@ -134,7 +134,7 @@ Follow-up issues:
 - `issues/open/1308-implement-collisionSuperAndLocalFunctionInConstructor.md` - Implement Collisionsuperandlocalfunctioninconstructor (same feature label, same group key, title overlap)
 - `issues/open/1312-implement-collisionSuperAndLocalVarInConstructor.md` - Implement Collisionsuperandlocalvarinconstructor (same feature label, same group key, title overlap)
 - `issues/done/132-implement-allowJsClassThisTypeCrash.md` - Implement Allowjsclassthistypecrash (same feature label, same group key, title overlap)
-- `issues/open/1401-implement-compositeContextualSignature.md` - Implement Compositecontextualsignature (same feature label, same group key, title overlap)
+- `issues/done/1401-implement-compositeContextualSignature.md` - Implement Compositecontextualsignature (same feature label, same group key, title overlap; now closed as stale build-pass)
 - `issues/open/1490-implement-contextualOverloadListFromArrayUnion.md` - Implement Contextualoverloadlistfromarrayunion (same feature label, same group key, title overlap)
 
 ## Smart triage
