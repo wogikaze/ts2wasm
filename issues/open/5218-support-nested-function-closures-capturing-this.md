@@ -126,6 +126,13 @@ is related but narrower: it handles a TypeScript implicit-`this` diagnostic
 before the runtime guard. This issue tracks the runtime/diagnostic boundary for
 an object literal function where TypeScript provides contextual member evidence.
 
+Additional superseded bucket:
+
+- `issues/done/1375-implement-commentsOnObjectLiteral-object-literal.md` reaches
+  the same issue-062e boundary for an object-literal accessor:
+  `get a() { return this.prop; }`. `commentsOnObjectLiteral4.ts` from the same
+  bucket is already a build pass.
+
 ## Completion Evidence
 
 Fill when implemented.
