@@ -120,7 +120,7 @@ Follow-up issues:
 
 - `issues/done/1073-implement-blockScopedFunctionDeclarationInStrictClass.md` - Implement Blockscopedfunctiondeclarationinstrictclass (same feature label, same group key, title overlap)
 - `issues/done/109-implement-addMoreCallSignaturesToBaseSignature.md` - Implement Addmorecallsignaturestobasesignature (same feature label, same group key, title overlap)
-- `issues/open/1095-implement-callOnClass.md` - Implement Callonclass (same feature label, same group key, title overlap)
+- `issues/done/1095-implement-callOnClass.md` - Implement Callonclass (same feature label, same group key, title overlap; split to issue 5197)
 - `issues/done/132-implement-allowJsClassThisTypeCrash.md` - Implement Allowjsclassthistypecrash (same feature label, same group key, title overlap)
 - `issues/open/2507-implement-genericCapturingFunctionNarrowing.md` - Implement Genericcapturingfunctionnarrowing (same feature label, same group key, title overlap)
 - `issues/open/429-implement-eval.md` - Implement eval support (same feature label, same group key, title overlap)
