@@ -8,7 +8,7 @@ priority: P1
 depends_on: []
 blocks: []
 created: 2026-05-01
-updated: 2026-05-01
+updated: 2026-05-06
 ---
 
 ## Summary
@@ -106,7 +106,7 @@ Current state:
 
 Follow-up issues:
 
-- [ ] none
+- [ ] `issues/open/5216-accept-large-decimal-exponent-number-literals.md`
 
 ## Notes
 
@@ -120,7 +120,56 @@ Follow-up issues:
 
 ## Smart triage
 
-Not generated. Rerun with `--triage-limit 1` or higher.
+Fresh triage shows this bucket currently stops at a numeric-literal lexer
+boundary before it reaches cast-expression parentheses behavior.
+
+### Smart triage: castExpressionParentheses
+
+- Issue class: `triage-needed`
+- Feature label: `parser-syntax`
+- Diagnostic: `UnsupportedSyntax` / `parser-or-frontend-unsupported`
+- Path: `reference/typescript/tests/cases/compiler/castExpressionParentheses.ts`
+
+Reproduction:
+
+```sh
+mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/castExpressionParentheses.ts
+```
+
+Failure location:
+
+```json
+{
+  "code": "UnsupportedSyntax",
+  "message": "invalid number literal: number too large to fit in target type at 215..221",
+  "line": 15,
+  "column": 5
+}
+```
+
+Source context:
+
+```text
+12 | (<any>1.);
+13 | (<any>1.0);
+14 | (<any>12e+34);
+15 | (<any>0xff);
+16 | (<any>/regexp/g);
+```
+
+Compiler evidence:
+
+```text
+tokens: fails before token output
+ast: same lexer failure
+resolved: same lexer failure
+```
+
+TypeScript AST sees `ExpressionStatement -> ParenthesizedExpression ->
+TypeAssertionExpression -> FirstLiteralToken "12e+34"` and reports no
+diagnostics. Child issue
+`issues/open/5216-accept-large-decimal-exponent-number-literals.md` owns this
+lexer/parser prerequisite.
 
 ## Completion evidence
 

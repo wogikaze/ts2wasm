@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 2 | 1 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4438 | 3761 | 677 |
+| frontend | 4439 | 3762 | 677 |
 | harness | 1 | 0 | 1 |
 | ir | 35 | 13 | 22 |
 | issues | 4 | 0 | 4 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5050 | 4029 | 1021 |
+| total | 5051 | 4030 | 1021 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -170,6 +170,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5213 | Parse generator function expressions in parameter initializers | feature | frontend/syntax | implementation-ready | P2 | 5000 | capturedParametersInInitializers parser coverage rejects |
 | 5214 | Parse computed class members in class expression initializers | feature | frontend/syntax | implementation-ready | P2 | 5000 | capturedParametersInInitializers parser coverage rejects `get [x]()` in |
 | 5215 | Support loop-local arrow calls from arrow closures | feature | ir/lowering | implementation-ready | P2 | 5001 | capturedVarInLoop parses and resolves, but lowering rejects |
+| 5216 | Accept large decimal exponent number literals | feature | frontend/lexer | implementation-ready | P2 |  | `castExpressionParentheses.ts` fails before token output because |
 <!-- generated:ready:end -->
 
 ## Blocked queue
