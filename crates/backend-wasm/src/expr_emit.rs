@@ -79,7 +79,7 @@ impl WatEmitter<'_> {
                         ValueTag::encode_number(*value)
                     ));
                 } else {
-                    writer.push_str(&format!("{pad}(i32.const {value})\n"));
+                    writer.i32_const(indent, value);
                     writer.push_str(&format!(
                         "{pad}(call {})\n",
                         RuntimeFn::NumberFromI32.symbol()
@@ -98,12 +98,12 @@ impl WatEmitter<'_> {
                 let decimal_src = self.string_offset(decimal) + Layout::STRING_HEADER_SIZE;
                 let decimal_len = self.string_len(decimal);
                 let limb_count = if *sign == 0 { 0 } else { 1 };
-                writer.push_str(&format!("{pad}(i32.const {sign})\n"));
-                writer.push_str(&format!("{pad}(i32.const {limb_count})\n"));
+                writer.i32_const(indent, sign);
+                writer.i32_const(indent, limb_count);
                 writer.i32_const(indent, *limb_low as i32);
                 writer.i32_const(indent, *limb_high as i32);
-                writer.push_str(&format!("{pad}(i32.const {decimal_src})\n"));
-                writer.push_str(&format!("{pad}(i32.const {decimal_len})\n"));
+                writer.i32_const(indent, decimal_src);
+                writer.i32_const(indent, decimal_len);
                 writer.push_str(&format!(
                     "{pad}(call {})\n",
                     RuntimeFn::MakeBigIntLiteral.symbol()
@@ -1510,8 +1510,8 @@ impl WatEmitter<'_> {
         let key_ptr = self.string_offset(key) + Layout::STRING_HEADER_SIZE;
         let key_len = self.string_len(key);
         writer.push_str(&format!("{pad}(local.get {object})\n"));
-        writer.push_str(&format!("{pad}(i32.const {key_ptr})\n"));
-        writer.push_str(&format!("{pad}(i32.const {key_len})\n"));
+        writer.i32_const(indent, key_ptr);
+        writer.i32_const(indent, key_len);
         writer.push_str(&format!(
             "{pad}(call {})\n",
             RuntimeFn::PropertyGet.symbol()
@@ -1704,8 +1704,8 @@ impl WatEmitter<'_> {
         writer.push_str(&format!("{pad}(local.set {rhs})\n"));
         self.emit_gc_root_mirror_index(writer.output_mut(), &pad, rhs, &child_frame);
         writer.push_str(&format!("{pad}(local.get {object})\n"));
-        writer.push_str(&format!("{pad}(i32.const {key_ptr})\n"));
-        writer.push_str(&format!("{pad}(i32.const {key_len})\n"));
+        writer.i32_const(indent, key_ptr);
+        writer.i32_const(indent, key_len);
         writer.push_str(&format!("{pad}(local.get {rhs})\n"));
         writer.push_str(&format!(
             "{pad}(call {})\n",
@@ -1726,8 +1726,8 @@ impl WatEmitter<'_> {
         let key_ptr = self.string_offset(key) + Layout::STRING_HEADER_SIZE;
         let key_len = self.string_len(key);
         writer.push_str(&format!("{pad}(local.get {object})\n"));
-        writer.push_str(&format!("{pad}(i32.const {key_ptr})\n"));
-        writer.push_str(&format!("{pad}(i32.const {key_len})\n"));
+        writer.i32_const(indent, key_ptr);
+        writer.i32_const(indent, key_len);
         self.emit_expr(writer, expr, indent, frame);
         writer.push_str(&format!(
             "{pad}(call {})\n",
