@@ -460,6 +460,7 @@ impl RuntimeLinkPlan {
                     }
                     LoweredBinaryOp::BitwiseAnd => self.add_required_runtime(RuntimeFn::BitwiseAnd),
                     LoweredBinaryOp::BitwiseXor => self.add_required_runtime(RuntimeFn::BitwiseXor),
+                    LoweredBinaryOp::BitwiseOr => self.add_required_runtime(RuntimeFn::BitwiseOr),
                     LoweredBinaryOp::Less => {
                         if left.inferred_type() == ts2wasm_ir::lowered::InferredType::Number
                             && right.inferred_type() == ts2wasm_ir::lowered::InferredType::Number
@@ -685,11 +686,11 @@ impl RuntimeLinkPlan {
 
 #[cfg(test)]
 mod tests {
-    use ts2wasm_ir::lowered::{
-        FuncId, LocalId, LoweredBinaryOp, LoweredExpr, LoweredProgram, LoweredStmt, ModuleInfo,
-        FunctionCallKind,
-    };
     use ts2wasm_ir::builtin::BuiltinId;
+    use ts2wasm_ir::lowered::{
+        FuncId, FunctionCallKind, LocalId, LoweredBinaryOp, LoweredExpr, LoweredProgram,
+        LoweredStmt, ModuleInfo,
+    };
 
     use super::{HostImport, RuntimeFn, RuntimeGlobal, RuntimeLinkPlan};
 

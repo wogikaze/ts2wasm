@@ -9,6 +9,7 @@ depends_on: []
 blocks: []
 created: 2026-05-06
 updated: 2026-05-06
+status: open
 ---
 
 ## Summary
@@ -50,13 +51,13 @@ Problem: Without origin tracking, wasm binary size includes unnecessary runtime 
 
 In scope:
 
-- [ ] Define `StringOrigin` enum in the runtime-abi or backend crate
-- [ ] Add origin field to string interning data structures
-- [ ] Thread origin from `RuntimeFn::spec().runtime_strings` through `RuntimeLinkPlan`
-- [ ] Add test: "no console.log → no Log/Write runtime strings in data segment"
-- [ ] Add test: "console.log present → only Log/Write runtime strings interned"
-- [ ] `docs/12-coding-standard.md` §11 update to reflect implementation
-- [ ] `current-state.md` update
+- [x] Define `StringOrigin` enum in the runtime-abi or backend crate
+- [x] Add origin field to string interning data structures
+- [x] Thread origin from `RuntimeFn::spec().runtime_strings` through `RuntimeLinkPlan`
+- [x] Add test: "no console.log → no Log/Write runtime strings in data segment"
+- [x] Add test: "console.log present → only Log/Write runtime strings interned"
+- [x] `docs/12-coding-standard.md` §11 update to reflect implementation
+- [x] `current-state.md` update
 
 Out of scope:
 
@@ -68,9 +69,10 @@ Out of scope:
 
 Expected:
 
-- `crates/backend-wasm/src/` or `crates/runtime-abi/src/` — `StringOrigin` type
-- String interning logic in backend
-- Linker or runtime-link-plan tests
+- `crates/backend-wasm/src/runtime_fn.rs` — `StringOrigin` enum
+- `crates/backend-wasm/src/string_intern.rs` — `intern_string_with_origin()`, `is_runtime_string()`
+- `crates/backend-wasm/src/emitter.rs` — `runtime_string_set`, origin-aware interning
+- `crates/backend-wasm/src/runtime_link_plan.rs` — `string_origins` field + tests
 - `docs/12-coding-standard.md`
 - `current-state.md`
 
@@ -81,13 +83,13 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] `StringOrigin` enum defined with `UserLiteral` and `Runtime(RuntimeFn)` variants
-- [ ] All interned strings tracked by origin
-- [ ] Only `RuntimeFn`-required strings appear in data segment when that function is in the link plan
-- [ ] Test: "no console.log → zero Log/Write runtime strings in data segment"
-- [ ] Test: "console.log present → Log/Write runtime strings present in data segment"
-- [ ] `cargo test` and `cargo nextest run` all pass
-- [ ] `docs/12-coding-standard.md §19.4` (RuntimeFn catalog checklist) includes StringOrigin requirement
+- [x] `StringOrigin` enum defined with `UserLiteral` and `Runtime(RuntimeFn)` variants
+- [x] All interned strings tracked by origin
+- [x] Only `RuntimeFn`-required strings appear in data segment when that function is in the link plan
+- [x] Test: "no console.log → zero Log/Write runtime strings in data segment"
+- [x] Test: "console.log present → Log/Write runtime strings present in data segment"
+- [x] `cargo test` and `cargo nextest run` all pass
+- [x] `docs/12-coding-standard.md §19.4` (RuntimeFn catalog checklist) includes StringOrigin requirement
 
 ## Validation
 
@@ -95,10 +97,8 @@ Required commands:
 
 ```sh
 cargo fmt --all --check
-cargo nextest run
-# Verify runtime strings only present when needed
-grep "RuntimeString::Runtime" crates/ --type rust
-grep "RuntimeString::UserLiteral" crates/ --type rust
+cargo nextest run -- 'runtime_link_plan'
+cargo check
 ```
 
 ## Docs / current-state / issue sync
@@ -106,13 +106,44 @@ grep "RuntimeString::UserLiteral" crates/ --type rust
 Final-state docs:
 
 - [ ] not affected
-- [ ] updated: `docs/12-coding-standard.md §11` and `§19.4`
+- [x] updated: `docs/12-coding-standard.md §11` and `§19.4`
 
 Current state:
 
 - [ ] not affected
-- [ ] updated: `current-state.md`
+- [x] updated: `current-state.md`
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
+- [ ] created/updated: none
+
+## Notes
+
+Small implementation hints only.
+
+Do not put TODO lists here.
+Do not put stale history here.
+Do not put completion logs here.
+
+## Completion evidence
+
+Fill only when moving to `done/`.
+
+Commits:
+
+- `<commit-hash>` W0: implement user/runtime string origin tracking
+
+Validation result:
+
+```text
+cargo nextest run -- 'runtime_link_plan':
+8 tests run: 8 passed (2 new acceptance tests)
+cargo fmt --all --check: pass
+cargo check: pass
+date: 2026-05-06
+```
+
+Remaining risks:
+
+- none

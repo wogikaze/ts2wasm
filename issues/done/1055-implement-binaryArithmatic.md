@@ -108,7 +108,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] added: `issues/open/5170-support-bitwise-or-binary-lowering.md`
+- [x] added: `issues/done/5170-support-bitwise-or-binary-lowering.md`
 
 ## Notes
 
@@ -143,7 +143,7 @@ Generated on 2026-05-06.
 - Visible symbols before failure: `v`, `null`, `undefined`
 - Compiler evidence: lexer and parser succeed; AST contains `Binary { op: BitwiseOr }`; lowering rejects `BinaryOp::BitwiseOr`.
 - TypeScript oracle: accepts the ES2015 reference cases; ordinary JavaScript bitwise OR applies ToInt32-style coercion to null and undefined operands.
-- Superseding child: `issues/open/5170-support-bitwise-or-binary-lowering.md`
+- Superseding child: `issues/done/5170-support-bitwise-or-binary-lowering.md`
 
 ## Completion evidence
 

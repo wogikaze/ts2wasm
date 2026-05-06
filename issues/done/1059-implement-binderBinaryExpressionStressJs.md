@@ -107,7 +107,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] added: `issues/open/5173-avoid-stack-overflow-on-deep-binary-expressions.md`
+- [x] added: `issues/done/5173-avoid-stack-overflow-on-deep-binary-expressions.md`
 
 ## Notes
 
@@ -129,7 +129,7 @@ Generated on 2026-05-06.
 - Visible symbols before failure: `caps`
 - Compiler evidence: tokens succeed; resolved dump reaches `resolve_builtins` and aborts with stack overflow.
 - TypeScript oracle: timed out for this large file during triage.
-- Superseding child: `issues/open/5173-avoid-stack-overflow-on-deep-binary-expressions.md`
+- Superseding child: `issues/done/5173-avoid-stack-overflow-on-deep-binary-expressions.md`
 
 ## Completion evidence
 

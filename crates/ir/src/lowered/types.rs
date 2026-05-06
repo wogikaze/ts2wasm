@@ -361,6 +361,7 @@ pub enum LoweredBinaryOp {
     Modulo,
     BitwiseAnd,
     BitwiseXor,
+    BitwiseOr,
     Less,
     LessEqual,
     Greater,
@@ -428,7 +429,8 @@ impl LoweredExpr {
                 | LoweredBinaryOp::Divide
                 | LoweredBinaryOp::Modulo
                 | LoweredBinaryOp::BitwiseAnd
-                | LoweredBinaryOp::BitwiseXor => {
+                | LoweredBinaryOp::BitwiseXor
+                | LoweredBinaryOp::BitwiseOr => {
                     if left.inferred_type() == InferredType::Number
                         && right.inferred_type() == InferredType::Number
                     {

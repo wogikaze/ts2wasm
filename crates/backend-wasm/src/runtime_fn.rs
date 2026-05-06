@@ -94,6 +94,7 @@ pub(crate) enum RuntimeFn {
     BitwiseToI32,
     BitwiseAnd,
     BitwiseXor,
+    BitwiseOr,
     Negate,
     Less,
     LessFast,

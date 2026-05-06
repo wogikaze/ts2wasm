@@ -10,7 +10,7 @@ Issue files are the source of truth for work items. The generated section below 
 | Area | Total | Open | Resolved |
 |---|---:|---:|---:|
 | abi | 7 | 0 | 7 |
-| backend | 16 | 3 | 13 |
+| backend | 16 | 4 | 12 |
 | backend-wasm | 3 | 0 | 3 |
 | cli | 15 | 0 | 15 |
 | compiler | 3 | 0 | 3 |
@@ -18,7 +18,7 @@ Issue files are the source of truth for work items. The generated section below 
 | docs | 2 | 0 | 2 |
 | frontend | 4438 | 3742 | 696 |
 | harness | 1 | 0 | 1 |
-| ir | 40 | 13 | 27 |
+| ir | 40 | 11 | 29 |
 | issues | 5 | 0 | 5 |
 | parser | 1 | 0 | 1 |
 | reference | 211 | 163 | 48 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5064 | 4013 | 1051 |
+| total | 5064 | 4012 | 1052 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -111,8 +111,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5167 | Support global Symbol builtin call | feature | ir/builtin-resolver | implementation-ready | P1 |  | `reference/typescript/tests/cases/compiler/bigintIndex.ts` currently reports `UnresolvedFunction: unresolved function... |
 | 5168 | Report BigInt property-name diagnostics | feature | frontend/syntax | implementation-ready | P1 |  | `reference/typescript/tests/cases/compiler/bigintPropertyName.ts` currently reports `UnsupportedSyntax: expected iden... |
 | 5169 | Parse ASI after expression statement | feature | frontend/syntax | implementation-ready | P1 |  | the BigInt lib reference cases report `UnsupportedSyntax: expected Semicolon, got Some(Let)` after: |
-| 5170 | Support bitwise OR binary lowering | feature | ir/lowering | implementation-ready | P1 |  | ordinary number/null/undefined bitwise OR expressions parse successfully but cannot be lowered. |
-| 5173 | Avoid stack overflow on deep binary expressions | feature | ir/builtin-resolver | implementation-ready | P1 |  | recursive expression folding in builtin resolution cannot process the deep binary-expression stress references. |
 | 5174 | Ignore empty binding pattern synthetic names | feature | frontend/name-resolution | implementation-ready | P1 |  | empty binding patterns do not declare a local binding, but the compiler currently registers their display text as if ... |
 | 5176 | Report ambient var lib redeclaration diagnostics | feature | frontend/semantics | implementation-ready | P1 |  | ambient `declare var` declarations can conflict with lib globals, but ts2wasm currently erases the declaration and re... |
 | 5177 | Report strict-null diagnostics in erased namespace methods | feature | frontend/semantics | implementation-ready | P1 |  | erased namespace class method bodies can hide typed local declaration diagnostics and produce a false build pass. |
@@ -142,6 +140,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5225 | W0: introduce typed WAT writer | refactor | backend | design-ready | P1 |  | Raw WAT string concatenation is the primary emission path, preventing compile-time validation of WAT structure and ru... |
 | 5226 | W0: mandatory span on all AST nodes and source diagnostics | refactor | frontend | design-ready | P0 |  | Source-originating diagnostics without `span` make error location impossible, degrading user experience. |
 | 5227 | W0: complete validate_lowered checks and sync IR contract docs | cleanup | ir | design-ready | P0 |  | Stale IR contract docs cause confusion about what the backend can rely on and what new contributors should implement. |
+| 5229 | W0: implement user/runtime string origin tracking | feature | backend | design-ready | P1 |  | Without origin tracking, wasm binary size includes unnecessary runtime strings, and there is no audit trail for data ... |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -5150,8 +5149,10 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5161 | Model ambient value declarations for name resolution | feature | frontend/resolver | see `issues/done/5161-model-ambient-value-declarations-for-name-resolution.md` |
 | 5162 | Allow compatible var redeclarations | feature | frontend/syntax | see `issues/done/5162-allow-compatible-var-redeclarations.md` |
 | 5164 | Parse exponentiation compound assignment | feature | frontend/syntax | see `issues/done/5164-parse-exponentiation-compound-assignment.md` |
+| 5170 | Support bitwise OR binary lowering | feature | ir/lowering | see `issues/done/5170-support-bitwise-or-binary-lowering.md` |
 | 5171 | Accept unsigned 32-bit hex literals | feature | frontend/lexer | see `issues/done/5171-accept-unsigned-32-bit-hex-literals.md` |
 | 5172 | Report unresolved implements in erased namespace | feature | frontend/semantics | see `issues/done/5172-report-unresolved-implements-in-erased-namespace.md` |
+| 5173 | Avoid stack overflow on deep binary expressions | feature | ir/builtin-resolver | see `issues/done/5173-avoid-stack-overflow-on-deep-binary-expressions.md` |
 | 5175 | Support export let declarations | feature | frontend/module-syntax | see `issues/done/5175-support-export-let-destructuring-declarations.md` |
 | 5178 | Parse bitwise compound assignment operators | feature | frontend/syntax | see `issues/done/5178-parse-bitwise-compound-assignment-operators.md` |
 | 5180 | Parse computed property object binding patterns | feature | frontend/syntax | see `issues/done/5180-parse-computed-property-object-binding-patterns.md` |
@@ -5174,7 +5175,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5222 | Parse ambient generic variable type annotations | feature | frontend/syntax | see `issues/done/5222-parse-ambient-generic-variable-type-annotations.md` |
 | 5223 | Report Iterator type-only value-use diagnostics | feature | frontend/resolver | see `issues/done/5223-report-iterator-type-only-value-use-diagnostics.md` |
 | 5224 | Handle package.json virtual sections in multi-file references | feature | compiler/reference | see `issues/done/5224-handle-package-json-virtual-sections-in-multifile-references.md` |
-| 5229 | W0: implement user/runtime string origin tracking | feature | backend | see `issues/done/5229-w0-user-runtime-string-origin.md` |
 <!-- generated:done:end -->
 
 ## Index generation contract

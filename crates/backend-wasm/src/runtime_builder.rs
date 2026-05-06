@@ -69,6 +69,7 @@ impl WatEmitter<'_> {
                 RuntimeFn::BitwiseToI32 => self.emit_bitwise_to_i32(wat),
                 RuntimeFn::BitwiseAnd => self.emit_bitwise_and(wat),
                 RuntimeFn::BitwiseXor => self.emit_bitwise_xor(wat),
+                RuntimeFn::BitwiseOr => self.emit_bitwise_or(wat),
                 RuntimeFn::Negate => self.emit_negate(wat),
                 RuntimeFn::Less => self.emit_less(wat),
                 RuntimeFn::LessFast => self.emit_less_fast(wat),

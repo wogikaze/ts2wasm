@@ -51,9 +51,9 @@ Builtin resolution processes the deep binary expression without stack overflow, 
 
 In scope:
 
-- [ ] Replace or guard the recursive builtin fold path for left-associated binary expression chains.
-- [ ] Add focused regression coverage for a deep `+` chain that previously overflowed.
-- [ ] Confirm both stress reference files no longer abort during `resolve_builtins`.
+- [x] Replace or guard the recursive builtin fold path for left-associated binary expression chains.
+- [x] Add focused regression coverage for a deep `+` chain that previously overflowed.
+- [x] Confirm both stress reference files no longer abort during `resolve_builtins`.
 
 Out of scope:
 
@@ -76,10 +76,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] A focused test exercises a deep left-associated `+` chain through builtin resolution.
-- [ ] The focused test no longer panics or aborts with stack overflow.
-- [ ] `python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/binderBinaryExpressionStress.ts` no longer reports `thread 'main' has overflowed its stack`.
-- [ ] `python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/binderBinaryExpressionStressJs.ts` no longer reports `thread 'main' has overflowed its stack`.
+- [x] A focused test exercises a deep left-associated `+` chain through builtin resolution.
+- [x] The focused test no longer panics or aborts with stack overflow.
+- [x] `python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/binderBinaryExpressionStress.ts` no longer reports `thread 'main' has overflowed its stack`.
+- [x] `python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/binderBinaryExpressionStressJs.ts` no longer reports `thread 'main' has overflowed its stack`.
 
 ## Validation
 
@@ -106,15 +106,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 
@@ -139,3 +139,25 @@ date:
 Remaining risks:
 
 - none
+
+## Completion evidence
+
+Commits:
+
+- `<hash>`
+
+Validation result:
+
+```text
+command: cargo nextest run -p ts2wasm-ir
+result: 27 passed, 0 failed
+date: 2026-05-06
+
+command: cargo nextest run -p ts2wasm-compiler
+result: 65 passed, 0 failed
+date: 2026-05-06
+```
+
+Remaining risks:
+
+- lowering pass (lower_expr) and backend emission (emit_expr) are still recursive for deep binary chains; a deep expression that survives builtin resolution may overflow during lowering or emission. This is tracked as a follow-up.

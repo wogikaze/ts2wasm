@@ -1483,6 +1483,18 @@ impl WatEmitter<'_> {
         );
     }
 
+    pub(crate) fn emit_bitwise_or(&self, wat: &mut String) {
+        wat.push_str(
+            r#"
+  (func $bitwise_or (param $a i32) (param $b i32) (result i32)
+    (call $number_from_i32
+      (i32.or
+        (call $bitwise_to_i32 (local.get $a))
+        (call $bitwise_to_i32 (local.get $b)))))
+"#,
+        );
+    }
+
     pub(crate) fn emit_negate(&self, wat: &mut String) {
         wat.push_str(
             r#"
