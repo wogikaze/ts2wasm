@@ -65,7 +65,7 @@ impl WatEmitter<'_> {
 
     pub(super) fn emit_expr(
         &self,
-        wat: &mut String,
+        writer: &mut WatWriter,
         expr: &LoweredExpr,
         indent: usize,
         frame: &LocalFrame,
@@ -74,20 +74,20 @@ impl WatEmitter<'_> {
         match expr {
             LoweredExpr::Number(value) => {
                 if ValueTag::can_encode_number(*value) {
-                    wat.push_str(&format!(
+                    writer.push_str(&format!(
                         "{pad}(i32.const {})\n",
                         ValueTag::encode_number(*value)
                     ));
                 } else {
-                    wat.push_str(&format!("{pad}(i32.const {value})\n"));
-                    wat.push_str(&format!(
+                    writer.push_str(&format!("{pad}(i32.const {value})\n"));
+                    writer.push_str(&format!(
                         "{pad}(call {})\n",
                         RuntimeFn::NumberFromI32.symbol()
                     ));
                 }
             }
             LoweredExpr::String(value) => {
-                wat.push_str(&format!("{pad}(i32.const {})\n", self.string_value(value)))
+                writer.push_str(&format!("{pad}(i32.const {})\n", self.string_value(value)))
             }
             LoweredExpr::BigIntLiteral {
                 decimal,
@@ -98,30 +98,24 @@ impl WatEmitter<'_> {
                 let decimal_src = self.string_offset(decimal) + Layout::STRING_HEADER_SIZE;
                 let decimal_len = self.string_len(decimal);
                 let limb_count = if *sign == 0 { 0 } else { 1 };
-                wat.push_str(&format!("{pad}(i32.const {sign})\n"));
-                wat.push_str(&format!("{pad}(i32.const {limb_count})\n"));
-                wat.push_str(&format!("{pad}(i32.const {})\n", *limb_low as i32));
-                wat.push_str(&format!("{pad}(i32.const {})\n", *limb_high as i32));
-                wat.push_str(&format!("{pad}(i32.const {decimal_src})\n"));
-                wat.push_str(&format!("{pad}(i32.const {decimal_len})\n"));
-                wat.push_str(&format!(
+                writer.push_str(&format!("{pad}(i32.const {sign})\n"));
+                writer.push_str(&format!("{pad}(i32.const {limb_count})\n"));
+                writer.push_str(&format!("{pad}(i32.const {})\n", *limb_low as i32));
+                writer.push_str(&format!("{pad}(i32.const {})\n", *limb_high as i32));
+                writer.push_str(&format!("{pad}(i32.const {decimal_src})\n"));
+                writer.push_str(&format!("{pad}(i32.const {decimal_len})\n"));
+                writer.push_str(&format!(
                     "{pad}(call {})\n",
                     RuntimeFn::MakeBigIntLiteral.symbol()
                 ));
             }
-            LoweredExpr::Bool(true) => {
-                wat.push_str(&format!("{pad}(i32.const {})\n", ValueTag::TRUE))
-            }
-            LoweredExpr::Bool(false) => {
-                wat.push_str(&format!("{pad}(i32.const {})\n", ValueTag::FALSE))
-            }
-            LoweredExpr::Null => wat.push_str(&format!("{pad}(i32.const {})\n", ValueTag::NULL)),
-            LoweredExpr::Undefined => {
-                wat.push_str(&format!("{pad}(i32.const {})\n", ValueTag::UNDEFINED))
-            }
+            LoweredExpr::Bool(true) => writer.i32_const(indent, ValueTag::TRUE),
+            LoweredExpr::Bool(false) => writer.i32_const(indent, ValueTag::FALSE),
+            LoweredExpr::Null => writer.i32_const(indent, ValueTag::NULL),
+            LoweredExpr::Undefined => writer.i32_const(indent, ValueTag::UNDEFINED),
             LoweredExpr::This => {
                 // validate_lowered rejects residual `this`; supported receivers lower to Local.
-                wat.push_str(&format!("{pad}(unreachable)\n"))
+                writer.unreachable(indent)
             }
             LoweredExpr::ArrowFn {
                 func_id,
@@ -131,56 +125,69 @@ impl WatEmitter<'_> {
                 ClosureRepresentation::DirectLocalToken => {
                     // Local-arrow calls are devirtualized during lowering; this opaque
                     // token prevents local initialization from becoming `undefined`.
-                    wat.push_str(&format!(
+                    writer.push_str(&format!(
                         "{pad}(i32.const {})\n",
                         ValueTag::encode_number(func_id.0 as i32)
                     ))
                 }
                 ClosureRepresentation::HeapObject => {
-                    self.emit_heap_closure_alloc(wat, *func_id, captures, indent, frame);
+                    self.emit_heap_closure_alloc(writer, *func_id, captures, indent, frame);
                 }
             },
-            LoweredExpr::Local(local_id) => {
-                wat.push_str(&format!("{pad}(local.get {})\n", local_index(*local_id)))
-            }
+            LoweredExpr::Local(local_id) => writer.local_get(indent, local_index(*local_id)),
             LoweredExpr::EnvCellNew(expr) => {
-                self.emit_expr(wat, expr, indent, frame);
-                wat.push_str(&format!("{pad}(local.set {})\n", frame.heap_value_tmp()));
-                self.emit_gc_root_mirror_index(wat, &pad, frame.heap_value_tmp(), frame);
-                wat.push_str(&format!(
+                self.emit_expr(writer, expr, indent, frame);
+                writer.local_set(indent, frame.heap_value_tmp());
+                self.emit_gc_root_mirror_index(
+                    writer.output_mut(),
+                    &pad,
+                    frame.heap_value_tmp(),
+                    frame,
+                );
+                writer.push_str(&format!(
                     "{pad}(local.set {} (call {} (i32.const {})))\n",
                     frame.heap_base_tmp(),
                     RuntimeFn::AllocHeap.symbol(),
                     Layout::ARRAY_HEADER_SIZE + ENV_CELL_SLOT_COUNT * 4,
                 ));
-                self.emit_gc_root_mirror_index(wat, &pad, frame.heap_base_tmp(), frame);
-                wat.push_str(&format!(
+                self.emit_gc_root_mirror_index(
+                    writer.output_mut(),
+                    &pad,
+                    frame.heap_base_tmp(),
+                    frame,
+                );
+                writer.push_str(&format!(
                     "{pad}(i32.store (local.get {}) (i32.const {ENV_CELL_SLOT_COUNT}))\n",
                     frame.heap_base_tmp(),
                 ));
-                wat.push_str(&format!(
+                writer.push_str(&format!(
                     "{pad}(i32.store (i32.add (local.get {}) (i32.const {ENV_CELL_VALUE_OFFSET})) (local.get {}))\n",
                     frame.heap_base_tmp(),
                     frame.heap_value_tmp(),
                 ));
-                wat.push_str(&format!(
+                writer.push_str(&format!(
                     "{pad}(i32.or (local.get {}) (i32.const {}))\n",
                     frame.heap_base_tmp(),
                     ValueTag::ARRAY_TAG,
                 ));
             }
             LoweredExpr::EnvCellGet(cell) => {
-                wat.push_str(&format!(
+                writer.push_str(&format!(
                     "{pad}(i32.load (i32.add (i32.and (local.get {}) (i32.const {})) (i32.const {ENV_CELL_VALUE_OFFSET})))\n",
                     local_index(*cell),
                     ValueTag::HEAP_MASK,
                 ));
             }
             LoweredExpr::EnvCellSet { cell, expr } => {
-                self.emit_expr(wat, expr, indent, frame);
-                wat.push_str(&format!("{pad}(local.tee {})\n", frame.heap_value_tmp()));
-                self.emit_gc_root_mirror_index(wat, &pad, frame.heap_value_tmp(), frame);
-                wat.push_str(&format!(
+                self.emit_expr(writer, expr, indent, frame);
+                writer.local_tee(indent, frame.heap_value_tmp());
+                self.emit_gc_root_mirror_index(
+                    writer.output_mut(),
+                    &pad,
+                    frame.heap_value_tmp(),
+                    frame,
+                );
+                writer.push_str(&format!(
                     "{pad}(i32.store (i32.add (i32.and (local.get {}) (i32.const {})) (i32.const {ENV_CELL_VALUE_OFFSET})) (local.get {}))\n",
                     local_index(*cell),
                     ValueTag::HEAP_MASK,
@@ -188,99 +195,111 @@ impl WatEmitter<'_> {
                 ));
             }
             LoweredExpr::PropertyDelete { object, key } => {
-                self.emit_expr(wat, object, indent, frame);
+                self.emit_expr(writer, object, indent, frame);
                 let key_ptr = self.string_offset(key) + Layout::STRING_HEADER_SIZE;
                 let key_len = self.string_len(key);
-                wat.push_str(&format!("{pad}(i32.const {})\n", key_ptr));
-                wat.push_str(&format!("{pad}(i32.const {})\n", key_len));
-                wat.push_str(&format!(
+                writer.push_str(&format!("{pad}(i32.const {})\n", key_ptr));
+                writer.push_str(&format!("{pad}(i32.const {})\n", key_len));
+                writer.push_str(&format!(
                     "{pad}(call {})\n",
                     RuntimeFn::PropertyDelete.symbol()
                 ));
             }
             LoweredExpr::PropertyDeleteDynamic { object, key } => {
-                self.emit_expr(wat, object, indent, frame);
-                wat.push_str(&format!("{pad}(local.set {})\n", frame.heap_base_tmp()));
-                self.emit_gc_root_mirror_index(wat, &pad, frame.heap_base_tmp(), frame);
-                self.emit_expr(wat, key, indent, frame);
-                wat.push_str(&format!("{pad}(i32.const {})\n", Layout::SCRATCH_OFFSET));
-                wat.push_str(&format!(
+                self.emit_expr(writer, object, indent, frame);
+                writer.local_set(indent, frame.heap_base_tmp());
+                self.emit_gc_root_mirror_index(
+                    writer.output_mut(),
+                    &pad,
+                    frame.heap_base_tmp(),
+                    frame,
+                );
+                self.emit_expr(writer, key, indent, frame);
+                writer.push_str(&format!("{pad}(i32.const {})\n", Layout::SCRATCH_OFFSET));
+                writer.push_str(&format!(
                     "{pad}(call {})\n",
                     RuntimeFn::ValueToStringInto.symbol()
                 ));
-                wat.push_str(&format!("{pad}(local.set {})\n", frame.heap_value_tmp()));
-                wat.push_str(&format!("{pad}(local.get {})\n", frame.heap_base_tmp()));
-                wat.push_str(&format!("{pad}(i32.const {})\n", Layout::SCRATCH_OFFSET));
-                wat.push_str(&format!("{pad}(local.get {})\n", frame.heap_value_tmp()));
-                wat.push_str(&format!(
+                writer.local_set(indent, frame.heap_value_tmp());
+                writer.local_get(indent, frame.heap_base_tmp());
+                writer.push_str(&format!("{pad}(i32.const {})\n", Layout::SCRATCH_OFFSET));
+                writer.local_get(indent, frame.heap_value_tmp());
+                writer.push_str(&format!(
                     "{pad}(call {})\n",
                     RuntimeFn::PropertyDelete.symbol()
                 ));
             }
             LoweredExpr::PropertyIn { obj, key } => {
-                self.emit_expr(wat, obj, indent, frame);
+                self.emit_expr(writer, obj, indent, frame);
                 let key_ptr = self.string_offset(key) + Layout::STRING_HEADER_SIZE;
                 let key_len = self.string_len(key);
-                wat.push_str(&format!("{pad}(i32.const {})\n", key_ptr));
-                wat.push_str(&format!("{pad}(i32.const {})\n", key_len));
-                wat.push_str(&format!(
+                writer.push_str(&format!("{pad}(i32.const {})\n", key_ptr));
+                writer.push_str(&format!("{pad}(i32.const {})\n", key_len));
+                writer.push_str(&format!(
                     "{pad}(call {})\n",
                     RuntimeFn::PropertyHas.symbol()
                 ));
             }
             LoweredExpr::PropertyInDynamic { obj, key } => {
-                self.emit_expr(wat, obj, indent, frame);
-                wat.push_str(&format!("{pad}(local.set {})\n", frame.heap_base_tmp()));
-                self.emit_gc_root_mirror_index(wat, &pad, frame.heap_base_tmp(), frame);
-                self.emit_expr(wat, key, indent, frame);
-                wat.push_str(&format!("{pad}(i32.const {})\n", Layout::SCRATCH_OFFSET));
-                wat.push_str(&format!(
+                self.emit_expr(writer, obj, indent, frame);
+                writer.local_set(indent, frame.heap_base_tmp());
+                self.emit_gc_root_mirror_index(
+                    writer.output_mut(),
+                    &pad,
+                    frame.heap_base_tmp(),
+                    frame,
+                );
+                self.emit_expr(writer, key, indent, frame);
+                writer.push_str(&format!("{pad}(i32.const {})\n", Layout::SCRATCH_OFFSET));
+                writer.push_str(&format!(
                     "{pad}(call {})\n",
                     RuntimeFn::ValueToStringInto.symbol()
                 ));
-                wat.push_str(&format!("{pad}(local.set {})\n", frame.heap_value_tmp()));
-                wat.push_str(&format!("{pad}(local.get {})\n", frame.heap_base_tmp()));
-                wat.push_str(&format!("{pad}(i32.const {})\n", Layout::SCRATCH_OFFSET));
-                wat.push_str(&format!("{pad}(local.get {})\n", frame.heap_value_tmp()));
-                wat.push_str(&format!(
+                writer.local_set(indent, frame.heap_value_tmp());
+                writer.local_get(indent, frame.heap_base_tmp());
+                writer.push_str(&format!("{pad}(i32.const {})\n", Layout::SCRATCH_OFFSET));
+                writer.local_get(indent, frame.heap_value_tmp());
+                writer.push_str(&format!(
                     "{pad}(call {})\n",
                     RuntimeFn::PropertyHas.symbol()
                 ));
             }
             LoweredExpr::Unary { op, expr } => {
-                self.emit_expr(wat, expr, indent, frame);
+                self.emit_expr(writer, expr, indent, frame);
                 match op {
                     LoweredUnaryOp::Not => {
-                        wat.push_str(&format!("{pad}(call {})\n", RuntimeFn::Not.symbol()))
+                        writer.line_fmt(indent, format_args!("(call {})", RuntimeFn::Not.symbol()))
                     }
                     LoweredUnaryOp::Plus => {
-                        wat.push_str(&format!("{pad}(call $primitive_to_number_for_equality)\n"))
+                        writer.push_str(&format!("{pad}(call $primitive_to_number_for_equality)\n"))
                     }
-                    LoweredUnaryOp::Negate => {
-                        wat.push_str(&format!("{pad}(call {})\n", RuntimeFn::Negate.symbol()))
-                    }
-                    LoweredUnaryOp::TypeOf => {
-                        wat.push_str(&format!("{pad}(call {})\n", RuntimeFn::TypeOf.symbol()))
-                    }
+                    LoweredUnaryOp::Negate => writer.line_fmt(
+                        indent,
+                        format_args!("(call {})", RuntimeFn::Negate.symbol()),
+                    ),
+                    LoweredUnaryOp::TypeOf => writer.line_fmt(
+                        indent,
+                        format_args!("(call {})", RuntimeFn::TypeOf.symbol()),
+                    ),
                     LoweredUnaryOp::Delete => {
                         // Delete is handled as a special case in the AST
                         // This should not be reached if delete is properly lowered
-                        wat.push_str(&format!("{pad}(i32.const 0)\n"))
+                        writer.push_str(&format!("{pad}(i32.const 0)\n"))
                     }
                     LoweredUnaryOp::Void => {
                         // Evaluate expr for side effects, drop result, produce undefined
-                        wat.push_str(&format!("{pad}(drop)\n"));
-                        wat.push_str(&format!("{pad}(i32.const 0)\n"));
+                        writer.drop(indent);
+                        writer.push_str(&format!("{pad}(i32.const 0)\n"));
                     }
                 }
             }
             LoweredExpr::Assign { local, expr } => {
-                self.emit_expr(wat, expr, indent, frame);
-                wat.push_str(&format!("{pad}(local.tee {})\n", local_index(*local)));
-                self.emit_gc_root_mirror(wat, &pad, *local, frame);
+                self.emit_expr(writer, expr, indent, frame);
+                writer.local_tee(indent, local_index(*local));
+                self.emit_gc_root_mirror(writer.output_mut(), &pad, *local, frame);
             }
             LoweredExpr::LogicalAssign { local, op, expr } => {
-                self.emit_logical_assign(wat, *local, *op, expr, indent, frame);
+                self.emit_logical_assign(writer, *local, *op, expr, indent, frame);
             }
             LoweredExpr::LogicalPropertyAssign {
                 object,
@@ -288,7 +307,7 @@ impl WatEmitter<'_> {
                 op,
                 expr,
             } => {
-                self.emit_logical_property_assign(wat, *object, key, *op, expr, indent, frame);
+                self.emit_logical_property_assign(writer, *object, key, *op, expr, indent, frame);
             }
             LoweredExpr::LogicalMemberAssign {
                 object,
@@ -296,7 +315,7 @@ impl WatEmitter<'_> {
                 op,
                 expr,
             } => {
-                self.emit_logical_member_assign(wat, object, key, *op, expr, indent, frame);
+                self.emit_logical_member_assign(writer, object, key, *op, expr, indent, frame);
             }
             LoweredExpr::LogicalComputedPropertyAssign {
                 object,
@@ -305,7 +324,7 @@ impl WatEmitter<'_> {
                 expr,
             } => {
                 self.emit_logical_computed_property_assign(
-                    wat, *object, key, *op, expr, indent, frame,
+                    writer, *object, key, *op, expr, indent, frame,
                 );
             }
             LoweredExpr::LogicalComputedMemberAssign {
@@ -315,25 +334,25 @@ impl WatEmitter<'_> {
                 expr,
             } => {
                 self.emit_logical_computed_member_assign(
-                    wat, object, key, *op, expr, indent, frame,
+                    writer, object, key, *op, expr, indent, frame,
                 );
             }
             LoweredExpr::Binary { left, op, right } => {
                 if *op == LoweredBinaryOp::And {
                     let lhs_tmp = frame.switch_value_tmp();
-                    self.emit_expr(wat, left, indent, frame);
-                    wat.push_str(&format!("{pad}(local.set {})\n", lhs_tmp));
-                    wat.push_str(&format!("{pad}(if (result i32)\n"));
-                    wat.push_str(&format!(
+                    self.emit_expr(writer, left, indent, frame);
+                    writer.local_set(indent, lhs_tmp);
+                    writer.if_result(indent, "i32");
+                    writer.push_str(&format!(
                         "{pad}  (call {}\n",
                         RuntimeFn::TruthyBool.symbol()
                     ));
-                    wat.push_str(&format!("{pad}    (local.get {})\n", lhs_tmp));
-                    wat.push_str(&format!("{pad}  )\n"));
-                    wat.push_str(&format!("{pad}  (then\n"));
-                    self.emit_expr(wat, right, indent + 4, &frame.child_temp_frame());
-                    wat.push_str(&format!("{pad}  )\n"));
-                    wat.push_str(&format!(
+                    writer.push_str(&format!("{pad}    (local.get {})\n", lhs_tmp));
+                    writer.push_str(&format!("{pad}  )\n"));
+                    writer.then(indent);
+                    self.emit_expr(writer, right, indent + 4, &frame.child_temp_frame());
+                    writer.push_str(&format!("{pad}  )\n"));
+                    writer.push_str(&format!(
                         "{pad}  (else\n{pad}    (local.get {})\n{pad}  ))\n",
                         lhs_tmp
                     ));
@@ -341,40 +360,40 @@ impl WatEmitter<'_> {
                 }
                 if *op == LoweredBinaryOp::Or {
                     let lhs_tmp = frame.switch_value_tmp();
-                    self.emit_expr(wat, left, indent, frame);
-                    wat.push_str(&format!("{pad}(local.set {})\n", lhs_tmp));
-                    wat.push_str(&format!("{pad}(if (result i32)\n"));
-                    wat.push_str(&format!(
+                    self.emit_expr(writer, left, indent, frame);
+                    writer.local_set(indent, lhs_tmp);
+                    writer.if_result(indent, "i32");
+                    writer.push_str(&format!(
                         "{pad}  (call {}\n",
                         RuntimeFn::TruthyBool.symbol()
                     ));
-                    wat.push_str(&format!("{pad}    (local.get {})\n", lhs_tmp));
-                    wat.push_str(&format!("{pad}  )\n"));
-                    wat.push_str(&format!(
+                    writer.push_str(&format!("{pad}    (local.get {})\n", lhs_tmp));
+                    writer.push_str(&format!("{pad}  )\n"));
+                    writer.push_str(&format!(
                         "{pad}  (then\n{pad}    (local.get {})\n{pad}  )\n",
                         lhs_tmp
                     ));
-                    wat.push_str(&format!("{pad}  (else\n"));
-                    self.emit_expr(wat, right, indent + 4, &frame.child_temp_frame());
-                    wat.push_str(&format!("{pad}  ))\n"));
+                    writer.r#else(indent);
+                    self.emit_expr(writer, right, indent + 4, &frame.child_temp_frame());
+                    writer.push_str(&format!("{pad}  ))\n"));
                     return;
                 }
                 if *op == LoweredBinaryOp::NullishCoalesce {
                     let lhs_tmp = frame.switch_value_tmp();
-                    self.emit_expr(wat, left, indent, frame);
-                    wat.push_str(&format!("{pad}(local.set {})\n", lhs_tmp));
-                    wat.push_str(&format!("{pad}(if (result i32)\n"));
-                    wat.push_str(&format!(
+                    self.emit_expr(writer, left, indent, frame);
+                    writer.local_set(indent, lhs_tmp);
+                    writer.if_result(indent, "i32");
+                    writer.push_str(&format!(
                         "{pad}  (i32.or\n{pad}    (i32.eq (local.get {}) (i32.const {}))\n{pad}    (i32.eq (local.get {}) (i32.const {})))\n",
                         lhs_tmp,
                         ValueTag::UNDEFINED,
                         lhs_tmp,
                         ValueTag::NULL
                     ));
-                    wat.push_str(&format!("{pad}  (then\n"));
-                    self.emit_expr(wat, right, indent + 4, &frame.child_temp_frame());
-                    wat.push_str(&format!("{pad}  )\n"));
-                    wat.push_str(&format!(
+                    writer.then(indent);
+                    self.emit_expr(writer, right, indent + 4, &frame.child_temp_frame());
+                    writer.push_str(&format!("{pad}  )\n"));
+                    writer.push_str(&format!(
                         "{pad}  (else\n{pad}    (local.get {})\n{pad}  ))\n",
                         lhs_tmp
                     ));
@@ -386,65 +405,89 @@ impl WatEmitter<'_> {
                     LoweredBinaryOp::Add
                         if left_ty == InferredType::Number && right_ty == InferredType::Number =>
                     {
-                        self.emit_expr(wat, left, indent, frame);
-                        self.emit_expr(wat, right, indent, frame);
-                        wat.push_str(&format!("{pad}(call {})\n", RuntimeFn::AddFast.symbol()));
+                        self.emit_expr(writer, left, indent, frame);
+                        self.emit_expr(writer, right, indent, frame);
+                        writer.line_fmt(
+                            indent,
+                            format_args!("(call {})", RuntimeFn::AddFast.symbol()),
+                        );
                     }
                     LoweredBinaryOp::Add
                         if left_ty == InferredType::String && right_ty == InferredType::String =>
                     {
-                        self.emit_expr(wat, left, indent, frame);
-                        self.emit_expr(wat, right, indent, frame);
-                        wat.push_str(&format!("{pad}(call {})\n", RuntimeFn::Concat.symbol()));
+                        self.emit_expr(writer, left, indent, frame);
+                        self.emit_expr(writer, right, indent, frame);
+                        writer.line_fmt(
+                            indent,
+                            format_args!("(call {})", RuntimeFn::Concat.symbol()),
+                        );
                     }
                     LoweredBinaryOp::Subtract
                         if left_ty == InferredType::Number && right_ty == InferredType::Number =>
                     {
-                        self.emit_expr(wat, left, indent, frame);
-                        self.emit_expr(wat, right, indent, frame);
-                        wat.push_str(&format!("{pad}(call {})\n", RuntimeFn::SubFast.symbol()));
+                        self.emit_expr(writer, left, indent, frame);
+                        self.emit_expr(writer, right, indent, frame);
+                        writer.line_fmt(
+                            indent,
+                            format_args!("(call {})", RuntimeFn::SubFast.symbol()),
+                        );
                     }
                     LoweredBinaryOp::Multiply
                         if left_ty == InferredType::Number && right_ty == InferredType::Number =>
                     {
-                        self.emit_expr(wat, left, indent, frame);
-                        self.emit_expr(wat, right, indent, frame);
-                        wat.push_str(&format!("{pad}(call {})\n", RuntimeFn::MulFast.symbol()));
+                        self.emit_expr(writer, left, indent, frame);
+                        self.emit_expr(writer, right, indent, frame);
+                        writer.line_fmt(
+                            indent,
+                            format_args!("(call {})", RuntimeFn::MulFast.symbol()),
+                        );
                     }
                     LoweredBinaryOp::Power
                         if left_ty == InferredType::Number && right_ty == InferredType::Number =>
                     {
-                        self.emit_expr(wat, left, indent, frame);
-                        self.emit_expr(wat, right, indent, frame);
-                        wat.push_str(&format!("{pad}(call {})\n", RuntimeFn::MathPow.symbol()));
+                        self.emit_expr(writer, left, indent, frame);
+                        self.emit_expr(writer, right, indent, frame);
+                        writer.line_fmt(
+                            indent,
+                            format_args!("(call {})", RuntimeFn::MathPow.symbol()),
+                        );
                     }
                     LoweredBinaryOp::Divide
                         if left_ty == InferredType::Number && right_ty == InferredType::Number =>
                     {
-                        self.emit_expr(wat, left, indent, frame);
-                        self.emit_expr(wat, right, indent, frame);
-                        wat.push_str(&format!("{pad}(call {})\n", RuntimeFn::DivFast.symbol()));
+                        self.emit_expr(writer, left, indent, frame);
+                        self.emit_expr(writer, right, indent, frame);
+                        writer.line_fmt(
+                            indent,
+                            format_args!("(call {})", RuntimeFn::DivFast.symbol()),
+                        );
                     }
                     LoweredBinaryOp::Modulo
                         if left_ty == InferredType::Number && right_ty == InferredType::Number =>
                     {
-                        self.emit_expr(wat, left, indent, frame);
-                        self.emit_expr(wat, right, indent, frame);
-                        wat.push_str(&format!("{pad}(call {})\n", RuntimeFn::ModFast.symbol()));
+                        self.emit_expr(writer, left, indent, frame);
+                        self.emit_expr(writer, right, indent, frame);
+                        writer.line_fmt(
+                            indent,
+                            format_args!("(call {})", RuntimeFn::ModFast.symbol()),
+                        );
                     }
                     LoweredBinaryOp::Less
                         if left_ty == InferredType::Number && right_ty == InferredType::Number =>
                     {
-                        self.emit_expr(wat, left, indent, frame);
-                        self.emit_expr(wat, right, indent, frame);
-                        wat.push_str(&format!("{pad}(call {})\n", RuntimeFn::LessFast.symbol()));
+                        self.emit_expr(writer, left, indent, frame);
+                        self.emit_expr(writer, right, indent, frame);
+                        writer.line_fmt(
+                            indent,
+                            format_args!("(call {})", RuntimeFn::LessFast.symbol()),
+                        );
                     }
                     LoweredBinaryOp::LessEqual
                         if left_ty == InferredType::Number && right_ty == InferredType::Number =>
                     {
-                        self.emit_expr(wat, left, indent, frame);
-                        self.emit_expr(wat, right, indent, frame);
-                        wat.push_str(&format!(
+                        self.emit_expr(writer, left, indent, frame);
+                        self.emit_expr(writer, right, indent, frame);
+                        writer.push_str(&format!(
                             "{pad}(call {})\n",
                             RuntimeFn::LessEqualFast.symbol()
                         ));
@@ -452,9 +495,9 @@ impl WatEmitter<'_> {
                     LoweredBinaryOp::Greater
                         if left_ty == InferredType::Number && right_ty == InferredType::Number =>
                     {
-                        self.emit_expr(wat, left, indent, frame);
-                        self.emit_expr(wat, right, indent, frame);
-                        wat.push_str(&format!(
+                        self.emit_expr(writer, left, indent, frame);
+                        self.emit_expr(writer, right, indent, frame);
+                        writer.push_str(&format!(
                             "{pad}(call {})\n",
                             RuntimeFn::GreaterFast.symbol()
                         ));
@@ -462,9 +505,9 @@ impl WatEmitter<'_> {
                     LoweredBinaryOp::GreaterEqual
                         if left_ty == InferredType::Number && right_ty == InferredType::Number =>
                     {
-                        self.emit_expr(wat, left, indent, frame);
-                        self.emit_expr(wat, right, indent, frame);
-                        wat.push_str(&format!(
+                        self.emit_expr(writer, left, indent, frame);
+                        self.emit_expr(writer, right, indent, frame);
+                        writer.push_str(&format!(
                             "{pad}(call {})\n",
                             RuntimeFn::GreaterEqualFast.symbol()
                         ));
@@ -496,56 +539,67 @@ impl WatEmitter<'_> {
                         };
                         if expr_may_collect(right) && !expr_uses_caller_backend_tmp(right) {
                             let lhs_tmp = frame.switch_value_tmp();
-                            self.emit_expr(wat, left, indent, frame);
-                            wat.push_str(&format!("{pad}(local.set {})\n", lhs_tmp));
-                            self.emit_gc_root_mirror_index(wat, &pad, lhs_tmp, frame);
-                            wat.push_str(&format!("{pad}(local.get {})\n", lhs_tmp));
-                            self.emit_expr(wat, right, indent, frame);
-                            wat.push_str(&format!("{pad}(call {})\n", runtime_fn.symbol()));
+                            self.emit_expr(writer, left, indent, frame);
+                            writer.local_set(indent, lhs_tmp);
+                            self.emit_gc_root_mirror_index(
+                                writer.output_mut(),
+                                &pad,
+                                lhs_tmp,
+                                frame,
+                            );
+                            writer.local_get(indent, lhs_tmp);
+                            self.emit_expr(writer, right, indent, frame);
+                            writer.push_str(&format!("{pad}(call {})\n", runtime_fn.symbol()));
                             return;
                         }
-                        self.emit_expr(wat, left, indent, frame);
-                        self.emit_expr(wat, right, indent, frame);
-                        wat.push_str(&format!("{pad}(call {})\n", runtime_fn.symbol()));
+                        self.emit_expr(writer, left, indent, frame);
+                        self.emit_expr(writer, right, indent, frame);
+                        writer.push_str(&format!("{pad}(call {})\n", runtime_fn.symbol()));
                     }
                 }
             }
             LoweredExpr::Call { kind, args } => match kind {
                 FunctionCallKind::User(func_id) => {
-                    self.emit_user_call_args(wat, *func_id, args, indent, frame);
+                    self.emit_user_call_args(writer, *func_id, args, indent, frame);
                 }
                 FunctionCallKind::Builtin(builtin) => {
                     for arg in args {
-                        self.emit_expr(wat, arg, indent, frame);
+                        self.emit_expr(writer, arg, indent, frame);
                     }
                     let runtime_fn = RuntimeFn::from_builtin(*builtin);
-                    wat.push_str(&format!("{pad}(call {})\n", runtime_fn.symbol()));
+                    writer.push_str(&format!("{pad}(call {})\n", runtime_fn.symbol()));
                     // ConsoleLog is void in WAT but may appear in value context
                     // (e.g. arrow body). Push undefined so the stack is consistent.
                     if matches!(runtime_fn, RuntimeFn::Log) {
-                        wat.push_str(&format!("{pad}(i32.const 0)\n"));
+                        writer.push_str(&format!("{pad}(i32.const 0)\n"));
                     }
                 }
             },
             LoweredExpr::ArrayNew { elements } => {
-                self.emit_array_literal(wat, elements, indent, frame);
+                self.emit_array_literal(writer, elements, indent, frame);
             }
             LoweredExpr::ArrayNewSparse { slots } => {
-                self.emit_sparse_array_literal(wat, slots, indent, frame);
+                self.emit_sparse_array_literal(writer, slots, indent, frame);
             }
             LoweredExpr::ArrayGet { arr, index } => {
-                self.emit_expr(wat, arr, indent, frame);
-                self.emit_expr(wat, index, indent, frame);
-                wat.push_str(&format!("{pad}(call {})\n", RuntimeFn::ArrayGet.symbol()));
+                self.emit_expr(writer, arr, indent, frame);
+                self.emit_expr(writer, index, indent, frame);
+                writer.line_fmt(
+                    indent,
+                    format_args!("(call {})", RuntimeFn::ArrayGet.symbol()),
+                );
             }
             LoweredExpr::Index { object, index } => {
-                self.emit_expr(wat, object, indent, frame);
-                self.emit_expr(wat, index, indent, frame);
-                wat.push_str(&format!("{pad}(call {})\n", RuntimeFn::Index.symbol()));
+                self.emit_expr(writer, object, indent, frame);
+                self.emit_expr(writer, index, indent, frame);
+                writer.line_fmt(indent, format_args!("(call {})", RuntimeFn::Index.symbol()));
             }
             LoweredExpr::GetLength(inner) => {
-                self.emit_expr(wat, inner, indent, frame);
-                wat.push_str(&format!("{pad}(call {})\n", RuntimeFn::GetLength.symbol()));
+                self.emit_expr(writer, inner, indent, frame);
+                writer.line_fmt(
+                    indent,
+                    format_args!("(call {})", RuntimeFn::GetLength.symbol()),
+                );
             }
             LoweredExpr::ObjectNew {
                 props,
@@ -555,26 +609,31 @@ impl WatEmitter<'_> {
                 let prop_capacity = prop_count + 8;
                 let size =
                     Layout::OBJECT_HEADER_SIZE + (prop_capacity as u32) * Layout::OBJECT_ENTRY_SIZE;
-                wat.push_str(&format!(
+                writer.push_str(&format!(
                     "{pad}(local.set {} (call {} (i32.const {})))\n",
                     frame.heap_base_tmp(),
                     RuntimeFn::AllocHeap.symbol(),
                     size,
                 ));
-                self.emit_gc_root_mirror_index(wat, &pad, frame.heap_base_tmp(), frame);
-                wat.push_str(&format!(
+                self.emit_gc_root_mirror_index(
+                    writer.output_mut(),
+                    &pad,
+                    frame.heap_base_tmp(),
+                    frame,
+                );
+                writer.push_str(&format!(
                     "{pad}(i32.store (local.get {}) (i32.const {}))\n",
                     frame.heap_base_tmp(),
                     prop_count,
                 ));
                 let flags = non_enumerable << Layout::OBJECT_NON_ENUM_SHIFT;
-                wat.push_str(&format!(
+                writer.push_str(&format!(
                     "{pad}(i32.store (i32.add (local.get {}) (i32.const {})) (i32.const {}))\n",
                     frame.heap_base_tmp(),
                     Layout::OBJECT_FLAGS_OFFSET,
                     flags,
                 ));
-                wat.push_str(&format!(
+                writer.push_str(&format!(
                     "{pad}(i32.store (i32.add (local.get {}) (i32.const {})) (i32.const 0))\n",
                     frame.heap_base_tmp(),
                     Layout::OBJECT_PROTOTYPE_OFFSET,
@@ -584,25 +643,25 @@ impl WatEmitter<'_> {
                     let entry_offset =
                         Layout::OBJECT_ENTRIES_OFFSET + (i as u32) * Layout::OBJECT_ENTRY_SIZE;
                     let key_raw = self.string_value(key);
-                    wat.push_str(&format!(
+                    writer.push_str(&format!(
                         "{pad}(i32.store (i32.add (local.get {}) (i32.const {})) (i32.const {}))\n",
                         frame.heap_base_tmp(),
                         entry_offset,
                         key_raw,
                     ));
-                    self.emit_expr(wat, val, indent, &child_frame);
-                    wat.push_str(&format!(
+                    self.emit_expr(writer, val, indent, &child_frame);
+                    writer.push_str(&format!(
                         "{pad}(local.set {})\n",
                         child_frame.heap_value_tmp(),
                     ));
-                    wat.push_str(&format!(
+                    writer.push_str(&format!(
                         "{pad}(i32.store (i32.add (local.get {}) (i32.const {})) (local.get {}))\n",
                         frame.heap_base_tmp(),
                         entry_offset + Layout::OBJECT_VALUE_OFFSET,
                         child_frame.heap_value_tmp(),
                     ));
                 }
-                wat.push_str(&format!(
+                writer.push_str(&format!(
                     "{pad}(i32.or (local.get {}) (i32.const {}))\n",
                     frame.heap_base_tmp(),
                     ValueTag::OBJECT_TAG,
@@ -616,40 +675,50 @@ impl WatEmitter<'_> {
                 let prop_capacity = prop_count + 8;
                 let size =
                     Layout::OBJECT_HEADER_SIZE + (prop_capacity as u32) * Layout::OBJECT_ENTRY_SIZE;
-                wat.push_str(&format!(
+                writer.push_str(&format!(
                     "{pad}(local.set {} (call {} (i32.const {})))\n",
                     frame.heap_base_tmp(),
                     RuntimeFn::AllocHeap.symbol(),
                     size,
                 ));
-                self.emit_gc_root_mirror_index(wat, &pad, frame.heap_base_tmp(), frame);
-                wat.push_str(&format!(
+                self.emit_gc_root_mirror_index(
+                    writer.output_mut(),
+                    &pad,
+                    frame.heap_base_tmp(),
+                    frame,
+                );
+                writer.push_str(&format!(
                     "{pad}(i32.store (local.get {}) (i32.const {}))\n",
                     frame.heap_base_tmp(),
                     prop_count,
                 ));
-                wat.push_str(&format!(
+                writer.push_str(&format!(
                     "{pad}(i32.store (i32.add (local.get {}) (i32.const {})) (i32.const 0))\n",
                     frame.heap_base_tmp(),
                     Layout::OBJECT_FLAGS_OFFSET,
                 ));
-                wat.push_str(&format!(
+                writer.push_str(&format!(
                     "{pad}(i32.store (i32.add (local.get {}) (i32.const {})) (global.get ${}))\n",
                     frame.heap_base_tmp(),
                     Layout::OBJECT_PROTOTYPE_OFFSET,
                     builtin_error_prototype_global(*constructor),
                 ));
                 let key_raw = self.string_value("message");
-                wat.push_str(&format!(
+                writer.push_str(&format!(
                     "{pad}(i32.store (i32.add (local.get {}) (i32.const {})) (i32.const {}))\n",
                     frame.heap_base_tmp(),
                     Layout::OBJECT_ENTRIES_OFFSET,
                     key_raw,
                 ));
-                self.emit_expr(wat, message, indent, frame);
-                wat.push_str(&format!("{pad}(local.set {})\n", frame.heap_value_tmp()));
-                self.emit_gc_root_mirror_index(wat, &pad, frame.heap_value_tmp(), frame);
-                wat.push_str(&format!(
+                self.emit_expr(writer, message, indent, frame);
+                writer.local_set(indent, frame.heap_value_tmp());
+                self.emit_gc_root_mirror_index(
+                    writer.output_mut(),
+                    &pad,
+                    frame.heap_value_tmp(),
+                    frame,
+                );
+                writer.push_str(&format!(
                     "{pad}(i32.store (i32.add (local.get {}) (i32.const {})) (local.get {}))\n",
                     frame.heap_base_tmp(),
                     Layout::OBJECT_ENTRIES_OFFSET + Layout::OBJECT_VALUE_OFFSET,
@@ -658,24 +727,32 @@ impl WatEmitter<'_> {
                 let stack_entry_offset = Layout::OBJECT_ENTRIES_OFFSET + Layout::OBJECT_ENTRY_SIZE;
                 let stack_key_raw = self.string_value("stack");
                 let stack_prefix_raw = self.string_value(builtin_error_stack_prefix(*constructor));
-                wat.push_str(&format!(
+                writer.push_str(&format!(
                     "{pad}(i32.store (i32.add (local.get {}) (i32.const {})) (i32.const {}))\n",
                     frame.heap_base_tmp(),
                     stack_entry_offset,
                     stack_key_raw,
                 ));
-                wat.push_str(&format!("{pad}(i32.const {})\n", stack_prefix_raw));
-                wat.push_str(&format!("{pad}(local.get {})\n", frame.heap_value_tmp()));
-                wat.push_str(&format!("{pad}(call {})\n", RuntimeFn::Concat.symbol()));
-                wat.push_str(&format!("{pad}(local.set {})\n", frame.heap_value_tmp()));
-                self.emit_gc_root_mirror_index(wat, &pad, frame.heap_value_tmp(), frame);
-                wat.push_str(&format!(
+                writer.push_str(&format!("{pad}(i32.const {})\n", stack_prefix_raw));
+                writer.local_get(indent, frame.heap_value_tmp());
+                writer.line_fmt(
+                    indent,
+                    format_args!("(call {})", RuntimeFn::Concat.symbol()),
+                );
+                writer.local_set(indent, frame.heap_value_tmp());
+                self.emit_gc_root_mirror_index(
+                    writer.output_mut(),
+                    &pad,
+                    frame.heap_value_tmp(),
+                    frame,
+                );
+                writer.push_str(&format!(
                     "{pad}(i32.store (i32.add (local.get {}) (i32.const {})) (local.get {}))\n",
                     frame.heap_base_tmp(),
                     stack_entry_offset + Layout::OBJECT_VALUE_OFFSET,
                     frame.heap_value_tmp(),
                 ));
-                wat.push_str(&format!(
+                writer.push_str(&format!(
                     "{pad}(i32.or (local.get {}) (i32.const {}))\n",
                     frame.heap_base_tmp(),
                     ValueTag::OBJECT_TAG,
@@ -684,72 +761,77 @@ impl WatEmitter<'_> {
             LoweredExpr::PropertyGet { obj, key } => {
                 let key_ptr = self.string_offset(key) + Layout::STRING_HEADER_SIZE;
                 let key_len = self.string_len(key);
-                self.emit_expr(wat, obj, indent, frame);
-                wat.push_str(&format!("{pad}(i32.const {})\n", key_ptr));
-                wat.push_str(&format!("{pad}(i32.const {})\n", key_len));
-                wat.push_str(&format!(
+                self.emit_expr(writer, obj, indent, frame);
+                writer.push_str(&format!("{pad}(i32.const {})\n", key_ptr));
+                writer.push_str(&format!("{pad}(i32.const {})\n", key_len));
+                writer.push_str(&format!(
                     "{pad}(call {})\n",
                     RuntimeFn::PropertyGet.symbol()
                 ));
             }
             LoweredExpr::OptionalPropertyGet { obj, key } => {
-                self.emit_optional_property_get(wat, obj, key, indent, frame);
+                self.emit_optional_property_get(writer, obj, key, indent, frame);
             }
             LoweredExpr::PropertyGetDynamic { obj, key } => {
-                self.emit_expr(wat, obj, indent, frame);
-                wat.push_str(&format!("{pad}(local.set {})\n", frame.heap_base_tmp()));
-                self.emit_gc_root_mirror_index(wat, &pad, frame.heap_base_tmp(), frame);
-                self.emit_expr(wat, key, indent, frame);
-                wat.push_str(&format!("{pad}(i32.const {})\n", Layout::SCRATCH_OFFSET));
-                wat.push_str(&format!(
+                self.emit_expr(writer, obj, indent, frame);
+                writer.local_set(indent, frame.heap_base_tmp());
+                self.emit_gc_root_mirror_index(
+                    writer.output_mut(),
+                    &pad,
+                    frame.heap_base_tmp(),
+                    frame,
+                );
+                self.emit_expr(writer, key, indent, frame);
+                writer.push_str(&format!("{pad}(i32.const {})\n", Layout::SCRATCH_OFFSET));
+                writer.push_str(&format!(
                     "{pad}(call {})\n",
                     RuntimeFn::ValueToStringInto.symbol()
                 ));
-                wat.push_str(&format!("{pad}(local.set {})\n", frame.heap_value_tmp()));
-                wat.push_str(&format!("{pad}(local.get {})\n", frame.heap_base_tmp()));
-                wat.push_str(&format!("{pad}(i32.const {})\n", Layout::SCRATCH_OFFSET));
-                wat.push_str(&format!("{pad}(local.get {})\n", frame.heap_value_tmp()));
-                wat.push_str(&format!(
+                writer.local_set(indent, frame.heap_value_tmp());
+                writer.local_get(indent, frame.heap_base_tmp());
+                writer.push_str(&format!("{pad}(i32.const {})\n", Layout::SCRATCH_OFFSET));
+                writer.local_get(indent, frame.heap_value_tmp());
+                writer.push_str(&format!(
                     "{pad}(call {})\n",
                     RuntimeFn::PropertyGet.symbol()
                 ));
             }
             LoweredExpr::OptionalIndex { object, index } => {
-                self.emit_optional_index(wat, object, index, indent, frame);
+                self.emit_optional_index(writer, object, index, indent, frame);
             }
             LoweredExpr::OptionalCall { callee, call } => {
-                self.emit_optional_call(wat, callee, call, indent, frame);
+                self.emit_optional_call(writer, callee, call, indent, frame);
             }
             LoweredExpr::MethodCall {
                 object: _,
                 method: _,
             } => {
                 // Lowering/validation should reject residual MethodCall before backend.
-                wat.push_str(&format!("{pad}(unreachable)\n"));
+                writer.unreachable(indent);
             }
             LoweredExpr::RuntimeCall { runtime_fn, args } => {
                 if runtime_fn == "ArrayPushMany" {
-                    self.emit_array_push_many_call(wat, args, indent, frame);
+                    self.emit_array_push_many_call(writer, args, indent, frame);
                     return;
                 }
                 if runtime_fn == "ArrayPushGrow" {
-                    self.emit_array_push_grow_call(wat, args, indent, frame);
+                    self.emit_array_push_grow_call(writer, args, indent, frame);
                     return;
                 }
                 if runtime_fn == "HeapClosureCall" {
-                    self.emit_heap_closure_dispatch(wat, args, indent, frame);
+                    self.emit_heap_closure_dispatch(writer, args, indent, frame);
                     return;
                 }
                 if runtime_fn == "PrivateFieldGet" {
-                    self.emit_private_field_get(wat, args, indent, frame);
+                    self.emit_private_field_get(writer, args, indent, frame);
                     return;
                 }
                 if runtime_fn == "PrivateFieldSet" {
-                    self.emit_private_field_set(wat, args, indent, frame);
+                    self.emit_private_field_set(writer, args, indent, frame);
                     return;
                 }
                 if runtime_fn == "PrivateBrandCheck" {
-                    self.emit_private_brand_check(wat, args, indent, frame);
+                    self.emit_private_brand_check(writer, args, indent, frame);
                     return;
                 }
                 if (runtime_fn == "StringIncludes"
@@ -759,33 +841,33 @@ impl WatEmitter<'_> {
                 {
                     // No position specified, default to 0 (undefined → start from beginning)
                     for arg in args {
-                        self.emit_expr(wat, arg, indent, frame);
+                        self.emit_expr(writer, arg, indent, frame);
                     }
-                    wat.push_str(&format!("{pad}(i32.const {})\n", 0));
+                    writer.push_str(&format!("{pad}(i32.const {})\n", 0));
                 } else if runtime_fn == "StringSubstr" && args.len() == 2 {
                     // No length specified: pad with undefined (0) → means "go to end"
                     for arg in args {
-                        self.emit_expr(wat, arg, indent, frame);
+                        self.emit_expr(writer, arg, indent, frame);
                     }
-                    wat.push_str(&format!("{pad}(i32.const 0)\n")); // undefined
+                    writer.push_str(&format!("{pad}(i32.const 0)\n")); // undefined
                 } else {
                     for arg in args {
-                        self.emit_expr(wat, arg, indent, frame);
+                        self.emit_expr(writer, arg, indent, frame);
                     }
                 }
                 let fn_name = super::runtime_fn::runtime_fn_from_name(runtime_fn)
                     .map(|f| f.symbol())
                     .unwrap_or_else(|| runtime_fn.as_str());
-                wat.push_str(&format!("{pad}(call {})\n", fn_name));
+                writer.push_str(&format!("{pad}(call {})\n", fn_name));
             }
             LoweredExpr::PropertySet { object, key, value } => {
-                self.emit_expr(wat, object, indent, frame);
+                self.emit_expr(writer, object, indent, frame);
                 let key_ptr = self.string_offset(key) + Layout::STRING_HEADER_SIZE;
                 let key_len = self.string_len(key);
-                wat.push_str(&format!("{pad}(i32.const {})\n", key_ptr));
-                wat.push_str(&format!("{pad}(i32.const {})\n", key_len));
-                self.emit_expr(wat, value, indent, frame);
-                wat.push_str(&format!(
+                writer.push_str(&format!("{pad}(i32.const {})\n", key_ptr));
+                writer.push_str(&format!("{pad}(i32.const {})\n", key_len));
+                self.emit_expr(writer, value, indent, frame);
+                writer.push_str(&format!(
                     "{pad}(call {})\n",
                     RuntimeFn::PropertySet.symbol(),
                 ));
@@ -795,27 +877,32 @@ impl WatEmitter<'_> {
                 index,
                 value,
             } => {
-                self.emit_expr(wat, object, indent, frame);
-                wat.push_str(&format!("{pad}(local.set {})\n", frame.heap_base_tmp()));
-                self.emit_gc_root_mirror_index(wat, &pad, frame.heap_base_tmp(), frame);
-                self.emit_expr(wat, index, indent, frame);
-                wat.push_str(&format!("{pad}(i32.const {})\n", Layout::SCRATCH_OFFSET));
-                wat.push_str(&format!(
+                self.emit_expr(writer, object, indent, frame);
+                writer.local_set(indent, frame.heap_base_tmp());
+                self.emit_gc_root_mirror_index(
+                    writer.output_mut(),
+                    &pad,
+                    frame.heap_base_tmp(),
+                    frame,
+                );
+                self.emit_expr(writer, index, indent, frame);
+                writer.push_str(&format!("{pad}(i32.const {})\n", Layout::SCRATCH_OFFSET));
+                writer.push_str(&format!(
                     "{pad}(call {})\n",
                     RuntimeFn::ValueToStringInto.symbol()
                 ));
-                wat.push_str(&format!("{pad}(local.set {})\n", frame.heap_value_tmp()));
-                wat.push_str(&format!("{pad}(local.get {})\n", frame.heap_base_tmp()));
-                wat.push_str(&format!("{pad}(i32.const {})\n", Layout::SCRATCH_OFFSET));
-                wat.push_str(&format!("{pad}(local.get {})\n", frame.heap_value_tmp()));
-                self.emit_expr(wat, value, indent, frame);
-                wat.push_str(&format!(
+                writer.local_set(indent, frame.heap_value_tmp());
+                writer.local_get(indent, frame.heap_base_tmp());
+                writer.push_str(&format!("{pad}(i32.const {})\n", Layout::SCRATCH_OFFSET));
+                writer.local_get(indent, frame.heap_value_tmp());
+                self.emit_expr(writer, value, indent, frame);
+                writer.push_str(&format!(
                     "{pad}(call {})\n",
                     RuntimeFn::PropertySet.symbol(),
                 ));
             }
             LoweredExpr::ModuleLoad { module_id } => {
-                wat.push_str(&format!(
+                writer.push_str(&format!(
                     "{pad}(call {} (i32.const {}))\n",
                     RuntimeFn::ModuleRequire.symbol(),
                     module_id,
@@ -833,17 +920,17 @@ impl WatEmitter<'_> {
                 let object_size = Layout::OBJECT_HEADER_SIZE
                     + (CLASS_INSTANCE_PUBLIC_SLOT_CAPACITY * Layout::OBJECT_ENTRY_SIZE)
                     + ((*private_slot_count as u32) * PRIVATE_FIELD_SLOT_SIZE);
-                wat.push_str(&format!(
+                writer.push_str(&format!(
                     "{pad}(local.set {} (call {} (i32.const {})))\n",
                     local_index(*base_local),
                     RuntimeFn::AllocHeap.symbol(),
                     object_size,
                 ));
-                wat.push_str(&format!(
+                writer.push_str(&format!(
                     "{pad}(i32.store (local.get {}) (i32.const 0))\n",
                     local_index(*base_local),
                 ));
-                wat.push_str(&format!(
+                writer.push_str(&format!(
                     "{pad}(i32.store (i32.add (local.get {}) (i32.const {})) (global.get ${}))\n",
                     local_index(*base_local),
                     Layout::OBJECT_PROTOTYPE_OFFSET,
@@ -854,7 +941,7 @@ impl WatEmitter<'_> {
                         private_brand.unwrap_or(0),
                         *private_slot_count as u32,
                     );
-                    wat.push_str(&format!(
+                    writer.push_str(&format!(
                         "{pad}(i32.store (i32.add (i32.sub (local.get {}) (i32.const {})) (i32.const {})) (i32.const {}))\n",
                         local_index(*base_local),
                         Layout::GC_HEADER_SIZE,
@@ -866,7 +953,7 @@ impl WatEmitter<'_> {
                 // Call constructor with implicit `this` first argument.
                 if let Some(func) = self.program.functions.get(constructor.0) {
                     if let Some(rest_index) = func.rest_param_index {
-                        wat.push_str(&format!(
+                        writer.push_str(&format!(
                             "{pad}(i32.or (local.get {}) (i32.const {}))\n",
                             local_index(*base_local),
                             ValueTag::OBJECT,
@@ -874,63 +961,63 @@ impl WatEmitter<'_> {
                         let explicit_fixed_count = rest_index.saturating_sub(1);
                         for arg_index in 0..explicit_fixed_count {
                             if let Some(arg) = args.get(arg_index) {
-                                self.emit_expr(wat, arg, indent, frame);
+                                self.emit_expr(writer, arg, indent, frame);
                             } else {
-                                wat.push_str(&format!(
+                                writer.push_str(&format!(
                                     "{pad}(i32.const {})\n",
                                     ValueTag::UNDEFINED
                                 ));
                             }
                         }
                         let rest_start = explicit_fixed_count.min(args.len());
-                        self.emit_array_literal(wat, &args[rest_start..], indent, frame);
+                        self.emit_array_literal(writer, &args[rest_start..], indent, frame);
                     } else {
-                        wat.push_str(&format!(
+                        writer.push_str(&format!(
                             "{pad}(i32.or (local.get {}) (i32.const {}))\n",
                             local_index(*base_local),
                             ValueTag::OBJECT,
                         ));
                         for arg in args {
-                            self.emit_expr(wat, arg, indent, frame);
+                            self.emit_expr(writer, arg, indent, frame);
                         }
                         for _ in (args.len() + 1)..func.params.len() {
-                            wat.push_str(&format!("{pad}(i32.const {})\n", ValueTag::UNDEFINED));
+                            writer.i32_const(indent, ValueTag::UNDEFINED);
                         }
                     }
                 }
-                wat.push_str(&format!("{pad}(call ${})\n", function_symbol(*constructor)));
-                wat.push_str(&format!("{pad}(drop)\n"));
+                writer.push_str(&format!("{pad}(call ${})\n", function_symbol(*constructor)));
+                writer.drop(indent);
 
-                wat.push_str(&format!(
+                writer.push_str(&format!(
                     "{pad}(i32.or (local.get {}) (i32.const {}))\n",
                     local_index(*base_local),
                     ValueTag::OBJECT,
                 ));
             }
             LoweredExpr::ClassPrototype(prototype) => {
-                wat.push_str(&format!(
+                writer.push_str(&format!(
                     "{pad}(i32.or (global.get ${}) (i32.const {}))\n",
                     class_prototype_global(prototype.constructor),
                     ValueTag::OBJECT,
                 ));
             }
             LoweredExpr::BuiltinErrorPrototype(constructor) => {
-                wat.push_str(&format!(
+                writer.push_str(&format!(
                     "{pad}(i32.or (global.get ${}) (i32.const {}))\n",
                     builtin_error_prototype_global(*constructor),
                     ValueTag::OBJECT,
                 ));
             }
             LoweredExpr::Block { stmts, result } => {
-                self.emit_statements(wat, stmts, indent, &mut LoopContext::default(), frame);
-                self.emit_expr(wat, result, indent, frame);
+                self.emit_statements(writer, stmts, indent, &mut LoopContext::default(), frame);
+                self.emit_expr(writer, result, indent, frame);
             }
         }
     }
 
     fn emit_user_call_args(
         &self,
-        wat: &mut String,
+        writer: &mut WatWriter,
         func_id: ts2wasm_ir::lowered::FuncId,
         args: &[LoweredExpr],
         indent: usize,
@@ -940,7 +1027,9 @@ impl WatEmitter<'_> {
         let func = self.program.functions.get(func_id.0);
 
         if args.first().is_some_and(is_private_brand_check_expr) {
-            self.emit_user_call_args_with_checked_receiver(wat, func_id, args, indent, frame, func);
+            self.emit_user_call_args_with_checked_receiver(
+                writer, func_id, args, indent, frame, func,
+            );
             return;
         }
 
@@ -949,30 +1038,30 @@ impl WatEmitter<'_> {
         {
             for arg_index in 0..rest_index {
                 if let Some(arg) = args.get(arg_index) {
-                    self.emit_expr(wat, arg, indent, frame);
+                    self.emit_expr(writer, arg, indent, frame);
                 } else {
-                    wat.push_str(&format!("{pad}(i32.const {})\n", ValueTag::UNDEFINED));
+                    writer.i32_const(indent, ValueTag::UNDEFINED);
                 }
             }
             let rest_start = rest_index.min(args.len());
-            self.emit_array_literal(wat, &args[rest_start..], indent, frame);
-            wat.push_str(&format!("{pad}(call ${})\n", function_symbol(func_id)));
+            self.emit_array_literal(writer, &args[rest_start..], indent, frame);
+            writer.push_str(&format!("{pad}(call ${})\n", function_symbol(func_id)));
             return;
         }
 
         let param_count = func.map(|f| f.params.len()).unwrap_or(0);
         for arg in args.iter().take(param_count) {
-            self.emit_expr(wat, arg, indent, frame);
+            self.emit_expr(writer, arg, indent, frame);
         }
         for _ in args.len()..param_count {
-            wat.push_str(&format!("{pad}(i32.const {})\n", ValueTag::UNDEFINED));
+            writer.i32_const(indent, ValueTag::UNDEFINED);
         }
-        wat.push_str(&format!("{pad}(call ${})\n", function_symbol(func_id)));
+        writer.push_str(&format!("{pad}(call ${})\n", function_symbol(func_id)));
     }
 
     fn emit_user_call_args_with_checked_receiver(
         &self,
-        wat: &mut String,
+        writer: &mut WatWriter,
         func_id: ts2wasm_ir::lowered::FuncId,
         args: &[LoweredExpr],
         indent: usize,
@@ -984,53 +1073,53 @@ impl WatEmitter<'_> {
         let receiver_tmp = frame.heap_base_tmp();
         let checked_call_exit = gen_expr_label("checked_call_exit");
 
-        wat.push_str(&format!("{pad}(block ${checked_call_exit} (result i32)\n"));
-        self.emit_expr(wat, &args[0], indent + 2, frame);
-        wat.push_str(&format!("{inner_pad}(local.set {receiver_tmp})\n"));
-        self.emit_gc_root_mirror_index(wat, &inner_pad, receiver_tmp, frame);
-        wat.push_str(&format!(
+        writer.push_str(&format!("{pad}(block ${checked_call_exit} (result i32)\n"));
+        self.emit_expr(writer, &args[0], indent + 2, frame);
+        writer.push_str(&format!("{inner_pad}(local.set {receiver_tmp})\n"));
+        self.emit_gc_root_mirror_index(writer.output_mut(), &inner_pad, receiver_tmp, frame);
+        writer.push_str(&format!(
             "{inner_pad}(if (global.get $exception_pending)\n{inner_pad}  (then\n{inner_pad}    (br ${checked_call_exit} (i32.const {}))\n{inner_pad}  ))\n",
             ValueTag::UNDEFINED
         ));
-        wat.push_str(&format!("{inner_pad}(local.get {receiver_tmp})\n"));
+        writer.push_str(&format!("{inner_pad}(local.get {receiver_tmp})\n"));
 
         if let Some(func) = func
             && let Some(rest_index) = func.rest_param_index
         {
             for arg_index in 1..rest_index {
                 if let Some(arg) = args.get(arg_index) {
-                    self.emit_expr(wat, arg, indent + 2, frame);
+                    self.emit_expr(writer, arg, indent + 2, frame);
                 } else {
-                    wat.push_str(&format!("{inner_pad}(i32.const {})\n", ValueTag::UNDEFINED));
+                    writer.push_str(&format!("{inner_pad}(i32.const {})\n", ValueTag::UNDEFINED));
                 }
             }
             let rest_start = rest_index.min(args.len());
-            self.emit_array_literal(wat, &args[rest_start..], indent + 2, frame);
-            wat.push_str(&format!(
+            self.emit_array_literal(writer, &args[rest_start..], indent + 2, frame);
+            writer.push_str(&format!(
                 "{inner_pad}(call ${})\n",
                 function_symbol(func_id)
             ));
-            wat.push_str(&format!("{pad})\n"));
+            writer.end(indent);
             return;
         }
 
         let param_count = func.map(|f| f.params.len()).unwrap_or(0);
         for arg in args.iter().skip(1) {
-            self.emit_expr(wat, arg, indent + 2, frame);
+            self.emit_expr(writer, arg, indent + 2, frame);
         }
         for _ in args.len()..param_count {
-            wat.push_str(&format!("{inner_pad}(i32.const {})\n", ValueTag::UNDEFINED));
+            writer.push_str(&format!("{inner_pad}(i32.const {})\n", ValueTag::UNDEFINED));
         }
-        wat.push_str(&format!(
+        writer.push_str(&format!(
             "{inner_pad}(call ${})\n",
             function_symbol(func_id)
         ));
-        wat.push_str(&format!("{pad})\n"));
+        writer.end(indent);
     }
 
     fn emit_heap_closure_alloc(
         &self,
-        wat: &mut String,
+        writer: &mut WatWriter,
         func_id: ts2wasm_ir::lowered::FuncId,
         captures: &[LocalId],
         indent: usize,
@@ -1040,50 +1129,50 @@ impl WatEmitter<'_> {
         let size = CLOSURE_CAPTURE_SLOTS_OFFSET + captures.len() as u32 * CLOSURE_CAPTURE_SLOT_SIZE;
 
         for capture in captures {
-            self.emit_gc_root_mirror(wat, &pad, *capture, frame);
+            self.emit_gc_root_mirror(writer.output_mut(), &pad, *capture, frame);
         }
 
-        wat.push_str(&format!(
+        writer.push_str(&format!(
             "{pad}(local.set {} (call {} (i32.const {})))\n",
             frame.heap_base_tmp(),
             RuntimeFn::AllocHeap.symbol(),
             size,
         ));
-        self.emit_gc_root_mirror_index(wat, &pad, frame.heap_base_tmp(), frame);
-        wat.push_str(&format!(
+        self.emit_gc_root_mirror_index(writer.output_mut(), &pad, frame.heap_base_tmp(), frame);
+        writer.push_str(&format!(
             "{pad}(i32.store (i32.add (i32.sub (local.get {}) (i32.const {})) (i32.const {})) (i32.const {}))\n",
             frame.heap_base_tmp(),
             Layout::GC_HEADER_SIZE,
             Layout::GC_FLAGS_AND_TYPE_OFFSET,
             Layout::GC_KIND_OBJECT,
         ));
-        wat.push_str(&format!(
+        writer.push_str(&format!(
             "{pad}(i32.store (i32.add (local.get {}) (i32.const {CLOSURE_SUBTYPE_OFFSET})) (i32.const {CLOSURE_SENTINEL}))\n",
             frame.heap_base_tmp(),
         ));
-        wat.push_str(&format!(
+        writer.push_str(&format!(
             "{pad}(i32.store (i32.add (local.get {}) (i32.const {CLOSURE_CODE_ID_OFFSET})) (i32.const {}))\n",
             frame.heap_base_tmp(),
             func_id.0,
         ));
-        wat.push_str(&format!(
+        writer.push_str(&format!(
             "{pad}(i32.store (i32.add (local.get {}) (i32.const {CLOSURE_CAPTURE_COUNT_OFFSET})) (i32.const {}))\n",
             frame.heap_base_tmp(),
             captures.len(),
         ));
-        wat.push_str(&format!(
+        writer.push_str(&format!(
             "{pad}(i32.store (i32.add (local.get {}) (i32.const {CLOSURE_ENV_FLAGS_OFFSET})) (i32.const 0))\n",
             frame.heap_base_tmp(),
         ));
         for (index, capture) in captures.iter().enumerate() {
             let offset = CLOSURE_CAPTURE_SLOTS_OFFSET + index as u32 * CLOSURE_CAPTURE_SLOT_SIZE;
-            wat.push_str(&format!(
+            writer.push_str(&format!(
                 "{pad}(i32.store (i32.add (local.get {}) (i32.const {offset})) (local.get {}))\n",
                 frame.heap_base_tmp(),
                 local_index(*capture),
             ));
         }
-        wat.push_str(&format!(
+        writer.push_str(&format!(
             "{pad}(i32.or (local.get {}) (i32.const {}))\n",
             frame.heap_base_tmp(),
             ValueTag::OBJECT_TAG,
@@ -1092,14 +1181,14 @@ impl WatEmitter<'_> {
 
     fn emit_heap_closure_dispatch(
         &self,
-        wat: &mut String,
+        writer: &mut WatWriter,
         args: &[LoweredExpr],
         indent: usize,
         frame: &LocalFrame,
     ) {
         let pad = " ".repeat(indent);
         if args.is_empty() || args.len() > MAX_SUPPORTED_HEAP_CLOSURE_USER_ARGS + 1 {
-            wat.push_str(&format!("{pad}(unreachable)\n"));
+            writer.unreachable(indent);
             return;
         }
 
@@ -1109,65 +1198,75 @@ impl WatEmitter<'_> {
         let arg_value = frame.heap_value_tmp();
         let payload = frame.switch_value_tmp();
 
-        wat.push_str(&format!(
+        writer.push_str(&format!(
             "{pad}(block $heap_closure_dispatch_done (result i32)\n"
         ));
-        self.emit_expr(wat, closure, indent + 2, frame);
-        wat.push_str(&format!("{pad}  (local.set {closure_value})\n"));
-        self.emit_gc_root_mirror_index(wat, &format!("{pad}  "), closure_value, frame);
+        self.emit_expr(writer, closure, indent + 2, frame);
+        writer.push_str(&format!("{pad}  (local.set {closure_value})\n"));
+        self.emit_gc_root_mirror_index(
+            writer.output_mut(),
+            &format!("{pad}  "),
+            closure_value,
+            frame,
+        );
         if let Some(user_arg) = user_args.first() {
-            self.emit_expr(wat, user_arg, indent + 2, frame);
-            wat.push_str(&format!("{pad}  (local.set {arg_value})\n"));
-            self.emit_gc_root_mirror_index(wat, &format!("{pad}  "), arg_value, frame);
+            self.emit_expr(writer, user_arg, indent + 2, frame);
+            writer.push_str(&format!("{pad}  (local.set {arg_value})\n"));
+            self.emit_gc_root_mirror_index(
+                writer.output_mut(),
+                &format!("{pad}  "),
+                arg_value,
+                frame,
+            );
         }
-        wat.push_str(&format!(
+        writer.push_str(&format!(
             "{pad}  (if (i32.ne (i32.and (local.get {closure_value}) (i32.const {})) (i32.const {}))\n",
             ValueTag::TAG_MASK,
             ValueTag::OBJECT_TAG,
         ));
-        wat.push_str(&format!("{pad}    (then (unreachable)))\n"));
-        wat.push_str(&format!(
+        writer.push_str(&format!("{pad}    (then (unreachable)))\n"));
+        writer.push_str(&format!(
             "{pad}  (local.set {payload} (i32.and (local.get {closure_value}) (i32.const {})))\n",
             ValueTag::HEAP_MASK,
         ));
-        wat.push_str(&format!(
+        writer.push_str(&format!(
             "{pad}  (if (i32.ne (i32.load (i32.add (local.get {payload}) (i32.const {CLOSURE_SUBTYPE_OFFSET}))) (i32.const {CLOSURE_SENTINEL}))\n",
         ));
-        wat.push_str(&format!("{pad}    (then (unreachable)))\n"));
+        writer.push_str(&format!("{pad}    (then (unreachable)))\n"));
 
         for function in &self.program.functions {
             let Some(capture_count) = function.params.len().checked_sub(user_args.len()) else {
                 continue;
             };
-            wat.push_str(&format!(
+            writer.push_str(&format!(
                 "{pad}  (if (i32.and\n{pad}        (i32.eq (i32.load (i32.add (local.get {payload}) (i32.const {CLOSURE_CODE_ID_OFFSET}))) (i32.const {}))\n{pad}        (i32.eq (i32.load (i32.add (local.get {payload}) (i32.const {CLOSURE_CAPTURE_COUNT_OFFSET}))) (i32.const {capture_count})))\n",
                 function.id.0,
             ));
-            wat.push_str(&format!("{pad}    (then\n"));
+            writer.then(indent);
             if !user_args.is_empty() {
-                wat.push_str(&format!("{pad}      (local.get {arg_value})\n"));
+                writer.push_str(&format!("{pad}      (local.get {arg_value})\n"));
             }
             for capture_index in 0..capture_count {
                 let offset =
                     CLOSURE_CAPTURE_SLOTS_OFFSET + capture_index as u32 * CLOSURE_CAPTURE_SLOT_SIZE;
-                wat.push_str(&format!(
+                writer.push_str(&format!(
                     "{pad}      (i32.load (i32.add (local.get {payload}) (i32.const {offset})))\n",
                 ));
             }
-            wat.push_str(&format!(
+            writer.push_str(&format!(
                 "{pad}      (call ${})\n",
                 function_symbol(function.id)
             ));
-            wat.push_str(&format!("{pad}      (br $heap_closure_dispatch_done)))\n"));
+            writer.push_str(&format!("{pad}      (br $heap_closure_dispatch_done)))\n"));
         }
 
-        wat.push_str(&format!("{pad}  (unreachable)\n"));
-        wat.push_str(&format!("{pad})\n"));
+        writer.push_str(&format!("{pad}  (unreachable)\n"));
+        writer.end(indent);
     }
 
     fn emit_private_field_get(
         &self,
-        wat: &mut String,
+        writer: &mut WatWriter,
         args: &[LoweredExpr],
         indent: usize,
         frame: &LocalFrame,
@@ -1179,28 +1278,28 @@ impl WatEmitter<'_> {
             LoweredExpr::Number(slot),
         ] = args
         else {
-            wat.push_str(&format!("{pad}(unreachable)\n"));
+            writer.unreachable(indent);
             return;
         };
         let object_value = frame.heap_base_tmp();
         let slot_offset = private_field_slot_offset(*slot as u32);
         let brand_marker = (*brand as u32) << PRIVATE_FIELD_BRAND_SHIFT;
 
-        self.emit_expr(wat, object, indent, frame);
-        wat.push_str(&format!("{pad}(local.set {object_value})\n"));
-        self.emit_gc_root_mirror_index(wat, &pad, object_value, frame);
-        wat.push_str(&format!("{pad}(block (result i32)\n"));
-        wat.push_str(&format!(
+        self.emit_expr(writer, object, indent, frame);
+        writer.push_str(&format!("{pad}(local.set {object_value})\n"));
+        self.emit_gc_root_mirror_index(writer.output_mut(), &pad, object_value, frame);
+        writer.push_str(&format!("{pad}(block (result i32)\n"));
+        writer.push_str(&format!(
             "{pad}  (if (i32.ne (i32.and (local.get {object_value}) (i32.const {})) (i32.const {}))\n",
             ValueTag::TAG_MASK,
             ValueTag::OBJECT_TAG,
         ));
-        wat.push_str(&format!(
+        writer.push_str(&format!(
             "{pad}    (then\n{pad}      (br 0 (call {}))\n{pad}    ))\n",
             RuntimeFn::PrivateBrandTypeError.symbol(),
         ));
-        wat.push_str(&format!("{pad}  (if\n"));
-        wat.push_str(&format!(
+        writer.push_str(&format!("{pad}  (if\n"));
+        writer.push_str(&format!(
             "{pad}    (i32.eqz\n{pad}      (i32.and\n{pad}        (i32.eq\n{pad}          (i32.and\n{pad}            (i32.load\n{pad}              (i32.add\n{pad}                (i32.sub (i32.and (local.get {object_value}) (i32.const {})) (i32.const {}))\n{pad}                (i32.const {})))\n{pad}            (i32.const {}))\n{pad}          (i32.const {brand_marker}))\n{pad}        (i32.gt_u\n{pad}          (i32.and\n{pad}            (i32.load\n{pad}              (i32.add\n{pad}                (i32.sub (i32.and (local.get {object_value}) (i32.const {})) (i32.const {}))\n{pad}                (i32.const {})))\n{pad}            (i32.const {}))\n{pad}          (i32.const {slot}))))\n",
             ValueTag::HEAP_MASK,
             Layout::GC_HEADER_SIZE,
@@ -1212,20 +1311,20 @@ impl WatEmitter<'_> {
             PRIVATE_FIELD_COUNT_MASK,
             slot = *slot as u32,
         ));
-        wat.push_str(&format!(
+        writer.push_str(&format!(
             "{pad}    (then\n{pad}      (br 0 (call {}))\n{pad}    ))\n",
             RuntimeFn::PrivateBrandTypeError.symbol(),
         ));
-        wat.push_str(&format!(
+        writer.push_str(&format!(
             "{pad}  (i32.load (i32.add (i32.and (local.get {object_value}) (i32.const {})) (i32.const {slot_offset})))\n",
             ValueTag::HEAP_MASK,
         ));
-        wat.push_str(&format!("{pad})\n"));
+        writer.end(indent);
     }
 
     fn emit_private_field_set(
         &self,
-        wat: &mut String,
+        writer: &mut WatWriter,
         args: &[LoweredExpr],
         indent: usize,
         frame: &LocalFrame,
@@ -1238,7 +1337,7 @@ impl WatEmitter<'_> {
             value,
         ] = args
         else {
-            wat.push_str(&format!("{pad}(unreachable)\n"));
+            writer.unreachable(indent);
             return;
         };
         let object_value = frame.heap_base_tmp();
@@ -1246,24 +1345,24 @@ impl WatEmitter<'_> {
         let slot_offset = private_field_slot_offset(*slot as u32);
         let brand_marker = (*brand as u32) << PRIVATE_FIELD_BRAND_SHIFT;
 
-        self.emit_expr(wat, object, indent, frame);
-        wat.push_str(&format!("{pad}(local.set {object_value})\n"));
-        self.emit_gc_root_mirror_index(wat, &pad, object_value, frame);
-        self.emit_expr(wat, value, indent, frame);
-        wat.push_str(&format!("{pad}(local.set {stored_value})\n"));
-        self.emit_gc_root_mirror_index(wat, &pad, stored_value, frame);
-        wat.push_str(&format!("{pad}(block (result i32)\n"));
-        wat.push_str(&format!(
+        self.emit_expr(writer, object, indent, frame);
+        writer.push_str(&format!("{pad}(local.set {object_value})\n"));
+        self.emit_gc_root_mirror_index(writer.output_mut(), &pad, object_value, frame);
+        self.emit_expr(writer, value, indent, frame);
+        writer.push_str(&format!("{pad}(local.set {stored_value})\n"));
+        self.emit_gc_root_mirror_index(writer.output_mut(), &pad, stored_value, frame);
+        writer.push_str(&format!("{pad}(block (result i32)\n"));
+        writer.push_str(&format!(
             "{pad}  (if (i32.ne (i32.and (local.get {object_value}) (i32.const {})) (i32.const {}))\n",
             ValueTag::TAG_MASK,
             ValueTag::OBJECT_TAG,
         ));
-        wat.push_str(&format!(
+        writer.push_str(&format!(
             "{pad}    (then\n{pad}      (br 0 (call {}))\n{pad}    ))\n",
             RuntimeFn::PrivateBrandTypeError.symbol(),
         ));
-        wat.push_str(&format!("{pad}  (if\n"));
-        wat.push_str(&format!(
+        writer.push_str(&format!("{pad}  (if\n"));
+        writer.push_str(&format!(
             "{pad}    (i32.eqz\n{pad}      (i32.and\n{pad}        (i32.eq\n{pad}          (i32.and\n{pad}            (i32.load\n{pad}              (i32.add\n{pad}                (i32.sub (i32.and (local.get {object_value}) (i32.const {})) (i32.const {}))\n{pad}                (i32.const {})))\n{pad}            (i32.const {}))\n{pad}          (i32.const {brand_marker}))\n{pad}        (i32.gt_u\n{pad}          (i32.and\n{pad}            (i32.load\n{pad}              (i32.add\n{pad}                (i32.sub (i32.and (local.get {object_value}) (i32.const {})) (i32.const {}))\n{pad}                (i32.const {})))\n{pad}            (i32.const {}))\n{pad}          (i32.const {slot}))))\n",
             ValueTag::HEAP_MASK,
             Layout::GC_HEADER_SIZE,
@@ -1275,65 +1374,65 @@ impl WatEmitter<'_> {
             PRIVATE_FIELD_COUNT_MASK,
             slot = *slot as u32,
         ));
-        wat.push_str(&format!(
+        writer.push_str(&format!(
             "{pad}    (then\n{pad}      (br 0 (call {}))\n{pad}    ))\n",
             RuntimeFn::PrivateBrandTypeError.symbol(),
         ));
-        wat.push_str(&format!(
+        writer.push_str(&format!(
             "{pad}  (i32.store (i32.add (i32.and (local.get {object_value}) (i32.const {})) (i32.const {slot_offset})) (local.get {stored_value}))\n",
             ValueTag::HEAP_MASK,
         ));
-        wat.push_str(&format!("{pad}  (local.get {stored_value})\n"));
-        wat.push_str(&format!("{pad})\n"));
+        writer.push_str(&format!("{pad}  (local.get {stored_value})\n"));
+        writer.end(indent);
     }
 
     fn emit_private_brand_check(
         &self,
-        wat: &mut String,
+        writer: &mut WatWriter,
         args: &[LoweredExpr],
         indent: usize,
         frame: &LocalFrame,
     ) {
         let pad = " ".repeat(indent);
         let [object, LoweredExpr::Number(brand)] = args else {
-            wat.push_str(&format!("{pad}(unreachable)\n"));
+            writer.unreachable(indent);
             return;
         };
         let object_value = frame.heap_base_tmp();
         let brand_marker = (*brand as u32) << PRIVATE_FIELD_BRAND_SHIFT;
 
-        self.emit_expr(wat, object, indent, frame);
-        wat.push_str(&format!("{pad}(local.set {object_value})\n"));
-        self.emit_gc_root_mirror_index(wat, &pad, object_value, frame);
-        wat.push_str(&format!("{pad}(block (result i32)\n"));
-        wat.push_str(&format!(
+        self.emit_expr(writer, object, indent, frame);
+        writer.push_str(&format!("{pad}(local.set {object_value})\n"));
+        self.emit_gc_root_mirror_index(writer.output_mut(), &pad, object_value, frame);
+        writer.push_str(&format!("{pad}(block (result i32)\n"));
+        writer.push_str(&format!(
             "{pad}  (if (i32.ne (i32.and (local.get {object_value}) (i32.const {})) (i32.const {}))\n",
             ValueTag::TAG_MASK,
             ValueTag::OBJECT_TAG,
         ));
-        wat.push_str(&format!(
+        writer.push_str(&format!(
             "{pad}    (then\n{pad}      (br 0 (call {}))\n{pad}    ))\n",
             RuntimeFn::PrivateBrandTypeError.symbol(),
         ));
-        wat.push_str(&format!("{pad}  (if\n"));
-        wat.push_str(&format!(
+        writer.push_str(&format!("{pad}  (if\n"));
+        writer.push_str(&format!(
             "{pad}    (i32.eqz\n{pad}      (i32.eq\n{pad}        (i32.and\n{pad}          (i32.load\n{pad}            (i32.add\n{pad}              (i32.sub (i32.and (local.get {object_value}) (i32.const {})) (i32.const {}))\n{pad}              (i32.const {})))\n{pad}          (i32.const {}))\n{pad}        (i32.const {brand_marker})))\n",
             ValueTag::HEAP_MASK,
             Layout::GC_HEADER_SIZE,
             Layout::GC_RESERVED_OFFSET,
             !PRIVATE_FIELD_COUNT_MASK,
         ));
-        wat.push_str(&format!(
+        writer.push_str(&format!(
             "{pad}    (then\n{pad}      (br 0 (call {}))\n{pad}    ))\n",
             RuntimeFn::PrivateBrandTypeError.symbol(),
         ));
-        wat.push_str(&format!("{pad}  (local.get {object_value})\n"));
-        wat.push_str(&format!("{pad})\n"));
+        writer.push_str(&format!("{pad}  (local.get {object_value})\n"));
+        writer.end(indent);
     }
 
     fn emit_logical_assign(
         &self,
-        wat: &mut String,
+        writer: &mut WatWriter,
         local: LocalId,
         op: LoweredLogicalAssignOp,
         expr: &LoweredExpr,
@@ -1344,62 +1443,65 @@ impl WatEmitter<'_> {
         let local = local_index(local);
         match op {
             LoweredLogicalAssignOp::And | LoweredLogicalAssignOp::Or => {
-                wat.push_str(&format!("{pad}(local.get {local})\n"));
-                wat.push_str(&format!("{pad}(call {})\n", RuntimeFn::TruthyBool.symbol()));
-                wat.push_str(&format!("{pad}(if (result i32)\n"));
+                writer.push_str(&format!("{pad}(local.get {local})\n"));
+                writer.line_fmt(
+                    indent,
+                    format_args!("(call {})", RuntimeFn::TruthyBool.symbol()),
+                );
+                writer.if_result(indent, "i32");
                 if op == LoweredLogicalAssignOp::And {
-                    wat.push_str(&format!("{pad}  (then\n"));
-                    self.emit_logical_assign_rhs(wat, local, expr, indent + 4, frame);
-                    wat.push_str(&format!("{pad}  )\n"));
-                    wat.push_str(&format!("{pad}  (else\n"));
-                    wat.push_str(&format!("{pad}    (local.get {local})\n"));
-                    wat.push_str(&format!("{pad}  )\n"));
+                    writer.then(indent);
+                    self.emit_logical_assign_rhs(writer, local, expr, indent + 4, frame);
+                    writer.push_str(&format!("{pad}  )\n"));
+                    writer.r#else(indent);
+                    writer.push_str(&format!("{pad}    (local.get {local})\n"));
+                    writer.push_str(&format!("{pad}  )\n"));
                 } else {
-                    wat.push_str(&format!("{pad}  (then\n"));
-                    wat.push_str(&format!("{pad}    (local.get {local})\n"));
-                    wat.push_str(&format!("{pad}  )\n"));
-                    wat.push_str(&format!("{pad}  (else\n"));
-                    self.emit_logical_assign_rhs(wat, local, expr, indent + 4, frame);
-                    wat.push_str(&format!("{pad}  )\n"));
+                    writer.then(indent);
+                    writer.push_str(&format!("{pad}    (local.get {local})\n"));
+                    writer.push_str(&format!("{pad}  )\n"));
+                    writer.r#else(indent);
+                    self.emit_logical_assign_rhs(writer, local, expr, indent + 4, frame);
+                    writer.push_str(&format!("{pad}  )\n"));
                 }
-                wat.push_str(&format!("{pad})\n"));
+                writer.end(indent);
             }
             LoweredLogicalAssignOp::Nullish => {
-                wat.push_str(&format!(
+                writer.push_str(&format!(
                     "{pad}(i32.or\n{pad}  (i32.eq (local.get {local}) (i32.const {}))\n{pad}  (i32.eq (local.get {local}) (i32.const {})))\n",
                     ValueTag::NULL,
                     ValueTag::UNDEFINED
                 ));
-                wat.push_str(&format!("{pad}(if (result i32)\n"));
-                wat.push_str(&format!("{pad}  (then\n"));
-                self.emit_logical_assign_rhs(wat, local, expr, indent + 4, frame);
-                wat.push_str(&format!("{pad}  )\n"));
-                wat.push_str(&format!("{pad}  (else\n"));
-                wat.push_str(&format!("{pad}    (local.get {local})\n"));
-                wat.push_str(&format!("{pad}  )\n"));
-                wat.push_str(&format!("{pad})\n"));
+                writer.if_result(indent, "i32");
+                writer.then(indent);
+                self.emit_logical_assign_rhs(writer, local, expr, indent + 4, frame);
+                writer.push_str(&format!("{pad}  )\n"));
+                writer.r#else(indent);
+                writer.push_str(&format!("{pad}    (local.get {local})\n"));
+                writer.push_str(&format!("{pad}  )\n"));
+                writer.end(indent);
             }
         }
     }
 
     fn emit_logical_assign_rhs(
         &self,
-        wat: &mut String,
+        writer: &mut WatWriter,
         local: usize,
         expr: &LoweredExpr,
         indent: usize,
         frame: &LocalFrame,
     ) {
         let pad = " ".repeat(indent);
-        self.emit_expr(wat, expr, indent, frame);
-        wat.push_str(&format!("{pad}(local.tee {local})\n"));
-        self.emit_gc_root_mirror_index(wat, &pad, local, frame);
+        self.emit_expr(writer, expr, indent, frame);
+        writer.push_str(&format!("{pad}(local.tee {local})\n"));
+        self.emit_gc_root_mirror_index(writer.output_mut(), &pad, local, frame);
     }
 
     #[allow(clippy::too_many_arguments)]
     fn emit_logical_property_assign(
         &self,
-        wat: &mut String,
+        writer: &mut WatWriter,
         object: LocalId,
         key: &str,
         op: LoweredLogicalAssignOp,
@@ -1410,64 +1512,67 @@ impl WatEmitter<'_> {
         let pad = " ".repeat(indent);
         let object = local_index(object);
         let current = frame.heap_value_tmp();
-        self.emit_property_get_into_tmp(wat, object, key, current, indent, frame);
+        self.emit_property_get_into_tmp(writer, object, key, current, indent, frame);
         match op {
             LoweredLogicalAssignOp::And | LoweredLogicalAssignOp::Or => {
-                wat.push_str(&format!("{pad}(local.get {current})\n"));
-                wat.push_str(&format!("{pad}(call {})\n", RuntimeFn::TruthyBool.symbol()));
-                wat.push_str(&format!("{pad}(if (result i32)\n"));
+                writer.push_str(&format!("{pad}(local.get {current})\n"));
+                writer.line_fmt(
+                    indent,
+                    format_args!("(call {})", RuntimeFn::TruthyBool.symbol()),
+                );
+                writer.if_result(indent, "i32");
                 if op == LoweredLogicalAssignOp::And {
-                    wat.push_str(&format!("{pad}  (then\n"));
+                    writer.then(indent);
                     self.emit_logical_property_assign_rhs(
-                        wat,
+                        writer,
                         object,
                         key,
                         expr,
                         indent + 4,
                         frame,
                     );
-                    wat.push_str(&format!("{pad}  )\n"));
-                    wat.push_str(&format!("{pad}  (else\n"));
-                    wat.push_str(&format!("{pad}    (local.get {current})\n"));
-                    wat.push_str(&format!("{pad}  )\n"));
+                    writer.push_str(&format!("{pad}  )\n"));
+                    writer.r#else(indent);
+                    writer.push_str(&format!("{pad}    (local.get {current})\n"));
+                    writer.push_str(&format!("{pad}  )\n"));
                 } else {
-                    wat.push_str(&format!("{pad}  (then\n"));
-                    wat.push_str(&format!("{pad}    (local.get {current})\n"));
-                    wat.push_str(&format!("{pad}  )\n"));
-                    wat.push_str(&format!("{pad}  (else\n"));
+                    writer.then(indent);
+                    writer.push_str(&format!("{pad}    (local.get {current})\n"));
+                    writer.push_str(&format!("{pad}  )\n"));
+                    writer.r#else(indent);
                     self.emit_logical_property_assign_rhs(
-                        wat,
+                        writer,
                         object,
                         key,
                         expr,
                         indent + 4,
                         frame,
                     );
-                    wat.push_str(&format!("{pad}  )\n"));
+                    writer.push_str(&format!("{pad}  )\n"));
                 }
-                wat.push_str(&format!("{pad})\n"));
+                writer.end(indent);
             }
             LoweredLogicalAssignOp::Nullish => {
-                wat.push_str(&format!(
+                writer.push_str(&format!(
                     "{pad}(i32.or\n{pad}  (i32.eq (local.get {current}) (i32.const {}))\n{pad}  (i32.eq (local.get {current}) (i32.const {})))\n",
                     ValueTag::NULL,
                     ValueTag::UNDEFINED
                 ));
-                wat.push_str(&format!("{pad}(if (result i32)\n"));
-                wat.push_str(&format!("{pad}  (then\n"));
-                self.emit_logical_property_assign_rhs(wat, object, key, expr, indent + 4, frame);
-                wat.push_str(&format!("{pad}  )\n"));
-                wat.push_str(&format!("{pad}  (else\n"));
-                wat.push_str(&format!("{pad}    (local.get {current})\n"));
-                wat.push_str(&format!("{pad}  )\n"));
-                wat.push_str(&format!("{pad})\n"));
+                writer.if_result(indent, "i32");
+                writer.then(indent);
+                self.emit_logical_property_assign_rhs(writer, object, key, expr, indent + 4, frame);
+                writer.push_str(&format!("{pad}  )\n"));
+                writer.r#else(indent);
+                writer.push_str(&format!("{pad}    (local.get {current})\n"));
+                writer.push_str(&format!("{pad}  )\n"));
+                writer.end(indent);
             }
         }
     }
 
     fn emit_property_get_into_tmp(
         &self,
-        wat: &mut String,
+        writer: &mut WatWriter,
         object: usize,
         key: &str,
         tmp: usize,
@@ -1477,20 +1582,20 @@ impl WatEmitter<'_> {
         let pad = " ".repeat(indent);
         let key_ptr = self.string_offset(key) + Layout::STRING_HEADER_SIZE;
         let key_len = self.string_len(key);
-        wat.push_str(&format!("{pad}(local.get {object})\n"));
-        wat.push_str(&format!("{pad}(i32.const {key_ptr})\n"));
-        wat.push_str(&format!("{pad}(i32.const {key_len})\n"));
-        wat.push_str(&format!(
+        writer.push_str(&format!("{pad}(local.get {object})\n"));
+        writer.push_str(&format!("{pad}(i32.const {key_ptr})\n"));
+        writer.push_str(&format!("{pad}(i32.const {key_len})\n"));
+        writer.push_str(&format!(
             "{pad}(call {})\n",
             RuntimeFn::PropertyGet.symbol()
         ));
-        wat.push_str(&format!("{pad}(local.set {tmp})\n"));
-        self.emit_gc_root_mirror_index(wat, &pad, tmp, frame);
+        writer.push_str(&format!("{pad}(local.set {tmp})\n"));
+        self.emit_gc_root_mirror_index(writer.output_mut(), &pad, tmp, frame);
     }
 
     fn emit_optional_property_get(
         &self,
-        wat: &mut String,
+        writer: &mut WatWriter,
         object_expr: &LoweredExpr,
         key: &str,
         indent: usize,
@@ -1501,29 +1606,29 @@ impl WatEmitter<'_> {
         let key_ptr = self.string_offset(key) + Layout::STRING_HEADER_SIZE;
         let key_len = self.string_len(key);
 
-        self.emit_expr(wat, object_expr, indent, frame);
-        wat.push_str(&format!("{pad}(local.set {object})\n"));
-        self.emit_gc_root_mirror_index(wat, &pad, object, frame);
-        self.emit_nullish_check(wat, object, indent);
-        wat.push_str(&format!("{pad}(if (result i32)\n"));
-        wat.push_str(&format!("{pad}  (then\n"));
-        wat.push_str(&format!("{pad}    (i32.const {})\n", ValueTag::UNDEFINED));
-        wat.push_str(&format!("{pad}  )\n"));
-        wat.push_str(&format!("{pad}  (else\n"));
-        wat.push_str(&format!("{pad}    (local.get {object})\n"));
-        wat.push_str(&format!("{pad}    (i32.const {key_ptr})\n"));
-        wat.push_str(&format!("{pad}    (i32.const {key_len})\n"));
-        wat.push_str(&format!(
+        self.emit_expr(writer, object_expr, indent, frame);
+        writer.push_str(&format!("{pad}(local.set {object})\n"));
+        self.emit_gc_root_mirror_index(writer.output_mut(), &pad, object, frame);
+        self.emit_nullish_check(writer, object, indent);
+        writer.if_result(indent, "i32");
+        writer.then(indent);
+        writer.push_str(&format!("{pad}    (i32.const {})\n", ValueTag::UNDEFINED));
+        writer.push_str(&format!("{pad}  )\n"));
+        writer.r#else(indent);
+        writer.push_str(&format!("{pad}    (local.get {object})\n"));
+        writer.push_str(&format!("{pad}    (i32.const {key_ptr})\n"));
+        writer.push_str(&format!("{pad}    (i32.const {key_len})\n"));
+        writer.push_str(&format!(
             "{pad}    (call {})\n",
             RuntimeFn::PropertyGet.symbol()
         ));
-        wat.push_str(&format!("{pad}  )\n"));
-        wat.push_str(&format!("{pad})\n"));
+        writer.push_str(&format!("{pad}  )\n"));
+        writer.end(indent);
     }
 
     fn emit_optional_index(
         &self,
-        wat: &mut String,
+        writer: &mut WatWriter,
         object_expr: &LoweredExpr,
         index_expr: &LoweredExpr,
         indent: usize,
@@ -1533,25 +1638,25 @@ impl WatEmitter<'_> {
         let object = frame.heap_base_tmp();
         let child_frame = frame.child_temp_frame();
 
-        self.emit_expr(wat, object_expr, indent, frame);
-        wat.push_str(&format!("{pad}(local.set {object})\n"));
-        self.emit_gc_root_mirror_index(wat, &pad, object, frame);
-        self.emit_nullish_check(wat, object, indent);
-        wat.push_str(&format!("{pad}(if (result i32)\n"));
-        wat.push_str(&format!("{pad}  (then\n"));
-        wat.push_str(&format!("{pad}    (i32.const {})\n", ValueTag::UNDEFINED));
-        wat.push_str(&format!("{pad}  )\n"));
-        wat.push_str(&format!("{pad}  (else\n"));
-        wat.push_str(&format!("{pad}    (local.get {object})\n"));
-        self.emit_expr(wat, index_expr, indent + 4, &child_frame);
-        wat.push_str(&format!("{pad}    (call {})\n", RuntimeFn::Index.symbol()));
-        wat.push_str(&format!("{pad}  )\n"));
-        wat.push_str(&format!("{pad})\n"));
+        self.emit_expr(writer, object_expr, indent, frame);
+        writer.push_str(&format!("{pad}(local.set {object})\n"));
+        self.emit_gc_root_mirror_index(writer.output_mut(), &pad, object, frame);
+        self.emit_nullish_check(writer, object, indent);
+        writer.if_result(indent, "i32");
+        writer.then(indent);
+        writer.push_str(&format!("{pad}    (i32.const {})\n", ValueTag::UNDEFINED));
+        writer.push_str(&format!("{pad}  )\n"));
+        writer.r#else(indent);
+        writer.push_str(&format!("{pad}    (local.get {object})\n"));
+        self.emit_expr(writer, index_expr, indent + 4, &child_frame);
+        writer.push_str(&format!("{pad}    (call {})\n", RuntimeFn::Index.symbol()));
+        writer.push_str(&format!("{pad}  )\n"));
+        writer.end(indent);
     }
 
     fn emit_optional_call(
         &self,
-        wat: &mut String,
+        writer: &mut WatWriter,
         callee_expr: &LoweredExpr,
         call_expr: &LoweredExpr,
         indent: usize,
@@ -1561,23 +1666,23 @@ impl WatEmitter<'_> {
         let callee = frame.heap_base_tmp();
         let child_frame = frame.child_temp_frame();
 
-        self.emit_expr(wat, callee_expr, indent, frame);
-        wat.push_str(&format!("{pad}(local.set {callee})\n"));
-        self.emit_gc_root_mirror_index(wat, &pad, callee, frame);
-        self.emit_nullish_check(wat, callee, indent);
-        wat.push_str(&format!("{pad}(if (result i32)\n"));
-        wat.push_str(&format!("{pad}  (then\n"));
-        wat.push_str(&format!("{pad}    (i32.const {})\n", ValueTag::UNDEFINED));
-        wat.push_str(&format!("{pad}  )\n"));
-        wat.push_str(&format!("{pad}  (else\n"));
-        self.emit_expr(wat, call_expr, indent + 4, &child_frame);
-        wat.push_str(&format!("{pad}  )\n"));
-        wat.push_str(&format!("{pad})\n"));
+        self.emit_expr(writer, callee_expr, indent, frame);
+        writer.push_str(&format!("{pad}(local.set {callee})\n"));
+        self.emit_gc_root_mirror_index(writer.output_mut(), &pad, callee, frame);
+        self.emit_nullish_check(writer, callee, indent);
+        writer.if_result(indent, "i32");
+        writer.then(indent);
+        writer.push_str(&format!("{pad}    (i32.const {})\n", ValueTag::UNDEFINED));
+        writer.push_str(&format!("{pad}  )\n"));
+        writer.r#else(indent);
+        self.emit_expr(writer, call_expr, indent + 4, &child_frame);
+        writer.push_str(&format!("{pad}  )\n"));
+        writer.end(indent);
     }
 
-    fn emit_nullish_check(&self, wat: &mut String, local: usize, indent: usize) {
+    fn emit_nullish_check(&self, writer: &mut WatWriter, local: usize, indent: usize) {
         let pad = " ".repeat(indent);
-        wat.push_str(&format!(
+        writer.push_str(&format!(
             "{pad}(i32.or\n{pad}  (i32.eq (local.get {local}) (i32.const {}))\n{pad}  (i32.eq (local.get {local}) (i32.const {})))\n",
             ValueTag::NULL,
             ValueTag::UNDEFINED
@@ -1587,7 +1692,7 @@ impl WatEmitter<'_> {
     #[allow(clippy::too_many_arguments)]
     fn emit_logical_member_assign(
         &self,
-        wat: &mut String,
+        writer: &mut WatWriter,
         object_expr: &LoweredExpr,
         key: &str,
         op: LoweredLogicalAssignOp,
@@ -1599,54 +1704,71 @@ impl WatEmitter<'_> {
         let object = frame.heap_base_tmp();
         let current = frame.heap_value_tmp();
 
-        self.emit_expr(wat, object_expr, indent, frame);
-        wat.push_str(&format!("{pad}(local.set {object})\n"));
-        self.emit_gc_root_mirror_index(wat, &pad, object, frame);
-        self.emit_property_get_into_tmp(wat, object, key, current, indent, frame);
+        self.emit_expr(writer, object_expr, indent, frame);
+        writer.push_str(&format!("{pad}(local.set {object})\n"));
+        self.emit_gc_root_mirror_index(writer.output_mut(), &pad, object, frame);
+        self.emit_property_get_into_tmp(writer, object, key, current, indent, frame);
 
         match op {
             LoweredLogicalAssignOp::And | LoweredLogicalAssignOp::Or => {
-                wat.push_str(&format!("{pad}(local.get {current})\n"));
-                wat.push_str(&format!("{pad}(call {})\n", RuntimeFn::TruthyBool.symbol()));
-                wat.push_str(&format!("{pad}(if (result i32)\n"));
+                writer.push_str(&format!("{pad}(local.get {current})\n"));
+                writer.line_fmt(
+                    indent,
+                    format_args!("(call {})", RuntimeFn::TruthyBool.symbol()),
+                );
+                writer.if_result(indent, "i32");
                 if op == LoweredLogicalAssignOp::And {
-                    wat.push_str(&format!("{pad}  (then\n"));
-                    self.emit_logical_member_assign_rhs(wat, object, key, expr, indent + 4, frame);
-                    wat.push_str(&format!("{pad}  )\n"));
-                    wat.push_str(&format!("{pad}  (else\n"));
-                    wat.push_str(&format!("{pad}    (local.get {current})\n"));
-                    wat.push_str(&format!("{pad}  )\n"));
+                    writer.then(indent);
+                    self.emit_logical_member_assign_rhs(
+                        writer,
+                        object,
+                        key,
+                        expr,
+                        indent + 4,
+                        frame,
+                    );
+                    writer.push_str(&format!("{pad}  )\n"));
+                    writer.r#else(indent);
+                    writer.push_str(&format!("{pad}    (local.get {current})\n"));
+                    writer.push_str(&format!("{pad}  )\n"));
                 } else {
-                    wat.push_str(&format!("{pad}  (then\n"));
-                    wat.push_str(&format!("{pad}    (local.get {current})\n"));
-                    wat.push_str(&format!("{pad}  )\n"));
-                    wat.push_str(&format!("{pad}  (else\n"));
-                    self.emit_logical_member_assign_rhs(wat, object, key, expr, indent + 4, frame);
-                    wat.push_str(&format!("{pad}  )\n"));
+                    writer.then(indent);
+                    writer.push_str(&format!("{pad}    (local.get {current})\n"));
+                    writer.push_str(&format!("{pad}  )\n"));
+                    writer.r#else(indent);
+                    self.emit_logical_member_assign_rhs(
+                        writer,
+                        object,
+                        key,
+                        expr,
+                        indent + 4,
+                        frame,
+                    );
+                    writer.push_str(&format!("{pad}  )\n"));
                 }
-                wat.push_str(&format!("{pad})\n"));
+                writer.end(indent);
             }
             LoweredLogicalAssignOp::Nullish => {
-                wat.push_str(&format!(
+                writer.push_str(&format!(
                     "{pad}(i32.or\n{pad}  (i32.eq (local.get {current}) (i32.const {}))\n{pad}  (i32.eq (local.get {current}) (i32.const {})))\n",
                     ValueTag::NULL,
                     ValueTag::UNDEFINED
                 ));
-                wat.push_str(&format!("{pad}(if (result i32)\n"));
-                wat.push_str(&format!("{pad}  (then\n"));
-                self.emit_logical_member_assign_rhs(wat, object, key, expr, indent + 4, frame);
-                wat.push_str(&format!("{pad}  )\n"));
-                wat.push_str(&format!("{pad}  (else\n"));
-                wat.push_str(&format!("{pad}    (local.get {current})\n"));
-                wat.push_str(&format!("{pad}  )\n"));
-                wat.push_str(&format!("{pad})\n"));
+                writer.if_result(indent, "i32");
+                writer.then(indent);
+                self.emit_logical_member_assign_rhs(writer, object, key, expr, indent + 4, frame);
+                writer.push_str(&format!("{pad}  )\n"));
+                writer.r#else(indent);
+                writer.push_str(&format!("{pad}    (local.get {current})\n"));
+                writer.push_str(&format!("{pad}  )\n"));
+                writer.end(indent);
             }
         }
     }
 
     fn emit_logical_member_assign_rhs(
         &self,
-        wat: &mut String,
+        writer: &mut WatWriter,
         object: usize,
         key: &str,
         expr: &LoweredExpr,
@@ -1659,14 +1781,14 @@ impl WatEmitter<'_> {
         let key_ptr = self.string_offset(key) + Layout::STRING_HEADER_SIZE;
         let key_len = self.string_len(key);
 
-        self.emit_expr(wat, expr, indent, &child_frame);
-        wat.push_str(&format!("{pad}(local.set {rhs})\n"));
-        self.emit_gc_root_mirror_index(wat, &pad, rhs, &child_frame);
-        wat.push_str(&format!("{pad}(local.get {object})\n"));
-        wat.push_str(&format!("{pad}(i32.const {key_ptr})\n"));
-        wat.push_str(&format!("{pad}(i32.const {key_len})\n"));
-        wat.push_str(&format!("{pad}(local.get {rhs})\n"));
-        wat.push_str(&format!(
+        self.emit_expr(writer, expr, indent, &child_frame);
+        writer.push_str(&format!("{pad}(local.set {rhs})\n"));
+        self.emit_gc_root_mirror_index(writer.output_mut(), &pad, rhs, &child_frame);
+        writer.push_str(&format!("{pad}(local.get {object})\n"));
+        writer.push_str(&format!("{pad}(i32.const {key_ptr})\n"));
+        writer.push_str(&format!("{pad}(i32.const {key_len})\n"));
+        writer.push_str(&format!("{pad}(local.get {rhs})\n"));
+        writer.push_str(&format!(
             "{pad}(call {})\n",
             RuntimeFn::PropertySet.symbol()
         ));
@@ -1674,7 +1796,7 @@ impl WatEmitter<'_> {
 
     fn emit_logical_property_assign_rhs(
         &self,
-        wat: &mut String,
+        writer: &mut WatWriter,
         object: usize,
         key: &str,
         expr: &LoweredExpr,
@@ -1684,11 +1806,11 @@ impl WatEmitter<'_> {
         let pad = " ".repeat(indent);
         let key_ptr = self.string_offset(key) + Layout::STRING_HEADER_SIZE;
         let key_len = self.string_len(key);
-        wat.push_str(&format!("{pad}(local.get {object})\n"));
-        wat.push_str(&format!("{pad}(i32.const {key_ptr})\n"));
-        wat.push_str(&format!("{pad}(i32.const {key_len})\n"));
-        self.emit_expr(wat, expr, indent, frame);
-        wat.push_str(&format!(
+        writer.push_str(&format!("{pad}(local.get {object})\n"));
+        writer.push_str(&format!("{pad}(i32.const {key_ptr})\n"));
+        writer.push_str(&format!("{pad}(i32.const {key_len})\n"));
+        self.emit_expr(writer, expr, indent, frame);
+        writer.push_str(&format!(
             "{pad}(call {})\n",
             RuntimeFn::PropertySet.symbol()
         ));
@@ -1697,7 +1819,7 @@ impl WatEmitter<'_> {
     #[allow(clippy::too_many_arguments)]
     fn emit_logical_computed_property_assign(
         &self,
-        wat: &mut String,
+        writer: &mut WatWriter,
         object: LocalId,
         key: &LoweredExpr,
         op: LoweredLogicalAssignOp,
@@ -1711,29 +1833,32 @@ impl WatEmitter<'_> {
         let current = frame.heap_value_tmp();
         let key_len = frame.switch_value_tmp();
 
-        self.emit_expr(wat, key, indent, frame);
-        wat.push_str(&format!("{pad}(local.set {key_value})\n"));
-        self.emit_gc_root_mirror_index(wat, &pad, key_value, frame);
-        self.emit_key_value_to_scratch(wat, key_value, key_len, indent);
-        wat.push_str(&format!("{pad}(local.get {object})\n"));
-        wat.push_str(&format!("{pad}(i32.const {})\n", Layout::SCRATCH_OFFSET));
-        wat.push_str(&format!("{pad}(local.get {key_len})\n"));
-        wat.push_str(&format!(
+        self.emit_expr(writer, key, indent, frame);
+        writer.push_str(&format!("{pad}(local.set {key_value})\n"));
+        self.emit_gc_root_mirror_index(writer.output_mut(), &pad, key_value, frame);
+        self.emit_key_value_to_scratch(writer, key_value, key_len, indent);
+        writer.push_str(&format!("{pad}(local.get {object})\n"));
+        writer.push_str(&format!("{pad}(i32.const {})\n", Layout::SCRATCH_OFFSET));
+        writer.push_str(&format!("{pad}(local.get {key_len})\n"));
+        writer.push_str(&format!(
             "{pad}(call {})\n",
             RuntimeFn::PropertyGet.symbol()
         ));
-        wat.push_str(&format!("{pad}(local.set {current})\n"));
-        self.emit_gc_root_mirror_index(wat, &pad, current, frame);
+        writer.push_str(&format!("{pad}(local.set {current})\n"));
+        self.emit_gc_root_mirror_index(writer.output_mut(), &pad, current, frame);
 
         match op {
             LoweredLogicalAssignOp::And | LoweredLogicalAssignOp::Or => {
-                wat.push_str(&format!("{pad}(local.get {current})\n"));
-                wat.push_str(&format!("{pad}(call {})\n", RuntimeFn::TruthyBool.symbol()));
-                wat.push_str(&format!("{pad}(if (result i32)\n"));
+                writer.push_str(&format!("{pad}(local.get {current})\n"));
+                writer.line_fmt(
+                    indent,
+                    format_args!("(call {})", RuntimeFn::TruthyBool.symbol()),
+                );
+                writer.if_result(indent, "i32");
                 if op == LoweredLogicalAssignOp::And {
-                    wat.push_str(&format!("{pad}  (then\n"));
+                    writer.then(indent);
                     self.emit_logical_computed_property_assign_rhs(
-                        wat,
+                        writer,
                         object,
                         key_value,
                         key_len,
@@ -1741,17 +1866,17 @@ impl WatEmitter<'_> {
                         indent + 4,
                         frame,
                     );
-                    wat.push_str(&format!("{pad}  )\n"));
-                    wat.push_str(&format!("{pad}  (else\n"));
-                    wat.push_str(&format!("{pad}    (local.get {current})\n"));
-                    wat.push_str(&format!("{pad}  )\n"));
+                    writer.push_str(&format!("{pad}  )\n"));
+                    writer.r#else(indent);
+                    writer.push_str(&format!("{pad}    (local.get {current})\n"));
+                    writer.push_str(&format!("{pad}  )\n"));
                 } else {
-                    wat.push_str(&format!("{pad}  (then\n"));
-                    wat.push_str(&format!("{pad}    (local.get {current})\n"));
-                    wat.push_str(&format!("{pad}  )\n"));
-                    wat.push_str(&format!("{pad}  (else\n"));
+                    writer.then(indent);
+                    writer.push_str(&format!("{pad}    (local.get {current})\n"));
+                    writer.push_str(&format!("{pad}  )\n"));
+                    writer.r#else(indent);
                     self.emit_logical_computed_property_assign_rhs(
-                        wat,
+                        writer,
                         object,
                         key_value,
                         key_len,
@@ -1759,20 +1884,20 @@ impl WatEmitter<'_> {
                         indent + 4,
                         frame,
                     );
-                    wat.push_str(&format!("{pad}  )\n"));
+                    writer.push_str(&format!("{pad}  )\n"));
                 }
-                wat.push_str(&format!("{pad})\n"));
+                writer.end(indent);
             }
             LoweredLogicalAssignOp::Nullish => {
-                wat.push_str(&format!(
+                writer.push_str(&format!(
                     "{pad}(i32.or\n{pad}  (i32.eq (local.get {current}) (i32.const {}))\n{pad}  (i32.eq (local.get {current}) (i32.const {})))\n",
                     ValueTag::NULL,
                     ValueTag::UNDEFINED
                 ));
-                wat.push_str(&format!("{pad}(if (result i32)\n"));
-                wat.push_str(&format!("{pad}  (then\n"));
+                writer.if_result(indent, "i32");
+                writer.then(indent);
                 self.emit_logical_computed_property_assign_rhs(
-                    wat,
+                    writer,
                     object,
                     key_value,
                     key_len,
@@ -1780,11 +1905,11 @@ impl WatEmitter<'_> {
                     indent + 4,
                     frame,
                 );
-                wat.push_str(&format!("{pad}  )\n"));
-                wat.push_str(&format!("{pad}  (else\n"));
-                wat.push_str(&format!("{pad}    (local.get {current})\n"));
-                wat.push_str(&format!("{pad}  )\n"));
-                wat.push_str(&format!("{pad})\n"));
+                writer.push_str(&format!("{pad}  )\n"));
+                writer.r#else(indent);
+                writer.push_str(&format!("{pad}    (local.get {current})\n"));
+                writer.push_str(&format!("{pad}  )\n"));
+                writer.end(indent);
             }
         }
     }
@@ -1792,7 +1917,7 @@ impl WatEmitter<'_> {
     #[allow(clippy::too_many_arguments)]
     fn emit_logical_computed_member_assign(
         &self,
-        wat: &mut String,
+        writer: &mut WatWriter,
         object_expr: &LoweredExpr,
         key: &LoweredExpr,
         op: LoweredLogicalAssignOp,
@@ -1807,33 +1932,36 @@ impl WatEmitter<'_> {
         let current_frame = frame.child_temp_frame();
         let current = current_frame.heap_base_tmp();
 
-        self.emit_expr(wat, object_expr, indent, frame);
-        wat.push_str(&format!("{pad}(local.set {object})\n"));
-        self.emit_gc_root_mirror_index(wat, &pad, object, frame);
+        self.emit_expr(writer, object_expr, indent, frame);
+        writer.push_str(&format!("{pad}(local.set {object})\n"));
+        self.emit_gc_root_mirror_index(writer.output_mut(), &pad, object, frame);
 
-        self.emit_expr(wat, key, indent, &current_frame);
-        wat.push_str(&format!("{pad}(local.set {key_value})\n"));
-        self.emit_gc_root_mirror_index(wat, &pad, key_value, frame);
-        self.emit_key_value_to_scratch(wat, key_value, key_len, indent);
-        wat.push_str(&format!("{pad}(local.get {object})\n"));
-        wat.push_str(&format!("{pad}(i32.const {})\n", Layout::SCRATCH_OFFSET));
-        wat.push_str(&format!("{pad}(local.get {key_len})\n"));
-        wat.push_str(&format!(
+        self.emit_expr(writer, key, indent, &current_frame);
+        writer.push_str(&format!("{pad}(local.set {key_value})\n"));
+        self.emit_gc_root_mirror_index(writer.output_mut(), &pad, key_value, frame);
+        self.emit_key_value_to_scratch(writer, key_value, key_len, indent);
+        writer.push_str(&format!("{pad}(local.get {object})\n"));
+        writer.push_str(&format!("{pad}(i32.const {})\n", Layout::SCRATCH_OFFSET));
+        writer.push_str(&format!("{pad}(local.get {key_len})\n"));
+        writer.push_str(&format!(
             "{pad}(call {})\n",
             RuntimeFn::PropertyGet.symbol()
         ));
-        wat.push_str(&format!("{pad}(local.set {current})\n"));
-        self.emit_gc_root_mirror_index(wat, &pad, current, &current_frame);
+        writer.push_str(&format!("{pad}(local.set {current})\n"));
+        self.emit_gc_root_mirror_index(writer.output_mut(), &pad, current, &current_frame);
 
         match op {
             LoweredLogicalAssignOp::And | LoweredLogicalAssignOp::Or => {
-                wat.push_str(&format!("{pad}(local.get {current})\n"));
-                wat.push_str(&format!("{pad}(call {})\n", RuntimeFn::TruthyBool.symbol()));
-                wat.push_str(&format!("{pad}(if (result i32)\n"));
+                writer.push_str(&format!("{pad}(local.get {current})\n"));
+                writer.line_fmt(
+                    indent,
+                    format_args!("(call {})", RuntimeFn::TruthyBool.symbol()),
+                );
+                writer.if_result(indent, "i32");
                 if op == LoweredLogicalAssignOp::And {
-                    wat.push_str(&format!("{pad}  (then\n"));
+                    writer.then(indent);
                     self.emit_logical_computed_property_assign_rhs(
-                        wat,
+                        writer,
                         object,
                         key_value,
                         key_len,
@@ -1841,17 +1969,17 @@ impl WatEmitter<'_> {
                         indent + 4,
                         &current_frame,
                     );
-                    wat.push_str(&format!("{pad}  )\n"));
-                    wat.push_str(&format!("{pad}  (else\n"));
-                    wat.push_str(&format!("{pad}    (local.get {current})\n"));
-                    wat.push_str(&format!("{pad}  )\n"));
+                    writer.push_str(&format!("{pad}  )\n"));
+                    writer.r#else(indent);
+                    writer.push_str(&format!("{pad}    (local.get {current})\n"));
+                    writer.push_str(&format!("{pad}  )\n"));
                 } else {
-                    wat.push_str(&format!("{pad}  (then\n"));
-                    wat.push_str(&format!("{pad}    (local.get {current})\n"));
-                    wat.push_str(&format!("{pad}  )\n"));
-                    wat.push_str(&format!("{pad}  (else\n"));
+                    writer.then(indent);
+                    writer.push_str(&format!("{pad}    (local.get {current})\n"));
+                    writer.push_str(&format!("{pad}  )\n"));
+                    writer.r#else(indent);
                     self.emit_logical_computed_property_assign_rhs(
-                        wat,
+                        writer,
                         object,
                         key_value,
                         key_len,
@@ -1859,20 +1987,20 @@ impl WatEmitter<'_> {
                         indent + 4,
                         &current_frame,
                     );
-                    wat.push_str(&format!("{pad}  )\n"));
+                    writer.push_str(&format!("{pad}  )\n"));
                 }
-                wat.push_str(&format!("{pad})\n"));
+                writer.end(indent);
             }
             LoweredLogicalAssignOp::Nullish => {
-                wat.push_str(&format!(
+                writer.push_str(&format!(
                     "{pad}(i32.or\n{pad}  (i32.eq (local.get {current}) (i32.const {}))\n{pad}  (i32.eq (local.get {current}) (i32.const {})))\n",
                     ValueTag::NULL,
                     ValueTag::UNDEFINED
                 ));
-                wat.push_str(&format!("{pad}(if (result i32)\n"));
-                wat.push_str(&format!("{pad}  (then\n"));
+                writer.if_result(indent, "i32");
+                writer.then(indent);
                 self.emit_logical_computed_property_assign_rhs(
-                    wat,
+                    writer,
                     object,
                     key_value,
                     key_len,
@@ -1880,36 +2008,36 @@ impl WatEmitter<'_> {
                     indent + 4,
                     &current_frame,
                 );
-                wat.push_str(&format!("{pad}  )\n"));
-                wat.push_str(&format!("{pad}  (else\n"));
-                wat.push_str(&format!("{pad}    (local.get {current})\n"));
-                wat.push_str(&format!("{pad}  )\n"));
-                wat.push_str(&format!("{pad})\n"));
+                writer.push_str(&format!("{pad}  )\n"));
+                writer.r#else(indent);
+                writer.push_str(&format!("{pad}    (local.get {current})\n"));
+                writer.push_str(&format!("{pad}  )\n"));
+                writer.end(indent);
             }
         }
     }
 
     fn emit_key_value_to_scratch(
         &self,
-        wat: &mut String,
+        writer: &mut WatWriter,
         key_value: usize,
         key_len: usize,
         indent: usize,
     ) {
         let pad = " ".repeat(indent);
-        wat.push_str(&format!("{pad}(local.get {key_value})\n"));
-        wat.push_str(&format!("{pad}(i32.const {})\n", Layout::SCRATCH_OFFSET));
-        wat.push_str(&format!(
+        writer.push_str(&format!("{pad}(local.get {key_value})\n"));
+        writer.push_str(&format!("{pad}(i32.const {})\n", Layout::SCRATCH_OFFSET));
+        writer.push_str(&format!(
             "{pad}(call {})\n",
             RuntimeFn::ValueToStringInto.symbol()
         ));
-        wat.push_str(&format!("{pad}(local.set {key_len})\n"));
+        writer.push_str(&format!("{pad}(local.set {key_len})\n"));
     }
 
     #[allow(clippy::too_many_arguments)]
     fn emit_logical_computed_property_assign_rhs(
         &self,
-        wat: &mut String,
+        writer: &mut WatWriter,
         object: usize,
         key_value: usize,
         key_len: usize,
@@ -1920,15 +2048,15 @@ impl WatEmitter<'_> {
         let pad = " ".repeat(indent);
         let child_frame = frame.child_temp_frame();
         let rhs = child_frame.heap_value_tmp();
-        self.emit_expr(wat, expr, indent, &child_frame);
-        wat.push_str(&format!("{pad}(local.set {rhs})\n"));
-        self.emit_gc_root_mirror_index(wat, &pad, rhs, &child_frame);
-        self.emit_key_value_to_scratch(wat, key_value, key_len, indent);
-        wat.push_str(&format!("{pad}(local.get {object})\n"));
-        wat.push_str(&format!("{pad}(i32.const {})\n", Layout::SCRATCH_OFFSET));
-        wat.push_str(&format!("{pad}(local.get {key_len})\n"));
-        wat.push_str(&format!("{pad}(local.get {rhs})\n"));
-        wat.push_str(&format!(
+        self.emit_expr(writer, expr, indent, &child_frame);
+        writer.push_str(&format!("{pad}(local.set {rhs})\n"));
+        self.emit_gc_root_mirror_index(writer.output_mut(), &pad, rhs, &child_frame);
+        self.emit_key_value_to_scratch(writer, key_value, key_len, indent);
+        writer.push_str(&format!("{pad}(local.get {object})\n"));
+        writer.push_str(&format!("{pad}(i32.const {})\n", Layout::SCRATCH_OFFSET));
+        writer.push_str(&format!("{pad}(local.get {key_len})\n"));
+        writer.push_str(&format!("{pad}(local.get {rhs})\n"));
+        writer.push_str(&format!(
             "{pad}(call {})\n",
             RuntimeFn::PropertySet.symbol()
         ));

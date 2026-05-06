@@ -10,7 +10,7 @@ use ts2wasm_runtime_abi::ValueTag;
 
 use super::runtime_fn::{NATIVE_SET_ADD_SENTINEL, RuntimeFn, RuntimeGlobal, StringOrigin};
 use super::runtime_link_plan::RuntimeLinkPlan;
-use super::wat_writer::WatModuleBuilder;
+use super::wat_writer::{WatModuleBuilder, WatWriter};
 
 pub(crate) fn emit_wat(program: &LoweredProgram) -> Result<String, Diagnostic> {
     WatEmitter::new(program).emit()
@@ -161,43 +161,72 @@ impl<'a> WatEmitter<'a> {
     fn emit(mut self) -> Result<String, Diagnostic> {
         self.validate_memory_layout()?;
         let _required_capabilities = self.link_plan.required_capabilities();
-        let mut wat = String::new();
-        wat.push_str("(module\n");
-        // Emit all required imports from catalog (single source of truth)
-        self.emit_imports_from_catalog(&mut wat);
-        wat.push_str(&format!(
-            "  (memory (export \"memory\") {} {})\n",
-            Layout::MEMORY_MIN_PAGES,
-            Layout::MEMORY_MAX_PAGES,
-        ));
-        wat.push_str(&format!(
-            "  (global $heap (mut i32) (i32.const {}))\n",
-            Layout::HEAP_START,
-        ));
-        self.emit_required_globals(&mut wat);
-        self.emit_class_prototype_globals(&mut wat);
-        self.emit_builtin_error_prototype_globals(&mut wat);
-        self.emit_data_segments(&mut wat);
-        self.emit_runtime(&mut wat);
+        let mut writer = WatWriter::new();
+        writer.open_module();
+
+        // Buffer for methods that still output to &mut String (cross-file API).
+        let mut buf = String::new();
+
+        // emit_imports_from_catalog uses WatModuleBuilder internally.
+        self.emit_imports_from_catalog(&mut buf);
+        writer.push_str(&buf);
+        buf.clear();
+
+        writer.line_fmt(
+            2,
+            format_args!(
+                "(memory (export \"memory\") {} {})",
+                Layout::MEMORY_MIN_PAGES,
+                Layout::MEMORY_MAX_PAGES,
+            ),
+        );
+        writer.line_fmt(
+            2,
+            format_args!(
+                "(global $heap (mut i32) (i32.const {}))",
+                Layout::HEAP_START,
+            ),
+        );
+
+        // emit_required_globals uses WatModuleBuilder internally.
+        self.emit_required_globals(&mut buf);
+        writer.push_str(&buf);
+        buf.clear();
+
+        self.emit_class_prototype_globals(&mut writer);
+        self.emit_builtin_error_prototype_globals(&mut writer);
+
+        self.emit_data_segments(&mut buf);
+        writer.push_str(&buf);
+        buf.clear();
+
+        self.emit_runtime(&mut buf);
+        writer.push_str(&buf);
+        buf.clear();
+
         if self
             .link_plan
             .required_runtime_functions()
             .contains(&RuntimeFn::SetFromArray)
         {
-            self.emit_set_add_dispatcher(&mut wat);
+            self.emit_set_add_dispatcher(&mut writer);
         }
         if self
             .link_plan
             .required_runtime_functions()
             .contains(&RuntimeFn::JsonStringify)
         {
-            self.emit_json_replacer_dispatcher(&mut wat);
+            self.emit_json_replacer_dispatcher(&mut writer);
         }
-        self.emit_functions(&mut wat);
-        self.emit_module_initializers(&mut wat);
-        self.emit_start(&mut wat);
-        wat.push_str(")\n");
-        Ok(wat)
+
+        self.emit_functions(&mut writer);
+
+        self.emit_module_initializers(&mut writer);
+
+        self.emit_start(&mut writer);
+
+        writer.close_module();
+        Ok(writer.into_string())
     }
 
     fn validate_memory_layout(&self) -> Result<(), Diagnostic> {
@@ -663,21 +692,27 @@ impl<'a> WatEmitter<'a> {
         }
     }
 
-    fn emit_class_prototype_globals(&self, wat: &mut String) {
+    fn emit_class_prototype_globals(&self, writer: &mut WatWriter) {
         for constructor in self.class_prototypes().keys() {
-            wat.push_str(&format!(
-                "  (global ${} (mut i32) (i32.const 0))\n",
-                class_prototype_global(*constructor),
-            ));
+            writer.line_fmt(
+                2,
+                format_args!(
+                    "(global ${} (mut i32) (i32.const 0))",
+                    class_prototype_global(*constructor),
+                ),
+            );
         }
     }
 
-    fn emit_builtin_error_prototype_globals(&self, wat: &mut String) {
+    fn emit_builtin_error_prototype_globals(&self, writer: &mut WatWriter) {
         for constructor in self.builtin_error_prototypes() {
-            wat.push_str(&format!(
-                "  (global ${} (mut i32) (i32.const 0))\n",
-                builtin_error_prototype_global(constructor),
-            ));
+            writer.line_fmt(
+                2,
+                format_args!(
+                    "(global ${} (mut i32) (i32.const 0))",
+                    builtin_error_prototype_global(constructor),
+                ),
+            );
         }
     }
 
@@ -1321,15 +1356,16 @@ impl<'a> WatEmitter<'a> {
         }
     }
 
-    fn emit_functions(&self, wat: &mut String) {
+    fn emit_functions(&self, writer: &mut WatWriter) {
+        let mut buf = String::new();
         for function in &self.program.functions {
-            wat.push_str(&format!("  (func ${} ", function_symbol(function.id)));
+            writer.push_str(&format!("  (func ${} ", function_symbol(function.id)));
             for _ in &function.params {
-                wat.push_str("(param i32) ");
+                writer.push_str("(param i32) ");
             }
-            wat.push_str("(result i32)\n");
+            writer.push_str("(result i32)\n");
             for _ in &function.locals {
-                wat.push_str("    (local i32)\n");
+                writer.push_str("    (local i32)\n");
             }
             let frame = LocalFrame::activation(
                 function.params.len() + function.locals.len(),
@@ -1337,141 +1373,208 @@ impl<'a> WatEmitter<'a> {
             );
             // Backend-owned temporaries for heap construction and switch dispatch.
             for _ in 0..frame.backend_local_count() {
-                wat.push_str("    (local i32)\n");
+                writer.push_str("    (local i32)\n");
             }
-            self.emit_gc_activation_frame_push(wat, &frame, 4);
-            self.emit_gc_root_param_initializer(wat, &frame, 4);
+            buf.clear();
+            self.emit_gc_activation_frame_push(&mut buf, &frame, 4);
+            self.emit_gc_root_param_initializer(&mut buf, &frame, 4);
+            writer.push_str(&buf);
+            buf.clear();
             let mut loop_ctx = super::stmt_emit::LoopContext::default();
-            self.emit_statements(wat, &function.body, 4, &mut loop_ctx, &frame);
-            self.emit_gc_activation_frame_pop(wat, &frame, 4);
-            wat.push_str(&format!("    (i32.const {})\n", ValueTag::UNDEFINED));
-            wat.push_str("  )\n");
+            self.emit_statements(writer, &function.body, 4, &mut loop_ctx, &frame);
+            buf.clear();
+            self.emit_gc_activation_frame_pop(&mut buf, &frame, 4);
+            writer.push_str(&buf);
+            writer.push_str(&format!("    (i32.const {})\n", ValueTag::UNDEFINED));
+            writer.push_str("  )\n");
         }
     }
 
-    fn emit_json_replacer_dispatcher(&self, wat: &mut String) {
-        wat.push_str(&format!(
-            "  (func $json_replacer_call (param $callback i32) (param $holder i32) (param $key i32) (param $value i32) (result i32)\n    (local $id i32)\n    (if (i32.ne (i32.and (local.get $callback) (i32.const {})) (i32.const {}))\n      (then (return (local.get $value))))\n    (local.set $id (i32.shr_s (local.get $callback) (i32.const {})))\n",
+    fn emit_json_replacer_dispatcher(&self, writer: &mut WatWriter) {
+        writer.push_str(
+            "  (func $json_replacer_call (param $callback i32) (param $holder i32) (param $key i32) (param $value i32) (result i32)\n",
+        );
+        writer.line(4, "(local $id i32)");
+        writer.push_str(&format!(
+            "    (if (i32.ne (i32.and (local.get $callback) (i32.const {})) (i32.const {}))\n      (then (return (local.get $value))))\n",
             ValueTag::TAG_MASK,
             ValueTag::NUMBER,
-            ValueTag::NUMBER_SHIFT,
         ));
+        writer.line_fmt(
+            4,
+            format_args!(
+                "(local.set $id (i32.shr_s (local.get $callback) (i32.const {})))",
+                ValueTag::NUMBER_SHIFT,
+            ),
+        );
 
         for function in &self.program.functions {
-            wat.push_str(&format!(
-                "    (if (i32.eq (local.get $id) (i32.const {}))\n      (then\n",
-                function.id.0
-            ));
+            writer.line_fmt(
+                4,
+                format_args!(
+                    "(if (i32.eq (local.get $id) (i32.const {})))",
+                    function.id.0
+                ),
+            );
+            writer.then(4);
             let mut supplied = 0usize;
             if function.uses_receiver {
-                wat.push_str("        (local.get $holder)\n");
+                writer.line(8, "(local.get $holder)");
                 supplied += 1;
             }
             if supplied < function.params.len() {
-                wat.push_str("        (local.get $key)\n");
+                writer.line(8, "(local.get $key)");
                 supplied += 1;
             }
             if supplied < function.params.len() {
-                wat.push_str("        (local.get $value)\n");
+                writer.line(8, "(local.get $value)");
                 supplied += 1;
             }
             for _ in supplied..function.params.len() {
-                wat.push_str(&format!("        (i32.const {})\n", ValueTag::UNDEFINED));
+                writer.line_fmt(8, format_args!("(i32.const {})", ValueTag::UNDEFINED));
             }
-            wat.push_str(&format!(
-                "        (return (call ${}))))\n",
-                function_symbol(function.id)
-            ));
+            writer.line_fmt(
+                8,
+                format_args!("(return (call ${}))))", function_symbol(function.id)),
+            );
         }
 
-        wat.push_str("    (local.get $value))\n");
+        writer.line(4, "(local.get $value))");
     }
 
-    fn emit_set_add_dispatcher(&self, wat: &mut String) {
-        wat.push_str(&format!(
-            "  (func $set_add_dispatch (param $set i32) (param $value i32) (result i32)\n    (local $callback i32)\n    (local $id i32)\n    (local.set $callback (global.get $set_prototype_add))\n    (if (i32.eq (local.get $callback) (i32.const {native}))\n      (then (return (call $set_add (local.get $set) (local.get $value)))))\n    (if (i32.ne (i32.and (local.get $callback) (i32.const {tag_mask})) (i32.const {number_tag}))\n      (then (return (i32.const {undefined}))))\n    (local.set $id (i32.shr_s (local.get $callback) (i32.const {number_shift})))\n",
-            native = NATIVE_SET_ADD_SENTINEL,
-            tag_mask = ValueTag::TAG_MASK,
-            number_tag = ValueTag::NUMBER,
-            undefined = ValueTag::UNDEFINED,
-            number_shift = ValueTag::NUMBER_SHIFT,
-        ));
+    fn emit_set_add_dispatcher(&self, writer: &mut WatWriter) {
+        writer.push_str(
+            "  (func $set_add_dispatch (param $set i32) (param $value i32) (result i32)\n",
+        );
+        writer.line(4, "(local $callback i32)");
+        writer.line(4, "(local $id i32)");
+        writer.line(4, "(local.set $callback (global.get $set_prototype_add))");
+        writer.line_fmt(
+            4,
+            format_args!(
+                "(if (i32.eq (local.get $callback) (i32.const {native}))",
+                native = NATIVE_SET_ADD_SENTINEL,
+            ),
+        );
+        writer.line(
+            6,
+            "(then (return (call $set_add (local.get $set) (local.get $value))))",
+        );
+        writer.line_fmt(
+            4,
+            format_args!(
+                "(if (i32.ne (i32.and (local.get $callback) (i32.const {tag_mask})) (i32.const {number_tag}))",
+                tag_mask = ValueTag::TAG_MASK,
+                number_tag = ValueTag::NUMBER,
+            ),
+        );
+        writer.line_fmt(
+            6,
+            format_args!(
+                "(then (return (i32.const {undefined})))",
+                undefined = ValueTag::UNDEFINED
+            ),
+        );
+        writer.line_fmt(
+            4,
+            format_args!(
+                "(local.set $id (i32.shr_s (local.get $callback) (i32.const {number_shift})))",
+                number_shift = ValueTag::NUMBER_SHIFT,
+            ),
+        );
 
         for function in &self.program.functions {
-            wat.push_str(&format!(
-                "    (if (i32.eq (local.get $id) (i32.const {}))\n      (then\n",
-                function.id.0
-            ));
+            writer.line_fmt(
+                4,
+                format_args!(
+                    "(if (i32.eq (local.get $id) (i32.const {})))",
+                    function.id.0
+                ),
+            );
+            writer.then(4);
             let mut supplied = 0usize;
             if function.uses_receiver {
-                wat.push_str("        (local.get $set)\n");
+                writer.line(8, "(local.get $set)");
                 supplied += 1;
             }
             if supplied < function.params.len() {
-                wat.push_str("        (local.get $value)\n");
+                writer.line(8, "(local.get $value)");
                 supplied += 1;
             }
             for _ in supplied..function.params.len() {
-                wat.push_str(&format!("        (i32.const {})\n", ValueTag::UNDEFINED));
+                writer.line_fmt(8, format_args!("(i32.const {})", ValueTag::UNDEFINED));
             }
-            wat.push_str(&format!(
-                "        (return (call ${}))))\n",
-                function_symbol(function.id)
-            ));
+            writer.line_fmt(
+                8,
+                format_args!("(return (call ${}))))", function_symbol(function.id)),
+            );
         }
 
-        wat.push_str("    (call $set_add (local.get $set) (local.get $value)))\n");
+        writer.line(4, "(call $set_add (local.get $set) (local.get $value))");
     }
 
-    fn emit_module_initializers(&self, wat: &mut String) {
+    fn emit_module_initializers(&self, writer: &mut WatWriter) {
         for module in &self.program.modules {
             if module.statements.is_empty() {
                 continue;
             }
-            wat.push_str(&format!("  (func ${}\n", module_init_symbol(module.id)));
+            writer.push_str(&format!("  (func ${}\n", module_init_symbol(module.id)));
             let frame =
                 LocalFrame::activation(module.locals_count, self.gc_call_frame_roots_enabled());
             for _ in 0..frame.total_local_count() {
-                wat.push_str("    (local i32)\n");
+                writer.push_str("    (local i32)\n");
             }
-            self.emit_gc_activation_frame_push(wat, &frame, 4);
-            wat.push_str(&format!(
+            let mut buf = String::new();
+            self.emit_gc_activation_frame_push(&mut buf, &frame, 4);
+            writer.push_str(&buf);
+            buf.clear();
+            writer.push_str(&format!(
                 "    (global.set $current_module_id (i32.const {}))\n",
                 module.id
             ));
             let mut loop_ctx = super::stmt_emit::LoopContext::default();
-            self.emit_statements(wat, &module.statements, 4, &mut loop_ctx, &frame);
-            self.emit_gc_activation_frame_pop(wat, &frame, 4);
-            wat.push_str("  )\n");
+            self.emit_statements(writer, &module.statements, 4, &mut loop_ctx, &frame);
+            buf.clear();
+            self.emit_gc_activation_frame_pop(&mut buf, &frame, 4);
+            writer.push_str(&buf);
+            writer.push_str("  )\n");
         }
     }
 
-    fn emit_start(&self, wat: &mut String) {
-        wat.push_str("  (func $_start (export \"_start\")\n");
+    fn emit_start(&self, writer: &mut WatWriter) {
+        writer.push_str("  (func $_start (export \"_start\")\n");
         let extra_locals = if self.module_runtime_enabled() { 1 } else { 0 };
         let frame = LocalFrame::new(
             self.program.top_level_locals.len() + extra_locals,
             self.gc_root_table_enabled().then_some(0),
         );
         for _ in 0..frame.total_local_count() {
-            wat.push_str("    (local i32)\n");
+            writer.push_str("    (local i32)\n");
         }
-        self.emit_gc_root_table_initializer(wat, 4);
+        let mut buf = String::new();
+        self.emit_gc_root_table_initializer(&mut buf, 4);
+        writer.push_str(&buf);
         if self.module_runtime_enabled() {
             let cache_size = Layout::MODULE_CACHE_MAX * Layout::MODULE_CACHE_ENTRY_SIZE;
-            wat.push_str(&format!(
+            writer.push_str(&format!(
                 "    (global.set $module_cache (call $alloc_heap (i32.const {cache_size})))\n",
             ));
-            wat.push_str("    (global.set $current_module_id (i32.const 1))\n");
+            writer.push_str("    (global.set $current_module_id (i32.const 1))\n");
         }
-        self.emit_class_prototype_initializers(wat, 4);
-        self.emit_builtin_error_prototype_initializers(wat, 4);
-        self.emit_module_initializer_calls(wat, 4);
+        buf.clear();
+        self.emit_class_prototype_initializers(&mut buf, 4);
+        writer.push_str(&buf);
+        buf.clear();
+        self.emit_builtin_error_prototype_initializers(&mut buf, 4);
+        writer.push_str(&buf);
+        buf.clear();
+        self.emit_module_initializer_calls(&mut buf, 4);
+        writer.push_str(&buf);
         if self.module_runtime_enabled() {
-            wat.push_str("    (global.set $current_module_id (i32.const 1))\n");
+            writer.push_str("    (global.set $current_module_id (i32.const 1))\n");
         }
-        self.emit_top_level_statements(wat, 4, &frame);
-        wat.push_str("  )\n");
+        self.emit_top_level_statements(writer, 4, &frame);
+        writer.push_str("  )\n");
     }
 
     fn emit_module_initializer_calls(&self, wat: &mut String, indent: usize) {

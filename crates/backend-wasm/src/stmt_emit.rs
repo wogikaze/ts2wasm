@@ -5,6 +5,7 @@ use super::expr_emit::{
     CLOSURE_ENV_FLAGS_OFFSET, CLOSURE_SENTINEL,
 };
 use super::runtime_fn::RuntimeFn;
+use super::wat_writer::WatWriter;
 use std::cell::RefCell;
 use ts2wasm_ir::lowered::LocalId;
 use ts2wasm_ir::lowered::LoweredStmt;
@@ -70,23 +71,30 @@ impl LoopContext {
 impl WatEmitter<'_> {
     pub(super) fn emit_top_level_statements(
         &self,
-        wat: &mut String,
+        writer: &mut WatWriter,
         indent: usize,
         frame: &LocalFrame,
     ) {
         let pad = " ".repeat(indent);
         for statement in &self.program.top_level_statements {
-            self.emit_statement(wat, statement, indent, &mut LoopContext::default(), frame);
-            self.emit_gc_backend_temp_roots_clear(wat, &pad, frame);
-            wat.push_str(&format!(
-                "{pad}(if (global.get $exception_pending)\n{pad}  (then (unreachable)))\n"
-            ));
+            self.emit_statement(
+                writer,
+                statement,
+                indent,
+                &mut LoopContext::default(),
+                frame,
+            );
+            let mut buf = String::new();
+            self.emit_gc_backend_temp_roots_clear(&mut buf, &pad, frame);
+            writer.push_str(buf.as_str());
+            writer.line(indent, "(if (global.get $exception_pending)");
+            writer.line(indent + 2, "(then (unreachable)))");
         }
     }
 
     pub(super) fn emit_statements(
         &self,
-        wat: &mut String,
+        writer: &mut WatWriter,
         statements: &[LoweredStmt],
         indent: usize,
         loop_ctx: &mut LoopContext,
@@ -94,25 +102,27 @@ impl WatEmitter<'_> {
     ) {
         let pad = " ".repeat(indent);
         for statement in statements {
-            self.emit_statement(wat, statement, indent, loop_ctx, frame);
-            self.emit_gc_backend_temp_roots_clear(wat, &pad, frame);
+            self.emit_statement(writer, statement, indent, loop_ctx, frame);
+            let mut buf = String::new();
+            self.emit_gc_backend_temp_roots_clear(&mut buf, &pad, frame);
+            writer.push_str(buf.as_str());
         }
     }
 
     fn emit_statement(
         &self,
-        wat: &mut String,
+        writer: &mut WatWriter,
         statement: &LoweredStmt,
         indent: usize,
         loop_ctx: &mut LoopContext,
         frame: &LocalFrame,
     ) {
-        self.emit_statement_with_label(wat, statement, indent, loop_ctx, frame, None);
+        self.emit_statement_with_label(writer, statement, indent, loop_ctx, frame, None);
     }
 
     fn emit_statement_with_label(
         &self,
-        wat: &mut String,
+        writer: &mut WatWriter,
         statement: &LoweredStmt,
         indent: usize,
         loop_ctx: &mut LoopContext,
@@ -122,17 +132,19 @@ impl WatEmitter<'_> {
         let pad = " ".repeat(indent);
         match statement {
             LoweredStmt::Block(statements) => {
-                self.emit_statements(wat, statements, indent, loop_ctx, frame);
+                self.emit_statements(writer, statements, indent, loop_ctx, frame);
             }
             LoweredStmt::Let(local_id, expr) | LoweredStmt::Assign(local_id, expr) => {
-                self.emit_expr(wat, expr, indent, frame);
-                wat.push_str(&format!("{pad}(local.set {})\n", local_index(*local_id)));
-                self.emit_gc_root_mirror(wat, &pad, *local_id, frame);
+                self.emit_expr(writer, expr, indent, frame);
+                writer.local_set(indent, local_index(*local_id));
+                let mut buf = String::new();
+                self.emit_gc_root_mirror(&mut buf, &pad, *local_id, frame);
+                writer.push_str(buf.as_str());
             }
             LoweredStmt::Expr(expr) => {
-                self.emit_expr(wat, expr, indent, frame);
+                self.emit_expr(writer, expr, indent, frame);
                 if self.expr_produces_value(expr) {
-                    wat.push_str(&format!("{pad}(drop)\n"));
+                    writer.drop(indent);
                 }
             }
             LoweredStmt::If {
@@ -140,92 +152,99 @@ impl WatEmitter<'_> {
                 then_body,
                 else_body,
             } => {
-                self.emit_expr(wat, condition, indent, frame);
-                wat.push_str(&format!("{pad}(call {})\n", RuntimeFn::TruthyBool.symbol()));
-                wat.push_str(&format!("{pad}(if\n"));
-                wat.push_str(&format!("{pad}  (then\n"));
-                self.emit_statements(wat, then_body, indent + 4, loop_ctx, frame);
-                wat.push_str(&format!("{pad}  )\n"));
+                self.emit_expr(writer, condition, indent, frame);
+                writer.call(indent, RuntimeFn::TruthyBool.symbol());
+                writer.r#if(indent);
+                writer.then(indent);
+                self.emit_statements(writer, then_body, indent + 4, loop_ctx, frame);
+                writer.end(indent);
                 if !else_body.is_empty() {
-                    wat.push_str(&format!("{pad}  (else\n"));
-                    self.emit_statements(wat, else_body, indent + 4, loop_ctx, frame);
-                    wat.push_str(&format!("{pad}  )\n"));
+                    writer.r#else(indent);
+                    self.emit_statements(writer, else_body, indent + 4, loop_ctx, frame);
+                    writer.end(indent);
                 }
-                wat.push_str(&format!("{pad})\n"));
+                writer.end(indent);
             }
             LoweredStmt::While { condition, body } => {
                 let exit_label = gen_label("while_exit");
                 let loop_label = gen_label("while_loop");
-                wat.push_str(&format!("{pad}(block ${}\n", exit_label));
-                wat.push_str(&format!("{pad}  (loop ${}\n", loop_label));
-                self.emit_expr(wat, condition, indent + 4, frame);
-                wat.push_str(&format!(
-                    "{pad}    (call {})\n",
-                    RuntimeFn::TruthyBool.symbol()
-                ));
-                wat.push_str(&format!("{pad}    (i32.eqz)\n"));
-                wat.push_str(&format!("{pad}    (br_if ${})\n", exit_label));
+                writer.block(indent, &exit_label);
+                writer.r#loop(indent + 2, &loop_label);
+                self.emit_expr(writer, condition, indent + 4, frame);
+                writer.line_fmt(
+                    indent + 4,
+                    format_args!("(call {})", RuntimeFn::TruthyBool.symbol()),
+                );
+                writer.i32_eqz(indent + 4);
+                writer.br_if(indent + 4, &exit_label);
 
                 loop_ctx.push(ControlFrame {
                     name: bound_label.map(str::to_owned),
                     exit_label: exit_label.clone(),
                     continue_label: Some(loop_label.clone()),
                 });
-                self.emit_statements(wat, body, indent + 4, loop_ctx, frame);
+                self.emit_statements(writer, body, indent + 4, loop_ctx, frame);
                 loop_ctx.pop();
 
-                wat.push_str(&format!("{pad}    (br ${})\n", loop_label));
-                wat.push_str(&format!("{pad}  )\n"));
-                wat.push_str(&format!("{pad})\n"));
+                writer.r#br(indent + 4, &loop_label);
+                writer.end(indent + 2);
+                writer.end(indent);
             }
             LoweredStmt::Return(expr) => {
-                self.emit_expr(wat, expr, indent, frame);
+                self.emit_expr(writer, expr, indent, frame);
                 if frame.uses_activation_roots() {
-                    wat.push_str(&format!("{pad}(local.set {})\n", frame.heap_value_tmp()));
-                    self.emit_gc_activation_frame_pop(wat, frame, indent);
-                    wat.push_str(&format!("{pad}(local.get {})\n", frame.heap_value_tmp()));
+                    writer.local_set(indent, frame.heap_value_tmp());
+                    let mut buf = String::new();
+                    self.emit_gc_activation_frame_pop(&mut buf, frame, indent);
+                    writer.push_str(buf.as_str());
+                    writer.local_get(indent, frame.heap_value_tmp());
                 }
-                wat.push_str(&format!("{pad}(return)\n"));
+                writer.return_(indent);
             }
             LoweredStmt::Throw(expr) => {
                 // Evaluate the thrown value, store to $exception_pending,
                 // then let the enclosing try-catch's br_if catch it.
-                self.emit_expr(wat, expr, indent, frame);
+                self.emit_expr(writer, expr, indent, frame);
                 if frame.uses_activation_roots() {
                     // Stack has the thrown value. Save to local, pop GC frame, then set global.
-                    wat.push_str(&format!("{pad}(local.set {})\n", frame.heap_value_tmp()));
-                    self.emit_gc_activation_frame_pop(wat, frame, indent);
-                    wat.push_str(&format!(
-                        "{pad}(global.set $exception_pending (local.get {}))\n",
-                        frame.heap_value_tmp(),
-                    ));
+                    writer.local_set(indent, frame.heap_value_tmp());
+                    let mut buf = String::new();
+                    self.emit_gc_activation_frame_pop(&mut buf, frame, indent);
+                    writer.push_str(buf.as_str());
+                    writer.line_fmt(
+                        indent,
+                        format_args!(
+                            "(global.set $exception_pending (local.get {}))",
+                            frame.heap_value_tmp(),
+                        ),
+                    );
                 } else {
                     // Value is on wasm stack — consume directly.
-                    wat.push_str(&format!("{pad}(global.set $exception_pending)\n"));
+                    writer.line(indent, "(global.set $exception_pending)");
                 }
             }
             LoweredStmt::DoWhile { body, condition } => {
                 let exit_label = gen_label("do_exit");
                 let loop_label = gen_label("do_loop");
-                wat.push_str(&format!("{pad}(block ${}\n", exit_label));
-                wat.push_str(&format!("{pad}  (loop ${}\n", loop_label));
+                writer.block(indent, &exit_label);
+                writer.r#loop(indent + 2, &loop_label);
 
                 loop_ctx.push(ControlFrame {
                     name: bound_label.map(str::to_owned),
                     exit_label: exit_label.clone(),
                     continue_label: Some(loop_label.clone()),
                 });
-                self.emit_statements(wat, body, indent + 4, loop_ctx, frame);
+                self.emit_statements(writer, body, indent + 4, loop_ctx, frame);
                 loop_ctx.pop();
 
-                self.emit_expr(wat, condition, indent + 4, frame);
-                wat.push_str(&format!(
-                    "{pad}    (call {})\n",
-                    RuntimeFn::TruthyBool.symbol()
-                ));
-                wat.push_str(&format!("{pad}    (br_if ${})\n", loop_label));
-                wat.push_str(&format!("{pad}  )\n"));
-                wat.push_str(&format!("{pad})\n"));
+                self.emit_expr(writer, condition, indent + 4, frame);
+                writer.line_fmt(
+                    indent + 4,
+                    format_args!("(call {})", RuntimeFn::TruthyBool.symbol()),
+                );
+                writer.br_if(indent + 4, &loop_label);
+                writer.end(indent + 2);
+                writer.end(indent);
             }
             LoweredStmt::For {
                 init,
@@ -234,24 +253,24 @@ impl WatEmitter<'_> {
                 body,
             } => {
                 if let Some(i) = init {
-                    self.emit_statement(wat, i, indent, loop_ctx, frame);
+                    self.emit_statement(writer, i, indent, loop_ctx, frame);
                 }
 
                 let exit_label = gen_label("for_exit");
                 let loop_label = gen_label("for_loop");
                 let continue_label = gen_label("for_continue");
 
-                wat.push_str(&format!("{pad}(block ${}\n", exit_label));
-                wat.push_str(&format!("{pad}  (loop ${}\n", loop_label));
+                writer.block(indent, &exit_label);
+                writer.r#loop(indent + 2, &loop_label);
 
                 if let Some(cond) = condition {
-                    self.emit_expr(wat, cond, indent + 4, frame);
-                    wat.push_str(&format!(
-                        "{pad}    (call {})\n",
-                        RuntimeFn::TruthyBool.symbol()
-                    ));
-                    wat.push_str(&format!("{pad}    (i32.eqz)\n"));
-                    wat.push_str(&format!("{pad}    (br_if ${})\n", exit_label));
+                    self.emit_expr(writer, cond, indent + 4, frame);
+                    writer.line_fmt(
+                        indent + 4,
+                        format_args!("(call {})", RuntimeFn::TruthyBool.symbol()),
+                    );
+                    writer.i32_eqz(indent + 4);
+                    writer.br_if(indent + 4, &exit_label);
                 }
 
                 loop_ctx.push(ControlFrame {
@@ -259,21 +278,21 @@ impl WatEmitter<'_> {
                     exit_label: exit_label.clone(),
                     continue_label: Some(continue_label.clone()),
                 });
-                self.emit_statements(wat, body, indent + 4, loop_ctx, frame);
+                self.emit_statements(writer, body, indent + 4, loop_ctx, frame);
                 loop_ctx.pop();
 
-                wat.push_str(&format!("{pad}  (block ${}\n", continue_label));
+                writer.block(indent + 2, &continue_label);
                 if let Some(upd) = update {
-                    self.emit_expr(wat, upd, indent + 4, frame);
+                    self.emit_expr(writer, upd, indent + 4, frame);
                     if self.expr_produces_value(upd) {
-                        wat.push_str(&format!("{pad}    (drop)\n"));
+                        writer.drop(indent + 4);
                     }
                 }
-                wat.push_str(&format!("{pad}  )\n"));
+                writer.end(indent + 2);
 
-                wat.push_str(&format!("{pad}    (br ${})\n", loop_label));
-                wat.push_str(&format!("{pad}  )\n"));
-                wat.push_str(&format!("{pad})\n"));
+                writer.r#br(indent + 4, &loop_label);
+                writer.end(indent + 2);
+                writer.end(indent);
             }
             LoweredStmt::ForIn {
                 var,
@@ -286,78 +305,48 @@ impl WatEmitter<'_> {
                 let exit_label = gen_label("for_in_exit");
                 let loop_label = gen_label("for_in_loop");
 
-                self.emit_expr(wat, iter, indent, frame);
-                wat.push_str(&format!("{pad}(call {})\n", RuntimeFn::ObjectKeys.symbol()));
-                wat.push_str(&format!("{pad}(local.set {})\n", local_index(*iter_local)));
+                self.emit_expr(writer, iter, indent, frame);
+                writer.call(indent, RuntimeFn::ObjectKeys.symbol());
+                writer.local_set(indent, local_index(*iter_local));
 
-                wat.push_str(&format!(
-                    "{pad}(i32.const {})\n",
-                    ValueTag::encode_number(0)
-                ));
-                wat.push_str(&format!("{pad}(local.set {})\n", local_index(*index_local)));
+                writer.i32_const(indent, ValueTag::encode_number(0));
+                writer.local_set(indent, local_index(*index_local));
 
-                wat.push_str(&format!("{pad}(local.get {})\n", local_index(*iter_local)));
-                wat.push_str(&format!("{pad}(call {})\n", RuntimeFn::GetLength.symbol()));
-                wat.push_str(&format!("{pad}(local.set {})\n", local_index(*len_local)));
+                writer.local_get(indent, local_index(*iter_local));
+                writer.call(indent, RuntimeFn::GetLength.symbol());
+                writer.local_set(indent, local_index(*len_local));
 
-                wat.push_str(&format!("{pad}(block ${}\n", exit_label));
-                wat.push_str(&format!("{pad}  (loop ${}\n", loop_label));
+                writer.block(indent, &exit_label);
+                writer.r#loop(indent + 2, &loop_label);
 
-                wat.push_str(&format!(
-                    "{pad}    (local.get {})\n",
-                    local_index(*index_local)
-                ));
-                wat.push_str(&format!(
-                    "{pad}    (local.get {})\n",
-                    local_index(*len_local)
-                ));
-                wat.push_str(&format!("{pad}    (call {})\n", RuntimeFn::Less.symbol()));
-                wat.push_str(&format!(
-                    "{pad}    (call {})\n",
-                    RuntimeFn::TruthyBool.symbol()
-                ));
-                wat.push_str(&format!("{pad}    (i32.eqz)\n"));
-                wat.push_str(&format!("{pad}    (br_if ${})\n", exit_label));
+                writer.local_get(indent + 4, local_index(*index_local));
+                writer.local_get(indent + 4, local_index(*len_local));
+                writer.call(indent + 4, RuntimeFn::Less.symbol());
+                writer.call(indent + 4, RuntimeFn::TruthyBool.symbol());
+                writer.i32_eqz(indent + 4);
+                writer.br_if(indent + 4, &exit_label);
 
-                wat.push_str(&format!(
-                    "{pad}    (local.get {})\n",
-                    local_index(*iter_local)
-                ));
-                wat.push_str(&format!(
-                    "{pad}    (local.get {})\n",
-                    local_index(*index_local)
-                ));
-                wat.push_str(&format!(
-                    "{pad}    (call {})\n",
-                    RuntimeFn::ArrayGet.symbol()
-                ));
-                wat.push_str(&format!("{pad}    (local.set {})\n", local_index(*var)));
+                writer.local_get(indent + 4, local_index(*iter_local));
+                writer.local_get(indent + 4, local_index(*index_local));
+                writer.call(indent + 4, RuntimeFn::ArrayGet.symbol());
+                writer.local_set(indent + 4, local_index(*var));
 
                 loop_ctx.push(ControlFrame {
                     name: bound_label.map(str::to_owned),
                     exit_label: exit_label.clone(),
                     continue_label: Some(loop_label.clone()),
                 });
-                self.emit_statements(wat, body, indent + 4, loop_ctx, frame);
+                self.emit_statements(writer, body, indent + 4, loop_ctx, frame);
                 loop_ctx.pop();
 
-                wat.push_str(&format!(
-                    "{pad}    (local.get {})\n",
-                    local_index(*index_local)
-                ));
-                wat.push_str(&format!(
-                    "{pad}    (i32.const {})\n",
-                    ValueTag::encode_number(1)
-                ));
-                wat.push_str(&format!("{pad}    (call {})\n", RuntimeFn::Add.symbol()));
-                wat.push_str(&format!(
-                    "{pad}    (local.set {})\n",
-                    local_index(*index_local)
-                ));
+                writer.local_get(indent + 4, local_index(*index_local));
+                writer.i32_const(indent + 4, ValueTag::encode_number(1));
+                writer.call(indent + 4, RuntimeFn::Add.symbol());
+                writer.local_set(indent + 4, local_index(*index_local));
 
-                wat.push_str(&format!("{pad}    (br ${})\n", loop_label));
-                wat.push_str(&format!("{pad}  )\n"));
-                wat.push_str(&format!("{pad})\n"));
+                writer.r#br(indent + 4, &loop_label);
+                writer.end(indent + 2);
+                writer.end(indent);
             }
             LoweredStmt::ForOf {
                 var,
@@ -370,82 +359,52 @@ impl WatEmitter<'_> {
                 let exit_label = gen_label("for_of_exit");
                 let loop_label = gen_label("for_of_loop");
 
-                self.emit_expr(wat, iter, indent, frame);
-                wat.push_str(&format!("{pad}(local.set {})\n", local_index(*iter_local)));
+                self.emit_expr(writer, iter, indent, frame);
+                writer.local_set(indent, local_index(*iter_local));
 
-                wat.push_str(&format!(
-                    "{pad}(i32.const {})\n",
-                    ValueTag::encode_number(0)
-                ));
-                wat.push_str(&format!("{pad}(local.set {})\n", local_index(*index_local)));
+                writer.i32_const(indent, ValueTag::encode_number(0));
+                writer.local_set(indent, local_index(*index_local));
 
-                wat.push_str(&format!("{pad}(local.get {})\n", local_index(*iter_local)));
-                wat.push_str(&format!("{pad}(call {})\n", RuntimeFn::GetLength.symbol()));
-                wat.push_str(&format!("{pad}(local.set {})\n", local_index(*len_local)));
+                writer.local_get(indent, local_index(*iter_local));
+                writer.call(indent, RuntimeFn::GetLength.symbol());
+                writer.local_set(indent, local_index(*len_local));
 
-                wat.push_str(&format!("{pad}(block ${}\n", exit_label));
-                wat.push_str(&format!("{pad}  (loop ${}\n", loop_label));
+                writer.block(indent, &exit_label);
+                writer.r#loop(indent + 2, &loop_label);
 
-                wat.push_str(&format!(
-                    "{pad}    (local.get {})\n",
-                    local_index(*index_local)
-                ));
-                wat.push_str(&format!(
-                    "{pad}    (local.get {})\n",
-                    local_index(*len_local)
-                ));
-                wat.push_str(&format!("{pad}    (call {})\n", RuntimeFn::Less.symbol()));
-                wat.push_str(&format!(
-                    "{pad}    (call {})\n",
-                    RuntimeFn::TruthyBool.symbol()
-                ));
-                wat.push_str(&format!("{pad}    (i32.eqz)\n"));
-                wat.push_str(&format!("{pad}    (br_if ${})\n", exit_label));
+                writer.local_get(indent + 4, local_index(*index_local));
+                writer.local_get(indent + 4, local_index(*len_local));
+                writer.call(indent + 4, RuntimeFn::Less.symbol());
+                writer.call(indent + 4, RuntimeFn::TruthyBool.symbol());
+                writer.i32_eqz(indent + 4);
+                writer.br_if(indent + 4, &exit_label);
 
-                wat.push_str(&format!(
-                    "{pad}    (local.get {})\n",
-                    local_index(*iter_local)
-                ));
-                wat.push_str(&format!(
-                    "{pad}    (local.get {})\n",
-                    local_index(*index_local)
-                ));
-                wat.push_str(&format!(
-                    "{pad}    (call {})\n",
-                    RuntimeFn::ArrayGet.symbol()
-                ));
-                wat.push_str(&format!("{pad}    (local.set {})\n", local_index(*var)));
+                writer.local_get(indent + 4, local_index(*iter_local));
+                writer.local_get(indent + 4, local_index(*index_local));
+                writer.call(indent + 4, RuntimeFn::ArrayGet.symbol());
+                writer.local_set(indent + 4, local_index(*var));
 
                 loop_ctx.push(ControlFrame {
                     name: bound_label.map(str::to_owned),
                     exit_label: exit_label.clone(),
                     continue_label: Some(loop_label.clone()),
                 });
-                self.emit_statements(wat, body, indent + 4, loop_ctx, frame);
+                self.emit_statements(writer, body, indent + 4, loop_ctx, frame);
                 loop_ctx.pop();
 
-                wat.push_str(&format!(
-                    "{pad}    (local.get {})\n",
-                    local_index(*index_local)
-                ));
-                wat.push_str(&format!(
-                    "{pad}    (i32.const {})\n",
-                    ValueTag::encode_number(1)
-                ));
-                wat.push_str(&format!("{pad}    (call {})\n", RuntimeFn::Add.symbol()));
-                wat.push_str(&format!(
-                    "{pad}    (local.set {})\n",
-                    local_index(*index_local)
-                ));
+                writer.local_get(indent + 4, local_index(*index_local));
+                writer.i32_const(indent + 4, ValueTag::encode_number(1));
+                writer.call(indent + 4, RuntimeFn::Add.symbol());
+                writer.local_set(indent + 4, local_index(*index_local));
 
-                wat.push_str(&format!("{pad}    (br ${})\n", loop_label));
-                wat.push_str(&format!("{pad}  )\n"));
-                wat.push_str(&format!("{pad})\n"));
+                writer.r#br(indent + 4, &loop_label);
+                writer.end(indent + 2);
+                writer.end(indent);
             }
             LoweredStmt::Labeled { label, body } => {
                 if is_loop_stmt(body) {
                     self.emit_statement_with_label(
-                        wat,
+                        writer,
                         body,
                         indent,
                         loop_ctx,
@@ -454,29 +413,29 @@ impl WatEmitter<'_> {
                     );
                 } else {
                     let exit_label = gen_label("label_exit");
-                    wat.push_str(&format!("{pad}(block ${}\n", exit_label));
+                    writer.block(indent, &exit_label);
                     loop_ctx.push(ControlFrame {
                         name: Some(label.clone()),
                         exit_label,
                         continue_label: None,
                     });
-                    self.emit_statement(wat, body, indent + 2, loop_ctx, frame);
+                    self.emit_statement(writer, body, indent + 2, loop_ctx, frame);
                     loop_ctx.pop();
-                    wat.push_str(&format!("{pad})\n"));
+                    writer.end(indent);
                 }
             }
             LoweredStmt::Break { label } => {
                 if let Some(target) = loop_ctx.break_label(label.as_deref()) {
-                    wat.push_str(&format!("{pad}(br ${target})\n"));
+                    writer.r#br(indent, target);
                 } else {
-                    wat.push_str(&format!("{pad};; ERROR: break outside loop\n"));
+                    writer.line(indent, ";; ERROR: break outside loop");
                 }
             }
             LoweredStmt::Continue { label } => {
                 if let Some(target) = loop_ctx.continue_label(label.as_deref()) {
-                    wat.push_str(&format!("{pad}(br ${target})\n"));
+                    writer.r#br(indent, target);
                 } else {
-                    wat.push_str(&format!("{pad};; ERROR: continue outside loop\n"));
+                    writer.line(indent, ";; ERROR: continue outside loop");
                 }
             }
             LoweredStmt::TryCatch {
@@ -489,61 +448,80 @@ impl WatEmitter<'_> {
                 let try_exit = gen_label("try_exit");
                 let catch_entry = gen_label("catch_entry");
 
-                wat.push_str(&format!("{pad}(block ${}\n", try_exit));
-                wat.push_str(&format!("{pad}  (block ${}\n", catch_entry));
-                wat.push_str(&format!(
-                    "{pad}    (global.set $exception_handler_depth (i32.add (global.get $exception_handler_depth) (i32.const 1)))\n",
-                ));
+                writer.block(indent, &try_exit);
+                writer.block(indent + 2, &catch_entry);
+                writer.line_fmt(
+                    indent + 4,
+                    format_args!(
+                        "(global.set $exception_handler_depth (i32.add (global.get $exception_handler_depth) (i32.const 1)))",
+                    ),
+                );
 
+                let mut buf = String::new();
                 for statement in try_body {
-                    self.emit_statement(wat, statement, indent + 4, loop_ctx, frame);
-                    self.emit_gc_backend_temp_roots_clear(wat, &format!("{pad}    "), frame);
-                    wat.push_str(&format!(
-                        "{pad}    (br_if ${} (global.get $exception_pending))\n",
-                        catch_entry
-                    ));
+                    self.emit_statement(writer, statement, indent + 4, loop_ctx, frame);
+                    buf.clear();
+                    self.emit_gc_backend_temp_roots_clear(&mut buf, &format!("{pad}    "), frame);
+                    writer.push_str(buf.as_str());
+                    buf.clear();
+                    writer.line_fmt(
+                        indent + 4,
+                        format_args!("(br_if ${} (global.get $exception_pending))", catch_entry),
+                    );
                 }
 
-                wat.push_str(&format!(
-                    "{pad}    (global.set $exception_handler_depth (i32.sub (global.get $exception_handler_depth) (i32.const 1)))\n",
-                ));
-                wat.push_str(&format!("{pad}    (br ${})\n", try_exit));
-                wat.push_str(&format!("{pad}  )\n"));
+                writer.line_fmt(
+                    indent + 4,
+                    format_args!(
+                        "(global.set $exception_handler_depth (i32.sub (global.get $exception_handler_depth) (i32.const 1)))",
+                    ),
+                );
+                writer.r#br(indent + 4, &try_exit);
+                writer.end(indent + 2);
 
                 // Catch block (for now, just a placeholder)
-                wat.push_str(&format!(
-                    "{pad}  (global.set $exception_handler_depth (i32.sub (global.get $exception_handler_depth) (i32.const 1)))\n",
-                ));
+                writer.line_fmt(
+                    indent + 2,
+                    format_args!(
+                        "(global.set $exception_handler_depth (i32.sub (global.get $exception_handler_depth) (i32.const 1)))",
+                    ),
+                );
                 if let Some(body) = catch_body {
                     if let Some(var) = catch_var {
-                        wat.push_str(&format!("{pad}  (global.get $exception_pending)\n"));
-                        wat.push_str(&format!("{pad}  (local.set {})\n", local_index(*var)));
-                        self.emit_gc_root_mirror(wat, &format!("{pad}  "), *var, frame);
+                        buf.clear();
+                        writer.line(indent + 2, "(global.get $exception_pending)");
+                        writer.local_set(indent + 2, local_index(*var));
+                        self.emit_gc_root_mirror(&mut buf, &format!("{pad}  "), *var, frame);
+                        writer.push_str(buf.as_str());
                     }
-                    wat.push_str(&format!(
-                        "{pad}  (global.set $exception_pending (i32.const {}))\n",
-                        ValueTag::UNDEFINED
-                    ));
-                    self.emit_statements(wat, body, indent + 4, loop_ctx, frame);
+                    buf.clear();
+                    writer.line_fmt(
+                        indent + 2,
+                        format_args!(
+                            "(global.set $exception_pending (i32.const {}))",
+                            ValueTag::UNDEFINED
+                        ),
+                    );
+                    self.emit_statements(writer, body, indent + 4, loop_ctx, frame);
                 }
 
-                wat.push_str(&format!("{pad})\n"));
+                writer.end(indent);
 
                 // Finally block (always executes)
                 if let Some(body) = finally_body {
-                    self.emit_statements(wat, body, indent + 2, loop_ctx, frame);
+                    self.emit_statements(writer, body, indent + 2, loop_ctx, frame);
                 }
             }
             LoweredStmt::Switch { expr, cases } => {
                 let switch_exit = gen_label("switch_exit");
-                wat.push_str(&format!("{pad}(block ${}\n", switch_exit));
+                writer.block(indent, &switch_exit);
 
                 if cases.is_empty() {
-                    self.emit_expr(wat, expr, indent + 2, frame);
+                    self.emit_expr(writer, expr, indent + 2, frame);
                     if self.expr_produces_value(expr) {
-                        wat.push_str(&format!("{pad}  (drop)\n"));
+                        writer.drop(indent + 2);
                     }
-                    wat.push_str(&format!("{pad})\n"));
+                    writer.end(indent);
                     return;
                 }
 
@@ -552,14 +530,14 @@ impl WatEmitter<'_> {
                     .collect::<Vec<_>>();
 
                 for label in case_labels.iter().rev() {
-                    wat.push_str(&format!("{pad}  (block ${label}\n"));
+                    writer.line(indent + 2, &format!("(block ${label}"));
                 }
 
-                self.emit_expr(wat, expr, indent + 4, frame);
-                wat.push_str(&format!(
-                    "{pad}    (local.set {})\n",
-                    frame.switch_value_tmp()
-                ));
+                self.emit_expr(writer, expr, indent + 4, frame);
+                writer.line_fmt(
+                    indent + 4,
+                    format_args!("(local.set {})", frame.switch_value_tmp()),
+                );
 
                 let default_label = cases
                     .iter()
@@ -568,25 +546,25 @@ impl WatEmitter<'_> {
 
                 for ((cond, _), label) in cases.iter().zip(case_labels.iter()) {
                     if let Some(c) = cond {
-                        wat.push_str(&format!(
-                            "{pad}    (local.get {})\n",
-                            frame.switch_value_tmp()
-                        ));
-                        self.emit_expr(wat, c, indent + 4, frame);
-                        wat.push_str(&format!(
-                            "{pad}    (call {})\n",
-                            RuntimeFn::StrictEqual.symbol()
-                        ));
-                        wat.push_str(&format!("{pad}    (i32.const {})\n", ValueTag::TRUE));
-                        wat.push_str(&format!("{pad}    (i32.eq)\n"));
-                        wat.push_str(&format!("{pad}    (br_if ${label})\n"));
+                        writer.line_fmt(
+                            indent + 4,
+                            format_args!("(local.get {})", frame.switch_value_tmp()),
+                        );
+                        self.emit_expr(writer, c, indent + 4, frame);
+                        writer.line_fmt(
+                            indent + 4,
+                            format_args!("(call {})", RuntimeFn::StrictEqual.symbol()),
+                        );
+                        writer.i32_const(indent + 4, ValueTag::TRUE);
+                        writer.i32_eq(indent + 4);
+                        writer.br_if(indent + 4, label);
                     }
                 }
 
                 if let Some(label) = default_label {
-                    wat.push_str(&format!("{pad}    (br ${label})\n"));
+                    writer.r#br(indent + 4, label);
                 } else {
-                    wat.push_str(&format!("{pad}    (br ${})\n", switch_exit));
+                    writer.r#br(indent + 4, &switch_exit);
                 }
 
                 loop_ctx.push(ControlFrame {
@@ -595,30 +573,23 @@ impl WatEmitter<'_> {
                     continue_label: None,
                 });
                 for ((_, body), label) in cases.iter().zip(case_labels.iter()) {
-                    wat.push_str(&format!("{pad}  ) ;; ${label}\n"));
-                    self.emit_statements(wat, body, indent + 2, loop_ctx, frame);
+                    writer.line(indent + 2, &format!(") ;; ${label}"));
+                    self.emit_statements(writer, body, indent + 2, loop_ctx, frame);
                 }
                 loop_ctx.pop();
-                wat.push_str(&format!("{pad})\n"));
+                writer.end(indent);
             }
             LoweredStmt::Export { name, expr } => {
                 let name_ptr = self.string_offset(name) + Layout::STRING_HEADER_SIZE;
                 let name_len = name.len() as u32;
-                wat.push_str(&format!(
-                    "{pad}(i32.const {name_ptr})\n{pad}(i32.const {name_len})\n"
-                ));
-                self.emit_expr(wat, expr, indent, frame);
-                wat.push_str(&format!(
-                    "{pad}(call {})\n",
-                    RuntimeFn::ModuleExportsSet.symbol(),
-                ));
+                writer.line_fmt(indent, format_args!("(i32.const {name_ptr})"));
+                writer.line_fmt(indent, format_args!("(i32.const {name_len})"));
+                self.emit_expr(writer, expr, indent, frame);
+                writer.call(indent, RuntimeFn::ModuleExportsSet.symbol());
             }
             LoweredStmt::ModuleExportsAssign { expr } => {
-                self.emit_expr(wat, expr, indent, frame);
-                wat.push_str(&format!(
-                    "{pad}(call {})\n",
-                    RuntimeFn::ModuleExportsAssign.symbol(),
-                ));
+                self.emit_expr(writer, expr, indent, frame);
+                writer.call(indent, RuntimeFn::ModuleExportsAssign.symbol());
             }
             LoweredStmt::ClassDecl {
                 constructor,
@@ -627,58 +598,82 @@ impl WatEmitter<'_> {
             } => {
                 let constructor_id = constructor.expect("constructor is always Some");
                 let proto_global = super::emitter::class_prototype_global(constructor_id);
+                let mut buf = String::new();
                 for (method_name, func_id) in methods {
                     // Allocate no-capture closure
-                    wat.push_str(&format!(
-                        "{pad}(local.set {} (call {} (i32.const {})))\n",
-                        frame.heap_base_tmp(),
-                        RuntimeFn::AllocHeap.symbol(),
-                        CLOSURE_CAPTURE_SLOTS_OFFSET,
-                    ));
-                    self.emit_gc_root_mirror_index(wat, &pad, frame.heap_base_tmp(), frame);
+                    writer.line_fmt(
+                        indent,
+                        format_args!(
+                            "(local.set {} (call {} (i32.const {})))",
+                            frame.heap_base_tmp(),
+                            RuntimeFn::AllocHeap.symbol(),
+                            CLOSURE_CAPTURE_SLOTS_OFFSET,
+                        ),
+                    );
+                    buf.clear();
+                    self.emit_gc_root_mirror_index(&mut buf, &pad, frame.heap_base_tmp(), frame);
+                    writer.push_str(buf.as_str());
                     // Store closure sentinel
-                    wat.push_str(&format!(
-                        "{pad}(i32.store (local.get {}) (i32.const {CLOSURE_SENTINEL}))\n",
-                        frame.heap_base_tmp(),
-                    ));
+                    writer.line_fmt(
+                        indent,
+                        format_args!(
+                            "(i32.store (local.get {}) (i32.const {CLOSURE_SENTINEL}))",
+                            frame.heap_base_tmp(),
+                        ),
+                    );
                     // Store func_id
-                    wat.push_str(&format!(
-                        "{pad}(i32.store (i32.add (local.get {}) (i32.const {CLOSURE_CODE_ID_OFFSET})) (i32.const {}))\n",
-                        frame.heap_base_tmp(),
-                        func_id.0,
-                    ));
+                    writer.line_fmt(
+                        indent,
+                        format_args!(
+                            "(i32.store (i32.add (local.get {}) (i32.const {CLOSURE_CODE_ID_OFFSET})) (i32.const {}))",
+                            frame.heap_base_tmp(),
+                            func_id.0,
+                        ),
+                    );
                     // Store capture_count = 0
-                    wat.push_str(&format!(
-                        "{pad}(i32.store (i32.add (local.get {}) (i32.const {CLOSURE_CAPTURE_COUNT_OFFSET})) (i32.const 0))\n",
-                        frame.heap_base_tmp(),
-                    ));
+                    writer.line_fmt(
+                        indent,
+                        format_args!(
+                            "(i32.store (i32.add (local.get {}) (i32.const {CLOSURE_CAPTURE_COUNT_OFFSET})) (i32.const 0))",
+                            frame.heap_base_tmp(),
+                        ),
+                    );
                     // Store env_flags = 0
-                    wat.push_str(&format!(
-                        "{pad}(i32.store (i32.add (local.get {}) (i32.const {CLOSURE_ENV_FLAGS_OFFSET})) (i32.const 0))\n",
-                        frame.heap_base_tmp(),
-                    ));
+                    writer.line_fmt(
+                        indent,
+                        format_args!(
+                            "(i32.store (i32.add (local.get {}) (i32.const {CLOSURE_ENV_FLAGS_OFFSET})) (i32.const 0))",
+                            frame.heap_base_tmp(),
+                        ),
+                    );
                     // Tag as object
-                    wat.push_str(&format!(
-                        "{pad}(local.set {} (i32.or (local.get {}) (i32.const {})))\n",
-                        frame.heap_value_tmp(),
-                        frame.heap_base_tmp(),
-                        ValueTag::OBJECT_TAG,
-                    ));
+                    writer.line_fmt(
+                        indent,
+                        format_args!(
+                            "(local.set {} (i32.or (local.get {}) (i32.const {})))",
+                            frame.heap_value_tmp(),
+                            frame.heap_base_tmp(),
+                            ValueTag::OBJECT_TAG,
+                        ),
+                    );
                     // $property_set(tagged_prototype, key_ptr, key_len, tagged_closure)
-                    wat.push_str(&format!(
-                        "{pad}(i32.or (global.get ${proto_global}) (i32.const {}))\n",
-                        ValueTag::OBJECT_TAG,
-                    ));
+                    writer.line_fmt(
+                        indent,
+                        format_args!(
+                            "(i32.or (global.get ${proto_global}) (i32.const {}))",
+                            ValueTag::OBJECT_TAG,
+                        ),
+                    );
                     let key_offset = self.string_offset(method_name) + Layout::STRING_HEADER_SIZE;
                     let key_len = self.string_len(method_name);
-                    wat.push_str(&format!("{pad}(i32.const {key_offset})\n"));
-                    wat.push_str(&format!("{pad}(i32.const {key_len})\n"));
-                    wat.push_str(&format!("{pad}(local.get {})\n", frame.heap_value_tmp(),));
-                    wat.push_str(&format!(
-                        "{pad}(call {})\n",
-                        RuntimeFn::PropertySet.symbol(),
-                    ));
-                    wat.push_str(&format!("{pad}(drop)\n"));
+                    writer.line_fmt(indent, format_args!("(i32.const {key_offset})"));
+                    writer.line_fmt(indent, format_args!("(i32.const {key_len})"));
+                    writer.line_fmt(
+                        indent,
+                        format_args!("(local.get {})", frame.heap_value_tmp()),
+                    );
+                    writer.call(indent, RuntimeFn::PropertySet.symbol());
+                    writer.drop(indent);
                 }
             }
         }
