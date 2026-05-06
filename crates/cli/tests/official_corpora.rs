@@ -259,6 +259,27 @@ fn official_corpora_smoke_gate_classifies_samples_without_requiring_pass() {
 }
 
 #[test]
+fn block_scoped_namespace_multisection_reports_focused_section_diagnostic() {
+    let case = "reference/typescript/tests/cases/compiler/blockScopedNamespaceDifferentFile.ts";
+    let record = classify_build_case("typescript", case);
+    record.validate().unwrap_or_else(|err| {
+        panic!(
+            "official test record should validate for {case}: {err}\n{}",
+            record.to_json_line()
+        )
+    });
+    let actual = record.actual.as_deref().unwrap_or_default();
+    assert!(
+        actual.contains("section `test.ts`") || matches!(record.status, TestStatus::Blocked),
+        "expected section-specific diagnostic or missing-reference blocked record, got: {actual}"
+    );
+    assert!(
+        !actual.contains("multi-section file has no module bodies"),
+        "empty-body aggregate diagnostic should not be reported: {actual}"
+    );
+}
+
+#[test]
 #[ignore = "strict official corpus pass gate fails until selected official cases are implemented"]
 fn strict_official_corpora_samples_must_build_successfully() {
     // NOTE: This is a BUILD smoke test, not a semantic compatibility test.

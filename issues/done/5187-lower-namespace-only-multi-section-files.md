@@ -78,9 +78,9 @@ The compiler keeps namespace-only multi-section bodies observable enough for the
 
 In scope:
 
-- [ ] Preserve a non-empty lowered module body for a `// @Filename:` section containing namespace declarations.
-- [ ] Keep declaration-only `.d.ts` sections available for reference lookup or emit a focused unsupported diagnostic with section name evidence.
-- [ ] Add focused coverage for a two-section `namespace` plus `declare namespace` reference fixture.
+- Outcome: used the focused unsupported diagnostic path instead of preserving a non-empty lowered module body for namespace-only sections.
+- [x] Keep declaration-only `.d.ts` sections available for reference lookup or emit a focused unsupported diagnostic with section name evidence.
+- [x] Add focused coverage for a two-section `namespace` plus `declare namespace` reference fixture.
 
 Out of scope:
 
@@ -104,9 +104,9 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] A focused test covers a multi-section file with `namespace C` and `declare namespace A`.
-- [ ] The representative fixture no longer reports `multi-section file has no module bodies`.
-- [ ] The next diagnostic includes the relevant section name or source span instead of an unspanned empty-body error.
+- [x] A focused test covers a multi-section file with `namespace C` and `declare namespace A`.
+- [x] The representative fixture no longer reports `multi-section file has no module bodies`.
+- [x] The next diagnostic includes the relevant section name or source span instead of an unspanned empty-body error.
 
 ## Validation
 
@@ -132,15 +132,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 
@@ -148,18 +148,32 @@ Split from generated bucket `1076` on 2026-05-06. Broader namespace semantics re
 
 ## Completion evidence
 
-Fill only when moving to `done/`.
-
 Commits:
 
-- `...`
+- `HEAD (final issue commit)`
 
 Validation result:
 
 ```text
-command:
-result:
-date:
+command: cargo fmt --all --check
+result: pass
+date: 2026-05-06
+
+command: cargo nextest run -p ts2wasm-cli --test official_corpora
+result: 3 passed, 0 failed, 1 skipped
+date: 2026-05-06
+
+command: cargo nextest run -p ts2wasm-compiler reports_namespace_only_multi_section_with_section_name
+result: 1 passed, 0 failed
+date: 2026-05-06
+
+command: cargo build -q -p ts2wasm-cli
+result: pass (warning: compile_source_with_emit is dead code)
+date: 2026-05-06
+
+command: python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/blockScopedNamespaceDifferentFile.ts
+result: UnsupportedRuntimeSubset with section `test.ts` and span 0..9; no longer `multi-section file has no module bodies`
+date: 2026-05-06
 ```
 
 Remaining risks:

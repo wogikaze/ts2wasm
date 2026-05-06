@@ -11,7 +11,9 @@ use std::process::Command;
 use ts2wasm_backend_wasm as backend;
 #[cfg(test)]
 use ts2wasm_frontend::BinaryOp;
-use ts2wasm_frontend::{Expr, Lexer, Parser, Span, Stmt, validate_type_reference_directives};
+use ts2wasm_frontend::{
+    Expr, Lexer, Parser, Span, Stmt, Token, validate_type_reference_directives,
+};
 use ts2wasm_ir::builtin_resolver;
 use ts2wasm_ir::lowered;
 use ts2wasm_ir::name_resolver;
@@ -1064,6 +1066,9 @@ fn lower_source_as_module_body(
 
     let body = rewrite_static_module_body_for_build(Path::new(&specifier), &program)?;
     if body.rewritten_program.is_empty() && body.module_exports.is_empty() {
+        if let Some(span) = first_erased_namespace_declaration_span(source)? {
+            return Err(namespace_only_section_diagnostic(&specifier, span));
+        }
         return Ok(None);
     }
 
@@ -1115,6 +1120,64 @@ fn lower_source_as_module_body(
         statements,
         locals_count: lowered_module.top_level_locals.len(),
     }))
+}
+
+fn namespace_only_section_diagnostic(specifier: &str, span: Span) -> Diagnostic {
+    Diagnostic {
+        code: DiagCode::UnsupportedSyntax,
+        message: format!(
+            "multi-section section `{specifier}` contains namespace-only declarations; namespace lowering is not implemented"
+        ),
+        span: Some(span),
+    }
+}
+
+fn first_erased_namespace_declaration_span(source: &str) -> Result<Option<Span>, Diagnostic> {
+    let tokens = Lexer::new(source).tokenize()?;
+    let mut index = 0usize;
+    while index < tokens.len() {
+        let mut keyword_index = index;
+        if matches!(tokens[index].kind, Token::Export)
+            || is_contextual_token(&tokens[index].kind, "declare")
+        {
+            keyword_index += 1;
+        }
+        if keyword_index < tokens.len()
+            && (is_contextual_token(&tokens[keyword_index].kind, "namespace")
+                || is_contextual_token(&tokens[keyword_index].kind, "module"))
+            && namespace_declaration_has_body(&tokens, keyword_index + 1)
+        {
+            return Ok(Some(tokens[keyword_index].span));
+        }
+        index += 1;
+    }
+    Ok(None)
+}
+
+fn namespace_declaration_has_body(
+    tokens: &[ts2wasm_frontend::SpannedToken],
+    mut index: usize,
+) -> bool {
+    match tokens.get(index).map(|token| &token.kind) {
+        Some(Token::Ident(_)) | Some(Token::String(_)) => index += 1,
+        _ => return false,
+    }
+    while matches!(tokens.get(index).map(|token| &token.kind), Some(Token::Dot))
+        && matches!(
+            tokens.get(index + 1).map(|token| &token.kind),
+            Some(Token::Ident(_))
+        )
+    {
+        index += 2;
+    }
+    matches!(
+        tokens.get(index).map(|token| &token.kind),
+        Some(Token::LeftBrace)
+    )
+}
+
+fn is_contextual_token(token: &Token, expected: &str) -> bool {
+    matches!(token, Token::Ident(name) if name == expected)
 }
 
 fn is_typescript_virtual_section(path: &Path) -> bool {
@@ -1966,6 +2029,40 @@ console.log("ok");
         assert_eq!(sections[0].0, "node_modules/typescript/package.json");
         assert!(!is_typescript_virtual_section(Path::new(&sections[0].0)));
         assert!(is_typescript_virtual_section(Path::new(&sections[1].0)));
+    }
+
+    #[test]
+    fn reports_namespace_only_multi_section_with_section_name() {
+        let dir = unique_temp_dir("namespace-only-multi-section");
+        std::fs::create_dir_all(&dir).expect("temp dir should be created");
+        let input = dir.join("entry.ts");
+        let output = dir.join("out.wasm");
+        let source = r#"
+// @Filename: test.ts
+namespace C {
+    export class Name {}
+}
+
+// @Filename: typings.d.ts
+declare namespace A {
+    namespace AA {
+        function func(): number;
+    }
+}
+"#;
+        std::fs::write(&input, source).expect("multi-section source should be written");
+
+        let err = build_file(&input, &output)
+            .expect_err("namespace-only multi-section should report focused section diagnostic");
+        assert_eq!(err.code, DiagCode::UnsupportedSyntax);
+        assert!(
+            err.message.contains("section `test.ts`"),
+            "diagnostic should include section name: {err:?}"
+        );
+        assert!(!err.message.contains("no module bodies"));
+        assert_eq!(err.span, Some(Span { start: 0, end: 9 }));
+
+        let _ = std::fs::remove_dir_all(&dir);
     }
 
     #[test]

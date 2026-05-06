@@ -13,7 +13,7 @@ Issue files are the source of truth for work items. The generated section below 
 | backend | 13 | 1 | 12 |
 | backend-wasm | 3 | 0 | 3 |
 | cli | 15 | 0 | 15 |
-| compiler | 3 | 1 | 2 |
+| compiler | 3 | 0 | 3 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
 | frontend | 4437 | 3745 | 692 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5059 | 4014 | 1045 |
+| total | 5059 | 4013 | 1046 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -123,7 +123,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5182 | Parse comma-separated for update expressions | feature | frontend/syntax | implementation-ready | P1 |  | comma-separated for-loop update expressions are parser-unsupported, blocking the block-scoped loop reassignment refer... |
 | 5183 | Report typed getter null return diagnostics | feature | frontend/semantics | implementation-ready | P1 |  | typed class getter return annotations are erased before return-expression diagnostics are checked. |
 | 5185 | Source-span unresolved class method function calls | feature | frontend/resolver | implementation-ready | P1 |  | unresolved function calls from class method bodies lose source-span information and should report the out-of-scope ca... |
-| 5187 | Lower namespace-only multi-section files | feature | compiler | implementation-ready | P1 |  | multi-section TypeScript reference files that contain namespace declarations but no static imports/exports are reduce... |
 | 5189 | Parse ASI after class expression variable initializer | feature | frontend/syntax | implementation-ready | P1 |  | semicolonless variable declarations whose initializer is an anonymous class expression do not accept ASI before the n... |
 | 5190 | Skip implements in ambient class declarations | feature | frontend/syntax | implementation-ready | P1 |  | ambient class declaration parsing does not skip `implements` heritage clauses. |
 | 5192 | Support first-class class constructor values | feature | ir/runtime | implementation-ready | P1 |  | class constructor bindings used as expression values still fail with `issue-5011`, blocking reference cases that pass... |
@@ -5156,6 +5155,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5178 | Parse bitwise compound assignment operators | feature | frontend/syntax | see `issues/done/5178-parse-bitwise-compound-assignment-operators.md` |
 | 5184 | Parse const enum declarations | feature | frontend/syntax | see `issues/done/5184-parse-const-enum-declarations.md` |
 | 5186 | Parse export assignment expressions | feature | frontend/syntax | see `issues/done/5186-parse-export-assignment-for-diagnostics.md` |
+| 5187 | Lower namespace-only multi-section files | feature | compiler | see `issues/done/5187-lower-namespace-only-multi-section-files.md` |
 | 5188 | Report block-scoped function call arity diagnostics | feature | frontend/semantics | see `issues/done/5188-report-block-scoped-function-call-arity-diagnostics.md` |
 | 5191 | Parse leading decimal numeric literals | feature | frontend/syntax | see `issues/done/5191-parse-leading-decimal-numeric-literals.md` |
 | 5193 | Parse ASI after ambient variable declarations | feature | frontend/syntax | see `issues/done/5193-parse-asi-after-ambient-variable-declarations.md` |
