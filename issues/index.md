@@ -26,8 +26,8 @@ Issue files are the source of truth for work items. The generated section below 
 | scripts | 3 | 0 | 3 |
 | security | 1 | 0 | 1 |
 | tests | 8 | 0 | 8 |
-| wasi | 4 | 1 | 3 |
-| total | 5077 | 3969 | 1108 |
+| wasi | 4 | 0 | 4 |
+| total | 5077 | 3968 | 1109 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -97,7 +97,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 353 | Implement iterator protocol integration for spread operator | feature | runtime/semantics | unstarted | P2 |  | General iterator protocol is not implemented for spread operator. |
 | 5137 | Split remaining Date API scope | cleanup | runtime/builtins | design-ready | P1 |  | Date issue 050 currently stays open after its named child issues 240 and 241 are done, but non-literal constructor in... |
 | 5138 | Split Reflect.construct isConstructor reference window | spike | runtime/builtins | design-ready | P1 |  | `reference/test262/test/annexB/built-ins/String/prototype/anchor/not-a-constructor.js` currently fails with `Unresolv... |
-| 5238 | W1: implement WASI filesystem read/write through preopens | feature | wasi | design-ready | P2 |  | W1: implement WASI filesystem read/write through preopens |
 | 5241 | W2: implement NaN, Infinity, -0 sentinel values in tagged-number encoding | feature | ir/runtime | design-ready | P2 | 5240 | The tagged-number encoding lacks sentinel values for the four IEEE 754 |
 <!-- generated:ready:end -->
 
@@ -5186,6 +5185,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5235 | W1: implement WASI stdin/fd_read lowering for input | feature | wasi | see file |
 | 5236 | W1: implement WASI args and environment variable lowering | feature | wasi | see file |
 | 5237 | W1: standalone WASI execution validation test suite | test | tests | see file |
+| 5238 | W1: implement WASI filesystem read/write through preopens | feature | wasi | see file |
 | 5239 | W0: migrate remaining multi-line WAT to line_fmt in expr_emit.rs | cleanup | backend | see file |
 | 5240 | W2: docs audit — fix stale language-reference entries and confirm semantic-core coverage | docs | docs | see file |
 <!-- generated:done:end -->

@@ -44,6 +44,19 @@ impl Layout {
     /// Offset at which `fd_read` writes the number of bytes actually read (`nread`).
     pub const STDIN_NREAD_OFFSET: u32 = 24;
 
+    // ---- File I/O layout --------------------------------------------------
+    /// Base offset of the file `fd_read`/`fd_write` iovec structure.
+    /// 8 bytes: [buf_ptr: i32, buf_len: i32].
+    pub const FILE_IOVEC_OFFSET: u32 = 28;
+    /// Offset at which `path_open` writes the resulting fd.
+    pub const FILE_RESULT_FD_OFFSET: u32 = 36;
+    /// Offset at which `fd_read` writes the number of bytes actually read.
+    pub const FILE_NREAD_OFFSET: u32 = 40;
+    /// Temporary file I/O staging buffer offset (reuses stdin buffer area).
+    pub const FILE_BUFFER_OFFSET: u32 = Self::STDIN_BUFFER_OFFSET;
+    /// Maximum total bytes that one `fs.readFileSync` call may read (64 KiB).
+    pub const FILE_READ_LIMIT: u32 = 64 * 1024;
+
     // ---- Array heap layout ------------------------------------------------
     /// Bytes before the element payload for the current sparse-capable array slice:
     /// i32 length, i32 capacity, i32 presence_word_count,

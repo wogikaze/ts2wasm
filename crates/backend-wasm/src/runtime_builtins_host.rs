@@ -813,21 +813,129 @@ impl WatEmitter<'_> {
     }
 
     pub(super) fn emit_fs_read_file_sync(&self, wat: &mut String) {
-        wat.push_str(
+        let alloc_size = Layout::STRING_HEADER_SIZE + Layout::FILE_READ_LIMIT;
+        wat.push_str(&format!(
             r#"
     (func $fs_read_file_sync (param $path i32) (param $encoding i32) (result i32)
-    (call $host_fs_read_file_sync (local.get $path) (local.get $encoding)))
+    (local $heap_ptr i32)
+    (local $path_len i32)
+    (local $path_data i32)
+    (local $fd i32)
+    (local $total i32)
+    (local $nread i32)
+    (local $remaining i32)
+    (local $chunk i32)
+    (local $ret i32)
+    (local $base i32)
+    (local.set $heap_ptr (i32.and (local.get $path) (i32.const {heap_mask})))
+    (local.set $path_len (i32.load (local.get $heap_ptr)))
+    (local.set $path_data (i32.add (local.get $heap_ptr) (i32.const 4)))
+    (i32.store (i32.const {file_iovec_off}) (i32.const {file_buf_off}))
+    (local.set $ret
+      (call $path_open
+        (i32.const 3)
+        (i32.const 0)
+        (local.get $path_data)
+        (local.get $path_len)
+        (i32.const 0)
+        (i64.const 2)
+        (i64.const 0)
+        (i32.const 0)
+        (i32.const {file_result_fd_off})))
+    (if (i32.ne (local.get $ret) (i32.const {zero})) (then (unreachable)))
+    (local.set $fd (i32.load (i32.const {file_result_fd_off})))
+    (local.set $base (call $alloc_heap (i32.const {alloc_size})))
+    (block $eof
+      (loop $read_loop
+        (local.set $remaining (i32.sub (i32.const {file_read_limit}) (local.get $total)))
+        (br_if $eof (i32.eqz (local.get $remaining)))
+        (local.set $chunk
+          (select
+            (local.get $remaining)
+            (i32.const {file_buf_sz})
+            (i32.lt_u (local.get $remaining) (i32.const {file_buf_sz}))))
+        (i32.store (i32.add (i32.const {file_iovec_off}) (i32.const 4)) (local.get $chunk))
+        (local.set $ret
+          (call $fd_read
+            (local.get $fd)
+            (i32.const {file_iovec_off})
+            (i32.const {one})
+            (i32.const {file_nread_off})))
+        (if (i32.ne (local.get $ret) (i32.const {zero})) (then (unreachable)))
+        (local.set $nread (i32.load (i32.const {file_nread_off})))
+        (br_if $eof (i32.eqz (local.get $nread)))
+        (call $copy
+          (i32.const {file_buf_off})
+          (i32.add (local.get $base) (i32.add (i32.const {hdr_sz}) (local.get $total)))
+          (local.get $nread))
+        (local.set $total (i32.add (local.get $total) (local.get $nread)))
+        (br $read_loop)))
+    (drop (call $fd_close (local.get $fd)))
+    (i32.store (local.get $base) (local.get $total))
+    (i32.or (local.get $base) (i32.const {string_tag})))
   "#,
-        );
+            heap_mask = ValueTag::HEAP_MASK,
+            file_iovec_off = Layout::FILE_IOVEC_OFFSET,
+            file_buf_off = Layout::FILE_BUFFER_OFFSET,
+            file_result_fd_off = Layout::FILE_RESULT_FD_OFFSET,
+            file_read_limit = Layout::FILE_READ_LIMIT,
+            file_buf_sz = Layout::STDIN_BUFFER_SIZE,
+            file_nread_off = Layout::FILE_NREAD_OFFSET,
+            alloc_size = alloc_size,
+            hdr_sz = Layout::STRING_HEADER_SIZE,
+            zero = RuntimeConst::ZERO,
+            one = RuntimeConst::ONE,
+            string_tag = ValueTag::STRING,
+        ));
     }
 
     pub(super) fn emit_fs_write_file_sync(&self, wat: &mut String) {
         wat.push_str(&format!(
             r#"
     (func $fs_write_file_sync (param $path i32) (param $data i32) (result i32)
-    (call $host_fs_write_file_sync (local.get $path) (local.get $data))
+    (local $path_heap i32)
+    (local $path_len i32)
+    (local $path_data i32)
+    (local $data_heap i32)
+    (local $data_len i32)
+    (local $data_ptr i32)
+    (local $fd i32)
+    (local $ret i32)
+    (local.set $path_heap (i32.and (local.get $path) (i32.const {heap_mask})))
+    (local.set $data_heap (i32.and (local.get $data) (i32.const {heap_mask})))
+    (local.set $path_len (i32.load (local.get $path_heap)))
+    (local.set $path_data (i32.add (local.get $path_heap) (i32.const 4)))
+    (local.set $data_len (i32.load (local.get $data_heap)))
+    (local.set $data_ptr (i32.add (local.get $data_heap) (i32.const 4)))
+    (local.set $ret
+      (call $path_open
+        (i32.const 3)
+        (i32.const 0)
+        (local.get $path_data)
+        (local.get $path_len)
+        (i32.const 9)
+        (i64.const 64)
+        (i64.const 0)
+        (i32.const 0)
+        (i32.const {file_result_fd_off})))
+    (if (i32.ne (local.get $ret) (i32.const {zero})) (then (unreachable)))
+    (local.set $fd (i32.load (i32.const {file_result_fd_off})))
+    (i32.store (i32.const {file_iovec_off}) (local.get $data_ptr))
+    (i32.store (i32.add (i32.const {file_iovec_off}) (i32.const 4)) (local.get $data_len))
+    (drop (call $fd_write
+      (local.get $fd)
+      (i32.const {file_iovec_off})
+      (i32.const {one})
+      (i32.const {file_nread_off})))
+    (drop (call $fd_close (local.get $fd)))
     (i32.const {undefined}))
   "#,
+            heap_mask = ValueTag::HEAP_MASK,
+            file_iovec_off = Layout::FILE_IOVEC_OFFSET,
+            file_result_fd_off = Layout::FILE_RESULT_FD_OFFSET,
+            file_nread_off = Layout::FILE_NREAD_OFFSET,
+            zero = RuntimeConst::ZERO,
+            one = RuntimeConst::ONE,
             undefined = ValueTag::UNDEFINED,
         ));
     }

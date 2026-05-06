@@ -399,6 +399,8 @@ pub(crate) enum RuntimeFn {
 pub(crate) enum HostImport {
     FdRead,
     FdWrite,
+    PathOpen,
+    FdClose,
     ClockTimeGet,
     RandomGet,
     ArgsSizesGet,
@@ -442,6 +444,22 @@ impl HostImport {
                 wat_symbol: "$fd_write",
                 abi: HostAbi::WasiPreview1,
                 params: "param i32 i32 i32 i32",
+                result: "result i32",
+            },
+            Self::PathOpen => HostImportSpec {
+                module: "wasi_snapshot_preview1",
+                name: "path_open",
+                wat_symbol: "$path_open",
+                abi: HostAbi::WasiPreview1,
+                params: "param i32 i32 i32 i32 i32 i64 i64 i32 i32",
+                result: "result i32",
+            },
+            Self::FdClose => HostImportSpec {
+                module: "wasi_snapshot_preview1",
+                name: "fd_close",
+                wat_symbol: "$fd_close",
+                abi: HostAbi::WasiPreview1,
+                params: "param i32",
                 result: "result i32",
             },
             Self::ClockTimeGet => HostImportSpec {
@@ -638,6 +656,8 @@ impl HostImport {
         match self {
             Self::FdRead => "wasi_snapshot_preview1.fd_read",
             Self::FdWrite => "wasi_snapshot_preview1.fd_write",
+            Self::PathOpen => "wasi_snapshot_preview1.path_open",
+            Self::FdClose => "wasi_snapshot_preview1.fd_close",
             Self::ClockTimeGet => "wasi_snapshot_preview1.clock_time_get",
             Self::RandomGet => "wasi_snapshot_preview1.random_get",
             Self::ArgsSizesGet => "wasi_snapshot_preview1.args_sizes_get",
@@ -852,8 +872,15 @@ pub(crate) enum Capability {
     StdoutWrite,
     WasiClockRealtime,
     WasiRandom,
+
     WasiArgs,
     WasiEnv,
+||||||| parent of a373e631 (backend-wasm: implement WASI path_open/fd_read/fd_write for fs.readFileSync and fs.writeFileSync)
+
+    WasiFilesystemRead,
+    WasiFilesystemWrite,
+    WasiFilesystemAppend,
+ (backend-wasm: implement WASI path_open/fd_read/fd_write for fs.readFileSync and fs.writeFileSync)
     HostFsReadFileSync,
     HostFsWriteFileSync,
     HostFsAppendFileSync,
@@ -881,8 +908,15 @@ impl Capability {
             Self::StdoutWrite => "stdout.write",
             Self::WasiClockRealtime => "wasi.clock.realtime",
             Self::WasiRandom => "wasi.random",
+
             Self::WasiArgs => "wasi.args",
             Self::WasiEnv => "wasi.env",
+||||||| parent of a373e631 (backend-wasm: implement WASI path_open/fd_read/fd_write for fs.readFileSync and fs.writeFileSync)
+
+            Self::WasiFilesystemRead => "wasi.filesystem.read",
+            Self::WasiFilesystemWrite => "wasi.filesystem.write",
+            Self::WasiFilesystemAppend => "wasi.filesystem.append",
+ (backend-wasm: implement WASI path_open/fd_read/fd_write for fs.readFileSync and fs.writeFileSync)
             Self::HostFsReadFileSync => "host.fs.readFileSync",
             Self::HostFsWriteFileSync => "host.fs.writeFileSync",
             Self::HostFsAppendFileSync => "host.fs.appendFileSync",
@@ -1083,10 +1117,20 @@ const BIGINT_AS_UINT_N_DEPS: &[RuntimeFn] = &[RuntimeFn::BigIntAdd, RuntimeFn::B
 
 const IMPORT_FD_READ: &[HostImport] = &[HostImport::FdRead];
 const IMPORT_FD_WRITE: &[HostImport] = &[HostImport::FdWrite];
+const IMPORT_PATH_OPEN: &[HostImport] = &[HostImport::PathOpen];
+const IMPORT_FD_CLOSE: &[HostImport] = &[HostImport::FdClose];
+const IMPORT_FS_READ_WASI: &[HostImport] = &[
+    HostImport::PathOpen,
+    HostImport::FdRead,
+    HostImport::FdClose,
+];
+const IMPORT_FS_WRITE_WASI: &[HostImport] = &[
+    HostImport::PathOpen,
+    HostImport::FdWrite,
+    HostImport::FdClose,
+];
 const IMPORT_CLOCK_TIME_GET: &[HostImport] = &[HostImport::ClockTimeGet];
 const IMPORT_RANDOM_GET: &[HostImport] = &[HostImport::RandomGet];
-const IMPORT_FS_READ_FILE_SYNC: &[HostImport] = &[HostImport::FsReadFileSync];
-const IMPORT_FS_WRITE_FILE_SYNC: &[HostImport] = &[HostImport::FsWriteFileSync];
 const IMPORT_FS_APPEND_FILE_SYNC: &[HostImport] = &[HostImport::FsAppendFileSync];
 const IMPORT_PROCESS_EXIT: &[HostImport] = &[HostImport::ProcessExit];
 const IMPORT_PATH_JOIN: &[HostImport] = &[HostImport::PathJoin];
@@ -1106,10 +1150,19 @@ const CAP_STDIN_READ: &[Capability] = &[Capability::StdinRead];
 const CAP_STDOUT_WRITE: &[Capability] = &[Capability::StdoutWrite];
 const CAP_WASI_CLOCK_REALTIME: &[Capability] = &[Capability::WasiClockRealtime];
 const CAP_WASI_RANDOM: &[Capability] = &[Capability::WasiRandom];
+
 const CAP_WASI_ARGS: &[Capability] = &[Capability::WasiArgs];
 const CAP_WASI_ENV: &[Capability] = &[Capability::WasiEnv];
 const CAP_HOST_FS_READ_FILE_SYNC: &[Capability] = &[Capability::HostFsReadFileSync];
 const CAP_HOST_FS_WRITE_FILE_SYNC: &[Capability] = &[Capability::HostFsWriteFileSync];
+||||||| parent of a373e631 (backend-wasm: implement WASI path_open/fd_read/fd_write for fs.readFileSync and fs.writeFileSync)
+const CAP_HOST_FS_READ_FILE_SYNC: &[Capability] = &[Capability::HostFsReadFileSync];
+const CAP_HOST_FS_WRITE_FILE_SYNC: &[Capability] = &[Capability::HostFsWriteFileSync];
+
+const CAP_WASI_FILESYSTEM_READ: &[Capability] = &[Capability::WasiFilesystemRead];
+const CAP_WASI_FILESYSTEM_WRITE: &[Capability] = &[Capability::WasiFilesystemWrite];
+const CAP_WASI_FILESYSTEM_APPEND: &[Capability] = &[Capability::WasiFilesystemAppend];
+ (backend-wasm: implement WASI path_open/fd_read/fd_write for fs.readFileSync and fs.writeFileSync)
 const CAP_HOST_FS_APPEND_FILE_SYNC: &[Capability] = &[Capability::HostFsAppendFileSync];
 const CAP_HOST_PROCESS_EXIT: &[Capability] = &[Capability::HostProcessExit];
 const CAP_HOST_PATH_JOIN: &[Capability] = &[Capability::HostPathJoin];
@@ -1131,6 +1184,7 @@ const VTS_RUNTIME_STRINGS: &[&str] = &[
     RuntimeString::FALSE,
     RuntimeString::TRUE,
 ];
+const FS_READ_WASI_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap, RuntimeFn::Copy];
 const LOG_RUNTIME_STRINGS: &[&str] = &[RuntimeString::NEWLINE];
 const TYPEOF_RUNTIME_STRINGS: &[&str] = &[
     "undefined",

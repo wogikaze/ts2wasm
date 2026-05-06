@@ -54,6 +54,7 @@ fn canonical_manifest_from_link_plan(plan: &RuntimeLinkPlan) -> CapabilityManife
             Capability::WasiClockRealtime => {
                 manifest.wasi.clock.realtime = true;
             }
+
             Capability::WasiArgs => {
                 manifest.wasi.args = true;
                 manifest
@@ -69,6 +70,44 @@ fn canonical_manifest_from_link_plan(plan: &RuntimeLinkPlan) -> CapabilityManife
                     .entry("wasi.env".to_owned())
                     .or_default()
                     .push("process.env".to_owned());
+||||||| parent of a373e631 (backend-wasm: implement WASI path_open/fd_read/fd_write for fs.readFileSync and fs.writeFileSync)
+
+            Capability::WasiFilesystemRead => {
+                manifest
+                    .wasi
+                    .filesystem
+                    .read
+                    .push("fs.readFileSync".to_owned());
+                manifest
+                    .capability_reasons
+                    .entry("wasi.filesystem.read".to_owned())
+                    .or_default()
+                    .push("fs.readFileSync".to_owned());
+            }
+            Capability::WasiFilesystemWrite => {
+                manifest
+                    .wasi
+                    .filesystem
+                    .write
+                    .push("fs.writeFileSync".to_owned());
+                manifest
+                    .capability_reasons
+                    .entry("wasi.filesystem.write".to_owned())
+                    .or_default()
+                    .push("fs.writeFileSync".to_owned());
+            }
+            Capability::WasiFilesystemAppend => {
+                manifest
+                    .wasi
+                    .filesystem
+                    .write
+                    .push("fs.appendFileSync".to_owned());
+                manifest
+                    .capability_reasons
+                    .entry("wasi.filesystem.write".to_owned())
+                    .or_default()
+                    .push("fs.appendFileSync".to_owned());
+ (backend-wasm: implement WASI path_open/fd_read/fd_write for fs.readFileSync and fs.writeFileSync)
             }
             Capability::HostFsReadFileSync
             | Capability::HostFsWriteFileSync

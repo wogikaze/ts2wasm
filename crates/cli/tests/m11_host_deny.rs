@@ -97,9 +97,31 @@ fn host_deny_allows_standalone_console_log() {
 }
 
 #[test]
-fn host_deny_rejects_node_host_imports() {
-    // fs.readFileSync with a file path requires Node host imports
-    assert_host_deny_rejects("node-apis/fs-read.ts");
+fn host_deny_allows_wasi_filesystem_read() {
+    // fs.readFileSync with a file path now uses WASI path_open/fd_read, not Node host imports
+    let result = compile_fixture_with_host_deny("node-apis/fs-read.ts");
+    assert!(
+        result.is_ok(),
+        "host-deny should allow WASI filesystem read: {:?}",
+        result
+    );
+}
+
+#[test]
+fn host_deny_allows_wasi_filesystem_write() {
+    // fs.writeFileSync now uses WASI path_open/fd_write, not Node host imports
+    let result = compile_fixture_with_host_deny("node-apis/fs-write.ts");
+    assert!(
+        result.is_ok(),
+        "host-deny should allow WASI filesystem write: {:?}",
+        result
+    );
+}
+
+#[test]
+fn host_deny_rejects_node_host_append_file() {
+    // fs.appendFileSync still uses Node host imports
+    assert_host_deny_rejects("node-apis/fs-append.ts");
 }
 
 #[test]
