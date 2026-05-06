@@ -431,73 +431,96 @@ impl BigIntStaticBuiltinFolder {
             }
             Expr::Binary {
                 left,
-                op,
-                right,
-                span,
+                op: first_op,
+                right: first_right,
+                span: first_span,
             } => {
-                let left = self.fold_expr(left);
-                let right = self.fold_expr(right);
-                if matches!(
-                    op,
-                    BinaryOp::BitwiseAnd | BinaryOp::BitwiseOr | BinaryOp::BitwiseXor
-                ) && let (Some(left_value), Some(right_value)) = (
-                    self.bigint_const_value(&left),
-                    self.bigint_const_value(&right),
-                ) && let Ok(result) = fold_bigint_binary(left_value, *op, right_value, *span)
-                {
-                    return bigint_const_to_expr(result, *span);
-                }
-                let left_toprimitive = self.object_toprimitive_primitive_expr(&left);
-                let right_toprimitive = self.object_toprimitive_primitive_expr(&right);
-                let is_relational = matches!(
-                    op,
-                    BinaryOp::Less
-                        | BinaryOp::LessEqual
-                        | BinaryOp::Greater
-                        | BinaryOp::GreaterEqual
-                );
-                let should_fold = matches!(
-                    op,
-                    BinaryOp::EqualEqual
-                        | BinaryOp::BangEqual
-                        | BinaryOp::Less
-                        | BinaryOp::LessEqual
-                        | BinaryOp::Greater
-                        | BinaryOp::GreaterEqual
-                ) && (expr_contains_bigint(&left)
-                    || expr_contains_bigint(&right)
-                    || left_toprimitive.as_ref().is_some_and(expr_contains_bigint)
-                    || right_toprimitive.as_ref().is_some_and(expr_contains_bigint));
-                let left_can_fold_toprimitive = left_toprimitive
-                    .as_ref()
-                    .is_some_and(|expr| object_toprimitive_can_fold_for_bigint_op(expr, *op));
-                let right_can_fold_toprimitive = right_toprimitive
-                    .as_ref()
-                    .is_some_and(|expr| object_toprimitive_can_fold_for_bigint_op(expr, *op));
-                Expr::Binary {
-                    left: Box::new(if should_fold && left_can_fold_toprimitive {
-                        let expr = left_toprimitive.unwrap_or(left);
-                        if is_relational {
-                            object_toprimitive_relational_expr(expr)
-                        } else {
-                            expr
+                // Iterative left-spine flattening to avoid stack overflow on deep chains.
+                let mut stack: Vec<(BinaryOp, &Expr, Span)> = Vec::new();
+                let mut cur = left;
+                loop {
+                    match &**cur {
+                        Expr::Binary {
+                            left: l,
+                            op,
+                            right,
+                            span,
+                        } => {
+                            stack.push((*op, right, *span));
+                            cur = l;
                         }
-                    } else {
-                        left
-                    }),
-                    op: *op,
-                    right: Box::new(if should_fold && right_can_fold_toprimitive {
-                        let expr = right_toprimitive.unwrap_or(right);
-                        if is_relational {
-                            object_toprimitive_relational_expr(expr)
-                        } else {
-                            expr
-                        }
-                    } else {
-                        right
-                    }),
-                    span: *span,
+                        _ => break,
+                    }
                 }
+                stack.push((*first_op, first_right, *first_span));
+                stack.reverse();
+                let mut accumulated = self.fold_expr(cur);
+                for (op, right, span) in stack {
+                    let right = self.fold_expr(right);
+                    if matches!(
+                        op,
+                        BinaryOp::BitwiseAnd | BinaryOp::BitwiseOr | BinaryOp::BitwiseXor
+                    ) && let (Some(left_value), Some(right_value)) = (
+                        self.bigint_const_value(&accumulated),
+                        self.bigint_const_value(&right),
+                    ) && let Ok(result) = fold_bigint_binary(left_value, op, right_value, span)
+                    {
+                        accumulated = bigint_const_to_expr(result, span);
+                        continue;
+                    }
+                    let left_toprimitive = self.object_toprimitive_primitive_expr(&accumulated);
+                    let right_toprimitive = self.object_toprimitive_primitive_expr(&right);
+                    let is_relational = matches!(
+                        op,
+                        BinaryOp::Less
+                            | BinaryOp::LessEqual
+                            | BinaryOp::Greater
+                            | BinaryOp::GreaterEqual
+                    );
+                    let should_fold = matches!(
+                        op,
+                        BinaryOp::EqualEqual
+                            | BinaryOp::BangEqual
+                            | BinaryOp::Less
+                            | BinaryOp::LessEqual
+                            | BinaryOp::Greater
+                            | BinaryOp::GreaterEqual
+                    ) && (expr_contains_bigint(&accumulated)
+                        || expr_contains_bigint(&right)
+                        || left_toprimitive.as_ref().is_some_and(expr_contains_bigint)
+                        || right_toprimitive.as_ref().is_some_and(expr_contains_bigint));
+                    let left_can_fold_toprimitive = left_toprimitive
+                        .as_ref()
+                        .is_some_and(|e| object_toprimitive_can_fold_for_bigint_op(e, op));
+                    let right_can_fold_toprimitive = right_toprimitive
+                        .as_ref()
+                        .is_some_and(|e| object_toprimitive_can_fold_for_bigint_op(e, op));
+                    accumulated = Expr::Binary {
+                        left: Box::new(if should_fold && left_can_fold_toprimitive {
+                            let e = left_toprimitive.unwrap_or(accumulated);
+                            if is_relational {
+                                object_toprimitive_relational_expr(e)
+                            } else {
+                                e
+                            }
+                        } else {
+                            accumulated
+                        }),
+                        op,
+                        right: Box::new(if should_fold && right_can_fold_toprimitive {
+                            let e = right_toprimitive.unwrap_or(right);
+                            if is_relational {
+                                object_toprimitive_relational_expr(e)
+                            } else {
+                                e
+                            }
+                        } else {
+                            right
+                        }),
+                        span,
+                    };
+                }
+                accumulated
             }
             Expr::Member {
                 object,
@@ -1456,132 +1479,151 @@ fn resolve_expr(expr: &Expr) -> Result<ResolvedExpr, Diagnostic> {
         }
         Expr::Binary {
             left,
-            op,
-            right,
-            span,
+            op: first_op,
+            right: first_right,
+            span: first_span,
         } => {
-            let left_contains_bigint = expr_contains_bigint(left);
-            let right_contains_bigint = expr_contains_bigint(right);
-            if left_contains_bigint || right_contains_bigint {
-                let left_resolved = resolve_expr(left)?;
+            // Iterative left-spine flattening to avoid stack overflow.
+            // Collect all (op, right, span) tuples from the left spine,
+            // resolve the leaf, then process each level from leaf outward.
+            let mut stack: Vec<(BinaryOp, &Expr, Span)> = Vec::new();
+            let mut cur = left;
+            loop {
+                match &**cur {
+                    Expr::Binary {
+                        left: l,
+                        op,
+                        right,
+                        span,
+                    } => {
+                        stack.push((*op, right, *span));
+                        cur = l;
+                    }
+                    _ => break,
+                }
+            }
+            stack.push((*first_op, first_right, *first_span));
+            stack.reverse();
+
+            // Resolve the leaf
+            let mut accumulated = resolve_expr(cur)?;
+
+            // Process each level from deepest to outermost
+            for (op, right, span) in stack {
                 let right_resolved = resolve_expr(right)?;
-                if bigint_arithmetic_op(*op) {
-                    if let (Some(left_value), Some(right_value)) = (
-                        bigint_from_resolved(&left_resolved),
-                        bigint_from_resolved(&right_resolved),
-                    ) {
-                        // Static fold may fail (e.g. negative exponent on
-                        // Power) — fall through to the dynamic path.
-                        if let Ok(result) = fold_bigint_binary(left_value, *op, right_value, *span)
-                        {
-                            return Ok(bigint_to_resolved(result));
+
+                // Apply BigInt folding logic at this level
+                let left_has_bigint = matches!(&accumulated, ResolvedExpr::BigIntLiteral { .. });
+                let right_has_bigint =
+                    matches!(&right_resolved, ResolvedExpr::BigIntLiteral { .. });
+                if left_has_bigint || right_has_bigint {
+                    if bigint_arithmetic_op(op) {
+                        if let (Some(left_value), Some(right_value)) = (
+                            bigint_from_resolved(&accumulated),
+                            bigint_from_resolved(&right_resolved),
+                        ) {
+                            if let Ok(result) =
+                                fold_bigint_binary(left_value, op, right_value, span)
+                            {
+                                accumulated = bigint_to_resolved(result);
+                                continue;
+                            }
+                        }
+                        if matches!(
+                            op,
+                            BinaryOp::Add
+                                | BinaryOp::Subtract
+                                | BinaryOp::Multiply
+                                | BinaryOp::Divide
+                                | BinaryOp::Modulo
+                                | BinaryOp::Power
+                        ) {
+                            accumulated = ResolvedExpr::Binary {
+                                left: Box::new(accumulated),
+                                op,
+                                right: Box::new(right_resolved),
+                            };
+                            continue;
                         }
                     }
                     if matches!(
                         op,
-                        BinaryOp::Add
-                            | BinaryOp::Subtract
-                            | BinaryOp::Multiply
-                            | BinaryOp::Divide
-                            | BinaryOp::Modulo
-                            | BinaryOp::Power
+                        BinaryOp::BitwiseAnd | BinaryOp::BitwiseOr | BinaryOp::BitwiseXor
                     ) {
-                        return Ok(ResolvedExpr::Binary {
-                            left: Box::new(left_resolved),
-                            op: *op,
-                            right: Box::new(right_resolved),
-                        });
-                    }
-                }
-                if matches!(
-                    op,
-                    BinaryOp::BitwiseAnd | BinaryOp::BitwiseOr | BinaryOp::BitwiseXor
-                ) {
-                    if let (Some(left_value), Some(right_value)) = (
-                        bigint_from_resolved(&left_resolved),
-                        bigint_from_resolved(&right_resolved),
-                    ) {
-                        let result = fold_bigint_binary(left_value, *op, right_value, *span)?;
-                        return Ok(bigint_to_resolved(result));
-                    }
-                    return Ok(ResolvedExpr::Binary {
-                        left: Box::new(left_resolved),
-                        op: *op,
-                        right: Box::new(right_resolved),
-                    });
-                }
-                if matches!(
-                    op,
-                    BinaryOp::LeftShift | BinaryOp::RightShift | BinaryOp::UnsignedRightShift
-                ) {
-                    if let (Some(left_value), Some(right_value)) = (
-                        bigint_from_resolved(&left_resolved),
-                        bigint_from_resolved(&right_resolved),
-                    ) {
-                        // Static fold may fail (e.g. unsigned right shift on
-                        // BigInt) — fall through to the dynamic path.
-                        if let Ok(result) = fold_bigint_binary(left_value, *op, right_value, *span)
-                        {
-                            return Ok(bigint_to_resolved(result));
+                        if let (Some(left_value), Some(right_value)) = (
+                            bigint_from_resolved(&accumulated),
+                            bigint_from_resolved(&right_resolved),
+                        ) {
+                            let result = fold_bigint_binary(left_value, op, right_value, span)?;
+                            accumulated = bigint_to_resolved(result);
+                            continue;
                         }
-                    }
-                    return Ok(ResolvedExpr::Binary {
-                        left: Box::new(left_resolved),
-                        op: *op,
-                        right: Box::new(right_resolved),
-                    });
-                }
-                let diagnostic = match op {
-                    BinaryOp::Add
-                    | BinaryOp::Subtract
-                    | BinaryOp::Multiply
-                    | BinaryOp::Divide
-                    | BinaryOp::Modulo => Some(bigint_dynamic_runtime_diagnostic(*span)),
-                    BinaryOp::Power => Some(bigint_exponentiation_diagnostic(*span)),
-                    BinaryOp::BitwiseAnd | BinaryOp::BitwiseOr | BinaryOp::BitwiseXor => {
-                        Some(bigint_bitwise_diagnostic(*span))
-                    }
-                    BinaryOp::LeftShift | BinaryOp::RightShift | BinaryOp::UnsignedRightShift => {
-                        Some(bigint_shift_diagnostic(*span))
-                    }
-                    BinaryOp::Less
-                    | BinaryOp::LessEqual
-                    | BinaryOp::Greater
-                    | BinaryOp::GreaterEqual
-                    | BinaryOp::StrictEqual
-                    | BinaryOp::EqualEqual
-                    | BinaryOp::BangEqual
-                    | BinaryOp::StrictNotEqual => {
-                        if let Some(folded) = fold_bigint_static_abstract_equality(
-                            &left_resolved,
-                            *op,
-                            &right_resolved,
-                            *span,
-                        )? {
-                            return Ok(folded);
-                        }
-                        return Ok(ResolvedExpr::Binary {
-                            left: Box::new(left_resolved),
-                            op: *op,
+                        accumulated = ResolvedExpr::Binary {
+                            left: Box::new(accumulated),
+                            op,
                             right: Box::new(right_resolved),
-                        });
+                        };
+                        continue;
                     }
-                    BinaryOp::And | BinaryOp::Or | BinaryOp::NullishCoalesce => None,
-                    BinaryOp::InstanceOf | BinaryOp::In => Some(Diagnostic {
-                        code: DiagCode::UnsupportedSyntax,
-                        message: "issue-261: BigInt object/coercion operator boundaries are tracked separately from literal runtime values".to_owned(),
-                        span: Some(*span),
-                    }),
+                    if matches!(
+                        op,
+                        BinaryOp::LeftShift | BinaryOp::RightShift | BinaryOp::UnsignedRightShift
+                    ) {
+                        if let (Some(left_value), Some(right_value)) = (
+                            bigint_from_resolved(&accumulated),
+                            bigint_from_resolved(&right_resolved),
+                        ) {
+                            if let Ok(result) =
+                                fold_bigint_binary(left_value, op, right_value, span)
+                            {
+                                accumulated = bigint_to_resolved(result);
+                                continue;
+                            }
+                        }
+                        accumulated = ResolvedExpr::Binary {
+                            left: Box::new(accumulated),
+                            op,
+                            right: Box::new(right_resolved),
+                        };
+                        continue;
+                    }
+                    // BigInt comparison/equality operators
+                    if let Some(folded) = fold_bigint_static_abstract_equality(
+                        &accumulated,
+                        op,
+                        &right_resolved,
+                        span,
+                    )? {
+                        accumulated = folded;
+                        continue;
+                    }
+                    // Fall through to dynamic diagnostic or simple binary
+                    match op {
+                        BinaryOp::Add | BinaryOp::Subtract | BinaryOp::Multiply
+                        | BinaryOp::Divide | BinaryOp::Modulo =>
+                            return Err(bigint_dynamic_runtime_diagnostic(span)),
+                        BinaryOp::Power => return Err(bigint_exponentiation_diagnostic(span)),
+                        BinaryOp::BitwiseAnd | BinaryOp::BitwiseOr | BinaryOp::BitwiseXor =>
+                            return Err(bigint_bitwise_diagnostic(span)),
+                        BinaryOp::LeftShift | BinaryOp::RightShift | BinaryOp::UnsignedRightShift =>
+                            return Err(bigint_shift_diagnostic(span)),
+                        BinaryOp::And | BinaryOp::Or | BinaryOp::NullishCoalesce => {}
+                        BinaryOp::InstanceOf | BinaryOp::In => return Err(Diagnostic {
+                            code: DiagCode::UnsupportedSyntax,
+                            message: "issue-261: BigInt object/coercion operator boundaries are tracked separately from literal runtime values".to_owned(),
+                            span: Some(span),
+                        }),
+                        _ => {} // Less/Greater/Equal etc handled by fold_bigint_static_abstract_equality
+                    }
+                }
+                // Non-BigInt fallback
+                accumulated = ResolvedExpr::Binary {
+                    left: Box::new(accumulated),
+                    op,
+                    right: Box::new(right_resolved),
                 };
-                if let Some(diagnostic) = diagnostic {
-                    return Err(diagnostic);
-                }
             }
-            Ok(ResolvedExpr::Binary {
-                left: Box::new(resolve_expr(left)?),
-                op: *op,
-                right: Box::new(resolve_expr(right)?),
-            })
+            Ok(accumulated)
         }
         Expr::Call { callee, args, .. } if is_require_call(callee, args) => {
             if let [
