@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 4 | 3 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4493 | 3653 | 840 |
+| frontend | 4494 | 3653 | 841 |
 | harness | 1 | 0 | 1 |
 | ir | 57 | 35 | 22 |
 | issues | 4 | 0 | 4 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5129 | 3936 | 1193 |
+| total | 5130 | 3936 | 1194 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -249,6 +249,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5292 | Skip tsconfig @Filename sections in reference harness | feature | compiler/multi-section | implementation-ready | P1 |  | reference-style `tsconfig.json` virtual sections are treated as module |
 | 5293 | Handle recursive generic self-heritage class lowering | bug | frontend/semantics | implementation-ready | P1 |  | recursive generic self-heritage classes fail with an opaque |
 | 5294 | Resolve sibling namespaces in nested namespace scopes | feature | frontend/name-resolution | implementation-ready | P1 |  | nested namespace resolution does not predeclare or look up sibling |
+| 5295 | Resolve import-equals require to virtual node_modules class export | feature | frontend/module-resolution | implementation-ready | P1 |  | bare `require("myModule")` aliases do not bind to a virtual |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -640,7 +641,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1344 | Implement Commentleadingclosebrace | spike | frontend/resolver | class: blocked | Implement Commentleadingclosebrace |
 | 1345 | Implement Commentonambientmodule | spike | frontend/syntax | class: blocked | Implement Commentonambientmodule |
 | 1346 | Implement Commentonambientvariable | spike | frontend/resolver | class: blocked | Implement Commentonambientvariable |
-| 1403 | Implement Compositewithnodemodulessourcefile | spike | frontend/syntax | class: blocked | Implement Compositewithnodemodulessourcefile |
 | 1404 | Implement Compoundvardecl | spike | frontend/syntax | class: blocked | Implement Compoundvardecl |
 | 1405 | Implement Computedenummembersyntacticallystring Enum | spike | frontend/syntax | class: blocked | Implement Computedenummembersyntacticallystring Enum |
 | 1406 | Implement Computedenummembersyntacticallystring Parser Syntax | spike | frontend/syntax | class: triage-needed | Implement Computedenummembersyntacticallystring Parser Syntax |
@@ -5085,6 +5085,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1400 | Implement Complicatedprivacy | spike | frontend/syntax | see `issues/done/1400-implement-complicatedPrivacy.md` |
 | 1401 | Implement Compositecontextualsignature | spike | frontend/syntax | see `issues/done/1401-implement-compositeContextualSignature.md` |
 | 1402 | Implement Compositegenericfunction | spike | reference/triage | see `issues/done/1402-implement-compositeGenericFunction.md` |
+| 1403 | Implement Compositewithnodemodulessourcefile | spike | frontend/syntax | see `issues/done/1403-implement-compositeWithNodeModulesSourceFile.md` |
 | 2050 | Implement Duplicatelocalvariable Duplicate Local | spike | reference/triage | see `issues/done/2050-implement-duplicateLocalVariable-duplicate-local.md` |
 | 3002 | Implement Isolateddeclarationerrorsdefault | spike | runtime/builtins | see `issues/done/3002-implement-isolatedDeclarationErrorsDefault.md` |
 | 3131 | Implement Jsxfactorynotidentifierorqualifiedname | spike | reference/triage | see `issues/done/3131-implement-jsxFactoryNotIdentifierOrQualifiedName.md` |
