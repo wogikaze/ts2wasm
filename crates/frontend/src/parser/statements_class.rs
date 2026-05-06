@@ -262,6 +262,7 @@ impl Parser {
                     params,
                     body: Vec::new(),
                     is_generator: false,
+                    is_ambient: false,
                     span: Span {
                         start: method_span.start,
                         end: method_span.end,
@@ -288,6 +289,7 @@ impl Parser {
                 params,
                 body: method_body,
                 is_generator: false,
+                is_ambient: false,
                 span: Span {
                     start: method_span.start,
                     end: method_end,

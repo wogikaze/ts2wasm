@@ -709,6 +709,34 @@ fn typescript_semantics_allows_extra_arguments_when_function_reads_arguments() {
 }
 
 #[test]
+fn typescript_semantics_uses_ambient_function_parameter_arity() {
+    let program = parse_and_resolve(
+        r#"
+        declare function canYouInferThis(fn: () => number): number;
+        canYouInferThis(() => 1);
+        "#,
+    );
+
+    ts2wasm_ir::validate_typescript_call_arity(&program).unwrap();
+}
+
+#[test]
+fn typescript_semantics_uses_ambient_optional_and_rest_arity() {
+    let program = parse_and_resolve(
+        r#"
+        declare function optional(value?: number): number;
+        declare function variadic(first: number, ...rest: number[]): number;
+        optional();
+        optional(1);
+        variadic(1);
+        variadic(1, 2, 3);
+        "#,
+    );
+
+    ts2wasm_ir::validate_typescript_call_arity(&program).unwrap();
+}
+
+#[test]
 fn typescript_semantics_rejects_outer_same_name_missing_argument() {
     let program = parse_and_resolve(
         r#"

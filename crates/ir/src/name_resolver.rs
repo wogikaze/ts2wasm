@@ -249,6 +249,7 @@ impl NameResolver {
                 params,
                 body,
                 is_generator,
+                is_ambient,
                 span,
             } => {
                 // Function declarations are already collected in first pass
@@ -282,6 +283,7 @@ impl NameResolver {
                     params: params.clone(),
                     body: resolved_body,
                     is_generator: *is_generator,
+                    is_ambient: *is_ambient,
                     span: *span,
                 })
             }

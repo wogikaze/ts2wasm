@@ -38,6 +38,7 @@ pub enum ResolvedStmt {
         params: Vec<ResolvedParam>,
         body: Vec<ResolvedStmt>,
         is_generator: bool,
+        is_ambient: bool,
     },
     TryCatch {
         try_block: Vec<ResolvedStmt>,

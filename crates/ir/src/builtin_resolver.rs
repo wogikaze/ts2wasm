@@ -167,12 +167,14 @@ impl BigIntStaticBuiltinFolder {
                 params,
                 body,
                 is_generator,
+                is_ambient,
                 span,
             } => Stmt::Function {
                 name: name.clone(),
                 params: params.clone(),
                 body: BigIntStaticBuiltinFolder::default().fold_stmts(body),
                 is_generator: *is_generator,
+                is_ambient: *is_ambient,
                 span: *span,
             },
             Stmt::Return { expr, span } => Stmt::Return {
@@ -1010,6 +1012,7 @@ fn resolve_stmt_with_outer_bindings(
             params,
             body,
             is_generator,
+            is_ambient,
             span,
         } => {
             let resolved_params = params
@@ -1031,6 +1034,7 @@ fn resolve_stmt_with_outer_bindings(
                     .map(resolve_stmt)
                     .collect::<Result<Vec<_>, _>>()?,
                 is_generator: *is_generator,
+                is_ambient: *is_ambient,
             })
         }
         Stmt::ClassDecl {

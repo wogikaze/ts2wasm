@@ -456,19 +456,27 @@ fn unparse_stmt(out: &mut String, stmt: &Stmt, indent: usize) {
             let _ = writeln!(out, "}}");
         }
         Stmt::Function {
-            name, params, body, ..
+            name,
+            params,
+            body,
+            is_ambient,
+            ..
         } => {
-            let params = params
-                .iter()
-                .map(|(name, default, rest)| {
-                    let prefix = if *rest { "..." } else { "" };
-                    match default {
-                        Some(expr) => format!("{prefix}{name} = {}", unparse_expr(expr)),
-                        None => format!("{prefix}{name}"),
-                    }
-                })
-                .collect::<Vec<_>>()
-                .join(", ");
+            let params = if *is_ambient {
+                String::new()
+            } else {
+                params
+                    .iter()
+                    .map(|(name, default, rest)| {
+                        let prefix = if *rest { "..." } else { "" };
+                        match default {
+                            Some(expr) => format!("{prefix}{name} = {}", unparse_expr(expr)),
+                            None => format!("{prefix}{name}"),
+                        }
+                    })
+                    .collect::<Vec<_>>()
+                    .join(", ")
+            };
             let _ = writeln!(out, "function {name}({params}) {{");
             unparse_block(out, body, indent + 1);
             write_indent(out, indent);

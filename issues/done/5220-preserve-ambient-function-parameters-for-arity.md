@@ -60,10 +60,10 @@ valid calls before later type-inference work.
 
 In scope:
 
-- [ ] Parse ambient function parameter names or placeholders into the emitted metadata statement
-- [ ] Preserve generic/type annotation erasure while keeping arity count
-- [ ] Add focused arity validation coverage for a one-parameter `declare function`
-- [ ] Re-run the representative triage and confirm it advances past the current TS2554 false positive
+- [x] Parse ambient function parameter names or placeholders into the emitted metadata statement
+- [x] Preserve generic/type annotation erasure while keeping arity count
+- [x] Add focused arity validation coverage for a one-parameter `declare function`
+- [x] Re-run the representative triage and confirm it advances past the current TS2554 false positive
 
 Out of scope:
 
@@ -85,10 +85,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] `declare function canYouInferThis(fn: () => number): number; canYouInferThis(() => 1);` no longer reports expected-0 arity
-- [ ] Ambient function declarations remain erased from runtime lowering
-- [ ] `badInferenceLowerPriorityThanGoodInference.ts` no longer stops at `TS2554: Expected 0 arguments, but got 1`
-- [ ] Issue index and readiness checks pass
+- [x] `declare function canYouInferThis(fn: () => number): number; canYouInferThis(() => 1);` no longer reports expected-0 arity
+- [x] Ambient function declarations remain erased from runtime lowering
+- [x] `badInferenceLowerPriorityThanGoodInference.ts` no longer stops at `TS2554: Expected 0 arguments, but got 1`
+- [x] Issue index and readiness checks pass
 
 ## Validation
 
@@ -119,15 +119,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 
@@ -140,16 +140,32 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- `...`
+- `876cac4e` frontend: preserve ambient function arity
 
 Validation result:
 
 ```text
-command:
-result:
-date:
+command: cargo fmt --all --check
+result: pass
+date: 2026-05-06
+
+command: cargo nextest run -p ts2wasm-cli ambient
+result: pass (9 passed)
+date: 2026-05-06
+
+command: cargo nextest run -p ts2wasm-cli typescript_semantics_
+result: pass (5 passed)
+date: 2026-05-06
+
+command: python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/badInferenceLowerPriorityThanGoodInference.ts
+result: BuildPass; no TS2554 expected-0 arity diagnostic
+date: 2026-05-06
+
+command: python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/callConstructAssignment.ts
+result: BuildPass
+date: 2026-05-06
 ```
 
 Remaining risks:
 
-- none
+- TypeScript generic inference remains out of scope for this metadata/arity slice.

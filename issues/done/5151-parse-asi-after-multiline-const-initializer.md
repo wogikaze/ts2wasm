@@ -127,7 +127,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] created: `issues/open/5220-preserve-ambient-function-parameters-for-arity.md`
+- [x] created: `issues/done/5220-preserve-ambient-function-parameters-for-arity.md`
 
 ## Notes
 

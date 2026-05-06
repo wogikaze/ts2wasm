@@ -203,9 +203,41 @@ mod tests {
         "#;
         let program = parse_program(source).unwrap();
         assert_eq!(program.len(), 3);
-        assert!(matches!(program[0], Stmt::Function { ref name, .. } if name == "consume"));
-        assert!(matches!(program[1], Stmt::Function { ref name, .. } if name == "identity"));
+        assert!(
+            matches!(program[0], Stmt::Function { ref name, ref params, is_ambient: true, .. } if name == "consume" && params.len() == 1)
+        );
+        assert!(
+            matches!(program[1], Stmt::Function { ref name, ref params, is_ambient: true, .. } if name == "identity" && params.len() == 1)
+        );
         assert!(matches!(program[2], Stmt::Let { .. }));
+    }
+
+    #[test]
+    fn ambient_function_declarations_preserve_arity_metadata() {
+        let source = r#"
+            declare function required(value: number): number;
+            declare function optional(value?: number): number;
+            declare function variadic(first: number, ...rest: number[]): number;
+            declare function receiver(this: unknown, value: number): number;
+        "#;
+        let program = parse_program(source).unwrap();
+        let params = program
+            .iter()
+            .filter_map(|stmt| match stmt {
+                Stmt::Function { name, params, body, is_ambient: true, .. } => {
+                    assert!(body.is_empty(), "ambient function bodies stay erased");
+                    Some((name.as_str(), params))
+                }
+                _ => None,
+            })
+            .collect::<Vec<_>>();
+
+        assert_eq!(params.len(), 4);
+        assert_eq!(params[0].1.len(), 1);
+        assert_eq!(params[1].1.len(), 1);
+        assert_eq!(params[2].1.len(), 2);
+        assert_eq!(params[3].1.len(), 1);
+        assert_eq!(params[3].1[0].0, "value");
     }
 
     #[test]

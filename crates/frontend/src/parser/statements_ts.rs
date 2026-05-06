@@ -342,21 +342,52 @@ impl Parser {
         self.expect(TokenKind::Function)?;
         let (name, name_span) = self.expect_ident()?;
         self.consume_typescript_generic_parameter_list()?;
-        self.skip_type_annotation_until(&[TokenKind::Semicolon])
-            .map_err(|_| {
-                self.unsupported_typescript_syntax(
-                    declare_span,
-                    "issue-400: unterminated ambient function declaration",
-                )
-            })?;
+        self.expect(TokenKind::LeftParen)?;
+        let mut params = Vec::new();
+        if !self.consume(TokenKind::RightParen) {
+            loop {
+                let param = self
+                    .parse_param(false, params.is_empty())
+                    .map_err(|_| {
+                        self.unsupported_typescript_syntax(
+                            declare_span,
+                            "issue-400: unterminated ambient function declaration",
+                        )
+                    })?;
+                let is_rest = param.is_rest;
+                if !param.is_this_parameter {
+                    params.push((param.name, param.default, is_rest));
+                }
+                if self.consume(TokenKind::RightParen) {
+                    break;
+                }
+                if is_rest {
+                    return Err(self.invalid_rest_binding_diagnostic(param.span));
+                }
+                self.expect(TokenKind::Comma)?;
+                if self.consume(TokenKind::RightParen) {
+                    break;
+                }
+            }
+        }
+        if self.consume(TokenKind::Colon) {
+            self.skip_type_annotation_until(&[TokenKind::Semicolon])
+                .map_err(|_| {
+                    self.unsupported_typescript_syntax(
+                        declare_span,
+                        "issue-400: unterminated ambient function declaration",
+                    )
+                })?;
+        }
         self.expect(TokenKind::Semicolon)?;
         // Emit a function with empty body so the name is registered in scope.
         // This allows calls to `declare function` names to resolve at compile time.
         self.pending_statements.push(Stmt::Function {
             name,
-            params: Vec::new(),
+            params,
             body: Vec::new(),
             is_generator: false,
+            is_ambient: true,
             span: name_span,
         });
         Ok(())

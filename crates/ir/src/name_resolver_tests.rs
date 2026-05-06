@@ -234,6 +234,7 @@ mod tests {
                 params: vec![],
                 body: vec![],
                 is_generator: false,
+                is_ambient: false,
                 span: Span { start: 10, end: 25 },
             },
         ];
@@ -280,6 +281,7 @@ mod tests {
                 params: vec![],
                 body: vec![],
                 is_generator: false,
+                is_ambient: false,
                 span: Span { start: 0, end: 20 },
             },
             Stmt::Function {
@@ -287,6 +289,7 @@ mod tests {
                 params: vec![],
                 body: vec![],
                 is_generator: false,
+                is_ambient: false,
                 span: Span { start: 21, end: 41 },
             },
             Stmt::Expr {
@@ -389,6 +392,7 @@ mod tests {
                     },
                 ],
                 is_generator: false,
+                is_ambient: false,
                 span: Span { start: 10, end: 40 },
             },
         ];
@@ -428,6 +432,7 @@ mod tests {
                     span: Span { start: 28, end: 54 },
                 }],
                 is_generator: false,
+                is_ambient: false,
                 span: Span { start: 19, end: 56 },
             },
         ];

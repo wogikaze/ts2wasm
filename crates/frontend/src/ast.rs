@@ -246,6 +246,7 @@ pub enum Stmt {
         params: Vec<(String, Option<Expr>, bool)>,
         body: Vec<Stmt>,
         is_generator: bool,
+        is_ambient: bool,
         span: Span,
     },
     Return {
