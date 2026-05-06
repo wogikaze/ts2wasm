@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 3 | 2 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4469 | 3704 | 765 |
+| frontend | 4470 | 3704 | 766 |
 | harness | 1 | 0 | 1 |
 | ir | 51 | 29 | 22 |
 | issues | 4 | 0 | 4 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5098 | 3986 | 1112 |
+| total | 5099 | 3986 | 1113 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -218,6 +218,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5261 | Report class-typed missing instance method calls | feature | ir/lowering | implementation-ready | P1 |  | Report class-typed missing instance method calls |
 | 5262 | Resolve import-equals aliases in class implements clauses | feature | frontend/resolver | implementation-ready | P1 |  | Resolve import-equals aliases in class implements clauses |
 | 5263 | Report primitive implements clauses on class expressions | feature | frontend/parser | implementation-ready | P1 |  | Report primitive implements clauses on class expressions |
+| 5264 | Parse typed const declarations before initializers | feature | frontend/parser | implementation-ready | P1 |  | Parse typed const declarations before initializers |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -507,7 +508,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1210 | Implement Classfieldsupernotaccessiblejs | spike | frontend/syntax | class: blocked | Implement Classfieldsupernotaccessiblejs |
 | 1211 | Implement Classfieldsbrokenconstructoremitnocrash | spike | frontend/syntax | class: blocked | Implement Classfieldsbrokenconstructoremitnocrash |
 | 1212 | Implement Classfunctionmerging Import Export | spike | frontend/syntax | class: blocked | Implement Classfunctionmerging Import Export |
-| 1220 | Implement Classinconvertedloopes | spike | frontend/syntax | class: triage-needed | Implement Classinconvertedloopes |
 | 1221 | Implement Classindexer | spike | frontend/syntax | class: triage-needed | Implement Classindexer |
 | 1222 | Implement Classmemberinitializerscoping | spike | frontend/syntax | class: triage-needed | Implement Classmemberinitializerscoping |
 | 1223 | Implement Classmemberinitializerwithlamdascoping Import Export | spike | frontend/syntax | class: blocked | Implement Classmemberinitializerwithlamdascoping Import Export |
@@ -5054,6 +5054,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1217 | Implement Classimplementsimportedinterface | spike | frontend/syntax | see `issues/done/1217-implement-classImplementsImportedInterface.md` |
 | 1218 | Implement Classimplementsmethodwithtupleargs | spike | frontend/syntax | see `issues/done/1218-implement-classImplementsMethodWIthTupleArgs.md` |
 | 1219 | Implement Classimplementsprimitive | spike | frontend/syntax | see `issues/done/1219-implement-classImplementsPrimitive.md` |
+| 1220 | Implement Classinconvertedloopes | spike | frontend/syntax | see `issues/done/1220-implement-classInConvertedLoopES.md` |
 | 2050 | Implement Duplicatelocalvariable Duplicate Local | spike | reference/triage | see `issues/done/2050-implement-duplicateLocalVariable-duplicate-local.md` |
 | 3002 | Implement Isolateddeclarationerrorsdefault | spike | runtime/builtins | see `issues/done/3002-implement-isolatedDeclarationErrorsDefault.md` |
 | 3131 | Implement Jsxfactorynotidentifierorqualifiedname | spike | reference/triage | see `issues/done/3131-implement-jsxFactoryNotIdentifierOrQualifiedName.md` |
