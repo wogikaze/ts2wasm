@@ -181,8 +181,19 @@ mod tests {
             let value = 1;
         "#;
         let program = parse_program(source).unwrap();
-        assert_eq!(program.len(), 1);
-        assert!(matches!(program[0], Stmt::Let { ref name, .. } if name == "value"));
+        assert_eq!(program.len(), 6);
+        for ambient_name in [
+            "literal",
+            "mutableValue",
+            "optionalName",
+            "legacyName",
+            "exportedLiteral",
+        ] {
+            assert!(program.iter().any(
+                |stmt| matches!(stmt, Stmt::AmbientValueDecl { name, .. } if name == ambient_name)
+            ));
+        }
+        assert!(matches!(program[5], Stmt::Let { ref name, .. } if name == "value"));
     }
 
     #[test]
@@ -206,11 +217,16 @@ mod tests {
             let runtimeValue = 1;
         "#;
         let program = parse_program(source).unwrap();
-        assert_eq!(program.len(), 3);
+        assert_eq!(program.len(), 4);
         assert!(
             program
                 .iter()
                 .any(|stmt| matches!(stmt, Stmt::Function { name, .. } if name == "readAmbient"))
+        );
+        assert!(
+            program.iter().any(
+                |stmt| matches!(stmt, Stmt::AmbientValueDecl { name, .. } if name == "ambientValue")
+            )
         );
         assert!(
             program
@@ -2746,11 +2762,15 @@ class Foo {
             let runtime = 1;
         "#;
         let program = parse_program(source).unwrap();
-        assert_eq!(program.len(), 1);
-        assert!(matches!(program[0], Stmt::Let { ref name, .. } if name == "runtime"));
+        assert_eq!(program.len(), 4);
+        for ambient_name in ["a", "b", "c"] {
+            assert!(program.iter().any(
+                |stmt| matches!(stmt, Stmt::AmbientValueDecl { name, .. } if name == ambient_name)
+            ));
+        }
+        assert!(matches!(program[3], Stmt::Let { ref name, .. } if name == "runtime"));
     }
 
-    #[test]
     #[test]
     fn asi_after_multiline_const_initializer() {
         let source = "const result = (() => ({ a: 1 }))\nresult.BLAH;";

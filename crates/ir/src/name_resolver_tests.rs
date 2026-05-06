@@ -43,6 +43,98 @@ mod tests {
     }
 
     #[test]
+    fn resolves_ambient_value_decl_in_array_and_object_literals() {
+        let program = vec![
+            Stmt::AmbientValueDecl {
+                name: "e".to_string(),
+                span: Span { start: 0, end: 1 },
+                is_var: true,
+            },
+            Stmt::Let {
+                is_var: true,
+                name: "arr".to_string(),
+                expr: Expr::Array {
+                    elements: vec![ts2wasm_frontend::ArrayLiteralElement::Present(
+                        Expr::Ident {
+                            name: "e".to_string(),
+                            span: Span { start: 13, end: 14 },
+                        },
+                    )],
+                    span: Span { start: 12, end: 15 },
+                },
+                span: Span { start: 4, end: 16 },
+            },
+            Stmt::Let {
+                is_var: true,
+                name: "obj".to_string(),
+                expr: Expr::Object {
+                    props: vec![(
+                        "c".to_string(),
+                        Expr::Ident {
+                            name: "e".to_string(),
+                            span: Span { start: 28, end: 29 },
+                        },
+                    )],
+                    span: Span { start: 23, end: 31 },
+                },
+                span: Span { start: 17, end: 32 },
+            },
+        ];
+
+        let resolved = name_resolver::resolve_names(&program).unwrap();
+        assert_eq!(resolved.len(), 3);
+        assert!(matches!(resolved[0], Stmt::AmbientValueDecl { ref name, .. } if name == "e"));
+
+        let builtins = crate::resolve_builtins(&resolved).unwrap();
+        assert!(matches!(
+            builtins[0],
+            crate::ResolvedStmt::AmbientValue(ref name) if name == "e"
+        ));
+        let lowered = crate::lowered::lower_program(&builtins).unwrap();
+        assert_eq!(lowered.top_level_statements.len(), 2);
+        assert_eq!(lowered.top_level_locals.len(), 3);
+    }
+
+    #[test]
+    fn resolves_ambient_const_shorthand_without_runtime_decl() {
+        let program = vec![
+            Stmt::AmbientValueDecl {
+                name: "c".to_string(),
+                span: Span { start: 0, end: 1 },
+                is_var: false,
+            },
+            Stmt::Let {
+                is_var: true,
+                name: "obj".to_string(),
+                expr: Expr::Object {
+                    props: vec![(
+                        "c".to_string(),
+                        Expr::Ident {
+                            name: "c".to_string(),
+                            span: Span { start: 13, end: 14 },
+                        },
+                    )],
+                    span: Span { start: 11, end: 16 },
+                },
+                span: Span { start: 4, end: 17 },
+            },
+        ];
+
+        let resolved = name_resolver::resolve_names(&program).unwrap();
+        assert_eq!(resolved.len(), 2);
+        assert!(matches!(resolved[0], Stmt::AmbientValueDecl { ref name, .. } if name == "c"));
+
+        let builtins = crate::resolve_builtins(&resolved).unwrap();
+        assert!(matches!(
+            builtins[0],
+            crate::ResolvedStmt::AmbientValue(ref name) if name == "c"
+        ));
+        let lowered = crate::lowered::lower_program(&builtins).unwrap();
+        assert_eq!(lowered.top_level_statements.len(), 1);
+        assert_eq!(lowered.top_level_locals.len(), 2);
+    }
+
+    #[test]
     fn test_unresolved_name_error() {
         let program = vec![Stmt::Expr {
             expr: Expr::Ident {

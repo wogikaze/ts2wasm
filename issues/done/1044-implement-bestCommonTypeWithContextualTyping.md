@@ -108,7 +108,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] created/updated: `issues/open/5161-model-ambient-value-declarations-for-name-resolution.md`
+- [x] created/updated: `issues/done/5161-model-ambient-value-declarations-for-name-resolution.md`
 
 ## Notes
 
@@ -129,7 +129,7 @@ Generated on 2026-05-06.
 - Failure: `unresolved name: \`e\` at 414..415`
 - Source context: `declare var e: Ellement;` followed by `var arr: Contextual[] = [e];`
 - TypeScript AST path: `FirstStatement -> VariableDeclarationList -> VariableDeclaration -> ArrayLiteralExpression -> Identifier(e)`
-- Split child: `issues/open/5161-model-ambient-value-declarations-for-name-resolution.md`
+- Split child: `issues/done/5161-model-ambient-value-declarations-for-name-resolution.md`
 
 ## Completion evidence
 

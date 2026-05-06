@@ -421,6 +421,9 @@ fn unparse_stmt(out: &mut String, stmt: &Stmt, indent: usize) {
         Stmt::Let { name, expr, .. } => {
             let _ = writeln!(out, "let {name} = {};", unparse_expr(expr));
         }
+        Stmt::AmbientValueDecl { name, .. } => {
+            let _ = writeln!(out, "declare var {name};");
+        }
         Stmt::Assign { name, expr, .. } => {
             let _ = writeln!(out, "{name} = {};", unparse_expr(expr));
         }

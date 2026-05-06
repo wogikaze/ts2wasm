@@ -366,9 +366,10 @@ impl Parser {
         &mut self,
         declare_span: Span,
     ) -> Result<(), Diagnostic> {
+        let is_var = matches!(self.peek(), Some(Token::Var));
         self.advance();
         loop {
-            self.expect_ident().map_err(|_| {
+            let (name, name_span) = self.expect_ident().map_err(|_| {
                 self.unsupported_typescript_syntax(
                     declare_span,
                     "issue-400: expected ambient variable declaration name",
@@ -393,6 +394,11 @@ impl Parser {
                     "issue-400: ambient variable declarations with initializers would affect runtime bindings",
                 ));
             }
+            self.pending_statements.push(Stmt::AmbientValueDecl {
+                name,
+                span: name_span,
+                is_var,
+            });
             if self.consume(TokenKind::Comma) {
                 continue;
             }

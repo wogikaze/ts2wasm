@@ -74,6 +74,7 @@ pub(super) fn collect_stmt_declared_bindings(
         | Stmt::ExportNamespaceFrom { .. }
         | Stmt::ExportDecl { .. }
         | Stmt::ExportDefault { .. }
+        | Stmt::AmbientValueDecl { .. }
         | Stmt::Assign { .. }
         | Stmt::Expr { .. }
         | Stmt::Return { .. }
@@ -294,7 +295,7 @@ pub(super) fn first_outer_local_reference_in_stmt(
         Stmt::Labeled { body, .. } => {
             first_outer_local_reference_in_stmt(body, outer_bindings, method_locals)
         }
-        Stmt::Function { .. } | Stmt::ClassDecl { .. } => None,
+        Stmt::Function { .. } | Stmt::ClassDecl { .. } | Stmt::AmbientValueDecl { .. } => None,
         Stmt::ImportSideEffect { .. }
         | Stmt::ImportNamed { .. }
         | Stmt::ImportDefault { .. }

@@ -299,6 +299,10 @@ impl<'a> Resolver<'a> {
 
     fn lower_stmt(&mut self, stmt: &ResolvedStmt) -> Result<LoweredStmt, Diagnostic> {
         match stmt {
+            ResolvedStmt::AmbientValue(name) => {
+                self.declare_local(name)?;
+                Ok(LoweredStmt::Expr(LoweredExpr::Undefined))
+            }
             ResolvedStmt::DestructureLet { pattern, expr } => {
                 let value_local = self.alloc_temp();
                 let mut statements = vec![LoweredStmt::Let(value_local, self.lower_expr(expr)?)];

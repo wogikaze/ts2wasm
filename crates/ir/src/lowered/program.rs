@@ -212,6 +212,9 @@ pub fn lower_program(program: &[ResolvedStmt]) -> Result<LoweredProgram, Diagnos
     let mut top_level_statements = Vec::new();
     for stmt in program {
         match stmt {
+            ResolvedStmt::AmbientValue(name) => {
+                resolver.declare_local(name)?;
+            }
             ResolvedStmt::Function { name, .. } => {
                 // Register function name in the lowered resolver's scope
                 // so it can be referenced as a value (e.g., `let cb = myFunc`)
@@ -441,6 +444,9 @@ fn collect_top_level_local_names(program: &[ResolvedStmt]) -> Result<HashSet<Str
                     names.insert(name.clone());
                 }
             }
+            ResolvedStmt::AmbientValue(name) => {
+                names.insert(name.clone());
+            }
             ResolvedStmt::DestructureLet { pattern, .. } => {
                 names.extend(pattern.names().into_iter().map(ToOwned::to_owned));
             }
@@ -554,7 +560,8 @@ fn collect_array_map_callback_function_names_in_stmt(
                 collect_array_map_callback_function_names_in_stmt(stmt, names);
             }
         }
-        ResolvedStmt::Function { .. }
+        ResolvedStmt::AmbientValue(_)
+        | ResolvedStmt::Function { .. }
         | ResolvedStmt::ClassDecl { .. }
         | ResolvedStmt::Break { .. }
         | ResolvedStmt::Continue { .. } => {}
@@ -1118,7 +1125,8 @@ fn scan_dense_array_returns(
             ResolvedStmt::Block { statements, .. } => {
                 scan_dense_array_returns(statements, dense_locals, saw_return, all_returns_dense);
             }
-            ResolvedStmt::Function { .. }
+            ResolvedStmt::AmbientValue(_)
+            | ResolvedStmt::Function { .. }
             | ResolvedStmt::DestructureLet { .. }
             | ResolvedStmt::Throw(_)
             | ResolvedStmt::Export { .. }
@@ -1204,7 +1212,8 @@ fn collect_declared_function_names(stmts: &[ResolvedStmt], names: &mut HashSet<S
             ResolvedStmt::Block { statements, .. } => {
                 collect_declared_function_names(statements, names);
             }
-            ResolvedStmt::Let(_, _)
+            ResolvedStmt::AmbientValue(_)
+            | ResolvedStmt::Let(_, _)
             | ResolvedStmt::DestructureLet { .. }
             | ResolvedStmt::Assign(_, _)
             | ResolvedStmt::Expr(_)
@@ -1259,7 +1268,8 @@ fn stmt_returns_any_name(stmt: &ResolvedStmt, names: &HashSet<String>) -> bool {
             .any(|(_, body)| block_returns_any_name(body, names)),
         ResolvedStmt::Labeled { body, .. } => stmt_returns_any_name(body, names),
         ResolvedStmt::Block { statements, .. } => block_returns_any_name(statements, names),
-        ResolvedStmt::Function { .. }
+            ResolvedStmt::AmbientValue(_)
+            | ResolvedStmt::Function { .. }
         | ResolvedStmt::Let(_, _)
         | ResolvedStmt::DestructureLet { .. }
         | ResolvedStmt::Assign(_, _)
@@ -1334,7 +1344,8 @@ fn stmt_contains_this(stmt: &ResolvedStmt) -> bool {
             expr_contains_this(expr)
         }
         ResolvedStmt::Block { statements, .. } => block_contains_this(statements),
-        ResolvedStmt::Function { .. }
+            ResolvedStmt::AmbientValue(_)
+            | ResolvedStmt::Function { .. }
         | ResolvedStmt::ClassDecl { .. }
         | ResolvedStmt::Break { .. }
         | ResolvedStmt::Continue { .. } => false,
@@ -1461,7 +1472,8 @@ fn stmt_has_direct_return(stmt: &ResolvedStmt) -> bool {
         ResolvedStmt::Block { statements, .. } => {
             direct_iife_body_has_unsupported_return(statements)
         }
-        ResolvedStmt::Function { .. }
+        ResolvedStmt::AmbientValue(_)
+        | ResolvedStmt::Function { .. }
         | ResolvedStmt::ClassDecl { .. }
         | ResolvedStmt::Let(_, _)
         | ResolvedStmt::DestructureLet { .. }
@@ -1535,7 +1547,8 @@ fn stmt_contains_arguments(stmt: &ResolvedStmt) -> bool {
             expr_contains_arguments(expr)
         }
         ResolvedStmt::Block { statements, .. } => block_contains_arguments(statements),
-        ResolvedStmt::Function { .. }
+        ResolvedStmt::AmbientValue(_)
+        | ResolvedStmt::Function { .. }
         | ResolvedStmt::ClassDecl { .. }
         | ResolvedStmt::Break { .. }
         | ResolvedStmt::Continue { .. } => false,

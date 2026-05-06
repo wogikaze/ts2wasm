@@ -76,11 +76,11 @@ Declaration-only ambient value declarations (`declare var`, `declare let`, `decl
 
 In scope:
 
-- [ ] Preserve resolver-visible metadata for declaration-only ambient value declarations erased by the parser.
-- [ ] Resolve references to ambient `declare var` / `declare let` / `declare const` names in expressions such as `[e]` and `{ s: e }`.
-- [ ] Keep ambient declarations with initializers rejected at the existing unsupported boundary.
-- [ ] Add focused coverage for a declaration-only ambient value referenced in an array literal and object literal.
-- [ ] Re-run the representative triage and confirm the current `UnresolvedName: e` blocker is gone.
+- [x] Preserve resolver-visible metadata for declaration-only ambient value declarations erased by the parser.
+- [x] Resolve references to ambient `declare var` / `declare let` / `declare const` names in expressions such as `[e]` and `{ s: e }`.
+- [x] Keep ambient declarations with initializers rejected at the existing unsupported boundary.
+- [x] Add focused coverage for a declaration-only ambient value referenced in an array literal and object literal.
+- [x] Re-run the representative triage and confirm the current `UnresolvedName: e` blocker is gone.
 
 Out of scope:
 
@@ -105,12 +105,12 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] `declare var e: Ellement; var arr = [e];` no longer reports `UnresolvedName` for `e`.
-- [ ] `declare const c: number; var obj = { c };` resolves the ambient value name without emitting a runtime declaration.
-- [ ] `declare var b2: boolean; b = b2;` resolves the ambient value name without emitting a runtime declaration.
-- [ ] `declare let anys: Ari<any>; var xs = anys.filter(Bullean);` resolves the ambient value name before later filter/type-predicate behavior is evaluated.
-- [ ] Ambient declarations with initializers, such as `declare var e = 1;`, remain rejected.
-- [ ] `python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/bestCommonTypeWithContextualTyping.ts` no longer reports `UnresolvedName: unresolved name: \`e\``.
+- [x] `declare var e: Ellement; var arr = [e];` no longer reports `UnresolvedName` for `e`.
+- [x] `declare const c: number; var obj = { c };` resolves the ambient value name without emitting a runtime declaration.
+- [x] `declare var b2: boolean; b = b2;` resolves the ambient value name without emitting a runtime declaration.
+- [x] `declare let anys: Ari<any>; var xs = anys.filter(Bullean);` resolves the ambient value name before later filter/type-predicate behavior is evaluated.
+- [x] Ambient declarations with initializers, such as `declare var e = 1;`, remain rejected.
+- [x] `python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/bestCommonTypeWithContextualTyping.ts` no longer reports `UnresolvedName: unresolved name: \`e\``.
 
 ## Validation
 
@@ -139,15 +139,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] created/updated: `issues/open/5191-support-ambient-interface-filter-receiver.md`
 
 ## Notes
 
@@ -159,16 +159,41 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- `...`
+- this commit: frontend: preserve ambient value declarations
 
 Validation result:
 
 ```text
-command:
-result:
-date:
+command: cargo fmt --all --check
+result: pass
+date: 2026-05-06
+
+command: cargo nextest run -p ts2wasm-frontend
+result: pass (172 passed)
+date: 2026-05-06
+
+command: cargo nextest run -p ts2wasm-ir
+result: pass (26 passed)
+date: 2026-05-06
+
+command: cargo build -p ts2wasm-cli
+result: pass
+date: 2026-05-06
+
+command: python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/bestCommonTypeWithContextualTyping.ts
+result: pass for issue 5161; no UnresolvedName for `e`, next blocker is existing issue 5160 ternary lowering
+date: 2026-05-06
+
+command: python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/booleanAssignment.ts
+result: pass for issue 5161; BuildPass, no UnresolvedName for `b2`
+date: 2026-05-06
+
+command: python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/booleanFilterAnyArray.ts
+result: pass for issue 5161; no UnresolvedName for `anys`, next blocker split to issue 5191
+date: 2026-05-06
 ```
 
 Remaining risks:
 
-- none
+- issue 5160 owns the later ternary lowering blocker in `bestCommonTypeWithContextualTyping.ts`
+- issue 5191 owns the later ambient interface `.filter(...)` receiver blocker in `booleanFilterAnyArray.ts`

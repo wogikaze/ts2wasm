@@ -15,6 +15,7 @@ pub struct ResolvedParam {
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum ResolvedStmt {
+    AmbientValue(String),
     Let(String, ResolvedExpr),
     DestructureLet {
         pattern: BindingPattern,

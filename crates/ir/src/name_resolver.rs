@@ -120,6 +120,12 @@ impl NameResolver {
                 self.classes.insert(name.clone(), Some(*span));
             }
         }
+        // First pass: collect declaration-only ambient value names without emitting runtime bindings.
+        for stmt in program {
+            if let Stmt::AmbientValueDecl { name, span, is_var } = stmt {
+                self.declare_binding(name, Some(*span), *is_var)?;
+            }
+        }
 
         // Second pass: resolve all statements
         program.iter().map(|stmt| self.resolve_stmt(stmt)).collect()
@@ -181,6 +187,11 @@ impl NameResolver {
                     is_var: *is_var,
                 })
             }
+            Stmt::AmbientValueDecl { name, span, is_var } => Ok(Stmt::AmbientValueDecl {
+                name: name.clone(),
+                span: *span,
+                is_var: *is_var,
+            }),
             Stmt::Assign { name, expr, span } => {
                 self.resolve_identifier(name, *span)?;
                 Ok(Stmt::Assign {

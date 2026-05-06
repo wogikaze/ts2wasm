@@ -216,6 +216,11 @@ pub enum Stmt {
         span: Span,
         is_var: bool,
     },
+    AmbientValueDecl {
+        name: String,
+        span: Span,
+        is_var: bool,
+    },
     Assign {
         name: String,
         expr: Expr,
@@ -504,6 +509,7 @@ impl Stmt {
             | Self::ExportDecl { span, .. }
             | Self::ExportDefault { span, .. }
             | Self::Let { span, .. }
+            | Self::AmbientValueDecl { span, .. }
             | Self::Assign { span, .. }
             | Self::Expr { span, .. }
             | Self::If { span, .. }
