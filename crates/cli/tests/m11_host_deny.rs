@@ -375,3 +375,102 @@ fn static_direct_eval_declares_no_node_host_eval_capability() {
         "static direct eval should not request a host eval capability: {manifest}"
     );
 }
+
+/// Standalone WASI execution validation (W1 Gate F equivalent).
+///
+/// Each fixture in the standalone catalog must:
+/// - Compile successfully under `--host-deny node`
+/// - Produce a manifest with `standalone: true`
+/// - Have zero `node_host.imports`
+#[test]
+fn standalone_fixtures_pass_host_deny() {
+    let fixtures: Vec<&str> = vec![
+        // Basics
+        "basics-hello/hello.ts",
+        // Primitives and control flow
+        "primitives-control-flow/boolean-if.ts",
+        "primitives-control-flow/number.ts",
+        "primitives-control-flow/string.ts",
+        "primitives-control-flow/function.ts",
+        "primitives-control-flow/while.ts",
+        // Arrays and objects
+        "arrays-objects/array.ts",
+        "arrays-objects/object.ts",
+        "arrays-objects/computed-property.ts",
+        "arrays-objects/string-length.ts",
+        // Equality and typeof
+        "basics-equality/equality-operators.ts",
+        "basics-typeof/typeof-test.ts",
+        // Arrow functions
+        "arrow-functions/arrow-basic.ts",
+        // Core semantics
+        "core-semantics/unary-void-operator.ts",
+        "core-semantics/typeof.ts",
+        // Builtins that are standalone (stdin, math, console)
+        "builtins-and-io/console-log.ts",
+        // TypeScript erasure (should produce standalone wasm)
+        "basics-types/type-alias-erasure.ts",
+    ];
+
+    for fixture_name in &fixtures {
+        let fixture = Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("../../fixtures")
+            .join(fixture_name);
+
+        let output_wasm = std::env::temp_dir().join(format!(
+            "ts2wasm-standalone-{}-{}.wasm",
+            fixture_name.replace(['/', '.'], "_"),
+            std::process::id()
+        ));
+
+        let output_manifest = std::env::temp_dir().join(format!(
+            "ts2wasm-standalone-{}-{}.json",
+            fixture_name.replace(['/', '.'], "_"),
+            std::process::id()
+        ));
+
+        let output = std::process::Command::new(env!("CARGO_BIN_EXE_ts2wasm"))
+            .arg("build")
+            .arg(&fixture)
+            .arg("-o")
+            .arg(&output_wasm)
+            .arg("--emit-manifest")
+            .arg(&output_manifest)
+            .arg("--host-deny")
+            .arg("node")
+            .output()
+            .unwrap_or_else(|e| panic!("Failed to execute ts2wasm for {fixture_name}: {e}"));
+
+        assert!(
+            output.status.success(),
+            "host-deny should allow standalone fixture {fixture_name}:\n{}",
+            String::from_utf8_lossy(&output.stderr)
+        );
+
+        // Verify manifest confirms standalone execution
+        let manifest_content =
+            std::fs::read_to_string(&output_manifest)
+                .unwrap_or_else(|e| panic!("Failed to read manifest for {fixture_name}: {e}"));
+        let manifest: serde_json::Value =
+            serde_json::from_str(&manifest_content)
+                .unwrap_or_else(|e| panic!("Invalid manifest JSON for {fixture_name}: {e}"));
+
+        assert_eq!(
+            manifest["standalone"], true,
+            "{fixture_name} must declare standalone: true in manifest"
+        );
+        assert_eq!(
+            manifest["node_host"]["required"], false,
+            "{fixture_name} must have node_host.required: false"
+        );
+        assert_eq!(
+            manifest["node_host"]["imports"],
+            serde_json::json!([]),
+            "{fixture_name} must have zero node_host imports"
+        );
+
+        // Clean up temp files
+        let _ = std::fs::remove_file(&output_wasm);
+        let _ = std::fs::remove_file(&output_manifest);
+    }
+}
