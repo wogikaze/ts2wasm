@@ -133,7 +133,7 @@ Follow-up issues:
 - `issues/done/1266-implement-collisionArgumentsArrowFunctions.md` - Implement Collisionargumentsarrowfunctions (same feature label, same group key, title overlap)
 - `issues/done/1267-implement-collisionArgumentsClassConstructor.md` - Implement Collisionargumentsclassconstructor (same feature label, same group key, title overlap)
 - `issues/done/1268-implement-collisionArgumentsClassMethod.md` - Implement Collisionargumentsclassmethod (same feature label, same group key, title overlap)
-- `issues/open/1269-implement-collisionArgumentsFunction.md` - Implement Collisionargumentsfunction (same feature label, same group key, title overlap)
+- `issues/done/1269-implement-collisionArgumentsFunction.md` - Implement Collisionargumentsfunction (same feature label, same group key, title overlap)
 - `issues/open/1270-implement-collisionArgumentsFunctionExpressions.md` - Implement Collisionargumentsfunctionexpressions (same feature label, same group key, title overlap)
 - `issues/open/1470-implement-constructorArgsErrors.md` - Implement Constructorargserrors (same feature label, same group key, title overlap)
 
