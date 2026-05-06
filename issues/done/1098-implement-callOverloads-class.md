@@ -5,10 +5,10 @@ type: spike
 area: frontend/syntax
 class: blocked
 priority: P1
-depends_on: [5001]
+depends_on: [5199]
 blocks: []
 created: 2026-05-01
-updated: 2026-05-01
+updated: 2026-05-06
 ---
 
 ## Summary
@@ -43,10 +43,10 @@ This generated bucket is either split into implementation-ready child issues or 
 
 In scope:
 
-- [ ] Inspect the smart triage report below
-- [ ] Confirm whether existing open/done issues already cover this bucket
-- [ ] Split one feature family, one observable behavior, or one fixed reference window into child issues
-- [ ] Preserve exact reproduction commands and representative AST/diagnostic evidence in each child issue
+- [x] Inspect the smart triage report below
+- [x] Confirm whether existing open/done issues already cover this bucket
+- [x] Split one feature family, one observable behavior, or one fixed reference window into child issues
+- [x] Preserve exact reproduction commands and representative AST/diagnostic evidence in each child issue
 
 Out of scope:
 
@@ -68,10 +68,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] Duplicate candidates below are confirmed as no-match or this issue is superseded
-- [ ] At least one child issue contains an exact `mise run reference-triage -- ...` command
-- [ ] Child issue includes failing path, diagnostic code, source context, visible symbols, and parser/TypeScript AST evidence
-- [ ] Child issue acceptance names the exact fixture/reference path and diagnostic/stdout change
+- [x] Duplicate candidates below are confirmed as no-match or this issue is superseded
+- [x] At least one child issue contains an exact `mise run reference-triage -- ...` command
+- [x] Child issue includes failing path, diagnostic code, source context, visible symbols, and parser/TypeScript AST evidence
+- [x] Child issue acceptance names the exact fixture/reference path and diagnostic/stdout change
 
 ## Validation
 
@@ -98,15 +98,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] updated: `current-state.md` (repo root)
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] `issues/open/5199-report-function-overload-list-class-merge-diagnostics.md`
 
 ## Notes
 
@@ -126,7 +126,56 @@ Follow-up issues:
 
 ## Smart triage
 
-Not generated. Rerun with `--triage-limit 1` or higher.
+### Smart triage: Triage duplicate function: callOverloads3 / callOverloads4
+
+- Issue class: `triage-needed`
+- Feature label: `duplicate-function`
+- Diagnostic: `DuplicateFunction` / `compiler-diagnostic`
+- Paths:
+  - `reference/typescript/tests/cases/compiler/callOverloads3.ts`
+  - `reference/typescript/tests/cases/compiler/callOverloads4.ts`
+
+Reproduction:
+
+```sh
+mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/callOverloads3.ts
+mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/callOverloads4.ts
+```
+
+Failure in both files:
+
+```text
+error: [DuplicateFunction] duplicate function definition: `Foo` at 52..60
+```
+
+Source context:
+
+```ts
+function Foo():Foo; // error
+function Foo(s:string):Foo; // error
+class Foo { // error
+    bar1() { }
+    constructor(x: any) { }
+}
+```
+
+Evidence:
+
+- Tokens and AST succeed for both reference files.
+- AST contains two bodyless top-level `Function Foo` declarations followed by
+  `ClassDecl Foo`.
+- `callOverloads4.ts` also includes a bodyless constructor overload before the
+  constructor implementation.
+- TypeScript oracle reports TS2814, TS2391, and TS2813 instead of treating the
+  second `function Foo` declaration as a duplicate concrete implementation.
+- Duplicate candidates `issues/open/2043-implement-duplicateIdentifierRelatedSpans-duplicate-function.md`,
+  `issues/open/2600-implement-getAndSetNotIdenticalType-duplicate-function.md`,
+  and `issues/open/4258-implement-staticVisibility-duplicate-function.md` are
+  no-match buckets for different duplicate-function windows.
+- Related `issues/open/769-implement-augmentedTypesFunction.md` is a different
+  parser-syntax bucket; child issue
+  `issues/open/5199-report-function-overload-list-class-merge-diagnostics.md`
+  owns this already-parsed callOverloads blocker.
 
 ## Completion evidence
 
@@ -134,14 +183,18 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- `...`
+- `...` pending
 
 Validation result:
 
 ```text
-command:
-result:
-date:
+command: python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/callOverloads3.ts
+result: pass; reproduced DuplicateFunction for top-level function overload list before class merge diagnostics
+date: 2026-05-06
+
+command: python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/callOverloads4.ts
+result: pass; reproduced same DuplicateFunction blocker with constructor overload variant
+date: 2026-05-06
 ```
 
 Remaining risks:
