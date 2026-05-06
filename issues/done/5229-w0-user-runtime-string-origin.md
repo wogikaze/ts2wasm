@@ -104,18 +104,18 @@ cargo check
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 - [x] updated: `docs/12-coding-standard.md §11` and `§19.4`
 
 Current state:
 
-- [ ] not affected
+- [x] not affected
 - [x] updated: `current-state.md`
 
 Follow-up issues:
 
 - [x] none
-- [ ] created/updated: none
+- [x] created/updated: none
 
 ## Notes
 
