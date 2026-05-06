@@ -1599,13 +1599,19 @@ impl<'a> Resolver<'a> {
             });
         }
         if block_contains_this(body) || block_contains_arguments(body) {
-            return Err(Diagnostic {
-                code: DiagCode::UnsupportedSyntax,
-                message: format!(
-                    "issue-062e: nested function `{name}` closures with `this` or `arguments` are not supported in this slice"
-                ),
-                span: None,
-            });
+            // If the function has an explicit `this` parameter (TypeScript syntax),
+            // the `this` references are valid receiver accesses, not closure captures.
+            if block_contains_this(body) && params.iter().any(|p| p.name == "this") {
+                // Explicit `this` parameter: this is a receiver function, not a closure issue.
+            } else {
+                return Err(Diagnostic {
+                    code: DiagCode::UnsupportedSyntax,
+                    message: format!(
+                        "issue-062e: nested function `{name}` closures with `this` or `arguments` are not supported in this slice"
+                    ),
+                    span: None,
+                });
+            }
         }
 
         let capture_names = self.nested_function_capture_names(name, params, body)?;
