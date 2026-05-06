@@ -1603,6 +1603,16 @@ impl<'a> Resolver<'a> {
             // the `this` references are valid receiver accesses, not closure captures.
             if block_contains_this(body) && params.iter().any(|p| p.name == "this") {
                 // Explicit `this` parameter: this is a receiver function, not a closure issue.
+            } else if block_contains_this(body) {
+                // No explicit `this` parameter — this usage will have implicit `any` type.
+                // Report a more specific TS2683-compatible diagnostic.
+                return Err(Diagnostic {
+                    code: DiagCode::UnsupportedSyntax,
+                    message: format!(
+                        "issue-5179: 'this' implicitly has type 'any' because it does not have a type annotation in nested function `{name}`"
+                    ),
+                    span: None,
+                });
             } else {
                 return Err(Diagnostic {
                     code: DiagCode::UnsupportedSyntax,
