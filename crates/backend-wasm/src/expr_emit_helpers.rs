@@ -18,7 +18,7 @@ pub(super) fn private_field_metadata(brand: u32, slot_count: u32) -> u32 {
 pub(super) fn is_private_brand_check_expr(expr: &LoweredExpr) -> bool {
     matches!(
         expr,
-        LoweredExpr::RuntimeCall { runtime_fn, args }
+        LoweredExpr::RuntimeCall { runtime_fn, args, .. }
             if runtime_fn == "PrivateBrandCheck" && args.len() == 2
     )
 }
@@ -37,13 +37,13 @@ pub(super) fn expr_may_collect(expr: &LoweredExpr) -> bool {
             expr_may_collect(left) || expr_may_collect(right)
         }
         LoweredExpr::Unary { expr, .. }
-        | LoweredExpr::GetLength(expr)
+        | LoweredExpr::GetLength(expr, _)
         | LoweredExpr::Assign { expr, .. }
-        | LoweredExpr::EnvCellNew(expr)
+        | LoweredExpr::EnvCellNew(expr, _)
         | LoweredExpr::EnvCellSet { expr, .. }
         | LoweredExpr::LogicalAssign { expr, .. }
         | LoweredExpr::LogicalPropertyAssign { expr, .. } => expr_may_collect(expr),
-        LoweredExpr::EnvCellGet(_) => false,
+        LoweredExpr::EnvCellGet(_, _) => false,
         LoweredExpr::LogicalMemberAssign { object, expr, .. } => {
             expr_may_collect(object) || expr_may_collect(expr)
         }
@@ -57,24 +57,24 @@ pub(super) fn expr_may_collect(expr: &LoweredExpr) -> bool {
         | LoweredExpr::OptionalPropertyGet { obj, .. }
         | LoweredExpr::PropertyIn { obj, .. }
         | LoweredExpr::PropertyDelete { object: obj, .. } => expr_may_collect(obj),
-        LoweredExpr::PropertyGetDynamic { obj, key }
-        | LoweredExpr::PropertyInDynamic { obj, key }
+        LoweredExpr::PropertyGetDynamic { obj, key, .. }
+        | LoweredExpr::PropertyInDynamic { obj, key, .. }
         | LoweredExpr::Index {
             object: obj,
-            index: key,
+            index: key, ..
         }
         | LoweredExpr::ArrayGet {
             arr: obj,
-            index: key,
+            index: key, ..
         }
         | LoweredExpr::OptionalIndex {
             object: obj,
-            index: key,
+            index: key, ..
         }
-        | LoweredExpr::PropertyDeleteDynamic { object: obj, key } => {
+        | LoweredExpr::PropertyDeleteDynamic { object: obj, key, .. } => {
             expr_may_collect(obj) || expr_may_collect(key)
         }
-        LoweredExpr::OptionalCall { callee, call } => {
+        LoweredExpr::OptionalCall { callee, call, .. } => {
             expr_may_collect(callee) || expr_may_collect(call)
         }
         LoweredExpr::PropertySet { object, value, .. } => {
@@ -83,23 +83,17 @@ pub(super) fn expr_may_collect(expr: &LoweredExpr) -> bool {
         LoweredExpr::PropertySetDynamic {
             object,
             index,
-            value,
+            value, ..
         } => expr_may_collect(object) || expr_may_collect(index) || expr_may_collect(value),
         LoweredExpr::MethodCall { object, .. } => expr_may_collect(object),
-        LoweredExpr::Number(value) => !ValueTag::can_encode_number(*value),
-        LoweredExpr::String(_)
-        | LoweredExpr::Bool(_)
-        | LoweredExpr::Null
-        | LoweredExpr::Undefined
-        | LoweredExpr::Local(_)
-        | LoweredExpr::ModuleLoad { .. }
-        | LoweredExpr::This
-        | LoweredExpr::ClassPrototype(_)
-        | LoweredExpr::BuiltinErrorPrototype(_) => false,
+        LoweredExpr::Number(value, _) => !ValueTag::can_encode_number(*value),
+        LoweredExpr::String(_, _) | LoweredExpr::Bool(_, _) | LoweredExpr::Null(..) | LoweredExpr::Undefined(..) | LoweredExpr::Local(_, _) | LoweredExpr::ModuleLoad { .. }
+        | LoweredExpr::This(..) | LoweredExpr::ClassPrototype(_, _)
+        | LoweredExpr::BuiltinErrorPrototype(_, _) => false,
         LoweredExpr::ArrowFn { representation, .. } => {
             matches!(representation, ClosureRepresentation::HeapObject)
         }
-        LoweredExpr::Block { stmts, result } => {
+        LoweredExpr::Block { stmts, result, .. } => {
             stmts.iter().any(stmt_may_collect) || expr_may_collect(result)
         }
     }
@@ -107,26 +101,26 @@ pub(super) fn expr_may_collect(expr: &LoweredExpr) -> bool {
 
 pub(super) fn stmt_may_collect(stmt: &LoweredStmt) -> bool {
     match stmt {
-        LoweredStmt::Block(stmts) => stmts.iter().any(stmt_may_collect),
-        LoweredStmt::Let(_, expr) | LoweredStmt::Assign(_, expr) => expr_may_collect(expr),
-        LoweredStmt::Expr(expr) => expr_may_collect(expr),
+        LoweredStmt::Block(stmts, _) => stmts.iter().any(stmt_may_collect),
+        LoweredStmt::Let(_, expr, _) | LoweredStmt::Assign(_, expr, _) => expr_may_collect(expr),
+        LoweredStmt::Expr(expr, _) => expr_may_collect(expr),
         LoweredStmt::If {
             condition,
             then_body,
-            else_body,
+            else_body, ..
         } => {
             expr_may_collect(condition)
                 || then_body.iter().any(stmt_may_collect)
                 || else_body.iter().any(stmt_may_collect)
         }
-        LoweredStmt::While { condition, body } | LoweredStmt::DoWhile { condition, body } => {
+        LoweredStmt::While { condition, body, .. } | LoweredStmt::DoWhile { condition, body, .. } => {
             expr_may_collect(condition) || body.iter().any(stmt_may_collect)
         }
         LoweredStmt::For {
             init,
             condition,
             update,
-            body,
+            body, ..
         } => {
             init.as_ref().is_some_and(|i| stmt_may_collect(i))
                 || condition.as_ref().is_some_and(expr_may_collect)
@@ -136,7 +130,7 @@ pub(super) fn stmt_may_collect(stmt: &LoweredStmt) -> bool {
         LoweredStmt::ForIn { body, .. } | LoweredStmt::ForOf { body, .. } => {
             body.iter().any(stmt_may_collect)
         }
-        LoweredStmt::Return(expr) | LoweredStmt::Throw(expr) => expr_may_collect(expr),
+        LoweredStmt::Return(expr, _) | LoweredStmt::Throw(expr, _) => expr_may_collect(expr),
         LoweredStmt::TryCatch {
             try_body,
             catch_body,
@@ -151,7 +145,7 @@ pub(super) fn stmt_may_collect(stmt: &LoweredStmt) -> bool {
                     .as_ref()
                     .is_some_and(|b| b.iter().any(stmt_may_collect))
         }
-        LoweredStmt::Switch { expr, cases } => {
+        LoweredStmt::Switch { expr, cases, .. } => {
             expr_may_collect(expr)
                 || cases
                     .iter()
@@ -159,7 +153,7 @@ pub(super) fn stmt_may_collect(stmt: &LoweredStmt) -> bool {
         }
         LoweredStmt::Labeled { body, .. } => stmt_may_collect(body),
         LoweredStmt::Break { .. } | LoweredStmt::Continue { .. } => false,
-        LoweredStmt::Export { expr, .. } | LoweredStmt::ModuleExportsAssign { expr } => {
+        LoweredStmt::Export { expr, .. } | LoweredStmt::ModuleExportsAssign { expr, .. } => {
             expr_may_collect(expr)
         }
         LoweredStmt::ClassDecl { .. } => false,
@@ -185,13 +179,13 @@ pub(super) fn expr_uses_caller_backend_tmp(expr: &LoweredExpr) -> bool {
             expr_uses_caller_backend_tmp(left) || expr_uses_caller_backend_tmp(right)
         }
         LoweredExpr::Unary { expr, .. }
-        | LoweredExpr::GetLength(expr)
+        | LoweredExpr::GetLength(expr, _)
         | LoweredExpr::Assign { expr, .. }
         | LoweredExpr::EnvCellSet { expr, .. }
         | LoweredExpr::LogicalAssign { expr, .. }
         | LoweredExpr::LogicalPropertyAssign { expr, .. } => expr_uses_caller_backend_tmp(expr),
-        LoweredExpr::EnvCellNew(_) => true,
-        LoweredExpr::EnvCellGet(_) => false,
+        LoweredExpr::EnvCellNew(_, _) => true,
+        LoweredExpr::EnvCellGet(_, _) => false,
         LoweredExpr::LogicalMemberAssign { .. } => true,
         LoweredExpr::LogicalComputedMemberAssign { .. } => true,
         LoweredExpr::LogicalComputedPropertyAssign { .. } => true,
@@ -199,7 +193,7 @@ pub(super) fn expr_uses_caller_backend_tmp(expr: &LoweredExpr) -> bool {
         | LoweredExpr::PropertyIn { obj, .. }
         | LoweredExpr::PropertyDelete { object: obj, .. }
         | LoweredExpr::MethodCall { object: obj, .. } => expr_uses_caller_backend_tmp(obj),
-        LoweredExpr::Index { object, index } | LoweredExpr::ArrayGet { arr: object, index } => {
+        LoweredExpr::Index { object, index, .. } | LoweredExpr::ArrayGet { arr: object, index, .. } => {
             expr_uses_caller_backend_tmp(object) || expr_uses_caller_backend_tmp(index)
         }
         LoweredExpr::PropertySet { object, value, .. } => {
@@ -215,16 +209,9 @@ pub(super) fn expr_uses_caller_backend_tmp(expr: &LoweredExpr) -> bool {
             true
         }
         LoweredExpr::RuntimeCall { args, .. } => args.iter().any(expr_uses_caller_backend_tmp),
-        LoweredExpr::Number(_)
-        | LoweredExpr::String(_)
-        | LoweredExpr::Bool(_)
-        | LoweredExpr::Null
-        | LoweredExpr::Undefined
-        | LoweredExpr::Local(_)
-        | LoweredExpr::ModuleLoad { .. }
-        | LoweredExpr::This
-        | LoweredExpr::ClassPrototype(_)
-        | LoweredExpr::BuiltinErrorPrototype(_) => false,
+        LoweredExpr::Number(_, _) | LoweredExpr::String(_, _) | LoweredExpr::Bool(_, _) | LoweredExpr::Null(..) | LoweredExpr::Undefined(..) | LoweredExpr::Local(_, _) | LoweredExpr::ModuleLoad { .. }
+        | LoweredExpr::This(..) | LoweredExpr::ClassPrototype(_, _)
+        | LoweredExpr::BuiltinErrorPrototype(_, _) => false,
         LoweredExpr::ArrowFn { representation, .. } => {
             matches!(representation, ClosureRepresentation::HeapObject)
         }

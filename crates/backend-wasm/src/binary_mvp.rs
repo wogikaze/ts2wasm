@@ -102,15 +102,15 @@ fn hello_stdout(program: &LoweredProgram) -> Result<Vec<u8>, Diagnostic> {
 
     for stmt in &program.top_level_statements {
         match stmt {
-            LoweredStmt::Let(id, expr) | LoweredStmt::Assign(id, expr) => {
+            LoweredStmt::Let(id, expr, _) | LoweredStmt::Assign(id, expr, _) => {
                 if let Ok(val) = resolve_const_i32(expr, &initializers) {
                     initializers.insert(*id, val);
                 }
             }
             LoweredStmt::Expr(LoweredExpr::Call {
                 kind: FunctionCallKind::Builtin(BuiltinId::ConsoleLog),
-                args,
-            }) => {
+                args, ..
+            }, _) => {
                 let line = resolve_console_log_line(args, &initializers)?;
                 stdout.extend_from_slice(&line);
                 stdout.push(b'\n');
@@ -149,23 +149,23 @@ fn resolve_expr_to_string(
     initializers: &HashMap<LocalId, i32>,
 ) -> Result<Vec<u8>, Diagnostic> {
     match expr {
-        LoweredExpr::String(s) => Ok(s.as_bytes().to_vec()),
-        LoweredExpr::Number(n) => Ok(n.to_string().as_bytes().to_vec()),
-        LoweredExpr::Bool(b) => Ok(if *b {
+        LoweredExpr::String(s, _) => Ok(s.as_bytes().to_vec()),
+        LoweredExpr::Number(n, _) => Ok(n.to_string().as_bytes().to_vec()),
+        LoweredExpr::Bool(b, _) => Ok(if *b {
             b"true".to_vec()
         } else {
             b"false".to_vec()
         }),
-        LoweredExpr::Null => Ok(b"null".to_vec()),
-        LoweredExpr::Undefined => Ok(b"undefined".to_vec()),
-        LoweredExpr::Local(id) => {
+        LoweredExpr::Null(..) => Ok(b"null".to_vec()),
+        LoweredExpr::Undefined(..) => Ok(b"undefined".to_vec()),
+        LoweredExpr::Local(id, _) => {
             let n = initializers
                 .get(id)
                 .copied()
                 .ok_or_else(|| unsupported("local variable without compile-time known value"))?;
             Ok(n.to_string().as_bytes().to_vec())
         }
-        LoweredExpr::Binary { left, op, right } => {
+        LoweredExpr::Binary { left, op, right, .. } => {
             let l = resolve_const_i32(left, initializers)?;
             let r = resolve_const_i32(right, initializers)?;
             let result = eval_binary_i32(*op, l, r)?;
@@ -180,15 +180,15 @@ fn resolve_const_i32(
     initializers: &HashMap<LocalId, i32>,
 ) -> Result<i32, Diagnostic> {
     match expr {
-        LoweredExpr::Number(n) => Ok(*n),
-        LoweredExpr::Bool(b) => Ok(if *b { 1 } else { 0 }),
-        LoweredExpr::Null => Ok(0),
-        LoweredExpr::Undefined => Ok(0),
-        LoweredExpr::Local(id) => initializers
+        LoweredExpr::Number(n, _) => Ok(*n),
+        LoweredExpr::Bool(b, _) => Ok(if *b { 1 } else { 0 }),
+        LoweredExpr::Null(..) => Ok(0),
+        LoweredExpr::Undefined(..) => Ok(0),
+        LoweredExpr::Local(id, _) => initializers
             .get(id)
             .copied()
             .ok_or_else(|| unsupported("local variable without compile-time known value")),
-        LoweredExpr::Binary { left, op, right } => {
+        LoweredExpr::Binary { left, op, right, .. } => {
             let l = resolve_const_i32(left, initializers)?;
             let r = resolve_const_i32(right, initializers)?;
             eval_binary_i32(*op, l, r)

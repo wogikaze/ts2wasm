@@ -131,17 +131,17 @@ impl WatEmitter<'_> {
     ) {
         let pad = " ".repeat(indent);
         match statement {
-            LoweredStmt::Block(statements) => {
+            LoweredStmt::Block(statements, _) => {
                 self.emit_statements(writer, statements, indent, loop_ctx, frame);
             }
-            LoweredStmt::Let(local_id, expr) | LoweredStmt::Assign(local_id, expr) => {
+            LoweredStmt::Let(local_id, expr, _) | LoweredStmt::Assign(local_id, expr, _) => {
                 self.emit_expr(writer, expr, indent, frame);
                 writer.local_set(indent, local_index(*local_id));
                 let mut buf = String::new();
                 self.emit_gc_root_mirror(&mut buf, &pad, *local_id, frame);
                 writer.push_str(buf.as_str());
             }
-            LoweredStmt::Expr(expr) => {
+            LoweredStmt::Expr(expr, _) => {
                 self.emit_expr(writer, expr, indent, frame);
                 if self.expr_produces_value(expr) {
                     writer.drop(indent);
@@ -150,7 +150,7 @@ impl WatEmitter<'_> {
             LoweredStmt::If {
                 condition,
                 then_body,
-                else_body,
+                else_body, ..
             } => {
                 self.emit_expr(writer, condition, indent, frame);
                 writer.call(indent, RuntimeFn::TruthyBool.symbol());
@@ -165,7 +165,7 @@ impl WatEmitter<'_> {
                 }
                 writer.end(indent);
             }
-            LoweredStmt::While { condition, body } => {
+            LoweredStmt::While { condition, body, .. } => {
                 let exit_label = gen_label("while_exit");
                 let loop_label = gen_label("while_loop");
                 writer.block(indent, &exit_label);
@@ -190,7 +190,7 @@ impl WatEmitter<'_> {
                 writer.end(indent + 2);
                 writer.end(indent);
             }
-            LoweredStmt::Return(expr) => {
+            LoweredStmt::Return(expr, _) => {
                 self.emit_expr(writer, expr, indent, frame);
                 if frame.uses_activation_roots() {
                     writer.local_set(indent, frame.heap_value_tmp());
@@ -201,7 +201,7 @@ impl WatEmitter<'_> {
                 }
                 writer.return_(indent);
             }
-            LoweredStmt::Throw(expr) => {
+            LoweredStmt::Throw(expr, _) => {
                 // Evaluate the thrown value, store to $exception_pending,
                 // then let the enclosing try-catch's br_if catch it.
                 self.emit_expr(writer, expr, indent, frame);
@@ -223,7 +223,7 @@ impl WatEmitter<'_> {
                     writer.line(indent, "(global.set $exception_pending)");
                 }
             }
-            LoweredStmt::DoWhile { body, condition } => {
+            LoweredStmt::DoWhile { body, condition, .. } => {
                 let exit_label = gen_label("do_exit");
                 let loop_label = gen_label("do_loop");
                 writer.block(indent, &exit_label);
@@ -250,7 +250,7 @@ impl WatEmitter<'_> {
                 init,
                 condition,
                 update,
-                body,
+                body, ..
             } => {
                 if let Some(i) = init {
                     self.emit_statement(writer, i, indent, loop_ctx, frame);
@@ -300,7 +300,7 @@ impl WatEmitter<'_> {
                 iter_local,
                 index_local,
                 len_local,
-                body,
+                body, ..
             } => {
                 let exit_label = gen_label("for_in_exit");
                 let loop_label = gen_label("for_in_loop");
@@ -354,7 +354,7 @@ impl WatEmitter<'_> {
                 iter_local,
                 index_local,
                 len_local,
-                body,
+                body, ..
             } => {
                 let exit_label = gen_label("for_of_exit");
                 let loop_label = gen_label("for_of_loop");
@@ -401,7 +401,7 @@ impl WatEmitter<'_> {
                 writer.end(indent + 2);
                 writer.end(indent);
             }
-            LoweredStmt::Labeled { label, body } => {
+            LoweredStmt::Labeled { label, body, .. } => {
                 if is_loop_stmt(body) {
                     self.emit_statement_with_label(
                         writer,
@@ -424,14 +424,14 @@ impl WatEmitter<'_> {
                     writer.end(indent);
                 }
             }
-            LoweredStmt::Break { label } => {
+            LoweredStmt::Break { label, .. } => {
                 if let Some(target) = loop_ctx.break_label(label.as_deref()) {
                     writer.r#br(indent, target);
                 } else {
                     writer.line(indent, ";; ERROR: break outside loop");
                 }
             }
-            LoweredStmt::Continue { label } => {
+            LoweredStmt::Continue { label, .. } => {
                 if let Some(target) = loop_ctx.continue_label(label.as_deref()) {
                     writer.r#br(indent, target);
                 } else {
@@ -442,7 +442,7 @@ impl WatEmitter<'_> {
                 try_body,
                 catch_var,
                 catch_body,
-                finally_body,
+                finally_body, ..
             } => {
                 // Basic try-catch: wrap in block, execute try, handle catch
                 let try_exit = gen_label("try_exit");
@@ -512,7 +512,7 @@ impl WatEmitter<'_> {
                     self.emit_statements(writer, body, indent + 2, loop_ctx, frame);
                 }
             }
-            LoweredStmt::Switch { expr, cases } => {
+            LoweredStmt::Switch { expr, cases, .. } => {
                 let switch_exit = gen_label("switch_exit");
                 writer.block(indent, &switch_exit);
 
@@ -579,7 +579,7 @@ impl WatEmitter<'_> {
                 loop_ctx.pop();
                 writer.end(indent);
             }
-            LoweredStmt::Export { name, expr } => {
+            LoweredStmt::Export { name, expr, .. } => {
                 let name_ptr = self.string_offset(name) + Layout::STRING_HEADER_SIZE;
                 let name_len = name.len() as u32;
                 writer.line_fmt(indent, format_args!("(i32.const {name_ptr})"));
@@ -587,7 +587,7 @@ impl WatEmitter<'_> {
                 self.emit_expr(writer, expr, indent, frame);
                 writer.call(indent, RuntimeFn::ModuleExportsSet.symbol());
             }
-            LoweredStmt::ModuleExportsAssign { expr } => {
+            LoweredStmt::ModuleExportsAssign { expr, .. } => {
                 self.emit_expr(writer, expr, indent, frame);
                 writer.call(indent, RuntimeFn::ModuleExportsAssign.symbol());
             }

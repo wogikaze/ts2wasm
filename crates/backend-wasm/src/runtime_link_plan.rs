@@ -211,28 +211,25 @@ impl RuntimeLinkPlan {
     fn collect_required_runtime_stmts(&mut self, statements: &[LoweredStmt]) {
         for statement in statements {
             match statement {
-                LoweredStmt::Block(statements) => {
+                LoweredStmt::Block(statements, _) => {
                     self.collect_required_runtime_stmts(statements);
                 }
-                LoweredStmt::Let(_, expr)
-                | LoweredStmt::Assign(_, expr)
-                | LoweredStmt::Expr(expr)
-                | LoweredStmt::Return(expr)
-                | LoweredStmt::Throw(expr) => {
+                LoweredStmt::Let(_, expr, _) | LoweredStmt::Assign(_, expr, _) | LoweredStmt::Expr(expr, _) | LoweredStmt::Return(expr, _)
+                | LoweredStmt::Throw(expr, _) => {
                     self.add_required_globals(GLOBALS_EXCEPTION_RUNTIME);
                     self.collect_required_runtime_expr(expr);
                 }
                 LoweredStmt::If {
                     condition,
                     then_body,
-                    else_body,
+                    else_body, ..
                 } => {
                     self.collect_required_runtime_expr(condition);
                     self.add_required_runtime(RuntimeFn::TruthyBool);
                     self.collect_required_runtime_stmts(then_body);
                     self.collect_required_runtime_stmts(else_body);
                 }
-                LoweredStmt::While { condition, body } => {
+                LoweredStmt::While { condition, body, .. } => {
                     self.collect_required_runtime_expr(condition);
                     self.add_required_runtime(RuntimeFn::TruthyBool);
                     self.collect_required_runtime_stmts(body);
@@ -241,7 +238,7 @@ impl RuntimeLinkPlan {
                     try_body,
                     catch_var: _,
                     catch_body,
-                    finally_body,
+                    finally_body, ..
                 } => {
                     self.add_required_globals(GLOBALS_EXCEPTION_RUNTIME);
                     self.collect_required_runtime_stmts(try_body);
@@ -252,7 +249,7 @@ impl RuntimeLinkPlan {
                         self.collect_required_runtime_stmts(body);
                     }
                 }
-                LoweredStmt::Switch { expr, cases } => {
+                LoweredStmt::Switch { expr, cases, .. } => {
                     self.collect_required_runtime_expr(expr);
                     for (cond, case_body) in cases {
                         if let Some(cond_expr) = cond {
@@ -262,7 +259,7 @@ impl RuntimeLinkPlan {
                         self.collect_required_runtime_stmts(case_body);
                     }
                 }
-                LoweredStmt::DoWhile { body, condition } => {
+                LoweredStmt::DoWhile { body, condition, .. } => {
                     self.collect_required_runtime_expr(condition);
                     self.add_required_runtime(RuntimeFn::TruthyBool);
                     self.collect_required_runtime_stmts(body);
@@ -271,7 +268,7 @@ impl RuntimeLinkPlan {
                     init,
                     condition,
                     update,
-                    body,
+                    body, ..
                 } => {
                     if let Some(stmt) = init {
                         self.collect_required_runtime_stmts(&[stmt.as_ref().clone()]);
@@ -316,7 +313,7 @@ impl RuntimeLinkPlan {
                     self.collect_required_runtime_expr(expr);
                     self.add_required_runtime(RuntimeFn::ModuleExportsSet);
                 }
-                LoweredStmt::ModuleExportsAssign { expr } => {
+                LoweredStmt::ModuleExportsAssign { expr, .. } => {
                     self.collect_required_runtime_expr(expr);
                     self.add_required_runtime(RuntimeFn::ModuleExportsAssign);
                 }
@@ -332,7 +329,7 @@ impl RuntimeLinkPlan {
 
     fn collect_required_runtime_expr(&mut self, expr: &LoweredExpr) {
         match expr {
-            LoweredExpr::Unary { op, expr } => {
+            LoweredExpr::Unary { op, expr, .. } => {
                 self.collect_required_runtime_expr(expr);
                 match op {
                     LoweredUnaryOp::Not => self.add_required_runtime(RuntimeFn::Not),
@@ -350,11 +347,11 @@ impl RuntimeLinkPlan {
             LoweredExpr::Assign { expr, .. } => {
                 self.collect_required_runtime_expr(expr);
             }
-            LoweredExpr::EnvCellNew(expr) => {
+            LoweredExpr::EnvCellNew(expr, _) => {
                 self.add_required_runtime(RuntimeFn::AllocHeap);
                 self.collect_required_runtime_expr(expr);
             }
-            LoweredExpr::EnvCellGet(_) => {}
+            LoweredExpr::EnvCellGet(_, _) => {}
             LoweredExpr::EnvCellSet { expr, .. } => {
                 self.collect_required_runtime_expr(expr);
             }
@@ -397,7 +394,7 @@ impl RuntimeLinkPlan {
                 op,
                 object,
                 key,
-                expr,
+                expr, ..
             } => {
                 self.add_required_runtime(RuntimeFn::PropertyGet);
                 self.add_required_runtime(RuntimeFn::PropertySet);
@@ -409,7 +406,7 @@ impl RuntimeLinkPlan {
                     self.add_required_runtime(RuntimeFn::TruthyBool);
                 }
             }
-            LoweredExpr::Binary { left, op, right } => {
+            LoweredExpr::Binary { left, op, right, .. } => {
                 self.collect_required_runtime_expr(left);
                 self.collect_required_runtime_expr(right);
                 match op {
@@ -512,7 +509,7 @@ impl RuntimeLinkPlan {
                     LoweredBinaryOp::NullishCoalesce => {}
                 }
             }
-            LoweredExpr::Call { kind, args } => {
+            LoweredExpr::Call { kind, args, .. } => {
                 for arg in args {
                     self.collect_required_runtime_expr(arg);
                 }
@@ -520,17 +517,12 @@ impl RuntimeLinkPlan {
                     self.add_required_runtime(RuntimeFn::from_builtin(*builtin));
                 }
             }
-            LoweredExpr::Number(value) => {
+            LoweredExpr::Number(value, _) => {
                 if !ValueTag::can_encode_number(*value) {
                     self.add_required_runtime(RuntimeFn::NumberFromI32);
                 }
             }
-            LoweredExpr::String(_)
-            | LoweredExpr::Bool(_)
-            | LoweredExpr::Null
-            | LoweredExpr::Undefined
-            | LoweredExpr::This
-            | LoweredExpr::Local(_) => {}
+            LoweredExpr::String(_, _) | LoweredExpr::Bool(_, _) | LoweredExpr::Null(..) | LoweredExpr::Undefined(..) | LoweredExpr::This(..) | LoweredExpr::Local(_, _) => {}
             LoweredExpr::ArrowFn { representation, .. } => {
                 if matches!(representation, ClosureRepresentation::HeapObject) {
                     self.add_required_runtime(RuntimeFn::AllocHeap);
@@ -545,7 +537,7 @@ impl RuntimeLinkPlan {
                     self.collect_required_runtime_expr(elem);
                 }
             }
-            LoweredExpr::ArrayNewSparse { slots } => {
+            LoweredExpr::ArrayNewSparse { slots, .. } => {
                 self.add_required_runtime(RuntimeFn::AllocHeap);
                 for slot in slots {
                     if let ts2wasm_ir::lowered::LoweredArraySlot::Present(elem) = slot {
@@ -553,17 +545,17 @@ impl RuntimeLinkPlan {
                     }
                 }
             }
-            LoweredExpr::ArrayGet { arr, index } => {
+            LoweredExpr::ArrayGet { arr, index, .. } => {
                 self.add_required_runtime(RuntimeFn::ArrayGet);
                 self.collect_required_runtime_expr(arr);
                 self.collect_required_runtime_expr(index);
             }
-            LoweredExpr::Index { object, index } => {
+            LoweredExpr::Index { object, index, .. } => {
                 self.add_required_runtime(RuntimeFn::Index);
                 self.collect_required_runtime_expr(object);
                 self.collect_required_runtime_expr(index);
             }
-            LoweredExpr::GetLength(inner) => {
+            LoweredExpr::GetLength(inner, _) => {
                 self.add_required_runtime(RuntimeFn::GetLength);
                 self.collect_required_runtime_expr(inner);
             }
@@ -586,18 +578,18 @@ impl RuntimeLinkPlan {
                 self.add_required_runtime(RuntimeFn::PropertyGet);
                 self.collect_required_runtime_expr(obj);
             }
-            LoweredExpr::PropertyGetDynamic { obj, key } => {
+            LoweredExpr::PropertyGetDynamic { obj, key, .. } => {
                 self.add_required_runtime(RuntimeFn::PropertyGet);
                 self.add_required_runtime(RuntimeFn::ValueToStringInto);
                 self.collect_required_runtime_expr(obj);
                 self.collect_required_runtime_expr(key);
             }
-            LoweredExpr::OptionalIndex { object, index } => {
+            LoweredExpr::OptionalIndex { object, index, .. } => {
                 self.add_required_runtime(RuntimeFn::Index);
                 self.collect_required_runtime_expr(object);
                 self.collect_required_runtime_expr(index);
             }
-            LoweredExpr::OptionalCall { callee, call } => {
+            LoweredExpr::OptionalCall { callee, call, .. } => {
                 self.collect_required_runtime_expr(callee);
                 self.collect_required_runtime_expr(call);
             }
@@ -609,7 +601,7 @@ impl RuntimeLinkPlan {
             LoweredExpr::PropertySetDynamic {
                 object,
                 index,
-                value,
+                value, ..
             } => {
                 self.add_required_runtime(RuntimeFn::PropertySet);
                 self.add_required_runtime(RuntimeFn::ValueToStringInto);
@@ -623,13 +615,13 @@ impl RuntimeLinkPlan {
                     self.collect_required_runtime_expr(arg);
                 }
             }
-            LoweredExpr::ClassPrototype(_) => {
+            LoweredExpr::ClassPrototype(_, _) => {
                 self.add_required_runtime(RuntimeFn::AllocHeap);
             }
-            LoweredExpr::BuiltinErrorPrototype(_) => {
+            LoweredExpr::BuiltinErrorPrototype(_, _) => {
                 self.add_required_runtime(RuntimeFn::AllocHeap);
             }
-            LoweredExpr::Block { stmts, result } => {
+            LoweredExpr::Block { stmts, result, .. } => {
                 for stmt in stmts {
                     self.collect_required_runtime_stmts(std::slice::from_ref(stmt));
                 }
@@ -639,7 +631,7 @@ impl RuntimeLinkPlan {
             LoweredExpr::ModuleLoad { .. } => {
                 self.add_required_runtime(RuntimeFn::ModuleRequire);
             }
-            LoweredExpr::RuntimeCall { runtime_fn, args } => {
+            LoweredExpr::RuntimeCall { runtime_fn, args, .. } => {
                 if runtime_fn == "ArrayPushMany" {
                     self.add_required_runtime(RuntimeFn::ArrayPush);
                     self.add_required_runtime(RuntimeFn::ArrayPushGrow);
@@ -661,21 +653,21 @@ impl RuntimeLinkPlan {
                     self.collect_required_runtime_expr(arg);
                 }
             }
-            LoweredExpr::PropertyDelete { object, key: _ } => {
+            LoweredExpr::PropertyDelete { object, key: _, .. } => {
                 self.collect_required_runtime_expr(object);
                 self.add_required_runtime(RuntimeFn::PropertyDelete);
             }
-            LoweredExpr::PropertyDeleteDynamic { object, key } => {
+            LoweredExpr::PropertyDeleteDynamic { object, key, .. } => {
                 self.collect_required_runtime_expr(object);
                 self.collect_required_runtime_expr(key);
                 self.add_required_runtime(RuntimeFn::PropertyDelete);
                 self.add_required_runtime(RuntimeFn::ValueToStringInto);
             }
-            LoweredExpr::PropertyIn { obj, key: _ } => {
+            LoweredExpr::PropertyIn { obj, key: _, .. } => {
                 self.collect_required_runtime_expr(obj);
                 self.add_required_runtime(RuntimeFn::PropertyHas);
             }
-            LoweredExpr::PropertyInDynamic { obj, key } => {
+            LoweredExpr::PropertyInDynamic { obj, key, .. } => {
                 self.collect_required_runtime_expr(obj);
                 self.collect_required_runtime_expr(key);
                 self.add_required_runtime(RuntimeFn::PropertyHas);

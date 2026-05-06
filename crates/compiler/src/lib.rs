@@ -273,23 +273,25 @@ fn populate_static_module_exports_for_build(
                 })?;
             // Unwrap Block wrappers around Let statements (e.g. empty destructuring)
             let effective = match stmt {
-                lowered::LoweredStmt::Block(stmts) if stmts.len() == 1 => &stmts[0],
+                lowered::LoweredStmt::Block(stmts, _) if stmts.len() == 1 => &stmts[0],
                 _ => stmt,
             };
             match effective {
-                lowered::LoweredStmt::Let(_, expr) => {
+                lowered::LoweredStmt::Let(_, expr, _) => {
                     statements.push(lowered::LoweredStmt::Export {
                         name: export.name.clone(),
                         expr: expr.clone(),
+                        span: Span::generated("Export"),
                     });
                 }
-                lowered::LoweredStmt::Block(stmts) => {
+                lowered::LoweredStmt::Block(stmts, _) => {
                     // Multi-stmt Block from destructuring — export each binding
                     for s in stmts {
-                        if let lowered::LoweredStmt::Let(local_id, expr) = s {
+                        if let lowered::LoweredStmt::Let(local_id, expr, _) = s {
                             statements.push(lowered::LoweredStmt::Export {
                                 name: format!("local_{}", local_id.0),
                                 expr: expr.clone(),
+                                span: Span::generated("Export"),
                             });
                         } else {
                             return Err(Diagnostic {
@@ -959,12 +961,14 @@ fn lower_static_named_import_reads_for_build(
             })?;
 
         match stmt {
-            lowered::LoweredStmt::Let(_, expr) => {
+            lowered::LoweredStmt::Let(_, expr, _) => {
                 *expr = lowered::LoweredExpr::PropertyGet {
                     obj: Box::new(lowered::LoweredExpr::ModuleLoad {
                         module_id: binding.source_module_id,
+                        span: Span::generated("ModuleLoad"),
                     }),
                     key: binding.imported_name.clone(),
+                    span: Span::generated("PropertyGet"),
                 };
             }
             other => {
@@ -1091,10 +1095,11 @@ fn lower_source_as_module_body(
                 span: None,
             })?;
         match stmt {
-            lowered::LoweredStmt::Let(_, expr) => {
+            lowered::LoweredStmt::Let(_, expr, _) => {
                 statements.push(lowered::LoweredStmt::Export {
                     name: export.name.clone(),
                     expr: expr.clone(),
+                    span: Span::generated("Export"),
                 });
             }
             other => {
@@ -1228,10 +1233,11 @@ fn lower_static_module_body_for_build(
                 span: None,
             })?;
         match stmt {
-            lowered::LoweredStmt::Let(_, expr) => {
+            lowered::LoweredStmt::Let(_, expr, _) => {
                 statements.push(lowered::LoweredStmt::Export {
                     name: export.name.clone(),
                     expr: expr.clone(),
+                    span: Span::generated("Export"),
                 });
             }
             other => {

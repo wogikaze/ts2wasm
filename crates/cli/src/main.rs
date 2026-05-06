@@ -85,7 +85,7 @@ fn run() -> Result<(), String> {
                     &input,
                     &output,
                     manifest.as_deref(),
-                    Some(host.as_str()),
+                    true,
                 )
             } else {
                 ts2wasm_cli::build_file_with_options(&input, &output, manifest.as_deref())
