@@ -11,7 +11,7 @@ Issue files are the source of truth for work items. The generated section below 
 |---|---:|---:|---:|
 | abi | 7 | 0 | 7 |
 | backend | 13 | 1 | 12 |
-| backend-wasm | 3 | 2 | 1 |
+| backend-wasm | 3 | 1 | 2 |
 | cli | 15 | 0 | 15 |
 | compiler | 2 | 1 | 1 |
 | coverage | 42 | 0 | 42 |
@@ -22,12 +22,12 @@ Issue files are the source of truth for work items. The generated section below 
 | issues | 5 | 0 | 5 |
 | parser | 1 | 0 | 1 |
 | reference | 211 | 163 | 48 |
-| runtime | 268 | 92 | 176 |
+| runtime | 269 | 93 | 176 |
 | scripts | 3 | 0 | 3 |
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5049 | 4028 | 1021 |
+| total | 5050 | 4028 | 1022 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -158,6 +158,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5209 | Support class instance method receiver calls | feature | ir/lowered | implementation-ready | P1 |  | class instance method calls such as `instance.once(...)` currently fail with `issue-211: unknown receiver class for m... |
 | 5210 | Sparse array holes handling for Array.prototype.map | feature | runtime/builtins | implementation-ready | P2 |  | current `Array.prototype.map` implementation only supports dense |
 | 5213 | Implement generator function syntax prerequisite for iterator spread | feature | frontend/syntax | implementation-ready | P2 |  | Generator function declarations are rejected before iterator spread can be tested. |
+| 5215 | Fix array includes WAT stack mismatch | bug | runtime/builtins | implementation-ready | P1 |  | `fixtures/builtins-and-io/array-includes.ts` emits invalid WAT with a residual `[i32, i32, i32]` stack at function end. |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -4126,7 +4127,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5020 | Implement RegExp literal support | spike | frontend/syntax | class: triage-needed | Implement RegExp literal support |
 | 5135 | Fix builtin arity validation for coercion/math globals | bug | ir | class: blocked | Fix builtin arity validation for coercion/math globals |
 | 5136 | Fix arity validation for RegExp/String prototype methods | bug | ir | class: blocked | Fix arity validation for RegExp/String prototype methods |
-| 5205 | Restore backend residual expression rejection | bug | backend-wasm | class: blocked | Restore backend residual expression rejection |
 | 5211 | Implement sparse array spread support | feature | runtime/semantics | 274 | Implement sparse array spread support |
 | 5212 | Implement remaining BigInt mixed runtime coercion edges | feature | runtime/semantics | class: blocked | Implement remaining BigInt mixed runtime coercion edges |
 | 5214 | Implement computed Symbol.iterator prerequisite for spread | feature | frontend/syntax | class: blocked | Implement computed Symbol.iterator prerequisite for spread |
@@ -5159,6 +5159,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5160 | Lower plain ternary conditional expressions | feature | frontend/semantics | see `issues/done/5160-lower-plain-ternary-conditional-expressions.md` |
 | 5161 | Model ambient value declarations for name resolution | feature | frontend/resolver | see `issues/done/5161-model-ambient-value-declarations-for-name-resolution.md` |
 | 5188 | Report block-scoped function call arity diagnostics | feature | frontend/semantics | see `issues/done/5188-report-block-scoped-function-call-arity-diagnostics.md` |
+| 5205 | Restore backend residual expression rejection | bug | backend-wasm | see `issues/done/5205-restore-backend-residual-expression-rejection.md` |
 | 5206 | Resolve issue ID collisions and open/done conflicts | cleanup | issues | see `issues/done/5206-resolve-issue-id-collisions-and-open-done-conflicts.md` |
 <!-- generated:done:end -->
 

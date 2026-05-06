@@ -538,7 +538,7 @@ fn validate_expr(
         LoweredExpr::BuiltinErrorPrototype(_) => {}
         LoweredExpr::This => {
             errors.push(Diagnostic {
-                code: DiagCode::UnsupportedSyntax,
+                code: DiagCode::InvariantViolation,
                 message: "issue-211: residual `this` must be resolved to an active receiver local before backend emission".to_owned(),
                 span: None,
             });
@@ -546,7 +546,7 @@ fn validate_expr(
         LoweredExpr::MethodCall { object, .. } => {
             validate_expr(object, local_count, num_funcs, program, errors, true);
             errors.push(Diagnostic {
-                code: DiagCode::UnsupportedSyntax,
+                code: DiagCode::InvariantViolation,
                 message:
                     "MethodCall must be resolved before backend; residual MethodCall is unsupported"
                         .to_owned(),

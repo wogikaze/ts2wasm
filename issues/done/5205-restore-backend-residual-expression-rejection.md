@@ -3,7 +3,7 @@ id: 5205
 title: "Restore backend residual expression rejection"
 type: bug
 area: backend-wasm
-class: blocked
+class: verification-ready
 priority: P1
 depends_on: []
 blocks: []
@@ -46,9 +46,9 @@ Both tests call `emit_wat(&program).expect_err(...)`, but `emit_wat` returns gen
 
 In scope:
 
-- [ ] Identify where residual-expression validation should run before WAT emission.
-- [ ] Restore `InvariantViolation` diagnostics for residual `MethodCall` and `This`.
-- [ ] Keep supported method-call and receiver lowering behavior intact.
+- [x] Identify where residual-expression validation should run before WAT emission.
+- [x] Restore `InvariantViolation` diagnostics for residual `MethodCall` and `This`.
+- [x] Keep supported method-call and receiver lowering behavior intact.
 
 Out of scope:
 
@@ -69,9 +69,9 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] `cargo nextest run -p ts2wasm-backend-wasm emit_wat_rejects_residual` passes.
-- [ ] The full `cargo nextest run` no longer fails at these two backend residual tests.
-- [ ] No supported class/object method receiver fixture regresses.
+- [x] `cargo nextest run -p ts2wasm-backend-wasm emit_wat_rejects_residual` passes.
+- [x] The full `cargo nextest run` no longer fails at these two backend residual tests.
+- [x] No supported class/object method receiver fixture regresses.
 
 ## Validation
 
@@ -100,15 +100,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] 5215 tracks the next unrelated full-gate failure found after the residual-expression tests passed.
 
 ## Notes
 
@@ -120,16 +120,32 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- `...`
+- This commit.
 
 Validation result:
 
 ```text
-command:
-result:
-date:
+command: cargo nextest run -p ts2wasm-backend-wasm emit_wat_rejects_residual
+result: pass
+date: 2026-05-06
+
+command: cargo nextest run -p ts2wasm-cli class_new_expression_method_call
+result: pass
+date: 2026-05-06
+
+command: cargo nextest run -p ts2wasm-cli --test dump_cli dump_ast_unparse_erases_ambient_declarations
+result: pass
+date: 2026-05-06
+
+command: cargo fmt --all --check
+result: pass
+date: 2026-05-06
+
+command: cargo nextest run
+result: fail after the 5205 residual-expression failures were cleared; stopped at issue 5215 (`array-includes.ts` wat2wasm stack mismatch)
+date: 2026-05-06
 ```
 
 Remaining risks:
 
-- none
+- Full `cargo nextest run` still fails on unrelated issue 5215.
