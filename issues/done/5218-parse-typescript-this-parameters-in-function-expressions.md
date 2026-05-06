@@ -60,11 +60,11 @@ order for the remaining parameters.
 
 In scope:
 
-- [ ] Parse and erase leading `this: Type` parameters in function expressions
-- [ ] Parse and erase leading `this: Type` parameters in function declarations if the same parser path is shared
-- [ ] Preserve rejection for non-leading `this` parameters if unsupported
-- [ ] Add focused parser tests for `function (this: any) {}` and a remaining runtime parameter
-- [ ] Re-run the representative triage and confirm it advances past the current issue-247 diagnostic
+- [x] Parse and erase leading `this: Type` parameters in function expressions
+- [x] Parse and erase leading `this: Type` parameters in function declarations if the same parser path is shared
+- [x] Preserve rejection for non-leading `this` parameters if unsupported
+- [x] Add focused parser tests for `function (this: any) {}` and a remaining runtime parameter
+- [x] Re-run the representative triage and confirm it advances past the current issue-247 diagnostic
 
 Out of scope:
 
@@ -86,10 +86,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] `function (this: any) {}` parses without creating a runtime parameter named `this`
-- [ ] `function (this: any, value: number) { return value; }` preserves `value` as the first runtime parameter
-- [ ] `binaryArithmeticControlFlowGraphNotTooLarge.ts` no longer reports `issue-247: expected binding identifier or pattern, got Some(This)`
-- [ ] Issue index and readiness checks pass
+- [x] `function (this: any) {}` parses without creating a runtime parameter named `this`
+- [x] `function (this: any, value: number) { return value; }` preserves `value` as the first runtime parameter
+- [x] `binaryArithmeticControlFlowGraphNotTooLarge.ts` no longer reports `issue-247: expected binding identifier or pattern, got Some(This)`
+- [x] Issue index and readiness checks pass
 
 ## Validation
 
@@ -119,15 +119,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] created: `issues/open/5219-support-explicit-this-parameter-function-expression-lowering.md`
 
 ## Notes
 
@@ -141,16 +141,28 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- `...`
+- pending local commit
 
 Validation result:
 
 ```text
-command:
-result:
-date:
+command: cargo fmt --all --check
+result: pass
+date: 2026-05-06
+
+command: cargo nextest run -p ts2wasm-frontend this_parameter
+result: pass
+date: 2026-05-06
+
+command: python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/binaryArithmeticControlFlowGraphNotTooLarge.ts
+result: pass for issue 5218; advanced past issue-247 Some(This) to issue-062e, tracked by issue 5219
+date: 2026-05-06
+
+command: python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/APISample_jsdoc.ts
+result: pass for issue 5218; no longer reports issue-247 Some(This)
+date: 2026-05-06
 ```
 
 Remaining risks:
 
-- none
+- Runtime/lowering support for explicit-this function expressions is tracked by issue 5219.

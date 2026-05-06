@@ -243,7 +243,7 @@ impl Parser {
         if self.consume(TokenKind::LeftParen) {
             if !self.consume(TokenKind::RightParen) {
                 loop {
-                    let param = self.parse_param(false)?;
+                    let param = self.parse_param(false, false)?;
                     let is_rest = param.is_rest;
                     let param_name = if let Some(default) = param.default {
                         format!(
@@ -318,7 +318,7 @@ impl Parser {
         self.expect(TokenKind::LeftParen)?;
         if !self.consume(TokenKind::RightParen) {
             loop {
-                self.parse_param(false)?;
+                self.parse_param(false, false)?;
                 if self.consume(TokenKind::RightParen) {
                     break;
                 }
@@ -1654,9 +1654,11 @@ impl Parser {
                                     let mut params = Vec::new();
                                     if !self.consume(TokenKind::RightParen) {
                                         loop {
-                                            let param = self.parse_param(false)?;
+                                            let param = self.parse_param(false, params.is_empty())?;
                                             let is_rest = param.is_rest;
-                                            params.push((param.name, param.default, is_rest));
+                                            if !param.is_this_parameter {
+                                                params.push((param.name, param.default, is_rest));
+                                            }
                                             if self.consume(TokenKind::RightParen) {
                                                 break;
                                             }
@@ -1772,9 +1774,11 @@ impl Parser {
         let mut params = Vec::new();
         if !self.consume(TokenKind::RightParen) {
             loop {
-                let param = self.parse_param(false)?;
+                let param = self.parse_param(false, params.is_empty())?;
                 let is_rest = param.is_rest;
-                params.push((param.name, param.default, is_rest));
+                if !param.is_this_parameter {
+                    params.push((param.name, param.default, is_rest));
+                }
                 if self.consume(TokenKind::RightParen) {
                     break;
                 }
@@ -1818,9 +1822,11 @@ impl Parser {
         let mut params = Vec::new();
         if !self.consume(TokenKind::RightParen) {
             loop {
-                let param = self.parse_param(false)?;
+                let param = self.parse_param(false, params.is_empty())?;
                 let is_rest = param.is_rest;
-                params.push((param.name, param.default, is_rest));
+                if !param.is_this_parameter {
+                    params.push((param.name, param.default, is_rest));
+                }
                 if self.consume(TokenKind::RightParen) {
                     break;
                 }

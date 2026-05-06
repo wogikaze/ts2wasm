@@ -221,13 +221,16 @@ impl Parser {
             let mut parameter_property_assignments = Vec::new();
             if !self.consume(TokenKind::RightParen) {
                 loop {
-                    let param = self.parse_param(method_name == "constructor")?;
+                    let param =
+                        self.parse_param(method_name == "constructor", params.is_empty())?;
                     let is_rest = param.is_rest;
                     if param.is_parameter_property {
                         parameter_property_assignments
                             .push(parameter_property_assignment(&param.name, param.span));
                     }
-                    params.push((param.name, param.default, is_rest));
+                    if !param.is_this_parameter {
+                        params.push((param.name, param.default, is_rest));
+                    }
                     if self.consume(TokenKind::RightParen) {
                         break;
                     }
@@ -367,7 +370,7 @@ impl Parser {
             let accessor_span = self.expect_contextual_keyword("set")?;
             let (name, name_span) = self.expect_private_ident()?;
             self.expect(TokenKind::LeftParen)?;
-            let param = self.parse_param(false)?;
+            let param = self.parse_param(false, false)?;
             self.expect(TokenKind::RightParen)?;
             let body = self.block()?;
             let end = self.prev_span().map(|span| span.end).unwrap_or(name_span.end);
@@ -389,8 +392,10 @@ impl Parser {
             let mut params = Vec::new();
             if !self.consume(TokenKind::RightParen) {
                 loop {
-                    let param = self.parse_param(false)?;
-                    params.push((param.name, param.default, param.is_rest));
+                    let param = self.parse_param(false, params.is_empty())?;
+                    if !param.is_this_parameter {
+                        params.push((param.name, param.default, param.is_rest));
+                    }
                     if self.consume(TokenKind::RightParen) {
                         break;
                     }

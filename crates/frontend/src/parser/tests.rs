@@ -158,6 +158,43 @@ mod tests {
     }
 
     #[test]
+    fn this_parameter_erased_from_function_expression_params() {
+        let program =
+            parse_program("let fn = function (this: any, value: number) { return value; };")
+                .unwrap();
+        let Stmt::Let {
+            expr: Expr::FunctionExpr { params, .. },
+            ..
+        } = &program[0]
+        else {
+            panic!("expected function expression let, got {:?}", program[0]);
+        };
+        assert_eq!(params.len(), 1);
+        assert_eq!(params[0].0, "value");
+    }
+
+    #[test]
+    fn this_parameter_erased_from_function_declaration_params() {
+        let program =
+            parse_program("function read(this: any, value: number) { return value; }").unwrap();
+        let Stmt::Function { params, .. } = &program[0] else {
+            panic!("expected function declaration, got {:?}", program[0]);
+        };
+        assert_eq!(params.len(), 1);
+        assert_eq!(params[0].0, "value");
+    }
+
+    #[test]
+    fn this_parameter_rejected_when_not_leading() {
+        let err =
+            parse_program("function read(value: number, this: any) { return value; }").unwrap_err();
+        assert_eq!(err.code, DiagCode::UnsupportedSyntax);
+        assert!(err
+            .message
+            .contains("this parameters must be the leading parameter"));
+    }
+
+    #[test]
     fn parses_ambient_function_declarations_as_erased_syntax() {
         let source = r#"
             declare function consume(value: number): void;

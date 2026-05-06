@@ -1,5 +1,9 @@
 impl Parser {
-    fn parse_param(&mut self, allow_parameter_property: bool) -> Result<ParsedParam, Diagnostic> {
+    fn parse_param(
+        &mut self,
+        allow_parameter_property: bool,
+        allow_this_parameter: bool,
+    ) -> Result<ParsedParam, Diagnostic> {
         let is_rest = self.consume(TokenKind::DotDotDot);
         let mut is_parameter_property = false;
 
@@ -10,6 +14,42 @@ impl Parser {
                 is_parameter_property = true;
             }
             self.advance();
+        }
+
+        if matches!(self.peek(), Some(Token::This)) {
+            let span = self
+                .advance()
+                .expect("peek() returned Some(Token::This) so advance() must succeed")
+                .span;
+            if !allow_this_parameter || is_rest || is_parameter_property {
+                return Err(Diagnostic {
+                    code: DiagCode::UnsupportedSyntax,
+                    message: "issue-247: TypeScript this parameters must be the leading parameter"
+                        .to_owned(),
+                    span: Some(span),
+                });
+            }
+            if !self.consume(TokenKind::Colon) {
+                return Err(Diagnostic {
+                    code: DiagCode::UnsupportedSyntax,
+                    message: "issue-247: TypeScript this parameters require a type annotation"
+                        .to_owned(),
+                    span: Some(span),
+                });
+            }
+            self.skip_type_annotation_until(&[
+                TokenKind::Equal,
+                TokenKind::Comma,
+                TokenKind::RightParen,
+            ])?;
+            return Ok(ParsedParam {
+                name: "this".to_owned(),
+                default: None,
+                is_rest: false,
+                is_parameter_property: false,
+                is_this_parameter: true,
+                span,
+            });
         }
 
         let binding = self.parse_binding_pattern()?;
@@ -50,6 +90,7 @@ impl Parser {
             default,
             is_rest,
             is_parameter_property,
+            is_this_parameter: false,
             span: binding.span,
         })
     }

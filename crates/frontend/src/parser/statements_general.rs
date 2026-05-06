@@ -1127,9 +1127,11 @@ impl Parser {
         let mut params = Vec::new();
         if !self.consume(TokenKind::RightParen) {
             loop {
-                let param = self.parse_param(false)?;
+                let param = self.parse_param(false, params.is_empty())?;
                 let is_rest = param.is_rest;
-                params.push((param.name, param.default, is_rest));
+                if !param.is_this_parameter {
+                    params.push((param.name, param.default, is_rest));
+                }
                 if self.consume(TokenKind::RightParen) {
                     break;
                 }
@@ -1175,9 +1177,11 @@ impl Parser {
         let mut params = Vec::new();
         if !self.consume(TokenKind::RightParen) {
             loop {
-                let param = self.parse_param(false)?;
+                let param = self.parse_param(false, params.is_empty())?;
                 let is_rest = param.is_rest;
-                params.push((param.name, param.default, is_rest));
+                if !param.is_this_parameter {
+                    params.push((param.name, param.default, is_rest));
+                }
                 if self.consume(TokenKind::RightParen) {
                     break;
                 }
@@ -1214,9 +1218,11 @@ impl Parser {
             let mut params = Vec::new();
             if !self.consume(TokenKind::RightParen) {
                 loop {
-                    let param = self.parse_param(false)?;
+                    let param = self.parse_param(false, params.is_empty())?;
                     let is_rest = param.is_rest;
-                    params.push((param.name, param.default, is_rest));
+                    if !param.is_this_parameter {
+                        params.push((param.name, param.default, is_rest));
+                    }
                     if self.consume(TokenKind::RightParen) {
                         break;
                     }
@@ -1248,9 +1254,11 @@ impl Parser {
         let mut params = Vec::new();
         if !self.consume(TokenKind::RightParen) {
             loop {
-                let param = self.parse_param(false)?;
+                let param = self.parse_param(false, params.is_empty())?;
                 let is_rest = param.is_rest;
-                params.push((param.name, param.default, is_rest));
+                if !param.is_this_parameter {
+                    params.push((param.name, param.default, is_rest));
+                }
                 if self.consume(TokenKind::RightParen) {
                     break;
                 }

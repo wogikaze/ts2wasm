@@ -43,6 +43,7 @@ struct ParsedParam {
     default: Option<Expr>,
     is_rest: bool,
     is_parameter_property: bool,
+    is_this_parameter: bool,
     span: Span,
 }
 

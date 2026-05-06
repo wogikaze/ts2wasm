@@ -16,9 +16,9 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 2 | 1 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4434 | 3757 | 677 |
+| frontend | 4434 | 3756 | 678 |
 | harness | 1 | 0 | 1 |
-| ir | 37 | 11 | 26 |
+| ir | 38 | 12 | 26 |
 | issues | 5 | 0 | 5 |
 | parser | 1 | 0 | 1 |
 | reference | 211 | 163 | 48 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5053 | 4026 | 1027 |
+| total | 5054 | 4026 | 1028 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -156,7 +156,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5209 | Support class instance method receiver calls | feature | ir/lowered | implementation-ready | P1 |  | class instance method calls such as `instance.once(...)` currently fail with `issue-211: unknown receiver class for m... |
 | 5210 | Sparse array holes handling for Array.prototype.map | feature | runtime/builtins | implementation-ready | P2 |  | current `Array.prototype.map` implementation only supports dense |
 | 5213 | Implement generator function syntax prerequisite for iterator spread | feature | frontend/syntax | implementation-ready | P2 |  | Generator function declarations are rejected before iterator spread can be tested. |
-| 5218 | Parse TypeScript this parameters in function expressions | feature | frontend/parser | implementation-ready | P1 |  | function expressions with TypeScript `this` parameters currently fail with `issue-247: expected binding identifier or... |
+| 5219 | Support explicit this-parameter function expression lowering | feature | ir/runtime | implementation-ready | P1 |  | function expressions that declare an erased TypeScript `this` parameter and read `this` in the body currently fail wi... |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -5164,6 +5164,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5215 | Fix array includes WAT stack mismatch | bug | runtime/builtins | see `issues/done/5215-fix-array-includes-wat-stack-mismatch.md` |
 | 5216 | Allow extra arguments for functions reading arguments object | bug | ir/semantics | see `issues/done/5216-allow-extra-arguments-for-functions-reading-arguments-object.md` |
 | 5217 | Preserve ambient value declarations through name resolution | bug | ir/name-resolution | see `issues/done/5217-preserve-ambient-value-declarations-through-name-resolution.md` |
+| 5218 | Parse TypeScript this parameters in function expressions | feature | frontend/parser | see `issues/done/5218-parse-typescript-this-parameters-in-function-expressions.md` |
 <!-- generated:done:end -->
 
 ## Index generation contract
