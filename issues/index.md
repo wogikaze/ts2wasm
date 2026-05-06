@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 4 | 3 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4512 | 3632 | 880 |
+| frontend | 4512 | 3631 | 881 |
 | harness | 1 | 0 | 1 |
 | ir | 57 | 35 | 22 |
 | issues | 4 | 0 | 4 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5148 | 3914 | 1234 |
+| total | 5148 | 3913 | 1235 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -50,7 +50,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 5000 (Meta: TypeScript Compiler Parser Syntax Coverage) [done/design] ch:488 open:415 done:73
 ├── 5002 (Meta: TypeScript Compiler Type System Coverage) [done/done] ch:234 open:217 done:17 (also ← 5005)
 ├── 5003 (Meta: TypeScript Compiler Declaration Emit Coverage) [done/done] ch:102 open:91 done:11 (also ← 5001)
-5001 (Meta: TypeScript Compiler Semantic Analysis Coverage) [done/done] ch:594 open:340 done:254
+5001 (Meta: TypeScript Compiler Semantic Analysis Coverage) [done/done] ch:593 open:339 done:254
 5004 (Meta: Runtime Builtins Coverage (test262) (audit reopened #5004)) [done/done] ch:24 open:3 done:21
 5005 (Meta: TypeScript Compiler Name Resolution Coverage) [done/done] ch:421 open:369 done:52
 ├── 5006 (Meta: TypeScript Compiler Scope Analysis Coverage) [done/done] ch:29 open:21 done:8
@@ -67,7 +67,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | Order | ID | Title | State | Class | Area | Priority | Depends on | Direct children | Open children | Done children |
 |-----:|---:|------|-------|-------|------|--------:|-----------:|----------------:|--------------:|--------------:|
 | 1 | 5000 | Meta: TypeScript Compiler Parser Syntax Coverage | done | design | frontend/syntax | P1 | - | 488 | 415 | 73 |
-| 2 | 5001 | Meta: TypeScript Compiler Semantic Analysis Coverage | done | done | frontend/semantics | P1 | - | 594 | 340 | 254 |
+| 2 | 5001 | Meta: TypeScript Compiler Semantic Analysis Coverage | done | done | frontend/semantics | P1 | - | 593 | 339 | 254 |
 | 3 | 5004 | Meta: Runtime Builtins Coverage (test262) (audit reopened #5004) | done | done | runtime/builtins | P1 | - | 24 | 3 | 21 |
 | 4 | 5005 | Meta: TypeScript Compiler Name Resolution Coverage | done | done | frontend/resolver | P1 | - | 421 | 369 | 52 |
 | 5 | 5002 | Meta: TypeScript Compiler Type System Coverage | done | done | frontend/semantics | P1 | 5000, 5005 | 234 | 217 | 17 |
@@ -541,7 +541,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 772 | Implement Augmentedtypesvar | spike | frontend/syntax | class: blocked | Implement Augmentedtypesvar |
 | 773 | Implement Autoasiforstaticsinclassdeclaration | spike | frontend/syntax | class: triage-needed | Implement Autoasiforstaticsinclassdeclaration |
 | 775 | Implement Autotypeassignedusingdestructuringfromnevernocrash | spike | frontend/resolver | class: blocked | Implement Autotypeassignedusingdestructuringfromnevernocrash |
-| 1196 | Implement Classextendsacrossfiles | spike | frontend/syntax | class: blocked | Implement Classextendsacrossfiles |
 | 1197 | Implement Classextendsclauseclassmergedwithmodulenotreferingconstructor | spike | frontend/syntax | class: blocked | Implement Classextendsclauseclassmergedwithmodulenotreferingconstructor |
 | 1198 | Implement Classextendsclauseclassnotreferringconstructor | spike | frontend/syntax | class: blocked | Implement Classextendsclauseclassnotreferringconstructor |
 | 1199 | Implement Classextendsinterface Parser Syntax | spike | frontend/syntax | class: blocked | Implement Classextendsinterface Parser Syntax |
@@ -4974,6 +4973,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1193 | Implement Classextendingabstractclasswithmembercalledthesameasitsowntypeparam | spike | frontend/syntax | see `issues/done/1193-implement-classExtendingAbstractClassWithMemberCalledTheSameAsItsOwnTypeParam.md` |
 | 1194 | Implement Classextendingany | spike | frontend/syntax | see `issues/done/1194-implement-classExtendingAny.md` |
 | 1195 | Implement Classextendingqualifiedname | spike | frontend/syntax | see `issues/done/1195-implement-classExtendingQualifiedName.md` |
+| 1196 | Implement Classextendsacrossfiles | spike | frontend/syntax | see `issues/done/1196-implement-classExtendsAcrossFiles.md` |
 | 1200 | Implement Classextendsinterface Unknown Unsupported | spike | frontend/syntax | see `issues/done/1200-implement-classExtendsInterface-unknown-unsupported.md` |
 | 1201 | Implement Classextendsinterfaceinexpression | spike | frontend/syntax | see `issues/done/1201-implement-classExtendsInterfaceInExpression.md` |
 | 1205 | Implement Classextendsnull | spike | frontend/syntax | see `issues/done/1205-implement-classExtendsNull.md` |
