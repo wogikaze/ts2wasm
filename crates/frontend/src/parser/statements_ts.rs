@@ -51,6 +51,20 @@ impl Parser {
             return Ok(true);
         }
 
+        if matches!(self.peek(), Some(Token::Const))
+            && matches!(self.peek_n(1), Some(Token::Ident(name)) if name == "enum")
+        {
+            self.advance(); // consume 'const'
+            let enum_span = self.peek_span().unwrap_or(Span {
+                start: self.cursor,
+                end: self.cursor,
+            });
+            self.advance(); // consume 'enum'
+            self.expect_ident()?; // consume enum name
+            self.skip_balanced_brace_block(enum_span)?; // skip { ... } body
+            return Ok(true);
+        }
+
         Ok(false)
     }
 

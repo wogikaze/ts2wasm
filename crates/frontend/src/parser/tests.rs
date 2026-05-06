@@ -3017,4 +3017,32 @@ class Foo {
             }
         }
     }
+
+    #[test]
+    fn parses_const_enum_declaration() {
+        let result = parse_program("const enum E { A }");
+        assert!(
+            result.is_ok(),
+            "expected const enum to parse, got err: {result:?}"
+        );
+    }
+
+    #[test]
+    fn parses_enum_declaration() {
+        let result = parse_program("enum E { A, B, C }");
+        assert!(
+            result.is_ok(),
+            "expected enum to parse, got err: {result:?}"
+        );
+    }
+
+    #[test]
+    fn rejects_non_const_enum_missing_initializer() {
+        let err = parse_program("const x;").unwrap_err();
+        assert_eq!(err.code, DiagCode::UnsupportedSyntax);
+        assert!(
+            err.message.contains("const declarations require an initializer"),
+            "{err:?}"
+        );
+    }
 }
