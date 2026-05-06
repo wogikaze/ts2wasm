@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 3 | 0 | 3 |
 | coverage | 44 | 1 | 43 |
 | docs | 4 | 2 | 2 |
-| frontend | 4439 | 3727 | 712 |
+| frontend | 4439 | 3726 | 713 |
 | harness | 1 | 0 | 1 |
 | ir | 42 | 10 | 32 |
 | issues | 5 | 0 | 5 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 9 | 2 | 7 |
 | wasi | 4 | 3 | 1 |
-| total | 5081 | 4005 | 1076 |
+| total | 5081 | 4004 | 1077 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -112,7 +112,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5198 | Support class method overload signatures for element access calls | feature | frontend/resolver | implementation-ready | P1 |  | class method overload signatures are currently treated as duplicate method definitions. |
 | 5199 | Report function overload list class merge diagnostics | feature | frontend/resolver | implementation-ready | P1 |  | top-level bodyless function overload declarations are currently handled as duplicate concrete function implementations. |
 | 5200 | Validate top-level function overload implementations | feature | frontend/resolver | implementation-ready | P1 |  | top-level function overload implementation groups are currently classified as duplicate concrete functions. |
-| 5201 | Parse object type literal call signatures | feature | frontend/parser | implementation-ready | P1 |  | TypeScript object type literals with call-signature members are not parsed as complete type annotations. |
 | 5203 | Report indexed new type-only callee diagnostics | feature | frontend/resolver | implementation-ready | P1 |  | indexed `new` callees that start with type-only identifiers fall into the generic issue-062 class-name requirement. |
 | 5204 | Resolve lexical super property captures in super call arguments | feature | frontend/resolver | implementation-ready | P1 |  | lexical `super` property access inside arrow arguments to `super(...)` is not resolved against the derived instance c... |
 | 5207 | Support ambient interface filter receivers | feature | frontend/semantics | implementation-ready | P2 |  | `reference/typescript/tests/cases/compiler/booleanFilterAnyArray.ts` now reports `issue-211: unknown receiver class f... |
@@ -5172,6 +5171,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5193 | Parse ASI after ambient variable declarations | feature | frontend/syntax | see `issues/done/5193-parse-asi-after-ambient-variable-declarations.md` |
 | 5194 | Report empty call type arguments | feature | frontend/syntax | see `issues/done/5194-report-empty-call-type-arguments.md` |
 | 5197 | Report class called without new | feature | frontend/resolver | see `issues/done/5197-report-class-called-without-new.md` |
+| 5201 | Parse object type literal call signatures | feature | frontend/parser | see `issues/done/5201-parse-object-type-literal-call-signatures.md` |
 | 5202 | Parse member call explicit type arguments | feature | frontend/parser | see `issues/done/5202-parse-member-call-explicit-type-arguments.md` |
 | 5205 | Restore backend residual expression rejection | bug | backend-wasm | see `issues/done/5205-restore-backend-residual-expression-rejection.md` |
 | 5206 | Resolve issue ID collisions and open/done conflicts | cleanup | issues | see `issues/done/5206-resolve-issue-id-collisions-and-open-done-conflicts.md` |
