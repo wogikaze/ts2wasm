@@ -22,12 +22,12 @@ Issue files are the source of truth for work items. The generated section below 
 | issues | 5 | 0 | 5 |
 | parser | 1 | 0 | 1 |
 | reference | 211 | 163 | 48 |
-| runtime | 269 | 90 | 179 |
+| runtime | 269 | 89 | 180 |
 | scripts | 3 | 0 | 3 |
 | security | 1 | 0 | 1 |
 | tests | 8 | 0 | 8 |
-| wasi | 4 | 2 | 2 |
-| total | 5077 | 3972 | 1105 |
+| wasi | 4 | 1 | 3 |
+| total | 5077 | 3970 | 1107 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -97,7 +97,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 353 | Implement iterator protocol integration for spread operator | feature | runtime/semantics | unstarted | P2 |  | General iterator protocol is not implemented for spread operator. |
 | 5137 | Split remaining Date API scope | cleanup | runtime/builtins | design-ready | P1 |  | Date issue 050 currently stays open after its named child issues 240 and 241 are done, but non-literal constructor in... |
 | 5138 | Split Reflect.construct isConstructor reference window | spike | runtime/builtins | design-ready | P1 |  | `reference/test262/test/annexB/built-ins/String/prototype/anchor/not-a-constructor.js` currently fails with `Unresolv... |
-| 5236 | W1: implement WASI args and environment variable lowering | feature | wasi | design-ready | P2 |  | W1: implement WASI args and environment variable lowering |
 | 5238 | W1: implement WASI filesystem read/write through preopens | feature | wasi | design-ready | P2 |  | W1: implement WASI filesystem read/write through preopens |
 | 5239 | W0: migrate remaining multi-line WAT to line_fmt in expr_emit.rs | cleanup | backend | design-ready | P2 | 5231 | W0: migrate remaining multi-line WAT to line_fmt in expr_emit.rs |
 | 5241 | W2: implement NaN, Infinity, -0 sentinel values in tagged-number encoding | feature | ir/runtime | design-ready | P2 | 5240 | The tagged-number encoding lacks sentinel values for the four IEEE 754 |
@@ -4069,7 +4068,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5020 | Implement RegExp literal support | spike | frontend/syntax | class: triage-needed | Implement RegExp literal support |
 | 5135 | Fix builtin arity validation for coercion/math globals | bug | ir | class: blocked | Fix builtin arity validation for coercion/math globals |
 | 5136 | Fix arity validation for RegExp/String prototype methods | bug | ir | class: blocked | Fix arity validation for RegExp/String prototype methods |
-| 5211 | Implement sparse array spread support | feature | runtime/semantics | 274 | Implement sparse array spread support |
 | 5212 | Implement remaining BigInt mixed runtime coercion edges | feature | runtime/semantics | class: blocked | Implement remaining BigInt mixed runtime coercion edges |
 | 5214 | Implement computed Symbol.iterator prerequisite for spread | feature | frontend/syntax | class: blocked | Implement computed Symbol.iterator prerequisite for spread |
 | 5242 | W2: declare JS semantic core workstream complete | docs | docs | 5240, 5241 | W2: declare JS semantic core workstream complete |
@@ -5164,6 +5162,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5208 | Support RegExp match fallback array map receivers | feature | frontend/semantics | see `issues/done/5208-support-regexp-match-fallback-array-map-receiver.md` |
 | 5209 | Support class instance method receiver calls | feature | ir/lowered | see `issues/done/5209-support-class-instance-method-receiver-calls.md` |
 | 5210 | Sparse array holes handling for Array.prototype.map | feature | runtime/builtins | see `issues/done/5210-array-map-sparse-array-holes.md` |
+| 5211 | Implement sparse array spread support | feature | runtime/semantics | see `issues/done/5211-sparse-array-spread-support.md` |
 | 5213 | Implement generator function syntax prerequisite for iterator spread | feature | frontend/syntax | see `issues/done/5213-generator-function-syntax-prerequisite-for-iterator-spread.md` |
 | 5215 | Fix array includes WAT stack mismatch | bug | runtime/builtins | see `issues/done/5215-fix-array-includes-wat-stack-mismatch.md` |
 | 5216 | Allow extra arguments for functions reading arguments object | bug | ir/semantics | see `issues/done/5216-allow-extra-arguments-for-functions-reading-arguments-object.md` |
@@ -5186,6 +5185,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5233 | W0: harden reference coverage prerequisites | infra | coverage | see file |
 | 5234 | W0: implement host-deny and auditable E2E manifest verification | feature | cli | see file |
 | 5235 | W1: implement WASI stdin/fd_read lowering for input | feature | wasi | see file |
+| 5236 | W1: implement WASI args and environment variable lowering | feature | wasi | see file |
 | 5237 | W1: standalone WASI execution validation test suite | test | tests | see file |
 | 5240 | W2: docs audit — fix stale language-reference entries and confirm semantic-core coverage | docs | docs | see file |
 <!-- generated:done:end -->
