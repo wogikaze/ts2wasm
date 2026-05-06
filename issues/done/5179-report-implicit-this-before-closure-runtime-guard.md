@@ -162,3 +162,12 @@ date:
 Remaining risks:
 
 - Later triage may expose loop-capture or closure runtime work after the implicit-`this` diagnostic is handled.
+
+
+## False-done audit
+
+Date: 2026-05-07
+
+Classification: truly-done.
+
+Audit result: retained in issues/done/. Implementation commits confirmed.
