@@ -130,7 +130,7 @@ Follow-up issues:
 - `issues/done/1062-implement-bindingPatternInParameter.md` - Implement Bindingpatterninparameter (same feature label, same group key, title overlap)
 - `issues/done/1129-implement-checkDestructuringShorthandAssigment-destructuring.md` - Implement Checkdestructuringshorthandassigment Destructuring (same feature label, same group key, title overlap)
 - `issues/done/1130-implement-checkDestructuringShorthandAssigment-name-resolution.md` - Implement Checkdestructuringshorthandassigment Name Resolution (same feature label, same group key, title overlap)
-- `issues/open/1408-implement-computedPropertiesInDestructuring.md` - Implement Computedpropertiesindestructuring (same feature label, same group key, title overlap)
+- `issues/done/1408-implement-computedPropertiesInDestructuring.md` - Implement Computedpropertiesindestructuring (same feature label, same group key, title overlap)
 - `issues/open/1521-implement-contextualTypingArrayDestructuringWithDefaults.md` - Implement Contextualtypingarraydestructuringwithdefaults (same feature label, same group key, title overlap)
 - `issues/open/1568-implement-controlFlowDestructuringLoop.md` - Implement Controlflowdestructuringloop (same feature label, same group key, title overlap)
 - `issues/open/1569-implement-controlFlowDestructuringVariablesInTryCatch.md` - Implement Controlflowdestructuringvariablesintrycatch (same feature label, same group key, title overlap)
