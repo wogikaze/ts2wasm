@@ -21,13 +21,13 @@ Issue files are the source of truth for work items. The generated section below 
 | ir | 36 | 14 | 22 |
 | issues | 4 | 0 | 4 |
 | parser | 1 | 0 | 1 |
-| reference | 212 | 162 | 50 |
+| reference | 212 | 161 | 51 |
 | runtime | 265 | 89 | 176 |
 | scripts | 3 | 1 | 2 |
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5052 | 4028 | 1024 |
+| total | 5052 | 4027 | 1025 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -447,7 +447,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 772 | Implement Augmentedtypesvar | spike | frontend/syntax | class: blocked | Implement Augmentedtypesvar |
 | 773 | Implement Autoasiforstaticsinclassdeclaration | spike | frontend/syntax | class: triage-needed | Implement Autoasiforstaticsinclassdeclaration |
 | 775 | Implement Autotypeassignedusingdestructuringfromnevernocrash | spike | frontend/resolver | class: blocked | Implement Autotypeassignedusingdestructuringfromnevernocrash |
-| 1119 | Implement Castofawait | spike | reference/triage | class: triage-needed | Implement Castofawait |
 | 1120 | Implement Castparentheses | spike | frontend/syntax | class: triage-needed | Implement Castparentheses |
 | 1121 | Implement Casttest | spike | frontend/syntax | class: triage-needed | Implement Casttest |
 | 1122 | Implement Catch | spike | reference/triage | class: triage-needed | Implement Catch |
@@ -5009,6 +5008,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1116 | Implement Castexpressionparentheses | spike | frontend/syntax | see `issues/done/1116-implement-castExpressionParentheses.md` |
 | 1117 | Implement Castfunctionexpressionshouldbeparenthesized | spike | frontend/syntax | see `issues/done/1117-implement-castFunctionExpressionShouldBeParenthesized.md` |
 | 1118 | Implement Castnewobjectbug | spike | frontend/syntax | see `issues/done/1118-implement-castNewObjectBug.md` |
+| 1119 | Implement Castofawait | spike | reference/triage | see `issues/done/1119-implement-castOfAwait.md` |
 | 2050 | Implement Duplicatelocalvariable Duplicate Local | spike | reference/triage | see `issues/done/2050-implement-duplicateLocalVariable-duplicate-local.md` |
 | 3002 | Implement Isolateddeclarationerrorsdefault | spike | runtime/builtins | see `issues/done/3002-implement-isolatedDeclarationErrorsDefault.md` |
 | 3131 | Implement Jsxfactorynotidentifierorqualifiedname | spike | reference/triage | see `issues/done/3131-implement-jsxFactoryNotIdentifierOrQualifiedName.md` |
