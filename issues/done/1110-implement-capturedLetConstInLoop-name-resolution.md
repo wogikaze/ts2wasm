@@ -3,12 +3,12 @@ id: 1110
 title: "Implement Capturedletconstinloop Name Resolution"
 type: spike
 area: frontend/resolver
-class: blocked
-priority: P1
-depends_on: [5005]
+class: triage-needed
+priority: P2
+depends_on: [5206]
 blocks: []
 created: 2026-05-01
-updated: 2026-05-01
+updated: 2026-05-06
 ---
 
 ## Summary
@@ -43,10 +43,10 @@ This generated bucket is either split into implementation-ready child issues or 
 
 In scope:
 
-- [ ] Inspect the smart triage report below
-- [ ] Confirm whether existing open/done issues already cover this bucket
-- [ ] Split one feature family, one observable behavior, or one fixed reference window into child issues
-- [ ] Preserve exact reproduction commands and representative AST/diagnostic evidence in each child issue
+- [x] Inspect the smart triage report below
+- [x] Confirm whether existing open/done issues already cover this bucket
+- [x] Split one feature family, one observable behavior, or one fixed reference window into child issues
+- [x] Preserve exact reproduction commands and representative AST/diagnostic evidence in each child issue
 
 Out of scope:
 
@@ -68,10 +68,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] Duplicate candidates below are confirmed as no-match or this issue is superseded
-- [ ] At least one child issue contains an exact `mise run reference-triage -- ...` command
-- [ ] Child issue includes failing path, diagnostic code, source context, visible symbols, and parser/TypeScript AST evidence
-- [ ] Child issue acceptance names the exact fixture/reference path and diagnostic/stdout change
+- [x] Duplicate candidates below are confirmed as no-match or this issue is superseded
+- [x] At least one child issue contains an exact `mise run reference-triage -- ...` command
+- [x] Child issue includes failing path, diagnostic code, source context, visible symbols, and parser/TypeScript AST evidence
+- [x] Child issue acceptance names the exact fixture/reference path and diagnostic/stdout change
 
 ## Validation
 
@@ -98,15 +98,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] updated: `current-state.md` (repo root)
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] `issues/open/5206-hoist-loop-body-var-declarations-for-post-loop-reads.md`
 
 ## Notes
 
@@ -127,7 +127,105 @@ Follow-up issues:
 
 ## Smart triage
 
-Not generated. Rerun with `--triage-limit 1` or higher.
+Fresh triage shows both affected files parse and produce AST successfully. The
+current blocker is name resolution for `var v` declared inside loop bodies and
+read after the loop. Child issue
+`issues/open/5206-hoist-loop-body-var-declarations-for-post-loop-reads.md`
+owns the implementation-ready resolver slice.
+
+### Smart triage: capturedLetConstInLoop3_ES6
+
+- Issue class: `triage-needed`
+- Feature label: `name-resolution`
+- Diagnostic: `UnresolvedName` / `resolver-symbol`
+- Path: `reference/typescript/tests/cases/compiler/capturedLetConstInLoop3_ES6.ts`
+
+Reproduction:
+
+```sh
+mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/capturedLetConstInLoop3_ES6.ts
+```
+
+Failure location:
+
+```json
+{
+  "code": "UnresolvedName",
+  "message": "unresolved name: `v` at 232..233",
+  "line": 16,
+  "column": 6
+}
+```
+
+Source context:
+
+```text
+16 | function foo0_1(x) {
+17 |     for (let x in []) {
+18 |         var v = x;
+19 |         (function() { return x + v });
+```
+
+AST evidence:
+
+```text
+Function foo0_1 contains a ForOf with var binding `v = x`, then a later
+Call `use(v)` in the same function body. The resolved dump fails at
+resolve_names with `UnresolvedName`.
+```
+
+TypeScript oracle:
+
+```text
+TS2454: Variable 'v' is used before being assigned.
+```
+
+### Smart triage: capturedLetConstInLoop3
+
+- Issue class: `triage-needed`
+- Feature label: `name-resolution`
+- Diagnostic: `UnresolvedName` / `resolver-symbol`
+- Path: `reference/typescript/tests/cases/compiler/capturedLetConstInLoop3.ts`
+
+Reproduction:
+
+```sh
+mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/capturedLetConstInLoop3.ts
+```
+
+Failure location:
+
+```json
+{
+  "code": "UnresolvedName",
+  "message": "unresolved name: `v` at 233..234",
+  "line": 15,
+  "column": 5
+}
+```
+
+Source context:
+
+```text
+15 | function foo0_1(x) {
+16 |     for (let x in []) {
+17 |         var v = x;
+18 |         (function() { return x + v });
+```
+
+AST evidence:
+
+```text
+Function foo0_1 contains a ForOf with var binding `v = x`, then a later
+Call `use(v)` in the same function body. The resolved dump fails at
+resolve_names with `UnresolvedName`.
+```
+
+TypeScript oracle:
+
+```text
+TS2454: Variable 'v' is used before being assigned.
+```
 
 ## Completion evidence
 
@@ -136,13 +234,18 @@ Fill only when moving to `done/`.
 Commits:
 
 - `...`
+- pending
 
 Validation result:
 
 ```text
-command:
-result:
-date:
+command: python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/capturedLetConstInLoop3_ES6.ts
+result: fail; UnresolvedName for post-loop read of loop-body `var v`
+date: 2026-05-06
+
+command: python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/capturedLetConstInLoop3.ts
+result: fail; UnresolvedName for post-loop read of loop-body `var v`
+date: 2026-05-06
 ```
 
 Remaining risks:
