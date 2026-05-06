@@ -1509,6 +1509,19 @@ impl<'a> Resolver<'a> {
                 capture_names.push(name);
             }
         }
+        // If the arrow body references super.method() or super.property, the
+        // super.method() lowering at resolver_expr.rs:1919 needs `this` as a
+        // local to construct the first call argument.  Arrow functions do not
+        // bind their own `this`, so we capture the enclosing `this` and make it
+        // available in the arrow's scope so that super-method resolution works.
+        if !capture_names.contains(&"this".to_owned())
+            && !excluded_set.contains("this")
+            && (expr_contains_super_ref(body)
+                || block_contains_super_ref(body_stmts))
+            && self.resolve_local("this").is_ok()
+        {
+            capture_names.push("this".to_owned());
+        }
         let captures = capture_names
             .iter()
             .map(|name| self.resolve_local(name))
@@ -3623,4 +3636,180 @@ fn dense_array_like_object_elements(props: &[(String, ResolvedExpr)]) -> Option<
         elements.push(value);
     }
     Some(elements)
+}
+
+/// Returns true when `expr` contains a `super.method()` call or a `super.property`
+/// access.  These expressions require `this` to be available as a local in whatever
+/// scope they are lowered into (see the `receiver_name == "super"` branch in
+/// resolver_expr.rs:1891).
+fn expr_contains_super_ref(expr: &ResolvedExpr) -> bool {
+    match expr {
+        ResolvedExpr::MethodCall { object, args, .. } => {
+            (matches!(object.as_ref(), ResolvedExpr::Ident(name) if name == "super"))
+                || expr_contains_super_ref(object)
+                || args.iter().any(expr_contains_super_ref)
+        }
+        ResolvedExpr::PropertyAccess { object, .. } => {
+            (matches!(object.as_ref(), ResolvedExpr::Ident(name) if name == "super"))
+                || expr_contains_super_ref(object)
+        }
+        ResolvedExpr::Call { callee, args, .. } => {
+            expr_contains_super_ref(callee) || args.iter().any(expr_contains_super_ref)
+        }
+        ResolvedExpr::Unary { expr, .. } | ResolvedExpr::Spread(expr) => {
+            expr_contains_super_ref(expr)
+        }
+        ResolvedExpr::Binary { left, right, .. } => {
+            expr_contains_super_ref(left) || expr_contains_super_ref(right)
+        }
+        ResolvedExpr::Ternary {
+            condition,
+            then_expr,
+            else_expr,
+            ..
+        } => {
+            expr_contains_super_ref(condition)
+                || expr_contains_super_ref(then_expr)
+                || expr_contains_super_ref(else_expr)
+        }
+        ResolvedExpr::Assign { name: _, expr }
+        | ResolvedExpr::LogicalAssign { expr, .. } => expr_contains_super_ref(expr),
+        ResolvedExpr::LogicalPropertyAssign { object: _, key: _, expr, op: _ } => {
+            expr_contains_super_ref(expr)
+        }
+        ResolvedExpr::LogicalMemberAssign { object, expr, .. } => {
+            expr_contains_super_ref(object) || expr_contains_super_ref(expr)
+        }
+        ResolvedExpr::LogicalComputedPropertyAssign { key, expr, .. } => {
+            expr_contains_super_ref(key) || expr_contains_super_ref(expr)
+        }
+        ResolvedExpr::LogicalComputedMemberAssign {
+            object, key, expr, ..
+        } => expr_contains_super_ref(object) || expr_contains_super_ref(key) || expr_contains_super_ref(expr),
+        ResolvedExpr::Array(elements) => elements.iter().any(|element| match element {
+            ResolvedArrayElement::Present(expr) => expr_contains_super_ref(expr),
+            ResolvedArrayElement::Hole => false,
+        }),
+        ResolvedExpr::Object(props) => {
+            props.iter().any(|(_, value)| expr_contains_super_ref(value))
+        }
+        ResolvedExpr::ComputedIndex { object, index } => {
+            expr_contains_super_ref(object) || expr_contains_super_ref(index)
+        }
+        ResolvedExpr::BuiltinCall { args, .. } | ResolvedExpr::New { args, .. } => {
+            args.iter().any(expr_contains_super_ref)
+        }
+        ResolvedExpr::BuiltinProperty { object, .. }
+        | ResolvedExpr::OptionalPropertyAccess { object, .. } => {
+            expr_contains_super_ref(object)
+        }
+        ResolvedExpr::OptionalComputedIndex { object, index, .. } => {
+            expr_contains_super_ref(object) || expr_contains_super_ref(index)
+        }
+        ResolvedExpr::OptionalCall { callee, args, .. } => {
+            expr_contains_super_ref(callee) || args.iter().any(expr_contains_super_ref)
+        }
+        ResolvedExpr::PropertyAssign { object, value, .. } => {
+            expr_contains_super_ref(object) || expr_contains_super_ref(value)
+        }
+        ResolvedExpr::PropertyAssignDynamic { object, key, value } => {
+            expr_contains_super_ref(object)
+                || expr_contains_super_ref(key)
+                || expr_contains_super_ref(value)
+        }
+        ResolvedExpr::ArrowFn { body, .. } => expr_contains_super_ref(body),
+        ResolvedExpr::FunctionExpr { .. }
+        | ResolvedExpr::ClassExpr { .. }
+        | ResolvedExpr::ModuleLoad { .. }
+        | ResolvedExpr::Number(_)
+        | ResolvedExpr::BigIntLiteral { .. }
+        | ResolvedExpr::String(_)
+        | ResolvedExpr::Bool(_)
+        | ResolvedExpr::Null
+        | ResolvedExpr::Undefined
+        | ResolvedExpr::This { .. }
+        | ResolvedExpr::Ident(_) => false,
+    }
+}
+
+/// Returns true when any statement in `stmts` contains an expression with a super
+/// reference (super.method() or super.property).
+fn block_contains_super_ref(stmts: &[ResolvedStmt]) -> bool {
+    stmts.iter().any(stmt_contains_super_ref)
+}
+
+fn stmt_contains_super_ref(stmt: &ResolvedStmt) -> bool {
+    match stmt {
+        ResolvedStmt::Let(_, expr) | ResolvedStmt::Assign(_, expr) | ResolvedStmt::Expr(expr) => {
+            expr_contains_super_ref(expr)
+        }
+        ResolvedStmt::Return(expr) => expr_contains_super_ref(expr),
+        ResolvedStmt::If {
+            condition,
+            then_body,
+            else_body,
+            ..
+        } => {
+            expr_contains_super_ref(condition)
+                || block_contains_super_ref(then_body)
+                || block_contains_super_ref(else_body)
+        }
+        ResolvedStmt::While { condition, body, .. } => {
+            expr_contains_super_ref(condition) || block_contains_super_ref(body)
+        }
+        ResolvedStmt::For {
+            init,
+            condition,
+            update,
+            body,
+            ..
+        } => {
+            init.as_ref().map_or(false, |s| stmt_contains_super_ref(s))
+                || condition
+                    .as_ref()
+                    .map_or(false, |c| expr_contains_super_ref(c))
+                || update
+                    .as_ref()
+                    .map_or(false, |u| expr_contains_super_ref(u))
+                || block_contains_super_ref(body)
+        }
+        ResolvedStmt::ForIn { var: _, iter, body, .. }
+        | ResolvedStmt::ForOf { var: _, iter, body, .. } => {
+            expr_contains_super_ref(iter) || block_contains_super_ref(body)
+        }
+        ResolvedStmt::Block { statements } => block_contains_super_ref(statements),
+        ResolvedStmt::TryCatch {
+            try_block,
+            catch_block,
+            finally_block,
+            ..
+        } => {
+            block_contains_super_ref(try_block)
+                || catch_block
+                    .as_ref()
+                    .map_or(false, |b| block_contains_super_ref(b))
+                || finally_block
+                    .as_ref()
+                    .map_or(false, |b| block_contains_super_ref(b))
+        }
+        ResolvedStmt::Throw(expr) => expr_contains_super_ref(expr),
+        ResolvedStmt::Switch { expr, cases } => {
+            expr_contains_super_ref(expr)
+                || cases
+                    .iter()
+                    .any(|(_, body)| block_contains_super_ref(body))
+        }
+        ResolvedStmt::DoWhile { body, condition } => {
+            block_contains_super_ref(body) || expr_contains_super_ref(condition)
+        }
+        ResolvedStmt::Labeled { body, .. } => stmt_contains_super_ref(body),
+        ResolvedStmt::Export { expr, .. } => expr_contains_super_ref(expr),
+        ResolvedStmt::ModuleExportsAssign { expr } => expr_contains_super_ref(expr),
+        ResolvedStmt::ClassDecl { .. }
+        | ResolvedStmt::DestructureLet { .. }
+        | ResolvedStmt::AmbientValue(_)
+        | ResolvedStmt::Function { .. }
+        | ResolvedStmt::Break { label: _ }
+        | ResolvedStmt::Continue { label: _ } => false,
+    }
 }
