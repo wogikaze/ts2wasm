@@ -18,16 +18,16 @@ Issue files are the source of truth for work items. The generated section below 
 | docs | 2 | 0 | 2 |
 | frontend | 4433 | 3758 | 675 |
 | harness | 1 | 0 | 1 |
-| ir | 35 | 11 | 24 |
+| ir | 36 | 12 | 24 |
 | issues | 5 | 0 | 5 |
 | parser | 1 | 0 | 1 |
 | reference | 211 | 163 | 48 |
-| runtime | 269 | 93 | 176 |
+| runtime | 269 | 92 | 177 |
 | scripts | 3 | 0 | 3 |
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5050 | 4028 | 1022 |
+| total | 5051 | 4028 | 1023 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -158,7 +158,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5209 | Support class instance method receiver calls | feature | ir/lowered | implementation-ready | P1 |  | class instance method calls such as `instance.once(...)` currently fail with `issue-211: unknown receiver class for m... |
 | 5210 | Sparse array holes handling for Array.prototype.map | feature | runtime/builtins | implementation-ready | P2 |  | current `Array.prototype.map` implementation only supports dense |
 | 5213 | Implement generator function syntax prerequisite for iterator spread | feature | frontend/syntax | implementation-ready | P2 |  | Generator function declarations are rejected before iterator spread can be tested. |
-| 5215 | Fix array includes WAT stack mismatch | bug | runtime/builtins | implementation-ready | P1 |  | `fixtures/builtins-and-io/array-includes.ts` emits invalid WAT with a residual `[i32, i32, i32]` stack at function end. |
+| 5216 | Allow extra arguments for functions reading arguments object | bug | ir/semantics | implementation-ready | P1 |  | `fixtures/core-semantics/function-arguments.ts` now fails at `first(7)` with TS2554 even though that fixture relies o... |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -5161,6 +5161,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5188 | Report block-scoped function call arity diagnostics | feature | frontend/semantics | see `issues/done/5188-report-block-scoped-function-call-arity-diagnostics.md` |
 | 5205 | Restore backend residual expression rejection | bug | backend-wasm | see `issues/done/5205-restore-backend-residual-expression-rejection.md` |
 | 5206 | Resolve issue ID collisions and open/done conflicts | cleanup | issues | see `issues/done/5206-resolve-issue-id-collisions-and-open-done-conflicts.md` |
+| 5215 | Fix array includes WAT stack mismatch | bug | runtime/builtins | see `issues/done/5215-fix-array-includes-wat-stack-mismatch.md` |
 <!-- generated:done:end -->
 
 ## Index generation contract

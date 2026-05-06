@@ -53,7 +53,7 @@ BackendIo: wat2wasm failed
 
 In scope:
 
-- [ ] Fix the root stack-balance issue in runtime array includes emission without suppressing the fixture.
+- [x] Fix the root stack-balance issue in runtime array includes emission without suppressing the fixture.
 
 Out of scope:
 
@@ -74,8 +74,8 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] `cargo nextest run -p ts2wasm-cli array_includes_fixture_matches_node_output_under_iwasm` passes.
-- [ ] `cargo nextest run -p ts2wasm-cli build_smoke_array_includes_method` does not regress.
+- [x] `cargo nextest run -p ts2wasm-cli array_includes_fixture_matches_node_output_under_iwasm` passes.
+- [x] `cargo nextest run -p ts2wasm-cli build_smoke_array_includes_method` does not regress.
 
 ## Validation
 
@@ -103,15 +103,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] 5216 tracks the next unrelated full-gate failure found after the array includes fixture passed.
 
 ## Notes
 
@@ -123,16 +123,28 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- `...`
+- This commit.
 
 Validation result:
 
 ```text
-command:
-result:
-date:
+command: cargo fmt --all --check
+result: pass
+date: 2026-05-06
+
+command: cargo nextest run -p ts2wasm-cli array_includes_fixture_matches_node_output_under_iwasm
+result: pass
+date: 2026-05-06
+
+command: cargo nextest run -p ts2wasm-cli build_smoke_array_includes_method
+result: pass
+date: 2026-05-06
+
+command: cargo nextest run
+result: fail after the 5215 array-includes failure was cleared; stopped at issue 5216 (`function-arguments.ts` TS2554 arity mismatch)
+date: 2026-05-06
 ```
 
 Remaining risks:
 
-- none
+- Full `cargo nextest run` still fails on unrelated issue 5216.
