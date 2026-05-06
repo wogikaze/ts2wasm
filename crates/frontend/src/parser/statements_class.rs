@@ -32,6 +32,8 @@ impl Parser {
             body,
             static_blocks,
             private_elements,
+            ts_private_field_names: _,
+            interface_heritage: _,
             span,
         } = class_decl
         else {
@@ -315,6 +317,8 @@ impl Parser {
             body,
             static_blocks,
             private_elements,
+            ts_private_field_names: Vec::new(),
+            interface_heritage: Vec::new(),
             span: Span {
                 start: span_start,
                 end,
