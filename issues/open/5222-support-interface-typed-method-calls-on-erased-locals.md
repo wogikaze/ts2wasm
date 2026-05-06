@@ -127,6 +127,11 @@ Issue 5195 handles direct calls to callable interface-typed locals such as
 `i("")`; this issue handles method calls through interface-typed receivers such
 as `s.groupBy(...)`.
 
+Additional superseded bucket:
+
+- `issues/done/1370-implement-commentsInterface.md` reaches the same issue-211
+  receiver family for `var i2_i: i2; i2_i.foo(30);`.
+
 ## Completion evidence
 
 Fill when implemented.
