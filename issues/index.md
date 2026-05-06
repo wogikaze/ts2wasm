@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 3 | 2 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4450 | 3746 | 704 |
+| frontend | 4450 | 3745 | 705 |
 | harness | 1 | 0 | 1 |
 | ir | 42 | 20 | 22 |
 | issues | 4 | 0 | 4 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5070 | 4019 | 1051 |
+| total | 5070 | 4018 | 1052 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -465,7 +465,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 772 | Implement Augmentedtypesvar | spike | frontend/syntax | class: blocked | Implement Augmentedtypesvar |
 | 773 | Implement Autoasiforstaticsinclassdeclaration | spike | frontend/syntax | class: triage-needed | Implement Autoasiforstaticsinclassdeclaration |
 | 775 | Implement Autotypeassignedusingdestructuringfromnevernocrash | spike | frontend/resolver | class: blocked | Implement Autotypeassignedusingdestructuringfromnevernocrash |
-| 1146 | Implement Checkerinitializationcrash | spike | frontend/syntax | class: triage-needed | Implement Checkerinitializationcrash |
 | 1147 | Implement Checkingobjectdefinepropertyonfunctionnonexistentpropertynocrash | spike | frontend/syntax | class: blocked | Implement Checkingobjectdefinepropertyonfunctionnonexistentpropertynocrash |
 | 1148 | Implement Checkingobjectwiththisinnamepositionnocrash | spike | frontend/syntax | class: blocked | Implement Checkingobjectwiththisinnamepositionnocrash |
 | 1149 | Implement Circularaccessorannotations | spike | frontend/syntax | class: blocked | Implement Circularaccessorannotations |
@@ -5027,6 +5026,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1143 | Implement Checksupercallbeforethisaccessing Parser Syntax | spike | frontend/syntax | see `issues/done/1143-implement-checkSuperCallBeforeThisAccessing-parser-syntax.md` |
 | 1144 | Implement Checkswitchstatementifcasetypeisstring | spike | frontend/syntax | see `issues/done/1144-implement-checkSwitchStatementIfCaseTypeIsString.md` |
 | 1145 | Implement Checktypepredicateforredundantproperties | spike | frontend/semantics | see `issues/done/1145-implement-checkTypePredicateForRedundantProperties.md` |
+| 1146 | Implement Checkerinitializationcrash | spike | frontend/syntax | see `issues/done/1146-implement-checkerInitializationCrash.md` |
 | 2050 | Implement Duplicatelocalvariable Duplicate Local | spike | reference/triage | see `issues/done/2050-implement-duplicateLocalVariable-duplicate-local.md` |
 | 3002 | Implement Isolateddeclarationerrorsdefault | spike | runtime/builtins | see `issues/done/3002-implement-isolatedDeclarationErrorsDefault.md` |
 | 3131 | Implement Jsxfactorynotidentifierorqualifiedname | spike | reference/triage | see `issues/done/3131-implement-jsxFactoryNotIdentifierOrQualifiedName.md` |
