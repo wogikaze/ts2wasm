@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 4 | 3 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4509 | 3632 | 877 |
+| frontend | 4510 | 3632 | 878 |
 | harness | 1 | 0 | 1 |
 | ir | 57 | 35 | 22 |
 | issues | 4 | 0 | 4 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5145 | 3914 | 1231 |
+| total | 5146 | 3914 | 1232 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -265,6 +265,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5308 | Parse ASI after instance class field initializers | feature | frontend/parser | implementation-ready | P1 |  | `conflictingTypeParameterSymbolTransfer.ts` reports `expected property name, got Equal` after `foo = this.t` instead ... |
 | 5309 | Skip generic type arguments in type annotations | feature | frontend/parser | implementation-ready | P1 |  | function parameter annotations such as `x: Record<'a', string>` fail with `expected Comma, got Some(Greater)`. |
 | 5310 | Parse nested block statements with variable declarations | feature | frontend/parser | implementation-ready | P1 |  | a nested block containing `var y = 0;` reports `expected Comma, got Some(Ident("y"))` instead of parsing as a block s... |
+| 5311 | Parse namespace property += assignment | feature | frontend/syntax | implementation-ready | P1 |  | `M.x += 2` in `constDeclarations-access3.ts` fails with |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -655,7 +656,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1344 | Implement Commentleadingclosebrace | spike | frontend/resolver | class: blocked | Implement Commentleadingclosebrace |
 | 1345 | Implement Commentonambientmodule | spike | frontend/syntax | class: blocked | Implement Commentonambientmodule |
 | 1346 | Implement Commentonambientvariable | spike | frontend/resolver | class: blocked | Implement Commentonambientvariable |
-| 1440 | Implement Constdeclarations Import Export | spike | frontend/syntax | class: blocked | Implement Constdeclarations Import Export |
 | 1441 | Implement Constdeclarations Name Resolution | spike | frontend/resolver | class: blocked | Implement Constdeclarations Name Resolution |
 | 1442 | Implement Constdeclarations Parser Syntax | spike | frontend/syntax | class: triage-needed | Implement Constdeclarations Parser Syntax |
 | 1443 | Implement Constdeclarations Scope Analysis | spike | frontend/resolver | class: blocked | Implement Constdeclarations Scope Analysis |
@@ -5101,6 +5101,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1437 | Implement Conflictingtypeparametersymboltransfer | spike | frontend/syntax | see `issues/done/1437-implement-conflictingTypeParameterSymbolTransfer.md` |
 | 1438 | Implement Consistentaliasvsnonaliasrecordbehavior | spike | frontend/syntax | see `issues/done/1438-implement-consistentAliasVsNonAliasRecordBehavior.md` |
 | 1439 | Implement Constdeclarationshadowedbyvardeclaration | spike | frontend/syntax | see `issues/done/1439-implement-constDeclarationShadowedByVarDeclaration.md` |
+| 1440 | Implement Constdeclarations Import Export | spike | frontend/syntax | see `issues/done/1440-implement-constDeclarations-import-export.md` |
 | 2050 | Implement Duplicatelocalvariable Duplicate Local | spike | reference/triage | see `issues/done/2050-implement-duplicateLocalVariable-duplicate-local.md` |
 | 3002 | Implement Isolateddeclarationerrorsdefault | spike | runtime/builtins | see `issues/done/3002-implement-isolatedDeclarationErrorsDefault.md` |
 | 3131 | Implement Jsxfactorynotidentifierorqualifiedname | spike | reference/triage | see `issues/done/3131-implement-jsxFactoryNotIdentifierOrQualifiedName.md` |
