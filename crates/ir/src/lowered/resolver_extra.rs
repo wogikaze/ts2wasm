@@ -599,6 +599,7 @@ impl<'a> Resolver<'a> {
                     LoweredExpr::ArrayNew { elements: vec![] , span: Span::generated("array_new")},
                     LoweredExpr::Local(local_id, Span::generated("local")),
                 ],
+                span: Span::generated("RuntimeCall"),
             }));
         }
         Ok(None)
@@ -740,9 +741,10 @@ impl<'a> Resolver<'a> {
                             LoweredExpr::ObjectNew {
                                 props: std::mem::take(&mut pending),
                                 non_enumerable: 0,
-                            
+
                                 span: Span::generated("object_new"),},
                         ],
+                        span: Span::generated("RuntimeCall"),
                     }
                 };
                 result = Some(LoweredExpr::RuntimeCall {
@@ -768,6 +770,7 @@ impl<'a> Resolver<'a> {
             Ok(LoweredExpr::RuntimeCall {
                 runtime_fn: "ObjectSpread".to_owned(),
                 args: vec![target, LoweredExpr::ObjectNew { props: pending, non_enumerable: 0 , span: Span::generated("object_new")}],
+                span: Span::generated("RuntimeCall"),
             })
         }
     }
@@ -1068,19 +1071,20 @@ impl<'a> Resolver<'a> {
         let temp_id = self.alloc_temp();
         Ok(vec![
             LoweredStmt::Let(temp_id, value, Span::generated("let_stmt")),
-            LoweredStmt::Let(local_id, LoweredExpr::Local(temp_id, Span::generated("local"))),
+            LoweredStmt::Let(local_id, LoweredExpr::Local(temp_id, Span::generated("local")), Span::generated("let")),
             LoweredStmt::If {
                 condition: LoweredExpr::Binary {
                     left: Box::new(LoweredExpr::Local(temp_id, Span::generated("local"))),
                     op: LoweredBinaryOp::StrictEqual,
                     right: Box::new(LoweredExpr::Undefined(Span::generated("undef"))),
-                
+
                     span: Span::generated("binary"),},
                 then_body: vec![LoweredStmt::Assign(
                     local_id,
                     lowered_binding_default(default),
                 Span::generated("assign"))],
                 else_body: vec![],
+                span: Span::generated("If"),
             },
         ])
     }
@@ -2641,7 +2645,7 @@ impl<'a> Resolver<'a> {
 
         // For now, only handle Ident receivers (variable arrays)
         let receiver_local = match &receiver {
-            LoweredExpr::Local(id, _, Span::generated("local")) => *id,
+            LoweredExpr::Local(id, _) => *id,
             _ => {
                 let temp = self.alloc_temp();
                 // receiver is a literal array: store in temp
@@ -2694,6 +2698,7 @@ impl<'a> Resolver<'a> {
         stmts.push(LoweredStmt::Let(
             len_local,
             LoweredExpr::GetLength(Box::new(receiver.clone()), Span::generated("get_length")),
+            Span::generated("Let"),
         ));
 
         // Allocate loop body stmts and any accumulator locals
@@ -2711,8 +2716,9 @@ impl<'a> Resolver<'a> {
                     LoweredExpr::ArrayGet {
                         arr: Box::new(arr_ref()),
                         index: Box::new(LoweredExpr::Local(i, Span::generated("local"))),
-                    
+
                         span: Span::generated("array_get"),},
+                    Span::generated("Let"),
                 ));
 
                 let call_args = {
@@ -2729,7 +2735,7 @@ impl<'a> Resolver<'a> {
                     LoweredExpr::Call {
                         kind: FunctionCallKind::User(func_id),
                         args: call_args,
-                    
+
                         span: Span::generated("call"),}
                 };
 
@@ -2740,8 +2746,9 @@ impl<'a> Resolver<'a> {
                         left: Box::new(LoweredExpr::Local(i, Span::generated("local"))),
                         op: LoweredBinaryOp::Add,
                         right: Box::new(LoweredExpr::Number(1, Span::generated("num"))),
-                    
+
                         span: Span::generated("binary"),},
+                    Span::generated("Assign"),
                 ));
 
                 result_expr = LoweredExpr::Undefined(Span::generated("undef"));
@@ -2762,8 +2769,9 @@ impl<'a> Resolver<'a> {
                     LoweredExpr::ArrayGet {
                         arr: Box::new(arr_ref()),
                         index: Box::new(LoweredExpr::Local(i, Span::generated("local"))),
-                    
+
                         span: Span::generated("array_get"),},
+                    Span::generated("Let"),
                 ));
 
                 let pred = self.alloc_temp();
@@ -2781,7 +2789,7 @@ impl<'a> Resolver<'a> {
                     LoweredExpr::Call {
                         kind: FunctionCallKind::User(func_id),
                         args: call_args,
-                    
+
                         span: Span::generated("call"),}
                 };
                 while_body.push(LoweredStmt::Let(pred, call_args, Span::generated("let_stmt")));
@@ -2793,9 +2801,10 @@ impl<'a> Resolver<'a> {
                             LoweredExpr::Local(result, Span::generated("local")),
                             LoweredExpr::Local(elem, Span::generated("local")),
                         ],
-                    
-                        span: Span::generated("runtime_call"),})],
+
+                        span: Span::generated("runtime_call"),}, Span::generated("Expr"))],
                     else_body: vec![],
+                    span: Span::generated("If"),
                 });
                 while_body.push(LoweredStmt::Assign(
                     i,
@@ -2803,15 +2812,16 @@ impl<'a> Resolver<'a> {
                         left: Box::new(LoweredExpr::Local(i, Span::generated("local"))),
                         op: LoweredBinaryOp::Add,
                         right: Box::new(LoweredExpr::Number(1, Span::generated("num"))),
-                    
+
                         span: Span::generated("binary"),},
+                    Span::generated("Assign"),
                 ));
 
                 result_expr = LoweredExpr::Local(result, Span::generated("local"));
             }
             "find" => {
                 let found = self.alloc_temp();
-                stmts.push(LoweredStmt::Let(found, LoweredExpr::Undefined(Span::generated("undef"))));
+                stmts.push(LoweredStmt::Let(found, LoweredExpr::Undefined(Span::generated("undef")), Span::generated("Let")));
 
                 let elem = self.alloc_temp();
                 while_body.push(LoweredStmt::Let(
@@ -2819,8 +2829,9 @@ impl<'a> Resolver<'a> {
                     LoweredExpr::ArrayGet {
                         arr: Box::new(arr_ref()),
                         index: Box::new(LoweredExpr::Local(i, Span::generated("local"))),
-                    
+
                         span: Span::generated("array_get"),},
+                    Span::generated("Let"),
                 ));
 
                 let pred = self.alloc_temp();
@@ -2838,7 +2849,7 @@ impl<'a> Resolver<'a> {
                     LoweredExpr::Call {
                         kind: FunctionCallKind::User(func_id),
                         args: call_args,
-                    
+
                         span: Span::generated("call"),}
                 };
                 while_body.push(LoweredStmt::Let(pred, call_args, Span::generated("let_stmt")));
@@ -2847,9 +2858,10 @@ impl<'a> Resolver<'a> {
                     then_body: vec![LoweredStmt::Assign(
                         found,
                         LoweredExpr::Local(elem, Span::generated("local")),
+                        Span::generated("Assign"),
                     )],
                     else_body: vec![],
-                
+
                     span: Span::generated("if_stmt"),});
                 while_body.push(LoweredStmt::Assign(
                     i,
@@ -2857,15 +2869,16 @@ impl<'a> Resolver<'a> {
                         left: Box::new(LoweredExpr::Local(i, Span::generated("local"))),
                         op: LoweredBinaryOp::Add,
                         right: Box::new(LoweredExpr::Number(1, Span::generated("num"))),
-                    
+
                         span: Span::generated("binary"),},
+                    Span::generated("Assign"),
                 ));
 
                 result_expr = LoweredExpr::Local(found, Span::generated("local"));
             }
             "findIndex" => {
                 let found = self.alloc_temp();
-                stmts.push(LoweredStmt::Let(found, LoweredExpr::Number(-1, Span::generated("num"))));
+                stmts.push(LoweredStmt::Let(found, LoweredExpr::Number(-1, Span::generated("num")), Span::generated("Let")));
 
                 let elem = self.alloc_temp();
                 while_body.push(LoweredStmt::Let(
@@ -2873,8 +2886,9 @@ impl<'a> Resolver<'a> {
                     LoweredExpr::ArrayGet {
                         arr: Box::new(arr_ref()),
                         index: Box::new(LoweredExpr::Local(i, Span::generated("local"))),
-                    
+
                         span: Span::generated("array_get"),},
+                    Span::generated("Let"),
                 ));
 
                 let pred = self.alloc_temp();
@@ -2892,7 +2906,7 @@ impl<'a> Resolver<'a> {
                     LoweredExpr::Call {
                         kind: FunctionCallKind::User(func_id),
                         args: call_args,
-                    
+
                         span: Span::generated("call"),}
                 };
                 while_body.push(LoweredStmt::Let(pred, call_args, Span::generated("let_stmt")));
@@ -2902,11 +2916,12 @@ impl<'a> Resolver<'a> {
                         LoweredStmt::Assign(
                             found,
                             LoweredExpr::Local(i, Span::generated("local")),
+                            Span::generated("Assign"),
                         ),
                         LoweredStmt::Break { label: None , span: Span::generated("brk")},
                     ],
                     else_body: vec![],
-                
+
                     span: Span::generated("if_stmt"),});
                 while_body.push(LoweredStmt::Assign(
                     i,
@@ -2914,8 +2929,9 @@ impl<'a> Resolver<'a> {
                         left: Box::new(LoweredExpr::Local(i, Span::generated("local"))),
                         op: LoweredBinaryOp::Add,
                         right: Box::new(LoweredExpr::Number(1, Span::generated("num"))),
-                    
+
                         span: Span::generated("binary"),},
+                    Span::generated("Assign"),
                 ));
 
                 result_expr = LoweredExpr::Local(found, Span::generated("local"));
@@ -2925,6 +2941,7 @@ impl<'a> Resolver<'a> {
                 stmts.push(LoweredStmt::Let(
                     found,
                     LoweredExpr::Undefined(Span::generated("undef")),
+                    Span::generated("Let"),
                 ));
 
                 let elem = self.alloc_temp();
@@ -2933,8 +2950,9 @@ impl<'a> Resolver<'a> {
                     LoweredExpr::ArrayGet {
                         arr: Box::new(arr_ref()),
                         index: Box::new(LoweredExpr::Local(i, Span::generated("local"))),
-                    
+
                         span: Span::generated("array_get"),},
+                    Span::generated("Let"),
                 ));
 
                 let pred = self.alloc_temp();
@@ -2952,7 +2970,7 @@ impl<'a> Resolver<'a> {
                     LoweredExpr::Call {
                         kind: FunctionCallKind::User(func_id),
                         args: call_args,
-                    
+
                         span: Span::generated("call"),}
                 };
                 while_body.push(LoweredStmt::Let(pred, call_args, Span::generated("let_stmt")));
@@ -2962,11 +2980,13 @@ impl<'a> Resolver<'a> {
                         LoweredStmt::Assign(
                             found,
                             LoweredExpr::Local(elem, Span::generated("local")),
+                            Span::generated("Assign"),
                         ),
                         LoweredStmt::Break { label: None ,
                         span: Span::generated("break"),},
                     ],
                     else_body: vec![],
+                    span: Span::generated("If"),
                 });
                 while_body.push(LoweredStmt::Assign(
                     i,
@@ -2974,15 +2994,16 @@ impl<'a> Resolver<'a> {
                         left: Box::new(LoweredExpr::Local(i, Span::generated("local"))),
                         op: LoweredBinaryOp::Subtract,
                         right: Box::new(LoweredExpr::Number(1, Span::generated("num"))),
-                    
+
                         span: Span::generated("binary"),},
+                    Span::generated("Assign"),
                 ));
 
                 result_expr = LoweredExpr::Local(found, Span::generated("local"));
             }
             "findLastIndex" => {
                 let found = self.alloc_temp();
-                stmts.push(LoweredStmt::Let(found, LoweredExpr::Number(-1, Span::generated("num"))));
+                stmts.push(LoweredStmt::Let(found, LoweredExpr::Number(-1, Span::generated("num")), Span::generated("Let")));
 
                 let elem = self.alloc_temp();
                 while_body.push(LoweredStmt::Let(
@@ -2990,8 +3011,9 @@ impl<'a> Resolver<'a> {
                     LoweredExpr::ArrayGet {
                         arr: Box::new(arr_ref()),
                         index: Box::new(LoweredExpr::Local(i, Span::generated("local"))),
-                    
+
                         span: Span::generated("array_get"),},
+                    Span::generated("Let"),
                 ));
 
                 let pred = self.alloc_temp();
@@ -3009,7 +3031,7 @@ impl<'a> Resolver<'a> {
                     LoweredExpr::Call {
                         kind: FunctionCallKind::User(func_id),
                         args: call_args,
-                    
+
                         span: Span::generated("call"),}
                 };
                 while_body.push(LoweredStmt::Let(pred, call_args, Span::generated("let_stmt")));
@@ -3019,11 +3041,13 @@ impl<'a> Resolver<'a> {
                         LoweredStmt::Assign(
                             found,
                             LoweredExpr::Local(i, Span::generated("local")),
+                            Span::generated("Assign"),
                         ),
                         LoweredStmt::Break { label: None ,
                         span: Span::generated("break"),},
                     ],
                     else_body: vec![],
+                    span: Span::generated("If"),
                 });
                 while_body.push(LoweredStmt::Assign(
                     i,
@@ -3031,8 +3055,9 @@ impl<'a> Resolver<'a> {
                         left: Box::new(LoweredExpr::Local(i, Span::generated("local"))),
                         op: LoweredBinaryOp::Subtract,
                         right: Box::new(LoweredExpr::Number(1, Span::generated("num"))),
-                    
+
                         span: Span::generated("binary"),},
+                    Span::generated("Assign"),
                 ));
 
                 result_expr = LoweredExpr::Local(found, Span::generated("local"));
@@ -3042,6 +3067,7 @@ impl<'a> Resolver<'a> {
                 stmts.push(LoweredStmt::Let(
                     found,
                     LoweredExpr::Bool(false, Span::generated("bool")),
+                    Span::generated("Let"),
                 ));
 
                 let elem = self.alloc_temp();
@@ -3050,8 +3076,9 @@ impl<'a> Resolver<'a> {
                     LoweredExpr::ArrayGet {
                         arr: Box::new(arr_ref()),
                         index: Box::new(LoweredExpr::Local(i, Span::generated("local"))),
-                    
+
                         span: Span::generated("array_get"),},
+                    Span::generated("Let"),
                 ));
 
                 let pred = self.alloc_temp();
@@ -3069,7 +3096,7 @@ impl<'a> Resolver<'a> {
                     LoweredExpr::Call {
                         kind: FunctionCallKind::User(func_id),
                         args: call_args,
-                    
+
                         span: Span::generated("call"),}
                 };
                 while_body.push(LoweredStmt::Let(pred, call_args, Span::generated("let_stmt")));
@@ -3078,9 +3105,10 @@ impl<'a> Resolver<'a> {
                     then_body: vec![LoweredStmt::Assign(
                         found,
                         LoweredExpr::Bool(true, Span::generated("bool")),
+                        Span::generated("Assign"),
                     )],
                     else_body: vec![],
-                
+
                     span: Span::generated("if_stmt"),});
                 while_body.push(LoweredStmt::Assign(
                     i,
@@ -3088,8 +3116,9 @@ impl<'a> Resolver<'a> {
                         left: Box::new(LoweredExpr::Local(i, Span::generated("local"))),
                         op: LoweredBinaryOp::Add,
                         right: Box::new(LoweredExpr::Number(1, Span::generated("num"))),
-                    
+
                         span: Span::generated("binary"),},
+                    Span::generated("Assign"),
                 ));
 
                 result_expr = LoweredExpr::Local(found, Span::generated("local"));
@@ -3099,6 +3128,7 @@ impl<'a> Resolver<'a> {
                 stmts.push(LoweredStmt::Let(
                     all,
                     LoweredExpr::Bool(true, Span::generated("bool")),
+                    Span::generated("Let"),
                 ));
 
                 let elem = self.alloc_temp();
@@ -3107,8 +3137,9 @@ impl<'a> Resolver<'a> {
                     LoweredExpr::ArrayGet {
                         arr: Box::new(arr_ref()),
                         index: Box::new(LoweredExpr::Local(i, Span::generated("local"))),
-                    
+
                         span: Span::generated("array_get"),},
+                    Span::generated("Let"),
                 ));
 
                 let pred = self.alloc_temp();
@@ -3126,7 +3157,7 @@ impl<'a> Resolver<'a> {
                     LoweredExpr::Call {
                         kind: FunctionCallKind::User(func_id),
                         args: call_args,
-                    
+
                         span: Span::generated("call"),}
                 };
                 while_body.push(LoweredStmt::Let(pred, call_args, Span::generated("let_stmt")));
@@ -3134,11 +3165,12 @@ impl<'a> Resolver<'a> {
                     condition: LoweredExpr::Unary {
                         op: LoweredUnaryOp::Not,
                         expr: Box::new(LoweredExpr::Local(pred, Span::generated("local"))),
-                    
+
                         span: Span::generated("unary"),},
                     then_body: vec![LoweredStmt::Assign(
                         all,
                         LoweredExpr::Bool(false, Span::generated("bool")),
+                        Span::generated("Assign"),
                     )],
                     else_body: vec![],
                     span: Span::generated("if_stmt"),});
@@ -3148,8 +3180,9 @@ impl<'a> Resolver<'a> {
                         left: Box::new(LoweredExpr::Local(i, Span::generated("local"))),
                         op: LoweredBinaryOp::Add,
                         right: Box::new(LoweredExpr::Number(1, Span::generated("num"))),
-                    
+
                         span: Span::generated("binary"),},
+                    Span::generated("Assign"),
                 ));
 
                 result_expr = LoweredExpr::Local(all, Span::generated("local"));
@@ -3177,8 +3210,9 @@ impl<'a> Resolver<'a> {
                     LoweredExpr::ArrayGet {
                         arr: Box::new(arr_ref()),
                         index: Box::new(LoweredExpr::Local(i, Span::generated("local"))),
-                    
+
                         span: Span::generated("array_get"),},
+                    Span::generated("Let"),
                 ));
 
                 // Reduce callback args: (acc, elem, i, arr)
@@ -3198,17 +3232,18 @@ impl<'a> Resolver<'a> {
                     LoweredExpr::Call {
                         kind: FunctionCallKind::User(func_id),
                         args: reduce_call_args,
-                    
+
                         span: Span::generated("call"),},
-                Span::generated("assign")));
+                    Span::generated("Assign")));
                 while_body.push(LoweredStmt::Assign(
                     i,
                     LoweredExpr::Binary {
                         left: Box::new(LoweredExpr::Local(i, Span::generated("local"))),
                         op: LoweredBinaryOp::Add,
                         right: Box::new(LoweredExpr::Number(1, Span::generated("num"))),
-                    
+
                         span: Span::generated("binary"),},
+                    Span::generated("Assign"),
                 ));
 
                 result_expr = LoweredExpr::Local(acc, Span::generated("local"));
@@ -3219,6 +3254,7 @@ impl<'a> Resolver<'a> {
                     result,
                     LoweredExpr::ArrayNew { elements: vec![] ,
                     span: Span::generated("array_new"),},
+                    Span::generated("Let"),
                 ));
                 let elem = self.alloc_temp();
                 while_body.push(LoweredStmt::Let(
@@ -3226,8 +3262,9 @@ impl<'a> Resolver<'a> {
                     LoweredExpr::ArrayGet {
                         arr: Box::new(arr_ref()),
                         index: Box::new(LoweredExpr::Local(i, Span::generated("local"))),
-                    
+
                         span: Span::generated("array_get"),},
+                    Span::generated("Let"),
                 ));
                 let mapped = self.alloc_temp();
                 let call_args = {
@@ -3244,7 +3281,7 @@ impl<'a> Resolver<'a> {
                     LoweredExpr::Call {
                         kind: FunctionCallKind::User(func_id),
                         args: call_args,
-                    
+
                         span: Span::generated("call"),}
                 };
                 while_body.push(LoweredStmt::Let(mapped, call_args, Span::generated("let_stmt")));
@@ -3255,16 +3292,17 @@ impl<'a> Resolver<'a> {
                         LoweredExpr::Local(result, Span::generated("local")),
                         LoweredExpr::Local(mapped, Span::generated("local")),
                     ],
-                
-                    span: Span::generated("runtime_call"),}));
+
+                    span: Span::generated("runtime_call"),}, Span::generated("Expr")));
                 while_body.push(LoweredStmt::Assign(
                     i,
                     LoweredExpr::Binary {
                         left: Box::new(LoweredExpr::Local(i, Span::generated("local"))),
                         op: LoweredBinaryOp::Add,
                         right: Box::new(LoweredExpr::Number(1, Span::generated("num"))),
-                    
+
                         span: Span::generated("binary"),},
+                    Span::generated("Assign"),
                 ));
                 result_expr = LoweredExpr::Local(result, Span::generated("local"));
             }
@@ -3275,6 +3313,7 @@ impl<'a> Resolver<'a> {
                     LoweredExpr::ArrayNew {
                         elements: vec![],
                         span: Span::generated("array_new"),},
+                    Span::generated("Let"),
                 ));
 
                 let elem = self.alloc_temp();
@@ -3284,6 +3323,7 @@ impl<'a> Resolver<'a> {
                         arr: Box::new(arr_ref()),
                         index: Box::new(LoweredExpr::Local(i, Span::generated("local"))),
                         span: Span::generated("array_get"),},
+                    Span::generated("Let"),
                 ));
 
                 let mapped = self.alloc_temp();
@@ -3310,15 +3350,16 @@ impl<'a> Resolver<'a> {
                         LoweredExpr::Local(result, Span::generated("local")),
                         LoweredExpr::Local(mapped, Span::generated("local")),
                     ],
-                    span: Span::generated("runtime_call"),}));
+                    span: Span::generated("runtime_call"),}, Span::generated("Expr")));
                 while_body.push(LoweredStmt::Assign(
                     i,
                     LoweredExpr::Binary {
                         left: Box::new(LoweredExpr::Local(i, Span::generated("local"))),
                         op: LoweredBinaryOp::Add,
                         right: Box::new(LoweredExpr::Number(1, Span::generated("num"))),
-                    
+
                         span: Span::generated("binary"),},
+                    Span::generated("Assign"),
                 ));
 
                 result_expr = LoweredExpr::Local(result, Span::generated("local"));
@@ -3343,11 +3384,12 @@ impl<'a> Resolver<'a> {
                     left: Box::new(LoweredExpr::Local(len_local, Span::generated("local"))),
                     op: LoweredBinaryOp::Subtract,
                     right: Box::new(LoweredExpr::Number(1, Span::generated("num"))),
-                
+
                     span: Span::generated("binary"),},
+                Span::generated("Let"),
             ));
         } else {
-            stmts.push(LoweredStmt::Let(i, LoweredExpr::Number(0, Span::generated("num"))));
+            stmts.push(LoweredStmt::Let(i, LoweredExpr::Number(0, Span::generated("num")), Span::generated("Let")));
         }
 
         // Determine the While condition based on method
@@ -3357,80 +3399,89 @@ impl<'a> Resolver<'a> {
                     left: Box::new(LoweredExpr::Local(i, Span::generated("local"))),
                     op: LoweredBinaryOp::Less,
                     right: Box::new(LoweredExpr::Local(len_local, Span::generated("local"))),
+                    span: Span::generated("binary"),
                 }),
                 op: LoweredBinaryOp::And,
                 right: Box::new(LoweredExpr::Binary {
                     left: Box::new(result_expr.clone()),
                     op: LoweredBinaryOp::StrictEqual,
                     right: Box::new(LoweredExpr::Undefined(Span::generated("undef"))),
+                    span: Span::generated("binary"),
                 }),
-            
+
                 span: Span::generated("binary"),},
             "findIndex" => LoweredExpr::Binary {
                 left: Box::new(LoweredExpr::Binary {
                     left: Box::new(LoweredExpr::Local(i, Span::generated("local"))),
                     op: LoweredBinaryOp::Less,
                     right: Box::new(LoweredExpr::Local(len_local, Span::generated("local"))),
+                    span: Span::generated("binary"),
                 }),
                 op: LoweredBinaryOp::And,
                 right: Box::new(LoweredExpr::Binary {
                     left: Box::new(result_expr.clone()),
                     op: LoweredBinaryOp::StrictEqual,
                     right: Box::new(LoweredExpr::Number(-1, Span::generated("num"))),
+                    span: Span::generated("binary"),
                 }),
-            
+
                 span: Span::generated("binary"),},
             "findLast" => LoweredExpr::Binary {
                 left: Box::new(LoweredExpr::Binary {
                     left: Box::new(LoweredExpr::Local(i, Span::generated("local"))),
                     op: LoweredBinaryOp::GreaterEqual,
                     right: Box::new(LoweredExpr::Number(0, Span::generated("num"))),
+                    span: Span::generated("binary"),
                 }),
                 op: LoweredBinaryOp::And,
                 right: Box::new(LoweredExpr::Binary {
                     left: Box::new(result_expr.clone()),
                     op: LoweredBinaryOp::StrictEqual,
                     right: Box::new(LoweredExpr::Undefined(Span::generated("undef"))),
+                    span: Span::generated("binary"),
                 }),
-            
+
                 span: Span::generated("binary"),},
             "findLastIndex" => LoweredExpr::Binary {
                 left: Box::new(LoweredExpr::Binary {
                     left: Box::new(LoweredExpr::Local(i, Span::generated("local"))),
                     op: LoweredBinaryOp::GreaterEqual,
                     right: Box::new(LoweredExpr::Number(0, Span::generated("num"))),
+                    span: Span::generated("binary"),
                 }),
                 op: LoweredBinaryOp::And,
                 right: Box::new(LoweredExpr::Binary {
                     left: Box::new(result_expr.clone()),
                     op: LoweredBinaryOp::StrictEqual,
                     right: Box::new(LoweredExpr::Number(-1, Span::generated("num"))),
-                
+
                     span: Span::generated("binary"),}),
-            
+
                 span: Span::generated("binary"),},
             "some" => LoweredExpr::Binary {
                 left: Box::new(LoweredExpr::Binary {
                     left: Box::new(LoweredExpr::Local(i, Span::generated("local"))),
                     op: LoweredBinaryOp::Less,
                     right: Box::new(LoweredExpr::Local(len_local, Span::generated("local"))),
-                
+
                     span: Span::generated("binary"),}),
                 op: LoweredBinaryOp::And,
                 right: Box::new(LoweredExpr::Unary {
                     op: LoweredUnaryOp::Not,
                     expr: Box::new(result_expr.clone()),
                     span: Span::generated("unary"),}),
+                span: Span::generated("binary"),
             },
             "every" => LoweredExpr::Binary {
                 left: Box::new(LoweredExpr::Binary {
                     left: Box::new(LoweredExpr::Local(i, Span::generated("local"))),
                     op: LoweredBinaryOp::Less,
                     right: Box::new(LoweredExpr::Local(len_local, Span::generated("local"))),
-                
+
                     span: Span::generated("binary"),}),
                 op: LoweredBinaryOp::And,
                 right: Box::new(result_expr.clone()),
+                span: Span::generated("binary"),
             },
             _ => LoweredExpr::Binary {
                 left: Box::new(LoweredExpr::Local(i, Span::generated("local"))),

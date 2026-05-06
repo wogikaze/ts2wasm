@@ -707,6 +707,8 @@ impl BigIntStaticBuiltinFolder {
                 body: BigIntStaticBuiltinFolder::default().fold_stmts(body),
                 static_blocks: static_blocks.clone(),
                 private_elements: private_elements.clone(),
+                ts_private_field_names: Vec::new(),
+                interface_heritage: Vec::new(),
                 span: *span,
             },
             Expr::Spread { expr, span } => Expr::Spread {

@@ -2462,11 +2462,13 @@ fn lower_html_wrapper_string_method(
                                 LoweredExpr::String(">".to_owned(), Span::generated("str")),
                                 result,
                             ],
-                        
+
                             span: Span::generated("runtime_call"),},
                     ],
+                    span: Span::generated("RuntimeCall"),
                 },
             ],
+            span: Span::generated("RuntimeCall"),
         };
     }
 

@@ -453,8 +453,9 @@ impl<'a> Resolver<'a> {
                         LoweredExpr::RuntimeCall {
                             runtime_fn: "ArrayPushGrow".to_owned(),
                             args: vec![LoweredExpr::Local(local_id, Span::generated("local")), self.lower_expr(&args[0])?],
-                        
+
                             span: Span::generated("runtime_call"),},
+                        Span::generated("assign_stmt"),
                     ));
                 }
                 Ok(LoweredStmt::Expr(self.lower_expr(expr)?, Span::generated("expr_stmt")))
@@ -540,7 +541,7 @@ impl<'a> Resolver<'a> {
                     captures,
                     representation,
                 
-                    span: Span::generated("arrow_fn"),} = &closure
+                    span: _,} = &closure
                 {
                     if matches!(representation, ClosureRepresentation::HeapObject) {
                         self.heap_closure_locals.insert(local_id);
@@ -556,16 +557,20 @@ impl<'a> Resolver<'a> {
                 }
                 self.nullish_locals.remove(&local_id);
                 if self.env_cell_locals.contains(&local_id) {
-                    Ok(LoweredStmt::Block(vec![
-                        LoweredStmt::Let(
-                            local_id,
-                            LoweredExpr::EnvCellNew(Box::new(LoweredExpr::Undefined(Span::generated("undef"))), Span::generated("env_cell_new")),
-                        ),
-                        LoweredStmt::Expr(LoweredExpr::EnvCellSet {
-                            cell: local_id,
-                            expr: Box::new(closure),
-                            span: Span::generated("env_cell_set"),}, Span::generated("expr_stmt")),
-                    ]))
+                    Ok(LoweredStmt::Block(
+                        vec![
+                            LoweredStmt::Let(
+                                local_id,
+                                LoweredExpr::EnvCellNew(Box::new(LoweredExpr::Undefined(Span::generated("undef"))), Span::generated("env_cell_new")),
+                                Span::generated("let_stmt"),
+                            ),
+                            LoweredStmt::Expr(LoweredExpr::EnvCellSet {
+                                cell: local_id,
+                                expr: Box::new(closure),
+                                span: Span::generated("env_cell_set"),}, Span::generated("expr_stmt")),
+                        ],
+                        Span::generated("block"),
+                    ))
                 } else {
                     Ok(LoweredStmt::Let(local_id, closure, Span::generated("let_stmt")))
                 }

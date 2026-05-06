@@ -622,6 +622,7 @@ impl NameResolver {
                 static_blocks,
                 private_elements,
                 span,
+                ..
             } => {
                 self.enter_scope();
                 if !name.is_empty() {
@@ -639,6 +640,8 @@ impl NameResolver {
                     body: resolved_body,
                     static_blocks: static_blocks.clone(),
                     private_elements: private_elements.clone(),
+                    ts_private_field_names: Vec::new(),
+                    interface_heritage: Vec::new(),
                     span: *span,
                 })
             }
