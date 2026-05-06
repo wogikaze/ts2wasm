@@ -135,6 +135,8 @@ Follow-up issues:
 
 Split from generated bucket `1053` on 2026-05-06 and expanded with generated bucket `1054` after both representative files stopped at the same expression-statement ASI boundary. Any BigInt library semantics that appear after this parser blocker should be triaged separately.
 
+Also supersedes generated bucket `issues/done/1183-implement-classExpressionNames.md`: fresh triage for `classExpressionNames.ts` stops after the completed expression statement `A = class {}` before the later-line `var a = new A()`, which is the same ASI-after-expression-statement parser boundary.
+
 ## Completion evidence
 
 Fill only when moving to `done/`.
