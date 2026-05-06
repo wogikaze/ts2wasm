@@ -130,7 +130,7 @@ Follow-up issues:
 - `issues/done/1118-implement-castNewObjectBug.md` - Implement Castnewobjectbug (same feature label, same group key, title overlap)
 - `issues/done/1128-implement-chainedSpecializationToObjectTypeLiteral.md` - Implement Chainedspecializationtoobjecttypeliteral (same feature label, same group key, title overlap)
 - `issues/done/1136-implement-checkJsObjectLiteralIndexSignatures.md` - Implement Checkjsobjectliteralindexsignatures (same feature label, same group key, title overlap)
-- `issues/open/1148-implement-checkingObjectWithThisInNamePositionNoCrash.md` - Implement Checkingobjectwiththisinnamepositionnocrash (same feature label, same group key, title overlap)
+- `issues/done/1148-implement-checkingObjectWithThisInNamePositionNoCrash.md` - Implement Checkingobjectwiththisinnamepositionnocrash (same feature label, same group key, title overlap; split to issue 5237)
 - `issues/open/1375-implement-commentsOnObjectLiteral-object-literal.md` - Implement Commentsonobjectliteral Object Literal (same feature label, same group key, title overlap)
 - `issues/open/1511-implement-contextualTypeFunctionObjectPropertyIntersection.md` - Implement Contextualtypefunctionobjectpropertyintersection (same feature label, same group key, title overlap)
 - `issues/open/1591-implement-convertClassExpressionToFunctionFromObjectProperty.md` - Implement Convertclassexpressiontofunctionfromobjectproperty (same feature label, same group key, title overlap)
