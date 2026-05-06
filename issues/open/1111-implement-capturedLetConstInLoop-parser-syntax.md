@@ -185,6 +185,8 @@ Source context:
 ```
 
 TypeScript oracle succeeds with no diagnostics.
+Child issue `issues/open/5207-parse-do-while-asi-before-following-for.md`
+owns this ASI slice.
 
 ### Smart triage: capturedLetConstInLoop1_ES6
 
@@ -220,6 +222,88 @@ Source context:
 ```
 
 TypeScript oracle succeeds with no diagnostics.
+Child issue `issues/open/5207-parse-do-while-asi-before-following-for.md`
+owns this ASI slice.
+
+### Smart triage: capturedLetConstInLoop6
+
+- Issue class: `triage-needed`
+- Feature label: `parser-syntax`
+- Diagnostic: `UnsupportedSyntax` / `parser-or-frontend-unsupported`
+- Path: `reference/typescript/tests/cases/compiler/capturedLetConstInLoop6.ts`
+
+Reproduction:
+
+```sh
+mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/capturedLetConstInLoop6.ts
+```
+
+Failure location:
+
+```json
+{
+  "code": "UnsupportedSyntax",
+  "message": "expected Semicolon, got Some(For) at 890..893",
+  "line": 64,
+  "column": 17
+}
+```
+
+Source context:
+
+```text
+60 | } while (1 === 1)
+61 |
+62 | for (let y = 0; y < 1; ++y) {
+63 |     let x = 1;
+```
+
+TypeScript oracle succeeds with no diagnostics. This is the same
+no-semicolon `do while` before `for` parser boundary as capturedLetConstInLoop1,
+with `break` and `continue` statements already parsed inside the preceding
+body. Child issue
+`issues/open/5207-parse-do-while-asi-before-following-for.md` owns this ASI
+slice.
+
+### Smart triage: capturedLetConstInLoop6_ES6
+
+- Issue class: `triage-needed`
+- Feature label: `parser-syntax`
+- Diagnostic: `UnsupportedSyntax` / `parser-or-frontend-unsupported`
+- Path: `reference/typescript/tests/cases/compiler/capturedLetConstInLoop6_ES6.ts`
+
+Reproduction:
+
+```sh
+mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/capturedLetConstInLoop6_ES6.ts
+```
+
+Failure location:
+
+```json
+{
+  "code": "UnsupportedSyntax",
+  "message": "expected Semicolon, got Some(For) at 887..890",
+  "line": 64,
+  "column": 17
+}
+```
+
+Source context:
+
+```text
+60 | } while (1 === 1)
+61 |
+62 | for (let y = 0; y < 1; ++y) {
+63 |     let x = 1;
+```
+
+TypeScript oracle succeeds with no diagnostics. This is the same
+no-semicolon `do while` before `for` parser boundary as capturedLetConstInLoop1,
+with `break` and `continue` statements already parsed inside the preceding
+body. Child issue
+`issues/open/5207-parse-do-while-asi-before-following-for.md` owns this ASI
+slice.
 
 ### Smart triage: capturedLetConstInLoop12
 
@@ -324,6 +408,35 @@ explicit semicolon before the enclosing function closes. Child issue
 `issues/open/5210-parse-do-while-asi-before-block-end-or-expression.md` owns
 this ASI slice.
 
+### Smart triage: capturedLetConstInLoop2_ES6
+
+- Issue class: `triage-needed`
+- Feature label: `parser-syntax`
+- Diagnostic: `UnsupportedSyntax` / `parser-or-frontend-unsupported`
+- Path: `reference/typescript/tests/cases/compiler/capturedLetConstInLoop2_ES6.ts`
+
+Reproduction:
+
+```sh
+mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/capturedLetConstInLoop2_ES6.ts
+```
+
+Failure location:
+
+```json
+{
+  "code": "UnsupportedSyntax",
+  "message": "expected Semicolon, got Some(RightBrace) at 856..857",
+  "line": 44,
+  "column": 1
+}
+```
+
+Source context includes the preceding `do { ... } while (1 === 1)` with no
+explicit semicolon before the enclosing function closes. Child issue
+`issues/open/5210-parse-do-while-asi-before-block-end-or-expression.md` owns
+this ASI slice.
+
 ### Smart triage: capturedLetConstInLoop5
 
 - Issue class: `triage-needed`
@@ -343,6 +456,36 @@ Failure location:
 {
   "code": "UnsupportedSyntax",
   "message": "expected Semicolon, got Some(Ident(\"use\")) at 1176..1179",
+  "line": 75,
+  "column": 6
+}
+```
+
+Source context includes a preceding `do { ... } while (1 === 1)` with no
+explicit semicolon before the following `use(v);` expression. TypeScript
+advances and reports TS2454 use-before-assigned diagnostics. Child issue
+`issues/open/5210-parse-do-while-asi-before-block-end-or-expression.md` owns
+this ASI slice.
+
+### Smart triage: capturedLetConstInLoop5_ES6
+
+- Issue class: `triage-needed`
+- Feature label: `parser-syntax`
+- Diagnostic: `UnsupportedSyntax` / `parser-or-frontend-unsupported`
+- Path: `reference/typescript/tests/cases/compiler/capturedLetConstInLoop5_ES6.ts`
+
+Reproduction:
+
+```sh
+mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/capturedLetConstInLoop5_ES6.ts
+```
+
+Failure location:
+
+```json
+{
+  "code": "UnsupportedSyntax",
+  "message": "expected Semicolon, got Some(Ident(\"use\")) at 1175..1178",
   "line": 75,
   "column": 6
 }
@@ -544,7 +687,10 @@ Visible symbols before failure include `exportedFoo`, loop/captured bindings
 `x`, `v0`, `v00`, `v1`, `v2`, `v3`, `y`, and the failing block-local `x`.
 Compiler tokens succeed; AST and resolved dumps fail with the same
 `UnsupportedSyntax` parser error. TypeScript oracle succeeds with no
-diagnostics.
+diagnostics. This is the same no-semicolon `do while` before `for` boundary as
+capturedLetConstInLoop1, with captured `var` use in the surrounding body. Child
+issue `issues/open/5207-parse-do-while-asi-before-following-for.md` owns this
+ASI slice.
 
 ### Folded triage from #1109: capturedLetConstInLoop4_ES6
 
@@ -584,7 +730,10 @@ Visible symbols before failure include `exportedFoo`, loop/captured bindings
 `x`, `v0`, `v00`, `v1`, `v2`, `v3`, `y`, and the failing block-local `x`.
 Compiler tokens succeed; AST and resolved dumps fail with the same
 `UnsupportedSyntax` parser error. TypeScript oracle succeeds with no
-diagnostics.
+diagnostics. This is the same no-semicolon `do while` before `for` boundary as
+capturedLetConstInLoop1, with captured `var` use in the surrounding body. Child
+issue `issues/open/5207-parse-do-while-asi-before-following-for.md` owns this
+ASI slice.
 
 ## Completion evidence
 
