@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 3 | 2 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4466 | 3709 | 757 |
+| frontend | 4466 | 3708 | 758 |
 | harness | 1 | 0 | 1 |
 | ir | 50 | 28 | 22 |
 | issues | 4 | 0 | 4 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5094 | 3990 | 1104 |
+| total | 5094 | 3989 | 1105 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -497,7 +497,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1202 | Implement Classextendsinterfaceinmodule | spike | frontend/syntax | class: blocked | Implement Classextendsinterfaceinmodule |
 | 1203 | Implement Classextendsinterfacethatextendsclasswithprivates | spike | frontend/syntax | class: blocked | Implement Classextendsinterfacethatextendsclasswithprivates |
 | 1204 | Implement Classextendsmultiplebaseclasses | spike | frontend/syntax | class: blocked | Implement Classextendsmultiplebaseclasses |
-| 1206 | Implement Classextensionnameoutput | spike | frontend/syntax | class: triage-needed | Implement Classextensionnameoutput |
 | 1207 | Implement Classfieldsuperaccessible | spike | frontend/syntax | class: blocked | Implement Classfieldsuperaccessible |
 | 1208 | Implement Classfieldsuperaccessiblejs | spike | frontend/syntax | class: blocked | Implement Classfieldsuperaccessiblejs |
 | 1209 | Implement Classfieldsupernotaccessible | spike | frontend/syntax | class: blocked | Implement Classfieldsupernotaccessible |
@@ -5050,6 +5049,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1200 | Implement Classextendsinterface Unknown Unsupported | spike | frontend/syntax | see `issues/done/1200-implement-classExtendsInterface-unknown-unsupported.md` |
 | 1201 | Implement Classextendsinterfaceinexpression | spike | frontend/syntax | see `issues/done/1201-implement-classExtendsInterfaceInExpression.md` |
 | 1205 | Implement Classextendsnull | spike | frontend/syntax | see `issues/done/1205-implement-classExtendsNull.md` |
+| 1206 | Implement Classextensionnameoutput | spike | frontend/syntax | see `issues/done/1206-implement-classExtensionNameOutput.md` |
 | 2050 | Implement Duplicatelocalvariable Duplicate Local | spike | reference/triage | see `issues/done/2050-implement-duplicateLocalVariable-duplicate-local.md` |
 | 3002 | Implement Isolateddeclarationerrorsdefault | spike | runtime/builtins | see `issues/done/3002-implement-isolatedDeclarationErrorsDefault.md` |
 | 3131 | Implement Jsxfactorynotidentifierorqualifiedname | spike | reference/triage | see `issues/done/3131-implement-jsxFactoryNotIdentifierOrQualifiedName.md` |
