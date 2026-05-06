@@ -111,7 +111,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] created: `issues/open/5153-erase-union-types-in-as-assertions.md`
+- [x] created: `issues/done/5153-erase-union-types-in-as-assertions.md`
 
 ## Notes
 
@@ -174,7 +174,7 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- split to `issues/open/5153-erase-union-types-in-as-assertions.md`
+- split to `issues/done/5153-erase-union-types-in-as-assertions.md`
 
 Validation result:
 

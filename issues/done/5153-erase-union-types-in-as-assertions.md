@@ -62,9 +62,9 @@ The parser consumes and erases the full union type annotation after `as`, leavin
 
 In scope:
 
-- [ ] Extend TypeScript `as` assertion erasure to consume union type tails such as `number | string`.
-- [ ] Add a focused parser regression for `return 10 as number | string;`.
-- [ ] Re-run the representative triage and confirm it no longer reports runtime `BitwiseOr` from the assertion type.
+- [x] Extend TypeScript `as` assertion erasure to consume union type tails such as `number | string`.
+- [x] Add a focused parser regression for `return 10 as number | string;`.
+- [x] Re-run the representative triage and confirm it no longer reports runtime `BitwiseOr` from the assertion type.
 
 Out of scope:
 
@@ -87,10 +87,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] A focused parser test erases `10 as number | string` to the same expression as `10 as number`.
-- [ ] The representative triage no longer reports `binary operator BitwiseOr not yet supported`.
-- [ ] Existing `as` assertion erasure tests continue to pass.
-- [ ] Any later class mismatch/type-system blocker is recorded separately if outside this parser slice.
+- [x] A focused parser test erases `10 as number | string` to the same expression as `10 as number`.
+- [x] The representative triage no longer reports `binary operator BitwiseOr not yet supported`.
+- [x] Existing `as` assertion erasure tests continue to pass.
+- [x] Any later class mismatch/type-system blocker is recorded separately if outside this parser slice.
 
 ## Validation
 
@@ -120,15 +120,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 
@@ -140,14 +140,34 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- `...`
+- this commit: frontend: erase union type assertions
 
 Validation result:
 
 ```text
-command:
-result:
-date:
+command: cargo fmt --all --check
+result: pass
+date: 2026-05-06
+
+command: cargo nextest run -p ts2wasm-frontend as_assertion_union_type_erasure
+result: pass
+date: 2026-05-06
+
+command: cargo nextest run -p ts2wasm-frontend
+result: pass (172 passed)
+date: 2026-05-06
+
+command: cargo build -p ts2wasm-cli
+result: pass
+date: 2026-05-06
+
+command: python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/baseClassImprovedMismatchErrors.ts
+result: pass; BuildPass, AST no longer contains runtime BitwiseOr for `as number | string`
+date: 2026-05-06
+
+command: mise run reference-coverage -- tsc --path-filter reference/typescript/tests/cases/compiler/baseClassImprovedMismatchErrors.ts --detail
+result: pass; executed=1, build_pass=1, unsupported=0
+date: 2026-05-06
 ```
 
 Remaining risks:

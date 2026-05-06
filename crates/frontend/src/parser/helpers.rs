@@ -86,7 +86,6 @@ fn is_typescript_expression_type_stop(token: &Token) -> bool {
             | Token::OrOr
             | Token::NullishCoalesce
             | Token::Ampersand
-            | Token::Pipe
             | Token::Caret
             | Token::LeftShift
             | Token::RightShift

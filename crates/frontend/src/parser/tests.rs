@@ -332,10 +332,10 @@ mod tests {
     }
     #[test]
     fn parses_typescript_as_assertion_union_type_erasure() {
-        let source = r#""
+        let source = r#"
             return 10 as number | string;
             let value = 42 as number | string | boolean;
-        ""#;
+        "#;
         let program = parse_program(source).unwrap();
         assert_eq!(program.len(), 2);
 

@@ -121,7 +121,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/open/5153-erase-union-types-in-as-assertions.md` is not a match: it owns TypeScript `as A | B` union erasure and explicitly excludes runtime bitwise-or implementation.
+- `issues/done/5153-erase-union-types-in-as-assertions.md` is not a match: it owns TypeScript `as A | B` union erasure and explicitly excludes runtime bitwise-or implementation.
 - BigInt bitwise OR issues/code paths are not a match: the affected files use ordinary `number`, `null`, and `undefined` operands.
 
 ## Smart triage
