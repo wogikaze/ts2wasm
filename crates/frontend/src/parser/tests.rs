@@ -3081,7 +3081,6 @@ class Foo {
         );
     }
 
-    #[ignore]
     #[test]
     fn parses_export_assignment() {
         let program = parse_program("export = foo;");
@@ -3097,7 +3096,6 @@ class Foo {
         }
     }
 
-    #[ignore]
     #[test]
     fn parses_export_assignment_member_expression() {
         let program = parse_program("export = module.exports;");

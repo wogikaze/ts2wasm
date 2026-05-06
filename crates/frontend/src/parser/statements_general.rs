@@ -117,6 +117,17 @@ impl Parser {
             self.class_export_statement(export_span)
         } else if matches!(self.peek(), Some(Token::Function)) {
             self.function_export_statement(export_span)
+        } else if matches!(self.peek(), Some(Token::Equal)) {
+            self.advance(); // consume '='
+            let expr = self.expression()?;
+            let end = self.statement_terminator_end(expr.span().end)?;
+            Ok(Stmt::Expr {
+                expr,
+                span: Span {
+                    start: export_span.start,
+                    end,
+                },
+            })
         } else {
             match self.peek() {
                 Some(Token::LeftBrace) => self.named_export_statement(export_span),

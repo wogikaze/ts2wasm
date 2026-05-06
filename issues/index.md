@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 2 | 1 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4435 | 3751 | 684 |
+| frontend | 4436 | 3750 | 686 |
 | harness | 1 | 0 | 1 |
 | ir | 39 | 12 | 27 |
 | issues | 5 | 0 | 5 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5056 | 4021 | 1035 |
+| total | 5057 | 4020 | 1037 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -129,11 +129,9 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5182 | Parse comma-separated for update expressions | feature | frontend/syntax | implementation-ready | P1 |  | comma-separated for-loop update expressions are parser-unsupported, blocking the block-scoped loop reassignment refer... |
 | 5183 | Report typed getter null return diagnostics | feature | frontend/semantics | implementation-ready | P1 |  | typed class getter return annotations are erased before return-expression diagnostics are checked. |
 | 5185 | Source-span unresolved class method function calls | feature | frontend/resolver | implementation-ready | P1 |  | unresolved function calls from class method bodies lose source-span information and should report the out-of-scope ca... |
-| 5186 | Parse export assignment expressions | feature | frontend/syntax | implementation-ready | P1 |  | `export = expr` is treated as an unsupported module boundary before the exported expression can be represented in the... |
 | 5187 | Lower namespace-only multi-section files | feature | compiler | implementation-ready | P1 |  | multi-section TypeScript reference files that contain namespace declarations but no static imports/exports are reduce... |
 | 5189 | Parse ASI after class expression variable initializer | feature | frontend/syntax | implementation-ready | P1 |  | semicolonless variable declarations whose initializer is an anonymous class expression do not accept ASI before the n... |
 | 5190 | Skip implements in ambient class declarations | feature | frontend/syntax | implementation-ready | P1 |  | ambient class declaration parsing does not skip `implements` heritage clauses. |
-| 5191 | Parse leading decimal numeric literals | feature | frontend/syntax | implementation-ready | P1 |  | `builtinIterator.ts` stops at a generic `unsupported expression` parser diagnostic before it can reach the intended `... |
 | 5192 | Support first-class class constructor values | feature | ir/runtime | implementation-ready | P1 |  | class constructor bindings used as expression values still fail with `issue-5011`, blocking reference cases that pass... |
 | 5194 | Report empty call type arguments | feature | frontend/syntax | implementation-ready | P1 |  | `Foo<a,,b>();` currently reports `expected Semicolon, got Some(Comma)` instead of a source-spanned missing type-argum... |
 | 5195 | Support callable interface-typed local calls | feature | ir/lowering | implementation-ready | P1 |  | callable interface-typed locals currently lower to `Undefined` values and calls to them stop with `issue-211`. |
@@ -152,6 +150,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5210 | Sparse array holes handling for Array.prototype.map | feature | runtime/builtins | implementation-ready | P2 |  | current `Array.prototype.map` implementation only supports dense |
 | 5213 | Implement generator function syntax prerequisite for iterator spread | feature | frontend/syntax | implementation-ready | P2 |  | Generator function declarations are rejected before iterator spread can be tested. |
 | 5219 | Support explicit this-parameter function expression lowering | feature | ir/runtime | implementation-ready | P1 |  | function expressions that declare an erased TypeScript `this` parameter and read `this` in the body currently fail wi... |
+| 5222 | Parse ambient generic variable type annotations | feature | frontend/syntax | implementation-ready | P1 |  | declaration-only ambient variables with generic type annotations can |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -5157,7 +5156,9 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5171 | Accept unsigned 32-bit hex literals | feature | frontend/lexer | see `issues/done/5171-accept-unsigned-32-bit-hex-literals.md` |
 | 5178 | Parse bitwise compound assignment operators | feature | frontend/syntax | see `issues/done/5178-parse-bitwise-compound-assignment-operators.md` |
 | 5184 | Parse const enum declarations | feature | frontend/syntax | see `issues/done/5184-parse-const-enum-declarations.md` |
+| 5186 | Parse export assignment expressions | feature | frontend/syntax | see `issues/done/5186-parse-export-assignment-for-diagnostics.md` |
 | 5188 | Report block-scoped function call arity diagnostics | feature | frontend/semantics | see `issues/done/5188-report-block-scoped-function-call-arity-diagnostics.md` |
+| 5191 | Parse leading decimal numeric literals | feature | frontend/syntax | see `issues/done/5191-parse-leading-decimal-numeric-literals.md` |
 | 5193 | Parse ASI after ambient variable declarations | feature | frontend/syntax | see `issues/done/5193-parse-asi-after-ambient-variable-declarations.md` |
 | 5205 | Restore backend residual expression rejection | bug | backend-wasm | see `issues/done/5205-restore-backend-residual-expression-rejection.md` |
 | 5206 | Resolve issue ID collisions and open/done conflicts | cleanup | issues | see `issues/done/5206-resolve-issue-id-collisions-and-open-done-conflicts.md` |
