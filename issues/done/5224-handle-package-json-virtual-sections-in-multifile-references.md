@@ -67,11 +67,11 @@ parser boundary to the next import/export or API-sample diagnostic.
 
 In scope:
 
-- [ ] Detect `.json` virtual sections produced by `// @filename:` references.
-- [ ] Preserve enough section metadata for later module-resolution work, or emit a focused unsupported diagnostic that names the JSON section.
-- [ ] Ensure `.ts`, `.tsx`, `.d.ts`, `.js`, and `.jsx` virtual sections keep the existing TypeScript parsing path.
-- [ ] Add focused coverage using `node_modules/typescript/package.json` plus a following TypeScript section.
-- [ ] Re-run `APISample_linter.ts` and `APISample_transform.ts` triage and record the next narrower blocker.
+- [x] Detect `.json` virtual sections produced by `// @filename:` references.
+- [x] Preserve enough section metadata for later module-resolution work, or emit a focused unsupported diagnostic that names the JSON section.
+- [x] Ensure `.ts`, `.tsx`, `.d.ts`, `.js`, and `.jsx` virtual sections keep the existing TypeScript parsing path.
+- [x] Add focused coverage using `node_modules/typescript/package.json` plus a following TypeScript section.
+- [x] Re-run `APISample_linter.ts` and `APISample_transform.ts` triage and record the next narrower blocker.
 
 Out of scope:
 
@@ -94,10 +94,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] `APISample_linter.ts` no longer reports `expected Semicolon, got Some(Colon)` for `node_modules/typescript/package.json`.
-- [ ] `APISample_transform.ts` no longer reports `expected Semicolon, got Some(Colon)` for `node_modules/typescript/package.json`.
-- [ ] Focused coverage proves JSON virtual sections are not parsed as TypeScript source.
-- [ ] Follow-up work is represented if triage advances to import/export or TypeScript compiler API runtime gaps.
+- [x] `APISample_linter.ts` no longer reports `expected Semicolon, got Some(Colon)` for `node_modules/typescript/package.json`.
+- [x] `APISample_transform.ts` no longer reports `expected Semicolon, got Some(Colon)` for `node_modules/typescript/package.json`.
+- [x] Focused coverage proves JSON virtual sections are not parsed as TypeScript source.
+- [x] Follow-up work is represented if triage advances to import/export or TypeScript compiler API runtime gaps.
 
 ## Validation
 
@@ -124,15 +124,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] existing: `issues/open/543-implement-APISample-import-export.md`
 
 ## Notes
 
@@ -146,16 +146,32 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- `...`
+- this commit: compiler: skip json virtual sections
 
 Validation result:
 
 ```text
-command:
-result:
-date:
+command: cargo fmt --all --check
+result: pass
+date: 2026-05-06
+
+command: cargo nextest run -p ts2wasm-compiler classifies_package_json_virtual_section_as_non_typescript
+result: pass; 1 test passed
+date: 2026-05-06
+
+command: cargo nextest run -p ts2wasm-cli --test official_corpora
+result: pass; 2 tests passed, 1 skipped
+date: 2026-05-06
+
+command: cargo build -q -p ts2wasm-cli && python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/APISample_linter.ts
+result: pass for issue 5224; no package.json colon parser diagnostic; advanced to UnresolvedName for `ts`
+date: 2026-05-06
+
+command: cargo build -q -p ts2wasm-cli && python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/APISample_transform.ts
+result: pass for issue 5224; no package.json colon parser diagnostic; advanced to UnresolvedName for `ts`
+date: 2026-05-06
 ```
 
 Remaining risks:
 
-- none
+- APISample import namespace/module handling remains under issue 543 and issue 432.

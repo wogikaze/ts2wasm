@@ -994,6 +994,9 @@ fn build_multi_section_file(
     let mut modules = Vec::new();
     for (i, (name, section_source)) in sections.iter().enumerate() {
         let section_path = Path::new(name);
+        if !is_typescript_virtual_section(section_path) {
+            continue;
+        }
         let semantic_path = if section_path.extension().is_some() {
             section_path
         } else {
@@ -1112,6 +1115,16 @@ fn lower_source_as_module_body(
         statements,
         locals_count: lowered_module.top_level_locals.len(),
     }))
+}
+
+fn is_typescript_virtual_section(path: &Path) -> bool {
+    let Some(extension) = path.extension().and_then(|extension| extension.to_str()) else {
+        return true;
+    };
+    matches!(
+        extension.to_ascii_lowercase().as_str(),
+        "ts" | "tsx" | "js" | "jsx" | "mts" | "cts" | "mjs" | "cjs"
+    )
 }
 
 fn lower_static_module_body_for_build(
@@ -1935,6 +1948,24 @@ mod tests {
     fn parses_program_with_utf8_bom() {
         let program = parse_program("\u{feff}console.log(1);").unwrap();
         assert_eq!(program.len(), 1);
+    }
+
+    #[test]
+    fn classifies_package_json_virtual_section_as_non_typescript() {
+        let source = r#"
+// @filename: node_modules/typescript/package.json
+{
+    "name": "typescript",
+    "types": "/.ts/typescript.d.ts"
+}
+// @filename: APISample_transform.ts
+console.log("ok");
+"#;
+        let sections = split_file_name_sections(source);
+        assert_eq!(sections.len(), 2);
+        assert_eq!(sections[0].0, "node_modules/typescript/package.json");
+        assert!(!is_typescript_virtual_section(Path::new(&sections[0].0)));
+        assert!(is_typescript_virtual_section(Path::new(&sections[1].0)));
     }
 
     #[test]

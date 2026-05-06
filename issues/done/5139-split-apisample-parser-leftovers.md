@@ -118,7 +118,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] created: `issues/open/5224-handle-package-json-virtual-sections-in-multifile-references.md`
+- [x] completed: `issues/done/5224-handle-package-json-virtual-sections-in-multifile-references.md`
 
 ## Resolution
 
@@ -133,7 +133,7 @@ section is reached.
 ```text
 command: python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/APISample_linter.ts
 result: UnsupportedSyntax: expected Semicolon, got Some(Colon) at 216..217
-owner: issues/open/5224-handle-package-json-virtual-sections-in-multifile-references.md
+owner: issues/done/5224-handle-package-json-virtual-sections-in-multifile-references.md
 ```
 
 `APISample_transform.ts`:
@@ -141,7 +141,7 @@ owner: issues/open/5224-handle-package-json-virtual-sections-in-multifile-refere
 ```text
 command: python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/APISample_transform.ts
 result: UnsupportedSyntax: expected Semicolon, got Some(Colon) at 216..217
-owner: issues/open/5224-handle-package-json-virtual-sections-in-multifile-references.md
+owner: issues/done/5224-handle-package-json-virtual-sections-in-multifile-references.md
 ```
 
 This is not issue 543 yet because the import/export boundary is hidden behind

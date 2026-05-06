@@ -13,7 +13,7 @@ Issue files are the source of truth for work items. The generated section below 
 | backend | 13 | 1 | 12 |
 | backend-wasm | 3 | 1 | 2 |
 | cli | 15 | 0 | 15 |
-| compiler | 3 | 2 | 1 |
+| compiler | 3 | 1 | 2 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
 | frontend | 4437 | 3749 | 688 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5059 | 4020 | 1039 |
+| total | 5059 | 4019 | 1040 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -149,7 +149,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5210 | Sparse array holes handling for Array.prototype.map | feature | runtime/builtins | implementation-ready | P2 |  | current `Array.prototype.map` implementation only supports dense |
 | 5213 | Implement generator function syntax prerequisite for iterator spread | feature | frontend/syntax | implementation-ready | P2 |  | Generator function declarations are rejected before iterator spread can be tested. |
 | 5219 | Support explicit this-parameter function expression lowering | feature | ir/runtime | implementation-ready | P1 |  | function expressions that declare an erased TypeScript `this` parameter and read `this` in the body currently fail wi... |
-| 5224 | Handle package.json virtual sections in multi-file references | feature | compiler/reference | implementation-ready | P1 |  | `node_modules/typescript/package.json` virtual sections in APISample references report `expected Semicolon, got Some(... |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -5170,6 +5169,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5221 | Support bitwise AND/XOR binary lowering | feature | ir/lowering | see `issues/done/5221-support-bitwise-and-xor-binary-lowering.md` |
 | 5222 | Parse ambient generic variable type annotations | feature | frontend/syntax | see `issues/done/5222-parse-ambient-generic-variable-type-annotations.md` |
 | 5223 | Report Iterator type-only value-use diagnostics | feature | frontend/resolver | see `issues/done/5223-report-iterator-type-only-value-use-diagnostics.md` |
+| 5224 | Handle package.json virtual sections in multi-file references | feature | compiler/reference | see `issues/done/5224-handle-package-json-virtual-sections-in-multifile-references.md` |
 <!-- generated:done:end -->
 
 ## Index generation contract
