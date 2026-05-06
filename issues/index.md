@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 4 | 3 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4507 | 3632 | 875 |
+| frontend | 4508 | 3632 | 876 |
 | harness | 1 | 0 | 1 |
 | ir | 57 | 35 | 22 |
 | issues | 4 | 0 | 4 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5143 | 3914 | 1229 |
+| total | 5144 | 3914 | 1230 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -263,6 +263,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5306 | Report export assignment with other exports | bug | frontend/syntax | implementation-ready | P1 |  | `ExportAssignment8.ts` stops at generic issue-055 instead of reporting the specific `export =` plus other exports rule. |
 | 5307 | Report var/function duplicate identifier diagnostics | bug | frontend/resolver | implementation-ready | P2 |  | `conflictingTypeAnnotatedVar.ts` reports a generic `DuplicateLocal` at the function declaration span instead of sourc... |
 | 5308 | Parse ASI after instance class field initializers | feature | frontend/parser | implementation-ready | P1 |  | `conflictingTypeParameterSymbolTransfer.ts` reports `expected property name, got Equal` after `foo = this.t` instead ... |
+| 5309 | Skip generic type arguments in type annotations | feature | frontend/parser | implementation-ready | P1 |  | function parameter annotations such as `x: Record<'a', string>` fail with `expected Comma, got Some(Greater)`. |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -653,7 +654,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1344 | Implement Commentleadingclosebrace | spike | frontend/resolver | class: blocked | Implement Commentleadingclosebrace |
 | 1345 | Implement Commentonambientmodule | spike | frontend/syntax | class: blocked | Implement Commentonambientmodule |
 | 1346 | Implement Commentonambientvariable | spike | frontend/resolver | class: blocked | Implement Commentonambientvariable |
-| 1438 | Implement Consistentaliasvsnonaliasrecordbehavior | spike | frontend/syntax | class: blocked | Implement Consistentaliasvsnonaliasrecordbehavior |
 | 1439 | Implement Constdeclarationshadowedbyvardeclaration | spike | frontend/syntax | class: blocked | Implement Constdeclarationshadowedbyvardeclaration |
 | 1440 | Implement Constdeclarations Import Export | spike | frontend/syntax | class: blocked | Implement Constdeclarations Import Export |
 | 1441 | Implement Constdeclarations Name Resolution | spike | frontend/resolver | class: blocked | Implement Constdeclarations Name Resolution |
@@ -5099,6 +5099,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1435 | Implement Conflictingdeclarationsimportfromnamespace | spike | frontend/syntax | see `issues/done/1435-implement-conflictingDeclarationsImportFromNamespace.md` |
 | 1436 | Implement Conflictingtypeannotatedvar | spike | reference/triage | see `issues/done/1436-implement-conflictingTypeAnnotatedVar.md` |
 | 1437 | Implement Conflictingtypeparametersymboltransfer | spike | frontend/syntax | see `issues/done/1437-implement-conflictingTypeParameterSymbolTransfer.md` |
+| 1438 | Implement Consistentaliasvsnonaliasrecordbehavior | spike | frontend/syntax | see `issues/done/1438-implement-consistentAliasVsNonAliasRecordBehavior.md` |
 | 2050 | Implement Duplicatelocalvariable Duplicate Local | spike | reference/triage | see `issues/done/2050-implement-duplicateLocalVariable-duplicate-local.md` |
 | 3002 | Implement Isolateddeclarationerrorsdefault | spike | runtime/builtins | see `issues/done/3002-implement-isolatedDeclarationErrorsDefault.md` |
 | 3131 | Implement Jsxfactorynotidentifierorqualifiedname | spike | reference/triage | see `issues/done/3131-implement-jsxFactoryNotIdentifierOrQualifiedName.md` |
