@@ -2441,6 +2441,21 @@ class Foo {
     }
 
     #[test]
+    fn rejects_null_return_in_typed_getter() {
+        let err = parse_program(
+            "class Result {} class Test { get Property(): Result { return null; } }",
+        )
+        .unwrap_err();
+        assert_eq!(err.code, DiagCode::UnsupportedTypeScriptSyntax);
+        assert!(err.message.contains("issue-5183"));
+    }
+
+    #[test]
+    fn allows_null_return_in_unannotated_getter() {
+        parse_program("class Test { get Property() { return null; } }").unwrap();
+    }
+
+    #[test]
     fn rejects_dynamic_import_with_issue_linked_diagnostic() {
         let err = parse_program("import('./module-source');").unwrap_err();
         assert_eq!(err.code, DiagCode::UnsupportedSyntax);

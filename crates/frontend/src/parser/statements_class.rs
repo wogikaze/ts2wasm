@@ -247,7 +247,11 @@ impl Parser {
                     }
                 }
             }
+            let mut has_getter_return_type = false;
             if self.consume(TokenKind::Colon) {
+                if method_name.starts_with("get ") {
+                    has_getter_return_type = true;
+                }
                 self.skip_type_annotation_until(&[
                     TokenKind::LeftBrace,
                     TokenKind::Semicolon,
@@ -286,6 +290,17 @@ impl Parser {
             }
 
             let mut method_body = self.block()?;
+
+            // issue-5183: reject null return in typed getter
+            if has_getter_return_type {
+                if let Some(null_span) = find_null_return_in_stmts(&method_body) {
+                    return Err(self.unsupported_typescript_syntax(
+                        null_span,
+                        "issue-5183: Type 'null' is not assignable to type of getter return type",
+                    ));
+                }
+            }
+
             if method_name == "constructor" && !parameter_property_assignments.is_empty() {
                 method_body = merge_constructor_parameter_property_assignments(
                     parameter_property_assignments,
@@ -465,4 +480,127 @@ impl Parser {
             },
         })
     }
+}
+
+/// Recursively search for `return null;` in a list of statements.
+/// Returns the span of the `null` expression if found.
+fn find_null_return_in_stmts(stmts: &[Stmt]) -> Option<Span> {
+    for stmt in stmts {
+        match stmt {
+            Stmt::Return { expr, .. } => {
+                if let Expr::Null { span } = expr {
+                    return Some(*span);
+                }
+            }
+            Stmt::If {
+                then_body,
+                else_body,
+                ..
+            } => {
+                if let Some(span) = find_null_return_in_stmts(then_body) {
+                    return Some(span);
+                }
+                if let Some(span) = find_null_return_in_stmts(else_body) {
+                    return Some(span);
+                }
+            }
+            Stmt::While { body, .. } => {
+                if let Some(span) = find_null_return_in_stmts(body) {
+                    return Some(span);
+                }
+            }
+            Stmt::DoWhile { body, .. } => {
+                if let Some(span) = find_null_return_in_stmts(body) {
+                    return Some(span);
+                }
+            }
+            Stmt::For { body, .. } => {
+                if let Some(span) = find_null_return_in_stmts(body) {
+                    return Some(span);
+                }
+            }
+            Stmt::ForIn { body, .. } => {
+                if let Some(span) = find_null_return_in_stmts(body) {
+                    return Some(span);
+                }
+            }
+            Stmt::ForOf { body, .. } => {
+                if let Some(span) = find_null_return_in_stmts(body) {
+                    return Some(span);
+                }
+            }
+            Stmt::Switch { cases, .. } => {
+                for (_, case_body) in cases {
+                    if let Some(span) = find_null_return_in_stmts(case_body) {
+                        return Some(span);
+                    }
+                }
+            }
+            Stmt::TryCatch {
+                try_block,
+                catch_block,
+                finally_block,
+                ..
+            } => {
+                if let Some(span) = find_null_return_in_stmts(try_block) {
+                    return Some(span);
+                }
+                if let Some(catch) = catch_block {
+                    if let Some(span) = find_null_return_in_stmts(catch) {
+                        return Some(span);
+                    }
+                }
+                if let Some(finally) = finally_block {
+                    if let Some(span) = find_null_return_in_stmts(finally) {
+                        return Some(span);
+                    }
+                }
+            }
+            Stmt::Labeled { body, .. } => {
+                if let Some(span) = find_null_return_in_stmts(std::slice::from_ref(body.as_ref()))
+                {
+                    return Some(span);
+                }
+            }
+            Stmt::Function { body, .. } => {
+                if let Some(span) = find_null_return_in_stmts(body) {
+                    return Some(span);
+                }
+            }
+            Stmt::ClassDecl {
+                body,
+                static_blocks,
+                ..
+            } => {
+                if let Some(span) = find_null_return_in_stmts(body) {
+                    return Some(span);
+                }
+                for block in static_blocks {
+                    if let Some(span) = find_null_return_in_stmts(&block.body) {
+                        return Some(span);
+                    }
+                }
+            }
+            Stmt::Let { .. }
+            | Stmt::AmbientValueDecl { .. }
+            | Stmt::Assign { .. }
+            | Stmt::Expr { .. }
+            | Stmt::Break { .. }
+            | Stmt::Continue { .. }
+            | Stmt::Throw { .. }
+            | Stmt::ImportSideEffect { .. }
+            | Stmt::ImportNamed { .. }
+            | Stmt::ImportDefault { .. }
+            | Stmt::ImportDefaultNamed { .. }
+            | Stmt::ImportNamespace { .. }
+            | Stmt::ImportDefaultNamespace { .. }
+            | Stmt::ExportNamed { .. }
+            | Stmt::ExportNamedFrom { .. }
+            | Stmt::ExportAllFrom { .. }
+            | Stmt::ExportNamespaceFrom { .. }
+            | Stmt::ExportDecl { .. }
+            | Stmt::ExportDefault { .. } => {}
+        }
+    }
+    None
 }
