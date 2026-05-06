@@ -14,15 +14,18 @@ updated: 2026-05-06
 ## Summary
 
 Resolve local imports between virtual files declared by TypeScript reference
-`// @Filename:` sections.
+`// @Filename:` / `// @filename:` sections.
 
 ## Problem
 
 `checkJsdocTypeTagOnExportAssignment2.ts` contains virtual files `a.ts`,
 `b.js`, and `c.js`. The `c.js` section imports `./b`, but module graph
 resolution looks on disk for `b.js` instead of resolving the virtual section.
+`circularReferenceInImport.ts` has the same first blocker with virtual
+`db.d.ts` and `app.ts` sections.
 
 Problem: `import b from "./b"` in a `// @Filename: c.js` section reports `issue-232: missing local module ./b`.
+Problem: `import * as Db from "./db"` in a `// @filename: app.ts` section reports `issue-232: missing local module ./db`.
 
 ## Current failure
 
@@ -62,8 +65,9 @@ specifier to another `@Filename` section in the same source file.
 
 In scope:
 
-- [ ] Register `@Filename` section names as virtual module paths.
+- [ ] Register `@Filename` / `@filename` section names as virtual module paths.
 - [ ] Resolve `./b` from a `c.js` section to the sibling `b.js` section.
+- [ ] Resolve `./db` from an `app.ts` section to the sibling `db.d.ts` section.
 - [ ] Add one focused multi-section fixture using `export default` and a default import.
 
 Out of scope:
@@ -89,6 +93,7 @@ Do not touch:
 ## Acceptance criteria
 
 - [ ] `checkJsdocTypeTagOnExportAssignment2.ts` no longer reports `issue-232: missing local module ./b`.
+- [ ] `circularReferenceInImport.ts` no longer reports `issue-232: missing local module ./db`.
 - [ ] A focused compiler test proves `// @Filename: b.js` is resolved by `import "./b"` from another section.
 - [ ] Existing missing real local module diagnostics still report issue-232.
 
@@ -129,6 +134,7 @@ Follow-up issues:
 ## Notes
 
 Split from generated bucket `issues/done/1138-implement-checkJsdocTypeTagOnExportAssignment.md`.
+Also owns the matching first blocker folded from `issues/done/1162-implement-circularReferenceInImport.md`; see that closed bucket for full `./db` triage evidence.
 
 ## Completion evidence
 

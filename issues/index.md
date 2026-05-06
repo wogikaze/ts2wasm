@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 3 | 2 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4454 | 3734 | 720 |
+| frontend | 4454 | 3733 | 721 |
 | harness | 1 | 0 | 1 |
 | ir | 44 | 22 | 22 |
 | issues | 4 | 0 | 4 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5076 | 4009 | 1067 |
+| total | 5076 | 4008 | 1068 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -471,7 +471,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 772 | Implement Augmentedtypesvar | spike | frontend/syntax | class: blocked | Implement Augmentedtypesvar |
 | 773 | Implement Autoasiforstaticsinclassdeclaration | spike | frontend/syntax | class: triage-needed | Implement Autoasiforstaticsinclassdeclaration |
 | 775 | Implement Autotypeassignedusingdestructuringfromnevernocrash | spike | frontend/resolver | class: blocked | Implement Autotypeassignedusingdestructuringfromnevernocrash |
-| 1162 | Implement Circularreferenceinimport | spike | frontend/syntax | class: blocked | Implement Circularreferenceinimport |
 | 1163 | Implement Circularreferenceinreturntype Name Resolution | spike | frontend/resolver | class: blocked | Implement Circularreferenceinreturntype Name Resolution |
 | 1164 | Implement Circularreferenceinreturntype Parser Syntax | spike | frontend/syntax | class: triage-needed | Implement Circularreferenceinreturntype Parser Syntax |
 | 1165 | Implement Circularresolvedsignature | spike | frontend/syntax | class: blocked | Implement Circularresolvedsignature |
@@ -5033,6 +5032,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1159 | Implement Circularmoduleimports | spike | frontend/syntax | see `issues/done/1159-implement-circularModuleImports.md` |
 | 1160 | Implement Circularobjectliteralaccessors | spike | frontend/syntax | see `issues/done/1160-implement-circularObjectLiteralAccessors.md` |
 | 1161 | Implement Circularoptionalityremoval | spike | frontend/resolver | see `issues/done/1161-implement-circularOptionalityRemoval.md` |
+| 1162 | Implement Circularreferenceinimport | spike | frontend/syntax | see `issues/done/1162-implement-circularReferenceInImport.md` |
 | 2050 | Implement Duplicatelocalvariable Duplicate Local | spike | reference/triage | see `issues/done/2050-implement-duplicateLocalVariable-duplicate-local.md` |
 | 3002 | Implement Isolateddeclarationerrorsdefault | spike | runtime/builtins | see `issues/done/3002-implement-isolatedDeclarationErrorsDefault.md` |
 | 3131 | Implement Jsxfactorynotidentifierorqualifiedname | spike | reference/triage | see `issues/done/3131-implement-jsxFactoryNotIdentifierOrQualifiedName.md` |
