@@ -12,7 +12,7 @@ Issue files are the source of truth for work items. The generated section below 
 | abi | 7 | 0 | 7 |
 | backend | 18 | 3 | 15 |
 | backend-wasm | 2 | 0 | 2 |
-| cli | 16 | 1 | 15 |
+| cli | 16 | 0 | 16 |
 | compiler | 3 | 0 | 3 |
 | coverage | 43 | 0 | 43 |
 | docs | 4 | 2 | 2 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 8 | 1 | 7 |
 | wasi | 4 | 3 | 1 |
-| total | 5076 | 4005 | 1071 |
+| total | 5076 | 4004 | 1072 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -126,7 +126,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5219 | Support explicit this-parameter function expression lowering | feature | ir/runtime | implementation-ready | P1 |  | function expressions that declare an erased TypeScript `this` parameter and read `this` in the body currently fail wi... |
 | 5230 | W0: mandatory span on LoweredExpr and LoweredStmt variants | refactor | ir | design-ready | P1 |  | W0: mandatory span on LoweredExpr and LoweredStmt variants |
 | 5231 | W0: migrate expr_emit.rs remaining raw WAT to typed writer | cleanup | backend | design-ready | P2 | 5225 | 274 escape-hatch `push_str` calls in `expr_emit.rs` prevent full typed-WAT coverage. |
-| 5234 | W0: implement host-deny and auditable E2E manifest verification | feature | cli | design-ready | P1 |  | W0: implement host-deny and auditable E2E manifest verification |
 | 5235 | W1: implement WASI stdin/fd_read lowering for input | feature | wasi | design-ready | P1 |  | W1: implement WASI stdin/fd_read lowering for input |
 | 5236 | W1: implement WASI args and environment variable lowering | feature | wasi | design-ready | P2 |  | W1: implement WASI args and environment variable lowering |
 | 5237 | W1: standalone WASI execution validation test suite | test | tests | design-ready | P1 |  | W1: standalone WASI execution validation test suite |
@@ -5187,6 +5186,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5229 | W0: implement user/runtime string origin tracking | feature | backend | see `issues/done/5229-w0-user-runtime-string-origin.md` |
 | 5232 | W0: fixture-ize RuntimeLinkPlan linker structure tests | cleanup | tests | see file |
 | 5233 | W0: harden reference coverage prerequisites | infra | coverage | see file |
+| 5234 | W0: implement host-deny and auditable E2E manifest verification | feature | cli | see file |
 <!-- generated:done:end -->
 
 ## Index generation contract

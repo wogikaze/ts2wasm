@@ -58,3 +58,12 @@ Expected:
 mise run reference-coverage -- --check-prerequisites --sample 10
 ```
 
+
+
+## False-done audit
+
+Date: 2026-05-06
+
+Classification: truly-done.
+
+Audit result: retained in issues/done/. Implementation commits confirmed.
