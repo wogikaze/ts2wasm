@@ -15,6 +15,7 @@ mod runtime_regexp;
 mod runtime_strings;
 mod stmt_emit;
 mod string_intern;
+mod wasm_binary;
 mod wat_writer;
 
 pub use ts2wasm_frontend::{DiagCode, Diagnostic};
