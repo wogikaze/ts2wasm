@@ -151,6 +151,12 @@ Related but distinct:
 - `issues/open/5271-parse-modified-static-class-fields.md`
 - `issues/open/5267-parse-string-literal-class-member-names.md`
 
+Additional superseded bucket:
+
+- `issues/done/1377-implement-commentsOnReturnStatement.md` reaches the same
+  parser boundary for `class DebugClass { public static debugFunc() { ... } }`
+  before any return-statement comment behavior is reached.
+
 ## Completion evidence
 
 Fill when implemented.
