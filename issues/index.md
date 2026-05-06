@@ -22,12 +22,12 @@ Issue files are the source of truth for work items. The generated section below 
 | issues | 5 | 0 | 5 |
 | parser | 1 | 0 | 1 |
 | reference | 211 | 163 | 48 |
-| runtime | 269 | 91 | 178 |
+| runtime | 269 | 90 | 179 |
 | scripts | 3 | 0 | 3 |
 | security | 1 | 0 | 1 |
 | tests | 8 | 0 | 8 |
 | wasi | 4 | 2 | 2 |
-| total | 5077 | 3973 | 1104 |
+| total | 5077 | 3972 | 1105 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -97,7 +97,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 353 | Implement iterator protocol integration for spread operator | feature | runtime/semantics | unstarted | P2 |  | General iterator protocol is not implemented for spread operator. |
 | 5137 | Split remaining Date API scope | cleanup | runtime/builtins | design-ready | P1 |  | Date issue 050 currently stays open after its named child issues 240 and 241 are done, but non-literal constructor in... |
 | 5138 | Split Reflect.construct isConstructor reference window | spike | runtime/builtins | design-ready | P1 |  | `reference/test262/test/annexB/built-ins/String/prototype/anchor/not-a-constructor.js` currently fails with `Unresolv... |
-| 5210 | Sparse array holes handling for Array.prototype.map | feature | runtime/builtins | implementation-ready | P2 |  | current `Array.prototype.map` implementation only supports dense |
 | 5236 | W1: implement WASI args and environment variable lowering | feature | wasi | design-ready | P2 |  | W1: implement WASI args and environment variable lowering |
 | 5238 | W1: implement WASI filesystem read/write through preopens | feature | wasi | design-ready | P2 |  | W1: implement WASI filesystem read/write through preopens |
 | 5239 | W0: migrate remaining multi-line WAT to line_fmt in expr_emit.rs | cleanup | backend | design-ready | P2 | 5231 | W0: migrate remaining multi-line WAT to line_fmt in expr_emit.rs |
@@ -5164,6 +5163,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5207 | Support ambient interface filter receivers | feature | frontend/semantics | see `issues/done/5207-support-ambient-interface-filter-receiver.md` |
 | 5208 | Support RegExp match fallback array map receivers | feature | frontend/semantics | see `issues/done/5208-support-regexp-match-fallback-array-map-receiver.md` |
 | 5209 | Support class instance method receiver calls | feature | ir/lowered | see `issues/done/5209-support-class-instance-method-receiver-calls.md` |
+| 5210 | Sparse array holes handling for Array.prototype.map | feature | runtime/builtins | see `issues/done/5210-array-map-sparse-array-holes.md` |
 | 5213 | Implement generator function syntax prerequisite for iterator spread | feature | frontend/syntax | see `issues/done/5213-generator-function-syntax-prerequisite-for-iterator-spread.md` |
 | 5215 | Fix array includes WAT stack mismatch | bug | runtime/builtins | see `issues/done/5215-fix-array-includes-wat-stack-mismatch.md` |
 | 5216 | Allow extra arguments for functions reading arguments object | bug | ir/semantics | see `issues/done/5216-allow-extra-arguments-for-functions-reading-arguments-object.md` |
