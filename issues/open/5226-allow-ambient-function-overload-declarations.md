@@ -119,6 +119,8 @@ Not run:
 ## Notes
 
 Split from generated bucket `issues/done/1133-implement-checkInfiniteExpansionTermination.md`.
+Also supersedes `issues/done/1153-implement-circularContextualMappedType.md`,
+which has the same ambient overload failure shape for `declare function reproduce`.
 
 ## Completion evidence
 
