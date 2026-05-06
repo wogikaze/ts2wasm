@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 4 | 3 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4518 | 3622 | 896 |
+| frontend | 4518 | 3621 | 897 |
 | harness | 1 | 0 | 1 |
 | ir | 64 | 42 | 22 |
 | issues | 4 | 0 | 4 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5161 | 3911 | 1250 |
+| total | 5161 | 3910 | 1251 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -554,7 +554,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 772 | Implement Augmentedtypesvar | spike | frontend/syntax | class: blocked | Implement Augmentedtypesvar |
 | 773 | Implement Autoasiforstaticsinclassdeclaration | spike | frontend/syntax | class: triage-needed | Implement Autoasiforstaticsinclassdeclaration |
 | 775 | Implement Autotypeassignedusingdestructuringfromnevernocrash | spike | frontend/resolver | class: blocked | Implement Autotypeassignedusingdestructuringfromnevernocrash |
-| 1229 | Implement Classnonuniquesymbolmethodhassymbolindexer | spike | frontend/syntax | class: blocked | Implement Classnonuniquesymbolmethodhassymbolindexer |
 | 1232 | Implement Classpropinitializationinferencewithelementaccess | spike | frontend/syntax | class: blocked | Implement Classpropinitializationinferencewithelementaccess |
 | 1234 | Implement Classpropertyinferencefrombroadertypeconst | spike | frontend/semantics | class: blocked | Implement Classpropertyinferencefrombroadertypeconst |
 | 1235 | Implement Classreferencedincontextualparameterwithinitsownbaseexpression | spike | frontend/syntax | class: blocked | Implement Classreferencedincontextualparameterwithinitsownbaseexpression |
@@ -5004,6 +5003,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1226 | Implement Classmergedwithinterfacemultiplebasesnoerror | spike | frontend/syntax | see `issues/done/1226-implement-classMergedWithInterfaceMultipleBasesNoError.md` |
 | 1227 | Implement Classmethodwithkeywordname | spike | frontend/syntax | see `issues/done/1227-implement-classMethodWithKeywordName.md` |
 | 1228 | Implement Classnamereferencesinstaticelements | spike | frontend/syntax | see `issues/done/1228-implement-classNameReferencesInStaticElements.md` |
+| 1229 | Implement Classnonuniquesymbolmethodhassymbolindexer | spike | frontend/syntax | see `issues/done/1229-implement-classNonUniqueSymbolMethodHasSymbolIndexer.md` |
 | 1230 | Implement Classorder | spike | frontend/syntax | see `issues/done/1230-implement-classOrder.md` |
 | 1231 | Implement Classorderbug | spike | frontend/syntax | see `issues/done/1231-implement-classOrderBug.md` |
 | 1233 | Implement Classpropertyerroronnameonly | spike | runtime/builtins | see `issues/done/1233-implement-classPropertyErrorOnNameOnly.md` |
