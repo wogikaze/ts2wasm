@@ -3,12 +3,12 @@ id: 1117
 title: "Implement Castfunctionexpressionshouldbeparenthesized"
 type: spike
 area: frontend/syntax
-class: blocked
+class: triage-needed
 priority: P1
 depends_on: [5001]
 blocks: []
 created: 2026-05-01
-updated: 2026-05-01
+updated: 2026-05-06
 ---
 
 ## Summary
@@ -106,7 +106,7 @@ Current state:
 
 Follow-up issues:
 
-- [ ] none
+- [ ] `issues/open/5217-support-method-calls-on-call-expression-receivers.md`
 
 ## Notes
 
@@ -120,7 +120,53 @@ Follow-up issues:
 
 ## Smart triage
 
-Not generated. Rerun with `--triage-limit 1` or higher.
+Fresh triage shows this bucket is stale as a parser issue. Tokens and AST
+succeed; the current blocker is method-call receiver lowering.
+
+### Smart triage: castFunctionExpressionShouldBeParenthesized
+
+- Issue class: `triage-needed`
+- Feature label: `method-call`
+- Diagnostic: `UnsupportedSyntax` / `parser-or-frontend-unsupported`
+- Path: `reference/typescript/tests/cases/compiler/castFunctionExpressionShouldBeParenthesized.ts`
+
+Reproduction:
+
+```sh
+mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/castFunctionExpressionShouldBeParenthesized.ts
+```
+
+Failure location:
+
+```json
+{
+  "code": "UnsupportedSyntax",
+  "message": "issue-211: method `foo` requires an identifier receiver at 20..52",
+  "line": 2,
+  "column": 2
+}
+```
+
+Source context:
+
+```text
+1 | // @target: es2015
+2 | (function a() { } as any)().foo()
+```
+
+Compiler evidence:
+
+```text
+tokens: ok
+ast: ok; Call(Member(Call(FunctionExpr a, args=[]), property="foo"), args=[])
+resolved/lowered: issue-211 method `foo` requires an identifier receiver
+```
+
+TypeScript AST sees `CallExpression -> PropertyAccessExpression ->
+CallExpression -> ParenthesizedExpression -> AsExpression ->
+FunctionExpression` and reports no diagnostics. Child issue
+`issues/open/5217-support-method-calls-on-call-expression-receivers.md` owns
+this receiver-lowering slice.
 
 ## Completion evidence
 
