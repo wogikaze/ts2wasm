@@ -489,6 +489,8 @@ pub enum Expr {
         body: Vec<Stmt>,
         static_blocks: Vec<ClassStaticBlock>,
         private_elements: Vec<ClassPrivateElement>,
+        ts_private_field_names: Vec<String>,
+        interface_heritage: Vec<Expr>,
         span: Span,
     },
     This {

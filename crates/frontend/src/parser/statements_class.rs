@@ -45,6 +45,8 @@ impl Parser {
             body,
             static_blocks,
             private_elements,
+            ts_private_field_names: Vec::new(),
+            interface_heritage: Vec::new(),
             span,
         })
     }
