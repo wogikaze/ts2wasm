@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 5 | 4 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4526 | 3601 | 925 |
+| frontend | 4527 | 3601 | 926 |
 | harness | 1 | 0 | 1 |
 | ir | 64 | 42 | 22 |
 | issues | 4 | 0 | 4 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5170 | 3891 | 1279 |
+| total | 5171 | 3891 | 1280 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -47,7 +47,7 @@ Issue files are the source of truth for work items. The generated section below 
 Direct child counts are derived from issue-file `depends_on` links. A meta issue can be `done` as a classification/design umbrella while implementation child issues remain open.
 
 ```
-5000 (Meta: TypeScript Compiler Parser Syntax Coverage) [done/design] ch:479 open:406 done:73
+5000 (Meta: TypeScript Compiler Parser Syntax Coverage) [done/design] ch:479 open:405 done:74
 ├── 5002 (Meta: TypeScript Compiler Type System Coverage) [done/done] ch:231 open:214 done:17 (also ← 5005)
 ├── 5003 (Meta: TypeScript Compiler Declaration Emit Coverage) [done/done] ch:102 open:91 done:11 (also ← 5001)
 5001 (Meta: TypeScript Compiler Semantic Analysis Coverage) [done/done] ch:583 open:329 done:254
@@ -66,7 +66,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 
 | Order | ID | Title | State | Class | Area | Priority | Depends on | Direct children | Open children | Done children |
 |-----:|---:|------|-------|-------|------|--------:|-----------:|----------------:|--------------:|--------------:|
-| 1 | 5000 | Meta: TypeScript Compiler Parser Syntax Coverage | done | design | frontend/syntax | P1 | - | 479 | 406 | 73 |
+| 1 | 5000 | Meta: TypeScript Compiler Parser Syntax Coverage | done | design | frontend/syntax | P1 | - | 479 | 405 | 74 |
 | 2 | 5001 | Meta: TypeScript Compiler Semantic Analysis Coverage | done | done | frontend/semantics | P1 | - | 583 | 329 | 254 |
 | 3 | 5004 | Meta: Runtime Builtins Coverage (test262) (audit reopened #5004) | done | done | runtime/builtins | P1 | - | 24 | 3 | 21 |
 | 4 | 5005 | Meta: TypeScript Compiler Name Resolution Coverage | done | done | frontend/resolver | P1 | - | 419 | 367 | 52 |
@@ -290,6 +290,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5333 | Report strict mode arguments binding diagnostics | feature | frontend/semantics | implementation-ready | P1 |  | strict-mode `arguments` bindings currently build-pass silently instead |
 | 5334 | Parse class constructor overload signatures | feature | frontend/parser | implementation-ready | P1 |  | class constructor overload signatures are not represented separately |
 | 5335 | Validate nested function overload implementations | feature | frontend/resolver | implementation-ready | P1 |  | nested function overload implementation groups are classified as |
+| 5336 | Parse object type literal signatures with rest parameters | feature | frontend/parser | implementation-ready | P1 |  | object type literal signature members with rest parameters are not |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -563,7 +564,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 772 | Implement Augmentedtypesvar | spike | frontend/syntax | class: blocked | Implement Augmentedtypesvar |
 | 773 | Implement Autoasiforstaticsinclassdeclaration | spike | frontend/syntax | class: triage-needed | Implement Autoasiforstaticsinclassdeclaration |
 | 775 | Implement Autotypeassignedusingdestructuringfromnevernocrash | spike | frontend/resolver | class: blocked | Implement Autotypeassignedusingdestructuringfromnevernocrash |
-| 1271 | Implement Collisionargumentsintype | spike | frontend/syntax | class: blocked | Implement Collisionargumentsintype |
 | 1272 | Implement Collisioncodegenenumwithenummemberconflict | spike | frontend/syntax | class: blocked | Implement Collisioncodegenenumwithenummemberconflict |
 | 1273 | Implement Collisioncodegenmodulewithaccessorchildren | spike | frontend/syntax | class: blocked | Implement Collisioncodegenmodulewithaccessorchildren |
 | 1274 | Implement Collisioncodegenmodulewithconstructorchildren | spike | frontend/syntax | class: blocked | Implement Collisioncodegenmodulewithconstructorchildren |
@@ -5026,6 +5026,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1268 | Implement Collisionargumentsclassmethod | spike | frontend/syntax | see `issues/done/1268-implement-collisionArgumentsClassMethod.md` |
 | 1269 | Implement Collisionargumentsfunction | spike | frontend/syntax | see `issues/done/1269-implement-collisionArgumentsFunction.md` |
 | 1270 | Implement Collisionargumentsfunctionexpressions | spike | frontend/syntax | see `issues/done/1270-implement-collisionArgumentsFunctionExpressions.md` |
+| 1271 | Implement Collisionargumentsintype | spike | frontend/syntax | see `issues/done/1271-implement-collisionArgumentsInType.md` |
 | 1325 | Implement Collisionthisexpressionandlocalvarinconstructor | spike | frontend/syntax | see `issues/done/1325-implement-collisionThisExpressionAndLocalVarInConstructor.md` |
 | 1327 | Implement Collisionthisexpressionandlocalvarinlambda | spike | frontend/syntax | see `issues/done/1327-implement-collisionThisExpressionAndLocalVarInLambda.md` |
 | 1328 | Implement Collisionthisexpressionandlocalvarinmethod | spike | frontend/syntax | see `issues/done/1328-implement-collisionThisExpressionAndLocalVarInMethod.md` |
