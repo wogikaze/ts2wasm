@@ -22,12 +22,12 @@ Issue files are the source of truth for work items. The generated section below 
 | issues | 5 | 0 | 5 |
 | parser | 1 | 0 | 1 |
 | reference | 211 | 163 | 48 |
-| runtime | 269 | 92 | 177 |
+| runtime | 269 | 91 | 178 |
 | scripts | 3 | 0 | 3 |
 | security | 1 | 0 | 1 |
 | tests | 8 | 1 | 7 |
 | wasi | 4 | 3 | 1 |
-| total | 5076 | 3981 | 1095 |
+| total | 5076 | 3980 | 1096 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -95,7 +95,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | ID | Title | Type | Area | Class | Priority | Depends on | Summary |
 |---:|---|---|---|---|---|---|---|
 | 353 | Implement iterator protocol integration for spread operator | feature | runtime/semantics | unstarted | P2 |  | General iterator protocol is not implemented for spread operator. |
-| 5132 | Add ABC451 non-top array separation attribution | infra | runtime/memory | implementation-ready | P1 | 5131 | issue 365 proves the dominant array-growth pressure is |
 | 5137 | Split remaining Date API scope | cleanup | runtime/builtins | design-ready | P1 |  | Date issue 050 currently stays open after its named child issues 240 and 241 are done, but non-literal constructor in... |
 | 5138 | Split Reflect.construct isConstructor reference window | spike | runtime/builtins | design-ready | P1 |  | `reference/test262/test/annexB/built-ins/String/prototype/anchor/not-a-constructor.js` currently fails with `Unresolv... |
 | 5207 | Support ambient interface filter receivers | feature | frontend/semantics | implementation-ready | P2 |  | `reference/typescript/tests/cases/compiler/booleanFilterAnyArray.ts` now reports `issue-211: unknown receiver class f... |
@@ -5098,6 +5097,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5129 | Implement String.prototype.matchAll literal RegExp lowering | feature | runtime/builtins | see `issues/done/5129-implement-string-match-all-literal-regexp.md` |
 | 5130 | Implement own method ToPrimitive for mixed BigInt comparisons | feature | runtime/semantics | see `issues/done/5130-implement-object-method-toprimitive-for-bigint-comparisons.md` |
 | 5131 | Design ABC451 non-top array growth strategy | design | runtime/memory | see `issues/done/5131-design-abc451-non-top-array-growth-strategy.md` |
+| 5132 | Add ABC451 non-top array separation attribution | infra | runtime/memory | see `issues/done/5132-add-abc451-non-top-array-separation-attribution.md` |
 | 5133 | Implement single-statement loop bodies for break and continue | feature | frontend/syntax | see `issues/done/5133-implement-single-statement-loop-body-break-continue.md` |
 | 5134 | Admit generators and async-functions features through Python test262 harness | spike | scripts | see `issues/done/5134-admit-generators-and-async-functions-through-python-harness.md` |
 | 5139 | Split APISample parser leftovers | cleanup | frontend/syntax | see `issues/done/5139-split-apisample-parser-leftovers.md` |
