@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 3 | 2 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4467 | 3705 | 762 |
+| frontend | 4468 | 3705 | 763 |
 | harness | 1 | 0 | 1 |
 | ir | 51 | 29 | 22 |
 | issues | 4 | 0 | 4 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5096 | 3987 | 1109 |
+| total | 5097 | 3987 | 1110 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -216,6 +216,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5259 | Report super property access in class extends null | feature | ir/resolver | implementation-ready | P1 |  | `classExtendsNull3.ts` parses two classes with `extends null` and |
 | 5260 | Report class heritage trailing comma | feature | frontend/parser | implementation-ready | P1 |  | `classHeritageWithTrailingSeparator.ts` tokenizes the class heritage |
 | 5261 | Report class-typed missing instance method calls | feature | ir/lowering | implementation-ready | P1 |  | Report class-typed missing instance method calls |
+| 5262 | Resolve import-equals aliases in class implements clauses | feature | frontend/resolver | implementation-ready | P1 |  | Resolve import-equals aliases in class implements clauses |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -505,7 +506,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1210 | Implement Classfieldsupernotaccessiblejs | spike | frontend/syntax | class: blocked | Implement Classfieldsupernotaccessiblejs |
 | 1211 | Implement Classfieldsbrokenconstructoremitnocrash | spike | frontend/syntax | class: blocked | Implement Classfieldsbrokenconstructoremitnocrash |
 | 1212 | Implement Classfunctionmerging Import Export | spike | frontend/syntax | class: blocked | Implement Classfunctionmerging Import Export |
-| 1217 | Implement Classimplementsimportedinterface | spike | frontend/syntax | class: blocked | Implement Classimplementsimportedinterface |
 | 1218 | Implement Classimplementsmethodwithtupleargs | spike | frontend/syntax | class: blocked | Implement Classimplementsmethodwithtupleargs |
 | 1219 | Implement Classimplementsprimitive | spike | frontend/syntax | class: blocked | Implement Classimplementsprimitive |
 | 1220 | Implement Classinconvertedloopes | spike | frontend/syntax | class: triage-needed | Implement Classinconvertedloopes |
@@ -5052,6 +5052,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1214 | Implement Classheritagewithtrailingseparator | spike | frontend/syntax | see `issues/done/1214-implement-classHeritageWithTrailingSeparator.md` |
 | 1215 | Implement Classimplementinginterfaceindexer | spike | frontend/syntax | see `issues/done/1215-implement-classImplementingInterfaceIndexer.md` |
 | 1216 | Implement Classimplementsclass | spike | frontend/syntax | see `issues/done/1216-implement-classImplementsClass.md` |
+| 1217 | Implement Classimplementsimportedinterface | spike | frontend/syntax | see `issues/done/1217-implement-classImplementsImportedInterface.md` |
 | 2050 | Implement Duplicatelocalvariable Duplicate Local | spike | reference/triage | see `issues/done/2050-implement-duplicateLocalVariable-duplicate-local.md` |
 | 3002 | Implement Isolateddeclarationerrorsdefault | spike | runtime/builtins | see `issues/done/3002-implement-isolatedDeclarationErrorsDefault.md` |
 | 3131 | Implement Jsxfactorynotidentifierorqualifiedname | spike | reference/triage | see `issues/done/3131-implement-jsxFactoryNotIdentifierOrQualifiedName.md` |
