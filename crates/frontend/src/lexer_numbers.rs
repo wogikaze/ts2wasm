@@ -61,14 +61,7 @@ impl<'a> Lexer<'a> {
 
         self.reject_invalid_decimal_bigint_suffix(start)?;
 
-        let value = i32::from_str_radix(&digits, radix).map_err(|error| Diagnostic {
-            code: DiagCode::UnsupportedSyntax,
-            message: format!("invalid number literal: {error}"),
-            span: Some(Span {
-                start,
-                end: self.cursor,
-            }),
-        })?;
+        let value = self.number_value(&digits, radix, start)?;
         Ok(SpannedToken {
             kind: Token::Number(value),
             span: Span {
@@ -230,6 +223,29 @@ impl<'a> Lexer<'a> {
         }
 
         Ok((digits, radix))
+    }
+
+    fn number_value(&self, digits: &str, radix: u32, start: usize) -> Result<i32, Diagnostic> {
+        if radix == 16 {
+            let value = u32::from_str_radix(digits, radix).map_err(|error| Diagnostic {
+                code: DiagCode::UnsupportedSyntax,
+                message: format!("invalid number literal: {error}"),
+                span: Some(Span {
+                    start,
+                    end: self.cursor,
+                }),
+            })?;
+            return Ok(value as i32);
+        }
+
+        i32::from_str_radix(digits, radix).map_err(|error| Diagnostic {
+            code: DiagCode::UnsupportedSyntax,
+            message: format!("invalid number literal: {error}"),
+            span: Some(Span {
+                start,
+                end: self.cursor,
+            }),
+        })
     }
 
     fn invalid_numeric_separator(&self, start: usize, message: &str) -> Diagnostic {

@@ -61,9 +61,9 @@ The lexer accepts unsigned 32-bit hexadecimal integer literals used as bit masks
 
 In scope:
 
-- [ ] Accept hexadecimal literals in the unsigned 32-bit range when they do not fit signed `i32`.
-- [ ] Preserve existing diagnostics for invalid digits and values outside the supported unsigned 32-bit mask range.
-- [ ] Add a focused lexer/parser regression for `0xefcdab89`.
+- [x] Accept hexadecimal literals in the unsigned 32-bit range when they do not fit signed `i32`.
+- [x] Preserve existing diagnostics for invalid digits and values outside the supported unsigned 32-bit mask range.
+- [x] Add a focused lexer/parser regression for `0xefcdab89`.
 
 Out of scope:
 
@@ -86,9 +86,9 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] Lexer tests accept `0xefcdab89` without `number too large to fit in target type`.
-- [ ] Invalid large non-hex or beyond-`u32` literals still produce a source-spanned diagnostic.
-- [ ] `python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/binaryArithmeticControlFlowGraphNotTooLarge.ts` no longer reports the `0xefcdab89` lexer failure.
+- [x] Lexer tests accept `0xefcdab89` without `number too large to fit in target type`.
+- [x] Invalid large non-hex or beyond-`u32` literals still produce a source-spanned diagnostic.
+- [x] `python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/binaryArithmeticControlFlowGraphNotTooLarge.ts` no longer reports the `0xefcdab89` lexer failure.
 
 ## Validation
 
@@ -114,15 +114,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] created: `issues/open/5218-parse-typescript-this-parameters-in-function-expressions.md`
 
 ## Notes
 
@@ -134,16 +134,24 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- `...`
+- pending local commit
 
 Validation result:
 
 ```text
-command:
-result:
-date:
+command: cargo fmt --all --check
+result: pass
+date: 2026-05-06
+
+command: cargo nextest run -p ts2wasm-frontend hex_literal
+result: pass
+date: 2026-05-06
+
+command: python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/binaryArithmeticControlFlowGraphNotTooLarge.ts
+result: pass for issue 5171; advanced past invalid number literal to issue-247 Some(This), tracked by issue 5218
+date: 2026-05-06
 ```
 
 Remaining risks:
 
-- none
+- Further parsing for TypeScript `this` parameters is tracked by issue 5218.

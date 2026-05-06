@@ -108,7 +108,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] added: `issues/open/5171-accept-unsigned-32-bit-hex-literals.md`
+- [x] added: `issues/done/5171-accept-unsigned-32-bit-hex-literals.md`
 
 ## Notes
 
@@ -132,7 +132,7 @@ Generated on 2026-05-06.
 - Visible symbols before failure: `foo`, `a`
 - Compiler evidence: token, AST, and resolved dumps fail at lexing before any parser or control-flow evidence is available.
 - TypeScript oracle: accepts the file with no diagnostics; AST path reaches `FirstLiteralToken` for `0xefcdab89` inside a binary expression.
-- Superseding child: `issues/open/5171-accept-unsigned-32-bit-hex-literals.md`
+- Superseding child: `issues/done/5171-accept-unsigned-32-bit-hex-literals.md`
 
 ## Completion evidence
 
