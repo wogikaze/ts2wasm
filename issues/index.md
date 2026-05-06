@@ -15,10 +15,10 @@ Issue files are the source of truth for work items. The generated section below 
 | cli | 16 | 1 | 15 |
 | compiler | 3 | 0 | 3 |
 | coverage | 43 | 0 | 43 |
-| docs | 2 | 0 | 2 |
+| docs | 4 | 2 | 2 |
 | frontend | 4438 | 3731 | 707 |
 | harness | 1 | 0 | 1 |
-| ir | 41 | 9 | 32 |
+| ir | 42 | 10 | 32 |
 | issues | 5 | 0 | 5 |
 | parser | 1 | 0 | 1 |
 | reference | 211 | 163 | 48 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 8 | 2 | 6 |
 | wasi | 4 | 3 | 1 |
-| total | 5073 | 4004 | 1069 |
+| total | 5076 | 4007 | 1069 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -133,6 +133,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5236 | W1: implement WASI args and environment variable lowering | feature | wasi | design-ready | P2 |  | W1: implement WASI args and environment variable lowering |
 | 5237 | W1: standalone WASI execution validation test suite | test | tests | design-ready | P1 |  | W1: standalone WASI execution validation test suite |
 | 5238 | W1: implement WASI filesystem read/write through preopens | feature | wasi | design-ready | P2 |  | W1: implement WASI filesystem read/write through preopens |
+| 5240 | W2: docs audit — fix stale language-reference entries and confirm semantic-core coverage | docs | docs | design-ready | P1 |  | Stale "未実装" entries prevent accurate W2 gate assessment. |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -4105,6 +4106,8 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5212 | Implement remaining BigInt mixed runtime coercion edges | feature | runtime/semantics | class: blocked | Implement remaining BigInt mixed runtime coercion edges |
 | 5214 | Implement computed Symbol.iterator prerequisite for spread | feature | frontend/syntax | class: blocked | Implement computed Symbol.iterator prerequisite for spread |
 | 5239 | W0: migrate remaining multi-line WAT to line_fmt in expr_emit.rs | cleanup | backend | 5231 | W0: migrate remaining multi-line WAT to line_fmt in expr_emit.rs |
+| 5241 | W2: implement NaN, Infinity, -0 sentinel values in tagged-number encoding | feature | ir/runtime | 5240 | W2: implement NaN, Infinity, -0 sentinel values in tagged-number encoding |
+| 5242 | W2: declare JS semantic core workstream complete | docs | docs | 5240, 5241 | W2: declare JS semantic core workstream complete |
 <!-- generated:blocked:end -->
 
 ## Done queue
