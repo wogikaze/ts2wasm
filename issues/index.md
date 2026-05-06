@@ -16,18 +16,18 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 2 | 1 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4415 | 3774 | 641 |
+| frontend | 4416 | 3775 | 641 |
 | harness | 1 | 0 | 1 |
 | ir | 31 | 9 | 22 |
 | issues | 4 | 0 | 4 |
 | parser | 1 | 0 | 1 |
-| reference | 211 | 165 | 46 |
+| reference | 211 | 164 | 47 |
 | runtime | 265 | 89 | 176 |
 | scripts | 3 | 1 | 2 |
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5022 | 4041 | 981 |
+| total | 5023 | 4041 | 982 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -142,6 +142,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5185 | Source-span unresolved class method function calls | feature | frontend/resolver | implementation-ready | P1 |  | unresolved function calls from class method bodies lose source-span information and should report the out-of-scope ca... |
 | 5186 | Parse export assignment expressions | feature | frontend/syntax | implementation-ready | P1 |  | `export = expr` is treated as an unsupported module boundary before the exported expression can be represented in the... |
 | 5187 | Lower namespace-only multi-section files | feature | compiler | implementation-ready | P1 |  | multi-section TypeScript reference files that contain namespace declarations but no static imports/exports are reduce... |
+| 5188 | Report block-scoped function call arity diagnostics | feature | frontend/semantics | implementation-ready | P1 |  | user-defined function calls that resolve to block-scoped same-name declarations can build even when TypeScript report... |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -417,7 +418,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 772 | Implement Augmentedtypesvar | spike | frontend/syntax | class: blocked | Implement Augmentedtypesvar |
 | 773 | Implement Autoasiforstaticsinclassdeclaration | spike | frontend/syntax | class: triage-needed | Implement Autoasiforstaticsinclassdeclaration |
 | 775 | Implement Autotypeassignedusingdestructuringfromnevernocrash | spike | frontend/resolver | class: blocked | Implement Autotypeassignedusingdestructuringfromnevernocrash |
-| 1077 | Implement Blockscopedsamenamefunctiondeclarationes | spike | reference/triage | class: triage-needed | Implement Blockscopedsamenamefunctiondeclarationes |
 | 1078 | Implement Blockscopedsamenamefunctiondeclarationstrictes | spike | reference/triage | class: triage-needed | Implement Blockscopedsamenamefunctiondeclarationstrictes |
 | 1079 | Implement Blockscopedvariablesusebeforedef | spike | frontend/resolver | class: blocked | Implement Blockscopedvariablesusebeforedef |
 | 1080 | Implement Bluebirdstaticthis | spike | frontend/syntax | class: triage-needed | Implement Bluebirdstaticthis |
@@ -4980,6 +4980,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1074 | Implement Blockscopedfunctiondeclarationinstrictmodule | spike | frontend/syntax | see `issues/done/1074-implement-blockScopedFunctionDeclarationInStrictModule.md` |
 | 1075 | Implement Blockscopedfunctiondeclarationstrictes | spike | frontend/resolver | see `issues/done/1075-implement-blockScopedFunctionDeclarationStrictES.md` |
 | 1076 | Implement Blockscopednamespacedifferentfile | spike | frontend/syntax | see `issues/done/1076-implement-blockScopedNamespaceDifferentFile.md` |
+| 1077 | Implement Blockscopedsamenamefunctiondeclarationes | spike | reference/triage | see `issues/done/1077-implement-blockScopedSameNameFunctionDeclarationES.md` |
 | 2050 | Implement Duplicatelocalvariable Duplicate Local | spike | reference/triage | see `issues/done/2050-implement-duplicateLocalVariable-duplicate-local.md` |
 | 3002 | Implement Isolateddeclarationerrorsdefault | spike | runtime/builtins | see `issues/done/3002-implement-isolatedDeclarationErrorsDefault.md` |
 | 3131 | Implement Jsxfactorynotidentifierorqualifiedname | spike | reference/triage | see `issues/done/3131-implement-jsxFactoryNotIdentifierOrQualifiedName.md` |
