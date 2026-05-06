@@ -106,7 +106,7 @@ Current state:
 
 Follow-up issues:
 
-- [ ] none
+- [ ] `issues/open/5207-parse-do-while-asi-before-following-for.md`
 
 ## Notes
 
@@ -141,9 +141,80 @@ Follow-up issues:
 
 ## Smart triage
 
-Not generated for the original representative path. Rerun with
-`--triage-limit 1` or higher before splitting the remaining parser-syntax
-bucket.
+Fresh triage has started. The repeated `expected Semicolon, got Some(For)`
+subfamily is split to
+`issues/open/5207-parse-do-while-asi-before-following-for.md`; remaining
+subfamilies still need child issues.
+
+### Smart triage: capturedLetConstInLoop1
+
+- Issue class: `triage-needed`
+- Feature label: `parser-syntax`
+- Diagnostic: `UnsupportedSyntax` / `parser-or-frontend-unsupported`
+- Path: `reference/typescript/tests/cases/compiler/capturedLetConstInLoop1.ts`
+
+Reproduction:
+
+```sh
+mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/capturedLetConstInLoop1.ts
+```
+
+Failure location:
+
+```json
+{
+  "code": "UnsupportedSyntax",
+  "message": "expected Semicolon, got Some(For) at 487..490",
+  "line": 34,
+  "column": 3
+}
+```
+
+Source context:
+
+```text
+31 | } while (1 === 1)
+32 |
+33 | for (let y = 0; y < 1; ++y) {
+34 |     let x = 1;
+```
+
+TypeScript oracle succeeds with no diagnostics.
+
+### Smart triage: capturedLetConstInLoop1_ES6
+
+- Issue class: `triage-needed`
+- Feature label: `parser-syntax`
+- Diagnostic: `UnsupportedSyntax` / `parser-or-frontend-unsupported`
+- Path: `reference/typescript/tests/cases/compiler/capturedLetConstInLoop1_ES6.ts`
+
+Reproduction:
+
+```sh
+mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/capturedLetConstInLoop1_ES6.ts
+```
+
+Failure location:
+
+```json
+{
+  "code": "UnsupportedSyntax",
+  "message": "expected Semicolon, got Some(For) at 446..449",
+  "line": 32,
+  "column": 1
+}
+```
+
+Source context:
+
+```text
+29 | } while (1 === 1)
+30 |
+31 | for (let y = 0; y < 1; ++y) {
+32 |     let x = 1;
+```
+
+TypeScript oracle succeeds with no diagnostics.
 
 ### Folded triage from #1109: capturedLetConstInLoop4
 
