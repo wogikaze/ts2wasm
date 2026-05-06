@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 1 | 0 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4404 | 3776 | 628 |
+| frontend | 4406 | 3777 | 629 |
 | harness | 1 | 0 | 1 |
 | ir | 31 | 9 | 22 |
 | issues | 4 | 0 | 4 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5010 | 4043 | 967 |
+| total | 5012 | 4044 | 968 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -130,6 +130,8 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5173 | Avoid stack overflow on deep binary expressions | feature | ir/builtin-resolver | implementation-ready | P1 |  | recursive expression folding in builtin resolution cannot process the deep binary-expression stress references. |
 | 5174 | Ignore empty binding pattern synthetic names | feature | frontend/name-resolution | implementation-ready | P1 |  | empty binding patterns do not declare a local binding, but the compiler currently registers their display text as if ... |
 | 5175 | Support export let destructuring declarations | feature | frontend/module-syntax | implementation-ready | P1 |  | the parser has an `export const <ident> = ...` slice, but `export let` destructuring declarations still stop at the g... |
+| 5176 | Report ambient var lib redeclaration diagnostics | feature | frontend/semantics | implementation-ready | P1 |  | ambient `declare var` declarations can conflict with lib globals, but ts2wasm currently erases the declaration and re... |
+| 5177 | Report strict-null diagnostics in erased namespace methods | feature | frontend/semantics | implementation-ready | P1 |  | erased namespace class method bodies can hide typed local declaration diagnostics and produce a false build pass. |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -406,7 +408,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 772 | Implement Augmentedtypesvar | spike | frontend/syntax | class: blocked | Implement Augmentedtypesvar |
 | 773 | Implement Autoasiforstaticsinclassdeclaration | spike | frontend/syntax | class: triage-needed | Implement Autoasiforstaticsinclassdeclaration |
 | 775 | Implement Autotypeassignedusingdestructuringfromnevernocrash | spike | frontend/resolver | class: blocked | Implement Autotypeassignedusingdestructuringfromnevernocrash |
-| 1064 | Implement Binopassignmentshouldhavetype | spike | frontend/syntax | class: blocked | Implement Binopassignmentshouldhavetype |
 | 1065 | Implement Bitwisecompoundassignmentoperators | spike | frontend/syntax | class: triage-needed | Implement Bitwisecompoundassignmentoperators |
 | 1066 | Implement Blockscopedbindingcapturethisinfunction | spike | reference/triage | class: triage-needed | Implement Blockscopedbindingcapturethisinfunction |
 | 1067 | Implement Blockscopedbindingusedbeforedef | spike | frontend/resolver | class: blocked | Implement Blockscopedbindingusedbeforedef |
@@ -4968,6 +4969,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1061 | Implement Bindingpatterncontextualtypedoesnotcausewidening | spike | frontend/resolver | see `issues/done/1061-implement-bindingPatternContextualTypeDoesNotCauseWidening.md` |
 | 1062 | Implement Bindingpatterninparameter | spike | frontend/syntax | see `issues/done/1062-implement-bindingPatternInParameter.md` |
 | 1063 | Implement Bindingpatternomittedexpressionnesting | spike | frontend/syntax | see `issues/done/1063-implement-bindingPatternOmittedExpressionNesting.md` |
+| 1064 | Implement Binopassignmentshouldhavetype | spike | frontend/syntax | see `issues/done/1064-implement-binopAssignmentShouldHaveType.md` |
 | 2050 | Implement Duplicatelocalvariable Duplicate Local | spike | reference/triage | see `issues/done/2050-implement-duplicateLocalVariable-duplicate-local.md` |
 | 3002 | Implement Isolateddeclarationerrorsdefault | spike | runtime/builtins | see `issues/done/3002-implement-isolatedDeclarationErrorsDefault.md` |
 | 3131 | Implement Jsxfactorynotidentifierorqualifiedname | spike | reference/triage | see `issues/done/3131-implement-jsxFactoryNotIdentifierOrQualifiedName.md` |
