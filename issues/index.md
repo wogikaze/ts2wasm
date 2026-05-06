@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 5 | 4 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4527 | 3587 | 940 |
+| frontend | 4527 | 3586 | 941 |
 | harness | 1 | 0 | 1 |
 | ir | 64 | 42 | 22 |
 | issues | 4 | 0 | 4 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5171 | 3877 | 1294 |
+| total | 5171 | 3876 | 1295 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -564,7 +564,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 772 | Implement Augmentedtypesvar | spike | frontend/syntax | class: blocked | Implement Augmentedtypesvar |
 | 773 | Implement Autoasiforstaticsinclassdeclaration | spike | frontend/syntax | class: triage-needed | Implement Autoasiforstaticsinclassdeclaration |
 | 775 | Implement Autotypeassignedusingdestructuringfromnevernocrash | spike | frontend/resolver | class: blocked | Implement Autotypeassignedusingdestructuringfromnevernocrash |
-| 1286 | Implement Collisionexportsrequireandambientenum | spike | frontend/syntax | class: blocked | Implement Collisionexportsrequireandambientenum |
 | 1287 | Implement Collisionexportsrequireandambientfunction | spike | frontend/syntax | class: blocked | Implement Collisionexportsrequireandambientfunction |
 | 1288 | Implement Collisionexportsrequireandambientfunctioninglobalfile | spike | frontend/syntax | class: blocked | Implement Collisionexportsrequireandambientfunctioninglobalfile |
 | 1289 | Implement Collisionexportsrequireandambientmodule | spike | frontend/syntax | class: blocked | Implement Collisionexportsrequireandambientmodule |
@@ -5027,6 +5026,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1283 | Implement Collisioncodegenmodulewithprivatemember | spike | frontend/syntax | see `issues/done/1283-implement-collisionCodeGenModuleWithPrivateMember.md` |
 | 1284 | Implement Collisionexportsrequireandalias | spike | frontend/syntax | see `issues/done/1284-implement-collisionExportsRequireAndAlias.md` |
 | 1285 | Implement Collisionexportsrequireandambientclass | spike | frontend/syntax | see `issues/done/1285-implement-collisionExportsRequireAndAmbientClass.md` |
+| 1286 | Implement Collisionexportsrequireandambientenum | spike | frontend/syntax | see `issues/done/1286-implement-collisionExportsRequireAndAmbientEnum.md` |
 | 1325 | Implement Collisionthisexpressionandlocalvarinconstructor | spike | frontend/syntax | see `issues/done/1325-implement-collisionThisExpressionAndLocalVarInConstructor.md` |
 | 1327 | Implement Collisionthisexpressionandlocalvarinlambda | spike | frontend/syntax | see `issues/done/1327-implement-collisionThisExpressionAndLocalVarInLambda.md` |
 | 1328 | Implement Collisionthisexpressionandlocalvarinmethod | spike | frontend/syntax | see `issues/done/1328-implement-collisionThisExpressionAndLocalVarInMethod.md` |
