@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 3 | 2 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4455 | 3732 | 723 |
+| frontend | 4456 | 3732 | 724 |
 | harness | 1 | 0 | 1 |
 | ir | 44 | 22 | 22 |
 | issues | 4 | 0 | 4 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5077 | 4007 | 1070 |
+| total | 5078 | 4007 | 1071 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -197,6 +197,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5240 | Parse async arrow function expressions | feature | frontend/syntax | implementation-ready | P1 |  | `async () => { ... }` and `(async () => { ... })` are rejected as `unsupported expression: Async` before AST construc... |
 | 5241 | Parse spread arguments in new expressions | bug | frontend/syntax | implementation-ready | P1 |  | spread arguments in constructor calls are rejected as raw `DotDotDot` parser errors before class/type-system behavior... |
 | 5242 | Parse direct generic call type arguments for callable consts | feature | frontend/parser | implementation-ready | P1 |  | the existing generic-call erasure path is too narrow for callable |
+| 5243 | Erase type arguments on ambient generic function calls | feature | frontend/parser | implementation-ready | P1 |  | the existing direct generic-call erasure guard covers simple generic |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -472,7 +473,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 772 | Implement Augmentedtypesvar | spike | frontend/syntax | class: blocked | Implement Augmentedtypesvar |
 | 773 | Implement Autoasiforstaticsinclassdeclaration | spike | frontend/syntax | class: triage-needed | Implement Autoasiforstaticsinclassdeclaration |
 | 775 | Implement Autotypeassignedusingdestructuringfromnevernocrash | spike | frontend/resolver | class: blocked | Implement Autotypeassignedusingdestructuringfromnevernocrash |
-| 1165 | Implement Circularresolvedsignature | spike | frontend/syntax | class: blocked | Implement Circularresolvedsignature |
 | 1166 | Implement Circulartypeargumentslocalandouternocrash | spike | frontend/syntax | class: blocked | Implement Circulartypeargumentslocalandouternocrash |
 | 1167 | Implement Circulartypeofwithfunctionmodule | spike | frontend/syntax | class: blocked | Implement Circulartypeofwithfunctionmodule |
 | 1168 | Implement Circularlyconstrainedmappedtypecontainingconditionalnoinfiniteinstantiationdepth | spike | frontend/semantics | class: blocked | Implement Circularlyconstrainedmappedtypecontainingconditionalnoinfiniteinstantiationdepth |
@@ -5034,6 +5034,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1162 | Implement Circularreferenceinimport | spike | frontend/syntax | see `issues/done/1162-implement-circularReferenceInImport.md` |
 | 1163 | Implement Circularreferenceinreturntype Name Resolution | spike | frontend/resolver | see `issues/done/1163-implement-circularReferenceInReturnType-name-resolution.md` |
 | 1164 | Implement Circularreferenceinreturntype Parser Syntax | spike | frontend/syntax | see `issues/done/1164-implement-circularReferenceInReturnType-parser-syntax.md` |
+| 1165 | Implement Circularresolvedsignature | spike | frontend/syntax | see `issues/done/1165-implement-circularResolvedSignature.md` |
 | 2050 | Implement Duplicatelocalvariable Duplicate Local | spike | reference/triage | see `issues/done/2050-implement-duplicateLocalVariable-duplicate-local.md` |
 | 3002 | Implement Isolateddeclarationerrorsdefault | spike | runtime/builtins | see `issues/done/3002-implement-isolatedDeclarationErrorsDefault.md` |
 | 3131 | Implement Jsxfactorynotidentifierorqualifiedname | spike | reference/triage | see `issues/done/3131-implement-jsxFactoryNotIdentifierOrQualifiedName.md` |
