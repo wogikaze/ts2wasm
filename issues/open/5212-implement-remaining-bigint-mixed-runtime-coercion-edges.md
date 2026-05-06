@@ -1,9 +1,9 @@
 ---
-id: 368
+id: 5212
 title: "Implement remaining BigInt mixed runtime coercion edges"
 type: feature
 area: runtime/semantics
-class: implementation-ready
+class: blocked
 priority: P2
 depends_on: [259, 261]
 blocks: []

@@ -147,7 +147,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] created/updated: `issues/open/5191-support-ambient-interface-filter-receiver.md`
+- [x] created/updated: `issues/open/5207-support-ambient-interface-filter-receiver.md`
 
 ## Notes
 
@@ -189,11 +189,11 @@ result: pass for issue 5161; BuildPass, no UnresolvedName for `b2`
 date: 2026-05-06
 
 command: python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/booleanFilterAnyArray.ts
-result: pass for issue 5161; no UnresolvedName for `anys`, next blocker split to issue 5191
+result: pass for issue 5161; no UnresolvedName for `anys`, next blocker split to issue 5207
 date: 2026-05-06
 ```
 
 Remaining risks:
 
 - issue 5160 owns the later ternary lowering blocker in `bestCommonTypeWithContextualTyping.ts`
-- issue 5191 owns the later ambient interface `.filter(...)` receiver blocker in `booleanFilterAnyArray.ts`
+- issue 5207 owns the later ambient interface `.filter(...)` receiver blocker in `booleanFilterAnyArray.ts`

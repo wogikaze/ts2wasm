@@ -1,5 +1,5 @@
 ---
-id: 401
+id: 5213
 title: "Implement generator function syntax prerequisite for iterator spread"
 type: feature
 area: frontend/syntax
@@ -78,8 +78,8 @@ Expected:
 
 Do not touch:
 
-- `issues/open/354-sparse-array-spread-support.md`
-- `issues/open/355-dynamic-object-enumeration-spread.md`
+- `issues/open/5211-sparse-array-spread-support.md`
+- `issues/done/355-dynamic-object-enumeration-spread.md`
 
 ## Acceptance criteria
 

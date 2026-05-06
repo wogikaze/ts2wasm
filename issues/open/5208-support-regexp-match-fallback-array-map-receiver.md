@@ -1,11 +1,11 @@
 ---
-id: 5192
+id: 5208
 title: "Support RegExp match fallback array map receivers"
 type: feature
 area: frontend/semantics
 class: implementation-ready
 priority: P2
-depends_on: [5160]
+depends_on: []
 blocks: []
 created: 2026-05-06
 updated: 2026-05-06

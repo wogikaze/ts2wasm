@@ -1,9 +1,9 @@
 ---
-id: 402
+id: 5214
 title: "Implement computed Symbol.iterator prerequisite for spread"
 type: feature
 area: frontend/syntax
-class: design-ready
+class: blocked
 priority: P2
 depends_on: []
 blocks: [353]
@@ -85,8 +85,8 @@ Expected:
 
 Do not touch:
 
-- `issues/open/354-sparse-array-spread-support.md`
-- `issues/open/355-dynamic-object-enumeration-spread.md`
+- `issues/open/5211-sparse-array-spread-support.md`
+- `issues/done/355-dynamic-object-enumeration-spread.md`
 
 ## Acceptance criteria
 

@@ -141,7 +141,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] created/updated: `issues/open/5192-support-regexp-match-fallback-array-map-receiver.md`
+- [x] created/updated: `issues/open/5208-support-regexp-match-fallback-array-map-receiver.md`
 
 ## Notes
 
@@ -179,7 +179,7 @@ result: pass (2 passed)
 date: 2026-05-06
 
 command: python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/bestChoiceType.ts
-result: pass for issue 5160; ternary unsupported blocker is gone, next blocker split to issue 5192
+result: pass for issue 5160; ternary unsupported blocker is gone, next blocker split to issue 5208
 date: 2026-05-06
 
 command: python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/bestCommonTypeWithContextualTyping.ts
@@ -189,4 +189,4 @@ date: 2026-05-06
 
 Remaining risks:
 
-- issue 5192 owns the next `bestChoiceType.ts` receiver-classification blocker after ternary lowering.
+- issue 5208 owns the next `bestChoiceType.ts` receiver-classification blocker after ternary lowering.

@@ -133,7 +133,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] created: `issues/open/5193-support-class-instance-method-receiver-calls.md`
+- [x] created: `issues/open/5209-support-class-instance-method-receiver-calls.md`
 
 ## Notes
 
@@ -165,4 +165,4 @@ date: 2026-05-06
 
 Remaining risks:
 
-- The representative reference now stops at class instance method receiver classification, tracked by issue 5193.
+- The representative reference now stops at class instance method receiver classification, tracked by issue 5209.

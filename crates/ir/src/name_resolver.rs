@@ -128,7 +128,14 @@ impl NameResolver {
         }
 
         // Second pass: resolve all statements
-        program.iter().map(|stmt| self.resolve_stmt(stmt)).collect()
+        let mut resolved = Vec::new();
+        for stmt in program {
+            if matches!(stmt, Stmt::AmbientValueDecl { .. }) {
+                continue;
+            }
+            resolved.push(self.resolve_stmt(stmt)?);
+        }
+        Ok(resolved)
     }
 
     fn resolve_stmt(&mut self, stmt: &Stmt) -> Result<Stmt, Diagnostic> {

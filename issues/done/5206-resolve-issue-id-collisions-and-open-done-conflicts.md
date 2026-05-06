@@ -9,6 +9,7 @@ depends_on: []
 blocks: []
 created: 2026-05-06
 updated: 2026-05-06
+completed: 2026-05-06
 ---
 
 ## Summary
@@ -50,9 +51,9 @@ Every open issue has a unique ID, reopened/follow-up work does not reuse done is
 
 In scope:
 
-- [ ] Renumber duplicate open issue files to unused IDs.
-- [ ] Update affected issue frontmatter, dependency references, and issue index.
-- [ ] Decide whether open/done conflicts are true reopenings or follow-up issues, then make the queue state explicit without duplicate IDs.
+- [x] Renumber duplicate open issue files to unused IDs.
+- [x] Update affected issue frontmatter, dependency references, and issue index.
+- [x] Decide whether open/done conflicts are true reopenings or follow-up issues, then make the queue state explicit without duplicate IDs.
 
 Out of scope:
 
@@ -74,10 +75,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] `python scripts/manager.py check-issue-health` passes.
-- [ ] `python scripts/manager.py update-issue-index --check` passes.
-- [ ] `python scripts/manager.py check-issue-readiness -- --fail-ready-below 80` passes or records any remaining independent readiness blocker as a separate issue.
-- [ ] No issue content is dropped while renumbering.
+- [x] `python scripts/manager.py check-issue-health` passes.
+- [x] `python scripts/manager.py update-issue-index --check` passes.
+- [x] `python scripts/manager.py check-issue-readiness -- --fail-ready-below 80` passes or records any remaining independent readiness blocker as a separate issue.
+- [x] No issue content is dropped while renumbering.
 
 ## Validation
 
@@ -105,15 +106,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 
@@ -121,20 +122,46 @@ Discovered while closing issue 5134.
 
 ## Completion evidence
 
-Fill only when moving to `done/`.
-
 Commits:
 
-- `...`
+- close commit: issues: restore issue queue health
 
 Validation result:
 
 ```text
-command:
-result:
-date:
+command: python scripts/manager.py update-issue-index
+result: pass; index regenerated
+date: 2026-05-06
+
+command: python scripts/manager.py update-issue-index --check
+result: pass
+date: 2026-05-06
+
+command: python scripts/manager.py check-issue-health
+result: pass
+date: 2026-05-06
+
+command: python scripts/manager.py check-issue-readiness -- --fail-ready-below 80
+result: pass
+date: 2026-05-06
+
+command: mise run check issues
+result: pass
+date: 2026-05-06
+
+command: cargo fmt --all --check
+result: pass
+date: 2026-05-06
+
+command: cargo check -p ts2wasm-ir -p ts2wasm-compiler
+result: pass; existing compiler dead_code warning remains
+date: 2026-05-06
+
+command: git diff --check
+result: pass
+date: 2026-05-06
 ```
 
 Remaining risks:
 
-- none
+- Full `cargo nextest run` still has backend residual-expression failures tracked by issue 5205.

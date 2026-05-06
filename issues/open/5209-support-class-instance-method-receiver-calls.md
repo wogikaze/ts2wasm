@@ -1,5 +1,5 @@
 ---
-id: 5193
+id: 5209
 title: "Support class instance method receiver calls"
 type: feature
 area: ir/lowered

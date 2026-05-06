@@ -3,7 +3,7 @@ id: 5205
 title: "Restore backend residual expression rejection"
 type: bug
 area: backend-wasm
-class: implementation-ready
+class: blocked
 priority: P1
 depends_on: []
 blocks: []
