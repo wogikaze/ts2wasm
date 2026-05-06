@@ -16,9 +16,9 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 3 | 2 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4448 | 3749 | 699 |
+| frontend | 4448 | 3748 | 700 |
 | harness | 1 | 0 | 1 |
-| ir | 40 | 18 | 22 |
+| ir | 41 | 19 | 22 |
 | issues | 4 | 0 | 4 |
 | parser | 1 | 0 | 1 |
 | reference | 212 | 159 | 53 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5066 | 4020 | 1046 |
+| total | 5067 | 4020 | 1047 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -186,6 +186,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5229 | Resolve imports between @Filename sections | feature | compiler/module-graph | implementation-ready | P1 |  | `import b from "./b"` in a `// @Filename: c.js` section reports `issue-232: missing local module ./b`. |
 | 5230 | Tokenize JSX elements before RegExp fallback | feature | frontend/lexer | implementation-ready | P1 |  | `</div>` in a JSX element reports `UnsupportedRegExp: unterminated RegExp literal`. |
 | 5231 | Parse export as namespace declarations | feature | frontend/parser | implementation-ready | P1 |  | `export as namespace THREE;` reports `UnsupportedModule: issue-055: unsupported static export`. |
+| 5232 | Support entry-module export class declarations | feature | ir/compiler | implementation-ready | P1 |  | entry-module `export class Foo {}` currently reports `UnsupportedModule: issue-5005: entry module ... uses a declarat... |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -461,7 +462,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 772 | Implement Augmentedtypesvar | spike | frontend/syntax | class: blocked | Implement Augmentedtypesvar |
 | 773 | Implement Autoasiforstaticsinclassdeclaration | spike | frontend/syntax | class: triage-needed | Implement Autoasiforstaticsinclassdeclaration |
 | 775 | Implement Autotypeassignedusingdestructuringfromnevernocrash | spike | frontend/resolver | class: blocked | Implement Autotypeassignedusingdestructuringfromnevernocrash |
-| 1141 | Implement Checksupercallbeforethisaccess | spike | frontend/syntax | class: triage-needed | Implement Checksupercallbeforethisaccess |
 | 1142 | Implement Checksupercallbeforethisaccessing Class | spike | frontend/syntax | class: blocked | Implement Checksupercallbeforethisaccessing Class |
 | 1143 | Implement Checksupercallbeforethisaccessing Parser Syntax | spike | frontend/syntax | class: triage-needed | Implement Checksupercallbeforethisaccessing Parser Syntax |
 | 1144 | Implement Checkswitchstatementifcasetypeisstring | spike | frontend/syntax | class: blocked | Implement Checkswitchstatementifcasetypeisstring |
@@ -5023,6 +5023,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1138 | Implement Checkjsdoctypetagonexportassignment | spike | frontend/syntax | see `issues/done/1138-implement-checkJsdocTypeTagOnExportAssignment.md` |
 | 1139 | Implement Checkjsxnotseterror | spike | reference/triage | see `issues/done/1139-implement-checkJsxNotSetError.md` |
 | 1140 | Implement Checkmergedglobalumdsymbol | spike | frontend/syntax | see `issues/done/1140-implement-checkMergedGlobalUMDSymbol.md` |
+| 1141 | Implement Checksupercallbeforethisaccess | spike | frontend/syntax | see `issues/done/1141-implement-checkSuperCallBeforeThisAccess.md` |
 | 2050 | Implement Duplicatelocalvariable Duplicate Local | spike | reference/triage | see `issues/done/2050-implement-duplicateLocalVariable-duplicate-local.md` |
 | 3002 | Implement Isolateddeclarationerrorsdefault | spike | runtime/builtins | see `issues/done/3002-implement-isolatedDeclarationErrorsDefault.md` |
 | 3131 | Implement Jsxfactorynotidentifierorqualifiedname | spike | reference/triage | see `issues/done/3131-implement-jsxFactoryNotIdentifierOrQualifiedName.md` |
