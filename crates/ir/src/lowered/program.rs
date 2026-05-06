@@ -228,7 +228,9 @@ pub fn lower_program(program: &[ResolvedStmt]) -> Result<LoweredProgram, Diagnos
                         func_id,
                         captures: Vec::new(),
                         representation: ClosureRepresentation::DirectLocalToken,
+                        span: Span::generated("arrow_fn"),
                     },
+                    Span::generated("let"),
                 ));
             }
             ResolvedStmt::ClassDecl {
@@ -265,6 +267,7 @@ pub fn lower_program(program: &[ResolvedStmt]) -> Result<LoweredProgram, Diagnos
                     methods: instance_methods,
                     static_methods,
                     private_fields: private_fields.clone(),
+                    span: Span::generated("class_decl"),
                 });
                 let mut initializers = Vec::new();
                 for (field, initializer, span) in static_private_fields {
@@ -1772,18 +1775,20 @@ fn lower_function(
                 let lowered_default = resolver.lower_expr(default)?;
                 body_with_defaults.push(LoweredStmt::If {
                     condition: LoweredExpr::Binary {
-                        left: Box::new(LoweredExpr::Local(param_local)),
+                        left: Box::new(LoweredExpr::Local(param_local, Span::generated("local"))),
                         op: LoweredBinaryOp::StrictEqual,
-                        right: Box::new(LoweredExpr::Undefined),
+                        right: Box::new(LoweredExpr::Undefined(Span::generated("undefined"))),
+                        span: Span::generated("binary"),
                     },
-                    then_body: vec![LoweredStmt::Assign(param_local, lowered_default)],
+                    then_body: vec![LoweredStmt::Assign(param_local, lowered_default, Span::generated("assign"))],
                     else_body: vec![],
+                    span: Span::generated("if_stmt"),
                 });
             }
             body_with_defaults.extend(
                 resolver.lower_binding_pattern_declarations(
                     &pattern,
-                    LoweredExpr::Local(param_local),
+                    LoweredExpr::Local(param_local, Span::generated("local")),
                     None,
                 )?,
             );
@@ -1800,7 +1805,7 @@ fn lower_function(
                     body_with_defaults.extend(
                         resolver.lower_binding_pattern_declarations(
                             &rest_pattern,
-                            LoweredExpr::Local(param_local),
+                            LoweredExpr::Local(param_local, Span::generated("local")),
                             None,
                         )?,
                     );
@@ -1812,12 +1817,14 @@ fn lower_function(
             // Generate: if (param === undefined) { param = default; }
             body_with_defaults.push(LoweredStmt::If {
                 condition: LoweredExpr::Binary {
-                    left: Box::new(LoweredExpr::Local(param_local)),
+                    left: Box::new(LoweredExpr::Local(param_local, Span::generated("local"))),
                     op: LoweredBinaryOp::StrictEqual,
-                    right: Box::new(LoweredExpr::Undefined),
+                    right: Box::new(LoweredExpr::Undefined(Span::generated("undefined"))),
+                    span: Span::generated("binary"),
                 },
-                then_body: vec![LoweredStmt::Assign(param_local, lowered_default)],
+                then_body: vec![LoweredStmt::Assign(param_local, lowered_default, Span::generated("assign"))],
                 else_body: vec![],
+                span: Span::generated("if_stmt"),
             });
         }
     }
