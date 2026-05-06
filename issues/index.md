@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 2 | 1 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4444 | 3750 | 694 |
+| frontend | 4445 | 3750 | 695 |
 | harness | 1 | 0 | 1 |
 | ir | 40 | 18 | 22 |
 | issues | 4 | 0 | 4 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5061 | 4021 | 1040 |
+| total | 5062 | 4021 | 1041 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -50,7 +50,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 5000 (Meta: TypeScript Compiler Parser Syntax Coverage) [done/design] ch:497 open:430 done:67
 ├── 5002 (Meta: TypeScript Compiler Type System Coverage) [done/done] ch:241 open:233 done:8 (also ← 5005)
 ├── 5003 (Meta: TypeScript Compiler Declaration Emit Coverage) [done/done] ch:103 open:92 done:11 (also ← 5001)
-5001 (Meta: TypeScript Compiler Semantic Analysis Coverage) [done/done] ch:602 open:353 done:249
+5001 (Meta: TypeScript Compiler Semantic Analysis Coverage) [done/done] ch:601 open:352 done:249
 5004 (Meta: Runtime Builtins Coverage (test262) (audit reopened #5004)) [done/done] ch:24 open:3 done:21
 5005 (Meta: TypeScript Compiler Name Resolution Coverage) [done/done] ch:427 open:380 done:47
 ├── 5006 (Meta: TypeScript Compiler Scope Analysis Coverage) [done/done] ch:30 open:22 done:8
@@ -67,7 +67,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | Order | ID | Title | State | Class | Area | Priority | Depends on | Direct children | Open children | Done children |
 |-----:|---:|------|-------|-------|------|--------:|-----------:|----------------:|--------------:|--------------:|
 | 1 | 5000 | Meta: TypeScript Compiler Parser Syntax Coverage | done | design | frontend/syntax | P1 | - | 497 | 430 | 67 |
-| 2 | 5001 | Meta: TypeScript Compiler Semantic Analysis Coverage | done | done | frontend/semantics | P1 | - | 602 | 353 | 249 |
+| 2 | 5001 | Meta: TypeScript Compiler Semantic Analysis Coverage | done | done | frontend/semantics | P1 | - | 601 | 352 | 249 |
 | 3 | 5004 | Meta: Runtime Builtins Coverage (test262) (audit reopened #5004) | done | done | runtime/builtins | P1 | - | 24 | 3 | 21 |
 | 4 | 5005 | Meta: TypeScript Compiler Name Resolution Coverage | done | done | frontend/resolver | P1 | - | 427 | 380 | 47 |
 | 5 | 5002 | Meta: TypeScript Compiler Type System Coverage | done | done | frontend/semantics | P1 | 5000, 5005 | 241 | 233 | 8 |
@@ -181,6 +181,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5224 | Parse destructuring assignment call arguments | feature | frontend/parser | implementation-ready | P1 |  | Parse destructuring assignment call arguments |
 | 5225 | Support qualified class heritage names | feature | ir/resolver | implementation-ready | P1 |  | Support qualified class heritage names |
 | 5226 | Allow ambient function overload declarations | feature | frontend/resolver | implementation-ready | P1 |  | Allow ambient function overload declarations |
+| 5227 | Honor @ts-ignore for JavaScript call diagnostics | feature | frontend/diagnostics | implementation-ready | P1 |  | the representative reports issue-211 at byte span `130..133` for an |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -456,7 +457,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 772 | Implement Augmentedtypesvar | spike | frontend/syntax | class: blocked | Implement Augmentedtypesvar |
 | 773 | Implement Autoasiforstaticsinclassdeclaration | spike | frontend/syntax | class: triage-needed | Implement Autoasiforstaticsinclassdeclaration |
 | 775 | Implement Autotypeassignedusingdestructuringfromnevernocrash | spike | frontend/resolver | class: blocked | Implement Autotypeassignedusingdestructuringfromnevernocrash |
-| 1135 | Implement Checkjsfiles | spike | frontend/syntax | class: blocked | Implement Checkjsfiles |
 | 1136 | Implement Checkjsobjectliteralindexsignatures | spike | frontend/syntax | class: blocked | Implement Checkjsobjectliteralindexsignatures |
 | 1137 | Implement Checkjstypedefnounusedlocalmarked | spike | frontend/syntax | class: blocked | Implement Checkjstypedefnounusedlocalmarked |
 | 1138 | Implement Checkjsdoctypetagonexportassignment | spike | frontend/syntax | class: blocked | Implement Checkjsdoctypetagonexportassignment |
@@ -5018,6 +5018,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1132 | Implement Checkindexconstraintofjavascriptclassexpression | spike | frontend/resolver | see `issues/done/1132-implement-checkIndexConstraintOfJavascriptClassExpression.md` |
 | 1133 | Implement Checkinfiniteexpansiontermination | spike | frontend/resolver | see `issues/done/1133-implement-checkInfiniteExpansionTermination.md` |
 | 1134 | Implement Checkinheritedproperty | spike | frontend/syntax | see `issues/done/1134-implement-checkInheritedProperty.md` |
+| 1135 | Implement Checkjsfiles | spike | frontend/syntax | see `issues/done/1135-implement-checkJsFiles.md` |
 | 2050 | Implement Duplicatelocalvariable Duplicate Local | spike | reference/triage | see `issues/done/2050-implement-duplicateLocalVariable-duplicate-local.md` |
 | 3002 | Implement Isolateddeclarationerrorsdefault | spike | runtime/builtins | see `issues/done/3002-implement-isolatedDeclarationErrorsDefault.md` |
 | 3131 | Implement Jsxfactorynotidentifierorqualifiedname | spike | reference/triage | see `issues/done/3131-implement-jsxFactoryNotIdentifierOrQualifiedName.md` |
