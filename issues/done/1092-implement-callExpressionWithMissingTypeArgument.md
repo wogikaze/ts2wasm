@@ -106,11 +106,11 @@ Current state:
 
 Follow-up issues:
 
-- [x] created: `issues/open/5194-report-empty-call-type-arguments.md`
+- [x] created: `issues/done/5194-report-empty-call-type-arguments.md`
 
 ## Notes
 
-Superseded by `issues/open/5194-report-empty-call-type-arguments.md`.
+Superseded by `issues/done/5194-report-empty-call-type-arguments.md`.
 Fresh triage shows this generated bucket is a focused parser diagnostic gap for
 `Foo<a,,b>()`, not a broad parser-syntax bucket.
 
@@ -131,12 +131,12 @@ Generated on 2026-05-06:
 - tokens: `Foo`, `<`, `a`, `,`, `,`, `b`, `>`, `(`, `)`, `;`
 - TypeScript AST: top-level `CallExpression` for `Foo<a,,b>()`
 - TypeScript oracle: TS1110 `Type expected` at the empty type-argument slot
-- follow-up: `issues/open/5194-report-empty-call-type-arguments.md`
+- follow-up: `issues/done/5194-report-empty-call-type-arguments.md`
 
 ## Completion evidence
 
 Closed as a generated triage bucket. The actionable parser diagnostic gap is
-tracked by `issues/open/5194-report-empty-call-type-arguments.md`.
+tracked by `issues/done/5194-report-empty-call-type-arguments.md`.
 
 Commits:
 

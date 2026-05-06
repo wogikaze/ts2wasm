@@ -58,9 +58,9 @@ type argument at the empty slot. The representative case no longer stops with
 
 In scope:
 
-- [ ] Detect empty entries in call type-argument lists
-- [ ] Emit a source-spanned missing type diagnostic at the empty slot
-- [ ] Preserve valid generic call type-argument erasure
+- [x] Detect empty entries in call type-argument lists
+- [x] Emit a source-spanned missing type diagnostic at the empty slot
+- [x] Preserve valid generic call type-argument erasure
 
 Out of scope:
 
@@ -83,10 +83,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] `Foo<a,,b>();` reports a missing type-argument diagnostic at the empty slot, not `expected Semicolon`
-- [ ] Existing valid generic call fixtures still parse and erase type arguments
-- [ ] A focused parser or CLI diagnostic test covers the malformed call type-argument list
-- [ ] `callExpressionWithMissingTypeArgument1.ts` advances beyond the current comma parser error
+- [x] `Foo<a,,b>();` reports a missing type-argument diagnostic at the empty slot, not `expected Semicolon`
+- [x] Existing valid generic call fixtures still parse and erase type arguments
+- [x] A focused parser or CLI diagnostic test covers the malformed call type-argument list
+- [x] `callExpressionWithMissingTypeArgument1.ts` advances beyond the current comma parser error
 
 ## Validation
 
@@ -111,15 +111,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 

@@ -108,7 +108,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] added: `issues/open/5181-support-prefix-update-expressions-in-call-arguments.md`
+- [x] added: `issues/done/5181-support-prefix-update-expressions-in-call-arguments.md`
 
 ## Notes
 
@@ -140,7 +140,7 @@ Generated on 2026-05-06.
 - Compiler evidence: tokens and AST succeed; the for-loop update `++i` is represented in `For.update`, and the call argument is represented as `Unary { op: PreIncrement, expr: Ident("i") }`; resolved pipeline fails before lowering.
 - TypeScript oracle: no diagnostics for the representative file.
 - TypeScript AST path at the failure: `ExpressionStatement -> CallExpression -> ParenthesizedExpression -> ArrowFunction -> CallExpression -> PrefixUnaryExpression`
-- Superseding child: `issues/open/5181-support-prefix-update-expressions-in-call-arguments.md`
+- Superseding child: `issues/done/5181-support-prefix-update-expressions-in-call-arguments.md`
 
 ## Completion evidence
 
