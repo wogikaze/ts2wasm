@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 3 | 0 | 3 |
 | coverage | 43 | 0 | 43 |
 | docs | 4 | 2 | 2 |
-| frontend | 4438 | 3718 | 720 |
+| frontend | 4438 | 3717 | 721 |
 | harness | 1 | 0 | 1 |
 | ir | 42 | 5 | 37 |
 | issues | 5 | 0 | 5 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 8 | 1 | 7 |
 | wasi | 4 | 3 | 1 |
-| total | 5076 | 3987 | 1089 |
+| total | 5076 | 3986 | 1090 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -100,7 +100,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5138 | Split Reflect.construct isConstructor reference window | spike | runtime/builtins | design-ready | P1 |  | `reference/test262/test/annexB/built-ins/String/prototype/anchor/not-a-constructor.js` currently fails with `Unresolv... |
 | 5158 | Report interface private member clashes | feature | frontend/resolver | implementation-ready | P1 |  | `reference/typescript/tests/cases/compiler/baseTypePrivateMemberClash.ts` currently reports `BackendIo` instead of a ... |
 | 5163 | Lower nested call expression callees | feature | frontend/semantics | implementation-ready | P2 |  | `reference/typescript/tests/cases/compiler/betterErrorForAccidentalCall.ts` currently reports `UnsupportedSyntax: onl... |
-| 5179 | Report implicit this before closure runtime guard | feature | frontend/semantics | implementation-ready | P1 |  | a TypeScript implicit-`this` diagnostic is hidden by the nested-function closure runtime-subset guard. |
 | 5199 | Report function overload list class merge diagnostics | feature | frontend/resolver | implementation-ready | P1 |  | top-level bodyless function overload declarations are currently handled as duplicate concrete function implementations. |
 | 5204 | Resolve lexical super property captures in super call arguments | feature | frontend/resolver | implementation-ready | P1 |  | lexical `super` property access inside arrow arguments to `super(...)` is not resolved against the derived instance c... |
 | 5207 | Support ambient interface filter receivers | feature | frontend/semantics | implementation-ready | P2 |  | `reference/typescript/tests/cases/compiler/booleanFilterAnyArray.ts` now reports `issue-211: unknown receiver class f... |
@@ -5143,6 +5142,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5176 | Report ambient var lib redeclaration diagnostics | feature | frontend/semantics | see `issues/done/5176-report-ambient-var-lib-redeclaration-diagnostics.md` |
 | 5177 | Report strict-null diagnostics in erased namespace methods | feature | frontend/semantics | see `issues/done/5177-report-strict-null-in-erased-namespace-methods.md` |
 | 5178 | Parse bitwise compound assignment operators | feature | frontend/syntax | see `issues/done/5178-parse-bitwise-compound-assignment-operators.md` |
+| 5179 | Report implicit this before closure runtime guard | feature | frontend/semantics | see `issues/done/5179-report-implicit-this-before-closure-runtime-guard.md` |
 | 5180 | Parse computed property object binding patterns | feature | frontend/syntax | see `issues/done/5180-parse-computed-property-object-binding-patterns.md` |
 | 5181 | Support prefix update expressions in call arguments | feature | frontend/semantics | see `issues/done/5181-support-prefix-update-expressions-in-call-arguments.md` |
 | 5182 | Parse comma-separated for update expressions | feature | frontend/syntax | see `issues/done/5182-parse-comma-separated-for-update-expressions.md` |
