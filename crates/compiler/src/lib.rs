@@ -94,7 +94,13 @@ pub fn build_file_with_host_deny(
     // Check for @fileName: multi-section file -- compile each section as its own module.
     let sections = split_file_name_sections(&source);
     if !sections.is_empty() {
-        return build_multi_section_file(&sections, output, capability_manifest_output, host_deny);
+        return build_multi_section_file(
+            input,
+            &sections,
+            output,
+            capability_manifest_output,
+            host_deny,
+        );
     }
 
     validate_type_reference_directives(&source)?;
@@ -112,6 +118,7 @@ pub fn build_file_with_host_deny(
         lower_static_named_import_bindings_for_build(&program, &module_graph)?;
     let name_resolved = name_resolver::resolve_names(&static_module_binding.rewritten_program)?;
     let resolved = builtin_resolver::resolve_builtins(&name_resolved)?;
+    validate_typescript_semantics_for_path(input, &resolved)?;
     validate_optimized_hir_slice(&resolved, OptimizationLevel::O0)?;
     let lowered = lowered::lower_program(&resolved)?;
     let lowered =
@@ -156,6 +163,28 @@ fn validate_optimized_hir_slice(
         Err(error) if error.code == DiagCode::UnsupportedSyntax => Ok(()),
         Err(error) => Err(error),
     }
+}
+
+fn validate_typescript_semantics_for_path(
+    input: &Path,
+    resolved: &[ts2wasm_ir::ResolvedStmt],
+) -> Result<(), Diagnostic> {
+    if is_typescript_source_path(input) {
+        ts2wasm_ir::semantic::validate_typescript_call_arity(resolved)?;
+    }
+    Ok(())
+}
+
+fn is_typescript_source_path(input: &Path) -> bool {
+    input
+        .extension()
+        .and_then(|extension| extension.to_str())
+        .is_some_and(|extension| {
+            matches!(
+                extension.to_ascii_lowercase().as_str(),
+                "ts" | "tsx" | "mts" | "cts"
+            )
+        })
 }
 
 fn ensure_runtime_feature_gates(lowered: &lowered::LoweredProgram) -> Result<(), Diagnostic> {
@@ -955,6 +984,7 @@ fn lower_static_named_import_reads_for_build(
 /// virtual modules via `// @fileName:` directives. Each section is compiled
 /// as a separate module body with its own scope.
 fn build_multi_section_file(
+    input: &Path,
     sections: &[(String, String)],
     output: &Path,
     capability_manifest_output: Option<&Path>,
@@ -962,7 +992,14 @@ fn build_multi_section_file(
 ) -> Result<CompileReport<()>, Diagnostic> {
     let mut modules = Vec::new();
     for (i, (name, section_source)) in sections.iter().enumerate() {
-        if let Some(module_info) = lower_source_as_module_body(section_source, i + 1, name.clone())?
+        let section_path = Path::new(name);
+        let semantic_path = if section_path.extension().is_some() {
+            section_path
+        } else {
+            input
+        };
+        if let Some(module_info) =
+            lower_source_as_module_body(section_source, semantic_path, i + 1, name.clone())?
         {
             modules.push(module_info);
         }
@@ -1013,6 +1050,7 @@ fn build_multi_section_file(
 /// Similar to lower_static_module_body_for_build but takes source directly.
 fn lower_source_as_module_body(
     source: &str,
+    semantic_path: &Path,
     module_id: usize,
     specifier: String,
 ) -> Result<Option<lowered::ModuleInfo>, Diagnostic> {
@@ -1027,6 +1065,7 @@ fn lower_source_as_module_body(
 
     let name_resolved = name_resolver::resolve_names(&body.rewritten_program)?;
     let resolved = builtin_resolver::resolve_builtins(&name_resolved)?;
+    validate_typescript_semantics_for_path(semantic_path, &resolved)?;
     validate_optimized_hir_slice(&resolved, OptimizationLevel::O0)?;
     let lowered_module = lowered::lower_program(&resolved)?;
 
@@ -1095,6 +1134,7 @@ fn lower_static_module_body_for_build(
 
     let name_resolved = name_resolver::resolve_names(&body.rewritten_program)?;
     let resolved = builtin_resolver::resolve_builtins(&name_resolved)?;
+    validate_typescript_semantics_for_path(path, &resolved)?;
     validate_optimized_hir_slice(&resolved, OptimizationLevel::O0)?;
     let lowered_module = lowered::lower_program(&resolved)?;
 

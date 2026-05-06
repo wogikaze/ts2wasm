@@ -21,5 +21,5 @@ pub use name_resolver::resolve_names;
 pub use optimizer::{OptimizationLevel, OptimizationPass, OptimizedHirProgram, optimize_hir};
 pub use semantic::{
     HirExpr, HirFunction, HirFunctionId, HirLocalId, HirProgram, HirRelationalOp, HirStmt,
-    lower_to_hir, validate_hir,
+    lower_to_hir, validate_hir, validate_typescript_call_arity,
 };

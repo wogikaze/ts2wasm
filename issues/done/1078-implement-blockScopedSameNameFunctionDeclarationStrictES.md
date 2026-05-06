@@ -107,7 +107,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] folded into `issues/open/5188-report-block-scoped-function-call-arity-diagnostics.md`
+- [x] folded into `issues/done/5188-report-block-scoped-function-call-arity-diagnostics.md`
 
 ## Notes
 
@@ -118,7 +118,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/open/5188-report-block-scoped-function-call-arity-diagnostics.md` is an exact implementation-ready owner for this strict-mode sibling.
+- `issues/done/5188-report-block-scoped-function-call-arity-diagnostics.md` is an exact implementation-ready owner for this strict-mode sibling.
 - Builtin arity buckets are not matches; these calls resolve to user-defined block-scoped functions.
 
 ## Smart triage
@@ -134,7 +134,7 @@ Generated on 2026-05-06.
 - Source context: `"use strict"; function foo(a: number) { ... function foo() { } ... foo(); foo(10); }`.
 - Compiler evidence: tokens, AST, and resolved IR succeed for both files; resolved IR contains source spans for the wrong-arity call sites. Strict ES5 emits no diagnostic, and strict ES6 reaches a later backend failure.
 - TypeScript oracle: four `TS2554` diagnostics per file for `Expected 0 arguments, but got 1.` and `Expected 1 arguments, but got 0.`
-- Superseded by child: `issues/open/5188-report-block-scoped-function-call-arity-diagnostics.md`
+- Superseded by child: `issues/done/5188-report-block-scoped-function-call-arity-diagnostics.md`
 
 ## Completion evidence
 

@@ -76,9 +76,9 @@ The compiler reports source-spanned arity diagnostics for wrong-argument calls t
 
 In scope:
 
-- [ ] Check resolved direct calls against the resolved user function's required parameter count.
-- [ ] Preserve the call-site span for wrong-arity diagnostics.
-- [ ] Add focused coverage for non-strict and strict ES5/ES6 same-name block-scoped function declarations.
+- [x] Check resolved direct calls against the resolved user function's required parameter count.
+- [x] Preserve the call-site span for wrong-arity diagnostics.
+- [x] Add focused coverage for non-strict and strict ES5/ES6 same-name block-scoped function declarations.
 
 Out of scope:
 
@@ -103,9 +103,9 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] Focused tests cover `foo(10)` resolving to a zero-parameter block function.
-- [ ] Focused tests cover `foo()` resolving to a one-parameter outer function.
-- [ ] `python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/blockScopedSameNameFunctionDeclarationES5.ts` no longer reports `BuildPass`.
+- [x] Focused tests cover `foo(10)` resolving to a zero-parameter block function.
+- [x] Focused tests cover `foo()` resolving to a one-parameter outer function.
+- [x] `python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/blockScopedSameNameFunctionDeclarationES5.ts` no longer reports `BuildPass`.
 
 ## Validation
 
@@ -134,15 +134,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 
@@ -154,14 +154,38 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- `...`
+- this commit: frontend: report TypeScript user call arity
 
 Validation result:
 
 ```text
-command:
-result:
-date:
+command: cargo fmt --all --check
+result: pass
+date: 2026-05-06
+
+command: cargo nextest run -p ts2wasm-cli --test ir_lowering typescript_semantics
+result: pass (2 passed)
+date: 2026-05-06
+
+command: cargo nextest run -p ts2wasm-cli --test ir_lowering
+result: pass (59 passed)
+date: 2026-05-06
+
+command: python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/blockScopedSameNameFunctionDeclarationES5.ts
+result: pass; no longer BuildPass, reports ArityMismatch TS2554 at the block-scoped `foo(10)` call
+date: 2026-05-06
+
+command: python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/blockScopedSameNameFunctionDeclarationES6.ts
+result: pass; no longer BuildPass, reports ArityMismatch TS2554 at the block-scoped `foo(10)` call
+date: 2026-05-06
+
+command: python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/blockScopedSameNameFunctionDeclarationStrictES5.ts
+result: pass; no longer BuildPass, reports ArityMismatch TS2554 at the block-scoped `foo(10)` call
+date: 2026-05-06
+
+command: python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/blockScopedSameNameFunctionDeclarationStrictES6.ts
+result: pass; no longer BuildPass, reports ArityMismatch TS2554 at the block-scoped `foo(10)` call
+date: 2026-05-06
 ```
 
 Remaining risks:

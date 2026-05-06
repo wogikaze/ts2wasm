@@ -1,9 +1,9 @@
 use std::collections::HashMap;
 
-use ts2wasm_frontend::{BinaryOp, DiagCode, Diagnostic, UnaryOp};
+use ts2wasm_frontend::{BinaryOp, DiagCode, Diagnostic, Span, UnaryOp};
 
 use crate::builtin::{BuiltinId, BuiltinPropertyId};
-use crate::builtin_resolved::{ResolvedExpr, ResolvedParam, ResolvedStmt};
+use crate::builtin_resolved::{ResolvedArrayElement, ResolvedExpr, ResolvedParam, ResolvedStmt};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct HirLocalId(pub usize);
@@ -172,6 +172,360 @@ pub fn validate_hir(program: &HirProgram) -> Result<(), Vec<Diagnostic>> {
         Ok(())
     } else {
         Err(errors)
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+struct TypeScriptFunctionArity {
+    required: usize,
+    max: Option<usize>,
+}
+
+/// Validate TypeScript-style direct calls to resolved user functions.
+///
+/// Runtime lowering still preserves JavaScript call behavior by padding missing
+/// arguments and dropping extras where the current ABI requires it. This pass is
+/// for `.ts` semantic checking before that runtime adaptation loses the source
+/// call arity.
+pub fn validate_typescript_call_arity(program: &[ResolvedStmt]) -> Result<(), Diagnostic> {
+    TypeScriptCallArityValidator::default().validate_lexical_block(program)
+}
+
+#[derive(Default)]
+struct TypeScriptCallArityValidator {
+    scopes: Vec<HashMap<String, TypeScriptFunctionArity>>,
+}
+
+impl TypeScriptCallArityValidator {
+    fn validate_lexical_block(&mut self, statements: &[ResolvedStmt]) -> Result<(), Diagnostic> {
+        self.scopes.push(collect_function_arities(statements));
+        let result = self.validate_stmts(statements);
+        self.scopes.pop();
+        result
+    }
+
+    fn validate_with_scope(
+        &mut self,
+        scope: HashMap<String, TypeScriptFunctionArity>,
+        f: impl FnOnce(&mut Self) -> Result<(), Diagnostic>,
+    ) -> Result<(), Diagnostic> {
+        self.scopes.push(scope);
+        let result = f(self);
+        self.scopes.pop();
+        result
+    }
+
+    fn validate_stmts(&mut self, statements: &[ResolvedStmt]) -> Result<(), Diagnostic> {
+        for statement in statements {
+            self.validate_stmt(statement)?;
+        }
+        Ok(())
+    }
+
+    fn validate_stmt(&mut self, statement: &ResolvedStmt) -> Result<(), Diagnostic> {
+        match statement {
+            ResolvedStmt::AmbientValue(_)
+            | ResolvedStmt::Break { .. }
+            | ResolvedStmt::Continue { .. } => {}
+            ResolvedStmt::Let(_, expr)
+            | ResolvedStmt::Assign(_, expr)
+            | ResolvedStmt::Expr(expr)
+            | ResolvedStmt::Return(expr)
+            | ResolvedStmt::Throw(expr) => self.validate_expr(expr)?,
+            ResolvedStmt::DestructureLet { expr, .. } => self.validate_expr(expr)?,
+            ResolvedStmt::If {
+                condition,
+                then_body,
+                else_body,
+            } => {
+                self.validate_expr(condition)?;
+                self.validate_lexical_block(then_body)?;
+                self.validate_lexical_block(else_body)?;
+            }
+            ResolvedStmt::While { condition, body } => {
+                self.validate_expr(condition)?;
+                self.validate_lexical_block(body)?;
+            }
+            ResolvedStmt::Function { body, .. } => {
+                self.validate_lexical_block(body)?;
+            }
+            ResolvedStmt::TryCatch {
+                try_block,
+                catch_block,
+                finally_block,
+                ..
+            } => {
+                self.validate_lexical_block(try_block)?;
+                if let Some(catch_block) = catch_block {
+                    self.validate_lexical_block(catch_block)?;
+                }
+                if let Some(finally_block) = finally_block {
+                    self.validate_lexical_block(finally_block)?;
+                }
+            }
+            ResolvedStmt::Switch { expr, cases } => {
+                self.validate_expr(expr)?;
+                for (case_expr, body) in cases {
+                    if let Some(case_expr) = case_expr {
+                        self.validate_expr(case_expr)?;
+                    }
+                    self.validate_lexical_block(body)?;
+                }
+            }
+            ResolvedStmt::DoWhile { body, condition } => {
+                self.validate_lexical_block(body)?;
+                self.validate_expr(condition)?;
+            }
+            ResolvedStmt::For {
+                init,
+                condition,
+                update,
+                body,
+            } => {
+                if let Some(init) = init {
+                    self.validate_stmt(init)?;
+                }
+                if let Some(condition) = condition {
+                    self.validate_expr(condition)?;
+                }
+                if let Some(update) = update {
+                    self.validate_expr(update)?;
+                }
+                self.validate_lexical_block(body)?;
+            }
+            ResolvedStmt::ForIn { iter, body, .. } | ResolvedStmt::ForOf { iter, body, .. } => {
+                self.validate_expr(iter)?;
+                self.validate_lexical_block(body)?;
+            }
+            ResolvedStmt::Labeled { body, .. } => self.validate_stmt(body)?,
+            ResolvedStmt::Export { expr, .. } | ResolvedStmt::ModuleExportsAssign { expr } => {
+                self.validate_expr(expr)?;
+            }
+            ResolvedStmt::ClassDecl {
+                constructor,
+                methods,
+                statics,
+                static_blocks,
+                ..
+            } => {
+                if let Some((_, body)) = constructor {
+                    self.validate_lexical_block(body)?;
+                }
+                for method in methods {
+                    self.validate_lexical_block(&method.body)?;
+                }
+                for (_, expr) in statics {
+                    self.validate_expr(expr)?;
+                }
+                for (_, body) in static_blocks {
+                    self.validate_lexical_block(body)?;
+                }
+            }
+            ResolvedStmt::Block { statements } => self.validate_lexical_block(statements)?,
+        }
+        Ok(())
+    }
+
+    fn validate_expr(&mut self, expr: &ResolvedExpr) -> Result<(), Diagnostic> {
+        match expr {
+            ResolvedExpr::Number(_)
+            | ResolvedExpr::BigIntLiteral { .. }
+            | ResolvedExpr::String(_)
+            | ResolvedExpr::Bool(_)
+            | ResolvedExpr::Null
+            | ResolvedExpr::Undefined
+            | ResolvedExpr::This { .. }
+            | ResolvedExpr::Ident(_)
+            | ResolvedExpr::ModuleLoad { .. } => {}
+            ResolvedExpr::Unary { expr, .. } | ResolvedExpr::Spread(expr) => {
+                self.validate_expr(expr)?;
+            }
+            ResolvedExpr::Binary { left, right, .. }
+            | ResolvedExpr::ComputedIndex {
+                object: left,
+                index: right,
+            }
+            | ResolvedExpr::OptionalComputedIndex {
+                object: left,
+                index: right,
+                ..
+            } => {
+                self.validate_expr(left)?;
+                self.validate_expr(right)?;
+            }
+            ResolvedExpr::Call { callee, args, span }
+            | ResolvedExpr::OptionalCall { callee, args, span } => {
+                self.validate_direct_call_arity(callee, args, *span)?;
+                self.validate_expr(callee)?;
+                self.validate_args(args)?;
+            }
+            ResolvedExpr::BuiltinCall { args, .. } | ResolvedExpr::New { args, .. } => {
+                self.validate_args(args)?;
+            }
+            ResolvedExpr::Assign { expr, .. } | ResolvedExpr::LogicalAssign { expr, .. } => {
+                self.validate_expr(expr)?;
+            }
+            ResolvedExpr::LogicalPropertyAssign { expr, .. } => {
+                self.validate_expr(expr)?;
+            }
+            ResolvedExpr::LogicalComputedPropertyAssign { key, expr, .. } => {
+                self.validate_expr(key)?;
+                self.validate_expr(expr)?;
+            }
+            ResolvedExpr::LogicalComputedMemberAssign {
+                object, key, expr, ..
+            } => {
+                self.validate_expr(object)?;
+                self.validate_expr(key)?;
+                self.validate_expr(expr)?;
+            }
+            ResolvedExpr::LogicalMemberAssign { object, expr, .. } => {
+                self.validate_expr(object)?;
+                self.validate_expr(expr)?;
+            }
+            ResolvedExpr::Array(elements) => {
+                for element in elements {
+                    if let ResolvedArrayElement::Present(expr) = element {
+                        self.validate_expr(expr)?;
+                    }
+                }
+            }
+            ResolvedExpr::Object(props) => {
+                for (_, value) in props {
+                    self.validate_expr(value)?;
+                }
+            }
+            ResolvedExpr::BuiltinProperty { object, .. }
+            | ResolvedExpr::PropertyAccess { object, .. }
+            | ResolvedExpr::OptionalPropertyAccess { object, .. } => {
+                self.validate_expr(object)?;
+            }
+            ResolvedExpr::MethodCall { object, args, .. } => {
+                self.validate_expr(object)?;
+                self.validate_args(args)?;
+            }
+            ResolvedExpr::PropertyAssign { object, value, .. } => {
+                self.validate_expr(object)?;
+                self.validate_expr(value)?;
+            }
+            ResolvedExpr::PropertyAssignDynamic { object, key, value } => {
+                self.validate_expr(object)?;
+                self.validate_expr(key)?;
+                self.validate_expr(value)?;
+            }
+            ResolvedExpr::ArrowFn {
+                body, body_stmts, ..
+            } => {
+                if body_stmts.is_empty() {
+                    self.validate_expr(body)?;
+                } else {
+                    self.validate_lexical_block(body_stmts)?;
+                }
+            }
+            ResolvedExpr::FunctionExpr { name, params, body } => {
+                let mut scope = HashMap::new();
+                if !name.is_empty() {
+                    scope.insert(name.clone(), function_arity(params));
+                }
+                self.validate_with_scope(scope, |validator| {
+                    validator.validate_lexical_block(body)
+                })?;
+            }
+            ResolvedExpr::ClassExpr { body, .. } => {
+                self.validate_lexical_block(body)?;
+            }
+        }
+        Ok(())
+    }
+
+    fn validate_args(&mut self, args: &[ResolvedExpr]) -> Result<(), Diagnostic> {
+        for arg in args {
+            self.validate_expr(arg)?;
+        }
+        Ok(())
+    }
+
+    fn validate_direct_call_arity(
+        &self,
+        callee: &ResolvedExpr,
+        args: &[ResolvedExpr],
+        span: Span,
+    ) -> Result<(), Diagnostic> {
+        if args
+            .iter()
+            .any(|arg| matches!(arg, ResolvedExpr::Spread(_)))
+        {
+            return Ok(());
+        }
+        let ResolvedExpr::Ident(name) = callee else {
+            return Ok(());
+        };
+        let Some(signature) = self.resolve_function_arity(name) else {
+            return Ok(());
+        };
+        let got = args.len();
+        if got < signature.required || signature.max.is_some_and(|max| got > max) {
+            return Err(Diagnostic {
+                code: DiagCode::ArityMismatch,
+                message: format_typescript_arity_message(signature, got),
+                span: Some(span),
+            });
+        }
+        Ok(())
+    }
+
+    fn resolve_function_arity(&self, name: &str) -> Option<TypeScriptFunctionArity> {
+        self.scopes
+            .iter()
+            .rev()
+            .find_map(|scope| scope.get(name).copied())
+    }
+}
+
+fn collect_function_arities(
+    statements: &[ResolvedStmt],
+) -> HashMap<String, TypeScriptFunctionArity> {
+    statements
+        .iter()
+        .filter_map(|statement| match statement {
+            ResolvedStmt::Function { name, params, .. } => {
+                Some((name.clone(), function_arity(params)))
+            }
+            _ => None,
+        })
+        .collect()
+}
+
+fn function_arity(params: &[ResolvedParam]) -> TypeScriptFunctionArity {
+    TypeScriptFunctionArity {
+        required: params
+            .iter()
+            .filter(|param| param.default.is_none() && !param.is_rest)
+            .count(),
+        max: if params.iter().any(|param| param.is_rest) {
+            None
+        } else {
+            Some(params.len())
+        },
+    }
+}
+
+fn format_typescript_arity_message(signature: TypeScriptFunctionArity, got: usize) -> String {
+    match signature.max {
+        Some(max) if max == signature.required => {
+            format!(
+                "TS2554: Expected {} arguments, but got {got}.",
+                signature.required
+            )
+        }
+        Some(max) => format!(
+            "TS2554: Expected {}-{} arguments, but got {got}.",
+            signature.required, max
+        ),
+        None => format!(
+            "TS2554: Expected at least {} arguments, but got {got}.",
+            signature.required
+        ),
     }
 }
 

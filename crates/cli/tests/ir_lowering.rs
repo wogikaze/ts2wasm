@@ -674,6 +674,48 @@ fn validate_rejects_arity_mismatch() {
 }
 
 #[test]
+fn typescript_semantics_rejects_block_scoped_same_name_extra_argument() {
+    let program = parse_and_resolve(
+        r#"
+        function foo(a: number) {
+          if (a === 1) {
+            function foo() {}
+            foo();
+            foo(10);
+          }
+        }
+        "#,
+    );
+    let err = ts2wasm_ir::validate_typescript_call_arity(&program).unwrap_err();
+
+    assert_eq!(err.code, DiagCode::ArityMismatch);
+    assert!(err.message.contains("TS2554"));
+    assert!(err.message.contains("Expected 0 arguments, but got 1"));
+    assert!(err.span.is_some(), "call-site span should be preserved");
+}
+
+#[test]
+fn typescript_semantics_rejects_outer_same_name_missing_argument() {
+    let program = parse_and_resolve(
+        r#"
+        function foo(a: number) {
+          if (a === 1) {
+            function foo() {}
+            foo();
+          }
+          foo();
+        }
+        "#,
+    );
+    let err = ts2wasm_ir::validate_typescript_call_arity(&program).unwrap_err();
+
+    assert_eq!(err.code, DiagCode::ArityMismatch);
+    assert!(err.message.contains("TS2554"));
+    assert!(err.message.contains("Expected 1 arguments, but got 0"));
+    assert!(err.span.is_some(), "call-site span should be preserved");
+}
+
+#[test]
 fn lowering_represents_returned_ordinary_closure_as_heap_creation() {
     use ts2wasm_ir::lowered::{ClosureRepresentation, FuncId, LocalId, LoweredExpr, LoweredStmt};
 

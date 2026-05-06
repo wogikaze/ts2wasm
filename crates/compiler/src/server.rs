@@ -475,6 +475,7 @@ fn lower_source_text(path: &Path, source: &str) -> Result<LoweredProgram, Diagno
         lower_static_named_import_bindings_for_build(&program, &module_graph)?;
     let name_resolved = name_resolver::resolve_names(&static_module_binding.rewritten_program)?;
     let resolved = builtin_resolver::resolve_builtins(&name_resolved)?;
+    super::validate_typescript_semantics_for_path(path, &resolved)?;
     validate_optimized_hir_slice(&resolved, OptimizationLevel::O0)?;
     let lowered = lowered::lower_program(&resolved)?;
     let lowered =

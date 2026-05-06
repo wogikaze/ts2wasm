@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 2 | 1 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4419 | 3768 | 651 |
+| frontend | 4419 | 3767 | 652 |
 | harness | 1 | 0 | 1 |
 | ir | 31 | 9 | 22 |
 | issues | 4 | 0 | 4 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5026 | 4033 | 993 |
+| total | 5026 | 4032 | 994 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -140,7 +140,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5185 | Source-span unresolved class method function calls | feature | frontend/resolver | implementation-ready | P1 |  | unresolved function calls from class method bodies lose source-span information and should report the out-of-scope ca... |
 | 5186 | Parse export assignment expressions | feature | frontend/syntax | implementation-ready | P1 |  | `export = expr` is treated as an unsupported module boundary before the exported expression can be represented in the... |
 | 5187 | Lower namespace-only multi-section files | feature | compiler | implementation-ready | P1 |  | multi-section TypeScript reference files that contain namespace declarations but no static imports/exports are reduce... |
-| 5188 | Report block-scoped function call arity diagnostics | feature | frontend/semantics | implementation-ready | P1 |  | user-defined function calls that resolve to block-scoped same-name declarations can build even when TypeScript report... |
 | 5189 | Parse ASI after class expression variable initializer | feature | frontend/syntax | implementation-ready | P1 |  | semicolonless variable declarations whose initializer is an anonymous class expression do not accept ASI before the n... |
 | 5190 | Skip implements in ambient class declarations | feature | frontend/syntax | implementation-ready | P1 |  | ambient class declaration parsing does not skip `implements` heritage clauses. |
 | 5191 | Support ambient interface filter receivers | feature | frontend/semantics | implementation-ready | P2 |  | `reference/typescript/tests/cases/compiler/booleanFilterAnyArray.ts` now reports `issue-211: unknown receiver class f... |
@@ -5137,6 +5136,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5150 | Report empty element access diagnostics | feature | frontend/syntax | see `issues/done/5150-report-empty-element-access-diagnostics.md` |
 | 5153 | Erase union types in as assertions | feature | frontend/syntax | see `issues/done/5153-erase-union-types-in-as-assertions.md` |
 | 5161 | Model ambient value declarations for name resolution | feature | frontend/resolver | see `issues/done/5161-model-ambient-value-declarations-for-name-resolution.md` |
+| 5188 | Report block-scoped function call arity diagnostics | feature | frontend/semantics | see `issues/done/5188-report-block-scoped-function-call-arity-diagnostics.md` |
 <!-- generated:done:end -->
 
 ## Index generation contract

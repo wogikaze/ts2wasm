@@ -107,7 +107,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] added: `issues/open/5188-report-block-scoped-function-call-arity-diagnostics.md`
+- [x] added: `issues/done/5188-report-block-scoped-function-call-arity-diagnostics.md`
 
 ## Notes
 
@@ -133,7 +133,7 @@ Generated on 2026-05-06.
 - Source context: outer `function foo(a: number)` contains block-scoped `function foo() {}` in each branch, then calls `foo()` and `foo(10)` inside and outside the block.
 - Compiler evidence: tokens, AST, and resolved IR succeed; resolved IR contains source spans for the wrong-arity call sites but no diagnostic is emitted.
 - TypeScript oracle: four `TS2554` diagnostics per file, alternating `Expected 0 arguments, but got 1.` and `Expected 1 arguments, but got 0.`
-- Superseding child: `issues/open/5188-report-block-scoped-function-call-arity-diagnostics.md`
+- Superseding child: `issues/done/5188-report-block-scoped-function-call-arity-diagnostics.md`
 
 ## Completion evidence
 

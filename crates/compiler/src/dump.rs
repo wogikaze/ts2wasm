@@ -161,6 +161,7 @@ fn build_dump_pipeline(
     let name_resolved = name_resolver::resolve_names(&ast)?;
     eprintln!("[pipeline] resolve_builtins");
     let resolved = builtin_resolver::resolve_builtins(&name_resolved)?;
+    super::validate_typescript_semantics_for_path(input, &resolved)?;
     eprintln!("[pipeline] build_typed_ir");
     let typed_ir = build_typed_ir(&resolved);
     let optimized_ir = typed_ir
