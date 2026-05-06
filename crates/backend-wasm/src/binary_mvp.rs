@@ -107,10 +107,14 @@ fn hello_stdout(program: &LoweredProgram) -> Result<Vec<u8>, Diagnostic> {
                     initializers.insert(*id, val);
                 }
             }
-            LoweredStmt::Expr(LoweredExpr::Call {
-                kind: FunctionCallKind::Builtin(BuiltinId::ConsoleLog),
-                args, ..
-            }, _) => {
+            LoweredStmt::Expr(
+                LoweredExpr::Call {
+                    kind: FunctionCallKind::Builtin(BuiltinId::ConsoleLog),
+                    args,
+                    ..
+                },
+                _,
+            ) => {
                 let line = resolve_console_log_line(args, &initializers)?;
                 stdout.extend_from_slice(&line);
                 stdout.push(b'\n');
@@ -165,7 +169,9 @@ fn resolve_expr_to_string(
                 .ok_or_else(|| unsupported("local variable without compile-time known value"))?;
             Ok(n.to_string().as_bytes().to_vec())
         }
-        LoweredExpr::Binary { left, op, right, .. } => {
+        LoweredExpr::Binary {
+            left, op, right, ..
+        } => {
             let l = resolve_const_i32(left, initializers)?;
             let r = resolve_const_i32(right, initializers)?;
             let result = eval_binary_i32(*op, l, r)?;
@@ -188,7 +194,9 @@ fn resolve_const_i32(
             .get(id)
             .copied()
             .ok_or_else(|| unsupported("local variable without compile-time known value")),
-        LoweredExpr::Binary { left, op, right, .. } => {
+        LoweredExpr::Binary {
+            left, op, right, ..
+        } => {
             let l = resolve_const_i32(left, initializers)?;
             let r = resolve_const_i32(right, initializers)?;
             eval_binary_i32(*op, l, r)

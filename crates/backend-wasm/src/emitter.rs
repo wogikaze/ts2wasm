@@ -431,20 +431,26 @@ impl<'a> WatEmitter<'a> {
             LoweredStmt::Block(statements, _) => {
                 self.collect_program_strings(statements);
             }
-            LoweredStmt::Let(_, expr, _) | LoweredStmt::Assign(_, expr, _) | LoweredStmt::Expr(expr, _) | LoweredStmt::Return(expr, _)
+            LoweredStmt::Let(_, expr, _)
+            | LoweredStmt::Assign(_, expr, _)
+            | LoweredStmt::Expr(expr, _)
+            | LoweredStmt::Return(expr, _)
             | LoweredStmt::Throw(expr, _) => {
                 self.collect_expr_strings(expr);
             }
             LoweredStmt::If {
                 condition,
                 then_body,
-                else_body, ..
+                else_body,
+                ..
             } => {
                 self.collect_expr_strings(condition);
                 self.collect_program_strings(then_body);
                 self.collect_program_strings(else_body);
             }
-            LoweredStmt::While { condition, body, .. } => {
+            LoweredStmt::While {
+                condition, body, ..
+            } => {
                 self.collect_expr_strings(condition);
                 self.collect_program_strings(body);
             }
@@ -471,7 +477,9 @@ impl<'a> WatEmitter<'a> {
                     self.collect_program_strings(body);
                 }
             }
-            LoweredStmt::DoWhile { body, condition, .. } => {
+            LoweredStmt::DoWhile {
+                body, condition, ..
+            } => {
                 self.collect_program_strings(body);
                 self.collect_expr_strings(condition);
             }
@@ -479,7 +487,8 @@ impl<'a> WatEmitter<'a> {
                 init,
                 condition,
                 update,
-                body, ..
+                body,
+                ..
             } => {
                 if let Some(init_stmt) = init {
                     self.collect_statement_strings(init_stmt);
@@ -533,7 +542,13 @@ impl<'a> WatEmitter<'a> {
             LoweredExpr::BigIntLiteral { decimal, .. } => {
                 self.intern_string(decimal);
             }
-            LoweredExpr::Number(_, _) | LoweredExpr::Bool(_, _) | LoweredExpr::Null(..) | LoweredExpr::Undefined(..) | LoweredExpr::This(..) | LoweredExpr::Local(_, _) | LoweredExpr::ArrowFn { .. } => {}
+            LoweredExpr::Number(_, _)
+            | LoweredExpr::Bool(_, _)
+            | LoweredExpr::Null(..)
+            | LoweredExpr::Undefined(..)
+            | LoweredExpr::This(..)
+            | LoweredExpr::Local(_, _)
+            | LoweredExpr::ArrowFn { .. } => {}
             LoweredExpr::Unary { expr, .. } => self.collect_expr_strings(expr),
             LoweredExpr::Assign { expr, .. } => self.collect_expr_strings(expr),
             LoweredExpr::EnvCellNew(expr, _) => self.collect_expr_strings(expr),
@@ -618,7 +633,8 @@ impl<'a> WatEmitter<'a> {
             }
             LoweredExpr::ErrorNew {
                 constructor,
-                message, ..
+                message,
+                ..
             } => {
                 self.intern_string("message");
                 self.intern_string("stack");
@@ -648,7 +664,9 @@ impl<'a> WatEmitter<'a> {
             LoweredExpr::MethodCall { object, .. } => {
                 self.collect_expr_strings(object);
             }
-            LoweredExpr::PropertySet { object, key, value, .. } => {
+            LoweredExpr::PropertySet {
+                object, key, value, ..
+            } => {
                 self.collect_expr_strings(object);
                 self.intern_string(key);
                 self.collect_expr_strings(value);
@@ -656,7 +674,8 @@ impl<'a> WatEmitter<'a> {
             LoweredExpr::PropertySetDynamic {
                 object,
                 index,
-                value, ..
+                value,
+                ..
             } => {
                 self.collect_expr_strings(object);
                 self.collect_expr_strings(index);
@@ -667,7 +686,7 @@ impl<'a> WatEmitter<'a> {
                     self.collect_expr_strings(arg);
                 }
             }
-            LoweredExpr::ClassPrototype(_, _)| LoweredExpr::BuiltinErrorPrototype(_, _) => {}
+            LoweredExpr::ClassPrototype(_, _) | LoweredExpr::BuiltinErrorPrototype(_, _) => {}
             LoweredExpr::Block { stmts, result, .. } => {
                 for stmt in stmts {
                     self.collect_statement_strings(stmt);
@@ -849,7 +868,10 @@ impl<'a> WatEmitter<'a> {
                 LoweredStmt::Block(statements, _) => {
                     Self::collect_class_prototypes_from_stmts(statements, prototypes);
                 }
-                LoweredStmt::Let(_, expr, _) | LoweredStmt::Assign(_, expr, _) | LoweredStmt::Expr(expr, _) | LoweredStmt::Return(expr, _)
+                LoweredStmt::Let(_, expr, _)
+                | LoweredStmt::Assign(_, expr, _)
+                | LoweredStmt::Expr(expr, _)
+                | LoweredStmt::Return(expr, _)
                 | LoweredStmt::Throw(expr, _)
                 | LoweredStmt::Export { expr, .. }
                 | LoweredStmt::ModuleExportsAssign { expr, .. } => {
@@ -858,14 +880,19 @@ impl<'a> WatEmitter<'a> {
                 LoweredStmt::If {
                     condition,
                     then_body,
-                    else_body, ..
+                    else_body,
+                    ..
                 } => {
                     Self::collect_class_prototypes_from_expr(condition, prototypes);
                     Self::collect_class_prototypes_from_stmts(then_body, prototypes);
                     Self::collect_class_prototypes_from_stmts(else_body, prototypes);
                 }
-                LoweredStmt::While { condition, body, .. }
-                | LoweredStmt::DoWhile { body, condition, .. } => {
+                LoweredStmt::While {
+                    condition, body, ..
+                }
+                | LoweredStmt::DoWhile {
+                    body, condition, ..
+                } => {
                     Self::collect_class_prototypes_from_expr(condition, prototypes);
                     Self::collect_class_prototypes_from_stmts(body, prototypes);
                 }
@@ -896,7 +923,8 @@ impl<'a> WatEmitter<'a> {
                     init,
                     condition,
                     update,
-                    body, ..
+                    body,
+                    ..
                 } => {
                     if let Some(init) = init {
                         Self::collect_class_prototypes_from_stmts(
@@ -936,7 +964,10 @@ impl<'a> WatEmitter<'a> {
                 LoweredStmt::Block(statements, _) => {
                     Self::collect_builtin_error_prototypes_from_stmts(statements, prototypes);
                 }
-                LoweredStmt::Let(_, expr, _) | LoweredStmt::Assign(_, expr, _) | LoweredStmt::Expr(expr, _) | LoweredStmt::Return(expr, _)
+                LoweredStmt::Let(_, expr, _)
+                | LoweredStmt::Assign(_, expr, _)
+                | LoweredStmt::Expr(expr, _)
+                | LoweredStmt::Return(expr, _)
                 | LoweredStmt::Throw(expr, _)
                 | LoweredStmt::Export { expr, .. }
                 | LoweredStmt::ModuleExportsAssign { expr, .. } => {
@@ -945,14 +976,19 @@ impl<'a> WatEmitter<'a> {
                 LoweredStmt::If {
                     condition,
                     then_body,
-                    else_body, ..
+                    else_body,
+                    ..
                 } => {
                     Self::collect_builtin_error_prototypes_from_expr(condition, prototypes);
                     Self::collect_builtin_error_prototypes_from_stmts(then_body, prototypes);
                     Self::collect_builtin_error_prototypes_from_stmts(else_body, prototypes);
                 }
-                LoweredStmt::While { condition, body, .. }
-                | LoweredStmt::DoWhile { body, condition, .. } => {
+                LoweredStmt::While {
+                    condition, body, ..
+                }
+                | LoweredStmt::DoWhile {
+                    body, condition, ..
+                } => {
                     Self::collect_builtin_error_prototypes_from_expr(condition, prototypes);
                     Self::collect_builtin_error_prototypes_from_stmts(body, prototypes);
                 }
@@ -983,7 +1019,8 @@ impl<'a> WatEmitter<'a> {
                     init,
                     condition,
                     update,
-                    body, ..
+                    body,
+                    ..
                 } => {
                     if let Some(stmt) = init {
                         Self::collect_builtin_error_prototypes_from_stmts(
@@ -1024,7 +1061,7 @@ impl<'a> WatEmitter<'a> {
             LoweredExpr::ClassPrototype(prototype, _) => {
                 add_class_prototype_ref(prototype, prototypes);
             }
-            LoweredExpr::BuiltinErrorPrototype(_, _)| LoweredExpr::ErrorNew { .. } => {}
+            LoweredExpr::BuiltinErrorPrototype(_, _) | LoweredExpr::ErrorNew { .. } => {}
             LoweredExpr::Block { stmts, result, .. } => {
                 Self::collect_class_prototypes_from_stmts(stmts, prototypes);
                 Self::collect_class_prototypes_from_expr(result, prototypes);
@@ -1055,18 +1092,23 @@ impl<'a> WatEmitter<'a> {
             LoweredExpr::PropertyInDynamic { obj, key, .. }
             | LoweredExpr::ArrayGet {
                 arr: obj,
-                index: key, ..
+                index: key,
+                ..
             }
             | LoweredExpr::Index {
                 object: obj,
-                index: key, ..
+                index: key,
+                ..
             }
             | LoweredExpr::OptionalIndex {
                 object: obj,
-                index: key, ..
+                index: key,
+                ..
             }
             | LoweredExpr::PropertyGetDynamic { obj, key, .. }
-            | LoweredExpr::PropertyDeleteDynamic { object: obj, key, .. } => {
+            | LoweredExpr::PropertyDeleteDynamic {
+                object: obj, key, ..
+            } => {
                 Self::collect_class_prototypes_from_expr(obj, prototypes);
                 Self::collect_class_prototypes_from_expr(key, prototypes);
             }
@@ -1103,7 +1145,8 @@ impl<'a> WatEmitter<'a> {
             LoweredExpr::PropertySetDynamic {
                 object,
                 index,
-                value, ..
+                value,
+                ..
             } => {
                 Self::collect_class_prototypes_from_expr(object, prototypes);
                 Self::collect_class_prototypes_from_expr(index, prototypes);
@@ -1140,9 +1183,16 @@ impl<'a> WatEmitter<'a> {
                 Self::collect_class_prototypes_from_expr(key, prototypes);
                 Self::collect_class_prototypes_from_expr(expr, prototypes);
             }
-            LoweredExpr::Number(_, _) | LoweredExpr::String(_, _) | LoweredExpr::BigIntLiteral { .. }
-            | LoweredExpr::Bool(_, _) | LoweredExpr::Null(..) | LoweredExpr::Undefined(..) | LoweredExpr::Local(_, _) | LoweredExpr::ModuleLoad { .. }
-            | LoweredExpr::This(..) | LoweredExpr::ArrowFn { .. } => {}
+            LoweredExpr::Number(_, _)
+            | LoweredExpr::String(_, _)
+            | LoweredExpr::BigIntLiteral { .. }
+            | LoweredExpr::Bool(_, _)
+            | LoweredExpr::Null(..)
+            | LoweredExpr::Undefined(..)
+            | LoweredExpr::Local(_, _)
+            | LoweredExpr::ModuleLoad { .. }
+            | LoweredExpr::This(..)
+            | LoweredExpr::ArrowFn { .. } => {}
         }
     }
 
@@ -1160,7 +1210,8 @@ impl<'a> WatEmitter<'a> {
             }
             LoweredExpr::ErrorNew {
                 constructor,
-                message, ..
+                message,
+                ..
             } => {
                 add_builtin_error_prototype_ref(*constructor, prototypes);
                 Self::collect_builtin_error_prototypes_from_expr(message, prototypes);
@@ -1176,27 +1227,33 @@ impl<'a> WatEmitter<'a> {
             LoweredExpr::Binary { left, right, .. }
             | LoweredExpr::PropertyGetDynamic {
                 obj: left,
-                key: right, ..
+                key: right,
+                ..
             }
             | LoweredExpr::Index {
                 object: left,
-                index: right, ..
+                index: right,
+                ..
             }
             | LoweredExpr::OptionalIndex {
                 object: left,
-                index: right, ..
+                index: right,
+                ..
             }
             | LoweredExpr::ArrayGet {
                 arr: left,
-                index: right, ..
+                index: right,
+                ..
             }
             | LoweredExpr::PropertyDeleteDynamic {
                 object: left,
-                key: right, ..
+                key: right,
+                ..
             }
             | LoweredExpr::PropertyInDynamic {
                 obj: left,
-                key: right, ..
+                key: right,
+                ..
             } => {
                 Self::collect_builtin_error_prototypes_from_expr(left, prototypes);
                 Self::collect_builtin_error_prototypes_from_expr(right, prototypes);
@@ -1263,9 +1320,17 @@ impl<'a> WatEmitter<'a> {
             LoweredExpr::PropertyIn { obj, .. } => {
                 Self::collect_builtin_error_prototypes_from_expr(obj, prototypes);
             }
-            LoweredExpr::Number(_, _) | LoweredExpr::String(_, _) | LoweredExpr::BigIntLiteral { .. }
-            | LoweredExpr::Bool(_, _) | LoweredExpr::Null(..) | LoweredExpr::Undefined(..) | LoweredExpr::Local(_, _) | LoweredExpr::ClassPrototype(_, _)| LoweredExpr::ModuleLoad { .. }
-            | LoweredExpr::This(..) | LoweredExpr::ArrowFn { .. } => {}
+            LoweredExpr::Number(_, _)
+            | LoweredExpr::String(_, _)
+            | LoweredExpr::BigIntLiteral { .. }
+            | LoweredExpr::Bool(_, _)
+            | LoweredExpr::Null(..)
+            | LoweredExpr::Undefined(..)
+            | LoweredExpr::Local(_, _)
+            | LoweredExpr::ClassPrototype(_, _)
+            | LoweredExpr::ModuleLoad { .. }
+            | LoweredExpr::This(..)
+            | LoweredExpr::ArrowFn { .. } => {}
         }
     }
 

@@ -81,12 +81,7 @@ fn run() -> Result<(), String> {
             explain_unsupported,
         } => {
             let result = if let Some(ref host) = host_deny {
-                ts2wasm_cli::build_file_with_host_deny(
-                    &input,
-                    &output,
-                    manifest.as_deref(),
-                    true,
-                )
+                ts2wasm_cli::build_file_with_host_deny(&input, &output, manifest.as_deref(), true)
             } else {
                 ts2wasm_cli::build_file_with_options(&input, &output, manifest.as_deref())
             };

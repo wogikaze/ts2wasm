@@ -61,19 +61,22 @@ pub(super) fn expr_may_collect(expr: &LoweredExpr) -> bool {
         | LoweredExpr::PropertyInDynamic { obj, key, .. }
         | LoweredExpr::Index {
             object: obj,
-            index: key, ..
+            index: key,
+            ..
         }
         | LoweredExpr::ArrayGet {
             arr: obj,
-            index: key, ..
+            index: key,
+            ..
         }
         | LoweredExpr::OptionalIndex {
             object: obj,
-            index: key, ..
+            index: key,
+            ..
         }
-        | LoweredExpr::PropertyDeleteDynamic { object: obj, key, .. } => {
-            expr_may_collect(obj) || expr_may_collect(key)
-        }
+        | LoweredExpr::PropertyDeleteDynamic {
+            object: obj, key, ..
+        } => expr_may_collect(obj) || expr_may_collect(key),
         LoweredExpr::OptionalCall { callee, call, .. } => {
             expr_may_collect(callee) || expr_may_collect(call)
         }
@@ -83,12 +86,19 @@ pub(super) fn expr_may_collect(expr: &LoweredExpr) -> bool {
         LoweredExpr::PropertySetDynamic {
             object,
             index,
-            value, ..
+            value,
+            ..
         } => expr_may_collect(object) || expr_may_collect(index) || expr_may_collect(value),
         LoweredExpr::MethodCall { object, .. } => expr_may_collect(object),
         LoweredExpr::Number(value, _) => !ValueTag::can_encode_number(*value),
-        LoweredExpr::String(_, _) | LoweredExpr::Bool(_, _) | LoweredExpr::Null(..) | LoweredExpr::Undefined(..) | LoweredExpr::Local(_, _) | LoweredExpr::ModuleLoad { .. }
-        | LoweredExpr::This(..) | LoweredExpr::ClassPrototype(_, _)
+        LoweredExpr::String(_, _)
+        | LoweredExpr::Bool(_, _)
+        | LoweredExpr::Null(..)
+        | LoweredExpr::Undefined(..)
+        | LoweredExpr::Local(_, _)
+        | LoweredExpr::ModuleLoad { .. }
+        | LoweredExpr::This(..)
+        | LoweredExpr::ClassPrototype(_, _)
         | LoweredExpr::BuiltinErrorPrototype(_, _) => false,
         LoweredExpr::ArrowFn { representation, .. } => {
             matches!(representation, ClosureRepresentation::HeapObject)
@@ -107,20 +117,25 @@ pub(super) fn stmt_may_collect(stmt: &LoweredStmt) -> bool {
         LoweredStmt::If {
             condition,
             then_body,
-            else_body, ..
+            else_body,
+            ..
         } => {
             expr_may_collect(condition)
                 || then_body.iter().any(stmt_may_collect)
                 || else_body.iter().any(stmt_may_collect)
         }
-        LoweredStmt::While { condition, body, .. } | LoweredStmt::DoWhile { condition, body, .. } => {
-            expr_may_collect(condition) || body.iter().any(stmt_may_collect)
+        LoweredStmt::While {
+            condition, body, ..
         }
+        | LoweredStmt::DoWhile {
+            condition, body, ..
+        } => expr_may_collect(condition) || body.iter().any(stmt_may_collect),
         LoweredStmt::For {
             init,
             condition,
             update,
-            body, ..
+            body,
+            ..
         } => {
             init.as_ref().is_some_and(|i| stmt_may_collect(i))
                 || condition.as_ref().is_some_and(expr_may_collect)
@@ -193,9 +208,10 @@ pub(super) fn expr_uses_caller_backend_tmp(expr: &LoweredExpr) -> bool {
         | LoweredExpr::PropertyIn { obj, .. }
         | LoweredExpr::PropertyDelete { object: obj, .. }
         | LoweredExpr::MethodCall { object: obj, .. } => expr_uses_caller_backend_tmp(obj),
-        LoweredExpr::Index { object, index, .. } | LoweredExpr::ArrayGet { arr: object, index, .. } => {
-            expr_uses_caller_backend_tmp(object) || expr_uses_caller_backend_tmp(index)
-        }
+        LoweredExpr::Index { object, index, .. }
+        | LoweredExpr::ArrayGet {
+            arr: object, index, ..
+        } => expr_uses_caller_backend_tmp(object) || expr_uses_caller_backend_tmp(index),
         LoweredExpr::PropertySet { object, value, .. } => {
             expr_uses_caller_backend_tmp(object) || expr_uses_caller_backend_tmp(value)
         }
@@ -209,8 +225,15 @@ pub(super) fn expr_uses_caller_backend_tmp(expr: &LoweredExpr) -> bool {
             true
         }
         LoweredExpr::RuntimeCall { args, .. } => args.iter().any(expr_uses_caller_backend_tmp),
-        LoweredExpr::Number(_, _) | LoweredExpr::String(_, _) | LoweredExpr::Bool(_, _) | LoweredExpr::Null(..) | LoweredExpr::Undefined(..) | LoweredExpr::Local(_, _) | LoweredExpr::ModuleLoad { .. }
-        | LoweredExpr::This(..) | LoweredExpr::ClassPrototype(_, _)
+        LoweredExpr::Number(_, _)
+        | LoweredExpr::String(_, _)
+        | LoweredExpr::Bool(_, _)
+        | LoweredExpr::Null(..)
+        | LoweredExpr::Undefined(..)
+        | LoweredExpr::Local(_, _)
+        | LoweredExpr::ModuleLoad { .. }
+        | LoweredExpr::This(..)
+        | LoweredExpr::ClassPrototype(_, _)
         | LoweredExpr::BuiltinErrorPrototype(_, _) => false,
         LoweredExpr::ArrowFn { representation, .. } => {
             matches!(representation, ClosureRepresentation::HeapObject)

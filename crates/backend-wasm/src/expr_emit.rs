@@ -94,12 +94,13 @@ impl WatEmitter<'_> {
                 decimal,
                 sign,
                 limb_low,
-                limb_high, ..
+                limb_high,
+                ..
             } => {
                 let decimal_src = self.string_offset(decimal) + Layout::STRING_HEADER_SIZE;
                 let decimal_len = self.string_len(decimal);
                 let limb_count = if *sign == 0 { 0 } else { 1 };
-                writer.i32_const(indent,   *sign);
+                writer.i32_const(indent, *sign);
                 writer.i32_const(indent, limb_count);
                 writer.i32_const(indent, *limb_low as i32);
                 writer.i32_const(indent, *limb_high as i32);
@@ -121,7 +122,8 @@ impl WatEmitter<'_> {
             LoweredExpr::ArrowFn {
                 func_id,
                 captures,
-                representation, ..
+                representation,
+                ..
             } => match representation {
                 ClosureRepresentation::DirectLocalToken => {
                     // Local-arrow calls are devirtualized during lowering; this opaque
@@ -299,14 +301,17 @@ impl WatEmitter<'_> {
                 writer.local_tee(indent, local_index(*local));
                 self.emit_gc_root_mirror(writer.output_mut(), &pad, *local, frame);
             }
-            LoweredExpr::LogicalAssign { local, op, expr, .. } => {
+            LoweredExpr::LogicalAssign {
+                local, op, expr, ..
+            } => {
                 self.emit_logical_assign(writer, *local, *op, expr, indent, frame);
             }
             LoweredExpr::LogicalPropertyAssign {
                 object,
                 key,
                 op,
-                expr, ..
+                expr,
+                ..
             } => {
                 self.emit_logical_property_assign(writer, *object, key, *op, expr, indent, frame);
             }
@@ -314,7 +319,8 @@ impl WatEmitter<'_> {
                 object,
                 key,
                 op,
-                expr, ..
+                expr,
+                ..
             } => {
                 self.emit_logical_member_assign(writer, object, key, *op, expr, indent, frame);
             }
@@ -322,7 +328,8 @@ impl WatEmitter<'_> {
                 object,
                 key,
                 op,
-                expr, ..
+                expr,
+                ..
             } => {
                 self.emit_logical_computed_property_assign(
                     writer, *object, key, *op, expr, indent, frame,
@@ -332,13 +339,16 @@ impl WatEmitter<'_> {
                 object,
                 key,
                 op,
-                expr, ..
+                expr,
+                ..
             } => {
                 self.emit_logical_computed_member_assign(
                     writer, object, key, *op, expr, indent, frame,
                 );
             }
-            LoweredExpr::Binary { left, op, right, .. } => {
+            LoweredExpr::Binary {
+                left, op, right, ..
+            } => {
                 if *op == LoweredBinaryOp::And {
                     let lhs_tmp = frame.switch_value_tmp();
                     self.emit_expr(writer, left, indent, frame);
@@ -604,7 +614,8 @@ impl WatEmitter<'_> {
             }
             LoweredExpr::ObjectNew {
                 props,
-                non_enumerable, ..
+                non_enumerable,
+                ..
             } => {
                 let prop_count = props.len();
                 let prop_capacity = prop_count + 8;
@@ -670,7 +681,8 @@ impl WatEmitter<'_> {
             }
             LoweredExpr::ErrorNew {
                 constructor,
-                message, ..
+                message,
+                ..
             } => {
                 let prop_count = 2;
                 let prop_capacity = prop_count + 8;
@@ -805,12 +817,15 @@ impl WatEmitter<'_> {
             }
             LoweredExpr::MethodCall {
                 object: _,
-                method: _, ..
+                method: _,
+                ..
             } => {
                 // Lowering/validation should reject residual MethodCall before backend.
                 writer.unreachable(indent);
             }
-            LoweredExpr::RuntimeCall { runtime_fn, args, .. } => {
+            LoweredExpr::RuntimeCall {
+                runtime_fn, args, ..
+            } => {
                 if runtime_fn == "ArrayPushMany" {
                     self.emit_array_push_many_call(writer, args, indent, frame);
                     return;
@@ -861,7 +876,9 @@ impl WatEmitter<'_> {
                     .unwrap_or_else(|| runtime_fn.as_str());
                 writer.line_fmt(indent, format_args!("(call {})", fn_name));
             }
-            LoweredExpr::PropertySet { object, key, value, .. } => {
+            LoweredExpr::PropertySet {
+                object, key, value, ..
+            } => {
                 self.emit_expr(writer, object, indent, frame);
                 let key_ptr = self.string_offset(key) + Layout::STRING_HEADER_SIZE;
                 let key_len = self.string_len(key);
@@ -876,7 +893,8 @@ impl WatEmitter<'_> {
             LoweredExpr::PropertySetDynamic {
                 object,
                 index,
-                value, ..
+                value,
+                ..
             } => {
                 self.emit_expr(writer, object, indent, frame);
                 writer.local_set(indent, frame.heap_base_tmp());
@@ -915,7 +933,8 @@ impl WatEmitter<'_> {
                 args,
                 base_local,
                 private_brand,
-                private_slot_count, ..
+                private_slot_count,
+                ..
             } => {
                 // Pre-allocate an object with room for constructor property writes.
                 let object_size = Layout::OBJECT_HEADER_SIZE

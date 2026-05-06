@@ -214,7 +214,10 @@ impl RuntimeLinkPlan {
                 LoweredStmt::Block(statements, _) => {
                     self.collect_required_runtime_stmts(statements);
                 }
-                LoweredStmt::Let(_, expr, _) | LoweredStmt::Assign(_, expr, _) | LoweredStmt::Expr(expr, _) | LoweredStmt::Return(expr, _)
+                LoweredStmt::Let(_, expr, _)
+                | LoweredStmt::Assign(_, expr, _)
+                | LoweredStmt::Expr(expr, _)
+                | LoweredStmt::Return(expr, _)
                 | LoweredStmt::Throw(expr, _) => {
                     self.add_required_globals(GLOBALS_EXCEPTION_RUNTIME);
                     self.collect_required_runtime_expr(expr);
@@ -222,14 +225,17 @@ impl RuntimeLinkPlan {
                 LoweredStmt::If {
                     condition,
                     then_body,
-                    else_body, ..
+                    else_body,
+                    ..
                 } => {
                     self.collect_required_runtime_expr(condition);
                     self.add_required_runtime(RuntimeFn::TruthyBool);
                     self.collect_required_runtime_stmts(then_body);
                     self.collect_required_runtime_stmts(else_body);
                 }
-                LoweredStmt::While { condition, body, .. } => {
+                LoweredStmt::While {
+                    condition, body, ..
+                } => {
                     self.collect_required_runtime_expr(condition);
                     self.add_required_runtime(RuntimeFn::TruthyBool);
                     self.collect_required_runtime_stmts(body);
@@ -238,7 +244,8 @@ impl RuntimeLinkPlan {
                     try_body,
                     catch_var: _,
                     catch_body,
-                    finally_body, ..
+                    finally_body,
+                    ..
                 } => {
                     self.add_required_globals(GLOBALS_EXCEPTION_RUNTIME);
                     self.collect_required_runtime_stmts(try_body);
@@ -259,7 +266,9 @@ impl RuntimeLinkPlan {
                         self.collect_required_runtime_stmts(case_body);
                     }
                 }
-                LoweredStmt::DoWhile { body, condition, .. } => {
+                LoweredStmt::DoWhile {
+                    body, condition, ..
+                } => {
                     self.collect_required_runtime_expr(condition);
                     self.add_required_runtime(RuntimeFn::TruthyBool);
                     self.collect_required_runtime_stmts(body);
@@ -268,7 +277,8 @@ impl RuntimeLinkPlan {
                     init,
                     condition,
                     update,
-                    body, ..
+                    body,
+                    ..
                 } => {
                     if let Some(stmt) = init {
                         self.collect_required_runtime_stmts(&[stmt.as_ref().clone()]);
@@ -394,7 +404,8 @@ impl RuntimeLinkPlan {
                 op,
                 object,
                 key,
-                expr, ..
+                expr,
+                ..
             } => {
                 self.add_required_runtime(RuntimeFn::PropertyGet);
                 self.add_required_runtime(RuntimeFn::PropertySet);
@@ -406,7 +417,9 @@ impl RuntimeLinkPlan {
                     self.add_required_runtime(RuntimeFn::TruthyBool);
                 }
             }
-            LoweredExpr::Binary { left, op, right, .. } => {
+            LoweredExpr::Binary {
+                left, op, right, ..
+            } => {
                 self.collect_required_runtime_expr(left);
                 self.collect_required_runtime_expr(right);
                 match op {
@@ -522,7 +535,12 @@ impl RuntimeLinkPlan {
                     self.add_required_runtime(RuntimeFn::NumberFromI32);
                 }
             }
-            LoweredExpr::String(_, _) | LoweredExpr::Bool(_, _) | LoweredExpr::Null(..) | LoweredExpr::Undefined(..) | LoweredExpr::This(..) | LoweredExpr::Local(_, _) => {}
+            LoweredExpr::String(_, _)
+            | LoweredExpr::Bool(_, _)
+            | LoweredExpr::Null(..)
+            | LoweredExpr::Undefined(..)
+            | LoweredExpr::This(..)
+            | LoweredExpr::Local(_, _) => {}
             LoweredExpr::ArrowFn { representation, .. } => {
                 if matches!(representation, ClosureRepresentation::HeapObject) {
                     self.add_required_runtime(RuntimeFn::AllocHeap);
@@ -601,7 +619,8 @@ impl RuntimeLinkPlan {
             LoweredExpr::PropertySetDynamic {
                 object,
                 index,
-                value, ..
+                value,
+                ..
             } => {
                 self.add_required_runtime(RuntimeFn::PropertySet);
                 self.add_required_runtime(RuntimeFn::ValueToStringInto);
@@ -631,7 +650,9 @@ impl RuntimeLinkPlan {
             LoweredExpr::ModuleLoad { .. } => {
                 self.add_required_runtime(RuntimeFn::ModuleRequire);
             }
-            LoweredExpr::RuntimeCall { runtime_fn, args, .. } => {
+            LoweredExpr::RuntimeCall {
+                runtime_fn, args, ..
+            } => {
                 if runtime_fn == "ArrayPushMany" {
                     self.add_required_runtime(RuntimeFn::ArrayPush);
                     self.add_required_runtime(RuntimeFn::ArrayPushGrow);

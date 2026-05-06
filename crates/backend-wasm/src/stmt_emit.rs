@@ -150,7 +150,8 @@ impl WatEmitter<'_> {
             LoweredStmt::If {
                 condition,
                 then_body,
-                else_body, ..
+                else_body,
+                ..
             } => {
                 self.emit_expr(writer, condition, indent, frame);
                 writer.call(indent, RuntimeFn::TruthyBool.symbol());
@@ -165,7 +166,9 @@ impl WatEmitter<'_> {
                 }
                 writer.end(indent);
             }
-            LoweredStmt::While { condition, body, .. } => {
+            LoweredStmt::While {
+                condition, body, ..
+            } => {
                 let exit_label = gen_label("while_exit");
                 let loop_label = gen_label("while_loop");
                 writer.block(indent, &exit_label);
@@ -223,7 +226,9 @@ impl WatEmitter<'_> {
                     writer.line(indent, "(global.set $exception_pending)");
                 }
             }
-            LoweredStmt::DoWhile { body, condition, .. } => {
+            LoweredStmt::DoWhile {
+                body, condition, ..
+            } => {
                 let exit_label = gen_label("do_exit");
                 let loop_label = gen_label("do_loop");
                 writer.block(indent, &exit_label);
@@ -250,7 +255,8 @@ impl WatEmitter<'_> {
                 init,
                 condition,
                 update,
-                body, ..
+                body,
+                ..
             } => {
                 if let Some(i) = init {
                     self.emit_statement(writer, i, indent, loop_ctx, frame);
@@ -300,7 +306,8 @@ impl WatEmitter<'_> {
                 iter_local,
                 index_local,
                 len_local,
-                body, ..
+                body,
+                ..
             } => {
                 let exit_label = gen_label("for_in_exit");
                 let loop_label = gen_label("for_in_loop");
@@ -354,7 +361,8 @@ impl WatEmitter<'_> {
                 iter_local,
                 index_local,
                 len_local,
-                body, ..
+                body,
+                ..
             } => {
                 let exit_label = gen_label("for_of_exit");
                 let loop_label = gen_label("for_of_loop");
@@ -442,7 +450,8 @@ impl WatEmitter<'_> {
                 try_body,
                 catch_var,
                 catch_body,
-                finally_body, ..
+                finally_body,
+                ..
             } => {
                 // Basic try-catch: wrap in block, execute try, handle catch
                 let try_exit = gen_label("try_exit");
