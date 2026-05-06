@@ -3045,4 +3045,62 @@ class Foo {
             "{err:?}"
         );
     }
+
+    #[test]
+    fn parses_leading_decimal_number() {
+        let program = parse_program("const done = Math.random() < .5;");
+        assert!(program.is_ok(), "expected .5 to parse, got err: {program:?}");
+    }
+
+    #[test]
+    fn leading_decimal_is_number_not_member() {
+        let program = parse_program("const x = .5;");
+        assert!(program.is_ok(), "expected .5 to parse, got err: {program:?}");
+        let program = program.unwrap();
+        assert_eq!(program.len(), 1);
+        match &program[0] {
+            Stmt::Let { expr, .. } => {
+                assert!(matches!(expr, Expr::Number { value: 5, .. }));
+            }
+            other => panic!("expected Let statement, got {other:?}"),
+        }
+    }
+
+    #[test]
+    fn member_access_not_confused_by_leading_decimal() {
+        let program = parse_program("const x = { p: 1 }; const y = x.p;");
+        assert!(program.is_ok(), "member access failed: {program:?}");
+    }
+
+    #[test]
+    fn numeric_member_access_still_reports_member_name_error() {
+        let err = parse_program("const x = object.5;").expect_err("object.5 should not parse as .5");
+        assert!(
+            err.message.contains("expected member property name"),
+            "{err:?}"
+        );
+    }
+
+    #[ignore]
+    #[test]
+    fn parses_export_assignment() {
+        let program = parse_program("export = foo;");
+        assert!(program.is_ok(), "expected export = foo to parse, got err: {program:?}");
+        let program = program.unwrap();
+        assert_eq!(program.len(), 1);
+        match &program[0] {
+            Stmt::Expr { expr, .. } => {
+                assert!(matches!(expr, Expr::Ident { name, .. } if name == "foo"),
+                    "expected Ident(foo), got {expr:?}");
+            }
+            other => panic!("expected Expr statement, got {other:?}"),
+        }
+    }
+
+    #[ignore]
+    #[test]
+    fn parses_export_assignment_member_expression() {
+        let program = parse_program("export = module.exports;");
+        assert!(program.is_ok(), "expected export = module.exports to parse, got err: {program:?}");
+    }
 }

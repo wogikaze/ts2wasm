@@ -1773,6 +1773,25 @@ impl Parser {
                 kind: Token::Class,
                 span,
             }) => self.class_expression(span),
+            Some(SpannedToken {
+                kind: Token::Dot,
+                span: dot_span,
+            }) if matches!(self.peek(), Some(Token::Number(_))) => {
+                let Some(SpannedToken {
+                    kind: Token::Number(value),
+                    span: num_span,
+                }) = self.advance()
+                else {
+                    unreachable!()
+                };
+                Ok(Expr::Number {
+                    value,
+                    span: Span {
+                        start: dot_span.start,
+                        end: num_span.end,
+                    },
+                })
+            }
             other => Err(Diagnostic {
                 code: DiagCode::UnsupportedSyntax,
                 message: format!("unsupported expression: {other:?}"),
