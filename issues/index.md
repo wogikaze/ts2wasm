@@ -13,10 +13,10 @@ Issue files are the source of truth for work items. The generated section below 
 | backend | 13 | 1 | 12 |
 | backend-wasm | 2 | 1 | 1 |
 | cli | 15 | 0 | 15 |
-| compiler | 4 | 3 | 1 |
+| compiler | 5 | 4 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4519 | 3608 | 911 |
+| frontend | 4519 | 3607 | 912 |
 | harness | 1 | 0 | 1 |
 | ir | 64 | 42 | 22 |
 | issues | 4 | 0 | 4 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5162 | 3897 | 1265 |
+| total | 5163 | 3897 | 1266 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -282,6 +282,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5325 | Fix multifile class constructor FuncId invariant | feature | ir/compiler | implementation-ready | P1 |  | a class with a constructor in the second virtual file can produce a |
 | 5326 | Parse anonymous default class export | feature | frontend/module-syntax | implementation-ready | P1 |  | this single anonymous default class form is still treated as an |
 | 5327 | Report class method overload wrong implementation name | feature | frontend/resolver | implementation-ready | P1 |  | `classWithOverloadImplementationOfWrongName2.ts` reports `DuplicateFunction: duplicate method definition: C.foo` inst... |
+| 5328 | Share script globals across @Filename sections for class namespace merge | feature | compiler/name-resolution | implementation-ready | P1 |  | cross-section global script declarations are not shared, so the second |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -555,7 +556,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 772 | Implement Augmentedtypesvar | spike | frontend/syntax | class: blocked | Implement Augmentedtypesvar |
 | 773 | Implement Autoasiforstaticsinclassdeclaration | spike | frontend/syntax | class: triage-needed | Implement Autoasiforstaticsinclassdeclaration |
 | 775 | Implement Autotypeassignedusingdestructuringfromnevernocrash | spike | frontend/resolver | class: blocked | Implement Autotypeassignedusingdestructuringfromnevernocrash |
-| 1254 | Implement Clodulesplitacrossfiles | spike | frontend/syntax | class: blocked | Implement Clodulesplitacrossfiles |
 | 1256 | Implement Cloduletest | spike | frontend/syntax | class: blocked | Implement Cloduletest |
 | 1257 | Implement Clodulewithduplicatemember | spike | frontend/syntax | class: blocked | Implement Clodulewithduplicatemember |
 | 1258 | Implement Clodulewithpriorinstantiatedmodule | spike | frontend/syntax | class: blocked | Implement Clodulewithpriorinstantiatedmodule |
@@ -5015,6 +5015,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1251 | Implement Cloduleacrossmoduledefinitions | spike | frontend/syntax | see `issues/done/1251-implement-cloduleAcrossModuleDefinitions.md` |
 | 1252 | Implement Cloduleandtypeparameters | spike | frontend/syntax | see `issues/done/1252-implement-cloduleAndTypeParameters.md` |
 | 1253 | Implement Clodulegenericonselfmember | spike | frontend/semantics | see `issues/done/1253-implement-cloduleGenericOnSelfMember.md` |
+| 1254 | Implement Clodulesplitacrossfiles | spike | frontend/syntax | see `issues/done/1254-implement-cloduleSplitAcrossFiles.md` |
 | 1255 | Implement Clodulestaticmembers | spike | frontend/syntax | see `issues/done/1255-implement-cloduleStaticMembers.md` |
 | 1263 | Implement Coandcontravariantinferences Parser Syntax | spike | frontend/syntax | see `issues/done/1263-implement-coAndContraVariantInferences-parser-syntax.md` |
 | 1265 | Implement Collectionpatternnoerror | spike | runtime/builtins | see `issues/done/1265-implement-collectionPatternNoError.md` |
