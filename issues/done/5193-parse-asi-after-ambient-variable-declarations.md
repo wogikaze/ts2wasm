@@ -76,11 +76,11 @@ variable declaration diagnostic.
 
 In scope:
 
-- [ ] Accept ASI after `declare var`, `declare let`, and `declare const`
-- [ ] Accept ASI after exported declaration-only ambient variables, such as `export declare let x: number`
-- [ ] Accept ASI after ambient variable type literals with call and construct signatures
-- [ ] Preserve rejection for ambient variable declarations with initializers
-- [ ] Add a focused parser/build regression fixture without relying on broad module resolution
+- [x] Accept ASI after `declare var`, `declare let`, and `declare const`
+- [x] Accept ASI after exported declaration-only ambient variables, such as `export declare let x: number`
+- [x] Accept ASI after ambient variable type literals with call and construct signatures
+- [x] Preserve rejection for ambient variable declarations with initializers
+- [x] Add a focused parser/build regression fixture without relying on broad module resolution
 
 Out of scope:
 
@@ -104,12 +104,12 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] `export declare let x: number` followed by a newline parses as an erased ambient value declaration without `issue-400`
-- [ ] `declare var foo:{ ( ):void; }` followed by `foo = bar;` parses the assignment as a separate expression, not an ambient initializer
-- [ ] `declare const c: number` followed by EOF or another statement parses without requiring an explicit semicolon
-- [ ] `declare var x = 1` remains rejected as an ambient initializer
-- [ ] `cachedModuleResolution2.ts` no longer stops at `issue-400: unterminated ambient variable declaration type`
-- [ ] `callConstructAssignment.ts` no longer stops at `issue-400: ambient variable declarations with initializers would affect runtime bindings`
+- [x] `export declare let x: number` followed by a newline parses as an erased ambient value declaration without `issue-400`
+- [x] `declare var foo:{ ( ):void; }` followed by `foo = bar;` parses the assignment as a separate expression, not an ambient initializer
+- [x] `declare const c: number` followed by EOF or another statement parses without requiring an explicit semicolon
+- [x] `declare var x = 1` remains rejected as an ambient initializer
+- [x] `cachedModuleResolution2.ts` no longer stops at `issue-400: unterminated ambient variable declaration type`
+- [x] `callConstructAssignment.ts` no longer stops at `issue-400: ambient variable declarations with initializers would affect runtime bindings`
 
 ## Validation
 
@@ -136,15 +136,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 
@@ -161,16 +161,32 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- `...`
+- pending local commit
 
 Validation result:
 
 ```text
-command:
-result:
-date:
+command: cargo fmt --all --check
+result: pass
+date: 2026-05-06
+
+command: cargo nextest run -p ts2wasm-frontend parses_ambient_variable_declarations_as_erased_syntax parses_asi_after_ambient parses_ambient_variable_declaration_type_at_eof_without_semicolon
+result: pass
+date: 2026-05-06
+
+command: cargo nextest run -p ts2wasm-cli -E 'test(ambient)'
+result: pass
+date: 2026-05-06
+
+command: TS2WASM_BINARY=target/debug/ts2wasm python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/cachedModuleResolution2.ts
+result: pass for this issue; advanced past issue-400 to existing multi-section/module boundary tracked by issue 5187
+date: 2026-05-06
+
+command: TS2WASM_BINARY=target/debug/ts2wasm python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/callConstructAssignment.ts
+result: pass; build-pass, no issue-400 ambient initializer diagnostic
+date: 2026-05-06
 ```
 
 Remaining risks:
 
-- none
+- Broader multi-section declaration-only/module-body lowering remains tracked by issue 5187.

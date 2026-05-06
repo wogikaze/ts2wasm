@@ -316,6 +316,71 @@ impl Parser {
         })
     }
 
+    fn skip_ambient_value_type_annotation_until(
+        &mut self,
+        stops: &[TokenKind],
+    ) -> Result<(), Diagnostic> {
+        let mut paren_depth = 0usize;
+        let mut bracket_depth = 0usize;
+        let mut brace_depth = 0usize;
+        let mut consumed_type_token = false;
+        while !self.is_at_end() {
+            let at_top_level = paren_depth == 0 && bracket_depth == 0 && brace_depth == 0;
+            if at_top_level
+                && self
+                    .peek()
+                    .is_some_and(|token| stops.iter().any(|kind| kind.matches(token)))
+            {
+                return Ok(());
+            }
+            if at_top_level
+                && consumed_type_token
+                && self.next_token_has_preceding_newline()
+                && self.peek().is_some_and(is_ambient_value_asi_boundary_token)
+            {
+                return Ok(());
+            }
+
+            match self.peek() {
+                Some(Token::LeftParen) => paren_depth += 1,
+                Some(Token::LeftBracket) => bracket_depth += 1,
+                Some(Token::LeftBrace) => brace_depth += 1,
+                Some(Token::RightParen) => {
+                    if paren_depth == 0 {
+                        return Ok(());
+                    }
+                    paren_depth -= 1;
+                }
+                Some(Token::RightBracket) => {
+                    if bracket_depth == 0 {
+                        return Ok(());
+                    }
+                    bracket_depth -= 1;
+                }
+                Some(Token::RightBrace) => {
+                    if brace_depth == 0 {
+                        return Ok(());
+                    }
+                    brace_depth -= 1;
+                }
+                None => break,
+                _ => {}
+            }
+            self.advance();
+            consumed_type_token = true;
+        }
+
+        if consumed_type_token && paren_depth == 0 && bracket_depth == 0 && brace_depth == 0 {
+            Ok(())
+        } else {
+            Err(Diagnostic {
+                code: DiagCode::UnsupportedSyntax,
+                message: "unterminated TypeScript type annotation".to_owned(),
+                span: self.prev_span(),
+            })
+        }
+    }
+
     /// Skip from an opening `[` to its matching `]`.
     fn skip_balanced_bracket_block(&mut self) -> Result<(), Diagnostic> {
         self.expect(TokenKind::LeftBracket)?;

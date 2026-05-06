@@ -106,11 +106,11 @@ Current state:
 
 Follow-up issues:
 
-- [x] updated: `issues/open/5193-parse-asi-after-ambient-variable-declarations.md`
+- [x] updated: `issues/done/5193-parse-asi-after-ambient-variable-declarations.md`
 
 ## Notes
 
-Folded into `issues/open/5193-parse-asi-after-ambient-variable-declarations.md`.
+Folded into `issues/done/5193-parse-asi-after-ambient-variable-declarations.md`.
 Fresh triage shows `callConstructAssignment.ts` fails because the parser does
 not accept ASI after declaration-only ambient variable type literals. It treats
 the later `foo = bar` assignment as an ambient variable initializer and reports
@@ -133,12 +133,12 @@ Generated on 2026-05-06:
 - visible symbols: `foo`, `bar`
 - source shape: `declare var foo:{ ( ):void; }`, `declare var bar:{ new ( ):any; }`, then `foo = bar;` and `bar = foo;`
 - TypeScript oracle: TS2322 assignment incompatibilities for call-vs-construct signatures
-- follow-up: `issues/open/5193-parse-asi-after-ambient-variable-declarations.md`
+- follow-up: `issues/done/5193-parse-asi-after-ambient-variable-declarations.md`
 
 ## Completion evidence
 
 Closed as a generated triage bucket. The actionable parser blocker is tracked by
-`issues/open/5193-parse-asi-after-ambient-variable-declarations.md`.
+`issues/done/5193-parse-asi-after-ambient-variable-declarations.md`.
 
 Commits:
 

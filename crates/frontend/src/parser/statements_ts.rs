@@ -376,7 +376,7 @@ impl Parser {
                 )
             })?;
             if self.consume(TokenKind::Colon) {
-                self.skip_type_annotation_until(&[
+                self.skip_ambient_value_type_annotation_until(&[
                     TokenKind::Equal,
                     TokenKind::Comma,
                     TokenKind::Semicolon,
@@ -402,13 +402,17 @@ impl Parser {
             if self.consume(TokenKind::Comma) {
                 continue;
             }
-            self.expect(TokenKind::Semicolon).map_err(|_| {
-                self.unsupported_typescript_syntax(
-                    declare_span,
-                    "issue-400: unterminated ambient variable declaration",
-                )
-            })?;
-            return Ok(());
+            if self.consume(TokenKind::Semicolon)
+                || self.is_at_end()
+                || (self.next_token_has_preceding_newline()
+                    && self.peek().is_some_and(is_ambient_value_asi_boundary_token))
+            {
+                return Ok(());
+            }
+            return Err(self.unsupported_typescript_syntax(
+                declare_span,
+                "issue-400: unterminated ambient variable declaration",
+            ));
         }
     }
 

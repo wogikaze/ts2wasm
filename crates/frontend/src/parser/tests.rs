@@ -197,6 +197,45 @@ mod tests {
     }
 
     #[test]
+    fn parses_asi_after_ambient_variable_declarations() {
+        let source = r#"
+            export declare let exportedValue: number
+            declare const constValue: string
+            declare var callable:{ ( ):void; }
+            callable = exportedValue;
+        "#;
+        let program = parse_program(source).unwrap();
+        assert_eq!(program.len(), 4);
+        for ambient_name in ["exportedValue", "constValue", "callable"] {
+            assert!(program.iter().any(
+                |stmt| matches!(stmt, Stmt::AmbientValueDecl { name, .. } if name == ambient_name)
+            ));
+        }
+        assert!(matches!(&program[3], Stmt::Assign { name, .. } if name == "callable"));
+    }
+
+    #[test]
+    fn parses_asi_after_ambient_construct_signature_type_literal() {
+        let source = r#"
+            declare var constructable:{ new ( ):any; }
+            constructable = constructable;
+        "#;
+        let program = parse_program(source).unwrap();
+        assert_eq!(program.len(), 2);
+        assert!(
+            matches!(&program[0], Stmt::AmbientValueDecl { name, .. } if name == "constructable")
+        );
+        assert!(matches!(&program[1], Stmt::Assign { name, .. } if name == "constructable"));
+    }
+
+    #[test]
+    fn parses_ambient_variable_declaration_type_at_eof_without_semicolon() {
+        let program = parse_program("declare const eofValue: number").unwrap();
+        assert_eq!(program.len(), 1);
+        assert!(matches!(&program[0], Stmt::AmbientValueDecl { name, .. } if name == "eofValue"));
+    }
+
+    #[test]
     fn parses_ambient_declarations_as_erased_syntax() {
         let source = r#"
             declare class AmbientBase { }

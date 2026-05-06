@@ -152,6 +152,36 @@ fn is_statement_boundary_token(token: &Token) -> bool {
     }
 }
 
+fn is_ambient_value_asi_boundary_token(token: &Token) -> bool {
+    is_statement_boundary_token(token)
+        || matches!(
+            token,
+            Token::Ident(_)
+                | Token::This
+                | Token::Super
+                | Token::New
+                | Token::TypeOf
+                | Token::Void
+                | Token::Delete
+                | Token::Increment
+                | Token::Decrement
+                | Token::Plus
+                | Token::Minus
+                | Token::Bang
+                | Token::Tilde
+                | Token::LeftParen
+                | Token::LeftBracket
+                | Token::String(_)
+                | Token::Number(_)
+                | Token::BigIntLiteral(_)
+                | Token::TemplateLiteral(_)
+                | Token::True
+                | Token::False
+                | Token::Null
+                | Token::Undefined
+        )
+}
+
 enum TemplatePart {
     String(String),
     Expr(Expr),

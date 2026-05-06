@@ -48,6 +48,9 @@ impl Parser {
             }
             statements.push(self.statement()?);
         }
+        while let Some(stmt) = self.take_pending_statement() {
+            statements.push(stmt);
+        }
         Ok(statements)
     }
 }
