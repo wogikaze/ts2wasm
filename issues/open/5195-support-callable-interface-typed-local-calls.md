@@ -24,12 +24,19 @@ the call as a function-valued local call. TypeScript preserves callable
 interface information and reports the earlier definite-assignment diagnostic for
 `i`, not an unsupported call-form parser or lowering error.
 
+Additional representative
+`callSignaturesShouldBeResolvedBeforeSpecialization.ts` parses an
+`I1<string>` local and calls `test(...)`; lowering stops at the same generic
+`issue-211` boundary before TypeScript's call-signature specialization can
+reject the boolean argument.
+
 Problem: callable interface-typed locals currently lower to `Undefined` values and calls to them stop with `issue-211`.
 
 ## Current failure
 
 ```sh
 mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/callExpressionWithTypeParameterConstrainedToOuterTypeParameter.ts
+mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/callSignaturesShouldBeResolvedBeforeSpecialization.ts
 ```
 
 Current diagnostic:
@@ -53,6 +60,11 @@ Triage evidence:
 - AST succeeds with `Let i = Undefined` and `Let y = Call(Ident i, String "")`.
 - Visible symbols include local bindings `i` and `y`.
 - TypeScript oracle reports TS2454, `Variable 'i' is used before being assigned`, at the call site.
+- For `callSignaturesShouldBeResolvedBeforeSpecialization.ts`, AST succeeds
+  with `var test!: I1<string>;`, `test("expects boolean instead of string")`,
+  and `test(true)`.
+- TypeScript oracle reports TS2345 for `test(true)` after resolving the
+  callable interface signature against `I1<string>`.
 
 ## Desired final state
 
@@ -67,6 +79,8 @@ In scope:
 
 - [ ] Preserve enough callable interface metadata for local variables with call signatures
 - [ ] Detect calls to uninitialized callable interface locals before generic lowering rejection
+- [ ] Specialize generic callable interface signatures before classifying local
+  calls
 - [ ] Keep existing unsupported diagnostics for arbitrary extracted method calls
 
 Out of scope:
@@ -92,7 +106,12 @@ Do not touch:
 ## Acceptance criteria
 
 - [ ] `callExpressionWithTypeParameterConstrainedToOuterTypeParameter.ts` no longer reports the generic `issue-211` extracted-method diagnostic for `i("")`
+- [ ] `callSignaturesShouldBeResolvedBeforeSpecialization.ts` no longer reports
+  the generic `issue-211` extracted-method diagnostic for `test(...)`
 - [ ] A focused fixture covers calling an uninitialized callable interface local and reports a source-spanned diagnostic at `i`
+- [ ] A focused fixture covers `interface I1<T> { (value: T): void; field1:
+  I1<boolean>; }` with a local `I1<string>` call, and the boolean argument path
+  reaches a type diagnostic instead of unsupported lowering
 - [ ] Existing issue-211 extracted method fixtures continue to report unsupported diagnostics
 - [ ] Valid direct function declarations and arrow/function variable calls keep passing
 
@@ -109,6 +128,7 @@ Impacted commands:
 
 ```sh
 mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/callExpressionWithTypeParameterConstrainedToOuterTypeParameter.ts
+mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/callSignaturesShouldBeResolvedBeforeSpecialization.ts
 ```
 
 Not run:

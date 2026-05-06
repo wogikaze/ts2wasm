@@ -3,12 +3,12 @@ id: 1101
 title: "Implement Callsignaturesshouldberesolvedbeforespecialization"
 type: spike
 area: frontend/syntax
-class: triage-needed
+class: blocked
 priority: P1
-depends_on: []
+depends_on: [5195]
 blocks: []
 created: 2026-05-01
-updated: 2026-05-01
+updated: 2026-05-06
 ---
 
 ## Summary
@@ -43,10 +43,10 @@ This generated bucket is either split into implementation-ready child issues or 
 
 In scope:
 
-- [ ] Inspect the smart triage report below
-- [ ] Confirm whether existing open/done issues already cover this bucket
-- [ ] Split one feature family, one observable behavior, or one fixed reference window into child issues
-- [ ] Preserve exact reproduction commands and representative AST/diagnostic evidence in each child issue
+- [x] Inspect the smart triage report below
+- [x] Confirm whether existing open/done issues already cover this bucket
+- [x] Split one feature family, one observable behavior, or one fixed reference window into child issues
+- [x] Preserve exact reproduction commands and representative AST/diagnostic evidence in each child issue
 
 Out of scope:
 
@@ -68,10 +68,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] Duplicate candidates below are confirmed as no-match or this issue is superseded
-- [ ] At least one child issue contains an exact `mise run reference-triage -- ...` command
-- [ ] Child issue includes failing path, diagnostic code, source context, visible symbols, and parser/TypeScript AST evidence
-- [ ] Child issue acceptance names the exact fixture/reference path and diagnostic/stdout change
+- [x] Duplicate candidates below are confirmed as no-match or this issue is superseded
+- [x] At least one child issue contains an exact `mise run reference-triage -- ...` command
+- [x] Child issue includes failing path, diagnostic code, source context, visible symbols, and parser/TypeScript AST evidence
+- [x] Child issue acceptance names the exact fixture/reference path and diagnostic/stdout change
 
 ## Validation
 
@@ -98,15 +98,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] updated: `current-state.md` (repo root)
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] `issues/open/5195-support-callable-interface-typed-local-calls.md`
 
 ## Notes
 
@@ -120,7 +120,51 @@ Follow-up issues:
 
 ## Smart triage
 
-Not generated. Rerun with `--triage-limit 1` or higher.
+### Smart triage: Triage function resolution: callSignaturesShouldBeResolvedBeforeSpecialization
+
+- Issue class: `triage-needed`
+- Feature label: `function-resolution`
+- Diagnostic: `UnsupportedSyntax` / `issue-211`
+- Path: `reference/typescript/tests/cases/compiler/callSignaturesShouldBeResolvedBeforeSpecialization.ts`
+
+Reproduction:
+
+```sh
+mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/callSignaturesShouldBeResolvedBeforeSpecialization.ts
+```
+
+Pipeline failure:
+
+```text
+error: [UnsupportedSyntax] issue-211: function-valued local calls such as extracted method `test(...)` are not supported; call receiver.method(...) directly at 143..184
+```
+
+Source context:
+
+```ts
+interface I1<T> {
+    (value: T): void;
+    field1: I1<boolean>;
+}
+
+function foo() {
+    var test!: I1<string>;
+    test("expects boolean instead of string");
+    test(true);
+}
+```
+
+Evidence:
+
+- Tokens and AST succeed.
+- AST body contains `Let test = Undefined`, `Call(Ident test, String ...)`,
+  and `Call(Ident test, Bool true)`.
+- TypeScript oracle specializes `I1<string>` and reports TS2345 for the boolean
+  argument path.
+- Existing child issue
+  `issues/open/5195-support-callable-interface-typed-local-calls.md` owns the
+  same generic callable interface local call boundary and has been expanded
+  with this reference path.
 
 ## Completion evidence
 
@@ -128,14 +172,14 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- `...`
+- `...` pending
 
 Validation result:
 
 ```text
-command:
-result:
-date:
+command: python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/callSignaturesShouldBeResolvedBeforeSpecialization.ts
+result: pass; reproduced issue-211 for callable interface-typed local `test(...)`
+date: 2026-05-06
 ```
 
 Remaining risks:
