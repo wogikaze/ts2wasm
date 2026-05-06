@@ -1963,17 +1963,20 @@ impl<'a> Resolver<'a> {
 
                     let obj_local = self.resolve_local(receiver_name)?;
 
-                    let class_name =
-                        self.local_classes
-                            .get(&obj_local)
-                            .ok_or_else(|| Diagnostic {
-                                code: DiagCode::UnsupportedSyntax,
-                                message: format!(
-                                    "issue-211: unknown receiver class for method `{}`",
-                                    method
-                                ),
-                                span: Some(*span),
-                            })?;
+                    // For ambient interface-typed receivers without a concrete class
+                    // in local_classes, fall back to Array for known array-like methods.
+                    let array_like_methods = ["filter", "map", "forEach", "find",
+                        "findIndex", "some", "every", "reduce", "flatMap"];
+                    let class_name_str = match self.local_classes.get(&obj_local) {
+                        Some(c) => c.clone(),
+                        None if array_like_methods.contains(&method.as_str()) => "Array".to_owned(),
+                        None => return Err(Diagnostic {
+                            code: DiagCode::UnsupportedSyntax,
+                            message: format!("issue-211: unknown receiver class for method `{}`", method),
+                            span: Some(*span),
+                        }),
+                    };
+                    let class_name = class_name_str.as_str();
 
                     let method_id =
                         self.resolve_class_method(class_name, method)
