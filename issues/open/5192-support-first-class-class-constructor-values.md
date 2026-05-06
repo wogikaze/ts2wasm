@@ -24,7 +24,7 @@ declarations, but name resolution still rejects `MenuWorkbenchToolBar` when it i
 used as a value argument. TypeScript accepts this pattern because class
 declarations are both types and constructor values.
 
-Problem: class constructor bindings used as expression values still fail with `issue-5011`, blocking reference cases that pass constructors to helper functions.
+Problem: class constructor bindings used as expression values still fail with `issue-5011`, blocking reference cases that pass constructors to helper functions or cast/access class constructor values.
 
 ## Current failure
 
@@ -61,6 +61,44 @@ ast: ok
 top-level class: ClassDecl { name: "MenuWorkbenchToolBar", constructor: Some(...) }
 failing expression: Call createInstance(MenuWorkbenchToolBar, { toolbarOptions: ... })
 resolved: issue-5011 at identifier MenuWorkbenchToolBar
+TypeScript oracle: ok, diagnostics: []
+```
+
+Additional generated bucket evidence:
+
+```sh
+mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/castParentheses.ts
+```
+
+Current diagnostic:
+
+```text
+error: [UnsupportedSyntax] issue-5011: class `a` cannot be used as a value — class runtime is not yet supported at 73..74
+```
+
+Source context:
+
+```ts
+class a {
+    static b: any;
+}
+
+var b = (<any>a);
+var b = (<any>a).b;
+var b = (<any>a.b).c;
+var b = (<any>a.b()).c;
+var b = (<any>new a);
+var b = (<any>new a.b);
+var b = (<any>new a).b
+```
+
+Parser evidence:
+
+```text
+ast: ok
+top-level class: ClassDecl { name: "a" }
+failing expression: Let b = Ident("a") from `(<any>a)`
+resolved: issue-5011 at identifier `a`
 TypeScript oracle: ok, diagnostics: []
 ```
 
@@ -103,6 +141,7 @@ Do not touch:
 ## Acceptance criteria
 
 - [ ] `cachedContextualTypes.ts` no longer reports `issue-5011` for `MenuWorkbenchToolBar`
+- [ ] `castParentheses.ts` no longer reports `issue-5011` for the first class constructor value use `(<any>a)`
 - [ ] A focused fixture passes for a class constructor value passed to a helper and used to construct an instance
 - [ ] Existing direct class fixtures, including `new C()` and static method calls, still pass
 - [ ] Unsupported class-value cases that remain out of scope keep a source-spanned diagnostic
