@@ -305,6 +305,8 @@ impl NameResolver {
                 body,
                 static_blocks,
                 private_elements,
+                ts_private_field_names,
+                interface_heritage,
                 span,
             } => {
                 // Class methods are lowered as standalone functions by the lowered program
@@ -351,6 +353,8 @@ impl NameResolver {
                     body: filtered_body,
                     static_blocks: static_blocks.clone(),
                     private_elements: private_elements.clone(),
+                    ts_private_field_names: ts_private_field_names.clone(),
+                    interface_heritage: interface_heritage.clone(),
                     span: *span,
                 })
             }
@@ -885,7 +889,10 @@ impl NameResolver {
                 // Check for type-only callee before the generic issue-062 guard.
                 // E.g., `new any[1]` should report TS2693 at `any`, not issue-062.
                 if let Expr::Index { object, .. } = expr.as_ref()
-                    && let Expr::Ident { name, span: name_span } = object.as_ref()
+                    && let Expr::Ident {
+                        name,
+                        span: name_span,
+                    } = object.as_ref()
                     && is_type_only_ambient_global(name)
                 {
                     return Err(type_only_value_use_diagnostic(name, *name_span));

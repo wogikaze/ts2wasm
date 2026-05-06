@@ -602,6 +602,24 @@ impl<'a> Resolver<'a> {
                     return Ok(LoweredExpr::Undefined(Span::generated("undef")));
                 }
 
+                // Before falling through to the generic function-valued local
+                // diagnostic, check if the callee is a local whose value is
+                // null/undefined — this covers TypeScript callable interface
+                // typed locals such as `var i: I<string>; i("")`. These are
+                // not extracted methods but simply uninitialized variables,
+                // and deserve a more precise diagnostic.
+                if let Ok(local_id) = self.resolve_local(func_name) {
+                    if self.nullish_locals.contains(&local_id) {
+                        return Err(Diagnostic {
+                            code: DiagCode::UnsupportedSyntax,
+                            message: format!(
+                                "issue-5195: callable interface-typed local `{func_name}` is not callable — the variable is never assigned"
+                            ),
+                            span: Some(*span),
+                        });
+                    }
+                }
+
                 let func_id = match self.resolve_func(func_name) {
                     Ok(func_id) => func_id,
                     Err(_) if self.resolve_local(func_name).is_ok() => {
