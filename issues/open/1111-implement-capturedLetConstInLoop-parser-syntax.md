@@ -111,6 +111,7 @@ Follow-up issues:
 - [ ] `issues/open/5209-parse-computed-object-literal-property-expressions.md`
 - [ ] `issues/open/5210-parse-do-while-asi-before-block-end-or-expression.md`
 - [ ] `issues/open/5211-parse-do-while-asi-before-labeled-statement.md`
+- [ ] `issues/open/5212-parse-function-expression-statements-in-nested-blocks.md`
 
 ## Notes
 
@@ -428,6 +429,82 @@ TypeScript oracle accepts the no-semicolon `do while` before the labeled
 statement. Child issue
 `issues/open/5211-parse-do-while-asi-before-labeled-statement.md` owns this ASI
 slice.
+
+### Smart triage: capturedLetConstInLoop9
+
+- Issue class: `triage-needed`
+- Feature label: `parser-syntax`
+- Diagnostic: `UnsupportedSyntax` / `parser-or-frontend-unsupported`
+- Path: `reference/typescript/tests/cases/compiler/capturedLetConstInLoop9.ts`
+
+Reproduction:
+
+```sh
+mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/capturedLetConstInLoop9.ts
+```
+
+Failure location:
+
+```json
+{
+  "code": "UnsupportedSyntax",
+  "message": "expected Comma, got Some(Ident(\"x\")) at 133..134",
+  "line": 8,
+  "column": 4
+}
+```
+
+Source context:
+
+```text
+6 |     {
+7 |         let x;
+8 |         (function() { return x });
+9 |     }
+```
+
+TypeScript accepts the parenthesized function expression statement inside the
+nested block. Child issue
+`issues/open/5212-parse-function-expression-statements-in-nested-blocks.md`
+owns this parser slice.
+
+### Smart triage: capturedLetConstInLoop9_ES6
+
+- Issue class: `triage-needed`
+- Feature label: `parser-syntax`
+- Diagnostic: `UnsupportedSyntax` / `parser-or-frontend-unsupported`
+- Path: `reference/typescript/tests/cases/compiler/capturedLetConstInLoop9_ES6.ts`
+
+Reproduction:
+
+```sh
+mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/capturedLetConstInLoop9_ES6.ts
+```
+
+Failure location:
+
+```json
+{
+  "code": "UnsupportedSyntax",
+  "message": "expected Comma, got Some(Ident(\"x\")) at 132..133",
+  "line": 9,
+  "column": 4
+}
+```
+
+Source context:
+
+```text
+7 |     {
+8 |         let x;
+9 |         (function() { return x });
+10 |     }
+```
+
+TypeScript accepts the parenthesized function expression statement inside the
+nested block. Child issue
+`issues/open/5212-parse-function-expression-statements-in-nested-blocks.md`
+owns this parser slice.
 
 ### Folded triage from #1109: capturedLetConstInLoop4
 
