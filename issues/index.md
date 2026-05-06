@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 3 | 2 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4452 | 3739 | 713 |
+| frontend | 4453 | 3739 | 714 |
 | harness | 1 | 0 | 1 |
 | ir | 44 | 22 | 22 |
 | issues | 4 | 0 | 4 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5074 | 4014 | 1060 |
+| total | 5075 | 4014 | 1061 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -48,7 +48,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 
 ```
 5000 (Meta: TypeScript Compiler Parser Syntax Coverage) [done/design] ch:494 open:427 done:67
-├── 5002 (Meta: TypeScript Compiler Type System Coverage) [done/done] ch:240 open:232 done:8 (also ← 5005)
+├── 5002 (Meta: TypeScript Compiler Type System Coverage) [done/done] ch:239 open:231 done:8 (also ← 5005)
 ├── 5003 (Meta: TypeScript Compiler Declaration Emit Coverage) [done/done] ch:103 open:92 done:11 (also ← 5001)
 5001 (Meta: TypeScript Compiler Semantic Analysis Coverage) [done/done] ch:597 open:348 done:249
 5004 (Meta: Runtime Builtins Coverage (test262) (audit reopened #5004)) [done/done] ch:24 open:3 done:21
@@ -70,7 +70,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 2 | 5001 | Meta: TypeScript Compiler Semantic Analysis Coverage | done | done | frontend/semantics | P1 | - | 597 | 348 | 249 |
 | 3 | 5004 | Meta: Runtime Builtins Coverage (test262) (audit reopened #5004) | done | done | runtime/builtins | P1 | - | 24 | 3 | 21 |
 | 4 | 5005 | Meta: TypeScript Compiler Name Resolution Coverage | done | done | frontend/resolver | P1 | - | 425 | 378 | 47 |
-| 5 | 5002 | Meta: TypeScript Compiler Type System Coverage | done | done | frontend/semantics | P1 | 5000, 5005 | 240 | 232 | 8 |
+| 5 | 5002 | Meta: TypeScript Compiler Type System Coverage | done | done | frontend/semantics | P1 | 5000, 5005 | 239 | 231 | 8 |
 | 6 | 5003 | Meta: TypeScript Compiler Declaration Emit Coverage | done | done | frontend/syntax | P2 | 5000, 5001 | 103 | 92 | 11 |
 | 7 | 5006 | Meta: TypeScript Compiler Scope Analysis Coverage | done | done | frontend/resolver | P2 | 5005 | 30 | 22 | 8 |
 | 8 | 5007 | Meta: TypeScript Compiler Module Resolution Coverage (audit reopened #5007) | done | done | frontend/resolver | P2 | 5005 | 21 | 19 | 2 |
@@ -194,6 +194,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5237 | Parse this-property computed object literal keys | feature | frontend/parser | implementation-ready | P1 |  | `{ [this.a]: "" }` reports `UnsupportedSyntax: expected identifier, |
 | 5238 | Preserve template interpolation expression spans | feature | frontend/parser | implementation-ready | P1 |  | `` `${a}` `` reports `UnresolvedName: unresolved name: a at 0..1` |
 | 5239 | Bind nested class declarations in function scopes | bug | ir | implementation-ready | P1 |  | a nested class declaration inside a function body is not bound as a local value/type name for later statements in tha... |
+| 5240 | Parse async arrow function expressions | feature | frontend/syntax | implementation-ready | P1 |  | `async () => { ... }` and `(async () => { ... })` are rejected as `unsupported expression: Async` before AST construc... |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -469,7 +470,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 772 | Implement Augmentedtypesvar | spike | frontend/syntax | class: blocked | Implement Augmentedtypesvar |
 | 773 | Implement Autoasiforstaticsinclassdeclaration | spike | frontend/syntax | class: triage-needed | Implement Autoasiforstaticsinclassdeclaration |
 | 775 | Implement Autotypeassignedusingdestructuringfromnevernocrash | spike | frontend/resolver | class: blocked | Implement Autotypeassignedusingdestructuringfromnevernocrash |
-| 1155 | Implement Circularinferredtypeofvariable | spike | frontend/semantics | class: blocked | Implement Circularinferredtypeofvariable |
 | 1156 | Implement Circularinlinemappedgenerictupletypenocrash | spike | frontend/semantics | class: blocked | Implement Circularinlinemappedgenerictupletypenocrash |
 | 1157 | Implement Circularinstantiationexpression | spike | frontend/resolver | class: blocked | Implement Circularinstantiationexpression |
 | 1158 | Implement Circularmappedtypeconstraint | spike | frontend/syntax | class: blocked | Implement Circularmappedtypeconstraint |
@@ -5031,6 +5031,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1152 | Implement Circularconstructorwithreturn | spike | frontend/syntax | see `issues/done/1152-implement-circularConstructorWithReturn.md` |
 | 1153 | Implement Circularcontextualmappedtype | spike | frontend/resolver | see `issues/done/1153-implement-circularContextualMappedType.md` |
 | 1154 | Implement Circularcontextualreturntype | spike | frontend/resolver | see `issues/done/1154-implement-circularContextualReturnType.md` |
+| 1155 | Implement Circularinferredtypeofvariable | spike | frontend/semantics | see `issues/done/1155-implement-circularInferredTypeOfVariable.md` |
 | 2050 | Implement Duplicatelocalvariable Duplicate Local | spike | reference/triage | see `issues/done/2050-implement-duplicateLocalVariable-duplicate-local.md` |
 | 3002 | Implement Isolateddeclarationerrorsdefault | spike | runtime/builtins | see `issues/done/3002-implement-isolatedDeclarationErrorsDefault.md` |
 | 3131 | Implement Jsxfactorynotidentifierorqualifiedname | spike | reference/triage | see `issues/done/3131-implement-jsxFactoryNotIdentifierOrQualifiedName.md` |
