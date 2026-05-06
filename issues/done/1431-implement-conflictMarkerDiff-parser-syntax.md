@@ -125,8 +125,8 @@ Follow-up issues:
 - Generic parser-syntax buckets are no-match because this bucket needs a
   specific source diagnostic for conflict marker lines, not broad parser
   extension work.
-- Sibling generated bucket `issues/open/1432-implement-conflictMarkerDiff-unknown-unsupported.md`
-  references a different representative path and still needs separate triage.
+- Sibling generated bucket `issues/done/1432-implement-conflictMarkerDiff-unknown-unsupported.md`
+  is also superseded by issue 5305.
 
 ## Smart triage
 

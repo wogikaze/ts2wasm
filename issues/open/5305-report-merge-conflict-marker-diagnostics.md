@@ -161,8 +161,9 @@ Follow-up issues:
 ## Notes
 
 Split from generated bucket `issues/done/1431-implement-conflictMarkerDiff-parser-syntax.md`.
-The sibling bucket `issues/open/1432-implement-conflictMarkerDiff-unknown-unsupported.md`
-may share this same root cause and should be triaged separately.
+Also supersedes sibling generated bucket
+`issues/done/1432-implement-conflictMarkerDiff-unknown-unsupported.md`, where
+the same marker diagnostic gap appears inside a method body.
 
 ## Completion evidence
 

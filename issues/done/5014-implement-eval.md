@@ -225,7 +225,7 @@ Duplicate candidates:
   },
   {
     "state": "open",
-    "path": "issues/open/1432-implement-conflictMarkerDiff-unknown-unsupported.md",
+    "path": "issues/done/1432-implement-conflictMarkerDiff-unknown-unsupported.md",
     "title": "Implement Conflictmarkerdiff Unknown Unsupported",
     "reason": "same feature label, title overlap"
   },
