@@ -161,3 +161,14 @@ date: 2026-05-06
 Remaining risks:
 
 - lowering pass (lower_expr) and backend emission (emit_expr) are still recursive for deep binary chains; a deep expression that survives builtin resolution may overflow during lowering or emission. This is tracked as a follow-up.
+
+## False-done audit
+
+Date: 2026-05-06
+
+Classification: truly-done.
+
+Audit result: retained in . This issue has repo-local close evidence
+(implementation commit or completion evidence).
+
+Future-work tracking: none identified.

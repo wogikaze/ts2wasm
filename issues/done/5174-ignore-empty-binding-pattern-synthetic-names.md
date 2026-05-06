@@ -149,3 +149,14 @@ date:
 Remaining risks:
 
 - none
+
+## False-done audit
+
+Date: 2026-05-06
+
+Classification: truly-done.
+
+Audit result: retained in . This issue has repo-local close evidence
+(implementation commit or completion evidence).
+
+Future-work tracking: none identified.

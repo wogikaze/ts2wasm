@@ -189,3 +189,14 @@ date: 2026-05-06
 ### Remaining risks
 
 - Full end-to-end `binaryArithmatic1.ts` reference triage requires backend-wasm to compile (blocked by pre-existing WAT writer migration in `wat_writer.rs`). Once the migration is complete, `python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/binaryArithmatic1.ts` should advance past the `binary operator BitwiseOr` diagnostic.
+
+## False-done audit
+
+Date: 2026-05-06
+
+Classification: truly-done.
+
+Audit result: retained in . This issue has repo-local close evidence
+(implementation commit or completion evidence).
+
+Future-work tracking: none identified.

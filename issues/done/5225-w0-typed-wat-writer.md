@@ -126,3 +126,14 @@ Follow-up issues:
 The `WatWriter` should be a standalone module in `crates/backend-wasm/src/wat_writer.rs`. Keep it simple: a struct with an internal `String` buffer that provides type-safe wrappers, not a full WAT parser/generator. The goal is compile-time safety for nesting and ABI, not WAT formatting perfection.
 
 Reference: `docs/12-coding-standard.md §1.2` and `§19.13` for the prohibition on raw WAT strings.
+
+## False-done audit
+
+Date: 2026-05-06
+
+Classification: truly-done.
+
+Audit result: retained in . This issue has repo-local close evidence
+(implementation commit or completion evidence).
+
+Future-work tracking: none identified.
