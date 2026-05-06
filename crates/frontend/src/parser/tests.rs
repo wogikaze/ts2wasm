@@ -3354,4 +3354,37 @@ class Foo {
             "expected OK parsing object type literal call signature followed by other decl, got err: {program:?}",
         );
     }
+
+    #[test]
+    fn reports_ts2320_for_interface_private_member_clash() {
+        let source = r#"
+            class X { private m: number; }
+            class Y { private m: string; }
+            interface Z extends X, Y { }
+        "#;
+        let err = parse_program(source)
+            .expect_err("interface extending classes with conflicting private members should report TS2320");
+        assert_eq!(err.code, DiagCode::TypeScriptTypeCheck);
+        assert!(err.message.contains("TS2320"), "message: {}", err.message);
+        assert!(err.message.contains("'Z'"), "message: {}", err.message);
+        assert!(err.message.contains("'X'"), "message: {}", err.message);
+        assert!(err.message.contains("'Y'"), "message: {}", err.message);
+        assert!(err.message.contains("'m'"), "message: {}", err.message);
+        assert!(err.span.is_some(), "diagnostic should preserve a span");
+    }
+
+    #[test]
+    fn allows_interface_extending_single_class_with_private() {
+        let source = r#"
+            class X { private m: number; }
+            interface Z extends X { }
+            let val = 1;
+        "#;
+        let stmts = parse_program(source)
+            .expect("interface extending a single class with private field should be allowed");
+        // class X is a runtime declaration, interface Z is erased
+        assert_eq!(stmts.len(), 2);
+        assert!(matches!(stmts[0], Stmt::ClassDecl { ref name, .. } if name == "X"));
+        assert!(matches!(stmts[1], Stmt::Let { ref name, .. } if name == "val"));
+    }
 }

@@ -342,13 +342,16 @@ impl Parser {
 
         let end = self.expect(TokenKind::RightBrace)?.end;
 
+        self.class_private_fields
+            .insert(name.clone(), ts_private_field_names.clone());
+
         Ok(Stmt::ClassDecl {
             name,
             extends,
             body,
             static_blocks,
             private_elements,
-            ts_private_field_names: Vec::new(),
+            ts_private_field_names,
             interface_heritage: Vec::new(),
             span: Span {
                 start: span_start,

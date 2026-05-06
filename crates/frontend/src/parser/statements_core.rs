@@ -26,6 +26,7 @@ impl Parser {
             has_preceding_newline,
             in_async_fn: false,
             fn_depth: 0,
+            class_private_fields: HashMap::new(),
         }
     }
 

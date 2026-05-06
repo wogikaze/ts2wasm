@@ -73,9 +73,15 @@ impl Parser {
         interface_span: Span,
     ) -> Result<(), Diagnostic> {
         // Accept both identifiers and TS-only keywords (e.g. `interface abstract { }`)
-        match self.peek() {
-            Some(Token::Ident(_)) => { self.expect_ident()?; }
-            Some(Token::Abstract) => { self.advance(); }
+        let interface_name = match self.peek() {
+            Some(Token::Ident(_)) => {
+                let (name, name_span) = self.expect_ident()?;
+                Some((name, name_span))
+            }
+            Some(Token::Abstract) => {
+                self.advance();
+                None
+            }
             other => {
                 return Err(Diagnostic {
                     code: DiagCode::UnsupportedSyntax,
@@ -83,7 +89,52 @@ impl Parser {
                     span: self.peek_span(),
                 });
             }
+        };
+
+        let _ = self.consume_typescript_generic_parameter_list()?;
+
+        // Collect heritage type names from extends clause
+        let mut heritage_names: Vec<String> = Vec::new();
+        if matches!(self.peek(), Some(Token::Extends)) {
+            self.advance();
+            let mut angle_depth = 0u32;
+            loop {
+                match self.peek() {
+                    Some(Token::LeftBrace) => break,
+                    Some(Token::Ident(name)) if angle_depth == 0 => {
+                        heritage_names.push(name.clone());
+                        self.advance();
+                    }
+                    Some(Token::Less) => {
+                        angle_depth += 1;
+                        self.advance();
+                    }
+                    Some(Token::Greater) => {
+                        if angle_depth > 0 {
+                            angle_depth -= 1;
+                        }
+                        self.advance();
+                    }
+                    Some(Token::Comma) if angle_depth == 0 => {
+                        self.advance();
+                    }
+                    Some(_) => {
+                        self.advance();
+                    }
+                    None => break,
+                }
+            }
         }
+
+        // Check for private member conflicts in heritage types
+        if let Some((ref iface_name, ref iface_name_span)) = interface_name {
+            self.check_interface_private_member_clash(
+                iface_name,
+                *iface_name_span,
+                &heritage_names,
+            )?;
+        }
+
         while !self.is_at_end() && !matches!(self.peek(), Some(Token::LeftBrace)) {
             self.advance();
         }
@@ -97,6 +148,38 @@ impl Parser {
 
         self.skip_balanced_brace_block(interface_span)?;
         self.consume(TokenKind::Semicolon);
+        Ok(())
+    }
+
+    fn check_interface_private_member_clash(
+        &self,
+        interface_name: &str,
+        interface_name_span: Span,
+        heritage_names: &[String],
+    ) -> Result<(), Diagnostic> {
+        for i in 0..heritage_names.len() {
+            for j in (i + 1)..heritage_names.len() {
+                let name_i = &heritage_names[i];
+                let name_j = &heritage_names[j];
+                if let (Some(fields_i), Some(fields_j)) = (
+                    self.class_private_fields.get(name_i.as_str()),
+                    self.class_private_fields.get(name_j.as_str()),
+                ) {
+                    for field in fields_i {
+                        if fields_j.contains(field) {
+                            return Err(Diagnostic {
+                                code: DiagCode::TypeScriptTypeCheck,
+                                message: format!(
+                                    "TS2320: Interface '{}' cannot simultaneously extend types '{}' and '{}'.\n  Named property '{}' of types '{}' and '{}' are not identical.",
+                                    interface_name, name_i, name_j, field, name_i, name_j
+                                ),
+                                span: Some(interface_name_span),
+                            });
+                        }
+                    }
+                }
+            }
+        }
         Ok(())
     }
 

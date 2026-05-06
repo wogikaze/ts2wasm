@@ -5,7 +5,7 @@ use crate::{
     Stmt, Token, TokenKind, UnaryOp,
     ast::{ClassPrivateElement, ClassStaticBlock, ReExportNamespaceSpecifier},
 };
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 
 pub struct Parser {
     tokens: Vec<SpannedToken>,
@@ -20,6 +20,8 @@ pub struct Parser {
     /// Whether we are inside an async function body (for context-sensitive `await` parsing).
     in_async_fn: bool,
     fn_depth: u32,
+    /// Maps class names to their TypeScript-`private` field names (erased at runtime).
+    class_private_fields: HashMap<String, Vec<String>>,
 }
 
 /// For each token, check if there is a line terminator between the previous
