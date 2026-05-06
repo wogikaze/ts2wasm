@@ -1436,7 +1436,7 @@ fn resolve_expr(expr: &Expr) -> Result<ResolvedExpr, Diagnostic> {
                     | UnaryOp::PreIncrement
                     | UnaryOp::PreDecrement
             ) {
-                return Err(increment_update_diagnostic(*span));
+                return resolve_update_expr_statement(expr);
             }
             if expr_contains_bigint(expr) {
                 let resolved = resolve_expr(expr)?;
