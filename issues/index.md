@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 5 | 4 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4527 | 3594 | 933 |
+| frontend | 4527 | 3593 | 934 |
 | harness | 1 | 0 | 1 |
 | ir | 64 | 42 | 22 |
 | issues | 4 | 0 | 4 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5171 | 3884 | 1287 |
+| total | 5171 | 3883 | 1288 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -564,7 +564,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 772 | Implement Augmentedtypesvar | spike | frontend/syntax | class: blocked | Implement Augmentedtypesvar |
 | 773 | Implement Autoasiforstaticsinclassdeclaration | spike | frontend/syntax | class: triage-needed | Implement Autoasiforstaticsinclassdeclaration |
 | 775 | Implement Autotypeassignedusingdestructuringfromnevernocrash | spike | frontend/resolver | class: blocked | Implement Autotypeassignedusingdestructuringfromnevernocrash |
-| 1279 | Implement Collisioncodegenmodulewithmembervariable | spike | frontend/syntax | class: blocked | Implement Collisioncodegenmodulewithmembervariable |
 | 1280 | Implement Collisioncodegenmodulewithmethodchildren | spike | frontend/syntax | class: blocked | Implement Collisioncodegenmodulewithmethodchildren |
 | 1281 | Implement Collisioncodegenmodulewithmodulechildren | spike | frontend/syntax | class: blocked | Implement Collisioncodegenmodulewithmodulechildren |
 | 1282 | Implement Collisioncodegenmodulewithmodulereopening | spike | frontend/syntax | class: blocked | Implement Collisioncodegenmodulewithmodulereopening |
@@ -5027,6 +5026,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1276 | Implement Collisioncodegenmodulewithfunctionchildren | spike | frontend/syntax | see `issues/done/1276-implement-collisionCodeGenModuleWithFunctionChildren.md` |
 | 1277 | Implement Collisioncodegenmodulewithmemberclassconflict | spike | frontend/syntax | see `issues/done/1277-implement-collisionCodeGenModuleWithMemberClassConflict.md` |
 | 1278 | Implement Collisioncodegenmodulewithmemberinterfaceconflict | spike | frontend/syntax | see `issues/done/1278-implement-collisionCodeGenModuleWithMemberInterfaceConflict.md` |
+| 1279 | Implement Collisioncodegenmodulewithmembervariable | spike | frontend/syntax | see `issues/done/1279-implement-collisionCodeGenModuleWithMemberVariable.md` |
 | 1325 | Implement Collisionthisexpressionandlocalvarinconstructor | spike | frontend/syntax | see `issues/done/1325-implement-collisionThisExpressionAndLocalVarInConstructor.md` |
 | 1327 | Implement Collisionthisexpressionandlocalvarinlambda | spike | frontend/syntax | see `issues/done/1327-implement-collisionThisExpressionAndLocalVarInLambda.md` |
 | 1328 | Implement Collisionthisexpressionandlocalvarinmethod | spike | frontend/syntax | see `issues/done/1328-implement-collisionThisExpressionAndLocalVarInMethod.md` |
