@@ -290,7 +290,7 @@ impl Parser {
         star_span: Span,
     ) -> Result<Stmt, Diagnostic> {
         self.expect_contextual_keyword("as")?;
-        let (exported, exported_span) = self.expect_ident()?;
+        let (exported, exported_span) = self.expect_module_specifier_name()?;
         let namespace = ReExportNamespaceSpecifier {
             exported,
             exported_span,
@@ -471,9 +471,9 @@ impl Parser {
             return Ok(specifiers);
         }
         loop {
-            let (imported, imported_span) = self.expect_ident()?;
+            let (imported, imported_span) = self.expect_module_specifier_name()?;
             let (local, local_span) = if self.consume_contextual_keyword("as") {
-                self.expect_ident()?
+                self.expect_module_specifier_name()?
             } else {
                 (imported.clone(), imported_span)
             };
@@ -507,9 +507,9 @@ impl Parser {
             return Ok(specifiers);
         }
         loop {
-            let (imported, imported_span) = self.expect_ident()?;
+            let (imported, imported_span) = self.expect_module_specifier_name()?;
             let (exported, exported_span) = if self.consume_contextual_keyword("as") {
-                self.expect_ident()?
+                self.expect_module_specifier_name()?
             } else {
                 (imported.clone(), imported_span)
             };

@@ -59,6 +59,27 @@ impl Parser {
         }
     }
 
+    /// Expect a module specifier name: identifier or string literal.
+    /// TypeScript allows string-literal names in import/export specifiers,
+    /// e.g., `export { foo as "0n" }`.
+    fn expect_module_specifier_name(&mut self) -> Result<(String, Span), Diagnostic> {
+        match self.advance() {
+            Some(SpannedToken {
+                kind: Token::Ident(name),
+                span,
+            }) => Ok((name, span)),
+            Some(SpannedToken {
+                kind: Token::String(value),
+                span,
+            }) => Ok((value, span)),
+            other => Err(Diagnostic {
+                code: DiagCode::UnsupportedSyntax,
+                message: format!("expected identifier or string literal, got {other:?}"),
+                span: self.peek_span(),
+            }),
+        }
+    }
+
     /// Expect a property name token: identifier, number literal, string literal,
     /// or any keyword token (which can be used as a property name in JavaScript).
     /// Returns the string representation (e.g., `"0"`, `"foo"`, `"const"`) and span.
