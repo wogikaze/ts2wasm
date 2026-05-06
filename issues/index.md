@@ -18,7 +18,7 @@ Issue files are the source of truth for work items. The generated section below 
 | docs | 2 | 0 | 2 |
 | frontend | 4438 | 3737 | 701 |
 | harness | 1 | 0 | 1 |
-| ir | 41 | 12 | 29 |
+| ir | 41 | 11 | 30 |
 | issues | 5 | 0 | 5 |
 | parser | 1 | 0 | 1 |
 | reference | 211 | 163 | 48 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5064 | 4006 | 1058 |
+| total | 5064 | 4005 | 1059 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -116,7 +116,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5179 | Report implicit this before closure runtime guard | feature | frontend/semantics | implementation-ready | P1 |  | a TypeScript implicit-`this` diagnostic is hidden by the nested-function closure runtime-subset guard. |
 | 5183 | Report typed getter null return diagnostics | feature | frontend/semantics | implementation-ready | P1 |  | typed class getter return annotations are erased before return-expression diagnostics are checked. |
 | 5185 | Source-span unresolved class method function calls | feature | frontend/resolver | implementation-ready | P1 |  | unresolved function calls from class method bodies lose source-span information and should report the out-of-scope ca... |
-| 5192 | Support first-class class constructor values | feature | ir/runtime | implementation-ready | P1 |  | class constructor bindings used as expression values still fail with `issue-5011`, blocking reference cases that pass... |
 | 5195 | Support callable interface-typed local calls | feature | ir/lowering | implementation-ready | P1 |  | callable interface-typed locals currently lower to `Undefined` values and calls to them stop with `issue-211`. |
 | 5196 | Support callable conditional-typed parameter calls | feature | ir/lowering | implementation-ready | P1 |  | callable parameters typed through conditional type aliases currently fall into the generic `issue-211` function-value... |
 | 5197 | Report class called without new | feature | frontend/resolver | implementation-ready | P1 |  | direct calls to class constructors without `new` currently report generic `issue-5011` class-value unsupported diagno... |
@@ -5159,6 +5158,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5189 | Parse ASI after class expression variable initializer | feature | frontend/syntax | see `issues/done/5189-parse-asi-after-class-expression-variable-initializer.md` |
 | 5190 | Skip implements in ambient class declarations | feature | frontend/syntax | see `issues/done/5190-skip-implements-in-ambient-class-declarations.md` |
 | 5191 | Parse leading decimal numeric literals | feature | frontend/syntax | see `issues/done/5191-parse-leading-decimal-numeric-literals.md` |
+| 5192 | Support first-class class constructor values | feature | ir/runtime | see `issues/done/5192-support-first-class-class-constructor-values.md` |
 | 5193 | Parse ASI after ambient variable declarations | feature | frontend/syntax | see `issues/done/5193-parse-asi-after-ambient-variable-declarations.md` |
 | 5194 | Report empty call type arguments | feature | frontend/syntax | see `issues/done/5194-report-empty-call-type-arguments.md` |
 | 5205 | Restore backend residual expression rejection | bug | backend-wasm | see `issues/done/5205-restore-backend-residual-expression-rejection.md` |

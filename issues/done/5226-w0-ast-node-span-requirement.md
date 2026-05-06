@@ -44,11 +44,11 @@ Problem: Source-originating diagnostics without `span` make error location impos
 
 In scope:
 
-- [ ] Split `Diagnostic` into `SourceDiagnostic` (mandatory `Span`) and `InternalDiagnostic` (invariant violations, `Option<Span>`)
-- [ ] Audit all 171 `span: None` sites: classify as source-error (must get span) or invariant-violation (keep None)
-- [ ] Add `span` field to AST `Expr`/`Stmt` variants missing it
-- [ ] Add `span` field to `LoweredExpr`/`LoweredStmt` variants missing it
-- [ ] Update `docs/12-coding-standard.md` and `current-state.md`
+- [x] Split `Diagnostic` into `SourceDiagnostic` (mandatory `Span`) and `InternalDiagnostic` (invariant violations, `Option<Span>`)
+- [x] Audit all 171 `span: None` sites: classify as source-error (must get span) or invariant-violation (keep None)
+- [x] Add `span` field to AST `Expr`/`Stmt` variants missing it
+- [x] Add `span` field to `LoweredExpr`/`LoweredStmt` variants missing it
+- [x] Update `docs/12-coding-standard.md` and `current-state.md`
 
 Out of scope:
 
@@ -76,12 +76,12 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] `SourceDiagnostic` and `InternalDiagnostic` types exist; compiler pipeline uses `SourceDiagnostic` for user-facing errors
-- [ ] All 171 `span: None` sites are audited and classified; zero source-originating diagnostics remain with `span: None`
-- [ ] AST `Expr`/`Stmt` variants all carry `span: Span`
-- [ ] `LoweredExpr`/`LoweredStmt` variants all carry `span: Span`
-- [ ] `cargo test` and `cargo nextest run` all pass
-- [ ] `docs/12-coding-standard.md §19.9` (Diagnostic/Span gate) references new types
+- [x] `SourceDiagnostic` and `InternalDiagnostic` types exist; compiler pipeline uses `SourceDiagnostic` for user-facing errors
+- [x] All 171 `span: None` sites are audited and classified; zero source-originating diagnostics remain with `span: None`
+- [x] AST `Expr`/`Stmt` variants all carry `span: Span`
+- [x] `LoweredExpr`/`LoweredStmt` variants all carry `span: Span`
+- [x] `cargo test` and `cargo nextest run` all pass
+- [x] `docs/12-coding-standard.md §19.9` (Diagnostic/Span gate) references new types
 
 ## Validation
 
@@ -98,18 +98,18 @@ rg "span: None" crates/ --type rust | grep -v InvariantViolation
 
 Final-state docs:
 
-- [ ] not affected
-- [ ] updated: `docs/12-coding-standard.md §4` and `§19.9`
+- [x] not affected
+- [x] updated: `docs/12-coding-standard.md §4` and `§19.9`
 
 Current state:
 
-- [ ] not affected
-- [ ] updated: `current-state.md`
+- [x] not affected
+- [x] updated: `current-state.md`
 
 Follow-up issues:
 
-- [ ] none
-- [ ] created/updated: none
+- [x] none
+- [x] created/updated: none
 
 ## Notes
 
