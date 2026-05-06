@@ -134,7 +134,7 @@ Follow-up issues:
 - `issues/done/1044-implement-bestCommonTypeWithContextualTyping.md` - Implement Bestcommontypewithcontextualtyping (same feature label, same group key, title overlap)
 - `issues/done/1048-implement-bigint.md` - Implement Bigint (same feature label, same group key, title overlap)
 - `issues/done/1051-implement-bigintIndex.md` - Implement Bigintindex (same feature label, same group key, title overlap)
-- `issues/open/1061-implement-bindingPatternContextualTypeDoesNotCauseWidening.md` - Implement Bindingpatterncontextualtypedoesnotcausewidening (same feature label, same group key, title overlap)
+- `issues/done/1061-implement-bindingPatternContextualTypeDoesNotCauseWidening.md` - Implement Bindingpatterncontextualtypedoesnotcausewidening (same feature label, same group key, title overlap)
 - `issues/open/1068-implement-blockScopedBindingsReassignedInLoop-name-resolution.md` - Implement Blockscopedbindingsreassignedinloop Name Resolution (same feature label, same group key, title overlap)
 
 ## Smart triage
