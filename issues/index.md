@@ -18,7 +18,7 @@ Issue files are the source of truth for work items. The generated section below 
 | docs | 4 | 2 | 2 |
 | frontend | 4438 | 3713 | 725 |
 | harness | 1 | 0 | 1 |
-| ir | 42 | 5 | 37 |
+| ir | 42 | 4 | 38 |
 | issues | 5 | 0 | 5 |
 | parser | 1 | 0 | 1 |
 | reference | 211 | 163 | 48 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 8 | 1 | 7 |
 | wasi | 4 | 3 | 1 |
-| total | 5076 | 3982 | 1094 |
+| total | 5076 | 3981 | 1095 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -100,7 +100,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5138 | Split Reflect.construct isConstructor reference window | spike | runtime/builtins | design-ready | P1 |  | `reference/test262/test/annexB/built-ins/String/prototype/anchor/not-a-constructor.js` currently fails with `Unresolv... |
 | 5207 | Support ambient interface filter receivers | feature | frontend/semantics | implementation-ready | P2 |  | `reference/typescript/tests/cases/compiler/booleanFilterAnyArray.ts` now reports `issue-211: unknown receiver class f... |
 | 5208 | Support RegExp match fallback array map receivers | feature | frontend/semantics | implementation-ready | P2 |  | locals initialized from RegExp match fallback expressions are not classified as array-like receivers for supported `.... |
-| 5209 | Support class instance method receiver calls | feature | ir/lowered | implementation-ready | P1 |  | class instance method calls such as `instance.once(...)` currently fail with `issue-211: unknown receiver class for m... |
 | 5210 | Sparse array holes handling for Array.prototype.map | feature | runtime/builtins | implementation-ready | P2 |  | current `Array.prototype.map` implementation only supports dense |
 | 5230 | W0: mandatory span on LoweredExpr and LoweredStmt variants | refactor | ir | design-ready | P1 |  | W0: mandatory span on LoweredExpr and LoweredStmt variants |
 | 5231 | W0: migrate expr_emit.rs remaining raw WAT to typed writer | cleanup | backend | design-ready | P2 | 5225 | 274 escape-hatch `push_str` calls in `expr_emit.rs` prevent full typed-WAT coverage. |
@@ -5168,6 +5167,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5204 | Resolve lexical super property captures in super call arguments | feature | frontend/resolver | see `issues/done/5204-resolve-lexical-super-property-captures-in-super-call-arguments.md` |
 | 5205 | Restore backend residual expression rejection | bug | backend-wasm | see `issues/done/5205-restore-backend-residual-expression-rejection.md` |
 | 5206 | Resolve issue ID collisions and open/done conflicts | cleanup | issues | see `issues/done/5206-resolve-issue-id-collisions-and-open-done-conflicts.md` |
+| 5209 | Support class instance method receiver calls | feature | ir/lowered | see `issues/done/5209-support-class-instance-method-receiver-calls.md` |
 | 5213 | Implement generator function syntax prerequisite for iterator spread | feature | frontend/syntax | see `issues/done/5213-generator-function-syntax-prerequisite-for-iterator-spread.md` |
 | 5215 | Fix array includes WAT stack mismatch | bug | runtime/builtins | see `issues/done/5215-fix-array-includes-wat-stack-mismatch.md` |
 | 5216 | Allow extra arguments for functions reading arguments object | bug | ir/semantics | see `issues/done/5216-allow-extra-arguments-for-functions-reading-arguments-object.md` |
