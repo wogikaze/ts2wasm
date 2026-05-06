@@ -36,18 +36,18 @@ This means any diagnostic emitted from the lowered IR layer cannot report a sour
 
 In scope:
 
-- [ ] Add `span: Span` to all 37 `LoweredExpr` tuple/struct variants
-- [ ] Add `span: Span` to all 18 `LoweredStmt` tuple/struct variants
-- [ ] Update resolver_expr.rs (~100 construction sites)
-- [ ] Update resolver_extra.rs (~50 construction sites)
-- [ ] Update resolver.rs (~20 construction sites)
-- [ ] Update program.rs (~20 construction sites)
-- [ ] Update program_builtins.rs (~10 construction sites)
-- [ ] Update validate.rs match patterns (~30)
-- [ ] Update expr_emit.rs match patterns (~80)
-- [ ] Update emitter.rs match patterns (~30)
-- [ ] Update any other LoweredExpr/LoweredStmt match sites
-- [ ] `cargo test` and `cargo nextest run` all pass
+- [x] Add `span: Span` to all 37 `LoweredExpr` tuple/struct variants
+- [x] Add `span: Span` to all 18 `LoweredStmt` tuple/struct variants
+- [x] Update resolver_expr.rs (~100 construction sites)
+- [x] Update resolver_extra.rs (~50 construction sites)
+- [x] Update resolver.rs (~20 construction sites)
+- [x] Update program.rs (~20 construction sites)
+- [x] Update program_builtins.rs (~10 construction sites)
+- [x] Update validate.rs match patterns (~30)
+- [x] Update expr_emit.rs match patterns (~80)
+- [x] Update emitter.rs match patterns (~30)
+- [x] Update any other LoweredExpr/LoweredStmt match sites
+- [x] `cargo test` and `cargo nextest run` all pass
 
 Out of scope:
 

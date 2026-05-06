@@ -45,10 +45,10 @@ Expected:
 
 ## Acceptance criteria
 
-- [ ] WASI fd_read is emitted instead of Node host import for stdin
-- [ ] fd_read import is conditional (absent when program doesn't read stdin)
-- [ ] Standalone fixture reads stdin and confirms WASI-only execution
-- [ ] Capability manifest shows wasi.stdin instead of node host import
+- [x] WASI fd_read is emitted instead of Node host import for stdin
+- [x] fd_read import is conditional (absent when program doesn't read stdin)
+- [x] Standalone fixture reads stdin and confirms WASI-only execution
+- [x] Capability manifest shows wasi.stdin instead of node host import
 
 ## Validation
 

@@ -43,13 +43,13 @@ Problem: Stale "未実装" entries prevent accurate W2 gate assessment.
 
 In scope:
 
-- [ ] Mark `void` operator as "実装済み" in javascript-features.md
-- [ ] Mark `for...of` as "実装済み" in javascript-features.md
-- [ ] Mark `for...in` as "部分実装 (runtime trap)" in javascript-features.md
-- [ ] Verify `void` fixture is included in m2_node_diff assertions
-- [ ] Verify `for...of` fixture is included in m2_node_diff assertions
-- [ ] Update `docs/05-compatibility-and-semantics.md` if W2 semantic coverage is incomplete
-- [ ] `current-state.md` update
+- [x] Mark `void` operator as "実装済み" in javascript-features.md
+- [x] Mark `for...of` as "実装済み" in javascript-features.md
+- [x] Mark `for...in` as "部分実装 (runtime trap)" in javascript-features.md
+- [x] Verify `void` fixture is included in m2_node_diff assertions
+- [x] Verify `for...of` fixture is included in m2_node_diff assertions
+- [x] Update `docs/05-compatibility-and-semantics.md` if W2 semantic coverage is incomplete
+- [x] `current-state.md` update
 
 Out of scope:
 
@@ -72,12 +72,12 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] `void` operator row is "実装済み" in javascript-features.md
-- [ ] `for...of` row is "実装済み" in javascript-features.md
-- [ ] `for...in` row is "部分実装 (runtime trap)" in javascript-features.md
-- [ ] All W2-scope operators have at least one fixture in the Node differential suite
-- [ ] `cargo fmt --all --check` passes
-- [ ] `cargo nextest run` passes
+- [x] `void` operator row is "実装済み" in javascript-features.md
+- [x] `for...of` row is "実装済み" in javascript-features.md
+- [x] `for...in` row is "部分実装 (runtime trap)" in javascript-features.md
+- [x] All W2-scope operators have at least one fixture in the Node differential suite
+- [x] `cargo fmt --all --check` passes
+- [x] `cargo nextest run` passes
 
 ## Validation
 
@@ -94,15 +94,15 @@ grep "for-of" crates/cli/tests/common/m2_node_diff_fixture_tests.rs
 
 Final-state docs:
 
-- [ ] not affected
-- [ ] updated: `docs/language-reference/javascript-features.md`
+- [x] not affected
+- [x] updated: `docs/language-reference/javascript-features.md`
 
 Current state:
 
-- [ ] not affected
-- [ ] updated: `current-state.md`
+- [x] not affected
+- [x] updated: `current-state.md`
 
 Follow-up issues:
 
-- [ ] none
-- [ ] created/updated: W2 semantic core completeness (5242)
+- [x] none
+- [x] created/updated: W2 semantic core completeness (5242)
