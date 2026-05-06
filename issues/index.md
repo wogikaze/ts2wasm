@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 1 | 0 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4400 | 3777 | 623 |
+| frontend | 4401 | 3777 | 624 |
 | harness | 1 | 0 | 1 |
 | ir | 30 | 8 | 22 |
 | issues | 4 | 0 | 4 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5005 | 4046 | 959 |
+| total | 5006 | 4046 | 960 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -47,7 +47,7 @@ Issue files are the source of truth for work items. The generated section below 
 Direct child counts are derived from issue-file `depends_on` links. A meta issue can be `done` as a classification/design umbrella while implementation child issues remain open.
 
 ```
-5000 (Meta: TypeScript Compiler Parser Syntax Coverage) [done/design] ch:495 open:428 done:67
+5000 (Meta: TypeScript Compiler Parser Syntax Coverage) [done/design] ch:494 open:427 done:67
 ├── 5002 (Meta: TypeScript Compiler Type System Coverage) [done/done] ch:242 open:234 done:8 (also ← 5005)
 ├── 5003 (Meta: TypeScript Compiler Declaration Emit Coverage) [done/done] ch:103 open:92 done:11 (also ← 5001)
 5001 (Meta: TypeScript Compiler Semantic Analysis Coverage) [done/done] ch:614 open:367 done:247
@@ -66,7 +66,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 
 | Order | ID | Title | State | Class | Area | Priority | Depends on | Direct children | Open children | Done children |
 |-----:|---:|------|-------|-------|------|--------:|-----------:|----------------:|--------------:|--------------:|
-| 1 | 5000 | Meta: TypeScript Compiler Parser Syntax Coverage | done | design | frontend/syntax | P1 | - | 495 | 428 | 67 |
+| 1 | 5000 | Meta: TypeScript Compiler Parser Syntax Coverage | done | design | frontend/syntax | P1 | - | 494 | 427 | 67 |
 | 2 | 5001 | Meta: TypeScript Compiler Semantic Analysis Coverage | done | done | frontend/semantics | P1 | - | 614 | 367 | 247 |
 | 3 | 5004 | Meta: Runtime Builtins Coverage (test262) (audit reopened #5004) | done | done | runtime/builtins | P1 | - | 24 | 3 | 21 |
 | 4 | 5005 | Meta: TypeScript Compiler Name Resolution Coverage | done | done | frontend/resolver | P1 | - | 442 | 395 | 47 |
@@ -125,6 +125,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5168 | Report BigInt property-name diagnostics | feature | frontend/syntax | implementation-ready | P1 |  | `reference/typescript/tests/cases/compiler/bigintPropertyName.ts` currently reports `UnsupportedSyntax: expected iden... |
 | 5169 | Parse ASI after expression statement | feature | frontend/syntax | implementation-ready | P1 |  | the BigInt lib reference cases report `UnsupportedSyntax: expected Semicolon, got Some(Let)` after: |
 | 5170 | Support bitwise OR binary lowering | feature | ir/lowering | implementation-ready | P1 |  | ordinary number/null/undefined bitwise OR expressions parse successfully but cannot be lowered. |
+| 5171 | Accept unsigned 32-bit hex literals | feature | frontend/lexer | implementation-ready | P1 |  | non-decimal number literals above `i32::MAX` are rejected during lexing, so parser and lowering triage cannot reach t... |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -401,7 +402,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 772 | Implement Augmentedtypesvar | spike | frontend/syntax | class: blocked | Implement Augmentedtypesvar |
 | 773 | Implement Autoasiforstaticsinclassdeclaration | spike | frontend/syntax | class: triage-needed | Implement Autoasiforstaticsinclassdeclaration |
 | 775 | Implement Autotypeassignedusingdestructuringfromnevernocrash | spike | frontend/resolver | class: blocked | Implement Autotypeassignedusingdestructuringfromnevernocrash |
-| 1056 | Implement Binaryarithmeticcontrolflowgraphnottoolarge | spike | frontend/syntax | class: blocked | Implement Binaryarithmeticcontrolflowgraphnottoolarge |
 | 1057 | Implement Bind | spike | frontend/syntax | class: blocked | Implement Bind |
 | 1058 | Implement Binderbinaryexpressionstress | spike | reference/triage | class: triage-needed | Implement Binderbinaryexpressionstress |
 | 1059 | Implement Binderbinaryexpressionstressjs | spike | reference/triage | class: triage-needed | Implement Binderbinaryexpressionstressjs |
@@ -4963,6 +4963,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1053 | Implement Bigintwithlib | spike | runtime/builtins | see `issues/done/1053-implement-bigintWithLib.md` |
 | 1054 | Implement Bigintwithoutlib | spike | runtime/builtins | see `issues/done/1054-implement-bigintWithoutLib.md` |
 | 1055 | Implement Binaryarithmatic | spike | frontend/syntax | see `issues/done/1055-implement-binaryArithmatic.md` |
+| 1056 | Implement Binaryarithmeticcontrolflowgraphnottoolarge | spike | frontend/syntax | see `issues/done/1056-implement-binaryArithmeticControlFlowGraphNotTooLarge.md` |
 | 2050 | Implement Duplicatelocalvariable Duplicate Local | spike | reference/triage | see `issues/done/2050-implement-duplicateLocalVariable-duplicate-local.md` |
 | 3002 | Implement Isolateddeclarationerrorsdefault | spike | runtime/builtins | see `issues/done/3002-implement-isolatedDeclarationErrorsDefault.md` |
 | 3131 | Implement Jsxfactorynotidentifierorqualifiedname | spike | reference/triage | see `issues/done/3131-implement-jsxFactoryNotIdentifierOrQualifiedName.md` |

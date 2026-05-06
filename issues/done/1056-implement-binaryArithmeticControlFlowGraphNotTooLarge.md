@@ -3,12 +3,14 @@ id: 1056
 title: "Implement Binaryarithmeticcontrolflowgraphnottoolarge"
 type: spike
 area: frontend/syntax
-class: blocked
+class: superseded
 priority: P1
-depends_on: [5000]
+depends_on: [5171]
 blocks: []
 created: 2026-05-01
-updated: 2026-05-01
+updated: 2026-05-06
+status: done
+completed: 2026-05-06
 ---
 
 ## Summary
@@ -43,10 +45,10 @@ This generated bucket is either split into implementation-ready child issues or 
 
 In scope:
 
-- [ ] Inspect the smart triage report below
-- [ ] Confirm whether existing open/done issues already cover this bucket
-- [ ] Split one feature family, one observable behavior, or one fixed reference window into child issues
-- [ ] Preserve exact reproduction commands and representative AST/diagnostic evidence in each child issue
+- [x] Inspect the smart triage report below
+- [x] Confirm whether existing open/done issues already cover this bucket
+- [x] Split one feature family, one observable behavior, or one fixed reference window into child issues
+- [x] Preserve exact reproduction commands and representative AST/diagnostic evidence in each child issue
 
 Out of scope:
 
@@ -68,10 +70,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] Duplicate candidates below are confirmed as no-match or this issue is superseded
-- [ ] At least one child issue contains an exact `mise run reference-triage -- ...` command
-- [ ] Child issue includes failing path, diagnostic code, source context, visible symbols, and parser/TypeScript AST evidence
-- [ ] Child issue acceptance names the exact fixture/reference path and diagnostic/stdout change
+- [x] Duplicate candidates below are confirmed as no-match or this issue is superseded
+- [x] At least one child issue contains an exact `mise run reference-triage -- ...` command
+- [x] Child issue includes failing path, diagnostic code, source context, visible symbols, and parser/TypeScript AST evidence
+- [x] Child issue acceptance names the exact fixture/reference path and diagnostic/stdout change
 
 ## Validation
 
@@ -98,15 +100,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] updated: `current-state.md` (repo root)
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] added: `issues/open/5171-accept-unsigned-32-bit-hex-literals.md`
 
 ## Notes
 
@@ -116,11 +118,21 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- none found by path/title/feature scan
+- `issues/done/243-implement-numeric-literal-separator-parser.md` is not a match: it covers numeric separators, not large hexadecimal literal magnitude.
+- `issues/open/059-implement-parser-syntax-extensions.md` is only a broad parser umbrella and is not an implementation-ready owner for this exact failure.
 
 ## Smart triage
 
-Not generated. Rerun with `--triage-limit 1` or higher.
+Generated on 2026-05-06.
+
+- Path: `reference/typescript/tests/cases/compiler/binaryArithmeticControlFlowGraphNotTooLarge.ts`
+- Diagnostic: `UnsupportedSyntax` / `parser-or-frontend-unsupported`
+- Failure: `invalid number literal: number too large to fit in target type at 298..308`
+- Source context: `d = ((a & 0xefcdab89) | (~a & 0x98badcfe)) + blocks[1] + 271733878;`
+- Visible symbols before failure: `foo`, `a`
+- Compiler evidence: token, AST, and resolved dumps fail at lexing before any parser or control-flow evidence is available.
+- TypeScript oracle: accepts the file with no diagnostics; AST path reaches `FirstLiteralToken` for `0xefcdab89` inside a binary expression.
+- Superseding child: `issues/open/5171-accept-unsigned-32-bit-hex-literals.md`
 
 ## Completion evidence
 
@@ -128,16 +140,16 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- `...`
+- `pending`
 
 Validation result:
 
 ```text
-command:
-result:
-date:
+command: python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/binaryArithmeticControlFlowGraphNotTooLarge.ts
+result: pass; current blocker identified as large hexadecimal numeric literal lexing, split to issue 5171
+date: 2026-05-06
 ```
 
 Remaining risks:
 
-- none
+- The reference file is large and likely has additional bitwise, shift, compound assignment, and control-flow blockers after issue 5171 advances past the first lexer failure.
