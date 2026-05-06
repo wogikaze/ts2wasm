@@ -1558,7 +1558,10 @@ impl Parser {
             let update = if self.consume(TokenKind::RightParen) {
                 None
             } else {
-                let expr = self.expression()?;
+                let mut expr = self.expression()?;
+                while self.consume(TokenKind::Comma) {
+                    expr = self.expression()?;
+                }
                 self.expect(TokenKind::RightParen)?;
                 Some(expr)
             };
