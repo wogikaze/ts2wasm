@@ -1095,13 +1095,13 @@ impl Parser {
                 },
             }
         };
-        let semi = self.expect(TokenKind::Semicolon)?;
+        let end = self.statement_terminator_end(expr.span().end)?;
         Ok(Stmt::Assign {
             name,
             expr,
             span: Span {
                 start: start.start,
-                end: semi.end,
+                end,
             },
         })
     }
