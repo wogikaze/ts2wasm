@@ -76,9 +76,9 @@ Any emitted WAT that references `$exception_pending` declares the corresponding 
 
 In scope:
 
-- [ ] Make top-level statement exception guards select the exception runtime global contract, or otherwise avoid emitting the guard when the global is not present.
-- [ ] Add a backend/runtime-link regression that catches `$exception_pending` references without declarations.
-- [ ] Add or update a reference/fixture regression for `baseTypeAfterDerivedType.ts` or an equivalent class method/rest-parameter top-level statement program.
+- [x] Make top-level statement exception guards select the exception runtime global contract, or otherwise avoid emitting the guard when the global is not present.
+- [x] Add a backend/runtime-link regression that catches `$exception_pending` references without declarations.
+- [x] Add or update a reference/fixture regression for `baseTypeAfterDerivedType.ts` or an equivalent class method/rest-parameter top-level statement program.
 
 Out of scope:
 
@@ -102,10 +102,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] `cargo run -q -p ts2wasm-cli -- build reference/typescript/tests/cases/compiler/baseTypeAfterDerivedType.ts -o /tmp/ts2wasm-1038-baseTypeAfterDerivedType.wasm` no longer fails with `undefined global variable "$exception_pending"`.
-- [ ] A regression asserts that emitted WAT cannot reference `$exception_pending` without declaring it.
-- [ ] `python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/baseTypeAfterDerivedType.ts` no longer reports the same `BackendIo`/`wat2wasm failed` diagnostic.
-- [ ] Runtime-link structure tests cover the selected exception global path.
+- [x] `cargo run -q -p ts2wasm-cli -- build reference/typescript/tests/cases/compiler/baseTypeAfterDerivedType.ts -o /tmp/ts2wasm-1038-baseTypeAfterDerivedType.wasm` no longer fails with `undefined global variable "$exception_pending"`.
+- [x] A regression asserts that emitted WAT cannot reference `$exception_pending` without declaring it.
+- [x] `python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/baseTypeAfterDerivedType.ts` no longer reports the same `BackendIo`/`wat2wasm failed` diagnostic.
+- [x] Runtime-link structure tests cover the selected exception global path.
 
 ## Validation
 
@@ -132,15 +132,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 
@@ -152,14 +152,26 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- `...`
+- closure commit: issues: close exception pending runtime link
 
 Validation result:
 
 ```text
-command:
-result:
-date:
+command: cargo fmt --all --check
+result: pass
+date: 2026-05-06
+
+command: cargo nextest run -p ts2wasm-backend-wasm
+result: pass; 38 tests passed
+date: 2026-05-06
+
+command: python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/baseTypeAfterDerivedType.ts
+result: pass for issue 5155; BuildPass, no BackendIo/wat2wasm missing `$exception_pending` diagnostic
+date: 2026-05-06
+
+command: cargo run -q -p ts2wasm-cli -- build reference/typescript/tests/cases/compiler/baseTypeAfterDerivedType.ts -o /tmp/ts2wasm-1038-baseTypeAfterDerivedType.wasm
+result: pass
+date: 2026-05-06
 ```
 
 Remaining risks:

@@ -11,7 +11,7 @@ Issue files are the source of truth for work items. The generated section below 
 |---|---:|---:|---:|
 | abi | 7 | 0 | 7 |
 | backend | 13 | 1 | 12 |
-| backend-wasm | 3 | 1 | 2 |
+| backend-wasm | 3 | 0 | 3 |
 | cli | 15 | 0 | 15 |
 | compiler | 3 | 1 | 2 |
 | coverage | 42 | 0 | 42 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5059 | 4019 | 1040 |
+| total | 5059 | 4018 | 1041 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -103,7 +103,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5147 | Report await expression context errors before runtime diagnostics | feature | frontend/syntax | implementation-ready | P2 |  | `await <literal>` in a non-async function currently fails with `UnsupportedRuntimeSubset` instead of a TypeScript-ali... |
 | 5152 | Support class constructor outer callback captures | feature | ir | implementation-ready | P1 |  | class constructors cannot currently call outer callback locals when nested arrow callbacks capture constructor `this`. |
 | 5154 | Parse angle-bracket type assertion statements | feature | frontend/syntax | implementation-ready | P1 |  | top-level `<T>expr;` type assertion statements currently fail parsing instead of erasing the type assertion. |
-| 5155 | Fix exception_pending runtime link for top-level statement checks | bug | backend-wasm | implementation-ready | P1 |  | `reference/typescript/tests/cases/compiler/baseTypeAfterDerivedType.ts` reaches backend emission, then `wat2wasm` fai... |
 | 5156 | Parse generic type arguments in class heritage clauses | feature | frontend/syntax | implementation-ready | P1 |  | `reference/typescript/tests/cases/compiler/baseTypeOrderChecking.ts` fails parsing on `class Class4<T> extends Class3... |
 | 5157 | Report set accessor rest parameter diagnostics | feature | frontend/syntax | implementation-ready | P1 |  | `reference/typescript/tests/cases/compiler/accessorWithRestParam.ts` currently reaches backend emission and fails wit... |
 | 5158 | Report interface private member clashes | feature | frontend/resolver | implementation-ready | P1 |  | `reference/typescript/tests/cases/compiler/baseTypePrivateMemberClash.ts` currently reports `BackendIo` instead of a ... |
@@ -5149,6 +5148,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5150 | Report empty element access diagnostics | feature | frontend/syntax | see `issues/done/5150-report-empty-element-access-diagnostics.md` |
 | 5151 | Parse ASI after multiline const initializer | feature | frontend/syntax | see `issues/done/5151-parse-asi-after-multiline-const-initializer.md` |
 | 5153 | Erase union types in as assertions | feature | frontend/syntax | see `issues/done/5153-erase-union-types-in-as-assertions.md` |
+| 5155 | Fix exception_pending runtime link for top-level statement checks | bug | backend-wasm | see `issues/done/5155-fix-exception-pending-runtime-link-for-top-level-statements.md` |
 | 5160 | Lower plain ternary conditional expressions | feature | frontend/semantics | see `issues/done/5160-lower-plain-ternary-conditional-expressions.md` |
 | 5161 | Model ambient value declarations for name resolution | feature | frontend/resolver | see `issues/done/5161-model-ambient-value-declarations-for-name-resolution.md` |
 | 5164 | Parse exponentiation compound assignment | feature | frontend/syntax | see `issues/done/5164-parse-exponentiation-compound-assignment.md` |

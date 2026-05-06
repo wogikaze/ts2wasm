@@ -48,7 +48,7 @@ error: [BackendIo] wat2wasm failed
 
 ## Desired final state
 
-This generated bucket is closed as superseded by `issues/open/5155-fix-exception-pending-runtime-link-for-top-level-statements.md`. Do not implement directly from this bucket.
+This generated bucket is closed as superseded by `issues/done/5155-fix-exception-pending-runtime-link-for-top-level-statements.md`. Do not implement directly from this bucket.
 
 ## Scope
 
@@ -119,7 +119,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] created: `issues/open/5155-fix-exception-pending-runtime-link-for-top-level-statements.md`
+- [x] completed: `issues/done/5155-fix-exception-pending-runtime-link-for-top-level-statements.md`
 
 ## Notes
 
@@ -202,7 +202,7 @@ Issue 5155 now owns the concrete backend runtime-link contract: top-level statem
 
 Commits:
 
-- superseded by `issues/open/5155-fix-exception-pending-runtime-link-for-top-level-statements.md`
+- superseded by `issues/done/5155-fix-exception-pending-runtime-link-for-top-level-statements.md`
 
 Validation result:
 
@@ -218,4 +218,4 @@ date: 2026-05-06
 
 Remaining risks:
 
-- Issue 5155 still needs implementation.
+- none; issue 5155 is complete.
