@@ -344,6 +344,12 @@ impl Parser {
                     )
                 })?;
         }
+        if self.peek_contextual_keyword("implements") {
+            self.advance();
+            while !self.is_at_end() && !matches!(self.peek(), Some(Token::LeftBrace)) {
+                self.advance();
+            }
+        }
         self.skip_balanced_brace_block(declare_span)?;
         self.consume(TokenKind::Semicolon);
         Ok(())
