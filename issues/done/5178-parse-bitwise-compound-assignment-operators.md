@@ -143,7 +143,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] created: `issues/open/5221-support-bitwise-and-xor-binary-lowering.md`
+- [x] created: `issues/done/5221-support-bitwise-and-xor-binary-lowering.md`
 
 ## Notes
 

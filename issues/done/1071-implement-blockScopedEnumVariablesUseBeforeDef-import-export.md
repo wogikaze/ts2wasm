@@ -108,7 +108,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] superseded by: `issues/open/5184-parse-const-enum-declarations.md`
+- [x] superseded by: `issues/done/5184-parse-const-enum-declarations.md`
 
 ## Notes
 
@@ -128,7 +128,7 @@ Follow-up issues:
 - `issues/open/732-implement-assignmentCompatability-import-export.md` - Implement Assignmentcompatability Import Export (same feature label, title overlap)
 - `issues/open/766-implement-augmentedTypesEnum-import-export.md` - Implement Augmentedtypesenum Import Export (same feature label, title overlap)
 - `issues/done/055-implement-import-export.md` - Umbrella: implement import and export (same feature label, title overlap)
-- `issues/open/5184-parse-const-enum-declarations.md` is an exact match for the current compiler blocker. The current failure is not import/export module loading; it is the same `const enum` parser boundary split from bucket `1070`.
+- `issues/done/5184-parse-const-enum-declarations.md` is an exact match for the current compiler blocker. The current failure is not import/export module loading; it is the same `const enum` parser boundary split from bucket `1070`.
 
 ## Smart triage
 
@@ -142,7 +142,7 @@ Generated on 2026-05-06.
 - Compiler evidence: token dump includes `Const`, `Ident("enum")`, `Ident("E")`, `{`, member `A`, and `}`; AST/resolved construction fails before representing the enum declaration.
 - TypeScript oracle: `TS2450: Enum 'E' used before its declaration.`
 - TypeScript AST path at the current blocker: `FunctionDeclaration -> Block -> EnumDeclaration`
-- Superseded by child: `issues/open/5184-parse-const-enum-declarations.md`
+- Superseded by child: `issues/done/5184-parse-const-enum-declarations.md`
 
 ## Completion evidence
 
