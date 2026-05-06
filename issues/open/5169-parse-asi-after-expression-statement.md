@@ -13,11 +13,11 @@ updated: 2026-05-06
 
 ## Summary
 
-`bigintWithLib.ts` contains a completed expression statement without a semicolon, followed by a blank line and a `let` declaration. TypeScript accepts this through automatic semicolon insertion, but the parser currently expects an explicit `Semicolon` and fails at `let`.
+`bigintWithLib.ts` and `bigintWithoutLib.ts` contain a completed expression statement without a semicolon, followed by a blank line and a `let` declaration. TypeScript accepts this through automatic semicolon insertion, but the parser currently expects an explicit `Semicolon` and fails at `let`.
 
 ## Problem
 
-Problem: `reference/typescript/tests/cases/compiler/bigintWithLib.ts` reports `UnsupportedSyntax: expected Semicolon, got Some(Let)` after:
+Problem: the BigInt lib reference cases report `UnsupportedSyntax: expected Semicolon, got Some(Let)` after:
 
 ```ts
 stringVal = bigintVal.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })
@@ -25,18 +25,22 @@ stringVal = bigintVal.toLocaleString('de-DE', { style: 'currency', currency: 'EU
 let bigIntArray: BigInt64Array = new BigInt64Array();
 ```
 
+`bigintWithoutLib.ts` has the same ASI boundary with a trailing comment after the expression statement.
+
 ## Current failure
 
 Reference triage:
 
 ```sh
 python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/bigintWithLib.ts
+python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/bigintWithoutLib.ts
 ```
 
 Current compiler diagnostic:
 
 ```text
 UnsupportedSyntax: expected Semicolon, got Some(Let) at 660..663
+UnsupportedSyntax: expected Semicolon, got Some(Let) at 998..1001
 ```
 
 Compiler evidence:
@@ -90,6 +94,7 @@ Do not touch:
 - [ ] Parser tests cover line-terminator ASI after a completed call/member expression statement.
 - [ ] Existing invalid continuation cases remain rejected.
 - [ ] `python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/bigintWithLib.ts` no longer reports `expected Semicolon, got Some(Let)`.
+- [ ] `python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/bigintWithoutLib.ts` no longer reports `expected Semicolon, got Some(Let)`.
 
 ## Validation
 
@@ -99,6 +104,7 @@ Required commands:
 cargo fmt --all --check
 cargo nextest run -p ts2wasm-frontend
 python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/bigintWithLib.ts
+python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/bigintWithoutLib.ts
 ```
 
 Impacted commands:
@@ -127,7 +133,7 @@ Follow-up issues:
 
 ## Notes
 
-Split from generated bucket `1053` on 2026-05-06. Any BigInt library semantics that appear after this parser blocker should be triaged separately.
+Split from generated bucket `1053` on 2026-05-06 and expanded with generated bucket `1054` after both representative files stopped at the same expression-statement ASI boundary. Any BigInt library semantics that appear after this parser blocker should be triaged separately.
 
 ## Completion evidence
 
