@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 3 | 2 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4486 | 3676 | 810 |
+| frontend | 4487 | 3676 | 811 |
 | harness | 1 | 0 | 1 |
 | ir | 57 | 35 | 22 |
 | issues | 4 | 0 | 4 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5121 | 3960 | 1161 |
+| total | 5122 | 3960 | 1162 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -241,6 +241,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5284 | Bind plain enum declarations before member access | feature | frontend/syntax | implementation-ready | P1 |  | `enum Colors { Cornflower, FancyPink }` does not create a frontend |
 | 5285 | Support export var initializer declarations | feature | frontend/module-syntax | implementation-ready | P1 |  | `export var newVar = new extMod.m1.m2.c();` currently cannot be |
 | 5286 | Preserve class constructor parameters for new arity | feature | ir | implementation-ready | P1 |  | `new c2(10)` reports `ArityMismatch` because the lowered constructor |
+| 5287 | Bind namespace declarations for qualified value access | feature | frontend/name-resolution | implementation-ready | P1 |  | a same-file non-ambient namespace declaration is erased before it |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -632,7 +633,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1344 | Implement Commentleadingclosebrace | spike | frontend/resolver | class: blocked | Implement Commentleadingclosebrace |
 | 1345 | Implement Commentonambientmodule | spike | frontend/syntax | class: blocked | Implement Commentonambientmodule |
 | 1346 | Implement Commentonambientvariable | spike | frontend/resolver | class: blocked | Implement Commentonambientvariable |
-| 1371 | Implement Commentsmodules | spike | frontend/syntax | class: blocked | Implement Commentsmodules |
 | 1372 | Implement Commentsmultimodulemultifile | spike | frontend/syntax | class: blocked | Implement Commentsmultimodulemultifile |
 | 1373 | Implement Commentsmultimodulesinglefile | spike | frontend/syntax | class: blocked | Implement Commentsmultimodulesinglefile |
 | 1374 | Implement Commentsonobjectliteral Name Resolution | spike | frontend/resolver | class: blocked | Implement Commentsonobjectliteral Name Resolution |
@@ -5077,6 +5077,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1368 | Implement Commentsfunction | spike | frontend/syntax | see `issues/done/1368-implement-commentsFunction.md` |
 | 1369 | Implement Commentsinheritance | spike | frontend/syntax | see `issues/done/1369-implement-commentsInheritance.md` |
 | 1370 | Implement Commentsinterface | spike | frontend/syntax | see `issues/done/1370-implement-commentsInterface.md` |
+| 1371 | Implement Commentsmodules | spike | frontend/syntax | see `issues/done/1371-implement-commentsModules.md` |
 | 2050 | Implement Duplicatelocalvariable Duplicate Local | spike | reference/triage | see `issues/done/2050-implement-duplicateLocalVariable-duplicate-local.md` |
 | 3002 | Implement Isolateddeclarationerrorsdefault | spike | runtime/builtins | see `issues/done/3002-implement-isolatedDeclarationErrorsDefault.md` |
 | 3131 | Implement Jsxfactorynotidentifierorqualifiedname | spike | reference/triage | see `issues/done/3131-implement-jsxFactoryNotIdentifierOrQualifiedName.md` |
