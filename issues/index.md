@@ -16,9 +16,9 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 1 | 0 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4398 | 3777 | 621 |
+| frontend | 4398 | 3776 | 622 |
 | harness | 1 | 0 | 1 |
-| ir | 28 | 6 | 22 |
+| ir | 29 | 7 | 22 |
 | issues | 4 | 0 | 4 |
 | parser | 1 | 0 | 1 |
 | reference | 211 | 169 | 42 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5001 | 4047 | 954 |
+| total | 5002 | 4047 | 955 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -52,7 +52,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 ├── 5003 (Meta: TypeScript Compiler Declaration Emit Coverage) [done/done] ch:103 open:92 done:11 (also ← 5001)
 5001 (Meta: TypeScript Compiler Semantic Analysis Coverage) [done/done] ch:615 open:368 done:247
 5004 (Meta: Runtime Builtins Coverage (test262) (audit reopened #5004)) [done/done] ch:24 open:3 done:21
-5005 (Meta: TypeScript Compiler Name Resolution Coverage) [done/done] ch:443 open:396 done:47
+5005 (Meta: TypeScript Compiler Name Resolution Coverage) [done/done] ch:442 open:395 done:47
 ├── 5006 (Meta: TypeScript Compiler Scope Analysis Coverage) [done/done] ch:32 open:24 done:8
 ├── 5007 (Meta: TypeScript Compiler Module Resolution Coverage (audit reopened #5007)) [done/done] ch:21 open:19 done:2
 ```
@@ -69,7 +69,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1 | 5000 | Meta: TypeScript Compiler Parser Syntax Coverage | done | design | frontend/syntax | P1 | - | 495 | 428 | 67 |
 | 2 | 5001 | Meta: TypeScript Compiler Semantic Analysis Coverage | done | done | frontend/semantics | P1 | - | 615 | 368 | 247 |
 | 3 | 5004 | Meta: Runtime Builtins Coverage (test262) (audit reopened #5004) | done | done | runtime/builtins | P1 | - | 24 | 3 | 21 |
-| 4 | 5005 | Meta: TypeScript Compiler Name Resolution Coverage | done | done | frontend/resolver | P1 | - | 443 | 396 | 47 |
+| 4 | 5005 | Meta: TypeScript Compiler Name Resolution Coverage | done | done | frontend/resolver | P1 | - | 442 | 395 | 47 |
 | 5 | 5002 | Meta: TypeScript Compiler Type System Coverage | done | done | frontend/semantics | P1 | 5000, 5005 | 242 | 234 | 8 |
 | 6 | 5003 | Meta: TypeScript Compiler Declaration Emit Coverage | done | done | frontend/syntax | P2 | 5000, 5001 | 103 | 92 | 11 |
 | 7 | 5006 | Meta: TypeScript Compiler Scope Analysis Coverage | done | done | frontend/resolver | P2 | 5005 | 32 | 24 | 8 |
@@ -121,6 +121,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5164 | Parse exponentiation compound assignment | feature | frontend/syntax | implementation-ready | P1 |  | the BigInt target reference cases currently report `UnsupportedSyntax: expected Semicolon, got Some(PowerEqual)` for ... |
 | 5165 | Support typed array subarray builtins | feature | ir/builtin-resolver | implementation-ready | P1 |  | Support typed array subarray builtins |
 | 5166 | Parse string-literal module specifier aliases | feature | frontend/syntax | implementation-ready | P1 |  | `reference/typescript/tests/cases/compiler/bigintArbirtraryIdentifier.ts` currently reports `UnsupportedSyntax: expec... |
+| 5167 | Support global Symbol builtin call | feature | ir/builtin-resolver | implementation-ready | P1 |  | `reference/typescript/tests/cases/compiler/bigintIndex.ts` currently reports `UnresolvedFunction: unresolved function... |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -397,7 +398,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 772 | Implement Augmentedtypesvar | spike | frontend/syntax | class: blocked | Implement Augmentedtypesvar |
 | 773 | Implement Autoasiforstaticsinclassdeclaration | spike | frontend/syntax | class: triage-needed | Implement Autoasiforstaticsinclassdeclaration |
 | 775 | Implement Autotypeassignedusingdestructuringfromnevernocrash | spike | frontend/resolver | class: blocked | Implement Autotypeassignedusingdestructuringfromnevernocrash |
-| 1051 | Implement Bigintindex | spike | frontend/resolver | class: blocked | Implement Bigintindex |
 | 1052 | Implement Bigintpropertyname | spike | runtime/builtins | class: triage-needed | Implement Bigintpropertyname |
 | 1053 | Implement Bigintwithlib | spike | runtime/builtins | class: triage-needed | Implement Bigintwithlib |
 | 1054 | Implement Bigintwithoutlib | spike | runtime/builtins | class: triage-needed | Implement Bigintwithoutlib |
@@ -4959,6 +4959,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1048 | Implement Bigint | spike | frontend/resolver | see `issues/done/1048-implement-bigint.md` |
 | 1049 | Implement Bigintambientminimal | spike | runtime/builtins | see `issues/done/1049-implement-bigintAmbientMinimal.md` |
 | 1050 | Implement Bigintarbirtraryidentifier | spike | runtime/builtins | see `issues/done/1050-implement-bigintArbirtraryIdentifier.md` |
+| 1051 | Implement Bigintindex | spike | frontend/resolver | see `issues/done/1051-implement-bigintIndex.md` |
 | 2050 | Implement Duplicatelocalvariable Duplicate Local | spike | reference/triage | see `issues/done/2050-implement-duplicateLocalVariable-duplicate-local.md` |
 | 3002 | Implement Isolateddeclarationerrorsdefault | spike | runtime/builtins | see `issues/done/3002-implement-isolatedDeclarationErrorsDefault.md` |
 | 3131 | Implement Jsxfactorynotidentifierorqualifiedname | spike | reference/triage | see `issues/done/3131-implement-jsxFactoryNotIdentifierOrQualifiedName.md` |
