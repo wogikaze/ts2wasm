@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 3 | 2 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4480 | 3689 | 791 |
+| frontend | 4481 | 3689 | 792 |
 | harness | 1 | 0 | 1 |
 | ir | 54 | 32 | 22 |
 | issues | 4 | 0 | 4 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5112 | 3970 | 1142 |
+| total | 5113 | 3970 | 1143 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -232,6 +232,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5275 | Parse modified static class methods | feature | frontend | implementation-ready | P1 |  | Parse modified static class methods |
 | 5276 | Report class declaration decorator boundary | feature | frontend/lexer | implementation-ready | P1 |  | `commentOnDecoratedClassDeclaration.ts` stops in tokenization at the |
 | 5277 | Parse export enum declarations to enum boundary | feature | frontend/module-syntax | implementation-ready | P1 |  | `commentOnExportEnumDeclaration.ts` stops at `export` before the enum |
+| 5278 | Parse trailing comma in function parameters with comments | feature | frontend/syntax | implementation-ready | P1 |  | `commentOnParameter3.ts` fails after parsing `a`, `b`, and a trailing |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -623,7 +624,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1344 | Implement Commentleadingclosebrace | spike | frontend/resolver | class: blocked | Implement Commentleadingclosebrace |
 | 1345 | Implement Commentonambientmodule | spike | frontend/syntax | class: blocked | Implement Commentonambientmodule |
 | 1346 | Implement Commentonambientvariable | spike | frontend/resolver | class: blocked | Implement Commentonambientvariable |
-| 1352 | Implement Commentonparameter | spike | frontend/syntax | class: triage-needed | Implement Commentonparameter |
 | 1353 | Implement Commentonparenthesizedexpressionopenparen | spike | frontend/syntax | class: triage-needed | Implement Commentonparenthesizedexpressionopenparen |
 | 1354 | Implement Commentonsignature | spike | frontend/syntax | class: triage-needed | Implement Commentonsignature |
 | 1355 | Implement Commentwithunreasonableindentationlevel | spike | frontend/syntax | class: blocked | Implement Commentwithunreasonableindentationlevel |
@@ -5068,6 +5068,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1349 | Implement Commentonelidedmodule | spike | frontend/syntax | see `issues/done/1349-implement-commentOnElidedModule.md` |
 | 1350 | Implement Commentonexportenumdeclaration | spike | frontend/syntax | see `issues/done/1350-implement-commentOnExportEnumDeclaration.md` |
 | 1351 | Implement Commentonimportstatement | spike | frontend/syntax | see `issues/done/1351-implement-commentOnImportStatement.md` |
+| 1352 | Implement Commentonparameter | spike | frontend/syntax | see `issues/done/1352-implement-commentOnParameter.md` |
 | 2050 | Implement Duplicatelocalvariable Duplicate Local | spike | reference/triage | see `issues/done/2050-implement-duplicateLocalVariable-duplicate-local.md` |
 | 3002 | Implement Isolateddeclarationerrorsdefault | spike | runtime/builtins | see `issues/done/3002-implement-isolatedDeclarationErrorsDefault.md` |
 | 3131 | Implement Jsxfactorynotidentifierorqualifiedname | spike | reference/triage | see `issues/done/3131-implement-jsxFactoryNotIdentifierOrQualifiedName.md` |
