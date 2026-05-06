@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 4 | 3 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4500 | 3641 | 859 |
+| frontend | 4501 | 3641 | 860 |
 | harness | 1 | 0 | 1 |
 | ir | 57 | 35 | 22 |
 | issues | 4 | 0 | 4 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5136 | 3924 | 1212 |
+| total | 5137 | 3924 | 1213 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -256,6 +256,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5299 | Lower computed object binding parameters | feature | frontend/semantics | implementation-ready | P1 |  | computed object binding aliases in parameters parse, but name |
 | 5300 | Report assignment to class binding diagnostics | feature | frontend/resolver | implementation-ready | P1 |  | assignment to a class binding currently parses, but name resolution |
 | 5301 | Report literal reference comparison diagnostics | feature | frontend/semantics | implementation-ready | P1 |  | `conditionalEqualityOnLiteralObjects.ts` builds successfully even |
+| 5302 | Parse fractional number literals in expressions | feature | frontend/syntax | implementation-ready | P1 |  | `conditionalTypeAssignabilityWhenDeferred.ts` currently fails before |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -647,7 +648,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1344 | Implement Commentleadingclosebrace | spike | frontend/resolver | class: blocked | Implement Commentleadingclosebrace |
 | 1345 | Implement Commentonambientmodule | spike | frontend/syntax | class: blocked | Implement Commentonambientmodule |
 | 1346 | Implement Commentonambientvariable | spike | frontend/resolver | class: blocked | Implement Commentonambientvariable |
-| 1422 | Implement Conditionaltypeassignabilitywhendeferred | spike | frontend/syntax | class: blocked | Implement Conditionaltypeassignabilitywhendeferred |
 | 1423 | Implement Conditionaltypebasedcontextualtypereturntypewidening | spike | frontend/semantics | class: blocked | Implement Conditionaltypebasedcontextualtypereturntypewidening |
 | 1424 | Implement Conditionaltypeclassmembers | spike | frontend/semantics | class: blocked | Implement Conditionaltypeclassmembers |
 | 1425 | Implement Conditionaltypediscriminatinglargeunionregulartypefetchingspeedreasonable | spike | frontend/syntax | class: blocked | Implement Conditionaltypediscriminatinglargeunionregulartypefetchingspeedreasonable |
@@ -5092,6 +5092,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1419 | Implement Conditionalexpressionnewline | spike | frontend/resolver | see `issues/done/1419-implement-conditionalExpressionNewLine.md` |
 | 1420 | Implement Conditionalexpressions | spike | frontend/semantics | see `issues/done/1420-implement-conditionalExpressions.md` |
 | 1421 | Implement Conditionalreturnexpression | spike | frontend/resolver | see `issues/done/1421-implement-conditionalReturnExpression.md` |
+| 1422 | Implement Conditionaltypeassignabilitywhendeferred | spike | frontend/syntax | see `issues/done/1422-implement-conditionalTypeAssignabilityWhenDeferred.md` |
 | 2050 | Implement Duplicatelocalvariable Duplicate Local | spike | reference/triage | see `issues/done/2050-implement-duplicateLocalVariable-duplicate-local.md` |
 | 3002 | Implement Isolateddeclarationerrorsdefault | spike | runtime/builtins | see `issues/done/3002-implement-isolatedDeclarationErrorsDefault.md` |
 | 3131 | Implement Jsxfactorynotidentifierorqualifiedname | spike | reference/triage | see `issues/done/3131-implement-jsxFactoryNotIdentifierOrQualifiedName.md` |
