@@ -81,6 +81,28 @@ Compiler evidence:
 - AST fails because class heritage parsing consumes past the class body and expects a later `{`.
 - TypeScript oracle accepts the nested heritage syntax; its only diagnostic is unrelated TS2564 for `Wrapper.property`.
 
+Additional folded representative:
+
+```sh
+python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/classExtendsInterfaceInModule.ts
+```
+
+```ts
+class C2<T> extends M.I2<T> {}
+```
+
+Current diagnostic:
+
+```text
+UnsupportedSyntax: expected LeftBrace, got Some(Ident("namespace"))
+```
+
+Compiler evidence:
+
+- Tokens include `class C2`, `<T>`, `extends`, qualified name `M.I2`, type argument `<T>`, `{}`, followed by `namespace Mod`.
+- AST fails at the following namespace because class heritage parsing consumes the type-argument tokens as runtime expression syntax.
+- TypeScript oracle accepts the syntax and reports later TS2689 class-extends-interface diagnostics.
+
 ## Desired final state
 
 The parser erases TypeScript type arguments in class heritage expressions before class body parsing. The representative case should advance past parser syntax and either compile further or report the next semantic/runtime diagnostic.
@@ -89,7 +111,7 @@ The parser erases TypeScript type arguments in class heritage expressions before
 
 In scope:
 
-- [ ] Parse or skip TypeScript type-argument lists in `extends` heritage expressions such as `extends Class3<T>` and nested `extends CBaseBase<Wrapper<T2>>`.
+- [ ] Parse or skip TypeScript type-argument lists in `extends` heritage expressions such as `extends Class3<T>`, nested `extends CBaseBase<Wrapper<T2>>`, and qualified `extends M.I2<T>`.
 - [ ] Preserve existing parsing for plain runtime heritage expressions such as `extends Base` and `extends mixin(Base)`.
 - [ ] Add focused parser regressions for `class Class4<T> extends Class3<T> {}` and a nested `RightShift` generic heritage clause.
 - [ ] Re-run the exact `baseTypeOrderChecking.ts` triage and record the new diagnostic if a downstream blocker remains.
@@ -159,6 +181,8 @@ Follow-up issues:
 ## Notes
 
 `class_statement` already calls `consume_typescript_generic_parameter_list()` after the class name. The missing boundary is the `class_extends()` path, which currently delegates directly to expression parsing.
+
+Also owns the matching qualified generic heritage parser blocker folded from `issues/done/1202-implement-classExtendsInterfaceInModule.md`.
 
 ## Completion evidence
 
