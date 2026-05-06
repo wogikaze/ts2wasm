@@ -2925,4 +2925,48 @@ class Foo {
         assert_eq!(err.code, DiagCode::UnsupportedSyntax);
         assert!(err.message.contains("expected Semicolon"), "{err:?}");
     }
+
+    #[test]
+    fn parses_exponentiation_compound_assignment() {
+        let program = parse_program("num **= 2;");
+        assert!(program.is_ok(), "expected PowerEqual to parse, got err: {program:?}");
+        let program = program.unwrap();
+        assert_eq!(program.len(), 1);
+        match &program[0] {
+            Stmt::Assign { name, expr, .. } => {
+                assert_eq!(name, "num");
+                match expr {
+                    Expr::Binary {
+                        op: BinaryOp::Power,
+                        left,
+                        right,
+                        ..
+                    } => {
+                        assert!(matches!(&**left, Expr::Ident { name: lname, .. } if *lname == "num"));
+                        assert!(matches!(&**right, Expr::Number { value: 2, .. }));
+                    }
+                    other => panic!("expected Power binary, got {other:?}"),
+                }
+            }
+            other => panic!("expected Stmt::Assign, got {other:?}"),
+        }
+    }
+
+    #[test]
+    fn preserves_exponentiation_operator_when_not_compound() {
+        let program = parse_program("x = a ** b;");
+        assert!(program.is_ok(), "{program:?}");
+        let program = program.unwrap();
+        assert_eq!(program.len(), 1);
+        match &program[0] {
+            Stmt::Assign { name, expr, .. } => {
+                assert_eq!(name, "x");
+                match expr {
+                    Expr::Binary { op: BinaryOp::Power, .. } => {}
+                    other => panic!("expected Power binary op, got {other:?}"),
+                }
+            }
+            other => panic!("expected Stmt::Assign, got {other:?}"),
+        }
+    }
 }

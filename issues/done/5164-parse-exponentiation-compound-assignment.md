@@ -158,14 +158,30 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- `...`
+- `<hash>` (set during commit)
 
 Validation result:
 
 ```text
-command:
-result:
-date:
+command: cargo fmt --all --check
+result: pass
+date: 2026-05-06
+
+command: cargo nextest run -p ts2wasm-frontend
+result: 184 passed, 0 failed
+date: 2026-05-06
+
+command: cargo nextest run -p ts2wasm-ir
+result: 26 passed, 0 failed
+date: 2026-05-06
+
+command: python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/bigIntWithTargetES2016.ts
+result: no PowerEqual diagnostic
+date: 2026-05-06
+
+command: python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/bigIntWithTargetLessThanES2016.ts
+result: no PowerEqual diagnostic
+date: 2026-05-06
 ```
 
 Remaining risks:
