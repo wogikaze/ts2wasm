@@ -108,6 +108,7 @@ Follow-up issues:
 
 - [ ] `issues/open/5207-parse-do-while-asi-before-following-for.md`
 - [ ] `issues/open/5208-parse-arrow-body-destructuring-assignments.md`
+- [ ] `issues/open/5209-parse-computed-object-literal-property-expressions.md`
 
 ## Notes
 
@@ -253,6 +254,43 @@ TypeScript AST sees the arrow body as a `BinaryExpression` assignment
 `[i] = [i + 1]` and reports no diagnostics. Child issue
 `issues/open/5208-parse-arrow-body-destructuring-assignments.md` owns this
 parser slice.
+
+### Smart triage: capturedLetConstInLoop13
+
+- Issue class: `triage-needed`
+- Feature label: `parser-syntax`
+- Diagnostic: `UnsupportedSyntax` / `parser-or-frontend-unsupported`
+- Path: `reference/typescript/tests/cases/compiler/capturedLetConstInLoop13.ts`
+
+Reproduction:
+
+```sh
+mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/capturedLetConstInLoop13.ts
+```
+
+Failure location:
+
+```json
+{
+  "code": "UnsupportedSyntax",
+  "message": "expected Dot, got Some(Plus) at 257..258",
+  "line": 13,
+  "column": 35
+}
+```
+
+Source context:
+
+```text
+12 |             this.bar({
+13 |                 [name + ".a"]: () => { this.foo(name); },
+14 |             });
+```
+
+TypeScript AST sees `PropertyAssignment -> ComputedPropertyName ->
+BinaryExpression` for `name + ".a"` and reports no diagnostics. Child issue
+`issues/open/5209-parse-computed-object-literal-property-expressions.md` owns
+this parser slice.
 
 ### Folded triage from #1109: capturedLetConstInLoop4
 
