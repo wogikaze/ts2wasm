@@ -16,9 +16,9 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 3 | 2 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4465 | 3711 | 754 |
+| frontend | 4465 | 3710 | 755 |
 | harness | 1 | 0 | 1 |
-| ir | 47 | 25 | 22 |
+| ir | 48 | 26 | 22 |
 | issues | 4 | 0 | 4 |
 | parser | 1 | 0 | 1 |
 | reference | 212 | 159 | 53 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5090 | 3989 | 1101 |
+| total | 5091 | 3989 | 1102 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -210,6 +210,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5253 | Report class expression decorator boundary | feature | frontend/lexer | implementation-ready | P1 |  | `classExpressionWithDecorator1.ts` stops in tokenization at |
 | 5254 | Parse ASI between static class fields | feature | frontend/parser | implementation-ready | P1 |  | `classExpressionWithStaticProperties2.ts` parses `static b` as the |
 | 5255 | Resolve super property accesses | feature | frontend/resolver | implementation-ready | P1 |  | `classExtendingAny.ts` parses class declarations, `extends Err`, and |
+| 5256 | Report non-constructor class heritage expressions | feature | ir/resolver | implementation-ready | P1 |  | `classExtendsInterface_not.ts` parses `class C extends "".bogus {}`, |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -490,7 +491,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1197 | Implement Classextendsclauseclassmergedwithmodulenotreferingconstructor | spike | frontend/syntax | class: blocked | Implement Classextendsclauseclassmergedwithmodulenotreferingconstructor |
 | 1198 | Implement Classextendsclauseclassnotreferringconstructor | spike | frontend/syntax | class: blocked | Implement Classextendsclauseclassnotreferringconstructor |
 | 1199 | Implement Classextendsinterface Parser Syntax | spike | frontend/syntax | class: blocked | Implement Classextendsinterface Parser Syntax |
-| 1200 | Implement Classextendsinterface Unknown Unsupported | spike | frontend/syntax | class: triage-needed | Implement Classextendsinterface Unknown Unsupported |
 | 1201 | Implement Classextendsinterfaceinexpression | spike | frontend/syntax | class: triage-needed | Implement Classextendsinterfaceinexpression |
 | 1202 | Implement Classextendsinterfaceinmodule | spike | frontend/syntax | class: blocked | Implement Classextendsinterfaceinmodule |
 | 1203 | Implement Classextendsinterfacethatextendsclasswithprivates | spike | frontend/syntax | class: blocked | Implement Classextendsinterfacethatextendsclasswithprivates |
@@ -5046,6 +5046,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1191 | Implement Classexpressionwithstaticpropertieses Unknown Unsupported | spike | frontend/syntax | see `issues/done/1191-implement-classExpressionWithStaticPropertiesES-unknown-unsupported.md` |
 | 1192 | Implement Classexpressions | spike | frontend/syntax | see `issues/done/1192-implement-classExpressions.md` |
 | 1194 | Implement Classextendingany | spike | frontend/syntax | see `issues/done/1194-implement-classExtendingAny.md` |
+| 1200 | Implement Classextendsinterface Unknown Unsupported | spike | frontend/syntax | see `issues/done/1200-implement-classExtendsInterface-unknown-unsupported.md` |
 | 2050 | Implement Duplicatelocalvariable Duplicate Local | spike | reference/triage | see `issues/done/2050-implement-duplicateLocalVariable-duplicate-local.md` |
 | 3002 | Implement Isolateddeclarationerrorsdefault | spike | runtime/builtins | see `issues/done/3002-implement-isolatedDeclarationErrorsDefault.md` |
 | 3131 | Implement Jsxfactorynotidentifierorqualifiedname | spike | reference/triage | see `issues/done/3131-implement-jsxFactoryNotIdentifierOrQualifiedName.md` |
