@@ -1738,15 +1738,21 @@ fn validate_ast(program: &[Stmt]) -> Result<(), Diagnostic> {
                         span: Some(*span),
                     });
                 }
-                if top_functions.contains_key(name) {
+                // Bodyless function declarations are TypeScript overload signatures.
+                // Allow multiple bodyless overloads before a single concrete implementation.
+                // Only concrete (non-bodyless) functions are tracked for duplicates.
+                if body.is_empty() {
+                    // Overload signature — skip duplicate tracking.
+                } else if top_functions.contains_key(name) {
                     return Err(Diagnostic {
                         code: DiagCode::DuplicateFunction,
                         message: format!("duplicate function definition: `{name}`"),
                         span: Some(*span),
                     });
+                } else {
+                    top_functions.insert(name.clone(), ());
+                    validate_block(body)?;
                 }
-                top_functions.insert(name.clone(), ());
-                validate_block(body)?;
             }
             _ => validate_stmt(stmt, true, &mut top_scope, &top_functions)?,
         }
