@@ -16,18 +16,18 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 2 | 1 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4430 | 3759 | 671 |
+| frontend | 4429 | 3758 | 671 |
 | harness | 1 | 0 | 1 |
 | ir | 34 | 12 | 22 |
 | issues | 4 | 0 | 4 |
 | parser | 1 | 0 | 1 |
-| reference | 211 | 162 | 49 |
+| reference | 212 | 162 | 50 |
 | runtime | 265 | 89 | 176 |
 | scripts | 3 | 1 | 2 |
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5040 | 4026 | 1014 |
+| total | 5040 | 4025 | 1015 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -435,7 +435,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 772 | Implement Augmentedtypesvar | spike | frontend/syntax | class: blocked | Implement Augmentedtypesvar |
 | 773 | Implement Autoasiforstaticsinclassdeclaration | spike | frontend/syntax | class: triage-needed | Implement Autoasiforstaticsinclassdeclaration |
 | 775 | Implement Autotypeassignedusingdestructuringfromnevernocrash | spike | frontend/resolver | class: blocked | Implement Autotypeassignedusingdestructuringfromnevernocrash |
-| 1109 | Implement Capturedletconstinloop Import Export | spike | frontend/syntax | class: blocked | Implement Capturedletconstinloop Import Export |
 | 1110 | Implement Capturedletconstinloop Name Resolution | spike | frontend/resolver | class: blocked | Implement Capturedletconstinloop Name Resolution |
 | 1111 | Implement Capturedletconstinloop Parser Syntax | spike | frontend/syntax | class: triage-needed | Implement Capturedletconstinloop Parser Syntax |
 | 1112 | Implement Capturedparametersininitializers | spike | frontend/syntax | class: triage-needed | Implement Capturedparametersininitializers |
@@ -4997,6 +4996,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1106 | Implement Capturesuperpropertyaccessinsupercall | spike | frontend/syntax | see `issues/done/1106-implement-captureSuperPropertyAccessInSuperCall.md` |
 | 1107 | Implement Capturedletconstinloop Arrow Function | spike | frontend/syntax | see `issues/done/1107-implement-capturedLetConstInLoop-arrow-function.md` |
 | 1108 | Implement Capturedletconstinloop Duplicate Local | spike | reference/triage | see `issues/done/1108-implement-capturedLetConstInLoop-duplicate-local.md` |
+| 1109 | Implement Capturedletconstinloop Import Export | spike | reference/triage | see `issues/done/1109-implement-capturedLetConstInLoop-import-export.md` |
 | 2050 | Implement Duplicatelocalvariable Duplicate Local | spike | reference/triage | see `issues/done/2050-implement-duplicateLocalVariable-duplicate-local.md` |
 | 3002 | Implement Isolateddeclarationerrorsdefault | spike | runtime/builtins | see `issues/done/3002-implement-isolatedDeclarationErrorsDefault.md` |
 | 3131 | Implement Jsxfactorynotidentifierorqualifiedname | spike | reference/triage | see `issues/done/3131-implement-jsxFactoryNotIdentifierOrQualifiedName.md` |

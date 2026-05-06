@@ -8,16 +8,16 @@ priority: P1
 depends_on: []
 blocks: []
 created: 2026-05-01
-updated: 2026-05-01
+updated: 2026-05-06
 ---
 
 ## Summary
 
-Triage capturedLetConstInLoop-parser-syntax across 14 failing reference test cases and split this bucket into implementation-ready child issues.
+Triage capturedLetConstInLoop-parser-syntax across the original 14 failing reference test cases plus 2 folded capturedLetConstInLoop import/export misbucket cases, then split this bucket into implementation-ready child issues.
 
 ## Problem
 
-Reference test results show 14 cases fail in directory `capturedLetConstInLoop-parser-syntax` with diagnostics: parser-syntax. The compiler cannot handle these syntax/semantics, preventing compilation of code in this category.
+Reference test results show 14 cases fail in directory `capturedLetConstInLoop-parser-syntax` with diagnostics: parser-syntax. Fresh triage of stale bucket #1109 adds 2 more capturedLetConstInLoop cases whose current blocker is also parser-syntax, not import/export. The compiler cannot handle these syntax/semantics, preventing compilation of code in this category.
 
 Problem: capturedLetConstInLoop-parser-syntax has 14 reference failures and needs smart-triage evidence before implementation starts.
 
@@ -118,6 +118,8 @@ Follow-up issues:
 - `reference/typescript/tests/cases/compiler/capturedLetConstInLoop13.ts`
 - `reference/typescript/tests/cases/compiler/capturedLetConstInLoop2.ts`
 - `reference/typescript/tests/cases/compiler/capturedLetConstInLoop2_ES6.ts`
+- `reference/typescript/tests/cases/compiler/capturedLetConstInLoop4.ts`
+- `reference/typescript/tests/cases/compiler/capturedLetConstInLoop4_ES6.ts`
 - `reference/typescript/tests/cases/compiler/capturedLetConstInLoop5_ES6.ts`
 - `reference/typescript/tests/cases/compiler/capturedLetConstInLoop5.ts`
 - `reference/typescript/tests/cases/compiler/capturedLetConstInLoop7.ts`
@@ -139,7 +141,89 @@ Follow-up issues:
 
 ## Smart triage
 
-Not generated. Rerun with `--triage-limit 1` or higher.
+Not generated for the original representative path. Rerun with
+`--triage-limit 1` or higher before splitting the remaining parser-syntax
+bucket.
+
+### Folded triage from #1109: capturedLetConstInLoop4
+
+- Issue class: `triage-needed`
+- Feature label: `parser-syntax`
+- Diagnostic: `UnsupportedSyntax` / `parser-or-frontend-unsupported`
+- Path: `reference/typescript/tests/cases/compiler/capturedLetConstInLoop4.ts`
+
+Reproduction:
+
+```sh
+mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/capturedLetConstInLoop4.ts
+```
+
+Failure location:
+
+```json
+{
+  "code": "UnsupportedSyntax",
+  "message": "expected Semicolon, got Some(For) at 692..695",
+  "line": 43,
+  "column": 12
+}
+```
+
+Source context:
+
+```text
+42 | for (let y = 0; y < 1; ++y) {
+43 |     let x = 1;
+44 |     var v4 = x;
+45 |     (function() { return x + v4});
+46 |     (() => x);
+```
+
+Visible symbols before failure include `exportedFoo`, loop/captured bindings
+`x`, `v0`, `v00`, `v1`, `v2`, `v3`, `y`, and the failing block-local `x`.
+Compiler tokens succeed; AST and resolved dumps fail with the same
+`UnsupportedSyntax` parser error. TypeScript oracle succeeds with no
+diagnostics.
+
+### Folded triage from #1109: capturedLetConstInLoop4_ES6
+
+- Issue class: `triage-needed`
+- Feature label: `parser-syntax`
+- Diagnostic: `UnsupportedSyntax` / `parser-or-frontend-unsupported`
+- Path: `reference/typescript/tests/cases/compiler/capturedLetConstInLoop4_ES6.ts`
+
+Reproduction:
+
+```sh
+mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/capturedLetConstInLoop4_ES6.ts
+```
+
+Failure location:
+
+```json
+{
+  "code": "UnsupportedSyntax",
+  "message": "expected Semicolon, got Some(For) at 669..672",
+  "line": 42,
+  "column": 11
+}
+```
+
+Source context:
+
+```text
+41 | for (let y = 0; y < 1; ++y) {
+42 |     let x = 1;
+43 |     var v4 = x;
+44 |     (function() { return x + v4});
+45 |     (() => x);
+```
+
+Visible symbols before failure include `exportedFoo`, loop/captured bindings
+`x`, `v0`, `v00`, `v1`, `v2`, `v3`, `y`, and the failing block-local `x`.
+Compiler tokens succeed; AST and resolved dumps fail with the same
+`UnsupportedSyntax` parser error. TypeScript oracle succeeds with no
+diagnostics.
 
 ## Completion evidence
 

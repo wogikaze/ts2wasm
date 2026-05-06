@@ -2,13 +2,13 @@
 id: 1109
 title: "Implement Capturedletconstinloop Import Export"
 type: spike
-area: frontend/syntax
-class: blocked
-priority: P1
-depends_on: [432]
+area: reference/triage
+class: triage-needed
+priority: P2
+depends_on: [1111]
 blocks: []
 created: 2026-05-01
-updated: 2026-05-01
+updated: 2026-05-06
 ---
 
 ## Summary
@@ -43,10 +43,10 @@ This generated bucket is either split into implementation-ready child issues or 
 
 In scope:
 
-- [ ] Inspect the smart triage report below
-- [ ] Confirm whether existing open/done issues already cover this bucket
-- [ ] Split one feature family, one observable behavior, or one fixed reference window into child issues
-- [ ] Preserve exact reproduction commands and representative AST/diagnostic evidence in each child issue
+- [x] Inspect the smart triage report below
+- [x] Confirm whether existing open/done issues already cover this bucket
+- [x] Split one feature family, one observable behavior, or one fixed reference window into child issues
+- [x] Preserve exact reproduction commands and representative AST/diagnostic evidence in each child issue
 
 Out of scope:
 
@@ -68,10 +68,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] Duplicate candidates below are confirmed as no-match or this issue is superseded
-- [ ] At least one child issue contains an exact `mise run reference-triage -- ...` command
-- [ ] Child issue includes failing path, diagnostic code, source context, visible symbols, and parser/TypeScript AST evidence
-- [ ] Child issue acceptance names the exact fixture/reference path and diagnostic/stdout change
+- [x] Duplicate candidates below are confirmed as no-match or this issue is superseded
+- [x] At least one child issue contains an exact `mise run reference-triage -- ...` command
+- [x] Child issue includes failing path, diagnostic code, source context, visible symbols, and parser/TypeScript AST evidence
+- [x] Child issue acceptance names the exact fixture/reference path and diagnostic/stdout change
 
 ## Validation
 
@@ -98,15 +98,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] updated: `current-state.md` (repo root)
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] `issues/open/1111-implement-capturedLetConstInLoop-parser-syntax.md`
 
 ## Notes
 
@@ -129,7 +129,90 @@ Follow-up issues:
 
 ## Smart triage
 
-Not generated. Rerun with `--triage-limit 1` or higher.
+Fresh triage shows this bucket is stale/misclassified. The current blocker is
+not import/export; both affected paths parse the leading `export function` and
+fail later as `parser-syntax`. The evidence was folded into
+`issues/open/1111-implement-capturedLetConstInLoop-parser-syntax.md`.
+
+### Smart triage: capturedLetConstInLoop4
+
+- Issue class: `triage-needed`
+- Feature label: `parser-syntax`
+- Diagnostic: `UnsupportedSyntax` / `parser-or-frontend-unsupported`
+- Path: `reference/typescript/tests/cases/compiler/capturedLetConstInLoop4.ts`
+
+Reproduction:
+
+```sh
+mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/capturedLetConstInLoop4.ts
+```
+
+Failure location:
+
+```json
+{
+  "code": "UnsupportedSyntax",
+  "message": "expected Semicolon, got Some(For) at 692..695",
+  "line": 43,
+  "column": 12
+}
+```
+
+Source context:
+
+```text
+42 | for (let y = 0; y < 1; ++y) {
+43 |     let x = 1;
+44 |     var v4 = x;
+45 |     (function() { return x + v4});
+46 |     (() => x);
+```
+
+Visible symbols before failure include `exportedFoo`, loop/captured bindings
+`x`, `v0`, `v00`, `v1`, `v2`, `v3`, `y`, and the failing block-local `x`.
+Compiler tokens succeed; AST and resolved dumps fail with the same
+`UnsupportedSyntax` parser error. TypeScript oracle succeeds with no
+diagnostics.
+
+### Smart triage: capturedLetConstInLoop4_ES6
+
+- Issue class: `triage-needed`
+- Feature label: `parser-syntax`
+- Diagnostic: `UnsupportedSyntax` / `parser-or-frontend-unsupported`
+- Path: `reference/typescript/tests/cases/compiler/capturedLetConstInLoop4_ES6.ts`
+
+Reproduction:
+
+```sh
+mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/capturedLetConstInLoop4_ES6.ts
+```
+
+Failure location:
+
+```json
+{
+  "code": "UnsupportedSyntax",
+  "message": "expected Semicolon, got Some(For) at 669..672",
+  "line": 42,
+  "column": 11
+}
+```
+
+Source context:
+
+```text
+41 | for (let y = 0; y < 1; ++y) {
+42 |     let x = 1;
+43 |     var v4 = x;
+44 |     (function() { return x + v4});
+45 |     (() => x);
+```
+
+Visible symbols before failure include `exportedFoo`, loop/captured bindings
+`x`, `v0`, `v00`, `v1`, `v2`, `v3`, `y`, and the failing block-local `x`.
+Compiler tokens succeed; AST and resolved dumps fail with the same
+`UnsupportedSyntax` parser error. TypeScript oracle succeeds with no
+diagnostics.
 
 ## Completion evidence
 
@@ -138,13 +221,18 @@ Fill only when moving to `done/`.
 Commits:
 
 - `...`
+- pending
 
 Validation result:
 
 ```text
-command:
-result:
-date:
+command: python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/capturedLetConstInLoop4.ts
+result: fail; current blocker is parser-syntax, folded into issue 1111
+date: 2026-05-06
+
+command: python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/capturedLetConstInLoop4_ES6.ts
+result: fail; current blocker is parser-syntax, folded into issue 1111
+date: 2026-05-06
 ```
 
 Remaining risks:
