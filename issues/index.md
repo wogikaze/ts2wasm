@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 5 | 4 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4521 | 3606 | 915 |
+| frontend | 4521 | 3605 | 916 |
 | harness | 1 | 0 | 1 |
 | ir | 64 | 42 | 22 |
 | issues | 4 | 0 | 4 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5165 | 3896 | 1269 |
+| total | 5165 | 3895 | 1270 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -558,7 +558,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 772 | Implement Augmentedtypesvar | spike | frontend/syntax | class: blocked | Implement Augmentedtypesvar |
 | 773 | Implement Autoasiforstaticsinclassdeclaration | spike | frontend/syntax | class: triage-needed | Implement Autoasiforstaticsinclassdeclaration |
 | 775 | Implement Autotypeassignedusingdestructuringfromnevernocrash | spike | frontend/resolver | class: blocked | Implement Autotypeassignedusingdestructuringfromnevernocrash |
-| 1259 | Implement Clodulewithprioruninstantiatedmodule | spike | frontend/syntax | class: blocked | Implement Clodulewithprioruninstantiatedmodule |
 | 1260 | Implement Clodulewithrecursivereference | spike | frontend/syntax | class: blocked | Implement Clodulewithrecursivereference |
 | 1261 | Implement Clodulesderivedclasses | spike | frontend/syntax | class: blocked | Implement Clodulesderivedclasses |
 | 1262 | Implement Coandcontravariantinferences Name Resolution | spike | frontend/resolver | class: blocked | Implement Coandcontravariantinferences Name Resolution |
@@ -5019,6 +5018,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1256 | Implement Cloduletest | spike | frontend/syntax | see `issues/done/1256-implement-cloduleTest.md` |
 | 1257 | Implement Clodulewithduplicatemember | spike | frontend/syntax | see `issues/done/1257-implement-cloduleWithDuplicateMember.md` |
 | 1258 | Implement Clodulewithpriorinstantiatedmodule | spike | frontend/syntax | see `issues/done/1258-implement-cloduleWithPriorInstantiatedModule.md` |
+| 1259 | Implement Clodulewithprioruninstantiatedmodule | spike | frontend/syntax | see `issues/done/1259-implement-cloduleWithPriorUninstantiatedModule.md` |
 | 1263 | Implement Coandcontravariantinferences Parser Syntax | spike | frontend/syntax | see `issues/done/1263-implement-coAndContraVariantInferences-parser-syntax.md` |
 | 1265 | Implement Collectionpatternnoerror | spike | runtime/builtins | see `issues/done/1265-implement-collectionPatternNoError.md` |
 | 1325 | Implement Collisionthisexpressionandlocalvarinconstructor | spike | frontend/syntax | see `issues/done/1325-implement-collisionThisExpressionAndLocalVarInConstructor.md` |
