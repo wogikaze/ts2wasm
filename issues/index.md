@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 4 | 3 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4518 | 3613 | 905 |
+| frontend | 4518 | 3612 | 906 |
 | harness | 1 | 0 | 1 |
 | ir | 64 | 42 | 22 |
 | issues | 4 | 0 | 4 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5161 | 3902 | 1259 |
+| total | 5161 | 3901 | 1260 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -47,7 +47,7 @@ Issue files are the source of truth for work items. The generated section below 
 Direct child counts are derived from issue-file `depends_on` links. A meta issue can be `done` as a classification/design umbrella while implementation child issues remain open.
 
 ```
-5000 (Meta: TypeScript Compiler Parser Syntax Coverage) [done/design] ch:482 open:409 done:73
+5000 (Meta: TypeScript Compiler Parser Syntax Coverage) [done/design] ch:481 open:408 done:73
 ├── 5002 (Meta: TypeScript Compiler Type System Coverage) [done/done] ch:233 open:216 done:17 (also ← 5005)
 ├── 5003 (Meta: TypeScript Compiler Declaration Emit Coverage) [done/done] ch:102 open:91 done:11 (also ← 5001)
 5001 (Meta: TypeScript Compiler Semantic Analysis Coverage) [done/done] ch:588 open:334 done:254
@@ -66,7 +66,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 
 | Order | ID | Title | State | Class | Area | Priority | Depends on | Direct children | Open children | Done children |
 |-----:|---:|------|-------|-------|------|--------:|-----------:|----------------:|--------------:|--------------:|
-| 1 | 5000 | Meta: TypeScript Compiler Parser Syntax Coverage | done | design | frontend/syntax | P1 | - | 482 | 409 | 73 |
+| 1 | 5000 | Meta: TypeScript Compiler Parser Syntax Coverage | done | design | frontend/syntax | P1 | - | 481 | 408 | 73 |
 | 2 | 5001 | Meta: TypeScript Compiler Semantic Analysis Coverage | done | done | frontend/semantics | P1 | - | 588 | 334 | 254 |
 | 3 | 5004 | Meta: Runtime Builtins Coverage (test262) (audit reopened #5004) | done | done | runtime/builtins | P1 | - | 24 | 3 | 21 |
 | 4 | 5005 | Meta: TypeScript Compiler Name Resolution Coverage | done | done | frontend/resolver | P1 | - | 420 | 368 | 52 |
@@ -554,7 +554,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 772 | Implement Augmentedtypesvar | spike | frontend/syntax | class: blocked | Implement Augmentedtypesvar |
 | 773 | Implement Autoasiforstaticsinclassdeclaration | spike | frontend/syntax | class: triage-needed | Implement Autoasiforstaticsinclassdeclaration |
 | 775 | Implement Autotypeassignedusingdestructuringfromnevernocrash | spike | frontend/resolver | class: blocked | Implement Autotypeassignedusingdestructuringfromnevernocrash |
-| 1247 | Implement Classwithmultiplebaseclasses | spike | frontend/syntax | class: blocked | Implement Classwithmultiplebaseclasses |
 | 1248 | Implement Classwithoverloadimplementationofwrongname | spike | frontend/syntax | class: blocked | Implement Classwithoverloadimplementationofwrongname |
 | 1250 | Implement Clinterfaces | spike | frontend/syntax | class: blocked | Implement Clinterfaces |
 | 1251 | Implement Cloduleacrossmoduledefinitions | spike | frontend/syntax | class: blocked | Implement Cloduleacrossmoduledefinitions |
@@ -5013,6 +5012,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1244 | Implement Classvariancecircularity | spike | frontend/syntax | see `issues/done/1244-implement-classVarianceCircularity.md` |
 | 1245 | Implement Classvarianceresolvecircularity | spike | frontend/syntax | see `issues/done/1245-implement-classVarianceResolveCircularity.md` |
 | 1246 | Implement Classwithemptytypeparameter | spike | frontend/syntax | see `issues/done/1246-implement-classWithEmptyTypeParameter.md` |
+| 1247 | Implement Classwithmultiplebaseclasses | spike | frontend/syntax | see `issues/done/1247-implement-classWithMultipleBaseClasses.md` |
 | 1249 | Implement Classdecl | spike | frontend/syntax | see `issues/done/1249-implement-classdecl.md` |
 | 1255 | Implement Clodulestaticmembers | spike | frontend/syntax | see `issues/done/1255-implement-cloduleStaticMembers.md` |
 | 1263 | Implement Coandcontravariantinferences Parser Syntax | spike | frontend/syntax | see `issues/done/1263-implement-coAndContraVariantInferences-parser-syntax.md` |
