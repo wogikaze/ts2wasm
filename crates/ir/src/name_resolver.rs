@@ -123,6 +123,18 @@ impl NameResolver {
         // First pass: collect declaration-only ambient value names without emitting runtime bindings.
         for stmt in program {
             if let Stmt::AmbientValueDecl { name, span, is_var } = stmt {
+                // TS2403: ambient declarations must not conflict with known builtin globals.
+                // TypeScript's lib declarations reserve names like `console`, `Array`, etc.
+                if self.allowed_globals.contains(name.as_str()) {
+                    return Err(Diagnostic {
+                        code: DiagCode::TypeScriptTypeCheck,
+                        message: format!(
+                            "TS2403: Subsequent variable declarations must have the same type. \
+                             Variable '{name}' must be of type '<lib-type>', but here has type 'any'."
+                        ),
+                        span: Some(*span),
+                    });
+                }
                 self.declare_binding(name, Some(*span), *is_var)?;
             }
         }

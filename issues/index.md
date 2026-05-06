@@ -10,13 +10,13 @@ Issue files are the source of truth for work items. The generated section below 
 | Area | Total | Open | Resolved |
 |---|---:|---:|---:|
 | abi | 7 | 0 | 7 |
-| backend | 18 | 3 | 15 |
+| backend | 19 | 4 | 15 |
 | backend-wasm | 2 | 0 | 2 |
-| cli | 16 | 0 | 16 |
+| cli | 17 | 1 | 16 |
 | compiler | 3 | 0 | 3 |
-| coverage | 43 | 0 | 43 |
+| coverage | 44 | 1 | 43 |
 | docs | 4 | 2 | 2 |
-| frontend | 4438 | 3729 | 709 |
+| frontend | 4439 | 3728 | 711 |
 | harness | 1 | 0 | 1 |
 | ir | 42 | 10 | 32 |
 | issues | 5 | 0 | 5 |
@@ -25,9 +25,9 @@ Issue files are the source of truth for work items. The generated section below 
 | runtime | 269 | 92 | 177 |
 | scripts | 3 | 0 | 3 |
 | security | 1 | 0 | 1 |
-| tests | 8 | 1 | 7 |
+| tests | 9 | 2 | 7 |
 | wasi | 4 | 3 | 1 |
-| total | 5076 | 4003 | 1073 |
+| total | 5081 | 4006 | 1075 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -99,17 +99,16 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5137 | Split remaining Date API scope | cleanup | runtime/builtins | design-ready | P1 |  | Date issue 050 currently stays open after its named child issues 240 and 241 are done, but non-literal constructor in... |
 | 5138 | Split Reflect.construct isConstructor reference window | spike | runtime/builtins | design-ready | P1 |  | `reference/test262/test/annexB/built-ins/String/prototype/anchor/not-a-constructor.js` currently fails with `Unresolv... |
 | 5152 | Support class constructor outer callback captures | feature | ir | implementation-ready | P1 |  | class constructors cannot currently call outer callback locals when nested arrow callbacks capture constructor `this`. |
+| 5157 | Report set accessor rest parameter diagnostics | feature | frontend/syntax | implementation-ready | P1 |  | `reference/typescript/tests/cases/compiler/accessorWithRestParam.ts` currently reaches backend emission and fails wit... |
 | 5158 | Report interface private member clashes | feature | frontend/resolver | implementation-ready | P1 |  | `reference/typescript/tests/cases/compiler/baseTypePrivateMemberClash.ts` currently reports `BackendIo` instead of a ... |
 | 5163 | Lower nested call expression callees | feature | frontend/semantics | implementation-ready | P2 |  | `reference/typescript/tests/cases/compiler/betterErrorForAccidentalCall.ts` currently reports `UnsupportedSyntax: onl... |
 | 5165 | Support typed array subarray builtins | feature | ir/builtin-resolver | implementation-ready | P1 |  | Support typed array subarray builtins |
-| 5176 | Report ambient var lib redeclaration diagnostics | feature | frontend/semantics | implementation-ready | P1 |  | ambient `declare var` declarations can conflict with lib globals, but ts2wasm currently erases the declaration and re... |
 | 5177 | Report strict-null diagnostics in erased namespace methods | feature | frontend/semantics | implementation-ready | P1 |  | erased namespace class method bodies can hide typed local declaration diagnostics and produce a false build pass. |
 | 5179 | Report implicit this before closure runtime guard | feature | frontend/semantics | implementation-ready | P1 |  | a TypeScript implicit-`this` diagnostic is hidden by the nested-function closure runtime-subset guard. |
 | 5183 | Report typed getter null return diagnostics | feature | frontend/semantics | implementation-ready | P1 |  | typed class getter return annotations are erased before return-expression diagnostics are checked. |
 | 5185 | Source-span unresolved class method function calls | feature | frontend/resolver | implementation-ready | P1 |  | unresolved function calls from class method bodies lose source-span information and should report the out-of-scope ca... |
 | 5195 | Support callable interface-typed local calls | feature | ir/lowering | implementation-ready | P1 |  | callable interface-typed locals currently lower to `Undefined` values and calls to them stop with `issue-211`. |
 | 5196 | Support callable conditional-typed parameter calls | feature | ir/lowering | implementation-ready | P1 |  | callable parameters typed through conditional type aliases currently fall into the generic `issue-211` function-value... |
-| 5197 | Report class called without new | feature | frontend/resolver | implementation-ready | P1 |  | direct calls to class constructors without `new` currently report generic `issue-5011` class-value unsupported diagno... |
 | 5198 | Support class method overload signatures for element access calls | feature | frontend/resolver | implementation-ready | P1 |  | class method overload signatures are currently treated as duplicate method definitions. |
 | 5199 | Report function overload list class merge diagnostics | feature | frontend/resolver | implementation-ready | P1 |  | top-level bodyless function overload declarations are currently handled as duplicate concrete function implementations. |
 | 5200 | Validate top-level function overload implementations | feature | frontend/resolver | implementation-ready | P1 |  | top-level function overload implementation groups are currently classified as duplicate concrete functions. |
@@ -123,8 +122,12 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5210 | Sparse array holes handling for Array.prototype.map | feature | runtime/builtins | implementation-ready | P2 |  | current `Array.prototype.map` implementation only supports dense |
 | 5213 | Implement generator function syntax prerequisite for iterator spread | feature | frontend/syntax | implementation-ready | P2 |  | Generator function declarations are rejected before iterator spread can be tested. |
 | 5219 | Support explicit this-parameter function expression lowering | feature | ir/runtime | implementation-ready | P1 |  | function expressions that declare an erased TypeScript `this` parameter and read `this` in the body currently fail wi... |
+| 5228 | W0: wasm binary backend — primary emission path | feature | backend | design-ready | P1 | 5225 | The WAT→wasm subprocess pipeline is fragile, slow, and adds an external toolchain dependency for every build. |
 | 5230 | W0: mandatory span on LoweredExpr and LoweredStmt variants | refactor | ir | design-ready | P1 |  | W0: mandatory span on LoweredExpr and LoweredStmt variants |
 | 5231 | W0: migrate expr_emit.rs remaining raw WAT to typed writer | cleanup | backend | design-ready | P2 | 5225 | 274 escape-hatch `push_str` calls in `expr_emit.rs` prevent full typed-WAT coverage. |
+| 5232 | W0: fixture-ize RuntimeLinkPlan linker structure tests | cleanup | tests | design-ready | P1 |  | W0: fixture-ize RuntimeLinkPlan linker structure tests |
+| 5233 | W0: harden reference coverage prerequisites | infra | coverage | design-ready | P1 |  | W0: harden reference coverage prerequisites |
+| 5234 | W0: implement host-deny and auditable E2E manifest verification | feature | cli | design-ready | P1 |  | W0: implement host-deny and auditable E2E manifest verification |
 | 5235 | W1: implement WASI stdin/fd_read lowering for input | feature | wasi | design-ready | P1 |  | W1: implement WASI stdin/fd_read lowering for input |
 | 5236 | W1: implement WASI args and environment variable lowering | feature | wasi | design-ready | P2 |  | W1: implement WASI args and environment variable lowering |
 | 5237 | W1: standalone WASI execution validation test suite | test | tests | design-ready | P1 |  | W1: standalone WASI execution validation test suite |
@@ -5154,6 +5157,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5173 | Avoid stack overflow on deep binary expressions | feature | ir/builtin-resolver | see `issues/done/5173-avoid-stack-overflow-on-deep-binary-expressions.md` |
 | 5174 | Ignore empty binding pattern synthetic names | feature | frontend/name-resolution | see `issues/done/5174-ignore-empty-binding-pattern-synthetic-names.md` |
 | 5175 | Support export let declarations | feature | frontend/module-syntax | see `issues/done/5175-support-export-let-destructuring-declarations.md` |
+| 5176 | Report ambient var lib redeclaration diagnostics | feature | frontend/semantics | see `issues/done/5176-report-ambient-var-lib-redeclaration-diagnostics.md` |
 | 5178 | Parse bitwise compound assignment operators | feature | frontend/syntax | see `issues/done/5178-parse-bitwise-compound-assignment-operators.md` |
 | 5180 | Parse computed property object binding patterns | feature | frontend/syntax | see `issues/done/5180-parse-computed-property-object-binding-patterns.md` |
 | 5181 | Support prefix update expressions in call arguments | feature | frontend/semantics | see `issues/done/5181-support-prefix-update-expressions-in-call-arguments.md` |
@@ -5168,6 +5172,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5192 | Support first-class class constructor values | feature | ir/runtime | see `issues/done/5192-support-first-class-class-constructor-values.md` |
 | 5193 | Parse ASI after ambient variable declarations | feature | frontend/syntax | see `issues/done/5193-parse-asi-after-ambient-variable-declarations.md` |
 | 5194 | Report empty call type arguments | feature | frontend/syntax | see `issues/done/5194-report-empty-call-type-arguments.md` |
+| 5197 | Report class called without new | feature | frontend/resolver | see `issues/done/5197-report-class-called-without-new.md` |
 | 5205 | Restore backend residual expression rejection | bug | backend-wasm | see `issues/done/5205-restore-backend-residual-expression-rejection.md` |
 | 5206 | Resolve issue ID collisions and open/done conflicts | cleanup | issues | see `issues/done/5206-resolve-issue-id-collisions-and-open-done-conflicts.md` |
 | 5215 | Fix array includes WAT stack mismatch | bug | runtime/builtins | see `issues/done/5215-fix-array-includes-wat-stack-mismatch.md` |
