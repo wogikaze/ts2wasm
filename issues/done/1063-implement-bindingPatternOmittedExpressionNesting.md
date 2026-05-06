@@ -3,12 +3,14 @@ id: 1063
 title: "Implement Bindingpatternomittedexpressionnesting"
 type: spike
 area: frontend/syntax
-class: blocked
+class: superseded
 priority: P1
-depends_on: [432]
+depends_on: [5175]
 blocks: []
 created: 2026-05-01
-updated: 2026-05-01
+updated: 2026-05-06
+status: done
+completed: 2026-05-06
 ---
 
 ## Summary
@@ -43,10 +45,10 @@ This generated bucket is either split into implementation-ready child issues or 
 
 In scope:
 
-- [ ] Inspect the smart triage report below
-- [ ] Confirm whether existing open/done issues already cover this bucket
-- [ ] Split one feature family, one observable behavior, or one fixed reference window into child issues
-- [ ] Preserve exact reproduction commands and representative AST/diagnostic evidence in each child issue
+- [x] Inspect the smart triage report below
+- [x] Confirm whether existing open/done issues already cover this bucket
+- [x] Split one feature family, one observable behavior, or one fixed reference window into child issues
+- [x] Preserve exact reproduction commands and representative AST/diagnostic evidence in each child issue
 
 Out of scope:
 
@@ -68,10 +70,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] Duplicate candidates below are confirmed as no-match or this issue is superseded
-- [ ] At least one child issue contains an exact `mise run reference-triage -- ...` command
-- [ ] Child issue includes failing path, diagnostic code, source context, visible symbols, and parser/TypeScript AST evidence
-- [ ] Child issue acceptance names the exact fixture/reference path and diagnostic/stdout change
+- [x] Duplicate candidates below are confirmed as no-match or this issue is superseded
+- [x] At least one child issue contains an exact `mise run reference-triage -- ...` command
+- [x] Child issue includes failing path, diagnostic code, source context, visible symbols, and parser/TypeScript AST evidence
+- [x] Child issue acceptance names the exact fixture/reference path and diagnostic/stdout change
 
 ## Validation
 
@@ -98,15 +100,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] updated: `current-state.md` (repo root)
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] added: `issues/open/5175-support-export-let-destructuring-declarations.md`
 
 ## Notes
 
@@ -116,11 +118,21 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- none found by path/title/feature scan
+- `issues/open/432-implement-import-export.md` is a broad generated import/export bucket, not an implementation-ready owner for this exact `export let` destructuring parser boundary.
+- Existing export-function/default/export-const issues do not cover `export let` destructuring.
 
 ## Smart triage
 
-Not generated. Rerun with `--triage-limit 1` or higher.
+Generated on 2026-05-06.
+
+- Path: `reference/typescript/tests/cases/compiler/bindingPatternOmittedExpressionNesting.ts`
+- Diagnostic: `UnsupportedModule` / `unsupported-feature-boundary`
+- Failure: `issue-055: unsupported variable export; module resolution and loading are not implemented at 64..70`
+- Source context: `export let [,,[,[],,[],]] = undefined as any;`
+- Visible symbols before failure: none
+- Compiler evidence: tokens succeed; AST and resolved dumps fail at the `export` token before parsing the declaration.
+- TypeScript oracle: accepts the file with no diagnostics.
+- Superseding child: `issues/open/5175-support-export-let-destructuring-declarations.md`
 
 ## Completion evidence
 
@@ -128,16 +140,16 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- `...`
+- `pending`
 
 Validation result:
 
 ```text
-command:
-result:
-date:
+command: python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/bindingPatternOmittedExpressionNesting.ts
+result: pass; current blocker identified as exported `let` destructuring parser/module boundary, split to issue 5175
+date: 2026-05-06
 ```
 
 Remaining risks:
 
-- none
+- Declaration emit and module export metadata may need follow-up triage after issue 5175 advances past the parser boundary.
