@@ -3261,4 +3261,46 @@ class Foo {
         assert!(matches!(&program[0], Stmt::ClassDecl { .. }));
         assert!(matches!(&program[1], Stmt::Let { name, .. } if name == "x"));
     }
+
+    #[test]
+    fn parses_object_type_literal_with_call_signature_in_var_annotation() {
+        let program = parse_program("var foo: { (x: number): string; }");
+        assert!(
+            program.is_ok(),
+            "expected OK parsing object type literal with call signature, got err: {program:?}",
+        );
+    }
+
+    #[test]
+    fn parses_object_type_literal_with_multiple_call_signatures() {
+        let source = r#"
+            var foo: {
+                (name: string): string;
+                (name: 'order'): string;
+                (name: 'content'): string;
+                (name: 'done'): string;
+            }
+        "#;
+        let program = parse_program(source);
+        assert!(
+            program.is_ok(),
+            "expected OK parsing object type literal with multiple call signatures, got err: {program:?}",
+        );
+    }
+
+    #[test]
+    fn parses_object_type_literal_with_call_signature_followed_by_other_decl() {
+        let source = r#"
+            var foo: {
+                (name: string): string;
+                (name: 'order'): string;
+            }
+            var foo2 = 1;
+        "#;
+        let program = parse_program(source);
+        assert!(
+            program.is_ok(),
+            "expected OK parsing object type literal call signature followed by other decl, got err: {program:?}",
+        );
+    }
 }

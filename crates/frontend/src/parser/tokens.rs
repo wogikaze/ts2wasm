@@ -318,6 +318,7 @@ impl Parser {
         let mut paren_depth = 0usize;
         let mut bracket_depth = 0usize;
         let mut brace_depth = 0usize;
+        let mut consumed_type_token = false;
         while !self.is_at_end() {
             let at_top_level = paren_depth == 0 && bracket_depth == 0 && brace_depth == 0;
             if at_top_level
@@ -354,13 +355,18 @@ impl Parser {
                 _ => {}
             }
             self.advance();
+            consumed_type_token = true;
         }
 
-        Err(Diagnostic {
-            code: DiagCode::UnsupportedSyntax,
-            message: "unterminated TypeScript type annotation".to_owned(),
-            span: self.prev_span(),
-        })
+        if consumed_type_token && paren_depth == 0 && bracket_depth == 0 && brace_depth == 0 {
+            Ok(())
+        } else {
+            Err(Diagnostic {
+                code: DiagCode::UnsupportedSyntax,
+                message: "unterminated TypeScript type annotation".to_owned(),
+                span: self.prev_span(),
+            })
+        }
     }
 
     fn skip_ambient_value_type_annotation_until(
