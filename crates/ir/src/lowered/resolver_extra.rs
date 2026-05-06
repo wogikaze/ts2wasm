@@ -1790,7 +1790,7 @@ impl<'a> Resolver<'a> {
             .ok_or_else(|| Diagnostic {
                 code: DiagCode::UnresolvedFunction,
                 message: format!("unresolved function: `{name}`"),
-                span: None,
+                span: Some(Span::generated("resolve_func")),
             })
     }
 
