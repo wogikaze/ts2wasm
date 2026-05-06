@@ -130,7 +130,7 @@ Follow-up issues:
 - `issues/done/1166-implement-circularTypeArgumentsLocalAndOuterNoCrash.md` - Implement Circulartypeargumentslocalandouternocrash (same feature label, same group key, title overlap; stale build-pass)
 - `issues/done/1170-implement-class.md` - Implement Class (same feature label, same group key, title overlap; split to issue 5246)
 - `issues/done/1218-implement-classImplementsMethodWIthTupleArgs.md` - Implement Classimplementsmethodwithtupleargs (same feature label, same group key, title overlap; stale build-pass)
-- `issues/open/1266-implement-collisionArgumentsArrowFunctions.md` - Implement Collisionargumentsarrowfunctions (same feature label, same group key, title overlap)
+- `issues/done/1266-implement-collisionArgumentsArrowFunctions.md` - Implement Collisionargumentsarrowfunctions (same feature label, same group key, title overlap)
 - `issues/open/1267-implement-collisionArgumentsClassConstructor.md` - Implement Collisionargumentsclassconstructor (same feature label, same group key, title overlap)
 - `issues/open/1268-implement-collisionArgumentsClassMethod.md` - Implement Collisionargumentsclassmethod (same feature label, same group key, title overlap)
 - `issues/open/1269-implement-collisionArgumentsFunction.md` - Implement Collisionargumentsfunction (same feature label, same group key, title overlap)
