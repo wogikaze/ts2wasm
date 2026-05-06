@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 2 | 1 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4441 | 3753 | 688 |
+| frontend | 4443 | 3753 | 690 |
 | harness | 1 | 0 | 1 |
 | ir | 39 | 17 | 22 |
 | issues | 4 | 0 | 4 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5057 | 4023 | 1034 |
+| total | 5059 | 4023 | 1036 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -50,9 +50,9 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 5000 (Meta: TypeScript Compiler Parser Syntax Coverage) [done/design] ch:497 open:430 done:67
 ├── 5002 (Meta: TypeScript Compiler Type System Coverage) [done/done] ch:241 open:233 done:8 (also ← 5005)
 ├── 5003 (Meta: TypeScript Compiler Declaration Emit Coverage) [done/done] ch:103 open:92 done:11 (also ← 5001)
-5001 (Meta: TypeScript Compiler Semantic Analysis Coverage) [done/done] ch:603 open:354 done:249
+5001 (Meta: TypeScript Compiler Semantic Analysis Coverage) [done/done] ch:602 open:353 done:249
 5004 (Meta: Runtime Builtins Coverage (test262) (audit reopened #5004)) [done/done] ch:24 open:3 done:21
-5005 (Meta: TypeScript Compiler Name Resolution Coverage) [done/done] ch:430 open:383 done:47
+5005 (Meta: TypeScript Compiler Name Resolution Coverage) [done/done] ch:429 open:382 done:47
 ├── 5006 (Meta: TypeScript Compiler Scope Analysis Coverage) [done/done] ch:30 open:22 done:8
 ├── 5007 (Meta: TypeScript Compiler Module Resolution Coverage (audit reopened #5007)) [done/done] ch:21 open:19 done:2
 ```
@@ -67,9 +67,9 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | Order | ID | Title | State | Class | Area | Priority | Depends on | Direct children | Open children | Done children |
 |-----:|---:|------|-------|-------|------|--------:|-----------:|----------------:|--------------:|--------------:|
 | 1 | 5000 | Meta: TypeScript Compiler Parser Syntax Coverage | done | design | frontend/syntax | P1 | - | 497 | 430 | 67 |
-| 2 | 5001 | Meta: TypeScript Compiler Semantic Analysis Coverage | done | done | frontend/semantics | P1 | - | 603 | 354 | 249 |
+| 2 | 5001 | Meta: TypeScript Compiler Semantic Analysis Coverage | done | done | frontend/semantics | P1 | - | 602 | 353 | 249 |
 | 3 | 5004 | Meta: Runtime Builtins Coverage (test262) (audit reopened #5004) | done | done | runtime/builtins | P1 | - | 24 | 3 | 21 |
-| 4 | 5005 | Meta: TypeScript Compiler Name Resolution Coverage | done | done | frontend/resolver | P1 | - | 430 | 383 | 47 |
+| 4 | 5005 | Meta: TypeScript Compiler Name Resolution Coverage | done | done | frontend/resolver | P1 | - | 429 | 382 | 47 |
 | 5 | 5002 | Meta: TypeScript Compiler Type System Coverage | done | done | frontend/semantics | P1 | 5000, 5005 | 241 | 233 | 8 |
 | 6 | 5003 | Meta: TypeScript Compiler Declaration Emit Coverage | done | done | frontend/syntax | P2 | 5000, 5001 | 103 | 92 | 11 |
 | 7 | 5006 | Meta: TypeScript Compiler Scope Analysis Coverage | done | done | frontend/resolver | P2 | 5005 | 30 | 22 | 8 |
@@ -177,6 +177,8 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5220 | Hoist for-initializer var declarations for sibling loop reads | feature | frontend/resolver | implementation-ready | P1 |  | `cf.ts` parses control-flow syntax successfully, but name resolution |
 | 5221 | Support chained .then calls on call-expression receivers | feature | ir/lowering | implementation-ready | P1 |  | both `chainedCallsWithTypeParameterConstrainedToOtherTypeParameter` |
 | 5222 | Support interface-typed method calls on erased locals | feature | ir/lowering | implementation-ready | P1 |  | Support interface-typed method calls on erased locals |
+| 5223 | Parse computed properties after object spread | feature | frontend/parser | implementation-ready | P1 |  | Parse computed properties after object spread |
+| 5224 | Parse destructuring assignment call arguments | feature | frontend/parser | implementation-ready | P1 |  | Parse destructuring assignment call arguments |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -452,8 +454,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 772 | Implement Augmentedtypesvar | spike | frontend/syntax | class: blocked | Implement Augmentedtypesvar |
 | 773 | Implement Autoasiforstaticsinclassdeclaration | spike | frontend/syntax | class: triage-needed | Implement Autoasiforstaticsinclassdeclaration |
 | 775 | Implement Autotypeassignedusingdestructuringfromnevernocrash | spike | frontend/resolver | class: blocked | Implement Autotypeassignedusingdestructuringfromnevernocrash |
-| 1129 | Implement Checkdestructuringshorthandassigment Destructuring | spike | frontend/syntax | class: blocked | Implement Checkdestructuringshorthandassigment Destructuring |
-| 1130 | Implement Checkdestructuringshorthandassigment Name Resolution | spike | frontend/resolver | class: blocked | Implement Checkdestructuringshorthandassigment Name Resolution |
 | 1131 | Implement Checkforobjecttoostrict | spike | frontend/syntax | class: blocked | Implement Checkforobjecttoostrict |
 | 1132 | Implement Checkindexconstraintofjavascriptclassexpression | spike | frontend/resolver | class: blocked | Implement Checkindexconstraintofjavascriptclassexpression |
 | 1133 | Implement Checkinfiniteexpansiontermination | spike | frontend/resolver | class: blocked | Implement Checkinfiniteexpansiontermination |
@@ -5014,6 +5014,8 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1126 | Implement Chainedcallswithtypeparameterconstrainedtoothertypeparameter | spike | frontend/syntax | see `issues/done/1126-implement-chainedCallsWithTypeParameterConstrainedToOtherTypeParameter.md` |
 | 1127 | Implement Chainedimportalias | spike | frontend/syntax | see `issues/done/1127-implement-chainedImportAlias.md` |
 | 1128 | Implement Chainedspecializationtoobjecttypeliteral | spike | frontend/syntax | see `issues/done/1128-implement-chainedSpecializationToObjectTypeLiteral.md` |
+| 1129 | Implement Checkdestructuringshorthandassigment Destructuring | spike | frontend/syntax | see `issues/done/1129-implement-checkDestructuringShorthandAssigment-destructuring.md` |
+| 1130 | Implement Checkdestructuringshorthandassigment Name Resolution | spike | frontend/resolver | see `issues/done/1130-implement-checkDestructuringShorthandAssigment-name-resolution.md` |
 | 2050 | Implement Duplicatelocalvariable Duplicate Local | spike | reference/triage | see `issues/done/2050-implement-duplicateLocalVariable-duplicate-local.md` |
 | 3002 | Implement Isolateddeclarationerrorsdefault | spike | runtime/builtins | see `issues/done/3002-implement-isolatedDeclarationErrorsDefault.md` |
 | 3131 | Implement Jsxfactorynotidentifierorqualifiedname | spike | reference/triage | see `issues/done/3131-implement-jsxFactoryNotIdentifierOrQualifiedName.md` |
