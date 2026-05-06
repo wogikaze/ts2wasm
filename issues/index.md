@@ -11,23 +11,23 @@ Issue files are the source of truth for work items. The generated section below 
 |---|---:|---:|---:|
 | abi | 7 | 0 | 7 |
 | backend | 13 | 1 | 12 |
-| backend-wasm | 2 | 1 | 1 |
+| backend-wasm | 3 | 2 | 1 |
 | cli | 15 | 0 | 15 |
 | compiler | 2 | 1 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4420 | 3767 | 653 |
+| frontend | 4433 | 3758 | 675 |
 | harness | 1 | 0 | 1 |
-| ir | 32 | 9 | 23 |
-| issues | 4 | 0 | 4 |
+| ir | 35 | 11 | 24 |
+| issues | 5 | 1 | 4 |
 | parser | 1 | 0 | 1 |
 | reference | 211 | 163 | 48 |
-| runtime | 265 | 89 | 176 |
-| scripts | 3 | 1 | 2 |
+| runtime | 268 | 92 | 176 |
+| scripts | 3 | 0 | 3 |
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5028 | 4032 | 996 |
+| total | 5049 | 4029 | 1020 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -47,12 +47,12 @@ Issue files are the source of truth for work items. The generated section below 
 Direct child counts are derived from issue-file `depends_on` links. A meta issue can be `done` as a classification/design umbrella while implementation child issues remain open.
 
 ```
-5000 (Meta: TypeScript Compiler Parser Syntax Coverage) [done/design] ch:494 open:427 done:67
-├── 5002 (Meta: TypeScript Compiler Type System Coverage) [done/done] ch:242 open:234 done:8 (also ← 5005)
+5000 (Meta: TypeScript Compiler Parser Syntax Coverage) [done/design] ch:490 open:423 done:67
+├── 5002 (Meta: TypeScript Compiler Type System Coverage) [done/done] ch:241 open:233 done:8 (also ← 5005)
 ├── 5003 (Meta: TypeScript Compiler Declaration Emit Coverage) [done/done] ch:103 open:92 done:11 (also ← 5001)
-5001 (Meta: TypeScript Compiler Semantic Analysis Coverage) [done/done] ch:608 open:361 done:247
+5001 (Meta: TypeScript Compiler Semantic Analysis Coverage) [done/done] ch:603 open:356 done:247
 5004 (Meta: Runtime Builtins Coverage (test262) (audit reopened #5004)) [done/done] ch:24 open:3 done:21
-5005 (Meta: TypeScript Compiler Name Resolution Coverage) [done/done] ch:435 open:388 done:47
+5005 (Meta: TypeScript Compiler Name Resolution Coverage) [done/done] ch:432 open:385 done:47
 ├── 5006 (Meta: TypeScript Compiler Scope Analysis Coverage) [done/done] ch:29 open:21 done:8
 ├── 5007 (Meta: TypeScript Compiler Module Resolution Coverage (audit reopened #5007)) [done/done] ch:21 open:19 done:2
 ```
@@ -66,11 +66,11 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 
 | Order | ID | Title | State | Class | Area | Priority | Depends on | Direct children | Open children | Done children |
 |-----:|---:|------|-------|-------|------|--------:|-----------:|----------------:|--------------:|--------------:|
-| 1 | 5000 | Meta: TypeScript Compiler Parser Syntax Coverage | done | design | frontend/syntax | P1 | - | 494 | 427 | 67 |
-| 2 | 5001 | Meta: TypeScript Compiler Semantic Analysis Coverage | done | done | frontend/semantics | P1 | - | 608 | 361 | 247 |
+| 1 | 5000 | Meta: TypeScript Compiler Parser Syntax Coverage | done | design | frontend/syntax | P1 | - | 490 | 423 | 67 |
+| 2 | 5001 | Meta: TypeScript Compiler Semantic Analysis Coverage | done | done | frontend/semantics | P1 | - | 603 | 356 | 247 |
 | 3 | 5004 | Meta: Runtime Builtins Coverage (test262) (audit reopened #5004) | done | done | runtime/builtins | P1 | - | 24 | 3 | 21 |
-| 4 | 5005 | Meta: TypeScript Compiler Name Resolution Coverage | done | done | frontend/resolver | P1 | - | 435 | 388 | 47 |
-| 5 | 5002 | Meta: TypeScript Compiler Type System Coverage | done | done | frontend/semantics | P1 | 5000, 5005 | 242 | 234 | 8 |
+| 4 | 5005 | Meta: TypeScript Compiler Name Resolution Coverage | done | done | frontend/resolver | P1 | - | 432 | 385 | 47 |
+| 5 | 5002 | Meta: TypeScript Compiler Type System Coverage | done | done | frontend/semantics | P1 | 5000, 5005 | 241 | 233 | 8 |
 | 6 | 5003 | Meta: TypeScript Compiler Declaration Emit Coverage | done | done | frontend/syntax | P2 | 5000, 5001 | 103 | 92 | 11 |
 | 7 | 5006 | Meta: TypeScript Compiler Scope Analysis Coverage | done | done | frontend/resolver | P2 | 5005 | 29 | 21 | 8 |
 | 8 | 5007 | Meta: TypeScript Compiler Module Resolution Coverage (audit reopened #5007) | done | done | frontend/resolver | P2 | 5005 | 21 | 19 | 2 |
@@ -94,12 +94,15 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 <!-- generated:ready:start -->
 | ID | Title | Type | Area | Class | Priority | Depends on | Summary |
 |---:|---|---|---|---|---|---|---|
+| 338 | Sparse array holes handling for Array.prototype.map | feature | runtime/builtins | implementation-ready | P2 |  | current `Array.prototype.map` implementation only supports dense |
 | 353 | Implement iterator protocol integration for spread operator | feature | runtime/semantics | unstarted | P2 |  | General iterator protocol is not implemented for spread operator. |
+| 368 | Implement remaining BigInt mixed runtime coercion edges | feature | runtime/semantics | implementation-ready | P2 | 259, 261 | Compatible object `ToPrimitive` for mixed BigInt comparisons and non-source-backed unknown out-of-range BigInt/String... |
+| 401 | Implement generator function syntax prerequisite for iterator spread | feature | frontend/syntax | implementation-ready | P2 |  | Generator function declarations are rejected before iterator spread can be tested. |
+| 402 | Implement computed Symbol.iterator prerequisite for spread | feature | frontend/syntax | design-ready | P2 |  | Computed `[Symbol.iterator]` object members are rejected before custom iterable spread can be tested. |
 | 5132 | Add ABC451 non-top array separation attribution | infra | runtime/memory | implementation-ready | P1 | 5131 | issue 365 proves the dominant array-growth pressure is |
 | 5137 | Split remaining Date API scope | cleanup | runtime/builtins | design-ready | P1 |  | Date issue 050 currently stays open after its named child issues 240 and 241 are done, but non-literal constructor in... |
 | 5138 | Split Reflect.construct isConstructor reference window | spike | runtime/builtins | design-ready | P1 |  | `reference/test262/test/annexB/built-ins/String/prototype/anchor/not-a-constructor.js` currently fails with `Unresolv... |
 | 5139 | Split APISample parser leftovers | cleanup | frontend/syntax | design-ready | P1 |  | issue 070 identified `APISample_linter.ts` and `APISample_transform.ts` as remaining parser/frontend leftovers, but t... |
-| 5144 | Support entry-module export function declarations | feature | ir/compiler | implementation-ready | P1 |  | entry-module `export function` declarations currently fail with `UnsupportedModule`, even though nearby static export... |
 | 5145 | Parse await as an identifier call outside async contexts | feature | frontend/syntax | implementation-ready | P2 |  | `await(...)` in a sync function currently fails with `UnsupportedRuntimeSubset` instead of preserving the TypeScript ... |
 | 5146 | Report for-await context errors before async runtime diagnostics | feature | frontend/syntax | implementation-ready | P2 |  | `for await...of` outside async/top-level-allowed contexts currently reports the broad async runtime unsupported messa... |
 | 5147 | Report await expression context errors before runtime diagnostics | feature | frontend/syntax | implementation-ready | P2 |  | `await <literal>` in a non-async function currently fails with `UnsupportedRuntimeSubset` instead of a TypeScript-ali... |
@@ -125,7 +128,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5172 | Report unresolved implements in erased namespace | feature | frontend/semantics | implementation-ready | P1 |  | erased namespace declarations can hide unresolved class `implements` clauses and produce a false build pass. |
 | 5173 | Avoid stack overflow on deep binary expressions | feature | ir/builtin-resolver | implementation-ready | P1 |  | recursive expression folding in builtin resolution cannot process the deep binary-expression stress references. |
 | 5174 | Ignore empty binding pattern synthetic names | feature | frontend/name-resolution | implementation-ready | P1 |  | empty binding patterns do not declare a local binding, but the compiler currently registers their display text as if ... |
-| 5175 | Support export let destructuring declarations | feature | frontend/module-syntax | implementation-ready | P1 |  | the parser has an `export const <ident> = ...` slice, but `export let` destructuring declarations still stop at the g... |
+| 5175 | Support export let declarations | feature | frontend/module-syntax | implementation-ready | P1 |  | the parser has an `export const <ident> = ...` slice, but `export let` declarations still stop at the generic variabl... |
 | 5176 | Report ambient var lib redeclaration diagnostics | feature | frontend/semantics | implementation-ready | P1 |  | ambient `declare var` declarations can conflict with lib globals, but ts2wasm currently erases the declaration and re... |
 | 5177 | Report strict-null diagnostics in erased namespace methods | feature | frontend/semantics | implementation-ready | P1 |  | erased namespace class method bodies can hide typed local declaration diagnostics and produce a false build pass. |
 | 5178 | Parse bitwise compound assignment operators | feature | frontend/syntax | implementation-ready | P1 |  | bitwise compound assignment operators `^=`, `&=`, and `\|=` fail in parser/frontend syntax before semantic diagnostic... |
@@ -140,9 +143,22 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5187 | Lower namespace-only multi-section files | feature | compiler | implementation-ready | P1 |  | multi-section TypeScript reference files that contain namespace declarations but no static imports/exports are reduce... |
 | 5189 | Parse ASI after class expression variable initializer | feature | frontend/syntax | implementation-ready | P1 |  | semicolonless variable declarations whose initializer is an anonymous class expression do not accept ASI before the n... |
 | 5190 | Skip implements in ambient class declarations | feature | frontend/syntax | implementation-ready | P1 |  | ambient class declaration parsing does not skip `implements` heritage clauses. |
-| 5191 | Support ambient interface filter receivers | feature | frontend/semantics | implementation-ready | P2 |  | `reference/typescript/tests/cases/compiler/booleanFilterAnyArray.ts` now reports `issue-211: unknown receiver class f... |
-| 5192 | Support RegExp match fallback array map receivers | feature | frontend/semantics | implementation-ready | P2 | 5160 | locals initialized from RegExp match fallback expressions are not classified as array-like receivers for supported `.... |
-| 5193 | Support class instance method receiver calls | feature | ir/lowered | implementation-ready | P1 |  | class instance method calls such as `instance.once(...)` currently fail with `issue-211: unknown receiver class for m... |
+| 5191 | Parse leading decimal numeric literals | feature | frontend/syntax | implementation-ready | P1 |  | `builtinIterator.ts` stops at a generic `unsupported expression` parser diagnostic before it can reach the intended `... |
+| 5192 | Support first-class class constructor values | feature | ir/runtime | implementation-ready | P1 |  | class constructor bindings used as expression values still fail with `issue-5011`, blocking reference cases that pass... |
+| 5193 | Parse ASI after ambient variable declarations | feature | frontend/syntax | implementation-ready | P1 |  | declaration-only ambient variables followed by a newline and another statement can still report `issue-400` instead o... |
+| 5194 | Report empty call type arguments | feature | frontend/syntax | implementation-ready | P1 |  | `Foo<a,,b>();` currently reports `expected Semicolon, got Some(Comma)` instead of a source-spanned missing type-argum... |
+| 5195 | Support callable interface-typed local calls | feature | ir/lowering | implementation-ready | P1 |  | callable interface-typed locals currently lower to `Undefined` values and calls to them stop with `issue-211`. |
+| 5196 | Support callable conditional-typed parameter calls | feature | ir/lowering | implementation-ready | P1 |  | callable parameters typed through conditional type aliases currently fall into the generic `issue-211` function-value... |
+| 5197 | Report class called without new | feature | frontend/resolver | implementation-ready | P1 |  | direct calls to class constructors without `new` currently report generic `issue-5011` class-value unsupported diagno... |
+| 5198 | Support class method overload signatures for element access calls | feature | frontend/resolver | implementation-ready | P1 |  | class method overload signatures are currently treated as duplicate method definitions. |
+| 5199 | Report function overload list class merge diagnostics | feature | frontend/resolver | implementation-ready | P1 |  | top-level bodyless function overload declarations are currently handled as duplicate concrete function implementations. |
+| 5200 | Validate top-level function overload implementations | feature | frontend/resolver | implementation-ready | P1 |  | top-level function overload implementation groups are currently classified as duplicate concrete functions. |
+| 5201 | Parse object type literal call signatures | feature | frontend/parser | implementation-ready | P1 |  | TypeScript object type literals with call-signature members are not parsed as complete type annotations. |
+| 5202 | Parse member call explicit type arguments | feature | frontend/parser | implementation-ready | P1 |  | explicit type arguments after member call callees are not parsed or erased. |
+| 5203 | Report indexed new type-only callee diagnostics | feature | frontend/resolver | implementation-ready | P1 |  | indexed `new` callees that start with type-only identifiers fall into the generic issue-062 class-name requirement. |
+| 5204 | Resolve lexical super property captures in super call arguments | feature | frontend/resolver | implementation-ready | P1 |  | lexical `super` property access inside arrow arguments to `super(...)` is not resolved against the derived instance c... |
+| 5205 | Restore backend residual expression rejection | bug | backend-wasm | implementation-ready | P1 |  | backend emission no longer rejects residual `MethodCall` and `This` expressions before WAT generation. |
+| 5206 | Resolve issue ID collisions and open/done conflicts | cleanup | issues | docs-ready | P1 |  | issue health currently fails because issue IDs 5191, 5192, 5193 and several older reopened IDs are duplicated across ... |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -179,6 +195,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 343 | Implement DuplicateLocal diagnostic detection (66 test262 cases) | feature | frontend/resolver | class: blocked | Implement DuplicateLocal diagnostic detection (66 test262 cases) |
 | 345 | Implement TypeScript type alias coverage for tsc suite (23 cases) | feature | frontend/syntax | class: blocked | Implement TypeScript type alias coverage for tsc suite (23 cases) |
 | 346 | Implement TypeScript declaration emit coverage for tsgo suite (16 cases) | feature | frontend/syntax | class: triage-needed | Implement TypeScript declaration emit coverage for tsgo suite (16 cases) |
+| 354 | Implement sparse array spread support | feature | runtime/semantics | 274 | Implement sparse array spread support |
 | 357 | Fix ABC451 depth-8 iwasm timeout | bug | runtime/memory | class: blocked | Fix ABC451 depth-8 iwasm timeout |
 | 363 | Reduce ABC451 allocation and sweep volume after bulk copy narrowing | bug | runtime/memory | class: blocked | Reduce ABC451 allocation and sweep volume after bulk copy narrowing |
 | 365 | Reduce ABC451 array-growth allocation and copy pressure | bug | runtime/memory | class: blocked | Reduce ABC451 array-growth allocation and copy pressure |
@@ -418,28 +435,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 772 | Implement Augmentedtypesvar | spike | frontend/syntax | class: blocked | Implement Augmentedtypesvar |
 | 773 | Implement Autoasiforstaticsinclassdeclaration | spike | frontend/syntax | class: triage-needed | Implement Autoasiforstaticsinclassdeclaration |
 | 775 | Implement Autotypeassignedusingdestructuringfromnevernocrash | spike | frontend/resolver | class: blocked | Implement Autotypeassignedusingdestructuringfromnevernocrash |
-| 1086 | Implement Builtiniterator | spike | frontend/syntax | class: triage-needed | Implement Builtiniterator |
-| 1087 | Implement Bundleddtslateexportrenaming | spike | frontend/syntax | class: blocked | Implement Bundleddtslateexportrenaming |
-| 1088 | Implement Cacheresolutions | spike | frontend/syntax | class: blocked | Implement Cacheresolutions |
-| 1089 | Implement Cachedcontextualtypes | spike | frontend/syntax | class: blocked | Implement Cachedcontextualtypes |
-| 1090 | Implement Cachedmoduleresolution | spike | frontend/syntax | class: blocked | Implement Cachedmoduleresolution |
-| 1091 | Implement Callconstructassignment | spike | frontend/syntax | class: triage-needed | Implement Callconstructassignment |
-| 1092 | Implement Callexpressionwithmissingtypeargument | spike | frontend/syntax | class: blocked | Implement Callexpressionwithmissingtypeargument |
-| 1093 | Implement Callexpressionwithtypeparameterconstrainedtooutertypeparameter | spike | frontend/syntax | class: blocked | Implement Callexpressionwithtypeparameterconstrainedtooutertypeparameter |
-| 1094 | Implement Callofconditionaltypewithconcretebranches | spike | frontend/semantics | class: blocked | Implement Callofconditionaltypewithconcretebranches |
-| 1095 | Implement Callonclass | spike | frontend/resolver | class: blocked | Implement Callonclass |
-| 1096 | Implement Calloninstance | spike | frontend/resolver | class: blocked | Implement Calloninstance |
-| 1097 | Implement Calloverloadviaelementaccessexpression | spike | frontend/syntax | class: blocked | Implement Calloverloadviaelementaccessexpression |
-| 1098 | Implement Calloverloads Class | spike | frontend/syntax | class: blocked | Implement Calloverloads Class |
-| 1099 | Implement Calloverloads Parser Syntax | spike | frontend/syntax | class: blocked | Implement Calloverloads Parser Syntax |
-| 1100 | Implement Callsignaturefunctionoverload | spike | frontend/syntax | class: blocked | Implement Callsignaturefunctionoverload |
-| 1101 | Implement Callsignaturesshouldberesolvedbeforespecialization | spike | frontend/syntax | class: triage-needed | Implement Callsignaturesshouldberesolvedbeforespecialization |
-| 1102 | Implement Callbackargsdifferbyoptionality | spike | frontend/syntax | class: blocked | Implement Callbackargsdifferbyoptionality |
-| 1103 | Implement Callbacksdontsharetypes | spike | frontend/syntax | class: triage-needed | Implement Callbacksdontsharetypes |
-| 1104 | Implement Cannotinvokenewonerrorexpression | spike | frontend/syntax | class: blocked | Implement Cannotinvokenewonerrorexpression |
-| 1105 | Implement Cannotinvokenewonindexexpression | spike | frontend/resolver | class: blocked | Implement Cannotinvokenewonindexexpression |
-| 1106 | Implement Capturesuperpropertyaccessinsupercall | spike | frontend/syntax | class: triage-needed | Implement Capturesuperpropertyaccessinsupercall |
-| 1107 | Implement Capturedletconstinloop Arrow Function | spike | frontend/syntax | class: blocked | Implement Capturedletconstinloop Arrow Function |
 | 1108 | Implement Capturedletconstinloop Duplicate Local | spike | reference/triage | class: triage-needed | Implement Capturedletconstinloop Duplicate Local |
 | 1109 | Implement Capturedletconstinloop Import Export | spike | frontend/syntax | class: blocked | Implement Capturedletconstinloop Import Export |
 | 1110 | Implement Capturedletconstinloop Name Resolution | spike | frontend/resolver | class: blocked | Implement Capturedletconstinloop Name Resolution |
@@ -4131,7 +4126,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5015 | Implement function support | spike | frontend/syntax | class: triage-needed | Implement function support |
 | 5018 | Implement legacy-global-builtin support | spike | frontend/syntax | class: triage-needed | Implement legacy-global-builtin support |
 | 5020 | Implement RegExp literal support | spike | frontend/syntax | class: triage-needed | Implement RegExp literal support |
-| 5134 | Admit generators and async-functions features through Python test262 harness | spike | scripts | 416 | Admit generators and async-functions features through Python test262 harness |
 | 5135 | Fix builtin arity validation for coercion/math globals | bug | ir | class: blocked | Fix builtin arity validation for coercion/math globals |
 | 5136 | Fix arity validation for RegExp/String prototype methods | bug | ir | class: blocked | Fix arity validation for RegExp/String prototype methods |
 <!-- generated:blocked:end -->
@@ -4980,6 +4974,28 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1083 | Implement Breakiniterationorswitchstatement | spike | frontend/resolver | see `issues/done/1083-implement-breakInIterationOrSwitchStatement.md` |
 | 1084 | Implement Breaknotiniterationorswitchstatement | spike | frontend/syntax | see `issues/done/1084-implement-breakNotInIterationOrSwitchStatement.md` |
 | 1085 | Implement Breaktarget | spike | frontend/syntax | see `issues/done/1085-implement-breakTarget.md` |
+| 1086 | Implement Builtiniterator | spike | frontend/syntax | see `issues/done/1086-implement-builtinIterator.md` |
+| 1087 | Implement Bundleddtslateexportrenaming | spike | frontend/syntax | see `issues/done/1087-implement-bundledDtsLateExportRenaming.md` |
+| 1088 | Implement Cacheresolutions | spike | frontend/syntax | see `issues/done/1088-implement-cacheResolutions.md` |
+| 1089 | Implement Cachedcontextualtypes | spike | frontend/syntax | see `issues/done/1089-implement-cachedContextualTypes.md` |
+| 1090 | Implement Cachedmoduleresolution | spike | frontend/syntax | see `issues/done/1090-implement-cachedModuleResolution.md` |
+| 1091 | Implement Callconstructassignment | spike | frontend/syntax | see `issues/done/1091-implement-callConstructAssignment.md` |
+| 1092 | Implement Callexpressionwithmissingtypeargument | spike | frontend/syntax | see `issues/done/1092-implement-callExpressionWithMissingTypeArgument.md` |
+| 1093 | Implement Callexpressionwithtypeparameterconstrainedtooutertypeparameter | spike | frontend/syntax | see `issues/done/1093-implement-callExpressionWithTypeParameterConstrainedToOuterTypeParameter.md` |
+| 1094 | Implement Callofconditionaltypewithconcretebranches | spike | frontend/semantics | see `issues/done/1094-implement-callOfConditionalTypeWithConcreteBranches.md` |
+| 1095 | Implement Callonclass | spike | frontend/resolver | see `issues/done/1095-implement-callOnClass.md` |
+| 1096 | Implement Calloninstance | spike | frontend/resolver | see `issues/done/1096-implement-callOnInstance.md` |
+| 1097 | Implement Calloverloadviaelementaccessexpression | spike | frontend/syntax | see `issues/done/1097-implement-callOverloadViaElementAccessExpression.md` |
+| 1098 | Implement Calloverloads Class | spike | frontend/syntax | see `issues/done/1098-implement-callOverloads-class.md` |
+| 1099 | Implement Calloverloads Parser Syntax | spike | frontend/syntax | see `issues/done/1099-implement-callOverloads-parser-syntax.md` |
+| 1100 | Implement Callsignaturefunctionoverload | spike | frontend/syntax | see `issues/done/1100-implement-callSignatureFunctionOverload.md` |
+| 1101 | Implement Callsignaturesshouldberesolvedbeforespecialization | spike | frontend/syntax | see `issues/done/1101-implement-callSignaturesShouldBeResolvedBeforeSpecialization.md` |
+| 1102 | Implement Callbackargsdifferbyoptionality | spike | frontend/syntax | see `issues/done/1102-implement-callbackArgsDifferByOptionality.md` |
+| 1103 | Implement Callbacksdontsharetypes | spike | frontend/syntax | see `issues/done/1103-implement-callbacksDontShareTypes.md` |
+| 1104 | Implement Cannotinvokenewonerrorexpression | spike | frontend/syntax | see `issues/done/1104-implement-cannotInvokeNewOnErrorExpression.md` |
+| 1105 | Implement Cannotinvokenewonindexexpression | spike | frontend/resolver | see `issues/done/1105-implement-cannotInvokeNewOnIndexExpression.md` |
+| 1106 | Implement Capturesuperpropertyaccessinsupercall | spike | frontend/syntax | see `issues/done/1106-implement-captureSuperPropertyAccessInSuperCall.md` |
+| 1107 | Implement Capturedletconstinloop Arrow Function | spike | frontend/syntax | see `issues/done/1107-implement-capturedLetConstInLoop-arrow-function.md` |
 | 2050 | Implement Duplicatelocalvariable Duplicate Local | spike | reference/triage | see `issues/done/2050-implement-duplicateLocalVariable-duplicate-local.md` |
 | 3002 | Implement Isolateddeclarationerrorsdefault | spike | runtime/builtins | see `issues/done/3002-implement-isolatedDeclarationErrorsDefault.md` |
 | 3131 | Implement Jsxfactorynotidentifierorqualifiedname | spike | reference/triage | see `issues/done/3131-implement-jsxFactoryNotIdentifierOrQualifiedName.md` |
@@ -5129,10 +5145,12 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5130 | Implement own method ToPrimitive for mixed BigInt comparisons | feature | runtime/semantics | see `issues/done/5130-implement-object-method-toprimitive-for-bigint-comparisons.md` |
 | 5131 | Design ABC451 non-top array growth strategy | design | runtime/memory | see `issues/done/5131-design-abc451-non-top-array-growth-strategy.md` |
 | 5133 | Implement single-statement loop bodies for break and continue | feature | frontend/syntax | see `issues/done/5133-implement-single-statement-loop-body-break-continue.md` |
+| 5134 | Admit generators and async-functions features through Python test262 harness | spike | scripts | see `issues/done/5134-admit-generators-and-async-functions-through-python-harness.md` |
 | 5140 | Implement type alias object parsing before exported interface | feature | frontend/syntax | see file |
 | 5141 | Implement prefix increment in for update clauses | feature | frontend/syntax | see `issues/done/5141-implement-for-update-prefix-increment.md` |
 | 5142 | Support class method calls on new-expression receivers | feature | ir/lowered | see `issues/done/5142-support-class-method-call-on-new-expression-receiver.md` |
 | 5143 | Implement unary void operator lowering | feature | ir/lowered | see `issues/done/5143-implement-unary-void-operator-lowering.md` |
+| 5144 | Support entry-module export function declarations | feature | ir/compiler | see `issues/done/5144-support-entry-export-function-declarations.md` |
 | 5148 | Parse generic async generator declarations | feature | frontend/syntax | see `issues/done/5148-parse-generic-async-generator-declarations.md` |
 | 5150 | Report empty element access diagnostics | feature | frontend/syntax | see `issues/done/5150-report-empty-element-access-diagnostics.md` |
 | 5153 | Erase union types in as assertions | feature | frontend/syntax | see `issues/done/5153-erase-union-types-in-as-assertions.md` |

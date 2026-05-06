@@ -1,0 +1,135 @@
+---
+id: 5205
+title: "Restore backend residual expression rejection"
+type: bug
+area: backend-wasm
+class: implementation-ready
+priority: P1
+depends_on: []
+blocks: []
+created: 2026-05-06
+updated: 2026-05-06
+---
+
+## Summary
+
+Restore `emit_wat` invariant checks for residual `LoweredExpr::MethodCall` and `LoweredExpr::This` before WAT emission.
+
+## Problem
+
+The full `cargo nextest run` gate currently fails because backend tests that expect residual unsupported expressions to be rejected now receive generated WAT instead.
+
+Problem: backend emission no longer rejects residual `MethodCall` and `This` expressions before WAT generation.
+
+## Current failure
+
+Reproduction:
+
+```sh
+cargo nextest run
+```
+
+Current failures:
+
+```text
+ts2wasm-backend-wasm tests::emit_wat_rejects_residual_this_before_emission
+ts2wasm-backend-wasm tests::emit_wat_rejects_residual_method_call_before_emission
+```
+
+Both tests call `emit_wat(&program).expect_err(...)`, but `emit_wat` returns generated WAT instead of an `InvariantViolation`.
+
+## Desired final state
+
+`emit_wat` rejects residual unsupported lowered expressions before emission, preserving the backend invariant that unsupported frontend/IR shapes cannot silently become WAT.
+
+## Scope
+
+In scope:
+
+- [ ] Identify where residual-expression validation should run before WAT emission.
+- [ ] Restore `InvariantViolation` diagnostics for residual `MethodCall` and `This`.
+- [ ] Keep supported method-call and receiver lowering behavior intact.
+
+Out of scope:
+
+- Implementing new method-call semantics.
+- Changing issue 5134 test262 harness behavior.
+
+## Affected paths
+
+Expected:
+
+- `crates/backend-wasm/src/`
+- `crates/ir/src/lowered/validate.rs`
+
+Do not touch:
+
+- `scripts/lib/test262_harness.py`
+- `crates/compiler/src/test262_preprocessor.rs`
+
+## Acceptance criteria
+
+- [ ] `cargo nextest run -p ts2wasm-backend-wasm emit_wat_rejects_residual` passes.
+- [ ] The full `cargo nextest run` no longer fails at these two backend residual tests.
+- [ ] No supported class/object method receiver fixture regresses.
+
+## Validation
+
+Required commands:
+
+```sh
+cargo fmt --all --check
+cargo nextest run -p ts2wasm-backend-wasm emit_wat_rejects_residual
+cargo nextest run
+python scripts/manager.py update-issue-index --check
+python scripts/manager.py check-issue-health
+git diff --check
+```
+
+Impacted commands:
+
+```sh
+cargo nextest run -p ts2wasm-cli class_new_expression_method_call
+```
+
+Not run:
+
+- none
+
+## Docs / current-state / issue sync
+
+Final-state docs:
+
+- [ ] not affected
+
+Current state:
+
+- [ ] not affected
+
+Follow-up issues:
+
+- [ ] none
+
+## Notes
+
+Discovered while closing issue 5134.
+
+## Completion evidence
+
+Fill only when moving to `done/`.
+
+Commits:
+
+- `...`
+
+Validation result:
+
+```text
+command:
+result:
+date:
+```
+
+Remaining risks:
+
+- none

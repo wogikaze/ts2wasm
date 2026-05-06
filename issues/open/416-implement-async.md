@@ -379,7 +379,7 @@ date: 2026-05-06
 
 Remaining risks:
 
-- Child issue 5134 must be completed to forward `generators` and `async-functions` tests through the Python harness.
+- Child issue 5134 is complete and forwards `generators` and `async-functions` tests through the Python harness.
 
 ## Triage result
 
@@ -406,5 +406,5 @@ Python harness metadata gap.
 
 **Action**: Split into child issue 5134 (Python harness feature whitelist).
 Close 416 as triage-spike completed. Remaining async/await lowering work is
-not yet scoped — child issue 5134 will unblock the metadata layer and reveal
+not yet scoped — child issue 5134 unblocked the metadata layer and revealed
 the actual compiler diagnostic for async function syntax.

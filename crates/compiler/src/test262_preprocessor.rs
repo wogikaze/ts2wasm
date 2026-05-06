@@ -74,6 +74,7 @@ const KNOWN_FEATURES: &[(&str, &str)] = &[
     ("cross-realm", "issue-5023"),
     ("class", "issue-421"),
     ("generators", "issue-401"),
+    ("async-functions", "issue-416"),
     ("BigInt", "issue-5000"),
     ("regexp-named-groups", "issue-5024"),
     ("regexp-dotall", "issue-5024"),
