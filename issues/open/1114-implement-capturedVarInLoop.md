@@ -3,12 +3,12 @@ id: 1114
 title: "Implement Capturedvarinloop"
 type: spike
 area: frontend/syntax
-class: blocked
+class: triage-needed
 priority: P1
 depends_on: [5001]
 blocks: []
 created: 2026-05-01
-updated: 2026-05-01
+updated: 2026-05-06
 ---
 
 ## Summary
@@ -106,7 +106,7 @@ Current state:
 
 Follow-up issues:
 
-- [ ] none
+- [ ] `issues/open/5215-support-loop-local-arrow-calls-from-arrow-closures.md`
 
 ## Notes
 
@@ -120,7 +120,54 @@ Follow-up issues:
 
 ## Smart triage
 
-Not generated. Rerun with `--triage-limit 1` or higher.
+Fresh triage shows this bucket is a method-call/lowering blocker, not
+parser-syntax. The parser and AST succeed.
+
+### Smart triage: capturedVarInLoop
+
+- Issue class: `triage-needed`
+- Feature label: `method-call`
+- Diagnostic: `UnsupportedSyntax` / `parser-or-frontend-unsupported`
+- Path: `reference/typescript/tests/cases/compiler/capturedVarInLoop.ts`
+
+Reproduction:
+
+```sh
+mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/capturedVarInLoop.ts
+```
+
+Failure location:
+
+```json
+{
+  "code": "UnsupportedSyntax",
+  "message": "issue-211: function-valued local calls such as extracted method `lambda1(...)` are not supported; call receiver.method(...) directly at 169..181",
+  "line": 6,
+  "column": 30
+}
+```
+
+Source context:
+
+```text
+3 | for (var i = 0; i < 10; i++) {
+4 |     var str = 'x', len = str.length;
+5 |     let lambda1 = (y) => { };
+6 |     let lambda2 = () => lambda1(len);
+7 | }
+```
+
+Compiler evidence:
+
+```text
+tokens: ok
+ast: ok; lambda1 is an ArrowFn binding, lambda2 body is Call(Ident lambda1, Ident len)
+resolved/lowered: issue-211 function-valued local call at lambda1(len)
+```
+
+TypeScript oracle reports no diagnostics. Child issue
+`issues/open/5215-support-loop-local-arrow-calls-from-arrow-closures.md` owns
+this lowering slice.
 
 ## Completion evidence
 
