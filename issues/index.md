@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 2 | 1 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4436 | 3750 | 686 |
+| frontend | 4437 | 3750 | 687 |
 | harness | 1 | 0 | 1 |
 | ir | 39 | 12 | 27 |
 | issues | 5 | 0 | 5 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5057 | 4020 | 1037 |
+| total | 5058 | 4020 | 1038 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -150,7 +150,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5210 | Sparse array holes handling for Array.prototype.map | feature | runtime/builtins | implementation-ready | P2 |  | current `Array.prototype.map` implementation only supports dense |
 | 5213 | Implement generator function syntax prerequisite for iterator spread | feature | frontend/syntax | implementation-ready | P2 |  | Generator function declarations are rejected before iterator spread can be tested. |
 | 5219 | Support explicit this-parameter function expression lowering | feature | ir/runtime | implementation-ready | P1 |  | function expressions that declare an erased TypeScript `this` parameter and read `this` in the body currently fail wi... |
-| 5222 | Parse ambient generic variable type annotations | feature | frontend/syntax | implementation-ready | P1 |  | declaration-only ambient variables with generic type annotations can |
+| 5223 | Report Iterator type-only value-use diagnostics | feature | frontend/resolver | implementation-ready | P1 |  | `Iterator.from(...)` in `builtinIterator.ts` reports generic `UnresolvedName` instead of a source-spanned type-only v... |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -5168,6 +5168,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5218 | Parse TypeScript this parameters in function expressions | feature | frontend/parser | see `issues/done/5218-parse-typescript-this-parameters-in-function-expressions.md` |
 | 5220 | Preserve ambient function parameters for arity | feature | frontend/ir | see `issues/done/5220-preserve-ambient-function-parameters-for-arity.md` |
 | 5221 | Support bitwise AND/XOR binary lowering | feature | ir/lowering | see `issues/done/5221-support-bitwise-and-xor-binary-lowering.md` |
+| 5222 | Parse ambient generic variable type annotations | feature | frontend/syntax | see `issues/done/5222-parse-ambient-generic-variable-type-annotations.md` |
 <!-- generated:done:end -->
 
 ## Index generation contract

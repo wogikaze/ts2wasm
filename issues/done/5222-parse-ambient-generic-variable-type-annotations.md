@@ -56,10 +56,10 @@ boundary.
 
 In scope:
 
-- [ ] Parse or skip generic type annotation lists in declaration-only ambient variables.
-- [ ] Preserve rejection for ambient variable declarations with initializers.
-- [ ] Add focused parser coverage for `declare const g1: Generator<string, number, boolean>;`.
-- [ ] Re-run `builtinIterator.ts` triage and record the next narrower blocker.
+- [x] Parse or skip generic type annotation lists in declaration-only ambient variables.
+- [x] Preserve rejection for ambient variable declarations with initializers.
+- [x] Add focused parser coverage for `declare const g1: Generator<string, number, boolean>;`.
+- [x] Re-run `builtinIterator.ts` triage and record the next narrower blocker.
 
 Out of scope:
 
@@ -80,10 +80,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] `declare const g1: Generator<string, number, boolean>;` parses as an erased ambient declaration.
-- [ ] `builtinIterator.ts` no longer reports `unterminated ambient variable declaration` at `Generator`.
-- [ ] Existing ambient initializer rejection coverage remains intact.
-- [ ] Follow-up work is represented if triage advances to iterator diagnostics.
+- [x] `declare const g1: Generator<string, number, boolean>;` parses as an erased ambient declaration.
+- [x] `builtinIterator.ts` no longer reports `unterminated ambient variable declaration` at `Generator`.
+- [x] Existing ambient initializer rejection coverage remains intact.
+- [x] Follow-up work is represented if triage advances to iterator diagnostics.
 
 ## Validation
 
@@ -109,15 +109,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] created/updated: `issues/open/5223-report-iterator-type-only-value-use-diagnostics.md`
 
 ## Notes
 
@@ -131,16 +131,24 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- `...`
+- this commit: frontend: parse ambient generic variable annotations
 
 Validation result:
 
 ```text
-command:
-result:
-date:
+command: cargo fmt --all --check
+result: pass
+date: 2026-05-06
+
+command: cargo nextest run -p ts2wasm-frontend ambient
+result: pass; 12 tests passed
+date: 2026-05-06
+
+command: cargo build -q -p ts2wasm-cli && python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/builtinIterator.ts
+result: pass for issue 5222; no ambient generic declaration parser diagnostic; advanced to generic UnresolvedName for Iterator tracked by issue 5223
+date: 2026-05-06
 ```
 
 Remaining risks:
 
-- none
+- `Iterator` type-only value-use diagnostic remains open under issue 5223.

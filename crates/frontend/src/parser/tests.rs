@@ -305,6 +305,24 @@ mod tests {
     }
 
     #[test]
+    fn parses_ambient_generic_variable_type_annotations() {
+        let source = r#"
+            declare const g1: Generator<string, number, boolean>;
+            declare const map: Map<string, number>, set: Set<string>;
+            declare const nested: Array<Array<number>>;
+            let runtime = 1;
+        "#;
+        let program = parse_program(source).unwrap();
+        assert_eq!(program.len(), 5);
+        for ambient_name in ["g1", "map", "set", "nested"] {
+            assert!(program.iter().any(
+                |stmt| matches!(stmt, Stmt::AmbientValueDecl { name, .. } if name == ambient_name)
+            ));
+        }
+        assert!(matches!(program[4], Stmt::Let { ref name, .. } if name == "runtime"));
+    }
+
+    #[test]
     fn parses_ambient_declarations_as_erased_syntax() {
         let source = r#"
             declare class AmbientBase { }

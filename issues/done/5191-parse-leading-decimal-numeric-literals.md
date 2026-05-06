@@ -136,7 +136,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] created: `issues/open/5222-parse-ambient-generic-variable-type-annotations.md`
+- [x] completed: `issues/done/5222-parse-ambient-generic-variable-type-annotations.md`
 
 ## Notes
 

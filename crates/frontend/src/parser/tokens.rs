@@ -323,9 +323,11 @@ impl Parser {
         let mut paren_depth = 0usize;
         let mut bracket_depth = 0usize;
         let mut brace_depth = 0usize;
+        let mut angle_depth = 0usize;
         let mut consumed_type_token = false;
         while !self.is_at_end() {
-            let at_top_level = paren_depth == 0 && bracket_depth == 0 && brace_depth == 0;
+            let at_top_level =
+                paren_depth == 0 && bracket_depth == 0 && brace_depth == 0 && angle_depth == 0;
             if at_top_level
                 && self
                     .peek()
@@ -345,6 +347,14 @@ impl Parser {
                 Some(Token::LeftParen) => paren_depth += 1,
                 Some(Token::LeftBracket) => bracket_depth += 1,
                 Some(Token::LeftBrace) => brace_depth += 1,
+                Some(Token::Less) => angle_depth += 1,
+                Some(Token::Greater) if angle_depth > 0 => angle_depth -= 1,
+                Some(Token::RightShift) if angle_depth > 0 => {
+                    angle_depth = angle_depth.saturating_sub(2);
+                }
+                Some(Token::UnsignedRightShift) if angle_depth > 0 => {
+                    angle_depth = angle_depth.saturating_sub(3);
+                }
                 Some(Token::RightParen) => {
                     if paren_depth == 0 {
                         return Ok(());
@@ -370,7 +380,12 @@ impl Parser {
             consumed_type_token = true;
         }
 
-        if consumed_type_token && paren_depth == 0 && bracket_depth == 0 && brace_depth == 0 {
+        if consumed_type_token
+            && paren_depth == 0
+            && bracket_depth == 0
+            && brace_depth == 0
+            && angle_depth == 0
+        {
             Ok(())
         } else {
             Err(Diagnostic {
