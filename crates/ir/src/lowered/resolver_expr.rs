@@ -623,6 +623,19 @@ impl<'a> Resolver<'a> {
                 let func_id = match self.resolve_func(func_name) {
                     Ok(func_id) => func_id,
                     Err(_) if self.resolve_local(func_name).is_ok() => {
+                        // Check if this local is a function parameter (e.g., typed
+                        // through a conditional type alias) for a more specific diagnostic.
+                        if let Ok(local_id) = self.resolve_local(func_name)
+                            && self.param_locals.contains(&local_id)
+                        {
+                            return Err(Diagnostic {
+                                code: DiagCode::UnsupportedSyntax,
+                                message: format!(
+                                    "issue-5196: callable parameter `{func_name}(...)` typed through a conditional type is not supported in this milestone"
+                                ),
+                                span: Some(*span),
+                            });
+                        }
                         return Err(Diagnostic {
                             code: DiagCode::UnsupportedSyntax,
                             message: format!(

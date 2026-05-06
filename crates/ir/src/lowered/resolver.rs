@@ -30,6 +30,7 @@ struct Resolver<'a> {
     class_static_private_fields: ClassStaticPrivateFields,
     local_classes: HashMap<LocalId, String>,
     object_function_props: HashMap<LocalId, HashMap<String, FuncId>>,
+    param_locals: HashSet<LocalId>,
     regexp_literal_locals: HashSet<LocalId>,
     invalid_date_locals: HashSet<LocalId>,
     bigint_locals: HashSet<LocalId>,
@@ -116,6 +117,7 @@ impl<'a> Resolver<'a> {
             class_static_private_fields,
             local_classes: HashMap::new(),
             object_function_props: HashMap::new(),
+            param_locals: HashSet::new(),
             regexp_literal_locals: HashSet::new(),
             invalid_date_locals: HashSet::new(),
             bigint_locals: HashSet::new(),
@@ -183,6 +185,7 @@ impl<'a> Resolver<'a> {
             class_static_private_fields,
             local_classes: HashMap::new(),
             object_function_props: HashMap::new(),
+            param_locals: HashSet::new(),
             regexp_literal_locals: HashSet::new(),
             invalid_date_locals: HashSet::new(),
             bigint_locals: HashSet::new(),
@@ -225,6 +228,7 @@ impl<'a> Resolver<'a> {
             if resolver.heap_closure_names.contains(param) {
                 resolver.heap_closure_locals.insert(local_id);
             }
+            resolver.param_locals.insert(local_id);
             if let Some(current_class) = current_class
                 && param == "this"
             {
