@@ -165,3 +165,12 @@ date:
 Remaining risks:
 
 - Later triage may expose actual accessor runtime emit or property descriptor semantics after this typed-return diagnostic is preserved.
+
+
+## False-done audit
+
+Date: 2026-05-07
+
+Classification: truly-done.
+
+Audit result: retained in issues/done/. Implementation commits confirmed.
