@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 4 | 3 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4495 | 3651 | 844 |
+| frontend | 4495 | 3650 | 845 |
 | harness | 1 | 0 | 1 |
 | ir | 57 | 35 | 22 |
 | issues | 4 | 0 | 4 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5131 | 3934 | 1197 |
+| total | 5131 | 3933 | 1198 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -642,7 +642,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1344 | Implement Commentleadingclosebrace | spike | frontend/resolver | class: blocked | Implement Commentleadingclosebrace |
 | 1345 | Implement Commentonambientmodule | spike | frontend/syntax | class: blocked | Implement Commentonambientmodule |
 | 1346 | Implement Commentonambientvariable | spike | frontend/resolver | class: blocked | Implement Commentonambientvariable |
-| 1407 | Implement Computedenumtypewidening | spike | frontend/syntax | class: triage-needed | Implement Computedenumtypewidening |
 | 1408 | Implement Computedpropertiesindestructuring | spike | frontend/syntax | class: blocked | Implement Computedpropertiesindestructuring |
 | 1409 | Implement Computedpropertiesnarrowed | spike | frontend/syntax | class: blocked | Implement Computedpropertiesnarrowed |
 | 1410 | Implement Computedpropertiestransformedinotherwisenontsclasses | spike | frontend/syntax | class: blocked | Implement Computedpropertiestransformedinotherwisenontsclasses |
@@ -5087,6 +5086,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1404 | Implement Compoundvardecl | spike | frontend/syntax | see `issues/done/1404-implement-compoundVarDecl.md` |
 | 1405 | Implement Computedenummembersyntacticallystring Enum | spike | frontend/syntax | see `issues/done/1405-implement-computedEnumMemberSyntacticallyString-enum.md` |
 | 1406 | Implement Computedenummembersyntacticallystring Parser Syntax | spike | frontend/syntax | see `issues/done/1406-implement-computedEnumMemberSyntacticallyString-parser-syntax.md` |
+| 1407 | Implement Computedenumtypewidening | spike | frontend/syntax | see `issues/done/1407-implement-computedEnumTypeWidening.md` |
 | 2050 | Implement Duplicatelocalvariable Duplicate Local | spike | reference/triage | see `issues/done/2050-implement-duplicateLocalVariable-duplicate-local.md` |
 | 3002 | Implement Isolateddeclarationerrorsdefault | spike | runtime/builtins | see `issues/done/3002-implement-isolatedDeclarationErrorsDefault.md` |
 | 3131 | Implement Jsxfactorynotidentifierorqualifiedname | spike | reference/triage | see `issues/done/3131-implement-jsxFactoryNotIdentifierOrQualifiedName.md` |
