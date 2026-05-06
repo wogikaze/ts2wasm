@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 3 | 2 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4459 | 3728 | 731 |
+| frontend | 4459 | 3727 | 732 |
 | harness | 1 | 0 | 1 |
 | ir | 44 | 22 | 22 |
 | issues | 4 | 0 | 4 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5081 | 4003 | 1078 |
+| total | 5081 | 4002 | 1079 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -475,7 +475,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 772 | Implement Augmentedtypesvar | spike | frontend/syntax | class: blocked | Implement Augmentedtypesvar |
 | 773 | Implement Autoasiforstaticsinclassdeclaration | spike | frontend/syntax | class: triage-needed | Implement Autoasiforstaticsinclassdeclaration |
 | 775 | Implement Autotypeassignedusingdestructuringfromnevernocrash | spike | frontend/resolver | class: blocked | Implement Autotypeassignedusingdestructuringfromnevernocrash |
-| 1171 | Implement Classaccessorinitializationinferencewithelementaccess | spike | frontend/syntax | class: blocked | Implement Classaccessorinitializationinferencewithelementaccess |
 | 1172 | Implement Classattributeinferencetemplate | spike | frontend/semantics | class: blocked | Implement Classattributeinferencetemplate |
 | 1173 | Implement Classattributeinferencetemplatejs | spike | frontend/semantics | class: blocked | Implement Classattributeinferencetemplatejs |
 | 1174 | Implement Classblockscoping | spike | frontend/syntax | class: triage-needed | Implement Classblockscoping |
@@ -5037,6 +5036,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1168 | Implement Circularlyconstrainedmappedtypecontainingconditionalnoinfiniteinstantiationdepth | spike | frontend/semantics | see `issues/done/1168-implement-circularlyConstrainedMappedTypeContainingConditionalNoInfiniteInstantiationDepth.md` |
 | 1169 | Implement Circularlysimplifyingconditionaltypesnocrash | spike | frontend/semantics | see `issues/done/1169-implement-circularlySimplifyingConditionalTypesNoCrash.md` |
 | 1170 | Implement Class | spike | frontend/syntax | see `issues/done/1170-implement-class.md` |
+| 1171 | Implement Classaccessorinitializationinferencewithelementaccess | spike | frontend/syntax | see `issues/done/1171-implement-classAccessorInitializationInferenceWithElementAccess.md` |
 | 2050 | Implement Duplicatelocalvariable Duplicate Local | spike | reference/triage | see `issues/done/2050-implement-duplicateLocalVariable-duplicate-local.md` |
 | 3002 | Implement Isolateddeclarationerrorsdefault | spike | runtime/builtins | see `issues/done/3002-implement-isolatedDeclarationErrorsDefault.md` |
 | 3131 | Implement Jsxfactorynotidentifierorqualifiedname | spike | reference/triage | see `issues/done/3131-implement-jsxFactoryNotIdentifierOrQualifiedName.md` |
