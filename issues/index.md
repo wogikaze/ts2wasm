@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 3 | 2 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4471 | 3698 | 773 |
+| frontend | 4471 | 3697 | 774 |
 | harness | 1 | 0 | 1 |
 | ir | 52 | 30 | 22 |
 | issues | 4 | 0 | 4 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5101 | 3980 | 1121 |
+| total | 5101 | 3979 | 1122 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -519,7 +519,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1235 | Implement Classreferencedincontextualparameterwithinitsownbaseexpression | spike | frontend/syntax | class: blocked | Implement Classreferencedincontextualparameterwithinitsownbaseexpression |
 | 1236 | Implement Classsideinheritance Name Resolution | spike | frontend/resolver | class: blocked | Implement Classsideinheritance Name Resolution |
 | 1237 | Implement Classsideinheritance Parser Syntax | spike | frontend/syntax | class: blocked | Implement Classsideinheritance Parser Syntax |
-| 1238 | Implement Classstaticinitializersusepropertiesbeforedeclaration | spike | frontend/syntax | class: triage-needed | Implement Classstaticinitializersusepropertiesbeforedeclaration |
 | 1239 | Implement Classstaticpropertyaccess | spike | frontend/syntax | class: triage-needed | Implement Classstaticpropertyaccess |
 | 1240 | Implement Classstaticpropertytypeguard | spike | frontend/syntax | class: blocked | Implement Classstaticpropertytypeguard |
 | 1241 | Implement Classtypeparametersinstatics | spike | frontend/syntax | class: blocked | Implement Classtypeparametersinstatics |
@@ -5057,6 +5056,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1230 | Implement Classorder | spike | frontend/syntax | see `issues/done/1230-implement-classOrder.md` |
 | 1231 | Implement Classorderbug | spike | frontend/syntax | see `issues/done/1231-implement-classOrderBug.md` |
 | 1233 | Implement Classpropertyerroronnameonly | spike | runtime/builtins | see `issues/done/1233-implement-classPropertyErrorOnNameOnly.md` |
+| 1238 | Implement Classstaticinitializersusepropertiesbeforedeclaration | spike | frontend/syntax | see `issues/done/1238-implement-classStaticInitializersUsePropertiesBeforeDeclaration.md` |
 | 2050 | Implement Duplicatelocalvariable Duplicate Local | spike | reference/triage | see `issues/done/2050-implement-duplicateLocalVariable-duplicate-local.md` |
 | 3002 | Implement Isolateddeclarationerrorsdefault | spike | runtime/builtins | see `issues/done/3002-implement-isolatedDeclarationErrorsDefault.md` |
 | 3131 | Implement Jsxfactorynotidentifierorqualifiedname | spike | reference/triage | see `issues/done/3131-implement-jsxFactoryNotIdentifierOrQualifiedName.md` |
