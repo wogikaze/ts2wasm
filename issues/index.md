@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 4 | 3 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4497 | 3647 | 850 |
+| frontend | 4497 | 3646 | 851 |
 | harness | 1 | 0 | 1 |
 | ir | 57 | 35 | 22 |
 | issues | 4 | 0 | 4 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5133 | 3930 | 1203 |
+| total | 5133 | 3929 | 1204 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -47,7 +47,7 @@ Issue files are the source of truth for work items. The generated section below 
 Direct child counts are derived from issue-file `depends_on` links. A meta issue can be `done` as a classification/design umbrella while implementation child issues remain open.
 
 ```
-5000 (Meta: TypeScript Compiler Parser Syntax Coverage) [done/design] ch:490 open:420 done:70
+5000 (Meta: TypeScript Compiler Parser Syntax Coverage) [done/design] ch:490 open:419 done:71
 ├── 5002 (Meta: TypeScript Compiler Type System Coverage) [done/done] ch:234 open:224 done:10 (also ← 5005)
 ├── 5003 (Meta: TypeScript Compiler Declaration Emit Coverage) [done/done] ch:102 open:91 done:11 (also ← 5001)
 5001 (Meta: TypeScript Compiler Semantic Analysis Coverage) [done/done] ch:594 open:340 done:254
@@ -66,7 +66,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 
 | Order | ID | Title | State | Class | Area | Priority | Depends on | Direct children | Open children | Done children |
 |-----:|---:|------|-------|-------|------|--------:|-----------:|----------------:|--------------:|--------------:|
-| 1 | 5000 | Meta: TypeScript Compiler Parser Syntax Coverage | done | design | frontend/syntax | P1 | - | 490 | 420 | 70 |
+| 1 | 5000 | Meta: TypeScript Compiler Parser Syntax Coverage | done | design | frontend/syntax | P1 | - | 490 | 419 | 71 |
 | 2 | 5001 | Meta: TypeScript Compiler Semantic Analysis Coverage | done | done | frontend/semantics | P1 | - | 594 | 340 | 254 |
 | 3 | 5004 | Meta: Runtime Builtins Coverage (test262) (audit reopened #5004) | done | done | runtime/builtins | P1 | - | 24 | 3 | 21 |
 | 4 | 5005 | Meta: TypeScript Compiler Name Resolution Coverage | done | done | frontend/resolver | P1 | - | 421 | 373 | 48 |
@@ -644,7 +644,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1344 | Implement Commentleadingclosebrace | spike | frontend/resolver | class: blocked | Implement Commentleadingclosebrace |
 | 1345 | Implement Commentonambientmodule | spike | frontend/syntax | class: blocked | Implement Commentonambientmodule |
 | 1346 | Implement Commentonambientvariable | spike | frontend/resolver | class: blocked | Implement Commentonambientvariable |
-| 1413 | Implement Computedpropertynameandtypeparameterconflict | spike | frontend/syntax | class: blocked | Implement Computedpropertynameandtypeparameterconflict |
 | 1414 | Implement Computedpropertynamewithimportedkey | spike | frontend/syntax | class: blocked | Implement Computedpropertynamewithimportedkey |
 | 1415 | Implement Computerpropertiesines | spike | frontend/syntax | class: blocked | Implement Computerpropertiesines |
 | 1416 | Implement Concatclassandstring | spike | frontend/resolver | class: blocked | Implement Concatclassandstring |
@@ -5089,6 +5088,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1410 | Implement Computedpropertiestransformedinotherwisenontsclasses | spike | frontend/syntax | see `issues/done/1410-implement-computedPropertiesTransformedInOtherwiseNonTSClasses.md` |
 | 1411 | Implement Computedpropertieswithsetterassignment | spike | frontend/syntax | see `issues/done/1411-implement-computedPropertiesWithSetterAssignment.md` |
 | 1412 | Implement Computedpropertybindingelementdeclarationnocrash | spike | frontend/syntax | see `issues/done/1412-implement-computedPropertyBindingElementDeclarationNoCrash.md` |
+| 1413 | Implement Computedpropertynameandtypeparameterconflict | spike | frontend/syntax | see `issues/done/1413-implement-computedPropertyNameAndTypeParameterConflict.md` |
 | 2050 | Implement Duplicatelocalvariable Duplicate Local | spike | reference/triage | see `issues/done/2050-implement-duplicateLocalVariable-duplicate-local.md` |
 | 3002 | Implement Isolateddeclarationerrorsdefault | spike | runtime/builtins | see `issues/done/3002-implement-isolatedDeclarationErrorsDefault.md` |
 | 3131 | Implement Jsxfactorynotidentifierorqualifiedname | spike | reference/triage | see `issues/done/3131-implement-jsxFactoryNotIdentifierOrQualifiedName.md` |
