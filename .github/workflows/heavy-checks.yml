@@ -35,7 +35,7 @@ jobs:
       - name: Install linker
         run: |
           sudo apt-get update
-          sudo apt-get install -y mold
+          sudo apt-get install -y mold wabt
 
       - name: Install wasm-tools
         run: |
