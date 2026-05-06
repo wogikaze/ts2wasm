@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 3 | 2 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4464 | 3714 | 750 |
+| frontend | 4464 | 3713 | 751 |
 | harness | 1 | 0 | 1 |
 | ir | 47 | 25 | 22 |
 | issues | 4 | 0 | 4 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5089 | 3992 | 1097 |
+| total | 5089 | 3991 | 1098 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -483,7 +483,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 772 | Implement Augmentedtypesvar | spike | frontend/syntax | class: blocked | Implement Augmentedtypesvar |
 | 773 | Implement Autoasiforstaticsinclassdeclaration | spike | frontend/syntax | class: triage-needed | Implement Autoasiforstaticsinclassdeclaration |
 | 775 | Implement Autotypeassignedusingdestructuringfromnevernocrash | spike | frontend/resolver | class: blocked | Implement Autotypeassignedusingdestructuringfromnevernocrash |
-| 1190 | Implement Classexpressionwithstaticpropertieses Parser Syntax | spike | frontend/syntax | class: triage-needed | Implement Classexpressionwithstaticpropertieses Parser Syntax |
 | 1191 | Implement Classexpressionwithstaticpropertieses Unknown Unsupported | spike | frontend/syntax | class: triage-needed | Implement Classexpressionwithstaticpropertieses Unknown Unsupported |
 | 1192 | Implement Classexpressions | spike | frontend/syntax | class: triage-needed | Implement Classexpressions |
 | 1193 | Implement Classextendingabstractclasswithmembercalledthesameasitsowntypeparam | spike | frontend/syntax | class: blocked | Implement Classextendingabstractclasswithmembercalledthesameasitsowntypeparam |
@@ -5045,6 +5044,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1187 | Implement Classexpressionwithresolutionofnamespaceofsamename | spike | frontend/syntax | see `issues/done/1187-implement-classExpressionWithResolutionOfNamespaceOfSameName.md` |
 | 1188 | Implement Classexpressionwithstaticproperties Parser Syntax | spike | frontend/syntax | see `issues/done/1188-implement-classExpressionWithStaticProperties-parser-syntax.md` |
 | 1189 | Implement Classexpressionwithstaticproperties Unknown Unsupported | spike | frontend/syntax | see `issues/done/1189-implement-classExpressionWithStaticProperties-unknown-unsupported.md` |
+| 1190 | Implement Classexpressionwithstaticpropertieses Parser Syntax | spike | frontend/syntax | see `issues/done/1190-implement-classExpressionWithStaticPropertiesES-parser-syntax.md` |
 | 2050 | Implement Duplicatelocalvariable Duplicate Local | spike | reference/triage | see `issues/done/2050-implement-duplicateLocalVariable-duplicate-local.md` |
 | 3002 | Implement Isolateddeclarationerrorsdefault | spike | runtime/builtins | see `issues/done/3002-implement-isolatedDeclarationErrorsDefault.md` |
 | 3131 | Implement Jsxfactorynotidentifierorqualifiedname | spike | reference/triage | see `issues/done/3131-implement-jsxFactoryNotIdentifierOrQualifiedName.md` |

@@ -118,3 +118,10 @@ python scripts/manager.py reference-coverage tsc --path-filter reference/typescr
 
 Split from `issues/done/1188-implement-classExpressionWithStaticProperties-parser-syntax.md`.
 Related generated bucket: `issues/open/773-implement-autoAsiForStaticsInClassDeclaration.md`.
+
+Additional superseded bucket:
+
+- `issues/done/1190-implement-classExpressionWithStaticPropertiesES-parser-syntax.md`
+  contributes `classExpressionWithStaticPropertiesES62.ts`, the same class
+  expression boundary with `static b` followed by later-line `static c = ...`.
+  Fresh triage on 2026-05-06 shows ES61 is already build-pass.
