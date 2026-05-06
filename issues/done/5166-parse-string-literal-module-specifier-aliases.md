@@ -72,11 +72,11 @@ The parser accepts string-literal module specifier names in valid static import/
 
 In scope:
 
-- [ ] Parse `export { foo as "0n" };`.
-- [ ] Parse `import { "0n" as foo } from "./foo";`.
-- [ ] Parse `export { foo as "0n" } from "./foo";` if the existing re-export parser shares the same specifier path.
-- [ ] Preserve spans and string values in the existing `ImportNamedSpecifier`, `ExportNamedSpecifier`, and `ReExportNamedSpecifier` structures.
-- [ ] Keep `import { 0n as foo }`, `import { foo as 0n }`, `export { foo as 0n }`, and `export { 0n as foo }` rejected.
+- [x] Parse `export { foo as "0n" };`.
+- [x] Parse `import { "0n" as foo } from "./foo";`.
+- [x] Parse `export { foo as "0n" } from "./foo";` if the existing re-export parser shares the same specifier path.
+- [x] Preserve spans and string values in the existing `ImportNamedSpecifier`, `ExportNamedSpecifier`, and `ReExportNamedSpecifier` structures.
+- [x] Keep `import { 0n as foo }`, `import { foo as 0n }`, `export { foo as 0n }`, and `export { 0n as foo }` rejected.
 
 Out of scope:
 
@@ -101,10 +101,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] `parse_program("export { foo as \"0n\" };")` succeeds and preserves exported name `"0n"`.
-- [ ] `parse_program("import { \"0n\" as foo } from \"./foo\";")` succeeds and preserves imported name `"0n"` with local name `foo`.
-- [ ] Invalid BigInt literal specifiers still fail with a source-spanned syntax diagnostic.
-- [ ] `python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/bigintArbirtraryIdentifier.ts` no longer reports the first `String("0n")` expected-identifier parser diagnostic.
+- [x] `parse_program("export { foo as \"0n\" };")` succeeds and preserves exported name `"0n"`.
+- [x] `parse_program("import { \"0n\" as foo } from \"./foo\";")` succeeds and preserves imported name `"0n"` with local name `foo`.
+- [x] Invalid BigInt literal specifiers still fail with a source-spanned syntax diagnostic.
+- [x] `python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/bigintArbirtraryIdentifier.ts` no longer reports the first `String("0n")` expected-identifier parser diagnostic.
 
 ## Validation
 
@@ -131,15 +131,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 

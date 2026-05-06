@@ -108,7 +108,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] created: `issues/open/5166-parse-string-literal-module-specifier-aliases.md`
+- [x] created: `issues/done/5166-parse-string-literal-module-specifier-aliases.md`
 
 ## Notes
 
@@ -131,7 +131,7 @@ Generated on 2026-05-06.
 - Visible symbols before failure: none
 - Compiler evidence: lexer emits `String("0n")`; AST/resolved fail before representing the valid arbitrary string-literal export name.
 - TypeScript oracle: accepts `export { foo as "0n" }` / `import { "0n" as foo }`, but reports diagnostics for later BigInt literal specifier forms.
-- Split child: `issues/open/5166-parse-string-literal-module-specifier-aliases.md`
+- Split child: `issues/done/5166-parse-string-literal-module-specifier-aliases.md`
 
 ## Completion evidence
 

@@ -108,7 +108,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] created/updated: `issues/open/5159-recover-colon-type-annotation-after-expression-statement.md`
+- [x] created/updated: `issues/done/5159-recover-colon-type-annotation-after-expression-statement.md`
 
 ## Notes
 
@@ -705,7 +705,7 @@ Stack trace:
 error: [UnsupportedSyntax] expected Semicolon, got Some(Colon) at 71..72
 ```
 
-Split child: `issues/open/5159-recover-colon-type-annotation-after-expression-statement.md`
+Split child: `issues/done/5159-recover-colon-type-annotation-after-expression-statement.md`
 
 ## Completion evidence
 

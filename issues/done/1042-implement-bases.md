@@ -108,7 +108,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] created/updated: `issues/open/5159-recover-colon-type-annotation-after-expression-statement.md`
+- [x] created/updated: `issues/done/5159-recover-colon-type-annotation-after-expression-statement.md`
 
 ## Notes
 
@@ -129,7 +129,7 @@ Generated on 2026-05-06.
 - Failure: `expected Semicolon, got Some(Colon) at 113..114`
 - Source context: `this.y: any;` in `class B` constructor
 - TypeScript AST path: `ClassDeclaration -> Constructor -> Block -> ExpressionStatement -> PropertyAccessExpression -> Identifier(y)`
-- Split child: `issues/open/5159-recover-colon-type-annotation-after-expression-statement.md`
+- Split child: `issues/done/5159-recover-colon-type-annotation-after-expression-statement.md`
 
 ## Completion evidence
 
