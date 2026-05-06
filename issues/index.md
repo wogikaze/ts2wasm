@@ -21,13 +21,13 @@ Issue files are the source of truth for work items. The generated section below 
 | ir | 57 | 35 | 22 |
 | issues | 4 | 0 | 4 |
 | parser | 1 | 0 | 1 |
-| reference | 212 | 158 | 54 |
+| reference | 212 | 157 | 55 |
 | runtime | 265 | 86 | 179 |
 | scripts | 3 | 1 | 2 |
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5127 | 3951 | 1176 |
+| total | 5127 | 3950 | 1177 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -638,7 +638,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1344 | Implement Commentleadingclosebrace | spike | frontend/resolver | class: blocked | Implement Commentleadingclosebrace |
 | 1345 | Implement Commentonambientmodule | spike | frontend/syntax | class: blocked | Implement Commentonambientmodule |
 | 1346 | Implement Commentonambientvariable | spike | frontend/resolver | class: blocked | Implement Commentonambientvariable |
-| 1386 | Implement Commonmissingsemicolons | spike | reference/triage | class: triage-needed | Implement Commonmissingsemicolons |
 | 1387 | Implement Commonsourcedir | spike | frontend/syntax | class: blocked | Implement Commonsourcedir |
 | 1388 | Implement Commonsourcedirectory | spike | frontend/syntax | class: blocked | Implement Commonsourcedirectory |
 | 1389 | Implement Commonjsaccessexports | spike | frontend/syntax | class: blocked | Implement Commonjsaccessexports |
@@ -5083,6 +5082,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1383 | Implement Commonjsexporttypedeclarationerror | spike | frontend/syntax | see `issues/done/1383-implement-commonJsExportTypeDeclarationError.md` |
 | 1384 | Implement Commonjsimportclassexpression | spike | frontend/syntax | see `issues/done/1384-implement-commonJsImportClassExpression.md` |
 | 1385 | Implement Commonjsisolatedmodules | spike | frontend/syntax | see `issues/done/1385-implement-commonJsIsolatedModules.md` |
+| 1386 | Implement Commonmissingsemicolons | spike | reference/triage | see `issues/done/1386-implement-commonMissingSemicolons.md` |
 | 2050 | Implement Duplicatelocalvariable Duplicate Local | spike | reference/triage | see `issues/done/2050-implement-duplicateLocalVariable-duplicate-local.md` |
 | 3002 | Implement Isolateddeclarationerrorsdefault | spike | runtime/builtins | see `issues/done/3002-implement-isolatedDeclarationErrorsDefault.md` |
 | 3131 | Implement Jsxfactorynotidentifierorqualifiedname | spike | reference/triage | see `issues/done/3131-implement-jsxFactoryNotIdentifierOrQualifiedName.md` |
