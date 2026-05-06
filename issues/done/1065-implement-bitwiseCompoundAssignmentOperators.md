@@ -120,7 +120,7 @@ Follow-up issues:
 
 - Generic `unknown-unsupported` buckets are not matches; they share only the generated feature label.
 - `issues/open/661-implement-arithAssignTyping.md` is related but not an exact match. Its first current parser blocker is arithmetic `*=` in a different reference file, while this bucket stops at bitwise `^=`.
-- `issues/open/5164-parse-exponentiation-compound-assignment.md` is related but owns only `**=`.
+- `issues/done/5164-parse-exponentiation-compound-assignment.md` is related but owns only `**=`.
 - `issues/open/5170-support-bitwise-or-binary-lowering.md` is not a match because it explicitly excludes `|=` compound assignment.
 
 ## Smart triage

@@ -79,10 +79,10 @@ The parser accepts exponentiation compound assignment expressions and either low
 
 In scope:
 
-- [ ] Parse `**=` as an assignment expression for identifier left-hand sides.
-- [ ] Preserve existing `**` exponentiation parsing.
-- [ ] Add focused parser/frontend coverage for `num **= BigInt(2);`.
-- [ ] Re-run representative triage and confirm the current `PowerEqual` parser blocker is gone.
+- [x] Parse `**=` as an assignment expression for identifier left-hand sides.
+- [x] Preserve existing `**` exponentiation parsing.
+- [x] Add focused parser/frontend coverage for `num **= BigInt(2);`.
+- [x] Re-run representative triage and confirm the current `PowerEqual` parser blocker is gone.
 
 Out of scope:
 
@@ -106,11 +106,11 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] `num **= BigInt(2);` parses without `expected Semicolon, got Some(PowerEqual)`.
-- [ ] `BigInt(1) ** BigInt(1);` remains parsed as exponentiation.
-- [ ] `python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/bigIntWithTargetES2016.ts` no longer reports the `PowerEqual` parser diagnostic.
-- [ ] `python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/bigIntWithTargetLessThanES2016.ts` no longer reports the `PowerEqual` parser diagnostic.
-- [ ] A focused parser/frontend regression covers the `PowerEqual` token path.
+- [x] `num **= BigInt(2);` parses without `expected Semicolon, got Some(PowerEqual)`.
+- [x] `BigInt(1) ** BigInt(1);` remains parsed as exponentiation.
+- [x] `python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/bigIntWithTargetES2016.ts` no longer reports the `PowerEqual` parser diagnostic.
+- [x] `python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/bigIntWithTargetLessThanES2016.ts` no longer reports the `PowerEqual` parser diagnostic.
+- [x] A focused parser/frontend regression covers the `PowerEqual` token path.
 
 ## Validation
 
@@ -138,15 +138,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 
@@ -158,7 +158,7 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- `<hash>` (set during commit)
+- `cee6dbbc`
 
 Validation result:
 

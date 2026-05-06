@@ -108,7 +108,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] created/updated: `issues/open/5164-parse-exponentiation-compound-assignment.md`
+- [x] created/updated: `issues/done/5164-parse-exponentiation-compound-assignment.md`
 
 ## Notes
 
@@ -129,7 +129,7 @@ Generated on 2026-05-06.
 - Failure: `expected Semicolon, got Some(PowerEqual) at 106..109`
 - Source context: `num **= BigInt(2);`
 - TypeScript AST path: `ExpressionStatement -> BinaryExpression -> AsteriskAsteriskEqualsToken`
-- Split child: `issues/open/5164-parse-exponentiation-compound-assignment.md`
+- Split child: `issues/done/5164-parse-exponentiation-compound-assignment.md`
 
 ## Completion evidence
 
