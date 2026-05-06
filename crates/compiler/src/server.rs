@@ -471,6 +471,12 @@ fn lower_source_text(path: &Path, source: &str) -> Result<LoweredProgram, Diagno
     let program = Parser::new(tokens, source).parse_program()?;
     validate_ast(&program)?;
     let module_graph = module_graph::build_entry_module_graph(path, &program)?;
+    // Surface cycle diagnostics: report first cycle diagnostic as error.
+    if let Some(cycle_diag) = module_graph.cycle_diagnostics().first() {
+        return Err(cycle_diag.clone());
+    }
+    // Validate dependency-first initialization order.
+    module_graph::validate_init_order(&module_graph)?;
     let static_module_binding =
         lower_static_named_import_bindings_for_build(&program, &module_graph)?;
     let name_resolved = name_resolver::resolve_names(&static_module_binding.rewritten_program)?;

@@ -300,7 +300,7 @@ fn populate_static_module_exports_for_build(
                         }
                     }
                 }
-                lowered::LoweredStmt::ClassDecl { name, .. } => {
+                lowered::LoweredStmt::ClassDecl { .. } => {
                     return Err(Diagnostic {
                         code: DiagCode::UnsupportedSyntax,
                         message: format!(
