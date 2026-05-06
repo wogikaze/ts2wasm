@@ -39,6 +39,7 @@ pub fn lower_program(program: &[ResolvedStmt]) -> Result<LoweredProgram, Diagnos
     let class_parents = collect_class_parents(program);
     let class_private_fields = collect_class_private_fields(program);
     let class_static_private_fields = collect_class_static_private_fields(program);
+    let function_recursion_depths = compute_recursion_depths(program, &function_ids);
     let mut next_func_id = function_ids.len();
     let mut functions_by_id = vec![None; function_ids.len()];
     let mut generated_functions = Vec::new();
@@ -80,6 +81,7 @@ pub fn lower_program(program: &[ResolvedStmt]) -> Result<LoweredProgram, Diagnos
                         in_constructor: false,
                         next_func_id,
                         self_closure: None,
+                        recursion_depth: *function_recursion_depths.get(&func_id).unwrap_or(&0),
                     },
                 )?;
                 next_func_id = lowered.next_func_id;
@@ -129,6 +131,7 @@ pub fn lower_program(program: &[ResolvedStmt]) -> Result<LoweredProgram, Diagnos
                         in_constructor: true,
                         next_func_id,
                         self_closure: None,
+                        recursion_depth: *function_recursion_depths.get(&ctor_id).unwrap_or(&0),
                     },
                 )?;
                 next_func_id = lowered.next_func_id;
@@ -183,6 +186,7 @@ pub fn lower_program(program: &[ResolvedStmt]) -> Result<LoweredProgram, Diagnos
                             in_constructor: false,
                             next_func_id,
                             self_closure: None,
+                            recursion_depth: *function_recursion_depths.get(&method_id).unwrap_or(&0),
                         },
                     )?;
                     next_func_id = lowered.next_func_id;
@@ -1176,6 +1180,346 @@ fn expr_is_known_dense_array_return(expr: &ResolvedExpr, dense_locals: &HashSet<
     }
 }
 
+/// Compute recursion depth for each function by analyzing the call graph.
+///
+/// A function has recursion_depth >= 1 if it is part of a recursive cycle
+/// (directly calls itself, or is part of a cycle through other functions).
+/// Depth 0 means the function is not recursive. Depths above 1 indicate the
+/// cycle length (2 for mutual recursion between two functions, etc.).
+///
+/// This is used by ABC451 runtime tracking to distinguish top-level array
+/// growth (depth 0) from nested/recursive array growth (depth 1+).
+fn compute_recursion_depths(
+    program: &[ResolvedStmt],
+    function_ids: &HashMap<String, FuncId>,
+) -> HashMap<FuncId, usize> {
+    // Step 1: Build the call graph: for each FuncId, which function *names* does it call?
+    let mut call_graph: HashMap<FuncId, HashSet<String>> = HashMap::new();
+    for stmt in program {
+        match stmt {
+            ResolvedStmt::Function { name, body, .. } => {
+                if let Some(&func_id) = function_ids.get(name.as_str()) {
+                    let mut targets = HashSet::new();
+                    collect_call_targets_in_stmts(body, &mut targets);
+                    call_graph.insert(func_id, targets);
+                }
+            }
+            ResolvedStmt::ClassDecl {
+                name,
+                constructor,
+                methods,
+                ..
+            } => {
+                let ctor_key = class_constructor_key(name);
+                if let Some(&ctor_id) = function_ids.get(&ctor_key) {
+                    let mut targets = HashSet::new();
+                    if let Some((_, body)) = constructor {
+                        collect_call_targets_in_stmts(body, &mut targets);
+                    }
+                    call_graph.insert(ctor_id, targets);
+                }
+                for method in methods {
+                    let method_key = class_method_key(name, &method.name);
+                    if let Some(&method_id) = function_ids.get(&method_key) {
+                        let mut targets = HashSet::new();
+                        collect_call_targets_in_stmts(&method.body, &mut targets);
+                        call_graph.insert(method_id, targets);
+                    }
+                }
+            }
+            _ => {}
+        }
+    }
+
+    // Step 2: Find strongly connected components (cycles) via DFS.
+    // Functions in a non-trivial SCC (size > 1 or self-loop) are recursive.
+    // Map FuncId -> node index (0..n)
+    let mut func_to_idx: HashMap<FuncId, usize> = HashMap::new();
+    let mut next_idx = 0;
+    for (name, &id) in function_ids {
+        if call_graph.contains_key(&id) || program.iter().any(|stmt| match stmt {
+            ResolvedStmt::Function { name: n, .. } => n == name,
+            ResolvedStmt::ClassDecl { name: n, .. } => n == name,
+            _ => false,
+        }) {
+            if !func_to_idx.contains_key(&id) {
+                func_to_idx.insert(id, next_idx);
+                next_idx += 1;
+            }
+        }
+    }
+
+    let n = func_to_idx.len();
+    let mut idx_to_func: Vec<FuncId> = vec![FuncId(0); n];
+    for (&id, &i) in &func_to_idx {
+        idx_to_func[i] = id;
+    }
+
+    // Build adjacency list: node index -> [node indices of called functions]
+    let mut adj: Vec<Vec<usize>> = vec![Vec::new(); n];
+    for (&caller_id, callee_names) in &call_graph {
+        if let Some(&caller_idx) = func_to_idx.get(&caller_id) {
+            for callee_name in callee_names {
+                if let Some(&callee_id) = function_ids.get(callee_name.as_str()) {
+                    if let Some(&callee_idx) = func_to_idx.get(&callee_id) {
+                        if !adj[caller_idx].contains(&callee_idx) {
+                            adj[caller_idx].push(callee_idx);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    // Kosaraju-style SCC detection via iterative Tarjan-like DFS.
+    // We use a simpler approach: find self-loops first, then find 2-node cycles, etc.
+    let mut recursion_depth: HashMap<FuncId, usize> = HashMap::new();
+
+    // Helper: recursive DFS to find reachable nodes that lead back to the start.
+    fn dfs_find_cycle(
+        node: usize,
+        adj: &[Vec<usize>],
+        visited: &mut [bool],
+        stack: &mut Vec<usize>,
+        in_stack: &mut [bool],
+        depths: &mut HashMap<FuncId, usize>,
+        idx_to_func: &[FuncId],
+    ) {
+        visited[node] = true;
+        stack.push(node);
+        in_stack[node] = true;
+
+        for &next in &adj[node] {
+            if !visited[next] {
+                dfs_find_cycle(next, adj, visited, stack, in_stack, depths, idx_to_func);
+            } else if in_stack[next] {
+                // Found a back edge: next -> ... -> node -> next is a cycle
+                // Mark all nodes in the cycle as recursive (depth 1).
+                let mut in_cycle = false;
+                for &s in stack.iter() {
+                    if s == next {
+                        in_cycle = true;
+                    }
+                    if in_cycle {
+                        depths.insert(idx_to_func[s], 1);
+                    }
+                    if s == node && in_cycle {
+                        break;
+                    }
+                }
+            }
+        }
+
+        stack.pop();
+        in_stack[node] = false;
+    }
+
+    let mut visited = vec![false; n];
+    let mut stack = Vec::new();
+    let mut in_stack = vec![false; n];
+
+    for i in 0..n {
+        if !visited[i] {
+            dfs_find_cycle(
+                i,
+                &adj,
+                &mut visited,
+                &mut stack,
+                &mut in_stack,
+                &mut recursion_depth,
+                &idx_to_func,
+            );
+        }
+    }
+
+    // Default depth 0 for functions not in cycles
+    for &id in idx_to_func.iter() {
+        recursion_depth.entry(id).or_insert(0);
+    }
+
+    recursion_depth
+}
+
+/// Collect all function names that are called from within a sequence of statements.
+fn collect_call_targets_in_stmts(stmts: &[ResolvedStmt], targets: &mut HashSet<String>) {
+    for stmt in stmts {
+        match stmt {
+            ResolvedStmt::Let(_, expr) | ResolvedStmt::Assign(_, expr) | ResolvedStmt::Expr(expr) | ResolvedStmt::Return(expr) | ResolvedStmt::Throw(expr) => {
+                collect_call_targets_in_expr(expr, targets);
+            }
+            ResolvedStmt::If { condition, then_body, else_body } => {
+                collect_call_targets_in_expr(condition, targets);
+                collect_call_targets_in_stmts(then_body, targets);
+                collect_call_targets_in_stmts(else_body, targets);
+            }
+            ResolvedStmt::While { condition, body } | ResolvedStmt::DoWhile { body, condition } => {
+                collect_call_targets_in_expr(condition, targets);
+                collect_call_targets_in_stmts(body, targets);
+            }
+            ResolvedStmt::For { init, condition, body, .. } => {
+                if let Some(init) = init {
+                    collect_call_targets_in_stmts(std::slice::from_ref(init.as_ref()), targets);
+                }
+                if let Some(condition) = condition {
+                    collect_call_targets_in_expr(condition, targets);
+                }
+                collect_call_targets_in_stmts(body, targets);
+            }
+            ResolvedStmt::ForIn { iter, body, .. } | ResolvedStmt::ForOf { iter, body, .. } => {
+                collect_call_targets_in_expr(iter, targets);
+                collect_call_targets_in_stmts(body, targets);
+            }
+            ResolvedStmt::TryCatch { try_block, catch_block, finally_block, .. } => {
+                collect_call_targets_in_stmts(try_block, targets);
+                if let Some(block) = catch_block {
+                    collect_call_targets_in_stmts(block, targets);
+                }
+                if let Some(block) = finally_block {
+                    collect_call_targets_in_stmts(block, targets);
+                }
+            }
+            ResolvedStmt::Switch { cases, .. } => {
+                for (_, body) in cases {
+                    collect_call_targets_in_stmts(body, targets);
+                }
+            }
+            ResolvedStmt::Labeled { body, .. } => {
+                collect_call_targets_in_stmts(std::slice::from_ref(body.as_ref()), targets);
+            }
+            ResolvedStmt::Export { expr, .. } | ResolvedStmt::ModuleExportsAssign { expr } => {
+                collect_call_targets_in_expr(expr, targets);
+            }
+            ResolvedStmt::Block { statements, .. } => {
+                collect_call_targets_in_stmts(statements, targets);
+            }
+            ResolvedStmt::DestructureLet { expr, .. } => {
+                collect_call_targets_in_expr(expr, targets);
+            }
+            ResolvedStmt::Function { body, .. } => {
+                // Nested functions: walk their body too
+                collect_call_targets_in_stmts(body, targets);
+            }
+            ResolvedStmt::AmbientValue(_) | ResolvedStmt::Break { .. } | ResolvedStmt::Continue { .. } | ResolvedStmt::ClassDecl { .. } => {}
+        }
+    }
+}
+
+/// Collect function call targets from a resolved expression tree.
+fn collect_call_targets_in_expr(expr: &ResolvedExpr, targets: &mut HashSet<String>) {
+    match expr {
+        ResolvedExpr::Call { callee, args, .. } => {
+            // Record the callee if it's a direct function reference
+            if let ResolvedExpr::Ident(name) = callee.as_ref() {
+                targets.insert(name.clone());
+            }
+            for arg in args {
+                collect_call_targets_in_expr(arg, targets);
+            }
+        }
+        ResolvedExpr::MethodCall { object, method, args, .. } => {
+            // Record method name as a potential call target
+            // (methods could be called on any object, including `this`)
+            targets.insert(method.clone());
+            collect_call_targets_in_expr(object, targets);
+            for arg in args {
+                collect_call_targets_in_expr(arg, targets);
+            }
+        }
+        ResolvedExpr::Unary { expr, .. }
+        | ResolvedExpr::BuiltinProperty { object: expr, .. }
+        | ResolvedExpr::PropertyAccess { object: expr, .. }
+        | ResolvedExpr::OptionalPropertyAccess { object: expr, .. } => {
+            collect_call_targets_in_expr(expr, targets);
+        }
+        ResolvedExpr::Binary { left, right, .. }
+        | ResolvedExpr::ComputedIndex { object: left, index: right } => {
+            collect_call_targets_in_expr(left, targets);
+            collect_call_targets_in_expr(right, targets);
+        }
+        ResolvedExpr::Ternary { condition, then_expr, else_expr, .. } => {
+            collect_call_targets_in_expr(condition, targets);
+            collect_call_targets_in_expr(then_expr, targets);
+            collect_call_targets_in_expr(else_expr, targets);
+        }
+        ResolvedExpr::OptionalCall { callee, args, .. } => {
+            if let ResolvedExpr::Ident(name) = callee.as_ref() {
+                targets.insert(name.clone());
+            }
+            for arg in args {
+                collect_call_targets_in_expr(arg, targets);
+            }
+        }
+        ResolvedExpr::Assign { expr, .. }
+        | ResolvedExpr::LogicalAssign { expr, .. }
+        | ResolvedExpr::LogicalPropertyAssign { expr, .. } => {
+            collect_call_targets_in_expr(expr, targets);
+        }
+        ResolvedExpr::LogicalMemberAssign { object, expr, .. } => {
+            collect_call_targets_in_expr(object, targets);
+            collect_call_targets_in_expr(expr, targets);
+        }
+        ResolvedExpr::LogicalComputedPropertyAssign { key, expr, .. } => {
+            collect_call_targets_in_expr(key, targets);
+            collect_call_targets_in_expr(expr, targets);
+        }
+        ResolvedExpr::LogicalComputedMemberAssign { object, key, expr, .. } => {
+            collect_call_targets_in_expr(object, targets);
+            collect_call_targets_in_expr(key, targets);
+            collect_call_targets_in_expr(expr, targets);
+        }
+        ResolvedExpr::Array(elements) => {
+            for element in elements {
+                if let ResolvedArrayElement::Present(element_expr) = element {
+                    collect_call_targets_in_expr(element_expr, targets);
+                }
+            }
+        }
+        ResolvedExpr::Object(props) => {
+            for (_, value) in props {
+                collect_call_targets_in_expr(value, targets);
+            }
+        }
+        ResolvedExpr::BuiltinCall { args, .. } | ResolvedExpr::New { args, .. } => {
+            for arg in args {
+                collect_call_targets_in_expr(arg, targets);
+            }
+        }
+        ResolvedExpr::OptionalComputedIndex { object, index, .. } => {
+            collect_call_targets_in_expr(object, targets);
+            collect_call_targets_in_expr(index, targets);
+        }
+        ResolvedExpr::PropertyAssign { object, value, .. } => {
+            collect_call_targets_in_expr(object, targets);
+            collect_call_targets_in_expr(value, targets);
+        }
+        ResolvedExpr::ArrowFn { body, .. } => {
+            collect_call_targets_in_expr(body, targets);
+        }
+        ResolvedExpr::FunctionExpr { name, body, .. } => {
+            targets.insert(name.clone());
+            collect_call_targets_in_stmts(body, targets);
+        }
+        ResolvedExpr::PropertyAssignDynamic { object, key, value } => {
+            collect_call_targets_in_expr(object, targets);
+            collect_call_targets_in_expr(key, targets);
+            collect_call_targets_in_expr(value, targets);
+        }
+        ResolvedExpr::Spread(expr) => {
+            collect_call_targets_in_expr(expr, targets);
+        }
+        ResolvedExpr::This { .. }
+        | ResolvedExpr::Ident(_)
+        | ResolvedExpr::Number(_)
+        | ResolvedExpr::BigIntLiteral { .. }
+        | ResolvedExpr::String(_)
+        | ResolvedExpr::Bool(_)
+        | ResolvedExpr::Null
+        | ResolvedExpr::Undefined
+        | ResolvedExpr::ModuleLoad { .. }
+        | ResolvedExpr::ClassExpr { .. } => {}
+    }
+}
+
 fn collect_declared_function_names(stmts: &[ResolvedStmt], names: &mut HashSet<String>) {
     for stmt in stmts {
         match stmt {
@@ -1670,6 +2014,8 @@ struct LowerFunctionOptions<'a> {
     in_constructor: bool,
     next_func_id: usize,
     self_closure: Option<SelfClosureOptions<'a>>,
+    /// Recursion depth for this function (0 = not recursive, 1+ = recursive).
+    recursion_depth: usize,
 }
 
 struct SelfClosureOptions<'a> {
@@ -1845,6 +2191,7 @@ fn lower_function(
             rest_param_index,
             locals: resolver.locals,
             body: body_with_defaults,
+            recursion_depth: options.recursion_depth,
         },
         generated_functions: resolver.generated_functions,
         next_func_id: resolver.next_func_id,

@@ -83,6 +83,10 @@ pub struct LoweredFunction {
     pub rest_param_index: Option<usize>,
     pub locals: Vec<LocalId>,
     pub body: Vec<LoweredStmt>,
+    /// Static recursion depth: 0 = not recursive, 1+ = part of a recursive cycle.
+    /// Used by ABC451 runtime tracking to distinguish top-level array growth
+    /// (depth 0) from nested/recursive array growth (depth 1+).
+    pub recursion_depth: usize,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]

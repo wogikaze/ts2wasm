@@ -515,6 +515,7 @@ impl<'a> Resolver<'a> {
                 in_constructor: false,
                 next_func_id: self.next_func_id,
                 self_closure,
+                recursion_depth: 0,
             },
         )?;
         self.next_func_id = lowered.next_func_id;
@@ -1583,6 +1584,7 @@ impl<'a> Resolver<'a> {
                     func_id,
                     capture_names: &capture_names,
                 }),
+                recursion_depth: 0,
             },
         )?;
         self.next_func_id = lowered.next_func_id;
@@ -1703,6 +1705,7 @@ impl<'a> Resolver<'a> {
                 in_constructor: false,
                 next_func_id: self.next_func_id,
                 self_closure,
+                recursion_depth: 0,
             },
         )?;
         self.next_func_id = lowered.next_func_id;
