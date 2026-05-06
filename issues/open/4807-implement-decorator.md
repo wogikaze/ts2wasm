@@ -120,7 +120,7 @@ Follow-up issues:
 ## Duplicate detection
 
 - `issues/done/1035-implement-baseConstraintOfDecorator.md` - Implement Baseconstraintofdecorator (same feature label, same group key, title overlap; superseded by issue 5144)
-- `issues/open/1186-implement-classExpressionWithDecorator.md` - Implement Classexpressionwithdecorator (same feature label, same group key, title overlap)
+- `issues/done/1186-implement-classExpressionWithDecorator.md` - Implement Classexpressionwithdecorator (same feature label, same group key, title overlap; split to issue 5253)
 - `issues/open/1892-implement-decoratorInJsFile.md` - Implement Decoratorinjsfile (same feature label, same group key, title overlap)
 - `issues/open/1893-implement-decoratorMetadataConditionalType.md` - Implement Decoratormetadataconditionaltype (same feature label, same group key, title overlap)
 - `issues/open/1894-implement-decoratorMetadataElidedImport.md` - Implement Decoratormetadataelidedimport (same feature label, same group key, title overlap)
