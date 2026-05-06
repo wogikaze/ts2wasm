@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 4 | 3 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4513 | 3630 | 883 |
+| frontend | 4514 | 3630 | 884 |
 | harness | 1 | 0 | 1 |
 | ir | 57 | 35 | 22 |
 | issues | 4 | 0 | 4 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5149 | 3912 | 1237 |
+| total | 5150 | 3912 | 1238 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -47,7 +47,7 @@ Issue files are the source of truth for work items. The generated section below 
 Direct child counts are derived from issue-file `depends_on` links. A meta issue can be `done` as a classification/design umbrella while implementation child issues remain open.
 
 ```
-5000 (Meta: TypeScript Compiler Parser Syntax Coverage) [done/design] ch:488 open:415 done:73
+5000 (Meta: TypeScript Compiler Parser Syntax Coverage) [done/design] ch:487 open:414 done:73
 ├── 5002 (Meta: TypeScript Compiler Type System Coverage) [done/done] ch:234 open:217 done:17 (also ← 5005)
 ├── 5003 (Meta: TypeScript Compiler Declaration Emit Coverage) [done/done] ch:102 open:91 done:11 (also ← 5001)
 5001 (Meta: TypeScript Compiler Semantic Analysis Coverage) [done/done] ch:593 open:339 done:254
@@ -66,7 +66,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 
 | Order | ID | Title | State | Class | Area | Priority | Depends on | Direct children | Open children | Done children |
 |-----:|---:|------|-------|-------|------|--------:|-----------:|----------------:|--------------:|--------------:|
-| 1 | 5000 | Meta: TypeScript Compiler Parser Syntax Coverage | done | design | frontend/syntax | P1 | - | 488 | 415 | 73 |
+| 1 | 5000 | Meta: TypeScript Compiler Parser Syntax Coverage | done | design | frontend/syntax | P1 | - | 487 | 414 | 73 |
 | 2 | 5001 | Meta: TypeScript Compiler Semantic Analysis Coverage | done | done | frontend/semantics | P1 | - | 593 | 339 | 254 |
 | 3 | 5004 | Meta: Runtime Builtins Coverage (test262) (audit reopened #5004) | done | done | runtime/builtins | P1 | - | 24 | 3 | 21 |
 | 4 | 5005 | Meta: TypeScript Compiler Name Resolution Coverage | done | done | frontend/resolver | P1 | - | 421 | 369 | 52 |
@@ -269,6 +269,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5312 | Parse export abstract class declarations | feature | frontend/syntax | implementation-ready | P1 |  | `export abstract class ConvenientObservable<T, TChange> ...` in |
 | 5313 | Report non-exported namespace member in qualified heritage | feature | frontend/name-resolution | implementation-ready | P1 |  | `classExtendingQualifiedName.ts` now builds successfully, but |
 | 5314 | Report non-constructor local class heritage | feature | frontend/name-resolution | implementation-ready | P1 |  | `classExtendsClauseClassMergedWithModuleNotReferingConstructor.ts` |
+| 5315 | Report class extends interface diagnostics | feature | frontend/name-resolution | implementation-ready | P1 |  | `classExtendsInterface.ts` now build-passes, but TypeScript reports |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -542,7 +543,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 772 | Implement Augmentedtypesvar | spike | frontend/syntax | class: blocked | Implement Augmentedtypesvar |
 | 773 | Implement Autoasiforstaticsinclassdeclaration | spike | frontend/syntax | class: triage-needed | Implement Autoasiforstaticsinclassdeclaration |
 | 775 | Implement Autotypeassignedusingdestructuringfromnevernocrash | spike | frontend/resolver | class: blocked | Implement Autotypeassignedusingdestructuringfromnevernocrash |
-| 1199 | Implement Classextendsinterface Parser Syntax | spike | frontend/syntax | class: blocked | Implement Classextendsinterface Parser Syntax |
 | 1202 | Implement Classextendsinterfaceinmodule | spike | frontend/syntax | class: blocked | Implement Classextendsinterfaceinmodule |
 | 1203 | Implement Classextendsinterfacethatextendsclasswithprivates | spike | frontend/syntax | class: blocked | Implement Classextendsinterfacethatextendsclasswithprivates |
 | 1204 | Implement Classextendsmultiplebaseclasses | spike | frontend/syntax | class: blocked | Implement Classextendsmultiplebaseclasses |
@@ -4975,6 +4975,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1196 | Implement Classextendsacrossfiles | spike | frontend/syntax | see `issues/done/1196-implement-classExtendsAcrossFiles.md` |
 | 1197 | Implement Classextendsclauseclassmergedwithmodulenotreferingconstructor | spike | frontend/syntax | see `issues/done/1197-implement-classExtendsClauseClassMergedWithModuleNotReferingConstructor.md` |
 | 1198 | Implement Classextendsclauseclassnotreferringconstructor | spike | frontend/syntax | see `issues/done/1198-implement-classExtendsClauseClassNotReferringConstructor.md` |
+| 1199 | Implement Classextendsinterface Parser Syntax | spike | frontend/syntax | see `issues/done/1199-implement-classExtendsInterface-parser-syntax.md` |
 | 1200 | Implement Classextendsinterface Unknown Unsupported | spike | frontend/syntax | see `issues/done/1200-implement-classExtendsInterface-unknown-unsupported.md` |
 | 1201 | Implement Classextendsinterfaceinexpression | spike | frontend/syntax | see `issues/done/1201-implement-classExtendsInterfaceInExpression.md` |
 | 1205 | Implement Classextendsnull | spike | frontend/syntax | see `issues/done/1205-implement-classExtendsNull.md` |

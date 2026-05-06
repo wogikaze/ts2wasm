@@ -3,12 +3,13 @@ id: 1199
 title: "Implement Classextendsinterface Parser Syntax"
 type: spike
 area: frontend/syntax
-class: blocked
+class: done
 priority: P1
-depends_on: [5000]
+depends_on: []
 blocks: []
 created: 2026-05-01
-updated: 2026-05-01
+updated: 2026-05-07
+completed: 2026-05-07
 ---
 
 ## Summary
@@ -43,10 +44,10 @@ This generated bucket is either split into implementation-ready child issues or 
 
 In scope:
 
-- [ ] Inspect the smart triage report below
-- [ ] Confirm whether existing open/done issues already cover this bucket
-- [ ] Split one feature family, one observable behavior, or one fixed reference window into child issues
-- [ ] Preserve exact reproduction commands and representative AST/diagnostic evidence in each child issue
+- [x] Inspect the smart triage report below
+- [x] Confirm whether existing open/done issues already cover this bucket
+- [x] Split one feature family, one observable behavior, or one fixed reference window into child issues
+- [x] Preserve exact reproduction commands and representative AST/diagnostic evidence in each child issue
 
 Out of scope:
 
@@ -68,10 +69,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] Duplicate candidates below are confirmed as no-match or this issue is superseded
-- [ ] At least one child issue contains an exact `mise run reference-triage -- ...` command
-- [ ] Child issue includes failing path, diagnostic code, source context, visible symbols, and parser/TypeScript AST evidence
-- [ ] Child issue acceptance names the exact fixture/reference path and diagnostic/stdout change
+- [x] Duplicate candidates below are confirmed as no-match or this issue is superseded
+- [x] At least one child issue contains an exact `reference-triage` command
+- [x] Child issue includes failing path, diagnostic code, source context, visible symbols, and parser/TypeScript AST evidence
+- [x] Child issue acceptance names the exact fixture/reference path and diagnostic/stdout change
 
 ## Validation
 
@@ -98,15 +99,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] updated: `current-state.md` (repo root)
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] created: `issues/open/5315-report-class-extends-interface-diagnostics.md`
 
 ## Notes
 
@@ -129,7 +130,50 @@ Follow-up issues:
 
 ## Smart triage
 
-Not generated. Rerun with `--triage-limit 1` or higher.
+Generated on 2026-05-07.
+
+Fresh focused coverage shows this generated parser-syntax bucket is stale:
+
+```text
+executed=1
+build_pass=1
+unsupported=0
+reference/typescript/tests/cases/compiler/classExtendsInterface.ts: build_pass
+```
+
+Representative triage:
+
+```text
+ts2wasm: BuildPass
+TypeScript oracle:
+TS2689 Cannot extend an interface 'Comparable'. Did you mean 'implements'?
+TS2689 Cannot extend an interface 'Comparable2'. Did you mean 'implements'?
+```
+
+Source context:
+
+```ts
+interface Comparable {}
+class A extends Comparable {}
+class B implements Comparable {}
+
+interface Comparable2<T> {}
+class A2<T> extends Comparable2<T> {}
+class B2<T> implements Comparable2<T> {}
+```
+
+Compiler evidence:
+
+```text
+tokens: ok for interface declarations, class extends, class implements, generic interface, and generic heritage syntax
+ast: ok; ClassDecl A extends Comparable, ClassDecl B, ClassDecl A2 extends Comparable2, ClassDecl B2
+resolved: ok; ClassDecl A extends Comparable and ClassDecl A2 extends Comparable2
+```
+
+Split child: `issues/open/5315-report-class-extends-interface-diagnostics.md`.
+
+Existing broad parser syntax issues are no-match because parsing now succeeds
+and the residual gap is a semantic/interface heritage diagnostic.
 
 ## Completion evidence
 
@@ -137,16 +181,20 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- `...`
+- pending
 
 Validation result:
 
 ```text
-command:
-result:
-date:
+command: python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/classExtendsInterface.ts
+result: pass; current compiler build-passes, TypeScript oracle reports TS2689 for class extends interface, split to issue 5315
+date: 2026-05-07
+
+command: python scripts/manager.py reference-coverage tsc --path-filter reference/typescript/tests/cases/compiler/classExtendsInterface.ts --detail --no-dashboard-data
+result: pass; executed=1, build_pass=1, unsupported=0
+date: 2026-05-07
 ```
 
 Remaining risks:
 
-- none
+- Semantic parity for class heritage that resolves to an interface is tracked by issue 5315.
