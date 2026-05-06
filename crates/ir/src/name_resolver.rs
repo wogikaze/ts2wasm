@@ -882,6 +882,14 @@ impl NameResolver {
             }),
             Expr::New { expr, args, span } => {
                 // Extract callee identifier directly to bypass class-value check
+                // Check for type-only callee before the generic issue-062 guard.
+                // E.g., `new any[1]` should report TS2693 at `any`, not issue-062.
+                if let Expr::Index { object, .. } = expr.as_ref()
+                    && let Expr::Ident { name, span: name_span } = object.as_ref()
+                    && is_type_only_ambient_global(name)
+                {
+                    return Err(type_only_value_use_diagnostic(name, *name_span));
+                }
                 let callee_name = match expr.as_ref() {
                     Expr::Ident { name, .. } => name.clone(),
                     Expr::Member { property, .. } => property.clone(),
