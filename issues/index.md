@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 1 | 0 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4414 | 3776 | 638 |
+| frontend | 4415 | 3776 | 639 |
 | harness | 1 | 0 | 1 |
 | ir | 31 | 9 | 22 |
 | issues | 4 | 0 | 4 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5020 | 4042 | 978 |
+| total | 5021 | 4042 | 979 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -140,6 +140,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5183 | Report typed getter null return diagnostics | feature | frontend/semantics | implementation-ready | P1 |  | typed class getter return annotations are erased before return-expression diagnostics are checked. |
 | 5184 | Parse const enum declarations | feature | frontend/syntax | implementation-ready | P1 |  | `const enum` declarations are parser-unsupported and are misclassified as malformed `const` variable declarations. |
 | 5185 | Source-span unresolved class method function calls | feature | frontend/resolver | implementation-ready | P1 |  | unresolved function calls from class method bodies lose source-span information and should report the out-of-scope ca... |
+| 5186 | Parse export assignment expressions | feature | frontend/syntax | implementation-ready | P1 |  | `export = expr` is treated as an unsupported module boundary before the exported expression can be represented in the... |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -415,7 +416,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 772 | Implement Augmentedtypesvar | spike | frontend/syntax | class: blocked | Implement Augmentedtypesvar |
 | 773 | Implement Autoasiforstaticsinclassdeclaration | spike | frontend/syntax | class: triage-needed | Implement Autoasiforstaticsinclassdeclaration |
 | 775 | Implement Autotypeassignedusingdestructuringfromnevernocrash | spike | frontend/resolver | class: blocked | Implement Autotypeassignedusingdestructuringfromnevernocrash |
-| 1074 | Implement Blockscopedfunctiondeclarationinstrictmodule | spike | frontend/syntax | class: blocked | Implement Blockscopedfunctiondeclarationinstrictmodule |
 | 1075 | Implement Blockscopedfunctiondeclarationstrictes | spike | frontend/resolver | class: blocked | Implement Blockscopedfunctiondeclarationstrictes |
 | 1076 | Implement Blockscopednamespacedifferentfile | spike | frontend/syntax | class: blocked | Implement Blockscopednamespacedifferentfile |
 | 1077 | Implement Blockscopedsamenamefunctiondeclarationes | spike | reference/triage | class: triage-needed | Implement Blockscopedsamenamefunctiondeclarationes |
@@ -4978,6 +4978,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1071 | Implement Blockscopedenumvariablesusebeforedef Import Export | spike | frontend/syntax | see `issues/done/1071-implement-blockScopedEnumVariablesUseBeforeDef-import-export.md` |
 | 1072 | Implement Blockscopedfunctiondeclarationes | spike | frontend/resolver | see `issues/done/1072-implement-blockScopedFunctionDeclarationES.md` |
 | 1073 | Implement Blockscopedfunctiondeclarationinstrictclass | spike | frontend/resolver | see `issues/done/1073-implement-blockScopedFunctionDeclarationInStrictClass.md` |
+| 1074 | Implement Blockscopedfunctiondeclarationinstrictmodule | spike | frontend/syntax | see `issues/done/1074-implement-blockScopedFunctionDeclarationInStrictModule.md` |
 | 2050 | Implement Duplicatelocalvariable Duplicate Local | spike | reference/triage | see `issues/done/2050-implement-duplicateLocalVariable-duplicate-local.md` |
 | 3002 | Implement Isolateddeclarationerrorsdefault | spike | runtime/builtins | see `issues/done/3002-implement-isolatedDeclarationErrorsDefault.md` |
 | 3131 | Implement Jsxfactorynotidentifierorqualifiedname | spike | reference/triage | see `issues/done/3131-implement-jsxFactoryNotIdentifierOrQualifiedName.md` |
