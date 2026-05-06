@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 3 | 2 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4462 | 3717 | 745 |
+| frontend | 4462 | 3716 | 746 |
 | harness | 1 | 0 | 1 |
 | ir | 47 | 25 | 22 |
 | issues | 4 | 0 | 4 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5087 | 3995 | 1092 |
+| total | 5087 | 3994 | 1093 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -481,7 +481,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 772 | Implement Augmentedtypesvar | spike | frontend/syntax | class: blocked | Implement Augmentedtypesvar |
 | 773 | Implement Autoasiforstaticsinclassdeclaration | spike | frontend/syntax | class: triage-needed | Implement Autoasiforstaticsinclassdeclaration |
 | 775 | Implement Autotypeassignedusingdestructuringfromnevernocrash | spike | frontend/resolver | class: blocked | Implement Autotypeassignedusingdestructuringfromnevernocrash |
-| 1185 | Implement Classexpressiontest | spike | frontend/syntax | class: triage-needed | Implement Classexpressiontest |
 | 1186 | Implement Classexpressionwithdecorator | spike | frontend/syntax | class: blocked | Implement Classexpressionwithdecorator |
 | 1187 | Implement Classexpressionwithresolutionofnamespaceofsamename | spike | frontend/syntax | class: blocked | Implement Classexpressionwithresolutionofnamespaceofsamename |
 | 1188 | Implement Classexpressionwithstaticproperties Parser Syntax | spike | frontend/syntax | class: triage-needed | Implement Classexpressionwithstaticproperties Parser Syntax |
@@ -5043,6 +5042,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1182 | Implement Classexpressioninclassstaticdeclarations | spike | frontend/syntax | see `issues/done/1182-implement-classExpressionInClassStaticDeclarations.md` |
 | 1183 | Implement Classexpressionnames | spike | frontend/syntax | see `issues/done/1183-implement-classExpressionNames.md` |
 | 1184 | Implement Classexpressionpropertymodifiers | spike | frontend/syntax | see `issues/done/1184-implement-classExpressionPropertyModifiers.md` |
+| 1185 | Implement Classexpressiontest | spike | frontend/syntax | see `issues/done/1185-implement-classExpressionTest.md` |
 | 2050 | Implement Duplicatelocalvariable Duplicate Local | spike | reference/triage | see `issues/done/2050-implement-duplicateLocalVariable-duplicate-local.md` |
 | 3002 | Implement Isolateddeclarationerrorsdefault | spike | runtime/builtins | see `issues/done/3002-implement-isolatedDeclarationErrorsDefault.md` |
 | 3131 | Implement Jsxfactorynotidentifierorqualifiedname | spike | reference/triage | see `issues/done/3131-implement-jsxFactoryNotIdentifierOrQualifiedName.md` |
