@@ -16,9 +16,9 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 2 | 1 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4439 | 3758 | 681 |
+| frontend | 4439 | 3757 | 682 |
 | harness | 1 | 0 | 1 |
-| ir | 36 | 14 | 22 |
+| ir | 37 | 15 | 22 |
 | issues | 4 | 0 | 4 |
 | parser | 1 | 0 | 1 |
 | reference | 212 | 161 | 51 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5052 | 4026 | 1026 |
+| total | 5053 | 4026 | 1027 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -172,6 +172,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5215 | Support loop-local arrow calls from arrow closures | feature | ir/lowering | implementation-ready | P2 | 5001 | capturedVarInLoop parses and resolves, but lowering rejects |
 | 5216 | Accept large decimal exponent number literals | feature | frontend/lexer | implementation-ready | P2 |  | `castExpressionParentheses.ts` fails before token output because |
 | 5217 | Support method calls on call expression receivers | feature | ir/lowering | implementation-ready | P2 | 5001 | `castFunctionExpressionShouldBeParenthesized.ts` parses successfully, |
+| 5218 | Support nested function closures capturing this | feature | ir/runtime | implementation-ready | P2 |  | `castTest.ts` parses and erases its angle-bracket type assertions, but |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -447,7 +448,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 772 | Implement Augmentedtypesvar | spike | frontend/syntax | class: blocked | Implement Augmentedtypesvar |
 | 773 | Implement Autoasiforstaticsinclassdeclaration | spike | frontend/syntax | class: triage-needed | Implement Autoasiforstaticsinclassdeclaration |
 | 775 | Implement Autotypeassignedusingdestructuringfromnevernocrash | spike | frontend/resolver | class: blocked | Implement Autotypeassignedusingdestructuringfromnevernocrash |
-| 1121 | Implement Casttest | spike | frontend/syntax | class: triage-needed | Implement Casttest |
 | 1122 | Implement Catch | spike | reference/triage | class: triage-needed | Implement Catch |
 | 1123 | Implement Catchclausewithinitializer | spike | frontend/syntax | class: triage-needed | Implement Catchclausewithinitializer |
 | 1124 | Implement Cf | spike | frontend/resolver | class: blocked | Implement Cf |
@@ -5009,6 +5009,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1118 | Implement Castnewobjectbug | spike | frontend/syntax | see `issues/done/1118-implement-castNewObjectBug.md` |
 | 1119 | Implement Castofawait | spike | reference/triage | see `issues/done/1119-implement-castOfAwait.md` |
 | 1120 | Implement Castparentheses | spike | frontend/syntax | see `issues/done/1120-implement-castParentheses.md` |
+| 1121 | Implement Casttest | spike | frontend/syntax | see `issues/done/1121-implement-castTest.md` |
 | 2050 | Implement Duplicatelocalvariable Duplicate Local | spike | reference/triage | see `issues/done/2050-implement-duplicateLocalVariable-duplicate-local.md` |
 | 3002 | Implement Isolateddeclarationerrorsdefault | spike | runtime/builtins | see `issues/done/3002-implement-isolatedDeclarationErrorsDefault.md` |
 | 3131 | Implement Jsxfactorynotidentifierorqualifiedname | spike | reference/triage | see `issues/done/3131-implement-jsxFactoryNotIdentifierOrQualifiedName.md` |
