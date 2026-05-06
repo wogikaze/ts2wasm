@@ -1790,26 +1790,32 @@ fn validate_stmt(
         Stmt::Let {
             name, span, is_var, ..
         } => {
-            if in_top_level && top_functions.contains_key(name) {
-                return Err(Diagnostic {
-                    code: DiagCode::DuplicateLocal,
-                    message: format!(
-                        "top-level lexical binding `{name}` conflicts with function declaration"
-                    ),
-                    span: Some(*span),
-                });
-            }
-            if scope.contains_key(name) {
-                if *is_var {
-                    return Ok(());
+            // Skip empty destructuring patterns (e.g. `const {} = ...`, `const [] = ...`)
+            // The parser represents these with display text "{}" or "[]", but they
+            // declare zero local bindings and should not be tracked in the scope.
+            let is_empty_pattern = name == "{}" || name == "[]";
+            if !is_empty_pattern {
+                if in_top_level && top_functions.contains_key(name) {
+                    return Err(Diagnostic {
+                        code: DiagCode::DuplicateLocal,
+                        message: format!(
+                            "top-level lexical binding `{name}` conflicts with function declaration"
+                        ),
+                        span: Some(*span),
+                    });
                 }
-                return Err(Diagnostic {
-                    code: DiagCode::DuplicateLocal,
-                    message: format!("duplicate local binding: `{name}`"),
-                    span: Some(*span),
-                });
+                if scope.contains_key(name) {
+                    if *is_var {
+                        return Ok(());
+                    }
+                    return Err(Diagnostic {
+                        code: DiagCode::DuplicateLocal,
+                        message: format!("duplicate local binding: `{name}`"),
+                        span: Some(*span),
+                    });
+                }
+                scope.insert(name.clone(), ());
             }
-            scope.insert(name.clone(), ());
             Ok(())
         }
         Stmt::Return { span, .. } if in_top_level => Err(Diagnostic {
@@ -2142,6 +2148,15 @@ declare namespace A {
         let err = validate_ast(&program).unwrap_err();
         assert_eq!(err.code, DiagCode::DuplicateLocal);
         assert!(err.span.is_some());
+    }
+
+    #[test]
+    fn accepts_multiple_empty_binding_patterns() {
+        // Empty destructuring patterns use synthetic names "{}" and "[]"
+        // and should not trigger DuplicateLocal.
+        let program =
+            parse_program("const {} = f(); const [] = f(); const {} = g();").unwrap();
+        assert!(validate_ast(&program).is_ok());
     }
 
     #[test]
