@@ -248,6 +248,14 @@ pub struct Span {
     pub end: usize,
 }
 
+impl Span {
+    /// Create a generated/inferred span for synthetic nodes.
+    /// Use only for compiler-generated nodes; real source spans must come from the AST.
+    pub fn generated(_label: &'static str) -> Self {
+        Self { start: 0, end: 0 }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::{DiagCode, Diagnostic, Span};

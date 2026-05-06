@@ -6,8 +6,8 @@ use super::binding_pattern::{
 use super::builtin::{BuiltinId, BuiltinPropertyId, BuiltinResult};
 use super::builtin_resolved::{ResolvedExpr, ResolvedParam, ResolvedStmt};
 use ts2wasm_frontend::{
-    BinaryOp, DiagCode, Diagnostic, LogicalAssignOp, OBJECT_SPREAD_SENTINEL,
-    SYMBOL_ITERATOR_OBJECT_KEY, Span, UnaryOp,
+    BinaryOp, DiagCode, Diagnostic, LogicalAssignOp, OBJECT_SPREAD_SENTINEL, Span,
+    SYMBOL_ITERATOR_OBJECT_KEY, UnaryOp,
 };
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
@@ -87,40 +87,46 @@ pub struct LoweredFunction {
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum LoweredStmt {
-    Block(Vec<LoweredStmt>),
-    Let(LocalId, LoweredExpr),
-    Assign(LocalId, LoweredExpr),
-    Expr(LoweredExpr),
+    Block(Vec<LoweredStmt>, Span),
+    Let(LocalId, LoweredExpr, Span),
+    Assign(LocalId, LoweredExpr, Span),
+    Expr(LoweredExpr, Span),
     If {
         condition: LoweredExpr,
         then_body: Vec<LoweredStmt>,
         else_body: Vec<LoweredStmt>,
+        span: Span,
     },
     While {
         condition: LoweredExpr,
         body: Vec<LoweredStmt>,
+        span: Span,
     },
-    Return(LoweredExpr),
-    Throw(LoweredExpr),
+    Return(LoweredExpr, Span),
+    Throw(LoweredExpr, Span),
     TryCatch {
         try_body: Vec<LoweredStmt>,
         catch_var: Option<LocalId>,
         catch_body: Option<Vec<LoweredStmt>>,
         finally_body: Option<Vec<LoweredStmt>>,
+        span: Span,
     },
     Switch {
         expr: LoweredExpr,
         cases: Vec<(Option<LoweredExpr>, Vec<LoweredStmt>)>,
+        span: Span,
     },
     DoWhile {
         body: Vec<LoweredStmt>,
         condition: LoweredExpr,
+        span: Span,
     },
     For {
         init: Option<Box<LoweredStmt>>,
         condition: Option<LoweredExpr>,
         update: Option<LoweredExpr>,
         body: Vec<LoweredStmt>,
+        span: Span,
     },
     ForIn {
         var: LocalId,
@@ -129,6 +135,7 @@ pub enum LoweredStmt {
         index_local: LocalId,
         len_local: LocalId,
         body: Vec<LoweredStmt>,
+        span: Span,
     },
     ForOf {
         var: LocalId,
@@ -137,23 +144,29 @@ pub enum LoweredStmt {
         index_local: LocalId,
         len_local: LocalId,
         body: Vec<LoweredStmt>,
+        span: Span,
     },
     Labeled {
         label: String,
         body: Box<LoweredStmt>,
+        span: Span,
     },
     Break {
         label: Option<String>,
+        span: Span,
     },
     Continue {
         label: Option<String>,
+        span: Span,
     },
     Export {
         name: String,
         expr: LoweredExpr,
+        span: Span,
     },
     ModuleExportsAssign {
         expr: LoweredExpr,
+        span: Span,
     },
     ClassDecl {
         name: String,
@@ -162,6 +175,7 @@ pub enum LoweredStmt {
         methods: Vec<(String, FuncId)>,
         static_methods: Vec<(String, FuncId)>,
         private_fields: Vec<String>,
+        span: Span,
     },
 }
 
@@ -185,146 +199,176 @@ pub enum LoweredArraySlot {
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum LoweredExpr {
-    Number(i32),
+    Number(i32, Span),
     BigIntLiteral {
         decimal: String,
         sign: i32,
         limb_low: u32,
         limb_high: u32,
+        span: Span,
     },
-    String(String),
-    Bool(bool),
-    Null,
-    Undefined,
-    Local(LocalId),
-    EnvCellNew(Box<LoweredExpr>),
-    EnvCellGet(LocalId),
+    String(String, Span),
+    Bool(bool, Span),
+    Null(Span),
+    Undefined(Span),
+    Local(LocalId, Span),
+    EnvCellNew(Box<LoweredExpr>, Span),
+    EnvCellGet(LocalId, Span),
     EnvCellSet {
         cell: LocalId,
         expr: Box<LoweredExpr>,
+        span: Span,
     },
     Unary {
         op: LoweredUnaryOp,
         expr: Box<LoweredExpr>,
+        span: Span,
     },
     Binary {
         left: Box<LoweredExpr>,
         op: LoweredBinaryOp,
         right: Box<LoweredExpr>,
+        span: Span,
     },
     PropertyIn {
         obj: Box<LoweredExpr>,
         key: String,
+        span: Span,
     },
     PropertyInDynamic {
         obj: Box<LoweredExpr>,
         key: Box<LoweredExpr>,
+        span: Span,
     },
     Call {
         kind: FunctionCallKind,
         args: Vec<LoweredExpr>,
+        span: Span,
     },
     Assign {
         local: LocalId,
         expr: Box<LoweredExpr>,
+        span: Span,
     },
     LogicalAssign {
         local: LocalId,
         op: LoweredLogicalAssignOp,
         expr: Box<LoweredExpr>,
+        span: Span,
     },
     LogicalPropertyAssign {
         object: LocalId,
         key: String,
         op: LoweredLogicalAssignOp,
         expr: Box<LoweredExpr>,
+        span: Span,
     },
     LogicalComputedPropertyAssign {
         object: LocalId,
         key: Box<LoweredExpr>,
         op: LoweredLogicalAssignOp,
         expr: Box<LoweredExpr>,
+        span: Span,
     },
     LogicalComputedMemberAssign {
         object: Box<LoweredExpr>,
         key: Box<LoweredExpr>,
         op: LoweredLogicalAssignOp,
         expr: Box<LoweredExpr>,
+        span: Span,
     },
     LogicalMemberAssign {
         object: Box<LoweredExpr>,
         key: String,
         op: LoweredLogicalAssignOp,
         expr: Box<LoweredExpr>,
+        span: Span,
     },
     ArrayNew {
         elements: Vec<LoweredExpr>,
+        span: Span,
     },
     ArrayNewSparse {
         slots: Vec<LoweredArraySlot>,
+        span: Span,
     },
     ArrayGet {
         arr: Box<LoweredExpr>,
         index: Box<LoweredExpr>,
+        span: Span,
     },
     Index {
         object: Box<LoweredExpr>,
         index: Box<LoweredExpr>,
+        span: Span,
     },
-    GetLength(Box<LoweredExpr>),
+    GetLength(Box<LoweredExpr>, Span),
     ObjectNew {
         props: Vec<(String, LoweredExpr)>,
         non_enumerable: u32, // bitmask: bit i = property i is non-enumerable
+        span: Span,
     },
     ErrorNew {
         constructor: BuiltinErrorConstructor,
         message: Box<LoweredExpr>,
+        span: Span,
     },
     PropertyGet {
         obj: Box<LoweredExpr>,
         key: String,
+        span: Span,
     },
     OptionalPropertyGet {
         obj: Box<LoweredExpr>,
         key: String,
+        span: Span,
     },
     PropertyGetDynamic {
         obj: Box<LoweredExpr>,
         key: Box<LoweredExpr>,
+        span: Span,
     },
     OptionalIndex {
         object: Box<LoweredExpr>,
         index: Box<LoweredExpr>,
+        span: Span,
     },
     OptionalCall {
         callee: Box<LoweredExpr>,
         call: Box<LoweredExpr>,
+        span: Span,
     },
     MethodCall {
         object: Box<LoweredExpr>,
         method: String,
+        span: Span,
     },
     RuntimeCall {
         runtime_fn: String,
         args: Vec<LoweredExpr>,
+        span: Span,
     },
     PropertySet {
         object: Box<LoweredExpr>,
         key: String,
         value: Box<LoweredExpr>,
+        span: Span,
     },
     PropertyDelete {
         object: Box<LoweredExpr>,
         key: String,
+        span: Span,
     },
     PropertyDeleteDynamic {
         object: Box<LoweredExpr>,
         key: Box<LoweredExpr>,
+        span: Span,
     },
     PropertySetDynamic {
         object: Box<LoweredExpr>,
         index: Box<LoweredExpr>,
         value: Box<LoweredExpr>,
+        span: Span,
     },
     New {
         constructor: FuncId,
@@ -333,21 +377,25 @@ pub enum LoweredExpr {
         base_local: LocalId,
         private_brand: Option<u32>,
         private_slot_count: usize,
+        span: Span,
     },
-    ClassPrototype(ClassPrototypeRef),
-    BuiltinErrorPrototype(BuiltinErrorConstructor),
+    ClassPrototype(ClassPrototypeRef, Span),
+    BuiltinErrorPrototype(BuiltinErrorConstructor, Span),
     ModuleLoad {
         module_id: usize,
+        span: Span,
     },
     Block {
         stmts: Vec<LoweredStmt>,
         result: Box<LoweredExpr>,
+        span: Span,
     },
-    This,
+    This(Span),
     ArrowFn {
         func_id: FuncId,
         captures: Vec<LocalId>,
         representation: ClosureRepresentation,
+        span: Span,
     },
 }
 
