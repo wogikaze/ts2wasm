@@ -844,21 +844,153 @@ impl WatEmitter<'_> {
     }
 
     pub(super) fn emit_process_argv(&self, wat: &mut String) {
-        wat.push_str(
+        wat.push_str(&format!(
             r#"
-    (func $process_argv (result i32)
-    (call $host_process_argv))
-  "#,
-        );
+  (func $process_argv (result i32)
+    (local $argc i32)
+    (local $buf_size i32)
+    (local $argv_ptrs i32)
+    (local $argv_buf i32)
+    (local $i i32)
+    (local $str_ptr i32)
+    (local $str_len i32)
+    (local $heap_str i32)
+    (local $capacity i32)
+    (local $arr i32)
+    ;; 1. args_sizes_get(scratch, scratch+4) -> argc, buf_size
+    (drop (call $args_sizes_get (i32.const {scratch}) (i32.add (i32.const {scratch}) (i32.const 4))))
+    (local.set $argc (i32.load (i32.const {scratch})))
+    (local.set $buf_size (i32.load (i32.add (i32.const {scratch}) (i32.const 4))))
+    ;; 2. Allocate WASI buffer for argv pointers + string data
+    (local.set $argv_ptrs (call $alloc_heap (i32.add (i32.shl (local.get $argc) (i32.const 2)) (local.get $buf_size))))
+    (local.set $argv_buf (i32.add (local.get $argv_ptrs) (i32.shl (local.get $argc) (i32.const 2))))
+    ;; 3. args_get(argv_ptrs, argv_buf)
+    (drop (call $args_get (local.get $argv_ptrs) (local.get $argv_buf)))
+    ;; 4. capacity = max(4, argc)
+    (local.set $capacity (i32.const 4))
+    (if (i32.gt_u (local.get $argc) (i32.const 4))
+      (then (local.set $capacity (local.get $argc))))
+    ;; 5. Allocate runtime array: ARRAY_HEADER_SIZE + capacity * 4 + presence_word(4)
+    (local.set $arr (call $alloc_heap (i32.add (i32.const {arr_hdr}) (i32.shl (local.get $capacity) (i32.const 2)))))
+    ;; 6. Initialize array header
+    (i32.store (local.get $arr) (local.get $argc))
+    (i32.store (i32.add (local.get $arr) (i32.const {cap_off})) (local.get $capacity))
+    (i32.store (i32.add (local.get $arr) (i32.const {pres_wc_off})) (i32.const 1))
+    (i32.store (i32.add (local.get $arr) (i32.const {elem_off_off})) (i32.const {arr_hdr}))
+    ;; 7. Presence mask
+    (if (i32.ge_u (local.get $argc) (i32.const 32))
+      (then (i32.store (i32.add (local.get $arr) (i32.const {pres_words_off})) (i32.const -1)))
+      (else (i32.store (i32.add (local.get $arr) (i32.const {pres_words_off})) (i32.sub (i32.shl (i32.const 1) (local.get $argc)) (i32.const 1)))))
+    ;; 8. Fill array elements
+    (local.set $i (i32.const 0))
+    (block $done
+      (loop $loop
+        (br_if $done (i32.ge_u (local.get $i) (local.get $argc)))
+        (local.set $str_ptr (i32.load (i32.add (local.get $argv_ptrs) (i32.shl (local.get $i) (i32.const 2)))))
+        ;; strlen: find null terminator
+        (local.set $str_len (i32.const 0))
+        (block $strlen_done
+          (loop $strlen_loop
+            (br_if $strlen_done (i32.eqz (i32.load8_u (i32.add (local.get $str_ptr) (local.get $str_len)))))
+            (local.set $str_len (i32.add (local.get $str_len) (i32.const 1)))
+            (br $strlen_loop)))
+        ;; Allocate runtime string: 4-byte length header + data bytes
+        (local.set $heap_str (call $alloc_heap (i32.add (local.get $str_len) (i32.const 4))))
+        (i32.store (local.get $heap_str) (local.get $str_len))
+        (call $copy (local.get $str_ptr) (i32.add (local.get $heap_str) (i32.const 4)) (local.get $str_len))
+        ;; Store tagged string into array element
+        (i32.store
+          (i32.add (local.get $arr) (i32.add (i32.const {arr_hdr}) (i32.shl (local.get $i) (i32.const 2))))
+          (i32.or (local.get $heap_str) (i32.const {string_tag})))
+        (local.set $i (i32.add (local.get $i) (i32.const 1)))
+        (br $loop)))
+    ;; 9. Return tagged array pointer
+    (i32.or (local.get $arr) (i32.const {array_tag})))
+"#,
+            scratch = Layout::SCRATCH_OFFSET,
+            arr_hdr = Layout::ARRAY_HEADER_SIZE,
+            cap_off = Layout::ARRAY_CAPACITY_OFFSET,
+            pres_wc_off = Layout::ARRAY_PRESENCE_WORD_COUNT_OFFSET,
+            elem_off_off = Layout::ARRAY_ELEMENTS_OFFSET_OFFSET,
+            pres_words_off = Layout::ARRAY_PRESENCE_WORDS_OFFSET,
+            array_tag = ValueTag::ARRAY,
+            string_tag = ValueTag::STRING,
+        ));
     }
 
     pub(super) fn emit_process_env(&self, wat: &mut String) {
-        wat.push_str(
+        wat.push_str(&format!(
             r#"
-    (func $process_env (result i32)
-    (call $host_process_env))
-  "#,
-        );
+  (func $process_env (result i32)
+    (local $envc i32)
+    (local $buf_size i32)
+    (local $env_ptrs i32)
+    (local $env_buf i32)
+    (local $i i32)
+    (local $str_ptr i32)
+    (local $str_len i32)
+    (local $eq_pos i32)
+    (local $key_len i32)
+    (local $val_ptr i32)
+    (local $val_len i32)
+    (local $heap_str i32)
+    (local $obj i32)
+    ;; 1. environ_sizes_get(scratch, scratch+4) -> envc, buf_size
+    (drop (call $environ_sizes_get (i32.const {scratch}) (i32.add (i32.const {scratch}) (i32.const 4))))
+    (local.set $envc (i32.load (i32.const {scratch})))
+    (local.set $buf_size (i32.load (i32.add (i32.const {scratch}) (i32.const 4))))
+    ;; 2. Allocate WASI buffer for environ pointers + string data
+    (local.set $env_ptrs (call $alloc_heap (i32.add (i32.shl (local.get $envc) (i32.const 2)) (local.get $buf_size))))
+    (local.set $env_buf (i32.add (local.get $env_ptrs) (i32.shl (local.get $envc) (i32.const 2))))
+    ;; 3. environ_get(env_ptrs, env_buf)
+    (drop (call $environ_get (local.get $env_ptrs) (local.get $env_buf)))
+    ;; 4. Create empty object
+    (local.set $obj (call $object_create (i32.const {null})))
+    ;; 5. Process each env entry
+    (local.set $i (i32.const 0))
+    (block $done
+      (loop $loop
+        (br_if $done (i32.ge_u (local.get $i) (local.get $envc)))
+        (local.set $str_ptr (i32.load (i32.add (local.get $env_ptrs) (i32.shl (local.get $i) (i32.const 2)))))
+        ;; strlen: find null terminator
+        (local.set $str_len (i32.const 0))
+        (block $strlen_done
+          (loop $strlen_loop
+            (br_if $strlen_done (i32.eqz (i32.load8_u (i32.add (local.get $str_ptr) (local.get $str_len)))))
+            (local.set $str_len (i32.add (local.get $str_len) (i32.const 1)))
+            (br $strlen_loop)))
+        ;; Find '=' separator (byte 61)
+        (local.set $eq_pos (i32.const 0))
+        (block $eq_found
+          (loop $eq_loop
+            (br_if $eq_found (i32.eq (i32.load8_u (i32.add (local.get $str_ptr) (local.get $eq_pos))) (i32.const 61)))
+            (local.set $eq_pos (i32.add (local.get $eq_pos) (i32.const 1)))
+            (br $eq_loop)))
+        ;; Skip entries without '='
+        (if (i32.lt_u (local.get $eq_pos) (local.get $str_len))
+          (then
+            (local.set $key_len (local.get $eq_pos))
+            (local.set $val_ptr (i32.add (local.get $str_ptr) (i32.add (local.get $eq_pos) (i32.const 1))))
+            (local.set $val_len (i32.sub (local.get $str_len) (i32.add (local.get $eq_pos) (i32.const 1))))
+            ;; Allocate runtime string for value
+            (local.set $heap_str (call $alloc_heap (i32.add (local.get $val_len) (i32.const 4))))
+            (i32.store (local.get $heap_str) (local.get $val_len))
+            (call $copy (local.get $val_ptr) (i32.add (local.get $heap_str) (i32.const 4)) (local.get $val_len))
+            ;; Set property on object
+            (drop (call $property_set
+              (local.get $obj)
+              (local.get $str_ptr)
+              (local.get $key_len)
+              (i32.or (local.get $heap_str) (i32.const {string_tag}))))))
+        (local.set $i (i32.add (local.get $i) (i32.const 1)))
+        (br $loop)))
+    ;; 6. Return tagged object
+    (local.get $obj))
+"#,
+            scratch = Layout::SCRATCH_OFFSET,
+            null = ValueTag::NULL,
+            string_tag = ValueTag::STRING,
+        ));
     }
 
     pub(super) fn emit_process_exit(&self, wat: &mut String) {

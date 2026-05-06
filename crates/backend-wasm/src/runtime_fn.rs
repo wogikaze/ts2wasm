@@ -401,11 +401,13 @@ pub(crate) enum HostImport {
     FdWrite,
     ClockTimeGet,
     RandomGet,
+    ArgsSizesGet,
+    ArgsGet,
+    EnvironSizesGet,
+    EnvironGet,
     FsReadFileSync,
     FsWriteFileSync,
     FsAppendFileSync,
-    ProcessArgv,
-    ProcessEnv,
     ProcessExit,
     PathJoin,
     PathResolve,
@@ -458,6 +460,38 @@ impl HostImport {
                 params: "param i32 i32",
                 result: "result i32",
             },
+            Self::ArgsSizesGet => HostImportSpec {
+                module: "wasi_snapshot_preview1",
+                name: "args_sizes_get",
+                wat_symbol: "$args_sizes_get",
+                abi: HostAbi::WasiPreview1,
+                params: "param i32 i32",
+                result: "result i32",
+            },
+            Self::ArgsGet => HostImportSpec {
+                module: "wasi_snapshot_preview1",
+                name: "args_get",
+                wat_symbol: "$args_get",
+                abi: HostAbi::WasiPreview1,
+                params: "param i32 i32",
+                result: "result i32",
+            },
+            Self::EnvironSizesGet => HostImportSpec {
+                module: "wasi_snapshot_preview1",
+                name: "environ_sizes_get",
+                wat_symbol: "$environ_sizes_get",
+                abi: HostAbi::WasiPreview1,
+                params: "param i32 i32",
+                result: "result i32",
+            },
+            Self::EnvironGet => HostImportSpec {
+                module: "wasi_snapshot_preview1",
+                name: "environ_get",
+                wat_symbol: "$environ_get",
+                abi: HostAbi::WasiPreview1,
+                params: "param i32 i32",
+                result: "result i32",
+            },
             Self::FsReadFileSync => HostImportSpec {
                 module: "host",
                 name: "fs.readFileSync",
@@ -481,22 +515,6 @@ impl HostImport {
                 abi: HostAbi::NodeShim,
                 params: "param i32 i32",
                 result: "",
-            },
-            Self::ProcessArgv => HostImportSpec {
-                module: "host",
-                name: "process.argv",
-                wat_symbol: "$host_process_argv",
-                abi: HostAbi::NodeShim,
-                params: "",
-                result: "result i32",
-            },
-            Self::ProcessEnv => HostImportSpec {
-                module: "host",
-                name: "process.env",
-                wat_symbol: "$host_process_env",
-                abi: HostAbi::NodeShim,
-                params: "",
-                result: "result i32",
             },
             Self::ProcessExit => HostImportSpec {
                 module: "host",
@@ -622,11 +640,13 @@ impl HostImport {
             Self::FdWrite => "wasi_snapshot_preview1.fd_write",
             Self::ClockTimeGet => "wasi_snapshot_preview1.clock_time_get",
             Self::RandomGet => "wasi_snapshot_preview1.random_get",
+            Self::ArgsSizesGet => "wasi_snapshot_preview1.args_sizes_get",
+            Self::ArgsGet => "wasi_snapshot_preview1.args_get",
+            Self::EnvironSizesGet => "wasi_snapshot_preview1.environ_sizes_get",
+            Self::EnvironGet => "wasi_snapshot_preview1.environ_get",
             Self::FsReadFileSync => "host.fs.readFileSync",
             Self::FsWriteFileSync => "host.fs.writeFileSync",
             Self::FsAppendFileSync => "host.fs.appendFileSync",
-            Self::ProcessArgv => "host.process.argv",
-            Self::ProcessEnv => "host.process.env",
             Self::ProcessExit => "host.process.exit",
             Self::PathJoin => "host.path.join",
             Self::PathResolve => "host.path.resolve",
@@ -832,11 +852,11 @@ pub(crate) enum Capability {
     StdoutWrite,
     WasiClockRealtime,
     WasiRandom,
+    WasiArgs,
+    WasiEnv,
     HostFsReadFileSync,
     HostFsWriteFileSync,
     HostFsAppendFileSync,
-    HostProcessArgv,
-    HostProcessEnv,
     HostProcessExit,
     HostPathJoin,
     HostPathResolve,
@@ -861,11 +881,11 @@ impl Capability {
             Self::StdoutWrite => "stdout.write",
             Self::WasiClockRealtime => "wasi.clock.realtime",
             Self::WasiRandom => "wasi.random",
+            Self::WasiArgs => "wasi.args",
+            Self::WasiEnv => "wasi.env",
             Self::HostFsReadFileSync => "host.fs.readFileSync",
             Self::HostFsWriteFileSync => "host.fs.writeFileSync",
             Self::HostFsAppendFileSync => "host.fs.appendFileSync",
-            Self::HostProcessArgv => "host.process.argv",
-            Self::HostProcessEnv => "host.process.env",
             Self::HostProcessExit => "host.process.exit",
             Self::HostPathJoin => "host.path.join",
             Self::HostPathResolve => "host.path.resolve",
@@ -1068,8 +1088,6 @@ const IMPORT_RANDOM_GET: &[HostImport] = &[HostImport::RandomGet];
 const IMPORT_FS_READ_FILE_SYNC: &[HostImport] = &[HostImport::FsReadFileSync];
 const IMPORT_FS_WRITE_FILE_SYNC: &[HostImport] = &[HostImport::FsWriteFileSync];
 const IMPORT_FS_APPEND_FILE_SYNC: &[HostImport] = &[HostImport::FsAppendFileSync];
-const IMPORT_PROCESS_ARGV: &[HostImport] = &[HostImport::ProcessArgv];
-const IMPORT_PROCESS_ENV: &[HostImport] = &[HostImport::ProcessEnv];
 const IMPORT_PROCESS_EXIT: &[HostImport] = &[HostImport::ProcessExit];
 const IMPORT_PATH_JOIN: &[HostImport] = &[HostImport::PathJoin];
 const IMPORT_PATH_RESOLVE: &[HostImport] = &[HostImport::PathResolve];
@@ -1088,11 +1106,11 @@ const CAP_STDIN_READ: &[Capability] = &[Capability::StdinRead];
 const CAP_STDOUT_WRITE: &[Capability] = &[Capability::StdoutWrite];
 const CAP_WASI_CLOCK_REALTIME: &[Capability] = &[Capability::WasiClockRealtime];
 const CAP_WASI_RANDOM: &[Capability] = &[Capability::WasiRandom];
+const CAP_WASI_ARGS: &[Capability] = &[Capability::WasiArgs];
+const CAP_WASI_ENV: &[Capability] = &[Capability::WasiEnv];
 const CAP_HOST_FS_READ_FILE_SYNC: &[Capability] = &[Capability::HostFsReadFileSync];
 const CAP_HOST_FS_WRITE_FILE_SYNC: &[Capability] = &[Capability::HostFsWriteFileSync];
 const CAP_HOST_FS_APPEND_FILE_SYNC: &[Capability] = &[Capability::HostFsAppendFileSync];
-const CAP_HOST_PROCESS_ARGV: &[Capability] = &[Capability::HostProcessArgv];
-const CAP_HOST_PROCESS_ENV: &[Capability] = &[Capability::HostProcessEnv];
 const CAP_HOST_PROCESS_EXIT: &[Capability] = &[Capability::HostProcessExit];
 const CAP_HOST_PATH_JOIN: &[Capability] = &[Capability::HostPathJoin];
 const CAP_HOST_PATH_RESOLVE: &[Capability] = &[Capability::HostPathResolve];

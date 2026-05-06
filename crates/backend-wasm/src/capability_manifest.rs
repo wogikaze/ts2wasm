@@ -54,13 +54,26 @@ fn canonical_manifest_from_link_plan(plan: &RuntimeLinkPlan) -> CapabilityManife
             Capability::WasiClockRealtime => {
                 manifest.wasi.clock.realtime = true;
             }
+            Capability::WasiArgs => {
+                manifest.wasi.args = true;
+                manifest
+                    .capability_reasons
+                    .entry("wasi.args".to_owned())
+                    .or_default()
+                    .push("process.argv".to_owned());
+            }
+            Capability::WasiEnv => {
+                manifest.wasi.env = true;
+                manifest
+                    .capability_reasons
+                    .entry("wasi.env".to_owned())
+                    .or_default()
+                    .push("process.env".to_owned());
+            }
             Capability::HostFsReadFileSync
             | Capability::HostFsWriteFileSync
             | Capability::HostFsAppendFileSync => {
                 // These are Node host capabilities, not WASI
-            }
-            Capability::HostProcessArgv | Capability::HostProcessEnv => {
-                // These are Node host capabilities
             }
             Capability::HostProcessExit => {
                 // Node host capability
