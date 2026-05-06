@@ -1,5 +1,6 @@
 use std::collections::{BTreeMap, BTreeSet};
 
+use serde::Serialize;
 use ts2wasm_ir::lowered::{
     ClosureRepresentation, FunctionCallKind, LoweredBinaryOp, LoweredExpr, LoweredLogicalAssignOp,
     LoweredProgram, LoweredStmt, LoweredUnaryOp,
@@ -682,6 +683,54 @@ impl RuntimeLinkPlan {
             }
         }
     }
+}
+
+/// Public snapshot of a RuntimeLinkPlan for use in fixture-based tests.
+/// All fields are sorted for deterministic JSON output.
+#[derive(Debug, Clone, Serialize)]
+pub struct LinkPlanSnapshot {
+    pub runtime_functions: Vec<String>,
+    pub globals: Vec<String>,
+    pub imports: Vec<String>,
+    pub capabilities: Vec<String>,
+    pub runtime_strings: Vec<String>,
+    pub manifest_target: String,
+}
+
+/// Generate a JSON snapshot of the RuntimeLinkPlan for a given lowered program.
+/// Used by fixture-based linker structure tests.
+pub fn emit_link_plan_snapshot_json(program: &LoweredProgram) -> String {
+    let plan = RuntimeLinkPlan::from_program(program);
+    let snapshot = LinkPlanSnapshot {
+        runtime_functions: plan
+            .required_runtime
+            .iter()
+            .map(|rf| rf.manifest_name().to_owned())
+            .collect(),
+        globals: plan
+            .required_globals
+            .iter()
+            .map(|g| g.symbol().to_owned())
+            .collect(),
+        imports: plan
+            .required_imports
+            .iter()
+            .map(|i| i.manifest_name().to_owned())
+            .collect(),
+        capabilities: plan
+            .required_capabilities
+            .iter()
+            .map(|c| c.manifest_name().to_owned())
+            .collect(),
+        runtime_strings: plan
+            .required_runtime_strings
+            .iter()
+            .copied()
+            .map(|s| s.to_owned())
+            .collect(),
+        manifest_target: plan.manifest_target.to_owned(),
+    };
+    serde_json::to_string_pretty(&snapshot).expect("LinkPlanSnapshot must serialize to JSON")
 }
 
 #[cfg(test)]

@@ -3398,7 +3398,8 @@ impl<'a> Resolver<'a> {
                     left: Box::new(LoweredExpr::Local(i, Span::generated("local"))),
                     op: LoweredBinaryOp::Less,
                     right: Box::new(LoweredExpr::Local(len_local, Span::generated("local"))),
-                }),
+                
+                    span: Span::generated("binary"),}),
                 op: LoweredBinaryOp::And,
                 right: Box::new(LoweredExpr::Unary {
                     op: LoweredUnaryOp::Not,
@@ -3469,6 +3470,8 @@ impl<'a> Resolver<'a> {
             LoweredExpr::Block {
                 stmts: inner_stmts,
                 result,
+                ..
+            ,
                 span: Span::generated("block"),} => {
                 stmts.extend(inner_stmts);
                 Ok(LoweredExpr::Block {
