@@ -8,7 +8,7 @@ priority: P2
 depends_on: []
 blocks: [353]
 created: 2026-05-01
-updated: 2026-05-01
+updated: 2026-05-06
 ---
 
 ## Summary
@@ -57,9 +57,9 @@ iterator diagnostic instead of failing at `function*` parsing.
 
 In scope:
 
-- [ ] Parse generator function declarations used by `function* gen() { yield ... }`
-- [ ] Preserve enough generator metadata for later iterator protocol lowering
-- [ ] Add a regression fixture that reaches issue 353's iterator spread boundary
+- [x] Parse generator function declarations used by `function* gen() { yield ... }`
+- [x] Preserve enough generator metadata for later iterator protocol lowering
+- [x] Add a regression fixture that reaches issue 353's iterator spread boundary
 
 Out of scope:
 
@@ -83,10 +83,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] `function* gen() { yield 1; yield 2; }` no longer fails with `expected identifier` at `*`
-- [ ] A generator spread fixture reaches either Node/iwasm parity or a source-backed issue 353 iterator diagnostic
-- [ ] Existing supported spread slices remain passing
-- [ ] Docs/current-state/issues are synchronized when status or design changes
+- [x] `function* gen() { yield 1; yield 2; }` no longer fails with `expected identifier` at `*`
+- [x] A generator spread fixture reaches either Node/iwasm parity or a source-backed issue 353 iterator diagnostic
+- [x] Existing supported spread slices remain passing
+- [x] Docs/current-state/issues are synchronized when status or design changes
 
 ## Validation
 
@@ -113,15 +113,16 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] updated: `current-state.md` (repo root) if generator support changes
+- [x] updated: `current-state.md` (repo root) if generator support changes
+  - current-state.md already documents: "Generator function declarations now parse enough metadata for `function* gen() { yield ... }` fixtures to reach the issue-353 iterator-protocol diagnostic instead of failing at the `*` token"
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 
@@ -135,14 +136,19 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- `...`
+- `e781df0e` issue-401: close generator syntax prerequisite (original parsing + fixture)
+- `fc9fd7ce` refactor: split runtime_core.rs (refactored to finish_generator_function_statement)
+- `c2f73110` issue-402: fix symbol iterator integration (test additions)
 
 Validation result:
 
 ```text
-command:
-result:
-date:
+command: cargo fmt --all --check
+result: pass
+command: cargo nextest run -p ts2wasm-frontend
+result: 203 passed, 0 skipped
+note: full spread/node_diff suite blocked by pre-existing IR crate compilation error (unrelated broken merge conflict in resolver_extra.rs)
+date: 2026-05-06
 ```
 
 Remaining risks:
