@@ -81,3 +81,12 @@ python scripts/manager.py reference-coverage tsc --path-filter reference/typescr
 ## Notes
 
 Split from `issues/done/1174-implement-classBlockScoping.md`.
+
+Additional duplicate/superseded buckets:
+
+- `issues/done/1189-implement-classExpressionWithStaticProperties-unknown-unsupported.md`
+  triages to the same `issue-313` lowering boundary for
+  `classExpressionWithStaticProperties3.ts`, where the named class expression
+  appears as a call argument (`arr.push(class C { ... })`). If the first
+  assignment/initializer implementation slice does not cover call-argument
+  expression positions, split that narrower follow-up after 5248 advances.
