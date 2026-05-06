@@ -132,7 +132,7 @@ Follow-up issues:
 - `issues/done/1099-implement-callOverloads-parser-syntax.md` - Implement Calloverloads Parser Syntax (same feature label, same group key, title overlap; closed into issues 5199 and 5200)
 - `issues/done/1111-implement-capturedLetConstInLoop-parser-syntax.md` - Implement Capturedletconstinloop Parser Syntax (same feature label, same group key, title overlap)
 - `issues/done/1143-implement-checkSuperCallBeforeThisAccessing-parser-syntax.md` - Implement Checksupercallbeforethisaccessing Parser Syntax (same feature label, same group key, title overlap)
-- `issues/open/1164-implement-circularReferenceInReturnType-parser-syntax.md` - Implement Circularreferenceinreturntype Parser Syntax (same feature label, same group key, title overlap)
+- `issues/done/1164-implement-circularReferenceInReturnType-parser-syntax.md` - Implement Circularreferenceinreturntype Parser Syntax (same feature label, same group key, title overlap; split to issue 5242)
 - `issues/open/1188-implement-classExpressionWithStaticProperties-parser-syntax.md` - Implement Classexpressionwithstaticproperties Parser Syntax (same feature label, same group key, title overlap)
 - `issues/open/1190-implement-classExpressionWithStaticPropertiesES-parser-syntax.md` - Implement Classexpressionwithstaticpropertieses Parser Syntax (same feature label, same group key, title overlap)
 - `issues/open/1199-implement-classExtendsInterface-parser-syntax.md` - Implement Classextendsinterface Parser Syntax (same feature label, same group key, title overlap)
