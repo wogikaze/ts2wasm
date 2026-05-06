@@ -68,10 +68,10 @@ When `Expr::Await` appears in an ordinary non-async function, the compiler emits
 
 In scope:
 
-- [ ] Track enough frontend or resolver context to know whether `Expr::Await` is inside an ordinary function.
-- [ ] Emit a clear source-spanned diagnostic for disallowed `await` expressions in non-async functions.
-- [ ] Add a focused diagnostic fixture for `function f() { await 1; }`.
-- [ ] Re-run the representative triage and confirm it no longer reports issue-294 as the first blocker.
+- [x] Track enough frontend or resolver context to know whether `Expr::Await` is inside an ordinary function.
+- [x] Emit a clear source-spanned diagnostic for disallowed `await` expressions in non-async functions.
+- [x] Add a focused diagnostic fixture for `function f() { await 1; }`.
+- [x] Re-run the representative triage and confirm it no longer reports issue-294 as the first blocker.
 
 Out of scope:
 
@@ -96,10 +96,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] A focused diagnostic test for `function f() { await 1; }` reports the new context diagnostic.
-- [ ] The diagnostic span covers the `await` keyword or full await expression.
-- [ ] `mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/awaitLiteralValues.ts` no longer reports `issue-294: await is only supported for Bun.file` as the first blocker.
-- [ ] Existing Bun stdin await lowering still works.
+- [x] A focused diagnostic test for `function f() { await 1; }` reports the new context diagnostic.
+- [x] The diagnostic span covers the `await` keyword or full await expression.
+- [x] `mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/awaitLiteralValues.ts` no longer reports `issue-294: await is only supported for Bun.file` as the first blocker.
+- [x] Existing Bun stdin await lowering still works.
 
 ## Validation
 
@@ -129,15 +129,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 
