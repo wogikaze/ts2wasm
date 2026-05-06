@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 4 | 3 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4496 | 3647 | 849 |
+| frontend | 4497 | 3647 | 850 |
 | harness | 1 | 0 | 1 |
 | ir | 57 | 35 | 22 |
 | issues | 4 | 0 | 4 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5132 | 3930 | 1202 |
+| total | 5133 | 3930 | 1203 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -252,6 +252,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5295 | Resolve import-equals require to virtual node_modules class export | feature | frontend/module-resolution | implementation-ready | P1 |  | bare `require("myModule")` aliases do not bind to a virtual |
 | 5296 | Parse double-dot numeric literal property access | feature | frontend/parser | implementation-ready | P1 |  | the parser treats the first dot as member access and rejects the |
 | 5297 | Lower computed object binding aliases | feature | frontend/semantics | implementation-ready | P1 |  | object binding aliases can only use identifier keys, so computed keys |
+| 5298 | Parse for-of array binding pattern heads | feature | frontend/syntax | implementation-ready | P1 |  | array binding patterns in `for-of` declaration heads are parsed as |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -643,7 +644,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1344 | Implement Commentleadingclosebrace | spike | frontend/resolver | class: blocked | Implement Commentleadingclosebrace |
 | 1345 | Implement Commentonambientmodule | spike | frontend/syntax | class: blocked | Implement Commentonambientmodule |
 | 1346 | Implement Commentonambientvariable | spike | frontend/resolver | class: blocked | Implement Commentonambientvariable |
-| 1412 | Implement Computedpropertybindingelementdeclarationnocrash | spike | frontend/syntax | class: blocked | Implement Computedpropertybindingelementdeclarationnocrash |
 | 1413 | Implement Computedpropertynameandtypeparameterconflict | spike | frontend/syntax | class: blocked | Implement Computedpropertynameandtypeparameterconflict |
 | 1414 | Implement Computedpropertynamewithimportedkey | spike | frontend/syntax | class: blocked | Implement Computedpropertynamewithimportedkey |
 | 1415 | Implement Computerpropertiesines | spike | frontend/syntax | class: blocked | Implement Computerpropertiesines |
@@ -5088,6 +5088,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1409 | Implement Computedpropertiesnarrowed | spike | frontend/syntax | see `issues/done/1409-implement-computedPropertiesNarrowed.md` |
 | 1410 | Implement Computedpropertiestransformedinotherwisenontsclasses | spike | frontend/syntax | see `issues/done/1410-implement-computedPropertiesTransformedInOtherwiseNonTSClasses.md` |
 | 1411 | Implement Computedpropertieswithsetterassignment | spike | frontend/syntax | see `issues/done/1411-implement-computedPropertiesWithSetterAssignment.md` |
+| 1412 | Implement Computedpropertybindingelementdeclarationnocrash | spike | frontend/syntax | see `issues/done/1412-implement-computedPropertyBindingElementDeclarationNoCrash.md` |
 | 2050 | Implement Duplicatelocalvariable Duplicate Local | spike | reference/triage | see `issues/done/2050-implement-duplicateLocalVariable-duplicate-local.md` |
 | 3002 | Implement Isolateddeclarationerrorsdefault | spike | runtime/builtins | see `issues/done/3002-implement-isolatedDeclarationErrorsDefault.md` |
 | 3131 | Implement Jsxfactorynotidentifierorqualifiedname | spike | reference/triage | see `issues/done/3131-implement-jsxFactoryNotIdentifierOrQualifiedName.md` |
