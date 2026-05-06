@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 3 | 0 | 3 |
 | coverage | 44 | 1 | 43 |
 | docs | 4 | 2 | 2 |
-| frontend | 4447 | 3729 | 718 |
+| frontend | 4447 | 3728 | 719 |
 | harness | 1 | 0 | 1 |
 | ir | 43 | 8 | 35 |
 | issues | 5 | 0 | 5 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 9 | 2 | 7 |
 | wasi | 4 | 3 | 1 |
-| total | 5090 | 4005 | 1085 |
+| total | 5090 | 4004 | 1086 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -104,7 +104,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5163 | Lower nested call expression callees | feature | frontend/semantics | implementation-ready | P2 |  | `reference/typescript/tests/cases/compiler/betterErrorForAccidentalCall.ts` currently reports `UnsupportedSyntax: onl... |
 | 5165 | Support typed array subarray builtins | feature | ir/builtin-resolver | implementation-ready | P1 |  | Support typed array subarray builtins |
 | 5176 | Report ambient var lib redeclaration diagnostics | feature | frontend/semantics | implementation-ready | P1 |  | ambient `declare var` declarations can conflict with lib globals, but ts2wasm currently erases the declaration and re... |
-| 5177 | Report strict-null diagnostics in erased namespace methods | feature | frontend/semantics | implementation-ready | P1 |  | erased namespace class method bodies can hide typed local declaration diagnostics and produce a false build pass. |
 | 5179 | Report implicit this before closure runtime guard | feature | frontend/semantics | implementation-ready | P1 |  | a TypeScript implicit-`this` diagnostic is hidden by the nested-function closure runtime-subset guard. |
 | 5183 | Report typed getter null return diagnostics | feature | frontend/semantics | implementation-ready | P1 |  | typed class getter return annotations are erased before return-expression diagnostics are checked. |
 | 5185 | Source-span unresolved class method function calls | feature | frontend/resolver | implementation-ready | P1 |  | unresolved function calls from class method bodies lose source-span information and should report the out-of-scope ca... |
@@ -5158,6 +5157,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5174 | Ignore empty binding pattern synthetic names | feature | frontend/name-resolution | see `issues/done/5174-ignore-empty-binding-pattern-synthetic-names.md` |
 | 5175 | Support export let declarations | feature | frontend/module-syntax | see `issues/done/5175-support-export-let-destructuring-declarations.md` |
 | 5176 | Report ambient var lib redeclaration diagnostics | feature | frontend/semantics | see `issues/done/5176-report-ambient-var-lib-redeclaration-diagnostics.md` |
+| 5177 | Report strict-null diagnostics in erased namespace methods | feature | frontend/semantics | see `issues/done/5177-report-strict-null-in-erased-namespace-methods.md` |
 | 5178 | Parse bitwise compound assignment operators | feature | frontend/syntax | see `issues/done/5178-parse-bitwise-compound-assignment-operators.md` |
 | 5180 | Parse computed property object binding patterns | feature | frontend/syntax | see `issues/done/5180-parse-computed-property-object-binding-patterns.md` |
 | 5181 | Support prefix update expressions in call arguments | feature | frontend/semantics | see `issues/done/5181-support-prefix-update-expressions-in-call-arguments.md` |
