@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 3 | 2 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4467 | 3707 | 760 |
+| frontend | 4467 | 3706 | 761 |
 | harness | 1 | 0 | 1 |
 | ir | 50 | 28 | 22 |
 | issues | 4 | 0 | 4 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5095 | 3988 | 1107 |
+| total | 5095 | 3987 | 1108 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -47,7 +47,7 @@ Issue files are the source of truth for work items. The generated section below 
 Direct child counts are derived from issue-file `depends_on` links. A meta issue can be `done` as a classification/design umbrella while implementation child issues remain open.
 
 ```
-5000 (Meta: TypeScript Compiler Parser Syntax Coverage) [done/design] ch:494 open:427 done:67
+5000 (Meta: TypeScript Compiler Parser Syntax Coverage) [done/design] ch:493 open:426 done:67
 ├── 5002 (Meta: TypeScript Compiler Type System Coverage) [done/done] ch:234 open:226 done:8 (also ← 5005)
 ├── 5003 (Meta: TypeScript Compiler Declaration Emit Coverage) [done/done] ch:102 open:91 done:11 (also ← 5001)
 5001 (Meta: TypeScript Compiler Semantic Analysis Coverage) [done/done] ch:595 open:346 done:249
@@ -66,7 +66,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 
 | Order | ID | Title | State | Class | Area | Priority | Depends on | Direct children | Open children | Done children |
 |-----:|---:|------|-------|-------|------|--------:|-----------:|----------------:|--------------:|--------------:|
-| 1 | 5000 | Meta: TypeScript Compiler Parser Syntax Coverage | done | design | frontend/syntax | P1 | - | 494 | 427 | 67 |
+| 1 | 5000 | Meta: TypeScript Compiler Parser Syntax Coverage | done | design | frontend/syntax | P1 | - | 493 | 426 | 67 |
 | 2 | 5001 | Meta: TypeScript Compiler Semantic Analysis Coverage | done | done | frontend/semantics | P1 | - | 595 | 346 | 249 |
 | 3 | 5004 | Meta: Runtime Builtins Coverage (test262) (audit reopened #5004) | done | done | runtime/builtins | P1 | - | 24 | 3 | 21 |
 | 4 | 5005 | Meta: TypeScript Compiler Name Resolution Coverage | done | done | frontend/resolver | P1 | - | 422 | 375 | 47 |
@@ -504,7 +504,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1210 | Implement Classfieldsupernotaccessiblejs | spike | frontend/syntax | class: blocked | Implement Classfieldsupernotaccessiblejs |
 | 1211 | Implement Classfieldsbrokenconstructoremitnocrash | spike | frontend/syntax | class: blocked | Implement Classfieldsbrokenconstructoremitnocrash |
 | 1212 | Implement Classfunctionmerging Import Export | spike | frontend/syntax | class: blocked | Implement Classfunctionmerging Import Export |
-| 1215 | Implement Classimplementinginterfaceindexer | spike | frontend/syntax | class: blocked | Implement Classimplementinginterfaceindexer |
 | 1216 | Implement Classimplementsclass | spike | frontend/syntax | class: blocked | Implement Classimplementsclass |
 | 1217 | Implement Classimplementsimportedinterface | spike | frontend/syntax | class: blocked | Implement Classimplementsimportedinterface |
 | 1218 | Implement Classimplementsmethodwithtupleargs | spike | frontend/syntax | class: blocked | Implement Classimplementsmethodwithtupleargs |
@@ -5051,6 +5050,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1206 | Implement Classextensionnameoutput | spike | frontend/syntax | see `issues/done/1206-implement-classExtensionNameOutput.md` |
 | 1213 | Implement Classfunctionmerging Parser Syntax | spike | frontend/syntax | see `issues/done/1213-implement-classFunctionMerging-parser-syntax.md` |
 | 1214 | Implement Classheritagewithtrailingseparator | spike | frontend/syntax | see `issues/done/1214-implement-classHeritageWithTrailingSeparator.md` |
+| 1215 | Implement Classimplementinginterfaceindexer | spike | frontend/syntax | see `issues/done/1215-implement-classImplementingInterfaceIndexer.md` |
 | 2050 | Implement Duplicatelocalvariable Duplicate Local | spike | reference/triage | see `issues/done/2050-implement-duplicateLocalVariable-duplicate-local.md` |
 | 3002 | Implement Isolateddeclarationerrorsdefault | spike | runtime/builtins | see `issues/done/3002-implement-isolatedDeclarationErrorsDefault.md` |
 | 3131 | Implement Jsxfactorynotidentifierorqualifiedname | spike | reference/triage | see `issues/done/3131-implement-jsxFactoryNotIdentifierOrQualifiedName.md` |
