@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 3 | 0 | 3 |
 | coverage | 43 | 0 | 43 |
 | docs | 4 | 2 | 2 |
-| frontend | 4438 | 3730 | 708 |
+| frontend | 4438 | 3729 | 709 |
 | harness | 1 | 0 | 1 |
 | ir | 42 | 10 | 32 |
 | issues | 5 | 0 | 5 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 8 | 1 | 7 |
 | wasi | 4 | 3 | 1 |
-| total | 5076 | 4004 | 1072 |
+| total | 5076 | 4003 | 1073 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -99,7 +99,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5137 | Split remaining Date API scope | cleanup | runtime/builtins | design-ready | P1 |  | Date issue 050 currently stays open after its named child issues 240 and 241 are done, but non-literal constructor in... |
 | 5138 | Split Reflect.construct isConstructor reference window | spike | runtime/builtins | design-ready | P1 |  | `reference/test262/test/annexB/built-ins/String/prototype/anchor/not-a-constructor.js` currently fails with `Unresolv... |
 | 5152 | Support class constructor outer callback captures | feature | ir | implementation-ready | P1 |  | class constructors cannot currently call outer callback locals when nested arrow callbacks capture constructor `this`. |
-| 5157 | Report set accessor rest parameter diagnostics | feature | frontend/syntax | implementation-ready | P1 |  | `reference/typescript/tests/cases/compiler/accessorWithRestParam.ts` currently reaches backend emission and fails wit... |
 | 5158 | Report interface private member clashes | feature | frontend/resolver | implementation-ready | P1 |  | `reference/typescript/tests/cases/compiler/baseTypePrivateMemberClash.ts` currently reports `BackendIo` instead of a ... |
 | 5163 | Lower nested call expression callees | feature | frontend/semantics | implementation-ready | P2 |  | `reference/typescript/tests/cases/compiler/betterErrorForAccidentalCall.ts` currently reports `UnsupportedSyntax: onl... |
 | 5165 | Support typed array subarray builtins | feature | ir/builtin-resolver | implementation-ready | P1 |  | Support typed array subarray builtins |
@@ -5139,6 +5138,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5153 | Erase union types in as assertions | feature | frontend/syntax | see `issues/done/5153-erase-union-types-in-as-assertions.md` |
 | 5154 | Parse angle-bracket type assertion statements | feature | frontend/syntax | see `issues/done/5154-parse-angle-bracket-type-assertion-statements.md` |
 | 5156 | Parse generic type arguments in class heritage clauses | feature | frontend/syntax | see `issues/done/5156-parse-generic-type-arguments-in-class-heritage.md` |
+| 5157 | Report set accessor rest parameter diagnostics | feature | frontend/syntax | see `issues/done/5157-report-set-accessor-rest-parameter-diagnostic.md` |
 | 5159 | Recover colon type annotations after expression statements | feature | frontend/syntax | see `issues/done/5159-recover-colon-type-annotation-after-expression-statement.md` |
 | 5160 | Lower plain ternary conditional expressions | feature | frontend/semantics | see `issues/done/5160-lower-plain-ternary-conditional-expressions.md` |
 | 5161 | Model ambient value declarations for name resolution | feature | frontend/resolver | see `issues/done/5161-model-ambient-value-declarations-for-name-resolution.md` |
