@@ -3,21 +3,26 @@ id: 548
 title: "Implement Exportassignment"
 type: spike
 area: frontend/syntax
-class: blocked
+class: done
 priority: P1
-depends_on: [432]
+depends_on: []
 blocks: []
 created: 2026-05-01
-updated: 2026-05-01
+updated: 2026-05-07
+completed: 2026-05-07
 ---
 
 ## Summary
 
-Triage ExportAssignment across 2 failing reference test cases and split this bucket into implementation-ready child issues.
+Triage ExportAssignment across 2 failing reference test cases and split this
+bucket into implementation-ready child issues.
 
 ## Problem
 
-Reference test results show 2 cases fail in directory `ExportAssignment` with diagnostics: import-export. The compiler cannot handle these syntax/semantics, preventing compilation of code in this category.
+Reference test results show 2 cases fail in directory `ExportAssignment` with
+diagnostics: import-export. Fresh duplicate review on 2026-05-07 shows both
+cases exercise the same `export = ...` plus other exported elements rule split
+into issue 5306.
 
 Problem: ExportAssignment has 2 reference failures and needs smart-triage evidence before implementation starts.
 
@@ -43,10 +48,10 @@ This generated bucket is either split into implementation-ready child issues or 
 
 In scope:
 
-- [ ] Inspect the smart triage report below
-- [ ] Confirm whether existing open/done issues already cover this bucket
-- [ ] Split one feature family, one observable behavior, or one fixed reference window into child issues
-- [ ] Preserve exact reproduction commands and representative AST/diagnostic evidence in each child issue
+- [x] Inspect the smart triage report below
+- [x] Confirm whether existing open/done issues already cover this bucket
+- [x] Split one feature family, one observable behavior, or one fixed reference window into child issues
+- [x] Preserve exact reproduction commands and representative AST/diagnostic evidence in each child issue
 
 Out of scope:
 
@@ -68,10 +73,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] Duplicate candidates below are confirmed as no-match or this issue is superseded
-- [ ] At least one child issue contains an exact `mise run reference-triage -- ...` command
-- [ ] Child issue includes failing path, diagnostic code, source context, visible symbols, and parser/TypeScript AST evidence
-- [ ] Child issue acceptance names the exact fixture/reference path and diagnostic/stdout change
+- [x] Duplicate candidates below are confirmed as no-match or this issue is superseded
+- [x] Child issue 5306 contains exact `mise run reference-triage -- ...` commands
+- [x] Child issue includes failing path, diagnostic code, source context, visible symbols, and parser/TypeScript AST evidence
+- [x] Child issue acceptance names the exact fixture/reference path and diagnostic/stdout change
 
 ## Validation
 
@@ -98,17 +103,22 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] updated: `current-state.md` (repo root)
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] created: `issues/open/5306-report-export-assignment-with-other-exports.md`
 
 ## Notes
+
+Split into `issues/open/5306-report-export-assignment-with-other-exports.md`.
+The child also includes the matching
+`conflictingDeclarationsImportFromNamespace1.ts` and
+`conflictingDeclarationsImportFromNamespace2.ts` window.
 
 ## Affected test files
 
@@ -416,14 +426,14 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- `...`
+- split into `issues/open/5306-report-export-assignment-with-other-exports.md`
 
 Validation result:
 
 ```text
-command:
-result:
-date:
+command: python scripts/manager.py update-issue-index; python scripts/manager.py update-issue-index --check; python scripts/manager.py check-issue-health; python scripts/manager.py check-issue-readiness -- --fail-ready-below 80; git diff --check
+result: pass
+date: 2026-05-07
 ```
 
 Remaining risks:
