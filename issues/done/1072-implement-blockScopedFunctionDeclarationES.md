@@ -3,12 +3,14 @@ id: 1072
 title: "Implement Blockscopedfunctiondeclarationes"
 type: spike
 area: frontend/resolver
-class: blocked
+class: superseded
 priority: P1
-depends_on: [5005]
+depends_on: []
 blocks: []
 created: 2026-05-01
-updated: 2026-05-01
+updated: 2026-05-06
+status: done
+completed: 2026-05-06
 ---
 
 ## Summary
@@ -43,10 +45,10 @@ This generated bucket is either split into implementation-ready child issues or 
 
 In scope:
 
-- [ ] Inspect the smart triage report below
-- [ ] Confirm whether existing open/done issues already cover this bucket
-- [ ] Split one feature family, one observable behavior, or one fixed reference window into child issues
-- [ ] Preserve exact reproduction commands and representative AST/diagnostic evidence in each child issue
+- [x] Inspect the smart triage report below
+- [x] Confirm whether existing open/done issues already cover this bucket
+- [x] Split one feature family, one observable behavior, or one fixed reference window into child issues
+- [x] Preserve exact reproduction commands and representative AST/diagnostic evidence in each child issue
 
 Out of scope:
 
@@ -68,10 +70,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] Duplicate candidates below are confirmed as no-match or this issue is superseded
-- [ ] At least one child issue contains an exact `mise run reference-triage -- ...` command
-- [ ] Child issue includes failing path, diagnostic code, source context, visible symbols, and parser/TypeScript AST evidence
-- [ ] Child issue acceptance names the exact fixture/reference path and diagnostic/stdout change
+- [x] Duplicate candidates below are confirmed as no-match or this issue is superseded
+- [x] At least one child issue contains an exact `mise run reference-triage -- ...` command
+- [x] Child issue includes failing path, diagnostic code, source context, visible symbols, and parser/TypeScript AST evidence
+- [x] Child issue acceptance names the exact fixture/reference path and diagnostic/stdout change
 
 ## Validation
 
@@ -98,15 +100,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] updated: `current-state.md` (repo root)
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] none; current compiler diagnostic matches the TypeScript oracle
 
 ## Notes
 
@@ -117,11 +119,24 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- none found by path/title/feature scan
+- Generic `name-resolution` buckets are not matches; they share only the broad feature label.
+- No child issue is needed because both affected files now produce the same unresolved-name diagnostic TypeScript reports.
 
 ## Smart triage
 
-Not generated. Rerun with `--triage-limit 1` or higher.
+Generated on 2026-05-06.
+
+- Paths:
+  - `reference/typescript/tests/cases/compiler/blockScopedFunctionDeclarationES6.ts`
+  - `reference/typescript/tests/cases/compiler/blockScopedFunctionDeclarationES5.ts`
+- Diagnostic: `UnresolvedName` / `resolver-symbol`
+- Current compiler messages:
+  - ES6: `unresolved name: `foo` at 69..72`
+  - ES5: `unresolved name: `foo` at 77..80`
+- Source context: `if (true) { function foo() { } foo(); } foo();`
+- Compiler evidence: tokens and AST succeed; the block-scoped function is visible inside the `if` body and the out-of-block `foo()` call fails name resolution.
+- TypeScript oracle: `TS2304: Cannot find name 'foo'.` at the same out-of-block call in both files.
+- Outcome: stale generated bucket; no implementation child needed.
 
 ## Completion evidence
 
@@ -129,16 +144,20 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- `...`
+- `pending`
 
 Validation result:
 
 ```text
-command:
-result:
-date:
+command: python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/blockScopedFunctionDeclarationES6.ts
+result: pass; current compiler UnresolvedName matches TypeScript TS2304 at the out-of-block call
+date: 2026-05-06
+
+command: python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/blockScopedFunctionDeclarationES5.ts
+result: pass; current compiler UnresolvedName matches TypeScript TS2304 at the out-of-block call
+date: 2026-05-06
 ```
 
 Remaining risks:
 
-- none
+- none for this generated bucket; broader name-resolution buckets remain separate work.
