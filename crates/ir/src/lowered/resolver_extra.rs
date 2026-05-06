@@ -2398,6 +2398,12 @@ impl<'a> Resolver<'a> {
             ResolvedExpr::Ident(name) => self.resolve_local(name).ok().is_some_and(|local_id| {
                 self.array_locals.contains(&local_id) && !self.env_cell_locals.contains(&local_id)
             }),
+            // Logical OR/AND where either side produces a dense array
+            // (e.g., `x || []`, `x && []`)
+            ResolvedExpr::Binary { left, op, right } if matches!(op, BinaryOp::Or | BinaryOp::And) => {
+                self.resolved_expr_produces_dense_array(left)
+                    || self.resolved_expr_produces_dense_array(right)
+            }
             ResolvedExpr::MethodCall { object, method, args, .. } if method == "map" => {
                 self.is_known_array_expr(object)
                     && (string_constructor_arrow_callback(args) || unary_plus_arrow_callback(args))
