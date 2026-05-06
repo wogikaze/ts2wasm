@@ -136,32 +136,33 @@ fn validate_stmt(
     errors: &mut Vec<Diagnostic>,
 ) {
     match stmt {
-        LoweredStmt::Block(stmts) => {
+        LoweredStmt::Block(stmts, _) => {
             validate_stmts(stmts, local_count, num_funcs, program, errors);
         }
-        LoweredStmt::Let(id, expr) | LoweredStmt::Assign(id, expr) => {
+        LoweredStmt::Let(id, expr, _) | LoweredStmt::Assign(id, expr, _) => {
             check_local_id(*id, local_count, errors);
             validate_expr(expr, local_count, num_funcs, program, errors, true);
         }
-        LoweredStmt::Expr(expr) => {
+        LoweredStmt::Expr(expr, _) => {
             validate_expr(expr, local_count, num_funcs, program, errors, false);
         }
-        LoweredStmt::Return(expr) => {
+        LoweredStmt::Return(expr, _) => {
             validate_expr(expr, local_count, num_funcs, program, errors, true);
         }
-        LoweredStmt::Throw(expr) => {
+        LoweredStmt::Throw(expr, _) => {
             validate_expr(expr, local_count, num_funcs, program, errors, true);
         }
         LoweredStmt::If {
             condition,
             then_body,
             else_body,
+            ..
         } => {
             validate_expr(condition, local_count, num_funcs, program, errors, true);
             validate_stmts(then_body, local_count, num_funcs, program, errors);
             validate_stmts(else_body, local_count, num_funcs, program, errors);
         }
-        LoweredStmt::While { condition, body } => {
+        LoweredStmt::While { condition, body, .. } => {
             validate_expr(condition, local_count, num_funcs, program, errors, true);
             validate_stmts(body, local_count, num_funcs, program, errors);
         }
@@ -170,6 +171,7 @@ fn validate_stmt(
             catch_var,
             catch_body,
             finally_body,
+            ..
         } => {
             validate_stmts(try_body, local_count, num_funcs, program, errors);
             if let Some(var_id) = catch_var {
@@ -189,7 +191,7 @@ fn validate_stmt(
                 });
             }
         }
-        LoweredStmt::Switch { expr, cases } => {
+        LoweredStmt::Switch { expr, cases, .. } => {
             validate_expr(expr, local_count, num_funcs, program, errors, true);
             for (cond, body) in cases {
                 if let Some(c) = cond {
@@ -198,7 +200,7 @@ fn validate_stmt(
                 validate_stmts(body, local_count, num_funcs, program, errors);
             }
         }
-        LoweredStmt::DoWhile { body, condition } => {
+        LoweredStmt::DoWhile { body, condition, .. } => {
             validate_stmts(body, local_count, num_funcs, program, errors);
             validate_expr(condition, local_count, num_funcs, program, errors, true);
         }
@@ -207,6 +209,7 @@ fn validate_stmt(
             condition,
             update,
             body,
+            ..
         } => {
             if let Some(i) = init {
                 validate_stmt(i, local_count, num_funcs, program, errors);
@@ -226,6 +229,7 @@ fn validate_stmt(
             index_local,
             len_local,
             body,
+            ..
         } => {
             check_local_id(*var, local_count, errors);
             check_local_id(*iter_local, local_count, errors);
@@ -241,6 +245,7 @@ fn validate_stmt(
             index_local,
             len_local,
             body,
+            ..
         } => {
             check_local_id(*var, local_count, errors);
             check_local_id(*iter_local, local_count, errors);
@@ -253,7 +258,7 @@ fn validate_stmt(
             validate_stmt(body, local_count, num_funcs, program, errors)
         }
         LoweredStmt::Break { .. } | LoweredStmt::Continue { .. } => {}
-        LoweredStmt::Export { expr, .. } | LoweredStmt::ModuleExportsAssign { expr } => {
+        LoweredStmt::Export { expr, .. } | LoweredStmt::ModuleExportsAssign { expr, .. } => {
             validate_expr(expr, local_count, num_funcs, program, errors, true);
         }
         LoweredStmt::ClassDecl {
@@ -299,19 +304,19 @@ fn validate_expr(
     value_required: bool,
 ) {
     match expr {
-        LoweredExpr::Number(_) => {}
+        LoweredExpr::Number(_, _) => {}
         LoweredExpr::BigIntLiteral { .. } => {}
-        LoweredExpr::Local(id) => check_local_id(*id, local_count, errors),
-        LoweredExpr::EnvCellNew(expr) => validate_expr(expr, local_count, num_funcs, program, errors, true),
-        LoweredExpr::EnvCellGet(cell) => check_local_id(*cell, local_count, errors),
-        LoweredExpr::EnvCellSet { cell, expr } => {
+        LoweredExpr::Local(id, _) => check_local_id(*id, local_count, errors),
+        LoweredExpr::EnvCellNew(expr, _) => validate_expr(expr, local_count, num_funcs, program, errors, true),
+        LoweredExpr::EnvCellGet(cell, _) => check_local_id(*cell, local_count, errors),
+        LoweredExpr::EnvCellSet { cell, expr, .. } => {
             check_local_id(*cell, local_count, errors);
             validate_expr(expr, local_count, num_funcs, program, errors, true);
         }
         LoweredExpr::Unary { expr, .. } => {
             validate_expr(expr, local_count, num_funcs, program, errors, true);
         }
-        LoweredExpr::Assign { local, expr } => {
+        LoweredExpr::Assign { local, expr, .. } => {
             check_local_id(*local, local_count, errors);
             validate_expr(expr, local_count, num_funcs, program, errors, true);
         }
@@ -345,7 +350,7 @@ fn validate_expr(
             validate_expr(left, local_count, num_funcs, program, errors, true);
             validate_expr(right, local_count, num_funcs, program, errors, true);
         }
-        LoweredExpr::Call { kind, args } => {
+        LoweredExpr::Call { kind, args, .. } => {
             for arg in args {
                 validate_expr(arg, local_count, num_funcs, program, errors, true);
             }
@@ -407,7 +412,7 @@ fn validate_expr(
                 }
             }
         }
-        LoweredExpr::RuntimeCall { runtime_fn, args } => {
+        LoweredExpr::RuntimeCall { runtime_fn, args, .. } => {
             for arg in args {
                 validate_expr(arg, local_count, num_funcs, program, errors, true);
             }
@@ -434,7 +439,7 @@ fn validate_expr(
                 });
             }
             if runtime_fn == "PrivateFieldGet"
-                && !matches!(args.as_slice(), [_, LoweredExpr::Number(brand), LoweredExpr::Number(slot)] if *brand > 0 && *slot >= 0)
+                && !matches!(args.as_slice(), [_, LoweredExpr::Number(brand, _), LoweredExpr::Number(slot, _)] if *brand > 0 && *slot >= 0)
             {
                 errors.push(Diagnostic {
                     code: DiagCode::InvariantViolation,
@@ -444,7 +449,7 @@ fn validate_expr(
                 });
             }
             if runtime_fn == "PrivateFieldSet"
-                && !matches!(args.as_slice(), [_, LoweredExpr::Number(brand), LoweredExpr::Number(slot), _] if *brand > 0 && *slot >= 0)
+                && !matches!(args.as_slice(), [_, LoweredExpr::Number(brand, _), LoweredExpr::Number(slot, _), _] if *brand > 0 && *slot >= 0)
             {
                 errors.push(Diagnostic {
                     code: DiagCode::InvariantViolation,
@@ -455,7 +460,7 @@ fn validate_expr(
                 });
             }
             if runtime_fn == "PrivateBrandCheck"
-                && !matches!(args.as_slice(), [_, LoweredExpr::Number(brand)] if *brand > 0)
+                && !matches!(args.as_slice(), [_, LoweredExpr::Number(brand, _)] if *brand > 0)
             {
                 errors.push(Diagnostic {
                     code: DiagCode::InvariantViolation,
@@ -465,27 +470,27 @@ fn validate_expr(
                 });
             }
         }
-        LoweredExpr::ArrayNew { elements } => {
+        LoweredExpr::ArrayNew { elements, .. } => {
             for elem in elements {
                 validate_expr(elem, local_count, num_funcs, program, errors, true);
             }
         }
-        LoweredExpr::ArrayNewSparse { slots } => {
+        LoweredExpr::ArrayNewSparse { slots, .. } => {
             for slot in slots {
                 if let LoweredArraySlot::Present(elem) = slot {
                     validate_expr(elem, local_count, num_funcs, program, errors, true);
                 }
             }
         }
-        LoweredExpr::ArrayGet { arr, index } => {
+        LoweredExpr::ArrayGet { arr, index, .. } => {
             validate_expr(arr, local_count, num_funcs, program, errors, true);
             validate_expr(index, local_count, num_funcs, program, errors, true);
         }
-        LoweredExpr::Index { object, index } => {
+        LoweredExpr::Index { object, index, .. } => {
             validate_expr(object, local_count, num_funcs, program, errors, true);
             validate_expr(index, local_count, num_funcs, program, errors, true);
         }
-        LoweredExpr::GetLength(expr) => {
+        LoweredExpr::GetLength(expr, _) => {
             validate_expr(expr, local_count, num_funcs, program, errors, true);
         }
         LoweredExpr::ObjectNew { props, .. } => {
@@ -507,6 +512,7 @@ fn validate_expr(
             object,
             index,
             value,
+            ..
         } => {
             validate_expr(object, local_count, num_funcs, program, errors, true);
             validate_expr(index, local_count, num_funcs, program, errors, true);
@@ -519,6 +525,7 @@ fn validate_expr(
             base_local,
             private_brand,
             private_slot_count,
+            ..
         } => {
             check_func_id(*constructor, num_funcs, errors);
             check_func_id(prototype.constructor, num_funcs, errors);
@@ -545,14 +552,14 @@ fn validate_expr(
                 validate_expr(arg, local_count, num_funcs, program, errors, true);
             }
         }
-        LoweredExpr::ClassPrototype(prototype) => {
+        LoweredExpr::ClassPrototype(prototype, _) => {
             check_func_id(prototype.constructor, num_funcs, errors);
             for parent in &prototype.parent_constructors {
                 check_func_id(*parent, num_funcs, errors);
             }
         }
-        LoweredExpr::BuiltinErrorPrototype(_) => {}
-        LoweredExpr::This => {
+        LoweredExpr::BuiltinErrorPrototype(_, _) => {}
+        LoweredExpr::This(..) => {
             errors.push(Diagnostic {
                 code: DiagCode::InvariantViolation,
                 message: "issue-211: residual `this` must be resolved to an active receiver local before backend emission".to_owned(),
@@ -573,46 +580,47 @@ fn validate_expr(
             func_id,
             captures,
             representation: _,
+            ..
         } => {
             check_func_id(*func_id, num_funcs, errors);
             for capture in captures {
                 check_local_id(*capture, local_count, errors);
             }
         }
-        LoweredExpr::String(_) => {}
-        LoweredExpr::Bool(_) => {}
-        LoweredExpr::Null => {}
-        LoweredExpr::Undefined => {}
+        LoweredExpr::String(_, _) => {}
+        LoweredExpr::Bool(_, _) => {}
+        LoweredExpr::Null(..) => {}
+        LoweredExpr::Undefined(..) => {}
         LoweredExpr::PropertyIn { obj, .. } => {
             validate_expr(obj, local_count, num_funcs, program, errors, true);
         }
-        LoweredExpr::PropertyInDynamic { obj, key } => {
+        LoweredExpr::PropertyInDynamic { obj, key, .. } => {
             validate_expr(obj, local_count, num_funcs, program, errors, true);
             validate_expr(key, local_count, num_funcs, program, errors, true);
         }
         LoweredExpr::PropertyDelete { object, .. } => {
             validate_expr(object, local_count, num_funcs, program, errors, true);
         }
-        LoweredExpr::PropertyDeleteDynamic { object, key } => {
+        LoweredExpr::PropertyDeleteDynamic { object, key, .. } => {
             validate_expr(object, local_count, num_funcs, program, errors, true);
             validate_expr(key, local_count, num_funcs, program, errors, true);
         }
-        LoweredExpr::PropertyGetDynamic { obj, key } => {
+        LoweredExpr::PropertyGetDynamic { obj, key, .. } => {
             validate_expr(obj, local_count, num_funcs, program, errors, true);
             validate_expr(key, local_count, num_funcs, program, errors, true);
         }
         LoweredExpr::OptionalPropertyGet { obj, .. } => {
             validate_expr(obj, local_count, num_funcs, program, errors, true);
         }
-        LoweredExpr::OptionalIndex { object, index } => {
+        LoweredExpr::OptionalIndex { object, index, .. } => {
             validate_expr(object, local_count, num_funcs, program, errors, true);
             validate_expr(index, local_count, num_funcs, program, errors, true);
         }
-        LoweredExpr::OptionalCall { callee, call } => {
+        LoweredExpr::OptionalCall { callee, call, .. } => {
             validate_expr(callee, local_count, num_funcs, program, errors, true);
             validate_expr(call, local_count, num_funcs, program, errors, true);
         }
-        LoweredExpr::ModuleLoad { module_id } => {
+        LoweredExpr::ModuleLoad { module_id, .. } => {
             if program.modules.iter().all(|m| m.id != *module_id) && *module_id != 0 {
                 // module_id 0 refers to the entry module; other IDs must exist in program.modules
                 errors.push(Diagnostic {
@@ -625,7 +633,7 @@ fn validate_expr(
                 });
             }
         }
-        LoweredExpr::Block { stmts, result } => {
+        LoweredExpr::Block { stmts, result, .. } => {
             validate_stmts(stmts, local_count, num_funcs, program, errors);
             validate_expr(result, local_count, num_funcs, program, errors, value_required);
         }

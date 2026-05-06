@@ -65,7 +65,7 @@ impl ArrowClosure {
             func_id: self.func_id,
             captures: self.captures.clone(),
             representation,
-        }
+            span: Span::generated("arrow_fn"),}
     }
 }
 
@@ -294,26 +294,26 @@ impl<'a> Resolver<'a> {
         self.scopes.push(HashMap::new());
         let lowered = self.lower_block(body);
         self.scopes.pop();
-        lowered.map(|statements| Some(LoweredStmt::Block(statements)))
+        lowered.map(|statements| Some(LoweredStmt::Block(statements, Span::generated("block"))))
     }
 
     fn lower_stmt(&mut self, stmt: &ResolvedStmt) -> Result<LoweredStmt, Diagnostic> {
         match stmt {
             ResolvedStmt::AmbientValue(name) => {
                 self.declare_local(name)?;
-                Ok(LoweredStmt::Expr(LoweredExpr::Undefined))
+                Ok(LoweredStmt::Expr(LoweredExpr::Undefined(Span::generated("undef")), Span::generated("expr_stmt")))
             }
             ResolvedStmt::DestructureLet { pattern, expr } => {
                 let value_local = self.alloc_temp();
-                let mut statements = vec![LoweredStmt::Let(value_local, self.lower_expr(expr)?)];
+                let mut statements = vec![LoweredStmt::Let(value_local, self.lower_expr(expr)?, Span::generated("let_stmt"))];
                 statements.extend(
                     self.lower_binding_pattern_declarations(
                         pattern,
-                        LoweredExpr::Local(value_local),
+                        LoweredExpr::Local(value_local, Span::generated("local")),
                         Some(expr),
                     )?,
                 );
-                Ok(LoweredStmt::Block(statements))
+                Ok(LoweredStmt::Block(statements, Span::generated("block")))
             }
             ResolvedStmt::Let(name, expr) => {
                 let local_id = self.declare_local(name)?;
@@ -330,7 +330,7 @@ impl<'a> Resolver<'a> {
                 };
                 let lowered = if self.env_cell_names.contains(name) {
                     self.env_cell_locals.insert(local_id);
-                    LoweredExpr::EnvCellNew(Box::new(lowered))
+                    LoweredExpr::EnvCellNew(Box::new(lowered), Span::generated("env_cell_new"))
                 } else {
                     lowered
                 };
@@ -374,7 +374,7 @@ impl<'a> Resolver<'a> {
                     self.local_classes.remove(&local_id);
                 }
                 self.update_regexp_literal_local(local_id, expr);
-                Ok(LoweredStmt::Let(local_id, lowered))
+                Ok(LoweredStmt::Let(local_id, lowered, Span::generated("let_stmt")))
             }
             ResolvedStmt::Assign(name, expr) => {
                 let local_id = self.resolve_local(name)?;
@@ -421,9 +421,10 @@ impl<'a> Resolver<'a> {
                     Ok(LoweredStmt::Expr(LoweredExpr::EnvCellSet {
                         cell: local_id,
                         expr: Box::new(lowered),
-                    }))
+                    
+                        span: Span::generated("env_cell_set"),}, Span::generated("expr_stmt")))
                 } else {
-                    Ok(LoweredStmt::Assign(local_id, lowered))
+                    Ok(LoweredStmt::Assign(local_id, lowered, Span::generated("assign")))
                 }
             }
             ResolvedStmt::Expr(expr) => {
@@ -447,11 +448,12 @@ impl<'a> Resolver<'a> {
                         local_id,
                         LoweredExpr::RuntimeCall {
                             runtime_fn: "ArrayPushGrow".to_owned(),
-                            args: vec![LoweredExpr::Local(local_id), self.lower_expr(&args[0])?],
-                        },
+                            args: vec![LoweredExpr::Local(local_id, Span::generated("local")), self.lower_expr(&args[0])?],
+                        
+                            span: Span::generated("runtime_call"),},
                     ));
                 }
-                Ok(LoweredStmt::Expr(self.lower_expr(expr)?))
+                Ok(LoweredStmt::Expr(self.lower_expr(expr)?, Span::generated("expr_stmt")))
             }
             ResolvedStmt::If {
                 condition,
@@ -501,12 +503,13 @@ impl<'a> Resolver<'a> {
                     condition,
                     then_body,
                     else_body,
-                })
+                
+                    span: Span::generated("if_stmt"),})
             }
             ResolvedStmt::While { condition, body } => Ok(LoweredStmt::While {
                 condition: self.lower_expr(condition)?,
                 body: self.lower_nested_block(body)?,
-            }),
+                span: Span::generated("while"),}),
             ResolvedStmt::Return(expr) => {
                 if let ResolvedExpr::Ident(name) = expr
                     && let Some(closure) = self
@@ -516,9 +519,9 @@ impl<'a> Resolver<'a> {
                 {
                     return Ok(LoweredStmt::Return(
                         closure.to_expr(ClosureRepresentation::HeapObject),
-                    ));
+                    Span::generated("return_stmt")));
                 }
-                Ok(LoweredStmt::Return(self.lower_expr(expr)?))
+                Ok(LoweredStmt::Return(self.lower_expr(expr)?, Span::generated("return_stmt")))
             }
             ResolvedStmt::Function {
                 name, params, body, ..
@@ -532,7 +535,8 @@ impl<'a> Resolver<'a> {
                     func_id,
                     captures,
                     representation,
-                } = &closure
+                
+                    span: Span::generated("arrow_fn"),} = &closure
                 {
                     if matches!(representation, ClosureRepresentation::HeapObject) {
                         self.heap_closure_locals.insert(local_id);
@@ -551,15 +555,15 @@ impl<'a> Resolver<'a> {
                     Ok(LoweredStmt::Block(vec![
                         LoweredStmt::Let(
                             local_id,
-                            LoweredExpr::EnvCellNew(Box::new(LoweredExpr::Undefined)),
+                            LoweredExpr::EnvCellNew(Box::new(LoweredExpr::Undefined(Span::generated("undef"))), Span::generated("env_cell_new")),
                         ),
                         LoweredStmt::Expr(LoweredExpr::EnvCellSet {
                             cell: local_id,
                             expr: Box::new(closure),
-                        }),
+                            span: Span::generated("env_cell_set"),}, Span::generated("expr_stmt")),
                     ]))
                 } else {
-                    Ok(LoweredStmt::Let(local_id, closure))
+                    Ok(LoweredStmt::Let(local_id, closure, Span::generated("let_stmt")))
                 }
             }
             ResolvedStmt::TryCatch {
@@ -584,9 +588,9 @@ impl<'a> Resolver<'a> {
                         .as_ref()
                         .map(|b| self.lower_nested_block(b))
                         .transpose()?,
-                })
+                        span: Span::generated("try_catch"),})
             }
-            ResolvedStmt::Throw(expr) => Ok(LoweredStmt::Throw(self.lower_expr(expr)?)),
+            ResolvedStmt::Throw(expr) => Ok(LoweredStmt::Throw(self.lower_expr(expr)?, Span::generated("throw_stmt"))),
             ResolvedStmt::Switch { expr, cases } => {
                 let resolved_cases = cases
                     .iter()
@@ -600,12 +604,12 @@ impl<'a> Resolver<'a> {
                 Ok(LoweredStmt::Switch {
                     expr: self.lower_expr(expr)?,
                     cases: resolved_cases,
-                })
+                    span: Span::generated("switch"),})
             }
             ResolvedStmt::DoWhile { body, condition } => Ok(LoweredStmt::DoWhile {
                 body: self.lower_nested_block(body)?,
                 condition: self.lower_expr(condition)?,
-            }),
+                span: Span::generated("do_while"),}),
             ResolvedStmt::For {
                 init,
                 condition,
@@ -624,7 +628,7 @@ impl<'a> Resolver<'a> {
                         condition: condition.as_ref().map(|c| self.lower_expr(c)).transpose()?,
                         update: update.as_ref().map(|u| self.lower_expr(u)).transpose()?,
                         body: self.lower_nested_block(body)?,
-                    })
+                        span: Span::generated("for"),})
                 })();
                 self.scopes.pop();
                 resolved
@@ -638,7 +642,7 @@ impl<'a> Resolver<'a> {
                     index_local: self.alloc_temp(),
                     len_local: self.alloc_temp(),
                     body: self.lower_nested_block(body)?,
-                })
+                    span: Span::generated("for_in"),})
             }
             ResolvedStmt::ForOf { var, iter, body } => {
                 let var_id = self.declare_local(var)?;
@@ -649,13 +653,14 @@ impl<'a> Resolver<'a> {
                     if class_name.is_some_and(|c| c == "Set") {
                         LoweredExpr::RuntimeCall {
                             runtime_fn: "SetValuesArray".to_owned(),
-                            args: vec![LoweredExpr::Local(local_id)],
-                        }
+                            args: vec![LoweredExpr::Local(local_id, Span::generated("local"))],
+                        
+                            span: Span::generated("runtime_call"),}
                     } else if class_name.is_some_and(|c| c == "Map") {
                         LoweredExpr::RuntimeCall {
                             runtime_fn: "MapValuesArray".to_owned(),
-                            args: vec![LoweredExpr::Local(local_id)],
-                        }
+                            args: vec![LoweredExpr::Local(local_id, Span::generated("local"))],
+                            span: Span::generated("runtime_call"),}
                     } else {
                         self.lower_expr(iter)?
                     }
@@ -669,28 +674,28 @@ impl<'a> Resolver<'a> {
                     index_local: self.alloc_temp(),
                     len_local: self.alloc_temp(),
                     body: self.lower_nested_block(body)?,
-                })
+                    span: Span::generated("for_of"),})
             }
             ResolvedStmt::Labeled { label, body } => Ok(LoweredStmt::Labeled {
                 label: label.clone(),
                 body: Box::new(self.lower_stmt(body)?),
-            }),
+                span: Span::generated("labeled"),}),
             ResolvedStmt::Break { label } => Ok(LoweredStmt::Break {
                 label: label.clone(),
-            }),
+                span: Span::generated("break"),}),
             ResolvedStmt::Continue { label } => Ok(LoweredStmt::Continue {
                 label: label.clone(),
-            }),
+                span: Span::generated("continue"),}),
             ResolvedStmt::Export { name, expr } => Ok(LoweredStmt::Export {
                 name: name.clone(),
                 expr: self.lower_expr(expr)?,
-            }),
+                span: Span::generated("export"),}),
             ResolvedStmt::ModuleExportsAssign { expr } => Ok(LoweredStmt::ModuleExportsAssign {
                 expr: self.lower_expr(expr)?,
-            }),
-            ResolvedStmt::ClassDecl { .. } => Ok(LoweredStmt::Expr(LoweredExpr::Undefined)),
+                span: Span::generated("module_exports_assign"),}),
+            ResolvedStmt::ClassDecl { .. } => Ok(LoweredStmt::Expr(LoweredExpr::Undefined(Span::generated("undef")), Span::generated("expr_stmt"))),
             ResolvedStmt::Block { statements, .. } => {
-                Ok(LoweredStmt::Block(self.lower_block(statements)?))
+                Ok(LoweredStmt::Block(self.lower_block(statements)?, Span::generated("block")))
             }
         }
     }
@@ -755,11 +760,11 @@ fn class_maps(
 
 fn lowered_binding_default(default: &BindingDefault) -> LoweredExpr {
     match default {
-        BindingDefault::Number(value) => LoweredExpr::Number(*value),
-        BindingDefault::String(value) => LoweredExpr::String(value.clone()),
-        BindingDefault::Bool(value) => LoweredExpr::Bool(*value),
-        BindingDefault::Null => LoweredExpr::Null,
-        BindingDefault::Undefined => LoweredExpr::Undefined,
+        BindingDefault::Number(value) => LoweredExpr::Number(*value, Span::generated("num")),
+        BindingDefault::String(value) => LoweredExpr::String(value.clone(), Span::generated("str")),
+        BindingDefault::Bool(value) => LoweredExpr::Bool(*value, Span::generated("bool")),
+        BindingDefault::Null => LoweredExpr::Null(Span::generated("null")),
+        BindingDefault::Undefined => LoweredExpr::Undefined(Span::generated("undef")),
     }
 }
 

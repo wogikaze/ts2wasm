@@ -3,7 +3,7 @@ use super::*;
 impl<'a> Resolver<'a> {
     pub(super) fn lower_expr(&mut self, expr: &ResolvedExpr) -> Result<LoweredExpr, Diagnostic> {
         match expr {
-            ResolvedExpr::Number(value) => Ok(LoweredExpr::Number(*value)),
+            ResolvedExpr::Number(value) => Ok(LoweredExpr::Number(*value, Span::generated("num"))),
             ResolvedExpr::BigIntLiteral {
                 decimal,
                 sign,
@@ -14,13 +14,13 @@ impl<'a> Resolver<'a> {
                 sign: *sign,
                 limb_low: *limb_low,
                 limb_high: *limb_high,
-            }),
-            ResolvedExpr::String(value) => Ok(LoweredExpr::String(value.clone())),
-            ResolvedExpr::Bool(value) => Ok(LoweredExpr::Bool(*value)),
-            ResolvedExpr::Null => Ok(LoweredExpr::Null),
-            ResolvedExpr::Undefined => Ok(LoweredExpr::Undefined),
+                span: Span::generated("bigint"),}),
+            ResolvedExpr::String(value) => Ok(LoweredExpr::String(value.clone(), Span::generated("str"))),
+            ResolvedExpr::Bool(value) => Ok(LoweredExpr::Bool(*value, Span::generated("bool"))),
+            ResolvedExpr::Null => Ok(LoweredExpr::Null(Span::generated("null"))),
+            ResolvedExpr::Undefined => Ok(LoweredExpr::Undefined(Span::generated("undef"))),
             ResolvedExpr::This { span } => match self.resolve_local("this") {
-                Ok(local) => Ok(LoweredExpr::Local(local)),
+                Ok(local) => Ok(LoweredExpr::Local(local, Span::generated("local"))),
                 Err(_) => Err(Diagnostic {
                     code: DiagCode::UnsupportedSyntax,
                     message: "issue-062d: `this` is only supported inside receiver-bound functions, class constructors, and instance methods in this milestone".to_owned(),
@@ -33,17 +33,17 @@ impl<'a> Resolver<'a> {
                 // Proper Infinity/NaN support requires broader number-model support (issue-281)
                 if name == "Infinity" {
                     use ts2wasm_runtime_abi::ValueTag;
-                    return Ok(LoweredExpr::Number(ValueTag::NUMBER_PAYLOAD_MAX));
+                    return Ok(LoweredExpr::Number(ValueTag::NUMBER_PAYLOAD_MAX, Span::generated("num")));
                 }
                 if name == "NaN" {
                     // NaN is approximated as 0 for now (not spec-compliant but pragmatic)
                     // Proper NaN support requires broader number-model support (issue-281)
-                    return Ok(LoweredExpr::Number(0));
+                    return Ok(LoweredExpr::Number(0, Span::generated("num")));
                 }
                 if name == "globalThis" {
                     // globalThis resolves to undefined in the current WASM model
                     // Full global object semantics require broader runtime support
-                    return Ok(LoweredExpr::Undefined);
+                    return Ok(LoweredExpr::Undefined(Span::generated("undef")));
                 }
                 // Builtin global constructor/namespace identifiers used as values
                 // These resolve to Undefined since their value semantics aren't needed
@@ -62,18 +62,18 @@ impl<'a> Resolver<'a> {
                     || name == "isNaN" || name == "parseInt" || name == "parseFloat" || name == "isFinite"
                     || name == "encodeURI" || name == "decodeURI"
                 {
-                    return Ok(LoweredExpr::Undefined);
+                    return Ok(LoweredExpr::Undefined(Span::generated("undef")));
                 }
                 match self.resolve_local(name) {
-                    Ok(local) if self.env_cell_locals.contains(&local) => Ok(LoweredExpr::EnvCellGet(local)),
-                    Ok(local) => Ok(LoweredExpr::Local(local)),
+                    Ok(local) if self.env_cell_locals.contains(&local) => Ok(LoweredExpr::EnvCellGet(local, Span::generated("env_cell_get"))),
+                    Ok(local) => Ok(LoweredExpr::Local(local, Span::generated("local"))),
                     Err(_) if name == "arguments" => Err(Diagnostic {
                         code: DiagCode::UnsupportedSyntax,
                         message: "issue-062d: `arguments` is only supported inside non-arrow functions in this milestone".to_owned(),
                         span: None,
                     }),
                     Err(_) if self.class_constructor_ids.contains_key(name.as_str()) => {
-                        Ok(LoweredExpr::ClassPrototype(self.class_prototype_ref(name)?))
+                        Ok(LoweredExpr::ClassPrototype(self.class_prototype_ref(name)?, Span::generated("class_proto")))
                     }
                     Err(err) => Err(err),
                 }
@@ -88,20 +88,22 @@ impl<'a> Resolver<'a> {
                 if *op == UnaryOp::Negate {
                     if let ResolvedExpr::Ident(name) = expr.as_ref() && name == "Infinity" {
                         use ts2wasm_runtime_abi::ValueTag;
-                        return Ok(LoweredExpr::Number(ValueTag::NUMBER_PAYLOAD_MIN));
+                        return Ok(LoweredExpr::Number(ValueTag::NUMBER_PAYLOAD_MIN, Span::generated("num")));
                     }
                     if self.resolved_expr_is_bigint(expr) {
                         return Ok(LoweredExpr::RuntimeCall {
                             runtime_fn: "BigIntUnaryMinus".to_owned(),
                             args: vec![self.lower_expr(expr)?],
-                        });
+                        
+                            span: Span::generated("runtime_call"),});
                     }
                 }
                 if *op == UnaryOp::BitwiseNot && self.resolved_expr_is_bigint(expr) {
                     return Ok(LoweredExpr::RuntimeCall {
                         runtime_fn: "BigIntBitwiseNot".to_owned(),
                         args: vec![self.lower_expr(expr)?],
-                    });
+                    
+                        span: Span::generated("runtime_call"),});
                 }
                 if *op == UnaryOp::Delete {
                     // Lower delete to PropertyDelete or PropertyDeleteDynamic
@@ -128,7 +130,7 @@ impl<'a> Resolver<'a> {
                             Ok(LoweredExpr::PropertyDelete {
                                 object: Box::new(self.lower_expr(object)?),
                                 key: key.clone(),
-                            })
+                                span: Span::generated("prop_delete"),})
                         }
                         ResolvedExpr::ComputedIndex { object, index } => {
                             if self.expr_has_private_progress_storage(object) {
@@ -142,18 +144,19 @@ impl<'a> Resolver<'a> {
                             Ok(LoweredExpr::PropertyDeleteDynamic {
                                 object: Box::new(self.lower_expr(object)?),
                                 key: Box::new(self.lower_expr(index)?),
-                            })
+                                span: Span::generated("prop_delete_dyn"),})
                         }
                         _ => Ok(LoweredExpr::Unary {
                             op: lower_unary_op(*op)?,
                             expr: Box::new(self.lower_expr(expr)?),
-                        }),
+                        
+                            span: Span::generated("unary"),}),
                     }
                 } else {
                     Ok(LoweredExpr::Unary {
                         op: lower_unary_op(*op)?,
                         expr: Box::new(self.lower_expr(expr)?),
-                    })
+                        span: Span::generated("unary"),})
                 }
             }
             ResolvedExpr::Binary { left, op, right } => {
@@ -161,7 +164,7 @@ impl<'a> Resolver<'a> {
                     let prototype = match right.as_ref() {
                         ResolvedExpr::Ident(name) => {
                             if let Some(constructor) = BuiltinErrorConstructor::from_name(name) {
-                                LoweredExpr::BuiltinErrorPrototype(constructor)
+                                LoweredExpr::BuiltinErrorPrototype(constructor, Span::generated("builtin_error_proto"))
                             } else {
                                 self.class_prototype_ref(name)
                                     .map(LoweredExpr::ClassPrototype)?
@@ -178,23 +181,25 @@ impl<'a> Resolver<'a> {
                     Ok(LoweredExpr::RuntimeCall {
                         runtime_fn: "$instanceof".to_string(),
                         args: vec![self.lower_expr(left)?, prototype],
-                    })
+                    
+                        span: Span::generated("runtime_call"),})
                 } else if *op == BinaryOp::In {
                     // Lower in to PropertyIn or PropertyInDynamic
                     // key in object -> check if key exists in object
                     match left.as_ref() {
                         ResolvedExpr::Number(index) => Ok(LoweredExpr::RuntimeCall {
                             runtime_fn: "ArrayIndexPresent".to_owned(),
-                            args: vec![self.lower_expr(right)?, LoweredExpr::Number(*index)],
-                        }),
+                            args: vec![self.lower_expr(right)?, LoweredExpr::Number(*index, Span::generated("num"))],
+                        
+                            span: Span::generated("runtime_call"),}),
                         ResolvedExpr::String(key) => Ok(LoweredExpr::PropertyIn {
                             obj: Box::new(self.lower_expr(right)?),
                             key: key.clone(),
-                        }),
+                            span: Span::generated("prop_in"),}),
                         _ => Ok(LoweredExpr::PropertyInDynamic {
                             obj: Box::new(self.lower_expr(right)?),
                             key: Box::new(self.lower_expr(left)?),
-                        }),
+                            span: Span::generated("prop_in_dyn"),}),
                     }
                 } else if matches!(op, BinaryOp::Divide | BinaryOp::Modulo)
                     && self.resolved_expr_is_bigint_div_rem_operand(left)
@@ -208,7 +213,8 @@ impl<'a> Resolver<'a> {
                     Ok(LoweredExpr::RuntimeCall {
                         runtime_fn: runtime_fn.to_owned(),
                         args: vec![self.lower_expr(left)?, self.lower_expr(right)?],
-                    })
+                    
+                        span: Span::generated("runtime_call"),})
                 } else if matches!(op, BinaryOp::Divide | BinaryOp::Modulo)
                     && ((self.resolved_expr_is_control_flow_mixed_bigint(left)
                         && self.resolved_expr_is_bigint_div_rem_operand(right))
@@ -244,7 +250,8 @@ impl<'a> Resolver<'a> {
                     Ok(LoweredExpr::RuntimeCall {
                         runtime_fn: runtime_fn.to_owned(),
                         args: vec![self.lower_expr(left)?, self.lower_expr(right)?],
-                    })
+                    
+                        span: Span::generated("runtime_call"),})
                 } else if *op == BinaryOp::Power
                     && self.resolved_expr_is_bigint(left)
                     && self.resolved_expr_is_bigint(right)
@@ -252,7 +259,8 @@ impl<'a> Resolver<'a> {
                     Ok(LoweredExpr::RuntimeCall {
                         runtime_fn: "BigIntPow".to_owned(),
                         args: vec![self.lower_expr(left)?, self.lower_expr(right)?],
-                    })
+                    
+                        span: Span::generated("runtime_call"),})
                 } else if matches!(
                     op,
                     BinaryOp::Add
@@ -272,12 +280,14 @@ impl<'a> Resolver<'a> {
                             left: Box::new(self.lower_expr(left)?),
                             op: LoweredBinaryOp::Add,
                             right: Box::new(self.lower_expr(right)?),
-                        })
+                        
+                            span: Span::generated("binary"),})
                     } else {
                         Ok(LoweredExpr::RuntimeCall {
                             runtime_fn: "BigIntMixedArithmeticTypeError".to_owned(),
                             args: vec![self.lower_expr(left)?, self.lower_expr(right)?],
-                        })
+                        
+                            span: Span::generated("runtime_call"),})
                     }
                 } else if matches!(
                     op,
@@ -294,7 +304,8 @@ impl<'a> Resolver<'a> {
                     Ok(LoweredExpr::RuntimeCall {
                         runtime_fn: runtime_fn.to_owned(),
                         args: vec![self.lower_expr(left)?, self.lower_expr(right)?],
-                    })
+                    
+                        span: Span::generated("runtime_call"),})
                 } else if matches!(
                     op,
                     BinaryOp::BitwiseAnd | BinaryOp::BitwiseOr | BinaryOp::BitwiseXor
@@ -306,7 +317,8 @@ impl<'a> Resolver<'a> {
                     Ok(LoweredExpr::RuntimeCall {
                         runtime_fn: "BigIntMixedArithmeticTypeError".to_owned(),
                         args: vec![self.lower_expr(left)?, self.lower_expr(right)?],
-                    })
+                    
+                        span: Span::generated("runtime_call"),})
                 } else if matches!(
                     op,
                     BinaryOp::LeftShift | BinaryOp::RightShift | BinaryOp::UnsignedRightShift
@@ -318,7 +330,8 @@ impl<'a> Resolver<'a> {
                         Ok(LoweredExpr::RuntimeCall {
                             runtime_fn: "BigIntMixedArithmeticTypeError".to_owned(),
                             args: vec![self.lower_expr(left)?, self.lower_expr(right)?],
-                        })
+                        
+                            span: Span::generated("runtime_call"),})
                     } else if self.resolved_expr_is_bigint(right) {
                         let runtime_fn = match op {
                             BinaryOp::LeftShift => "BigIntLeftShift",
@@ -328,20 +341,23 @@ impl<'a> Resolver<'a> {
                         Ok(LoweredExpr::RuntimeCall {
                             runtime_fn: runtime_fn.to_owned(),
                             args: vec![self.lower_expr(left)?, self.lower_expr(right)?],
-                        })
+                        
+                            span: Span::generated("runtime_call"),})
                     } else {
                         // Mixed BigInt/non-BigInt shift → TypeError
                         Ok(LoweredExpr::RuntimeCall {
                             runtime_fn: "BigIntMixedArithmeticTypeError".to_owned(),
                             args: vec![self.lower_expr(left)?, self.lower_expr(right)?],
-                        })
+                        
+                            span: Span::generated("runtime_call"),})
                     }
                 } else {
                     Ok(LoweredExpr::Binary {
                         left: Box::new(self.lower_expr(left)?),
                         op: lower_binary_op(*op)?,
                         right: Box::new(self.lower_expr(right)?),
-                    })
+                    
+                        span: Span::generated("binary"),})
                 }
             }
             ResolvedExpr::Assign { name, expr } => {
@@ -350,9 +366,10 @@ impl<'a> Resolver<'a> {
                 self.invalidate_static_function_array_like_local(local);
                 let expr = Box::new(self.lower_expr(expr)?);
                 if self.env_cell_locals.contains(&local) {
-                    Ok(LoweredExpr::EnvCellSet { cell: local, expr })
+                    Ok(LoweredExpr::EnvCellSet { cell: local, expr ,
+                    span: Span::generated("env_cell_set"),})
                 } else {
-                    Ok(LoweredExpr::Assign { local, expr })
+                    Ok(LoweredExpr::Assign { local, expr , span: Span::generated("assign")})
                 }
             }
             ResolvedExpr::LogicalAssign { name, op, expr } => {
@@ -363,7 +380,7 @@ impl<'a> Resolver<'a> {
                     local,
                     op: lower_logical_assign_op(*op),
                     expr: Box::new(self.lower_expr(expr)?),
-                })
+                    span: Span::generated("logical_assign"),})
             }
             ResolvedExpr::LogicalPropertyAssign {
                 object,
@@ -381,7 +398,7 @@ impl<'a> Resolver<'a> {
                     key: key.clone(),
                     op: lower_logical_assign_op(*op),
                     expr: Box::new(self.lower_expr(expr)?),
-                })
+                    span: Span::generated("logical_prop_assign"),})
             }
             ResolvedExpr::LogicalComputedPropertyAssign {
                 object,
@@ -399,7 +416,7 @@ impl<'a> Resolver<'a> {
                     key: Box::new(self.lower_expr(key)?),
                     op: lower_logical_assign_op(*op),
                     expr: Box::new(self.lower_expr(expr)?),
-                })
+                    span: Span::generated("logical_comp_prop_assign"),})
             }
             ResolvedExpr::LogicalComputedMemberAssign {
                 object,
@@ -416,7 +433,7 @@ impl<'a> Resolver<'a> {
                 key: Box::new(self.lower_expr(key)?),
                 op: lower_logical_assign_op(*op),
                 expr: Box::new(self.lower_expr(expr)?),
-            }),
+                span: Span::generated("logical_comp_member_assign"),}),
             ResolvedExpr::LogicalMemberAssign {
                 object,
                 key,
@@ -427,7 +444,7 @@ impl<'a> Resolver<'a> {
                 key: key.clone(),
                 op: lower_logical_assign_op(*op),
                 expr: Box::new(self.lower_expr(expr)?),
-            }),
+                span: Span::generated("logical_member_assign"),}),
             ResolvedExpr::Ternary {
                 condition,
                 then_expr,
@@ -437,21 +454,21 @@ impl<'a> Resolver<'a> {
                 let result = self.alloc_temp();
                 Ok(LoweredExpr::Block {
                     stmts: vec![
-                        LoweredStmt::Let(result, LoweredExpr::Undefined),
+                        LoweredStmt::Let(result, LoweredExpr::Undefined(Span::generated("undef")), Span::generated("let_stmt")),
                         LoweredStmt::If {
                             condition: self.lower_expr(condition)?,
                             then_body: vec![LoweredStmt::Assign(
                                 result,
                                 self.lower_expr(then_expr)?,
-                            )],
+                            Span::generated("assign"))],
                             else_body: vec![LoweredStmt::Assign(
                                 result,
                                 self.lower_expr(else_expr)?,
-                            )],
-                        },
+                            Span::generated("assign"))],
+                            span: Span::generated("if_stmt"),},
                     ],
-                    result: Box::new(LoweredExpr::Local(result)),
-                })
+                    result: Box::new(LoweredExpr::Local(result, Span::generated("local"))),
+                    span: Span::generated("block"),})
             }
             ResolvedExpr::Call { callee, args, span } => {
                 if let ResolvedExpr::FunctionExpr { name, params, body } = callee.as_ref() {
@@ -475,34 +492,37 @@ impl<'a> Resolver<'a> {
                     return Ok(LoweredExpr::RuntimeCall {
                         runtime_fn: runtime_fn.to_owned(),
                         args: self.lower_call_args(args)?,
-                    });
+                    
+                        span: Span::generated("runtime_call"),});
                 }
 
                 if let Ok(local_id) = self.resolve_local(func_name)
                     && let Some(closure) = self.arrow_locals.get(&local_id).cloned()
                 {
                     let mut lowered_args = self.lower_call_args(args)?;
-                    lowered_args.extend(closure.captures.iter().copied().map(LoweredExpr::Local));
+                    lowered_args.extend(closure.captures.iter().copied().map(|id| LoweredExpr::Local(id, Span::generated("local"))));
                     return Ok(LoweredExpr::Call {
                         kind: FunctionCallKind::User(closure.func_id),
                         args: lowered_args,
-                    });
+                    
+                        span: Span::generated("call"),});
                 }
 
                 if let Ok(local_id) = self.resolve_local(func_name)
                     && self.heap_closure_locals.contains(&local_id)
                 {
                     let receiver = if self.env_cell_locals.contains(&local_id) {
-                        LoweredExpr::EnvCellGet(local_id)
+                        LoweredExpr::EnvCellGet(local_id, Span::generated("env_cell_get"))
                     } else {
-                        LoweredExpr::Local(local_id)
+                        LoweredExpr::Local(local_id, Span::generated("local"))
                     };
                     let mut lowered_args = vec![receiver];
                     lowered_args.extend(self.lower_call_args(args)?);
                     return Ok(LoweredExpr::RuntimeCall {
                         runtime_fn: "HeapClosureCall".to_owned(),
                         args: lowered_args,
-                    });
+                    
+                        span: Span::generated("runtime_call"),});
                 }
 
                 if func_name == "super" {
@@ -540,7 +560,7 @@ impl<'a> Resolver<'a> {
                             span: None,
                         })?;
 
-                    let mut lowered_args = vec![LoweredExpr::Local(self.resolve_local("this")?)];
+                    let mut lowered_args = vec![LoweredExpr::Local(self.resolve_local("this")?, Span::generated("local"))];
                     lowered_args.extend(
                         args.iter()
                             .map(|arg| self.lower_expr(arg))
@@ -550,7 +570,8 @@ impl<'a> Resolver<'a> {
                     return Ok(LoweredExpr::Call {
                         kind: FunctionCallKind::User(parent_ctor),
                         args: lowered_args,
-                    });
+                    
+                        span: Span::generated("call"),});
                 }
 
                 if func_name == "String"
@@ -560,7 +581,8 @@ impl<'a> Resolver<'a> {
                     return Ok(LoweredExpr::RuntimeCall {
                         runtime_fn: "BigIntToString".to_owned(),
                         args: vec![self.lower_expr(arg)?],
-                    });
+                    
+                        span: Span::generated("runtime_call"),});
                 }
 
                 if func_name == Boolean
@@ -569,14 +591,15 @@ impl<'a> Resolver<'a> {
                     return Ok(LoweredExpr::RuntimeCall {
                         runtime_fn: BigIntToBoolean.to_owned(),
                         args: vec![self.lower_expr(&args[0])?],
-                    });
+                    
+                        span: Span::generated("runtime_call"),});
                 }
 
                 // Global Symbol() call: Symbol runtime values are outside
                 // the WASM subset. Return Undefined to advance past the
                 // UnresolvedFunction blocker.
                 if func_name == Symbol {
-                    return Ok(LoweredExpr::Undefined);
+                    return Ok(LoweredExpr::Undefined(Span::generated("undef")));
                 }
 
                 let func_id = match self.resolve_func(func_name) {
@@ -610,12 +633,13 @@ impl<'a> Resolver<'a> {
                     });
                 }
                 let lowered_args =
-                    self.lower_function_call_args(func_id, LoweredExpr::Undefined, args)?;
+                    self.lower_function_call_args(func_id, LoweredExpr::Undefined(Span::generated("undef")), args)?;
 
                 Ok(LoweredExpr::Call {
                     kind: FunctionCallKind::User(func_id),
                     args: lowered_args,
-                })
+                
+                    span: Span::generated("call"),})
             }
             ResolvedExpr::BuiltinCall { builtin, args } => {
                 let mut lowered_args = args
@@ -625,12 +649,13 @@ impl<'a> Resolver<'a> {
                 // ParseInt accepts an optional second argument (radix).
                 // When omitted, default to 0 (auto-detect radix) per JS semantics.
                 if *builtin == BuiltinId::ParseInt && lowered_args.len() == 1 {
-                    lowered_args.push(LoweredExpr::Number(0));
+                    lowered_args.push(LoweredExpr::Number(0, Span::generated("num")));
                 }
                 Ok(LoweredExpr::Call {
                     kind: FunctionCallKind::Builtin(*builtin),
                     args: lowered_args,
-                })
+                
+                    span: Span::generated("call"),})
             }
             ResolvedExpr::BuiltinProperty {
                 builtin,
@@ -644,7 +669,7 @@ impl<'a> Resolver<'a> {
                     ResolvedExpr::Ident(name) if is_global_builtin_function_name(name) => {
                         lower_global_builtin_function_metadata_property(name, "length")
                     }
-                    _ => Ok(LoweredExpr::GetLength(Box::new(self.lower_expr(object)?))),
+                    _ => Ok(LoweredExpr::GetLength(Box::new(self.lower_expr(object)?), Span::generated("get_length"))),
                 },
             },
             ResolvedExpr::PropertyAccess { object, key, span } => {
@@ -652,7 +677,7 @@ impl<'a> Resolver<'a> {
                     return Err(private_storage_observable_access_diagnostic(Some(*span)));
                 }
                 if is_array_prototype_push_property(object, key) {
-                    return Ok(LoweredExpr::Number(0));
+                    return Ok(LoweredExpr::Number(0, Span::generated("num")));
                 }
                 if key.starts_with('#') {
                     if let Some(local_name) = self.current_static_private_field_local_name(key) {
@@ -665,9 +690,9 @@ impl<'a> Resolver<'a> {
                                 span: Some(*span),
                             })?;
                             return Ok(if self.env_cell_locals.contains(&local) {
-                                LoweredExpr::EnvCellGet(local)
+                                LoweredExpr::EnvCellGet(local, Span::generated("env_cell_get"))
                             } else {
-                                LoweredExpr::Local(local)
+                                LoweredExpr::Local(local, Span::generated("local"))
                             });
                         }
                         return Err(Diagnostic {
@@ -683,7 +708,8 @@ impl<'a> Resolver<'a> {
                             return Ok(LoweredExpr::Call {
                                 kind: FunctionCallKind::User(getter_id),
                                 args: Vec::new(),
-                            });
+                            
+                                span: Span::generated("call"),});
                         }
                         return Err(Diagnostic {
                             code: DiagCode::UnsupportedSyntax,
@@ -704,7 +730,7 @@ impl<'a> Resolver<'a> {
                     }
                     if let Some(getter_id) = self.current_private_getter_id(key) {
                         let receiver = if matches!(object.as_ref(), ResolvedExpr::This { .. }) {
-                            LoweredExpr::Local(self.resolve_local("this")?)
+                            LoweredExpr::Local(self.resolve_local("this")?, Span::generated("local"))
                         } else {
                             let class_name = self.current_class.clone().ok_or_else(|| Diagnostic {
                                 code: DiagCode::UnsupportedSyntax,
@@ -718,14 +744,16 @@ impl<'a> Resolver<'a> {
                                 runtime_fn: "PrivateBrandCheck".to_owned(),
                                 args: vec![
                                     self.lower_expr(object)?,
-                                    LoweredExpr::Number(brand as i32),
+                                    LoweredExpr::Number(brand as i32, Span::generated("num")),
                                 ],
-                            }
+                            
+                                span: Span::generated("runtime_call"),}
                         };
                         return Ok(LoweredExpr::Call {
                             kind: FunctionCallKind::User(getter_id),
                             args: vec![receiver],
-                        });
+                        
+                            span: Span::generated("call"),});
                     }
                     if let Some(class_name) = self.infer_class_for_expr(object)
                         && self.private_getter_id_for_class(&class_name, key).is_some()
@@ -743,10 +771,11 @@ impl<'a> Resolver<'a> {
                         runtime_fn: "PrivateFieldGet".to_owned(),
                         args: vec![
                             self.lower_expr(object)?,
-                            LoweredExpr::Number(brand as i32),
-                            LoweredExpr::Number(slot as i32),
+                            LoweredExpr::Number(brand as i32, Span::generated("num")),
+                            LoweredExpr::Number(slot as i32, Span::generated("num")),
                         ],
-                    });
+                    
+                        span: Span::generated("runtime_call"),});
                 }
                 if let ResolvedExpr::Ident(name) = object.as_ref()
                     && self.resolve_func(name).is_ok()
@@ -769,19 +798,21 @@ impl<'a> Resolver<'a> {
                 {
                     return Ok(LoweredExpr::RuntimeCall {
                         runtime_fn: "SetSize".to_owned(),
-                        args: vec![LoweredExpr::Local(obj_local)],
-                    });
+                        args: vec![LoweredExpr::Local(obj_local, Span::generated("local"))],
+                    
+                        span: Span::generated("runtime_call"),});
                 }
                 if is_set_prototype_property(object, key, "add") {
                     return Ok(LoweredExpr::RuntimeCall {
                         runtime_fn: "SetPrototypeAddGet".to_owned(),
                         args: Vec::new(),
-                    });
+                    
+                        span: Span::generated("runtime_call"),});
                 }
                 Ok(LoweredExpr::PropertyGet {
                     obj: Box::new(self.lower_expr(object)?),
                     key: key.clone(),
-                })
+                    span: Span::generated("prop_get"),})
             },
             ResolvedExpr::OptionalPropertyAccess { object, key, .. } => {
                 if is_private_field_storage_key(key) {
@@ -790,7 +821,7 @@ impl<'a> Resolver<'a> {
                 Ok(LoweredExpr::OptionalPropertyGet {
                     obj: Box::new(self.lower_expr(object)?),
                     key: key.clone(),
-                })
+                    span: Span::generated("opt_prop_get"),})
             }
             ResolvedExpr::OptionalComputedIndex { object, index, .. } => {
                 if self.expr_has_private_progress_storage(object) {
@@ -799,7 +830,7 @@ impl<'a> Resolver<'a> {
                 Ok(LoweredExpr::OptionalIndex {
                     object: Box::new(self.lower_expr(object)?),
                     index: Box::new(self.lower_expr(index)?),
-                })
+                    span: Span::generated("opt_index"),})
             }
             ResolvedExpr::OptionalCall { callee, args, span } => {
                 self.lower_optional_call(callee, args, *span)
@@ -819,7 +850,8 @@ impl<'a> Resolver<'a> {
                     Ok(LoweredExpr::Index {
                         object: Box::new(lowered_object),
                         index: Box::new(lowered_index),
-                    })
+                    
+                        span: Span::generated("index"),})
                 } else if matches!(object.as_ref(), ResolvedExpr::Array(_))
                     || matches!(
                         lowered_object,
@@ -829,12 +861,12 @@ impl<'a> Resolver<'a> {
                     Ok(LoweredExpr::ArrayGet {
                         arr: Box::new(lowered_object),
                         index: Box::new(lowered_index),
-                    })
+                        span: Span::generated("array_get"),})
                 } else {
                     Ok(LoweredExpr::Index {
                         object: Box::new(lowered_object),
                         index: Box::new(lowered_index),
-                    })
+                        span: Span::generated("index"),})
                 }
             }
             ResolvedExpr::Array(elements) => {
@@ -868,7 +900,8 @@ impl<'a> Resolver<'a> {
                     return Ok(LoweredExpr::RuntimeCall {
                         runtime_fn: "ArrayPushMany".to_owned(),
                         args: lowered_args,
-                    });
+                    
+                        span: Span::generated("runtime_call"),});
                 }
                 if is_array_from_call_receiver(object, method) {
                     return self.lower_array_from_call(args, *span);
@@ -894,7 +927,8 @@ impl<'a> Resolver<'a> {
                     return Ok(LoweredExpr::RuntimeCall {
                         runtime_fn: runtime_fn.to_owned(),
                         args: self.lower_call_args(args)?,
-                    });
+                    
+                        span: Span::generated("runtime_call"),});
                 }
                 if method.starts_with('#') {
                     if let Some(method_id) = self.current_static_private_method_id(method) {
@@ -913,7 +947,8 @@ impl<'a> Resolver<'a> {
                             return Ok(LoweredExpr::Call {
                                 kind: FunctionCallKind::User(method_id),
                                 args: lowered_args,
-                            });
+                            
+                                span: Span::generated("call"),});
                         }
                         return Err(Diagnostic {
                             code: DiagCode::UnsupportedSyntax,
@@ -933,7 +968,7 @@ impl<'a> Resolver<'a> {
                         }
                     })?;
                     let receiver = if matches!(object.as_ref(), ResolvedExpr::This { .. }) {
-                        LoweredExpr::Local(self.resolve_local("this")?)
+                        LoweredExpr::Local(self.resolve_local("this")?, Span::generated("local"))
                     } else {
                         let class_name = self.current_class.clone().ok_or_else(|| Diagnostic {
                             code: DiagCode::UnsupportedSyntax,
@@ -945,8 +980,9 @@ impl<'a> Resolver<'a> {
                         let brand = self.private_brand_for_class(&class_name, Some(*span))?;
                         LoweredExpr::RuntimeCall {
                             runtime_fn: "PrivateBrandCheck".to_owned(),
-                            args: vec![self.lower_expr(object)?, LoweredExpr::Number(brand as i32)],
-                        }
+                            args: vec![self.lower_expr(object)?, LoweredExpr::Number(brand as i32, Span::generated("num"))],
+                        
+                            span: Span::generated("runtime_call"),}
                     };
                     let mut lowered_args = vec![receiver];
                     lowered_args.extend(
@@ -957,7 +993,8 @@ impl<'a> Resolver<'a> {
                     return Ok(LoweredExpr::Call {
                         kind: FunctionCallKind::User(method_id),
                         args: lowered_args,
-                    });
+                    
+                        span: Span::generated("call"),});
                 }
                 if is_json_static_call(object, method) {
                     validate_json_stringify_args(
@@ -990,29 +1027,29 @@ impl<'a> Resolver<'a> {
                         LoweredExpr::ObjectNew {
                             props: lowered_props,
                             non_enumerable: 0,
-                        }
+                            span: Span::generated("object_new"),}
                     } else {
                         self.lower_expr(&args[0])?
                     };
                     lowered_args.push(value);
                     lowered_args.push(match args.get(1) {
-                        Some(ResolvedExpr::Array(_)) => LoweredExpr::Null,
+                        Some(ResolvedExpr::Array(_)) => LoweredExpr::Null(Span::generated("null")),
                         Some(replacer) => {
                             if let Some(func_id) =
                                 json_stringify_function_replacer_id(replacer, self.function_ids)
                             {
-                                LoweredExpr::Number(func_id.0 as i32)
+                                LoweredExpr::Number(func_id.0 as i32, Span::generated("num"))
                             } else {
                                 self.lower_expr(replacer)?
                             }
                         }
-                        None => LoweredExpr::Undefined,
+                        None => LoweredExpr::Undefined(Span::generated("undef")),
                     });
                     lowered_args.push(match args.get(2) {
                         Some(space)
                             if should_ignore_json_stringify_space(space, self.function_ids) =>
                         {
-                            LoweredExpr::Undefined
+                            LoweredExpr::Undefined(Span::generated("undef"))
                         }
                         Some(space) => {
                             if let Some(boxed_space) = json_stringify_boxed_space_value(space) {
@@ -1021,17 +1058,19 @@ impl<'a> Resolver<'a> {
                                 self.lower_expr(space)?
                             }
                         }
-                        None => LoweredExpr::Undefined,
+                        None => LoweredExpr::Undefined(Span::generated("undef")),
                     });
                     Ok(LoweredExpr::RuntimeCall {
                         runtime_fn: "JsonStringify".to_owned(),
                         args: lowered_args,
-                    })
+                    
+                        span: Span::generated("runtime_call"),})
                 } else if is_date_now_live_time_call(object, method) {
                     Ok(LoweredExpr::RuntimeCall {
                         runtime_fn: "DateNow".to_owned(),
                         args: vec![],
-                    })
+                    
+                        span: Span::generated("runtime_call"),})
                 } else if self.is_unsupported_regexp_compile_receiver(object, method) {
                     Err(unsupported_regexp_compile_diagnostic(Some(*span)))
                 } else if self.is_object_key_enumeration_leak(object, method, args) {
@@ -1047,7 +1086,8 @@ impl<'a> Resolver<'a> {
                     Ok(LoweredExpr::RuntimeCall {
                         runtime_fn: "RegExpTest".to_owned(),
                         args: lowered_args,
-                    })
+                    
+                        span: Span::generated("runtime_call"),})
                 } else if let Some(regexp_args) = regexp_exec_runtime(object, method, args, *span)?
                 {
                     let lowered_args = regexp_args
@@ -1057,7 +1097,8 @@ impl<'a> Resolver<'a> {
                     Ok(LoweredExpr::RuntimeCall {
                         runtime_fn: "RegExpMatch".to_owned(),
                         args: lowered_args,
-                    })
+                    
+                        span: Span::generated("runtime_call"),})
                 } else if let Some(regexp_args) =
                     regexp_string_match_runtime(object, method, args, *span)?
                 {
@@ -1068,7 +1109,8 @@ impl<'a> Resolver<'a> {
                     Ok(LoweredExpr::RuntimeCall {
                         runtime_fn: if method == "search" { "RegExpSearch".to_owned() } else { "RegExpMatch".to_owned() },
                         args: lowered_args,
-                    })
+                    
+                        span: Span::generated("runtime_call"),})
                 } else if matches!(method.as_str(), "getTime" | "valueOf")
                     && self.is_date_receiver(object)
                 {
@@ -1085,7 +1127,8 @@ impl<'a> Resolver<'a> {
                     Ok(LoweredExpr::RuntimeCall {
                         runtime_fn: "DateGetTime".to_owned(),
                         args: vec![self.lower_expr(object)?],
-                    })
+                    
+                        span: Span::generated("runtime_call"),})
                 } else if method == "getTimezoneOffset" && self.is_date_receiver(object) {
                     if !args.is_empty() {
                         return Err(Diagnostic {
@@ -1100,7 +1143,8 @@ impl<'a> Resolver<'a> {
                     Ok(LoweredExpr::RuntimeCall {
                         runtime_fn: "DateGetTimezoneOffset".to_owned(),
                         args: vec![self.lower_expr(object)?],
-                    })
+                    
+                        span: Span::generated("runtime_call"),})
                 } else if is_local_tz_date_method(method) && self.is_date_receiver(object) {
                     if !args.is_empty() {
                         return Err(Diagnostic {
@@ -1127,9 +1171,10 @@ impl<'a> Resolver<'a> {
                         runtime_fn: "DateGetLocalTimeField".to_owned(),
                         args: vec![
                             self.lower_expr(object)?,
-                            LoweredExpr::Number(field_index),
+                            LoweredExpr::Number(field_index, Span::generated("num")),
                         ],
-                    })
+                    
+                        span: Span::generated("runtime_call"),})
                 } else if method == "getYear" && is_static_date_constructor_expr(object) {
                     if !args.is_empty() {
                         return Err(Diagnostic {
@@ -1144,7 +1189,7 @@ impl<'a> Resolver<'a> {
                     if let ResolvedExpr::New { args: date_args, .. } = object.as_ref()
                         && let Some(ResolvedExpr::Number(year)) = date_args.first()
                     {
-                        return Ok(LoweredExpr::Number(year - 1900));
+                        return Ok(LoweredExpr::Number(year - 1900, Span::generated("num")));
                     }
                     Err(unsupported_annex_b_date_method_diagnostic(
                         method,
@@ -1161,7 +1206,7 @@ impl<'a> Resolver<'a> {
                             span: Some(*span),
                         });
                     }
-                    Ok(LoweredExpr::Number(0))
+                    Ok(LoweredExpr::Number(0, Span::generated("num")))
                 } else if method == "getYear" && self.is_date_receiver(object) {
                     if !args.is_empty() {
                         return Err(Diagnostic {
@@ -1176,11 +1221,12 @@ impl<'a> Resolver<'a> {
                     Ok(LoweredExpr::Binary {
                         left: Box::new(LoweredExpr::RuntimeCall {
                             runtime_fn: "DateGetLocalTimeField".to_owned(),
-                            args: vec![self.lower_expr(object)?, LoweredExpr::Number(0)],
-                        }),
+                            args: vec![self.lower_expr(object)?, LoweredExpr::Number(0, Span::generated("num"))],
+                        
+                            span: Span::generated("runtime_call"),}),
                         op: LoweredBinaryOp::Subtract,
-                        right: Box::new(LoweredExpr::Number(1900)),
-                    })
+                        right: Box::new(LoweredExpr::Number(1900, Span::generated("num"))),
+                        span: Span::generated("binary"),})
                 } else if is_annex_b_date_method(method) && self.is_date_receiver(object) {
                     Err(unsupported_annex_b_date_method_diagnostic(
                         method,
@@ -1200,7 +1246,8 @@ impl<'a> Resolver<'a> {
                     Ok(LoweredExpr::RuntimeCall {
                         runtime_fn: "DateToString".to_owned(),
                         args: vec![self.lower_expr(object)?],
-                    })
+                    
+                        span: Span::generated("runtime_call"),})
                 } else if self.is_date_receiver(object)
                     && matches!(
                         method.as_str(),
@@ -1237,7 +1284,8 @@ impl<'a> Resolver<'a> {
                     Ok(LoweredExpr::RuntimeCall {
                         runtime_fn: runtime_fn.to_owned(),
                         args: vec![self.lower_expr(object)?],
-                    })
+                    
+                        span: Span::generated("runtime_call"),})
                 } else if self.is_date_receiver(object)
                     && matches!(method.as_str(), "toISOString" | "toJSON")
                 {
@@ -1254,7 +1302,8 @@ impl<'a> Resolver<'a> {
                     Ok(LoweredExpr::RuntimeCall {
                         runtime_fn: "DateToISOString".to_owned(),
                         args: vec![self.lower_expr(object)?],
-                    })
+                    
+                        span: Span::generated("runtime_call"),})
                 } else if matches!(object.as_ref(), ResolvedExpr::String(_)) {
                     if is_html_wrapper_string_method(method) {
                         let lowered_object = self.lower_expr(object)?;
@@ -1281,7 +1330,8 @@ impl<'a> Resolver<'a> {
                         Ok(LoweredExpr::RuntimeCall {
                             runtime_fn,
                             args: lowered_args,
-                        })
+                        
+                            span: Span::generated("runtime_call"),})
                     } else {
                         Err(Diagnostic {
                             code: DiagCode::UnsupportedSyntax,
@@ -1303,7 +1353,7 @@ impl<'a> Resolver<'a> {
                     if args.len() > 1 {
                         lowered_args.push(self.lower_expr(&args[1])?);
                     } else {
-                        lowered_args.push(LoweredExpr::Number(0));
+                        lowered_args.push(LoweredExpr::Number(0, Span::generated("num")));
                     }
                     Ok(LoweredExpr::RuntimeCall {
                         runtime_fn: if method == "indexOf" {
@@ -1312,7 +1362,8 @@ impl<'a> Resolver<'a> {
                             "ArrayIncludes".to_owned()
                         },
                         args: lowered_args,
-                    })
+                    
+                        span: Span::generated("runtime_call"),})
                 } else if method == "concat"
                     && self.is_known_array_expr(object)
                 {
@@ -1325,7 +1376,8 @@ impl<'a> Resolver<'a> {
                     Ok(LoweredExpr::RuntimeCall {
                         runtime_fn: "ArrayConcat".to_owned(),
                         args: lowered_args,
-                    })
+                    
+                        span: Span::generated("runtime_call"),})
                 } else if (method == "find" || method == "findIndex" || method == "findLast" || method == "findLastIndex" || method == "filter" || method == "every" || method == "some")
                     && is_identity_arrow_callback(args)
                     && self.is_known_array_expr(object)
@@ -1355,7 +1407,8 @@ impl<'a> Resolver<'a> {
                         return Ok(LoweredExpr::RuntimeCall {
                             runtime_fn: "ArrayPushMany".to_owned(),
                             args: lowered_args,
-                        });
+                        
+                            span: Span::generated("runtime_call"),});
                     }
                     if (runtime_fn == "MathMax" || runtime_fn == "MathMin") && args.len() > 2 {
                         let mut lowered_args = Vec::new();
@@ -1373,7 +1426,8 @@ impl<'a> Resolver<'a> {
                             result = LoweredExpr::RuntimeCall {
                                 runtime_fn: runtime_fn.clone(),
                                 args: vec![result, arg.clone()],
-                            };
+                            
+                                span: Span::generated("runtime_call"),};
                         }
                         return Ok(result);
                     }
@@ -1390,7 +1444,7 @@ impl<'a> Resolver<'a> {
                             // +Infinity approximated as maximum representable number
                             ValueTag::NUMBER_PAYLOAD_MAX
                         };
-                        return Ok(LoweredExpr::Number(infinity_value));
+                        return Ok(LoweredExpr::Number(infinity_value, Span::generated("num")));
                     }
                     let mut lowered_args = Vec::new();
                     let is_static_call = matches!(
@@ -1408,7 +1462,8 @@ impl<'a> Resolver<'a> {
                     Ok(LoweredExpr::RuntimeCall {
                         runtime_fn,
                         args: lowered_args,
-                    })
+                    
+                        span: Span::generated("runtime_call"),})
                 } else {
                     if let ResolvedExpr::Ident(receiver_name) = object.as_ref()
                         && let Ok(obj_local) = self.resolve_local(receiver_name)
@@ -1420,13 +1475,14 @@ impl<'a> Resolver<'a> {
                     {
                         let lowered_args = self.lower_function_call_args(
                             method_id,
-                            LoweredExpr::Local(obj_local),
+                            LoweredExpr::Local(obj_local, Span::generated("local")),
                             args,
                         )?;
                         return Ok(LoweredExpr::Call {
                             kind: FunctionCallKind::User(method_id),
                             args: lowered_args,
-                        });
+                        
+                            span: Span::generated("call"),});
                     }
 
                     if method == "map"
@@ -1436,7 +1492,8 @@ impl<'a> Resolver<'a> {
                         return Ok(LoweredExpr::RuntimeCall {
                             runtime_fn: "ArrayMapValueToString".to_owned(),
                             args: vec![self.lower_expr(object)?],
-                        });
+                        
+                            span: Span::generated("runtime_call"),});
                     }
 
                     if method == "map"
@@ -1446,7 +1503,8 @@ impl<'a> Resolver<'a> {
                         return Ok(LoweredExpr::RuntimeCall {
                             runtime_fn: "ArrayMapUnaryPlus".to_owned(),
                             args: vec![self.lower_expr(object)?],
-                        });
+                        
+                            span: Span::generated("runtime_call"),});
                     }
 
                     if method == "map"
@@ -1478,7 +1536,8 @@ impl<'a> Resolver<'a> {
                         return Ok(LoweredExpr::RuntimeCall {
                             runtime_fn: "ArrayMapStringSplit".to_owned(),
                             args: vec![self.lower_expr(object)?, self.lower_expr(separator)?],
-                        });
+                        
+                            span: Span::generated("runtime_call"),});
                     }
 
                     if method == "sort" && self.is_known_array_expr(object) {
@@ -1486,7 +1545,8 @@ impl<'a> Resolver<'a> {
                             return Ok(LoweredExpr::RuntimeCall {
                                 runtime_fn: "ArraySortNumeric".to_owned(),
                                 args: vec![self.lower_expr(object)?],
-                            });
+                            
+                                span: Span::generated("runtime_call"),});
                         }
                         return Err(unsupported_array_sort_diagnostic(Some(*span)));
                     }
@@ -1541,7 +1601,7 @@ impl<'a> Resolver<'a> {
                                 })?;
 
                         let mut lowered_args =
-                            vec![LoweredExpr::Local(self.resolve_local("this")?)];
+                            vec![LoweredExpr::Local(self.resolve_local("this")?, Span::generated("local"))];
                         lowered_args.extend(
                             args.iter()
                                 .map(|e| self.lower_expr(e))
@@ -1551,7 +1611,8 @@ impl<'a> Resolver<'a> {
                         return Ok(LoweredExpr::Call {
                             kind: FunctionCallKind::User(method_id),
                             args: lowered_args,
-                        });
+                        
+                            span: Span::generated("call"),});
                     }
 
                     let receiver_name = match object.as_ref() {
@@ -1583,7 +1644,8 @@ impl<'a> Resolver<'a> {
                                 return Ok(LoweredExpr::RuntimeCall {
                                     runtime_fn: runtime_fn.to_owned(),
                                     args: lowered_args,
-                                });
+                                
+                                    span: Span::generated("runtime_call"),});
                             }
                             return Err(Diagnostic {
                                 code: DiagCode::UnsupportedSyntax,
@@ -1668,7 +1730,8 @@ impl<'a> Resolver<'a> {
                                             return Ok(LoweredExpr::RuntimeCall {
                                                 runtime_fn: runtime_fn.to_owned(),
                                                 args: lowered_args,
-                                            });
+                                            
+                                                span: Span::generated("runtime_call"),});
                                         }
                                     }
                                     return Err(Diagnostic {
@@ -1702,7 +1765,8 @@ impl<'a> Resolver<'a> {
                                 return Ok(LoweredExpr::RuntimeCall {
                                     runtime_fn: runtime_fn.to_owned(),
                                     args: lowered_args,
-                                });
+                                
+                                    span: Span::generated("runtime_call"),});
                             }
                             // new C().method() — lower through class method dispatch
                             if let ResolvedExpr::New { class_name, .. } = object.as_ref() {
@@ -1723,7 +1787,8 @@ impl<'a> Resolver<'a> {
                                     return Ok(LoweredExpr::Call {
                                         kind: FunctionCallKind::User(method_id),
                                         args: lowered_args,
-                                    });
+                                    
+                                        span: Span::generated("call"),});
                                 }
                             }
                             return Err(Diagnostic {
@@ -1751,23 +1816,23 @@ impl<'a> Resolver<'a> {
                                 span: Some(*span),
                             });
                         }
-                        let mut lowered_args = vec![LoweredExpr::Local(obj_local)];
+                        let mut lowered_args = vec![LoweredExpr::Local(obj_local, Span::generated("local"))];
                         // Array.prototype.flat defaults depth to 1 when omitted
                         if class_name == "Array" && method == "flat" && args.is_empty() {
-                            lowered_args.push(LoweredExpr::Number(1));
+                            lowered_args.push(LoweredExpr::Number(1, Span::generated("num")));
                         } else if class_name == "Array" && method == "join" && args.is_empty() {
-                            lowered_args.push(LoweredExpr::String(",".to_owned()));
+                            lowered_args.push(LoweredExpr::String(",".to_owned(), Span::generated("str")));
                         } else if class_name == "Array" && method == "copyWithin" {
                             // copyWithin(target, start, end) — pad missing args with undefined
                             for arg in args.iter().take(3) {
                                 lowered_args.push(self.lower_expr(arg)?);
                             }
                             while lowered_args.len() < 4 {
-                                lowered_args.push(LoweredExpr::Undefined);
+                                lowered_args.push(LoweredExpr::Undefined(Span::generated("undef")));
                             }
                         } else if class_name == "Array" && (method == "toString" || method == "toLocaleString") {
                             // toString/toLocaleString calls join(",") internally
-                            lowered_args.push(LoweredExpr::String(",".to_owned()));
+                            lowered_args.push(LoweredExpr::String(",".to_owned(), Span::generated("str")));
                         } else {
                             lowered_args.extend(
                                 args.iter()
@@ -1778,7 +1843,8 @@ impl<'a> Resolver<'a> {
                         return Ok(LoweredExpr::RuntimeCall {
                             runtime_fn: runtime_fn.to_owned(),
                             args: lowered_args,
-                        });
+                        
+                            span: Span::generated("runtime_call"),});
                     }
 
                     if receiver_name == "super" {
@@ -1809,7 +1875,7 @@ impl<'a> Resolver<'a> {
                             })?;
 
                         let mut lowered_args =
-                            vec![LoweredExpr::Local(self.resolve_local("this")?)];
+                            vec![LoweredExpr::Local(self.resolve_local("this")?, Span::generated("local"))];
                         lowered_args.extend(
                             args.iter()
                                 .map(|e| self.lower_expr(e))
@@ -1819,7 +1885,8 @@ impl<'a> Resolver<'a> {
                         return Ok(LoweredExpr::Call {
                             kind: FunctionCallKind::User(method_id),
                             args: lowered_args,
-                        });
+                        
+                            span: Span::generated("call"),});
                     }
 
                     if let Some(method_id) = self
@@ -1836,7 +1903,8 @@ impl<'a> Resolver<'a> {
                         return Ok(LoweredExpr::Call {
                             kind: FunctionCallKind::User(method_id),
                             args: lowered_args,
-                        });
+                        
+                            span: Span::generated("call"),});
                     }
 
                     let obj_local = self.resolve_local(receiver_name)?;
@@ -1861,7 +1929,7 @@ impl<'a> Resolver<'a> {
                                 span: Some(*span),
                             })?;
 
-                    let mut lowered_args = vec![LoweredExpr::Local(obj_local)];
+                    let mut lowered_args = vec![LoweredExpr::Local(obj_local, Span::generated("local"))];
                     lowered_args.extend(args.iter().map(|e| self.lower_expr(e)).collect::<Result<
                         Vec<_>,
                         _,
@@ -1872,7 +1940,8 @@ impl<'a> Resolver<'a> {
                     Ok(LoweredExpr::Call {
                         kind: FunctionCallKind::User(method_id),
                         args: lowered_args,
-                    })
+                    
+                        span: Span::generated("call"),})
                 }
             }
             ResolvedExpr::PropertyAssign {
@@ -1893,7 +1962,8 @@ impl<'a> Resolver<'a> {
                     return Ok(LoweredExpr::RuntimeCall {
                         runtime_fn: "SetPrototypeAddSet".to_owned(),
                         args: vec![self.lower_set_prototype_add_assignment_value(value)?],
-                    });
+                    
+                        span: Span::generated("runtime_call"),});
                 }
                 if is_set_prototype_property(object, key, "originalAdd")
                     && is_set_prototype_property_expr(value, "add")
@@ -1901,7 +1971,8 @@ impl<'a> Resolver<'a> {
                     return Ok(LoweredExpr::RuntimeCall {
                         runtime_fn: "SetPrototypeAddGet".to_owned(),
                         args: Vec::new(),
-                    });
+                    
+                        span: Span::generated("runtime_call"),});
                 }
                 if key.starts_with('#') {
                     if let Some(local_name) = self.current_static_private_field_local_name(key) {
@@ -1915,9 +1986,10 @@ impl<'a> Resolver<'a> {
                             })?;
                             let expr = Box::new(self.lower_expr(value)?);
                             return Ok(if self.env_cell_locals.contains(&local) {
-                                LoweredExpr::EnvCellSet { cell: local, expr }
+                                LoweredExpr::EnvCellSet { cell: local, expr ,
+                                span: Span::generated("env_cell_set"),}
                             } else {
-                                LoweredExpr::Assign { local, expr }
+                                LoweredExpr::Assign { local, expr , span: Span::generated("assign")}
                             });
                         }
                         return Err(Diagnostic {
@@ -1933,7 +2005,8 @@ impl<'a> Resolver<'a> {
                             return Ok(LoweredExpr::Call {
                                 kind: FunctionCallKind::User(setter_id),
                                 args: vec![self.lower_expr(value)?],
-                            });
+                            
+                                span: Span::generated("call"),});
                         }
                         return Err(Diagnostic {
                             code: DiagCode::UnsupportedSyntax,
@@ -1945,7 +2018,7 @@ impl<'a> Resolver<'a> {
                     }
                     if let Some(setter_id) = self.current_private_setter_id(key) {
                         let receiver = if matches!(object.as_ref(), ResolvedExpr::This { .. }) {
-                            LoweredExpr::Local(self.resolve_local("this")?)
+                            LoweredExpr::Local(self.resolve_local("this")?, Span::generated("local"))
                         } else {
                             let class_name = self.current_class.clone().ok_or_else(|| Diagnostic {
                                 code: DiagCode::UnsupportedSyntax,
@@ -1959,14 +2032,15 @@ impl<'a> Resolver<'a> {
                                 runtime_fn: "PrivateBrandCheck".to_owned(),
                                 args: vec![
                                     self.lower_expr(object)?,
-                                    LoweredExpr::Number(brand as i32),
+                                    LoweredExpr::Number(brand as i32, Span::generated("num")),
                                 ],
-                            }
+                            
+                                span: Span::generated("runtime_call"),}
                         };
                         return Ok(LoweredExpr::Call {
                             kind: FunctionCallKind::User(setter_id),
                             args: vec![receiver, self.lower_expr(value)?],
-                        });
+                            span: Span::generated("call"),});
                     }
                     if let Some(class_name) = self.infer_class_for_expr(object)
                         && self.private_setter_id_for_class(&class_name, key).is_some()
@@ -1984,17 +2058,18 @@ impl<'a> Resolver<'a> {
                         runtime_fn: "PrivateFieldSet".to_owned(),
                         args: vec![
                             self.lower_expr(object)?,
-                            LoweredExpr::Number(brand as i32),
-                            LoweredExpr::Number(slot as i32),
+                            LoweredExpr::Number(brand as i32, Span::generated("num")),
+                            LoweredExpr::Number(slot as i32, Span::generated("num")),
                             self.lower_expr(value)?,
                         ],
-                    });
+                    
+                        span: Span::generated("runtime_call"),});
                 }
                 Ok(LoweredExpr::PropertySet {
                     object: Box::new(self.lower_expr(object)?),
                     key: key.clone(),
                     value: Box::new(self.lower_expr(value)?),
-                })
+                    span: Span::generated("prop_set"),})
             }
             ResolvedExpr::PropertyAssignDynamic { object, key, value } => {
                 if let ResolvedExpr::Ident(name) = object.as_ref()
@@ -2010,7 +2085,7 @@ impl<'a> Resolver<'a> {
                     object: Box::new(self.lower_expr(object)?),
                     index: Box::new(self.lower_expr(key)?),
                     value: Box::new(self.lower_expr(value)?),
-                })
+                    span: Span::generated("prop_set_dyn"),})
             }
             ResolvedExpr::New {
                 class_name,
@@ -2018,20 +2093,22 @@ impl<'a> Resolver<'a> {
                 span: _,
             } => {
                 if class_name == "RegExp" {
-                    return Ok(LoweredExpr::String(regexp_constructor_literal(args)?));
+                    return Ok(LoweredExpr::String(regexp_constructor_literal(args)?, Span::generated("str")));
                 }
                 if class_name == "Date" {
                     if args.is_empty() {
                         return Ok(LoweredExpr::RuntimeCall {
                             runtime_fn: "DateNewLive".to_owned(),
                             args: vec![],
-                        });
+                        
+                            span: Span::generated("runtime_call"),});
                     }
                     if is_invalid_date_constructor_expr(expr) {
                         return Ok(LoweredExpr::RuntimeCall {
                             runtime_fn: "DateNew".to_owned(),
-                            args: vec![LoweredExpr::Number(0)],
-                        });
+                            args: vec![LoweredExpr::Number(0, Span::generated("num"))],
+                        
+                            span: Span::generated("runtime_call"),});
                     }
                     if args.len() != 1 {
                         return Err(Diagnostic {
@@ -2046,7 +2123,8 @@ impl<'a> Resolver<'a> {
                         return Ok(LoweredExpr::RuntimeCall {
                             runtime_fn: "DateNew".to_owned(),
                             args: vec![self.lower_expr(epoch_ms)?],
-                        });
+                        
+                            span: Span::generated("runtime_call"),});
                     }
                     if !is_date_constructor_epoch_arg(epoch_ms) {
                         return Err(Diagnostic {
@@ -2058,13 +2136,15 @@ impl<'a> Resolver<'a> {
                     return Ok(LoweredExpr::RuntimeCall {
                         runtime_fn: "DateNew".to_owned(),
                         args: vec![self.lower_expr(epoch_ms)?],
-                    });
+                    
+                        span: Span::generated("runtime_call"),});
                 }
                 if class_name == "Array" {
                     if args.is_empty() {
                         return Ok(LoweredExpr::ArrayNewSparse {
                             slots: Vec::new(),
-                        });
+                        
+                            span: Span::generated("array_new_sparse"),});
                     }
                     let [length] = args.as_slice() else {
                         return Err(Diagnostic {
@@ -2089,21 +2169,23 @@ impl<'a> Resolver<'a> {
                     }
                     return Ok(LoweredExpr::ArrayNewSparse {
                         slots: vec![LoweredArraySlot::Hole; *length as usize],
-                    });
+                        span: Span::generated("array_new_sparse"),});
                 }
                 if class_name == "Map" || class_name == "Set" {
                     if args.is_empty() {
                         return Ok(LoweredExpr::RuntimeCall {
                             runtime_fn: format!("{class_name}New"),
                             args: Vec::new(),
-                        });
+                        
+                            span: Span::generated("runtime_call"),});
                     }
                     if class_name == "Set" && args.len() == 1 && self.is_known_array_expr(&args[0])
                     {
                         return Ok(LoweredExpr::RuntimeCall {
                             runtime_fn: "SetFromArray".to_owned(),
                             args: vec![self.lower_expr(&args[0])?],
-                        });
+                        
+                            span: Span::generated("runtime_call"),});
                     }
                     if class_name == "Set" {
                         return Err(Diagnostic {
@@ -2123,13 +2205,14 @@ impl<'a> Resolver<'a> {
                         Some(message) => LoweredExpr::RuntimeCall {
                             runtime_fn: "ErrorMessage".to_owned(),
                             args: vec![self.lower_expr(message)?],
-                        },
-                        None => LoweredExpr::String(String::new()),
+                        
+                            span: Span::generated("runtime_call"),},
+                        None => LoweredExpr::String(String::new(), Span::generated("str")),
                     };
                     return Ok(LoweredExpr::ErrorNew {
                         constructor,
                         message: Box::new(message),
-                    });
+                        span: Span::generated("error_new"),});
                 }
 
                 let prototype = match self.class_prototype_ref(class_name) {
@@ -2139,7 +2222,7 @@ impl<'a> Resolver<'a> {
                         // (like new Point()) or a class inside an erased namespace
                         // (like new M.C()). Return Null in both cases since the
                         // constructee doesn't exist in the compiled output.
-                        return Ok(LoweredExpr::Null);
+                        return Ok(LoweredExpr::Null(Span::generated("null")));
                     }
                 };
 
@@ -2161,11 +2244,11 @@ impl<'a> Resolver<'a> {
                     base_local: self.alloc_temp(),
                     private_brand,
                     private_slot_count,
-                })
+                    span: Span::generated("new"),})
             }
             ResolvedExpr::ModuleLoad { specifier } => Ok(LoweredExpr::ModuleLoad {
                 module_id: self.module_id_for_specifier(specifier),
-            }),
+                span: Span::generated("module_load"),}),
             ResolvedExpr::ArrowFn {
                 params,
                 body,
@@ -2204,8 +2287,8 @@ fn lower_global_builtin_function_metadata_property(
     key: &str,
 ) -> Result<LoweredExpr, Diagnostic> {
     match key {
-        "name" => Ok(LoweredExpr::String(name.to_owned())),
-        "length" => Ok(LoweredExpr::Number(global_builtin_function_length(name))),
+        "name" => Ok(LoweredExpr::String(name.to_owned(), Span::generated("str"))),
+        "length" => Ok(LoweredExpr::Number(global_builtin_function_length(name), Span::generated("num"))),
         _ => unreachable!("caller filters global builtin function metadata property"),
     }
 }
@@ -2302,25 +2385,27 @@ fn lower_html_wrapper_string_method(
 
     let mut result = LoweredExpr::RuntimeCall {
         runtime_fn: "Concat".to_owned(),
-        args: vec![object, LoweredExpr::String(close_tag.to_owned())],
-    };
+        args: vec![object, LoweredExpr::String(close_tag.to_owned(), Span::generated("str"))],
+    
+        span: Span::generated("runtime_call"),};
 
     let has_arg = !open_suffix.is_empty();
     if has_arg {
         let needs_escaping = matches!(method, "anchor" | "fontcolor" | "fontsize" | "link");
         let mut arg = args.into_iter().next().unwrap_or(LoweredExpr::String(
             "undefined".to_owned(),
-        ));
+        Span::generated("str")));
         // Spec requires escaping " as &quot; in attribute values (B.2.3.10, B.2.3.6, etc.)
         if needs_escaping {
             arg = LoweredExpr::RuntimeCall {
                 runtime_fn: "StringReplaceAll".to_owned(),
                 args: vec![
                     arg,
-                    LoweredExpr::String("\"".to_owned()),
-                    LoweredExpr::String("&quot;".to_owned()),
+                    LoweredExpr::String("\"".to_owned(), Span::generated("str")),
+                    LoweredExpr::String("&quot;".to_owned(), Span::generated("str")),
                 ],
-            };
+            
+                span: Span::generated("runtime_call"),};
         }
         result = LoweredExpr::RuntimeCall {
             runtime_fn: "Concat".to_owned(),
@@ -2329,14 +2414,15 @@ fn lower_html_wrapper_string_method(
                 LoweredExpr::RuntimeCall {
                     runtime_fn: "Concat".to_owned(),
                     args: vec![
-                        LoweredExpr::String(open_suffix.to_owned()),
+                        LoweredExpr::String(open_suffix.to_owned(), Span::generated("str")),
                         LoweredExpr::RuntimeCall {
                             runtime_fn: "Concat".to_owned(),
                             args: vec![
-                                LoweredExpr::String(">".to_owned()),
+                                LoweredExpr::String(">".to_owned(), Span::generated("str")),
                                 result,
                             ],
-                        },
+                        
+                            span: Span::generated("runtime_call"),},
                     ],
                 },
             ],
@@ -2346,8 +2432,8 @@ fn lower_html_wrapper_string_method(
     Ok(LoweredExpr::RuntimeCall {
         runtime_fn: "Concat".to_owned(),
         args: vec![
-            LoweredExpr::String(open_prefix.to_owned()),
+            LoweredExpr::String(open_prefix.to_owned(), Span::generated("str")),
             result,
         ],
-    })
+        span: Span::generated("runtime_call"),})
 }

@@ -22,6 +22,7 @@ pub use ts2wasm_frontend::{DiagCode, Diagnostic};
 use ts2wasm_ir::lowered::LoweredProgram;
 
 pub(crate) use runtime_fn::RuntimeFn;
+pub use runtime_link_plan::{LinkPlanSnapshot, emit_link_plan_snapshot_json};
 
 pub fn emit_canonical_manifest_json(program: &LoweredProgram) -> String {
     capability_manifest::emit_canonical_manifest_json(program)

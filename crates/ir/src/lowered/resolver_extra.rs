@@ -14,7 +14,7 @@ impl<'a> Resolver<'a> {
                                     lowered_args.push(self.lower_expr(expr)?);
                                 }
                                 ResolvedArrayElement::Hole => {
-                                    lowered_args.push(LoweredExpr::Undefined);
+                                    lowered_args.push(LoweredExpr::Undefined(Span::generated("undef")));
                                 }
                             }
                         }
@@ -58,7 +58,7 @@ impl<'a> Resolver<'a> {
         }
         Ok(value
             .chars()
-            .map(|ch| LoweredExpr::String(ch.to_string()))
+            .map(|ch| LoweredExpr::String(ch.to_string(), Span::generated("str")))
             .collect())
     }
 
@@ -76,7 +76,7 @@ impl<'a> Resolver<'a> {
                     ResolvedArrayElement::Hole => slots.push(LoweredArraySlot::Hole),
                 }
             }
-            return Ok(LoweredExpr::ArrayNewSparse { slots });
+            return Ok(LoweredExpr::ArrayNewSparse { slots , span: Span::generated("array_new_sparse")});
         }
         if !elements.iter().any(|element| {
             matches!(
@@ -88,7 +88,7 @@ impl<'a> Resolver<'a> {
             )
         }) {
             let lowered = self.lower_array_literal_elements(elements)?;
-            return Ok(LoweredExpr::ArrayNew { elements: lowered });
+            return Ok(LoweredExpr::ArrayNew { elements: lowered , span: Span::generated("array_new")});
         }
 
         let mut segments = Vec::new();
@@ -144,7 +144,7 @@ impl<'a> Resolver<'a> {
                     });
                 }
                 ResolvedArrayElement::Present(expr) => pending_dense.push(self.lower_expr(expr)?),
-                ResolvedArrayElement::Hole => pending_dense.push(LoweredExpr::Undefined),
+                ResolvedArrayElement::Hole => pending_dense.push(LoweredExpr::Undefined(Span::generated("undef"))),
             }
         }
 
@@ -152,13 +152,14 @@ impl<'a> Resolver<'a> {
 
         let mut iter = segments.into_iter();
         let Some(mut combined) = iter.next() else {
-            return Ok(LoweredExpr::ArrayNew { elements: vec![] });
+            return Ok(LoweredExpr::ArrayNew { elements: vec![] , span: Span::generated("array_new")});
         };
         for segment in iter {
             combined = LoweredExpr::RuntimeCall {
                 runtime_fn: "ArrayConcat".to_owned(),
                 args: vec![combined, segment],
-            };
+            
+                span: Span::generated("runtime_call"),};
         }
         Ok(combined)
     }
@@ -207,13 +208,15 @@ impl<'a> Resolver<'a> {
                         return Ok(LoweredExpr::RuntimeCall {
                             runtime_fn: "ArrayMapArrayLikeIdentity".to_owned(),
                             args: vec![self.lower_expr(receiver)?],
-                        });
+                        
+                            span: Span::generated("runtime_call"),});
                     }
                     if is_number_double_arrow_callback(map_args) {
                         return Ok(LoweredExpr::RuntimeCall {
                             runtime_fn: "ArrayMapArrayLikeDouble".to_owned(),
                             args: vec![self.lower_expr(receiver)?],
-                        });
+                        
+                            span: Span::generated("runtime_call"),});
                     }
                     return Err(unsupported_array_map_diagnostic(Some(span)));
                 };
@@ -226,11 +229,13 @@ impl<'a> Resolver<'a> {
             _ if is_identity_arrow_callback(map_args) => Ok(LoweredExpr::RuntimeCall {
                 runtime_fn: "ArrayMapArrayLikeIdentity".to_owned(),
                 args: vec![self.lower_expr(receiver)?],
-            }),
+            
+                span: Span::generated("runtime_call"),}),
             _ if is_number_double_arrow_callback(map_args) => Ok(LoweredExpr::RuntimeCall {
                 runtime_fn: "ArrayMapArrayLikeDouble".to_owned(),
                 args: vec![self.lower_expr(receiver)?],
-            }),
+            
+                span: Span::generated("runtime_call"),}),
             _ => Err(unsupported_array_map_diagnostic(Some(span))),
         }
     }
@@ -253,12 +258,14 @@ impl<'a> Resolver<'a> {
             return Ok(LoweredExpr::RuntimeCall {
                 runtime_fn: "ArrayValues".to_owned(),
                 args: vec![self.lower_expr(source)?],
-            });
+            
+                span: Span::generated("runtime_call"),});
         }
 
         Ok(LoweredExpr::ArrayNew {
             elements: Vec::new(),
-        })
+        
+            span: Span::generated("array_new"),})
     }
 
     pub(super) fn lower_array_map_elements(
@@ -290,17 +297,19 @@ impl<'a> Resolver<'a> {
             }
         }
         if is_sparse {
-            Ok(LoweredExpr::ArrayNewSparse { slots: mapped })
+            Ok(LoweredExpr::ArrayNewSparse { slots: mapped ,
+            span: Span::generated("array_new_sparse"),})
         } else {
             Ok(LoweredExpr::ArrayNew {
                 elements: mapped
                     .into_iter()
                     .map(|slot| match slot {
                         LoweredArraySlot::Present(expr) => expr,
-                        LoweredArraySlot::Hole => LoweredExpr::Undefined,
+                        LoweredArraySlot::Hole => LoweredExpr::Undefined(Span::generated("undef")),
                     })
                     .collect(),
-            })
+            
+                    span: Span::generated("array_new"),})
         }
     }
 
@@ -329,17 +338,18 @@ impl<'a> Resolver<'a> {
                 else {
                     return Err(unsupported_array_map_diagnostic(Some(span)));
                 };
-                let mut explicit_args = vec![element, LoweredExpr::Number(index as i32)];
+                let mut explicit_args = vec![element, LoweredExpr::Number(index as i32, Span::generated("num"))];
                 explicit_args.push(self.lower_expr(array_expr)?);
                 let mut call_args = explicit_args
                     .into_iter()
                     .take(params.len())
                     .collect::<Vec<_>>();
-                call_args.extend(captures.iter().copied().map(LoweredExpr::Local));
+                call_args.extend(captures.iter().copied().map(|id| LoweredExpr::Local(id, Span::generated("local"))));
                 Ok(LoweredExpr::Call {
                     kind: FunctionCallKind::User(func_id),
                     args: call_args,
-                })
+                
+                    span: Span::generated("call"),})
             }
             ResolvedExpr::FunctionExpr { name, params, body } => {
                 self.lower_array_map_function_expr_callback_call(
@@ -350,14 +360,14 @@ impl<'a> Resolver<'a> {
                 let func_id = self.resolve_func(name)?;
                 let receiver = match this_arg {
                     Some(expr) => self.lower_expr(expr)?,
-                    None => LoweredExpr::Undefined,
+                    None => LoweredExpr::Undefined(Span::generated("undef")),
                 };
                 let signature = self
                     .function_signatures
                     .get(&func_id)
                     .copied()
                     .unwrap_or_default();
-                let mut explicit_args = vec![element, LoweredExpr::Number(index as i32)];
+                let mut explicit_args = vec![element, LoweredExpr::Number(index as i32, Span::generated("num"))];
                 explicit_args.push(self.lower_expr(array_expr)?);
                 let argument_props = explicit_args
                     .iter()
@@ -366,7 +376,7 @@ impl<'a> Resolver<'a> {
                     .map(|(index, arg)| (index.to_string(), arg))
                     .chain(std::iter::once((
                         "length".to_owned(),
-                        LoweredExpr::Number(explicit_args.len() as i32),
+                        LoweredExpr::Number(explicit_args.len() as i32, Span::generated("num")),
                     )))
                     .collect::<Vec<_>>();
                 let mut call_args = Vec::new();
@@ -379,20 +389,22 @@ impl<'a> Resolver<'a> {
                     let explicit_len = explicit_args.len();
                     call_args.extend(explicit_args.into_iter().take(signature.explicit_params));
                     for _ in explicit_len..signature.explicit_params {
-                        call_args.push(LoweredExpr::Undefined);
+                        call_args.push(LoweredExpr::Undefined(Span::generated("undef")));
                     }
                 }
                 if signature.needs_arguments {
                     call_args.push(LoweredExpr::ObjectNew {
                         props: argument_props,
                         non_enumerable: 0,
-                    });
+                    
+                        span: Span::generated("object_new"),});
                 }
                 self.append_function_captures(func_id, &mut call_args)?;
                 Ok(LoweredExpr::Call {
                     kind: FunctionCallKind::User(func_id),
                     args: call_args,
-                })
+                
+                    span: Span::generated("call"),})
             }
             _ => Err(unsupported_array_map_diagnostic(Some(span))),
         }
@@ -422,7 +434,7 @@ impl<'a> Resolver<'a> {
 
         let receiver = match this_arg {
             Some(expr) => self.lower_expr(expr)?,
-            None => LoweredExpr::Undefined,
+            None => LoweredExpr::Undefined(Span::generated("undef")),
         };
         let mut params_with_this = vec![ResolvedParam {
             name: "this".to_owned(),
@@ -511,19 +523,20 @@ impl<'a> Resolver<'a> {
 
         let explicit_args = [
             element,
-            LoweredExpr::Number(index as i32),
+            LoweredExpr::Number(index as i32, Span::generated("num")),
             self.lower_expr(array_expr)?,
         ];
         let mut call_args = vec![receiver];
         call_args.extend(explicit_args.into_iter().take(params.len()));
         for _ in call_args.len()..=params.len() {
-            call_args.push(LoweredExpr::Undefined);
+            call_args.push(LoweredExpr::Undefined(Span::generated("undef")));
         }
-        call_args.extend(captures.into_iter().map(LoweredExpr::Local));
+        call_args.extend(captures.into_iter().map(|id| LoweredExpr::Local(id, Span::generated("local"))));
         Ok(LoweredExpr::Call {
             kind: FunctionCallKind::User(func_id),
             args: call_args,
-        })
+        
+            span: Span::generated("call"),})
     }
 
     pub(super) fn lower_array_literal_elements(
@@ -553,7 +566,7 @@ impl<'a> Resolver<'a> {
                     }
                 }
                 ResolvedArrayElement::Present(expr) => lowered.push(self.lower_expr(expr)?),
-                ResolvedArrayElement::Hole => lowered.push(LoweredExpr::Undefined),
+                ResolvedArrayElement::Hole => lowered.push(LoweredExpr::Undefined(Span::generated("undef"))),
             }
         }
         Ok(lowered)
@@ -565,7 +578,8 @@ impl<'a> Resolver<'a> {
         }
         segments.push(LoweredExpr::ArrayNew {
             elements: std::mem::take(pending_dense),
-        });
+        
+            span: Span::generated("array_new"),});
     }
 
     pub(super) fn lower_dense_array_local_spread_operand(
@@ -582,8 +596,8 @@ impl<'a> Resolver<'a> {
             return Ok(Some(LoweredExpr::RuntimeCall {
                 runtime_fn: "ArrayConcat".to_owned(),
                 args: vec![
-                    LoweredExpr::ArrayNew { elements: vec![] },
-                    LoweredExpr::Local(local_id),
+                    LoweredExpr::ArrayNew { elements: vec![] , span: Span::generated("array_new")},
+                    LoweredExpr::Local(local_id, Span::generated("local")),
                 ],
             }));
         }
@@ -617,8 +631,9 @@ impl<'a> Resolver<'a> {
         {
             return Ok(Some(LoweredExpr::RuntimeCall {
                 runtime_fn: "SetValuesArray".to_owned(),
-                args: vec![LoweredExpr::Local(local_id)],
-            }));
+                args: vec![LoweredExpr::Local(local_id, Span::generated("local"))],
+            
+                span: Span::generated("runtime_call"),}));
         }
         Ok(None)
     }
@@ -640,8 +655,9 @@ impl<'a> Resolver<'a> {
         {
             return Ok(Some(LoweredExpr::RuntimeCall {
                 runtime_fn: "MapValuesArray".to_owned(),
-                args: vec![LoweredExpr::Local(local_id)],
-            }));
+                args: vec![LoweredExpr::Local(local_id, Span::generated("local"))],
+            
+                span: Span::generated("runtime_call"),}));
         }
         Ok(None)
     }
@@ -713,7 +729,7 @@ impl<'a> Resolver<'a> {
 
                 let target = result
                     .take()
-                    .unwrap_or_else(|| LoweredExpr::ObjectNew { props: Vec::new(), non_enumerable: 0 });
+                    .unwrap_or_else(|| LoweredExpr::ObjectNew { props: Vec::new(), non_enumerable: 0 , span: Span::generated("object_new")});
                 let target = if pending.is_empty() {
                     target
                 } else {
@@ -724,14 +740,16 @@ impl<'a> Resolver<'a> {
                             LoweredExpr::ObjectNew {
                                 props: std::mem::take(&mut pending),
                                 non_enumerable: 0,
-                            },
+                            
+                                span: Span::generated("object_new"),},
                         ],
                     }
                 };
                 result = Some(LoweredExpr::RuntimeCall {
                     runtime_fn: "ObjectSpread".to_owned(),
                     args: vec![target, self.lower_expr(value)?],
-                });
+                
+                    span: Span::generated("runtime_call"),});
                 continue;
             }
 
@@ -741,15 +759,15 @@ impl<'a> Resolver<'a> {
             pending.push((key.clone(), self.lower_expr(value)?));
         }
 
-        let target = result.unwrap_or_else(|| LoweredExpr::ObjectNew { props: Vec::new(), non_enumerable: 0 });
+        let target = result.unwrap_or_else(|| LoweredExpr::ObjectNew { props: Vec::new(), non_enumerable: 0 , span: Span::generated("object_new")});
         if pending.is_empty() {
             Ok(target)
         } else if matches!(target, LoweredExpr::ObjectNew { ref props, .. } if props.is_empty()) {
-            Ok(LoweredExpr::ObjectNew { props: pending, non_enumerable: 0 })
+            Ok(LoweredExpr::ObjectNew { props: pending, non_enumerable: 0 , span: Span::generated("object_new")})
         } else {
             Ok(LoweredExpr::RuntimeCall {
                 runtime_fn: "ObjectSpread".to_owned(),
-                args: vec![target, LoweredExpr::ObjectNew { props: pending, non_enumerable: 0 }],
+                args: vec![target, LoweredExpr::ObjectNew { props: pending, non_enumerable: 0 , span: Span::generated("object_new")}],
             })
         }
     }
@@ -778,7 +796,7 @@ impl<'a> Resolver<'a> {
         if let ResolvedExpr::Ident(name) = value
             && let Ok(func_id) = self.resolve_func(name)
         {
-            return Ok(LoweredExpr::Number(func_id.0 as i32));
+            return Ok(LoweredExpr::Number(func_id.0 as i32, Span::generated("num")));
         }
         self.lower_expr(value)
     }
@@ -801,7 +819,8 @@ impl<'a> Resolver<'a> {
         Ok(LoweredExpr::RuntimeCall {
             runtime_fn: "SetAdd".to_owned(),
             args: vec![self.lower_expr(&args[0])?, self.lower_expr(&args[1])?],
-        })
+        
+            span: Span::generated("runtime_call"),})
     }
 
     pub(super) fn lower_binding_pattern_declarations(
@@ -912,16 +931,17 @@ impl<'a> Resolver<'a> {
             if matches {
                 elements.push(LoweredExpr::ObjectNew {
                     props: vec![
-                        ("0".to_owned(), LoweredExpr::String(ch.to_string())),
-                        ("index".to_owned(), LoweredExpr::Number(index as i32)),
-                        ("input".to_owned(), LoweredExpr::String(input.clone())),
+                        ("0".to_owned(), LoweredExpr::String(ch.to_string(), Span::generated("str"))),
+                        ("index".to_owned(), LoweredExpr::Number(index as i32, Span::generated("num"))),
+                        ("input".to_owned(), LoweredExpr::String(input.clone(), Span::generated("str"))),
                     ],
                     non_enumerable: 0,
-                });
+                
+                    span: Span::generated("object_new"),});
             }
         }
 
-        Ok(LoweredExpr::ArrayNew { elements })
+        Ok(LoweredExpr::ArrayNew { elements , span: Span::generated("array_new")})
     }
 
     pub(super) fn lower_array_binding_declaration(
@@ -934,15 +954,16 @@ impl<'a> Resolver<'a> {
                 runtime_fn: "ArraySlice".to_owned(),
                 args: vec![
                     value.clone(),
-                    LoweredExpr::Number(binding.index as i32),
-                    LoweredExpr::GetLength(Box::new(value.clone())),
+                    LoweredExpr::Number(binding.index as i32, Span::generated("num")),
+                    LoweredExpr::GetLength(Box::new(value.clone()), Span::generated("get_length")),
                 ],
-            }
+            
+                span: Span::generated("runtime_call"),}
         } else {
             LoweredExpr::Index {
                 object: Box::new(value.clone()),
-                index: Box::new(LoweredExpr::Number(binding.index as i32)),
-            }
+                index: Box::new(LoweredExpr::Number(binding.index as i32, Span::generated("num"))),
+                span: Span::generated("index"),}
         };
         let Some(name) = binding.target.identifier() else {
             if let Some(pattern) = binding.target.pattern() {
@@ -952,7 +973,7 @@ impl<'a> Resolver<'a> {
         };
         let local_id = self.declare_local(name)?;
         if binding.is_rest {
-            return Ok(vec![LoweredStmt::Let(local_id, element_value)]);
+            return Ok(vec![LoweredStmt::Let(local_id, element_value, Span::generated("let_stmt"))]);
         }
         self.lower_binding_declaration_with_default(
             local_id,
@@ -971,7 +992,8 @@ impl<'a> Resolver<'a> {
         let property_value = LoweredExpr::PropertyGet {
             obj: Box::new(value.clone()),
             key: binding.key.clone(),
-        };
+        
+            span: Span::generated("prop_get"),};
         let Some(name) = binding.target.identifier() else {
             if let Some(pattern) = binding.target.pattern() {
                 return self.lower_binding_pattern_declarations(pattern, property_value, None);
@@ -1024,14 +1046,14 @@ impl<'a> Resolver<'a> {
                     LoweredExpr::PropertyGet {
                         obj: Box::new(value.clone()),
                         key: key.clone(),
-                    },
+                        span: Span::generated("prop_get"),},
                 )
             })
             .collect();
         Ok(vec![LoweredStmt::Let(
             local_id,
-            LoweredExpr::ObjectNew { props: rest_props, non_enumerable: 0 },
-        )])
+            LoweredExpr::ObjectNew { props: rest_props, non_enumerable: 0 , span: Span::generated("object_new")},
+        Span::generated("let_stmt"))])
     }
 
     pub(super) fn lower_binding_declaration_with_default(
@@ -1041,22 +1063,23 @@ impl<'a> Resolver<'a> {
         default: Option<&BindingDefault>,
     ) -> Result<Vec<LoweredStmt>, Diagnostic> {
         let Some(default) = default else {
-            return Ok(vec![LoweredStmt::Let(local_id, value)]);
+            return Ok(vec![LoweredStmt::Let(local_id, value, Span::generated("let_stmt"))]);
         };
         let temp_id = self.alloc_temp();
         Ok(vec![
-            LoweredStmt::Let(temp_id, value),
-            LoweredStmt::Let(local_id, LoweredExpr::Local(temp_id)),
+            LoweredStmt::Let(temp_id, value, Span::generated("let_stmt")),
+            LoweredStmt::Let(local_id, LoweredExpr::Local(temp_id, Span::generated("local"))),
             LoweredStmt::If {
                 condition: LoweredExpr::Binary {
-                    left: Box::new(LoweredExpr::Local(temp_id)),
+                    left: Box::new(LoweredExpr::Local(temp_id, Span::generated("local"))),
                     op: LoweredBinaryOp::StrictEqual,
-                    right: Box::new(LoweredExpr::Undefined),
-                },
+                    right: Box::new(LoweredExpr::Undefined(Span::generated("undef"))),
+                
+                    span: Span::generated("binary"),},
                 then_body: vec![LoweredStmt::Assign(
                     local_id,
                     lowered_binding_default(default),
-                )],
+                Span::generated("assign"))],
                 else_body: vec![],
             },
         ])
@@ -1083,19 +1106,20 @@ impl<'a> Resolver<'a> {
 
         if let Ok(local_id) = self.resolve_local(func_name) {
             if self.nullish_locals.contains(&local_id) {
-                return Ok(LoweredExpr::Undefined);
+                return Ok(LoweredExpr::Undefined(Span::generated("undef")));
             }
 
             if let Some(closure) = self.arrow_locals.get(&local_id).cloned() {
                 let mut lowered_args = self.lower_call_args(args)?;
-                lowered_args.extend(closure.captures.iter().copied().map(LoweredExpr::Local));
+                lowered_args.extend(closure.captures.iter().copied().map(|id| LoweredExpr::Local(id, Span::generated("local"))));
                 return Ok(LoweredExpr::OptionalCall {
-                    callee: Box::new(LoweredExpr::Local(local_id)),
+                    callee: Box::new(LoweredExpr::Local(local_id, Span::generated("local"))),
                     call: Box::new(LoweredExpr::Call {
                         kind: FunctionCallKind::User(closure.func_id),
                         args: lowered_args,
-                    }),
-                });
+                    
+                        span: Span::generated("call"),}),
+                    span: Span::generated("opt_call"),});
             }
 
             // Not a closure or nullish (e.g. function declaration) —
@@ -1116,11 +1140,12 @@ impl<'a> Resolver<'a> {
                 span: Some(span),
             });
         }
-        let lowered_args = self.lower_function_call_args(func_id, LoweredExpr::Undefined, args)?;
+        let lowered_args = self.lower_function_call_args(func_id, LoweredExpr::Undefined(Span::generated("undef")), args)?;
         Ok(LoweredExpr::Call {
             kind: FunctionCallKind::User(func_id),
             args: lowered_args,
-        })
+        
+            span: Span::generated("call"),})
     }
 
     pub(super) fn lower_function_call_args(
@@ -1138,19 +1163,22 @@ impl<'a> Resolver<'a> {
             if let Some(local_id) = self.single_dense_array_local_spread_arg(args) {
                 (0..signature.explicit_params)
                     .map(|index| LoweredExpr::ArrayGet {
-                        arr: Box::new(LoweredExpr::Local(local_id)),
-                        index: Box::new(LoweredExpr::Number(index as i32)),
-                    })
+                        arr: Box::new(LoweredExpr::Local(local_id, Span::generated("local"))),
+                        index: Box::new(LoweredExpr::Number(index as i32, Span::generated("num"))),
+                    
+                        span: Span::generated("array_get"),})
                     .collect()
             } else if let Some(local_id) = self.single_set_local_spread_arg(args) {
                 (0..signature.explicit_params)
                     .map(|index| LoweredExpr::ArrayGet {
                         arr: Box::new(LoweredExpr::RuntimeCall {
                             runtime_fn: "SetValuesArray".to_owned(),
-                            args: vec![LoweredExpr::Local(local_id)],
-                        }),
-                        index: Box::new(LoweredExpr::Number(index as i32)),
-                    })
+                            args: vec![LoweredExpr::Local(local_id, Span::generated("local"))],
+                        
+                            span: Span::generated("runtime_call"),}),
+                        index: Box::new(LoweredExpr::Number(index as i32, Span::generated("num"))),
+                    
+                        span: Span::generated("array_get"),})
                     .collect()
             } else {
                 self.lower_call_args(args)?
@@ -1169,7 +1197,7 @@ impl<'a> Resolver<'a> {
         } else {
             lowered_args.extend(explicit_args.iter().take(signature.explicit_params).cloned());
             for _ in explicit_args.len()..signature.explicit_params {
-                lowered_args.push(LoweredExpr::Undefined);
+                lowered_args.push(LoweredExpr::Undefined(Span::generated("undef")));
             }
         }
 
@@ -1183,12 +1211,12 @@ impl<'a> Resolver<'a> {
             let length_index = props.len(); // index of "length" after push
             props.push((
                 "length".to_owned(),
-                LoweredExpr::Number(argument_count as i32),
+                LoweredExpr::Number(argument_count as i32, Span::generated("num")),
             ));
             lowered_args.push(LoweredExpr::ObjectNew {
                 props,
                 non_enumerable: 1 << length_index, // length is non-enumerable
-            });
+                span: Span::generated("object_new"),});
         }
 
         self.append_function_captures(func_id, &mut lowered_args)?;
@@ -1259,7 +1287,7 @@ impl<'a> Resolver<'a> {
                     span: None,
                 });
             }
-            lowered_args.push(LoweredExpr::Local(local));
+            lowered_args.push(LoweredExpr::Local(local, Span::generated("local")));
         }
 
         Ok(())
@@ -1296,7 +1324,7 @@ impl<'a> Resolver<'a> {
                     span: None,
                 });
             }
-            lowered_args.push(LoweredExpr::Local(local));
+            lowered_args.push(LoweredExpr::Local(local, Span::generated("local")));
         }
 
         Ok(())
@@ -1311,7 +1339,8 @@ impl<'a> Resolver<'a> {
         span: Span,
     ) -> Result<LoweredExpr, Diagnostic> {
         if Self::is_direct_return_this_iife(params, body, args) {
-            return Ok(LoweredExpr::ObjectNew { props: Vec::new(), non_enumerable: 0 });
+            return Ok(LoweredExpr::ObjectNew { props: Vec::new(), non_enumerable: 0 ,
+            span: Span::generated("object_new"),});
         }
         if params.iter().any(|param| param.is_rest) {
             return Err(Diagnostic {
@@ -1349,13 +1378,14 @@ impl<'a> Resolver<'a> {
             .take(params.len())
             .collect::<Vec<_>>();
         for _ in lowered_args.len()..params.len() {
-            lowered_args.push(LoweredExpr::Undefined);
+            lowered_args.push(LoweredExpr::Undefined(Span::generated("undef")));
         }
-        lowered_args.extend(captures.into_iter().map(LoweredExpr::Local));
+        lowered_args.extend(captures.into_iter().map(|id| LoweredExpr::Local(id, Span::generated("local"))));
         Ok(LoweredExpr::Call {
             kind: FunctionCallKind::User(func_id),
             args: lowered_args,
-        })
+        
+            span: Span::generated("call"),})
     }
 
     fn is_direct_return_this_iife(
@@ -1404,7 +1434,7 @@ impl<'a> Resolver<'a> {
     ) -> Result<LoweredExpr, Diagnostic> {
         let func_id = self.resolve_func(name)?;
         match key {
-            "name" => Ok(LoweredExpr::String(name.to_owned())),
+            "name" => Ok(LoweredExpr::String(name.to_owned(), Span::generated("str"))),
             "length" => {
                 let signature = self
                     .function_signatures
@@ -1412,7 +1442,7 @@ impl<'a> Resolver<'a> {
                     .copied()
                     .unwrap_or_default();
                 if let Some(length) = signature.metadata_length {
-                    Ok(LoweredExpr::Number(length as i32))
+                    Ok(LoweredExpr::Number(length as i32, Span::generated("num")))
                 } else {
                     Err(Diagnostic {
                         code: DiagCode::UnsupportedSyntax,
@@ -1546,7 +1576,8 @@ impl<'a> Resolver<'a> {
             func_id,
             captures,
             representation: ClosureRepresentation::DirectLocalToken,
-        })
+        
+            span: Span::generated("arrow_fn"),})
     }
 
     pub(super) fn lower_nested_function(
@@ -1653,7 +1684,8 @@ impl<'a> Resolver<'a> {
             } else {
                 ClosureRepresentation::DirectLocalToken
             },
-        })
+        
+            span: Span::generated("arrow_fn"),})
     }
 
     pub(super) fn lower_named_function_expr(
@@ -2061,7 +2093,7 @@ impl<'a> Resolver<'a> {
                 LoweredExpr::ArrowFn {
                     representation: ClosureRepresentation::HeapObject,
                     ..
-                }
+                    span: Span::generated("arrow_fn"),}
             )
         {
             self.heap_closure_locals.insert(local_id);
@@ -2594,7 +2626,7 @@ impl<'a> Resolver<'a> {
 
         // For now, only handle Ident receivers (variable arrays)
         let receiver_local = match &receiver {
-            LoweredExpr::Local(id) => *id,
+            LoweredExpr::Local(id, Span::generated("local")) => *id,
             _ => {
                 let temp = self.alloc_temp();
                 // receiver is a literal array: store in temp
@@ -2646,14 +2678,14 @@ impl<'a> Resolver<'a> {
         // Let(len_local, GetLength(receiver))
         stmts.push(LoweredStmt::Let(
             len_local,
-            LoweredExpr::GetLength(Box::new(receiver.clone())),
+            LoweredExpr::GetLength(Box::new(receiver.clone()), Span::generated("get_length")),
         ));
 
         // Allocate loop body stmts and any accumulator locals
         let mut while_body = Vec::new();
         let result_expr;
 
-        let arr_ref = || -> LoweredExpr { LoweredExpr::Local(receiver_local) };
+        let arr_ref = || -> LoweredExpr { LoweredExpr::Local(receiver_local, Span::generated("local")) };
 
         // Build the loop body based on method
         match method {
@@ -2663,38 +2695,41 @@ impl<'a> Resolver<'a> {
                     elem,
                     LoweredExpr::ArrayGet {
                         arr: Box::new(arr_ref()),
-                        index: Box::new(LoweredExpr::Local(i)),
-                    },
+                        index: Box::new(LoweredExpr::Local(i, Span::generated("local"))),
+                    
+                        span: Span::generated("array_get"),},
                 ));
 
                 let call_args = {
                     let explicit_args = vec![
-                        LoweredExpr::Local(elem),
-                        LoweredExpr::Local(i),
+                        LoweredExpr::Local(elem, Span::generated("local")),
+                        LoweredExpr::Local(i, Span::generated("local")),
                         arr_ref(),
                     ];
                     let mut call_args: Vec<LoweredExpr> = explicit_args
                         .into_iter()
                         .take(param_count)
                         .collect();
-                    call_args.extend(captures.iter().copied().map(LoweredExpr::Local));
+                    call_args.extend(captures.iter().copied().map(|id| LoweredExpr::Local(id, Span::generated("local"))));
                     LoweredExpr::Call {
                         kind: FunctionCallKind::User(func_id),
                         args: call_args,
-                    }
+                    
+                        span: Span::generated("call"),}
                 };
 
-                while_body.push(LoweredStmt::Expr(call_args));
+                while_body.push(LoweredStmt::Expr(call_args, Span::generated("expr_stmt")));
                 while_body.push(LoweredStmt::Assign(
                     i,
                     LoweredExpr::Binary {
-                        left: Box::new(LoweredExpr::Local(i)),
+                        left: Box::new(LoweredExpr::Local(i, Span::generated("local"))),
                         op: LoweredBinaryOp::Add,
-                        right: Box::new(LoweredExpr::Number(1)),
-                    },
+                        right: Box::new(LoweredExpr::Number(1, Span::generated("num"))),
+                    
+                        span: Span::generated("binary"),},
                 ));
 
-                result_expr = LoweredExpr::Undefined;
+                result_expr = LoweredExpr::Undefined(Span::generated("undef"));
             }
             "filter" => {
                 let result = self.alloc_temp();
@@ -2702,166 +2737,179 @@ impl<'a> Resolver<'a> {
                     result,
                     LoweredExpr::ArrayNew {
                         elements: vec![],
-                    },
-                ));
+                    
+                        span: Span::generated("array_new"),},
+                , Span::generated("let_stmt")));
 
                 let elem = self.alloc_temp();
                 while_body.push(LoweredStmt::Let(
                     elem,
                     LoweredExpr::ArrayGet {
                         arr: Box::new(arr_ref()),
-                        index: Box::new(LoweredExpr::Local(i)),
-                    },
+                        index: Box::new(LoweredExpr::Local(i, Span::generated("local"))),
+                    
+                        span: Span::generated("array_get"),},
                 ));
 
                 let pred = self.alloc_temp();
                 let call_args = {
                     let explicit_args = vec![
-                        LoweredExpr::Local(elem),
-                        LoweredExpr::Local(i),
+                        LoweredExpr::Local(elem, Span::generated("local")),
+                        LoweredExpr::Local(i, Span::generated("local")),
                         arr_ref(),
                     ];
                     let mut call_args: Vec<LoweredExpr> = explicit_args
                         .into_iter()
                         .take(param_count)
                         .collect();
-                    call_args.extend(captures.iter().copied().map(LoweredExpr::Local));
+                    call_args.extend(captures.iter().copied().map(|id| LoweredExpr::Local(id, Span::generated("local"))));
                     LoweredExpr::Call {
                         kind: FunctionCallKind::User(func_id),
                         args: call_args,
-                    }
+                    
+                        span: Span::generated("call"),}
                 };
-                while_body.push(LoweredStmt::Let(pred, call_args));
+                while_body.push(LoweredStmt::Let(pred, call_args, Span::generated("let_stmt")));
                 while_body.push(LoweredStmt::If {
-                    condition: LoweredExpr::Local(pred),
+                    condition: LoweredExpr::Local(pred, Span::generated("local")),
                     then_body: vec![LoweredStmt::Expr(LoweredExpr::RuntimeCall {
                         runtime_fn: "ArrayPushGrow".to_owned(),
                         args: vec![
-                            LoweredExpr::Local(result),
-                            LoweredExpr::Local(elem),
+                            LoweredExpr::Local(result, Span::generated("local")),
+                            LoweredExpr::Local(elem, Span::generated("local")),
                         ],
-                    })],
+                    
+                        span: Span::generated("runtime_call"),})],
                     else_body: vec![],
                 });
                 while_body.push(LoweredStmt::Assign(
                     i,
                     LoweredExpr::Binary {
-                        left: Box::new(LoweredExpr::Local(i)),
+                        left: Box::new(LoweredExpr::Local(i, Span::generated("local"))),
                         op: LoweredBinaryOp::Add,
-                        right: Box::new(LoweredExpr::Number(1)),
-                    },
+                        right: Box::new(LoweredExpr::Number(1, Span::generated("num"))),
+                    
+                        span: Span::generated("binary"),},
                 ));
 
-                result_expr = LoweredExpr::Local(result);
+                result_expr = LoweredExpr::Local(result, Span::generated("local"));
             }
             "find" => {
                 let found = self.alloc_temp();
-                stmts.push(LoweredStmt::Let(found, LoweredExpr::Undefined));
+                stmts.push(LoweredStmt::Let(found, LoweredExpr::Undefined(Span::generated("undef"))));
 
                 let elem = self.alloc_temp();
                 while_body.push(LoweredStmt::Let(
                     elem,
                     LoweredExpr::ArrayGet {
                         arr: Box::new(arr_ref()),
-                        index: Box::new(LoweredExpr::Local(i)),
-                    },
+                        index: Box::new(LoweredExpr::Local(i, Span::generated("local"))),
+                    
+                        span: Span::generated("array_get"),},
                 ));
 
                 let pred = self.alloc_temp();
                 let call_args = {
                     let explicit_args = vec![
-                        LoweredExpr::Local(elem),
-                        LoweredExpr::Local(i),
+                        LoweredExpr::Local(elem, Span::generated("local")),
+                        LoweredExpr::Local(i, Span::generated("local")),
                         arr_ref(),
                     ];
                     let mut call_args: Vec<LoweredExpr> = explicit_args
                         .into_iter()
                         .take(param_count)
                         .collect();
-                    call_args.extend(captures.iter().copied().map(LoweredExpr::Local));
+                    call_args.extend(captures.iter().copied().map(|id| LoweredExpr::Local(id, Span::generated("local"))));
                     LoweredExpr::Call {
                         kind: FunctionCallKind::User(func_id),
                         args: call_args,
-                    }
+                    
+                        span: Span::generated("call"),}
                 };
-                while_body.push(LoweredStmt::Let(pred, call_args));
+                while_body.push(LoweredStmt::Let(pred, call_args, Span::generated("let_stmt")));
                 while_body.push(LoweredStmt::If {
-                    condition: LoweredExpr::Local(pred),
+                    condition: LoweredExpr::Local(pred, Span::generated("local")),
                     then_body: vec![LoweredStmt::Assign(
                         found,
-                        LoweredExpr::Local(elem),
+                        LoweredExpr::Local(elem, Span::generated("local")),
                     )],
                     else_body: vec![],
-                });
+                
+                    span: Span::generated("if_stmt"),});
                 while_body.push(LoweredStmt::Assign(
                     i,
                     LoweredExpr::Binary {
-                        left: Box::new(LoweredExpr::Local(i)),
+                        left: Box::new(LoweredExpr::Local(i, Span::generated("local"))),
                         op: LoweredBinaryOp::Add,
-                        right: Box::new(LoweredExpr::Number(1)),
-                    },
+                        right: Box::new(LoweredExpr::Number(1, Span::generated("num"))),
+                    
+                        span: Span::generated("binary"),},
                 ));
 
-                result_expr = LoweredExpr::Local(found);
+                result_expr = LoweredExpr::Local(found, Span::generated("local"));
             }
             "findIndex" => {
                 let found = self.alloc_temp();
-                stmts.push(LoweredStmt::Let(found, LoweredExpr::Number(-1)));
+                stmts.push(LoweredStmt::Let(found, LoweredExpr::Number(-1, Span::generated("num"))));
 
                 let elem = self.alloc_temp();
                 while_body.push(LoweredStmt::Let(
                     elem,
                     LoweredExpr::ArrayGet {
                         arr: Box::new(arr_ref()),
-                        index: Box::new(LoweredExpr::Local(i)),
-                    },
+                        index: Box::new(LoweredExpr::Local(i, Span::generated("local"))),
+                    
+                        span: Span::generated("array_get"),},
                 ));
 
                 let pred = self.alloc_temp();
                 let call_args = {
                     let explicit_args = vec![
-                        LoweredExpr::Local(elem),
-                        LoweredExpr::Local(i),
+                        LoweredExpr::Local(elem, Span::generated("local")),
+                        LoweredExpr::Local(i, Span::generated("local")),
                         arr_ref(),
                     ];
                     let mut call_args: Vec<LoweredExpr> = explicit_args
                         .into_iter()
                         .take(param_count)
                         .collect();
-                    call_args.extend(captures.iter().copied().map(LoweredExpr::Local));
+                    call_args.extend(captures.iter().copied().map(|id| LoweredExpr::Local(id, Span::generated("local"))));
                     LoweredExpr::Call {
                         kind: FunctionCallKind::User(func_id),
                         args: call_args,
-                    }
+                    
+                        span: Span::generated("call"),}
                 };
-                while_body.push(LoweredStmt::Let(pred, call_args));
+                while_body.push(LoweredStmt::Let(pred, call_args, Span::generated("let_stmt")));
                 while_body.push(LoweredStmt::If {
-                    condition: LoweredExpr::Local(pred),
+                    condition: LoweredExpr::Local(pred, Span::generated("local")),
                     then_body: vec![
                         LoweredStmt::Assign(
                             found,
-                            LoweredExpr::Local(i),
+                            LoweredExpr::Local(i, Span::generated("local")),
                         ),
-                        LoweredStmt::Break { label: None },
+                        LoweredStmt::Break { label: None , span: Span::generated("brk")},
                     ],
                     else_body: vec![],
-                });
+                
+                    span: Span::generated("if_stmt"),});
                 while_body.push(LoweredStmt::Assign(
                     i,
                     LoweredExpr::Binary {
-                        left: Box::new(LoweredExpr::Local(i)),
+                        left: Box::new(LoweredExpr::Local(i, Span::generated("local"))),
                         op: LoweredBinaryOp::Add,
-                        right: Box::new(LoweredExpr::Number(1)),
-                    },
+                        right: Box::new(LoweredExpr::Number(1, Span::generated("num"))),
+                    
+                        span: Span::generated("binary"),},
                 ));
 
-                result_expr = LoweredExpr::Local(found);
+                result_expr = LoweredExpr::Local(found, Span::generated("local"));
             }
             "findLast" => {
                 let found = self.alloc_temp();
                 stmts.push(LoweredStmt::Let(
                     found,
-                    LoweredExpr::Undefined,
+                    LoweredExpr::Undefined(Span::generated("undef")),
                 ));
 
                 let elem = self.alloc_temp();
@@ -2869,108 +2917,116 @@ impl<'a> Resolver<'a> {
                     elem,
                     LoweredExpr::ArrayGet {
                         arr: Box::new(arr_ref()),
-                        index: Box::new(LoweredExpr::Local(i)),
-                    },
+                        index: Box::new(LoweredExpr::Local(i, Span::generated("local"))),
+                    
+                        span: Span::generated("array_get"),},
                 ));
 
                 let pred = self.alloc_temp();
                 let call_args = {
                     let explicit_args = vec![
-                        LoweredExpr::Local(elem),
-                        LoweredExpr::Local(i),
+                        LoweredExpr::Local(elem, Span::generated("local")),
+                        LoweredExpr::Local(i, Span::generated("local")),
                         arr_ref(),
                     ];
                     let mut call_args: Vec<LoweredExpr> = explicit_args
                         .into_iter()
                         .take(param_count)
                         .collect();
-                    call_args.extend(captures.iter().copied().map(LoweredExpr::Local));
+                    call_args.extend(captures.iter().copied().map(|id| LoweredExpr::Local(id, Span::generated("local"))));
                     LoweredExpr::Call {
                         kind: FunctionCallKind::User(func_id),
                         args: call_args,
-                    }
+                    
+                        span: Span::generated("call"),}
                 };
-                while_body.push(LoweredStmt::Let(pred, call_args));
+                while_body.push(LoweredStmt::Let(pred, call_args, Span::generated("let_stmt")));
                 while_body.push(LoweredStmt::If {
-                    condition: LoweredExpr::Local(pred),
+                    condition: LoweredExpr::Local(pred, Span::generated("local")),
                     then_body: vec![
                         LoweredStmt::Assign(
                             found,
-                            LoweredExpr::Local(elem),
+                            LoweredExpr::Local(elem, Span::generated("local")),
                         ),
-                        LoweredStmt::Break { label: None },
+                        LoweredStmt::Break { label: None ,
+                        span: Span::generated("break"),},
                     ],
                     else_body: vec![],
                 });
                 while_body.push(LoweredStmt::Assign(
                     i,
                     LoweredExpr::Binary {
-                        left: Box::new(LoweredExpr::Local(i)),
+                        left: Box::new(LoweredExpr::Local(i, Span::generated("local"))),
                         op: LoweredBinaryOp::Subtract,
-                        right: Box::new(LoweredExpr::Number(1)),
-                    },
+                        right: Box::new(LoweredExpr::Number(1, Span::generated("num"))),
+                    
+                        span: Span::generated("binary"),},
                 ));
 
-                result_expr = LoweredExpr::Local(found);
+                result_expr = LoweredExpr::Local(found, Span::generated("local"));
             }
             "findLastIndex" => {
                 let found = self.alloc_temp();
-                stmts.push(LoweredStmt::Let(found, LoweredExpr::Number(-1)));
+                stmts.push(LoweredStmt::Let(found, LoweredExpr::Number(-1, Span::generated("num"))));
 
                 let elem = self.alloc_temp();
                 while_body.push(LoweredStmt::Let(
                     elem,
                     LoweredExpr::ArrayGet {
                         arr: Box::new(arr_ref()),
-                        index: Box::new(LoweredExpr::Local(i)),
-                    },
+                        index: Box::new(LoweredExpr::Local(i, Span::generated("local"))),
+                    
+                        span: Span::generated("array_get"),},
                 ));
 
                 let pred = self.alloc_temp();
                 let call_args = {
                     let explicit_args = vec![
-                        LoweredExpr::Local(elem),
-                        LoweredExpr::Local(i),
+                        LoweredExpr::Local(elem, Span::generated("local")),
+                        LoweredExpr::Local(i, Span::generated("local")),
                         arr_ref(),
                     ];
                     let mut call_args: Vec<LoweredExpr> = explicit_args
                         .into_iter()
                         .take(param_count)
                         .collect();
-                    call_args.extend(captures.iter().copied().map(LoweredExpr::Local));
+                    call_args.extend(captures.iter().copied().map(|id| LoweredExpr::Local(id, Span::generated("local"))));
                     LoweredExpr::Call {
                         kind: FunctionCallKind::User(func_id),
                         args: call_args,
-                    }
+                    
+                        span: Span::generated("call"),}
                 };
-                while_body.push(LoweredStmt::Let(pred, call_args));
+                while_body.push(LoweredStmt::Let(pred, call_args, Span::generated("let_stmt")));
                 while_body.push(LoweredStmt::If {
-                    condition: LoweredExpr::Local(pred),
+                    condition: LoweredExpr::Local(pred, Span::generated("local")),
                     then_body: vec![
                         LoweredStmt::Assign(
                             found,
-                            LoweredExpr::Local(i),
+                            LoweredExpr::Local(i, Span::generated("local")),
                         ),
-                        LoweredStmt::Break { label: None },
+                        LoweredStmt::Break { label: None ,
+                        span: Span::generated("break"),},
                     ],
                     else_body: vec![],
                 });
                 while_body.push(LoweredStmt::Assign(
                     i,
                     LoweredExpr::Binary {
-                        left: Box::new(LoweredExpr::Local(i)),
+                        left: Box::new(LoweredExpr::Local(i, Span::generated("local"))),
                         op: LoweredBinaryOp::Subtract,
-                        right: Box::new(LoweredExpr::Number(1)),
-                    },
+                        right: Box::new(LoweredExpr::Number(1, Span::generated("num"))),
+                    
+                        span: Span::generated("binary"),},
                 ));
 
-                result_expr = LoweredExpr::Local(found);
+                result_expr = LoweredExpr::Local(found, Span::generated("local"));
             }
             "some" => {
                 let found = self.alloc_temp();
                 stmts.push(LoweredStmt::Let(
                     found,
-                    LoweredExpr::Bool(false),
+                    LoweredExpr::Bool(false, Span::generated("bool")),
                 ));
 
                 let elem = self.alloc_temp();
@@ -2978,52 +3034,56 @@ impl<'a> Resolver<'a> {
                     elem,
                     LoweredExpr::ArrayGet {
                         arr: Box::new(arr_ref()),
-                        index: Box::new(LoweredExpr::Local(i)),
-                    },
+                        index: Box::new(LoweredExpr::Local(i, Span::generated("local"))),
+                    
+                        span: Span::generated("array_get"),},
                 ));
 
                 let pred = self.alloc_temp();
                 let call_args = {
                     let explicit_args = vec![
-                        LoweredExpr::Local(elem),
-                        LoweredExpr::Local(i),
+                        LoweredExpr::Local(elem, Span::generated("local")),
+                        LoweredExpr::Local(i, Span::generated("local")),
                         arr_ref(),
                     ];
                     let mut call_args: Vec<LoweredExpr> = explicit_args
                         .into_iter()
                         .take(param_count)
                         .collect();
-                    call_args.extend(captures.iter().copied().map(LoweredExpr::Local));
+                    call_args.extend(captures.iter().copied().map(|id| LoweredExpr::Local(id, Span::generated("local"))));
                     LoweredExpr::Call {
                         kind: FunctionCallKind::User(func_id),
                         args: call_args,
-                    }
+                    
+                        span: Span::generated("call"),}
                 };
-                while_body.push(LoweredStmt::Let(pred, call_args));
+                while_body.push(LoweredStmt::Let(pred, call_args, Span::generated("let_stmt")));
                 while_body.push(LoweredStmt::If {
-                    condition: LoweredExpr::Local(pred),
+                    condition: LoweredExpr::Local(pred, Span::generated("local")),
                     then_body: vec![LoweredStmt::Assign(
                         found,
-                        LoweredExpr::Bool(true),
+                        LoweredExpr::Bool(true, Span::generated("bool")),
                     )],
                     else_body: vec![],
-                });
+                
+                    span: Span::generated("if_stmt"),});
                 while_body.push(LoweredStmt::Assign(
                     i,
                     LoweredExpr::Binary {
-                        left: Box::new(LoweredExpr::Local(i)),
+                        left: Box::new(LoweredExpr::Local(i, Span::generated("local"))),
                         op: LoweredBinaryOp::Add,
-                        right: Box::new(LoweredExpr::Number(1)),
-                    },
+                        right: Box::new(LoweredExpr::Number(1, Span::generated("num"))),
+                    
+                        span: Span::generated("binary"),},
                 ));
 
-                result_expr = LoweredExpr::Local(found);
+                result_expr = LoweredExpr::Local(found, Span::generated("local"));
             }
             "every" => {
                 let all = self.alloc_temp();
                 stmts.push(LoweredStmt::Let(
                     all,
-                    LoweredExpr::Bool(true),
+                    LoweredExpr::Bool(true, Span::generated("bool")),
                 ));
 
                 let elem = self.alloc_temp();
@@ -3031,49 +3091,53 @@ impl<'a> Resolver<'a> {
                     elem,
                     LoweredExpr::ArrayGet {
                         arr: Box::new(arr_ref()),
-                        index: Box::new(LoweredExpr::Local(i)),
-                    },
+                        index: Box::new(LoweredExpr::Local(i, Span::generated("local"))),
+                    
+                        span: Span::generated("array_get"),},
                 ));
 
                 let pred = self.alloc_temp();
                 let call_args = {
                     let explicit_args = vec![
-                        LoweredExpr::Local(elem),
-                        LoweredExpr::Local(i),
+                        LoweredExpr::Local(elem, Span::generated("local")),
+                        LoweredExpr::Local(i, Span::generated("local")),
                         arr_ref(),
                     ];
                     let mut call_args: Vec<LoweredExpr> = explicit_args
                         .into_iter()
                         .take(param_count)
                         .collect();
-                    call_args.extend(captures.iter().copied().map(LoweredExpr::Local));
+                    call_args.extend(captures.iter().copied().map(|id| LoweredExpr::Local(id, Span::generated("local"))));
                     LoweredExpr::Call {
                         kind: FunctionCallKind::User(func_id),
                         args: call_args,
-                    }
+                    
+                        span: Span::generated("call"),}
                 };
-                while_body.push(LoweredStmt::Let(pred, call_args));
+                while_body.push(LoweredStmt::Let(pred, call_args, Span::generated("let_stmt")));
                 while_body.push(LoweredStmt::If {
                     condition: LoweredExpr::Unary {
                         op: LoweredUnaryOp::Not,
-                        expr: Box::new(LoweredExpr::Local(pred)),
-                    },
+                        expr: Box::new(LoweredExpr::Local(pred, Span::generated("local"))),
+                    
+                        span: Span::generated("unary"),},
                     then_body: vec![LoweredStmt::Assign(
                         all,
-                        LoweredExpr::Bool(false),
+                        LoweredExpr::Bool(false, Span::generated("bool")),
                     )],
                     else_body: vec![],
-                });
+                    span: Span::generated("if_stmt"),});
                 while_body.push(LoweredStmt::Assign(
                     i,
                     LoweredExpr::Binary {
-                        left: Box::new(LoweredExpr::Local(i)),
+                        left: Box::new(LoweredExpr::Local(i, Span::generated("local"))),
                         op: LoweredBinaryOp::Add,
-                        right: Box::new(LoweredExpr::Number(1)),
-                    },
+                        right: Box::new(LoweredExpr::Number(1, Span::generated("num"))),
+                    
+                        span: Span::generated("binary"),},
                 ));
 
-                result_expr = LoweredExpr::Local(all);
+                result_expr = LoweredExpr::Local(all, Span::generated("local"));
             }
             "reduce" => {
                 // For reduce, the callback receives (acc, elem, i, arr)
@@ -3090,96 +3154,104 @@ impl<'a> Resolver<'a> {
                         span: None,
                     });
                 };
-                stmts.push(LoweredStmt::Let(acc, init_expr));
+                stmts.push(LoweredStmt::Let(acc, init_expr, Span::generated("let_stmt")));
 
                 let elem = self.alloc_temp();
                 while_body.push(LoweredStmt::Let(
                     elem,
                     LoweredExpr::ArrayGet {
                         arr: Box::new(arr_ref()),
-                        index: Box::new(LoweredExpr::Local(i)),
-                    },
+                        index: Box::new(LoweredExpr::Local(i, Span::generated("local"))),
+                    
+                        span: Span::generated("array_get"),},
                 ));
 
                 // Reduce callback args: (acc, elem, i, arr)
                 let reduce_explicit = vec![
-                    LoweredExpr::Local(acc),
-                    LoweredExpr::Local(elem),
-                    LoweredExpr::Local(i),
+                    LoweredExpr::Local(acc, Span::generated("local")),
+                    LoweredExpr::Local(elem, Span::generated("local")),
+                    LoweredExpr::Local(i, Span::generated("local")),
                     arr_ref(),
                 ];
                 let mut reduce_call_args: Vec<LoweredExpr> = reduce_explicit
                     .into_iter()
                     .take(param_count)
                     .collect();
-                reduce_call_args.extend(captures.iter().copied().map(LoweredExpr::Local));
+                reduce_call_args.extend(captures.iter().copied().map(|id| LoweredExpr::Local(id, Span::generated("local"))));
                 while_body.push(LoweredStmt::Assign(
                     acc,
                     LoweredExpr::Call {
                         kind: FunctionCallKind::User(func_id),
                         args: reduce_call_args,
-                    },
-                ));
+                    
+                        span: Span::generated("call"),},
+                Span::generated("assign")));
                 while_body.push(LoweredStmt::Assign(
                     i,
                     LoweredExpr::Binary {
-                        left: Box::new(LoweredExpr::Local(i)),
+                        left: Box::new(LoweredExpr::Local(i, Span::generated("local"))),
                         op: LoweredBinaryOp::Add,
-                        right: Box::new(LoweredExpr::Number(1)),
-                    },
+                        right: Box::new(LoweredExpr::Number(1, Span::generated("num"))),
+                    
+                        span: Span::generated("binary"),},
                 ));
 
-                result_expr = LoweredExpr::Local(acc);
+                result_expr = LoweredExpr::Local(acc, Span::generated("local"));
             }
             "flatMap" => {
                 let result = self.alloc_temp();
                 stmts.push(LoweredStmt::Let(
                     result,
-                    LoweredExpr::ArrayNew { elements: vec![] },
+                    LoweredExpr::ArrayNew { elements: vec![] ,
+                    span: Span::generated("array_new"),},
                 ));
                 let elem = self.alloc_temp();
                 while_body.push(LoweredStmt::Let(
                     elem,
                     LoweredExpr::ArrayGet {
                         arr: Box::new(arr_ref()),
-                        index: Box::new(LoweredExpr::Local(i)),
-                    },
+                        index: Box::new(LoweredExpr::Local(i, Span::generated("local"))),
+                    
+                        span: Span::generated("array_get"),},
                 ));
                 let mapped = self.alloc_temp();
                 let call_args = {
                     let explicit_args = vec![
-                        LoweredExpr::Local(elem),
-                        LoweredExpr::Local(i),
+                        LoweredExpr::Local(elem, Span::generated("local")),
+                        LoweredExpr::Local(i, Span::generated("local")),
                         arr_ref(),
                     ];
                     let mut call_args: Vec<LoweredExpr> = explicit_args
                         .into_iter()
                         .take(param_count)
                         .collect();
-                    call_args.extend(captures.iter().copied().map(LoweredExpr::Local));
+                    call_args.extend(captures.iter().copied().map(|id| LoweredExpr::Local(id, Span::generated("local"))));
                     LoweredExpr::Call {
                         kind: FunctionCallKind::User(func_id),
                         args: call_args,
-                    }
+                    
+                        span: Span::generated("call"),}
                 };
-                while_body.push(LoweredStmt::Let(mapped, call_args));
+                while_body.push(LoweredStmt::Let(mapped, call_args, Span::generated("let_stmt")));
                 // Push or spread the result (handles array vs non-array)
                 while_body.push(LoweredStmt::Expr(LoweredExpr::RuntimeCall {
                     runtime_fn: "ArrayPushOrSpread".to_owned(),
                     args: vec![
-                        LoweredExpr::Local(result),
-                        LoweredExpr::Local(mapped),
+                        LoweredExpr::Local(result, Span::generated("local")),
+                        LoweredExpr::Local(mapped, Span::generated("local")),
                     ],
-                }));
+                
+                    span: Span::generated("runtime_call"),}));
                 while_body.push(LoweredStmt::Assign(
                     i,
                     LoweredExpr::Binary {
-                        left: Box::new(LoweredExpr::Local(i)),
+                        left: Box::new(LoweredExpr::Local(i, Span::generated("local"))),
                         op: LoweredBinaryOp::Add,
-                        right: Box::new(LoweredExpr::Number(1)),
-                    },
+                        right: Box::new(LoweredExpr::Number(1, Span::generated("num"))),
+                    
+                        span: Span::generated("binary"),},
                 ));
-                result_expr = LoweredExpr::Local(result);
+                result_expr = LoweredExpr::Local(result, Span::generated("local"));
             }
             "map" => {
                 let result = self.alloc_temp();
@@ -3187,7 +3259,7 @@ impl<'a> Resolver<'a> {
                     result,
                     LoweredExpr::ArrayNew {
                         elements: vec![],
-                    },
+                        span: Span::generated("array_new"),},
                 ));
 
                 let elem = self.alloc_temp();
@@ -3195,45 +3267,46 @@ impl<'a> Resolver<'a> {
                     elem,
                     LoweredExpr::ArrayGet {
                         arr: Box::new(arr_ref()),
-                        index: Box::new(LoweredExpr::Local(i)),
-                    },
+                        index: Box::new(LoweredExpr::Local(i, Span::generated("local"))),
+                        span: Span::generated("array_get"),},
                 ));
 
                 let mapped = self.alloc_temp();
                 let call_args = {
                     let explicit_args = vec![
-                        LoweredExpr::Local(elem),
-                        LoweredExpr::Local(i),
+                        LoweredExpr::Local(elem, Span::generated("local")),
+                        LoweredExpr::Local(i, Span::generated("local")),
                         arr_ref(),
                     ];
                     let mut call_args: Vec<LoweredExpr> = explicit_args
                         .into_iter()
                         .take(param_count)
                         .collect();
-                    call_args.extend(captures.iter().copied().map(LoweredExpr::Local));
+                    call_args.extend(captures.iter().copied().map(|id| LoweredExpr::Local(id, Span::generated("local"))));
                     LoweredExpr::Call {
                         kind: FunctionCallKind::User(func_id),
                         args: call_args,
-                    }
+                        span: Span::generated("call"),}
                 };
-                while_body.push(LoweredStmt::Let(mapped, call_args));
+                while_body.push(LoweredStmt::Let(mapped, call_args, Span::generated("let_stmt")));
                 while_body.push(LoweredStmt::Expr(LoweredExpr::RuntimeCall {
                     runtime_fn: "ArrayPushGrow".to_owned(),
                     args: vec![
-                        LoweredExpr::Local(result),
-                        LoweredExpr::Local(mapped),
+                        LoweredExpr::Local(result, Span::generated("local")),
+                        LoweredExpr::Local(mapped, Span::generated("local")),
                     ],
-                }));
+                    span: Span::generated("runtime_call"),}));
                 while_body.push(LoweredStmt::Assign(
                     i,
                     LoweredExpr::Binary {
-                        left: Box::new(LoweredExpr::Local(i)),
+                        left: Box::new(LoweredExpr::Local(i, Span::generated("local"))),
                         op: LoweredBinaryOp::Add,
-                        right: Box::new(LoweredExpr::Number(1)),
-                    },
+                        right: Box::new(LoweredExpr::Number(1, Span::generated("num"))),
+                    
+                        span: Span::generated("binary"),},
                 ));
 
-                result_expr = LoweredExpr::Local(result);
+                result_expr = LoweredExpr::Local(result, Span::generated("local"));
             }
             _ => {
                 return Err(Diagnostic {
@@ -3252,106 +3325,113 @@ impl<'a> Resolver<'a> {
             stmts.push(LoweredStmt::Let(
                 i,
                 LoweredExpr::Binary {
-                    left: Box::new(LoweredExpr::Local(len_local)),
+                    left: Box::new(LoweredExpr::Local(len_local, Span::generated("local"))),
                     op: LoweredBinaryOp::Subtract,
-                    right: Box::new(LoweredExpr::Number(1)),
-                },
+                    right: Box::new(LoweredExpr::Number(1, Span::generated("num"))),
+                
+                    span: Span::generated("binary"),},
             ));
         } else {
-            stmts.push(LoweredStmt::Let(i, LoweredExpr::Number(0)));
+            stmts.push(LoweredStmt::Let(i, LoweredExpr::Number(0, Span::generated("num"))));
         }
 
         // Determine the While condition based on method
         let condition = match method {
             "find" => LoweredExpr::Binary {
                 left: Box::new(LoweredExpr::Binary {
-                    left: Box::new(LoweredExpr::Local(i)),
+                    left: Box::new(LoweredExpr::Local(i, Span::generated("local"))),
                     op: LoweredBinaryOp::Less,
-                    right: Box::new(LoweredExpr::Local(len_local)),
+                    right: Box::new(LoweredExpr::Local(len_local, Span::generated("local"))),
                 }),
                 op: LoweredBinaryOp::And,
                 right: Box::new(LoweredExpr::Binary {
                     left: Box::new(result_expr.clone()),
                     op: LoweredBinaryOp::StrictEqual,
-                    right: Box::new(LoweredExpr::Undefined),
+                    right: Box::new(LoweredExpr::Undefined(Span::generated("undef"))),
                 }),
-            },
+            
+                span: Span::generated("binary"),},
             "findIndex" => LoweredExpr::Binary {
                 left: Box::new(LoweredExpr::Binary {
-                    left: Box::new(LoweredExpr::Local(i)),
+                    left: Box::new(LoweredExpr::Local(i, Span::generated("local"))),
                     op: LoweredBinaryOp::Less,
-                    right: Box::new(LoweredExpr::Local(len_local)),
+                    right: Box::new(LoweredExpr::Local(len_local, Span::generated("local"))),
                 }),
                 op: LoweredBinaryOp::And,
                 right: Box::new(LoweredExpr::Binary {
                     left: Box::new(result_expr.clone()),
                     op: LoweredBinaryOp::StrictEqual,
-                    right: Box::new(LoweredExpr::Number(-1)),
+                    right: Box::new(LoweredExpr::Number(-1, Span::generated("num"))),
                 }),
-            },
+            
+                span: Span::generated("binary"),},
             "findLast" => LoweredExpr::Binary {
                 left: Box::new(LoweredExpr::Binary {
-                    left: Box::new(LoweredExpr::Local(i)),
+                    left: Box::new(LoweredExpr::Local(i, Span::generated("local"))),
                     op: LoweredBinaryOp::GreaterEqual,
-                    right: Box::new(LoweredExpr::Number(0)),
+                    right: Box::new(LoweredExpr::Number(0, Span::generated("num"))),
                 }),
                 op: LoweredBinaryOp::And,
                 right: Box::new(LoweredExpr::Binary {
                     left: Box::new(result_expr.clone()),
                     op: LoweredBinaryOp::StrictEqual,
-                    right: Box::new(LoweredExpr::Undefined),
+                    right: Box::new(LoweredExpr::Undefined(Span::generated("undef"))),
                 }),
-            },
+            
+                span: Span::generated("binary"),},
             "findLastIndex" => LoweredExpr::Binary {
                 left: Box::new(LoweredExpr::Binary {
-                    left: Box::new(LoweredExpr::Local(i)),
+                    left: Box::new(LoweredExpr::Local(i, Span::generated("local"))),
                     op: LoweredBinaryOp::GreaterEqual,
-                    right: Box::new(LoweredExpr::Number(0)),
+                    right: Box::new(LoweredExpr::Number(0, Span::generated("num"))),
                 }),
                 op: LoweredBinaryOp::And,
                 right: Box::new(LoweredExpr::Binary {
                     left: Box::new(result_expr.clone()),
                     op: LoweredBinaryOp::StrictEqual,
-                    right: Box::new(LoweredExpr::Number(-1)),
+                    right: Box::new(LoweredExpr::Number(-1, Span::generated("num"))),
                 }),
-            },
+            
+                span: Span::generated("binary"),},
             "some" => LoweredExpr::Binary {
                 left: Box::new(LoweredExpr::Binary {
-                    left: Box::new(LoweredExpr::Local(i)),
+                    left: Box::new(LoweredExpr::Local(i, Span::generated("local"))),
                     op: LoweredBinaryOp::Less,
-                    right: Box::new(LoweredExpr::Local(len_local)),
+                    right: Box::new(LoweredExpr::Local(len_local, Span::generated("local"))),
                 }),
                 op: LoweredBinaryOp::And,
                 right: Box::new(LoweredExpr::Unary {
                     op: LoweredUnaryOp::Not,
                     expr: Box::new(result_expr.clone()),
-                }),
+                    span: Span::generated("unary"),}),
             },
             "every" => LoweredExpr::Binary {
                 left: Box::new(LoweredExpr::Binary {
-                    left: Box::new(LoweredExpr::Local(i)),
+                    left: Box::new(LoweredExpr::Local(i, Span::generated("local"))),
                     op: LoweredBinaryOp::Less,
-                    right: Box::new(LoweredExpr::Local(len_local)),
-                }),
+                    right: Box::new(LoweredExpr::Local(len_local, Span::generated("local"))),
+                
+                    span: Span::generated("binary"),}),
                 op: LoweredBinaryOp::And,
                 right: Box::new(result_expr.clone()),
             },
             _ => LoweredExpr::Binary {
-                left: Box::new(LoweredExpr::Local(i)),
+                left: Box::new(LoweredExpr::Local(i, Span::generated("local"))),
                 op: LoweredBinaryOp::Less,
-                right: Box::new(LoweredExpr::Local(len_local)),
-            },
+                right: Box::new(LoweredExpr::Local(len_local, Span::generated("local"))),
+                span: Span::generated("binary"),},
         };
 
         stmts.push(LoweredStmt::While {
             condition,
             body: while_body,
-        });
+            span: Span::generated("while"),});
 
         Ok(LoweredExpr::Block {
             stmts,
             result: Box::new(result_expr),
-        })
+        
+            span: Span::generated("block"),})
     }
 
     /// Lower a callback method on a literal array receiver.
@@ -3370,8 +3450,8 @@ impl<'a> Resolver<'a> {
         _span: Span,
     ) -> Result<LoweredExpr, Diagnostic> {
         // Store receiver in a temp, then delegate to variable array handling
-        let arr_ref = LoweredExpr::Local(arr_temp);
-        let mut stmts = vec![LoweredStmt::Let(arr_temp, receiver)];
+        let arr_ref = LoweredExpr::Local(arr_temp, Span::generated("local"));
+        let mut stmts = vec![LoweredStmt::Let(arr_temp, receiver, Span::generated("let_stmt"))];
         let inner = self.lower_variable_array_callback_method(
             method,
             arr_temp,
@@ -3389,12 +3469,13 @@ impl<'a> Resolver<'a> {
             LoweredExpr::Block {
                 stmts: inner_stmts,
                 result,
-            } => {
+                span: Span::generated("block"),} => {
                 stmts.extend(inner_stmts);
                 Ok(LoweredExpr::Block {
                     stmts,
                     result,
-                })
+                
+                    span: Span::generated("block"),})
             }
             _ => Ok(inner),
         }

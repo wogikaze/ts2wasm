@@ -2154,8 +2154,7 @@ declare namespace A {
     fn accepts_multiple_empty_binding_patterns() {
         // Empty destructuring patterns use synthetic names "{}" and "[]"
         // and should not trigger DuplicateLocal.
-        let program =
-            parse_program("const {} = f(); const [] = f(); const {} = g();").unwrap();
+        let program = parse_program("const {} = f(); const [] = f(); const {} = g();").unwrap();
         assert!(validate_ast(&program).is_ok());
     }
 
