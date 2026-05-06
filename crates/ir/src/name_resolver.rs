@@ -624,10 +624,6 @@ impl NameResolver {
                         span: *span,
                     });
                 }
-                // Reject class name used as value — class runtime is not yet supported
-                if self.classes.contains_key(name) {
-                    return Err(unsupported_class_value(name, *span));
-                }
                 // Check if it's a variable in scope or allowed global
                 if self.is_declared(name) {
                     Ok(Expr::Ident {
@@ -1299,16 +1295,6 @@ fn unsupported_arguments_outside_function(span: Span) -> Diagnostic {
         message:
             "issue-062d: `arguments` is only supported inside non-arrow functions in this milestone"
                 .to_owned(),
-        span: Some(span),
-    }
-}
-
-fn unsupported_class_value(name: &str, span: Span) -> Diagnostic {
-    Diagnostic {
-        code: DiagCode::UnsupportedSyntax,
-        message: format!(
-            "issue-5011: class `{name}` cannot be used as a value — class runtime is not yet supported"
-        ),
         span: Some(span),
     }
 }

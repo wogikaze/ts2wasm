@@ -613,6 +613,15 @@ impl<'a> Resolver<'a> {
                             span: Some(*span),
                         });
                     }
+                    Err(_) if self.class_constructor_ids.contains_key(func_name.as_str()) => {
+                        return Err(Diagnostic {
+                            code: DiagCode::UnsupportedSyntax,
+                            message: format!(
+                                "issue-5197: class `{func_name}` cannot be called without `new` — constructors are not callable"
+                            ),
+                            span: Some(*span),
+                        });
+                    }
                     Err(_) => return Err(Diagnostic {
                         code: DiagCode::UnresolvedFunction,
                         message: format!("unresolved function: `{func_name}`"),
