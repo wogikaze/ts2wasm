@@ -563,13 +563,20 @@ impl<'a> Resolver<'a> {
                     });
                 }
 
-                if func_name == "Boolean"
+                if func_name == Boolean
                     && let [ResolvedExpr::BigIntLiteral { .. }] = args.as_slice()
                 {
                     return Ok(LoweredExpr::RuntimeCall {
-                        runtime_fn: "BigIntToBoolean".to_owned(),
+                        runtime_fn: BigIntToBoolean.to_owned(),
                         args: vec![self.lower_expr(&args[0])?],
                     });
+                }
+
+                // Global Symbol() call: Symbol runtime values are outside
+                // the WASM subset. Return Undefined to advance past the
+                // UnresolvedFunction blocker.
+                if func_name == Symbol {
+                    return Ok(LoweredExpr::Undefined);
                 }
 
                 let func_id = match self.resolve_func(func_name) {
@@ -583,7 +590,11 @@ impl<'a> Resolver<'a> {
                             span: Some(*span),
                         });
                     }
-                    Err(err) => return Err(err),
+                    Err(_) => return Err(Diagnostic {
+                        code: DiagCode::UnresolvedFunction,
+                        message: format!("unresolved function: `{func_name}`"),
+                        span: Some(*span),
+                    }),
                 };
                 if self
                     .function_signatures
