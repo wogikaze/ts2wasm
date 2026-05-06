@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 3 | 2 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4487 | 3676 | 811 |
+| frontend | 4487 | 3675 | 812 |
 | harness | 1 | 0 | 1 |
 | ir | 57 | 35 | 22 |
 | issues | 4 | 0 | 4 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5122 | 3960 | 1162 |
+| total | 5122 | 3959 | 1163 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -633,7 +633,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1344 | Implement Commentleadingclosebrace | spike | frontend/resolver | class: blocked | Implement Commentleadingclosebrace |
 | 1345 | Implement Commentonambientmodule | spike | frontend/syntax | class: blocked | Implement Commentonambientmodule |
 | 1346 | Implement Commentonambientvariable | spike | frontend/resolver | class: blocked | Implement Commentonambientvariable |
-| 1372 | Implement Commentsmultimodulemultifile | spike | frontend/syntax | class: blocked | Implement Commentsmultimodulemultifile |
 | 1373 | Implement Commentsmultimodulesinglefile | spike | frontend/syntax | class: blocked | Implement Commentsmultimodulesinglefile |
 | 1374 | Implement Commentsonobjectliteral Name Resolution | spike | frontend/resolver | class: blocked | Implement Commentsonobjectliteral Name Resolution |
 | 1375 | Implement Commentsonobjectliteral Object Literal | spike | frontend/syntax | class: blocked | Implement Commentsonobjectliteral Object Literal |
@@ -5078,6 +5077,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1369 | Implement Commentsinheritance | spike | frontend/syntax | see `issues/done/1369-implement-commentsInheritance.md` |
 | 1370 | Implement Commentsinterface | spike | frontend/syntax | see `issues/done/1370-implement-commentsInterface.md` |
 | 1371 | Implement Commentsmodules | spike | frontend/syntax | see `issues/done/1371-implement-commentsModules.md` |
+| 1372 | Implement Commentsmultimodulemultifile | spike | frontend/syntax | see `issues/done/1372-implement-commentsMultiModuleMultiFile.md` |
 | 2050 | Implement Duplicatelocalvariable Duplicate Local | spike | reference/triage | see `issues/done/2050-implement-duplicateLocalVariable-duplicate-local.md` |
 | 3002 | Implement Isolateddeclarationerrorsdefault | spike | runtime/builtins | see `issues/done/3002-implement-isolatedDeclarationErrorsDefault.md` |
 | 3131 | Implement Jsxfactorynotidentifierorqualifiedname | spike | reference/triage | see `issues/done/3131-implement-jsxFactoryNotIdentifierOrQualifiedName.md` |
