@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 2 | 1 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4426 | 3760 | 666 |
+| frontend | 4427 | 3760 | 667 |
 | harness | 1 | 0 | 1 |
 | ir | 34 | 12 | 22 |
 | issues | 4 | 0 | 4 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5036 | 4028 | 1008 |
+| total | 5037 | 4028 | 1009 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -156,6 +156,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5199 | Report function overload list class merge diagnostics | feature | frontend/resolver | implementation-ready | P1 |  | top-level bodyless function overload declarations are currently handled as duplicate concrete function implementations. |
 | 5200 | Validate top-level function overload implementations | feature | frontend/resolver | implementation-ready | P1 |  | top-level function overload implementation groups are currently classified as duplicate concrete functions. |
 | 5201 | Parse object type literal call signatures | feature | frontend/parser | implementation-ready | P1 |  | TypeScript object type literals with call-signature members are not parsed as complete type annotations. |
+| 5202 | Parse member call explicit type arguments | feature | frontend/parser | implementation-ready | P1 |  | explicit type arguments after member call callees are not parsed or erased. |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -431,7 +432,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 772 | Implement Augmentedtypesvar | spike | frontend/syntax | class: blocked | Implement Augmentedtypesvar |
 | 773 | Implement Autoasiforstaticsinclassdeclaration | spike | frontend/syntax | class: triage-needed | Implement Autoasiforstaticsinclassdeclaration |
 | 775 | Implement Autotypeassignedusingdestructuringfromnevernocrash | spike | frontend/resolver | class: blocked | Implement Autotypeassignedusingdestructuringfromnevernocrash |
-| 1103 | Implement Callbacksdontsharetypes | spike | frontend/syntax | class: triage-needed | Implement Callbacksdontsharetypes |
 | 1104 | Implement Cannotinvokenewonerrorexpression | spike | frontend/syntax | class: blocked | Implement Cannotinvokenewonerrorexpression |
 | 1105 | Implement Cannotinvokenewonindexexpression | spike | frontend/resolver | class: blocked | Implement Cannotinvokenewonindexexpression |
 | 1106 | Implement Capturesuperpropertyaccessinsupercall | spike | frontend/syntax | class: triage-needed | Implement Capturesuperpropertyaccessinsupercall |
@@ -4993,6 +4993,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1100 | Implement Callsignaturefunctionoverload | spike | frontend/syntax | see `issues/done/1100-implement-callSignatureFunctionOverload.md` |
 | 1101 | Implement Callsignaturesshouldberesolvedbeforespecialization | spike | frontend/syntax | see `issues/done/1101-implement-callSignaturesShouldBeResolvedBeforeSpecialization.md` |
 | 1102 | Implement Callbackargsdifferbyoptionality | spike | frontend/syntax | see `issues/done/1102-implement-callbackArgsDifferByOptionality.md` |
+| 1103 | Implement Callbacksdontsharetypes | spike | frontend/syntax | see `issues/done/1103-implement-callbacksDontShareTypes.md` |
 | 2050 | Implement Duplicatelocalvariable Duplicate Local | spike | reference/triage | see `issues/done/2050-implement-duplicateLocalVariable-duplicate-local.md` |
 | 3002 | Implement Isolateddeclarationerrorsdefault | spike | runtime/builtins | see `issues/done/3002-implement-isolatedDeclarationErrorsDefault.md` |
 | 3131 | Implement Jsxfactorynotidentifierorqualifiedname | spike | reference/triage | see `issues/done/3131-implement-jsxFactoryNotIdentifierOrQualifiedName.md` |
