@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 2 | 1 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4436 | 3763 | 673 |
+| frontend | 4438 | 3765 | 673 |
 | harness | 1 | 0 | 1 |
 | ir | 34 | 12 | 22 |
 | issues | 4 | 0 | 4 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5047 | 4030 | 1017 |
+| total | 5049 | 4032 | 1017 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -47,7 +47,7 @@ Issue files are the source of truth for work items. The generated section below 
 Direct child counts are derived from issue-file `depends_on` links. A meta issue can be `done` as a classification/design umbrella while implementation child issues remain open.
 
 ```
-5000 (Meta: TypeScript Compiler Parser Syntax Coverage) [done/design] ch:496 open:429 done:67
+5000 (Meta: TypeScript Compiler Parser Syntax Coverage) [done/design] ch:498 open:431 done:67
 ├── 5002 (Meta: TypeScript Compiler Type System Coverage) [done/done] ch:241 open:233 done:8 (also ← 5005)
 ├── 5003 (Meta: TypeScript Compiler Declaration Emit Coverage) [done/done] ch:103 open:92 done:11 (also ← 5001)
 5001 (Meta: TypeScript Compiler Semantic Analysis Coverage) [done/done] ch:603 open:356 done:247
@@ -66,7 +66,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 
 | Order | ID | Title | State | Class | Area | Priority | Depends on | Direct children | Open children | Done children |
 |-----:|---:|------|-------|-------|------|--------:|-----------:|----------------:|--------------:|--------------:|
-| 1 | 5000 | Meta: TypeScript Compiler Parser Syntax Coverage | done | design | frontend/syntax | P1 | - | 496 | 429 | 67 |
+| 1 | 5000 | Meta: TypeScript Compiler Parser Syntax Coverage | done | design | frontend/syntax | P1 | - | 498 | 431 | 67 |
 | 2 | 5001 | Meta: TypeScript Compiler Semantic Analysis Coverage | done | done | frontend/semantics | P1 | - | 603 | 356 | 247 |
 | 3 | 5004 | Meta: Runtime Builtins Coverage (test262) (audit reopened #5004) | done | done | runtime/builtins | P1 | - | 24 | 3 | 21 |
 | 4 | 5005 | Meta: TypeScript Compiler Name Resolution Coverage | done | done | frontend/resolver | P1 | - | 431 | 384 | 47 |
@@ -167,6 +167,8 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5210 | Parse do-while ASI before block end or expression | feature | frontend/syntax | implementation-ready | P2 | 5000 | capturedLetConstInLoop parser tests still reject no-semicolon |
 | 5211 | Parse do-while ASI before labeled statement | feature | frontend/syntax | implementation-ready | P2 | 5000 | capturedLetConstInLoop parser tests reject a no-semicolon |
 | 5212 | Parse function expression statements in nested blocks | feature | frontend/syntax | implementation-ready | P2 | 5000 | capturedLetConstInLoop parser tests reject `(function() { return x })` |
+| 5213 | Parse generator function expressions in parameter initializers | feature | frontend/syntax | implementation-ready | P2 | 5000 | capturedParametersInInitializers parser coverage rejects |
+| 5214 | Parse computed class members in class expression initializers | feature | frontend/syntax | implementation-ready | P2 | 5000 | capturedParametersInInitializers parser coverage rejects `get [x]()` in |
 <!-- generated:ready:end -->
 
 ## Blocked queue
