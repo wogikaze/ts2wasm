@@ -330,6 +330,26 @@ mod tests {
         };
         assert!(matches!(chained, Expr::Array { .. }));
     }
+    #[test]
+    fn parses_typescript_as_assertion_union_type_erasure() {
+        let source = r#""
+            return 10 as number | string;
+            let value = 42 as number | string | boolean;
+        ""#;
+        let program = parse_program(source).unwrap();
+        assert_eq!(program.len(), 2);
+
+        let Stmt::Return { expr: ret_val, .. } = &program[0] else {
+            panic!("expected return statement");
+        };
+        assert!(matches!(ret_val, Expr::Number { value: 10, .. }));
+
+        let Stmt::Let { expr: let_val, .. } = &program[1] else {
+            panic!("expected let statement");
+        };
+        assert!(matches!(let_val, Expr::Number { value: 42, .. }));
+    }
+
 
     #[test]
     fn parses_typescript_satisfies_expressions_as_erased_syntax() {
