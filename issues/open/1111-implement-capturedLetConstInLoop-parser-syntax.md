@@ -110,6 +110,7 @@ Follow-up issues:
 - [ ] `issues/open/5208-parse-arrow-body-destructuring-assignments.md`
 - [ ] `issues/open/5209-parse-computed-object-literal-property-expressions.md`
 - [ ] `issues/open/5210-parse-do-while-asi-before-block-end-or-expression.md`
+- [ ] `issues/open/5211-parse-do-while-asi-before-labeled-statement.md`
 
 ## Notes
 
@@ -351,6 +352,82 @@ explicit semicolon before the following `use(v);` expression. TypeScript
 advances and reports TS2454 use-before-assigned diagnostics. Child issue
 `issues/open/5210-parse-do-while-asi-before-block-end-or-expression.md` owns
 this ASI slice.
+
+### Smart triage: capturedLetConstInLoop7
+
+- Issue class: `triage-needed`
+- Feature label: `parser-syntax`
+- Diagnostic: `UnsupportedSyntax` / `parser-or-frontend-unsupported`
+- Path: `reference/typescript/tests/cases/compiler/capturedLetConstInLoop7.ts`
+
+Reproduction:
+
+```sh
+mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/capturedLetConstInLoop7.ts
+```
+
+Failure location:
+
+```json
+{
+  "code": "UnsupportedSyntax",
+  "message": "expected Semicolon, got Some(Ident(\"l4\")) at 1383..1385",
+  "line": 101,
+  "column": 2
+}
+```
+
+Source context:
+
+```text
+94 | } while (1 === 1)
+95 |
+96 | l4:
+97 | for (let y = 0; y < 1; ++y) {
+```
+
+TypeScript oracle accepts the no-semicolon `do while` before the labeled
+statement. Child issue
+`issues/open/5211-parse-do-while-asi-before-labeled-statement.md` owns this ASI
+slice.
+
+### Smart triage: capturedLetConstInLoop7_ES6
+
+- Issue class: `triage-needed`
+- Feature label: `parser-syntax`
+- Diagnostic: `UnsupportedSyntax` / `parser-or-frontend-unsupported`
+- Path: `reference/typescript/tests/cases/compiler/capturedLetConstInLoop7_ES6.ts`
+
+Reproduction:
+
+```sh
+mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/capturedLetConstInLoop7_ES6.ts
+```
+
+Failure location:
+
+```json
+{
+  "code": "UnsupportedSyntax",
+  "message": "expected Semicolon, got Some(Ident(\"l4\")) at 1380..1382",
+  "line": 101,
+  "column": 2
+}
+```
+
+Source context:
+
+```text
+94 | } while (1 === 1)
+95 |
+96 | l4:
+97 | for (let y = 0; y < 1; ++y) {
+```
+
+TypeScript oracle accepts the no-semicolon `do while` before the labeled
+statement. Child issue
+`issues/open/5211-parse-do-while-asi-before-labeled-statement.md` owns this ASI
+slice.
 
 ### Folded triage from #1109: capturedLetConstInLoop4
 
