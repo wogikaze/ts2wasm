@@ -71,11 +71,11 @@ The frontend accepts `^=`, `&=`, and `|=` as assignment-expression syntax for id
 
 In scope:
 
-- [ ] Tokenize or parser-detect `^=`, `&=`, and `|=` as bitwise compound assignment operators.
-- [ ] Represent identifier-target bitwise compound assignment in the AST/dump path.
-- [ ] Preserve existing ordinary binary `^`, `&`, and `|` parsing.
-- [ ] Add focused parser/frontend coverage for `a ^= a;`, `c &= c;`, and `e |= e;`.
-- [ ] Re-run representative triage and confirm the current `Equal` parser blocker is gone.
+- [x] Tokenize or parser-detect `^=`, `&=`, and `|=` as bitwise compound assignment operators.
+- [x] Represent identifier-target bitwise compound assignment in the AST/dump path.
+- [x] Preserve existing ordinary binary `^`, `&`, and `|` parsing.
+- [x] Add focused parser/frontend coverage for `a ^= a;`, `c &= c;`, and `e |= e;`.
+- [x] Re-run representative triage and confirm the current `Equal` parser blocker is gone.
 
 Out of scope:
 
@@ -104,11 +104,11 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] `a ^= a;` parses without `unsupported expression: ... Equal`.
-- [ ] `c &= c;` and `e |= e;` parse through the same bitwise compound assignment representation.
-- [ ] Ordinary binary `a ^ b`, `c & d`, and `e | f` parsing remains unchanged.
-- [ ] `python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/bitwiseCompoundAssignmentOperators.ts` no longer reports the current `Equal` parser diagnostic.
-- [ ] A focused parser/frontend regression covers all three bitwise compound assignment operators.
+- [x] `a ^= a;` parses without `unsupported expression: ... Equal`.
+- [x] `c &= c;` and `e |= e;` parse through the same bitwise compound assignment representation.
+- [x] Ordinary binary `a ^ b`, `c & d`, and `e | f` parsing remains unchanged.
+- [x] `python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/bitwiseCompoundAssignmentOperators.ts` no longer reports the current `Equal` parser diagnostic.
+- [x] A focused parser/frontend regression covers all three bitwise compound assignment operators.
 
 ## Validation
 
@@ -135,15 +135,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] created: `issues/open/5221-support-bitwise-and-xor-binary-lowering.md`
 
 ## Notes
 
@@ -155,16 +155,28 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- `...`
+- `pending`
 
 Validation result:
 
 ```text
-command:
-result:
-date:
+command: cargo fmt --all --check
+result: pass
+date: 2026-05-06
+
+command: cargo nextest run -p ts2wasm-frontend compound
+result: pass (5 passed)
+date: 2026-05-06
+
+command: cargo nextest run -p ts2wasm-ir
+result: pass (26 passed)
+date: 2026-05-06
+
+command: python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/bitwiseCompoundAssignmentOperators.ts
+result: parser/AST pass; advanced to `binary operator BitwiseXor not yet supported`
+date: 2026-05-06
 ```
 
 Remaining risks:
 
-- Later triage may expose operand typing diagnostics after the parser represents these operators.
+- Later AND/XOR lowering is split to issue 5221.

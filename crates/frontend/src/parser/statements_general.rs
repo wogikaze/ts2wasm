@@ -34,7 +34,18 @@ impl Parser {
             Some(Token::Ident(_))
                 if matches!(
                     self.peek_n(1),
-                    Some(Token::Equal | Token::PlusEqual | Token::MinusEqual | Token::PowerEqual | Token::StarEqual | Token::SlashEqual | Token::PercentEqual)
+                    Some(
+                        Token::Equal
+                            | Token::PlusEqual
+                            | Token::MinusEqual
+                            | Token::PowerEqual
+                            | Token::StarEqual
+                            | Token::SlashEqual
+                            | Token::PercentEqual
+                            | Token::AmpersandEqual
+                            | Token::PipeEqual
+                            | Token::CaretEqual,
+                    )
                 ) =>
             {
                 self.assign_statement()
@@ -1028,6 +1039,12 @@ impl Parser {
                 BinaryOp::Modulo
             } else if self.consume(TokenKind::PowerEqual) {
                 BinaryOp::Power
+            } else if self.consume(TokenKind::AmpersandEqual) {
+                BinaryOp::BitwiseAnd
+            } else if self.consume(TokenKind::PipeEqual) {
+                BinaryOp::BitwiseOr
+            } else if self.consume(TokenKind::CaretEqual) {
+                BinaryOp::BitwiseXor
             } else {
                 return Err(Diagnostic {
                     code: DiagCode::UnsupportedSyntax,

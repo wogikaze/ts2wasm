@@ -2971,4 +2971,50 @@ class Foo {
             other => panic!("expected Stmt::Assign, got {other:?}"),
         }
     }
+
+    #[test]
+    fn parses_bitwise_compound_assignments() {
+        let program = parse_program("a ^= a; c &= c; e |= e;");
+        assert!(program.is_ok(), "{program:?}");
+        let program = program.unwrap();
+        assert_eq!(program.len(), 3);
+        let expected = [
+            ("a", BinaryOp::BitwiseXor),
+            ("c", BinaryOp::BitwiseAnd),
+            ("e", BinaryOp::BitwiseOr),
+        ];
+        for (stmt, (expected_name, expected_op)) in program.iter().zip(expected) {
+            match stmt {
+                Stmt::Assign { name, expr, .. } => {
+                    assert_eq!(name, expected_name);
+                    match expr {
+                        Expr::Binary { op, .. } => assert_eq!(*op, expected_op),
+                        other => panic!("expected bitwise binary assignment, got {other:?}"),
+                    }
+                }
+                other => panic!("expected Stmt::Assign, got {other:?}"),
+            }
+        }
+    }
+
+    #[test]
+    fn preserves_bitwise_binary_operators_when_not_compound() {
+        let program = parse_program("let x = a ^ b; let y = c & d; let z = e | f;");
+        assert!(program.is_ok(), "{program:?}");
+        let program = program.unwrap();
+        assert_eq!(program.len(), 3);
+        for (stmt, expected_op) in program.iter().zip([
+            BinaryOp::BitwiseXor,
+            BinaryOp::BitwiseAnd,
+            BinaryOp::BitwiseOr,
+        ]) {
+            match stmt {
+                Stmt::Let {
+                    expr: Expr::Binary { op, .. },
+                    ..
+                } => assert_eq!(*op, expected_op),
+                other => panic!("expected let binary expression, got {other:?}"),
+            }
+        }
+    }
 }

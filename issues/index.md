@@ -16,9 +16,9 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 2 | 1 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4435 | 3753 | 682 |
+| frontend | 4435 | 3752 | 683 |
 | harness | 1 | 0 | 1 |
-| ir | 38 | 12 | 26 |
+| ir | 39 | 13 | 26 |
 | issues | 5 | 0 | 5 |
 | parser | 1 | 0 | 1 |
 | reference | 211 | 163 | 48 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5055 | 4023 | 1032 |
+| total | 5056 | 4023 | 1033 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -123,7 +123,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5175 | Support export let declarations | feature | frontend/module-syntax | implementation-ready | P1 |  | the parser has an `export const <ident> = ...` slice, but `export let` declarations still stop at the generic variabl... |
 | 5176 | Report ambient var lib redeclaration diagnostics | feature | frontend/semantics | implementation-ready | P1 |  | ambient `declare var` declarations can conflict with lib globals, but ts2wasm currently erases the declaration and re... |
 | 5177 | Report strict-null diagnostics in erased namespace methods | feature | frontend/semantics | implementation-ready | P1 |  | erased namespace class method bodies can hide typed local declaration diagnostics and produce a false build pass. |
-| 5178 | Parse bitwise compound assignment operators | feature | frontend/syntax | implementation-ready | P1 |  | bitwise compound assignment operators `^=`, `&=`, and `\|=` fail in parser/frontend syntax before semantic diagnostic... |
 | 5179 | Report implicit this before closure runtime guard | feature | frontend/semantics | implementation-ready | P1 |  | a TypeScript implicit-`this` diagnostic is hidden by the nested-function closure runtime-subset guard. |
 | 5180 | Parse computed property object binding patterns | feature | frontend/syntax | implementation-ready | P1 |  | computed property names in object binding patterns are parser-unsupported, blocking `TS2448` used-before-definition c... |
 | 5181 | Support prefix update expressions in call arguments | feature | frontend/semantics | implementation-ready | P1 |  | identifier prefix update expressions in call arguments are parser-accepted but resolver/lowering-unsupported. |
@@ -154,6 +153,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5210 | Sparse array holes handling for Array.prototype.map | feature | runtime/builtins | implementation-ready | P2 |  | current `Array.prototype.map` implementation only supports dense |
 | 5213 | Implement generator function syntax prerequisite for iterator spread | feature | frontend/syntax | implementation-ready | P2 |  | Generator function declarations are rejected before iterator spread can be tested. |
 | 5219 | Support explicit this-parameter function expression lowering | feature | ir/runtime | implementation-ready | P1 |  | function expressions that declare an erased TypeScript `this` parameter and read `this` in the body currently fail wi... |
+| 5221 | Support bitwise AND/XOR binary lowering | feature | ir/lowering | implementation-ready | P1 |  | ordinary bitwise XOR and AND binary expressions can now be produced by |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -5157,6 +5157,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5161 | Model ambient value declarations for name resolution | feature | frontend/resolver | see `issues/done/5161-model-ambient-value-declarations-for-name-resolution.md` |
 | 5164 | Parse exponentiation compound assignment | feature | frontend/syntax | see `issues/done/5164-parse-exponentiation-compound-assignment.md` |
 | 5171 | Accept unsigned 32-bit hex literals | feature | frontend/lexer | see `issues/done/5171-accept-unsigned-32-bit-hex-literals.md` |
+| 5178 | Parse bitwise compound assignment operators | feature | frontend/syntax | see `issues/done/5178-parse-bitwise-compound-assignment-operators.md` |
 | 5188 | Report block-scoped function call arity diagnostics | feature | frontend/semantics | see `issues/done/5188-report-block-scoped-function-call-arity-diagnostics.md` |
 | 5193 | Parse ASI after ambient variable declarations | feature | frontend/syntax | see `issues/done/5193-parse-asi-after-ambient-variable-declarations.md` |
 | 5205 | Restore backend residual expression rejection | bug | backend-wasm | see `issues/done/5205-restore-backend-residual-expression-rejection.md` |

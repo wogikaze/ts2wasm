@@ -108,7 +108,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] added: `issues/open/5178-parse-bitwise-compound-assignment-operators.md`
+- [x] added: `issues/done/5178-parse-bitwise-compound-assignment-operators.md`
 
 ## Notes
 
@@ -134,7 +134,7 @@ Generated on 2026-05-06.
 - Visible symbols before failure: binding `a` initialized to `true`, binding `b` initialized to `1`
 - Compiler evidence: token dump emits `Ident("a")`, `Caret`, `Equal`, `Ident("a")`; AST/resolved construction fails at `Equal` before representing `^=`.
 - TypeScript oracle: reports `TS2447` for boolean `^=`, `TS2362` for invalid left-hand operands, and `TS2363` for invalid right-hand operands; the same file exercises `&=` and `|=`.
-- Superseding child: `issues/open/5178-parse-bitwise-compound-assignment-operators.md`
+- Superseding child: `issues/done/5178-parse-bitwise-compound-assignment-operators.md`
 
 ## Completion evidence
 
