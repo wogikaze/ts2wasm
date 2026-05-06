@@ -16,9 +16,9 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 3 | 2 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4459 | 3725 | 734 |
+| frontend | 4459 | 3724 | 735 |
 | harness | 1 | 0 | 1 |
-| ir | 45 | 23 | 22 |
+| ir | 46 | 24 | 22 |
 | issues | 4 | 0 | 4 |
 | parser | 1 | 0 | 1 |
 | reference | 212 | 159 | 53 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5082 | 4001 | 1081 |
+| total | 5083 | 4001 | 1082 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -202,6 +202,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5245 | Parse interface construct signatures | feature | frontend/parser | implementation-ready | P1 |  | interface construct signatures are parsed as if they were runtime |
 | 5246 | Report static declarations inside constructor bodies | feature | frontend/parser | implementation-ready | P1 |  | invalid `static` declarations in constructor bodies report generic unsupported expression instead of a spanned parser... |
 | 5247 | Fix JS noEmit class constructor FuncId invariant | feature | ir/compiler | implementation-ready | P1 |  | `classAttributeInferenceTemplateJS.ts` triage reports `InvariantViolation: ClassDecl constructor FuncId 0 is out of r... |
+| 5248 | Lower class expressions | feature | ir/compiler | implementation-ready | P1 |  | `classBlockScoping.ts` reports `UnsupportedSyntax: issue-313: class expression lowering not yet implemented`. |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -476,7 +477,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 772 | Implement Augmentedtypesvar | spike | frontend/syntax | class: blocked | Implement Augmentedtypesvar |
 | 773 | Implement Autoasiforstaticsinclassdeclaration | spike | frontend/syntax | class: triage-needed | Implement Autoasiforstaticsinclassdeclaration |
 | 775 | Implement Autotypeassignedusingdestructuringfromnevernocrash | spike | frontend/resolver | class: blocked | Implement Autotypeassignedusingdestructuringfromnevernocrash |
-| 1174 | Implement Classblockscoping | spike | frontend/syntax | class: triage-needed | Implement Classblockscoping |
 | 1175 | Implement Classdeclarationblockscoping | spike | frontend/syntax | class: triage-needed | Implement Classdeclarationblockscoping |
 | 1176 | Implement Classdeclarationcheckusedbeforedefinitioninitself | spike | frontend/syntax | class: triage-needed | Implement Classdeclarationcheckusedbeforedefinitioninitself |
 | 1177 | Implement Classdeclarationmergedinmodulewithcontinuation | spike | frontend/syntax | class: blocked | Implement Classdeclarationmergedinmodulewithcontinuation |
@@ -5038,6 +5038,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1171 | Implement Classaccessorinitializationinferencewithelementaccess | spike | frontend/syntax | see `issues/done/1171-implement-classAccessorInitializationInferenceWithElementAccess.md` |
 | 1172 | Implement Classattributeinferencetemplate | spike | frontend/semantics | see `issues/done/1172-implement-classAttributeInferenceTemplate.md` |
 | 1173 | Implement Classattributeinferencetemplatejs | spike | frontend/semantics | see `issues/done/1173-implement-classAttributeInferenceTemplateJS.md` |
+| 1174 | Implement Classblockscoping | spike | frontend/syntax | see `issues/done/1174-implement-classBlockScoping.md` |
 | 2050 | Implement Duplicatelocalvariable Duplicate Local | spike | reference/triage | see `issues/done/2050-implement-duplicateLocalVariable-duplicate-local.md` |
 | 3002 | Implement Isolateddeclarationerrorsdefault | spike | runtime/builtins | see `issues/done/3002-implement-isolatedDeclarationErrorsDefault.md` |
 | 3131 | Implement Jsxfactorynotidentifierorqualifiedname | spike | reference/triage | see `issues/done/3131-implement-jsxFactoryNotIdentifierOrQualifiedName.md` |
