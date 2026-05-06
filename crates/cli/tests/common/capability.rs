@@ -26,7 +26,7 @@ pub fn node_command() -> Command {
     // --experimental-strip-types enables Node.js to handle .ts files with
     // ESM import/export syntax (required by several fixture tests).
     // Applied via env var to bypass linter revert of the source file.
-    cmd.env("NODE_OPTIONS", "--experimental-strip-types");
+    cmd.arg("--experimental-strip-types");
     cmd
 }
 
