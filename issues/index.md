@@ -13,21 +13,21 @@ Issue files are the source of truth for work items. The generated section below 
 | backend | 13 | 1 | 12 |
 | backend-wasm | 2 | 1 | 1 |
 | cli | 15 | 0 | 15 |
-| compiler | 1 | 0 | 1 |
+| compiler | 2 | 1 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4397 | 3778 | 619 |
+| frontend | 4418 | 3769 | 649 |
 | harness | 1 | 0 | 1 |
-| ir | 27 | 5 | 22 |
+| ir | 31 | 9 | 22 |
 | issues | 4 | 0 | 4 |
 | parser | 1 | 0 | 1 |
-| reference | 211 | 169 | 42 |
-| runtime | 265 | 94 | 171 |
+| reference | 211 | 163 | 48 |
+| runtime | 265 | 89 | 176 |
 | scripts | 3 | 1 | 2 |
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 4999 | 4049 | 950 |
+| total | 5025 | 4034 | 991 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -42,114 +42,51 @@ Issue files are the source of truth for work items. The generated section below 
 ## Dependency graph
 
 <!-- generated:dep-graph:start -->
-
 ### Meta issue dependency tree
 
+Direct child counts are derived from issue-file `depends_on` links. A meta issue can be `done` as a classification/design umbrella while implementation child issues remain open.
+
 ```
-5000 (Meta: TypeScript Compiler Parser Syntax Coverage) [P1] ch:1172
-│   ├── 5001 (Meta: TypeScript Compiler Semantic Analysis Coverage) [P1] ch:2112
-│   ├── 5002 (Meta: TypeScript Compiler Type System Coverage) [P1] ch:243 (also ← 5005)
-│   ├── 5005 (Meta: TypeScript Compiler Name Resolution Coverage) [P1] ch:428
-│   │   ├── 5006 (Meta: TypeScript Compiler Scope Analysis Coverage) [P2] ch:32
-│   │   └── 5007 (Meta: TypeScript Compiler Module Resolution Coverage) [P2] ch:30
-│   └── 5003 (Meta: TypeScript Compiler Declaration Emit Coverage) [P2] ch:104 (also ← 5001)
-5004 (Meta: Runtime Builtins Coverage (test262)) [P1] ch:45
+5000 (Meta: TypeScript Compiler Parser Syntax Coverage) [done/design] ch:494 open:427 done:67
+├── 5002 (Meta: TypeScript Compiler Type System Coverage) [done/done] ch:242 open:234 done:8 (also ← 5005)
+├── 5003 (Meta: TypeScript Compiler Declaration Emit Coverage) [done/done] ch:103 open:92 done:11 (also ← 5001)
+5001 (Meta: TypeScript Compiler Semantic Analysis Coverage) [done/done] ch:608 open:361 done:247
+5004 (Meta: Runtime Builtins Coverage (test262) (audit reopened #5004)) [done/done] ch:24 open:3 done:21
+5005 (Meta: TypeScript Compiler Name Resolution Coverage) [done/done] ch:435 open:388 done:47
+├── 5006 (Meta: TypeScript Compiler Scope Analysis Coverage) [done/done] ch:29 open:21 done:8
+├── 5007 (Meta: TypeScript Compiler Module Resolution Coverage (audit reopened #5007)) [done/done] ch:21 open:19 done:2
 ```
 
 ### Multi-parent notes
 
-- **5003** (Meta: TypeScript Compiler Declaration Emit Coverage) also depends on **5001** (Meta: TypeScript Compiler Semantic Analysis Coverage) — shown under primary parent in tree above
-- **5002** (Meta: TypeScript Compiler Type System Coverage) also depends on **5005** (Meta: TypeScript Compiler Name Resolution Coverage) — shown under primary parent in tree above
+- **5002** (Meta: TypeScript Compiler Type System Coverage) also depends on **5005** - shown under primary parent **5000** in tree above
+- **5003** (Meta: TypeScript Compiler Declaration Emit Coverage) also depends on **5001** - shown under primary parent **5000** in tree above
 
 ### Meta issue overview
 
-| Order | ID | Title | Area | Priority | Level | Depends on | Child count |
-|-----:|---:|------|------|--------:|------:|-----------:|-----------:|
-| 1 | 5000 | Meta: TypeScript Compiler Parser Syntax Coverage | frontend/syntax | P1 | 0 | - | 1172 |
-| 2 | 5004 | Meta: Runtime Builtins Coverage (test262) | runtime/builtins | P1 | 0 | - | 45 |
-| 3 | 5001 | Meta: TypeScript Compiler Semantic Analysis Coverage | frontend/semantics | P1 | 1 | 5000 | 2112 |
-| 4 | 5005 | Meta: TypeScript Compiler Name Resolution Coverage | frontend/resolver | P1 | 1 | 5000 | 428 |
-| 5 | 5003 | Meta: TypeScript Compiler Declaration Emit Coverage | frontend/syntax | P2 | 2 | 5000, 5001 | 104 |
-| 6 | 5007 | Meta: TypeScript Compiler Module Resolution Coverage | frontend/resolver | P2 | 2 | 5005 | 30 |
-| 7 | 5002 | Meta: TypeScript Compiler Type System Coverage | frontend/semantics | P1 | 2 | 5000, 5005 | 243 |
-| 8 | 5006 | Meta: TypeScript Compiler Scope Analysis Coverage | frontend/resolver | P2 | 2 | 5005 | 32 |
+| Order | ID | Title | State | Class | Area | Priority | Depends on | Direct children | Open children | Done children |
+|-----:|---:|------|-------|-------|------|--------:|-----------:|----------------:|--------------:|--------------:|
+| 1 | 5000 | Meta: TypeScript Compiler Parser Syntax Coverage | done | design | frontend/syntax | P1 | - | 494 | 427 | 67 |
+| 2 | 5001 | Meta: TypeScript Compiler Semantic Analysis Coverage | done | done | frontend/semantics | P1 | - | 608 | 361 | 247 |
+| 3 | 5004 | Meta: Runtime Builtins Coverage (test262) (audit reopened #5004) | done | done | runtime/builtins | P1 | - | 24 | 3 | 21 |
+| 4 | 5005 | Meta: TypeScript Compiler Name Resolution Coverage | done | done | frontend/resolver | P1 | - | 435 | 388 | 47 |
+| 5 | 5002 | Meta: TypeScript Compiler Type System Coverage | done | done | frontend/semantics | P1 | 5000, 5005 | 242 | 234 | 8 |
+| 6 | 5003 | Meta: TypeScript Compiler Declaration Emit Coverage | done | done | frontend/syntax | P2 | 5000, 5001 | 103 | 92 | 11 |
+| 7 | 5006 | Meta: TypeScript Compiler Scope Analysis Coverage | done | done | frontend/resolver | P2 | 5005 | 29 | 21 | 8 |
+| 8 | 5007 | Meta: TypeScript Compiler Module Resolution Coverage (audit reopened #5007) | done | done | frontend/resolver | P2 | 5005 | 21 | 19 | 2 |
 
-### Topological order (design-ready + key runtime blocked)
+### Topological order
 
-| Order | ID | Title | Area | Class | Priority | Level | Depends on |
-|-----:|---:|------|------|-------|--------:|------:|-----------:|
-| 1 | 5000 | Meta: TypeScript Compiler Parser Syntax Coverage | frontend/syntax | design-ready | P1 | 0 | - |
-| 2 | 5004 | Meta: Runtime Builtins Coverage (test262) | runtime/builtins | design-ready | P1 | 0 | - |
-| 3 | 5001 | Meta: TypeScript Compiler Semantic Analysis Coverage | frontend/semantics | design-ready | P1 | 1 | 5000 |
-| 4 | 5005 | Meta: TypeScript Compiler Name Resolution Coverage | frontend/resolver | design-ready | P1 | 1 | 5000 |
-| 5 | 5003 | Meta: TypeScript Compiler Declaration Emit Coverage | frontend/syntax | design-ready | P2 | 2 | 5000, 5001 |
-| 6 | 5007 | Meta: TypeScript Compiler Module Resolution Coverage | frontend/resolver | design-ready | P2 | 2 | 5005 |
-| 7 | 5002 | Meta: TypeScript Compiler Type System Coverage | frontend/semantics | design-ready | P1 | 2 | 5000, 5005 |
-| 8 | 5006 | Meta: TypeScript Compiler Scope Analysis Coverage | frontend/resolver | design-ready | P2 | 2 | 5005 |
-| 9 | 5011 | Represent or reject class runtime values in lowered IR | ir/backend | design | P3 | 0 | - |
-| 10 | 316 | Fix Object.keys backend-io error | runtime/builtins | blocked | P0 | 1 | 5004 |
-| 11 | 4284 | Implement Stringincludes | runtime/builtins | blocked | P1 | 1 | 5004 |
-| 12 | 4683 | Implement Unterminatedregexatendofsource | runtime/builtins | blocked | P1 | 1 | 5004 |
-| 13 | 4000 | Implement Regexpwithslashincharclass | runtime/builtins | blocked | P1 | 1 | 5004 |
-| 14 | 4479 | Implement Tsxfragmentchildrencheck | runtime/builtins | blocked | P1 | 1 | 5004 |
-| 15 | 4291 | Implement Stringmatchall | runtime/builtins | blocked | P1 | 1 | 5004 |
-| 16 | 313 | Implement array-builtin support | runtime/builtins | blocked | P1 | 1 | 5004 |
-| 17 | 3135 | Implement Jsxpreservewithjsinput | runtime/builtins | blocked | P1 | 1 | 5004 |
-| 18 | 2230 | Implement Excessivestackdepthflatarray | runtime/builtins | blocked | P1 | 1 | 5004 |
-| 19 | 4812 | Implement RegExp literal support | runtime/builtins | blocked | P1 | 1 | 5004 |
-| 20 | 2421 | Implement Foroftransformsexpression | runtime/builtins | blocked | P1 | 1 | 5004 |
-| 21 | 444 | Implement RegExp literal support | runtime/builtins | blocked | P1 | 1 | 5004 |
-| 22 | 4003 | Implement Regularexpressioncharacterclassrangeorder | runtime/builtins | blocked | P1 | 1 | 5004 |
-| 23 | 3778 | Implement Parsejsxextends | runtime/builtins | blocked | P1 | 1 | 5004 |
-| 24 | 3777 | Implement Parsejsxelementinunaryexpressionnocrash Regexp Literal | runtime/builtins | blocked | P1 | 1 | 5004 |
-| 25 | 336 | Implement test262 includes directive processing | cli/reference | blocked | P1 | 0 | 050 |
-| 26 | 3130 | Implement Jsxfactorymissingerrorinsideaclass | runtime/builtins | blocked | P1 | 1 | 5004 |
-| 27 | 300 | Support ABC451 large integer number boundary | runtime | blocked | P1 | 0 | 308, 309 |
-| 28 | 2872 | Implement Initializeddestructuringassignmenttypes | runtime/builtins | blocked | P1 | 1 | 5004 |
-| 29 | 1139 | Implement Checkjsxnotseterror | runtime/builtins | blocked | P1 | 1 | 5004 |
-| 30 | 052 | Implement JSON | runtime/builtins | blocked | P1 | 1 | 5004 |
-| 31 | 342 | Implement Object builtin method coverage (1,721 test262 cases) | runtime/builtins | blocked | P1 | 1 | 5004 |
-| 32 | 240 | Implement Date timezone-aware toString policy | runtime/builtins | blocked | P1 | 1 | 239, 5004 |
-| 33 | 429 | Implement eval support | reference/triage | blocked | P1 | 2 | 5005 |
-| 34 | 3134 | Implement Jsxfactoryqualifiednamewithes | runtime/builtins | blocked | P1 | 1 | 5004 |
-| 35 | 4005 | Implement Regularexpressionscanning | runtime/builtins | blocked | P1 | 1 | 5004 |
-| 36 | 052d | Implement broader JSON.stringify replacer semantics | runtime/builtins | blocked | P1 | 1 | 5004 |
-| 37 | 423 | Implement Date object support | runtime/builtins | blocked | P1 | 1 | 5004 |
-| 38 | 3137 | Implement Jsxspreadtag | runtime/builtins | blocked | P1 | 1 | 5004 |
-| 39 | 066 | Implement RegExp literal support | runtime/builtins | blocked | P1 | 1 | 5004 |
-| 40 | 4294 | Implement Stringtrim | runtime/builtins | blocked | P1 | 1 | 5004 |
-| 41 | 3125 | Implement Jsxemitwithattributes | runtime/builtins | blocked | P1 | 1 | 5004 |
-| 42 | 363 | Reduce ABC451 allocation and sweep volume after bulk copy narrowing | runtime/memory | blocked | P1 | 0 | 362, 364 |
-| 43 | 3097 | Implement Jsfilecompilationtypeargumentsyntaxofcall | runtime/builtins | blocked | P1 | 1 | 5004 |
-| 44 | 3131 | Implement Jsxfactorynotidentifierorqualifiedname | runtime/builtins | blocked | P1 | 1 | 5004 |
-| 45 | 294 | Support ABC451 D original submission without source rewrite | frontend/runtime | blocked | P1 | 0 | 274 |
-| 46 | 3126 | Implement Jsxfactoryandreactnamespace | runtime/builtins | blocked | P1 | 1 | 5004 |
-| 47 | 309 | Reduce ABC451 depth-9 live allocation shape | runtime/memory | blocked | P1 | 0 | 308 |
-| 48 | 017b | Implement GC strategy | runtime/memory | blocked | P1 | 0 | 217, 218, 219, 220, 221 |
-| 49 | 4697 | Implement Unusedimports Regexp Literal | runtime/builtins | blocked | P1 | 1 | 5004 |
-| 50 | 357 | Fix ABC451 depth-8 iwasm timeout | runtime/memory | blocked | P1 | 0 | 385, 386 |
-| 51 | 3127 | Implement Jsxfactoryidentifier | runtime/builtins | blocked | P1 | 1 | 5004 |
-| 52 | 419 | Implement built-in API support | runtime/builtins | blocked | P1 | 1 | 5000, 5004 |
-| 53 | 050 | Implement Date | runtime/builtins | blocked | P1 | 1 | 5004 |
-| 54 | 3136 | Implement Jsxruntimepragma | runtime/builtins | blocked | P1 | 1 | 5004 |
-| 55 | 4776 | Implement Verbatimmodulesyntaxreactreference | runtime/builtins | blocked | P1 | 1 | 5004 |
-| 56 | 365 | Reduce ABC451 array-growth allocation and copy pressure | runtime/memory | blocked | P1 | 0 | 364, 366, 367 |
-| 57 | 314 | Implement string-builtin support | runtime/builtins | blocked | P1 | 1 | 5004 |
-| 58 | 4480 | Implement Tsxresolveexternalmoduleexportstypes | runtime/builtins | blocked | P1 | 1 | 5004 |
-| 59 | 3999 | Implement Regexpwithopenbracketincharclass | runtime/builtins | blocked | P1 | 1 | 5004 |
-| 60 | 308 | Implement ABC451 depth-9 GC cadence policy | runtime/memory | blocked | P1 | 0 | 309 |
-| 61 | 4004 | Implement Regularexpressionextendedunicodeescapes | runtime/builtins | blocked | P1 | 1 | 5004 |
-| 62 | 3132 | Implement Jsxfactoryqualifiedname | runtime/builtins | blocked | P1 | 1 | 5004 |
-| 63 | 335 | Implement full Math.pow number semantics | runtime/builtins | blocked | P2 | 1 | 5004 |
-| 64 | 021 | Implement full wasm backend | backend | blocked | P2 | 0 | 008, 020 |
-| 65 | 407 | Implement key-preserving Map entry storage for spread iteration | runtime/semantics | blocked | P2 | 0 | 353 |
-| 66 | 374 | Design broader object ToPrimitive for mixed BigInt comparisons | runtime/semantics | blocked | P2 | 0 | 259, 261 |
-| 67 | 382 | Multi-limb BigInt addition and subtraction | runtime/semantics | blocked | P2 | 0 | 259, 260, 393, 394 |
-| 68 | 369 | Implement full multi-limb BigInt arithmetic | runtime/semantics | blocked | P2 | 0 | 259, 260, 393, 394, 383, 391, 392 |
-| 69 | 370 | Implement BigInt arithmetic RangeError and TypeError parity | runtime/semantics | blocked | P2 | 0 | 260, 380, 381 |
-| 70 | 353 | Implement iterator protocol integration for spread operator | runtime/semantics | blocked | P2 | 0 | 274 |
-| 71 | 344 | Implement legacy global builtin bindings (8 test262 cases) | runtime/builtins | blocked | P3 | 1 | 5004 |
-
+| Order | ID | Title | State | Class | Priority | Level | Depends on |
+|-----:|---:|------|-------|-------|--------:|------:|-----------:|
+| 1 | 5000 | Meta: TypeScript Compiler Parser Syntax Coverage | done | design | P1 | 0 | - |
+| 2 | 5001 | Meta: TypeScript Compiler Semantic Analysis Coverage | done | done | P1 | 0 | - |
+| 3 | 5004 | Meta: Runtime Builtins Coverage (test262) (audit reopened #5004) | done | done | P1 | 0 | - |
+| 4 | 5005 | Meta: TypeScript Compiler Name Resolution Coverage | done | done | P1 | 0 | - |
+| 5 | 5002 | Meta: TypeScript Compiler Type System Coverage | done | done | P1 | 1 | 5000, 5005 |
+| 6 | 5003 | Meta: TypeScript Compiler Declaration Emit Coverage | done | done | P2 | 1 | 5000, 5001 |
+| 7 | 5006 | Meta: TypeScript Compiler Scope Analysis Coverage | done | done | P2 | 1 | 5005 |
+| 8 | 5007 | Meta: TypeScript Compiler Module Resolution Coverage (audit reopened #5007) | done | done | P2 | 1 | 5005 |
 <!-- generated:dep-graph:end -->
 
 ## Ready queue
@@ -182,6 +119,32 @@ Issue files are the source of truth for work items. The generated section below 
 | 5162 | Allow compatible var redeclarations | feature | frontend/syntax | implementation-ready | P2 |  | `reference/typescript/tests/cases/compiler/duplicateLocalVariable3.ts` reports `DuplicateLocal` for `var x = 1; var x... |
 | 5163 | Lower nested call expression callees | feature | frontend/semantics | implementation-ready | P2 |  | `reference/typescript/tests/cases/compiler/betterErrorForAccidentalCall.ts` currently reports `UnsupportedSyntax: onl... |
 | 5164 | Parse exponentiation compound assignment | feature | frontend/syntax | implementation-ready | P1 |  | the BigInt target reference cases currently report `UnsupportedSyntax: expected Semicolon, got Some(PowerEqual)` for ... |
+| 5165 | Support typed array subarray builtins | feature | ir/builtin-resolver | implementation-ready | P1 |  | Support typed array subarray builtins |
+| 5166 | Parse string-literal module specifier aliases | feature | frontend/syntax | implementation-ready | P1 |  | `reference/typescript/tests/cases/compiler/bigintArbirtraryIdentifier.ts` currently reports `UnsupportedSyntax: expec... |
+| 5167 | Support global Symbol builtin call | feature | ir/builtin-resolver | implementation-ready | P1 |  | `reference/typescript/tests/cases/compiler/bigintIndex.ts` currently reports `UnresolvedFunction: unresolved function... |
+| 5168 | Report BigInt property-name diagnostics | feature | frontend/syntax | implementation-ready | P1 |  | `reference/typescript/tests/cases/compiler/bigintPropertyName.ts` currently reports `UnsupportedSyntax: expected iden... |
+| 5169 | Parse ASI after expression statement | feature | frontend/syntax | implementation-ready | P1 |  | the BigInt lib reference cases report `UnsupportedSyntax: expected Semicolon, got Some(Let)` after: |
+| 5170 | Support bitwise OR binary lowering | feature | ir/lowering | implementation-ready | P1 |  | ordinary number/null/undefined bitwise OR expressions parse successfully but cannot be lowered. |
+| 5171 | Accept unsigned 32-bit hex literals | feature | frontend/lexer | implementation-ready | P1 |  | non-decimal number literals above `i32::MAX` are rejected during lexing, so parser and lowering triage cannot reach t... |
+| 5172 | Report unresolved implements in erased namespace | feature | frontend/semantics | implementation-ready | P1 |  | erased namespace declarations can hide unresolved class `implements` clauses and produce a false build pass. |
+| 5173 | Avoid stack overflow on deep binary expressions | feature | ir/builtin-resolver | implementation-ready | P1 |  | recursive expression folding in builtin resolution cannot process the deep binary-expression stress references. |
+| 5174 | Ignore empty binding pattern synthetic names | feature | frontend/name-resolution | implementation-ready | P1 |  | empty binding patterns do not declare a local binding, but the compiler currently registers their display text as if ... |
+| 5175 | Support export let destructuring declarations | feature | frontend/module-syntax | implementation-ready | P1 |  | the parser has an `export const <ident> = ...` slice, but `export let` destructuring declarations still stop at the g... |
+| 5176 | Report ambient var lib redeclaration diagnostics | feature | frontend/semantics | implementation-ready | P1 |  | ambient `declare var` declarations can conflict with lib globals, but ts2wasm currently erases the declaration and re... |
+| 5177 | Report strict-null diagnostics in erased namespace methods | feature | frontend/semantics | implementation-ready | P1 |  | erased namespace class method bodies can hide typed local declaration diagnostics and produce a false build pass. |
+| 5178 | Parse bitwise compound assignment operators | feature | frontend/syntax | implementation-ready | P1 |  | bitwise compound assignment operators `^=`, `&=`, and `\|=` fail in parser/frontend syntax before semantic diagnostic... |
+| 5179 | Report implicit this before closure runtime guard | feature | frontend/semantics | implementation-ready | P1 |  | a TypeScript implicit-`this` diagnostic is hidden by the nested-function closure runtime-subset guard. |
+| 5180 | Parse computed property object binding patterns | feature | frontend/syntax | implementation-ready | P1 |  | computed property names in object binding patterns are parser-unsupported, blocking `TS2448` used-before-definition c... |
+| 5181 | Support prefix update expressions in call arguments | feature | frontend/semantics | implementation-ready | P1 |  | identifier prefix update expressions in call arguments are parser-accepted but resolver/lowering-unsupported. |
+| 5182 | Parse comma-separated for update expressions | feature | frontend/syntax | implementation-ready | P1 |  | comma-separated for-loop update expressions are parser-unsupported, blocking the block-scoped loop reassignment refer... |
+| 5183 | Report typed getter null return diagnostics | feature | frontend/semantics | implementation-ready | P1 |  | typed class getter return annotations are erased before return-expression diagnostics are checked. |
+| 5184 | Parse const enum declarations | feature | frontend/syntax | implementation-ready | P1 |  | `const enum` declarations are parser-unsupported and are misclassified as malformed `const` variable declarations. |
+| 5185 | Source-span unresolved class method function calls | feature | frontend/resolver | implementation-ready | P1 |  | unresolved function calls from class method bodies lose source-span information and should report the out-of-scope ca... |
+| 5186 | Parse export assignment expressions | feature | frontend/syntax | implementation-ready | P1 |  | `export = expr` is treated as an unsupported module boundary before the exported expression can be represented in the... |
+| 5187 | Lower namespace-only multi-section files | feature | compiler | implementation-ready | P1 |  | multi-section TypeScript reference files that contain namespace declarations but no static imports/exports are reduce... |
+| 5188 | Report block-scoped function call arity diagnostics | feature | frontend/semantics | implementation-ready | P1 |  | user-defined function calls that resolve to block-scoped same-name declarations can build even when TypeScript report... |
+| 5189 | Parse ASI after class expression variable initializer | feature | frontend/syntax | implementation-ready | P1 |  | semicolonless variable declarations whose initializer is an anonymous class expression do not accept ASI before the n... |
+| 5190 | Skip implements in ambient class declarations | feature | frontend/syntax | implementation-ready | P1 |  | ambient class declaration parsing does not skip `implements` heritage clauses. |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -195,7 +158,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 052d | Implement broader JSON.stringify replacer semantics (audit reopened #052d) | feature | runtime/builtins | class: blocked | Implement broader JSON.stringify replacer semantics (audit reopened #052d) |
 | 059 | Implement parser syntax extensions for TypeScript and advanced JS (audit reopened #059) | feature | frontend | class: blocked | Implement parser syntax extensions for TypeScript and advanced JS (audit reopened #059) |
 | 064 | Implement name resolution (triaged - superseded by test262 metadata issues) | spike | frontend/resolver | class: blocked | Implement name resolution (triaged - superseded by test262 metadata issues) |
-| 107 | Implement Accessorsemit | spike | frontend/syntax | class: blocked | Implement Accessorsemit |
 | 117 | Implement Aliasofgenericfunctionwithrestbehavedsameasunaliased | spike | frontend/syntax | class: blocked | Implement Aliasofgenericfunctionwithrestbehavedsameasunaliased |
 | 133 | Implement Allowjscrossmonorepopackage (dup) | spike | frontend/syntax | class: blocked | Implement Allowjscrossmonorepopackage (dup) |
 | 137 | Implement Alwaysstrictalreadyusestrict | spike | frontend/syntax | class: triage-needed | Implement Alwaysstrictalreadyusestrict |
@@ -458,44 +420,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 772 | Implement Augmentedtypesvar | spike | frontend/syntax | class: blocked | Implement Augmentedtypesvar |
 | 773 | Implement Autoasiforstaticsinclassdeclaration | spike | frontend/syntax | class: triage-needed | Implement Autoasiforstaticsinclassdeclaration |
 | 775 | Implement Autotypeassignedusingdestructuringfromnevernocrash | spike | frontend/resolver | class: blocked | Implement Autotypeassignedusingdestructuringfromnevernocrash |
-| 1048 | Implement Bigint | spike | frontend/resolver | class: blocked | Implement Bigint |
-| 1049 | Implement Bigintambientminimal | spike | runtime/builtins | class: triage-needed | Implement Bigintambientminimal |
-| 1050 | Implement Bigintarbirtraryidentifier | spike | runtime/builtins | class: triage-needed | Implement Bigintarbirtraryidentifier |
-| 1051 | Implement Bigintindex | spike | frontend/resolver | class: blocked | Implement Bigintindex |
-| 1052 | Implement Bigintpropertyname | spike | runtime/builtins | class: triage-needed | Implement Bigintpropertyname |
-| 1053 | Implement Bigintwithlib | spike | runtime/builtins | class: triage-needed | Implement Bigintwithlib |
-| 1054 | Implement Bigintwithoutlib | spike | runtime/builtins | class: triage-needed | Implement Bigintwithoutlib |
-| 1055 | Implement Binaryarithmatic | spike | frontend/syntax | class: blocked | Implement Binaryarithmatic |
-| 1056 | Implement Binaryarithmeticcontrolflowgraphnottoolarge | spike | frontend/syntax | class: blocked | Implement Binaryarithmeticcontrolflowgraphnottoolarge |
-| 1057 | Implement Bind | spike | frontend/syntax | class: blocked | Implement Bind |
-| 1058 | Implement Binderbinaryexpressionstress | spike | reference/triage | class: triage-needed | Implement Binderbinaryexpressionstress |
-| 1059 | Implement Binderbinaryexpressionstressjs | spike | reference/triage | class: triage-needed | Implement Binderbinaryexpressionstressjs |
-| 1060 | Implement Bindingpatterncannotbeonlyinferencesource | spike | reference/triage | class: triage-needed | Implement Bindingpatterncannotbeonlyinferencesource |
-| 1061 | Implement Bindingpatterncontextualtypedoesnotcausewidening | spike | frontend/resolver | class: blocked | Implement Bindingpatterncontextualtypedoesnotcausewidening |
-| 1062 | Implement Bindingpatterninparameter | spike | frontend/syntax | class: blocked | Implement Bindingpatterninparameter |
-| 1063 | Implement Bindingpatternomittedexpressionnesting | spike | frontend/syntax | class: blocked | Implement Bindingpatternomittedexpressionnesting |
-| 1064 | Implement Binopassignmentshouldhavetype | spike | frontend/syntax | class: blocked | Implement Binopassignmentshouldhavetype |
-| 1065 | Implement Bitwisecompoundassignmentoperators | spike | frontend/syntax | class: triage-needed | Implement Bitwisecompoundassignmentoperators |
-| 1066 | Implement Blockscopedbindingcapturethisinfunction | spike | reference/triage | class: triage-needed | Implement Blockscopedbindingcapturethisinfunction |
-| 1067 | Implement Blockscopedbindingusedbeforedef | spike | frontend/resolver | class: blocked | Implement Blockscopedbindingusedbeforedef |
-| 1068 | Implement Blockscopedbindingsreassignedinloop Name Resolution | spike | frontend/resolver | class: blocked | Implement Blockscopedbindingsreassignedinloop Name Resolution |
-| 1069 | Implement Blockscopedbindingsreassignedinloop Scope Analysis | spike | frontend/resolver | class: blocked | Implement Blockscopedbindingsreassignedinloop Scope Analysis |
-| 1070 | Implement Blockscopedenumvariablesusebeforedef Enum | spike | frontend/syntax | class: blocked | Implement Blockscopedenumvariablesusebeforedef Enum |
-| 1071 | Implement Blockscopedenumvariablesusebeforedef Import Export | spike | frontend/syntax | class: blocked | Implement Blockscopedenumvariablesusebeforedef Import Export |
-| 1072 | Implement Blockscopedfunctiondeclarationes | spike | frontend/resolver | class: blocked | Implement Blockscopedfunctiondeclarationes |
-| 1073 | Implement Blockscopedfunctiondeclarationinstrictclass | spike | frontend/resolver | class: blocked | Implement Blockscopedfunctiondeclarationinstrictclass |
-| 1074 | Implement Blockscopedfunctiondeclarationinstrictmodule | spike | frontend/syntax | class: blocked | Implement Blockscopedfunctiondeclarationinstrictmodule |
-| 1075 | Implement Blockscopedfunctiondeclarationstrictes | spike | frontend/resolver | class: blocked | Implement Blockscopedfunctiondeclarationstrictes |
-| 1076 | Implement Blockscopednamespacedifferentfile | spike | frontend/syntax | class: blocked | Implement Blockscopednamespacedifferentfile |
-| 1077 | Implement Blockscopedsamenamefunctiondeclarationes | spike | reference/triage | class: triage-needed | Implement Blockscopedsamenamefunctiondeclarationes |
-| 1078 | Implement Blockscopedsamenamefunctiondeclarationstrictes | spike | reference/triage | class: triage-needed | Implement Blockscopedsamenamefunctiondeclarationstrictes |
-| 1079 | Implement Blockscopedvariablesusebeforedef | spike | frontend/resolver | class: blocked | Implement Blockscopedvariablesusebeforedef |
-| 1080 | Implement Bluebirdstaticthis | spike | frontend/syntax | class: triage-needed | Implement Bluebirdstaticthis |
-| 1081 | Implement Booleanassignment | spike | frontend/resolver | class: blocked | Implement Booleanassignment |
-| 1082 | Implement Booleanfilteranyarray | spike | frontend/syntax | class: triage-needed | Implement Booleanfilteranyarray |
-| 1083 | Implement Breakiniterationorswitchstatement | spike | frontend/resolver | class: blocked | Implement Breakiniterationorswitchstatement |
-| 1084 | Implement Breaknotiniterationorswitchstatement | spike | frontend/syntax | class: blocked | Implement Breaknotiniterationorswitchstatement |
-| 1085 | Implement Breaktarget | spike | frontend/syntax | class: blocked | Implement Breaktarget |
 | 1086 | Implement Builtiniterator | spike | frontend/syntax | class: triage-needed | Implement Builtiniterator |
 | 1087 | Implement Bundleddtslateexportrenaming | spike | frontend/syntax | class: blocked | Implement Bundleddtslateexportrenaming |
 | 1088 | Implement Cacheresolutions | spike | frontend/syntax | class: blocked | Implement Cacheresolutions |
@@ -3630,7 +3554,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 4225 | Implement Spycomparisonchecking | spike | frontend/syntax | class: triage-needed | Implement Spycomparisonchecking |
 | 4226 | Implement Stabletypeordering | spike | frontend/syntax | class: triage-needed | Implement Stabletypeordering |
 | 4227 | Implement Stackdepthlimitcastingtype | spike | frontend/syntax | class: triage-needed | Implement Stackdepthlimitcastingtype |
-| 4228 | Implement Standalonebreak | spike | frontend/syntax | class: blocked | Implement Standalonebreak |
 | 4229 | Implement Staticandmemberfunctions | spike | frontend/syntax | class: triage-needed | Implement Staticandmemberfunctions |
 | 4230 | Implement Staticanonymoustypenotreferencingtypeparameter | spike | frontend/syntax | class: blocked | Implement Staticanonymoustypenotreferencingtypeparameter |
 | 4231 | Implement Staticasidentifier | spike | frontend/syntax | class: triage-needed | Implement Staticasidentifier |
@@ -3992,7 +3915,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 4590 | Implement Typedarrays Name Resolution | spike | frontend/resolver | class: blocked | Implement Typedarrays Name Resolution |
 | 4591 | Implement Typedarrays Parser Syntax | spike | runtime/builtins | class: triage-needed | Implement Typedarrays Parser Syntax |
 | 4592 | Implement Typedarrayscrossassignability | spike | frontend/resolver | class: blocked | Implement Typedarrayscrossassignability |
-| 4593 | Implement Typedarrayssubarray | spike | frontend/resolver | class: blocked | Implement Typedarrayssubarray |
 | 4594 | Implement Typedgenericprototypemember | spike | frontend/semantics | class: blocked | Implement Typedgenericprototypemember |
 | 4595 | Implement Typeofambientexternalmodules | spike | frontend/syntax | class: blocked | Implement Typeofambientexternalmodules |
 | 4596 | Implement Typeofclass | spike | frontend/resolver | class: blocked | Implement Typeofclass |
@@ -4350,6 +4272,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 104 | Implement Accessorwithrestparam | spike | frontend/syntax | see `issues/done/104-implement-accessorWithRestParam.md` |
 | 105 | Implement Accessorwithoutbody | spike | frontend/syntax | see `issues/done/105-implement-accessorWithoutBody.md` |
 | 106 | Implement Accessors (dup) | spike | frontend/syntax | see `issues/done/106-implement-accessors.md` |
+| 107 | Implement Accessorsemit | spike | frontend/syntax | see `issues/done/107-implement-accessorsEmit.md` |
 | 108 | Implement Accessorsinambientcontext | spike | frontend/syntax | see `issues/done/108-implement-accessorsInAmbientContext.md` |
 | 109 | Implement Addmorecallsignaturestobasesignature (dup) | spike | frontend/resolver | see `issues/done/109-implement-addMoreCallSignaturesToBaseSignature.md` |
 | 110 | Implement Addmoreoverloadstobasesignature | spike | frontend/syntax | see `issues/done/110-implement-addMoreOverloadsToBaseSignature.md` |
@@ -5021,6 +4944,44 @@ Issue files are the source of truth for work items. The generated section below 
 | 1045 | Implement Bettererrorforaccidentalcall | spike | frontend/syntax | see `issues/done/1045-implement-betterErrorForAccidentalCall.md` |
 | 1046 | Implement Bigintwithtargetes | spike | runtime/builtins | see `issues/done/1046-implement-bigIntWithTargetES.md` |
 | 1047 | Implement Bigintwithtargetlessthanes | spike | runtime/builtins | see `issues/done/1047-implement-bigIntWithTargetLessThanES.md` |
+| 1048 | Implement Bigint | spike | frontend/resolver | see `issues/done/1048-implement-bigint.md` |
+| 1049 | Implement Bigintambientminimal | spike | runtime/builtins | see `issues/done/1049-implement-bigintAmbientMinimal.md` |
+| 1050 | Implement Bigintarbirtraryidentifier | spike | runtime/builtins | see `issues/done/1050-implement-bigintArbirtraryIdentifier.md` |
+| 1051 | Implement Bigintindex | spike | frontend/resolver | see `issues/done/1051-implement-bigintIndex.md` |
+| 1052 | Implement Bigintpropertyname | spike | runtime/builtins | see `issues/done/1052-implement-bigintPropertyName.md` |
+| 1053 | Implement Bigintwithlib | spike | runtime/builtins | see `issues/done/1053-implement-bigintWithLib.md` |
+| 1054 | Implement Bigintwithoutlib | spike | runtime/builtins | see `issues/done/1054-implement-bigintWithoutLib.md` |
+| 1055 | Implement Binaryarithmatic | spike | frontend/syntax | see `issues/done/1055-implement-binaryArithmatic.md` |
+| 1056 | Implement Binaryarithmeticcontrolflowgraphnottoolarge | spike | frontend/syntax | see `issues/done/1056-implement-binaryArithmeticControlFlowGraphNotTooLarge.md` |
+| 1057 | Implement Bind | spike | frontend/syntax | see `issues/done/1057-implement-bind.md` |
+| 1058 | Implement Binderbinaryexpressionstress | spike | reference/triage | see `issues/done/1058-implement-binderBinaryExpressionStress.md` |
+| 1059 | Implement Binderbinaryexpressionstressjs | spike | reference/triage | see `issues/done/1059-implement-binderBinaryExpressionStressJs.md` |
+| 1060 | Implement Bindingpatterncannotbeonlyinferencesource | spike | reference/triage | see `issues/done/1060-implement-bindingPatternCannotBeOnlyInferenceSource.md` |
+| 1061 | Implement Bindingpatterncontextualtypedoesnotcausewidening | spike | frontend/resolver | see `issues/done/1061-implement-bindingPatternContextualTypeDoesNotCauseWidening.md` |
+| 1062 | Implement Bindingpatterninparameter | spike | frontend/syntax | see `issues/done/1062-implement-bindingPatternInParameter.md` |
+| 1063 | Implement Bindingpatternomittedexpressionnesting | spike | frontend/syntax | see `issues/done/1063-implement-bindingPatternOmittedExpressionNesting.md` |
+| 1064 | Implement Binopassignmentshouldhavetype | spike | frontend/syntax | see `issues/done/1064-implement-binopAssignmentShouldHaveType.md` |
+| 1065 | Implement Bitwisecompoundassignmentoperators | spike | frontend/syntax | see `issues/done/1065-implement-bitwiseCompoundAssignmentOperators.md` |
+| 1066 | Implement Blockscopedbindingcapturethisinfunction | spike | reference/triage | see `issues/done/1066-implement-blockScopedBindingCaptureThisInFunction.md` |
+| 1067 | Implement Blockscopedbindingusedbeforedef | spike | frontend/resolver | see `issues/done/1067-implement-blockScopedBindingUsedBeforeDef.md` |
+| 1068 | Implement Blockscopedbindingsreassignedinloop Name Resolution | spike | frontend/resolver | see `issues/done/1068-implement-blockScopedBindingsReassignedInLoop-name-resolution.md` |
+| 1069 | Implement Blockscopedbindingsreassignedinloop Scope Analysis | spike | frontend/resolver | see `issues/done/1069-implement-blockScopedBindingsReassignedInLoop-scope-analysis.md` |
+| 1070 | Implement Blockscopedenumvariablesusebeforedef Enum | spike | frontend/syntax | see `issues/done/1070-implement-blockScopedEnumVariablesUseBeforeDef-enum.md` |
+| 1071 | Implement Blockscopedenumvariablesusebeforedef Import Export | spike | frontend/syntax | see `issues/done/1071-implement-blockScopedEnumVariablesUseBeforeDef-import-export.md` |
+| 1072 | Implement Blockscopedfunctiondeclarationes | spike | frontend/resolver | see `issues/done/1072-implement-blockScopedFunctionDeclarationES.md` |
+| 1073 | Implement Blockscopedfunctiondeclarationinstrictclass | spike | frontend/resolver | see `issues/done/1073-implement-blockScopedFunctionDeclarationInStrictClass.md` |
+| 1074 | Implement Blockscopedfunctiondeclarationinstrictmodule | spike | frontend/syntax | see `issues/done/1074-implement-blockScopedFunctionDeclarationInStrictModule.md` |
+| 1075 | Implement Blockscopedfunctiondeclarationstrictes | spike | frontend/resolver | see `issues/done/1075-implement-blockScopedFunctionDeclarationStrictES.md` |
+| 1076 | Implement Blockscopednamespacedifferentfile | spike | frontend/syntax | see `issues/done/1076-implement-blockScopedNamespaceDifferentFile.md` |
+| 1077 | Implement Blockscopedsamenamefunctiondeclarationes | spike | reference/triage | see `issues/done/1077-implement-blockScopedSameNameFunctionDeclarationES.md` |
+| 1078 | Implement Blockscopedsamenamefunctiondeclarationstrictes | spike | reference/triage | see `issues/done/1078-implement-blockScopedSameNameFunctionDeclarationStrictES.md` |
+| 1079 | Implement Blockscopedvariablesusebeforedef | spike | frontend/resolver | see `issues/done/1079-implement-blockScopedVariablesUseBeforeDef.md` |
+| 1080 | Implement Bluebirdstaticthis | spike | frontend/syntax | see `issues/done/1080-implement-bluebirdStaticThis.md` |
+| 1081 | Implement Booleanassignment | spike | frontend/resolver | see `issues/done/1081-implement-booleanAssignment.md` |
+| 1082 | Implement Booleanfilteranyarray | spike | frontend/resolver | see `issues/done/1082-implement-booleanFilterAnyArray.md` |
+| 1083 | Implement Breakiniterationorswitchstatement | spike | frontend/resolver | see `issues/done/1083-implement-breakInIterationOrSwitchStatement.md` |
+| 1084 | Implement Breaknotiniterationorswitchstatement | spike | frontend/syntax | see `issues/done/1084-implement-breakNotInIterationOrSwitchStatement.md` |
+| 1085 | Implement Breaktarget | spike | frontend/syntax | see `issues/done/1085-implement-breakTarget.md` |
 | 2050 | Implement Duplicatelocalvariable Duplicate Local | spike | reference/triage | see `issues/done/2050-implement-duplicateLocalVariable-duplicate-local.md` |
 | 3002 | Implement Isolateddeclarationerrorsdefault | spike | runtime/builtins | see `issues/done/3002-implement-isolatedDeclarationErrorsDefault.md` |
 | 3131 | Implement Jsxfactorynotidentifierorqualifiedname | spike | reference/triage | see `issues/done/3131-implement-jsxFactoryNotIdentifierOrQualifiedName.md` |
@@ -5029,9 +4990,11 @@ Issue files are the source of truth for work items. The generated section below 
 | 3690 | Implement Optionaltupleelementsandundefined | spike | reference/triage | see `issues/done/3690-implement-optionalTupleElementsAndUndefined.md` |
 | 3996 | Implement Compiler (dup) | spike | frontend/syntax | see `issues/done/3996-implement-reference-typescript-tests-cases-compiler.md` |
 | 4210 | Implement Splicetuples | spike | frontend/resolver | see `issues/done/4210-implement-spliceTuples.md` |
+| 4228 | Implement Standalonebreak | spike | frontend/syntax | see `issues/done/4228-implement-standaloneBreak.md` |
 | 4284 | Implement Stringincludes (audit reopened #4284) | spike | runtime/builtins | see `issues/done/4284-implement-stringIncludes.md` |
 | 4291 | Implement Stringmatchall | spike | reference/triage | see `issues/done/4291-implement-stringMatchAll.md` |
 | 4294 | Implement Stringtrim | spike | runtime/builtins | see `issues/done/4294-implement-stringTrim.md` |
+| 4593 | Implement Typedarrayssubarray | spike | frontend/resolver | see `issues/done/4593-implement-typedArraysSubarray.md` |
 | 4806 | Implement class syntax (dup) | spike | frontend/syntax | see `issues/done/4806-implement-class.md` |
 | 4808 | Implement import/export module syntax (dup) | spike | frontend/syntax | see `issues/done/4808-implement-import-export.md` |
 | 4809 | Implement name resolution (dup) | spike | frontend/resolver | see `issues/done/4809-implement-name-resolution.md` |

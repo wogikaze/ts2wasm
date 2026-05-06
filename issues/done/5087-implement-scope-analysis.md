@@ -128,9 +128,9 @@ Follow-up issues:
 
 - `issues/done/082-implement-abstractClassInLocalScope.md` - Implement Abstractclassinlocalscope (same feature label, same group key, title overlap)
 - `issues/done/083-implement-abstractClassInLocalScopeIsAbstract.md` - Implement Abstractclassinlocalscopeisabstract (same feature label, same group key, title overlap)
-- `issues/open/1067-implement-blockScopedBindingUsedBeforeDef.md` - Implement Blockscopedbindingusedbeforedef (same feature label, same group key, title overlap)
-- `issues/open/1069-implement-blockScopedBindingsReassignedInLoop-scope-analysis.md` - Implement Blockscopedbindingsreassignedinloop Scope Analysis (same feature label, same group key, title overlap)
-- `issues/open/1079-implement-blockScopedVariablesUseBeforeDef.md` - Implement Blockscopedvariablesusebeforedef (same feature label, same group key, title overlap)
+- `issues/done/1067-implement-blockScopedBindingUsedBeforeDef.md` - Implement Blockscopedbindingusedbeforedef (same feature label, same group key, title overlap)
+- `issues/done/1069-implement-blockScopedBindingsReassignedInLoop-scope-analysis.md` - Implement Blockscopedbindingsreassignedinloop Scope Analysis (same feature label, same group key, title overlap)
+- `issues/done/1079-implement-blockScopedVariablesUseBeforeDef.md` - Implement Blockscopedvariablesusebeforedef (same feature label, same group key, title overlap)
 - `issues/open/1178-implement-classDeclarationShouldBeOutOfScopeInComputedNames.md` - Implement Classdeclarationshouldbeoutofscopeincomputednames (same feature label, same group key, title overlap)
 - `issues/open/1443-implement-constDeclarations-scope-analysis.md` - Implement Constdeclarations Scope Analysis (same feature label, same group key, title overlap)
 - `issues/open/1551-implement-continueInLoopsWithCapturedBlockScopedBindings.md` - Implement Continueinloopswithcapturedblockscopedbindings (same feature label, same group key, title overlap)

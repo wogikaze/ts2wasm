@@ -23,6 +23,7 @@ from issue_common import (
     issue_title,
     load_issues,
     render_blocked_table,
+    render_dependency_graph,
     render_done_table,
     render_ready_table,
     render_summary_table,
@@ -50,6 +51,12 @@ def render_index(index_content: str, issues: list[Issue]) -> str:
         "<!-- generated:summary:start -->",
         "<!-- generated:summary:end -->",
         render_summary_table(issues),
+    )
+    next_content = replace_generated_block(
+        next_content,
+        "<!-- generated:dep-graph:start -->",
+        "<!-- generated:dep-graph:end -->",
+        render_dependency_graph(issues),
     )
     next_content = replace_generated_block(
         next_content,
