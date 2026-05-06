@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 4 | 3 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4491 | 3664 | 827 |
+| frontend | 4491 | 3663 | 828 |
 | harness | 1 | 0 | 1 |
 | ir | 57 | 35 | 22 |
 | issues | 4 | 0 | 4 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5127 | 3948 | 1179 |
+| total | 5127 | 3947 | 1180 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -638,7 +638,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1344 | Implement Commentleadingclosebrace | spike | frontend/resolver | class: blocked | Implement Commentleadingclosebrace |
 | 1345 | Implement Commentonambientmodule | spike | frontend/syntax | class: blocked | Implement Commentonambientmodule |
 | 1346 | Implement Commentonambientvariable | spike | frontend/resolver | class: blocked | Implement Commentonambientvariable |
-| 1389 | Implement Commonjsaccessexports | spike | frontend/syntax | class: blocked | Implement Commonjsaccessexports |
 | 1390 | Implement Commonjssafeimport | spike | frontend/syntax | class: blocked | Implement Commonjssafeimport |
 | 1391 | Implement Comparabilitytypeparametersrelatedbyunion | spike | frontend/syntax | class: blocked | Implement Comparabilitytypeparametersrelatedbyunion |
 | 1392 | Implement Comparablerelationbidirectional | spike | frontend/syntax | class: triage-needed | Implement Comparablerelationbidirectional |
@@ -5083,6 +5082,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1386 | Implement Commonmissingsemicolons | spike | reference/triage | see `issues/done/1386-implement-commonMissingSemicolons.md` |
 | 1387 | Implement Commonsourcedir | spike | frontend/syntax | see `issues/done/1387-implement-commonSourceDir.md` |
 | 1388 | Implement Commonsourcedirectory | spike | frontend/syntax | see `issues/done/1388-implement-commonSourceDirectory.md` |
+| 1389 | Implement Commonjsaccessexports | spike | frontend/syntax | see `issues/done/1389-implement-commonjsAccessExports.md` |
 | 2050 | Implement Duplicatelocalvariable Duplicate Local | spike | reference/triage | see `issues/done/2050-implement-duplicateLocalVariable-duplicate-local.md` |
 | 3002 | Implement Isolateddeclarationerrorsdefault | spike | runtime/builtins | see `issues/done/3002-implement-isolatedDeclarationErrorsDefault.md` |
 | 3131 | Implement Jsxfactorynotidentifierorqualifiedname | spike | reference/triage | see `issues/done/3131-implement-jsxFactoryNotIdentifierOrQualifiedName.md` |
