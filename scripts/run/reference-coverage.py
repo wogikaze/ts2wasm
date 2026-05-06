@@ -217,11 +217,81 @@ def resolve_suite_paths(suite, path_filters=None):
 
     return config, files
 
+def check_prerequisites():
+    """Validate all reference coverage prerequisites before the main loop.
+
+    Checks:
+    - Reference test suite directories exist and contain test files
+    - iwasm binary is reachable on PATH
+    - Node.js binary is reachable on PATH
+
+    Prints a clear diagnostic for each missing prerequisite.
+    Returns True if all prerequisites are satisfied, False otherwise.
+    """
+    all_ok = True
+
+    # Check reference suite directories
+    for suite_key, config in SUITE_METADATA.items():
+        repo_path = config["repo_path"]
+        suite_path = config["path"]
+        if not repo_path.exists():
+            print(
+                f"ERROR: {suite_key} reference repository not found at {repo_path}",
+                file=sys.stderr,
+            )
+            print(f"  {config['clone_hint']}", file=sys.stderr)
+            all_ok = False
+        elif not suite_path.exists():
+            print(
+                f"ERROR: {suite_key} test directory not found at {suite_path}",
+                file=sys.stderr,
+            )
+            print(f"  Expected under {repo_path}", file=sys.stderr)
+            all_ok = False
+        else:
+            # Verify at least one test file exists
+            if suite_key == "test262":
+                sample = list(suite_path.glob("**/*.js"))
+            elif suite_key == "tsc":
+                sample = list(suite_path.glob("**/*.ts"))
+            else:
+                sample = [f for f in suite_path.rglob("*") if f.is_file()]
+            if not sample:
+                print(
+                    f"ERROR: {suite_key} test directory {suite_path} contains no test files",
+                    file=sys.stderr,
+                )
+                all_ok = False
+            else:
+                print(f"  OK: {suite_key} ({len(sample)} files)")
+
+    # Check iwasm binary
+    iwasm_path = shutil.which("iwasm")
+    if iwasm_path:
+        print(f"  OK: iwasm ({iwasm_path})")
+    else:
+        print("ERROR: iwasm not found on PATH", file=sys.stderr)
+        print("  Install iwasm (wamr) or add it to your PATH", file=sys.stderr)
+        all_ok = False
+
+    # Check Node.js binary
+    node_path = shutil.which("node")
+    if node_path:
+        print(f"  OK: node ({node_path})")
+    else:
+        print("ERROR: node not found on PATH", file=sys.stderr)
+        print("  Install Node.js or add it to your PATH", file=sys.stderr)
+        all_ok = False
+
+    return all_ok
+
+
 def usage():
     print("Usage:")
     print("  python scripts/manager.py reference-coverage <suite> [--limit N] [--json] [--detail]")
     print("      [--paths-file PATH] [--path-filter TEXT] [--dashboard-data] [--no-dashboard-data]")
     print("      [--jsonl] [--jobs N] [--sample N] [--category PATTERN] [--no-server] [--no-semantic]")
+    print("      [--check-prerequisites]")
     print()
     print("Suites:")
     print("  test262   -> reference/test262/test/**/*.js")
@@ -234,6 +304,7 @@ def usage():
     print("  --no-semantic disable semantic check (skip Node/iwasm execution after build)")
     print("  --sample N   Max files per category (test262 only, uses category-based sampling)")
     print("  --category PATTERN  Regex filter for test categories (test262 only, used with --sample)")
+    print("  --check-prerequisites  Validate prerequisites and exit (no coverage run)")
 
 def repo_relative(path):
     """Return a stable repo-relative path string for evidence and filtering."""
@@ -661,6 +732,11 @@ def feature_label(diag_code, err_file, file_path):
     return "unknown-unsupported"
 
 def main():
+    # Handle --check-prerequisites before suite parsing (works standalone or with a suite)
+    if "--check-prerequisites" in sys.argv:
+        ok = check_prerequisites()
+        sys.exit(0 if ok else 1)
+
     if len(sys.argv) < 2:
         usage()
         sys.exit(1)
