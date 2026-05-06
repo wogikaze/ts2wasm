@@ -10,13 +10,13 @@ Issue files are the source of truth for work items. The generated section below 
 | Area | Total | Open | Resolved |
 |---|---:|---:|---:|
 | abi | 7 | 0 | 7 |
-| backend | 17 | 2 | 15 |
+| backend | 18 | 3 | 15 |
 | backend-wasm | 2 | 0 | 2 |
 | cli | 16 | 1 | 15 |
 | compiler | 3 | 0 | 3 |
 | coverage | 43 | 1 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4438 | 3734 | 704 |
+| frontend | 4438 | 3732 | 706 |
 | harness | 1 | 0 | 1 |
 | ir | 41 | 9 | 32 |
 | issues | 5 | 0 | 5 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 8 | 2 | 6 |
 | wasi | 4 | 3 | 1 |
-| total | 5072 | 4007 | 1065 |
+| total | 5073 | 4006 | 1067 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -98,7 +98,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5132 | Add ABC451 non-top array separation attribution | infra | runtime/memory | implementation-ready | P1 | 5131 | issue 365 proves the dominant array-growth pressure is |
 | 5137 | Split remaining Date API scope | cleanup | runtime/builtins | design-ready | P1 |  | Date issue 050 currently stays open after its named child issues 240 and 241 are done, but non-literal constructor in... |
 | 5138 | Split Reflect.construct isConstructor reference window | spike | runtime/builtins | design-ready | P1 |  | `reference/test262/test/annexB/built-ins/String/prototype/anchor/not-a-constructor.js` currently fails with `Unresolv... |
-| 5145 | Parse await as an identifier call outside async contexts | feature | frontend/syntax | implementation-ready | P2 |  | `await(...)` in a sync function currently fails with `UnsupportedRuntimeSubset` instead of preserving the TypeScript ... |
 | 5146 | Report for-await context errors before async runtime diagnostics | feature | frontend/syntax | implementation-ready | P2 |  | `for await...of` outside async/top-level-allowed contexts currently reports the broad async runtime unsupported messa... |
 | 5147 | Report await expression context errors before runtime diagnostics | feature | frontend/syntax | implementation-ready | P2 |  | `await <literal>` in a non-async function currently fails with `UnsupportedRuntimeSubset` instead of a TypeScript-ali... |
 | 5152 | Support class constructor outer callback captures | feature | ir | implementation-ready | P1 |  | class constructors cannot currently call outer callback locals when nested arrow callbacks capture constructor `this`. |
@@ -106,7 +105,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5158 | Report interface private member clashes | feature | frontend/resolver | implementation-ready | P1 |  | `reference/typescript/tests/cases/compiler/baseTypePrivateMemberClash.ts` currently reports `BackendIo` instead of a ... |
 | 5163 | Lower nested call expression callees | feature | frontend/semantics | implementation-ready | P2 |  | `reference/typescript/tests/cases/compiler/betterErrorForAccidentalCall.ts` currently reports `UnsupportedSyntax: onl... |
 | 5165 | Support typed array subarray builtins | feature | ir/builtin-resolver | implementation-ready | P1 |  | Support typed array subarray builtins |
-| 5169 | Parse ASI after expression statement | feature | frontend/syntax | implementation-ready | P1 |  | the BigInt lib reference cases report `UnsupportedSyntax: expected Semicolon, got Some(Let)` after: |
 | 5176 | Report ambient var lib redeclaration diagnostics | feature | frontend/semantics | implementation-ready | P1 |  | ambient `declare var` declarations can conflict with lib globals, but ts2wasm currently erases the declaration and re... |
 | 5177 | Report strict-null diagnostics in erased namespace methods | feature | frontend/semantics | implementation-ready | P1 |  | erased namespace class method bodies can hide typed local declaration diagnostics and produce a false build pass. |
 | 5179 | Report implicit this before closure runtime guard | feature | frontend/semantics | implementation-ready | P1 |  | a TypeScript implicit-`this` diagnostic is hidden by the nested-function closure runtime-subset guard. |
@@ -4108,6 +4106,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5211 | Implement sparse array spread support | feature | runtime/semantics | 274 | Implement sparse array spread support |
 | 5212 | Implement remaining BigInt mixed runtime coercion edges | feature | runtime/semantics | class: blocked | Implement remaining BigInt mixed runtime coercion edges |
 | 5214 | Implement computed Symbol.iterator prerequisite for spread | feature | frontend/syntax | class: blocked | Implement computed Symbol.iterator prerequisite for spread |
+| 5239 | W0: migrate remaining multi-line WAT to line_fmt in expr_emit.rs | cleanup | backend | 5231 | W0: migrate remaining multi-line WAT to line_fmt in expr_emit.rs |
 <!-- generated:blocked:end -->
 
 ## Done queue
@@ -5132,6 +5131,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5142 | Support class method calls on new-expression receivers | feature | ir/lowered | see `issues/done/5142-support-class-method-call-on-new-expression-receiver.md` |
 | 5143 | Implement unary void operator lowering | feature | ir/lowered | see `issues/done/5143-implement-unary-void-operator-lowering.md` |
 | 5144 | Support entry-module export function declarations | feature | ir/compiler | see `issues/done/5144-support-entry-export-function-declarations.md` |
+| 5145 | Parse await as an identifier call outside async contexts | feature | frontend/syntax | see `issues/done/5145-parse-await-as-call-outside-async-context.md` |
 | 5148 | Parse generic async generator declarations | feature | frontend/syntax | see `issues/done/5148-parse-generic-async-generator-declarations.md` |
 | 5149 | Parse trailing comma in typed class method parameters | feature | frontend/syntax | see `issues/done/5149-parse-trailing-comma-in-typed-class-method-parameters.md` |
 | 5150 | Report empty element access diagnostics | feature | frontend/syntax | see `issues/done/5150-report-empty-element-access-diagnostics.md` |
@@ -5147,6 +5147,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5166 | Parse string-literal module specifier aliases | feature | frontend/syntax | see `issues/done/5166-parse-string-literal-module-specifier-aliases.md` |
 | 5167 | Support global Symbol builtin call | feature | ir/builtin-resolver | see `issues/done/5167-support-global-symbol-builtin-call.md` |
 | 5168 | Report BigInt property-name diagnostics | feature | frontend/syntax | see `issues/done/5168-report-bigint-property-name-diagnostics.md` |
+| 5169 | Parse ASI after expression statement | feature | frontend/syntax | see `issues/done/5169-parse-asi-after-expression-statement.md` |
 | 5170 | Support bitwise OR binary lowering | feature | ir/lowering | see `issues/done/5170-support-bitwise-or-binary-lowering.md` |
 | 5171 | Accept unsigned 32-bit hex literals | feature | frontend/lexer | see `issues/done/5171-accept-unsigned-32-bit-hex-literals.md` |
 | 5172 | Report unresolved implements in erased namespace | feature | frontend/semantics | see `issues/done/5172-report-unresolved-implements-in-erased-namespace.md` |

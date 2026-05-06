@@ -68,8 +68,9 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] Zero `push_str` calls in `expr_emit.rs` for patterns with typed equivalents
-- [ ] All simple instruction patterns (`i32.const`, `local.get`, `local.set`, `i32.add`, etc.) use typed methods
+- [x] Named-param `i32.const` patterns migrated to `writer.i32_const()` (11 patterns)
+- [ ] `local.get`, `local.set`, `local.tee` with `{pad}` patterns migrated to typed methods
+- [ ] Complex multi-line inline WAT patterns converted to `writer.line_fmt()` (209 remaining)
 - [ ] `cargo nextest run` passes (all backend tests)
 - [ ] WAT output unchanged (verified by existing snapshot tests)
 
