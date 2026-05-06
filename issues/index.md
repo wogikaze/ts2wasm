@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 1 | 0 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4410 | 3778 | 632 |
+| frontend | 4411 | 3778 | 633 |
 | harness | 1 | 0 | 1 |
 | ir | 31 | 9 | 22 |
 | issues | 4 | 0 | 4 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5016 | 4044 | 972 |
+| total | 5017 | 4044 | 973 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -53,7 +53,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 5001 (Meta: TypeScript Compiler Semantic Analysis Coverage) [done/done] ch:613 open:366 done:247
 5004 (Meta: Runtime Builtins Coverage (test262) (audit reopened #5004)) [done/done] ch:24 open:3 done:21
 5005 (Meta: TypeScript Compiler Name Resolution Coverage) [done/done] ch:440 open:393 done:47
-├── 5006 (Meta: TypeScript Compiler Scope Analysis Coverage) [done/done] ch:31 open:23 done:8
+├── 5006 (Meta: TypeScript Compiler Scope Analysis Coverage) [done/done] ch:30 open:22 done:8
 ├── 5007 (Meta: TypeScript Compiler Module Resolution Coverage (audit reopened #5007)) [done/done] ch:21 open:19 done:2
 ```
 
@@ -72,7 +72,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 4 | 5005 | Meta: TypeScript Compiler Name Resolution Coverage | done | done | frontend/resolver | P1 | - | 440 | 393 | 47 |
 | 5 | 5002 | Meta: TypeScript Compiler Type System Coverage | done | done | frontend/semantics | P1 | 5000, 5005 | 242 | 234 | 8 |
 | 6 | 5003 | Meta: TypeScript Compiler Declaration Emit Coverage | done | done | frontend/syntax | P2 | 5000, 5001 | 103 | 92 | 11 |
-| 7 | 5006 | Meta: TypeScript Compiler Scope Analysis Coverage | done | done | frontend/resolver | P2 | 5005 | 31 | 23 | 8 |
+| 7 | 5006 | Meta: TypeScript Compiler Scope Analysis Coverage | done | done | frontend/resolver | P2 | 5005 | 30 | 22 | 8 |
 | 8 | 5007 | Meta: TypeScript Compiler Module Resolution Coverage (audit reopened #5007) | done | done | frontend/resolver | P2 | 5005 | 21 | 19 | 2 |
 
 ### Topological order
@@ -136,6 +136,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5179 | Report implicit this before closure runtime guard | feature | frontend/semantics | implementation-ready | P1 |  | a TypeScript implicit-`this` diagnostic is hidden by the nested-function closure runtime-subset guard. |
 | 5180 | Parse computed property object binding patterns | feature | frontend/syntax | implementation-ready | P1 |  | computed property names in object binding patterns are parser-unsupported, blocking `TS2448` used-before-definition c... |
 | 5181 | Support prefix update expressions in call arguments | feature | frontend/semantics | implementation-ready | P1 |  | identifier prefix update expressions in call arguments are parser-accepted but resolver/lowering-unsupported. |
+| 5182 | Parse comma-separated for update expressions | feature | frontend/syntax | implementation-ready | P1 |  | comma-separated for-loop update expressions are parser-unsupported, blocking the block-scoped loop reassignment refer... |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -412,7 +413,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 772 | Implement Augmentedtypesvar | spike | frontend/syntax | class: blocked | Implement Augmentedtypesvar |
 | 773 | Implement Autoasiforstaticsinclassdeclaration | spike | frontend/syntax | class: triage-needed | Implement Autoasiforstaticsinclassdeclaration |
 | 775 | Implement Autotypeassignedusingdestructuringfromnevernocrash | spike | frontend/resolver | class: blocked | Implement Autotypeassignedusingdestructuringfromnevernocrash |
-| 1069 | Implement Blockscopedbindingsreassignedinloop Scope Analysis | spike | frontend/resolver | class: blocked | Implement Blockscopedbindingsreassignedinloop Scope Analysis |
 | 1070 | Implement Blockscopedenumvariablesusebeforedef Enum | spike | frontend/syntax | class: blocked | Implement Blockscopedenumvariablesusebeforedef Enum |
 | 1071 | Implement Blockscopedenumvariablesusebeforedef Import Export | spike | frontend/syntax | class: blocked | Implement Blockscopedenumvariablesusebeforedef Import Export |
 | 1072 | Implement Blockscopedfunctiondeclarationes | spike | frontend/resolver | class: blocked | Implement Blockscopedfunctiondeclarationes |
@@ -4974,6 +4974,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1066 | Implement Blockscopedbindingcapturethisinfunction | spike | reference/triage | see `issues/done/1066-implement-blockScopedBindingCaptureThisInFunction.md` |
 | 1067 | Implement Blockscopedbindingusedbeforedef | spike | frontend/resolver | see `issues/done/1067-implement-blockScopedBindingUsedBeforeDef.md` |
 | 1068 | Implement Blockscopedbindingsreassignedinloop Name Resolution | spike | frontend/resolver | see `issues/done/1068-implement-blockScopedBindingsReassignedInLoop-name-resolution.md` |
+| 1069 | Implement Blockscopedbindingsreassignedinloop Scope Analysis | spike | frontend/resolver | see `issues/done/1069-implement-blockScopedBindingsReassignedInLoop-scope-analysis.md` |
 | 2050 | Implement Duplicatelocalvariable Duplicate Local | spike | reference/triage | see `issues/done/2050-implement-duplicateLocalVariable-duplicate-local.md` |
 | 3002 | Implement Isolateddeclarationerrorsdefault | spike | runtime/builtins | see `issues/done/3002-implement-isolatedDeclarationErrorsDefault.md` |
 | 3131 | Implement Jsxfactorynotidentifierorqualifiedname | spike | reference/triage | see `issues/done/3131-implement-jsxFactoryNotIdentifierOrQualifiedName.md` |

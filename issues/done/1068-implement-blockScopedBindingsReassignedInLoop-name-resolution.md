@@ -126,7 +126,7 @@ Follow-up issues:
 - `issues/open/693-implement-arrayToLocaleStringES-name-resolution.md` - Implement Arraytolocalestringes Name Resolution (same feature label, title overlap)
 - `issues/open/733-implement-assignmentCompatability-name-resolution.md` - Implement Assignmentcompatability Name Resolution (same feature label, title overlap)
 - `issues/done/268-implement-for-loop-increment-operator.md` is related but not a match. It completed for-loop update-slot support, while the current blocker is `++i` in a call argument expression.
-- `issues/open/1069-implement-blockScopedBindingsReassignedInLoop-scope-analysis.md` is a sibling generated bucket, not an implementation-ready child for the current issue-268 diagnostic.
+- `issues/done/1069-implement-blockScopedBindingsReassignedInLoop-scope-analysis.md` is a sibling generated bucket, not an implementation-ready child for the current issue-268 diagnostic.
 
 ## Smart triage
 

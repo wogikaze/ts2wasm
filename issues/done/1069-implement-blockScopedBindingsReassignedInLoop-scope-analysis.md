@@ -3,12 +3,14 @@ id: 1069
 title: "Implement Blockscopedbindingsreassignedinloop Scope Analysis"
 type: spike
 area: frontend/resolver
-class: blocked
+class: superseded
 priority: P2
-depends_on: [5006]
+depends_on: [5182]
 blocks: []
 created: 2026-05-01
-updated: 2026-05-01
+updated: 2026-05-06
+status: done
+completed: 2026-05-06
 ---
 
 ## Summary
@@ -43,10 +45,10 @@ This generated bucket is either split into implementation-ready child issues or 
 
 In scope:
 
-- [ ] Inspect the smart triage report below
-- [ ] Confirm whether existing open/done issues already cover this bucket
-- [ ] Split one feature family, one observable behavior, or one fixed reference window into child issues
-- [ ] Preserve exact reproduction commands and representative AST/diagnostic evidence in each child issue
+- [x] Inspect the smart triage report below
+- [x] Confirm whether existing open/done issues already cover this bucket
+- [x] Split one feature family, one observable behavior, or one fixed reference window into child issues
+- [x] Preserve exact reproduction commands and representative AST/diagnostic evidence in each child issue
 
 Out of scope:
 
@@ -68,10 +70,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] Duplicate candidates below are confirmed as no-match or this issue is superseded
-- [ ] At least one child issue contains an exact `mise run reference-triage -- ...` command
-- [ ] Child issue includes failing path, diagnostic code, source context, visible symbols, and parser/TypeScript AST evidence
-- [ ] Child issue acceptance names the exact fixture/reference path and diagnostic/stdout change
+- [x] Duplicate candidates below are confirmed as no-match or this issue is superseded
+- [x] At least one child issue contains an exact `mise run reference-triage -- ...` command
+- [x] Child issue includes failing path, diagnostic code, source context, visible symbols, and parser/TypeScript AST evidence
+- [x] Child issue acceptance names the exact fixture/reference path and diagnostic/stdout change
 
 ## Validation
 
@@ -98,15 +100,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] updated: `current-state.md` (repo root)
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] added: `issues/open/5182-parse-comma-separated-for-update-expressions.md`
 
 ## Notes
 
@@ -120,11 +122,23 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- none found by path/title/feature scan
+- Other `scope-analysis` generated buckets share only the broad feature label.
+- `issues/open/746-implement-assignmentToParenthesizedExpression.md` also reports `expected RightParen, got Some(Comma)`, but it covers parenthesized assignment/comma-expression parsing in a different reference path rather than for-loop update slots.
+- No open issue was found for comma-separated `for` update expressions.
 
 ## Smart triage
 
-Not generated. Rerun with `--triage-limit 1` or higher.
+Generated on 2026-05-06.
+
+- Path: `reference/typescript/tests/cases/compiler/blockScopedBindingsReassignedInLoop2.ts`
+- Diagnostic: `UnsupportedSyntax` / `parser-or-frontend-unsupported`
+- Current compiler message: `expected RightParen, got Some(Comma) at 53..54`
+- First failing source line: `for (let x = 1, y = 2; x < y; ++x, --y) {`
+- Visible symbols before failure: binding `x`; the parser has not yet modeled the full `let x = 1, y = 2` declaration list.
+- Compiler evidence: token dump includes `Increment`, `Ident("x")`, `Comma`, `Decrement`, and `Ident("y")`; AST/resolved construction fails before representing the `ForStatement`.
+- TypeScript oracle: no diagnostics for the representative file.
+- TypeScript AST path at the failure: `ForStatement -> BinaryExpression -> PrefixUnaryExpression -> CommaToken`
+- Superseding child: `issues/open/5182-parse-comma-separated-for-update-expressions.md`
 
 ## Completion evidence
 
@@ -132,16 +146,16 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- `...`
+- `pending`
 
 Validation result:
 
 ```text
-command:
-result:
-date:
+command: python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/blockScopedBindingsReassignedInLoop2.ts
+result: pass; current blocker identified as comma-separated for update expression parsing, split to issue 5182
+date: 2026-05-06
 ```
 
 Remaining risks:
 
-- none
+- Later triage may expose multi-declarator `let`, postfix update values, or captured loop binding semantics after issue 5182 advances past the parser blocker.
