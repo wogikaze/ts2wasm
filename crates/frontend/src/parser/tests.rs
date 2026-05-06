@@ -772,28 +772,21 @@ mod tests {
     }
 
     #[test]
-    fn preserves_adjacent_relational_expression_that_resembles_generic_call() {
+    fn parses_generic_call_as_call_not_comparison() {
         let program = parse_program("let result = a<b>(c);").unwrap();
         let Stmt::Let { expr, .. } = &program[0] else {
             panic!("expected let statement");
         };
-        let Expr::Binary {
-            left,
-            op: BinaryOp::Greater,
-            right,
-            ..
-        } = expr
-        else {
-            panic!("expected greater-than comparison, got {expr:?}");
-        };
-        assert!(matches!(
-            left.as_ref(),
-            Expr::Binary {
-                op: BinaryOp::Less,
-                ..
+        match expr {
+            Expr::Call {
+                callee, args, ..
+            } => {
+                assert!(matches!(callee.as_ref(), Expr::Ident { name, .. } if name == "a"));
+                assert_eq!(args.len(), 1);
+                assert!(matches!(&args[0], Expr::Ident { name, .. } if name == "c"));
             }
-        ));
-        assert!(matches!(right.as_ref(), Expr::Ident { name, .. } if name == "c"));
+            other => panic!("expected Call expression, got {other:?}"),
+        }
     }
 
     #[test]

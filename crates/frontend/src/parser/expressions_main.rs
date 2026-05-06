@@ -1341,7 +1341,10 @@ impl Parser {
     }
 
     fn is_typescript_generic_call_callee(&self, callee: &Expr) -> bool {
-        matches!(callee, Expr::Ident { name, .. } if self.typescript_generic_functions.contains(name))
+        // Accept any identifier callee for generic call type arguments.
+        // The downstream try_consume_typescript_call_type_arguments checks
+        // that `<` is followed by matching `>` and immediately by `(`.
+        matches!(callee, Expr::Ident { .. })
     }
 
     fn try_consume_typescript_new_type_arguments(
