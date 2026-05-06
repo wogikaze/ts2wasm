@@ -19,11 +19,13 @@ diagnostics instead of stopping at `DuplicateFunction`.
 
 ## Problem
 
-`callOverloads3.ts` and `callOverloads4.ts` both parse successfully, but
-`validate_ast` rejects the second bodyless `function Foo(...)` declaration as a
-duplicate function. TypeScript treats these declarations as an invalid function
-overload list/class merge and reports diagnostics at the function and class
-names.
+`callOverloads3.ts`, `callOverloads4.ts`, and `callOverloads5.ts` parse
+successfully, but `validate_ast` rejects the second bodyless
+`function Foo(...)` declaration as a duplicate function. The `callOverloads1.ts`
+and `callOverloads2.ts` windows also contain the same class/function merge
+problem after their `F1` function-overload implementation blocker is removed.
+TypeScript treats these declarations as invalid function overload list/class
+merges and reports diagnostics at the function and class names.
 
 Problem: top-level bodyless function overload declarations are currently handled as duplicate concrete function implementations.
 
@@ -32,6 +34,7 @@ Problem: top-level bodyless function overload declarations are currently handled
 ```sh
 mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/callOverloads3.ts
 mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/callOverloads4.ts
+mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/callOverloads5.ts
 ```
 
 Current diagnostic for both files:
@@ -52,7 +55,8 @@ class Foo { // error
 ```
 
 The `callOverloads4.ts` variant also includes a bodyless constructor overload
-inside the class before the constructor implementation.
+inside the class before the constructor implementation. The `callOverloads5.ts`
+variant includes class method overload signatures inside the invalid class.
 
 Triage evidence:
 
@@ -61,6 +65,8 @@ Triage evidence:
   `ClassDecl Foo`.
 - `callOverloads4.ts` additionally contains two `constructor` class members,
   where the first constructor declaration is bodyless.
+- `callOverloads5.ts` additionally contains bodyless `bar1` class method
+  overload signatures before its implementation.
 - TypeScript oracle reports TS2814 for function/class merge, TS2391 for the
   missing function implementation ordering, and TS2813 for the class
   declaration implementing overload list `Foo`.
@@ -113,8 +119,14 @@ Do not touch:
   the second `function Foo` overload declaration
 - [ ] `callOverloads4.ts` no longer reports generic `DuplicateFunction` for
   the second `function Foo` overload declaration
+- [ ] `callOverloads5.ts` no longer reports generic `DuplicateFunction` for
+  the second `function Foo` overload declaration
+- [ ] After issue 5200 removes the `F1` blocker, `callOverloads1.ts` and
+  `callOverloads2.ts` reach a class/function merge diagnostic for `Foo`
 - [ ] A focused fixture covers two bodyless `function Foo` declarations followed
   by `class Foo`
+- [ ] A focused fixture covers `class Foo` followed by bodyless
+  `function Foo();`
 - [ ] Multiple concrete function bodies with the same name still report the
   existing duplicate-function diagnostic
 - [ ] The new diagnostic is source-spanned at the offending function or class
@@ -134,6 +146,7 @@ Impacted commands:
 ```sh
 mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/callOverloads3.ts
 mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/callOverloads4.ts
+mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/callOverloads5.ts
 ```
 
 Not run:

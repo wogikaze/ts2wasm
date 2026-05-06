@@ -131,7 +131,7 @@ Follow-up issues:
 - `issues/done/1012-implement-autonumberingInEnums.md` - Implement Autonumberinginenums (same feature label, same group key, title overlap)
 - `issues/done/1070-implement-blockScopedEnumVariablesUseBeforeDef-enum.md` - Implement Blockscopedenumvariablesusebeforedef Enum (same feature label, same group key, title overlap)
 - `issues/done/1071-implement-blockScopedEnumVariablesUseBeforeDef-import-export.md` - Implement Blockscopedenumvariablesusebeforedef Import Export (same feature label, same group key, title overlap)
-- `issues/open/1099-implement-callOverloads-parser-syntax.md` - Implement Calloverloads Parser Syntax (same feature label, same group key, title overlap)
+- `issues/done/1099-implement-callOverloads-parser-syntax.md` - Implement Calloverloads Parser Syntax (same feature label, same group key, title overlap; closed into issues 5199 and 5200)
 - `issues/open/1109-implement-capturedLetConstInLoop-import-export.md` - Implement Capturedletconstinloop Import Export (same feature label, same group key, title overlap)
 - `issues/open/1111-implement-capturedLetConstInLoop-parser-syntax.md` - Implement Capturedletconstinloop Parser Syntax (same feature label, same group key, title overlap)
 - `issues/open/1143-implement-checkSuperCallBeforeThisAccessing-parser-syntax.md` - Implement Checksupercallbeforethisaccessing Parser Syntax (same feature label, same group key, title overlap)
