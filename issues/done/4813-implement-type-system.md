@@ -124,7 +124,7 @@ Follow-up issues:
 - `issues/done/1155-implement-circularInferredTypeOfVariable.md` - Implement Circularinferredtypeofvariable (same feature label, same group key, title overlap; split to issue 5240)
 - `issues/done/1156-implement-circularInlineMappedGenericTupleTypeNoCrash.md` - Implement Circularinlinemappedgenerictupletypenocrash (same feature label, same group key, title overlap; split to issue 5241)
 - `issues/done/1168-implement-circularlyConstrainedMappedTypeContainingConditionalNoInfiniteInstantiationDepth.md` - Implement Circularlyconstrainedmappedtypecontainingconditionalnoinfiniteinstantiationdepth (same feature label, same group key, title overlap; split to issue 5245)
-- `issues/open/1169-implement-circularlySimplifyingConditionalTypesNoCrash.md` - Implement Circularlysimplifyingconditionaltypesnocrash (same feature label, same group key, title overlap)
+- `issues/done/1169-implement-circularlySimplifyingConditionalTypesNoCrash.md` - Implement Circularlysimplifyingconditionaltypesnocrash (same feature label, same group key, title overlap; stale build-pass)
 - `issues/open/1172-implement-classAttributeInferenceTemplate.md` - Implement Classattributeinferencetemplate (same feature label, same group key, title overlap)
 - `issues/open/1173-implement-classAttributeInferenceTemplateJS.md` - Implement Classattributeinferencetemplatejs (same feature label, same group key, title overlap)
 - `issues/open/1234-implement-classPropertyInferenceFromBroaderTypeConst.md` - Implement Classpropertyinferencefrombroadertypeconst (same feature label, same group key, title overlap)
