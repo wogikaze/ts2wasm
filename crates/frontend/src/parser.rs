@@ -19,6 +19,7 @@ pub struct Parser {
     has_preceding_newline: Vec<bool>,
     /// Whether we are inside an async function body (for context-sensitive `await` parsing).
     in_async_fn: bool,
+    fn_depth: u32,
 }
 
 /// For each token, check if there is a line terminator between the previous

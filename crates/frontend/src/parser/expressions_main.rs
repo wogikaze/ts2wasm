@@ -947,7 +947,7 @@ impl Parser {
         } else if let Some(await_span) = self.consume_span(TokenKind::Await) {
             // Outside async functions, `await(...)` is a call expression whose
             // callee is the identifier `await`, matching TypeScript semantics.
-            if !self.in_async_fn && matches!(self.peek(), Some(Token::LeftParen)) {
+            if self.fn_depth > 0 && !self.in_async_fn && matches!(self.peek(), Some(Token::LeftParen)) {
                 self.advance(); // consume `(`
                 let mut args = Vec::new();
                 if !self.consume(TokenKind::RightParen) {
@@ -972,7 +972,7 @@ impl Parser {
                     },
                 })
             } else {
-                if !self.in_async_fn {
+                if self.fn_depth > 0 && !self.in_async_fn {
                     return Err(Diagnostic {
                         code: DiagCode::UnsupportedSyntax,
                         message: "'await' expressions are only allowed within async functions and at the top levels of modules".to_owned(),
