@@ -121,7 +121,7 @@ Follow-up issues:
 ## Duplicate detection
 
 - `issues/done/062f-function-object-metadata.md` owns the supported `name` and `length` metadata subset and explicit unsupported metadata diagnostics; it does not implement namespace-merged function static properties.
-- `issues/open/1212-implement-classFunctionMerging-import-export.md` is a related generated bucket, but it has no fresh triage evidence and is not a focused implementation-ready owner.
+- `issues/done/1212-implement-classFunctionMerging-import-export.md` is a related generated bucket, but fresh triage shows it is now a build pass, not a focused implementation-ready owner.
 - Broad import/export buckets are not exact owners for the current lowering diagnostic.
 
 ## Smart triage

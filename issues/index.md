@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 4 | 3 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4517 | 3625 | 892 |
+| frontend | 4517 | 3624 | 893 |
 | harness | 1 | 0 | 1 |
 | ir | 62 | 40 | 22 |
 | issues | 4 | 0 | 4 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5158 | 3912 | 1246 |
+| total | 5158 | 3911 | 1247 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -551,7 +551,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 772 | Implement Augmentedtypesvar | spike | frontend/syntax | class: blocked | Implement Augmentedtypesvar |
 | 773 | Implement Autoasiforstaticsinclassdeclaration | spike | frontend/syntax | class: triage-needed | Implement Autoasiforstaticsinclassdeclaration |
 | 775 | Implement Autotypeassignedusingdestructuringfromnevernocrash | spike | frontend/resolver | class: blocked | Implement Autotypeassignedusingdestructuringfromnevernocrash |
-| 1212 | Implement Classfunctionmerging Import Export | spike | frontend/syntax | class: blocked | Implement Classfunctionmerging Import Export |
 | 1223 | Implement Classmemberinitializerwithlamdascoping Import Export | spike | frontend/syntax | class: blocked | Implement Classmemberinitializerwithlamdascoping Import Export |
 | 1224 | Implement Classmemberinitializerwithlamdascoping Module System Amd | spike | frontend/syntax | class: blocked | Implement Classmemberinitializerwithlamdascoping Module System Amd |
 | 1226 | Implement Classmergedwithinterfacemultiplebasesnoerror | spike | frontend/syntax | class: blocked | Implement Classmergedwithinterfacemultiplebasesnoerror |
@@ -4988,6 +4987,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1209 | Implement Classfieldsupernotaccessible | spike | frontend/syntax | see `issues/done/1209-implement-classFieldSuperNotAccessible.md` |
 | 1210 | Implement Classfieldsupernotaccessiblejs | spike | frontend/syntax | see `issues/done/1210-implement-classFieldSuperNotAccessibleJs.md` |
 | 1211 | Implement Classfieldsbrokenconstructoremitnocrash | spike | frontend/syntax | see `issues/done/1211-implement-classFieldsBrokenConstructorEmitNoCrash.md` |
+| 1212 | Implement Classfunctionmerging Import Export | spike | frontend/syntax | see `issues/done/1212-implement-classFunctionMerging-import-export.md` |
 | 1213 | Implement Classfunctionmerging Parser Syntax | spike | frontend/syntax | see `issues/done/1213-implement-classFunctionMerging-parser-syntax.md` |
 | 1214 | Implement Classheritagewithtrailingseparator | spike | frontend/syntax | see `issues/done/1214-implement-classHeritageWithTrailingSeparator.md` |
 | 1215 | Implement Classimplementinginterfaceindexer | spike | frontend/syntax | see `issues/done/1215-implement-classImplementingInterfaceIndexer.md` |
