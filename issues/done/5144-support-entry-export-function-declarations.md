@@ -64,10 +64,10 @@ The entry module build path accepts `export function name(...) { ... }` for supp
 
 In scope:
 
-- [ ] Rewrite `ExportDecl(Function)` in the entry module build path as a local function declaration plus module export metadata.
-- [ ] Export under the declared function name.
-- [ ] Add focused build/module tests for an exported function with a supported body.
-- [ ] Re-run the representative reference triage and confirm it no longer reports the `only export const and export default are supported` boundary.
+- [x] Rewrite `ExportDecl(Function)` in the entry module build path as a local function declaration plus module export metadata.
+- [x] Export under the declared function name.
+- [x] Add focused build/module tests for an exported function with a supported body.
+- [x] Re-run the representative reference triage and confirm it no longer reports the `only export const and export default are supported` boundary.
 
 Out of scope:
 
@@ -91,10 +91,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] `export function f() { return 1; }` builds as an entry module and exports `f`.
-- [ ] A focused module test proves an exported function value can be imported or observed through the existing static module export path.
-- [ ] `mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/avoidNarrowingUsingConstVariableFromBindingElementWithLiteralInitializer.ts` no longer reports `only export const and export default are supported`.
-- [ ] Unsupported export forms outside this slice still produce clear issue-5005 diagnostics.
+- [x] `export function f() { return 1; }` builds as an entry module and exports `f`.
+- [x] A focused module test proves an exported function value can be imported or observed through the existing static module export path.
+- [x] `mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/avoidNarrowingUsingConstVariableFromBindingElementWithLiteralInitializer.ts` no longer reports `only export const and export default are supported`.
+- [x] Unsupported export forms outside this slice still produce clear issue-5005 diagnostics.
 
 ## Validation
 
@@ -124,15 +124,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 
@@ -149,14 +149,17 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- `...`
+- `4c461f73` issue-5144: add export function module proof (tests and fixture)
 
 Validation result:
 
 ```text
-command:
-result:
-date:
+cargo fmt --all --check => pass
+cargo nextest run -p ts2wasm-cli module => 27 tests passed
+cargo nextest run -p ts2wasm-compiler static_function_export_lowering_populates_entry_module_export => pass
+mise run reference-triage -- tsc .../avoidNarrowingUsingConstVariableFromBindingElementWithLiteralInitializer.ts => UnsupportedModule boundary lifted; now reports UnresolvedName for ambient `foo` (out of scope)
+git diff --check => pass
+date: 2026-05-06
 ```
 
 Remaining risks:
