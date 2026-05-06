@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 2 | 1 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4420 | 3765 | 655 |
+| frontend | 4421 | 3765 | 656 |
 | harness | 1 | 0 | 1 |
 | ir | 32 | 10 | 22 |
 | issues | 4 | 0 | 4 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5028 | 4031 | 997 |
+| total | 5029 | 4031 | 998 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -47,7 +47,7 @@ Issue files are the source of truth for work items. The generated section below 
 Direct child counts are derived from issue-file `depends_on` links. A meta issue can be `done` as a classification/design umbrella while implementation child issues remain open.
 
 ```
-5000 (Meta: TypeScript Compiler Parser Syntax Coverage) [done/design] ch:493 open:426 done:67
+5000 (Meta: TypeScript Compiler Parser Syntax Coverage) [done/design] ch:492 open:425 done:67
 ├── 5002 (Meta: TypeScript Compiler Type System Coverage) [done/done] ch:242 open:234 done:8 (also ← 5005)
 ├── 5003 (Meta: TypeScript Compiler Declaration Emit Coverage) [done/done] ch:103 open:92 done:11 (also ← 5001)
 5001 (Meta: TypeScript Compiler Semantic Analysis Coverage) [done/done] ch:608 open:361 done:247
@@ -66,7 +66,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 
 | Order | ID | Title | State | Class | Area | Priority | Depends on | Direct children | Open children | Done children |
 |-----:|---:|------|-------|-------|------|--------:|-----------:|----------------:|--------------:|--------------:|
-| 1 | 5000 | Meta: TypeScript Compiler Parser Syntax Coverage | done | design | frontend/syntax | P1 | - | 493 | 426 | 67 |
+| 1 | 5000 | Meta: TypeScript Compiler Parser Syntax Coverage | done | design | frontend/syntax | P1 | - | 492 | 425 | 67 |
 | 2 | 5001 | Meta: TypeScript Compiler Semantic Analysis Coverage | done | done | frontend/semantics | P1 | - | 608 | 361 | 247 |
 | 3 | 5004 | Meta: Runtime Builtins Coverage (test262) (audit reopened #5004) | done | done | runtime/builtins | P1 | - | 24 | 3 | 21 |
 | 4 | 5005 | Meta: TypeScript Compiler Name Resolution Coverage | done | done | frontend/resolver | P1 | - | 435 | 388 | 47 |
@@ -148,6 +148,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5191 | Parse leading decimal numeric literals | feature | frontend/syntax | implementation-ready | P1 |  | `builtinIterator.ts` stops at a generic `unsupported expression` parser diagnostic before it can reach the intended `... |
 | 5192 | Support first-class class constructor values | feature | ir/runtime | implementation-ready | P1 |  | class constructor bindings used as expression values still fail with `issue-5011`, blocking reference cases that pass... |
 | 5193 | Parse ASI after ambient variable declarations | feature | frontend/syntax | implementation-ready | P1 |  | declaration-only ambient variables followed by a newline and another statement can still report `issue-400` instead o... |
+| 5194 | Report empty call type arguments | feature | frontend/syntax | implementation-ready | P1 |  | `Foo<a,,b>();` currently reports `expected Semicolon, got Some(Comma)` instead of a source-spanned missing type-argum... |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -423,7 +424,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 772 | Implement Augmentedtypesvar | spike | frontend/syntax | class: blocked | Implement Augmentedtypesvar |
 | 773 | Implement Autoasiforstaticsinclassdeclaration | spike | frontend/syntax | class: triage-needed | Implement Autoasiforstaticsinclassdeclaration |
 | 775 | Implement Autotypeassignedusingdestructuringfromnevernocrash | spike | frontend/resolver | class: blocked | Implement Autotypeassignedusingdestructuringfromnevernocrash |
-| 1092 | Implement Callexpressionwithmissingtypeargument | spike | frontend/syntax | class: blocked | Implement Callexpressionwithmissingtypeargument |
 | 1093 | Implement Callexpressionwithtypeparameterconstrainedtooutertypeparameter | spike | frontend/syntax | class: blocked | Implement Callexpressionwithtypeparameterconstrainedtooutertypeparameter |
 | 1094 | Implement Callofconditionaltypewithconcretebranches | spike | frontend/semantics | class: blocked | Implement Callofconditionaltypewithconcretebranches |
 | 1095 | Implement Callonclass | spike | frontend/resolver | class: blocked | Implement Callonclass |
@@ -4985,6 +4985,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1089 | Implement Cachedcontextualtypes | spike | frontend/syntax | see `issues/done/1089-implement-cachedContextualTypes.md` |
 | 1090 | Implement Cachedmoduleresolution | spike | frontend/syntax | see `issues/done/1090-implement-cachedModuleResolution.md` |
 | 1091 | Implement Callconstructassignment | spike | frontend/syntax | see `issues/done/1091-implement-callConstructAssignment.md` |
+| 1092 | Implement Callexpressionwithmissingtypeargument | spike | frontend/syntax | see `issues/done/1092-implement-callExpressionWithMissingTypeArgument.md` |
 | 2050 | Implement Duplicatelocalvariable Duplicate Local | spike | reference/triage | see `issues/done/2050-implement-duplicateLocalVariable-duplicate-local.md` |
 | 3002 | Implement Isolateddeclarationerrorsdefault | spike | runtime/builtins | see `issues/done/3002-implement-isolatedDeclarationErrorsDefault.md` |
 | 3131 | Implement Jsxfactorynotidentifierorqualifiedname | spike | reference/triage | see `issues/done/3131-implement-jsxFactoryNotIdentifierOrQualifiedName.md` |
