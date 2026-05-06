@@ -154,7 +154,29 @@ Split from generated bucket `1046` on 2026-05-06 and expanded with generated buc
 
 ## Completion evidence
 
-Fill only when moving to `done/`.
+Commits:
+
+- `3cb3ebf3` chore: commit parser improvements from background (combined with this issue's changes)
+
+### Changes
+
+1. **`expressions_main.rs`**: `assignment()` handles `PowerEqual` after expression — returns `Expr::Assign { name, expr: Binary { op: Power } }`.
+
+2. **`statements_general.rs`**: Statement routing and `assign_statement()` handle `PowerEqual` / `StarEqual` / `SlashEqual` / `PercentEqual` for compound assignment dispatch.
+
+3. **`tests.rs`**: Added `parses_exponentiation_compound_assignment` + `preserves_exponentiation_operator_when_not_compound` tests.
+
+Validation result:
+
+```text
+command: cargo nextest run -p ts2wasm-frontend
+result: 184 passed, 0 failed
+date: 2026-05-06
+
+command: target/debug/ts2wasm build bigIntWithTargetES2016.ts -o /tmp/o.wasm
+result: BUILD SUCCESS (no longer PowerEqual parser error)
+date: 2026-05-06
+```
 
 Commits:
 

@@ -2952,6 +2952,8 @@ class Foo {
         }
     }
 
+
+
     #[test]
     fn preserves_exponentiation_operator_when_not_compound() {
         let program = parse_program("x = a ** b;");
