@@ -2731,14 +2731,6 @@ class Foo {
     }
 
     #[test]
-    fn parses_declare_with_type_syntax_inside_declare_block() {
-        let source = r#"
-            declare namespace NS {
-                interface Inner { x: number }
-                type Alias = string;
-                function fn(): void;
-
-    #[test]
     fn asi_after_multiline_const_initializer() {
         let source = "const result = (() => ({ a: 1 }))\nresult.BLAH;";
         let program = parse_program(source).unwrap();
