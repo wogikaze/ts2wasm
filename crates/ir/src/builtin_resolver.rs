@@ -1390,10 +1390,16 @@ fn resolve_expr(expr: &Expr) -> Result<ResolvedExpr, Diagnostic> {
             op: BinaryOp::InstanceOf,
             right: Box::new(resolve_expr(type_expr)?),
         }),
-        Expr::Ternary { span, .. } => Err(Diagnostic {
-            code: DiagCode::UnsupportedSyntax,
-            message: "ternary operator not yet supported".to_owned(),
-            span: Some(*span),
+        Expr::Ternary {
+            condition,
+            then_expr,
+            else_expr,
+            span,
+        } => Ok(ResolvedExpr::Ternary {
+            condition: Box::new(resolve_expr(condition)?),
+            then_expr: Box::new(resolve_expr(then_expr)?),
+            else_expr: Box::new(resolve_expr(else_expr)?),
+            span: *span,
         }),
         Expr::Unary { op, expr, span } => {
             if matches!(

@@ -136,6 +136,12 @@ pub enum ResolvedExpr {
         op: BinaryOp,
         right: Box<ResolvedExpr>,
     },
+    Ternary {
+        condition: Box<ResolvedExpr>,
+        then_expr: Box<ResolvedExpr>,
+        else_expr: Box<ResolvedExpr>,
+        span: Span,
+    },
     Call {
         callee: Box<ResolvedExpr>,
         args: Vec<ResolvedExpr>,

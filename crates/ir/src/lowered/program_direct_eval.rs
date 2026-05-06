@@ -235,6 +235,16 @@ pub(super) fn collect_direct_eval_function_assignment_expr(
             collect_direct_eval_function_assignment_expr(function_name, left, env);
             collect_direct_eval_function_assignment_expr(function_name, right, env);
         }
+        ResolvedExpr::Ternary {
+            condition,
+            then_expr,
+            else_expr,
+            ..
+        } => {
+            collect_direct_eval_function_assignment_expr(function_name, condition, env);
+            collect_direct_eval_function_assignment_expr(function_name, then_expr, env);
+            collect_direct_eval_function_assignment_expr(function_name, else_expr, env);
+        }
         ResolvedExpr::Call { callee, args, .. } => {
             collect_direct_eval_function_assignment_expr(function_name, callee, env);
             for arg in args {

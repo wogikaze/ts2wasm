@@ -12,6 +12,16 @@ pub(super) fn collect_arrow_captures(expr: &ResolvedExpr, params: &[String], cap
             collect_arrow_captures(left, params, captures);
             collect_arrow_captures(right, params, captures);
         }
+        ResolvedExpr::Ternary {
+            condition,
+            then_expr,
+            else_expr,
+            ..
+        } => {
+            collect_arrow_captures(condition, params, captures);
+            collect_arrow_captures(then_expr, params, captures);
+            collect_arrow_captures(else_expr, params, captures);
+        }
         ResolvedExpr::Call { callee, args, .. } => {
             collect_arrow_captures(callee, params, captures);
             for arg in args {
@@ -388,6 +398,16 @@ pub(super) fn expr_assigns_any_name(expr: &ResolvedExpr, names: &[String]) -> bo
         }
         ResolvedExpr::Binary { left, right, .. } => {
             expr_assigns_any_name(left, names) || expr_assigns_any_name(right, names)
+        }
+        ResolvedExpr::Ternary {
+            condition,
+            then_expr,
+            else_expr,
+            ..
+        } => {
+            expr_assigns_any_name(condition, names)
+                || expr_assigns_any_name(then_expr, names)
+                || expr_assigns_any_name(else_expr, names)
         }
         ResolvedExpr::Call { callee, args, .. } => {
             expr_assigns_any_name(callee, names)

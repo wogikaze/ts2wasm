@@ -425,6 +425,31 @@ impl<'a> Resolver<'a> {
                 op: lower_logical_assign_op(*op),
                 expr: Box::new(self.lower_expr(expr)?),
             }),
+            ResolvedExpr::Ternary {
+                condition,
+                then_expr,
+                else_expr,
+                ..
+            } => {
+                let result = self.alloc_temp();
+                Ok(LoweredExpr::Block {
+                    stmts: vec![
+                        LoweredStmt::Let(result, LoweredExpr::Undefined),
+                        LoweredStmt::If {
+                            condition: self.lower_expr(condition)?,
+                            then_body: vec![LoweredStmt::Assign(
+                                result,
+                                self.lower_expr(then_expr)?,
+                            )],
+                            else_body: vec![LoweredStmt::Assign(
+                                result,
+                                self.lower_expr(else_expr)?,
+                            )],
+                        },
+                    ],
+                    result: Box::new(LoweredExpr::Local(result)),
+                })
+            }
             ResolvedExpr::Call { callee, args, span } => {
                 if let ResolvedExpr::FunctionExpr { name, params, body } = callee.as_ref() {
                     return self.lower_function_expr_call(name, params, body, args, *span);

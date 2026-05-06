@@ -716,6 +716,33 @@ fn typescript_semantics_rejects_outer_same_name_missing_argument() {
 }
 
 #[test]
+fn lowering_represents_plain_ternary_as_expression_block() {
+    use ts2wasm_ir::lowered::{LocalId, LoweredExpr, LoweredStmt};
+
+    let program = parse_and_resolve(
+        r#"
+        let x = true;
+        let y = x ? x : [];
+        "#,
+    );
+    let lowered = ts2wasm_ir::lowered::lower_program(&program).unwrap();
+
+    match &lowered.top_level_statements[1] {
+        LoweredStmt::Let(LocalId(1), LoweredExpr::Block { stmts, result }) => {
+            assert!(matches!(
+                stmts.as_slice(),
+                [
+                    LoweredStmt::Let(LocalId(2), LoweredExpr::Undefined),
+                    LoweredStmt::If { .. }
+                ]
+            ));
+            assert!(matches!(result.as_ref(), LoweredExpr::Local(LocalId(2))));
+        }
+        other => panic!("unexpected lowered ternary statement: {other:?}"),
+    }
+}
+
+#[test]
 fn lowering_represents_returned_ordinary_closure_as_heap_creation() {
     use ts2wasm_ir::lowered::{ClosureRepresentation, FuncId, LocalId, LoweredExpr, LoweredStmt};
 

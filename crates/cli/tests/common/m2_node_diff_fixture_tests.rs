@@ -2191,11 +2191,8 @@ fn typeof_fixture_matches_node_output_under_iwasm() {
 }
 
 #[test]
-fn ternary_fixture_reports_unsupported_syntax() {
-    assert_build_fails_with_unsupported_syntax(
-        "fixtures/core-semantics/ternary.ts",
-        "ternary operator not yet supported",
-    );
+fn ternary_fixture_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node("fixtures/core-semantics/ternary.ts");
 }
 
 #[test]
@@ -2223,13 +2220,8 @@ fn core_expression_await_fixture_builds_successfully() {
 }
 
 #[test]
-fn core_expression_ternary_fixture_reports_unsupported_syntax() {
-    assert_build_fails_with_diagnostic(
-        "fixtures/core-expressions/ternary.ts",
-        "[UnsupportedSyntax]",
-        "ternary operator not yet supported",
-        true,
-    );
+fn core_expression_ternary_fixture_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node("fixtures/core-expressions/ternary.ts");
 }
 
 #[test]

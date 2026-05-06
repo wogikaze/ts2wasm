@@ -604,6 +604,16 @@ fn collect_array_map_callback_function_names_in_expr(
             collect_array_map_callback_function_names_in_expr(left, names);
             collect_array_map_callback_function_names_in_expr(right, names);
         }
+        ResolvedExpr::Ternary {
+            condition,
+            then_expr,
+            else_expr,
+            ..
+        } => {
+            collect_array_map_callback_function_names_in_expr(condition, names);
+            collect_array_map_callback_function_names_in_expr(then_expr, names);
+            collect_array_map_callback_function_names_in_expr(else_expr, names);
+        }
         ResolvedExpr::Call { callee, args, .. }
         | ResolvedExpr::OptionalCall { callee, args, .. } => {
             collect_array_map_callback_function_names_in_expr(callee, names);
@@ -1359,6 +1369,16 @@ fn expr_contains_this(expr: &ResolvedExpr) -> bool {
         ResolvedExpr::Binary { left, right, .. } => {
             expr_contains_this(left) || expr_contains_this(right)
         }
+        ResolvedExpr::Ternary {
+            condition,
+            then_expr,
+            else_expr,
+            ..
+        } => {
+            expr_contains_this(condition)
+                || expr_contains_this(then_expr)
+                || expr_contains_this(else_expr)
+        }
         ResolvedExpr::Call { callee, args, .. } => {
             expr_contains_this(callee) || args.iter().any(expr_contains_this)
         }
@@ -1563,6 +1583,16 @@ fn expr_contains_arguments(expr: &ResolvedExpr) -> bool {
         }
         ResolvedExpr::Binary { left, right, .. } => {
             expr_contains_arguments(left) || expr_contains_arguments(right)
+        }
+        ResolvedExpr::Ternary {
+            condition,
+            then_expr,
+            else_expr,
+            ..
+        } => {
+            expr_contains_arguments(condition)
+                || expr_contains_arguments(then_expr)
+                || expr_contains_arguments(else_expr)
         }
         ResolvedExpr::Call { callee, args, .. } => {
             expr_contains_arguments(callee) || args.iter().any(expr_contains_arguments)

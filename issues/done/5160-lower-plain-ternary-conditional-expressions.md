@@ -72,10 +72,10 @@ Plain ternary conditional expressions lower through resolver/IR/backend for the 
 
 In scope:
 
-- [ ] Resolve `Expr::Ternary` into an IR form or existing conditional lowering that preserves JavaScript truthiness of the condition.
-- [ ] Lower simple expression branches such as `x ? x : []`.
-- [ ] Add focused coverage for `let y = x ? x : []` and the existing `fixtures/core-semantics/ternary.ts` shape.
-- [ ] Re-run the representative reference triage and confirm the current `ternary operator not yet supported` blocker is gone.
+- [x] Resolve `Expr::Ternary` into an IR form or existing conditional lowering that preserves JavaScript truthiness of the condition.
+- [x] Lower simple expression branches such as `x ? x : []`.
+- [x] Add focused coverage for `let y = x ? x : []` and the existing `fixtures/core-semantics/ternary.ts` shape.
+- [x] Re-run the representative reference triage and confirm the current `ternary operator not yet supported` blocker is gone.
 
 Out of scope:
 
@@ -102,10 +102,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] `fixtures/core-semantics/ternary.ts` no longer reports `ternary operator not yet supported` and matches Node output.
-- [ ] `python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/bestChoiceType.ts` no longer reports `UnsupportedSyntax: ternary operator not yet supported`.
-- [ ] A focused unit or fixture test covers `let y = x ? x : [];`.
-- [ ] Existing parser ternary AST coverage remains passing.
+- [x] `fixtures/core-semantics/ternary.ts` no longer reports `ternary operator not yet supported` and matches Node output.
+- [x] `python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/bestChoiceType.ts` no longer reports `UnsupportedSyntax: ternary operator not yet supported`.
+- [x] A focused unit or fixture test covers `let y = x ? x : [];`.
+- [x] Existing parser ternary AST coverage remains passing.
 
 ## Validation
 
@@ -133,15 +133,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] created/updated: `issues/open/5192-support-regexp-match-fallback-array-map-receiver.md`
 
 ## Notes
 
@@ -153,16 +153,40 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- `...`
+- this commit: frontend: lower plain ternary expressions
 
 Validation result:
 
 ```text
-command:
-result:
-date:
+command: cargo fmt --all --check
+result: pass
+date: 2026-05-06
+
+command: cargo nextest run -p ts2wasm-frontend
+result: pass (172 passed)
+date: 2026-05-06
+
+command: cargo nextest run -p ts2wasm-ir
+result: pass (26 passed)
+date: 2026-05-06
+
+command: cargo nextest run -p ts2wasm-cli ternary
+result: pass (4 passed)
+date: 2026-05-06
+
+command: cargo nextest run -p ts2wasm-cli --test m2_node_diff ternary
+result: pass (2 passed)
+date: 2026-05-06
+
+command: python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/bestChoiceType.ts
+result: pass for issue 5160; ternary unsupported blocker is gone, next blocker split to issue 5192
+date: 2026-05-06
+
+command: python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/bestCommonTypeWithContextualTyping.ts
+result: pass; BuildPass, ternary expression resolves and lowers
+date: 2026-05-06
 ```
 
 Remaining risks:
 
-- none
+- issue 5192 owns the next `bestChoiceType.ts` receiver-classification blocker after ternary lowering.

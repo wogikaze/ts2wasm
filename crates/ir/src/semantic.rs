@@ -353,6 +353,16 @@ impl TypeScriptCallArityValidator {
                 self.validate_expr(left)?;
                 self.validate_expr(right)?;
             }
+            ResolvedExpr::Ternary {
+                condition,
+                then_expr,
+                else_expr,
+                ..
+            } => {
+                self.validate_expr(condition)?;
+                self.validate_expr(then_expr)?;
+                self.validate_expr(else_expr)?;
+            }
             ResolvedExpr::Call { callee, args, span }
             | ResolvedExpr::OptionalCall { callee, args, span } => {
                 self.validate_direct_call_arity(callee, args, *span)?;
@@ -778,6 +788,9 @@ impl<'a> HirLowerer<'a> {
                 expr,
             } => Ok(HirExpr::JsUnaryNot(Box::new(self.lower_expr(expr)?))),
             ResolvedExpr::Binary { left, op, right } => self.lower_binary(left, *op, right),
+            ResolvedExpr::Ternary { .. } => Err(unsupported(
+                "ternary expressions are not part of the initial HIR slice",
+            )),
             ResolvedExpr::BuiltinCall { builtin, args } => Ok(HirExpr::CallBuiltin {
                 builtin: *builtin,
                 args: self.lower_args(args)?,
