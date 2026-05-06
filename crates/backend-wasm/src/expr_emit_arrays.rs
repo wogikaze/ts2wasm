@@ -13,7 +13,10 @@ impl WatEmitter<'_> {
         };
         if values.is_empty() {
             self.emit_expr(writer, array, indent, frame);
-            writer.line_fmt(indent, format_args!("(call {})", RuntimeFn::GetLength.symbol()));
+            writer.line_fmt(
+                indent,
+                format_args!("(call {})", RuntimeFn::GetLength.symbol()),
+            );
             return;
         }
 
@@ -306,7 +309,9 @@ impl WatEmitter<'_> {
         for (i, slot) in slots.iter().enumerate() {
             let offset = Layout::ARRAY_HEADER_SIZE + (i as u32) * 4;
             match slot {
-                LoweredArraySlot::Present(elem) => self.emit_expr(writer, elem, indent, &child_frame),
+                LoweredArraySlot::Present(elem) => {
+                    self.emit_expr(writer, elem, indent, &child_frame)
+                }
                 LoweredArraySlot::Hole => {
                     writer.i32_const(indent, ValueTag::UNDEFINED);
                 }
@@ -331,6 +336,4 @@ impl WatEmitter<'_> {
             ),
         );
     }
-
-
 }

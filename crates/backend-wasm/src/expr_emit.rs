@@ -100,8 +100,8 @@ impl WatEmitter<'_> {
                 let limb_count = if *sign == 0 { 0 } else { 1 };
                 writer.push_str(&format!("{pad}(i32.const {sign})\n"));
                 writer.push_str(&format!("{pad}(i32.const {limb_count})\n"));
-                writer.push_str(&format!("{pad}(i32.const {})\n", *limb_low as i32));
-                writer.push_str(&format!("{pad}(i32.const {})\n", *limb_high as i32));
+                writer.i32_const(indent, *limb_low as i32);
+                writer.i32_const(indent, *limb_high as i32);
                 writer.push_str(&format!("{pad}(i32.const {decimal_src})\n"));
                 writer.push_str(&format!("{pad}(i32.const {decimal_len})\n"));
                 writer.push_str(&format!(
@@ -198,8 +198,8 @@ impl WatEmitter<'_> {
                 self.emit_expr(writer, object, indent, frame);
                 let key_ptr = self.string_offset(key) + Layout::STRING_HEADER_SIZE;
                 let key_len = self.string_len(key);
-                writer.push_str(&format!("{pad}(i32.const {})\n", key_ptr));
-                writer.push_str(&format!("{pad}(i32.const {})\n", key_len));
+                writer.i32_const(indent, key_ptr);
+                writer.i32_const(indent, key_len);
                 writer.push_str(&format!(
                     "{pad}(call {})\n",
                     RuntimeFn::PropertyDelete.symbol()
@@ -215,14 +215,14 @@ impl WatEmitter<'_> {
                     frame,
                 );
                 self.emit_expr(writer, key, indent, frame);
-                writer.push_str(&format!("{pad}(i32.const {})\n", Layout::SCRATCH_OFFSET));
+                writer.i32_const(indent, Layout::SCRATCH_OFFSET);
                 writer.push_str(&format!(
                     "{pad}(call {})\n",
                     RuntimeFn::ValueToStringInto.symbol()
                 ));
                 writer.local_set(indent, frame.heap_value_tmp());
                 writer.local_get(indent, frame.heap_base_tmp());
-                writer.push_str(&format!("{pad}(i32.const {})\n", Layout::SCRATCH_OFFSET));
+                writer.i32_const(indent, Layout::SCRATCH_OFFSET);
                 writer.local_get(indent, frame.heap_value_tmp());
                 writer.push_str(&format!(
                     "{pad}(call {})\n",
@@ -233,8 +233,8 @@ impl WatEmitter<'_> {
                 self.emit_expr(writer, obj, indent, frame);
                 let key_ptr = self.string_offset(key) + Layout::STRING_HEADER_SIZE;
                 let key_len = self.string_len(key);
-                writer.push_str(&format!("{pad}(i32.const {})\n", key_ptr));
-                writer.push_str(&format!("{pad}(i32.const {})\n", key_len));
+                writer.i32_const(indent, key_ptr);
+                writer.i32_const(indent, key_len);
                 writer.push_str(&format!(
                     "{pad}(call {})\n",
                     RuntimeFn::PropertyHas.symbol()
@@ -250,14 +250,14 @@ impl WatEmitter<'_> {
                     frame,
                 );
                 self.emit_expr(writer, key, indent, frame);
-                writer.push_str(&format!("{pad}(i32.const {})\n", Layout::SCRATCH_OFFSET));
+                writer.i32_const(indent, Layout::SCRATCH_OFFSET);
                 writer.push_str(&format!(
                     "{pad}(call {})\n",
                     RuntimeFn::ValueToStringInto.symbol()
                 ));
                 writer.local_set(indent, frame.heap_value_tmp());
                 writer.local_get(indent, frame.heap_base_tmp());
-                writer.push_str(&format!("{pad}(i32.const {})\n", Layout::SCRATCH_OFFSET));
+                writer.i32_const(indent, Layout::SCRATCH_OFFSET);
                 writer.local_get(indent, frame.heap_value_tmp());
                 writer.push_str(&format!(
                     "{pad}(call {})\n",
@@ -284,12 +284,12 @@ impl WatEmitter<'_> {
                     LoweredUnaryOp::Delete => {
                         // Delete is handled as a special case in the AST
                         // This should not be reached if delete is properly lowered
-                        writer.push_str(&format!("{pad}(i32.const 0)\n"))
+                        writer.i32_const(indent, 0)
                     }
                     LoweredUnaryOp::Void => {
                         // Evaluate expr for side effects, drop result, produce undefined
                         writer.drop(indent);
-                        writer.push_str(&format!("{pad}(i32.const 0)\n"));
+                        writer.i32_const(indent, 0);
                     }
                 }
             }
@@ -352,10 +352,13 @@ impl WatEmitter<'_> {
                     writer.then(indent);
                     self.emit_expr(writer, right, indent + 4, &frame.child_temp_frame());
                     writer.push_str(&format!("{pad}  )\n"));
-                    writer.push_str(&format!(
-                        "{pad}  (else\n{pad}    (local.get {})\n{pad}  ))\n",
-                        lhs_tmp
-                    ));
+                    writer.line_fmt(
+                        indent,
+                        format_args!(
+                            "{pad}  (else\n{pad}    (local.get {})\n{pad}  ))\n",
+                            lhs_tmp
+                        ),
+                    );
                     return;
                 }
                 if *op == LoweredBinaryOp::Or {
@@ -369,10 +372,10 @@ impl WatEmitter<'_> {
                     ));
                     writer.push_str(&format!("{pad}    (local.get {})\n", lhs_tmp));
                     writer.push_str(&format!("{pad}  )\n"));
-                    writer.push_str(&format!(
-                        "{pad}  (then\n{pad}    (local.get {})\n{pad}  )\n",
-                        lhs_tmp
-                    ));
+                    writer.line_fmt(
+                        indent,
+                        format_args!("{pad}  (then\n{pad}    (local.get {})\n{pad}  )\n", lhs_tmp),
+                    );
                     writer.r#else(indent);
                     self.emit_expr(writer, right, indent + 4, &frame.child_temp_frame());
                     writer.push_str(&format!("{pad}  ))\n"));
@@ -383,20 +386,17 @@ impl WatEmitter<'_> {
                     self.emit_expr(writer, left, indent, frame);
                     writer.local_set(indent, lhs_tmp);
                     writer.if_result(indent, "i32");
-                    writer.push_str(&format!(
-                        "{pad}  (i32.or\n{pad}    (i32.eq (local.get {}) (i32.const {}))\n{pad}    (i32.eq (local.get {}) (i32.const {})))\n",
-                        lhs_tmp,
-                        ValueTag::UNDEFINED,
-                        lhs_tmp,
-                        ValueTag::NULL
-                    ));
+                    writer.line_fmt(indent, format_args!("{pad}  (i32.or\n{pad}    (i32.eq (local.get {}) (i32.const {}))\n{pad}    (i32.eq (local.get {}) (i32.const {})))\n", lhs_tmp, ValueTag::UNDEFINED, lhs_tmp, ValueTag::NULL));
                     writer.then(indent);
                     self.emit_expr(writer, right, indent + 4, &frame.child_temp_frame());
                     writer.push_str(&format!("{pad}  )\n"));
-                    writer.push_str(&format!(
-                        "{pad}  (else\n{pad}    (local.get {})\n{pad}  ))\n",
-                        lhs_tmp
-                    ));
+                    writer.line_fmt(
+                        indent,
+                        format_args!(
+                            "{pad}  (else\n{pad}    (local.get {})\n{pad}  ))\n",
+                            lhs_tmp
+                        ),
+                    );
                     return;
                 }
                 let left_ty = left.inferred_type();
@@ -571,7 +571,7 @@ impl WatEmitter<'_> {
                     // ConsoleLog is void in WAT but may appear in value context
                     // (e.g. arrow body). Push undefined so the stack is consistent.
                     if matches!(runtime_fn, RuntimeFn::Log) {
-                        writer.push_str(&format!("{pad}(i32.const 0)\n"));
+                        writer.i32_const(indent, 0);
                     }
                 }
             },
@@ -733,7 +733,7 @@ impl WatEmitter<'_> {
                     stack_entry_offset,
                     stack_key_raw,
                 ));
-                writer.push_str(&format!("{pad}(i32.const {})\n", stack_prefix_raw));
+                writer.i32_const(indent, stack_prefix_raw);
                 writer.local_get(indent, frame.heap_value_tmp());
                 writer.line_fmt(
                     indent,
@@ -762,8 +762,8 @@ impl WatEmitter<'_> {
                 let key_ptr = self.string_offset(key) + Layout::STRING_HEADER_SIZE;
                 let key_len = self.string_len(key);
                 self.emit_expr(writer, obj, indent, frame);
-                writer.push_str(&format!("{pad}(i32.const {})\n", key_ptr));
-                writer.push_str(&format!("{pad}(i32.const {})\n", key_len));
+                writer.i32_const(indent, key_ptr);
+                writer.i32_const(indent, key_len);
                 writer.push_str(&format!(
                     "{pad}(call {})\n",
                     RuntimeFn::PropertyGet.symbol()
@@ -782,14 +782,14 @@ impl WatEmitter<'_> {
                     frame,
                 );
                 self.emit_expr(writer, key, indent, frame);
-                writer.push_str(&format!("{pad}(i32.const {})\n", Layout::SCRATCH_OFFSET));
+                writer.i32_const(indent, Layout::SCRATCH_OFFSET);
                 writer.push_str(&format!(
                     "{pad}(call {})\n",
                     RuntimeFn::ValueToStringInto.symbol()
                 ));
                 writer.local_set(indent, frame.heap_value_tmp());
                 writer.local_get(indent, frame.heap_base_tmp());
-                writer.push_str(&format!("{pad}(i32.const {})\n", Layout::SCRATCH_OFFSET));
+                writer.i32_const(indent, Layout::SCRATCH_OFFSET);
                 writer.local_get(indent, frame.heap_value_tmp());
                 writer.push_str(&format!(
                     "{pad}(call {})\n",
@@ -843,7 +843,7 @@ impl WatEmitter<'_> {
                     for arg in args {
                         self.emit_expr(writer, arg, indent, frame);
                     }
-                    writer.push_str(&format!("{pad}(i32.const {})\n", 0));
+                    writer.i32_const(indent, 0);
                 } else if runtime_fn == "StringSubstr" && args.len() == 2 {
                     // No length specified: pad with undefined (0) → means "go to end"
                     for arg in args {
@@ -858,14 +858,14 @@ impl WatEmitter<'_> {
                 let fn_name = super::runtime_fn::runtime_fn_from_name(runtime_fn)
                     .map(|f| f.symbol())
                     .unwrap_or_else(|| runtime_fn.as_str());
-                writer.push_str(&format!("{pad}(call {})\n", fn_name));
+                writer.line_fmt(indent, format_args!("(call {})", fn_name));
             }
             LoweredExpr::PropertySet { object, key, value } => {
                 self.emit_expr(writer, object, indent, frame);
                 let key_ptr = self.string_offset(key) + Layout::STRING_HEADER_SIZE;
                 let key_len = self.string_len(key);
-                writer.push_str(&format!("{pad}(i32.const {})\n", key_ptr));
-                writer.push_str(&format!("{pad}(i32.const {})\n", key_len));
+                writer.i32_const(indent, key_ptr);
+                writer.i32_const(indent, key_len);
                 self.emit_expr(writer, value, indent, frame);
                 writer.push_str(&format!(
                     "{pad}(call {})\n",
@@ -886,14 +886,14 @@ impl WatEmitter<'_> {
                     frame,
                 );
                 self.emit_expr(writer, index, indent, frame);
-                writer.push_str(&format!("{pad}(i32.const {})\n", Layout::SCRATCH_OFFSET));
+                writer.i32_const(indent, Layout::SCRATCH_OFFSET);
                 writer.push_str(&format!(
                     "{pad}(call {})\n",
                     RuntimeFn::ValueToStringInto.symbol()
                 ));
                 writer.local_set(indent, frame.heap_value_tmp());
                 writer.local_get(indent, frame.heap_base_tmp());
-                writer.push_str(&format!("{pad}(i32.const {})\n", Layout::SCRATCH_OFFSET));
+                writer.i32_const(indent, Layout::SCRATCH_OFFSET);
                 writer.local_get(indent, frame.heap_value_tmp());
                 self.emit_expr(writer, value, indent, frame);
                 writer.push_str(&format!(
@@ -963,10 +963,7 @@ impl WatEmitter<'_> {
                             if let Some(arg) = args.get(arg_index) {
                                 self.emit_expr(writer, arg, indent, frame);
                             } else {
-                                writer.push_str(&format!(
-                                    "{pad}(i32.const {})\n",
-                                    ValueTag::UNDEFINED
-                                ));
+                                writer.i32_const(indent, ValueTag::UNDEFINED);
                             }
                         }
                         let rest_start = explicit_fixed_count.min(args.len());
@@ -1077,10 +1074,7 @@ impl WatEmitter<'_> {
         self.emit_expr(writer, &args[0], indent + 2, frame);
         writer.push_str(&format!("{inner_pad}(local.set {receiver_tmp})\n"));
         self.emit_gc_root_mirror_index(writer.output_mut(), &inner_pad, receiver_tmp, frame);
-        writer.push_str(&format!(
-            "{inner_pad}(if (global.get $exception_pending)\n{inner_pad}  (then\n{inner_pad}    (br ${checked_call_exit} (i32.const {}))\n{inner_pad}  ))\n",
-            ValueTag::UNDEFINED
-        ));
+        writer.line_fmt(indent, format_args!("{inner_pad}(if (global.get $exception_pending)\n{inner_pad}  (then\n{inner_pad}    (br ${checked_call_exit} (i32.const {}))\n{inner_pad}  ))\n", ValueTag::UNDEFINED));
         writer.push_str(&format!("{inner_pad}(local.get {receiver_tmp})\n"));
 
         if let Some(func) = func
@@ -1198,9 +1192,10 @@ impl WatEmitter<'_> {
         let arg_value = frame.heap_value_tmp();
         let payload = frame.switch_value_tmp();
 
-        writer.push_str(&format!(
-            "{pad}(block $heap_closure_dispatch_done (result i32)\n"
-        ));
+        writer.line_fmt(
+            indent,
+            format_args!("{pad}(block $heap_closure_dispatch_done (result i32)\n"),
+        );
         self.emit_expr(writer, closure, indent + 2, frame);
         writer.push_str(&format!("{pad}  (local.set {closure_value})\n"));
         self.emit_gc_root_mirror_index(
@@ -1219,29 +1214,17 @@ impl WatEmitter<'_> {
                 frame,
             );
         }
-        writer.push_str(&format!(
-            "{pad}  (if (i32.ne (i32.and (local.get {closure_value}) (i32.const {})) (i32.const {}))\n",
-            ValueTag::TAG_MASK,
-            ValueTag::OBJECT_TAG,
-        ));
+        writer.line_fmt(indent, format_args!("{pad}  (if (i32.ne (i32.and (local.get {closure_value}) (i32.const {})) (i32.const {}))\n", ValueTag::TAG_MASK, ValueTag::OBJECT_TAG));
         writer.push_str(&format!("{pad}    (then (unreachable)))\n"));
-        writer.push_str(&format!(
-            "{pad}  (local.set {payload} (i32.and (local.get {closure_value}) (i32.const {})))\n",
-            ValueTag::HEAP_MASK,
-        ));
-        writer.push_str(&format!(
-            "{pad}  (if (i32.ne (i32.load (i32.add (local.get {payload}) (i32.const {CLOSURE_SUBTYPE_OFFSET}))) (i32.const {CLOSURE_SENTINEL}))\n",
-        ));
+        writer.line_fmt(indent, format_args!("{pad}  (local.set {payload} (i32.and (local.get {closure_value}) (i32.const {})))\n", ValueTag::HEAP_MASK));
+        writer.line_fmt(indent, format_args!("{pad}  (if (i32.ne (i32.load (i32.add (local.get {payload}) (i32.const {CLOSURE_SUBTYPE_OFFSET}))) (i32.const {CLOSURE_SENTINEL}))\n"));
         writer.push_str(&format!("{pad}    (then (unreachable)))\n"));
 
         for function in &self.program.functions {
             let Some(capture_count) = function.params.len().checked_sub(user_args.len()) else {
                 continue;
             };
-            writer.push_str(&format!(
-                "{pad}  (if (i32.and\n{pad}        (i32.eq (i32.load (i32.add (local.get {payload}) (i32.const {CLOSURE_CODE_ID_OFFSET}))) (i32.const {}))\n{pad}        (i32.eq (i32.load (i32.add (local.get {payload}) (i32.const {CLOSURE_CAPTURE_COUNT_OFFSET}))) (i32.const {capture_count})))\n",
-                function.id.0,
-            ));
+            writer.line_fmt(indent, format_args!("{pad}  (if (i32.and\n{pad}        (i32.eq (i32.load (i32.add (local.get {payload}) (i32.const {CLOSURE_CODE_ID_OFFSET}))) (i32.const {}))\n{pad}        (i32.eq (i32.load (i32.add (local.get {payload}) (i32.const {CLOSURE_CAPTURE_COUNT_OFFSET}))) (i32.const {capture_count})))\n", function.id.0));
             writer.then(indent);
             if !user_args.is_empty() {
                 writer.push_str(&format!("{pad}      (local.get {arg_value})\n"));
@@ -1249,9 +1232,7 @@ impl WatEmitter<'_> {
             for capture_index in 0..capture_count {
                 let offset =
                     CLOSURE_CAPTURE_SLOTS_OFFSET + capture_index as u32 * CLOSURE_CAPTURE_SLOT_SIZE;
-                writer.push_str(&format!(
-                    "{pad}      (i32.load (i32.add (local.get {payload}) (i32.const {offset})))\n",
-                ));
+                writer.line_fmt(indent, format_args!("{pad}      (i32.load (i32.add (local.get {payload}) (i32.const {offset})))\n"));
             }
             writer.push_str(&format!(
                 "{pad}      (call ${})\n",
@@ -1289,36 +1270,18 @@ impl WatEmitter<'_> {
         writer.push_str(&format!("{pad}(local.set {object_value})\n"));
         self.emit_gc_root_mirror_index(writer.output_mut(), &pad, object_value, frame);
         writer.push_str(&format!("{pad}(block (result i32)\n"));
-        writer.push_str(&format!(
-            "{pad}  (if (i32.ne (i32.and (local.get {object_value}) (i32.const {})) (i32.const {}))\n",
-            ValueTag::TAG_MASK,
-            ValueTag::OBJECT_TAG,
-        ));
+        writer.line_fmt(indent, format_args!("{pad}  (if (i32.ne (i32.and (local.get {object_value}) (i32.const {})) (i32.const {}))\n", ValueTag::TAG_MASK, ValueTag::OBJECT_TAG));
         writer.push_str(&format!(
             "{pad}    (then\n{pad}      (br 0 (call {}))\n{pad}    ))\n",
             RuntimeFn::PrivateBrandTypeError.symbol(),
         ));
         writer.push_str(&format!("{pad}  (if\n"));
-        writer.push_str(&format!(
-            "{pad}    (i32.eqz\n{pad}      (i32.and\n{pad}        (i32.eq\n{pad}          (i32.and\n{pad}            (i32.load\n{pad}              (i32.add\n{pad}                (i32.sub (i32.and (local.get {object_value}) (i32.const {})) (i32.const {}))\n{pad}                (i32.const {})))\n{pad}            (i32.const {}))\n{pad}          (i32.const {brand_marker}))\n{pad}        (i32.gt_u\n{pad}          (i32.and\n{pad}            (i32.load\n{pad}              (i32.add\n{pad}                (i32.sub (i32.and (local.get {object_value}) (i32.const {})) (i32.const {}))\n{pad}                (i32.const {})))\n{pad}            (i32.const {}))\n{pad}          (i32.const {slot}))))\n",
-            ValueTag::HEAP_MASK,
-            Layout::GC_HEADER_SIZE,
-            Layout::GC_RESERVED_OFFSET,
-            !PRIVATE_FIELD_COUNT_MASK,
-            ValueTag::HEAP_MASK,
-            Layout::GC_HEADER_SIZE,
-            Layout::GC_RESERVED_OFFSET,
-            PRIVATE_FIELD_COUNT_MASK,
-            slot = *slot as u32,
-        ));
+        writer.line_fmt(indent, format_args!("{pad}    (i32.eqz\n{pad}      (i32.and\n{pad}        (i32.eq\n{pad}          (i32.and\n{pad}            (i32.load\n{pad}              (i32.add\n{pad}                (i32.sub (i32.and (local.get {object_value}) (i32.const {})) (i32.const {}))\n{pad}                (i32.const {})))\n{pad}            (i32.const {}))\n{pad}          (i32.const {brand_marker}))\n{pad}        (i32.gt_u\n{pad}          (i32.and\n{pad}            (i32.load\n{pad}              (i32.add\n{pad}                (i32.sub (i32.and (local.get {object_value}) (i32.const {})) (i32.const {}))\n{pad}                (i32.const {})))\n{pad}            (i32.const {}))\n{pad}          (i32.const {slot}))))\n", ValueTag::HEAP_MASK, Layout::GC_HEADER_SIZE, Layout::GC_RESERVED_OFFSET, !PRIVATE_FIELD_COUNT_MASK, ValueTag::HEAP_MASK, Layout::GC_HEADER_SIZE, Layout::GC_RESERVED_OFFSET, PRIVATE_FIELD_COUNT_MASK, slot = *slot as u32));
         writer.push_str(&format!(
             "{pad}    (then\n{pad}      (br 0 (call {}))\n{pad}    ))\n",
             RuntimeFn::PrivateBrandTypeError.symbol(),
         ));
-        writer.push_str(&format!(
-            "{pad}  (i32.load (i32.add (i32.and (local.get {object_value}) (i32.const {})) (i32.const {slot_offset})))\n",
-            ValueTag::HEAP_MASK,
-        ));
+        writer.line_fmt(indent, format_args!("{pad}  (i32.load (i32.add (i32.and (local.get {object_value}) (i32.const {})) (i32.const {slot_offset})))\n", ValueTag::HEAP_MASK));
         writer.end(indent);
     }
 
@@ -1352,36 +1315,18 @@ impl WatEmitter<'_> {
         writer.push_str(&format!("{pad}(local.set {stored_value})\n"));
         self.emit_gc_root_mirror_index(writer.output_mut(), &pad, stored_value, frame);
         writer.push_str(&format!("{pad}(block (result i32)\n"));
-        writer.push_str(&format!(
-            "{pad}  (if (i32.ne (i32.and (local.get {object_value}) (i32.const {})) (i32.const {}))\n",
-            ValueTag::TAG_MASK,
-            ValueTag::OBJECT_TAG,
-        ));
+        writer.line_fmt(indent, format_args!("{pad}  (if (i32.ne (i32.and (local.get {object_value}) (i32.const {})) (i32.const {}))\n", ValueTag::TAG_MASK, ValueTag::OBJECT_TAG));
         writer.push_str(&format!(
             "{pad}    (then\n{pad}      (br 0 (call {}))\n{pad}    ))\n",
             RuntimeFn::PrivateBrandTypeError.symbol(),
         ));
         writer.push_str(&format!("{pad}  (if\n"));
-        writer.push_str(&format!(
-            "{pad}    (i32.eqz\n{pad}      (i32.and\n{pad}        (i32.eq\n{pad}          (i32.and\n{pad}            (i32.load\n{pad}              (i32.add\n{pad}                (i32.sub (i32.and (local.get {object_value}) (i32.const {})) (i32.const {}))\n{pad}                (i32.const {})))\n{pad}            (i32.const {}))\n{pad}          (i32.const {brand_marker}))\n{pad}        (i32.gt_u\n{pad}          (i32.and\n{pad}            (i32.load\n{pad}              (i32.add\n{pad}                (i32.sub (i32.and (local.get {object_value}) (i32.const {})) (i32.const {}))\n{pad}                (i32.const {})))\n{pad}            (i32.const {}))\n{pad}          (i32.const {slot}))))\n",
-            ValueTag::HEAP_MASK,
-            Layout::GC_HEADER_SIZE,
-            Layout::GC_RESERVED_OFFSET,
-            !PRIVATE_FIELD_COUNT_MASK,
-            ValueTag::HEAP_MASK,
-            Layout::GC_HEADER_SIZE,
-            Layout::GC_RESERVED_OFFSET,
-            PRIVATE_FIELD_COUNT_MASK,
-            slot = *slot as u32,
-        ));
+        writer.line_fmt(indent, format_args!("{pad}    (i32.eqz\n{pad}      (i32.and\n{pad}        (i32.eq\n{pad}          (i32.and\n{pad}            (i32.load\n{pad}              (i32.add\n{pad}                (i32.sub (i32.and (local.get {object_value}) (i32.const {})) (i32.const {}))\n{pad}                (i32.const {})))\n{pad}            (i32.const {}))\n{pad}          (i32.const {brand_marker}))\n{pad}        (i32.gt_u\n{pad}          (i32.and\n{pad}            (i32.load\n{pad}              (i32.add\n{pad}                (i32.sub (i32.and (local.get {object_value}) (i32.const {})) (i32.const {}))\n{pad}                (i32.const {})))\n{pad}            (i32.const {}))\n{pad}          (i32.const {slot}))))\n", ValueTag::HEAP_MASK, Layout::GC_HEADER_SIZE, Layout::GC_RESERVED_OFFSET, !PRIVATE_FIELD_COUNT_MASK, ValueTag::HEAP_MASK, Layout::GC_HEADER_SIZE, Layout::GC_RESERVED_OFFSET, PRIVATE_FIELD_COUNT_MASK, slot = *slot as u32));
         writer.push_str(&format!(
             "{pad}    (then\n{pad}      (br 0 (call {}))\n{pad}    ))\n",
             RuntimeFn::PrivateBrandTypeError.symbol(),
         ));
-        writer.push_str(&format!(
-            "{pad}  (i32.store (i32.add (i32.and (local.get {object_value}) (i32.const {})) (i32.const {slot_offset})) (local.get {stored_value}))\n",
-            ValueTag::HEAP_MASK,
-        ));
+        writer.line_fmt(indent, format_args!("{pad}  (i32.store (i32.add (i32.and (local.get {object_value}) (i32.const {})) (i32.const {slot_offset})) (local.get {stored_value}))\n", ValueTag::HEAP_MASK));
         writer.push_str(&format!("{pad}  (local.get {stored_value})\n"));
         writer.end(indent);
     }
@@ -1405,23 +1350,13 @@ impl WatEmitter<'_> {
         writer.push_str(&format!("{pad}(local.set {object_value})\n"));
         self.emit_gc_root_mirror_index(writer.output_mut(), &pad, object_value, frame);
         writer.push_str(&format!("{pad}(block (result i32)\n"));
-        writer.push_str(&format!(
-            "{pad}  (if (i32.ne (i32.and (local.get {object_value}) (i32.const {})) (i32.const {}))\n",
-            ValueTag::TAG_MASK,
-            ValueTag::OBJECT_TAG,
-        ));
+        writer.line_fmt(indent, format_args!("{pad}  (if (i32.ne (i32.and (local.get {object_value}) (i32.const {})) (i32.const {}))\n", ValueTag::TAG_MASK, ValueTag::OBJECT_TAG));
         writer.push_str(&format!(
             "{pad}    (then\n{pad}      (br 0 (call {}))\n{pad}    ))\n",
             RuntimeFn::PrivateBrandTypeError.symbol(),
         ));
         writer.push_str(&format!("{pad}  (if\n"));
-        writer.push_str(&format!(
-            "{pad}    (i32.eqz\n{pad}      (i32.eq\n{pad}        (i32.and\n{pad}          (i32.load\n{pad}            (i32.add\n{pad}              (i32.sub (i32.and (local.get {object_value}) (i32.const {})) (i32.const {}))\n{pad}              (i32.const {})))\n{pad}          (i32.const {}))\n{pad}        (i32.const {brand_marker})))\n",
-            ValueTag::HEAP_MASK,
-            Layout::GC_HEADER_SIZE,
-            Layout::GC_RESERVED_OFFSET,
-            !PRIVATE_FIELD_COUNT_MASK,
-        ));
+        writer.line_fmt(indent, format_args!("{pad}    (i32.eqz\n{pad}      (i32.eq\n{pad}        (i32.and\n{pad}          (i32.load\n{pad}            (i32.add\n{pad}              (i32.sub (i32.and (local.get {object_value}) (i32.const {})) (i32.const {}))\n{pad}              (i32.const {})))\n{pad}          (i32.const {}))\n{pad}        (i32.const {brand_marker})))\n", ValueTag::HEAP_MASK, Layout::GC_HEADER_SIZE, Layout::GC_RESERVED_OFFSET, !PRIVATE_FIELD_COUNT_MASK));
         writer.push_str(&format!(
             "{pad}    (then\n{pad}      (br 0 (call {}))\n{pad}    ))\n",
             RuntimeFn::PrivateBrandTypeError.symbol(),
@@ -1467,11 +1402,7 @@ impl WatEmitter<'_> {
                 writer.end(indent);
             }
             LoweredLogicalAssignOp::Nullish => {
-                writer.push_str(&format!(
-                    "{pad}(i32.or\n{pad}  (i32.eq (local.get {local}) (i32.const {}))\n{pad}  (i32.eq (local.get {local}) (i32.const {})))\n",
-                    ValueTag::NULL,
-                    ValueTag::UNDEFINED
-                ));
+                writer.line_fmt(indent, format_args!("{pad}(i32.or\n{pad}  (i32.eq (local.get {local}) (i32.const {}))\n{pad}  (i32.eq (local.get {local}) (i32.const {})))\n", ValueTag::NULL, ValueTag::UNDEFINED));
                 writer.if_result(indent, "i32");
                 writer.then(indent);
                 self.emit_logical_assign_rhs(writer, local, expr, indent + 4, frame);
@@ -1553,11 +1484,7 @@ impl WatEmitter<'_> {
                 writer.end(indent);
             }
             LoweredLogicalAssignOp::Nullish => {
-                writer.push_str(&format!(
-                    "{pad}(i32.or\n{pad}  (i32.eq (local.get {current}) (i32.const {}))\n{pad}  (i32.eq (local.get {current}) (i32.const {})))\n",
-                    ValueTag::NULL,
-                    ValueTag::UNDEFINED
-                ));
+                writer.line_fmt(indent, format_args!("{pad}(i32.or\n{pad}  (i32.eq (local.get {current}) (i32.const {}))\n{pad}  (i32.eq (local.get {current}) (i32.const {})))\n", ValueTag::NULL, ValueTag::UNDEFINED));
                 writer.if_result(indent, "i32");
                 writer.then(indent);
                 self.emit_logical_property_assign_rhs(writer, object, key, expr, indent + 4, frame);
@@ -1682,11 +1609,7 @@ impl WatEmitter<'_> {
 
     fn emit_nullish_check(&self, writer: &mut WatWriter, local: usize, indent: usize) {
         let pad = " ".repeat(indent);
-        writer.push_str(&format!(
-            "{pad}(i32.or\n{pad}  (i32.eq (local.get {local}) (i32.const {}))\n{pad}  (i32.eq (local.get {local}) (i32.const {})))\n",
-            ValueTag::NULL,
-            ValueTag::UNDEFINED
-        ));
+        writer.line_fmt(indent, format_args!("{pad}(i32.or\n{pad}  (i32.eq (local.get {local}) (i32.const {}))\n{pad}  (i32.eq (local.get {local}) (i32.const {})))\n", ValueTag::NULL, ValueTag::UNDEFINED));
     }
 
     #[allow(clippy::too_many_arguments)]
@@ -1749,11 +1672,7 @@ impl WatEmitter<'_> {
                 writer.end(indent);
             }
             LoweredLogicalAssignOp::Nullish => {
-                writer.push_str(&format!(
-                    "{pad}(i32.or\n{pad}  (i32.eq (local.get {current}) (i32.const {}))\n{pad}  (i32.eq (local.get {current}) (i32.const {})))\n",
-                    ValueTag::NULL,
-                    ValueTag::UNDEFINED
-                ));
+                writer.line_fmt(indent, format_args!("{pad}(i32.or\n{pad}  (i32.eq (local.get {current}) (i32.const {}))\n{pad}  (i32.eq (local.get {current}) (i32.const {})))\n", ValueTag::NULL, ValueTag::UNDEFINED));
                 writer.if_result(indent, "i32");
                 writer.then(indent);
                 self.emit_logical_member_assign_rhs(writer, object, key, expr, indent + 4, frame);
@@ -1838,7 +1757,7 @@ impl WatEmitter<'_> {
         self.emit_gc_root_mirror_index(writer.output_mut(), &pad, key_value, frame);
         self.emit_key_value_to_scratch(writer, key_value, key_len, indent);
         writer.push_str(&format!("{pad}(local.get {object})\n"));
-        writer.push_str(&format!("{pad}(i32.const {})\n", Layout::SCRATCH_OFFSET));
+        writer.i32_const(indent, Layout::SCRATCH_OFFSET);
         writer.push_str(&format!("{pad}(local.get {key_len})\n"));
         writer.push_str(&format!(
             "{pad}(call {})\n",
@@ -1889,11 +1808,7 @@ impl WatEmitter<'_> {
                 writer.end(indent);
             }
             LoweredLogicalAssignOp::Nullish => {
-                writer.push_str(&format!(
-                    "{pad}(i32.or\n{pad}  (i32.eq (local.get {current}) (i32.const {}))\n{pad}  (i32.eq (local.get {current}) (i32.const {})))\n",
-                    ValueTag::NULL,
-                    ValueTag::UNDEFINED
-                ));
+                writer.line_fmt(indent, format_args!("{pad}(i32.or\n{pad}  (i32.eq (local.get {current}) (i32.const {}))\n{pad}  (i32.eq (local.get {current}) (i32.const {})))\n", ValueTag::NULL, ValueTag::UNDEFINED));
                 writer.if_result(indent, "i32");
                 writer.then(indent);
                 self.emit_logical_computed_property_assign_rhs(
@@ -1941,7 +1856,7 @@ impl WatEmitter<'_> {
         self.emit_gc_root_mirror_index(writer.output_mut(), &pad, key_value, frame);
         self.emit_key_value_to_scratch(writer, key_value, key_len, indent);
         writer.push_str(&format!("{pad}(local.get {object})\n"));
-        writer.push_str(&format!("{pad}(i32.const {})\n", Layout::SCRATCH_OFFSET));
+        writer.i32_const(indent, Layout::SCRATCH_OFFSET);
         writer.push_str(&format!("{pad}(local.get {key_len})\n"));
         writer.push_str(&format!(
             "{pad}(call {})\n",
@@ -1992,11 +1907,7 @@ impl WatEmitter<'_> {
                 writer.end(indent);
             }
             LoweredLogicalAssignOp::Nullish => {
-                writer.push_str(&format!(
-                    "{pad}(i32.or\n{pad}  (i32.eq (local.get {current}) (i32.const {}))\n{pad}  (i32.eq (local.get {current}) (i32.const {})))\n",
-                    ValueTag::NULL,
-                    ValueTag::UNDEFINED
-                ));
+                writer.line_fmt(indent, format_args!("{pad}(i32.or\n{pad}  (i32.eq (local.get {current}) (i32.const {}))\n{pad}  (i32.eq (local.get {current}) (i32.const {})))\n", ValueTag::NULL, ValueTag::UNDEFINED));
                 writer.if_result(indent, "i32");
                 writer.then(indent);
                 self.emit_logical_computed_property_assign_rhs(
@@ -2026,7 +1937,7 @@ impl WatEmitter<'_> {
     ) {
         let pad = " ".repeat(indent);
         writer.push_str(&format!("{pad}(local.get {key_value})\n"));
-        writer.push_str(&format!("{pad}(i32.const {})\n", Layout::SCRATCH_OFFSET));
+        writer.i32_const(indent, Layout::SCRATCH_OFFSET);
         writer.push_str(&format!(
             "{pad}(call {})\n",
             RuntimeFn::ValueToStringInto.symbol()
@@ -2053,7 +1964,7 @@ impl WatEmitter<'_> {
         self.emit_gc_root_mirror_index(writer.output_mut(), &pad, rhs, &child_frame);
         self.emit_key_value_to_scratch(writer, key_value, key_len, indent);
         writer.push_str(&format!("{pad}(local.get {object})\n"));
-        writer.push_str(&format!("{pad}(i32.const {})\n", Layout::SCRATCH_OFFSET));
+        writer.i32_const(indent, Layout::SCRATCH_OFFSET);
         writer.push_str(&format!("{pad}(local.get {key_len})\n"));
         writer.push_str(&format!("{pad}(local.get {rhs})\n"));
         writer.push_str(&format!(
