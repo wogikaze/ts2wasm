@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 4 | 3 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4504 | 3633 | 871 |
+| frontend | 4504 | 3632 | 872 |
 | harness | 1 | 0 | 1 |
 | ir | 57 | 35 | 22 |
 | issues | 4 | 0 | 4 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5140 | 3916 | 1224 |
+| total | 5140 | 3915 | 1225 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -651,7 +651,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1344 | Implement Commentleadingclosebrace | spike | frontend/resolver | class: blocked | Implement Commentleadingclosebrace |
 | 1345 | Implement Commentonambientmodule | spike | frontend/syntax | class: blocked | Implement Commentonambientmodule |
 | 1346 | Implement Commentonambientvariable | spike | frontend/resolver | class: blocked | Implement Commentonambientvariable |
-| 1434 | Implement Conflictmarkertrivia Unknown Unsupported | spike | frontend/syntax | class: triage-needed | Implement Conflictmarkertrivia Unknown Unsupported |
 | 1435 | Implement Conflictingdeclarationsimportfromnamespace | spike | frontend/syntax | class: blocked | Implement Conflictingdeclarationsimportfromnamespace |
 | 1436 | Implement Conflictingtypeannotatedvar | spike | reference/triage | class: triage-needed | Implement Conflictingtypeannotatedvar |
 | 1437 | Implement Conflictingtypeparametersymboltransfer | spike | frontend/syntax | class: blocked | Implement Conflictingtypeparametersymboltransfer |
@@ -5096,6 +5095,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1431 | Implement Conflictmarkerdiff Parser Syntax | spike | frontend/syntax | see `issues/done/1431-implement-conflictMarkerDiff-parser-syntax.md` |
 | 1432 | Implement Conflictmarkerdiff Unknown Unsupported | spike | frontend/syntax | see `issues/done/1432-implement-conflictMarkerDiff-unknown-unsupported.md` |
 | 1433 | Implement Conflictmarkertrivia Parser Syntax | spike | frontend/syntax | see `issues/done/1433-implement-conflictMarkerTrivia-parser-syntax.md` |
+| 1434 | Implement Conflictmarkertrivia Unknown Unsupported | spike | frontend/syntax | see `issues/done/1434-implement-conflictMarkerTrivia-unknown-unsupported.md` |
 | 2050 | Implement Duplicatelocalvariable Duplicate Local | spike | reference/triage | see `issues/done/2050-implement-duplicateLocalVariable-duplicate-local.md` |
 | 3002 | Implement Isolateddeclarationerrorsdefault | spike | runtime/builtins | see `issues/done/3002-implement-isolatedDeclarationErrorsDefault.md` |
 | 3131 | Implement Jsxfactorynotidentifierorqualifiedname | spike | reference/triage | see `issues/done/3131-implement-jsxFactoryNotIdentifierOrQualifiedName.md` |

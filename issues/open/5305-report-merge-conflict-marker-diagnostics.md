@@ -167,6 +167,10 @@ the same marker diagnostic gap appears inside a method body.
 Also supersedes generated bucket
 `issues/done/1433-implement-conflictMarkerTrivia-parser-syntax.md`, where the
 same marker diagnostic gap appears for non-diff3 markers in a class body.
+Also supersedes generated bucket
+`issues/done/1434-implement-conflictMarkerTrivia-unknown-unsupported.md`, where
+the same marker diagnostic gap appears for `conflictMarkerTrivia2.ts` and
+`conflictMarkerTrivia4.ts`.
 
 ## Completion evidence
 

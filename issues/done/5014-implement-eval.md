@@ -231,7 +231,7 @@ Duplicate candidates:
   },
   {
     "state": "open",
-    "path": "issues/open/1434-implement-conflictMarkerTrivia-unknown-unsupported.md",
+    "path": "issues/done/1434-implement-conflictMarkerTrivia-unknown-unsupported.md",
     "title": "Implement Conflictmarkertrivia Unknown Unsupported",
     "reason": "same feature label, title overlap"
   },
