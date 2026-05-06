@@ -21,13 +21,13 @@ Issue files are the source of truth for work items. The generated section below 
 | ir | 54 | 32 | 22 |
 | issues | 4 | 0 | 4 |
 | parser | 1 | 0 | 1 |
-| reference | 212 | 159 | 53 |
+| reference | 212 | 158 | 54 |
 | runtime | 265 | 86 | 179 |
 | scripts | 3 | 1 | 2 |
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5110 | 3973 | 1137 |
+| total | 5110 | 3972 | 1138 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -621,7 +621,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1344 | Implement Commentleadingclosebrace | spike | frontend/resolver | class: blocked | Implement Commentleadingclosebrace |
 | 1345 | Implement Commentonambientmodule | spike | frontend/syntax | class: blocked | Implement Commentonambientmodule |
 | 1346 | Implement Commentonambientvariable | spike | frontend/resolver | class: blocked | Implement Commentonambientvariable |
-| 1347 | Implement Commentonclassaccessor | spike | reference/triage | class: triage-needed | Implement Commentonclassaccessor |
 | 1348 | Implement Commentondecoratedclassdeclaration | spike | frontend/syntax | class: triage-needed | Implement Commentondecoratedclassdeclaration |
 | 1349 | Implement Commentonelidedmodule | spike | frontend/syntax | class: blocked | Implement Commentonelidedmodule |
 | 1350 | Implement Commentonexportenumdeclaration | spike | frontend/syntax | class: blocked | Implement Commentonexportenumdeclaration |
@@ -5066,6 +5065,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1336 | Implement Commaoperator | spike | frontend/syntax | see `issues/done/1336-implement-commaOperator.md` |
 | 1339 | Implement Commentbeforestaticmethod | spike | frontend/syntax | see `issues/done/1339-implement-commentBeforeStaticMethod.md` |
 | 1340 | Implement Commentemitatendoffile | spike | frontend/syntax | see `issues/done/1340-implement-commentEmitAtEndOfFile.md` |
+| 1347 | Implement Commentonclassaccessor | spike | reference/triage | see `issues/done/1347-implement-commentOnClassAccessor.md` |
 | 2050 | Implement Duplicatelocalvariable Duplicate Local | spike | reference/triage | see `issues/done/2050-implement-duplicateLocalVariable-duplicate-local.md` |
 | 3002 | Implement Isolateddeclarationerrorsdefault | spike | runtime/builtins | see `issues/done/3002-implement-isolatedDeclarationErrorsDefault.md` |
 | 3131 | Implement Jsxfactorynotidentifierorqualifiedname | spike | reference/triage | see `issues/done/3131-implement-jsxFactoryNotIdentifierOrQualifiedName.md` |
