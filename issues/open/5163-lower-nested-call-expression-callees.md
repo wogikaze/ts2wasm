@@ -81,6 +81,8 @@ class Derived extends Based {
 }
 ```
 
+Additional representative: `reference/typescript/tests/cases/compiler/circularReferenceInReturnType.ts` reports the same diagnostic for higher-order generic calls such as `fn2()(() => res2)` and `fn3()(() => res3)`.
+
 Current compiler evidence:
 
 - Tokens and AST succeed.
@@ -109,6 +111,7 @@ In scope:
 - [ ] Handle `Expr::Call { callee: Expr::Call { ... } }` in expression lowering with a source-spanned diagnostic or runtime-supported callable path.
 - [ ] Handle `Expr::Call { callee: Expr::New { ... } }` in expression lowering with the same source-spanned diagnostic family.
 - [ ] Handle `Expr::Call { callee: Expr::ArrowFn { ... } }` for arrow-function IIFE shapes with the same source-spanned diagnostic family or supported callable path.
+- [ ] Handle higher-order function call chains such as `fn2()(() => res2)` without the generic unsupported diagnostic.
 - [ ] Preserve existing identifier-call behavior.
 - [ ] Add focused coverage for `foo()(1).toString()` and the whitespace/newline accidental-call variants.
 - [ ] Re-run the representative triage and confirm the current generic unsupported diagnostic is gone.
@@ -138,6 +141,7 @@ Do not touch:
 - [ ] `foo()(1).toString()` no longer reports `only identifier calls are supported in expression context`.
 - [ ] `(new D(1))()` no longer reports `only identifier calls are supported in expression context`.
 - [ ] `(() => { this; })()` in `checkSuperCallBeforeThisAccessing4.ts` no longer reports `only identifier calls are supported in expression context`.
+- [ ] `fn2()(() => res2)` in `circularReferenceInReturnType.ts` no longer reports `only identifier calls are supported in expression context`.
 - [ ] Whitespace and newline accidental-call variants from `betterErrorForAccidentalCall.ts` reach the same new diagnostic or lowered path.
 - [ ] Existing simple identifier calls continue to pass.
 - [ ] `python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/betterErrorForAccidentalCall.ts` no longer reports the current generic unsupported diagnostic.
@@ -153,6 +157,7 @@ cargo nextest run -p ts2wasm-cli call
 python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/betterErrorForAccidentalCall.ts
 python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/callOnInstance.ts
 python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/checkSuperCallBeforeThisAccessing4.ts
+python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/circularReferenceInReturnType.ts
 ```
 
 Impacted commands:
@@ -185,8 +190,10 @@ Split from generated bucket `1045` on 2026-05-06. Generated bucket `1096`
 was folded in on the same date after fresh triage showed the same lowering
 boundary for new-expression callees. Generated bucket `1143` was folded in
 after fresh triage showed the same lowering boundary for arrow-function IIFE
-callees. The broad call-expression parent `420` remains blocked for unrelated
-`super[...]()` and other call-expression feature families.
+callees. Generated bucket `1163` was folded in after fresh triage showed the
+same lowering boundary for higher-order generic call chains. The broad
+call-expression parent `420` remains blocked for unrelated `super[...]()` and
+other call-expression feature families.
 
 ## Completion evidence
 
