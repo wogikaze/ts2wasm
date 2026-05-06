@@ -908,6 +908,23 @@ impl Parser {
         if let Some(semi) = self.consume_span(TokenKind::Semicolon) {
             return Ok(semi.end);
         }
+        // Recover from TypeScript-style `expr: type;` after expression statements.
+        // The parser sees `this.y: any;` as an expression `this.y` followed by
+        // a colon type annotation. Skip the colon and consume until semicolon
+        // or statement boundary, then return the semicolon position.
+        if matches!(self.peek(), Some(Token::Colon)) {
+            self.advance(); // consume ':'
+            while !self.is_at_end()
+                && !matches!(self.peek(), Some(Token::Semicolon))
+                && !self.next_token_has_preceding_newline()
+            {
+                self.advance();
+            }
+            if let Some(semi) = self.consume_span(TokenKind::Semicolon) {
+                return Ok(semi.end);
+            }
+            return Ok(fallback_end);
+        }
         if self.is_at_end()
             || self
                 .peek()
