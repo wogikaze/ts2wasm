@@ -335,6 +335,11 @@ fn static_declaration_export_entry_build_smoke() {
 }
 
 #[test]
+fn static_function_export_entry_build_smoke() {
+    assert_fixture_build_smoke("module-system/static-export-function-entry.ts");
+}
+
+#[test]
 fn static_class_export_reports_issue_5005() {
     assert_build_fails_with_unsupported_syntax(
         "module-system/static-class-export-unsupported.ts",

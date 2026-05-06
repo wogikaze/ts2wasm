@@ -2400,6 +2400,77 @@ export default 2;
     }
 
     #[test]
+    fn static_function_export_lowering_populates_entry_module_export() {
+        let dir = unique_temp_dir("static-function-export-entry");
+        std::fs::create_dir_all(&dir).expect("temp dir should be created");
+        let entry = dir.join("entry.ts");
+        let source = "export function f() { return 1; }\n";
+        std::fs::write(&entry, source).expect("entry should be written");
+
+        let program = parse_program(source).expect("entry should parse");
+        validate_ast(&program).expect("entry should validate");
+        let graph = build_entry_module_graph(&entry, &program).expect("graph should build");
+        let static_module_binding = lower_static_named_import_bindings_for_build(&program, &graph)
+            .expect("static function export binding should lower");
+
+        assert_eq!(
+            static_module_binding.module_exports,
+            vec![ModuleExport {
+                name: "f".to_owned(),
+                lowered_statement_index: 0,
+            }]
+        );
+        match &static_module_binding.rewritten_program[0] {
+            Stmt::Let {
+                name,
+                expr: Expr::FunctionExpr {
+                    name: expr_name, ..
+                },
+                ..
+            } => {
+                assert_eq!(name, "f");
+                assert_eq!(expr_name, "f");
+            }
+            other => panic!("unexpected rewritten export function stmt: {other:?}"),
+        }
+
+        let name_resolved = name_resolver::resolve_names(&static_module_binding.rewritten_program)
+            .expect("rewritten function export should resolve");
+        let resolved =
+            builtin_resolver::resolve_builtins(&name_resolved).expect("builtins should resolve");
+        let lowered_program = lowered::lower_program(&resolved).expect("program should lower");
+        let lowered_program = populate_static_module_exports_for_build(
+            lowered_program,
+            &graph,
+            &static_module_binding.module_exports,
+        )
+        .expect("entry function export should populate module metadata");
+
+        assert_eq!(lowered_program.modules.len(), 1);
+        let module = &lowered_program.modules[0];
+        assert_eq!(module.id, 0);
+        assert_eq!(module.specifier, "<entry>");
+        assert_eq!(module.locals_count, 1);
+        match &module.statements[..] {
+            [
+                lowered::LoweredStmt::Export {
+                    name,
+                    expr:
+                        lowered::LoweredExpr::ArrowFn {
+                            representation: lowered::ClosureRepresentation::DirectLocalToken,
+                            ..
+                        },
+                },
+            ] => assert_eq!(name, "f"),
+            other => panic!("unexpected entry module export statements: {other:?}"),
+        }
+        lowered::validate_lowered(&lowered_program)
+            .expect("entry function export metadata should validate as lowered IR");
+
+        let _ = std::fs::remove_dir_all(&dir);
+    }
+
+    #[test]
     fn static_module_export_lowering_orders_module_metadata_dependency_first() {
         let dir = unique_temp_dir("static-module-export-order");
         std::fs::create_dir_all(&dir).expect("temp dir should be created");
