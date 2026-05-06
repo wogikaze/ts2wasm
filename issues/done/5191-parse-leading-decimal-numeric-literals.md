@@ -72,10 +72,10 @@ The parser accepts leading-decimal numeric literals such as `.5` in expression p
 
 In scope:
 
-- [ ] Parse `Dot` followed by `Number` as a decimal numeric literal in primary-expression position.
-- [ ] Preserve member access parsing for `object.property` and numeric property access diagnostics for `object.5`.
-- [ ] Add focused parser coverage for `Math.random() < .5`.
-- [ ] Re-run the representative triage and confirm the current `unsupported expression ... Dot` blocker is gone.
+- [x] Parse `Dot` followed by `Number` as a decimal numeric literal in primary-expression position.
+- [x] Preserve member access parsing for `object.property` and numeric property access diagnostics for `object.5`.
+- [x] Add focused parser coverage for `Math.random() < .5`.
+- [x] Re-run the representative triage and confirm the current `unsupported expression ... Dot` blocker is gone.
 
 Out of scope:
 
@@ -99,10 +99,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] `parse_program("const done = Math.random() < .5;")` succeeds.
-- [ ] Parser tests distinguish `.5` from member access so `Math.random().x` still parses as property access.
-- [ ] `python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/builtinIterator.ts` no longer reports `unsupported expression` on the `Dot` token at `355..356`.
-- [ ] If triage advances, any remaining `Iterator` type/value or iterator-helper diagnostics are recorded as separate follow-up issues instead of expanding this slice.
+- [x] `parse_program("const done = Math.random() < .5;")` succeeds.
+- [x] Parser tests distinguish `.5` from member access so `Math.random().x` still parses as property access.
+- [x] `python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/builtinIterator.ts` no longer reports `unsupported expression` on the `Dot` token at `355..356`.
+- [x] If triage advances, any remaining `Iterator` type/value or iterator-helper diagnostics are recorded as separate follow-up issues instead of expanding this slice.
 
 ## Validation
 
@@ -128,15 +128,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] created: `issues/open/5222-parse-ambient-generic-variable-type-annotations.md`
 
 ## Notes
 
@@ -144,20 +144,22 @@ Split from generated bucket `1086` on 2026-05-06. Existing iterator protocol and
 
 ## Completion evidence
 
-Fill only when moving to `done/`.
-
 Commits:
 
-- `...`
+- `5c84d451`
 
 Validation result:
 
 ```text
-command:
-result:
-date:
+command: cargo nextest run -p ts2wasm-frontend
+result: 192 passed, 2 skipped
+date: 2026-05-06
+
+command: python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/builtinIterator.ts
+result: Dot parser blocker resolved, advances to ambient generic variable declaration diagnostic tracked by issue 5222
+date: 2026-05-06
 ```
 
 Remaining risks:
 
-- none
+- Triage advances to separate ambient generic variable declaration blocker (issue 5222)

@@ -111,7 +111,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] created: `issues/open/5191-parse-leading-decimal-numeric-literals.md`
+- [x] created: `issues/done/5191-parse-leading-decimal-numeric-literals.md`
 
 ## Notes
 
@@ -134,7 +134,7 @@ Generated on 2026-05-06.
 - Source context: `done: Math.random() < .5,`
 - Compiler evidence: tokens succeed; AST construction fails on the `Dot` token that begins `.5`; visible-symbol extraction reaches earlier `Iterator.from`, `map`, `filter`, and `isZero` declarations.
 - TypeScript oracle: accepts `.5` syntax and reports later TS2693/TS2339/TS2689 diagnostics for `Iterator` type/value and iterator helper usage.
-- Split child: `issues/open/5191-parse-leading-decimal-numeric-literals.md`
+- Split child: `issues/done/5191-parse-leading-decimal-numeric-literals.md`
 
 ## Completion evidence
 
