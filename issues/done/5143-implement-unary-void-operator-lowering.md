@@ -9,6 +9,7 @@ depends_on: []
 blocks: []
 created: 2026-05-06
 updated: 2026-05-06
+completed: 2026-05-06
 ---
 
 ## Summary
@@ -63,10 +64,10 @@ The compiler lowers unary `void expr` by evaluating `expr` for side effects and 
 
 In scope:
 
-- [ ] Add a `LoweredUnaryOp::Void` or equivalent lowering path that preserves operand side effects.
-- [ ] Ensure the expression result is `undefined` regardless of operand value.
-- [ ] Add a focused fixture for `void sideEffect()` in an arrow/function body.
-- [ ] Re-run the representative `avoidCycleWithVoidExpressionReturnedFromArrow.ts` triage and confirm it advances past the unary `Void` diagnostic.
+- [x] Add a `LoweredUnaryOp::Void` or equivalent lowering path that preserves operand side effects.
+- [x] Ensure the expression result is `undefined` regardless of operand value.
+- [x] Add a focused fixture for `void sideEffect()` in an arrow/function body.
+- [x] Re-run the representative `avoidCycleWithVoidExpressionReturnedFromArrow.ts` triage and confirm it advances past the unary `Void` diagnostic.
 
 Out of scope:
 
@@ -91,10 +92,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] A focused Node/iwasm fixture for `void sideEffect()` matches Node output and proves the side effect ran.
-- [ ] The fixture proves the expression result is `undefined`.
-- [ ] `mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/avoidCycleWithVoidExpressionReturnedFromArrow.ts` no longer reports `unary operator Void not yet supported`.
-- [ ] Existing supported unary operators still pass their focused tests.
+- [x] A focused Node/iwasm fixture for `void sideEffect()` matches Node output and proves the side effect ran.
+- [x] The fixture proves the expression result is `undefined`.
+- [x] `mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/avoidCycleWithVoidExpressionReturnedFromArrow.ts` no longer reports `unary operator Void not yet supported`.
+- [x] Existing supported unary operators still pass their focused tests.
 
 ## Validation
 
@@ -124,15 +125,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] created: `issues/open/5193-support-class-instance-method-receiver-calls.md`
 
 ## Notes
 
@@ -144,16 +145,24 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- `...`
+- close commit: fixtures: close unary void lowering issue
 
 Validation result:
 
 ```text
-command:
-result:
-date:
+command: cargo fmt --all --check
+result: pass
+date: 2026-05-06
+
+command: cargo nextest run -p ts2wasm-cli unary_void_operator
+result: pass (1 passed)
+date: 2026-05-06
+
+command: python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/avoidCycleWithVoidExpressionReturnedFromArrow.ts
+result: pass for issue 5143; the unary `Void` diagnostic is gone and the next blocker is `issue-211: unknown receiver class for method once`
+date: 2026-05-06
 ```
 
 Remaining risks:
 
-- none
+- The representative reference now stops at class instance method receiver classification, tracked by issue 5193.
