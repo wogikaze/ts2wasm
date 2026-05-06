@@ -278,8 +278,8 @@ Duplicate candidates:
     "reason": "same feature label, title overlap"
   },
   {
-    "state": "open",
-    "path": "issues/open/1142-implement-checkSuperCallBeforeThisAccessing-class.md",
+    "state": "done",
+    "path": "issues/done/1142-implement-checkSuperCallBeforeThisAccessing-class.md",
     "title": "Implement Checksupercallbeforethisaccessing Class",
     "reason": "same feature label, title overlap"
   },

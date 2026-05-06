@@ -16,9 +16,9 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 3 | 2 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4448 | 3748 | 700 |
+| frontend | 4448 | 3747 | 701 |
 | harness | 1 | 0 | 1 |
-| ir | 41 | 19 | 22 |
+| ir | 42 | 20 | 22 |
 | issues | 4 | 0 | 4 |
 | parser | 1 | 0 | 1 |
 | reference | 212 | 159 | 53 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5067 | 4020 | 1047 |
+| total | 5068 | 4020 | 1048 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -50,7 +50,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 5000 (Meta: TypeScript Compiler Parser Syntax Coverage) [done/design] ch:496 open:429 done:67
 ├── 5002 (Meta: TypeScript Compiler Type System Coverage) [done/done] ch:241 open:233 done:8 (also ← 5005)
 ├── 5003 (Meta: TypeScript Compiler Declaration Emit Coverage) [done/done] ch:103 open:92 done:11 (also ← 5001)
-5001 (Meta: TypeScript Compiler Semantic Analysis Coverage) [done/done] ch:600 open:351 done:249
+5001 (Meta: TypeScript Compiler Semantic Analysis Coverage) [done/done] ch:599 open:350 done:249
 5004 (Meta: Runtime Builtins Coverage (test262) (audit reopened #5004)) [done/done] ch:24 open:3 done:21
 5005 (Meta: TypeScript Compiler Name Resolution Coverage) [done/done] ch:427 open:380 done:47
 ├── 5006 (Meta: TypeScript Compiler Scope Analysis Coverage) [done/done] ch:30 open:22 done:8
@@ -67,7 +67,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | Order | ID | Title | State | Class | Area | Priority | Depends on | Direct children | Open children | Done children |
 |-----:|---:|------|-------|-------|------|--------:|-----------:|----------------:|--------------:|--------------:|
 | 1 | 5000 | Meta: TypeScript Compiler Parser Syntax Coverage | done | design | frontend/syntax | P1 | - | 496 | 429 | 67 |
-| 2 | 5001 | Meta: TypeScript Compiler Semantic Analysis Coverage | done | done | frontend/semantics | P1 | - | 600 | 351 | 249 |
+| 2 | 5001 | Meta: TypeScript Compiler Semantic Analysis Coverage | done | done | frontend/semantics | P1 | - | 599 | 350 | 249 |
 | 3 | 5004 | Meta: Runtime Builtins Coverage (test262) (audit reopened #5004) | done | done | runtime/builtins | P1 | - | 24 | 3 | 21 |
 | 4 | 5005 | Meta: TypeScript Compiler Name Resolution Coverage | done | done | frontend/resolver | P1 | - | 427 | 380 | 47 |
 | 5 | 5002 | Meta: TypeScript Compiler Type System Coverage | done | done | frontend/semantics | P1 | 5000, 5005 | 241 | 233 | 8 |
@@ -187,6 +187,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5230 | Tokenize JSX elements before RegExp fallback | feature | frontend/lexer | implementation-ready | P1 |  | `</div>` in a JSX element reports `UnsupportedRegExp: unterminated RegExp literal`. |
 | 5231 | Parse export as namespace declarations | feature | frontend/parser | implementation-ready | P1 |  | `export as namespace THREE;` reports `UnsupportedModule: issue-055: unsupported static export`. |
 | 5232 | Support entry-module export class declarations | feature | ir/compiler | implementation-ready | P1 |  | entry-module `export class Foo {}` currently reports `UnsupportedModule: issue-5005: entry module ... uses a declarat... |
+| 5233 | Report super call in non-derived class | feature | ir/lowering | implementation-ready | P1 |  | `super()` in a class without `extends` reports `UnsupportedSyntax: super(...) used in class without extends` instead ... |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -462,7 +463,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 772 | Implement Augmentedtypesvar | spike | frontend/syntax | class: blocked | Implement Augmentedtypesvar |
 | 773 | Implement Autoasiforstaticsinclassdeclaration | spike | frontend/syntax | class: triage-needed | Implement Autoasiforstaticsinclassdeclaration |
 | 775 | Implement Autotypeassignedusingdestructuringfromnevernocrash | spike | frontend/resolver | class: blocked | Implement Autotypeassignedusingdestructuringfromnevernocrash |
-| 1142 | Implement Checksupercallbeforethisaccessing Class | spike | frontend/syntax | class: blocked | Implement Checksupercallbeforethisaccessing Class |
 | 1143 | Implement Checksupercallbeforethisaccessing Parser Syntax | spike | frontend/syntax | class: triage-needed | Implement Checksupercallbeforethisaccessing Parser Syntax |
 | 1144 | Implement Checkswitchstatementifcasetypeisstring | spike | frontend/syntax | class: blocked | Implement Checkswitchstatementifcasetypeisstring |
 | 1145 | Implement Checktypepredicateforredundantproperties | spike | frontend/semantics | class: blocked | Implement Checktypepredicateforredundantproperties |
@@ -5024,6 +5024,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1139 | Implement Checkjsxnotseterror | spike | reference/triage | see `issues/done/1139-implement-checkJsxNotSetError.md` |
 | 1140 | Implement Checkmergedglobalumdsymbol | spike | frontend/syntax | see `issues/done/1140-implement-checkMergedGlobalUMDSymbol.md` |
 | 1141 | Implement Checksupercallbeforethisaccess | spike | frontend/syntax | see `issues/done/1141-implement-checkSuperCallBeforeThisAccess.md` |
+| 1142 | Implement Checksupercallbeforethisaccessing Class | spike | frontend/syntax | see `issues/done/1142-implement-checkSuperCallBeforeThisAccessing-class.md` |
 | 2050 | Implement Duplicatelocalvariable Duplicate Local | spike | reference/triage | see `issues/done/2050-implement-duplicateLocalVariable-duplicate-local.md` |
 | 3002 | Implement Isolateddeclarationerrorsdefault | spike | runtime/builtins | see `issues/done/3002-implement-isolatedDeclarationErrorsDefault.md` |
 | 3131 | Implement Jsxfactorynotidentifierorqualifiedname | spike | reference/triage | see `issues/done/3131-implement-jsxFactoryNotIdentifierOrQualifiedName.md` |
