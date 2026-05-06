@@ -18,16 +18,16 @@ Issue files are the source of truth for work items. The generated section below 
 | docs | 2 | 0 | 2 |
 | frontend | 4402 | 3777 | 625 |
 | harness | 1 | 0 | 1 |
-| ir | 30 | 8 | 22 |
+| ir | 31 | 9 | 22 |
 | issues | 4 | 0 | 4 |
 | parser | 1 | 0 | 1 |
-| reference | 211 | 169 | 42 |
+| reference | 211 | 167 | 44 |
 | runtime | 265 | 89 | 176 |
 | scripts | 3 | 1 | 2 |
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5007 | 4046 | 961 |
+| total | 5008 | 4045 | 963 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -127,6 +127,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5170 | Support bitwise OR binary lowering | feature | ir/lowering | implementation-ready | P1 |  | ordinary number/null/undefined bitwise OR expressions parse successfully but cannot be lowered. |
 | 5171 | Accept unsigned 32-bit hex literals | feature | frontend/lexer | implementation-ready | P1 |  | non-decimal number literals above `i32::MAX` are rejected during lexing, so parser and lowering triage cannot reach t... |
 | 5172 | Report unresolved implements in erased namespace | feature | frontend/semantics | implementation-ready | P1 |  | erased namespace declarations can hide unresolved class `implements` clauses and produce a false build pass. |
+| 5173 | Avoid stack overflow on deep binary expressions | feature | ir/builtin-resolver | implementation-ready | P1 |  | recursive expression folding in builtin resolution cannot process the deep binary-expression stress references. |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -403,8 +404,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 772 | Implement Augmentedtypesvar | spike | frontend/syntax | class: blocked | Implement Augmentedtypesvar |
 | 773 | Implement Autoasiforstaticsinclassdeclaration | spike | frontend/syntax | class: triage-needed | Implement Autoasiforstaticsinclassdeclaration |
 | 775 | Implement Autotypeassignedusingdestructuringfromnevernocrash | spike | frontend/resolver | class: blocked | Implement Autotypeassignedusingdestructuringfromnevernocrash |
-| 1058 | Implement Binderbinaryexpressionstress | spike | reference/triage | class: triage-needed | Implement Binderbinaryexpressionstress |
-| 1059 | Implement Binderbinaryexpressionstressjs | spike | reference/triage | class: triage-needed | Implement Binderbinaryexpressionstressjs |
 | 1060 | Implement Bindingpatterncannotbeonlyinferencesource | spike | reference/triage | class: triage-needed | Implement Bindingpatterncannotbeonlyinferencesource |
 | 1061 | Implement Bindingpatterncontextualtypedoesnotcausewidening | spike | frontend/resolver | class: blocked | Implement Bindingpatterncontextualtypedoesnotcausewidening |
 | 1062 | Implement Bindingpatterninparameter | spike | frontend/syntax | class: blocked | Implement Bindingpatterninparameter |
@@ -4965,6 +4964,8 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1055 | Implement Binaryarithmatic | spike | frontend/syntax | see `issues/done/1055-implement-binaryArithmatic.md` |
 | 1056 | Implement Binaryarithmeticcontrolflowgraphnottoolarge | spike | frontend/syntax | see `issues/done/1056-implement-binaryArithmeticControlFlowGraphNotTooLarge.md` |
 | 1057 | Implement Bind | spike | frontend/syntax | see `issues/done/1057-implement-bind.md` |
+| 1058 | Implement Binderbinaryexpressionstress | spike | reference/triage | see `issues/done/1058-implement-binderBinaryExpressionStress.md` |
+| 1059 | Implement Binderbinaryexpressionstressjs | spike | reference/triage | see `issues/done/1059-implement-binderBinaryExpressionStressJs.md` |
 | 2050 | Implement Duplicatelocalvariable Duplicate Local | spike | reference/triage | see `issues/done/2050-implement-duplicateLocalVariable-duplicate-local.md` |
 | 3002 | Implement Isolateddeclarationerrorsdefault | spike | runtime/builtins | see `issues/done/3002-implement-isolatedDeclarationErrorsDefault.md` |
 | 3131 | Implement Jsxfactorynotidentifierorqualifiedname | spike | reference/triage | see `issues/done/3131-implement-jsxFactoryNotIdentifierOrQualifiedName.md` |
