@@ -143,6 +143,7 @@ Representative generated buckets re-triaged into this boundary slice:
 - `issues/done/150-implement-ambientExternalModuleReopen.md`: `declare module "fs" { ... }` is module-shaped and now routes to `UnsupportedModule` instead of a generic parser error.
 - `issues/done/160-implement-ambientModules.md`: `declare namespace Foo.Bar { ... }` is module-shaped and now routes to `UnsupportedModule`.
 - `issues/open/162-implement-ambientPropertyDeclarationInJs.md`: `declare prop: string;` inside a class is declaration-only and now parses/erases without adding a runtime class element.
+- `issues/done/1184-implement-classExpressionPropertyModifiers.md`: `declare [Symbol.toStringTag] = "uh";` inside a class expression remains on the source-spanned `UnsupportedTypeScriptSyntax` rejection boundary because ambient class element initializers would affect runtime bindings.
 
 ## Completion evidence
 
