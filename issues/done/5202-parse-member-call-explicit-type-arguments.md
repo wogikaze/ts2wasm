@@ -75,11 +75,11 @@ continues to resolver/type diagnostics.
 
 In scope:
 
-- [ ] Parse `object.method<T, U>(args)` as a call expression
-- [ ] Erase or preserve the parsed type argument list consistently with current
+- [x] Parse `object.method<T, U>(args)` as a call expression
+- [x] Erase or preserve the parsed type argument list consistently with current
   direct-call type argument handling
-- [ ] Preserve ordinary relational/comparison parsing for non-call expressions
-- [ ] Preserve existing plain member calls such as `_.map(c2, rf1)`
+- [x] Preserve ordinary relational/comparison parsing for non-call expressions
+- [x] Preserve existing plain member calls such as `_.map(c2, rf1)`
 
 Out of scope:
 
@@ -102,12 +102,12 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] `callbacksDontShareTypes.ts` no longer reports `expected Semicolon, got
+- [x] `callbacksDontShareTypes.ts` no longer reports `expected Semicolon, got
   Some(Greater)` at `_.map<number, string>(...)`
-- [ ] A focused parser fixture covers `obj.method<number, string>(arg)`
-- [ ] A focused parser fixture covers ordinary `obj.method(arg)` and keeps the
+- [x] A focused parser fixture covers `obj.method<number, string>(arg)`
+- [x] A focused parser fixture covers ordinary `obj.method(arg)` and keeps the
   existing AST shape
-- [ ] A focused negative/regression fixture covers a relational expression shape
+- [x] A focused negative/regression fixture covers a relational expression shape
   that must not be reclassified as a generic member call
 
 ## Validation
@@ -133,15 +133,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 
@@ -167,3 +167,12 @@ date:
 Remaining risks:
 
 - none
+
+
+## False-done audit
+
+Date: 2026-05-06
+
+Classification: truly-done.
+
+Audit result: retained in issues/done/. Implementation commits confirmed.

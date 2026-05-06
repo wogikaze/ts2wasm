@@ -10,13 +10,13 @@ Issue files are the source of truth for work items. The generated section below 
 | Area | Total | Open | Resolved |
 |---|---:|---:|---:|
 | abi | 7 | 0 | 7 |
-| backend | 19 | 4 | 15 |
+| backend | 18 | 3 | 15 |
 | backend-wasm | 2 | 0 | 2 |
-| cli | 17 | 1 | 16 |
+| cli | 16 | 0 | 16 |
 | compiler | 3 | 0 | 3 |
-| coverage | 44 | 1 | 43 |
+| coverage | 43 | 0 | 43 |
 | docs | 4 | 2 | 2 |
-| frontend | 4439 | 3726 | 713 |
+| frontend | 4438 | 3725 | 713 |
 | harness | 1 | 0 | 1 |
 | ir | 42 | 10 | 32 |
 | issues | 5 | 0 | 5 |
@@ -25,9 +25,9 @@ Issue files are the source of truth for work items. The generated section below 
 | runtime | 269 | 92 | 177 |
 | scripts | 3 | 0 | 3 |
 | security | 1 | 0 | 1 |
-| tests | 9 | 2 | 7 |
+| tests | 8 | 1 | 7 |
 | wasi | 4 | 3 | 1 |
-| total | 5081 | 4004 | 1077 |
+| total | 5076 | 3999 | 1077 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -99,7 +99,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5137 | Split remaining Date API scope | cleanup | runtime/builtins | design-ready | P1 |  | Date issue 050 currently stays open after its named child issues 240 and 241 are done, but non-literal constructor in... |
 | 5138 | Split Reflect.construct isConstructor reference window | spike | runtime/builtins | design-ready | P1 |  | `reference/test262/test/annexB/built-ins/String/prototype/anchor/not-a-constructor.js` currently fails with `Unresolv... |
 | 5152 | Support class constructor outer callback captures | feature | ir | implementation-ready | P1 |  | class constructors cannot currently call outer callback locals when nested arrow callbacks capture constructor `this`. |
-| 5157 | Report set accessor rest parameter diagnostics | feature | frontend/syntax | implementation-ready | P1 |  | `reference/typescript/tests/cases/compiler/accessorWithRestParam.ts` currently reaches backend emission and fails wit... |
 | 5158 | Report interface private member clashes | feature | frontend/resolver | implementation-ready | P1 |  | `reference/typescript/tests/cases/compiler/baseTypePrivateMemberClash.ts` currently reports `BackendIo` instead of a ... |
 | 5163 | Lower nested call expression callees | feature | frontend/semantics | implementation-ready | P2 |  | `reference/typescript/tests/cases/compiler/betterErrorForAccidentalCall.ts` currently reports `UnsupportedSyntax: onl... |
 | 5165 | Support typed array subarray builtins | feature | ir/builtin-resolver | implementation-ready | P1 |  | Support typed array subarray builtins |
@@ -120,12 +119,8 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5210 | Sparse array holes handling for Array.prototype.map | feature | runtime/builtins | implementation-ready | P2 |  | current `Array.prototype.map` implementation only supports dense |
 | 5213 | Implement generator function syntax prerequisite for iterator spread | feature | frontend/syntax | implementation-ready | P2 |  | Generator function declarations are rejected before iterator spread can be tested. |
 | 5219 | Support explicit this-parameter function expression lowering | feature | ir/runtime | implementation-ready | P1 |  | function expressions that declare an erased TypeScript `this` parameter and read `this` in the body currently fail wi... |
-| 5228 | W0: wasm binary backend — primary emission path | feature | backend | design-ready | P1 | 5225 | The WAT→wasm subprocess pipeline is fragile, slow, and adds an external toolchain dependency for every build. |
 | 5230 | W0: mandatory span on LoweredExpr and LoweredStmt variants | refactor | ir | design-ready | P1 |  | W0: mandatory span on LoweredExpr and LoweredStmt variants |
 | 5231 | W0: migrate expr_emit.rs remaining raw WAT to typed writer | cleanup | backend | design-ready | P2 | 5225 | 274 escape-hatch `push_str` calls in `expr_emit.rs` prevent full typed-WAT coverage. |
-| 5232 | W0: fixture-ize RuntimeLinkPlan linker structure tests | cleanup | tests | design-ready | P1 |  | W0: fixture-ize RuntimeLinkPlan linker structure tests |
-| 5233 | W0: harden reference coverage prerequisites | infra | coverage | design-ready | P1 |  | W0: harden reference coverage prerequisites |
-| 5234 | W0: implement host-deny and auditable E2E manifest verification | feature | cli | design-ready | P1 |  | W0: implement host-deny and auditable E2E manifest verification |
 | 5235 | W1: implement WASI stdin/fd_read lowering for input | feature | wasi | design-ready | P1 |  | W1: implement WASI stdin/fd_read lowering for input |
 | 5236 | W1: implement WASI args and environment variable lowering | feature | wasi | design-ready | P2 |  | W1: implement WASI args and environment variable lowering |
 | 5237 | W1: standalone WASI execution validation test suite | test | tests | design-ready | P1 |  | W1: standalone WASI execution validation test suite |

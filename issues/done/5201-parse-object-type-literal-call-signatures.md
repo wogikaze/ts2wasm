@@ -68,10 +68,10 @@ unterminated type annotation.
 
 In scope:
 
-- [ ] Parse object type literal annotations after `var name:`
-- [ ] Parse call-signature members of the form `(param: Type): ReturnType;`
-- [ ] Accept string-literal parameter types in those call signatures
-- [ ] Preserve or erase the parsed type metadata consistently with existing
+- [x] Parse object type literal annotations after `var name:`
+- [x] Parse call-signature members of the form `(param: Type): ReturnType;`
+- [x] Accept string-literal parameter types in those call signatures
+- [x] Preserve or erase the parsed type metadata consistently with existing
   TypeScript annotation handling
 
 Out of scope:
@@ -95,13 +95,13 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] `callSignatureFunctionOverload.ts` no longer reports `unterminated
+- [x] `callSignatureFunctionOverload.ts` no longer reports `unterminated
   TypeScript type annotation`
-- [ ] A focused parser fixture covers a variable annotation with an object type
+- [x] A focused parser fixture covers a variable annotation with an object type
   literal containing at least two call signatures
-- [ ] A focused parser fixture covers a call signature parameter typed as a
+- [x] A focused parser fixture covers a call signature parameter typed as a
   string literal, such as `'order'`
-- [ ] Existing object literal expression parsing remains unchanged
+- [x] Existing object literal expression parsing remains unchanged
 
 ## Validation
 
@@ -126,15 +126,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 
@@ -160,3 +160,12 @@ date:
 Remaining risks:
 
 - none
+
+
+## False-done audit
+
+Date: 2026-05-06
+
+Classification: truly-done.
+
+Audit result: retained in issues/done/. Implementation commits confirmed.

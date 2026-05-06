@@ -63,10 +63,10 @@ The frontend preserves enough ambient declaration information to report the repr
 
 In scope:
 
-- [ ] Parse or record `declare var <ident>;` ambient declarations before they are erased.
-- [ ] Detect the narrow ES5-lib `console` redeclaration mismatch used by the representative reference case.
-- [ ] Report a source-spanned diagnostic at the `console` identifier.
-- [ ] Keep ordinary non-ambient `var` handling aligned with issue `5162`.
+- [x] Parse or record `declare var <ident>;` ambient declarations before they are erased.
+- [x] Detect the narrow ES5-lib `console` redeclaration mismatch used by the representative reference case.
+- [x] Report a source-spanned diagnostic at the `console` identifier.
+- [x] Keep ordinary non-ambient `var` handling aligned with issue `5162`.
 
 Out of scope:
 
@@ -93,10 +93,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] A focused frontend or compiler test covers `declare var console;` with ES5 lib context and reports a diagnostic at `console`.
-- [ ] `python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/binopAssignmentShouldHaveType.ts` no longer reports `BuildPass` solely because `declare var console;` was erased.
-- [ ] Existing duplicate `let` / `const` diagnostics and compatible `var` redeclaration behavior remain unchanged.
-- [ ] Issue `5162` remains responsible for general compatible `var` redeclarations; this issue only covers the ambient-lib conflict surfaced by this reference case.
+- [x] A focused frontend or compiler test covers `declare var console;` with ES5 lib context and reports a diagnostic at `console`.
+- [x] `python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/binopAssignmentShouldHaveType.ts` no longer reports `BuildPass` solely because `declare var console;` was erased.
+- [x] Existing duplicate `let` / `const` diagnostics and compatible `var` redeclaration behavior remain unchanged.
+- [x] Issue `5162` remains responsible for general compatible `var` redeclarations; this issue only covers the ambient-lib conflict surfaced by this reference case.
 
 ## Validation
 
@@ -123,15 +123,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 
@@ -158,3 +158,12 @@ date:
 Remaining risks:
 
 - none
+
+
+## False-done audit
+
+Date: 2026-05-06
+
+Classification: truly-done.
+
+Audit result: retained in issues/done/. Implementation commits confirmed.

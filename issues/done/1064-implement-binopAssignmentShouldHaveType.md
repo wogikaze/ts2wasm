@@ -108,7 +108,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] added: `issues/open/5176-report-ambient-var-lib-redeclaration-diagnostics.md`
+- [x] added: `issues/done/5176-report-ambient-var-lib-redeclaration-diagnostics.md`
 - [x] added: `issues/open/5177-report-strict-null-in-erased-namespace-methods.md`
 
 ## Notes
@@ -137,7 +137,7 @@ Generated on 2026-05-06.
   - `TS2403`: `Variable 'console' must be of type 'Console', but here has type 'any'.`
   - `TS2322`: `Type 'null' is not assignable to type 'string'.`
 - Superseding children:
-  - `issues/open/5176-report-ambient-var-lib-redeclaration-diagnostics.md`
+  - `issues/done/5176-report-ambient-var-lib-redeclaration-diagnostics.md`
   - `issues/open/5177-report-strict-null-in-erased-namespace-methods.md`
 
 ## Completion evidence

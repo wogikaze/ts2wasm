@@ -106,11 +106,11 @@ Current state:
 
 Follow-up issues:
 
-- [x] created: `issues/open/5197-report-class-called-without-new.md`
+- [x] created: `issues/done/5197-report-class-called-without-new.md`
 
 ## Notes
 
-Superseded by `issues/open/5197-report-class-called-without-new.md`. Fresh
+Superseded by `issues/done/5197-report-class-called-without-new.md`. Fresh
 triage shows the source parses to `ClassDecl C` and `Call(Ident C)`, but name
 resolution reports the broad `issue-5011` class-value diagnostic instead of the
 TypeScript oracle's class-not-callable TS2348 diagnostic.
@@ -131,12 +131,12 @@ Generated on 2026-05-06:
 - diagnostic: `UnsupportedSyntax`, `issue-5011: class C cannot be used as a value`
 - AST: `ClassDecl C`; `Let c = Call(Ident C, [])`
 - TypeScript oracle: TS2348 `Value of type 'typeof C' is not callable. Did you mean to include 'new'?`
-- follow-up: `issues/open/5197-report-class-called-without-new.md`
+- follow-up: `issues/done/5197-report-class-called-without-new.md`
 
 ## Completion evidence
 
 Closed as a generated triage bucket. The actionable class-call diagnostic gap is
-tracked by `issues/open/5197-report-class-called-without-new.md`.
+tracked by `issues/done/5197-report-class-called-without-new.md`.
 
 Commits:
 

@@ -61,9 +61,9 @@ diagnostic. Supported `new C()` paths remain unchanged.
 
 In scope:
 
-- [ ] Detect a known class declaration used as the callee of a plain `Call`
-- [ ] Emit a source-spanned class-not-callable diagnostic at the class identifier
-- [ ] Preserve `new C()` and supported class method/static method paths
+- [x] Detect a known class declaration used as the callee of a plain `Call`
+- [x] Emit a source-spanned class-not-callable diagnostic at the class identifier
+- [x] Preserve `new C()` and supported class method/static method paths
 
 Out of scope:
 
@@ -87,10 +87,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] `callOnClass.ts` no longer reports generic `issue-5011` for `C()`
-- [ ] A focused fixture for `class C {}; C();` reports a class-not-callable diagnostic at `C`
-- [ ] `new C()` class fixtures still pass
-- [ ] Class constructor values passed as ordinary arguments remain governed by issue 5192
+- [x] `callOnClass.ts` no longer reports generic `issue-5011` for `C()`
+- [x] A focused fixture for `class C {}; C();` reports a class-not-callable diagnostic at `C`
+- [x] `new C()` class fixtures still pass
+- [x] Class constructor values passed as ordinary arguments remain governed by issue 5192
 
 ## Validation
 
@@ -115,15 +115,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 
@@ -150,3 +150,12 @@ date:
 Remaining risks:
 
 - none
+
+
+## False-done audit
+
+Date: 2026-05-06
+
+Classification: truly-done.
+
+Audit result: retained in issues/done/. Implementation commits confirmed.

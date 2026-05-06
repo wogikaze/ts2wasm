@@ -106,7 +106,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] `issues/open/5201-parse-object-type-literal-call-signatures.md`
+- [x] `issues/done/5201-parse-object-type-literal-call-signatures.md`
 
 ## Notes
 
@@ -160,7 +160,7 @@ Evidence:
   types with multiple call signatures.
 - Broad parser-syntax candidates are no-match owners because the exact blocker
   is object type literal call-signature syntax.
-- Child issue `issues/open/5201-parse-object-type-literal-call-signatures.md`
+- Child issue `issues/done/5201-parse-object-type-literal-call-signatures.md`
   owns the implementation slice.
 
 ## Completion evidence

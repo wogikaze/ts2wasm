@@ -74,10 +74,10 @@ The frontend reports a source-spanned diagnostic for rest parameters on instance
 
 In scope:
 
-- [ ] Detect rest parameters in class `set` accessors during parsing or validation.
-- [ ] Cover both instance `set X(...v)` and static `static set X(...v2)`.
-- [ ] Add a focused parser/frontend test for the TS1053 shape.
-- [ ] Re-run the representative triage and confirm it no longer reports `BackendIo`.
+- [x] Detect rest parameters in class `set` accessors during parsing or validation.
+- [x] Cover both instance `set X(...v)` and static `static set X(...v2)`.
+- [x] Add a focused parser/frontend test for the TS1053 shape.
+- [x] Re-run the representative triage and confirm it no longer reports `BackendIo`.
 
 Out of scope:
 
@@ -100,10 +100,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] `set X(...v) {}` reports a source-spanned frontend diagnostic matching the TypeScript oracle shape.
-- [ ] `static set X(...v2) {}` reports the same diagnostic.
-- [ ] `python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/accessorWithRestParam.ts` no longer reports `BackendIo`.
-- [ ] Existing valid getter/setter parsing tests continue to pass.
+- [x] `set X(...v) {}` reports a source-spanned frontend diagnostic matching the TypeScript oracle shape.
+- [x] `static set X(...v2) {}` reports the same diagnostic.
+- [x] `python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/accessorWithRestParam.ts` no longer reports `BackendIo`.
+- [x] Existing valid getter/setter parsing tests continue to pass.
 
 ## Validation
 
@@ -129,15 +129,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 
@@ -162,3 +162,12 @@ date:
 Remaining risks:
 
 - none
+
+
+## False-done audit
+
+Date: 2026-05-06
+
+Classification: truly-done.
+
+Audit result: retained in issues/done/. Implementation commits confirmed.
