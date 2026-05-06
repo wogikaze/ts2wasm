@@ -16,9 +16,9 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 2 | 1 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4443 | 3753 | 690 |
+| frontend | 4443 | 3752 | 691 |
 | harness | 1 | 0 | 1 |
-| ir | 39 | 17 | 22 |
+| ir | 40 | 18 | 22 |
 | issues | 4 | 0 | 4 |
 | parser | 1 | 0 | 1 |
 | reference | 212 | 160 | 52 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5059 | 4023 | 1036 |
+| total | 5060 | 4023 | 1037 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -179,6 +179,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5222 | Support interface-typed method calls on erased locals | feature | ir/lowering | implementation-ready | P1 |  | Support interface-typed method calls on erased locals |
 | 5223 | Parse computed properties after object spread | feature | frontend/parser | implementation-ready | P1 |  | Parse computed properties after object spread |
 | 5224 | Parse destructuring assignment call arguments | feature | frontend/parser | implementation-ready | P1 |  | Parse destructuring assignment call arguments |
+| 5225 | Support qualified class heritage names | feature | ir/resolver | implementation-ready | P1 |  | Support qualified class heritage names |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -454,7 +455,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 772 | Implement Augmentedtypesvar | spike | frontend/syntax | class: blocked | Implement Augmentedtypesvar |
 | 773 | Implement Autoasiforstaticsinclassdeclaration | spike | frontend/syntax | class: triage-needed | Implement Autoasiforstaticsinclassdeclaration |
 | 775 | Implement Autotypeassignedusingdestructuringfromnevernocrash | spike | frontend/resolver | class: blocked | Implement Autotypeassignedusingdestructuringfromnevernocrash |
-| 1131 | Implement Checkforobjecttoostrict | spike | frontend/syntax | class: blocked | Implement Checkforobjecttoostrict |
 | 1132 | Implement Checkindexconstraintofjavascriptclassexpression | spike | frontend/resolver | class: blocked | Implement Checkindexconstraintofjavascriptclassexpression |
 | 1133 | Implement Checkinfiniteexpansiontermination | spike | frontend/resolver | class: blocked | Implement Checkinfiniteexpansiontermination |
 | 1134 | Implement Checkinheritedproperty | spike | frontend/syntax | class: triage-needed | Implement Checkinheritedproperty |
@@ -5016,6 +5016,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1128 | Implement Chainedspecializationtoobjecttypeliteral | spike | frontend/syntax | see `issues/done/1128-implement-chainedSpecializationToObjectTypeLiteral.md` |
 | 1129 | Implement Checkdestructuringshorthandassigment Destructuring | spike | frontend/syntax | see `issues/done/1129-implement-checkDestructuringShorthandAssigment-destructuring.md` |
 | 1130 | Implement Checkdestructuringshorthandassigment Name Resolution | spike | frontend/resolver | see `issues/done/1130-implement-checkDestructuringShorthandAssigment-name-resolution.md` |
+| 1131 | Implement Checkforobjecttoostrict | spike | frontend/syntax | see `issues/done/1131-implement-checkForObjectTooStrict.md` |
 | 2050 | Implement Duplicatelocalvariable Duplicate Local | spike | reference/triage | see `issues/done/2050-implement-duplicateLocalVariable-duplicate-local.md` |
 | 3002 | Implement Isolateddeclarationerrorsdefault | spike | runtime/builtins | see `issues/done/3002-implement-isolatedDeclarationErrorsDefault.md` |
 | 3131 | Implement Jsxfactorynotidentifierorqualifiedname | spike | reference/triage | see `issues/done/3131-implement-jsxFactoryNotIdentifierOrQualifiedName.md` |
