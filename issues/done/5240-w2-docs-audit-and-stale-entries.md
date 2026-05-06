@@ -106,3 +106,12 @@ Follow-up issues:
 
 - [x] none
 - [x] created/updated: W2 semantic core completeness (5242)
+
+
+## False-done audit
+
+Date: 2026-05-07
+
+Classification: truly-done.
+
+Audit result: retained in issues/done/. Implementation commits confirmed.
