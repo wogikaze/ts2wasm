@@ -238,6 +238,16 @@ impl Parser {
                 self.advance();
                 Ok(key)
             }
+            Some(Token::BigIntLiteral(_)) | Some(Token::PrivateIdentifier(_)) => {
+                Err(Diagnostic {
+                    code: DiagCode::UnsupportedSyntax,
+                    message: format!(
+                        "issue-5168: a 'bigint' literal cannot be used as a property name, got {:?}",
+                        self.peek()
+                    ),
+                    span: self.peek_span(),
+                })
+            }
             Some(token) if keyword_to_property_name(token).is_some() => {
                 let key = keyword_to_property_name(token).unwrap().to_owned();
                 self.advance();
@@ -255,6 +265,22 @@ impl Parser {
 
     fn parse_computed_object_key(&mut self) -> Result<String, Diagnostic> {
         let start = self.expect(TokenKind::LeftBracket)?;
+        // Handle BigInt literal computed keys: [1n]
+        if matches!(self.peek(), Some(Token::BigIntLiteral(_))) {
+            let bigint_span = self.peek_span();
+            self.advance();
+            let end = self.expect(TokenKind::RightBracket)?;
+            return Err(Diagnostic {
+                code: DiagCode::UnsupportedSyntax,
+                message: format!(
+                    "issue-5168: a computed property name must be of type 'string', 'number', 'symbol', or 'any', got 'bigint'"
+                ),
+                span: Some(Span {
+                    start: start.start,
+                    end: end.end,
+                }),
+            });
+        }
         let (object, _) = self.expect_ident()?;
         self.expect(TokenKind::Dot)?;
         let (property, _) = self.expect_ident()?;
