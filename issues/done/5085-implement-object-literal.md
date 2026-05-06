@@ -127,7 +127,7 @@ Follow-up issues:
 ## Duplicate detection
 
 - `issues/open/052-implement-json.md` - Implement JSON (same feature label, same group key, title overlap)
-- `issues/open/1118-implement-castNewObjectBug.md` - Implement Castnewobjectbug (same feature label, same group key, title overlap)
+- `issues/done/1118-implement-castNewObjectBug.md` - Implement Castnewobjectbug (same feature label, same group key, title overlap)
 - `issues/open/1128-implement-chainedSpecializationToObjectTypeLiteral.md` - Implement Chainedspecializationtoobjecttypeliteral (same feature label, same group key, title overlap)
 - `issues/open/1136-implement-checkJsObjectLiteralIndexSignatures.md` - Implement Checkjsobjectliteralindexsignatures (same feature label, same group key, title overlap)
 - `issues/open/1148-implement-checkingObjectWithThisInNamePositionNoCrash.md` - Implement Checkingobjectwiththisinnamepositionnocrash (same feature label, same group key, title overlap)
