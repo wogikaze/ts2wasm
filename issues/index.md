@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 3 | 2 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4449 | 3746 | 703 |
+| frontend | 4450 | 3746 | 704 |
 | harness | 1 | 0 | 1 |
 | ir | 42 | 20 | 22 |
 | issues | 4 | 0 | 4 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5069 | 4019 | 1050 |
+| total | 5070 | 4019 | 1051 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -48,7 +48,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 
 ```
 5000 (Meta: TypeScript Compiler Parser Syntax Coverage) [done/design] ch:496 open:429 done:67
-├── 5002 (Meta: TypeScript Compiler Type System Coverage) [done/done] ch:241 open:233 done:8 (also ← 5005)
+├── 5002 (Meta: TypeScript Compiler Type System Coverage) [done/done] ch:240 open:232 done:8 (also ← 5005)
 ├── 5003 (Meta: TypeScript Compiler Declaration Emit Coverage) [done/done] ch:103 open:92 done:11 (also ← 5001)
 5001 (Meta: TypeScript Compiler Semantic Analysis Coverage) [done/done] ch:598 open:349 done:249
 5004 (Meta: Runtime Builtins Coverage (test262) (audit reopened #5004)) [done/done] ch:24 open:3 done:21
@@ -70,7 +70,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 2 | 5001 | Meta: TypeScript Compiler Semantic Analysis Coverage | done | done | frontend/semantics | P1 | - | 598 | 349 | 249 |
 | 3 | 5004 | Meta: Runtime Builtins Coverage (test262) (audit reopened #5004) | done | done | runtime/builtins | P1 | - | 24 | 3 | 21 |
 | 4 | 5005 | Meta: TypeScript Compiler Name Resolution Coverage | done | done | frontend/resolver | P1 | - | 427 | 380 | 47 |
-| 5 | 5002 | Meta: TypeScript Compiler Type System Coverage | done | done | frontend/semantics | P1 | 5000, 5005 | 241 | 233 | 8 |
+| 5 | 5002 | Meta: TypeScript Compiler Type System Coverage | done | done | frontend/semantics | P1 | 5000, 5005 | 240 | 232 | 8 |
 | 6 | 5003 | Meta: TypeScript Compiler Declaration Emit Coverage | done | done | frontend/syntax | P2 | 5000, 5001 | 103 | 92 | 11 |
 | 7 | 5006 | Meta: TypeScript Compiler Scope Analysis Coverage | done | done | frontend/resolver | P2 | 5005 | 30 | 22 | 8 |
 | 8 | 5007 | Meta: TypeScript Compiler Module Resolution Coverage (audit reopened #5007) | done | done | frontend/resolver | P2 | 5005 | 21 | 19 | 2 |
@@ -189,6 +189,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5232 | Support entry-module export class declarations | feature | ir/compiler | implementation-ready | P1 |  | entry-module `export class Foo {}` currently reports `UnsupportedModule: issue-5005: entry module ... uses a declarat... |
 | 5233 | Report super call in non-derived class | feature | ir/lowering | implementation-ready | P1 |  | `super()` in a class without `extends` reports `UnsupportedSyntax: super(...) used in class without extends` instead ... |
 | 5234 | Track array-typed parameters for callback methods | feature | frontend/semantics | implementation-ready | P1 |  | class method parameter `x: Array<string>` reports `UnsupportedSyntax: issue-211: unknown receiver class for method fo... |
+| 5235 | Erase type predicate object return types | feature | frontend/parser | implementation-ready | P1 |  | `function f(x: any): x is { a: string; a: string; } { return true; }` reports `InvalidTopLevelReturn` because the ret... |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -464,7 +465,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 772 | Implement Augmentedtypesvar | spike | frontend/syntax | class: blocked | Implement Augmentedtypesvar |
 | 773 | Implement Autoasiforstaticsinclassdeclaration | spike | frontend/syntax | class: triage-needed | Implement Autoasiforstaticsinclassdeclaration |
 | 775 | Implement Autotypeassignedusingdestructuringfromnevernocrash | spike | frontend/resolver | class: blocked | Implement Autotypeassignedusingdestructuringfromnevernocrash |
-| 1145 | Implement Checktypepredicateforredundantproperties | spike | frontend/semantics | class: blocked | Implement Checktypepredicateforredundantproperties |
 | 1146 | Implement Checkerinitializationcrash | spike | frontend/syntax | class: triage-needed | Implement Checkerinitializationcrash |
 | 1147 | Implement Checkingobjectdefinepropertyonfunctionnonexistentpropertynocrash | spike | frontend/syntax | class: blocked | Implement Checkingobjectdefinepropertyonfunctionnonexistentpropertynocrash |
 | 1148 | Implement Checkingobjectwiththisinnamepositionnocrash | spike | frontend/syntax | class: blocked | Implement Checkingobjectwiththisinnamepositionnocrash |
@@ -5026,6 +5026,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1142 | Implement Checksupercallbeforethisaccessing Class | spike | frontend/syntax | see `issues/done/1142-implement-checkSuperCallBeforeThisAccessing-class.md` |
 | 1143 | Implement Checksupercallbeforethisaccessing Parser Syntax | spike | frontend/syntax | see `issues/done/1143-implement-checkSuperCallBeforeThisAccessing-parser-syntax.md` |
 | 1144 | Implement Checkswitchstatementifcasetypeisstring | spike | frontend/syntax | see `issues/done/1144-implement-checkSwitchStatementIfCaseTypeIsString.md` |
+| 1145 | Implement Checktypepredicateforredundantproperties | spike | frontend/semantics | see `issues/done/1145-implement-checkTypePredicateForRedundantProperties.md` |
 | 2050 | Implement Duplicatelocalvariable Duplicate Local | spike | reference/triage | see `issues/done/2050-implement-duplicateLocalVariable-duplicate-local.md` |
 | 3002 | Implement Isolateddeclarationerrorsdefault | spike | runtime/builtins | see `issues/done/3002-implement-isolatedDeclarationErrorsDefault.md` |
 | 3131 | Implement Jsxfactorynotidentifierorqualifiedname | spike | reference/triage | see `issues/done/3131-implement-jsxFactoryNotIdentifierOrQualifiedName.md` |

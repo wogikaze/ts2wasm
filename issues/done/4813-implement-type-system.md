@@ -120,7 +120,7 @@ Follow-up issues:
 
 - `issues/done/1029-implement-badInferenceLowerPriorityThanGoodInference.md` - Implement Badinferencelowerprioritythangoodinference (same feature label, same group key, title overlap; split to issue 5151)
 - `issues/done/1094-implement-callOfConditionalTypeWithConcreteBranches.md` - Implement Callofconditionaltypewithconcretebranches (same feature label, same group key, title overlap; split to issue 5196)
-- `issues/open/1145-implement-checkTypePredicateForRedundantProperties.md` - Implement Checktypepredicateforredundantproperties (same feature label, same group key, title overlap)
+- `issues/done/1145-implement-checkTypePredicateForRedundantProperties.md` - Implement Checktypepredicateforredundantproperties (same feature label, same group key, title overlap)
 - `issues/open/1155-implement-circularInferredTypeOfVariable.md` - Implement Circularinferredtypeofvariable (same feature label, same group key, title overlap)
 - `issues/open/1156-implement-circularInlineMappedGenericTupleTypeNoCrash.md` - Implement Circularinlinemappedgenerictupletypenocrash (same feature label, same group key, title overlap)
 - `issues/open/1168-implement-circularlyConstrainedMappedTypeContainingConditionalNoInfiniteInstantiationDepth.md` - Implement Circularlyconstrainedmappedtypecontainingconditionalnoinfiniteinstantiationdepth (same feature label, same group key, title overlap)
