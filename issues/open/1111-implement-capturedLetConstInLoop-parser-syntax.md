@@ -107,6 +107,7 @@ Current state:
 Follow-up issues:
 
 - [ ] `issues/open/5207-parse-do-while-asi-before-following-for.md`
+- [ ] `issues/open/5208-parse-arrow-body-destructuring-assignments.md`
 
 ## Notes
 
@@ -215,6 +216,43 @@ Source context:
 ```
 
 TypeScript oracle succeeds with no diagnostics.
+
+### Smart triage: capturedLetConstInLoop12
+
+- Issue class: `triage-needed`
+- Feature label: `parser-syntax`
+- Diagnostic: `UnsupportedSyntax` / `parser-or-frontend-unsupported`
+- Path: `reference/typescript/tests/cases/compiler/capturedLetConstInLoop12.ts`
+
+Reproduction:
+
+```sh
+mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/capturedLetConstInLoop12.ts
+```
+
+Failure location:
+
+```json
+{
+  "code": "UnsupportedSyntax",
+  "message": "expected RightParen, got Some(Equal) at 129..130",
+  "line": 7,
+  "column": 26
+}
+```
+
+Source context:
+
+```text
+6 |     for (let i = 0; i < 4; i++) {
+7 |         (() => [i] = [i + 1])();
+8 |     }
+```
+
+TypeScript AST sees the arrow body as a `BinaryExpression` assignment
+`[i] = [i + 1]` and reports no diagnostics. Child issue
+`issues/open/5208-parse-arrow-body-destructuring-assignments.md` owns this
+parser slice.
 
 ### Folded triage from #1109: capturedLetConstInLoop4
 
