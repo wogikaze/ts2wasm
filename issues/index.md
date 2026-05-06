@@ -18,7 +18,7 @@ Issue files are the source of truth for work items. The generated section below 
 | docs | 5 | 2 | 3 |
 | frontend | 4438 | 3711 | 727 |
 | harness | 1 | 0 | 1 |
-| ir | 42 | 4 | 38 |
+| ir | 42 | 3 | 39 |
 | issues | 5 | 0 | 5 |
 | parser | 1 | 0 | 1 |
 | reference | 211 | 163 | 48 |
@@ -26,8 +26,8 @@ Issue files are the source of truth for work items. The generated section below 
 | scripts | 3 | 0 | 3 |
 | security | 1 | 0 | 1 |
 | tests | 8 | 1 | 7 |
-| wasi | 4 | 3 | 1 |
-| total | 5077 | 3978 | 1099 |
+| wasi | 4 | 2 | 2 |
+| total | 5077 | 3976 | 1101 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -98,9 +98,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5137 | Split remaining Date API scope | cleanup | runtime/builtins | design-ready | P1 |  | Date issue 050 currently stays open after its named child issues 240 and 241 are done, but non-literal constructor in... |
 | 5138 | Split Reflect.construct isConstructor reference window | spike | runtime/builtins | design-ready | P1 |  | `reference/test262/test/annexB/built-ins/String/prototype/anchor/not-a-constructor.js` currently fails with `Unresolv... |
 | 5210 | Sparse array holes handling for Array.prototype.map | feature | runtime/builtins | implementation-ready | P2 |  | current `Array.prototype.map` implementation only supports dense |
-| 5230 | W0: mandatory span on LoweredExpr and LoweredStmt variants | refactor | ir | design-ready | P1 |  | W0: mandatory span on LoweredExpr and LoweredStmt variants |
 | 5231 | W0: migrate expr_emit.rs remaining raw WAT to typed writer | cleanup | backend | design-ready | P2 | 5225 | 274 escape-hatch `push_str` calls in `expr_emit.rs` prevent full typed-WAT coverage. |
-| 5235 | W1: implement WASI stdin/fd_read lowering for input | feature | wasi | design-ready | P1 |  | W1: implement WASI stdin/fd_read lowering for input |
 | 5236 | W1: implement WASI args and environment variable lowering | feature | wasi | design-ready | P2 |  | W1: implement WASI args and environment variable lowering |
 | 5237 | W1: standalone WASI execution validation test suite | test | tests | design-ready | P1 |  | W1: standalone WASI execution validation test suite |
 | 5238 | W1: implement WASI filesystem read/write through preopens | feature | wasi | design-ready | P2 |  | W1: implement WASI filesystem read/write through preopens |
@@ -5185,9 +5183,11 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5227 | W0: complete validate_lowered checks and sync IR contract docs | cleanup | ir | see `issues/done/5227-w0-validate-lowered-completeness.md` |
 | 5228 | W0: wasm binary backend — primary emission path | feature | backend | see file |
 | 5229 | W0: implement user/runtime string origin tracking | feature | backend | see `issues/done/5229-w0-user-runtime-string-origin.md` |
+| 5230 | W0: mandatory span on LoweredExpr and LoweredStmt variants | refactor | ir | see file |
 | 5232 | W0: fixture-ize RuntimeLinkPlan linker structure tests | cleanup | tests | see file |
 | 5233 | W0: harden reference coverage prerequisites | infra | coverage | see file |
 | 5234 | W0: implement host-deny and auditable E2E manifest verification | feature | cli | see file |
+| 5235 | W1: implement WASI stdin/fd_read lowering for input | feature | wasi | see file |
 <!-- generated:done:end -->
 
 ## Index generation contract
