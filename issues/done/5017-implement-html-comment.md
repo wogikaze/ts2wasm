@@ -285,7 +285,7 @@ Duplicate candidates:
   },
   {
     "state": "open",
-    "path": "issues/open/1170-implement-class.md",
+    "path": "issues/done/1170-implement-class.md",
     "title": "Implement Class",
     "reason": "same feature label, title overlap"
   },

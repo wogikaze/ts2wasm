@@ -128,7 +128,7 @@ Follow-up issues:
 
 - `issues/done/1102-implement-callbackArgsDifferByOptionality.md` - Implement Callbackargsdifferbyoptionality (same feature label, same group key, title overlap; closed into issue 5200)
 - `issues/done/1166-implement-circularTypeArgumentsLocalAndOuterNoCrash.md` - Implement Circulartypeargumentslocalandouternocrash (same feature label, same group key, title overlap; stale build-pass)
-- `issues/open/1170-implement-class.md` - Implement Class (same feature label, same group key, title overlap)
+- `issues/done/1170-implement-class.md` - Implement Class (same feature label, same group key, title overlap; split to issue 5246)
 - `issues/open/1218-implement-classImplementsMethodWIthTupleArgs.md` - Implement Classimplementsmethodwithtupleargs (same feature label, same group key, title overlap)
 - `issues/open/1266-implement-collisionArgumentsArrowFunctions.md` - Implement Collisionargumentsarrowfunctions (same feature label, same group key, title overlap)
 - `issues/open/1267-implement-collisionArgumentsClassConstructor.md` - Implement Collisionargumentsclassconstructor (same feature label, same group key, title overlap)
