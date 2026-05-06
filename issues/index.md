@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 3 | 2 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4476 | 3694 | 782 |
+| frontend | 4476 | 3692 | 784 |
 | harness | 1 | 0 | 1 |
 | ir | 54 | 32 | 22 |
 | issues | 4 | 0 | 4 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5108 | 3976 | 1132 |
+| total | 5108 | 3974 | 1134 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -604,8 +604,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1323 | Implement Collisionthisexpressionandfunctioninglobal | spike | frontend/syntax | class: blocked | Implement Collisionthisexpressionandfunctioninglobal |
 | 1324 | Implement Collisionthisexpressionandlocalvarinaccessors | spike | frontend/syntax | class: blocked | Implement Collisionthisexpressionandlocalvarinaccessors |
 | 1326 | Implement Collisionthisexpressionandlocalvarinfunction | spike | frontend/syntax | class: blocked | Implement Collisionthisexpressionandlocalvarinfunction |
-| 1327 | Implement Collisionthisexpressionandlocalvarinlambda | spike | frontend/syntax | class: triage-needed | Implement Collisionthisexpressionandlocalvarinlambda |
-| 1328 | Implement Collisionthisexpressionandlocalvarinmethod | spike | frontend/syntax | class: triage-needed | Implement Collisionthisexpressionandlocalvarinmethod |
 | 1329 | Implement Collisionthisexpressionandlocalvarinproperty | spike | frontend/syntax | class: blocked | Implement Collisionthisexpressionandlocalvarinproperty |
 | 1330 | Implement Collisionthisexpressionandlocalvarwithsuperexperssion | spike | frontend/syntax | class: blocked | Implement Collisionthisexpressionandlocalvarwithsuperexperssion |
 | 1331 | Implement Collisionthisexpressionandmoduleinglobal | spike | frontend/syntax | class: blocked | Implement Collisionthisexpressionandmoduleinglobal |
@@ -5064,6 +5062,8 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1263 | Implement Coandcontravariantinferences Parser Syntax | spike | frontend/syntax | see `issues/done/1263-implement-coAndContraVariantInferences-parser-syntax.md` |
 | 1265 | Implement Collectionpatternnoerror | spike | runtime/builtins | see `issues/done/1265-implement-collectionPatternNoError.md` |
 | 1325 | Implement Collisionthisexpressionandlocalvarinconstructor | spike | frontend/syntax | see `issues/done/1325-implement-collisionThisExpressionAndLocalVarInConstructor.md` |
+| 1327 | Implement Collisionthisexpressionandlocalvarinlambda | spike | frontend/syntax | see `issues/done/1327-implement-collisionThisExpressionAndLocalVarInLambda.md` |
+| 1328 | Implement Collisionthisexpressionandlocalvarinmethod | spike | frontend/syntax | see `issues/done/1328-implement-collisionThisExpressionAndLocalVarInMethod.md` |
 | 2050 | Implement Duplicatelocalvariable Duplicate Local | spike | reference/triage | see `issues/done/2050-implement-duplicateLocalVariable-duplicate-local.md` |
 | 3002 | Implement Isolateddeclarationerrorsdefault | spike | runtime/builtins | see `issues/done/3002-implement-isolatedDeclarationErrorsDefault.md` |
 | 3131 | Implement Jsxfactorynotidentifierorqualifiedname | spike | reference/triage | see `issues/done/3131-implement-jsxFactoryNotIdentifierOrQualifiedName.md` |

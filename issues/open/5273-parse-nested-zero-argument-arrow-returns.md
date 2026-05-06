@@ -144,6 +144,10 @@ Follow-up issues:
 
 Split from generated bucket
 `issues/done/1325-implement-collisionThisExpressionAndLocalVarInConstructor.md`.
+Also supersedes
+`issues/done/1327-implement-collisionThisExpressionAndLocalVarInLambda.md`
+and `issues/done/1328-implement-collisionThisExpressionAndLocalVarInMethod.md`,
+which both stop at the same `(callback) => () => { ... }` parser failure.
 
 Related but distinct:
 
