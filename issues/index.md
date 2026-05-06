@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 4 | 3 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4502 | 3638 | 864 |
+| frontend | 4502 | 3637 | 865 |
 | harness | 1 | 0 | 1 |
 | ir | 57 | 35 | 22 |
 | issues | 4 | 0 | 4 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5138 | 3921 | 1217 |
+| total | 5138 | 3920 | 1218 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -649,7 +649,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1344 | Implement Commentleadingclosebrace | spike | frontend/resolver | class: blocked | Implement Commentleadingclosebrace |
 | 1345 | Implement Commentonambientmodule | spike | frontend/syntax | class: blocked | Implement Commentonambientmodule |
 | 1346 | Implement Commentonambientvariable | spike | frontend/resolver | class: blocked | Implement Commentonambientvariable |
-| 1427 | Implement Conditionaltyperelaxingconstraintassignability | spike | frontend/syntax | class: blocked | Implement Conditionaltyperelaxingconstraintassignability |
 | 1428 | Implement Conditionaltypesubclassextendstypeparam | spike | frontend/semantics | class: blocked | Implement Conditionaltypesubclassextendstypeparam |
 | 1429 | Implement Conditionaltypessimplifywhentrivial | spike | frontend/semantics | class: blocked | Implement Conditionaltypessimplifywhentrivial |
 | 1430 | Implement Conditionallyduplicateoverloadscausedbyoverloadresolution | spike | frontend/syntax | class: blocked | Implement Conditionallyduplicateoverloadscausedbyoverloadresolution |
@@ -5094,6 +5093,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1424 | Implement Conditionaltypeclassmembers | spike | frontend/semantics | see `issues/done/1424-implement-conditionalTypeClassMembers.md` |
 | 1425 | Implement Conditionaltypediscriminatinglargeunionregulartypefetchingspeedreasonable | spike | frontend/syntax | see `issues/done/1425-implement-conditionalTypeDiscriminatingLargeUnionRegularTypeFetchingSpeedReasonable.md` |
 | 1426 | Implement Conditionaltypedoesntspinforever | spike | frontend/syntax | see `issues/done/1426-implement-conditionalTypeDoesntSpinForever.md` |
+| 1427 | Implement Conditionaltyperelaxingconstraintassignability | spike | frontend/syntax | see `issues/done/1427-implement-conditionalTypeRelaxingConstraintAssignability.md` |
 | 2050 | Implement Duplicatelocalvariable Duplicate Local | spike | reference/triage | see `issues/done/2050-implement-duplicateLocalVariable-duplicate-local.md` |
 | 3002 | Implement Isolateddeclarationerrorsdefault | spike | runtime/builtins | see `issues/done/3002-implement-isolatedDeclarationErrorsDefault.md` |
 | 3131 | Implement Jsxfactorynotidentifierorqualifiedname | spike | reference/triage | see `issues/done/3131-implement-jsxFactoryNotIdentifierOrQualifiedName.md` |
