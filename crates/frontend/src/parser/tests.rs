@@ -3149,4 +3149,14 @@ class Foo {
         let program = parse_program("export = module.exports;");
         assert!(program.is_ok(), "expected export = module.exports to parse, got err: {program:?}");
     }
+
+    #[test]
+    fn asi_after_class_expression_variable_initializer() {
+        let program = parse_program("let y = class { static a = x; }\nlet x;");
+        assert!(program.is_ok(), "expected ASI after class expression let, got err: {program:?}");
+        let program = program.unwrap();
+        assert_eq!(program.len(), 2);
+        assert!(matches!(&program[0], Stmt::ClassDecl { .. }));
+        assert!(matches!(&program[1], Stmt::Let { name, .. } if name == "x"));
+    }
 }

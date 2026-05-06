@@ -60,9 +60,9 @@ impl Parser {
         let extends = self.class_extends()?;
         self.skip_class_implements()?;
         let mut class_decl = self.class_decl_body(binding_name, extends, start.start)?;
-        let semi = self.expect(TokenKind::Semicolon)?;
+        let end = self.statement_terminator_end(class_decl.span().end)?;
         if let Stmt::ClassDecl { span, .. } = &mut class_decl {
-            span.end = semi.end;
+            span.end = end;
         }
         Ok(class_decl)
     }

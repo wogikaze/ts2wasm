@@ -156,3 +156,21 @@ date:
 Remaining risks:
 
 - none
+
+## Completion evidence
+
+Commits:
+
+- `<hash>` (set during commit)
+
+Validation result:
+
+```text
+command: cargo nextest run -p ts2wasm-frontend
+result: 200 passed, 0 failed
+date: 2026-05-06
+
+command: python reference-triage blockScopedVariablesUseBeforeDef.ts
+result: ok, returncode 0 (no expected Semicolon error)
+date: 2026-05-06
+```
