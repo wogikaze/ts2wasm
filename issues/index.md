@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 3 | 2 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4483 | 3684 | 799 |
+| frontend | 4484 | 3684 | 800 |
 | harness | 1 | 0 | 1 |
 | ir | 56 | 34 | 22 |
 | issues | 4 | 0 | 4 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5117 | 3967 | 1150 |
+| total | 5118 | 3967 | 1151 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -237,6 +237,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5280 | Validate commented top-level function overloads | feature | frontend/resolver | implementation-ready | P1 |  | `commentOnSignature1.ts` parses successfully, but `validate_ast` |
 | 5281 | Resolve commented arrow rest parameters | feature | ir/name-resolution | implementation-ready | P1 |  | arrow rest parameters are not made visible under their identifier name |
 | 5282 | Parse labeled empty statements | feature | frontend/syntax | implementation-ready | P2 |  | `Input: ;` currently reports `UnsupportedSyntax: unsupported expression: ... Semicolon`, even though TypeScript accep... |
+| 5283 | Support entry-module export var declarations | feature | frontend/module-syntax | implementation-ready | P1 |  | `export var b: number;` currently stops at the generic unsupported variable export boundary before the declaration ca... |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -628,7 +629,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1344 | Implement Commentleadingclosebrace | spike | frontend/resolver | class: blocked | Implement Commentleadingclosebrace |
 | 1345 | Implement Commentonambientmodule | spike | frontend/syntax | class: blocked | Implement Commentonambientmodule |
 | 1346 | Implement Commentonambientvariable | spike | frontend/resolver | class: blocked | Implement Commentonambientvariable |
-| 1360 | Implement Commentsbeforevariablestatement | spike | frontend/syntax | class: blocked | Implement Commentsbeforevariablestatement |
 | 1361 | Implement Commentsclass | spike | frontend/resolver | class: blocked | Implement Commentsclass |
 | 1362 | Implement Commentsclassmembers | spike | frontend/syntax | class: triage-needed | Implement Commentsclassmembers |
 | 1363 | Implement Commentscommentparsing | spike | frontend/syntax | class: triage-needed | Implement Commentscommentparsing |
@@ -5073,6 +5073,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1357 | Implement Commentsafterspread | spike | frontend/syntax | see `issues/done/1357-implement-commentsAfterSpread.md` |
 | 1358 | Implement Commentsatendoffile | spike | frontend/syntax | see `issues/done/1358-implement-commentsAtEndOfFile.md` |
 | 1359 | Implement Commentsbeforefunctionexpression | spike | frontend/syntax | see `issues/done/1359-implement-commentsBeforeFunctionExpression.md` |
+| 1360 | Implement Commentsbeforevariablestatement | spike | frontend/syntax | see `issues/done/1360-implement-commentsBeforeVariableStatement.md` |
 | 2050 | Implement Duplicatelocalvariable Duplicate Local | spike | reference/triage | see `issues/done/2050-implement-duplicateLocalVariable-duplicate-local.md` |
 | 3002 | Implement Isolateddeclarationerrorsdefault | spike | runtime/builtins | see `issues/done/3002-implement-isolatedDeclarationErrorsDefault.md` |
 | 3131 | Implement Jsxfactorynotidentifierorqualifiedname | spike | reference/triage | see `issues/done/3131-implement-jsxFactoryNotIdentifierOrQualifiedName.md` |
