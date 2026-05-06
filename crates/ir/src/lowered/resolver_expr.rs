@@ -1539,6 +1539,18 @@ impl<'a> Resolver<'a> {
                             span: Span::generated("call"),});
                     }
 
+                    // Sparse arrays with known holes must route through the hole-aware
+                    // lower_array_map_elements before optimized runtime paths or literal
+                    // expansion, because those paths assume dense arrays.
+                    if method == "map"
+                        && let Some(elements) = self.resolved_expr_static_array_slots(object)
+                        && elements
+                            .iter()
+                            .any(|element| matches!(element, ResolvedArrayElement::Hole))
+                    {
+                        return self.lower_array_map_elements(object, &elements, args, *span);
+                    }
+
                     if method == "map"
                         && string_constructor_arrow_callback(args)
                         && self.is_known_array_expr(object)
@@ -1546,7 +1558,7 @@ impl<'a> Resolver<'a> {
                         return Ok(LoweredExpr::RuntimeCall {
                             runtime_fn: "ArrayMapValueToString".to_owned(),
                             args: vec![self.lower_expr(object)?],
-                        
+
                             span: Span::generated("runtime_call"),});
                     }
 
@@ -1557,7 +1569,7 @@ impl<'a> Resolver<'a> {
                         return Ok(LoweredExpr::RuntimeCall {
                             runtime_fn: "ArrayMapUnaryPlus".to_owned(),
                             args: vec![self.lower_expr(object)?],
-                        
+
                             span: Span::generated("runtime_call"),});
                     }
 
@@ -1565,15 +1577,6 @@ impl<'a> Resolver<'a> {
                         && let ResolvedExpr::Array(_) = object.as_ref()
                     {
                         return self.lower_array_literal_map(object, args, *span);
-                    }
-
-                    if method == "map"
-                        && let Some(elements) = self.resolved_expr_static_array_slots(object)
-                        && elements
-                            .iter()
-                            .any(|element| matches!(element, ResolvedArrayElement::Hole))
-                    {
-                        return self.lower_array_map_elements(object, &elements, args, *span);
                     }
 
                     if method == "map"
