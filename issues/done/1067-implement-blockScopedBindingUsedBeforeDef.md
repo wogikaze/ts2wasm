@@ -108,7 +108,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] added: `issues/open/5180-parse-computed-property-object-binding-patterns.md`
+- [x] added: `issues/done/5180-parse-computed-property-object-binding-patterns.md`
 
 ## Notes
 
@@ -134,7 +134,7 @@ Generated on 2026-05-06.
 - Compiler evidence: token dump includes `LeftBrace`, `LeftBracket`, `Ident("a")`, `RightBracket`, `Colon`, and target `Ident("a")`; AST/resolved construction fails before representing the binding element.
 - TypeScript AST path: `ForOfStatement -> VariableDeclarationList -> VariableDeclaration -> ObjectBindingPattern -> BindingElement -> ComputedPropertyName -> Identifier`
 - TypeScript oracle: reports `TS2448` used-before-declaration and `TS2538` invalid index type diagnostics for the computed key identifiers.
-- Superseding child: `issues/open/5180-parse-computed-property-object-binding-patterns.md`
+- Superseding child: `issues/done/5180-parse-computed-property-object-binding-patterns.md`
 
 ## Completion evidence
 
@@ -155,3 +155,18 @@ date: 2026-05-06
 Remaining risks:
 
 - Later triage may expose the intended `TS2448` and `TS2538` diagnostics after issue 5180 advances past parsing.
+
+## False-done audit
+
+Date: 2026-05-06
+
+Classification: truly-done.
+
+Audit result: retained in `issues/done/`. This issue has repo-local close evidence
+(completion evidence with validation commands) or proper superseded classification
+with child issues in `issues/open/`. The acceptance criteria documented in the issue
+are satisfied by the repo-local evidence cited in the completion evidence section.
+
+Future-work tracking: no untracked future-work item was identified in this issue
+during this metadata/evidence audit.
+

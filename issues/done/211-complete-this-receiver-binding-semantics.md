@@ -150,3 +150,18 @@ Remaining risks:
 - Arrow lexical `this` remains out of scope and tracked by issue 210.
 - Static `this`, top-level `this`, extracted method calls, and dynamic/function-valued local calls are explicitly unsupported with issue-211 diagnostics rather than counted as semantic pass.
 - The new unsupported-form diagnostics are issue-linked but still use the current IR/lowering `span: None` diagnostic path; issue 223 tracks carrying source spans through that layer.
+
+## False-done audit
+
+Date: 2026-05-06
+
+Classification: truly-done.
+
+Audit result: retained in `issues/done/`. This issue has repo-local close evidence
+(completion evidence with validation commands) or proper superseded classification
+with child issues in `issues/open/`. The acceptance criteria documented in the issue
+are satisfied by the repo-local evidence cited in the completion evidence section.
+
+Future-work tracking: no untracked future-work item was identified in this issue
+during this metadata/evidence audit.
+

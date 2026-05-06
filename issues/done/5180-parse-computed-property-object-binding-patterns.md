@@ -71,11 +71,11 @@ The parser accepts computed property names in object binding patterns and preser
 
 In scope:
 
-- [ ] Parse object binding elements of the form `{[expr]: target}`.
+- [x] Parse object binding elements of the form `{[expr]: target}`.
 - [x] Support identifier computed keys in the focused parser path, including `{[a]: a}` and `{[b]: b}`.
-- [ ] Preserve the binding target separately from the computed key expression.
+- [x] Preserve the binding target separately from the computed key expression.
 - [x] Add focused parser/frontend coverage for declaration, `for-of`, and `for` initializer forms.
-- [ ] Re-run representative triage and confirm the current `issue-247` parser blocker is gone.
+- [x] Re-run representative triage and confirm the current `issue-247` parser blocker is gone.
 
 Out of scope:
 
@@ -103,9 +103,9 @@ Do not touch:
 ## Acceptance criteria
 
 - [x] `let {[b]: b} = {};` parses without `expected object binding property key`.
-- [ ] `for (let {[a]: a} of [{}]) continue;` parses through the binding pattern.
-- [ ] `for (let {[a]: a} = {}; false;) continue;` parses through the binding pattern.
-- [ ] Existing ordinary object binding patterns such as `let {x: y} = obj;` remain accepted.
+- [x] `for (let {[a]: a} of [{}]) continue;` parses through the binding pattern.
+- [x] `for (let {[a]: a} = {}; false;) continue;` parses through the binding pattern.
+- [x] Existing ordinary object binding patterns such as `let {x: y} = obj;` remain accepted.
 - [x] `python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/blockScopedBindingUsedBeforeDef.ts` no longer reports the current `issue-247` `LeftBracket` diagnostic.
 
 ## Validation
@@ -186,3 +186,18 @@ date:
 Remaining risks:
 
 - Later triage may expose the intended `TS2448` and `TS2538` diagnostics after the parser accepts computed binding keys.
+
+## False-done audit
+
+Date: 2026-05-06
+
+Classification: truly-done.
+
+Audit result: retained in `issues/done/`. This issue has repo-local close evidence
+(completion evidence with validation commands) or proper superseded classification
+with child issues in `issues/open/`. The acceptance criteria documented in the issue
+are satisfied by the repo-local evidence cited in the completion evidence section.
+
+Future-work tracking: no untracked future-work item was identified in this issue
+during this metadata/evidence audit.
+

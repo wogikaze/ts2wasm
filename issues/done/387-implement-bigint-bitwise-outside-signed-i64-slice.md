@@ -142,3 +142,18 @@ Remaining risks:
 - 2026-05-01: Close audit found issue 387 cannot close yet. Static literal and local-known out-of-signed-i64 fixtures now match Node/iwasm, but control-flow-assigned dynamic BigInt bitwise values outside signed i64 still report source-backed `issue-387` diagnostics. Added `bigint_bitwise_dynamic_out_of_signed_i64_reports_issue_387` as residual evidence for the missing dynamic slice.
 - 2026-05-01: Implemented a fourth progress slice for constant-condition control-flow assignments. The static BigInt folder now preserves the executed branch's tracked BigInt assignment for `if (true)` / `if (false)`, allowing the residual out-of-signed-i64 branch-assigned `~`, `&`, `|`, and `^` fixture to fold to canonical BigInt literals and match Node/iwasm without using ordinary number bitwise helpers. Broader non-constant control-flow and untracked dynamic bitwise values remain open.
 - 2026-05-01: Implemented a fifth progress slice for non-constant if/else assignments where both branch exits prove the same BigInt literal. The static BigInt folder now joins identical branch facts, so the dynamic branch-selector fixture still folds out-of-signed-i64 `~`, `&`, `|`, and `^` to canonical BigInt literals without using ordinary number bitwise helpers. Branches with differing values and untracked dynamic runtime bitwise remain open.
+
+## False-done audit
+
+Date: 2026-05-06
+
+Classification: truly-done.
+
+Audit result: retained in `issues/done/`. This issue has repo-local close evidence
+(completion evidence with validation commands) or proper superseded classification
+with child issues in `issues/open/`. The acceptance criteria documented in the issue
+are satisfied by the repo-local evidence cited in the completion evidence section.
+
+Future-work tracking: no untracked future-work item was identified in this issue
+during this metadata/evidence audit.
+

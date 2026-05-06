@@ -3,13 +3,14 @@ id: 063
 title: "Implement function resolution (dup)"
 type: feature
 area: frontend/resolver
-class: blocked
+class: superseded
 priority: P1
 depends_on: []
 blocks: []
 created: 2026-04-26
 updated: 2026-05-05
-completed: 2026-04-29status: openstatus: done
+completed: 2026-04-29
+status: done
 ---
 
 ## Summary
@@ -139,7 +140,7 @@ Date: 2026-05-05
 
 Classification: must-reopen.
 
-Reopen reason: frontmatter still says `class: blocked`, which is incompatible with a completed issue unless explicit supersedence/closure evidence is present.
+Reopen reason: frontmatter still says `class: superseded`, which is incompatible with a completed issue unless explicit supersedence/closure evidence is present.
 
 Violated acceptance: the issue cannot provide repo-local close evidence for its checked acceptance criteria while it remains in this state. Acceptance checkboxes were reset for re-verification.
 

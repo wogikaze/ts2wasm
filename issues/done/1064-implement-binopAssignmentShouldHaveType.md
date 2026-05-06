@@ -120,7 +120,7 @@ Follow-up issues:
 ## Duplicate detection
 
 - `issues/open/432-implement-import-export.md` is not a match for the current blocker: the reference case now builds successfully, and current evidence is about hidden TypeScript oracle diagnostics.
-- `issues/open/5162-allow-compatible-var-redeclarations.md` is related but not an exact match. It covers compatible duplicate `var` declarations; the current first oracle diagnostic is an ambient `declare var console;` conflict with a lib global.
+- `issues/done/5162-allow-compatible-var-redeclarations.md` is related but not an exact match. It covers compatible duplicate `var` declarations; the current first oracle diagnostic is an ambient `declare var console;` conflict with a lib global.
 - No open issue was found for the namespace class method `var name: string = null` diagnostic hidden by namespace erasure.
 
 ## Smart triage
@@ -159,3 +159,18 @@ date: 2026-05-06
 Remaining risks:
 
 - The representative case has multiple TypeScript diagnostics; issue 5176 owns the earlier ambient redeclaration diagnostic, and issue 5177 owns the namespace method strict-null diagnostic.
+
+## False-done audit
+
+Date: 2026-05-06
+
+Classification: truly-done.
+
+Audit result: retained in `issues/done/`. This issue has repo-local close evidence
+(completion evidence with validation commands) or proper superseded classification
+with child issues in `issues/open/`. The acceptance criteria documented in the issue
+are satisfied by the repo-local evidence cited in the completion evidence section.
+
+Future-work tracking: no untracked future-work item was identified in this issue
+during this metadata/evidence audit.
+

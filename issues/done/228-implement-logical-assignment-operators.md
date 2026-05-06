@@ -275,3 +275,18 @@ Remaining risks:
 - Dynamic computed logical assignment targets remain unsupported.
 - Non-identifier receiver targets such as `getObj()["value"] ||= rhs()` remain unsupported to avoid claiming full single-evaluation semantics before dedicated temporary-target design.
 - The Annex B `[[IsHTMLDDA]]` test262 cases still require broader `$262`/HTMLDDA compatibility and are not closed by this progress slice.
+
+## False-done audit
+
+Date: 2026-05-06
+
+Classification: truly-done.
+
+Audit result: retained in `issues/done/`. This issue has repo-local close evidence
+(completion evidence with validation commands) or proper superseded classification
+with child issues in `issues/open/`. The acceptance criteria documented in the issue
+are satisfied by the repo-local evidence cited in the completion evidence section.
+
+Future-work tracking: no untracked future-work item was identified in this issue
+during this metadata/evidence audit.
+

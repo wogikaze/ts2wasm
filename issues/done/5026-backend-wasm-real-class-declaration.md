@@ -3,13 +3,13 @@ id: 5026
 title: "[backend-wasm] Implement real class declaration emission (audit reopened #5026)"
 type: feature
 area: backend
-class: implementation-ready
+class: done
 priority: P0
 depends_on: []
 blocks: []
 created: 2026-05-03
 updated: 2026-05-05
-status: open
+status: done
 ---
 
 ## Summary

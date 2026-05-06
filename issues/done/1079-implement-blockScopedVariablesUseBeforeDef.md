@@ -108,7 +108,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] added: `issues/open/5189-parse-asi-after-class-expression-variable-initializer.md`
+- [x] added: `issues/done/5189-parse-asi-after-class-expression-variable-initializer.md`
 
 ## Notes
 
@@ -131,7 +131,7 @@ Generated on 2026-05-06.
 - Source context: `function foo9() { let y = class { static a = x; } let x; }`
 - Compiler evidence: tokens succeed through the class expression and following `Let`; AST/resolved construction fails at the following `let x;`.
 - TypeScript oracle: `TS2448: Block-scoped variable 'x' used before its declaration.` at the `x` inside the static class field initializer.
-- Superseding child: `issues/open/5189-parse-asi-after-class-expression-variable-initializer.md`
+- Superseding child: `issues/done/5189-parse-asi-after-class-expression-variable-initializer.md`
 
 ## Completion evidence
 
@@ -152,3 +152,18 @@ date: 2026-05-06
 Remaining risks:
 
 - none
+
+## False-done audit
+
+Date: 2026-05-06
+
+Classification: truly-done.
+
+Audit result: retained in `issues/done/`. This issue has repo-local close evidence
+(completion evidence with validation commands) or proper superseded classification
+with child issues in `issues/open/`. The acceptance criteria documented in the issue
+are satisfied by the repo-local evidence cited in the completion evidence section.
+
+Future-work tracking: no untracked future-work item was identified in this issue
+during this metadata/evidence audit.
+

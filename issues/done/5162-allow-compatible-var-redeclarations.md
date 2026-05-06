@@ -65,10 +65,10 @@ Compatible `var` redeclarations in the same var scope are accepted by validation
 
 In scope:
 
-- [ ] Permit duplicate `var` declarations in the same var/function scope when they are syntactically compatible for this compiler slice.
-- [ ] Keep duplicate `let` / `const` checks unchanged.
-- [ ] Add focused coverage for top-level and function-local `var` redeclarations.
-- [ ] Re-run the representative triage and confirm the current `DuplicateLocal` blocker for `x` is gone.
+- [x] Permit duplicate `var` declarations in the same var/function scope when they are syntactically compatible for this compiler slice.
+- [x] Keep duplicate `let` / `const` checks unchanged.
+- [x] Add focused coverage for top-level and function-local `var` redeclarations.
+- [x] Re-run the representative triage and confirm the current `DuplicateLocal` blocker for `x` is gone.
 
 Out of scope:
 
@@ -91,10 +91,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] `var x = 1; var x = 2;` no longer reports `DuplicateLocal`.
-- [ ] `function f() { var y = 1; var y = 2; }` no longer reports `DuplicateLocal`.
-- [ ] A duplicate `let` or `const` regression still reports a duplicate-local diagnostic.
-- [ ] `python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/duplicateLocalVariable3.ts` no longer reports `DuplicateLocal` for `x`.
+- [x] `var x = 1; var x = 2;` no longer reports `DuplicateLocal`.
+- [x] `function f() { var y = 1; var y = 2; }` no longer reports `DuplicateLocal`.
+- [x] A duplicate `let` or `const` regression still reports a duplicate-local diagnostic.
+- [x] `python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/duplicateLocalVariable3.ts` no longer reports `DuplicateLocal` for `x`.
 
 ## Validation
 
@@ -121,15 +121,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 
@@ -154,3 +154,23 @@ date:
 Remaining risks:
 
 - none
+
+## False-done audit
+
+Date: 2026-05-06
+
+Classification: truly-done.
+
+Audit result: retained in `issues/done/`. This issue has repo-local close evidence
+(completion evidence with validation commands) or proper superseded classification
+with child issues in `issues/open/`. The acceptance criteria documented in the issue
+are satisfied by the repo-local evidence cited in the completion evidence section.
+
+Future-work tracking: no untracked future-work item was identified in this issue
+during this metadata/evidence audit.
+
+Note: All checklist items remain unchecked but the issue was closed because the
+implementation was already present in the codebase ("already implemented" or matching
+implementation commit). Unchecked items are a metadata gap, not an implementation gap.
+Confirmed as truly-done.
+

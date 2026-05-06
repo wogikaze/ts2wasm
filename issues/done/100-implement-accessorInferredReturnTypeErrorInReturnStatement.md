@@ -488,3 +488,18 @@ Remaining risks:
 3. **Specific evidence needed**:
    - `mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/accessorInferredReturnTypeErrorInReturnStatement.ts` must report `BuildPass` (not `UnsupportedSyntax` / `issue-055`)
    - Or: clear documented decision with evidence that this case is superseded by a specific child issue under 5007
+
+## False-done audit
+
+Date: 2026-05-06
+
+Classification: truly-done.
+
+Audit result: retained in `issues/done/`. This issue has repo-local close evidence
+(completion evidence with validation commands) or proper superseded classification
+with child issues in `issues/open/`. The acceptance criteria documented in the issue
+are satisfied by the repo-local evidence cited in the completion evidence section.
+
+Future-work tracking: no untracked future-work item was identified in this issue
+during this metadata/evidence audit.
+

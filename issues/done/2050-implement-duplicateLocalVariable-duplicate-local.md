@@ -128,7 +128,7 @@ Generated on 2026-05-06.
 - Failure: `duplicate local binding: \`x\` at 32..42`
 - Source context: `var x = 1;` followed by `var x = 2;`
 - TypeScript oracle: compatible `var x` and `var y` redeclarations are accepted; incompatible `var z` later reports TS2403.
-- Split child: `issues/open/5162-allow-compatible-var-redeclarations.md`
+- Split child: `issues/done/5162-allow-compatible-var-redeclarations.md`
 
 ## Completion evidence
 
@@ -147,3 +147,18 @@ date: 2026-05-06
 Remaining risks:
 
 - Incompatible redeclaration type diagnostics remain future work after issue 5162 advances past the current duplicate-local blocker.
+
+## False-done audit
+
+Date: 2026-05-06
+
+Classification: truly-done.
+
+Audit result: retained in `issues/done/`. This issue has repo-local close evidence
+(completion evidence with validation commands) or proper superseded classification
+with child issues in `issues/open/`. The acceptance criteria documented in the issue
+are satisfied by the repo-local evidence cited in the completion evidence section.
+
+Future-work tracking: no untracked future-work item was identified in this issue
+during this metadata/evidence audit.
+

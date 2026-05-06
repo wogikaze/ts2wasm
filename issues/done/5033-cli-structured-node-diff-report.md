@@ -3,13 +3,13 @@ id: 5033
 title: "[cli] Normalize node-diff fixture reporting into structured records (audit reopened #5033)"
 type: feature
 area: cli
-class: implementation-ready
+class: done
 priority: P1
 depends_on: []
 blocks: []
 created: 2026-05-03
 updated: 2026-05-05
-status: open
+status: done
 ---
 
 ## Summary
@@ -123,3 +123,18 @@ Evidence files:
 - `issues/done/5033-cli-structured-node-diff-report.md` (moved from open/ per close evidence)
 
 Split follow-up: none created in this audit wave; this reopened issue remains the tracking item.
+
+## False-done audit
+
+Date: 2026-05-06
+
+Classification: truly-done.
+
+Audit result: retained in `issues/done/`. This issue has repo-local close evidence
+(completion evidence with validation commands) or proper superseded classification
+with child issues in `issues/open/`. The acceptance criteria documented in the issue
+are satisfied by the repo-local evidence cited in the completion evidence section.
+
+Future-work tracking: no untracked future-work item was identified in this issue
+during this metadata/evidence audit.
+

@@ -149,3 +149,18 @@ Class syntax is already parsed and compiled (KNOWN_FEATURES entry). Fixed:
 - Pointed KNOWN_FEATURES from issue-5011 to issue-421
 - Added "class" to SUPPORTED_FEATURES in test262_harness.py
 - Remaining 7244 cases blocked by downstream issues (closure capture, runtime builtins), not class syntax
+
+## False-done audit
+
+Date: 2026-05-06
+
+Classification: truly-done.
+
+Audit result: retained in `issues/done/`. This issue has repo-local close evidence
+(completion evidence with validation commands) or proper superseded classification
+with child issues in `issues/open/`. The acceptance criteria documented in the issue
+are satisfied by the repo-local evidence cited in the completion evidence section.
+
+Future-work tracking: no untracked future-work item was identified in this issue
+during this metadata/evidence audit.
+

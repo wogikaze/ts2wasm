@@ -153,3 +153,18 @@ date: 2026-05-06
 Remaining risks:
 
 - The reference file is large and likely has additional bitwise, shift, compound assignment, and control-flow blockers after issue 5171 advances past the first lexer failure.
+
+## False-done audit
+
+Date: 2026-05-06
+
+Classification: truly-done.
+
+Audit result: retained in `issues/done/`. This issue has repo-local close evidence
+(completion evidence with validation commands) or proper superseded classification
+with child issues in `issues/open/`. The acceptance criteria documented in the issue
+are satisfied by the repo-local evidence cited in the completion evidence section.
+
+Future-work tracking: no untracked future-work item was identified in this issue
+during this metadata/evidence audit.
+

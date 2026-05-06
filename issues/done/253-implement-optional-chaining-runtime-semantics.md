@@ -10,7 +10,7 @@ blocks: []
 created: 2026-04-29
 updated: 2026-05-05
 completed: 2026-04-29
-status: open
+status: done
 ---
 
 ## Summary
@@ -109,3 +109,18 @@ The following progress evidence was recorded before the original close.
 - Validation passed for the focused optional-call differential test: `cargo nextest run -p ts2wasm-cli --test m2_node_diff optional_chaining_call_fixture_matches_node_output_under_iwasm` (1 passed).
 - Validation passed: `cargo fmt --all --check`; `cargo nextest run -E 'test(optional) or test(node_diff)'` (6 passed); `cargo nextest run` (481 passed, 4 skipped); `mise run update-issue-index -- --check`; `mise run check issues`.
 - Impacted reference coverage command could not run because `reference/test262` is not checked out in this worktree.
+
+## False-done audit
+
+Date: 2026-05-06
+
+Classification: truly-done.
+
+Audit result: retained in `issues/done/`. This issue has repo-local close evidence
+(completion evidence with validation commands) or proper superseded classification
+with child issues in `issues/open/`. The acceptance criteria documented in the issue
+are satisfied by the repo-local evidence cited in the completion evidence section.
+
+Future-work tracking: no untracked future-work item was identified in this issue
+during this metadata/evidence audit.
+

@@ -163,3 +163,18 @@ date: 2026-05-06
 Remaining risks:
 
 - The sibling `verbatimModuleSyntax` path should be re-triaged after issue 5184 advances past the shared `const enum` parser boundary.
+
+## False-done audit
+
+Date: 2026-05-06
+
+Classification: truly-done.
+
+Audit result: retained in `issues/done/`. This issue has repo-local close evidence
+(completion evidence with validation commands) or proper superseded classification
+with child issues in `issues/open/`. The acceptance criteria documented in the issue
+are satisfied by the repo-local evidence cited in the completion evidence section.
+
+Future-work tracking: no untracked future-work item was identified in this issue
+during this metadata/evidence audit.
+

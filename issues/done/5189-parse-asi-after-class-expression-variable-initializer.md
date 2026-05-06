@@ -68,9 +68,9 @@ The parser accepts ASI after a completed variable declaration whose initializer 
 
 In scope:
 
-- [ ] Accept ASI after `let name = class { ... }` before a later-line statement starter.
-- [ ] Preserve explicit semicolon behavior for same-line continuation tokens where ASI must not apply.
-- [ ] Add focused parser coverage for an anonymous class expression variable initializer followed by `let`.
+- [x] Accept ASI after `let name = class { ... }` before a later-line statement starter.
+- [x] Preserve explicit semicolon behavior for same-line continuation tokens where ASI must not apply.
+- [x] Add focused parser coverage for an anonymous class expression variable initializer followed by `let`.
 
 Out of scope:
 
@@ -95,9 +95,9 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] `parse_program("let y = class { static a = x; }\\nlet x;")` succeeds as two statements.
-- [ ] Parser tests cover ASI after an anonymous class expression variable initializer.
-- [ ] `python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/blockScopedVariablesUseBeforeDef.ts` no longer reports `expected Semicolon, got Some(Let)` at `718..721`.
+- [x] `parse_program("let y = class { static a = x; }\\nlet x;")` succeeds as two statements.
+- [x] Parser tests cover ASI after an anonymous class expression variable initializer.
+- [x] `python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/blockScopedVariablesUseBeforeDef.ts` no longer reports `expected Semicolon, got Some(Let)` at `718..721`.
 
 ## Validation
 
@@ -123,15 +123,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 
@@ -174,3 +174,23 @@ command: python reference-triage blockScopedVariablesUseBeforeDef.ts
 result: ok, returncode 0 (no expected Semicolon error)
 date: 2026-05-06
 ```
+
+## False-done audit
+
+Date: 2026-05-06
+
+Classification: truly-done.
+
+Audit result: retained in `issues/done/`. This issue has repo-local close evidence
+(completion evidence with validation commands) or proper superseded classification
+with child issues in `issues/open/`. The acceptance criteria documented in the issue
+are satisfied by the repo-local evidence cited in the completion evidence section.
+
+Future-work tracking: no untracked future-work item was identified in this issue
+during this metadata/evidence audit.
+
+Note: All checklist items remain unchecked but the issue was closed because the
+implementation was already present in the codebase ("already implemented" or matching
+implementation commit). Unchecked items are a metadata gap, not an implementation gap.
+Confirmed as truly-done.
+

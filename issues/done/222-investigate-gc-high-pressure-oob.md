@@ -58,3 +58,18 @@ cargo nextest run
   - `cargo nextest run -p ts2wasm-runtime-abi memory_max_pages_cover_initial_pages initial_memory_pages_cover_single_max_stdin_heap_allocation_from_heap_start`: pass, 2 passed / 7 skipped
   - `cargo nextest run -p ts2wasm-cli --test m2_node_diff m3_semantic_fixtures_match_node_output_under_iwasm`: pass, 1 passed / 19 skipped
   - `cargo nextest run -p ts2wasm-cli --test m1_iwasm oom_alloc_check_must_fail_iwasm`: pass, 1 passed / 1 skipped
+
+## False-done audit
+
+Date: 2026-05-06
+
+Classification: truly-done.
+
+Audit result: retained in `issues/done/`. This issue has repo-local close evidence
+(completion evidence with validation commands) or proper superseded classification
+with child issues in `issues/open/`. The acceptance criteria documented in the issue
+are satisfied by the repo-local evidence cited in the completion evidence section.
+
+Future-work tracking: no untracked future-work item was identified in this issue
+during this metadata/evidence audit.
+

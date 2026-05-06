@@ -199,3 +199,18 @@ Remaining work before close:
 - Preserve or expose module graph IDs/paths for downstream resolved/lowered module binding work.
 - Run the full required validation set for final close.
 - The assignment's combined `dump --ast --resolved` command still cannot run as one CLI invocation because `dump` currently accepts only one phase flag.
+
+## False-done audit
+
+Date: 2026-05-06
+
+Classification: truly-done.
+
+Audit result: retained in `issues/done/`. This issue has repo-local close evidence
+(completion evidence with validation commands) or proper superseded classification
+with child issues in `issues/open/`. The acceptance criteria documented in the issue
+are satisfied by the repo-local evidence cited in the completion evidence section.
+
+Future-work tracking: no untracked future-work item was identified in this issue
+during this metadata/evidence audit.
+

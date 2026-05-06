@@ -72,3 +72,18 @@ Close note:
 - Commit: `f7ad5b0`
 - Backend now allocates a fixed GC call-frame root stack during `_start`, pushes activation frames on function entry, mirrors function locals/temporaries into the active frame, marks the active frame chain during collection, and pops frames on all emitted function returns.
 - `fixtures/core-semantics/closure-gc-call-frame-root.ts` adds closure capture coverage under allocation pressure; existing `gc-call-frame-root.ts` continues to cover function local preservation.
+
+## False-done audit
+
+Date: 2026-05-06
+
+Classification: truly-done.
+
+Audit result: retained in `issues/done/`. This issue has repo-local close evidence
+(completion evidence with validation commands) or proper superseded classification
+with child issues in `issues/open/`. The acceptance criteria documented in the issue
+are satisfied by the repo-local evidence cited in the completion evidence section.
+
+Future-work tracking: no untracked future-work item was identified in this issue
+during this metadata/evidence audit.
+

@@ -139,3 +139,18 @@ Acceptance evidence:
 - Unsupported module forms remain covered by `crates/cli/tests/m9_modules.rs` diagnostics for missing modules, bare specifiers, unsupported declaration/class/default exports, re-exports, namespace imports, default imports, and missing named exports.
 - `current-state.md` already records that the narrow static named ES module import/export subset has Node/iwasm differential coverage rather than build-smoke-only status.
 - No parser, resolver, lowering, backend, or docs files were changed in this close-only branch.
+
+## False-done audit
+
+Date: 2026-05-06
+
+Classification: truly-done.
+
+Audit result: retained in `issues/done/`. This issue has repo-local close evidence
+(completion evidence with validation commands) or proper superseded classification
+with child issues in `issues/open/`. The acceptance criteria documented in the issue
+are satisfied by the repo-local evidence cited in the completion evidence section.
+
+Future-work tracking: no untracked future-work item was identified in this issue
+during this metadata/evidence audit.
+

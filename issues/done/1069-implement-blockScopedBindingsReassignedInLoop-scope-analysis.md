@@ -108,7 +108,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] added: `issues/open/5182-parse-comma-separated-for-update-expressions.md`
+- [x] added: `issues/done/5182-parse-comma-separated-for-update-expressions.md`
 
 ## Notes
 
@@ -138,7 +138,7 @@ Generated on 2026-05-06.
 - Compiler evidence: token dump includes `Increment`, `Ident("x")`, `Comma`, `Decrement`, and `Ident("y")`; AST/resolved construction fails before representing the `ForStatement`.
 - TypeScript oracle: no diagnostics for the representative file.
 - TypeScript AST path at the failure: `ForStatement -> BinaryExpression -> PrefixUnaryExpression -> CommaToken`
-- Superseding child: `issues/open/5182-parse-comma-separated-for-update-expressions.md`
+- Superseding child: `issues/done/5182-parse-comma-separated-for-update-expressions.md`
 
 ## Completion evidence
 
@@ -159,3 +159,18 @@ date: 2026-05-06
 Remaining risks:
 
 - Later triage may expose multi-declarator `let`, postfix update values, or captured loop binding semantics after issue 5182 advances past the parser blocker.
+
+## False-done audit
+
+Date: 2026-05-06
+
+Classification: truly-done.
+
+Audit result: retained in `issues/done/`. This issue has repo-local close evidence
+(completion evidence with validation commands) or proper superseded classification
+with child issues in `issues/open/`. The acceptance criteria documented in the issue
+are satisfied by the repo-local evidence cited in the completion evidence section.
+
+Future-work tracking: no untracked future-work item was identified in this issue
+during this metadata/evidence audit.
+
