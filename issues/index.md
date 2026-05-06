@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 4 | 3 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4491 | 3656 | 835 |
+| frontend | 4492 | 3656 | 836 |
 | harness | 1 | 0 | 1 |
 | ir | 57 | 35 | 22 |
 | issues | 4 | 0 | 4 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5127 | 3940 | 1187 |
+| total | 5128 | 3940 | 1188 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -48,7 +48,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 
 ```
 5000 (Meta: TypeScript Compiler Parser Syntax Coverage) [done/design] ch:490 open:420 done:70
-├── 5002 (Meta: TypeScript Compiler Type System Coverage) [done/done] ch:234 open:226 done:8 (also ← 5005)
+├── 5002 (Meta: TypeScript Compiler Type System Coverage) [done/done] ch:234 open:225 done:9 (also ← 5005)
 ├── 5003 (Meta: TypeScript Compiler Declaration Emit Coverage) [done/done] ch:102 open:91 done:11 (also ← 5001)
 5001 (Meta: TypeScript Compiler Semantic Analysis Coverage) [done/done] ch:594 open:343 done:251
 5004 (Meta: Runtime Builtins Coverage (test262) (audit reopened #5004)) [done/done] ch:24 open:3 done:21
@@ -70,7 +70,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 2 | 5001 | Meta: TypeScript Compiler Semantic Analysis Coverage | done | done | frontend/semantics | P1 | - | 594 | 343 | 251 |
 | 3 | 5004 | Meta: Runtime Builtins Coverage (test262) (audit reopened #5004) | done | done | runtime/builtins | P1 | - | 24 | 3 | 21 |
 | 4 | 5005 | Meta: TypeScript Compiler Name Resolution Coverage | done | done | frontend/resolver | P1 | - | 421 | 373 | 48 |
-| 5 | 5002 | Meta: TypeScript Compiler Type System Coverage | done | done | frontend/semantics | P1 | 5000, 5005 | 234 | 226 | 8 |
+| 5 | 5002 | Meta: TypeScript Compiler Type System Coverage | done | done | frontend/semantics | P1 | 5000, 5005 | 234 | 225 | 9 |
 | 6 | 5003 | Meta: TypeScript Compiler Declaration Emit Coverage | done | done | frontend/syntax | P2 | 5000, 5001 | 102 | 91 | 11 |
 | 7 | 5006 | Meta: TypeScript Compiler Scope Analysis Coverage | done | done | frontend/resolver | P2 | 5005 | 29 | 21 | 8 |
 | 8 | 5007 | Meta: TypeScript Compiler Module Resolution Coverage (audit reopened #5007) | done | done | frontend/resolver | P2 | 5005 | 21 | 19 | 2 |
@@ -247,6 +247,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5290 | Parse private static generic class methods | feature | frontend/parser | implementation-ready | P1 |  | `reference/typescript/tests/cases/compiler/commentsTypeParameters.ts` |
 | 5291 | Report malformed export type declarations | feature | frontend/parser | implementation-ready | P1 |  | malformed `export type` declarations are not diagnosed or recovered |
 | 5292 | Skip tsconfig @Filename sections in reference harness | feature | compiler/multi-section | implementation-ready | P1 |  | reference-style `tsconfig.json` virtual sections are treated as module |
+| 5293 | Handle recursive generic self-heritage class lowering | bug | frontend/semantics | implementation-ready | P1 |  | recursive generic self-heritage classes fail with an opaque |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -638,7 +639,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1344 | Implement Commentleadingclosebrace | spike | frontend/resolver | class: blocked | Implement Commentleadingclosebrace |
 | 1345 | Implement Commentonambientmodule | spike | frontend/syntax | class: blocked | Implement Commentonambientmodule |
 | 1346 | Implement Commentonambientvariable | spike | frontend/resolver | class: blocked | Implement Commentonambientvariable |
-| 1397 | Implement Complicatedgenericrecursivebaseclassreference | spike | frontend/semantics | class: blocked | Implement Complicatedgenericrecursivebaseclassreference |
 | 1398 | Implement Complicatedindexedaccesskeyofreliesonkeyofneverupperbound | spike | frontend/syntax | class: blocked | Implement Complicatedindexedaccesskeyofreliesonkeyofneverupperbound |
 | 1399 | Implement Complicatedindexesofintersectionsareinferencable | spike | frontend/semantics | class: blocked | Implement Complicatedindexesofintersectionsareinferencable |
 | 1400 | Implement Complicatedprivacy | spike | frontend/syntax | class: blocked | Implement Complicatedprivacy |
@@ -5083,6 +5083,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1394 | Implement Complexclassrelationships | spike | frontend/syntax | see `issues/done/1394-implement-complexClassRelationships.md` |
 | 1395 | Implement Complexnarrowingwithany | spike | frontend/syntax | see `issues/done/1395-implement-complexNarrowingWithAny.md` |
 | 1396 | Implement Complexrecursivecollections | spike | frontend/syntax | see `issues/done/1396-implement-complexRecursiveCollections.md` |
+| 1397 | Implement Complicatedgenericrecursivebaseclassreference | spike | frontend/semantics | see `issues/done/1397-implement-complicatedGenericRecursiveBaseClassReference.md` |
 | 2050 | Implement Duplicatelocalvariable Duplicate Local | spike | reference/triage | see `issues/done/2050-implement-duplicateLocalVariable-duplicate-local.md` |
 | 3002 | Implement Isolateddeclarationerrorsdefault | spike | runtime/builtins | see `issues/done/3002-implement-isolatedDeclarationErrorsDefault.md` |
 | 3131 | Implement Jsxfactorynotidentifierorqualifiedname | spike | reference/triage | see `issues/done/3131-implement-jsxFactoryNotIdentifierOrQualifiedName.md` |
