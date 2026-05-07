@@ -96,7 +96,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 |---:|---|---|---|---|---|---|---|
 | 353 | Implement iterator protocol integration for spread operator | feature | runtime/semantics | unstarted | P2 |  | General iterator protocol is not implemented for spread operator. |
 | 5241 | W2: implement NaN, Infinity, -0 sentinel values in tagged-number encoding | feature | ir/runtime | implementation-ready | P2 | 5240 | The tagged-number encoding lacks sentinel values for the four IEEE 754 |
-| 5243 | Implement non-literal Date constructor inputs | feature | runtime/builtins | design-ready | P1 |  | Implement non-literal Date constructor inputs |
+| 5243 | Implement non-literal Date constructor inputs | feature | runtime/builtins | implementation-ready | P1 |  | Implement non-literal Date constructor inputs |
 <!-- generated:ready:end -->
 
 ## Blocked queue
