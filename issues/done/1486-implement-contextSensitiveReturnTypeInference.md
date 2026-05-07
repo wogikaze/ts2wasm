@@ -3,12 +3,12 @@ id: 1486
 title: "Implement Contextsensitivereturntypeinference"
 type: spike
 area: frontend/resolver
-class: blocked
+class: done
 priority: P1
 depends_on: [5005]
 blocks: []
 created: 2026-05-01
-updated: 2026-05-01
+updated: 2026-05-07
 ---
 
 ## Summary
@@ -43,10 +43,10 @@ This generated bucket is either split into implementation-ready child issues or 
 
 In scope:
 
-- [ ] Inspect the smart triage report below
-- [ ] Confirm whether existing open/done issues already cover this bucket
-- [ ] Split one feature family, one observable behavior, or one fixed reference window into child issues
-- [ ] Preserve exact reproduction commands and representative AST/diagnostic evidence in each child issue
+- [x] Inspect the smart triage report below
+- [x] Confirm whether existing open/done issues already cover this bucket
+- [x] Split one feature family, one observable behavior, or one fixed reference window into child issues
+- [x] Preserve exact reproduction commands and representative AST/diagnostic evidence in each child issue
 
 Out of scope:
 
@@ -68,10 +68,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] Duplicate candidates below are confirmed as no-match or this issue is superseded
-- [ ] At least one child issue contains an exact `mise run reference-triage -- ...` command
-- [ ] Child issue includes failing path, diagnostic code, source context, visible symbols, and parser/TypeScript AST evidence
-- [ ] Child issue acceptance names the exact fixture/reference path and diagnostic/stdout change
+- [x] Duplicate candidates below are confirmed as no-match or this issue is superseded
+- [x] At least one child issue contains an exact `mise run reference-triage -- ...` command
+- [x] Child issue includes failing path, diagnostic code, source context, visible symbols, and parser/TypeScript AST evidence
+- [x] Child issue acceptance names the exact fixture/reference path and diagnostic/stdout change
 
 ## Validation
 
@@ -98,15 +98,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] updated: `current-state.md` (repo root)
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] split to `issues/open/5366-restore-call-argument-scope-after-typed-arrow-callbacks.md`
 
 ## Notes
 
@@ -120,7 +120,32 @@ Follow-up issues:
 
 ## Smart triage
 
-Not generated. Rerun with `--triage-limit 1` or higher.
+Fresh triage on 2026-05-07 shows this generated bucket is blocked by a
+resolver scope issue before context-sensitive return type inference can run.
+
+Current diagnostic:
+
+```text
+error: [UnresolvedName] unresolved name: `DEPS` at 486..490
+```
+
+Source context:
+
+```ts
+const DEPS = { foo: 1 }
+
+test(
+  (deps: typeof DEPS, data) => ({
+    fn1: function() { return deps.foo },
+    fn2: data.bar
+  }),
+  DEPS
+);
+```
+
+TypeScript oracle: accepted with no diagnostics.
+
+This bucket was split to `issues/open/5366-restore-call-argument-scope-after-typed-arrow-callbacks.md`.
 
 ## Completion evidence
 
@@ -128,16 +153,21 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- `...`
+- `...` (filled by commit that moves this issue)
 
 Validation result:
 
 ```text
-command:
-result:
-date:
+command: python scripts/manager.py reference-coverage tsc --path-filter reference/typescript/tests/cases/compiler/contextSensitiveReturnTypeInference.ts --detail --no-dashboard-data
+result: pass; executed=1, build_pass=0, unsupported=1, diagnostic UnresolvedName
+date: 2026-05-07
+
+command: python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/contextSensitiveReturnTypeInference.ts
+result: pass; reproduced UnresolvedName for call argument `DEPS` and split child issue 5366
+date: 2026-05-07
 ```
 
 Remaining risks:
 
-- none
+- Actual context-sensitive return type inference behavior remains hidden until
+  issue 5366 advances past the resolver scope blocker.
