@@ -68,3 +68,12 @@ Design documented above. WAT implementation deferred to when backend-wasm compil
 ```sh
 cargo nextest run -E 'test(spread)'
 ```
+
+
+## False-done audit
+
+Date: 2026-05-07
+
+Classification: truly-done.
+
+Audit result: retained in issues/done/. Implementation/design commits confirmed.

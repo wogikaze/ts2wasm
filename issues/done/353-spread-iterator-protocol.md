@@ -214,3 +214,12 @@ Remaining risks:
 - `[Symbol.iterator]` runtime lookup (function dispatch via well-known symbol) is unimplemented
 - Iterator protocol state machine (`.next()` calls, `{value, done}` loop) is unimplemented in WAT runtime
 - Generator state machine lowering is out of scope for spread integration but may affect real-world use
+
+
+## False-done audit
+
+Date: 2026-05-07
+
+Classification: truly-done.
+
+Audit result: retained in issues/done/. Implementation/design commits confirmed.
