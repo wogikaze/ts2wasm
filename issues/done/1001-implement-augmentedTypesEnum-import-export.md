@@ -124,7 +124,7 @@ Follow-up issues:
 - `issues/open/662-implement-arrayAssignmentTest-import-export.md` - Implement Arrayassignmenttest Import Export (same feature label, title overlap)
 - `issues/open/732-implement-assignmentCompatability-import-export.md` - Implement Assignmentcompatability Import Export (same feature label, title overlap)
 - `issues/done/766-implement-augmentedTypesEnum-import-export.md` - Implement Augmentedtypesenum Import Export (same reference path, same feature label, same group key, title overlap)
-- `issues/open/768-implement-augmentedTypesExternalModule.md` - Implement Augmentedtypesexternalmodule (same feature label, same group key, title overlap)
+- `issues/done/768-implement-augmentedTypesExternalModule.md` - Implement Augmentedtypesexternalmodule (same feature label, same group key, title overlap)
 - `issues/open/771-implement-augmentedTypesModules.md` - Implement Augmentedtypesmodules (same feature label, same group key, title overlap)
 
 ## Smart triage

@@ -5,48 +5,56 @@ type: spike
 area: frontend/syntax
 class: blocked
 priority: P1
-depends_on: [432]
+depends_on: []
 blocks: []
 created: 2026-05-01
-updated: 2026-05-01
+updated: 2026-05-07
+completed: 2026-05-07
+status: done
 ---
 
 ## Summary
 
-Triage augmentedTypesExternalModule across 1 failing reference test cases and split this bucket into implementation-ready child issues.
+Closed this generated bucket as superseded by
+`issues/open/5285-support-export-var-initializer-declarations.md`.
 
 ## Problem
 
-Reference test results show 1 cases fail in directory `augmentedTypesExternalModule` with diagnostics: import-export. The compiler cannot handle these syntax/semantics, preventing compilation of code in this category.
+Fresh triage shows the current first blocker is the initialized
+`export var a = 1;` declaration in `augmentedTypesExternalModule1.ts`.
+Existing issue 5285 already owns this exact initialized export-var parser
+boundary.
 
-Problem: augmentedTypesExternalModule has 1 reference failures and needs smart-triage evidence before implementation starts.
+Problem: the generated bucket remained blocked even though its executable work
+is already tracked by issue 5285.
 
 ## Current failure
 
 Representative reproduction:
 
 ```sh
-mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/augmentedTypesExternalModule1.ts
+env TS2WASM_BINARY=/tmp/ts2wasm-issue-blockers-target/debug/ts2wasm python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/augmentedTypesExternalModule1.ts
 ```
 
 Coverage window:
 
 ```sh
-mise run reference-coverage -- tsc --path-filter reference/typescript/tests/cases/compiler/augmentedTypesExternalModule1.ts --detail
+env TS2WASM_BINARY=/tmp/ts2wasm-issue-blockers-target/debug/ts2wasm python scripts/manager.py reference-coverage tsc --path-filter reference/typescript/tests/cases/compiler/augmentedTypesExternalModule1.ts --detail --no-dashboard-data
 ```
 
 ## Desired final state
 
-This generated bucket is either split into implementation-ready child issues or superseded by an existing open/done issue with matching evidence. Do not implement directly from this bucket.
+This generated bucket is closed. Implement from
+`issues/open/5285-support-export-var-initializer-declarations.md`.
 
 ## Scope
 
 In scope:
 
-- [ ] Inspect the smart triage report below
-- [ ] Confirm whether existing open/done issues already cover this bucket
-- [ ] Split one feature family, one observable behavior, or one fixed reference window into child issues
-- [ ] Preserve exact reproduction commands and representative AST/diagnostic evidence in each child issue
+- [x] Inspect the smart triage report below
+- [x] Confirm whether existing open/done issues already cover this bucket
+- [x] Supersede this generated bucket with the existing implementation-ready issue
+- [x] Preserve exact reproduction commands and representative AST/diagnostic evidence
 
 Out of scope:
 
@@ -68,45 +76,45 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] Duplicate candidates below are confirmed as no-match or this issue is superseded
-- [ ] At least one child issue contains an exact `mise run reference-triage -- ...` command
-- [ ] Child issue includes failing path, diagnostic code, source context, visible symbols, and parser/TypeScript AST evidence
-- [ ] Child issue acceptance names the exact fixture/reference path and diagnostic/stdout change
+- [x] Duplicate candidates below are confirmed and this issue is superseded
+- [x] Superseding issue 5285 contains the implementation scope
+- [x] Current triage evidence is recorded
+- [x] Superseding issue acceptance names the export-var diagnostic change
 
 ## Validation
 
 Required commands:
 
 ```sh
-cargo fmt --all --check
-cargo nextest run
+python scripts/manager.py update-issue-index --check
+python scripts/manager.py check-issue-health
+python scripts/manager.py check-issue-readiness -- --fail-ready-below 80
 ```
 
 Impacted commands:
 
 ```sh
-mise run reference-coverage -- tsc --limit 2
-mise run reference-coverage -- tsc --path-filter reference/typescript/tests/cases/compiler/augmentedTypesExternalModule1.ts --detail
-mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/augmentedTypesExternalModule1.ts
+env TS2WASM_BINARY=/tmp/ts2wasm-issue-blockers-target/debug/ts2wasm python scripts/manager.py reference-coverage tsc --path-filter reference/typescript/tests/cases/compiler/augmentedTypesExternalModule1.ts --detail --no-dashboard-data
+env TS2WASM_BINARY=/tmp/ts2wasm-issue-blockers-target/debug/ts2wasm python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/augmentedTypesExternalModule1.ts
 ```
 
 Not run:
 
-- none
+- cargo fmt / nextest not run for this metadata-only issue lifecycle closure
 
 ## Docs / current-state / issue sync
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] updated: `current-state.md` (repo root)
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] `issues/open/5285-support-export-var-initializer-declarations.md`
 
 ## Notes
 
@@ -116,7 +124,20 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- none found by path/title/feature scan
+Superseded by `issues/open/5285-support-export-var-initializer-declarations.md`.
+
+Evidence:
+
+- Current source: `export var a = 1;`
+- Current diagnostic: `issue-055: unsupported variable export`
+- Existing issue 5285 scope: initialized `export var name = expr;`
+
+Related no-match issues:
+
+- `issues/open/5283-support-entry-export-var-declarations.md` covers typed
+  declaration-only `export var name: type;`.
+- `issues/open/5175-support-export-let-destructuring-declarations.md` covers
+  exported `let` destructuring.
 
 ## Smart triage
 
@@ -502,20 +523,22 @@ error: [UnsupportedModule] issue-055: unsupported variable export; module resolu
 
 ## Completion evidence
 
-Fill only when moving to `done/`.
-
 Commits:
 
-- `...`
+- this commit
 
 Validation result:
 
 ```text
-command:
-result:
-date:
+command: env TS2WASM_BINARY=/tmp/ts2wasm-issue-blockers-target/debug/ts2wasm python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/augmentedTypesExternalModule1.ts
+result: pass; issue-055 unsupported variable export, superseded by issue 5285
+date: 2026-05-07
+
+command: env TS2WASM_BINARY=/tmp/ts2wasm-issue-blockers-target/debug/ts2wasm python scripts/manager.py reference-coverage tsc --path-filter reference/typescript/tests/cases/compiler/augmentedTypesExternalModule1.ts --detail --no-dashboard-data
+result: pass; executed=1, unsupported=1, UnsupportedSyntax=1
+date: 2026-05-07
 ```
 
 Remaining risks:
 
-- none
+- Issue 5285 still needs implementation; this closure only removes the duplicate generated bucket from the blocked queue.
