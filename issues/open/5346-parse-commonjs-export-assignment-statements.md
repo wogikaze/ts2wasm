@@ -162,6 +162,12 @@ Related but not duplicate:
   `export = server;` with the same issue-055 static export boundary. After
   export-assignment parsing lands, this path may need a narrower duplicate
   `export =` diagnostic issue for TypeScript TS2300.
+- Also owns `issues/done/3428-implement-namedImportNonExistentName.md`: fresh
+  triage for `namedImportNonExistentName.ts` stops at the first
+  `export = Foo;` at 85..91 with the same issue-055 static export boundary.
+  Later oracle diagnostics include duplicate `export=`, invalid
+  `export as namespace`, and missing virtual `./foo` and `./foo2` modules,
+  covered by follow-up module-diagnostics and virtual import-resolution issues.
 
 ## Completion evidence
 
