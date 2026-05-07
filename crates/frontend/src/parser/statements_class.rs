@@ -269,6 +269,24 @@ impl Parser {
                 continue;
             }
 
+            // ASI (automatic semicolon insertion) for class member declarations:
+            // `static x` without `;` followed by another member should work.
+            // Check if the next token looks like a new member declaration.
+            if let Some(next) = self.peek() {
+                let is_new_member = matches!(next, Token::RightBrace)
+                    || matches!(next, Token::Static)
+                    || matches!(next, Token::Abstract)
+                    || matches!(next, Token::Const | Token::Var | Token::Let | Token::Export)
+                    || matches!(next, Token::Ident(name) if matches!(
+                        name.as_str(),
+                        "public" | "private" | "protected" | "readonly"
+                            | "override" | "accessor" | "get" | "set" | "async"
+                    ));
+                if is_new_member {
+                    continue;
+                }
+            }
+
             self.expect(TokenKind::LeftParen)?;
             let mut params = Vec::new();
             let mut parameter_property_assignments = Vec::new();
