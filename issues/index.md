@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 7 | 6 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4576 | 3431 | 1145 |
+| frontend | 4576 | 3430 | 1146 |
 | harness | 1 | 0 | 1 |
 | ir | 79 | 57 | 22 |
 | issues | 4 | 0 | 4 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5237 | 3729 | 1508 |
+| total | 5237 | 3728 | 1509 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -434,7 +434,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 555 | Implement Abstractclassinlocalscopeisabstract | spike | frontend/resolver | class: blocked | Implement Abstractclassinlocalscopeisabstract |
 | 556 | Implement Abstractclassunioninstantiation | spike | frontend/resolver | class: blocked | Implement Abstractclassunioninstantiation |
 | 597 | Implement Allowjsclassthistypecrash | spike | reference/triage | class: triage-needed | Implement Allowjsclassthistypecrash |
-| 600 | Implement Allowsyntheticdefaultimports | spike | frontend/syntax | class: blocked | Implement Allowsyntheticdefaultimports |
 | 601 | Implement Allowsyntheticdefaultimportscanpaintcrossmoduledeclaration | spike | frontend/syntax | class: blocked | Implement Allowsyntheticdefaultimportscanpaintcrossmoduledeclaration |
 | 605 | Implement Ambientclassdeclaredbeforebase | spike | frontend/syntax | class: blocked | Implement Ambientclassdeclaredbeforebase |
 | 606 | Implement Ambientconstliterals | spike | frontend/syntax | class: triage-needed | Implement Ambientconstliterals |
@@ -4387,6 +4386,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 596 | Implement Allowimportclausestomergewithtypes | spike | frontend/syntax | see `issues/done/596-implement-allowImportClausesToMergeWithTypes.md` |
 | 598 | Implement Allowjscrossmonorepopackage | spike | frontend/syntax | see `issues/done/598-implement-allowJsCrossMonorepoPackage.md` |
 | 599 | Implement Allowjscheckjstypeparameternocrash | spike | frontend/syntax | see `issues/done/599-implement-allowJscheckJsTypeParameterNoCrash.md` |
+| 600 | Implement Allowsyntheticdefaultimports | spike | frontend/syntax | see `issues/done/600-implement-allowSyntheticDefaultImports.md` |
 | 602 | Implement Alwaysstrictmodule (audit reopened #602) | spike | frontend/syntax | see `issues/done/602-implement-alwaysStrictModule.md` |
 | 603 | Implement Alwaysstrictnoimplicitusestrict (audit reopened #603) | spike | frontend/syntax | see `issues/done/603-implement-alwaysStrictNoImplicitUseStrict.md` |
 | 604 | Implement Ambientclassdeclarationwithextends (audit reopened #604) | spike | frontend/syntax | see `issues/done/604-implement-ambientClassDeclarationWithExtends.md` |
