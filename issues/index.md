@@ -13,7 +13,7 @@ Issue files are the source of truth for work items. The generated section below 
 | backend | 13 | 1 | 12 |
 | backend-wasm | 2 | 1 | 1 |
 | cli | 15 | 0 | 15 |
-| compiler | 19 | 11 | 8 |
+| compiler | 21 | 12 | 9 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
 | frontend | 4581 | 3350 | 1231 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5261 | 3653 | 1608 |
+| total | 5263 | 3654 | 1609 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -47,7 +47,7 @@ Issue files are the source of truth for work items. The generated section below 
 Direct child counts are derived from issue-file `depends_on` links. A meta issue can be `done` as a classification/design umbrella while implementation child issues remain open.
 
 ```
-5000 (Meta: TypeScript Compiler Parser Syntax Coverage) [done/design] ch:446 open:363 done:83
+5000 (Meta: TypeScript Compiler Parser Syntax Coverage) [done/design] ch:446 open:362 done:84
 ├── 5002 (Meta: TypeScript Compiler Type System Coverage) [done/done] ch:224 open:205 done:19 (also ← 5005)
 ├── 5003 (Meta: TypeScript Compiler Declaration Emit Coverage) [done/done] ch:100 open:89 done:11 (also ← 5001)
 5001 (Meta: TypeScript Compiler Semantic Analysis Coverage) [done/done] ch:556 open:297 done:259
@@ -66,7 +66,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 
 | Order | ID | Title | State | Class | Area | Priority | Depends on | Direct children | Open children | Done children |
 |-----:|---:|------|-------|-------|------|--------:|-----------:|----------------:|--------------:|--------------:|
-| 1 | 5000 | Meta: TypeScript Compiler Parser Syntax Coverage | done | design | frontend/syntax | P1 | - | 446 | 363 | 83 |
+| 1 | 5000 | Meta: TypeScript Compiler Parser Syntax Coverage | done | design | frontend/syntax | P1 | - | 446 | 362 | 84 |
 | 2 | 5001 | Meta: TypeScript Compiler Semantic Analysis Coverage | done | done | frontend/semantics | P1 | - | 556 | 297 | 259 |
 | 3 | 5004 | Meta: Runtime Builtins Coverage (test262) (audit reopened #5004) | done | done | runtime/builtins | P1 | - | 24 | 3 | 21 |
 | 4 | 5005 | Meta: TypeScript Compiler Name Resolution Coverage | done | done | frontend/resolver | P1 | - | 399 | 342 | 57 |
@@ -379,6 +379,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5424 | Skip unread asset @Filename sections in reference harness | feature | compiler/multi-section | implementation-ready | P1 |  | fixture-only asset sections such as `.js` or `.css` files that should |
 | 5425 | Resolve local require between @Filename sections | feature | compiler/module-graph | implementation-ready | P1 |  | local CommonJS require calls can create dangling `ModuleLoad` |
 | 5426 | Resolve @symlink filename aliases for local imports | feature | compiler/module-graph | implementation-ready | P1 |  | `@symlink` aliases are not registered as virtual module paths for |
+| 5427 | Resolve reference types to virtual @types packages | feature | frontend/semantics | implementation-ready | P1 | 227 | Resolve reference types to virtual @types packages |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -2334,7 +2335,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 3302 | Implement Modulealiasasfunctionargument | spike | frontend/syntax | class: blocked | Implement Modulealiasasfunctionargument |
 | 3303 | Implement Modulealiasinterface | spike | frontend/syntax | class: blocked | Implement Modulealiasinterface |
 | 3304 | Implement Moduleandinterfacesharingname | spike | frontend/syntax | class: blocked | Implement Moduleandinterfacesharingname |
-| 3388 | Implement Moduleresolutionwithsymlinks Parser Syntax | spike | frontend/syntax | class: blocked | Implement Moduleresolutionwithsymlinks Parser Syntax |
 | 3389 | Implement Modulesamevalueduplicateexportedbindings | spike | frontend/syntax | class: blocked | Implement Modulesamevalueduplicateexportedbindings |
 | 3390 | Implement Modulescopingbug | spike | frontend/syntax | class: blocked | Implement Modulescopingbug |
 | 3391 | Implement Modulesharesnamewithimportdeclarationinsideit | spike | frontend/syntax | class: blocked | Implement Modulesharesnamewithimportdeclarationinsideit |
@@ -3755,6 +3755,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5398 | Resolve namespace import-equals alias value access | feature | frontend/name-resolution | 5287 | Resolve namespace import-equals alias value access |
 | 5399 | Resolve ambient namespace import alias in declare module | feature | frontend/name-resolution | 5370 | Resolve ambient namespace import alias in declare module |
 | 5404 | Bind dotted ambient namespace qualified access | feature | frontend/resolver | 5370 | Bind dotted ambient namespace qualified access |
+| 5428 | Resolve symlinked node_modules static re-exports | feature | compiler/module-graph | 5426 | Resolve symlinked node_modules static re-exports |
 <!-- generated:blocked:end -->
 
 ## Done queue
@@ -5222,6 +5223,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 3385 | Implement Moduleresolutionwithsuffixes Import Export (audit reopened #3385) | maintenance | compiler/multi-section | see `issues/done/3385-implement-moduleResolutionWithSuffixes-import-export.md` |
 | 3386 | Implement Moduleresolutionwithsuffixes Module Resolution | maintenance | compiler/multi-section | see `issues/done/3386-implement-moduleResolutionWithSuffixes-module-resolution.md` |
 | 3387 | Implement Moduleresolutionwithsymlinks Import Export | maintenance | compiler/module-graph | see `issues/done/3387-implement-moduleResolutionWithSymlinks-import-export.md` |
+| 3388 | Split moduleResolutionWithSymlinks parser-syntax bucket | maintenance | compiler/module-resolution | see `issues/done/3388-implement-moduleResolutionWithSymlinks-parser-syntax.md` |
 | 3690 | Implement Optionaltupleelementsandundefined | spike | reference/triage | see `issues/done/3690-implement-optionalTupleElementsAndUndefined.md` |
 | 3996 | Implement Compiler (dup) | spike | frontend/syntax | see `issues/done/3996-implement-reference-typescript-tests-cases-compiler.md` |
 | 4210 | Implement Splicetuples | spike | frontend/resolver | see `issues/done/4210-implement-spliceTuples.md` |
