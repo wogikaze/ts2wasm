@@ -14,7 +14,9 @@ impl Parser {
     }
 
     fn class_expression(&mut self, start: Span) -> Result<Expr, Diagnostic> {
-        let name = if matches!(self.peek(), Some(Token::Ident(_))) {
+        let name = if matches!(self.peek(), Some(Token::Ident(_)))
+            && !self.peek_contextual_keyword("implements")
+        {
             let (name, _) = self.expect_ident()?;
             name
         } else {

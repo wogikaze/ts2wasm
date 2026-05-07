@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 6 | 3 | 3 |
 | coverage | 44 | 1 | 43 |
 | docs | 5 | 0 | 5 |
-| frontend | 4546 | 3835 | 711 |
+| frontend | 4546 | 3834 | 712 |
 | harness | 1 | 0 | 1 |
 | ir | 72 | 22 | 50 |
 | issues | 5 | 0 | 5 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 8 | 0 | 8 |
 | wasi | 4 | 0 | 4 |
-| total | 5223 | 4110 | 1113 |
+| total | 5223 | 4109 | 1114 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -287,6 +287,8 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1440 | Implement Constdeclarations Import Export | spike | frontend/syntax | done | P1 |  | constDeclarations-import-export has 5 reference failures and needs smart-triage evidence before implementation starts. |
 | 1441 | Implement Constdeclarations Name Resolution | spike | frontend/resolver | superseded | P1 |  | the generated bucket remained blocked instead of pointing to an |
 | 1447 | Implement Constenumerrors | spike | frontend/syntax | superseded | P1 | 5351 | constEnumErrors has 1 reference failures and needs smart-triage evidence before implementation starts. |
+| 1449 | Implement Constenummergingwithvalues Import Export | spike | frontend/syntax | superseded | P1 | 5186 | constEnumMergingWithValues-import-export has 4 reference failures and needs smart-triage evidence before implementati... |
+| 1450 | Implement Constenummergingwithvalues Parser Syntax | spike | frontend/syntax | superseded | P1 | 5186 | constEnumMergingWithValues-parser-syntax has 1 reference failures and needs smart-triage evidence before implementati... |
 | 1451 | Implement Constenumnamespacereferencecausesnoimport | spike | frontend/syntax | done | P1 |  | `constEnumNamespaceReferenceCausesNoImport` needs to be tracked through |
 | 1452 | Implement Constenumnoemitreexport | spike | frontend/syntax | done | P1 |  | `constEnumNoEmitReexport.ts` is blocked by const-enum declaration |
 | 1453 | Implement Constenumnopreservedeclarationreexport | spike | frontend/syntax | done | P1 |  | `constEnumNoPreserveDeclarationReexport.ts` is blocked by const-enum |
@@ -350,7 +352,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5156 | Parse generic type arguments in class heritage clauses | feature | frontend/syntax | implementation-ready | P1 |  | `reference/typescript/tests/cases/compiler/baseTypeOrderChecking.ts` fails parsing on `class Class4<T> extends Class3... |
 | 5163 | Lower nested call expression callees | feature | frontend/semantics | implementation-ready | P2 |  | `reference/typescript/tests/cases/compiler/betterErrorForAccidentalCall.ts` currently reports `UnsupportedSyntax: onl... |
 | 5184 | Parse const enum declarations | feature | frontend/syntax | implementation-ready | P1 |  | `const enum` declarations are parser-unsupported and are misclassified as malformed `const` variable declarations. |
-| 5186 | Parse export assignment expressions | feature | frontend/syntax | implementation-ready | P1 |  | `export = expr` is treated as an unsupported module boundary before the exported expression can be represented in the... |
 | 5195 | Support callable interface-typed local calls | feature | ir/lowering | implementation-ready | P1 |  | callable interface-typed locals currently lower to `Undefined` values and calls to them stop with `issue-211`. |
 | 5200 | Validate top-level function overload implementations | feature | frontend/resolver | implementation-ready | P1 |  | top-level function overload implementation groups are currently classified as duplicate concrete functions. |
 | 5246 | Report static declarations inside constructor bodies | feature | frontend/parser | implementation-ready | P1 |  | invalid `static` declarations in constructor bodies report generic unsupported expression instead of a spanned parser... |
@@ -922,8 +923,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1445 | Implement Constenumbadpropertynames | spike | frontend/syntax | 5184 | Implement Constenumbadpropertynames |
 | 1446 | Implement Constenumdeclarations | spike | frontend/syntax | 5184 | Implement Constenumdeclarations |
 | 1448 | Implement Constenumexternalmodule | spike | frontend/syntax | 5184 | Implement Constenumexternalmodule |
-| 1449 | Implement Constenummergingwithvalues Import Export | spike | frontend/syntax | 5186 | Implement Constenummergingwithvalues Import Export |
-| 1450 | Implement Constenummergingwithvalues Parser Syntax | spike | frontend/syntax | 5186 | Implement Constenummergingwithvalues Parser Syntax |
 | 1469 | Implement Constructorargwithgenericcallsignature | spike | frontend/syntax | 432 | Implement Constructorargwithgenericcallsignature |
 | 1473 | Implement Constructoroverloads Import Export | spike | frontend/syntax | 432 | Implement Constructoroverloads Import Export |
 | 1515 | Implement Contextualtypeselfreferencing | spike | frontend/resolver | class: blocked | Implement Contextualtypeselfreferencing |
@@ -5255,6 +5254,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5182 | Parse comma-separated for update expressions | feature | frontend/syntax | see `issues/done/5182-parse-comma-separated-for-update-expressions.md` |
 | 5183 | Report typed getter null return diagnostics | feature | frontend/semantics | see `issues/done/5183-report-typed-getter-null-return-diagnostics.md` |
 | 5185 | Source-span unresolved class method function calls | feature | frontend/resolver | see `issues/done/5185-source-span-unresolved-class-method-function-calls.md` |
+| 5186 | Parse export assignment expressions | feature | frontend/syntax | see `issues/done/5186-parse-export-assignment-for-diagnostics.md` |
 | 5187 | Lower namespace-only multi-section files | feature | compiler | see `issues/done/5187-lower-namespace-only-multi-section-files.md` |
 | 5188 | Report block-scoped function call arity diagnostics | feature | frontend/semantics | see `issues/done/5188-report-block-scoped-function-call-arity-diagnostics.md` |
 | 5189 | Parse ASI after class expression variable initializer | feature | frontend/syntax | see `issues/done/5189-parse-asi-after-class-expression-variable-initializer.md` |

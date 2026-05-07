@@ -145,3 +145,13 @@ python scripts/manager.py reference-coverage tsc --path-filter classImplementsCl
 Split from `issues/open/1216-implement-classImplementsClass.md`. The sibling
 references `classImplementsClass1.ts`, `2.ts`, `3.ts`, `4.ts`, `5.ts`, and
 `7.ts` are currently build-pass.
+
+## False-done audit
+
+**truly-done** (5261)
+
+- Implementation commits: verified via `git log --oneline --all --grep=5261`
+- Completion evidence: filled with specific commit hashes and validation results
+- Acceptance criteria: all checked as met
+
+This issue has repo-local close evidence with implementation commits and validation commands.

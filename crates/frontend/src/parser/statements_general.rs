@@ -912,6 +912,33 @@ impl Parser {
         None
     }
 
+    /// Try to consume a compound assignment token (e.g. `+=`, `-=`, `*=`)
+    /// and return the corresponding `BinaryOp`. Returns `None` if the next
+    /// token is not a compound assignment operator.
+    fn compound_assignment_operator(&mut self) -> Option<BinaryOp> {
+        if self.consume(TokenKind::PlusEqual) {
+            Some(BinaryOp::Add)
+        } else if self.consume(TokenKind::MinusEqual) {
+            Some(BinaryOp::Subtract)
+        } else if self.consume(TokenKind::StarEqual) {
+            Some(BinaryOp::Multiply)
+        } else if self.consume(TokenKind::SlashEqual) {
+            Some(BinaryOp::Divide)
+        } else if self.consume(TokenKind::PercentEqual) {
+            Some(BinaryOp::Modulo)
+        } else if self.consume(TokenKind::PowerEqual) {
+            Some(BinaryOp::Power)
+        } else if self.consume(TokenKind::AmpersandEqual) {
+            Some(BinaryOp::BitwiseAnd)
+        } else if self.consume(TokenKind::PipeEqual) {
+            Some(BinaryOp::BitwiseOr)
+        } else if self.consume(TokenKind::CaretEqual) {
+            Some(BinaryOp::BitwiseXor)
+        } else {
+            None
+        }
+    }
+
     fn statement_terminator_end(&mut self, fallback_end: usize) -> Result<usize, Diagnostic> {
         if let Some(semi) = self.consume_span(TokenKind::Semicolon) {
             return Ok(semi.end);

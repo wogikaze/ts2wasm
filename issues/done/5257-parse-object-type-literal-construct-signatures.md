@@ -128,3 +128,13 @@ python scripts/manager.py reference-coverage tsc --path-filter reference/typescr
 
 Split from `issues/open/1201-implement-classExtendsInterfaceInExpression.md`.
 Related parser owner: `issues/done/5245-iterator-protocol-runtime.md`.
+
+## False-done audit
+
+**truly-done** (5257)
+
+- Implementation commits: verified via `git log --oneline --all --grep=5257`
+- Completion evidence: filled with specific commit hashes and validation results
+- Acceptance criteria: all checked as met
+
+This issue has repo-local close evidence with implementation commits and validation commands.
