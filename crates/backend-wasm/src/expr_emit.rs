@@ -535,8 +535,14 @@ impl WatEmitter<'_> {
                     self.emit_user_call_args(writer, *func_id, args, indent, frame);
                 }
                 FunctionCallKind::Builtin(builtin) => {
+                    let expected = builtin.expected_arity();
                     for arg in args {
                         self.emit_expr(writer, arg, indent, frame);
+                    }
+                    // Pad missing args with undefined (JavaScript semantics).
+                    // The arity validation allows 0-arg calls via min_arity() change (issue 5135).
+                    for _ in args.len()..expected {
+                        writer.i32_const(indent, 0); // TaggedValue::UNDEFINED
                     }
                     let runtime_fn = RuntimeFn::from_builtin(*builtin);
                     writer.call(indent, runtime_fn.symbol());
