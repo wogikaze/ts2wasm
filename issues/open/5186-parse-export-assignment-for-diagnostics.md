@@ -153,6 +153,10 @@ Additional superseded bucket:
   `UnsupportedModule issue-055: unsupported static export` at `120..126`;
   TypeScript parses the leading `enum foo`, merged namespace, and
   `ExportAssignment` with no diagnostics.
+- `issues/done/3335-implement-moduleElementsInWrongContext.md` has two
+  variants that currently stop at `export = M;` inside a bare block or function
+  body. Issue 5413 owns the later wrong-context diagnostics once this parser
+  boundary is removed.
 
 ## Completion evidence
 

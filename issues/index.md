@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 7 | 6 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4586 | 3394 | 1192 |
+| frontend | 4587 | 3394 | 1193 |
 | harness | 1 | 0 | 1 |
 | ir | 79 | 57 | 22 |
 | issues | 4 | 0 | 4 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5247 | 3691 | 1556 |
+| total | 5248 | 3691 | 1557 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -365,6 +365,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5410 | Report namespace-as-base-type diagnostics | feature | frontend/semantics | implementation-ready | P1 |  | namespace-as-base-type misuse currently produces a false build pass |
 | 5411 | Report TS2709 for namespace variable annotation | feature | frontend/semantics | implementation-ready | P1 |  | `var a: A;` silently build-passes when `A` is a namespace. |
 | 5412 | Report TS2451 for duplicate const filename sections | feature | frontend/semantics | implementation-ready | P2 |  | duplicate `const a` across the representative `.cts`/`.mts` reference |
+| 5413 | Report nested namespace wrong-context diagnostic | bug | frontend/syntax | implementation-ready | P1 |  | the frontend accepts a nested namespace declaration in a statement |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -2320,7 +2321,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 3302 | Implement Modulealiasasfunctionargument | spike | frontend/syntax | class: blocked | Implement Modulealiasasfunctionargument |
 | 3303 | Implement Modulealiasinterface | spike | frontend/syntax | class: blocked | Implement Modulealiasinterface |
 | 3304 | Implement Moduleandinterfacesharingname | spike | frontend/syntax | class: blocked | Implement Moduleandinterfacesharingname |
-| 3335 | Implement Moduleelementsinwrongcontext | spike | frontend/syntax | class: blocked | Implement Moduleelementsinwrongcontext |
 | 3337 | Implement Moduleexports | spike | frontend/syntax | class: blocked | Implement Moduleexports |
 | 3338 | Implement Moduleexportstypenoexcesspropertycheckfromcontainedliteral | spike | frontend/syntax | class: blocked | Implement Moduleexportstypenoexcesspropertycheckfromcontainedliteral |
 | 3339 | Implement Moduleexportsunaryexpression | spike | frontend/syntax | class: blocked | Implement Moduleexportsunaryexpression |
@@ -5207,6 +5207,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 3332 | Implement Moduledeclarationexportstarshadowingglobalisnameable | spike | frontend/syntax | see `issues/done/3332-implement-moduleDeclarationExportStarShadowingGlobalIsNameable.md` |
 | 3333 | Implement Moduledetectionisolatedmodulescjsfilescope | spike | reference/triage | see `issues/done/3333-implement-moduleDetectionIsolatedModulesCjsFileScope.md` |
 | 3334 | Implement Moduleduplicateidentifiers | spike | frontend/syntax | see `issues/done/3334-implement-moduleDuplicateIdentifiers.md` |
+| 3335 | Implement Moduleelementsinwrongcontext | spike | frontend/syntax | see `issues/done/3335-implement-moduleElementsInWrongContext.md` |
 | 3336 | Implement Moduleexportnonstructured | spike | frontend/syntax | see `issues/done/3336-implement-moduleExportNonStructured.md` |
 | 3690 | Implement Optionaltupleelementsandundefined | spike | reference/triage | see `issues/done/3690-implement-optionalTupleElementsAndUndefined.md` |
 | 3996 | Implement Compiler (dup) | spike | frontend/syntax | see `issues/done/3996-implement-reference-typescript-tests-cases-compiler.md` |
