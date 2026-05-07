@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 5 | 4 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4527 | 3578 | 949 |
+| frontend | 4527 | 3577 | 950 |
 | harness | 1 | 0 | 1 |
 | ir | 64 | 42 | 22 |
 | issues | 4 | 0 | 4 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5171 | 3868 | 1303 |
+| total | 5171 | 3867 | 1304 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -564,7 +564,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 772 | Implement Augmentedtypesvar | spike | frontend/syntax | class: blocked | Implement Augmentedtypesvar |
 | 773 | Implement Autoasiforstaticsinclassdeclaration | spike | frontend/syntax | class: triage-needed | Implement Autoasiforstaticsinclassdeclaration |
 | 775 | Implement Autotypeassignedusingdestructuringfromnevernocrash | spike | frontend/resolver | class: blocked | Implement Autotypeassignedusingdestructuringfromnevernocrash |
-| 1295 | Implement Collisionexportsrequireandinternalmodulealias | spike | frontend/syntax | class: blocked | Implement Collisionexportsrequireandinternalmodulealias |
 | 1296 | Implement Collisionexportsrequireandinternalmodulealiasinglobalfile | spike | frontend/syntax | class: blocked | Implement Collisionexportsrequireandinternalmodulealiasinglobalfile |
 | 1297 | Implement Collisionexportsrequireandmodule | spike | frontend/syntax | class: blocked | Implement Collisionexportsrequireandmodule |
 | 1298 | Implement Collisionexportsrequireanduninstantiatedmodule | spike | frontend/syntax | class: blocked | Implement Collisionexportsrequireanduninstantiatedmodule |
@@ -5027,6 +5026,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1292 | Implement Collisionexportsrequireandenum | spike | frontend/syntax | see `issues/done/1292-implement-collisionExportsRequireAndEnum.md` |
 | 1293 | Implement Collisionexportsrequireandfunction | spike | frontend/syntax | see `issues/done/1293-implement-collisionExportsRequireAndFunction.md` |
 | 1294 | Implement Collisionexportsrequireandfunctioninglobalfile | spike | frontend/syntax | see `issues/done/1294-implement-collisionExportsRequireAndFunctionInGlobalFile.md` |
+| 1295 | Implement Collisionexportsrequireandinternalmodulealias | spike | frontend/syntax | see `issues/done/1295-implement-collisionExportsRequireAndInternalModuleAlias.md` |
 | 1325 | Implement Collisionthisexpressionandlocalvarinconstructor | spike | frontend/syntax | see `issues/done/1325-implement-collisionThisExpressionAndLocalVarInConstructor.md` |
 | 1327 | Implement Collisionthisexpressionandlocalvarinlambda | spike | frontend/syntax | see `issues/done/1327-implement-collisionThisExpressionAndLocalVarInLambda.md` |
 | 1328 | Implement Collisionthisexpressionandlocalvarinmethod | spike | frontend/syntax | see `issues/done/1328-implement-collisionThisExpressionAndLocalVarInMethod.md` |
