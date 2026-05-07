@@ -153,6 +153,10 @@ Related but not duplicate:
   `export = Foo;` before AST construction. Later blockers are
   `export as namespace` parsing (issue 5231) and virtual `./foo` import
   resolution (issue 5229).
+- Also owns `issues/done/3314-implement-moduleAugmentationDuringSyntheticDefaultCheck.md`:
+  fresh triage for `moduleAugmentationDuringSyntheticDefaultCheck.ts` stops at
+  `export = moment;` in the virtual `node_modules/moment/index.d.ts` section
+  before package resolution or ambient module augmentation diagnostics.
 
 ## Completion evidence
 
