@@ -166,6 +166,10 @@ Fresh triage reports `UnsupportedModule: issue-5005` for entry-module
 `export Foo` in both files. Later comment emit, assertion preservation,
 `satisfies`, and `this.client.getThing()` lowering behavior remains unproven
 until this export-class boundary advances.
+Also owns `issues/done/3361-implement-modulePrologueAMD.md`: fresh triage for
+`modulePrologueAMD.ts` parses the `"use strict"` prologue and then stops at
+entry-module `export class Foo {}` with issue-5005 before AMD prologue emit
+parity becomes actionable.
 
 ## Completion evidence
 

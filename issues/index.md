@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 7 | 6 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4587 | 3376 | 1211 |
+| frontend | 4587 | 3375 | 1212 |
 | harness | 1 | 0 | 1 |
 | ir | 81 | 59 | 22 |
 | issues | 4 | 0 | 4 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5255 | 3674 | 1581 |
+| total | 5255 | 3673 | 1582 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -2328,7 +2328,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 3302 | Implement Modulealiasasfunctionargument | spike | frontend/syntax | class: blocked | Implement Modulealiasasfunctionargument |
 | 3303 | Implement Modulealiasinterface | spike | frontend/syntax | class: blocked | Implement Modulealiasinterface |
 | 3304 | Implement Moduleandinterfacesharingname | spike | frontend/syntax | class: blocked | Implement Moduleandinterfacesharingname |
-| 3361 | Implement Moduleprologueamd | spike | frontend/syntax | class: blocked | Implement Moduleprologueamd |
 | 3362 | Implement Moduleprologuecommonjs | spike | frontend/syntax | class: blocked | Implement Moduleprologuecommonjs |
 | 3363 | Implement Moduleprologuees | spike | frontend/syntax | class: blocked | Implement Moduleprologuees |
 | 3364 | Implement Moduleprologuesystem | spike | frontend/syntax | class: blocked | Implement Moduleprologuesystem |
@@ -5216,6 +5215,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 3358 | Implement Modulepreserve | maintenance | frontend/syntax | see `issues/done/3358-implement-modulePreserve.md` |
 | 3359 | Implement Modulepreserveimporthelpers | maintenance | frontend/syntax | see `issues/done/3359-implement-modulePreserveImportHelpers.md` |
 | 3360 | Implement Modulepreservetoplevelawait | maintenance | reference/triage | see `issues/done/3360-implement-modulePreserveTopLevelAwait.md` |
+| 3361 | Implement Moduleprologueamd | maintenance | frontend/syntax | see `issues/done/3361-implement-modulePrologueAMD.md` |
 | 3690 | Implement Optionaltupleelementsandundefined | spike | reference/triage | see `issues/done/3690-implement-optionalTupleElementsAndUndefined.md` |
 | 3996 | Implement Compiler (dup) | spike | frontend/syntax | see `issues/done/3996-implement-reference-typescript-tests-cases-compiler.md` |
 | 4210 | Implement Splicetuples | spike | frontend/resolver | see `issues/done/4210-implement-spliceTuples.md` |
