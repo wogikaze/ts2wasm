@@ -132,7 +132,7 @@ impl Parser {
             match self.peek() {
                 Some(Token::LeftBrace) => self.named_export_statement(export_span),
                 Some(Token::Star) => self.star_re_export_statement(export_span),
-                Some(Token::Const | Token::Let) => self.variable_export_statement(export_span),
+                Some(Token::Const | Token::Let | Token::Var) => self.variable_export_statement(export_span),
                 _ => {
                     let form = match self.peek() {
                         Some(Token::Const | Token::Let | Token::Var) => "variable export",

@@ -3516,4 +3516,65 @@ class Foo {
         assert!(matches!(stmts[0], Stmt::ClassDecl { ref name, .. } if name == "X"));
         assert!(matches!(stmts[1], Stmt::Let { ref name, .. } if name == "val"));
     }
+
+    #[test]
+    fn parses_export_var_no_initializer() {
+        let program = parse_program("export var b: number;").unwrap();
+        assert_eq!(program.len(), 1);
+        match &program[0] {
+            Stmt::ExportDecl {
+                declaration,
+                specifier,
+                span,
+            } => {
+                assert_eq!(specifier.local, "b");
+                assert_eq!(specifier.exported, "b");
+                assert_eq!(*span, Span { start: 0, end: 22 });
+                match declaration.as_ref() {
+                    Stmt::Let {
+                        name,
+                        expr: Expr::Undefined { .. },
+                        is_var,
+                        ..
+                    } => {
+                        assert_eq!(name, "b");
+                        assert!(*is_var);
+                    }
+                    other => panic!("expected Let with var flag, got {other:?}"),
+                }
+            }
+            other => panic!("expected ExportDecl, got {other:?}"),
+        }
+    }
+
+    #[test]
+    fn parses_export_var_with_initializer() {
+        let program = parse_program("export var a = 1;").unwrap();
+        assert_eq!(program.len(), 1);
+        match &program[0] {
+            Stmt::ExportDecl {
+                declaration,
+                specifier,
+                span,
+            } => {
+                assert_eq!(specifier.local, "a");
+                assert_eq!(specifier.exported, "a");
+                assert_eq!(*span, Span { start: 0, end: 18 });
+                match declaration.as_ref() {
+                    Stmt::Let {
+                        name,
+                        expr: Expr::Number { value, .. },
+                        is_var,
+                        ..
+                    } => {
+                        assert_eq!(name, "a");
+                        assert_eq!(*value, 1);
+                        assert!(*is_var);
+                    }
+                    other => panic!("expected Let with var flag and number initializer, got {other:?}"),
+                }
+            }
+            other => panic!("expected ExportDecl, got {other:?}"),
+        }
+    }
 }
