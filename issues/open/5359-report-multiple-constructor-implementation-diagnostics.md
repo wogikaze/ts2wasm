@@ -138,7 +138,7 @@ Follow-up issues:
 
 ## Notes
 
-Split from `issues/done/1475-implement-constructorOverloads-parser-syntax.md`
+Split from `issues/open/1475-implement-constructorOverloads-parser-syntax.md`
 on 2026-05-07.
 
 Related:

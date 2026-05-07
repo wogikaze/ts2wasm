@@ -122,7 +122,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] superseded by `issues/done/5192-support-first-class-class-constructor-values.md`
+- [x] superseded by `issues/open/5192-support-first-class-class-constructor-values.md`
 - [x] superseded by `issues/done/5161-model-ambient-value-declarations-for-name-resolution.md`
 - [x] related later semantic blocker: `issues/open/5261-report-class-typed-missing-instance-method-calls.md`
 
@@ -135,7 +135,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/5192-support-first-class-class-constructor-values.md` - exact current owner for `classSideInheritance3.ts`, where assigning `B` as a value reports `issue-5011`
+- `issues/open/5192-support-first-class-class-constructor-values.md` - exact current owner for `classSideInheritance3.ts`, where assigning `B` as a value reports `issue-5011`
 - `issues/done/5161-model-ambient-value-declarations-for-name-resolution.md` - exact current owner for `classSideInheritance1.ts`, where `declare var a: A` is visible to TypeScript but not resolver-visible
 - `issues/open/5261-report-class-typed-missing-instance-method-calls.md` - related later TypeScript diagnostic owner for static members called through class-typed instances (`a.bar()` / `c.bar()`)
 - `issues/open/064-implement-name-resolution.md` and other broad name-resolution buckets are no-match for this current evidence because the failing paths map to narrower open issues.
@@ -211,7 +211,7 @@ to `new (x: string) => A`
 
 Superseding owner:
 
-- `issues/done/5192-support-first-class-class-constructor-values.md`
+- `issues/open/5192-support-first-class-class-constructor-values.md`
 
 ### Smart triage: classSideInheritance1
 

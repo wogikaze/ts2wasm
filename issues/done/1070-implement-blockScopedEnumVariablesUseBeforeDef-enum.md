@@ -108,7 +108,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] added: `issues/done/5184-parse-const-enum-declarations.md`
+- [x] added: `issues/open/5184-parse-const-enum-declarations.md`
 
 ## Notes
 
@@ -120,7 +120,7 @@ Follow-up issues:
 ## Duplicate detection
 
 - `issues/open/428-implement-enum.md` - Implement enum support (same feature label, title overlap)
-- `issues/done/1446-implement-constEnumDeclarations.md`, `issues/open/633-implement-amdModuleConstEnumUsage.md`, and `issues/open/737-implement-assignmentNonObjectTypeConstraints.md` show the same `const enum` parser boundary, but they are generated buckets rather than a focused implementation-ready child.
+- `issues/open/1446-implement-constEnumDeclarations.md`, `issues/open/633-implement-amdModuleConstEnumUsage.md`, and `issues/open/737-implement-assignmentNonObjectTypeConstraints.md` show the same `const enum` parser boundary, but they are generated buckets rather than a focused implementation-ready child.
 
 ## Smart triage
 
@@ -134,7 +134,7 @@ Generated on 2026-05-06.
 - Compiler evidence: token dump includes `Const`, `Ident("enum")`, `Ident("E")`, `{`, member `A`, and `}`; AST/resolved construction fails before representing the enum declaration.
 - TypeScript oracle: `TS2450: Enum 'E' used before its declaration.`
 - TypeScript AST path at the current blocker: `FunctionDeclaration -> Block -> EnumDeclaration`
-- Superseding child: `issues/done/5184-parse-const-enum-declarations.md`
+- Superseding child: `issues/open/5184-parse-const-enum-declarations.md`
 
 ## Completion evidence
 

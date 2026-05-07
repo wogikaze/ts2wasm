@@ -136,7 +136,7 @@ Follow-up issues:
 ## Notes
 
 Split from generated bucket
-`issues/done/1531-implement-contextualTypingTwoInstancesOfSameTypeParameter.md`.
+`issues/open/1531-implement-contextualTypingTwoInstancesOfSameTypeParameter.md`.
 
 Related but distinct:
 

@@ -163,7 +163,7 @@ Follow-up issues:
 
 ## Notes
 
-Split from `issues/done/1254-implement-cloduleSplitAcrossFiles.md` on
+Split from `issues/open/1254-implement-cloduleSplitAcrossFiles.md` on
 2026-05-07.
 
 Related but not duplicates:

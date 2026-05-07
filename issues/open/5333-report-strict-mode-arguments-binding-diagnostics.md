@@ -152,7 +152,7 @@ Follow-up issues:
 
 ## Notes
 
-Split from `issues/done/1266-implement-collisionArgumentsArrowFunctions.md` on
+Split from `issues/open/1266-implement-collisionArgumentsArrowFunctions.md` on
 2026-05-07.
 
 Related but not duplicates:

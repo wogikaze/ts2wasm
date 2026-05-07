@@ -116,7 +116,7 @@ Follow-up issues:
 
 ## Notes
 
-Split from `issues/done/1517-implement-contextualTypesNegatedTypeLikeConstraintInGenericMappedType.md`.
+Split from `issues/open/1517-implement-contextualTypesNegatedTypeLikeConstraintInGenericMappedType.md`.
 
 ## Completion evidence
 

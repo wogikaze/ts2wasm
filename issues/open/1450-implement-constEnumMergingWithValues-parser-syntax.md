@@ -21,7 +21,7 @@ status: done
 
 Closed this generated parser-syntax bucket because fresh triage stops at the
 `export = foo` parser/module boundary already owned by
-`issues/done/5186-parse-export-assignment-for-diagnostics.md`.
+`issues/open/5186-parse-export-assignment-for-diagnostics.md`.
 
 ## Problem
 
@@ -46,7 +46,7 @@ mise run reference-coverage -- tsc --path-filter reference/typescript/tests/case
 ## Desired final state
 
 This generated bucket is closed. Implement from
-`issues/done/5186-parse-export-assignment-for-diagnostics.md`.
+`issues/open/5186-parse-export-assignment-for-diagnostics.md`.
 
 ## Scope
 
@@ -115,7 +115,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] superseded by: `issues/done/5186-parse-export-assignment-for-diagnostics.md`
+- [x] superseded by: `issues/open/5186-parse-export-assignment-for-diagnostics.md`
 
 ## Notes
 
@@ -131,7 +131,7 @@ Follow-up issues:
 - `issues/open/663-implement-arrayAssignmentTest-parser-syntax.md` - Implement Arrayassignmenttest Parser Syntax (same feature label, title overlap)
 - `issues/open/734-implement-assignmentCompatability-parser-syntax.md` - Implement Assignmentcompatability Parser Syntax (same feature label, title overlap)
 - `issues/open/753-implement-asyncFunctionReturnType-parser-syntax.md` - Implement Asyncfunctionreturntype Parser Syntax (same feature label, title overlap)
-- `issues/done/767-implement-augmentedTypesEnum-parser-syntax.md` - Implement Augmentedtypesenum Parser Syntax (same feature label, title overlap)
+- `issues/open/767-implement-augmentedTypesEnum-parser-syntax.md` - Implement Augmentedtypesenum Parser Syntax (same feature label, title overlap)
 - `issues/open/059-implement-parser-syntax-extensions.md` - Implement parser syntax extensions for TypeScript and advanced JS (same feature label, title overlap)
 - `issues/done/065-implement-parser-syntax.md` - Implement parser syntax extensions (same feature label, title overlap)
 - `issues/done/065a-merge-duplicate-parser-syntax-issue-into-059.md` - Merge duplicate parser syntax issue into 059 (same feature label, title overlap)
@@ -146,7 +146,7 @@ Generated on 2026-05-07.
 - Current failing source: `export = foo`
 - Token evidence includes `Ident("enum")`, `Ident("foo")`, `Ident("namespace")`, nested `const enum E { X }`, then `Export`, `Equal`, `Ident("foo")`.
 - TypeScript oracle parses top-level `EnumDeclaration`, `ModuleDeclaration`, and `ExportAssignment` with no diagnostics.
-- Superseding issue: `issues/done/5186-parse-export-assignment-for-diagnostics.md`
+- Superseding issue: `issues/open/5186-parse-export-assignment-for-diagnostics.md`
 
 ## Completion evidence
 

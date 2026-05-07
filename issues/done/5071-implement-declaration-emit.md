@@ -128,8 +128,8 @@ Follow-up issues:
 
 - `issues/done/096-implement-accessorDeclarationEmitJs.md` - Implement Accessordeclarationemitjs (same feature label, same group key, title overlap)
 - `issues/done/097-implement-accessorDeclarationEmitVisibilityErrors.md` - Implement Accessordeclarationemitvisibilityerrors (same feature label, same group key, title overlap)
-- `issues/done/1179-implement-classDeclaredBeforeClassFactory.md` - Implement Classdeclaredbeforeclassfactory (same feature label, same group key, title overlap; split to issue 5252)
-- `issues/done/1249-implement-classdecl.md` - Implement Classdecl (same feature label, same group key, title overlap)
+- `issues/open/1179-implement-classDeclaredBeforeClassFactory.md` - Implement Classdeclaredbeforeclassfactory (same feature label, same group key, title overlap; split to issue 5252)
+- `issues/open/1249-implement-classdecl.md` - Implement Classdecl (same feature label, same group key, title overlap)
 - `issues/done/141-implement-ambientClassDeclaredBeforeBase.md` - Implement Ambientclassdeclaredbeforebase (same feature label, same group key, title overlap)
 - `issues/open/1599-implement-crashDeclareGlobalTypeofExport.md` - Implement Crashdeclareglobaltypeofexport (same feature label, same group key, title overlap)
 - `issues/open/1683-implement-declarationEmitAliasInlineing.md` - Implement Declarationemitaliasinlineing (same feature label, same group key, title overlap)

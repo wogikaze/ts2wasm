@@ -138,7 +138,7 @@ Follow-up issues:
   commented bodyless top-level overload signatures followed by one
   implementation. `commentsCommentParsing.ts` fails in the same feature family
   at the commented `f1` overload group.
-- `issues/done/5200-validate-top-level-function-overload-implementations.md`
+- `issues/open/5200-validate-top-level-function-overload-implementations.md`
   owns general top-level overload grouping without the comment/trivia-specific
   focus.
 - `issues/done/5199-report-function-overload-list-class-merge-diagnostics.md`

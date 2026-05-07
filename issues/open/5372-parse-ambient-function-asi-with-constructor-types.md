@@ -129,7 +129,7 @@ Follow-up issues:
 
 ## Notes
 
-Split from `issues/done/1501-implement-contextualSignatureInstantiation-parser-syntax.md`.
+Split from `issues/open/1501-implement-contextualSignatureInstantiation-parser-syntax.md`.
 
 Related but not duplicates:
 

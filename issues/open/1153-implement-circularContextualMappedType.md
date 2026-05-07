@@ -129,7 +129,7 @@ Fresh duplicate scan found exact owner `issues/done/5226-w0-ast-node-span-requir
 Other duplicate-function candidates are not the owner:
 
 - `issues/done/5199-report-function-overload-list-class-merge-diagnostics.md` covers overload lists followed by a class of the same name.
-- `issues/done/5200-validate-top-level-function-overload-implementations.md` covers non-ambient overload signatures plus an implementation body.
+- `issues/open/5200-validate-top-level-function-overload-implementations.md` covers non-ambient overload signatures plus an implementation body.
 - generated duplicate-function buckets 2043, 2600, and 4258 still need their own smart triage.
 
 ## Smart triage

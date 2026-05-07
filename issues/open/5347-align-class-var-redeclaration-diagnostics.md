@@ -137,7 +137,7 @@ Follow-up issues:
 
 ## Notes
 
-Split from `issues/done/765-implement-augmentedTypesClass.md`.
+Split from `issues/open/765-implement-augmentedTypesClass.md`.
 
 Related but not duplicate:
 
@@ -145,7 +145,7 @@ Related but not duplicate:
   duplicate `var` declarations.
 - `issues/open/5249-scope-block-local-class-declarations.md` handles nested
   block-local classes colliding with outer classes.
-- `issues/done/767-implement-augmentedTypesEnum-parser-syntax.md` owns a
+- `issues/open/767-implement-augmentedTypesEnum-parser-syntax.md` owns a
   generated enum-focused bucket and may become relevant after this class/var
   blocker advances.
 

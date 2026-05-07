@@ -110,7 +110,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] superseded by `issues/done/5200-validate-top-level-function-overload-implementations.md`
+- [x] superseded by `issues/open/5200-validate-top-level-function-overload-implementations.md`
 
 ## Notes
 
@@ -120,7 +120,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- Superseded by `issues/done/5200-validate-top-level-function-overload-implementations.md`.
+- Superseded by `issues/open/5200-validate-top-level-function-overload-implementations.md`.
   The current blocker is top-level function overload implementation grouping:
   bodyless overload signatures for `callb` are treated as duplicate local
   bindings before contextual lambda diagnostics can run.
@@ -155,7 +155,7 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- superseding issue: `issues/done/5200-validate-top-level-function-overload-implementations.md`
+- superseding issue: `issues/open/5200-validate-top-level-function-overload-implementations.md`
 
 Validation result:
 

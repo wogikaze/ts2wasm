@@ -130,7 +130,7 @@ Follow-up issues:
 
 ## Notes
 
-Split from generated bucket `issues/done/1482-implement-constructorWithIncompleteTypeAnnotation.md` on 2026-05-07.
+Split from generated bucket `issues/open/1482-implement-constructorWithIncompleteTypeAnnotation.md` on 2026-05-07.
 
 ## Completion evidence
 

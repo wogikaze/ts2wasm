@@ -116,5 +116,5 @@ python scripts/manager.py reference-coverage tsc --path-filter reference/typescr
 
 ## Notes
 
-Split from `issues/done/1179-implement-classDeclaredBeforeClassFactory.md`.
+Split from `issues/open/1179-implement-classDeclaredBeforeClassFactory.md`.
 Related generated bucket: `issues/open/1741-implement-declarationEmitExpressionInExtends-declaration-emit.md`.

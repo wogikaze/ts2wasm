@@ -146,7 +146,7 @@ Follow-up issues:
 - `issues/open/4642-implement-unicodeStringLiteral.md` is another generated
   string-literal bucket without smart triage evidence.
 - Existing enum issues such as `issues/open/428-implement-enum.md` and
-  `issues/done/1406-implement-computedEnumMemberSyntacticallyString-parser-syntax.md`
+  `issues/open/1406-implement-computedEnumMemberSyntacticallyString-parser-syntax.md`
   do not own this string-literal lexer blocker.
 
 ## Smart triage

@@ -160,7 +160,7 @@ Compiler evidence:
 
 Duplicate review:
 
-- `issues/done/5195-support-callable-interface-typed-local-calls.md` is related
+- `issues/open/5195-support-callable-interface-typed-local-calls.md` is related
   but covers callable interface-typed locals such as `var i: I<string>; i("")`.
 - `issues/done/5196-support-callable-conditional-typed-parameter-calls.md` is
   related but covers callable conditional-typed parameters such as `arg(10)`.

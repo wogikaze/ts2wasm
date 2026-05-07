@@ -140,7 +140,7 @@ Follow-up issues:
 ## Notes
 
 Split from generated bucket
-`issues/done/1417-implement-conditionalEqualityOnLiteralObjects.md`.
+`issues/open/1417-implement-conditionalEqualityOnLiteralObjects.md`.
 
 This issue intentionally starts with only the first object-literal strict
 equality condition. The rest of the reference file includes array literals,

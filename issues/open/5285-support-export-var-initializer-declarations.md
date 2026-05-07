@@ -139,7 +139,7 @@ Follow-up issues:
 
 ## Notes
 
-Split from `issues/done/1366-implement-commentsExternalModules.md`.
+Split from `issues/open/1366-implement-commentsExternalModules.md`.
 
 Related but not duplicates:
 
@@ -148,7 +148,7 @@ Related but not duplicates:
 - `issues/done/232-resolve-local-relative-es-module-graph.md` covers intentional bare/non-local specifier rejection.
 - `commentsExternalModules3.ts` has the same initialized export-var shape and
   should be rechecked after this representative slice advances.
-- `issues/done/1376-implement-commentsOnRequireStatement.md` reaches the same
+- `issues/open/1376-implement-commentsOnRequireStatement.md` reaches the same
   initialized `export var subject = 10;` boundary before its later re-export
   and missing-module diagnostics.
 

@@ -137,7 +137,7 @@ Follow-up issues:
 
 ## Notes
 
-Split from `issues/done/1358-implement-commentsAtEndOfFile.md`.
+Split from `issues/open/1358-implement-commentsAtEndOfFile.md`.
 
 Related but not duplicates:
 

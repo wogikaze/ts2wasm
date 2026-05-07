@@ -124,7 +124,7 @@ Follow-up issues:
 ## Notes
 
 Split from stale generated bucket
-`issues/done/1208-implement-classFieldSuperAccessibleJs.md`.
+`issues/open/1208-implement-classFieldSuperAccessibleJs.md`.
 
 Related but not duplicate:
 

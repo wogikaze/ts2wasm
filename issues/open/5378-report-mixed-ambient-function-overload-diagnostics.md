@@ -138,7 +138,7 @@ Follow-up issues:
 
 ## Notes
 
-Split from `issues/done/1518-implement-contextualTyping-import-export.md`.
+Split from `issues/open/1518-implement-contextualTyping-import-export.md`.
 
 ## Completion evidence
 

@@ -155,7 +155,7 @@ Follow-up issues:
 ## Notes
 
 Split from generated bucket
-`issues/done/1226-implement-classMergedWithInterfaceMultipleBasesNoError.md`.
+`issues/open/1226-implement-classMergedWithInterfaceMultipleBasesNoError.md`.
 
 Related but not duplicates:
 

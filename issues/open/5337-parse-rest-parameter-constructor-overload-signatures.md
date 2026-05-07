@@ -138,7 +138,7 @@ Follow-up issues:
 
 ## Notes
 
-Split from `issues/done/1301-implement-collisionRestParameterClassConstructor.md`
+Split from `issues/open/1301-implement-collisionRestParameterClassConstructor.md`
 on 2026-05-07.
 
 ## Completion evidence

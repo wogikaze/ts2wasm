@@ -154,12 +154,12 @@ Follow-up issues:
 
 ## Notes
 
-Split from `issues/done/1258-implement-cloduleWithPriorInstantiatedModule.md`
+Split from `issues/open/1258-implement-cloduleWithPriorInstantiatedModule.md`
 on 2026-05-07.
 
 Related but not duplicates:
 
-- `issues/done/771-implement-augmentedTypesModules.md` also contains TS2434
+- `issues/open/771-implement-augmentedTypesModules.md` also contains TS2434
   oracle evidence, but it is a broad generated bucket with five files and an
   older namespace/module ownership failure.
 - `issues/open/5329-report-class-namespace-duplicate-member-diagnostics.md`

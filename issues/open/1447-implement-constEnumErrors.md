@@ -144,7 +144,7 @@ Nearby non-owners:
 - `issues/done/5171-accept-unsigned-32-bit-hex-literals.md` covers large hex masks.
 - `issues/done/5216-allow-extra-arguments-for-functions-reading-arguments-object.md` covers exponent notation.
 - `issues/open/300-support-abc451-large-integer-number-boundary.md` covers runtime representation after parsing.
-- `issues/done/5184-parse-const-enum-declarations.md` covers the const-enum parser boundary, not the current lexer failure.
+- `issues/open/5184-parse-const-enum-declarations.md` covers the const-enum parser boundary, not the current lexer failure.
 
 ## Completion evidence
 

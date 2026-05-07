@@ -115,5 +115,5 @@ python scripts/manager.py reference-coverage tsc --path-filter reference/typescr
 
 ## Notes
 
-Split from `issues/done/1201-implement-classExtendsInterfaceInExpression.md`.
+Split from `issues/open/1201-implement-classExtendsInterfaceInExpression.md`.
 Related parser owner: `issues/done/5245-iterator-protocol-runtime.md`.

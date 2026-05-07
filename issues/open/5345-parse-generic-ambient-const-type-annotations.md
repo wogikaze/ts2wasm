@@ -165,11 +165,11 @@ Follow-up issues:
 
 ## Notes
 
-Split from `issues/done/762-implement-asyncYieldStarContextualType.md`.
+Split from `issues/open/762-implement-asyncYieldStarContextualType.md`.
 
 2026-05-07 fold-in:
 
-- `issues/done/1509-implement-contextualTypeCaching.md` reaches the same
+- `issues/open/1509-implement-contextualTypeCaching.md` reaches the same
   ambient const generic callable annotation boundary for
   `declare const A: <T, P extends keyof T>(obj: T, prop: P, factory: () => T[P]) => void;`.
 - Current diagnostic:

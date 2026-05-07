@@ -162,7 +162,7 @@ Follow-up issues:
 
 ## Notes
 
-Split from `issues/done/1346-implement-commentOnAmbientVariable.md`.
+Split from `issues/open/1346-implement-commentOnAmbientVariable.md`.
 
 Related but not duplicate:
 
@@ -176,7 +176,7 @@ Related but not duplicate:
 
 2026-05-07 fold-in:
 
-- `issues/done/1504-implement-contextualSignatureInstatiationContravariance.md`
+- `issues/open/1504-implement-contextualSignatureInstatiationContravariance.md`
   reaches the same ambient assignment-target resolver boundary for
   `declare var g2: ...; g2 = f2;`.
 - Current diagnostic: `UnresolvedName: unresolved name: \`g2\`` at the assignment.

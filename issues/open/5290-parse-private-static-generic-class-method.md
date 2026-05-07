@@ -138,7 +138,7 @@ Follow-up issues:
 
 ## Notes
 
-Split from generated bucket `issues/done/1380-implement-commentsTypeParameters.md`.
+Split from generated bucket `issues/open/1380-implement-commentsTypeParameters.md`.
 Related but broader issue: `issues/open/5275-parse-modified-static-class-methods.md`.
 
 ## Completion evidence

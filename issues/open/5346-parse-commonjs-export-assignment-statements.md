@@ -138,7 +138,7 @@ Follow-up issues:
 
 ## Notes
 
-Split from `issues/done/763-implement-augmentExportEquals.md`.
+Split from `issues/open/763-implement-augmentExportEquals.md`.
 
 Related but not duplicate:
 

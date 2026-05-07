@@ -156,7 +156,7 @@ Follow-up issues:
 ## Notes
 
 Split from generated bucket
-`issues/done/1490-implement-contextualOverloadListFromArrayUnion.md` on
+`issues/open/1490-implement-contextualOverloadListFromArrayUnion.md` on
 2026-05-07.
 
 Related but not duplicates:

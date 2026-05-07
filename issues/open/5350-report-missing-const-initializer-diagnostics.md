@@ -100,7 +100,7 @@ python scripts/manager.py check-issue-readiness -- --fail-ready-below 80
 
 ## Notes
 
-Split from `issues/done/1444-implement-constDeclarations-unknown-unsupported.md`.
+Split from `issues/open/1444-implement-constDeclarations-unknown-unsupported.md`.
 Issue `5264` remains the owner for typed const declarations that do have an
 initializer but are misparsed before `=`.
 

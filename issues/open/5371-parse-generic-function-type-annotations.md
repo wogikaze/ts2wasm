@@ -128,7 +128,7 @@ Follow-up issues:
 
 ## Notes
 
-Split from `issues/done/1501-implement-contextualSignatureInstantiation-parser-syntax.md`.
+Split from `issues/open/1501-implement-contextualSignatureInstantiation-parser-syntax.md`.
 
 Related but not duplicates:
 
@@ -139,7 +139,7 @@ Related but not duplicates:
 
 2026-05-07 fold-in:
 
-- `issues/done/1503-implement-contextualSignatureInstantiationWithTypeParameterConstrainedToOuterTypeParameter.md`
+- `issues/open/1503-implement-contextualSignatureInstantiationWithTypeParameterConstrainedToOuterTypeParameter.md`
   is the same parser boundary at `var h: <V, W>(...) => W;`.
 - TypeScript oracle parses the FunctionType and then reports later TS2322/TS2454
   diagnostics unrelated to parser support.

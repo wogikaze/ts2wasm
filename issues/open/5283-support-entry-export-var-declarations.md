@@ -138,7 +138,7 @@ Follow-up issues:
 
 ## Notes
 
-Split from `issues/done/1360-implement-commentsBeforeVariableStatement.md`.
+Split from `issues/open/1360-implement-commentsBeforeVariableStatement.md`.
 
 Related but not duplicates:
 

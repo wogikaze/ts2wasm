@@ -137,7 +137,7 @@ Follow-up issues:
 ## Notes
 
 Split from stale generated bucket
-`issues/done/1207-implement-classFieldSuperAccessible.md`.
+`issues/open/1207-implement-classFieldSuperAccessible.md`.
 
 Related but not duplicates:
 

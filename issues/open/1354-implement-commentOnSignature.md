@@ -135,7 +135,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/5200-validate-top-level-function-overload-implementations.md`
+- `issues/open/5200-validate-top-level-function-overload-implementations.md`
   is related, but broadening it with this comments/signature reference made the
   issue too large for readiness gates.
 - `issues/open/5280-validate-commented-top-level-function-overloads.md` owns

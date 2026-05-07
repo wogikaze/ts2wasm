@@ -137,7 +137,7 @@ Follow-up issues:
 
 ## Notes
 
-Split from `issues/done/1478-implement-constructorReturningAPrimitive.md` on
+Split from `issues/open/1478-implement-constructorReturningAPrimitive.md` on
 2026-05-07 after fresh coverage reported build_pass.
 
 The non-generic `class A { constructor() { return 1; } }` portion does not

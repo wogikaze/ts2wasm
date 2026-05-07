@@ -116,7 +116,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/769-implement-augmentedTypesFunction.md` - Implement Augmentedtypesfunction (same reference path, same feature label, same group key, title overlap)
+- `issues/open/769-implement-augmentedTypesFunction.md` - Implement Augmentedtypesfunction (same reference path, same feature label, same group key, title overlap)
 
 ## Smart triage
 
@@ -126,7 +126,7 @@ Not generated. Rerun with `--triage-limit 1` or higher.
 ## 重複整理メモ
 
 この issue はタイトルが重複しているため、内容がより充実している
-`issues/done/769-implement-augmentedTypesFunction.md` に統合されました。
+`issues/open/769-implement-augmentedTypesFunction.md` に統合されました。
 そちらを参照してください。
 ## Completion evidence
 

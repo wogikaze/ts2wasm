@@ -136,7 +136,7 @@ Not generated. Rerun with `--triage-limit 1` or higher.
 ## 重複整理メモ
 
 この issue はタイトルが重複しているため、内容がより充実している
-`issues/done/548-implement-ExportAssignment.md` に統合されました。
+`issues/open/548-implement-ExportAssignment.md` に統合されました。
 そちらを参照してください。
 ## Completion evidence
 

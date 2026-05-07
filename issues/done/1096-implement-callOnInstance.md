@@ -106,11 +106,11 @@ Current state:
 
 Follow-up issues:
 
-- [x] updated: `issues/done/5163-lower-nested-call-expression-callees.md`
+- [x] updated: `issues/open/5163-lower-nested-call-expression-callees.md`
 
 ## Notes
 
-Folded into `issues/done/5163-lower-nested-call-expression-callees.md`.
+Folded into `issues/open/5163-lower-nested-call-expression-callees.md`.
 Fresh triage shows the parser builds the nested call AST, then lowering rejects
 the outer call because its callee is a `New` expression rather than an
 identifier.
@@ -131,12 +131,12 @@ Generated on 2026-05-06:
 - diagnostic: `UnsupportedSyntax`, `only identifier calls are supported in expression context at 172..183`
 - AST: `Let s2 = Call(New(Ident D, [1]), [])`; expression `Call(New(Ident C, [1]), [])`
 - TypeScript oracle: TS2349 for `(new D(1))()` and `(new C(1))()`
-- follow-up: `issues/done/5163-lower-nested-call-expression-callees.md`
+- follow-up: `issues/open/5163-lower-nested-call-expression-callees.md`
 
 ## Completion evidence
 
 Closed as a generated triage bucket. The actionable nested callee lowering gap
-is tracked by `issues/done/5163-lower-nested-call-expression-callees.md`.
+is tracked by `issues/open/5163-lower-nested-call-expression-callees.md`.
 
 Commits:
 

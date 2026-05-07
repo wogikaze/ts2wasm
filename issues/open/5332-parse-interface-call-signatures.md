@@ -150,7 +150,7 @@ Follow-up issues:
 
 ## Notes
 
-Split from `issues/done/1264-implement-coAndContraVariantInferences-type-system.md` on
+Split from `issues/open/1264-implement-coAndContraVariantInferences-type-system.md` on
 2026-05-07.
 
 Related but not duplicates:
@@ -159,7 +159,7 @@ Related but not duplicates:
   construct-signature members.
 - `issues/done/5201-parse-object-type-literal-call-signatures.md` covers call
   signatures inside object type literals.
-- `issues/done/5195-support-callable-interface-typed-local-calls.md` covers
+- `issues/open/5195-support-callable-interface-typed-local-calls.md` covers
   lowering/semantic behavior after callable interfaces parse.
 
 ## Completion evidence

@@ -163,10 +163,10 @@ Follow-up issues:
 Split from generated bucket
 `issues/done/1325-implement-collisionThisExpressionAndLocalVarInConstructor.md`.
 Also supersedes
-`issues/done/1324-implement-collisionThisExpressionAndLocalVarInAccessors.md`,
-`issues/done/1329-implement-collisionThisExpressionAndLocalVarInProperty.md`,
-`issues/done/1327-implement-collisionThisExpressionAndLocalVarInLambda.md`
-and `issues/done/1328-implement-collisionThisExpressionAndLocalVarInMethod.md`,
+`issues/open/1324-implement-collisionThisExpressionAndLocalVarInAccessors.md`,
+`issues/open/1329-implement-collisionThisExpressionAndLocalVarInProperty.md`,
+`issues/open/1327-implement-collisionThisExpressionAndLocalVarInLambda.md`
+and `issues/open/1328-implement-collisionThisExpressionAndLocalVarInMethod.md`,
 which stop at the same `(callback) => () => { ... }` parser failure.
 
 2026-05-07 additional evidence: `collisionThisExpressionAndLocalVarInAccessors.ts`
@@ -198,7 +198,7 @@ Related but distinct:
   class-constructor nested callback lowering after parsing succeeds.
 
 2026-05-07 additional evidence: generated bucket
-`issues/done/1522-implement-contextualTypingFunctionReturningFunction.md` is
+`issues/open/1522-implement-contextualTypingFunctionReturningFunction.md` is
 superseded here. Both `contextualTypingFunctionReturningFunction.ts` and
 `contextualTypingFunctionReturningFunction2.ts` tokenize successfully but fail
 AST construction at the inner arrow in `() => n => ...`:
@@ -213,7 +213,7 @@ TypeScript accepts both sources with no diagnostics and its AST records nested
 `b: () => n => {}` and the call argument `f(() => n => n)`.
 
 2026-05-07 additional evidence: generated bucket
-`issues/done/1532-implement-contextualTypingWithFixedTypeParameters.md` is
+`issues/open/1532-implement-contextualTypingWithFixedTypeParameters.md` is
 superseded here. `contextualTypingWithFixedTypeParameters1.ts` tokenizes
 successfully but fails AST construction at the inner arrow in
 `f10('', () => a => a.foo, '')`:

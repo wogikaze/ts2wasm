@@ -177,7 +177,7 @@ Follow-up issues:
 
 ## Notes
 
-Split from `issues/done/1271-implement-collisionArgumentsInType.md` on
+Split from `issues/open/1271-implement-collisionArgumentsInType.md` on
 2026-05-07.
 
 Related but not duplicates:

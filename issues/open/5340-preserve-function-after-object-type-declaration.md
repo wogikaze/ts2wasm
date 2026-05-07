@@ -121,7 +121,7 @@ Follow-up issues:
 
 ## Notes
 
-Split from `issues/done/1326-implement-collisionThisExpressionAndLocalVarInFunction.md`.
+Split from `issues/open/1326-implement-collisionThisExpressionAndLocalVarInFunction.md`.
 Related: `issues/open/5339-preserve-var-after-object-type-declaration.md`
 covers the same type declaration followed by another `var`.
 

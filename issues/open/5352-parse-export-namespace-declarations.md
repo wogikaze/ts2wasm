@@ -95,9 +95,9 @@ In scope:
 Out of scope:
 
 - Nested `const enum` parsing, tracked by
-  `issues/done/5184-parse-const-enum-declarations.md`.
+  `issues/open/5184-parse-const-enum-declarations.md`.
 - Export-assignment parsing and diagnostics, tracked separately by
-  `issues/done/5186-parse-export-assignment-for-diagnostics.md` and
+  `issues/open/5186-parse-export-assignment-for-diagnostics.md` and
   `issues/open/5306-report-export-assignment-with-other-exports.md`.
 - Import-equals/`require` module loading.
 - Namespace value binding or namespace emit/lowering.
@@ -170,7 +170,7 @@ Follow-up issues:
 ## Notes
 
 Split from generated bucket
-`issues/done/1451-implement-constEnumNamespaceReferenceCausesNoImport.md`.
+`issues/open/1451-implement-constEnumNamespaceReferenceCausesNoImport.md`.
 
 Related but not duplicates:
 

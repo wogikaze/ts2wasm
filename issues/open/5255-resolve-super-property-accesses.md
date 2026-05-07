@@ -128,7 +128,7 @@ python scripts/manager.py reference-coverage tsc --path-filter reference/typescr
 
 ## Notes
 
-Split from `issues/done/1194-implement-classExtendingAny.md`.
+Split from `issues/open/1194-implement-classExtendingAny.md`.
 
 Related but not owners for this exact boundary:
 

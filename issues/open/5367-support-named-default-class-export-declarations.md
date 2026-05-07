@@ -153,7 +153,7 @@ Follow-up issues:
 ## Notes
 
 Split from generated bucket
-`issues/done/1488-implement-contextualExpressionTypecheckingDoesntBlowStack.md`.
+`issues/open/1488-implement-contextualExpressionTypecheckingDoesntBlowStack.md`.
 
 Related but not duplicates:
 

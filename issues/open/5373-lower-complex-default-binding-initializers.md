@@ -161,7 +161,7 @@ Follow-up issues:
 
 ## Notes
 
-Split from `issues/done/1510-implement-contextualTypeForInitalizedVariablesFiltersUndefined.md`.
+Split from `issues/open/1510-implement-contextualTypeForInitalizedVariablesFiltersUndefined.md`.
 The broader destructuring implementation was completed in issue 251 with this
 form deliberately left behind as a source-spanned runtime-subset guard.
 

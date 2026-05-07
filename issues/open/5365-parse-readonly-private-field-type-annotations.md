@@ -137,7 +137,7 @@ Follow-up issues:
 
 ## Notes
 
-Split from generated bucket `issues/done/1483-implement-constructorWithParameterPropertiesAndPrivateFields.md` on 2026-05-07.
+Split from generated bucket `issues/open/1483-implement-constructorWithParameterPropertiesAndPrivateFields.md` on 2026-05-07.
 
 Related but distinct issues:
 

@@ -126,7 +126,7 @@ Current state:
 Follow-up issues:
 
 - [x] created: `issues/open/5332-parse-interface-call-signatures.md`
-- [x] superseded by `issues/done/5184-parse-const-enum-declarations.md`
+- [x] superseded by `issues/open/5184-parse-const-enum-declarations.md`
 - [x] superseded by `issues/open/5303-parse-trailing-comma-in-typed-function-parameters.md`
 - [x] superseded by `issues/open/5309-skip-generic-type-arguments-in-type-annotations.md`
 
@@ -143,7 +143,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/5184-parse-const-enum-declarations.md` - exact owner for `coAndContraVariantInferences3.ts` and `coAndContraVariantInferences4.ts` current `const enum` parser blocker
+- `issues/open/5184-parse-const-enum-declarations.md` - exact owner for `coAndContraVariantInferences3.ts` and `coAndContraVariantInferences4.ts` current `const enum` parser blocker
 - `issues/open/5303-parse-trailing-comma-in-typed-function-parameters.md` - exact owner for `coAndContraVariantInferences5.ts` trailing comma in typed function parameters
 - `issues/open/5309-skip-generic-type-arguments-in-type-annotations.md` - exact owner for `coAndContraVariantInferences.ts` generic type arguments inside function parameter annotations
 - `issues/open/5332-parse-interface-call-signatures.md` - new child for `coAndContraVariantInferences6.ts` interface call-signature parsing
@@ -181,14 +181,14 @@ the `2.ts` generated bucket history.
 - Diagnostic: `UnsupportedSyntax`
 - Message: `const declarations require an initializer at 1965..1969`
 - Source: `const enum SyntaxKind { ... }`
-- Owner: `issues/done/5184-parse-const-enum-declarations.md`
+- Owner: `issues/open/5184-parse-const-enum-declarations.md`
 
 ### coAndContraVariantInferences4.ts
 
 - Diagnostic: `UnsupportedSyntax`
 - Message: `const declarations require an initializer at 46..50`
 - Source: `const enum SyntaxKind { ... }`
-- Owner: `issues/done/5184-parse-const-enum-declarations.md`
+- Owner: `issues/open/5184-parse-const-enum-declarations.md`
 
 ### coAndContraVariantInferences5.ts
 

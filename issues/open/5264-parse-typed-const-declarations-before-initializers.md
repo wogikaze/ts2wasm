@@ -130,6 +130,6 @@ python scripts/manager.py reference-coverage tsc --path-filter reference/typescr
 
 ## Notes
 
-Split from `issues/done/1220-implement-classInConvertedLoopES.md`. This issue
+Split from `issues/open/1220-implement-classInConvertedLoopES.md`. This issue
 only covers the current first parser blocker; converted loop/class semantics
 may need a later child after the typed const declaration parses.

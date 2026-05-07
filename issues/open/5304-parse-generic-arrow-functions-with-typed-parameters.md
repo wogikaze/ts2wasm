@@ -156,13 +156,13 @@ Follow-up issues:
 
 ## Notes
 
-Split from generated bucket `issues/done/1429-implement-conditionalTypesSimplifyWhenTrivial.md`.
+Split from generated bucket `issues/open/1429-implement-conditionalTypesSimplifyWhenTrivial.md`.
 Related but non-identical slice `issues/done/5154-parse-angle-bracket-type-assertion-statements.md`
 explicitly excludes ambiguous generic arrow parsing.
 
 2026-05-07 fold-in:
 
-- `issues/done/1502-implement-contextualSignatureInstantiation-unknown-unsupported.md`
+- `issues/open/1502-implement-contextualSignatureInstantiation-unknown-unsupported.md`
   is the same parser boundary in `contextualSignatureInstantiation1.ts`.
 - Current diagnostic: `UnsupportedSyntax: expected RightParen, got Some(Colon)`
   at `var e = <K>(x: string, y?: K) => x.length;`.

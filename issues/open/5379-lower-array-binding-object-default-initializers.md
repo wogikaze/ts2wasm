@@ -137,7 +137,7 @@ Follow-up issues:
 ## Notes
 
 Split from
-`issues/done/1521-implement-contextualTypingArrayDestructuringWithDefaults.md`.
+`issues/open/1521-implement-contextualTypingArrayDestructuringWithDefaults.md`.
 
 ## Completion evidence
 

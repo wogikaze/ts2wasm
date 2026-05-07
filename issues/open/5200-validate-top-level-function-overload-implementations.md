@@ -201,7 +201,7 @@ issue 5199.
 
 2026-05-07 additional superseded bucket:
 
-- `issues/done/1527-implement-contextualTypingOfLambdaReturnExpression.md`
+- `issues/open/1527-implement-contextualTypingOfLambdaReturnExpression.md`
   reaches the same top-level overload grouping boundary. The source has two
   bodyless `callb(lam: ...)` overload signatures followed by one implementation
   `function callb(a) { }`; resolver reports

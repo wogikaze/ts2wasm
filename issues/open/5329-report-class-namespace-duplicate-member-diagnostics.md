@@ -159,7 +159,7 @@ Follow-up issues:
 
 ## Notes
 
-Split from `issues/done/1257-implement-cloduleWithDuplicateMember.md` on
+Split from `issues/open/1257-implement-cloduleWithDuplicateMember.md` on
 2026-05-07.
 
 Related but not duplicates:

@@ -120,7 +120,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/771-implement-augmentedTypesModules.md` - Implement Augmentedtypesmodules (same reference path, same feature label, same group key, title overlap)
+- `issues/open/771-implement-augmentedTypesModules.md` - Implement Augmentedtypesmodules (same reference path, same feature label, same group key, title overlap)
 
 ## Smart triage
 
@@ -130,7 +130,7 @@ Not generated. Rerun with `--triage-limit 1` or higher.
 ## 重複整理メモ
 
 この issue はタイトルが重複しているため、内容がより充実している
-`issues/done/771-implement-augmentedTypesModules.md` に統合されました。
+`issues/open/771-implement-augmentedTypesModules.md` に統合されました。
 そちらを参照してください。
 ## Completion evidence
 

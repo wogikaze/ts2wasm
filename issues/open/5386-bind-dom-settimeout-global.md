@@ -148,7 +148,7 @@ Follow-up issues:
 ## Notes
 
 Split from generated bucket
-`issues/done/1535-implement-contextuallyTypeArgumentsKeyword.md`.
+`issues/open/1535-implement-contextuallyTypeArgumentsKeyword.md`.
 
 Related but distinct:
 

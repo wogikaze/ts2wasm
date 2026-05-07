@@ -154,11 +154,11 @@ Follow-up issues:
 
 ## Notes
 
-Split from `issues/done/1357-implement-commentsAfterSpread.md`.
+Split from `issues/open/1357-implement-commentsAfterSpread.md`.
 
 Related but not duplicates:
 
-- `issues/done/1300-implement-collisionRestParameterArrowFunctions.md` is a
+- `issues/open/1300-implement-collisionRestParameterArrowFunctions.md` is a
   generated semantic collision bucket and lacks current smart-triage evidence
   for this resolver failure.
 - `issues/done/038-implement-rest-parameters.md` and
@@ -170,7 +170,7 @@ Related but not duplicates:
 
 2026-05-07 fold-in:
 
-- `issues/done/1505-implement-contextualTupleTypeParameterReadonly.md` reaches
+- `issues/open/1505-implement-contextualTupleTypeParameterReadonly.md` reaches
   the same resolver gap for an uncommented arrow rest parameter:
   `eacher((...args) => { const [a, b] = args; })`.
 - Current diagnostic: `UnresolvedName: unresolved name: \`args\`` inside the

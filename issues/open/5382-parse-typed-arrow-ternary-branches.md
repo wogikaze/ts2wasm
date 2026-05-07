@@ -135,7 +135,7 @@ Follow-up issues:
 ## Notes
 
 Split from generated bucket
-`issues/done/1525-implement-contextualTypingOfConditionalExpression.md`.
+`issues/open/1525-implement-contextualTypingOfConditionalExpression.md`.
 
 ## Completion evidence
 

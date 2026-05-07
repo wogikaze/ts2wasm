@@ -126,7 +126,7 @@ Follow-up issues:
 
 ## Notes
 
-Split from stale generated bucket `issues/done/1195-implement-classExtendingQualifiedName.md`.
+Split from stale generated bucket `issues/open/1195-implement-classExtendingQualifiedName.md`.
 
 Related but not duplicates:
 

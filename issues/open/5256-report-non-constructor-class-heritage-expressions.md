@@ -78,7 +78,7 @@ Out of scope:
 - Qualified class heritage names such as `extends Foo.Object`, tracked by
   `issues/done/5225-w0-typed-wat-writer.md`.
 - Generic type arguments in class heritage, tracked by
-  `issues/done/5156-parse-generic-type-arguments-in-class-heritage.md`.
+  `issues/open/5156-parse-generic-type-arguments-in-class-heritage.md`.
 
 ## Affected paths
 
@@ -121,4 +121,4 @@ python scripts/manager.py reference-coverage tsc --path-filter reference/typescr
 
 ## Notes
 
-Split from `issues/done/1200-implement-classExtendsInterface-unknown-unsupported.md`.
+Split from `issues/open/1200-implement-classExtendsInterface-unknown-unsupported.md`.

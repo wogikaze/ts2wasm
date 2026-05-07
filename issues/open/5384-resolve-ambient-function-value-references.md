@@ -154,7 +154,7 @@ Follow-up issues:
 ## Notes
 
 Split from generated bucket
-`issues/done/1530-implement-contextualTypingReturnStatementWithReturnTypeAnnotation.md`.
+`issues/open/1530-implement-contextualTypingReturnStatementWithReturnTypeAnnotation.md`.
 
 Related but distinct:
 

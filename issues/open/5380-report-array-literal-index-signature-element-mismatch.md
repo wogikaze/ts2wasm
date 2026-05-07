@@ -152,7 +152,7 @@ Follow-up issues:
 ## Notes
 
 Split from generated bucket
-`issues/done/1524-implement-contextualTypingOfArrayLiterals.md`.
+`issues/open/1524-implement-contextualTypingOfArrayLiterals.md`.
 
 Related but distinct:
 

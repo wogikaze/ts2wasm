@@ -144,7 +144,7 @@ Follow-up issues:
 ## Notes
 
 Split from generated bucket
-`issues/done/1526-implement-contextualTypingOfGenericFunctionTypedArguments.md`.
+`issues/open/1526-implement-contextualTypingOfGenericFunctionTypedArguments.md`.
 
 Related but distinct:
 

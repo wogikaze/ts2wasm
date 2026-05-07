@@ -181,9 +181,9 @@ Follow-up issues:
 - `issues/done/232-resolve-local-relative-es-module-graph.md` owns real
   on-disk local relative module graph diagnostics, but not virtual section
   registration.
-- `issues/done/1384-implement-commonJsImportClassExpression.md`,
-  `issues/done/1127-implement-chainedImportAlias.md`, and
-  `issues/done/1162-implement-circularReferenceInImport.md` are prior generated
+- `issues/open/1384-implement-commonJsImportClassExpression.md`,
+  `issues/open/1127-implement-chainedImportAlias.md`, and
+  `issues/open/1162-implement-circularReferenceInImport.md` are prior generated
   buckets closed on the same missing virtual module boundary.
 
 ## Smart triage

@@ -126,7 +126,7 @@ Follow-up issues:
 ## Duplicate detection
 
 - `issues/done/066-implement-regexp-literal.md` - Implement RegExp literal support (same reference path, title overlap)
-- `issues/done/1170-implement-class.md` - Implement Class (same feature label, same group key, title overlap; split to issue 5246)
+- `issues/open/1170-implement-class.md` - Implement Class (same feature label, same group key, title overlap; split to issue 5246)
 - `issues/done/128-implement-aliasUsedAsNameValue.md` - Implement Aliasusedasnamevalue (same feature label, same group key, title overlap)
 - `issues/done/132-implement-allowJsClassThisTypeCrash.md` - Implement Allowjsclassthistypecrash (same feature label, same group key, title overlap)
 - `issues/open/1988-implement-discriminantUsingEvaluatableTemplateExpression.md` - Implement Discriminantusingevaluatabletemplateexpression (same feature label, same group key, title overlap)

@@ -125,7 +125,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/5200-validate-top-level-function-overload-implementations.md` is related but not exact: it handles non-ambient overload signatures with implementation declarations, while this bucket's current blocker is multiple ambient `declare function` signatures with no implementation body.
+- `issues/open/5200-validate-top-level-function-overload-implementations.md` is related but not exact: it handles non-ambient overload signatures with implementation declarations, while this bucket's current blocker is multiple ambient `declare function` signatures with no implementation body.
 - `issues/done/5199-report-function-overload-list-class-merge-diagnostics.md` is not exact: this bucket has no class/function merge.
 
 ## Smart triage

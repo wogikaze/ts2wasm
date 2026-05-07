@@ -153,13 +153,13 @@ Follow-up issues:
 ## Notes
 
 Split from generated bucket
-`issues/done/1248-implement-classWithOverloadImplementationOfWrongName.md`.
+`issues/open/1248-implement-classWithOverloadImplementationOfWrongName.md`.
 
 Related but distinct issues:
 
 - `issues/done/5198-support-class-method-overload-signatures-for-element-access-calls.md`
   handles valid class method overload signature merging.
-- `issues/done/5200-validate-top-level-function-overload-implementations.md`
+- `issues/open/5200-validate-top-level-function-overload-implementations.md`
   handles top-level function overload implementation grouping.
 
 ## Completion evidence

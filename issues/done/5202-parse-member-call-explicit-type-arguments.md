@@ -148,7 +148,7 @@ Follow-up issues:
 Issue 059 already notes a direct generic-call erasure guard. This issue is the
 member-callee counterpart and should keep the same ambiguity discipline.
 
-Also supersedes generated bucket `issues/done/1185-implement-classExpressionTest.md`: fresh triage for `classExpressionTest1.ts` and `classExpressionTest2.ts` reaches `return v.f<string>();` and fails at the same explicit member-call type argument parser boundary.
+Also supersedes generated bucket `issues/open/1185-implement-classExpressionTest.md`: fresh triage for `classExpressionTest1.ts` and `classExpressionTest2.ts` reaches `return v.f<string>();` and fails at the same explicit member-call type argument parser boundary.
 
 ## Completion evidence
 

@@ -114,5 +114,5 @@ python scripts/manager.py reference-coverage tsc --path-filter reference/typescr
 
 ## Notes
 
-Split from generated bucket `issues/done/1352-implement-commentOnParameter.md`.
+Split from generated bucket `issues/open/1352-implement-commentOnParameter.md`.
 Related typed class method slice: `issues/done/5149-parse-trailing-comma-in-typed-class-method-parameters.md`.

@@ -139,10 +139,10 @@ Follow-up issues:
 
 ## Notes
 
-Split from generated bucket `issues/done/1379-implement-commentsOverloads.md`.
+Split from generated bucket `issues/open/1379-implement-commentsOverloads.md`.
 Related but broader issues:
 
-- `issues/done/5200-validate-top-level-function-overload-implementations.md`
+- `issues/open/5200-validate-top-level-function-overload-implementations.md`
 - `issues/open/5280-validate-commented-top-level-function-overloads.md`
 
 ## Completion evidence

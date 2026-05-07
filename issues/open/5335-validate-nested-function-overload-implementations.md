@@ -86,7 +86,7 @@ In scope:
 
 Out of scope:
 
-- Top-level overload implementation grouping, tracked by `issues/done/5200-validate-top-level-function-overload-implementations.md`.
+- Top-level overload implementation grouping, tracked by `issues/open/5200-validate-top-level-function-overload-implementations.md`.
 - Class method overload signatures, tracked by `issues/done/5198-support-class-method-overload-signatures-for-element-access-calls.md`.
 - Strict-mode `arguments` binding diagnostics after overload grouping advances.
 
@@ -152,7 +152,7 @@ Follow-up issues:
 ## Notes
 
 Split from
-`issues/done/1270-implement-collisionArgumentsFunctionExpressions.md` on
+`issues/open/1270-implement-collisionArgumentsFunctionExpressions.md` on
 2026-05-07.
 
 ## Completion evidence

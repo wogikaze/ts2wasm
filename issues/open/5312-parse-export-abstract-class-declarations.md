@@ -113,13 +113,13 @@ Follow-up issues:
 
 ## Notes
 
-Split from generated bucket `issues/done/1193-implement-classExtendingAbstractClassWithMemberCalledTheSameAsItsOwnTypeParam.md`.
+Split from generated bucket `issues/open/1193-implement-classExtendingAbstractClassWithMemberCalledTheSameAsItsOwnTypeParam.md`.
 
 Related but not duplicates:
 
 - `issues/done/5232-w0-fixture-ize-runtimelinkplan-linker-structure-tests.md` starts after
   `ExportDecl(ClassDecl)` exists and handles module-build export metadata.
-- `issues/done/1213-implement-classFunctionMerging-parser-syntax.md` covers
+- `issues/open/1213-implement-classFunctionMerging-parser-syntax.md` covers
   `declare abstract class`, not `export abstract class`.
 
 ## Completion Evidence

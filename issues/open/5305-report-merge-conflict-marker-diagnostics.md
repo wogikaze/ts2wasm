@@ -160,15 +160,15 @@ Follow-up issues:
 
 ## Notes
 
-Split from generated bucket `issues/done/1431-implement-conflictMarkerDiff-parser-syntax.md`.
+Split from generated bucket `issues/open/1431-implement-conflictMarkerDiff-parser-syntax.md`.
 Also supersedes sibling generated bucket
-`issues/done/1432-implement-conflictMarkerDiff-unknown-unsupported.md`, where
+`issues/open/1432-implement-conflictMarkerDiff-unknown-unsupported.md`, where
 the same marker diagnostic gap appears inside a method body.
 Also supersedes generated bucket
-`issues/done/1433-implement-conflictMarkerTrivia-parser-syntax.md`, where the
+`issues/open/1433-implement-conflictMarkerTrivia-parser-syntax.md`, where the
 same marker diagnostic gap appears for non-diff3 markers in a class body.
 Also supersedes generated bucket
-`issues/done/1434-implement-conflictMarkerTrivia-unknown-unsupported.md`, where
+`issues/open/1434-implement-conflictMarkerTrivia-unknown-unsupported.md`, where
 the same marker diagnostic gap appears for `conflictMarkerTrivia2.ts` and
 `conflictMarkerTrivia4.ts`.
 

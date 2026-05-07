@@ -145,7 +145,7 @@ Follow-up issues:
 ## Notes
 
 Split from generated bucket
-`issues/done/1385-implement-commonJsIsolatedModules.md`.
+`issues/open/1385-implement-commonJsIsolatedModules.md`.
 
 ## Completion evidence
 

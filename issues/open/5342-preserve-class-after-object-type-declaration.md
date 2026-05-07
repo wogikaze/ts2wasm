@@ -155,7 +155,7 @@ Follow-up issues:
 
 ## Notes
 
-Split from `issues/done/1332-implement-collisionThisExpressionAndNameResolution.md`.
+Split from `issues/open/1332-implement-collisionThisExpressionAndNameResolution.md`.
 
 Related but not duplicate:
 

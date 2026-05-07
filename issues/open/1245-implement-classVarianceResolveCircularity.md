@@ -143,7 +143,7 @@ declare function callme(x: object): string;
 - `issues/done/5226-w0-ast-node-span-requirement.md` is the
   exact owner for multiple bodyless ambient `declare function` declarations with
   the same name.
-- `issues/done/5200-validate-top-level-function-overload-implementations.md` is
+- `issues/open/5200-validate-top-level-function-overload-implementations.md` is
   related but covers non-ambient overload signatures with implementation bodies.
 - `issues/done/5199-report-function-overload-list-class-merge-diagnostics.md`
   is related but covers function overload lists merged with classes.

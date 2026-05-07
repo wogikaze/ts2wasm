@@ -19,7 +19,7 @@ completed: 2026-05-07
 ## Summary
 
 Closed as superseded by
-`issues/done/5184-parse-const-enum-declarations.md`.
+`issues/open/5184-parse-const-enum-declarations.md`.
 
 Fresh triage shows the current first blocker is not setter assignment: the
 `const enum Props` declaration is misparsed as a bogus `const enum` binding, so
@@ -125,7 +125,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] superseded by: `issues/done/5184-parse-const-enum-declarations.md`
+- [x] superseded by: `issues/open/5184-parse-const-enum-declarations.md`
 
 ## Notes
 
@@ -135,7 +135,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/5184-parse-const-enum-declarations.md` owns the current first
+- `issues/open/5184-parse-const-enum-declarations.md` owns the current first
   blocker: `const enum` is parsed as a `const` declaration named `enum`,
   leaving `Props` unresolved.
 

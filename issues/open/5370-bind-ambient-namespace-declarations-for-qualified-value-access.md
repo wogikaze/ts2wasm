@@ -115,7 +115,7 @@ Follow-up issues:
 
 ## Notes
 
-Split from generated bucket `issues/done/1495-implement-contextualReturnTypeOfIIFE-import-export.md` on 2026-05-07.
+Split from generated bucket `issues/open/1495-implement-contextualReturnTypeOfIIFE-import-export.md` on 2026-05-07.
 
 Related:
 

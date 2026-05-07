@@ -151,7 +151,7 @@ Follow-up issues:
 ## Notes
 
 Split from stale generated bucket
-`issues/done/1203-implement-classExtendsInterfaceThatExtendsClassWithPrivates.md`.
+`issues/open/1203-implement-classExtendsInterfaceThatExtendsClassWithPrivates.md`.
 
 Related but not duplicates:
 

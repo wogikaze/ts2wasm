@@ -108,7 +108,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] created/updated: `issues/done/5163-lower-nested-call-expression-callees.md`
+- [x] created/updated: `issues/open/5163-lower-nested-call-expression-callees.md`
 
 ## Notes
 
@@ -129,7 +129,7 @@ Generated on 2026-05-06.
 - Failure: `only identifier calls are supported in expression context at 52..70`
 - Source context: `foo()(1 as number).toString();`
 - TypeScript AST path: `ExpressionStatement -> CallExpression -> PropertyAccessExpression -> CallExpression -> CallExpression -> Identifier(foo)`
-- Split child: `issues/done/5163-lower-nested-call-expression-callees.md`
+- Split child: `issues/open/5163-lower-nested-call-expression-callees.md`
 
 ## Completion evidence
 

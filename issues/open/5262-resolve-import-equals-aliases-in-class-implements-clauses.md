@@ -134,6 +134,6 @@ python scripts/manager.py reference-coverage tsc --path-filter reference/typescr
 
 ## Notes
 
-Split from `issues/done/1217-implement-classImplementsImportedInterface.md`.
+Split from `issues/open/1217-implement-classImplementsImportedInterface.md`.
 Broad import/export umbrella issue 432 is not an exact implementation slice for
 this namespace-local import-equals alias use in class heritage.

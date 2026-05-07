@@ -121,7 +121,7 @@ Follow-up issues:
 
 ## Notes
 
-Split from stale generated bucket `issues/done/1199-implement-classExtendsInterface-parser-syntax.md`.
+Split from stale generated bucket `issues/open/1199-implement-classExtendsInterface-parser-syntax.md`.
 
 Related but not duplicates:
 

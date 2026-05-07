@@ -142,7 +142,7 @@ declare function assertNode(node: Node | undefined, test: ((node: Node) => boole
 - `issues/done/5226-w0-ast-node-span-requirement.md` is the exact
   owner for multiple bodyless ambient `declare function` declarations with the
   same name.
-- `issues/done/5200-validate-top-level-function-overload-implementations.md` is
+- `issues/open/5200-validate-top-level-function-overload-implementations.md` is
   related but not exact: it handles non-ambient overload signatures with an
   implementation declaration.
 - `issues/done/5199-report-function-overload-list-class-merge-diagnostics.md`

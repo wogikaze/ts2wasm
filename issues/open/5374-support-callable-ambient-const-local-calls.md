@@ -91,7 +91,7 @@ Out of scope:
 
 - Full runtime support for arbitrary function-valued locals.
 - Callable interface-typed locals, tracked by
-  `issues/done/5195-support-callable-interface-typed-local-calls.md`.
+  `issues/open/5195-support-callable-interface-typed-local-calls.md`.
 - Callable conditional-typed parameters, tracked by
   `issues/done/5196-support-callable-conditional-typed-parameter-calls.md`.
 - Definite-assignment diagnostics for uninitialized function-typed locals,
@@ -159,7 +159,7 @@ Follow-up issues:
 
 ## Notes
 
-Split from `issues/done/1515-implement-contextualTypeSelfReferencing.md`.
+Split from `issues/open/1515-implement-contextualTypeSelfReferencing.md`.
 Related broad method-call bucket: `issues/open/435-implement-method-call.md`.
 
 ## Completion evidence

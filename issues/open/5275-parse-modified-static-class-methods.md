@@ -143,7 +143,7 @@ Follow-up issues:
 ## Notes
 
 Split from generated bucket
-`issues/done/1339-implement-commentBeforeStaticMethod.md`.
+`issues/open/1339-implement-commentBeforeStaticMethod.md`.
 
 Related but distinct:
 
@@ -153,7 +153,7 @@ Related but distinct:
 
 Additional superseded bucket:
 
-- `issues/done/1377-implement-commentsOnReturnStatement.md` reaches the same
+- `issues/open/1377-implement-commentsOnReturnStatement.md` reaches the same
   parser boundary for `class DebugClass { public static debugFunc() { ... } }`
   before any return-statement comment behavior is reached.
 

@@ -133,7 +133,7 @@ Follow-up issues:
 ## Notes
 
 Split from
-`issues/done/1306-implement-collisionRestParameterUnderscoreIUsage.md`.
+`issues/open/1306-implement-collisionRestParameterUnderscoreIUsage.md`.
 
 ## Completion evidence
 

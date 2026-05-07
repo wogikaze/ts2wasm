@@ -150,7 +150,7 @@ Follow-up issues:
 
 ## Notes
 
-Split from generated bucket `issues/done/1231-implement-classOrderBug.md`.
+Split from generated bucket `issues/open/1231-implement-classOrderBug.md`.
 Related but distinct open issue: `issues/done/5152-support-class-constructor-outer-callback-captures.md`.
 
 ## Completion evidence

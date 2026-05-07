@@ -101,7 +101,7 @@ python scripts/manager.py check-issue-readiness -- --fail-ready-below 80
 ## Notes
 
 Split from generated bucket
-`issues/done/1405-implement-computedEnumMemberSyntacticallyString-enum.md`.
+`issues/open/1405-implement-computedEnumMemberSyntacticallyString-enum.md`.
 
 Related but not duplicates: issue 1406 covers the sibling
 `computedEnumMemberSyntacticallyString2.ts` bucket, and issues 5284/5277 cover

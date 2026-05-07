@@ -132,7 +132,7 @@ Follow-up issues:
 ## Notes
 
 Split from stale generated bucket
-`issues/done/1210-implement-classFieldSuperNotAccessibleJs.md`.
+`issues/open/1210-implement-classFieldSuperNotAccessibleJs.md`.
 
 Related but not duplicate:
 

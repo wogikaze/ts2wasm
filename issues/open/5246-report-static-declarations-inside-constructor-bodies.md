@@ -76,5 +76,5 @@ python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/
 
 ## Notes
 
-Split from stale generated buckets `issues/done/1170-implement-class.md` and
-`issues/done/4262-implement-staticsInConstructorBodies.md`.
+Split from stale generated buckets `issues/open/1170-implement-class.md` and
+`issues/open/4262-implement-staticsInConstructorBodies.md`.
