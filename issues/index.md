@@ -18,7 +18,7 @@ Issue files are the source of truth for work items. The generated section below 
 | docs | 5 | 0 | 5 |
 | frontend | 4546 | 3853 | 693 |
 | harness | 1 | 0 | 1 |
-| ir | 72 | 31 | 41 |
+| ir | 72 | 30 | 42 |
 | issues | 5 | 0 | 5 |
 | parser | 1 | 0 | 1 |
 | reference | 212 | 163 | 49 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 8 | 0 | 8 |
 | wasi | 4 | 0 | 4 |
-| total | 5223 | 4137 | 1086 |
+| total | 5223 | 4136 | 1087 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -144,6 +144,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1116 | Implement Castexpressionparentheses | spike | frontend/syntax | done | P1 |  | castExpressionParentheses has 1 reference failures and needs smart-triage evidence before implementation starts. |
 | 1117 | Implement Castfunctionexpressionshouldbeparenthesized | spike | frontend/syntax | done | P1 | 5001 | castFunctionExpressionShouldBeParenthesized has 1 reference failures and needs smart-triage evidence before implement... |
 | 1118 | Implement Castnewobjectbug | spike | frontend/syntax | superseded | P1 |  | castNewObjectBug had 1 generated reference failure and needed smart-triage evidence before implementation starts. Cur... |
+| 1120 | Implement Castparentheses | spike | frontend/syntax | superseded | P2 | 5192 | castParentheses has 1 reference failure whose actionable blocker is now tracked by `issues/open/5192-support-first-cl... |
 | 1121 | Implement Casttest | spike | frontend/syntax | superseded | P2 | 5218 | castTest has 1 reference failure whose current actionable blocker is now tracked by child issue 5218. |
 | 1122 | Implement Catch | spike | reference/triage | superseded | P2 |  | catch no longer has a current compiler blocker; no child implementation issue is needed for this generated bucket. |
 | 1123 | Implement Catchclausewithinitializer | spike | frontend/syntax | superseded | P1 | 5219 | catchClauseWithInitializer has 1 reference failure whose current actionable blocker is now tracked by child issue 5219. |
@@ -353,7 +354,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5163 | Lower nested call expression callees | feature | frontend/semantics | implementation-ready | P2 |  | `reference/typescript/tests/cases/compiler/betterErrorForAccidentalCall.ts` currently reports `UnsupportedSyntax: onl... |
 | 5184 | Parse const enum declarations | feature | frontend/syntax | implementation-ready | P1 |  | `const enum` declarations are parser-unsupported and are misclassified as malformed `const` variable declarations. |
 | 5186 | Parse export assignment expressions | feature | frontend/syntax | implementation-ready | P1 |  | `export = expr` is treated as an unsupported module boundary before the exported expression can be represented in the... |
-| 5192 | Support first-class class constructor values | feature | ir/runtime | implementation-ready | P1 |  | class constructor bindings used as expression values still fail with `issue-5011`, blocking reference cases that pass... |
 | 5195 | Support callable interface-typed local calls | feature | ir/lowering | implementation-ready | P1 |  | callable interface-typed locals currently lower to `Undefined` values and calls to them stop with `issue-211`. |
 | 5200 | Validate top-level function overload implementations | feature | frontend/resolver | implementation-ready | P1 |  | top-level function overload implementation groups are currently classified as duplicate concrete functions. |
 | 5246 | Report static declarations inside constructor bodies | feature | frontend/parser | implementation-ready | P1 |  | invalid `static` declarations in constructor bodies report generic unsupported expression instead of a spanned parser... |
@@ -771,7 +771,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1109 | Implement Capturedletconstinloop Import Export | spike | reference/triage | class: triage-needed | Implement Capturedletconstinloop Import Export |
 | 1110 | Implement Capturedletconstinloop Name Resolution | spike | frontend/resolver | class: triage-needed | Implement Capturedletconstinloop Name Resolution |
 | 1119 | Implement Castofawait | spike | reference/triage | class: triage-needed | Implement Castofawait |
-| 1120 | Implement Castparentheses | spike | frontend/syntax | 5192 | Implement Castparentheses |
 | 1143 | Implement Checksupercallbeforethisaccessing Parser Syntax | spike | frontend/syntax | 5163 | Implement Checksupercallbeforethisaccessing Parser Syntax |
 | 1162 | Implement Circularreferenceinimport | spike | frontend/syntax | class: blocked | Implement Circularreferenceinimport |
 | 1163 | Implement Circularreferenceinreturntype Name Resolution | spike | frontend/resolver | 5163 | Implement Circularreferenceinreturntype Name Resolution |
@@ -5283,6 +5282,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5189 | Parse ASI after class expression variable initializer | feature | frontend/syntax | see `issues/done/5189-parse-asi-after-class-expression-variable-initializer.md` |
 | 5190 | Skip implements in ambient class declarations | feature | frontend/syntax | see `issues/done/5190-skip-implements-in-ambient-class-declarations.md` |
 | 5191 | Parse leading decimal numeric literals | feature | frontend/syntax | see `issues/done/5191-parse-leading-decimal-numeric-literals.md` |
+| 5192 | Support first-class class constructor values | feature | ir/runtime | see `issues/done/5192-support-first-class-class-constructor-values.md` |
 | 5193 | Parse ASI after ambient variable declarations | feature | frontend/syntax | see `issues/done/5193-parse-asi-after-ambient-variable-declarations.md` |
 | 5194 | Report empty call type arguments | feature | frontend/syntax | see `issues/done/5194-report-empty-call-type-arguments.md` |
 | 5196 | Support callable conditional-typed parameter calls | feature | ir/lowering | see `issues/done/5196-support-callable-conditional-typed-parameter-calls.md` |
