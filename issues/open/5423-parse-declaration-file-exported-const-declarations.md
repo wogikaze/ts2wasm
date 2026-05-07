@@ -143,6 +143,13 @@ Split from `issues/done/3373-implement-moduleResolutionAsTypeReferenceDirective.
 Issue `5350` was checked and is intentionally kept as the executable `.ts`
 negative-diagnostic owner, not the declaration-file acceptance owner.
 
+Also owns `issues/done/3375-implement-moduleResolutionAsTypeReferenceDirectiveScoped.md`:
+fresh triage for `moduleResolutionAsTypeReferenceDirectiveScoped.ts` stops on
+the first virtual `.d.ts` section, `/a/types/dummy/index.d.ts`, at
+`export const dummy: number;`. The scoped type-root and `@types` package
+resolution cases are not reachable until these declaration-file exported const
+declarations parse as ambient metadata.
+
 ## Completion evidence
 
 Fill only when moving to `done/`.
