@@ -109,6 +109,9 @@ Do not touch:
 - [ ] `export class Foo {}` builds as an entry module and exports `Foo`.
 - [ ] A focused module test proves an exported class value can be observed through the existing static module export path, or records the next class-runtime blocker with a narrower follow-up issue.
 - [ ] `python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/checkSuperCallBeforeThisAccess.ts` no longer reports `issue-5005: entry module ... only export const and export default are supported` for `export class Foo`.
+- [ ] `commentEmitOnParenthesizedAssertionInReturnStatement.ts` and
+  `commentEmitOnParenthesizedAssertionInReturnStatement2.ts` no longer report
+  issue-5005 for their entry-module `export class Foo` declarations.
 - [ ] Unsupported export forms outside this slice still produce clear issue-5005 diagnostics.
 
 ## Validation
@@ -153,6 +156,16 @@ Related module-export history:
 
 - `issues/done/5008-static-es-module-export-default-namespace-reexport.md`
 - `issues/open/5144-support-entry-export-function-declarations.md`
+
+2026-05-07 additional evidence:
+`commentEmitOnParenthesizedAssertionInReturnStatement.ts` and
+`commentEmitOnParenthesizedAssertionInReturnStatement2.ts` both tokenize and
+parse `export class Foo { ... }`, including class field initializers and
+parenthesized return expressions containing `as` or `satisfies` assertions.
+Fresh triage reports `UnsupportedModule: issue-5005` for entry-module
+`export Foo` in both files. Later comment emit, assertion preservation,
+`satisfies`, and `this.client.getThing()` lowering behavior remains unproven
+until this export-class boundary advances.
 
 ## Completion evidence
 
