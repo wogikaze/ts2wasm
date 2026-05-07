@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 6 | 5 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4567 | 3465 | 1102 |
+| frontend | 4567 | 3464 | 1103 |
 | harness | 1 | 0 | 1 |
 | ir | 75 | 53 | 22 |
 | issues | 4 | 0 | 4 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5223 | 3761 | 1462 |
+| total | 5223 | 3760 | 1463 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -602,7 +602,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 759 | Implement Asynciife | spike | frontend/syntax | class: triage-needed | Implement Asynciife |
 | 760 | Implement Asyncimportnestedyield | spike | reference/triage | class: triage-needed | Implement Asyncimportnestedyield |
 | 761 | Implement Asynciteratorextraparameters | spike | runtime/builtins | class: triage-needed | Implement Asynciteratorextraparameters |
-| 1540 | Implement Contextuallytypedbydiscriminableunion Unknown Unsupported | spike | frontend/syntax | class: triage-needed | Implement Contextuallytypedbydiscriminableunion Unknown Unsupported |
 | 1541 | Implement Contextuallytypedjsxattribute | spike | frontend/syntax | class: blocked | Implement Contextuallytypedjsxattribute |
 | 1542 | Implement Contextuallytypedoptionalproperty | spike | frontend/resolver | class: blocked | Implement Contextuallytypedoptionalproperty |
 | 1543 | Implement Contextuallytypedparametersoptionalinjsdoc | spike | reference/triage | class: triage-needed | Implement Contextuallytypedparametersoptionalinjsdoc |
@@ -5179,6 +5178,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1537 | Implement Contextuallytypegeneratorreturntypefromunion | spike | runtime/builtins | see `issues/done/1537-implement-contextuallyTypeGeneratorReturnTypeFromUnion.md` |
 | 1538 | Implement Contextuallytypedbooleanliterals | spike | frontend/resolver | see `issues/done/1538-implement-contextuallyTypedBooleanLiterals.md` |
 | 1539 | Implement Contextuallytypedbydiscriminableunion Parser Syntax | spike | frontend/syntax | see `issues/done/1539-implement-contextuallyTypedByDiscriminableUnion-parser-syntax.md` |
+| 1540 | Implement Contextuallytypedbydiscriminableunion Unknown Unsupported | spike | frontend/syntax | see `issues/done/1540-implement-contextuallyTypedByDiscriminableUnion-unknown-unsupported.md` |
 | 2050 | Implement Duplicatelocalvariable Duplicate Local | spike | reference/triage | see `issues/done/2050-implement-duplicateLocalVariable-duplicate-local.md` |
 | 3002 | Implement Isolateddeclarationerrorsdefault | spike | runtime/builtins | see `issues/done/3002-implement-isolatedDeclarationErrorsDefault.md` |
 | 3131 | Implement Jsxfactorynotidentifierorqualifiedname | spike | reference/triage | see `issues/done/3131-implement-jsxFactoryNotIdentifierOrQualifiedName.md` |

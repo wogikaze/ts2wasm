@@ -112,6 +112,9 @@ Do not touch:
 - [ ] `contextualSignatureInstantiation1.ts` no longer reports
   `expected RightParen, got Some(Colon)` at `var e = <K>(x: string, y?: K) =>`.
 - [ ] `conditionalTypesSimplifyWhenTrivial.ts` no longer reports `expected RightParen, got Some(Colon)` at the `params:` annotation.
+- [ ] `contextuallyTypedByDiscriminableUnion2.ts` no longer reports
+  `expected RightParen, got Some(Colon)` at
+  `<I extends Identifiable>(props: MyComponentProps<I>) =>`.
 - [ ] Existing arrow-function and angle-bracket assertion parser tests continue to pass.
 - [ ] If parsing advances to a new blocker, that next blocker is recorded separately.
 - [ ] Issue state stays synchronized with `issues/index.md`.
@@ -168,6 +171,15 @@ explicitly excludes ambiguous generic arrow parsing.
   at `var e = <K>(x: string, y?: K) => x.length;`.
 - TypeScript oracle accepts the generic arrow and infers
   `<K>(x: string, y?: K | undefined) => number`.
+
+2026-05-07 fold-in:
+
+- `issues/done/1540-implement-contextuallyTypedByDiscriminableUnion-unknown-unsupported.md`
+  is the same parser boundary in `contextuallyTypedByDiscriminableUnion2.ts`.
+- Current diagnostic: `UnsupportedSyntax: expected RightParen, got Some(Colon)`
+  at `const MyComponent = <I extends Identifiable>(props: MyComponentProps<I>) => {};`.
+- TypeScript oracle accepts the generic arrow and infers
+  `<I extends Identifiable>(props: MyComponentProps<I>) => void`.
 
 ## Completion evidence
 
