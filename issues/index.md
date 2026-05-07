@@ -16,9 +16,9 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 6 | 3 | 3 |
 | coverage | 44 | 1 | 43 |
 | docs | 5 | 0 | 5 |
-| frontend | 4546 | 3851 | 695 |
+| frontend | 4546 | 3850 | 696 |
 | harness | 1 | 0 | 1 |
-| ir | 72 | 26 | 46 |
+| ir | 72 | 25 | 47 |
 | issues | 5 | 0 | 5 |
 | parser | 1 | 0 | 1 |
 | reference | 212 | 163 | 49 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 8 | 0 | 8 |
 | wasi | 4 | 0 | 4 |
-| total | 5223 | 4130 | 1093 |
+| total | 5223 | 4128 | 1095 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -383,7 +383,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5275 | Parse modified static class methods | feature | frontend | implementation-ready | P1 |  | Parse modified static class methods |
 | 5276 | Report class declaration decorator boundary | feature | frontend/lexer | implementation-ready | P1 |  | `commentOnDecoratedClassDeclaration.ts` stops in tokenization at the |
 | 5277 | Parse export enum declarations to enum boundary | feature | frontend/module-syntax | implementation-ready | P1 |  | `commentOnExportEnumDeclaration.ts` stops at `export` before the enum |
-| 5278 | Parse trailing comma in function parameters with comments | feature | frontend/syntax | implementation-ready | P1 |  | `commentOnParameter3.ts` fails after parsing `a`, `b`, and a trailing |
 | 5279 | Report function-typed local call definite assignment | feature | ir/lowering | implementation-ready | P2 |  | `commentOnParenthesizedExpressionOpenParen1.ts` parses successfully, |
 | 5280 | Validate commented top-level function overloads | feature | frontend/resolver | implementation-ready | P1 |  | `commentOnSignature1.ts` parses successfully, but `validate_ast` |
 | 5281 | Resolve arrow rest parameter bindings | feature | ir/name-resolution | implementation-ready | P1 |  | arrow rest parameters are not made visible under their identifier name |
@@ -460,7 +459,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5354 | Report invalid const class members | feature | frontend/semantics | implementation-ready | P1 |  | invalid `const` class members in class expressions are silently |
 | 5355 | Report invalid constructor parameter modifiers | bug | frontend/parser | implementation-ready | P1 |  | current failure is `expected Comma, got Some(Static)` for |
 | 5356 | Report uninitialized generic class fields | bug | frontend/semantics | implementation-ready | P1 |  | current failure is a false build pass for `class D<T, U> { x: T; y: U }`, where TypeScript reports uninitialized prop... |
-| 5357 | Avoid eval diagnostic for qualified Function constructors | bug | ir/resolver | implementation-ready | P1 |  | current failure is a false eval diagnostic for qualified `new M.Function(...)` because resolver `Expr::New` collapses... |
 | 5358 | Report constructor bodies in ambient class declarations | feature | frontend/parser | implementation-ready | P1 |  | implementation bodies inside ambient class declarations are not |
 | 5359 | Report multiple constructor implementation diagnostics | feature | frontend/diagnostics | implementation-ready | P1 |  | invalid multiple constructor implementations are not reported with |
 | 5360 | Report class field initializer constructor-scope captures | feature | frontend/semantics | implementation-ready | P2 |  | class field initializer semantic validation currently does not reject |
@@ -5332,8 +5330,10 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5256 | Report non-constructor class heritage expressions | feature | ir/resolver | see file |
 | 5258 | Report super calls in class extends null constructors | feature | ir/resolver | see file |
 | 5259 | Report super property access in class extends null | feature | ir/resolver | see file |
+| 5278 | Parse trailing comma in function parameters with comments | feature | frontend/syntax | see file |
 | 5282 | Parse labeled empty statements | feature | frontend/syntax | see `issues/done/5282-parse-labeled-empty-statements.md` |
 | 5283 | Support entry-module export var declarations | feature | frontend/module-syntax | see `issues/done/5283-support-entry-export-var-declarations.md` |
+| 5357 | Avoid eval diagnostic for qualified Function constructors | bug | ir/resolver | see `issues/done/5357-avoid-eval-diagnostic-for-qualified-function-constructors.md` |
 <!-- generated:done:end -->
 
 ## Index generation contract

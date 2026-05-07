@@ -55,3 +55,8 @@ fn build_smoke_class_super() {
 fn build_smoke_class_super_method() {
     assert_fixture_build_smoke("classes-and-inheritance/class-super-method.ts");
 }
+
+#[test]
+fn build_smoke_class_default_derived_ctor_arity() {
+    assert_fixture_build_smoke("core-semantics/class-default-derived-ctor-arity.ts");
+}
