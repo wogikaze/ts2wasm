@@ -3,23 +3,24 @@ id: 137
 title: "Implement Alwaysstrictalreadyusestrict"
 type: spike
 area: frontend/syntax
-class: triage-needed
+class: done
 priority: P1
 depends_on: []
 blocks: []
 created: 2026-04-29
-updated: 2026-04-29
+updated: 2026-05-07
+completed: 2026-05-07
 ---
 
 ## Summary
 
-Triage alwaysStrictAlreadyUseStrict across 1 failing reference test cases and split this bucket into implementation-ready child issues.
+Close alwaysStrictAlreadyUseStrict as a stale generated blocker: fresh triage shows the affected reference file now builds successfully.
 
 ## Problem
 
-Reference test results show 1 cases fail in directory `alwaysStrictAlreadyUseStrict` with diagnostics: parser-syntax. The compiler cannot handle these syntax/semantics, preventing compilation of code in this category.
+Reference test results used to show 1 case failing in directory `alwaysStrictAlreadyUseStrict` with diagnostics: parser-syntax. Fresh triage on 2026-05-07 shows the affected file now builds successfully and TypeScript reports no oracle diagnostics.
 
-Problem: alwaysStrictAlreadyUseStrict has 1 reference failures and needs smart-triage evidence before implementation starts.
+Problem: alwaysStrictAlreadyUseStrict is stale. The current compiler parses the `"use strict"` directive prologue without a semicolon before the following function declaration.
 
 ## Current failure
 
@@ -43,10 +44,10 @@ This generated bucket is either split into implementation-ready child issues or 
 
 In scope:
 
-- [ ] Inspect the smart triage report below
-- [ ] Confirm whether existing open/done issues already cover this bucket
-- [ ] Split one feature family, one observable behavior, or one fixed reference window into child issues
-- [ ] Preserve exact reproduction commands and representative AST/diagnostic evidence in each child issue
+- [x] Inspect the smart triage report below
+- [x] Confirm whether existing open/done issues already cover this bucket
+- [x] Close as stale build-pass bucket
+- [x] Preserve exact reproduction commands and representative AST/diagnostic evidence
 
 Out of scope:
 
@@ -68,10 +69,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] Duplicate candidates below are confirmed as no-match or this issue is superseded
-- [ ] At least one child issue contains an exact `mise run reference-triage -- ...` command
-- [ ] Child issue includes failing path, diagnostic code, source context, visible symbols, and parser/TypeScript AST evidence
-- [ ] Child issue acceptance names the exact fixture/reference path and diagnostic/stdout change
+- [x] Duplicate candidates below are confirmed as no-match for required implementation work
+- [x] No child issue needed because the affected file is build-pass
+- [x] This issue includes affected path, diagnostic classification, and parser/TypeScript AST evidence
+- [x] Coverage names the exact reference window and build-pass result
 
 ## Validation
 
@@ -91,21 +92,23 @@ mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/alway
 
 Not run:
 
-- none
+- `cargo fmt --all --check` and `cargo nextest run`; this close is an
+  issue-lifecycle-only stale build-pass update, so focused reference and issue
+  checks were used instead.
 
 ## Docs / current-state / issue sync
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] updated: `current-state.md` (repo root)
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 
@@ -115,7 +118,30 @@ Follow-up issues:
 
 ## Duplicate detection
 
+- No implementation child issue is needed for the affected file.
+- `issues/open/059-implement-parser-syntax-extensions.md` and historical parser
+  syntax buckets are broad same-label candidates, but the exact
+  `alwaysStrictAlreadyUseStrict.ts` reference now builds successfully.
+
 ## Smart triage
+
+Generated 2026-05-07.
+
+```text
+command:
+env TS2WASM_BINARY=/home/wogikaze/wgkz/ts2wasm/target/debug/ts2wasm python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/alwaysStrictAlreadyUseStrict.ts
+
+result:
+BuildPass / pass; ts2wasm build succeeded
+
+compiler evidence:
+tokens: ok; String("use strict") at 44..56 followed by Function at 58..66
+ast: ok; top-level Expr(String("use strict")) followed by Function f()
+resolved: ok; top-level Expr(String("use strict")) followed by Function f()
+TypeScript oracle: ok; diagnostics []
+```
+
+## Historical smart triage
 
 ### Smart triage: Triage parser syntax: alwaysStrictAlreadyUseStrict
 
@@ -422,14 +448,24 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- `...`
+- Closed as stale build-pass bucket; no child issue created.
 
 Validation result:
 
 ```text
 command:
+env TS2WASM_BINARY=/home/wogikaze/wgkz/ts2wasm/target/debug/ts2wasm python scripts/manager.py reference-coverage tsc --path-filter reference/typescript/tests/cases/compiler/alwaysStrictAlreadyUseStrict.ts --detail --no-dashboard-data
 result:
+pass; executed=1, build_pass=1, unsupported=0
 date:
+2026-05-07
+
+command:
+env TS2WASM_BINARY=/home/wogikaze/wgkz/ts2wasm/target/debug/ts2wasm python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/alwaysStrictAlreadyUseStrict.ts
+result:
+pass; BuildPass / pass, ast/resolved dumps succeed, TypeScript oracle diagnostics []
+date:
+2026-05-07
 ```
 
 Remaining risks:
@@ -439,14 +475,14 @@ Remaining risks:
 
 ## ⚠️ False-done audit (re-opened from issues/done/)
 
-**Why this was false-done**: This generated triage spike issue was copy-closed to `issues/done/` as part of a batch close cycle without actual triage completion. The done/ copy only differs from open/ in checkbox state ([ ] → [x]) with no "Status" note, no child issues created, no implementation commits, and empty completion evidence. The checkboxes were batch-checked without evidence that the triage was actually performed.
+**Why this was false-done**: This generated triage spike issue was copy-closed to `issues/done/` as part of a batch close cycle without actual triage completion. The old done/ copy only changed checkbox state without adding a status note, child issues, implementation commits, or completion evidence. This pass fills the missing evidence and closes it as stale build-pass.
 
 **True-done checklist** (all must pass):
 
-1. Perform actual triage review of the reference failure case
-2. Either create child implementation issue(s) or confirm this issue is superseded by an existing issue (with "Status" note)
-3. Fill in completion evidence section with triage results
-4. Remove stale open/ copy if it exists
+1. [x] Perform actual triage review of the reference failure case
+2. [x] Either create child implementation issue(s) or confirm this issue is superseded by an existing issue (with "Status" note)
+3. [x] Fill in completion evidence section with triage results
+4. [x] Remove stale open/ copy if it exists
 
 **Commands that must pass**:
 
