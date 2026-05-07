@@ -16,18 +16,18 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 7 | 6 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4587 | 3394 | 1193 |
+| frontend | 4586 | 3393 | 1193 |
 | harness | 1 | 0 | 1 |
 | ir | 79 | 57 | 22 |
 | issues | 4 | 0 | 4 |
 | parser | 1 | 0 | 1 |
-| reference | 212 | 147 | 65 |
+| reference | 213 | 147 | 66 |
 | runtime | 265 | 84 | 181 |
 | scripts | 3 | 1 | 2 |
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5248 | 3691 | 1557 |
+| total | 5248 | 3690 | 1558 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -2321,7 +2321,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 3302 | Implement Modulealiasasfunctionargument | spike | frontend/syntax | class: blocked | Implement Modulealiasasfunctionargument |
 | 3303 | Implement Modulealiasinterface | spike | frontend/syntax | class: blocked | Implement Modulealiasinterface |
 | 3304 | Implement Moduleandinterfacesharingname | spike | frontend/syntax | class: blocked | Implement Moduleandinterfacesharingname |
-| 3337 | Implement Moduleexports | spike | frontend/syntax | class: blocked | Implement Moduleexports |
 | 3338 | Implement Moduleexportstypenoexcesspropertycheckfromcontainedliteral | spike | frontend/syntax | class: blocked | Implement Moduleexportstypenoexcesspropertycheckfromcontainedliteral |
 | 3339 | Implement Moduleexportsunaryexpression | spike | frontend/syntax | class: blocked | Implement Moduleexportsunaryexpression |
 | 3340 | Implement Moduleidentifiers | spike | frontend/syntax | class: blocked | Implement Moduleidentifiers |
@@ -5209,6 +5208,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 3334 | Implement Moduleduplicateidentifiers | spike | frontend/syntax | see `issues/done/3334-implement-moduleDuplicateIdentifiers.md` |
 | 3335 | Implement Moduleelementsinwrongcontext | spike | frontend/syntax | see `issues/done/3335-implement-moduleElementsInWrongContext.md` |
 | 3336 | Implement Moduleexportnonstructured | spike | frontend/syntax | see `issues/done/3336-implement-moduleExportNonStructured.md` |
+| 3337 | Implement Moduleexports | spike | reference/triage | see `issues/done/3337-implement-moduleExports.md` |
 | 3690 | Implement Optionaltupleelementsandundefined | spike | reference/triage | see `issues/done/3690-implement-optionalTupleElementsAndUndefined.md` |
 | 3996 | Implement Compiler (dup) | spike | frontend/syntax | see `issues/done/3996-implement-reference-typescript-tests-cases-compiler.md` |
 | 4210 | Implement Splicetuples | spike | frontend/resolver | see `issues/done/4210-implement-spliceTuples.md` |
