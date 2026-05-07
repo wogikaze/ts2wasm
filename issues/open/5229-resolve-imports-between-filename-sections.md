@@ -138,6 +138,7 @@ Also owns the matching first blocker folded from `issues/done/1162-implement-cir
 Also owns `issues/done/3317-implement-moduleAugmentationExtendFileModule.md`: both `moduleAugmentationExtendFileModule1.ts` and `moduleAugmentationExtendFileModule2.ts` currently parse the `@filename` sections and then report issue-232 missing local module `./observable`, with the same sibling virtual-section resolution requirement as the side-effect `./map` import.
 Also owns `issues/done/3323-implement-moduleAugmentationNoNewNames.md`: `moduleAugmentationNoNewNames.ts` parses virtual `map.ts`, `observable.ts`, and `main.ts` sections, then reports issue-232 missing local module `./observable` instead of resolving the sibling virtual section.
 Also owns `issues/done/3308-implement-moduleAugmentationCollidingNamesInAugmentation.md`: `moduleAugmentationCollidingNamesInAugmentation1.ts` parses virtual `map1.ts`, `map2.ts`, `observable.ts`, and `main.ts` sections, then reports issue-232 missing local module `./observable` before the later duplicate-declaration diagnostics.
+Also owns `issues/done/3309-implement-moduleAugmentationDeclarationEmit.md`: both `moduleAugmentationDeclarationEmit1.ts` and `moduleAugmentationDeclarationEmit2.ts` parse virtual `map.ts`, `observable.ts`, and `main.ts` sections, then report issue-232 missing local module `./observable` before declaration emit or merged-declaration diagnostics.
 
 ## Completion evidence
 

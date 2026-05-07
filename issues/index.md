@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 7 | 6 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4583 | 3405 | 1178 |
+| frontend | 4583 | 3404 | 1179 |
 | harness | 1 | 0 | 1 |
 | ir | 79 | 57 | 22 |
 | issues | 4 | 0 | 4 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5244 | 3703 | 1541 |
+| total | 5244 | 3702 | 1542 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -49,7 +49,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 ```
 5000 (Meta: TypeScript Compiler Parser Syntax Coverage) [done/design] ch:447 open:364 done:83
 ├── 5002 (Meta: TypeScript Compiler Type System Coverage) [done/done] ch:224 open:205 done:19 (also ← 5005)
-├── 5003 (Meta: TypeScript Compiler Declaration Emit Coverage) [done/done] ch:101 open:90 done:11 (also ← 5001)
+├── 5003 (Meta: TypeScript Compiler Declaration Emit Coverage) [done/done] ch:100 open:89 done:11 (also ← 5001)
 5001 (Meta: TypeScript Compiler Semantic Analysis Coverage) [done/done] ch:556 open:297 done:259
 5004 (Meta: Runtime Builtins Coverage (test262) (audit reopened #5004)) [done/done] ch:24 open:3 done:21
 5005 (Meta: TypeScript Compiler Name Resolution Coverage) [done/done] ch:399 open:343 done:56
@@ -71,7 +71,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 3 | 5004 | Meta: Runtime Builtins Coverage (test262) (audit reopened #5004) | done | done | runtime/builtins | P1 | - | 24 | 3 | 21 |
 | 4 | 5005 | Meta: TypeScript Compiler Name Resolution Coverage | done | done | frontend/resolver | P1 | - | 399 | 343 | 56 |
 | 5 | 5002 | Meta: TypeScript Compiler Type System Coverage | done | done | frontend/semantics | P1 | 5000, 5005 | 224 | 205 | 19 |
-| 6 | 5003 | Meta: TypeScript Compiler Declaration Emit Coverage | done | done | frontend/syntax | P2 | 5000, 5001 | 101 | 90 | 11 |
+| 6 | 5003 | Meta: TypeScript Compiler Declaration Emit Coverage | done | done | frontend/syntax | P2 | 5000, 5001 | 100 | 89 | 11 |
 | 7 | 5006 | Meta: TypeScript Compiler Scope Analysis Coverage | done | done | frontend/resolver | P2 | 5005 | 28 | 20 | 8 |
 | 8 | 5007 | Meta: TypeScript Compiler Module Resolution Coverage (audit reopened #5007) | done | done | frontend/resolver | P2 | 5005 | 20 | 18 | 2 |
 
@@ -2320,7 +2320,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 3305 | Implement Moduleandinterfacewithsamename | spike | frontend/syntax | class: blocked | Implement Moduleandinterfacewithsamename |
 | 3306 | Implement Moduleasbasetype | spike | frontend/syntax | class: blocked | Implement Moduleasbasetype |
 | 3307 | Implement Moduleassignmentcompat | spike | frontend/syntax | class: blocked | Implement Moduleassignmentcompat |
-| 3309 | Implement Moduleaugmentationdeclarationemit | spike | frontend/syntax | class: blocked | Implement Moduleaugmentationdeclarationemit |
 | 3310 | Implement Moduleaugmentationdisallowedextensions | spike | frontend/syntax | class: blocked | Implement Moduleaugmentationdisallowedextensions |
 | 3311 | Implement Moduleaugmentationdoesinterfacemergeofreexport | spike | frontend/syntax | class: blocked | Implement Moduleaugmentationdoesinterfacemergeofreexport |
 | 3312 | Implement Moduleaugmentationdoesnamespaceenummergeofreexport | spike | frontend/syntax | class: blocked | Implement Moduleaugmentationdoesnamespaceenummergeofreexport |
@@ -5190,6 +5189,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 3029 | Implement Isolatedmodulesnonambientconstenum | spike | frontend/syntax | see `issues/done/3029-implement-isolatedModulesNonAmbientConstEnum.md` |
 | 3131 | Implement Jsxfactorynotidentifierorqualifiedname | spike | reference/triage | see `issues/done/3131-implement-jsxFactoryNotIdentifierOrQualifiedName.md` |
 | 3308 | Implement Moduleaugmentationcollidingnamesinaugmentation | spike | frontend/syntax | see `issues/done/3308-implement-moduleAugmentationCollidingNamesInAugmentation.md` |
+| 3309 | Implement Moduleaugmentationdeclarationemit | spike | frontend/syntax | see `issues/done/3309-implement-moduleAugmentationDeclarationEmit.md` |
 | 3316 | Implement Moduleaugmentationextendambientmodule | spike | frontend/syntax | see `issues/done/3316-implement-moduleAugmentationExtendAmbientModule.md` |
 | 3317 | Implement Moduleaugmentationextendfilemodule | spike | frontend/syntax | see `issues/done/3317-implement-moduleAugmentationExtendFileModule.md` |
 | 3318 | Implement Moduleaugmentationglobal Import Export | spike | frontend/syntax | see `issues/done/3318-implement-moduleAugmentationGlobal-import-export.md` |
