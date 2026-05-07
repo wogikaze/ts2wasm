@@ -16,18 +16,18 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 7 | 6 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4585 | 3392 | 1193 |
+| frontend | 4584 | 3391 | 1193 |
 | harness | 1 | 0 | 1 |
-| ir | 80 | 58 | 22 |
+| ir | 81 | 59 | 22 |
 | issues | 4 | 0 | 4 |
 | parser | 1 | 0 | 1 |
-| reference | 214 | 147 | 67 |
+| reference | 215 | 147 | 68 |
 | runtime | 265 | 84 | 181 |
 | scripts | 3 | 1 | 2 |
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5249 | 3690 | 1559 |
+| total | 5250 | 3690 | 1560 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -367,6 +367,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5412 | Report TS2451 for duplicate const filename sections | feature | frontend/semantics | implementation-ready | P2 |  | duplicate `const a` across the representative `.cts`/`.mts` reference |
 | 5413 | Report nested namespace wrong-context diagnostic | bug | frontend/syntax | implementation-ready | P1 |  | the frontend accepts a nested namespace declaration in a statement |
 | 5414 | Classify non-builtin require result method calls | feature | ir/lowering | implementation-ready | P1 |  | the compiler does not distinguish a non-builtin CommonJS require result |
+| 5415 | Support identifier update expressions in value positions | feature | ir/lowering | implementation-ready | P1 |  | identifier update expressions are parser-accepted in value positions, |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -2322,7 +2323,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 3302 | Implement Modulealiasasfunctionargument | spike | frontend/syntax | class: blocked | Implement Modulealiasasfunctionargument |
 | 3303 | Implement Modulealiasinterface | spike | frontend/syntax | class: blocked | Implement Modulealiasinterface |
 | 3304 | Implement Moduleandinterfacesharingname | spike | frontend/syntax | class: blocked | Implement Moduleandinterfacesharingname |
-| 3339 | Implement Moduleexportsunaryexpression | spike | frontend/syntax | class: blocked | Implement Moduleexportsunaryexpression |
 | 3340 | Implement Moduleidentifiers | spike | frontend/syntax | class: blocked | Implement Moduleidentifiers |
 | 3341 | Implement Moduleimport | spike | frontend/syntax | class: blocked | Implement Moduleimport |
 | 3342 | Implement Moduleimportedfortypeargumentposition | spike | frontend/syntax | class: blocked | Implement Moduleimportedfortypeargumentposition |
@@ -5210,6 +5210,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 3336 | Implement Moduleexportnonstructured | spike | frontend/syntax | see `issues/done/3336-implement-moduleExportNonStructured.md` |
 | 3337 | Implement Moduleexports | spike | reference/triage | see `issues/done/3337-implement-moduleExports.md` |
 | 3338 | Implement Moduleexportstypenoexcesspropertycheckfromcontainedliteral | spike | reference/triage | see `issues/done/3338-implement-moduleExportsTypeNoExcessPropertyCheckFromContainedLiteral.md` |
+| 3339 | Implement Moduleexportsunaryexpression | spike | reference/triage | see `issues/done/3339-implement-moduleExportsUnaryExpression.md` |
 | 3690 | Implement Optionaltupleelementsandundefined | spike | reference/triage | see `issues/done/3690-implement-optionalTupleElementsAndUndefined.md` |
 | 3996 | Implement Compiler (dup) | spike | frontend/syntax | see `issues/done/3996-implement-reference-typescript-tests-cases-compiler.md` |
 | 4210 | Implement Splicetuples | spike | frontend/resolver | see `issues/done/4210-implement-spliceTuples.md` |
