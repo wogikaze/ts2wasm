@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 25 | 13 | 12 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4591 | 3325 | 1266 |
+| frontend | 4591 | 3324 | 1267 |
 | harness | 1 | 0 | 1 |
 | ir | 83 | 60 | 23 |
 | issues | 4 | 0 | 4 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5275 | 3627 | 1648 |
+| total | 5275 | 3626 | 1649 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -2347,7 +2347,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 3302 | Implement Modulealiasasfunctionargument | spike | frontend/syntax | class: blocked | Implement Modulealiasasfunctionargument |
 | 3303 | Implement Modulealiasinterface | spike | frontend/syntax | class: blocked | Implement Modulealiasinterface |
 | 3304 | Implement Moduleandinterfacesharingname | spike | frontend/syntax | class: blocked | Implement Moduleandinterfacesharingname |
-| 3427 | Implement Namedfunctionexpressioninmodule | spike | frontend/syntax | class: blocked | Implement Namedfunctionexpressioninmodule |
 | 3428 | Implement Namedimportnonexistentname | spike | frontend/syntax | class: blocked | Implement Namedimportnonexistentname |
 | 3429 | Implement Namespacedisambiguationinunion | spike | frontend/syntax | class: blocked | Implement Namespacedisambiguationinunion |
 | 3430 | Implement Namespacemergedwithfunctionwithoverloadsusage | spike | frontend/syntax | class: blocked | Implement Namespacemergedwithfunctionwithoverloadsusage |
@@ -5235,6 +5234,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 3424 | Implement Namedfunctionexpressionassignedtoclassproperty | spike | frontend/syntax | see `issues/done/3424-implement-namedFunctionExpressionAssignedToClassProperty.md` |
 | 3425 | Implement Namedfunctionexpressioncall | spike | frontend/syntax | see `issues/done/3425-implement-namedFunctionExpressionCall.md` |
 | 3426 | Implement Namedfunctionexpressioncallerrors | spike | frontend/resolver | see `issues/done/3426-implement-namedFunctionExpressionCallErrors.md` |
+| 3427 | Implement Namedfunctionexpressioninmodule | spike | frontend/syntax | see `issues/done/3427-implement-namedFunctionExpressionInModule.md` |
 | 3690 | Implement Optionaltupleelementsandundefined | spike | reference/triage | see `issues/done/3690-implement-optionalTupleElementsAndUndefined.md` |
 | 3996 | Implement Compiler (dup) | spike | frontend/syntax | see `issues/done/3996-implement-reference-typescript-tests-cases-compiler.md` |
 | 4210 | Implement Splicetuples | spike | frontend/resolver | see `issues/done/4210-implement-spliceTuples.md` |
