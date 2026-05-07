@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 25 | 13 | 12 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4591 | 3329 | 1262 |
+| frontend | 4591 | 3328 | 1263 |
 | harness | 1 | 0 | 1 |
 | ir | 82 | 59 | 23 |
 | issues | 4 | 0 | 4 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5274 | 3630 | 1644 |
+| total | 5274 | 3629 | 1645 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -47,7 +47,7 @@ Issue files are the source of truth for work items. The generated section below 
 Direct child counts are derived from issue-file `depends_on` links. A meta issue can be `done` as a classification/design umbrella while implementation child issues remain open.
 
 ```
-5000 (Meta: TypeScript Compiler Parser Syntax Coverage) [done/design] ch:446 open:361 done:85
+5000 (Meta: TypeScript Compiler Parser Syntax Coverage) [done/design] ch:446 open:360 done:86
 ├── 5002 (Meta: TypeScript Compiler Type System Coverage) [done/done] ch:223 open:203 done:20 (also ← 5005)
 ├── 5003 (Meta: TypeScript Compiler Declaration Emit Coverage) [done/done] ch:100 open:89 done:11 (also ← 5001)
 5001 (Meta: TypeScript Compiler Semantic Analysis Coverage) [done/done] ch:556 open:297 done:259
@@ -66,7 +66,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 
 | Order | ID | Title | State | Class | Area | Priority | Depends on | Direct children | Open children | Done children |
 |-----:|---:|------|-------|-------|------|--------:|-----------:|----------------:|--------------:|--------------:|
-| 1 | 5000 | Meta: TypeScript Compiler Parser Syntax Coverage | done | design | frontend/syntax | P1 | - | 446 | 361 | 85 |
+| 1 | 5000 | Meta: TypeScript Compiler Parser Syntax Coverage | done | design | frontend/syntax | P1 | - | 446 | 360 | 86 |
 | 2 | 5001 | Meta: TypeScript Compiler Semantic Analysis Coverage | done | done | frontend/semantics | P1 | - | 556 | 297 | 259 |
 | 3 | 5004 | Meta: Runtime Builtins Coverage (test262) (audit reopened #5004) | done | done | runtime/builtins | P1 | - | 24 | 3 | 21 |
 | 4 | 5005 | Meta: TypeScript Compiler Name Resolution Coverage | done | done | frontend/resolver | P1 | - | 397 | 339 | 58 |
@@ -2346,7 +2346,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 3302 | Implement Modulealiasasfunctionargument | spike | frontend/syntax | class: blocked | Implement Modulealiasasfunctionargument |
 | 3303 | Implement Modulealiasinterface | spike | frontend/syntax | class: blocked | Implement Modulealiasinterface |
 | 3304 | Implement Moduleandinterfacesharingname | spike | frontend/syntax | class: blocked | Implement Moduleandinterfacesharingname |
-| 3423 | Implement Namecollisionsinpropertyassignments | spike | frontend/syntax | class: blocked | Implement Namecollisionsinpropertyassignments |
 | 3424 | Implement Namedfunctionexpressionassignedtoclassproperty | spike | frontend/syntax | class: triage-needed | Implement Namedfunctionexpressionassignedtoclassproperty |
 | 3425 | Implement Namedfunctionexpressioncall | spike | frontend/syntax | class: blocked | Implement Namedfunctionexpressioncall |
 | 3426 | Implement Namedfunctionexpressioncallerrors | spike | frontend/resolver | class: blocked | Implement Namedfunctionexpressioncallerrors |
@@ -5234,6 +5233,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 3420 | Implement Mutuallyrecursiveinterfacedeclaration | spike | frontend/syntax | see `issues/done/3420-implement-mutuallyRecursiveInterfaceDeclaration.md` |
 | 3421 | Implement Namecollisionwithblockscopedvariable | spike | frontend/syntax | see `issues/done/3421-implement-nameCollisionWithBlockScopedVariable.md` |
 | 3422 | Implement Namecollisions | spike | frontend/syntax | see `issues/done/3422-implement-nameCollisions.md` |
+| 3423 | Implement Namecollisionsinpropertyassignments | spike | frontend/syntax | see `issues/done/3423-implement-nameCollisionsInPropertyAssignments.md` |
 | 3690 | Implement Optionaltupleelementsandundefined | spike | reference/triage | see `issues/done/3690-implement-optionalTupleElementsAndUndefined.md` |
 | 3996 | Implement Compiler (dup) | spike | frontend/syntax | see `issues/done/3996-implement-reference-typescript-tests-cases-compiler.md` |
 | 4210 | Implement Splicetuples | spike | frontend/resolver | see `issues/done/4210-implement-spliceTuples.md` |
