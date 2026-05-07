@@ -13,7 +13,7 @@ Issue files are the source of truth for work items. The generated section below 
 | backend | 13 | 1 | 12 |
 | backend-wasm | 2 | 1 | 1 |
 | cli | 15 | 0 | 15 |
-| compiler | 23 | 12 | 11 |
+| compiler | 25 | 13 | 12 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
 | frontend | 4582 | 3338 | 1244 |
@@ -21,13 +21,13 @@ Issue files are the source of truth for work items. The generated section below 
 | ir | 82 | 59 | 23 |
 | issues | 4 | 0 | 4 |
 | parser | 1 | 0 | 1 |
-| reference | 217 | 146 | 71 |
+| reference | 215 | 144 | 71 |
 | runtime | 264 | 83 | 181 |
 | scripts | 3 | 1 | 2 |
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5266 | 3641 | 1625 |
+| total | 5266 | 3640 | 1626 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -95,6 +95,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | ID | Title | Type | Area | Class | Priority | Depends on | Summary |
 |---:|---|---|---|---|---|---|---|
 | 353 | Implement iterator protocol integration for spread operator | feature | runtime/semantics | unstarted | P2 |  | General iterator protocol is not implemented for spread operator. |
+| 711 | Report TS1108 for top-level return statements | feature | compiler/diagnostics | implementation-ready | P2 |  | top-level `return` currently reports unsupported `InvalidTopLevelReturn` instead of a TS1108-style diagnostic. |
 | 1999 | Report symbol WeakSet.add diagnostics | feature | frontend/resolver | implementation-ready | P1 |  | weak collection symbol negative tests currently fail with |
 | 5132 | Add ABC451 non-top array separation attribution | infra | runtime/memory | implementation-ready | P1 | 5131 | issue 365 proves the dominant array-growth pressure is |
 | 5137 | Split remaining Date API scope | cleanup | runtime/builtins | design-ready | P1 |  | Date issue 050 currently stays open after its named child issues 240 and 241 are done, but non-literal constructor in... |
@@ -533,7 +534,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 706 | Implement Asiarith | spike | frontend/syntax | class: triage-needed | Implement Asiarith |
 | 709 | Implement Asiines | spike | frontend/syntax | class: triage-needed | Implement Asiines |
 | 710 | Implement Asipublicprivateprotected | spike | frontend/syntax | class: blocked | Implement Asipublicprivateprotected |
-| 711 | Implement Asireturn | spike | reference/triage | class: triage-needed | Implement Asireturn |
 | 712 | Implement Assertinwrapsometypeparameter | spike | frontend/syntax | class: blocked | Implement Assertinwrapsometypeparameter |
 | 713 | Implement Assertionfunctionwildcardimport | spike | frontend/syntax | class: blocked | Implement Assertionfunctionwildcardimport |
 | 714 | Implement Assertionfunctionscannarrowbydiscriminant | spike | frontend/syntax | class: blocked | Implement Assertionfunctionscannarrowbydiscriminant |
@@ -2338,7 +2338,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 3302 | Implement Modulealiasasfunctionargument | spike | frontend/syntax | class: blocked | Implement Modulealiasasfunctionargument |
 | 3303 | Implement Modulealiasinterface | spike | frontend/syntax | class: blocked | Implement Modulealiasinterface |
 | 3304 | Implement Moduleandinterfacesharingname | spike | frontend/syntax | class: blocked | Implement Moduleandinterfacesharingname |
-| 3405 | Implement Multilinepropertyaccessandarrowfunctionindent | spike | reference/triage | class: triage-needed | Implement Multilinepropertyaccessandarrowfunctionindent |
 | 3406 | Implement Multimoduleclodule | spike | frontend/syntax | class: blocked | Implement Multimoduleclodule |
 | 3407 | Implement Multimodulefundule | spike | frontend/syntax | class: blocked | Implement Multimodulefundule |
 | 3408 | Implement Multiplebaseinterfaeswithincompatibleproperties | spike | frontend/syntax | class: blocked | Implement Multiplebaseinterfaeswithincompatibleproperties |
@@ -5227,6 +5226,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 3402 | Split multiExtendsSplitInterfaces bucket to DOM self global issue | maintenance | frontend/resolver | see `issues/done/3402-implement-multiExtendsSplitInterfaces.md` |
 | 3403 | Split multiImportExport bucket to exported require import-equals issue | maintenance | frontend/parser | see `issues/done/3403-implement-multiImportExport.md` |
 | 3404 | Split multiLineErrors bucket to object return type parser issue | maintenance | frontend/parser | see `issues/done/3404-implement-multiLineErrors.md` |
+| 3405 | Close multiLinePropertyAccessAndArrowFunctionIndent to TS1108 owner | maintenance | compiler/diagnostics | see `issues/done/3405-implement-multiLinePropertyAccessAndArrowFunctionIndent.md` |
 | 3690 | Implement Optionaltupleelementsandundefined | spike | reference/triage | see `issues/done/3690-implement-optionalTupleElementsAndUndefined.md` |
 | 3996 | Implement Compiler (dup) | spike | frontend/syntax | see `issues/done/3996-implement-reference-typescript-tests-cases-compiler.md` |
 | 4210 | Implement Splicetuples | spike | frontend/resolver | see `issues/done/4210-implement-spliceTuples.md` |

@@ -1,76 +1,130 @@
 ---
 id: 711
-title: "Implement Asireturn"
-type: spike
-area: reference/triage
-class: triage-needed
+title: "Report TS1108 for top-level return statements"
+type: feature
+area: compiler/diagnostics
+class: implementation-ready
 priority: P2
 depends_on: []
 blocks: []
 created: 2026-05-01
-updated: 2026-05-01
+updated: 2026-05-08
 ---
 
 ## Summary
 
-Triage asiReturn across 1 failing reference test cases and split this bucket into implementation-ready child issues.
+Map top-level `return` validation failures to a TypeScript-style TS1108 diagnostic instead of leaving them as generic unsupported `InvalidTopLevelReturn` blockers.
 
 ## Problem
 
-Reference test results show 1 cases fail in directory `asiReturn` with diagnostics: top-level-return. The compiler cannot handle these syntax/semantics, preventing compilation of code in this category.
+The compiler already parses top-level `return` statements and rejects them during validation with `InvalidTopLevelReturn`. TypeScript reports the same source shape as diagnostic TS1108:
 
-Problem: asiReturn has 1 reference failures and needs smart-triage evidence before implementation starts.
-
-## Current failure
-
-Representative reproduction:
-
-```sh
-mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/asiReturn.ts
+```text
+A 'return' statement can only be used within a function body.
 ```
 
-Coverage window:
+Problem: top-level `return` currently reports unsupported `InvalidTopLevelReturn` instead of a TS1108-style diagnostic.
+
+Because the current diagnostic remains a project-internal unsupported code, reference coverage marks these cases as unsupported instead of expected TypeScript diagnostics.
+
+Representative coverage for `asiReturn.ts`:
 
 ```sh
-mise run reference-coverage -- tsc --path-filter reference/typescript/tests/cases/compiler/asiReturn.ts --detail
+env TS2WASM_BINARY=/tmp/ts2wasm-issue-blockers-target/debug/ts2wasm python scripts/manager.py reference-coverage tsc --path-filter reference/typescript/tests/cases/compiler/asiReturn.ts --detail --no-dashboard-data
+```
+
+Current result:
+
+```text
+executed=1
+build_pass=0
+unsupported=1
+unsupported_diagcodes=InvalidTopLevelReturn:1
+unsupported_features=top-level-return:1
+```
+
+Representative coverage for `multiLinePropertyAccessAndArrowFunctionIndent1.ts`:
+
+```sh
+env TS2WASM_BINARY=/tmp/ts2wasm-issue-blockers-target/debug/ts2wasm python scripts/manager.py reference-coverage tsc --path-filter reference/typescript/tests/cases/compiler/multiLinePropertyAccessAndArrowFunctionIndent1.ts --detail --no-dashboard-data
+```
+
+Current result:
+
+```text
+executed=1
+build_pass=0
+unsupported=1
+unsupported_diagcodes=InvalidTopLevelReturn:1
+unsupported_features=top-level-return:1
+```
+
+## Source Context
+
+Minimal ASI case:
+
+```ts
+// @target: es2015
+// This should be an error for using a return outside a function, but ASI should work properly
+return
+```
+
+Multi-line property access and arrow function case:
+
+```ts
+// @target: es2015
+// @strict: false
+return this.edit(role)
+    .then((role: Role) =>
+        this.roleService.add(role)
+            .then((data: ng.IHttpPromiseCallbackArg<Role>) => data.data));
+```
+
+Focused triage shows the parser produces a top-level `Return` AST in both cases. The first case has `Undefined` as the return expression because ASI applies; the second keeps the full chained call expression. Validation then emits `InvalidTopLevelReturn`.
+
+TypeScript oracle evidence:
+
+```text
+asiReturn.ts: TS1108 at the top-level return keyword
+multiLinePropertyAccessAndArrowFunctionIndent1.ts: TS1108 at the top-level return keyword
 ```
 
 ## Desired final state
 
-This generated bucket is either split into implementation-ready child issues or superseded by an existing open/done issue with matching evidence. Do not implement directly from this bucket.
+Top-level `return` validation errors are surfaced as a TypeScript-style TS1108 diagnostic with the source span on the `return` keyword. The representative reference cases should no longer be counted as unsupported `InvalidTopLevelReturn` blockers.
 
 ## Scope
 
 In scope:
 
-- [ ] Inspect the smart triage report below
-- [ ] Confirm whether existing open/done issues already cover this bucket
-- [ ] Split one feature family, one observable behavior, or one fixed reference window into child issues
-- [ ] Preserve exact reproduction commands and representative AST/diagnostic evidence in each child issue
+- [ ] Map `InvalidTopLevelReturn` validation failures to TS1108-compatible diagnostic output.
+- [ ] Preserve the diagnostic span on the `return` keyword, not the full return expression.
+- [ ] Cover bare ASI `return`, multi-line `return <expression>`, and valid function-body returns.
 
 Out of scope:
 
-- Direct implementation from this generated bucket
-- Broad multi-feature fixes without child issue split
+- Implementing top-level return as executable JavaScript.
+- Changing parser ASI behavior beyond preserving the existing top-level `Return` AST.
+- Diagnostics for top-level `break`, `continue`, `await`, or `yield`.
+- Runtime, WASM backend, or module-system changes.
 
 ## Affected paths
 
 Expected:
 
-- `issues/open/`
-- `scripts/run/reference-triage.py`
-- `fixtures/`
+- `crates/compiler/src/lib.rs`
+- compiler or CLI diagnostic tests that assert diagnostic code/span
 
 Do not touch:
 
-- implementation code until the triage report assigns a concrete frontend/runtime/backend owner
+- frontend parser behavior unless a span preservation bug is found
+- backend/runtime lowering
 
 ## Acceptance criteria
 
-- [ ] Duplicate candidates below are confirmed as no-match or this issue is superseded
-- [ ] At least one child issue contains an exact `mise run reference-triage -- ...` command
-- [ ] Child issue includes failing path, diagnostic code, source context, visible symbols, and parser/TypeScript AST evidence
-- [ ] Child issue acceptance names the exact fixture/reference path and diagnostic/stdout change
+- [ ] `reference/typescript/tests/cases/compiler/asiReturn.ts` no longer reports unsupported `InvalidTopLevelReturn`; it reports a TS1108-style diagnostic.
+- [ ] `reference/typescript/tests/cases/compiler/multiLinePropertyAccessAndArrowFunctionIndent1.ts` no longer reports unsupported `InvalidTopLevelReturn`; it reports a TS1108-style diagnostic.
+- [ ] Focused regression coverage asserts the `return` keyword span and keeps valid in-function returns passing.
 
 ## Validation
 
@@ -78,15 +132,20 @@ Required commands:
 
 ```sh
 cargo fmt --all --check
-cargo nextest run
+cargo nextest run -p ts2wasm-compiler
+env TS2WASM_BINARY=/tmp/ts2wasm-issue-blockers-target/debug/ts2wasm python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/asiReturn.ts
+env TS2WASM_BINARY=/tmp/ts2wasm-issue-blockers-target/debug/ts2wasm python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/multiLinePropertyAccessAndArrowFunctionIndent1.ts
 ```
 
 Impacted commands:
 
 ```sh
-mise run reference-coverage -- tsc --limit 2
-mise run reference-coverage -- tsc --path-filter reference/typescript/tests/cases/compiler/asiReturn.ts --detail
-mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/asiReturn.ts
+env TS2WASM_BINARY=/tmp/ts2wasm-issue-blockers-target/debug/ts2wasm python scripts/manager.py reference-coverage tsc --path-filter reference/typescript/tests/cases/compiler/asiReturn.ts --detail --no-dashboard-data
+env TS2WASM_BINARY=/tmp/ts2wasm-issue-blockers-target/debug/ts2wasm python scripts/manager.py reference-coverage tsc --path-filter reference/typescript/tests/cases/compiler/multiLinePropertyAccessAndArrowFunctionIndent1.ts --detail --no-dashboard-data
+python scripts/manager.py update-issue-index --check
+python scripts/manager.py check-issue-health
+python scripts/manager.py check-issue-readiness -- --fail-ready-below 80
+git diff --check
 ```
 
 Not run:
@@ -101,7 +160,7 @@ Final-state docs:
 
 Current state:
 
-- [ ] updated: `current-state.md` (repo root)
+- [ ] not affected
 
 Follow-up issues:
 
@@ -109,204 +168,8 @@ Follow-up issues:
 
 ## Notes
 
-## Affected test files
-
-- `reference/typescript/tests/cases/compiler/asiReturn.ts`
-
-## Duplicate detection
-
-- none found by path/title/feature scan
-
-## Smart triage
-
-### Smart triage: Triage top level return: asiReturn
-
-- Issue class: `triage-needed`
-- Feature label: `top-level-return`
-- Diagnostic: `InvalidTopLevelReturn` / `compiler-diagnostic`
-- Path: `reference/typescript/tests/cases/compiler/asiReturn.ts`
-
-Reproduction:
-
-```sh
-mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/asiReturn.ts
-```
-
-Source overview:
-
-```json
-{
-  "suite": "tsc",
-  "bytes": 123,
-  "lines": 3,
-  "extension": ".ts",
-  "first_code_line": "﻿// @target: es2015"
-}
-```
-
-Failure location:
-
-```json
-{
-  "code": "InvalidTopLevelReturn",
-  "message": "top-level return is not supported at 119..125",
-  "span_start": 119,
-  "span_end": 125,
-  "line": 3,
-  "column": 5,
-  "feature_label": "top-level-return",
-  "error_type": "compiler-diagnostic"
-}
-```
-
-Source context:
-
-```text
-1 | ﻿// @target: es2015
-2 | // This should be an error for using a return outside a function, but ASI should work properly
-3 | return
-```
-
-Visible symbols before failure:
-
-```json
-[]
-```
-
-Duplicate candidates:
-
-```json
-[]
-```
-
-Error-specific suggestions:
-
-- Create a child issue around this exact path and diagnostic before broadening the reference window.
-
-Compiler dumps:
-
-#### tokens
-
-- ok: `True`
-- truncated: `False`
-
-```text
-== tokens ==
-[
-    SpannedToken {
-        kind: Return,
-        span: Span {
-            start: 119,
-            end: 125,
-        },
-    },
-]
-```
-
-#### ast
-
-- ok: `True`
-- truncated: `False`
-
-```text
-== ast ==
-[
-    Return {
-        expr: Undefined {
-            span: Span {
-                start: 119,
-                end: 125,
-            },
-        },
-        span: Span {
-            start: 119,
-            end: 125,
-        },
-    },
-]
-```
-
-#### resolved
-
-- ok: `False`
-- truncated: `False`
-
-```text
-error: [InvalidTopLevelReturn] top-level return is not supported at 119..125
-```
-
-TypeScript/JavaScript oracle:
-
-```json
-{
-  "ok": true,
-  "returncode": 0,
-  "typescript": {
-    "ok": false,
-    "diagnostics": [
-      {
-        "code": 1108,
-        "category": "Error",
-        "message": "A 'return' statement can only be used within a function body.",
-        "file": "/home/wogikaze/wgkz/ts2wasm/reference/typescript/tests/cases/compiler/asiReturn.ts",
-        "start": 116,
-        "length": 6,
-        "line": 3,
-        "character": 1
-      }
-    ],
-    "hints": [],
-    "typescriptVersion": "6.0.3"
-  },
-  "ast": {
-    "topLevel": [
-      {
-        "kind": "ReturnStatement",
-        "text": "return",
-        "line": 3,
-        "character": 1
-      }
-    ],
-    "pathToPosition": [
-      {
-        "kind": "SourceFile",
-        "text": "return",
-        "line": 3,
-        "character": 1
-      },
-      {
-        "kind": "ReturnStatement",
-        "text": "return",
-        "line": 3,
-        "character": 1
-      }
-    ]
-  }
-}
-```
-
-Stack trace:
-
-```text
-error: [InvalidTopLevelReturn] top-level return is not supported at 119..125
-```
+This issue now owns the shared top-level return diagnostic family. It absorbs the `asiReturn.ts` generated bucket and the duplicate evidence from #3405. Done duplicate #946 already points at this issue.
 
 ## Completion evidence
 
-Fill only when moving to `done/`.
-
-Commits:
-
-- `...`
-
-Validation result:
-
-```text
-command:
-result:
-date:
-```
-
-Remaining risks:
-
-- none
+Fill only when implemented.
