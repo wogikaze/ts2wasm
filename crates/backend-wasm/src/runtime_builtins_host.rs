@@ -1739,4 +1739,22 @@ impl WatEmitter<'_> {
   "#,
         );
     }
+
+    pub(super) fn emit_get_iterator(&self, wat: &mut String) {
+        wat.push_str(
+            r#"
+    (func $get_iterator (param $obj i32) (result i32)
+      (unreachable))
+  "#,
+        );
+    }
+
+    pub(super) fn emit_iterator_next(&self, wat: &mut String) {
+        wat.push_str(
+            r#"
+    (func $iterator_next (param $iter i32) (result i32)
+      (unreachable))
+  "#,
+        );
+    }
 }

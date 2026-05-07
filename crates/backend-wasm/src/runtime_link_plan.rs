@@ -1095,7 +1095,10 @@ mod tests {
     #[test]
     fn no_console_log_no_log_write_runtime_strings() {
         let program = LoweredProgram {
-            top_level_statements: vec![LoweredStmt::Expr(LoweredExpr::Number(42, Span::generated("test")))],
+            top_level_statements: vec![LoweredStmt::Expr(LoweredExpr::Number(
+                42,
+                Span::generated("test"),
+            ))],
             top_level_locals: vec![],
             functions: vec![],
             modules: vec![],

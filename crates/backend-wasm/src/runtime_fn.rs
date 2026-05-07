@@ -393,6 +393,12 @@ pub(crate) enum RuntimeFn {
     Escape,
     /// Global unescape function
     Unescape,
+    /// ECMAScript GetIterator(obj) — calls obj[Symbol.iterator]()
+    /// and returns the iterator object.
+    GetIterator,
+    /// ECMAScript IteratorNext(iterator) — calls iterator.next() and returns
+    /// the result object { value, done }.
+    IteratorNext,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Ord, PartialOrd)]
@@ -862,6 +868,8 @@ pub(crate) fn runtime_fn_from_name(name: &str) -> Option<RuntimeFn> {
         "DecodeURI" => Some(RuntimeFn::DecodeURI),
         "Escape" => Some(RuntimeFn::Escape),
         "Unescape" => Some(RuntimeFn::Unescape),
+        "GetIterator" => Some(RuntimeFn::GetIterator),
+        "IteratorNext" => Some(RuntimeFn::IteratorNext),
         _ => None,
     }
 }

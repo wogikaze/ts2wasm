@@ -233,6 +233,8 @@ impl WatEmitter<'_> {
                 RuntimeFn::DecodeURI => self.emit_decode_uri(wat),
                 RuntimeFn::Escape => self.emit_escape(wat),
                 RuntimeFn::Unescape => self.emit_unescape(wat),
+                RuntimeFn::GetIterator => self.emit_get_iterator(wat),
+                RuntimeFn::IteratorNext => self.emit_iterator_next(wat),
                 RuntimeFn::ArrayIndexOf => self.emit_array_index_of(wat),
                 RuntimeFn::ArrayIncludes => self.emit_array_includes(wat),
                 RuntimeFn::ArrayFind => self.emit_array_find(wat),

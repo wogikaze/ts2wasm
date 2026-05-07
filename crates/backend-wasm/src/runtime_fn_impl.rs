@@ -1971,6 +1971,22 @@ impl RuntimeFn {
                 runtime_strings: NO_RUNTIME_STRINGS,
                 result: RuntimeResult::Value,
             },
+            Self::GetIterator => RuntimeSpec {
+                symbol: "$get_iterator",
+                deps: NO_DEPS,
+                imports: NO_IMPORTS,
+                capability: NO_CAPS,
+                runtime_strings: NO_RUNTIME_STRINGS,
+                result: RuntimeResult::EffectOnly,
+            },
+            Self::IteratorNext => RuntimeSpec {
+                symbol: "$iterator_next",
+                deps: NO_DEPS,
+                imports: NO_IMPORTS,
+                capability: NO_CAPS,
+                runtime_strings: NO_RUNTIME_STRINGS,
+                result: RuntimeResult::EffectOnly,
+            },
         }
     }
 
@@ -2246,6 +2262,8 @@ impl RuntimeFn {
             Self::EncodeURI => "encode_uri",
             Self::DecodeURI => "decode_uri",
             Self::Escape => "escape",
+            Self::GetIterator => "get_iterator",
+            Self::IteratorNext => "iterator_next",
             Self::Unescape => "unescape",
         }
     }
@@ -2502,6 +2520,8 @@ impl RuntimeFn {
             // URI encoding/decoding (341e)
             Self::EncodeURI,
             Self::DecodeURI,
+            Self::GetIterator,
+            Self::IteratorNext,
             Self::Escape,
             Self::Unescape,
         ]
@@ -2759,6 +2779,8 @@ impl RuntimeFn {
             Self::NumberIsSafeInteger,
             // URI encoding/decoding (341e)
             Self::EncodeURI,
+            Self::GetIterator,
+            Self::IteratorNext,
             Self::DecodeURI,
             Self::Escape,
             Self::Unescape,
