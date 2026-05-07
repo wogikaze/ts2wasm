@@ -153,6 +153,16 @@ Follow-up issues:
 
 Split from generated bucket `1044` on 2026-05-06. Generated buckets `1081` and `1082` were folded in on the same date after fresh triage showed the same ambient value declaration name-resolution gap for `declare var b2:boolean;` and `declare let anys: Ari<any>;`. Existing ambient-erasure work made declaration-only syntax parseable; this slice is specifically about preserving enough erased metadata for name resolution.
 
+Additional superseded bucket:
+
+- `issues/done/1463-implement-constWithNonNull.md` reaches the same ambient
+  value name-resolution boundary for `declare const x: number | undefined;`.
+  Fresh triage on 2026-05-07 reports
+  `UnresolvedName: unresolved name: \`x\` at 73..74` for the later `x!++`
+  expression; TypeScript parses the use as
+  `PostfixUnaryExpression -> NonNullExpression -> Identifier` and then reports
+  TS2588 because assignment to the ambient const is illegal.
+
 ## Completion evidence
 
 Fill only when moving to `done/`.
