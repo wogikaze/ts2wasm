@@ -3,17 +3,21 @@ id: 661
 title: "Implement Arithassigntyping"
 type: spike
 area: frontend/syntax
-class: triage-needed
+class: superseded
 priority: P1
-depends_on: []
+depends_on: [5349]
 blocks: []
 created: 2026-05-01
-updated: 2026-05-01
+updated: 2026-05-07
+completed: 2026-05-07
+status: done
 ---
 
 ## Summary
 
-Triage arithAssignTyping across 1 failing reference test cases and split this bucket into implementation-ready child issues.
+Closed this generated arithmetic-assignment bucket after splitting the current
+`*=`, `/=`, and `%=` parser boundary to
+`issues/open/5349-parse-multiplicative-compound-assignment-operators.md`.
 
 ## Problem
 
@@ -37,16 +41,17 @@ mise run reference-coverage -- tsc --path-filter reference/typescript/tests/case
 
 ## Desired final state
 
-This generated bucket is either split into implementation-ready child issues or superseded by an existing open/done issue with matching evidence. Do not implement directly from this bucket.
+This generated bucket is closed. Implement from
+`issues/open/5349-parse-multiplicative-compound-assignment-operators.md`.
 
 ## Scope
 
 In scope:
 
-- [ ] Inspect the smart triage report below
-- [ ] Confirm whether existing open/done issues already cover this bucket
-- [ ] Split one feature family, one observable behavior, or one fixed reference window into child issues
-- [ ] Preserve exact reproduction commands and representative AST/diagnostic evidence in each child issue
+- [x] Inspect the smart triage report below
+- [x] Confirm whether existing open/done issues already cover this bucket
+- [x] Split one feature family, one observable behavior, or one fixed reference window into child issues
+- [x] Preserve exact reproduction commands and representative AST/diagnostic evidence in each child issue
 
 Out of scope:
 
@@ -68,10 +73,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] Duplicate candidates below are confirmed as no-match or this issue is superseded
-- [ ] At least one child issue contains an exact `mise run reference-triage -- ...` command
-- [ ] Child issue includes failing path, diagnostic code, source context, visible symbols, and parser/TypeScript AST evidence
-- [ ] Child issue acceptance names the exact fixture/reference path and diagnostic/stdout change
+- [x] Duplicate candidates below are confirmed as no-match or this issue is superseded
+- [x] Child issue contains exact `reference-triage` commands
+- [x] Child issue includes failing path, diagnostic code, source context, visible symbols, and parser/TypeScript AST evidence
+- [x] Child issue acceptance names the exact fixture/reference path and diagnostic/stdout change
 
 ## Validation
 
@@ -98,15 +103,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] updated: `current-state.md` (repo root)
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] created: `issues/open/5349-parse-multiplicative-compound-assignment-operators.md`
 
 ## Notes
 
@@ -116,7 +121,22 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- none found by path/title/feature scan
+Split to `issues/open/5349-parse-multiplicative-compound-assignment-operators.md`.
+
+No exact existing implementation-ready owner covered identifier-target `*=`,
+`/=`, and `%=`:
+
+- `issues/open/5178-parse-bitwise-compound-assignment-operators.md` owns bitwise `^=`, `&=`, and `|=`.
+- `issues/open/5164-parse-exponentiation-compound-assignment.md` owns `**=`.
+- `issues/open/5311-parse-property-access-arithmetic-compound-assignments.md` owns namespace property `+=`.
+
+Current evidence:
+
+```text
+arithAssignTyping.ts: UnsupportedSyntax expected Semicolon, got Some(StarEqual) at 92..94
+source: f *= 1; // error
+TypeScript oracle: TS2629 Cannot assign to 'f' because it is a class.
+```
 
 ## Smart triage
 
@@ -743,16 +763,17 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- `...`
+- `pending`
 
 Validation result:
 
 ```text
-command:
-result:
-date:
+command: env TS2WASM_BINARY=/tmp/ts2wasm-issue-blockers-target/debug/ts2wasm python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/arithAssignTyping.ts
+result: pass; current blocker identified as identifier-target multiplicative compound assignment parser syntax, split to issue 5349
+date: 2026-05-07
 ```
 
 Remaining risks:
 
-- none
+- Later triage may expose bitwise/shift compound assignment or final
+  class-binding assignment diagnostics after issue 5349 advances past `*=`.

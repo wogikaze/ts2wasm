@@ -116,7 +116,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/open/661-implement-arithAssignTyping.md` - Implement Arithassigntyping (same reference path, same feature label, same group key, title overlap)
+- `issues/done/661-implement-arithAssignTyping.md` - Implement Arithassigntyping (same reference path, same feature label, same group key, title overlap)
 
 ## Smart triage
 
@@ -126,8 +126,8 @@ Not generated. Rerun with `--triage-limit 1` or higher.
 ## 重複整理メモ
 
 この issue はタイトルが重複しているため、内容がより充実している
-`issues/open/661-implement-arithAssignTyping.md` に統合されました。
-そちらを参照してください。
+`issues/done/661-implement-arithAssignTyping.md` に統合されました。
+現在の実装対象は `issues/open/5349-parse-multiplicative-compound-assignment-operators.md` です。
 ## Completion evidence
 
 Fill only when moving to `done/`.
