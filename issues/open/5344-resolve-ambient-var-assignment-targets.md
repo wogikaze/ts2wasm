@@ -117,6 +117,8 @@ Do not touch:
 ## Acceptance criteria
 
 - [ ] `declare var x: number; x = 2;` no longer reports `UnresolvedName` for `x`.
+- [ ] `contextualSignatureInstatiationContravariance.ts` no longer reports
+  `UnresolvedName` for ambient assignment target `g2` in `g2 = f2`.
 - [ ] A focused resolver test proves the ambient `var` binding is resolver-visible for assignment targets without adding a runtime local.
 - [ ] Existing ambient value expression cases in issue 5161 remain unchanged or are explicitly advanced by the same implementation.
 - [ ] Ambient declarations with initializers, such as `declare var x = 1;`, remain rejected.
@@ -171,6 +173,15 @@ Related but not duplicate:
 - `issues/open/5193-parse-asi-after-ambient-variable-declarations.md` covers
   parser ASI after ambient variable declarations, not name resolution after
   successful parse.
+
+2026-05-07 fold-in:
+
+- `issues/done/1504-implement-contextualSignatureInstatiationContravariance.md`
+  reaches the same ambient assignment-target resolver boundary for
+  `declare var g2: ...; g2 = f2;`.
+- Current diagnostic: `UnresolvedName: unresolved name: \`g2\`` at the assignment.
+- TypeScript oracle reports the later TS2322 contravariance diagnostic once the
+  ambient assignment target resolves.
 
 ## Completion evidence
 
