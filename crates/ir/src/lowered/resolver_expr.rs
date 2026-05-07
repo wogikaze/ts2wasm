@@ -2175,9 +2175,9 @@ impl<'a> Resolver<'a> {
                         return Err(Diagnostic {
                             code: DiagCode::UnsupportedSyntax,
                             message: if args.len() > 1 {
-                                "issue-5243: multi-argument new Date(year, month, ...) is not supported in this slice".to_string()
+                                "issue-5243: multi-argument new Date(year, month, ...) is not supported in this slice".to_string().to_string()
                             } else {
-                                "issue-5243: Date constructor requires an epoch-millisecond number, not a string or expression".to_string()
+                                "issue-5243: Date constructor requires an epoch-millisecond number, not a string or expression".to_string().to_string()
                             },
                             span: None,
                         });
