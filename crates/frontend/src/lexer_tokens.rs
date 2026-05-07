@@ -119,7 +119,7 @@ pub struct SpannedToken {
     pub span: Span,
 }
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub enum TokenKind {
     PrivateIdentifier,
     Let,
