@@ -106,6 +106,9 @@ Do not touch:
 - [ ] A focused test proves `(async () => { return 1; })` no longer reports raw `unsupported expression: Async`
 - [ ] `circularInferredTypeOfVariable.ts` advances past the current parser failure at the parenthesized async arrow head
 - [ ] `asyncIIFE.ts` advances past the current parser failure at `(async () => { ... })`
+- [ ] `contextuallyTypeAsyncFunctionReturnTypeFromUnion.ts` advances past the
+  current parser failure at the object property value
+  `test: async () => Promise.reject(...)`
 - [ ] Existing non-async arrow function tests still pass
 - [ ] Any remaining unsupported async/await behavior reports a later source-spanned diagnostic with a specific feature label
 
@@ -151,6 +154,21 @@ Related triage buckets 751, 759, and 3758 show the same raw async-arrow parser
 boundary and can be folded after fresh triage. Generated bucket 1496 was folded
 on 2026-05-07 after `contextualReturnTypeOfIIFE.ts` reported the same raw
 `unsupported expression: Async` failure at `(async () => { ... })()`.
+
+Generated bucket
+`issues/done/1536-implement-contextuallyTypeAsyncFunctionReturnTypeFromUnion.md`
+was folded on 2026-05-07 after
+`contextuallyTypeAsyncFunctionReturnTypeFromUnion.ts` reported the same raw
+`unsupported expression: Async` failure for an object property value:
+
+```ts
+services: {
+  test: async () => Promise.reject("some err"),
+}
+```
+
+TypeScript accepts the source with no diagnostics and records the property
+initializer as an `ArrowFunction`.
 
 ## Completion evidence
 

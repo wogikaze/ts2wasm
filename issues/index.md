@@ -22,12 +22,12 @@ Issue files are the source of truth for work items. The generated section below 
 | issues | 4 | 0 | 4 |
 | parser | 1 | 0 | 1 |
 | reference | 212 | 151 | 61 |
-| runtime | 265 | 86 | 179 |
+| runtime | 265 | 85 | 180 |
 | scripts | 3 | 1 | 2 |
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5221 | 3763 | 1458 |
+| total | 5221 | 3762 | 1459 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -600,7 +600,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 759 | Implement Asynciife | spike | frontend/syntax | class: triage-needed | Implement Asynciife |
 | 760 | Implement Asyncimportnestedyield | spike | reference/triage | class: triage-needed | Implement Asyncimportnestedyield |
 | 761 | Implement Asynciteratorextraparameters | spike | runtime/builtins | class: triage-needed | Implement Asynciteratorextraparameters |
-| 1536 | Implement Contextuallytypeasyncfunctionreturntypefromunion | spike | runtime/builtins | class: triage-needed | Implement Contextuallytypeasyncfunctionreturntypefromunion |
 | 1537 | Implement Contextuallytypegeneratorreturntypefromunion | spike | runtime/builtins | class: triage-needed | Implement Contextuallytypegeneratorreturntypefromunion |
 | 1538 | Implement Contextuallytypedbooleanliterals | spike | frontend/resolver | class: blocked | Implement Contextuallytypedbooleanliterals |
 | 1539 | Implement Contextuallytypedbydiscriminableunion Parser Syntax | spike | frontend/syntax | class: triage-needed | Implement Contextuallytypedbydiscriminableunion Parser Syntax |
@@ -5177,6 +5176,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1533 | Implement Contextualtypingwithgenericandnongenericsignature | spike | frontend/semantics | see `issues/done/1533-implement-contextualTypingWithGenericAndNonGenericSignature.md` |
 | 1534 | Implement Contextualtypingwithgenericsignature | spike | frontend/semantics | see `issues/done/1534-implement-contextualTypingWithGenericSignature.md` |
 | 1535 | Implement Contextuallytypeargumentskeyword | spike | frontend/syntax | see `issues/done/1535-implement-contextuallyTypeArgumentsKeyword.md` |
+| 1536 | Implement Contextuallytypeasyncfunctionreturntypefromunion | spike | runtime/builtins | see `issues/done/1536-implement-contextuallyTypeAsyncFunctionReturnTypeFromUnion.md` |
 | 2050 | Implement Duplicatelocalvariable Duplicate Local | spike | reference/triage | see `issues/done/2050-implement-duplicateLocalVariable-duplicate-local.md` |
 | 3002 | Implement Isolateddeclarationerrorsdefault | spike | runtime/builtins | see `issues/done/3002-implement-isolatedDeclarationErrorsDefault.md` |
 | 3131 | Implement Jsxfactorynotidentifierorqualifiedname | spike | reference/triage | see `issues/done/3131-implement-jsxFactoryNotIdentifierOrQualifiedName.md` |
