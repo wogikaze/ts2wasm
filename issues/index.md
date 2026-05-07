@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 9 | 8 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4588 | 3362 | 1226 |
+| frontend | 4588 | 3361 | 1227 |
 | harness | 1 | 0 | 1 |
 | ir | 81 | 59 | 22 |
 | issues | 4 | 0 | 4 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5258 | 3662 | 1596 |
+| total | 5258 | 3661 | 1597 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -2331,7 +2331,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 3302 | Implement Modulealiasasfunctionargument | spike | frontend/syntax | class: blocked | Implement Modulealiasasfunctionargument |
 | 3303 | Implement Modulealiasinterface | spike | frontend/syntax | class: blocked | Implement Modulealiasinterface |
 | 3304 | Implement Moduleandinterfacesharingname | spike | frontend/syntax | class: blocked | Implement Moduleandinterfacesharingname |
-| 3376 | Implement Moduleresolutionnoresolve (audit reopened #3376) | spike | frontend/syntax | class: blocked | Implement Moduleresolutionnoresolve (audit reopened #3376) |
 | 3377 | Implement Moduleresolutionnotscjs (audit reopened #3377) | spike | frontend/syntax | class: blocked | Implement Moduleresolutionnotscjs (audit reopened #3377) |
 | 3378 | Implement Moduleresolutionnotsesm (audit reopened #3378) | spike | frontend/syntax | class: blocked | Implement Moduleresolutionnotsesm (audit reopened #3378) |
 | 3379 | Implement Moduleresolutionpackageidwithrelativeandabsolutepath (audit reopened #3379) | spike | frontend/syntax | class: blocked | Implement Moduleresolutionpackageidwithrelativeandabsolutepath (audit reopened #3379) |
@@ -5219,6 +5218,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 3373 | Implement Moduleresolutionastypereferencedirective | maintenance | frontend/syntax | see `issues/done/3373-implement-moduleResolutionAsTypeReferenceDirective.md` |
 | 3374 | Implement Moduleresolutionastypereferencedirectiveambient (audit reopened #3374) | maintenance | frontend/syntax | see `issues/done/3374-implement-moduleResolutionAsTypeReferenceDirectiveAmbient.md` |
 | 3375 | Implement Moduleresolutionastypereferencedirectivescoped | maintenance | frontend/syntax | see `issues/done/3375-implement-moduleResolutionAsTypeReferenceDirectiveScoped.md` |
+| 3376 | Implement Moduleresolutionnoresolve (audit reopened #3376) | maintenance | frontend/syntax | see `issues/done/3376-implement-moduleResolutionNoResolve.md` |
 | 3690 | Implement Optionaltupleelementsandundefined | spike | reference/triage | see `issues/done/3690-implement-optionalTupleElementsAndUndefined.md` |
 | 3996 | Implement Compiler (dup) | spike | frontend/syntax | see `issues/done/3996-implement-reference-typescript-tests-cases-compiler.md` |
 | 4210 | Implement Splicetuples | spike | frontend/resolver | see `issues/done/4210-implement-spliceTuples.md` |

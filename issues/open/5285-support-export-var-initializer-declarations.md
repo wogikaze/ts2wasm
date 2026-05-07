@@ -155,6 +155,10 @@ Related but not duplicates:
   triage for `moduleDuplicateIdentifiers.ts` stops at initialized
   `export var Foo = 2;` before duplicate exported variable and duplicate class
   diagnostics become reachable.
+- Also owns `issues/done/3376-implement-moduleResolutionNoResolve.md`: fresh
+  triage for `moduleResolutionNoResolve.ts` parses the import-equals section
+  and then stops at `export var c = '';` in `b.ts` before `--noResolve`
+  relative import diagnostics become actionable.
 
 ## Completion evidence
 
