@@ -875,12 +875,9 @@ pub(crate) enum Capability {
 
     WasiArgs,
     WasiEnv,
-||||||| parent of a373e631 (backend-wasm: implement WASI path_open/fd_read/fd_write for fs.readFileSync and fs.writeFileSync)
-
     WasiFilesystemRead,
     WasiFilesystemWrite,
     WasiFilesystemAppend,
- (backend-wasm: implement WASI path_open/fd_read/fd_write for fs.readFileSync and fs.writeFileSync)
     HostFsReadFileSync,
     HostFsWriteFileSync,
     HostFsAppendFileSync,
@@ -911,12 +908,9 @@ impl Capability {
 
             Self::WasiArgs => "wasi.args",
             Self::WasiEnv => "wasi.env",
-||||||| parent of a373e631 (backend-wasm: implement WASI path_open/fd_read/fd_write for fs.readFileSync and fs.writeFileSync)
-
             Self::WasiFilesystemRead => "wasi.filesystem.read",
             Self::WasiFilesystemWrite => "wasi.filesystem.write",
             Self::WasiFilesystemAppend => "wasi.filesystem.append",
- (backend-wasm: implement WASI path_open/fd_read/fd_write for fs.readFileSync and fs.writeFileSync)
             Self::HostFsReadFileSync => "host.fs.readFileSync",
             Self::HostFsWriteFileSync => "host.fs.writeFileSync",
             Self::HostFsAppendFileSync => "host.fs.appendFileSync",
@@ -1153,16 +1147,11 @@ const CAP_WASI_RANDOM: &[Capability] = &[Capability::WasiRandom];
 
 const CAP_WASI_ARGS: &[Capability] = &[Capability::WasiArgs];
 const CAP_WASI_ENV: &[Capability] = &[Capability::WasiEnv];
-const CAP_HOST_FS_READ_FILE_SYNC: &[Capability] = &[Capability::HostFsReadFileSync];
-const CAP_HOST_FS_WRITE_FILE_SYNC: &[Capability] = &[Capability::HostFsWriteFileSync];
-||||||| parent of a373e631 (backend-wasm: implement WASI path_open/fd_read/fd_write for fs.readFileSync and fs.writeFileSync)
-const CAP_HOST_FS_READ_FILE_SYNC: &[Capability] = &[Capability::HostFsReadFileSync];
-const CAP_HOST_FS_WRITE_FILE_SYNC: &[Capability] = &[Capability::HostFsWriteFileSync];
-
 const CAP_WASI_FILESYSTEM_READ: &[Capability] = &[Capability::WasiFilesystemRead];
 const CAP_WASI_FILESYSTEM_WRITE: &[Capability] = &[Capability::WasiFilesystemWrite];
 const CAP_WASI_FILESYSTEM_APPEND: &[Capability] = &[Capability::WasiFilesystemAppend];
- (backend-wasm: implement WASI path_open/fd_read/fd_write for fs.readFileSync and fs.writeFileSync)
+const CAP_HOST_FS_READ_FILE_SYNC: &[Capability] = &[Capability::HostFsReadFileSync];
+const CAP_HOST_FS_WRITE_FILE_SYNC: &[Capability] = &[Capability::HostFsWriteFileSync];
 const CAP_HOST_FS_APPEND_FILE_SYNC: &[Capability] = &[Capability::HostFsAppendFileSync];
 const CAP_HOST_PROCESS_EXIT: &[Capability] = &[Capability::HostProcessExit];
 const CAP_HOST_PATH_JOIN: &[Capability] = &[Capability::HostPathJoin];
