@@ -907,6 +907,7 @@ fn collect_function_signatures(
             ResolvedStmt::ClassDecl {
                 name,
                 constructor,
+                extends,
                 methods,
                 ..
             } => {
@@ -918,7 +919,10 @@ fn collect_function_signatures(
                     + 1;
                 let ctor_has_rest = constructor
                     .as_ref()
-                    .is_some_and(|(params, _)| params.iter().any(|param| param.is_rest));
+                    .is_some_and(|(params, _)| params.iter().any(|param| param.is_rest))
+                    // Derived classes without explicit constructors accept any
+                    // number of arguments (implicit rest).
+                    || (constructor.is_none() && extends.is_some());
                 let ctor_returns_heap_closure = constructor
                     .as_ref()
                     .is_some_and(|(_, body)| block_returns_declared_function(body));
