@@ -79,13 +79,7 @@ impl<'a> Resolver<'a> {
             return Ok(LoweredExpr::ArrayNewSparse { slots , span: Span::generated("array_new_sparse")});
         }
         if !elements.iter().any(|element| {
-            matches!(
-                element,
-                ResolvedArrayElement::Present(ResolvedExpr::Spread(spread_expr))
-                    if self.is_known_set_local_spread_operand(spread_expr.as_ref())
-                        || self.is_known_map_local_spread_operand(spread_expr.as_ref())
-                        || self.is_known_dense_array_local_spread_operand(spread_expr.as_ref())
-            )
+            matches!(element, ResolvedArrayElement::Present(ResolvedExpr::Spread(_)))
         }) {
             let lowered = self.lower_array_literal_elements(elements)?;
             return Ok(LoweredExpr::ArrayNew { elements: lowered , span: Span::generated("array_new")});
@@ -132,7 +126,9 @@ impl<'a> Resolver<'a> {
                     }
 
                     if self.resolved_expr_has_symbol_iterator_property(spread_expr.as_ref()) {
-                        return Err(Self::unsupported_symbol_iterator_spread_diagnostic());
+                        Self::flush_array_segment(&mut segments, &mut pending_dense);
+                        segments.push(self.lower_spread_via_iterator(spread_expr.as_ref())?);
+                        continue;
                     }
 
                     return Err(Diagnostic {
@@ -2227,6 +2223,127 @@ impl<'a> Resolver<'a> {
                     .to_owned(),
             span: None,
         }
+    }
+
+    pub(super) fn lower_spread_via_iterator(
+        &mut self,
+        spread_expr: &ResolvedExpr,
+    ) -> Result<LoweredExpr, Diagnostic> {
+        // Implements the ECMAScript iterator protocol via IR-level While loop.
+        // Gets obj[Symbol.iterator] via PropertyGetDynamic with sentinel key,
+        // calls it via HeapClosureCall, then loops calling .next() and collecting values.
+        let sentinel_key = SYMBOL_ITERATOR_OBJECT_KEY.to_owned();
+        let span = Span::generated("spread_via_iterator");
+        let iterable = self.lower_expr(spread_expr)?;
+        let iter_fn = self.alloc_temp();
+        let iterator = self.alloc_temp();
+        let result_arr = self.alloc_temp();
+        let done_val = self.alloc_temp();
+        let mut stmts = Vec::new();
+        stmts.push(LoweredStmt::Let(
+            iter_fn,
+            LoweredExpr::PropertyGetDynamic {
+                obj: Box::new(iterable),
+                key: Box::new(LoweredExpr::String(sentinel_key, Span::generated("str"))),
+                span,
+            },
+            span,
+        ));
+        stmts.push(LoweredStmt::Let(
+            iterator,
+            LoweredExpr::RuntimeCall {
+                runtime_fn: "HeapClosureCall".to_owned(),
+                args: vec![LoweredExpr::Local(iter_fn, Span::generated("local"))],
+                span,
+            },
+            span,
+        ));
+        stmts.push(LoweredStmt::Let(
+            result_arr,
+            LoweredExpr::ArrayNew { elements: vec![], span },
+            span,
+        ));
+        stmts.push(LoweredStmt::Let(
+            done_val,
+            LoweredExpr::Bool(false, Span::generated("bool")),
+            span,
+        ));
+        let next_fn = self.alloc_temp();
+        let r = self.alloc_temp();
+        let value = self.alloc_temp();
+        let mut body = Vec::new();
+        body.push(LoweredStmt::Let(
+            next_fn,
+            LoweredExpr::PropertyGetDynamic {
+                obj: Box::new(LoweredExpr::Local(iterator, Span::generated("local"))),
+                key: Box::new(LoweredExpr::String("next".to_owned(), Span::generated("str"))),
+                span,
+            },
+            span,
+        ));
+        body.push(LoweredStmt::Let(
+            r,
+            LoweredExpr::RuntimeCall {
+                runtime_fn: "HeapClosureCall".to_owned(),
+                args: vec![LoweredExpr::Local(next_fn, Span::generated("local"))],
+                span,
+            },
+            span,
+        ));
+        body.push(LoweredStmt::Let(
+            done_val,
+            LoweredExpr::PropertyGetDynamic {
+                obj: Box::new(LoweredExpr::Local(r, Span::generated("local"))),
+                key: Box::new(LoweredExpr::String("done".to_owned(), Span::generated("str"))),
+                span,
+            },
+            span,
+        ));
+        let mut push_body = Vec::new();
+        push_body.push(LoweredStmt::Let(
+            value,
+            LoweredExpr::PropertyGetDynamic {
+                obj: Box::new(LoweredExpr::Local(r, Span::generated("local"))),
+                key: Box::new(LoweredExpr::String("value".to_owned(), Span::generated("str"))),
+                span,
+            },
+            span,
+        ));
+        push_body.push(LoweredStmt::Expr(
+            LoweredExpr::RuntimeCall {
+                runtime_fn: "ArrayPush".to_owned(),
+                args: vec![
+                    LoweredExpr::Local(result_arr, Span::generated("local")),
+                    LoweredExpr::Local(value, Span::generated("local")),
+                ],
+                span,
+            },
+            span,
+        ));
+        body.push(LoweredStmt::If {
+            condition: LoweredExpr::Unary {
+                op: LoweredUnaryOp::Not,
+                expr: Box::new(LoweredExpr::Local(done_val, Span::generated("local"))),
+                span,
+            },
+            then_body: push_body,
+            else_body: vec![],
+            span,
+        });
+        stmts.push(LoweredStmt::DoWhile {
+            body,
+            condition: LoweredExpr::Unary {
+                op: LoweredUnaryOp::Not,
+                expr: Box::new(LoweredExpr::Local(done_val, Span::generated("local"))),
+                span,
+            },
+            span,
+        });
+        Ok(LoweredExpr::Block {
+            stmts,
+            result: Box::new(LoweredExpr::Local(result_arr, Span::generated("local"))),
+            span,
+        })
     }
 
     pub(super) fn update_static_object_literal_local_on_let(
