@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 3 | 0 | 3 |
 | coverage | 43 | 0 | 43 |
 | docs | 5 | 0 | 5 |
-| frontend | 4438 | 3746 | 692 |
+| frontend | 4438 | 3745 | 693 |
 | harness | 1 | 0 | 1 |
 | ir | 42 | 1 | 41 |
 | issues | 5 | 0 | 5 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 8 | 0 | 8 |
 | wasi | 4 | 0 | 4 |
-| total | 5084 | 4004 | 1080 |
+| total | 5084 | 4003 | 1081 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -4104,7 +4104,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5024 | Implement anonymous interface new expression identifier | feature | runtime/builtins | class: blocked | Implement anonymous interface new expression identifier |
 | 5025 | Implement any as return type instanceof constructor RHS | feature | runtime/builtins | class: blocked | Implement any as return type instanceof constructor RHS |
 | 5212 | Implement remaining BigInt mixed runtime coercion edges | feature | runtime/semantics | class: blocked | Implement remaining BigInt mixed runtime coercion edges |
-| 5214 | Implement computed Symbol.iterator prerequisite for spread | feature | frontend/syntax | class: blocked | Implement computed Symbol.iterator prerequisite for spread |
 <!-- generated:blocked:end -->
 
 ## Done queue
@@ -5164,6 +5163,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5210 | Sparse array holes handling for Array.prototype.map | feature | runtime/builtins | see `issues/done/5210-array-map-sparse-array-holes.md` |
 | 5211 | Implement sparse array spread support | feature | runtime/semantics | see `issues/done/5211-sparse-array-spread-support.md` |
 | 5213 | Implement generator function syntax prerequisite for iterator spread | feature | frontend/syntax | see `issues/done/5213-generator-function-syntax-prerequisite-for-iterator-spread.md` |
+| 5214 | Implement computed Symbol.iterator prerequisite for spread | feature | frontend/syntax | see `issues/done/5214-computed-symbol-iterator-prerequisite-for-spread.md` |
 | 5215 | Fix array includes WAT stack mismatch | bug | runtime/builtins | see `issues/done/5215-fix-array-includes-wat-stack-mismatch.md` |
 | 5216 | Allow extra arguments for functions reading arguments object | bug | ir/semantics | see `issues/done/5216-allow-extra-arguments-for-functions-reading-arguments-object.md` |
 | 5217 | Preserve ambient value declarations through name resolution | bug | ir/name-resolution | see `issues/done/5217-preserve-ambient-value-declarations-through-name-resolution.md` |

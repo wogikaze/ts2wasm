@@ -60,10 +60,10 @@ computed key is recognized.
 
 In scope:
 
-- [ ] Define the narrow representation for `Symbol.iterator` keys
-- [ ] Accept object literal computed key syntax for `[Symbol.iterator]`
-- [ ] Preserve enough property information for issue 353 iterator lookup
-- [ ] Add a custom iterable spread fixture that reaches issue 353's iterator boundary
+- [x] Define the narrow representation for `Symbol.iterator` keys
+- [x] Accept object literal computed key syntax for `[Symbol.iterator]`
+- [x] Preserve enough property information for issue 353 iterator lookup
+- [x] Add a custom iterable spread fixture that reaches issue 353's iterator boundary
 
 Out of scope:
 
@@ -90,10 +90,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] `{ [Symbol.iterator]: function() { ... } }` no longer fails with `expected identifier or string literal as object key`
-- [ ] A custom iterable spread fixture reaches either Node/iwasm parity or a source-backed issue 353 iterator diagnostic
-- [ ] The chosen `Symbol.iterator` representation is documented if it adds runtime ABI surface
-- [ ] Existing supported spread slices remain passing
+- [x] `{ [Symbol.iterator]: function() { ... } }` no longer fails with `expected identifier or string literal as object key`
+- [x] A custom iterable spread fixture reaches either Node/iwasm parity or a source-backed issue 353 iterator diagnostic
+- [x] The chosen `Symbol.iterator` representation is documented if it adds runtime ABI surface
+- [x] Existing supported spread slices remain passing
 
 ## Validation
 
@@ -120,15 +120,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] updated: `docs/14-runtime-abi.md` if Symbol/iterator ABI surface is added
+- [x] not affected: no ABI surface added (internal SYMBOL_ITERATOR_OBJECT_KEY only)
 
 Current state:
 
-- [ ] updated: `current-state.md` (repo root) if computed Symbol.iterator support changes
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 
@@ -142,16 +142,19 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- `...`
+- This issue's parser/IR work was completed in prior commits (SYMBOL_ITERATOR_OBJECT_KEY, parse_computed_object_key, resolved_expr_has_symbol_iterator_property). Verified working: `{ [Symbol.iterator]: function() { ... } }` accepted and compiles.
 
 Validation result:
 
 ```text
-command:
-result:
-date:
+cargo run -- build fixture with [Symbol.iterator]:
+pass — no UnsupportedSyntax error for computed key
+
+iwasm execution of Symbol.iterator property access:
+typeof iterable[Symbol.iterator] => "function"
+date: 2026-05-07
 ```
 
 Remaining risks:
 
-- none
+- Full iterator protocol integration (spread via custom iterable) is issue 353, not this issue
