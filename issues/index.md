@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 7 | 6 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4577 | 3428 | 1149 |
+| frontend | 4577 | 3427 | 1150 |
 | harness | 1 | 0 | 1 |
 | ir | 79 | 57 | 22 |
 | issues | 4 | 0 | 4 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5238 | 3726 | 1512 |
+| total | 5238 | 3725 | 1513 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -435,7 +435,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 555 | Implement Abstractclassinlocalscopeisabstract | spike | frontend/resolver | class: blocked | Implement Abstractclassinlocalscopeisabstract |
 | 556 | Implement Abstractclassunioninstantiation | spike | frontend/resolver | class: blocked | Implement Abstractclassunioninstantiation |
 | 597 | Implement Allowjsclassthistypecrash | spike | reference/triage | class: triage-needed | Implement Allowjsclassthistypecrash |
-| 609 | Implement Ambientexportdefaulterrors | spike | frontend/syntax | class: blocked | Implement Ambientexportdefaulterrors |
 | 610 | Implement Ambientexternalmoduleinanotherexternalmodule | spike | frontend/syntax | class: blocked | Implement Ambientexternalmoduleinanotherexternalmodule |
 | 612 | Implement Ambientexternalmodulewithinternalimportdeclaration | spike | frontend/syntax | class: blocked | Implement Ambientexternalmodulewithinternalimportdeclaration |
 | 615 | Implement Ambientexternalmodulewithoutinternalimportdeclaration | spike | frontend/syntax | class: blocked | Implement Ambientexternalmodulewithoutinternalimportdeclaration |
@@ -4393,6 +4392,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 606 | Implement Ambientconstliterals | spike | frontend/syntax | see `issues/done/606-implement-ambientConstLiterals.md` |
 | 607 | Implement Ambientenumelementinitializer (dup) | spike | frontend/syntax | see `issues/done/607-implement-ambientEnumElementInitializer.md` |
 | 608 | Implement Ambienterrors | spike | runtime/builtins | see `issues/done/608-implement-ambientErrors.md` |
+| 609 | Implement Ambientexportdefaulterrors | spike | frontend/syntax | see `issues/done/609-implement-ambientExportDefaultErrors.md` |
 | 611 | Implement Ambientexternalmodulereopen (audit reopened #611) | spike | frontend/syntax | see `issues/done/611-implement-ambientExternalModuleReopen.md` |
 | 613 | Implement Ambientexternalmodulewithrelativeexternalimportdeclaration (audit reopened #613) | spike | frontend/syntax | see `issues/done/613-implement-ambientExternalModuleWithRelativeExternalImportDeclaration.md` |
 | 614 | Implement Ambientexternalmodulewithrelativemodulename (audit reopened #614) | spike | frontend/syntax | see `issues/done/614-implement-ambientExternalModuleWithRelativeModuleName.md` |
