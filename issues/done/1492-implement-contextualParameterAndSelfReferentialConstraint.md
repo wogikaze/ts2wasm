@@ -3,12 +3,12 @@ id: 1492
 title: "Implement Contextualparameterandselfreferentialconstraint"
 type: spike
 area: frontend/syntax
-class: triage-needed
+class: done
 priority: P2
 depends_on: []
 blocks: []
 created: 2026-05-01
-updated: 2026-05-01
+updated: 2026-05-07
 ---
 
 ## Summary
@@ -43,10 +43,10 @@ This generated bucket is either split into implementation-ready child issues or 
 
 In scope:
 
-- [ ] Inspect the smart triage report below
-- [ ] Confirm whether existing open/done issues already cover this bucket
-- [ ] Split one feature family, one observable behavior, or one fixed reference window into child issues
-- [ ] Preserve exact reproduction commands and representative AST/diagnostic evidence in each child issue
+- [x] Inspect the smart triage report below
+- [x] Confirm whether existing open/done issues already cover this bucket
+- [x] Split one feature family, one observable behavior, or one fixed reference window into child issues
+- [x] Preserve exact reproduction commands and representative AST/diagnostic evidence in each child issue
 
 Out of scope:
 
@@ -68,10 +68,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] Duplicate candidates below are confirmed as no-match or this issue is superseded
-- [ ] At least one child issue contains an exact `mise run reference-triage -- ...` command
-- [ ] Child issue includes failing path, diagnostic code, source context, visible symbols, and parser/TypeScript AST evidence
-- [ ] Child issue acceptance names the exact fixture/reference path and diagnostic/stdout change
+- [x] Duplicate candidates below are confirmed as no-match or this issue is superseded
+- [x] At least one child issue contains an exact `mise run reference-triage -- ...` command
+- [x] Child issue includes failing path, diagnostic code, source context, visible symbols, and parser/TypeScript AST evidence
+- [x] Child issue acceptance names the exact fixture/reference path and diagnostic/stdout change
 
 ## Validation
 
@@ -98,15 +98,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] updated: `current-state.md` (repo root)
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] superseded by `issues/open/5161-model-ambient-value-declarations-for-name-resolution.md`
 
 ## Notes
 
@@ -120,7 +120,38 @@ Follow-up issues:
 
 ## Smart triage
 
-Not generated. Rerun with `--triage-limit 1` or higher.
+Fresh triage on 2026-05-07 shows this generated unknown-unsupported bucket is
+blocked by the ambient value declaration name-resolution gap already tracked by
+issue 5161.
+
+Current diagnostic:
+
+```text
+UnresolvedName: unresolved name: `repeat` at 532..538
+```
+
+Source context:
+
+```ts
+declare const repeat: {
+  <O extends NoExcessProperties<RepeatOptions<A>, O>, A>(
+    options: O,
+  ): (self: Effect<A>) => Effect<A>;
+};
+
+pipe(
+  {} as Effect<boolean>,
+  repeat({
+```
+
+Smart triage visible symbols list `repeat` at line 21 before the resolver
+failure. TypeScript accepts the file with no diagnostics and infers the nested
+callback parameter `x` as `boolean`.
+
+This bucket is superseded by
+`issues/open/5161-model-ambient-value-declarations-for-name-resolution.md`,
+which owns declaration-only `declare var` / `declare let` / `declare const`
+values being resolver-visible without runtime emission.
 
 ## Completion evidence
 
@@ -128,16 +159,22 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- `...`
+- `...` (filled by commit that moves this issue)
 
 Validation result:
 
 ```text
-command:
-result:
-date:
+command: python scripts/manager.py reference-coverage tsc --path-filter reference/typescript/tests/cases/compiler/contextualParameterAndSelfReferentialConstraint1.ts --detail --no-dashboard-data
+result: pass; executed=1, build_pass=0, unsupported=1, diagnostic UnresolvedName
+date: 2026-05-07
+
+command: python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/contextualParameterAndSelfReferentialConstraint1.ts
+result: pass; ambient `declare const repeat` name-resolution blocker mapped to issue 5161
+date: 2026-05-07
 ```
 
 Remaining risks:
 
-- none
+- The self-referential constraint and contextual parameter inference behavior
+  remains hidden until issue 5161 advances this file past ambient value
+  name-resolution.

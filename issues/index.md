@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 6 | 5 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4556 | 3496 | 1060 |
+| frontend | 4556 | 3495 | 1061 |
 | harness | 1 | 0 | 1 |
 | ir | 67 | 45 | 22 |
 | issues | 4 | 0 | 4 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5204 | 3790 | 1414 |
+| total | 5204 | 3789 | 1415 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -583,7 +583,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 759 | Implement Asynciife | spike | frontend/syntax | class: triage-needed | Implement Asynciife |
 | 760 | Implement Asyncimportnestedyield | spike | reference/triage | class: triage-needed | Implement Asyncimportnestedyield |
 | 761 | Implement Asynciteratorextraparameters | spike | runtime/builtins | class: triage-needed | Implement Asynciteratorextraparameters |
-| 1492 | Implement Contextualparameterandselfreferentialconstraint | spike | frontend/syntax | class: triage-needed | Implement Contextualparameterandselfreferentialconstraint |
 | 1493 | Implement Contextualpropertyofgenericfilteringmappedtype | spike | frontend/semantics | class: blocked | Implement Contextualpropertyofgenericfilteringmappedtype |
 | 1494 | Implement Contextualpropertyofgenericmappedtype | spike | frontend/resolver | class: blocked | Implement Contextualpropertyofgenericmappedtype |
 | 1495 | Implement Contextualreturntypeofiife Import Export | spike | frontend/syntax | class: blocked | Implement Contextualreturntypeofiife Import Export |
@@ -5160,6 +5159,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1489 | Implement Contextualoutertypeparameters | spike | frontend/syntax | see `issues/done/1489-implement-contextualOuterTypeParameters.md` |
 | 1490 | Implement Contextualoverloadlistfromarrayunion | spike | frontend/syntax | see `issues/done/1490-implement-contextualOverloadListFromArrayUnion.md` |
 | 1491 | Implement Contextualparamtypevsnestedreturntypeinference | spike | frontend/semantics | see `issues/done/1491-implement-contextualParamTypeVsNestedReturnTypeInference.md` |
+| 1492 | Implement Contextualparameterandselfreferentialconstraint | spike | frontend/syntax | see `issues/done/1492-implement-contextualParameterAndSelfReferentialConstraint.md` |
 | 2050 | Implement Duplicatelocalvariable Duplicate Local | spike | reference/triage | see `issues/done/2050-implement-duplicateLocalVariable-duplicate-local.md` |
 | 3002 | Implement Isolateddeclarationerrorsdefault | spike | runtime/builtins | see `issues/done/3002-implement-isolatedDeclarationErrorsDefault.md` |
 | 3131 | Implement Jsxfactorynotidentifierorqualifiedname | spike | reference/triage | see `issues/done/3131-implement-jsxFactoryNotIdentifierOrQualifiedName.md` |
