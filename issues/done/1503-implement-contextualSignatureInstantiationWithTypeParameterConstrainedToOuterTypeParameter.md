@@ -3,12 +3,12 @@ id: 1503
 title: "Implement Contextualsignatureinstantiationwithtypeparameterconstrainedtooutertypeparameter"
 type: spike
 area: frontend/syntax
-class: blocked
+class: done
 priority: P1
-depends_on: [5000]
+depends_on: []
 blocks: []
 created: 2026-05-01
-updated: 2026-05-01
+updated: 2026-05-07
 ---
 
 ## Summary
@@ -43,10 +43,10 @@ This generated bucket is either split into implementation-ready child issues or 
 
 In scope:
 
-- [ ] Inspect the smart triage report below
-- [ ] Confirm whether existing open/done issues already cover this bucket
-- [ ] Split one feature family, one observable behavior, or one fixed reference window into child issues
-- [ ] Preserve exact reproduction commands and representative AST/diagnostic evidence in each child issue
+- [x] Inspect the smart triage report below
+- [x] Confirm whether existing open/done issues already cover this bucket
+- [x] Split one feature family, one observable behavior, or one fixed reference window into child issues
+- [x] Preserve exact reproduction commands and representative AST/diagnostic evidence in each child issue
 
 Out of scope:
 
@@ -68,10 +68,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] Duplicate candidates below are confirmed as no-match or this issue is superseded
-- [ ] At least one child issue contains an exact `mise run reference-triage -- ...` command
-- [ ] Child issue includes failing path, diagnostic code, source context, visible symbols, and parser/TypeScript AST evidence
-- [ ] Child issue acceptance names the exact fixture/reference path and diagnostic/stdout change
+- [x] Duplicate candidates below are confirmed as no-match or this issue is superseded
+- [x] Existing issue 5371 contains an exact `reference-triage` command and now names this path
+- [x] This issue includes failing path, diagnostic code, source context, visible symbols, and parser/TypeScript AST evidence
+- [x] Completion evidence names the exact fixture/reference path and diagnostic/stdout change
 
 ## Validation
 
@@ -98,15 +98,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] updated: `current-state.md` (repo root)
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] superseded by `issues/open/5371-parse-generic-function-type-annotations.md`
 
 ## Notes
 
@@ -120,7 +120,37 @@ Follow-up issues:
 
 ## Smart triage
 
-Not generated. Rerun with `--triage-limit 1` or higher.
+Fresh triage on 2026-05-07 shows this generated blocked bucket is now the same
+generic function type annotation parser boundary owned by
+`issues/open/5371-parse-generic-function-type-annotations.md`.
+
+Current diagnostic:
+
+```text
+UnsupportedSyntax: expected Semicolon, got Some(Greater) at 118..119
+```
+
+Source context:
+
+```ts
+function f<T>() {
+    function g<U extends T>(u: U): U { return null }
+    return g;
+}
+var h: <V, W>(v: V, func: (v: V) => W) => W;
+```
+
+Compiler evidence:
+
+```text
+tokens: ok through generic function declarations and `var h: <V, W>`
+ast/resolved: fail at the closing `>` in the generic function type annotation
+visible symbols before failure: binding `h`
+TypeScript oracle: parses the FunctionType and later reports TS2322/TS2454 diagnostics
+```
+
+No new child issue was created because issue 5371 already scopes variable type
+annotations that start with generic function types.
 
 ## Completion evidence
 
@@ -140,4 +170,6 @@ date:
 
 Remaining risks:
 
-- none
+- Contextual signature instantiation with outer-constrained type parameters
+  remains hidden until issue 5371 advances this file past the current parser
+  boundary.

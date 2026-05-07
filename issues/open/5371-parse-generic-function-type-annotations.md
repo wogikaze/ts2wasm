@@ -34,12 +34,6 @@ Reproduction:
 env TS2WASM_BINARY=/tmp/ts2wasm-issue-blockers-target/debug/ts2wasm python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/contextualSignatureInstantiation2.ts
 ```
 
-Focused coverage:
-
-```sh
-env TS2WASM_BINARY=/tmp/ts2wasm-issue-blockers-target/debug/ts2wasm python scripts/manager.py reference-coverage tsc --path-filter reference/typescript/tests/cases/compiler/contextualSignatureInstantiation2.ts --detail --no-dashboard-data
-```
-
 Current diagnostic:
 
 ```text
@@ -75,15 +69,13 @@ In scope:
 
 - [ ] Erase variable type annotations that start with a generic function type.
 - [ ] Support nested function type return annotations such as `=> <U>(...) => ...`.
-- [ ] Preserve parser behavior for generic arrow function expressions in value position.
 - [ ] Add focused parser or CLI coverage for a `var f: <T>(x: T) => T;` annotation.
 
 Out of scope:
 
 - Type checking generic function types.
 - Contextual signature instantiation semantics after parsing succeeds.
-- Generic arrow function expressions in assignment value position, tracked by
-  `issues/open/5304-parse-generic-arrow-functions-with-typed-parameters.md`.
+- Generic arrow function expressions in value position.
 
 ## Affected paths
 
@@ -93,15 +85,12 @@ Expected:
 - `crates/frontend/src/parser/tests.rs`
 - focused parser or CLI fixture
 
-Do not touch:
-
-- backend emit or runtime ABI
-- contextual typing semantics unless fresh triage proves parsing already advanced
-
 ## Acceptance criteria
 
 - [ ] `contextualSignatureInstantiation2.ts` no longer reports
   `expected Semicolon, got Some(Greater)` at the generic function type annotation.
+- [ ] `contextualSignatureInstantiationWithTypeParameterConstrainedToOuterTypeParameter.ts`
+  no longer reports `expected Semicolon, got Some(Greater)` at `var h: <V, W>`.
 - [ ] A focused test accepts `var f: <T>(x: T) => T;`.
 - [ ] A focused test or reference triage covers a nested function type return.
 - [ ] If the file advances to TS2454 or another semantic blocker, record that
@@ -121,12 +110,7 @@ Impacted commands:
 
 ```sh
 env TS2WASM_BINARY=/tmp/ts2wasm-issue-blockers-target/debug/ts2wasm python scripts/manager.py reference-coverage tsc --path-filter reference/typescript/tests/cases/compiler/contextualSignatureInstantiation2.ts --detail --no-dashboard-data
-python scripts/manager.py check-issue-readiness -- --fail-ready-below 80
 ```
-
-Not run:
-
-- none
 
 ## Docs / current-state / issue sync
 
@@ -151,7 +135,14 @@ Related but not duplicates:
 - `issues/open/5304-parse-generic-arrow-functions-with-typed-parameters.md`
   covers generic arrow expressions in value position.
 - `issues/open/5345-parse-generic-ambient-const-type-annotations.md` covers
-  generic callable annotations on `declare const`, not ordinary local variables.
+  generic callable annotations on `declare const`.
+
+2026-05-07 fold-in:
+
+- `issues/done/1503-implement-contextualSignatureInstantiationWithTypeParameterConstrainedToOuterTypeParameter.md`
+  is the same parser boundary at `var h: <V, W>(...) => W;`.
+- TypeScript oracle parses the FunctionType and then reports later TS2322/TS2454
+  diagnostics unrelated to parser support.
 
 ## Completion evidence
 
