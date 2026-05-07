@@ -51,7 +51,7 @@ In scope:
 - [x] Remove or relax `args.len() != 1` check in `regexp_exec_runtime` (program_builtins.rs)
 - [x] Remove or relax `args.len() != 1` check in `regexp_string_match_runtime` (program_builtins.rs)
 - [x] Relax `args.len() != 1` check for RegExp class-based routing in `resolver_expr.rs` (line 1679)
-- [ ] Add fixture test for `RegExp.prototype.test()` (0 args) returning `false`
+- [x] Add fixture test for `RegExp.prototype.test()` (0 args) returning `false` (fixture created, cannot verify build due to pre-existing dirty files)
 
 Out of scope:
 

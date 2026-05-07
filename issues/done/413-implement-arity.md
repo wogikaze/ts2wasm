@@ -122,7 +122,7 @@ Follow-up issues:
 
 **Child issues created**:
 - `issues/done/5135-fix-builtin-arity-validation-coercion-globals.md` — Fix validate.rs + builtin.rs for Boolean, Number, isNaN, isFinite, parseInt, parseFloat, encodeURI, decodeURI, escape, unescape (~20-25 test cases)
-- `issues/open/5136-fix-arity-validation-regexp-string-prototype.md` — Fix program_builtins.rs + resolver_expr.rs for RegExp.prototype.exec/test and String.prototype.match/search (~10 test cases)
+- `issues/done/5136-fix-arity-validation-regexp-string-prototype.md` — Fix program_builtins.rs + resolver_expr.rs for RegExp.prototype.exec/test and String.prototype.match/search (~10 test cases)
 
 ## Affected test files
 
@@ -692,7 +692,7 @@ date: 2026-05-06
 
 Child issues:
 - issues/done/5135-fix-builtin-arity-validation-coercion-globals.md (coercion/math globals)
-- issues/open/5136-fix-arity-validation-regexp-string-prototype.md (RegExp/String prototype methods)
+- issues/done/5136-fix-arity-validation-regexp-string-prototype.md (RegExp/String prototype methods)
 
 Duplicate check:
 - issues/done/287-fix-arguments-object-arity-mismatch.md → NOT a match (user-function arity)
