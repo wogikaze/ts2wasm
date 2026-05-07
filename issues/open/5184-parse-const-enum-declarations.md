@@ -165,6 +165,11 @@ Additional superseded bucket:
   on 2026-05-07 reports `const declarations require an initializer at 51..55`
   for `const enum E { ... }`; TypeScript accepts both `E` and `E2` const enum
   declarations with no diagnostics.
+- `issues/done/1448-implement-constEnumExternalModule.md` reaches the same
+  parser boundary before external module handling. Fresh triage on 2026-05-07
+  reports `const declarations require an initializer at 62..66` for
+  `const enum E { V = 100 }`; TypeScript parses the enum, `export = E`, and
+  `import A = require('m1')` before reporting TS2307 for module resolution.
 
 ## Completion evidence
 
