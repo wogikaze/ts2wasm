@@ -3,23 +3,24 @@ id: 553
 title: "Implement Transportstream"
 type: spike
 area: frontend/syntax
-class: triage-needed
+class: superseded
 priority: P1
 depends_on: []
 blocks: []
 created: 2026-05-01
-updated: 2026-05-01
+updated: 2026-05-07
+completed: 2026-05-07
 ---
 
 ## Summary
 
-Triage TransportStream across 1 failing reference test cases and split this bucket into implementation-ready child issues.
+Close `TransportStream` as superseded by issue 081: fresh triage confirms this is binary test data, not a compiler implementation blocker.
 
 ## Problem
 
-Reference test results show 1 cases fail in directory `TransportStream` with diagnostics: parser-syntax. The compiler cannot handle these syntax/semantics, preventing compilation of code in this category.
+Reference test results show 1 case failing in directory `TransportStream` with diagnostics: parser-syntax. Fresh triage on 2026-05-07 confirms the root cause already recorded by `issues/done/081-implement-TransportStream.md`: `TransportStream.ts` is binary test data, not parsable TypeScript source.
 
-Problem: TransportStream has 1 reference failures and needs smart-triage evidence before implementation starts.
+Problem: this generated bucket is a duplicate/superseded issue, not an implementation work order. TypeScript itself reports TS1490 "File appears to be binary."
 
 ## Current failure
 
@@ -45,7 +46,7 @@ In scope:
 
 - [x] Inspect the smart triage report below
 - [x] Confirm whether existing open/done issues already cover this bucket
-- [x] Split one feature family, one observable behavior, or one fixed reference window into child issues
+- [x] Supersede this generated bucket with existing issue 081 evidence
 - [x] Preserve exact reproduction commands and representative AST/diagnostic evidence in each child issue
 
 Out of scope:
@@ -69,9 +70,9 @@ Do not touch:
 ## Acceptance criteria
 
 - [x] Duplicate candidates below are confirmed as no-match or this issue is superseded
-- [x] At least one child issue contains an exact `mise run reference-triage -- ...` command
-- [x] Child issue includes failing path, diagnostic code, source context, visible symbols, and parser/TypeScript AST evidence
-- [x] Child issue acceptance names the exact fixture/reference path and diagnostic/stdout change
+- [x] Existing issue 081 contains an exact `mise run reference-triage -- ...` command
+- [x] Existing issue 081 includes failing path, diagnostic code, source context, visible symbols, and parser/TypeScript AST evidence
+- [x] This issue records that no child issue is needed because the file is binary test data
 
 ## Validation
 
@@ -92,7 +93,9 @@ mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/Trans
 
 Not run:
 
-- none
+- `cargo fmt --all --check` and `cargo nextest run`; this close is an
+  issue-lifecycle-only superseded-bucket update, so focused reference and issue
+  checks were used instead.
 
 ## Docs / current-state / issue sync
 
@@ -102,7 +105,7 @@ Final-state docs:
 
 Current state:
 
-- [x] updated: `current-state.md` (repo root)
+- [x] not affected
 
 Follow-up issues:
 
@@ -116,11 +119,42 @@ Follow-up issues:
 
 ## Duplicate detection
 
+- Superseded by `issues/done/081-implement-TransportStream.md`.
+- `issues/done/081-implement-TransportStream.md` classifies the file as
+  binary test data, not a parser implementation bug.
+- `issues/done/467-implement-TransportStream.md` and
+  `issues/done/788-implement-TransportStream.md` are historical duplicate
+  generated buckets for the same path.
+
 - `issues/done/081-implement-TransportStream.md` - Implement Transportstream (same reference path, same feature label, same group key, title overlap)
 - `issues/open/442-implement-parser-syntax.md` - Implement parser syntax extensions (same feature label, same group key, title overlap)
 - `issues/done/467-implement-TransportStream.md` - Implement Transportstream (same reference path, same feature label, same group key, title overlap)
 
 ## Smart triage
+
+Generated 2026-05-07.
+
+```text
+command:
+env TS2WASM_BINARY=/home/wogikaze/wgkz/ts2wasm/target/debug/ts2wasm python scripts/manager.py reference-coverage tsc --path-filter reference/typescript/tests/cases/compiler/TransportStream.ts --detail --no-dashboard-data
+
+result:
+pass; executed=1, unsupported=1, unsupported_diagcodes=UnsupportedSyntax:1,
+unsupported_features=unknown-unsupported:1
+
+representative triage:
+env TS2WASM_BINARY=/home/wogikaze/wgkz/ts2wasm/target/debug/ts2wasm python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/TransportStream.ts
+
+representative result:
+UnsupportedSyntax / parser-or-frontend-unsupported at `@` in binary payload
+
+compiler evidence:
+tokens/ast/resolved: unsupported character `@` at 20..21
+TypeScript oracle: TS1490 "File appears to be binary." plus invalid-character diagnostics
+decision: superseded by issue 081; no implementation child is needed
+```
+
+## Historical smart triage
 
 ### Smart triage: Triage parser syntax: TransportStream
 
@@ -402,14 +436,24 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- `...`
+- Closed as superseded by issue 081; no implementation child issue created.
 
 Validation result:
 
 ```text
 command:
+env TS2WASM_BINARY=/home/wogikaze/wgkz/ts2wasm/target/debug/ts2wasm python scripts/manager.py reference-coverage tsc --path-filter reference/typescript/tests/cases/compiler/TransportStream.ts --detail --no-dashboard-data
 result:
+pass; executed=1, unsupported=1, UnsupportedSyntax unknown-unsupported, matching binary test data classification
 date:
+2026-05-07
+
+command:
+env TS2WASM_BINARY=/home/wogikaze/wgkz/ts2wasm/target/debug/ts2wasm python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/TransportStream.ts
+result:
+pass; reproduced unsupported character at binary payload and TypeScript oracle TS1490 "File appears to be binary."
+date:
+2026-05-07
 ```
 
 Remaining risks:
@@ -421,10 +465,10 @@ Remaining risks:
 **Why this was false-done**: This generated triage spike issue was moved to `issues/done/` without actual triage or implementation. It has `type: spike` and `class: blocked` depending on meta-issues (`depends_on: []` or `[5001]`), with zero implementation commits referencing this issue, empty completion evidence (commits `...`), and no Status note or Close note documenting triage results.
 
 **True-done checklist** (all must pass):
-1. Perform actual triage review of the reference failure case(s)
-2. Either split into implementation-ready child issue(s) or confirm superseded by an existing issue (document with Status note)
-3. Fill in completion evidence section with triage results and commit SHAs
-4. Verify all acceptance criteria checkboxes reflect completed work
+1. [x] Perform actual triage review of the reference failure case(s)
+2. [x] Either split into implementation-ready child issue(s) or confirm superseded by an existing issue (document with Status note)
+3. [x] Fill in completion evidence section with triage results and commit SHAs
+4. [x] Verify all acceptance criteria checkboxes reflect completed work
 
 **Commands that must pass**:
 ```sh
