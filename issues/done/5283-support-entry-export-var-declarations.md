@@ -74,7 +74,7 @@ named variable export, or advances to the next narrower semantic/module blocker.
 
 In scope:
 
-- [ ] Parse simple entry-module `export var name: type;` with focused coverage, then re-run the representative reference triage and confirm the issue-055 variable export boundary is gone.
+- [x] Parse simple entry-module `export var name: type;` with focused coverage, then re-run the representative reference triage and confirm the issue-055 variable export boundary is gone.
 
 Out of scope:
 
@@ -98,8 +98,8 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] `export var b: number;` parses without `issue-055: unsupported variable export`, while unrelated unsupported import/export diagnostics still report issue-055.
-- [ ] `python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/commentsBeforeVariableStatement1.ts` no longer reports the variable export boundary.
+- [x] `export var b: number;` parses without `issue-055: unsupported variable export`, while unrelated unsupported import/export diagnostics still report issue-055.
+- [x] `python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/commentsBeforeVariableStatement1.ts` no longer reports the variable export boundary.
 
 ## Validation
 
@@ -126,15 +126,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 
@@ -153,4 +153,33 @@ Related but not duplicates:
 
 ## Completion evidence
 
-Fill when implemented.
+Commits:
+
+- `524858ae35` (implementation by wogikaze)
+
+Validation result:
+
+```text
+cargo nextest run -p ts2wasm-frontend export
+=> 20 tests run: 20 passed, 206 skipped
+
+cargo nextest run -p ts2wasm-cli module
+=> 27 tests run: 27 passed, 681 skipped
+
+python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/commentsBeforeVariableStatement1.ts
+=> BuildPass — no issue-055 variable export boundary
+date: 2026-05-08
+```
+
+Remaining risks:
+
+- none
+## False-done audit
+
+**truly-done** (5283)
+
+- Implementation commits: verified via `git log --oneline --all --grep=5283`
+- Completion evidence: filled with specific commit hashes and validation results
+- Acceptance criteria: all checked as met
+
+This issue has repo-local close evidence with implementation commits and validation commands.
