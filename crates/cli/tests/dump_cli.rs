@@ -535,6 +535,14 @@ fn dump_ast_reports_unterminated_ambient_function() {
 }
 
 #[test]
+fn dump_ast_reports_class_expression_decorator_boundary() {
+    let stderr = run_dump_error(&["--ast"], "var v = @decorate class C { static p = 1 };");
+    assert!(stderr.contains("[UnsupportedTypeScriptSyntax]"), "{stderr}");
+    assert!(stderr.contains("decorator"), "{stderr}");
+    assert!(!stderr.contains("unsupported character"), "{stderr}");
+}
+
+#[test]
 fn dump_ast_reports_unterminated_array_binding() {
     let stderr = run_dump_error(&["--ast", "--unparse"], "let [a, = arr;");
     assert!(stderr.contains("issue-247"), "{stderr}");

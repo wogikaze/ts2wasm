@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 6 | 3 | 3 |
 | coverage | 44 | 1 | 43 |
 | docs | 5 | 0 | 5 |
-| frontend | 4546 | 3846 | 700 |
+| frontend | 4546 | 3844 | 702 |
 | harness | 1 | 0 | 1 |
 | ir | 72 | 23 | 49 |
 | issues | 5 | 0 | 5 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 8 | 0 | 8 |
 | wasi | 4 | 0 | 4 |
-| total | 5223 | 4122 | 1101 |
+| total | 5223 | 4120 | 1103 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -359,7 +359,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5246 | Report static declarations inside constructor bodies | feature | frontend/parser | implementation-ready | P1 |  | invalid `static` declarations in constructor bodies report generic unsupported expression instead of a spanned parser... |
 | 5248 | Lower class expressions | feature | ir/compiler | implementation-ready | P1 |  | `classBlockScoping.ts` reports `UnsupportedSyntax: issue-313: class expression lowering not yet implemented`. |
 | 5249 | Scope block-local class declarations | feature | frontend/resolver | implementation-ready | P1 |  | `classDeclarationBlockScoping1.ts` reports `DuplicateLocal` for an inner block-local `class C {}` that TypeScript acc... |
-| 5251 | Parse computed class member names in class declarations | feature | frontend/parser | implementation-ready | P1 |  | `classDeclarationShouldBeOutOfScopeInComputedNames.ts` stops during |
 | 5253 | Report class expression decorator boundary | feature | frontend/lexer | implementation-ready | P1 |  | `classExpressionWithDecorator1.ts` stops in tokenization at |
 | 5255 | Resolve super property accesses | feature | frontend/resolver | implementation-ready | P1 |  | `classExtendingAny.ts` parses class declarations, `extends Err`, and |
 | 5260 | Report class heritage trailing comma | feature | frontend/parser | implementation-ready | P1 |  | `classHeritageWithTrailingSeparator.ts` tokenizes the class heritage |
@@ -378,7 +377,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5274 | Parse general comma expressions | feature | frontend | implementation-ready | P1 |  | Parse general comma expressions |
 | 5275 | Parse modified static class methods | feature | frontend | implementation-ready | P1 |  | Parse modified static class methods |
 | 5276 | Report class declaration decorator boundary | feature | frontend/lexer | implementation-ready | P1 |  | `commentOnDecoratedClassDeclaration.ts` stops in tokenization at the |
-| 5277 | Parse export enum declarations to enum boundary | feature | frontend/module-syntax | implementation-ready | P1 |  | `commentOnExportEnumDeclaration.ts` stops at `export` before the enum |
 | 5279 | Report function-typed local call definite assignment | feature | ir/lowering | implementation-ready | P2 |  | `commentOnParenthesizedExpressionOpenParen1.ts` parses successfully, |
 | 5280 | Validate commented top-level function overloads | feature | frontend/resolver | implementation-ready | P1 |  | `commentOnSignature1.ts` parses successfully, but `validate_ast` |
 | 5281 | Resolve arrow rest parameter bindings | feature | ir/name-resolution | implementation-ready | P1 |  | arrow rest parameters are not made visible under their identifier name |
@@ -5321,6 +5319,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5245 | Implement ECMAScript iterator protocol runtime for spread operator | feature | runtime/semantics | see `issues/done/5245-iterator-protocol-runtime.md` |
 | 5247 | Fix JS noEmit class constructor FuncId invariant | feature | ir/compiler | see file |
 | 5250 | Parse class declarations in nested block statements | feature | frontend/parser | see file |
+| 5251 | Parse computed class member names in class declarations | feature | frontend/parser | see file |
 | 5252 | Support call-expression class heritage | feature | ir/resolver | see file |
 | 5254 | Parse ASI between static class fields | feature | frontend/parser | see file |
 | 5256 | Report non-constructor class heritage expressions | feature | ir/resolver | see file |
@@ -5328,6 +5327,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5258 | Report super calls in class extends null constructors | feature | ir/resolver | see file |
 | 5259 | Report super property access in class extends null | feature | ir/resolver | see file |
 | 5268 | Support derived constructor parameter properties after super | feature | ir | see `issues/done/5268-support-derived-constructor-parameter-properties-after-super.md` |
+| 5277 | Parse export enum declarations to enum boundary | feature | frontend/module-syntax | see file |
 | 5278 | Parse trailing comma in function parameters with comments | feature | frontend/syntax | see file |
 | 5282 | Parse labeled empty statements | feature | frontend/syntax | see `issues/done/5282-parse-labeled-empty-statements.md` |
 | 5283 | Support entry-module export var declarations | feature | frontend/module-syntax | see `issues/done/5283-support-entry-export-var-declarations.md` |

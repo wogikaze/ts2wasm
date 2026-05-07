@@ -96,32 +96,27 @@ impl NameResolver {
     }
 
     fn resolve_program(&mut self, program: &[Stmt]) -> Result<Vec<Stmt>, Diagnostic> {
-        // First pass: collect all function declarations (hoisting).
+        // First pass: collect body-ful function declarations (hoisting).
         // Bodyless function declarations are TypeScript overload signatures
-        // (may or may not have the `declare` keyword). Multiple ambient and/or
-        // bodyless overloads for the same name are valid; only body-ful
+        // (may or may not have the `declare` keyword). Only body-ful
         // (concrete) duplicates are rejected.
         for stmt in program {
             if let Stmt::Function {
-                name,
-                body,
-                span,
-                is_ambient,
-                ..
+                name, body, span, ..
             } = stmt
             {
                 let is_concrete = !body.is_empty();
                 if self.functions.contains_key(name) && is_concrete {
-                    // Only concrete (body-ful) duplicates are errors.
-                    if !is_ambient {
-                        return Err(Diagnostic {
-                            code: DiagCode::DuplicateFunction,
-                            message: format!("duplicate function definition: `{name}`"),
-                            span: Some(*span),
-                        });
-                    }
+                    eprintln!("DBG_NR_DUP_FN: {} at {}..{}", name, span.start, span.end);
+                    return Err(Diagnostic {
+                        code: DiagCode::DuplicateFunction,
+                        message: format!("duplicate function definition: `{name}`"),
+                        span: Some(*span),
+                    });
                 }
-                self.functions.insert(name.clone(), Some(*span));
+                if is_concrete {
+                    self.functions.insert(name.clone(), Some(*span));
+                }
             }
         }
         // After the pass, verify each bodyless overload has a concrete

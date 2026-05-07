@@ -521,6 +521,32 @@ mod tests {
     }
 
     #[test]
+    fn rejects_class_expression_decorator_with_boundary_diagnostic() {
+        let err = parse_program("var v = @decorate class C {};")
+            .expect_err("class expression decorator should report boundary diagnostic");
+        assert_eq!(err.code, DiagCode::UnsupportedTypeScriptSyntax);
+        assert!(err.message.contains("decorator"), "{err:?}");
+        let span = err.span.expect("diagnostic must have a source span");
+        assert_eq!(
+            &"var v = @decorate class C {};"[span.start..span.end],
+            "@decorate"
+        );
+    }
+
+    #[test]
+    fn rejects_bare_at_in_expression_position() {
+        let err = parse_program("var v = @ class C {};")
+            .expect_err("bare @ without decorator identifier should report boundary diagnostic");
+        assert_eq!(err.code, DiagCode::UnsupportedTypeScriptSyntax);
+        assert!(err.message.contains("decorator"), "{err:?}");
+        let span = err.span.expect("diagnostic must have a source span");
+        assert_eq!(
+            &"var v = @ class C {};"[span.start..span.end],
+            "@"
+        );
+    }
+
+    #[test]
     fn parses_typescript_generic_functions_and_calls_as_erased_syntax() {
         let source = r#"
             function id<T>(value: T): T { return value; }
