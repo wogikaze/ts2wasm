@@ -130,6 +130,11 @@ Also supersedes `issues/done/1263-implement-coAndContraVariantInferences-parser-
 where fresh triage shows `coAndContraVariantInferences2.ts` now parses and
 stops at `DuplicateFunction` for ambient `declare function assertNode(...)`
 overload declarations.
+Also supersedes `issues/done/1511-implement-contextualTypeFunctionObjectPropertyIntersection.md`,
+where fresh triage shows `contextualTypeFunctionObjectPropertyIntersection.ts`
+stops at `DuplicateFunction` for the second bodyless ambient
+`declare function createSlice(...)` overload declaration before reaching the
+later TypeScript TS2353 object-literal diagnostic.
 
 ## Completion evidence
 
