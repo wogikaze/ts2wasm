@@ -351,9 +351,7 @@ impl Parser {
                 // Parameter property modifiers (public/private/protected/readonly)
                 // are only valid in constructor parameters, not arrow functions.
                 // Return false early to let the expression parser handle it.
-                if matches!(self.peek(), _)
-                    && matches!(self.peek_n(1), Some(Token::Ident(_)))
-                {
+                if self.peek_parameter_property_modifier() {
                     return Ok(false);
                 }
                 self.parse_param(false, false)?;

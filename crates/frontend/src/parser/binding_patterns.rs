@@ -11,7 +11,7 @@ impl Parser {
             && matches!(self.peek_n(1), Some(Token::Ident(_)))
         {
             if !allow_parameter_property {
-                let span = self.peek_span().unwrap_or_default();
+                let span = self.peek_span().unwrap_or(Span { start: 0, end: 0 });
                 return Err(Diagnostic {
                     code: DiagCode::UnsupportedSyntax,
                     message:
