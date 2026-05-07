@@ -164,4 +164,9 @@ Related but not duplicates:
 
 ## Completion evidence
 
-Fill when implemented.
+- Constructor lowering already added `extends` + rest param in commit `c9f746ffb`.
+- Signature metadata consistency fix in commit `6ff0e914`.
+- Fixture: `fixtures/core-semantics/class-default-derived-ctor-arity.ts`.
+- Build-smoke test: `build_smoke_class_default_derived_ctor_arity`.
+- `commentsInheritance.ts` now builds (reference-coverage: build_pass).
+- 793 tests pass (cargo nextest, ir + cli + compiler).
