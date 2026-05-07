@@ -3,17 +3,21 @@ id: 1449
 title: "Implement Constenummergingwithvalues Import Export"
 type: spike
 area: frontend/syntax
-class: blocked
+class: superseded
 priority: P1
-depends_on: [432]
+depends_on: [5186]
 blocks: []
 created: 2026-05-01
-updated: 2026-05-01
+updated: 2026-05-07
+completed: 2026-05-07
+status: done
 ---
 
 ## Summary
 
-Triage constEnumMergingWithValues-import-export across 4 failing reference test cases and split this bucket into implementation-ready child issues.
+Closed this generated import-export bucket because fresh triage for its four
+reference files stops at the `export = foo` parser/module boundary already
+owned by `issues/open/5186-parse-export-assignment-for-diagnostics.md`.
 
 ## Problem
 
@@ -37,16 +41,17 @@ mise run reference-coverage -- tsc --path-filter reference/typescript/tests/case
 
 ## Desired final state
 
-This generated bucket is either split into implementation-ready child issues or superseded by an existing open/done issue with matching evidence. Do not implement directly from this bucket.
+This generated bucket is closed. Implement from
+`issues/open/5186-parse-export-assignment-for-diagnostics.md`.
 
 ## Scope
 
 In scope:
 
-- [ ] Inspect the smart triage report below
-- [ ] Confirm whether existing open/done issues already cover this bucket
-- [ ] Split one feature family, one observable behavior, or one fixed reference window into child issues
-- [ ] Preserve exact reproduction commands and representative AST/diagnostic evidence in each child issue
+- [x] Inspect the smart triage report below
+- [x] Confirm whether existing open/done issues already cover this bucket
+- [x] Supersede this bucket with the existing implementation-ready export-assignment issue
+- [x] Preserve exact reproduction commands and representative AST/diagnostic evidence
 
 Out of scope:
 
@@ -68,10 +73,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] Duplicate candidates below are confirmed as no-match or this issue is superseded
-- [ ] At least one child issue contains an exact `mise run reference-triage -- ...` command
-- [ ] Child issue includes failing path, diagnostic code, source context, visible symbols, and parser/TypeScript AST evidence
-- [ ] Child issue acceptance names the exact fixture/reference path and diagnostic/stdout change
+- [x] Duplicate candidates below are confirmed as no-match or this issue is superseded
+- [x] Superseding issue contains exact `reference-triage` commands
+- [x] Superseding issue includes failing path, diagnostic code, source context, visible symbols, and parser/TypeScript AST evidence
+- [x] Superseding issue acceptance names the exact reference paths and diagnostic changes
 
 ## Validation
 
@@ -98,15 +103,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] updated: `current-state.md` (repo root)
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] superseded by: `issues/open/5186-parse-export-assignment-for-diagnostics.md`
 
 ## Notes
 
@@ -131,7 +136,28 @@ Follow-up issues:
 
 ## Smart triage
 
-Not generated. Rerun with `--triage-limit 1` or higher.
+Generated on 2026-05-07 for all four listed files.
+
+Common current failure:
+
+```text
+UnsupportedModule: issue-055: unsupported static export; module resolution and loading are not implemented
+source: export = foo
+```
+
+Per-file spans:
+
+- `constEnumMergingWithValues1.ts`: `export` at `123..129`
+- `constEnumMergingWithValues2.ts`: `export` at `118..124`
+- `constEnumMergingWithValues4.ts`: `export` at `144..150`
+- `constEnumMergingWithValues5.ts`: `export` at `133..139`
+
+TypeScript oracle parses `ExportAssignment` for each file and reports no
+diagnostics. The files differ in the value merged with namespace `foo`
+(`function`, `class`, namespace/var, and `preserveConstEnums`), but the current
+compiler boundary is identical: the frontend does not represent `export = foo`.
+
+Superseding issue: `issues/open/5186-parse-export-assignment-for-diagnostics.md`.
 
 ## Completion evidence
 
@@ -139,16 +165,16 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- `...`
+- `pending`
 
 Validation result:
 
 ```text
-command:
-result:
-date:
+command: env TS2WASM_BINARY=/tmp/ts2wasm-issue-blockers-target/debug/ts2wasm python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/constEnumMergingWithValues2.ts
+result: pass; current blocker is export-assignment parsing tracked by issue 5186
+date: 2026-05-07
 ```
 
 Remaining risks:
 
-- none
+- Later triage may expose namespace/value merging or const-enum semantics after issue 5186 parses export assignments.

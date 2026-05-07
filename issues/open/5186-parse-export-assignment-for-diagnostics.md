@@ -98,6 +98,7 @@ Do not touch:
 
 - [ ] A focused parser or CLI test covers `export = foo;`.
 - [ ] `export = foo;` preserves an expression span for `foo`.
+- [ ] `constEnumMergingWithValues1.ts`, `2.ts`, `4.ts`, and `5.ts` no longer stop at the generic `issue-055: unsupported static export` boundary.
 - [ ] `python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/blockScopedFunctionDeclarationInStrictModule.ts` advances past the current AST-construction failure at the `export` keyword or reports the next semantic/module boundary with expression-span evidence.
 
 ## Validation
@@ -137,6 +138,15 @@ Follow-up issues:
 ## Notes
 
 Split from generated bucket `1074` on 2026-05-06. Existing import/export umbrella issues are broader than this syntax slice; this issue only asks the frontend to preserve the export-assignment expression for later diagnostics.
+
+Additional superseded bucket:
+
+- `issues/done/1449-implement-constEnumMergingWithValues-import-export.md`
+  reaches the same `export = foo` static export boundary in
+  `constEnumMergingWithValues1.ts`, `2.ts`, `4.ts`, and `5.ts`. Fresh triage on
+  2026-05-07 reports `UnsupportedModule issue-055: unsupported static export`
+  at the `export` keyword for all four files; TypeScript parses each as an
+  `ExportAssignment`.
 
 ## Completion evidence
 

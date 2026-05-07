@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 5 | 4 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4541 | 3524 | 1017 |
+| frontend | 4541 | 3523 | 1018 |
 | harness | 1 | 0 | 1 |
 | ir | 65 | 43 | 22 |
 | issues | 4 | 0 | 4 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5186 | 3815 | 1371 |
+| total | 5186 | 3814 | 1372 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -565,7 +565,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 759 | Implement Asynciife | spike | frontend/syntax | class: triage-needed | Implement Asynciife |
 | 760 | Implement Asyncimportnestedyield | spike | reference/triage | class: triage-needed | Implement Asyncimportnestedyield |
 | 761 | Implement Asynciteratorextraparameters | spike | runtime/builtins | class: triage-needed | Implement Asynciteratorextraparameters |
-| 1449 | Implement Constenummergingwithvalues Import Export | spike | frontend/syntax | class: blocked | Implement Constenummergingwithvalues Import Export |
 | 1450 | Implement Constenummergingwithvalues Parser Syntax | spike | frontend/syntax | class: triage-needed | Implement Constenummergingwithvalues Parser Syntax |
 | 1451 | Implement Constenumnamespacereferencecausesnoimport | spike | frontend/syntax | class: blocked | Implement Constenumnamespacereferencecausesnoimport |
 | 1452 | Implement Constenumnoemitreexport | spike | frontend/syntax | class: blocked | Implement Constenumnoemitreexport |
@@ -5142,6 +5141,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1446 | Implement Constenumdeclarations | spike | frontend/syntax | see `issues/done/1446-implement-constEnumDeclarations.md` |
 | 1447 | Implement Constenumerrors | spike | frontend/syntax | see `issues/done/1447-implement-constEnumErrors.md` |
 | 1448 | Implement Constenumexternalmodule | spike | frontend/syntax | see `issues/done/1448-implement-constEnumExternalModule.md` |
+| 1449 | Implement Constenummergingwithvalues Import Export | spike | frontend/syntax | see `issues/done/1449-implement-constEnumMergingWithValues-import-export.md` |
 | 2050 | Implement Duplicatelocalvariable Duplicate Local | spike | reference/triage | see `issues/done/2050-implement-duplicateLocalVariable-duplicate-local.md` |
 | 3002 | Implement Isolateddeclarationerrorsdefault | spike | runtime/builtins | see `issues/done/3002-implement-isolatedDeclarationErrorsDefault.md` |
 | 3131 | Implement Jsxfactorynotidentifierorqualifiedname | spike | reference/triage | see `issues/done/3131-implement-jsxFactoryNotIdentifierOrQualifiedName.md` |
