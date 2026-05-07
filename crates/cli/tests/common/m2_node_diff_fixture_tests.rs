@@ -1584,10 +1584,16 @@ fn instanceof_fixture_builds_successfully() {
     // issue-5011 (class value support) was implemented — build now succeeds
     let fixture = "fixtures/core-semantics/instanceof.ts";
     let fixture_path = Path::new(env!("CARGO_MANIFEST_DIR"))
-        .join("../../").join(fixture);
+        .join("../../")
+        .join(fixture);
     let output = temp_wasm_path(fixture);
     let build = std::process::Command::new(env!("CARGO_BIN_EXE_ts2wasm"))
-        .arg("build").arg(&fixture_path).arg("-o").arg(&output).output().unwrap();
+        .arg("build")
+        .arg(&fixture_path)
+        .arg("-o")
+        .arg(&output)
+        .output()
+        .unwrap();
     assert!(build.status.success(), "build failed for {fixture}");
 }
 

@@ -14,7 +14,7 @@ Issue files are the source of truth for work items. The generated section below 
 | backend-wasm | 2 | 0 | 2 |
 | cli | 16 | 0 | 16 |
 | compiler | 3 | 0 | 3 |
-| coverage | 43 | 0 | 43 |
+| coverage | 44 | 1 | 43 |
 | docs | 5 | 0 | 5 |
 | frontend | 4438 | 3745 | 693 |
 | harness | 1 | 0 | 1 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 8 | 0 | 8 |
 | wasi | 4 | 0 | 4 |
-| total | 5083 | 4002 | 1081 |
+| total | 5084 | 4003 | 1081 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -134,6 +134,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 871 | Implement Anonterface (dup) | spike | frontend/syntax | superseded | P1 | 5001 | anonterface has 1 reference failures and needs smart-triage evidence before implementation starts. |
 | 5048 | [ir] Broaden BigInt lowering beyond signed-i64/first-limb slice | feature | ir | implementation-ready | P0 |  | [ir] Broaden BigInt lowering beyond signed-i64/first-limb slice |
 | 5245 | Implement ECMAScript iterator protocol runtime for spread operator | feature | runtime/semantics | design-ready | P2 | 353 | Implement ECMAScript iterator protocol runtime for spread operator |
+| 5246 | W5: test262 coverage ramp from 100 to 500 executed | feature | coverage | design-ready | P1 |  | W5: test262 coverage ramp from 100 to 500 executed |
 <!-- generated:ready:end -->
 
 ## Blocked queue
