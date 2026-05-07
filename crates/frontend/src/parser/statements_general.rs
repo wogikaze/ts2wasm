@@ -35,6 +35,7 @@ impl Parser {
             Some(Token::Async) if matches!(self.peek_n(1), Some(Token::Function)) => {
                 self.async_function_statement()
             }
+            Some(Token::At) => self.decorator_before_class_declaration(),
             Some(Token::Ident(_)) if matches!(self.peek_n(1), Some(Token::Colon)) => {
                 self.labeled_statement()
             }
@@ -59,6 +60,73 @@ impl Parser {
             }
             _ => self.expression_statement(),
         }
+    }
+
+    /// Handle `@decorator` before a class declaration at statement level.
+    ///
+    /// Consumes the `@`, the decorator identifier, and optional call arguments
+    /// `(...)`, then emits a source-spanned TypeScript decorator boundary
+    /// diagnostic instead of falling through to the expression parser.
+    fn decorator_before_class_declaration(&mut self) -> Result<Stmt, Diagnostic> {
+        let at_span = self
+            .peek_span()
+            .unwrap_or(Span {
+                start: 0,
+                end: 0,
+            });
+        self.advance(); // consume @
+
+        // Consume optional decorator identifier
+        let decorator_end = if matches!(self.peek(), Some(Token::Ident(_))) {
+            let ident_span = self
+                .peek_span()
+                .unwrap_or(at_span);
+            self.advance(); // consume decorator name
+
+            // Consume optional call arguments: @decorator(args...)
+            if matches!(self.peek(), Some(Token::LeftParen)) {
+                self.advance(); // consume '('
+                let mut depth = 1usize;
+                loop {
+                    match self.peek() {
+                        Some(Token::LeftParen) => {
+                            depth += 1;
+                            self.advance();
+                        }
+                        Some(Token::RightParen) => {
+                            depth -= 1;
+                            self.advance();
+                            if depth == 0 {
+                                break;
+                            }
+                        }
+                        Some(_) => {
+                            self.advance();
+                        }
+                        None => break,
+                    }
+                }
+                self.prev_span()
+                    .map(|s| s.end)
+                    .unwrap_or(ident_span.end)
+            } else {
+                ident_span.end
+            }
+        } else {
+            at_span.end
+        };
+
+        // Always report this as a decorator boundary diagnostic regardless
+        // of what follows.  If the next token is `class` (the expected
+        // case), the caller learns that decorators are not yet supported.
+        Err(Diagnostic {
+            code: DiagCode::UnsupportedTypeScriptSyntax,
+            message: "issue-5253: TypeScript decorator syntax is not supported".to_owned(),
+            span: Some(Span {
+                start: at_span.start,
+                end: decorator_end,
+            }),
+        })
     }
 
     fn import_statement(&mut self) -> Result<Stmt, Diagnostic> {

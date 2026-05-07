@@ -547,6 +547,45 @@ mod tests {
     }
 
     #[test]
+    fn rejects_class_declaration_decorator_with_boundary_diagnostic() {
+        let err = parse_program("@decorator class C {}")
+            .expect_err("class declaration decorator should report boundary diagnostic");
+        assert_eq!(err.code, DiagCode::UnsupportedTypeScriptSyntax);
+        assert!(err.message.contains("decorator"), "{err:?}");
+        let span = err.span.expect("diagnostic must have a source span");
+        assert_eq!(
+            &"@decorator class C {}"[span.start..span.end],
+            "@decorator"
+        );
+    }
+
+    #[test]
+    fn rejects_class_declaration_decorator_with_call_args() {
+        let err = parse_program("@decorator(\"hello\") class Remote {}")
+            .expect_err("decorator with call args should report boundary diagnostic");
+        assert_eq!(err.code, DiagCode::UnsupportedTypeScriptSyntax);
+        assert!(err.message.contains("decorator"), "{err:?}");
+        let span = err.span.expect("diagnostic must have a source span");
+        assert_eq!(
+            &"@decorator(\"hello\") class Remote {}"[span.start..span.end],
+            "@decorator(\"hello\")"
+        );
+    }
+
+    #[test]
+    fn rejects_class_declaration_decorator_with_multiple_args() {
+        let err = parse_program("@decorator(arg1, arg2) class C {}")
+            .expect_err("decorator with multiple args should report boundary diagnostic");
+        assert_eq!(err.code, DiagCode::UnsupportedTypeScriptSyntax);
+        assert!(err.message.contains("decorator"), "{err:?}");
+        let span = err.span.expect("diagnostic must have a source span");
+        assert_eq!(
+            &"@decorator(arg1, arg2) class C {}"[span.start..span.end],
+            "@decorator(arg1, arg2)"
+        );
+    }
+
+    #[test]
     fn parses_typescript_generic_functions_and_calls_as_erased_syntax() {
         let source = r#"
             function id<T>(value: T): T { return value; }
@@ -2785,6 +2824,81 @@ b /* parameter b */,
                 assert!(extends.is_none());
             }
             other => panic!("expected ClassExpr in let initializer, got {other:?}"),
+        }
+    }
+
+    #[test]
+    fn rejects_anonymous_class_expression_implements_primitive() {
+        let source = "const C4 = class implements number {}";
+        let err = parse_program(source)
+            .expect_err("anonymous class expression implements primitive should be rejected");
+        assert_eq!(err.code, DiagCode::UnsupportedTypeScriptSyntax);
+        assert!(err.message.contains("number"), "{err:?}");
+        assert!(err.message.contains("primitive"), "{err:?}");
+        let span = err.span.expect("diagnostic must have a source span");
+        assert_eq!(&source[span.start..span.end], "number");
+    }
+
+    #[test]
+    fn rejects_named_class_expression_implements_primitive() {
+        let source = "const C7 = class A implements number {}";
+        let err = parse_program(source)
+            .expect_err("named class expression implements primitive should be rejected");
+        assert_eq!(err.code, DiagCode::UnsupportedTypeScriptSyntax);
+        assert!(err.message.contains("number"), "{err:?}");
+        assert!(err.message.contains("primitive"), "{err:?}");
+        let span = err.span.expect("diagnostic must have a source span");
+        assert_eq!(&source[span.start..span.end], "number");
+    }
+
+    #[test]
+    fn rejects_class_declaration_implements_primitive_number() {
+        let source = "class C implements number {}";
+        let err = parse_program(source)
+            .expect_err("class declaration implements number should be rejected");
+        assert_eq!(err.code, DiagCode::UnsupportedTypeScriptSyntax);
+        assert!(err.message.contains("number"), "{err:?}");
+        assert!(err.message.contains("primitive"), "{err:?}");
+        let span = err.span.expect("diagnostic must have a source span");
+        assert_eq!(&source[span.start..span.end], "number");
+    }
+
+    #[test]
+    fn rejects_class_declaration_implements_primitive_string() {
+        let source = "class C implements string {}";
+        let err = parse_program(source)
+            .expect_err("class declaration implements string should be rejected");
+        assert_eq!(err.code, DiagCode::UnsupportedTypeScriptSyntax);
+        assert!(err.message.contains("string"), "{err:?}");
+        assert!(err.message.contains("primitive"), "{err:?}");
+        let span = err.span.expect("diagnostic must have a source span");
+        assert_eq!(&source[span.start..span.end], "string");
+    }
+
+    #[test]
+    fn rejects_class_declaration_implements_primitive_boolean() {
+        let source = "class C implements boolean {}";
+        let err = parse_program(source)
+            .expect_err("class declaration implements boolean should be rejected");
+        assert_eq!(err.code, DiagCode::UnsupportedTypeScriptSyntax);
+        assert!(err.message.contains("boolean"), "{err:?}");
+        assert!(err.message.contains("primitive"), "{err:?}");
+        let span = err.span.expect("diagnostic must have a source span");
+        assert_eq!(&source[span.start..span.end], "boolean");
+    }
+
+    #[test]
+    fn allows_non_primitive_implements_in_class_declaration() {
+        // Non-primitive implements types are silently erased (no type checking).
+        let program = parse_program("class C implements I {}")
+            .expect("non-primitive implements should be silently skipped");
+        assert_eq!(program.len(), 1);
+        match &program[0] {
+            Stmt::ClassDecl { name, body, .. } => {
+                assert_eq!(name, "C");
+                assert!(body.is_empty());
+            }
+            other => panic!("expected ClassDecl, got {other:?}"),
         }
     }
 
