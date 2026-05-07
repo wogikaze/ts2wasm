@@ -916,10 +916,18 @@ impl NameResolver {
                         });
                     }
                 };
-                if callee_name == "Function" && !self.is_user_declared("Function") {
+                // Only unqualified `new Function(...)` triggers the eval boundary,
+                // NOT qualified calls like `new M.Function(...)`.
+                if matches!(expr.as_ref(), Expr::Ident { .. })
+                    && callee_name == "Function"
+                    && !self.is_user_declared("Function")
+                {
                     return Err(unsupported_function_constructor(*span));
                 }
-                if callee_name == "eval" && !self.is_user_declared("eval") {
+                if matches!(expr.as_ref(), Expr::Ident { .. })
+                    && callee_name == "eval"
+                    && !self.is_user_declared("eval")
+                {
                     return Err(unsupported_eval_diagnostic(*span));
                 }
                 Ok(Expr::New {
