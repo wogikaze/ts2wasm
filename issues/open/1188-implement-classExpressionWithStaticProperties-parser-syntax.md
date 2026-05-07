@@ -110,7 +110,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] `issues/open/5254-parse-asi-between-static-class-fields.md`
+- [x] `issues/done/5254-parse-asi-between-static-class-fields.md`
 
 ## Notes
 

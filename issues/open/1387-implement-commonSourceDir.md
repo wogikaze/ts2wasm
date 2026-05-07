@@ -18,7 +18,7 @@ updated: 2026-05-07
 ## Summary
 
 Closed as superseded by
-`issues/open/5285-support-export-var-initializer-declarations.md`.
+`issues/done/5285-support-export-var-initializer-declarations.md`.
 
 Fresh focused triage shows both `commonSourceDir5.ts` and
 `commonSourceDir6.ts` currently stop at the same initialized `export var`
@@ -137,7 +137,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] superseded by: `issues/open/5285-support-export-var-initializer-declarations.md`
+- [x] superseded by: `issues/done/5285-support-export-var-initializer-declarations.md`
 
 ## Notes
 
@@ -148,7 +148,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/open/5285-support-export-var-initializer-declarations.md` owns
+- `issues/done/5285-support-export-var-initializer-declarations.md` owns
   initialized `export var name = expr;` declarations that currently stop at
   issue-055 unsupported variable export.
 - `issues/done/5283-support-entry-export-var-declarations.md` is related but

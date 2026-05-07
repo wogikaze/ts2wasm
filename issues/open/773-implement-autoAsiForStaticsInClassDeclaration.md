@@ -20,7 +20,7 @@ status: done
 ## Summary
 
 Closed this generated parser-syntax bucket as superseded by
-`issues/open/5254-parse-asi-between-static-class-fields.md`.
+`issues/done/5254-parse-asi-between-static-class-fields.md`.
 
 ## Problem
 
@@ -48,7 +48,7 @@ mise run reference-coverage -- tsc --path-filter reference/typescript/tests/case
 ## Desired final state
 
 This generated bucket is closed. Implement from
-`issues/open/5254-parse-asi-between-static-class-fields.md`.
+`issues/done/5254-parse-asi-between-static-class-fields.md`.
 
 ## Scope
 
@@ -117,7 +117,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] `issues/open/5254-parse-asi-between-static-class-fields.md`
+- [x] `issues/done/5254-parse-asi-between-static-class-fields.md`
 
 ## Notes
 
@@ -127,7 +127,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-Superseded by `issues/open/5254-parse-asi-between-static-class-fields.md`.
+Superseded by `issues/done/5254-parse-asi-between-static-class-fields.md`.
 
 Evidence:
 

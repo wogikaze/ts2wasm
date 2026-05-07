@@ -139,7 +139,7 @@ class A {
 
 - `issues/open/059-implement-parser-syntax-extensions.md` is the broader parser
   syntax epic and should not be selected directly.
-- `issues/open/5251-parse-computed-class-member-names-in-class-declarations.md`
+- `issues/done/5251-parse-computed-class-member-names-in-class-declarations.md`
   is related but covers computed member names, not quoted string-literal names.
 - No existing open issue owned the exact `public static "\""() {}` parser
   failure, so this bucket was split to issue 5267.

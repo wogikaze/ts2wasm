@@ -125,7 +125,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/open/5254-parse-asi-between-static-class-fields.md` is related but
+- `issues/done/5254-parse-asi-between-static-class-fields.md` is related but
   static-only; this case is instance class field ASI after an initializer.
 - Split into `issues/open/5308-parse-asi-after-instance-class-field-initializers.md`.
 

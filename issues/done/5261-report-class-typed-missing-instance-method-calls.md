@@ -84,13 +84,13 @@ semantic blocker.
 
 In scope:
 
-- [ ] Preserve class type information for ambient value declarations such as
+- [x] Preserve class type information for ambient value declarations such as
   `declare var c: C`.
-- [ ] Resolve `c.bar()` / `c2.bar()` against the receiver class before the
+- [x] Resolve `c.bar()` / `c2.bar()` against the receiver class before the
   generic issue-211 unknown-receiver path.
-- [ ] Distinguish static-only methods such as `A.bar` / inherited `C2.bar`
+- [x] Distinguish static-only methods such as `A.bar` / inherited `C2.bar`
   from instance methods.
-- [ ] Emit a source-spanned diagnostic at the property access when no supported
+- [x] Emit a source-spanned diagnostic at the property access when no supported
   instance method exists.
 
 Out of scope:
@@ -116,13 +116,13 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] `classImplementsClass6.ts` no longer reports
+- [x] `classImplementsClass6.ts` no longer reports
   `issue-211: unknown receiver class for method bar`.
-- [ ] A focused fixture covers `declare var c: C; c.bar();` where `bar` is not
+- [x] A focused fixture covers `declare var c: C; c.bar();` where `bar` is not
   an instance method of `C`.
-- [ ] A focused fixture covers an inherited static method accessed through an
+- [x] A focused fixture covers an inherited static method accessed through an
   instance, e.g. `declare var c2: C2; c2.bar();`.
-- [ ] Existing supported direct class instance method calls remain unchanged.
+- [x] Existing supported direct class instance method calls remain unchanged.
 
 ## Validation
 

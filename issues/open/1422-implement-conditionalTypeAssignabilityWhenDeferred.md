@@ -173,7 +173,7 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- Split to `issues/open/5302-parse-fractional-number-literals-in-expressions.md`.
+- Split to `issues/done/5302-parse-fractional-number-literals-in-expressions.md`.
 
 Validation result:
 

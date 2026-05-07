@@ -63,9 +63,9 @@ representative reference advances to the next narrower blocker.
 
 In scope:
 
-- [ ] Parse `Number(0) Dot Number(5)` as one fractional numeric expression literal.
-- [ ] Preserve normal member access parsing for non-numeric dot expressions.
-- [ ] Add focused parser coverage for `Math.random() > 0.5`.
+- [x] Parse `Number(0) Dot Number(5)` as one fractional numeric expression literal.
+- [x] Preserve normal member access parsing for non-numeric dot expressions.
+- [x] Add focused parser coverage for `Math.random() > 0.5`.
 
 Out of scope:
 
@@ -88,9 +88,9 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] `Math.random() > 0.5` parses as a comparison against a numeric literal instead of member access.
-- [ ] `python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/conditionalTypeAssignabilityWhenDeferred.ts` no longer reports `expected member property name, got Number(5)` at `946..947`.
-- [ ] Existing member access parsing such as `obj.x` remains unchanged.
+- [x] `Math.random() > 0.5` parses as a comparison against a numeric literal instead of member access.
+- [x] `python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/conditionalTypeAssignabilityWhenDeferred.ts` no longer reports `expected member property name, got Number(5)` at `946..947`.
+- [x] Existing member access parsing such as `obj.x` remains unchanged.
 
 ## Validation
 
@@ -116,15 +116,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 

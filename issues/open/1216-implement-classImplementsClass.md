@@ -19,7 +19,7 @@ updated: 2026-05-06
 
 Closed by splitting the only remaining current blocker in the
 `classImplementsClass` reference family to
-`issues/open/5261-report-class-typed-missing-instance-method-calls.md`.
+`issues/done/5261-report-class-typed-missing-instance-method-calls.md`.
 
 ## Problem
 
@@ -116,7 +116,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] `issues/open/5261-report-class-typed-missing-instance-method-calls.md`
+- [x] `issues/done/5261-report-class-typed-missing-instance-method-calls.md`
 
 ## Notes
 
@@ -181,7 +181,7 @@ TypeScript oracle: TS2339 on c.bar and TS2576 on c2.bar
 
 Split issue:
 
-- `issues/open/5261-report-class-typed-missing-instance-method-calls.md`
+- `issues/done/5261-report-class-typed-missing-instance-method-calls.md`
 
 ## Completion evidence
 
@@ -189,7 +189,7 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- Split to `issues/open/5261-report-class-typed-missing-instance-method-calls.md`; see local commit for this issue cleanup.
+- Split to `issues/done/5261-report-class-typed-missing-instance-method-calls.md`; see local commit for this issue cleanup.
 
 Validation result:
 

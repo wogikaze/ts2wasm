@@ -114,7 +114,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] none; superseded by `issues/open/5305-report-merge-conflict-marker-diagnostics.md`
+- [x] none; superseded by `issues/done/5305-report-merge-conflict-marker-diagnostics.md`
 
 ## Notes
 
@@ -124,7 +124,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- Superseded by `issues/open/5305-report-merge-conflict-marker-diagnostics.md`.
+- Superseded by `issues/done/5305-report-merge-conflict-marker-diagnostics.md`.
   The current first blocker is the same merge conflict marker diagnostic gap,
   with regular conflict markers in a class body.
 - Generic parser-syntax buckets are no-match because this bucket needs a

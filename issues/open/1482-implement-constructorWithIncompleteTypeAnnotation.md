@@ -110,7 +110,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] split to `issues/open/5364-report-unterminated-string-literal-at-raw-newline.md`
+- [x] split to `issues/done/5364-report-unterminated-string-literal-at-raw-newline.md`
 
 ## Notes
 
@@ -144,7 +144,7 @@ Source context:
 47 |                     return 1;
 ```
 
-This bucket was split to `issues/open/5364-report-unterminated-string-literal-at-raw-newline.md`.
+This bucket was split to `issues/done/5364-report-unterminated-string-literal-at-raw-newline.md`.
 
 ## Completion evidence
 

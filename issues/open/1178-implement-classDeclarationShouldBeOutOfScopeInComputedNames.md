@@ -110,7 +110,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] `issues/open/5251-parse-computed-class-member-names-in-class-declarations.md`
+- [x] `issues/done/5251-parse-computed-class-member-names-in-class-declarations.md`
 
 ## Notes
 

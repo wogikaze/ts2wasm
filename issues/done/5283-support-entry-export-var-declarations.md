@@ -146,7 +146,7 @@ Related but not duplicates:
   `export let` destructuring and explicitly excludes general `export var`.
 - `issues/done/5144-support-entry-export-function-declarations.md`,
   `issues/done/5232-w0-fixture-ize-runtimelinkplan-linker-structure-tests.md`, and
-  `issues/open/5277-parse-export-enum-declarations-to-enum-boundary.md` cover
+  `issues/done/5277-parse-export-enum-declarations-to-enum-boundary.md` cover
   sibling export forms.
 - `issues/open/432-implement-import-export.md` is the broad generated
   import/export bucket and is too wide to implement directly.

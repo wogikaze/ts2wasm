@@ -18,7 +18,7 @@ updated: 2026-05-06
 ## Summary
 
 Closed by splitting the current object type literal construct-signature parser
-blocker to `issues/open/5257-parse-object-type-literal-construct-signatures.md`.
+blocker to `issues/done/5257-parse-object-type-literal-construct-signatures.md`.
 
 ## Problem
 
@@ -114,7 +114,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] `issues/open/5257-parse-object-type-literal-construct-signatures.md`
+- [x] `issues/done/5257-parse-object-type-literal-construct-signatures.md`
 
 ## Notes
 
@@ -168,7 +168,7 @@ likely existing owner for the `extends factory(A)` shape.
 
 Split issue:
 
-- `issues/open/5257-parse-object-type-literal-construct-signatures.md`
+- `issues/done/5257-parse-object-type-literal-construct-signatures.md`
 
 ## Completion evidence
 
@@ -176,7 +176,7 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- Split to `issues/open/5257-parse-object-type-literal-construct-signatures.md`; see local commit for this issue cleanup.
+- Split to `issues/done/5257-parse-object-type-literal-construct-signatures.md`; see local commit for this issue cleanup.
 
 Validation result:
 

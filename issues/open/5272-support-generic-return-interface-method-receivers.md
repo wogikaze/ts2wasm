@@ -168,7 +168,7 @@ Related but distinct:
   handles method calls on locals directly annotated with interface types.
 - `issues/done/5234-w0-implement-host-deny-and-auditable-e2e-manifest-verification.md`
   handles array-shaped parameter annotations.
-- `issues/open/5261-report-class-typed-missing-instance-method-calls.md`
+- `issues/done/5261-report-class-typed-missing-instance-method-calls.md`
   handles class-typed ambient locals and missing instance methods.
 
 ## Completion evidence

@@ -114,7 +114,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] none; superseded by `issues/open/5305-report-merge-conflict-marker-diagnostics.md`
+- [x] none; superseded by `issues/done/5305-report-merge-conflict-marker-diagnostics.md`
 
 ## Notes
 
@@ -125,7 +125,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- Superseded by `issues/open/5305-report-merge-conflict-marker-diagnostics.md`.
+- Superseded by `issues/done/5305-report-merge-conflict-marker-diagnostics.md`.
   Both affected paths hit merge conflict marker lines before any unrelated
   unknown-unsupported behavior.
 - Generic unknown-unsupported candidates are no-match because this bucket needs

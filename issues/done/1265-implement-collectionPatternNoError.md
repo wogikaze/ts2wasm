@@ -143,7 +143,7 @@ class DataProvider<T extends Message, U extends MessageList<T>> {
   function return constrained to an interface.
 - `issues/done/5234-w0-implement-host-deny-and-auditable-e2e-manifest-verification.md` is
   related but not exact: it handles array-shaped parameter annotations.
-- `issues/open/5261-report-class-typed-missing-instance-method-calls.md` is
+- `issues/done/5261-report-class-typed-missing-instance-method-calls.md` is
   related but not exact: it handles class-typed ambient locals with missing
   instance methods.
 - No exact implementation-ready issue owned the generic return interface

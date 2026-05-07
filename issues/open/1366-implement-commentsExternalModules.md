@@ -18,7 +18,7 @@ updated: 2026-05-07
 ## Summary
 
 Closed after splitting the current exported variable initializer blocker into
-`issues/open/5285-support-export-var-initializer-declarations.md`.
+`issues/done/5285-support-export-var-initializer-declarations.md`.
 
 ## Problem
 
@@ -59,7 +59,7 @@ commentsExternalModules3.ts: UnsupportedSyntax import-export; issue-055 unsuppor
 ## Desired final state
 
 This generated bucket is closed. Implementation should proceed through
-`issues/open/5285-support-export-var-initializer-declarations.md`; the bare
+`issues/done/5285-support-export-var-initializer-declarations.md`; the bare
 module specifier behavior remains covered by `issues/done/232-resolve-local-relative-es-module-graph.md`.
 
 ## Scope
@@ -134,7 +134,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] `issues/open/5285-support-export-var-initializer-declarations.md`
+- [x] `issues/done/5285-support-export-var-initializer-declarations.md`
 
 ## Notes
 
@@ -152,7 +152,7 @@ Follow-up issues:
 - `issues/done/5283-support-entry-export-var-declarations.md` covers a simple
   typed `export var b: number;` declaration and is too narrow for initialized
   exported variables that depend on imported module values.
-- `issues/open/5285-support-export-var-initializer-declarations.md` owns the
+- `issues/done/5285-support-export-var-initializer-declarations.md` owns the
   current `export var newVar = new extMod...` blocker.
 
 ## Smart triage

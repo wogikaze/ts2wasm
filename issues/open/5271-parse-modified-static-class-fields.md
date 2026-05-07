@@ -144,7 +144,7 @@ Follow-up issues:
 ## Notes
 
 Split from generated bucket `issues/open/1255-implement-cloduleStaticMembers.md`.
-Related but distinct issue: `issues/open/5254-parse-asi-between-static-class-fields.md`.
+Related but distinct issue: `issues/done/5254-parse-asi-between-static-class-fields.md`.
 
 ## Completion evidence
 

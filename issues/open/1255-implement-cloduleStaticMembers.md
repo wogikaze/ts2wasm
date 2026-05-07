@@ -133,7 +133,7 @@ class Clod {
 
 ## Duplicate detection
 
-- `issues/open/5254-parse-asi-between-static-class-fields.md` is related but
+- `issues/done/5254-parse-asi-between-static-class-fields.md` is related but
   owns ASI between uninitialized static fields, not modifier-prefixed static
   fields with initializers.
 - No existing implementation-ready child owned `private static x = 10;`, so

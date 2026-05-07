@@ -77,10 +77,10 @@ SourceFile
 
 In scope:
 
-- [ ] Recognize `export enum Name { ... }` as an exported enum declaration instead of generic unsupported static export.
-- [ ] Preserve comments/trivia before the exported enum declaration.
-- [ ] Advance to the existing enum-specific unsupported TypeScript syntax diagnostic until enum transform support exists.
-- [ ] Add focused frontend/CLI coverage for `export enum Color { r, g, b }`.
+- [x] Recognize `export enum Name { ... }` as an exported enum declaration instead of generic unsupported static export.
+- [x] Preserve comments/trivia before the exported enum declaration.
+- [x] Advance to the existing enum-specific unsupported TypeScript syntax diagnostic until enum transform support exists.
+- [x] Add focused frontend/CLI coverage for `export enum Color { r, g, b }`.
 
 Out of scope:
 
@@ -105,11 +105,11 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] `commentOnExportEnumDeclaration.ts` no longer reports issue-055 `unsupported static export`.
-- [ ] A focused test proves `export enum Color { r, g, b }` reaches an enum-specific boundary diagnostic.
-- [ ] Existing non-export enum boundary diagnostics remain source-spanned.
-- [ ] Existing unsupported import/export diagnostics for unrelated forms still report issue-055.
-- [ ] If parsing advances to a broader enum transform blocker, that next blocker is recorded separately.
+- [x] `commentOnExportEnumDeclaration.ts` no longer reports issue-055 `unsupported static export`.
+- [x] A focused test proves `export enum Color { r, g, b }` reaches an enum-specific boundary diagnostic.
+- [x] Existing non-export enum boundary diagnostics remain source-spanned.
+- [x] Existing unsupported import/export diagnostics for unrelated forms still report issue-055.
+- [x] If parsing advances to a broader enum transform blocker, that next blocker is recorded separately.
 
 ## Validation
 

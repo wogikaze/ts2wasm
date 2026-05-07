@@ -66,10 +66,10 @@ The lexer/parser reports a source-spanned unterminated string literal diagnostic
 
 In scope:
 
-- [ ] Detect raw newline before a closing single-quoted or double-quoted string delimiter.
-- [ ] Emit a source-spanned unterminated-string diagnostic instead of generic unsupported syntax.
-- [ ] Add a focused lexer/parser regression for `const x = 'unterminated\nnext();`.
-- [ ] Re-run `constructorWithIncompleteTypeAnnotation.ts` and split the next blocker if outside this issue.
+- [x] Detect raw newline before a closing single-quoted or double-quoted string delimiter.
+- [x] Emit a source-spanned unterminated-string diagnostic instead of generic unsupported syntax.
+- [x] Add a focused lexer/parser regression for `const x = 'unterminated\nnext();`.
+- [x] Re-run `constructorWithIncompleteTypeAnnotation.ts` and split the next blocker if outside this issue.
 
 Out of scope:
 
@@ -89,10 +89,10 @@ Do not touch: unrelated runtime/backend code.
 
 ## Acceptance criteria
 
-- [ ] `constructorWithIncompleteTypeAnnotation.ts` no longer reports generic `raw newline in string literal is not allowed`.
-- [ ] A focused test reports an unterminated string literal diagnostic for a raw newline in a single-quoted string.
-- [ ] Existing valid escaped newline or escaped character string tests keep passing.
-- [ ] Any next blocker from the reference path is recorded here or split to a follow-up.
+- [x] `constructorWithIncompleteTypeAnnotation.ts` no longer reports generic `raw newline in string literal is not allowed`.
+- [x] A focused test reports an unterminated string literal diagnostic for a raw newline in a single-quoted string.
+- [x] Existing valid escaped newline or escaped character string tests keep passing.
+- [x] Any next blocker from the reference path is recorded here or split to a follow-up.
 
 ## Validation
 
@@ -118,15 +118,15 @@ python scripts/manager.py reference-coverage tsc --path-filter reference/typescr
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 

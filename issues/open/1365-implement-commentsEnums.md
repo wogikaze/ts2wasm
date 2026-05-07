@@ -144,7 +144,7 @@ Follow-up issues:
   may expose the same family later, but they are not implementation-ready
   children.
 - `issues/open/5184-parse-const-enum-declarations.md` covers `const enum`.
-- `issues/open/5277-parse-export-enum-declarations-to-enum-boundary.md` covers
+- `issues/done/5277-parse-export-enum-declarations-to-enum-boundary.md` covers
   `export enum`.
 - `issues/open/5284-bind-plain-enum-declarations-before-member-access.md` owns
   this current plain enum binding blocker.

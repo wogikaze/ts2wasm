@@ -53,9 +53,9 @@ failing during lexing.
 
 In scope:
 
-- [ ] Accept `9007199254740992` as a decimal numeric literal token.
-- [ ] Preserve source spans for later diagnostics.
-- [ ] Add focused lexer coverage for a decimal integer above `i32::MAX`.
+- [x] Accept `9007199254740992` as a decimal numeric literal token.
+- [x] Preserve source spans for later diagnostics.
+- [x] Add focused lexer coverage for a decimal integer above `i32::MAX`.
 
 Out of scope:
 
@@ -78,9 +78,9 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] Lexer tests accept `9007199254740992` without `number too large to fit in target type`.
-- [ ] `constEnumErrors.ts` no longer reports the current lexer failure at `9007199254740992`.
-- [ ] Invalid decimal number forms still produce source-spanned diagnostics.
+- [x] Lexer tests accept `9007199254740992` without `number too large to fit in target type`.
+- [x] `constEnumErrors.ts` no longer reports the current lexer failure at `9007199254740992`.
+- [x] Invalid decimal number forms still produce source-spanned diagnostics.
 
 ## Validation
 

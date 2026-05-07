@@ -21,7 +21,7 @@ status: done
 
 Closed this generated const-enum errors bucket after splitting the current
 large decimal integer literal lexer boundary to
-`issues/open/5351-accept-large-decimal-integer-number-literals.md`.
+`issues/done/5351-accept-large-decimal-integer-number-literals.md`.
 
 ## Problem
 
@@ -46,7 +46,7 @@ mise run reference-coverage -- tsc --path-filter reference/typescript/tests/case
 ## Desired final state
 
 This generated bucket is closed. Implement the current lexer boundary from
-`issues/open/5351-accept-large-decimal-integer-number-literals.md`.
+`issues/done/5351-accept-large-decimal-integer-number-literals.md`.
 
 ## Scope
 
@@ -115,7 +115,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] created: `issues/open/5351-accept-large-decimal-integer-number-literals.md`
+- [x] created: `issues/done/5351-accept-large-decimal-integer-number-literals.md`
 
 ## Notes
 
@@ -137,7 +137,7 @@ Generated on 2026-05-07.
 - Current failing source: `A = 9007199254740992`
 - Compiler dumps fail before token output, AST, or resolved construction.
 - TypeScript oracle parses the file and reports later enum diagnostics including TS2567, TS2651, TS2474, TS2475, TS2476, TS2477, and TS2478.
-- Superseding child: `issues/open/5351-accept-large-decimal-integer-number-literals.md`
+- Superseding child: `issues/done/5351-accept-large-decimal-integer-number-literals.md`
 
 Nearby non-owners:
 

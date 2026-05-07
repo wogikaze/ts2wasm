@@ -183,7 +183,7 @@ Follow-up issues:
 - `issues/open/435-implement-method-call.md` is a broad method-call bucket, but
   the oracle first diagnostic is the earlier ambient constructor implementation
   diagnostic.
-- `issues/open/5261-report-class-typed-missing-instance-method-calls.md`
+- `issues/done/5261-report-class-typed-missing-instance-method-calls.md`
   handles known class-typed ambient locals whose requested method is missing;
   this representative has a method declared in `Foo` and should not reach that
   missing-method path before TS1183.

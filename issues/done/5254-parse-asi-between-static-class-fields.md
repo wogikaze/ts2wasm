@@ -66,10 +66,10 @@ class C {
 
 In scope:
 
-- [ ] Accept ASI after `static name` before a later-line `static` class element.
-- [ ] Cover class declarations and class expressions with the same parser rule.
-- [ ] Preserve method parsing for `static name()` and field initializer parsing for `static name = expr`.
-- [ ] Add focused parser coverage for `static b` followed by `static c = ...`.
+- [x] Accept ASI after `static name` before a later-line `static` class element.
+- [x] Cover class declarations and class expressions with the same parser rule.
+- [x] Preserve method parsing for `static name()` and field initializer parsing for `static name = expr`.
+- [x] Add focused parser coverage for `static b` followed by `static c = ...`.
 
 Out of scope:
 
@@ -92,10 +92,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] `classExpressionWithStaticProperties2.ts` no longer reports `expected LeftParen, got Some(Static)`.
-- [ ] `autoAsiForStaticsInClassDeclaration.ts` no longer reports `expected LeftParen, got Some(Static)`.
-- [ ] A focused parser test covers `class C { static b\nstatic c = 1 }`.
-- [ ] Existing static method parsing remains unchanged.
+- [x] `classExpressionWithStaticProperties2.ts` no longer reports `expected LeftParen, got Some(Static)`.
+- [x] `autoAsiForStaticsInClassDeclaration.ts` no longer reports `expected LeftParen, got Some(Static)`.
+- [x] A focused parser test covers `class C { static b\nstatic c = 1 }`.
+- [x] Existing static method parsing remains unchanged.
 
 ## Validation
 

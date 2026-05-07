@@ -20,7 +20,7 @@ status: done
 ## Summary
 
 Closed this generated bucket as superseded by
-`issues/open/5285-support-export-var-initializer-declarations.md`.
+`issues/done/5285-support-export-var-initializer-declarations.md`.
 
 ## Problem
 
@@ -49,7 +49,7 @@ env TS2WASM_BINARY=/tmp/ts2wasm-issue-blockers-target/debug/ts2wasm python scrip
 ## Desired final state
 
 This generated bucket is closed. Implement from
-`issues/open/5285-support-export-var-initializer-declarations.md`.
+`issues/done/5285-support-export-var-initializer-declarations.md`.
 
 ## Scope
 
@@ -118,7 +118,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] `issues/open/5285-support-export-var-initializer-declarations.md`
+- [x] `issues/done/5285-support-export-var-initializer-declarations.md`
 
 ## Notes
 
@@ -128,7 +128,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-Superseded by `issues/open/5285-support-export-var-initializer-declarations.md`.
+Superseded by `issues/done/5285-support-export-var-initializer-declarations.md`.
 
 Evidence:
 

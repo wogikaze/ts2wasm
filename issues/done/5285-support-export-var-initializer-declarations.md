@@ -77,7 +77,7 @@ boundary.
 
 In scope:
 
-- [ ] Parse initialized `export var name = expr;` declarations with focused coverage, then re-run `commentsExternalModules2.ts` and confirm the issue-055 variable export boundary is gone.
+- [x] Parse initialized `export var name = expr;` declarations with focused coverage, then re-run `commentsExternalModules2.ts` and confirm the issue-055 variable export boundary is gone.
 
 Out of scope:
 
@@ -100,8 +100,8 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] `commentsExternalModules2.ts` no longer reports issue-055 `unsupported variable export` at `export var newVar`.
-- [ ] A focused fixture covers `export var name = expr;` and preserves unrelated unsupported module specifier diagnostics.
+- [x] `commentsExternalModules2.ts` no longer reports issue-055 `unsupported variable export` at `export var newVar`.
+- [x] A focused fixture covers `export var name = expr;` and preserves unrelated unsupported module specifier diagnostics.
 
 ## Validation
 
@@ -127,15 +127,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 

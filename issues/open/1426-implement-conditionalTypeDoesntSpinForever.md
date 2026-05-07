@@ -114,7 +114,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] none; superseded by `issues/open/5277-parse-export-enum-declarations-to-enum-boundary.md`
+- [x] none; superseded by `issues/done/5277-parse-export-enum-declarations-to-enum-boundary.md`
 
 ## Notes
 
@@ -124,7 +124,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- Superseded by `issues/open/5277-parse-export-enum-declarations-to-enum-boundary.md`.
+- Superseded by `issues/done/5277-parse-export-enum-declarations-to-enum-boundary.md`.
   The current 1426 first blocker is the same issue-055 `export enum` boundary
   that 5277 owns.
 - Generic import/export duplicate candidates are no-match because they cover

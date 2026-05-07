@@ -176,7 +176,7 @@ Related but not duplicates:
 
 - `issues/done/5231-w0-typed-wat-writer-expr-emit-migration.md` covers
   `export as namespace Name;`, not namespace declarations with bodies.
-- `issues/open/5277-parse-export-enum-declarations-to-enum-boundary.md` covers
+- `issues/done/5277-parse-export-enum-declarations-to-enum-boundary.md` covers
   `export enum`, not `export namespace`.
 - `issues/open/5287-bind-namespace-declarations-for-qualified-value-access.md`
   and `issues/open/5294-resolve-sibling-namespaces-in-nested-namespace-scopes.md`

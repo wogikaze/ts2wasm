@@ -134,7 +134,7 @@ Follow-up issues:
 
 - `issues/open/5336-parse-object-type-literal-signatures-with-rest-parameters.md` - exact owner for object type literal call/construct/method/property signatures with rest parameters
 - `issues/done/5201-parse-object-type-literal-call-signatures.md` - related call-signature-only parser issue, narrower than this mixed signature shape
-- `issues/open/5257-parse-object-type-literal-construct-signatures.md` - related construct-signature-only parser issue, narrower than this mixed signature shape
+- `issues/done/5257-parse-object-type-literal-construct-signatures.md` - related construct-signature-only parser issue, narrower than this mixed signature shape
 
 ## Smart triage
 

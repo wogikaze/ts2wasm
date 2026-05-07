@@ -18,7 +18,7 @@ updated: 2026-05-06
 ## Summary
 
 Closed after splitting the current module-syntax blocker into
-`issues/open/5277-parse-export-enum-declarations-to-enum-boundary.md`.
+`issues/done/5277-parse-export-enum-declarations-to-enum-boundary.md`.
 
 ## Problem
 
@@ -53,7 +53,7 @@ unsupported_features=import-export:1
 ## Desired final state
 
 This generated bucket is closed. Implementation should proceed through
-`issues/open/5277-parse-export-enum-declarations-to-enum-boundary.md`.
+`issues/done/5277-parse-export-enum-declarations-to-enum-boundary.md`.
 
 ## Scope
 
@@ -125,7 +125,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] `issues/open/5277-parse-export-enum-declarations-to-enum-boundary.md`
+- [x] `issues/done/5277-parse-export-enum-declarations-to-enum-boundary.md`
 
 ## Notes
 

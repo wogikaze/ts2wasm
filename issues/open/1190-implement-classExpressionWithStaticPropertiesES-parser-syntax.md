@@ -17,7 +17,7 @@ updated: 2026-05-06
 
 ## Summary
 
-Closed as superseded by `issues/open/5254-parse-asi-between-static-class-fields.md`.
+Closed as superseded by `issues/done/5254-parse-asi-between-static-class-fields.md`.
 Fresh triage shows the remaining parser-syntax representative in this bucket is
 the same static class field ASI boundary already split from 1188.
 
@@ -116,7 +116,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] superseded by `issues/open/5254-parse-asi-between-static-class-fields.md`
+- [x] superseded by `issues/done/5254-parse-asi-between-static-class-fields.md`
 
 ## Notes
 
@@ -176,7 +176,7 @@ StaticKeyword`.
 
 Superseding owner:
 
-- `issues/open/5254-parse-asi-between-static-class-fields.md`
+- `issues/done/5254-parse-asi-between-static-class-fields.md`
 
 Reason:
 
@@ -189,7 +189,7 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- Superseded by `issues/open/5254-parse-asi-between-static-class-fields.md`; see local commit for this issue cleanup.
+- Superseded by `issues/done/5254-parse-asi-between-static-class-fields.md`; see local commit for this issue cleanup.
 
 Validation result:
 

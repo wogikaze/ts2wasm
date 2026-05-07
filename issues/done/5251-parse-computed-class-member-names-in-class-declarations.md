@@ -63,10 +63,10 @@ ClassDeclaration -> PropertyDeclaration "static readonly [A.p1] = 0;" -> FirstLi
 
 In scope:
 
-- [ ] Parse computed class member names for class declarations.
-- [ ] Preserve modifiers such as `static` and `readonly` on computed property declarations.
-- [ ] Parse static and instance computed methods and fields without misreading `=` as a property name.
-- [ ] Add focused parser/frontend coverage for the representative static readonly field plus computed method and instance field forms.
+- [x] Parse computed class member names for class declarations.
+- [x] Preserve modifiers such as `static` and `readonly` on computed property declarations.
+- [x] Parse static and instance computed methods and fields without misreading `=` as a property name.
+- [x] Add focused parser/frontend coverage for the representative static readonly field plus computed method and instance field forms.
 
 Out of scope:
 
@@ -89,9 +89,9 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] The representative reference case no longer reports `expected property name, got Equal` for `static readonly [A.p1] = 0;`.
-- [ ] A focused test parses static computed fields, static computed methods, instance computed methods, and instance computed fields in class declarations.
-- [ ] If TS2449/use-before-declaration remains after parsing succeeds, the next blocker is recorded with the same reference path and oracle diagnostic.
+- [x] The representative reference case no longer reports `expected property name, got Equal` for `static readonly [A.p1] = 0;`.
+- [x] A focused test parses static computed fields, static computed methods, instance computed methods, and instance computed fields in class declarations.
+- [x] If TS2449/use-before-declaration remains after parsing succeeds, the next blocker is recorded with the same reference path and oracle diagnostic.
 
 ## Validation
 

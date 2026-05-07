@@ -165,7 +165,7 @@ Related but not exact:
 - `issues/open/5334-parse-class-constructor-overload-signatures.md` handles
   valid runtime class overload signatures; this issue handles invalid bodies in
   ambient class declarations.
-- `issues/open/5261-report-class-typed-missing-instance-method-calls.md`
+- `issues/done/5261-report-class-typed-missing-instance-method-calls.md`
   handles missing methods on known class-typed ambient locals; this issue should
   prevent `constructorOverloads6.ts` from reaching that method-call family.
 
