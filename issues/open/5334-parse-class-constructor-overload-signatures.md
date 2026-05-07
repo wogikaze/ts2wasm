@@ -107,6 +107,7 @@ Do not touch:
 ## Acceptance criteria
 
 - [ ] `collisionArgumentsClassConstructor.ts` no longer reports `DuplicateFunction: duplicate constructor definition` for bodyless constructor overload signatures.
+- [ ] `collisionThisExpressionAndPropertyNameAsConstuctorParameter.ts` no longer reports `DuplicateFunction: duplicate constructor definition` for bodyless constructor overload signatures before the `_this` parameter-property cases.
 - [ ] A focused parser/resolver test accepts `class C { constructor(x: number); constructor(x: string); constructor(x: any) {} }`.
 - [ ] A focused negative test still rejects two constructor bodies in one class.
 - [ ] `declare class C { constructor(x: number); constructor(x: string); }` remains erased/accepted if currently parsed.
@@ -154,6 +155,16 @@ Follow-up issues:
 
 Split from `issues/done/1267-implement-collisionArgumentsClassConstructor.md`
 on 2026-05-07.
+
+2026-05-07 additional evidence:
+`collisionThisExpressionAndPropertyNameAsConstuctorParameter.ts` parses tokens
+and AST for ordinary constructor `_this` parameters, parameter properties, and
+nested arrow returns, then fails during validation/resolution with
+`DuplicateFunction: duplicate constructor definition` when it reaches classes
+with bodyless constructor overload signatures followed by an implementation.
+The TypeScript oracle accepts the file with no diagnostics. Later
+parameter-property and lexical `this` collision behavior remains unproven until
+this constructor-overload blocker is resolved.
 
 ## Completion evidence
 

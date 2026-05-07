@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 5 | 4 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4532 | 3547 | 985 |
+| frontend | 4532 | 3546 | 986 |
 | harness | 1 | 0 | 1 |
 | ir | 65 | 43 | 22 |
 | issues | 4 | 0 | 4 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5177 | 3838 | 1339 |
+| total | 5177 | 3837 | 1340 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -570,7 +570,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 772 | Implement Augmentedtypesvar | spike | frontend/syntax | class: blocked | Implement Augmentedtypesvar |
 | 773 | Implement Autoasiforstaticsinclassdeclaration | spike | frontend/syntax | class: triage-needed | Implement Autoasiforstaticsinclassdeclaration |
 | 775 | Implement Autotypeassignedusingdestructuringfromnevernocrash | spike | frontend/resolver | class: blocked | Implement Autotypeassignedusingdestructuringfromnevernocrash |
-| 1334 | Implement Collisionthisexpressionandpropertynameasconstuctorparameter | spike | frontend/syntax | class: blocked | Implement Collisionthisexpressionandpropertynameasconstuctorparameter |
 | 1335 | Implement Collisionthisexpressionandvaringlobal | spike | frontend/syntax | class: blocked | Implement Collisionthisexpressionandvaringlobal |
 | 1337 | Implement Commaoperatorinconditionalexpression | spike | frontend/semantics | class: blocked | Implement Commaoperatorinconditionalexpression |
 | 1338 | Implement Commaoperatorleftsideunused | spike | frontend/syntax | class: blocked | Implement Commaoperatorleftsideunused |
@@ -5036,6 +5035,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1331 | Implement Collisionthisexpressionandmoduleinglobal | spike | frontend/syntax | see `issues/done/1331-implement-collisionThisExpressionAndModuleInGlobal.md` |
 | 1332 | Implement Collisionthisexpressionandnameresolution | spike | frontend/syntax | see `issues/done/1332-implement-collisionThisExpressionAndNameResolution.md` |
 | 1333 | Implement Collisionthisexpressionandparameter | spike | frontend/syntax | see `issues/done/1333-implement-collisionThisExpressionAndParameter.md` |
+| 1334 | Implement Collisionthisexpressionandpropertynameasconstuctorparameter | spike | frontend/syntax | see `issues/done/1334-implement-collisionThisExpressionAndPropertyNameAsConstuctorParameter.md` |
 | 1336 | Implement Commaoperator | spike | frontend/syntax | see `issues/done/1336-implement-commaOperator.md` |
 | 1339 | Implement Commentbeforestaticmethod | spike | frontend/syntax | see `issues/done/1339-implement-commentBeforeStaticMethod.md` |
 | 1340 | Implement Commentemitatendoffile | spike | frontend/syntax | see `issues/done/1340-implement-commentEmitAtEndOfFile.md` |
