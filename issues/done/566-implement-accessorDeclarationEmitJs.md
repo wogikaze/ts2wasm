@@ -3,12 +3,13 @@ id: 566
 title: "Implement Accessordeclarationemitjs"
 type: spike
 area: frontend/syntax
-class: blocked
+class: done
 priority: P2
-depends_on: [5003]
+depends_on: [5394]
 blocks: []
 created: 2026-05-01
-updated: 2026-05-01
+updated: 2026-05-08
+completed: 2026-05-08
 ---
 
 ## Summary
@@ -17,9 +18,13 @@ Triage accessorDeclarationEmitJs across 1 failing reference test cases and split
 
 ## Problem
 
-Reference test results show 1 cases fail in directory `accessorDeclarationEmitJs` with diagnostics: declaration-emit. The compiler cannot handle these syntax/semantics, preventing compilation of code in this category.
+Reference test results showed 1 case in `accessorDeclarationEmitJs` with
+diagnostics: declaration-emit. Fresh coverage now build-passes the file; the old
+object-literal accessor parser blocker is gone.
 
-Problem: accessorDeclarationEmitJs has 1 reference failures and needs smart-triage evidence before implementation starts.
+Problem: `reference-triage` still exposes a different compiler invariant:
+`FuncId 0 is out of range (program has 0 function(s))`. That follow-up is split
+to issue 5394.
 
 ## Current failure
 
@@ -43,10 +48,10 @@ This generated bucket is either split into implementation-ready child issues or 
 
 In scope:
 
-- [ ] Inspect the smart triage report below
-- [ ] Confirm whether existing open/done issues already cover this bucket
-- [ ] Split one feature family, one observable behavior, or one fixed reference window into child issues
-- [ ] Preserve exact reproduction commands and representative AST/diagnostic evidence in each child issue
+- [x] Inspect the smart triage report below
+- [x] Confirm whether existing open/done issues already cover this bucket
+- [x] Split one feature family, one observable behavior, or one fixed reference window into child issues
+- [x] Preserve exact reproduction commands and representative AST/diagnostic evidence in each child issue
 
 Out of scope:
 
@@ -68,10 +73,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] Duplicate candidates below are confirmed as no-match or this issue is superseded
-- [ ] At least one child issue contains an exact `mise run reference-triage -- ...` command
-- [ ] Child issue includes failing path, diagnostic code, source context, visible symbols, and parser/TypeScript AST evidence
-- [ ] Child issue acceptance names the exact fixture/reference path and diagnostic/stdout change
+- [x] Duplicate candidates below are confirmed as no-match or this issue is superseded
+- [x] At least one child issue contains an exact `mise run reference-triage -- ...` command
+- [x] Child issue includes failing path, diagnostic code, source context, visible symbols, and parser/TypeScript AST evidence
+- [x] Child issue acceptance names the exact fixture/reference path and diagnostic/stdout change
 
 ## Validation
 
@@ -98,15 +103,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] updated: `current-state.md` (repo root)
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 
@@ -617,16 +622,20 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- `...`
+- pending
 
 Validation result:
 
 ```text
-command:
-result:
-date:
+command: env TS2WASM_BINARY=/tmp/ts2wasm-issue-blockers-target/debug/ts2wasm python scripts/manager.py reference-coverage tsc --path-filter reference/typescript/tests/cases/compiler/accessorDeclarationEmitJs.ts --detail --no-dashboard-data
+result: pass; executed=1, build_pass=1, unsupported=0
+date: 2026-05-08
+
+command: env TS2WASM_BINARY=/tmp/ts2wasm-issue-blockers-target/debug/ts2wasm python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/accessorDeclarationEmitJs.ts
+result: pass; triage now reports InvariantViolation FuncId 0 out of range after tokens/AST/resolved succeed; split to issue 5394
+date: 2026-05-08
 ```
 
 Remaining risks:
 
-- none
+- Implementation remains open in `issues/open/5394-fix-object-accessor-funcid-invariant.md`.
