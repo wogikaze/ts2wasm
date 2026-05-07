@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 7 | 6 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4582 | 3409 | 1173 |
+| frontend | 4583 | 3409 | 1174 |
 | harness | 1 | 0 | 1 |
 | ir | 79 | 57 | 22 |
 | issues | 4 | 0 | 4 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5243 | 3707 | 1536 |
+| total | 5244 | 3707 | 1537 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -361,6 +361,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5406 | Report ambient enum nonconstant initializers | feature | frontend/semantics | implementation-ready | P2 |  | `ambientEnum1.ts` currently records a ts2wasm `BuildPass`, but |
 | 5407 | Report ambient getter implementation bodies | feature | frontend/parser | implementation-ready | P1 |  | ambient class getter implementation bodies are currently erased |
 | 5408 | Parse bare global augmentation blocks | bug | frontend/syntax | implementation-ready | P1 |  | bare TypeScript global augmentation syntax falls through to runtime |
+| 5409 | Report non-exported namespace member type annotations | bug | frontend/semantics | implementation-ready | P1 |  | non-exported namespace members in qualified type annotations are erased |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -2330,7 +2331,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 3322 | Implement Moduleaugmentationindependency | spike | frontend/syntax | class: blocked | Implement Moduleaugmentationindependency |
 | 3324 | Implement Moduleaugmentationofalias | spike | frontend/syntax | class: blocked | Implement Moduleaugmentationofalias |
 | 3325 | Implement Moduleaugmentationwithnonexistentnamedimport | spike | frontend/syntax | class: blocked | Implement Moduleaugmentationwithnonexistentnamedimport |
-| 3328 | Implement Moduleclassarraycodegentest | spike | frontend/syntax | class: blocked | Implement Moduleclassarraycodegentest |
 | 3331 | Implement Modulecrashbug | spike | frontend/syntax | class: blocked | Implement Modulecrashbug |
 | 3332 | Implement Moduledeclarationexportstarshadowingglobalisnameable | spike | frontend/syntax | class: blocked | Implement Moduledeclarationexportstarshadowingglobalisnameable |
 | 3333 | Implement Moduledetectionisolatedmodulescjsfilescope | spike | reference/triage | class: triage-needed | Implement Moduledetectionisolatedmodulescjsfilescope |
@@ -5202,6 +5202,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 3323 | Implement Moduleaugmentationnonewnames | spike | frontend/syntax | see `issues/done/3323-implement-moduleAugmentationNoNewNames.md` |
 | 3326 | Implement Moduleaugmentationsbundledoutput | spike | frontend/syntax | see `issues/done/3326-implement-moduleAugmentationsBundledOutput.md` |
 | 3327 | Implement Moduleaugmentationsimports | spike | frontend/syntax | see `issues/done/3327-implement-moduleAugmentationsImports.md` |
+| 3328 | Implement Moduleclassarraycodegentest | spike | frontend/syntax | see `issues/done/3328-implement-moduleClassArrayCodeGenTest.md` |
 | 3329 | Implement Modulecodegentest | spike | frontend/syntax | see `issues/done/3329-implement-moduleCodeGenTest.md` |
 | 3330 | Implement Modulecodegentest | spike | frontend/syntax | see `issues/done/3330-implement-moduleCodegenTest.md` |
 | 3690 | Implement Optionaltupleelementsandundefined | spike | reference/triage | see `issues/done/3690-implement-optionalTupleElementsAndUndefined.md` |
