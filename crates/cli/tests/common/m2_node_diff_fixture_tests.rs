@@ -2290,10 +2290,6 @@ fn core_expression_class_expr_fixture_builds_successfully() {
         .arg("build").arg(&fixture_path).arg("-o").arg(&output).output().unwrap();
     assert!(build.status.success(), "build failed for {fixture}");
 }
-        "nested function `f` closures with `this` or `arguments`",
-        false,
-    );
-}
 
 #[test]
 fn core_expression_instanceof_date_fixture_reports_unsupported_date() {
