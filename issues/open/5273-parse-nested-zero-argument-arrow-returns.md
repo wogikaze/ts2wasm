@@ -13,9 +13,10 @@ updated: 2026-05-07
 
 ## Summary
 
-Parse arrow functions whose expression body is another zero-argument arrow
-function, especially inside object literal property initializers such as
-`doStuff: (callback) => () => { ... }`.
+Parse arrow functions whose expression body is another arrow function,
+especially nested zero-argument arrows inside object literal property
+initializers or contextual callback positions such as
+`doStuff: (callback) => () => { ... }` and `f(() => n => n)`.
 
 ## Problem
 
@@ -109,7 +110,13 @@ Do not touch:
 - [ ] `collisionThisExpressionAndParameter.ts` no longer reports the same
   nested zero-argument arrow parser failure inside a constructor object-literal
   property initializer.
+- [ ] `contextualTypingFunctionReturningFunction.ts` no longer reports
+  `expected Comma, got Some(Arrow)` at the inner arrow in `b: () => n => {}`.
+- [ ] `contextualTypingFunctionReturningFunction2.ts` no longer reports
+  `expected Comma, got Some(Arrow)` at the inner arrow in `f(() => n => n)`.
 - [ ] A focused parser test covers `(callback) => () => { return callback(this); }`.
+- [ ] A focused parser test covers `() => n => n` as an expression-bodied
+  arrow returning another arrow.
 - [ ] Existing arrow function expression tests still pass.
 - [ ] The representative reference triage records the next diagnostic or pass
   state after the parser fix.
@@ -186,6 +193,21 @@ Related but distinct:
 - `issues/open/5240-parse-async-arrow-function-expressions.md` owns `async () =>`.
 - `issues/open/5152-support-class-constructor-outer-callback-captures.md` owns
   class-constructor nested callback lowering after parsing succeeds.
+
+2026-05-07 additional evidence: generated bucket
+`issues/done/1522-implement-contextualTypingFunctionReturningFunction.md` is
+superseded here. Both `contextualTypingFunctionReturningFunction.ts` and
+`contextualTypingFunctionReturningFunction2.ts` tokenize successfully but fail
+AST construction at the inner arrow in `() => n => ...`:
+
+```text
+contextualTypingFunctionReturningFunction.ts: expected Comma, got Some(Arrow) at 164..166
+contextualTypingFunctionReturningFunction2.ts: expected Comma, got Some(Arrow) at 144..146
+```
+
+TypeScript accepts both sources with no diagnostics and its AST records nested
+`ArrowFunction` nodes under the object literal property assignment
+`b: () => n => {}` and the call argument `f(() => n => n)`.
 
 ## Completion evidence
 
