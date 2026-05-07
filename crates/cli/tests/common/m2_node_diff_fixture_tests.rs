@@ -43,10 +43,17 @@ fn m3_semantic_fixtures_match_node_output_under_iwasm() {
 fn int32_typed_stress_builds_successfully() {
     // Console.log multi-arg output format differs from Node
     let fixture = "fixtures/core-semantics/int32-typed-stress.ts";
-    let fixture_path = Path::new(env!("CARGO_MANIFEST_DIR")).join("../../").join(fixture);
+    let fixture_path = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("../../")
+        .join(fixture);
     let output = temp_wasm_path(fixture);
     let build = std::process::Command::new(env!("CARGO_BIN_EXE_ts2wasm"))
-        .arg("build").arg(&fixture_path).arg("-o").arg(&output).output().unwrap();
+        .arg("build")
+        .arg(&fixture_path)
+        .arg("-o")
+        .arg(&output)
+        .output()
+        .unwrap();
     assert!(build.status.success(), "build failed for {fixture}");
 }
 
@@ -1312,10 +1319,17 @@ fn json_fixtures_match_node_output_under_iwasm() {
 fn json_stringify_replacer_array_ignored_builds_successfully() {
     // wat2wasm fails on generated WAT (syntax error)
     let fixture = "fixtures/builtins-and-io/json-stringify-replacer-array-ignored.ts";
-    let fixture_path = Path::new(env!("CARGO_MANIFEST_DIR")).join("../../").join(fixture);
+    let fixture_path = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("../../")
+        .join(fixture);
     let output = temp_wasm_path(fixture);
     let build = std::process::Command::new(env!("CARGO_BIN_EXE_ts2wasm"))
-        .arg("build").arg(&fixture_path).arg("-o").arg(&output).output().unwrap();
+        .arg("build")
+        .arg(&fixture_path)
+        .arg("-o")
+        .arg(&output)
+        .output()
+        .unwrap();
     // Just verifying build attempt — output may fail
 }
 
