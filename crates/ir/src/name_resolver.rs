@@ -760,6 +760,45 @@ impl NameResolver {
                     span: *span,
                 })
             }
+            Expr::ArrowFn {
+                params,
+                body,
+                body_stmts,
+                span,
+            } => {
+                self.enter_scope();
+                self.function_depth += 1;
+                for (param_name, default, is_rest) in params {
+                    self.declare_binding(param_name, Some(*span), false)?;
+                    if *is_rest {
+                        // For rest params with binding patterns like (...[value]),
+                        // also declare the inner names from the pattern
+                        if let Some(inner) = param_name.strip_prefix("...")
+                            && let Some(pattern) = parse_binding_pattern(inner, Some(*span))?
+                        {
+                            for name in pattern.names() {
+                                self.declare_variable(name, Some(*span), false)?;
+                            }
+                        }
+                    }
+                    if let Some(default_expr) = default {
+                        self.resolve_expr(default_expr)?;
+                    }
+                }
+                let resolved_body = Box::new(self.resolve_expr(body)?);
+                let resolved_stmts = body_stmts
+                    .iter()
+                    .map(|s| self.resolve_stmt(s))
+                    .collect::<Result<Vec<_>, _>>()?;
+                self.function_depth -= 1;
+                self.exit_scope();
+                Ok(Expr::ArrowFn {
+                    params: params.clone(),
+                    body: resolved_body,
+                    body_stmts: resolved_stmts,
+                    span: *span,
+                })
+            }
             Expr::Ident { name, span } => {
                 // 'super' is a special keyword, not a regular identifier.
                 // Don't try to resolve it as a variable name.

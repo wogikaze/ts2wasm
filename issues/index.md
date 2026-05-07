@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 7 | 4 | 3 |
 | coverage | 44 | 1 | 43 |
 | docs | 5 | 0 | 5 |
-| frontend | 4562 | 3753 | 809 |
+| frontend | 4562 | 3750 | 812 |
 | harness | 1 | 0 | 1 |
 | ir | 77 | 24 | 53 |
 | issues | 5 | 0 | 5 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 8 | 0 | 8 |
 | wasi | 4 | 0 | 4 |
-| total | 5245 | 4026 | 1219 |
+| total | 5245 | 4023 | 1222 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -382,7 +382,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5289 | Validate commentsOverloads top-level functions | feature | frontend/resolver | implementation-ready | P1 |  | `reference/typescript/tests/cases/compiler/commentsOverloads.ts` |
 | 5291 | Report malformed export type declarations | feature | frontend/parser | implementation-ready | P1 |  | malformed `export type` declarations are not diagnosed or recovered |
 | 5292 | Skip tsconfig @Filename sections in reference harness | feature | compiler/multi-section | implementation-ready | P1 |  | reference-style `tsconfig.json` virtual sections are treated as module |
-| 5293 | Handle recursive generic self-heritage class lowering | bug | frontend/semantics | implementation-ready | P1 |  | recursive generic self-heritage classes fail with an opaque |
 | 5294 | Resolve sibling namespaces in nested namespace scopes | feature | frontend/name-resolution | implementation-ready | P1 |  | nested namespace resolution does not predeclare or look up sibling |
 | 5295 | Resolve import-equals require to virtual node_modules class export | feature | frontend/module-resolution | implementation-ready | P1 |  | bare `require("myModule")` aliases do not bind to a virtual |
 | 5297 | Lower computed object binding aliases | feature | frontend/semantics | implementation-ready | P1 |  | object binding aliases can only use identifier keys, so computed keys |
@@ -412,7 +411,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5330 | Report namespace before class merge diagnostic | feature | frontend/semantics | implementation-ready | P1 |  | prior instantiated namespace/class merge ordering currently produces a |
 | 5331 | Report class namespace static side inheritance diagnostic | feature | frontend/semantics | implementation-ready | P1 |  | namespace-augmented static-side inheritance compatibility currently |
 | 5332 | Parse interface call signatures | feature | frontend/parser | implementation-ready | P1 |  | interface call-signature members are not parsed as erasable TypeScript |
-| 5333 | Report strict mode arguments binding diagnostics | feature | frontend/semantics | implementation-ready | P1 |  | strict-mode `arguments` bindings currently build-pass silently instead |
 | 5334 | Parse class constructor overload signatures | feature | frontend/parser | implementation-ready | P1 |  | class constructor overload signatures are not represented separately |
 | 5335 | Validate nested function overload implementations | feature | frontend/resolver | implementation-ready | P1 |  | nested function overload implementation groups are classified as |
 | 5336 | Parse object type literal signatures with rest parameters | feature | frontend/parser | implementation-ready | P1 |  | object type literal signature members with rest parameters are not |
@@ -427,7 +425,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5348 | Resolve const declarations before use diagnostics | bug | frontend/resolver | implementation-ready | P1 |  | lexical const bindings are not registered early enough for |
 | 5350 | Report missing const initializer diagnostics | feature | frontend/parser | implementation-ready | P1 |  | Report missing const initializer diagnostics |
 | 5352 | Parse export namespace declarations | feature | frontend/module-syntax | implementation-ready | P1 |  | `export namespace Name { ... }` is treated as an unsupported static |
-| 5354 | Report invalid const class members | feature | frontend/semantics | implementation-ready | P1 |  | invalid `const` class members in class expressions are silently |
 | 5355 | Report invalid constructor parameter modifiers | bug | frontend/parser | implementation-ready | P1 |  | current failure is `expected Comma, got Some(Static)` for |
 | 5356 | Report uninitialized generic class fields | bug | frontend/semantics | implementation-ready | P1 |  | current failure is a false build pass for `class D<T, U> { x: T; y: U }`, where TypeScript reports uninitialized prop... |
 | 5358 | Report constructor bodies in ambient class declarations | feature | frontend/parser | implementation-ready | P1 |  | implementation bodies inside ambient class declarations are not |
@@ -5331,6 +5328,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5286 | Preserve class constructor parameters for new arity | feature | ir | see `issues/done/5286-preserve-class-constructor-parameters-for-new-arity.md` |
 | 5288 | Parse typed modified static class fields | feature | frontend/parser | see `issues/done/5288-parse-typed-modified-static-class-fields.md` |
 | 5290 | Parse private static generic class methods | feature | frontend/parser | see `issues/done/5290-parse-private-static-generic-class-method.md` |
+| 5293 | Handle recursive generic self-heritage class lowering | bug | frontend/semantics | see `issues/done/5293-handle-recursive-generic-self-heritage-class-lowering.md` |
 | 5296 | Parse double-dot numeric literal property access | feature | frontend/parser | see `issues/done/5296-parse-double-dot-numeric-literal-property-access.md` |
 | 5301 | Report literal reference comparison diagnostics | feature | frontend/semantics | see file |
 | 5302 | Parse fractional number literals in expressions | feature | frontend/syntax | see file |
@@ -5341,12 +5339,14 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5309 | Skip generic type arguments in type annotations | feature | frontend/parser | see `issues/done/5309-skip-generic-type-arguments-in-type-annotations.md` |
 | 5311 | Parse namespace property += assignment | feature | frontend/syntax | see file |
 | 5312 | Parse export abstract class declarations | feature | frontend/syntax | see file |
+| 5333 | Report strict mode arguments binding diagnostics | feature | frontend/semantics | see `issues/done/5333-report-strict-mode-arguments-binding-diagnostics.md` |
 | 5339 | Preserve var after object type declaration | feature | frontend/syntax | see file |
 | 5340 | Preserve function after object type declaration | feature | frontend/syntax | see `issues/done/5340-preserve-function-after-object-type-declaration.md` |
 | 5342 | Preserve class after object type declaration | feature | frontend/syntax | see `issues/done/5342-preserve-class-after-object-type-declaration.md` |
 | 5349 | Parse multiplicative compound assignment operators | feature | frontend/syntax | see `issues/done/5349-parse-multiplicative-compound-assignment-operators.md` |
 | 5351 | Accept large decimal integer number literals | feature | frontend/lexer | see `issues/done/5351-accept-large-decimal-integer-number-literals.md` |
 | 5353 | Parse extended Unicode string escapes | feature | frontend/syntax | see `issues/done/5353-parse-extended-unicode-string-escapes.md` |
+| 5354 | Report invalid const class members | feature | frontend/semantics | see file |
 | 5357 | Avoid eval diagnostic for qualified Function constructors | bug | ir/resolver | see `issues/done/5357-avoid-eval-diagnostic-for-qualified-function-constructors.md` |
 | 5364 | Report unterminated string literal at raw newline | bug | frontend/lexer | see `issues/done/5364-report-unterminated-string-literal-at-raw-newline.md` |
 | 5379 | Lower array binding object default initializers | feature | ir/lowering | see `issues/done/5379-lower-array-binding-object-default-initializers.md` |
