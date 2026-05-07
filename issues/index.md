@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 25 | 13 | 12 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4592 | 3322 | 1270 |
+| frontend | 4592 | 3321 | 1271 |
 | harness | 1 | 0 | 1 |
 | ir | 83 | 60 | 23 |
 | issues | 4 | 0 | 4 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5276 | 3624 | 1652 |
+| total | 5276 | 3623 | 1653 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -2348,7 +2348,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 3302 | Implement Modulealiasasfunctionargument | spike | frontend/syntax | class: blocked | Implement Modulealiasasfunctionargument |
 | 3303 | Implement Modulealiasinterface | spike | frontend/syntax | class: blocked | Implement Modulealiasinterface |
 | 3304 | Implement Moduleandinterfacesharingname | spike | frontend/syntax | class: blocked | Implement Moduleandinterfacesharingname |
-| 3431 | Implement Namespacemergedwithimportaliasnocrash | spike | frontend/syntax | class: blocked | Implement Namespacemergedwithimportaliasnocrash |
 | 3432 | Implement Namespacenotmergedwithfunctiondefaultexport | spike | frontend/syntax | class: blocked | Implement Namespacenotmergedwithfunctiondefaultexport |
 | 3433 | Implement Namespaces | spike | frontend/syntax | class: blocked | Implement Namespaces |
 | 3434 | Implement Namespacesdeclaration | spike | frontend/syntax | class: blocked | Implement Namespacesdeclaration |
@@ -5236,6 +5235,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 3428 | Implement Namedimportnonexistentname | spike | frontend/syntax | see `issues/done/3428-implement-namedImportNonExistentName.md` |
 | 3429 | Implement Namespacedisambiguationinunion | spike | frontend/syntax | see `issues/done/3429-implement-namespaceDisambiguationInUnion.md` |
 | 3430 | Implement Namespacemergedwithfunctionwithoverloadsusage | spike | frontend/syntax | see `issues/done/3430-implement-namespaceMergedWithFunctionWithOverloadsUsage.md` |
+| 3431 | Implement Namespacemergedwithimportaliasnocrash | spike | frontend/syntax | see `issues/done/3431-implement-namespaceMergedWithImportAliasNoCrash.md` |
 | 3690 | Implement Optionaltupleelementsandundefined | spike | reference/triage | see `issues/done/3690-implement-optionalTupleElementsAndUndefined.md` |
 | 3996 | Implement Compiler (dup) | spike | frontend/syntax | see `issues/done/3996-implement-reference-typescript-tests-cases-compiler.md` |
 | 4210 | Implement Splicetuples | spike | frontend/resolver | see `issues/done/4210-implement-spliceTuples.md` |

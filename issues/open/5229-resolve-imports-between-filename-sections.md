@@ -157,6 +157,11 @@ triage for `moduleResolutionNoTsESM.ts` reaches the same virtual `x.ts`,
 `y.tsx`, `z.d.ts`, and `user.ts` section layout, then reports issue-232
 missing local module `./x.ts` before ESM explicit-TypeScript-extension
 diagnostics become actionable.
+Also owns `issues/done/3431-implement-namespaceMergedWithImportAliasNoCrash.md`: fresh
+coverage reaches issue-232 missing local module `./file1` for
+`import * as Lib from "./file1"` between `file2.ts` and sibling virtual
+`file1.ts`. Later oracle diagnostics include namespace-as-value and missing
+namespace member checks.
 Also owns the local-virtual-section subset of
 `issues/done/3380-implement-moduleResolutionWithExtensions-import-export.md`:
 fresh triage for `moduleResolutionWithExtensions_notSupported*.ts` parses the
