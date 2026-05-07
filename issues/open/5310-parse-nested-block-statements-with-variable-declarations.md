@@ -14,7 +14,7 @@ updated: 2026-05-07
 ## Summary
 
 Parse nested block statements as statements inside other blocks when the nested
-block contains variable declarations such as `var y = 0;`.
+block contains variable declarations such as `var y = 0;` or `const c = false;`.
 
 ## Problem
 
@@ -25,6 +25,8 @@ falls through to expression parsing and then reports a comma expectation at the
 inner `var y` declaration.
 
 Problem: a nested block containing `var y = 0;` reports `expected Comma, got Some(Ident("y"))` instead of parsing as a block statement.
+The same parser boundary appears in `constDeclarations-scopes.ts` for an inner
+block containing `const c = false;`.
 
 ## Current failure
 
@@ -55,6 +57,19 @@ var y = 0;
 TypeScript oracle parses the source and reports later TS2481 diagnostics for
 the shadowing rule.
 
+Second reproduction:
+
+```sh
+python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/constDeclarations-scopes.ts
+```
+
+Observed 2026-05-07:
+
+```text
+UnsupportedSyntax: expected Comma, got Some(Ident("c")) at 1018..1019
+source: { const c = false; var b: boolean = c; }
+```
+
 ## Desired final state
 
 The parser accepts nested block statements inside block bodies and preserves the
@@ -67,7 +82,7 @@ In scope:
 
 - [ ] Dispatch `LeftBrace` as a nested block statement inside `statement()`.
 - [ ] Preserve variable declarations inside nested blocks.
-- [ ] Add focused parser coverage for `{ const y = 0; { var y = 0; } }`.
+- [ ] Add focused parser coverage for `{ const y = 0; { var y = 0; } }` and an inner `const` declaration.
 
 Out of scope:
 
@@ -89,6 +104,7 @@ Do not touch:
 ## Acceptance criteria
 
 - [ ] `constDeclarationShadowedByVarDeclaration.ts` no longer reports `expected Comma, got Some(Ident("y"))`.
+- [ ] `constDeclarations-scopes.ts` no longer reports `expected Comma, got Some(Ident("c"))`.
 - [ ] A focused parser test accepts `{ const y = 0; { var y = 0; } }`.
 - [ ] Existing top-level block flattening behavior remains unchanged.
 
@@ -105,6 +121,7 @@ Impacted commands:
 
 ```sh
 mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/constDeclarationShadowedByVarDeclaration.ts
+python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/constDeclarations-scopes.ts
 ```
 
 Not run:
@@ -129,6 +146,8 @@ Follow-up issues:
 
 Split from generated bucket
 `issues/done/1439-implement-constDeclarationShadowedByVarDeclaration.md`.
+Also supersedes the current parser boundary from
+`issues/done/1443-implement-constDeclarations-scope-analysis.md`.
 
 After this parser blocker is fixed, the reference case should be triaged for
 the TS2481 const/var shadowing diagnostic.

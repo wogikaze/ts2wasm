@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 5 | 4 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4539 | 3528 | 1011 |
+| frontend | 4539 | 3527 | 1012 |
 | harness | 1 | 0 | 1 |
 | ir | 65 | 43 | 22 |
 | issues | 4 | 0 | 4 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5184 | 3819 | 1365 |
+| total | 5184 | 3818 | 1366 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -53,7 +53,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 5001 (Meta: TypeScript Compiler Semantic Analysis Coverage) [done/done] ch:572 open:318 done:254
 5004 (Meta: Runtime Builtins Coverage (test262) (audit reopened #5004)) [done/done] ch:24 open:3 done:21
 5005 (Meta: TypeScript Compiler Name Resolution Coverage) [done/done] ch:412 open:360 done:52
-├── 5006 (Meta: TypeScript Compiler Scope Analysis Coverage) [done/done] ch:29 open:21 done:8
+├── 5006 (Meta: TypeScript Compiler Scope Analysis Coverage) [done/done] ch:28 open:20 done:8
 ├── 5007 (Meta: TypeScript Compiler Module Resolution Coverage (audit reopened #5007)) [done/done] ch:21 open:19 done:2
 ```
 
@@ -72,7 +72,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 4 | 5005 | Meta: TypeScript Compiler Name Resolution Coverage | done | done | frontend/resolver | P1 | - | 412 | 360 | 52 |
 | 5 | 5002 | Meta: TypeScript Compiler Type System Coverage | done | done | frontend/semantics | P1 | 5000, 5005 | 230 | 213 | 17 |
 | 6 | 5003 | Meta: TypeScript Compiler Declaration Emit Coverage | done | done | frontend/syntax | P2 | 5000, 5001 | 102 | 91 | 11 |
-| 7 | 5006 | Meta: TypeScript Compiler Scope Analysis Coverage | done | done | frontend/resolver | P2 | 5005 | 29 | 21 | 8 |
+| 7 | 5006 | Meta: TypeScript Compiler Scope Analysis Coverage | done | done | frontend/resolver | P2 | 5005 | 28 | 20 | 8 |
 | 8 | 5007 | Meta: TypeScript Compiler Module Resolution Coverage (audit reopened #5007) | done | done | frontend/resolver | P2 | 5005 | 21 | 19 | 2 |
 
 ### Topological order
@@ -563,7 +563,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 759 | Implement Asynciife | spike | frontend/syntax | class: triage-needed | Implement Asynciife |
 | 760 | Implement Asyncimportnestedyield | spike | reference/triage | class: triage-needed | Implement Asyncimportnestedyield |
 | 761 | Implement Asynciteratorextraparameters | spike | runtime/builtins | class: triage-needed | Implement Asynciteratorextraparameters |
-| 1443 | Implement Constdeclarations Scope Analysis | spike | frontend/resolver | class: blocked | Implement Constdeclarations Scope Analysis |
 | 1444 | Implement Constdeclarations Unknown Unsupported | spike | frontend/syntax | class: triage-needed | Implement Constdeclarations Unknown Unsupported |
 | 1445 | Implement Constenumbadpropertynames | spike | frontend/syntax | class: blocked | Implement Constenumbadpropertynames |
 | 1446 | Implement Constenumdeclarations | spike | frontend/syntax | class: blocked | Implement Constenumdeclarations |
@@ -5140,6 +5139,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1440 | Implement Constdeclarations Import Export | spike | frontend/syntax | see `issues/done/1440-implement-constDeclarations-import-export.md` |
 | 1441 | Implement Constdeclarations Name Resolution | spike | frontend/resolver | see `issues/done/1441-implement-constDeclarations-name-resolution.md` |
 | 1442 | Implement Constdeclarations Parser Syntax | spike | frontend/syntax | see `issues/done/1442-implement-constDeclarations-parser-syntax.md` |
+| 1443 | Implement Constdeclarations Scope Analysis | spike | frontend/resolver | see `issues/done/1443-implement-constDeclarations-scope-analysis.md` |
 | 2050 | Implement Duplicatelocalvariable Duplicate Local | spike | reference/triage | see `issues/done/2050-implement-duplicateLocalVariable-duplicate-local.md` |
 | 3002 | Implement Isolateddeclarationerrorsdefault | spike | runtime/builtins | see `issues/done/3002-implement-isolatedDeclarationErrorsDefault.md` |
 | 3131 | Implement Jsxfactorynotidentifierorqualifiedname | spike | reference/triage | see `issues/done/3131-implement-jsxFactoryNotIdentifierOrQualifiedName.md` |
