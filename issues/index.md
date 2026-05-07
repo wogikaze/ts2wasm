@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 7 | 6 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4581 | 3417 | 1164 |
+| frontend | 4581 | 3416 | 1165 |
 | harness | 1 | 0 | 1 |
 | ir | 79 | 57 | 22 |
 | issues | 4 | 0 | 4 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5242 | 3715 | 1527 |
+| total | 5242 | 3714 | 1528 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -2326,7 +2326,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 3313 | Implement Moduleaugmentationdoesnamespacemergeofreexport | spike | frontend/syntax | class: blocked | Implement Moduleaugmentationdoesnamespacemergeofreexport |
 | 3314 | Implement Moduleaugmentationduringsyntheticdefaultcheck | spike | frontend/syntax | class: blocked | Implement Moduleaugmentationduringsyntheticdefaultcheck |
 | 3315 | Implement Moduleaugmentationenumclassmergeofreexportiserror | spike | frontend/syntax | class: blocked | Implement Moduleaugmentationenumclassmergeofreexportiserror |
-| 3316 | Implement Moduleaugmentationextendambientmodule | spike | frontend/syntax | class: blocked | Implement Moduleaugmentationextendambientmodule |
 | 3317 | Implement Moduleaugmentationextendfilemodule | spike | frontend/syntax | class: blocked | Implement Moduleaugmentationextendfilemodule |
 | 3318 | Implement Moduleaugmentationglobal Import Export | spike | frontend/syntax | class: blocked | Implement Moduleaugmentationglobal Import Export |
 | 3319 | Implement Moduleaugmentationglobal Parser Syntax | spike | frontend/syntax | class: triage-needed | Implement Moduleaugmentationglobal Parser Syntax |
@@ -5201,6 +5200,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 3002 | Implement Isolateddeclarationerrorsdefault | spike | runtime/builtins | see `issues/done/3002-implement-isolatedDeclarationErrorsDefault.md` |
 | 3029 | Implement Isolatedmodulesnonambientconstenum | spike | frontend/syntax | see `issues/done/3029-implement-isolatedModulesNonAmbientConstEnum.md` |
 | 3131 | Implement Jsxfactorynotidentifierorqualifiedname | spike | reference/triage | see `issues/done/3131-implement-jsxFactoryNotIdentifierOrQualifiedName.md` |
+| 3316 | Implement Moduleaugmentationextendambientmodule | spike | frontend/syntax | see `issues/done/3316-implement-moduleAugmentationExtendAmbientModule.md` |
 | 3329 | Implement Modulecodegentest | spike | frontend/syntax | see `issues/done/3329-implement-moduleCodeGenTest.md` |
 | 3330 | Implement Modulecodegentest | spike | frontend/syntax | see `issues/done/3330-implement-moduleCodegenTest.md` |
 | 3690 | Implement Optionaltupleelementsandundefined | spike | reference/triage | see `issues/done/3690-implement-optionalTupleElementsAndUndefined.md` |
