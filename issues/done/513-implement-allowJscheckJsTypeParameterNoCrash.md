@@ -648,7 +648,7 @@ error: [UnsupportedModule] issue-055: unsupported variable export; module resolu
 ## 重複整理メモ
 
 この issue はタイトルが重複しているため、内容がより充実している
-`issues/open/599-implement-allowJscheckJsTypeParameterNoCrash.md` に統合されました。
+`issues/done/599-implement-allowJscheckJsTypeParameterNoCrash.md` に統合されました。
 そちらを参照してください。
 ## Completion evidence
 
