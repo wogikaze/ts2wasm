@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 5 | 4 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4555 | 3498 | 1057 |
+| frontend | 4555 | 3497 | 1058 |
 | harness | 1 | 0 | 1 |
 | ir | 67 | 45 | 22 |
 | issues | 4 | 0 | 4 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5202 | 3791 | 1411 |
+| total | 5202 | 3790 | 1412 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -47,7 +47,7 @@ Issue files are the source of truth for work items. The generated section below 
 Direct child counts are derived from issue-file `depends_on` links. A meta issue can be `done` as a classification/design umbrella while implementation child issues remain open.
 
 ```
-5000 (Meta: TypeScript Compiler Parser Syntax Coverage) [done/design] ch:454 open:371 done:83
+5000 (Meta: TypeScript Compiler Parser Syntax Coverage) [done/design] ch:453 open:370 done:83
 ├── 5002 (Meta: TypeScript Compiler Type System Coverage) [done/done] ch:229 open:212 done:17 (also ← 5005)
 ├── 5003 (Meta: TypeScript Compiler Declaration Emit Coverage) [done/done] ch:102 open:91 done:11 (also ← 5001)
 5001 (Meta: TypeScript Compiler Semantic Analysis Coverage) [done/done] ch:565 open:307 done:258
@@ -66,7 +66,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 
 | Order | ID | Title | State | Class | Area | Priority | Depends on | Direct children | Open children | Done children |
 |-----:|---:|------|-------|-------|------|--------:|-----------:|----------------:|--------------:|--------------:|
-| 1 | 5000 | Meta: TypeScript Compiler Parser Syntax Coverage | done | design | frontend/syntax | P1 | - | 454 | 371 | 83 |
+| 1 | 5000 | Meta: TypeScript Compiler Parser Syntax Coverage | done | design | frontend/syntax | P1 | - | 453 | 370 | 83 |
 | 2 | 5001 | Meta: TypeScript Compiler Semantic Analysis Coverage | done | done | frontend/semantics | P1 | - | 565 | 307 | 258 |
 | 3 | 5004 | Meta: Runtime Builtins Coverage (test262) (audit reopened #5004) | done | done | runtime/builtins | P1 | - | 24 | 3 | 21 |
 | 4 | 5005 | Meta: TypeScript Compiler Name Resolution Coverage | done | done | frontend/resolver | P1 | - | 411 | 356 | 55 |
@@ -581,7 +581,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 759 | Implement Asynciife | spike | frontend/syntax | class: triage-needed | Implement Asynciife |
 | 760 | Implement Asyncimportnestedyield | spike | reference/triage | class: triage-needed | Implement Asyncimportnestedyield |
 | 761 | Implement Asynciteratorextraparameters | spike | runtime/builtins | class: triage-needed | Implement Asynciteratorextraparameters |
-| 1489 | Implement Contextualoutertypeparameters | spike | frontend/syntax | class: blocked | Implement Contextualoutertypeparameters |
 | 1490 | Implement Contextualoverloadlistfromarrayunion | spike | frontend/syntax | class: blocked | Implement Contextualoverloadlistfromarrayunion |
 | 1491 | Implement Contextualparamtypevsnestedreturntypeinference | spike | frontend/semantics | class: blocked | Implement Contextualparamtypevsnestedreturntypeinference |
 | 1492 | Implement Contextualparameterandselfreferentialconstraint | spike | frontend/syntax | class: triage-needed | Implement Contextualparameterandselfreferentialconstraint |
@@ -5158,6 +5157,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1486 | Implement Contextsensitivereturntypeinference | spike | frontend/resolver | see `issues/done/1486-implement-contextSensitiveReturnTypeInference.md` |
 | 1487 | Implement Contextualcomputednonbindablepropertytype | spike | frontend/syntax | see `issues/done/1487-implement-contextualComputedNonBindablePropertyType.md` |
 | 1488 | Implement Contextualexpressiontypecheckingdoesntblowstack | spike | frontend/syntax | see `issues/done/1488-implement-contextualExpressionTypecheckingDoesntBlowStack.md` |
+| 1489 | Implement Contextualoutertypeparameters | spike | frontend/syntax | see `issues/done/1489-implement-contextualOuterTypeParameters.md` |
 | 2050 | Implement Duplicatelocalvariable Duplicate Local | spike | reference/triage | see `issues/done/2050-implement-duplicateLocalVariable-duplicate-local.md` |
 | 3002 | Implement Isolateddeclarationerrorsdefault | spike | runtime/builtins | see `issues/done/3002-implement-isolatedDeclarationErrorsDefault.md` |
 | 3131 | Implement Jsxfactorynotidentifierorqualifiedname | spike | reference/triage | see `issues/done/3131-implement-jsxFactoryNotIdentifierOrQualifiedName.md` |
