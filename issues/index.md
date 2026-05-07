@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 7 | 6 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4585 | 3377 | 1208 |
+| frontend | 4585 | 3376 | 1209 |
 | harness | 1 | 0 | 1 |
 | ir | 81 | 59 | 22 |
 | issues | 4 | 0 | 4 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5253 | 3676 | 1577 |
+| total | 5253 | 3675 | 1578 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -2326,7 +2326,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 3302 | Implement Modulealiasasfunctionargument | spike | frontend/syntax | class: blocked | Implement Modulealiasasfunctionargument |
 | 3303 | Implement Modulealiasinterface | spike | frontend/syntax | class: blocked | Implement Modulealiasinterface |
 | 3304 | Implement Moduleandinterfacesharingname | spike | frontend/syntax | class: blocked | Implement Moduleandinterfacesharingname |
-| 3357 | Implement Moduleouterqualification | spike | frontend/syntax | class: blocked | Implement Moduleouterqualification |
 | 3358 | Implement Modulepreserve | spike | frontend/syntax | class: blocked | Implement Modulepreserve |
 | 3359 | Implement Modulepreserveimporthelpers | spike | frontend/syntax | class: blocked | Implement Modulepreserveimporthelpers |
 | 3360 | Implement Modulepreservetoplevelawait | spike | reference/triage | class: triage-needed | Implement Modulepreservetoplevelawait |
@@ -5214,6 +5213,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 3354 | Implement Modulenodeimportrequireemit | spike | frontend/syntax | see `issues/done/3354-implement-moduleNodeImportRequireEmit.md` |
 | 3355 | Implement Modulenonedynamicimport | maintenance | frontend/syntax | see `issues/done/3355-implement-moduleNoneDynamicImport.md` |
 | 3356 | Implement Modulenoneerrors | maintenance | frontend/syntax | see `issues/done/3356-implement-moduleNoneErrors.md` |
+| 3357 | Implement Moduleouterqualification | maintenance | frontend/syntax | see `issues/done/3357-implement-moduleOuterQualification.md` |
 | 3690 | Implement Optionaltupleelementsandundefined | spike | reference/triage | see `issues/done/3690-implement-optionalTupleElementsAndUndefined.md` |
 | 3996 | Implement Compiler (dup) | spike | frontend/syntax | see `issues/done/3996-implement-reference-typescript-tests-cases-compiler.md` |
 | 4210 | Implement Splicetuples | spike | frontend/resolver | see `issues/done/4210-implement-spliceTuples.md` |
