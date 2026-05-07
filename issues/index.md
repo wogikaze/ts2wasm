@@ -18,16 +18,16 @@ Issue files are the source of truth for work items. The generated section below 
 | docs | 2 | 0 | 2 |
 | frontend | 4560 | 3474 | 1086 |
 | harness | 1 | 0 | 1 |
-| ir | 72 | 50 | 22 |
+| ir | 73 | 51 | 22 |
 | issues | 4 | 0 | 4 |
 | parser | 1 | 0 | 1 |
-| reference | 212 | 152 | 60 |
+| reference | 212 | 151 | 61 |
 | runtime | 265 | 86 | 179 |
 | scripts | 3 | 1 | 2 |
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5213 | 3770 | 1443 |
+| total | 5214 | 3770 | 1444 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -333,6 +333,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5376 | Support ambient generic factory local calls | feature | ir/lowering | implementation-ready | P1 |  | ambient generic factory locals currently fall into the generic |
 | 5377 | Support callable ambient interface local calls with key remap | feature | ir/lowering | implementation-ready | P1 |  | callable ambient interface locals after mapped-type key remapping fall |
 | 5378 | Report mixed ambient function overload diagnostics | feature | frontend/resolver | implementation-ready | P1 |  | mixed ambient/non-ambient top-level function overload groups report a |
+| 5379 | Lower array binding object default initializers | feature | ir/lowering | implementation-ready | P2 |  | array binding patterns with object-literal default initializers are not |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -592,7 +593,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 759 | Implement Asynciife | spike | frontend/syntax | class: triage-needed | Implement Asynciife |
 | 760 | Implement Asyncimportnestedyield | spike | reference/triage | class: triage-needed | Implement Asyncimportnestedyield |
 | 761 | Implement Asynciteratorextraparameters | spike | runtime/builtins | class: triage-needed | Implement Asynciteratorextraparameters |
-| 1521 | Implement Contextualtypingarraydestructuringwithdefaults | spike | reference/triage | class: triage-needed | Implement Contextualtypingarraydestructuringwithdefaults |
 | 1522 | Implement Contextualtypingfunctionreturningfunction | spike | frontend/syntax | class: blocked | Implement Contextualtypingfunctionreturningfunction |
 | 1523 | Implement Contextualtypingofaccessors | spike | frontend/syntax | class: blocked | Implement Contextualtypingofaccessors |
 | 1524 | Implement Contextualtypingofarrayliterals | spike | frontend/syntax | class: blocked | Implement Contextualtypingofarrayliterals |
@@ -5169,6 +5169,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1518 | Implement Contextualtyping Import Export | spike | frontend/syntax | see `issues/done/1518-implement-contextualTyping-import-export.md` |
 | 1519 | Implement Contextualtyping Parser Syntax | spike | frontend/syntax | see `issues/done/1519-implement-contextualTyping-parser-syntax.md` |
 | 1520 | Implement Contextualtyping Unknown Unsupported | spike | frontend/syntax | see `issues/done/1520-implement-contextualTyping-unknown-unsupported.md` |
+| 1521 | Implement Contextualtypingarraydestructuringwithdefaults | spike | reference/triage | see `issues/done/1521-implement-contextualTypingArrayDestructuringWithDefaults.md` |
 | 2050 | Implement Duplicatelocalvariable Duplicate Local | spike | reference/triage | see `issues/done/2050-implement-duplicateLocalVariable-duplicate-local.md` |
 | 3002 | Implement Isolateddeclarationerrorsdefault | spike | runtime/builtins | see `issues/done/3002-implement-isolatedDeclarationErrorsDefault.md` |
 | 3131 | Implement Jsxfactorynotidentifierorqualifiedname | spike | reference/triage | see `issues/done/3131-implement-jsxFactoryNotIdentifierOrQualifiedName.md` |
