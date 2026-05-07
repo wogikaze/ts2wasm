@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 6 | 3 | 3 |
 | coverage | 44 | 1 | 43 |
 | docs | 5 | 0 | 5 |
-| frontend | 4546 | 3850 | 696 |
+| frontend | 4546 | 3849 | 697 |
 | harness | 1 | 0 | 1 |
 | ir | 72 | 23 | 49 |
 | issues | 5 | 0 | 5 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 8 | 0 | 8 |
 | wasi | 4 | 0 | 4 |
-| total | 5223 | 4126 | 1097 |
+| total | 5223 | 4125 | 1098 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -359,7 +359,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5246 | Report static declarations inside constructor bodies | feature | frontend/parser | implementation-ready | P1 |  | invalid `static` declarations in constructor bodies report generic unsupported expression instead of a spanned parser... |
 | 5248 | Lower class expressions | feature | ir/compiler | implementation-ready | P1 |  | `classBlockScoping.ts` reports `UnsupportedSyntax: issue-313: class expression lowering not yet implemented`. |
 | 5249 | Scope block-local class declarations | feature | frontend/resolver | implementation-ready | P1 |  | `classDeclarationBlockScoping1.ts` reports `DuplicateLocal` for an inner block-local `class C {}` that TypeScript acc... |
-| 5250 | Parse class declarations in nested block statements | feature | frontend/parser | implementation-ready | P1 |  | `classDeclarationBlockScoping2.ts` reports `UnsupportedSyntax: expected Comma, got Some(Ident("C"))` at a nested `{ c... |
 | 5251 | Parse computed class member names in class declarations | feature | frontend/parser | implementation-ready | P1 |  | `classDeclarationShouldBeOutOfScopeInComputedNames.ts` stops during |
 | 5253 | Report class expression decorator boundary | feature | frontend/lexer | implementation-ready | P1 |  | `classExpressionWithDecorator1.ts` stops in tokenization at |
 | 5254 | Parse ASI between static class fields | feature | frontend/parser | implementation-ready | P1 |  | `classExpressionWithStaticProperties2.ts` parses `static b` as the |
@@ -5324,6 +5323,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5244 | Define timezone formatting policy for Date.prototype.toString | design | runtime/builtins | see file |
 | 5245 | Implement ECMAScript iterator protocol runtime for spread operator | feature | runtime/semantics | see `issues/done/5245-iterator-protocol-runtime.md` |
 | 5247 | Fix JS noEmit class constructor FuncId invariant | feature | ir/compiler | see file |
+| 5250 | Parse class declarations in nested block statements | feature | frontend/parser | see file |
 | 5252 | Support call-expression class heritage | feature | ir/resolver | see file |
 | 5256 | Report non-constructor class heritage expressions | feature | ir/resolver | see file |
 | 5258 | Report super calls in class extends null constructors | feature | ir/resolver | see file |
