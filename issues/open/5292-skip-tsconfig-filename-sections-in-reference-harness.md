@@ -160,6 +160,13 @@ UnsupportedSyntax/module-resolution paths, and representative triage for
 `moduleResolutionWithSuffixes_one_externalModule.ts` stops in virtual
 `/tsconfig.json` at the first JSON property colon before moduleSuffixes,
 JSON-module, JS-module, or external package behavior becomes actionable.
+Also owns `issues/done/3386-implement-moduleResolutionWithSuffixes-module-resolution.md`:
+fresh coverage for the listed external-module and json-module subset reports
+four UnsupportedSyntax/module-resolution paths, and representative triage for
+`moduleResolutionWithSuffixes_one_externalModulePath.ts` and
+`moduleResolutionWithSuffixes_one_externalModule_withPaths.ts` stops in
+virtual `/tsconfig.json` at the first JSON property colon before package
+subpath, path mapping, or moduleSuffixes behavior becomes actionable.
 
 ## Completion evidence
 
