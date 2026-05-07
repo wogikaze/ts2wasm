@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 7 | 6 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4579 | 3422 | 1157 |
+| frontend | 4579 | 3421 | 1158 |
 | harness | 1 | 0 | 1 |
 | ir | 79 | 57 | 22 |
 | issues | 4 | 0 | 4 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5240 | 3720 | 1520 |
+| total | 5240 | 3719 | 1521 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -371,7 +371,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 052d | Implement broader JSON.stringify replacer semantics (audit reopened #052d) | feature | runtime/builtins | class: blocked | Implement broader JSON.stringify replacer semantics (audit reopened #052d) |
 | 059 | Implement parser syntax extensions for TypeScript and advanced JS (audit reopened #059) | feature | frontend | class: blocked | Implement parser syntax extensions for TypeScript and advanced JS (audit reopened #059) |
 | 064 | Implement name resolution (triaged - superseded by test262 metadata issues) | spike | frontend/resolver | class: blocked | Implement name resolution (triaged - superseded by test262 metadata issues) |
-| 142 | Implement Ambientclassmergesoverloadswithinterface | spike | frontend/syntax | class: blocked | Implement Ambientclassmergesoverloadswithinterface |
 | 143 | Implement Ambientclassoverloadforfunction | spike | frontend/syntax | class: blocked | Implement Ambientclassoverloadforfunction |
 | 145 | Implement Ambientenum | spike | frontend/syntax | class: blocked | Implement Ambientenum |
 | 156 | Implement Ambientgetters | spike | frontend/syntax | class: blocked | Implement Ambientgetters |
@@ -3993,6 +3992,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 139 | Implement Alwaysstrictnoimplicitusestrict | spike | frontend/syntax | see `issues/done/139-implement-alwaysStrictNoImplicitUseStrict.md` |
 | 140 | Implement Ambientclassdeclarationwithextends | spike | frontend/syntax | see `issues/done/140-implement-ambientClassDeclarationWithExtends.md` |
 | 141 | Implement Ambientclassdeclaredbeforebase (dup) | spike | frontend/syntax | see `issues/done/141-implement-ambientClassDeclaredBeforeBase.md` |
+| 142 | Implement Ambientclassmergesoverloadswithinterface | spike | frontend/syntax | see `issues/done/142-implement-ambientClassMergesOverloadsWithInterface.md` |
 | 144 | Implement Ambientconstliterals (dup) | spike | frontend/syntax | see `issues/done/144-implement-ambientConstLiterals.md` |
 | 146 | Implement Ambientenumelementinitializer (dup) | spike | frontend/syntax | see `issues/done/146-implement-ambientEnumElementInitializer.md` |
 | 147 | Implement Ambienterrors | spike | frontend/syntax | see `issues/done/147-implement-ambientErrors.md` |

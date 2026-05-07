@@ -26,7 +26,7 @@ Problem: `tsc` coverage reports `ambient-declaration` as a top TypeScript-only u
 Representative generated issues with `feature_label: ambient-declaration` include:
 
 - `issues/done/140-implement-ambientClassDeclarationWithExtends.md`
-- `issues/open/142-implement-ambientClassMergesOverloadsWithInterface.md`
+- `issues/done/142-implement-ambientClassMergesOverloadsWithInterface.md`
 - `issues/done/144-implement-ambientConstLiterals.md`
 - `issues/open/145-implement-ambientEnum.md`
 - `issues/done/148-implement-ambientExportDefaultErrors.md`
