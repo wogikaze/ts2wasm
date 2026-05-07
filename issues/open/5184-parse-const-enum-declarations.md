@@ -160,6 +160,11 @@ Additional superseded bucket:
   `const enum` parser boundary at top level. Fresh triage on 2026-05-07 reports
   `const declarations require an initializer at 26..30` for `const enum E { A }`;
   TypeScript parses the enum and reports TS2339 for the later `E["B"]` access.
+- `issues/done/1446-implement-constEnumDeclarations.md` reaches the same
+  parser boundary for ordinary top-level const enum declarations. Fresh triage
+  on 2026-05-07 reports `const declarations require an initializer at 51..55`
+  for `const enum E { ... }`; TypeScript accepts both `E` and `E2` const enum
+  declarations with no diagnostics.
 
 ## Completion evidence
 
