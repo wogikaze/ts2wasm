@@ -61,6 +61,9 @@ SUPPORTED_FEATURES = (
     "String.prototype.matchAll",
     "String.prototype.replaceAll",
     "String.prototype.trimStart",
+    "String.prototype.trimEnd",
+    "TypedArray",
+    "BigInt",
 )
 ASSERT_FAILURE_SENTINEL = "__TS2WASM_TEST262_ASSERT_FAIL__"
 
