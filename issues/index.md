@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 7 | 6 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4581 | 3418 | 1163 |
+| frontend | 4581 | 3417 | 1164 |
 | harness | 1 | 0 | 1 |
 | ir | 79 | 57 | 22 |
 | issues | 4 | 0 | 4 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5242 | 3716 | 1526 |
+| total | 5242 | 3715 | 1527 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -2041,7 +2041,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 3026 | Implement Isolatedmodulesimportconstenumtypeonly | spike | frontend/syntax | class: blocked | Implement Isolatedmodulesimportconstenumtypeonly |
 | 3027 | Implement Isolatedmodulesimportexportelision | spike | frontend/syntax | class: blocked | Implement Isolatedmodulesimportexportelision |
 | 3028 | Implement Isolatedmodulesnoemitonerror | spike | frontend/syntax | class: blocked | Implement Isolatedmodulesnoemitonerror |
-| 3029 | Implement Isolatedmodulesnonambientconstenum | spike | frontend/syntax | class: blocked | Implement Isolatedmodulesnonambientconstenum |
 | 3030 | Implement Isolatedmodulesout | spike | frontend/syntax | class: blocked | Implement Isolatedmodulesout |
 | 3031 | Implement Isolatedmodulesplainfile | spike | frontend/resolver | class: blocked | Implement Isolatedmodulesplainfile |
 | 3032 | Implement Isolatedmodulesreexportalias | spike | frontend/syntax | class: blocked | Implement Isolatedmodulesreexportalias |
@@ -5200,6 +5199,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1549 | Implement Contextuallytypingrestparameters | spike | reference/triage | see `issues/done/1549-implement-contextuallyTypingRestParameters.md` |
 | 2050 | Implement Duplicatelocalvariable Duplicate Local | spike | reference/triage | see `issues/done/2050-implement-duplicateLocalVariable-duplicate-local.md` |
 | 3002 | Implement Isolateddeclarationerrorsdefault | spike | runtime/builtins | see `issues/done/3002-implement-isolatedDeclarationErrorsDefault.md` |
+| 3029 | Implement Isolatedmodulesnonambientconstenum | spike | frontend/syntax | see `issues/done/3029-implement-isolatedModulesNonAmbientConstEnum.md` |
 | 3131 | Implement Jsxfactorynotidentifierorqualifiedname | spike | reference/triage | see `issues/done/3131-implement-jsxFactoryNotIdentifierOrQualifiedName.md` |
 | 3329 | Implement Modulecodegentest | spike | frontend/syntax | see `issues/done/3329-implement-moduleCodeGenTest.md` |
 | 3330 | Implement Modulecodegentest | spike | frontend/syntax | see `issues/done/3330-implement-moduleCodegenTest.md` |

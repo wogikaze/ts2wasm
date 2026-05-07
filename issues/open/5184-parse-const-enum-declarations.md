@@ -231,6 +231,11 @@ Additional superseded bucket:
   `const enum E4 { ... }`; TypeScript parses preceding ordinary enums, the
   const enum, and later enum member `as const` expressions before reporting a
   later TS1355 invalid const-assertion diagnostic.
+- `issues/done/3029-implement-isolatedModulesNonAmbientConstEnum.md` reaches
+  the same parser boundary before isolated-modules const-enum usage. Fresh
+  triage on 2026-05-08 reports `const declarations require an initializer at
+  95..99` for `const enum E { X = 100 }`; TypeScript parses the enum,
+  `var e = E.X`, and `export var x` with no diagnostics.
 
 ## Completion evidence
 
