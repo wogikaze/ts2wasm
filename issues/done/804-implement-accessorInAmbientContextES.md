@@ -118,7 +118,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/099-implement-accessorInAmbientContextES.md` - Implement Accessorinambientcontextes (same reference path, same group key, title overlap)
+- `issues/open/099-implement-accessorInAmbientContextES.md` - Implement Accessorinambientcontextes (same reference path, same group key, title overlap)
 - `issues/done/483-implement-accessorInAmbientContextES.md` - Implement Accessorinambientcontextes (same reference path, same feature label, same group key, title overlap)
 - `issues/open/543-implement-APISample-import-export.md` - Implement Apisample Import Export (same feature label, same group key, title overlap)
 - `issues/done/549-implement-FunctionDeclaration-import-export.md` - Implement Functiondeclaration Import Export (same feature label, same group key, title overlap)

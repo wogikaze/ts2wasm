@@ -118,7 +118,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/139-implement-alwaysStrictNoImplicitUseStrict.md` - Implement Alwaysstrictnoimplicitusestrict (same reference path, same group key, title overlap)
+- `issues/open/139-implement-alwaysStrictNoImplicitUseStrict.md` - Implement Alwaysstrictnoimplicitusestrict (same reference path, same group key, title overlap)
 - `issues/done/517-implement-alwaysStrictNoImplicitUseStrict.md` - Implement Alwaysstrictnoimplicitusestrict (same reference path, same feature label, same group key, title overlap)
 - `issues/done/603-implement-alwaysStrictNoImplicitUseStrict.md` - Implement Alwaysstrictnoimplicitusestrict (same reference path, same feature label, same group key, title overlap)
 

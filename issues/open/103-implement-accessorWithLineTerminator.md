@@ -440,7 +440,7 @@ error: [UnsupportedSyntax] expected LeftParen, got Some(Ident("x")) at 51..52
 ## 重複整理メモ
 
 この issue はタイトルが重複しているため、内容がより充実している
-`issues/done/572-implement-accessorWithLineTerminator.md` に統合されました。
+`issues/open/572-implement-accessorWithLineTerminator.md` に統合されました。
 そちらを参照してください。
 ## Completion evidence
 

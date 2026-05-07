@@ -128,7 +128,7 @@ Follow-up issues:
 
 - `issues/done/144-implement-ambientConstLiterals.md` - Implement Ambientconstliterals (same feature label, same group key, title overlap)
 - `issues/open/145-implement-ambientEnum.md` - Implement Ambientenum (same feature label, same group key, title overlap)
-- `issues/done/146-implement-ambientEnumElementInitializer.md` - Implement Ambientenumelementinitializer (same feature label, same group key, title overlap)
+- `issues/open/146-implement-ambientEnumElementInitializer.md` - Implement Ambientenumelementinitializer (same feature label, same group key, title overlap)
 - `issues/done/159-implement-ambientModuleWithTemplateLiterals.md` - Implement Ambientmodulewithtemplateliterals (same feature label, same group key, title overlap)
 - `issues/done/175-implement-amdModuleConstEnumUsage.md` - Implement Amdmoduleconstenumusage (same feature label, same group key, title overlap)
 - `issues/done/255-implement-private-class-element-runtime-semantics.md` - Implement private class element runtime semantics (same feature label, same group key, title overlap)

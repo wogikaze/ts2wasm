@@ -118,7 +118,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/078-implement-MemberAccessorDeclaration.md` - Implement Memberaccessordeclaration (same reference path, same feature label, same group key, title overlap)
+- `issues/open/078-implement-MemberAccessorDeclaration.md` - Implement Memberaccessordeclaration (same reference path, same feature label, same group key, title overlap)
 - `issues/open/422-implement-class-accessor.md` - Implement class-accessor support (same feature label, same group key, title overlap)
 
 ## Smart triage

@@ -118,7 +118,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/092-implement-accessOverriddenBaseClassMember.md` - Implement Accessoverriddenbaseclassmember (same reference path, same feature label, same group key, title overlap)
+- `issues/open/092-implement-accessOverriddenBaseClassMember.md` - Implement Accessoverriddenbaseclassmember (same reference path, same feature label, same group key, title overlap)
 
 ## Smart triage
 

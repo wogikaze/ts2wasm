@@ -119,7 +119,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/115-implement-aliasInaccessibleModule.md` - Implement Aliasinaccessiblemodule (same reference path, same group key, title overlap)
+- `issues/open/115-implement-aliasInaccessibleModule.md` - Implement Aliasinaccessiblemodule (same reference path, same group key, title overlap)
 - `issues/done/495-implement-aliasInaccessibleModule.md` - Implement Aliasinaccessiblemodule (same reference path, same feature label, same group key, title overlap)
 
 ## Smart triage

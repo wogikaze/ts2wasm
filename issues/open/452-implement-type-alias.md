@@ -123,7 +123,7 @@ Follow-up issues:
 - `issues/done/112-implement-aliasBug.md` - Implement Aliasbug (same feature label, same group key, title overlap)
 - `issues/done/113-implement-aliasDoesNotDuplicateSignatures.md` - Implement Aliasdoesnotduplicatesignatures (same feature label, same group key, title overlap)
 - `issues/done/114-implement-aliasErrors.md` - Implement Aliaserrors (same feature label, same group key, title overlap)
-- `issues/done/115-implement-aliasInaccessibleModule.md` - Implement Aliasinaccessiblemodule (same feature label, same group key, title overlap)
+- `issues/open/115-implement-aliasInaccessibleModule.md` - Implement Aliasinaccessiblemodule (same feature label, same group key, title overlap)
 - `issues/done/116-implement-aliasInstantiationExpressionGenericIntersectionNoCrash.md` - Implement Aliasinstantiationexpressiongenericintersectionnocrash (same feature label, same group key, title overlap)
 - `issues/open/117-implement-aliasOfGenericFunctionWithRestBehavedSameAsUnaliased.md` - Implement Aliasofgenericfunctionwithrestbehavedsameasunaliased (same feature label, same group key, title overlap)
 - `issues/done/118-implement-aliasOnMergedModuleInterface.md` - Implement Aliasonmergedmoduleinterface (same feature label, same group key, title overlap)

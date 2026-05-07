@@ -16,18 +16,18 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 3 | 0 | 3 |
 | coverage | 44 | 1 | 43 |
 | docs | 5 | 0 | 5 |
-| frontend | 4438 | 3745 | 693 |
+| frontend | 4438 | 3744 | 694 |
 | harness | 1 | 0 | 1 |
 | ir | 42 | 1 | 41 |
 | issues | 5 | 0 | 5 |
 | parser | 1 | 0 | 1 |
-| reference | 211 | 166 | 45 |
+| reference | 211 | 164 | 47 |
 | runtime | 272 | 86 | 186 |
 | scripts | 3 | 0 | 3 |
 | security | 1 | 0 | 1 |
 | tests | 8 | 0 | 8 |
 | wasi | 4 | 0 | 4 |
-| total | 5081 | 4000 | 1081 |
+| total | 5081 | 3997 | 1084 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -47,7 +47,7 @@ Issue files are the source of truth for work items. The generated section below 
 Direct child counts are derived from issue-file `depends_on` links. A meta issue can be `done` as a classification/design umbrella while implementation child issues remain open.
 
 ```
-5000 (Meta: TypeScript Compiler Parser Syntax Coverage) [done/design] ch:490 open:431 done:59
+5000 (Meta: TypeScript Compiler Parser Syntax Coverage) [done/design] ch:490 open:430 done:60
 ├── 5002 (Meta: TypeScript Compiler Type System Coverage) [done/done] ch:241 open:233 done:8 (also ← 5005)
 ├── 5003 (Meta: TypeScript Compiler Declaration Emit Coverage) [done/done] ch:103 open:93 done:10 (also ← 5001)
 5001 (Meta: TypeScript Compiler Semantic Analysis Coverage) [done/done] ch:603 open:380 done:223
@@ -66,7 +66,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 
 | Order | ID | Title | State | Class | Area | Priority | Depends on | Direct children | Open children | Done children |
 |-----:|---:|------|-------|-------|------|--------:|-----------:|----------------:|--------------:|--------------:|
-| 1 | 5000 | Meta: TypeScript Compiler Parser Syntax Coverage | done | design | frontend/syntax | P1 | - | 490 | 431 | 59 |
+| 1 | 5000 | Meta: TypeScript Compiler Parser Syntax Coverage | done | design | frontend/syntax | P1 | - | 490 | 430 | 60 |
 | 2 | 5001 | Meta: TypeScript Compiler Semantic Analysis Coverage | done | done | frontend/semantics | P1 | - | 603 | 380 | 223 |
 | 3 | 5004 | Meta: Runtime Builtins Coverage (test262) (audit reopened #5004) | done | done | runtime/builtins | P1 | - | 24 | 3 | 21 |
 | 4 | 5005 | Meta: TypeScript Compiler Name Resolution Coverage | done | done | frontend/resolver | P1 | - | 432 | 385 | 47 |
@@ -125,11 +125,8 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 184 | Implement Anydeclare | spike | frontend/syntax | superseded | P2 | 5003 | anyDeclare has 1 reference failures and needs smart-triage evidence before implementation starts. |
 | 463 | Implement Functiondeclaration Import Export | spike | frontend/syntax | superseded | P1 | 5001 | FunctionDeclaration-import-export has 1 reference failures and needs smart-triage evidence before implementation starts. |
 | 467 | Implement Transportstream (dup) | spike | frontend/syntax | superseded | P1 | 5000 | TransportStream has 1 reference failures and needs smart-triage evidence before implementation starts. |
-| 486 | Implement Accessorwithlineterminator (dup) | spike | reference/triage | superseded | P2 |  | accessorWithLineTerminator has 1 reference failures and needs smart-triage evidence before implementation starts. |
 | 518 | Implement Ambientclassdeclarationwithextends | spike | frontend/syntax | superseded | P1 | 5001 | ambientClassDeclarationWithExtends has 1 reference failures and needs smart-triage evidence before implementation sta... |
 | 572 | Implement Accessorwithlineterminator | spike | reference/triage | superseded | P2 |  | accessorWithLineTerminator has 1 reference failures and needs smart-triage evidence before implementation starts. |
-| 788 | Implement Transportstream (dup) | spike | frontend/syntax | superseded | P1 | 5000 | TransportStream has 1 reference failures and needs smart-triage evidence before implementation starts. |
-| 807 | Implement Accessorwithlineterminator (dup) | spike | reference/triage | superseded | P2 |  | accessorWithLineTerminator has 1 reference failures and needs smart-triage evidence before implementation starts. |
 | 840 | Implement Ambientclassdeclaredbeforebase (dup) | spike | frontend/syntax | superseded | P1 | 5001 | ambientClassDeclaredBeforeBase has 1 reference failures and needs smart-triage evidence before implementation starts. |
 | 871 | Implement Anonterface (dup) | spike | frontend/syntax | superseded | P1 | 5001 | anonterface has 1 reference failures and needs smart-triage evidence before implementation starts. |
 | 5048 | [ir] Broaden BigInt lowering beyond signed-i64/first-limb slice | feature | ir | implementation-ready | P0 |  | [ir] Broaden BigInt lowering beyond signed-i64/first-limb slice |
@@ -4518,6 +4515,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 483 | Implement Accessorinambientcontextes (audit reopened #483) | spike | frontend/syntax | see `issues/done/483-implement-accessorInAmbientContextES.md` |
 | 484 | Implement Accessorinferredreturntypeerrorinreturnstatement (dup) | spike | frontend/syntax | see `issues/done/484-implement-accessorInferredReturnTypeErrorInReturnStatement.md` |
 | 485 | Implement Accessorparameteraccessibilitymodifier (audit reopened #485) | spike | frontend/syntax | see `issues/done/485-implement-accessorParameterAccessibilityModifier.md` |
+| 486 | Implement Accessorwithlineterminator (dup) | spike | reference/triage | see `issues/done/486-implement-accessorWithLineTerminator.md` |
 | 487 | Implement Accessorwithoutbody (audit reopened #487) | spike | frontend/syntax | see `issues/done/487-implement-accessorWithoutBody.md` |
 | 488 | Implement Accessors (dup) | spike | frontend/syntax | see `issues/done/488-implement-accessors.md` |
 | 489 | Implement Accessorsinambientcontext (audit reopened #489) | spike | frontend/syntax | see `issues/done/489-implement-accessorsInAmbientContext.md` |
@@ -4615,6 +4613,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 785 | Implement Functiondeclaration Parser Syntax (dup) | spike | frontend/syntax | see `issues/done/785-implement-FunctionDeclaration-parser-syntax.md` |
 | 786 | Implement Memberaccessordeclaration (audit reopened #786) | spike | frontend/syntax | see `issues/done/786-implement-MemberAccessorDeclaration.md` |
 | 787 | Implement Parameterlist | spike | frontend/syntax | see `issues/done/787-implement-ParameterList.md` |
+| 788 | Implement Transportstream (dup) | spike | frontend/syntax | see `issues/done/788-implement-TransportStream.md` |
 | 789 | Implement Abstractclassinlocalscope (dup) | spike | frontend/syntax | see `issues/done/789-implement-abstractClassInLocalScope.md` |
 | 790 | Implement Abstractclassinlocalscopeisabstract (dup) | spike | frontend/syntax | see `issues/done/790-implement-abstractClassInLocalScopeIsAbstract.md` |
 | 791 | Implement Abstractclassunioninstantiation (dup) | spike | frontend/resolver | see `issues/done/791-implement-abstractClassUnionInstantiation.md` |
@@ -4633,6 +4632,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 804 | Implement Accessorinambientcontextes (audit reopened #804) | spike | frontend/syntax | see `issues/done/804-implement-accessorInAmbientContextES.md` |
 | 805 | Implement Accessorinferredreturntypeerrorinreturnstatement (dup) | spike | frontend/syntax | see `issues/done/805-implement-accessorInferredReturnTypeErrorInReturnStatement.md` |
 | 806 | Implement Accessorparameteraccessibilitymodifier (audit reopened #806) | spike | frontend/syntax | see `issues/done/806-implement-accessorParameterAccessibilityModifier.md` |
+| 807 | Implement Accessorwithlineterminator (dup) | spike | reference/triage | see `issues/done/807-implement-accessorWithLineTerminator.md` |
 | 808 | Implement Accessorwithoutbody (audit reopened #808) | spike | frontend/syntax | see `issues/done/808-implement-accessorWithoutBody.md` |
 | 809 | Implement Accessors (dup) | spike | frontend/syntax | see `issues/done/809-implement-accessors.md` |
 | 810 | Implement Accessorsinambientcontext (audit reopened #810) | spike | frontend/syntax | see `issues/done/810-implement-accessorsInAmbientContext.md` |

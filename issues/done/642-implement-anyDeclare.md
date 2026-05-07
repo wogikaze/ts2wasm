@@ -118,7 +118,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/184-implement-anyDeclare.md` - Implement Anydeclare (same reference path, same group key, title overlap)
+- `issues/open/184-implement-anyDeclare.md` - Implement Anydeclare (same reference path, same group key, title overlap)
 
 ## Smart triage
 

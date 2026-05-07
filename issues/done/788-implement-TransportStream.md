@@ -1,11 +1,11 @@
 ---
-id: 807
-title: "Implement Accessorwithlineterminator (dup)"
+id: 788
+title: "Implement Transportstream (dup)"
 type: spike
-area: reference/triage
+area: frontend/syntax
 class: superseded
-priority: P2
-depends_on: []
+priority: P1
+depends_on: [5000]
 blocks: []
 created: 2026-05-01
 updated: 2026-05-07
@@ -13,30 +13,30 @@ updated: 2026-05-07
 > **Reopened by false-done audit** (2026-05-07)
 > Classification: must-reopen
 > Reason: Zero implementation commits. Batch-closed without evidence. Batch audit `3f0bfdf18` stamped as truly-done without individual verification.
-> Evidence: `git log --oneline --all --grep=807` shows only creation/chore commits — no feat/fix commit.
+> Evidence: `git log --oneline --all --grep=788` shows only creation/chore commits — no feat/fix commit.
 
 ## Summary
 
-Triage accessorWithLineTerminator across 1 failing reference test cases and split this bucket into implementation-ready child issues.
+Triage TransportStream across 1 failing reference test cases and split this bucket into implementation-ready child issues.
 
 ## Problem
 
-Reference test results show 1 cases fail in directory `accessorWithLineTerminator` with diagnostics: duplicate-function. The compiler cannot handle these syntax/semantics, preventing compilation of code in this category.
+Reference test results show 1 cases fail in directory `TransportStream` with diagnostics: parser-syntax. The compiler cannot handle these syntax/semantics, preventing compilation of code in this category.
 
-Problem: accessorWithLineTerminator has 1 reference failures and needs smart-triage evidence before implementation starts.
+Problem: TransportStream has 1 reference failures and needs smart-triage evidence before implementation starts.
 
 ## Current failure
 
 Representative reproduction:
 
 ```sh
-mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/accessorWithLineTerminator.ts
+mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/TransportStream.ts
 ```
 
 Coverage window:
 
 ```sh
-mise run reference-coverage -- tsc --path-filter reference/typescript/tests/cases/compiler/accessorWithLineTerminator.ts --detail
+mise run reference-coverage -- tsc --path-filter reference/typescript/tests/cases/compiler/TransportStream.ts --detail
 ```
 
 ## Desired final state
@@ -60,7 +60,7 @@ Out of scope:
 
 ## Triage result
 
-Failing test: `accessorWithLineTerminator.ts` — duplicate
+Failing test: `TransportStream.ts` — duplicate
 
 This issue was reopened by false-done audit. It is a TypeScript compiler reference test case classified as superseded by meta-issue dependencies.
 
@@ -68,13 +68,14 @@ This issue was reopened by false-done audit. It is a TypeScript compiler referen
 
 Expected:
 
-- `issues/open/`
-- `scripts/run/reference-triage.py`
+- `crates/frontend/src/`
+- `crates/cli/src/`
 - `fixtures/`
+- `scripts/run/reference-triage.py`
 
 Do not touch:
 
-- implementation code until the triage report assigns a concrete frontend/runtime/backend owner
+- unrelated runtime/backend code unless `reference-triage` proves the failure is not frontend-owned
 
 ## Acceptance criteria
 
@@ -96,8 +97,8 @@ Impacted commands:
 
 ```sh
 mise run reference-coverage -- tsc --limit 2
-mise run reference-coverage -- tsc --path-filter reference/typescript/tests/cases/compiler/accessorWithLineTerminator.ts --detail
-mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/accessorWithLineTerminator.ts
+mise run reference-coverage -- tsc --path-filter reference/typescript/tests/cases/compiler/TransportStream.ts --detail
+mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/TransportStream.ts
 ```
 
 Not run:
@@ -122,13 +123,15 @@ Follow-up issues:
 
 ## Affected test files
 
-- `reference/typescript/tests/cases/compiler/accessorWithLineTerminator.ts`
+- `reference/typescript/tests/cases/compiler/TransportStream.ts`
 
 ## Duplicate detection
 
-- `issues/done/103-implement-accessorWithLineTerminator.md` - Implement Accessorwithlineterminator (same reference path, same group key, title overlap)
-- `issues/done/486-implement-accessorWithLineTerminator.md` - Implement Accessorwithlineterminator (same reference path, same feature label, same group key, title overlap)
-- `issues/done/572-implement-accessorWithLineTerminator.md` - Implement Accessorwithlineterminator (same reference path, same feature label, same group key, title overlap)
+- `issues/done/081-implement-TransportStream.md` - Implement Transportstream (same reference path, same feature label, same group key, title overlap)
+- `issues/open/442-implement-parser-syntax.md` - Implement parser syntax extensions (same feature label, same group key, title overlap)
+- `issues/open/467-implement-TransportStream.md` - Implement Transportstream (same reference path, same feature label, same group key, title overlap)
+- `issues/open/550-implement-FunctionDeclaration-parser-syntax.md` - Implement Functiondeclaration Parser Syntax (same feature label, same group key, title overlap)
+- `issues/open/553-implement-TransportStream.md` - Implement Transportstream (same reference path, same feature label, same group key, title overlap)
 
 ## Smart triage
 
@@ -138,7 +141,7 @@ Not generated. Rerun with `--triage-limit 1` or higher.
 ## 重複整理メモ
 
 この issue はタイトルが重複しているため、内容がより充実している
-`issues/done/572-implement-accessorWithLineTerminator.md` に統合されました。
+`issues/open/553-implement-TransportStream.md` に統合されました。
 そちらを参照してください。
 ## Completion evidence
 
@@ -160,30 +163,17 @@ Remaining risks:
 
 - none
 
-## Status
+## ⚠️ False-done audit (re-opened from `issues/done/`)
 
-Superseded by issue #103. Duplicate from separate coverage run.
-
----
-
-## ⚠️ False-done audit (re-opened from issues/done/)
-
-**Why this was false-done**: This issue has `class: triage-needed` in `issues/done/`.
-The "Status" note claims supersedence by issue #103, but issue #103 was itself
-identified as false-done and moved back to `issues/open/`. The supersedence chain
-is therefore invalid. No implementation commits, no close note, no completion
-evidence.
+**Why this was false-done**: This generated triage spike issue was moved to `issues/done/` without actual triage or implementation. It has `type: spike` and `class: blocked` depending on meta-issues (`depends_on: [5000]` or `[5001]`), with zero implementation commits referencing this issue, empty completion evidence (commits `...`), and no Status note or Close note documenting triage results.
 
 **True-done checklist** (all must pass):
-
-1. Perform actual triage review
-2. Either create child implementation issue(s) or confirm this issue is legitimately
-   superseded by a truly resolved issue
-3. Update `class` from `triage-needed` to appropriate value
-4. Fill in completion evidence section with triage results
+1. Perform actual triage review of the reference failure case(s)
+2. Either split into implementation-ready child issue(s) or confirm superseded by an existing issue (document with Status note)
+3. Fill in completion evidence section with triage results and commit SHAs
+4. Verify all acceptance criteria checkboxes reflect completed work
 
 **Commands that must pass**:
-
 ```sh
 cargo fmt --all --check
 cargo nextest run

@@ -133,7 +133,7 @@ Follow-up issues:
 - `issues/done/173-implement-amdLikeInputDeclarationEmit.md` - Implement Amdlikeinputdeclarationemit (same feature label, same group key, title overlap)
 - `issues/done/174-implement-amdModuleBundleNoDuplicateDeclarationEmitComments.md` - Implement Amdmodulebundlenoduplicatedeclarationemitcomments (same feature label, same group key, title overlap)
 - `issues/done/177-implement-anonClassDeclarationEmitIsAnon.md` - Implement Anonclassdeclarationemitisanon (same feature label, same group key, title overlap)
-- `issues/done/184-implement-anyDeclare.md` - Implement Anydeclare (same feature label, same group key, title overlap)
+- `issues/open/184-implement-anyDeclare.md` - Implement Anydeclare (same feature label, same group key, title overlap)
 - `issues/done/408-implement-tsgo-declaration-emit-asconst-and-generic-methods.md` - Implement tsgo declaration emit: AsConstSatisfies/const generic method cases (same feature label, same group key, title overlap)
 - `issues/done/409-implement-tsgo-declaration-emit-package-json-subpath.md` - Implement tsgo declaration emit: package-json exports and subpath reexport cases (same feature label, same group key, title overlap)
 

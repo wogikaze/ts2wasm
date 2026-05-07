@@ -135,7 +135,7 @@ Follow-up issues:
 - `issues/done/068-implement-unsupported-expression.md` - Implement unsupported expression types (same feature label, same group key, title overlap)
 - `issues/done/069-implement-APILibCheck.md` - Implement Apilibcheck (same feature label, same group key, title overlap)
 - `issues/done/070-implement-APISample.md` - Implement Apisample (same feature label, same group key, title overlap)
-- `issues/done/071-implement-ArrowFunctionExpression.md` - Implement Arrowfunctionexpression (same feature label, same group key, title overlap)
+- `issues/open/071-implement-ArrowFunctionExpression.md` - Implement Arrowfunctionexpression (same feature label, same group key, title overlap)
 
 ## Smart triage
 
