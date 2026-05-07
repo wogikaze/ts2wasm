@@ -341,7 +341,7 @@ error: [UnsupportedSyntax] expected Semicolon, got Some(Ident("enum")) at 28..32
 ## 重複整理メモ
 
 この issue はタイトルが重複しているため、内容がより充実している
-`issues/open/521-implement-ambientEnumElementInitializer.md` に統合されました。
+`issues/done/521-implement-ambientEnumElementInitializer.md` に統合されました。
 そちらを参照してください。
 ## Completion evidence
 

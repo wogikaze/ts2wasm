@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 7 | 6 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4581 | 3419 | 1162 |
+| frontend | 4581 | 3418 | 1163 |
 | harness | 1 | 0 | 1 |
 | ir | 79 | 57 | 22 |
 | issues | 4 | 0 | 4 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5242 | 3717 | 1525 |
+| total | 5242 | 3716 | 1526 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -424,7 +424,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 452 | Implement type-alias support | spike | frontend/syntax | class: blocked | Implement type-alias support |
 | 453 | Implement type-system support | spike | frontend/semantics | class: blocked | Implement type-system support |
 | 454 | Investigate and classify unknown-unsupported cases | spike | frontend/syntax | class: triage-needed | Investigate and classify unknown-unsupported cases |
-| 521 | Implement Ambientenumelementinitializer | spike | frontend/syntax | class: blocked | Implement Ambientenumelementinitializer |
 | 541 | Implement Apilibcheck | spike | frontend/syntax | class: blocked | Implement Apilibcheck |
 | 542 | Implement Apisample Arrow Function | spike | frontend/syntax | class: blocked | Implement Apisample Arrow Function |
 | 543 | Implement Apisample Import Export | spike | frontend/syntax | class: blocked | Implement Apisample Import Export |
@@ -4310,6 +4309,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 518 | Implement Ambientclassdeclarationwithextends | spike | frontend/syntax | see `issues/done/518-implement-ambientClassDeclarationWithExtends.md` |
 | 519 | Implement Ambientclassdeclaredbeforebase (dup) | spike | frontend/syntax | see `issues/done/519-implement-ambientClassDeclaredBeforeBase.md` |
 | 520 | Implement Ambientconstliterals (dup) | spike | frontend/syntax | see `issues/done/520-implement-ambientConstLiterals.md` |
+| 521 | Implement Ambientenumelementinitializer | spike | frontend/syntax | see `issues/done/521-implement-ambientEnumElementInitializer.md` |
 | 522 | Implement Ambienterrors | spike | runtime/builtins | see `issues/done/522-implement-ambientErrors.md` |
 | 523 | Implement Ambientexportdefaulterrors (dup) | spike | frontend/syntax | see `issues/done/523-implement-ambientExportDefaultErrors.md` |
 | 524 | Implement Ambientexternalmoduleinanotherexternalmodule (dup) | spike | frontend/syntax | see `issues/done/524-implement-ambientExternalModuleInAnotherExternalModule.md` |
