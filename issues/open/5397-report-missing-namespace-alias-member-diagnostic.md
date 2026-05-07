@@ -158,7 +158,10 @@ Follow-up issues:
 
 Split from generated bucket `578` on 2026-05-08. The sibling
 `aliasErrors.ts` reference has historically exposed the same TS2694 shape and
-should be rechecked when triaging issue 580.
+was rechecked while triaging issue 580. Its first current blocker is the
+runtime/value-position namespace alias `beez.baz.boo`, split separately as
+issue 5398; after that advances, `aliasErrors.ts` is expected to expose this
+same TS2694 `booz.bar` diagnostic.
 
 ## Completion evidence
 

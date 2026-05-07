@@ -592,7 +592,7 @@ error: [UnsupportedSyntax] expected Semicolon, got Some(Ident("foo")) at 30..33
 ## 重複整理メモ
 
 この issue はタイトルが重複しているため、内容がより充実している
-`issues/open/580-implement-aliasErrors.md` に統合されました。
+`issues/done/580-implement-aliasErrors.md` に統合されました。
 そちらを参照してください。
 ## Completion evidence
 

@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 6 | 5 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4572 | 3447 | 1125 |
+| frontend | 4573 | 3447 | 1126 |
 | harness | 1 | 0 | 1 |
 | ir | 79 | 57 | 22 |
 | issues | 4 | 0 | 4 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5232 | 3744 | 1488 |
+| total | 5233 | 3744 | 1489 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -432,7 +432,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 555 | Implement Abstractclassinlocalscopeisabstract | spike | frontend/resolver | class: blocked | Implement Abstractclassinlocalscopeisabstract |
 | 556 | Implement Abstractclassunioninstantiation | spike | frontend/resolver | class: blocked | Implement Abstractclassunioninstantiation |
 | 579 | Implement Aliasdoesnotduplicatesignatures | spike | frontend/syntax | class: blocked | Implement Aliasdoesnotduplicatesignatures |
-| 580 | Implement Aliaserrors | spike | frontend/syntax | class: blocked | Implement Aliaserrors |
 | 582 | Implement Aliasinstantiationexpressiongenericintersectionnocrash | spike | frontend/syntax | class: blocked | Implement Aliasinstantiationexpressiongenericintersectionnocrash |
 | 583 | Implement Aliasonmergedmoduleinterface | spike | frontend/syntax | class: blocked | Implement Aliasonmergedmoduleinterface |
 | 584 | Implement Aliasusageinaccessorsofclass | spike | frontend/syntax | class: blocked | Implement Aliasusageinaccessorsofclass |
@@ -3846,6 +3845,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5134 | Admit generators and async-functions features through Python test262 harness | spike | scripts | 416 | Admit generators and async-functions features through Python test262 harness |
 | 5135 | Fix builtin arity validation for coercion/math globals | bug | ir | class: blocked | Fix builtin arity validation for coercion/math globals |
 | 5136 | Fix arity validation for RegExp/String prototype methods | bug | ir | class: blocked | Fix arity validation for RegExp/String prototype methods |
+| 5398 | Resolve namespace import-equals alias value access | feature | frontend/name-resolution | 5287 | Resolve namespace import-equals alias value access |
 <!-- generated:blocked:end -->
 
 ## Done queue
@@ -4381,6 +4381,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 576 | Implement Addmorecallsignaturestobasesignature | spike | frontend/syntax | see `issues/done/576-implement-addMoreCallSignaturesToBaseSignature.md` |
 | 577 | Implement Aliasassignments | spike | frontend/syntax | see `issues/done/577-implement-aliasAssignments.md` |
 | 578 | Implement Aliasbug | spike | frontend/syntax | see `issues/done/578-implement-aliasBug.md` |
+| 580 | Implement Aliaserrors | spike | frontend/syntax | see `issues/done/580-implement-aliasErrors.md` |
 | 581 | Implement Aliasinaccessiblemodule (audit reopened #581) | spike | frontend/syntax | see `issues/done/581-implement-aliasInaccessibleModule.md` |
 | 602 | Implement Alwaysstrictmodule (audit reopened #602) | spike | frontend/syntax | see `issues/done/602-implement-alwaysStrictModule.md` |
 | 603 | Implement Alwaysstrictnoimplicitusestrict (audit reopened #603) | spike | frontend/syntax | see `issues/done/603-implement-alwaysStrictNoImplicitUseStrict.md` |
