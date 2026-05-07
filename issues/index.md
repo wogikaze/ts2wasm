@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 5 | 4 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4544 | 3507 | 1037 |
+| frontend | 4544 | 3506 | 1038 |
 | harness | 1 | 0 | 1 |
 | ir | 65 | 43 | 22 |
 | issues | 4 | 0 | 4 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5189 | 3798 | 1391 |
+| total | 5189 | 3797 | 1392 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -568,7 +568,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 759 | Implement Asynciife | spike | frontend/syntax | class: triage-needed | Implement Asynciife |
 | 760 | Implement Asyncimportnestedyield | spike | reference/triage | class: triage-needed | Implement Asyncimportnestedyield |
 | 761 | Implement Asynciteratorextraparameters | spike | runtime/builtins | class: triage-needed | Implement Asynciteratorextraparameters |
-| 1469 | Implement Constructorargwithgenericcallsignature | spike | frontend/syntax | class: blocked | Implement Constructorargwithgenericcallsignature |
 | 1470 | Implement Constructorargserrors | spike | frontend/syntax | class: blocked | Implement Constructorargserrors |
 | 1471 | Implement Constructorastype | spike | frontend/resolver | class: blocked | Implement Constructorastype |
 | 1472 | Implement Constructorinvocationwithtoofewtypeargs | spike | frontend/syntax | class: blocked | Implement Constructorinvocationwithtoofewtypeargs |
@@ -5145,6 +5144,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1466 | Implement Constraints | spike | frontend/resolver | see `issues/done/1466-implement-constraints.md` |
 | 1467 | Implement Constraintsthatreferenceothercontstraints | spike | frontend/syntax | see `issues/done/1467-implement-constraintsThatReferenceOtherContstraints.md` |
 | 1468 | Implement Constraintsusedinprototypeproperty | spike | frontend/syntax | see `issues/done/1468-implement-constraintsUsedInPrototypeProperty.md` |
+| 1469 | Implement Constructorargwithgenericcallsignature | spike | frontend/syntax | see `issues/done/1469-implement-constructorArgWithGenericCallSignature.md` |
 | 2050 | Implement Duplicatelocalvariable Duplicate Local | spike | reference/triage | see `issues/done/2050-implement-duplicateLocalVariable-duplicate-local.md` |
 | 3002 | Implement Isolateddeclarationerrorsdefault | spike | runtime/builtins | see `issues/done/3002-implement-isolatedDeclarationErrorsDefault.md` |
 | 3131 | Implement Jsxfactorynotidentifierorqualifiedname | spike | reference/triage | see `issues/done/3131-implement-jsxFactoryNotIdentifierOrQualifiedName.md` |
