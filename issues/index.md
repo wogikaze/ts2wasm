@@ -16,9 +16,9 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 5 | 4 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4528 | 3568 | 960 |
+| frontend | 4528 | 3567 | 961 |
 | harness | 1 | 0 | 1 |
-| ir | 64 | 42 | 22 |
+| ir | 65 | 43 | 22 |
 | issues | 4 | 0 | 4 |
 | parser | 1 | 0 | 1 |
 | reference | 212 | 155 | 57 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5172 | 3858 | 1314 |
+| total | 5173 | 3858 | 1315 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -50,7 +50,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 5000 (Meta: TypeScript Compiler Parser Syntax Coverage) [done/design] ch:474 open:399 done:75
 ├── 5002 (Meta: TypeScript Compiler Type System Coverage) [done/done] ch:231 open:214 done:17 (also ← 5005)
 ├── 5003 (Meta: TypeScript Compiler Declaration Emit Coverage) [done/done] ch:102 open:91 done:11 (also ← 5001)
-5001 (Meta: TypeScript Compiler Semantic Analysis Coverage) [done/done] ch:582 open:328 done:254
+5001 (Meta: TypeScript Compiler Semantic Analysis Coverage) [done/done] ch:581 open:327 done:254
 5004 (Meta: Runtime Builtins Coverage (test262) (audit reopened #5004)) [done/done] ch:24 open:3 done:21
 5005 (Meta: TypeScript Compiler Name Resolution Coverage) [done/done] ch:419 open:367 done:52
 ├── 5006 (Meta: TypeScript Compiler Scope Analysis Coverage) [done/done] ch:29 open:21 done:8
@@ -67,7 +67,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | Order | ID | Title | State | Class | Area | Priority | Depends on | Direct children | Open children | Done children |
 |-----:|---:|------|-------|-------|------|--------:|-----------:|----------------:|--------------:|--------------:|
 | 1 | 5000 | Meta: TypeScript Compiler Parser Syntax Coverage | done | design | frontend/syntax | P1 | - | 474 | 399 | 75 |
-| 2 | 5001 | Meta: TypeScript Compiler Semantic Analysis Coverage | done | done | frontend/semantics | P1 | - | 582 | 328 | 254 |
+| 2 | 5001 | Meta: TypeScript Compiler Semantic Analysis Coverage | done | done | frontend/semantics | P1 | - | 581 | 327 | 254 |
 | 3 | 5004 | Meta: Runtime Builtins Coverage (test262) (audit reopened #5004) | done | done | runtime/builtins | P1 | - | 24 | 3 | 21 |
 | 4 | 5005 | Meta: TypeScript Compiler Name Resolution Coverage | done | done | frontend/resolver | P1 | - | 419 | 367 | 52 |
 | 5 | 5002 | Meta: TypeScript Compiler Type System Coverage | done | done | frontend/semantics | P1 | 5000, 5005 | 231 | 214 | 17 |
@@ -292,6 +292,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5335 | Validate nested function overload implementations | feature | frontend/resolver | implementation-ready | P1 |  | nested function overload implementation groups are classified as |
 | 5336 | Parse object type literal signatures with rest parameters | feature | frontend/parser | implementation-ready | P1 |  | object type literal signature members with rest parameters are not |
 | 5337 | Parse rest parameter constructor overload signatures | feature | frontend/parser | implementation-ready | P1 |  | bodyless constructor overload signatures with rest parameters are |
+| 5338 | Support rest constructor outer local captures | feature | ir/lowering | implementation-ready | P1 |  | constructor rest parameters and hidden lexical-capture parameters |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -565,7 +566,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 772 | Implement Augmentedtypesvar | spike | frontend/syntax | class: blocked | Implement Augmentedtypesvar |
 | 773 | Implement Autoasiforstaticsinclassdeclaration | spike | frontend/syntax | class: triage-needed | Implement Autoasiforstaticsinclassdeclaration |
 | 775 | Implement Autotypeassignedusingdestructuringfromnevernocrash | spike | frontend/resolver | class: blocked | Implement Autotypeassignedusingdestructuringfromnevernocrash |
-| 1306 | Implement Collisionrestparameterunderscoreiusage | spike | frontend/syntax | class: blocked | Implement Collisionrestparameterunderscoreiusage |
 | 1307 | Implement Collisionsuperandlocalfunctioninaccessors | spike | frontend/syntax | class: blocked | Implement Collisionsuperandlocalfunctioninaccessors |
 | 1308 | Implement Collisionsuperandlocalfunctioninconstructor | spike | frontend/syntax | class: blocked | Implement Collisionsuperandlocalfunctioninconstructor |
 | 1309 | Implement Collisionsuperandlocalfunctioninmethod | spike | frontend/syntax | class: blocked | Implement Collisionsuperandlocalfunctioninmethod |
@@ -5028,6 +5028,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1303 | Implement Collisionrestparameterfunction | spike | frontend/syntax | see `issues/done/1303-implement-collisionRestParameterFunction.md` |
 | 1304 | Implement Collisionrestparameterfunctionexpressions | spike | frontend/syntax | see `issues/done/1304-implement-collisionRestParameterFunctionExpressions.md` |
 | 1305 | Implement Collisionrestparameterintype | spike | frontend/syntax | see `issues/done/1305-implement-collisionRestParameterInType.md` |
+| 1306 | Implement Collisionrestparameterunderscoreiusage | spike | frontend/syntax | see `issues/done/1306-implement-collisionRestParameterUnderscoreIUsage.md` |
 | 1325 | Implement Collisionthisexpressionandlocalvarinconstructor | spike | frontend/syntax | see `issues/done/1325-implement-collisionThisExpressionAndLocalVarInConstructor.md` |
 | 1327 | Implement Collisionthisexpressionandlocalvarinlambda | spike | frontend/syntax | see `issues/done/1327-implement-collisionThisExpressionAndLocalVarInLambda.md` |
 | 1328 | Implement Collisionthisexpressionandlocalvarinmethod | spike | frontend/syntax | see `issues/done/1328-implement-collisionThisExpressionAndLocalVarInMethod.md` |
