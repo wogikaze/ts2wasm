@@ -1580,11 +1580,15 @@ fn labeled_control_invalid_fixtures_report_source_diagnostics() {
 }
 
 #[test]
-fn instanceof_fixture_matches_node_output_under_iwasm() {
-    assert_build_fails_with_unsupported_syntax(
-        "fixtures/core-semantics/instanceof.ts",
-        "issue-5011:",
-    );
+fn instanceof_fixture_builds_successfully() {
+    // issue-5011 (class value support) was implemented — build now succeeds
+    let fixture = "fixtures/core-semantics/instanceof.ts";
+    let fixture_path = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("../../").join(fixture);
+    let output = temp_wasm_path(fixture);
+    let build = std::process::Command::new(env!("CARGO_BIN_EXE_ts2wasm"))
+        .arg("build").arg(&fixture_path).arg("-o").arg(&output).output().unwrap();
+    assert!(build.status.success(), "build failed for {fixture}");
 }
 
 #[test]
