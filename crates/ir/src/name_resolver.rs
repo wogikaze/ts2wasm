@@ -1095,6 +1095,11 @@ impl NameResolver {
             {
                 return Err(diagnostic);
             }
+            if let Some(diagnostic) =
+                self.literal_reference_comparison_gap(current_left, current_op, current_right, current_span)
+            {
+                return Err(diagnostic);
+            }
             chain.push((current_op, current_right, current_span));
             let mut continued = false;
             if let Expr::Binary {
@@ -1298,7 +1303,7 @@ impl NameResolver {
             Some(Diagnostic {
                 code: DiagCode::UnsupportedSyntax,
                 message: format!(
-                    "issue-5301: this comparison between object/array literals always evaluates to `{}` because each literal creates a distinct reference",
+                    "issue-5301: this comparison between object/array literals always results in `{}` because each literal creates a distinct reference",
                     if matches!(op, BinaryOp::StrictEqual | BinaryOp::EqualEqual) { "false" } else { "true" }
                 ),
                 span: Some(span),
