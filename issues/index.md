@@ -9,25 +9,25 @@ Issue files are the source of truth for work items. The generated section below 
 <!-- generated:summary:start -->
 | Area | Total | Open | Resolved |
 |---|---:|---:|---:|
-| abi | 7 | 1 | 6 |
+| abi | 8 | 1 | 7 |
 | backend | 18 | 1 | 17 |
 | backend-wasm | 2 | 0 | 2 |
 | cli | 16 | 0 | 16 |
 | compiler | 3 | 0 | 3 |
 | coverage | 43 | 0 | 43 |
 | docs | 5 | 0 | 5 |
-| frontend | 4438 | 3711 | 727 |
+| frontend | 4438 | 3746 | 692 |
 | harness | 1 | 0 | 1 |
-| ir | 42 | 0 | 42 |
+| ir | 42 | 1 | 41 |
 | issues | 5 | 0 | 5 |
 | parser | 1 | 0 | 1 |
-| reference | 211 | 163 | 48 |
-| runtime | 272 | 88 | 184 |
+| reference | 211 | 166 | 45 |
+| runtime | 275 | 89 | 186 |
 | scripts | 3 | 0 | 3 |
 | security | 1 | 0 | 1 |
 | tests | 8 | 0 | 8 |
 | wasi | 4 | 0 | 4 |
-| total | 5080 | 3964 | 1116 |
+| total | 5084 | 4004 | 1080 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -47,14 +47,14 @@ Issue files are the source of truth for work items. The generated section below 
 Direct child counts are derived from issue-file `depends_on` links. A meta issue can be `done` as a classification/design umbrella while implementation child issues remain open.
 
 ```
-5000 (Meta: TypeScript Compiler Parser Syntax Coverage) [done/design] ch:490 open:423 done:67
+5000 (Meta: TypeScript Compiler Parser Syntax Coverage) [done/design] ch:490 open:431 done:59
 ├── 5002 (Meta: TypeScript Compiler Type System Coverage) [done/done] ch:241 open:233 done:8 (also ← 5005)
-├── 5003 (Meta: TypeScript Compiler Declaration Emit Coverage) [done/done] ch:103 open:92 done:11 (also ← 5001)
-5001 (Meta: TypeScript Compiler Semantic Analysis Coverage) [done/done] ch:603 open:356 done:247
-5004 (Meta: Runtime Builtins Coverage (test262) (audit reopened #5004)) [done/done] ch:24 open:5 done:19
+├── 5003 (Meta: TypeScript Compiler Declaration Emit Coverage) [done/done] ch:103 open:93 done:10 (also ← 5001)
+5001 (Meta: TypeScript Compiler Semantic Analysis Coverage) [done/done] ch:603 open:380 done:223
+5004 (Meta: Runtime Builtins Coverage (test262) (audit reopened #5004)) [done/done] ch:26 open:5 done:21
 5005 (Meta: TypeScript Compiler Name Resolution Coverage) [done/done] ch:432 open:385 done:47
 ├── 5006 (Meta: TypeScript Compiler Scope Analysis Coverage) [done/done] ch:29 open:21 done:8
-├── 5007 (Meta: TypeScript Compiler Module Resolution Coverage (audit reopened #5007)) [done/done] ch:21 open:19 done:2
+├── 5007 (Meta: TypeScript Compiler Module Resolution Coverage (audit reopened #5007)) [done/done] ch:21 open:21 done:0
 ```
 
 ### Multi-parent notes
@@ -66,14 +66,14 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 
 | Order | ID | Title | State | Class | Area | Priority | Depends on | Direct children | Open children | Done children |
 |-----:|---:|------|-------|-------|------|--------:|-----------:|----------------:|--------------:|--------------:|
-| 1 | 5000 | Meta: TypeScript Compiler Parser Syntax Coverage | done | design | frontend/syntax | P1 | - | 490 | 423 | 67 |
-| 2 | 5001 | Meta: TypeScript Compiler Semantic Analysis Coverage | done | done | frontend/semantics | P1 | - | 603 | 356 | 247 |
-| 3 | 5004 | Meta: Runtime Builtins Coverage (test262) (audit reopened #5004) | done | done | runtime/builtins | P1 | - | 24 | 5 | 19 |
+| 1 | 5000 | Meta: TypeScript Compiler Parser Syntax Coverage | done | design | frontend/syntax | P1 | - | 490 | 431 | 59 |
+| 2 | 5001 | Meta: TypeScript Compiler Semantic Analysis Coverage | done | done | frontend/semantics | P1 | - | 603 | 380 | 223 |
+| 3 | 5004 | Meta: Runtime Builtins Coverage (test262) (audit reopened #5004) | done | done | runtime/builtins | P1 | - | 26 | 5 | 21 |
 | 4 | 5005 | Meta: TypeScript Compiler Name Resolution Coverage | done | done | frontend/resolver | P1 | - | 432 | 385 | 47 |
 | 5 | 5002 | Meta: TypeScript Compiler Type System Coverage | done | done | frontend/semantics | P1 | 5000, 5005 | 241 | 233 | 8 |
-| 6 | 5003 | Meta: TypeScript Compiler Declaration Emit Coverage | done | done | frontend/syntax | P2 | 5000, 5001 | 103 | 92 | 11 |
+| 6 | 5003 | Meta: TypeScript Compiler Declaration Emit Coverage | done | done | frontend/syntax | P2 | 5000, 5001 | 103 | 93 | 10 |
 | 7 | 5006 | Meta: TypeScript Compiler Scope Analysis Coverage | done | done | frontend/resolver | P2 | 5005 | 29 | 21 | 8 |
-| 8 | 5007 | Meta: TypeScript Compiler Module Resolution Coverage (audit reopened #5007) | done | done | frontend/resolver | P2 | 5005 | 21 | 19 | 2 |
+| 8 | 5007 | Meta: TypeScript Compiler Module Resolution Coverage (audit reopened #5007) | done | done | frontend/resolver | P2 | 5005 | 21 | 21 | 0 |
 
 ### Topological order
 
@@ -94,7 +94,47 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 <!-- generated:ready:start -->
 | ID | Title | Type | Area | Class | Priority | Depends on | Summary |
 |---:|---|---|---|---|---|---|---|
+| 071 | Implement Arrowfunctionexpression | spike | frontend/syntax | superseded | P1 | 5000 | ArrowFunctionExpression has 1 reference failures and needs smart-triage evidence before implementation starts. |
+| 072 | Implement Classdeclaration (dup) | spike | frontend/syntax | superseded | P1 | 5000 | ClassDeclaration has 11 reference failures and needs smart-triage evidence before implementation starts. |
+| 073 | Implement Classdeclarationwithinvalidconstonpropertydeclaration | spike | frontend/syntax | superseded | P1 | 5000 | ClassDeclarationWithInvalidConstOnPropertyDeclaration has 2 reference failures and needs smart-triage evidence before... |
+| 078 | Implement Memberaccessordeclaration | spike | frontend/syntax | superseded | P1 | 5001 | MemberAccessorDeclaration has 1 reference failures and needs smart-triage evidence before implementation starts. |
+| 092 | Implement Accessoverriddenbaseclassmember | spike | frontend/semantics | superseded | P1 | 5001 | accessOverriddenBaseClassMember has 1 reference failures and needs smart-triage evidence before implementation starts. |
+| 098 | Implement Accessordeclarationorder | spike | frontend/syntax | superseded | P1 | 5000 | accessorDeclarationOrder has 1 reference failures and needs smart-triage evidence before implementation starts. |
+| 099 | Implement Accessorinambientcontextes | spike | frontend/syntax | superseded | P1 | 5001 | accessorInAmbientContextES has 1 reference failures and needs smart-triage evidence before implementation starts. |
+| 100 | Implement Accessorinferredreturntypeerrorinreturnstatement (dup) | spike | frontend/syntax | superseded | P1 | 5007 | accessorInferredReturnTypeErrorInReturnStatement fails due to UnsupportedModule (`export var`). |
+| 101 | Implement Accessorparameteraccessibilitymodifier | spike | frontend/syntax | superseded | P1 | 5001 | accessorParameterAccessibilityModifier has 1 reference failures and needs smart-triage evidence before implementation... |
+| 103 | Implement Accessorwithlineterminator (dup) | spike | frontend/syntax | superseded | P1 | 5001 | accessorWithLineTerminator has 1 reference failures and needs smart-triage evidence before implementation starts. |
+| 105 | Implement Accessorwithoutbody | spike | frontend/syntax | superseded | P1 | 5000 | accessorWithoutBody has 2 reference failures and needs smart-triage evidence before implementation starts. |
+| 108 | Implement Accessorsinambientcontext | spike | frontend/syntax | superseded | P1 | 5001 | accessorsInAmbientContext has 1 reference failures and needs smart-triage evidence before implementation starts. |
+| 115 | Implement Aliasinaccessiblemodule | spike | frontend/syntax | superseded | P1 | 5001 | aliasInaccessibleModule has 2 reference failures and needs smart-triage evidence before implementation starts. |
+| 119 | Implement Aliasusageinaccessorsofclass (dup) | spike | frontend/syntax | superseded | P1 | 5007 | aliasUsageInAccessorsOfClass fails due to UnsupportedModule (`import = require`). |
+| 138 | Implement Alwaysstrictmodule | spike | frontend/syntax | superseded | P1 | 5001 | alwaysStrictModule has 6 reference failures and needs smart-triage evidence before implementation starts. |
+| 139 | Implement Alwaysstrictnoimplicitusestrict | spike | frontend/syntax | superseded | P1 | 5000 | alwaysStrictNoImplicitUseStrict has 1 reference failures and needs smart-triage evidence before implementation starts. |
+| 146 | Implement Ambientenumelementinitializer (dup) | spike | frontend/syntax | superseded | P1 | 5001 | ambientEnumElementInitializer has 6 reference failures and needs smart-triage evidence before implementation starts. |
+| 150 | Implement Ambientexternalmodulereopen | spike | frontend/syntax | superseded | P1 | 5001 | ambientExternalModuleReopen has 1 reference failures and needs smart-triage evidence before implementation starts. |
+| 152 | Implement Ambientexternalmodulewithrelativeexternalimportdeclaration | spike | frontend/syntax | superseded | P1 | 5001 | ambientExternalModuleWithRelativeExternalImportDeclaration has 1 reference failures and needs smart-triage evidence b... |
+| 153 | Implement Ambientexternalmodulewithrelativemodulename | spike | frontend/syntax | superseded | P1 | 5001 | ambientExternalModuleWithRelativeModuleName has 1 reference failures and needs smart-triage evidence before implement... |
+| 155 | Implement Ambientfundule | spike | frontend/syntax | superseded | P1 | 5001 | ambientFundule has 1 reference failures and needs smart-triage evidence before implementation starts. |
+| 158 | Implement Ambientmodulewithclassdeclarationwithextends | spike | frontend/syntax | superseded | P1 | 5001 | ambientModuleWithClassDeclarationWithExtends has 1 reference failures and needs smart-triage evidence before implemen... |
+| 161 | Implement Ambientnamerestrictions | spike | frontend/syntax | superseded | P1 | 5001 | ambientNameRestrictions has 1 reference failures and needs smart-triage evidence before implementation starts. |
+| 164 | Implement Ambientstatement | spike | frontend/syntax | superseded | P1 | 5001 | ambientStatement has 1 reference failures and needs smart-triage evidence before implementation starts. |
+| 165 | Implement Ambientwithstatements | spike | frontend/syntax | superseded | P1 | 5001 | ambientWithStatements has 1 reference failures and needs smart-triage evidence before implementation starts. |
+| 180 | Implement Anonymousclassexpression | spike | frontend/syntax | superseded | P1 | 5001 | anonymousClassExpression has 1 reference failures and needs smart-triage evidence before implementation starts. |
+| 181 | Implement Anonymousmodules | spike | frontend/syntax | superseded | P1 | 5001 | anonymousModules has 1 reference failures and needs smart-triage evidence before implementation starts. |
+| 183 | Implement Anyasreturntypefornewoncall | spike | frontend/syntax | superseded | P1 | 5001 | anyAsReturnTypeForNewOnCall has 1 reference failures and needs smart-triage evidence before implementation starts. |
+| 184 | Implement Anydeclare | spike | frontend/syntax | superseded | P2 | 5003 | anyDeclare has 1 reference failures and needs smart-triage evidence before implementation starts. |
+| 463 | Implement Functiondeclaration Import Export | spike | frontend/syntax | superseded | P1 | 5001 | FunctionDeclaration-import-export has 1 reference failures and needs smart-triage evidence before implementation starts. |
+| 467 | Implement Transportstream (dup) | spike | frontend/syntax | superseded | P1 | 5000 | TransportStream has 1 reference failures and needs smart-triage evidence before implementation starts. |
+| 486 | Implement Accessorwithlineterminator (dup) | spike | reference/triage | superseded | P2 |  | accessorWithLineTerminator has 1 reference failures and needs smart-triage evidence before implementation starts. |
+| 518 | Implement Ambientclassdeclarationwithextends | spike | frontend/syntax | superseded | P1 | 5001 | ambientClassDeclarationWithExtends has 1 reference failures and needs smart-triage evidence before implementation sta... |
+| 572 | Implement Accessorwithlineterminator | spike | reference/triage | superseded | P2 |  | accessorWithLineTerminator has 1 reference failures and needs smart-triage evidence before implementation starts. |
+| 788 | Implement Transportstream (dup) | spike | frontend/syntax | superseded | P1 | 5000 | TransportStream has 1 reference failures and needs smart-triage evidence before implementation starts. |
+| 807 | Implement Accessorwithlineterminator (dup) | spike | reference/triage | superseded | P2 |  | accessorWithLineTerminator has 1 reference failures and needs smart-triage evidence before implementation starts. |
+| 840 | Implement Ambientclassdeclaredbeforebase (dup) | spike | frontend/syntax | superseded | P1 | 5001 | ambientClassDeclaredBeforeBase has 1 reference failures and needs smart-triage evidence before implementation starts. |
+| 871 | Implement Anonterface (dup) | spike | frontend/syntax | superseded | P1 | 5001 | anonterface has 1 reference failures and needs smart-triage evidence before implementation starts. |
+| 5048 | [ir] Broaden BigInt lowering beyond signed-i64/first-limb slice | feature | ir | implementation-ready | P0 |  | [ir] Broaden BigInt lowering beyond signed-i64/first-limb slice |
 | 5051 | [runtime-abi] Add ABI layout golden tests and versioning | test | abi | implementation-ready | P1 |  | [runtime-abi] Add ABI layout golden tests and versioning |
+| 5245 | Implement ECMAScript iterator protocol runtime for spread operator | feature | runtime/semantics | design-ready | P2 | 353 | Implement ECMAScript iterator protocol runtime for spread operator |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -4165,14 +4205,10 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 068 | Implement unsupported expression types | spike | frontend/semantics | see `issues/done/068-implement-unsupported-expression.md` |
 | 069 | Implement Apilibcheck (dup) | spike | runtime/builtins | see `issues/done/069-implement-APILibCheck.md` |
 | 070 | Implement Apisample | spike | runtime/builtins | see `issues/done/070-implement-APISample.md` |
-| 071 | Implement Arrowfunctionexpression | spike | frontend/syntax | see `issues/done/071-implement-ArrowFunctionExpression.md` |
-| 072 | Implement Classdeclaration (dup) | spike | frontend/syntax | see `issues/done/072-implement-ClassDeclaration.md` |
-| 073 | Implement Classdeclarationwithinvalidconstonpropertydeclaration | spike | frontend/syntax | see `issues/done/073-implement-ClassDeclarationWithInvalidConstOnPropertyDeclaration.md` |
 | 074 | Implement Declarationerrorsnoemitonerror | spike | frontend/syntax | see `issues/done/074-implement-DeclarationErrorsNoEmitOnError.md` |
 | 075 | Implement Exportassignment (dup) | spike | frontend/syntax | see `issues/done/075-implement-ExportAssignment.md` |
 | 076 | Implement Functiondeclaration | spike | frontend/syntax | see `issues/done/076-implement-FunctionDeclaration.md` |
 | 077 | Implement Interfacedeclaration | spike | frontend/syntax | see `issues/done/077-implement-InterfaceDeclaration.md` |
-| 078 | Implement Memberaccessordeclaration | spike | frontend/syntax | see `issues/done/078-implement-MemberAccessorDeclaration.md` |
 | 079 | Implement Parameterlist | spike | frontend/syntax | see `issues/done/079-implement-ParameterList.md` |
 | 080 | Implement Systemmoduleforstatementnoinitializer | spike | frontend/syntax | see `issues/done/080-implement-SystemModuleForStatementNoInitializer.md` |
 | 081 | Implement Transportstream (dup) | spike | reference/triage | see `issues/done/081-implement-TransportStream.md` |
@@ -4186,33 +4222,23 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 089 | Implement Acceptsymbolasweaktype (dup) | spike | frontend/resolver | see `issues/done/089-implement-acceptSymbolAsWeakType.md` |
 | 090 | Implement Acceptablealias (dup) | spike | frontend/syntax | see `issues/done/090-implement-acceptableAlias.md` |
 | 091 | Implement Accessinstancememberfromstaticmethod (dup) | spike | frontend/syntax | see `issues/done/091-implement-accessInstanceMemberFromStaticMethod.md` |
-| 092 | Implement Accessoverriddenbaseclassmember | spike | frontend/semantics | see `issues/done/092-implement-accessOverriddenBaseClassMember.md` |
 | 093 | Implement Accessstaticmemberfrominstancemethod (dup) | spike | frontend/syntax | see `issues/done/093-implement-accessStaticMemberFromInstanceMethod.md` |
 | 094 | Implement Accessoraccidentalcalldiagnostic (dup) | spike | frontend/resolver | see `issues/done/094-implement-accessorAccidentalCallDiagnostic.md` |
 | 095 | Implement Accessorbodyintypecontext | spike | frontend/syntax | see `issues/done/095-implement-accessorBodyInTypeContext.md` |
 | 096 | Implement Accessordeclarationemitjs (dup) | spike | frontend/syntax | see `issues/done/096-implement-accessorDeclarationEmitJs.md` |
 | 097 | Implement Accessordeclarationemitvisibilityerrors (dup) | spike | frontend/syntax | see `issues/done/097-implement-accessorDeclarationEmitVisibilityErrors.md` |
-| 098 | Implement Accessordeclarationorder | spike | frontend/syntax | see `issues/done/098-implement-accessorDeclarationOrder.md` |
-| 099 | Implement Accessorinambientcontextes | spike | frontend/syntax | see `issues/done/099-implement-accessorInAmbientContextES.md` |
-| 100 | Implement Accessorinferredreturntypeerrorinreturnstatement (dup) | spike | frontend/syntax | see `issues/done/100-implement-accessorInferredReturnTypeErrorInReturnStatement.md` |
-| 101 | Implement Accessorparameteraccessibilitymodifier | spike | frontend/syntax | see `issues/done/101-implement-accessorParameterAccessibilityModifier.md` |
 | 102 | Implement Accessorwithinitializer | spike | frontend/syntax | see `issues/done/102-implement-accessorWithInitializer.md` |
-| 103 | Implement Accessorwithlineterminator (dup) | spike | frontend/syntax | see `issues/done/103-implement-accessorWithLineTerminator.md` |
 | 104 | Implement Accessorwithrestparam | spike | frontend/syntax | see `issues/done/104-implement-accessorWithRestParam.md` |
-| 105 | Implement Accessorwithoutbody | spike | frontend/syntax | see `issues/done/105-implement-accessorWithoutBody.md` |
 | 106 | Implement Accessors (dup) | spike | frontend/syntax | see `issues/done/106-implement-accessors.md` |
 | 107 | Implement Accessorsemit | spike | frontend/syntax | see `issues/done/107-implement-accessorsEmit.md` |
-| 108 | Implement Accessorsinambientcontext | spike | frontend/syntax | see `issues/done/108-implement-accessorsInAmbientContext.md` |
 | 109 | Implement Addmorecallsignaturestobasesignature (dup) | spike | frontend/resolver | see `issues/done/109-implement-addMoreCallSignaturesToBaseSignature.md` |
 | 110 | Implement Addmoreoverloadstobasesignature | spike | frontend/syntax | see `issues/done/110-implement-addMoreOverloadsToBaseSignature.md` |
 | 111 | Implement Aliasassignments (dup) | spike | frontend/syntax | see `issues/done/111-implement-aliasAssignments.md` |
 | 112 | Implement Aliasbug (dup) | spike | frontend/syntax | see `issues/done/112-implement-aliasBug.md` |
 | 113 | Implement Aliasdoesnotduplicatesignatures (dup) | spike | frontend/syntax | see `issues/done/113-implement-aliasDoesNotDuplicateSignatures.md` |
 | 114 | Implement Aliaserrors (dup) | spike | frontend/syntax | see `issues/done/114-implement-aliasErrors.md` |
-| 115 | Implement Aliasinaccessiblemodule | spike | frontend/syntax | see `issues/done/115-implement-aliasInaccessibleModule.md` |
 | 116 | Implement Aliasinstantiationexpressiongenericintersectionnocrash (dup) | spike | frontend/syntax | see `issues/done/116-implement-aliasInstantiationExpressionGenericIntersectionNoCrash.md` |
 | 118 | Implement Aliasonmergedmoduleinterface (dup) | spike | frontend/syntax | see `issues/done/118-implement-aliasOnMergedModuleInterface.md` |
-| 119 | Implement Aliasusageinaccessorsofclass (dup) | spike | frontend/syntax | see `issues/done/119-implement-aliasUsageInAccessorsOfClass.md` |
 | 120 | Implement Aliasusageinarray (dup) | spike | frontend/syntax | see `issues/done/120-implement-aliasUsageInArray.md` |
 | 121 | Implement Aliasusageinfunctionexpression (dup) | spike | frontend/syntax | see `issues/done/121-implement-aliasUsageInFunctionExpression.md` |
 | 122 | Implement Aliasusageingenericfunction (dup) | spike | frontend/syntax | see `issues/done/122-implement-aliasUsageInGenericFunction.md` |
@@ -4229,29 +4255,18 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 134 | Implement Allowjscheckjstypeparameternocrash (dup) | spike | frontend/syntax | see `issues/done/134-implement-allowJscheckJsTypeParameterNoCrash.md` |
 | 135 | Implement Allowsyntheticdefaultimports (dup) | spike | frontend/syntax | see `issues/done/135-implement-allowSyntheticDefaultImports.md` |
 | 136 | Implement Allowsyntheticdefaultimportscanpaintcrossmoduledeclaration (dup) | spike | frontend/syntax | see `issues/done/136-implement-allowSyntheticDefaultImportsCanPaintCrossModuleDeclaration.md` |
-| 138 | Implement Alwaysstrictmodule | spike | frontend/syntax | see `issues/done/138-implement-alwaysStrictModule.md` |
-| 139 | Implement Alwaysstrictnoimplicitusestrict | spike | frontend/syntax | see `issues/done/139-implement-alwaysStrictNoImplicitUseStrict.md` |
 | 140 | Implement Ambientclassdeclarationwithextends | spike | frontend/syntax | see `issues/done/140-implement-ambientClassDeclarationWithExtends.md` |
 | 141 | Implement Ambientclassdeclaredbeforebase (dup) | spike | frontend/syntax | see `issues/done/141-implement-ambientClassDeclaredBeforeBase.md` |
 | 144 | Implement Ambientconstliterals (dup) | spike | frontend/syntax | see `issues/done/144-implement-ambientConstLiterals.md` |
-| 146 | Implement Ambientenumelementinitializer (dup) | spike | frontend/syntax | see `issues/done/146-implement-ambientEnumElementInitializer.md` |
 | 147 | Implement Ambienterrors | spike | frontend/syntax | see `issues/done/147-implement-ambientErrors.md` |
 | 148 | Implement Ambientexportdefaulterrors (dup) | spike | frontend/syntax | see `issues/done/148-implement-ambientExportDefaultErrors.md` |
 | 149 | Implement Ambientexternalmoduleinanotherexternalmodule (dup) | spike | frontend/syntax | see `issues/done/149-implement-ambientExternalModuleInAnotherExternalModule.md` |
-| 150 | Implement Ambientexternalmodulereopen | spike | frontend/syntax | see `issues/done/150-implement-ambientExternalModuleReopen.md` |
 | 151 | Implement Ambientexternalmodulewithinternalimportdeclaration (dup) | spike | frontend/syntax | see `issues/done/151-implement-ambientExternalModuleWithInternalImportDeclaration.md` |
-| 152 | Implement Ambientexternalmodulewithrelativeexternalimportdeclaration | spike | frontend/syntax | see `issues/done/152-implement-ambientExternalModuleWithRelativeExternalImportDeclaration.md` |
-| 153 | Implement Ambientexternalmodulewithrelativemodulename | spike | frontend/syntax | see `issues/done/153-implement-ambientExternalModuleWithRelativeModuleName.md` |
 | 154 | Implement Ambientexternalmodulewithoutinternalimportdeclaration (dup) | spike | frontend/syntax | see `issues/done/154-implement-ambientExternalModuleWithoutInternalImportDeclaration.md` |
-| 155 | Implement Ambientfundule | spike | frontend/syntax | see `issues/done/155-implement-ambientFundule.md` |
 | 157 | Implement Ambientmoduleexports (dup) | spike | frontend/syntax | see `issues/done/157-implement-ambientModuleExports.md` |
-| 158 | Implement Ambientmodulewithclassdeclarationwithextends | spike | frontend/syntax | see `issues/done/158-implement-ambientModuleWithClassDeclarationWithExtends.md` |
 | 159 | Implement Ambientmodulewithtemplateliterals (dup) | spike | frontend/syntax | see `issues/done/159-implement-ambientModuleWithTemplateLiterals.md` |
 | 160 | Implement Ambientmodules (dup) | spike | frontend/syntax | see `issues/done/160-implement-ambientModules.md` |
-| 161 | Implement Ambientnamerestrictions | spike | frontend/syntax | see `issues/done/161-implement-ambientNameRestrictions.md` |
 | 163 | Implement Ambientrequirefunction (dup) | spike | frontend/syntax | see `issues/done/163-implement-ambientRequireFunction.md` |
-| 164 | Implement Ambientstatement | spike | frontend/syntax | see `issues/done/164-implement-ambientStatement.md` |
-| 165 | Implement Ambientwithstatements | spike | frontend/syntax | see `issues/done/165-implement-ambientWithStatements.md` |
 | 166 | Implement Ambiguouscallswherereturntypesagree (dup) | spike | frontend/syntax | see `issues/done/166-implement-ambiguousCallsWhereReturnTypesAgree.md` |
 | 167 | Implement Ambiguousgenericassertion (dup) | spike | frontend/syntax | see `issues/done/167-implement-ambiguousGenericAssertion.md` |
 | 169 | Implement Ambiguousoverloadresolution (dup) | spike | frontend/syntax | see `issues/done/169-implement-ambiguousOverloadResolution.md` |
@@ -4265,11 +4280,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 177 | Implement Anonclassdeclarationemitisanon (dup) | spike | frontend/syntax | see `issues/done/177-implement-anonClassDeclarationEmitIsAnon.md` |
 | 178 | Implement Anonterface (dup) | spike | frontend/syntax | see `issues/done/178-implement-anonterface.md` |
 | 179 | Implement Anonymousclassdeclarationdoesntprintwithreadonly (dup) | spike | frontend/syntax | see `issues/done/179-implement-anonymousClassDeclarationDoesntPrintWithReadonly.md` |
-| 180 | Implement Anonymousclassexpression | spike | frontend/syntax | see `issues/done/180-implement-anonymousClassExpression.md` |
-| 181 | Implement Anonymousmodules | spike | frontend/syntax | see `issues/done/181-implement-anonymousModules.md` |
 | 182 | Implement Anyandunknownhavefalsycomponents (dup) | spike | frontend/syntax | see `issues/done/182-implement-anyAndUnknownHaveFalsyComponents.md` |
-| 183 | Implement Anyasreturntypefornewoncall | spike | frontend/syntax | see `issues/done/183-implement-anyAsReturnTypeForNewOnCall.md` |
-| 184 | Implement Anydeclare | spike | frontend/syntax | see `issues/done/184-implement-anyDeclare.md` |
 | 185 | Implement Anyidenticaltoitself (dup) | spike | frontend/syntax | see `issues/done/185-implement-anyIdenticalToItself.md` |
 | 186 | Implement Anyindexedaccessarraynoexception | spike | frontend/syntax | see `issues/done/186-implement-anyIndexedAccessArrayNoException.md` |
 | 187 | Implement Anyinferenceanonymousfunctions (dup) | spike | frontend/syntax | see `issues/done/187-implement-anyInferenceAnonymousFunctions.md` |
@@ -4490,11 +4501,9 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 460 | Implement Classdeclaration (dup) | spike | frontend/syntax | see `issues/done/460-implement-ClassDeclaration.md` |
 | 461 | Implement Classdeclarationwithinvalidconstonpropertydeclaration (audit reopened #461) | spike | frontend/syntax | see `issues/done/461-implement-ClassDeclarationWithInvalidConstOnPropertyDeclaration.md` |
 | 462 | Implement Exportassignment (dup) | spike | frontend/syntax | see `issues/done/462-implement-ExportAssignment.md` |
-| 463 | Implement Functiondeclaration Import Export | spike | frontend/syntax | see `issues/done/463-implement-FunctionDeclaration-import-export.md` |
 | 464 | Implement Functiondeclaration Parser Syntax (dup) | spike | frontend/syntax | see `issues/done/464-implement-FunctionDeclaration-parser-syntax.md` |
 | 465 | Implement Memberaccessordeclaration (audit reopened #465) | spike | frontend/syntax | see `issues/done/465-implement-MemberAccessorDeclaration.md` |
 | 466 | Implement Parameterlist | spike | frontend/syntax | see `issues/done/466-implement-ParameterList.md` |
-| 467 | Implement Transportstream (dup) | spike | frontend/syntax | see `issues/done/467-implement-TransportStream.md` |
 | 468 | Implement Abstractclassinlocalscope (dup) | spike | frontend/syntax | see `issues/done/468-implement-abstractClassInLocalScope.md` |
 | 469 | Implement Abstractclassinlocalscopeisabstract (dup) | spike | frontend/syntax | see `issues/done/469-implement-abstractClassInLocalScopeIsAbstract.md` |
 | 470 | Implement Abstractclassunioninstantiation (dup) | spike | frontend/resolver | see `issues/done/470-implement-abstractClassUnionInstantiation.md` |
@@ -4513,7 +4522,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 483 | Implement Accessorinambientcontextes (audit reopened #483) | spike | frontend/syntax | see `issues/done/483-implement-accessorInAmbientContextES.md` |
 | 484 | Implement Accessorinferredreturntypeerrorinreturnstatement (dup) | spike | frontend/syntax | see `issues/done/484-implement-accessorInferredReturnTypeErrorInReturnStatement.md` |
 | 485 | Implement Accessorparameteraccessibilitymodifier (audit reopened #485) | spike | frontend/syntax | see `issues/done/485-implement-accessorParameterAccessibilityModifier.md` |
-| 486 | Implement Accessorwithlineterminator (dup) | spike | reference/triage | see `issues/done/486-implement-accessorWithLineTerminator.md` |
 | 487 | Implement Accessorwithoutbody (audit reopened #487) | spike | frontend/syntax | see `issues/done/487-implement-accessorWithoutBody.md` |
 | 488 | Implement Accessors (dup) | spike | frontend/syntax | see `issues/done/488-implement-accessors.md` |
 | 489 | Implement Accessorsinambientcontext (audit reopened #489) | spike | frontend/syntax | see `issues/done/489-implement-accessorsInAmbientContext.md` |
@@ -4545,7 +4553,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 515 | Implement Allowsyntheticdefaultimportscanpaintcrossmoduledeclaration (dup) | spike | frontend/syntax | see `issues/done/515-implement-allowSyntheticDefaultImportsCanPaintCrossModuleDeclaration.md` |
 | 516 | Implement Alwaysstrictmodule (audit reopened #516) | spike | frontend/syntax | see `issues/done/516-implement-alwaysStrictModule.md` |
 | 517 | Implement Alwaysstrictnoimplicitusestrict (audit reopened #517) | spike | frontend/syntax | see `issues/done/517-implement-alwaysStrictNoImplicitUseStrict.md` |
-| 518 | Implement Ambientclassdeclarationwithextends | spike | frontend/syntax | see `issues/done/518-implement-ambientClassDeclarationWithExtends.md` |
 | 519 | Implement Ambientclassdeclaredbeforebase (dup) | spike | frontend/syntax | see `issues/done/519-implement-ambientClassDeclaredBeforeBase.md` |
 | 520 | Implement Ambientconstliterals (dup) | spike | frontend/syntax | see `issues/done/520-implement-ambientConstLiterals.md` |
 | 522 | Implement Ambienterrors | spike | runtime/builtins | see `issues/done/522-implement-ambientErrors.md` |
@@ -4576,7 +4583,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 568 | Implement Accessordeclarationorder (audit reopened #568) | spike | frontend/syntax | see `issues/done/568-implement-accessorDeclarationOrder.md` |
 | 569 | Implement Accessorinambientcontextes (audit reopened #569) | spike | frontend/syntax | see `issues/done/569-implement-accessorInAmbientContextES.md` |
 | 571 | Implement Accessorparameteraccessibilitymodifier (audit reopened #571) | spike | frontend/syntax | see `issues/done/571-implement-accessorParameterAccessibilityModifier.md` |
-| 572 | Implement Accessorwithlineterminator | spike | reference/triage | see `issues/done/572-implement-accessorWithLineTerminator.md` |
 | 573 | Implement Accessorwithoutbody (audit reopened #573) | spike | frontend/syntax | see `issues/done/573-implement-accessorWithoutBody.md` |
 | 575 | Implement Accessorsinambientcontext (audit reopened #575) | spike | frontend/syntax | see `issues/done/575-implement-accessorsInAmbientContext.md` |
 | 581 | Implement Aliasinaccessiblemodule (audit reopened #581) | spike | frontend/syntax | see `issues/done/581-implement-aliasInaccessibleModule.md` |
@@ -4613,7 +4619,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 785 | Implement Functiondeclaration Parser Syntax (dup) | spike | frontend/syntax | see `issues/done/785-implement-FunctionDeclaration-parser-syntax.md` |
 | 786 | Implement Memberaccessordeclaration (audit reopened #786) | spike | frontend/syntax | see `issues/done/786-implement-MemberAccessorDeclaration.md` |
 | 787 | Implement Parameterlist | spike | frontend/syntax | see `issues/done/787-implement-ParameterList.md` |
-| 788 | Implement Transportstream (dup) | spike | frontend/syntax | see `issues/done/788-implement-TransportStream.md` |
 | 789 | Implement Abstractclassinlocalscope (dup) | spike | frontend/syntax | see `issues/done/789-implement-abstractClassInLocalScope.md` |
 | 790 | Implement Abstractclassinlocalscopeisabstract (dup) | spike | frontend/syntax | see `issues/done/790-implement-abstractClassInLocalScopeIsAbstract.md` |
 | 791 | Implement Abstractclassunioninstantiation (dup) | spike | frontend/resolver | see `issues/done/791-implement-abstractClassUnionInstantiation.md` |
@@ -4632,7 +4637,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 804 | Implement Accessorinambientcontextes (audit reopened #804) | spike | frontend/syntax | see `issues/done/804-implement-accessorInAmbientContextES.md` |
 | 805 | Implement Accessorinferredreturntypeerrorinreturnstatement (dup) | spike | frontend/syntax | see `issues/done/805-implement-accessorInferredReturnTypeErrorInReturnStatement.md` |
 | 806 | Implement Accessorparameteraccessibilitymodifier (audit reopened #806) | spike | frontend/syntax | see `issues/done/806-implement-accessorParameterAccessibilityModifier.md` |
-| 807 | Implement Accessorwithlineterminator (dup) | spike | reference/triage | see `issues/done/807-implement-accessorWithLineTerminator.md` |
 | 808 | Implement Accessorwithoutbody (audit reopened #808) | spike | frontend/syntax | see `issues/done/808-implement-accessorWithoutBody.md` |
 | 809 | Implement Accessors (dup) | spike | frontend/syntax | see `issues/done/809-implement-accessors.md` |
 | 810 | Implement Accessorsinambientcontext (audit reopened #810) | spike | frontend/syntax | see `issues/done/810-implement-accessorsInAmbientContext.md` |
@@ -4665,7 +4669,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 837 | Implement Alwaysstrictmodule (audit reopened #837) | spike | frontend/syntax | see `issues/done/837-implement-alwaysStrictModule.md` |
 | 838 | Implement Alwaysstrictnoimplicitusestrict (audit reopened #838) | spike | frontend/syntax | see `issues/done/838-implement-alwaysStrictNoImplicitUseStrict.md` |
 | 839 | Implement Ambientclassdeclarationwithextends (audit reopened #839) | spike | frontend/syntax | see `issues/done/839-implement-ambientClassDeclarationWithExtends.md` |
-| 840 | Implement Ambientclassdeclaredbeforebase (dup) | spike | frontend/syntax | see `issues/done/840-implement-ambientClassDeclaredBeforeBase.md` |
 | 841 | Implement Ambientconstliterals (dup) | spike | frontend/syntax | see `issues/done/841-implement-ambientConstLiterals.md` |
 | 842 | Implement Ambientenumelementinitializer (dup) | spike | frontend/syntax | see `issues/done/842-implement-ambientEnumElementInitializer.md` |
 | 843 | Implement Ambienterrors | spike | runtime/builtins | see `issues/done/843-implement-ambientErrors.md` |
@@ -4696,7 +4699,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 868 | Implement Amdmoduleconstenumusage (dup) | spike | frontend/syntax | see `issues/done/868-implement-amdModuleConstEnumUsage.md` |
 | 869 | Implement Amdmodulename (dup) | spike | frontend/syntax | see `issues/done/869-implement-amdModuleName.md` |
 | 870 | Implement Anonclassdeclarationemitisanon (dup) | spike | frontend/syntax | see `issues/done/870-implement-anonClassDeclarationEmitIsAnon.md` |
-| 871 | Implement Anonterface (dup) | spike | frontend/syntax | see `issues/done/871-implement-anonterface.md` |
 | 872 | Implement Anonymousclassdeclarationdoesntprintwithreadonly (dup) | spike | frontend/syntax | see `issues/done/872-implement-anonymousClassDeclarationDoesntPrintWithReadonly.md` |
 | 873 | Implement Anonymousclassexpression (audit reopened #873) | spike | frontend/syntax | see `issues/done/873-implement-anonymousClassExpression.md` |
 | 874 | Implement Anonymousmodules (audit reopened #874) | spike | frontend/syntax | see `issues/done/874-implement-anonymousModules.md` |
@@ -4974,6 +4976,8 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5021 | Implement string-builtin support | feature | frontend/syntax | see `issues/done/5021-implement-string-builtin.md` |
 | 5022 | Implement Array.prototype.every receiver semantics for 2dArrays (audit reopened #5022) | feature | runtime/builtins | see `issues/done/5022-implement-array-every-receiver.md` |
 | 5023 | Implement API Sample watcher arrow function return | feature | runtime/builtins | see `issues/done/5023-implement-api-sample-watcher-arrow.md` |
+| 5024 | Implement anonymous interface new expression identifier | feature | runtime/builtins | see file |
+| 5025 | Implement any as return type instanceof constructor RHS | feature | runtime/builtins | see file |
 | 5026 | [backend-wasm] Implement real class declaration emission (audit reopened #5026) | feature | backend | see `issues/done/5026-backend-wasm-real-class-declaration.md` |
 | 5027 | [backend-wasm] Replace throw-as-return with catchable exception runtime (audit reopened #5027) | feature | backend | see `issues/done/5027-backend-wasm-catchable-exception.md` |
 | 5028 | [backend-wasm] Implement array growth and reallocation for push/write paths (audit reopened #5028) | feature | backend | see `issues/done/5028-backend-wasm-array-growth.md` |
@@ -4996,9 +5000,9 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5045 | [frontend] Improve syntax error recovery and source spans (audit reopened #5045) | feature | frontend | see `issues/done/5045-frontend-error-recovery.md` |
 | 5046 | [ir] Design full class runtime IR representation | feature | ir | see `issues/done/5046-ir-class-ir.md` |
 | 5047 | [ir] Implement env-cell lowering for outer-scope mutation | feature | ir | see `issues/done/5047-ir-env-cell.md` |
-| 5048 | [ir] Broaden BigInt lowering beyond signed-i64/first-limb slice | feature | ir | see `issues/done/5048-ir-bigint-lowering.md` |
 | 5049 | [ir] Complete destructuring, rest, and default binding lowering | feature | ir | see `issues/done/5049-ir-destructuring.md` |
 | 5050 | [ir] Implement iterator protocol lowering for spread and for-of | feature | ir | see `issues/done/5050-ir-iterator-protocol.md` |
+| 5051 | [runtime-abi] Add ABI layout golden tests and versioning | test | abi | see file |
 | 5052 | [runtime-abi] Validate runtime memory map for overlap and headroom | feature | abi | see `issues/done/5052-abi-memory-map.md` |
 | 5053 | [runtime-abi] Add typed wrappers for tagged values and heap pointers (audit reopened #5053) | refactor | abi | see `issues/done/5053-abi-typed-wrappers.md` |
 | 5054 | [runtime-abi] Document value tags and object layout as public ABI (audit reopened #5054) | docs | abi | see `issues/done/5054-abi-document-layout.md` |
