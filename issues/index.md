@@ -16,18 +16,18 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 7 | 6 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4585 | 3394 | 1191 |
+| frontend | 4586 | 3395 | 1191 |
 | harness | 1 | 0 | 1 |
 | ir | 79 | 57 | 22 |
 | issues | 4 | 0 | 4 |
 | parser | 1 | 0 | 1 |
-| reference | 212 | 148 | 64 |
+| reference | 212 | 147 | 65 |
 | runtime | 265 | 84 | 181 |
 | scripts | 3 | 1 | 2 |
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5246 | 3692 | 1554 |
+| total | 5247 | 3692 | 1555 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -364,6 +364,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5409 | Report non-exported namespace member type annotations | bug | frontend/semantics | implementation-ready | P1 |  | non-exported namespace members in qualified type annotations are erased |
 | 5410 | Report namespace-as-base-type diagnostics | feature | frontend/semantics | implementation-ready | P1 |  | namespace-as-base-type misuse currently produces a false build pass |
 | 5411 | Report TS2709 for namespace variable annotation | feature | frontend/semantics | implementation-ready | P1 |  | `var a: A;` silently build-passes when `A` is a namespace. |
+| 5412 | Report TS2451 for duplicate const filename sections | feature | frontend/semantics | implementation-ready | P2 |  | duplicate `const a` across the representative `.cts`/`.mts` reference |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -2319,7 +2320,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 3302 | Implement Modulealiasasfunctionargument | spike | frontend/syntax | class: blocked | Implement Modulealiasasfunctionargument |
 | 3303 | Implement Modulealiasinterface | spike | frontend/syntax | class: blocked | Implement Modulealiasinterface |
 | 3304 | Implement Moduleandinterfacesharingname | spike | frontend/syntax | class: blocked | Implement Moduleandinterfacesharingname |
-| 3333 | Implement Moduledetectionisolatedmodulescjsfilescope | spike | reference/triage | class: triage-needed | Implement Moduledetectionisolatedmodulescjsfilescope |
 | 3334 | Implement Moduleduplicateidentifiers | spike | frontend/syntax | class: blocked | Implement Moduleduplicateidentifiers |
 | 3335 | Implement Moduleelementsinwrongcontext | spike | frontend/syntax | class: blocked | Implement Moduleelementsinwrongcontext |
 | 3337 | Implement Moduleexports | spike | frontend/syntax | class: blocked | Implement Moduleexports |
@@ -5206,6 +5206,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 3330 | Implement Modulecodegentest | spike | frontend/syntax | see `issues/done/3330-implement-moduleCodegenTest.md` |
 | 3331 | Implement Modulecrashbug | spike | frontend/syntax | see `issues/done/3331-implement-moduleCrashBug.md` |
 | 3332 | Implement Moduledeclarationexportstarshadowingglobalisnameable | spike | frontend/syntax | see `issues/done/3332-implement-moduleDeclarationExportStarShadowingGlobalIsNameable.md` |
+| 3333 | Implement Moduledetectionisolatedmodulescjsfilescope | spike | reference/triage | see `issues/done/3333-implement-moduleDetectionIsolatedModulesCjsFileScope.md` |
 | 3336 | Implement Moduleexportnonstructured | spike | frontend/syntax | see `issues/done/3336-implement-moduleExportNonStructured.md` |
 | 3690 | Implement Optionaltupleelementsandundefined | spike | reference/triage | see `issues/done/3690-implement-optionalTupleElementsAndUndefined.md` |
 | 3996 | Implement Compiler (dup) | spike | frontend/syntax | see `issues/done/3996-implement-reference-typescript-tests-cases-compiler.md` |
