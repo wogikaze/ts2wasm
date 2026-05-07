@@ -114,6 +114,9 @@ Do not touch:
   `expected Comma, got Some(Arrow)` at the inner arrow in `b: () => n => {}`.
 - [ ] `contextualTypingFunctionReturningFunction2.ts` no longer reports
   `expected Comma, got Some(Arrow)` at the inner arrow in `f(() => n => n)`.
+- [ ] `contextualTypingWithFixedTypeParameters1.ts` no longer reports
+  `expected Comma, got Some(Arrow)` at the inner arrow in
+  `f10('', () => a => a.foo, '')`.
 - [ ] A focused parser test covers `(callback) => () => { return callback(this); }`.
 - [ ] A focused parser test covers `() => n => n` as an expression-bodied
   arrow returning another arrow.
@@ -208,6 +211,21 @@ contextualTypingFunctionReturningFunction2.ts: expected Comma, got Some(Arrow) a
 TypeScript accepts both sources with no diagnostics and its AST records nested
 `ArrowFunction` nodes under the object literal property assignment
 `b: () => n => {}` and the call argument `f(() => n => n)`.
+
+2026-05-07 additional evidence: generated bucket
+`issues/done/1532-implement-contextualTypingWithFixedTypeParameters.md` is
+superseded here. `contextualTypingWithFixedTypeParameters1.ts` tokenizes
+successfully but fails AST construction at the inner arrow in
+`f10('', () => a => a.foo, '')`:
+
+```text
+expected Comma, got Some(Arrow) at 120..122
+```
+
+TypeScript parses the call argument as nested `ArrowFunction` nodes:
+`() => a => a.foo` and `a => a.foo`. Its oracle then reports TS2339 for the
+property access and TS2345 for the later fixed type-parameter argument
+diagnostic after parsing succeeds.
 
 ## Completion evidence
 
