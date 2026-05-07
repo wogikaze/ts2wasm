@@ -16,9 +16,9 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 5 | 4 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4551 | 3502 | 1049 |
+| frontend | 4551 | 3501 | 1050 |
 | harness | 1 | 0 | 1 |
-| ir | 66 | 44 | 22 |
+| ir | 67 | 45 | 22 |
 | issues | 4 | 0 | 4 |
 | parser | 1 | 0 | 1 |
 | reference | 212 | 155 | 57 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5197 | 3794 | 1403 |
+| total | 5198 | 3794 | 1404 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -50,7 +50,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 5000 (Meta: TypeScript Compiler Parser Syntax Coverage) [done/design] ch:454 open:372 done:82
 ├── 5002 (Meta: TypeScript Compiler Type System Coverage) [done/done] ch:229 open:212 done:17 (also ← 5005)
 ├── 5003 (Meta: TypeScript Compiler Declaration Emit Coverage) [done/done] ch:102 open:91 done:11 (also ← 5001)
-5001 (Meta: TypeScript Compiler Semantic Analysis Coverage) [done/done] ch:565 open:309 done:256
+5001 (Meta: TypeScript Compiler Semantic Analysis Coverage) [done/done] ch:565 open:308 done:257
 5004 (Meta: Runtime Builtins Coverage (test262) (audit reopened #5004)) [done/done] ch:24 open:3 done:21
 5005 (Meta: TypeScript Compiler Name Resolution Coverage) [done/done] ch:411 open:357 done:54
 ├── 5006 (Meta: TypeScript Compiler Scope Analysis Coverage) [done/done] ch:28 open:20 done:8
@@ -67,7 +67,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | Order | ID | Title | State | Class | Area | Priority | Depends on | Direct children | Open children | Done children |
 |-----:|---:|------|-------|-------|------|--------:|-----------:|----------------:|--------------:|--------------:|
 | 1 | 5000 | Meta: TypeScript Compiler Parser Syntax Coverage | done | design | frontend/syntax | P1 | - | 454 | 372 | 82 |
-| 2 | 5001 | Meta: TypeScript Compiler Semantic Analysis Coverage | done | done | frontend/semantics | P1 | - | 565 | 309 | 256 |
+| 2 | 5001 | Meta: TypeScript Compiler Semantic Analysis Coverage | done | done | frontend/semantics | P1 | - | 565 | 308 | 257 |
 | 3 | 5004 | Meta: Runtime Builtins Coverage (test262) (audit reopened #5004) | done | done | runtime/builtins | P1 | - | 24 | 3 | 21 |
 | 4 | 5005 | Meta: TypeScript Compiler Name Resolution Coverage | done | done | frontend/resolver | P1 | - | 411 | 357 | 54 |
 | 5 | 5002 | Meta: TypeScript Compiler Type System Coverage | done | done | frontend/semantics | P1 | 5000, 5005 | 229 | 212 | 17 |
@@ -317,6 +317,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5360 | Report class field initializer constructor-scope captures | feature | frontend/semantics | implementation-ready | P2 |  | class field initializer semantic validation currently does not reject |
 | 5361 | Report invalid constructor return value diagnostics | feature | frontend/semantics | implementation-ready | P2 |  | constructor return value semantic validation currently does not reject |
 | 5362 | Report strict-mode static constructor parameter name | bug | frontend/parser | implementation-ready | P1 |  | the compiler currently reports an unsupported parser failure, |
+| 5363 | Support class constructor outer local return captures | feature | ir | implementation-ready | P1 |  | class constructor bodies cannot currently resolve and lower direct |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -576,7 +577,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 759 | Implement Asynciife | spike | frontend/syntax | class: triage-needed | Implement Asynciife |
 | 760 | Implement Asyncimportnestedyield | spike | reference/triage | class: triage-needed | Implement Asyncimportnestedyield |
 | 761 | Implement Asynciteratorextraparameters | spike | runtime/builtins | class: triage-needed | Implement Asynciteratorextraparameters |
-| 1481 | Implement Constructorwithcapturedsuper | spike | frontend/syntax | class: blocked | Implement Constructorwithcapturedsuper |
 | 1482 | Implement Constructorwithincompletetypeannotation | spike | frontend/syntax | class: triage-needed | Implement Constructorwithincompletetypeannotation |
 | 1483 | Implement Constructorwithparameterpropertiesandprivatefields | spike | frontend/syntax | class: blocked | Implement Constructorwithparameterpropertiesandprivatefields |
 | 1484 | Implement Constructorwithsuperandprologue | spike | frontend/syntax | class: blocked | Implement Constructorwithsuperandprologue |
@@ -5153,6 +5153,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1478 | Implement Constructorreturningaprimitive | spike | frontend/syntax | see `issues/done/1478-implement-constructorReturningAPrimitive.md` |
 | 1479 | Implement Constructorstaticparamname | spike | frontend/syntax | see `issues/done/1479-implement-constructorStaticParamName.md` |
 | 1480 | Implement Constructorstaticparamnameerrors | spike | frontend/syntax | see `issues/done/1480-implement-constructorStaticParamNameErrors.md` |
+| 1481 | Implement Constructorwithcapturedsuper | spike | frontend/syntax | see `issues/done/1481-implement-constructorWithCapturedSuper.md` |
 | 2050 | Implement Duplicatelocalvariable Duplicate Local | spike | reference/triage | see `issues/done/2050-implement-duplicateLocalVariable-duplicate-local.md` |
 | 3002 | Implement Isolateddeclarationerrorsdefault | spike | runtime/builtins | see `issues/done/3002-implement-isolatedDeclarationErrorsDefault.md` |
 | 3131 | Implement Jsxfactorynotidentifierorqualifiedname | spike | reference/triage | see `issues/done/3131-implement-jsxFactoryNotIdentifierOrQualifiedName.md` |

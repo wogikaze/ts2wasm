@@ -3,12 +3,12 @@ id: 1481
 title: "Implement Constructorwithcapturedsuper"
 type: spike
 area: frontend/syntax
-class: blocked
+class: done
 priority: P1
 depends_on: [5001]
 blocks: []
 created: 2026-05-01
-updated: 2026-05-01
+updated: 2026-05-07
 ---
 
 ## Summary
@@ -43,10 +43,10 @@ This generated bucket is either split into implementation-ready child issues or 
 
 In scope:
 
-- [ ] Inspect the smart triage report below
-- [ ] Confirm whether existing open/done issues already cover this bucket
-- [ ] Split one feature family, one observable behavior, or one fixed reference window into child issues
-- [ ] Preserve exact reproduction commands and representative AST/diagnostic evidence in each child issue
+- [x] Inspect the smart triage report below
+- [x] Confirm whether existing open/done issues already cover this bucket
+- [x] Split one feature family, one observable behavior, or one fixed reference window into child issues
+- [x] Preserve exact reproduction commands and representative AST/diagnostic evidence in each child issue
 
 Out of scope:
 
@@ -68,10 +68,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] Duplicate candidates below are confirmed as no-match or this issue is superseded
-- [ ] At least one child issue contains an exact `mise run reference-triage -- ...` command
-- [ ] Child issue includes failing path, diagnostic code, source context, visible symbols, and parser/TypeScript AST evidence
-- [ ] Child issue acceptance names the exact fixture/reference path and diagnostic/stdout change
+- [x] Duplicate candidates below are confirmed as no-match or this issue is superseded
+- [x] At least one child issue contains an exact `mise run reference-triage -- ...` command
+- [x] Child issue includes failing path, diagnostic code, source context, visible symbols, and parser/TypeScript AST evidence
+- [x] Child issue acceptance names the exact fixture/reference path and diagnostic/stdout change
 
 ## Validation
 
@@ -98,15 +98,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] updated: `current-state.md` (repo root)
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] split to `issues/open/5363-support-class-constructor-outer-local-return-captures.md`
 
 ## Notes
 
@@ -120,7 +120,32 @@ Follow-up issues:
 
 ## Smart triage
 
-Not generated. Rerun with `--triage-limit 1` or higher.
+Fresh triage on 2026-05-07 shows the generated bucket is no longer an
+implementation-ready unit. Tokens and AST succeed, but name resolution stops at
+the first class constructor lexical-capture blocker before the later derived
+constructor/super behavior can be evaluated.
+
+Current diagnostic:
+
+```text
+error: [UnsupportedSyntax] issue-289: class constructor `constructor` references outer local `oneA`; class constructor lexical captures require environment support at 83..87
+```
+
+Source context:
+
+```ts
+let oneA: A;
+
+class A {
+    constructor() {
+        return oneA;
+    }
+}
+```
+
+TypeScript oracle: accepted with no diagnostics.
+
+This bucket was split to `issues/open/5363-support-class-constructor-outer-local-return-captures.md`.
 
 ## Completion evidence
 
@@ -128,16 +153,23 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- `...`
+- `...` (filled by commit that moves this issue)
 
 Validation result:
 
 ```text
-command:
-result:
-date:
+command: python scripts/manager.py reference-coverage tsc --path-filter reference/typescript/tests/cases/compiler/constructorWithCapturedSuper.ts --detail --no-dashboard-data
+result: pass; executed=1, build_pass=0, unsupported=1, diagnostic UnsupportedSyntax issue-289
+date: 2026-05-07
+
+command: python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/constructorWithCapturedSuper.ts
+result: pass; reproduced issue-289 constructor outer-local return capture and split child issue 5363
+date: 2026-05-07
 ```
 
 Remaining risks:
 
-- none
+- Later behavior in `constructorWithCapturedSuper.ts`, including derived
+  constructors, `super()`, early returns, loops, try/finally, and nested
+  callbacks, remains hidden until issue 5363 advances past the base constructor
+  capture.
