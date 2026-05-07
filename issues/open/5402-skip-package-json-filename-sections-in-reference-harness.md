@@ -186,6 +186,11 @@ fresh triage for `moduleResolutionAsTypeReferenceDirectiveAmbient.ts` parses
 `declare module "phaser" { export const a2: number; }`, then stops in the
 virtual `/typings/phaser/package.json` body at the first JSON property colon
 before type-root or package resolution becomes actionable.
+Also owns `issues/done/3379-implement-moduleResolutionPackageIdWithRelativeAndAbsolutePath.md`:
+fresh triage for `moduleResolutionPackageIdWithRelativeAndAbsolutePath.ts`
+stops in `/shared/node_modules/troublesome-lib/package.json` at the first JSON
+property colon before package-id relative/absolute path behavior, path mapping,
+or virtual node_modules resolution becomes actionable.
 
 ## Completion evidence
 
