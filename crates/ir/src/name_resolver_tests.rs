@@ -677,4 +677,102 @@ mod tests {
         assert_eq!(err.code, DiagCode::UnsupportedSyntax);
         assert!(err.message.contains("issue-5255"));
     }
+
+    #[test]
+    fn allows_class_constructor_new_of_later_class_binding() {
+        // classOrderBug.ts shape:
+        // class bar { constructor() { new foo(); } }
+        // class foo {}
+        let program = vec![
+            Stmt::ClassDecl {
+                name: "bar".to_string(),
+                extends: None,
+                body: vec![Stmt::Function {
+                    name: "constructor".to_string(),
+                    params: vec![],
+                    body: vec![Stmt::Expr {
+                        expr: Expr::New {
+                            expr: Box::new(Expr::Ident {
+                                name: "foo".to_string(),
+                                span: Span { start: 50, end: 53 },
+                            }),
+                            args: vec![],
+                            span: Span { start: 46, end: 55 },
+                        },
+                        span: Span { start: 46, end: 55 },
+                    }],
+                    is_generator: false,
+                    is_ambient: false,
+                    overload_signature: false,
+                    span: Span { start: 20, end: 60 },
+                }],
+                static_blocks: vec![],
+                private_elements: vec![],
+                ts_private_field_names: vec![],
+                interface_heritage: vec![],
+                span: Span { start: 0, end: 62 },
+            },
+            Stmt::ClassDecl {
+                name: "foo".to_string(),
+                extends: None,
+                body: vec![],
+                static_blocks: vec![],
+                private_elements: vec![],
+                ts_private_field_names: vec![],
+                interface_heritage: vec![],
+                span: Span { start: 63, end: 80 },
+            },
+        ];
+        let result = crate::resolve_builtins(&program);
+        assert!(
+            result.is_ok(),
+            "class constructor `new foo()` with later class binding should be allowed: {:?}",
+            result.err()
+        );
+    }
+
+    #[test]
+    fn rejects_class_constructor_outer_non_class_reference() {
+        // let x = 1;
+        // class bar { constructor() { x; } }
+        let program = vec![
+            Stmt::Let {
+                is_var: false,
+                name: "x".to_string(),
+                expr: Expr::Number {
+                    value: 1,
+                    span: Span { start: 4, end: 5 },
+                },
+                span: Span { start: 0, end: 6 },
+            },
+            Stmt::ClassDecl {
+                name: "bar".to_string(),
+                extends: None,
+                body: vec![Stmt::Function {
+                    name: "constructor".to_string(),
+                    params: vec![],
+                    body: vec![Stmt::Expr {
+                        expr: Expr::Ident {
+                            name: "x".to_string(),
+                            span: Span { start: 30, end: 31 },
+                        },
+                        span: Span { start: 30, end: 31 },
+                    }],
+                    is_generator: false,
+                    is_ambient: false,
+                    overload_signature: false,
+                    span: Span { start: 20, end: 35 },
+                }],
+                static_blocks: vec![],
+                private_elements: vec![],
+                ts_private_field_names: vec![],
+                interface_heritage: vec![],
+                span: Span { start: 7, end: 37 },
+            },
+        ];
+        let err = crate::resolve_builtins(&program).unwrap_err();
+        assert_eq!(err.code, DiagCode::UnsupportedSyntax);
+        assert!(err.message.contains("issue-289"));
+        assert!(err.message.contains("references outer local `x`"));
+    }
 }

@@ -9,6 +9,17 @@ pub(super) fn collect_top_level_bindings(program: &[Stmt]) -> Result<HashSet<Str
     Ok(bindings)
 }
 
+/// Collects only class declaration names from the top-level program.
+pub(super) fn collect_top_level_class_names(program: &[Stmt]) -> HashSet<String> {
+    let mut names = HashSet::new();
+    for stmt in program {
+        if let Stmt::ClassDecl { name, .. } = stmt {
+            names.insert(name.clone());
+        }
+    }
+    names
+}
+
 pub(super) fn collect_stmt_declared_bindings(
     stmt: &Stmt,
     bindings: &mut HashSet<String>,
@@ -118,9 +129,16 @@ pub(super) fn reject_class_method_outer_local_references(
     params: &[(String, Option<Expr>, bool)],
     body: &[Stmt],
     outer_bindings: &HashSet<String>,
+    class_names: &HashSet<String>,
 ) -> Result<(), Diagnostic> {
-    let captures =
-        class_method_outer_local_captures(class_name, method_name, params, body, outer_bindings)?;
+    let captures = class_method_outer_local_captures(
+        class_name,
+        method_name,
+        params,
+        body,
+        outer_bindings,
+        class_names,
+    )?;
     if let Some(name) = captures.first() {
         return Err(Diagnostic {
             code: DiagCode::UnsupportedSyntax,
@@ -131,6 +149,7 @@ pub(super) fn reject_class_method_outer_local_references(
                 body,
                 outer_bindings,
                 &class_method_local_names(class_name, params, body)?,
+                class_names,
             )
             .map(|(_, span)| span),
         });
@@ -145,6 +164,7 @@ pub(super) fn class_method_outer_local_captures(
     params: &[(String, Option<Expr>, bool)],
     body: &[Stmt],
     outer_bindings: &HashSet<String>,
+    class_names: &HashSet<String>,
 ) -> Result<Vec<String>, Diagnostic> {
     if outer_bindings.is_empty() {
         return Ok(Vec::new());
@@ -154,7 +174,7 @@ pub(super) fn class_method_outer_local_captures(
 
     let mut capture_names = Vec::new();
     while let Some((name, span)) =
-        first_outer_local_reference_in_stmts(body, outer_bindings, &method_locals)
+        first_outer_local_reference_in_stmts(body, outer_bindings, &method_locals, class_names)
     {
         if params.iter().any(|(_, _, is_rest)| *is_rest) {
             return Err(Diagnostic {
@@ -191,48 +211,77 @@ pub(super) fn first_outer_local_reference_in_stmts(
     stmts: &[Stmt],
     outer_bindings: &HashSet<String>,
     method_locals: &HashSet<String>,
+    class_names: &HashSet<String>,
 ) -> Option<(String, Span)> {
-    stmts
-        .iter()
-        .find_map(|stmt| first_outer_local_reference_in_stmt(stmt, outer_bindings, method_locals))
+    stmts.iter().find_map(|stmt| {
+        first_outer_local_reference_in_stmt(stmt, outer_bindings, method_locals, class_names)
+    })
 }
 
 pub(super) fn first_outer_local_reference_in_stmt(
     stmt: &Stmt,
     outer_bindings: &HashSet<String>,
     method_locals: &HashSet<String>,
+    class_names: &HashSet<String>,
 ) -> Option<(String, Span)> {
     match stmt {
         Stmt::Let { expr, .. } | Stmt::Return { expr, .. } | Stmt::Throw { expr, .. } => {
-            first_outer_local_reference_in_expr(expr, outer_bindings, method_locals)
+            first_outer_local_reference_in_expr(expr, outer_bindings, method_locals, class_names)
         }
         Stmt::Assign { name, expr, span } => {
             reference_if_outer(name, *span, outer_bindings, method_locals).or_else(|| {
-                first_outer_local_reference_in_expr(expr, outer_bindings, method_locals)
+                first_outer_local_reference_in_expr(
+                    expr,
+                    outer_bindings,
+                    method_locals,
+                    class_names,
+                )
             })
         }
         Stmt::Expr { expr, .. } => {
-            first_outer_local_reference_in_expr(expr, outer_bindings, method_locals)
+            first_outer_local_reference_in_expr(expr, outer_bindings, method_locals, class_names)
         }
         Stmt::If {
             condition,
             then_body,
             else_body,
             ..
-        } => first_outer_local_reference_in_expr(condition, outer_bindings, method_locals)
-            .or_else(|| {
-                first_outer_local_reference_in_stmts(then_body, outer_bindings, method_locals)
-            })
-            .or_else(|| {
-                first_outer_local_reference_in_stmts(else_body, outer_bindings, method_locals)
-            }),
+        } => first_outer_local_reference_in_expr(
+            condition,
+            outer_bindings,
+            method_locals,
+            class_names,
+        )
+        .or_else(|| {
+            first_outer_local_reference_in_stmts(
+                then_body,
+                outer_bindings,
+                method_locals,
+                class_names,
+            )
+        })
+        .or_else(|| {
+            first_outer_local_reference_in_stmts(
+                else_body,
+                outer_bindings,
+                method_locals,
+                class_names,
+            )
+        }),
         Stmt::While {
             condition, body, ..
         }
         | Stmt::DoWhile {
             body, condition, ..
-        } => first_outer_local_reference_in_expr(condition, outer_bindings, method_locals)
-            .or_else(|| first_outer_local_reference_in_stmts(body, outer_bindings, method_locals)),
+        } => first_outer_local_reference_in_expr(
+            condition,
+            outer_bindings,
+            method_locals,
+            class_names,
+        )
+        .or_else(|| {
+            first_outer_local_reference_in_stmts(body, outer_bindings, method_locals, class_names)
+        }),
         Stmt::For {
             init,
             condition,
@@ -242,60 +291,110 @@ pub(super) fn first_outer_local_reference_in_stmt(
         } => init
             .as_deref()
             .and_then(|stmt| {
-                first_outer_local_reference_in_stmt(stmt, outer_bindings, method_locals)
+                first_outer_local_reference_in_stmt(
+                    stmt,
+                    outer_bindings,
+                    method_locals,
+                    class_names,
+                )
             })
             .or_else(|| {
                 condition.as_ref().and_then(|expr| {
-                    first_outer_local_reference_in_expr(expr, outer_bindings, method_locals)
+                    first_outer_local_reference_in_expr(
+                        expr,
+                        outer_bindings,
+                        method_locals,
+                        class_names,
+                    )
                 })
             })
             .or_else(|| {
                 update.as_ref().and_then(|expr| {
-                    first_outer_local_reference_in_expr(expr, outer_bindings, method_locals)
+                    first_outer_local_reference_in_expr(
+                        expr,
+                        outer_bindings,
+                        method_locals,
+                        class_names,
+                    )
                 })
             })
-            .or_else(|| first_outer_local_reference_in_stmts(body, outer_bindings, method_locals)),
+            .or_else(|| {
+                first_outer_local_reference_in_stmts(
+                    body,
+                    outer_bindings,
+                    method_locals,
+                    class_names,
+                )
+            }),
         Stmt::ForIn { iter, body, .. } | Stmt::ForOf { iter, body, .. } => {
-            first_outer_local_reference_in_expr(iter, outer_bindings, method_locals).or_else(|| {
-                first_outer_local_reference_in_stmts(body, outer_bindings, method_locals)
-            })
+            first_outer_local_reference_in_expr(iter, outer_bindings, method_locals, class_names)
+                .or_else(|| {
+                    first_outer_local_reference_in_stmts(
+                        body,
+                        outer_bindings,
+                        method_locals,
+                        class_names,
+                    )
+                })
         }
         Stmt::TryCatch {
             try_block,
             catch_block,
             finally_block,
             ..
-        } => first_outer_local_reference_in_stmts(try_block, outer_bindings, method_locals)
-            .or_else(|| {
-                catch_block.as_ref().and_then(|block| {
-                    first_outer_local_reference_in_stmts(block, outer_bindings, method_locals)
-                })
+        } => first_outer_local_reference_in_stmts(
+            try_block,
+            outer_bindings,
+            method_locals,
+            class_names,
+        )
+        .or_else(|| {
+            catch_block.as_ref().and_then(|block| {
+                first_outer_local_reference_in_stmts(
+                    block,
+                    outer_bindings,
+                    method_locals,
+                    class_names,
+                )
             })
-            .or_else(|| {
-                finally_block.as_ref().and_then(|block| {
-                    first_outer_local_reference_in_stmts(block, outer_bindings, method_locals)
-                })
-            }),
+        })
+        .or_else(|| {
+            finally_block.as_ref().and_then(|block| {
+                first_outer_local_reference_in_stmts(
+                    block,
+                    outer_bindings,
+                    method_locals,
+                    class_names,
+                )
+            })
+        }),
         Stmt::Switch { expr, cases, .. } => {
-            first_outer_local_reference_in_expr(expr, outer_bindings, method_locals).or_else(|| {
-                cases.iter().find_map(|(case_expr, body)| {
-                    case_expr
-                        .as_ref()
-                        .and_then(|expr| {
-                            first_outer_local_reference_in_expr(expr, outer_bindings, method_locals)
-                        })
-                        .or_else(|| {
-                            first_outer_local_reference_in_stmts(
-                                body,
-                                outer_bindings,
-                                method_locals,
-                            )
-                        })
+            first_outer_local_reference_in_expr(expr, outer_bindings, method_locals, class_names)
+                .or_else(|| {
+                    cases.iter().find_map(|(case_expr, body)| {
+                        case_expr
+                            .as_ref()
+                            .and_then(|expr| {
+                                first_outer_local_reference_in_expr(
+                                    expr,
+                                    outer_bindings,
+                                    method_locals,
+                                    class_names,
+                                )
+                            })
+                            .or_else(|| {
+                                first_outer_local_reference_in_stmts(
+                                    body,
+                                    outer_bindings,
+                                    method_locals,
+                                    class_names,
+                                )
+                            })
+                    })
                 })
-            })
         }
         Stmt::Labeled { body, .. } => {
-            first_outer_local_reference_in_stmt(body, outer_bindings, method_locals)
+            first_outer_local_reference_in_stmt(body, outer_bindings, method_locals, class_names)
         }
         Stmt::Function { .. } | Stmt::ClassDecl { .. } | Stmt::AmbientValueDecl { .. } => None,
         Stmt::ImportSideEffect { .. }
@@ -321,6 +420,7 @@ pub(super) fn first_outer_local_reference_in_expr(
     expr: &Expr,
     outer_bindings: &HashSet<String>,
     method_locals: &HashSet<String>,
+    class_names: &HashSet<String>,
 ) -> Option<(String, Span)> {
     match expr {
         Expr::Ident { name, span } => {
@@ -330,30 +430,41 @@ pub(super) fn first_outer_local_reference_in_expr(
         | Expr::TypeOf { expr, .. }
         | Expr::Await { expr, .. }
         | Expr::Spread { expr, .. } => {
-            first_outer_local_reference_in_expr(expr, outer_bindings, method_locals)
+            first_outer_local_reference_in_expr(expr, outer_bindings, method_locals, class_names)
         }
         Expr::Binary { left, right, .. } => {
-            first_outer_local_reference_in_expr(left, outer_bindings, method_locals).or_else(|| {
-                first_outer_local_reference_in_expr(right, outer_bindings, method_locals)
-            })
+            first_outer_local_reference_in_expr(left, outer_bindings, method_locals, class_names)
+                .or_else(|| {
+                    first_outer_local_reference_in_expr(
+                        right,
+                        outer_bindings,
+                        method_locals,
+                        class_names,
+                    )
+                })
         }
         Expr::Member { object, .. } | Expr::OptionalMember { object, .. } => {
-            first_outer_local_reference_in_expr(object, outer_bindings, method_locals)
+            first_outer_local_reference_in_expr(object, outer_bindings, method_locals, class_names)
         }
         Expr::Call { callee, args, .. } | Expr::OptionalCall { callee, args, .. } => {
-            first_outer_local_reference_in_expr(callee, outer_bindings, method_locals).or_else(
-                || {
+            first_outer_local_reference_in_expr(callee, outer_bindings, method_locals, class_names)
+                .or_else(|| {
                     args.iter().find_map(|arg| {
-                        first_outer_local_reference_in_expr(arg, outer_bindings, method_locals)
+                        first_outer_local_reference_in_expr(
+                            arg,
+                            outer_bindings,
+                            method_locals,
+                            class_names,
+                        )
                     })
-                },
-            )
+                })
         }
         Expr::Assign { name, expr, span }
         | Expr::LogicalAssign {
             name, expr, span, ..
-        } => reference_if_outer(name, *span, outer_bindings, method_locals)
-            .or_else(|| first_outer_local_reference_in_expr(expr, outer_bindings, method_locals)),
+        } => reference_if_outer(name, *span, outer_bindings, method_locals).or_else(|| {
+            first_outer_local_reference_in_expr(expr, outer_bindings, method_locals, class_names)
+        }),
         Expr::LogicalPropertyAssign {
             object_expr,
             computed_key,
@@ -362,67 +473,152 @@ pub(super) fn first_outer_local_reference_in_expr(
         } => object_expr
             .as_deref()
             .and_then(|object| {
-                first_outer_local_reference_in_expr(object, outer_bindings, method_locals)
+                first_outer_local_reference_in_expr(
+                    object,
+                    outer_bindings,
+                    method_locals,
+                    class_names,
+                )
             })
             .or_else(|| {
                 computed_key.as_deref().and_then(|key| {
-                    first_outer_local_reference_in_expr(key, outer_bindings, method_locals)
+                    first_outer_local_reference_in_expr(
+                        key,
+                        outer_bindings,
+                        method_locals,
+                        class_names,
+                    )
                 })
             })
-            .or_else(|| first_outer_local_reference_in_expr(expr, outer_bindings, method_locals)),
+            .or_else(|| {
+                first_outer_local_reference_in_expr(
+                    expr,
+                    outer_bindings,
+                    method_locals,
+                    class_names,
+                )
+            }),
         Expr::Array { elements, .. } => elements.iter().find_map(|element| match element {
             ArrayLiteralElement::Present(expr) | ArrayLiteralElement::Spread(expr) => {
-                first_outer_local_reference_in_expr(expr, outer_bindings, method_locals)
+                first_outer_local_reference_in_expr(
+                    expr,
+                    outer_bindings,
+                    method_locals,
+                    class_names,
+                )
             }
             ArrayLiteralElement::Hole(_) => None,
         }),
         Expr::Object { props, .. } => props.iter().find_map(|(_, value)| {
-            first_outer_local_reference_in_expr(value, outer_bindings, method_locals)
+            first_outer_local_reference_in_expr(value, outer_bindings, method_locals, class_names)
         }),
         Expr::Index { object, index, .. } | Expr::OptionalIndex { object, index, .. } => {
-            first_outer_local_reference_in_expr(object, outer_bindings, method_locals).or_else(
-                || first_outer_local_reference_in_expr(index, outer_bindings, method_locals),
-            )
+            first_outer_local_reference_in_expr(object, outer_bindings, method_locals, class_names)
+                .or_else(|| {
+                    first_outer_local_reference_in_expr(
+                        index,
+                        outer_bindings,
+                        method_locals,
+                        class_names,
+                    )
+                })
         }
         Expr::New { expr, args, .. } => {
-            first_outer_local_reference_in_expr(expr, outer_bindings, method_locals).or_else(|| {
+            // Allow `new ClassName()` when ClassName is a class declaration
+            // (forward references to later class declarations in the same scope)
+            let callee_ref = match expr.as_ref() {
+                Expr::Ident { name, .. } if class_names.contains(name) => None,
+                _ => first_outer_local_reference_in_expr(
+                    expr,
+                    outer_bindings,
+                    method_locals,
+                    class_names,
+                ),
+            };
+            callee_ref.or_else(|| {
                 args.iter().find_map(|arg| {
-                    first_outer_local_reference_in_expr(arg, outer_bindings, method_locals)
+                    first_outer_local_reference_in_expr(
+                        arg,
+                        outer_bindings,
+                        method_locals,
+                        class_names,
+                    )
                 })
             })
         }
         Expr::InstanceOf {
             expr, type_expr, ..
-        } => {
-            first_outer_local_reference_in_expr(expr, outer_bindings, method_locals).or_else(|| {
-                first_outer_local_reference_in_expr(type_expr, outer_bindings, method_locals)
-            })
-        }
+        } => first_outer_local_reference_in_expr(expr, outer_bindings, method_locals, class_names)
+            .or_else(|| {
+                first_outer_local_reference_in_expr(
+                    type_expr,
+                    outer_bindings,
+                    method_locals,
+                    class_names,
+                )
+            }),
         Expr::Ternary {
             condition,
             then_expr,
             else_expr,
             ..
-        } => first_outer_local_reference_in_expr(condition, outer_bindings, method_locals)
-            .or_else(|| {
-                first_outer_local_reference_in_expr(then_expr, outer_bindings, method_locals)
-            })
-            .or_else(|| {
-                first_outer_local_reference_in_expr(else_expr, outer_bindings, method_locals)
-            }),
-        Expr::PropertyAssign { object, value, .. } => {
-            first_outer_local_reference_in_expr(object, outer_bindings, method_locals).or_else(
-                || first_outer_local_reference_in_expr(value, outer_bindings, method_locals),
+        } => first_outer_local_reference_in_expr(
+            condition,
+            outer_bindings,
+            method_locals,
+            class_names,
+        )
+        .or_else(|| {
+            first_outer_local_reference_in_expr(
+                then_expr,
+                outer_bindings,
+                method_locals,
+                class_names,
             )
+        })
+        .or_else(|| {
+            first_outer_local_reference_in_expr(
+                else_expr,
+                outer_bindings,
+                method_locals,
+                class_names,
+            )
+        }),
+        Expr::PropertyAssign { object, value, .. } => {
+            first_outer_local_reference_in_expr(object, outer_bindings, method_locals, class_names)
+                .or_else(|| {
+                    first_outer_local_reference_in_expr(
+                        value,
+                        outer_bindings,
+                        method_locals,
+                        class_names,
+                    )
+                })
         }
         Expr::IndexAssign {
             object,
             index,
             value,
             ..
-        } => first_outer_local_reference_in_expr(object, outer_bindings, method_locals)
-            .or_else(|| first_outer_local_reference_in_expr(index, outer_bindings, method_locals))
-            .or_else(|| first_outer_local_reference_in_expr(value, outer_bindings, method_locals)),
+        } => {
+            first_outer_local_reference_in_expr(object, outer_bindings, method_locals, class_names)
+                .or_else(|| {
+                    first_outer_local_reference_in_expr(
+                        index,
+                        outer_bindings,
+                        method_locals,
+                        class_names,
+                    )
+                })
+                .or_else(|| {
+                    first_outer_local_reference_in_expr(
+                        value,
+                        outer_bindings,
+                        method_locals,
+                        class_names,
+                    )
+                })
+        }
         Expr::ArrowFn { .. } | Expr::FunctionExpr { .. } | Expr::ClassExpr { .. } => None,
         Expr::Number { .. }
         | Expr::BigInt { .. }

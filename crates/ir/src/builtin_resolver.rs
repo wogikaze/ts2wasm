@@ -39,9 +39,10 @@ pub fn resolve_builtins(program: &[Stmt]) -> Result<Vec<ResolvedStmt>, Diagnosti
     let program = BigIntStaticBuiltinFolder::default().fold_stmts(program);
     BigIntRuntimeGuard::default().visit_stmts(&program)?;
     let outer_bindings = collect_top_level_bindings(&program)?;
+    let class_names = collect_top_level_class_names(&program);
     program
         .iter()
-        .map(|stmt| resolve_stmt_with_outer_bindings(stmt, &outer_bindings))
+        .map(|stmt| resolve_stmt_with_outer_bindings(stmt, &outer_bindings, &class_names))
         .collect()
 }
 
@@ -969,12 +970,13 @@ fn is_bigint_static_builtin_callee(callee: &Expr) -> bool {
 }
 
 fn resolve_stmt(stmt: &Stmt) -> Result<ResolvedStmt, Diagnostic> {
-    resolve_stmt_with_outer_bindings(stmt, &HashSet::new())
+    resolve_stmt_with_outer_bindings(stmt, &HashSet::new(), &HashSet::new())
 }
 
 fn resolve_stmt_with_outer_bindings(
     stmt: &Stmt,
     outer_bindings: &HashSet<String>,
+    class_names: &HashSet<String>,
 ) -> Result<ResolvedStmt, Diagnostic> {
     match stmt {
         // Import/export forms are handled by the compiler's module rewrite path
@@ -1135,6 +1137,7 @@ fn resolve_stmt_with_outer_bindings(
                             params,
                             method_body,
                             outer_bindings,
+                            class_names,
                         )?;
                         if constructor.is_some() {
                             return Err(Diagnostic {
@@ -1182,6 +1185,7 @@ fn resolve_stmt_with_outer_bindings(
                             params,
                             method_body,
                             outer_bindings,
+                            class_names,
                         )?;
                         let resolved_params = params
                             .iter()
