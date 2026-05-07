@@ -170,6 +170,12 @@ Additional superseded bucket:
   reports `const declarations require an initializer at 62..66` for
   `const enum E { V = 100 }`; TypeScript parses the enum, `export = E`, and
   `import A = require('m1')` before reporting TS2307 for module resolution.
+- `issues/done/1451-implement-constEnumNamespaceReferenceCausesNoImport.md`
+  includes `constEnumNamespaceReferenceCausesNoImport.ts`, which reaches the
+  same parser boundary through `export const enum ConstFooEnum { ... }`. Fresh
+  triage on 2026-05-07 reports `const declarations require an initializer at
+  112..116` at `Ident("enum")`; TypeScript parses the declaration as an
+  exported `EnumDeclaration` and only reports later TS2307 for `./foo`.
 
 ## Completion evidence
 
