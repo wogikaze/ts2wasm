@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 7 | 6 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4583 | 3396 | 1187 |
+| frontend | 4584 | 3396 | 1188 |
 | harness | 1 | 0 | 1 |
 | ir | 79 | 57 | 22 |
 | issues | 4 | 0 | 4 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5244 | 3694 | 1550 |
+| total | 5245 | 3694 | 1551 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -362,6 +362,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5407 | Report ambient getter implementation bodies | feature | frontend/parser | implementation-ready | P1 |  | ambient class getter implementation bodies are currently erased |
 | 5408 | Parse bare global augmentation blocks | bug | frontend/syntax | implementation-ready | P1 |  | bare TypeScript global augmentation syntax falls through to runtime |
 | 5409 | Report non-exported namespace member type annotations | bug | frontend/semantics | implementation-ready | P1 |  | non-exported namespace members in qualified type annotations are erased |
+| 5410 | Report namespace-as-base-type diagnostics | feature | frontend/semantics | implementation-ready | P1 |  | namespace-as-base-type misuse currently produces a false build pass |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -2317,7 +2318,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 3302 | Implement Modulealiasasfunctionargument | spike | frontend/syntax | class: blocked | Implement Modulealiasasfunctionargument |
 | 3303 | Implement Modulealiasinterface | spike | frontend/syntax | class: blocked | Implement Modulealiasinterface |
 | 3304 | Implement Moduleandinterfacesharingname | spike | frontend/syntax | class: blocked | Implement Moduleandinterfacesharingname |
-| 3306 | Implement Moduleasbasetype | spike | frontend/syntax | class: blocked | Implement Moduleasbasetype |
 | 3307 | Implement Moduleassignmentcompat | spike | frontend/syntax | class: blocked | Implement Moduleassignmentcompat |
 | 3331 | Implement Modulecrashbug | spike | frontend/syntax | class: blocked | Implement Modulecrashbug |
 | 3332 | Implement Moduledeclarationexportstarshadowingglobalisnameable | spike | frontend/syntax | class: blocked | Implement Moduledeclarationexportstarshadowingglobalisnameable |
@@ -5181,6 +5181,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 3029 | Implement Isolatedmodulesnonambientconstenum | spike | frontend/syntax | see `issues/done/3029-implement-isolatedModulesNonAmbientConstEnum.md` |
 | 3131 | Implement Jsxfactorynotidentifierorqualifiedname | spike | reference/triage | see `issues/done/3131-implement-jsxFactoryNotIdentifierOrQualifiedName.md` |
 | 3305 | Implement Moduleandinterfacewithsamename | spike | frontend/syntax | see `issues/done/3305-implement-moduleAndInterfaceWithSameName.md` |
+| 3306 | Implement Moduleasbasetype | spike | frontend/syntax | see `issues/done/3306-implement-moduleAsBaseType.md` |
 | 3308 | Implement Moduleaugmentationcollidingnamesinaugmentation | spike | frontend/syntax | see `issues/done/3308-implement-moduleAugmentationCollidingNamesInAugmentation.md` |
 | 3309 | Implement Moduleaugmentationdeclarationemit | spike | frontend/syntax | see `issues/done/3309-implement-moduleAugmentationDeclarationEmit.md` |
 | 3310 | Implement Moduleaugmentationdisallowedextensions | spike | frontend/syntax | see `issues/done/3310-implement-moduleAugmentationDisallowedExtensions.md` |
