@@ -1662,3 +1662,54 @@ fn inferred_type_falls_back_to_unknown_for_mixed_add() {
     };
     assert_eq!(expr.inferred_type(), InferredType::Unknown);
 }
+
+#[test]
+fn lower_arrow_fn_iife_empty_body() {
+    let program = parse_and_resolve("(() => {})();");
+    let lowered = ts2wasm_ir::lowered::lower_program(&program).unwrap();
+    // Should produce a top-level expression that is a Call with a User function kind.
+    // The call invokes an ArrowFn that returns undefined.
+    assert!(
+        matches!(
+            lowered.top_level_statements.first(),
+            Some(ts2wasm_ir::lowered::LoweredStmt::Expr(
+                ts2wasm_ir::lowered::LoweredExpr::Call {
+                    kind: ts2wasm_ir::lowered::FunctionCallKind::User(_),
+                    args,
+                    ..
+                },
+                _
+            )) if args.is_empty()
+        ),
+        "expected User(..) call with empty args at top level: {:?}",
+        lowered.top_level_statements.first()
+    );
+}
+
+#[test]
+fn lower_arrow_fn_iife_with_body() {
+    let program = parse_and_resolve(
+        r#"
+        let x = 1;
+        (() => { x = x + 1; })();
+        "#,
+    );
+    let lowered = ts2wasm_ir::lowered::lower_program(&program).unwrap();
+    // The arrow should capture `x` from the enclosing scope.
+    // The top-level statement[1] should be a Call with the capture arg appended.
+    assert!(
+        matches!(
+            lowered.top_level_statements.get(1),
+            Some(ts2wasm_ir::lowered::LoweredStmt::Expr(
+                ts2wasm_ir::lowered::LoweredExpr::Call {
+                    kind: ts2wasm_ir::lowered::FunctionCallKind::User(_),
+                    args,
+                    ..
+                },
+                _
+            )) if args.len() == 1
+        ),
+        "expected User(..) call with one capture arg: {:?}",
+        lowered.top_level_statements.get(1)
+    );
+}

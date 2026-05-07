@@ -1353,6 +1353,47 @@ impl<'a> Resolver<'a> {
         Ok(())
     }
 
+    pub(super) fn lower_arrow_fn_iife(
+        &mut self,
+        params: &[String],
+        body: &ResolvedExpr,
+        body_stmts: &[ResolvedStmt],
+        args: &[ResolvedExpr],
+        span: Span,
+    ) -> Result<LoweredExpr, Diagnostic> {
+        let lowered = self.lower_arrow_fn(params, body, body_stmts)?;
+        let LoweredExpr::ArrowFn {
+            func_id, captures, ..
+        } = lowered
+        else {
+            return Err(Diagnostic {
+                code: DiagCode::InvariantViolation,
+                message: "arrow function lowering must produce an ArrowFn token"
+                    .to_owned(),
+                span: Some(span),
+            });
+        };
+        let explicit_args = self.lower_call_args(args)?;
+        let mut lowered_args = explicit_args
+            .into_iter()
+            .take(params.len())
+            .collect::<Vec<_>>();
+        for _ in lowered_args.len()..params.len() {
+            lowered_args.push(LoweredExpr::Undefined(Span::generated("undef")));
+        }
+        lowered_args.extend(
+            captures
+                .into_iter()
+                .map(|id| LoweredExpr::Local(id, Span::generated("local"))),
+        );
+        Ok(LoweredExpr::Call {
+            kind: FunctionCallKind::User(func_id),
+            args: lowered_args,
+
+            span: Span::generated("call"),
+        })
+    }
+
     pub(super) fn lower_function_expr_call(
         &mut self,
         name: &str,

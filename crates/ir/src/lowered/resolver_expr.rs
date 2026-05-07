@@ -481,6 +481,15 @@ impl<'a> Resolver<'a> {
                     return self.lower_function_expr_call(name, params, body, args, *span);
                 }
 
+                if let ResolvedExpr::ArrowFn {
+                    params, body, body_stmts,
+                } = callee.as_ref()
+                {
+                    return self.lower_arrow_fn_iife(
+                        params, body, body_stmts, args, *span,
+                    );
+                }
+
                 let func_name = match callee.as_ref() {
                     ResolvedExpr::Ident(name) => name,
                     expr @ (ResolvedExpr::Call { .. } | ResolvedExpr::New { .. }) => {
