@@ -18,7 +18,7 @@ Issue files are the source of truth for work items. The generated section below 
 | docs | 5 | 0 | 5 |
 | frontend | 4563 | 3769 | 794 |
 | harness | 1 | 0 | 1 |
-| ir | 77 | 27 | 50 |
+| ir | 77 | 26 | 51 |
 | issues | 5 | 0 | 5 |
 | parser | 1 | 0 | 1 |
 | reference | 212 | 160 | 52 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 8 | 0 | 8 |
 | wasi | 4 | 0 | 4 |
-| total | 5246 | 4045 | 1201 |
+| total | 5246 | 4044 | 1202 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -460,7 +460,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5376 | Support ambient generic factory local calls | feature | ir/lowering | implementation-ready | P1 |  | ambient generic factory locals currently fall into the generic |
 | 5377 | Support callable ambient interface local calls with key remap | feature | ir/lowering | implementation-ready | P1 |  | callable ambient interface locals after mapped-type key remapping fall |
 | 5378 | Report mixed ambient function overload diagnostics | feature | frontend/resolver | implementation-ready | P1 |  | mixed ambient/non-ambient top-level function overload groups report a |
-| 5379 | Lower array binding object default initializers | feature | ir/lowering | implementation-ready | P2 |  | array binding patterns with object-literal default initializers are not |
 | 5380 | Report array literal index-signature element mismatch | feature | frontend/semantics | implementation-ready | P1 |  | array literals assigned to numeric-index-signature interfaces can skip the invalid element diagnostic and fall throug... |
 | 5381 | Parse untyped arrow ternary branches | feature | frontend/syntax | implementation-ready | P1 |  | untyped arrow functions used as ternary conditional branches are rejected during AST construction before contextual t... |
 | 5382 | Parse typed arrow ternary branches | feature | frontend/syntax | implementation-ready | P1 |  | typed arrow functions used as ternary conditional branches are rejected during AST construction before contextual typ... |
@@ -5357,6 +5356,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5351 | Accept large decimal integer number literals | feature | frontend/lexer | see `issues/done/5351-accept-large-decimal-integer-number-literals.md` |
 | 5357 | Avoid eval diagnostic for qualified Function constructors | bug | ir/resolver | see `issues/done/5357-avoid-eval-diagnostic-for-qualified-function-constructors.md` |
 | 5364 | Report unterminated string literal at raw newline | bug | frontend/lexer | see `issues/done/5364-report-unterminated-string-literal-at-raw-newline.md` |
+| 5379 | Lower array binding object default initializers | feature | ir/lowering | see `issues/done/5379-lower-array-binding-object-default-initializers.md` |
 <!-- generated:done:end -->
 
 ## Index generation contract

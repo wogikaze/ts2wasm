@@ -25,6 +25,7 @@ pub enum BindingDefault {
     Bool(bool),
     Null,
     Undefined,
+    Object(Vec<(String, String)>),
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -412,6 +413,19 @@ fn parse_binding_default(text: &str, span: Option<Span>) -> Result<BindingDefaul
     }
     if let Ok(value) = text.parse::<i32>() {
         return Ok(BindingDefault::Number(value));
+    }
+    if text.starts_with('{') && text.ends_with('}') {
+        let inner = &text[1..text.len()-1];
+        let props: Vec<(String, String)> = inner.split(',')
+            .filter(|s| !s.is_empty())
+            .filter_map(|prop| {
+                let mut parts = prop.splitn(2, ':');
+                let key = parts.next()?.trim().to_string();
+                let value = parts.next()?.trim().to_string();
+                Some((key, value))
+            })
+            .collect();
+        return Ok(BindingDefault::Object(props));
     }
     if let Some(value) = parse_string_literal(text) {
         return Ok(BindingDefault::String(value));

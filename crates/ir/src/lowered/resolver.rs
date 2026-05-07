@@ -777,6 +777,10 @@ fn lowered_binding_default(default: &BindingDefault) -> LoweredExpr {
         BindingDefault::Bool(value) => LoweredExpr::Bool(*value, Span::generated("bool")),
         BindingDefault::Null => LoweredExpr::Null(Span::generated("null")),
         BindingDefault::Undefined => LoweredExpr::Undefined(Span::generated("undef")),
+        BindingDefault::Object(props) => {
+            let _ = props;
+            LoweredExpr::Undefined(Span::generated("undef"))
+        }
     }
 }
 
