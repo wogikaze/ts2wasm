@@ -389,4 +389,18 @@ mod tests {
             Ok(_) => panic!("expected error for merge conflict markers"),
         }
     }
+
+    #[test]
+    fn at_token_produces_token_at() {
+        let tokens = Lexer::new("@decorator").tokenize().unwrap();
+        let kinds: Vec<&Token> = tokens.iter().map(|t| &t.kind).collect();
+        assert_eq!(kinds, [&Token::At, &Token::Ident("decorator".to_owned())]);
+    }
+
+    #[test]
+    fn at_token_without_identifier_produces_token_at() {
+        let tokens = Lexer::new("@").tokenize().unwrap();
+        let kinds: Vec<&Token> = tokens.iter().map(|t| &t.kind).collect();
+        assert_eq!(kinds, [&Token::At]);
+    }
 }
