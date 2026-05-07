@@ -8,7 +8,7 @@ priority: P1
 depends_on: []
 blocks: []
 created: 2026-05-07
-updated: 2026-05-07
+updated: 2026-05-08
 ---
 
 ## Summary
@@ -23,6 +23,10 @@ with `UnsupportedSyntax: expected LeftBrace, got Some(Comma)`, while TypeScript
 parses the class declaration and reports TS1174: classes can only extend one
 class.
 
+The same parser boundary now owns `multipleInheritance.ts`, which stops at
+`class C extends B1, B2 {}` before later TS1174 and class-member diagnostics
+can be exposed.
+
 ## Current failure
 
 ```sh
@@ -35,6 +39,20 @@ Observed 2026-05-07:
 ts2wasm: UnsupportedSyntax expected LeftBrace, got Some(Comma) at 63..64
 source: class C extends A,B { }
 TypeScript oracle:
+TS1174 Classes can only extend a single class.
+```
+
+Additional representative path, observed 2026-05-08:
+
+```sh
+env TS2WASM_BINARY=/tmp/ts2wasm-issue-blockers-target/debug/ts2wasm python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/multipleInheritance.ts
+```
+
+```text
+ts2wasm: UnsupportedSyntax expected LeftBrace, got Some(Comma) at 121..122
+source: class C extends B1, B2 { // duplicate member }
+TypeScript oracle:
+TS1174 Classes can only extend a single class.
 TS1174 Classes can only extend a single class.
 ```
 
@@ -79,7 +97,8 @@ Do not touch:
 ## Acceptance criteria
 
 - [ ] `classExtendsMultipleBaseClasses.ts` no longer reports
-  `expected LeftBrace, got Some(Comma)`.
+  `expected LeftBrace, got Some(Comma)`; the same parser path also covers
+  `multipleInheritance.ts` at `class C extends B1, B2`.
 - [ ] The new diagnostic is source-spanned at the comma or second base `B` and
   names the single-base-class rule.
 - [ ] `class C extends A {}` still parses.
@@ -129,6 +148,9 @@ Related but not duplicate:
 - `issues/open/5260-report-class-heritage-trailing-comma.md` handles
   `class D extends C, {}` and explicitly leaves multiple heritage clauses out of
   scope.
+- `issues/done/3415-implement-multipleInheritance.md` is a generated bucket
+  closed into this owner after fresh triage showed the same
+  `expected LeftBrace, got Some(Comma)` parser boundary at `class C extends B1, B2`.
 
 ## Completion evidence
 

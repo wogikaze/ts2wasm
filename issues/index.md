@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 25 | 13 | 12 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4587 | 3333 | 1254 |
+| frontend | 4587 | 3332 | 1255 |
 | harness | 1 | 0 | 1 |
 | ir | 82 | 59 | 23 |
 | issues | 4 | 0 | 4 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5270 | 3634 | 1636 |
+| total | 5270 | 3633 | 1637 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -2342,7 +2342,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 3302 | Implement Modulealiasasfunctionargument | spike | frontend/syntax | class: blocked | Implement Modulealiasasfunctionargument |
 | 3303 | Implement Modulealiasinterface | spike | frontend/syntax | class: blocked | Implement Modulealiasinterface |
 | 3304 | Implement Moduleandinterfacesharingname | spike | frontend/syntax | class: blocked | Implement Moduleandinterfacesharingname |
-| 3415 | Implement Multipleinheritance | spike | frontend/syntax | class: triage-needed | Implement Multipleinheritance |
 | 3416 | Implement Multivar | spike | frontend/syntax | class: blocked | Implement Multivar |
 | 3417 | Implement Mutuallyrecursivecallbacks | spike | frontend/resolver | class: blocked | Implement Mutuallyrecursivecallbacks |
 | 3418 | Implement Mutuallyrecursivegenericbasetypes | spike | frontend/semantics | class: blocked | Implement Mutuallyrecursivegenericbasetypes |
@@ -5230,6 +5229,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 3412 | Split multipleExportAssignmentsInAmbientDeclaration to ambient duplicate export issue | maintenance | frontend/semantics | see `issues/done/3412-implement-multipleExportAssignmentsInAmbientDeclaration.md` |
 | 3413 | Split multipleExports to namespace export declaration diagnostic | maintenance | frontend/semantics | see `issues/done/3413-implement-multipleExports.md` |
 | 3414 | Close multipleInferenceContexts as stale build-pass | maintenance | frontend/resolver | see `issues/done/3414-implement-multipleInferenceContexts.md` |
+| 3415 | Close multipleInheritance to multiple class heritage owner | maintenance | frontend/parser | see `issues/done/3415-implement-multipleInheritance.md` |
 | 3690 | Implement Optionaltupleelementsandundefined | spike | reference/triage | see `issues/done/3690-implement-optionalTupleElementsAndUndefined.md` |
 | 3996 | Implement Compiler (dup) | spike | frontend/syntax | see `issues/done/3996-implement-reference-typescript-tests-cases-compiler.md` |
 | 4210 | Implement Splicetuples | spike | frontend/resolver | see `issues/done/4210-implement-spliceTuples.md` |
