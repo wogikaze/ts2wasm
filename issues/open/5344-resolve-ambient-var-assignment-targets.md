@@ -8,7 +8,7 @@ priority: P1
 depends_on: []
 blocks: []
 created: 2026-05-07
-updated: 2026-05-07
+updated: 2026-05-08
 ---
 
 ## Summary
@@ -182,6 +182,15 @@ Related but not duplicate:
 - Current diagnostic: `UnresolvedName: unresolved name: \`g2\`` at the assignment.
 - TypeScript oracle reports the later TS2322 contravariance diagnostic once the
   ambient assignment target resolves.
+
+2026-05-08 fold-in:
+
+- `issues/done/3417-implement-mutuallyRecursiveCallbacks.md` reaches the same
+  ambient assignment-target resolver boundary for
+  `declare var bar: Bar<{}>; bar = foo;`.
+- Current diagnostic: `UnresolvedName: unresolved name: \`bar\`` at the assignment.
+- TypeScript oracle reports later TS2322 recursive callback assignability once
+  the ambient assignment target resolves.
 
 ## Completion evidence
 
