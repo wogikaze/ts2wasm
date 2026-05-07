@@ -154,7 +154,7 @@ Compiler evidence:
 
 Duplicate review:
 
-- `issues/open/546-implement-ClassDeclaration.md` is related but broad and owns
+- `issues/done/546-implement-ClassDeclaration.md` is related but broad and owns
   constructor overload declaration triage, not the exact bare-constructor
   missing parameter list/body case.
 - No exact open/done owner was found for this malformed constructor diagnostic.

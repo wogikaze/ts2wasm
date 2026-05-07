@@ -129,7 +129,7 @@ Split from stale generated bucket
 
 Related but not duplicate:
 
-- `issues/open/546-implement-ClassDeclaration.md` is a broad class declaration
+- `issues/done/546-implement-ClassDeclaration.md` is a broad class declaration
   triage bucket containing constructor overload declarations; this issue is the
   narrow malformed bare-constructor case.
 

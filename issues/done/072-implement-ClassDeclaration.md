@@ -433,7 +433,7 @@ error: [UnsupportedSyntax] expected LeftBrace, got Some(Semicolon) at 66..67
 ## 重複整理メモ
 
 この issue はタイトルが重複しているため、内容がより充実している
-`issues/open/546-implement-ClassDeclaration.md` に統合されました。
+`issues/done/546-implement-ClassDeclaration.md` に統合されました。
 そちらを参照してください。
 ## Completion evidence
 
