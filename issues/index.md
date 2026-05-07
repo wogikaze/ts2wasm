@@ -15,7 +15,7 @@ Issue files are the source of truth for work items. The generated section below 
 | cli | 16 | 0 | 16 |
 | compiler | 3 | 0 | 3 |
 | coverage | 43 | 0 | 43 |
-| docs | 5 | 1 | 4 |
+| docs | 5 | 0 | 5 |
 | frontend | 4438 | 3711 | 727 |
 | harness | 1 | 0 | 1 |
 | ir | 42 | 2 | 40 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 8 | 0 | 8 |
 | wasi | 4 | 0 | 4 |
-| total | 5079 | 3965 | 1114 |
+| total | 5079 | 3964 | 1115 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -95,7 +95,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | ID | Title | Type | Area | Class | Priority | Depends on | Summary |
 |---:|---|---|---|---|---|---|---|
 | 353 | Implement iterator protocol integration for spread operator | feature | runtime/semantics | unstarted | P2 |  | General iterator protocol is not implemented for spread operator. |
-| 5242 | W2: declare JS semantic core workstream complete | docs | docs | design-ready | P1 | 5240, 5241 | No formal W2 completion gate — items are done but not verified as a |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -5188,6 +5187,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5239 | W0: migrate remaining multi-line WAT to line_fmt in expr_emit.rs | cleanup | backend | see file |
 | 5240 | W2: docs audit — fix stale language-reference entries and confirm semantic-core coverage | docs | docs | see file |
 | 5241 | W2: implement NaN, Infinity, -0 sentinel values in tagged-number encoding | feature | ir/runtime | see file |
+| 5242 | W2: declare JS semantic core workstream complete | docs | docs | see file |
 | 5243 | Implement non-literal Date constructor inputs | feature | runtime/builtins | see file |
 | 5244 | Define timezone formatting policy for Date.prototype.toString | design | runtime/builtins | see file |
 <!-- generated:done:end -->
