@@ -89,15 +89,19 @@ impl TaggedValue {
     /// The `false` value.
     pub const FALSE: Self = Self(2);
     /// The `true` value.
-    pub const TRUE: Self = Self(3);    /// NaN sentinel — number-tagged reserved out-of-range payload.
-    pub const NAN: Self = Self((ValueTag::NAN_PAYLOAD << ValueTag::NUMBER_SHIFT) | ValueTag::NUMBER);
+    pub const TRUE: Self = Self(3);
+    /// NaN sentinel — number-tagged reserved out-of-range payload.
+    pub const NAN: Self =
+        Self((ValueTag::NAN_PAYLOAD << ValueTag::NUMBER_SHIFT) | ValueTag::NUMBER);
     /// +Infinity sentinel.
-    pub const INFINITY: Self = Self((ValueTag::INFINITY_PAYLOAD << ValueTag::NUMBER_SHIFT) | ValueTag::NUMBER);
+    pub const INFINITY: Self =
+        Self((ValueTag::INFINITY_PAYLOAD << ValueTag::NUMBER_SHIFT) | ValueTag::NUMBER);
     /// -Infinity sentinel.
-    pub const NEG_INFINITY: Self = Self((ValueTag::NEG_INFINITY_PAYLOAD << ValueTag::NUMBER_SHIFT) | ValueTag::NUMBER);
+    pub const NEG_INFINITY: Self =
+        Self((ValueTag::NEG_INFINITY_PAYLOAD << ValueTag::NUMBER_SHIFT) | ValueTag::NUMBER);
     /// -0 (negative zero) sentinel.
-    pub const NEG_ZERO: Self = Self((ValueTag::NEG_ZERO_PAYLOAD << ValueTag::NUMBER_SHIFT) | ValueTag::NUMBER);
-
+    pub const NEG_ZERO: Self =
+        Self((ValueTag::NEG_ZERO_PAYLOAD << ValueTag::NUMBER_SHIFT) | ValueTag::NUMBER);
 
     /// Encode a small signed integer as a tagged number value.
     ///

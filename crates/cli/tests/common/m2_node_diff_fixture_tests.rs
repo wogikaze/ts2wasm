@@ -1809,21 +1809,28 @@ fn arrow_function_fixtures_match_node_output_under_iwasm() {
         assert_fixture_matches_node(fixture);
     }
 
-#[test]
-fn arrow_assigned_recursive_unsupported_builds_but_produces_wrong_output() {
-    let fixture = "fixtures/core-semantics/arrow-assigned-recursive-unsupported.ts";
-    let fixture_path = Path::new(env!("CARGO_MANIFEST_DIR"))
-        .join("../../").join(fixture);
-    let output = temp_wasm_path(fixture);
-    let build = std::process::Command::new(env!("CARGO_BIN_EXE_ts2wasm"))
-        .arg("build").arg(&fixture_path).arg("-o").arg(&output).output().unwrap();
-    assert!(build.status.success(), "build failed for {fixture}");
-}
+    #[test]
+    fn arrow_assigned_recursive_unsupported_builds_but_produces_wrong_output() {
+        let fixture = "fixtures/core-semantics/arrow-assigned-recursive-unsupported.ts";
+        let fixture_path = Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("../../")
+            .join(fixture);
+        let output = temp_wasm_path(fixture);
+        let build = std::process::Command::new(env!("CARGO_BIN_EXE_ts2wasm"))
+            .arg("build")
+            .arg(&fixture_path)
+            .arg("-o")
+            .arg(&output)
+            .output()
+            .unwrap();
+        assert!(build.status.success(), "build failed for {fixture}");
+    }
 }
 
 #[test]
 fn arrow_assigned_recursive_unsupported_builds_but_produces_wrong_output() {
     // Recursive arrow assigned to const: builds but returns 'true' instead of 24
+    let fixture = "fixtures/core-semantics/arrow-assigned-recursive-unsupported.ts";
     let fixture_path = Path::new(env!("CARGO_MANIFEST_DIR"))
         .join("../../")
         .join(fixture);
@@ -2284,10 +2291,16 @@ fn core_expression_ternary_fixture_matches_node_output_under_iwasm() {
 fn core_expression_class_expr_fixture_builds_successfully() {
     let fixture = "fixtures/core-expressions/class-expr.ts";
     let fixture_path = Path::new(env!("CARGO_MANIFEST_DIR"))
-        .join("../../").join(fixture);
+        .join("../../")
+        .join(fixture);
     let output = temp_wasm_path(fixture);
     let build = std::process::Command::new(env!("CARGO_BIN_EXE_ts2wasm"))
-        .arg("build").arg(&fixture_path).arg("-o").arg(&output).output().unwrap();
+        .arg("build")
+        .arg(&fixture_path)
+        .arg("-o")
+        .arg(&output)
+        .output()
+        .unwrap();
     assert!(build.status.success(), "build failed for {fixture}");
 }
 

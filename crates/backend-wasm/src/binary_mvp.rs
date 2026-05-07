@@ -12,7 +12,7 @@ use ts2wasm_runtime_abi::{Layout, RuntimeConst};
 use super::{
     runtime_fn::{HostImport, RuntimeFn},
     runtime_link_plan::RuntimeLinkPlan,
-    wasm_binary::{self, EMPTY_BLOCK_TYPE, I32, WasmBinaryWriter},
+    wasm_binary::{self, I32, WasmBinaryWriter},
 };
 
 /// Emit a direct WASM binary for the lowered program.

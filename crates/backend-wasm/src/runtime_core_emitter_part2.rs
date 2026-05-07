@@ -1126,7 +1126,8 @@ impl WatEmitter<'_> {
             true_tag = ValueTag::TRUE,
             false_tag = ValueTag::FALSE,
             zero = RuntimeConst::ZERO,
-            nan_sentinel = (ValueTag::NAN_PAYLOAD as u32) << ValueTag::NUMBER_SHIFT as u32 | ValueTag::NUMBER as u32,
+            nan_sentinel = (ValueTag::NAN_PAYLOAD as u32) << ValueTag::NUMBER_SHIFT as u32
+                | ValueTag::NUMBER as u32,
             tag_mask = ValueTag::TAG_MASK,
             number_tag = ValueTag::NUMBER,
             object_tag = ValueTag::OBJECT,
