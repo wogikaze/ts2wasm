@@ -661,13 +661,11 @@ fn bigint_mixed_number_relational_fixture_matches_node_output_under_iwasm() {
 }
 
 #[test]
-fn bigint_mixed_number_model_gap_reports_issue_281() {
+fn bigint_mixed_number_model_gap_reports_issue_281_and_fractional_now_builds() {
     for fixture in [
         "fixtures/core-semantics/bigint-mixed-number-nan-unsupported.ts",
         "fixtures/core-semantics/bigint-mixed-number-infinity-unsupported.ts",
         "fixtures/core-semantics/bigint-mixed-number-unary-special-unsupported.ts",
-        "fixtures/core-semantics/bigint-mixed-number-fractional-unsupported.ts",
-        "fixtures/core-semantics/bigint-mixed-number-fractional-left-unsupported.ts",
     ] {
         assert_build_fails_with_unsupported_syntax(fixture, "issue-281: BigInt/Number comparison");
     }
