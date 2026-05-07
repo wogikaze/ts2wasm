@@ -3,12 +3,14 @@ id: 615
 title: "Implement Ambientexternalmodulewithoutinternalimportdeclaration"
 type: spike
 area: frontend/syntax
-class: blocked
+class: superseded
 priority: P1
-depends_on: [432]
+depends_on: []
 blocks: []
 created: 2026-05-01
-updated: 2026-05-01
+updated: 2026-05-08
+completed: 2026-05-08
+status: done
 ---
 
 ## Summary
@@ -17,9 +19,11 @@ Triage ambientExternalModuleWithoutInternalImportDeclaration across 1 failing re
 
 ## Problem
 
-Reference test results show 1 cases fail in directory `ambientExternalModuleWithoutInternalImportDeclaration` with diagnostics: import-export. The compiler cannot handle these syntax/semantics, preventing compilation of code in this category.
+Fresh reference evidence shows the compiler now reaches the existing issue-232
+bare/non-local module specifier boundary for `import A = require('M')`.
 
-Problem: ambientExternalModuleWithoutInternalImportDeclaration has 1 reference failures and needs smart-triage evidence before implementation starts.
+Problem: this generated bucket is not a standalone implementation order; the
+remaining blocker is covered by the completed issue 232 module-graph contract.
 
 ## Current failure
 
@@ -37,16 +41,18 @@ mise run reference-coverage -- tsc --path-filter reference/typescript/tests/case
 
 ## Desired final state
 
-This generated bucket is either split into implementation-ready child issues or superseded by an existing open/done issue with matching evidence. Do not implement directly from this bucket.
+This generated bucket is superseded by
+`issues/done/232-resolve-local-relative-es-module-graph.md`. Do not implement
+directly from this bucket.
 
 ## Scope
 
 In scope:
 
-- [ ] Inspect the smart triage report below
-- [ ] Confirm whether existing open/done issues already cover this bucket
-- [ ] Split one feature family, one observable behavior, or one fixed reference window into child issues
-- [ ] Preserve exact reproduction commands and representative AST/diagnostic evidence in each child issue
+- [x] Inspect the smart triage report below
+- [x] Confirm whether existing open/done issues already cover this bucket
+- [x] Supersede this bucket with issue 232's non-local module specifier boundary
+- [x] Preserve exact reproduction commands and representative AST/diagnostic evidence in this closed issue
 
 Out of scope:
 
@@ -68,18 +74,20 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] Duplicate candidates below are confirmed as no-match or this issue is superseded
-- [ ] At least one child issue contains an exact `mise run reference-triage -- ...` command
-- [ ] Child issue includes failing path, diagnostic code, source context, visible symbols, and parser/TypeScript AST evidence
-- [ ] Child issue acceptance names the exact fixture/reference path and diagnostic/stdout change
+- [x] Duplicate candidates below are confirmed as no-match or this issue is superseded
+- [x] This closed issue contains an exact `python scripts/manager.py reference-triage ...` command
+- [x] This closed issue includes failing path, diagnostic code, source context, visible symbols, and parser/TypeScript AST evidence
+- [x] Completion evidence names the exact fixture/reference path and diagnostic/stdout change
 
 ## Validation
 
 Required commands:
 
 ```sh
-cargo fmt --all --check
-cargo nextest run
+python scripts/manager.py update-issue-index --check
+python scripts/manager.py check-issue-health
+python scripts/manager.py check-issue-readiness -- --fail-ready-below 80
+git diff --check
 ```
 
 Impacted commands:
@@ -92,21 +100,22 @@ mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/ambie
 
 Not run:
 
-- none
+- `cargo fmt --all --check`; issue cleanup only, no Rust code changed
+- `cargo nextest run`; issue cleanup only, no implementation changed
 
 ## Docs / current-state / issue sync
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] updated: `current-state.md` (repo root)
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 
@@ -564,18 +573,58 @@ error: [UnsupportedModule] issue-400: ambient module declarations require module
 
 ## Completion evidence
 
-Fill only when moving to `done/`.
+Closed as superseded by `issues/done/232-resolve-local-relative-es-module-graph.md`.
+
+Fresh coverage with the current binary:
+
+```text
+env TS2WASM_BINARY=/tmp/ts2wasm-issue-blockers-target/debug/ts2wasm python scripts/manager.py reference-coverage tsc --path-filter reference/typescript/tests/cases/compiler/ambientExternalModuleWithoutInternalImportDeclaration.ts --detail --no-dashboard-data
+suite=tsc
+executed=1
+unsupported=1
+unsupported_diagcodes=UnsupportedModule:1
+unsupported_features=import-export:1
+reference/typescript/tests/cases/compiler/ambientExternalModuleWithoutInternalImportDeclaration.ts: UnsupportedModule: import-export
+```
+
+Fresh triage:
+
+```text
+env TS2WASM_BINARY=/tmp/ts2wasm-issue-blockers-target/debug/ts2wasm python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/ambientExternalModuleWithoutInternalImportDeclaration.ts
+```
+
+Observed primary triage category:
+
+```text
+BackendIo: wat2wasm failed
+```
+
+The detailed resolved dump shows the actionable owner boundary:
+
+```text
+[pipeline] module_graph
+error: [UnsupportedModule] issue-232: unsupported non-local module specifier `M`; package resolution, import maps, and absolute specifiers are not implemented at 433..436
+```
+
+Issue 232 deliberately rejects bare/non-local specifiers with source-spanned
+UnsupportedModule diagnostics. The current reference path hits that existing
+policy boundary, so no new child implementation slice is created from this
+generated bucket.
 
 Commits:
 
-- `...`
+- superseded by `issues/done/232-resolve-local-relative-es-module-graph.md`
 
 Validation result:
 
 ```text
-command:
-result:
-date:
+command: env TS2WASM_BINARY=/tmp/ts2wasm-issue-blockers-target/debug/ts2wasm python scripts/manager.py reference-coverage tsc --path-filter reference/typescript/tests/cases/compiler/ambientExternalModuleWithoutInternalImportDeclaration.ts --detail --no-dashboard-data
+result: pass; executed=1, unsupported=1, unsupported_diagcodes=UnsupportedModule:1
+date: 2026-05-08
+
+command: env TS2WASM_BINARY=/tmp/ts2wasm-issue-blockers-target/debug/ts2wasm python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/ambientExternalModuleWithoutInternalImportDeclaration.ts
+result: pass; resolved dump reaches issue-232 unsupported non-local module specifier `M`
+date: 2026-05-08
 ```
 
 Remaining risks:
