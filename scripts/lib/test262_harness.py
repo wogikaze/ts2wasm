@@ -54,6 +54,10 @@ SUPPORTED_FEATURES = (
     "Array.prototype.flat",
     "stable-array-sort",
     "Symbol",
+    "regexp-named-groups",
+    "regexp-duplicate-named-groups",
+    "regexp-lookbehind",
+    "regexp-dotall",
 )
 ASSERT_FAILURE_SENTINEL = "__TS2WASM_TEST262_ASSERT_FAIL__"
 
