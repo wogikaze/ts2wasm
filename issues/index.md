@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 6 | 3 | 3 |
 | coverage | 44 | 1 | 43 |
 | docs | 5 | 0 | 5 |
-| frontend | 4546 | 3844 | 702 |
+| frontend | 4546 | 3839 | 707 |
 | harness | 1 | 0 | 1 |
 | ir | 72 | 23 | 49 |
 | issues | 5 | 0 | 5 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 8 | 0 | 8 |
 | wasi | 4 | 0 | 4 |
-| total | 5223 | 4120 | 1103 |
+| total | 5223 | 4115 | 1108 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -47,7 +47,7 @@ Issue files are the source of truth for work items. The generated section below 
 Direct child counts are derived from issue-file `depends_on` links. A meta issue can be `done` as a classification/design umbrella while implementation child issues remain open.
 
 ```
-5000 (Meta: TypeScript Compiler Parser Syntax Coverage) [done/design] ch:439 open:379 done:60
+5000 (Meta: TypeScript Compiler Parser Syntax Coverage) [done/design] ch:439 open:377 done:62
 ├── 5002 (Meta: TypeScript Compiler Type System Coverage) [done/done] ch:224 open:216 done:8 (also ← 5005)
 ├── 5003 (Meta: TypeScript Compiler Declaration Emit Coverage) [done/done] ch:102 open:92 done:10 (also ← 5001)
 5001 (Meta: TypeScript Compiler Semantic Analysis Coverage) [done/done] ch:554 open:331 done:223
@@ -66,7 +66,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 
 | Order | ID | Title | State | Class | Area | Priority | Depends on | Direct children | Open children | Done children |
 |-----:|---:|------|-------|-------|------|--------:|-----------:|----------------:|--------------:|--------------:|
-| 1 | 5000 | Meta: TypeScript Compiler Parser Syntax Coverage | done | design | frontend/syntax | P1 | - | 439 | 379 | 60 |
+| 1 | 5000 | Meta: TypeScript Compiler Parser Syntax Coverage | done | design | frontend/syntax | P1 | - | 439 | 377 | 62 |
 | 2 | 5001 | Meta: TypeScript Compiler Semantic Analysis Coverage | done | done | frontend/semantics | P1 | - | 554 | 331 | 223 |
 | 3 | 5004 | Meta: Runtime Builtins Coverage (test262) (audit reopened #5004) | done | done | runtime/builtins | P1 | - | 24 | 3 | 21 |
 | 4 | 5005 | Meta: TypeScript Compiler Name Resolution Coverage | done | done | frontend/resolver | P1 | - | 404 | 357 | 47 |
@@ -279,10 +279,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1428 | Implement Conditionaltypesubclassextendstypeparam | spike | frontend/semantics | done | P1 | 5002 | conditionalTypeSubclassExtendsTypeParam has 1 reference failures and needs smart-triage evidence before implementatio... |
 | 1429 | Implement Conditionaltypessimplifywhentrivial | spike | frontend/semantics | done | P1 | 5002 | conditionalTypesSimplifyWhenTrivial has 1 reference failures and needs smart-triage evidence before implementation st... |
 | 1430 | Implement Conditionallyduplicateoverloadscausedbyoverloadresolution | spike | frontend/syntax | done | P2 | 5005 | conditionallyDuplicateOverloadsCausedByOverloadResolution has 1 reference failures and needs smart-triage evidence be... |
-| 1431 | Implement Conflictmarkerdiff Parser Syntax | spike | frontend/syntax | done | P1 | 5000 | conflictMarkerDiff-parser-syntax has 1 reference failures and needs smart-triage evidence before implementation starts. |
-| 1432 | Implement Conflictmarkerdiff Unknown Unsupported | spike | frontend/syntax | done | P2 |  | conflictMarkerDiff-unknown-unsupported has 1 reference failures and needs smart-triage evidence before implementation... |
-| 1433 | Implement Conflictmarkertrivia Parser Syntax | spike | frontend/syntax | done | P1 | 5000 | conflictMarkerTrivia-parser-syntax has 1 reference failures and needs smart-triage evidence before implementation sta... |
-| 1434 | Implement Conflictmarkertrivia Unknown Unsupported | spike | frontend/syntax | done | P2 |  | conflictMarkerTrivia-unknown-unsupported has 2 reference failures and needs smart-triage evidence before implementati... |
 | 1435 | Implement Conflictingdeclarationsimportfromnamespace | spike | frontend/syntax | done | P1 |  | conflictingDeclarationsImportFromNamespace has 2 reference failures and needs smart-triage evidence before implementa... |
 | 1436 | Implement Conflictingtypeannotatedvar | spike | reference/triage | done | P2 |  | conflictingTypeAnnotatedVar has 1 reference failures and needs smart-triage evidence before implementation starts. |
 | 1437 | Implement Conflictingtypeparametersymboltransfer | spike | frontend/syntax | done | P1 |  | conflictingTypeParameterSymbolTransfer has 1 reference failures and needs smart-triage evidence before implementation... |
@@ -399,7 +395,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5302 | Parse fractional number literals in expressions | feature | frontend/syntax | implementation-ready | P1 |  | `conditionalTypeAssignabilityWhenDeferred.ts` currently fails before |
 | 5303 | Parse trailing comma in typed function parameters | feature | frontend/syntax | implementation-ready | P1 |  | typed function declaration parameter lists with a trailing comma |
 | 5304 | Parse generic arrow functions with typed parameters | feature | frontend/syntax | implementation-ready | P1 |  | generic arrow functions with typed parameters currently fail with |
-| 5305 | Report merge conflict marker diagnostics | feature | frontend/syntax | implementation-ready | P1 |  | merge conflict marker source currently reports generic parser syntax |
 | 5306 | Report export assignment with other exports | bug | frontend/syntax | implementation-ready | P1 |  | `ExportAssignment8.ts` stops at generic issue-055 instead of reporting the specific `export =` plus other exports rule. |
 | 5307 | Report var/function duplicate identifier diagnostics | bug | frontend/resolver | implementation-ready | P2 |  | var/function declaration collisions report generic `DuplicateLocal` |
 | 5308 | Parse ASI after instance class field initializers | feature | frontend/parser | implementation-ready | P1 |  | `conflictingTypeParameterSymbolTransfer.ts` reports `expected property name, got Equal` after `foo = this.t` instead ... |
@@ -5060,6 +5055,10 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1325 | Implement Collisionthisexpressionandlocalvarinconstructor | spike | frontend/syntax | see `issues/done/1325-implement-collisionThisExpressionAndLocalVarInConstructor.md` |
 | 1342 | Implement Commentinmethodcall | spike | frontend/syntax | see `issues/done/1342-implement-commentInMethodCall.md` |
 | 1386 | Implement Commonmissingsemicolons | spike | reference/triage | see `issues/done/1386-implement-commonMissingSemicolons.md` |
+| 1431 | Implement Conflictmarkerdiff Parser Syntax | spike | frontend/syntax | see `issues/done/1431-implement-conflictMarkerDiff-parser-syntax.md` |
+| 1432 | Implement Conflictmarkerdiff Unknown Unsupported | spike | frontend/syntax | see `issues/done/1432-implement-conflictMarkerDiff-unknown-unsupported.md` |
+| 1433 | Implement Conflictmarkertrivia Parser Syntax | spike | frontend/syntax | see `issues/done/1433-implement-conflictMarkerTrivia-parser-syntax.md` |
+| 1434 | Implement Conflictmarkertrivia Unknown Unsupported | spike | frontend/syntax | see `issues/done/1434-implement-conflictMarkerTrivia-unknown-unsupported.md` |
 | 1496 | Implement Contextualreturntypeofiife Unknown Unsupported | spike | frontend/syntax | see `issues/done/1496-implement-contextualReturnTypeOfIIFE-unknown-unsupported.md` |
 | 1500 | Implement Contextualsignatureinstantiation Duplicate Local | spike | reference/triage | see `issues/done/1500-implement-contextualSignatureInstantiation-duplicate-local.md` |
 | 2050 | Implement Duplicatelocalvariable Duplicate Local | spike | reference/triage | see `issues/done/2050-implement-duplicateLocalVariable-duplicate-local.md` |
@@ -5333,6 +5332,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5283 | Support entry-module export var declarations | feature | frontend/module-syntax | see `issues/done/5283-support-entry-export-var-declarations.md` |
 | 5285 | Support export var initializer declarations | feature | frontend/module-syntax | see `issues/done/5285-support-export-var-initializer-declarations.md` |
 | 5286 | Preserve class constructor parameters for new arity | feature | ir | see `issues/done/5286-preserve-class-constructor-parameters-for-new-arity.md` |
+| 5305 | Report merge conflict marker diagnostics | feature | frontend/syntax | see `issues/done/5305-report-merge-conflict-marker-diagnostics.md` |
 | 5357 | Avoid eval diagnostic for qualified Function constructors | bug | ir/resolver | see `issues/done/5357-avoid-eval-diagnostic-for-qualified-function-constructors.md` |
 <!-- generated:done:end -->
 
