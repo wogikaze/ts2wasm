@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 25 | 13 | 12 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4589 | 3330 | 1259 |
+| frontend | 4590 | 3330 | 1260 |
 | harness | 1 | 0 | 1 |
 | ir | 82 | 59 | 23 |
 | issues | 4 | 0 | 4 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5272 | 3631 | 1641 |
+| total | 5273 | 3631 | 1642 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -390,6 +390,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5435 | Report export declarations inside namespaces | bug | frontend/semantics | implementation-ready | P1 |  | namespace-body export declarations are erased before diagnostics, causing a false build-pass. |
 | 5436 | Report mixed exported and local namespace var merges | feature | frontend/semantics | implementation-ready | P1 |  | `multivar.ts` now build-passes, but TypeScript reports TS2395 because |
 | 5437 | Report typed class method null return diagnostics | feature | frontend/semantics | implementation-ready | P1 |  | `mutuallyRecursiveGenericBaseTypes2.ts` now build-passes, but |
+| 5438 | Support named exports of local interfaces | feature | frontend/name-resolution | implementation-ready | P1 |  | named exports of local type-only interface declarations fail with `UnsupportedSyntax` unknown local binding. |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -2344,7 +2345,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 3302 | Implement Modulealiasasfunctionargument | spike | frontend/syntax | class: blocked | Implement Modulealiasasfunctionargument |
 | 3303 | Implement Modulealiasinterface | spike | frontend/syntax | class: blocked | Implement Modulealiasinterface |
 | 3304 | Implement Moduleandinterfacesharingname | spike | frontend/syntax | class: blocked | Implement Moduleandinterfacesharingname |
-| 3420 | Implement Mutuallyrecursiveinterfacedeclaration | spike | frontend/syntax | class: triage-needed | Implement Mutuallyrecursiveinterfacedeclaration |
 | 3421 | Implement Namecollisionwithblockscopedvariable | spike | frontend/syntax | class: blocked | Implement Namecollisionwithblockscopedvariable |
 | 3422 | Implement Namecollisions | spike | frontend/syntax | class: blocked | Implement Namecollisions |
 | 3423 | Implement Namecollisionsinpropertyassignments | spike | frontend/syntax | class: blocked | Implement Namecollisionsinpropertyassignments |
@@ -5232,6 +5232,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 3417 | Close mutuallyRecursiveCallbacks to ambient var assignment owner | maintenance | frontend/resolver | see `issues/done/3417-implement-mutuallyRecursiveCallbacks.md` |
 | 3418 | Split mutuallyRecursiveGenericBaseTypes bucket | maintenance | frontend/semantics | see `issues/done/3418-implement-mutuallyRecursiveGenericBaseTypes.md` |
 | 3419 | Implement Mutuallyrecursiveinference | spike | frontend/semantics | see `issues/done/3419-implement-mutuallyRecursiveInference.md` |
+| 3420 | Implement Mutuallyrecursiveinterfacedeclaration | spike | frontend/syntax | see `issues/done/3420-implement-mutuallyRecursiveInterfaceDeclaration.md` |
 | 3690 | Implement Optionaltupleelementsandundefined | spike | reference/triage | see `issues/done/3690-implement-optionalTupleElementsAndUndefined.md` |
 | 3996 | Implement Compiler (dup) | spike | frontend/syntax | see `issues/done/3996-implement-reference-typescript-tests-cases-compiler.md` |
 | 4210 | Implement Splicetuples | spike | frontend/resolver | see `issues/done/4210-implement-spliceTuples.md` |
