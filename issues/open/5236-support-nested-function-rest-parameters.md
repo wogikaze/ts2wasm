@@ -104,6 +104,9 @@ Do not touch:
 ## Acceptance criteria
 
 - [ ] A nested function expression with a rest parameter can be lowered as a closure/local function value without the rest-parameter `issue-062e` guard.
+- [ ] `contextuallyTypingRestParameters.ts` no longer reports the
+  rest-parameter `issue-062e` closure guard for
+  `var x: (...y: string[]) => void = function (...y) { ... }`.
 - [ ] Rest parameter index validation remains correct after hidden capture parameters are inserted.
 - [ ] Existing diagnostics remain for nested functions that use `this`, `arguments`, or mutable captured outer locals.
 - [ ] `python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/checkingObjectDefinePropertyOnFunctionNonexistentPropertyNoCrash1.ts` advances past the current rest-parameter closure boundary.
@@ -154,6 +157,17 @@ Related but broader:
 - `issues/done/212-implement-rest-parameter-argument-collection.md`
 - `issues/done/040-implement-default-parameters.md`
 - `issues/open/5218-support-nested-function-closures-capturing-this.md`
+
+2026-05-07 fold-in:
+
+- `issues/done/1549-implement-contextuallyTypingRestParameters.md` reaches the
+  same issue-062e rest-parameter closure boundary in
+  `contextuallyTypingRestParameters.ts`.
+- Current diagnostic: `UnsupportedRuntimeSubset: issue-062e: nested function
+  `` closure parameters with defaults or rest are not supported in this slice`
+  for `var x: (...y: string[]) => void = function (...y) { ... }`.
+- TypeScript oracle reports later TS2322 diagnostics because `y` and `t` are
+  `string[]` and the source assigns them to `string` locals.
 
 ## Completion evidence
 

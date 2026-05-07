@@ -21,13 +21,13 @@ Issue files are the source of truth for work items. The generated section below 
 | ir | 76 | 54 | 22 |
 | issues | 4 | 0 | 4 |
 | parser | 1 | 0 | 1 |
-| reference | 212 | 149 | 63 |
+| reference | 212 | 148 | 64 |
 | runtime | 265 | 84 | 181 |
 | scripts | 3 | 1 | 2 |
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5224 | 3757 | 1467 |
+| total | 5224 | 3756 | 1468 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -607,7 +607,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1542 | Implement Contextuallytypedoptionalproperty | spike | frontend/resolver | class: blocked | Implement Contextuallytypedoptionalproperty |
 | 1544 | Implement Contextuallytypedparameterswithinitializers Arrow Function | spike | frontend/syntax | class: blocked | Implement Contextuallytypedparameterswithinitializers Arrow Function |
 | 1545 | Implement Contextuallytypedparameterswithinitializers Import Export | spike | frontend/syntax | class: blocked | Implement Contextuallytypedparameterswithinitializers Import Export |
-| 1549 | Implement Contextuallytypingrestparameters | spike | reference/triage | class: triage-needed | Implement Contextuallytypingrestparameters |
 | 1550 | Implement Continueiniterationstatement | spike | frontend/resolver | class: blocked | Implement Continueiniterationstatement |
 | 1551 | Implement Continueinloopswithcapturedblockscopedbindings | spike | frontend/resolver | class: blocked | Implement Continueinloopswithcapturedblockscopedbindings |
 | 1552 | Implement Continuenotiniterationstatement Arrow Function | spike | frontend/syntax | class: blocked | Implement Continuenotiniterationstatement Arrow Function |
@@ -5180,6 +5179,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1546 | Implement Contextuallytypedparameterswithinitializers Unknown Unsupported | spike | frontend/syntax | see `issues/done/1546-implement-contextuallyTypedParametersWithInitializers-unknown-unsupported.md` |
 | 1547 | Implement Contextuallytypedparameterswithquestiontoken | spike | reference/triage | see `issues/done/1547-implement-contextuallyTypedParametersWithQuestionToken.md` |
 | 1548 | Implement Contextuallytypedsymbolnamedproperties | spike | frontend/syntax | see `issues/done/1548-implement-contextuallyTypedSymbolNamedProperties.md` |
+| 1549 | Implement Contextuallytypingrestparameters | spike | reference/triage | see `issues/done/1549-implement-contextuallyTypingRestParameters.md` |
 | 2050 | Implement Duplicatelocalvariable Duplicate Local | spike | reference/triage | see `issues/done/2050-implement-duplicateLocalVariable-duplicate-local.md` |
 | 3002 | Implement Isolateddeclarationerrorsdefault | spike | runtime/builtins | see `issues/done/3002-implement-isolatedDeclarationErrorsDefault.md` |
 | 3131 | Implement Jsxfactorynotidentifierorqualifiedname | spike | reference/triage | see `issues/done/3131-implement-jsxFactoryNotIdentifierOrQualifiedName.md` |
