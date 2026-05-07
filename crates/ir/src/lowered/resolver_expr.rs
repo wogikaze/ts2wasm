@@ -31,14 +31,12 @@ impl<'a> Resolver<'a> {
                 // Handle special global constants Infinity and NaN
                 // Note: These are approximated as max/min representable numbers due to small-int number model
                 // Proper Infinity/NaN support requires broader number-model support (issue-281)
+                use ts2wasm_runtime_abi::ValueTag;
                 if name == "Infinity" {
-                    use ts2wasm_runtime_abi::ValueTag;
-                    return Ok(LoweredExpr::Number(ValueTag::NUMBER_PAYLOAD_MAX, Span::generated("num")));
+                    return Ok(LoweredExpr::Number(ValueTag::INFINITY_PAYLOAD << ValueTag::NUMBER_SHIFT | ValueTag::NUMBER, Span::generated("infinity")));
                 }
                 if name == "NaN" {
-                    // NaN is approximated as 0 for now (not spec-compliant but pragmatic)
-                    // Proper NaN support requires broader number-model support (issue-281)
-                    return Ok(LoweredExpr::Number(0, Span::generated("num")));
+                    return Ok(LoweredExpr::Number(ValueTag::NAN_PAYLOAD << ValueTag::NUMBER_SHIFT | ValueTag::NUMBER, Span::generated("nan")));
                 }
                 if name == "globalThis" {
                     // globalThis resolves to undefined in the current WASM model
