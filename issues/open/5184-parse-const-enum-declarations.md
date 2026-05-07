@@ -225,6 +225,12 @@ Additional superseded bucket:
   `const enum numbers { ... }`; TypeScript parses the enum, interface numeric
   properties, const-enum indexed accesses, and later ordinary enum indexed
   accesses before reporting TS2454 definite-assignment diagnostics for `test`.
+- `issues/done/1464-implement-constantEnumAssert.md` reaches the same parser
+  boundary before const assertion behavior. Fresh triage on 2026-05-07 reports
+  `const declarations require an initializer at 145..149` for
+  `const enum E4 { ... }`; TypeScript parses preceding ordinary enums, the
+  const enum, and later enum member `as const` expressions before reporting a
+  later TS1355 invalid const-assertion diagnostic.
 
 ## Completion evidence
 

@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 5 | 4 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4544 | 3512 | 1032 |
+| frontend | 4544 | 3511 | 1033 |
 | harness | 1 | 0 | 1 |
 | ir | 65 | 43 | 22 |
 | issues | 4 | 0 | 4 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5189 | 3803 | 1386 |
+| total | 5189 | 3802 | 1387 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -568,7 +568,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 759 | Implement Asynciife | spike | frontend/syntax | class: triage-needed | Implement Asynciife |
 | 760 | Implement Asyncimportnestedyield | spike | reference/triage | class: triage-needed | Implement Asyncimportnestedyield |
 | 761 | Implement Asynciteratorextraparameters | spike | runtime/builtins | class: triage-needed | Implement Asynciteratorextraparameters |
-| 1464 | Implement Constantenumassert | spike | frontend/syntax | class: triage-needed | Implement Constantenumassert |
 | 1465 | Implement Constraintcheckingenericbasetypereference | spike | frontend/semantics | class: blocked | Implement Constraintcheckingenericbasetypereference |
 | 1466 | Implement Constraints | spike | frontend/resolver | class: blocked | Implement Constraints |
 | 1467 | Implement Constraintsthatreferenceothercontstraints | spike | frontend/syntax | class: blocked | Implement Constraintsthatreferenceothercontstraints |
@@ -5145,6 +5144,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1461 | Implement Constinclassexpression | spike | frontend/syntax | see `issues/done/1461-implement-constInClassExpression.md` |
 | 1462 | Implement Constindexedaccess | spike | frontend/syntax | see `issues/done/1462-implement-constIndexedAccess.md` |
 | 1463 | Implement Constwithnonnull | spike | frontend/syntax | see `issues/done/1463-implement-constWithNonNull.md` |
+| 1464 | Implement Constantenumassert | spike | frontend/syntax | see `issues/done/1464-implement-constantEnumAssert.md` |
 | 2050 | Implement Duplicatelocalvariable Duplicate Local | spike | reference/triage | see `issues/done/2050-implement-duplicateLocalVariable-duplicate-local.md` |
 | 3002 | Implement Isolateddeclarationerrorsdefault | spike | runtime/builtins | see `issues/done/3002-implement-isolatedDeclarationErrorsDefault.md` |
 | 3131 | Implement Jsxfactorynotidentifierorqualifiedname | spike | reference/triage | see `issues/done/3131-implement-jsxFactoryNotIdentifierOrQualifiedName.md` |
