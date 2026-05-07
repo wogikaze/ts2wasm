@@ -16,18 +16,18 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 25 | 13 | 12 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4583 | 3335 | 1248 |
+| frontend | 4585 | 3335 | 1250 |
 | harness | 1 | 0 | 1 |
 | ir | 82 | 59 | 23 |
 | issues | 4 | 0 | 4 |
 | parser | 1 | 0 | 1 |
 | reference | 215 | 144 | 71 |
-| runtime | 264 | 83 | 181 |
+| runtime | 263 | 82 | 181 |
 | scripts | 3 | 1 | 2 |
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5267 | 3637 | 1630 |
+| total | 5268 | 3636 | 1632 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -385,6 +385,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5430 | Parse exported import-equals require declarations | feature | frontend/parser | implementation-ready | P1 |  | `export import Math = require("./Math/Math")` currently reports a |
 | 5431 | Erase object type literal function return annotations | feature | frontend/parser | implementation-ready | P1 |  | Erase object type literal function return annotations |
 | 5432 | Support class namespace merged static members | feature | frontend/semantics | implementation-ready | P1 |  | `multiModuleClodule1.ts` reports `UnresolvedName` for class/namespace merged value access because exported namespace ... |
+| 5433 | Report duplicate static class member modifiers | feature | frontend/parser | implementation-ready | P1 |  | duplicate `static` class member modifiers are parsed as a method/field boundary error instead of a source-spanned dup... |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -2339,7 +2340,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 3302 | Implement Modulealiasasfunctionargument | spike | frontend/syntax | class: blocked | Implement Modulealiasasfunctionargument |
 | 3303 | Implement Modulealiasinterface | spike | frontend/syntax | class: blocked | Implement Modulealiasinterface |
 | 3304 | Implement Moduleandinterfacesharingname | spike | frontend/syntax | class: blocked | Implement Moduleandinterfacesharingname |
-| 3410 | Implement Multipleclasspropertymodifierserrors | spike | runtime/builtins | class: triage-needed | Implement Multipleclasspropertymodifierserrors |
 | 3411 | Implement Multipleexportassignments | spike | frontend/syntax | class: blocked | Implement Multipleexportassignments |
 | 3412 | Implement Multipleexportassignmentsinambientdeclaration | spike | frontend/syntax | class: blocked | Implement Multipleexportassignmentsinambientdeclaration |
 | 3413 | Implement Multipleexports | spike | frontend/syntax | class: blocked | Implement Multipleexports |
@@ -3177,7 +3177,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 4249 | Implement Staticmethodwithtypeparameterextendsclausedeclfile | spike | frontend/syntax | class: blocked | Implement Staticmethodwithtypeparameterextendsclausedeclfile |
 | 4250 | Implement Staticmethodsreferencingclasstypeparameters | spike | frontend/syntax | class: blocked | Implement Staticmethodsreferencingclasstypeparameters |
 | 4251 | Implement Staticmismatchbecauseofprototype | spike | frontend/syntax | class: triage-needed | Implement Staticmismatchbecauseofprototype |
-| 4252 | Implement Staticmodifieralreadyseen | spike | frontend/syntax | class: triage-needed | Implement Staticmodifieralreadyseen |
 | 4253 | Implement Staticmustprecedepublic | spike | frontend/syntax | class: blocked | Implement Staticmustprecedepublic |
 | 4254 | Implement Staticoffofinstance | spike | frontend/syntax | class: triage-needed | Implement Staticoffofinstance |
 | 4255 | Implement Staticpropsuper | spike | frontend/syntax | class: triage-needed | Implement Staticpropsuper |
@@ -5228,10 +5227,12 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 3407 | Close multiModuleFundule to function namespace merge owner | maintenance | frontend/semantics | see `issues/done/3407-implement-multiModuleFundule.md` |
 | 3408 | Close multipleBaseInterfaesWithIncompatibleProperties as stale build-pass | maintenance | frontend/syntax | see `issues/done/3408-implement-multipleBaseInterfaesWithIncompatibleProperties.md` |
 | 3409 | Close multipleClassPropertyModifiers to modified static field parser owner | maintenance | frontend | see `issues/done/3409-implement-multipleClassPropertyModifiers.md` |
+| 3410 | Split multipleClassPropertyModifiersErrors to duplicate static modifier issue | maintenance | frontend/parser | see `issues/done/3410-implement-multipleClassPropertyModifiersErrors.md` |
 | 3690 | Implement Optionaltupleelementsandundefined | spike | reference/triage | see `issues/done/3690-implement-optionalTupleElementsAndUndefined.md` |
 | 3996 | Implement Compiler (dup) | spike | frontend/syntax | see `issues/done/3996-implement-reference-typescript-tests-cases-compiler.md` |
 | 4210 | Implement Splicetuples | spike | frontend/resolver | see `issues/done/4210-implement-spliceTuples.md` |
 | 4228 | Implement Standalonebreak | spike | frontend/syntax | see `issues/done/4228-implement-standaloneBreak.md` |
+| 4252 | Split staticModifierAlreadySeen to duplicate static modifier issue | maintenance | frontend/parser | see `issues/done/4252-implement-staticModifierAlreadySeen.md` |
 | 4262 | Implement Staticsinconstructorbodies | spike | frontend/syntax | see `issues/done/4262-implement-staticsInConstructorBodies.md` |
 | 4284 | Implement Stringincludes (audit reopened #4284) | spike | runtime/builtins | see `issues/done/4284-implement-stringIncludes.md` |
 | 4291 | Implement Stringmatchall | spike | reference/triage | see `issues/done/4291-implement-stringMatchAll.md` |
