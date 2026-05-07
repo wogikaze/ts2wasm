@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 6 | 5 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4574 | 3444 | 1130 |
+| frontend | 4574 | 3443 | 1131 |
 | harness | 1 | 0 | 1 |
 | ir | 79 | 57 | 22 |
 | issues | 4 | 0 | 4 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5234 | 3741 | 1493 |
+| total | 5234 | 3740 | 1494 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -431,7 +431,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 554 | Implement Abstractclassinlocalscope | spike | frontend/resolver | class: blocked | Implement Abstractclassinlocalscope |
 | 555 | Implement Abstractclassinlocalscopeisabstract | spike | frontend/resolver | class: blocked | Implement Abstractclassinlocalscopeisabstract |
 | 556 | Implement Abstractclassunioninstantiation | spike | frontend/resolver | class: blocked | Implement Abstractclassunioninstantiation |
-| 585 | Implement Aliasusageinarray | spike | frontend/syntax | class: blocked | Implement Aliasusageinarray |
 | 586 | Implement Aliasusageinfunctionexpression | spike | frontend/syntax | class: blocked | Implement Aliasusageinfunctionexpression |
 | 587 | Implement Aliasusageingenericfunction | spike | frontend/syntax | class: blocked | Implement Aliasusageingenericfunction |
 | 588 | Implement Aliasusageinindexerofclass | spike | frontend/syntax | class: blocked | Implement Aliasusageinindexerofclass |
@@ -4384,6 +4383,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 582 | Implement Aliasinstantiationexpressiongenericintersectionnocrash | spike | frontend/syntax | see `issues/done/582-implement-aliasInstantiationExpressionGenericIntersectionNoCrash.md` |
 | 583 | Implement Aliasonmergedmoduleinterface | spike | frontend/syntax | see `issues/done/583-implement-aliasOnMergedModuleInterface.md` |
 | 584 | Implement Aliasusageinaccessorsofclass | spike | frontend/syntax | see `issues/done/584-implement-aliasUsageInAccessorsOfClass.md` |
+| 585 | Implement Aliasusageinarray | spike | frontend/syntax | see `issues/done/585-implement-aliasUsageInArray.md` |
 | 602 | Implement Alwaysstrictmodule (audit reopened #602) | spike | frontend/syntax | see `issues/done/602-implement-alwaysStrictModule.md` |
 | 603 | Implement Alwaysstrictnoimplicitusestrict (audit reopened #603) | spike | frontend/syntax | see `issues/done/603-implement-alwaysStrictNoImplicitUseStrict.md` |
 | 604 | Implement Ambientclassdeclarationwithextends (audit reopened #604) | spike | frontend/syntax | see `issues/done/604-implement-ambientClassDeclarationWithExtends.md` |
