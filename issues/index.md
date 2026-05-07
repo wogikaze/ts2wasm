@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 25 | 13 | 12 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4591 | 3326 | 1265 |
+| frontend | 4591 | 3325 | 1266 |
 | harness | 1 | 0 | 1 |
 | ir | 83 | 60 | 23 |
 | issues | 4 | 0 | 4 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5275 | 3628 | 1647 |
+| total | 5275 | 3627 | 1648 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -52,7 +52,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 ├── 5003 (Meta: TypeScript Compiler Declaration Emit Coverage) [done/done] ch:100 open:89 done:11 (also ← 5001)
 5001 (Meta: TypeScript Compiler Semantic Analysis Coverage) [done/done] ch:556 open:296 done:260
 5004 (Meta: Runtime Builtins Coverage (test262) (audit reopened #5004)) [done/done] ch:24 open:3 done:21
-5005 (Meta: TypeScript Compiler Name Resolution Coverage) [done/done] ch:397 open:339 done:58
+5005 (Meta: TypeScript Compiler Name Resolution Coverage) [done/done] ch:397 open:338 done:59
 ├── 5006 (Meta: TypeScript Compiler Scope Analysis Coverage) [done/done] ch:28 open:20 done:8
 ├── 5007 (Meta: TypeScript Compiler Module Resolution Coverage (audit reopened #5007)) [done/done] ch:20 open:12 done:8
 ```
@@ -69,7 +69,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1 | 5000 | Meta: TypeScript Compiler Parser Syntax Coverage | done | design | frontend/syntax | P1 | - | 446 | 360 | 86 |
 | 2 | 5001 | Meta: TypeScript Compiler Semantic Analysis Coverage | done | done | frontend/semantics | P1 | - | 556 | 296 | 260 |
 | 3 | 5004 | Meta: Runtime Builtins Coverage (test262) (audit reopened #5004) | done | done | runtime/builtins | P1 | - | 24 | 3 | 21 |
-| 4 | 5005 | Meta: TypeScript Compiler Name Resolution Coverage | done | done | frontend/resolver | P1 | - | 397 | 339 | 58 |
+| 4 | 5005 | Meta: TypeScript Compiler Name Resolution Coverage | done | done | frontend/resolver | P1 | - | 397 | 338 | 59 |
 | 5 | 5002 | Meta: TypeScript Compiler Type System Coverage | done | done | frontend/semantics | P1 | 5000, 5005 | 223 | 203 | 20 |
 | 6 | 5003 | Meta: TypeScript Compiler Declaration Emit Coverage | done | done | frontend/syntax | P2 | 5000, 5001 | 100 | 89 | 11 |
 | 7 | 5006 | Meta: TypeScript Compiler Scope Analysis Coverage | done | done | frontend/resolver | P2 | 5005 | 28 | 20 | 8 |
@@ -2347,7 +2347,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 3302 | Implement Modulealiasasfunctionargument | spike | frontend/syntax | class: blocked | Implement Modulealiasasfunctionargument |
 | 3303 | Implement Modulealiasinterface | spike | frontend/syntax | class: blocked | Implement Modulealiasinterface |
 | 3304 | Implement Moduleandinterfacesharingname | spike | frontend/syntax | class: blocked | Implement Moduleandinterfacesharingname |
-| 3426 | Implement Namedfunctionexpressioncallerrors | spike | frontend/resolver | class: blocked | Implement Namedfunctionexpressioncallerrors |
 | 3427 | Implement Namedfunctionexpressioninmodule | spike | frontend/syntax | class: blocked | Implement Namedfunctionexpressioninmodule |
 | 3428 | Implement Namedimportnonexistentname | spike | frontend/syntax | class: blocked | Implement Namedimportnonexistentname |
 | 3429 | Implement Namespacedisambiguationinunion | spike | frontend/syntax | class: blocked | Implement Namespacedisambiguationinunion |
@@ -5235,6 +5234,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 3423 | Implement Namecollisionsinpropertyassignments | spike | frontend/syntax | see `issues/done/3423-implement-nameCollisionsInPropertyAssignments.md` |
 | 3424 | Implement Namedfunctionexpressionassignedtoclassproperty | spike | frontend/syntax | see `issues/done/3424-implement-namedFunctionExpressionAssignedToClassProperty.md` |
 | 3425 | Implement Namedfunctionexpressioncall | spike | frontend/syntax | see `issues/done/3425-implement-namedFunctionExpressionCall.md` |
+| 3426 | Implement Namedfunctionexpressioncallerrors | spike | frontend/resolver | see `issues/done/3426-implement-namedFunctionExpressionCallErrors.md` |
 | 3690 | Implement Optionaltupleelementsandundefined | spike | reference/triage | see `issues/done/3690-implement-optionalTupleElementsAndUndefined.md` |
 | 3996 | Implement Compiler (dup) | spike | frontend/syntax | see `issues/done/3996-implement-reference-typescript-tests-cases-compiler.md` |
 | 4210 | Implement Splicetuples | spike | frontend/resolver | see `issues/done/4210-implement-spliceTuples.md` |
