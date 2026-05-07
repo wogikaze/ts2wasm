@@ -3,12 +3,12 @@ id: 1506
 title: "Implement Contextualtypearrayreturntype"
 type: spike
 area: frontend/syntax
-class: blocked
+class: done
 priority: P1
-depends_on: [5000]
+depends_on: []
 blocks: []
 created: 2026-05-01
-updated: 2026-05-01
+updated: 2026-05-07
 ---
 
 ## Summary
@@ -43,10 +43,10 @@ This generated bucket is either split into implementation-ready child issues or 
 
 In scope:
 
-- [ ] Inspect the smart triage report below
-- [ ] Confirm whether existing open/done issues already cover this bucket
-- [ ] Split one feature family, one observable behavior, or one fixed reference window into child issues
-- [ ] Preserve exact reproduction commands and representative AST/diagnostic evidence in each child issue
+- [x] Inspect the smart triage report below
+- [x] Confirm whether existing open/done issues already cover this bucket
+- [x] Close as stale because the representative path now build-passes
+- [x] Preserve exact reproduction commands and representative AST/diagnostic evidence
 
 Out of scope:
 
@@ -68,10 +68,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] Duplicate candidates below are confirmed as no-match or this issue is superseded
-- [ ] At least one child issue contains an exact `mise run reference-triage -- ...` command
-- [ ] Child issue includes failing path, diagnostic code, source context, visible symbols, and parser/TypeScript AST evidence
-- [ ] Child issue acceptance names the exact fixture/reference path and diagnostic/stdout change
+- [x] Duplicate candidates below are confirmed; no child issue is needed
+- [x] No child issue created because the compiler now reports build_pass
+- [x] This issue includes path, diagnostic status, source context, visible symbols, and parser/TypeScript AST evidence
+- [x] Completion evidence names the exact reference path and build-pass result
 
 ## Validation
 
@@ -98,15 +98,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] updated: `current-state.md` (repo root)
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] none; current compiler build has no parser blocker on this path
 
 ## Notes
 
@@ -120,7 +120,36 @@ Follow-up issues:
 
 ## Smart triage
 
-Not generated. Rerun with `--triage-limit 1` or higher.
+Fresh triage on 2026-05-07 shows the original parser-syntax blocker is stale.
+The focused reference path now build-passes.
+
+Current status:
+
+```text
+BuildPass: ts2wasm build succeeded
+```
+
+Coverage result:
+
+```text
+executed=1
+build_pass=1
+unsupported=0
+blocked=0
+```
+
+Compiler evidence:
+
+```text
+tokens: ok through interfaces, index signature, arrow property, array return, and object literal
+ast: ok; Let style with Object.initialLeftPageTransforms ArrowFn returning Array[{ ry: null }]
+resolved: ok; style binding resolves with arrow body and array return
+TypeScript oracle: reports later TS2322 because null is not assignable to Transform3D
+```
+
+No child issue was created because there is no current compiler blocker in the
+build path. The TypeScript oracle diagnostic is semantic parity work and should
+be triaged separately if semantic checking for this window is selected.
 
 ## Completion evidence
 
@@ -140,4 +169,5 @@ date:
 
 Remaining risks:
 
-- none
+- Semantic parity is not enabled for this focused coverage window. TypeScript's
+  TS2322 contextual array return diagnostic remains outside this issue cleanup.
