@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 6 | 3 | 3 |
 | coverage | 44 | 1 | 43 |
 | docs | 5 | 0 | 5 |
-| frontend | 4546 | 3838 | 708 |
+| frontend | 4546 | 3836 | 710 |
 | harness | 1 | 0 | 1 |
 | ir | 72 | 23 | 49 |
 | issues | 5 | 0 | 5 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 8 | 0 | 8 |
 | wasi | 4 | 0 | 4 |
-| total | 5223 | 4114 | 1109 |
+| total | 5223 | 4112 | 1111 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -286,6 +286,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1439 | Implement Constdeclarationshadowedbyvardeclaration | spike | frontend/syntax | done | P1 |  | constDeclarationShadowedByVarDeclaration has 2 reference failures and needs smart-triage evidence before implementati... |
 | 1440 | Implement Constdeclarations Import Export | spike | frontend/syntax | done | P1 |  | constDeclarations-import-export has 5 reference failures and needs smart-triage evidence before implementation starts. |
 | 1441 | Implement Constdeclarations Name Resolution | spike | frontend/resolver | superseded | P1 |  | the generated bucket remained blocked instead of pointing to an |
+| 1447 | Implement Constenumerrors | spike | frontend/syntax | superseded | P1 | 5351 | constEnumErrors has 1 reference failures and needs smart-triage evidence before implementation starts. |
 | 1451 | Implement Constenumnamespacereferencecausesnoimport | spike | frontend/syntax | done | P1 |  | `constEnumNamespaceReferenceCausesNoImport` needs to be tracked through |
 | 1452 | Implement Constenumnoemitreexport | spike | frontend/syntax | done | P1 |  | `constEnumNoEmitReexport.ts` is blocked by const-enum declaration |
 | 1453 | Implement Constenumnopreservedeclarationreexport | spike | frontend/syntax | done | P1 |  | `constEnumNoPreserveDeclarationReexport.ts` is blocked by const-enum |
@@ -439,7 +440,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5348 | Resolve const declarations before use diagnostics | bug | frontend/resolver | implementation-ready | P1 |  | lexical const bindings are not registered early enough for |
 | 5349 | Parse multiplicative compound assignment operators | feature | frontend/syntax | implementation-ready | P1 |  | Parse multiplicative compound assignment operators |
 | 5350 | Report missing const initializer diagnostics | feature | frontend/parser | implementation-ready | P1 |  | Report missing const initializer diagnostics |
-| 5351 | Accept large decimal integer number literals | feature | frontend/lexer | implementation-ready | P1 |  | Accept large decimal integer number literals |
 | 5352 | Parse export namespace declarations | feature | frontend/module-syntax | implementation-ready | P1 |  | `export namespace Name { ... }` is treated as an unsupported static |
 | 5353 | Parse extended Unicode string escapes | feature | frontend/syntax | implementation-ready | P1 |  | string literal lexing rejects valid ECMAScript extended Unicode code |
 | 5354 | Report invalid const class members | feature | frontend/semantics | implementation-ready | P1 |  | invalid `const` class members in class expressions are silently |
@@ -451,7 +451,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5361 | Report invalid constructor return value diagnostics | feature | frontend/semantics | implementation-ready | P2 |  | constructor return value semantic validation currently does not reject |
 | 5362 | Report strict-mode static constructor parameter name | bug | frontend/parser | implementation-ready | P1 |  | the compiler currently reports an unsupported parser failure, |
 | 5363 | Support class constructor outer local return captures | feature | ir | implementation-ready | P1 |  | class constructor bodies cannot currently resolve and lower direct |
-| 5364 | Report unterminated string literal at raw newline | bug | frontend/lexer | implementation-ready | P1 |  | Report unterminated string literal at raw newline |
 | 5365 | Parse readonly private field type annotations | feature | frontend/parser | implementation-ready | P1 |  | `constructorWithParameterPropertiesAndPrivateFields.es2015.ts` currently reports `UnsupportedSyntax: expected propert... |
 | 5366 | Restore call argument scope after typed arrow callbacks | bug | frontend/resolver | implementation-ready | P1 |  | `contextSensitiveReturnTypeInference.ts` currently reports `UnresolvedName: unresolved name: DEPS` for a call argumen... |
 | 5367 | Parse named default class export | feature | frontend/module-syntax | implementation-ready | P1 |  | a named default class export is still treated as an unsupported module |
@@ -924,7 +923,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1444 | Implement Constdeclarations Unknown Unsupported | spike | frontend/syntax | 5350 | Implement Constdeclarations Unknown Unsupported |
 | 1445 | Implement Constenumbadpropertynames | spike | frontend/syntax | 5184 | Implement Constenumbadpropertynames |
 | 1446 | Implement Constenumdeclarations | spike | frontend/syntax | 5184 | Implement Constenumdeclarations |
-| 1447 | Implement Constenumerrors | spike | frontend/syntax | 5351 | Implement Constenumerrors |
 | 1448 | Implement Constenumexternalmodule | spike | frontend/syntax | 5184 | Implement Constenumexternalmodule |
 | 1449 | Implement Constenummergingwithvalues Import Export | spike | frontend/syntax | 5186 | Implement Constenummergingwithvalues Import Export |
 | 1450 | Implement Constenummergingwithvalues Parser Syntax | spike | frontend/syntax | 5186 | Implement Constenummergingwithvalues Parser Syntax |
@@ -5333,7 +5331,9 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5286 | Preserve class constructor parameters for new arity | feature | ir | see `issues/done/5286-preserve-class-constructor-parameters-for-new-arity.md` |
 | 5302 | Parse fractional number literals in expressions | feature | frontend/syntax | see file |
 | 5305 | Report merge conflict marker diagnostics | feature | frontend/syntax | see `issues/done/5305-report-merge-conflict-marker-diagnostics.md` |
+| 5351 | Accept large decimal integer number literals | feature | frontend/lexer | see `issues/done/5351-accept-large-decimal-integer-number-literals.md` |
 | 5357 | Avoid eval diagnostic for qualified Function constructors | bug | ir/resolver | see `issues/done/5357-avoid-eval-diagnostic-for-qualified-function-constructors.md` |
+| 5364 | Report unterminated string literal at raw newline | bug | frontend/lexer | see `issues/done/5364-report-unterminated-string-literal-at-raw-newline.md` |
 <!-- generated:done:end -->
 
 ## Index generation contract
