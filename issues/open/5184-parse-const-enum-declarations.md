@@ -195,6 +195,12 @@ Additional superseded bucket:
   `constEnumPreserveEmitNamedExport1.ts` and
   `constEnumPreserveEmitNamedExport2.ts`; TypeScript parses both declarations
   and then reports later duplicate identifier or missing module diagnostics.
+- `issues/done/1456-implement-constEnumPreserveEmitReexport.md` reaches the
+  same parser boundary before preserve-emit re-export behavior. Fresh triage on
+  2026-05-07 reports `const declarations require an initializer at 112..116`
+  for `export const enum MyConstEnum { ... }`; TypeScript parses the
+  declaration and then reports later export consistency, multiple default
+  export, and missing module diagnostics.
 
 ## Completion evidence
 
