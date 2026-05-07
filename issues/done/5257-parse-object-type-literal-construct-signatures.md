@@ -53,12 +53,12 @@ UnsupportedSyntax: unsupported expression: Some(SpannedToken { kind: RightParen,
 
 In scope:
 
-- [ ] Parse `new (...): Type` members inside object type literals used in
+- [x] Parse `new (...): Type` members inside object type literals used in
   annotations.
-- [ ] Erase the construct signature so runtime parsing continues after the
+- [x] Erase the construct signature so runtime parsing continues after the
   annotation.
-- [ ] Cover zero-argument construct signatures like `{ new(): Object }`.
-- [ ] Preserve existing object type literal property and method signature
+- [x] Cover zero-argument construct signatures like `{ new(): Object }`.
+- [x] Preserve existing object type literal property and method signature
   erasure.
 
 Out of scope:
@@ -88,13 +88,24 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] `classExtendsInterfaceInExpression.ts` no longer reports the current
+- [x] `classExtendsInterfaceInExpression.ts` no longer reports the current
   `unsupported expression ... RightParen` diagnostic at `{new(): Object}`.
-- [ ] A focused parser or CLI fixture covers
+- [x] A focused parser or CLI fixture covers
   `function f(): { new(): Object } { return null; }`.
-- [ ] Existing object type literal annotation erasure still works.
-- [ ] If this exposes the later `extends factory(A)` blocker, record or link it
+- [x] Existing object type literal annotation erasure still works.
+- [x] If this exposes the later `extends factory(A)` blocker, record or link it
   to the class heritage call-expression owner.
+
+## Resolution
+
+Implemented in commit `a2a37e20a`. The `skip_type_annotation_until` function in
+`tokens.rs` now detects when `{` is both a stop token and the first token of
+a type annotation (object type literal), and skips the entire balanced brace
+block before continuing to scan for the real stop token (function body `{`).
+
+`classExtendsInterfaceInExpression.ts` now builds successfully. The remaining
+blocker is `extends factory(A)` call-expression in class heritage, tracked by
+issue 5252.
 
 ## Validation
 
