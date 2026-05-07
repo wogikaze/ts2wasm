@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 5 | 4 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4531 | 3549 | 982 |
+| frontend | 4531 | 3548 | 983 |
 | harness | 1 | 0 | 1 |
 | ir | 65 | 43 | 22 |
 | issues | 4 | 0 | 4 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5176 | 3840 | 1336 |
+| total | 5176 | 3839 | 1337 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -569,7 +569,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 772 | Implement Augmentedtypesvar | spike | frontend/syntax | class: blocked | Implement Augmentedtypesvar |
 | 773 | Implement Autoasiforstaticsinclassdeclaration | spike | frontend/syntax | class: triage-needed | Implement Autoasiforstaticsinclassdeclaration |
 | 775 | Implement Autotypeassignedusingdestructuringfromnevernocrash | spike | frontend/resolver | class: blocked | Implement Autotypeassignedusingdestructuringfromnevernocrash |
-| 1331 | Implement Collisionthisexpressionandmoduleinglobal | spike | frontend/syntax | class: blocked | Implement Collisionthisexpressionandmoduleinglobal |
 | 1332 | Implement Collisionthisexpressionandnameresolution | spike | frontend/syntax | class: blocked | Implement Collisionthisexpressionandnameresolution |
 | 1333 | Implement Collisionthisexpressionandparameter | spike | frontend/syntax | class: blocked | Implement Collisionthisexpressionandparameter |
 | 1334 | Implement Collisionthisexpressionandpropertynameasconstuctorparameter | spike | frontend/syntax | class: blocked | Implement Collisionthisexpressionandpropertynameasconstuctorparameter |
@@ -5035,6 +5034,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1328 | Implement Collisionthisexpressionandlocalvarinmethod | spike | frontend/syntax | see `issues/done/1328-implement-collisionThisExpressionAndLocalVarInMethod.md` |
 | 1329 | Implement Collisionthisexpressionandlocalvarinproperty | spike | frontend/syntax | see `issues/done/1329-implement-collisionThisExpressionAndLocalVarInProperty.md` |
 | 1330 | Implement Collisionthisexpressionandlocalvarwithsuperexperssion | spike | frontend/syntax | see `issues/done/1330-implement-collisionThisExpressionAndLocalVarWithSuperExperssion.md` |
+| 1331 | Implement Collisionthisexpressionandmoduleinglobal | spike | frontend/syntax | see `issues/done/1331-implement-collisionThisExpressionAndModuleInGlobal.md` |
 | 1336 | Implement Commaoperator | spike | frontend/syntax | see `issues/done/1336-implement-commaOperator.md` |
 | 1339 | Implement Commentbeforestaticmethod | spike | frontend/syntax | see `issues/done/1339-implement-commentBeforeStaticMethod.md` |
 | 1340 | Implement Commentemitatendoffile | spike | frontend/syntax | see `issues/done/1340-implement-commentEmitAtEndOfFile.md` |
