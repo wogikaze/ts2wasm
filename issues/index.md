@@ -22,12 +22,12 @@ Issue files are the source of truth for work items. The generated section below 
 | issues | 5 | 0 | 5 |
 | parser | 1 | 0 | 1 |
 | reference | 211 | 163 | 48 |
-| runtime | 271 | 87 | 184 |
+| runtime | 272 | 87 | 185 |
 | scripts | 3 | 0 | 3 |
 | security | 1 | 0 | 1 |
 | tests | 8 | 0 | 8 |
 | wasi | 4 | 0 | 4 |
-| total | 5079 | 3964 | 1115 |
+| total | 5080 | 3964 | 1116 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -94,7 +94,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 <!-- generated:ready:start -->
 | ID | Title | Type | Area | Class | Priority | Depends on | Summary |
 |---:|---|---|---|---|---|---|---|
-| 353 | Implement iterator protocol integration for spread operator | feature | runtime/semantics | unstarted | P2 |  | General iterator protocol is not implemented for spread operator. |
+| 5245 | Implement ECMAScript iterator protocol runtime for spread operator | feature | runtime/semantics | design-ready | P2 | 353 | Implement ECMAScript iterator protocol runtime for spread operator |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -4417,6 +4417,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 350 | Implement derived-class private element initialization | feature | runtime/semantics | see `issues/done/350-derived-class-private-element-init.md` |
 | 351 | Implement full private brand storage and brand-checking semantics | feature | runtime/semantics | see `issues/done/351-private-brand-storage-brand-checks.md` |
 | 352 | Implement static private field ordering with static blocks | feature | runtime/semantics | see `issues/done/352-static-private-field-static-blocks-order.md` |
+| 353 | Implement iterator protocol integration for spread operator | feature | runtime/semantics | see `issues/done/353-spread-iterator-protocol.md` |
 | 354 | Implement sparse array spread support | feature | runtime/semantics | see `issues/done/354-sparse-array-spread-support.md` |
 | 355 | Implement dynamic object property enumeration spread | feature | runtime/semantics | see `issues/done/355-dynamic-object-enumeration-spread.md` |
 | 356 | Fix array-push growth WAT format compile blocker | bug | backend | see `issues/done/356-fix-array-push-growth-wat-format-compile-blocker.md` |
