@@ -122,7 +122,7 @@ Follow-up issues:
 - `issues/done/108-implement-accessorsInAmbientContext.md` - Implement Accessorsinambientcontext (same feature label, same group key, title overlap)
 - `issues/done/119-implement-aliasUsageInAccessorsOfClass.md` - Implement Aliasusageinaccessorsofclass (same feature label, same group key, title overlap)
 - `issues/done/488-implement-accessors.md` - Implement Accessors (same reference path, same feature label, same group key, title overlap)
-- `issues/open/574-implement-accessors.md` - Implement Accessors (same reference path, same feature label, same group key, title overlap)
+- `issues/done/574-implement-accessors.md` - Implement Accessors (same reference path, same feature label, same group key, title overlap)
 - `issues/done/399-define-typescript-parse-erase-emit-boundary.md` - Define TypeScript parse, erase, and emit boundary contract (same feature label, same group key)
 
 ## Smart triage
@@ -133,7 +133,7 @@ Not generated. Rerun with `--triage-limit 1` or higher.
 ## 重複整理メモ
 
 この issue はタイトルが重複しているため、内容がより充実している
-`issues/open/574-implement-accessors.md` に統合されました。
+`issues/done/574-implement-accessors.md` に統合されました。
 そちらを参照してください。
 ## Completion evidence
 

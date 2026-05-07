@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 6 | 5 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4569 | 3448 | 1121 |
+| frontend | 4571 | 3449 | 1122 |
 | harness | 1 | 0 | 1 |
 | ir | 79 | 57 | 22 |
 | issues | 4 | 0 | 4 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5229 | 3745 | 1484 |
+| total | 5231 | 3746 | 1485 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -350,6 +350,8 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5392 | Report unqualified instance member name diagnostics | feature | frontend/resolver | implementation-ready | P1 |  | `foo` inside a static method currently reports generic |
 | 5393 | Report get accessor accidental call diagnostics | feature | ir/lowering | implementation-ready | P1 |  | Report get accessor accidental call diagnostics |
 | 5394 | Fix object accessor FuncId invariant | feature | ir/compiler | implementation-ready | P1 |  | Fix object accessor FuncId invariant |
+| 5395 | Report getter return mismatch with setter annotation | feature | frontend/semantics | implementation-ready | P1 |  | `accessors_spec_section-4.5_error-cases.ts` build-passes even though |
+| 5396 | Report setter body mismatch with getter annotation | feature | frontend/semantics | implementation-ready | P1 |  | `accessors_spec_section-4.5_error-cases.ts` build-passes even though |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -428,7 +430,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 554 | Implement Abstractclassinlocalscope | spike | frontend/resolver | class: blocked | Implement Abstractclassinlocalscope |
 | 555 | Implement Abstractclassinlocalscopeisabstract | spike | frontend/resolver | class: blocked | Implement Abstractclassinlocalscopeisabstract |
 | 556 | Implement Abstractclassunioninstantiation | spike | frontend/resolver | class: blocked | Implement Abstractclassunioninstantiation |
-| 574 | Implement Accessors | spike | frontend/syntax | class: triage-needed | Implement Accessors |
 | 576 | Implement Addmorecallsignaturestobasesignature | spike | frontend/syntax | class: blocked | Implement Addmorecallsignaturestobasesignature |
 | 577 | Implement Aliasassignments | spike | frontend/syntax | class: blocked | Implement Aliasassignments |
 | 578 | Implement Aliasbug | spike | frontend/syntax | class: blocked | Implement Aliasbug |
@@ -4377,6 +4378,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 571 | Implement Accessorparameteraccessibilitymodifier (audit reopened #571) | spike | frontend/syntax | see `issues/done/571-implement-accessorParameterAccessibilityModifier.md` |
 | 572 | Implement Accessorwithlineterminator | spike | reference/triage | see `issues/done/572-implement-accessorWithLineTerminator.md` |
 | 573 | Implement Accessorwithoutbody (audit reopened #573) | spike | frontend/syntax | see `issues/done/573-implement-accessorWithoutBody.md` |
+| 574 | Implement Accessors | spike | frontend/syntax | see `issues/done/574-implement-accessors.md` |
 | 575 | Implement Accessorsinambientcontext (audit reopened #575) | spike | frontend/syntax | see `issues/done/575-implement-accessorsInAmbientContext.md` |
 | 581 | Implement Aliasinaccessiblemodule (audit reopened #581) | spike | frontend/syntax | see `issues/done/581-implement-aliasInaccessibleModule.md` |
 | 602 | Implement Alwaysstrictmodule (audit reopened #602) | spike | frontend/syntax | see `issues/done/602-implement-alwaysStrictModule.md` |

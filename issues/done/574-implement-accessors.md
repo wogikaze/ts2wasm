@@ -3,12 +3,13 @@ id: 574
 title: "Implement Accessors"
 type: spike
 area: frontend/syntax
-class: triage-needed
+class: done
 priority: P2
-depends_on: []
+depends_on: [5395, 5396]
 blocks: []
 created: 2026-05-01
-updated: 2026-05-01
+updated: 2026-05-08
+completed: 2026-05-08
 ---
 
 ## Summary
@@ -17,9 +18,13 @@ Triage accessors across 2 failing reference test cases and split this bucket int
 
 ## Problem
 
-Reference test results show 2 cases fail in directory `accessors` with diagnostics: class-accessor. The compiler cannot handle these syntax/semantics, preventing compilation of code in this category.
+Reference test results showed 2 cases in `accessors` with diagnostics:
+class-accessor. Fresh coverage now build-passes both affected files; the old
+modified accessor parser blocker is gone.
 
-Problem: accessors has 2 reference failures and needs smart-triage evidence before implementation starts.
+Problem: `accessors_spec_section-4.5_error-cases.ts` still hides TypeScript
+TS2322 diagnostics for accessor pair type mismatches. Those semantic follow-ups
+are split to issues 5395 and 5396.
 
 ## Current failure
 
@@ -43,10 +48,10 @@ This generated bucket is either split into implementation-ready child issues or 
 
 In scope:
 
-- [ ] Inspect the smart triage report below
-- [ ] Confirm whether existing open/done issues already cover this bucket
-- [ ] Split one feature family, one observable behavior, or one fixed reference window into child issues
-- [ ] Preserve exact reproduction commands and representative AST/diagnostic evidence in each child issue
+- [x] Inspect the smart triage report below
+- [x] Confirm whether existing open/done issues already cover this bucket
+- [x] Split one feature family, one observable behavior, or one fixed reference window into child issues
+- [x] Preserve exact reproduction commands and representative AST/diagnostic evidence in each child issue
 
 Out of scope:
 
@@ -68,10 +73,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] Duplicate candidates below are confirmed as no-match or this issue is superseded
-- [ ] At least one child issue contains an exact `mise run reference-triage -- ...` command
-- [ ] Child issue includes failing path, diagnostic code, source context, visible symbols, and parser/TypeScript AST evidence
-- [ ] Child issue acceptance names the exact fixture/reference path and diagnostic/stdout change
+- [x] Duplicate candidates below are confirmed as no-match or this issue is superseded
+- [x] At least one child issue contains an exact `mise run reference-triage -- ...` command
+- [x] Child issue includes failing path, diagnostic code, source context, visible symbols, and parser/TypeScript AST evidence
+- [x] Child issue acceptance names the exact fixture/reference path and diagnostic/stdout change
 
 ## Validation
 
@@ -98,15 +103,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] updated: `current-state.md` (repo root)
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 
@@ -606,16 +611,24 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- `...`
+- pending
 
 Validation result:
 
 ```text
-command:
-result:
-date:
+command: env TS2WASM_BINARY=/tmp/ts2wasm-issue-blockers-target/debug/ts2wasm python scripts/manager.py reference-coverage tsc --path-filter reference/typescript/tests/cases/compiler/accessors_spec_section-4.5 --detail --no-dashboard-data
+result: pass; executed=2, build_pass=2, unsupported=0
+date: 2026-05-08
+
+command: env TS2WASM_BINARY=/tmp/ts2wasm-issue-blockers-target/debug/ts2wasm python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/accessors_spec_section-4.5_error-cases.ts
+result: pass; BuildPass, TypeScript oracle reports four TS2322 accessor pair diagnostics; split to issue 5395
+date: 2026-05-08
+
+command: env TS2WASM_BINARY=/tmp/ts2wasm-issue-blockers-target/debug/ts2wasm python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/accessors_spec_section-4.5_inference.ts
+result: pass; BuildPass and TypeScript oracle ok
+date: 2026-05-08
 ```
 
 Remaining risks:
 
-- none
+- Implementation remains open in `issues/open/5395-report-getter-return-mismatch-with-setter-annotation.md` and `issues/open/5396-report-setter-body-mismatch-with-getter-annotation.md`.
