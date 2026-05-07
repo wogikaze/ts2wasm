@@ -182,6 +182,12 @@ Additional superseded bucket:
   `export const enum MyConstEnum { ... }`; TypeScript parses the declaration and
   then reports later duplicate identifier, export consistency, default export,
   and missing module diagnostics.
+- `issues/done/1453-implement-constEnumNoPreserveDeclarationReexport.md`
+  reaches the same parser boundary before declaration re-export behavior. Fresh
+  triage on 2026-05-07 reports `const declarations require an initializer at
+  84..88` for `export const enum MyConstEnum { ... }`; TypeScript parses the
+  declaration and then reports later duplicate identifier, export consistency,
+  multiple default export, and missing module diagnostics.
 
 ## Completion evidence
 
