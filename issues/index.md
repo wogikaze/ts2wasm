@@ -9,7 +9,7 @@ Issue files are the source of truth for work items. The generated section below 
 <!-- generated:summary:start -->
 | Area | Total | Open | Resolved |
 |---|---:|---:|---:|
-| abi | 8 | 1 | 7 |
+| abi | 7 | 0 | 7 |
 | backend | 18 | 1 | 17 |
 | backend-wasm | 2 | 0 | 2 |
 | cli | 16 | 0 | 16 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 8 | 0 | 8 |
 | wasi | 4 | 0 | 4 |
-| total | 5084 | 4003 | 1081 |
+| total | 5083 | 4002 | 1081 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -133,7 +133,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 840 | Implement Ambientclassdeclaredbeforebase (dup) | spike | frontend/syntax | superseded | P1 | 5001 | ambientClassDeclaredBeforeBase has 1 reference failures and needs smart-triage evidence before implementation starts. |
 | 871 | Implement Anonterface (dup) | spike | frontend/syntax | superseded | P1 | 5001 | anonterface has 1 reference failures and needs smart-triage evidence before implementation starts. |
 | 5048 | [ir] Broaden BigInt lowering beyond signed-i64/first-limb slice | feature | ir | implementation-ready | P0 |  | [ir] Broaden BigInt lowering beyond signed-i64/first-limb slice |
-| 5051 | [runtime-abi] Add ABI layout golden tests and versioning | test | abi | implementation-ready | P1 |  | [runtime-abi] Add ABI layout golden tests and versioning |
 | 5245 | Implement ECMAScript iterator protocol runtime for spread operator | feature | runtime/semantics | design-ready | P2 | 353 | Implement ECMAScript iterator protocol runtime for spread operator |
 <!-- generated:ready:end -->
 
