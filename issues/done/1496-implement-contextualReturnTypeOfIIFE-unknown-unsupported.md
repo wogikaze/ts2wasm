@@ -3,12 +3,12 @@ id: 1496
 title: "Implement Contextualreturntypeofiife Unknown Unsupported"
 type: spike
 area: frontend/syntax
-class: triage-needed
+class: done
 priority: P2
 depends_on: []
 blocks: []
 created: 2026-05-01
-updated: 2026-05-01
+updated: 2026-05-07
 ---
 
 ## Summary
@@ -43,10 +43,10 @@ This generated bucket is either split into implementation-ready child issues or 
 
 In scope:
 
-- [ ] Inspect the smart triage report below
-- [ ] Confirm whether existing open/done issues already cover this bucket
-- [ ] Split one feature family, one observable behavior, or one fixed reference window into child issues
-- [ ] Preserve exact reproduction commands and representative AST/diagnostic evidence in each child issue
+- [x] Inspect the smart triage report below
+- [x] Confirm whether existing open/done issues already cover this bucket
+- [x] Split one feature family, one observable behavior, or one fixed reference window into child issues
+- [x] Preserve exact reproduction commands and representative AST/diagnostic evidence in each child issue
 
 Out of scope:
 
@@ -68,10 +68,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] Duplicate candidates below are confirmed as no-match or this issue is superseded
-- [ ] At least one child issue contains an exact `mise run reference-triage -- ...` command
-- [ ] Child issue includes failing path, diagnostic code, source context, visible symbols, and parser/TypeScript AST evidence
-- [ ] Child issue acceptance names the exact fixture/reference path and diagnostic/stdout change
+- [x] Duplicate candidates below are confirmed as no-match or this issue is superseded
+- [x] At least one child issue contains an exact `mise run reference-triage -- ...` command
+- [x] Child issue includes failing path, diagnostic code, source context, visible symbols, and parser/TypeScript AST evidence
+- [x] Child issue acceptance names the exact fixture/reference path and diagnostic/stdout change
 
 ## Validation
 
@@ -98,15 +98,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] updated: `current-state.md` (repo root)
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] superseded by `issues/open/5240-parse-async-arrow-function-expressions.md`
 
 ## Notes
 
@@ -120,7 +120,35 @@ Follow-up issues:
 
 ## Smart triage
 
-Not generated. Rerun with `--triage-limit 1` or higher.
+Fresh triage on 2026-05-07 shows this generated unknown-unsupported bucket is
+the raw async-arrow parser boundary already owned by
+`issues/open/5240-parse-async-arrow-function-expressions.md`.
+
+Current diagnostic:
+
+```text
+UnsupportedSyntax: unsupported expression: Some(SpannedToken { kind: Async, span: Span { start: 91, end: 96 } }) at 97..98
+```
+
+Source context:
+
+```ts
+const test1: Promise<[one: number, two: string]> = (async () => {
+    return [1, 'two'];
+})();
+```
+
+Compiler evidence:
+
+```text
+tokens: ok through LeftParen, Async, LeftParen, RightParen, Arrow, body, call
+ast/resolved: fail before AST construction with raw Async parser error
+TypeScript oracle: diagnostics=[]; ArrowFunction under ParenthesizedExpression
+```
+
+No child issue was created because 5240 already accepts `(async () => { ... })`
+in expression position and explicitly asks reference cases to advance past the
+raw `unsupported expression: Async` parser failure.
 
 ## Completion evidence
 
@@ -128,16 +156,21 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- `...`
+- `...` (filled by commit that moves this issue)
 
 Validation result:
 
 ```text
-command:
-result:
-date:
+command: python scripts/manager.py reference-coverage tsc --path-filter reference/typescript/tests/cases/compiler/contextualReturnTypeOfIIFE.ts --detail --no-dashboard-data
+result: pass; executed=1, unsupported=1, unsupported_diagcodes=UnsupportedSyntax:1, unsupported_features=unknown-unsupported:1
+date: 2026-05-07
+
+command: python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/contextualReturnTypeOfIIFE.ts
+result: pass; raw async-arrow parser blocker folded into issue 5240
+date: 2026-05-07
 ```
 
 Remaining risks:
 
-- none
+- Contextual return type and Promise behavior remain hidden until issue 5240
+  advances this file past the async-arrow parser boundary.

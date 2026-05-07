@@ -148,7 +148,9 @@ Follow-up issues:
 
 Split from generated bucket `issues/done/1155-implement-circularInferredTypeOfVariable.md`.
 Related triage buckets 751, 759, and 3758 show the same raw async-arrow parser
-boundary and can be folded after fresh triage.
+boundary and can be folded after fresh triage. Generated bucket 1496 was folded
+on 2026-05-07 after `contextualReturnTypeOfIIFE.ts` reported the same raw
+`unsupported expression: Async` failure at `(async () => { ... })()`.
 
 ## Completion evidence
 

@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 6 | 5 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4557 | 3493 | 1064 |
+| frontend | 4557 | 3492 | 1065 |
 | harness | 1 | 0 | 1 |
 | ir | 67 | 45 | 22 |
 | issues | 4 | 0 | 4 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5205 | 3787 | 1418 |
+| total | 5205 | 3786 | 1419 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -584,7 +584,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 759 | Implement Asynciife | spike | frontend/syntax | class: triage-needed | Implement Asynciife |
 | 760 | Implement Asyncimportnestedyield | spike | reference/triage | class: triage-needed | Implement Asyncimportnestedyield |
 | 761 | Implement Asynciteratorextraparameters | spike | runtime/builtins | class: triage-needed | Implement Asynciteratorextraparameters |
-| 1496 | Implement Contextualreturntypeofiife Unknown Unsupported | spike | frontend/syntax | class: triage-needed | Implement Contextualreturntypeofiife Unknown Unsupported |
 | 1497 | Implement Contextualsignatureconditionaltypeinstantiationusingdefault | spike | frontend/semantics | class: blocked | Implement Contextualsignatureconditionaltypeinstantiationusingdefault |
 | 1498 | Implement Contextualsignatureinarrayelementlibes | spike | frontend/syntax | class: blocked | Implement Contextualsignatureinarrayelementlibes |
 | 1499 | Implement Contextualsignatureinobjectfreeze | spike | frontend/resolver | class: blocked | Implement Contextualsignatureinobjectfreeze |
@@ -5161,6 +5160,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1493 | Implement Contextualpropertyofgenericfilteringmappedtype | spike | frontend/semantics | see `issues/done/1493-implement-contextualPropertyOfGenericFilteringMappedType.md` |
 | 1494 | Implement Contextualpropertyofgenericmappedtype | spike | frontend/resolver | see `issues/done/1494-implement-contextualPropertyOfGenericMappedType.md` |
 | 1495 | Implement Contextualreturntypeofiife Import Export | spike | frontend/syntax | see `issues/done/1495-implement-contextualReturnTypeOfIIFE-import-export.md` |
+| 1496 | Implement Contextualreturntypeofiife Unknown Unsupported | spike | frontend/syntax | see `issues/done/1496-implement-contextualReturnTypeOfIIFE-unknown-unsupported.md` |
 | 2050 | Implement Duplicatelocalvariable Duplicate Local | spike | reference/triage | see `issues/done/2050-implement-duplicateLocalVariable-duplicate-local.md` |
 | 3002 | Implement Isolateddeclarationerrorsdefault | spike | runtime/builtins | see `issues/done/3002-implement-isolatedDeclarationErrorsDefault.md` |
 | 3131 | Implement Jsxfactorynotidentifierorqualifiedname | spike | reference/triage | see `issues/done/3131-implement-jsxFactoryNotIdentifierOrQualifiedName.md` |
