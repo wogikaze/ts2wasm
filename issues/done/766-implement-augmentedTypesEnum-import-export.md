@@ -5,48 +5,54 @@ type: spike
 area: frontend/syntax
 class: blocked
 priority: P1
-depends_on: [432]
+depends_on: []
 blocks: []
 created: 2026-05-01
-updated: 2026-05-01
+updated: 2026-05-07
+completed: 2026-05-07
+status: done
 ---
 
 ## Summary
 
-Triage augmentedTypesEnum-import-export across 1 failing reference test cases and split this bucket into implementation-ready child issues.
+Closed this generated import-export bucket as stale: fresh triage and focused
+coverage show the representative reference file now builds successfully.
 
 ## Problem
 
-Reference test results show 1 cases fail in directory `augmentedTypesEnum-import-export` with diagnostics: import-export. The compiler cannot handle these syntax/semantics, preventing compilation of code in this category.
+Fresh reference evidence no longer shows an import-export blocker for
+`augmentedTypesEnum3.ts`.
 
-Problem: augmentedTypesEnum-import-export has 1 reference failures and needs smart-triage evidence before implementation starts.
+Problem: the issue still sat in the blocked queue even though the representative
+case is now a build pass.
 
 ## Current failure
 
 Representative reproduction:
 
 ```sh
-mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/augmentedTypesEnum3.ts
+env TS2WASM_BINARY=/tmp/ts2wasm-issue-blockers-target/debug/ts2wasm python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/augmentedTypesEnum3.ts
 ```
 
 Coverage window:
 
 ```sh
-mise run reference-coverage -- tsc --path-filter reference/typescript/tests/cases/compiler/augmentedTypesEnum3.ts --detail
+env TS2WASM_BINARY=/tmp/ts2wasm-issue-blockers-target/debug/ts2wasm python scripts/manager.py reference-coverage tsc --path-filter reference/typescript/tests/cases/compiler/augmentedTypesEnum3.ts --detail --no-dashboard-data
 ```
 
 ## Desired final state
 
-This generated bucket is either split into implementation-ready child issues or superseded by an existing open/done issue with matching evidence. Do not implement directly from this bucket.
+The generated bucket is closed; no child issue is needed for the previous
+import-export blocker.
 
 ## Scope
 
 In scope:
 
-- [ ] Inspect the smart triage report below
-- [ ] Confirm whether existing open/done issues already cover this bucket
-- [ ] Split one feature family, one observable behavior, or one fixed reference window into child issues
-- [ ] Preserve exact reproduction commands and representative AST/diagnostic evidence in each child issue
+- [x] Inspect the smart triage report below
+- [x] Confirm current evidence
+- [x] Close as stale build-pass evidence
+- [x] Preserve exact reproduction commands and current coverage evidence
 
 Out of scope:
 
@@ -68,45 +74,45 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] Duplicate candidates below are confirmed as no-match or this issue is superseded
-- [ ] At least one child issue contains an exact `mise run reference-triage -- ...` command
-- [ ] Child issue includes failing path, diagnostic code, source context, visible symbols, and parser/TypeScript AST evidence
-- [ ] Child issue acceptance names the exact fixture/reference path and diagnostic/stdout change
+- [x] Duplicate candidates below are confirmed as stale
+- [x] Current triage command is recorded
+- [x] Current coverage result is recorded
+- [x] No child issue is needed for a build-pass bucket
 
 ## Validation
 
 Required commands:
 
 ```sh
-cargo fmt --all --check
-cargo nextest run
+python scripts/manager.py update-issue-index --check
+python scripts/manager.py check-issue-health
+python scripts/manager.py check-issue-readiness -- --fail-ready-below 80
 ```
 
 Impacted commands:
 
 ```sh
-mise run reference-coverage -- tsc --limit 2
-mise run reference-coverage -- tsc --path-filter reference/typescript/tests/cases/compiler/augmentedTypesEnum3.ts --detail
-mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/augmentedTypesEnum3.ts
+env TS2WASM_BINARY=/tmp/ts2wasm-issue-blockers-target/debug/ts2wasm python scripts/manager.py reference-coverage tsc --path-filter reference/typescript/tests/cases/compiler/augmentedTypesEnum3.ts --detail --no-dashboard-data
+env TS2WASM_BINARY=/tmp/ts2wasm-issue-blockers-target/debug/ts2wasm python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/augmentedTypesEnum3.ts
 ```
 
 Not run:
 
-- none
+- cargo fmt / nextest not run for this metadata-only issue lifecycle closure
 
 ## Docs / current-state / issue sync
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] updated: `current-state.md` (repo root)
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 
@@ -116,10 +122,12 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/open/432-implement-import-export.md` - Implement import/export module syntax (same feature label, title overlap)
-- `issues/done/457-implement-APISample-import-export.md` - Implement Apisample Import Export (same feature label, title overlap)
-- `issues/done/463-implement-FunctionDeclaration-import-export.md` - Implement Functiondeclaration Import Export (same feature label, title overlap)
-- `issues/done/055-implement-import-export.md` - Umbrella: implement import and export (same feature label, title overlap)
+No implementation child needed. Fresh triage reports `BuildPass`; focused
+coverage reports `build_pass=1`, `unsupported=0`, and `blocked=0`.
+
+TypeScript oracle reports TS2432 for multiple enum declarations with omitted
+first initializers, but semantic parity is outside this stale import-export
+bucket closure.
 
 ## Smart triage
 
@@ -607,20 +615,22 @@ error: [UnsupportedModule] issue-399: TypeScript namespace/internal module decla
 
 ## Completion evidence
 
-Fill only when moving to `done/`.
-
 Commits:
 
-- `...`
+- this commit
 
 Validation result:
 
 ```text
-command:
-result:
-date:
+command: env TS2WASM_BINARY=/tmp/ts2wasm-issue-blockers-target/debug/ts2wasm python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/augmentedTypesEnum3.ts
+result: pass; BuildPass, no compiler blocker
+date: 2026-05-07
+
+command: env TS2WASM_BINARY=/tmp/ts2wasm-issue-blockers-target/debug/ts2wasm python scripts/manager.py reference-coverage tsc --path-filter reference/typescript/tests/cases/compiler/augmentedTypesEnum3.ts --detail --no-dashboard-data
+result: pass; executed=1, build_pass=1, unsupported=0, blocked=0
+date: 2026-05-07
 ```
 
 Remaining risks:
 
-- none
+- TypeScript oracle reports TS2432 enum declaration diagnostics; semantic parity is outside this stale import-export blocker closure.

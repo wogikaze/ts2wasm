@@ -236,7 +236,7 @@ Duplicate candidates:
   },
   {
     "state": "open",
-    "path": "issues/open/766-implement-augmentedTypesEnum-import-export.md",
+    "path": "issues/done/766-implement-augmentedTypesEnum-import-export.md",
     "title": "Implement Augmentedtypesenum Import Export",
     "reason": "same feature label, title overlap"
   },
