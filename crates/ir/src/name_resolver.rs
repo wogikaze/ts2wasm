@@ -15,7 +15,9 @@ pub fn resolve_names(program: &[Stmt]) -> Result<Vec<Stmt>, Diagnostic> {
 struct NameResolver {
     /// Stack of lexical scopes, each mapping names to their declaration spans
     scopes: Vec<std::collections::HashMap<String, Option<Span>>>,
-    /// Function declarations at the current scope level
+    /// Concrete (body-ful) function declarations at the current scope level.
+    /// Bodyless TypeScript overload signatures are NOT stored here; they are
+    /// validated for matching implementations separately.
     functions: std::collections::HashMap<String, Option<Span>>,
     /// Class declarations at the current scope level
     classes: std::collections::HashMap<String, Option<Span>>,
@@ -97,9 +99,8 @@ impl NameResolver {
 
     fn resolve_program(&mut self, program: &[Stmt]) -> Result<Vec<Stmt>, Diagnostic> {
         // First pass: collect body-ful function declarations (hoisting).
-        // Bodyless function declarations are TypeScript overload signatures
-        // (may or may not have the `declare` keyword). Only body-ful
-        // (concrete) duplicates are rejected.
+        // Bodyless function declarations are TypeScript overload signatures.
+        // Only concrete (body-ful) duplicates are rejected.
         for stmt in program {
             if let Stmt::Function {
                 name, body, span, ..
@@ -107,7 +108,6 @@ impl NameResolver {
             {
                 let is_concrete = !body.is_empty();
                 if self.functions.contains_key(name) && is_concrete {
-                    eprintln!("DBG_NR_DUP_FN: {} at {}..{}", name, span.start, span.end);
                     return Err(Diagnostic {
                         code: DiagCode::DuplicateFunction,
                         message: format!("duplicate function definition: `{name}`"),
