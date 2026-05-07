@@ -139,6 +139,11 @@ Follow-up issues:
 ## Notes
 
 Split from `issues/done/3383-implement-moduleResolutionWithRequire.md`.
+Also owns `issues/done/3384-implement-moduleResolutionWithRequireAndImport.md`:
+fresh triage for `moduleResolutionWithRequireAndImport.ts` parses the
+`typeof import("./other")` type annotation as an erased `null` initializer,
+then reaches `require("./other")` and fails lowered validation with
+`ModuleLoad references module_id 1 which is not in the program's module list`.
 
 Related but not duplicates:
 
