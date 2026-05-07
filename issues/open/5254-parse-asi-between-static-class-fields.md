@@ -117,7 +117,7 @@ python scripts/manager.py reference-coverage tsc --path-filter reference/typescr
 ## Notes
 
 Split from `issues/done/1188-implement-classExpressionWithStaticProperties-parser-syntax.md`.
-Related generated bucket: `issues/open/773-implement-autoAsiForStaticsInClassDeclaration.md`.
+Related generated bucket: `issues/done/773-implement-autoAsiForStaticsInClassDeclaration.md`.
 
 Additional superseded bucket:
 

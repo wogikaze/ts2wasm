@@ -127,7 +127,7 @@ Follow-up issues:
 - `issues/open/059-implement-parser-syntax-extensions.md` - Implement parser syntax extensions for TypeScript and advanced JS (same feature label, title overlap)
 - `issues/done/065-implement-parser-syntax.md` - Implement parser syntax extensions (same feature label, title overlap)
 - `issues/done/065a-merge-duplicate-parser-syntax-issue-into-059.md` - Merge duplicate parser syntax issue into 059 (same feature label, title overlap)
-- `issues/open/773-implement-autoAsiForStaticsInClassDeclaration.md` has the same `static x` / `static y` ASI parser boundary for class declarations; issue 5254 covers both declaration and expression forms.
+- `issues/done/773-implement-autoAsiForStaticsInClassDeclaration.md` has the same `static x` / `static y` ASI parser boundary for class declarations; issue 5254 covers both declaration and expression forms.
 
 ## Smart triage
 

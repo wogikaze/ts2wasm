@@ -2,24 +2,30 @@
 id: 773
 title: "Implement Autoasiforstaticsinclassdeclaration"
 type: spike
-area: frontend/syntax
-class: triage-needed
+area: frontend/parser
+class: superseded
 priority: P1
 depends_on: []
 blocks: []
 created: 2026-05-01
-updated: 2026-05-01
+updated: 2026-05-07
+completed: 2026-05-07
+status: done
 ---
 
 ## Summary
 
-Triage autoAsiForStaticsInClassDeclaration across 1 failing reference test cases and split this bucket into implementation-ready child issues.
+Closed this generated parser-syntax bucket as superseded by
+`issues/open/5254-parse-asi-between-static-class-fields.md`.
 
 ## Problem
 
-Reference test results show 1 cases fail in directory `autoAsiForStaticsInClassDeclaration` with diagnostics: parser-syntax. The compiler cannot handle these syntax/semantics, preventing compilation of code in this category.
+Fresh triage confirms the current blocker is the `static x` followed by
+later-line `static y` class field ASI parser boundary, already owned by issue
+5254.
 
-Problem: autoAsiForStaticsInClassDeclaration has 1 reference failures and needs smart-triage evidence before implementation starts.
+Problem: the generated bucket remained triage-needed even though the executable
+parser work is already tracked by issue 5254.
 
 ## Current failure
 
@@ -37,16 +43,17 @@ mise run reference-coverage -- tsc --path-filter reference/typescript/tests/case
 
 ## Desired final state
 
-This generated bucket is either split into implementation-ready child issues or superseded by an existing open/done issue with matching evidence. Do not implement directly from this bucket.
+This generated bucket is closed. Implement from
+`issues/open/5254-parse-asi-between-static-class-fields.md`.
 
 ## Scope
 
 In scope:
 
-- [ ] Inspect the smart triage report below
-- [ ] Confirm whether existing open/done issues already cover this bucket
-- [ ] Split one feature family, one observable behavior, or one fixed reference window into child issues
-- [ ] Preserve exact reproduction commands and representative AST/diagnostic evidence in each child issue
+- [x] Inspect the smart triage report below
+- [x] Confirm whether existing open/done issues already cover this bucket
+- [x] Supersede this generated bucket with the existing implementation-ready issue
+- [x] Preserve exact reproduction commands and representative AST/diagnostic evidence
 
 Out of scope:
 
@@ -68,45 +75,45 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] Duplicate candidates below are confirmed as no-match or this issue is superseded
-- [ ] At least one child issue contains an exact `mise run reference-triage -- ...` command
-- [ ] Child issue includes failing path, diagnostic code, source context, visible symbols, and parser/TypeScript AST evidence
-- [ ] Child issue acceptance names the exact fixture/reference path and diagnostic/stdout change
+- [x] Duplicate candidates below are confirmed and this issue is superseded
+- [x] Superseding issue 5254 contains the implementation scope
+- [x] Current triage evidence is recorded
+- [x] Superseding issue acceptance names this exact reference path and diagnostic change
 
 ## Validation
 
 Required commands:
 
 ```sh
-cargo fmt --all --check
-cargo nextest run
+python scripts/manager.py update-issue-index --check
+python scripts/manager.py check-issue-health
+python scripts/manager.py check-issue-readiness -- --fail-ready-below 80
 ```
 
 Impacted commands:
 
 ```sh
-mise run reference-coverage -- tsc --limit 2
-mise run reference-coverage -- tsc --path-filter reference/typescript/tests/cases/compiler/autoAsiForStaticsInClassDeclaration.ts --detail
-mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/autoAsiForStaticsInClassDeclaration.ts
+env TS2WASM_BINARY=/tmp/ts2wasm-issue-blockers-target/debug/ts2wasm python scripts/manager.py reference-coverage tsc --path-filter reference/typescript/tests/cases/compiler/autoAsiForStaticsInClassDeclaration.ts --detail --no-dashboard-data
+env TS2WASM_BINARY=/tmp/ts2wasm-issue-blockers-target/debug/ts2wasm python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/autoAsiForStaticsInClassDeclaration.ts
 ```
 
 Not run:
 
-- none
+- cargo fmt / nextest not run for this metadata-only issue lifecycle closure
 
 ## Docs / current-state / issue sync
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] updated: `current-state.md` (repo root)
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] `issues/open/5254-parse-asi-between-static-class-fields.md`
 
 ## Notes
 
@@ -116,9 +123,39 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- none found by path/title/feature scan
+Superseded by `issues/open/5254-parse-asi-between-static-class-fields.md`.
 
-## Smart triage
+Evidence:
+
+- Current diagnostic: `UnsupportedSyntax`
+- Current message: `expected LeftParen, got Some(Static) at 71..77`
+- Current source:
+
+```text
+class C {
+    static x
+    static y
+}
+```
+
+- Existing issue 5254 scope covers ASI after `static name` before a later-line
+  `static` class element for both class declarations and class expressions.
+- Existing issue 5254 acceptance already names
+  `autoAsiForStaticsInClassDeclaration.ts` and this exact diagnostic.
+
+Current coverage:
+
+```text
+executed=1
+build_pass=0
+unsupported=1
+unsupported_diagcodes=UnsupportedSyntax:1
+unsupported_features=unknown-unsupported:1
+semantic_enabled=0
+reference/typescript/tests/cases/compiler/autoAsiForStaticsInClassDeclaration.ts: UnsupportedSyntax: unknown-unsupported
+```
+
+## Current smart triage
 
 ### Smart triage: Triage parser syntax: autoAsiForStaticsInClassDeclaration
 
