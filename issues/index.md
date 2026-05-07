@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 22 | 12 | 10 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4580 | 3349 | 1231 |
+| frontend | 4580 | 3348 | 1232 |
 | harness | 1 | 0 | 1 |
 | ir | 81 | 59 | 22 |
 | issues | 4 | 0 | 4 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5263 | 3653 | 1610 |
+| total | 5263 | 3652 | 1611 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -2335,7 +2335,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 3302 | Implement Modulealiasasfunctionargument | spike | frontend/syntax | class: blocked | Implement Modulealiasasfunctionargument |
 | 3303 | Implement Modulealiasinterface | spike | frontend/syntax | class: blocked | Implement Modulealiasinterface |
 | 3304 | Implement Moduleandinterfacesharingname | spike | frontend/syntax | class: blocked | Implement Moduleandinterfacesharingname |
-| 3390 | Implement Modulescopingbug | spike | frontend/syntax | class: blocked | Implement Modulescopingbug |
 | 3391 | Implement Modulesharesnamewithimportdeclarationinsideit | spike | frontend/syntax | class: blocked | Implement Modulesharesnamewithimportdeclarationinsideit |
 | 3392 | Implement Modulesymbolmerging | spike | frontend/syntax | class: blocked | Implement Modulesymbolmerging |
 | 3393 | Implement Moduleunassignedvariable | spike | frontend/syntax | class: blocked | Implement Moduleunassignedvariable |
@@ -5224,6 +5223,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 3387 | Implement Moduleresolutionwithsymlinks Import Export | maintenance | compiler/module-graph | see `issues/done/3387-implement-moduleResolutionWithSymlinks-import-export.md` |
 | 3388 | Split moduleResolutionWithSymlinks parser-syntax bucket | maintenance | compiler/module-resolution | see `issues/done/3388-implement-moduleResolutionWithSymlinks-parser-syntax.md` |
 | 3389 | Close moduleSameValueDuplicateExportedBindings bucket to virtual re-export owner | maintenance | compiler/module-graph | see `issues/done/3389-implement-moduleSameValueDuplicateExportedBindings.md` |
+| 3390 | Close moduleScopingBug generated bucket after build pass | maintenance | frontend/syntax | see `issues/done/3390-implement-moduleScopingBug.md` |
 | 3690 | Implement Optionaltupleelementsandundefined | spike | reference/triage | see `issues/done/3690-implement-optionalTupleElementsAndUndefined.md` |
 | 3996 | Implement Compiler (dup) | spike | frontend/syntax | see `issues/done/3996-implement-reference-typescript-tests-cases-compiler.md` |
 | 4210 | Implement Splicetuples | spike | frontend/resolver | see `issues/done/4210-implement-spliceTuples.md` |
