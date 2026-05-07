@@ -77,6 +77,7 @@ impl NameResolver {
             "unescape",
             "Reflect",
             "globalThis",
+            "setTimeout",
         ]
         .iter()
         .map(|s| s.to_string())
