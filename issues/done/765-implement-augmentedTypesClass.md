@@ -5,48 +5,56 @@ type: spike
 area: frontend/syntax
 class: blocked
 priority: P1
-depends_on: [5000]
+depends_on: []
 blocks: []
 created: 2026-05-01
-updated: 2026-05-01
+updated: 2026-05-07
+completed: 2026-05-07
+status: done
 ---
 
 ## Summary
 
-Triage augmentedTypesClass across 5 failing reference test cases and split this bucket into implementation-ready child issues.
+Closed this generated parser-syntax bucket by splitting the current concrete
+non-parser blocker to
+`issues/open/5347-align-class-var-redeclaration-diagnostics.md`.
 
 ## Problem
 
-Reference test results show 5 cases fail in directory `augmentedTypesClass` with diagnostics: parser-syntax. The compiler cannot handle these syntax/semantics, preventing compilation of code in this category.
+Fresh triage shows the parser now accepts the representative `public foo()`
+class methods. The first remaining blocker is a resolver duplicate-local
+diagnostic for `class c1` followed by `var c1`.
 
-Problem: augmentedTypesClass has 5 reference failures and needs smart-triage evidence before implementation starts.
+Problem: the generated bucket remained blocked as parser-syntax even though the
+current failure belongs to duplicate identifier diagnostic parity.
 
 ## Current failure
 
 Representative reproduction:
 
 ```sh
-mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/augmentedTypesClass.ts
+env TS2WASM_BINARY=/tmp/ts2wasm-issue-blockers-target/debug/ts2wasm python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/augmentedTypesClass.ts
 ```
 
 Coverage window:
 
 ```sh
-mise run reference-coverage -- tsc --path-filter reference/typescript/tests/cases/compiler/augmentedTypesClass.ts --detail
+env TS2WASM_BINARY=/tmp/ts2wasm-issue-blockers-target/debug/ts2wasm python scripts/manager.py reference-coverage tsc --path-filter reference/typescript/tests/cases/compiler/augmentedTypesClass.ts --detail --no-dashboard-data
 ```
 
 ## Desired final state
 
-This generated bucket is either split into implementation-ready child issues or superseded by an existing open/done issue with matching evidence. Do not implement directly from this bucket.
+This generated bucket is closed. Implement from
+`issues/open/5347-align-class-var-redeclaration-diagnostics.md`.
 
 ## Scope
 
 In scope:
 
-- [ ] Inspect the smart triage report below
-- [ ] Confirm whether existing open/done issues already cover this bucket
-- [ ] Split one feature family, one observable behavior, or one fixed reference window into child issues
-- [ ] Preserve exact reproduction commands and representative AST/diagnostic evidence in each child issue
+- [x] Inspect the smart triage report below
+- [x] Confirm whether existing open/done issues already cover this bucket
+- [x] Split one feature family, one observable behavior, or one fixed reference window into a child issue
+- [x] Preserve exact reproduction commands and representative AST/diagnostic evidence in the child issue
 
 Out of scope:
 
@@ -68,45 +76,45 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] Duplicate candidates below are confirmed as no-match or this issue is superseded
-- [ ] At least one child issue contains an exact `mise run reference-triage -- ...` command
-- [ ] Child issue includes failing path, diagnostic code, source context, visible symbols, and parser/TypeScript AST evidence
-- [ ] Child issue acceptance names the exact fixture/reference path and diagnostic/stdout change
+- [x] Duplicate candidates below are confirmed as no-match or this issue is superseded
+- [x] Child issue contains an exact `reference-triage` command
+- [x] Child issue includes failing path, diagnostic code, source context, visible symbols, and parser/TypeScript AST evidence
+- [x] Child issue acceptance names the exact fixture/reference path and diagnostic/stdout change
 
 ## Validation
 
 Required commands:
 
 ```sh
-cargo fmt --all --check
-cargo nextest run
+python scripts/manager.py update-issue-index --check
+python scripts/manager.py check-issue-health
+python scripts/manager.py check-issue-readiness -- --fail-ready-below 80
 ```
 
 Impacted commands:
 
 ```sh
-mise run reference-coverage -- tsc --limit 10
-mise run reference-coverage -- tsc --path-filter reference/typescript/tests/cases/compiler/augmentedTypesClass.ts --detail
-mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/augmentedTypesClass.ts
+env TS2WASM_BINARY=/tmp/ts2wasm-issue-blockers-target/debug/ts2wasm python scripts/manager.py reference-coverage tsc --path-filter reference/typescript/tests/cases/compiler/augmentedTypesClass.ts --detail --no-dashboard-data
+env TS2WASM_BINARY=/tmp/ts2wasm-issue-blockers-target/debug/ts2wasm python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/augmentedTypesClass.ts
 ```
 
 Not run:
 
-- none
+- cargo fmt / nextest not run for this metadata-only issue lifecycle closure
 
 ## Docs / current-state / issue sync
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] updated: `current-state.md` (repo root)
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] `issues/open/5347-align-class-var-redeclaration-diagnostics.md`
 
 ## Notes
 
@@ -120,7 +128,16 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- none found by path/title/feature scan
+Split to `issues/open/5347-align-class-var-redeclaration-diagnostics.md`.
+
+Related no-match issues:
+
+- `issues/open/5162-allow-compatible-var-redeclarations.md` handles compatible
+  duplicate `var` declarations.
+- `issues/open/5249-scope-block-local-class-declarations.md` handles nested
+  block-local classes colliding with outer classes.
+- `issues/open/767-implement-augmentedTypesEnum-parser-syntax.md` is an
+  enum-focused generated bucket, not the first current `class`/`var` blocker.
 
 ## Smart triage
 
@@ -627,20 +644,22 @@ error: [UnsupportedSyntax] expected LeftParen, got Some(Ident("foo")) at 59..62
 
 ## Completion evidence
 
-Fill only when moving to `done/`.
-
 Commits:
 
-- `...`
+- this commit
 
 Validation result:
 
 ```text
-command:
-result:
-date:
+command: env TS2WASM_BINARY=/tmp/ts2wasm-issue-blockers-target/debug/ts2wasm python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/augmentedTypesClass.ts
+result: pass; current blocker is DuplicateLocal for class c1 / var c1, split to issue 5347
+date: 2026-05-07
+
+command: env TS2WASM_BINARY=/tmp/ts2wasm-issue-blockers-target/debug/ts2wasm python scripts/manager.py reference-coverage tsc --path-filter reference/typescript/tests/cases/compiler/augmentedTypesClass.ts --detail --no-dashboard-data
+result: pass; executed=1, unsupported=1, DuplicateLocal=1
+date: 2026-05-07
 ```
 
 Remaining risks:
 
-- none
+- Issue 5347 still needs implementation; later class/enum merge diagnostics remain after this first blocker advances.
