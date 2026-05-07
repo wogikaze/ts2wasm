@@ -160,6 +160,10 @@ Also owns `issues/done/3336-implement-moduleExportNonStructured.md`: fresh
 triage for `moduleExportNonStructured.ts` stops in its virtual `package.json`
 section at the first property colon before `.mts`, `.cjs`, `.d.cts`, or
 CommonJS `export =` diagnostics become reachable.
+Also owns `issues/done/3346-implement-moduleLocalImportNotIncorrectlyRedirected.md`:
+fresh triage stops in `node_modules/troublesome-lib/package.json` at the first
+JSON property colon before package resolution or local import redirection
+semantics become reachable.
 
 ## Completion evidence
 
