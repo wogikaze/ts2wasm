@@ -3,23 +3,29 @@ id: 559
 title: "Implement Abstractpropertynegative"
 type: spike
 area: frontend/syntax
-class: triage-needed
+class: done
 priority: P1
 depends_on: []
 blocks: []
 created: 2026-05-01
-updated: 2026-05-01
+updated: 2026-05-07
+completed: 2026-05-07
 ---
 
 ## Summary
 
-Triage abstractPropertyNegative across 1 failing reference test cases and split this bucket into implementation-ready child issues.
+Close `abstractPropertyNegative` as a stale generated parser bucket after fresh
+focused evidence shows the reference path now build-passes.
 
 ## Problem
 
-Reference test results show 1 cases fail in directory `abstractPropertyNegative` with diagnostics: parser-syntax. The compiler cannot handle these syntax/semantics, preventing compilation of code in this category.
+Reference test results originally showed 1 case failing in directory
+`abstractPropertyNegative` with diagnostics: parser-syntax. Fresh triage on
+2026-05-07 shows the parser blocker is gone and the exact reference path now
+build-passes.
 
-Problem: abstractPropertyNegative has 1 reference failures and needs smart-triage evidence before implementation starts.
+Problem: `abstractPropertyNegative.ts` no longer has a compiler blocker in the
+focused tsc reference window.
 
 ## Current failure
 
@@ -37,16 +43,17 @@ mise run reference-coverage -- tsc --path-filter reference/typescript/tests/case
 
 ## Desired final state
 
-This generated bucket is either split into implementation-ready child issues or superseded by an existing open/done issue with matching evidence. Do not implement directly from this bucket.
+This generated bucket is closed as stale because the exact reference path now
+build-passes.
 
 ## Scope
 
 In scope:
 
-- [ ] Inspect the smart triage report below
-- [ ] Confirm whether existing open/done issues already cover this bucket
-- [ ] Split one feature family, one observable behavior, or one fixed reference window into child issues
-- [ ] Preserve exact reproduction commands and representative AST/diagnostic evidence in each child issue
+- [x] Inspect the smart triage report below
+- [x] Confirm whether existing open/done issues already cover this bucket
+- [x] Re-run the exact focused reference window
+- [x] Preserve exact reproduction commands and current build-pass evidence
 
 Out of scope:
 
@@ -68,10 +75,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] Duplicate candidates below are confirmed as no-match or this issue is superseded
-- [ ] At least one child issue contains an exact `mise run reference-triage -- ...` command
-- [ ] Child issue includes failing path, diagnostic code, source context, visible symbols, and parser/TypeScript AST evidence
-- [ ] Child issue acceptance names the exact fixture/reference path and diagnostic/stdout change
+- [x] Duplicate candidates below are confirmed as stale historical buckets
+- [x] Current `reference-triage` evidence is captured for the exact reference path
+- [x] Current coverage evidence shows `build_pass=1`
+- [x] No child issue is needed for this exact reference path
 
 ## Validation
 
@@ -92,21 +99,23 @@ mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/abstr
 
 Not run:
 
-- none
+- `cargo fmt --all --check` and `cargo nextest run`; this close is an
+  issue-lifecycle-only stale bucket update, so focused reference and issue
+  checks were used instead.
 
 ## Docs / current-state / issue sync
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] updated: `current-state.md` (repo root)
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 
@@ -121,6 +130,32 @@ Follow-up issues:
 - `issues/done/473-implement-abstractPropertyNegative.md` - Implement Abstractpropertynegative (same reference path, same feature label, same group key, title overlap)
 
 ## Smart triage
+
+Generated 2026-05-07.
+
+```text
+command:
+env TS2WASM_BINARY=/home/wogikaze/wgkz/ts2wasm/target/debug/ts2wasm python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/abstractPropertyNegative.ts
+
+result:
+BuildPass / build-pass
+
+coverage:
+executed=1
+build_pass=1
+unsupported=0
+
+compiler evidence:
+tokens: ok
+ast: ok
+resolved: ok
+
+decision:
+close as stale generated parser bucket; no child issue needed for this exact
+reference path.
+```
+
+## Historical smart triage
 
 ### Smart triage: Triage parser syntax: abstractPropertyNegative
 
@@ -733,20 +768,30 @@ error: [UnsupportedSyntax] expected LeftBrace, got Some(Ident("implements")) at 
 
 ## Completion evidence
 
-Fill only when moving to `done/`.
-
 Commits:
 
-- `...`
+- Closed as a stale generated parser bucket after focused reference evidence
+  showed `abstractPropertyNegative.ts` now build-passes.
 
 Validation result:
 
 ```text
 command:
+env TS2WASM_BINARY=/home/wogikaze/wgkz/ts2wasm/target/debug/ts2wasm python scripts/manager.py reference-coverage tsc --path-filter reference/typescript/tests/cases/compiler/abstractPropertyNegative.ts --detail --no-dashboard-data
 result:
+executed=1, build_pass=1, unsupported=0
 date:
+2026-05-07
+
+command:
+env TS2WASM_BINARY=/home/wogikaze/wgkz/ts2wasm/target/debug/ts2wasm python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/abstractPropertyNegative.ts
+result:
+BuildPass / build-pass; tokens, AST, and resolved dumps are ok
+date:
+2026-05-07
 ```
 
 Remaining risks:
 
-- none
+- No semantic parity claim is made; this close only covers the compiler
+  blocker represented by the generated bucket.

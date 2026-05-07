@@ -121,7 +121,7 @@ Follow-up issues:
 - `issues/done/473-implement-abstractPropertyNegative.md` - Implement Abstractpropertynegative (same reference path, same feature label, same group key, title overlap)
 - `issues/done/546-implement-ClassDeclaration.md` - Implement Classdeclaration (same feature label, same group key, title overlap)
 - `issues/done/550-implement-FunctionDeclaration-parser-syntax.md` - Implement Functiondeclaration Parser Syntax (same feature label, same group key, title overlap)
-- `issues/open/559-implement-abstractPropertyNegative.md` - Implement Abstractpropertynegative (same reference path, same feature label, same group key, title overlap)
+- `issues/done/559-implement-abstractPropertyNegative.md` - Implement Abstractpropertynegative (same reference path, same feature label, same group key, title overlap)
 
 ## Smart triage
 
@@ -131,7 +131,7 @@ Not generated. Rerun with `--triage-limit 1` or higher.
 ## 重複整理メモ
 
 この issue はタイトルが重複しているため、内容がより充実している
-`issues/open/559-implement-abstractPropertyNegative.md` に統合されました。
+`issues/done/559-implement-abstractPropertyNegative.md` に統合されました。
 そちらを参照してください。
 ## Completion evidence
 
