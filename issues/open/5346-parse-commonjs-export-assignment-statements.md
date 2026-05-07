@@ -168,6 +168,11 @@ Related but not duplicate:
   Later oracle diagnostics include duplicate `export=`, invalid
   `export as namespace`, and missing virtual `./foo` and `./foo2` modules,
   covered by follow-up module-diagnostics and virtual import-resolution issues.
+- Also owns `issues/done/3430-implement-namespaceMergedWithFunctionWithOverloadsUsage.md`:
+  fresh triage stops at `export = Foo;` after parsing the ambient namespace and
+  declare function overload signatures. Later surfaces include
+  `import X = require("./file")`, virtual module resolution, and the `X(0)`
+  overload usage.
 
 ## Completion evidence
 
