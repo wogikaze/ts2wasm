@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 23 | 12 | 11 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4579 | 3337 | 1242 |
+| frontend | 4580 | 3337 | 1243 |
 | harness | 1 | 0 | 1 |
 | ir | 82 | 59 | 23 |
 | issues | 4 | 0 | 4 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5264 | 3641 | 1623 |
+| total | 5265 | 3641 | 1624 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -381,6 +381,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5426 | Resolve @symlink filename aliases for local imports | feature | compiler/module-graph | implementation-ready | P1 |  | `@symlink` aliases are not registered as virtual module paths for |
 | 5427 | Resolve reference types to virtual @types packages | feature | frontend/semantics | implementation-ready | P1 | 227 | Resolve reference types to virtual @types packages |
 | 5429 | Bind DOM self.cancelAnimationFrame global | feature | frontend/resolver | implementation-ready | P1 |  | DOM `self.cancelAnimationFrame(0)` currently fails with generic |
+| 5430 | Parse exported import-equals require declarations | feature | frontend/parser | implementation-ready | P1 |  | `export import Math = require("./Math/Math")` currently reports a |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -2336,7 +2337,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 3302 | Implement Modulealiasasfunctionargument | spike | frontend/syntax | class: blocked | Implement Modulealiasasfunctionargument |
 | 3303 | Implement Modulealiasinterface | spike | frontend/syntax | class: blocked | Implement Modulealiasinterface |
 | 3304 | Implement Moduleandinterfacesharingname | spike | frontend/syntax | class: blocked | Implement Moduleandinterfacesharingname |
-| 3403 | Implement Multiimportexport | spike | frontend/syntax | class: blocked | Implement Multiimportexport |
 | 3404 | Implement Multilineerrors | spike | runtime/builtins | class: triage-needed | Implement Multilineerrors |
 | 3405 | Implement Multilinepropertyaccessandarrowfunctionindent | spike | reference/triage | class: triage-needed | Implement Multilinepropertyaccessandarrowfunctionindent |
 | 3406 | Implement Multimoduleclodule | spike | frontend/syntax | class: blocked | Implement Multimoduleclodule |
@@ -5225,6 +5225,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 3400 | Close moduledecl bucket to ambient namespace value owner | maintenance | frontend/resolver | see `issues/done/3400-implement-moduledecl.md` |
 | 3401 | Close multiCallOverloads bucket to nested default-parameter closure owner | maintenance | ir/lowering | see `issues/done/3401-implement-multiCallOverloads.md` |
 | 3402 | Split multiExtendsSplitInterfaces bucket to DOM self global issue | maintenance | frontend/resolver | see `issues/done/3402-implement-multiExtendsSplitInterfaces.md` |
+| 3403 | Split multiImportExport bucket to exported require import-equals issue | maintenance | frontend/parser | see `issues/done/3403-implement-multiImportExport.md` |
 | 3690 | Implement Optionaltupleelementsandundefined | spike | reference/triage | see `issues/done/3690-implement-optionalTupleElementsAndUndefined.md` |
 | 3996 | Implement Compiler (dup) | spike | frontend/syntax | see `issues/done/3996-implement-reference-typescript-tests-cases-compiler.md` |
 | 4210 | Implement Splicetuples | spike | frontend/resolver | see `issues/done/4210-implement-spliceTuples.md` |
