@@ -1438,10 +1438,17 @@ fn set_size_clear_fixture_matches_node_output_under_iwasm() {
 #[test]
 fn set_constructor_array_fixture_builds_successfully() {
     let fixture = "fixtures/builtins-and-io/set-constructor-array.ts";
-    let fixture_path = Path::new(env!("CARGO_MANIFEST_DIR")).join("../../").join(fixture);
+    let fixture_path = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("../../")
+        .join(fixture);
     let output = temp_wasm_path(fixture);
     let build = std::process::Command::new(env!("CARGO_BIN_EXE_ts2wasm"))
-        .arg("build").arg(&fixture_path).arg("-o").arg(&output).output().unwrap();
+        .arg("build")
+        .arg(&fixture_path)
+        .arg("-o")
+        .arg(&output)
+        .output()
+        .unwrap();
 }
 
 #[test]

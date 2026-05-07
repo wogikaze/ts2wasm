@@ -538,6 +538,9 @@ fn extract_function_stubs(_helper_source: &str, full_source: &str) -> String {
             "verifyCallableProperty",
         ),
         ("function assert() {}", "assert"),
+        ("function isConstructor() {}", "isConstructor"),
+        ("function testFinished() {}", "testFinished"),
+        ("function $DONOTEVALUATE() {}", "$DONOTEVALUATE"),
     ];
     candidate_stubs
         .iter()
