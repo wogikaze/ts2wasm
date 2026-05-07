@@ -104,3 +104,12 @@ Current state:
 Follow-up issues:
 
 - [x] create only if the fixture inventory finds uncovered Date runtime work
+
+
+## False-done audit
+
+Date: 2026-05-07
+
+Classification: truly-done.
+
+Audit result: retained in issues/done/. Implementation commits confirmed.

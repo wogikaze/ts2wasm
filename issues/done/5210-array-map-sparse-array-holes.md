@@ -160,3 +160,12 @@ Remaining:
   cover callback call count, `0 in mapped`, `1 in mapped`, `2 in mapped`, mapped
   values, and `mapped.length`.
 - Targeted validation: `cargo fmt --all --check`; `cargo nextest run -p ts2wasm-cli array_map`; `mise run update-issue-index -- --check`; `mise run check issues`.
+
+
+## False-done audit
+
+Date: 2026-05-07
+
+Classification: truly-done.
+
+Audit result: retained in issues/done/. Implementation commits confirmed.

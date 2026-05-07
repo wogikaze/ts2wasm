@@ -19,3 +19,12 @@ Establish the timezone formatting policy for Date.prototype.toString and related
 
 - [x] Document timezone-dependent formatting requirements for toString()
 - [x] Implement or explicitly defer timezone-specific output
+
+
+## False-done audit
+
+Date: 2026-05-07
+
+Classification: truly-done.
+
+Audit result: retained in issues/done/. Implementation commits confirmed.

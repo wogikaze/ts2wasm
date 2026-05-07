@@ -146,3 +146,12 @@ decimal string. This avoids changing the ValueTag encoding.
 
 Object.is can be a new RuntimeFn that checks for NaN via heap-header flag and
 for -0 via the sign of the encoded payload or heap-number cached decimal string.
+
+
+## False-done audit
+
+Date: 2026-05-07
+
+Classification: truly-done.
+
+Audit result: retained in issues/done/. Implementation commits confirmed.

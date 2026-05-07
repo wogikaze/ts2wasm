@@ -115,3 +115,12 @@ Gate B conditions:
 
 This should be verified before declaring W2 complete. If any W2-scope fixture
 still fails differential, create a blocking issue before resolving this one.
+
+
+## False-done audit
+
+Date: 2026-05-07
+
+Classification: truly-done.
+
+Audit result: retained in issues/done/. Implementation commits confirmed.

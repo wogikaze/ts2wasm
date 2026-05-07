@@ -162,3 +162,12 @@ date:
 Remaining risks:
 
 - Sparse array representation in the runtime may need backend changes for hole tracking
+
+
+## False-done audit
+
+Date: 2026-05-07
+
+Classification: truly-done.
+
+Audit result: retained in issues/done/. Implementation commits confirmed.

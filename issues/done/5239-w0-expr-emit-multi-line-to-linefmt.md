@@ -80,3 +80,12 @@ grep -c "push_str.*format" crates/backend-wasm/src/expr_emit.rs
 ## Notes
 
 The conversion is purely mechanical: each `push_str(&format!(...))` block becomes `writer.line_fmt(indent, format_args!(...))`. The key challenge is handling multi-line format strings and multiple format arguments. A Python script may be needed to batch-convert, but each conversion must be verified by `cargo fmt --all --check`.
+
+
+## False-done audit
+
+Date: 2026-05-07
+
+Classification: truly-done.
+
+Audit result: retained in issues/done/. Implementation commits confirmed.
