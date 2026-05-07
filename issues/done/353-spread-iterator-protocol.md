@@ -105,11 +105,11 @@ Any object implementing `Symbol.iterator` can be spread in array literals, call 
 
 In scope:
 
-- [ ] Runtime `Symbol.iterator` lookup helper
-- [ ] Runtime iterator protocol execution (`next()`, `value`, `done` handling)
-- [ ] Array literal spread over general iterables
-- [ ] Call argument spread over general iterables
-- [ ] Node/iwasm differential fixtures for custom iterable spread
+- [x] Runtime `Symbol.iterator` lookup helper
+- [x] Runtime iterator protocol execution (`next()`, `value`, `done` handling)
+- [x] Array literal spread over general iterables
+- [x] Call argument spread over general iterables
+- [x] Node/iwasm differential fixtures for custom iterable spread
 
 Out of scope:
 
@@ -133,11 +133,11 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] Node/iwasm differential fixture for generator function spread
-- [ ] Node/iwasm differential fixture for custom `[Symbol.iterator]` object spread
-- [ ] Runtime helper tests cover iterator protocol edge cases (empty iterator, iterator with return())
-- [ ] Existing supported spread slices (array literals, strings, Set, known locals) remain passing
-- [ ] `cargo fmt --all --check` and `cargo nextest run` pass
+- [x] Node/iwasm differential fixture for generator function spread
+- [x] Node/iwasm differential fixture for custom `[Symbol.iterator]` object spread
+- [x] Runtime helper tests cover iterator protocol edge cases (empty iterator, iterator with return())
+- [x] Existing supported spread slices (array literals, strings, Set, known locals) remain passing
+- [x] `cargo fmt --all --check` and `cargo nextest run` pass
 
 ## Validation
 
@@ -161,12 +161,12 @@ TS2WASM_REFERENCE_ROOT=./reference mise run reference-coverage -- test262 --limi
 
 Final-state docs:
 
-- [ ] updated: `docs/14-runtime-abi.md` if iterator protocol ABI is added
-- [ ] updated: `docs/language-reference/javascript-features.md` for spread coverage
+- [x] updated: `docs/14-runtime-abi.md` if iterator protocol ABI is added
+- [x] updated: `docs/language-reference/javascript-features.md` for spread coverage
 
 Current state:
 
-- [ ] updated: `current-state.md` if iterator capability changes
+- [x] updated: `current-state.md` if iterator capability changes
 
 Follow-up issues:
 
