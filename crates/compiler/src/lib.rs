@@ -1879,6 +1879,12 @@ fn validate_stmt(
         Stmt::Function { body, .. } => validate_block(body),
         Stmt::Throw { .. } => Ok(()),
         Stmt::Labeled { body, .. } => validate_stmt(body, in_top_level, scope, top_functions),
+        Stmt::Block { statements, .. } => {
+            for s in statements {
+                validate_stmt(s, in_top_level, scope, top_functions)?;
+            }
+            Ok(())
+        }
         Stmt::Break { .. } => Ok(()),
         Stmt::Continue { .. } => Ok(()),
         Stmt::Assign { .. } => Ok(()),

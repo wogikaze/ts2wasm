@@ -285,7 +285,9 @@ pub(super) fn stmt_contains_return_stmt(stmt: &Stmt) -> bool {
             init.as_deref().is_some_and(stmt_contains_return_stmt)
                 || block_contains_return_stmt(body)
         }
-        Stmt::Block { statements: body, .. } => block_contains_return_stmt(body),
+        Stmt::Block {
+            statements: body, ..
+        } => block_contains_return_stmt(body),
         Stmt::TryCatch {
             try_block,
             catch_block,
@@ -341,7 +343,9 @@ pub(super) fn validate_static_block_stmt(stmt: &Stmt) -> Result<(), Diagnostic> 
             "return statements are not valid in class static blocks",
             *span,
         )),
-        Stmt::Block { statements: body, .. } => {
+        Stmt::Block {
+            statements: body, ..
+        } => {
             for stmt in body {
                 validate_static_block_stmt(stmt)?;
             }
