@@ -170,6 +170,10 @@ Also owns `issues/done/3361-implement-modulePrologueAMD.md`: fresh triage for
 `modulePrologueAMD.ts` parses the `"use strict"` prologue and then stops at
 entry-module `export class Foo {}` with issue-5005 before AMD prologue emit
 parity becomes actionable.
+Also owns `issues/done/3362-implement-modulePrologueCommonjs.md`: fresh triage
+for `modulePrologueCommonjs.ts` parses the `"use strict"` prologue and then
+stops at entry-module `export class Foo {}` with issue-5005 before CommonJS
+prologue emit parity becomes actionable.
 
 ## Completion evidence
 
