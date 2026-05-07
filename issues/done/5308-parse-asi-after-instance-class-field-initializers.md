@@ -69,9 +69,9 @@ instance field as ASI, so the representative case advances past the current
 
 In scope:
 
-- [ ] Stop instance class field initializer parsing at a valid ASI boundary.
-- [ ] Cover `field = expr` followed by a later class member without an explicit semicolon.
-- [ ] Preserve existing parsing for semicolon-terminated fields and methods.
+- [x] Stop instance class field initializer parsing at a valid ASI boundary.
+- [x] Cover `field = expr` followed by a later class member without an explicit semicolon.
+- [x] Preserve existing parsing for semicolon-terminated fields and methods.
 
 Out of scope:
 
@@ -92,9 +92,9 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] `conflictingTypeParameterSymbolTransfer.ts` no longer reports `expected property name, got Equal` after `foo = this.t`.
-- [ ] A focused parser test accepts `class C { a = 1\nb = this.a\n}`.
-- [ ] Existing method parsing for `name()` and semicolon-terminated field parsing remain unchanged.
+- [x] `conflictingTypeParameterSymbolTransfer.ts` no longer reports `expected property name, got Equal` after `foo = this.t`.
+- [x] A focused parser test accepts `class C { a = 1\nb = this.a\n}`.
+- [x] Existing method parsing for `name()` and semicolon-terminated field parsing remain unchanged.
 
 ## Validation
 
@@ -119,15 +119,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 

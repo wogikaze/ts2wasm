@@ -70,10 +70,10 @@ the next blocker or pass state.
 
 In scope:
 
-- [ ] Parse `private static name<T>(...) { ... }` class methods.
-- [ ] Erase comments/trivia inside the method type parameter list.
-- [ ] Preserve existing parsing for unmodified generic methods and static generic methods.
-- [ ] Add focused parser/frontend coverage for a private static generic method.
+- [x] Parse `private static name<T>(...) { ... }` class methods.
+- [x] Erase comments/trivia inside the method type parameter list.
+- [x] Preserve existing parsing for unmodified generic methods and static generic methods.
+- [x] Add focused parser/frontend coverage for a private static generic method.
 
 Out of scope:
 
@@ -97,10 +97,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] `python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/commentsTypeParameters.ts` no longer reports `expected LeftParen, got Some(Ident("privatestaticmethod"))`.
-- [ ] A focused parser test accepts `class C { private static m<T>(a: T) {} }`.
-- [ ] Existing unmodified generic class method parsing remains covered.
-- [ ] Any later declaration/comment emit blocker from this reference path is recorded separately.
+- [x] `python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/commentsTypeParameters.ts` no longer reports `expected LeftParen, got Some(Ident("privatestaticmethod"))`.
+- [x] A focused parser test accepts `class C { private static m<T>(a: T) {} }`.
+- [x] Existing unmodified generic class method parsing remains covered.
+- [x] Any later declaration/comment emit blocker from this reference path is recorded separately.
 
 ## Validation
 
@@ -126,15 +126,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 

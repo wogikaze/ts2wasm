@@ -23,7 +23,7 @@ Closed as superseded. Fresh triage shows both
 `constEnumPreserveEmitNamedExport1.ts` and
 `constEnumPreserveEmitNamedExport2.ts` currently stop at the same plain
 `const enum A { ... }` parser misclassification already owned by
-`issues/open/5184-parse-const-enum-declarations.md`.
+`issues/done/5184-parse-const-enum-declarations.md`.
 
 ## Problem
 
@@ -53,7 +53,7 @@ env TS2WASM_BINARY=/tmp/ts2wasm-issue-blockers-target/debug/ts2wasm python scrip
 ## Desired final state
 
 This generated bucket is closed as superseded by
-`issues/open/5184-parse-const-enum-declarations.md`. Do not implement directly
+`issues/done/5184-parse-const-enum-declarations.md`. Do not implement directly
 from this bucket.
 
 ## Scope
@@ -143,7 +143,7 @@ Follow-up issues:
 ## Duplicate detection
 
 Current first blocker is covered by
-`issues/open/5184-parse-const-enum-declarations.md`.
+`issues/done/5184-parse-const-enum-declarations.md`.
 
 Resolution:
 

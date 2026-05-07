@@ -140,7 +140,7 @@ Follow-up issues:
 - `issues/done/5229-w0-user-runtime-string-origin.md` owns the
   current first blocker: local imports between TypeScript reference
   `// @Filename:` / `// @filename:` virtual sections.
-- `issues/open/5296-parse-double-dot-numeric-literal-property-access.md` covers
+- `issues/done/5296-parse-double-dot-numeric-literal-property-access.md` covers
   the sibling `computedEnumMemberSyntacticallyString.ts` parser blocker and is
   not needed for this `2.ts` file.
 

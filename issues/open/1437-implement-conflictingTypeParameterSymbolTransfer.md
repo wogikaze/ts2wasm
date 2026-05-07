@@ -115,7 +115,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] created: `issues/open/5308-parse-asi-after-instance-class-field-initializers.md`
+- [x] created: `issues/done/5308-parse-asi-after-instance-class-field-initializers.md`
 
 ## Notes
 
@@ -127,7 +127,7 @@ Follow-up issues:
 
 - `issues/done/5254-parse-asi-between-static-class-fields.md` is related but
   static-only; this case is instance class field ASI after an initializer.
-- Split into `issues/open/5308-parse-asi-after-instance-class-field-initializers.md`.
+- Split into `issues/done/5308-parse-asi-after-instance-class-field-initializers.md`.
 
 ## Smart triage
 
@@ -211,7 +211,7 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- split into `issues/open/5308-parse-asi-after-instance-class-field-initializers.md`
+- split into `issues/done/5308-parse-asi-after-instance-class-field-initializers.md`
 
 Validation result:
 

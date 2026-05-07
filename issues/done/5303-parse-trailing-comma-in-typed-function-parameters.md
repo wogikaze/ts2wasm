@@ -80,11 +80,11 @@ initializer. Type-only annotations continue to be erased for runtime lowering.
 
 In scope:
 
-- [ ] Accept a trailing comma before `)` in function declaration parameter lists.
-- [ ] Preserve existing support for generic type parameter lists after the function name.
-- [ ] Preserve existing support for parameter type annotations and default initializers.
-- [ ] Add focused parser coverage for `export function f<T>(x: T, y: T[] = [],) {}`.
-- [ ] Re-run the representative triage and record any next blocker separately.
+- [x] Accept a trailing comma before `)` in function declaration parameter lists.
+- [x] Preserve existing support for generic type parameter lists after the function name.
+- [x] Preserve existing support for parameter type annotations and default initializers.
+- [x] Add focused parser coverage for `export function f<T>(x: T, y: T[] = [],) {}`.
+- [x] Re-run the representative triage and record any next blocker separately.
 
 Out of scope:
 
@@ -109,11 +109,11 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] A focused parser test accepts `export function f<T>(x: T, y: T[] = [],) {}`.
-- [ ] `conditionalTypeDiscriminatingLargeUnionRegularTypeFetchingSpeedReasonable.ts` no longer reports `issue-247: expected binding identifier or pattern, got Some(RightParen)`.
-- [ ] Existing parameter-list parser tests continue to pass.
-- [ ] If parsing advances to a new blocker, that next blocker is recorded separately.
-- [ ] Issue state stays synchronized with `issues/index.md`.
+- [x] A focused parser test accepts `export function f<T>(x: T, y: T[] = [],) {}`.
+- [x] `conditionalTypeDiscriminatingLargeUnionRegularTypeFetchingSpeedReasonable.ts` no longer reports `issue-247: expected binding identifier or pattern, got Some(RightParen)`.
+- [x] Existing parameter-list parser tests continue to pass.
+- [x] If parsing advances to a new blocker, that next blocker is recorded separately.
+- [x] Issue state stays synchronized with `issues/index.md`.
 
 ## Validation
 

@@ -19,7 +19,7 @@ completed: 2026-05-07
 ## Summary
 
 Closed as superseded by
-`issues/open/5284-bind-plain-enum-declarations-before-member-access.md`.
+`issues/done/5284-bind-plain-enum-declarations-before-member-access.md`.
 
 Fresh triage shows the old parser-syntax bucket now parses the file far enough
 to fail name resolution for `E.B`, because the plain enum declaration does not
@@ -124,7 +124,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] superseded by: `issues/open/5284-bind-plain-enum-declarations-before-member-access.md`
+- [x] superseded by: `issues/done/5284-bind-plain-enum-declarations-before-member-access.md`
 
 ## Notes
 
@@ -134,7 +134,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/open/5284-bind-plain-enum-declarations-before-member-access.md`
+- `issues/done/5284-bind-plain-enum-declarations-before-member-access.md`
   owns the exact current behavior: a plain `enum E { ... }` declaration does
   not create a frontend binding before later `E.B` member access.
 

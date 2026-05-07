@@ -126,8 +126,8 @@ Current state:
 Follow-up issues:
 
 - [x] created: `issues/open/5332-parse-interface-call-signatures.md`
-- [x] superseded by `issues/open/5184-parse-const-enum-declarations.md`
-- [x] superseded by `issues/open/5303-parse-trailing-comma-in-typed-function-parameters.md`
+- [x] superseded by `issues/done/5184-parse-const-enum-declarations.md`
+- [x] superseded by `issues/done/5303-parse-trailing-comma-in-typed-function-parameters.md`
 - [x] superseded by `issues/open/5309-skip-generic-type-arguments-in-type-annotations.md`
 
 ## Notes
@@ -143,8 +143,8 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/open/5184-parse-const-enum-declarations.md` - exact owner for `coAndContraVariantInferences3.ts` and `coAndContraVariantInferences4.ts` current `const enum` parser blocker
-- `issues/open/5303-parse-trailing-comma-in-typed-function-parameters.md` - exact owner for `coAndContraVariantInferences5.ts` trailing comma in typed function parameters
+- `issues/done/5184-parse-const-enum-declarations.md` - exact owner for `coAndContraVariantInferences3.ts` and `coAndContraVariantInferences4.ts` current `const enum` parser blocker
+- `issues/done/5303-parse-trailing-comma-in-typed-function-parameters.md` - exact owner for `coAndContraVariantInferences5.ts` trailing comma in typed function parameters
 - `issues/open/5309-skip-generic-type-arguments-in-type-annotations.md` - exact owner for `coAndContraVariantInferences.ts` generic type arguments inside function parameter annotations
 - `issues/open/5332-parse-interface-call-signatures.md` - new child for `coAndContraVariantInferences6.ts` interface call-signature parsing
 - `issues/open/345-implement-tsc-type-alias-coverage.md` - Implement TypeScript type alias coverage for tsc suite (23 cases) (same feature label, title overlap)
@@ -181,21 +181,21 @@ the `2.ts` generated bucket history.
 - Diagnostic: `UnsupportedSyntax`
 - Message: `const declarations require an initializer at 1965..1969`
 - Source: `const enum SyntaxKind { ... }`
-- Owner: `issues/open/5184-parse-const-enum-declarations.md`
+- Owner: `issues/done/5184-parse-const-enum-declarations.md`
 
 ### coAndContraVariantInferences4.ts
 
 - Diagnostic: `UnsupportedSyntax`
 - Message: `const declarations require an initializer at 46..50`
 - Source: `const enum SyntaxKind { ... }`
-- Owner: `issues/open/5184-parse-const-enum-declarations.md`
+- Owner: `issues/done/5184-parse-const-enum-declarations.md`
 
 ### coAndContraVariantInferences5.ts
 
 - Diagnostic: `UnsupportedSyntax`
 - Message: `issue-247: expected binding identifier or pattern, got Some(RightParen) at 181..182`
 - Source: trailing comma after `onChange: (status: Thing | null) => void,`
-- Owner: `issues/open/5303-parse-trailing-comma-in-typed-function-parameters.md`
+- Owner: `issues/done/5303-parse-trailing-comma-in-typed-function-parameters.md`
 
 ### coAndContraVariantInferences6.ts
 

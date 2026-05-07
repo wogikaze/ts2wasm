@@ -43,7 +43,7 @@ mise run reference-coverage -- tsc --path-filter reference/typescript/tests/case
 ## Desired final state
 
 This generated bucket is closed as superseded by
-`issues/open/5184-parse-const-enum-declarations.md`. Do not implement directly
+`issues/done/5184-parse-const-enum-declarations.md`. Do not implement directly
 from this bucket.
 
 ## Scope
@@ -116,7 +116,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] existing owner: `issues/open/5184-parse-const-enum-declarations.md`
+- [x] existing owner: `issues/done/5184-parse-const-enum-declarations.md`
 
 ## Notes
 
@@ -150,7 +150,7 @@ takes the ordinary `const` declaration path before recognizing the TypeScript
 `const enum` form. The TypeScript oracle parses the declaration as
 `EnumDeclaration "const enum E { X = 100 }"` with no diagnostics. This is the
 same parser boundary tracked by
-`issues/open/5184-parse-const-enum-declarations.md`.
+`issues/done/5184-parse-const-enum-declarations.md`.
 
 ### Smart triage: Triage ambient declaration: isolatedModulesNonAmbientConstEnum
 

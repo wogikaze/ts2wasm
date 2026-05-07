@@ -58,9 +58,9 @@ text: 2..toFixed(0)
 
 In scope:
 
-- [ ] Parse `NumberLiteral .. Identifier` for the exact `2..toFixed(0)` shape.
-- [ ] Add one focused parser or CLI regression for `const BAR = 2..toFixed(0);`.
-- [ ] Re-run the representative triage and record the next blocker.
+- [x] Parse `NumberLiteral .. Identifier` for the exact `2..toFixed(0)` shape.
+- [x] Add one focused parser or CLI regression for `const BAR = 2..toFixed(0);`.
+- [x] Re-run the representative triage and record the next blocker.
 
 Out of scope:
 
@@ -77,9 +77,9 @@ Expected:
 
 ## Acceptance criteria
 
-- [ ] The representative triage no longer reports `expected member property name, got Dot` at `95..102`.
-- [ ] Focused coverage no longer stops on the double-dot parser error.
-- [ ] A regression covers `const BAR = 2..toFixed(0);`.
+- [x] The representative triage no longer reports `expected member property name, got Dot` at `95..102`.
+- [x] Focused coverage no longer stops on the double-dot parser error.
+- [x] A regression covers `const BAR = 2..toFixed(0);`.
 
 ## Validation
 

@@ -122,7 +122,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] created: `issues/open/5296-parse-double-dot-numeric-literal-property-access.md`
+- [x] created: `issues/done/5296-parse-double-dot-numeric-literal-property-access.md`
 
 ## Notes
 

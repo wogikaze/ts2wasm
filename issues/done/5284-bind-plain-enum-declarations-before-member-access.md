@@ -82,11 +82,11 @@ The frontend records a plain enum declaration binding before resolving
 
 In scope:
 
-- [ ] Parse/bind a plain top-level enum declaration with identifier members before resolving `Name.Member`, then re-run the representative reference triage and confirm the `UnresolvedName` boundary is gone.
+- [x] Parse/bind a plain top-level enum declaration with identifier members before resolving `Name.Member`, then re-run the representative reference triage and confirm the `UnresolvedName` boundary is gone.
 
 Out of scope:
 
-- `const enum`, tracked separately by `issues/open/5184-parse-const-enum-declarations.md`.
+- `const enum`, tracked separately by `issues/done/5184-parse-const-enum-declarations.md`.
 - `export enum`, tracked separately by `issues/done/5277-parse-export-enum-declarations-to-enum-boundary.md`.
 - Computed enum members, merged enums, declaration emit, and full enum runtime transform.
 - Comment emit fidelity.
@@ -107,9 +107,9 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] `commentsEnums.ts` no longer reports `UnresolvedName` for `Colors` at `Colors.Cornflower`.
-- [ ] A focused fixture covers `enum Colors { Cornflower, FancyPink }` followed by `Colors.Cornflower`.
-- [ ] Remaining unsupported enum behavior reports an enum-specific source-spanned diagnostic instead of a generic unresolved-name diagnostic.
+- [x] `commentsEnums.ts` no longer reports `UnresolvedName` for `Colors` at `Colors.Cornflower`.
+- [x] A focused fixture covers `enum Colors { Cornflower, FancyPink }` followed by `Colors.Cornflower`.
+- [x] Remaining unsupported enum behavior reports an enum-specific source-spanned diagnostic instead of a generic unresolved-name diagnostic.
 
 ## Validation
 
@@ -135,15 +135,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 
@@ -155,7 +155,7 @@ Related but not duplicates:
 - `issues/open/2121-implement-enumBasics-parser-syntax.md` and
   `issues/open/2143-implement-enumPropertyAccess.md` are generated buckets, not
   implementation-ready slices.
-- `issues/open/5184-parse-const-enum-declarations.md` covers `const enum`.
+- `issues/done/5184-parse-const-enum-declarations.md` covers `const enum`.
 - `issues/done/5277-parse-export-enum-declarations-to-enum-boundary.md` covers
   `export enum`.
 

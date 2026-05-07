@@ -21,7 +21,7 @@ status: done
 
 Closed this generated const-enum bucket because fresh triage stops at the
 `const enum` parser boundary already owned by
-`issues/open/5184-parse-const-enum-declarations.md`.
+`issues/done/5184-parse-const-enum-declarations.md`.
 
 ## Problem
 
@@ -46,7 +46,7 @@ mise run reference-coverage -- tsc --path-filter reference/typescript/tests/case
 ## Desired final state
 
 This generated bucket is closed. Implement from
-`issues/open/5184-parse-const-enum-declarations.md`.
+`issues/done/5184-parse-const-enum-declarations.md`.
 
 ## Scope
 
@@ -115,7 +115,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] superseded by: `issues/open/5184-parse-const-enum-declarations.md`
+- [x] superseded by: `issues/done/5184-parse-const-enum-declarations.md`
 
 ## Notes
 
@@ -138,7 +138,7 @@ Generated on 2026-05-07.
 - Token evidence: `Const`, `Ident("enum")`, `Ident("E")`, `{`, `Ident("A")`, `}`
 - Visible symbol extraction reports a bogus binding named `e`.
 - TypeScript oracle parses `const enum E { A }` as `EnumDeclaration`, then reports TS2339 for the later `E["B"]` access.
-- Superseding issue: `issues/open/5184-parse-const-enum-declarations.md`
+- Superseding issue: `issues/done/5184-parse-const-enum-declarations.md`
 
 ## Completion evidence
 

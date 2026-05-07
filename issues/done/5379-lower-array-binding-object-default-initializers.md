@@ -66,12 +66,12 @@ narrower diagnostic that names array binding object defaults.
 
 In scope:
 
-- [ ] Lower `let [c0 = { a: "a" }] = [];` without issue-251.
-- [ ] Lower an elided/preceded element form such as
+- [x] Lower `let [c0 = { a: "a" }] = [];` without issue-251.
+- [x] Lower an elided/preceded element form such as
   `let [x1, c1 = { a: "a" }] = [1];`.
-- [ ] Preserve unsupported diagnostics for broader effectful or non-literal
+- [x] Preserve unsupported diagnostics for broader effectful or non-literal
   default binding initializers.
-- [ ] Add focused coverage for array binding object-literal defaults.
+- [x] Add focused coverage for array binding object-literal defaults.
 
 Out of scope:
 
@@ -95,11 +95,11 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] `contextualTypingArrayDestructuringWithDefaults.ts` no longer reports the
+- [x] `contextualTypingArrayDestructuringWithDefaults.ts` no longer reports the
   current issue-251 diagnostic at `58..91`.
-- [ ] A focused fixture covers `[c0 = { a: "a" }] = []`.
-- [ ] A focused fixture covers `[x1, c1 = { a: "a" }] = [1]`.
-- [ ] Existing unsupported cases for effectful/default binding initializers
+- [x] A focused fixture covers `[c0 = { a: "a" }] = []`.
+- [x] A focused fixture covers `[x1, c1 = { a: "a" }] = [1]`.
+- [x] Existing unsupported cases for effectful/default binding initializers
   still report source-spanned issue-251 diagnostics.
 
 ## Validation
@@ -124,15 +124,15 @@ python scripts/manager.py check-issue-readiness -- --fail-ready-below 80
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 

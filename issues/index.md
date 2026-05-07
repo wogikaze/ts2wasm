@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 7 | 4 | 3 |
 | coverage | 44 | 1 | 43 |
 | docs | 5 | 0 | 5 |
-| frontend | 4563 | 3769 | 794 |
+| frontend | 4562 | 3768 | 794 |
 | harness | 1 | 0 | 1 |
 | ir | 77 | 26 | 51 |
 | issues | 5 | 0 | 5 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 8 | 0 | 8 |
 | wasi | 4 | 0 | 4 |
-| total | 5246 | 4044 | 1202 |
+| total | 5245 | 4043 | 1202 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -364,7 +364,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5255 | Resolve super property accesses | feature | frontend/resolver | implementation-ready | P1 |  | `classExtendingAny.ts` parses class declarations, `extends Err`, and |
 | 5260 | Report class heritage trailing comma | feature | frontend/parser | implementation-ready | P1 |  | `classHeritageWithTrailingSeparator.ts` tokenizes the class heritage |
 | 5262 | Resolve import-equals aliases in class implements clauses | feature | frontend/resolver | implementation-ready | P1 |  | Resolve import-equals aliases in class implements clauses |
-| 5263 | Report primitive implements clauses on class expressions | feature | frontend/parser | implementation-ready | P1 |  | Report primitive implements clauses on class expressions |
 | 5266 | Support class constructor new of later class binding | feature | ir | implementation-ready | P1 |  | `reference/typescript/tests/cases/compiler/classOrderBug.ts` reports |
 | 5267 | Parse string literal class member names | feature | frontend | implementation-ready | P1 |  | `reference/typescript/tests/cases/compiler/classStaticPropertyAccess.ts` |
 | 5269 | Parse optional class property declarations | feature | frontend | implementation-ready | P1 |  | `reference/typescript/tests/cases/compiler/classUsedBeforeInitializedVariables.ts` |

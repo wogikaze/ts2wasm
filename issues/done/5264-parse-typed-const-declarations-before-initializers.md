@@ -75,12 +75,12 @@ blocker in the loop/class body if one remains.
 
 In scope:
 
-- [ ] Support `const name: Type = expr` for simple and generic type
+- [x] Support `const name: Type = expr` for simple and generic type
   annotations.
-- [ ] Preserve the existing runtime initializer expression.
-- [ ] Keep `const name: Type;` rejected with a source-spanned missing
+- [x] Preserve the existing runtime initializer expression.
+- [x] Keep `const name: Type;` rejected with a source-spanned missing
   initializer diagnostic.
-- [ ] Preserve `let` / `var` type annotation behavior where already supported.
+- [x] Preserve `let` / `var` type annotation behavior where already supported.
 
 Out of scope:
 
@@ -105,12 +105,12 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] `classInConvertedLoopES5.ts` no longer reports
+- [x] `classInConvertedLoopES5.ts` no longer reports
   `const declarations require an initializer` at `classesByRow`.
-- [ ] A focused parser or CLI fixture covers
+- [x] A focused parser or CLI fixture covers
   `const classesByRow: Record<string, object> = {};`.
-- [ ] A negative fixture covers `const missing: Record<string, object>;`.
-- [ ] Existing untyped `const x = expr` parsing remains unchanged.
+- [x] A negative fixture covers `const missing: Record<string, object>;`.
+- [x] Existing untyped `const x = expr` parsing remains unchanged.
 
 ## Validation
 

@@ -73,11 +73,11 @@ report `expected property name, got LeftBrace`.
 
 In scope:
 
-- [ ] Detect `public {` / `private {` / `protected {` in class member parsing.
-- [ ] Emit a source-spanned missing-member-identifier diagnostic.
-- [ ] Preserve valid access modifier parsing for fields, methods, accessors,
+- [x] Detect `public {` / `private {` / `protected {` in class member parsing.
+- [x] Emit a source-spanned missing-member-identifier diagnostic.
+- [x] Preserve valid access modifier parsing for fields, methods, accessors,
   and index signatures.
-- [ ] Keep parser recovery narrow enough that following class members remain
+- [x] Keep parser recovery narrow enough that following class members remain
   parseable when present.
 
 Out of scope:
@@ -101,13 +101,13 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] `classMemberWithMissingIdentifier.ts` no longer reports
+- [x] `classMemberWithMissingIdentifier.ts` no longer reports
   `expected property name, got LeftBrace`.
-- [ ] `classMemberWithMissingIdentifier2.ts` no longer reports
+- [x] `classMemberWithMissingIdentifier2.ts` no longer reports
   `expected property name, got LeftBrace`.
-- [ ] A focused fixture covers `class C { public {}; }`.
-- [ ] A focused fixture covers `class C { public {[name:string]: T}; }`.
-- [ ] Valid `public field`, `public method()`, and public class index
+- [x] A focused fixture covers `class C { public {}; }`.
+- [x] A focused fixture covers `class C { public {[name:string]: T}; }`.
+- [x] Valid `public field`, `public method()`, and public class index
   signatures remain unchanged.
 
 ## Validation

@@ -115,7 +115,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] created: `issues/open/5303-parse-trailing-comma-in-typed-function-parameters.md`
+- [x] created: `issues/done/5303-parse-trailing-comma-in-typed-function-parameters.md`
 
 ## Notes
 

@@ -18,7 +18,7 @@ updated: 2026-05-07
 ## Summary
 
 Closed as superseded by
-`issues/open/5184-parse-const-enum-declarations.md`.
+`issues/done/5184-parse-const-enum-declarations.md`.
 
 Fresh triage shows this generated bucket is not currently blocked by comment
 emit behavior. Parsing and AST construction advance to the final `const enum`
@@ -60,7 +60,7 @@ unsupported_features=name-resolution:1
 ## Desired final state
 
 This generated bucket is closed. Implementation should proceed through
-`issues/open/5184-parse-const-enum-declarations.md`; comment emit behavior
+`issues/done/5184-parse-const-enum-declarations.md`; comment emit behavior
 should be rechecked after the const-enum parser/binding blocker advances.
 
 ## Scope
@@ -133,7 +133,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] superseded by: `issues/open/5184-parse-const-enum-declarations.md`
+- [x] superseded by: `issues/done/5184-parse-const-enum-declarations.md`
 
 ## Notes
 
@@ -143,10 +143,10 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/open/5184-parse-const-enum-declarations.md` owns the exact
+- `issues/done/5184-parse-const-enum-declarations.md` owns the exact
   const-enum misclassification family. This path exposes it as a bogus visible
   binding named `enum` followed by unresolved `color`.
-- `issues/open/5284-bind-plain-enum-declarations-before-member-access.md` is
+- `issues/done/5284-bind-plain-enum-declarations-before-member-access.md` is
   adjacent, but explicitly scopes plain enums and lists `const enum` as tracked
   separately by 5184.
 

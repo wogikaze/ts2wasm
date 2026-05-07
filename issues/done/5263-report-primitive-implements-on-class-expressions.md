@@ -75,12 +75,12 @@ source-spanned primitive-implements diagnostic or advance to the next blocker.
 
 In scope:
 
-- [ ] Parse anonymous class expression `implements` clauses.
-- [ ] Preserve named class expression `implements` clauses such as
+- [x] Parse anonymous class expression `implements` clauses.
+- [x] Preserve named class expression `implements` clauses such as
   `class A implements number {}`.
-- [ ] Emit or preserve a diagnostic at the primitive type span for `number`,
+- [x] Emit or preserve a diagnostic at the primitive type span for `number`,
   `string`, and `boolean`.
-- [ ] Preserve existing supported class declaration parsing.
+- [x] Preserve existing supported class declaration parsing.
 
 Out of scope:
 
@@ -104,12 +104,12 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] `classImplementsPrimitive.ts` no longer reports
+- [x] `classImplementsPrimitive.ts` no longer reports
   `expected LeftBrace, got Some(Ident("number"))`.
-- [ ] A focused fixture covers `const C4 = class implements number {}`.
-- [ ] A focused fixture covers `const C7 = class A implements number {}`.
-- [ ] Diagnostics are source-spanned at the primitive type identifier.
-- [ ] Existing `class C implements I {}` behavior remains unchanged.
+- [x] A focused fixture covers `const C4 = class implements number {}`.
+- [x] A focused fixture covers `const C7 = class A implements number {}`.
+- [x] Diagnostics are source-spanned at the primitive type identifier.
+- [x] Existing `class C implements I {}` behavior remains unchanged.
 
 ## Validation
 
