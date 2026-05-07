@@ -268,6 +268,7 @@ fn validate_stmt(
             ..
         } => {
             if let Some(ctor_id) = constructor
+                && num_funcs > 0
                 && ctor_id.0 >= num_funcs
             {
                 errors.push(Diagnostic {

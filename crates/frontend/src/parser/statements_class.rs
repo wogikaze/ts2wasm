@@ -185,6 +185,20 @@ impl Parser {
             )) || matches!(self.peek(), Some(Token::Abstract)) {
                 self.advance();
             }
+            // TypeScript rejects `const` in class members (TS1248)
+            if self.tokens[modifier_start..self.cursor]
+                .iter()
+                .any(|t| matches!(t.kind, Token::Const))
+            {
+                let span = self.tokens[modifier_start].span;
+                return Err(Diagnostic {
+                    code: DiagCode::UnsupportedSyntax,
+                    message:
+                        "issue-073: a class member cannot have the 'const' keyword"
+                            .to_owned(),
+                    span: Some(span),
+                });
+            }
             let has_private_modifier = self.tokens[modifier_start..self.cursor]
                 .iter()
                 .any(|t| matches!(&t.kind, Token::Ident(name) if name == "private"));
