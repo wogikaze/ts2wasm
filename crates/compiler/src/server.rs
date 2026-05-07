@@ -508,6 +508,7 @@ mod tests {
     use super::*;
     use std::sync::atomic::Ordering;
     use std::time::Duration;
+    use ts2wasm_frontend::Span;
 
     fn test_tmpdir(name: &str) -> PathBuf {
         let path = std::env::temp_dir().join(format!(

@@ -1,4 +1,4 @@
-use ts2wasm_frontend::DiagCode;
+use ts2wasm_frontend::{DiagCode, Span};
 
 fn parse_and_resolve(source: &str) -> Vec<ts2wasm_ir::builtin_resolved::ResolvedStmt> {
     let program = ts2wasm_cli::parse_program(source).unwrap();
@@ -28,22 +28,24 @@ fn lowering_passes_mutable_class_method_outer_local_capture() {
         lowered.top_level_statements.first(),
         Some(LoweredStmt::Let(
             LocalId(0),
-            LoweredExpr::EnvCellNew(initial)
-        )) if matches!(initial.as_ref(), LoweredExpr::Number(0))
+            LoweredExpr::EnvCellNew(initial, _)
+        , _)) if matches!(initial.as_ref(), LoweredExpr::Number(0, _))
     ));
     assert!(matches!(
         lowered.top_level_statements.last(),
         Some(LoweredStmt::Expr(LoweredExpr::Call {
             kind: FunctionCallKind::Builtin(ts2wasm_ir::builtin::BuiltinId::ConsoleLog),
-            args,
-        })) if matches!(args.as_slice(), [LoweredExpr::EnvCellGet(LocalId(0))])
+            args, ..}, _)) if matches!(args.as_slice(), [LoweredExpr::EnvCellGet(LocalId(0), _)])
     ));
     assert!(matches!(
         lowered.functions[1].body.as_slice(),
-        [LoweredStmt::Expr(LoweredExpr::EnvCellSet {
-            cell: LocalId(1),
-            ..
-        })]
+        [LoweredStmt::Expr(
+            LoweredExpr::EnvCellSet {
+                cell: LocalId(1),
+                ..
+            },
+            _
+        )]
     ));
 }
 
@@ -115,20 +117,25 @@ fn lowering_passes_immutable_class_method_outer_local_capture() {
     }
 
     match &lowered.top_level_statements[3] {
-        LoweredStmt::Expr(LoweredExpr::Call {
-            kind: FunctionCallKind::Builtin(ts2wasm_ir::builtin::BuiltinId::ConsoleLog),
-            args,
-        }) => match &args[..] {
+        LoweredStmt::Expr(
+            LoweredExpr::Call {
+                kind: FunctionCallKind::Builtin(ts2wasm_ir::builtin::BuiltinId::ConsoleLog),
+                args,
+                ..
+            },
+            _,
+        ) => match &args[..] {
             [
                 LoweredExpr::Call {
                     kind: FunctionCallKind::User(_),
                     args: method_args,
+                    ..
                 },
             ] => {
                 assert!(matches!(method_args.as_slice(), [
-                    LoweredExpr::Local(LocalId(1)),
-                    LoweredExpr::String(prefix),
-                    LoweredExpr::Local(LocalId(0)),
+                    LoweredExpr::Local(LocalId(1), _),
+                    LoweredExpr::String(prefix, _),
+                    LoweredExpr::Local(LocalId(0), _),
                 ] if prefix == "class"));
             }
             other => panic!("unexpected console.log arg for captured class method: {other:?}"),
@@ -150,10 +157,10 @@ fn lowering_splits_functions_and_resolves_ids() {
     assert_eq!(lowered.top_level_locals.len(), 2);
 
     match &lowered.top_level_statements[2] {
-        ts2wasm_ir::lowered::LoweredStmt::Expr(ts2wasm_ir::lowered::LoweredExpr::Call {
-            kind,
-            args,
-        }) => {
+        ts2wasm_ir::lowered::LoweredStmt::Expr(
+            ts2wasm_ir::lowered::LoweredExpr::Call { kind, args, .. },
+            _,
+        ) => {
             assert!(matches!(
                 kind,
                 ts2wasm_ir::lowered::FunctionCallKind::Builtin(
@@ -197,18 +204,16 @@ fn lowering_hoists_direct_eval_block_function_to_enclosing_function_scope() {
                 LoweredExpr::ArrowFn {
                     func_id: FuncId(1),
                     captures,
-                    representation: ClosureRepresentation::DirectLocalToken,
-                },
-            ),
+                    representation: ClosureRepresentation::DirectLocalToken, ..},
+             _),
             LoweredStmt::Return(LoweredExpr::Call {
                 kind: FunctionCallKind::User(FuncId(1)),
-                args,
-            }),
+                args, ..}, _),
         ] if captures.is_empty() && args.is_empty()
     ));
     assert!(matches!(
         lowered.functions[1].body.as_slice(),
-        [LoweredStmt::Return(LoweredExpr::Number(1))]
+        [LoweredStmt::Return(LoweredExpr::Number(1, _), _)]
     ));
 }
 
@@ -265,7 +270,8 @@ fn lowering_routes_regexp_literal_to_string_subset() {
     match &lowered.top_level_statements[0] {
         ts2wasm_ir::lowered::LoweredStmt::Let(
             _,
-            ts2wasm_ir::lowered::LoweredExpr::String(value),
+            ts2wasm_ir::lowered::LoweredExpr::String(value, _),
+            _,
         ) => assert_eq!(value, "/abc/i"),
         other => panic!("unexpected lowered statement: {other:?}"),
     }
@@ -279,7 +285,10 @@ fn lowering_routes_regexp_literal_test_to_runtime_call() {
     match &lowered.top_level_statements[0] {
         ts2wasm_ir::lowered::LoweredStmt::Let(
             _,
-            ts2wasm_ir::lowered::LoweredExpr::RuntimeCall { runtime_fn, args },
+            ts2wasm_ir::lowered::LoweredExpr::RuntimeCall {
+                runtime_fn, args, ..
+            },
+            _,
         ) => {
             assert_eq!(runtime_fn, "RegExpTest");
             assert_eq!(args.len(), 2);
@@ -296,7 +305,8 @@ fn lowering_routes_new_regexp_test_to_runtime_call() {
     match &lowered.top_level_statements[0] {
         ts2wasm_ir::lowered::LoweredStmt::Let(
             _,
-            ts2wasm_ir::lowered::LoweredExpr::String(value),
+            ts2wasm_ir::lowered::LoweredExpr::String(value, _),
+            _,
         ) => assert_eq!(value, "/abc/"),
         other => panic!("unexpected RegExp constructor lowering: {other:?}"),
     }
@@ -304,7 +314,10 @@ fn lowering_routes_new_regexp_test_to_runtime_call() {
     match &lowered.top_level_statements[1] {
         ts2wasm_ir::lowered::LoweredStmt::Let(
             _,
-            ts2wasm_ir::lowered::LoweredExpr::RuntimeCall { runtime_fn, args },
+            ts2wasm_ir::lowered::LoweredExpr::RuntimeCall {
+                runtime_fn, args, ..
+            },
+            _,
         ) => {
             assert_eq!(runtime_fn, "RegExpTest");
             assert_eq!(args.len(), 2);
@@ -322,7 +335,8 @@ fn lowering_routes_new_regexp_with_g_flag_test_to_runtime_call() {
     match &lowered.top_level_statements[0] {
         ts2wasm_ir::lowered::LoweredStmt::Let(
             _,
-            ts2wasm_ir::lowered::LoweredExpr::String(value),
+            ts2wasm_ir::lowered::LoweredExpr::String(value, _),
+            _,
         ) => assert_eq!(value, "/abc/g"),
         other => panic!("unexpected RegExp constructor lowering: {other:?}"),
     }
@@ -330,7 +344,10 @@ fn lowering_routes_new_regexp_with_g_flag_test_to_runtime_call() {
     match &lowered.top_level_statements[1] {
         ts2wasm_ir::lowered::LoweredStmt::Let(
             _,
-            ts2wasm_ir::lowered::LoweredExpr::RuntimeCall { runtime_fn, args },
+            ts2wasm_ir::lowered::LoweredExpr::RuntimeCall {
+                runtime_fn, args, ..
+            },
+            _,
         ) => {
             assert_eq!(runtime_fn, "RegExpTest");
             assert_eq!(args.len(), 2);
@@ -347,7 +364,10 @@ fn lowering_routes_direct_new_regexp_test_to_runtime_call() {
     match &lowered.top_level_statements[0] {
         ts2wasm_ir::lowered::LoweredStmt::Let(
             _,
-            ts2wasm_ir::lowered::LoweredExpr::RuntimeCall { runtime_fn, args },
+            ts2wasm_ir::lowered::LoweredExpr::RuntimeCall {
+                runtime_fn, args, ..
+            },
+            _,
         ) => {
             assert_eq!(runtime_fn, "RegExpTest");
             assert_eq!(args.len(), 2);
@@ -364,7 +384,10 @@ fn lowering_routes_string_match_regexp_literal_to_runtime_call() {
     match &lowered.top_level_statements[0] {
         ts2wasm_ir::lowered::LoweredStmt::Let(
             _,
-            ts2wasm_ir::lowered::LoweredExpr::RuntimeCall { runtime_fn, args },
+            ts2wasm_ir::lowered::LoweredExpr::RuntimeCall {
+                runtime_fn, args, ..
+            },
+            _,
         ) => {
             assert_eq!(runtime_fn, "RegExpMatch");
             assert_eq!(args.len(), 2);
@@ -381,7 +404,10 @@ fn lowering_routes_string_match_new_regexp_to_runtime_call() {
     match &lowered.top_level_statements[0] {
         ts2wasm_ir::lowered::LoweredStmt::Let(
             _,
-            ts2wasm_ir::lowered::LoweredExpr::RuntimeCall { runtime_fn, args },
+            ts2wasm_ir::lowered::LoweredExpr::RuntimeCall {
+                runtime_fn, args, ..
+            },
+            _,
         ) => {
             assert_eq!(runtime_fn, "RegExpMatch");
             assert_eq!(args.len(), 2);
@@ -398,7 +424,10 @@ fn lowering_keeps_array_push_expression_length_returning() {
     match &lowered.top_level_statements[1] {
         ts2wasm_ir::lowered::LoweredStmt::Let(
             _,
-            ts2wasm_ir::lowered::LoweredExpr::RuntimeCall { runtime_fn, args },
+            ts2wasm_ir::lowered::LoweredExpr::RuntimeCall {
+                runtime_fn, args, ..
+            },
+            _,
         ) => {
             assert_eq!(runtime_fn, "ArrayPush");
             assert_eq!(args.len(), 2);
@@ -415,7 +444,10 @@ fn lowering_routes_regexp_literal_exec_to_runtime_call() {
     match &lowered.top_level_statements[0] {
         ts2wasm_ir::lowered::LoweredStmt::Let(
             _,
-            ts2wasm_ir::lowered::LoweredExpr::RuntimeCall { runtime_fn, args },
+            ts2wasm_ir::lowered::LoweredExpr::RuntimeCall {
+                runtime_fn, args, ..
+            },
+            _,
         ) => {
             assert_eq!(runtime_fn, "RegExpMatch");
             assert_eq!(args.len(), 2);
@@ -432,7 +464,10 @@ fn lowering_routes_identifier_regexp_exec_to_runtime_call() {
     match &lowered.top_level_statements[1] {
         ts2wasm_ir::lowered::LoweredStmt::Let(
             _,
-            ts2wasm_ir::lowered::LoweredExpr::RuntimeCall { runtime_fn, args },
+            ts2wasm_ir::lowered::LoweredExpr::RuntimeCall {
+                runtime_fn, args, ..
+            },
+            _,
         ) => {
             assert_eq!(runtime_fn, "RegExpMatch");
             assert_eq!(args.len(), 2);
@@ -449,7 +484,10 @@ fn lowering_routes_direct_new_regexp_exec_to_runtime_call() {
     match &lowered.top_level_statements[0] {
         ts2wasm_ir::lowered::LoweredStmt::Let(
             _,
-            ts2wasm_ir::lowered::LoweredExpr::RuntimeCall { runtime_fn, args },
+            ts2wasm_ir::lowered::LoweredExpr::RuntimeCall {
+                runtime_fn, args, ..
+            },
+            _,
         ) => {
             assert_eq!(runtime_fn, "RegExpMatch");
             assert_eq!(args.len(), 2);
@@ -466,7 +504,10 @@ fn lowering_routes_new_date_epoch_to_runtime_call() {
     match &lowered.top_level_statements[0] {
         ts2wasm_ir::lowered::LoweredStmt::Let(
             _,
-            ts2wasm_ir::lowered::LoweredExpr::RuntimeCall { runtime_fn, args },
+            ts2wasm_ir::lowered::LoweredExpr::RuntimeCall {
+                runtime_fn, args, ..
+            },
+            _,
         ) => {
             assert_eq!(runtime_fn, "DateNew");
             assert_eq!(args.len(), 1);
@@ -483,7 +524,10 @@ fn lowering_routes_date_get_time_to_runtime_call() {
     match &lowered.top_level_statements[1] {
         ts2wasm_ir::lowered::LoweredStmt::Let(
             _,
-            ts2wasm_ir::lowered::LoweredExpr::RuntimeCall { runtime_fn, args },
+            ts2wasm_ir::lowered::LoweredExpr::RuntimeCall {
+                runtime_fn, args, ..
+            },
+            _,
         ) => {
             assert_eq!(runtime_fn, "DateGetTime");
             assert_eq!(args.len(), 1);
@@ -500,7 +544,10 @@ fn lowering_routes_date_now_to_live_time_runtime_call() {
     match &lowered.top_level_statements[0] {
         ts2wasm_ir::lowered::LoweredStmt::Let(
             _,
-            ts2wasm_ir::lowered::LoweredExpr::RuntimeCall { runtime_fn, args },
+            ts2wasm_ir::lowered::LoweredExpr::RuntimeCall {
+                runtime_fn, args, ..
+            },
+            _,
         ) => {
             assert_eq!(runtime_fn, "DateNow");
             assert!(args.is_empty());
@@ -622,11 +669,13 @@ fn lowering_routes_template_interpolation_through_addition() {
                 left,
                 op: ts2wasm_ir::lowered::LoweredBinaryOp::Add,
                 right,
+                ..
             },
+            _,
         ) => {
             assert!(matches!(
                 right.as_ref(),
-                ts2wasm_ir::lowered::LoweredExpr::String(value) if value == "!"
+                ts2wasm_ir::lowered::LoweredExpr::String(value, _) if value == "!"
             ));
             assert!(matches!(
                 left.as_ref(),
@@ -655,11 +704,16 @@ fn validate_rejects_arity_mismatch() {
         rest_param_index: None,
         locals: vec![],
         body: vec![],
+        recursion_depth: 0,
     };
-    let call = LoweredStmt::Expr(LoweredExpr::Call {
-        kind: FunctionCallKind::User(FuncId(0)),
-        args: vec![LoweredExpr::Number(1)],
-    });
+    let call = LoweredStmt::Expr(
+        LoweredExpr::Call {
+            kind: FunctionCallKind::User(FuncId(0)),
+            args: vec![LoweredExpr::Number(1, Span::generated("test"))],
+            span: Span::generated("test"),
+        },
+        Span::generated("test"),
+    );
     let program = LoweredProgram {
         top_level_statements: vec![call],
         top_level_locals: vec![],
@@ -785,15 +839,15 @@ fn lowering_represents_plain_ternary_as_expression_block() {
     let lowered = ts2wasm_ir::lowered::lower_program(&program).unwrap();
 
     match &lowered.top_level_statements[1] {
-        LoweredStmt::Let(LocalId(1), LoweredExpr::Block { stmts, result }) => {
+        LoweredStmt::Let(LocalId(1), LoweredExpr::Block { stmts, result, .. }, _) => {
             assert!(matches!(
                 stmts.as_slice(),
                 [
-                    LoweredStmt::Let(LocalId(2), LoweredExpr::Undefined),
+                    LoweredStmt::Let(LocalId(2), LoweredExpr::Undefined(_), _),
                     LoweredStmt::If { .. }
                 ]
             ));
-            assert!(matches!(result.as_ref(), LoweredExpr::Local(LocalId(2))));
+            assert!(matches!(result.as_ref(), LoweredExpr::Local(LocalId(2), _)));
         }
         other => panic!("unexpected lowered ternary statement: {other:?}"),
     }
@@ -828,7 +882,9 @@ fn lowering_represents_returned_ordinary_closure_as_heap_creation() {
                 func_id,
                 captures,
                 representation,
+                ..
             },
+            _,
         ) => {
             assert_eq!(*func_id, FuncId(1));
             assert_eq!(captures, &vec![LocalId(0)]);
@@ -838,11 +894,15 @@ fn lowering_represents_returned_ordinary_closure_as_heap_creation() {
     }
 
     match &make_reader.body[2] {
-        LoweredStmt::Return(LoweredExpr::ArrowFn {
-            func_id,
-            captures,
-            representation,
-        }) => {
+        LoweredStmt::Return(
+            LoweredExpr::ArrowFn {
+                func_id,
+                captures,
+                representation,
+                ..
+            },
+            _,
+        ) => {
             assert_eq!(*func_id, FuncId(1));
             assert_eq!(captures, &vec![LocalId(0)]);
             assert_eq!(*representation, ClosureRepresentation::HeapObject);
@@ -881,7 +941,9 @@ fn lowering_represents_known_heap_closure_local_call_explicitly() {
                 func_id: FuncId(0),
                 captures,
                 representation,
+                ..
             },
+            _,
         ) => {
             assert!(captures.is_empty());
             assert_eq!(*representation, ClosureRepresentation::DirectLocalToken);
@@ -897,25 +959,31 @@ fn lowering_represents_known_heap_closure_local_call_explicitly() {
                 kind: FunctionCallKind::User(_),
                 ..
             },
+            _,
         ) => {}
         other => panic!("unexpected heap closure local binding: {other:?}"),
     }
 
     match &lowered.top_level_statements[2] {
-        LoweredStmt::Expr(LoweredExpr::Call {
-            kind: FunctionCallKind::Builtin(ts2wasm_ir::builtin::BuiltinId::ConsoleLog),
-            args,
-        }) => match &args[..] {
+        LoweredStmt::Expr(
+            LoweredExpr::Call {
+                kind: FunctionCallKind::Builtin(ts2wasm_ir::builtin::BuiltinId::ConsoleLog),
+                args,
+                ..
+            },
+            _,
+        ) => match &args[..] {
             [
                 LoweredExpr::RuntimeCall {
                     runtime_fn,
                     args: call_args,
+                    ..
                 },
             ] => {
                 assert_eq!(runtime_fn, "HeapClosureCall");
                 assert!(matches!(
                     call_args.as_slice(),
-                    [LoweredExpr::Local(LocalId(1))]
+                    [LoweredExpr::Local(LocalId(1), _)]
                 ));
             }
             other => panic!("unexpected console.log argument for heap closure call: {other:?}"),
@@ -987,6 +1055,7 @@ fn lowering_represents_private_field_access_as_internal_slot_calls() {
                 private_slot_count,
                 ..
             },
+            _,
         ) => {
             assert_eq!(*private_brand, Some(1));
             assert_eq!(*private_slot_count, 1);
@@ -996,15 +1065,20 @@ fn lowering_represents_private_field_access_as_internal_slot_calls() {
 
     let constructor = &lowered.functions[0];
     match &constructor.body[0] {
-        LoweredStmt::Expr(LoweredExpr::RuntimeCall { runtime_fn, args }) => {
+        LoweredStmt::Expr(
+            LoweredExpr::RuntimeCall {
+                runtime_fn, args, ..
+            },
+            _,
+        ) => {
             assert_eq!(runtime_fn, "PrivateFieldSet");
             assert!(matches!(
                 args.as_slice(),
                 [
-                    LoweredExpr::Local(LocalId(0)),
-                    LoweredExpr::Number(1),
-                    LoweredExpr::Number(0),
-                    LoweredExpr::Number(7)
+                    LoweredExpr::Local(LocalId(0), _),
+                    LoweredExpr::Number(1, _),
+                    LoweredExpr::Number(0, _),
+                    LoweredExpr::Number(7, _)
                 ]
             ));
         }
@@ -1013,14 +1087,19 @@ fn lowering_represents_private_field_access_as_internal_slot_calls() {
 
     let read_method = &lowered.functions[1];
     match &read_method.body[0] {
-        LoweredStmt::Return(LoweredExpr::RuntimeCall { runtime_fn, args }) => {
+        LoweredStmt::Return(
+            LoweredExpr::RuntimeCall {
+                runtime_fn, args, ..
+            },
+            _,
+        ) => {
             assert_eq!(runtime_fn, "PrivateFieldGet");
             assert!(matches!(
                 args.as_slice(),
                 [
-                    LoweredExpr::Local(LocalId(0)),
-                    LoweredExpr::Number(1),
-                    LoweredExpr::Number(0)
+                    LoweredExpr::Local(LocalId(0), _),
+                    LoweredExpr::Number(1, _),
+                    LoweredExpr::Number(0, _)
                 ]
             ));
         }
@@ -1028,10 +1107,13 @@ fn lowering_represents_private_field_access_as_internal_slot_calls() {
     }
 
     match &lowered.top_level_statements[2] {
-        LoweredStmt::Expr(LoweredExpr::Call {
-            kind: FunctionCallKind::Builtin(ts2wasm_ir::builtin::BuiltinId::ConsoleLog),
-            ..
-        }) => {}
+        LoweredStmt::Expr(
+            LoweredExpr::Call {
+                kind: FunctionCallKind::Builtin(ts2wasm_ir::builtin::BuiltinId::ConsoleLog),
+                ..
+            },
+            _,
+        ) => {}
         other => panic!("unexpected console.log lowering: {other:?}"),
     }
 }
@@ -1057,14 +1139,19 @@ fn lowering_represents_same_class_private_field_receiver_as_branded_slot_call() 
 
     let read_method = &lowered.functions[1];
     match &read_method.body[0] {
-        LoweredStmt::Return(LoweredExpr::RuntimeCall { runtime_fn, args }) => {
+        LoweredStmt::Return(
+            LoweredExpr::RuntimeCall {
+                runtime_fn, args, ..
+            },
+            _,
+        ) => {
             assert_eq!(runtime_fn, "PrivateFieldGet");
             assert!(matches!(
                 args.as_slice(),
                 [
-                    LoweredExpr::Local(LocalId(1)),
-                    LoweredExpr::Number(1),
-                    LoweredExpr::Number(0)
+                    LoweredExpr::Local(LocalId(1), _),
+                    LoweredExpr::Number(1, _),
+                    LoweredExpr::Number(0, _)
                 ]
             ));
         }
@@ -1073,15 +1160,20 @@ fn lowering_represents_same_class_private_field_receiver_as_branded_slot_call() 
 
     let write_method = &lowered.functions[2];
     match &write_method.body[0] {
-        LoweredStmt::Expr(LoweredExpr::RuntimeCall { runtime_fn, args }) => {
+        LoweredStmt::Expr(
+            LoweredExpr::RuntimeCall {
+                runtime_fn, args, ..
+            },
+            _,
+        ) => {
             assert_eq!(runtime_fn, "PrivateFieldSet");
             assert!(matches!(
                 args.as_slice(),
                 [
-                    LoweredExpr::Local(LocalId(1)),
-                    LoweredExpr::Number(1),
-                    LoweredExpr::Number(0),
-                    LoweredExpr::Local(LocalId(2))
+                    LoweredExpr::Local(LocalId(1), _),
+                    LoweredExpr::Number(1, _),
+                    LoweredExpr::Number(0, _),
+                    LoweredExpr::Local(LocalId(2), _)
                 ]
             ));
         }
@@ -1108,12 +1200,16 @@ fn lowering_represents_direct_private_method_call_as_same_class_user_call() {
 
     let read_method = &lowered.functions[1];
     match &read_method.body[0] {
-        LoweredStmt::Return(LoweredExpr::Call {
-            kind: FunctionCallKind::User(FuncId(2)),
-            args,
-        }) => assert!(matches!(
+        LoweredStmt::Return(
+            LoweredExpr::Call {
+                kind: FunctionCallKind::User(FuncId(2)),
+                args,
+                ..
+            },
+            _,
+        ) => assert!(matches!(
             args.as_slice(),
-            [LoweredExpr::Local(LocalId(0)), LoweredExpr::Number(2)]
+            [LoweredExpr::Local(LocalId(0), _), LoweredExpr::Number(2, _)]
         )),
         other => panic!("unexpected private method call lowering: {other:?}"),
     }
@@ -1138,20 +1234,25 @@ fn lowering_represents_private_method_non_this_receiver_as_brand_checked_user_ca
 
     let read_method = &lowered.functions[1];
     match &read_method.body[0] {
-        LoweredStmt::Return(LoweredExpr::Call {
-            kind: FunctionCallKind::User(FuncId(2)),
-            args,
-        }) => match args.as_slice() {
+        LoweredStmt::Return(
+            LoweredExpr::Call {
+                kind: FunctionCallKind::User(FuncId(2)),
+                args,
+                ..
+            },
+            _,
+        ) => match args.as_slice() {
             [
                 LoweredExpr::RuntimeCall {
                     runtime_fn,
                     args: brand_args,
+                    ..
                 },
             ] => {
                 assert_eq!(runtime_fn, "PrivateBrandCheck");
                 assert!(matches!(
                     brand_args.as_slice(),
-                    [LoweredExpr::Local(_), LoweredExpr::Number(1)]
+                    [LoweredExpr::Local(_, _), LoweredExpr::Number(1, _)]
                 ));
             }
             other => panic!("unexpected private method brand-check args: {other:?}"),
@@ -1180,19 +1281,27 @@ fn lowering_represents_static_private_method_call_as_same_class_user_call() {
 
     let read_method = &lowered.functions[1];
     match &read_method.body[0] {
-        LoweredStmt::Return(LoweredExpr::Call {
-            kind: FunctionCallKind::User(FuncId(3)),
-            args,
-        }) => assert!(args.is_empty()),
+        LoweredStmt::Return(
+            LoweredExpr::Call {
+                kind: FunctionCallKind::User(FuncId(3)),
+                args,
+                ..
+            },
+            _,
+        ) => assert!(args.is_empty()),
         other => panic!("unexpected static private method call lowering: {other:?}"),
     }
 
     let read_by_name_method = &lowered.functions[2];
     match &read_by_name_method.body[0] {
-        LoweredStmt::Return(LoweredExpr::Call {
-            kind: FunctionCallKind::User(FuncId(3)),
-            args,
-        }) => assert!(args.is_empty()),
+        LoweredStmt::Return(
+            LoweredExpr::Call {
+                kind: FunctionCallKind::User(FuncId(3)),
+                args,
+                ..
+            },
+            _,
+        ) => assert!(args.is_empty()),
         other => panic!("unexpected static private method class-name call lowering: {other:?}"),
     }
 }
@@ -1222,37 +1331,59 @@ fn lowering_represents_static_private_accessor_access_as_same_class_user_call() 
 
     let read_method = &lowered.functions[1];
     match &read_method.body[0] {
-        LoweredStmt::Return(LoweredExpr::Call {
-            kind: FunctionCallKind::User(FuncId(5)),
-            args,
-        }) => assert!(args.is_empty()),
+        LoweredStmt::Return(
+            LoweredExpr::Call {
+                kind: FunctionCallKind::User(FuncId(5)),
+                args,
+                ..
+            },
+            _,
+        ) => assert!(args.is_empty()),
         other => panic!("unexpected static private getter access lowering: {other:?}"),
     }
 
     let read_by_name_method = &lowered.functions[2];
     match &read_by_name_method.body[0] {
-        LoweredStmt::Return(LoweredExpr::Call {
-            kind: FunctionCallKind::User(FuncId(5)),
-            args,
-        }) => assert!(args.is_empty()),
+        LoweredStmt::Return(
+            LoweredExpr::Call {
+                kind: FunctionCallKind::User(FuncId(5)),
+                args,
+                ..
+            },
+            _,
+        ) => assert!(args.is_empty()),
         other => panic!("unexpected static private getter class-name lowering: {other:?}"),
     }
 
     let write_method = &lowered.functions[3];
     match &write_method.body[0] {
-        LoweredStmt::Expr(LoweredExpr::Call {
-            kind: FunctionCallKind::User(FuncId(6)),
-            args,
-        }) => assert!(matches!(args.as_slice(), [LoweredExpr::Local(LocalId(0))])),
+        LoweredStmt::Expr(
+            LoweredExpr::Call {
+                kind: FunctionCallKind::User(FuncId(6)),
+                args,
+                ..
+            },
+            _,
+        ) => assert!(matches!(
+            args.as_slice(),
+            [LoweredExpr::Local(LocalId(0), _)]
+        )),
         other => panic!("unexpected static private setter assignment lowering: {other:?}"),
     }
 
     let write_by_name_method = &lowered.functions[4];
     match &write_by_name_method.body[0] {
-        LoweredStmt::Expr(LoweredExpr::Call {
-            kind: FunctionCallKind::User(FuncId(6)),
-            args,
-        }) => assert!(matches!(args.as_slice(), [LoweredExpr::Local(LocalId(0))])),
+        LoweredStmt::Expr(
+            LoweredExpr::Call {
+                kind: FunctionCallKind::User(FuncId(6)),
+                args,
+                ..
+            },
+            _,
+        ) => assert!(matches!(
+            args.as_slice(),
+            [LoweredExpr::Local(LocalId(0), _)]
+        )),
         other => panic!("unexpected static private setter class-name lowering: {other:?}"),
     }
 }
@@ -1300,28 +1431,32 @@ fn lowering_represents_static_private_field_access_as_same_class_env_cell() {
     }
 
     match &lowered.top_level_statements[1] {
-        LoweredStmt::Let(LocalId(0), LoweredExpr::EnvCellNew(initializer)) => {
-            assert!(matches!(initializer.as_ref(), LoweredExpr::Number(3)));
+        LoweredStmt::Let(LocalId(0), LoweredExpr::EnvCellNew(initializer, _), _) => {
+            assert!(matches!(initializer.as_ref(), LoweredExpr::Number(3, _)));
         }
         other => panic!("unexpected static private field storage lowering: {other:?}"),
     }
 
     let read_method = &lowered.functions[1];
     match &read_method.body[0] {
-        LoweredStmt::Return(LoweredExpr::EnvCellGet(LocalId(0))) => {}
+        LoweredStmt::Return(LoweredExpr::EnvCellGet(LocalId(0), _), _) => {}
         other => panic!("unexpected static private field read lowering: {other:?}"),
     }
 
     let write_method = &lowered.functions[2];
     match &write_method.body[0] {
-        LoweredStmt::Expr(LoweredExpr::EnvCellSet {
-            cell: LocalId(1),
-            expr,
-        }) => assert!(matches!(expr.as_ref(), LoweredExpr::Local(LocalId(0)))),
+        LoweredStmt::Expr(
+            LoweredExpr::EnvCellSet {
+                cell: LocalId(1),
+                expr,
+                ..
+            },
+            _,
+        ) => assert!(matches!(expr.as_ref(), LoweredExpr::Local(LocalId(0), _))),
         other => panic!("unexpected static private field write lowering: {other:?}"),
     }
     match &write_method.body[1] {
-        LoweredStmt::Return(LoweredExpr::EnvCellGet(LocalId(1))) => {}
+        LoweredStmt::Return(LoweredExpr::EnvCellGet(LocalId(1), _), _) => {}
         other => panic!("unexpected static private field class-name read lowering: {other:?}"),
     }
 }
@@ -1345,10 +1480,17 @@ fn lowering_represents_direct_private_getter_access_as_same_class_user_call() {
 
     let read_method = &lowered.functions[1];
     match &read_method.body[0] {
-        LoweredStmt::Return(LoweredExpr::Call {
-            kind: FunctionCallKind::User(FuncId(2)),
-            args,
-        }) => assert!(matches!(args.as_slice(), [LoweredExpr::Local(LocalId(0))])),
+        LoweredStmt::Return(
+            LoweredExpr::Call {
+                kind: FunctionCallKind::User(FuncId(2)),
+                args,
+                ..
+            },
+            _,
+        ) => assert!(matches!(
+            args.as_slice(),
+            [LoweredExpr::Local(LocalId(0), _)]
+        )),
         other => panic!("unexpected private getter access lowering: {other:?}"),
     }
 }
@@ -1372,20 +1514,25 @@ fn lowering_represents_private_getter_non_this_receiver_as_brand_checked_user_ca
 
     let read_method = &lowered.functions[1];
     match &read_method.body[0] {
-        LoweredStmt::Return(LoweredExpr::Call {
-            kind: FunctionCallKind::User(FuncId(2)),
-            args,
-        }) => match args.as_slice() {
+        LoweredStmt::Return(
+            LoweredExpr::Call {
+                kind: FunctionCallKind::User(FuncId(2)),
+                args,
+                ..
+            },
+            _,
+        ) => match args.as_slice() {
             [
                 LoweredExpr::RuntimeCall {
                     runtime_fn,
                     args: brand_args,
+                    ..
                 },
             ] => {
                 assert_eq!(runtime_fn, "PrivateBrandCheck");
                 assert!(matches!(
                     brand_args.as_slice(),
-                    [LoweredExpr::Local(_), LoweredExpr::Number(1)]
+                    [LoweredExpr::Local(_, _), LoweredExpr::Number(1, _)]
                 ));
             }
             other => panic!("unexpected private getter brand-check args: {other:?}"),
@@ -1414,14 +1561,18 @@ fn lowering_represents_direct_private_setter_assignment_as_same_class_user_call(
 
     let write_method = &lowered.functions[1];
     match &write_method.body[0] {
-        LoweredStmt::Expr(LoweredExpr::Call {
-            kind: FunctionCallKind::User(FuncId(2)),
-            args,
-        }) => assert!(matches!(
+        LoweredStmt::Expr(
+            LoweredExpr::Call {
+                kind: FunctionCallKind::User(FuncId(2)),
+                args,
+                ..
+            },
+            _,
+        ) => assert!(matches!(
             args.as_slice(),
             [
-                LoweredExpr::Local(LocalId(0)),
-                LoweredExpr::Local(LocalId(1))
+                LoweredExpr::Local(LocalId(0), _),
+                LoweredExpr::Local(LocalId(1), _)
             ]
         )),
         other => panic!("unexpected private setter assignment lowering: {other:?}"),
@@ -1466,7 +1617,9 @@ fn lowering_connects_read_file_sync_idiom_to_builtin_call_shape() {
                         ts2wasm_ir::builtin::BuiltinId::ReadStdinUtf8,
                     ),
                 args,
+                ..
             },
+            _,
         ) => {
             assert!(args.is_empty());
         }
@@ -1478,9 +1631,10 @@ fn lowering_connects_read_file_sync_idiom_to_builtin_call_shape() {
 fn inferred_type_marks_number_addition_as_number() {
     use ts2wasm_ir::lowered::{InferredType, LoweredBinaryOp, LoweredExpr};
     let expr = LoweredExpr::Binary {
-        left: Box::new(LoweredExpr::Number(1)),
+        left: Box::new(LoweredExpr::Number(1, Span::generated("test"))),
         op: LoweredBinaryOp::Add,
-        right: Box::new(LoweredExpr::Number(2)),
+        right: Box::new(LoweredExpr::Number(2, Span::generated("test"))),
+        span: Span::generated("test"),
     };
     assert_eq!(expr.inferred_type(), InferredType::Number);
 }
@@ -1489,9 +1643,10 @@ fn inferred_type_marks_number_addition_as_number() {
 fn inferred_type_marks_string_addition_as_string() {
     use ts2wasm_ir::lowered::{InferredType, LoweredBinaryOp, LoweredExpr};
     let expr = LoweredExpr::Binary {
-        left: Box::new(LoweredExpr::String("a".to_owned())),
+        left: Box::new(LoweredExpr::String("a".to_owned(), Span::generated("test"))),
         op: LoweredBinaryOp::Add,
-        right: Box::new(LoweredExpr::String("b".to_owned())),
+        right: Box::new(LoweredExpr::String("b".to_owned(), Span::generated("test"))),
+        span: Span::generated("test"),
     };
     assert_eq!(expr.inferred_type(), InferredType::String);
 }
@@ -1500,9 +1655,10 @@ fn inferred_type_marks_string_addition_as_string() {
 fn inferred_type_falls_back_to_unknown_for_mixed_add() {
     use ts2wasm_ir::lowered::{InferredType, LoweredBinaryOp, LoweredExpr};
     let expr = LoweredExpr::Binary {
-        left: Box::new(LoweredExpr::String("a".to_owned())),
+        left: Box::new(LoweredExpr::String("a".to_owned(), Span::generated("test"))),
         op: LoweredBinaryOp::Add,
-        right: Box::new(LoweredExpr::Number(1)),
+        right: Box::new(LoweredExpr::Number(1, Span::generated("test"))),
+        span: Span::generated("test"),
     };
     assert_eq!(expr.inferred_type(), InferredType::Unknown);
 }

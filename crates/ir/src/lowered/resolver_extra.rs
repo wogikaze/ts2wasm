@@ -1596,7 +1596,8 @@ impl<'a> Resolver<'a> {
             captures,
             representation: ClosureRepresentation::DirectLocalToken,
         
-            span: Span::generated("arrow_fn"),})
+            span: Span::generated("arrow_fn"),
+        })
     }
 
     pub(super) fn lower_nested_function(
@@ -1721,7 +1722,8 @@ impl<'a> Resolver<'a> {
                 ClosureRepresentation::DirectLocalToken
             },
         
-            span: Span::generated("arrow_fn"),})
+            span: Span::generated("arrow_fn"),
+        })
     }
 
     pub(super) fn lower_named_function_expr(

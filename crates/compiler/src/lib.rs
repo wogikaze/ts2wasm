@@ -2505,7 +2505,11 @@ console.log(value);
         assert_eq!(
             module.statements,
             vec![
-                lowered::LoweredStmt::Let(lowered::LocalId(0), lowered::LoweredExpr::Number(1, Span::generated("test")), Span::generated("test")),
+                lowered::LoweredStmt::Let(
+                    lowered::LocalId(0),
+                    lowered::LoweredExpr::Number(1, Span::generated("test")),
+                    Span::generated("test")
+                ),
                 lowered::LoweredStmt::Export {
                     name: "value".to_owned(),
                     expr: lowered::LoweredExpr::Number(1, Span::generated("test")),

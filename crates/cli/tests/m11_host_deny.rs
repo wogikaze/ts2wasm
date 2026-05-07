@@ -470,12 +470,10 @@ fn standalone_fixtures_pass_host_deny() {
         );
 
         // Verify manifest confirms standalone execution
-        let manifest_content =
-            std::fs::read_to_string(&output_manifest)
-                .unwrap_or_else(|e| panic!("Failed to read manifest for {fixture_name}: {e}"));
-        let manifest: serde_json::Value =
-            serde_json::from_str(&manifest_content)
-                .unwrap_or_else(|e| panic!("Invalid manifest JSON for {fixture_name}: {e}"));
+        let manifest_content = std::fs::read_to_string(&output_manifest)
+            .unwrap_or_else(|e| panic!("Failed to read manifest for {fixture_name}: {e}"));
+        let manifest: serde_json::Value = serde_json::from_str(&manifest_content)
+            .unwrap_or_else(|e| panic!("Invalid manifest JSON for {fixture_name}: {e}"));
 
         assert_eq!(
             manifest["standalone"], true,
