@@ -147,6 +147,12 @@ Additional superseded bucket:
   2026-05-07 reports `UnsupportedModule issue-055: unsupported static export`
   at the `export` keyword for all four files; TypeScript parses each as an
   `ExportAssignment`.
+- `issues/done/1450-implement-constEnumMergingWithValues-parser-syntax.md`
+  reaches the same `export = foo` static export boundary in
+  `constEnumMergingWithValues3.ts`. Fresh triage on 2026-05-07 reports
+  `UnsupportedModule issue-055: unsupported static export` at `120..126`;
+  TypeScript parses the leading `enum foo`, merged namespace, and
+  `ExportAssignment` with no diagnostics.
 
 ## Completion evidence
 
