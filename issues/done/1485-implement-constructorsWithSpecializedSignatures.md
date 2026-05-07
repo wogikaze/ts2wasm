@@ -3,12 +3,12 @@ id: 1485
 title: "Implement Constructorswithspecializedsignatures"
 type: spike
 area: frontend/syntax
-class: triage-needed
+class: done
 priority: P1
 depends_on: []
 blocks: []
 created: 2026-05-01
-updated: 2026-05-01
+updated: 2026-05-07
 ---
 
 ## Summary
@@ -43,10 +43,10 @@ This generated bucket is either split into implementation-ready child issues or 
 
 In scope:
 
-- [ ] Inspect the smart triage report below
-- [ ] Confirm whether existing open/done issues already cover this bucket
-- [ ] Split one feature family, one observable behavior, or one fixed reference window into child issues
-- [ ] Preserve exact reproduction commands and representative AST/diagnostic evidence in each child issue
+- [x] Inspect the smart triage report below
+- [x] Confirm whether existing open/done issues already cover this bucket
+- [x] Split one feature family, one observable behavior, or one fixed reference window into child issues
+- [x] Preserve exact reproduction commands and representative AST/diagnostic evidence in each child issue
 
 Out of scope:
 
@@ -68,10 +68,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] Duplicate candidates below are confirmed as no-match or this issue is superseded
-- [ ] At least one child issue contains an exact `mise run reference-triage -- ...` command
-- [ ] Child issue includes failing path, diagnostic code, source context, visible symbols, and parser/TypeScript AST evidence
-- [ ] Child issue acceptance names the exact fixture/reference path and diagnostic/stdout change
+- [x] Duplicate candidates below are confirmed as no-match or this issue is superseded
+- [x] At least one child issue contains an exact `mise run reference-triage -- ...` command
+- [x] Child issue includes failing path, diagnostic code, source context, visible symbols, and parser/TypeScript AST evidence
+- [x] Child issue acceptance names the exact fixture/reference path and diagnostic/stdout change
 
 ## Validation
 
@@ -98,15 +98,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] updated: `current-state.md` (repo root)
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] superseded by `issues/open/5334-parse-class-constructor-overload-signatures.md`
 
 ## Notes
 
@@ -120,7 +120,29 @@ Follow-up issues:
 
 ## Smart triage
 
-Not generated. Rerun with `--triage-limit 1` or higher.
+Fresh triage on 2026-05-07 shows this generated bucket is blocked by the same
+bodyless class constructor overload signature boundary tracked by issue 5334.
+
+Current diagnostic:
+
+```text
+error: [DuplicateFunction] duplicate constructor definition
+```
+
+Source context:
+
+```ts
+class D {
+    constructor(x: "hi");
+    constructor(x: "foo");
+    constructor(x: number);
+    constructor(x: "hi") { }
+}
+```
+
+TypeScript oracle: TS2394 on incompatible specialized overload signatures.
+
+This bucket was superseded by `issues/open/5334-parse-class-constructor-overload-signatures.md`.
 
 ## Completion evidence
 
@@ -128,16 +150,22 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- `...`
+- `...` (filled by commit that moves this issue)
 
 Validation result:
 
 ```text
-command:
-result:
-date:
+command: python scripts/manager.py reference-coverage tsc --path-filter reference/typescript/tests/cases/compiler/constructorsWithSpecializedSignatures.ts --detail --no-dashboard-data
+result: pass; executed=1, build_pass=0, unsupported=1, diagnostic DuplicateFunction
+date: 2026-05-07
+
+command: python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/constructorsWithSpecializedSignatures.ts
+result: pass; reproduced DuplicateFunction constructor overload blocker and mapped it to issue 5334
+date: 2026-05-07
 ```
 
 Remaining risks:
 
-- none
+- TS2394 specialized constructor overload compatibility diagnostics and
+  interface construct signatures remain hidden until issue 5334 advances past
+  the constructor overload parser/validation boundary.

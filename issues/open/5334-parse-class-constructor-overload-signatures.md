@@ -157,14 +157,9 @@ Split from `issues/done/1267-implement-collisionArgumentsClassConstructor.md`
 on 2026-05-07.
 
 2026-05-07 additional evidence:
-`collisionThisExpressionAndPropertyNameAsConstuctorParameter.ts` parses tokens
-and AST for ordinary constructor `_this` parameters, parameter properties, and
-nested arrow returns, then fails during validation/resolution with
-`DuplicateFunction: duplicate constructor definition` when it reaches classes
-with bodyless constructor overload signatures followed by an implementation.
-The TypeScript oracle accepts the file with no diagnostics. Later
-parameter-property and lexical `this` collision behavior remains unproven until
-this constructor-overload blocker is resolved.
+
+- `issues/done/1317-implement-collisionSuperAndPropertyNameAsConstuctorParameter.md` reaches the same `DuplicateFunction: duplicate constructor definition` boundary before `_super` parameter-property cases.
+- `issues/done/1485-implement-constructorsWithSpecializedSignatures.md` reaches the same boundary before TypeScript's TS2394 specialized overload compatibility diagnostics.
 
 ## Completion evidence
 
