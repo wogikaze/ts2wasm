@@ -135,6 +135,7 @@ Follow-up issues:
 
 Split from generated bucket `issues/done/1138-implement-checkJsdocTypeTagOnExportAssignment.md`.
 Also owns the matching first blocker folded from `issues/done/1162-implement-circularReferenceInImport.md`; see that closed bucket for full `./db` triage evidence.
+Also owns `issues/done/3317-implement-moduleAugmentationExtendFileModule.md`: both `moduleAugmentationExtendFileModule1.ts` and `moduleAugmentationExtendFileModule2.ts` currently parse the `@filename` sections and then report issue-232 missing local module `./observable`, with the same sibling virtual-section resolution requirement as the side-effect `./map` import.
 
 ## Completion evidence
 
