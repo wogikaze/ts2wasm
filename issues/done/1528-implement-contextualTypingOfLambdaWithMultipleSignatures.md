@@ -8,7 +8,7 @@ priority: P1
 depends_on: []
 blocks: []
 created: 2026-05-01
-updated: 2026-05-01
+updated: 2026-05-07
 ---
 
 ## Summary
@@ -43,10 +43,10 @@ This generated bucket is either split into implementation-ready child issues or 
 
 In scope:
 
-- [ ] Inspect the smart triage report below
-- [ ] Confirm whether existing open/done issues already cover this bucket
-- [ ] Split one feature family, one observable behavior, or one fixed reference window into child issues
-- [ ] Preserve exact reproduction commands and representative AST/diagnostic evidence in each child issue
+- [x] Inspect the smart triage report below
+- [x] Confirm whether existing open/done issues already cover this bucket
+- [x] Split one feature family, one observable behavior, or one fixed reference window into child issues
+- [x] Preserve exact reproduction commands and representative AST/diagnostic evidence in each child issue
 
 Out of scope:
 
@@ -68,10 +68,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] Duplicate candidates below are confirmed as no-match or this issue is superseded
-- [ ] At least one child issue contains an exact `mise run reference-triage -- ...` command
-- [ ] Child issue includes failing path, diagnostic code, source context, visible symbols, and parser/TypeScript AST evidence
-- [ ] Child issue acceptance names the exact fixture/reference path and diagnostic/stdout change
+- [x] Duplicate candidates below are confirmed as no-match or this issue is superseded
+- [x] At least one child issue contains an exact `mise run reference-triage -- ...` command
+- [x] Child issue includes failing path, diagnostic code, source context, visible symbols, and parser/TypeScript AST evidence
+- [x] Child issue acceptance names the exact fixture/reference path and diagnostic/stdout change
 
 ## Validation
 
@@ -98,15 +98,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] updated: `current-state.md` (repo root)
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] none; stale build-pass bucket
 
 ## Notes
 
@@ -116,11 +116,25 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- none found by path/title/feature scan
+- No child issue needed. Fresh triage shows no current compiler blocker:
+  `contextualTypingOfLambdaWithMultipleSignatures2.ts` is a build-pass case.
 
 ## Smart triage
 
-Not generated. Rerun with `--triage-limit 1` or higher.
+Generated 2026-05-07.
+
+```text
+command:
+env TS2WASM_BINARY=/home/wogikaze/wgkz/ts2wasm/target/debug/ts2wasm python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/contextualTypingOfLambdaWithMultipleSignatures2.ts
+
+result:
+BuildPass: ts2wasm build succeeded
+feature_label: build-pass
+tokens: ok
+AST: ok; declaration erases overloaded call signatures and assignment keeps arrow body `a.asdf`
+resolved: ok; `f` assignment resolves to ArrowFn with PropertyAccess `a.asdf`
+TypeScript oracle: ok, no diagnostics
+```
 
 ## Completion evidence
 
@@ -128,16 +142,27 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- `...`
+- stale build-pass cleanup
 
 Validation result:
 
 ```text
 command:
+env TS2WASM_BINARY=/home/wogikaze/wgkz/ts2wasm/target/debug/ts2wasm python scripts/manager.py reference-coverage tsc --path-filter reference/typescript/tests/cases/compiler/contextualTypingOfLambdaWithMultipleSignatures2.ts --detail --no-dashboard-data
 result:
+pass; executed=1, build_pass=1, unsupported=0, fail=0
 date:
+2026-05-07
+
+command:
+env TS2WASM_BINARY=/home/wogikaze/wgkz/ts2wasm/target/debug/ts2wasm python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/contextualTypingOfLambdaWithMultipleSignatures2.ts
+result:
+pass; BuildPass, no current compiler blocker
+date:
+2026-05-07
 ```
 
 Remaining risks:
 
-- none
+- none for this bucket; future semantic parity work should be tracked only if a
+  semantic-enabled window reports a mismatch.

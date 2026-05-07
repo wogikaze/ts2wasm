@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 6 | 5 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4563 | 3471 | 1092 |
+| frontend | 4563 | 3470 | 1093 |
 | harness | 1 | 0 | 1 |
 | ir | 74 | 52 | 22 |
 | issues | 4 | 0 | 4 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5218 | 3768 | 1450 |
+| total | 5218 | 3767 | 1451 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -597,7 +597,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 759 | Implement Asynciife | spike | frontend/syntax | class: triage-needed | Implement Asynciife |
 | 760 | Implement Asyncimportnestedyield | spike | reference/triage | class: triage-needed | Implement Asyncimportnestedyield |
 | 761 | Implement Asynciteratorextraparameters | spike | runtime/builtins | class: triage-needed | Implement Asynciteratorextraparameters |
-| 1528 | Implement Contextualtypingoflambdawithmultiplesignatures | spike | frontend/syntax | class: triage-needed | Implement Contextualtypingoflambdawithmultiplesignatures |
 | 1529 | Implement Contextualtypingoftooshortoverloads | spike | frontend/syntax | class: blocked | Implement Contextualtypingoftooshortoverloads |
 | 1530 | Implement Contextualtypingreturnstatementwithreturntypeannotation | spike | frontend/resolver | class: blocked | Implement Contextualtypingreturnstatementwithreturntypeannotation |
 | 1531 | Implement Contextualtypingtwoinstancesofsametypeparameter | spike | frontend/syntax | class: blocked | Implement Contextualtypingtwoinstancesofsametypeparameter |
@@ -5174,6 +5173,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1525 | Implement Contextualtypingofconditionalexpression | spike | frontend/semantics | see `issues/done/1525-implement-contextualTypingOfConditionalExpression.md` |
 | 1526 | Implement Contextualtypingofgenericfunctiontypedarguments | spike | frontend/semantics | see `issues/done/1526-implement-contextualTypingOfGenericFunctionTypedArguments.md` |
 | 1527 | Implement Contextualtypingoflambdareturnexpression | spike | frontend/syntax | see `issues/done/1527-implement-contextualTypingOfLambdaReturnExpression.md` |
+| 1528 | Implement Contextualtypingoflambdawithmultiplesignatures | spike | frontend/syntax | see `issues/done/1528-implement-contextualTypingOfLambdaWithMultipleSignatures.md` |
 | 2050 | Implement Duplicatelocalvariable Duplicate Local | spike | reference/triage | see `issues/done/2050-implement-duplicateLocalVariable-duplicate-local.md` |
 | 3002 | Implement Isolateddeclarationerrorsdefault | spike | runtime/builtins | see `issues/done/3002-implement-isolatedDeclarationErrorsDefault.md` |
 | 3131 | Implement Jsxfactorynotidentifierorqualifiedname | spike | reference/triage | see `issues/done/3131-implement-jsxFactoryNotIdentifierOrQualifiedName.md` |
