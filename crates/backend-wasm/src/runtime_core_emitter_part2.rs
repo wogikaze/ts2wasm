@@ -1107,6 +1107,11 @@ impl WatEmitter<'_> {
           (i32.eq
             (i32.load (i32.and (local.get $b) (i32.const {heap_mask})))
             (i32.const {heap_number_sentinel})))))
+    ;; NaN sentinel check: NaN must never be equal to anything (including itself)
+    (if (i32.or
+          (i32.eq (local.get $a) (i32.const {nan_sentinel}))
+          (i32.eq (local.get $b) (i32.const {nan_sentinel})))
+      (then (return (i32.const {false_tag}))))
     (if (i32.and (local.get $a_is_number) (local.get $b_is_number))
       (then
         (return
@@ -1121,6 +1126,7 @@ impl WatEmitter<'_> {
             true_tag = ValueTag::TRUE,
             false_tag = ValueTag::FALSE,
             zero = RuntimeConst::ZERO,
+            nan_sentinel = (ValueTag::NAN_PAYLOAD as u32) << ValueTag::NUMBER_SHIFT as u32 | ValueTag::NUMBER as u32,
             tag_mask = ValueTag::TAG_MASK,
             number_tag = ValueTag::NUMBER,
             object_tag = ValueTag::OBJECT,
