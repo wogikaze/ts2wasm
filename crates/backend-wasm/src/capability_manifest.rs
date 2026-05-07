@@ -70,8 +70,7 @@ fn canonical_manifest_from_link_plan(plan: &RuntimeLinkPlan) -> CapabilityManife
                     .entry("wasi.env".to_owned())
                     .or_default()
                     .push("process.env".to_owned());
-||||||| parent of a373e631 (backend-wasm: implement WASI path_open/fd_read/fd_write for fs.readFileSync and fs.writeFileSync)
-
+            }
             Capability::WasiFilesystemRead => {
                 manifest
                     .wasi
@@ -107,7 +106,6 @@ fn canonical_manifest_from_link_plan(plan: &RuntimeLinkPlan) -> CapabilityManife
                     .entry("wasi.filesystem.write".to_owned())
                     .or_default()
                     .push("fs.appendFileSync".to_owned());
- (backend-wasm: implement WASI path_open/fd_read/fd_write for fs.readFileSync and fs.writeFileSync)
             }
             Capability::HostFsReadFileSync
             | Capability::HostFsWriteFileSync
