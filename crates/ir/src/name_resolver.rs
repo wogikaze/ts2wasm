@@ -103,37 +103,48 @@ impl NameResolver {
         // Only concrete (body-ful) duplicates are rejected.
         for stmt in program {
             if let Stmt::Function {
-                name, body, span, ..
+                name,
+                overload_signature,
+                span,
+                ..
             } = stmt
             {
-                let is_concrete = !body.is_empty();
-                if self.functions.contains_key(name) && is_concrete {
+                if self.functions.contains_key(name) && !overload_signature {
                     return Err(Diagnostic {
                         code: DiagCode::DuplicateFunction,
                         message: format!("duplicate function definition: `{name}`"),
                         span: Some(*span),
                     });
                 }
-                if is_concrete {
+                if !overload_signature {
                     self.functions.insert(name.clone(), Some(*span));
                 }
             }
         }
         // After the pass, verify each bodyless overload has a concrete
-        // (body-ful) implementation.
+        // (body-ful) implementation. Ambient declarations (declare function)
+        // are exempt since they are erased at compile time.
         let concrete_names: std::collections::HashSet<&str> = program
             .iter()
             .filter_map(|s| match s {
-                Stmt::Function { name, body, .. } if !body.is_empty() => Some(name.as_str()),
+                Stmt::Function {
+                    name,
+                    overload_signature,
+                    ..
+                } if !overload_signature => Some(name.as_str()),
                 _ => None,
             })
             .collect();
         for stmt in program {
             if let Stmt::Function {
-                name, body, span, ..
+                name,
+                overload_signature,
+                is_ambient,
+                span,
+                ..
             } = stmt
             {
-                if body.is_empty() && !concrete_names.contains(name.as_str()) {
+                if *overload_signature && !*is_ambient && !concrete_names.contains(name.as_str()) {
                     return Err(Diagnostic {
                         code: DiagCode::UnsupportedSyntax,
                         message: format!(
@@ -302,7 +313,9 @@ impl NameResolver {
                 body,
                 is_generator,
                 is_ambient,
+                overload_signature,
                 span,
+                ..
             } => {
                 // Function declarations are already collected in first pass
                 // Now resolve the function body with its own scope
@@ -336,6 +349,7 @@ impl NameResolver {
                     body: resolved_body,
                     is_generator: *is_generator,
                     is_ambient: *is_ambient,
+                    overload_signature: *overload_signature,
                     span: *span,
                 })
             }

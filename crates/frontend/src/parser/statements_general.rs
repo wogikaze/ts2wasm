@@ -826,6 +826,7 @@ impl Parser {
                 body,
                 is_generator,
                 is_ambient: false,
+                overload_signature: false,
                 span: eval_span,
             })),
             _ => Ok(None),
@@ -1216,6 +1217,7 @@ impl Parser {
                 body: Vec::new(),
                 is_generator: false,
                 is_ambient: false,
+                overload_signature: true,
                 span: Span {
                     start: start.start,
                     end: start.end,
@@ -1230,6 +1232,7 @@ impl Parser {
             body,
             is_generator: false,
             is_ambient: false,
+            overload_signature: false,
             span: Span {
                 start: start.start,
                 end,
@@ -1271,6 +1274,7 @@ impl Parser {
             body: Vec::new(),
             is_generator: true,
             is_ambient: false,
+            overload_signature: false,
             span: Span {
                 start: start.start,
                 end,
@@ -1316,6 +1320,7 @@ impl Parser {
                 body: Vec::new(),
                 is_generator: true,
                 is_ambient: false,
+                overload_signature: false,
                 span: Span {
                     start: async_span.start,
                     end,
@@ -1356,6 +1361,7 @@ impl Parser {
             body: Vec::new(),
             is_generator: false,
             is_ambient: false,
+            overload_signature: false,
             span: Span {
                 start: async_span.start,
                 end,

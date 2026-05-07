@@ -505,6 +505,7 @@ impl Parser {
             body: Vec::new(),
             is_generator: false,
             is_ambient: true,
+            overload_signature: true,
             span: name_span,
         });
         Ok(())

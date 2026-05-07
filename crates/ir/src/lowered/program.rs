@@ -384,15 +384,38 @@ fn collect_function_ids(program: &[ResolvedStmt]) -> Result<HashMap<String, Func
     let mut function_ids = HashMap::new();
     let mut next_func_id = 0;
 
+    // Pre-collect names with concrete (non-empty body) functions for
+    // overload-group detection.
+    let concrete_names: HashSet<&str> = program
+        .iter()
+        .filter_map(|s| match s {
+            ResolvedStmt::Function { name, body, .. } if !body.is_empty() => {
+                Some(name.as_str())
+            }
+            _ => None,
+        })
+        .collect();
+
     for stmt in program {
         match stmt {
-            ResolvedStmt::Function { name, .. } => {
+            ResolvedStmt::Function {
+                name, body, ..
+            } => {
                 if function_ids.contains_key(name.as_str()) {
-                    return Err(Diagnostic {
-                        code: DiagCode::DuplicateFunction,
-                        message: format!("duplicate function definition: `{name}`"),
-                        span: None,
-                    });
+                    // Allow bodyless overloads to reuse an existing name.
+                    // Only body-ful (concrete function body) duplicates are errors.
+                    if !body.is_empty() {
+                        return Err(Diagnostic {
+                            code: DiagCode::DuplicateFunction,
+                            message: format!("duplicate function definition: `{name}`"),
+                            span: None,
+                        });
+                    }
+                    continue;
+                }
+                // Skip bodyless overloads that have a concrete implementation.
+                if body.is_empty() && concrete_names.contains(name.as_str()) {
+                    continue;
                 }
                 function_ids.insert(name.clone(), FuncId(next_func_id));
                 next_func_id += 1;

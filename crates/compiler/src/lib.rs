@@ -515,6 +515,7 @@ fn lower_static_named_import_bindings_for_build(
                     body,
                     is_generator: false,
                     is_ambient: false,
+                    overload_signature: false,
                     span,
                 } = declaration.as_ref()
                 {
@@ -1298,6 +1299,7 @@ fn rewrite_static_module_body_for_build(
                     body,
                     is_generator: false,
                     is_ambient: false,
+                    overload_signature: false,
                     span,
                 } = declaration.as_ref()
                 {
