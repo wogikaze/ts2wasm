@@ -768,21 +768,14 @@ impl NameResolver {
             } => {
                 self.enter_scope();
                 self.function_depth += 1;
-                for (param_name, default, is_rest) in params {
+                for param_name in params {
                     self.declare_binding(param_name, Some(*span), false)?;
-                    if *is_rest {
-                        // For rest params with binding patterns like (...[value]),
-                        // also declare the inner names from the pattern
-                        if let Some(inner) = param_name.strip_prefix("...")
-                            && let Some(pattern) = parse_binding_pattern(inner, Some(*span))?
-                        {
-                            for name in pattern.names() {
-                                self.declare_variable(name, Some(*span), false)?;
-                            }
+                    if let Some(inner) = param_name.strip_prefix("...")
+                        && let Some(pattern) = parse_binding_pattern(inner, Some(*span))?
+                    {
+                        for name in pattern.names() {
+                            self.declare_variable(name, Some(*span), false)?;
                         }
-                    }
-                    if let Some(default_expr) = default {
-                        self.resolve_expr(default_expr)?;
                     }
                 }
                 let resolved_body = Box::new(self.resolve_expr(body)?);
@@ -1105,38 +1098,6 @@ impl NameResolver {
                 else_expr: Box::new(self.resolve_expr(else_expr)?),
                 span: *span,
             }),
-            Expr::ArrowFn {
-                params,
-                body,
-                body_stmts,
-                span,
-            } => {
-                self.enter_scope();
-                for param in params {
-                    self.declare_binding(param, Some(*span), false)?;
-                    // For rest params with binding patterns like (...[value]),
-                    // also declare the inner names from the pattern
-                    if let Some(inner) = param.strip_prefix("...")
-                        && let Some(pattern) = parse_binding_pattern(inner, Some(*span))?
-                    {
-                        for name in pattern.names() {
-                            self.declare_variable(name, Some(*span), false)?;
-                        }
-                    }
-                }
-                let resolved_body_stmts = body_stmts
-                    .iter()
-                    .map(|s| self.resolve_stmt(s))
-                    .collect::<Result<Vec<_>, _>>()?;
-                let resolved_body = self.resolve_expr(body)?;
-                self.exit_scope();
-                Ok(Expr::ArrowFn {
-                    params: params.clone(),
-                    body: Box::new(resolved_body),
-                    body_stmts: resolved_body_stmts,
-                    span: *span,
-                })
-            }
             Expr::Spread { expr, span } => Ok(Expr::Spread {
                 expr: Box::new(self.resolve_expr(expr)?),
                 span: *span,

@@ -326,7 +326,6 @@ pub(super) fn stmt_contains_return_stmt(stmt: &Stmt) -> bool {
         | Stmt::Throw { .. }
         | Stmt::Break { .. }
         | Stmt::Continue { .. } => false,
-        Stmt::Block { .. } => false,
     }
 }
 
@@ -445,8 +444,7 @@ pub(super) fn validate_static_block_stmt(stmt: &Stmt) -> Result<(), Diagnostic> 
             validate_static_block_stmts(body)
         }
         Stmt::Labeled { body, .. } => validate_static_block_stmt(body),
-        Stmt::Block { .. }
-        | Stmt::Break { .. }
+        Stmt::Break { .. }
         | Stmt::Continue { .. }
         | Stmt::AmbientValueDecl { .. } => Ok(()),
         Stmt::ImportSideEffect { span, .. }
