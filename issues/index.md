@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 6 | 3 | 3 |
 | coverage | 44 | 1 | 43 |
 | docs | 5 | 0 | 5 |
-| frontend | 4546 | 3423 | 1123 |
+| frontend | 4546 | 3422 | 1124 |
 | harness | 1 | 0 | 1 |
 | ir | 72 | 31 | 41 |
 | issues | 5 | 0 | 5 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 8 | 0 | 8 |
 | wasi | 4 | 0 | 4 |
-| total | 5223 | 3694 | 1529 |
+| total | 5223 | 3693 | 1530 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -270,7 +270,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5383 | Classify number parameter toFixed calls | feature | ir/lowering | implementation-ready | P1 |  | `x.toFixed()` inside an arrow callback with `x: number` falls through to `issue-211: unknown receiver class for metho... |
 | 5384 | Resolve ambient function value references | feature | frontend/resolver | implementation-ready | P1 |  | `contextualTypingReturnStatementWithReturnTypeAnnotation.ts` currently |
 | 5385 | Parse arrow body assignment expressions | feature | frontend/syntax | implementation-ready | P1 | 5000 | `contextualTypingTwoInstancesOfSameTypeParameter.ts` currently fails |
-| 5386 | Bind DOM setTimeout global | feature | frontend/resolver | implementation-ready | P1 |  | `contextuallyTypeArgumentsKeyword.ts` requests `// @lib: es2017, dom` |
 | 5387 | Parse function expression statements in nested blocks | feature | frontend/syntax | implementation-ready | P2 | 5000 | capturedLetConstInLoop parser tests reject `(function() { return x })` |
 | 5388 | W5: test262 coverage ramp from 100 to 500 executed | feature | coverage | design-ready | P1 |  | W5: test262 coverage ramp from 100 to 500 executed |
 <!-- generated:ready:end -->
@@ -5334,6 +5333,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5243 | Implement non-literal Date constructor inputs | feature | runtime/builtins | see file |
 | 5244 | Define timezone formatting policy for Date.prototype.toString | design | runtime/builtins | see file |
 | 5245 | Implement ECMAScript iterator protocol runtime for spread operator | feature | runtime/semantics | see `issues/done/5245-iterator-protocol-runtime.md` |
+| 5386 | Bind DOM setTimeout global | feature | frontend/resolver | see `issues/done/5386-bind-dom-settimeout-global.md` |
 <!-- generated:done:end -->
 
 ## Index generation contract

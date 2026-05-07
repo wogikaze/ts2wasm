@@ -10,9 +10,17 @@ impl Parser {
         while self.peek_parameter_property_modifier()
             && matches!(self.peek_n(1), Some(Token::Ident(_)))
         {
-            if allow_parameter_property {
-                is_parameter_property = true;
+            if !allow_parameter_property {
+                let span = self.peek_span().unwrap_or_default();
+                return Err(Diagnostic {
+                    code: DiagCode::UnsupportedSyntax,
+                    message:
+                        "issue-071: parameter property modifiers are only allowed in constructor parameters"
+                            .to_owned(),
+                    span: Some(span),
+                });
             }
+            is_parameter_property = true;
             self.advance();
         }
 

@@ -348,6 +348,14 @@ impl Parser {
         self.expect(TokenKind::LeftParen)?;
         if !self.consume(TokenKind::RightParen) {
             loop {
+                // Parameter property modifiers (public/private/protected/readonly)
+                // are only valid in constructor parameters, not arrow functions.
+                // Return false early to let the expression parser handle it.
+                if matches!(self.peek(), _)
+                    && matches!(self.peek_n(1), Some(Token::Ident(_)))
+                {
+                    return Ok(false);
+                }
                 self.parse_param(false, false)?;
                 if self.consume(TokenKind::RightParen) {
                     break;
