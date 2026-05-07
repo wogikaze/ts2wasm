@@ -3,12 +3,12 @@ id: 1505
 title: "Implement Contextualtupletypeparameterreadonly"
 type: spike
 area: frontend/syntax
-class: blocked
+class: done
 priority: P1
-depends_on: [5000]
+depends_on: []
 blocks: []
 created: 2026-05-01
-updated: 2026-05-01
+updated: 2026-05-07
 ---
 
 ## Summary
@@ -43,10 +43,10 @@ This generated bucket is either split into implementation-ready child issues or 
 
 In scope:
 
-- [ ] Inspect the smart triage report below
-- [ ] Confirm whether existing open/done issues already cover this bucket
-- [ ] Split one feature family, one observable behavior, or one fixed reference window into child issues
-- [ ] Preserve exact reproduction commands and representative AST/diagnostic evidence in each child issue
+- [x] Inspect the smart triage report below
+- [x] Confirm whether existing open/done issues already cover this bucket
+- [x] Split one feature family, one observable behavior, or one fixed reference window into child issues
+- [x] Preserve exact reproduction commands and representative AST/diagnostic evidence in each child issue
 
 Out of scope:
 
@@ -68,10 +68,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] Duplicate candidates below are confirmed as no-match or this issue is superseded
-- [ ] At least one child issue contains an exact `mise run reference-triage -- ...` command
-- [ ] Child issue includes failing path, diagnostic code, source context, visible symbols, and parser/TypeScript AST evidence
-- [ ] Child issue acceptance names the exact fixture/reference path and diagnostic/stdout change
+- [x] Duplicate candidates below are confirmed as no-match or this issue is superseded
+- [x] Existing issue 5281 contains an exact `reference-triage` command and now names this path
+- [x] This issue includes failing path, diagnostic code, source context, visible symbols, and parser/TypeScript AST evidence
+- [x] Completion evidence names the exact fixture/reference path and diagnostic/stdout change
 
 ## Validation
 
@@ -98,15 +98,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] updated: `current-state.md` (repo root)
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] superseded by `issues/open/5281-resolve-commented-arrow-rest-parameters.md`
 
 ## Notes
 
@@ -120,7 +120,38 @@ Follow-up issues:
 
 ## Smart triage
 
-Not generated. Rerun with `--triage-limit 1` or higher.
+Fresh triage on 2026-05-07 shows this generated blocked bucket is now the same
+arrow rest parameter resolver binding gap owned by
+`issues/open/5281-resolve-commented-arrow-rest-parameters.md`.
+
+Current diagnostic:
+
+```text
+UnresolvedName: unresolved name: `args` at 397..401
+```
+
+Source context:
+
+```ts
+eacher((...args) => {
+    const [a, b] = args;
+    a;
+    b;
+});
+```
+
+Compiler evidence:
+
+```text
+tokens: ok through ReadonlyArray annotations, `as const`, and arrow rest parameter
+ast: ok; second eacher call contains ArrowFn with rest parameter args and body_stmts
+resolved: fail in resolve_names for `args` inside `const [a, b] = args`
+TypeScript oracle: `args` parameter has readonly tuple union type and reports earlier TS2345
+```
+
+No new child issue was created because issue 5281 already scopes resolver
+binding for arrow rest parameters. This file confirms the same resolver gap
+without comments between `...` and the parameter name.
 
 ## Completion evidence
 
@@ -140,4 +171,5 @@ date:
 
 Remaining risks:
 
-- none
+- Readonly tuple contextual typing remains hidden until issue 5281 advances the
+  file past the current arrow rest parameter resolver boundary.

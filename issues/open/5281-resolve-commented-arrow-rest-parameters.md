@@ -1,6 +1,6 @@
 ---
 id: 5281
-title: "Resolve commented arrow rest parameters"
+title: "Resolve arrow rest parameter bindings"
 type: feature
 area: ir/name-resolution
 class: implementation-ready
@@ -13,8 +13,8 @@ updated: 2026-05-06
 
 ## Summary
 
-Fix name resolution for arrow function rest parameters when comments/trivia
-appear between `...` and the parameter name.
+Fix name resolution for arrow function rest parameters, including cases where
+comments/trivia appear between `...` and the parameter name.
 
 ## Problem
 
@@ -112,6 +112,8 @@ Do not touch:
 ## Acceptance criteria
 
 - [ ] `(.../* comment */args) => args.length` and `(first, .../* comment */rest) => rest.length` resolve their rest parameters.
+- [ ] `contextualTupleTypeParameterReadonly.ts` no longer reports
+  `UnresolvedName` for `args` inside `eacher((...args) => { ... })`.
 - [ ] Existing non-rest arrow parameter tests still pass.
 - [ ] `python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/commentsAfterSpread.ts` no longer reports `UnresolvedName: unresolved name: \`args\``.
 
@@ -165,6 +167,15 @@ Related but not duplicates:
   resolver binding gap.
 - `issues/done/5064-implement-arrow-function.md` is the broad arrow-function
   generated bucket and was superseded by narrower children.
+
+2026-05-07 fold-in:
+
+- `issues/done/1505-implement-contextualTupleTypeParameterReadonly.md` reaches
+  the same resolver gap for an uncommented arrow rest parameter:
+  `eacher((...args) => { const [a, b] = args; })`.
+- Current diagnostic: `UnresolvedName: unresolved name: \`args\`` inside the
+  arrow body. TypeScript oracle binds `args` and reports an earlier TS2345
+  readonly tuple assignability diagnostic.
 
 ## Completion Evidence
 
