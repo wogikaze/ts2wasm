@@ -201,6 +201,12 @@ Additional superseded bucket:
   for `export const enum MyConstEnum { ... }`; TypeScript parses the
   declaration and then reports later export consistency, multiple default
   export, and missing module diagnostics.
+- `issues/done/1458-implement-constEnumToStringNoComments.md` reaches the same
+  parser boundary before toString/no-comments behavior. Fresh triage on
+  2026-05-07 reports `const declarations require an initializer at 52..56` for
+  `const enum Foo { ... }`; TypeScript parses the enum, reports no diagnostics,
+  and sees later `Foo.X.toString()` and `Foo["X"].toString()` statements that
+  are not reached before this parser boundary.
 
 ## Completion evidence
 
