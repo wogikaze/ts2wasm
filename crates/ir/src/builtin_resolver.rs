@@ -1080,6 +1080,7 @@ fn resolve_stmt_with_outer_bindings(
             let extends_name = match extends {
                 Some(ext_expr) => match ext_expr.as_ref() {
                     Expr::Ident { name: parent, .. } => Some(parent.clone()),
+                    Expr::Null { .. } => Some("null".to_owned()),
                     _ => {
                         return Err(Diagnostic {
                             code: DiagCode::UnsupportedSyntax,

@@ -18,7 +18,7 @@ Issue files are the source of truth for work items. The generated section below 
 | docs | 5 | 0 | 5 |
 | frontend | 4546 | 3853 | 693 |
 | harness | 1 | 0 | 1 |
-| ir | 72 | 30 | 42 |
+| ir | 72 | 29 | 43 |
 | issues | 5 | 0 | 5 |
 | parser | 1 | 0 | 1 |
 | reference | 212 | 163 | 49 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 8 | 0 | 8 |
 | wasi | 4 | 0 | 4 |
-| total | 5223 | 4136 | 1087 |
+| total | 5223 | 4135 | 1088 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -367,7 +367,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5255 | Resolve super property accesses | feature | frontend/resolver | implementation-ready | P1 |  | `classExtendingAny.ts` parses class declarations, `extends Err`, and |
 | 5256 | Report non-constructor class heritage expressions | feature | ir/resolver | implementation-ready | P1 |  | `classExtendsInterface_not.ts` parses `class C extends "".bogus {}`, |
 | 5257 | Parse object type literal construct signatures | feature | frontend/parser | implementation-ready | P1 |  | `classExtendsInterfaceInExpression.ts` fails before class heritage can |
-| 5258 | Report super calls in class extends null constructors | feature | ir/resolver | implementation-ready | P1 |  | `classExtendsNull.ts` parses `extends null` and a constructor |
 | 5259 | Report super property access in class extends null | feature | ir/resolver | implementation-ready | P1 |  | `classExtendsNull3.ts` parses two classes with `extends null` and |
 | 5260 | Report class heritage trailing comma | feature | frontend/parser | implementation-ready | P1 |  | `classHeritageWithTrailingSeparator.ts` tokenizes the class heritage |
 | 5261 | Report class-typed missing instance method calls | feature | ir/lowering | implementation-ready | P1 |  | Report class-typed missing instance method calls |
@@ -5334,6 +5333,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5244 | Define timezone formatting policy for Date.prototype.toString | design | runtime/builtins | see file |
 | 5245 | Implement ECMAScript iterator protocol runtime for spread operator | feature | runtime/semantics | see `issues/done/5245-iterator-protocol-runtime.md` |
 | 5247 | Fix JS noEmit class constructor FuncId invariant | feature | ir/compiler | see file |
+| 5258 | Report super calls in class extends null constructors | feature | ir/resolver | see file |
 <!-- generated:done:end -->
 
 ## Index generation contract
