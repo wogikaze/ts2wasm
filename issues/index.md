@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 7 | 6 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4585 | 3376 | 1209 |
+| frontend | 4587 | 3377 | 1210 |
 | harness | 1 | 0 | 1 |
 | ir | 81 | 59 | 22 |
 | issues | 4 | 0 | 4 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5253 | 3675 | 1578 |
+| total | 5255 | 3676 | 1579 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -371,6 +371,8 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5416 | Report invalid block after member expression statement | bug | frontend/parser | implementation-ready | P1 |  | the parser should reject or recover from a block immediately following |
 | 5417 | Parse default keyword in named import specifiers | feature | frontend/module-syntax | implementation-ready | P1 |  | the parser should accept contextual `default` as the imported binding |
 | 5418 | Parse dynamic import call expressions | feature | frontend/module-syntax | implementation-ready | P1 |  | dynamic import calls such as `const foo = import("./b");` are rejected |
+| 5419 | Parse parenthesized self-closing JSX expressions | feature | frontend/jsx | implementation-ready | P1 |  | self-closing JSX expressions in expression position are not parsed or |
+| 5420 | Parse import attributes with clauses | feature | frontend/module-syntax | implementation-ready | P1 |  | import attribute `with { type: "json" }` clauses are not accepted or |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -2326,7 +2328,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 3302 | Implement Modulealiasasfunctionargument | spike | frontend/syntax | class: blocked | Implement Modulealiasasfunctionargument |
 | 3303 | Implement Modulealiasinterface | spike | frontend/syntax | class: blocked | Implement Modulealiasinterface |
 | 3304 | Implement Moduleandinterfacesharingname | spike | frontend/syntax | class: blocked | Implement Moduleandinterfacesharingname |
-| 3358 | Implement Modulepreserve | spike | frontend/syntax | class: blocked | Implement Modulepreserve |
 | 3359 | Implement Modulepreserveimporthelpers | spike | frontend/syntax | class: blocked | Implement Modulepreserveimporthelpers |
 | 3360 | Implement Modulepreservetoplevelawait | spike | reference/triage | class: triage-needed | Implement Modulepreservetoplevelawait |
 | 3361 | Implement Moduleprologueamd | spike | frontend/syntax | class: blocked | Implement Moduleprologueamd |
@@ -5214,6 +5215,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 3355 | Implement Modulenonedynamicimport | maintenance | frontend/syntax | see `issues/done/3355-implement-moduleNoneDynamicImport.md` |
 | 3356 | Implement Modulenoneerrors | maintenance | frontend/syntax | see `issues/done/3356-implement-moduleNoneErrors.md` |
 | 3357 | Implement Moduleouterqualification | maintenance | frontend/syntax | see `issues/done/3357-implement-moduleOuterQualification.md` |
+| 3358 | Implement Modulepreserve | maintenance | frontend/syntax | see `issues/done/3358-implement-modulePreserve.md` |
 | 3690 | Implement Optionaltupleelementsandundefined | spike | reference/triage | see `issues/done/3690-implement-optionalTupleElementsAndUndefined.md` |
 | 3996 | Implement Compiler (dup) | spike | frontend/syntax | see `issues/done/3996-implement-reference-typescript-tests-cases-compiler.md` |
 | 4210 | Implement Splicetuples | spike | frontend/resolver | see `issues/done/4210-implement-spliceTuples.md` |

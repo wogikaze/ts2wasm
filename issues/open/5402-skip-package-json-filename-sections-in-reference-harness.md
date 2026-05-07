@@ -168,6 +168,10 @@ Also owns `issues/done/3354-implement-moduleNodeImportRequireEmit.md`: fresh
 triage stops in `// @filename: package.json` at the first JSON property colon
 before `declare module "foo";`, `import foo = require("foo");`, or NodeNext
 emit diagnostics become reachable.
+Also owns `issues/done/3358-implement-modulePreserve.md` for
+`modulePreserve2.ts`: fresh triage stops in virtual `package.json` at the first
+JSON property colon before package `exports`, ESM/CJS conditional resolution,
+or module-preserve import/require diagnostics become reachable.
 
 ## Completion evidence
 

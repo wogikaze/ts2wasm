@@ -175,6 +175,10 @@ Also owns `issues/done/3356-implement-moduleNoneErrors.md`: fresh triage for
 `moduleNoneErrors.ts` stops at dependency module `export class Foo` in virtual
 `a.ts` before TypeScript's TS2564 uninitialized class property diagnostic
 becomes actionable.
+Also owns `issues/done/3358-implement-modulePreserve.md` for
+`modulePreserve1.ts`: fresh triage stops at dependency module `export class A`
+in virtual `/a.ts` before `export = class B {}`, static import, import-equals,
+or module-preserve emit diagnostics become actionable.
 
 ## Completion evidence
 
