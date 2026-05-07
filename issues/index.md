@@ -16,9 +16,9 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 6 | 5 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4563 | 3473 | 1090 |
+| frontend | 4563 | 3472 | 1091 |
 | harness | 1 | 0 | 1 |
-| ir | 73 | 51 | 22 |
+| ir | 74 | 52 | 22 |
 | issues | 4 | 0 | 4 |
 | parser | 1 | 0 | 1 |
 | reference | 212 | 151 | 61 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5217 | 3769 | 1448 |
+| total | 5218 | 3769 | 1449 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -48,7 +48,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 
 ```
 5000 (Meta: TypeScript Compiler Parser Syntax Coverage) [done/design] ch:446 open:363 done:83
-├── 5002 (Meta: TypeScript Compiler Type System Coverage) [done/done] ch:225 open:208 done:17 (also ← 5005)
+├── 5002 (Meta: TypeScript Compiler Type System Coverage) [done/done] ch:224 open:207 done:17 (also ← 5005)
 ├── 5003 (Meta: TypeScript Compiler Declaration Emit Coverage) [done/done] ch:102 open:91 done:11 (also ← 5001)
 5001 (Meta: TypeScript Compiler Semantic Analysis Coverage) [done/done] ch:559 open:301 done:258
 5004 (Meta: Runtime Builtins Coverage (test262) (audit reopened #5004)) [done/done] ch:24 open:3 done:21
@@ -70,7 +70,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 2 | 5001 | Meta: TypeScript Compiler Semantic Analysis Coverage | done | done | frontend/semantics | P1 | - | 559 | 301 | 258 |
 | 3 | 5004 | Meta: Runtime Builtins Coverage (test262) (audit reopened #5004) | done | done | runtime/builtins | P1 | - | 24 | 3 | 21 |
 | 4 | 5005 | Meta: TypeScript Compiler Name Resolution Coverage | done | done | frontend/resolver | P1 | - | 405 | 350 | 55 |
-| 5 | 5002 | Meta: TypeScript Compiler Type System Coverage | done | done | frontend/semantics | P1 | 5000, 5005 | 225 | 208 | 17 |
+| 5 | 5002 | Meta: TypeScript Compiler Type System Coverage | done | done | frontend/semantics | P1 | 5000, 5005 | 224 | 207 | 17 |
 | 6 | 5003 | Meta: TypeScript Compiler Declaration Emit Coverage | done | done | frontend/syntax | P2 | 5000, 5001 | 102 | 91 | 11 |
 | 7 | 5006 | Meta: TypeScript Compiler Scope Analysis Coverage | done | done | frontend/resolver | P2 | 5005 | 28 | 20 | 8 |
 | 8 | 5007 | Meta: TypeScript Compiler Module Resolution Coverage (audit reopened #5007) | done | done | frontend/resolver | P2 | 5005 | 21 | 19 | 2 |
@@ -337,6 +337,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5380 | Report array literal index-signature element mismatch | feature | frontend/semantics | implementation-ready | P1 |  | array literals assigned to numeric-index-signature interfaces can skip the invalid element diagnostic and fall throug... |
 | 5381 | Parse untyped arrow ternary branches | feature | frontend/syntax | implementation-ready | P1 |  | untyped arrow functions used as ternary conditional branches are rejected during AST construction before contextual t... |
 | 5382 | Parse typed arrow ternary branches | feature | frontend/syntax | implementation-ready | P1 |  | typed arrow functions used as ternary conditional branches are rejected during AST construction before contextual typ... |
+| 5383 | Classify number parameter toFixed calls | feature | ir/lowering | implementation-ready | P1 |  | `x.toFixed()` inside an arrow callback with `x: number` falls through to `issue-211: unknown receiver class for metho... |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -596,7 +597,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 759 | Implement Asynciife | spike | frontend/syntax | class: triage-needed | Implement Asynciife |
 | 760 | Implement Asyncimportnestedyield | spike | reference/triage | class: triage-needed | Implement Asyncimportnestedyield |
 | 761 | Implement Asynciteratorextraparameters | spike | runtime/builtins | class: triage-needed | Implement Asynciteratorextraparameters |
-| 1526 | Implement Contextualtypingofgenericfunctiontypedarguments | spike | frontend/semantics | class: blocked | Implement Contextualtypingofgenericfunctiontypedarguments |
 | 1527 | Implement Contextualtypingoflambdareturnexpression | spike | frontend/syntax | class: triage-needed | Implement Contextualtypingoflambdareturnexpression |
 | 1528 | Implement Contextualtypingoflambdawithmultiplesignatures | spike | frontend/syntax | class: triage-needed | Implement Contextualtypingoflambdawithmultiplesignatures |
 | 1529 | Implement Contextualtypingoftooshortoverloads | spike | frontend/syntax | class: blocked | Implement Contextualtypingoftooshortoverloads |
@@ -5173,6 +5173,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1523 | Implement Contextualtypingofaccessors | spike | frontend/syntax | see `issues/done/1523-implement-contextualTypingOfAccessors.md` |
 | 1524 | Implement Contextualtypingofarrayliterals | spike | frontend/syntax | see `issues/done/1524-implement-contextualTypingOfArrayLiterals.md` |
 | 1525 | Implement Contextualtypingofconditionalexpression | spike | frontend/semantics | see `issues/done/1525-implement-contextualTypingOfConditionalExpression.md` |
+| 1526 | Implement Contextualtypingofgenericfunctiontypedarguments | spike | frontend/semantics | see `issues/done/1526-implement-contextualTypingOfGenericFunctionTypedArguments.md` |
 | 2050 | Implement Duplicatelocalvariable Duplicate Local | spike | reference/triage | see `issues/done/2050-implement-duplicateLocalVariable-duplicate-local.md` |
 | 3002 | Implement Isolateddeclarationerrorsdefault | spike | runtime/builtins | see `issues/done/3002-implement-isolatedDeclarationErrorsDefault.md` |
 | 3131 | Implement Jsxfactorynotidentifierorqualifiedname | spike | reference/triage | see `issues/done/3131-implement-jsxFactoryNotIdentifierOrQualifiedName.md` |
