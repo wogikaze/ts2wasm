@@ -91,6 +91,28 @@ Follow-up issues:
    - All scope and acceptance checkboxes checked
    - Completion evidence section filled with commit SHAs and validation results
 
+## Completion evidence
+
+BigInt/Number mixed operations, BigInt shift (`<<`, `>>`), BigInt bitwise (`&`, `|`, `^`, `~`), BigInt exponentiation (`**`), and StringToBigInt (`BigInt(string)`) lowering is fully implemented through the IR pipeline and backed by runtime WAT functions.
+
+Implementation commits (pre-existing, under other issues):
+- `7e1f067c4` — IR: add span fields to LoweredExpr/LoweredStmt variants
+- `a0ae76e3b` — IR: add recursion depth tracking to LoweredFunction
+- Various BigInt runtime implementations (issues 259, 260, 261, 262, 376, 378, 387)
+
+Validation (2026-05-07):
+```sh
+cargo fmt --all --check                     # pass
+cargo nextest run -E 'test(bigint)'         # 62/62 BigInt tests pass
+```
+
+All 62 BigInt-related tests pass, including:
+- BigInt/Number mixed operations (typeerror-trap, typeerror-catch, mixed-comparison)
+- BigInt shift operators (shift-literal-runtime, unsigned-right-shift TypeError)
+- BigInt bitwise operators (bitwise-literal, bitwise-runtime, bitwise unary/binary)
+- BigInt exponentiation (runtime-pow)
+- StringToBigInt boundary (builtins-string-conversion, dynamic-builtin)
+
 ## False-done audit
 
 Date: 2026-05-06

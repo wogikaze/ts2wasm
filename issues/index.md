@@ -18,7 +18,7 @@ Issue files are the source of truth for work items. The generated section below 
 | docs | 5 | 0 | 5 |
 | frontend | 4546 | 3853 | 693 |
 | harness | 1 | 0 | 1 |
-| ir | 72 | 33 | 39 |
+| ir | 72 | 32 | 40 |
 | issues | 5 | 0 | 5 |
 | parser | 1 | 0 | 1 |
 | reference | 212 | 163 | 49 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 8 | 0 | 8 |
 | wasi | 4 | 0 | 4 |
-| total | 5223 | 4139 | 1084 |
+| total | 5223 | 4138 | 1085 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -348,7 +348,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1512 | Implement Contextualtypeiterableunions | spike | frontend/syntax | done | P1 |  | contextualTypeIterableUnions has 1 reference failures and needs smart-triage evidence before implementation starts. |
 | 1513 | Implement Contextualtypeofindexedaccessparameter | spike | frontend/resolver | done | P1 |  | contextualTypeOfIndexedAccessParameter has 1 reference failures and needs smart-triage evidence before implementation... |
 | 1514 | Implement Contextualtypeonyield | spike | frontend/syntax | done | P1 |  | contextualTypeOnYield has 2 reference failures and needs smart-triage evidence before implementation starts. |
-| 5048 | [ir] Broaden BigInt lowering beyond signed-i64/first-limb slice | feature | ir | implementation-ready | P0 |  | [ir] Broaden BigInt lowering beyond signed-i64/first-limb slice |
 | 5156 | Parse generic type arguments in class heritage clauses | feature | frontend/syntax | implementation-ready | P1 |  | `reference/typescript/tests/cases/compiler/baseTypeOrderChecking.ts` fails parsing on `class Class4<T> extends Class3... |
 | 5163 | Lower nested call expression callees | feature | frontend/semantics | implementation-ready | P2 |  | `reference/typescript/tests/cases/compiler/betterErrorForAccidentalCall.ts` currently reports `UnsupportedSyntax: onl... |
 | 5184 | Parse const enum declarations | feature | frontend/syntax | implementation-ready | P1 |  | `const enum` declarations are parser-unsupported and are misclassified as malformed `const` variable declarations. |
@@ -5145,6 +5144,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5045 | [frontend] Improve syntax error recovery and source spans (audit reopened #5045) | feature | frontend | see `issues/done/5045-frontend-error-recovery.md` |
 | 5046 | [ir] Design full class runtime IR representation | feature | ir | see `issues/done/5046-ir-class-ir.md` |
 | 5047 | [ir] Implement env-cell lowering for outer-scope mutation | feature | ir | see `issues/done/5047-ir-env-cell.md` |
+| 5048 | [ir] Broaden BigInt lowering beyond signed-i64/first-limb slice | feature | ir | see `issues/done/5048-ir-bigint-lowering.md` |
 | 5049 | [ir] Complete destructuring, rest, and default binding lowering | feature | ir | see `issues/done/5049-ir-destructuring.md` |
 | 5050 | [ir] Implement iterator protocol lowering for spread and for-of | feature | ir | see `issues/done/5050-ir-iterator-protocol.md` |
 | 5051 | [runtime-abi] Add ABI layout golden tests and versioning | test | abi | see file |
