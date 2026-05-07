@@ -3,12 +3,13 @@ id: 595
 title: "Implement Aliasesinsystemmodule"
 type: spike
 area: frontend/syntax
-class: blocked
+class: done
 priority: P1
-depends_on: [432]
+depends_on: [5400]
 blocks: []
 created: 2026-05-01
-updated: 2026-05-01
+updated: 2026-05-08
+completed: 2026-05-08
 ---
 
 ## Summary
@@ -17,9 +18,9 @@ Triage aliasesInSystemModule across 2 failing reference test cases and split thi
 
 ## Problem
 
-Reference test results show 2 cases fail in directory `aliasesInSystemModule` with diagnostics: import-export. The compiler cannot handle these syntax/semantics, preventing compilation of code in this category.
+Reference test results show 2 cases failing in directory `aliasesInSystemModule` with diagnostics: import-export. Fresh triage shows the representative current failure is the `export import cls2 = alias.Class;` issue-055 static export boundary, split to issue 5400.
 
-Problem: aliasesInSystemModule has 2 reference failures and needs smart-triage evidence before implementation starts.
+Problem: `aliasesInSystemModule` had 2 generated bucket failures and needed smart-triage evidence. The current parser blocker is now tracked by issue 5400.
 
 ## Current failure
 
@@ -43,10 +44,10 @@ This generated bucket is either split into implementation-ready child issues or 
 
 In scope:
 
-- [ ] Inspect the smart triage report below
-- [ ] Confirm whether existing open/done issues already cover this bucket
-- [ ] Split one feature family, one observable behavior, or one fixed reference window into child issues
-- [ ] Preserve exact reproduction commands and representative AST/diagnostic evidence in each child issue
+- [x] Inspect the smart triage report below
+- [x] Confirm whether existing open/done issues already cover this bucket
+- [x] Split exported import-equals declarations to issue 5400
+- [x] Preserve exact reproduction commands and representative AST/diagnostic evidence in the child issue
 
 Out of scope:
 
@@ -68,10 +69,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] Duplicate candidates below are confirmed as no-match or this issue is superseded
-- [ ] At least one child issue contains an exact `mise run reference-triage -- ...` command
-- [ ] Child issue includes failing path, diagnostic code, source context, visible symbols, and parser/TypeScript AST evidence
-- [ ] Child issue acceptance names the exact fixture/reference path and diagnostic/stdout change
+- [x] Duplicate candidates below are confirmed as no-match or this issue is superseded
+- [x] Child issue 5400 contains an exact `reference-triage` command
+- [x] Child issue includes failing path, diagnostic code, source context, visible symbols, and parser/TypeScript AST evidence
+- [x] Child issue acceptance names the exact reference path and diagnostic change
 
 ## Validation
 
@@ -92,21 +93,22 @@ mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/alias
 
 Not run:
 
-- none
+- `cargo fmt --all --check`; issue cleanup only, no Rust code changed
+- `cargo nextest run`; issue cleanup only, no implementation changed
 
 ## Docs / current-state / issue sync
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] updated: `current-state.md` (repo root)
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] created: `issues/open/5400-parse-exported-import-equals-declarations.md`
 
 ## Notes
 
@@ -633,16 +635,26 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- `...`
+- pending
 
 Validation result:
 
 ```text
-command:
-result:
-date:
+command: env TS2WASM_BINARY=/tmp/ts2wasm-issue-blockers-target/debug/ts2wasm python scripts/manager.py reference-coverage tsc --path-filter aliasesInSystemModule --detail --no-dashboard-data
+result: pass; executed=2, build_pass=0, unsupported=2, unsupported_diagcodes=UnsupportedSyntax:2, unsupported_features=type-alias:2
+date: 2026-05-08
+
+command: env TS2WASM_BINARY=/tmp/ts2wasm-issue-blockers-target/debug/ts2wasm python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/aliasesInSystemModule2.ts
+result: pass; tokens succeed, current blocker is issue-055 exported import-equals static export, split to issue 5400
+date: 2026-05-08
+```
+
+Current compiler failure:
+
+```text
+UnsupportedModule: issue-055: unsupported static export; module resolution and loading are not implemented at 118..124
 ```
 
 Remaining risks:
 
-- none
+- Implementation remains open in `issues/open/5400-parse-exported-import-equals-declarations.md`.
