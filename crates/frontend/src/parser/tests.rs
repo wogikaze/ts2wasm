@@ -1332,6 +1332,73 @@ mod tests {
     }
 
     #[test]
+    fn parses_class_with_nested_generic_heritage_rightshift() {
+        // TypeScript nested type arguments in class heritage with >> token:
+        //   class CBase<T2> extends CBaseBase<Wrapper<T2>> { }
+        // The lexer emits the closing >> as RightShift, which must be
+        // consumed by skip_typescript_angle_list_after_less.
+        let program = parse_program(
+            "class Wrapper<T> { property: T; }\nclass CBaseBase<T> { }\nclass CBase<T2> extends CBaseBase<Wrapper<T2>> { }",
+        )
+        .unwrap();
+        assert_eq!(program.len(), 3);
+        let Stmt::ClassDecl {
+            name,
+            extends,
+            body,
+            ..
+        } = &program[2]
+        else {
+            panic!("expected class declaration at index 2");
+        };
+        assert_eq!(name, "CBase");
+        assert!(extends.is_some(), "CBase should have an extends clause");
+        assert!(
+            body.is_empty(),
+            "generic class with nested heritage should parse"
+        );
+        let extends_expr = extends.as_ref().unwrap();
+        assert!(
+            matches!(extends_expr.as_ref(), Expr::Ident { name, .. } if name == "CBaseBase"),
+            "extends expression should be Ident(CBaseBase) with nested type args erased, got {extends_expr:?}"
+        );
+    }
+
+    #[test]
+    fn parses_class_with_qualified_generic_heritage() {
+        // TypeScript qualified name with type arguments in class heritage:
+        //   class C2<T> extends M.I2<T> { }
+        // The parser must consume the dot-chain before consuming <T>.
+        let program = parse_program(
+            "var M: any;\nclass C2<T> extends M.I2<T> { }",
+        )
+        .unwrap();
+        assert_eq!(program.len(), 2);
+        let Stmt::ClassDecl {
+            name,
+            extends,
+            body,
+            ..
+        } = &program[1]
+        else {
+            panic!("expected class declaration at index 1");
+        };
+        assert_eq!(name, "C2");
+        assert!(extends.is_some(), "C2 should have an extends clause");
+        assert!(
+            body.is_empty(),
+            "generic class with qualified heritage should parse"
+        );
+        let extends_expr = extends.as_ref().unwrap();
+        assert!(
+            matches!(extends_expr.as_ref(), Expr::Member { object, property, .. }
+                if matches!(object.as_ref(), Expr::Ident { name, .. } if name == "M")
+                    && property == "I2"),
+            "extends expression should be Member(M.I2) with type args erased, got {extends_expr:?}"
+        );
+    }
+
+    #[test]
     fn parses_class_with_public_methods() {
         let stmts =
             parse_program("class C { public foo() { return 1; } private bar() { return 2; } }")

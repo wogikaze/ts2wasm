@@ -1382,6 +1382,7 @@ fn resolve_stmt_with_outer_bindings(
         | Stmt::ExportDecl { .. }
         | Stmt::ExportAssignment { .. }
         | Stmt::ExportAssignment { .. }
+        | Stmt::ExportAssignment { .. }
         | Stmt::ExportDefault { .. } => Err(Diagnostic {
             code: DiagCode::UnsupportedSyntax,
             message:
