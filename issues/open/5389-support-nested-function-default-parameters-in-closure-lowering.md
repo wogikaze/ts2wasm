@@ -167,6 +167,10 @@ Related but distinct:
   parameters and explicitly excludes nested function default parameters.
 - `issues/done/062e-function-closures.md` records the historical closure work
   and broader issue-062e boundary.
+- Also owns `issues/done/3401-implement-multiCallOverloads.md`: fresh triage
+  for `multiCallOverloads.ts` gets through interface call signatures and stops
+  at the same issue-062e guard for anonymous function expressions with optional
+  parameters, such as `function(z?) {}`.
 
 ## Completion evidence
 
