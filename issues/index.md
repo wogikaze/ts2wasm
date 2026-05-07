@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 25 | 13 | 12 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4592 | 3321 | 1271 |
+| frontend | 4593 | 3321 | 1272 |
 | harness | 1 | 0 | 1 |
 | ir | 83 | 60 | 23 |
 | issues | 4 | 0 | 4 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5276 | 3623 | 1653 |
+| total | 5277 | 3623 | 1654 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -394,6 +394,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5439 | Report namespace/value duplicate identifiers | bug | frontend/resolver | implementation-ready | P1 |  | namespace declarations that collide with `var` bindings currently build-pass silently instead of reporting duplicate ... |
 | 5440 | Support initialized function expression local calls | feature | ir/lowering | implementation-ready | P1 |  | initialized function-expression locals fall into the generic issue-211 function-valued local call boundary. |
 | 5441 | Report namespaced union literal assignment diagnostic | feature | frontend/semantics | implementation-ready | P1 |  | erased namespace type aliases and union annotations hide the invalid |
+| 5442 | Report mixed default function namespace merge diagnostic | feature | frontend/semantics | implementation-ready | P1 |  | ambient module declaration bodies are erased before declaration export |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -2348,7 +2349,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 3302 | Implement Modulealiasasfunctionargument | spike | frontend/syntax | class: blocked | Implement Modulealiasasfunctionargument |
 | 3303 | Implement Modulealiasinterface | spike | frontend/syntax | class: blocked | Implement Modulealiasinterface |
 | 3304 | Implement Moduleandinterfacesharingname | spike | frontend/syntax | class: blocked | Implement Moduleandinterfacesharingname |
-| 3432 | Implement Namespacenotmergedwithfunctiondefaultexport | spike | frontend/syntax | class: blocked | Implement Namespacenotmergedwithfunctiondefaultexport |
 | 3433 | Implement Namespaces | spike | frontend/syntax | class: blocked | Implement Namespaces |
 | 3434 | Implement Namespacesdeclaration | spike | frontend/syntax | class: blocked | Implement Namespacesdeclaration |
 | 3435 | Implement Namespaceswithtypealiasonlyexportsmerge | spike | frontend/syntax | class: blocked | Implement Namespaceswithtypealiasonlyexportsmerge |
@@ -5236,6 +5236,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 3429 | Implement Namespacedisambiguationinunion | spike | frontend/syntax | see `issues/done/3429-implement-namespaceDisambiguationInUnion.md` |
 | 3430 | Implement Namespacemergedwithfunctionwithoverloadsusage | spike | frontend/syntax | see `issues/done/3430-implement-namespaceMergedWithFunctionWithOverloadsUsage.md` |
 | 3431 | Implement Namespacemergedwithimportaliasnocrash | spike | frontend/syntax | see `issues/done/3431-implement-namespaceMergedWithImportAliasNoCrash.md` |
+| 3432 | Implement Namespacenotmergedwithfunctiondefaultexport | spike | frontend/syntax | see `issues/done/3432-implement-namespaceNotMergedWithFunctionDefaultExport.md` |
 | 3690 | Implement Optionaltupleelementsandundefined | spike | reference/triage | see `issues/done/3690-implement-optionalTupleElementsAndUndefined.md` |
 | 3996 | Implement Compiler (dup) | spike | frontend/syntax | see `issues/done/3996-implement-reference-typescript-tests-cases-compiler.md` |
 | 4210 | Implement Splicetuples | spike | frontend/resolver | see `issues/done/4210-implement-spliceTuples.md` |
