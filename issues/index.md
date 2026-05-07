@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 7 | 6 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4584 | 3378 | 1206 |
+| frontend | 4585 | 3378 | 1207 |
 | harness | 1 | 0 | 1 |
 | ir | 81 | 59 | 22 |
 | issues | 4 | 0 | 4 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5252 | 3677 | 1575 |
+| total | 5253 | 3677 | 1576 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -370,6 +370,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5415 | Support identifier update expressions in value positions | feature | ir/lowering | implementation-ready | P1 |  | identifier update expressions are parser-accepted in value positions, |
 | 5416 | Report invalid block after member expression statement | bug | frontend/parser | implementation-ready | P1 |  | the parser should reject or recover from a block immediately following |
 | 5417 | Parse default keyword in named import specifiers | feature | frontend/module-syntax | implementation-ready | P1 |  | the parser should accept contextual `default` as the imported binding |
+| 5418 | Parse dynamic import call expressions | feature | frontend/module-syntax | implementation-ready | P1 |  | dynamic import calls such as `const foo = import("./b");` are rejected |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -2325,7 +2326,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 3302 | Implement Modulealiasasfunctionargument | spike | frontend/syntax | class: blocked | Implement Modulealiasasfunctionargument |
 | 3303 | Implement Modulealiasinterface | spike | frontend/syntax | class: blocked | Implement Modulealiasinterface |
 | 3304 | Implement Moduleandinterfacesharingname | spike | frontend/syntax | class: blocked | Implement Moduleandinterfacesharingname |
-| 3355 | Implement Modulenonedynamicimport | spike | frontend/syntax | class: blocked | Implement Modulenonedynamicimport |
 | 3356 | Implement Modulenoneerrors | spike | frontend/syntax | class: blocked | Implement Modulenoneerrors |
 | 3357 | Implement Moduleouterqualification | spike | frontend/syntax | class: blocked | Implement Moduleouterqualification |
 | 3358 | Implement Modulepreserve | spike | frontend/syntax | class: blocked | Implement Modulepreserve |
@@ -5213,6 +5213,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 3352 | Implement Modulenoemit | maintenance | frontend/syntax | see `issues/done/3352-implement-moduleNoEmit.md` |
 | 3353 | Implement Modulenodedefaultimports | maintenance | frontend/syntax | see `issues/done/3353-implement-moduleNodeDefaultImports.md` |
 | 3354 | Implement Modulenodeimportrequireemit | spike | frontend/syntax | see `issues/done/3354-implement-moduleNodeImportRequireEmit.md` |
+| 3355 | Implement Modulenonedynamicimport | maintenance | frontend/syntax | see `issues/done/3355-implement-moduleNoneDynamicImport.md` |
 | 3690 | Implement Optionaltupleelementsandundefined | spike | reference/triage | see `issues/done/3690-implement-optionalTupleElementsAndUndefined.md` |
 | 3996 | Implement Compiler (dup) | spike | frontend/syntax | see `issues/done/3996-implement-reference-typescript-tests-cases-compiler.md` |
 | 4210 | Implement Splicetuples | spike | frontend/resolver | see `issues/done/4210-implement-spliceTuples.md` |
