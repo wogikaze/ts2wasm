@@ -3,12 +3,14 @@ id: 583
 title: "Implement Aliasonmergedmoduleinterface"
 type: spike
 area: frontend/syntax
-class: blocked
+class: superseded
 priority: P1
-depends_on: [432]
+depends_on: []
 blocks: []
 created: 2026-05-01
-updated: 2026-05-01
+updated: 2026-05-08
+completed: 2026-05-08
+status: done
 ---
 
 ## Summary
@@ -17,9 +19,9 @@ Triage aliasOnMergedModuleInterface across 1 failing reference test cases and sp
 
 ## Problem
 
-Reference test results show 1 cases fail in directory `aliasOnMergedModuleInterface` with diagnostics: import-export. The compiler cannot handle these syntax/semantics, preventing compilation of code in this category.
+Reference test results show 1 case failing in directory `aliasOnMergedModuleInterface` with diagnostics: import-export. Fresh coverage and triage show the compiler now reaches the existing issue-232 unsupported non-local module specifier boundary for the bare module specifier `"foo"`.
 
-Problem: aliasOnMergedModuleInterface has 1 reference failures and needs smart-triage evidence before implementation starts.
+Problem: `aliasOnMergedModuleInterface` is not a standalone implementation order; the observed behavior is covered by issue 232's accepted non-local module boundary.
 
 ## Current failure
 
@@ -37,16 +39,16 @@ mise run reference-coverage -- tsc --path-filter reference/typescript/tests/case
 
 ## Desired final state
 
-This generated bucket is either split into implementation-ready child issues or superseded by an existing open/done issue with matching evidence. Do not implement directly from this bucket.
+This generated bucket is closed as superseded by `issues/done/232-resolve-local-relative-es-module-graph.md`. Do not implement directly from this bucket.
 
 ## Scope
 
 In scope:
 
-- [ ] Inspect the smart triage report below
-- [ ] Confirm whether existing open/done issues already cover this bucket
-- [ ] Split one feature family, one observable behavior, or one fixed reference window into child issues
-- [ ] Preserve exact reproduction commands and representative AST/diagnostic evidence in each child issue
+- [x] Inspect the smart triage report below
+- [x] Confirm whether existing open/done issues already cover this bucket
+- [x] Supersede this bucket with issue 232's non-local module specifier boundary
+- [x] Preserve exact reproduction commands and representative AST/diagnostic evidence in this closed issue
 
 Out of scope:
 
@@ -68,18 +70,20 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] Duplicate candidates below are confirmed as no-match or this issue is superseded
-- [ ] At least one child issue contains an exact `mise run reference-triage -- ...` command
-- [ ] Child issue includes failing path, diagnostic code, source context, visible symbols, and parser/TypeScript AST evidence
-- [ ] Child issue acceptance names the exact fixture/reference path and diagnostic/stdout change
+- [x] Duplicate candidates below are confirmed as no-match or this issue is superseded
+- [x] This closed issue contains an exact `python scripts/manager.py reference-triage ...` command
+- [x] This closed issue includes failing path, diagnostic code, source context, visible symbols, and parser/TypeScript AST evidence
+- [x] Completion evidence names the exact fixture/reference path and diagnostic/stdout change
 
 ## Validation
 
 Required commands:
 
 ```sh
-cargo fmt --all --check
-cargo nextest run
+python scripts/manager.py update-issue-index --check
+python scripts/manager.py check-issue-health
+python scripts/manager.py check-issue-readiness -- --fail-ready-below 80
+git diff --check
 ```
 
 Impacted commands:
@@ -92,21 +96,22 @@ mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/alias
 
 Not run:
 
-- none
+- `cargo fmt --all --check`; issue cleanup only, no Rust code changed
+- `cargo nextest run`; issue cleanup only, no implementation changed
 
 ## Docs / current-state / issue sync
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] updated: `current-state.md` (repo root)
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 
@@ -591,14 +596,39 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- `...`
+- superseded by `issues/done/232-resolve-local-relative-es-module-graph.md`
 
 Validation result:
 
 ```text
-command:
-result:
-date:
+command: env TS2WASM_BINARY=/tmp/ts2wasm-issue-blockers-target/debug/ts2wasm python scripts/manager.py reference-coverage tsc --path-filter reference/typescript/tests/cases/compiler/aliasOnMergedModuleInterface.ts --detail --no-dashboard-data
+result: pass; executed=1, build_pass=0, unsupported=1, unsupported_diagcodes=UnsupportedModule:1, unsupported_features=import-export:1
+date: 2026-05-08
+
+command: env TS2WASM_BINARY=/tmp/ts2wasm-issue-blockers-target/debug/ts2wasm python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/aliasOnMergedModuleInterface.ts
+result: pass; reproduced issue-232 unsupported non-local module specifier diagnostic for `foo` in the resolved module_graph dump after parsing `declare module "foo"` and `import foo = require("foo")`
+date: 2026-05-08
+```
+
+Current compiler failure:
+
+```text
+[pipeline] module_graph
+error: [UnsupportedModule] issue-232: unsupported non-local module specifier `foo`; package resolution, import maps, and absolute specifiers are not implemented at 392..397
+```
+
+TypeScript oracle evidence:
+
+```text
+TS2664: Invalid module name in augmentation, module 'foo' cannot be found.
+TS2307: Cannot find module 'foo' or its corresponding type declarations.
+AST path includes ModuleDeclaration `declare module "foo"` and ImportEqualsDeclaration `import foo = require("foo")`.
+```
+
+Resolution:
+
+```text
+Issue 232 deliberately rejects bare/non-local module specifiers with source-spanned UnsupportedModule diagnostics. The current reference path hits that existing policy boundary, so no child implementation slice is created from this generated bucket.
 ```
 
 Remaining risks:
