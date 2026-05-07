@@ -148,6 +148,10 @@ triage now build-passes while the TypeScript oracle reports TS2709 for
 `var a: A;`, `var b: B;`, and `var c: C;` after same-file namespace
 declarations.
 
+Also owns `issues/done/3399-implement-moduleWithValuesAsType.md`: fresh triage
+now build-passes while the TypeScript oracle reports TS2709 for `var a: A;`
+after a same-file namespace that contains a value declaration.
+
 ## Completion evidence
 
 Fill when implemented.
