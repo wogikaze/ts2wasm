@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 6 | 5 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4574 | 3437 | 1137 |
+| frontend | 4574 | 3436 | 1138 |
 | harness | 1 | 0 | 1 |
 | ir | 79 | 57 | 22 |
 | issues | 4 | 0 | 4 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5234 | 3734 | 1500 |
+| total | 5234 | 3733 | 1501 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -431,7 +431,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 554 | Implement Abstractclassinlocalscope | spike | frontend/resolver | class: blocked | Implement Abstractclassinlocalscope |
 | 555 | Implement Abstractclassinlocalscopeisabstract | spike | frontend/resolver | class: blocked | Implement Abstractclassinlocalscopeisabstract |
 | 556 | Implement Abstractclassunioninstantiation | spike | frontend/resolver | class: blocked | Implement Abstractclassunioninstantiation |
-| 592 | Implement Aliasusageinvarassignment | spike | frontend/syntax | class: blocked | Implement Aliasusageinvarassignment |
 | 593 | Implement Aliasusedasnamevalue | spike | frontend/syntax | class: blocked | Implement Aliasusedasnamevalue |
 | 594 | Implement Aliaswithinterfaceexportassignmentusedinvarinitializer | spike | frontend/syntax | class: blocked | Implement Aliaswithinterfaceexportassignmentusedinvarinitializer |
 | 595 | Implement Aliasesinsystemmodule | spike | frontend/syntax | class: blocked | Implement Aliasesinsystemmodule |
@@ -4384,6 +4383,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 589 | Implement Aliasusageinobjectliteral | spike | frontend/syntax | see `issues/done/589-implement-aliasUsageInObjectLiteral.md` |
 | 590 | Implement Aliasusageinorexpression | spike | frontend/syntax | see `issues/done/590-implement-aliasUsageInOrExpression.md` |
 | 591 | Implement Aliasusageintypeargumentofextendsclause | spike | frontend/syntax | see `issues/done/591-implement-aliasUsageInTypeArgumentOfExtendsClause.md` |
+| 592 | Implement Aliasusageinvarassignment | spike | frontend/syntax | see `issues/done/592-implement-aliasUsageInVarAssignment.md` |
 | 602 | Implement Alwaysstrictmodule (audit reopened #602) | spike | frontend/syntax | see `issues/done/602-implement-alwaysStrictModule.md` |
 | 603 | Implement Alwaysstrictnoimplicitusestrict (audit reopened #603) | spike | frontend/syntax | see `issues/done/603-implement-alwaysStrictNoImplicitUseStrict.md` |
 | 604 | Implement Ambientclassdeclarationwithextends (audit reopened #604) | spike | frontend/syntax | see `issues/done/604-implement-ambientClassDeclarationWithExtends.md` |
