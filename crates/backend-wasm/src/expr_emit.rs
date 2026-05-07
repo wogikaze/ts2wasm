@@ -1180,6 +1180,35 @@ impl WatEmitter<'_> {
                 frame,
             );
         }
+        // Check for NUMBER-tagged DirectLocalToken (func_id << NUMBER_SHIFT | NUMBER_TAG)
+        writer.push_str(&format!(
+            "{pad}  (if (i32.eq (i32.and (local.get {closure_value}) (i32.const {tag_mask})) (i32.const {number_tag}))\n",
+            tag_mask = ValueTag::TAG_MASK,
+            number_tag = ValueTag::NUMBER,
+        ));
+        writer.push_str(&format!("{pad}    (then\n"));
+        writer.push_str(&format!(
+            "{pad}      (local.set {payload} (i32.shr_u (local.get {closure_value}) (i32.const {num_shift})))\n",
+            num_shift = ValueTag::NUMBER_SHIFT,
+        ));
+        // Dispatch table for NUMBER-tagged functions
+        for function in &self.program.functions {
+            if function.params.is_empty() {
+                writer.push_str(&format!(
+                    "{pad}      (if (i32.eq (local.get {payload}) (i32.const {}))\n",
+                    function.id.0
+                ));
+                writer.push_str(&format!(
+                    "{pad}        (then (br $heap_closure_dispatch_done (call ${})))\n",
+                    function_symbol(function.id)
+                ));
+                writer.push_str(&format!("{pad}      )\n"));
+            }
+        }
+        writer.push_str(&format!("{pad}      (unreachable)\n"));
+        writer.push_str(&format!("{pad}    ))\n"));
+
+        // Existing OBJECT/closure dispatch
         writer.line_fmt(indent, format_args!("{pad}  (if (i32.ne (i32.and (local.get {closure_value}) (i32.const {})) (i32.const {}))\n", ValueTag::TAG_MASK, ValueTag::OBJECT_TAG));
         writer.push_str(&format!("{pad}    (then (unreachable)))\n"));
         writer.line_fmt(indent, format_args!("{pad}  (local.set {payload} (i32.and (local.get {closure_value}) (i32.const {})))\n", ValueTag::HEAP_MASK));

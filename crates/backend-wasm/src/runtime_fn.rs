@@ -300,6 +300,7 @@ pub(crate) enum RuntimeFn {
     /// M10: Object statics
     ObjectKeys,
     ObjectSpread,
+    SpreadViaIterator,
     ObjectValues,
     ObjectEntries,
     ObjectHasOwnProperty,
@@ -732,6 +733,7 @@ pub(crate) fn runtime_fn_from_name(name: &str) -> Option<RuntimeFn> {
         "BigIntRightShift" => Some(RuntimeFn::BigIntRightShift),
         "ObjectKeys" => Some(RuntimeFn::ObjectKeys),
         "ObjectSpread" => Some(RuntimeFn::ObjectSpread),
+        "SpreadViaIterator" => Some(RuntimeFn::SpreadViaIterator),
         "ObjectValues" => Some(RuntimeFn::ObjectValues),
         "ObjectEntries" => Some(RuntimeFn::ObjectEntries),
         "ObjectHasOwnProperty" => Some(RuntimeFn::ObjectHasOwnProperty),

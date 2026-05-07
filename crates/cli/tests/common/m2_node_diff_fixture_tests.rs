@@ -987,10 +987,17 @@ fn abstract_equality_fixture_matches_node_output_under_iwasm() {
 fn template_literal_fixture_builds_successfully() {
     // Template literal interpolation with multiple expressions has wrong ordering
     let fixture = "fixtures/core-semantics/template-literal.ts";
-    let fixture_path = Path::new(env!("CARGO_MANIFEST_DIR")).join("../../").join(fixture);
+    let fixture_path = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("../../")
+        .join(fixture);
     let output = temp_wasm_path(fixture);
     let build = std::process::Command::new(env!("CARGO_BIN_EXE_ts2wasm"))
-        .arg("build").arg(&fixture_path).arg("-o").arg(&output).output().unwrap();
+        .arg("build")
+        .arg(&fixture_path)
+        .arg("-o")
+        .arg(&output)
+        .output()
+        .unwrap();
 }
 
 #[test]
@@ -1459,10 +1466,17 @@ fn set_constructor_array_fixture_builds_successfully() {
 #[test]
 fn set_iterable_calls_add_fixture_builds() {
     let fixture = "fixtures/builtins-and-io/set-iterable-calls-add.ts";
-    let fixture_path = Path::new(env!("CARGO_MANIFEST_DIR")).join("../../").join(fixture);
+    let fixture_path = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("../../")
+        .join(fixture);
     let output = temp_wasm_path(fixture);
     let build = std::process::Command::new(env!("CARGO_BIN_EXE_ts2wasm"))
-        .arg("build").arg(&fixture_path).arg("-o").arg(&output).output().unwrap();
+        .arg("build")
+        .arg(&fixture_path)
+        .arg("-o")
+        .arg(&output)
+        .output()
+        .unwrap();
 }
 
 #[test]
@@ -2076,28 +2090,49 @@ fn spread_operator_static_concat_string_fixture_matches_node_output_under_iwasm(
 #[test]
 fn spread_operator_set_array_fixture_builds_successfully() {
     let fixture = "fixtures/core-semantics/spread-array-set.ts";
-    let fixture_path = Path::new(env!("CARGO_MANIFEST_DIR")).join("../../").join(fixture);
+    let fixture_path = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("../../")
+        .join(fixture);
     let output = temp_wasm_path(fixture);
     let build = std::process::Command::new(env!("CARGO_BIN_EXE_ts2wasm"))
-        .arg("build").arg(&fixture_path).arg("-o").arg(&output).output().unwrap();
+        .arg("build")
+        .arg(&fixture_path)
+        .arg("-o")
+        .arg(&output)
+        .output()
+        .unwrap();
 }
 
 #[test]
 fn spread_operator_mixed_set_array_fixture_builds_successfully() {
     let fixture = "fixtures/core-semantics/spread-array-set-mixed.ts";
-    let fixture_path = Path::new(env!("CARGO_MANIFEST_DIR")).join("../../").join(fixture);
+    let fixture_path = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("../../")
+        .join(fixture);
     let output = temp_wasm_path(fixture);
     let build = std::process::Command::new(env!("CARGO_BIN_EXE_ts2wasm"))
-        .arg("build").arg(&fixture_path).arg("-o").arg(&output).output().unwrap();
+        .arg("build")
+        .arg(&fixture_path)
+        .arg("-o")
+        .arg(&output)
+        .output()
+        .unwrap();
 }
 
 #[test]
 fn spread_operator_set_call_fixture_builds_successfully() {
     let fixture = "fixtures/core-semantics/spread-call-set-local.ts";
-    let fixture_path = Path::new(env!("CARGO_MANIFEST_DIR")).join("../../").join(fixture);
+    let fixture_path = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("../../")
+        .join(fixture);
     let output = temp_wasm_path(fixture);
     let build = std::process::Command::new(env!("CARGO_BIN_EXE_ts2wasm"))
-        .arg("build").arg(&fixture_path).arg("-o").arg(&output).output().unwrap();
+        .arg("build")
+        .arg(&fixture_path)
+        .arg("-o")
+        .arg(&output)
+        .output()
+        .unwrap();
 }
 
 #[test]
@@ -2150,11 +2185,27 @@ fn spread_operator_generator_fixture_reports_issue_353() {
 }
 
 #[test]
-fn spread_operator_custom_iterable_reaches_issue_353() {
-    assert_build_fails_with_unsupported_syntax_without_span(
+fn spread_operator_custom_iterable_fixture_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node(
         "fixtures/core-semantics/spread-array-custom-iterable-unsupported.ts",
-        "issue-353:",
     );
+}
+
+#[test]
+fn spread_operator_custom_iterable_multi_value_fixture_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node(
+        "fixtures/core-semantics/spread-array-custom-iterable-multi-value.ts",
+    );
+}
+
+#[test]
+fn spread_operator_custom_iterable_mixed_fixture_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node("fixtures/core-semantics/spread-array-custom-iterable-mixed.ts");
+}
+
+#[test]
+fn spread_operator_custom_iterable_empty_fixture_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node("fixtures/core-semantics/spread-array-custom-iterable-empty.ts");
 }
 
 #[test]

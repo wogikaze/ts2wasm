@@ -1529,6 +1529,14 @@ impl RuntimeFn {
                 runtime_strings: NO_RUNTIME_STRINGS,
                 result: RuntimeResult::Value,
             },
+            Self::SpreadViaIterator => RuntimeSpec {
+                symbol: "$spread_via_iterator",
+                deps: &[],
+                imports: NO_IMPORTS,
+                capability: NO_CAPS,
+                runtime_strings: NO_RUNTIME_STRINGS,
+                result: RuntimeResult::Value,
+            },
             Self::ObjectValues => RuntimeSpec {
                 symbol: "$object_values",
                 deps: OBJECT_VALUES_DEPS,
@@ -2209,6 +2217,7 @@ impl RuntimeFn {
             Self::ArrayIsArray => "array_is_array",
             Self::ObjectKeys => "object_keys",
             Self::ObjectSpread => "object_spread",
+            Self::SpreadViaIterator => "spread_via_iterator",
             Self::ObjectValues => "object_values",
             Self::ObjectEntries => "object_entries",
             Self::ObjectHasOwnProperty => "object_has_own_property",
@@ -2460,6 +2469,7 @@ impl RuntimeFn {
             // Object statics
             Self::ObjectKeys,
             Self::ObjectSpread,
+            Self::SpreadViaIterator,
             Self::ObjectValues,
             Self::ObjectEntries,
             Self::ObjectHasOwnProperty,
@@ -2720,6 +2730,7 @@ impl RuntimeFn {
             // Object statics
             Self::ObjectKeys,
             Self::ObjectSpread,
+            Self::SpreadViaIterator,
             Self::ObjectValues,
             Self::ObjectEntries,
             Self::ObjectHasOwnProperty,

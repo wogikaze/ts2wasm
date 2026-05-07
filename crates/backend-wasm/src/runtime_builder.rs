@@ -177,6 +177,7 @@ impl WatEmitter<'_> {
                 RuntimeFn::ArrayIsArray => self.emit_array_is_array(wat),
                 RuntimeFn::ObjectKeys => self.emit_object_keys(wat),
                 RuntimeFn::ObjectSpread => self.emit_object_spread(wat),
+                RuntimeFn::SpreadViaIterator => self.emit_spread_via_iterator(wat),
                 RuntimeFn::ObjectValues => self.emit_object_values(wat),
                 RuntimeFn::ObjectEntries => self.emit_object_entries(wat),
                 RuntimeFn::ObjectHasOwnProperty => self.emit_object_has_own_property(wat),
@@ -267,5 +268,8 @@ impl WatEmitter<'_> {
                 RuntimeFn::RegExpSearch => self.emit_regexp_search(wat),
             }
         }
+    }
+    pub(super) fn emit_spread_via_iterator(&self, wat: &mut String) {
+        unreachable!("SpreadViaIterator is handled inline in RuntimeCall dispatch");
     }
 }
