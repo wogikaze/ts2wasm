@@ -115,4 +115,11 @@ Not run:
 
 ## Completion evidence
 
+2026-05-07 additional evidence:
+
+- `issues/done/1487-implement-contextualComputedNonBindablePropertyType.md`
+  reaches the same computed object-literal key expression boundary for
+  `[testD()]`, failing with `expected Dot, got Some(LeftParen)` before mapped
+  type/contextual typing behavior can run.
+
 Fill when implemented.
