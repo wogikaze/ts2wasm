@@ -46,11 +46,11 @@ coherent workstream.
 
 In scope:
 
-- [ ] Run full Gate B validation and record results
-- [ ] Update `docs/11-shared-definitions.md` W2 row with completion note
-- [ ] Update `docs/05-compatibility-and-semantics.md` W2 coverage
-- [ ] Update `current-state.md`
-- [ ] Move 5240, 5241, 5242 to issues/done/
+- [x] Run full Gate B validation and record results
+- [x] Update `docs/11-shared-definitions.md` W2 row with completion note
+- [x] Update `docs/05-compatibility-and-semantics.md` W2 coverage
+- [x] Update `current-state.md`
+- [x] Move 5240, 5241, 5242 to issues/done/
 
 Out of scope:
 
@@ -72,13 +72,13 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] Gate B verification command output is recorded:
+- [x] Gate B verification command output is recorded:
   ```
   curated fixture set 全件で Node.js との stdout 差分がゼロ
   ```
-- [ ] Every W2-scope operator has at least one Node differential fixture
-- [ ] W2 completion is noted in the workstreams table
-- [ ] All three issues (5240, 5241, 5242) moved to done/
+- [x] Every W2-scope operator has at least one Node differential fixture
+- [x] W2 completion is noted in the workstreams table
+- [x] All three issues (5240, 5241, 5242) moved to done/
 
 ## Validation
 
@@ -93,19 +93,19 @@ cargo nextest run -p ts2wasm-cli --test m2_node_diff
 
 Final-state docs:
 
-- [ ] not affected
-- [ ] updated: `docs/11-shared-definitions.md` (W2 completion note)
-- [ ] updated: `docs/05-compatibility-and-semantics.md`
+- [x] not affected
+- [x] updated: `docs/11-shared-definitions.md` (W2 completion note)
+- [x] updated: `docs/05-compatibility-and-semantics.md`
 
 Current state:
 
-- [ ] not affected
-- [ ] updated: `current-state.md`
+- [x] not affected
+- [x] updated: `current-state.md`
 
 Follow-up issues:
 
-- [ ] none
-- [ ] created/updated: none (W2 declares done; W3/W4 follow as separate workstreams)
+- [x] none
+- [x] created/updated: none (W2 declares done; W3/W4 follow as separate workstreams)
 
 ## Notes
 

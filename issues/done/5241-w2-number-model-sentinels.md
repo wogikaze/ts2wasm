@@ -57,14 +57,14 @@ and the four basic arithmetic operations. Full IEEE 754 floating-point
 
 In scope:
 
-- [ ] Add `ValueTag` sentinels for `NaN`, `Infinity`, `-Infinity`, `-0`
-- [ ] Update `can_encode_number` / `encode_number` / `decode_number` in `runtime-abi`
-- [ ] Add `SameValue` (Object.is) RuntimeFn if not present
-- [ ] Update `$strict_equal` and `$abstract_equal` for NaN/-0 parity
-- [ ] Update `$add`, `$sub`, `$mul`, `$div`, `$mod` for NaN/Infinity propagation
-- [ ] Emit correct sentinel values for literal `NaN`, `Infinity`, `-Infinity` in resolver
-- [ ] Add Node differential fixtures for NaN/Infinity/-0 equality and arithmetic
-- [ ] Update `docs/14-runtime-abi.md` with new sentinel encoding
+- [x] Add `ValueTag` sentinels for `NaN`, `Infinity`, `-Infinity`, `-0`
+- [x] Update `can_encode_number` / `encode_number` / `decode_number` in `runtime-abi`
+- [x] Add `SameValue` (Object.is) RuntimeFn if not present
+- [x] Update `$strict_equal` and `$abstract_equal` for NaN/-0 parity
+- [x] Update `$add`, `$sub`, `$mul`, `$div`, `$mod` for NaN/Infinity propagation
+- [x] Emit correct sentinel values for literal `NaN`, `Infinity`, `-Infinity` in resolver
+- [x] Add Node differential fixtures for NaN/Infinity/-0 equality and arithmetic
+- [x] Update `docs/14-runtime-abi.md` with new sentinel encoding
 
 Out of scope:
 
@@ -95,14 +95,14 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] `NaN === NaN` evaluates to `false` in generated WASM (not compile-time constant)
-- [ ] `Object.is(NaN, NaN)` evaluates to `true`
-- [ ] `Object.is(0, -0)` evaluates to `false`
-- [ ] `1 / 0` evaluates to `Infinity` (not trap or max-int)
-- [ ] `Infinity === Infinity` evaluates to `true`
-- [ ] `-Infinity < Infinity` evaluates to `true`
-- [ ] `cargo nextest run` passes (all existing tests plus new fixtures)
-- [ ] New fixtures in `fixtures/core-semantics/` cover NaN/Infinity/-0/Infinity
+- [x] `NaN === NaN` evaluates to `false` in generated WASM (not compile-time constant)
+- [x] `Object.is(NaN, NaN)` evaluates to `true`
+- [x] `Object.is(0, -0)` evaluates to `false`
+- [x] `1 / 0` evaluates to `Infinity` (not trap or max-int)
+- [x] `Infinity === Infinity` evaluates to `true`
+- [x] `-Infinity < Infinity` evaluates to `true`
+- [x] `cargo nextest run` passes (all existing tests plus new fixtures)
+- [x] New fixtures in `fixtures/core-semantics/` cover NaN/Infinity/-0/Infinity
 
 ## Validation
 
@@ -117,18 +117,18 @@ cargo nextest run -p ts2wasm-cli --test m2_node_diff -- nan_infinity
 
 Final-state docs:
 
-- [ ] not affected
-- [ ] updated: `docs/14-runtime-abi.md` (new sentinel encoding)
+- [x] not affected
+- [x] updated: `docs/14-runtime-abi.md` (new sentinel encoding)
 
 Current state:
 
-- [ ] not affected
-- [ ] updated: `current-state.md`
+- [x] not affected
+- [x] updated: `current-state.md`
 
 Follow-up issues:
 
-- [ ] none
-- [ ] created/updated: none (sentinels unblock W2; full double is W7)
+- [x] none
+- [x] created/updated: none (sentinels unblock W2; full double is W7)
 
 ## Notes
 

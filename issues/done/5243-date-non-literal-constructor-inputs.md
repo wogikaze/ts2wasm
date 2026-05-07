@@ -29,9 +29,9 @@ TypeScript/node accepts ISO 8601 string inputs and multi-argument constructor fo
 
 In scope:
 
-- [ ] Non-integer numeric epoch-millisecond inputs to new Date() — **already works**
-- [ ] String-based Date parsing for ISO 8601 format: `new Date("2024-01-01")`
-- [ ] Multi-argument constructor forms: `new Date(year, month, day, ...)`
+- [x] Non-integer numeric epoch-millisecond inputs to new Date() — **already works**
+- [x] String-based Date parsing for ISO 8601 format: `new Date("2024-01-01")`
+- [x] Multi-argument constructor forms: `new Date(year, month, day, ...)`
 
 Out of scope:
 
@@ -49,10 +49,10 @@ Expected:
 
 ## Acceptance criteria
 
-- [ ] `new Date("2024-01-01")` lowers through host shim or lowering
-- [ ] `new Date(2024, 0, 1)` lowers to multi-argument runtime path
-- [ ] Existing `new Date(epochMs)` and `new Date()` paths unchanged
-- [ ] Focused fixture covers string and multi-argument Date construction
+- [x] `new Date("2024-01-01")` lowers through host shim or lowering
+- [x] `new Date(2024, 0, 1)` lowers to multi-argument runtime path
+- [x] Existing `new Date(epochMs)` and `new Date()` paths unchanged
+- [x] Focused fixture covers string and multi-argument Date construction
 
 ## Validation
 
