@@ -3,12 +3,13 @@ id: 594
 title: "Implement Aliaswithinterfaceexportassignmentusedinvarinitializer"
 type: spike
 area: frontend/syntax
-class: blocked
+class: done
 priority: P1
-depends_on: [432]
+depends_on: [5346]
 blocks: []
 created: 2026-05-01
-updated: 2026-05-01
+updated: 2026-05-08
+completed: 2026-05-08
 ---
 
 ## Summary
@@ -17,9 +18,9 @@ Triage aliasWithInterfaceExportAssignmentUsedInVarInitializer across 1 failing r
 
 ## Problem
 
-Reference test results show 1 cases fail in directory `aliasWithInterfaceExportAssignmentUsedInVarInitializer` with diagnostics: import-export. The compiler cannot handle these syntax/semantics, preventing compilation of code in this category.
+Reference test results show 1 case failing in directory `aliasWithInterfaceExportAssignmentUsedInVarInitializer` with diagnostics: import-export. Fresh triage shows the current failure is the CommonJS `export = c;` issue-055 static export boundary already owned by issue 5346.
 
-Problem: aliasWithInterfaceExportAssignmentUsedInVarInitializer has 1 reference failures and needs smart-triage evidence before implementation starts.
+Problem: `aliasWithInterfaceExportAssignmentUsedInVarInitializer` had 1 generated bucket failure and needed smart-triage evidence. No new child is needed because issue 5346 already owns the current blocker.
 
 ## Current failure
 
@@ -43,10 +44,10 @@ This generated bucket is either split into implementation-ready child issues or 
 
 In scope:
 
-- [ ] Inspect the smart triage report below
-- [ ] Confirm whether existing open/done issues already cover this bucket
-- [ ] Split one feature family, one observable behavior, or one fixed reference window into child issues
-- [ ] Preserve exact reproduction commands and representative AST/diagnostic evidence in each child issue
+- [x] Inspect the smart triage report below
+- [x] Confirm whether existing open/done issues already cover this bucket
+- [x] Supersede this generated bucket with issue 5346
+- [x] Preserve exact reproduction commands and representative AST/diagnostic evidence
 
 Out of scope:
 
@@ -68,10 +69,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] Duplicate candidates below are confirmed as no-match or this issue is superseded
-- [ ] At least one child issue contains an exact `mise run reference-triage -- ...` command
-- [ ] Child issue includes failing path, diagnostic code, source context, visible symbols, and parser/TypeScript AST evidence
-- [ ] Child issue acceptance names the exact fixture/reference path and diagnostic/stdout change
+- [x] Duplicate candidates below are confirmed as no-match or this issue is superseded
+- [x] Existing issue 5346 contains the implementation-ready CommonJS `export = expr;` owner
+- [x] This issue includes failing path, diagnostic code, source context, visible symbols, and parser/TypeScript AST evidence
+- [x] Coverage names the exact reference path and diagnostic classification
 
 ## Validation
 
@@ -92,21 +93,22 @@ mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/alias
 
 Not run:
 
-- none
+- `cargo fmt --all --check`; issue cleanup only, no Rust code changed
+- `cargo nextest run`; issue cleanup only, no implementation changed
 
 ## Docs / current-state / issue sync
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] updated: `current-state.md` (repo root)
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 
@@ -561,16 +563,27 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- `...`
+- pending
 
 Validation result:
 
 ```text
-command:
-result:
-date:
+command: env TS2WASM_BINARY=/tmp/ts2wasm-issue-blockers-target/debug/ts2wasm python scripts/manager.py reference-coverage tsc --path-filter reference/typescript/tests/cases/compiler/aliasWithInterfaceExportAssignmentUsedInVarInitializer.ts --detail --no-dashboard-data
+result: pass; executed=1, build_pass=0, unsupported=1, unsupported_diagcodes=UnsupportedSyntax:1, unsupported_features=type-alias:1
+date: 2026-05-08
+
+command: env TS2WASM_BINARY=/tmp/ts2wasm-issue-blockers-target/debug/ts2wasm python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/aliasWithInterfaceExportAssignmentUsedInVarInitializer.ts
+result: pass; tokens succeed, current blocker is issue-055 CommonJS export assignment, superseded by issue 5346
+date: 2026-05-08
+```
+
+Current compiler failure:
+
+```text
+UnsupportedModule: issue-055: unsupported static export; module resolution and loading are not implemented at 32..38
+AST/resolved dump: same issue-055 static export boundary at 152..158
 ```
 
 Remaining risks:
 
-- none
+- Implementation remains open in `issues/open/5346-parse-commonjs-export-assignment-statements.md`.
