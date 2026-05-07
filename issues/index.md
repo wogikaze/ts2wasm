@@ -22,12 +22,12 @@ Issue files are the source of truth for work items. The generated section below 
 | issues | 5 | 0 | 5 |
 | parser | 1 | 0 | 1 |
 | reference | 211 | 163 | 48 |
-| runtime | 271 | 88 | 183 |
+| runtime | 271 | 87 | 184 |
 | scripts | 3 | 0 | 3 |
 | security | 1 | 0 | 1 |
 | tests | 8 | 0 | 8 |
 | wasi | 4 | 0 | 4 |
-| total | 5079 | 3967 | 1112 |
+| total | 5079 | 3966 | 1113 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -96,7 +96,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 |---:|---|---|---|---|---|---|---|
 | 353 | Implement iterator protocol integration for spread operator | feature | runtime/semantics | unstarted | P2 |  | General iterator protocol is not implemented for spread operator. |
 | 5241 | W2: implement NaN, Infinity, -0 sentinel values in tagged-number encoding | feature | ir/runtime | implementation-ready | P2 | 5240 | The tagged-number encoding lacks sentinel values for the four IEEE 754 |
-| 5243 | Implement non-literal Date constructor inputs | feature | runtime/builtins | implementation-ready | P1 |  | Implement non-literal Date constructor inputs |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -5189,6 +5188,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5238 | W1: implement WASI filesystem read/write through preopens | feature | wasi | see file |
 | 5239 | W0: migrate remaining multi-line WAT to line_fmt in expr_emit.rs | cleanup | backend | see file |
 | 5240 | W2: docs audit — fix stale language-reference entries and confirm semantic-core coverage | docs | docs | see file |
+| 5243 | Implement non-literal Date constructor inputs | feature | runtime/builtins | see file |
 | 5244 | Define timezone formatting policy for Date.prototype.toString | design | runtime/builtins | see file |
 <!-- generated:done:end -->
 
