@@ -75,20 +75,41 @@ impl Parser {
         if self.consume(TokenKind::Extends) {
             // Handle TypeScript type arguments in class heritage clauses:
             //   class C<T> extends Base<T> { }
+            //   class C<T> extends NS.Base<T> { }
+            //   class C<T> extends Base<Wrapper<T>> { }
             // Without this, `<T>` is consumed as Less/Greater binary operators,
             // producing `Base < T > { }` and consuming the class body brace.
+            //
+            // Also handle qualified member-access chains such as M.I2<T>:
+            // consume the dot-chain before looking for `<` type arguments.
             if matches!(self.peek(), Some(Token::Ident(_)))
-                && matches!(self.peek_n(1), Some(Token::Less))
+                && matches!(
+                    self.peek_n(1),
+                    Some(Token::Less | Token::Dot)
+                )
             {
                 let (name, name_span) = self.expect_ident()?;
+                let mut expr: Expr = Expr::Ident {
+                    name,
+                    span: name_span,
+                };
+                // Follow member access chains: a.b.c
+                while self.consume(TokenKind::Dot) {
+                    let (property, prop_span) = self.expect_member_property_name()?;
+                    let start = expr.span().start;
+                    expr = Expr::Member {
+                        object: Box::new(expr),
+                        property,
+                        span: Span {
+                            start,
+                            end: prop_span.end,
+                        },
+                    };
+                }
+                // Consume optional type arguments (handles nested >> via
+                // skip_typescript_angle_list_after_less)
                 let _ = self.consume_typescript_generic_parameter_list()?;
-                let expr = self.finish_call_member(
-                    Expr::Ident {
-                        name,
-                        span: name_span,
-                    },
-                    true,
-                )?;
+                let expr = self.finish_call_member(expr, true)?;
                 return Ok(Some(Box::new(expr)));
             }
             let expr = self.expression()?;
