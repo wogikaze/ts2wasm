@@ -1514,6 +1514,76 @@ class Foo {
     }
 
     #[test]
+    fn function_parameter_trailing_comma() {
+        // Trailing comma after last parameter with comments
+        let stmts = parse_program(
+            "\
+function commentedParameters(
+a /* parameter a */,
+b /* parameter b */,
+/* extra comment */
+) { }",
+        )
+        .unwrap();
+        assert_eq!(stmts.len(), 1);
+        let Stmt::Function { params, .. } = &stmts[0] else {
+            panic!("expected Function");
+        };
+        assert_eq!(params.len(), 2);
+
+        // Trailing comma without comments
+        let stmts = parse_program("function f(a, b,) {}").unwrap();
+        assert_eq!(stmts.len(), 1);
+        let Stmt::Function { params, .. } = &stmts[0] else {
+            panic!("expected Function");
+        };
+        assert_eq!(params.len(), 2);
+
+        // No trailing comma still works
+        let stmts = parse_program("function f(a, b) {}").unwrap();
+        assert_eq!(stmts.len(), 1);
+        let Stmt::Function { params, .. } = &stmts[0] else {
+            panic!("expected Function");
+        };
+        assert_eq!(params.len(), 2);
+
+        // Single parameter with trailing comma
+        let stmts = parse_program("function f(a,) {}").unwrap();
+        assert_eq!(stmts.len(), 1);
+        let Stmt::Function { params, .. } = &stmts[0] else {
+            panic!("expected Function");
+        };
+        assert_eq!(params.len(), 1);
+
+        // Zero parameters with trailing comma still fails (not valid syntax)
+        assert!(parse_program("function f(,) {}").is_err());
+
+        // Generator function with trailing comma
+        let stmts = parse_program("function* f(a, b,) {}").unwrap();
+        assert_eq!(stmts.len(), 1);
+        let Stmt::Function { params, .. } = &stmts[0] else {
+            panic!("expected Function");
+        };
+        assert_eq!(params.len(), 2);
+
+        // Async function with trailing comma
+        let stmts = parse_program("async function f(a, b,) {}").unwrap();
+        assert_eq!(stmts.len(), 1);
+        let Stmt::Function { params, .. } = &stmts[0] else {
+            panic!("expected Function");
+        };
+        assert_eq!(params.len(), 2);
+
+        // Async generator with trailing comma
+        let stmts = parse_program("async function* f(a, b,) {}").unwrap();
+        assert_eq!(stmts.len(), 1);
+        let Stmt::Function { params, .. } = &stmts[0] else {
+            panic!("expected Function");
+        };
+        assert_eq!(params.len(), 2);
+    }
+
+    #[test]
     fn parses_constructor_parameter_properties_as_this_assignments() {
         let program = parse_program(
             "class Box { constructor(public x = 1, private readonly y?: number) {} }",
@@ -3327,6 +3397,34 @@ class Foo {
     }
 
     #[test]
+    fn parses_const_enum_declaration_with_values() {
+        let result = parse_program("const enum E { A = 1, B = 2 }");
+        assert!(
+            result.is_ok(),
+            "expected const enum with values to parse, got err: {result:?}"
+        );
+    }
+
+    #[test]
+    fn parses_const_enum_in_function_block() {
+        let result = parse_program("function f() { const enum E { A }; return 1; }");
+        assert!(
+            result.is_ok(),
+            "expected const enum in function block to parse, got err: {result:?}"
+        );
+        let stmts = result.unwrap();
+        assert_eq!(stmts.len(), 1);
+        assert!(matches!(&stmts[0], Stmt::Function { name, .. } if name == "f"));
+    }
+
+    #[test]
+    fn parses_const_enum_erased_no_bogus_binding() {
+        let stmts = parse_program("const enum E { A }\nlet x = 1;").unwrap();
+        assert_eq!(stmts.len(), 1);
+        assert!(matches!(&stmts[0], Stmt::Let { name, .. } if name == "x"));
+    }
+
+    #[test]
     fn parses_enum_declaration() {
         let result = parse_program("enum E { A, B, C }");
         assert!(
@@ -3529,7 +3627,7 @@ class Foo {
             } => {
                 assert_eq!(specifier.local, "b");
                 assert_eq!(specifier.exported, "b");
-                assert_eq!(*span, Span { start: 0, end: 22 });
+                assert_eq!(*span, Span { start: 0, end: 21 });
                 match declaration.as_ref() {
                     Stmt::Let {
                         name,
@@ -3559,7 +3657,7 @@ class Foo {
             } => {
                 assert_eq!(specifier.local, "a");
                 assert_eq!(specifier.exported, "a");
-                assert_eq!(*span, Span { start: 0, end: 18 });
+                assert_eq!(*span, Span { start: 0, end: 17 });
                 match declaration.as_ref() {
                     Stmt::Let {
                         name,
