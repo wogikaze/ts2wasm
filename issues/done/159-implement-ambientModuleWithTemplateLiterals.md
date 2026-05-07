@@ -453,7 +453,7 @@ error: [UnsupportedSyntax] expected Semicolon, got Some(Ident("namespace")) at 2
 ## 重複整理メモ
 
 この issue はタイトルが重複しているため、内容がより充実している
-`issues/open/619-implement-ambientModuleWithTemplateLiterals.md` に統合されました。
+`issues/done/619-implement-ambientModuleWithTemplateLiterals.md` に統合されました。
 そちらを参照してください。
 ## Completion evidence
 

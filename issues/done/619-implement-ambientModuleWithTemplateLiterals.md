@@ -3,12 +3,14 @@ id: 619
 title: "Implement Ambientmodulewithtemplateliterals"
 type: spike
 area: frontend/syntax
-class: blocked
+class: superseded
 priority: P1
-depends_on: [432]
+depends_on: [5370]
 blocks: []
 created: 2026-05-01
-updated: 2026-05-01
+updated: 2026-05-08
+completed: 2026-05-08
+status: done
 ---
 
 ## Summary
@@ -17,9 +19,12 @@ Triage ambientModuleWithTemplateLiterals across 1 failing reference test cases a
 
 ## Problem
 
-Reference test results show 1 cases fail in directory `ambientModuleWithTemplateLiterals` with diagnostics: import-export. The compiler cannot handle these syntax/semantics, preventing compilation of code in this category.
+Fresh reference evidence shows this bucket now reaches the existing issue 5370
+ambient namespace qualified value-access blocker.
 
-Problem: ambientModuleWithTemplateLiterals has 1 reference failures and needs smart-triage evidence before implementation starts.
+Problem: this generated import/export bucket is not a standalone
+implementation order; its current blocker is `UnresolvedName` for the erased
+ambient namespace root `Foo`.
 
 ## Current failure
 
@@ -37,16 +42,18 @@ mise run reference-coverage -- tsc --path-filter reference/typescript/tests/case
 
 ## Desired final state
 
-This generated bucket is either split into implementation-ready child issues or superseded by an existing open/done issue with matching evidence. Do not implement directly from this bucket.
+This generated bucket is superseded by
+`issues/open/5370-bind-ambient-namespace-declarations-for-qualified-value-access.md`.
+Do not implement directly from this bucket.
 
 ## Scope
 
 In scope:
 
-- [ ] Inspect the smart triage report below
-- [ ] Confirm whether existing open/done issues already cover this bucket
-- [ ] Split one feature family, one observable behavior, or one fixed reference window into child issues
-- [ ] Preserve exact reproduction commands and representative AST/diagnostic evidence in each child issue
+- [x] Inspect the smart triage report below
+- [x] Confirm whether existing open/done issues already cover this bucket
+- [x] Supersede this bucket with issue 5370's ambient namespace qualified value-access slice
+- [x] Preserve exact reproduction commands and representative AST/diagnostic evidence in this closed issue
 
 Out of scope:
 
@@ -68,18 +75,20 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] Duplicate candidates below are confirmed as no-match or this issue is superseded
-- [ ] At least one child issue contains an exact `mise run reference-triage -- ...` command
-- [ ] Child issue includes failing path, diagnostic code, source context, visible symbols, and parser/TypeScript AST evidence
-- [ ] Child issue acceptance names the exact fixture/reference path and diagnostic/stdout change
+- [x] Duplicate candidates below are confirmed as no-match or this issue is superseded
+- [x] This closed issue contains an exact `python scripts/manager.py reference-triage ...` command
+- [x] This closed issue includes failing path, diagnostic code, source context, visible symbols, and parser/TypeScript AST evidence
+- [x] Completion evidence names the exact fixture/reference path and diagnostic/stdout change
 
 ## Validation
 
 Required commands:
 
 ```sh
-cargo fmt --all --check
-cargo nextest run
+python scripts/manager.py update-issue-index --check
+python scripts/manager.py check-issue-health
+python scripts/manager.py check-issue-readiness -- --fail-ready-below 80
+git diff --check
 ```
 
 Impacted commands:
@@ -92,21 +101,22 @@ mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/ambie
 
 Not run:
 
-- none
+- `cargo fmt --all --check`; issue cleanup only, no Rust code changed
+- `cargo nextest run`; issue cleanup only, no implementation changed
 
 ## Docs / current-state / issue sync
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] updated: `current-state.md` (repo root)
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] existing: `issues/open/5370-bind-ambient-namespace-declarations-for-qualified-value-access.md`
 
 ## Notes
 
@@ -120,6 +130,50 @@ Follow-up issues:
 - `issues/done/533-implement-ambientModuleWithTemplateLiterals.md` - Implement Ambientmodulewithtemplateliterals (same reference path, same feature label, same group key, title overlap)
 
 ## Smart triage
+
+Fresh triage on 2026-05-08 shows this generated import/export bucket now
+reaches a name-resolution blocker:
+
+```text
+reference/typescript/tests/cases/compiler/ambientModuleWithTemplateLiterals.ts: UnresolvedName: name-resolution
+```
+
+Focused triage reports:
+
+```text
+UnresolvedName: unresolved name: `Foo` at 289..292
+```
+
+Representative source context:
+
+```ts
+declare namespace Foo {
+    enum Bar {
+        a = `1`,
+        b = '2',
+        c = '3'
+    }
+
+    export const a = 'string';
+    export const b = `template`;
+}
+
+Foo.a;
+Foo.b;
+Foo.c;
+```
+
+The compiler tokenizes and parses the ambient namespace, enum members with
+template/string literal initializers, exported const declarations, and later
+qualified expressions. The AST keeps only the outside runtime statements, then
+`resolve_names` cannot find the top-level ambient namespace identifier `Foo`.
+TypeScript accepts the file with no diagnostics.
+
+This is covered by
+`issues/open/5370-bind-ambient-namespace-declarations-for-qualified-value-access.md`,
+which owns binding same-file ambient `declare namespace` declarations as
+resolver-visible namespace values without emitting runtime namespace
+initialization.
 
 ### Smart triage: Triage import export: ambientModuleWithTemplateLiterals
 
@@ -592,18 +646,53 @@ error: [UnsupportedModule] issue-400: ambient namespace declarations require mod
 
 ## Completion evidence
 
-Fill only when moving to `done/`.
+Closed as superseded by
+`issues/open/5370-bind-ambient-namespace-declarations-for-qualified-value-access.md`.
+
+Fresh coverage with the current binary:
+
+```text
+env TS2WASM_BINARY=/tmp/ts2wasm-issue-blockers-target/debug/ts2wasm python scripts/manager.py reference-coverage tsc --path-filter reference/typescript/tests/cases/compiler/ambientModuleWithTemplateLiterals.ts --detail --no-dashboard-data
+suite=tsc
+executed=1
+unsupported=1
+unsupported_diagcodes=UnresolvedName:1
+unsupported_features=name-resolution:1
+reference/typescript/tests/cases/compiler/ambientModuleWithTemplateLiterals.ts: UnresolvedName: name-resolution
+```
+
+Fresh triage:
+
+```text
+env TS2WASM_BINARY=/tmp/ts2wasm-issue-blockers-target/debug/ts2wasm python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/ambientModuleWithTemplateLiterals.ts
+```
+
+Observed owner boundary:
+
+```text
+[pipeline] resolve_names
+error: [UnresolvedName] unresolved name: `Foo` at 289..292
+```
+
+Issue 5370 already tracks resolving ambient namespace roots for qualified
+value access while preserving ambient erasure. This reference is the same
+observable behavior with `Foo.a`, `Foo.b`, `Foo.c`, `Foo.d`, and `Foo.e`, so
+no new child issue is created.
 
 Commits:
 
-- `...`
+- superseded by `issues/open/5370-bind-ambient-namespace-declarations-for-qualified-value-access.md`
 
 Validation result:
 
 ```text
-command:
-result:
-date:
+command: env TS2WASM_BINARY=/tmp/ts2wasm-issue-blockers-target/debug/ts2wasm python scripts/manager.py reference-coverage tsc --path-filter reference/typescript/tests/cases/compiler/ambientModuleWithTemplateLiterals.ts --detail --no-dashboard-data
+result: pass; executed=1, unsupported=1, unsupported_diagcodes=UnresolvedName:1
+date: 2026-05-08
+
+command: env TS2WASM_BINARY=/tmp/ts2wasm-issue-blockers-target/debug/ts2wasm python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/ambientModuleWithTemplateLiterals.ts
+result: pass; resolved dump reaches issue-5370 ambient namespace qualified value-access boundary
+date: 2026-05-08
 ```
 
 Remaining risks:

@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 7 | 6 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4577 | 3423 | 1154 |
+| frontend | 4577 | 3422 | 1155 |
 | harness | 1 | 0 | 1 |
 | ir | 79 | 57 | 22 |
 | issues | 4 | 0 | 4 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5238 | 3721 | 1517 |
+| total | 5238 | 3720 | 1518 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -435,7 +435,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 555 | Implement Abstractclassinlocalscopeisabstract | spike | frontend/resolver | class: blocked | Implement Abstractclassinlocalscopeisabstract |
 | 556 | Implement Abstractclassunioninstantiation | spike | frontend/resolver | class: blocked | Implement Abstractclassunioninstantiation |
 | 597 | Implement Allowjsclassthistypecrash | spike | reference/triage | class: triage-needed | Implement Allowjsclassthistypecrash |
-| 619 | Implement Ambientmodulewithtemplateliterals | spike | frontend/syntax | class: blocked | Implement Ambientmodulewithtemplateliterals |
 | 620 | Implement Ambientmodules | spike | frontend/syntax | class: blocked | Implement Ambientmodules |
 | 622 | Implement Ambientrequirefunction | spike | frontend/syntax | class: blocked | Implement Ambientrequirefunction |
 | 625 | Implement Ambiguouscallswherereturntypesagree | spike | frontend/syntax | class: triage-needed | Implement Ambiguouscallswherereturntypesagree |
@@ -4398,6 +4397,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 616 | Implement Ambientfundule (audit reopened #616) | spike | frontend/syntax | see `issues/done/616-implement-ambientFundule.md` |
 | 617 | Implement Ambientmoduleexports | spike | frontend/syntax | see `issues/done/617-implement-ambientModuleExports.md` |
 | 618 | Implement Ambientmodulewithclassdeclarationwithextends (audit reopened #618) | spike | frontend/syntax | see `issues/done/618-implement-ambientModuleWithClassDeclarationWithExtends.md` |
+| 619 | Implement Ambientmodulewithtemplateliterals | spike | frontend/syntax | see `issues/done/619-implement-ambientModuleWithTemplateLiterals.md` |
 | 621 | Implement Ambientnamerestrictions (audit reopened #621) | spike | frontend/syntax | see `issues/done/621-implement-ambientNameRestrictions.md` |
 | 623 | Implement Ambientstatement (audit reopened #623) | spike | frontend/syntax | see `issues/done/623-implement-ambientStatement.md` |
 | 624 | Implement Ambientwithstatements (audit reopened #624) | spike | frontend/syntax | see `issues/done/624-implement-ambientWithStatements.md` |
