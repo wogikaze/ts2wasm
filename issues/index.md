@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 23 | 12 | 11 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4579 | 3343 | 1236 |
+| frontend | 4579 | 3342 | 1237 |
 | harness | 1 | 0 | 1 |
 | ir | 81 | 59 | 22 |
 | issues | 4 | 0 | 4 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5263 | 3647 | 1616 |
+| total | 5263 | 3646 | 1617 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -2335,7 +2335,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 3302 | Implement Modulealiasasfunctionargument | spike | frontend/syntax | class: blocked | Implement Modulealiasasfunctionargument |
 | 3303 | Implement Modulealiasinterface | spike | frontend/syntax | class: blocked | Implement Modulealiasinterface |
 | 3304 | Implement Moduleandinterfacesharingname | spike | frontend/syntax | class: blocked | Implement Moduleandinterfacesharingname |
-| 3396 | Implement Modulevisibilitytest | spike | frontend/syntax | class: blocked | Implement Modulevisibilitytest |
 | 3397 | Implement Modulewithnovaluesastype | spike | frontend/syntax | class: blocked | Implement Modulewithnovaluesastype |
 | 3398 | Implement Modulewithtrystatement | spike | frontend/syntax | class: blocked | Implement Modulewithtrystatement |
 | 3399 | Implement Modulewithvaluesastype | spike | frontend/syntax | class: blocked | Implement Modulewithvaluesastype |
@@ -5224,6 +5223,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 3393 | Close moduleUnassignedVariable bucket after build pass | maintenance | frontend/syntax | see `issues/done/3393-implement-moduleUnassignedVariable.md` |
 | 3394 | Close moduleVariableArrayIndexer bucket after build pass | maintenance | frontend/syntax | see `issues/done/3394-implement-moduleVariableArrayIndexer.md` |
 | 3395 | Close moduleVariables bucket after build pass | maintenance | frontend/syntax | see `issues/done/3395-implement-moduleVariables.md` |
+| 3396 | Close moduleVisibilityTest bucket to namespace qualified access owner | maintenance | frontend/name-resolution | see `issues/done/3396-implement-moduleVisibilityTest.md` |
 | 3690 | Implement Optionaltupleelementsandundefined | spike | reference/triage | see `issues/done/3690-implement-optionalTupleElementsAndUndefined.md` |
 | 3996 | Implement Compiler (dup) | spike | frontend/syntax | see `issues/done/3996-implement-reference-typescript-tests-cases-compiler.md` |
 | 4210 | Implement Splicetuples | spike | frontend/resolver | see `issues/done/4210-implement-spliceTuples.md` |

@@ -8,7 +8,7 @@ priority: P1
 depends_on: []
 blocks: []
 created: 2026-05-07
-updated: 2026-05-07
+updated: 2026-05-08
 ---
 
 ## Summary
@@ -176,6 +176,11 @@ actionable.
 - Also owns `issues/done/3340-implement-moduleIdentifiers.md`: fresh triage
   reaches the same non-ambient same-file namespace binding boundary for
   `namespace M { export var a = 1 }` followed by `var x1 = M.a;`.
+- Also owns the remaining failing subset of
+  `issues/done/3396-implement-moduleVisibilityTest.md`: fresh triage for cases
+  1 and 2 stops at unresolved namespace root `M` for same-file qualified value
+  accesses such as `new M.C()`, `M.x`, `M.E.A`, and `M.exported_var`. Cases 3
+  and 4 now build.
 
 ## Completion evidence
 
