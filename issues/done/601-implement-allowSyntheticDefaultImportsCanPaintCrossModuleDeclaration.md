@@ -3,12 +3,13 @@ id: 601
 title: "Implement Allowsyntheticdefaultimportscanpaintcrossmoduledeclaration"
 type: spike
 area: frontend/syntax
-class: blocked
+class: done
 priority: P1
-depends_on: [432]
+depends_on: [5403]
 blocks: []
 created: 2026-05-01
-updated: 2026-05-01
+updated: 2026-05-08
+completed: 2026-05-08
 ---
 
 ## Summary
@@ -43,10 +44,10 @@ This generated bucket is either split into implementation-ready child issues or 
 
 In scope:
 
-- [ ] Inspect the smart triage report below
-- [ ] Confirm whether existing open/done issues already cover this bucket
-- [ ] Split one feature family, one observable behavior, or one fixed reference window into child issues
-- [ ] Preserve exact reproduction commands and representative AST/diagnostic evidence in each child issue
+- [x] Inspect the smart triage report below
+- [x] Confirm whether existing open/done issues already cover this bucket
+- [x] Split one feature family, one observable behavior, or one fixed reference window into child issues
+- [x] Preserve exact reproduction commands and representative AST/diagnostic evidence in each child issue
 
 Out of scope:
 
@@ -68,10 +69,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] Duplicate candidates below are confirmed as no-match or this issue is superseded
-- [ ] At least one child issue contains an exact `mise run reference-triage -- ...` command
-- [ ] Child issue includes failing path, diagnostic code, source context, visible symbols, and parser/TypeScript AST evidence
-- [ ] Child issue acceptance names the exact fixture/reference path and diagnostic/stdout change
+- [x] Duplicate candidates below are confirmed as no-match or this issue is superseded
+- [x] At least one child issue contains an exact `mise run reference-triage -- ...` command
+- [x] Child issue includes failing path, diagnostic code, source context, visible symbols, and parser/TypeScript AST evidence
+- [x] Child issue acceptance names the exact fixture/reference path and diagnostic/stdout change
 
 ## Validation
 
@@ -98,15 +99,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] updated: `current-state.md` (repo root)
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 
@@ -707,7 +708,32 @@ error: [UnsupportedModule] issue-232: missing local module `./color` imported fr
 
 ## Completion evidence
 
-Fill only when moving to `done/`.
+Closed as a generated bucket after fresh 2026-05-08 triage split the current
+blocker to `issues/open/5403-support-type-only-default-exports-of-local-interfaces.md`.
+
+Fresh coverage with the current binary:
+
+```text
+env TS2WASM_BINARY=/tmp/ts2wasm-issue-blockers-target/debug/ts2wasm python scripts/manager.py reference-coverage tsc --path-filter reference/typescript/tests/cases/compiler/allowSyntheticDefaultImportsCanPaintCrossModuleDeclaration.ts --detail --no-dashboard-data
+suite=tsc
+executed=1
+unsupported=1
+unsupported_diagcodes=UnsupportedModule:1
+unsupported_features=import-export:1
+reference/typescript/tests/cases/compiler/allowSyntheticDefaultImportsCanPaintCrossModuleDeclaration.ts: UnsupportedModule: import-export
+```
+
+Fresh triage:
+
+```text
+env TS2WASM_BINARY=/tmp/ts2wasm-issue-blockers-target/debug/ts2wasm python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/allowSyntheticDefaultImportsCanPaintCrossModuleDeclaration.ts
+error: [UnresolvedName] unresolved name: `Color` at 50..55
+```
+
+The current primary blocker is `export default Color;` after a local
+`interface Color { ... }`. Issue 5403 owns that type-only default-export shape;
+later virtual-file import resolution remains out of scope for this generated
+bucket.
 
 Commits:
 
@@ -723,4 +749,5 @@ date:
 
 Remaining risks:
 
-- none
+- After issue 5403 lands, this reference case is expected to advance to
+  virtual `@filename` import resolution for `./color` and `./file1`.
