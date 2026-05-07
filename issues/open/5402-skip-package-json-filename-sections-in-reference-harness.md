@@ -198,6 +198,11 @@ fresh triage for `moduleResolutionWithExtensions_unexpected.ts` and
 `moduleResolutionWithExtensions_unexpected2.ts` first stops in unread fixture
 asset text owned by issue 5424; after that skip, both files contain virtual
 `package.json` bodies whose JSON property-colon boundary is owned here.
+Also owns `issues/done/3382-implement-moduleResolutionWithModule.md`: fresh
+triage for `moduleResolutionWithModule.ts` stops in
+`node_modules/pkg/package.json` at the first JSON property colon before
+`export declare function thing(): void;`, `import * as p from "pkg";`,
+package `exports`, or Node16/NodeNext module resolution becomes actionable.
 
 ## Completion evidence
 
