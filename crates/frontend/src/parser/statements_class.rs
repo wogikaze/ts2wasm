@@ -205,6 +205,21 @@ impl Parser {
 
             if matches!(self.peek(), Some(Token::LeftBracket)) {
                 self.skip_balanced_bracket_block()?;
+                // Computed method: `["method"]() { ... }`
+                if self.consume(TokenKind::LeftParen) {
+                    while !self.consume(TokenKind::RightParen) { self.advance(); }
+                    if matches!(self.peek(), Some(Token::Colon)) {
+                        self.advance();
+                        self.skip_type_annotation_until(&[
+                            TokenKind::LeftBrace, TokenKind::Semicolon, TokenKind::RightBrace,
+                        ]).ok();
+                    }
+                    if self.consume(TokenKind::Semicolon) {
+                        continue;
+                    }
+                    self.block()?;
+                    continue;
+                }
                 if self.consume(TokenKind::Colon) {
                     self.skip_type_annotation_until(&[
                         TokenKind::Semicolon,
