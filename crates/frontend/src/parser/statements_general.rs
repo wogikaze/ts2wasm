@@ -1773,6 +1773,12 @@ impl Parser {
             if self.consume_erasable_typescript_declaration()? {
                 continue;
             }
+            // Handle nested block statements (e.g. `{ class C {} }`)
+            if matches!(self.peek(), Some(Token::LeftBrace)) {
+                let nested = self.block()?;
+                statements.extend(nested);
+                continue;
+            }
             statements.push(self.statement()?);
         }
         Ok(statements)
