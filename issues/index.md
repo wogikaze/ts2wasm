@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 7 | 6 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4583 | 3409 | 1174 |
+| frontend | 4583 | 3408 | 1175 |
 | harness | 1 | 0 | 1 |
 | ir | 79 | 57 | 22 |
 | issues | 4 | 0 | 4 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5244 | 3707 | 1537 |
+| total | 5244 | 3706 | 1538 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -2328,7 +2328,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 3313 | Implement Moduleaugmentationdoesnamespacemergeofreexport | spike | frontend/syntax | class: blocked | Implement Moduleaugmentationdoesnamespacemergeofreexport |
 | 3314 | Implement Moduleaugmentationduringsyntheticdefaultcheck | spike | frontend/syntax | class: blocked | Implement Moduleaugmentationduringsyntheticdefaultcheck |
 | 3315 | Implement Moduleaugmentationenumclassmergeofreexportiserror | spike | frontend/syntax | class: blocked | Implement Moduleaugmentationenumclassmergeofreexportiserror |
-| 3322 | Implement Moduleaugmentationindependency | spike | frontend/syntax | class: blocked | Implement Moduleaugmentationindependency |
 | 3324 | Implement Moduleaugmentationofalias | spike | frontend/syntax | class: blocked | Implement Moduleaugmentationofalias |
 | 3325 | Implement Moduleaugmentationwithnonexistentnamedimport | spike | frontend/syntax | class: blocked | Implement Moduleaugmentationwithnonexistentnamedimport |
 | 3331 | Implement Modulecrashbug | spike | frontend/syntax | class: blocked | Implement Modulecrashbug |
@@ -5199,6 +5198,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 3319 | Implement Moduleaugmentationglobal Parser Syntax | spike | frontend/syntax | see `issues/done/3319-implement-moduleAugmentationGlobal-parser-syntax.md` |
 | 3320 | Implement Moduleaugmentationimportsandexports | spike | frontend/syntax | see `issues/done/3320-implement-moduleAugmentationImportsAndExports.md` |
 | 3321 | Implement Moduleaugmentationinambientmodule | spike | frontend/syntax | see `issues/done/3321-implement-moduleAugmentationInAmbientModule.md` |
+| 3322 | Implement Moduleaugmentationindependency | spike | frontend/syntax | see `issues/done/3322-implement-moduleAugmentationInDependency.md` |
 | 3323 | Implement Moduleaugmentationnonewnames | spike | frontend/syntax | see `issues/done/3323-implement-moduleAugmentationNoNewNames.md` |
 | 3326 | Implement Moduleaugmentationsbundledoutput | spike | frontend/syntax | see `issues/done/3326-implement-moduleAugmentationsBundledOutput.md` |
 | 3327 | Implement Moduleaugmentationsimports | spike | frontend/syntax | see `issues/done/3327-implement-moduleAugmentationsImports.md` |
