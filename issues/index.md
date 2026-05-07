@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 6 | 5 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4555 | 3496 | 1059 |
+| frontend | 4556 | 3496 | 1060 |
 | harness | 1 | 0 | 1 |
 | ir | 67 | 45 | 22 |
 | issues | 4 | 0 | 4 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5203 | 3790 | 1413 |
+| total | 5204 | 3790 | 1414 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -48,7 +48,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 
 ```
 5000 (Meta: TypeScript Compiler Parser Syntax Coverage) [done/design] ch:453 open:370 done:83
-├── 5002 (Meta: TypeScript Compiler Type System Coverage) [done/done] ch:229 open:212 done:17 (also ← 5005)
+├── 5002 (Meta: TypeScript Compiler Type System Coverage) [done/done] ch:228 open:211 done:17 (also ← 5005)
 ├── 5003 (Meta: TypeScript Compiler Declaration Emit Coverage) [done/done] ch:102 open:91 done:11 (also ← 5001)
 5001 (Meta: TypeScript Compiler Semantic Analysis Coverage) [done/done] ch:564 open:306 done:258
 5004 (Meta: Runtime Builtins Coverage (test262) (audit reopened #5004)) [done/done] ch:24 open:3 done:21
@@ -70,7 +70,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 2 | 5001 | Meta: TypeScript Compiler Semantic Analysis Coverage | done | done | frontend/semantics | P1 | - | 564 | 306 | 258 |
 | 3 | 5004 | Meta: Runtime Builtins Coverage (test262) (audit reopened #5004) | done | done | runtime/builtins | P1 | - | 24 | 3 | 21 |
 | 4 | 5005 | Meta: TypeScript Compiler Name Resolution Coverage | done | done | frontend/resolver | P1 | - | 411 | 356 | 55 |
-| 5 | 5002 | Meta: TypeScript Compiler Type System Coverage | done | done | frontend/semantics | P1 | 5000, 5005 | 229 | 212 | 17 |
+| 5 | 5002 | Meta: TypeScript Compiler Type System Coverage | done | done | frontend/semantics | P1 | 5000, 5005 | 228 | 211 | 17 |
 | 6 | 5003 | Meta: TypeScript Compiler Declaration Emit Coverage | done | done | frontend/syntax | P2 | 5000, 5001 | 102 | 91 | 11 |
 | 7 | 5006 | Meta: TypeScript Compiler Scope Analysis Coverage | done | done | frontend/resolver | P2 | 5005 | 28 | 20 | 8 |
 | 8 | 5007 | Meta: TypeScript Compiler Module Resolution Coverage (audit reopened #5007) | done | done | frontend/resolver | P2 | 5005 | 21 | 19 | 2 |
@@ -323,6 +323,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5366 | Restore call argument scope after typed arrow callbacks | bug | frontend/resolver | implementation-ready | P1 |  | `contextSensitiveReturnTypeInference.ts` currently reports `UnresolvedName: unresolved name: DEPS` for a call argumen... |
 | 5367 | Parse named default class export | feature | frontend/module-syntax | implementation-ready | P1 |  | a named default class export is still treated as an unsupported module |
 | 5368 | Isolate exported bindings across @filename sections | feature | compiler/multi-section | implementation-ready | P1 |  | external-module `@filename` sections are not isolated during name |
+| 5369 | Parse call-expression type arguments in class heritage | feature | frontend/parser | implementation-ready | P1 |  | the class heritage parser expects the class body after `Tag("Foo")` |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -582,7 +583,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 759 | Implement Asynciife | spike | frontend/syntax | class: triage-needed | Implement Asynciife |
 | 760 | Implement Asyncimportnestedyield | spike | reference/triage | class: triage-needed | Implement Asyncimportnestedyield |
 | 761 | Implement Asynciteratorextraparameters | spike | runtime/builtins | class: triage-needed | Implement Asynciteratorextraparameters |
-| 1491 | Implement Contextualparamtypevsnestedreturntypeinference | spike | frontend/semantics | class: blocked | Implement Contextualparamtypevsnestedreturntypeinference |
 | 1492 | Implement Contextualparameterandselfreferentialconstraint | spike | frontend/syntax | class: triage-needed | Implement Contextualparameterandselfreferentialconstraint |
 | 1493 | Implement Contextualpropertyofgenericfilteringmappedtype | spike | frontend/semantics | class: blocked | Implement Contextualpropertyofgenericfilteringmappedtype |
 | 1494 | Implement Contextualpropertyofgenericmappedtype | spike | frontend/resolver | class: blocked | Implement Contextualpropertyofgenericmappedtype |
@@ -5159,6 +5159,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1488 | Implement Contextualexpressiontypecheckingdoesntblowstack | spike | frontend/syntax | see `issues/done/1488-implement-contextualExpressionTypecheckingDoesntBlowStack.md` |
 | 1489 | Implement Contextualoutertypeparameters | spike | frontend/syntax | see `issues/done/1489-implement-contextualOuterTypeParameters.md` |
 | 1490 | Implement Contextualoverloadlistfromarrayunion | spike | frontend/syntax | see `issues/done/1490-implement-contextualOverloadListFromArrayUnion.md` |
+| 1491 | Implement Contextualparamtypevsnestedreturntypeinference | spike | frontend/semantics | see `issues/done/1491-implement-contextualParamTypeVsNestedReturnTypeInference.md` |
 | 2050 | Implement Duplicatelocalvariable Duplicate Local | spike | reference/triage | see `issues/done/2050-implement-duplicateLocalVariable-duplicate-local.md` |
 | 3002 | Implement Isolateddeclarationerrorsdefault | spike | runtime/builtins | see `issues/done/3002-implement-isolatedDeclarationErrorsDefault.md` |
 | 3131 | Implement Jsxfactorynotidentifierorqualifiedname | spike | reference/triage | see `issues/done/3131-implement-jsxFactoryNotIdentifierOrQualifiedName.md` |
