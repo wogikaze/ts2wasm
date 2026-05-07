@@ -22,12 +22,12 @@ Issue files are the source of truth for work items. The generated section below 
 | issues | 5 | 0 | 5 |
 | parser | 1 | 0 | 1 |
 | reference | 211 | 163 | 48 |
-| runtime | 272 | 87 | 185 |
+| runtime | 272 | 86 | 186 |
 | scripts | 3 | 0 | 3 |
 | security | 1 | 0 | 1 |
 | tests | 8 | 0 | 8 |
 | wasi | 4 | 0 | 4 |
-| total | 5080 | 3964 | 1116 |
+| total | 5080 | 3963 | 1117 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -94,7 +94,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 <!-- generated:ready:start -->
 | ID | Title | Type | Area | Class | Priority | Depends on | Summary |
 |---:|---|---|---|---|---|---|---|
-| 5245 | Implement ECMAScript iterator protocol runtime for spread operator | feature | runtime/semantics | design-ready | P2 | 353 | Implement ECMAScript iterator protocol runtime for spread operator |
+| — | No ready issues (all blocked) | — | — | — | — | — | See Blocked queue |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -5191,6 +5191,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5242 | W2: declare JS semantic core workstream complete | docs | docs | see file |
 | 5243 | Implement non-literal Date constructor inputs | feature | runtime/builtins | see file |
 | 5244 | Define timezone formatting policy for Date.prototype.toString | design | runtime/builtins | see file |
+| 5245 | Implement ECMAScript iterator protocol runtime for spread operator | feature | runtime/semantics | see `issues/done/5245-iterator-protocol-runtime.md` |
 <!-- generated:done:end -->
 
 ## Index generation contract
