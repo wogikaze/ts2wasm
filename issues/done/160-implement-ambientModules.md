@@ -393,7 +393,7 @@ error: [UnsupportedSyntax] expected Semicolon, got Some(Ident("namespace")) at 5
 ## 重複整理メモ
 
 この issue はタイトルが重複しているため、内容がより充実している
-`issues/open/620-implement-ambientModules.md` に統合されました。
+`issues/done/620-implement-ambientModules.md` に統合されました。
 そちらを参照してください。
 ## Completion evidence
 

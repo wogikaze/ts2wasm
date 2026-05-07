@@ -120,7 +120,7 @@ Follow-up issues:
 
 - `issues/open/442-implement-parser-syntax.md` - Implement parser syntax extensions (same feature label, title overlap)
 - `issues/done/464-implement-FunctionDeclaration-parser-syntax.md` - Implement Functiondeclaration Parser Syntax (same feature label, title overlap)
-- `issues/open/550-implement-FunctionDeclaration-parser-syntax.md` - Implement Functiondeclaration Parser Syntax (same feature label, title overlap)
+- `issues/done/550-implement-FunctionDeclaration-parser-syntax.md` - Implement Functiondeclaration Parser Syntax (same feature label, title overlap)
 - `issues/open/663-implement-arrayAssignmentTest-parser-syntax.md` - Implement Arrayassignmenttest Parser Syntax (same reference path, same feature label, same group key, title overlap)
 - `issues/open/674-implement-arrayFakeFlatNoCrashInferenceDeclarations.md` - Implement Arrayfakeflatnocrashinferencedeclarations (same feature label, same group key, title overlap)
 - `issues/open/675-implement-arrayFilter.md` - Implement Arrayfilter (same feature label, same group key, title overlap)

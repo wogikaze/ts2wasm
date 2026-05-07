@@ -403,7 +403,7 @@ error: [UnsupportedSyntax] expected LeftBrace, got Some(Semicolon) at 33..34
 ## 重複整理メモ
 
 この issue はタイトルが重複しているため、内容がより充実している
-`issues/open/550-implement-FunctionDeclaration-parser-syntax.md` に統合されました。
+`issues/done/550-implement-FunctionDeclaration-parser-syntax.md` に統合されました。
 そちらを参照してください。
 ## Completion evidence
 

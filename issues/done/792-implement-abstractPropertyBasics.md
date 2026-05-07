@@ -120,9 +120,9 @@ Follow-up issues:
 - `issues/open/442-implement-parser-syntax.md` - Implement parser syntax extensions (same feature label, same group key, title overlap)
 - `issues/done/460-implement-ClassDeclaration.md` - Implement Classdeclaration (same feature label, same group key, title overlap)
 - `issues/done/471-implement-abstractPropertyBasics.md` - Implement Abstractpropertybasics (same reference path, same feature label, same group key, title overlap)
-- `issues/open/546-implement-ClassDeclaration.md` - Implement Classdeclaration (same feature label, same group key, title overlap)
-- `issues/open/550-implement-FunctionDeclaration-parser-syntax.md` - Implement Functiondeclaration Parser Syntax (same feature label, same group key, title overlap)
-- `issues/open/557-implement-abstractPropertyBasics.md` - Implement Abstractpropertybasics (same reference path, same feature label, same group key, title overlap)
+- `issues/done/546-implement-ClassDeclaration.md` - Implement Classdeclaration (same feature label, same group key, title overlap)
+- `issues/done/550-implement-FunctionDeclaration-parser-syntax.md` - Implement Functiondeclaration Parser Syntax (same feature label, same group key, title overlap)
+- `issues/done/557-implement-abstractPropertyBasics.md` - Implement Abstractpropertybasics (same reference path, same feature label, same group key, title overlap)
 
 ## Smart triage
 
@@ -132,7 +132,7 @@ Not generated. Rerun with `--triage-limit 1` or higher.
 ## 重複整理メモ
 
 この issue はタイトルが重複しているため、内容がより充実している
-`issues/open/557-implement-abstractPropertyBasics.md` に統合されました。
+`issues/done/557-implement-abstractPropertyBasics.md` に統合されました。
 そちらを参照してください。
 ## Completion evidence
 

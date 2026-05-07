@@ -119,7 +119,7 @@ Follow-up issues:
 - `issues/done/096-implement-accessorDeclarationEmitJs.md` - Implement Accessordeclarationemitjs (same reference path, same feature label, same group key, title overlap)
 - `issues/open/424-implement-declaration-emit.md` - Implement declaration-emit support (same feature label, same group key, title overlap)
 - `issues/done/480-implement-accessorDeclarationEmitJs.md` - Implement Accessordeclarationemitjs (same reference path, same feature label, same group key, title overlap)
-- `issues/open/566-implement-accessorDeclarationEmitJs.md` - Implement Accessordeclarationemitjs (same reference path, same feature label, same group key, title overlap)
+- `issues/done/566-implement-accessorDeclarationEmitJs.md` - Implement Accessordeclarationemitjs (same reference path, same feature label, same group key, title overlap)
 
 ## Smart triage
 
@@ -129,7 +129,7 @@ Not generated. Rerun with `--triage-limit 1` or higher.
 ## 重複整理メモ
 
 この issue はタイトルが重複しているため、内容がより充実している
-`issues/open/566-implement-accessorDeclarationEmitJs.md` に統合されました。
+`issues/done/566-implement-accessorDeclarationEmitJs.md` に統合されました。
 そちらを参照してください。
 ## Completion evidence
 

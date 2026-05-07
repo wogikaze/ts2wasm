@@ -130,9 +130,9 @@ Follow-up issues:
 - `issues/done/1048-implement-bigint.md` - Implement Bigint (same feature label, same group key, title overlap)
 - `issues/done/1077-implement-blockScopedSameNameFunctionDeclarationES.md` - Implement Blockscopedsamenamefunctiondeclarationes (same feature label, same group key, title overlap)
 - `issues/done/1078-implement-blockScopedSameNameFunctionDeclarationStrictES.md` - Implement Blockscopedsamenamefunctiondeclarationstrictes (same feature label, same group key, title overlap)
-- `issues/open/1244-implement-classVarianceCircularity.md` - Implement Classvariancecircularity (same feature label, same group key, title overlap)
-- `issues/open/1245-implement-classVarianceResolveCircularity.md` - Implement Classvarianceresolvecircularity (same feature label, same group key, title overlap)
-- `issues/open/1543-implement-contextuallyTypedParametersOptionalInJSDoc.md` - Implement Contextuallytypedparametersoptionalinjsdoc (same feature label, same group key, title overlap)
+- `issues/done/1244-implement-classVarianceCircularity.md` - Implement Classvariancecircularity (same feature label, same group key, title overlap)
+- `issues/done/1245-implement-classVarianceResolveCircularity.md` - Implement Classvarianceresolvecircularity (same feature label, same group key, title overlap)
+- `issues/done/1543-implement-contextuallyTypedParametersOptionalInJSDoc.md` - Implement Contextuallytypedparametersoptionalinjsdoc (same feature label, same group key, title overlap)
 - `issues/open/2169-implement-errorForwardReferenceForwadingConstructor.md` - Implement Errorforwardreferenceforwadingconstructor (same feature label, same group key, title overlap)
 - `issues/open/2232-implement-exhaustiveSwitchCheckCircularity.md` - Implement Exhaustiveswitchcheckcircularity (same feature label, same group key, title overlap)
 

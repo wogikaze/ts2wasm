@@ -116,7 +116,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/open/133-implement-allowJsCrossMonorepoPackage.md` - Implement Allowjscrossmonorepopackage (same reference path, same group key, title overlap)
+- `issues/done/133-implement-allowJsCrossMonorepoPackage.md` - Implement Allowjscrossmonorepopackage (same reference path, same group key, title overlap)
 
 ## Smart triage
 
@@ -192,7 +192,7 @@ Duplicate candidates:
 [
   {
     "state": "open",
-    "path": "issues/open/133-implement-allowJsCrossMonorepoPackage.md",
+    "path": "issues/done/133-implement-allowJsCrossMonorepoPackage.md",
     "title": "Implement Allowjscrossmonorepopackage",
     "reason": "same reference path, title overlap"
   },
@@ -843,7 +843,7 @@ error: [UnsupportedModule] issue-232: unsupported non-local module specifier `pk
 ## 重複整理メモ
 
 この issue はタイトルが重複しているため、内容がより充実している
-`issues/open/598-implement-allowJsCrossMonorepoPackage.md` に統合されました。
+`issues/done/598-implement-allowJsCrossMonorepoPackage.md` に統合されました。
 そちらを参照してください。
 ## Completion evidence
 

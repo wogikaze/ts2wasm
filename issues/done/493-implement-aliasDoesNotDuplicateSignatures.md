@@ -579,7 +579,7 @@ error: [UnsupportedModule] issue-400: ambient namespace declarations require mod
 ## 重複整理メモ
 
 この issue はタイトルが重複しているため、内容がより充実している
-`issues/open/579-implement-aliasDoesNotDuplicateSignatures.md` に統合されました。
+`issues/done/579-implement-aliasDoesNotDuplicateSignatures.md` に統合されました。
 そちらを参照してください。
 ## Completion evidence
 

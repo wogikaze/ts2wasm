@@ -475,7 +475,7 @@ error: [UnsupportedModule] issue-399: TypeScript namespace/internal module decla
 ## 重複整理メモ
 
 この issue はタイトルが重複しているため、内容がより充実している
-`issues/open/561-implement-acceptableAlias.md` に統合されました。
+`issues/done/561-implement-acceptableAlias.md` に統合されました。
 そちらを参照してください。
 ## Completion evidence
 

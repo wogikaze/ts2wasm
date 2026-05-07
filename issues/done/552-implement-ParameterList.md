@@ -118,7 +118,7 @@ Follow-up issues:
 ## Duplicate detection
 
 - `issues/done/079-implement-ParameterList.md` - Implement Parameterlist (same reference path, same feature label, same group key, title overlap)
-- `issues/open/199-implement-reference-typescript-tests-cases-compiler.md` - Implement Compiler (same feature label, same group key, title overlap)
+- `issues/done/199-implement-reference-typescript-tests-cases-compiler.md` - Implement Compiler (same feature label, same group key, title overlap)
 - `issues/open/442-implement-parser-syntax.md` - Implement parser syntax extensions (same feature label, same group key, title overlap)
 - `issues/done/466-implement-ParameterList.md` - Implement Parameterlist (same reference path, same feature label, same group key, title overlap)
 
@@ -208,7 +208,7 @@ Duplicate candidates:
   },
   {
     "state": "open",
-    "path": "issues/open/550-implement-FunctionDeclaration-parser-syntax.md",
+    "path": "issues/done/550-implement-FunctionDeclaration-parser-syntax.md",
     "title": "Implement Functiondeclaration Parser Syntax",
     "reason": "same feature label, title overlap"
   },

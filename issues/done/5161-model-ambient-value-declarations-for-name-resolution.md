@@ -175,6 +175,14 @@ Additional superseded bucket:
   `declare const styled: StyledInterface; export const StyledSelect = styled(Flex).attrs(...)`.
   This is the same ambient `declare const` value reference boundary covered by
   this issue.
+- `issues/done/582-implement-aliasInstantiationExpressionGenericIntersectionNoCrash.md`
+  reaches the same ambient value name-resolution boundary after parser support
+  for generic class declarations and instantiation-expression type aliases.
+  Fresh triage on 2026-05-08 reports `UnresolvedName` for
+  `declare const e: ErrAlias<number>; e as ErrAlias<string>;` and
+  `declare const wat: Wat<number>; wat as Wat<string>;`. TypeScript later
+  reports TS2352 conversion diagnostics, but the current compiler blocker is
+  still resolver visibility for declaration-only ambient const values.
 
 ## Completion evidence
 

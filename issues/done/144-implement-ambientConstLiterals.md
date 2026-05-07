@@ -636,7 +636,7 @@ error: [UnsupportedSyntax] expected Semicolon, got Some(Ident("E")) at 96..97
 ## 重複整理メモ
 
 この issue はタイトルが重複しているため、内容がより充実している
-`issues/open/606-implement-ambientConstLiterals.md` に統合されました。
+`issues/done/606-implement-ambientConstLiterals.md` に統合されました。
 そちらを参照してください。
 ## Completion evidence
 

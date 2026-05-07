@@ -427,7 +427,7 @@ error: [UnsupportedSyntax] expected Semicolon, got Some(Ident("module")) at 118.
 ## 重複整理メモ
 
 この issue はタイトルが重複しているため、内容がより充実している
-`issues/open/615-implement-ambientExternalModuleWithoutInternalImportDeclaration.md` に統合されました。
+`issues/done/615-implement-ambientExternalModuleWithoutInternalImportDeclaration.md` に統合されました。
 そちらを参照してください。
 ## Completion evidence
 

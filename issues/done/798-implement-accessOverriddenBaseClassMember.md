@@ -121,8 +121,8 @@ Follow-up issues:
 - `issues/open/092-implement-accessOverriddenBaseClassMember.md` - Implement Accessoverriddenbaseclassmember (same reference path, same feature label, same group key, title overlap)
 - `issues/done/460-implement-ClassDeclaration.md` - Implement Classdeclaration (same feature label, same group key, title overlap)
 - `issues/done/477-implement-accessOverriddenBaseClassMember.md` - Implement Accessoverriddenbaseclassmember (same reference path, same feature label, same group key, title overlap)
-- `issues/open/546-implement-ClassDeclaration.md` - Implement Classdeclaration (same feature label, same group key, title overlap)
-- `issues/open/550-implement-FunctionDeclaration-parser-syntax.md` - Implement Functiondeclaration Parser Syntax (same feature label, same group key, title overlap)
+- `issues/done/546-implement-ClassDeclaration.md` - Implement Classdeclaration (same feature label, same group key, title overlap)
+- `issues/done/550-implement-FunctionDeclaration-parser-syntax.md` - Implement Functiondeclaration Parser Syntax (same feature label, same group key, title overlap)
 - `issues/done/563-implement-accessOverriddenBaseClassMember.md` - Implement Accessoverriddenbaseclassmember (same reference path, same feature label, same group key, title overlap)
 
 ## Smart triage

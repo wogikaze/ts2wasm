@@ -118,7 +118,7 @@ Follow-up issues:
 ## Duplicate detection
 
 - Older accessor buckets share the `class-accessor` feature label, but none owns the current typed getter false build-pass.
-- `issues/open/574-implement-accessors.md` is a broad generated accessor bucket, not an implementation-ready child for this current `TS2322` mismatch.
+- `issues/done/574-implement-accessors.md` is a broad generated accessor bucket, not an implementation-ready child for this current `TS2322` mismatch.
 
 ## Smart triage
 

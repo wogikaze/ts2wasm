@@ -118,8 +118,8 @@ Follow-up issues:
 
 - `issues/done/144-implement-ambientConstLiterals.md` - Implement Ambientconstliterals (same reference path, same group key, title overlap)
 - `issues/done/520-implement-ambientConstLiterals.md` - Implement Ambientconstliterals (same reference path, same feature label, same group key, title overlap)
-- `issues/open/550-implement-FunctionDeclaration-parser-syntax.md` - Implement Functiondeclaration Parser Syntax (same feature label, same group key, title overlap)
-- `issues/open/606-implement-ambientConstLiterals.md` - Implement Ambientconstliterals (same reference path, same feature label, same group key, title overlap)
+- `issues/done/550-implement-FunctionDeclaration-parser-syntax.md` - Implement Functiondeclaration Parser Syntax (same feature label, same group key, title overlap)
+- `issues/done/606-implement-ambientConstLiterals.md` - Implement Ambientconstliterals (same reference path, same feature label, same group key, title overlap)
 
 ## Smart triage
 
@@ -129,7 +129,7 @@ Not generated. Rerun with `--triage-limit 1` or higher.
 ## 重複整理メモ
 
 この issue はタイトルが重複しているため、内容がより充実している
-`issues/open/606-implement-ambientConstLiterals.md` に統合されました。
+`issues/done/606-implement-ambientConstLiterals.md` に統合されました。
 そちらを参照してください。
 ## Completion evidence
 

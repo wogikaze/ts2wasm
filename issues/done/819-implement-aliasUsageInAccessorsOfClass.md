@@ -118,7 +118,7 @@ Follow-up issues:
 
 - `issues/open/119-implement-aliasUsageInAccessorsOfClass.md` - Implement Aliasusageinaccessorsofclass (same reference path, same group key, title overlap)
 - `issues/done/498-implement-aliasUsageInAccessorsOfClass.md` - Implement Aliasusageinaccessorsofclass (same reference path, same feature label, same group key, title overlap)
-- `issues/open/584-implement-aliasUsageInAccessorsOfClass.md` - Implement Aliasusageinaccessorsofclass (same reference path, same feature label, same group key, title overlap)
+- `issues/done/584-implement-aliasUsageInAccessorsOfClass.md` - Implement Aliasusageinaccessorsofclass (same reference path, same feature label, same group key, title overlap)
 - `issues/open/715-implement-assign.md` - Implement Assign (same feature label, same group key, title overlap)
 
 ## Smart triage
@@ -129,7 +129,7 @@ Not generated. Rerun with `--triage-limit 1` or higher.
 ## 重複整理メモ
 
 この issue はタイトルが重複しているため、内容がより充実している
-`issues/open/584-implement-aliasUsageInAccessorsOfClass.md` に統合されました。
+`issues/done/584-implement-aliasUsageInAccessorsOfClass.md` に統合されました。
 そちらを参照してください。
 ## Completion evidence
 

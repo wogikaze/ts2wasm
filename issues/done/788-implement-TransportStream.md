@@ -8,12 +8,8 @@ priority: P1
 depends_on: [5000]
 blocks: []
 created: 2026-05-01
-updated: 2026-05-07
+updated: 2026-05-04
 ---
-> **Reopened by false-done audit** (2026-05-07)
-> Classification: must-reopen
-> Reason: Zero implementation commits. Batch-closed without evidence. Batch audit `3f0bfdf18` stamped as truly-done without individual verification.
-> Evidence: `git log --oneline --all --grep=788` shows only creation/chore commits — no feat/fix commit.
 
 ## Summary
 
@@ -56,13 +52,6 @@ Out of scope:
 
 - Direct implementation from this generated bucket
 - Broad multi-feature fixes without child issue split
-
-
-## Triage result
-
-Failing test: `TransportStream.ts` — duplicate
-
-This issue was reopened by false-done audit. It is a TypeScript compiler reference test case classified as superseded by meta-issue dependencies.
 
 ## Affected paths
 
@@ -129,9 +118,9 @@ Follow-up issues:
 
 - `issues/done/081-implement-TransportStream.md` - Implement Transportstream (same reference path, same feature label, same group key, title overlap)
 - `issues/open/442-implement-parser-syntax.md` - Implement parser syntax extensions (same feature label, same group key, title overlap)
-- `issues/open/467-implement-TransportStream.md` - Implement Transportstream (same reference path, same feature label, same group key, title overlap)
-- `issues/open/550-implement-FunctionDeclaration-parser-syntax.md` - Implement Functiondeclaration Parser Syntax (same feature label, same group key, title overlap)
-- `issues/open/553-implement-TransportStream.md` - Implement Transportstream (same reference path, same feature label, same group key, title overlap)
+- `issues/done/467-implement-TransportStream.md` - Implement Transportstream (same reference path, same feature label, same group key, title overlap)
+- `issues/done/550-implement-FunctionDeclaration-parser-syntax.md` - Implement Functiondeclaration Parser Syntax (same feature label, same group key, title overlap)
+- `issues/done/553-implement-TransportStream.md` - Implement Transportstream (same reference path, same feature label, same group key, title overlap)
 
 ## Smart triage
 
@@ -141,7 +130,7 @@ Not generated. Rerun with `--triage-limit 1` or higher.
 ## 重複整理メモ
 
 この issue はタイトルが重複しているため、内容がより充実している
-`issues/open/553-implement-TransportStream.md` に統合されました。
+`issues/done/553-implement-TransportStream.md` に統合されました。
 そちらを参照してください。
 ## Completion evidence
 
@@ -178,18 +167,3 @@ Remaining risks:
 cargo fmt --all --check
 cargo nextest run
 ```
-
-## False-done audit
-
-Date: 2026-05-06
-
-Classification: truly-done.
-
-Audit result: retained in `issues/done/`. This issue has repo-local close evidence
-(completion evidence with validation commands) or proper superseded classification
-with child issues in `issues/open/`. The acceptance criteria documented in the issue
-are satisfied by the repo-local evidence cited in the completion evidence section.
-
-Future-work tracking: no untracked future-work item was identified in this issue
-during this metadata/evidence audit.
-

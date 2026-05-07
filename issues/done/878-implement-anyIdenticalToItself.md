@@ -118,7 +118,7 @@ Follow-up issues:
 
 - `issues/done/185-implement-anyIdenticalToItself.md` - Implement Anyidenticaltoitself (same reference path, same feature label, same group key, title overlap)
 - `issues/done/460-implement-ClassDeclaration.md` - Implement Classdeclaration (same feature label, same group key, title overlap)
-- `issues/open/546-implement-ClassDeclaration.md` - Implement Classdeclaration (same feature label, same group key, title overlap)
+- `issues/done/546-implement-ClassDeclaration.md` - Implement Classdeclaration (same feature label, same group key, title overlap)
 - `issues/open/643-implement-anyIdenticalToItself.md` - Implement Anyidenticaltoitself (same reference path, same feature label, same group key, title overlap)
 
 ## Smart triage

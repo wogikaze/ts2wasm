@@ -118,8 +118,8 @@ Follow-up issues:
 
 - `issues/done/148-implement-ambientExportDefaultErrors.md` - Implement Ambientexportdefaulterrors (same reference path, same group key, title overlap)
 - `issues/done/523-implement-ambientExportDefaultErrors.md` - Implement Ambientexportdefaulterrors (same reference path, same feature label, same group key, title overlap)
-- `issues/open/548-implement-ExportAssignment.md` - Implement Exportassignment (same feature label, same group key, title overlap)
-- `issues/open/609-implement-ambientExportDefaultErrors.md` - Implement Ambientexportdefaulterrors (same reference path, same feature label, same group key, title overlap)
+- `issues/done/548-implement-ExportAssignment.md` - Implement Exportassignment (same feature label, same group key, title overlap)
+- `issues/done/609-implement-ambientExportDefaultErrors.md` - Implement Ambientexportdefaulterrors (same reference path, same feature label, same group key, title overlap)
 
 ## Smart triage
 
@@ -129,7 +129,7 @@ Not generated. Rerun with `--triage-limit 1` or higher.
 ## 重複整理メモ
 
 この issue はタイトルが重複しているため、内容がより充実している
-`issues/open/609-implement-ambientExportDefaultErrors.md` に統合されました。
+`issues/done/609-implement-ambientExportDefaultErrors.md` に統合されました。
 そちらを参照してください。
 ## Completion evidence
 

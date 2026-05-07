@@ -74,9 +74,9 @@ object-literal strict equality condition instead of returning `BuildPass`.
 
 In scope:
 
-- [ ] Detect the direct object-literal `===` object-literal condition shape.
-- [ ] Report a source-spanned TS2839-compatible diagnostic at the condition.
-- [ ] Add focused coverage for the representative strict-equality fixture.
+- [x] Detect the direct object-literal `===` object-literal condition shape.
+- [x] Report a source-spanned TS2839-compatible diagnostic at the condition.
+- [x] Add focused coverage for the representative strict-equality fixture.
 
 Out of scope:
 
@@ -99,9 +99,9 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] The focused `if ({ a: 1 } === { a: 1 }) {}` case reports a source-spanned diagnostic.
-- [ ] `python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/conditionalEqualityOnLiteralObjects.ts` no longer reports `BuildPass` for the first condition.
-- [ ] Existing primitive equality fixtures continue to build without the new diagnostic.
+- [x] The focused `if ({ a: 1 } === { a: 1 }) {}` case reports a source-spanned diagnostic.
+- [x] `python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/conditionalEqualityOnLiteralObjects.ts` no longer reports `BuildPass` for the first condition.
+- [x] Existing primitive equality fixtures continue to build without the new diagnostic.
 
 ## Validation
 
@@ -127,15 +127,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 

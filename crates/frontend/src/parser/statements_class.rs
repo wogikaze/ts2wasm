@@ -59,7 +59,9 @@ impl Parser {
         start: Span,
     ) -> Result<Stmt, Diagnostic> {
         self.expect(TokenKind::Class)?;
-        if matches!(self.peek(), Some(Token::Ident(_))) {
+        if matches!(self.peek(), Some(Token::Ident(_)))
+            && !self.peek_contextual_keyword("implements")
+        {
             self.advance();
         }
         let _ = self.consume_typescript_generic_parameter_list()?;
@@ -125,6 +127,20 @@ impl Parser {
         if self.peek_contextual_keyword("implements") {
             self.advance();
             while !self.is_at_end() && !matches!(self.peek(), Some(Token::LeftBrace)) {
+                if let Some(Token::Ident(name)) = self.peek().cloned() {
+                    if matches!(name.as_str(), "string" | "number" | "boolean") {
+                        let span = self.peek_span().expect("ident token must have span");
+                        self.advance();
+                        return Err(Diagnostic {
+                            code: DiagCode::UnsupportedTypeScriptSyntax,
+                            message: format!(
+                                "issue-5263: `{name}` is a primitive, \
+                                 not a valid class implements type"
+                            ),
+                            span: Some(span),
+                        });
+                    }
+                }
                 self.advance();
             }
         }

@@ -473,7 +473,7 @@ error: [UnsupportedSyntax] expected Colon, got Some(Ident("getter")) at 189..195
 ## 重複整理メモ
 
 この issue はタイトルが重複しているため、内容がより充実している
-`issues/open/566-implement-accessorDeclarationEmitJs.md` に統合されました。
+`issues/done/566-implement-accessorDeclarationEmitJs.md` に統合されました。
 そちらを参照してください。
 ## Completion evidence
 

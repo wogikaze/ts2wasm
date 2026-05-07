@@ -628,7 +628,7 @@ error: [UnsupportedSyntax] expected Semicolon, got Some(Ident("zzz")) at 154..15
 ## 重複整理メモ
 
 この issue はタイトルが重複しているため、内容がより充実している
-`issues/open/596-implement-allowImportClausesToMergeWithTypes.md` に統合されました。
+`issues/done/596-implement-allowImportClausesToMergeWithTypes.md` に統合されました。
 そちらを参照してください。
 ## Completion evidence
 

@@ -688,7 +688,7 @@ error: [UnsupportedModule] issue-232: missing local module `./color` imported fr
 ## 重複整理メモ
 
 この issue はタイトルが重複しているため、内容がより充実している
-`issues/open/601-implement-allowSyntheticDefaultImportsCanPaintCrossModuleDeclaration.md` に統合されました。
+`issues/done/601-implement-allowSyntheticDefaultImportsCanPaintCrossModuleDeclaration.md` に統合されました。
 そちらを参照してください。
 ## Completion evidence
 
