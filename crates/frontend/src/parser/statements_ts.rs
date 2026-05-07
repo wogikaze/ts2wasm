@@ -40,6 +40,20 @@ impl Parser {
             return self.consume_module_or_namespace_declaration();
         }
 
+        if matches!(self.peek(), Some(Token::Export))
+            && matches!(self.peek_n(1), Some(Token::Ident(name)) if name == "enum")
+        {
+            self.advance(); // consume 'export'
+            let enum_span = self.peek_span().unwrap_or(Span {
+                start: self.cursor,
+                end: self.cursor,
+            });
+            self.advance(); // consume 'enum'
+            self.expect_ident()?; // consume enum name
+            self.skip_balanced_brace_block(enum_span)?; // skip { ... } body
+            return Ok(true);
+        }
+
         if self.peek_contextual_keyword("enum") {
             let enum_span = self.peek_span().unwrap_or(Span {
                 start: self.cursor,

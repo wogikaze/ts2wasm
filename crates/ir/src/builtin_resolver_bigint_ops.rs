@@ -277,6 +277,7 @@ pub(super) fn collect_assigned_names_in_stmt(stmt: &Stmt, names: &mut HashSet<St
         | Stmt::ExportNamespaceFrom { .. }
         | Stmt::ExportDecl { .. }
         | Stmt::ExportDefault { .. }
+        | Stmt::ExportAssignment { .. }
         | Stmt::Break { .. }
         | Stmt::Continue { .. } => {}
     }

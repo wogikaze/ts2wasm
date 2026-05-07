@@ -1890,7 +1890,8 @@ fn validate_stmt(
         | Stmt::ExportNamedFrom { .. }
         | Stmt::ExportAllFrom { .. }
         | Stmt::ExportNamespaceFrom { .. }
-        | Stmt::ExportDefault { .. } => Ok(()),
+        | Stmt::ExportDefault { .. }
+        | Stmt::ExportAssignment { .. } => Ok(()),
         Stmt::ExportDecl { declaration, .. } => {
             validate_stmt(declaration, in_top_level, scope, top_functions)
         }

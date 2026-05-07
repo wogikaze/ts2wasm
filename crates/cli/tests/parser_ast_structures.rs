@@ -317,3 +317,15 @@ fn this_expression_creates_ast_node() {
         }
     ));
 }
+
+#[test]
+fn export_assignment_creates_ast_node() {
+    let stmts = parse("export = foo;");
+    assert_eq!(stmts.len(), 1);
+    match &stmts[0] {
+        Stmt::ExportAssignment { expr, .. } => {
+            assert!(matches!(expr, Expr::Ident { name, .. } if name == "foo"));
+        }
+        other => panic!("expected ExportAssignment, got {other:?}"),
+    }
+}

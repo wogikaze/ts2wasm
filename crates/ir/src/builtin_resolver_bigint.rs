@@ -829,6 +829,7 @@ impl BigIntRuntimeGuard {
             | Stmt::ExportNamespaceFrom { .. }
             | Stmt::ExportDecl { .. }
             | Stmt::ExportDefault { .. }
+            | Stmt::ExportAssignment { .. }
             | Stmt::AmbientValueDecl { .. }
             | Stmt::Break { .. }
             | Stmt::Continue { .. } => Ok(()),

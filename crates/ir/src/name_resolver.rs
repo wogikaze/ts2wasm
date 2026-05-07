@@ -191,6 +191,9 @@ impl NameResolver {
             Stmt::ExportDefault { span, .. } => {
                 Err(unsupported_module_decl(*span, "default export"))
             }
+            Stmt::ExportAssignment { span, .. } => {
+                Err(unsupported_module_decl(*span, "export assignment"))
+            }
             Stmt::Let {
                 name,
                 expr,

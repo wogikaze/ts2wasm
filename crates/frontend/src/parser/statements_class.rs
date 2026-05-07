@@ -616,6 +616,7 @@ fn find_null_return_in_stmts(stmts: &[Stmt]) -> Option<Span> {
             | Stmt::ExportAllFrom { .. }
             | Stmt::ExportNamespaceFrom { .. }
             | Stmt::ExportDecl { .. }
+            | Stmt::ExportAssignment { .. }
             | Stmt::ExportDefault { .. } => {}
         }
     }

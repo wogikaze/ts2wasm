@@ -210,6 +210,10 @@ pub enum Stmt {
         default_span: Span,
         span: Span,
     },
+    ExportAssignment {
+        expr: Expr,
+        span: Span,
+    },
     Let {
         name: String,
         expr: Expr,
@@ -513,6 +517,7 @@ impl Stmt {
             | Self::ExportNamespaceFrom { span, .. }
             | Self::ExportDecl { span, .. }
             | Self::ExportDefault { span, .. }
+            | Self::ExportAssignment { span, .. }
             | Self::Let { span, .. }
             | Self::AmbientValueDecl { span, .. }
             | Self::Assign { span, .. }

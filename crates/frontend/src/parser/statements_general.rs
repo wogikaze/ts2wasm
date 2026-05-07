@@ -121,7 +121,7 @@ impl Parser {
             self.advance(); // consume '='
             let expr = self.expression()?;
             let end = self.statement_terminator_end(expr.span().end)?;
-            Ok(Stmt::Expr {
+            Ok(Stmt::ExportAssignment {
                 expr,
                 span: Span {
                     start: export_span.start,

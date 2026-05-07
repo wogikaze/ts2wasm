@@ -3269,6 +3269,31 @@ class Foo {
     }
 
     #[test]
+    fn parses_export_enum_declaration() {
+        let result = parse_program("export enum Color { r, g, b }");
+        assert!(
+            result.is_ok(),
+            "expected export enum to parse, got err: {result:?}"
+        );
+    }
+
+    #[test]
+    fn parses_export_enum_with_values() {
+        let result = parse_program("export enum E { A = 1, B = 2 }");
+        assert!(
+            result.is_ok(),
+            "expected export enum with values to parse, got err: {result:?}"
+        );
+    }
+
+    #[test]
+    fn parses_export_enum_followed_by_let() {
+        let stmts = parse_program("export enum E { A }\nlet x = 1;").unwrap();
+        assert_eq!(stmts.len(), 1);
+        assert!(matches!(&stmts[0], Stmt::Let { name, .. } if name == "x"));
+    }
+
+    #[test]
     fn rejects_non_const_enum_missing_initializer() {
         let err = parse_program("const x;").unwrap_err();
         assert_eq!(err.code, DiagCode::UnsupportedSyntax);
@@ -3326,11 +3351,11 @@ class Foo {
         let program = program.unwrap();
         assert_eq!(program.len(), 1);
         match &program[0] {
-            Stmt::Expr { expr, .. } => {
+            Stmt::ExportAssignment { expr, .. } => {
                 assert!(matches!(expr, Expr::Ident { name, .. } if name == "foo"),
                     "expected Ident(foo), got {expr:?}");
             }
-            other => panic!("expected Expr statement, got {other:?}"),
+            other => panic!("expected ExportAssignment, got {other:?}"),
         }
     }
 

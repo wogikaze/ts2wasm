@@ -1,47 +1,54 @@
 {
-  "runtime_functions": [
-    "add",
-    "add_fast",
-    "alloc_heap",
-    "concat",
-    "copy",
-    "is_string",
-    "less",
-    "less_fast",
-    "log",
-    "number_from_i32",
-    "number_to_i32",
-    "string_equal",
-    "truthy_bool",
-    "value_to_string_into",
-    "write"
+  "capabilities": [
+    "stdout.write"
   ],
   "globals": [
     "$alloc_bytes_since_last_gc",
-    "$exception_handler_depth",
-    "$exception_pending",
-    "$gc_call_frame_base",
-    "$gc_call_frame_current",
-    "$gc_call_frame_limit",
-    "$gc_call_frame_top",
     "$gc_free_list",
     "$gc_free_list_max_body_size",
     "$gc_free_list_second_max_body_size",
     "$gc_root_base",
-    "$gc_root_count"
+    "$gc_root_count",
+    "$gc_call_frame_base",
+    "$gc_call_frame_top",
+    "$gc_call_frame_limit",
+    "$gc_call_frame_current",
+    "$exception_pending",
+    "$exception_handler_depth"
   ],
   "imports": [
     "wasi_snapshot_preview1.fd_write"
   ],
-  "capabilities": [
-    "stdout.write"
+  "manifest_target": "wasm32-wasi-p1",
+  "runtime_functions": [
+    "write",
+    "copy",
+    "value_to_string_into",
+    "log",
+    "truthy_bool",
+    "number_from_i32",
+    "number_to_i32",
+    "bigint_mixed_arithmetic_type_error",
+    "bigint_string_comparison_boundary_error",
+    "bigint_compare",
+    "string_equal",
+    "concat",
+    "is_string",
+    "add",
+    "less",
+    "strict_equal",
+    "equal_equal",
+    "alloc_heap"
   ],
   "runtime_strings": [
     "\n",
+    "Cannot mix BigInt and other types, use explicit conversions",
+    "TypeError: Cannot mix BigInt and other types, use explicit conversions\n",
     "false",
+    "issue-375: BigInt/String comparison StringToBigInt value is outside the runtime comparison boundary\n",
+    "message",
     "null",
     "true",
     "undefined"
-  ],
-  "manifest_target": "wasm32-wasi-p1"
+  ]
 }

@@ -375,6 +375,7 @@ impl BigIntStaticBuiltinFolder {
             | Stmt::ExportNamedFrom { .. }
             | Stmt::ExportAllFrom { .. }
             | Stmt::ExportNamespaceFrom { .. }
+            | Stmt::ExportAssignment { .. }
             | Stmt::AmbientValueDecl { .. }
             | Stmt::Break { .. }
             | Stmt::Continue { .. } => stmt.clone(),
@@ -1379,6 +1380,8 @@ fn resolve_stmt_with_outer_bindings(
         | Stmt::ExportAllFrom { .. }
         | Stmt::ExportNamespaceFrom { .. }
         | Stmt::ExportDecl { .. }
+        | Stmt::ExportAssignment { .. }
+        | Stmt::ExportAssignment { .. }
         | Stmt::ExportDefault { .. } => Err(Diagnostic {
             code: DiagCode::UnsupportedSyntax,
             message:

@@ -316,6 +316,7 @@ pub(super) fn stmt_contains_return_stmt(stmt: &Stmt) -> bool {
         | Stmt::ExportNamespaceFrom { .. }
         | Stmt::ExportDecl { .. }
         | Stmt::ExportDefault { .. }
+        | Stmt::ExportAssignment { .. }
         | Stmt::Let { .. }
         | Stmt::Assign { .. }
         | Stmt::Expr { .. }
@@ -444,6 +445,7 @@ pub(super) fn validate_static_block_stmt(stmt: &Stmt) -> Result<(), Diagnostic> 
         | Stmt::ExportAllFrom { span, .. }
         | Stmt::ExportNamespaceFrom { span, .. }
         | Stmt::ExportDecl { span, .. }
+        | Stmt::ExportAssignment { span, .. }
         | Stmt::ExportDefault { span, .. } => Err(static_block_unsupported(
             "module declarations inside class static blocks are not supported",
             *span,

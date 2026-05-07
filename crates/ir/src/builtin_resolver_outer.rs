@@ -74,6 +74,7 @@ pub(super) fn collect_stmt_declared_bindings(
         | Stmt::ExportNamespaceFrom { .. }
         | Stmt::ExportDecl { .. }
         | Stmt::ExportDefault { .. }
+        | Stmt::ExportAssignment { .. }
         | Stmt::AmbientValueDecl { .. }
         | Stmt::Assign { .. }
         | Stmt::Expr { .. }
@@ -308,6 +309,7 @@ pub(super) fn first_outer_local_reference_in_stmt(
         | Stmt::ExportNamespaceFrom { .. }
         | Stmt::ExportDecl { .. }
         | Stmt::ExportDefault { .. }
+        | Stmt::ExportAssignment { .. }
         | Stmt::Break { .. }
         | Stmt::Continue { .. } => None,
     }
