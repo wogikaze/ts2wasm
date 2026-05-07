@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 7 | 4 | 3 |
 | coverage | 44 | 1 | 43 |
 | docs | 5 | 0 | 5 |
-| frontend | 4562 | 3776 | 786 |
+| frontend | 4563 | 3775 | 788 |
 | harness | 1 | 0 | 1 |
 | ir | 77 | 27 | 50 |
 | issues | 5 | 0 | 5 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 8 | 0 | 8 |
 | wasi | 4 | 0 | 4 |
-| total | 5245 | 4052 | 1193 |
+| total | 5246 | 4051 | 1195 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -286,7 +286,10 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1439 | Implement Constdeclarationshadowedbyvardeclaration | spike | frontend/syntax | done | P1 |  | constDeclarationShadowedByVarDeclaration has 2 reference failures and needs smart-triage evidence before implementati... |
 | 1440 | Implement Constdeclarations Import Export | spike | frontend/syntax | done | P1 |  | constDeclarations-import-export has 5 reference failures and needs smart-triage evidence before implementation starts. |
 | 1441 | Implement Constdeclarations Name Resolution | spike | frontend/resolver | superseded | P1 |  | the generated bucket remained blocked instead of pointing to an |
+| 1445 | Implement Constenumbadpropertynames | spike | frontend/syntax | superseded | P1 | 5184 | constEnumBadPropertyNames has 1 reference failures and needs smart-triage evidence before implementation starts. |
+| 1446 | Implement Constenumdeclarations | spike | frontend/syntax | superseded | P1 | 5184 | constEnumDeclarations has 1 reference failures and needs smart-triage evidence before implementation starts. |
 | 1447 | Implement Constenumerrors | spike | frontend/syntax | superseded | P1 | 5351 | constEnumErrors has 1 reference failures and needs smart-triage evidence before implementation starts. |
+| 1448 | Implement Constenumexternalmodule | spike | frontend/syntax | superseded | P1 | 5184 | constEnumExternalModule has 1 reference failures and needs smart-triage evidence before implementation starts. |
 | 1449 | Implement Constenummergingwithvalues Import Export | spike | frontend/syntax | superseded | P1 | 5186 | constEnumMergingWithValues-import-export has 4 reference failures and needs smart-triage evidence before implementati... |
 | 1450 | Implement Constenummergingwithvalues Parser Syntax | spike | frontend/syntax | superseded | P1 | 5186 | constEnumMergingWithValues-parser-syntax has 1 reference failures and needs smart-triage evidence before implementati... |
 | 1451 | Implement Constenumnamespacereferencecausesnoimport | spike | frontend/syntax | done | P1 |  | `constEnumNamespaceReferenceCausesNoImport` needs to be tracked through |
@@ -352,7 +355,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1999 | Report symbol WeakSet.add diagnostics | feature | frontend/resolver | implementation-ready | P1 |  | weak collection symbol negative tests currently fail with |
 | 5156 | Parse generic type arguments in class heritage clauses | feature | frontend/syntax | implementation-ready | P1 |  | `reference/typescript/tests/cases/compiler/baseTypeOrderChecking.ts` fails parsing on `class Class4<T> extends Class3... |
 | 5163 | Lower nested call expression callees | feature | frontend/semantics | implementation-ready | P2 |  | `reference/typescript/tests/cases/compiler/betterErrorForAccidentalCall.ts` currently reports `UnsupportedSyntax: onl... |
-| 5184 | Parse const enum declarations | feature | frontend/syntax | implementation-ready | P1 |  | `const enum` declarations are parser-unsupported and are misclassified as malformed `const` variable declarations. |
 | 5195 | Support callable interface-typed local calls | feature | ir/lowering | implementation-ready | P1 |  | callable interface-typed locals currently lower to `Undefined` values and calls to them stop with `issue-211`. |
 | 5200 | Validate top-level function overload implementations | feature | frontend/resolver | implementation-ready | P1 |  | top-level function overload implementation groups are currently classified as duplicate concrete functions. |
 | 5246 | Report static declarations inside constructor bodies | feature | frontend/parser | implementation-ready | P1 |  | invalid `static` declarations in constructor bodies report generic unsupported expression instead of a spanned parser... |
@@ -362,6 +364,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5255 | Resolve super property accesses | feature | frontend/resolver | implementation-ready | P1 |  | `classExtendingAny.ts` parses class declarations, `extends Err`, and |
 | 5260 | Report class heritage trailing comma | feature | frontend/parser | implementation-ready | P1 |  | `classHeritageWithTrailingSeparator.ts` tokenizes the class heritage |
 | 5262 | Resolve import-equals aliases in class implements clauses | feature | frontend/resolver | implementation-ready | P1 |  | Resolve import-equals aliases in class implements clauses |
+| 5263 | Report primitive implements clauses on class expressions | feature | frontend/parser | implementation-ready | P1 |  | Report primitive implements clauses on class expressions |
 | 5264 | Parse typed const declarations before initializers | feature | frontend/parser | implementation-ready | P1 |  | Parse typed const declarations before initializers |
 | 5265 | Report missing class member identifier after modifier | feature | frontend/parser | implementation-ready | P1 |  | Report missing class member identifier after modifier |
 | 5266 | Support class constructor new of later class binding | feature | ir | implementation-ready | P1 |  | `reference/typescript/tests/cases/compiler/classOrderBug.ts` reports |
@@ -377,7 +380,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5279 | Report function-typed local call definite assignment | feature | ir/lowering | implementation-ready | P2 |  | `commentOnParenthesizedExpressionOpenParen1.ts` parses successfully, |
 | 5280 | Validate commented top-level function overloads | feature | frontend/resolver | implementation-ready | P1 |  | `commentOnSignature1.ts` parses successfully, but `validate_ast` |
 | 5281 | Resolve arrow rest parameter bindings | feature | ir/name-resolution | implementation-ready | P1 |  | arrow rest parameters are not made visible under their identifier name |
-| 5284 | Bind plain enum declarations before member access | feature | frontend/syntax | implementation-ready | P1 |  | `enum Colors { Cornflower, FancyPink }` does not create a frontend |
 | 5287 | Bind namespace declarations for qualified value access | feature | frontend/name-resolution | implementation-ready | P1 |  | a same-file non-ambient namespace declaration is erased before it |
 | 5288 | Parse typed modified static class fields | feature | frontend/parser | implementation-ready | P1 |  | `reference/typescript/tests/cases/compiler/commentsOnStaticMembers.ts` |
 | 5289 | Validate commentsOverloads top-level functions | feature | frontend/resolver | implementation-ready | P1 |  | `reference/typescript/tests/cases/compiler/commentsOverloads.ts` |
@@ -881,9 +883,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1442 | Implement Constdeclarations Parser Syntax | spike | frontend/syntax | 5349 | Implement Constdeclarations Parser Syntax |
 | 1443 | Implement Constdeclarations Scope Analysis | spike | frontend/resolver | 5310 | Implement Constdeclarations Scope Analysis |
 | 1444 | Implement Constdeclarations Unknown Unsupported | spike | frontend/syntax | 5350 | Implement Constdeclarations Unknown Unsupported |
-| 1445 | Implement Constenumbadpropertynames | spike | frontend/syntax | 5184 | Implement Constenumbadpropertynames |
-| 1446 | Implement Constenumdeclarations | spike | frontend/syntax | 5184 | Implement Constenumdeclarations |
-| 1448 | Implement Constenumexternalmodule | spike | frontend/syntax | 5184 | Implement Constenumexternalmodule |
 | 1469 | Implement Constructorargwithgenericcallsignature | spike | frontend/syntax | 432 | Implement Constructorargwithgenericcallsignature |
 | 1473 | Implement Constructoroverloads Import Export | spike | frontend/syntax | 432 | Implement Constructoroverloads Import Export |
 | 1515 | Implement Contextualtypeselfreferencing | spike | frontend/resolver | class: blocked | Implement Contextualtypeselfreferencing |
@@ -5274,6 +5273,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5181 | Support prefix update expressions in call arguments | feature | frontend/semantics | see `issues/done/5181-support-prefix-update-expressions-in-call-arguments.md` |
 | 5182 | Parse comma-separated for update expressions | feature | frontend/syntax | see `issues/done/5182-parse-comma-separated-for-update-expressions.md` |
 | 5183 | Report typed getter null return diagnostics | feature | frontend/semantics | see `issues/done/5183-report-typed-getter-null-return-diagnostics.md` |
+| 5184 | Parse const enum declarations | feature | frontend/syntax | see `issues/done/5184-parse-const-enum-declarations.md` |
 | 5185 | Source-span unresolved class method function calls | feature | frontend/resolver | see `issues/done/5185-source-span-unresolved-class-method-function-calls.md` |
 | 5186 | Parse export assignment expressions | feature | frontend/syntax | see `issues/done/5186-parse-export-assignment-for-diagnostics.md` |
 | 5187 | Lower namespace-only multi-section files | feature | compiler | see `issues/done/5187-lower-namespace-only-multi-section-files.md` |
@@ -5348,6 +5348,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5278 | Parse trailing comma in function parameters with comments | feature | frontend/syntax | see file |
 | 5282 | Parse labeled empty statements | feature | frontend/syntax | see `issues/done/5282-parse-labeled-empty-statements.md` |
 | 5283 | Support entry-module export var declarations | feature | frontend/module-syntax | see `issues/done/5283-support-entry-export-var-declarations.md` |
+| 5284 | Bind plain enum declarations before member access | feature | frontend/syntax | see `issues/done/5284-bind-plain-enum-declarations-before-member-access.md` |
 | 5285 | Support export var initializer declarations | feature | frontend/module-syntax | see `issues/done/5285-support-export-var-initializer-declarations.md` |
 | 5286 | Preserve class constructor parameters for new arity | feature | ir | see `issues/done/5286-preserve-class-constructor-parameters-for-new-arity.md` |
 | 5301 | Report literal reference comparison diagnostics | feature | frontend/semantics | see file |
