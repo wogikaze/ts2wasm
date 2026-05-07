@@ -18,16 +18,16 @@ Issue files are the source of truth for work items. The generated section below 
 | docs | 2 | 0 | 2 |
 | frontend | 4567 | 3463 | 1104 |
 | harness | 1 | 0 | 1 |
-| ir | 75 | 53 | 22 |
+| ir | 76 | 54 | 22 |
 | issues | 4 | 0 | 4 |
 | parser | 1 | 0 | 1 |
-| reference | 212 | 150 | 62 |
+| reference | 212 | 149 | 63 |
 | runtime | 265 | 84 | 181 |
 | scripts | 3 | 1 | 2 |
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5223 | 3758 | 1465 |
+| total | 5224 | 3758 | 1466 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -343,6 +343,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5386 | Bind DOM setTimeout global | feature | frontend/resolver | implementation-ready | P1 |  | `contextuallyTypeArgumentsKeyword.ts` requests `// @lib: es2017, dom` |
 | 5387 | Parse generator function expressions in const initializers | feature | frontend/syntax | implementation-ready | P1 | 5000 | `contextuallyTypeGeneratorReturnTypeFromUnion.ts` currently stops at |
 | 5388 | Support discriminated union parameter method calls | feature | ir/lowering | implementation-ready | P1 |  | Support discriminated union parameter method calls |
+| 5389 | Support nested function default parameters in closure lowering | feature | ir/lowering | implementation-ready | P1 |  | Support nested function default parameters in closure lowering |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -606,7 +607,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1542 | Implement Contextuallytypedoptionalproperty | spike | frontend/resolver | class: blocked | Implement Contextuallytypedoptionalproperty |
 | 1544 | Implement Contextuallytypedparameterswithinitializers Arrow Function | spike | frontend/syntax | class: blocked | Implement Contextuallytypedparameterswithinitializers Arrow Function |
 | 1545 | Implement Contextuallytypedparameterswithinitializers Import Export | spike | frontend/syntax | class: blocked | Implement Contextuallytypedparameterswithinitializers Import Export |
-| 1547 | Implement Contextuallytypedparameterswithquestiontoken | spike | reference/triage | class: triage-needed | Implement Contextuallytypedparameterswithquestiontoken |
 | 1548 | Implement Contextuallytypedsymbolnamedproperties | spike | frontend/syntax | class: triage-needed | Implement Contextuallytypedsymbolnamedproperties |
 | 1549 | Implement Contextuallytypingrestparameters | spike | reference/triage | class: triage-needed | Implement Contextuallytypingrestparameters |
 | 1550 | Implement Continueiniterationstatement | spike | frontend/resolver | class: blocked | Implement Continueiniterationstatement |
@@ -5179,6 +5179,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1540 | Implement Contextuallytypedbydiscriminableunion Unknown Unsupported | spike | frontend/syntax | see `issues/done/1540-implement-contextuallyTypedByDiscriminableUnion-unknown-unsupported.md` |
 | 1543 | Implement Contextuallytypedparametersoptionalinjsdoc | spike | reference/triage | see `issues/done/1543-implement-contextuallyTypedParametersOptionalInJSDoc.md` |
 | 1546 | Implement Contextuallytypedparameterswithinitializers Unknown Unsupported | spike | frontend/syntax | see `issues/done/1546-implement-contextuallyTypedParametersWithInitializers-unknown-unsupported.md` |
+| 1547 | Implement Contextuallytypedparameterswithquestiontoken | spike | reference/triage | see `issues/done/1547-implement-contextuallyTypedParametersWithQuestionToken.md` |
 | 2050 | Implement Duplicatelocalvariable Duplicate Local | spike | reference/triage | see `issues/done/2050-implement-duplicateLocalVariable-duplicate-local.md` |
 | 3002 | Implement Isolateddeclarationerrorsdefault | spike | runtime/builtins | see `issues/done/3002-implement-isolatedDeclarationErrorsDefault.md` |
 | 3131 | Implement Jsxfactorynotidentifierorqualifiedname | spike | reference/triage | see `issues/done/3131-implement-jsxFactoryNotIdentifierOrQualifiedName.md` |
