@@ -173,6 +173,9 @@ Also owns `issues/done/3305-implement-moduleAndInterfaceWithSameName.md`: fresh
 triage reaches the same non-ambient same-file namespace binding boundary for
 `Foo2` before the later `Foo2.Bar` interface/value visibility diagnostic becomes
 actionable.
+- Also owns `issues/done/3340-implement-moduleIdentifiers.md`: fresh triage
+  reaches the same non-ambient same-file namespace binding boundary for
+  `namespace M { export var a = 1 }` followed by `var x1 = M.a;`.
 
 ## Completion evidence
 
