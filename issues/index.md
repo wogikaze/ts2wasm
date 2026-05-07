@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 5 | 4 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4535 | 3539 | 996 |
+| frontend | 4536 | 3539 | 997 |
 | harness | 1 | 0 | 1 |
 | ir | 65 | 43 | 22 |
 | issues | 4 | 0 | 4 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5180 | 3830 | 1350 |
+| total | 5181 | 3830 | 1351 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -300,6 +300,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5343 | Track array-typed erased locals for callback methods | feature | frontend/semantics | implementation-ready | P1 |  | declaration-only array locals such as `var s: string[];` lose their |
 | 5344 | Resolve ambient var assignment targets | feature | frontend/resolver | implementation-ready | P1 |  | declaration-only ambient variable assignment targets are not |
 | 5345 | Parse generic ambient const type annotations | feature | frontend/parser | implementation-ready | P1 |  | nested generic ambient const annotations are not erased as a complete |
+| 5346 | Parse CommonJS export assignment statements | feature | frontend/parser | implementation-ready | P1 |  | Parse CommonJS export assignment statements |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -560,7 +561,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 759 | Implement Asynciife | spike | frontend/syntax | class: triage-needed | Implement Asynciife |
 | 760 | Implement Asyncimportnestedyield | spike | reference/triage | class: triage-needed | Implement Asyncimportnestedyield |
 | 761 | Implement Asynciteratorextraparameters | spike | runtime/builtins | class: triage-needed | Implement Asynciteratorextraparameters |
-| 763 | Implement Augmentexportequals | spike | frontend/syntax | class: blocked | Implement Augmentexportequals |
 | 764 | Implement Augmentedclasswithprototypepropertyonmodule | spike | frontend/syntax | class: blocked | Implement Augmentedclasswithprototypepropertyonmodule |
 | 765 | Implement Augmentedtypesclass | spike | frontend/syntax | class: blocked | Implement Augmentedtypesclass |
 | 766 | Implement Augmentedtypesenum Import Export | spike | frontend/syntax | class: blocked | Implement Augmentedtypesenum Import Export |
@@ -4469,6 +4469,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 707 | Implement Asibreak | spike | frontend/syntax | see `issues/done/707-implement-asiBreak.md` |
 | 708 | Implement Asicontinue | spike | frontend/syntax | see `issues/done/708-implement-asiContinue.md` |
 | 762 | Implement Asyncyieldstarcontextualtype | spike | frontend/syntax | see `issues/done/762-implement-asyncYieldStarContextualType.md` |
+| 763 | Implement Augmentexportequals | spike | frontend/syntax | see `issues/done/763-implement-augmentExportEquals.md` |
 | 774 | Implement Autolift | spike | frontend/syntax | see `issues/done/774-implement-autoLift.md` |
 | 776 | Implement Apilibcheck (dup) | spike | frontend/syntax | see `issues/done/776-implement-APILibCheck.md` |
 | 777 | Implement Apisample Arrow Function (dup) | spike | frontend/syntax | see `issues/done/777-implement-APISample-arrow-function.md` |

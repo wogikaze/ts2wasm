@@ -5,48 +5,60 @@ type: spike
 area: frontend/syntax
 class: blocked
 priority: P1
-depends_on: [432]
+depends_on: []
 blocks: []
 created: 2026-05-01
-updated: 2026-05-01
+updated: 2026-05-07
+completed: 2026-05-07
+status: done
 ---
 
 ## Summary
 
-Triage augmentExportEquals across 12 failing reference test cases and split this bucket into implementation-ready child issues.
+Closed this generated bucket by splitting the current concrete blocker to
+`issues/open/5346-parse-commonjs-export-assignment-statements.md`.
 
 ## Problem
 
-Reference test results show 12 cases fail in directory `augmentExportEquals` with diagnostics: import-export. The compiler cannot handle these syntax/semantics, preventing compilation of code in this category.
+Fresh triage shows the first blocker is not module augmentation yet. The
+compiler stops at the CommonJS export assignment in the first virtual file:
 
-Problem: augmentExportEquals has 12 reference failures and needs smart-triage evidence before implementation starts.
+```ts
+var x = 1;
+export = x;
+```
+
+Problem: `export = x;` reports generic issue-055 static export before the
+reference test reaches `import x = require("./file1")` or
+`declare module "./file1"`.
 
 ## Current failure
 
 Representative reproduction:
 
 ```sh
-mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/augmentExportEquals1.ts
+env TS2WASM_BINARY=/tmp/ts2wasm-issue-blockers-target/debug/ts2wasm python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/augmentExportEquals1.ts
 ```
 
 Coverage window:
 
 ```sh
-mise run reference-coverage -- tsc --path-filter reference/typescript/tests/cases/compiler/augmentExportEquals1.ts --detail
+env TS2WASM_BINARY=/tmp/ts2wasm-issue-blockers-target/debug/ts2wasm python scripts/manager.py reference-coverage tsc --path-filter reference/typescript/tests/cases/compiler/augmentExportEquals1.ts --detail --no-dashboard-data
 ```
 
 ## Desired final state
 
-This generated bucket is either split into implementation-ready child issues or superseded by an existing open/done issue with matching evidence. Do not implement directly from this bucket.
+This generated bucket is closed. Implement from
+`issues/open/5346-parse-commonjs-export-assignment-statements.md`.
 
 ## Scope
 
 In scope:
 
-- [ ] Inspect the smart triage report below
-- [ ] Confirm whether existing open/done issues already cover this bucket
-- [ ] Split one feature family, one observable behavior, or one fixed reference window into child issues
-- [ ] Preserve exact reproduction commands and representative AST/diagnostic evidence in each child issue
+- [x] Inspect the smart triage report below
+- [x] Confirm whether existing open/done issues already cover this bucket
+- [x] Split one feature family, one observable behavior, or one fixed reference window into child issues
+- [x] Preserve exact reproduction commands and representative AST/diagnostic evidence in the child issue
 
 Out of scope:
 
@@ -68,45 +80,45 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] Duplicate candidates below are confirmed as no-match or this issue is superseded
-- [ ] At least one child issue contains an exact `mise run reference-triage -- ...` command
-- [ ] Child issue includes failing path, diagnostic code, source context, visible symbols, and parser/TypeScript AST evidence
-- [ ] Child issue acceptance names the exact fixture/reference path and diagnostic/stdout change
+- [x] Duplicate candidates below are confirmed as no-match or this issue is superseded
+- [x] Child issue contains an exact `reference-triage` command
+- [x] Child issue includes failing path, diagnostic code, source context, visible symbols, and parser/TypeScript AST evidence
+- [x] Child issue acceptance names the exact fixture/reference path and diagnostic/stdout change
 
 ## Validation
 
 Required commands:
 
 ```sh
-cargo fmt --all --check
-cargo nextest run
+python scripts/manager.py update-issue-index --check
+python scripts/manager.py check-issue-health
+python scripts/manager.py check-issue-readiness -- --fail-ready-below 80
 ```
 
 Impacted commands:
 
 ```sh
-mise run reference-coverage -- tsc --limit 24
-mise run reference-coverage -- tsc --path-filter reference/typescript/tests/cases/compiler/augmentExportEquals1.ts --detail
-mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/augmentExportEquals1.ts
+env TS2WASM_BINARY=/tmp/ts2wasm-issue-blockers-target/debug/ts2wasm python scripts/manager.py reference-coverage tsc --path-filter reference/typescript/tests/cases/compiler/augmentExportEquals1.ts --detail --no-dashboard-data
+env TS2WASM_BINARY=/tmp/ts2wasm-issue-blockers-target/debug/ts2wasm python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/augmentExportEquals1.ts
 ```
 
 Not run:
 
-- none
+- cargo fmt / nextest not run for this metadata-only issue lifecycle closure
 
 ## Docs / current-state / issue sync
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] updated: `current-state.md` (repo root)
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] `issues/open/5346-parse-commonjs-export-assignment-statements.md`
 
 ## Notes
 
@@ -126,7 +138,17 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- none found by path/title/feature scan
+Split to `issues/open/5346-parse-commonjs-export-assignment-statements.md`.
+
+Related no-match issues:
+
+- `issues/open/5306-report-export-assignment-with-other-exports.md` covers the
+  invalid `export =` plus other exported declarations rule, not a plain
+  CommonJS export assignment.
+- `issues/open/5229-resolve-imports-between-filename-sections.md` covers
+  virtual file import resolution after import syntax is parsed.
+- `issues/open/432-implement-import-export.md` is the broad import/export
+  umbrella and is too large to implement directly.
 
 ## Smart triage
 
@@ -656,20 +678,22 @@ error: [UnsupportedModule] issue-055: unsupported static export; module resoluti
 
 ## Completion evidence
 
-Fill only when moving to `done/`.
-
 Commits:
 
-- `...`
+- this commit
 
 Validation result:
 
 ```text
-command:
-result:
-date:
+command: env TS2WASM_BINARY=/tmp/ts2wasm-issue-blockers-target/debug/ts2wasm python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/augmentExportEquals1.ts
+result: pass; reproduced issue-055 unsupported static export and split to issue 5346
+date: 2026-05-07
+
+command: env TS2WASM_BINARY=/tmp/ts2wasm-issue-blockers-target/debug/ts2wasm python scripts/manager.py reference-coverage tsc --path-filter reference/typescript/tests/cases/compiler/augmentExportEquals1.ts --detail --no-dashboard-data
+result: pass; executed=1, unsupported=1, UnsupportedSyntax=1
+date: 2026-05-07
 ```
 
 Remaining risks:
 
-- none
+- Issue 5346 still needs implementation; this closure only removes the generated bucket from the blocked queue.
