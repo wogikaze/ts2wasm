@@ -285,6 +285,7 @@ pub(super) fn stmt_contains_return_stmt(stmt: &Stmt) -> bool {
             init.as_deref().is_some_and(stmt_contains_return_stmt)
                 || block_contains_return_stmt(body)
         }
+        Stmt::Block { statements: body, .. } => block_contains_return_stmt(body),
         Stmt::TryCatch {
             try_block,
             catch_block,
@@ -323,6 +324,7 @@ pub(super) fn stmt_contains_return_stmt(stmt: &Stmt) -> bool {
         | Stmt::Throw { .. }
         | Stmt::Break { .. }
         | Stmt::Continue { .. } => false,
+        Stmt::Block { .. } => false,
     }
 }
 
@@ -339,6 +341,12 @@ pub(super) fn validate_static_block_stmt(stmt: &Stmt) -> Result<(), Diagnostic> 
             "return statements are not valid in class static blocks",
             *span,
         )),
+        Stmt::Block { statements: body, .. } => {
+            for stmt in body {
+                validate_static_block_stmt(stmt)?;
+            }
+            Ok(())
+        }
         Stmt::Let { expr, .. }
         | Stmt::Assign { expr, .. }
         | Stmt::Expr { expr, .. }
@@ -433,7 +441,10 @@ pub(super) fn validate_static_block_stmt(stmt: &Stmt) -> Result<(), Diagnostic> 
             validate_static_block_stmts(body)
         }
         Stmt::Labeled { body, .. } => validate_static_block_stmt(body),
-        Stmt::Break { .. } | Stmt::Continue { .. } | Stmt::AmbientValueDecl { .. } => Ok(()),
+        Stmt::Block { .. }
+        | Stmt::Break { .. }
+        | Stmt::Continue { .. }
+        | Stmt::AmbientValueDecl { .. } => Ok(()),
         Stmt::ImportSideEffect { span, .. }
         | Stmt::ImportNamed { span, .. }
         | Stmt::ImportDefault { span, .. }

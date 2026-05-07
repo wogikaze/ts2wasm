@@ -82,6 +82,7 @@ pub(super) fn collect_stmt_declared_bindings(
         | Stmt::Throw { .. }
         | Stmt::Break { .. }
         | Stmt::Continue { .. } => {}
+        Stmt::Block { .. } => {}
     }
     Ok(())
 }
@@ -312,6 +313,7 @@ pub(super) fn first_outer_local_reference_in_stmt(
         | Stmt::ExportAssignment { .. }
         | Stmt::Break { .. }
         | Stmt::Continue { .. } => None,
+        Stmt::Block { .. } => None,
     }
 }
 

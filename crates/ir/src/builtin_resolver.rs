@@ -368,7 +368,7 @@ impl BigIntStaticBuiltinFolder {
                 span: *span,
             },
             Stmt::Block { statements, .. } => {
-                let folded = fold_stmts(statements, bindings, freeze, class_freezer)?;
+                let folded = self.fold_stmts(statements);
                 Stmt::Block {
                     statements: folded,
                     span: Span::generated("block"),

@@ -833,6 +833,7 @@ impl BigIntRuntimeGuard {
             | Stmt::AmbientValueDecl { .. }
             | Stmt::Break { .. }
             | Stmt::Continue { .. } => Ok(()),
+            Stmt::Block { .. } => Ok(()),
         }
     }
 

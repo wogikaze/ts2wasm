@@ -622,10 +622,7 @@ fn unparse_stmt(out: &mut String, stmt: &Stmt, indent: usize) {
                 .unwrap_or_default();
             let _ = writeln!(out, "continue{suffix};");
         }
-    }
-}
-
-fn unparse_block(out: &mut String, body: &[Stmt], indent: usize) {
+        Stmt::Block { statements, .. } => unparse_block(out, statements, indent),(out: &mut String, body: &[Stmt], indent: usize) {
     for stmt in body {
         unparse_stmt(out, stmt, indent);
     }
