@@ -1,6 +1,13 @@
 impl Parser {
     fn statement(&mut self) -> Result<Stmt, Diagnostic> {
         match self.peek() {
+            Some(Token::Semicolon) => {
+                let semi = self.consume_span(TokenKind::Semicolon).unwrap_or(Span::generated("semi"));
+                Ok(Stmt::Expr {
+                    expr: Expr::Undefined { span: semi },
+                    span: semi,
+                })
+            }
             Some(Token::Import) => self.import_statement(),
             Some(Token::Export) => self.export_statement(),
             Some(Token::Let) => self.let_statement(),
@@ -1181,6 +1188,9 @@ impl Parser {
         let mut params = Vec::new();
         if !self.consume(TokenKind::RightParen) {
             loop {
+                if self.consume(TokenKind::RightParen) {
+                    break;
+                }
                 let param = self.parse_param(false, params.is_empty())?;
                 let is_rest = param.is_rest;
                 if !param.is_this_parameter {
@@ -1233,6 +1243,9 @@ impl Parser {
         let mut params = Vec::new();
         if !self.consume(TokenKind::RightParen) {
             loop {
+                if self.consume(TokenKind::RightParen) {
+                    break;
+                }
                 let param = self.parse_param(false, params.is_empty())?;
                 let is_rest = param.is_rest;
                 if !param.is_this_parameter {
@@ -1275,6 +1288,9 @@ impl Parser {
             let mut params = Vec::new();
             if !self.consume(TokenKind::RightParen) {
                 loop {
+                    if self.consume(TokenKind::RightParen) {
+                        break;
+                    }
                     let param = self.parse_param(false, params.is_empty())?;
                     let is_rest = param.is_rest;
                     if !param.is_this_parameter {
@@ -1312,6 +1328,9 @@ impl Parser {
         let mut params = Vec::new();
         if !self.consume(TokenKind::RightParen) {
             loop {
+                if self.consume(TokenKind::RightParen) {
+                    break;
+                }
                 let param = self.parse_param(false, params.is_empty())?;
                 let is_rest = param.is_rest;
                 if !param.is_this_parameter {
