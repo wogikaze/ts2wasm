@@ -1862,11 +1862,11 @@ impl<'a> Resolver<'a> {
                         && let Some(class_name) = self.local_classes.get(&obj_local)
                         && let Some(runtime_fn) = collection_method_runtime_fn(class_name, method)
                     {
-                        if class_name == "RegExp" && args.len() != 1 {
+                        if class_name == "RegExp" && args.len() > 1 {
                             return Err(Diagnostic {
                                 code: DiagCode::ArityMismatch,
                                 message: format!(
-                                    "RegExp.prototype.{method} expects 1 argument, got {}",
+                                    "RegExp.prototype.{method} expects at most 1 argument, got {}",
                                     args.len()
                                 ),
                                 span: Some(*span),
@@ -2332,7 +2332,6 @@ impl<'a> Resolver<'a> {
             }),
         }
     }
-
 }
 
 fn is_global_builtin_function_name(name: &str) -> bool {
@@ -2355,7 +2354,10 @@ fn lower_global_builtin_function_metadata_property(
 ) -> Result<LoweredExpr, Diagnostic> {
     match key {
         "name" => Ok(LoweredExpr::String(name.to_owned(), Span::generated("str"))),
-        "length" => Ok(LoweredExpr::Number(global_builtin_function_length(name), Span::generated("num"))),
+        "length" => Ok(LoweredExpr::Number(
+            global_builtin_function_length(name),
+            Span::generated("num"),
+        )),
         _ => unreachable!("caller filters global builtin function metadata property"),
     }
 }
@@ -2363,8 +2365,9 @@ fn lower_global_builtin_function_metadata_property(
 fn global_builtin_function_length(name: &str) -> i32 {
     match name {
         "parseInt" => 2,
-        "escape" | "unescape" | "isNaN" | "parseFloat" | "isFinite" | "encodeURI"
-        | "decodeURI" => 1,
+        "escape" | "unescape" | "isNaN" | "parseFloat" | "isFinite" | "encodeURI" | "decodeURI" => {
+            1
+        }
         _ => 0,
     }
 }
@@ -2442,26 +2445,29 @@ fn lower_html_wrapper_string_method(
         _ => {
             return Err(Diagnostic {
                 code: DiagCode::UnsupportedSyntax,
-                message: format!(
-                    "String.prototype.{method} is not supported in this milestone"
-                ),
+                message: format!("String.prototype.{method} is not supported in this milestone"),
                 span: Some(span),
-            })
+            });
         }
     };
 
     let mut result = LoweredExpr::RuntimeCall {
         runtime_fn: "Concat".to_owned(),
-        args: vec![object, LoweredExpr::String(close_tag.to_owned(), Span::generated("str"))],
-    
-        span: Span::generated("runtime_call"),};
+        args: vec![
+            object,
+            LoweredExpr::String(close_tag.to_owned(), Span::generated("str")),
+        ],
+
+        span: Span::generated("runtime_call"),
+    };
 
     let has_arg = !open_suffix.is_empty();
     if has_arg {
         let needs_escaping = matches!(method, "anchor" | "fontcolor" | "fontsize" | "link");
         let mut arg = args.into_iter().next().unwrap_or(LoweredExpr::String(
             "undefined".to_owned(),
-        Span::generated("str")));
+            Span::generated("str"),
+        ));
         // Spec requires escaping " as &quot; in attribute values (B.2.3.10, B.2.3.6, etc.)
         if needs_escaping {
             arg = LoweredExpr::RuntimeCall {
@@ -2471,8 +2477,9 @@ fn lower_html_wrapper_string_method(
                     LoweredExpr::String("\"".to_owned(), Span::generated("str")),
                     LoweredExpr::String("&quot;".to_owned(), Span::generated("str")),
                 ],
-            
-                span: Span::generated("runtime_call"),};
+
+                span: Span::generated("runtime_call"),
+            };
         }
         result = LoweredExpr::RuntimeCall {
             runtime_fn: "Concat".to_owned(),
@@ -2489,7 +2496,8 @@ fn lower_html_wrapper_string_method(
                                 result,
                             ],
 
-                            span: Span::generated("runtime_call"),},
+                            span: Span::generated("runtime_call"),
+                        },
                     ],
                     span: Span::generated("RuntimeCall"),
                 },
@@ -2504,5 +2512,6 @@ fn lower_html_wrapper_string_method(
             LoweredExpr::String(open_prefix.to_owned(), Span::generated("str")),
             result,
         ],
-        span: Span::generated("runtime_call"),})
+        span: Span::generated("runtime_call"),
+    })
 }

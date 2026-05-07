@@ -1,5 +1,5 @@
-use crate::builtin_resolved::ResolvedArrayElement;
 use super::*;
+use crate::builtin_resolved::ResolvedArrayElement;
 
 pub(super) fn resolve_method_to_runtime_fn(object: &ResolvedExpr, method: &str) -> Option<String> {
     if let ResolvedExpr::Ident(name) = object {
@@ -226,7 +226,10 @@ pub(super) fn collection_method_runtime_fn_arg(method: &str) -> Option<&'static 
 
 /// Returns true for array methods whose WASM runtime function doesn't accept user callbacks
 pub(super) fn is_identity_array_method(method: &str) -> bool {
-    matches!(method, "every" | "some" | "find" | "findIndex" | "findLast" | "findLastIndex" | "filter")
+    matches!(
+        method,
+        "every" | "some" | "find" | "findIndex" | "findLast" | "findLastIndex" | "filter"
+    )
 }
 
 pub(super) fn is_date_constructor_epoch_arg(arg: &ResolvedExpr) -> bool {
@@ -268,9 +271,8 @@ pub(super) fn validate_json_stringify_args(
                 if function_ids
                     .get(name)
                     .and_then(|id| function_signatures.get(id))
-                    .is_some_and(|signature| {
-                        !signature.has_rest && !signature.needs_arguments
-                    }) => {}
+                    .is_some_and(|signature| !signature.has_rest && !signature.needs_arguments) => {
+            }
             ResolvedExpr::Ident(name) if function_ids.contains_key(name) => {
                 return Err(json_stringify_replacer_diagnostic(
                     "function replacer callbacks with rest parameters or `arguments`",
@@ -330,7 +332,10 @@ pub(super) fn is_supported_json_stringify_space(
     }
 }
 
-pub(super) fn is_supported_json_stringify_boxed_space(class_name: &str, args: &[ResolvedExpr]) -> bool {
+pub(super) fn is_supported_json_stringify_boxed_space(
+    class_name: &str,
+    args: &[ResolvedExpr],
+) -> bool {
     match (class_name, args) {
         ("Number", [arg]) => is_json_stringify_number_space_arg(arg),
         ("Number", []) => true,
@@ -366,14 +371,12 @@ pub(super) fn is_supported_json_stringify_replacer_array(
     elements: &[ResolvedArrayElement],
     function_ids: &HashMap<String, FuncId>,
 ) -> bool {
-    elements
-        .iter()
-        .all(|element| match element {
-            ResolvedArrayElement::Present(expr) => {
-                json_stringify_replacer_entry(expr, function_ids).is_some()
-            }
-            ResolvedArrayElement::Hole => true,
-        })
+    elements.iter().all(|element| match element {
+        ResolvedArrayElement::Present(expr) => {
+            json_stringify_replacer_entry(expr, function_ids).is_some()
+        }
+        ResolvedArrayElement::Hole => true,
+    })
 }
 
 pub(super) enum JsonStringifyReplacerEntry {
@@ -402,7 +405,8 @@ pub(super) fn json_stringify_replacer_entry(
         }
         ResolvedExpr::ArrowFn { .. } => Some(JsonStringifyReplacerEntry::Ignored),
         ResolvedExpr::Ident(name)
-            if function_ids.contains_key(name) || is_ignored_json_stringify_replacer_ident(name) =>
+            if function_ids.contains_key(name)
+                || is_ignored_json_stringify_replacer_ident(name) =>
         {
             Some(JsonStringifyReplacerEntry::Ignored)
         }
@@ -424,7 +428,9 @@ pub(super) fn json_stringify_boxed_replacer_entry(
 ) -> Option<JsonStringifyReplacerEntry> {
     match (class_name, args) {
         ("String", []) => Some(JsonStringifyReplacerEntry::Key(String::new())),
-        ("String", [ResolvedExpr::String(key)]) => Some(JsonStringifyReplacerEntry::Key(key.clone())),
+        ("String", [ResolvedExpr::String(key)]) => {
+            Some(JsonStringifyReplacerEntry::Key(key.clone()))
+        }
         ("Number", []) => Some(JsonStringifyReplacerEntry::Key("0".to_owned())),
         ("Number", [arg]) => json_stringify_number_key(arg).map(JsonStringifyReplacerEntry::Key),
         ("Boolean", []) => Some(JsonStringifyReplacerEntry::Ignored),
@@ -499,7 +505,9 @@ pub(super) fn is_json_stringify_side_effect_free_static_value(value: &ResolvedEx
             .iter()
             .all(|(_, value)| is_json_stringify_side_effect_free_static_value(value)),
         ResolvedExpr::Array(elements) => elements.iter().all(|element| match element {
-            ResolvedArrayElement::Present(expr) => is_json_stringify_side_effect_free_static_value(expr),
+            ResolvedArrayElement::Present(expr) => {
+                is_json_stringify_side_effect_free_static_value(expr)
+            }
             ResolvedArrayElement::Hole => true,
         }),
         _ => false,
@@ -510,7 +518,10 @@ pub(super) fn is_ignored_json_stringify_replacer_ident(name: &str) -> bool {
     matches!(name, "Symbol" | "Number" | "String" | "Boolean" | "Object")
 }
 
-pub(super) fn is_ignored_json_stringify_replacer_call(callee: &ResolvedExpr, args: &[ResolvedExpr]) -> bool {
+pub(super) fn is_ignored_json_stringify_replacer_call(
+    callee: &ResolvedExpr,
+    args: &[ResolvedExpr],
+) -> bool {
     matches!(callee, ResolvedExpr::Ident(name) if name == "Symbol")
         && args.iter().all(is_json_stringify_primitive_space_arg)
 }
@@ -537,7 +548,10 @@ pub(super) fn is_ignored_json_stringify_space_ident(name: &str) -> bool {
     matches!(name, "Symbol" | "Number" | "String" | "Boolean" | "Object")
 }
 
-pub(super) fn is_ignored_json_stringify_space_call(callee: &ResolvedExpr, args: &[ResolvedExpr]) -> bool {
+pub(super) fn is_ignored_json_stringify_space_call(
+    callee: &ResolvedExpr,
+    args: &[ResolvedExpr],
+) -> bool {
     matches!(callee, ResolvedExpr::Ident(name) if name == "Symbol")
         && args.iter().all(is_json_stringify_primitive_space_arg)
 }
@@ -596,7 +610,10 @@ pub(super) fn is_annex_b_date_method(method: &str) -> bool {
     matches!(method, "getYear" | "setYear" | "toGMTString")
 }
 
-pub(super) fn unsupported_annex_b_date_method_diagnostic(method: &str, span: Option<Span>) -> Diagnostic {
+pub(super) fn unsupported_annex_b_date_method_diagnostic(
+    method: &str,
+    span: Option<Span>,
+) -> Diagnostic {
     Diagnostic {
         code: DiagCode::UnsupportedSyntax,
         message: format!(
@@ -667,11 +684,11 @@ pub(super) fn regexp_test_runtime(
     if method != "test" {
         return Ok(None);
     }
-    if args.len() != 1 {
+    if args.len() > 1 {
         return Err(Diagnostic {
             code: DiagCode::ArityMismatch,
             message: format!(
-                "RegExp.prototype.test expects 1 argument, got {}",
+                "RegExp.prototype.test expects at most 1 argument, got {}",
                 args.len()
             ),
             span: Some(span),
@@ -703,11 +720,11 @@ pub(super) fn regexp_string_match_runtime(
     if method != "match" && method != "search" {
         return Ok(None);
     }
-    if args.len() != 1 {
+    if args.len() > 1 {
         return Err(Diagnostic {
             code: DiagCode::ArityMismatch,
             message: format!(
-                "String.prototype.{} expects 1 argument, got {}",
+                "String.prototype.{} expects at most 1 argument, got {}",
                 method,
                 args.len()
             ),
@@ -730,8 +747,9 @@ pub(super) fn regexp_string_match_runtime(
         _ => {
             return Err(Diagnostic {
                 code: DiagCode::UnsupportedSyntax,
-                message:
-                    format!("issue-051: String.prototype.{method} supports only RegExp literal or new RegExp(\"plain\") arguments in this subset"),
+                message: format!(
+                    "issue-051: String.prototype.{method} supports only RegExp literal or new RegExp(\"plain\") arguments in this subset"
+                ),
                 span: Some(span),
             });
         }
@@ -748,11 +766,11 @@ pub(super) fn regexp_exec_runtime(
     if method != "exec" {
         return Ok(None);
     }
-    if args.len() != 1 {
+    if args.len() > 1 {
         return Err(Diagnostic {
             code: DiagCode::ArityMismatch,
             message: format!(
-                "RegExp.prototype.exec expects 1 argument, got {}",
+                "RegExp.prototype.exec expects at most 1 argument, got {}",
                 args.len()
             ),
             span: Some(span),
@@ -803,8 +821,20 @@ pub(super) fn validate_regexp_plain_literal(raw: &str, context: &str) -> Result<
     let mut seen_i = false;
     for ch in flags.chars() {
         match ch {
-            'g' if seen_g => return Err(unsupported_regexp_literal(context, raw, "duplicate flag `g`")),
-            'i' if seen_i => return Err(unsupported_regexp_literal(context, raw, "duplicate flag `i`")),
+            'g' if seen_g => {
+                return Err(unsupported_regexp_literal(
+                    context,
+                    raw,
+                    "duplicate flag `g`",
+                ));
+            }
+            'i' if seen_i => {
+                return Err(unsupported_regexp_literal(
+                    context,
+                    raw,
+                    "duplicate flag `i`",
+                ));
+            }
             'g' => seen_g = true,
             'i' => seen_i = true,
             _ => unreachable!(),
@@ -818,10 +848,9 @@ pub(super) fn validate_regexp_plain_literal(raw: &str, context: &str) -> Result<
         if ch == b'\\' {
             if i + 1 < bytes.len() {
                 match bytes[i + 1] {
-                    b'd' | b'D' | b'w' | b'W' | b's' | b'S' | b'b' | b'B'
-                    | b'0' | b'n' | b't' | b'r' | b'f' | b'v' | b'\\'
-                    | b'/' | b'.' | b'^' | b'$' | b'+' | b'*' | b'?' | b'('
-                    | b')' | b'[' | b']' | b'{' | b'}' | b'|' => {
+                    b'd' | b'D' | b'w' | b'W' | b's' | b'S' | b'b' | b'B' | b'0' | b'n' | b't'
+                    | b'r' | b'f' | b'v' | b'\\' | b'/' | b'.' | b'^' | b'$' | b'+' | b'*'
+                    | b'?' | b'(' | b')' | b'[' | b']' | b'{' | b'}' | b'|' => {
                         i += 2;
                     }
                     _ => {

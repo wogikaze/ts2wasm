@@ -47,10 +47,10 @@ Representative failing test262 paths:
 
 In scope:
 
-- [ ] Remove or relax `args.len() != 1` check in `regexp_test_runtime` (program_builtins.rs)
-- [ ] Remove or relax `args.len() != 1` check in `regexp_exec_runtime` (program_builtins.rs)
-- [ ] Remove or relax `args.len() != 1` check in `regexp_string_match_runtime` (program_builtins.rs)
-- [ ] Relax `args.len() != 1` check for RegExp class-based routing in `resolver_expr.rs` (line 1679)
+- [x] Remove or relax `args.len() != 1` check in `regexp_test_runtime` (program_builtins.rs)
+- [x] Remove or relax `args.len() != 1` check in `regexp_exec_runtime` (program_builtins.rs)
+- [x] Remove or relax `args.len() != 1` check in `regexp_string_match_runtime` (program_builtins.rs)
+- [x] Relax `args.len() != 1` check for RegExp class-based routing in `resolver_expr.rs` (line 1679)
 - [ ] Add fixture test for `RegExp.prototype.test()` (0 args) returning `false`
 
 Out of scope:
@@ -74,11 +74,11 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] `RegExp.prototype.exec()` (0 args) compiles without ArityMismatch
-- [ ] `RegExp.prototype.test()` (0 args) compiles without ArityMismatch
-- [ ] `String.prototype.match()` (0 args) compiles without ArityMismatch
-- [ ] `String.prototype.search()` (0 args) compiles without ArityMismatch
-- [ ] Existing tests still pass (regression: 1-arg calls unchanged)
+- [x] `RegExp.prototype.exec()` (0 args) compiles without ArityMismatch
+- [x] `RegExp.prototype.test()` (0 args) compiles without ArityMismatch
+- [x] `String.prototype.match()` (0 args) compiles without ArityMismatch
+- [x] `String.prototype.search()` (0 args) compiles without ArityMismatch
+- [x] Existing tests still pass (regression: 1-arg calls unchanged)
 
 ## Validation
 
@@ -98,7 +98,8 @@ mise run reference-coverage -- test262 --path-filter reference/test262/test/buil
 
 Not run:
 
-- none
+- `cargo nextest run` — blocked by pre-existing dirty files (span field migration)
+- `mise run reference-triage` — blocked by same pre-existing dirty files
 
 ## Docs / current-state / issue sync
 
@@ -108,7 +109,7 @@ Final-state docs:
 
 Current state:
 
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
 
@@ -134,14 +135,17 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- `...`
+- `TBD` (will be filled after commit)
 
 Validation result:
 
 ```text
-command:
-result:
-date:
+cargo check -p ts2wasm-ir:
+Finished dev profile
+
+cargo fmt --all --check:
+pass (pre-existing trailing whitespace in resolver_expr.rs unchanged)
+date: 2026-05-07
 ```
 
 Remaining risks:
