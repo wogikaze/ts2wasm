@@ -8,7 +8,7 @@ priority: P1
 depends_on: []
 blocks: []
 created: 2026-05-06
-updated: 2026-05-06
+updated: 2026-05-07
 ---
 
 ## Summary
@@ -140,6 +140,9 @@ Do not touch:
 - [ ] `callbackArgsDifferByOptionality.ts` no longer reports
   `DuplicateFunction` for the valid `x3` overload signatures plus
   implementation
+- [ ] `contextualTypingOfLambdaReturnExpression.ts` no longer reports
+  `DuplicateLocal` for the valid `callb` overload signatures plus
+  implementation
 - [ ] A focused fixture covers one bodyless overload signature followed by one
   implementation for the same name
 - [ ] A focused fixture covers two bodyless overload signatures followed by one
@@ -165,6 +168,7 @@ Impacted commands:
 mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/callOverloads1.ts
 mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/callOverloads2.ts
 mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/callbackArgsDifferByOptionality.ts
+python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/contextualTypingOfLambdaReturnExpression.ts
 ```
 
 Not run:
@@ -190,6 +194,15 @@ Follow-up issues:
 This issue only handles top-level function overload implementation grouping.
 The `Foo` class/function merge errors in the same reference files are owned by
 issue 5199.
+
+2026-05-07 additional superseded bucket:
+
+- `issues/done/1527-implement-contextualTypingOfLambdaReturnExpression.md`
+  reaches the same top-level overload grouping boundary. The source has two
+  bodyless `callb(lam: ...)` overload signatures followed by one implementation
+  `function callb(a) { }`; resolver reports
+  `DuplicateLocal: duplicate local variable: callb at 82..90` before TypeScript's
+  intended lambda contextual member diagnostics on `a.length`.
 
 ## Completion evidence
 
