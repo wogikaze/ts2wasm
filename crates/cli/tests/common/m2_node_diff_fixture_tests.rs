@@ -1106,7 +1106,10 @@ fn annexb_ishtmldda_host_hook_reports_issue_237() {
 fn for_await_of_unsupported_reports_issue_230() {
     // Build succeeds (iterator protocol is implemented); for-await-of runtime
     // traps with an unsupported iterator kind error.
-    assert_fixture_iwasm_traps("fixtures/core-semantics/for-await-of-unsupported.ts");
+    assert_build_fails_with_unsupported_syntax(
+        "fixtures/core-semantics/for-await-of-unsupported.ts",
+        "'for await' loops are only allowed within async functions",
+    );
     // async function declaration without call compiles (trivially, no stdout)
     let fixture_async = "fixtures/core-semantics/async-function-for-await-of-unsupported.ts";
     let fixture_path = Path::new(env!("CARGO_MANIFEST_DIR"))
