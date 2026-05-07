@@ -8,7 +8,7 @@ priority: P1
 depends_on: []
 blocks: []
 created: 2026-05-06
-updated: 2026-05-06
+updated: 2026-05-08
 ---
 
 ## Summary
@@ -131,6 +131,9 @@ Additional superseded bucket:
 
 - `issues/done/1370-implement-commentsInterface.md` reaches the same issue-211
   receiver family for `var i2_i: i2; i2_i.foo(30);`.
+- `issues/done/3418-implement-mutuallyRecursiveGenericBaseTypes.md` folds in
+  `mutuallyRecursiveGenericBaseTypes1.ts`, where `var b: B<number>; b.foo();`
+  reaches the same `issue-211: unknown receiver class for method foo` boundary.
 
 ## Completion evidence
 
