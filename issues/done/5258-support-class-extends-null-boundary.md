@@ -53,17 +53,17 @@ python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/
 
 In scope:
 
-- [ ] Treat `extends null` as a distinct heritage kind for constructor
+- [x] Treat `extends null` as a distinct heritage kind for constructor
   `super()` diagnostics.
-- [ ] Emit a source-spanned diagnostic for `super()` inside a constructor whose
+- [x] Emit a source-spanned diagnostic for `super()` inside a constructor whose
   class extends `null`.
-- [ ] Preserve `extends Base` behavior.
+- [x] Preserve `extends Base` behavior.
 
 Out of scope:
 
 - Full runtime implementation of `extends null` object construction.
 - `super.x` diagnostics in `extends null` classes, tracked by
-  `issues/open/5259-report-super-property-access-in-class-extends-null.md`.
+  `issues/done/5259-report-super-property-access-in-class-extends-null.md`.
 - Interface-merge/static-side diagnostics for `classExtendsNull2.ts`.
 - Broad arbitrary heritage expression support.
 - Object global builtin support if later exposed by `Object.create(null)`.
@@ -84,10 +84,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] `classExtendsNull.ts` no longer reports the generic
+- [x] `classExtendsNull.ts` no longer reports the generic
   `only simple inheritance (extends ClassName) is supported` diagnostic.
-- [ ] A focused fixture covers `class C extends null { constructor() { super(); } }`.
-- [ ] The next diagnostic is source-spanned at the invalid constructor
+- [x] A focused fixture covers `class C extends null { constructor() { super(); } }`.
+- [x] The next diagnostic is source-spanned at the invalid constructor
   `super()` use or the unsupported `extends null` semantic boundary.
 
 ## Validation
@@ -110,7 +110,7 @@ python scripts/manager.py reference-coverage tsc --path-filter reference/typescr
 ## Notes
 
 Split from `issues/open/1205-implement-classExtendsNull.md`.
-Sibling split: `issues/open/5259-report-super-property-access-in-class-extends-null.md`.
+Sibling split: `issues/done/5259-report-super-property-access-in-class-extends-null.md`.
 ## False-done audit
 
 **truly-done** (5258)

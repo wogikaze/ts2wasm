@@ -154,7 +154,7 @@ Related but not exact:
 
 - `issues/done/226-implement-parameter-properties.md` owns parameter property
   runtime lowering, not TS2301 semantic validation.
-- `issues/open/5268-support-derived-constructor-parameter-properties-after-super.md`
+- `issues/done/5268-support-derived-constructor-parameter-properties-after-super.md`
   owns derived constructor parameter-property ordering.
 
 ## Completion evidence

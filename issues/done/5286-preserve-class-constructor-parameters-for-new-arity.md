@@ -82,9 +82,9 @@ lowering, and `new C(arg)` no longer reports a false zero-argument
 
 In scope:
 
-- [ ] Preserve one-parameter class constructor arity in the class/new-call lowering path.
-- [ ] Add a focused regression for `class C { constructor(a: number) {} } new C(1);`.
-- [ ] Re-run `commentsInheritance.ts` and record the next blocker if this path advances.
+- [x] Preserve one-parameter class constructor arity in the class/new-call lowering path.
+- [x] Add a focused regression for `class C { constructor(a: number) {} } new C(1);`.
+- [x] Re-run `commentsInheritance.ts` and record the next blocker if this path advances.
 
 Out of scope:
 
@@ -108,10 +108,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] `new C(1)` for a class with `constructor(a: number)` no longer reports `ArityMismatch` expecting 0 arguments.
-- [ ] A focused regression covers a one-parameter class constructor and a `new` call with one argument.
-- [ ] `python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/commentsInheritance.ts` no longer reports the false zero-arity constructor diagnostic for `new c2(10)`.
-- [ ] Any next blocker from `commentsInheritance.ts` is recorded in this issue or split to a follow-up if outside this scope.
+- [x] `new C(1)` for a class with `constructor(a: number)` no longer reports `ArityMismatch` expecting 0 arguments.
+- [x] A focused regression covers a one-parameter class constructor and a `new` call with one argument.
+- [x] `python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/commentsInheritance.ts` no longer reports the false zero-arity constructor diagnostic for `new c2(10)`.
+- [x] Any next blocker from `commentsInheritance.ts` is recorded in this issue or split to a follow-up if outside this scope.
 
 ## Validation
 
@@ -141,15 +141,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 
@@ -160,7 +160,7 @@ Related but not duplicates:
 - `issues/done/413-implement-arity.md` covered broader historical arity work, not this class-constructor lowering bug.
 - `issues/done/5135-fix-builtin-arity-validation-coercion-globals.md` and `issues/done/5136-fix-arity-validation-regexp-string-prototype.md` cover builtin constructor and method arity validation.
 - `issues/open/2460-implement-functionParameterArityMismatch.md` is a generated TypeScript function arity bucket, not a class `new` constructor issue.
-- `issues/open/5268-support-derived-constructor-parameter-properties-after-super.md` covers derived constructor parameter properties, not ordinary constructor arity metadata.
+- `issues/done/5268-support-derived-constructor-parameter-properties-after-super.md` covers derived constructor parameter properties, not ordinary constructor arity metadata.
 
 ## Completion evidence
 

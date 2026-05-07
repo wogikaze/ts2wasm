@@ -90,7 +90,7 @@ Out of scope:
 
 - Full conditional type semantics for `DiscriminateUnion` or `WithName`.
 - Typed class method trailing commas, tracked by `issues/done/5149-parse-trailing-comma-in-typed-class-method-parameters.md`.
-- Comment-specific trailing comma coverage, tracked by `issues/open/5278-parse-trailing-comma-in-function-parameters-with-comments.md`.
+- Comment-specific trailing comma coverage, tracked by `issues/done/5278-parse-trailing-comma-in-function-parameters-with-comments.md`.
 - Rest parameter trailing comma diagnostics.
 
 ## Affected paths
@@ -156,7 +156,7 @@ Follow-up issues:
 ## Notes
 
 Split from generated bucket `issues/open/1425-implement-conditionalTypeDiscriminatingLargeUnionRegularTypeFetchingSpeedReasonable.md`.
-Related but non-identical slices are `issues/open/5278-parse-trailing-comma-in-function-parameters-with-comments.md`
+Related but non-identical slices are `issues/done/5278-parse-trailing-comma-in-function-parameters-with-comments.md`
 and `issues/done/5149-parse-trailing-comma-in-typed-class-method-parameters.md`.
 
 ## Completion evidence

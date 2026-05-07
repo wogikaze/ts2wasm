@@ -18,7 +18,7 @@ updated: 2026-05-06
 ## Summary
 
 Closed after splitting the current parser blocker into
-`issues/open/5278-parse-trailing-comma-in-function-parameters-with-comments.md`.
+`issues/done/5278-parse-trailing-comma-in-function-parameters-with-comments.md`.
 
 ## Problem
 
@@ -53,7 +53,7 @@ unsupported_features=unknown-unsupported:1
 ## Desired final state
 
 This generated bucket is closed. Implementation should proceed through
-`issues/open/5278-parse-trailing-comma-in-function-parameters-with-comments.md`.
+`issues/done/5278-parse-trailing-comma-in-function-parameters-with-comments.md`.
 
 ## Scope
 
@@ -125,7 +125,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] `issues/open/5278-parse-trailing-comma-in-function-parameters-with-comments.md`
+- [x] `issues/done/5278-parse-trailing-comma-in-function-parameters-with-comments.md`
 
 ## Notes
 
@@ -138,7 +138,7 @@ Follow-up issues:
 - `issues/done/5149-parse-trailing-comma-in-typed-class-method-parameters.md`
   tracks a related typed class method trailing comma blocker, but broadening it
   made the work order too large for readiness gates.
-- `issues/open/5278-parse-trailing-comma-in-function-parameters-with-comments.md`
+- `issues/done/5278-parse-trailing-comma-in-function-parameters-with-comments.md`
   owns this narrower ordinary function declaration/comment representative.
 - Other smart-triage duplicate candidates share the broad `parser-syntax` label
   only and do not cover this exact trailing parameter comma diagnostic.

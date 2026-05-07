@@ -123,7 +123,7 @@ Current state:
 Follow-up issues:
 
 - [x] created: `issues/open/5324-support-dependency-export-class-declarations.md`
-- [x] superseded in part by `issues/open/5283-support-entry-export-var-declarations.md`
+- [x] superseded in part by `issues/done/5283-support-entry-export-var-declarations.md`
 
 ## Notes
 
@@ -143,7 +143,7 @@ Follow-up issues:
 - `issues/open/732-implement-assignmentCompatability-import-export.md` - Implement Assignmentcompatability Import Export (same feature label, title overlap)
 - `issues/open/766-implement-augmentedTypesEnum-import-export.md` - Implement Augmentedtypesenum Import Export (same feature label, title overlap)
 - `issues/done/055-implement-import-export.md` - Umbrella: implement import and export (same feature label, title overlap)
-- `issues/open/5283-support-entry-export-var-declarations.md` - exact owner for the `classMemberInitializerWithLamdaScoping4.ts` first blocker, `export var field1: string`
+- `issues/done/5283-support-entry-export-var-declarations.md` - exact owner for the `classMemberInitializerWithLamdaScoping4.ts` first blocker, `export var field1: string`
 - `issues/done/5232-w0-fixture-ize-runtimelinkplan-linker-structure-tests.md` - related entry-module export-class owner, not exact for dependency virtual files
 - `issues/open/5295-resolve-import-equals-require-to-virtual-node-modules-class-export.md` - related node_modules dependency export-class shape, not exact for this fixed reference window
 
@@ -197,7 +197,7 @@ ast/resolved: fail at issue-055 unsupported variable export
 
 Disposition:
 
-- Superseded by `issues/open/5283-support-entry-export-var-declarations.md`.
+- Superseded by `issues/done/5283-support-entry-export-var-declarations.md`.
 
 ### Smart triage: classMemberInitializerWithLamdaScoping3
 

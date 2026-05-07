@@ -143,7 +143,7 @@ Related but distinct issues:
 
 - `issues/done/248-implement-private-class-element-parser.md` owns private identifier tokenization and basic private element parsing.
 - `issues/done/255-implement-private-class-element-runtime-semantics.md` owns runtime private field semantics.
-- `issues/open/5268-support-derived-constructor-parameter-properties-after-super.md` owns derived constructor parameter-property ordering.
+- `issues/done/5268-support-derived-constructor-parameter-properties-after-super.md` owns derived constructor parameter-property ordering.
 
 ## Completion Evidence
 

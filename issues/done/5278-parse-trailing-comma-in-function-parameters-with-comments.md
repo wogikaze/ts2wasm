@@ -65,10 +65,10 @@ parameters: a, b
 
 In scope:
 
-- [ ] Accept a trailing comma before `)` in ordinary function declaration parameter lists.
-- [ ] Preserve comment/trivia skipping around parameters and the closing `)`.
-- [ ] Add focused parser coverage for `function commentedParameters(a /* parameter a */, b /* parameter b */,) {}`.
-- [ ] Re-run the representative triage and confirm it no longer reports the issue-247 RightParen diagnostic.
+- [x] Accept a trailing comma before `)` in ordinary function declaration parameter lists.
+- [x] Preserve comment/trivia skipping around parameters and the closing `)`.
+- [x] Add focused parser coverage for `function commentedParameters(a /* parameter a */, b /* parameter b */,) {}`.
+- [x] Re-run the representative triage and confirm it no longer reports the issue-247 RightParen diagnostic.
 
 Out of scope:
 
@@ -91,10 +91,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] A focused parser test accepts `function commentedParameters(a /* parameter a */, b /* parameter b */,) {}`.
-- [ ] `commentOnParameter3.ts` no longer reports `issue-247: expected binding identifier or pattern, got Some(RightParen)`.
-- [ ] Existing parameter-list parser tests continue to pass.
-- [ ] If parsing advances to a new blocker, that next blocker is recorded separately.
+- [x] A focused parser test accepts `function commentedParameters(a /* parameter a */, b /* parameter b */,) {}`.
+- [x] `commentOnParameter3.ts` no longer reports `issue-247: expected binding identifier or pattern, got Some(RightParen)`.
+- [x] Existing parameter-list parser tests continue to pass.
+- [x] If parsing advances to a new blocker, that next blocker is recorded separately.
 
 ## Validation
 

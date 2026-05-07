@@ -151,7 +151,7 @@ Follow-up issues:
 
 - `issues/open/5285-support-export-var-initializer-declarations.md` owns this
   initialized `export var name = expr;` boundary.
-- `issues/open/5283-support-entry-export-var-declarations.md` covers typed
+- `issues/done/5283-support-entry-export-var-declarations.md` covers typed
   export-var declarations without initializers and is too narrow for this
   first blocker.
 - `issues/done/232-resolve-local-relative-es-module-graph.md` may cover later

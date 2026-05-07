@@ -52,16 +52,16 @@ python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/
 
 In scope:
 
-- [ ] Treat `extends null` as a distinct heritage kind for `super.x`
+- [x] Treat `extends null` as a distinct heritage kind for `super.x`
   diagnostics.
-- [ ] Emit a source-spanned diagnostic for `super.oops` in static and instance
+- [x] Emit a source-spanned diagnostic for `super.oops` in static and instance
   methods whose class extends `null`.
-- [ ] Preserve normal `super.x` handling in classes with identifier heritage.
+- [x] Preserve normal `super.x` handling in classes with identifier heritage.
 
 Out of scope:
 
 - Constructor `super()` diagnostics for `extends null`, tracked by
-  `issues/open/5258-support-class-extends-null-boundary.md`.
+  `issues/done/5258-support-class-extends-null-boundary.md`.
 - Full runtime implementation of `extends null`.
 - General `super` property runtime lowering.
 
@@ -81,10 +81,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] `classExtendsNull3.ts` no longer reports the generic
+- [x] `classExtendsNull3.ts` no longer reports the generic
   `only simple inheritance (extends ClassName) is supported` diagnostic.
-- [ ] A focused fixture covers `class C extends null { method() { super.x; } }`.
-- [ ] The next diagnostic is source-spanned at the `super.x` use or the
+- [x] A focused fixture covers `class C extends null { method() { super.x; } }`.
+- [x] The next diagnostic is source-spanned at the `super.x` use or the
   unsupported `extends null` semantic boundary.
 
 ## Validation

@@ -138,7 +138,7 @@ Evidence:
 
 Related no-match issues:
 
-- `issues/open/5283-support-entry-export-var-declarations.md` covers typed
+- `issues/done/5283-support-entry-export-var-declarations.md` covers typed
   declaration-only `export var name: type;`.
 - `issues/done/5175-support-export-let-destructuring-declarations.md` covers
   exported `let` destructuring.

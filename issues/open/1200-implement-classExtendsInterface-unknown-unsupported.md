@@ -18,7 +18,7 @@ updated: 2026-05-06
 ## Summary
 
 Closed by splitting the current class heritage diagnostic boundary to
-`issues/open/5256-report-non-constructor-class-heritage-expressions.md`.
+`issues/done/5256-report-non-constructor-class-heritage-expressions.md`.
 
 ## Problem
 
@@ -115,7 +115,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] `issues/open/5256-report-non-constructor-class-heritage-expressions.md`
+- [x] `issues/done/5256-report-non-constructor-class-heritage-expressions.md`
 
 ## Notes
 
@@ -163,7 +163,7 @@ expression.
 
 Split issue:
 
-- `issues/open/5256-report-non-constructor-class-heritage-expressions.md`
+- `issues/done/5256-report-non-constructor-class-heritage-expressions.md`
 
 ## Completion evidence
 
@@ -171,7 +171,7 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- Split to `issues/open/5256-report-non-constructor-class-heritage-expressions.md`; see local commit for this issue cleanup.
+- Split to `issues/done/5256-report-non-constructor-class-heritage-expressions.md`; see local commit for this issue cleanup.
 
 Validation result:
 

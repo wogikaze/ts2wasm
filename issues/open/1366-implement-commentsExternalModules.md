@@ -149,7 +149,7 @@ Follow-up issues:
 - `issues/done/232-resolve-local-relative-es-module-graph.md` covers the
   intentional bare/non-local module specifier diagnostic seen in
   `commentsExternalModules.ts`.
-- `issues/open/5283-support-entry-export-var-declarations.md` covers a simple
+- `issues/done/5283-support-entry-export-var-declarations.md` covers a simple
   typed `export var b: number;` declaration and is too narrow for initialized
   exported variables that depend on imported module values.
 - `issues/open/5285-support-export-var-initializer-declarations.md` owns the

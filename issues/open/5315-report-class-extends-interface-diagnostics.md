@@ -127,7 +127,7 @@ Related but not duplicates:
 
 - `issues/open/5314-report-non-constructor-local-class-heritage.md` handles
   non-constructor local value bindings used as heritage.
-- `issues/open/5256-report-non-constructor-class-heritage-expressions.md`
+- `issues/done/5256-report-non-constructor-class-heritage-expressions.md`
   handles member-expression heritage diagnostics.
 
 ## Completion Evidence

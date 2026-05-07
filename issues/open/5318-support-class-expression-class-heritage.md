@@ -143,9 +143,9 @@ Related but not duplicates:
 
 - `issues/open/5248-lower-class-expressions.md` handles class expressions used
   as ordinary assignment/initializer values.
-- `issues/open/5252-support-call-expression-class-heritage.md` handles
+- `issues/done/5252-support-call-expression-class-heritage.md` handles
   `extends makeBaseClass()`.
-- `issues/open/5256-report-non-constructor-class-heritage-expressions.md`
+- `issues/done/5256-report-non-constructor-class-heritage-expressions.md`
   handles invalid non-constructor heritage diagnostics.
 
 ## Completion evidence

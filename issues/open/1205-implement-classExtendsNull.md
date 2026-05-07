@@ -114,8 +114,8 @@ Current state:
 
 Follow-up issues:
 
-- [x] `issues/open/5258-support-class-extends-null-boundary.md`
-- [x] `issues/open/5259-report-super-property-access-in-class-extends-null.md`
+- [x] `issues/done/5258-support-class-extends-null-boundary.md`
+- [x] `issues/done/5259-report-super-property-access-in-class-extends-null.md`
 
 ## Notes
 
@@ -183,9 +183,9 @@ diagnostics:
 
 Split issues:
 
-- `issues/open/5258-support-class-extends-null-boundary.md`: constructor
+- `issues/done/5258-support-class-extends-null-boundary.md`: constructor
   `super()` in classes extending `null`.
-- `issues/open/5259-report-super-property-access-in-class-extends-null.md`:
+- `issues/done/5259-report-super-property-access-in-class-extends-null.md`:
   `super.oops` in static/instance methods of classes extending `null`.
 
 ## Completion evidence
@@ -194,8 +194,8 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- Split to `issues/open/5258-support-class-extends-null-boundary.md` and
-  `issues/open/5259-report-super-property-access-in-class-extends-null.md`;
+- Split to `issues/done/5258-support-class-extends-null-boundary.md` and
+  `issues/done/5259-report-super-property-access-in-class-extends-null.md`;
   see local commit for this issue cleanup.
 
 Validation result:

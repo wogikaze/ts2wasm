@@ -17,7 +17,7 @@ updated: 2026-05-06
 
 ## Summary
 
-Closed as superseded by `issues/open/5192-support-first-class-class-constructor-values.md`.
+Closed as superseded by `issues/done/5192-support-first-class-class-constructor-values.md`.
 
 ## Problem
 
@@ -51,7 +51,7 @@ UnsupportedSyntax: issue-5011: class `c2` cannot be used as a value — class ru
 ## Desired final state
 
 This generated bucket is closed. Implementation should proceed through
-`issues/open/5192-support-first-class-class-constructor-values.md`.
+`issues/done/5192-support-first-class-class-constructor-values.md`.
 
 ## Scope
 
@@ -123,7 +123,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] superseded by `issues/open/5192-support-first-class-class-constructor-values.md`
+- [x] superseded by `issues/done/5192-support-first-class-class-constructor-values.md`
 
 ## Notes
 
@@ -133,7 +133,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/open/5192-support-first-class-class-constructor-values.md` owns the
+- `issues/done/5192-support-first-class-class-constructor-values.md` owns the
   shared class constructor value boundary. `commentsClass.ts` fails at
   `var i2_c = c2;`, which is the same `issue-5011` family.
 - `issues/done/5011-class-runtime-value-semantics.md` documents the current

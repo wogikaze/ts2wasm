@@ -18,7 +18,7 @@ updated: 2026-05-06
 ## Summary
 
 Closed after splitting the current labeled empty statement parser blocker into
-`issues/open/5282-parse-labeled-empty-statements.md`.
+`issues/done/5282-parse-labeled-empty-statements.md`.
 
 ## Problem
 
@@ -55,7 +55,7 @@ unsupported_features=unknown-unsupported:1
 ## Desired final state
 
 This generated bucket is closed. Implementation should proceed through
-`issues/open/5282-parse-labeled-empty-statements.md`.
+`issues/done/5282-parse-labeled-empty-statements.md`.
 
 ## Scope
 
@@ -127,7 +127,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] `issues/open/5282-parse-labeled-empty-statements.md`
+- [x] `issues/done/5282-parse-labeled-empty-statements.md`
 
 ## Notes
 
@@ -142,7 +142,7 @@ Follow-up issues:
 - `issues/done/5211-sparse-array-spread-support.md` is about
   the boundary before a following label, not a label whose body is `;`.
 - Broad unknown-unsupported buckets are not exact matches.
-- `issues/open/5282-parse-labeled-empty-statements.md` owns this current
+- `issues/done/5282-parse-labeled-empty-statements.md` owns this current
   blocker.
 
 ## Smart triage

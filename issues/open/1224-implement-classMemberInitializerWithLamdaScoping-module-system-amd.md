@@ -136,7 +136,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/open/5247-fix-js-noemit-class-constructor-funcid-invariant.md` - related same invariant in a JS/noEmit path, not exact for this multi-file TypeScript reference window
+- `issues/done/5247-fix-js-noemit-class-constructor-funcid-invariant.md` - related same invariant in a JS/noEmit path, not exact for this multi-file TypeScript reference window
 
 ## Smart triage
 

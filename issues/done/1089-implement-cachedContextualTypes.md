@@ -106,11 +106,11 @@ Current state:
 
 Follow-up issues:
 
-- [x] created: `issues/open/5192-support-first-class-class-constructor-values.md`
+- [x] created: `issues/done/5192-support-first-class-class-constructor-values.md`
 
 ## Notes
 
-Superseded by `issues/open/5192-support-first-class-class-constructor-values.md`.
+Superseded by `issues/done/5192-support-first-class-class-constructor-values.md`.
 Fresh triage shows this bucket is not a parser-syntax blocker anymore: the parser
 builds the class declaration and call AST, and name resolution rejects the class
 identifier as a runtime value with `issue-5011`.
@@ -131,12 +131,12 @@ Generated on 2026-05-06:
 - result: parser and AST succeed; `resolve_names` fails with `UnsupportedSyntax`
 - diagnostic: `issue-5011: class MenuWorkbenchToolBar cannot be used as a value - class runtime is not yet supported at 483..503`
 - TypeScript oracle: ok, diagnostics: []
-- follow-up: `issues/open/5192-support-first-class-class-constructor-values.md`
+- follow-up: `issues/done/5192-support-first-class-class-constructor-values.md`
 
 ## Completion evidence
 
 Closed as a generated triage bucket. The actionable blocker is tracked by
-`issues/open/5192-support-first-class-class-constructor-values.md`.
+`issues/done/5192-support-first-class-class-constructor-values.md`.
 
 Commits:
 

@@ -18,7 +18,7 @@ Issue files are the source of truth for work items. The generated section below 
 | docs | 5 | 0 | 5 |
 | frontend | 4546 | 3850 | 696 |
 | harness | 1 | 0 | 1 |
-| ir | 72 | 24 | 48 |
+| ir | 72 | 23 | 49 |
 | issues | 5 | 0 | 5 |
 | parser | 1 | 0 | 1 |
 | reference | 212 | 163 | 49 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 8 | 0 | 8 |
 | wasi | 4 | 0 | 4 |
-| total | 5223 | 4127 | 1096 |
+| total | 5223 | 4126 | 1097 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -144,7 +144,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1116 | Implement Castexpressionparentheses | spike | frontend/syntax | done | P1 |  | castExpressionParentheses has 1 reference failures and needs smart-triage evidence before implementation starts. |
 | 1117 | Implement Castfunctionexpressionshouldbeparenthesized | spike | frontend/syntax | done | P1 | 5001 | castFunctionExpressionShouldBeParenthesized has 1 reference failures and needs smart-triage evidence before implement... |
 | 1118 | Implement Castnewobjectbug | spike | frontend/syntax | superseded | P1 |  | castNewObjectBug had 1 generated reference failure and needed smart-triage evidence before implementation starts. Cur... |
-| 1120 | Implement Castparentheses | spike | frontend/syntax | superseded | P2 | 5192 | castParentheses has 1 reference failure whose actionable blocker is now tracked by `issues/open/5192-support-first-cl... |
+| 1120 | Implement Castparentheses | spike | frontend/syntax | superseded | P2 | 5192 | castParentheses has 1 reference failure whose actionable blocker is now tracked by `issues/done/5192-support-first-cl... |
 | 1121 | Implement Casttest | spike | frontend/syntax | superseded | P2 | 5218 | castTest has 1 reference failure whose current actionable blocker is now tracked by child issue 5218. |
 | 1122 | Implement Catch | spike | reference/triage | superseded | P2 |  | catch no longer has a current compiler blocker; no child implementation issue is needed for this generated bucket. |
 | 1123 | Implement Catchclausewithinitializer | spike | frontend/syntax | superseded | P1 | 5219 | catchClauseWithInitializer has 1 reference failure whose current actionable blocker is now tracked by child issue 5219. |
@@ -373,7 +373,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5265 | Report missing class member identifier after modifier | feature | frontend/parser | implementation-ready | P1 |  | Report missing class member identifier after modifier |
 | 5266 | Support class constructor new of later class binding | feature | ir | implementation-ready | P1 |  | `reference/typescript/tests/cases/compiler/classOrderBug.ts` reports |
 | 5267 | Parse string literal class member names | feature | frontend | implementation-ready | P1 |  | `reference/typescript/tests/cases/compiler/classStaticPropertyAccess.ts` |
-| 5268 | Support derived constructor parameter properties after super | feature | ir | implementation-ready | P1 |  | `reference/typescript/tests/cases/compiler/classUpdateTests.ts` reports |
 | 5269 | Parse optional class property declarations | feature | frontend | implementation-ready | P1 |  | `reference/typescript/tests/cases/compiler/classUsedBeforeInitializedVariables.ts` |
 | 5270 | Parse modified class accessor declarations | feature | frontend | implementation-ready | P1 |  | `reference/typescript/tests/cases/compiler/classdecl.ts` reports |
 | 5271 | Parse modified static class fields | feature | frontend | implementation-ready | P1 |  | `reference/typescript/tests/cases/compiler/cloduleStaticMembers.ts` |
@@ -5329,6 +5328,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5256 | Report non-constructor class heritage expressions | feature | ir/resolver | see file |
 | 5258 | Report super calls in class extends null constructors | feature | ir/resolver | see file |
 | 5259 | Report super property access in class extends null | feature | ir/resolver | see file |
+| 5268 | Support derived constructor parameter properties after super | feature | ir | see `issues/done/5268-support-derived-constructor-parameter-properties-after-super.md` |
 | 5278 | Parse trailing comma in function parameters with comments | feature | frontend/syntax | see file |
 | 5282 | Parse labeled empty statements | feature | frontend/syntax | see `issues/done/5282-parse-labeled-empty-statements.md` |
 | 5283 | Support entry-module export var declarations | feature | frontend/module-syntax | see `issues/done/5283-support-entry-export-var-declarations.md` |

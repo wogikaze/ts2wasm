@@ -67,7 +67,7 @@ In scope:
 
 Out of scope:
 
-- First-class constructor value flow, tracked by `issues/open/5192-support-first-class-class-constructor-values.md`
+- First-class constructor value flow, tracked by `issues/done/5192-support-first-class-class-constructor-values.md`
 - Full class runtime value aliasing
 - Generic callable class or construct signature type checking
 

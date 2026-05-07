@@ -131,7 +131,7 @@ Also owns the matching first residual semantic gap folded from
 
 Related but not duplicates:
 
-- `issues/open/5256-report-non-constructor-class-heritage-expressions.md`
+- `issues/done/5256-report-non-constructor-class-heritage-expressions.md`
   handles member-expression heritage diagnostics.
 - `issues/done/5225-w0-typed-wat-writer.md` handles
   qualified class heritage implementation.

@@ -72,13 +72,13 @@ instance fields for those parameter properties.
 
 In scope:
 
-- [ ] Accept derived constructor parameter properties when the constructor body
+- [x] Accept derived constructor parameter properties when the constructor body
       starts with `super(...)`.
-- [ ] Lower generated parameter-property field assignments after the leading
+- [x] Lower generated parameter-property field assignments after the leading
       `super(...)` call.
-- [ ] Preserve the existing diagnostic for derived constructors where any
+- [x] Preserve the existing diagnostic for derived constructors where any
       parameter-property initialization would occur before `super(...)`.
-- [ ] Add focused coverage for both accepted and rejected derived constructor
+- [x] Add focused coverage for both accepted and rejected derived constructor
       parameter-property forms from `classUpdateTests.ts`.
 
 Out of scope:
@@ -103,10 +103,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] `python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/classUpdateTests.ts` no longer reports `issue-226` for class `L`.
-- [ ] A focused regression accepts `class L extends G { constructor(private p1:number) { super(); } }`.
-- [ ] A focused regression still rejects a derived parameter-property constructor where other statements precede `super()`.
-- [ ] Any next blocker from the same reference path is recorded in this issue or split to a follow-up if outside this scope.
+- [x] `python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/classUpdateTests.ts` no longer reports `issue-226` for class `L`.
+- [x] A focused regression accepts `class L extends G { constructor(private p1:number) { super(); } }`.
+- [x] A focused regression still rejects a derived parameter-property constructor where other statements precede `super()`.
+- [x] Any next blocker from the same reference path is recorded in this issue or split to a follow-up if outside this scope.
 
 ## Validation
 
@@ -137,15 +137,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 

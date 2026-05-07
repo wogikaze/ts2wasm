@@ -151,7 +151,7 @@ Follow-up issues:
 - `issues/open/5285-support-export-var-initializer-declarations.md` owns
   initialized `export var name = expr;` declarations that currently stop at
   issue-055 unsupported variable export.
-- `issues/open/5283-support-entry-export-var-declarations.md` is related but
+- `issues/done/5283-support-entry-export-var-declarations.md` is related but
   covers simple typed `export var name: type;`, not initialized exports.
 - `issues/done/055-implement-import-export.md` is the closed import/export
   umbrella; remaining executable work is tracked by narrower child issues.

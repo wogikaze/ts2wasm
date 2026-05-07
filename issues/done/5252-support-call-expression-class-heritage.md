@@ -67,9 +67,9 @@ hint: makeBaseClass has type typeof Base
 
 In scope:
 
-- [ ] Accept `extends <identifier>()` in class heritage during builtin resolution.
-- [ ] Preserve existing resolution of the identifier callee, including later function declarations.
-- [ ] Add focused coverage for `class Derived extends makeBaseClass() {}`.
+- [x] Accept `extends <identifier>()` in class heritage during builtin resolution.
+- [x] Preserve existing resolution of the identifier callee, including later function declarations.
+- [x] Add focused coverage for `class Derived extends makeBaseClass() {}`.
 
 Out of scope:
 
@@ -94,9 +94,9 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] `classDeclaredBeforeClassFactory.ts` no longer reports `only simple inheritance (extends ClassName) is supported`.
-- [ ] A focused test covers `class Derived extends makeBaseClass() {}` with `makeBaseClass` declared later in the file.
-- [ ] If runtime support for dynamically evaluated heritage remains incomplete, the next blocker is recorded after resolver acceptance.
+- [x] `classDeclaredBeforeClassFactory.ts` no longer reports `only simple inheritance (extends ClassName) is supported`.
+- [x] A focused test covers `class Derived extends makeBaseClass() {}` with `makeBaseClass` declared later in the file.
+- [x] If runtime support for dynamically evaluated heritage remains incomplete, the next blocker is recorded after resolver acceptance.
 
 ## Validation
 

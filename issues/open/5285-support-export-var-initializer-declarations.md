@@ -81,7 +81,7 @@ In scope:
 
 Out of scope:
 
-- Simple typed export-var declarations without initializers, tracked by `issues/open/5283-support-entry-export-var-declarations.md`.
+- Simple typed export-var declarations without initializers, tracked by `issues/done/5283-support-entry-export-var-declarations.md`.
 - Exported `let` destructuring, tracked by `issues/done/5175-support-export-let-destructuring-declarations.md`.
 - Package/bare specifier resolution, which is out of scope for completed issue 232.
 - Full external module execution and comment/declaration emit fidelity.
@@ -143,7 +143,7 @@ Split from `issues/open/1366-implement-commentsExternalModules.md`.
 
 Related but not duplicates:
 
-- `issues/open/5283-support-entry-export-var-declarations.md` covers simple typed `export var name: type;`.
+- `issues/done/5283-support-entry-export-var-declarations.md` covers simple typed `export var name: type;`.
 - `issues/done/5175-support-export-let-destructuring-declarations.md` covers exported `let` destructuring.
 - `issues/done/232-resolve-local-relative-es-module-graph.md` covers intentional bare/non-local specifier rejection.
 - `commentsExternalModules3.ts` has the same initialized export-var shape and

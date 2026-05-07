@@ -126,7 +126,7 @@ Follow-up issues:
 - `issues/open/1168-implement-circularlyConstrainedMappedTypeContainingConditionalNoInfiniteInstantiationDepth.md` - Implement Circularlyconstrainedmappedtypecontainingconditionalnoinfiniteinstantiationdepth (same feature label, same group key, title overlap; split to issue 5245)
 - `issues/open/1169-implement-circularlySimplifyingConditionalTypesNoCrash.md` - Implement Circularlysimplifyingconditionaltypesnocrash (same feature label, same group key, title overlap; stale build-pass)
 - `issues/open/1172-implement-classAttributeInferenceTemplate.md` - stale build-pass; no longer open
-- `issues/open/1173-implement-classAttributeInferenceTemplateJS.md` - split to `issues/open/5247-fix-js-noemit-class-constructor-funcid-invariant.md`
+- `issues/open/1173-implement-classAttributeInferenceTemplateJS.md` - split to `issues/done/5247-fix-js-noemit-class-constructor-funcid-invariant.md`
 - `issues/open/1234-implement-classPropertyInferenceFromBroaderTypeConst.md` - Implement Classpropertyinferencefrombroadertypeconst (same feature label, same group key, title overlap)
 
 ## Smart triage

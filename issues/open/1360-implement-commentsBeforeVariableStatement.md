@@ -18,7 +18,7 @@ updated: 2026-05-06
 ## Summary
 
 Closed after splitting the current `export var` module-syntax blocker into
-`issues/open/5283-support-entry-export-var-declarations.md`.
+`issues/done/5283-support-entry-export-var-declarations.md`.
 
 ## Problem
 
@@ -54,7 +54,7 @@ unsupported_features=unknown-unsupported:1
 ## Desired final state
 
 This generated bucket is closed. Implementation should proceed through
-`issues/open/5283-support-entry-export-var-declarations.md`.
+`issues/done/5283-support-entry-export-var-declarations.md`.
 
 ## Scope
 
@@ -126,7 +126,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] `issues/open/5283-support-entry-export-var-declarations.md`
+- [x] `issues/done/5283-support-entry-export-var-declarations.md`
 
 ## Notes
 
@@ -145,7 +145,7 @@ Follow-up issues:
   sibling export forms.
 - `issues/open/432-implement-import-export.md` is the broad import/export
   generated bucket and is too wide.
-- `issues/open/5283-support-entry-export-var-declarations.md` owns this current
+- `issues/done/5283-support-entry-export-var-declarations.md` owns this current
   blocker.
 
 ## Smart triage

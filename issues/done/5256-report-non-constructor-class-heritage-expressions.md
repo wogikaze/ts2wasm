@@ -62,19 +62,19 @@ TypeScript oracle: TS2339 at property `bogus`
 
 In scope:
 
-- [ ] Preserve the parsed heritage member-expression span through resolver or
+- [x] Preserve the parsed heritage member-expression span through resolver or
   builtin-resolution diagnostics.
-- [ ] Replace the generic simple-inheritance rejection for `extends "".bogus`
+- [x] Replace the generic simple-inheritance rejection for `extends "".bogus`
   with a source-spanned diagnostic that names unsupported or invalid
   non-constructor heritage expression semantics.
-- [ ] Keep existing supported `extends Base` behavior unchanged.
-- [ ] Avoid broadening the identifier-call heritage support tracked by 5252.
+- [x] Keep existing supported `extends Base` behavior unchanged.
+- [x] Avoid broadening the identifier-call heritage support tracked by 5252.
 
 Out of scope:
 
 - Runtime lowering for arbitrary evaluated heritage expressions.
 - `extends makeBaseClass()` support, tracked by
-  `issues/open/5252-support-call-expression-class-heritage.md`.
+  `issues/done/5252-support-call-expression-class-heritage.md`.
 - Qualified class heritage names such as `extends Foo.Object`, tracked by
   `issues/done/5225-w0-typed-wat-writer.md`.
 - Generic type arguments in class heritage, tracked by
@@ -96,12 +96,12 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] `classExtendsInterface_not.ts` no longer reports the generic
+- [x] `classExtendsInterface_not.ts` no longer reports the generic
   `only simple inheritance (extends ClassName) is supported` diagnostic.
-- [ ] A focused fixture covers `class C extends "".bogus {}` and asserts the
+- [x] A focused fixture covers `class C extends "".bogus {}` and asserts the
   new diagnostic is source-spanned at the heritage expression/property.
-- [ ] Existing supported `class C extends Base {}` coverage remains green.
-- [ ] 5252/5225 class heritage cases remain under their existing owners.
+- [x] Existing supported `class C extends Base {}` coverage remains green.
+- [x] 5252/5225 class heritage cases remain under their existing owners.
 
 ## Validation
 

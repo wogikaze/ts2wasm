@@ -158,7 +158,7 @@ Split from generated bucket
 
 Related but not duplicates:
 
-- `issues/open/5247-fix-js-noemit-class-constructor-funcid-invariant.md`
+- `issues/done/5247-fix-js-noemit-class-constructor-funcid-invariant.md`
   owns the same invariant in a JS/noEmit reference path. This issue keeps the
   multi-file TypeScript reference window explicit so the fix is verified against
   both shapes.

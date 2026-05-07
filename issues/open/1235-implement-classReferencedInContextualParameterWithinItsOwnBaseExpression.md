@@ -121,7 +121,7 @@ Current state:
 Follow-up issues:
 
 - [x] superseded by `issues/done/5232-w0-fixture-ize-runtimelinkplan-linker-structure-tests.md`
-- [x] related next boundary: `issues/open/5252-support-call-expression-class-heritage.md`
+- [x] related next boundary: `issues/done/5252-support-call-expression-class-heritage.md`
 
 ## Notes
 
@@ -132,7 +132,7 @@ Follow-up issues:
 ## Duplicate detection
 
 - `issues/done/5232-w0-fixture-ize-runtimelinkplan-linker-structure-tests.md` - exact current first blocker for entry-module `export class`
-- `issues/open/5252-support-call-expression-class-heritage.md` - exact next boundary for `extends Class<A>("A")(...)` after export class support
+- `issues/done/5252-support-call-expression-class-heritage.md` - exact next boundary for `extends Class<A>("A")(...)` after export class support
 
 ## Smart triage
 
@@ -202,7 +202,7 @@ AST topLevel includes exported ClassDeclaration A with call-expression heritage.
 Superseding owners:
 
 - `issues/done/5232-w0-fixture-ize-runtimelinkplan-linker-structure-tests.md`
-- `issues/open/5252-support-call-expression-class-heritage.md`
+- `issues/done/5252-support-call-expression-class-heritage.md`
 
 ## Completion evidence
 

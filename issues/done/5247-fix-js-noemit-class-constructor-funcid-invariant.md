@@ -39,9 +39,9 @@ InvariantViolation: ClassDecl constructor FuncId 0 is out of range (program has 
 
 In scope:
 
-- [ ] Preserve or remove class constructor `FuncId` references consistently when JS/noEmit lowering has zero emitted functions.
-- [ ] Add focused validation coverage for a noEmit/checkJs class with a constructor.
-- [ ] Confirm the representative no longer reports the invariant.
+- [x] Preserve or remove class constructor `FuncId` references consistently when JS/noEmit lowering has zero emitted functions.
+- [x] Add focused validation coverage for a noEmit/checkJs class with a constructor.
+- [x] Confirm the representative no longer reports the invariant.
 
 Out of scope:
 
@@ -56,9 +56,9 @@ Do not touch: module export semantics or frontend parser syntax.
 
 ## Acceptance criteria
 
-- [ ] `classAttributeInferenceTemplateJS.ts` triage no longer reports `ClassDecl constructor FuncId 0 is out of range`.
-- [ ] A focused regression covers a JS/noEmit class constructor with zero emitted functions.
-- [ ] Existing class constructor lowering tests still pass.
+- [x] `classAttributeInferenceTemplateJS.ts` triage no longer reports `ClassDecl constructor FuncId 0 is out of range`.
+- [x] A focused regression covers a JS/noEmit class constructor with zero emitted functions.
+- [x] Existing class constructor lowering tests still pass.
 
 ## Validation
 

@@ -159,7 +159,7 @@ Follow-up issues:
 
 - `issues/done/226-implement-parameter-properties.md` completed parameter
   property runtime support and is not this TS2301 field-initializer diagnostic.
-- `issues/open/5268-support-derived-constructor-parameter-properties-after-super.md`
+- `issues/done/5268-support-derived-constructor-parameter-properties-after-super.md`
   handles derived constructor parameter properties, not ordinary field
   initializer references to constructor-scope names.
 - Existing class member initializer issues mention TS2301 as later oracle

@@ -96,7 +96,7 @@ In scope:
 Out of scope:
 
 - Entry-module export class declarations, tracked by `issues/done/5232-w0-fixture-ize-runtimelinkplan-linker-structure-tests.md`.
-- Exported variables, tracked by `issues/open/5283-support-entry-export-var-declarations.md` and related variable-export slices.
+- Exported variables, tracked by `issues/done/5283-support-entry-export-var-declarations.md` and related variable-export slices.
 - Full TS2301 class field initializer scoping diagnostics.
 - AMD/CommonJS emit parity beyond the static dependency export-class boundary.
 
@@ -164,7 +164,7 @@ Related but not duplicates:
 
 - `issues/done/5232-w0-fixture-ize-runtimelinkplan-linker-structure-tests.md` covers entry-module `export class`, not dependency virtual files.
 - `issues/open/5295-resolve-import-equals-require-to-virtual-node-modules-class-export.md` covers bare `require("myModule")` resolution plus a node_modules dependency class export shape.
-- `issues/open/5283-support-entry-export-var-declarations.md` covers the sibling `classMemberInitializerWithLamdaScoping4.ts` first blocker, `export var field1: string`.
+- `issues/done/5283-support-entry-export-var-declarations.md` covers the sibling `classMemberInitializerWithLamdaScoping4.ts` first blocker, `export var field1: string`.
 
 ## Completion evidence
 

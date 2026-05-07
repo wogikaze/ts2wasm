@@ -72,8 +72,8 @@ and downstream resolver/lowering stages treat it as a no-op statement.
 
 In scope:
 
-- [ ] Add the minimal empty-statement handling and focused parser coverage for `Input: ;`.
-- [ ] Re-run the representative reference triage and confirm the failure advances.
+- [x] Add the minimal empty-statement handling and focused parser coverage for `Input: ;`.
+- [x] Re-run the representative reference triage and confirm the failure advances.
 
 Out of scope:
 
@@ -97,8 +97,8 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] `Input: ;` parses as a labeled no-op statement without an unsupported semicolon expression, while existing labeled `while` and break/continue tests still pass.
-- [ ] `python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/commentsAtEndOfFile1.ts` no longer reports `unsupported expression: ... Semicolon`.
+- [x] `Input: ;` parses as a labeled no-op statement without an unsupported semicolon expression, while existing labeled `while` and break/continue tests still pass.
+- [x] `python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/commentsAtEndOfFile1.ts` no longer reports `unsupported expression: ... Semicolon`.
 
 ## Validation
 
@@ -125,15 +125,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 

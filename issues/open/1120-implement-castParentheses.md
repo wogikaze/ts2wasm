@@ -25,7 +25,7 @@ Triage castParentheses across 1 failing reference test case and fold the current
 
 Reference test results showed 1 case failing in directory `castParentheses` with diagnostics: unknown-unsupported. Fresh triage shows the parser handles the cast-parentheses forms, and the current blocker is `issue-5011` class constructor value usage.
 
-Problem: castParentheses has 1 reference failure whose actionable blocker is now tracked by `issues/open/5192-support-first-class-class-constructor-values.md`.
+Problem: castParentheses has 1 reference failure whose actionable blocker is now tracked by `issues/done/5192-support-first-class-class-constructor-values.md`.
 
 ## Current failure
 
@@ -43,7 +43,7 @@ mise run reference-coverage -- tsc --path-filter reference/typescript/tests/case
 
 ## Desired final state
 
-This generated bucket is superseded by `issues/open/5192-support-first-class-class-constructor-values.md`.
+This generated bucket is superseded by `issues/done/5192-support-first-class-class-constructor-values.md`.
 
 ## Scope
 
@@ -115,7 +115,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] updated: `issues/open/5192-support-first-class-class-constructor-values.md`
+- [x] updated: `issues/done/5192-support-first-class-class-constructor-values.md`
 
 ## Notes
 
@@ -136,7 +136,7 @@ Generated on 2026-05-06:
 - feature label: `class`
 - diagnostic: `UnsupportedSyntax` / `parser-or-frontend-unsupported`
 - message: `issue-5011: class a cannot be used as a value - class runtime is not yet supported at 73..74`
-- follow-up: `issues/open/5192-support-first-class-class-constructor-values.md`
+- follow-up: `issues/done/5192-support-first-class-class-constructor-values.md`
 
 Source context:
 
@@ -171,7 +171,7 @@ TypeScript oracle: ok, diagnostics: []
 ## Completion evidence
 
 Closed as a generated triage bucket. The actionable first blocker is tracked by
-`issues/open/5192-support-first-class-class-constructor-values.md`.
+`issues/done/5192-support-first-class-class-constructor-values.md`.
 
 Commits:
 

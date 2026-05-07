@@ -85,7 +85,7 @@ blocked issue.
 
 Superseded by:
 
-- `issues/open/5192-support-first-class-class-constructor-values.md`
+- `issues/done/5192-support-first-class-class-constructor-values.md`
 
 Rationale:
 

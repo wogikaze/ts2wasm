@@ -68,7 +68,7 @@ Out of scope:
 - Interface construct signatures, tracked by
   `issues/done/5245-iterator-protocol-runtime.md`.
 - Class heritage call-expression support for `extends factory(A)`, tracked
-  separately by `issues/open/5252-support-call-expression-class-heritage.md`
+  separately by `issues/done/5252-support-call-expression-class-heritage.md`
   if it remains after this parser blocker advances.
 
 ## Affected paths

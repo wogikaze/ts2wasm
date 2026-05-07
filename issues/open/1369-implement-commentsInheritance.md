@@ -134,7 +134,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] created: `issues/open/5286-preserve-class-constructor-parameters-for-new-arity.md`
+- [x] created: `issues/done/5286-preserve-class-constructor-parameters-for-new-arity.md`
 
 ## Notes
 

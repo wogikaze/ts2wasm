@@ -125,7 +125,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/open/5278-parse-trailing-comma-in-function-parameters-with-comments.md`
+- `issues/done/5278-parse-trailing-comma-in-function-parameters-with-comments.md`
   is related but narrower: ordinary function parameters with comments.
 - `issues/done/5149-parse-trailing-comma-in-typed-class-method-parameters.md`
   is related but covers class methods, not exported function declarations.

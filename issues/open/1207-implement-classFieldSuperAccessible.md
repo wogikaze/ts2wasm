@@ -157,9 +157,9 @@ Duplicate review:
 
 - `issues/open/5248-lower-class-expressions.md` covers class expressions as
   ordinary values, not direct class heritage.
-- `issues/open/5252-support-call-expression-class-heritage.md` covers
+- `issues/done/5252-support-call-expression-class-heritage.md` covers
   `extends makeBaseClass()`.
-- `issues/open/5256-report-non-constructor-class-heritage-expressions.md`
+- `issues/done/5256-report-non-constructor-class-heritage-expressions.md`
   covers invalid heritage diagnostics.
 - No exact open/done owner was found for direct `extends class Expr {}` support.
 

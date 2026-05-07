@@ -110,7 +110,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] `issues/open/5252-support-call-expression-class-heritage.md`
+- [x] `issues/done/5252-support-call-expression-class-heritage.md`
 
 ## Notes
 

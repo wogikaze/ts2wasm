@@ -74,9 +74,9 @@ constructors.
 
 In scope:
 
-- [ ] Keep issue-062 for unqualified global `Function(...)` and `new Function(...)`.
-- [ ] Stop treating `Expr::New { expr: Member(..., property: "Function") }` as global dynamic Function.
-- [ ] Add focused resolver coverage for `new M.Function("return 5")`.
+- [x] Keep issue-062 for unqualified global `Function(...)` and `new Function(...)`.
+- [x] Stop treating `Expr::New { expr: Member(..., property: "Function") }` as global dynamic Function.
+- [x] Add focused resolver coverage for `new M.Function("return 5")`.
 
 Out of scope:
 
@@ -99,9 +99,9 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] `constructorOverloads4.ts` no longer reports issue-062 for `new M.Function("return 5")`.
-- [ ] A focused resolver test proves member callee `M.Function` is not treated as global `Function`.
-- [ ] Existing tests for unqualified `Function("return 1")` and `new Function("return 1")` still report issue-062.
+- [x] `constructorOverloads4.ts` no longer reports issue-062 for `new M.Function("return 5")`.
+- [x] A focused resolver test proves member callee `M.Function` is not treated as global `Function`.
+- [x] Existing tests for unqualified `Function("return 1")` and `new Function("return 1")` still report issue-062.
 
 ## Validation
 
@@ -127,15 +127,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] record the next namespace/class construction blocker if exposed.
+- [x] record the next namespace/class construction blocker if exposed.
 
 ## Notes
 
