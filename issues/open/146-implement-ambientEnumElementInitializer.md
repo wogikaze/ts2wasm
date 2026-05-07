@@ -57,6 +57,13 @@ Out of scope:
 - Direct implementation from this generated bucket
 - Broad multi-feature fixes without child issue split
 
+
+## Triage result
+
+Failing test: `ambientEnumElementInitializer1.ts` — ambient enum init
+
+This issue was reopened by false-done audit. It is a TypeScript compiler reference test case classified as superseded by meta-issue dependencies.
+
 ## Affected paths
 
 Expected:
