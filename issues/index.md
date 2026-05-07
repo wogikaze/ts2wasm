@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 7 | 6 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4584 | 3379 | 1205 |
+| frontend | 4584 | 3378 | 1206 |
 | harness | 1 | 0 | 1 |
 | ir | 81 | 59 | 22 |
 | issues | 4 | 0 | 4 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5252 | 3678 | 1574 |
+| total | 5252 | 3677 | 1575 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -2325,7 +2325,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 3302 | Implement Modulealiasasfunctionargument | spike | frontend/syntax | class: blocked | Implement Modulealiasasfunctionargument |
 | 3303 | Implement Modulealiasinterface | spike | frontend/syntax | class: blocked | Implement Modulealiasinterface |
 | 3304 | Implement Moduleandinterfacesharingname | spike | frontend/syntax | class: blocked | Implement Moduleandinterfacesharingname |
-| 3354 | Implement Modulenodeimportrequireemit | spike | frontend/syntax | class: blocked | Implement Modulenodeimportrequireemit |
 | 3355 | Implement Modulenonedynamicimport | spike | frontend/syntax | class: blocked | Implement Modulenonedynamicimport |
 | 3356 | Implement Modulenoneerrors | spike | frontend/syntax | class: blocked | Implement Modulenoneerrors |
 | 3357 | Implement Moduleouterqualification | spike | frontend/syntax | class: blocked | Implement Moduleouterqualification |
@@ -5213,6 +5212,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 3351 | Implement Modulenewexportbug | maintenance | frontend/syntax | see `issues/done/3351-implement-moduleNewExportBug.md` |
 | 3352 | Implement Modulenoemit | maintenance | frontend/syntax | see `issues/done/3352-implement-moduleNoEmit.md` |
 | 3353 | Implement Modulenodedefaultimports | maintenance | frontend/syntax | see `issues/done/3353-implement-moduleNodeDefaultImports.md` |
+| 3354 | Implement Modulenodeimportrequireemit | spike | frontend/syntax | see `issues/done/3354-implement-moduleNodeImportRequireEmit.md` |
 | 3690 | Implement Optionaltupleelementsandundefined | spike | reference/triage | see `issues/done/3690-implement-optionalTupleElementsAndUndefined.md` |
 | 3996 | Implement Compiler (dup) | spike | frontend/syntax | see `issues/done/3996-implement-reference-typescript-tests-cases-compiler.md` |
 | 4210 | Implement Splicetuples | spike | frontend/resolver | see `issues/done/4210-implement-spliceTuples.md` |

@@ -164,6 +164,10 @@ Also owns `issues/done/3346-implement-moduleLocalImportNotIncorrectlyRedirected.
 fresh triage stops in `node_modules/troublesome-lib/package.json` at the first
 JSON property colon before package resolution or local import redirection
 semantics become reachable.
+Also owns `issues/done/3354-implement-moduleNodeImportRequireEmit.md`: fresh
+triage stops in `// @filename: package.json` at the first JSON property colon
+before `declare module "foo";`, `import foo = require("foo");`, or NodeNext
+emit diagnostics become reachable.
 
 ## Completion evidence
 
