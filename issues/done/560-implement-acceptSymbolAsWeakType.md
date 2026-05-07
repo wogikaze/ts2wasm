@@ -3,23 +3,30 @@ id: 560
 title: "Implement Acceptsymbolasweaktype"
 type: spike
 area: frontend/resolver
-class: blocked
+class: done
 priority: P1
-depends_on: [5005]
+depends_on: [1999]
 blocks: []
 created: 2026-05-01
-updated: 2026-05-01
+updated: 2026-05-07
+completed: 2026-05-07
 ---
 
 ## Summary
 
-Triage acceptSymbolAsWeakType across 1 failing reference test cases and split this bucket into implementation-ready child issues.
+Close `acceptSymbolAsWeakType` after moving the current weak-collection symbol
+diagnostic blocker into issue 1999.
 
 ## Problem
 
-Reference test results show 1 cases fail in directory `acceptSymbolAsWeakType` with diagnostics: name-resolution. The compiler cannot handle these syntax/semantics, preventing compilation of code in this category.
+Reference test results originally showed 1 case failing in directory
+`acceptSymbolAsWeakType` with diagnostics: name-resolution. Fresh triage on
+2026-05-07 shows the original `WeakSet` unresolved-name blocker has advanced;
+the current family is shared with `dissallowSymbolAsWeakType` and is now owned
+by issue 1999.
 
-Problem: acceptSymbolAsWeakType has 1 reference failures and needs smart-triage evidence before implementation starts.
+Problem: this generated bucket duplicates the weak collection `symbol` negative
+diagnostic work now tracked by issue 1999.
 
 ## Current failure
 
@@ -37,16 +44,17 @@ mise run reference-coverage -- tsc --path-filter reference/typescript/tests/case
 
 ## Desired final state
 
-This generated bucket is either split into implementation-ready child issues or superseded by an existing open/done issue with matching evidence. Do not implement directly from this bucket.
+This generated bucket is superseded by issue 1999, which owns both
+`acceptSymbolAsWeakType.ts` and `dissallowSymbolAsWeakType.ts`.
 
 ## Scope
 
 In scope:
 
-- [ ] Inspect the smart triage report below
-- [ ] Confirm whether existing open/done issues already cover this bucket
-- [ ] Split one feature family, one observable behavior, or one fixed reference window into child issues
-- [ ] Preserve exact reproduction commands and representative AST/diagnostic evidence in each child issue
+- [x] Inspect the smart triage report below
+- [x] Confirm whether existing open/done issues already cover this bucket
+- [x] Split one feature family, one observable behavior, or one fixed reference window into child issues
+- [x] Preserve exact reproduction commands and representative AST/diagnostic evidence in the owner issue
 
 Out of scope:
 
@@ -68,10 +76,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] Duplicate candidates below are confirmed as no-match or this issue is superseded
-- [ ] At least one child issue contains an exact `mise run reference-triage -- ...` command
-- [ ] Child issue includes failing path, diagnostic code, source context, visible symbols, and parser/TypeScript AST evidence
-- [ ] Child issue acceptance names the exact fixture/reference path and diagnostic/stdout change
+- [x] Duplicate candidates below are confirmed and issue 1999 is the owner
+- [x] Owner issue 1999 contains exact `reference-triage` commands
+- [x] Owner issue 1999 includes the shared diagnostic code, source context, visible symbols, and parser/TypeScript AST evidence
+- [x] Owner issue 1999 acceptance names the first shared diagnostic/stdout change
 
 ## Validation
 
@@ -92,21 +100,23 @@ mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/accep
 
 Not run:
 
-- none
+- `cargo fmt --all --check` and `cargo nextest run`; this close is an
+  issue-lifecycle-only split update, so focused reference and issue checks were
+  used instead.
 
 ## Docs / current-state / issue sync
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] updated: `current-state.md` (repo root)
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] updated: `issues/open/1999-implement-dissallowSymbolAsWeakType.md`
 
 ## Notes
 
@@ -121,6 +131,35 @@ Follow-up issues:
 - `issues/done/474-implement-acceptSymbolAsWeakType.md` - Implement Acceptsymbolasweaktype (same reference path, same feature label, same group key, title overlap)
 
 ## Smart triage
+
+Generated 2026-05-07.
+
+```text
+command:
+env TS2WASM_BINARY=/home/wogikaze/wgkz/ts2wasm/target/debug/ts2wasm python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/acceptSymbolAsWeakType.ts
+
+result:
+UnresolvedFunction / function-resolution
+
+current diagnostic:
+unresolved function: `Symbol`
+
+lowerer evidence:
+tokens: ok
+ast: ok
+resolved/lowered: fails with `method WeakSet.add not found at 114..123`
+
+TypeScript oracle:
+TS2769 on `new WeakSet([s])` / `new WeakMap([[s, false]])`;
+TS2345 on weak collection method calls with `symbol` arguments;
+TS2304 for WeakRef and FinalizationRegistry in this oracle run.
+
+decision:
+superseded by issues/open/1999-implement-dissallowSymbolAsWeakType.md, which
+owns both weak-collection symbol negative reference files.
+```
+
+## Historical smart triage
 
 ### Smart triage: Triage name resolution: acceptSymbolAsWeakType
 
@@ -817,20 +856,29 @@ error: [UnresolvedName] unresolved name: `WeakSet` at 100..107
 
 ## Completion evidence
 
-Fill only when moving to `done/`.
-
 Commits:
 
-- `...`
+- Superseded by issue 1999 after fresh triage showed the current blocker is
+  the shared weak-collection symbol diagnostic family.
 
 Validation result:
 
 ```text
 command:
+env TS2WASM_BINARY=/home/wogikaze/wgkz/ts2wasm/target/debug/ts2wasm python scripts/manager.py reference-coverage tsc --path-filter reference/typescript/tests/cases/compiler/acceptSymbolAsWeakType.ts --detail --no-dashboard-data
 result:
+executed=1, build_pass=0, unsupported=1, unsupported_diagcodes=UnresolvedFunction:1
 date:
+2026-05-07
+
+command:
+env TS2WASM_BINARY=/home/wogikaze/wgkz/ts2wasm/target/debug/ts2wasm python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/acceptSymbolAsWeakType.ts
+result:
+UnresolvedFunction / function-resolution; current diagnostic is `unresolved function: Symbol`; lowerer evidence reaches `method WeakSet.add not found`
+date:
+2026-05-07
 ```
 
 Remaining risks:
 
-- none
+- Issue 1999 owns implementation and follow-up verification.

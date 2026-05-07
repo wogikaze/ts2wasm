@@ -1,77 +1,86 @@
 ---
 id: 1999
-title: "Implement Dissallowsymbolasweaktype"
-type: spike
+title: "Report symbol WeakSet.add diagnostics"
+type: feature
 area: frontend/resolver
-class: blocked
+class: implementation-ready
 priority: P1
-depends_on: [5005]
+depends_on: []
 blocks: []
 created: 2026-05-01
-updated: 2026-05-01
+updated: 2026-05-07
 ---
 
 ## Summary
 
-Triage dissallowSymbolAsWeakType across 1 failing reference test cases and split this bucket into implementation-ready child issues.
+Handle the first `symbol` weak-collection negative blocker by resolving the
+`Symbol` call and `WeakSet.add` far enough to report a TypeScript-style
+diagnostic instead of stopping at resolver/lowering lookup failures.
 
 ## Problem
 
-Reference test results show 1 cases fail in directory `dissallowSymbolAsWeakType` with diagnostics: name-resolution. The compiler cannot handle these syntax/semantics, preventing compilation of code in this category.
+Fresh triage on 2026-05-07 shows both
+`acceptSymbolAsWeakType.ts` and `dissallowSymbolAsWeakType.ts` parse and reach
+the resolver/lowerer, but stop before the first TypeScript diagnostic for using
+a `symbol` value with `WeakSet.add`.
 
-Problem: dissallowSymbolAsWeakType has 1 reference failures and needs smart-triage evidence before implementation starts.
+Problem: weak collection symbol negative tests currently fail with
+`UnresolvedFunction: Symbol` / `method WeakSet.add not found` instead of a
+source-spanned TS2345-style diagnostic for `ws.add(s)`.
 
 ## Current failure
 
 Representative reproduction:
 
 ```sh
-mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/dissallowSymbolAsWeakType.ts
+python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/dissallowSymbolAsWeakType.ts
 ```
 
 Coverage window:
 
 ```sh
-mise run reference-coverage -- tsc --path-filter reference/typescript/tests/cases/compiler/dissallowSymbolAsWeakType.ts --detail
+python scripts/manager.py reference-coverage tsc --path-filter reference/typescript/tests/cases/compiler/dissallowSymbolAsWeakType.ts --detail --no-dashboard-data
 ```
 
 ## Desired final state
 
-This generated bucket is either split into implementation-ready child issues or superseded by an existing open/done issue with matching evidence. Do not implement directly from this bucket.
+The compiler should recognize the relevant builtin call and `WeakSet.add`
+surface well enough to emit the expected negative diagnostic for a symbol
+argument. The exact reference files should no longer stop at `Symbol` function
+resolution or `WeakSet.add` method lookup.
 
 ## Scope
 
 In scope:
 
-- [ ] Inspect the smart triage report below
-- [ ] Confirm whether existing open/done issues already cover this bucket
-- [ ] Split one feature family, one observable behavior, or one fixed reference window into child issues
-- [ ] Preserve exact reproduction commands and representative AST/diagnostic evidence in each child issue
+- [ ] Resolve the first `Symbol('s')` / `WeakSet.add` lookup path for the focused weak-set symbol fixture.
+- [ ] Emit a source-spanned diagnostic for `ws.add(s)` where TypeScript requires an object argument and `s` is symbol-typed.
 
 Out of scope:
 
-- Direct implementation from this generated bucket
-- Broad multi-feature fixes without child issue split
+- General collection runtime implementation beyond the first `WeakSet.add` diagnostic in these reference files.
+- `WeakMap` methods, `WeakRef`, and `FinalizationRegistry`; split follow-up issues if they become the next blockers.
+- Full lib.esnext / lib.es2022 declaration modeling outside this focused builtin/method diagnostic slice.
+- Runtime support for weak references or finalization.
 
 ## Affected paths
 
 Expected:
 
 - `crates/frontend/src/`
-- `crates/cli/src/`
-- `fixtures/`
-- `scripts/run/reference-triage.py`
+- `crates/ir/src/`
+- `crates/cli/tests/`
+- focused fixtures under the existing CLI/frontend test layout
 
 Do not touch:
 
-- unrelated runtime/backend code unless `reference-triage` proves the failure is not frontend-owned
+- unrelated runtime/backend code unless the resolver produces a supported runtime shape
+- broad collection/runtime ABI work outside this diagnostic slice
 
 ## Acceptance criteria
 
-- [ ] Duplicate candidates below are confirmed as no-match or this issue is superseded
-- [ ] At least one child issue contains an exact `mise run reference-triage -- ...` command
-- [ ] Child issue includes failing path, diagnostic code, source context, visible symbols, and parser/TypeScript AST evidence
-- [ ] Child issue acceptance names the exact fixture/reference path and diagnostic/stdout change
+- [ ] `dissallowSymbolAsWeakType.ts` no longer reports `unresolved function: Symbol` or `method WeakSet.add not found`.
+- [ ] A focused fixture covers `const s: symbol = Symbol("s"); const ws = new WeakSet([s]); ws.add(s);` and reports the symbol/object mismatch at `s`.
 
 ## Validation
 
@@ -79,20 +88,19 @@ Required commands:
 
 ```sh
 cargo fmt --all --check
-cargo nextest run
+cargo nextest run -p ts2wasm-cli -E 'test(symbol) or test(weak) or test(diagnostic)'
 ```
 
 Impacted commands:
 
 ```sh
-mise run reference-coverage -- tsc --limit 2
-mise run reference-coverage -- tsc --path-filter reference/typescript/tests/cases/compiler/dissallowSymbolAsWeakType.ts --detail
-mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/dissallowSymbolAsWeakType.ts
+python scripts/manager.py reference-coverage tsc --path-filter reference/typescript/tests/cases/compiler/dissallowSymbolAsWeakType.ts --detail --no-dashboard-data
+python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/dissallowSymbolAsWeakType.ts
 ```
 
 Not run:
 
-- none
+- implementation gates; this issue is being refined into an implementation-ready owner
 
 ## Docs / current-state / issue sync
 
@@ -102,7 +110,7 @@ Final-state docs:
 
 Current state:
 
-- [ ] updated: `current-state.md` (repo root)
+- [ ] not affected
 
 Follow-up issues:
 
@@ -120,7 +128,32 @@ Follow-up issues:
 
 ## Smart triage
 
-Not generated. Rerun with `--triage-limit 1` or higher.
+Generated 2026-05-07.
+
+```text
+commands:
+env TS2WASM_BINARY=/home/wogikaze/wgkz/ts2wasm/target/debug/ts2wasm python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/dissallowSymbolAsWeakType.ts
+
+result:
+UnresolvedFunction / function-resolution
+
+current diagnostic:
+unresolved function: `Symbol`
+
+lowerer evidence:
+tokens: ok
+ast: ok
+resolved/lowered: fails with `method WeakSet.add not found`
+
+TypeScript oracle:
+TS2769 on `new WeakSet([s])`; TS2345 on `ws.add(s)` with a `symbol` argument.
+Later WeakMap, WeakRef, and FinalizationRegistry diagnostics are out of scope
+for this first blocker slice.
+
+decision:
+Own the first `dissallowSymbolAsWeakType.ts` weak-set symbol blocker. Issue 560
+has the same first blocker family and is closed as superseded by this owner.
+```
 
 ## Completion evidence
 
@@ -140,4 +173,5 @@ date:
 
 Remaining risks:
 
-- none
+- This issue intentionally scopes to the first `WeakSet.add` diagnostic and
+  resolver/lowerer classification, not runtime weak collection support.

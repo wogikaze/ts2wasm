@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 6 | 5 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4567 | 3454 | 1113 |
+| frontend | 4567 | 3453 | 1114 |
 | harness | 1 | 0 | 1 |
 | ir | 77 | 55 | 22 |
 | issues | 4 | 0 | 4 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5225 | 3749 | 1476 |
+| total | 5225 | 3748 | 1477 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -52,7 +52,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 ├── 5003 (Meta: TypeScript Compiler Declaration Emit Coverage) [done/done] ch:102 open:91 done:11 (also ← 5001)
 5001 (Meta: TypeScript Compiler Semantic Analysis Coverage) [done/done] ch:557 open:298 done:259
 5004 (Meta: Runtime Builtins Coverage (test262) (audit reopened #5004)) [done/done] ch:24 open:3 done:21
-5005 (Meta: TypeScript Compiler Name Resolution Coverage) [done/done] ch:404 open:348 done:56
+5005 (Meta: TypeScript Compiler Name Resolution Coverage) [done/done] ch:402 open:346 done:56
 ├── 5006 (Meta: TypeScript Compiler Scope Analysis Coverage) [done/done] ch:28 open:20 done:8
 ├── 5007 (Meta: TypeScript Compiler Module Resolution Coverage (audit reopened #5007)) [done/done] ch:21 open:19 done:2
 ```
@@ -69,7 +69,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1 | 5000 | Meta: TypeScript Compiler Parser Syntax Coverage | done | design | frontend/syntax | P1 | - | 447 | 364 | 83 |
 | 2 | 5001 | Meta: TypeScript Compiler Semantic Analysis Coverage | done | done | frontend/semantics | P1 | - | 557 | 298 | 259 |
 | 3 | 5004 | Meta: Runtime Builtins Coverage (test262) (audit reopened #5004) | done | done | runtime/builtins | P1 | - | 24 | 3 | 21 |
-| 4 | 5005 | Meta: TypeScript Compiler Name Resolution Coverage | done | done | frontend/resolver | P1 | - | 404 | 348 | 56 |
+| 4 | 5005 | Meta: TypeScript Compiler Name Resolution Coverage | done | done | frontend/resolver | P1 | - | 402 | 346 | 56 |
 | 5 | 5002 | Meta: TypeScript Compiler Type System Coverage | done | done | frontend/semantics | P1 | 5000, 5005 | 224 | 205 | 19 |
 | 6 | 5003 | Meta: TypeScript Compiler Declaration Emit Coverage | done | done | frontend/syntax | P2 | 5000, 5001 | 102 | 91 | 11 |
 | 7 | 5006 | Meta: TypeScript Compiler Scope Analysis Coverage | done | done | frontend/resolver | P2 | 5005 | 28 | 20 | 8 |
@@ -95,6 +95,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | ID | Title | Type | Area | Class | Priority | Depends on | Summary |
 |---:|---|---|---|---|---|---|---|
 | 353 | Implement iterator protocol integration for spread operator | feature | runtime/semantics | unstarted | P2 |  | General iterator protocol is not implemented for spread operator. |
+| 1999 | Report symbol WeakSet.add diagnostics | feature | frontend/resolver | implementation-ready | P1 |  | weak collection symbol negative tests currently fail with |
 | 5132 | Add ABC451 non-top array separation attribution | infra | runtime/memory | implementation-ready | P1 | 5131 | issue 365 proves the dominant array-growth pressure is |
 | 5137 | Split remaining Date API scope | cleanup | runtime/builtins | design-ready | P1 |  | Date issue 050 currently stays open after its named child issues 240 and 241 are done, but non-literal constructor in... |
 | 5138 | Split Reflect.construct isConstructor reference window | spike | runtime/builtins | design-ready | P1 |  | `reference/test262/test/annexB/built-ins/String/prototype/anchor/not-a-constructor.js` currently fails with `Unresolv... |
@@ -423,7 +424,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 554 | Implement Abstractclassinlocalscope | spike | frontend/resolver | class: blocked | Implement Abstractclassinlocalscope |
 | 555 | Implement Abstractclassinlocalscopeisabstract | spike | frontend/resolver | class: blocked | Implement Abstractclassinlocalscopeisabstract |
 | 556 | Implement Abstractclassunioninstantiation | spike | frontend/resolver | class: blocked | Implement Abstractclassunioninstantiation |
-| 560 | Implement Acceptsymbolasweaktype | spike | frontend/resolver | class: blocked | Implement Acceptsymbolasweaktype |
 | 561 | Implement Acceptablealias | spike | frontend/syntax | class: blocked | Implement Acceptablealias |
 | 562 | Implement Accessinstancememberfromstaticmethod | spike | frontend/resolver | class: blocked | Implement Accessinstancememberfromstaticmethod |
 | 564 | Implement Accessstaticmemberfrominstancemethod | spike | frontend/resolver | class: blocked | Implement Accessstaticmemberfrominstancemethod |
@@ -1049,7 +1049,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1996 | Implement Discriminatedunionerrormessage | spike | frontend/syntax | class: blocked | Implement Discriminatedunionerrormessage |
 | 1997 | Implement Discriminatedunionwithindexsignature | spike | frontend/syntax | class: blocked | Implement Discriminatedunionwithindexsignature |
 | 1998 | Implement Discriminatingunionwithunionpropertyagainstundefinedwithoutstrictnullchecks | spike | frontend/syntax | class: blocked | Implement Discriminatingunionwithunionpropertyagainstundefinedwithoutstrictnullchecks |
-| 1999 | Implement Dissallowsymbolasweaktype | spike | frontend/resolver | class: blocked | Implement Dissallowsymbolasweaktype |
 | 2000 | Implement Divergentaccessors | spike | frontend/syntax | class: blocked | Implement Divergentaccessors |
 | 2001 | Implement Divergentaccessorstypes Class Accessor | spike | frontend/syntax | class: blocked | Implement Divergentaccessorstypes Class Accessor |
 | 2002 | Implement Divergentaccessorstypes Name Resolution | spike | frontend/resolver | class: blocked | Implement Divergentaccessorstypes Name Resolution |
@@ -4367,6 +4366,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 557 | Implement Abstractpropertybasics | spike | frontend/syntax | see `issues/done/557-implement-abstractPropertyBasics.md` |
 | 558 | Implement Abstractpropertyinconstructor | spike | frontend/syntax | see `issues/done/558-implement-abstractPropertyInConstructor.md` |
 | 559 | Implement Abstractpropertynegative | spike | frontend/syntax | see `issues/done/559-implement-abstractPropertyNegative.md` |
+| 560 | Implement Acceptsymbolasweaktype | spike | frontend/resolver | see `issues/done/560-implement-acceptSymbolAsWeakType.md` |
 | 563 | Implement Accessoverriddenbaseclassmember (audit reopened #563) | spike | frontend/syntax | see `issues/done/563-implement-accessOverriddenBaseClassMember.md` |
 | 568 | Implement Accessordeclarationorder (audit reopened #568) | spike | frontend/syntax | see `issues/done/568-implement-accessorDeclarationOrder.md` |
 | 569 | Implement Accessorinambientcontextes (audit reopened #569) | spike | frontend/syntax | see `issues/done/569-implement-accessorInAmbientContextES.md` |
