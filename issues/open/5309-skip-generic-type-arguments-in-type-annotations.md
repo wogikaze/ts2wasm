@@ -132,6 +132,16 @@ Split from generated bucket
 The same reference case may expose type-system diagnostics after this parser
 boundary is fixed.
 
+Additional superseded bucket:
+
+- `issues/done/1467-implement-constraintsThatReferenceOtherContstraints.md`
+  reaches the same generic type-argument skipper boundary in a class property
+  annotation. Fresh triage on 2026-05-07 reports
+  `expected property name, got Comma at 141..147` for
+  `data: Foo<Object, Object>;`; TypeScript parses it as a
+  `PropertyDeclaration` with a `TypeReference`, then reports a later TS2564
+  definite-assignment diagnostic.
+
 ## Completion evidence
 
 Fill only when moving to `done/`.
