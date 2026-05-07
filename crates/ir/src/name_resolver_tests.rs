@@ -616,4 +616,65 @@ mod tests {
 
         assert!(name_resolver::resolve_names(&program).is_ok());
     }
+
+    #[test]
+    fn test_super_property_access_reports_unsupported() {
+        // super.x in a non-class function expression context should
+        // report issue-5255 instead of bare UnresolvedName.
+        let program = vec![Stmt::Function {
+            name: "f".to_string(),
+            params: vec![],
+            body: vec![Stmt::Expr {
+                expr: Expr::Member {
+                    object: Box::new(Expr::Ident {
+                        name: "super".to_string(),
+                        span: Span { start: 0, end: 5 },
+                    }),
+                    property: "x".to_string(),
+                    span: Span { start: 0, end: 7 },
+                },
+                span: Span { start: 0, end: 8 },
+            }],
+            is_generator: false,
+            is_ambient: false,
+            overload_signature: false,
+            span: Span { start: 0, end: 20 },
+        }];
+
+        let err = name_resolver::resolve_names(&program).unwrap_err();
+        assert_eq!(err.code, DiagCode::UnsupportedSyntax);
+        assert!(err.message.contains("issue-5255"));
+    }
+
+    #[test]
+    fn test_super_index_access_reports_unsupported() {
+        // super['x'] in a non-class function expression context should
+        // report issue-5255 instead of bare UnresolvedName.
+        let program = vec![Stmt::Function {
+            name: "f".to_string(),
+            params: vec![],
+            body: vec![Stmt::Expr {
+                expr: Expr::Index {
+                    object: Box::new(Expr::Ident {
+                        name: "super".to_string(),
+                        span: Span { start: 0, end: 5 },
+                    }),
+                    index: Box::new(Expr::String {
+                        value: "x".to_string(),
+                        span: Span { start: 6, end: 9 },
+                    }),
+                    span: Span { start: 0, end: 10 },
+                },
+                span: Span { start: 0, end: 11 },
+            }],
+            is_generator: false,
+            is_ambient: false,
+            overload_signature: false,
+            span: Span { start: 0, end: 25 },
+        }];
+
+        let err = name_resolver::resolve_names(&program).unwrap_err();
+        assert_eq!(err.code, DiagCode::UnsupportedSyntax);
+        assert!(err.message.contains("issue-5255"));
+    }
 }
