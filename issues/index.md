@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 5 | 4 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4547 | 3504 | 1043 |
+| frontend | 4548 | 3504 | 1044 |
 | harness | 1 | 0 | 1 |
 | ir | 66 | 44 | 22 |
 | issues | 4 | 0 | 4 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5193 | 3796 | 1397 |
+| total | 5194 | 3796 | 1398 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -47,7 +47,7 @@ Issue files are the source of truth for work items. The generated section below 
 Direct child counts are derived from issue-file `depends_on` links. A meta issue can be `done` as a classification/design umbrella while implementation child issues remain open.
 
 ```
-5000 (Meta: TypeScript Compiler Parser Syntax Coverage) [done/design] ch:454 open:378 done:76
+5000 (Meta: TypeScript Compiler Parser Syntax Coverage) [done/design] ch:454 open:377 done:77
 ├── 5002 (Meta: TypeScript Compiler Type System Coverage) [done/done] ch:229 open:212 done:17 (also ← 5005)
 ├── 5003 (Meta: TypeScript Compiler Declaration Emit Coverage) [done/done] ch:102 open:91 done:11 (also ← 5001)
 5001 (Meta: TypeScript Compiler Semantic Analysis Coverage) [done/done] ch:565 open:309 done:256
@@ -66,7 +66,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 
 | Order | ID | Title | State | Class | Area | Priority | Depends on | Direct children | Open children | Done children |
 |-----:|---:|------|-------|-------|------|--------:|-----------:|----------------:|--------------:|--------------:|
-| 1 | 5000 | Meta: TypeScript Compiler Parser Syntax Coverage | done | design | frontend/syntax | P1 | - | 454 | 378 | 76 |
+| 1 | 5000 | Meta: TypeScript Compiler Parser Syntax Coverage | done | design | frontend/syntax | P1 | - | 454 | 377 | 77 |
 | 2 | 5001 | Meta: TypeScript Compiler Semantic Analysis Coverage | done | done | frontend/semantics | P1 | - | 565 | 309 | 256 |
 | 3 | 5004 | Meta: Runtime Builtins Coverage (test262) (audit reopened #5004) | done | done | runtime/builtins | P1 | - | 24 | 3 | 21 |
 | 4 | 5005 | Meta: TypeScript Compiler Name Resolution Coverage | done | done | frontend/resolver | P1 | - | 411 | 357 | 54 |
@@ -313,6 +313,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5356 | Report uninitialized generic class fields | bug | frontend/semantics | implementation-ready | P1 |  | current failure is a false build pass for `class D<T, U> { x: T; y: U }`, where TypeScript reports uninitialized prop... |
 | 5357 | Avoid eval diagnostic for qualified Function constructors | bug | ir/resolver | implementation-ready | P1 |  | current failure is a false eval diagnostic for qualified `new M.Function(...)` because resolver `Expr::New` collapses... |
 | 5358 | Report constructor bodies in ambient class declarations | feature | frontend/parser | implementation-ready | P1 |  | implementation bodies inside ambient class declarations are not |
+| 5359 | Report multiple constructor implementation diagnostics | feature | frontend/diagnostics | implementation-ready | P1 |  | invalid multiple constructor implementations are not reported with |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -572,7 +573,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 759 | Implement Asynciife | spike | frontend/syntax | class: triage-needed | Implement Asynciife |
 | 760 | Implement Asyncimportnestedyield | spike | reference/triage | class: triage-needed | Implement Asyncimportnestedyield |
 | 761 | Implement Asynciteratorextraparameters | spike | runtime/builtins | class: triage-needed | Implement Asynciteratorextraparameters |
-| 1475 | Implement Constructoroverloads Parser Syntax | spike | frontend/syntax | class: blocked | Implement Constructoroverloads Parser Syntax |
 | 1476 | Implement Constructorparametersinvariabledeclarations | spike | frontend/syntax | class: blocked | Implement Constructorparametersinvariabledeclarations |
 | 1477 | Implement Constructorparametersthatshadowexternalnamesinvariabledeclarations | spike | frontend/syntax | class: blocked | Implement Constructorparametersthatshadowexternalnamesinvariabledeclarations |
 | 1478 | Implement Constructorreturningaprimitive | spike | frontend/syntax | class: blocked | Implement Constructorreturningaprimitive |
@@ -5149,6 +5149,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1472 | Implement Constructorinvocationwithtoofewtypeargs | spike | frontend/syntax | see `issues/done/1472-implement-constructorInvocationWithTooFewTypeArgs.md` |
 | 1473 | Implement Constructoroverloads Import Export | spike | frontend/syntax | see `issues/done/1473-implement-constructorOverloads-import-export.md` |
 | 1474 | Implement Constructoroverloads Name Resolution | spike | frontend/resolver | see `issues/done/1474-implement-constructorOverloads-name-resolution.md` |
+| 1475 | Implement Constructoroverloads Parser Syntax | spike | frontend/syntax | see `issues/done/1475-implement-constructorOverloads-parser-syntax.md` |
 | 2050 | Implement Duplicatelocalvariable Duplicate Local | spike | reference/triage | see `issues/done/2050-implement-duplicateLocalVariable-duplicate-local.md` |
 | 3002 | Implement Isolateddeclarationerrorsdefault | spike | runtime/builtins | see `issues/done/3002-implement-isolatedDeclarationErrorsDefault.md` |
 | 3131 | Implement Jsxfactorynotidentifierorqualifiedname | spike | reference/triage | see `issues/done/3131-implement-jsxFactoryNotIdentifierOrQualifiedName.md` |
