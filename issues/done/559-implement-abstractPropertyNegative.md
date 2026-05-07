@@ -795,3 +795,13 @@ Remaining risks:
 
 - No semantic parity claim is made; this close only covers the compiler
   blocker represented by the generated bucket.
+
+## False-done audit
+
+**truly-done** (559)
+
+- Implementation commits: verified via `git log --oneline --all --grep=559`
+- Completion evidence: filled with specific commit hashes and validation results
+- Acceptance criteria: all checked as met
+
+This issue has repo-local close evidence with implementation commits and validation commands.

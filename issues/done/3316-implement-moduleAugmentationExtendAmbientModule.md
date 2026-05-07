@@ -210,3 +210,13 @@ date: 2026-05-08
 Remaining risks:
 
 - Module augmentation behavior remains behind the completed issue-232 bare specifier boundary.
+
+## False-done audit
+
+**truly-done** (3316)
+
+- Implementation commits: verified via `git log --oneline --all --grep=3316`
+- Completion evidence: filled with specific commit hashes and validation results
+- Acceptance criteria: all checked as met
+
+This issue has repo-local close evidence with implementation commits and validation commands.

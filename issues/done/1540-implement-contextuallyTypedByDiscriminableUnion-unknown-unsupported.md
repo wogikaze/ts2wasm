@@ -181,3 +181,13 @@ Remaining risks:
 
 - The reference path remains unsupported until issue 5304 parses generic arrow
   functions with typed parameters.
+
+## False-done audit
+
+**truly-done** (1540)
+
+- Implementation commits: verified via `git log --oneline --all --grep=1540`
+- Completion evidence: filled with specific commit hashes and validation results
+- Acceptance criteria: all checked as met
+
+This issue has repo-local close evidence with implementation commits and validation commands.

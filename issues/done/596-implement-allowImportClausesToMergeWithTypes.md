@@ -793,3 +793,13 @@ UnsupportedSyntax: expected Semicolon, got Some(Ident("zzz")) at 154..157
 Remaining risks:
 
 - Implementation remains open in `issues/open/5401-parse-export-default-interface-declarations.md`.
+
+## False-done audit
+
+**truly-done** (596)
+
+- Implementation commits: verified via `git log --oneline --all --grep=596`
+- Completion evidence: filled with specific commit hashes and validation results
+- Acceptance criteria: all checked as met
+
+This issue has repo-local close evidence with implementation commits and validation commands.

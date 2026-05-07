@@ -195,3 +195,13 @@ Remaining risks:
 - The reference path remains unsupported until issue 5236 handles rest
   parameters in function-expression closure lowering or reports the earlier
   TypeScript-style TS2322 diagnostics.
+
+## False-done audit
+
+**truly-done** (1549)
+
+- Implementation commits: verified via `git log --oneline --all --grep=1549`
+- Completion evidence: filled with specific commit hashes and validation results
+- Acceptance criteria: all checked as met
+
+This issue has repo-local close evidence with implementation commits and validation commands.

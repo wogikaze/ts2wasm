@@ -658,3 +658,13 @@ UnsupportedModule: issue-055: unsupported static export; module resolution and l
 Remaining risks:
 
 - Implementation remains open in `issues/open/5400-parse-exported-import-equals-declarations.md`.
+
+## False-done audit
+
+**truly-done** (595)
+
+- Implementation commits: verified via `git log --oneline --all --grep=595`
+- Completion evidence: filled with specific commit hashes and validation results
+- Acceptance criteria: all checked as met
+
+This issue has repo-local close evidence with implementation commits and validation commands.

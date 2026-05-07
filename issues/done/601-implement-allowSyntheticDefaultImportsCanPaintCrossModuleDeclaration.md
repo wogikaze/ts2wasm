@@ -751,3 +751,13 @@ Remaining risks:
 
 - After issue 5403 lands, this reference case is expected to advance to
   virtual `@filename` import resolution for `./color` and `./file1`.
+
+## False-done audit
+
+**truly-done** (601)
+
+- Implementation commits: verified via `git log --oneline --all --grep=601`
+- Completion evidence: filled with specific commit hashes and validation results
+- Acceptance criteria: all checked as met
+
+This issue has repo-local close evidence with implementation commits and validation commands.

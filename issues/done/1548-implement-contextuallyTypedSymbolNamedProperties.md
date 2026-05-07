@@ -187,3 +187,13 @@ Remaining risks:
 
 - The reference path remains unsupported until issue 5228 parses simple
   identifier computed object-literal keys.
+
+## False-done audit
+
+**truly-done** (1548)
+
+- Implementation commits: verified via `git log --oneline --all --grep=1548`
+- Completion evidence: filled with specific commit hashes and validation results
+- Acceptance criteria: all checked as met
+
+This issue has repo-local close evidence with implementation commits and validation commands.

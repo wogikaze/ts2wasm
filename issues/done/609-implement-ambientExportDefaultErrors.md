@@ -766,3 +766,13 @@ Remaining risks:
 
 - After issue 5231 lands, this reference case may advance to CommonJS
   `export =`, ambient module diagnostics, or side-effect import diagnostics.
+
+## False-done audit
+
+**truly-done** (609)
+
+- Implementation commits: verified via `git log --oneline --all --grep=609`
+- Completion evidence: filled with specific commit hashes and validation results
+- Acceptance criteria: all checked as met
+
+This issue has repo-local close evidence with implementation commits and validation commands.

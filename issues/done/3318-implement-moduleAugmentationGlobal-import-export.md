@@ -226,3 +226,13 @@ date: 2026-05-08
 Remaining risks:
 
 - Bare `global { ... }` syntax remains open in issue 5408.
+
+## False-done audit
+
+**truly-done** (3318)
+
+- Implementation commits: verified via `git log --oneline --all --grep=3318`
+- Completion evidence: filled with specific commit hashes and validation results
+- Acceptance criteria: all checked as met
+
+This issue has repo-local close evidence with implementation commits and validation commands.

@@ -889,3 +889,13 @@ UnsupportedSyntax: expected Semicolon, got Some(Colon) at 157..158
 Remaining risks:
 
 - Implementation remains open in `issues/open/5402-skip-package-json-filename-sections-in-reference-harness.md`.
+
+## False-done audit
+
+**truly-done** (598)
+
+- Implementation commits: verified via `git log --oneline --all --grep=598`
+- Completion evidence: filled with specific commit hashes and validation results
+- Acceptance criteria: all checked as met
+
+This issue has repo-local close evidence with implementation commits and validation commands.

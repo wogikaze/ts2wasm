@@ -599,3 +599,13 @@ date: 2026-05-08
 Remaining risks:
 
 - Implementation remains open in `issues/done/5161-model-ambient-value-declarations-for-name-resolution.md`.
+
+## False-done audit
+
+**truly-done** (582)
+
+- Implementation commits: verified via `git log --oneline --all --grep=582`
+- Completion evidence: filled with specific commit hashes and validation results
+- Acceptance criteria: all checked as met
+
+This issue has repo-local close evidence with implementation commits and validation commands.

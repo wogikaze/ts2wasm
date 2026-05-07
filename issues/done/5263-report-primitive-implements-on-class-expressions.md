@@ -130,3 +130,13 @@ python scripts/manager.py reference-coverage tsc --path-filter reference/typescr
 ## Notes
 
 Split from `issues/open/1219-implement-classImplementsPrimitive.md`.
+
+## False-done audit
+
+**truly-done** (5263)
+
+- Implementation commits: verified via `git log --oneline --all --grep=5263`
+- Completion evidence: filled with specific commit hashes and validation results
+- Acceptance criteria: all checked as met
+
+This issue has repo-local close evidence with implementation commits and validation commands.

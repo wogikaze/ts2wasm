@@ -198,7 +198,8 @@ impl Parser {
             while matches!(self.peek(), Some(Token::Ident(name)) if matches!(
                 name.as_str(),
                 "public" | "private" | "protected" | "readonly" | "override" | "accessor"
-            )) || matches!(self.peek(), Some(
+            )) || matches!(self.peek(), Some(Token::Static))
+                || matches!(self.peek(), Some(
                 Token::Const | Token::Var | Token::Let | Token::Export
             )) || matches!(self.peek(), Some(Token::Abstract)) {
                 self.advance();

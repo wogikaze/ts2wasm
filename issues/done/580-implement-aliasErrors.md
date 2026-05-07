@@ -750,3 +750,13 @@ Remaining risks:
 
 - Implementation remains open in `issues/open/5398-resolve-namespace-import-equals-alias-value-access.md`.
 - Later namespace alias member diagnostics remain open in `issues/open/5397-report-missing-namespace-alias-member-diagnostic.md`.
+
+## False-done audit
+
+**truly-done** (580)
+
+- Implementation commits: verified via `git log --oneline --all --grep=580`
+- Completion evidence: filled with specific commit hashes and validation results
+- Acceptance criteria: all checked as met
+
+This issue has repo-local close evidence with implementation commits and validation commands.

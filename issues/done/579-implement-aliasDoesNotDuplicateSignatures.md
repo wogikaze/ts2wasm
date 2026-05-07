@@ -622,3 +622,13 @@ date: 2026-05-08
 Remaining risks:
 
 - Implementation remains open in `issues/open/5399-resolve-ambient-namespace-import-alias-in-declare-module.md`.
+
+## False-done audit
+
+**truly-done** (579)
+
+- Implementation commits: verified via `git log --oneline --all --grep=579`
+- Completion evidence: filled with specific commit hashes and validation results
+- Acceptance criteria: all checked as met
+
+This issue has repo-local close evidence with implementation commits and validation commands.

@@ -762,3 +762,13 @@ UnsupportedModule: issue-5005: dependency module declaration export uses a form 
 Remaining risks:
 
 - Implementation remains open in `issues/open/5324-support-dependency-export-class-declarations.md`.
+
+## False-done audit
+
+**truly-done** (590)
+
+- Implementation commits: verified via `git log --oneline --all --grep=590`
+- Completion evidence: filled with specific commit hashes and validation results
+- Acceptance criteria: all checked as met
+
+This issue has repo-local close evidence with implementation commits and validation commands.

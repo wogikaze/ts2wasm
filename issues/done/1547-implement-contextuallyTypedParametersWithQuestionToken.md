@@ -200,3 +200,13 @@ Remaining risks:
 - The reference path remains unsupported until issue 5389 handles nested
   function default/optional parameters in closure lowering or reports the
   earlier TypeScript-style TS2345 diagnostic.
+
+## False-done audit
+
+**truly-done** (1547)
+
+- Implementation commits: verified via `git log --oneline --all --grep=1547`
+- Completion evidence: filled with specific commit hashes and validation results
+- Acceptance criteria: all checked as met
+
+This issue has repo-local close evidence with implementation commits and validation commands.

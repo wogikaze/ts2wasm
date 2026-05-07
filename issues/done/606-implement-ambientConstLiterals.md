@@ -832,3 +832,13 @@ Remaining risks:
 
 - After issue 5302 lands, this reference case may advance to ternary lowering
   or declaration-emit inference diagnostics.
+
+## False-done audit
+
+**truly-done** (606)
+
+- Implementation commits: verified via `git log --oneline --all --grep=606`
+- Completion evidence: filled with specific commit hashes and validation results
+- Acceptance criteria: all checked as met
+
+This issue has repo-local close evidence with implementation commits and validation commands.

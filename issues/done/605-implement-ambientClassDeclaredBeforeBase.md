@@ -476,3 +476,13 @@ Remaining risks:
 - If declaration-only triage dumps become tracked as a separate quality gate,
   they should be handled by a dedicated triage-dump issue rather than reopening
   this reference coverage bucket.
+
+## False-done audit
+
+**truly-done** (605)
+
+- Implementation commits: verified via `git log --oneline --all --grep=605`
+- Completion evidence: filled with specific commit hashes and validation results
+- Acceptance criteria: all checked as met
+
+This issue has repo-local close evidence with implementation commits and validation commands.

@@ -199,3 +199,13 @@ Remaining risks:
 - Sibling files `contextuallyTypedParametersWithInitializers1.ts` and
   `contextuallyTypedParametersWithInitializers3.ts` remain unsupported in the
   broader path-filter coverage window and are tracked by issues 1545 and 1544.
+
+## False-done audit
+
+**truly-done** (1546)
+
+- Implementation commits: verified via `git log --oneline --all --grep=1546`
+- Completion evidence: filled with specific commit hashes and validation results
+- Acceptance criteria: all checked as met
+
+This issue has repo-local close evidence with implementation commits and validation commands.

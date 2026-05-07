@@ -139,3 +139,13 @@ Additional superseded bucket:
   unspanned `UnresolvedFunction` for `fooVar`, while TypeScript reports TS2454
   at the `fooVar` call. Comment emit behavior is not reached before this
   resolver/lowering boundary.
+
+## False-done audit
+
+**truly-done** (5279)
+
+- Implementation commits: verified via `git log --oneline --all --grep=5279`
+- Completion evidence: filled with specific commit hashes and validation results
+- Acceptance criteria: all checked as met
+
+This issue has repo-local close evidence with implementation commits and validation commands.

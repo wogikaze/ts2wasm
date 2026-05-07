@@ -623,3 +623,13 @@ Remaining risks:
 
 - `allowSyntheticDefaultImports1.ts` may advance to module-resolution or
   declaration-file handling after issue 5285 lands.
+
+## False-done audit
+
+**truly-done** (600)
+
+- Implementation commits: verified via `git log --oneline --all --grep=600`
+- Completion evidence: filled with specific commit hashes and validation results
+- Acceptance criteria: all checked as met
+
+This issue has repo-local close evidence with implementation commits and validation commands.

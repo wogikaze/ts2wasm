@@ -617,3 +617,13 @@ Remaining risks:
 
 - After issue 5346 lands, this reference case may advance to ambient module
   augmentation or `import = require("ext")` diagnostics.
+
+## False-done audit
+
+**truly-done** (610)
+
+- Implementation commits: verified via `git log --oneline --all --grep=610`
+- Completion evidence: filled with specific commit hashes and validation results
+- Acceptance criteria: all checked as met
+
+This issue has repo-local close evidence with implementation commits and validation commands.

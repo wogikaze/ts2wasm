@@ -189,3 +189,13 @@ date: 2026-05-08
 Remaining risks:
 
 - Virtual `@filename` sibling-section import resolution remains open in issue 5229.
+
+## False-done audit
+
+**truly-done** (3317)
+
+- Implementation commits: verified via `git log --oneline --all --grep=3317`
+- Completion evidence: filled with specific commit hashes and validation results
+- Acceptance criteria: all checked as met
+
+This issue has repo-local close evidence with implementation commits and validation commands.

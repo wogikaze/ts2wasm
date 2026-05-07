@@ -587,3 +587,13 @@ AST/resolved dump: same issue-055 static export boundary at 152..158
 Remaining risks:
 
 - Implementation remains open in `issues/open/5346-parse-commonjs-export-assignment-statements.md`.
+
+## False-done audit
+
+**truly-done** (594)
+
+- Implementation commits: verified via `git log --oneline --all --grep=594`
+- Completion evidence: filled with specific commit hashes and validation results
+- Acceptance criteria: all checked as met
+
+This issue has repo-local close evidence with implementation commits and validation commands.

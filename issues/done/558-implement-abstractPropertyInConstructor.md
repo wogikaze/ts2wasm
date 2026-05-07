@@ -811,3 +811,13 @@ Remaining risks:
 
 - Issue 5390 owns the implementation for abstract property constructor
   diagnostics.
+
+## False-done audit
+
+**truly-done** (558)
+
+- Implementation commits: verified via `git log --oneline --all --grep=558`
+- Completion evidence: filled with specific commit hashes and validation results
+- Acceptance criteria: all checked as met
+
+This issue has repo-local close evidence with implementation commits and validation commands.

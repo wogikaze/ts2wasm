@@ -205,3 +205,13 @@ Remaining risks:
 - The reference path remains unsupported until issue 5388 handles
   discriminated union parameter method calls or reports a more precise
   source-spanned semantic diagnostic.
+
+## False-done audit
+
+**truly-done** (1539)
+
+- Implementation commits: verified via `git log --oneline --all --grep=1539`
+- Completion evidence: filled with specific commit hashes and validation results
+- Acceptance criteria: all checked as met
+
+This issue has repo-local close evidence with implementation commits and validation commands.

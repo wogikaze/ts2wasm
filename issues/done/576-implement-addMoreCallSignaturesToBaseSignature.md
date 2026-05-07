@@ -596,3 +596,13 @@ date: 2026-05-08
 Remaining risks:
 
 - Implementation remains open in `issues/open/5195-support-callable-interface-typed-local-calls.md`.
+
+## False-done audit
+
+**truly-done** (576)
+
+- Implementation commits: verified via `git log --oneline --all --grep=576`
+- Completion evidence: filled with specific commit hashes and validation results
+- Acceptance criteria: all checked as met
+
+This issue has repo-local close evidence with implementation commits and validation commands.
