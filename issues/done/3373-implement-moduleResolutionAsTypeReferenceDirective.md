@@ -1,14 +1,16 @@
 ---
 id: 3373
 title: "Implement Moduleresolutionastypereferencedirective"
-type: spike
+type: maintenance
 area: frontend/syntax
-class: blocked
+class: superseded
 priority: P2
-depends_on: [5007]
+depends_on: [5007, 5423]
 blocks: []
 created: 2026-05-01
-updated: 2026-05-06
+updated: 2026-05-08
+completed: 2026-05-08
+status: done
 ---
 
 > **Reopened by audit** (2026-05-06)
@@ -26,9 +28,15 @@ Triage moduleResolutionAsTypeReferenceDirective across 1 failing reference test 
 
 ## Problem
 
-Reference test results show 1 cases fail in directory `moduleResolutionAsTypeReferenceDirective` with diagnostics: module-resolution. The compiler cannot handle these syntax/semantics, preventing compilation of code in this category.
+Reference test results show 1 case in
+`moduleResolutionAsTypeReferenceDirective`. Fresh triage confirms the first
+current blocker is not type-reference resolution itself: the frontend rejects a
+virtual `.d.ts` ambient export,
+`export const a2: number;`, as an executable const declaration without an
+initializer.
 
-Problem: moduleResolutionAsTypeReferenceDirective has 1 reference failures and needs smart-triage evidence before implementation starts.
+Problem: this generated bucket needs to close as split triage, with the
+actionable parser work moved to child issue `5423`.
 
 ## Current failure
 
@@ -46,7 +54,8 @@ mise run reference-coverage -- tsc --path-filter reference/typescript/tests/case
 
 ## Desired final state
 
-This generated bucket is either split into implementation-ready child issues or superseded by an existing open/done issue with matching evidence. Do not implement directly from this bucket.
+This generated bucket is closed. The actionable first blocker is tracked by
+issue `5423`.
 
 ## Scope
 
@@ -101,7 +110,8 @@ mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/modul
 
 Not run:
 
-- none
+- `cargo fmt --all --check` and `cargo nextest run`; this close only moves a
+  generated triage bucket and adds an issue file, with no Rust source changes.
 
 ## Docs / current-state / issue sync
 
@@ -111,11 +121,11 @@ Final-state docs:
 
 Current state:
 
-- [x] updated: `current-state.md` (repo root)
+- [x] not affected
 
 Follow-up issues:
 
-- [x] none
+- [x] `issues/open/5423-parse-declaration-file-exported-const-declarations.md`
 
 ## Notes
 
@@ -129,7 +139,59 @@ Follow-up issues:
 
 ## Smart triage
 
-Not generated. Rerun with `--triage-limit 1` or higher.
+Generated manually on 2026-05-08:
+
+```sh
+env TS2WASM_BINARY=/tmp/ts2wasm-issue-blockers-target/debug/ts2wasm \
+  python scripts/manager.py reference-coverage tsc \
+  --path-filter reference/typescript/tests/cases/compiler/moduleResolutionAsTypeReferenceDirective.ts \
+  --detail --no-dashboard-data
+```
+
+Result:
+
+```text
+executed=1
+build_pass=0
+unsupported=1
+unsupported_diagcodes=UnsupportedSyntax:1
+unsupported_features=module-resolution:1
+per-file: moduleResolutionAsTypeReferenceDirective.ts => UnsupportedSyntax / module-resolution
+```
+
+Focused triage:
+
+```sh
+env TS2WASM_BINARY=/tmp/ts2wasm-issue-blockers-target/debug/ts2wasm \
+  python scripts/manager.py reference-triage tsc \
+  reference/typescript/tests/cases/compiler/moduleResolutionAsTypeReferenceDirective.ts
+```
+
+Observed:
+
+```text
+diagnosis: UnsupportedSyntax / parser-or-frontend-unsupported
+message: const declarations require an initializer at 13..15
+actual error span: 233..235
+source context:
+// @Filename: /typings/phaser/types/phaser.d.ts
+export const a2: number;
+
+// @Filename: /typings/phaser/package.json
+{ "name": "phaser", "version": "1.2.3", "types": "types/phaser.d.ts" }
+
+// @Filename: /a.ts
+import { a2 } from "phaser";
+```
+
+The token stream reaches `Export Const Ident("a2") : Ident("number") ;`.
+The parser then rejects the ambient declaration-file export as a runtime const
+without an initializer.
+
+Existing issue `5350` was checked and remains the owner for executable `.ts`
+missing-const-initializer diagnostics. It is not a match for this `.d.ts`
+acceptance case because `export const a2: number;` is valid ambient declaration
+surface metadata.
 
 ## Completion evidence
 
@@ -137,19 +199,24 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- `...`
+- this close/split commit
 
 Validation result:
 
 ```text
-command:
-result:
-date:
+command: env TS2WASM_BINARY=/tmp/ts2wasm-issue-blockers-target/debug/ts2wasm python scripts/manager.py reference-coverage tsc --path-filter reference/typescript/tests/cases/compiler/moduleResolutionAsTypeReferenceDirective.ts --detail --no-dashboard-data
+result: pass; reproduced UnsupportedSyntax/module-resolution first blocker
+date: 2026-05-08
+
+command: env TS2WASM_BINARY=/tmp/ts2wasm-issue-blockers-target/debug/ts2wasm python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/moduleResolutionAsTypeReferenceDirective.ts
+result: pass; first blocker is declaration-file export const without initializer, split to issue 5423
+date: 2026-05-08
 ```
 
 Remaining risks:
 
-- none
+- After issue `5423`, this reference may advance to virtual `package.json`
+  handling (`5402`) or bare package resolution for `phaser`.
 
 
 ---
@@ -183,6 +250,9 @@ reference this issue.
 
 ## Close note
 
-Superseded by meta-issue 5005 (TypeScript Compiler Name Resolution Coverage), which covers module resolution as a sub-area.
+Split to implementation-ready issue `5423`, which owns the current first
+blocker: parsing declaration-file `export const a2: number;` without a runtime
+initializer. Type-reference directive work remains out of scope until this
+parser blocker and later virtual package/module-resolution blockers are cleared.
 
-superseded-by: 5005
+superseded-by: 5423
