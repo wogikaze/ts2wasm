@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 7 | 4 | 3 |
 | coverage | 44 | 1 | 43 |
 | docs | 5 | 0 | 5 |
-| frontend | 4562 | 3766 | 796 |
+| frontend | 4562 | 3758 | 804 |
 | harness | 1 | 0 | 1 |
 | ir | 77 | 24 | 53 |
 | issues | 5 | 0 | 5 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 8 | 0 | 8 |
 | wasi | 4 | 0 | 4 |
-| total | 5245 | 4039 | 1206 |
+| total | 5245 | 4031 | 1214 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -129,6 +129,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 518 | Implement Ambientclassdeclarationwithextends | spike | frontend/syntax | superseded | P1 | 5001 | ambientClassDeclarationWithExtends has 1 reference failures and needs smart-triage evidence before implementation sta... |
 | 548 | Implement Exportassignment | spike | frontend/syntax | done | P1 |  | ExportAssignment has 2 reference failures and needs smart-triage evidence before implementation starts. |
 | 572 | Implement Accessorwithlineterminator | spike | reference/triage | superseded | P2 |  | accessorWithLineTerminator has 1 reference failures and needs smart-triage evidence before implementation starts. |
+| 661 | Implement Arithassigntyping | spike | frontend/syntax | superseded | P1 | 5349 | arithAssignTyping has 1 reference failures and needs smart-triage evidence before implementation starts. |
 | 769 | Implement Augmentedtypesfunction | spike | frontend/resolver | superseded | P1 |  | Implement Augmentedtypesfunction |
 | 772 | Implement Augmentedtypesvar | spike | frontend/resolver | superseded | P1 |  | the generated parser-syntax bucket remained blocked even though its |
 | 773 | Implement Autoasiforstaticsinclassdeclaration | spike | frontend/parser | superseded | P1 |  | the generated bucket remained triage-needed even though the executable |
@@ -286,6 +287,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1439 | Implement Constdeclarationshadowedbyvardeclaration | spike | frontend/syntax | done | P1 |  | constDeclarationShadowedByVarDeclaration has 2 reference failures and needs smart-triage evidence before implementati... |
 | 1440 | Implement Constdeclarations Import Export | spike | frontend/syntax | done | P1 |  | constDeclarations-import-export has 5 reference failures and needs smart-triage evidence before implementation starts. |
 | 1441 | Implement Constdeclarations Name Resolution | spike | frontend/resolver | superseded | P1 |  | the generated bucket remained blocked instead of pointing to an |
+| 1442 | Implement Constdeclarations Parser Syntax | spike | frontend/syntax | superseded | P1 | 5349 | constDeclarations-parser-syntax has 6 reference failures and needs smart-triage evidence before implementation starts. |
 | 1445 | Implement Constenumbadpropertynames | spike | frontend/syntax | superseded | P1 | 5184 | constEnumBadPropertyNames has 1 reference failures and needs smart-triage evidence before implementation starts. |
 | 1446 | Implement Constenumdeclarations | spike | frontend/syntax | superseded | P1 | 5184 | constEnumDeclarations has 1 reference failures and needs smart-triage evidence before implementation starts. |
 | 1447 | Implement Constenumerrors | spike | frontend/syntax | superseded | P1 | 5351 | constEnumErrors has 1 reference failures and needs smart-triage evidence before implementation starts. |
@@ -377,7 +379,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5280 | Validate commented top-level function overloads | feature | frontend/resolver | implementation-ready | P1 |  | `commentOnSignature1.ts` parses successfully, but `validate_ast` |
 | 5281 | Resolve arrow rest parameter bindings | feature | ir/name-resolution | implementation-ready | P1 |  | arrow rest parameters are not made visible under their identifier name |
 | 5287 | Bind namespace declarations for qualified value access | feature | frontend/name-resolution | implementation-ready | P1 |  | a same-file non-ambient namespace declaration is erased before it |
-| 5288 | Parse typed modified static class fields | feature | frontend/parser | implementation-ready | P1 |  | `reference/typescript/tests/cases/compiler/commentsOnStaticMembers.ts` |
 | 5289 | Validate commentsOverloads top-level functions | feature | frontend/resolver | implementation-ready | P1 |  | `reference/typescript/tests/cases/compiler/commentsOverloads.ts` |
 | 5291 | Report malformed export type declarations | feature | frontend/parser | implementation-ready | P1 |  | malformed `export type` declarations are not diagnosed or recovered |
 | 5292 | Skip tsconfig @Filename sections in reference harness | feature | compiler/multi-section | implementation-ready | P1 |  | reference-style `tsconfig.json` virtual sections are treated as module |
@@ -391,8 +392,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5306 | Report export assignment with other exports | bug | frontend/syntax | implementation-ready | P1 |  | `ExportAssignment8.ts` stops at generic issue-055 instead of reporting the specific `export =` plus other exports rule. |
 | 5307 | Report var/function duplicate identifier diagnostics | bug | frontend/resolver | implementation-ready | P2 |  | var/function declaration collisions report generic `DuplicateLocal` |
 | 5310 | Parse nested block statements with variable declarations | feature | frontend/parser | implementation-ready | P1 |  | a nested block containing `var y = 0;` reports `expected Comma, got Some(Ident("y"))` instead of parsing as a block s... |
-| 5311 | Parse namespace property += assignment | feature | frontend/syntax | implementation-ready | P1 |  | `M.x += 2` in `constDeclarations-access3.ts` fails with |
-| 5312 | Parse export abstract class declarations | feature | frontend/syntax | implementation-ready | P1 |  | `export abstract class ConvenientObservable<T, TChange> ...` in |
 | 5313 | Report non-exported namespace member in qualified heritage | feature | frontend/name-resolution | implementation-ready | P1 |  | `classExtendingQualifiedName.ts` now builds successfully, but |
 | 5314 | Report non-constructor local class heritage | feature | frontend/name-resolution | implementation-ready | P1 |  | `classExtendsClauseClassMergedWithModuleNotReferingConstructor.ts` |
 | 5315 | Report class extends interface diagnostics | feature | frontend/name-resolution | implementation-ready | P1 |  | `classExtendsInterface.ts` now build-passes, but TypeScript reports |
@@ -419,20 +418,15 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5336 | Parse object type literal signatures with rest parameters | feature | frontend/parser | implementation-ready | P1 |  | object type literal signature members with rest parameters are not |
 | 5337 | Parse rest parameter constructor overload signatures | feature | frontend/parser | implementation-ready | P1 |  | bodyless constructor overload signatures with rest parameters are |
 | 5338 | Support rest constructor outer local captures | feature | ir/lowering | implementation-ready | P1 |  | constructor rest parameters and hidden lexical-capture parameters |
-| 5339 | Preserve var after object type declaration | feature | frontend/syntax | implementation-ready | P1 |  | a `var name: { ... }` object type annotation consumes the next |
-| 5340 | Preserve function after object type declaration | feature | frontend/syntax | implementation-ready | P1 |  | `var name: { method(param: Type); }` is not terminated before a following `function` declaration. |
 | 5341 | Resolve lexical super captures in method arrows | feature | frontend/resolver | implementation-ready | P1 |  | lexical `super.foo()` inside an arrow in a derived class method is not resolved against the method's derived instance... |
-| 5342 | Preserve class after object type declaration | feature | frontend/syntax | implementation-ready | P1 |  | `var name: { method(param: Type); }` is not terminated before a |
 | 5343 | Track array-typed erased locals for callback methods | feature | frontend/semantics | implementation-ready | P1 |  | declaration-only array locals such as `var s: string[];` lose their |
 | 5344 | Resolve ambient var assignment targets | feature | frontend/resolver | implementation-ready | P1 |  | declaration-only ambient variable assignment targets are not |
 | 5345 | Parse generic ambient const type annotations | feature | frontend/parser | implementation-ready | P1 |  | nested generic ambient const annotations are not erased as a complete |
 | 5346 | Parse CommonJS export assignment statements | feature | frontend/parser | implementation-ready | P1 |  | Parse CommonJS export assignment statements |
 | 5347 | Align class var redeclaration diagnostics | feature | frontend/resolver | implementation-ready | P1 |  | Align class var redeclaration diagnostics |
 | 5348 | Resolve const declarations before use diagnostics | bug | frontend/resolver | implementation-ready | P1 |  | lexical const bindings are not registered early enough for |
-| 5349 | Parse multiplicative compound assignment operators | feature | frontend/syntax | implementation-ready | P1 |  | Parse multiplicative compound assignment operators |
 | 5350 | Report missing const initializer diagnostics | feature | frontend/parser | implementation-ready | P1 |  | Report missing const initializer diagnostics |
 | 5352 | Parse export namespace declarations | feature | frontend/module-syntax | implementation-ready | P1 |  | `export namespace Name { ... }` is treated as an unsupported static |
-| 5353 | Parse extended Unicode string escapes | feature | frontend/syntax | implementation-ready | P1 |  | string literal lexing rejects valid ECMAScript extended Unicode code |
 | 5354 | Report invalid const class members | feature | frontend/semantics | implementation-ready | P1 |  | invalid `const` class members in class expressions are silently |
 | 5355 | Report invalid constructor parameter modifiers | bug | frontend/parser | implementation-ready | P1 |  | current failure is `expected Comma, got Some(Static)` for |
 | 5356 | Report uninitialized generic class fields | bug | frontend/semantics | implementation-ready | P1 |  | current failure is a false build pass for `class D<T, U> { x: T; y: U }`, where TypeScript reports uninitialized prop... |
@@ -587,7 +581,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 658 | Implement Argumentsreferenceinobjectliteral | spike | frontend/syntax | class: blocked | Implement Argumentsreferenceinobjectliteral |
 | 659 | Implement Argumentsusedinclassfieldinitializerorstaticinitializationblock | spike | frontend/syntax | class: blocked | Implement Argumentsusedinclassfieldinitializerorstaticinitializationblock |
 | 660 | Implement Argumentsusedinobjectliteralproperty | spike | frontend/syntax | class: blocked | Implement Argumentsusedinobjectliteralproperty |
-| 661 | Implement Arithassigntyping | spike | frontend/syntax | 5349 | Implement Arithassigntyping |
 | 662 | Implement Arrayassignmenttest Import Export | spike | frontend/syntax | class: blocked | Implement Arrayassignmenttest Import Export |
 | 663 | Implement Arrayassignmenttest Parser Syntax | spike | frontend/syntax | class: triage-needed | Implement Arrayassignmenttest Parser Syntax |
 | 664 | Implement Arrayaugment | spike | reference/triage | class: triage-needed | Implement Arrayaugment |
@@ -868,7 +861,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1425 | Implement Conditionaltypediscriminatinglargeunionregulartypefetchingspeedreasonable | spike | frontend/syntax | 432 | Implement Conditionaltypediscriminatinglargeunionregulartypefetchingspeedreasonable |
 | 1426 | Implement Conditionaltypedoesntspinforever | spike | frontend/syntax | 432 | Implement Conditionaltypedoesntspinforever |
 | 1427 | Implement Conditionaltyperelaxingconstraintassignability | spike | frontend/syntax | 432 | Implement Conditionaltyperelaxingconstraintassignability |
-| 1442 | Implement Constdeclarations Parser Syntax | spike | frontend/syntax | 5349 | Implement Constdeclarations Parser Syntax |
 | 1443 | Implement Constdeclarations Scope Analysis | spike | frontend/resolver | 5310 | Implement Constdeclarations Scope Analysis |
 | 1444 | Implement Constdeclarations Unknown Unsupported | spike | frontend/syntax | 5350 | Implement Constdeclarations Unknown Unsupported |
 | 1469 | Implement Constructorargwithgenericcallsignature | spike | frontend/syntax | 432 | Implement Constructorargwithgenericcallsignature |
@@ -5342,6 +5334,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5284 | Bind plain enum declarations before member access | feature | frontend/syntax | see `issues/done/5284-bind-plain-enum-declarations-before-member-access.md` |
 | 5285 | Support export var initializer declarations | feature | frontend/module-syntax | see `issues/done/5285-support-export-var-initializer-declarations.md` |
 | 5286 | Preserve class constructor parameters for new arity | feature | ir | see `issues/done/5286-preserve-class-constructor-parameters-for-new-arity.md` |
+| 5288 | Parse typed modified static class fields | feature | frontend/parser | see `issues/done/5288-parse-typed-modified-static-class-fields.md` |
 | 5290 | Parse private static generic class methods | feature | frontend/parser | see `issues/done/5290-parse-private-static-generic-class-method.md` |
 | 5296 | Parse double-dot numeric literal property access | feature | frontend/parser | see `issues/done/5296-parse-double-dot-numeric-literal-property-access.md` |
 | 5301 | Report literal reference comparison diagnostics | feature | frontend/semantics | see file |
@@ -5351,7 +5344,14 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5305 | Report merge conflict marker diagnostics | feature | frontend/syntax | see `issues/done/5305-report-merge-conflict-marker-diagnostics.md` |
 | 5308 | Parse ASI after instance class field initializers | feature | frontend/parser | see `issues/done/5308-parse-asi-after-instance-class-field-initializers.md` |
 | 5309 | Skip generic type arguments in type annotations | feature | frontend/parser | see `issues/done/5309-skip-generic-type-arguments-in-type-annotations.md` |
+| 5311 | Parse namespace property += assignment | feature | frontend/syntax | see file |
+| 5312 | Parse export abstract class declarations | feature | frontend/syntax | see file |
+| 5339 | Preserve var after object type declaration | feature | frontend/syntax | see file |
+| 5340 | Preserve function after object type declaration | feature | frontend/syntax | see `issues/done/5340-preserve-function-after-object-type-declaration.md` |
+| 5342 | Preserve class after object type declaration | feature | frontend/syntax | see `issues/done/5342-preserve-class-after-object-type-declaration.md` |
+| 5349 | Parse multiplicative compound assignment operators | feature | frontend/syntax | see `issues/done/5349-parse-multiplicative-compound-assignment-operators.md` |
 | 5351 | Accept large decimal integer number literals | feature | frontend/lexer | see `issues/done/5351-accept-large-decimal-integer-number-literals.md` |
+| 5353 | Parse extended Unicode string escapes | feature | frontend/syntax | see `issues/done/5353-parse-extended-unicode-string-escapes.md` |
 | 5357 | Avoid eval diagnostic for qualified Function constructors | bug | ir/resolver | see `issues/done/5357-avoid-eval-diagnostic-for-qualified-function-constructors.md` |
 | 5364 | Report unterminated string literal at raw newline | bug | frontend/lexer | see `issues/done/5364-report-unterminated-string-literal-at-raw-newline.md` |
 | 5379 | Lower array binding object default initializers | feature | ir/lowering | see `issues/done/5379-lower-array-binding-object-default-initializers.md` |

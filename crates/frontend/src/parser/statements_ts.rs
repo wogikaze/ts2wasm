@@ -40,6 +40,17 @@ impl Parser {
             return self.consume_module_or_namespace_declaration();
         }
 
+        // export abstract class — erased TypeScript syntax
+        if matches!(self.peek(), Some(Token::Export))
+            && matches!(self.peek_n(1), Some(Token::Abstract))
+            && matches!(self.peek_n(2), Some(Token::Class))
+        {
+            self.advance(); // consume 'export'
+            self.advance(); // consume 'abstract'
+            self.consume_erasable_abstract_class_body()?;
+            return Ok(true);
+        }
+
         if matches!(self.peek(), Some(Token::Export))
             && matches!(self.peek_n(1), Some(Token::Ident(name)) if name == "enum")
         {
