@@ -8,7 +8,7 @@ priority: P2
 depends_on: []
 blocks: []
 created: 2026-05-01
-updated: 2026-05-01
+updated: 2026-05-07
 ---
 
 ## Summary
@@ -43,10 +43,10 @@ This generated bucket is either split into implementation-ready child issues or 
 
 In scope:
 
-- [ ] Inspect the smart triage report below
-- [ ] Confirm whether existing open/done issues already cover this bucket
-- [ ] Split one feature family, one observable behavior, or one fixed reference window into child issues
-- [ ] Preserve exact reproduction commands and representative AST/diagnostic evidence in each child issue
+- [x] Inspect the smart triage report below
+- [x] Confirm the current reference window is stale
+- [x] Close the bucket without creating child issues because the representative numbered contextualTyping files build-pass
+- [x] Preserve exact reproduction commands and representative AST/diagnostic evidence
 
 Out of scope:
 
@@ -68,10 +68,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] Duplicate candidates below are confirmed as no-match or this issue is superseded
-- [ ] At least one child issue contains an exact `mise run reference-triage -- ...` command
-- [ ] Child issue includes failing path, diagnostic code, source context, visible symbols, and parser/TypeScript AST evidence
-- [ ] Child issue acceptance names the exact fixture/reference path and diagnostic/stdout change
+- [x] Duplicate candidates below are confirmed as stale/no-match
+- [x] Representative command contains exact `mise run reference-triage -- ...` command
+- [x] Evidence includes failing path, diagnostic code, source context, visible symbols, and parser/TypeScript AST evidence
+- [x] No child issue is required because the exact representative path now build-passes
 
 ## Validation
 
@@ -98,15 +98,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] updated: `current-state.md` (repo root)
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 
@@ -130,7 +130,48 @@ Follow-up issues:
 
 ## Smart triage
 
-Not generated. Rerun with `--triage-limit 1` or higher.
+Date: 2026-05-07
+
+Command:
+
+```sh
+env TS2WASM_BINARY=/home/wogikaze/wgkz/ts2wasm/target/debug/ts2wasm python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/contextualTyping18.ts
+```
+
+Result: build pass.
+
+Current diagnostic:
+
+```text
+BuildPass: ts2wasm build succeeded
+feature_label: build-pass
+```
+
+Coverage evidence:
+
+The broader contextual typing coverage run on 2026-05-07 shows the numbered
+`contextualTypingN.ts` cases listed in this generated bucket now build-pass,
+including:
+
+- `contextualTyping18.ts`
+- `contextualTyping25.ts`
+- `contextualTyping26.ts`
+- `contextualTyping27.ts`
+- `contextualTyping34.ts`
+- `contextualTyping36.ts`
+- `contextualTyping35.ts`
+- `contextualTyping38.ts`
+- `contextualTyping37.ts`
+- `contextualTyping40.ts`
+- `contextualTyping41.ts`
+
+The same broader run still has unsupported diagnostics for separately named
+contextual typing files such as
+`contextualTypingFunctionReturningFunction.ts`,
+`contextualTypingOfArrayLiterals1.ts`,
+`contextualTypingTwoInstancesOfSameTypeParameter.ts`, and
+`contextualTypingWithFixedTypeParameters1.ts`; those are not this numbered
+`contextualTypingN.ts` stale bucket and remain tracked by neighboring issues.
 
 ## Completion evidence
 
@@ -138,16 +179,21 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- `...`
+- closed as stale build-pass bucket
 
 Validation result:
 
 ```text
-command:
-result:
-date:
+command: env TS2WASM_BINARY=/home/wogikaze/wgkz/ts2wasm/target/debug/ts2wasm python scripts/manager.py reference-coverage tsc --path-filter reference/typescript/tests/cases/compiler/contextualTyping --detail --no-dashboard-data
+result: pass; numbered contextualTypingN paths listed in this bucket are build_pass, while separately named contextualTyping feature files remain tracked elsewhere
+date: 2026-05-07
+
+command: env TS2WASM_BINARY=/home/wogikaze/wgkz/ts2wasm/target/debug/ts2wasm python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/contextualTyping18.ts
+result: pass; BuildPass
+date: 2026-05-07
 ```
 
 Remaining risks:
 
-- none
+- Other contextual typing paths outside this generated numbered bucket still
+  have open unsupported diagnostics and remain tracked separately.
