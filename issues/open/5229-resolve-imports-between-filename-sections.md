@@ -68,6 +68,7 @@ In scope:
 - [ ] Register `@Filename` / `@filename` section names as virtual module paths.
 - [ ] Resolve `./b` from a `c.js` section to the sibling `b.js` section.
 - [ ] Resolve `./db` from an `app.ts` section to the sibling `db.d.ts` section.
+- [ ] Resolve re-export source specifiers such as `export * from "./file"` to sibling virtual sections.
 - [ ] Add one focused multi-section fixture using `export default` and a default import.
 
 Out of scope:
@@ -94,6 +95,7 @@ Do not touch:
 
 - [ ] `checkJsdocTypeTagOnExportAssignment2.ts` no longer reports `issue-232: missing local module ./b`.
 - [ ] `circularReferenceInImport.ts` no longer reports `issue-232: missing local module ./db`.
+- [ ] `moduleAugmentationDoesInterfaceMergeOfReexport.ts` no longer reports `issue-232: missing local module ./file` for `export * from "./file"`.
 - [ ] A focused compiler test proves `// @Filename: b.js` is resolved by `import "./b"` from another section.
 - [ ] Existing missing real local module diagnostics still report issue-232.
 
@@ -139,6 +141,7 @@ Also owns `issues/done/3317-implement-moduleAugmentationExtendFileModule.md`: bo
 Also owns `issues/done/3323-implement-moduleAugmentationNoNewNames.md`: `moduleAugmentationNoNewNames.ts` parses virtual `map.ts`, `observable.ts`, and `main.ts` sections, then reports issue-232 missing local module `./observable` instead of resolving the sibling virtual section.
 Also owns `issues/done/3308-implement-moduleAugmentationCollidingNamesInAugmentation.md`: `moduleAugmentationCollidingNamesInAugmentation1.ts` parses virtual `map1.ts`, `map2.ts`, `observable.ts`, and `main.ts` sections, then reports issue-232 missing local module `./observable` before the later duplicate-declaration diagnostics.
 Also owns `issues/done/3309-implement-moduleAugmentationDeclarationEmit.md`: both `moduleAugmentationDeclarationEmit1.ts` and `moduleAugmentationDeclarationEmit2.ts` parse virtual `map.ts`, `observable.ts`, and `main.ts` sections, then report issue-232 missing local module `./observable` before declaration emit or merged-declaration diagnostics.
+Also owns `issues/done/3311-implement-moduleAugmentationDoesInterfaceMergeOfReexport.md`: `moduleAugmentationDoesInterfaceMergeOfReexport.ts` parses virtual `file.ts`, `reexport.ts`, and `augment.ts` sections, then reports issue-232 missing local module `./file` for `export * from "./file"` before interface-merge diagnostics.
 
 ## Completion evidence
 
