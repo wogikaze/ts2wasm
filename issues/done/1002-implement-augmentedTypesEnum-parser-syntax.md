@@ -125,7 +125,7 @@ Follow-up issues:
 - `issues/open/753-implement-asyncFunctionReturnType-parser-syntax.md` - Implement Asyncfunctionreturntype Parser Syntax (same feature label, title overlap)
 - `issues/done/767-implement-augmentedTypesEnum-parser-syntax.md` - Implement Augmentedtypesenum Parser Syntax (same reference path, same feature label, same group key, title overlap)
 - `issues/done/769-implement-augmentedTypesFunction.md` - Implement Augmentedtypesfunction (same feature label, same group key, title overlap)
-- `issues/open/770-implement-augmentedTypesInterface.md` - Implement Augmentedtypesinterface (same feature label, same group key, title overlap)
+- `issues/done/770-implement-augmentedTypesInterface.md` - Implement Augmentedtypesinterface (same feature label, same group key, title overlap)
 - `issues/open/772-implement-augmentedTypesVar.md` - Implement Augmentedtypesvar (same feature label, same group key, title overlap)
 
 ## Smart triage

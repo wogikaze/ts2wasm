@@ -5,21 +5,26 @@ type: spike
 area: frontend/syntax
 class: blocked
 priority: P1
-depends_on: [5000]
+depends_on: []
 blocks: []
 created: 2026-05-01
-updated: 2026-05-01
+updated: 2026-05-07
+completed: 2026-05-07
+status: done
 ---
 
 ## Summary
 
-Triage augmentedTypesInterface across 1 failing reference test cases and split this bucket into implementation-ready child issues.
+Closed this generated parser-syntax bucket as stale: fresh triage and focused
+coverage show the representative reference file now builds successfully.
 
 ## Problem
 
-Reference test results show 1 cases fail in directory `augmentedTypesInterface` with diagnostics: parser-syntax. The compiler cannot handle these syntax/semantics, preventing compilation of code in this category.
+Fresh reference evidence no longer shows a parser-syntax blocker for
+`augmentedTypesInterface.ts`.
 
-Problem: augmentedTypesInterface has 1 reference failures and needs smart-triage evidence before implementation starts.
+Problem: the issue still sat in the blocked queue even though the representative
+case is now a build pass.
 
 ## Current failure
 
@@ -37,16 +42,17 @@ mise run reference-coverage -- tsc --path-filter reference/typescript/tests/case
 
 ## Desired final state
 
-This generated bucket is either split into implementation-ready child issues or superseded by an existing open/done issue with matching evidence. Do not implement directly from this bucket.
+The generated bucket is closed; no child issue is needed for the previous
+parser-syntax blocker.
 
 ## Scope
 
 In scope:
 
-- [ ] Inspect the smart triage report below
-- [ ] Confirm whether existing open/done issues already cover this bucket
-- [ ] Split one feature family, one observable behavior, or one fixed reference window into child issues
-- [ ] Preserve exact reproduction commands and representative AST/diagnostic evidence in each child issue
+- [x] Inspect the smart triage report below
+- [x] Confirm current evidence
+- [x] Close as stale build-pass evidence
+- [x] Preserve exact reproduction commands and current coverage evidence
 
 Out of scope:
 
@@ -68,45 +74,45 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] Duplicate candidates below are confirmed as no-match or this issue is superseded
-- [ ] At least one child issue contains an exact `mise run reference-triage -- ...` command
-- [ ] Child issue includes failing path, diagnostic code, source context, visible symbols, and parser/TypeScript AST evidence
-- [ ] Child issue acceptance names the exact fixture/reference path and diagnostic/stdout change
+- [x] Duplicate candidates below are confirmed as stale
+- [x] Current triage command is recorded
+- [x] Current coverage result is recorded
+- [x] No child issue is needed for a build-pass bucket
 
 ## Validation
 
 Required commands:
 
 ```sh
-cargo fmt --all --check
-cargo nextest run
+python scripts/manager.py update-issue-index --check
+python scripts/manager.py check-issue-health
+python scripts/manager.py check-issue-readiness -- --fail-ready-below 80
 ```
 
 Impacted commands:
 
 ```sh
-mise run reference-coverage -- tsc --limit 2
-mise run reference-coverage -- tsc --path-filter reference/typescript/tests/cases/compiler/augmentedTypesInterface.ts --detail
-mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/augmentedTypesInterface.ts
+env TS2WASM_BINARY=/tmp/ts2wasm-issue-blockers-target/debug/ts2wasm python scripts/manager.py reference-coverage tsc --path-filter reference/typescript/tests/cases/compiler/augmentedTypesInterface.ts --detail --no-dashboard-data
+env TS2WASM_BINARY=/tmp/ts2wasm-issue-blockers-target/debug/ts2wasm python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/augmentedTypesInterface.ts
 ```
 
 Not run:
 
-- none
+- cargo fmt / nextest not run for this metadata-only issue lifecycle closure
 
 ## Docs / current-state / issue sync
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] updated: `current-state.md` (repo root)
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 
@@ -116,9 +122,57 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- none found by path/title/feature scan
+No implementation child needed. Fresh triage reports `BuildPass`; focused
+coverage reports `build_pass=1`, `unsupported=0`, and `blocked=0`.
 
-## Smart triage
+TypeScript oracle reports interface/enum merge diagnostics TS2567, but semantic
+parity is outside this stale parser-syntax bucket closure.
+
+Current coverage:
+
+```text
+executed=1
+build_pass=1
+semantic_pass=0
+unsupported=0
+blocked=0
+unsupported_diagcodes=
+unsupported_features=
+semantic_enabled=0
+reference/typescript/tests/cases/compiler/augmentedTypesInterface.ts: build_pass
+```
+
+## Current smart triage
+
+### Smart triage: Build pass: augmentedTypesInterface
+
+- Issue class: `none`
+- Feature label: `build-pass`
+- Diagnostic: `BuildPass` / `pass`
+- Path: `reference/typescript/tests/cases/compiler/augmentedTypesInterface.ts`
+
+Reproduction:
+
+```sh
+env TS2WASM_BINARY=/tmp/ts2wasm-issue-blockers-target/debug/ts2wasm python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/augmentedTypesInterface.ts
+```
+
+Failure location:
+
+```json
+{
+  "code": "BuildPass",
+  "message": "ts2wasm build succeeded",
+  "span_start": null,
+  "span_end": null,
+  "line": null,
+  "column": null,
+  "feature_label": "build-pass",
+  "error_type": "pass"
+}
+```
+
+## Stale generated smart triage
 
 ### Smart triage: Triage parser syntax: augmentedTypesInterface
 
