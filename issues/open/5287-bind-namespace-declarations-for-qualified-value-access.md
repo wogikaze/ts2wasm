@@ -93,8 +93,8 @@ In scope:
 Out of scope:
 
 - Ambient `declare namespace`, tracked by ambient declaration boundary work.
-- Multi-section namespace-only body preservation, tracked by `issues/open/5187-lower-namespace-only-multi-section-files.md`.
-- Function/namespace merging, tracked by `issues/open/5244-support-namespace-merged-function-static-properties.md`.
+- Multi-section namespace-only body preservation, tracked by `issues/done/5187-lower-namespace-only-multi-section-files.md`.
+- Function/namespace merging, tracked by `issues/done/5244-date-timezone-formatting-policy.md`.
 - AMD/outFile emit and full declaration comment fidelity.
 
 ## Affected paths
@@ -164,9 +164,9 @@ Related but not duplicates:
 - `issues/done/399-define-typescript-parse-erase-emit-boundary.md` defines the
   namespace ownership contract.
 - `issues/open/432-implement-import-export.md` is the broad triage parent.
-- `issues/open/5187-lower-namespace-only-multi-section-files.md`,
-  `issues/open/5225-support-qualified-class-heritage-names.md`, and
-  `issues/open/5244-support-namespace-merged-function-static-properties.md`
+- `issues/done/5187-lower-namespace-only-multi-section-files.md`,
+  `issues/done/5225-w0-typed-wat-writer.md`, and
+  `issues/done/5244-date-timezone-formatting-policy.md`
   cover adjacent namespace shapes, not same-file namespace value access.
 
 ## Completion evidence

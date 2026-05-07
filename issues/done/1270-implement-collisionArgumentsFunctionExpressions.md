@@ -126,7 +126,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/open/5200-validate-top-level-function-overload-implementations.md` - related top-level overload grouping, not nested function declarations
+- `issues/done/5200-validate-top-level-function-overload-implementations.md` - related top-level overload grouping, not nested function declarations
 - broad duplicate-local generated buckets are not exact owners for this current first blocker
 - no exact existing owner found for nested function overload implementation grouping
 

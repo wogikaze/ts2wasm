@@ -116,7 +116,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- No exact owner found. `issues/open/5202-parse-member-call-explicit-type-arguments.md`
+- No exact owner found. `issues/done/5202-parse-member-call-explicit-type-arguments.md`
   owns the older explicit member-call type argument parser boundary, but this
   representative now parses and reaches `x.toFixed()` lowering.
 

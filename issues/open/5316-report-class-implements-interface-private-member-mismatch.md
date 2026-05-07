@@ -155,7 +155,7 @@ Split from stale generated bucket
 
 Related but not duplicates:
 
-- `issues/open/5158-report-interface-private-member-clash.md` handles
+- `issues/done/5158-report-interface-private-member-clash.md` handles
   `interface Z extends X, Y` private-member clashes.
 - `issues/open/5315-report-class-extends-interface-diagnostics.md` handles
   class `extends` interface diagnostics.

@@ -110,7 +110,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] updated: `issues/open/5226-allow-ambient-function-overload-declarations.md`
+- [x] updated: `issues/done/5226-w0-ast-node-span-requirement.md`
 
 ## Notes
 
@@ -120,12 +120,12 @@ Follow-up issues:
 
 ## Duplicate detection
 
-Fresh duplicate scan found exact owner `issues/open/5226-allow-ambient-function-overload-declarations.md`.
+Fresh duplicate scan found exact owner `issues/done/5226-w0-ast-node-span-requirement.md`.
 
 Other duplicate-function candidates are not the owner:
 
-- `issues/open/5199-report-function-overload-list-class-merge-diagnostics.md` covers overload lists followed by a class of the same name.
-- `issues/open/5200-validate-top-level-function-overload-implementations.md` covers non-ambient overload signatures plus an implementation body.
+- `issues/done/5199-report-function-overload-list-class-merge-diagnostics.md` covers overload lists followed by a class of the same name.
+- `issues/done/5200-validate-top-level-function-overload-implementations.md` covers non-ambient overload signatures plus an implementation body.
 - generated duplicate-function buckets 2043, 2600, and 4258 still need their own smart triage.
 
 ## Smart triage

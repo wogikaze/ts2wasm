@@ -111,7 +111,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] none; superseded by `issues/open/5226-allow-ambient-function-overload-declarations.md`
+- [x] none; superseded by `issues/done/5226-w0-ast-node-span-requirement.md`
 
 ## Notes
 
@@ -121,10 +121,10 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- Superseded by `issues/open/5226-allow-ambient-function-overload-declarations.md`.
+- Superseded by `issues/done/5226-w0-ast-node-span-requirement.md`.
   The current first blocker is the same ambient bodyless
   `declare function` overload declaration shape that 5226 owns.
-- `issues/open/5200-validate-top-level-function-overload-implementations.md`
+- `issues/done/5200-validate-top-level-function-overload-implementations.md`
   is related but not exact because it covers non-ambient overload signatures
   plus implementation declarations.
 - `issues/open/5280-validate-commented-top-level-function-overloads.md` and

@@ -70,11 +70,11 @@ The frontend recognizes `const enum E { A }` as a TypeScript enum declaration be
 
 In scope:
 
-- [ ] Recognize `const enum` in statement positions before the ordinary `const` declaration parser.
-- [ ] Preserve enough enum declaration metadata for later diagnostics or explicit unsupported-enum handling.
-- [ ] Avoid creating a bogus binding named `enum`.
-- [ ] Add focused parser/frontend coverage for `const enum E { A }` inside a function block.
-- [ ] Re-run representative triage and confirm the current const-initializer diagnostic is gone.
+- [x] Recognize `const enum` in statement positions before the ordinary `const` declaration parser.
+- [x] Preserve enough enum declaration metadata for later diagnostics or explicit unsupported-enum handling.
+- [x] Avoid creating a bogus binding named `enum`.
+- [x] Add focused parser/frontend coverage for `const enum E { A }` inside a function block.
+- [x] Re-run representative triage and confirm the current const-initializer diagnostic is gone.
 
 Out of scope:
 
@@ -102,11 +102,11 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] `const enum E { A }` parses as an enum declaration or reports an enum-specific diagnostic, not `const declarations require an initializer`.
-- [ ] `constEnumBadPropertyNames.ts` no longer reports `const declarations require an initializer` at `const enum E { A }`.
-- [ ] A function-block `const enum E { A }` no longer creates a bogus binding named `enum`.
-- [ ] Ordinary `const x;` still reports the missing-initializer diagnostic.
-- [ ] `python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/blockScopedEnumVariablesUseBeforeDef.ts` no longer reports the current const-initializer diagnostic at `const enum E`.
+- [x] `const enum E { A }` parses as an enum declaration or reports an enum-specific diagnostic, not `const declarations require an initializer`.
+- [x] `constEnumBadPropertyNames.ts` no longer reports `const declarations require an initializer` at `const enum E { A }`.
+- [x] A function-block `const enum E { A }` no longer creates a bogus binding named `enum`.
+- [x] Ordinary `const x;` still reports the missing-initializer diagnostic.
+- [x] `python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/blockScopedEnumVariablesUseBeforeDef.ts` no longer reports the current const-initializer diagnostic at `const enum E`.
 
 ## Validation
 
@@ -134,15 +134,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 

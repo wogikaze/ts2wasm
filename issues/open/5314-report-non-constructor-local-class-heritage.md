@@ -133,7 +133,7 @@ Related but not duplicates:
 
 - `issues/open/5256-report-non-constructor-class-heritage-expressions.md`
   handles member-expression heritage diagnostics.
-- `issues/open/5225-support-qualified-class-heritage-names.md` handles
+- `issues/done/5225-w0-typed-wat-writer.md` handles
   qualified class heritage implementation.
 
 ## Completion Evidence

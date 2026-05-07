@@ -114,7 +114,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] superseded by `issues/open/5161-model-ambient-value-declarations-for-name-resolution.md`
+- [x] superseded by `issues/done/5161-model-ambient-value-declarations-for-name-resolution.md`
 
 ## Notes
 
@@ -124,7 +124,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/open/5161-model-ambient-value-declarations-for-name-resolution.md` - exact owner for `declare const` values being visible to expression name resolution
+- `issues/done/5161-model-ambient-value-declarations-for-name-resolution.md` - exact owner for `declare const` values being visible to expression name resolution
 - broad name-resolution buckets are not exact owners for this current first blocker
 
 ## Smart triage
@@ -191,13 +191,13 @@ binding c type: C
 
 Superseding owner:
 
-- `issues/open/5161-model-ambient-value-declarations-for-name-resolution.md`
+- `issues/done/5161-model-ambient-value-declarations-for-name-resolution.md`
 
 ## Completion evidence
 
 Commits:
 
-- Superseded by `issues/open/5161-model-ambient-value-declarations-for-name-resolution.md`; see local commit for this issue cleanup.
+- Superseded by `issues/done/5161-model-ambient-value-declarations-for-name-resolution.md`; see local commit for this issue cleanup.
 
 Validation result:
 

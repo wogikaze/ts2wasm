@@ -125,7 +125,7 @@ Follow-up issues:
 
 - `issues/open/5334-parse-class-constructor-overload-signatures.md` owns the current `DuplicateFunction: duplicate constructor definition` blocker for bodyless class constructor overload signatures.
 - `issues/open/5337-parse-rest-parameter-constructor-overload-signatures.md` is related but covers rest-parameter constructor overload signatures.
-- `issues/open/5199-report-function-overload-list-class-merge-diagnostics.md` is related but covers top-level function/class overload merge diagnostics, not class constructor overload signatures.
+- `issues/done/5199-report-function-overload-list-class-merge-diagnostics.md` is related but covers top-level function/class overload merge diagnostics, not class constructor overload signatures.
 
 ## Smart triage
 

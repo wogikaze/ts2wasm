@@ -72,7 +72,7 @@ In scope:
 
 Out of scope:
 
-- Typed class method trailing commas, tracked by `issues/open/5149-parse-trailing-comma-in-typed-class-method-parameters.md`.
+- Typed class method trailing commas, tracked by `issues/done/5149-parse-trailing-comma-in-typed-class-method-parameters.md`.
 - Rest parameter trailing comma diagnostics.
 - TypeScript type checking or comment emit fidelity.
 
@@ -115,4 +115,4 @@ python scripts/manager.py reference-coverage tsc --path-filter reference/typescr
 ## Notes
 
 Split from generated bucket `issues/done/1352-implement-commentOnParameter.md`.
-Related typed class method slice: `issues/open/5149-parse-trailing-comma-in-typed-class-method-parameters.md`.
+Related typed class method slice: `issues/done/5149-parse-trailing-comma-in-typed-class-method-parameters.md`.

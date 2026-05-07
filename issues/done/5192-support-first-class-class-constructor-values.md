@@ -113,10 +113,10 @@ fails with `issue-5011`.
 
 In scope:
 
-- [ ] Represent a class constructor binding as a value in lowered IR/runtime data
-- [ ] Preserve existing direct `new C()` and method-call class behavior
-- [ ] Support passing a class constructor value as an argument to a function
-- [ ] Add a focused fixture covering `createInstance(C, args)` or an equivalent constructor factory
+- [x] Represent a class constructor binding as a value in lowered IR/runtime data
+- [x] Preserve existing direct `new C()` and method-call class behavior
+- [x] Support passing a class constructor value as an argument to a function
+- [x] Add a focused fixture covering `createInstance(C, args)` or an equivalent constructor factory
 
 Out of scope:
 
@@ -140,11 +140,11 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] `cachedContextualTypes.ts` no longer reports `issue-5011` for `MenuWorkbenchToolBar`
-- [ ] `castParentheses.ts` no longer reports `issue-5011` for the first class constructor value use `(<any>a)`
-- [ ] A focused fixture passes for a class constructor value passed to a helper and used to construct an instance
-- [ ] Existing direct class fixtures, including `new C()` and static method calls, still pass
-- [ ] Unsupported class-value cases that remain out of scope keep a source-spanned diagnostic
+- [x] `cachedContextualTypes.ts` no longer reports `issue-5011` for `MenuWorkbenchToolBar`
+- [x] `castParentheses.ts` no longer reports `issue-5011` for the first class constructor value use `(<any>a)`
+- [x] A focused fixture passes for a class constructor value passed to a helper and used to construct an instance
+- [x] Existing direct class fixtures, including `new C()` and static method calls, still pass
+- [x] Unsupported class-value cases that remain out of scope keep a source-spanned diagnostic
 
 ## Validation
 
@@ -170,15 +170,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 

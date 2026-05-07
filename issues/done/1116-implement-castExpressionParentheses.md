@@ -107,7 +107,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] `issues/open/5216-accept-large-decimal-exponent-number-literals.md`
+- [x] `issues/done/5216-allow-extra-arguments-for-functions-reading-arguments-object.md`
 
 ## Notes
 
@@ -169,7 +169,7 @@ resolved: same lexer failure
 TypeScript AST sees `ExpressionStatement -> ParenthesizedExpression ->
 TypeAssertionExpression -> FirstLiteralToken "12e+34"` and reports no
 diagnostics. Child issue
-`issues/open/5216-accept-large-decimal-exponent-number-literals.md` owns this
+`issues/done/5216-allow-extra-arguments-for-functions-reading-arguments-object.md` owns this
 lexer/parser prerequisite.
 
 ## Completion evidence

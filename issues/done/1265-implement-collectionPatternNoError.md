@@ -137,11 +137,11 @@ class DataProvider<T extends Message, U extends MessageList<T>> {
 
 ## Duplicate detection
 
-- `issues/open/5222-support-interface-typed-method-calls-on-erased-locals.md`
+- `issues/done/5222-parse-ambient-generic-variable-type-annotations.md`
   is related but not exact: it handles locals directly annotated with interface
   types, while this bucket's current blocker is a local inferred from a generic
   function return constrained to an interface.
-- `issues/open/5234-track-array-typed-parameters-for-callback-methods.md` is
+- `issues/done/5234-w0-implement-host-deny-and-auditable-e2e-manifest-verification.md` is
   related but not exact: it handles array-shaped parameter annotations.
 - `issues/open/5261-report-class-typed-missing-instance-method-calls.md` is
   related but not exact: it handles class-typed ambient locals with missing

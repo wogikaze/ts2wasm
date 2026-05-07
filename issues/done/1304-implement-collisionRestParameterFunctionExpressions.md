@@ -129,8 +129,8 @@ Follow-up issues:
 ## Duplicate detection
 
 - `issues/open/5335-validate-nested-function-overload-implementations.md` - exact owner for valid nested function overload signatures currently reported as duplicate locals
-- `issues/open/5200-validate-top-level-function-overload-implementations.md` - related top-level function overload issue, not nested
-- `issues/open/5198-support-class-method-overload-signatures-for-element-access-calls.md` - related class method overload issue, not nested functions
+- `issues/done/5200-validate-top-level-function-overload-implementations.md` - related top-level function overload issue, not nested
+- `issues/done/5198-support-class-method-overload-signatures-for-element-access-calls.md` - related class method overload issue, not nested functions
 
 ## Smart triage
 

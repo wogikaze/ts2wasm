@@ -21,7 +21,7 @@ Triage checkDestructuringShorthandAssigment-name-resolution across 1 failing ref
 
 Reference test results show 1 case failing in directory `checkDestructuringShorthandAssigment-name-resolution` with diagnostics: name-resolution. Fresh triage shows the parser turns the parenthesized destructuring assignment `({ b = "5" } = {})` into an assignment whose target name is the whole pattern string, then name resolution reports `UnresolvedName`.
 
-Problem: `checkDestructuringShorthandAssigment.ts` is too broad for direct implementation. Its current observable blocker is now tracked by `issues/open/5224-parse-destructuring-assignment-call-arguments.md`.
+Problem: `checkDestructuringShorthandAssigment.ts` is too broad for direct implementation. Its current observable blocker is now tracked by `issues/done/5224-handle-package-json-virtual-sections-in-multifile-references.md`.
 
 ## Current failure
 
@@ -39,7 +39,7 @@ mise run reference-coverage -- tsc --path-filter reference/typescript/tests/case
 
 ## Desired final state
 
-This generated bucket is superseded by `issues/open/5224-parse-destructuring-assignment-call-arguments.md`. Do not implement directly from this bucket.
+This generated bucket is superseded by `issues/done/5224-handle-package-json-virtual-sections-in-multifile-references.md`. Do not implement directly from this bucket.
 
 ## Scope
 
@@ -111,7 +111,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] created: `issues/open/5224-parse-destructuring-assignment-call-arguments.md`
+- [x] created: `issues/done/5224-handle-package-json-virtual-sections-in-multifile-references.md`
 
 ## Notes
 
@@ -185,7 +185,7 @@ blocker is tracked by child issue 5224.
 
 Commits:
 
-- child issue: `issues/open/5224-parse-destructuring-assignment-call-arguments.md`
+- child issue: `issues/done/5224-handle-package-json-virtual-sections-in-multifile-references.md`
 
 Validation result:
 

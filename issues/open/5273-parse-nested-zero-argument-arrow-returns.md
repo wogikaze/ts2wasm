@@ -81,7 +81,7 @@ Out of scope:
 
 - Full lexical `this` lowering inside nested arrow callbacks.
 - Runtime support for invoking arbitrary object-literal callback factories.
-- Async arrow parsing, tracked by `issues/open/5240-parse-async-arrow-function-expressions.md`.
+- Async arrow parsing, tracked by `issues/done/5240-w2-docs-audit-and-stale-entries.md`.
 
 ## Affected paths
 
@@ -193,8 +193,8 @@ plus duplicate global `console` diagnostics.
 
 Related but distinct:
 
-- `issues/open/5240-parse-async-arrow-function-expressions.md` owns `async () =>`.
-- `issues/open/5152-support-class-constructor-outer-callback-captures.md` owns
+- `issues/done/5240-w2-docs-audit-and-stale-entries.md` owns `async () =>`.
+- `issues/done/5152-support-class-constructor-outer-callback-captures.md` owns
   class-constructor nested callback lowering after parsing succeeds.
 
 2026-05-07 additional evidence: generated bucket

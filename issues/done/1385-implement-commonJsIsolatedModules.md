@@ -142,10 +142,10 @@ Follow-up issues:
 
 - No exact existing implementation-ready issue was found for
   `tsconfig.json` virtual section handling.
-- `issues/open/5229-resolve-imports-between-filename-sections.md` is related
+- `issues/done/5229-w0-user-runtime-string-origin.md` is related
   but owns local import resolution between code sections, not config-section
   filtering.
-- `issues/open/5187-lower-namespace-only-multi-section-files.md` is related
+- `issues/done/5187-lower-namespace-only-multi-section-files.md` is related
   but owns namespace-only code sections, not JSON config sections.
 
 ## Smart triage

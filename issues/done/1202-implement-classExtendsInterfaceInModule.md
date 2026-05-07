@@ -107,7 +107,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] superseded by existing `issues/open/5156-parse-generic-type-arguments-in-class-heritage.md`
+- [x] superseded by existing `issues/done/5156-parse-generic-type-arguments-in-class-heritage.md`
 
 ## Notes
 

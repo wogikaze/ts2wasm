@@ -141,8 +141,8 @@ Follow-up issues:
 ## Duplicate detection
 
 No exact duplicate found by path/title/feature scan. Existing arity issues such
-as `issues/done/413-implement-arity.md`, `issues/open/5135-fix-builtin-arity-validation-coercion-globals.md`,
-`issues/open/5136-fix-arity-validation-regexp-string-prototype.md`, and the
+as `issues/done/413-implement-arity.md`, `issues/done/5135-fix-builtin-arity-validation-coercion-globals.md`,
+`issues/done/5136-fix-arity-validation-regexp-string-prototype.md`, and the
 generated `issues/open/2460-implement-functionParameterArityMismatch.md` cover
 builtins or function-call arity, not class constructor parameter arity for
 `new C(arg)`. Related constructor issues cover parameter properties or later

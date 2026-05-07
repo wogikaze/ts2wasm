@@ -136,7 +136,7 @@ class foo extends baz {}
 
 ## Duplicate detection
 
-- `issues/open/5152-support-class-constructor-outer-callback-captures.md` is
+- `issues/done/5152-support-class-constructor-outer-callback-captures.md` is
   related by the same issue-289 constructor lexical-capture diagnostic, but its
   acceptance is intentionally scoped to callback-local calls and nested arrow
   `this`.

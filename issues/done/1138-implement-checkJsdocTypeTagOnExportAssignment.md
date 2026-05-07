@@ -107,7 +107,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] created: `issues/open/5229-resolve-imports-between-filename-sections.md`
+- [x] created: `issues/done/5229-w0-user-runtime-string-origin.md`
 
 ## Notes
 
@@ -130,7 +130,7 @@ local imports between `@Filename` virtual sections.
 
 No-match rationale:
 
-- `issues/open/5186-parse-export-assignment-for-diagnostics.md` covers
+- `issues/done/5186-parse-export-assignment-for-diagnostics.md` covers
   `export = expr` syntax, while this representative already builds AST for
   `export default` and `import b from "./b"`.
 - `issues/done/5127-implement-export-default-multifile-lowering.md` fixed
@@ -196,7 +196,7 @@ TypeScript oracle: TS2307 for ./b in this reference window
 
 Split result:
 
-- `issues/open/5229-resolve-imports-between-filename-sections.md`
+- `issues/done/5229-w0-user-runtime-string-origin.md`
 
 ## Completion evidence
 

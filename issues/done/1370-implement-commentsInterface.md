@@ -58,7 +58,7 @@ error: [UnsupportedSyntax] issue-211: unknown receiver class for method `foo` at
 ## Desired final state
 
 This generated bucket is superseded by
-`issues/open/5222-support-interface-typed-method-calls-on-erased-locals.md`.
+`issues/done/5222-parse-ambient-generic-variable-type-annotations.md`.
 Do not implement directly from this bucket.
 
 ## Scope
@@ -131,7 +131,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] superseded by: `issues/open/5222-support-interface-typed-method-calls-on-erased-locals.md`
+- [x] superseded by: `issues/done/5222-parse-ambient-generic-variable-type-annotations.md`
 
 ## Notes
 
@@ -141,7 +141,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-`issues/open/5222-support-interface-typed-method-calls-on-erased-locals.md` is
+`issues/done/5222-parse-ambient-generic-variable-type-annotations.md` is
 an exact behavioral match. Its representative case is `var s: Sequence<string>;
 s.groupBy(...)`; this bucket's representative shape is the same unsupported
 receiver family:
@@ -165,7 +165,7 @@ Other candidates are related but not exact:
   forms as issue-linked diagnostics.
 - `issues/open/435-implement-method-call.md` is broader method-call support and
   should not duplicate the narrower interface-typed receiver issue.
-- `issues/open/5217-support-method-calls-on-call-expression-receivers.md` covers
+- `issues/done/5217-preserve-ambient-value-declarations-through-name-resolution.md` covers
   call-expression receivers, not identifier locals annotated with interface
   types.
 

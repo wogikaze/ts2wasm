@@ -21,7 +21,7 @@ Triage checkDestructuringShorthandAssigment-destructuring across 1 failing refer
 
 Reference test results show 1 case failing in directory `checkDestructuringShorthandAssigment-destructuring` with diagnostics: destructuring. Fresh triage shows tokenization succeeds, but AST construction fails at the computed property name `[k]` after an object spread entry.
 
-Problem: `checkDestructuringShorthandAssigment2.ts` is too broad for direct implementation. Its current observable blocker is now tracked by `issues/open/5223-parse-computed-properties-after-object-spread.md`.
+Problem: `checkDestructuringShorthandAssigment2.ts` is too broad for direct implementation. Its current observable blocker is now tracked by `issues/done/5223-report-iterator-type-only-value-use-diagnostics.md`.
 
 ## Current failure
 
@@ -39,7 +39,7 @@ mise run reference-coverage -- tsc --path-filter reference/typescript/tests/case
 
 ## Desired final state
 
-This generated bucket is superseded by `issues/open/5223-parse-computed-properties-after-object-spread.md`. Do not implement directly from this bucket.
+This generated bucket is superseded by `issues/done/5223-report-iterator-type-only-value-use-diagnostics.md`. Do not implement directly from this bucket.
 
 ## Scope
 
@@ -111,7 +111,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] created: `issues/open/5223-parse-computed-properties-after-object-spread.md`
+- [x] created: `issues/done/5223-report-iterator-type-only-value-use-diagnostics.md`
 
 ## Notes
 
@@ -185,7 +185,7 @@ blocker is tracked by child issue 5223.
 
 Commits:
 
-- child issue: `issues/open/5223-parse-computed-properties-after-object-spread.md`
+- child issue: `issues/done/5223-report-iterator-type-only-value-use-diagnostics.md`
 
 Validation result:
 

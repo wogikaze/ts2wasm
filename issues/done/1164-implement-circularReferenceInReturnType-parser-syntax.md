@@ -39,7 +39,7 @@ mise run reference-coverage -- tsc --path-filter reference/typescript/tests/case
 
 ## Desired final state
 
-This generated bucket is closed after splitting `issues/open/5242-parse-direct-generic-call-type-arguments-for-callable-consts.md`. Do not implement directly from this bucket.
+This generated bucket is closed after splitting `issues/done/5242-w2-completion-declaration.md`. Do not implement directly from this bucket.
 
 ## Scope
 
@@ -110,7 +110,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] created: `issues/open/5242-parse-direct-generic-call-type-arguments-for-callable-consts.md`
+- [x] created: `issues/done/5242-w2-completion-declaration.md`
 
 ## Notes
 
@@ -120,8 +120,8 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/open/5194-report-empty-call-type-arguments.md` covers malformed empty call type-argument lists; this case is valid syntax.
-- `issues/open/5202-parse-member-call-explicit-type-arguments.md` covers member callees such as `obj.method<T>()`; this case is a direct identifier call.
+- `issues/done/5194-report-empty-call-type-arguments.md` covers malformed empty call type-argument lists; this case is valid syntax.
+- `issues/done/5202-parse-member-call-explicit-type-arguments.md` covers member callees such as `obj.method<T>()`; this case is a direct identifier call.
 - `issues/open/059-implement-parser-syntax-extensions.md` and `issues/open/442-implement-parser-syntax.md` are broad parser parents, not focused implementation-ready owners.
 
 ## Smart triage
@@ -193,7 +193,7 @@ binding A type: any
 
 Split result:
 
-- `issues/open/5242-parse-direct-generic-call-type-arguments-for-callable-consts.md`
+- `issues/done/5242-w2-completion-declaration.md`
 
 ## Completion evidence
 
@@ -203,7 +203,7 @@ The `circularReferenceInReturnType2` parser-syntax bucket is complete. The curre
 
 Commits:
 
-- split to `issues/open/5242-parse-direct-generic-call-type-arguments-for-callable-consts.md`
+- split to `issues/done/5242-w2-completion-declaration.md`
 
 Validation result:
 

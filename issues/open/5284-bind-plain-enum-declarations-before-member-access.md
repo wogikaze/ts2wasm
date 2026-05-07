@@ -86,7 +86,7 @@ In scope:
 
 Out of scope:
 
-- `const enum`, tracked separately by `issues/open/5184-parse-const-enum-declarations.md`.
+- `const enum`, tracked separately by `issues/done/5184-parse-const-enum-declarations.md`.
 - `export enum`, tracked separately by `issues/open/5277-parse-export-enum-declarations-to-enum-boundary.md`.
 - Computed enum members, merged enums, declaration emit, and full enum runtime transform.
 - Comment emit fidelity.
@@ -155,7 +155,7 @@ Related but not duplicates:
 - `issues/open/2121-implement-enumBasics-parser-syntax.md` and
   `issues/open/2143-implement-enumPropertyAccess.md` are generated buckets, not
   implementation-ready slices.
-- `issues/open/5184-parse-const-enum-declarations.md` covers `const enum`.
+- `issues/done/5184-parse-const-enum-declarations.md` covers `const enum`.
 - `issues/open/5277-parse-export-enum-declarations-to-enum-boundary.md` covers
   `export enum`.
 

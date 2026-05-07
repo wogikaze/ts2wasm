@@ -46,7 +46,7 @@ python scripts/manager.py reference-coverage tsc --path-filter reference/typescr
 ## Desired final state
 
 This generated bucket is closed as superseded by
-`issues/open/5198-support-class-method-overload-signatures-for-element-access-calls.md`.
+`issues/done/5198-support-class-method-overload-signatures-for-element-access-calls.md`.
 
 ## Scope
 
@@ -115,7 +115,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] superseded by `issues/open/5198-support-class-method-overload-signatures-for-element-access-calls.md`
+- [x] superseded by `issues/done/5198-support-class-method-overload-signatures-for-element-access-calls.md`
 
 ## Notes
 
@@ -125,7 +125,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/open/5198-support-class-method-overload-signatures-for-element-access-calls.md` - exact owner for valid class method overload signatures currently reported as duplicate methods
+- `issues/done/5198-support-class-method-overload-signatures-for-element-access-calls.md` - exact owner for valid class method overload signatures currently reported as duplicate methods
 - `issues/open/5327-report-class-method-overload-wrong-implementation-name.md` - related invalid wrong-name implementation diagnostics, not this valid overload signature shape
 - broad duplicate-function generated buckets are not exact owners for this current first blocker
 
@@ -190,13 +190,13 @@ TS1210: Code contained in a class is evaluated in JavaScript's strict mode which
 
 Superseding owner:
 
-- `issues/open/5198-support-class-method-overload-signatures-for-element-access-calls.md`
+- `issues/done/5198-support-class-method-overload-signatures-for-element-access-calls.md`
 
 ## Completion evidence
 
 Commits:
 
-- Superseded by `issues/open/5198-support-class-method-overload-signatures-for-element-access-calls.md`; see local commit for this issue cleanup.
+- Superseded by `issues/done/5198-support-class-method-overload-signatures-for-element-access-calls.md`; see local commit for this issue cleanup.
 
 Validation result:
 

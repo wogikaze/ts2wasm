@@ -15,7 +15,7 @@ status: done
 
 ## Summary
 
-Closed as superseded by `issues/open/5232-support-entry-export-class-declarations.md`.
+Closed as superseded by `issues/done/5232-w0-fixture-ize-runtimelinkplan-linker-structure-tests.md`.
 
 ## Problem
 
@@ -83,7 +83,7 @@ Out of scope:
 
 Expected:
 
-- `issues/open/5232-support-entry-export-class-declarations.md`
+- `issues/done/5232-w0-fixture-ize-runtimelinkplan-linker-structure-tests.md`
 
 Do not touch:
 

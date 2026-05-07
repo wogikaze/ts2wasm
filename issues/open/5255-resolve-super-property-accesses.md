@@ -81,9 +81,9 @@ Out of scope:
 - `super[...]()` call lowering; broad call-expression cases remain under
   `issues/open/420-implement-call-expression.md`.
 - Lexical `super` capture in arrow arguments to `super(...)`, tracked by
-  `issues/open/5204-resolve-lexical-super-property-captures-in-super-call-arguments.md`.
+  `issues/done/5204-resolve-lexical-super-property-captures-in-super-call-arguments.md`.
 - Non-derived `super()` diagnostics, tracked by
-  `issues/open/5233-report-super-call-in-non-derived-class.md`.
+  `issues/done/5233-w0-harden-reference-coverage-prerequisites.md`.
 
 ## Affected paths
 
@@ -134,7 +134,7 @@ Related but not owners for this exact boundary:
 
 - `issues/open/420-implement-call-expression.md` covers `super[...]()` call
   expression semantics in broader test262 windows.
-- `issues/open/5204-resolve-lexical-super-property-captures-in-super-call-arguments.md`
+- `issues/done/5204-resolve-lexical-super-property-captures-in-super-call-arguments.md`
   excludes dynamic `super[expr]` property access.
-- `issues/open/5233-report-super-call-in-non-derived-class.md` excludes
+- `issues/done/5233-w0-harden-reference-coverage-prerequisites.md` excludes
   `super.method(...)` and `super.x` beyond its non-derived `super()` diagnostic.

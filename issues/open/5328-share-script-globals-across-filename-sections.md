@@ -97,8 +97,8 @@ In scope:
 
 Out of scope:
 
-- Local imports between `@Filename` sections; tracked by `issues/open/5229-resolve-imports-between-filename-sections.md`.
-- Namespace-only multi-section body preservation; tracked by `issues/open/5187-lower-namespace-only-multi-section-files.md`.
+- Local imports between `@Filename` sections; tracked by `issues/done/5229-w0-user-runtime-string-origin.md`.
+- Namespace-only multi-section body preservation; tracked by `issues/done/5187-lower-namespace-only-multi-section-files.md`.
 - Same-file namespace value binding; tracked by `issues/open/5287-bind-namespace-declarations-for-qualified-value-access.md`.
 - Full declaration emit or AMD/outFile behavior.
 
@@ -171,9 +171,9 @@ Related but not duplicates:
 - `issues/open/5287-bind-namespace-declarations-for-qualified-value-access.md`
   covers same-file namespace declarations such as `namespace m1 { ... }`
   followed by `m1.fooExport()`.
-- `issues/open/5187-lower-namespace-only-multi-section-files.md` covers
+- `issues/done/5187-lower-namespace-only-multi-section-files.md` covers
   namespace-only or declaration-only virtual sections that are currently dropped.
-- `issues/open/5229-resolve-imports-between-filename-sections.md` covers local
+- `issues/done/5229-w0-user-runtime-string-origin.md` covers local
   import specifiers between virtual files.
 
 ## Completion evidence

@@ -107,7 +107,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] created: `issues/open/5231-parse-export-as-namespace-declarations.md`
+- [x] created: `issues/done/5231-w0-typed-wat-writer-expr-emit-migration.md`
 
 ## Notes
 
@@ -182,7 +182,7 @@ TypeScript oracle: TS1315 Global module exports may only appear in declaration f
 
 Split result:
 
-- `issues/open/5231-parse-export-as-namespace-declarations.md`
+- `issues/done/5231-w0-typed-wat-writer-expr-emit-migration.md`
 
 ## Completion evidence
 

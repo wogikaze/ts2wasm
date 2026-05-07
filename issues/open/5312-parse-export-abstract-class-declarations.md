@@ -117,7 +117,7 @@ Split from generated bucket `issues/done/1193-implement-classExtendingAbstractCl
 
 Related but not duplicates:
 
-- `issues/open/5232-support-entry-export-class-declarations.md` starts after
+- `issues/done/5232-w0-fixture-ize-runtimelinkplan-linker-structure-tests.md` starts after
   `ExportDecl(ClassDecl)` exists and handles module-build export metadata.
 - `issues/done/1213-implement-classFunctionMerging-parser-syntax.md` covers
   `declare abstract class`, not `export abstract class`.

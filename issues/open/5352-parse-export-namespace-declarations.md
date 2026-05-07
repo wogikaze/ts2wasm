@@ -95,14 +95,14 @@ In scope:
 Out of scope:
 
 - Nested `const enum` parsing, tracked by
-  `issues/open/5184-parse-const-enum-declarations.md`.
+  `issues/done/5184-parse-const-enum-declarations.md`.
 - Export-assignment parsing and diagnostics, tracked separately by
-  `issues/open/5186-parse-export-assignment-for-diagnostics.md` and
+  `issues/done/5186-parse-export-assignment-for-diagnostics.md` and
   `issues/open/5306-report-export-assignment-with-other-exports.md`.
 - Import-equals/`require` module loading.
 - Namespace value binding or namespace emit/lowering.
 - `export as namespace Name;`, tracked by
-  `issues/open/5231-parse-export-as-namespace-declarations.md`.
+  `issues/done/5231-w0-typed-wat-writer-expr-emit-migration.md`.
 
 ## Affected paths
 
@@ -174,7 +174,7 @@ Split from generated bucket
 
 Related but not duplicates:
 
-- `issues/open/5231-parse-export-as-namespace-declarations.md` covers
+- `issues/done/5231-w0-typed-wat-writer-expr-emit-migration.md` covers
   `export as namespace Name;`, not namespace declarations with bodies.
 - `issues/open/5277-parse-export-enum-declarations-to-enum-boundary.md` covers
   `export enum`, not `export namespace`.

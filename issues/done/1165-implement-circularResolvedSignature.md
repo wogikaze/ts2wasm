@@ -39,7 +39,7 @@ mise run reference-coverage -- tsc --path-filter reference/typescript/tests/case
 
 ## Desired final state
 
-This generated bucket is closed after splitting `issues/open/5243-erase-type-arguments-on-ambient-generic-function-calls.md`. Do not implement directly from this bucket.
+This generated bucket is closed after splitting `issues/done/5243-date-non-literal-constructor-inputs.md`. Do not implement directly from this bucket.
 
 ## Scope
 
@@ -110,7 +110,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] created: `issues/open/5243-erase-type-arguments-on-ambient-generic-function-calls.md`
+- [x] created: `issues/done/5243-date-non-literal-constructor-inputs.md`
 
 ## Notes
 
@@ -120,8 +120,8 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/open/5242-parse-direct-generic-call-type-arguments-for-callable-consts.md` covers generic callable const declarations; this case is an ambient `declare function`.
-- `issues/open/5202-parse-member-call-explicit-type-arguments.md` covers member callees; this case is a direct identifier call.
+- `issues/done/5242-w2-completion-declaration.md` covers generic callable const declarations; this case is an ambient `declare function`.
+- `issues/done/5202-parse-member-call-explicit-type-arguments.md` covers member callees; this case is a direct identifier call.
 - Broad import/export and name-resolution buckets are not exact owners for the current first blocker.
 
 ## Smart triage
@@ -193,7 +193,7 @@ TS2322: Type 'string' is not assignable to type 'number'.
 
 Split result:
 
-- `issues/open/5243-erase-type-arguments-on-ambient-generic-function-calls.md`
+- `issues/done/5243-date-non-literal-constructor-inputs.md`
 
 ## Completion evidence
 
@@ -203,7 +203,7 @@ The `circularResolvedSignature` bucket is complete. The current failure is split
 
 Commits:
 
-- split to `issues/open/5243-erase-type-arguments-on-ambient-generic-function-calls.md`
+- split to `issues/done/5243-date-non-literal-constructor-inputs.md`
 
 Validation result:
 

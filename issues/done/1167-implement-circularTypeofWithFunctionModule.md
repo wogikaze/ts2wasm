@@ -39,7 +39,7 @@ mise run reference-coverage -- tsc --path-filter reference/typescript/tests/case
 
 ## Desired final state
 
-This generated bucket is closed after splitting `issues/open/5244-support-namespace-merged-function-static-properties.md`. Do not implement directly from this bucket.
+This generated bucket is closed after splitting `issues/done/5244-date-timezone-formatting-policy.md`. Do not implement directly from this bucket.
 
 ## Scope
 
@@ -110,7 +110,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] created: `issues/open/5244-support-namespace-merged-function-static-properties.md`
+- [x] created: `issues/done/5244-date-timezone-formatting-policy.md`
 
 ## Notes
 
@@ -189,7 +189,7 @@ function maker type: typeof Bar
 
 Split result:
 
-- `issues/open/5244-support-namespace-merged-function-static-properties.md`
+- `issues/done/5244-date-timezone-formatting-policy.md`
 
 ## Completion evidence
 
@@ -199,7 +199,7 @@ The `circularTypeofWithFunctionModule` bucket is complete. The current failure i
 
 Commits:
 
-- split to `issues/open/5244-support-namespace-merged-function-static-properties.md`
+- split to `issues/done/5244-date-timezone-formatting-policy.md`
 
 Validation result:
 

@@ -108,7 +108,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] created: `issues/open/5230-tokenize-jsx-elements-before-regexp-fallback.md`
+- [x] created: `issues/done/5230-w0-lowered-ir-span-requirement.md`
 
 ## Notes
 
@@ -183,7 +183,7 @@ TypeScript oracle: TS2304 for div, TS2552 for foo, TS1161 for the closing tag
 
 Split result:
 
-- `issues/open/5230-tokenize-jsx-elements-before-regexp-fallback.md`
+- `issues/done/5230-w0-lowered-ir-span-requirement.md`
 
 ## Completion evidence
 

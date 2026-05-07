@@ -127,8 +127,8 @@ Follow-up issues:
 
 No duplicate implementation issue is needed because the current focused window
 is build-pass. Adjacent ambient/namespace issues such as
-`issues/open/5187-lower-namespace-only-multi-section-files.md` and
-`issues/open/5172-report-unresolved-implements-in-erased-namespace.md` own
+`issues/done/5187-lower-namespace-only-multi-section-files.md` and
+`issues/done/5172-report-unresolved-implements-in-erased-namespace.md` own
 other reference files with real diagnostics; this path has no current compiler
 or TypeScript oracle failure.
 

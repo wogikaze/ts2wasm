@@ -132,7 +132,7 @@ Split to `issues/open/5347-align-class-var-redeclaration-diagnostics.md`.
 
 Related no-match issues:
 
-- `issues/open/5162-allow-compatible-var-redeclarations.md` handles compatible
+- `issues/done/5162-allow-compatible-var-redeclarations.md` handles compatible
   duplicate `var` declarations.
 - `issues/open/5249-scope-block-local-class-declarations.md` handles nested
   block-local classes colliding with outer classes.

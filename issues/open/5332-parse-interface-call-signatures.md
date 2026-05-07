@@ -84,7 +84,7 @@ In scope:
 
 Out of scope:
 
-- Object type literal call signatures, tracked by `issues/open/5201-parse-object-type-literal-call-signatures.md`.
+- Object type literal call signatures, tracked by `issues/done/5201-parse-object-type-literal-call-signatures.md`.
 - Callable interface lowering/type behavior, tracked by callable-interface semantic issues.
 - Full React/JSX element type compatibility.
 - The later TS2322 diagnostic for `{ value: "C" }`.
@@ -155,11 +155,11 @@ Split from `issues/done/1264-implement-coAndContraVariantInferences-type-system.
 
 Related but not duplicates:
 
-- `issues/open/5245-parse-interface-construct-signatures.md` covers `new (...)`
+- `issues/done/5245-iterator-protocol-runtime.md` covers `new (...)`
   construct-signature members.
-- `issues/open/5201-parse-object-type-literal-call-signatures.md` covers call
+- `issues/done/5201-parse-object-type-literal-call-signatures.md` covers call
   signatures inside object type literals.
-- `issues/open/5195-support-callable-interface-typed-local-calls.md` covers
+- `issues/done/5195-support-callable-interface-typed-local-calls.md` covers
   lowering/semantic behavior after callable interfaces parse.
 
 ## Completion evidence

@@ -17,7 +17,7 @@ status: done
 
 Closed this generated import-export bucket because fresh triage for its four
 reference files stops at the `export = foo` parser/module boundary already
-owned by `issues/open/5186-parse-export-assignment-for-diagnostics.md`.
+owned by `issues/done/5186-parse-export-assignment-for-diagnostics.md`.
 
 ## Problem
 
@@ -42,7 +42,7 @@ mise run reference-coverage -- tsc --path-filter reference/typescript/tests/case
 ## Desired final state
 
 This generated bucket is closed. Implement from
-`issues/open/5186-parse-export-assignment-for-diagnostics.md`.
+`issues/done/5186-parse-export-assignment-for-diagnostics.md`.
 
 ## Scope
 
@@ -111,7 +111,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] superseded by: `issues/open/5186-parse-export-assignment-for-diagnostics.md`
+- [x] superseded by: `issues/done/5186-parse-export-assignment-for-diagnostics.md`
 
 ## Notes
 
@@ -157,7 +157,7 @@ diagnostics. The files differ in the value merged with namespace `foo`
 (`function`, `class`, namespace/var, and `preserveConstEnums`), but the current
 compiler boundary is identical: the frontend does not represent `export = foo`.
 
-Superseding issue: `issues/open/5186-parse-export-assignment-for-diagnostics.md`.
+Superseding issue: `issues/done/5186-parse-export-assignment-for-diagnostics.md`.
 
 ## Completion evidence
 

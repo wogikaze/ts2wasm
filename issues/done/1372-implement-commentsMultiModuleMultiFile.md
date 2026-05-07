@@ -147,7 +147,7 @@ Follow-up issues:
 - `issues/done/232-resolve-local-relative-es-module-graph.md` covers this
   issue's current first blocker: source-spanned rejection of non-local/bare
   module specifiers with an issue-linked diagnostic.
-- `issues/open/5229-resolve-imports-between-filename-sections.md` is related
+- `issues/done/5229-w0-user-runtime-string-origin.md` is related
   but not exact. It covers local relative imports such as `./b` between
   `@Filename` sections; this file uses a non-local specifier
   `commentsMultiModuleMultiFile_0`.

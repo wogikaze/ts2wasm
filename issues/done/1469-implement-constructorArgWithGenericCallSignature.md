@@ -169,7 +169,7 @@ Follow-up issues:
 - `issues/open/5287-bind-namespace-declarations-for-qualified-value-access.md`
   owns binding same-file non-ambient namespace declarations as namespace values
   so qualified accesses can resolve exported members.
-- `issues/open/5225-support-qualified-class-heritage-names.md` is related but
+- `issues/done/5225-w0-typed-wat-writer.md` is related but
   covers qualified names in class heritage clauses, not value access.
 - `issues/open/5294-resolve-sibling-namespaces-in-nested-namespace-scopes.md`
   is related but covers nested sibling namespace lookup.

@@ -124,7 +124,7 @@ Follow-up issues:
 
 - `issues/open/5340-preserve-function-after-object-type-declaration.md` is the exact owner for `var console: { log(...); }` followed by `function x()`.
 - `issues/open/5339-preserve-var-after-object-type-declaration.md` is related but covers the same object type declaration followed by another `var` declaration.
-- `issues/open/5201-parse-object-type-literal-call-signatures.md` is related but narrower: it covers call-signature members like `(name: string): string`, not method signatures like `log(val: any);`.
+- `issues/done/5201-parse-object-type-literal-call-signatures.md` is related but narrower: it covers call-signature members like `(name: string): string`, not method signatures like `log(val: any);`.
 - Arrow and `this.x` behavior after parsing remains unproven until issue 5340 advances past the object type declaration boundary.
 
 ## Smart triage

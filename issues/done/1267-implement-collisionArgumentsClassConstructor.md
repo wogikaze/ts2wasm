@@ -126,7 +126,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/open/5199-report-function-overload-list-class-merge-diagnostics.md` - related top-level function/class overload merge issue, not constructor overload ownership
+- `issues/done/5199-report-function-overload-list-class-merge-diagnostics.md` - related top-level function/class overload merge issue, not constructor overload ownership
 - `issues/open/5323-report-missing-constructor-parameter-list.md` - related malformed bare-constructor diagnostic, not valid overload signatures
 - no exact existing owner found for valid class constructor overload signatures
 

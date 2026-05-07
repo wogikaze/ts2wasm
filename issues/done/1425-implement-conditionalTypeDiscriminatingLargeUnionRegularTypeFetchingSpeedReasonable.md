@@ -123,7 +123,7 @@ Follow-up issues:
 
 - `issues/open/5278-parse-trailing-comma-in-function-parameters-with-comments.md`
   is related but narrower: ordinary function parameters with comments.
-- `issues/open/5149-parse-trailing-comma-in-typed-class-method-parameters.md`
+- `issues/done/5149-parse-trailing-comma-in-typed-class-method-parameters.md`
   is related but covers class methods, not exported function declarations.
 - Generic type-system candidates from smart triage are no-match because the
   concrete failure happens before AST construction at a parameter-list

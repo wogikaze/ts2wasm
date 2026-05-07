@@ -86,8 +86,8 @@ In scope:
 
 Out of scope:
 
-- Plain generic heritage such as `extends Base<T>`, tracked by `issues/open/5156-parse-generic-type-arguments-in-class-heritage.md`.
-- Direct generic callable const calls outside class heritage, tracked by `issues/open/5242-parse-direct-generic-call-type-arguments-for-callable-consts.md`.
+- Plain generic heritage such as `extends Base<T>`, tracked by `issues/done/5156-parse-generic-type-arguments-in-class-heritage.md`.
+- Direct generic callable const calls outside class heritage, tracked by `issues/done/5242-w2-completion-declaration.md`.
 - Contextual type inference after this parser boundary.
 
 ## Affected paths
@@ -153,9 +153,9 @@ on 2026-05-07.
 
 Related but not duplicates:
 
-- `issues/open/5156-parse-generic-type-arguments-in-class-heritage.md` covers
+- `issues/done/5156-parse-generic-type-arguments-in-class-heritage.md` covers
   plain and qualified generic heritage references such as `extends Base<T>`.
-- `issues/open/5242-parse-direct-generic-call-type-arguments-for-callable-consts.md`
+- `issues/done/5242-w2-completion-declaration.md`
   covers direct generic calls in expression positions, not class heritage.
 
 ## Completion evidence

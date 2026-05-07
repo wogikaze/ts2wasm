@@ -107,7 +107,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] created: `issues/open/5233-report-super-call-in-non-derived-class.md`
+- [x] created: `issues/done/5233-w0-harden-reference-coverage-prerequisites.md`
 
 ## Notes
 
@@ -186,7 +186,7 @@ TypeScript oracle: TS2335 "'super' can only be referenced in a derived class."
 
 Split result:
 
-- `issues/open/5233-report-super-call-in-non-derived-class.md`
+- `issues/done/5233-w0-harden-reference-coverage-prerequisites.md`
 
 ## Completion evidence
 

@@ -146,7 +146,7 @@ Follow-up issues:
 - `issues/open/5280-validate-commented-top-level-function-overloads.md` is
   related, but folding this larger reference file into it made the issue too
   large for readiness gates.
-- `issues/open/5200-validate-top-level-function-overload-implementations.md`
+- `issues/done/5200-validate-top-level-function-overload-implementations.md`
   is broader and related, but 5280 is the narrower comments/trivia work order.
 - Class method and constructor overloads later in `commentsOverloads.ts` are
   adjacent but not the first blocker reached by current triage.

@@ -107,7 +107,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] created: `issues/open/5227-honor-ts-ignore-for-js-call-diagnostics.md`
+- [x] created: `issues/done/5227-w0-validate-lowered-completeness.md`
 
 ## Notes
 
@@ -208,7 +208,7 @@ TypeScript oracle: TS2349 only for the block-comment pseudo-directive calls at l
 
 Split result:
 
-- `issues/open/5227-honor-ts-ignore-for-js-call-diagnostics.md`
+- `issues/done/5227-w0-validate-lowered-completeness.md`
 
 ## Completion evidence
 

@@ -142,7 +142,7 @@ Split from `issues/done/1358-implement-commentsAtEndOfFile.md`.
 Related but not duplicates:
 
 - `issues/done/290-fix-asi-eof-semicolon-parser-bucket.md` covered `expected Semicolon, got None`, not a labeled empty statement.
-- `issues/open/5211-parse-do-while-asi-before-labeled-statement.md` covers an ASI boundary before a following label, not `label: ;`.
+- `issues/done/5211-sparse-array-spread-support.md` covers an ASI boundary before a following label, not `label: ;`.
 - Broad unknown-unsupported buckets are not exact owners for this current failure.
 
 ## Completion evidence

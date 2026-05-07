@@ -149,11 +149,11 @@ Related but not duplicates:
   resolver binding.
 - `issues/open/432-implement-import-export.md` is the broad import/export
   triage parent and is too broad for direct implementation.
-- `issues/open/5187-lower-namespace-only-multi-section-files.md` only preserves
+- `issues/done/5187-lower-namespace-only-multi-section-files.md` only preserves
   namespace-only multi-section bodies before triage.
-- `issues/open/5225-support-qualified-class-heritage-names.md` covers namespace
+- `issues/done/5225-w0-typed-wat-writer.md` covers namespace
   qualification in `extends` clauses, not top-level value access.
-- `issues/open/5244-support-namespace-merged-function-static-properties.md`
+- `issues/done/5244-date-timezone-formatting-policy.md`
   covers function/namespace merging, not plain namespace value binding.
 
 ## Smart triage

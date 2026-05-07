@@ -130,7 +130,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/open/5180-parse-computed-property-object-binding-patterns.md` is
+- `issues/done/5180-parse-computed-property-object-binding-patterns.md` is
   related but not a duplicate: it covers parser acceptance for computed binding
   keys. The current representative already has `tokens: ok` and `ast: ok`.
 - `issues/done/251-implement-destructuring-binding-runtime-semantics.md`

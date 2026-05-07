@@ -21,7 +21,7 @@ Triage checkInfiniteExpansionTermination across 1 failing reference test cases a
 
 Reference test results show 1 case failing in directory `checkInfiniteExpansionTermination`. Fresh triage shows tokens and AST succeed; `validate_ast` stops on duplicate-function validation for two ambient `declare function combineLatest` overload declarations.
 
-Problem: `checkInfiniteExpansionTermination2.ts` is too broad for direct implementation. Its current observable blocker is now tracked by `issues/open/5226-allow-ambient-function-overload-declarations.md`.
+Problem: `checkInfiniteExpansionTermination2.ts` is too broad for direct implementation. Its current observable blocker is now tracked by `issues/done/5226-w0-ast-node-span-requirement.md`.
 
 ## Current failure
 
@@ -39,7 +39,7 @@ mise run reference-coverage -- tsc --path-filter reference/typescript/tests/case
 
 ## Desired final state
 
-This generated bucket is superseded by `issues/open/5226-allow-ambient-function-overload-declarations.md`. Do not implement directly from this bucket.
+This generated bucket is superseded by `issues/done/5226-w0-ast-node-span-requirement.md`. Do not implement directly from this bucket.
 
 ## Scope
 
@@ -111,7 +111,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] created: `issues/open/5226-allow-ambient-function-overload-declarations.md`
+- [x] created: `issues/done/5226-w0-ast-node-span-requirement.md`
 
 ## Notes
 
@@ -121,8 +121,8 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/open/5200-validate-top-level-function-overload-implementations.md` is related but not exact: it handles non-ambient overload signatures with implementation declarations, while this bucket's current blocker is multiple ambient `declare function` signatures with no implementation body.
-- `issues/open/5199-report-function-overload-list-class-merge-diagnostics.md` is not exact: this bucket has no class/function merge.
+- `issues/done/5200-validate-top-level-function-overload-implementations.md` is related but not exact: it handles non-ambient overload signatures with implementation declarations, while this bucket's current blocker is multiple ambient `declare function` signatures with no implementation body.
+- `issues/done/5199-report-function-overload-list-class-merge-diagnostics.md` is not exact: this bucket has no class/function merge.
 
 ## Smart triage
 
@@ -195,7 +195,7 @@ is tracked by child issue 5226.
 
 Commits:
 
-- child issue: `issues/open/5226-allow-ambient-function-overload-declarations.md`
+- child issue: `issues/done/5226-w0-ast-node-span-requirement.md`
 
 Validation result:
 

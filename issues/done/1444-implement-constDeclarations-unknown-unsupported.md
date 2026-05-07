@@ -138,7 +138,7 @@ Generated on 2026-05-07.
 Nearby non-owners:
 
 - `issues/open/5264-parse-typed-const-declarations-before-initializers.md` covers typed const declarations with valid initializers, not missing-initializer diagnostics.
-- `issues/open/5184-parse-const-enum-declarations.md` covers `const enum`, not ordinary const variable declarations.
+- `issues/done/5184-parse-const-enum-declarations.md` covers `const enum`, not ordinary const variable declarations.
 
 ## Completion evidence
 

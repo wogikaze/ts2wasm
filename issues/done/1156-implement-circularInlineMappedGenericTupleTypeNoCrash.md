@@ -110,7 +110,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] created: `issues/open/5241-parse-spread-arguments-in-new-expressions.md`
+- [x] created: `issues/done/5241-w2-number-model-sentinels.md`
 
 ## Notes
 
@@ -124,7 +124,7 @@ Fresh duplicate scan found broad spread issues but no exact implementation-ready
 owner for constructor-call spread parsing:
 
 - `issues/open/274-implement-spread-operator.md` is the broad spread meta issue.
-- `issues/open/353-spread-iterator-protocol.md` owns general iterator protocol semantics.
+- `issues/done/353-spread-iterator-protocol.md` owns general iterator protocol semantics.
 - `issues/done/039-implement-spread-arguments.md` completed ordinary call spread syntax.
 
 Issue 5241 is narrower: parse spread arguments in `new` expressions so the

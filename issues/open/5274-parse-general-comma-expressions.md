@@ -80,7 +80,7 @@ Out of scope:
 - Runtime lowering for arbitrary comma expressions beyond proving the parser
   shape is represented.
 - Comma-separated `for` update expressions, tracked by
-  `issues/open/5182-parse-comma-separated-for-update-expressions.md`.
+  `issues/done/5182-parse-comma-separated-for-update-expressions.md`.
 
 ## Affected paths
 
@@ -148,7 +148,7 @@ Split from generated bucket `issues/done/1336-implement-commaOperator.md`.
 
 Related but distinct:
 
-- `issues/open/5182-parse-comma-separated-for-update-expressions.md` handles
+- `issues/done/5182-parse-comma-separated-for-update-expressions.md` handles
   the narrow `for (...; ...; ++x, --y)` update slot.
 - `issues/done/1338-implement-commaOperatorLeftSideUnused.md` is a generated
   blocked bucket for TS2695 diagnostics after parser support exists.

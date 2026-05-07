@@ -167,9 +167,9 @@ Follow-up issues:
 - `issues/open/5287-bind-namespace-declarations-for-qualified-value-access.md`
   owns binding same-file non-ambient namespace declarations as namespace values
   so qualified accesses can resolve exported members.
-- `issues/open/5187-lower-namespace-only-multi-section-files.md` is related
+- `issues/done/5187-lower-namespace-only-multi-section-files.md` is related
   but covers namespace-only multi-section preservation.
-- `issues/open/5244-support-namespace-merged-function-static-properties.md` is
+- `issues/done/5244-date-timezone-formatting-policy.md` is
   related but covers function/namespace merging and exported static members.
 
 ## Smart triage

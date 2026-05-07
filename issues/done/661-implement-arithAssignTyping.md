@@ -126,8 +126,8 @@ Split to `issues/open/5349-parse-multiplicative-compound-assignment-operators.md
 No exact existing implementation-ready owner covered identifier-target `*=`,
 `/=`, and `%=`:
 
-- `issues/open/5178-parse-bitwise-compound-assignment-operators.md` owns bitwise `^=`, `&=`, and `|=`.
-- `issues/open/5164-parse-exponentiation-compound-assignment.md` owns `**=`.
+- `issues/done/5178-parse-bitwise-compound-assignment-operators.md` owns bitwise `^=`, `&=`, and `|=`.
+- `issues/done/5164-parse-exponentiation-compound-assignment.md` owns `**=`.
 - `issues/open/5311-parse-property-access-arithmetic-compound-assignments.md` owns namespace property `+=`.
 
 Current evidence:

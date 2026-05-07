@@ -93,7 +93,7 @@ Out of scope:
 
 - Full TypeScript contextual typing or mapped-type evaluation.
 - Non-ambient callable interface locals, tracked by
-  `issues/open/5195-support-callable-interface-typed-local-calls.md`.
+  `issues/done/5195-support-callable-interface-typed-local-calls.md`.
 - Generic ambient const function calls, tracked by
   `issues/open/5374-support-callable-ambient-const-local-calls.md` and
   `issues/open/5376-support-ambient-generic-factory-local-calls.md`.

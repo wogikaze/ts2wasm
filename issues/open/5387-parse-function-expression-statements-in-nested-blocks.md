@@ -1,5 +1,5 @@
 ---
-id: 5212
+id: 5387
 title: "Parse function expression statements in nested blocks"
 type: feature
 area: frontend/syntax

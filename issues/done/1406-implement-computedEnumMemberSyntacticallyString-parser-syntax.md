@@ -15,7 +15,7 @@ completed: 2026-05-07
 ## Summary
 
 Closed as superseded by
-`issues/open/5229-resolve-imports-between-filename-sections.md`.
+`issues/done/5229-w0-user-runtime-string-origin.md`.
 
 Fresh triage shows the original parser-syntax label is stale:
 `computedEnumMemberSyntacticallyString2.ts` now parses and builds far enough to
@@ -123,7 +123,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] superseded by: `issues/open/5229-resolve-imports-between-filename-sections.md`
+- [x] superseded by: `issues/done/5229-w0-user-runtime-string-origin.md`
 
 ## Notes
 
@@ -133,7 +133,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/open/5229-resolve-imports-between-filename-sections.md` owns the
+- `issues/done/5229-w0-user-runtime-string-origin.md` owns the
   current first blocker: local imports between TypeScript reference
   `// @Filename:` / `// @filename:` virtual sections.
 - `issues/open/5296-parse-double-dot-numeric-literal-property-access.md` covers

@@ -110,7 +110,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] none; superseded by `issues/open/5232-support-entry-export-class-declarations.md`
+- [x] none; superseded by `issues/done/5232-w0-fixture-ize-runtimelinkplan-linker-structure-tests.md`
 
 ## Notes
 
@@ -120,7 +120,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- Superseded by `issues/open/5232-support-entry-export-class-declarations.md`.
+- Superseded by `issues/done/5232-w0-fixture-ize-runtimelinkplan-linker-structure-tests.md`.
   The current 1427 first blocker is the same entry-module `ExportDecl(ClassDecl)`
   issue-5005 boundary that 5232 owns.
 - Generic import/export duplicate candidates are no-match because they cover

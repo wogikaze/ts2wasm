@@ -129,7 +129,7 @@ Follow-up issues:
 ## Duplicate detection
 
 - `issues/open/5255-resolve-super-property-accesses.md` is related but covers bare `super` property receivers resolving as normal identifiers, not the unresolved synthetic `this` produced by lexical `super.foo()` in arrows.
-- `issues/open/5204-resolve-lexical-super-property-captures-in-super-call-arguments.md` is related but scoped to arrow arguments passed to `super(...)`, not arrows inside ordinary derived class methods.
+- `issues/done/5204-resolve-lexical-super-property-captures-in-super-call-arguments.md` is related but scoped to arrow arguments passed to `super(...)`, not arrows inside ordinary derived class methods.
 - No exact existing implementation-ready issue owned this method-arrow lexical `super.foo()` blocker, so this bucket was split to issue 5341.
 
 ## Smart triage

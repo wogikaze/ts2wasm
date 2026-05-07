@@ -14,7 +14,7 @@ updated: 2026-05-06
 ## Summary
 
 Closed as superseded by
-`issues/open/5226-allow-ambient-function-overload-declarations.md`. Fresh
+`issues/done/5226-w0-ast-node-span-requirement.md`. Fresh
 triage shows this generated parser-syntax bucket is now blocked by duplicate
 validation for ambient `declare function` overload signatures, not parser
 syntax.
@@ -135,13 +135,13 @@ declare function assertNode(node: Node | undefined, test: ((node: Node) => boole
 
 ## Duplicate detection
 
-- `issues/open/5226-allow-ambient-function-overload-declarations.md` is the exact
+- `issues/done/5226-w0-ast-node-span-requirement.md` is the exact
   owner for multiple bodyless ambient `declare function` declarations with the
   same name.
-- `issues/open/5200-validate-top-level-function-overload-implementations.md` is
+- `issues/done/5200-validate-top-level-function-overload-implementations.md` is
   related but not exact: it handles non-ambient overload signatures with an
   implementation declaration.
-- `issues/open/5199-report-function-overload-list-class-merge-diagnostics.md`
+- `issues/done/5199-report-function-overload-list-class-merge-diagnostics.md`
   is related but not exact: it handles overload lists followed by class
   declarations.
 - Broad parser-syntax candidates are stale because fresh triage shows tokens
@@ -179,7 +179,7 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- Superseded by `issues/open/5226-allow-ambient-function-overload-declarations.md`; see local commit for this issue cleanup.
+- Superseded by `issues/done/5226-w0-ast-node-span-requirement.md`; see local commit for this issue cleanup.
 
 Validation result:
 

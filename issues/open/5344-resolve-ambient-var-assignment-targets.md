@@ -96,7 +96,7 @@ In scope:
 
 Out of scope:
 
-- General expression references to ambient values, tracked by `issues/open/5161-model-ambient-value-declarations-for-name-resolution.md`.
+- General expression references to ambient values, tracked by `issues/done/5161-model-ambient-value-declarations-for-name-resolution.md`.
 - Full runtime implementation or initialization of ambient values.
 - Ambient declarations with initializers; those must remain rejected at the existing unsupported boundary.
 - TypeScript semantic assignment compatibility checks after the name resolves.
@@ -166,11 +166,11 @@ Split from `issues/done/1346-implement-commentOnAmbientVariable.md`.
 
 Related but not duplicate:
 
-- `issues/open/5161-model-ambient-value-declarations-for-name-resolution.md`
+- `issues/done/5161-model-ambient-value-declarations-for-name-resolution.md`
   covers ambient values referenced in expression positions such as array
   literals, object literal shorthand, and method receivers. This issue owns the
   assignment target form from `commentOnAmbientVariable2.ts`.
-- `issues/open/5193-parse-asi-after-ambient-variable-declarations.md` covers
+- `issues/done/5193-parse-asi-after-ambient-variable-declarations.md` covers
   parser ASI after ambient variable declarations, not name resolution after
   successful parse.
 

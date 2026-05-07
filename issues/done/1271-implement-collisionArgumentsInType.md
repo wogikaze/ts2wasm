@@ -116,7 +116,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/open/5201-parse-object-type-literal-call-signatures.md` covers object type literal call-signature members only.
+- `issues/done/5201-parse-object-type-literal-call-signatures.md` covers object type literal call-signature members only.
 - `issues/open/5257-parse-object-type-literal-construct-signatures.md` covers construct signatures only.
 - `issues/open/5333-report-strict-mode-arguments-binding-diagnostics.md` covers strict-mode `arguments` diagnostics after syntax parsing succeeds.
 - none fully cover the mixed call, construct, method, and property signature members with rest parameters in this reference.

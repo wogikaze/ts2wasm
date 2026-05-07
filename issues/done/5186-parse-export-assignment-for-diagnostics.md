@@ -68,9 +68,9 @@ The frontend represents `export = expr` as an AST statement with the exported ex
 
 In scope:
 
-- [ ] Parse `export = <expression>;` as a distinct export-assignment AST statement.
-- [ ] Preserve the span of the exported expression.
-- [ ] Add focused parser/AST coverage for `export = foo`.
+- [x] Parse `export = <expression>;` as a distinct export-assignment AST statement.
+- [x] Preserve the span of the exported expression.
+- [x] Add focused parser/AST coverage for `export = foo`.
 
 Out of scope:
 
@@ -96,10 +96,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] A focused parser or CLI test covers `export = foo;`.
-- [ ] `export = foo;` preserves an expression span for `foo`.
-- [ ] `constEnumMergingWithValues1.ts`, `2.ts`, `4.ts`, and `5.ts` no longer stop at the generic `issue-055: unsupported static export` boundary.
-- [ ] `python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/blockScopedFunctionDeclarationInStrictModule.ts` advances past the current AST-construction failure at the `export` keyword or reports the next semantic/module boundary with expression-span evidence.
+- [x] A focused parser or CLI test covers `export = foo;`.
+- [x] `export = foo;` preserves an expression span for `foo`.
+- [x] `constEnumMergingWithValues1.ts`, `2.ts`, `4.ts`, and `5.ts` no longer stop at the generic `issue-055: unsupported static export` boundary.
+- [x] `python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/blockScopedFunctionDeclarationInStrictModule.ts` advances past the current AST-construction failure at the `export` keyword or reports the next semantic/module boundary with expression-span evidence.
 
 ## Validation
 
@@ -125,15 +125,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 

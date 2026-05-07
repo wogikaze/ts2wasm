@@ -118,7 +118,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- No exact existing owner found. `issues/open/5160-lower-plain-ternary-conditional-expressions.md`
+- No exact existing owner found. `issues/done/5160-lower-plain-ternary-conditional-expressions.md`
   is related but starts after parser success; this bucket currently stops
   during AST construction on arrow-function ternary branches.
 

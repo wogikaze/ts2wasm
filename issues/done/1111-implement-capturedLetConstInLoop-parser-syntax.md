@@ -107,12 +107,12 @@ Current state:
 
 Follow-up issues:
 
-- [x] `issues/open/5207-parse-do-while-asi-before-following-for.md`
-- [x] `issues/open/5208-parse-arrow-body-destructuring-assignments.md`
-- [x] `issues/open/5209-parse-computed-object-literal-property-expressions.md`
-- [x] `issues/open/5210-parse-do-while-asi-before-block-end-or-expression.md`
-- [x] `issues/open/5211-parse-do-while-asi-before-labeled-statement.md`
-- [x] `issues/open/5212-parse-function-expression-statements-in-nested-blocks.md`
+- [x] `issues/done/5207-support-ambient-interface-filter-receiver.md`
+- [x] `issues/done/5208-support-regexp-match-fallback-array-map-receiver.md`
+- [x] `issues/done/5209-support-class-instance-method-receiver-calls.md`
+- [x] `issues/done/5210-array-map-sparse-array-holes.md`
+- [x] `issues/done/5211-sparse-array-spread-support.md`
+- [x] `issues/open/5387-parse-function-expression-statements-in-nested-blocks.md`
 
 ## Notes
 
@@ -149,7 +149,7 @@ Follow-up issues:
 
 Fresh triage has started. The repeated `expected Semicolon, got Some(For)`
 subfamily is split to
-`issues/open/5207-parse-do-while-asi-before-following-for.md`; remaining
+`issues/done/5207-support-ambient-interface-filter-receiver.md`; remaining
 subfamilies still need child issues.
 
 ### Smart triage: capturedLetConstInLoop1
@@ -186,7 +186,7 @@ Source context:
 ```
 
 TypeScript oracle succeeds with no diagnostics.
-Child issue `issues/open/5207-parse-do-while-asi-before-following-for.md`
+Child issue `issues/done/5207-support-ambient-interface-filter-receiver.md`
 owns this ASI slice.
 
 ### Smart triage: capturedLetConstInLoop1_ES6
@@ -223,7 +223,7 @@ Source context:
 ```
 
 TypeScript oracle succeeds with no diagnostics.
-Child issue `issues/open/5207-parse-do-while-asi-before-following-for.md`
+Child issue `issues/done/5207-support-ambient-interface-filter-receiver.md`
 owns this ASI slice.
 
 ### Smart triage: capturedLetConstInLoop6
@@ -263,7 +263,7 @@ TypeScript oracle succeeds with no diagnostics. This is the same
 no-semicolon `do while` before `for` parser boundary as capturedLetConstInLoop1,
 with `break` and `continue` statements already parsed inside the preceding
 body. Child issue
-`issues/open/5207-parse-do-while-asi-before-following-for.md` owns this ASI
+`issues/done/5207-support-ambient-interface-filter-receiver.md` owns this ASI
 slice.
 
 ### Smart triage: capturedLetConstInLoop6_ES6
@@ -303,7 +303,7 @@ TypeScript oracle succeeds with no diagnostics. This is the same
 no-semicolon `do while` before `for` parser boundary as capturedLetConstInLoop1,
 with `break` and `continue` statements already parsed inside the preceding
 body. Child issue
-`issues/open/5207-parse-do-while-asi-before-following-for.md` owns this ASI
+`issues/done/5207-support-ambient-interface-filter-receiver.md` owns this ASI
 slice.
 
 ### Smart triage: capturedLetConstInLoop12
@@ -340,7 +340,7 @@ Source context:
 
 TypeScript AST sees the arrow body as a `BinaryExpression` assignment
 `[i] = [i + 1]` and reports no diagnostics. Child issue
-`issues/open/5208-parse-arrow-body-destructuring-assignments.md` owns this
+`issues/done/5208-support-regexp-match-fallback-array-map-receiver.md` owns this
 parser slice.
 
 ### Smart triage: capturedLetConstInLoop13
@@ -377,7 +377,7 @@ Source context:
 
 TypeScript AST sees `PropertyAssignment -> ComputedPropertyName ->
 BinaryExpression` for `name + ".a"` and reports no diagnostics. Child issue
-`issues/open/5209-parse-computed-object-literal-property-expressions.md` owns
+`issues/done/5209-support-class-instance-method-receiver-calls.md` owns
 this parser slice.
 
 ### Smart triage: capturedLetConstInLoop2
@@ -406,7 +406,7 @@ Failure location:
 
 Source context includes the preceding `do { ... } while (1 === 1)` with no
 explicit semicolon before the enclosing function closes. Child issue
-`issues/open/5210-parse-do-while-asi-before-block-end-or-expression.md` owns
+`issues/done/5210-array-map-sparse-array-holes.md` owns
 this ASI slice.
 
 ### Smart triage: capturedLetConstInLoop2_ES6
@@ -435,7 +435,7 @@ Failure location:
 
 Source context includes the preceding `do { ... } while (1 === 1)` with no
 explicit semicolon before the enclosing function closes. Child issue
-`issues/open/5210-parse-do-while-asi-before-block-end-or-expression.md` owns
+`issues/done/5210-array-map-sparse-array-holes.md` owns
 this ASI slice.
 
 ### Smart triage: capturedLetConstInLoop5
@@ -465,7 +465,7 @@ Failure location:
 Source context includes a preceding `do { ... } while (1 === 1)` with no
 explicit semicolon before the following `use(v);` expression. TypeScript
 advances and reports TS2454 use-before-assigned diagnostics. Child issue
-`issues/open/5210-parse-do-while-asi-before-block-end-or-expression.md` owns
+`issues/done/5210-array-map-sparse-array-holes.md` owns
 this ASI slice.
 
 ### Smart triage: capturedLetConstInLoop5_ES6
@@ -495,7 +495,7 @@ Failure location:
 Source context includes a preceding `do { ... } while (1 === 1)` with no
 explicit semicolon before the following `use(v);` expression. TypeScript
 advances and reports TS2454 use-before-assigned diagnostics. Child issue
-`issues/open/5210-parse-do-while-asi-before-block-end-or-expression.md` owns
+`issues/done/5210-array-map-sparse-array-holes.md` owns
 this ASI slice.
 
 ### Smart triage: capturedLetConstInLoop7
@@ -533,7 +533,7 @@ Source context:
 
 TypeScript oracle accepts the no-semicolon `do while` before the labeled
 statement. Child issue
-`issues/open/5211-parse-do-while-asi-before-labeled-statement.md` owns this ASI
+`issues/done/5211-sparse-array-spread-support.md` owns this ASI
 slice.
 
 ### Smart triage: capturedLetConstInLoop7_ES6
@@ -571,7 +571,7 @@ Source context:
 
 TypeScript oracle accepts the no-semicolon `do while` before the labeled
 statement. Child issue
-`issues/open/5211-parse-do-while-asi-before-labeled-statement.md` owns this ASI
+`issues/done/5211-sparse-array-spread-support.md` owns this ASI
 slice.
 
 ### Smart triage: capturedLetConstInLoop9
@@ -609,7 +609,7 @@ Source context:
 
 TypeScript accepts the parenthesized function expression statement inside the
 nested block. Child issue
-`issues/open/5212-parse-function-expression-statements-in-nested-blocks.md`
+`issues/open/5387-parse-function-expression-statements-in-nested-blocks.md`
 owns this parser slice.
 
 ### Smart triage: capturedLetConstInLoop9_ES6
@@ -647,7 +647,7 @@ Source context:
 
 TypeScript accepts the parenthesized function expression statement inside the
 nested block. Child issue
-`issues/open/5212-parse-function-expression-statements-in-nested-blocks.md`
+`issues/open/5387-parse-function-expression-statements-in-nested-blocks.md`
 owns this parser slice.
 
 ### Folded triage from #1109: capturedLetConstInLoop4
@@ -690,7 +690,7 @@ Compiler tokens succeed; AST and resolved dumps fail with the same
 `UnsupportedSyntax` parser error. TypeScript oracle succeeds with no
 diagnostics. This is the same no-semicolon `do while` before `for` boundary as
 capturedLetConstInLoop1, with captured `var` use in the surrounding body. Child
-issue `issues/open/5207-parse-do-while-asi-before-following-for.md` owns this
+issue `issues/done/5207-support-ambient-interface-filter-receiver.md` owns this
 ASI slice.
 
 ### Folded triage from #1109: capturedLetConstInLoop4_ES6
@@ -733,7 +733,7 @@ Compiler tokens succeed; AST and resolved dumps fail with the same
 `UnsupportedSyntax` parser error. TypeScript oracle succeeds with no
 diagnostics. This is the same no-semicolon `do while` before `for` boundary as
 capturedLetConstInLoop1, with captured `var` use in the surrounding body. Child
-issue `issues/open/5207-parse-do-while-asi-before-following-for.md` owns this
+issue `issues/done/5207-support-ambient-interface-filter-receiver.md` owns this
 ASI slice.
 
 ## Completion evidence

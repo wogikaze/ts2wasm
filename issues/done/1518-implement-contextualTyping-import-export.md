@@ -169,10 +169,10 @@ Compiler evidence:
 
 Duplicate review:
 
-- `issues/open/5200-validate-top-level-function-overload-implementations.md`
+- `issues/done/5200-validate-top-level-function-overload-implementations.md`
   owns valid non-ambient overload signatures plus implementations, not mixed
   ambient/non-ambient diagnostics.
-- `issues/open/5226-allow-ambient-function-overload-declarations.md` owns
+- `issues/done/5226-w0-ast-node-span-requirement.md` owns
   multiple ambient overload declarations, not a mixed ambient signature plus
   non-ambient implementation.
 - `issues/open/5307-report-var-function-duplicate-identifier-diagnostics.md`

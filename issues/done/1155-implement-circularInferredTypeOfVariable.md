@@ -110,7 +110,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] created: `issues/open/5240-parse-async-arrow-function-expressions.md`
+- [x] created: `issues/done/5240-w2-docs-audit-and-stale-entries.md`
 
 ## Notes
 

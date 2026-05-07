@@ -78,7 +78,7 @@ Out of scope:
 - `import x = require("./file1")` support.
 - `declare module "./file1"` augmentation semantics.
 - The invalid `export =` plus other exported declarations rule, tracked by `issues/open/5306-report-export-assignment-with-other-exports.md`.
-- Virtual `@Filename` section import resolution, tracked by `issues/open/5229-resolve-imports-between-filename-sections.md`.
+- Virtual `@Filename` section import resolution, tracked by `issues/done/5229-w0-user-runtime-string-origin.md`.
 
 ## Affected paths
 
@@ -144,7 +144,7 @@ Related but not duplicate:
 
 - `issues/open/5306-report-export-assignment-with-other-exports.md` covers the
   TypeScript diagnostic for `export =` combined with other exported elements.
-- `issues/open/5229-resolve-imports-between-filename-sections.md` covers
+- `issues/done/5229-w0-user-runtime-string-origin.md` covers
   virtual multi-file import resolution after import syntax is parsed.
 - `issues/open/432-implement-import-export.md` is the broad import/export
   umbrella and is too large to implement directly.

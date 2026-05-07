@@ -130,7 +130,7 @@ Split from stale generated bucket `issues/done/1195-implement-classExtendingQual
 
 Related but not duplicates:
 
-- `issues/open/5225-support-qualified-class-heritage-names.md` handles a
+- `issues/done/5225-w0-typed-wat-writer.md` handles a
   current unsupported qualified heritage implementation blocker. This issue is
   the semantic diagnostic for namespace-private qualified heritage after the
   representative `classExtendingQualifiedName.ts` path now build-passes.

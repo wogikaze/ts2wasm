@@ -78,7 +78,7 @@ In scope:
 
 Out of scope:
 
-- `export let` destructuring, tracked separately by `issues/open/5175-support-export-let-destructuring-declarations.md`.
+- `export let` destructuring, tracked separately by `issues/done/5175-support-export-let-destructuring-declarations.md`.
 - `export function`, `export class`, and `export enum` slices.
 - Full AMD emit or comment-preservation fidelity.
 
@@ -142,10 +142,10 @@ Split from `issues/done/1360-implement-commentsBeforeVariableStatement.md`.
 
 Related but not duplicates:
 
-- `issues/open/5175-support-export-let-destructuring-declarations.md` covers
+- `issues/done/5175-support-export-let-destructuring-declarations.md` covers
   `export let` destructuring and explicitly excludes general `export var`.
-- `issues/open/5144-support-entry-export-function-declarations.md`,
-  `issues/open/5232-support-entry-export-class-declarations.md`, and
+- `issues/done/5144-support-entry-export-function-declarations.md`,
+  `issues/done/5232-w0-fixture-ize-runtimelinkplan-linker-structure-tests.md`, and
   `issues/open/5277-parse-export-enum-declarations-to-enum-boundary.md` cover
   sibling export forms.
 - `issues/open/432-implement-import-export.md` is the broad generated

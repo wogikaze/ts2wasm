@@ -114,7 +114,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] superseded by `issues/open/5161-model-ambient-value-declarations-for-name-resolution.md`
+- [x] superseded by `issues/done/5161-model-ambient-value-declarations-for-name-resolution.md`
 
 ## Notes
 
@@ -124,7 +124,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/open/5161-model-ambient-value-declarations-for-name-resolution.md` - exact owner for `declare const` values being visible to expression name resolution
+- `issues/done/5161-model-ambient-value-declarations-for-name-resolution.md` - exact owner for `declare const` values being visible to expression name resolution
 - `issues/open/064-implement-name-resolution.md` - Implement name resolution (triaged - superseded by test262 metadata issues) (same feature label, title overlap)
 - `issues/open/437-implement-name-resolution.md` - Implement name resolution (same feature label, title overlap)
 - `issues/open/648-implement-argumentsAsPropertyName-name-resolution.md` - Implement Argumentsaspropertyname Name Resolution (same feature label, title overlap)
@@ -197,13 +197,13 @@ binding fn type: (() => void) | ((a: number) => void)
 
 Superseding owner:
 
-- `issues/open/5161-model-ambient-value-declarations-for-name-resolution.md`
+- `issues/done/5161-model-ambient-value-declarations-for-name-resolution.md`
 
 ## Completion evidence
 
 Commits:
 
-- Superseded by `issues/open/5161-model-ambient-value-declarations-for-name-resolution.md`; see local commit for this issue cleanup.
+- Superseded by `issues/done/5161-model-ambient-value-declarations-for-name-resolution.md`; see local commit for this issue cleanup.
 
 Validation result:
 

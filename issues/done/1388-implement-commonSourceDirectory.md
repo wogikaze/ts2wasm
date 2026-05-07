@@ -14,7 +14,7 @@ updated: 2026-05-07
 ## Summary
 
 Closed as superseded by
-`issues/open/5187-lower-namespace-only-multi-section-files.md`.
+`issues/done/5187-lower-namespace-only-multi-section-files.md`.
 
 Fresh focused triage shows this bucket currently stops at declaration-only /
 namespace-only `.d.ts` multi-section handling, not common source directory
@@ -137,7 +137,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] superseded by: `issues/open/5187-lower-namespace-only-multi-section-files.md`
+- [x] superseded by: `issues/done/5187-lower-namespace-only-multi-section-files.md`
 
 ## Notes
 
@@ -148,7 +148,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/open/5187-lower-namespace-only-multi-section-files.md` owns keeping
+- `issues/done/5187-lower-namespace-only-multi-section-files.md` owns keeping
   namespace-only/declaration-only multi-section `.d.ts` bodies observable enough
   for the next namespace/scope diagnostic.
 - `issues/open/5292-skip-tsconfig-filename-sections-in-reference-harness.md`

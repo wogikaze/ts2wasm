@@ -143,7 +143,7 @@ Current state:
 Follow-up issues:
 
 - [x] created: `issues/open/5357-avoid-eval-diagnostic-for-qualified-function-constructors.md`
-- [x] existing: `issues/open/5232-support-entry-export-class-declarations.md`
+- [x] existing: `issues/done/5232-w0-fixture-ize-runtimelinkplan-linker-structure-tests.md`
 - [x] existing: `issues/open/5334-parse-class-constructor-overload-signatures.md`
 
 ## Notes
@@ -156,7 +156,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/open/5232-support-entry-export-class-declarations.md` owns the
+- `issues/done/5232-w0-fixture-ize-runtimelinkplan-linker-structure-tests.md` owns the
   issue-5005 entry-module `export class C` blocker.
 - `issues/open/5334-parse-class-constructor-overload-signatures.md` owns the
   `DuplicateFunction: duplicate constructor definition` blocker exposed after

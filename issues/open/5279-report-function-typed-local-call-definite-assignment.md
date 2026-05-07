@@ -85,8 +85,8 @@ In scope:
 Out of scope:
 
 - Runtime support for arbitrary function-valued local calls.
-- Callable interface locals, tracked by `issues/open/5195-support-callable-interface-typed-local-calls.md`.
-- Conditional callable types, tracked by `issues/open/5196-support-callable-conditional-typed-parameter-calls.md`.
+- Callable interface locals, tracked by `issues/done/5195-support-callable-interface-typed-local-calls.md`.
+- Conditional callable types, tracked by `issues/done/5196-support-callable-conditional-typed-parameter-calls.md`.
 - Method receiver support for `obj.method()`.
 
 ## Affected paths

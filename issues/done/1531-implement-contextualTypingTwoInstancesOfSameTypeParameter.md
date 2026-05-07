@@ -117,7 +117,7 @@ Follow-up issues:
 ## Duplicate detection
 
 - No exact existing owner found.
-- `issues/open/5208-parse-arrow-body-destructuring-assignments.md` is related
+- `issues/done/5208-support-regexp-match-fallback-array-map-receiver.md` is related
   but owns destructuring assignment bodies such as `() => [i] = [i + 1]`, not
   this plain identifier assignment body `y => x = y`.
 

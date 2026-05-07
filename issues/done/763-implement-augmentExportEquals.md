@@ -145,7 +145,7 @@ Related no-match issues:
 - `issues/open/5306-report-export-assignment-with-other-exports.md` covers the
   invalid `export =` plus other exported declarations rule, not a plain
   CommonJS export assignment.
-- `issues/open/5229-resolve-imports-between-filename-sections.md` covers
+- `issues/done/5229-w0-user-runtime-string-origin.md` covers
   virtual file import resolution after import syntax is parsed.
 - `issues/open/432-implement-import-export.md` is the broad import/export
   umbrella and is too large to implement directly.

@@ -171,7 +171,7 @@ Related but not duplicates:
   non-constructor local values in heritage clauses.
 - `issues/open/5315-report-class-extends-interface-diagnostics.md` covers
   class-extends-interface diagnostics.
-- `issues/open/5225-support-qualified-class-heritage-names.md` covers qualified
+- `issues/done/5225-w0-typed-wat-writer.md` covers qualified
   heritage parsing/lowering, not namespace-augmented static-side compatibility.
 
 ## Completion evidence

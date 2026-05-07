@@ -77,7 +77,7 @@ Out of scope:
 
 - Class/enum merge diagnostics later in the same file.
 - Interface/class and function/class augmented type buckets.
-- Compatible duplicate `var` redeclarations, tracked separately by `issues/open/5162-allow-compatible-var-redeclarations.md`.
+- Compatible duplicate `var` redeclarations, tracked separately by `issues/done/5162-allow-compatible-var-redeclarations.md`.
 - Block-local class scoping, tracked by `issues/open/5249-scope-block-local-class-declarations.md`.
 - Parser changes for accessibility-modified class methods.
 
@@ -141,7 +141,7 @@ Split from `issues/done/765-implement-augmentedTypesClass.md`.
 
 Related but not duplicate:
 
-- `issues/open/5162-allow-compatible-var-redeclarations.md` handles compatible
+- `issues/done/5162-allow-compatible-var-redeclarations.md` handles compatible
   duplicate `var` declarations.
 - `issues/open/5249-scope-block-local-class-declarations.md` handles nested
   block-local classes colliding with outer classes.

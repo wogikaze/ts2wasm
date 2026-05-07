@@ -107,7 +107,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] created: `issues/open/5236-support-nested-function-rest-parameters.md`
+- [x] created: `issues/done/5236-w1-implement-wasi-args-and-environment-variable-lowering.md`
 
 ## Notes
 
@@ -132,7 +132,7 @@ default parameters:
 
 Split result:
 
-- `issues/open/5236-support-nested-function-rest-parameters.md`
+- `issues/done/5236-w1-implement-wasi-args-and-environment-variable-lowering.md`
 
 ## Smart triage
 
@@ -194,7 +194,7 @@ TypeScript oracle: TS2339 Property 'fn' does not exist on type '(...args: any[])
 
 Split result:
 
-- `issues/open/5236-support-nested-function-rest-parameters.md`
+- `issues/done/5236-w1-implement-wasi-args-and-environment-variable-lowering.md`
 
 ## Completion evidence
 

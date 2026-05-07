@@ -135,8 +135,8 @@ Follow-up issues:
   issue-211 diagnostics for unsupported dynamic/function-valued local calls.
 - `issues/open/435-implement-method-call.md` is the broad method-call bucket,
   not an executable slice.
-- `issues/open/5195-support-callable-interface-typed-local-calls.md` and
-  `issues/open/5196-support-callable-conditional-typed-parameter-calls.md`
+- `issues/done/5195-support-callable-interface-typed-local-calls.md` and
+  `issues/done/5196-support-callable-conditional-typed-parameter-calls.md`
   cover related callable typed locals, but not this `var f: () => any; f()`
   definite-assignment oracle.
 - `issues/open/5279-report-function-typed-local-call-definite-assignment.md`

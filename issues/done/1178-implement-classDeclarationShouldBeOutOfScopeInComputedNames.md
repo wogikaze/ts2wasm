@@ -116,7 +116,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/open/5214-parse-computed-class-members-in-class-expression-initializers.md` is related but limited to class expressions in default parameter initializers; no exact owner found for computed class member names in class declarations.
+- `issues/done/5214-computed-symbol-iterator-prerequisite-for-spread.md` is related but limited to class expressions in default parameter initializers; no exact owner found for computed class member names in class declarations.
 - `issues/done/5087-implement-scope-analysis.md` had a stale generated-bucket link to this issue; it now points at this closed bucket and child issue 5251.
 
 ## Smart triage

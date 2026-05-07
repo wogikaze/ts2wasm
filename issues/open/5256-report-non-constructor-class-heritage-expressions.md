@@ -76,9 +76,9 @@ Out of scope:
 - `extends makeBaseClass()` support, tracked by
   `issues/open/5252-support-call-expression-class-heritage.md`.
 - Qualified class heritage names such as `extends Foo.Object`, tracked by
-  `issues/open/5225-support-qualified-class-heritage-names.md`.
+  `issues/done/5225-w0-typed-wat-writer.md`.
 - Generic type arguments in class heritage, tracked by
-  `issues/open/5156-parse-generic-type-arguments-in-class-heritage.md`.
+  `issues/done/5156-parse-generic-type-arguments-in-class-heritage.md`.
 
 ## Affected paths
 

@@ -106,7 +106,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] superseded by `issues/open/5240-parse-async-arrow-function-expressions.md`
+- [x] superseded by `issues/done/5240-w2-docs-audit-and-stale-entries.md`
 
 ## Notes
 
@@ -122,7 +122,7 @@ Follow-up issues:
 
 Fresh triage on 2026-05-07 shows this generated unknown-unsupported bucket is
 the raw async-arrow parser boundary already owned by
-`issues/open/5240-parse-async-arrow-function-expressions.md`.
+`issues/done/5240-w2-docs-audit-and-stale-entries.md`.
 
 Current diagnostic:
 

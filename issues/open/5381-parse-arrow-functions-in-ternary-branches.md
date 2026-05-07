@@ -71,7 +71,7 @@ In scope:
 Out of scope:
 
 - Lowering `Expr::Ternary`, tracked by
-  `issues/open/5160-lower-plain-ternary-conditional-expressions.md`.
+  `issues/done/5160-lower-plain-ternary-conditional-expressions.md`.
 - Typed arrow parameters in ternary branches, tracked by
   `issues/open/5382-parse-typed-arrow-ternary-branches.md`.
 - Contextual function type assignability for ternary branch unions.
@@ -139,7 +139,7 @@ Split from generated bucket
 
 Related but distinct:
 
-- `issues/open/5160-lower-plain-ternary-conditional-expressions.md` owns
+- `issues/done/5160-lower-plain-ternary-conditional-expressions.md` owns
   lowering for ternaries that already parse as `Expr::Ternary`.
 - `issues/open/5382-parse-typed-arrow-ternary-branches.md` owns the typed
   branch shape `true ? (a: C) => a.foo : (b: number) => { }`.

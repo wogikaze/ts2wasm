@@ -91,9 +91,9 @@ Out of scope:
 
 - Full runtime support for arbitrary function-valued locals.
 - Callable interface-typed locals, tracked by
-  `issues/open/5195-support-callable-interface-typed-local-calls.md`.
+  `issues/done/5195-support-callable-interface-typed-local-calls.md`.
 - Callable conditional-typed parameters, tracked by
-  `issues/open/5196-support-callable-conditional-typed-parameter-calls.md`.
+  `issues/done/5196-support-callable-conditional-typed-parameter-calls.md`.
 - Definite-assignment diagnostics for uninitialized function-typed locals,
   tracked by
   `issues/open/5279-report-function-typed-local-call-definite-assignment.md`.

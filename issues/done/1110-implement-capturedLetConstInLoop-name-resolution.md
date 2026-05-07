@@ -106,7 +106,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] `issues/open/5206-hoist-loop-body-var-declarations-for-post-loop-reads.md`
+- [x] `issues/done/5206-resolve-issue-id-collisions-and-open-done-conflicts.md`
 
 ## Notes
 
@@ -130,7 +130,7 @@ Follow-up issues:
 Fresh triage shows both affected files parse and produce AST successfully. The
 current blocker is name resolution for `var v` declared inside loop bodies and
 read after the loop. Child issue
-`issues/open/5206-hoist-loop-body-var-declarations-for-post-loop-reads.md`
+`issues/done/5206-resolve-issue-id-collisions-and-open-done-conflicts.md`
 owns the implementation-ready resolver slice.
 
 ### Smart triage: capturedLetConstInLoop3_ES6

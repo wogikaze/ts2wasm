@@ -131,7 +131,7 @@ class a {
 
 ## Duplicate detection
 
-- `issues/done/072-implement-ClassDeclaration.md` - Implement Classdeclaration (same feature label, same group key, title overlap)
+- `issues/open/072-implement-ClassDeclaration.md` - Implement Classdeclaration (same feature label, same group key, title overlap)
 - `issues/open/424-implement-declaration-emit.md` - Implement declaration-emit support (same feature label, same group key, title overlap)
 - `issues/done/773-implement-autoAsiForStaticsInClassDeclaration.md` - Implement Autoasiforstaticsinclassdeclaration (same feature label, same group key, title overlap)
 - `issues/open/422-implement-class-accessor.md` is related but broad; no

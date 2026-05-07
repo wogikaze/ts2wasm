@@ -102,8 +102,8 @@ In scope:
 Out of scope:
 
 - Async generator runtime semantics and `yield*` lowering.
-- Direct generic call expression parsing, tracked by `issues/open/5242-parse-direct-generic-call-type-arguments-for-callable-consts.md`.
-- ASI after ambient variable declarations, tracked by `issues/open/5193-parse-asi-after-ambient-variable-declarations.md`.
+- Direct generic call expression parsing, tracked by `issues/done/5242-w2-completion-declaration.md`.
+- ASI after ambient variable declarations, tracked by `issues/done/5193-parse-asi-after-ambient-variable-declarations.md`.
 - Generic async generator declaration parsing already completed in `issues/done/5148-parse-generic-async-generator-declarations.md`.
 
 ## Affected paths
@@ -179,9 +179,9 @@ Split from `issues/done/762-implement-asyncYieldStarContextualType.md`.
 
 Related but not duplicate:
 
-- `issues/open/5193-parse-asi-after-ambient-variable-declarations.md` covers
+- `issues/done/5193-parse-asi-after-ambient-variable-declarations.md` covers
   semicolon insertion after ambient declarations.
-- `issues/open/5242-parse-direct-generic-call-type-arguments-for-callable-consts.md`
+- `issues/done/5242-w2-completion-declaration.md`
   covers later runtime call syntax such as `object<T>()`.
 - `issues/done/5148-parse-generic-async-generator-declarations.md` covers the
   async generator declaration parser shape after this ambient declaration

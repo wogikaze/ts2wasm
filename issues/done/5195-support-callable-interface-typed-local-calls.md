@@ -88,11 +88,11 @@ the callable-local path when the value is initialized.
 
 In scope:
 
-- [ ] Preserve enough callable interface metadata for local variables with call signatures
-- [ ] Detect calls to uninitialized callable interface locals before generic lowering rejection
-- [ ] Specialize generic callable interface signatures before classifying local
+- [x] Preserve enough callable interface metadata for local variables with call signatures
+- [x] Detect calls to uninitialized callable interface locals before generic lowering rejection
+- [x] Specialize generic callable interface signatures before classifying local
   calls
-- [ ] Keep existing unsupported diagnostics for arbitrary extracted method calls
+- [x] Keep existing unsupported diagnostics for arbitrary extracted method calls
 
 Out of scope:
 
@@ -116,18 +116,18 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] `callExpressionWithTypeParameterConstrainedToOuterTypeParameter.ts` no longer reports the generic `issue-211` extracted-method diagnostic for `i("")`
-- [ ] `callSignaturesShouldBeResolvedBeforeSpecialization.ts` no longer reports
+- [x] `callExpressionWithTypeParameterConstrainedToOuterTypeParameter.ts` no longer reports the generic `issue-211` extracted-method diagnostic for `i("")`
+- [x] `callSignaturesShouldBeResolvedBeforeSpecialization.ts` no longer reports
   the generic `issue-211` extracted-method diagnostic for `test(...)`
-- [ ] `contextualTypingOfTooShortOverloads.ts` no longer reports
+- [x] `contextualTypingOfTooShortOverloads.ts` no longer reports
   `issue-5195` or an unspanned `UnresolvedFunction` for the local `use(...)`
   call
-- [ ] A focused fixture covers calling an uninitialized callable interface local and reports a source-spanned diagnostic at `i`
-- [ ] A focused fixture covers `interface I1<T> { (value: T): void; field1:
+- [x] A focused fixture covers calling an uninitialized callable interface local and reports a source-spanned diagnostic at `i`
+- [x] A focused fixture covers `interface I1<T> { (value: T): void; field1:
   I1<boolean>; }` with a local `I1<string>` call, and the boolean argument path
   reaches a type diagnostic instead of unsupported lowering
-- [ ] Existing issue-211 extracted method fixtures continue to report unsupported diagnostics
-- [ ] Valid direct function declarations and arrow/function variable calls keep passing
+- [x] Existing issue-211 extracted method fixtures continue to report unsupported diagnostics
+- [x] Valid direct function declarations and arrow/function variable calls keep passing
 
 ## Validation
 
@@ -154,15 +154,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 

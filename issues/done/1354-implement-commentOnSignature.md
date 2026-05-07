@@ -131,14 +131,14 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/open/5200-validate-top-level-function-overload-implementations.md`
+- `issues/done/5200-validate-top-level-function-overload-implementations.md`
   is related, but broadening it with this comments/signature reference made the
   issue too large for readiness gates.
 - `issues/open/5280-validate-commented-top-level-function-overloads.md` owns
   this narrower commented top-level overload group.
-- `issues/open/5199-report-function-overload-list-class-merge-diagnostics.md`
+- `issues/done/5199-report-function-overload-list-class-merge-diagnostics.md`
   is related but covers function overload lists followed by a class merge.
-- `issues/open/5198-support-class-method-overload-signatures-for-element-access-calls.md`
+- `issues/done/5198-support-class-method-overload-signatures-for-element-access-calls.md`
   is related but covers class method overload signatures; it is not the first
   blocker in this path.
 

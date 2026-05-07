@@ -182,7 +182,7 @@ Split from `issues/done/1271-implement-collisionArgumentsInType.md` on
 
 Related but not duplicates:
 
-- `issues/open/5201-parse-object-type-literal-call-signatures.md` covers
+- `issues/done/5201-parse-object-type-literal-call-signatures.md` covers
   overload-like call-signature members in object type literals, without the
   construct, method, property, and rest-parameter mix from this reference.
 - `issues/open/5257-parse-object-type-literal-construct-signatures.md` covers

@@ -142,7 +142,7 @@ unsupported: classImplementsClass6.ts
 
 ## Duplicate detection
 
-- `issues/open/5222-support-interface-typed-method-calls-on-erased-locals.md`
+- `issues/done/5222-parse-ambient-generic-variable-type-annotations.md`
   is related but not exact: it covers interface-typed erased receivers such as
   `var s: Sequence<string>; s.groupBy(...)`, while this bucket has class-typed
   ambient locals `declare var c: C; c.bar()`.

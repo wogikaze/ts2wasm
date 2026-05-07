@@ -107,7 +107,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] `issues/open/5215-support-loop-local-arrow-calls-from-arrow-closures.md`
+- [x] `issues/done/5215-fix-array-includes-wat-stack-mismatch.md`
 
 ## Notes
 
@@ -167,7 +167,7 @@ resolved/lowered: issue-211 function-valued local call at lambda1(len)
 ```
 
 TypeScript oracle reports no diagnostics. Child issue
-`issues/open/5215-support-loop-local-arrow-calls-from-arrow-closures.md` owns
+`issues/done/5215-fix-array-includes-wat-stack-mismatch.md` owns
 this lowering slice.
 
 ## Completion evidence

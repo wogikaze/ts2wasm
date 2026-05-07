@@ -87,7 +87,7 @@ In scope:
 Out of scope:
 
 - Missing constructor parameter-list diagnostics, tracked by `issues/open/5323-report-missing-constructor-parameter-list.md`.
-- Top-level function/class overload merges, tracked by `issues/open/5199-report-function-overload-list-class-merge-diagnostics.md`.
+- Top-level function/class overload merges, tracked by `issues/done/5199-report-function-overload-list-class-merge-diagnostics.md`.
 - Strict-mode `arguments` binding diagnostics after constructor overloads parse.
 
 ## Affected paths

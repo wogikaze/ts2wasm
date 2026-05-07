@@ -47,7 +47,7 @@ python scripts/manager.py reference-coverage tsc --path-filter reference/typescr
 
 This generated bucket is closed because the current observable blocker is
 owned by
-`issues/open/5200-validate-top-level-function-overload-implementations.md`.
+`issues/done/5200-validate-top-level-function-overload-implementations.md`.
 
 ## Scope
 
@@ -118,7 +118,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] none; superseded by `issues/open/5200-validate-top-level-function-overload-implementations.md`
+- [x] none; superseded by `issues/done/5200-validate-top-level-function-overload-implementations.md`
 
 ## Notes
 
@@ -128,9 +128,9 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/open/5200-validate-top-level-function-overload-implementations.md` - exact owner for valid top-level function overload signatures currently reported as duplicate functions
+- `issues/done/5200-validate-top-level-function-overload-implementations.md` - exact owner for valid top-level function overload signatures currently reported as duplicate functions
 - `issues/open/5335-validate-nested-function-overload-implementations.md` - related nested function overload issue, not top-level
-- `issues/open/5199-report-function-overload-list-class-merge-diagnostics.md` - related top-level function/class merge diagnostic, not this valid overload group
+- `issues/done/5199-report-function-overload-list-class-merge-diagnostics.md` - related top-level function/class merge diagnostic, not this valid overload group
 
 ## Smart triage
 
@@ -197,13 +197,13 @@ diagnostics: []
 
 Superseded by:
 
-- `issues/open/5200-validate-top-level-function-overload-implementations.md`
+- `issues/done/5200-validate-top-level-function-overload-implementations.md`
 
 ## Completion evidence
 
 Commits:
 
-- Superseded by `issues/open/5200-validate-top-level-function-overload-implementations.md`.
+- Superseded by `issues/done/5200-validate-top-level-function-overload-implementations.md`.
 
 Validation result:
 

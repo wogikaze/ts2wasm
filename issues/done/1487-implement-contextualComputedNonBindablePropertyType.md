@@ -106,7 +106,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] superseded by `issues/open/5209-parse-computed-object-literal-property-expressions.md`
+- [x] superseded by `issues/done/5209-support-class-instance-method-receiver-calls.md`
 
 ## Notes
 
@@ -140,7 +140,7 @@ forceMatch({
 TypeScript oracle: accepted with no diagnostics. AST path:
 `ObjectLiteralExpression -> PropertyAssignment -> ComputedPropertyName -> CallExpression`.
 
-This bucket was superseded by `issues/open/5209-parse-computed-object-literal-property-expressions.md`.
+This bucket was superseded by `issues/done/5209-support-class-instance-method-receiver-calls.md`.
 
 ## Completion evidence
 

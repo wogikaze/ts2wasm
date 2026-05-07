@@ -121,9 +121,9 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/open/5162-allow-compatible-var-redeclarations.md` is related but
+- `issues/done/5162-allow-compatible-var-redeclarations.md` is related but
   covers compatible `var` redeclarations, not this var/function conflict.
-- `issues/open/5205-report-incompatible-var-redeclaration-type-diagnostics.md`
+- `issues/done/5205-restore-backend-residual-expression-rejection.md`
   is related but starts after duplicate-local blockers are gone and covers
   repeated `var` type compatibility.
 - Split into `issues/open/5307-report-var-function-duplicate-identifier-diagnostics.md`.

@@ -183,7 +183,7 @@ Follow-up issues:
   handles known class-typed ambient locals whose requested method is missing;
   this representative has a method declared in `Foo` and should not reach that
   missing-method path before TS1183.
-- `issues/open/5161-model-ambient-value-declarations-for-name-resolution.md`
+- `issues/done/5161-model-ambient-value-declarations-for-name-resolution.md`
   handles `declare var` / `declare let` / `declare const` value visibility,
   not `declare class` constructor bodies.
 - `issues/open/5334-parse-class-constructor-overload-signatures.md` handles

@@ -107,7 +107,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] updated: `issues/open/5163-lower-nested-call-expression-callees.md`
+- [x] updated: `issues/done/5163-lower-nested-call-expression-callees.md`
 
 ## Notes
 
@@ -124,7 +124,7 @@ Follow-up issues:
 Fresh triage found only one current unsupported case in this generated bucket:
 `checkSuperCallBeforeThisAccessing4.ts`. The current diagnostic is the same
 non-identifier call-callee lowering boundary tracked by
-`issues/open/5163-lower-nested-call-expression-callees.md`.
+`issues/done/5163-lower-nested-call-expression-callees.md`.
 
 Related but no-match:
 
@@ -198,7 +198,7 @@ TypeScript oracle: ok, no diagnostics
 
 Split result:
 
-- folded into `issues/open/5163-lower-nested-call-expression-callees.md`
+- folded into `issues/done/5163-lower-nested-call-expression-callees.md`
 
 ## Completion evidence
 

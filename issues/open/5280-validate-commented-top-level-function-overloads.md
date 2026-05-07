@@ -78,7 +78,7 @@ In scope:
 
 Out of scope:
 
-- General top-level overload validation without comments, tracked by `issues/open/5200-validate-top-level-function-overload-implementations.md`.
+- General top-level overload validation without comments, tracked by `issues/done/5200-validate-top-level-function-overload-implementations.md`.
 - Class constructor overload signatures.
 - Class method overload signatures.
 - Comment emit fidelity.
@@ -123,4 +123,4 @@ python scripts/manager.py reference-coverage tsc --path-filter reference/typescr
 ## Notes
 
 Split from `issues/done/1354-implement-commentOnSignature.md`.
-Related top-level overload issue: `issues/open/5200-validate-top-level-function-overload-implementations.md`.
+Related top-level overload issue: `issues/done/5200-validate-top-level-function-overload-implementations.md`.

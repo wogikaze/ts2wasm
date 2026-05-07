@@ -139,7 +139,7 @@ var y1 = 1; // error
 
 - TypeScript oracle reports duplicate identifier TS2300 diagnostics at both
   `y1` identifiers.
-- Related issue `issues/open/5199-report-function-overload-list-class-merge-diagnostics.md`
+- Related issue `issues/done/5199-report-function-overload-list-class-merge-diagnostics.md`
   owns the later class/function merge diagnostics in this same reference file
   family, but not this first function/var duplicate-identifier blocker.
 

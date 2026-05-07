@@ -21,7 +21,7 @@ Triage cf across 1 failing reference test case and fold the current blocker into
 
 Reference test results show 1 case failing in directory `cf` with diagnostics: name-resolution. Fresh triage shows the specific blocker is `UnresolvedName` for `k` after `var k` was declared in a previous `for` initializer.
 
-Problem: cf has 1 reference failure whose actionable blocker is now tracked by `issues/open/5220-hoist-for-initializer-var-for-sibling-loop-reads.md`.
+Problem: cf has 1 reference failure whose actionable blocker is now tracked by `issues/done/5220-preserve-ambient-function-parameters-for-arity.md`.
 
 ## Current failure
 
@@ -39,7 +39,7 @@ mise run reference-coverage -- tsc --path-filter reference/typescript/tests/case
 
 ## Desired final state
 
-This generated bucket is superseded by `issues/open/5220-hoist-for-initializer-var-for-sibling-loop-reads.md`.
+This generated bucket is superseded by `issues/done/5220-preserve-ambient-function-parameters-for-arity.md`.
 
 ## Scope
 
@@ -111,7 +111,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] created: `issues/open/5220-hoist-for-initializer-var-for-sibling-loop-reads.md`
+- [x] created: `issues/done/5220-preserve-ambient-function-parameters-for-arity.md`
 
 ## Notes
 
@@ -132,7 +132,7 @@ Generated on 2026-05-06:
 - feature label: `name-resolution`
 - diagnostic: `UnresolvedName` / `resolver-symbol`
 - message: `unresolved name: k at 0..0`
-- child issue: `issues/open/5220-hoist-for-initializer-var-for-sibling-loop-reads.md`
+- child issue: `issues/done/5220-preserve-ambient-function-parameters-for-arity.md`
 
 Representative source:
 

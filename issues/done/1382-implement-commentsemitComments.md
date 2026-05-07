@@ -144,7 +144,7 @@ Follow-up issues:
   owns the exact first blocker: `var fooVar: () => void; fooVar();` should
   report a source-spanned TS2454-like diagnostic instead of unspanned
   `UnresolvedFunction`.
-- `issues/open/5198-support-class-method-overload-signatures-for-element-access-calls.md`
+- `issues/done/5198-support-class-method-overload-signatures-for-element-access-calls.md`
   is adjacent for the later `c.foo1` overload group, but it is not the first
   diagnostic reported by current coverage.
 

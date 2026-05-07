@@ -188,7 +188,7 @@ Duplicate review:
 - `issues/open/5374-support-callable-ambient-const-local-calls.md` is related
   but remains focused on a single generic ambient const function call used
   directly with runtime arguments.
-- `issues/open/5195-support-callable-interface-typed-local-calls.md` is related
+- `issues/done/5195-support-callable-interface-typed-local-calls.md` is related
   but covers non-ambient callable interface-typed locals and definite
   assignment/type diagnostics.
 - Broad type-system buckets such as `issues/open/2497-...` and `issues/open/345-...`

@@ -106,7 +106,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] folded residual name-resolution blocker into `issues/open/5161-model-ambient-value-declarations-for-name-resolution.md`
+- [x] folded residual name-resolution blocker into `issues/done/5161-model-ambient-value-declarations-for-name-resolution.md`
 
 ## Notes
 
@@ -160,7 +160,7 @@ export const StyledSelect = styled(Flex).attrs({
 ```
 
 The residual `declare const styled` expression reference is covered by
-`issues/open/5161-model-ambient-value-declarations-for-name-resolution.md`.
+`issues/done/5161-model-ambient-value-declarations-for-name-resolution.md`.
 
 ## Completion evidence
 

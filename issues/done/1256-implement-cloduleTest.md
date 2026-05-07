@@ -16,7 +16,7 @@ status: done
 ## Summary
 
 Closed as superseded by
-`issues/open/5217-support-method-calls-on-call-expression-receivers.md`.
+`issues/done/5217-preserve-ambient-value-declarations-through-name-resolution.md`.
 
 ## Problem
 
@@ -121,7 +121,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] superseded by: `issues/open/5217-support-method-calls-on-call-expression-receivers.md`
+- [x] superseded by: `issues/done/5217-preserve-ambient-value-declarations-through-name-resolution.md`
 
 ## Notes
 
@@ -132,10 +132,10 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/open/5217-support-method-calls-on-call-expression-receivers.md`
+- `issues/done/5217-preserve-ambient-value-declarations-through-name-resolution.md`
   owns method calls where the receiver is itself a call expression, matching
   `$('.foo').addClass('bar')`.
-- `issues/open/5221-support-chained-method-calls-on-call-expression-receivers.md`
+- `issues/done/5221-support-bitwise-and-xor-binary-lowering.md`
   is related but covers longer chained `.then` expressions.
 - `issues/done/5142-support-class-method-call-on-new-expression-receiver.md`
   is related but only covers `new C().g()`.

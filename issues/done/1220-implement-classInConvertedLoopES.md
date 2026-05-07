@@ -135,7 +135,7 @@ for (const row of ['1', '2', '3', '4', '5']) {
 
 ## Duplicate detection
 
-- `issues/open/5184-parse-const-enum-declarations.md` is related only by the
+- `issues/done/5184-parse-const-enum-declarations.md` is related only by the
   generic missing-initializer diagnostic; it covers `const enum`, not typed
   variable declarations with initializers.
 - `issues/done/1444-implement-constDeclarations-unknown-unsupported.md` is a

@@ -86,9 +86,9 @@ Out of scope:
 - Full TypeScript assignability for arbitrary interfaces.
 - Runtime support for `Date.prototype.getDate`.
 - General interface-typed method receiver support; see
-  `issues/open/5222-support-interface-typed-method-calls-on-erased-locals.md`.
+  `issues/done/5222-parse-ambient-generic-variable-type-annotations.md`.
 - Array callback receiver typing; see
-  `issues/open/5234-track-array-typed-parameters-for-callback-methods.md`.
+  `issues/done/5234-w0-implement-host-deny-and-auditable-e2e-manifest-verification.md`.
 
 ## Affected paths
 
@@ -156,10 +156,10 @@ Split from generated bucket
 
 Related but distinct:
 
-- `issues/open/5222-support-interface-typed-method-calls-on-erased-locals.md`
+- `issues/done/5222-parse-ambient-generic-variable-type-annotations.md`
   owns method calls through erased interface-typed locals such as
   `s.groupBy(...)`.
-- `issues/open/5234-track-array-typed-parameters-for-callback-methods.md`
+- `issues/done/5234-w0-implement-host-deny-and-auditable-e2e-manifest-verification.md`
   owns array-shaped parameter annotations for callback methods such as
   `x.forEach(...)`.
 

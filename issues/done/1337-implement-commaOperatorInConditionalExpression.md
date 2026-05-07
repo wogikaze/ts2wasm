@@ -15,7 +15,7 @@ status: done
 
 ## Summary
 
-Closed as superseded by `issues/open/5228-parse-simple-computed-object-literal-keys.md` for the current computed object-literal key parser failure.
+Closed as superseded by `issues/done/5228-w0-wasm-binary-backend-mvp.md` for the current computed object-literal key parser failure.
 
 ## Problem
 
@@ -122,7 +122,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/open/5228-parse-simple-computed-object-literal-keys.md` owns the current `{ [m]: i }` parser failure.
+- `issues/done/5228-w0-wasm-binary-backend-mvp.md` owns the current `{ [m]: i }` parser failure.
 - Ternary/conditional expression lowering and comma-operator semantics remain unproven until issue 5228 advances past the computed object key parser boundary.
 
 ## Smart triage

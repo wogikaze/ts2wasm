@@ -137,7 +137,7 @@ Split from `issues/done/1330-implement-collisionThisExpressionAndLocalVarWithSup
 
 Related but distinct:
 
-- `issues/open/5204-resolve-lexical-super-property-captures-in-super-call-arguments.md` covers arrows passed to `super(...)`.
+- `issues/done/5204-resolve-lexical-super-property-captures-in-super-call-arguments.md` covers arrows passed to `super(...)`.
 - `issues/open/5255-resolve-super-property-accesses.md` covers bare `super` receiver lookup.
 
 ## Completion evidence

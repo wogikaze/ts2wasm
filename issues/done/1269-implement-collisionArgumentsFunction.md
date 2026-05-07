@@ -46,7 +46,7 @@ python scripts/manager.py reference-coverage tsc --path-filter reference/typescr
 ## Desired final state
 
 This generated bucket is closed as superseded by
-`issues/open/5200-validate-top-level-function-overload-implementations.md`.
+`issues/done/5200-validate-top-level-function-overload-implementations.md`.
 
 ## Scope
 
@@ -115,7 +115,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] superseded by `issues/open/5200-validate-top-level-function-overload-implementations.md`
+- [x] superseded by `issues/done/5200-validate-top-level-function-overload-implementations.md`
 
 ## Notes
 
@@ -125,8 +125,8 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/open/5200-validate-top-level-function-overload-implementations.md` - exact owner for valid top-level function overload signatures currently reported as duplicate functions
-- `issues/open/5199-report-function-overload-list-class-merge-diagnostics.md` - related function overload/class merge diagnostic, not this implementation group
+- `issues/done/5200-validate-top-level-function-overload-implementations.md` - exact owner for valid top-level function overload signatures currently reported as duplicate functions
+- `issues/done/5199-report-function-overload-list-class-merge-diagnostics.md` - related function overload/class merge diagnostic, not this implementation group
 - broad duplicate-function generated buckets are not exact owners for this current first blocker
 
 ## Smart triage
@@ -188,13 +188,13 @@ TS1100: Invalid use of 'arguments' in strict mode.
 
 Superseding owner:
 
-- `issues/open/5200-validate-top-level-function-overload-implementations.md`
+- `issues/done/5200-validate-top-level-function-overload-implementations.md`
 
 ## Completion evidence
 
 Commits:
 
-- Superseded by `issues/open/5200-validate-top-level-function-overload-implementations.md`; see local commit for this issue cleanup.
+- Superseded by `issues/done/5200-validate-top-level-function-overload-implementations.md`; see local commit for this issue cleanup.
 
 Validation result:
 

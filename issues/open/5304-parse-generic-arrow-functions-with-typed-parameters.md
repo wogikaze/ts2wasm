@@ -88,7 +88,7 @@ In scope:
 Out of scope:
 
 - Conditional type evaluation for `Exclude`, `Extract`, or `TemplatedConditional`.
-- Angle-bracket type assertion statements, tracked by `issues/open/5154-parse-angle-bracket-type-assertion-statements.md`.
+- Angle-bracket type assertion statements, tracked by `issues/done/5154-parse-angle-bracket-type-assertion-statements.md`.
 - JSX parsing.
 - Generic arrow function body lowering beyond the existing arrow-function support.
 
@@ -157,7 +157,7 @@ Follow-up issues:
 ## Notes
 
 Split from generated bucket `issues/done/1429-implement-conditionalTypesSimplifyWhenTrivial.md`.
-Related but non-identical slice `issues/open/5154-parse-angle-bracket-type-assertion-statements.md`
+Related but non-identical slice `issues/done/5154-parse-angle-bracket-type-assertion-statements.md`
 explicitly excludes ambiguous generic arrow parsing.
 
 2026-05-07 fold-in:

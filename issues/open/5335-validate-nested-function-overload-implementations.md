@@ -86,8 +86,8 @@ In scope:
 
 Out of scope:
 
-- Top-level overload implementation grouping, tracked by `issues/open/5200-validate-top-level-function-overload-implementations.md`.
-- Class method overload signatures, tracked by `issues/open/5198-support-class-method-overload-signatures-for-element-access-calls.md`.
+- Top-level overload implementation grouping, tracked by `issues/done/5200-validate-top-level-function-overload-implementations.md`.
+- Class method overload signatures, tracked by `issues/done/5198-support-class-method-overload-signatures-for-element-access-calls.md`.
 - Strict-mode `arguments` binding diagnostics after overload grouping advances.
 
 ## Affected paths

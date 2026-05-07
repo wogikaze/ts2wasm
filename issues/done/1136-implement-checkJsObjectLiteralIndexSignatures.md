@@ -107,7 +107,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] created: `issues/open/5228-parse-simple-computed-object-literal-keys.md`
+- [x] created: `issues/done/5228-w0-wasm-binary-backend-mvp.md`
 
 ## Notes
 
@@ -124,7 +124,7 @@ representative is a smaller simple-identifier key slice.
 
 Split to:
 
-- `issues/open/5228-parse-simple-computed-object-literal-keys.md`
+- `issues/done/5228-w0-wasm-binary-backend-mvp.md`
 
 ## Smart triage
 

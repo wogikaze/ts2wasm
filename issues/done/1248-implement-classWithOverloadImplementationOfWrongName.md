@@ -129,8 +129,8 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/open/5198-support-class-method-overload-signatures-for-element-access-calls.md` is related but handles valid class method overload signature merging with a same-name implementation.
-- `issues/open/5200-validate-top-level-function-overload-implementations.md` is related but only handles top-level function overload implementation grouping.
+- `issues/done/5198-support-class-method-overload-signatures-for-element-access-calls.md` is related but handles valid class method overload signature merging with a same-name implementation.
+- `issues/done/5200-validate-top-level-function-overload-implementations.md` is related but only handles top-level function overload implementation grouping.
 - `issues/open/2043-implement-duplicateIdentifierRelatedSpans-duplicate-function.md`, `issues/open/2600-implement-getAndSetNotIdenticalType-duplicate-function.md`, and `issues/open/4258-implement-staticVisibility-duplicate-function.md` are no-match generated duplicate-function buckets for other reference paths.
 - No existing open/done issue owned the invalid class method overload implementation-name/order diagnostics, so this bucket was split to issue 5327.
 

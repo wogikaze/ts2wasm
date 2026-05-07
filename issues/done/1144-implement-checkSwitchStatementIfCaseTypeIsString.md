@@ -107,7 +107,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] created: `issues/open/5234-track-array-typed-parameters-for-callback-methods.md`
+- [x] created: `issues/done/5234-w0-implement-host-deny-and-auditable-e2e-manifest-verification.md`
 
 ## Notes
 
@@ -126,7 +126,7 @@ issue for array-shaped function/class-method parameter annotations:
   `issues/open/677-implement-arrayFlatMap.md` hit similar issue-211 unknown
   receiver boundaries for array locals, but they are generated buckets and do
   not cover class method parameter annotation tracking.
-- `issues/open/5222-support-interface-typed-method-calls-on-erased-locals.md`
+- `issues/done/5222-parse-ambient-generic-variable-type-annotations.md`
   is related for interface-typed receivers, but not array-shaped parameters and
   built-in callback methods.
 
@@ -192,7 +192,7 @@ TypeScript oracle: ok, no diagnostics; parameter x has type string[]
 
 Split result:
 
-- `issues/open/5234-track-array-typed-parameters-for-callback-methods.md`
+- `issues/done/5234-w0-implement-host-deny-and-auditable-e2e-manifest-verification.md`
 
 ## Completion evidence
 
