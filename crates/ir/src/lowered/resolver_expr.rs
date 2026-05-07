@@ -1969,9 +1969,11 @@ impl<'a> Resolver<'a> {
                     // in local_classes, fall back to Array for known array-like methods.
                     let array_like_methods = ["filter", "map", "forEach", "find",
                         "findIndex", "some", "every", "reduce", "flatMap"];
+                    let number_methods = ["toFixed", "toExponential", "toPrecision"];
                     let class_name_str = match self.local_classes.get(&obj_local) {
                         Some(c) => c.clone(),
                         None if array_like_methods.contains(&method.as_str()) => "Array".to_owned(),
+                        None if number_methods.contains(&method.as_str()) => "Number".to_owned(),
                         None => return Err(Diagnostic {
                             code: DiagCode::UnsupportedSyntax,
                             message: format!("issue-211: unknown receiver class for method `{}` (receiver `{}` is an untyped or ambient variable; issue-5261: the method may be a static member or not exist on the instance type)", method, receiver_name),

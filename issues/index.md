@@ -18,7 +18,7 @@ Issue files are the source of truth for work items. The generated section below 
 | docs | 5 | 0 | 5 |
 | frontend | 4562 | 3768 | 794 |
 | harness | 1 | 0 | 1 |
-| ir | 77 | 26 | 51 |
+| ir | 77 | 25 | 52 |
 | issues | 5 | 0 | 5 |
 | parser | 1 | 0 | 1 |
 | reference | 212 | 160 | 52 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 8 | 0 | 8 |
 | wasi | 4 | 0 | 4 |
-| total | 5245 | 4043 | 1202 |
+| total | 5245 | 4042 | 1203 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -462,7 +462,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5380 | Report array literal index-signature element mismatch | feature | frontend/semantics | implementation-ready | P1 |  | array literals assigned to numeric-index-signature interfaces can skip the invalid element diagnostic and fall throug... |
 | 5381 | Parse untyped arrow ternary branches | feature | frontend/syntax | implementation-ready | P1 |  | untyped arrow functions used as ternary conditional branches are rejected during AST construction before contextual t... |
 | 5382 | Parse typed arrow ternary branches | feature | frontend/syntax | implementation-ready | P1 |  | typed arrow functions used as ternary conditional branches are rejected during AST construction before contextual typ... |
-| 5383 | Classify number parameter toFixed calls | feature | ir/lowering | implementation-ready | P1 |  | `x.toFixed()` inside an arrow callback with `x: number` falls through to `issue-211: unknown receiver class for metho... |
 | 5384 | Resolve ambient function value references | feature | frontend/resolver | implementation-ready | P1 |  | `contextualTypingReturnStatementWithReturnTypeAnnotation.ts` currently |
 | 5385 | Parse arrow body assignment expressions | feature | frontend/syntax | implementation-ready | P1 | 5000 | `contextualTypingTwoInstancesOfSameTypeParameter.ts` currently fails |
 | 5386 | Bind DOM setTimeout global | feature | frontend/resolver | implementation-ready | P1 |  | `contextuallyTypeArgumentsKeyword.ts` requests `// @lib: es2017, dom` |
@@ -5356,6 +5355,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5357 | Avoid eval diagnostic for qualified Function constructors | bug | ir/resolver | see `issues/done/5357-avoid-eval-diagnostic-for-qualified-function-constructors.md` |
 | 5364 | Report unterminated string literal at raw newline | bug | frontend/lexer | see `issues/done/5364-report-unterminated-string-literal-at-raw-newline.md` |
 | 5379 | Lower array binding object default initializers | feature | ir/lowering | see `issues/done/5379-lower-array-binding-object-default-initializers.md` |
+| 5383 | Classify number parameter toFixed calls | feature | ir/lowering | see `issues/done/5383-classify-number-parameter-tofixed-calls.md` |
 <!-- generated:done:end -->
 
 ## Index generation contract
