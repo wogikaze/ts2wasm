@@ -143,6 +143,7 @@ Also owns `issues/done/3308-implement-moduleAugmentationCollidingNamesInAugmenta
 Also owns `issues/done/3309-implement-moduleAugmentationDeclarationEmit.md`: both `moduleAugmentationDeclarationEmit1.ts` and `moduleAugmentationDeclarationEmit2.ts` parse virtual `map.ts`, `observable.ts`, and `main.ts` sections, then report issue-232 missing local module `./observable` before declaration emit or merged-declaration diagnostics.
 Also owns `issues/done/3311-implement-moduleAugmentationDoesInterfaceMergeOfReexport.md`: `moduleAugmentationDoesInterfaceMergeOfReexport.ts` parses virtual `file.ts`, `reexport.ts`, and `augment.ts` sections, then reports issue-232 missing local module `./file` for `export * from "./file"` before interface-merge diagnostics.
 Also owns `issues/done/3312-implement-moduleAugmentationDoesNamespaceEnumMergeOfReexport.md`: `moduleAugmentationDoesNamespaceEnumMergeOfReexport.ts` parses virtual `file.ts`, `reexport.ts`, and `augment.ts` sections, then reports issue-232 missing local module `./file` for `export * from "./file"` before namespace/enum merge diagnostics.
+Also owns `issues/done/3313-implement-moduleAugmentationDoesNamespaceMergeOfReexport.md`: `moduleAugmentationDoesNamespaceMergeOfReexport.ts` parses virtual `file.ts`, `reexport.ts`, and `augment.ts` sections, then reports issue-232 missing local module `./file` for `export * from "./file"` before namespace merge diagnostics.
 
 ## Completion evidence
 

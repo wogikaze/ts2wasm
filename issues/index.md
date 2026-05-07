@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 7 | 6 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4583 | 3401 | 1182 |
+| frontend | 4583 | 3400 | 1183 |
 | harness | 1 | 0 | 1 |
 | ir | 79 | 57 | 22 |
 | issues | 4 | 0 | 4 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5244 | 3699 | 1545 |
+| total | 5244 | 3698 | 1546 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -2320,7 +2320,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 3305 | Implement Moduleandinterfacewithsamename | spike | frontend/syntax | class: blocked | Implement Moduleandinterfacewithsamename |
 | 3306 | Implement Moduleasbasetype | spike | frontend/syntax | class: blocked | Implement Moduleasbasetype |
 | 3307 | Implement Moduleassignmentcompat | spike | frontend/syntax | class: blocked | Implement Moduleassignmentcompat |
-| 3313 | Implement Moduleaugmentationdoesnamespacemergeofreexport | spike | frontend/syntax | class: blocked | Implement Moduleaugmentationdoesnamespacemergeofreexport |
 | 3314 | Implement Moduleaugmentationduringsyntheticdefaultcheck | spike | frontend/syntax | class: blocked | Implement Moduleaugmentationduringsyntheticdefaultcheck |
 | 3315 | Implement Moduleaugmentationenumclassmergeofreexportiserror | spike | frontend/syntax | class: blocked | Implement Moduleaugmentationenumclassmergeofreexportiserror |
 | 3331 | Implement Modulecrashbug | spike | frontend/syntax | class: blocked | Implement Modulecrashbug |
@@ -5190,6 +5189,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 3310 | Implement Moduleaugmentationdisallowedextensions | spike | frontend/syntax | see `issues/done/3310-implement-moduleAugmentationDisallowedExtensions.md` |
 | 3311 | Implement Moduleaugmentationdoesinterfacemergeofreexport | spike | frontend/syntax | see `issues/done/3311-implement-moduleAugmentationDoesInterfaceMergeOfReexport.md` |
 | 3312 | Implement Moduleaugmentationdoesnamespaceenummergeofreexport | spike | frontend/syntax | see `issues/done/3312-implement-moduleAugmentationDoesNamespaceEnumMergeOfReexport.md` |
+| 3313 | Implement Moduleaugmentationdoesnamespacemergeofreexport | spike | frontend/syntax | see `issues/done/3313-implement-moduleAugmentationDoesNamespaceMergeOfReexport.md` |
 | 3316 | Implement Moduleaugmentationextendambientmodule | spike | frontend/syntax | see `issues/done/3316-implement-moduleAugmentationExtendAmbientModule.md` |
 | 3317 | Implement Moduleaugmentationextendfilemodule | spike | frontend/syntax | see `issues/done/3317-implement-moduleAugmentationExtendFileModule.md` |
 | 3318 | Implement Moduleaugmentationglobal Import Export | spike | frontend/syntax | see `issues/done/3318-implement-moduleAugmentationGlobal-import-export.md` |
