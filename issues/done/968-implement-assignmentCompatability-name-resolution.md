@@ -127,7 +127,7 @@ Follow-up issues:
 - `issues/open/693-implement-arrayToLocaleStringES-name-resolution.md` - Implement Arraytolocalestringes Name Resolution (same feature label, title overlap)
 - `issues/open/733-implement-assignmentCompatability-name-resolution.md` - Implement Assignmentcompatability Name Resolution (same reference path, same feature label, same group key, title overlap)
 - `issues/open/738-implement-assignmentRestElementWithErrorSourceType.md` - Implement Assignmentrestelementwitherrorsourcetype (same feature label, same group key, title overlap)
-- `issues/open/775-implement-autoTypeAssignedUsingDestructuringFromNeverNoCrash.md` - Implement Autotypeassignedusingdestructuringfromnevernocrash (same feature label, same group key, title overlap)
+- `issues/done/775-implement-autoTypeAssignedUsingDestructuringFromNeverNoCrash.md` - Implement Autotypeassignedusingdestructuringfromnevernocrash (same feature label, same group key, title overlap)
 
 ## Smart triage
 

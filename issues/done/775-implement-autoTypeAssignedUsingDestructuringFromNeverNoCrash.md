@@ -3,23 +3,30 @@ id: 775
 title: "Implement Autotypeassignedusingdestructuringfromnevernocrash"
 type: spike
 area: frontend/resolver
-class: blocked
+class: superseded
 priority: P1
-depends_on: [5005]
+depends_on: []
 blocks: []
 created: 2026-05-01
-updated: 2026-05-01
+updated: 2026-05-07
+completed: 2026-05-07
+status: done
 ---
 
 ## Summary
 
-Triage autoTypeAssignedUsingDestructuringFromNeverNoCrash across 1 failing reference test cases and split this bucket into implementation-ready child issues.
+Closed this generated name-resolution bucket as superseded by
+`issues/open/5161-model-ambient-value-declarations-for-name-resolution.md`.
 
 ## Problem
 
-Reference test results show 1 cases fail in directory `autoTypeAssignedUsingDestructuringFromNeverNoCrash` with diagnostics: name-resolution. The compiler cannot handle these syntax/semantics, preventing compilation of code in this category.
+Fresh triage confirms the current blocker is `UnresolvedName` for `b` after
+`declare const b: null;` is erased from the runtime AST. Existing issue 5161
+already owns resolver-visible metadata for declaration-only ambient values,
+including `declare const`.
 
-Problem: autoTypeAssignedUsingDestructuringFromNeverNoCrash has 1 reference failures and needs smart-triage evidence before implementation starts.
+Problem: the generated bucket remained blocked even though its current
+executable work is already tracked by issue 5161.
 
 ## Current failure
 
@@ -37,16 +44,17 @@ mise run reference-coverage -- tsc --path-filter reference/typescript/tests/case
 
 ## Desired final state
 
-This generated bucket is either split into implementation-ready child issues or superseded by an existing open/done issue with matching evidence. Do not implement directly from this bucket.
+This generated bucket is closed. Implement from
+`issues/open/5161-model-ambient-value-declarations-for-name-resolution.md`.
 
 ## Scope
 
 In scope:
 
-- [ ] Inspect the smart triage report below
-- [ ] Confirm whether existing open/done issues already cover this bucket
-- [ ] Split one feature family, one observable behavior, or one fixed reference window into child issues
-- [ ] Preserve exact reproduction commands and representative AST/diagnostic evidence in each child issue
+- [x] Inspect the smart triage report below
+- [x] Confirm whether existing open/done issues already cover this bucket
+- [x] Supersede this generated bucket with the existing implementation-ready issue
+- [x] Preserve exact reproduction commands and representative AST/diagnostic evidence
 
 Out of scope:
 
@@ -68,45 +76,45 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] Duplicate candidates below are confirmed as no-match or this issue is superseded
-- [ ] At least one child issue contains an exact `mise run reference-triage -- ...` command
-- [ ] Child issue includes failing path, diagnostic code, source context, visible symbols, and parser/TypeScript AST evidence
-- [ ] Child issue acceptance names the exact fixture/reference path and diagnostic/stdout change
+- [x] Duplicate candidates below are confirmed and this issue is superseded
+- [x] Superseding issue 5161 contains the implementation scope
+- [x] Current triage evidence is recorded
+- [x] Superseding issue acceptance names this ambient const resolution change
 
 ## Validation
 
 Required commands:
 
 ```sh
-cargo fmt --all --check
-cargo nextest run
+python scripts/manager.py update-issue-index --check
+python scripts/manager.py check-issue-health
+python scripts/manager.py check-issue-readiness -- --fail-ready-below 80
 ```
 
 Impacted commands:
 
 ```sh
-mise run reference-coverage -- tsc --limit 2
-mise run reference-coverage -- tsc --path-filter reference/typescript/tests/cases/compiler/autoTypeAssignedUsingDestructuringFromNeverNoCrash.ts --detail
-mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/autoTypeAssignedUsingDestructuringFromNeverNoCrash.ts
+env TS2WASM_BINARY=/tmp/ts2wasm-issue-blockers-target/debug/ts2wasm python scripts/manager.py reference-coverage tsc --path-filter reference/typescript/tests/cases/compiler/autoTypeAssignedUsingDestructuringFromNeverNoCrash.ts --detail --no-dashboard-data
+env TS2WASM_BINARY=/tmp/ts2wasm-issue-blockers-target/debug/ts2wasm python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/autoTypeAssignedUsingDestructuringFromNeverNoCrash.ts
 ```
 
 Not run:
 
-- none
+- cargo fmt / nextest not run for this metadata-only issue lifecycle closure
 
 ## Docs / current-state / issue sync
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] updated: `current-state.md` (repo root)
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] `issues/open/5161-model-ambient-value-declarations-for-name-resolution.md`
 
 ## Notes
 
@@ -116,9 +124,42 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- none found by path/title/feature scan
+Superseded by `issues/open/5161-model-ambient-value-declarations-for-name-resolution.md`.
 
-## Smart triage
+Evidence:
+
+- Current diagnostic: `UnresolvedName`
+- Current message: unresolved name: `b` at `149..150`
+- Current source:
+
+```text
+declare const b: null;
+let file;
+
+if (b === null) {
+  // empty
+} else {
+  [file] = b;
+}
+```
+
+- Existing issue 5161 scope covers declaration-only ambient value declarations
+  (`declare var`, `declare let`, `declare const`) being visible to name
+  resolution without emitting runtime declarations.
+
+Current coverage:
+
+```text
+executed=1
+build_pass=0
+unsupported=1
+unsupported_diagcodes=UnresolvedName:1
+unsupported_features=name-resolution:1
+semantic_enabled=0
+reference/typescript/tests/cases/compiler/autoTypeAssignedUsingDestructuringFromNeverNoCrash.ts: UnresolvedName: name-resolution
+```
+
+## Current smart triage
 
 ### Smart triage: Triage name resolution: autoTypeAssignedUsingDestructuringFromNeverNoCrash
 
