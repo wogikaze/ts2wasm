@@ -91,6 +91,7 @@ pub fn lower_program(program: &[ResolvedStmt]) -> Result<LoweredProgram, Diagnos
             ResolvedStmt::ClassDecl {
                 name,
                 constructor,
+                extends,
                 methods,
                 ..
             } => {
@@ -110,6 +111,20 @@ pub fn lower_program(program: &[ResolvedStmt]) -> Result<LoweredProgram, Diagnos
                     span: None,
                 }];
                 ctor_params_with_this.extend(ctor_params.clone());
+
+                // Derived classes without explicit constructors have an implicit
+                // default constructor that accepts any number of arguments
+                // (constructor(...args: any[]) { super(...args); }).
+                // Add a rest parameter to match JavaScript semantics so that
+                // new Derived(arg) passes arity validation.
+                if constructor.is_none() && extends.is_some() {
+                    ctor_params_with_this.push(ResolvedParam {
+                        name: "...args".to_owned(),
+                        default: None,
+                        is_rest: true,
+                        span: None,
+                    });
+                }
 
                 let lowered = lower_function(
                     ctor_id,

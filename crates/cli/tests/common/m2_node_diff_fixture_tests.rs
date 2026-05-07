@@ -2187,28 +2187,49 @@ fn spread_operator_generator_fixture_reports_issue_353() {
 #[test]
 fn spread_operator_custom_iterable_fixture_builds_successfully() {
     let fixture = "fixtures/core-semantics/spread-array-custom-iterable-unsupported.ts";
-    let fixture_path = Path::new(env!("CARGO_MANIFEST_DIR")).join("../../").join(fixture);
+    let fixture_path = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("../../")
+        .join(fixture);
     let output = temp_wasm_path(fixture);
     let build = std::process::Command::new(env!("CARGO_BIN_EXE_ts2wasm"))
-        .arg("build").arg(&fixture_path).arg("-o").arg(&output).output().unwrap();
+        .arg("build")
+        .arg(&fixture_path)
+        .arg("-o")
+        .arg(&output)
+        .output()
+        .unwrap();
 }
 
 #[test]
 fn spread_operator_custom_iterable_multi_value_fixture_builds_successfully() {
     let fixture = "fixtures/core-semantics/spread-array-custom-iterable-multi-value.ts";
-    let fixture_path = Path::new(env!("CARGO_MANIFEST_DIR")).join("../../").join(fixture);
+    let fixture_path = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("../../")
+        .join(fixture);
     let output = temp_wasm_path(fixture);
     let build = std::process::Command::new(env!("CARGO_BIN_EXE_ts2wasm"))
-        .arg("build").arg(&fixture_path).arg("-o").arg(&output).output().unwrap();
+        .arg("build")
+        .arg(&fixture_path)
+        .arg("-o")
+        .arg(&output)
+        .output()
+        .unwrap();
 }
 
 #[test]
 fn spread_operator_custom_iterable_mixed_fixture_builds_successfully() {
     let fixture = "fixtures/core-semantics/spread-array-custom-iterable-mixed.ts";
-    let fixture_path = Path::new(env!("CARGO_MANIFEST_DIR")).join("../../").join(fixture);
+    let fixture_path = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("../../")
+        .join(fixture);
     let output = temp_wasm_path(fixture);
     let build = std::process::Command::new(env!("CARGO_BIN_EXE_ts2wasm"))
-        .arg("build").arg(&fixture_path).arg("-o").arg(&output).output().unwrap();
+        .arg("build")
+        .arg(&fixture_path)
+        .arg("-o")
+        .arg(&output)
+        .output()
+        .unwrap();
 }
 
 #[test]

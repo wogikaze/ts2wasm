@@ -106,3 +106,12 @@ python scripts/manager.py reference-coverage tsc --path-filter reference/typescr
 ## Notes
 
 Split from `issues/open/1205-implement-classExtendsNull.md`.
+## False-done audit
+
+**truly-done** (5259)
+
+- Implementation commits: verified via `git log --oneline --all --grep=5259`
+- Completion evidence: filled with specific commit hashes and validation results
+- Acceptance criteria: all checked as met
+
+This issue has repo-local close evidence with implementation commits and validation commands.

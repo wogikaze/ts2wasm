@@ -118,3 +118,12 @@ python scripts/manager.py reference-coverage tsc --path-filter reference/typescr
 
 Split from `issues/open/1179-implement-classDeclaredBeforeClassFactory.md`.
 Related generated bucket: `issues/open/1741-implement-declarationEmitExpressionInExtends-declaration-emit.md`.
+## False-done audit
+
+**truly-done** (5252)
+
+- Implementation commits: verified via `git log --oneline --all --grep=5252`
+- Completion evidence: filled with specific commit hashes and validation results
+- Acceptance criteria: all checked as met
+
+This issue has repo-local close evidence with implementation commits and validation commands.
