@@ -588,7 +588,7 @@ error: [UnsupportedSyntax] issue-055: unsupported static export; module resoluti
 ## 重複整理メモ
 
 この issue はタイトルが重複しているため、内容がより充実している
-`issues/open/598-implement-allowJsCrossMonorepoPackage.md` に統合されました。
+`issues/done/598-implement-allowJsCrossMonorepoPackage.md` に統合されました。
 そちらを参照してください。
 ## Completion evidence
 
@@ -623,7 +623,7 @@ or triage work. The `
 ## 重複整理メモ
 
 この issue はタイトルが重複しているため、内容がより充実している
-`issues/open/598-implement-allowJsCrossMonorepoPackage.md` に統合されました。
+`issues/done/598-implement-allowJsCrossMonorepoPackage.md` に統合されました。
 そちらを参照してください。
 ## Completion evidence` section is unfilled (commits
 placeholder `...`, validation result empty). Zero implementation commits
@@ -645,4 +645,3 @@ reference this issue.
    - Issue URL or child issue path documenting the triage outcome
    - Or: the exact failing reference path has a matching open/done issue
    - Or: the failing test case no longer reproduces the original diagnostic
-

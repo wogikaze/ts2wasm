@@ -843,7 +843,7 @@ error: [UnsupportedModule] issue-232: unsupported non-local module specifier `pk
 ## 重複整理メモ
 
 この issue はタイトルが重複しているため、内容がより充実している
-`issues/open/598-implement-allowJsCrossMonorepoPackage.md` に統合されました。
+`issues/done/598-implement-allowJsCrossMonorepoPackage.md` に統合されました。
 そちらを参照してください。
 ## Completion evidence
 
