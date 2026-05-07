@@ -131,7 +131,7 @@ Follow-up issues:
 - `issues/done/1124-implement-cf.md` - Implement Cf (same feature label, same group key, title overlap)
 - `issues/done/1402-implement-compositeGenericFunction.md` - Implement Compositegenericfunction (same feature label, same group key, title overlap; now closed as stale build-pass)
 - `issues/done/1436-implement-conflictingTypeAnnotatedVar.md` - Implement Conflictingtypeannotatedvar (same feature label, same group key, title overlap)
-- `issues/open/1500-implement-contextualSignatureInstantiation-duplicate-local.md` - Implement Contextualsignatureinstantiation Duplicate Local (same feature label, same group key, title overlap)
+- `issues/done/1500-implement-contextualSignatureInstantiation-duplicate-local.md` - Implement Contextualsignatureinstantiation Duplicate Local (same feature label, same group key, title overlap; folded into issue 5234)
 - `issues/open/1777-implement-declarationEmitMappedTypeTemplateTypeofSymbol.md` - Implement Declarationemitmappedtypetemplatetypeofsymbol (same feature label, same group key, title overlap)
 - `issues/open/2008-implement-doNotEmitPinnedCommentNotOnTopOfFile.md` - Implement Donotemitpinnedcommentnotontopoffile (same feature label, same group key, title overlap)
 - `issues/open/2037-implement-duplicateIdentifierBindingElementInParameterDeclaration.md` - Implement Duplicateidentifierbindingelementinparameterdeclaration (same feature label, same group key, title overlap)

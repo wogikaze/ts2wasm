@@ -99,7 +99,9 @@ Do not touch:
 ## Acceptance criteria
 
 - [ ] `x: Array<string>` and `x: string[]` parameters are recognized as array-shaped locals for supported callback methods.
+- [ ] `items: T[]` generic function parameters are recognized as array-shaped locals for supported callback methods such as `items.map(f)`.
 - [ ] `x.forEach(v => use(v))` no longer reports `issue-211: unknown receiver class for method forEach` when `x` has an array-shaped parameter annotation.
+- [ ] `contextualSignatureInstantiation3.ts` no longer reports `issue-211: unknown receiver class for method map` at `items.map(f)`.
 - [ ] Existing unknown receiver diagnostics remain for untyped locals and non-array receiver annotations.
 - [ ] `python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/checkSwitchStatementIfCaseTypeIsString.ts` advances past the current `forEach` receiver boundary.
 
@@ -141,6 +143,9 @@ Follow-up issues:
 ## Notes
 
 Split from generated bucket `issues/done/1144-implement-checkSwitchStatementIfCaseTypeIsString.md`.
+Generated bucket `issues/done/1500-implement-contextualSignatureInstantiation-duplicate-local.md`
+was folded in on 2026-05-07 after fresh triage showed the same receiver tracking
+gap for a generic function parameter `items: T[]` and `items.map(f)`.
 
 Related but broader:
 

@@ -21,13 +21,13 @@ Issue files are the source of truth for work items. The generated section below 
 | ir | 67 | 45 | 22 |
 | issues | 4 | 0 | 4 |
 | parser | 1 | 0 | 1 |
-| reference | 212 | 155 | 57 |
+| reference | 212 | 154 | 58 |
 | runtime | 265 | 86 | 179 |
 | scripts | 3 | 1 | 2 |
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5205 | 3783 | 1422 |
+| total | 5205 | 3782 | 1423 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -584,7 +584,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 759 | Implement Asynciife | spike | frontend/syntax | class: triage-needed | Implement Asynciife |
 | 760 | Implement Asyncimportnestedyield | spike | reference/triage | class: triage-needed | Implement Asyncimportnestedyield |
 | 761 | Implement Asynciteratorextraparameters | spike | runtime/builtins | class: triage-needed | Implement Asynciteratorextraparameters |
-| 1500 | Implement Contextualsignatureinstantiation Duplicate Local | spike | reference/triage | class: triage-needed | Implement Contextualsignatureinstantiation Duplicate Local |
 | 1501 | Implement Contextualsignatureinstantiation Parser Syntax | spike | frontend/syntax | class: triage-needed | Implement Contextualsignatureinstantiation Parser Syntax |
 | 1502 | Implement Contextualsignatureinstantiation Unknown Unsupported | spike | frontend/syntax | class: triage-needed | Implement Contextualsignatureinstantiation Unknown Unsupported |
 | 1503 | Implement Contextualsignatureinstantiationwithtypeparameterconstrainedtooutertypeparameter | spike | frontend/syntax | class: blocked | Implement Contextualsignatureinstantiationwithtypeparameterconstrainedtooutertypeparameter |
@@ -5161,6 +5160,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1497 | Implement Contextualsignatureconditionaltypeinstantiationusingdefault | spike | frontend/semantics | see `issues/done/1497-implement-contextualSignatureConditionalTypeInstantiationUsingDefault.md` |
 | 1498 | Implement Contextualsignatureinarrayelementlibes | spike | frontend/syntax | see `issues/done/1498-implement-contextualSignatureInArrayElementLibEs.md` |
 | 1499 | Implement Contextualsignatureinobjectfreeze | spike | frontend/resolver | see `issues/done/1499-implement-contextualSignatureInObjectFreeze.md` |
+| 1500 | Implement Contextualsignatureinstantiation Duplicate Local | spike | reference/triage | see `issues/done/1500-implement-contextualSignatureInstantiation-duplicate-local.md` |
 | 2050 | Implement Duplicatelocalvariable Duplicate Local | spike | reference/triage | see `issues/done/2050-implement-duplicateLocalVariable-duplicate-local.md` |
 | 3002 | Implement Isolateddeclarationerrorsdefault | spike | runtime/builtins | see `issues/done/3002-implement-isolatedDeclarationErrorsDefault.md` |
 | 3131 | Implement Jsxfactorynotidentifierorqualifiedname | spike | reference/triage | see `issues/done/3131-implement-jsxFactoryNotIdentifierOrQualifiedName.md` |
