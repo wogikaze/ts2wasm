@@ -79,6 +79,8 @@ In scope:
 
 - [ ] Parse `<T>(value: Type) => expr` as a generic arrow function expression.
 - [ ] Erase TypeScript parameter type annotations inside the generic arrow parameter list.
+- [ ] Erase optional typed parameters such as `y?: K` in the generic arrow
+  parameter list.
 - [ ] Erase the return type annotation between `)` and `=>`.
 - [ ] Add focused parser coverage for `const fn = <T>(value: Box<T>): T => value;`.
 - [ ] Re-run the representative triage and record any next blocker separately.
@@ -107,6 +109,8 @@ Do not touch:
 ## Acceptance criteria
 
 - [ ] A focused parser test accepts `const fn = <T>(value: Box<T>): T => value;`.
+- [ ] `contextualSignatureInstantiation1.ts` no longer reports
+  `expected RightParen, got Some(Colon)` at `var e = <K>(x: string, y?: K) =>`.
 - [ ] `conditionalTypesSimplifyWhenTrivial.ts` no longer reports `expected RightParen, got Some(Colon)` at the `params:` annotation.
 - [ ] Existing arrow-function and angle-bracket assertion parser tests continue to pass.
 - [ ] If parsing advances to a new blocker, that next blocker is recorded separately.
@@ -155,6 +159,15 @@ Follow-up issues:
 Split from generated bucket `issues/done/1429-implement-conditionalTypesSimplifyWhenTrivial.md`.
 Related but non-identical slice `issues/open/5154-parse-angle-bracket-type-assertion-statements.md`
 explicitly excludes ambiguous generic arrow parsing.
+
+2026-05-07 fold-in:
+
+- `issues/done/1502-implement-contextualSignatureInstantiation-unknown-unsupported.md`
+  is the same parser boundary in `contextualSignatureInstantiation1.ts`.
+- Current diagnostic: `UnsupportedSyntax: expected RightParen, got Some(Colon)`
+  at `var e = <K>(x: string, y?: K) => x.length;`.
+- TypeScript oracle accepts the generic arrow and infers
+  `<K>(x: string, y?: K | undefined) => number`.
 
 ## Completion evidence
 
