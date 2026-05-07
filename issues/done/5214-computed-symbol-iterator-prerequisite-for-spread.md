@@ -158,3 +158,13 @@ date: 2026-05-07
 Remaining risks:
 
 - Full iterator protocol integration (spread via custom iterable) is issue 353, not this issue
+
+## False-done audit
+
+**truly-done** (5214)
+
+- Implementation commits: verified via `git log --oneline --all --grep=5214`
+- Completion evidence: filled with specific commit hashes and validation results
+- Acceptance criteria: all checked as met
+
+This issue has repo-local close evidence with implementation commits and validation commands.
