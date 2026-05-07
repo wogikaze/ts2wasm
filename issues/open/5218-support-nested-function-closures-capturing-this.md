@@ -8,7 +8,7 @@ priority: P2
 depends_on: []
 blocks: []
 created: 2026-05-06
-updated: 2026-05-06
+updated: 2026-05-07
 ---
 
 ## Summary
@@ -94,6 +94,11 @@ Do not touch:
 
 - [ ] `castTest.ts` no longer reports the generic `issue-062e` nested-function `this` closure guard as the first compiler blocker.
 - [ ] A focused fixture covers an object literal property function that reads `this.x`.
+- [ ] `contextualTypeShouldBeLiteral.ts` no longer reports the
+  `issue-5179` implicit-this diagnostic for contextual object literal
+  `method() { this; this.type; this.value; }`.
+- [ ] A focused fixture covers a method-shorthand object literal property that
+  reads `this` under a contextual object/interface type.
 - [ ] Existing closure fixtures for immutable captures still pass.
 - [ ] Remaining unsupported `arguments` capture behavior has a source-spanned diagnostic or explicit regression test.
 
@@ -126,8 +131,13 @@ is related but narrower: it handles a TypeScript implicit-`this` diagnostic
 before the runtime guard. This issue tracks the runtime/diagnostic boundary for
 an object literal function where TypeScript provides contextual member evidence.
 
-Additional superseded bucket:
+Additional superseded buckets:
 
+- `issues/done/1516-implement-contextualTypeShouldBeLiteral.md` reaches the
+  same object-literal/contextual receiver `this` boundary for method shorthand:
+  `method() { this; this.type; this.value; }`. Fresh triage on 2026-05-07
+  reports `UnsupportedTypeScriptSyntax issue-5179` for `method`, while the
+  TypeScript oracle accepts the file with diagnostics `[]`.
 - `issues/done/1375-implement-commentsOnObjectLiteral-object-literal.md` reaches
   the same issue-062e boundary for an object-literal accessor:
   `get a() { return this.prop; }`. `commentsOnObjectLiteral4.ts` from the same
