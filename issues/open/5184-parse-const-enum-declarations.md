@@ -207,6 +207,12 @@ Additional superseded bucket:
   `const enum Foo { ... }`; TypeScript parses the enum, reports no diagnostics,
   and sees later `Foo.X.toString()` and `Foo["X"].toString()` statements that
   are not reached before this parser boundary.
+- `issues/done/1459-implement-constEnumToStringWithComments.md` reaches the
+  same parser boundary before toString/with-comments behavior. Fresh triage on
+  2026-05-07 reports `const declarations require an initializer at 53..57` for
+  `const enum Foo { ... }`; TypeScript parses the enum, reports no diagnostics,
+  and sees the same later `Foo.X.toString()` and `Foo["X"].toString()`
+  statements before any comment-preservation behavior is reached.
 
 ## Completion evidence
 
