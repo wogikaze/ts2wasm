@@ -3,23 +3,24 @@ id: 558
 title: "Implement Abstractpropertyinconstructor"
 type: spike
 area: frontend/syntax
-class: triage-needed
+class: done
 priority: P1
-depends_on: []
+depends_on: [5390]
 blocks: []
 created: 2026-05-01
-updated: 2026-05-01
+updated: 2026-05-07
+completed: 2026-05-07
 ---
 
 ## Summary
 
-Triage abstractPropertyInConstructor across 1 failing reference test cases and split this bucket into implementation-ready child issues.
+Close `abstractPropertyInConstructor` after splitting the current later blocker into issue 5390.
 
 ## Problem
 
-Reference test results show 1 cases fail in directory `abstractPropertyInConstructor` with diagnostics: parser-syntax. The compiler cannot handle these syntax/semantics, preventing compilation of code in this category.
+Reference test results originally showed 1 case failing in directory `abstractPropertyInConstructor` with diagnostics: parser-syntax. Fresh triage on 2026-05-07 shows the parser blocker is gone; the current failure is a lowerer/diagnostic gap for constructor access to abstract properties.
 
-Problem: abstractPropertyInConstructor has 1 reference failures and needs smart-triage evidence before implementation starts.
+Problem: `abstractPropertyInConstructor.ts` now reaches `UnsupportedSyntax: method AbstractClass.cb not found` where TypeScript reports TS2715 for abstract property access in the constructor.
 
 ## Current failure
 
@@ -43,10 +44,10 @@ This generated bucket is either split into implementation-ready child issues or 
 
 In scope:
 
-- [ ] Inspect the smart triage report below
-- [ ] Confirm whether existing open/done issues already cover this bucket
-- [ ] Split one feature family, one observable behavior, or one fixed reference window into child issues
-- [ ] Preserve exact reproduction commands and representative AST/diagnostic evidence in each child issue
+- [x] Inspect the smart triage report below
+- [x] Confirm whether existing open/done issues already cover this bucket
+- [x] Split one feature family, one observable behavior, or one fixed reference window into child issues
+- [x] Preserve exact reproduction commands and representative AST/diagnostic evidence in each child issue
 
 Out of scope:
 
@@ -68,10 +69,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] Duplicate candidates below are confirmed as no-match or this issue is superseded
-- [ ] At least one child issue contains an exact `mise run reference-triage -- ...` command
-- [ ] Child issue includes failing path, diagnostic code, source context, visible symbols, and parser/TypeScript AST evidence
-- [ ] Child issue acceptance names the exact fixture/reference path and diagnostic/stdout change
+- [x] Duplicate candidates below are confirmed as no-match for the exact current failure
+- [x] Child issue 5390 contains an exact `reference-triage` command
+- [x] Child issue 5390 includes failing path, diagnostic code, source context, visible symbols, and parser/TypeScript AST evidence
+- [x] Child issue 5390 acceptance names the exact reference path and diagnostic/stdout change
 
 ## Validation
 
@@ -92,21 +93,23 @@ mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/abstr
 
 Not run:
 
-- none
+- `cargo fmt --all --check` and `cargo nextest run`; this close is an
+  issue-lifecycle-only split update, so focused reference and issue checks were
+  used instead.
 
 ## Docs / current-state / issue sync
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] updated: `current-state.md` (repo root)
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] created: `issues/open/5390-report-abstract-property-constructor-access-diagnostics.md`
 
 ## Notes
 
@@ -116,10 +119,47 @@ Follow-up issues:
 
 ## Duplicate detection
 
+- Split current failure to
+  `issues/open/5390-report-abstract-property-constructor-access-diagnostics.md`.
+- `issues/open/5261-report-class-typed-missing-instance-method-calls.md` is
+  related but not exact: it handles class-typed ambient locals whose requested
+  instance method is missing.
+- `issues/open/5322-support-callable-class-auto-accessor-fields.md` is related
+  but not exact: it handles callable auto-accessor fields, not abstract
+  property constructor diagnostics.
+
 - `issues/done/087-implement-abstractPropertyInConstructor.md` - Implement Abstractpropertyinconstructor (same reference path, same feature label, same group key, title overlap)
 - `issues/done/472-implement-abstractPropertyInConstructor.md` - Implement Abstractpropertyinconstructor (same reference path, same feature label, same group key, title overlap)
 
 ## Smart triage
+
+Generated 2026-05-07.
+
+```text
+command:
+env TS2WASM_BINARY=/home/wogikaze/wgkz/ts2wasm/target/debug/ts2wasm python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/abstractPropertyInConstructor.ts
+
+result:
+UnsupportedSyntax / method-call
+
+current diagnostic:
+method `AbstractClass.cb` not found at 269..281
+
+compiler evidence:
+tokens: ok
+ast: ok; AbstractClass constructor body parses; abstract properties are present
+resolved/lowered: fails in lower_program
+
+TypeScript oracle:
+TS2715 for constructor accesses to abstract properties `prop`, `cb`, `x`, and
+`y`; representative message is "Abstract property 'cb' in class
+'AbstractClass' cannot be accessed in the constructor."
+
+decision:
+split to issues/open/5390-report-abstract-property-constructor-access-diagnostics.md
+```
+
+## Historical smart triage
 
 ### Smart triage: Triage parser syntax: abstractPropertyInConstructor
 
@@ -744,20 +784,30 @@ error: [UnsupportedSyntax] expected Semicolon, got Some(Ident("other")) at 473..
 
 ## Completion evidence
 
-Fill only when moving to `done/`.
-
 Commits:
 
-- `...`
+- Split current lowerer/diagnostic blocker to issue 5390; no direct
+  implementation from this generated bucket.
 
 Validation result:
 
 ```text
 command:
+env TS2WASM_BINARY=/home/wogikaze/wgkz/ts2wasm/target/debug/ts2wasm python scripts/manager.py reference-coverage tsc --path-filter reference/typescript/tests/cases/compiler/abstractPropertyInConstructor.ts --detail --no-dashboard-data
 result:
+executed=1, build_pass=0, unsupported=1, unsupported_diagcodes=UnsupportedSyntax:1
 date:
+2026-05-07
+
+command:
+env TS2WASM_BINARY=/home/wogikaze/wgkz/ts2wasm/target/debug/ts2wasm python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/abstractPropertyInConstructor.ts
+result:
+UnsupportedSyntax / method-call; current diagnostic is `method AbstractClass.cb not found`; TypeScript oracle reports TS2715 abstract property constructor access diagnostics.
+date:
+2026-05-07
 ```
 
 Remaining risks:
 
-- none
+- Issue 5390 owns the implementation for abstract property constructor
+  diagnostics.
