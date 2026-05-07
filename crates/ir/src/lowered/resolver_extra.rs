@@ -991,8 +991,19 @@ impl<'a> Resolver<'a> {
     ) -> Result<Vec<LoweredStmt>, Diagnostic> {
         let property_value = if binding.computed {
             // Computed key: resolve the identifier inside [foo] and use dynamic lookup
-            let key_expr = binding.key.trim_start_matches('[').trim_end_matches(']');
-            let key_local = self.resolve_local(key_expr)?;
+            // Extract identifier from serialized AST: "[Ident { name: \"key\", ...}]"
+            let key_raw = binding.key.trim_start_matches('[').trim_end_matches(']');
+            let key_name = if let Some(start) = key_raw.find("name: \"") {
+                let after_start = &key_raw[start + 7..];
+                if let Some(end) = after_start.find('\"') {
+                    &after_start[..end]
+                } else {
+                    key_raw
+                }
+            } else {
+                key_raw
+            };
+            let key_local = self.resolve_local(key_name)?;
             LoweredExpr::PropertyGetDynamic {
                 obj: Box::new(value.clone()),
                 key: Box::new(LoweredExpr::Local(key_local, Span::generated("local"))),
