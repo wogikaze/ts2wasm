@@ -103,6 +103,9 @@ Do not touch:
   second arrow.
 - [ ] `collisionThisExpressionAndLocalVarInAccessors.ts` no longer reports the
   same nested zero-argument arrow parser failure inside class accessor bodies.
+- [ ] `collisionThisExpressionAndLocalVarInProperty.ts` no longer reports the
+  same nested zero-argument arrow parser failure inside class property
+  initializers.
 - [ ] A focused parser test covers `(callback) => () => { return callback(this); }`.
 - [ ] Existing arrow function expression tests still pass.
 - [ ] The representative reference triage records the next diagnostic or pass
@@ -148,6 +151,7 @@ Split from generated bucket
 `issues/done/1325-implement-collisionThisExpressionAndLocalVarInConstructor.md`.
 Also supersedes
 `issues/done/1324-implement-collisionThisExpressionAndLocalVarInAccessors.md`,
+`issues/done/1329-implement-collisionThisExpressionAndLocalVarInProperty.md`,
 `issues/done/1327-implement-collisionThisExpressionAndLocalVarInLambda.md`
 and `issues/done/1328-implement-collisionThisExpressionAndLocalVarInMethod.md`,
 which stop at the same `(callback) => () => { ... }` parser failure.
@@ -157,6 +161,13 @@ stops at span `141..143` on the second arrow in
 `doStuff: (callback) => () => { ... }` inside a getter body. TypeScript accepts
 the source and reports no diagnostics; its AST path has nested `ArrowFunction`
 nodes under a `PropertyAssignment` inside `GetAccessor`.
+
+2026-05-07 additional evidence: `collisionThisExpressionAndLocalVarInProperty.ts`
+stops at span `111..113` on the second arrow in
+`doStuff: (callback) => () => { ... }` inside a public class property
+initializer. TypeScript accepts the source and reports no diagnostics; its AST
+path has nested `ArrowFunction` nodes under a `PropertyAssignment` inside
+`PropertyDeclaration`.
 
 Related but distinct:
 
