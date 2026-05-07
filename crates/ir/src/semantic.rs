@@ -119,8 +119,15 @@ pub fn lower_to_hir(program: &[ResolvedStmt]) -> Result<HirProgram, Diagnostic> 
     for stmt in program {
         match stmt {
             ResolvedStmt::Function {
-                name, params, body, ..
+                name,
+                params,
+                body,
+                ..
             } => {
+                // Skip bodyless TypeScript overload signatures.
+                if body.is_empty() {
+                    continue;
+                }
                 let id = function_ids[name.as_str()];
                 functions.push(lower_function(id, params, body, &function_ids)?);
             }
@@ -820,7 +827,14 @@ fn collect_function_ids(
 ) -> Result<HashMap<String, HirFunctionId>, Diagnostic> {
     let mut ids = HashMap::new();
     for stmt in program {
-        if let ResolvedStmt::Function { name, .. } = stmt {
+        if let ResolvedStmt::Function {
+            name, body, ..
+        } = stmt
+        {
+            // Skip bodyless overload signatures.
+            if body.is_empty() {
+                continue;
+            }
             if ids.contains_key(name.as_str()) {
                 return Err(Diagnostic {
                     code: DiagCode::DuplicateFunction,

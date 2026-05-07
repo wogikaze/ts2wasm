@@ -264,6 +264,13 @@ impl<'a> Lexer<'a> {
             if self.skip_ignored()? {
                 continue;
             }
+
+            // Detect Git merge conflict markers at line start before falling into
+            // operator tokenization (LeftShift, OrOr, StrictEqual, UnsignedRightShift).
+            if self.at_line_start {
+                self.check_merge_conflict_marker()?;
+            }
+
             let start = self.cursor;
             match ch {
                 ch if ch.is_whitespace() => {
@@ -1120,6 +1127,37 @@ impl<'a> Lexer<'a> {
             }
             self.advance_char();
         }
+    }
+
+    /// Check for Git merge conflict markers (`<<<<<<<`, `|||||||`, `=======`,
+    /// `>>>>>>>`) at the start of a line. Returns an error diagnostic spanning
+    /// the entire conflict marker line if one is found.
+    fn check_merge_conflict_marker(&mut self) -> Result<(), Diagnostic> {
+        debug_assert!(self.at_line_start);
+        let remaining = &self.source[self.cursor..];
+        let is_marker = remaining.starts_with("<<<<<<<")
+            || remaining.starts_with("|||||||")
+            || remaining.starts_with("=======")
+            || remaining.starts_with(">>>>>>>");
+        if !is_marker {
+            return Ok(());
+        }
+        let start = self.cursor;
+        // Skip the rest of the conflict marker line
+        while let Some(ch) = self.peek_char() {
+            if is_line_terminator(ch) {
+                break;
+            }
+            self.advance_char();
+        }
+        Err(Diagnostic::source(
+            Span {
+                start,
+                end: self.cursor,
+            },
+            DiagCode::UnsupportedSyntax,
+            "Merge conflict marker encountered",
+        ))
     }
 
     fn peek_char(&self) -> Option<char> {

@@ -261,7 +261,13 @@ mod tests {
         let params = program
             .iter()
             .filter_map(|stmt| match stmt {
-                Stmt::Function { name, params, body, is_ambient: true, .. } => {
+                Stmt::Function {
+                    name,
+                    params,
+                    body,
+                    is_ambient: true,
+                    ..
+                } => {
                     assert!(body.is_empty(), "ambient function bodies stay erased");
                     Some((name.as_str(), params))
                 }
@@ -381,21 +387,15 @@ mod tests {
         "#;
         let program = parse_program(source).unwrap();
         assert_eq!(program.len(), 4);
-        assert!(
-            program
-                .iter()
-                .any(|stmt| matches!(stmt, Stmt::Function { name, .. } if name == "readAmbient"))
-        );
-        assert!(
-            program.iter().any(
-                |stmt| matches!(stmt, Stmt::AmbientValueDecl { name, .. } if name == "ambientValue")
-            )
-        );
-        assert!(
-            program
-                .iter()
-                .any(|stmt| matches!(stmt, Stmt::ClassDecl { .. }))
-        );
+        assert!(program
+            .iter()
+            .any(|stmt| matches!(stmt, Stmt::Function { name, .. } if name == "readAmbient")));
+        assert!(program.iter().any(
+            |stmt| matches!(stmt, Stmt::AmbientValueDecl { name, .. } if name == "ambientValue")
+        ));
+        assert!(program
+            .iter()
+            .any(|stmt| matches!(stmt, Stmt::ClassDecl { .. })));
         assert!(program.iter().any(|stmt| matches!(stmt, Stmt::Let { .. })));
 
         let Some(Stmt::ClassDecl { body, .. }) = program
@@ -460,8 +460,9 @@ mod tests {
 
     #[test]
     fn allows_local_implements_type_in_erased_namespace() {
-        let program = parse_program("namespace M { interface I {} export class C implements I {} }")
-            .expect("local namespace interface should satisfy erased implements reference");
+        let program =
+            parse_program("namespace M { interface I {} export class C implements I {} }")
+                .expect("local namespace interface should satisfy erased implements reference");
         assert!(program.is_empty());
     }
 
@@ -470,21 +471,20 @@ mod tests {
         let err = parse_program(
             "namespace Test { export class Bug { bug() { var name: string = null; } } }",
         )
-        .expect_err(
-            "typed local declaration with null in erased namespace should report TS2322",
-        );
+        .expect_err("typed local declaration with null in erased namespace should report TS2322");
         assert_eq!(err.code, DiagCode::TypeScriptTypeCheck);
         assert!(err.message.contains("TS2322"));
-        assert!(err.message.contains("Type 'null' is not assignable to type 'string'"));
+        assert!(err
+            .message
+            .contains("Type 'null' is not assignable to type 'string'"));
         assert_eq!(err.span, Some(Span { start: 48, end: 52 }));
     }
 
     #[test]
     fn allows_untyped_null_in_erased_namespace_class_method() {
-        let stmts = parse_program(
-            "namespace Test { export class Bug { bug() { var name = null; } } }",
-        )
-        .expect("untyped null in erased namespace should not report TS2322");
+        let stmts =
+            parse_program("namespace Test { export class Bug { bug() { var name = null; } } }")
+                .expect("untyped null in erased namespace should not report TS2322");
         assert!(stmts.is_empty());
     }
 
@@ -493,12 +493,12 @@ mod tests {
         let err = parse_program(
             "namespace Test { export class Bug { bug() { let name: number = null; } } }",
         )
-        .expect_err(
-            "typed null local with let in erased namespace should report TS2322",
-        );
+        .expect_err("typed null local with let in erased namespace should report TS2322");
         assert_eq!(err.code, DiagCode::TypeScriptTypeCheck);
         assert!(err.message.contains("TS2322"));
-        assert!(err.message.contains("Type 'null' is not assignable to type 'number'"));
+        assert!(err
+            .message
+            .contains("Type 'null' is not assignable to type 'number'"));
     }
 
     #[test]
@@ -580,7 +580,6 @@ mod tests {
         };
         assert!(matches!(let_val, Expr::Number { value: 42, .. }));
     }
-
 
     #[test]
     fn parses_typescript_satisfies_expressions_as_erased_syntax() {
@@ -717,12 +716,10 @@ mod tests {
     fn parses_anonymous_function_expression_call_with_spread() {
         let program =
             parse_program("(function(a, b, c) { return a + b + c; }(...[1, 2, 3]));").unwrap();
-        let [
-            Stmt::Expr {
-                expr: Expr::Call { callee, args, .. },
-                ..
-            },
-        ] = program.as_slice()
+        let [Stmt::Expr {
+            expr: Expr::Call { callee, args, .. },
+            ..
+        }] = program.as_slice()
         else {
             panic!("expected function expression call statement");
         };
@@ -851,9 +848,7 @@ mod tests {
             panic!("expected let statement");
         };
         match expr {
-            Expr::Call {
-                callee, args, ..
-            } => {
+            Expr::Call { callee, args, .. } => {
                 assert!(matches!(callee.as_ref(), Expr::Ident { name, .. } if name == "a"));
                 assert_eq!(args.len(), 1);
                 assert!(matches!(&args[0], Expr::Ident { name, .. } if name == "c"));
@@ -864,17 +859,16 @@ mod tests {
 
     #[test]
     fn parses_member_call_with_explicit_type_arguments() {
-        let program =
-            parse_program("let result = _.map<number, string>(c2, rf1);").unwrap();
+        let program = parse_program("let result = _.map<number, string>(c2, rf1);").unwrap();
         let Stmt::Let { expr, .. } = &program[0] else {
             panic!("expected let statement");
         };
         match expr {
-            Expr::Call {
-                callee, args, ..
-            } => {
+            Expr::Call { callee, args, .. } => {
                 match callee.as_ref() {
-                    Expr::Member { object, property, .. } => {
+                    Expr::Member {
+                        object, property, ..
+                    } => {
                         assert!(
                             matches!(object.as_ref(), Expr::Ident { name, .. } if name == "_"),
                             "expected member object `_`, got {object:?}"
@@ -886,11 +880,13 @@ mod tests {
                 assert_eq!(args.len(), 2, "expected 2 arguments");
                 assert!(
                     matches!(&args[0], Expr::Ident { name, .. } if name == "c2"),
-                    "expected first arg `c2`, got {:?}", args[0]
+                    "expected first arg `c2`, got {:?}",
+                    args[0]
                 );
                 assert!(
                     matches!(&args[1], Expr::Ident { name, .. } if name == "rf1"),
-                    "expected second arg `rf1`, got {:?}", args[1]
+                    "expected second arg `rf1`, got {:?}",
+                    args[1]
                 );
             }
             other => panic!("expected Call expression, got {other:?}"),
@@ -904,11 +900,11 @@ mod tests {
             panic!("expected let statement");
         };
         match expr {
-            Expr::Call {
-                callee, args, ..
-            } => {
+            Expr::Call { callee, args, .. } => {
                 match callee.as_ref() {
-                    Expr::Member { object, property, .. } => {
+                    Expr::Member {
+                        object, property, ..
+                    } => {
                         assert!(
                             matches!(object.as_ref(), Expr::Ident { name, .. } if name == "_"),
                             "expected member object `_`, got {object:?}"
@@ -920,11 +916,13 @@ mod tests {
                 assert_eq!(args.len(), 2, "expected 2 arguments");
                 assert!(
                     matches!(&args[0], Expr::Ident { name, .. } if name == "c2"),
-                    "expected first arg `c2`, got {:?}", args[0]
+                    "expected first arg `c2`, got {:?}",
+                    args[0]
                 );
                 assert!(
                     matches!(&args[1], Expr::Ident { name, .. } if name == "rf1"),
-                    "expected second arg `rf1`, got {:?}", args[1]
+                    "expected second arg `rf1`, got {:?}",
+                    args[1]
                 );
             }
             other => panic!("expected Call expression, got {other:?}"),
@@ -1369,10 +1367,7 @@ mod tests {
         // TypeScript qualified name with type arguments in class heritage:
         //   class C2<T> extends M.I2<T> { }
         // The parser must consume the dot-chain before consuming <T>.
-        let program = parse_program(
-            "var M: any;\nclass C2<T> extends M.I2<T> { }",
-        )
-        .unwrap();
+        let program = parse_program("var M: any;\nclass C2<T> extends M.I2<T> { }").unwrap();
         assert_eq!(program.len(), 2);
         let Stmt::ClassDecl {
             name,
@@ -1426,12 +1421,7 @@ class Foo {
             panic!("expected class declaration");
         };
         assert_eq!(body.len(), 2);
-        let Stmt::Function {
-            name,
-            params,
-            ..
-        } = &body[0]
-        else {
+        let Stmt::Function { name, params, .. } = &body[0] else {
             panic!("expected method function");
         };
         assert_eq!(params.len(), 2, "handleResolve should have 2 params");
@@ -1732,10 +1722,9 @@ b /* parameter b */,
     fn rejects_uninitialized_const_after_type_annotation() {
         let err = parse_program("const value: number;").unwrap_err();
         assert_eq!(err.code, DiagCode::UnsupportedSyntax);
-        assert!(
-            err.message
-                .contains("const declarations require an initializer")
-        );
+        assert!(err
+            .message
+            .contains("const declarations require an initializer"));
     }
 
     #[test]
@@ -1796,10 +1785,9 @@ b /* parameter b */,
         let err = parse_program("let [...a, b] = arr;").unwrap_err();
         assert_eq!(err.code, DiagCode::UnsupportedSyntax);
         assert!(err.message.contains("issue-247"));
-        assert!(
-            err.message
-                .contains("rest binding must be the final element")
-        );
+        assert!(err
+            .message
+            .contains("rest binding must be the final element"));
         assert_eq!(err.span, Some(Span { start: 5, end: 8 }));
     }
 
@@ -1860,10 +1848,9 @@ b /* parameter b */,
         let err = parse_program("[...a, b] = arr;").unwrap_err();
         assert_eq!(err.code, DiagCode::UnsupportedSyntax);
         assert!(err.message.contains("issue-252"));
-        assert!(
-            err.message
-                .contains("rest assignment target must be the final element")
-        );
+        assert!(err
+            .message
+            .contains("rest assignment target must be the final element"));
         assert_eq!(err.span, Some(Span { start: 1, end: 4 }));
     }
 
@@ -1872,10 +1859,9 @@ b /* parameter b */,
         let err = parse_program("({ x: call() } = obj);").unwrap_err();
         assert_eq!(err.code, DiagCode::UnsupportedSyntax);
         assert!(err.message.contains("issue-252"));
-        assert!(
-            err.message
-                .contains("invalid destructuring assignment target")
-        );
+        assert!(err
+            .message
+            .contains("invalid destructuring assignment target"));
     }
 
     #[test]
@@ -2449,21 +2435,17 @@ b /* parameter b */,
         let function_err = parse_program("export default function value() {};").unwrap_err();
         assert_eq!(function_err.code, DiagCode::UnsupportedSyntax);
         assert!(function_err.message.contains("issue-055"));
-        assert!(
-            function_err
-                .message
-                .contains("unsupported default function export")
-        );
+        assert!(function_err
+            .message
+            .contains("unsupported default function export"));
         assert_eq!(function_err.span, Some(Span { start: 0, end: 6 }));
 
         let class_err = parse_program("export default class Value {};").unwrap_err();
         assert_eq!(class_err.code, DiagCode::UnsupportedSyntax);
         assert!(class_err.message.contains("issue-055"));
-        assert!(
-            class_err
-                .message
-                .contains("unsupported default class export")
-        );
+        assert!(class_err
+            .message
+            .contains("unsupported default class export"));
         assert_eq!(class_err.span, Some(Span { start: 0, end: 6 }));
     }
 
@@ -2616,10 +2598,9 @@ b /* parameter b */,
 
     #[test]
     fn rejects_null_return_in_typed_getter() {
-        let err = parse_program(
-            "class Result {} class Test { get Property(): Result { return null; } }",
-        )
-        .unwrap_err();
+        let err =
+            parse_program("class Result {} class Test { get Property(): Result { return null; } }")
+                .unwrap_err();
         assert_eq!(err.code, DiagCode::UnsupportedTypeScriptSyntax);
         assert!(err.message.contains("issue-5183"));
     }
@@ -2635,10 +2616,9 @@ b /* parameter b */,
         assert_eq!(err.code, DiagCode::UnsupportedSyntax);
         assert!(err.message.contains("issue-055"));
         assert!(err.message.contains("unsupported dynamic import"));
-        assert!(
-            err.message
-                .contains("module resolution and loading are not implemented")
-        );
+        assert!(err
+            .message
+            .contains("module resolution and loading are not implemented"));
         assert_eq!(err.span, Some(Span { start: 0, end: 6 }));
     }
 
@@ -2836,7 +2816,9 @@ b /* parameter b */,
         assert_eq!(program.len(), 2);
 
         match &program[1] {
-            Stmt::While { condition, body, .. } => {
+            Stmt::While {
+                condition, body, ..
+            } => {
                 assert!(matches!(
                     condition,
                     Expr::Binary {
@@ -2941,8 +2923,8 @@ b /* parameter b */,
 
     #[test]
     fn parses_switch_statement() {
-        let program = parse_program("let x = 1; switch (x) { case 1: break; default: break; }")
-            .unwrap();
+        let program =
+            parse_program("let x = 1; switch (x) { case 1: break; default: break; }").unwrap();
         assert_eq!(program.len(), 2);
 
         match &program[1] {
@@ -2951,10 +2933,7 @@ b /* parameter b */,
                 assert_eq!(cases.len(), 2);
                 // First case: case 1:
                 assert!(cases[0].0.is_some());
-                assert!(matches!(
-                    &cases[0].0,
-                    Some(Expr::Number { value: 1, .. })
-                ));
+                assert!(matches!(&cases[0].0, Some(Expr::Number { value: 1, .. })));
                 assert_eq!(cases[0].1.len(), 1);
                 // Second case: default:
                 assert!(cases[1].0.is_none());
@@ -2970,7 +2949,9 @@ b /* parameter b */,
         assert_eq!(program.len(), 2);
 
         match &program[1] {
-            Stmt::DoWhile { body, condition, .. } => {
+            Stmt::DoWhile {
+                body, condition, ..
+            } => {
                 assert_eq!(body.len(), 1);
                 assert!(matches!(
                     condition,
@@ -3042,8 +3023,7 @@ b /* parameter b */,
     #[test]
     fn parses_for_loop_without_init_prefix_increment() {
         let program =
-            parse_program("let i = 0; let limit = 10; for (; i < limit; ++i) { break; }")
-                .unwrap();
+            parse_program("let i = 0; let limit = 10; for (; i < limit; ++i) { break; }").unwrap();
         assert_eq!(program.len(), 3);
 
         match &program[2] {
@@ -3058,7 +3038,13 @@ b /* parameter b */,
                 assert!(condition.is_some());
                 assert!(update.is_some());
                 assert_eq!(body.len(), 1);
-                assert!(matches!(update.as_ref().unwrap(), Expr::Unary { op: UnaryOp::PreIncrement, .. }));
+                assert!(matches!(
+                    update.as_ref().unwrap(),
+                    Expr::Unary {
+                        op: UnaryOp::PreIncrement,
+                        ..
+                    }
+                ));
             }
             other => panic!("expected For statement with prefix increment, got {other:?}"),
         }
@@ -3081,7 +3067,13 @@ b /* parameter b */,
                 assert!(condition.is_none());
                 assert!(update.is_some());
                 assert_eq!(body.len(), 1);
-                assert!(matches!(update.as_ref().unwrap(), Expr::Unary { op: UnaryOp::PreIncrement, .. }));
+                assert!(matches!(
+                    update.as_ref().unwrap(),
+                    Expr::Unary {
+                        op: UnaryOp::PreIncrement,
+                        ..
+                    }
+                ));
             }
             other => panic!("expected For statement with no init/condition, got {other:?}"),
         }
@@ -3095,10 +3087,7 @@ b /* parameter b */,
         match &program[0] {
             Stmt::Labeled { label, body, .. } => {
                 assert_eq!(label, "label");
-                assert!(matches!(
-                    body.as_ref(),
-                    Stmt::While { .. }
-                ));
+                assert!(matches!(body.as_ref(), Stmt::While { .. }));
             }
             other => panic!("expected Labeled statement, got {other:?}"),
         }
@@ -3174,17 +3163,23 @@ b /* parameter b */,
 
     #[test]
     fn parses_break_with_label() {
-        let program = parse_program("outer: while (true) { while (true) { break outer; } }")
-            .unwrap();
+        let program =
+            parse_program("outer: while (true) { while (true) { break outer; } }").unwrap();
         assert_eq!(program.len(), 1);
 
         let Stmt::Labeled { body, .. } = &program[0] else {
             panic!("expected Labeled statement");
         };
-        let Stmt::While { body: outer_body, .. } = body.as_ref() else {
+        let Stmt::While {
+            body: outer_body, ..
+        } = body.as_ref()
+        else {
             panic!("expected outer While statement");
         };
-        let Stmt::While { body: inner_body, .. } = &outer_body[0] else {
+        let Stmt::While {
+            body: inner_body, ..
+        } = &outer_body[0]
+        else {
             panic!("expected inner While statement");
         };
         match &inner_body[0] {
@@ -3204,7 +3199,9 @@ b /* parameter b */,
         "#;
         let program = parse_program(source).unwrap();
         assert_eq!(program.len(), 2);
-        assert!(matches!(program[0], Stmt::Function { ref name, .. } if name == "exportedDeclared"));
+        assert!(
+            matches!(program[0], Stmt::Function { ref name, .. } if name == "exportedDeclared")
+        );
         assert!(matches!(program[1], Stmt::Let { .. }));
     }
 
@@ -3253,12 +3250,25 @@ b /* parameter b */,
         let source = "const result = (() => ({ a: 1 }))\nresult.BLAH;";
         let program = parse_program(source).unwrap();
         assert_eq!(program.len(), 2);
-        let Stmt::Let { name, expr: Expr::ArrowFn { .. }, .. } = &program[0] else {
-            panic!("expected Let with arrow fn initializer, got {:?}", program[0]);
+        let Stmt::Let {
+            name,
+            expr: Expr::ArrowFn { .. },
+            ..
+        } = &program[0]
+        else {
+            panic!(
+                "expected Let with arrow fn initializer, got {:?}",
+                program[0]
+            );
         };
         assert_eq!(name, "result");
         match &program[1] {
-            Stmt::Expr { expr: Expr::Member { object, property, .. }, .. } => {
+            Stmt::Expr {
+                expr: Expr::Member {
+                    object, property, ..
+                },
+                ..
+            } => {
                 assert!(matches!(object.as_ref(), Expr::Ident { name, .. } if name == "result"));
                 assert_eq!(property, "BLAH");
             }
@@ -3279,7 +3289,12 @@ b /* parameter b */,
             other => panic!("expected Let, got {other:?}"),
         }
         match &program[1] {
-            Stmt::Expr { expr: Expr::Member { object, property, .. }, .. } => {
+            Stmt::Expr {
+                expr: Expr::Member {
+                    object, property, ..
+                },
+                ..
+            } => {
                 assert!(matches!(object.as_ref(), Expr::Ident { name, .. } if name == "result"));
                 assert_eq!(property, "BLAH");
             }
@@ -3298,7 +3313,10 @@ b /* parameter b */,
     #[test]
     fn parses_exponentiation_compound_assignment() {
         let program = parse_program("num **= 2;");
-        assert!(program.is_ok(), "expected PowerEqual to parse, got err: {program:?}");
+        assert!(
+            program.is_ok(),
+            "expected PowerEqual to parse, got err: {program:?}"
+        );
         let program = program.unwrap();
         assert_eq!(program.len(), 1);
         match &program[0] {
@@ -3311,7 +3329,9 @@ b /* parameter b */,
                         right,
                         ..
                     } => {
-                        assert!(matches!(&**left, Expr::Ident { name: lname, .. } if *lname == "num"));
+                        assert!(
+                            matches!(&**left, Expr::Ident { name: lname, .. } if *lname == "num")
+                        );
                         assert!(matches!(&**right, Expr::Number { value: 2, .. }));
                     }
                     other => panic!("expected Power binary, got {other:?}"),
@@ -3320,8 +3340,6 @@ b /* parameter b */,
             other => panic!("expected Stmt::Assign, got {other:?}"),
         }
     }
-
-
 
     #[test]
     fn preserves_exponentiation_operator_when_not_compound() {
@@ -3333,7 +3351,10 @@ b /* parameter b */,
             Stmt::Assign { name, expr, .. } => {
                 assert_eq!(name, "x");
                 match expr {
-                    Expr::Binary { op: BinaryOp::Power, .. } => {}
+                    Expr::Binary {
+                        op: BinaryOp::Power,
+                        ..
+                    } => {}
                     other => panic!("expected Power binary op, got {other:?}"),
                 }
             }
@@ -3463,7 +3484,8 @@ b /* parameter b */,
         let err = parse_program("const x;").unwrap_err();
         assert_eq!(err.code, DiagCode::UnsupportedSyntax);
         assert!(
-            err.message.contains("const declarations require an initializer"),
+            err.message
+                .contains("const declarations require an initializer"),
             "{err:?}"
         );
     }
@@ -3471,13 +3493,19 @@ b /* parameter b */,
     #[test]
     fn parses_leading_decimal_number() {
         let program = parse_program("const done = Math.random() < .5;");
-        assert!(program.is_ok(), "expected .5 to parse, got err: {program:?}");
+        assert!(
+            program.is_ok(),
+            "expected .5 to parse, got err: {program:?}"
+        );
     }
 
     #[test]
     fn leading_decimal_is_number_not_member() {
         let program = parse_program("const x = .5;");
-        assert!(program.is_ok(), "expected .5 to parse, got err: {program:?}");
+        assert!(
+            program.is_ok(),
+            "expected .5 to parse, got err: {program:?}"
+        );
         let program = program.unwrap();
         assert_eq!(program.len(), 1);
         match &program[0] {
@@ -3496,7 +3524,8 @@ b /* parameter b */,
 
     #[test]
     fn numeric_member_access_still_reports_member_name_error() {
-        let err = parse_program("const x = object.5;").expect_err("object.5 should not parse as .5");
+        let err =
+            parse_program("const x = object.5;").expect_err("object.5 should not parse as .5");
         assert!(
             err.message.contains("expected member property name"),
             "{err:?}"
@@ -3506,19 +3535,27 @@ b /* parameter b */,
     #[test]
     fn parses_export_let_destructuring() {
         let program = parse_program("export let [,,[,[],,[],]] = undefined as any;");
-        assert!(program.is_ok(), "expected export let destructuring to parse, got err: {program:?}");
+        assert!(
+            program.is_ok(),
+            "expected export let destructuring to parse, got err: {program:?}"
+        );
     }
 
     #[test]
     fn parses_export_assignment() {
         let program = parse_program("export = foo;");
-        assert!(program.is_ok(), "expected export = foo to parse, got err: {program:?}");
+        assert!(
+            program.is_ok(),
+            "expected export = foo to parse, got err: {program:?}"
+        );
         let program = program.unwrap();
         assert_eq!(program.len(), 1);
         match &program[0] {
             Stmt::ExportAssignment { expr, .. } => {
-                assert!(matches!(expr, Expr::Ident { name, .. } if name == "foo"),
-                    "expected Ident(foo), got {expr:?}");
+                assert!(
+                    matches!(expr, Expr::Ident { name, .. } if name == "foo"),
+                    "expected Ident(foo), got {expr:?}"
+                );
             }
             other => panic!("expected ExportAssignment, got {other:?}"),
         }
@@ -3527,13 +3564,19 @@ b /* parameter b */,
     #[test]
     fn parses_export_assignment_member_expression() {
         let program = parse_program("export = module.exports;");
-        assert!(program.is_ok(), "expected export = module.exports to parse, got err: {program:?}");
+        assert!(
+            program.is_ok(),
+            "expected export = module.exports to parse, got err: {program:?}"
+        );
     }
 
     #[test]
     fn asi_after_class_expression_variable_initializer() {
         let program = parse_program("let y = class { static a = x; }\nlet x;");
-        assert!(program.is_ok(), "expected ASI after class expression let, got err: {program:?}");
+        assert!(
+            program.is_ok(),
+            "expected ASI after class expression let, got err: {program:?}"
+        );
         let program = program.unwrap();
         assert_eq!(program.len(), 2);
         assert!(matches!(&program[0], Stmt::ClassDecl { .. }));
@@ -3583,14 +3626,73 @@ b /* parameter b */,
     }
 
     #[test]
+    fn parses_object_type_literal_with_construct_signature_in_func_annotation() {
+        let program = parse_program("function f(): { new(): Object } { return null; }");
+        assert!(
+            program.is_ok(),
+            "expected OK parsing construct signature in function return type, got err: {program:?}",
+        );
+    }
+
+    #[test]
+    fn parses_object_type_literal_with_construct_signature_and_params() {
+        let source = r#"
+            function factory(a: any): { new(x: number): Object } {
+                return null;
+            }
+        "#;
+        let program = parse_program(source);
+        assert!(
+            program.is_ok(),
+            "expected OK parsing construct signature with params, got err: {program:?}",
+        );
+    }
+
+    #[test]
+    fn parses_object_type_literal_with_multiple_construct_signatures() {
+        let source = r#"
+            function f(): {
+                new(): Object;
+                new(x: number): Object;
+                new(x: string): Object;
+            } {
+                return null;
+            }
+        "#;
+        let program = parse_program(source);
+        assert!(
+            program.is_ok(),
+            "expected OK parsing multiple construct signatures, got err: {program:?}",
+        );
+    }
+
+    #[test]
+    fn parses_object_type_literal_with_construct_and_call_signatures() {
+        let source = r#"
+            function f(): {
+                new(): Object;
+                (x: number): string;
+            } {
+                return null;
+            }
+        "#;
+        let program = parse_program(source);
+        assert!(
+            program.is_ok(),
+            "expected OK parsing mixed construct and call signatures, got err: {program:?}",
+        );
+    }
+
+    #[test]
     fn reports_ts2320_for_interface_private_member_clash() {
         let source = r#"
             class X { private m: number; }
             class Y { private m: string; }
             interface Z extends X, Y { }
         "#;
-        let err = parse_program(source)
-            .expect_err("interface extending classes with conflicting private members should report TS2320");
+        let err = parse_program(source).expect_err(
+            "interface extending classes with conflicting private members should report TS2320",
+        );
         assert_eq!(err.code, DiagCode::TypeScriptTypeCheck);
         assert!(err.message.contains("TS2320"), "message: {}", err.message);
         assert!(err.message.contains("'Z'"), "message: {}", err.message);
@@ -3669,7 +3771,9 @@ b /* parameter b */,
                         assert_eq!(*value, 1);
                         assert!(*is_var);
                     }
-                    other => panic!("expected Let with var flag and number initializer, got {other:?}"),
+                    other => {
+                        panic!("expected Let with var flag and number initializer, got {other:?}")
+                    }
                 }
             }
             other => panic!("expected ExportDecl, got {other:?}"),

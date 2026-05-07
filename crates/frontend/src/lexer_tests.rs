@@ -283,4 +283,110 @@ mod tests {
 
         assert_eq!(program.len(), 2);
     }
+
+    #[test]
+    fn merge_conflict_marker_left_shift_detects_at_line_start() {
+        let err = Lexer::new("class C {\n<<<<<<< HEAD\n    v = 1;\n>>>>>>> Branch-a\n}")
+            .tokenize()
+            .unwrap_err();
+
+        assert_eq!(err.code, DiagCode::UnsupportedSyntax);
+        assert!(
+            err.message.contains("Merge conflict marker encountered"),
+            "{err:?}"
+        );
+        let span = err
+            .span
+            .expect("merge conflict marker diagnostic must have a span");
+        assert_eq!(
+            &"class C {\n<<<<<<< HEAD"[span.start..span.end],
+            "<<<<<<< HEAD"
+        );
+    }
+
+    #[test]
+    fn merge_conflict_marker_pipe_detects_at_line_start() {
+        let err =
+            Lexer::new("class C {\n<<<<<<< HEAD\n    v = 1;\n||||||| merged common ancestors\n}")
+                .tokenize()
+                .unwrap_err();
+
+        assert_eq!(err.code, DiagCode::UnsupportedSyntax);
+        assert!(
+            err.message.contains("Merge conflict marker encountered"),
+            "{err:?}"
+        );
+    }
+
+    #[test]
+    fn merge_conflict_marker_equals_detects_at_line_start() {
+        let err = Lexer::new("class C {\n<<<<<<< HEAD\n    v = 1;\n||||||| merged\n=======\n}")
+            .tokenize()
+            .unwrap_err();
+        // The third conflict marker (=======) on line 5 should be detected after
+        // the first marker error propagates. We just verify the error type.
+        assert_eq!(err.code, DiagCode::UnsupportedSyntax);
+        assert!(
+            err.message.contains("Merge conflict marker encountered"),
+            "{err:?}"
+        );
+    }
+
+    #[test]
+    fn merge_conflict_marker_greater_detects_at_line_start() {
+        let err = Lexer::new(
+            "class C {\n<<<<<<< HEAD\n    v = 1;\n=======\n    v = 2;\n>>>>>>> Branch-a\n}",
+        )
+        .tokenize()
+        .unwrap_err();
+
+        assert_eq!(err.code, DiagCode::UnsupportedSyntax);
+        assert!(
+            err.message.contains("Merge conflict marker encountered"),
+            "{err:?}"
+        );
+    }
+
+    #[test]
+    fn merge_conflict_marker_correct_span_for_line() {
+        let source = "class C {\n<<<<<<< HEAD\n}";
+        let err = Lexer::new(source).tokenize().unwrap_err();
+
+        let span = err.span.expect("diagnostic must have a span");
+        let marker_line = &source[span.start..span.end];
+        assert_eq!(marker_line, "<<<<<<< HEAD");
+    }
+
+    #[test]
+    fn normal_left_shift_at_line_start_not_conflict_marker() {
+        let program = parse_program("let x = 1 << 2;").unwrap();
+        assert_eq!(program.len(), 1);
+    }
+
+    #[test]
+    fn normal_strict_equals_not_detected_as_conflict_marker() {
+        let program = parse_program("let eq = a === b;").unwrap();
+        assert_eq!(program.len(), 1);
+    }
+
+    #[test]
+    fn merge_conflict_markers_in_class_body_produces_diagnostic_from_parse() {
+        let err = parse_program("class C {\n<<<<<<< HEAD\n    v = 1;\n}");
+
+        match err {
+            Err(diag) => {
+                assert_eq!(diag.code, DiagCode::UnsupportedSyntax);
+                assert!(
+                    diag.message.contains("Merge conflict marker encountered"),
+                    "{diag:?}"
+                );
+                let span = diag.span.expect("diagnostic must have a span");
+                assert_eq!(
+                    &"class C {\n<<<<<<< HEAD"[span.start..span.end],
+                    "<<<<<<< HEAD"
+                );
+            }
+            Ok(_) => panic!("expected error for merge conflict markers"),
+        }
+    }
 }

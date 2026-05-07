@@ -97,10 +97,7 @@ impl Parser {
                 kind: Token::String(s),
                 span,
             }) => Ok((s, span)),
-            Some(SpannedToken {
-                kind,
-                span,
-            }) => {
+            Some(SpannedToken { kind, span }) => {
                 // Keywords that can be used as property names in JavaScript
                 let name = match &kind {
                     Token::Let => "let",
@@ -134,11 +131,13 @@ impl Parser {
                     Token::False => "false",
                     Token::Null => "null",
                     Token::Undefined => "undefined",
-                    _ => return Err(Diagnostic {
-                        code: DiagCode::UnsupportedSyntax,
-                        message: format!("expected property name, got {kind:?}"),
-                        span: self.peek_span(),
-                    }),
+                    _ => {
+                        return Err(Diagnostic {
+                            code: DiagCode::UnsupportedSyntax,
+                            message: format!("expected property name, got {kind:?}"),
+                            span: self.peek_span(),
+                        })
+                    }
                 };
                 Ok((name.to_string(), span))
             }
@@ -238,16 +237,14 @@ impl Parser {
                 self.advance();
                 Ok(key)
             }
-            Some(Token::BigIntLiteral(_)) | Some(Token::PrivateIdentifier(_)) => {
-                Err(Diagnostic {
-                    code: DiagCode::UnsupportedSyntax,
-                    message: format!(
-                        "issue-5168: a 'bigint' literal cannot be used as a property name, got {:?}",
-                        self.peek()
-                    ),
-                    span: self.peek_span(),
-                })
-            }
+            Some(Token::BigIntLiteral(_)) | Some(Token::PrivateIdentifier(_)) => Err(Diagnostic {
+                code: DiagCode::UnsupportedSyntax,
+                message: format!(
+                    "issue-5168: a 'bigint' literal cannot be used as a property name, got {:?}",
+                    self.peek()
+                ),
+                span: self.peek_span(),
+            }),
             Some(token) if keyword_to_property_name(token).is_some() => {
                 let key = keyword_to_property_name(token).unwrap().to_owned();
                 self.advance();
@@ -320,6 +317,19 @@ impl Parser {
         let mut brace_depth = 0usize;
         let mut consumed_type_token = false;
         while !self.is_at_end() {
+            // When `{` is a stop token but no type tokens have been consumed yet,
+            // this is an object type literal `{ ... }` (e.g. `{ new(): Object }`).
+            // Skip the entire balanced brace block and continue scanning for the
+            // real stop token (e.g. the function body `{`).
+            if !consumed_type_token
+                && matches!(self.peek(), Some(Token::LeftBrace))
+                && stops.contains(&TokenKind::LeftBrace)
+            {
+                brace_depth = 1;
+                self.advance();
+                continue;
+            }
+
             let at_top_level = paren_depth == 0 && bracket_depth == 0 && brace_depth == 0;
             if at_top_level
                 && self

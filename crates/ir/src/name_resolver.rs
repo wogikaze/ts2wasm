@@ -96,17 +96,57 @@ impl NameResolver {
     }
 
     fn resolve_program(&mut self, program: &[Stmt]) -> Result<Vec<Stmt>, Diagnostic> {
-        // First pass: collect all function declarations (hoisting)
+        // First pass: collect all function declarations (hoisting).
+        // Bodyless function declarations are TypeScript overload signatures
+        // (may or may not have the `declare` keyword). Multiple ambient and/or
+        // bodyless overloads for the same name are valid; only body-ful
+        // (concrete) duplicates are rejected.
         for stmt in program {
-            if let Stmt::Function { name, span, .. } = stmt {
-                if self.functions.contains_key(name) {
+            if let Stmt::Function {
+                name,
+                body,
+                span,
+                is_ambient,
+                ..
+            } = stmt
+            {
+                let is_concrete = !body.is_empty();
+                if self.functions.contains_key(name) && is_concrete {
+                    // Only concrete (body-ful) duplicates are errors.
+                    if !is_ambient {
+                        return Err(Diagnostic {
+                            code: DiagCode::DuplicateFunction,
+                            message: format!("duplicate function definition: `{name}`"),
+                            span: Some(*span),
+                        });
+                    }
+                }
+                self.functions.insert(name.clone(), Some(*span));
+            }
+        }
+        // After the pass, verify each bodyless overload has a concrete
+        // (body-ful) implementation.
+        let concrete_names: std::collections::HashSet<&str> = program
+            .iter()
+            .filter_map(|s| match s {
+                Stmt::Function { name, body, .. } if !body.is_empty() => Some(name.as_str()),
+                _ => None,
+            })
+            .collect();
+        for stmt in program {
+            if let Stmt::Function {
+                name, body, span, ..
+            } = stmt
+            {
+                if body.is_empty() && !concrete_names.contains(name.as_str()) {
                     return Err(Diagnostic {
-                        code: DiagCode::DuplicateLocal,
-                        message: format!("duplicate local variable: `{name}`"),
+                        code: DiagCode::UnsupportedSyntax,
+                        message: format!(
+                            "TS2391: function overload signature `{name}` has no implementation"
+                        ),
                         span: Some(*span),
                     });
                 }
-                self.functions.insert(name.clone(), Some(*span));
             }
         }
         // First pass: collect all class declarations (hoisting)

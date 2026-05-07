@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 6 | 3 | 3 |
 | coverage | 44 | 1 | 43 |
 | docs | 5 | 0 | 5 |
-| frontend | 4546 | 3849 | 697 |
+| frontend | 4546 | 3847 | 699 |
 | harness | 1 | 0 | 1 |
 | ir | 72 | 23 | 49 |
 | issues | 5 | 0 | 5 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 8 | 0 | 8 |
 | wasi | 4 | 0 | 4 |
-| total | 5223 | 4125 | 1098 |
+| total | 5223 | 4123 | 1100 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -361,7 +361,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5249 | Scope block-local class declarations | feature | frontend/resolver | implementation-ready | P1 |  | `classDeclarationBlockScoping1.ts` reports `DuplicateLocal` for an inner block-local `class C {}` that TypeScript acc... |
 | 5251 | Parse computed class member names in class declarations | feature | frontend/parser | implementation-ready | P1 |  | `classDeclarationShouldBeOutOfScopeInComputedNames.ts` stops during |
 | 5253 | Report class expression decorator boundary | feature | frontend/lexer | implementation-ready | P1 |  | `classExpressionWithDecorator1.ts` stops in tokenization at |
-| 5254 | Parse ASI between static class fields | feature | frontend/parser | implementation-ready | P1 |  | `classExpressionWithStaticProperties2.ts` parses `static b` as the |
 | 5255 | Resolve super property accesses | feature | frontend/resolver | implementation-ready | P1 |  | `classExtendingAny.ts` parses class declarations, `extends Err`, and |
 | 5257 | Parse object type literal construct signatures | feature | frontend/parser | implementation-ready | P1 |  | `classExtendsInterfaceInExpression.ts` fails before class heritage can |
 | 5260 | Report class heritage trailing comma | feature | frontend/parser | implementation-ready | P1 |  | `classHeritageWithTrailingSeparator.ts` tokenizes the class heritage |
@@ -385,7 +384,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5280 | Validate commented top-level function overloads | feature | frontend/resolver | implementation-ready | P1 |  | `commentOnSignature1.ts` parses successfully, but `validate_ast` |
 | 5281 | Resolve arrow rest parameter bindings | feature | ir/name-resolution | implementation-ready | P1 |  | arrow rest parameters are not made visible under their identifier name |
 | 5284 | Bind plain enum declarations before member access | feature | frontend/syntax | implementation-ready | P1 |  | `enum Colors { Cornflower, FancyPink }` does not create a frontend |
-| 5285 | Support export var initializer declarations | feature | frontend/module-syntax | implementation-ready | P1 |  | `export var newVar = new extMod.m1.m2.c();` currently cannot be |
 | 5287 | Bind namespace declarations for qualified value access | feature | frontend/name-resolution | implementation-ready | P1 |  | a same-file non-ambient namespace declaration is erased before it |
 | 5288 | Parse typed modified static class fields | feature | frontend/parser | implementation-ready | P1 |  | `reference/typescript/tests/cases/compiler/commentsOnStaticMembers.ts` |
 | 5289 | Validate commentsOverloads top-level functions | feature | frontend/resolver | implementation-ready | P1 |  | `reference/typescript/tests/cases/compiler/commentsOverloads.ts` |
@@ -5325,6 +5323,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5247 | Fix JS noEmit class constructor FuncId invariant | feature | ir/compiler | see file |
 | 5250 | Parse class declarations in nested block statements | feature | frontend/parser | see file |
 | 5252 | Support call-expression class heritage | feature | ir/resolver | see file |
+| 5254 | Parse ASI between static class fields | feature | frontend/parser | see file |
 | 5256 | Report non-constructor class heritage expressions | feature | ir/resolver | see file |
 | 5258 | Report super calls in class extends null constructors | feature | ir/resolver | see file |
 | 5259 | Report super property access in class extends null | feature | ir/resolver | see file |
@@ -5332,6 +5331,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5278 | Parse trailing comma in function parameters with comments | feature | frontend/syntax | see file |
 | 5282 | Parse labeled empty statements | feature | frontend/syntax | see `issues/done/5282-parse-labeled-empty-statements.md` |
 | 5283 | Support entry-module export var declarations | feature | frontend/module-syntax | see `issues/done/5283-support-entry-export-var-declarations.md` |
+| 5285 | Support export var initializer declarations | feature | frontend/module-syntax | see `issues/done/5285-support-export-var-initializer-declarations.md` |
 | 5286 | Preserve class constructor parameters for new arity | feature | ir | see `issues/done/5286-preserve-class-constructor-parameters-for-new-arity.md` |
 | 5357 | Avoid eval diagnostic for qualified Function constructors | bug | ir/resolver | see `issues/done/5357-avoid-eval-diagnostic-for-qualified-function-constructors.md` |
 <!-- generated:done:end -->
