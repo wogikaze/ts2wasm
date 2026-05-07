@@ -141,3 +141,7 @@ python scripts/manager.py reference-coverage tsc --path-filter reference/typescr
 Split from `issues/done/1348-implement-commentOnDecoratedClassDeclaration.md`.
 Related broad decorator bucket: `issues/open/4807-implement-decorator.md`.
 Related class-expression decorator boundary: `issues/open/5253-report-class-expression-decorator-boundary.md`.
+Also owns `issues/done/3359-implement-modulePreserveImportHelpers.md`: fresh
+triage for `modulePreserveImportHelpers.ts` stops at `@dec()` before exported
+and non-exported class declarations before import helpers, package metadata, or
+tslib declarations become actionable.
