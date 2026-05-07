@@ -18,16 +18,16 @@ Issue files are the source of truth for work items. The generated section below 
 | docs | 2 | 0 | 2 |
 | frontend | 4559 | 3482 | 1077 |
 | harness | 1 | 0 | 1 |
-| ir | 67 | 45 | 22 |
+| ir | 68 | 46 | 22 |
 | issues | 4 | 0 | 4 |
 | parser | 1 | 0 | 1 |
-| reference | 212 | 154 | 58 |
+| reference | 212 | 153 | 59 |
 | runtime | 265 | 86 | 179 |
 | scripts | 3 | 1 | 2 |
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5207 | 3775 | 1432 |
+| total | 5208 | 3775 | 1433 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -327,6 +327,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5370 | Bind ambient namespace declarations for qualified value access | feature | frontend/resolver | implementation-ready | P1 |  | ambient namespace declarations are not visible as namespace values for same-file qualified value access. |
 | 5371 | Parse generic function type annotations | feature | frontend/parser | implementation-ready | P1 |  | generic function type annotations in variable declarations are not |
 | 5372 | Parse ambient function ASI with constructor types | feature | frontend/parser | implementation-ready | P1 |  | ambient function declaration erasure still requires a terminator for |
+| 5373 | Lower complex default binding initializers | feature | ir/lowering | implementation-ready | P2 |  | complex default binding initializers in object binding parameters are |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -586,7 +587,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 759 | Implement Asynciife | spike | frontend/syntax | class: triage-needed | Implement Asynciife |
 | 760 | Implement Asyncimportnestedyield | spike | reference/triage | class: triage-needed | Implement Asyncimportnestedyield |
 | 761 | Implement Asynciteratorextraparameters | spike | runtime/builtins | class: triage-needed | Implement Asynciteratorextraparameters |
-| 1510 | Implement Contextualtypeforinitalizedvariablesfiltersundefined | spike | reference/triage | class: triage-needed | Implement Contextualtypeforinitalizedvariablesfiltersundefined |
 | 1511 | Implement Contextualtypefunctionobjectpropertyintersection | spike | frontend/syntax | class: blocked | Implement Contextualtypefunctionobjectpropertyintersection |
 | 1512 | Implement Contextualtypeiterableunions | spike | frontend/syntax | class: blocked | Implement Contextualtypeiterableunions |
 | 1513 | Implement Contextualtypeofindexedaccessparameter | spike | frontend/resolver | class: blocked | Implement Contextualtypeofindexedaccessparameter |
@@ -5163,6 +5163,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1507 | Implement Contextualtypebasedonintersectionwithanyinthemix Name Resolution | spike | frontend/resolver | see `issues/done/1507-implement-contextualTypeBasedOnIntersectionWithAnyInTheMix-name-resolution.md` |
 | 1508 | Implement Contextualtypebasedonintersectionwithanyinthemix Unknown Unsupported | spike | frontend/syntax | see `issues/done/1508-implement-contextualTypeBasedOnIntersectionWithAnyInTheMix-unknown-unsupported.md` |
 | 1509 | Implement Contextualtypecaching | spike | frontend/syntax | see `issues/done/1509-implement-contextualTypeCaching.md` |
+| 1510 | Implement Contextualtypeforinitalizedvariablesfiltersundefined | spike | reference/triage | see `issues/done/1510-implement-contextualTypeForInitalizedVariablesFiltersUndefined.md` |
 | 2050 | Implement Duplicatelocalvariable Duplicate Local | spike | reference/triage | see `issues/done/2050-implement-duplicateLocalVariable-duplicate-local.md` |
 | 3002 | Implement Isolateddeclarationerrorsdefault | spike | runtime/builtins | see `issues/done/3002-implement-isolatedDeclarationErrorsDefault.md` |
 | 3131 | Implement Jsxfactorynotidentifierorqualifiedname | spike | reference/triage | see `issues/done/3131-implement-jsxFactoryNotIdentifierOrQualifiedName.md` |
