@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 5 | 4 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4539 | 3527 | 1012 |
+| frontend | 4540 | 3527 | 1013 |
 | harness | 1 | 0 | 1 |
 | ir | 65 | 43 | 22 |
 | issues | 4 | 0 | 4 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5184 | 3818 | 1366 |
+| total | 5185 | 3818 | 1367 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -304,6 +304,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5347 | Align class var redeclaration diagnostics | feature | frontend/resolver | implementation-ready | P1 |  | Align class var redeclaration diagnostics |
 | 5348 | Resolve const declarations before use diagnostics | bug | frontend/resolver | implementation-ready | P1 |  | lexical const bindings are not registered early enough for |
 | 5349 | Parse multiplicative compound assignment operators | feature | frontend/syntax | implementation-ready | P1 |  | Parse multiplicative compound assignment operators |
+| 5350 | Report missing const initializer diagnostics | feature | frontend/parser | implementation-ready | P1 |  | Report missing const initializer diagnostics |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -563,7 +564,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 759 | Implement Asynciife | spike | frontend/syntax | class: triage-needed | Implement Asynciife |
 | 760 | Implement Asyncimportnestedyield | spike | reference/triage | class: triage-needed | Implement Asyncimportnestedyield |
 | 761 | Implement Asynciteratorextraparameters | spike | runtime/builtins | class: triage-needed | Implement Asynciteratorextraparameters |
-| 1444 | Implement Constdeclarations Unknown Unsupported | spike | frontend/syntax | class: triage-needed | Implement Constdeclarations Unknown Unsupported |
 | 1445 | Implement Constenumbadpropertynames | spike | frontend/syntax | class: blocked | Implement Constenumbadpropertynames |
 | 1446 | Implement Constenumdeclarations | spike | frontend/syntax | class: blocked | Implement Constenumdeclarations |
 | 1447 | Implement Constenumerrors | spike | frontend/syntax | class: blocked | Implement Constenumerrors |
@@ -5140,6 +5140,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1441 | Implement Constdeclarations Name Resolution | spike | frontend/resolver | see `issues/done/1441-implement-constDeclarations-name-resolution.md` |
 | 1442 | Implement Constdeclarations Parser Syntax | spike | frontend/syntax | see `issues/done/1442-implement-constDeclarations-parser-syntax.md` |
 | 1443 | Implement Constdeclarations Scope Analysis | spike | frontend/resolver | see `issues/done/1443-implement-constDeclarations-scope-analysis.md` |
+| 1444 | Implement Constdeclarations Unknown Unsupported | spike | frontend/syntax | see `issues/done/1444-implement-constDeclarations-unknown-unsupported.md` |
 | 2050 | Implement Duplicatelocalvariable Duplicate Local | spike | reference/triage | see `issues/done/2050-implement-duplicateLocalVariable-duplicate-local.md` |
 | 3002 | Implement Isolateddeclarationerrorsdefault | spike | runtime/builtins | see `issues/done/3002-implement-isolatedDeclarationErrorsDefault.md` |
 | 3131 | Implement Jsxfactorynotidentifierorqualifiedname | spike | reference/triage | see `issues/done/3131-implement-jsxFactoryNotIdentifierOrQualifiedName.md` |

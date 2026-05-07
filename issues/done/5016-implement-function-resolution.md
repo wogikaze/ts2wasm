@@ -296,7 +296,7 @@ Duplicate candidates:
   },
   {
     "state": "open",
-    "path": "issues/open/1444-implement-constDeclarations-unknown-unsupported.md",
+    "path": "issues/done/1444-implement-constDeclarations-unknown-unsupported.md",
     "title": "Implement Constdeclarations Unknown Unsupported",
     "reason": "same feature label, title overlap"
   },
