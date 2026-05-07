@@ -13,10 +13,10 @@ Issue files are the source of truth for work items. The generated section below 
 | backend | 13 | 1 | 12 |
 | backend-wasm | 2 | 1 | 1 |
 | cli | 15 | 0 | 15 |
-| compiler | 15 | 10 | 5 |
+| compiler | 16 | 10 | 6 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4584 | 3353 | 1231 |
+| frontend | 4583 | 3352 | 1231 |
 | harness | 1 | 0 | 1 |
 | ir | 81 | 59 | 22 |
 | issues | 4 | 0 | 4 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5260 | 3655 | 1605 |
+| total | 5260 | 3654 | 1606 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -2333,7 +2333,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 3302 | Implement Modulealiasasfunctionargument | spike | frontend/syntax | class: blocked | Implement Modulealiasasfunctionargument |
 | 3303 | Implement Modulealiasinterface | spike | frontend/syntax | class: blocked | Implement Modulealiasinterface |
 | 3304 | Implement Moduleandinterfacesharingname | spike | frontend/syntax | class: blocked | Implement Moduleandinterfacesharingname |
-| 3385 | Implement Moduleresolutionwithsuffixes Import Export (audit reopened #3385) | spike | frontend/syntax | class: blocked | Implement Moduleresolutionwithsuffixes Import Export (audit reopened #3385) |
 | 3386 | Implement Moduleresolutionwithsuffixes Module Resolution | spike | frontend/syntax | class: blocked | Implement Moduleresolutionwithsuffixes Module Resolution |
 | 3387 | Implement Moduleresolutionwithsymlinks Import Export | spike | frontend/syntax | class: blocked | Implement Moduleresolutionwithsymlinks Import Export |
 | 3388 | Implement Moduleresolutionwithsymlinks Parser Syntax | spike | frontend/syntax | class: blocked | Implement Moduleresolutionwithsymlinks Parser Syntax |
@@ -5221,6 +5220,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 3382 | Implement Moduleresolutionwithmodule (audit reopened #3382) | maintenance | compiler/multi-section | see `issues/done/3382-implement-moduleResolutionWithModule.md` |
 | 3383 | Implement Moduleresolutionwithrequire (audit reopened #3383) | maintenance | compiler/module-graph | see `issues/done/3383-implement-moduleResolutionWithRequire.md` |
 | 3384 | Implement Moduleresolutionwithrequireandimport | maintenance | compiler/module-graph | see `issues/done/3384-implement-moduleResolutionWithRequireAndImport.md` |
+| 3385 | Implement Moduleresolutionwithsuffixes Import Export (audit reopened #3385) | maintenance | compiler/multi-section | see `issues/done/3385-implement-moduleResolutionWithSuffixes-import-export.md` |
 | 3690 | Implement Optionaltupleelementsandundefined | spike | reference/triage | see `issues/done/3690-implement-optionalTupleElementsAndUndefined.md` |
 | 3996 | Implement Compiler (dup) | spike | frontend/syntax | see `issues/done/3996-implement-reference-typescript-tests-cases-compiler.md` |
 | 4210 | Implement Splicetuples | spike | frontend/resolver | see `issues/done/4210-implement-spliceTuples.md` |

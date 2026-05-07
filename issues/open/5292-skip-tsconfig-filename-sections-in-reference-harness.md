@@ -151,6 +151,15 @@ Also owns the `tsconfig.json` subset of
 fresh triage for `moduleResolutionWithExtensions_withPaths.ts` stops in the
 virtual `/tsconfig.json` section at the first JSON property colon before path
 mapping or extension resolution diagnostics become actionable.
+Also owns `issues/done/3385-implement-moduleResolutionWithSuffixes-import-export.md`:
+fresh prefix coverage for `moduleResolutionWithSuffixes_` reports 16
+UnsupportedSyntax/module-resolution paths, and representative triage for
+`moduleResolutionWithSuffixes_notSpecified.ts`,
+`moduleResolutionWithSuffixes_one_jsonModule.ts`,
+`moduleResolutionWithSuffixes_one_jsModule.ts`, and
+`moduleResolutionWithSuffixes_one_externalModule.ts` stops in virtual
+`/tsconfig.json` at the first JSON property colon before moduleSuffixes,
+JSON-module, JS-module, or external package behavior becomes actionable.
 
 ## Completion evidence
 
