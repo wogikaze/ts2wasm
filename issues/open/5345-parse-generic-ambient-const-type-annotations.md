@@ -167,6 +167,16 @@ Follow-up issues:
 
 Split from `issues/done/762-implement-asyncYieldStarContextualType.md`.
 
+2026-05-07 fold-in:
+
+- `issues/done/1509-implement-contextualTypeCaching.md` reaches the same
+  ambient const generic callable annotation boundary for
+  `declare const A: <T, P extends keyof T>(obj: T, prop: P, factory: () => T[P]) => void;`.
+- Current diagnostic:
+  `UnsupportedTypeScriptSyntax: issue-400: unterminated ambient variable declaration at 864..871`.
+- TypeScript oracle accepts the declaration and reports `A` as
+  `<T, P extends keyof T>(obj: T, prop: P, factory: () => T[P]) => void`.
+
 Related but not duplicate:
 
 - `issues/open/5193-parse-asi-after-ambient-variable-declarations.md` covers
