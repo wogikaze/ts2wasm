@@ -181,6 +181,12 @@ UnsupportedSyntax/module-resolution paths, and representative triage for
 `package.json` property colon before scoped package resolution becomes
 actionable.
 
+Also owns `issues/done/3374-implement-moduleResolutionAsTypeReferenceDirectiveAmbient.md`:
+fresh triage for `moduleResolutionAsTypeReferenceDirectiveAmbient.ts` parses
+`declare module "phaser" { export const a2: number; }`, then stops in the
+virtual `/typings/phaser/package.json` body at the first JSON property colon
+before type-root or package resolution becomes actionable.
+
 ## Completion evidence
 
 Fill only when moving to `done/`.
