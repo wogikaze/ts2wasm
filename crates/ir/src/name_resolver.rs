@@ -363,7 +363,6 @@ impl NameResolver {
                 interface_heritage,
                 span,
             } => {
-                eprintln!("DBG_CLASSDECL: name={} body_len={} span={:?}", name, body.len(), span);
                 // Class methods are lowered as standalone functions by the lowered program
                 // builder (program.rs). The class statement itself is dropped. See the LIMITATION
                 // comment in program.rs.
@@ -767,7 +766,9 @@ impl NameResolver {
                 if name == "super" {
                     return Err(Diagnostic {
                         code: DiagCode::UnsupportedSyntax,
-                        message: "issue-5255: super property access is not supported in this milestone".to_owned(),
+                        message:
+                            "issue-5255: super property access is not supported in this milestone"
+                                .to_owned(),
                         span: Some(*span),
                     });
                 }
@@ -1179,7 +1180,9 @@ impl NameResolver {
                 if name == "super" {
                     return Err(Diagnostic {
                         code: DiagCode::UnsupportedSyntax,
-                        message: "issue-5255: super property access is not supported in this milestone".to_owned(),
+                        message:
+                            "issue-5255: super property access is not supported in this milestone"
+                                .to_owned(),
                         span: Some(*span),
                     });
                 }
