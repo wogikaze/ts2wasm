@@ -3,12 +3,13 @@ id: 605
 title: "Implement Ambientclassdeclaredbeforebase"
 type: spike
 area: frontend/syntax
-class: blocked
+class: done
 priority: P1
-depends_on: [432]
+depends_on: []
 blocks: []
 created: 2026-05-01
-updated: 2026-05-01
+updated: 2026-05-08
+completed: 2026-05-08
 ---
 
 ## Summary
@@ -43,10 +44,10 @@ This generated bucket is either split into implementation-ready child issues or 
 
 In scope:
 
-- [ ] Inspect the smart triage report below
-- [ ] Confirm whether existing open/done issues already cover this bucket
-- [ ] Split one feature family, one observable behavior, or one fixed reference window into child issues
-- [ ] Preserve exact reproduction commands and representative AST/diagnostic evidence in each child issue
+- [x] Inspect the smart triage report below
+- [x] Confirm whether existing open/done issues already cover this bucket
+- [x] Split one feature family, one observable behavior, or one fixed reference window into child issues
+- [x] Preserve exact reproduction commands and representative AST/diagnostic evidence in each child issue
 
 Out of scope:
 
@@ -68,10 +69,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] Duplicate candidates below are confirmed as no-match or this issue is superseded
-- [ ] At least one child issue contains an exact `mise run reference-triage -- ...` command
-- [ ] Child issue includes failing path, diagnostic code, source context, visible symbols, and parser/TypeScript AST evidence
-- [ ] Child issue acceptance names the exact fixture/reference path and diagnostic/stdout change
+- [x] Duplicate candidates below are confirmed as no-match or this issue is superseded
+- [x] At least one child issue contains an exact `mise run reference-triage -- ...` command
+- [x] Child issue includes failing path, diagnostic code, source context, visible symbols, and parser/TypeScript AST evidence
+- [x] Child issue acceptance names the exact fixture/reference path and diagnostic/stdout change
 
 ## Validation
 
@@ -98,15 +99,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] updated: `current-state.md` (repo root)
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 
@@ -433,7 +434,30 @@ error: [UnsupportedModule] issue-400: ambient namespace declarations require mod
 
 ## Completion evidence
 
-Fill only when moving to `done/`.
+Closed as stale after fresh 2026-05-08 focused coverage showed the reference
+case now builds successfully.
+
+Fresh coverage with the current binary:
+
+```text
+env TS2WASM_BINARY=/tmp/ts2wasm-issue-blockers-target/debug/ts2wasm python scripts/manager.py reference-coverage tsc --path-filter reference/typescript/tests/cases/compiler/ambientClassDeclaredBeforeBase.ts --detail --no-dashboard-data
+suite=tsc
+executed=1
+build_pass=1
+unsupported=0
+reference/typescript/tests/cases/compiler/ambientClassDeclaredBeforeBase.ts: build_pass
+```
+
+Fresh triage still reports the ambient declaration-only dump as having no
+module bodies:
+
+```text
+env TS2WASM_BINARY=/tmp/ts2wasm-issue-blockers-target/debug/ts2wasm python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/ambientClassDeclaredBeforeBase.ts
+UnsupportedSyntax: multi-section file has no module bodies
+```
+
+That triage-only dump does not correspond to a focused coverage failure, so no
+new implementation owner is needed for this bucket.
 
 Commits:
 
@@ -449,4 +473,6 @@ date:
 
 Remaining risks:
 
-- none
+- If declaration-only triage dumps become tracked as a separate quality gate,
+  they should be handled by a dedicated triage-dump issue rather than reopening
+  this reference coverage bucket.
