@@ -3,12 +3,13 @@ id: 576
 title: "Implement Addmorecallsignaturestobasesignature"
 type: spike
 area: frontend/syntax
-class: blocked
+class: done
 priority: P1
-depends_on: [5005]
+depends_on: [5195]
 blocks: []
 created: 2026-05-01
-updated: 2026-05-01
+updated: 2026-05-08
+completed: 2026-05-08
 ---
 
 ## Summary
@@ -17,9 +18,14 @@ Triage addMoreCallSignaturesToBaseSignature across 2 failing reference test case
 
 ## Problem
 
-Reference test results show 2 cases fail in directory `addMoreCallSignaturesToBaseSignature` with diagnostics: method-call. The compiler cannot handle these syntax/semantics, preventing compilation of code in this category.
+Reference test results show 2 cases in `addMoreCallSignaturesToBaseSignature`
+with function-resolution diagnostics. Fresh triage shows both are non-ambient
+locals typed by callable interfaces and called before assignment.
 
-Problem: addMoreCallSignaturesToBaseSignature has 2 reference failures and needs smart-triage evidence before implementation starts.
+Problem: addMoreCallSignaturesToBaseSignature had 2 generated bucket failures
+and needed smart-triage evidence. No new child is needed because issue 5195
+already owns callable interface-typed local calls and the TS2454
+definite-assignment diagnostic boundary.
 
 ## Current failure
 
@@ -43,10 +49,10 @@ This generated bucket is either split into implementation-ready child issues or 
 
 In scope:
 
-- [ ] Inspect the smart triage report below
-- [ ] Confirm whether existing open/done issues already cover this bucket
-- [ ] Split one feature family, one observable behavior, or one fixed reference window into child issues
-- [ ] Preserve exact reproduction commands and representative AST/diagnostic evidence in each child issue
+- [x] Inspect the smart triage report below
+- [x] Confirm whether existing open/done issues already cover this bucket
+- [x] Supersede this generated bucket with issue 5195
+- [x] Preserve exact reproduction commands and representative AST/diagnostic evidence
 
 Out of scope:
 
@@ -68,10 +74,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] Duplicate candidates below are confirmed as no-match or this issue is superseded
-- [ ] At least one child issue contains an exact `mise run reference-triage -- ...` command
-- [ ] Child issue includes failing path, diagnostic code, source context, visible symbols, and parser/TypeScript AST evidence
-- [ ] Child issue acceptance names the exact fixture/reference path and diagnostic/stdout change
+- [x] Duplicate candidates below are confirmed as no-match or this issue is superseded
+- [x] Existing issue 5195 contains the implementation-ready callable-interface local owner
+- [x] This issue includes failing path, diagnostic code, source context, visible symbols, and parser/TypeScript AST evidence
+- [x] Coverage names the exact reference paths and diagnostic classification
 
 ## Validation
 
@@ -98,15 +104,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] updated: `current-state.md` (repo root)
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 
@@ -569,16 +575,24 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- `...`
+- pending
 
 Validation result:
 
 ```text
-command:
-result:
-date:
+command: env TS2WASM_BINARY=/tmp/ts2wasm-issue-blockers-target/debug/ts2wasm python scripts/manager.py reference-coverage tsc --path-filter reference/typescript/tests/cases/compiler/addMoreCallSignaturesToBaseSignature --detail --no-dashboard-data
+result: pass; executed=2, unsupported=2, unsupported_diagcodes=UnresolvedFunction:2, unsupported_features=function-resolution:2
+date: 2026-05-08
+
+command: env TS2WASM_BINARY=/tmp/ts2wasm-issue-blockers-target/debug/ts2wasm python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/addMoreCallSignaturesToBaseSignature.ts
+result: pass; generic issue-211 callable local call for `a()`, TypeScript oracle TS2454 for `a`; superseded by issue 5195
+date: 2026-05-08
+
+command: env TS2WASM_BINARY=/tmp/ts2wasm-issue-blockers-target/debug/ts2wasm python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/addMoreCallSignaturesToBaseSignature2.ts
+result: pass; generic issue-211 callable local call for `a(1)`, TypeScript oracle TS2454 for `a`; superseded by issue 5195
+date: 2026-05-08
 ```
 
 Remaining risks:
 
-- none
+- Implementation remains open in `issues/open/5195-support-callable-interface-typed-local-calls.md`.
