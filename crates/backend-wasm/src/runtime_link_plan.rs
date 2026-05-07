@@ -748,6 +748,7 @@ pub fn emit_link_plan_snapshot_json(program: &LoweredProgram) -> String {
 
 #[cfg(test)]
 mod tests {
+    use ts2wasm_frontend::Span;
     use ts2wasm_ir::builtin::BuiltinId;
     use ts2wasm_ir::lowered::{
         FuncId, FunctionCallKind, LocalId, LoweredBinaryOp, LoweredExpr, LoweredProgram,
@@ -800,7 +801,7 @@ mod tests {
                 specifier: "./dep".to_owned(),
                 statements: vec![LoweredStmt::Export {
                     name: "value".to_owned(),
-                    expr: LoweredExpr::Number(1),
+                    expr: LoweredExpr::Number(1, Span::generated("test")),
                 }],
                 locals_count: 0,
             }],
@@ -866,7 +867,7 @@ mod tests {
                     runtime_fn: "BigIntMixedArithmeticTypeError".to_owned(),
                     args: vec![
                         LoweredExpr::Local(ts2wasm_ir::lowered::LocalId(0)),
-                        LoweredExpr::Number(2),
+                        LoweredExpr::Number(2, Span::generated("test")),
                     ],
                 }),
                 LoweredStmt::Expr(LoweredExpr::RuntimeCall {
@@ -901,14 +902,14 @@ mod tests {
                 LoweredStmt::Expr(LoweredExpr::RuntimeCall {
                     runtime_fn: "BigIntAsIntN".to_owned(),
                     args: vec![
-                        LoweredExpr::Number(8),
+                        LoweredExpr::Number(8, Span::generated("test")),
                         LoweredExpr::Local(ts2wasm_ir::lowered::LocalId(0)),
                     ],
                 }),
                 LoweredStmt::Expr(LoweredExpr::RuntimeCall {
                     runtime_fn: "BigIntAsUintN".to_owned(),
                     args: vec![
-                        LoweredExpr::Number(8),
+                        LoweredExpr::Number(8, Span::generated("test")),
                         LoweredExpr::Local(ts2wasm_ir::lowered::LocalId(0)),
                     ],
                 }),
@@ -998,11 +999,13 @@ mod tests {
                     left: Box::new(LoweredExpr::Local(ts2wasm_ir::lowered::LocalId(0))),
                     op: LoweredBinaryOp::StrictEqual,
                     right: Box::new(LoweredExpr::Local(ts2wasm_ir::lowered::LocalId(1))),
+                    span: Span::generated("test"),
                 }),
                 LoweredStmt::Expr(LoweredExpr::Binary {
                     left: Box::new(LoweredExpr::Local(ts2wasm_ir::lowered::LocalId(0))),
                     op: LoweredBinaryOp::Less,
                     right: Box::new(LoweredExpr::Local(ts2wasm_ir::lowered::LocalId(1))),
+                    span: Span::generated("test"),
                 }),
             ],
             top_level_locals: vec![
@@ -1092,7 +1095,7 @@ mod tests {
     #[test]
     fn no_console_log_no_log_write_runtime_strings() {
         let program = LoweredProgram {
-            top_level_statements: vec![LoweredStmt::Expr(LoweredExpr::Number(42))],
+            top_level_statements: vec![LoweredStmt::Expr(LoweredExpr::Number(42, Span::generated("test")))],
             top_level_locals: vec![],
             functions: vec![],
             modules: vec![],
@@ -1154,7 +1157,7 @@ mod tests {
         let program = LoweredProgram {
             top_level_statements: vec![LoweredStmt::Expr(LoweredExpr::Call {
                 kind: FunctionCallKind::Builtin(BuiltinId::ConsoleLog),
-                args: vec![LoweredExpr::Number(42)],
+                args: vec![LoweredExpr::Number(42, Span::generated("test"))],
             })],
             top_level_locals: vec![],
             functions: vec![],
