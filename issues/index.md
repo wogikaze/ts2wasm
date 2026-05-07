@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 6 | 5 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4557 | 3489 | 1068 |
+| frontend | 4559 | 3490 | 1069 |
 | harness | 1 | 0 | 1 |
 | ir | 67 | 45 | 22 |
 | issues | 4 | 0 | 4 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5205 | 3782 | 1423 |
+| total | 5207 | 3783 | 1424 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -325,6 +325,8 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5368 | Isolate exported bindings across @filename sections | feature | compiler/multi-section | implementation-ready | P1 |  | external-module `@filename` sections are not isolated during name |
 | 5369 | Parse call-expression type arguments in class heritage | feature | frontend/parser | implementation-ready | P1 |  | the class heritage parser expects the class body after `Tag("Foo")` |
 | 5370 | Bind ambient namespace declarations for qualified value access | feature | frontend/resolver | implementation-ready | P1 |  | ambient namespace declarations are not visible as namespace values for same-file qualified value access. |
+| 5371 | Parse generic function type annotations | feature | frontend/parser | implementation-ready | P1 |  | generic function type annotations in variable declarations are not |
+| 5372 | Parse ambient function ASI with constructor types | feature | frontend/parser | implementation-ready | P1 |  | ambient function declaration erasure still requires a terminator for |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -584,7 +586,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 759 | Implement Asynciife | spike | frontend/syntax | class: triage-needed | Implement Asynciife |
 | 760 | Implement Asyncimportnestedyield | spike | reference/triage | class: triage-needed | Implement Asyncimportnestedyield |
 | 761 | Implement Asynciteratorextraparameters | spike | runtime/builtins | class: triage-needed | Implement Asynciteratorextraparameters |
-| 1501 | Implement Contextualsignatureinstantiation Parser Syntax | spike | frontend/syntax | class: triage-needed | Implement Contextualsignatureinstantiation Parser Syntax |
 | 1502 | Implement Contextualsignatureinstantiation Unknown Unsupported | spike | frontend/syntax | class: triage-needed | Implement Contextualsignatureinstantiation Unknown Unsupported |
 | 1503 | Implement Contextualsignatureinstantiationwithtypeparameterconstrainedtooutertypeparameter | spike | frontend/syntax | class: blocked | Implement Contextualsignatureinstantiationwithtypeparameterconstrainedtooutertypeparameter |
 | 1504 | Implement Contextualsignatureinstatiationcontravariance | spike | frontend/resolver | class: blocked | Implement Contextualsignatureinstatiationcontravariance |
@@ -5161,6 +5162,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1498 | Implement Contextualsignatureinarrayelementlibes | spike | frontend/syntax | see `issues/done/1498-implement-contextualSignatureInArrayElementLibEs.md` |
 | 1499 | Implement Contextualsignatureinobjectfreeze | spike | frontend/resolver | see `issues/done/1499-implement-contextualSignatureInObjectFreeze.md` |
 | 1500 | Implement Contextualsignatureinstantiation Duplicate Local | spike | reference/triage | see `issues/done/1500-implement-contextualSignatureInstantiation-duplicate-local.md` |
+| 1501 | Implement Contextualsignatureinstantiation Parser Syntax | spike | frontend/syntax | see `issues/done/1501-implement-contextualSignatureInstantiation-parser-syntax.md` |
 | 2050 | Implement Duplicatelocalvariable Duplicate Local | spike | reference/triage | see `issues/done/2050-implement-duplicateLocalVariable-duplicate-local.md` |
 | 3002 | Implement Isolateddeclarationerrorsdefault | spike | runtime/builtins | see `issues/done/3002-implement-isolatedDeclarationErrorsDefault.md` |
 | 3131 | Implement Jsxfactorynotidentifierorqualifiedname | spike | reference/triage | see `issues/done/3131-implement-jsxFactoryNotIdentifierOrQualifiedName.md` |

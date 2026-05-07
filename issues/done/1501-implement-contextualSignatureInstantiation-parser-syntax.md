@@ -3,12 +3,12 @@ id: 1501
 title: "Implement Contextualsignatureinstantiation Parser Syntax"
 type: spike
 area: frontend/syntax
-class: triage-needed
+class: done
 priority: P1
 depends_on: []
 blocks: []
 created: 2026-05-01
-updated: 2026-05-01
+updated: 2026-05-07
 ---
 
 ## Summary
@@ -43,10 +43,10 @@ This generated bucket is either split into implementation-ready child issues or 
 
 In scope:
 
-- [ ] Inspect the smart triage report below
-- [ ] Confirm whether existing open/done issues already cover this bucket
-- [ ] Split one feature family, one observable behavior, or one fixed reference window into child issues
-- [ ] Preserve exact reproduction commands and representative AST/diagnostic evidence in each child issue
+- [x] Inspect the smart triage report below
+- [x] Confirm whether existing open/done issues already cover this bucket
+- [x] Split one feature family, one observable behavior, or one fixed reference window into child issues
+- [x] Preserve exact reproduction commands and representative AST/diagnostic evidence in each child issue
 
 Out of scope:
 
@@ -68,10 +68,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] Duplicate candidates below are confirmed as no-match or this issue is superseded
-- [ ] At least one child issue contains an exact `mise run reference-triage -- ...` command
-- [ ] Child issue includes failing path, diagnostic code, source context, visible symbols, and parser/TypeScript AST evidence
-- [ ] Child issue acceptance names the exact fixture/reference path and diagnostic/stdout change
+- [x] Duplicate candidates below are confirmed as no-match or this issue is superseded
+- [x] At least one child issue contains an exact `mise run reference-triage -- ...` command
+- [x] Child issue includes failing path, diagnostic code, source context, visible symbols, and parser/TypeScript AST evidence
+- [x] Child issue acceptance names the exact fixture/reference path and diagnostic/stdout change
 
 ## Validation
 
@@ -98,15 +98,16 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] updated: `current-state.md` (repo root)
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] created: `issues/open/5371-parse-generic-function-type-annotations.md`
+- [x] created: `issues/open/5372-parse-ambient-function-asi-with-constructor-types.md`
 
 ## Notes
 
@@ -130,7 +131,61 @@ Follow-up issues:
 
 ## Smart triage
 
-Not generated. Rerun with `--triage-limit 1` or higher.
+Fresh triage on 2026-05-07 shows this generated parser-syntax bucket contains
+two independent parser blockers, so it was split instead of implemented
+directly.
+
+`contextualSignatureInstantiation2.ts` fails while parsing a variable type
+annotation that starts with a generic function type:
+
+```text
+UnsupportedSyntax: expected Semicolon, got Some(Greater) at 58..59
+```
+
+Source context:
+
+```ts
+var dot: <T, S>(f: (_: T) => S) => <U>(g: (_: U) => T) => (_: U) => S;
+dot = <T, S>(f: (_: T) => S) => <U>(g: (_: U) => T): (r:U) => S => (x) => f(g(x));
+```
+
+Compiler evidence:
+
+```text
+tokens: ok through `<T, S>` and nested arrow/function type tokens
+ast/resolved: fail at the closing `>` in the generic function type annotation
+TypeScript oracle: parses FunctionType nodes and only reports later TS2454 for `id`
+```
+
+This parser slice was split to
+`issues/open/5371-parse-generic-function-type-annotations.md`.
+
+`contextualSignatureInstantiation4.ts` fails on ASI after an ambient function
+declaration whose parameter type is a constructor signature:
+
+```text
+UnsupportedTypeScriptSyntax: issue-400: unterminated ambient function declaration at 147..154
+```
+
+Source context:
+
+```ts
+declare function fruitFactory1<TFruit>(Fruit: new (...args: any[]) => TFruit): TFruit
+const banana1 = fruitFactory1(Banana) // Banana<any>
+```
+
+Compiler evidence:
+
+```text
+tokens: ok through declare class Banana and the ambient function signature
+ast/resolved: fail at `declare` with the issue-400 unterminated ambient function boundary
+TypeScript oracle: diagnostics=[]; accepts the declaration and infers Banana<any>
+```
+
+This is adjacent to `issues/open/705-implement-asiAmbientFunctionDeclaration.md`,
+but 705 is still a generated triage-needed bucket. The implementation-ready
+child for this concrete shape was split to
+`issues/open/5372-parse-ambient-function-asi-with-constructor-types.md`.
 
 ## Completion evidence
 
@@ -150,4 +205,5 @@ date:
 
 Remaining risks:
 
-- none
+- Contextual signature instantiation semantics remain hidden until issues 5371
+  and 5372 advance these files past the current parser boundaries.
