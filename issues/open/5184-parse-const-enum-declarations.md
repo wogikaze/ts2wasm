@@ -176,6 +176,12 @@ Additional superseded bucket:
   triage on 2026-05-07 reports `const declarations require an initializer at
   112..116` at `Ident("enum")`; TypeScript parses the declaration as an
   exported `EnumDeclaration` and only reports later TS2307 for `./foo`.
+- `issues/done/1452-implement-constEnumNoEmitReexport.md` reaches the same
+  parser boundary before no-emit re-export behavior. Fresh triage on
+  2026-05-07 reports `const declarations require an initializer at 82..86` for
+  `export const enum MyConstEnum { ... }`; TypeScript parses the declaration and
+  then reports later duplicate identifier, export consistency, default export,
+  and missing module diagnostics.
 
 ## Completion evidence
 
