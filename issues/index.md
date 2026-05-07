@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 7 | 6 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4582 | 3388 | 1194 |
+| frontend | 4582 | 3387 | 1195 |
 | harness | 1 | 0 | 1 |
 | ir | 81 | 59 | 22 |
 | issues | 4 | 0 | 4 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5250 | 3687 | 1563 |
+| total | 5250 | 3686 | 1564 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -2323,7 +2323,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 3302 | Implement Modulealiasasfunctionargument | spike | frontend/syntax | class: blocked | Implement Modulealiasasfunctionargument |
 | 3303 | Implement Modulealiasinterface | spike | frontend/syntax | class: blocked | Implement Modulealiasinterface |
 | 3304 | Implement Moduleandinterfacesharingname | spike | frontend/syntax | class: blocked | Implement Moduleandinterfacesharingname |
-| 3343 | Implement Moduleintypeposition | spike | frontend/syntax | class: blocked | Implement Moduleintypeposition |
 | 3344 | Implement Modulekeyworddeprecated | spike | frontend/syntax | class: blocked | Implement Modulekeyworddeprecated |
 | 3345 | Implement Modulekeywordrepeaterror | spike | frontend/syntax | class: blocked | Implement Modulekeywordrepeaterror |
 | 3346 | Implement Modulelocalimportnotincorrectlyredirected | spike | frontend/syntax | class: blocked | Implement Modulelocalimportnotincorrectlyredirected |
@@ -5211,6 +5210,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 3340 | Implement Moduleidentifiers | spike | frontend/syntax | see `issues/done/3340-implement-moduleIdentifiers.md` |
 | 3341 | Implement Moduleimport | spike | reference/triage | see `issues/done/3341-implement-moduleImport.md` |
 | 3342 | Implement Moduleimportedfortypeargumentposition | spike | reference/triage | see `issues/done/3342-implement-moduleImportedForTypeArgumentPosition.md` |
+| 3343 | Implement Moduleintypeposition | maintenance | frontend/syntax | see `issues/done/3343-implement-moduleInTypePosition.md` |
 | 3690 | Implement Optionaltupleelementsandundefined | spike | reference/triage | see `issues/done/3690-implement-optionalTupleElementsAndUndefined.md` |
 | 3996 | Implement Compiler (dup) | spike | frontend/syntax | see `issues/done/3996-implement-reference-typescript-tests-cases-compiler.md` |
 | 4210 | Implement Splicetuples | spike | frontend/resolver | see `issues/done/4210-implement-spliceTuples.md` |

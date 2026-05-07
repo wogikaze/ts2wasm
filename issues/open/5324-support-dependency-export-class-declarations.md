@@ -170,6 +170,7 @@ Also owns `issues/done/3320-implement-moduleAugmentationImportsAndExports.md`: f
 Also owns `issues/done/3326-implement-moduleAugmentationsBundledOutput.md`: `moduleAugmentationsBundledOutput1.ts` reaches issue-5005 dependency-module `export class` for virtual `m1.ts` / `m3.ts` sections before bundled output or augmentation semantics become actionable.
 Also owns `issues/done/3327-implement-moduleAugmentationsImports.md`: `moduleAugmentationsImports1.ts` and `moduleAugmentationsImports2.ts` reach issue-5005 dependency-module `export class` for virtual `a.ts` / `b.ts` sections before module augmentation import semantics become actionable.
 Also owns `issues/done/3315-implement-moduleAugmentationEnumClassMergeOfReexportIsError.md`: fresh triage stops at dependency module `export class Foo` in virtual `file.ts` before the virtual re-export source resolution blocker tracked by issue 5229 and before enum/class merge diagnostics become actionable.
+Also owns `issues/done/3343-implement-moduleInTypePosition.md`: fresh triage for `moduleInTypePosition1.ts` stops at dependency module `export class Promise` in virtual `moduleInTypePosition1_0.ts` before the later virtual local import resolution boundary tracked by issue 5229.
 
 ## Completion evidence
 
