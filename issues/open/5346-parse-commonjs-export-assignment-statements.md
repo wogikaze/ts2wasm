@@ -148,6 +148,11 @@ Related but not duplicate:
   virtual multi-file import resolution after import syntax is parsed.
 - `issues/open/432-implement-import-export.md` is the broad import/export
   umbrella and is too large to implement directly.
+- Also owns `issues/done/3325-implement-moduleAugmentationWithNonExistentNamedImport.md`:
+  fresh triage for `moduleAugmentationWithNonExistentNamedImport.ts` stops at
+  `export = Foo;` before AST construction. Later blockers are
+  `export as namespace` parsing (issue 5231) and virtual `./foo` import
+  resolution (issue 5229).
 
 ## Completion evidence
 
