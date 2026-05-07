@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 7 | 4 | 3 |
 | coverage | 44 | 1 | 43 |
 | docs | 5 | 0 | 5 |
-| frontend | 4562 | 3758 | 804 |
+| frontend | 4562 | 3753 | 809 |
 | harness | 1 | 0 | 1 |
 | ir | 77 | 24 | 53 |
 | issues | 5 | 0 | 5 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 8 | 0 | 8 |
 | wasi | 4 | 0 | 4 |
-| total | 5245 | 4031 | 1214 |
+| total | 5245 | 4026 | 1219 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -47,7 +47,7 @@ Issue files are the source of truth for work items. The generated section below 
 Direct child counts are derived from issue-file `depends_on` links. A meta issue can be `done` as a classification/design umbrella while implementation child issues remain open.
 
 ```
-5000 (Meta: TypeScript Compiler Parser Syntax Coverage) [done/design] ch:440 open:378 done:62
+5000 (Meta: TypeScript Compiler Parser Syntax Coverage) [done/design] ch:440 open:376 done:64
 ├── 5002 (Meta: TypeScript Compiler Type System Coverage) [done/done] ch:224 open:216 done:8 (also ← 5005)
 ├── 5003 (Meta: TypeScript Compiler Declaration Emit Coverage) [done/done] ch:101 open:91 done:10 (also ← 5001)
 5001 (Meta: TypeScript Compiler Semantic Analysis Coverage) [done/done] ch:554 open:330 done:224
@@ -66,7 +66,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 
 | Order | ID | Title | State | Class | Area | Priority | Depends on | Direct children | Open children | Done children |
 |-----:|---:|------|-------|-------|------|--------:|-----------:|----------------:|--------------:|--------------:|
-| 1 | 5000 | Meta: TypeScript Compiler Parser Syntax Coverage | done | design | frontend/syntax | P1 | - | 440 | 378 | 62 |
+| 1 | 5000 | Meta: TypeScript Compiler Parser Syntax Coverage | done | design | frontend/syntax | P1 | - | 440 | 376 | 64 |
 | 2 | 5001 | Meta: TypeScript Compiler Semantic Analysis Coverage | done | done | frontend/semantics | P1 | - | 554 | 330 | 224 |
 | 3 | 5004 | Meta: Runtime Builtins Coverage (test262) (audit reopened #5004) | done | done | runtime/builtins | P1 | - | 24 | 3 | 21 |
 | 4 | 5005 | Meta: TypeScript Compiler Name Resolution Coverage | done | done | frontend/resolver | P1 | - | 399 | 351 | 48 |
@@ -451,12 +451,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5377 | Support callable ambient interface local calls with key remap | feature | ir/lowering | implementation-ready | P1 |  | callable ambient interface locals after mapped-type key remapping fall |
 | 5378 | Report mixed ambient function overload diagnostics | feature | frontend/resolver | implementation-ready | P1 |  | mixed ambient/non-ambient top-level function overload groups report a |
 | 5380 | Report array literal index-signature element mismatch | feature | frontend/semantics | implementation-ready | P1 |  | array literals assigned to numeric-index-signature interfaces can skip the invalid element diagnostic and fall throug... |
-| 5381 | Parse untyped arrow ternary branches | feature | frontend/syntax | implementation-ready | P1 |  | untyped arrow functions used as ternary conditional branches are rejected during AST construction before contextual t... |
-| 5382 | Parse typed arrow ternary branches | feature | frontend/syntax | implementation-ready | P1 |  | typed arrow functions used as ternary conditional branches are rejected during AST construction before contextual typ... |
-| 5384 | Resolve ambient function value references | feature | frontend/resolver | implementation-ready | P1 |  | `contextualTypingReturnStatementWithReturnTypeAnnotation.ts` currently |
-| 5385 | Parse arrow body assignment expressions | feature | frontend/syntax | implementation-ready | P1 | 5000 | `contextualTypingTwoInstancesOfSameTypeParameter.ts` currently fails |
 | 5386 | Bind DOM setTimeout global | feature | frontend/resolver | implementation-ready | P1 |  | `contextuallyTypeArgumentsKeyword.ts` requests `// @lib: es2017, dom` |
-| 5387 | Parse generator function expressions in const initializers | feature | frontend/syntax | implementation-ready | P1 | 5000 | `contextuallyTypeGeneratorReturnTypeFromUnion.ts` currently stops at |
 | 5388 | Support discriminated union parameter method calls | feature | ir/lowering | implementation-ready | P1 |  | Support discriminated union parameter method calls |
 | 5389 | Support nested function default parameters in closure lowering | feature | ir/lowering | implementation-ready | P1 |  | Support nested function default parameters in closure lowering |
 | 5390 | Report abstract property constructor access diagnostics | feature | ir/lowering | implementation-ready | P1 |  | abstract property accesses inside the declaring class constructor |
@@ -5355,7 +5350,12 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5357 | Avoid eval diagnostic for qualified Function constructors | bug | ir/resolver | see `issues/done/5357-avoid-eval-diagnostic-for-qualified-function-constructors.md` |
 | 5364 | Report unterminated string literal at raw newline | bug | frontend/lexer | see `issues/done/5364-report-unterminated-string-literal-at-raw-newline.md` |
 | 5379 | Lower array binding object default initializers | feature | ir/lowering | see `issues/done/5379-lower-array-binding-object-default-initializers.md` |
+| 5381 | Parse untyped arrow ternary branches | feature | frontend/syntax | see `issues/done/5381-parse-arrow-functions-in-ternary-branches.md` |
+| 5382 | Parse typed arrow ternary branches | feature | frontend/syntax | see `issues/done/5382-parse-typed-arrow-ternary-branches.md` |
 | 5383 | Classify number parameter toFixed calls | feature | ir/lowering | see `issues/done/5383-classify-number-parameter-tofixed-calls.md` |
+| 5384 | Resolve ambient function value references | feature | frontend/resolver | see `issues/done/5384-resolve-ambient-function-value-references.md` |
+| 5385 | Parse arrow body assignment expressions | feature | frontend/syntax | see `issues/done/5385-parse-arrow-body-assignment-expressions.md` |
+| 5387 | Parse generator function expressions in const initializers | feature | frontend/syntax | see `issues/done/5387-parse-generator-function-expressions-in-const-initializers.md` |
 <!-- generated:done:end -->
 
 ## Index generation contract

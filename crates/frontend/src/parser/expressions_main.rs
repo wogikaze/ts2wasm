@@ -384,9 +384,28 @@ impl Parser {
     fn ternary(&mut self) -> Result<Expr, Diagnostic> {
         let mut expr = self.coalesce()?;
         if self.consume(TokenKind::Question) {
-            let then_expr = self.expression()?;
+            // In ternary then-branches, arrow functions should not consume `:` as a
+            // return type annotation if that `:` is the ternary's else-branch separator.
+            // E.g., `true ? (a: number) => a : (b: number) => b`
+            let then_expr = if matches!(self.peek(), Some(Token::LeftParen)) {
+                self.parse_ternary_then_expression()?
+            } else {
+                self.expression()?
+            };
             self.expect(TokenKind::Colon)?;
-            let else_expr = self.ternary()?;
+            // Else-branch may also start with an arrow function like `(b) => b`
+            let else_expr = if matches!(self.peek(), Some(Token::LeftParen)) {
+                let saved = self.cursor;
+                if let Ok(true) = self.probe_parenthesized_arrow_params() {
+                    self.cursor = saved;
+                    self.parse_arrow_function_without_return_type()?
+                } else {
+                    self.cursor = saved;
+                    self.ternary()?
+                }
+            } else {
+                self.ternary()?
+            };
             let span = Span {
                 start: expr.span().start,
                 end: else_expr.span().end,
@@ -399,6 +418,90 @@ impl Parser {
             };
         }
         Ok(expr)
+    }
+
+    /// Parse the then-branch of a ternary when it starts with `(` — arrow functions
+    /// should not consume `:` as return type annotations across the ternary separator.
+    fn parse_ternary_then_expression(&mut self) -> Result<Expr, Diagnostic> {
+        let saved = self.cursor;
+        // Try to parse as an arrow function with limited return type consumption
+        if let Ok(true) = self.probe_parenthesized_arrow_params() {
+            self.cursor = saved;
+            // Parse arrow function with a flag that limits return type
+            return self.parse_arrow_function_without_return_type();
+        }
+        self.cursor = saved;
+        self.expression()
+    }
+
+    /// Parse arrow function without consuming return type `:`, to avoid
+    /// conflicting with the ternary's else-branch separator.
+    fn parse_arrow_function_without_return_type(&mut self) -> Result<Expr, Diagnostic> {
+        let start_span = self.peek_span().unwrap_or(Span { start: 0, end: 0 });
+        let mut params = Vec::new();
+        self.expect(TokenKind::LeftParen)?;
+        if !self.consume(TokenKind::RightParen) {
+            loop {
+                let param = self.parse_param(false, false)?;
+                let is_rest = param.is_rest;
+                let param_name = if let Some(default) = param.default {
+                    format!("{} = {}", param.name, self.binding_default_expr_text(&default))
+                } else {
+                    param.name
+                };
+                params.push(if is_rest { format!("...{param_name}") } else { param_name });
+                if self.consume(TokenKind::RightParen) { break; }
+                if is_rest { return Err(self.invalid_rest_binding_diagnostic(param.span)); }
+                self.expect(TokenKind::Comma)?;
+            }
+        }
+        // Try to consume return type annotation, but only if followed by =>
+        // (to avoid conflicting with the ternary's else-branch separator)
+        if matches!(self.peek(), Some(Token::Colon)) {
+            let saved = self.cursor;
+            self.advance(); // consume ':'
+            // Skip type annotation tokens — if we hit `=>`, the `:` was a return type
+            let mut depth = 0usize;
+            while let Some(token) = self.peek() {
+                match token {
+                    Token::Arrow if depth == 0 => break,
+                    Token::LeftParen | Token::LeftBrace | Token::LeftBracket => {
+                        depth += 1;
+                        self.advance();
+                    }
+                    Token::RightParen | Token::RightBrace | Token::RightBracket if depth > 0 => {
+                        depth -= 1;
+                        self.advance();
+                    }
+                    Token::Comma | Token::Semicolon | Token::RightBrace if depth == 0 => {
+                        // Not a return type annotation — restore cursor
+                        self.cursor = saved;
+                        break;
+                    }
+                    _ => { self.advance(); }
+                }
+            }
+        }
+        self.expect(TokenKind::Arrow)?;
+        let mut body_stmts = Vec::new();
+        let body = if matches!(self.peek(), Some(Token::LeftBrace)) {
+            let block_stmts = self.block()?;
+            match block_stmts.split_last() {
+                Some((Stmt::Return { expr, .. }, rest)) => {
+                    body_stmts.extend_from_slice(rest);
+                    expr.clone()
+                }
+                _ => Expr::Undefined { span: Span::generated("undef") },
+            }
+        } else {
+            self.expression()?
+        };
+        Ok(Expr::ArrowFn {
+            params,
+            body: Box::new(body),
+            body_stmts,
+            span: Span::generated("arrow"),
+        })
     }
 
     fn coalesce(&mut self) -> Result<Expr, Diagnostic> {
