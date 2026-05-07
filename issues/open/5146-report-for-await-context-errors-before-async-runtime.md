@@ -146,6 +146,12 @@ Related follow-up for ordinary `await(...)` call parsing:
 
 - `issues/open/5145-parse-await-as-call-outside-async-context.md`
 
+Also owns `issues/done/3360-implement-modulePreserveTopLevelAwait.md`: fresh
+triage for `modulePreserveTopLevelAwait1.ts` stops at top-level
+`for await (const x of []) {}` with issue-230 before TypeScript's TS1432
+context diagnostic and before the following top-level `await Promise.resolve()`
+diagnostic become actionable.
+
 ## Completion evidence
 
 Fill only when moving to `done/`.
