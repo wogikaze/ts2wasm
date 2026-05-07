@@ -82,6 +82,8 @@ Do not touch:
 
 - [ ] `checkJsObjectLiteralIndexSignatures.ts` no longer reports `expected Dot, got Some(RightBracket)` for `{ [n]: 1 }`.
 - [ ] `commaOperatorInConditionalExpression.ts` no longer reports `expected Dot, got Some(RightBracket)` for `{ [m]: i }` inside ternary object-literal branches.
+- [ ] `contextuallyTypedSymbolNamedProperties.ts` no longer reports
+  `expected Dot, got Some(RightBracket)` for `[A]: ap => { ... }`.
 - [ ] A focused fixture proves object literals accept `[identifier]` computed property keys.
 - [ ] Existing computed-member access parsing still handles `numericIndex[n].toFixed()`.
 
@@ -131,6 +133,16 @@ construction fails with `UnsupportedSyntax: expected Dot, got
 Some(RightBracket) at 97..98`. TypeScript accepts the source with no
 diagnostics and its AST path is `ConditionalExpression -> ObjectLiteralExpression
 -> PropertyAssignment -> ComputedPropertyName`.
+
+2026-05-07 additional evidence:
+`contextuallyTypedSymbolNamedProperties.ts` stops at the same parser boundary
+for symbol-valued identifier keys in an object literal argument:
+`f(ab, { [A]: ap => { ap.description }, [B]: bp => { bp.description } })`.
+Tokens show `LeftBracket Ident("A") RightBracket Colon`, then AST construction
+fails with `UnsupportedSyntax: expected Dot, got Some(RightBracket) at
+395..396`. TypeScript accepts the source with no diagnostics and its AST path
+is `CallExpression -> ObjectLiteralExpression -> PropertyAssignment ->
+ComputedPropertyName -> Identifier A`.
 
 ## Completion evidence
 
