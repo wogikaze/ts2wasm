@@ -2174,8 +2174,11 @@ impl<'a> Resolver<'a> {
                     if args.len() != 1 {
                         return Err(Diagnostic {
                             code: DiagCode::UnsupportedSyntax,
-                            message: "issue-050: only deterministic new Date(<epoch-ms integer>) is supported in this slice"
-                                .to_owned(),
+                            message: if args.len() > 1 {
+                                "issue-5243: multi-argument new Date(year, month, ...) is not supported in this slice".to_string()
+                            } else {
+                                "issue-5243: Date constructor requires an epoch-millisecond number, not a string or expression".to_string()
+                            },
                             span: None,
                         });
                     }
@@ -2188,9 +2191,14 @@ impl<'a> Resolver<'a> {
                             span: Span::generated("runtime_call"),});
                     }
                     if !is_date_constructor_epoch_arg(epoch_ms) {
+                        let msg = if matches!(epoch_ms, ResolvedExpr::String(_)) {
+                            "issue-5243: string-based Date parsing like new Date(\"2024-01-01\") is not supported in this slice"
+                        } else {
+                            "issue-5243: Date constructor requires an epoch-millisecond number argument"
+                        };
                         return Err(Diagnostic {
                             code: DiagCode::UnsupportedSyntax,
-                            message: "issue-050: Date constructor currently requires an integer epoch millisecond literal".to_owned(),
+                            message: msg.to_owned(),
                             span: None,
                         });
                     }
