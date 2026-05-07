@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 5 | 4 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4529 | 3555 | 974 |
+| frontend | 4529 | 3554 | 975 |
 | harness | 1 | 0 | 1 |
 | ir | 65 | 43 | 22 |
 | issues | 4 | 0 | 4 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5174 | 3846 | 1328 |
+| total | 5174 | 3845 | 1329 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -52,7 +52,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 ├── 5003 (Meta: TypeScript Compiler Declaration Emit Coverage) [done/done] ch:102 open:91 done:11 (also ← 5001)
 5001 (Meta: TypeScript Compiler Semantic Analysis Coverage) [done/done] ch:577 open:323 done:254
 5004 (Meta: Runtime Builtins Coverage (test262) (audit reopened #5004)) [done/done] ch:24 open:3 done:21
-5005 (Meta: TypeScript Compiler Name Resolution Coverage) [done/done] ch:417 open:365 done:52
+5005 (Meta: TypeScript Compiler Name Resolution Coverage) [done/done] ch:416 open:364 done:52
 ├── 5006 (Meta: TypeScript Compiler Scope Analysis Coverage) [done/done] ch:29 open:21 done:8
 ├── 5007 (Meta: TypeScript Compiler Module Resolution Coverage (audit reopened #5007)) [done/done] ch:21 open:19 done:2
 ```
@@ -69,7 +69,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1 | 5000 | Meta: TypeScript Compiler Parser Syntax Coverage | done | design | frontend/syntax | P1 | - | 469 | 394 | 75 |
 | 2 | 5001 | Meta: TypeScript Compiler Semantic Analysis Coverage | done | done | frontend/semantics | P1 | - | 577 | 323 | 254 |
 | 3 | 5004 | Meta: Runtime Builtins Coverage (test262) (audit reopened #5004) | done | done | runtime/builtins | P1 | - | 24 | 3 | 21 |
-| 4 | 5005 | Meta: TypeScript Compiler Name Resolution Coverage | done | done | frontend/resolver | P1 | - | 417 | 365 | 52 |
+| 4 | 5005 | Meta: TypeScript Compiler Name Resolution Coverage | done | done | frontend/resolver | P1 | - | 416 | 364 | 52 |
 | 5 | 5002 | Meta: TypeScript Compiler Type System Coverage | done | done | frontend/semantics | P1 | 5000, 5005 | 231 | 214 | 17 |
 | 6 | 5003 | Meta: TypeScript Compiler Declaration Emit Coverage | done | done | frontend/syntax | P2 | 5000, 5001 | 102 | 91 | 11 |
 | 7 | 5006 | Meta: TypeScript Compiler Scope Analysis Coverage | done | done | frontend/resolver | P2 | 5005 | 29 | 21 | 8 |
@@ -567,7 +567,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 772 | Implement Augmentedtypesvar | spike | frontend/syntax | class: blocked | Implement Augmentedtypesvar |
 | 773 | Implement Autoasiforstaticsinclassdeclaration | spike | frontend/syntax | class: triage-needed | Implement Autoasiforstaticsinclassdeclaration |
 | 775 | Implement Autotypeassignedusingdestructuringfromnevernocrash | spike | frontend/resolver | class: blocked | Implement Autotypeassignedusingdestructuringfromnevernocrash |
-| 1320 | Implement Collisionthisexpressionandambientvaringlobal | spike | frontend/resolver | class: blocked | Implement Collisionthisexpressionandambientvaringlobal |
 | 1321 | Implement Collisionthisexpressionandclassinglobal | spike | frontend/syntax | class: blocked | Implement Collisionthisexpressionandclassinglobal |
 | 1322 | Implement Collisionthisexpressionandenuminglobal | spike | frontend/syntax | class: blocked | Implement Collisionthisexpressionandenuminglobal |
 | 1323 | Implement Collisionthisexpressionandfunctioninglobal | spike | frontend/syntax | class: blocked | Implement Collisionthisexpressionandfunctioninglobal |
@@ -5030,6 +5029,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1317 | Implement Collisionsuperandpropertynameasconstuctorparameter | spike | frontend/syntax | see `issues/done/1317-implement-collisionSuperAndPropertyNameAsConstuctorParameter.md` |
 | 1318 | Implement Collisionthisexpressionandaliasinglobal | spike | frontend/syntax | see `issues/done/1318-implement-collisionThisExpressionAndAliasInGlobal.md` |
 | 1319 | Implement Collisionthisexpressionandambientclassinglobal | spike | frontend/resolver | see `issues/done/1319-implement-collisionThisExpressionAndAmbientClassInGlobal.md` |
+| 1320 | Implement Collisionthisexpressionandambientvaringlobal | spike | frontend/resolver | see `issues/done/1320-implement-collisionThisExpressionAndAmbientVarInGlobal.md` |
 | 1325 | Implement Collisionthisexpressionandlocalvarinconstructor | spike | frontend/syntax | see `issues/done/1325-implement-collisionThisExpressionAndLocalVarInConstructor.md` |
 | 1327 | Implement Collisionthisexpressionandlocalvarinlambda | spike | frontend/syntax | see `issues/done/1327-implement-collisionThisExpressionAndLocalVarInLambda.md` |
 | 1328 | Implement Collisionthisexpressionandlocalvarinmethod | spike | frontend/syntax | see `issues/done/1328-implement-collisionThisExpressionAndLocalVarInMethod.md` |
