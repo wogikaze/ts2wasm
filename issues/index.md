@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 7 | 6 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4579 | 3420 | 1159 |
+| frontend | 4580 | 3420 | 1160 |
 | harness | 1 | 0 | 1 |
 | ir | 79 | 57 | 22 |
 | issues | 4 | 0 | 4 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5240 | 3718 | 1522 |
+| total | 5241 | 3718 | 1523 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -358,6 +358,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5402 | Skip package.json @Filename sections in reference harness | feature | compiler/multi-section | implementation-ready | P1 |  | reference-style `package.json` virtual sections are treated as module bodies instead of package metadata or non-code ... |
 | 5403 | Support type-only default exports of local interfaces | feature | frontend/name-resolution | implementation-ready | P1 |  | the resolver treats `export default Color;` as a value export |
 | 5405 | Bind require fs local method calls | feature | frontend/resolver | implementation-ready | P1 |  | `ambientRequireFunction.ts` currently reaches issue-211 unknown |
+| 5406 | Report ambient enum nonconstant initializers | feature | frontend/semantics | implementation-ready | P2 |  | `ambientEnum1.ts` currently records a ts2wasm `BuildPass`, but |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -371,7 +372,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 052d | Implement broader JSON.stringify replacer semantics (audit reopened #052d) | feature | runtime/builtins | class: blocked | Implement broader JSON.stringify replacer semantics (audit reopened #052d) |
 | 059 | Implement parser syntax extensions for TypeScript and advanced JS (audit reopened #059) | feature | frontend | class: blocked | Implement parser syntax extensions for TypeScript and advanced JS (audit reopened #059) |
 | 064 | Implement name resolution (triaged - superseded by test262 metadata issues) | spike | frontend/resolver | class: blocked | Implement name resolution (triaged - superseded by test262 metadata issues) |
-| 145 | Implement Ambientenum | spike | frontend/syntax | class: blocked | Implement Ambientenum |
 | 156 | Implement Ambientgetters | spike | frontend/syntax | class: blocked | Implement Ambientgetters |
 | 162 | Implement Ambientpropertydeclarationinjs | spike | frontend/syntax | class: blocked | Implement Ambientpropertydeclarationinjs |
 | 168 | Implement Ambiguousoverload | spike | frontend/syntax | class: blocked | Implement Ambiguousoverload |
@@ -3994,6 +3994,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 142 | Implement Ambientclassmergesoverloadswithinterface | spike | frontend/syntax | see `issues/done/142-implement-ambientClassMergesOverloadsWithInterface.md` |
 | 143 | Implement Ambientclassoverloadforfunction | spike | frontend/syntax | see `issues/done/143-implement-ambientClassOverloadForFunction.md` |
 | 144 | Implement Ambientconstliterals (dup) | spike | frontend/syntax | see `issues/done/144-implement-ambientConstLiterals.md` |
+| 145 | Implement Ambientenum | spike | frontend/syntax | see `issues/done/145-implement-ambientEnum.md` |
 | 146 | Implement Ambientenumelementinitializer (dup) | spike | frontend/syntax | see `issues/done/146-implement-ambientEnumElementInitializer.md` |
 | 147 | Implement Ambienterrors | spike | frontend/syntax | see `issues/done/147-implement-ambientErrors.md` |
 | 148 | Implement Ambientexportdefaulterrors (dup) | spike | frontend/syntax | see `issues/done/148-implement-ambientExportDefaultErrors.md` |

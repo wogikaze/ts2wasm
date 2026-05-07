@@ -28,7 +28,7 @@ Representative generated issues with `feature_label: ambient-declaration` includ
 - `issues/done/140-implement-ambientClassDeclarationWithExtends.md`
 - `issues/done/142-implement-ambientClassMergesOverloadsWithInterface.md`
 - `issues/done/144-implement-ambientConstLiterals.md`
-- `issues/open/145-implement-ambientEnum.md`
+- `issues/done/145-implement-ambientEnum.md`
 - `issues/done/148-implement-ambientExportDefaultErrors.md`
 - `issues/done/150-implement-ambientExternalModuleReopen.md`
 - `issues/done/160-implement-ambientModules.md`
@@ -139,7 +139,7 @@ Progress 2026-05-01:
 Representative generated buckets re-triaged into this boundary slice:
 
 - `issues/done/140-implement-ambientClassDeclarationWithExtends.md`: `declare class A { }` / `declare class B extends A { }` is declaration-only and now parses/erases before runtime lowering.
-- `issues/open/145-implement-ambientEnum.md`: `declare enum E1 { ... }` is declaration-only and now parses/erases before runtime lowering.
+- `issues/done/145-implement-ambientEnum.md`: `declare enum E1 { ... }` is declaration-only and now parses/erases before runtime lowering.
 - `issues/done/150-implement-ambientExternalModuleReopen.md`: `declare module "fs" { ... }` is module-shaped and now routes to `UnsupportedModule` instead of a generic parser error.
 - `issues/done/160-implement-ambientModules.md`: `declare namespace Foo.Bar { ... }` is module-shaped and now routes to `UnsupportedModule`.
 - `issues/open/162-implement-ambientPropertyDeclarationInJs.md`: `declare prop: string;` inside a class is declaration-only and now parses/erases without adding a runtime class element.
