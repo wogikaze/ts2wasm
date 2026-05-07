@@ -171,7 +171,7 @@ Duplicate review:
   receiver function values that read `this`; this bucket adds the method
   shorthand/contextual-object form.
 - Broad parser buckets such as `issues/open/059-implement-parser-syntax-extensions.md`
-  and `issues/open/1519-implement-contextualTyping-parser-syntax.md` are less
+  and `issues/done/1519-implement-contextualTyping-parser-syntax.md` are less
   specific than the existing 5218 owner.
 
 ## Completion evidence

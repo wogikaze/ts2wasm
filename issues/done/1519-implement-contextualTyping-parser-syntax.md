@@ -8,7 +8,7 @@ priority: P1
 depends_on: []
 blocks: []
 created: 2026-05-01
-updated: 2026-05-01
+updated: 2026-05-07
 ---
 
 ## Summary
@@ -43,10 +43,10 @@ This generated bucket is either split into implementation-ready child issues or 
 
 In scope:
 
-- [ ] Inspect the smart triage report below
-- [ ] Confirm whether existing open/done issues already cover this bucket
-- [ ] Split one feature family, one observable behavior, or one fixed reference window into child issues
-- [ ] Preserve exact reproduction commands and representative AST/diagnostic evidence in each child issue
+- [x] Inspect the smart triage report below
+- [x] Confirm the current reference window is stale
+- [x] Close the bucket without creating child issues because all affected files build-pass
+- [x] Preserve exact reproduction commands and representative AST/diagnostic evidence
 
 Out of scope:
 
@@ -68,10 +68,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] Duplicate candidates below are confirmed as no-match or this issue is superseded
-- [ ] At least one child issue contains an exact `mise run reference-triage -- ...` command
-- [ ] Child issue includes failing path, diagnostic code, source context, visible symbols, and parser/TypeScript AST evidence
-- [ ] Child issue acceptance names the exact fixture/reference path and diagnostic/stdout change
+- [x] Duplicate candidates below are confirmed as stale
+- [x] Representative command contains exact `mise run reference-triage -- ...` command
+- [x] Evidence includes failing path, diagnostic code, source context, visible symbols, and parser/TypeScript AST evidence
+- [x] No child issue is required because the exact affected paths now build-pass
 
 ## Validation
 
@@ -98,15 +98,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] updated: `current-state.md` (repo root)
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 
@@ -137,7 +137,51 @@ Follow-up issues:
 
 ## Smart triage
 
-Not generated. Rerun with `--triage-limit 1` or higher.
+Date: 2026-05-07
+
+Command:
+
+```sh
+env TS2WASM_BINARY=/home/wogikaze/wgkz/ts2wasm/target/debug/ts2wasm python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/contextualTyping10.ts
+```
+
+Result: build pass.
+
+Current diagnostic:
+
+```text
+BuildPass: ts2wasm build succeeded
+feature_label: build-pass
+```
+
+Representative source context:
+
+```ts
+class foo { public bar:{id:number;}[] = [{id:1}, {id:2}]; }
+```
+
+Compiler evidence:
+
+- tokens: ok
+- ast: ok; class declaration `foo` parses and erases the TypeScript-only field
+  type annotation
+- resolved: ok; class `foo` is present with no constructor/methods/statics
+- TypeScript oracle: ok, diagnostics `[]`
+
+Coverage evidence:
+
+The broader contextual typing coverage run on 2026-05-07 shows all nine paths
+listed in this bucket as `build_pass`:
+
+- `contextualTyping10.ts`
+- `contextualTyping11.ts`
+- `contextualTyping15.ts`
+- `contextualTyping14.ts`
+- `contextualTyping12.ts`
+- `contextualTyping24.ts`
+- `contextualTyping3.ts`
+- `contextualTyping4.ts`
+- `contextualTyping5.ts`
 
 ## Completion evidence
 
@@ -145,16 +189,21 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- `...`
+- closed as stale build-pass bucket
 
 Validation result:
 
 ```text
-command:
-result:
-date:
+command: env TS2WASM_BINARY=/home/wogikaze/wgkz/ts2wasm/target/debug/ts2wasm python scripts/manager.py reference-coverage tsc --path-filter reference/typescript/tests/cases/compiler/contextualTyping --detail --no-dashboard-data
+result: pass; the nine paths listed in this bucket are all build_pass
+date: 2026-05-07
+
+command: env TS2WASM_BINARY=/home/wogikaze/wgkz/ts2wasm/target/debug/ts2wasm python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/contextualTyping10.ts
+result: pass; BuildPass with TypeScript diagnostics []
+date: 2026-05-07
 ```
 
 Remaining risks:
 
-- none
+- Other contextual typing paths outside this generated bucket still have open
+  unsupported diagnostics and remain tracked separately.
