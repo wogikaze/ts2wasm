@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 25 | 13 | 12 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4585 | 3335 | 1250 |
+| frontend | 4585 | 3334 | 1251 |
 | harness | 1 | 0 | 1 |
 | ir | 82 | 59 | 23 |
 | issues | 4 | 0 | 4 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5268 | 3636 | 1632 |
+| total | 5268 | 3635 | 1633 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -2340,7 +2340,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 3302 | Implement Modulealiasasfunctionargument | spike | frontend/syntax | class: blocked | Implement Modulealiasasfunctionargument |
 | 3303 | Implement Modulealiasinterface | spike | frontend/syntax | class: blocked | Implement Modulealiasinterface |
 | 3304 | Implement Moduleandinterfacesharingname | spike | frontend/syntax | class: blocked | Implement Moduleandinterfacesharingname |
-| 3411 | Implement Multipleexportassignments | spike | frontend/syntax | class: blocked | Implement Multipleexportassignments |
 | 3412 | Implement Multipleexportassignmentsinambientdeclaration | spike | frontend/syntax | class: blocked | Implement Multipleexportassignmentsinambientdeclaration |
 | 3413 | Implement Multipleexports | spike | frontend/syntax | class: blocked | Implement Multipleexports |
 | 3414 | Implement Multipleinferencecontexts | spike | frontend/resolver | class: blocked | Implement Multipleinferencecontexts |
@@ -5228,6 +5227,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 3408 | Close multipleBaseInterfaesWithIncompatibleProperties as stale build-pass | maintenance | frontend/syntax | see `issues/done/3408-implement-multipleBaseInterfaesWithIncompatibleProperties.md` |
 | 3409 | Close multipleClassPropertyModifiers to modified static field parser owner | maintenance | frontend | see `issues/done/3409-implement-multipleClassPropertyModifiers.md` |
 | 3410 | Split multipleClassPropertyModifiersErrors to duplicate static modifier issue | maintenance | frontend/parser | see `issues/done/3410-implement-multipleClassPropertyModifiersErrors.md` |
+| 3411 | Close multipleExportAssignments to CommonJS export assignment parser owner | maintenance | frontend/parser | see `issues/done/3411-implement-multipleExportAssignments.md` |
 | 3690 | Implement Optionaltupleelementsandundefined | spike | reference/triage | see `issues/done/3690-implement-optionalTupleElementsAndUndefined.md` |
 | 3996 | Implement Compiler (dup) | spike | frontend/syntax | see `issues/done/3996-implement-reference-typescript-tests-cases-compiler.md` |
 | 4210 | Implement Splicetuples | spike | frontend/resolver | see `issues/done/4210-implement-spliceTuples.md` |

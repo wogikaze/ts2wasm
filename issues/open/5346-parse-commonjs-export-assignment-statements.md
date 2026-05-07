@@ -157,6 +157,11 @@ Related but not duplicate:
   fresh triage for `moduleAugmentationDuringSyntheticDefaultCheck.ts` stops at
   `export = moment;` in the virtual `node_modules/moment/index.d.ts` section
   before package resolution or ambient module augmentation diagnostics.
+- Also owns `issues/done/3411-implement-multipleExportAssignments.md`: fresh
+  triage for `multipleExportAssignments.ts` stops at the first
+  `export = server;` with the same issue-055 static export boundary. After
+  export-assignment parsing lands, this path may need a narrower duplicate
+  `export =` diagnostic issue for TypeScript TS2300.
 
 ## Completion evidence
 
