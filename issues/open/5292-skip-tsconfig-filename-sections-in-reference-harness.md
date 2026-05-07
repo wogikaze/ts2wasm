@@ -146,6 +146,11 @@ Follow-up issues:
 
 Split from generated bucket
 `issues/done/1385-implement-commonJsIsolatedModules.md`.
+Also owns the `tsconfig.json` subset of
+`issues/done/3380-implement-moduleResolutionWithExtensions-import-export.md`:
+fresh triage for `moduleResolutionWithExtensions_withPaths.ts` stops in the
+virtual `/tsconfig.json` section at the first JSON property colon before path
+mapping or extension resolution diagnostics become actionable.
 
 ## Completion evidence
 
