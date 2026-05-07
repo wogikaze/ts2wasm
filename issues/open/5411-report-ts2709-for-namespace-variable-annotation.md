@@ -138,6 +138,11 @@ Sibling cases `moduleAssignmentCompat2.ts` through
 `moduleAssignmentCompat4.ts` show the same TS2709 oracle shape and should be
 rechecked after this representative diagnostic lands.
 
+Also owns `issues/done/3331-implement-moduleCrashBug.md`: fresh triage for
+`moduleCrashBug1.ts` now build-passes while the TypeScript oracle reports
+TS2709 for `var m: _modes;`, the same namespace-root variable annotation
+diagnostic shape.
+
 ## Completion evidence
 
 Fill when implemented.
