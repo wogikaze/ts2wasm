@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 5 | 4 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4528 | 3561 | 967 |
+| frontend | 4528 | 3560 | 968 |
 | harness | 1 | 0 | 1 |
 | ir | 65 | 43 | 22 |
 | issues | 4 | 0 | 4 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5173 | 3852 | 1321 |
+| total | 5173 | 3851 | 1322 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -47,7 +47,7 @@ Issue files are the source of truth for work items. The generated section below 
 Direct child counts are derived from issue-file `depends_on` links. A meta issue can be `done` as a classification/design umbrella while implementation child issues remain open.
 
 ```
-5000 (Meta: TypeScript Compiler Parser Syntax Coverage) [done/design] ch:472 open:397 done:75
+5000 (Meta: TypeScript Compiler Parser Syntax Coverage) [done/design] ch:471 open:396 done:75
 ├── 5002 (Meta: TypeScript Compiler Type System Coverage) [done/done] ch:231 open:214 done:17 (also ← 5005)
 ├── 5003 (Meta: TypeScript Compiler Declaration Emit Coverage) [done/done] ch:102 open:91 done:11 (also ← 5001)
 5001 (Meta: TypeScript Compiler Semantic Analysis Coverage) [done/done] ch:577 open:323 done:254
@@ -66,7 +66,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 
 | Order | ID | Title | State | Class | Area | Priority | Depends on | Direct children | Open children | Done children |
 |-----:|---:|------|-------|-------|------|--------:|-----------:|----------------:|--------------:|--------------:|
-| 1 | 5000 | Meta: TypeScript Compiler Parser Syntax Coverage | done | design | frontend/syntax | P1 | - | 472 | 397 | 75 |
+| 1 | 5000 | Meta: TypeScript Compiler Parser Syntax Coverage | done | design | frontend/syntax | P1 | - | 471 | 396 | 75 |
 | 2 | 5001 | Meta: TypeScript Compiler Semantic Analysis Coverage | done | done | frontend/semantics | P1 | - | 577 | 323 | 254 |
 | 3 | 5004 | Meta: Runtime Builtins Coverage (test262) (audit reopened #5004) | done | done | runtime/builtins | P1 | - | 24 | 3 | 21 |
 | 4 | 5005 | Meta: TypeScript Compiler Name Resolution Coverage | done | done | frontend/resolver | P1 | - | 419 | 367 | 52 |
@@ -566,7 +566,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 772 | Implement Augmentedtypesvar | spike | frontend/syntax | class: blocked | Implement Augmentedtypesvar |
 | 773 | Implement Autoasiforstaticsinclassdeclaration | spike | frontend/syntax | class: triage-needed | Implement Autoasiforstaticsinclassdeclaration |
 | 775 | Implement Autotypeassignedusingdestructuringfromnevernocrash | spike | frontend/resolver | class: blocked | Implement Autotypeassignedusingdestructuringfromnevernocrash |
-| 1313 | Implement Collisionsuperandlocalvarinmethod | spike | frontend/syntax | class: blocked | Implement Collisionsuperandlocalvarinmethod |
 | 1314 | Implement Collisionsuperandlocalvarinproperty | spike | frontend/syntax | class: blocked | Implement Collisionsuperandlocalvarinproperty |
 | 1315 | Implement Collisionsuperandnameresolution | spike | frontend/resolver | class: blocked | Implement Collisionsuperandnameresolution |
 | 1316 | Implement Collisionsuperandparameter | spike | frontend/syntax | class: blocked | Implement Collisionsuperandparameter |
@@ -5029,6 +5028,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1310 | Implement Collisionsuperandlocalfunctioninproperty | spike | frontend/syntax | see `issues/done/1310-implement-collisionSuperAndLocalFunctionInProperty.md` |
 | 1311 | Implement Collisionsuperandlocalvarinaccessors | spike | frontend/syntax | see `issues/done/1311-implement-collisionSuperAndLocalVarInAccessors.md` |
 | 1312 | Implement Collisionsuperandlocalvarinconstructor | spike | frontend/syntax | see `issues/done/1312-implement-collisionSuperAndLocalVarInConstructor.md` |
+| 1313 | Implement Collisionsuperandlocalvarinmethod | spike | frontend/syntax | see `issues/done/1313-implement-collisionSuperAndLocalVarInMethod.md` |
 | 1325 | Implement Collisionthisexpressionandlocalvarinconstructor | spike | frontend/syntax | see `issues/done/1325-implement-collisionThisExpressionAndLocalVarInConstructor.md` |
 | 1327 | Implement Collisionthisexpressionandlocalvarinlambda | spike | frontend/syntax | see `issues/done/1327-implement-collisionThisExpressionAndLocalVarInLambda.md` |
 | 1328 | Implement Collisionthisexpressionandlocalvarinmethod | spike | frontend/syntax | see `issues/done/1328-implement-collisionThisExpressionAndLocalVarInMethod.md` |
