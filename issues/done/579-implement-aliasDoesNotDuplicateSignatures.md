@@ -3,12 +3,13 @@ id: 579
 title: "Implement Aliasdoesnotduplicatesignatures"
 type: spike
 area: frontend/syntax
-class: blocked
+class: done
 priority: P1
-depends_on: [432]
+depends_on: [5399]
 blocks: []
 created: 2026-05-01
-updated: 2026-05-01
+updated: 2026-05-08
+completed: 2026-05-08
 ---
 
 ## Summary
@@ -17,9 +18,15 @@ Triage aliasDoesNotDuplicateSignatures across 1 failing reference test cases and
 
 ## Problem
 
-Reference test results show 1 cases fail in directory `aliasDoesNotDuplicateSignatures` with diagnostics: import-export. The compiler cannot handle these syntax/semantics, preventing compilation of code in this category.
+Reference test results showed 1 case in `aliasDoesNotDuplicateSignatures` with
+diagnostics: import-export. Fresh triage shows the current blocker is no longer
+the ambient namespace syntax boundary; it is `UnresolvedName` for ambient
+namespace `demoNS` used by an import-equals alias inside `declare module
+'demoModule'`.
 
-Problem: aliasDoesNotDuplicateSignatures has 1 reference failures and needs smart-triage evidence before implementation starts.
+Problem: aliasDoesNotDuplicateSignatures had 1 generated bucket failure and
+needed smart-triage evidence. The current ambient namespace import-alias
+blocker is split to issue 5399.
 
 ## Current failure
 
@@ -43,10 +50,10 @@ This generated bucket is either split into implementation-ready child issues or 
 
 In scope:
 
-- [ ] Inspect the smart triage report below
-- [ ] Confirm whether existing open/done issues already cover this bucket
-- [ ] Split one feature family, one observable behavior, or one fixed reference window into child issues
-- [ ] Preserve exact reproduction commands and representative AST/diagnostic evidence in each child issue
+- [x] Inspect the smart triage report below
+- [x] Confirm whether existing open/done issues already cover this bucket
+- [x] Split ambient namespace import-alias resolution to issue 5399
+- [x] Preserve exact reproduction commands and representative AST/diagnostic evidence
 
 Out of scope:
 
@@ -68,10 +75,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] Duplicate candidates below are confirmed as no-match or this issue is superseded
-- [ ] At least one child issue contains an exact `mise run reference-triage -- ...` command
-- [ ] Child issue includes failing path, diagnostic code, source context, visible symbols, and parser/TypeScript AST evidence
-- [ ] Child issue acceptance names the exact fixture/reference path and diagnostic/stdout change
+- [x] Duplicate candidates below are confirmed as no-match or this issue is superseded
+- [x] Child issue 5399 contains an exact `mise run reference-triage -- ...` command
+- [x] Child issue 5399 includes failing path, diagnostic code, source context, visible symbols, and parser/TypeScript AST evidence
+- [x] Child issue 5399 acceptance names the exact reference path and diagnostic change
 
 ## Validation
 
@@ -98,15 +105,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] updated: `current-state.md` (repo root)
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] created: `issues/open/5399-resolve-ambient-namespace-import-alias-in-declare-module.md`
 
 ## Notes
 
@@ -596,20 +603,22 @@ error: [UnsupportedModule] issue-400: ambient namespace declarations require mod
 
 ## Completion evidence
 
-Fill only when moving to `done/`.
-
 Commits:
 
-- `...`
+- pending
 
 Validation result:
 
 ```text
-command:
-result:
-date:
+command: env TS2WASM_BINARY=/tmp/ts2wasm-issue-blockers-target/debug/ts2wasm python scripts/manager.py reference-coverage tsc --path-filter reference/typescript/tests/cases/compiler/aliasDoesNotDuplicateSignatures.ts --detail --no-dashboard-data
+result: pass; executed=1, build_pass=0, unsupported=1, unsupported_diagcodes=UnsupportedModule:1, unsupported_features=import-export:1
+date: 2026-05-08
+
+command: env TS2WASM_BINARY=/tmp/ts2wasm-issue-blockers-target/debug/ts2wasm python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/aliasDoesNotDuplicateSignatures.ts
+result: pass; tokens/AST succeed, current blocker is UnresolvedName for ambient namespace `demoNS` used by an import-equals alias inside `declare module`, split to issue 5399
+date: 2026-05-08
 ```
 
 Remaining risks:
 
-- none
+- Implementation remains open in `issues/open/5399-resolve-ambient-namespace-import-alias-in-declare-module.md`.
