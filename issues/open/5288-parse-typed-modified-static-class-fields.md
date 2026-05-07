@@ -143,6 +143,15 @@ Related but distinct parser issues:
 - `issues/open/5271-parse-modified-static-class-fields.md`
 - `issues/open/5254-parse-asi-between-static-class-fields.md`
 
+Additional superseded bucket:
+
+- `issues/done/1465-implement-constraintCheckInGenericBaseTypeReference.md`
+  reaches the same typed modified static class field parser boundary before
+  generic constraint checking. Fresh triage on 2026-05-07 reports
+  `expected LeftParen, got Some(Ident("People")) at 307..313` for
+  `public static People: Derived`; TypeScript parses it as a
+  `PropertyDeclaration` named `People` and reports no diagnostics for the file.
+
 ## Completion evidence
 
 Fill only when moving to `done/`.
