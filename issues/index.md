@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 7 | 6 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4583 | 3385 | 1198 |
+| frontend | 4583 | 3384 | 1199 |
 | harness | 1 | 0 | 1 |
 | ir | 81 | 59 | 22 |
 | issues | 4 | 0 | 4 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5251 | 3684 | 1567 |
+| total | 5251 | 3683 | 1568 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -2324,7 +2324,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 3302 | Implement Modulealiasasfunctionargument | spike | frontend/syntax | class: blocked | Implement Modulealiasasfunctionargument |
 | 3303 | Implement Modulealiasinterface | spike | frontend/syntax | class: blocked | Implement Modulealiasinterface |
 | 3304 | Implement Moduleandinterfacesharingname | spike | frontend/syntax | class: blocked | Implement Moduleandinterfacesharingname |
-| 3347 | Implement Modulemembermissingerrorisrelative | spike | frontend/syntax | class: blocked | Implement Modulemembermissingerrorisrelative |
 | 3348 | Implement Modulememberwithouttypeannotation | spike | frontend/syntax | class: blocked | Implement Modulememberwithouttypeannotation |
 | 3349 | Implement Modulemerge | spike | frontend/syntax | class: blocked | Implement Modulemerge |
 | 3350 | Implement Modulemergeconstructor | spike | frontend/syntax | class: blocked | Implement Modulemergeconstructor |
@@ -5212,6 +5211,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 3344 | Implement Modulekeyworddeprecated | maintenance | frontend/syntax | see `issues/done/3344-implement-moduleKeywordDeprecated.md` |
 | 3345 | Implement Modulekeywordrepeaterror | maintenance | frontend/syntax | see `issues/done/3345-implement-moduleKeywordRepeatError.md` |
 | 3346 | Implement Modulelocalimportnotincorrectlyredirected | maintenance | frontend/syntax | see `issues/done/3346-implement-moduleLocalImportNotIncorrectlyRedirected.md` |
+| 3347 | Implement Modulemembermissingerrorisrelative | maintenance | frontend/syntax | see `issues/done/3347-implement-moduleMemberMissingErrorIsRelative.md` |
 | 3690 | Implement Optionaltupleelementsandundefined | spike | reference/triage | see `issues/done/3690-implement-optionalTupleElementsAndUndefined.md` |
 | 3996 | Implement Compiler (dup) | spike | frontend/syntax | see `issues/done/3996-implement-reference-typescript-tests-cases-compiler.md` |
 | 4210 | Implement Splicetuples | spike | frontend/resolver | see `issues/done/4210-implement-spliceTuples.md` |

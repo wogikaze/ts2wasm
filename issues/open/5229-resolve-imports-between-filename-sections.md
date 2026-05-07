@@ -145,6 +145,7 @@ Also owns `issues/done/3311-implement-moduleAugmentationDoesInterfaceMergeOfReex
 Also owns `issues/done/3312-implement-moduleAugmentationDoesNamespaceEnumMergeOfReexport.md`: `moduleAugmentationDoesNamespaceEnumMergeOfReexport.ts` parses virtual `file.ts`, `reexport.ts`, and `augment.ts` sections, then reports issue-232 missing local module `./file` for `export * from "./file"` before namespace/enum merge diagnostics.
 Also owns `issues/done/3313-implement-moduleAugmentationDoesNamespaceMergeOfReexport.md`: `moduleAugmentationDoesNamespaceMergeOfReexport.ts` parses virtual `file.ts`, `reexport.ts`, and `augment.ts` sections, then reports issue-232 missing local module `./file` for `export * from "./file"` before namespace merge diagnostics.
 Also owns `issues/done/3332-implement-moduleDeclarationExportStarShadowingGlobalIsNameable.md`: fresh triage for `moduleDeclarationExportStarShadowingGlobalIsNameable.ts` stops at issue-232 missing local module `./account` for `export * from "./account"` in virtual `model/index.ts` before ambient `declare global`, `./model`, or declaration nameability diagnostics become actionable.
+Also owns `issues/done/3347-implement-moduleMemberMissingErrorIsRelative.md`: fresh triage for `moduleMemberMissingErrorIsRelative.ts` parses virtual `folder/foo.ts` and `folder/bar.ts`, then reports issue-232 missing local module `./foo` before the intended missing exported member diagnostic for `nosuch` becomes reachable.
 
 ## Completion evidence
 
