@@ -18,7 +18,7 @@ Issue files are the source of truth for work items. The generated section below 
 | docs | 5 | 0 | 5 |
 | frontend | 4546 | 3853 | 693 |
 | harness | 1 | 0 | 1 |
-| ir | 72 | 32 | 40 |
+| ir | 72 | 31 | 41 |
 | issues | 5 | 0 | 5 |
 | parser | 1 | 0 | 1 |
 | reference | 212 | 163 | 49 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 8 | 0 | 8 |
 | wasi | 4 | 0 | 4 |
-| total | 5223 | 4138 | 1085 |
+| total | 5223 | 4137 | 1086 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -190,6 +190,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1169 | Implement Circularlysimplifyingconditionaltypesnocrash | spike | frontend/semantics | done | P1 |  | the generated blocker is stale in the current runner view. There is no current ts2wasm build blocker for `circularlyS... |
 | 1171 | Implement Classaccessorinitializationinferencewithelementaccess | spike | frontend/syntax | done | P1 | 5232 | `classAccessorInitializationInferenceWithElementAccess1.ts` no longer |
 | 1172 | Implement Classattributeinferencetemplate | spike | frontend/semantics | done | P1 |  | `classAttributeInferenceTemplate.ts` no longer has a compiler blocker; |
+| 1173 | Implement Classattributeinferencetemplatejs | spike | frontend/semantics | done | P1 | 5247 | `classAttributeInferenceTemplateJS.ts` is not a broad type-system |
 | 1176 | Implement Classdeclarationcheckusedbeforedefinitioninitself | spike | frontend/syntax | done | P1 |  | `classDeclarationCheckUsedBeforeDefinitionInItself.ts` no longer has a compiler blocker; fresh coverage and triage bo... |
 | 1177 | Implement Classdeclarationmergedinmodulewithcontinuation | spike | frontend/syntax | done | P1 |  | `classDeclarationMergedInModuleWithContinuation.ts` no longer has a compiler blocker; fresh coverage and triage both ... |
 | 1193 | Implement Classextendingabstractclasswithmembercalledthesameasitsowntypeparam | spike | frontend/syntax | done | P1 |  | classExtendingAbstractClassWithMemberCalledTheSameAsItsOwnTypeParam has 1 reference failures and needs smart-triage e... |
@@ -356,7 +357,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5195 | Support callable interface-typed local calls | feature | ir/lowering | implementation-ready | P1 |  | callable interface-typed locals currently lower to `Undefined` values and calls to them stop with `issue-211`. |
 | 5200 | Validate top-level function overload implementations | feature | frontend/resolver | implementation-ready | P1 |  | top-level function overload implementation groups are currently classified as duplicate concrete functions. |
 | 5246 | Report static declarations inside constructor bodies | feature | frontend/parser | implementation-ready | P1 |  | invalid `static` declarations in constructor bodies report generic unsupported expression instead of a spanned parser... |
-| 5247 | Fix JS noEmit class constructor FuncId invariant | feature | ir/compiler | implementation-ready | P1 |  | `classAttributeInferenceTemplateJS.ts` triage reports `InvariantViolation: ClassDecl constructor FuncId 0 is out of r... |
 | 5248 | Lower class expressions | feature | ir/compiler | implementation-ready | P1 |  | `classBlockScoping.ts` reports `UnsupportedSyntax: issue-313: class expression lowering not yet implemented`. |
 | 5249 | Scope block-local class declarations | feature | frontend/resolver | implementation-ready | P1 |  | `classDeclarationBlockScoping1.ts` reports `DuplicateLocal` for an inner block-local `class C {}` that TypeScript acc... |
 | 5250 | Parse class declarations in nested block statements | feature | frontend/parser | implementation-ready | P1 |  | `classDeclarationBlockScoping2.ts` reports `UnsupportedSyntax: expected Comma, got Some(Ident("C"))` at a nested `{ c... |
@@ -776,7 +776,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1162 | Implement Circularreferenceinimport | spike | frontend/syntax | class: blocked | Implement Circularreferenceinimport |
 | 1163 | Implement Circularreferenceinreturntype Name Resolution | spike | frontend/resolver | 5163 | Implement Circularreferenceinreturntype Name Resolution |
 | 1170 | Implement Class | spike | frontend/syntax | 5246 | Implement Class |
-| 1173 | Implement Classattributeinferencetemplatejs | spike | frontend/semantics | 5247 | Implement Classattributeinferencetemplatejs |
 | 1174 | Implement Classblockscoping | spike | frontend/syntax | 5248 | Implement Classblockscoping |
 | 1175 | Implement Classdeclarationblockscoping | spike | frontend/syntax | 5249, 5250 | Implement Classdeclarationblockscoping |
 | 1178 | Implement Classdeclarationshouldbeoutofscopeincomputednames | spike | frontend/resolver | class: blocked | Implement Classdeclarationshouldbeoutofscopeincomputednames |
@@ -5334,6 +5333,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5243 | Implement non-literal Date constructor inputs | feature | runtime/builtins | see file |
 | 5244 | Define timezone formatting policy for Date.prototype.toString | design | runtime/builtins | see file |
 | 5245 | Implement ECMAScript iterator protocol runtime for spread operator | feature | runtime/semantics | see `issues/done/5245-iterator-protocol-runtime.md` |
+| 5247 | Fix JS noEmit class constructor FuncId invariant | feature | ir/compiler | see file |
 <!-- generated:done:end -->
 
 ## Index generation contract
