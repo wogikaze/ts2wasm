@@ -219,6 +219,12 @@ Additional superseded bucket:
   `const enum Enum1 { A0 = 100 }`; TypeScript parses later duplicate const
   enums, nested namespace const enums, import aliases, and switch tests before
   reporting a later TS2366 missing-return diagnostic.
+- `issues/done/1462-implement-constIndexedAccess.md` reaches the same parser
+  boundary before indexed access behavior. Fresh triage on 2026-05-07 reports
+  `const declarations require an initializer at 31..35` for
+  `const enum numbers { ... }`; TypeScript parses the enum, interface numeric
+  properties, const-enum indexed accesses, and later ordinary enum indexed
+  accesses before reporting TS2454 definite-assignment diagnostics for `test`.
 
 ## Completion evidence
 
