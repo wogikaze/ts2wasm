@@ -162,6 +162,11 @@ Also owns the local-virtual-section subset of
 fresh triage for `moduleResolutionWithExtensions_notSupported*.ts` parses the
 entry imports and then reports issue-232 missing local module `./tsx` or
 `./jsx` instead of resolving the sibling empty virtual `.tsx` / `.jsx` sections.
+Also owns `issues/done/3389-implement-moduleSameValueDuplicateExportedBindings.md`:
+fresh triage for both `moduleSameValueDuplicateExportedBindings1.ts` and
+`moduleSameValueDuplicateExportedBindings2.ts` stops at issue-232 missing local
+module `./b` for `export * from "./b"` in virtual `a.ts` before duplicate
+exported-binding semantics become actionable.
 
 ## Completion evidence
 
