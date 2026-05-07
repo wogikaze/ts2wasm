@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 6 | 5 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4571 | 3447 | 1124 |
+| frontend | 4572 | 3447 | 1125 |
 | harness | 1 | 0 | 1 |
 | ir | 79 | 57 | 22 |
 | issues | 4 | 0 | 4 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5231 | 3744 | 1487 |
+| total | 5232 | 3744 | 1488 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -352,6 +352,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5394 | Fix object accessor FuncId invariant | feature | ir/compiler | implementation-ready | P1 |  | Fix object accessor FuncId invariant |
 | 5395 | Report getter return mismatch with setter annotation | feature | frontend/semantics | implementation-ready | P1 |  | `accessors_spec_section-4.5_error-cases.ts` build-passes even though |
 | 5396 | Report setter body mismatch with getter annotation | feature | frontend/semantics | implementation-ready | P1 |  | `accessors_spec_section-4.5_error-cases.ts` build-passes even though |
+| 5397 | Report missing namespace alias member diagnostics | feature | frontend/semantics | implementation-ready | P1 |  | `aliasBug.ts` now build-passes even though TypeScript reports TS2694 |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -430,7 +431,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 554 | Implement Abstractclassinlocalscope | spike | frontend/resolver | class: blocked | Implement Abstractclassinlocalscope |
 | 555 | Implement Abstractclassinlocalscopeisabstract | spike | frontend/resolver | class: blocked | Implement Abstractclassinlocalscopeisabstract |
 | 556 | Implement Abstractclassunioninstantiation | spike | frontend/resolver | class: blocked | Implement Abstractclassunioninstantiation |
-| 578 | Implement Aliasbug | spike | frontend/syntax | class: blocked | Implement Aliasbug |
 | 579 | Implement Aliasdoesnotduplicatesignatures | spike | frontend/syntax | class: blocked | Implement Aliasdoesnotduplicatesignatures |
 | 580 | Implement Aliaserrors | spike | frontend/syntax | class: blocked | Implement Aliaserrors |
 | 582 | Implement Aliasinstantiationexpressiongenericintersectionnocrash | spike | frontend/syntax | class: blocked | Implement Aliasinstantiationexpressiongenericintersectionnocrash |
@@ -4380,6 +4380,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 575 | Implement Accessorsinambientcontext (audit reopened #575) | spike | frontend/syntax | see `issues/done/575-implement-accessorsInAmbientContext.md` |
 | 576 | Implement Addmorecallsignaturestobasesignature | spike | frontend/syntax | see `issues/done/576-implement-addMoreCallSignaturesToBaseSignature.md` |
 | 577 | Implement Aliasassignments | spike | frontend/syntax | see `issues/done/577-implement-aliasAssignments.md` |
+| 578 | Implement Aliasbug | spike | frontend/syntax | see `issues/done/578-implement-aliasBug.md` |
 | 581 | Implement Aliasinaccessiblemodule (audit reopened #581) | spike | frontend/syntax | see `issues/done/581-implement-aliasInaccessibleModule.md` |
 | 602 | Implement Alwaysstrictmodule (audit reopened #602) | spike | frontend/syntax | see `issues/done/602-implement-alwaysStrictModule.md` |
 | 603 | Implement Alwaysstrictnoimplicitusestrict (audit reopened #603) | spike | frontend/syntax | see `issues/done/603-implement-alwaysStrictNoImplicitUseStrict.md` |

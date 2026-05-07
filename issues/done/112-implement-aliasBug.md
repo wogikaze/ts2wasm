@@ -473,7 +473,7 @@ error: [UnsupportedSyntax] expected Semicolon, got Some(Ident("foo")) at 54..57
 ## 重複整理メモ
 
 この issue はタイトルが重複しているため、内容がより充実している
-`issues/open/578-implement-aliasBug.md` に統合されました。
+`issues/done/578-implement-aliasBug.md` に統合されました。
 そちらを参照してください。
 ## Completion evidence
 
