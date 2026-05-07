@@ -474,7 +474,7 @@ error: [UnsupportedSyntax] issue-055: unsupported class export; module resolutio
 ## 重複整理メモ
 
 この issue はタイトルが重複しているため、内容がより充実している
-`issues/open/577-implement-aliasAssignments.md` に統合されました。
+`issues/done/577-implement-aliasAssignments.md` に統合されました。
 そちらを参照してください。
 ## Completion evidence
 
