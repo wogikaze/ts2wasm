@@ -18,7 +18,7 @@ Issue files are the source of truth for work items. The generated section below 
 | docs | 5 | 1 | 4 |
 | frontend | 4438 | 3711 | 727 |
 | harness | 1 | 0 | 1 |
-| ir | 42 | 3 | 39 |
+| ir | 42 | 2 | 40 |
 | issues | 5 | 0 | 5 |
 | parser | 1 | 0 | 1 |
 | reference | 211 | 163 | 48 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 8 | 0 | 8 |
 | wasi | 4 | 0 | 4 |
-| total | 5079 | 3966 | 1113 |
+| total | 5079 | 3965 | 1114 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -95,7 +95,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | ID | Title | Type | Area | Class | Priority | Depends on | Summary |
 |---:|---|---|---|---|---|---|---|
 | 353 | Implement iterator protocol integration for spread operator | feature | runtime/semantics | unstarted | P2 |  | General iterator protocol is not implemented for spread operator. |
-| 5241 | W2: implement NaN, Infinity, -0 sentinel values in tagged-number encoding | feature | ir/runtime | implementation-ready | P2 | 5240 | The tagged-number encoding lacks sentinel values for the four IEEE 754 |
+| 5242 | W2: declare JS semantic core workstream complete | docs | docs | design-ready | P1 | 5240, 5241 | No formal W2 completion gate — items are done but not verified as a |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -4066,7 +4066,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5136 | Fix arity validation for RegExp/String prototype methods | bug | ir | class: blocked | Fix arity validation for RegExp/String prototype methods |
 | 5212 | Implement remaining BigInt mixed runtime coercion edges | feature | runtime/semantics | class: blocked | Implement remaining BigInt mixed runtime coercion edges |
 | 5214 | Implement computed Symbol.iterator prerequisite for spread | feature | frontend/syntax | class: blocked | Implement computed Symbol.iterator prerequisite for spread |
-| 5242 | W2: declare JS semantic core workstream complete | docs | docs | 5240, 5241 | W2: declare JS semantic core workstream complete |
 <!-- generated:blocked:end -->
 
 ## Done queue
@@ -5188,6 +5187,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5238 | W1: implement WASI filesystem read/write through preopens | feature | wasi | see file |
 | 5239 | W0: migrate remaining multi-line WAT to line_fmt in expr_emit.rs | cleanup | backend | see file |
 | 5240 | W2: docs audit — fix stale language-reference entries and confirm semantic-core coverage | docs | docs | see file |
+| 5241 | W2: implement NaN, Infinity, -0 sentinel values in tagged-number encoding | feature | ir/runtime | see file |
 | 5243 | Implement non-literal Date constructor inputs | feature | runtime/builtins | see file |
 | 5244 | Define timezone formatting policy for Date.prototype.toString | design | runtime/builtins | see file |
 <!-- generated:done:end -->
