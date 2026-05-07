@@ -134,7 +134,7 @@ function f1() {
 
 - `issues/open/5182-parse-comma-separated-for-update-expressions.md` is
   related but explicitly out of scope for general comma expression support.
-- `issues/open/1338-implement-commaOperatorLeftSideUnused.md` is related but
+- `issues/done/1338-implement-commaOperatorLeftSideUnused.md` is related but
   is a blocked generated bucket for TS2695 diagnostics after parser support.
 - No exact implementation-ready issue owned general comma expressions, so this
   bucket was split to issue 5274.

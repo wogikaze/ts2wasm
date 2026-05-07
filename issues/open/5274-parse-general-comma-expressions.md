@@ -66,6 +66,7 @@ In scope:
 
 - [ ] Parse comma expressions in variable initializers.
 - [ ] Parse comma expressions in return expressions.
+- [ ] Parse comma expressions in `case` label expressions, such as `case 0, 1:`.
 - [ ] Preserve left-to-right expression order in the AST/dump or equivalent
   representation.
 - [ ] Add focused parser tests for `((1, 2, 3), 4, 5, (6, 7))` and
@@ -103,6 +104,8 @@ Do not touch:
 - [ ] A focused parser test covers nested comma expressions in a variable
   initializer.
 - [ ] A focused parser test covers comma expressions in a return statement.
+- [ ] `commaOperatorLeftSideUnused.ts` no longer reports `expected Colon, got
+  Some(Comma)` for `case 0, 1:`.
 - [ ] Existing expression precedence tests still pass.
 
 ## Validation
@@ -147,8 +150,16 @@ Related but distinct:
 
 - `issues/open/5182-parse-comma-separated-for-update-expressions.md` handles
   the narrow `for (...; ...; ++x, --y)` update slot.
-- `issues/open/1338-implement-commaOperatorLeftSideUnused.md` is a generated
+- `issues/done/1338-implement-commaOperatorLeftSideUnused.md` is a generated
   blocked bucket for TS2695 diagnostics after parser support exists.
+
+2026-05-07 additional evidence: `commaOperatorLeftSideUnused.ts` stops before
+the later TS2695 diagnostic cases at `case 0, 1:`. Tokens are present for
+`Case Number(0) Comma Number(1) Colon`, but AST construction fails with
+`UnsupportedSyntax: expected Colon, got Some(Comma) at 179..180`. TypeScript
+parses this as a comma expression in the case label and reports TS2695 on the
+left operand. The later parenthesized comma expressions in assignments and
+calls remain unproven until this case-label parser boundary advances.
 
 ## Completion evidence
 
