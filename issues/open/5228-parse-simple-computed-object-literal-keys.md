@@ -81,6 +81,7 @@ Do not touch:
 ## Acceptance criteria
 
 - [ ] `checkJsObjectLiteralIndexSignatures.ts` no longer reports `expected Dot, got Some(RightBracket)` for `{ [n]: 1 }`.
+- [ ] `commaOperatorInConditionalExpression.ts` no longer reports `expected Dot, got Some(RightBracket)` for `{ [m]: i }` inside ternary object-literal branches.
 - [ ] A focused fixture proves object literals accept `[identifier]` computed property keys.
 - [ ] Existing computed-member access parsing still handles `numericIndex[n].toFixed()`.
 
@@ -121,6 +122,15 @@ Follow-up issues:
 ## Notes
 
 Split from generated bucket `issues/done/1136-implement-checkJsObjectLiteralIndexSignatures.md`.
+
+2026-05-07 additional evidence:
+`commaOperatorInConditionalExpression.ts` stops at the same parser boundary for
+`{ [m]: i }` in `return true ? { [m]: i } : { [m]: i + 1 }`. Tokens show the
+computed key as `LeftBracket Ident("m") RightBracket Colon`, then AST
+construction fails with `UnsupportedSyntax: expected Dot, got
+Some(RightBracket) at 97..98`. TypeScript accepts the source with no
+diagnostics and its AST path is `ConditionalExpression -> ObjectLiteralExpression
+-> PropertyAssignment -> ComputedPropertyName`.
 
 ## Completion evidence
 

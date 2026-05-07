@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 5 | 4 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4532 | 3545 | 987 |
+| frontend | 4532 | 3544 | 988 |
 | harness | 1 | 0 | 1 |
 | ir | 65 | 43 | 22 |
 | issues | 4 | 0 | 4 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5177 | 3836 | 1341 |
+| total | 5177 | 3835 | 1342 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -48,7 +48,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 
 ```
 5000 (Meta: TypeScript Compiler Parser Syntax Coverage) [done/design] ch:463 open:388 done:75
-├── 5002 (Meta: TypeScript Compiler Type System Coverage) [done/done] ch:231 open:214 done:17 (also ← 5005)
+├── 5002 (Meta: TypeScript Compiler Type System Coverage) [done/done] ch:230 open:213 done:17 (also ← 5005)
 ├── 5003 (Meta: TypeScript Compiler Declaration Emit Coverage) [done/done] ch:102 open:91 done:11 (also ← 5001)
 5001 (Meta: TypeScript Compiler Semantic Analysis Coverage) [done/done] ch:573 open:319 done:254
 5004 (Meta: Runtime Builtins Coverage (test262) (audit reopened #5004)) [done/done] ch:24 open:3 done:21
@@ -70,7 +70,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 2 | 5001 | Meta: TypeScript Compiler Semantic Analysis Coverage | done | done | frontend/semantics | P1 | - | 573 | 319 | 254 |
 | 3 | 5004 | Meta: Runtime Builtins Coverage (test262) (audit reopened #5004) | done | done | runtime/builtins | P1 | - | 24 | 3 | 21 |
 | 4 | 5005 | Meta: TypeScript Compiler Name Resolution Coverage | done | done | frontend/resolver | P1 | - | 416 | 364 | 52 |
-| 5 | 5002 | Meta: TypeScript Compiler Type System Coverage | done | done | frontend/semantics | P1 | 5000, 5005 | 231 | 214 | 17 |
+| 5 | 5002 | Meta: TypeScript Compiler Type System Coverage | done | done | frontend/semantics | P1 | 5000, 5005 | 230 | 213 | 17 |
 | 6 | 5003 | Meta: TypeScript Compiler Declaration Emit Coverage | done | done | frontend/syntax | P2 | 5000, 5001 | 102 | 91 | 11 |
 | 7 | 5006 | Meta: TypeScript Compiler Scope Analysis Coverage | done | done | frontend/resolver | P2 | 5005 | 29 | 21 | 8 |
 | 8 | 5007 | Meta: TypeScript Compiler Module Resolution Coverage (audit reopened #5007) | done | done | frontend/resolver | P2 | 5005 | 21 | 19 | 2 |
@@ -570,7 +570,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 772 | Implement Augmentedtypesvar | spike | frontend/syntax | class: blocked | Implement Augmentedtypesvar |
 | 773 | Implement Autoasiforstaticsinclassdeclaration | spike | frontend/syntax | class: triage-needed | Implement Autoasiforstaticsinclassdeclaration |
 | 775 | Implement Autotypeassignedusingdestructuringfromnevernocrash | spike | frontend/resolver | class: blocked | Implement Autotypeassignedusingdestructuringfromnevernocrash |
-| 1337 | Implement Commaoperatorinconditionalexpression | spike | frontend/semantics | class: blocked | Implement Commaoperatorinconditionalexpression |
 | 1338 | Implement Commaoperatorleftsideunused | spike | frontend/syntax | class: blocked | Implement Commaoperatorleftsideunused |
 | 1341 | Implement Commentemitonparenthesizedassertioninreturnstatement | spike | frontend/syntax | class: blocked | Implement Commentemitonparenthesizedassertioninreturnstatement |
 | 1342 | Implement Commentinmethodcall | spike | frontend/syntax | class: blocked | Implement Commentinmethodcall |
@@ -5037,6 +5036,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1334 | Implement Collisionthisexpressionandpropertynameasconstuctorparameter | spike | frontend/syntax | see `issues/done/1334-implement-collisionThisExpressionAndPropertyNameAsConstuctorParameter.md` |
 | 1335 | Implement Collisionthisexpressionandvaringlobal | spike | frontend/syntax | see `issues/done/1335-implement-collisionThisExpressionAndVarInGlobal.md` |
 | 1336 | Implement Commaoperator | spike | frontend/syntax | see `issues/done/1336-implement-commaOperator.md` |
+| 1337 | Implement Commaoperatorinconditionalexpression | spike | frontend/semantics | see `issues/done/1337-implement-commaOperatorInConditionalExpression.md` |
 | 1339 | Implement Commentbeforestaticmethod | spike | frontend/syntax | see `issues/done/1339-implement-commentBeforeStaticMethod.md` |
 | 1340 | Implement Commentemitatendoffile | spike | frontend/syntax | see `issues/done/1340-implement-commentEmitAtEndOfFile.md` |
 | 1347 | Implement Commentonclassaccessor | spike | reference/triage | see `issues/done/1347-implement-commentOnClassAccessor.md` |
