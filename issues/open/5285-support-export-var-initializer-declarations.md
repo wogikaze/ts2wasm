@@ -151,6 +151,10 @@ Related but not duplicates:
 - `issues/done/1376-implement-commentsOnRequireStatement.md` reaches the same
   initialized `export var subject = 10;` boundary before its later re-export
   and missing-module diagnostics.
+- Also owns `issues/done/3334-implement-moduleDuplicateIdentifiers.md`: fresh
+  triage for `moduleDuplicateIdentifiers.ts` stops at initialized
+  `export var Foo = 2;` before duplicate exported variable and duplicate class
+  diagnostics become reachable.
 
 ## Completion evidence
 
