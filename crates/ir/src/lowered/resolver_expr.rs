@@ -63,6 +63,13 @@ impl<'a> Resolver<'a> {
                 {
                     return Ok(LoweredExpr::Undefined(Span::generated("undef")));
                 }
+                if name == "super" {
+                    return Err(Diagnostic {
+                        code: DiagCode::UnsupportedSyntax,
+                        message: "issue-5255: super property access is not supported in this milestone".to_owned(),
+                        span: None,
+                    });
+                }
                 match self.resolve_local(name) {
                     Ok(local) if self.env_cell_locals.contains(&local) => Ok(LoweredExpr::EnvCellGet(local, Span::generated("env_cell_get"))),
                     Ok(local) => Ok(LoweredExpr::Local(local, Span::generated("local"))),
@@ -727,6 +734,13 @@ impl<'a> Resolver<'a> {
             ResolvedExpr::PropertyAccess { object, key, span } => {
                 if is_private_field_storage_key(key) {
                     return Err(private_storage_observable_access_diagnostic(Some(*span)));
+                }
+                if matches!(object.as_ref(), ResolvedExpr::Ident(name) if name == "super") {
+                    return Err(Diagnostic {
+                        code: DiagCode::UnsupportedSyntax,
+                        message: format!("issue-5255: super property access `super.{key}` is not supported in this milestone"),
+                        span: Some(*span),
+                    });
                 }
                 if is_array_prototype_push_property(object, key) {
                     return Ok(LoweredExpr::Number(0, Span::generated("num")));

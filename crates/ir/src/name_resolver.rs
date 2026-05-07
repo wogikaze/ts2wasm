@@ -363,6 +363,7 @@ impl NameResolver {
                 interface_heritage,
                 span,
             } => {
+                eprintln!("DBG_CLASSDECL: name={} body_len={} span={:?}", name, body.len(), span);
                 // Class methods are lowered as standalone functions by the lowered program
                 // builder (program.rs). The class statement itself is dropped. See the LIMITATION
                 // comment in program.rs.
@@ -761,6 +762,15 @@ impl NameResolver {
                 })
             }
             Expr::Ident { name, span } => {
+                // 'super' is a special keyword, not a regular identifier.
+                // Don't try to resolve it as a variable name.
+                if name == "super" {
+                    return Err(Diagnostic {
+                        code: DiagCode::UnsupportedSyntax,
+                        message: "issue-5255: super property access is not supported in this milestone".to_owned(),
+                        span: Some(*span),
+                    });
+                }
                 // Check if it's a function name
                 if self.functions.contains_key(name) || self.is_implicit_arguments(name) {
                     return Ok(Expr::Ident {
@@ -1164,6 +1174,15 @@ impl NameResolver {
     fn resolve_member_target(&mut self, expr: &Expr) -> Result<Expr, Diagnostic> {
         match expr {
             Expr::Ident { name, span } => {
+                // 'super' is a special keyword, not a regular identifier.
+                // Don't try to resolve it as a variable name.
+                if name == "super" {
+                    return Err(Diagnostic {
+                        code: DiagCode::UnsupportedSyntax,
+                        message: "issue-5255: super property access is not supported in this milestone".to_owned(),
+                        span: Some(*span),
+                    });
+                }
                 // Validate the identifier exists (function, class, variable, or allowed global)
                 if self.functions.contains_key(name)
                     || self.is_implicit_arguments(name)

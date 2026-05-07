@@ -240,7 +240,8 @@ impl Parser {
         let mut previous_token_can_end_body = false;
 
         while !self.is_at_end() {
-            let at_top_level = paren_depth == 0 && bracket_depth == 0 && brace_depth == 0 && angle_depth == 0;
+            let at_top_level =
+                paren_depth == 0 && bracket_depth == 0 && brace_depth == 0 && angle_depth == 0;
             if at_top_level
                 && consumed_type_token
                 && self.peek().is_some_and(|token| {
@@ -485,14 +486,12 @@ impl Parser {
         let mut params = Vec::new();
         if !self.consume(TokenKind::RightParen) {
             loop {
-                let param = self
-                    .parse_param(false, params.is_empty())
-                    .map_err(|_| {
-                        self.unsupported_typescript_syntax(
-                            declare_span,
-                            "issue-400: unterminated ambient function declaration",
-                        )
-                    })?;
+                let param = self.parse_param(false, params.is_empty()).map_err(|_| {
+                    self.unsupported_typescript_syntax(
+                        declare_span,
+                        "issue-400: unterminated ambient function declaration",
+                    )
+                })?;
                 let is_rest = param.is_rest;
                 if !param.is_this_parameter {
                     params.push((param.name, param.default, is_rest));
@@ -646,7 +645,8 @@ impl Parser {
                 span: Some(start_span),
             });
         };
-        let declared_type_names = self.collect_erased_namespace_type_names(left_brace + 1, right_brace);
+        let declared_type_names =
+            self.collect_erased_namespace_type_names(left_brace + 1, right_brace);
         let mut index = left_brace + 1;
         while index < right_brace {
             if matches!(self.tokens[index].kind, Token::Class) {
@@ -661,11 +661,7 @@ impl Parser {
         Ok(())
     }
 
-    fn collect_erased_namespace_type_names(
-        &self,
-        start: usize,
-        end: usize,
-    ) -> HashSet<String> {
+    fn collect_erased_namespace_type_names(&self, start: usize, end: usize) -> HashSet<String> {
         let mut names = HashSet::new();
         let mut index = start;
         while index < end {
@@ -675,7 +671,9 @@ impl Parser {
                         names.insert(name.to_owned());
                     }
                 }
-                Token::Ident(keyword) if matches!(keyword.as_str(), "interface" | "type" | "enum") => {
+                Token::Ident(keyword)
+                    if matches!(keyword.as_str(), "interface" | "type" | "enum") =>
+                {
                     if let Some((name, _)) = self.ident_at(index + 1) {
                         names.insert(name.to_owned());
                     }
@@ -764,10 +762,28 @@ impl Parser {
                 self.tokens[index].kind,
                 Token::Var | Token::Let | Token::Const
             ) && let Some(name) = self.ident_at(index + 1)
-                && matches!(self.tokens.get(index + 2), Some(SpannedToken { kind: Token::Colon, .. }))
+                && matches!(
+                    self.tokens.get(index + 2),
+                    Some(SpannedToken {
+                        kind: Token::Colon,
+                        ..
+                    })
+                )
                 && let Some((type_name, _)) = self.ident_at(index + 3)
-                && matches!(self.tokens.get(index + 4), Some(SpannedToken { kind: Token::Equal, .. }))
-                && matches!(self.tokens.get(index + 5), Some(SpannedToken { kind: Token::Null, .. }))
+                && matches!(
+                    self.tokens.get(index + 4),
+                    Some(SpannedToken {
+                        kind: Token::Equal,
+                        ..
+                    })
+                )
+                && matches!(
+                    self.tokens.get(index + 5),
+                    Some(SpannedToken {
+                        kind: Token::Null,
+                        ..
+                    })
+                )
             {
                 return Err(Diagnostic {
                     code: DiagCode::TypeScriptTypeCheck,
@@ -871,7 +887,6 @@ impl Parser {
             span: Some(start_span),
         })
     }
-
 }
 
 fn is_global_implements_type_name(name: &str) -> bool {
