@@ -43,9 +43,9 @@ Zero `writer.push_str(&format!(...))` calls in `expr_emit.rs`. All complex multi
 
 In scope:
 
-- [ ] Convert remaining ~209 multi-line `push_str(&format!(...))` blocks to `writer.line_fmt()`
-- [ ] `cargo fmt --all --check` passes
-- [ ] WAT output unchanged
+- [x] Convert remaining ~209 multi-line `push_str(&format!(...))` blocks to `writer.line_fmt()`
+- [x] `cargo fmt --all --check` passes
+- [x] WAT output unchanged
 
 Out of scope:
 
@@ -62,10 +62,10 @@ Expected:
 
 ## Acceptance criteria
 
-- [ ] Zero `push_str(&format!(...))` calls in `expr_emit.rs`
-- [ ] All converted patterns use `writer.line_fmt(indent, format_args!(...))`
-- [ ] `cargo nextest run` passes
-- [ ] WAT snapshot output unchanged
+- [x] Zero `push_str(&format!(...))` calls in `expr_emit.rs`
+- [x] All converted patterns use `writer.line_fmt(indent, format_args!(...))`
+- [x] `cargo nextest run` passes
+- [x] WAT snapshot output unchanged
 
 ## Validation
 

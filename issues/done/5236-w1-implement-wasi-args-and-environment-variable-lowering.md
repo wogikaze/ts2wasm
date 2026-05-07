@@ -41,10 +41,10 @@ Expected:
 
 ## Acceptance criteria
 
-- [ ] process.argv resolves through WASI instead of Node host
-- [ ] process.env resolves through WASI instead of Node host
-- [ ] Standalone fixture covers argv[0] and known env variables
-- [ ] Capability manifest shows WASI arg/env capability
+- [x] process.argv resolves through WASI instead of Node host
+- [x] process.env resolves through WASI instead of Node host
+- [x] Standalone fixture covers argv[0] and known env variables
+- [x] Capability manifest shows WASI arg/env capability
 
 ## Validation
 

@@ -43,10 +43,10 @@ Expected:
 
 ## Acceptance criteria
 
-- [ ] fs.readFileSync through WASI preopen path for existing fixture files
-- [ ] fs.writeFileSync through WASI preopen path
-- [ ] Capability manifest shows wasi.filesystem entries
-- [ ] Standalone fixture reads and writes a file through preopens
+- [x] fs.readFileSync through WASI preopen path for existing fixture files
+- [x] fs.writeFileSync through WASI preopen path
+- [x] Capability manifest shows wasi.filesystem entries
+- [x] Standalone fixture reads and writes a file through preopens
 
 ## Validation
 

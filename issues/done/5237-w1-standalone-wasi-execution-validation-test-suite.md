@@ -44,10 +44,10 @@ Expected:
 
 ## Acceptance criteria
 
-- [ ] 10+ standalone fixtures pass host-deny validation
-- [ ] CI includes standalone validation gate
-- [ ] Each fixture's manifest confirms standalone: true
-- [ ] Regression: adding a Node host import to a standalone fixture is caught
+- [x] 10+ standalone fixtures pass host-deny validation
+- [x] CI includes standalone validation gate
+- [x] Each fixture's manifest confirms standalone: true
+- [x] Regression: adding a Node host import to a standalone fixture is caught
 
 ## Validation
 
