@@ -135,7 +135,7 @@ Follow-up issues:
 - `issues/open/2444-implement-functionDeclarationWithResolutionOfTypeOfSameName.md` - Implement Functiondeclarationwithresolutionoftypeofsamename (same feature label, same group key, title overlap)
 - `issues/open/2448-implement-functionExpressionWithResolutionOfTypeNamedArguments.md` - Implement Functionexpressionwithresolutionoftypenamedarguments (same feature label, same group key, title overlap)
 - `issues/open/2449-implement-functionExpressionWithResolutionOfTypeOfSameName.md` - Implement Functionexpressionwithresolutionoftypeofsamename (same feature label, same group key, title overlap)
-- `issues/open/3371-implement-moduleResolution-module-resolution.md` - Implement Moduleresolution Module Resolution (same feature label, same group key, title overlap)
+- `issues/done/3371-implement-moduleResolution-module-resolution.md` - Implement Moduleresolution Module Resolution (same feature label, same group key, title overlap)
 
 ## Smart triage
 

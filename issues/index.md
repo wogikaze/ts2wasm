@@ -13,10 +13,10 @@ Issue files are the source of truth for work items. The generated section below 
 | backend | 13 | 1 | 12 |
 | backend-wasm | 2 | 1 | 1 |
 | cli | 15 | 0 | 15 |
-| compiler | 8 | 7 | 1 |
+| compiler | 9 | 8 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4587 | 3366 | 1221 |
+| frontend | 4587 | 3365 | 1222 |
 | harness | 1 | 0 | 1 |
 | ir | 81 | 59 | 22 |
 | issues | 4 | 0 | 4 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5256 | 3665 | 1591 |
+| total | 5257 | 3665 | 1592 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -54,7 +54,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 5004 (Meta: Runtime Builtins Coverage (test262) (audit reopened #5004)) [done/done] ch:24 open:3 done:21
 5005 (Meta: TypeScript Compiler Name Resolution Coverage) [done/done] ch:399 open:343 done:56
 ├── 5006 (Meta: TypeScript Compiler Scope Analysis Coverage) [done/done] ch:28 open:20 done:8
-├── 5007 (Meta: TypeScript Compiler Module Resolution Coverage (audit reopened #5007)) [done/done] ch:20 open:18 done:2
+├── 5007 (Meta: TypeScript Compiler Module Resolution Coverage (audit reopened #5007)) [done/done] ch:20 open:17 done:3
 ```
 
 ### Multi-parent notes
@@ -73,7 +73,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5 | 5002 | Meta: TypeScript Compiler Type System Coverage | done | done | frontend/semantics | P1 | 5000, 5005 | 224 | 205 | 19 |
 | 6 | 5003 | Meta: TypeScript Compiler Declaration Emit Coverage | done | done | frontend/syntax | P2 | 5000, 5001 | 100 | 89 | 11 |
 | 7 | 5006 | Meta: TypeScript Compiler Scope Analysis Coverage | done | done | frontend/resolver | P2 | 5005 | 28 | 20 | 8 |
-| 8 | 5007 | Meta: TypeScript Compiler Module Resolution Coverage (audit reopened #5007) | done | done | frontend/resolver | P2 | 5005 | 20 | 18 | 2 |
+| 8 | 5007 | Meta: TypeScript Compiler Module Resolution Coverage (audit reopened #5007) | done | done | frontend/resolver | P2 | 5005 | 20 | 17 | 3 |
 
 ### Topological order
 
@@ -374,6 +374,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5419 | Parse parenthesized self-closing JSX expressions | feature | frontend/jsx | implementation-ready | P1 |  | self-closing JSX expressions in expression position are not parsed or |
 | 5420 | Parse import attributes with clauses | feature | frontend/module-syntax | implementation-ready | P1 |  | import attribute `with { type: "json" }` clauses are not accepted or |
 | 5421 | Resolve classic moduleResolution bare imports to virtual sections | feature | compiler/module-graph | implementation-ready | P1 |  | module graph validation reports `issue-232: unsupported non-local |
+| 5422 | Skip markdown @Filename sections in reference harness | feature | compiler/multi-section | implementation-ready | P1 |  | the multi-section compiler path tokenizes and parses the README body |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -2329,7 +2330,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 3302 | Implement Modulealiasasfunctionargument | spike | frontend/syntax | class: blocked | Implement Modulealiasasfunctionargument |
 | 3303 | Implement Modulealiasinterface | spike | frontend/syntax | class: blocked | Implement Modulealiasinterface |
 | 3304 | Implement Moduleandinterfacesharingname | spike | frontend/syntax | class: blocked | Implement Moduleandinterfacesharingname |
-| 3371 | Implement Moduleresolution Module Resolution | spike | frontend/syntax | class: blocked | Implement Moduleresolution Module Resolution |
 | 3372 | Implement Moduleresolution Name Resolution (audit reopened #3372) | spike | frontend/resolver | class: blocked | Implement Moduleresolution Name Resolution (audit reopened #3372) |
 | 3373 | Implement Moduleresolutionastypereferencedirective | spike | frontend/syntax | class: blocked | Implement Moduleresolutionastypereferencedirective |
 | 3374 | Implement Moduleresolutionastypereferencedirectiveambient (audit reopened #3374) | spike | frontend/syntax | class: blocked | Implement Moduleresolutionastypereferencedirectiveambient (audit reopened #3374) |
@@ -5217,6 +5217,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 3368 | Implement Modulereopenedtypeotherblock | maintenance | frontend/syntax | see `issues/done/3368-implement-moduleReopenedTypeOtherBlock.md` |
 | 3369 | Implement Modulereopenedtypesameblock | maintenance | frontend/syntax | see `issues/done/3369-implement-moduleReopenedTypeSameBlock.md` |
 | 3370 | Implement Moduleresolution Import Export | maintenance | frontend/syntax | see `issues/done/3370-implement-moduleResolution-import-export.md` |
+| 3371 | Implement Moduleresolution Module Resolution | maintenance | frontend/syntax | see `issues/done/3371-implement-moduleResolution-module-resolution.md` |
 | 3690 | Implement Optionaltupleelementsandundefined | spike | reference/triage | see `issues/done/3690-implement-optionalTupleElementsAndUndefined.md` |
 | 3996 | Implement Compiler (dup) | spike | frontend/syntax | see `issues/done/3996-implement-reference-typescript-tests-cases-compiler.md` |
 | 4210 | Implement Splicetuples | spike | frontend/resolver | see `issues/done/4210-implement-spliceTuples.md` |

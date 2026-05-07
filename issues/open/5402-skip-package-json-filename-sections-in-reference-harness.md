@@ -173,6 +173,14 @@ Also owns `issues/done/3358-implement-modulePreserve.md` for
 JSON property colon before package `exports`, ESM/CJS conditional resolution,
 or module-preserve import/require diagnostics become reachable.
 
+Also owns the package-json subset of
+`issues/done/3371-implement-moduleResolution-module-resolution.md`: fresh
+coverage for `moduleResolution_packageJson_*` reports six
+UnsupportedSyntax/module-resolution paths, and representative triage for
+`moduleResolution_packageJson_scopedPackage.ts` stops at the virtual
+`package.json` property colon before scoped package resolution becomes
+actionable.
+
 ## Completion evidence
 
 Fill only when moving to `done/`.
