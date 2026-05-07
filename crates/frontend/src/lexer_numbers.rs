@@ -61,7 +61,19 @@ impl<'a> Lexer<'a> {
 
         self.reject_invalid_decimal_bigint_suffix(start)?;
 
-        let value = self.number_value(&digits, radix, start)?;
+        let value = match self.number_value(&digits, radix, start) {
+            Ok(v) => v,
+            Err(_) => {
+                // Number too large for i32 — emit as BigInt literal
+                return Ok(SpannedToken {
+                    kind: Token::BigIntLiteral(self.source[start..self.cursor].to_owned()),
+                    span: Span {
+                        start,
+                        end: self.cursor,
+                    },
+                });
+            }
+        };
         Ok(SpannedToken {
             kind: Token::Number(value),
             span: Span {
