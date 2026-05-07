@@ -33,11 +33,11 @@ arrays. Sparse arrays with holes (e.g., `[1, , 3]`) are not handled correctly.
 
 In scope:
 
-- [ ] Detect sparse arrays in map operations
-- [ ] Skip holes during map iteration (no callback invocation for holes)
-- [ ] Preserve holes in result array at correct indices
-- [ ] Add sparse array map fixtures
-- [ ] Validate with Test262 sparse array map tests
+- [x] Detect sparse arrays in map operations
+- [x] Skip holes during map iteration (no callback invocation for holes)
+- [x] Preserve holes in result array at correct indices
+- [x] Add sparse array map fixtures
+- [x] Validate with Test262 sparse array map tests
 
 Out of scope:
 
@@ -62,11 +62,11 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] A sparse array map fixture (e.g., `[1, , 3].map(x => x * 2)`) matches Node output under `iwasm`.
-- [ ] Holes are skipped during iteration (callback not called for hole indices).
-- [ ] Holes are preserved in result array at correct indices.
-- [ ] Existing dense-array map fixtures still pass.
-- [ ] Selected Test262 sparse array map tests pass.
+- [x] A sparse array map fixture (e.g., `[1, , 3].map(x => x * 2)`) matches Node output under `iwasm`.
+- [x] Holes are skipped during iteration (callback not called for hole indices).
+- [x] Holes are preserved in result array at correct indices.
+- [x] Existing dense-array map fixtures still pass.
+- [x] Selected Test262 sparse array map tests pass.
 
 ## Validation
 
@@ -93,8 +93,8 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
-- [ ] updated if sparse array representation changes
+- [x] not affected
+- [x] updated if sparse array representation changes
 
 Current state:
 

@@ -40,9 +40,9 @@ Issue 050 depends only on open, concrete Date child issues, or it is closed with
 
 In scope:
 
-- [ ] Inventory remaining Date fixtures under `fixtures/builtins-and-io/`.
-- [ ] Map each remaining Date constructor/method gap to an existing done issue or a new child issue.
-- [ ] Update issue 050 dependencies and acceptance criteria to reference only open remaining child work.
+- [x] Inventory remaining Date fixtures under `fixtures/builtins-and-io/`.
+- [x] Map each remaining Date constructor/method gap to an existing done issue or a new child issue.
+- [x] Update issue 050 dependencies and acceptance criteria to reference only open remaining child work.
 
 Out of scope:
 
@@ -66,10 +66,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] Remaining Date fixture inventory names each uncovered fixture and its assigned issue or done evidence.
-- [ ] Any new Date child issues include exact fixture, stdout/stderr, diagnostic, or pass evidence expectations.
-- [ ] Issue 050 no longer lists closed child issues as open blockers.
-- [ ] Issue index and issue health checks pass after the split.
+- [x] Remaining Date fixture inventory names each uncovered fixture and its assigned issue or done evidence.
+- [x] Any new Date child issues include exact fixture, stdout/stderr, diagnostic, or pass evidence expectations.
+- [x] Issue 050 no longer lists closed child issues as open blockers.
+- [x] Issue index and issue health checks pass after the split.
 
 ## Validation
 
@@ -95,12 +95,12 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] create only if the fixture inventory finds uncovered Date runtime work
+- [x] create only if the fixture inventory finds uncovered Date runtime work

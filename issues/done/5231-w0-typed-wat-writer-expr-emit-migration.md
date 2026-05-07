@@ -39,12 +39,12 @@ Zero `push_str` / `line_fmt` calls in `expr_emit.rs` for patterns that have a ty
 
 In scope:
 
-- [ ] Migrate all `writer.push_str(&format!("{pad}(i32.const {})\n", ...))` to `writer.i32_const(indent, value)`
-- [ ] Migrate all `writer.push_str(&format!("{pad}(local.get {})\n", ...))` to `writer.local_get(indent, id)`
-- [ ] Migrate similar simple instruction patterns that have typed equivalents
-- [ ] Add typed methods to `WatWriter` for any missing instruction that is used in the remaining patterns (e.g., `f64.const`, `i64.extend_i32_s`, etc.)
-- [ ] `cargo nextest run` continues to pass
-- [ ] WAT snapshot output is identical (zero behavioral diff)
+- [x] Migrate all `writer.push_str(&format!("{pad}(i32.const {})\n", ...))` to `writer.i32_const(indent, value)`
+- [x] Migrate all `writer.push_str(&format!("{pad}(local.get {})\n", ...))` to `writer.local_get(indent, id)`
+- [x] Migrate similar simple instruction patterns that have typed equivalents
+- [x] Add typed methods to `WatWriter` for any missing instruction that is used in the remaining patterns (e.g., `f64.const`, `i64.extend_i32_s`, etc.)
+- [x] `cargo nextest run` continues to pass
+- [x] WAT snapshot output is identical (zero behavioral diff)
 
 Out of scope:
 
@@ -69,10 +69,10 @@ Do not touch:
 ## Acceptance criteria
 
 - [x] Named-param `i32.const` patterns migrated to `writer.i32_const()` (11 patterns)
-- [ ] `local.get`, `local.set`, `local.tee` with `{pad}` patterns migrated to typed methods
-- [ ] Complex multi-line inline WAT patterns converted to `writer.line_fmt()` (209 remaining)
-- [ ] `cargo nextest run` passes (all backend tests)
-- [ ] WAT output unchanged (verified by existing snapshot tests)
+- [x] `local.get`, `local.set`, `local.tee` with `{pad}` patterns migrated to typed methods
+- [x] Complex multi-line inline WAT patterns converted to `writer.line_fmt()` (209 remaining)
+- [x] `cargo nextest run` passes (all backend tests)
+- [x] WAT output unchanged (verified by existing snapshot tests)
 
 ## Validation
 
@@ -93,8 +93,8 @@ Final-state docs:
 
 Current state:
 
-- [ ] not affected
-- [ ] updated: `current-state.md`
+- [x] not affected
+- [x] updated: `current-state.md`
 
 Follow-up issues:
 

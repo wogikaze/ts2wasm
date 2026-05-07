@@ -49,10 +49,10 @@ spread sparse array) observe those positions as present, matching Node behavior.
 
 In scope:
 
-- [ ] Sparse array representation in array literal spread
-- [ ] Hole materialization to present `undefined` when spreading sparse arrays
-- [ ] Call argument spread with sparse arrays (holes map to undefined in arguments)
-- [ ] Node/iwasm differential fixtures for sparse array spread
+- [x] Sparse array representation in array literal spread
+- [x] Hole materialization to present `undefined` when spreading sparse arrays
+- [x] Call argument spread with sparse arrays (holes map to undefined in arguments)
+- [x] Node/iwasm differential fixtures for sparse array spread
 
 Out of scope:
 
@@ -76,11 +76,11 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] Node/iwasm differential fixture proves sparse array spread materializes holes as present `undefined`
-- [ ] Node/iwasm differential fixture proves `0 in [...sparse]` / `1 in [...sparse]` / `2 in [...sparse]` match Node
-- [ ] Node/iwasm differential fixture proves call spread with sparse array maps holes to undefined
-- [ ] Existing dense array spread slices remain passing
-- [ ] `cargo fmt --all --check` and `cargo nextest run` pass
+- [x] Node/iwasm differential fixture proves sparse array spread materializes holes as present `undefined`
+- [x] Node/iwasm differential fixture proves `0 in [...sparse]` / `1 in [...sparse]` / `2 in [...sparse]` match Node
+- [x] Node/iwasm differential fixture proves call spread with sparse array maps holes to undefined
+- [x] Existing dense array spread slices remain passing
+- [x] `cargo fmt --all --check` and `cargo nextest run` pass
 
 ## Validation
 
@@ -103,15 +103,15 @@ cargo test -p ts2wasm-cli spread
 
 Final-state docs:
 
-- [ ] updated: `docs/language-reference/javascript-features.md` for sparse array spread
+- [x] updated: `docs/language-reference/javascript-features.md` for sparse array spread
 
 Current state:
 
-- [ ] updated: `current-state.md` if sparse array capability changes
+- [x] updated: `current-state.md` if sparse array capability changes
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 

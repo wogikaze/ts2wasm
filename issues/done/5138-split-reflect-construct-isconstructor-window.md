@@ -61,9 +61,9 @@ The reference window is represented by one or more executable child issues that 
 
 In scope:
 
-- [ ] Decide whether the next slice should support `Reflect` as a global binding, implement minimal `Reflect.construct`, or emit a precise unsupported builtin diagnostic.
-- [ ] Split implementation work into child issues with exact reference paths and expected diagnostic/stdout behavior.
-- [ ] Update the stale `Reflect` feature mapping if issue 5025 is not the correct owner for this reference window.
+- [x] Decide whether the next slice should support `Reflect` as a global binding, implement minimal `Reflect.construct`, or emit a precise unsupported builtin diagnostic.
+- [x] Split implementation work into child issues with exact reference paths and expected diagnostic/stdout behavior.
+- [x] Update the stale `Reflect` feature mapping if issue 5025 is not the correct owner for this reference window.
 
 Out of scope:
 
@@ -88,10 +88,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] The selected child issue names the exact `anchor/not-a-constructor.js` reproduction command and expected `Reflect` diagnostic or pass behavior.
-- [ ] The selected child issue covers at least the Annex B String HTML-method `not-a-constructor` reference window listed in this issue.
-- [ ] The selected child issue records whether `crates/compiler/src/test262_preprocessor.rs` should continue mapping `Reflect` / `Reflect.construct` to issue 5025.
-- [ ] Issue 068 remains closed as a superseded generated bucket.
+- [x] The selected child issue names the exact `anchor/not-a-constructor.js` reproduction command and expected `Reflect` diagnostic or pass behavior.
+- [x] The selected child issue covers at least the Annex B String HTML-method `not-a-constructor` reference window listed in this issue.
+- [x] The selected child issue records whether `crates/compiler/src/test262_preprocessor.rs` should continue mapping `Reflect` / `Reflect.construct` to issue 5025.
+- [x] Issue 068 remains closed as a superseded generated bucket.
 
 ## Validation
 
@@ -118,12 +118,12 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] create implementation child issue(s) after the Reflect support decision
+- [x] create implementation child issue(s) after the Reflect support decision
