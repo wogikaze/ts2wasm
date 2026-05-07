@@ -1974,7 +1974,7 @@ impl<'a> Resolver<'a> {
                         None if array_like_methods.contains(&method.as_str()) => "Array".to_owned(),
                         None => return Err(Diagnostic {
                             code: DiagCode::UnsupportedSyntax,
-                            message: format!("issue-211: unknown receiver class for method `{}`", method),
+                            message: format!("issue-211: unknown receiver class for method `{}` (receiver `{}` is an untyped or ambient variable; issue-5261: the method may be a static member or not exist on the instance type)", method, receiver_name),
                             span: Some(*span),
                         }),
                     };
