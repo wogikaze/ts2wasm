@@ -3,12 +3,13 @@ id: 133
 title: "Implement Allowjscrossmonorepopackage (dup)"
 type: spike
 area: frontend/syntax
-class: blocked
+class: done
 priority: P2
-depends_on: [5007]
+depends_on: [5402]
 blocks: []
 created: 2026-04-29
-updated: 2026-05-06
+updated: 2026-05-08
+completed: 2026-05-08
 ---
 
 > **Reopened by audit** (2026-05-06)
@@ -26,9 +27,9 @@ Triage allowJsCrossMonorepoPackage across 1 failing reference test cases and spl
 
 ## Problem
 
-Reference test results show 1 cases fail in directory `allowJsCrossMonorepoPackage` with diagnostics: module-resolution. The compiler cannot handle these syntax/semantics, preventing compilation of code in this category.
+Reference test results show 1 case failing in directory `allowJsCrossMonorepoPackage` with diagnostics: module-resolution. Fresh triage shows the current failure is the virtual `package.json` section parsing boundary, split to issue 5402.
 
-Problem: allowJsCrossMonorepoPackage has 1 reference failures and needs smart-triage evidence before implementation starts.
+Problem: `allowJsCrossMonorepoPackage` had 1 generated bucket failure and needed smart-triage evidence. The current package metadata section blocker is now tracked by issue 5402.
 
 ## Current failure
 
@@ -54,7 +55,7 @@ In scope:
 
 - [x] Inspect the smart triage report below
 - [x] Confirm whether existing open/done issues already cover this bucket
-- [x] Split one feature family, one observable behavior, or one fixed reference window into child issues
+- [x] Split package.json virtual section handling to issue 5402
 - [x] Preserve exact reproduction commands and representative AST/diagnostic evidence in each child issue
 
 Out of scope:
@@ -78,7 +79,7 @@ Do not touch:
 ## Acceptance criteria
 
 - [x] Duplicate candidates below are confirmed as no-match or this issue is superseded
-- [x] At least one child issue contains an exact `mise run reference-triage -- ...` command
+- [x] Child issue 5402 contains an exact `reference-triage` command
 - [x] Child issue includes failing path, diagnostic code, source context, visible symbols, and parser/TypeScript AST evidence
 - [x] Child issue acceptance names the exact fixture/reference path and diagnostic/stdout change
 
@@ -100,7 +101,8 @@ mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/allow
 
 Not run:
 
-- none
+- `cargo fmt --all --check`; issue cleanup only, no Rust code changed
+- `cargo nextest run`; issue cleanup only, no implementation changed
 
 ## Docs / current-state / issue sync
 
@@ -110,11 +112,11 @@ Final-state docs:
 
 Current state:
 
-- [x] updated: `current-state.md` (repo root)
+- [x] not affected
 
 Follow-up issues:
 
-- [x] none
+- [x] created: `issues/open/5402-skip-package-json-filename-sections-in-reference-harness.md`
 
 ## Notes
 
@@ -189,7 +191,7 @@ Duplicate candidates:
 [
   {
     "state": "open",
-    "path": "issues/open/133-implement-allowJsCrossMonorepoPackage.md",
+    "path": "issues/done/133-implement-allowJsCrossMonorepoPackage.md",
     "title": "Implement Allowjscrossmonorepopackage",
     "reason": "same reference path, title overlap"
   }
@@ -589,26 +591,31 @@ error: [UnsupportedSyntax] issue-055: unsupported static export; module resoluti
 
 この issue はタイトルが重複しているため、内容がより充実している
 `issues/done/598-implement-allowJsCrossMonorepoPackage.md` に統合されました。
-そちらを参照してください。
+その fresh triage 結果から `issues/open/5402-skip-package-json-filename-sections-in-reference-harness.md`
+を作成しました。
 ## Completion evidence
 
 Fill only when moving to `done/`.
 
 Commits:
 
-- `...`
+- pending
 
 Validation result:
 
 ```text
-command:
-result:
-date:
+command: env TS2WASM_BINARY=/tmp/ts2wasm-issue-blockers-target/debug/ts2wasm python scripts/manager.py reference-coverage tsc --path-filter reference/typescript/tests/cases/compiler/allowJsCrossMonorepoPackage.ts --detail --no-dashboard-data
+result: pass; executed=1, build_pass=0, unsupported=1, unsupported_diagcodes=UnsupportedSyntax:1, unsupported_features=module-resolution:1
+date: 2026-05-08
+
+command: env TS2WASM_BINARY=/tmp/ts2wasm-issue-blockers-target/debug/ts2wasm python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/allowJsCrossMonorepoPackage.ts
+result: pass; tokens succeed through the preceding declaration, current blocker is package.json section parsing, split to issue 5402
+date: 2026-05-08
 ```
 
 Remaining risks:
 
-- none
+- Implementation remains open in `issues/open/5402-skip-package-json-filename-sections-in-reference-harness.md`.
 
 
 ---
@@ -645,3 +652,11 @@ reference this issue.
    - Issue URL or child issue path documenting the triage outcome
    - Or: the exact failing reference path has a matching open/done issue
    - Or: the failing test case no longer reproduces the original diagnostic
+
+## Audit resolution
+
+Resolved on 2026-05-08 as a generated triage bucket, not an implementation
+issue. Fresh triage and coverage evidence are recorded above, and the current
+blocker was split to
+`issues/open/5402-skip-package-json-filename-sections-in-reference-harness.md`.
+No Rust implementation changed in this cleanup slice.

@@ -127,7 +127,7 @@ Follow-up issues:
 ## Duplicate detection
 
 - `issues/done/1037-implement-baseIndexSignatureResolution.md` - Implement Baseindexsignatureresolution (same feature label, same group key, title overlap; stale build-pass bucket)
-- `issues/open/133-implement-allowJsCrossMonorepoPackage.md` - Implement Allowjscrossmonorepopackage (same feature label, same group key, title overlap)
+- `issues/done/133-implement-allowJsCrossMonorepoPackage.md` - Implement Allowjscrossmonorepopackage (same feature label, same group key, title overlap)
 - `issues/done/1430-implement-conditionallyDuplicateOverloadsCausedByOverloadResolution.md` - Implement Conditionallyduplicateoverloadscausedbyoverloadresolution (same feature label, same group key, title overlap)
 - `issues/done/169-implement-ambiguousOverloadResolution.md` - Implement Ambiguousoverloadresolution (same feature label, same group key, title overlap)
 - `issues/open/2058-implement-duplicatePackage-module-resolution.md` - Implement Duplicatepackage Module Resolution (same feature label, same group key, title overlap)

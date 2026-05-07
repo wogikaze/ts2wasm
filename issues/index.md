@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 7 | 6 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4576 | 3433 | 1143 |
+| frontend | 4576 | 3432 | 1144 |
 | harness | 1 | 0 | 1 |
 | ir | 79 | 57 | 22 |
 | issues | 4 | 0 | 4 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5237 | 3731 | 1506 |
+| total | 5237 | 3730 | 1507 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -54,7 +54,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 5004 (Meta: Runtime Builtins Coverage (test262) (audit reopened #5004)) [done/done] ch:24 open:3 done:21
 5005 (Meta: TypeScript Compiler Name Resolution Coverage) [done/done] ch:399 open:343 done:56
 ├── 5006 (Meta: TypeScript Compiler Scope Analysis Coverage) [done/done] ch:28 open:20 done:8
-├── 5007 (Meta: TypeScript Compiler Module Resolution Coverage (audit reopened #5007)) [done/done] ch:21 open:19 done:2
+├── 5007 (Meta: TypeScript Compiler Module Resolution Coverage (audit reopened #5007)) [done/done] ch:20 open:18 done:2
 ```
 
 ### Multi-parent notes
@@ -73,7 +73,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5 | 5002 | Meta: TypeScript Compiler Type System Coverage | done | done | frontend/semantics | P1 | 5000, 5005 | 224 | 205 | 19 |
 | 6 | 5003 | Meta: TypeScript Compiler Declaration Emit Coverage | done | done | frontend/syntax | P2 | 5000, 5001 | 101 | 90 | 11 |
 | 7 | 5006 | Meta: TypeScript Compiler Scope Analysis Coverage | done | done | frontend/resolver | P2 | 5005 | 28 | 20 | 8 |
-| 8 | 5007 | Meta: TypeScript Compiler Module Resolution Coverage (audit reopened #5007) | done | done | frontend/resolver | P2 | 5005 | 21 | 19 | 2 |
+| 8 | 5007 | Meta: TypeScript Compiler Module Resolution Coverage (audit reopened #5007) | done | done | frontend/resolver | P2 | 5005 | 20 | 18 | 2 |
 
 ### Topological order
 
@@ -369,7 +369,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 052d | Implement broader JSON.stringify replacer semantics (audit reopened #052d) | feature | runtime/builtins | class: blocked | Implement broader JSON.stringify replacer semantics (audit reopened #052d) |
 | 059 | Implement parser syntax extensions for TypeScript and advanced JS (audit reopened #059) | feature | frontend | class: blocked | Implement parser syntax extensions for TypeScript and advanced JS (audit reopened #059) |
 | 064 | Implement name resolution (triaged - superseded by test262 metadata issues) | spike | frontend/resolver | class: blocked | Implement name resolution (triaged - superseded by test262 metadata issues) |
-| 133 | Implement Allowjscrossmonorepopackage (dup) | spike | frontend/syntax | class: blocked | Implement Allowjscrossmonorepopackage (dup) |
 | 142 | Implement Ambientclassmergesoverloadswithinterface | spike | frontend/syntax | class: blocked | Implement Ambientclassmergesoverloadswithinterface |
 | 143 | Implement Ambientclassoverloadforfunction | spike | frontend/syntax | class: blocked | Implement Ambientclassoverloadforfunction |
 | 145 | Implement Ambientenum | spike | frontend/syntax | class: blocked | Implement Ambientenum |
@@ -3995,6 +3994,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 130 | Implement Aliasesinsystemmodule (dup) | spike | frontend/syntax | see `issues/done/130-implement-aliasesInSystemModule.md` |
 | 131 | Implement Allowimportclausestomergewithtypes (dup) | spike | frontend/syntax | see `issues/done/131-implement-allowImportClausesToMergeWithTypes.md` |
 | 132 | Implement Allowjsclassthistypecrash (dup) | spike | runtime/builtins | see `issues/done/132-implement-allowJsClassThisTypeCrash.md` |
+| 133 | Implement Allowjscrossmonorepopackage (dup) | spike | frontend/syntax | see `issues/done/133-implement-allowJsCrossMonorepoPackage.md` |
 | 134 | Implement Allowjscheckjstypeparameternocrash (dup) | spike | frontend/syntax | see `issues/done/134-implement-allowJscheckJsTypeParameterNoCrash.md` |
 | 135 | Implement Allowsyntheticdefaultimports (dup) | spike | frontend/syntax | see `issues/done/135-implement-allowSyntheticDefaultImports.md` |
 | 136 | Implement Allowsyntheticdefaultimportscanpaintcrossmoduledeclaration (dup) | spike | frontend/syntax | see `issues/done/136-implement-allowSyntheticDefaultImportsCanPaintCrossModuleDeclaration.md` |

@@ -118,7 +118,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/open/133-implement-allowJsCrossMonorepoPackage.md` - Implement Allowjscrossmonorepopackage (same reference path, same group key, title overlap)
+- `issues/done/133-implement-allowJsCrossMonorepoPackage.md` - Implement Allowjscrossmonorepopackage (same reference path, same group key, title overlap)
 - `issues/done/512-implement-allowJsCrossMonorepoPackage.md` - Implement Allowjscrossmonorepopackage (same reference path, same feature label, same group key, title overlap)
 
 ## Smart triage
@@ -195,7 +195,7 @@ Duplicate candidates:
 [
   {
     "state": "open",
-    "path": "issues/open/133-implement-allowJsCrossMonorepoPackage.md",
+    "path": "issues/done/133-implement-allowJsCrossMonorepoPackage.md",
     "title": "Implement Allowjscrossmonorepopackage",
     "reason": "same reference path, title overlap"
   },
