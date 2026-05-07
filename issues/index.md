@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 5 | 4 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4529 | 3557 | 972 |
+| frontend | 4529 | 3556 | 973 |
 | harness | 1 | 0 | 1 |
 | ir | 65 | 43 | 22 |
 | issues | 4 | 0 | 4 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5174 | 3848 | 1326 |
+| total | 5174 | 3847 | 1327 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -567,7 +567,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 772 | Implement Augmentedtypesvar | spike | frontend/syntax | class: blocked | Implement Augmentedtypesvar |
 | 773 | Implement Autoasiforstaticsinclassdeclaration | spike | frontend/syntax | class: triage-needed | Implement Autoasiforstaticsinclassdeclaration |
 | 775 | Implement Autotypeassignedusingdestructuringfromnevernocrash | spike | frontend/resolver | class: blocked | Implement Autotypeassignedusingdestructuringfromnevernocrash |
-| 1318 | Implement Collisionthisexpressionandaliasinglobal | spike | frontend/syntax | class: blocked | Implement Collisionthisexpressionandaliasinglobal |
 | 1319 | Implement Collisionthisexpressionandambientclassinglobal | spike | frontend/resolver | class: blocked | Implement Collisionthisexpressionandambientclassinglobal |
 | 1320 | Implement Collisionthisexpressionandambientvaringlobal | spike | frontend/resolver | class: blocked | Implement Collisionthisexpressionandambientvaringlobal |
 | 1321 | Implement Collisionthisexpressionandclassinglobal | spike | frontend/syntax | class: blocked | Implement Collisionthisexpressionandclassinglobal |
@@ -5030,6 +5029,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1315 | Implement Collisionsuperandnameresolution | spike | frontend/resolver | see `issues/done/1315-implement-collisionSuperAndNameResolution.md` |
 | 1316 | Implement Collisionsuperandparameter | spike | frontend/syntax | see `issues/done/1316-implement-collisionSuperAndParameter.md` |
 | 1317 | Implement Collisionsuperandpropertynameasconstuctorparameter | spike | frontend/syntax | see `issues/done/1317-implement-collisionSuperAndPropertyNameAsConstuctorParameter.md` |
+| 1318 | Implement Collisionthisexpressionandaliasinglobal | spike | frontend/syntax | see `issues/done/1318-implement-collisionThisExpressionAndAliasInGlobal.md` |
 | 1325 | Implement Collisionthisexpressionandlocalvarinconstructor | spike | frontend/syntax | see `issues/done/1325-implement-collisionThisExpressionAndLocalVarInConstructor.md` |
 | 1327 | Implement Collisionthisexpressionandlocalvarinlambda | spike | frontend/syntax | see `issues/done/1327-implement-collisionThisExpressionAndLocalVarInLambda.md` |
 | 1328 | Implement Collisionthisexpressionandlocalvarinmethod | spike | frontend/syntax | see `issues/done/1328-implement-collisionThisExpressionAndLocalVarInMethod.md` |
