@@ -213,6 +213,12 @@ Additional superseded bucket:
   `const enum Foo { ... }`; TypeScript parses the enum, reports no diagnostics,
   and sees the same later `Foo.X.toString()` and `Foo["X"].toString()`
   statements before any comment-preservation behavior is reached.
+- `issues/done/1460-implement-constEnums.md` reaches the same parser boundary
+  before broad const-enum semantics. Fresh triage on 2026-05-07 reports
+  `const declarations require an initializer at 26..30` for
+  `const enum Enum1 { A0 = 100 }`; TypeScript parses later duplicate const
+  enums, nested namespace const enums, import aliases, and switch tests before
+  reporting a later TS2366 missing-return diagnostic.
 
 ## Completion evidence
 
