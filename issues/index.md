@@ -16,9 +16,9 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 5 | 4 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4546 | 3505 | 1041 |
+| frontend | 4546 | 3504 | 1042 |
 | harness | 1 | 0 | 1 |
-| ir | 65 | 43 | 22 |
+| ir | 66 | 44 | 22 |
 | issues | 4 | 0 | 4 |
 | parser | 1 | 0 | 1 |
 | reference | 212 | 155 | 57 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5191 | 3796 | 1395 |
+| total | 5192 | 3796 | 1396 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -311,6 +311,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5354 | Report invalid const class members | feature | frontend/semantics | implementation-ready | P1 |  | invalid `const` class members in class expressions are silently |
 | 5355 | Report invalid constructor parameter modifiers | bug | frontend/parser | implementation-ready | P1 |  | current failure is `expected Comma, got Some(Static)` for |
 | 5356 | Report uninitialized generic class fields | bug | frontend/semantics | implementation-ready | P1 |  | current failure is a false build pass for `class D<T, U> { x: T; y: U }`, where TypeScript reports uninitialized prop... |
+| 5357 | Avoid eval diagnostic for qualified Function constructors | bug | ir/resolver | implementation-ready | P1 |  | current failure is a false eval diagnostic for qualified `new M.Function(...)` because resolver `Expr::New` collapses... |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -570,7 +571,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 759 | Implement Asynciife | spike | frontend/syntax | class: triage-needed | Implement Asynciife |
 | 760 | Implement Asyncimportnestedyield | spike | reference/triage | class: triage-needed | Implement Asyncimportnestedyield |
 | 761 | Implement Asynciteratorextraparameters | spike | runtime/builtins | class: triage-needed | Implement Asynciteratorextraparameters |
-| 1473 | Implement Constructoroverloads Import Export | spike | frontend/syntax | class: blocked | Implement Constructoroverloads Import Export |
 | 1474 | Implement Constructoroverloads Name Resolution | spike | frontend/resolver | class: blocked | Implement Constructoroverloads Name Resolution |
 | 1475 | Implement Constructoroverloads Parser Syntax | spike | frontend/syntax | class: blocked | Implement Constructoroverloads Parser Syntax |
 | 1476 | Implement Constructorparametersinvariabledeclarations | spike | frontend/syntax | class: blocked | Implement Constructorparametersinvariabledeclarations |
@@ -5147,6 +5147,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1470 | Implement Constructorargserrors | spike | frontend/syntax | see `issues/done/1470-implement-constructorArgsErrors.md` |
 | 1471 | Implement Constructorastype | spike | frontend/resolver | see `issues/done/1471-implement-constructorAsType.md` |
 | 1472 | Implement Constructorinvocationwithtoofewtypeargs | spike | frontend/syntax | see `issues/done/1472-implement-constructorInvocationWithTooFewTypeArgs.md` |
+| 1473 | Implement Constructoroverloads Import Export | spike | frontend/syntax | see `issues/done/1473-implement-constructorOverloads-import-export.md` |
 | 2050 | Implement Duplicatelocalvariable Duplicate Local | spike | reference/triage | see `issues/done/2050-implement-duplicateLocalVariable-duplicate-local.md` |
 | 3002 | Implement Isolateddeclarationerrorsdefault | spike | runtime/builtins | see `issues/done/3002-implement-isolatedDeclarationErrorsDefault.md` |
 | 3131 | Implement Jsxfactorynotidentifierorqualifiedname | spike | reference/triage | see `issues/done/3131-implement-jsxFactoryNotIdentifierOrQualifiedName.md` |
