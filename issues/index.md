@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 5 | 4 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4527 | 3574 | 953 |
+| frontend | 4527 | 3573 | 954 |
 | harness | 1 | 0 | 1 |
 | ir | 64 | 42 | 22 |
 | issues | 4 | 0 | 4 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5171 | 3864 | 1307 |
+| total | 5171 | 3863 | 1308 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -564,7 +564,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 772 | Implement Augmentedtypesvar | spike | frontend/syntax | class: blocked | Implement Augmentedtypesvar |
 | 773 | Implement Autoasiforstaticsinclassdeclaration | spike | frontend/syntax | class: triage-needed | Implement Autoasiforstaticsinclassdeclaration |
 | 775 | Implement Autotypeassignedusingdestructuringfromnevernocrash | spike | frontend/resolver | class: blocked | Implement Autotypeassignedusingdestructuringfromnevernocrash |
-| 1299 | Implement Collisionexportsrequireandvar | spike | frontend/syntax | class: blocked | Implement Collisionexportsrequireandvar |
 | 1300 | Implement Collisionrestparameterarrowfunctions | spike | frontend/syntax | class: blocked | Implement Collisionrestparameterarrowfunctions |
 | 1301 | Implement Collisionrestparameterclassconstructor | spike | frontend/syntax | class: blocked | Implement Collisionrestparameterclassconstructor |
 | 1302 | Implement Collisionrestparameterclassmethod | spike | frontend/syntax | class: blocked | Implement Collisionrestparameterclassmethod |
@@ -5027,6 +5026,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1296 | Implement Collisionexportsrequireandinternalmodulealiasinglobalfile | spike | frontend/syntax | see `issues/done/1296-implement-collisionExportsRequireAndInternalModuleAliasInGlobalFile.md` |
 | 1297 | Implement Collisionexportsrequireandmodule | spike | frontend/syntax | see `issues/done/1297-implement-collisionExportsRequireAndModule.md` |
 | 1298 | Implement Collisionexportsrequireanduninstantiatedmodule | spike | frontend/syntax | see `issues/done/1298-implement-collisionExportsRequireAndUninstantiatedModule.md` |
+| 1299 | Implement Collisionexportsrequireandvar | spike | frontend/syntax | see `issues/done/1299-implement-collisionExportsRequireAndVar.md` |
 | 1325 | Implement Collisionthisexpressionandlocalvarinconstructor | spike | frontend/syntax | see `issues/done/1325-implement-collisionThisExpressionAndLocalVarInConstructor.md` |
 | 1327 | Implement Collisionthisexpressionandlocalvarinlambda | spike | frontend/syntax | see `issues/done/1327-implement-collisionThisExpressionAndLocalVarInLambda.md` |
 | 1328 | Implement Collisionthisexpressionandlocalvarinmethod | spike | frontend/syntax | see `issues/done/1328-implement-collisionThisExpressionAndLocalVarInMethod.md` |
