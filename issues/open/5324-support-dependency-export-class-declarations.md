@@ -166,6 +166,8 @@ Related but not duplicates:
 - `issues/open/5295-resolve-import-equals-require-to-virtual-node-modules-class-export.md` covers bare `require("myModule")` resolution plus a node_modules dependency class export shape.
 - `issues/open/5283-support-entry-export-var-declarations.md` covers the sibling `classMemberInitializerWithLamdaScoping4.ts` first blocker, `export var field1: string`.
 
+Also owns `issues/done/3320-implement-moduleAugmentationImportsAndExports.md`: fresh triage for `moduleAugmentationImportsAndExports1.ts` and `moduleAugmentationImportsAndExports4.ts` reaches the same issue-5005 dependency-module `export class` boundary for virtual `f1.ts` / `f2.ts` sections before module augmentation semantics become actionable.
+
 ## Completion evidence
 
 Fill when implemented.

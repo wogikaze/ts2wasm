@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 7 | 6 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4582 | 3414 | 1168 |
+| frontend | 4582 | 3413 | 1169 |
 | harness | 1 | 0 | 1 |
 | ir | 79 | 57 | 22 |
 | issues | 4 | 0 | 4 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5243 | 3712 | 1531 |
+| total | 5243 | 3711 | 1532 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -2327,7 +2327,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 3313 | Implement Moduleaugmentationdoesnamespacemergeofreexport | spike | frontend/syntax | class: blocked | Implement Moduleaugmentationdoesnamespacemergeofreexport |
 | 3314 | Implement Moduleaugmentationduringsyntheticdefaultcheck | spike | frontend/syntax | class: blocked | Implement Moduleaugmentationduringsyntheticdefaultcheck |
 | 3315 | Implement Moduleaugmentationenumclassmergeofreexportiserror | spike | frontend/syntax | class: blocked | Implement Moduleaugmentationenumclassmergeofreexportiserror |
-| 3320 | Implement Moduleaugmentationimportsandexports | spike | frontend/syntax | class: blocked | Implement Moduleaugmentationimportsandexports |
 | 3321 | Implement Moduleaugmentationinambientmodule | spike | frontend/syntax | class: blocked | Implement Moduleaugmentationinambientmodule |
 | 3322 | Implement Moduleaugmentationindependency | spike | frontend/syntax | class: blocked | Implement Moduleaugmentationindependency |
 | 3323 | Implement Moduleaugmentationnonewnames | spike | frontend/syntax | class: blocked | Implement Moduleaugmentationnonewnames |
@@ -5202,6 +5201,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 3317 | Implement Moduleaugmentationextendfilemodule | spike | frontend/syntax | see `issues/done/3317-implement-moduleAugmentationExtendFileModule.md` |
 | 3318 | Implement Moduleaugmentationglobal Import Export | spike | frontend/syntax | see `issues/done/3318-implement-moduleAugmentationGlobal-import-export.md` |
 | 3319 | Implement Moduleaugmentationglobal Parser Syntax | spike | frontend/syntax | see `issues/done/3319-implement-moduleAugmentationGlobal-parser-syntax.md` |
+| 3320 | Implement Moduleaugmentationimportsandexports | spike | frontend/syntax | see `issues/done/3320-implement-moduleAugmentationImportsAndExports.md` |
 | 3329 | Implement Modulecodegentest | spike | frontend/syntax | see `issues/done/3329-implement-moduleCodeGenTest.md` |
 | 3330 | Implement Modulecodegentest | spike | frontend/syntax | see `issues/done/3330-implement-moduleCodegenTest.md` |
 | 3690 | Implement Optionaltupleelementsandundefined | spike | reference/triage | see `issues/done/3690-implement-optionalTupleElementsAndUndefined.md` |
