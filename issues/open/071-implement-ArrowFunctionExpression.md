@@ -57,7 +57,22 @@ Out of scope:
 - Direct implementation from this generated bucket
 - Broad multi-feature fixes without child issue split
 
-## Affected paths
+## Triage result
+
+The single failing reference case `ArrowFunctionExpression1.ts` uses `var v = (public x: string) => { };` which the TypeScript compiler correctly rejects because parameter property modifiers (`public`/`private`/`protected`/`readonly`) are only valid in constructor parameters, not arrow functions.
+
+The ts2wasm compiler silently accepts this invalid syntax because the frontend parser's `parse_param` function consumes access modifier keywords without validating their context.
+
+**Reproduction:**
+```sh
+cargo run -q -p ts2wasm-cli -- build reference/typescript/tests/cases/compiler/ArrowFunctionExpression1.ts
+# Expected: error about invalid parameter property in arrow function
+# Actual: compiles silently
+```
+
+**Fix location:** The probe for arrow function params in `probe_parenthesized_arrow_params()` uses `parse_param` which silently consumes modifiers. Implementing this diagnostic requires either:
+- Adding modifier tracking to `ParsedParam` struct and checking in `arrow_function()`
+- Or validating non-constructor callers of `parse_param` directly
 
 Expected:
 
