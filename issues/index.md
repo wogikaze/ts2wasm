@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 25 | 13 | 12 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4587 | 3332 | 1255 |
+| frontend | 4588 | 3332 | 1256 |
 | harness | 1 | 0 | 1 |
 | ir | 82 | 59 | 23 |
 | issues | 4 | 0 | 4 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5270 | 3633 | 1637 |
+| total | 5271 | 3633 | 1638 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -388,6 +388,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5433 | Report duplicate static class member modifiers | feature | frontend/parser | implementation-ready | P1 |  | duplicate `static` class member modifiers are parsed as a method/field boundary error instead of a source-spanned dup... |
 | 5434 | Report duplicate ambient module export assignments | bug | frontend/semantics | implementation-ready | P1 |  | duplicate `export =` declarations inside an ambient module are hidden by ambient erasure and produce a false build-pass. |
 | 5435 | Report export declarations inside namespaces | bug | frontend/semantics | implementation-ready | P1 |  | namespace-body export declarations are erased before diagnostics, causing a false build-pass. |
+| 5436 | Report mixed exported and local namespace var merges | feature | frontend/semantics | implementation-ready | P1 |  | `multivar.ts` now build-passes, but TypeScript reports TS2395 because |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -2342,7 +2343,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 3302 | Implement Modulealiasasfunctionargument | spike | frontend/syntax | class: blocked | Implement Modulealiasasfunctionargument |
 | 3303 | Implement Modulealiasinterface | spike | frontend/syntax | class: blocked | Implement Modulealiasinterface |
 | 3304 | Implement Moduleandinterfacesharingname | spike | frontend/syntax | class: blocked | Implement Moduleandinterfacesharingname |
-| 3416 | Implement Multivar | spike | frontend/syntax | class: blocked | Implement Multivar |
 | 3417 | Implement Mutuallyrecursivecallbacks | spike | frontend/resolver | class: blocked | Implement Mutuallyrecursivecallbacks |
 | 3418 | Implement Mutuallyrecursivegenericbasetypes | spike | frontend/semantics | class: blocked | Implement Mutuallyrecursivegenericbasetypes |
 | 3419 | Implement Mutuallyrecursiveinference | spike | frontend/semantics | class: blocked | Implement Mutuallyrecursiveinference |
@@ -5230,6 +5230,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 3413 | Split multipleExports to namespace export declaration diagnostic | maintenance | frontend/semantics | see `issues/done/3413-implement-multipleExports.md` |
 | 3414 | Close multipleInferenceContexts as stale build-pass | maintenance | frontend/resolver | see `issues/done/3414-implement-multipleInferenceContexts.md` |
 | 3415 | Close multipleInheritance to multiple class heritage owner | maintenance | frontend/parser | see `issues/done/3415-implement-multipleInheritance.md` |
+| 3416 | Split multivar to namespace var merge diagnostic | maintenance | frontend/semantics | see `issues/done/3416-implement-multivar.md` |
 | 3690 | Implement Optionaltupleelementsandundefined | spike | reference/triage | see `issues/done/3690-implement-optionalTupleElementsAndUndefined.md` |
 | 3996 | Implement Compiler (dup) | spike | frontend/syntax | see `issues/done/3996-implement-reference-typescript-tests-cases-compiler.md` |
 | 4210 | Implement Splicetuples | spike | frontend/resolver | see `issues/done/4210-implement-spliceTuples.md` |
