@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 7 | 6 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4582 | 3386 | 1196 |
+| frontend | 4583 | 3386 | 1197 |
 | harness | 1 | 0 | 1 |
 | ir | 81 | 59 | 22 |
 | issues | 4 | 0 | 4 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5250 | 3685 | 1565 |
+| total | 5251 | 3685 | 1566 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -368,6 +368,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5413 | Report nested namespace wrong-context diagnostic | bug | frontend/syntax | implementation-ready | P1 |  | the frontend accepts a nested namespace declaration in a statement |
 | 5414 | Classify non-builtin require result method calls | feature | ir/lowering | implementation-ready | P1 |  | the compiler does not distinguish a non-builtin CommonJS require result |
 | 5415 | Support identifier update expressions in value positions | feature | ir/lowering | implementation-ready | P1 |  | identifier update expressions are parser-accepted in value positions, |
+| 5416 | Report invalid block after member expression statement | bug | frontend/parser | implementation-ready | P1 |  | the parser should reject or recover from a block immediately following |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -2323,7 +2324,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 3302 | Implement Modulealiasasfunctionargument | spike | frontend/syntax | class: blocked | Implement Modulealiasasfunctionargument |
 | 3303 | Implement Modulealiasinterface | spike | frontend/syntax | class: blocked | Implement Modulealiasinterface |
 | 3304 | Implement Moduleandinterfacesharingname | spike | frontend/syntax | class: blocked | Implement Moduleandinterfacesharingname |
-| 3345 | Implement Modulekeywordrepeaterror | spike | frontend/syntax | class: blocked | Implement Modulekeywordrepeaterror |
 | 3346 | Implement Modulelocalimportnotincorrectlyredirected | spike | frontend/syntax | class: blocked | Implement Modulelocalimportnotincorrectlyredirected |
 | 3347 | Implement Modulemembermissingerrorisrelative | spike | frontend/syntax | class: blocked | Implement Modulemembermissingerrorisrelative |
 | 3348 | Implement Modulememberwithouttypeannotation | spike | frontend/syntax | class: blocked | Implement Modulememberwithouttypeannotation |
@@ -5211,6 +5211,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 3342 | Implement Moduleimportedfortypeargumentposition | spike | reference/triage | see `issues/done/3342-implement-moduleImportedForTypeArgumentPosition.md` |
 | 3343 | Implement Moduleintypeposition | maintenance | frontend/syntax | see `issues/done/3343-implement-moduleInTypePosition.md` |
 | 3344 | Implement Modulekeyworddeprecated | maintenance | frontend/syntax | see `issues/done/3344-implement-moduleKeywordDeprecated.md` |
+| 3345 | Implement Modulekeywordrepeaterror | maintenance | frontend/syntax | see `issues/done/3345-implement-moduleKeywordRepeatError.md` |
 | 3690 | Implement Optionaltupleelementsandundefined | spike | reference/triage | see `issues/done/3690-implement-optionalTupleElementsAndUndefined.md` |
 | 3996 | Implement Compiler (dup) | spike | frontend/syntax | see `issues/done/3996-implement-reference-typescript-tests-cases-compiler.md` |
 | 4210 | Implement Splicetuples | spike | frontend/resolver | see `issues/done/4210-implement-spliceTuples.md` |
