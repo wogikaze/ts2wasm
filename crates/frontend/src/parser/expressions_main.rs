@@ -1804,6 +1804,7 @@ impl Parser {
     }
 
     fn function_expression(&mut self, start: Span) -> Result<Expr, Diagnostic> {
+        let is_generator = self.consume(TokenKind::Star);
         let name = if matches!(self.peek(), Some(Token::Ident(_))) {
             let (name, _) = self.expect_ident()?;
             let has_generic_params = self.consume_typescript_generic_parameter_list()?;
@@ -1832,6 +1833,19 @@ impl Parser {
         }
         if self.consume(TokenKind::Colon) {
             self.skip_type_annotation_until(&[TokenKind::LeftBrace])?;
+        }
+        if is_generator {
+            self.skip_balanced_brace_block(start)?;
+            let end = self.prev_span().map(|span| span.end).unwrap_or(start.end);
+            return Ok(Expr::FunctionExpr {
+                name,
+                params,
+                body: Vec::new(),
+                span: Span {
+                    start: start.start,
+                    end,
+                },
+            });
         }
         let body = self.block()?;
         let end = body.last().map(|stmt| stmt.span().end).unwrap_or(start.end);
