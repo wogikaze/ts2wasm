@@ -118,7 +118,7 @@ Follow-up issues:
 
 - `issues/done/144-implement-ambientConstLiterals.md` - Implement Ambientconstliterals (same reference path, same group key, title overlap)
 - `issues/done/520-implement-ambientConstLiterals.md` - Implement Ambientconstliterals (same reference path, same feature label, same group key, title overlap)
-- `issues/open/550-implement-FunctionDeclaration-parser-syntax.md` - Implement Functiondeclaration Parser Syntax (same feature label, same group key, title overlap)
+- `issues/done/550-implement-FunctionDeclaration-parser-syntax.md` - Implement Functiondeclaration Parser Syntax (same feature label, same group key, title overlap)
 - `issues/open/606-implement-ambientConstLiterals.md` - Implement Ambientconstliterals (same reference path, same feature label, same group key, title overlap)
 
 ## Smart triage

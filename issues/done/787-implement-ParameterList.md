@@ -121,7 +121,7 @@ Follow-up issues:
 - `issues/done/199-implement-reference-typescript-tests-cases-compiler.md` - Implement Compiler (same feature label, same group key, title overlap)
 - `issues/open/442-implement-parser-syntax.md` - Implement parser syntax extensions (same feature label, same group key, title overlap)
 - `issues/done/466-implement-ParameterList.md` - Implement Parameterlist (same reference path, same feature label, same group key, title overlap)
-- `issues/open/550-implement-FunctionDeclaration-parser-syntax.md` - Implement Functiondeclaration Parser Syntax (same feature label, same group key, title overlap)
+- `issues/done/550-implement-FunctionDeclaration-parser-syntax.md` - Implement Functiondeclaration Parser Syntax (same feature label, same group key, title overlap)
 - `issues/done/552-implement-ParameterList.md` - Implement Parameterlist (same reference path, same feature label, same group key, title overlap)
 
 ## Smart triage

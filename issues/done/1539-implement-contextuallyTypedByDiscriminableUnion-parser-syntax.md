@@ -127,7 +127,7 @@ Follow-up issues:
   triage proves parsing succeeds and lowering reports issue-211:
   `issues/open/442-implement-parser-syntax.md`,
   `issues/done/464-implement-FunctionDeclaration-parser-syntax.md`,
-  `issues/open/550-implement-FunctionDeclaration-parser-syntax.md`,
+  `issues/done/550-implement-FunctionDeclaration-parser-syntax.md`,
   `issues/open/663-implement-arrayAssignmentTest-parser-syntax.md`,
   `issues/open/734-implement-assignmentCompatability-parser-syntax.md`,
   `issues/open/753-implement-asyncFunctionReturnType-parser-syntax.md`,
