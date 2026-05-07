@@ -367,6 +367,13 @@ impl BigIntStaticBuiltinFolder {
                 specifier: specifier.clone(),
                 span: *span,
             },
+            Stmt::Block { statements, .. } => {
+                let folded = fold_stmts(statements, bindings, freeze, class_freezer)?;
+                Stmt::Block {
+                    statements: folded,
+                    span: Span::generated("block"),
+                }
+            }
             Stmt::ImportSideEffect { .. }
             | Stmt::ImportNamed { .. }
             | Stmt::ImportDefault { .. }
@@ -1372,6 +1379,14 @@ fn resolve_stmt_with_outer_bindings(
             label: label.clone(),
             body: Box::new(resolve_stmt(body)?),
         }),
+        Stmt::Block { statements, .. } => {
+            Ok(ResolvedStmt::Block {
+                statements: statements
+                    .iter()
+                    .map(resolve_stmt)
+                    .collect::<Result<Vec<_>, _>>()?,
+            })
+        }
         Stmt::Break { label, .. } => Ok(ResolvedStmt::Break {
             label: label.clone(),
         }),

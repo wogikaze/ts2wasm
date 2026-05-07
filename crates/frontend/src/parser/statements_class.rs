@@ -719,6 +719,11 @@ fn find_null_return_in_stmts(stmts: &[Stmt]) -> Option<Span> {
                     }
                 }
             }
+            Stmt::Block { statements, .. } => {
+                if let Some(span) = find_null_return_in_stmts(statements) {
+                    return Some(span);
+                }
+            }
             Stmt::Let { .. }
             | Stmt::AmbientValueDecl { .. }
             | Stmt::Assign { .. }

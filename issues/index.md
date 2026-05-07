@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 7 | 4 | 3 |
 | coverage | 44 | 1 | 43 |
 | docs | 5 | 0 | 5 |
-| frontend | 4562 | 3777 | 785 |
+| frontend | 4562 | 3776 | 786 |
 | harness | 1 | 0 | 1 |
 | ir | 77 | 27 | 50 |
 | issues | 5 | 0 | 5 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 8 | 0 | 8 |
 | wasi | 4 | 0 | 4 |
-| total | 5245 | 4053 | 1192 |
+| total | 5245 | 4052 | 1193 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -362,7 +362,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5255 | Resolve super property accesses | feature | frontend/resolver | implementation-ready | P1 |  | `classExtendingAny.ts` parses class declarations, `extends Err`, and |
 | 5260 | Report class heritage trailing comma | feature | frontend/parser | implementation-ready | P1 |  | `classHeritageWithTrailingSeparator.ts` tokenizes the class heritage |
 | 5262 | Resolve import-equals aliases in class implements clauses | feature | frontend/resolver | implementation-ready | P1 |  | Resolve import-equals aliases in class implements clauses |
-| 5263 | Report primitive implements clauses on class expressions | feature | frontend/parser | implementation-ready | P1 |  | Report primitive implements clauses on class expressions |
 | 5264 | Parse typed const declarations before initializers | feature | frontend/parser | implementation-ready | P1 |  | Parse typed const declarations before initializers |
 | 5265 | Report missing class member identifier after modifier | feature | frontend/parser | implementation-ready | P1 |  | Report missing class member identifier after modifier |
 | 5266 | Support class constructor new of later class binding | feature | ir | implementation-ready | P1 |  | `reference/typescript/tests/cases/compiler/classOrderBug.ts` reports |
@@ -5343,6 +5342,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5258 | Report super calls in class extends null constructors | feature | ir/resolver | see file |
 | 5259 | Report super property access in class extends null | feature | ir/resolver | see file |
 | 5261 | Report class-typed missing instance method calls | feature | ir/lowering | see file |
+| 5263 | Report primitive implements clauses on class expressions | feature | frontend/parser | see file |
 | 5268 | Support derived constructor parameter properties after super | feature | ir | see `issues/done/5268-support-derived-constructor-parameter-properties-after-super.md` |
 | 5277 | Parse export enum declarations to enum boundary | feature | frontend/module-syntax | see file |
 | 5278 | Parse trailing comma in function parameters with comments | feature | frontend/syntax | see file |
