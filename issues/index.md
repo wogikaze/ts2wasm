@@ -16,18 +16,18 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 6 | 3 | 3 |
 | coverage | 44 | 1 | 43 |
 | docs | 5 | 0 | 5 |
-| frontend | 4546 | 3422 | 1124 |
+| frontend | 4546 | 3853 | 693 |
 | harness | 1 | 0 | 1 |
-| ir | 72 | 31 | 41 |
+| ir | 72 | 33 | 39 |
 | issues | 5 | 0 | 5 |
 | parser | 1 | 0 | 1 |
-| reference | 212 | 152 | 60 |
-| runtime | 272 | 83 | 189 |
+| reference | 212 | 163 | 49 |
+| runtime | 272 | 85 | 187 |
 | scripts | 3 | 0 | 3 |
 | security | 1 | 0 | 1 |
 | tests | 8 | 0 | 8 |
 | wasi | 4 | 0 | 4 |
-| total | 5223 | 3693 | 1530 |
+| total | 5223 | 4139 | 1084 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -47,12 +47,12 @@ Issue files are the source of truth for work items. The generated section below 
 Direct child counts are derived from issue-file `depends_on` links. A meta issue can be `done` as a classification/design umbrella while implementation child issues remain open.
 
 ```
-5000 (Meta: TypeScript Compiler Parser Syntax Coverage) [done/design] ch:439 open:363 done:76
-├── 5002 (Meta: TypeScript Compiler Type System Coverage) [done/done] ch:224 open:205 done:19 (also ← 5005)
+5000 (Meta: TypeScript Compiler Parser Syntax Coverage) [done/design] ch:439 open:379 done:60
+├── 5002 (Meta: TypeScript Compiler Type System Coverage) [done/done] ch:224 open:216 done:8 (also ← 5005)
 ├── 5003 (Meta: TypeScript Compiler Declaration Emit Coverage) [done/done] ch:102 open:92 done:10 (also ← 5001)
-5001 (Meta: TypeScript Compiler Semantic Analysis Coverage) [done/done] ch:554 open:320 done:234
+5001 (Meta: TypeScript Compiler Semantic Analysis Coverage) [done/done] ch:554 open:331 done:223
 5004 (Meta: Runtime Builtins Coverage (test262) (audit reopened #5004)) [done/done] ch:24 open:3 done:21
-5005 (Meta: TypeScript Compiler Name Resolution Coverage) [done/done] ch:404 open:349 done:55
+5005 (Meta: TypeScript Compiler Name Resolution Coverage) [done/done] ch:404 open:357 done:47
 ├── 5006 (Meta: TypeScript Compiler Scope Analysis Coverage) [done/done] ch:27 open:19 done:8
 ├── 5007 (Meta: TypeScript Compiler Module Resolution Coverage (audit reopened #5007)) [done/done] ch:21 open:21 done:0
 ```
@@ -66,11 +66,11 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 
 | Order | ID | Title | State | Class | Area | Priority | Depends on | Direct children | Open children | Done children |
 |-----:|---:|------|-------|-------|------|--------:|-----------:|----------------:|--------------:|--------------:|
-| 1 | 5000 | Meta: TypeScript Compiler Parser Syntax Coverage | done | design | frontend/syntax | P1 | - | 439 | 363 | 76 |
-| 2 | 5001 | Meta: TypeScript Compiler Semantic Analysis Coverage | done | done | frontend/semantics | P1 | - | 554 | 320 | 234 |
+| 1 | 5000 | Meta: TypeScript Compiler Parser Syntax Coverage | done | design | frontend/syntax | P1 | - | 439 | 379 | 60 |
+| 2 | 5001 | Meta: TypeScript Compiler Semantic Analysis Coverage | done | done | frontend/semantics | P1 | - | 554 | 331 | 223 |
 | 3 | 5004 | Meta: Runtime Builtins Coverage (test262) (audit reopened #5004) | done | done | runtime/builtins | P1 | - | 24 | 3 | 21 |
-| 4 | 5005 | Meta: TypeScript Compiler Name Resolution Coverage | done | done | frontend/resolver | P1 | - | 404 | 349 | 55 |
-| 5 | 5002 | Meta: TypeScript Compiler Type System Coverage | done | done | frontend/semantics | P1 | 5000, 5005 | 224 | 205 | 19 |
+| 4 | 5005 | Meta: TypeScript Compiler Name Resolution Coverage | done | done | frontend/resolver | P1 | - | 404 | 357 | 47 |
+| 5 | 5002 | Meta: TypeScript Compiler Type System Coverage | done | done | frontend/semantics | P1 | 5000, 5005 | 224 | 216 | 8 |
 | 6 | 5003 | Meta: TypeScript Compiler Declaration Emit Coverage | done | done | frontend/syntax | P2 | 5000, 5001 | 102 | 92 | 10 |
 | 7 | 5006 | Meta: TypeScript Compiler Scope Analysis Coverage | done | done | frontend/resolver | P2 | 5005 | 27 | 19 | 8 |
 | 8 | 5007 | Meta: TypeScript Compiler Module Resolution Coverage (audit reopened #5007) | done | done | frontend/resolver | P2 | 5005 | 21 | 21 | 0 |
@@ -107,6 +107,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 105 | Implement Accessorwithoutbody | spike | frontend/syntax | superseded | P1 | 5000 | accessorWithoutBody has 2 reference failures and needs smart-triage evidence before implementation starts. |
 | 108 | Implement Accessorsinambientcontext | spike | frontend/syntax | superseded | P1 | 5001 | accessorsInAmbientContext has 1 reference failures and needs smart-triage evidence before implementation starts. |
 | 115 | Implement Aliasinaccessiblemodule | spike | frontend/syntax | superseded | P1 | 5001 | aliasInaccessibleModule has 2 reference failures and needs smart-triage evidence before implementation starts. |
+| 117 | Implement Aliasofgenericfunctionwithrestbehavedsameasunaliased | spike | frontend/syntax | done | P1 |  | the generated blocker is stale in the current runner view. There is no |
 | 119 | Implement Aliasusageinaccessorsofclass (dup) | spike | frontend/syntax | superseded | P1 | 5007 | aliasUsageInAccessorsOfClass fails due to UnsupportedModule (`import = require`). |
 | 138 | Implement Alwaysstrictmodule | spike | frontend/syntax | superseded | P1 | 5001 | alwaysStrictModule has 6 reference failures and needs smart-triage evidence before implementation starts. |
 | 139 | Implement Alwaysstrictnoimplicitusestrict | spike | frontend/syntax | superseded | P1 | 5000 | alwaysStrictNoImplicitUseStrict has 1 reference failures and needs smart-triage evidence before implementation starts. |
@@ -126,10 +127,235 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 463 | Implement Functiondeclaration Import Export | spike | frontend/syntax | superseded | P1 | 5001 | FunctionDeclaration-import-export has 1 reference failures and needs smart-triage evidence before implementation starts. |
 | 467 | Implement Transportstream (dup) | spike | frontend/syntax | superseded | P1 | 5000 | TransportStream has 1 reference failures and needs smart-triage evidence before implementation starts. |
 | 518 | Implement Ambientclassdeclarationwithextends | spike | frontend/syntax | superseded | P1 | 5001 | ambientClassDeclarationWithExtends has 1 reference failures and needs smart-triage evidence before implementation sta... |
+| 548 | Implement Exportassignment | spike | frontend/syntax | done | P1 |  | ExportAssignment has 2 reference failures and needs smart-triage evidence before implementation starts. |
 | 572 | Implement Accessorwithlineterminator | spike | reference/triage | superseded | P2 |  | accessorWithLineTerminator has 1 reference failures and needs smart-triage evidence before implementation starts. |
+| 769 | Implement Augmentedtypesfunction | spike | frontend/resolver | superseded | P1 |  | Implement Augmentedtypesfunction |
+| 772 | Implement Augmentedtypesvar | spike | frontend/resolver | superseded | P1 |  | the generated parser-syntax bucket remained blocked even though its |
+| 773 | Implement Autoasiforstaticsinclassdeclaration | spike | frontend/parser | superseded | P1 |  | the generated bucket remained triage-needed even though the executable |
+| 775 | Implement Autotypeassignedusingdestructuringfromnevernocrash | spike | frontend/resolver | superseded | P1 |  | the generated bucket remained blocked even though its current |
 | 840 | Implement Ambientclassdeclaredbeforebase (dup) | spike | frontend/syntax | superseded | P1 | 5001 | ambientClassDeclaredBeforeBase has 1 reference failures and needs smart-triage evidence before implementation starts. |
 | 871 | Implement Anonterface (dup) | spike | frontend/syntax | superseded | P1 | 5001 | anonterface has 1 reference failures and needs smart-triage evidence before implementation starts. |
+| 1065 | Implement Bitwisecompoundassignmentoperators | spike | frontend/syntax | superseded | P2 | 5178 | bitwiseCompoundAssignmentOperators has 1 reference failures and needs smart-triage evidence before implementation sta... |
+| 1111 | Implement Capturedletconstinloop Parser Syntax | spike | frontend/syntax | done | P1 |  | capturedLetConstInLoop-parser-syntax has 14 reference failures and needs smart-triage evidence before implementation ... |
+| 1112 | Implement Capturedparametersininitializers | spike | frontend/syntax | done | P2 |  | capturedParametersInInitializers has 2 reference failures and needs smart-triage evidence before implementation starts. |
+| 1113 | Implement Capturedshorthandpropertyassignmentnocheck | spike | frontend/syntax | done | P1 |  | capturedShorthandPropertyAssignmentNoCheck has 1 reference failures and needs smart-triage evidence before implementa... |
+| 1114 | Implement Capturedvarinloop | spike | frontend/syntax | done | P1 | 5001 | capturedVarInLoop has 1 reference failures and needs smart-triage evidence before implementation starts. |
+| 1115 | Implement Caseinsensitivefilesystemwithcapsimporttypedeclarations | spike | frontend/syntax | done | P1 | 232 | caseInsensitiveFileSystemWithCapsImportTypeDeclarations is not a standalone implementation order in the current runne... |
+| 1116 | Implement Castexpressionparentheses | spike | frontend/syntax | done | P1 |  | castExpressionParentheses has 1 reference failures and needs smart-triage evidence before implementation starts. |
+| 1117 | Implement Castfunctionexpressionshouldbeparenthesized | spike | frontend/syntax | done | P1 | 5001 | castFunctionExpressionShouldBeParenthesized has 1 reference failures and needs smart-triage evidence before implement... |
+| 1118 | Implement Castnewobjectbug | spike | frontend/syntax | superseded | P1 |  | castNewObjectBug had 1 generated reference failure and needed smart-triage evidence before implementation starts. Cur... |
+| 1121 | Implement Casttest | spike | frontend/syntax | superseded | P2 | 5218 | castTest has 1 reference failure whose current actionable blocker is now tracked by child issue 5218. |
+| 1122 | Implement Catch | spike | reference/triage | superseded | P2 |  | catch no longer has a current compiler blocker; no child implementation issue is needed for this generated bucket. |
+| 1123 | Implement Catchclausewithinitializer | spike | frontend/syntax | superseded | P1 | 5219 | catchClauseWithInitializer has 1 reference failure whose current actionable blocker is now tracked by child issue 5219. |
+| 1124 | Implement Cf | spike | frontend/resolver | superseded | P1 | 5220 | cf has 1 reference failure whose actionable blocker is now tracked by `issues/done/5220-preserve-ambient-function-par... |
+| 1125 | Implement Chainedassignment | spike | frontend/syntax | superseded | P1 |  | chainedAssignment no longer has a current compiler blocker; no child implementation issue is needed for this generate... |
+| 1126 | Implement Chainedcallswithtypeparameterconstrainedtoothertypeparameter | spike | frontend/syntax | superseded | P1 | 5221 | chainedCallsWithTypeParameterConstrainedToOtherTypeParameter has 2 reference failures whose actionable blocker is now... |
+| 1127 | Implement Chainedimportalias | spike | frontend/syntax | done | P1 | 232 | `chainedImportAlias` is not a standalone implementation order in the current runner view; the first blocker is an ora... |
+| 1128 | Implement Chainedspecializationtoobjecttypeliteral | spike | frontend/syntax | done | P1 | 5222 | `chainedSpecializationToObjectTypeLiteral` is too broad for direct implementation. Its current observable blocker is ... |
+| 1129 | Implement Checkdestructuringshorthandassigment Destructuring | spike | frontend/syntax | done | P1 | 5223 | `checkDestructuringShorthandAssigment2.ts` is too broad for direct implementation. Its current observable blocker is ... |
+| 1130 | Implement Checkdestructuringshorthandassigment Name Resolution | spike | frontend/resolver | done | P1 | 5224 | `checkDestructuringShorthandAssigment.ts` is too broad for direct implementation. Its current observable blocker is n... |
+| 1131 | Implement Checkforobjecttoostrict | spike | frontend/syntax | done | P1 | 5225 | `checkForObjectTooStrict.ts` is too broad for direct implementation. Its current observable blocker is now tracked by... |
+| 1132 | Implement Checkindexconstraintofjavascriptclassexpression | spike | frontend/resolver | done | P1 | 056 | `checkIndexConstraintOfJavascriptClassExpression` is not a standalone implementation order in the current runner view... |
+| 1133 | Implement Checkinfiniteexpansiontermination | spike | frontend/resolver | done | P1 | 5226 | `checkInfiniteExpansionTermination2.ts` is too broad for direct implementation. Its current observable blocker is now... |
+| 1134 | Implement Checkinheritedproperty | spike | frontend/syntax | done | P1 |  | `checkInheritedProperty` no longer has a current compiler blocker in this runner view. The TypeScript oracle still re... |
+| 1135 | Implement Checkjsfiles | spike | frontend/syntax | done | P1 | 5227 | checkJsFiles has 1 reference failures and needs smart-triage evidence before implementation starts. |
+| 1136 | Implement Checkjsobjectliteralindexsignatures | spike | frontend/syntax | done | P1 | 5228 | checkJsObjectLiteralIndexSignatures has 1 reference failures and needs smart-triage evidence before implementation st... |
+| 1137 | Implement Checkjstypedefnounusedlocalmarked | spike | frontend/syntax | done | P1 |  | checkJsTypeDefNoUnusedLocalMarked has 1 reference failures and needs smart-triage evidence before implementation starts. |
+| 1138 | Implement Checkjsdoctypetagonexportassignment | spike | frontend/syntax | done | P1 | 5229 | checkJsdocTypeTagOnExportAssignment has 8 reference failures and needs smart-triage evidence before implementation st... |
+| 1139 | Implement Checkjsxnotseterror | spike | reference/triage | done | P1 | 5230 | checkJsxNotSetError has 1 reference failures and needs smart-triage evidence before implementation starts. |
+| 1140 | Implement Checkmergedglobalumdsymbol | spike | frontend/syntax | done | P1 | 5231 | checkMergedGlobalUMDSymbol has 1 reference failures and needs smart-triage evidence before implementation starts. |
+| 1141 | Implement Checksupercallbeforethisaccess | spike | frontend/syntax | done | P1 | 5232 | checkSuperCallBeforeThisAccess has 1 reference failures and needs smart-triage evidence before implementation starts. |
+| 1142 | Implement Checksupercallbeforethisaccessing Class | spike | frontend/syntax | done | P1 | 5233 | checkSuperCallBeforeThisAccessing-class has 1 reference failures and needs smart-triage evidence before implementatio... |
+| 1145 | Implement Checktypepredicateforredundantproperties | spike | frontend/semantics | done | P1 | 5235 | checkTypePredicateForRedundantProperties has 1 reference failures and needs smart-triage evidence before implementati... |
+| 1146 | Implement Checkerinitializationcrash | spike | frontend/syntax | done | P1 |  | checkerInitializationCrash has 1 reference failures and needs smart-triage evidence before implementation starts. |
+| 1147 | Implement Checkingobjectdefinepropertyonfunctionnonexistentpropertynocrash | spike | frontend/syntax | done | P1 | 5236 | checkingObjectDefinePropertyOnFunctionNonexistentPropertyNoCrash has 1 reference failures and needs smart-triage evid... |
+| 1148 | Implement Checkingobjectwiththisinnamepositionnocrash | spike | frontend/syntax | done | P1 | 5237 | checkingObjectWithThisInNamePositionNoCrash has 1 reference failures and needs smart-triage evidence before implement... |
+| 1149 | Implement Circularaccessorannotations | spike | frontend/syntax | done | P1 |  | `circularAccessorAnnotations` no longer has a current compiler build blocker in this runner view. The TypeScript orac... |
+| 1150 | Implement Circularbaseconstraint | spike | frontend/syntax | done | P2 | 5238 | `circularBaseConstraint` is not a standalone circular type-system implementation order. The first current blocker is ... |
+| 1151 | Implement Circularconstraintyieldsappropriateerror | spike | frontend/syntax | done | P1 |  | `circularConstraintYieldsAppropriateError` no longer has a current compiler build blocker in this runner view. TypeSc... |
+| 1152 | Implement Circularconstructorwithreturn | spike | frontend/syntax | done | P1 | 5239 | `circularConstructorWithReturn.ts` fails with `UnresolvedName` for `PrismaClient` at `return PrismaClient`, even thou... |
+| 1153 | Implement Circularcontextualmappedtype | spike | frontend/resolver | done | P1 | 5226 | `circularContextualMappedType.ts` fails with `DuplicateFunction` at the second ambient `declare function reproduce` d... |
+| 1154 | Implement Circularcontextualreturntype | spike | frontend/resolver | done | P1 |  | `circularContextualReturnType.ts` no longer has a current compiler build blocker in this runner view. TypeScript also... |
+| 1156 | Implement Circularinlinemappedgenerictupletypenocrash | spike | frontend/semantics | done | P1 | 5241 | `circularInlineMappedGenericTupleTypeNoCrash.ts` currently fails with `unsupported expression: ... DotDotDot` at `new... |
+| 1157 | Implement Circularinstantiationexpression | spike | frontend/resolver | done | P1 |  | `circularInstantiationExpression.ts` no longer has a current compiler build blocker in this runner view. TypeScript a... |
+| 1158 | Implement Circularmappedtypeconstraint | spike | frontend/syntax | done | P1 |  | `circularMappedTypeConstraint.ts` no longer has a current compiler build blocker in this runner view. TypeScript also... |
+| 1159 | Implement Circularmoduleimports | spike | frontend/syntax | done | P1 |  | `circularModuleImports.ts` no longer has a current compiler build blocker in this runner view. TypeScript still repor... |
+| 1160 | Implement Circularobjectliteralaccessors | spike | frontend/syntax | done | P1 |  | `circularObjectLiteralAccessors.ts` no longer has a current compiler build blocker in this runner view. TypeScript al... |
+| 1161 | Implement Circularoptionalityremoval | spike | frontend/resolver | superseded | P1 |  | `circularOptionalityRemoval` is not a standalone implementation order; the current build failure is an oracle-matchin... |
+| 1164 | Implement Circularreferenceinreturntype Parser Syntax | spike | frontend/syntax | done | P1 | 5242 | `circularReferenceInReturnType2.ts` is not a standalone generated parser bucket. The current first blocker is the foc... |
+| 1165 | Implement Circularresolvedsignature | spike | frontend/syntax | done | P1 | 5243 | `circularResolvedSignature.ts` is not a standalone generated import/export bucket in the current runner view. The act... |
+| 1166 | Implement Circulartypeargumentslocalandouternocrash | spike | frontend/syntax | done | P1 |  | the generated blocker is stale in the current runner view. There is no current ts2wasm build blocker for `circularTyp... |
+| 1167 | Implement Circulartypeofwithfunctionmodule | spike | frontend/syntax | done | P1 | 5244 | `circularTypeofWithFunctionModule.ts` is not a standalone generated import/export bucket in the current runner view. ... |
+| 1168 | Implement Circularlyconstrainedmappedtypecontainingconditionalnoinfiniteinstantiationdepth | spike | frontend/semantics | done | P1 | 5245 | this generated type-system bucket is not directly implementation-ready in the current runner view. The first actionab... |
+| 1169 | Implement Circularlysimplifyingconditionaltypesnocrash | spike | frontend/semantics | done | P1 |  | the generated blocker is stale in the current runner view. There is no current ts2wasm build blocker for `circularlyS... |
+| 1171 | Implement Classaccessorinitializationinferencewithelementaccess | spike | frontend/syntax | done | P1 | 5232 | `classAccessorInitializationInferenceWithElementAccess1.ts` no longer |
+| 1172 | Implement Classattributeinferencetemplate | spike | frontend/semantics | done | P1 |  | `classAttributeInferenceTemplate.ts` no longer has a compiler blocker; |
+| 1176 | Implement Classdeclarationcheckusedbeforedefinitioninitself | spike | frontend/syntax | done | P1 |  | `classDeclarationCheckUsedBeforeDefinitionInItself.ts` no longer has a compiler blocker; fresh coverage and triage bo... |
+| 1177 | Implement Classdeclarationmergedinmodulewithcontinuation | spike | frontend/syntax | done | P1 |  | `classDeclarationMergedInModuleWithContinuation.ts` no longer has a compiler blocker; fresh coverage and triage both ... |
+| 1193 | Implement Classextendingabstractclasswithmembercalledthesameasitsowntypeparam | spike | frontend/syntax | done | P1 |  | classExtendingAbstractClassWithMemberCalledTheSameAsItsOwnTypeParam has 1 reference failures and needs smart-triage e... |
+| 1195 | Implement Classextendingqualifiedname | spike | frontend/syntax | done | P1 |  | classExtendingQualifiedName has 2 reference failures and needs smart-triage evidence before implementation starts. |
+| 1196 | Implement Classextendsacrossfiles | spike | frontend/syntax | done | P1 |  | classExtendsAcrossFiles has 1 reference failures and needs smart-triage evidence before implementation starts. |
+| 1197 | Implement Classextendsclauseclassmergedwithmodulenotreferingconstructor | spike | frontend/syntax | done | P1 |  | classExtendsClauseClassMergedWithModuleNotReferingConstructor has 1 reference failures and needs smart-triage evidenc... |
+| 1198 | Implement Classextendsclauseclassnotreferringconstructor | spike | frontend/syntax | done | P1 |  | classExtendsClauseClassNotReferringConstructor has 1 reference failures and needs smart-triage evidence before implem... |
+| 1199 | Implement Classextendsinterface Parser Syntax | spike | frontend/syntax | done | P1 |  | classExtendsInterface-parser-syntax has 1 reference failures and needs smart-triage evidence before implementation st... |
+| 1202 | Implement Classextendsinterfaceinmodule | spike | frontend/syntax | done | P1 |  | classExtendsInterfaceInModule has 1 reference failures and needs smart-triage evidence before implementation starts. |
+| 1203 | Implement Classextendsinterfacethatextendsclasswithprivates | spike | frontend/syntax | done | P1 |  | classExtendsInterfaceThatExtendsClassWithPrivates was a stale |
+| 1204 | Implement Classextendsmultiplebaseclasses | spike | frontend/syntax | done | P1 |  | classExtendsMultipleBaseClasses was a stale generated bucket and |
+| 1207 | Implement Classfieldsuperaccessible | spike | frontend/syntax | done | P1 |  | classFieldSuperAccessible was a stale generated bucket and needed |
+| 1208 | Implement Classfieldsuperaccessiblejs | spike | frontend/syntax | done | P1 |  | classFieldSuperAccessibleJs was a stale generated bucket and needed |
+| 1209 | Implement Classfieldsupernotaccessible | spike | frontend/syntax | done | P1 |  | classFieldSuperNotAccessible was a stale generated bucket and needed |
+| 1210 | Implement Classfieldsupernotaccessiblejs | spike | frontend/syntax | done | P1 |  | classFieldSuperNotAccessibleJs was a stale generated bucket and needed |
+| 1211 | Implement Classfieldsbrokenconstructoremitnocrash | spike | frontend/syntax | done | P1 |  | classFieldsBrokenConstructorEmitNoCrash was a stale generated bucket |
+| 1212 | Implement Classfunctionmerging Import Export | spike | frontend/syntax | done | P1 |  | this generated bucket was stale and had no smart-triage evidence. The |
+| 1223 | Implement Classmemberinitializerwithlamdascoping Import Export | spike | frontend/syntax | done | P1 |  | the generated bucket mixed two different first blockers: |
+| 1224 | Implement Classmemberinitializerwithlamdascoping Module System Amd | spike | frontend/syntax | done | P1 |  | the generated bucket is no longer a coherent module-system AMD work |
+| 1226 | Implement Classmergedwithinterfacemultiplebasesnoerror | spike | frontend/syntax | done | P1 |  | `export default class extends Foo { ... }` stops at the generic |
+| 1229 | Implement Classnonuniquesymbolmethodhassymbolindexer | spike | frontend/syntax | done | P1 |  | `[a]()` in `export class A` stops with `expected property name, got |
+| 1232 | Implement Classpropinitializationinferencewithelementaccess | spike | frontend/syntax | done | P1 |  | `export class Cls { ... }` stops with issue-5005 before later |
+| 1234 | Implement Classpropertyinferencefrombroadertypeconst | spike | frontend/semantics | done | P1 |  | `expectAB(c.D)` fails with `UnresolvedName` for `c` because |
+| 1235 | Implement Classreferencedincontextualparameterwithinitsownbaseexpression | spike | frontend/syntax | done | P1 |  | `export class A extends Class<A>("A")(...)` stops before this generated |
+| 1236 | Implement Classsideinheritance Name Resolution | spike | frontend/resolver | done | P1 |  | `classSideInheritance3.ts` currently stops on `issue-5011` for using a |
+| 1237 | Implement Classsideinheritance Parser Syntax | spike | frontend/syntax | done | P1 |  | the generated parser-syntax bucket is stale. TypeScript still reports |
+| 1240 | Implement Classstaticpropertytypeguard | spike | frontend/syntax | done | P1 |  | `classStaticPropertyTypeGuard.ts` reports `expected LeftParen, got Some(Ident("_a"))` at the typed modified static cl... |
+| 1241 | Implement Classtypeparametersinstatics | spike | frontend/syntax | done | P1 |  | the generated import/export bucket is stale. TypeScript still reports |
+| 1246 | Implement Classwithemptytypeparameter | spike | frontend/syntax | done | P1 |  | the generated parser-syntax bucket is stale. TypeScript still reports |
+| 1247 | Implement Classwithmultiplebaseclasses | spike | frontend/syntax | done | P1 |  | the generated parser-syntax bucket is stale. TypeScript still reports |
+| 1248 | Implement Classwithoverloadimplementationofwrongname | spike | frontend/syntax | done | P1 |  | `classWithOverloadImplementationOfWrongName2.ts` reports |
+| 1250 | Implement Clinterfaces | spike | frontend/syntax | done | P1 |  | `clinterfaces.ts` reports `issue-055: unsupported static export` at |
+| 1251 | Implement Cloduleacrossmoduledefinitions | spike | frontend/syntax | done | P1 |  | the generated import/export bucket is stale. The representative |
+| 1252 | Implement Cloduleandtypeparameters | spike | frontend/syntax | done | P1 |  | the generated parser-syntax bucket is stale. The representative |
+| 1253 | Implement Clodulegenericonselfmember | spike | frontend/semantics | done | P1 |  | the generated type-system bucket is stale. TypeScript still reports |
+| 1262 | Implement Coandcontravariantinferences Name Resolution | spike | frontend/resolver | done | P1 |  | `fn.call(null, x)` fails with `UnresolvedName` for `fn` because |
+| 1264 | Implement Coandcontravariantinferences Type System | spike | frontend/semantics | done | P1 |  | the generated bucket is not one executable type-system slice. Its |
+| 1266 | Implement Collisionargumentsarrowfunctions | spike | frontend/syntax | done | P1 |  | strict-mode `arguments` bindings in arrow parameters and arrow bodies |
+| 1267 | Implement Collisionargumentsclassconstructor | spike | frontend/syntax | done | P1 |  | class constructor overload signatures are treated as duplicate |
+| 1268 | Implement Collisionargumentsclassmethod | spike | frontend/syntax | done | P1 |  | valid TypeScript class method overload signatures are treated as |
+| 1269 | Implement Collisionargumentsfunction | spike | frontend/syntax | done | P1 |  | valid TypeScript top-level function overload signatures are treated as |
+| 1270 | Implement Collisionargumentsfunctionexpressions | spike | frontend/syntax | done | P1 |  | nested function overload signatures are treated as duplicate local |
+| 1285 | Implement Collisionexportsrequireandambientclass | spike | frontend/syntax | done | P1 |  | the generated import/export bucket is stale. TypeScript still reports |
+| 1286 | Implement Collisionexportsrequireandambientenum | spike | frontend/syntax | done | P1 |  | the generated import/export bucket is stale. TypeScript still reports |
+| 1287 | Implement Collisionexportsrequireandambientfunction | spike | frontend/syntax | done | P1 |  | the generated import/export bucket is stale. TypeScript oracle also |
+| 1288 | Implement Collisionexportsrequireandambientfunctioninglobalfile | spike | frontend/syntax | done | P1 |  | the generated import/export bucket is stale. TypeScript oracle also |
+| 1289 | Implement Collisionexportsrequireandambientmodule | spike | frontend/syntax | done | P1 |  | the generated import/export bucket is stale. TypeScript still reports |
+| 1290 | Implement Collisionexportsrequireandambientvar | spike | frontend/syntax | done | P1 |  | the generated import/export bucket is stale. TypeScript still reports |
+| 1291 | Implement Collisionexportsrequireandclass | spike | frontend/syntax | done | P1 |  | the generated bucket does not need a new child issue. The actionable |
+| 1292 | Implement Collisionexportsrequireandenum | spike | frontend/syntax | done | P1 |  | the generated bucket does not need a new child issue. The actionable |
+| 1293 | Implement Collisionexportsrequireandfunction | spike | frontend/syntax | done | P1 |  | the generated import/export bucket is stale. TypeScript oracle also |
+| 1294 | Implement Collisionexportsrequireandfunctioninglobalfile | spike | frontend/syntax | done | P1 |  | the generated import/export bucket is stale. TypeScript oracle also |
+| 1295 | Implement Collisionexportsrequireandinternalmodulealias | spike | frontend/syntax | done | P1 |  | the generated import/export bucket is stale. TypeScript oracle also |
+| 1296 | Implement Collisionexportsrequireandinternalmodulealiasinglobalfile | spike | frontend/syntax | done | P1 |  | the generated import/export bucket is stale. TypeScript oracle also |
+| 1297 | Implement Collisionexportsrequireandmodule | spike | frontend/syntax | done | P1 |  | the generated import/export bucket is stale. TypeScript still reports |
+| 1298 | Implement Collisionexportsrequireanduninstantiatedmodule | spike | frontend/syntax | done | P1 |  | the generated import/export bucket is stale. TypeScript still reports |
+| 1299 | Implement Collisionexportsrequireandvar | spike | frontend/syntax | done | P1 |  | the generated import/export bucket is stale. TypeScript oracle |
+| 1300 | Implement Collisionrestparameterarrowfunctions | spike | frontend/syntax | done | P1 |  | the generated arrow-function bucket is stale. TypeScript oracle |
+| 1301 | Implement Collisionrestparameterclassconstructor | spike | frontend/syntax | done | P1 |  | class constructor overload signatures are treated as duplicate |
+| 1302 | Implement Collisionrestparameterclassmethod | spike | frontend/syntax | done | P1 |  | valid TypeScript class method overload signatures are treated as |
+| 1303 | Implement Collisionrestparameterfunction | spike | frontend/syntax | done | P1 |  | valid TypeScript top-level function overload signatures are treated |
+| 1304 | Implement Collisionrestparameterfunctionexpressions | spike | frontend/syntax | done | P1 |  | valid TypeScript nested function overload signatures are treated as |
+| 1305 | Implement Collisionrestparameterintype | spike | frontend/syntax | done | P1 |  | object type literal signature members with rest parameters are not |
+| 1306 | Implement Collisionrestparameterunderscoreiusage | spike | frontend/syntax | done | P1 |  | constructor rest parameters and hidden lexical-capture parameters |
+| 1307 | Implement Collisionsuperandlocalfunctioninaccessors | spike | frontend/syntax | done | P1 |  | the generated class-accessor bucket is stale. TypeScript oracle |
+| 1308 | Implement Collisionsuperandlocalfunctioninconstructor | spike | frontend/syntax | done | P1 |  | the generated arrow-function bucket is stale. TypeScript oracle |
+| 1397 | Implement Complicatedgenericrecursivebaseclassreference | spike | frontend/semantics | done | P1 | 5002 | `complicatedGenericRecursiveBaseClassReference.ts` reaches tokens and |
+| 1399 | Implement Complicatedindexesofintersectionsareinferencable | spike | frontend/semantics | done | P1 | 5002 | the generated blocker is stale; there is no current compiler or |
+| 1401 | Implement Compositecontextualsignature | spike | frontend/syntax | done | P1 | 5001 | the generated blocker is stale; there is no current compiler or |
+| 1402 | Implement Compositegenericfunction | spike | reference/triage | done | P2 |  | the generated duplicate-local/compiler blocker is stale; there is no |
+| 1405 | Implement Computedenummembersyntacticallystring Enum | spike | frontend/syntax | done | P1 | 5001 | `computedEnumMemberSyntacticallyString.ts` reports |
+| 1406 | Implement Computedenummembersyntacticallystring Parser Syntax | spike | frontend/syntax | superseded | P1 |  | 1406 is not a standalone parser implementation order. The current |
+| 1407 | Implement Computedenumtypewidening | spike | frontend/syntax | superseded | P1 |  | 1407 is not a standalone computed-enum type-widening work order in the |
+| 1408 | Implement Computedpropertiesindestructuring | spike | frontend/syntax | done | P1 | 5001 | `computedPropertiesInDestructuring1.ts` reports |
+| 1411 | Implement Computedpropertieswithsetterassignment | spike | frontend/syntax | superseded | P2 |  | 1411 is not a standalone computed setter assignment work order in the |
+| 1413 | Implement Computedpropertynameandtypeparameterconflict | spike | frontend/syntax | done | P1 | 5000 | computedPropertyNameAndTypeParameterConflict has 1 reference failures and needs smart-triage evidence before implemen... |
+| 1416 | Implement Concatclassandstring | spike | frontend/resolver | done | P1 | 5005 | concatClassAndString has 1 reference failures and needs smart-triage evidence before implementation starts. |
+| 1417 | Implement Conditionalequalityonliteralobjects | spike | frontend/semantics | done | P1 | 5002 | conditionalEqualityOnLiteralObjects has 1 reference failures and needs smart-triage evidence before implementation st... |
+| 1418 | Implement Conditionalexpression | spike | frontend/semantics | done | P1 | 5002 | conditionalExpression has 1 reference failures and needs smart-triage evidence before implementation starts. |
+| 1419 | Implement Conditionalexpressionnewline | spike | frontend/resolver | done | P1 | 5005 | conditionalExpressionNewLine has 10 reference failures and needs smart-triage evidence before implementation starts. |
+| 1420 | Implement Conditionalexpressions | spike | frontend/semantics | done | P1 | 5002 | conditionalExpressions has 1 reference failures and needs smart-triage evidence before implementation starts. |
+| 1421 | Implement Conditionalreturnexpression | spike | frontend/resolver | done | P1 | 5005 | conditionalReturnExpression has 1 reference failures and needs smart-triage evidence before implementation starts. |
+| 1423 | Implement Conditionaltypebasedcontextualtypereturntypewidening | spike | frontend/semantics | done | P1 | 5002 | conditionalTypeBasedContextualTypeReturnTypeWidening has 1 reference failures and needs smart-triage evidence before ... |
+| 1424 | Implement Conditionaltypeclassmembers | spike | frontend/semantics | done | P1 | 5002 | conditionalTypeClassMembers has 1 reference failures and needs smart-triage evidence before implementation starts. |
+| 1428 | Implement Conditionaltypesubclassextendstypeparam | spike | frontend/semantics | done | P1 | 5002 | conditionalTypeSubclassExtendsTypeParam has 1 reference failures and needs smart-triage evidence before implementatio... |
+| 1429 | Implement Conditionaltypessimplifywhentrivial | spike | frontend/semantics | done | P1 | 5002 | conditionalTypesSimplifyWhenTrivial has 1 reference failures and needs smart-triage evidence before implementation st... |
+| 1430 | Implement Conditionallyduplicateoverloadscausedbyoverloadresolution | spike | frontend/syntax | done | P2 | 5005 | conditionallyDuplicateOverloadsCausedByOverloadResolution has 1 reference failures and needs smart-triage evidence be... |
+| 1431 | Implement Conflictmarkerdiff Parser Syntax | spike | frontend/syntax | done | P1 | 5000 | conflictMarkerDiff-parser-syntax has 1 reference failures and needs smart-triage evidence before implementation starts. |
+| 1432 | Implement Conflictmarkerdiff Unknown Unsupported | spike | frontend/syntax | done | P2 |  | conflictMarkerDiff-unknown-unsupported has 1 reference failures and needs smart-triage evidence before implementation... |
+| 1433 | Implement Conflictmarkertrivia Parser Syntax | spike | frontend/syntax | done | P1 | 5000 | conflictMarkerTrivia-parser-syntax has 1 reference failures and needs smart-triage evidence before implementation sta... |
+| 1434 | Implement Conflictmarkertrivia Unknown Unsupported | spike | frontend/syntax | done | P2 |  | conflictMarkerTrivia-unknown-unsupported has 2 reference failures and needs smart-triage evidence before implementati... |
+| 1435 | Implement Conflictingdeclarationsimportfromnamespace | spike | frontend/syntax | done | P1 |  | conflictingDeclarationsImportFromNamespace has 2 reference failures and needs smart-triage evidence before implementa... |
+| 1436 | Implement Conflictingtypeannotatedvar | spike | reference/triage | done | P2 |  | conflictingTypeAnnotatedVar has 1 reference failures and needs smart-triage evidence before implementation starts. |
+| 1437 | Implement Conflictingtypeparametersymboltransfer | spike | frontend/syntax | done | P1 |  | conflictingTypeParameterSymbolTransfer has 1 reference failures and needs smart-triage evidence before implementation... |
+| 1438 | Implement Consistentaliasvsnonaliasrecordbehavior | spike | frontend/syntax | done | P1 |  | consistentAliasVsNonAliasRecordBehavior has 1 reference failures and needs smart-triage evidence before implementatio... |
+| 1439 | Implement Constdeclarationshadowedbyvardeclaration | spike | frontend/syntax | done | P1 |  | constDeclarationShadowedByVarDeclaration has 2 reference failures and needs smart-triage evidence before implementati... |
+| 1440 | Implement Constdeclarations Import Export | spike | frontend/syntax | done | P1 |  | constDeclarations-import-export has 5 reference failures and needs smart-triage evidence before implementation starts. |
+| 1441 | Implement Constdeclarations Name Resolution | spike | frontend/resolver | superseded | P1 |  | the generated bucket remained blocked instead of pointing to an |
+| 1451 | Implement Constenumnamespacereferencecausesnoimport | spike | frontend/syntax | done | P1 |  | `constEnumNamespaceReferenceCausesNoImport` needs to be tracked through |
+| 1452 | Implement Constenumnoemitreexport | spike | frontend/syntax | done | P1 |  | `constEnumNoEmitReexport.ts` is blocked by const-enum declaration |
+| 1453 | Implement Constenumnopreservedeclarationreexport | spike | frontend/syntax | done | P1 |  | `constEnumNoPreserveDeclarationReexport.ts` is blocked by const-enum |
+| 1454 | Implement Constenumonlymodulemerging | spike | frontend/syntax | done | P1 |  | `constEnumOnlyModuleMerging.ts` was listed as blocked, but current |
+| 1455 | Implement Constenumpreserveemitnamedexport | spike | frontend/syntax | done | P1 |  | `constEnumPreserveEmitNamedExport` is blocked by const-enum declaration |
+| 1456 | Implement Constenumpreserveemitreexport | spike | frontend/syntax | done | P1 |  | `constEnumPreserveEmitReexport.ts` is blocked by const-enum declaration |
+| 1457 | Implement Constenumsyntheticnodescomments | spike | frontend/syntax | done | P1 |  | `constEnumSyntheticNodesComments.ts` is blocked by string-literal |
+| 1458 | Implement Constenumtostringnocomments | spike | frontend/syntax | done | P1 |  | `constEnumToStringNoComments.ts` is blocked by const-enum declaration |
+| 1459 | Implement Constenumtostringwithcomments | spike | frontend/syntax | done | P1 |  | `constEnumToStringWithComments.ts` is blocked by const-enum |
+| 1460 | Implement Constenums | spike | frontend/syntax | done | P1 |  | `constEnums.ts` is blocked by const-enum declaration parsing before the |
+| 1461 | Implement Constinclassexpression | spike | frontend/syntax | done | P1 |  | `constInClassExpression.ts` needs a focused implementation issue for |
+| 1462 | Implement Constindexedaccess | spike | frontend/syntax | done | P2 |  | `constIndexedAccess.ts` is blocked by const-enum declaration parsing |
+| 1463 | Implement Constwithnonnull | spike | frontend/syntax | done | P1 |  | `constWithNonNull.ts` is blocked by ambient `declare const` |
+| 1464 | Implement Constantenumassert | spike | frontend/syntax | done | P1 |  | `constantEnumAssert.ts` is blocked by const-enum declaration parsing |
+| 1465 | Implement Constraintcheckingenericbasetypereference | spike | frontend/semantics | done | P1 |  | `constraintCheckInGenericBaseTypeReference.ts` is blocked by typed |
+| 1466 | Implement Constraints | spike | frontend/resolver | done | P1 |  | `constraints0.ts` is blocked by ambient `declare var` name-resolution |
+| 1467 | Implement Constraintsthatreferenceothercontstraints | spike | frontend/syntax | done | P1 |  | `constraintsThatReferenceOtherContstraints1.ts` is blocked by generic |
+| 1468 | Implement Constraintsusedinprototypeproperty | spike | frontend/syntax | superseded | P1 | 5000 | Implement Constraintsusedinprototypeproperty |
+| 1470 | Implement Constructorargserrors | spike | frontend/syntax | superseded | P1 | 5001 | `constructorArgsErrors` needed a focused implementation-ready child |
+| 1471 | Implement Constructorastype | spike | frontend/resolver | superseded | P1 | 5005 | `constructorAsType.ts` is blocked by ambient `declare var` |
+| 1472 | Implement Constructorinvocationwithtoofewtypeargs | spike | frontend/syntax | superseded | P1 | 5001 | `constructorInvocationWithTooFewTypeArgs.ts` needed a focused child for |
+| 1474 | Implement Constructoroverloads Name Resolution | spike | frontend/resolver | superseded | P1 | 5005 | this bucket needs a focused owner for the ambient-class constructor |
+| 1475 | Implement Constructoroverloads Parser Syntax | spike | frontend/syntax | superseded | P1 | 5000 | this generated parser-syntax bucket needs focused ownership instead |
+| 1476 | Implement Constructorparametersinvariabledeclarations | spike | frontend/syntax | superseded | P1 | 5000 | the generated parser-syntax bucket no longer represents a compiler |
+| 1477 | Implement Constructorparametersthatshadowexternalnamesinvariabledeclarations | spike | frontend/syntax | superseded | P1 | 5000 | the generated parser-syntax bucket no longer represents a compiler |
+| 1478 | Implement Constructorreturningaprimitive | spike | frontend/syntax | superseded | P1 | 5000 | the generated parser-syntax bucket no longer represents a compiler |
+| 1479 | Implement Constructorstaticparamname | spike | frontend/syntax | superseded | P1 | 5000 | `constructor(static)` is rejected by the parser as a generic binding |
+| 1480 | Implement Constructorstaticparamnameerrors | spike | frontend/syntax | superseded | P1 | 5000 | this generated bucket is a duplicate of the focused issue 5362 and |
+| 1481 | Implement Constructorwithcapturedsuper | spike | frontend/syntax | done | P1 | 5001 | constructorWithCapturedSuper has 1 reference failures and needs smart-triage evidence before implementation starts. |
+| 1482 | Implement Constructorwithincompletetypeannotation | spike | frontend/syntax | done | P1 |  | constructorWithIncompleteTypeAnnotation has 1 reference failures and needs smart-triage evidence before implementatio... |
+| 1483 | Implement Constructorwithparameterpropertiesandprivatefields | spike | frontend/syntax | done | P1 | 5000 | constructorWithParameterPropertiesAndPrivateFields has 1 reference failures and needs smart-triage evidence before im... |
+| 1484 | Implement Constructorwithsuperandprologue | spike | frontend/syntax | done | P1 | 5001 | constructorWithSuperAndPrologue has 1 reference failures and needs smart-triage evidence before implementation starts. |
+| 1485 | Implement Constructorswithspecializedsignatures | spike | frontend/syntax | done | P1 |  | constructorsWithSpecializedSignatures has 1 reference failures and needs smart-triage evidence before implementation ... |
+| 1486 | Implement Contextsensitivereturntypeinference | spike | frontend/resolver | done | P1 | 5005 | contextSensitiveReturnTypeInference has 1 reference failures and needs smart-triage evidence before implementation st... |
+| 1487 | Implement Contextualcomputednonbindablepropertytype | spike | frontend/syntax | done | P1 |  | contextualComputedNonBindablePropertyType has 1 reference failures and needs smart-triage evidence before implementat... |
+| 1488 | Implement Contextualexpressiontypecheckingdoesntblowstack | spike | frontend/syntax | done | P1 |  | contextualExpressionTypecheckingDoesntBlowStack has 1 reference failures and needs smart-triage evidence before imple... |
+| 1489 | Implement Contextualoutertypeparameters | spike | frontend/syntax | done | P1 |  | contextualOuterTypeParameters has 1 reference failures and needs smart-triage evidence before implementation starts. |
+| 1490 | Implement Contextualoverloadlistfromarrayunion | spike | frontend/syntax | done | P1 |  | contextualOverloadListFromArrayUnion has 1 reference failures and needs smart-triage evidence before implementation s... |
+| 1491 | Implement Contextualparamtypevsnestedreturntypeinference | spike | frontend/semantics | done | P1 |  | contextualParamTypeVsNestedReturnTypeInference has 4 reference failures and needs smart-triage evidence before implem... |
+| 1492 | Implement Contextualparameterandselfreferentialconstraint | spike | frontend/syntax | done | P2 |  | contextualParameterAndSelfReferentialConstraint has 1 reference failures and needs smart-triage evidence before imple... |
+| 1493 | Implement Contextualpropertyofgenericfilteringmappedtype | spike | frontend/semantics | done | P1 |  | contextualPropertyOfGenericFilteringMappedType has 1 reference failures and needs smart-triage evidence before implem... |
+| 1494 | Implement Contextualpropertyofgenericmappedtype | spike | frontend/resolver | done | P1 |  | contextualPropertyOfGenericMappedType has 1 reference failures and needs smart-triage evidence before implementation ... |
+| 1495 | Implement Contextualreturntypeofiife Import Export | spike | frontend/syntax | done | P1 |  | contextualReturnTypeOfIIFE-import-export has 2 reference failures and needs smart-triage evidence before implementati... |
+| 1497 | Implement Contextualsignatureconditionaltypeinstantiationusingdefault | spike | frontend/semantics | done | P1 |  | contextualSignatureConditionalTypeInstantiationUsingDefault has 1 reference failures and needs smart-triage evidence ... |
+| 1498 | Implement Contextualsignatureinarrayelementlibes | spike | frontend/syntax | done | P1 |  | contextualSignatureInArrayElementLibEs has 2 reference failures and needs smart-triage evidence before implementation... |
+| 1499 | Implement Contextualsignatureinobjectfreeze | spike | frontend/resolver | done | P1 |  | contextualSignatureInObjectFreeze has 1 reference failures and needs smart-triage evidence before implementation starts. |
+| 1501 | Implement Contextualsignatureinstantiation Parser Syntax | spike | frontend/syntax | done | P1 |  | contextualSignatureInstantiation-parser-syntax has 2 reference failures and needs smart-triage evidence before implem... |
+| 1502 | Implement Contextualsignatureinstantiation Unknown Unsupported | spike | frontend/syntax | done | P2 |  | contextualSignatureInstantiation-unknown-unsupported has 1 reference failures and needs smart-triage evidence before ... |
+| 1503 | Implement Contextualsignatureinstantiationwithtypeparameterconstrainedtooutertypeparameter | spike | frontend/syntax | done | P1 |  | contextualSignatureInstantiationWithTypeParameterConstrainedToOuterTypeParameter has 1 reference failures and needs s... |
+| 1504 | Implement Contextualsignatureinstatiationcontravariance | spike | frontend/resolver | done | P1 |  | contextualSignatureInstatiationContravariance has 1 reference failures and needs smart-triage evidence before impleme... |
+| 1505 | Implement Contextualtupletypeparameterreadonly | spike | frontend/syntax | done | P1 |  | contextualTupleTypeParameterReadonly has 1 reference failures and needs smart-triage evidence before implementation s... |
+| 1506 | Implement Contextualtypearrayreturntype | spike | frontend/syntax | done | P1 |  | contextualTypeArrayReturnType has 1 reference failures and needs smart-triage evidence before implementation starts. |
+| 1507 | Implement Contextualtypebasedonintersectionwithanyinthemix Name Resolution | spike | frontend/resolver | done | P1 |  | contextualTypeBasedOnIntersectionWithAnyInTheMix-name-resolution has 4 reference failures and needs smart-triage evid... |
+| 1508 | Implement Contextualtypebasedonintersectionwithanyinthemix Unknown Unsupported | spike | frontend/syntax | done | P2 |  | contextualTypeBasedOnIntersectionWithAnyInTheMix-unknown-unsupported has 1 reference failures and needs smart-triage ... |
+| 1509 | Implement Contextualtypecaching | spike | frontend/syntax | done | P1 |  | contextualTypeCaching has 1 reference failures and needs smart-triage evidence before implementation starts. |
+| 1510 | Implement Contextualtypeforinitalizedvariablesfiltersundefined | spike | reference/triage | done | P2 |  | contextualTypeForInitalizedVariablesFiltersUndefined has 1 reference failures and needs smart-triage evidence before ... |
+| 1511 | Implement Contextualtypefunctionobjectpropertyintersection | spike | frontend/syntax | done | P1 |  | contextualTypeFunctionObjectPropertyIntersection has 1 reference failures and needs smart-triage evidence before impl... |
+| 1512 | Implement Contextualtypeiterableunions | spike | frontend/syntax | done | P1 |  | contextualTypeIterableUnions has 1 reference failures and needs smart-triage evidence before implementation starts. |
+| 1513 | Implement Contextualtypeofindexedaccessparameter | spike | frontend/resolver | done | P1 |  | contextualTypeOfIndexedAccessParameter has 1 reference failures and needs smart-triage evidence before implementation... |
+| 1514 | Implement Contextualtypeonyield | spike | frontend/syntax | done | P1 |  | contextualTypeOnYield has 2 reference failures and needs smart-triage evidence before implementation starts. |
 | 5048 | [ir] Broaden BigInt lowering beyond signed-i64/first-limb slice | feature | ir | implementation-ready | P0 |  | [ir] Broaden BigInt lowering beyond signed-i64/first-limb slice |
+| 5156 | Parse generic type arguments in class heritage clauses | feature | frontend/syntax | implementation-ready | P1 |  | `reference/typescript/tests/cases/compiler/baseTypeOrderChecking.ts` fails parsing on `class Class4<T> extends Class3... |
+| 5163 | Lower nested call expression callees | feature | frontend/semantics | implementation-ready | P2 |  | `reference/typescript/tests/cases/compiler/betterErrorForAccidentalCall.ts` currently reports `UnsupportedSyntax: onl... |
+| 5184 | Parse const enum declarations | feature | frontend/syntax | implementation-ready | P1 |  | `const enum` declarations are parser-unsupported and are misclassified as malformed `const` variable declarations. |
+| 5186 | Parse export assignment expressions | feature | frontend/syntax | implementation-ready | P1 |  | `export = expr` is treated as an unsupported module boundary before the exported expression can be represented in the... |
+| 5192 | Support first-class class constructor values | feature | ir/runtime | implementation-ready | P1 |  | class constructor bindings used as expression values still fail with `issue-5011`, blocking reference cases that pass... |
+| 5195 | Support callable interface-typed local calls | feature | ir/lowering | implementation-ready | P1 |  | callable interface-typed locals currently lower to `Undefined` values and calls to them stop with `issue-211`. |
+| 5200 | Validate top-level function overload implementations | feature | frontend/resolver | implementation-ready | P1 |  | top-level function overload implementation groups are currently classified as duplicate concrete functions. |
 | 5246 | Report static declarations inside constructor bodies | feature | frontend/parser | implementation-ready | P1 |  | invalid `static` declarations in constructor bodies report generic unsupported expression instead of a spanned parser... |
 | 5247 | Fix JS noEmit class constructor FuncId invariant | feature | ir/compiler | implementation-ready | P1 |  | `classAttributeInferenceTemplateJS.ts` triage reports `InvariantViolation: ClassDecl constructor FuncId 0 is out of r... |
 | 5248 | Lower class expressions | feature | ir/compiler | implementation-ready | P1 |  | `classBlockScoping.ts` reports `UnsupportedSyntax: issue-313: class expression lowering not yet implemented`. |
@@ -270,6 +496,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5383 | Classify number parameter toFixed calls | feature | ir/lowering | implementation-ready | P1 |  | `x.toFixed()` inside an arrow callback with `x: number` falls through to `issue-211: unknown receiver class for metho... |
 | 5384 | Resolve ambient function value references | feature | frontend/resolver | implementation-ready | P1 |  | `contextualTypingReturnStatementWithReturnTypeAnnotation.ts` currently |
 | 5385 | Parse arrow body assignment expressions | feature | frontend/syntax | implementation-ready | P1 | 5000 | `contextualTypingTwoInstancesOfSameTypeParameter.ts` currently fails |
+| 5386 | Bind DOM setTimeout global | feature | frontend/resolver | implementation-ready | P1 |  | `contextuallyTypeArgumentsKeyword.ts` requests `// @lib: es2017, dom` |
 | 5387 | Parse function expression statements in nested blocks | feature | frontend/syntax | implementation-ready | P2 | 5000 | capturedLetConstInLoop parser tests reject `(function() { return x })` |
 | 5388 | W5: test262 coverage ramp from 100 to 500 executed | feature | coverage | design-ready | P1 |  | W5: test262 coverage ramp from 100 to 500 executed |
 <!-- generated:ready:end -->
@@ -434,6 +661,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 658 | Implement Argumentsreferenceinobjectliteral | spike | frontend/syntax | class: blocked | Implement Argumentsreferenceinobjectliteral |
 | 659 | Implement Argumentsusedinclassfieldinitializerorstaticinitializationblock | spike | frontend/syntax | class: blocked | Implement Argumentsusedinclassfieldinitializerorstaticinitializationblock |
 | 660 | Implement Argumentsusedinobjectliteralproperty | spike | frontend/syntax | class: blocked | Implement Argumentsusedinobjectliteralproperty |
+| 661 | Implement Arithassigntyping | spike | frontend/syntax | 5349 | Implement Arithassigntyping |
 | 662 | Implement Arrayassignmenttest Import Export | spike | frontend/syntax | class: blocked | Implement Arrayassignmenttest Import Export |
 | 663 | Implement Arrayassignmenttest Parser Syntax | spike | frontend/syntax | class: triage-needed | Implement Arrayassignmenttest Parser Syntax |
 | 664 | Implement Arrayaugment | spike | reference/triage | class: triage-needed | Implement Arrayaugment |
@@ -531,6 +759,223 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 759 | Implement Asynciife | spike | frontend/syntax | class: triage-needed | Implement Asynciife |
 | 760 | Implement Asyncimportnestedyield | spike | reference/triage | class: triage-needed | Implement Asyncimportnestedyield |
 | 761 | Implement Asynciteratorextraparameters | spike | runtime/builtins | class: triage-needed | Implement Asynciteratorextraparameters |
+| 762 | Implement Asyncyieldstarcontextualtype | spike | frontend/syntax | class: blocked | Implement Asyncyieldstarcontextualtype |
+| 763 | Implement Augmentexportequals | spike | frontend/syntax | class: blocked | Implement Augmentexportequals |
+| 764 | Implement Augmentedclasswithprototypepropertyonmodule | spike | frontend/syntax | class: blocked | Implement Augmentedclasswithprototypepropertyonmodule |
+| 765 | Implement Augmentedtypesclass | spike | frontend/syntax | class: blocked | Implement Augmentedtypesclass |
+| 766 | Implement Augmentedtypesenum Import Export | spike | frontend/syntax | class: blocked | Implement Augmentedtypesenum Import Export |
+| 767 | Implement Augmentedtypesenum Parser Syntax | spike | frontend/syntax | class: blocked | Implement Augmentedtypesenum Parser Syntax |
+| 768 | Implement Augmentedtypesexternalmodule | spike | frontend/syntax | class: blocked | Implement Augmentedtypesexternalmodule |
+| 770 | Implement Augmentedtypesinterface | spike | frontend/syntax | class: blocked | Implement Augmentedtypesinterface |
+| 771 | Implement Augmentedtypesmodules | spike | frontend/syntax | class: blocked | Implement Augmentedtypesmodules |
+| 1108 | Implement Capturedletconstinloop Duplicate Local | spike | reference/triage | class: triage-needed | Implement Capturedletconstinloop Duplicate Local |
+| 1109 | Implement Capturedletconstinloop Import Export | spike | reference/triage | class: triage-needed | Implement Capturedletconstinloop Import Export |
+| 1110 | Implement Capturedletconstinloop Name Resolution | spike | frontend/resolver | class: triage-needed | Implement Capturedletconstinloop Name Resolution |
+| 1119 | Implement Castofawait | spike | reference/triage | class: triage-needed | Implement Castofawait |
+| 1120 | Implement Castparentheses | spike | frontend/syntax | 5192 | Implement Castparentheses |
+| 1143 | Implement Checksupercallbeforethisaccessing Parser Syntax | spike | frontend/syntax | 5163 | Implement Checksupercallbeforethisaccessing Parser Syntax |
+| 1162 | Implement Circularreferenceinimport | spike | frontend/syntax | class: blocked | Implement Circularreferenceinimport |
+| 1163 | Implement Circularreferenceinreturntype Name Resolution | spike | frontend/resolver | 5163 | Implement Circularreferenceinreturntype Name Resolution |
+| 1170 | Implement Class | spike | frontend/syntax | 5246 | Implement Class |
+| 1173 | Implement Classattributeinferencetemplatejs | spike | frontend/semantics | 5247 | Implement Classattributeinferencetemplatejs |
+| 1174 | Implement Classblockscoping | spike | frontend/syntax | 5248 | Implement Classblockscoping |
+| 1175 | Implement Classdeclarationblockscoping | spike | frontend/syntax | 5249, 5250 | Implement Classdeclarationblockscoping |
+| 1178 | Implement Classdeclarationshouldbeoutofscopeincomputednames | spike | frontend/resolver | class: blocked | Implement Classdeclarationshouldbeoutofscopeincomputednames |
+| 1179 | Implement Classdeclaredbeforeclassfactory | spike | frontend/syntax | class: blocked | Implement Classdeclaredbeforeclassfactory |
+| 1180 | Implement Classexpressionassignment | spike | frontend/syntax | class: triage-needed | Implement Classexpressionassignment |
+| 1181 | Implement Classexpressionextendingabstractclass | spike | frontend/syntax | class: triage-needed | Implement Classexpressionextendingabstractclass |
+| 1182 | Implement Classexpressioninclassstaticdeclarations | spike | frontend/syntax | class: triage-needed | Implement Classexpressioninclassstaticdeclarations |
+| 1183 | Implement Classexpressionnames | spike | frontend/syntax | class: triage-needed | Implement Classexpressionnames |
+| 1184 | Implement Classexpressionpropertymodifiers | spike | frontend/syntax | class: triage-needed | Implement Classexpressionpropertymodifiers |
+| 1185 | Implement Classexpressiontest | spike | frontend/syntax | class: triage-needed | Implement Classexpressiontest |
+| 1186 | Implement Classexpressionwithdecorator | spike | frontend/syntax | class: blocked | Implement Classexpressionwithdecorator |
+| 1187 | Implement Classexpressionwithresolutionofnamespaceofsamename | spike | frontend/syntax | class: blocked | Implement Classexpressionwithresolutionofnamespaceofsamename |
+| 1188 | Implement Classexpressionwithstaticproperties Parser Syntax | spike | frontend/syntax | class: triage-needed | Implement Classexpressionwithstaticproperties Parser Syntax |
+| 1189 | Implement Classexpressionwithstaticproperties Unknown Unsupported | spike | frontend/syntax | class: triage-needed | Implement Classexpressionwithstaticproperties Unknown Unsupported |
+| 1190 | Implement Classexpressionwithstaticpropertieses Parser Syntax | spike | frontend/syntax | class: triage-needed | Implement Classexpressionwithstaticpropertieses Parser Syntax |
+| 1191 | Implement Classexpressionwithstaticpropertieses Unknown Unsupported | spike | frontend/syntax | class: triage-needed | Implement Classexpressionwithstaticpropertieses Unknown Unsupported |
+| 1192 | Implement Classexpressions | spike | frontend/syntax | class: triage-needed | Implement Classexpressions |
+| 1194 | Implement Classextendingany | spike | frontend/syntax | class: triage-needed | Implement Classextendingany |
+| 1200 | Implement Classextendsinterface Unknown Unsupported | spike | frontend/syntax | class: triage-needed | Implement Classextendsinterface Unknown Unsupported |
+| 1201 | Implement Classextendsinterfaceinexpression | spike | frontend/syntax | class: triage-needed | Implement Classextendsinterfaceinexpression |
+| 1205 | Implement Classextendsnull | spike | frontend/syntax | class: triage-needed | Implement Classextendsnull |
+| 1206 | Implement Classextensionnameoutput | spike | frontend/syntax | class: triage-needed | Implement Classextensionnameoutput |
+| 1213 | Implement Classfunctionmerging Parser Syntax | spike | frontend/syntax | class: triage-needed | Implement Classfunctionmerging Parser Syntax |
+| 1214 | Implement Classheritagewithtrailingseparator | spike | frontend/syntax | class: triage-needed | Implement Classheritagewithtrailingseparator |
+| 1215 | Implement Classimplementinginterfaceindexer | spike | frontend/syntax | class: blocked | Implement Classimplementinginterfaceindexer |
+| 1216 | Implement Classimplementsclass | spike | frontend/syntax | class: blocked | Implement Classimplementsclass |
+| 1217 | Implement Classimplementsimportedinterface | spike | frontend/syntax | class: blocked | Implement Classimplementsimportedinterface |
+| 1218 | Implement Classimplementsmethodwithtupleargs | spike | frontend/syntax | class: blocked | Implement Classimplementsmethodwithtupleargs |
+| 1219 | Implement Classimplementsprimitive | spike | frontend/syntax | class: blocked | Implement Classimplementsprimitive |
+| 1220 | Implement Classinconvertedloopes | spike | frontend/syntax | class: triage-needed | Implement Classinconvertedloopes |
+| 1221 | Implement Classindexer | spike | frontend/syntax | class: triage-needed | Implement Classindexer |
+| 1222 | Implement Classmemberinitializerscoping | spike | frontend/syntax | class: triage-needed | Implement Classmemberinitializerscoping |
+| 1225 | Implement Classmemberwithmissingidentifier | spike | frontend/syntax | class: triage-needed | Implement Classmemberwithmissingidentifier |
+| 1227 | Implement Classmethodwithkeywordname | spike | frontend/syntax | class: triage-needed | Implement Classmethodwithkeywordname |
+| 1228 | Implement Classnamereferencesinstaticelements | spike | frontend/syntax | class: triage-needed | Implement Classnamereferencesinstaticelements |
+| 1230 | Implement Classorder | spike | frontend/syntax | class: triage-needed | Implement Classorder |
+| 1231 | Implement Classorderbug | spike | frontend/syntax | class: triage-needed | Implement Classorderbug |
+| 1233 | Implement Classpropertyerroronnameonly | spike | runtime/builtins | class: triage-needed | Implement Classpropertyerroronnameonly |
+| 1238 | Implement Classstaticinitializersusepropertiesbeforedeclaration | spike | frontend/syntax | class: triage-needed | Implement Classstaticinitializersusepropertiesbeforedeclaration |
+| 1239 | Implement Classstaticpropertyaccess | spike | frontend/syntax | class: triage-needed | Implement Classstaticpropertyaccess |
+| 1242 | Implement Classupdatetests | spike | runtime/builtins | class: triage-needed | Implement Classupdatetests |
+| 1243 | Implement Classusedbeforeinitializedvariables | spike | frontend/syntax | class: triage-needed | Implement Classusedbeforeinitializedvariables |
+| 1244 | Implement Classvariancecircularity | spike | frontend/syntax | class: triage-needed | Implement Classvariancecircularity |
+| 1245 | Implement Classvarianceresolvecircularity | spike | frontend/syntax | class: triage-needed | Implement Classvarianceresolvecircularity |
+| 1249 | Implement Classdecl | spike | frontend/syntax | class: triage-needed | Implement Classdecl |
+| 1254 | Implement Clodulesplitacrossfiles | spike | frontend/syntax | class: blocked | Implement Clodulesplitacrossfiles |
+| 1255 | Implement Clodulestaticmembers | spike | frontend/syntax | class: triage-needed | Implement Clodulestaticmembers |
+| 1256 | Implement Cloduletest | spike | frontend/syntax | class: blocked | Implement Cloduletest |
+| 1257 | Implement Clodulewithduplicatemember | spike | frontend/syntax | class: blocked | Implement Clodulewithduplicatemember |
+| 1258 | Implement Clodulewithpriorinstantiatedmodule | spike | frontend/syntax | class: blocked | Implement Clodulewithpriorinstantiatedmodule |
+| 1259 | Implement Clodulewithprioruninstantiatedmodule | spike | frontend/syntax | class: blocked | Implement Clodulewithprioruninstantiatedmodule |
+| 1260 | Implement Clodulewithrecursivereference | spike | frontend/syntax | class: blocked | Implement Clodulewithrecursivereference |
+| 1261 | Implement Clodulesderivedclasses | spike | frontend/syntax | class: blocked | Implement Clodulesderivedclasses |
+| 1263 | Implement Coandcontravariantinferences Parser Syntax | spike | frontend/syntax | class: triage-needed | Implement Coandcontravariantinferences Parser Syntax |
+| 1271 | Implement Collisionargumentsintype | spike | frontend/syntax | class: blocked | Implement Collisionargumentsintype |
+| 1272 | Implement Collisioncodegenenumwithenummemberconflict | spike | frontend/syntax | class: blocked | Implement Collisioncodegenenumwithenummemberconflict |
+| 1273 | Implement Collisioncodegenmodulewithaccessorchildren | spike | frontend/syntax | class: blocked | Implement Collisioncodegenmodulewithaccessorchildren |
+| 1274 | Implement Collisioncodegenmodulewithconstructorchildren | spike | frontend/syntax | class: blocked | Implement Collisioncodegenmodulewithconstructorchildren |
+| 1275 | Implement Collisioncodegenmodulewithenummemberconflict | spike | frontend/syntax | class: blocked | Implement Collisioncodegenmodulewithenummemberconflict |
+| 1276 | Implement Collisioncodegenmodulewithfunctionchildren | spike | frontend/syntax | class: blocked | Implement Collisioncodegenmodulewithfunctionchildren |
+| 1277 | Implement Collisioncodegenmodulewithmemberclassconflict | spike | frontend/syntax | class: blocked | Implement Collisioncodegenmodulewithmemberclassconflict |
+| 1278 | Implement Collisioncodegenmodulewithmemberinterfaceconflict | spike | frontend/syntax | class: blocked | Implement Collisioncodegenmodulewithmemberinterfaceconflict |
+| 1279 | Implement Collisioncodegenmodulewithmembervariable | spike | frontend/syntax | class: blocked | Implement Collisioncodegenmodulewithmembervariable |
+| 1280 | Implement Collisioncodegenmodulewithmethodchildren | spike | frontend/syntax | class: blocked | Implement Collisioncodegenmodulewithmethodchildren |
+| 1281 | Implement Collisioncodegenmodulewithmodulechildren | spike | frontend/syntax | class: blocked | Implement Collisioncodegenmodulewithmodulechildren |
+| 1282 | Implement Collisioncodegenmodulewithmodulereopening | spike | frontend/syntax | class: blocked | Implement Collisioncodegenmodulewithmodulereopening |
+| 1283 | Implement Collisioncodegenmodulewithprivatemember | spike | frontend/syntax | class: blocked | Implement Collisioncodegenmodulewithprivatemember |
+| 1284 | Implement Collisionexportsrequireandalias | spike | frontend/syntax | class: blocked | Implement Collisionexportsrequireandalias |
+| 1309 | Implement Collisionsuperandlocalfunctioninmethod | spike | frontend/syntax | class: blocked | Implement Collisionsuperandlocalfunctioninmethod |
+| 1310 | Implement Collisionsuperandlocalfunctioninproperty | spike | frontend/syntax | class: blocked | Implement Collisionsuperandlocalfunctioninproperty |
+| 1311 | Implement Collisionsuperandlocalvarinaccessors | spike | frontend/syntax | class: blocked | Implement Collisionsuperandlocalvarinaccessors |
+| 1312 | Implement Collisionsuperandlocalvarinconstructor | spike | frontend/syntax | class: blocked | Implement Collisionsuperandlocalvarinconstructor |
+| 1313 | Implement Collisionsuperandlocalvarinmethod | spike | frontend/syntax | class: blocked | Implement Collisionsuperandlocalvarinmethod |
+| 1314 | Implement Collisionsuperandlocalvarinproperty | spike | frontend/syntax | class: blocked | Implement Collisionsuperandlocalvarinproperty |
+| 1315 | Implement Collisionsuperandnameresolution | spike | frontend/resolver | class: blocked | Implement Collisionsuperandnameresolution |
+| 1316 | Implement Collisionsuperandparameter | spike | frontend/syntax | class: blocked | Implement Collisionsuperandparameter |
+| 1317 | Implement Collisionsuperandpropertynameasconstuctorparameter | spike | frontend/syntax | class: blocked | Implement Collisionsuperandpropertynameasconstuctorparameter |
+| 1318 | Implement Collisionthisexpressionandaliasinglobal | spike | frontend/syntax | class: blocked | Implement Collisionthisexpressionandaliasinglobal |
+| 1319 | Implement Collisionthisexpressionandambientclassinglobal | spike | frontend/resolver | class: blocked | Implement Collisionthisexpressionandambientclassinglobal |
+| 1320 | Implement Collisionthisexpressionandambientvaringlobal | spike | frontend/resolver | class: blocked | Implement Collisionthisexpressionandambientvaringlobal |
+| 1321 | Implement Collisionthisexpressionandclassinglobal | spike | frontend/syntax | class: blocked | Implement Collisionthisexpressionandclassinglobal |
+| 1322 | Implement Collisionthisexpressionandenuminglobal | spike | frontend/syntax | class: blocked | Implement Collisionthisexpressionandenuminglobal |
+| 1323 | Implement Collisionthisexpressionandfunctioninglobal | spike | frontend/syntax | class: blocked | Implement Collisionthisexpressionandfunctioninglobal |
+| 1324 | Implement Collisionthisexpressionandlocalvarinaccessors | spike | frontend/syntax | class: blocked | Implement Collisionthisexpressionandlocalvarinaccessors |
+| 1326 | Implement Collisionthisexpressionandlocalvarinfunction | spike | frontend/syntax | class: blocked | Implement Collisionthisexpressionandlocalvarinfunction |
+| 1327 | Implement Collisionthisexpressionandlocalvarinlambda | spike | frontend/syntax | class: triage-needed | Implement Collisionthisexpressionandlocalvarinlambda |
+| 1328 | Implement Collisionthisexpressionandlocalvarinmethod | spike | frontend/syntax | class: triage-needed | Implement Collisionthisexpressionandlocalvarinmethod |
+| 1329 | Implement Collisionthisexpressionandlocalvarinproperty | spike | frontend/syntax | class: blocked | Implement Collisionthisexpressionandlocalvarinproperty |
+| 1330 | Implement Collisionthisexpressionandlocalvarwithsuperexperssion | spike | frontend/syntax | class: blocked | Implement Collisionthisexpressionandlocalvarwithsuperexperssion |
+| 1331 | Implement Collisionthisexpressionandmoduleinglobal | spike | frontend/syntax | class: blocked | Implement Collisionthisexpressionandmoduleinglobal |
+| 1332 | Implement Collisionthisexpressionandnameresolution | spike | frontend/syntax | class: blocked | Implement Collisionthisexpressionandnameresolution |
+| 1333 | Implement Collisionthisexpressionandparameter | spike | frontend/syntax | class: blocked | Implement Collisionthisexpressionandparameter |
+| 1334 | Implement Collisionthisexpressionandpropertynameasconstuctorparameter | spike | frontend/syntax | class: blocked | Implement Collisionthisexpressionandpropertynameasconstuctorparameter |
+| 1335 | Implement Collisionthisexpressionandvaringlobal | spike | frontend/syntax | class: blocked | Implement Collisionthisexpressionandvaringlobal |
+| 1336 | Implement Commaoperator | spike | frontend/syntax | class: triage-needed | Implement Commaoperator |
+| 1337 | Implement Commaoperatorinconditionalexpression | spike | frontend/semantics | class: blocked | Implement Commaoperatorinconditionalexpression |
+| 1338 | Implement Commaoperatorleftsideunused | spike | frontend/syntax | class: blocked | Implement Commaoperatorleftsideunused |
+| 1339 | Implement Commentbeforestaticmethod | spike | frontend/syntax | class: triage-needed | Implement Commentbeforestaticmethod |
+| 1340 | Implement Commentemitatendoffile | spike | frontend/syntax | class: triage-needed | Implement Commentemitatendoffile |
+| 1341 | Implement Commentemitonparenthesizedassertioninreturnstatement | spike | frontend/syntax | class: blocked | Implement Commentemitonparenthesizedassertioninreturnstatement |
+| 1343 | Implement Commentinnamespacedeclarationwithidentifierpathname | spike | frontend/syntax | class: blocked | Implement Commentinnamespacedeclarationwithidentifierpathname |
+| 1344 | Implement Commentleadingclosebrace | spike | frontend/resolver | class: blocked | Implement Commentleadingclosebrace |
+| 1345 | Implement Commentonambientmodule | spike | frontend/syntax | class: blocked | Implement Commentonambientmodule |
+| 1346 | Implement Commentonambientvariable | spike | frontend/resolver | class: blocked | Implement Commentonambientvariable |
+| 1347 | Implement Commentonclassaccessor | spike | reference/triage | class: triage-needed | Implement Commentonclassaccessor |
+| 1348 | Implement Commentondecoratedclassdeclaration | spike | frontend/syntax | class: triage-needed | Implement Commentondecoratedclassdeclaration |
+| 1349 | Implement Commentonelidedmodule | spike | frontend/syntax | class: blocked | Implement Commentonelidedmodule |
+| 1350 | Implement Commentonexportenumdeclaration | spike | frontend/syntax | class: blocked | Implement Commentonexportenumdeclaration |
+| 1351 | Implement Commentonimportstatement | spike | frontend/syntax | class: blocked | Implement Commentonimportstatement |
+| 1352 | Implement Commentonparameter | spike | frontend/syntax | class: triage-needed | Implement Commentonparameter |
+| 1353 | Implement Commentonparenthesizedexpressionopenparen | spike | frontend/syntax | class: triage-needed | Implement Commentonparenthesizedexpressionopenparen |
+| 1354 | Implement Commentonsignature | spike | frontend/syntax | class: triage-needed | Implement Commentonsignature |
+| 1355 | Implement Commentwithunreasonableindentationlevel | spike | frontend/syntax | class: blocked | Implement Commentwithunreasonableindentationlevel |
+| 1356 | Implement Commentsafterfunctionexpression | spike | frontend/syntax | class: triage-needed | Implement Commentsafterfunctionexpression |
+| 1357 | Implement Commentsafterspread | spike | frontend/syntax | class: blocked | Implement Commentsafterspread |
+| 1358 | Implement Commentsatendoffile | spike | frontend/syntax | class: triage-needed | Implement Commentsatendoffile |
+| 1359 | Implement Commentsbeforefunctionexpression | spike | frontend/syntax | class: triage-needed | Implement Commentsbeforefunctionexpression |
+| 1360 | Implement Commentsbeforevariablestatement | spike | frontend/syntax | class: blocked | Implement Commentsbeforevariablestatement |
+| 1361 | Implement Commentsclass | spike | frontend/resolver | class: blocked | Implement Commentsclass |
+| 1362 | Implement Commentsclassmembers | spike | frontend/syntax | class: triage-needed | Implement Commentsclassmembers |
+| 1363 | Implement Commentscommentparsing | spike | frontend/syntax | class: triage-needed | Implement Commentscommentparsing |
+| 1364 | Implement Commentsdottedmodulename | spike | frontend/syntax | class: blocked | Implement Commentsdottedmodulename |
+| 1365 | Implement Commentsenums | spike | frontend/syntax | class: triage-needed | Implement Commentsenums |
+| 1366 | Implement Commentsexternalmodules | spike | frontend/syntax | class: blocked | Implement Commentsexternalmodules |
+| 1367 | Implement Commentsformatting | spike | frontend/syntax | class: blocked | Implement Commentsformatting |
+| 1368 | Implement Commentsfunction | spike | frontend/syntax | class: triage-needed | Implement Commentsfunction |
+| 1369 | Implement Commentsinheritance | spike | frontend/syntax | class: triage-needed | Implement Commentsinheritance |
+| 1370 | Implement Commentsinterface | spike | frontend/syntax | class: blocked | Implement Commentsinterface |
+| 1371 | Implement Commentsmodules | spike | frontend/syntax | class: blocked | Implement Commentsmodules |
+| 1372 | Implement Commentsmultimodulemultifile | spike | frontend/syntax | class: blocked | Implement Commentsmultimodulemultifile |
+| 1373 | Implement Commentsmultimodulesinglefile | spike | frontend/syntax | class: blocked | Implement Commentsmultimodulesinglefile |
+| 1374 | Implement Commentsonobjectliteral Name Resolution | spike | frontend/resolver | class: blocked | Implement Commentsonobjectliteral Name Resolution |
+| 1375 | Implement Commentsonobjectliteral Object Literal | spike | frontend/syntax | class: blocked | Implement Commentsonobjectliteral Object Literal |
+| 1376 | Implement Commentsonrequirestatement | spike | frontend/syntax | class: blocked | Implement Commentsonrequirestatement |
+| 1377 | Implement Commentsonreturnstatement | spike | frontend/syntax | class: triage-needed | Implement Commentsonreturnstatement |
+| 1378 | Implement Commentsonstaticmembers | spike | frontend/syntax | class: triage-needed | Implement Commentsonstaticmembers |
+| 1379 | Implement Commentsoverloads | spike | frontend/syntax | class: blocked | Implement Commentsoverloads |
+| 1380 | Implement Commentstypeparameters | spike | frontend/syntax | class: blocked | Implement Commentstypeparameters |
+| 1381 | Implement Commentsdonotemitcomments | spike | frontend/syntax | class: triage-needed | Implement Commentsdonotemitcomments |
+| 1382 | Implement Commentsemitcomments | spike | frontend/syntax | class: triage-needed | Implement Commentsemitcomments |
+| 1383 | Implement Commonjsexporttypedeclarationerror | spike | frontend/syntax | class: blocked | Implement Commonjsexporttypedeclarationerror |
+| 1384 | Implement Commonjsimportclassexpression | spike | frontend/syntax | class: blocked | Implement Commonjsimportclassexpression |
+| 1385 | Implement Commonjsisolatedmodules | spike | frontend/syntax | class: blocked | Implement Commonjsisolatedmodules |
+| 1387 | Implement Commonsourcedir | spike | frontend/syntax | class: blocked | Implement Commonsourcedir |
+| 1388 | Implement Commonsourcedirectory | spike | frontend/syntax | class: blocked | Implement Commonsourcedirectory |
+| 1389 | Implement Commonjsaccessexports | spike | frontend/syntax | class: blocked | Implement Commonjsaccessexports |
+| 1390 | Implement Commonjssafeimport | spike | frontend/syntax | class: blocked | Implement Commonjssafeimport |
+| 1391 | Implement Comparabilitytypeparametersrelatedbyunion | spike | frontend/syntax | class: blocked | Implement Comparabilitytypeparametersrelatedbyunion |
+| 1392 | Implement Comparablerelationbidirectional | spike | frontend/syntax | class: triage-needed | Implement Comparablerelationbidirectional |
+| 1393 | Implement Comparisonofpartialdeepandindexedaccessterminateswithouterror | spike | frontend/syntax | class: triage-needed | Implement Comparisonofpartialdeepandindexedaccessterminateswithouterror |
+| 1394 | Implement Complexclassrelationships | spike | frontend/syntax | class: triage-needed | Implement Complexclassrelationships |
+| 1395 | Implement Complexnarrowingwithany | spike | frontend/syntax | class: blocked | Implement Complexnarrowingwithany |
+| 1396 | Implement Complexrecursivecollections | spike | frontend/syntax | class: blocked | Implement Complexrecursivecollections |
+| 1398 | Implement Complicatedindexedaccesskeyofreliesonkeyofneverupperbound | spike | frontend/syntax | 432 | Implement Complicatedindexedaccesskeyofreliesonkeyofneverupperbound |
+| 1400 | Implement Complicatedprivacy | spike | frontend/syntax | 432 | Implement Complicatedprivacy |
+| 1403 | Implement Compositewithnodemodulessourcefile | spike | frontend/syntax | 432 | Implement Compositewithnodemodulessourcefile |
+| 1404 | Implement Compoundvardecl | spike | frontend/syntax | 432 | Implement Compoundvardecl |
+| 1409 | Implement Computedpropertiesnarrowed | spike | frontend/syntax | 432 | Implement Computedpropertiesnarrowed |
+| 1410 | Implement Computedpropertiestransformedinotherwisenontsclasses | spike | frontend/syntax | 432 | Implement Computedpropertiestransformedinotherwisenontsclasses |
+| 1412 | Implement Computedpropertybindingelementdeclarationnocrash | spike | frontend/syntax | 432 | Implement Computedpropertybindingelementdeclarationnocrash |
+| 1414 | Implement Computedpropertynamewithimportedkey | spike | frontend/syntax | 432 | Implement Computedpropertynamewithimportedkey |
+| 1415 | Implement Computerpropertiesines | spike | frontend/syntax | 059 | Implement Computerpropertiesines |
+| 1422 | Implement Conditionaltypeassignabilitywhendeferred | spike | frontend/syntax | 432 | Implement Conditionaltypeassignabilitywhendeferred |
+| 1425 | Implement Conditionaltypediscriminatinglargeunionregulartypefetchingspeedreasonable | spike | frontend/syntax | 432 | Implement Conditionaltypediscriminatinglargeunionregulartypefetchingspeedreasonable |
+| 1426 | Implement Conditionaltypedoesntspinforever | spike | frontend/syntax | 432 | Implement Conditionaltypedoesntspinforever |
+| 1427 | Implement Conditionaltyperelaxingconstraintassignability | spike | frontend/syntax | 432 | Implement Conditionaltyperelaxingconstraintassignability |
+| 1442 | Implement Constdeclarations Parser Syntax | spike | frontend/syntax | 5349 | Implement Constdeclarations Parser Syntax |
+| 1443 | Implement Constdeclarations Scope Analysis | spike | frontend/resolver | 5310 | Implement Constdeclarations Scope Analysis |
+| 1444 | Implement Constdeclarations Unknown Unsupported | spike | frontend/syntax | 5350 | Implement Constdeclarations Unknown Unsupported |
+| 1445 | Implement Constenumbadpropertynames | spike | frontend/syntax | 5184 | Implement Constenumbadpropertynames |
+| 1446 | Implement Constenumdeclarations | spike | frontend/syntax | 5184 | Implement Constenumdeclarations |
+| 1447 | Implement Constenumerrors | spike | frontend/syntax | 5351 | Implement Constenumerrors |
+| 1448 | Implement Constenumexternalmodule | spike | frontend/syntax | 5184 | Implement Constenumexternalmodule |
+| 1449 | Implement Constenummergingwithvalues Import Export | spike | frontend/syntax | 5186 | Implement Constenummergingwithvalues Import Export |
+| 1450 | Implement Constenummergingwithvalues Parser Syntax | spike | frontend/syntax | 5186 | Implement Constenummergingwithvalues Parser Syntax |
+| 1469 | Implement Constructorargwithgenericcallsignature | spike | frontend/syntax | 432 | Implement Constructorargwithgenericcallsignature |
+| 1473 | Implement Constructoroverloads Import Export | spike | frontend/syntax | 432 | Implement Constructoroverloads Import Export |
+| 1515 | Implement Contextualtypeselfreferencing | spike | frontend/resolver | class: blocked | Implement Contextualtypeselfreferencing |
+| 1516 | Implement Contextualtypeshouldbeliteral | spike | reference/triage | class: triage-needed | Implement Contextualtypeshouldbeliteral |
+| 1517 | Implement Contextualtypesnegatedtypelikeconstraintingenericmappedtype | spike | frontend/syntax | class: blocked | Implement Contextualtypesnegatedtypelikeconstraintingenericmappedtype |
+| 1518 | Implement Contextualtyping Import Export | spike | frontend/syntax | class: blocked | Implement Contextualtyping Import Export |
+| 1519 | Implement Contextualtyping Parser Syntax | spike | frontend/syntax | class: triage-needed | Implement Contextualtyping Parser Syntax |
+| 1520 | Implement Contextualtyping Unknown Unsupported | spike | frontend/syntax | class: triage-needed | Implement Contextualtyping Unknown Unsupported |
+| 1521 | Implement Contextualtypingarraydestructuringwithdefaults | spike | reference/triage | class: triage-needed | Implement Contextualtypingarraydestructuringwithdefaults |
+| 1522 | Implement Contextualtypingfunctionreturningfunction | spike | frontend/syntax | class: blocked | Implement Contextualtypingfunctionreturningfunction |
+| 1523 | Implement Contextualtypingofaccessors | spike | frontend/syntax | class: blocked | Implement Contextualtypingofaccessors |
+| 1524 | Implement Contextualtypingofarrayliterals | spike | frontend/syntax | class: blocked | Implement Contextualtypingofarrayliterals |
+| 1525 | Implement Contextualtypingofconditionalexpression | spike | frontend/semantics | class: blocked | Implement Contextualtypingofconditionalexpression |
+| 1526 | Implement Contextualtypingofgenericfunctiontypedarguments | spike | frontend/semantics | class: blocked | Implement Contextualtypingofgenericfunctiontypedarguments |
+| 1527 | Implement Contextualtypingoflambdareturnexpression | spike | frontend/syntax | class: triage-needed | Implement Contextualtypingoflambdareturnexpression |
+| 1528 | Implement Contextualtypingoflambdawithmultiplesignatures | spike | frontend/syntax | class: triage-needed | Implement Contextualtypingoflambdawithmultiplesignatures |
+| 1529 | Implement Contextualtypingoftooshortoverloads | spike | frontend/syntax | class: blocked | Implement Contextualtypingoftooshortoverloads |
+| 1530 | Implement Contextualtypingreturnstatementwithreturntypeannotation | spike | frontend/resolver | class: blocked | Implement Contextualtypingreturnstatementwithreturntypeannotation |
+| 1531 | Implement Contextualtypingtwoinstancesofsametypeparameter | spike | frontend/syntax | class: blocked | Implement Contextualtypingtwoinstancesofsametypeparameter |
+| 1532 | Implement Contextualtypingwithfixedtypeparameters | spike | frontend/syntax | class: blocked | Implement Contextualtypingwithfixedtypeparameters |
+| 1533 | Implement Contextualtypingwithgenericandnongenericsignature | spike | frontend/semantics | class: blocked | Implement Contextualtypingwithgenericandnongenericsignature |
+| 1534 | Implement Contextualtypingwithgenericsignature | spike | frontend/semantics | class: blocked | Implement Contextualtypingwithgenericsignature |
+| 1535 | Implement Contextuallytypeargumentskeyword | spike | frontend/syntax | class: blocked | Implement Contextuallytypeargumentskeyword |
 | 1536 | Implement Contextuallytypeasyncfunctionreturntypefromunion | spike | runtime/builtins | class: triage-needed | Implement Contextuallytypeasyncfunctionreturntypefromunion |
 | 1537 | Implement Contextuallytypegeneratorreturntypefromunion | spike | runtime/builtins | class: triage-needed | Implement Contextuallytypegeneratorreturntypefromunion |
 | 1538 | Implement Contextuallytypedbooleanliterals | spike | frontend/resolver | class: blocked | Implement Contextuallytypedbooleanliterals |
@@ -3248,6 +3693,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 4259 | Implement Staticvisibility Parser Syntax | spike | frontend/syntax | class: triage-needed | Implement Staticvisibility Parser Syntax |
 | 4260 | Implement Statics | spike | frontend/syntax | class: blocked | Implement Statics |
 | 4261 | Implement Staticsinafunction | spike | frontend/syntax | class: triage-needed | Implement Staticsinafunction |
+| 4262 | Implement Staticsinconstructorbodies | spike | frontend/syntax | 5246 | Implement Staticsinconstructorbodies |
 | 4263 | Implement Staticsnotinscopeinclodule | spike | frontend/resolver | class: blocked | Implement Staticsnotinscopeinclodule |
 | 4264 | Implement Stradac | spike | frontend/resolver | class: blocked | Implement Stradac |
 | 4265 | Implement Strictfunctiontypes | spike | frontend/resolver | class: blocked | Implement Strictfunctiontypes |
@@ -3927,7 +4373,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 113 | Implement Aliasdoesnotduplicatesignatures (dup) | spike | frontend/syntax | see `issues/done/113-implement-aliasDoesNotDuplicateSignatures.md` |
 | 114 | Implement Aliaserrors (dup) | spike | frontend/syntax | see `issues/done/114-implement-aliasErrors.md` |
 | 116 | Implement Aliasinstantiationexpressiongenericintersectionnocrash (dup) | spike | frontend/syntax | see `issues/done/116-implement-aliasInstantiationExpressionGenericIntersectionNoCrash.md` |
-| 117 | Implement Aliasofgenericfunctionwithrestbehavedsameasunaliased | spike | frontend/syntax | see `issues/done/117-implement-aliasOfGenericFunctionWithRestBehavedSameAsUnaliased.md` |
 | 118 | Implement Aliasonmergedmoduleinterface (dup) | spike | frontend/syntax | see `issues/done/118-implement-aliasOnMergedModuleInterface.md` |
 | 120 | Implement Aliasusageinarray (dup) | spike | frontend/syntax | see `issues/done/120-implement-aliasUsageInArray.md` |
 | 121 | Implement Aliasusageinfunctionexpression (dup) | spike | frontend/syntax | see `issues/done/121-implement-aliasUsageInFunctionExpression.md` |
@@ -4267,7 +4712,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 540 | Implement Ambiguousgenericassertion (dup) | spike | frontend/syntax | see `issues/done/540-implement-ambiguousGenericAssertion.md` |
 | 545 | Implement Arrowfunctionexpression (audit reopened #545) | spike | frontend/syntax | see `issues/done/545-implement-ArrowFunctionExpression.md` |
 | 547 | Implement Classdeclarationwithinvalidconstonpropertydeclaration (audit reopened #547) | spike | frontend/syntax | see `issues/done/547-implement-ClassDeclarationWithInvalidConstOnPropertyDeclaration.md` |
-| 548 | Implement Exportassignment | spike | frontend/syntax | see `issues/done/548-implement-ExportAssignment.md` |
 | 549 | Implement Functiondeclaration Import Export (audit reopened #549) | spike | frontend/syntax | see `issues/done/549-implement-FunctionDeclaration-import-export.md` |
 | 551 | Implement Memberaccessordeclaration (audit reopened #551) | spike | frontend/syntax | see `issues/done/551-implement-MemberAccessorDeclaration.md` |
 | 552 | Implement Parameterlist | spike | frontend/syntax | see `issues/done/552-implement-ParameterList.md` |
@@ -4295,24 +4739,10 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 639 | Implement Anonymousmodules (audit reopened #639) | spike | frontend/syntax | see `issues/done/639-implement-anonymousModules.md` |
 | 641 | Implement Anyasreturntypefornewoncall (audit reopened #641) | spike | frontend/syntax | see `issues/done/641-implement-anyAsReturnTypeForNewOnCall.md` |
 | 642 | Implement Anydeclare (audit reopened #642) | spike | frontend/syntax | see `issues/done/642-implement-anyDeclare.md` |
-| 661 | Implement Arithassigntyping | spike | frontend/syntax | see `issues/done/661-implement-arithAssignTyping.md` |
 | 669 | Implement Arrayconcat (dup) | spike | frontend/syntax | see `issues/done/669-implement-arrayConcat.md` |
 | 707 | Implement Asibreak | spike | frontend/syntax | see `issues/done/707-implement-asiBreak.md` |
 | 708 | Implement Asicontinue | spike | frontend/syntax | see `issues/done/708-implement-asiContinue.md` |
-| 762 | Implement Asyncyieldstarcontextualtype | spike | frontend/syntax | see `issues/done/762-implement-asyncYieldStarContextualType.md` |
-| 763 | Implement Augmentexportequals | spike | frontend/syntax | see `issues/done/763-implement-augmentExportEquals.md` |
-| 764 | Implement Augmentedclasswithprototypepropertyonmodule | spike | frontend/syntax | see `issues/done/764-implement-augmentedClassWithPrototypePropertyOnModule.md` |
-| 765 | Implement Augmentedtypesclass | spike | frontend/syntax | see `issues/done/765-implement-augmentedTypesClass.md` |
-| 766 | Implement Augmentedtypesenum Import Export | spike | frontend/syntax | see `issues/done/766-implement-augmentedTypesEnum-import-export.md` |
-| 767 | Implement Augmentedtypesenum Parser Syntax | spike | frontend/syntax | see `issues/done/767-implement-augmentedTypesEnum-parser-syntax.md` |
-| 768 | Implement Augmentedtypesexternalmodule | spike | frontend/syntax | see `issues/done/768-implement-augmentedTypesExternalModule.md` |
-| 769 | Implement Augmentedtypesfunction | spike | frontend/resolver | see `issues/done/769-implement-augmentedTypesFunction.md` |
-| 770 | Implement Augmentedtypesinterface | spike | frontend/syntax | see `issues/done/770-implement-augmentedTypesInterface.md` |
-| 771 | Implement Augmentedtypesmodules | spike | frontend/syntax | see `issues/done/771-implement-augmentedTypesModules.md` |
-| 772 | Implement Augmentedtypesvar | spike | frontend/resolver | see `issues/done/772-implement-augmentedTypesVar.md` |
-| 773 | Implement Autoasiforstaticsinclassdeclaration | spike | frontend/parser | see `issues/done/773-implement-autoAsiForStaticsInClassDeclaration.md` |
 | 774 | Implement Autolift | spike | frontend/syntax | see `issues/done/774-implement-autoLift.md` |
-| 775 | Implement Autotypeassignedusingdestructuringfromnevernocrash | spike | frontend/resolver | see `issues/done/775-implement-autoTypeAssignedUsingDestructuringFromNeverNoCrash.md` |
 | 776 | Implement Apilibcheck (dup) | spike | frontend/syntax | see `issues/done/776-implement-APILibCheck.md` |
 | 777 | Implement Apisample Arrow Function (dup) | spike | frontend/syntax | see `issues/done/777-implement-APISample-arrow-function.md` |
 | 778 | Implement Apisample Import Export (dup) | spike | frontend/syntax | see `issues/done/778-implement-APISample-import-export.md` |
@@ -4601,7 +5031,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1062 | Implement Bindingpatterninparameter | spike | frontend/syntax | see `issues/done/1062-implement-bindingPatternInParameter.md` |
 | 1063 | Implement Bindingpatternomittedexpressionnesting | spike | frontend/syntax | see `issues/done/1063-implement-bindingPatternOmittedExpressionNesting.md` |
 | 1064 | Implement Binopassignmentshouldhavetype | spike | frontend/syntax | see `issues/done/1064-implement-binopAssignmentShouldHaveType.md` |
-| 1065 | Implement Bitwisecompoundassignmentoperators | spike | frontend/syntax | see `issues/done/1065-implement-bitwiseCompoundAssignmentOperators.md` |
 | 1066 | Implement Blockscopedbindingcapturethisinfunction | spike | reference/triage | see `issues/done/1066-implement-blockScopedBindingCaptureThisInFunction.md` |
 | 1067 | Implement Blockscopedbindingusedbeforedef | spike | frontend/resolver | see `issues/done/1067-implement-blockScopedBindingUsedBeforeDef.md` |
 | 1068 | Implement Blockscopedbindingsreassignedinloop Name Resolution | spike | frontend/resolver | see `issues/done/1068-implement-blockScopedBindingsReassignedInLoop-name-resolution.md` |
@@ -4644,434 +5073,14 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1105 | Implement Cannotinvokenewonindexexpression | spike | frontend/resolver | see `issues/done/1105-implement-cannotInvokeNewOnIndexExpression.md` |
 | 1106 | Implement Capturesuperpropertyaccessinsupercall | spike | frontend/syntax | see `issues/done/1106-implement-captureSuperPropertyAccessInSuperCall.md` |
 | 1107 | Implement Capturedletconstinloop Arrow Function | spike | frontend/syntax | see `issues/done/1107-implement-capturedLetConstInLoop-arrow-function.md` |
-| 1108 | Implement Capturedletconstinloop Duplicate Local | spike | reference/triage | see `issues/done/1108-implement-capturedLetConstInLoop-duplicate-local.md` |
-| 1109 | Implement Capturedletconstinloop Import Export | spike | reference/triage | see `issues/done/1109-implement-capturedLetConstInLoop-import-export.md` |
-| 1110 | Implement Capturedletconstinloop Name Resolution | spike | frontend/resolver | see `issues/done/1110-implement-capturedLetConstInLoop-name-resolution.md` |
-| 1111 | Implement Capturedletconstinloop Parser Syntax | spike | frontend/syntax | see `issues/done/1111-implement-capturedLetConstInLoop-parser-syntax.md` |
-| 1112 | Implement Capturedparametersininitializers | spike | frontend/syntax | see `issues/done/1112-implement-capturedParametersInInitializers.md` |
-| 1113 | Implement Capturedshorthandpropertyassignmentnocheck | spike | frontend/syntax | see `issues/done/1113-implement-capturedShorthandPropertyAssignmentNoCheck.md` |
-| 1114 | Implement Capturedvarinloop | spike | frontend/syntax | see `issues/done/1114-implement-capturedVarInLoop.md` |
-| 1115 | Implement Caseinsensitivefilesystemwithcapsimporttypedeclarations | spike | frontend/syntax | see `issues/done/1115-implement-caseInsensitiveFileSystemWithCapsImportTypeDeclarations.md` |
-| 1116 | Implement Castexpressionparentheses | spike | frontend/syntax | see `issues/done/1116-implement-castExpressionParentheses.md` |
-| 1117 | Implement Castfunctionexpressionshouldbeparenthesized | spike | frontend/syntax | see `issues/done/1117-implement-castFunctionExpressionShouldBeParenthesized.md` |
-| 1118 | Implement Castnewobjectbug | spike | frontend/syntax | see `issues/done/1118-implement-castNewObjectBug.md` |
-| 1119 | Implement Castofawait | spike | reference/triage | see `issues/done/1119-implement-castOfAwait.md` |
-| 1120 | Implement Castparentheses | spike | frontend/syntax | see `issues/done/1120-implement-castParentheses.md` |
-| 1121 | Implement Casttest | spike | frontend/syntax | see `issues/done/1121-implement-castTest.md` |
-| 1122 | Implement Catch | spike | reference/triage | see `issues/done/1122-implement-catch.md` |
-| 1123 | Implement Catchclausewithinitializer | spike | frontend/syntax | see `issues/done/1123-implement-catchClauseWithInitializer.md` |
-| 1124 | Implement Cf | spike | frontend/resolver | see `issues/done/1124-implement-cf.md` |
-| 1125 | Implement Chainedassignment | spike | frontend/syntax | see `issues/done/1125-implement-chainedAssignment.md` |
-| 1126 | Implement Chainedcallswithtypeparameterconstrainedtoothertypeparameter | spike | frontend/syntax | see `issues/done/1126-implement-chainedCallsWithTypeParameterConstrainedToOtherTypeParameter.md` |
-| 1127 | Implement Chainedimportalias | spike | frontend/syntax | see `issues/done/1127-implement-chainedImportAlias.md` |
-| 1128 | Implement Chainedspecializationtoobjecttypeliteral | spike | frontend/syntax | see `issues/done/1128-implement-chainedSpecializationToObjectTypeLiteral.md` |
-| 1129 | Implement Checkdestructuringshorthandassigment Destructuring | spike | frontend/syntax | see `issues/done/1129-implement-checkDestructuringShorthandAssigment-destructuring.md` |
-| 1130 | Implement Checkdestructuringshorthandassigment Name Resolution | spike | frontend/resolver | see `issues/done/1130-implement-checkDestructuringShorthandAssigment-name-resolution.md` |
-| 1131 | Implement Checkforobjecttoostrict | spike | frontend/syntax | see `issues/done/1131-implement-checkForObjectTooStrict.md` |
-| 1132 | Implement Checkindexconstraintofjavascriptclassexpression | spike | frontend/resolver | see `issues/done/1132-implement-checkIndexConstraintOfJavascriptClassExpression.md` |
-| 1133 | Implement Checkinfiniteexpansiontermination | spike | frontend/resolver | see `issues/done/1133-implement-checkInfiniteExpansionTermination.md` |
-| 1134 | Implement Checkinheritedproperty | spike | frontend/syntax | see `issues/done/1134-implement-checkInheritedProperty.md` |
-| 1135 | Implement Checkjsfiles | spike | frontend/syntax | see `issues/done/1135-implement-checkJsFiles.md` |
-| 1136 | Implement Checkjsobjectliteralindexsignatures | spike | frontend/syntax | see `issues/done/1136-implement-checkJsObjectLiteralIndexSignatures.md` |
-| 1137 | Implement Checkjstypedefnounusedlocalmarked | spike | frontend/syntax | see `issues/done/1137-implement-checkJsTypeDefNoUnusedLocalMarked.md` |
-| 1138 | Implement Checkjsdoctypetagonexportassignment | spike | frontend/syntax | see `issues/done/1138-implement-checkJsdocTypeTagOnExportAssignment.md` |
-| 1139 | Implement Checkjsxnotseterror | spike | reference/triage | see `issues/done/1139-implement-checkJsxNotSetError.md` |
-| 1140 | Implement Checkmergedglobalumdsymbol | spike | frontend/syntax | see `issues/done/1140-implement-checkMergedGlobalUMDSymbol.md` |
-| 1141 | Implement Checksupercallbeforethisaccess | spike | frontend/syntax | see `issues/done/1141-implement-checkSuperCallBeforeThisAccess.md` |
-| 1142 | Implement Checksupercallbeforethisaccessing Class | spike | frontend/syntax | see `issues/done/1142-implement-checkSuperCallBeforeThisAccessing-class.md` |
-| 1143 | Implement Checksupercallbeforethisaccessing Parser Syntax | spike | frontend/syntax | see `issues/done/1143-implement-checkSuperCallBeforeThisAccessing-parser-syntax.md` |
 | 1144 | Implement Checkswitchstatementifcasetypeisstring | spike | frontend/syntax | see `issues/done/1144-implement-checkSwitchStatementIfCaseTypeIsString.md` |
-| 1145 | Implement Checktypepredicateforredundantproperties | spike | frontend/semantics | see `issues/done/1145-implement-checkTypePredicateForRedundantProperties.md` |
-| 1146 | Implement Checkerinitializationcrash | spike | frontend/syntax | see `issues/done/1146-implement-checkerInitializationCrash.md` |
-| 1147 | Implement Checkingobjectdefinepropertyonfunctionnonexistentpropertynocrash | spike | frontend/syntax | see `issues/done/1147-implement-checkingObjectDefinePropertyOnFunctionNonexistentPropertyNoCrash.md` |
-| 1148 | Implement Checkingobjectwiththisinnamepositionnocrash | spike | frontend/syntax | see `issues/done/1148-implement-checkingObjectWithThisInNamePositionNoCrash.md` |
-| 1149 | Implement Circularaccessorannotations | spike | frontend/syntax | see `issues/done/1149-implement-circularAccessorAnnotations.md` |
-| 1150 | Implement Circularbaseconstraint | spike | frontend/syntax | see `issues/done/1150-implement-circularBaseConstraint.md` |
-| 1151 | Implement Circularconstraintyieldsappropriateerror | spike | frontend/syntax | see `issues/done/1151-implement-circularConstraintYieldsAppropriateError.md` |
-| 1152 | Implement Circularconstructorwithreturn | spike | frontend/syntax | see `issues/done/1152-implement-circularConstructorWithReturn.md` |
-| 1153 | Implement Circularcontextualmappedtype | spike | frontend/resolver | see `issues/done/1153-implement-circularContextualMappedType.md` |
-| 1154 | Implement Circularcontextualreturntype | spike | frontend/resolver | see `issues/done/1154-implement-circularContextualReturnType.md` |
 | 1155 | Implement Circularinferredtypeofvariable | spike | frontend/semantics | see `issues/done/1155-implement-circularInferredTypeOfVariable.md` |
-| 1156 | Implement Circularinlinemappedgenerictupletypenocrash | spike | frontend/semantics | see `issues/done/1156-implement-circularInlineMappedGenericTupleTypeNoCrash.md` |
-| 1157 | Implement Circularinstantiationexpression | spike | frontend/resolver | see `issues/done/1157-implement-circularInstantiationExpression.md` |
-| 1158 | Implement Circularmappedtypeconstraint | spike | frontend/syntax | see `issues/done/1158-implement-circularMappedTypeConstraint.md` |
-| 1159 | Implement Circularmoduleimports | spike | frontend/syntax | see `issues/done/1159-implement-circularModuleImports.md` |
-| 1160 | Implement Circularobjectliteralaccessors | spike | frontend/syntax | see `issues/done/1160-implement-circularObjectLiteralAccessors.md` |
-| 1161 | Implement Circularoptionalityremoval | spike | frontend/resolver | see `issues/done/1161-implement-circularOptionalityRemoval.md` |
-| 1162 | Implement Circularreferenceinimport | spike | frontend/syntax | see `issues/done/1162-implement-circularReferenceInImport.md` |
-| 1163 | Implement Circularreferenceinreturntype Name Resolution | spike | frontend/resolver | see `issues/done/1163-implement-circularReferenceInReturnType-name-resolution.md` |
-| 1164 | Implement Circularreferenceinreturntype Parser Syntax | spike | frontend/syntax | see `issues/done/1164-implement-circularReferenceInReturnType-parser-syntax.md` |
-| 1165 | Implement Circularresolvedsignature | spike | frontend/syntax | see `issues/done/1165-implement-circularResolvedSignature.md` |
-| 1166 | Implement Circulartypeargumentslocalandouternocrash | spike | frontend/syntax | see `issues/done/1166-implement-circularTypeArgumentsLocalAndOuterNoCrash.md` |
-| 1167 | Implement Circulartypeofwithfunctionmodule | spike | frontend/syntax | see `issues/done/1167-implement-circularTypeofWithFunctionModule.md` |
-| 1168 | Implement Circularlyconstrainedmappedtypecontainingconditionalnoinfiniteinstantiationdepth | spike | frontend/semantics | see `issues/done/1168-implement-circularlyConstrainedMappedTypeContainingConditionalNoInfiniteInstantiationDepth.md` |
-| 1169 | Implement Circularlysimplifyingconditionaltypesnocrash | spike | frontend/semantics | see `issues/done/1169-implement-circularlySimplifyingConditionalTypesNoCrash.md` |
-| 1170 | Implement Class | spike | frontend/syntax | see `issues/done/1170-implement-class.md` |
-| 1171 | Implement Classaccessorinitializationinferencewithelementaccess | spike | frontend/syntax | see `issues/done/1171-implement-classAccessorInitializationInferenceWithElementAccess.md` |
-| 1172 | Implement Classattributeinferencetemplate | spike | frontend/semantics | see `issues/done/1172-implement-classAttributeInferenceTemplate.md` |
-| 1173 | Implement Classattributeinferencetemplatejs | spike | frontend/semantics | see `issues/done/1173-implement-classAttributeInferenceTemplateJS.md` |
-| 1174 | Implement Classblockscoping | spike | frontend/syntax | see `issues/done/1174-implement-classBlockScoping.md` |
-| 1175 | Implement Classdeclarationblockscoping | spike | frontend/syntax | see `issues/done/1175-implement-classDeclarationBlockScoping.md` |
-| 1176 | Implement Classdeclarationcheckusedbeforedefinitioninitself | spike | frontend/syntax | see `issues/done/1176-implement-classDeclarationCheckUsedBeforeDefinitionInItself.md` |
-| 1177 | Implement Classdeclarationmergedinmodulewithcontinuation | spike | frontend/syntax | see `issues/done/1177-implement-classDeclarationMergedInModuleWithContinuation.md` |
-| 1178 | Implement Classdeclarationshouldbeoutofscopeincomputednames | spike | frontend/resolver | see `issues/done/1178-implement-classDeclarationShouldBeOutOfScopeInComputedNames.md` |
-| 1179 | Implement Classdeclaredbeforeclassfactory | spike | frontend/syntax | see `issues/done/1179-implement-classDeclaredBeforeClassFactory.md` |
-| 1180 | Implement Classexpressionassignment | spike | frontend/syntax | see `issues/done/1180-implement-classExpressionAssignment.md` |
-| 1181 | Implement Classexpressionextendingabstractclass | spike | frontend/syntax | see `issues/done/1181-implement-classExpressionExtendingAbstractClass.md` |
-| 1182 | Implement Classexpressioninclassstaticdeclarations | spike | frontend/syntax | see `issues/done/1182-implement-classExpressionInClassStaticDeclarations.md` |
-| 1183 | Implement Classexpressionnames | spike | frontend/syntax | see `issues/done/1183-implement-classExpressionNames.md` |
-| 1184 | Implement Classexpressionpropertymodifiers | spike | frontend/syntax | see `issues/done/1184-implement-classExpressionPropertyModifiers.md` |
-| 1185 | Implement Classexpressiontest | spike | frontend/syntax | see `issues/done/1185-implement-classExpressionTest.md` |
-| 1186 | Implement Classexpressionwithdecorator | spike | frontend/syntax | see `issues/done/1186-implement-classExpressionWithDecorator.md` |
-| 1187 | Implement Classexpressionwithresolutionofnamespaceofsamename | spike | frontend/syntax | see `issues/done/1187-implement-classExpressionWithResolutionOfNamespaceOfSameName.md` |
-| 1188 | Implement Classexpressionwithstaticproperties Parser Syntax | spike | frontend/syntax | see `issues/done/1188-implement-classExpressionWithStaticProperties-parser-syntax.md` |
-| 1189 | Implement Classexpressionwithstaticproperties Unknown Unsupported | spike | frontend/syntax | see `issues/done/1189-implement-classExpressionWithStaticProperties-unknown-unsupported.md` |
-| 1190 | Implement Classexpressionwithstaticpropertieses Parser Syntax | spike | frontend/syntax | see `issues/done/1190-implement-classExpressionWithStaticPropertiesES-parser-syntax.md` |
-| 1191 | Implement Classexpressionwithstaticpropertieses Unknown Unsupported | spike | frontend/syntax | see `issues/done/1191-implement-classExpressionWithStaticPropertiesES-unknown-unsupported.md` |
-| 1192 | Implement Classexpressions | spike | frontend/syntax | see `issues/done/1192-implement-classExpressions.md` |
-| 1193 | Implement Classextendingabstractclasswithmembercalledthesameasitsowntypeparam | spike | frontend/syntax | see `issues/done/1193-implement-classExtendingAbstractClassWithMemberCalledTheSameAsItsOwnTypeParam.md` |
-| 1194 | Implement Classextendingany | spike | frontend/syntax | see `issues/done/1194-implement-classExtendingAny.md` |
-| 1195 | Implement Classextendingqualifiedname | spike | frontend/syntax | see `issues/done/1195-implement-classExtendingQualifiedName.md` |
-| 1196 | Implement Classextendsacrossfiles | spike | frontend/syntax | see `issues/done/1196-implement-classExtendsAcrossFiles.md` |
-| 1197 | Implement Classextendsclauseclassmergedwithmodulenotreferingconstructor | spike | frontend/syntax | see `issues/done/1197-implement-classExtendsClauseClassMergedWithModuleNotReferingConstructor.md` |
-| 1198 | Implement Classextendsclauseclassnotreferringconstructor | spike | frontend/syntax | see `issues/done/1198-implement-classExtendsClauseClassNotReferringConstructor.md` |
-| 1199 | Implement Classextendsinterface Parser Syntax | spike | frontend/syntax | see `issues/done/1199-implement-classExtendsInterface-parser-syntax.md` |
-| 1200 | Implement Classextendsinterface Unknown Unsupported | spike | frontend/syntax | see `issues/done/1200-implement-classExtendsInterface-unknown-unsupported.md` |
-| 1201 | Implement Classextendsinterfaceinexpression | spike | frontend/syntax | see `issues/done/1201-implement-classExtendsInterfaceInExpression.md` |
-| 1202 | Implement Classextendsinterfaceinmodule | spike | frontend/syntax | see `issues/done/1202-implement-classExtendsInterfaceInModule.md` |
-| 1203 | Implement Classextendsinterfacethatextendsclasswithprivates | spike | frontend/syntax | see `issues/done/1203-implement-classExtendsInterfaceThatExtendsClassWithPrivates.md` |
-| 1204 | Implement Classextendsmultiplebaseclasses | spike | frontend/syntax | see `issues/done/1204-implement-classExtendsMultipleBaseClasses.md` |
-| 1205 | Implement Classextendsnull | spike | frontend/syntax | see `issues/done/1205-implement-classExtendsNull.md` |
-| 1206 | Implement Classextensionnameoutput | spike | frontend/syntax | see `issues/done/1206-implement-classExtensionNameOutput.md` |
-| 1207 | Implement Classfieldsuperaccessible | spike | frontend/syntax | see `issues/done/1207-implement-classFieldSuperAccessible.md` |
-| 1208 | Implement Classfieldsuperaccessiblejs | spike | frontend/syntax | see `issues/done/1208-implement-classFieldSuperAccessibleJs.md` |
-| 1209 | Implement Classfieldsupernotaccessible | spike | frontend/syntax | see `issues/done/1209-implement-classFieldSuperNotAccessible.md` |
-| 1210 | Implement Classfieldsupernotaccessiblejs | spike | frontend/syntax | see `issues/done/1210-implement-classFieldSuperNotAccessibleJs.md` |
-| 1211 | Implement Classfieldsbrokenconstructoremitnocrash | spike | frontend/syntax | see `issues/done/1211-implement-classFieldsBrokenConstructorEmitNoCrash.md` |
-| 1212 | Implement Classfunctionmerging Import Export | spike | frontend/syntax | see `issues/done/1212-implement-classFunctionMerging-import-export.md` |
-| 1213 | Implement Classfunctionmerging Parser Syntax | spike | frontend/syntax | see `issues/done/1213-implement-classFunctionMerging-parser-syntax.md` |
-| 1214 | Implement Classheritagewithtrailingseparator | spike | frontend/syntax | see `issues/done/1214-implement-classHeritageWithTrailingSeparator.md` |
-| 1215 | Implement Classimplementinginterfaceindexer | spike | frontend/syntax | see `issues/done/1215-implement-classImplementingInterfaceIndexer.md` |
-| 1216 | Implement Classimplementsclass | spike | frontend/syntax | see `issues/done/1216-implement-classImplementsClass.md` |
-| 1217 | Implement Classimplementsimportedinterface | spike | frontend/syntax | see `issues/done/1217-implement-classImplementsImportedInterface.md` |
-| 1218 | Implement Classimplementsmethodwithtupleargs | spike | frontend/syntax | see `issues/done/1218-implement-classImplementsMethodWIthTupleArgs.md` |
-| 1219 | Implement Classimplementsprimitive | spike | frontend/syntax | see `issues/done/1219-implement-classImplementsPrimitive.md` |
-| 1220 | Implement Classinconvertedloopes | spike | frontend/syntax | see `issues/done/1220-implement-classInConvertedLoopES.md` |
-| 1221 | Implement Classindexer | spike | frontend/syntax | see `issues/done/1221-implement-classIndexer.md` |
-| 1222 | Implement Classmemberinitializerscoping | spike | frontend/syntax | see `issues/done/1222-implement-classMemberInitializerScoping.md` |
-| 1223 | Implement Classmemberinitializerwithlamdascoping Import Export | spike | frontend/syntax | see `issues/done/1223-implement-classMemberInitializerWithLamdaScoping-import-export.md` |
-| 1224 | Implement Classmemberinitializerwithlamdascoping Module System Amd | spike | frontend/syntax | see `issues/done/1224-implement-classMemberInitializerWithLamdaScoping-module-system-amd.md` |
-| 1225 | Implement Classmemberwithmissingidentifier | spike | frontend/syntax | see `issues/done/1225-implement-classMemberWithMissingIdentifier.md` |
-| 1226 | Implement Classmergedwithinterfacemultiplebasesnoerror | spike | frontend/syntax | see `issues/done/1226-implement-classMergedWithInterfaceMultipleBasesNoError.md` |
-| 1227 | Implement Classmethodwithkeywordname | spike | frontend/syntax | see `issues/done/1227-implement-classMethodWithKeywordName.md` |
-| 1228 | Implement Classnamereferencesinstaticelements | spike | frontend/syntax | see `issues/done/1228-implement-classNameReferencesInStaticElements.md` |
-| 1229 | Implement Classnonuniquesymbolmethodhassymbolindexer | spike | frontend/syntax | see `issues/done/1229-implement-classNonUniqueSymbolMethodHasSymbolIndexer.md` |
-| 1230 | Implement Classorder | spike | frontend/syntax | see `issues/done/1230-implement-classOrder.md` |
-| 1231 | Implement Classorderbug | spike | frontend/syntax | see `issues/done/1231-implement-classOrderBug.md` |
-| 1232 | Implement Classpropinitializationinferencewithelementaccess | spike | frontend/syntax | see `issues/done/1232-implement-classPropInitializationInferenceWithElementAccess.md` |
-| 1233 | Implement Classpropertyerroronnameonly | spike | runtime/builtins | see `issues/done/1233-implement-classPropertyErrorOnNameOnly.md` |
-| 1234 | Implement Classpropertyinferencefrombroadertypeconst | spike | frontend/semantics | see `issues/done/1234-implement-classPropertyInferenceFromBroaderTypeConst.md` |
-| 1235 | Implement Classreferencedincontextualparameterwithinitsownbaseexpression | spike | frontend/syntax | see `issues/done/1235-implement-classReferencedInContextualParameterWithinItsOwnBaseExpression.md` |
-| 1236 | Implement Classsideinheritance Name Resolution | spike | frontend/resolver | see `issues/done/1236-implement-classSideInheritance-name-resolution.md` |
-| 1237 | Implement Classsideinheritance Parser Syntax | spike | frontend/syntax | see `issues/done/1237-implement-classSideInheritance-parser-syntax.md` |
-| 1238 | Implement Classstaticinitializersusepropertiesbeforedeclaration | spike | frontend/syntax | see `issues/done/1238-implement-classStaticInitializersUsePropertiesBeforeDeclaration.md` |
-| 1239 | Implement Classstaticpropertyaccess | spike | frontend/syntax | see `issues/done/1239-implement-classStaticPropertyAccess.md` |
-| 1240 | Implement Classstaticpropertytypeguard | spike | frontend/syntax | see `issues/done/1240-implement-classStaticPropertyTypeGuard.md` |
-| 1241 | Implement Classtypeparametersinstatics | spike | frontend/syntax | see `issues/done/1241-implement-classTypeParametersInStatics.md` |
-| 1242 | Implement Classupdatetests | spike | runtime/builtins | see `issues/done/1242-implement-classUpdateTests.md` |
-| 1243 | Implement Classusedbeforeinitializedvariables | spike | frontend/syntax | see `issues/done/1243-implement-classUsedBeforeInitializedVariables.md` |
-| 1244 | Implement Classvariancecircularity | spike | frontend/syntax | see `issues/done/1244-implement-classVarianceCircularity.md` |
-| 1245 | Implement Classvarianceresolvecircularity | spike | frontend/syntax | see `issues/done/1245-implement-classVarianceResolveCircularity.md` |
-| 1246 | Implement Classwithemptytypeparameter | spike | frontend/syntax | see `issues/done/1246-implement-classWithEmptyTypeParameter.md` |
-| 1247 | Implement Classwithmultiplebaseclasses | spike | frontend/syntax | see `issues/done/1247-implement-classWithMultipleBaseClasses.md` |
-| 1248 | Implement Classwithoverloadimplementationofwrongname | spike | frontend/syntax | see `issues/done/1248-implement-classWithOverloadImplementationOfWrongName.md` |
-| 1249 | Implement Classdecl | spike | frontend/syntax | see `issues/done/1249-implement-classdecl.md` |
-| 1250 | Implement Clinterfaces | spike | frontend/syntax | see `issues/done/1250-implement-clinterfaces.md` |
-| 1251 | Implement Cloduleacrossmoduledefinitions | spike | frontend/syntax | see `issues/done/1251-implement-cloduleAcrossModuleDefinitions.md` |
-| 1252 | Implement Cloduleandtypeparameters | spike | frontend/syntax | see `issues/done/1252-implement-cloduleAndTypeParameters.md` |
-| 1253 | Implement Clodulegenericonselfmember | spike | frontend/semantics | see `issues/done/1253-implement-cloduleGenericOnSelfMember.md` |
-| 1254 | Implement Clodulesplitacrossfiles | spike | frontend/syntax | see `issues/done/1254-implement-cloduleSplitAcrossFiles.md` |
-| 1255 | Implement Clodulestaticmembers | spike | frontend/syntax | see `issues/done/1255-implement-cloduleStaticMembers.md` |
-| 1256 | Implement Cloduletest | spike | frontend/syntax | see `issues/done/1256-implement-cloduleTest.md` |
-| 1257 | Implement Clodulewithduplicatemember | spike | frontend/syntax | see `issues/done/1257-implement-cloduleWithDuplicateMember.md` |
-| 1258 | Implement Clodulewithpriorinstantiatedmodule | spike | frontend/syntax | see `issues/done/1258-implement-cloduleWithPriorInstantiatedModule.md` |
-| 1259 | Implement Clodulewithprioruninstantiatedmodule | spike | frontend/syntax | see `issues/done/1259-implement-cloduleWithPriorUninstantiatedModule.md` |
-| 1260 | Implement Clodulewithrecursivereference | spike | frontend/syntax | see `issues/done/1260-implement-cloduleWithRecursiveReference.md` |
-| 1261 | Implement Clodulesderivedclasses | spike | frontend/syntax | see `issues/done/1261-implement-clodulesDerivedClasses.md` |
-| 1262 | Implement Coandcontravariantinferences Name Resolution | spike | frontend/resolver | see `issues/done/1262-implement-coAndContraVariantInferences-name-resolution.md` |
-| 1263 | Implement Coandcontravariantinferences Parser Syntax | spike | frontend/syntax | see `issues/done/1263-implement-coAndContraVariantInferences-parser-syntax.md` |
-| 1264 | Implement Coandcontravariantinferences Type System | spike | frontend/semantics | see `issues/done/1264-implement-coAndContraVariantInferences-type-system.md` |
 | 1265 | Implement Collectionpatternnoerror | spike | runtime/builtins | see `issues/done/1265-implement-collectionPatternNoError.md` |
-| 1266 | Implement Collisionargumentsarrowfunctions | spike | frontend/syntax | see `issues/done/1266-implement-collisionArgumentsArrowFunctions.md` |
-| 1267 | Implement Collisionargumentsclassconstructor | spike | frontend/syntax | see `issues/done/1267-implement-collisionArgumentsClassConstructor.md` |
-| 1268 | Implement Collisionargumentsclassmethod | spike | frontend/syntax | see `issues/done/1268-implement-collisionArgumentsClassMethod.md` |
-| 1269 | Implement Collisionargumentsfunction | spike | frontend/syntax | see `issues/done/1269-implement-collisionArgumentsFunction.md` |
-| 1270 | Implement Collisionargumentsfunctionexpressions | spike | frontend/syntax | see `issues/done/1270-implement-collisionArgumentsFunctionExpressions.md` |
-| 1271 | Implement Collisionargumentsintype | spike | frontend/syntax | see `issues/done/1271-implement-collisionArgumentsInType.md` |
-| 1272 | Implement Collisioncodegenenumwithenummemberconflict | spike | frontend/syntax | see `issues/done/1272-implement-collisionCodeGenEnumWithEnumMemberConflict.md` |
-| 1273 | Implement Collisioncodegenmodulewithaccessorchildren | spike | frontend/syntax | see `issues/done/1273-implement-collisionCodeGenModuleWithAccessorChildren.md` |
-| 1274 | Implement Collisioncodegenmodulewithconstructorchildren | spike | frontend/syntax | see `issues/done/1274-implement-collisionCodeGenModuleWithConstructorChildren.md` |
-| 1275 | Implement Collisioncodegenmodulewithenummemberconflict | spike | frontend/syntax | see `issues/done/1275-implement-collisionCodeGenModuleWithEnumMemberConflict.md` |
-| 1276 | Implement Collisioncodegenmodulewithfunctionchildren | spike | frontend/syntax | see `issues/done/1276-implement-collisionCodeGenModuleWithFunctionChildren.md` |
-| 1277 | Implement Collisioncodegenmodulewithmemberclassconflict | spike | frontend/syntax | see `issues/done/1277-implement-collisionCodeGenModuleWithMemberClassConflict.md` |
-| 1278 | Implement Collisioncodegenmodulewithmemberinterfaceconflict | spike | frontend/syntax | see `issues/done/1278-implement-collisionCodeGenModuleWithMemberInterfaceConflict.md` |
-| 1279 | Implement Collisioncodegenmodulewithmembervariable | spike | frontend/syntax | see `issues/done/1279-implement-collisionCodeGenModuleWithMemberVariable.md` |
-| 1280 | Implement Collisioncodegenmodulewithmethodchildren | spike | frontend/syntax | see `issues/done/1280-implement-collisionCodeGenModuleWithMethodChildren.md` |
-| 1281 | Implement Collisioncodegenmodulewithmodulechildren | spike | frontend/syntax | see `issues/done/1281-implement-collisionCodeGenModuleWithModuleChildren.md` |
-| 1282 | Implement Collisioncodegenmodulewithmodulereopening | spike | frontend/syntax | see `issues/done/1282-implement-collisionCodeGenModuleWithModuleReopening.md` |
-| 1283 | Implement Collisioncodegenmodulewithprivatemember | spike | frontend/syntax | see `issues/done/1283-implement-collisionCodeGenModuleWithPrivateMember.md` |
-| 1284 | Implement Collisionexportsrequireandalias | spike | frontend/syntax | see `issues/done/1284-implement-collisionExportsRequireAndAlias.md` |
-| 1285 | Implement Collisionexportsrequireandambientclass | spike | frontend/syntax | see `issues/done/1285-implement-collisionExportsRequireAndAmbientClass.md` |
-| 1286 | Implement Collisionexportsrequireandambientenum | spike | frontend/syntax | see `issues/done/1286-implement-collisionExportsRequireAndAmbientEnum.md` |
-| 1287 | Implement Collisionexportsrequireandambientfunction | spike | frontend/syntax | see `issues/done/1287-implement-collisionExportsRequireAndAmbientFunction.md` |
-| 1288 | Implement Collisionexportsrequireandambientfunctioninglobalfile | spike | frontend/syntax | see `issues/done/1288-implement-collisionExportsRequireAndAmbientFunctionInGlobalFile.md` |
-| 1289 | Implement Collisionexportsrequireandambientmodule | spike | frontend/syntax | see `issues/done/1289-implement-collisionExportsRequireAndAmbientModule.md` |
-| 1290 | Implement Collisionexportsrequireandambientvar | spike | frontend/syntax | see `issues/done/1290-implement-collisionExportsRequireAndAmbientVar.md` |
-| 1291 | Implement Collisionexportsrequireandclass | spike | frontend/syntax | see `issues/done/1291-implement-collisionExportsRequireAndClass.md` |
-| 1292 | Implement Collisionexportsrequireandenum | spike | frontend/syntax | see `issues/done/1292-implement-collisionExportsRequireAndEnum.md` |
-| 1293 | Implement Collisionexportsrequireandfunction | spike | frontend/syntax | see `issues/done/1293-implement-collisionExportsRequireAndFunction.md` |
-| 1294 | Implement Collisionexportsrequireandfunctioninglobalfile | spike | frontend/syntax | see `issues/done/1294-implement-collisionExportsRequireAndFunctionInGlobalFile.md` |
-| 1295 | Implement Collisionexportsrequireandinternalmodulealias | spike | frontend/syntax | see `issues/done/1295-implement-collisionExportsRequireAndInternalModuleAlias.md` |
-| 1296 | Implement Collisionexportsrequireandinternalmodulealiasinglobalfile | spike | frontend/syntax | see `issues/done/1296-implement-collisionExportsRequireAndInternalModuleAliasInGlobalFile.md` |
-| 1297 | Implement Collisionexportsrequireandmodule | spike | frontend/syntax | see `issues/done/1297-implement-collisionExportsRequireAndModule.md` |
-| 1298 | Implement Collisionexportsrequireanduninstantiatedmodule | spike | frontend/syntax | see `issues/done/1298-implement-collisionExportsRequireAndUninstantiatedModule.md` |
-| 1299 | Implement Collisionexportsrequireandvar | spike | frontend/syntax | see `issues/done/1299-implement-collisionExportsRequireAndVar.md` |
-| 1300 | Implement Collisionrestparameterarrowfunctions | spike | frontend/syntax | see `issues/done/1300-implement-collisionRestParameterArrowFunctions.md` |
-| 1301 | Implement Collisionrestparameterclassconstructor | spike | frontend/syntax | see `issues/done/1301-implement-collisionRestParameterClassConstructor.md` |
-| 1302 | Implement Collisionrestparameterclassmethod | spike | frontend/syntax | see `issues/done/1302-implement-collisionRestParameterClassMethod.md` |
-| 1303 | Implement Collisionrestparameterfunction | spike | frontend/syntax | see `issues/done/1303-implement-collisionRestParameterFunction.md` |
-| 1304 | Implement Collisionrestparameterfunctionexpressions | spike | frontend/syntax | see `issues/done/1304-implement-collisionRestParameterFunctionExpressions.md` |
-| 1305 | Implement Collisionrestparameterintype | spike | frontend/syntax | see `issues/done/1305-implement-collisionRestParameterInType.md` |
-| 1306 | Implement Collisionrestparameterunderscoreiusage | spike | frontend/syntax | see `issues/done/1306-implement-collisionRestParameterUnderscoreIUsage.md` |
-| 1307 | Implement Collisionsuperandlocalfunctioninaccessors | spike | frontend/syntax | see `issues/done/1307-implement-collisionSuperAndLocalFunctionInAccessors.md` |
-| 1308 | Implement Collisionsuperandlocalfunctioninconstructor | spike | frontend/syntax | see `issues/done/1308-implement-collisionSuperAndLocalFunctionInConstructor.md` |
-| 1309 | Implement Collisionsuperandlocalfunctioninmethod | spike | frontend/syntax | see `issues/done/1309-implement-collisionSuperAndLocalFunctionInMethod.md` |
-| 1310 | Implement Collisionsuperandlocalfunctioninproperty | spike | frontend/syntax | see `issues/done/1310-implement-collisionSuperAndLocalFunctionInProperty.md` |
-| 1311 | Implement Collisionsuperandlocalvarinaccessors | spike | frontend/syntax | see `issues/done/1311-implement-collisionSuperAndLocalVarInAccessors.md` |
-| 1312 | Implement Collisionsuperandlocalvarinconstructor | spike | frontend/syntax | see `issues/done/1312-implement-collisionSuperAndLocalVarInConstructor.md` |
-| 1313 | Implement Collisionsuperandlocalvarinmethod | spike | frontend/syntax | see `issues/done/1313-implement-collisionSuperAndLocalVarInMethod.md` |
-| 1314 | Implement Collisionsuperandlocalvarinproperty | spike | frontend/syntax | see `issues/done/1314-implement-collisionSuperAndLocalVarInProperty.md` |
-| 1315 | Implement Collisionsuperandnameresolution | spike | frontend/resolver | see `issues/done/1315-implement-collisionSuperAndNameResolution.md` |
-| 1316 | Implement Collisionsuperandparameter | spike | frontend/syntax | see `issues/done/1316-implement-collisionSuperAndParameter.md` |
-| 1317 | Implement Collisionsuperandpropertynameasconstuctorparameter | spike | frontend/syntax | see `issues/done/1317-implement-collisionSuperAndPropertyNameAsConstuctorParameter.md` |
-| 1318 | Implement Collisionthisexpressionandaliasinglobal | spike | frontend/syntax | see `issues/done/1318-implement-collisionThisExpressionAndAliasInGlobal.md` |
-| 1319 | Implement Collisionthisexpressionandambientclassinglobal | spike | frontend/resolver | see `issues/done/1319-implement-collisionThisExpressionAndAmbientClassInGlobal.md` |
-| 1320 | Implement Collisionthisexpressionandambientvaringlobal | spike | frontend/resolver | see `issues/done/1320-implement-collisionThisExpressionAndAmbientVarInGlobal.md` |
-| 1321 | Implement Collisionthisexpressionandclassinglobal | spike | frontend/syntax | see `issues/done/1321-implement-collisionThisExpressionAndClassInGlobal.md` |
-| 1322 | Implement Collisionthisexpressionandenuminglobal | spike | frontend/syntax | see `issues/done/1322-implement-collisionThisExpressionAndEnumInGlobal.md` |
-| 1323 | Implement Collisionthisexpressionandfunctioninglobal | spike | frontend/syntax | see `issues/done/1323-implement-collisionThisExpressionAndFunctionInGlobal.md` |
-| 1324 | Implement Collisionthisexpressionandlocalvarinaccessors | spike | frontend/syntax | see `issues/done/1324-implement-collisionThisExpressionAndLocalVarInAccessors.md` |
 | 1325 | Implement Collisionthisexpressionandlocalvarinconstructor | spike | frontend/syntax | see `issues/done/1325-implement-collisionThisExpressionAndLocalVarInConstructor.md` |
-| 1326 | Implement Collisionthisexpressionandlocalvarinfunction | spike | frontend/syntax | see `issues/done/1326-implement-collisionThisExpressionAndLocalVarInFunction.md` |
-| 1327 | Implement Collisionthisexpressionandlocalvarinlambda | spike | frontend/syntax | see `issues/done/1327-implement-collisionThisExpressionAndLocalVarInLambda.md` |
-| 1328 | Implement Collisionthisexpressionandlocalvarinmethod | spike | frontend/syntax | see `issues/done/1328-implement-collisionThisExpressionAndLocalVarInMethod.md` |
-| 1329 | Implement Collisionthisexpressionandlocalvarinproperty | spike | frontend/syntax | see `issues/done/1329-implement-collisionThisExpressionAndLocalVarInProperty.md` |
-| 1330 | Implement Collisionthisexpressionandlocalvarwithsuperexperssion | spike | frontend/syntax | see `issues/done/1330-implement-collisionThisExpressionAndLocalVarWithSuperExperssion.md` |
-| 1331 | Implement Collisionthisexpressionandmoduleinglobal | spike | frontend/syntax | see `issues/done/1331-implement-collisionThisExpressionAndModuleInGlobal.md` |
-| 1332 | Implement Collisionthisexpressionandnameresolution | spike | frontend/syntax | see `issues/done/1332-implement-collisionThisExpressionAndNameResolution.md` |
-| 1333 | Implement Collisionthisexpressionandparameter | spike | frontend/syntax | see `issues/done/1333-implement-collisionThisExpressionAndParameter.md` |
-| 1334 | Implement Collisionthisexpressionandpropertynameasconstuctorparameter | spike | frontend/syntax | see `issues/done/1334-implement-collisionThisExpressionAndPropertyNameAsConstuctorParameter.md` |
-| 1335 | Implement Collisionthisexpressionandvaringlobal | spike | frontend/syntax | see `issues/done/1335-implement-collisionThisExpressionAndVarInGlobal.md` |
-| 1336 | Implement Commaoperator | spike | frontend/syntax | see `issues/done/1336-implement-commaOperator.md` |
-| 1337 | Implement Commaoperatorinconditionalexpression | spike | frontend/semantics | see `issues/done/1337-implement-commaOperatorInConditionalExpression.md` |
-| 1338 | Implement Commaoperatorleftsideunused | spike | frontend/syntax | see `issues/done/1338-implement-commaOperatorLeftSideUnused.md` |
-| 1339 | Implement Commentbeforestaticmethod | spike | frontend/syntax | see `issues/done/1339-implement-commentBeforeStaticMethod.md` |
-| 1340 | Implement Commentemitatendoffile | spike | frontend/syntax | see `issues/done/1340-implement-commentEmitAtEndOfFile.md` |
-| 1341 | Implement Commentemitonparenthesizedassertioninreturnstatement | spike | frontend/syntax | see `issues/done/1341-implement-commentEmitOnParenthesizedAssertionInReturnStatement.md` |
 | 1342 | Implement Commentinmethodcall | spike | frontend/syntax | see `issues/done/1342-implement-commentInMethodCall.md` |
-| 1343 | Implement Commentinnamespacedeclarationwithidentifierpathname | spike | frontend/syntax | see `issues/done/1343-implement-commentInNamespaceDeclarationWithIdentifierPathName.md` |
-| 1344 | Implement Commentleadingclosebrace | spike | frontend/resolver | see `issues/done/1344-implement-commentLeadingCloseBrace.md` |
-| 1345 | Implement Commentonambientmodule | spike | frontend/syntax | see `issues/done/1345-implement-commentOnAmbientModule.md` |
-| 1346 | Implement Commentonambientvariable | spike | frontend/resolver | see `issues/done/1346-implement-commentOnAmbientVariable.md` |
-| 1347 | Implement Commentonclassaccessor | spike | reference/triage | see `issues/done/1347-implement-commentOnClassAccessor.md` |
-| 1348 | Implement Commentondecoratedclassdeclaration | spike | frontend/syntax | see `issues/done/1348-implement-commentOnDecoratedClassDeclaration.md` |
-| 1349 | Implement Commentonelidedmodule | spike | frontend/syntax | see `issues/done/1349-implement-commentOnElidedModule.md` |
-| 1350 | Implement Commentonexportenumdeclaration | spike | frontend/syntax | see `issues/done/1350-implement-commentOnExportEnumDeclaration.md` |
-| 1351 | Implement Commentonimportstatement | spike | frontend/syntax | see `issues/done/1351-implement-commentOnImportStatement.md` |
-| 1352 | Implement Commentonparameter | spike | frontend/syntax | see `issues/done/1352-implement-commentOnParameter.md` |
-| 1353 | Implement Commentonparenthesizedexpressionopenparen | spike | frontend/syntax | see `issues/done/1353-implement-commentOnParenthesizedExpressionOpenParen.md` |
-| 1354 | Implement Commentonsignature | spike | frontend/syntax | see `issues/done/1354-implement-commentOnSignature.md` |
-| 1355 | Implement Commentwithunreasonableindentationlevel | spike | frontend/syntax | see `issues/done/1355-implement-commentWithUnreasonableIndentationLevel.md` |
-| 1356 | Implement Commentsafterfunctionexpression | spike | frontend/syntax | see `issues/done/1356-implement-commentsAfterFunctionExpression.md` |
-| 1357 | Implement Commentsafterspread | spike | frontend/syntax | see `issues/done/1357-implement-commentsAfterSpread.md` |
-| 1358 | Implement Commentsatendoffile | spike | frontend/syntax | see `issues/done/1358-implement-commentsAtEndOfFile.md` |
-| 1359 | Implement Commentsbeforefunctionexpression | spike | frontend/syntax | see `issues/done/1359-implement-commentsBeforeFunctionExpression.md` |
-| 1360 | Implement Commentsbeforevariablestatement | spike | frontend/syntax | see `issues/done/1360-implement-commentsBeforeVariableStatement.md` |
-| 1361 | Implement Commentsclass | spike | frontend/resolver | see `issues/done/1361-implement-commentsClass.md` |
-| 1362 | Implement Commentsclassmembers | spike | frontend/syntax | see `issues/done/1362-implement-commentsClassMembers.md` |
-| 1363 | Implement Commentscommentparsing | spike | frontend/syntax | see `issues/done/1363-implement-commentsCommentParsing.md` |
-| 1364 | Implement Commentsdottedmodulename | spike | frontend/syntax | see `issues/done/1364-implement-commentsDottedModuleName.md` |
-| 1365 | Implement Commentsenums | spike | frontend/syntax | see `issues/done/1365-implement-commentsEnums.md` |
-| 1366 | Implement Commentsexternalmodules | spike | frontend/syntax | see `issues/done/1366-implement-commentsExternalModules.md` |
-| 1367 | Implement Commentsformatting | spike | frontend/syntax | see `issues/done/1367-implement-commentsFormatting.md` |
-| 1368 | Implement Commentsfunction | spike | frontend/syntax | see `issues/done/1368-implement-commentsFunction.md` |
-| 1369 | Implement Commentsinheritance | spike | frontend/syntax | see `issues/done/1369-implement-commentsInheritance.md` |
-| 1370 | Implement Commentsinterface | spike | frontend/syntax | see `issues/done/1370-implement-commentsInterface.md` |
-| 1371 | Implement Commentsmodules | spike | frontend/syntax | see `issues/done/1371-implement-commentsModules.md` |
-| 1372 | Implement Commentsmultimodulemultifile | spike | frontend/syntax | see `issues/done/1372-implement-commentsMultiModuleMultiFile.md` |
-| 1373 | Implement Commentsmultimodulesinglefile | spike | frontend/syntax | see `issues/done/1373-implement-commentsMultiModuleSingleFile.md` |
-| 1374 | Implement Commentsonobjectliteral Name Resolution | spike | frontend/resolver | see `issues/done/1374-implement-commentsOnObjectLiteral-name-resolution.md` |
-| 1375 | Implement Commentsonobjectliteral Object Literal | spike | frontend/syntax | see `issues/done/1375-implement-commentsOnObjectLiteral-object-literal.md` |
-| 1376 | Implement Commentsonrequirestatement | spike | frontend/syntax | see `issues/done/1376-implement-commentsOnRequireStatement.md` |
-| 1377 | Implement Commentsonreturnstatement | spike | frontend/syntax | see `issues/done/1377-implement-commentsOnReturnStatement.md` |
-| 1378 | Implement Commentsonstaticmembers | spike | frontend/syntax | see `issues/done/1378-implement-commentsOnStaticMembers.md` |
-| 1379 | Implement Commentsoverloads | spike | frontend/syntax | see `issues/done/1379-implement-commentsOverloads.md` |
-| 1380 | Implement Commentstypeparameters | spike | frontend/syntax | see `issues/done/1380-implement-commentsTypeParameters.md` |
-| 1381 | Implement Commentsdonotemitcomments | spike | frontend/syntax | see `issues/done/1381-implement-commentsdoNotEmitComments.md` |
-| 1382 | Implement Commentsemitcomments | spike | frontend/syntax | see `issues/done/1382-implement-commentsemitComments.md` |
-| 1383 | Implement Commonjsexporttypedeclarationerror | spike | frontend/syntax | see `issues/done/1383-implement-commonJsExportTypeDeclarationError.md` |
-| 1384 | Implement Commonjsimportclassexpression | spike | frontend/syntax | see `issues/done/1384-implement-commonJsImportClassExpression.md` |
-| 1385 | Implement Commonjsisolatedmodules | spike | frontend/syntax | see `issues/done/1385-implement-commonJsIsolatedModules.md` |
 | 1386 | Implement Commonmissingsemicolons | spike | reference/triage | see `issues/done/1386-implement-commonMissingSemicolons.md` |
-| 1387 | Implement Commonsourcedir | spike | frontend/syntax | see `issues/done/1387-implement-commonSourceDir.md` |
-| 1388 | Implement Commonsourcedirectory | spike | frontend/syntax | see `issues/done/1388-implement-commonSourceDirectory.md` |
-| 1389 | Implement Commonjsaccessexports | spike | frontend/syntax | see `issues/done/1389-implement-commonjsAccessExports.md` |
-| 1390 | Implement Commonjssafeimport | spike | frontend/syntax | see `issues/done/1390-implement-commonjsSafeImport.md` |
-| 1391 | Implement Comparabilitytypeparametersrelatedbyunion | spike | frontend/syntax | see `issues/done/1391-implement-comparabilityTypeParametersRelatedByUnion.md` |
-| 1392 | Implement Comparablerelationbidirectional | spike | frontend/syntax | see `issues/done/1392-implement-comparableRelationBidirectional.md` |
-| 1393 | Implement Comparisonofpartialdeepandindexedaccessterminateswithouterror | spike | frontend/syntax | see `issues/done/1393-implement-comparisonOfPartialDeepAndIndexedAccessTerminatesWithoutError.md` |
-| 1394 | Implement Complexclassrelationships | spike | frontend/syntax | see `issues/done/1394-implement-complexClassRelationships.md` |
-| 1395 | Implement Complexnarrowingwithany | spike | frontend/syntax | see `issues/done/1395-implement-complexNarrowingWithAny.md` |
-| 1396 | Implement Complexrecursivecollections | spike | frontend/syntax | see `issues/done/1396-implement-complexRecursiveCollections.md` |
-| 1397 | Implement Complicatedgenericrecursivebaseclassreference | spike | frontend/semantics | see `issues/done/1397-implement-complicatedGenericRecursiveBaseClassReference.md` |
-| 1398 | Implement Complicatedindexedaccesskeyofreliesonkeyofneverupperbound | spike | frontend/syntax | see `issues/done/1398-implement-complicatedIndexedAccessKeyofReliesOnKeyofNeverUpperBound.md` |
-| 1399 | Implement Complicatedindexesofintersectionsareinferencable | spike | frontend/semantics | see `issues/done/1399-implement-complicatedIndexesOfIntersectionsAreInferencable.md` |
-| 1400 | Implement Complicatedprivacy | spike | frontend/syntax | see `issues/done/1400-implement-complicatedPrivacy.md` |
-| 1401 | Implement Compositecontextualsignature | spike | frontend/syntax | see `issues/done/1401-implement-compositeContextualSignature.md` |
-| 1402 | Implement Compositegenericfunction | spike | reference/triage | see `issues/done/1402-implement-compositeGenericFunction.md` |
-| 1403 | Implement Compositewithnodemodulessourcefile | spike | frontend/syntax | see `issues/done/1403-implement-compositeWithNodeModulesSourceFile.md` |
-| 1404 | Implement Compoundvardecl | spike | frontend/syntax | see `issues/done/1404-implement-compoundVarDecl.md` |
-| 1405 | Implement Computedenummembersyntacticallystring Enum | spike | frontend/syntax | see `issues/done/1405-implement-computedEnumMemberSyntacticallyString-enum.md` |
-| 1406 | Implement Computedenummembersyntacticallystring Parser Syntax | spike | frontend/syntax | see `issues/done/1406-implement-computedEnumMemberSyntacticallyString-parser-syntax.md` |
-| 1407 | Implement Computedenumtypewidening | spike | frontend/syntax | see `issues/done/1407-implement-computedEnumTypeWidening.md` |
-| 1408 | Implement Computedpropertiesindestructuring | spike | frontend/syntax | see `issues/done/1408-implement-computedPropertiesInDestructuring.md` |
-| 1409 | Implement Computedpropertiesnarrowed | spike | frontend/syntax | see `issues/done/1409-implement-computedPropertiesNarrowed.md` |
-| 1410 | Implement Computedpropertiestransformedinotherwisenontsclasses | spike | frontend/syntax | see `issues/done/1410-implement-computedPropertiesTransformedInOtherwiseNonTSClasses.md` |
-| 1411 | Implement Computedpropertieswithsetterassignment | spike | frontend/syntax | see `issues/done/1411-implement-computedPropertiesWithSetterAssignment.md` |
-| 1412 | Implement Computedpropertybindingelementdeclarationnocrash | spike | frontend/syntax | see `issues/done/1412-implement-computedPropertyBindingElementDeclarationNoCrash.md` |
-| 1413 | Implement Computedpropertynameandtypeparameterconflict | spike | frontend/syntax | see `issues/done/1413-implement-computedPropertyNameAndTypeParameterConflict.md` |
-| 1414 | Implement Computedpropertynamewithimportedkey | spike | frontend/syntax | see `issues/done/1414-implement-computedPropertyNameWithImportedKey.md` |
-| 1415 | Implement Computerpropertiesines | spike | frontend/syntax | see `issues/done/1415-implement-computerPropertiesInES.md` |
-| 1416 | Implement Concatclassandstring | spike | frontend/resolver | see `issues/done/1416-implement-concatClassAndString.md` |
-| 1417 | Implement Conditionalequalityonliteralobjects | spike | frontend/semantics | see `issues/done/1417-implement-conditionalEqualityOnLiteralObjects.md` |
-| 1418 | Implement Conditionalexpression | spike | frontend/semantics | see `issues/done/1418-implement-conditionalExpression.md` |
-| 1419 | Implement Conditionalexpressionnewline | spike | frontend/resolver | see `issues/done/1419-implement-conditionalExpressionNewLine.md` |
-| 1420 | Implement Conditionalexpressions | spike | frontend/semantics | see `issues/done/1420-implement-conditionalExpressions.md` |
-| 1421 | Implement Conditionalreturnexpression | spike | frontend/resolver | see `issues/done/1421-implement-conditionalReturnExpression.md` |
-| 1422 | Implement Conditionaltypeassignabilitywhendeferred | spike | frontend/syntax | see `issues/done/1422-implement-conditionalTypeAssignabilityWhenDeferred.md` |
-| 1423 | Implement Conditionaltypebasedcontextualtypereturntypewidening | spike | frontend/semantics | see `issues/done/1423-implement-conditionalTypeBasedContextualTypeReturnTypeWidening.md` |
-| 1424 | Implement Conditionaltypeclassmembers | spike | frontend/semantics | see `issues/done/1424-implement-conditionalTypeClassMembers.md` |
-| 1425 | Implement Conditionaltypediscriminatinglargeunionregulartypefetchingspeedreasonable | spike | frontend/syntax | see `issues/done/1425-implement-conditionalTypeDiscriminatingLargeUnionRegularTypeFetchingSpeedReasonable.md` |
-| 1426 | Implement Conditionaltypedoesntspinforever | spike | frontend/syntax | see `issues/done/1426-implement-conditionalTypeDoesntSpinForever.md` |
-| 1427 | Implement Conditionaltyperelaxingconstraintassignability | spike | frontend/syntax | see `issues/done/1427-implement-conditionalTypeRelaxingConstraintAssignability.md` |
-| 1428 | Implement Conditionaltypesubclassextendstypeparam | spike | frontend/semantics | see `issues/done/1428-implement-conditionalTypeSubclassExtendsTypeParam.md` |
-| 1429 | Implement Conditionaltypessimplifywhentrivial | spike | frontend/semantics | see `issues/done/1429-implement-conditionalTypesSimplifyWhenTrivial.md` |
-| 1430 | Implement Conditionallyduplicateoverloadscausedbyoverloadresolution | spike | frontend/syntax | see `issues/done/1430-implement-conditionallyDuplicateOverloadsCausedByOverloadResolution.md` |
-| 1431 | Implement Conflictmarkerdiff Parser Syntax | spike | frontend/syntax | see `issues/done/1431-implement-conflictMarkerDiff-parser-syntax.md` |
-| 1432 | Implement Conflictmarkerdiff Unknown Unsupported | spike | frontend/syntax | see `issues/done/1432-implement-conflictMarkerDiff-unknown-unsupported.md` |
-| 1433 | Implement Conflictmarkertrivia Parser Syntax | spike | frontend/syntax | see `issues/done/1433-implement-conflictMarkerTrivia-parser-syntax.md` |
-| 1434 | Implement Conflictmarkertrivia Unknown Unsupported | spike | frontend/syntax | see `issues/done/1434-implement-conflictMarkerTrivia-unknown-unsupported.md` |
-| 1435 | Implement Conflictingdeclarationsimportfromnamespace | spike | frontend/syntax | see `issues/done/1435-implement-conflictingDeclarationsImportFromNamespace.md` |
-| 1436 | Implement Conflictingtypeannotatedvar | spike | reference/triage | see `issues/done/1436-implement-conflictingTypeAnnotatedVar.md` |
-| 1437 | Implement Conflictingtypeparametersymboltransfer | spike | frontend/syntax | see `issues/done/1437-implement-conflictingTypeParameterSymbolTransfer.md` |
-| 1438 | Implement Consistentaliasvsnonaliasrecordbehavior | spike | frontend/syntax | see `issues/done/1438-implement-consistentAliasVsNonAliasRecordBehavior.md` |
-| 1439 | Implement Constdeclarationshadowedbyvardeclaration | spike | frontend/syntax | see `issues/done/1439-implement-constDeclarationShadowedByVarDeclaration.md` |
-| 1440 | Implement Constdeclarations Import Export | spike | frontend/syntax | see `issues/done/1440-implement-constDeclarations-import-export.md` |
-| 1441 | Implement Constdeclarations Name Resolution | spike | frontend/resolver | see `issues/done/1441-implement-constDeclarations-name-resolution.md` |
-| 1442 | Implement Constdeclarations Parser Syntax | spike | frontend/syntax | see `issues/done/1442-implement-constDeclarations-parser-syntax.md` |
-| 1443 | Implement Constdeclarations Scope Analysis | spike | frontend/resolver | see `issues/done/1443-implement-constDeclarations-scope-analysis.md` |
-| 1444 | Implement Constdeclarations Unknown Unsupported | spike | frontend/syntax | see `issues/done/1444-implement-constDeclarations-unknown-unsupported.md` |
-| 1445 | Implement Constenumbadpropertynames | spike | frontend/syntax | see `issues/done/1445-implement-constEnumBadPropertyNames.md` |
-| 1446 | Implement Constenumdeclarations | spike | frontend/syntax | see `issues/done/1446-implement-constEnumDeclarations.md` |
-| 1447 | Implement Constenumerrors | spike | frontend/syntax | see `issues/done/1447-implement-constEnumErrors.md` |
-| 1448 | Implement Constenumexternalmodule | spike | frontend/syntax | see `issues/done/1448-implement-constEnumExternalModule.md` |
-| 1449 | Implement Constenummergingwithvalues Import Export | spike | frontend/syntax | see `issues/done/1449-implement-constEnumMergingWithValues-import-export.md` |
-| 1450 | Implement Constenummergingwithvalues Parser Syntax | spike | frontend/syntax | see `issues/done/1450-implement-constEnumMergingWithValues-parser-syntax.md` |
-| 1451 | Implement Constenumnamespacereferencecausesnoimport | spike | frontend/syntax | see `issues/done/1451-implement-constEnumNamespaceReferenceCausesNoImport.md` |
-| 1452 | Implement Constenumnoemitreexport | spike | frontend/syntax | see `issues/done/1452-implement-constEnumNoEmitReexport.md` |
-| 1453 | Implement Constenumnopreservedeclarationreexport | spike | frontend/syntax | see `issues/done/1453-implement-constEnumNoPreserveDeclarationReexport.md` |
-| 1454 | Implement Constenumonlymodulemerging | spike | frontend/syntax | see `issues/done/1454-implement-constEnumOnlyModuleMerging.md` |
-| 1455 | Implement Constenumpreserveemitnamedexport | spike | frontend/syntax | see `issues/done/1455-implement-constEnumPreserveEmitNamedExport.md` |
-| 1456 | Implement Constenumpreserveemitreexport | spike | frontend/syntax | see `issues/done/1456-implement-constEnumPreserveEmitReexport.md` |
-| 1457 | Implement Constenumsyntheticnodescomments | spike | frontend/syntax | see `issues/done/1457-implement-constEnumSyntheticNodesComments.md` |
-| 1458 | Implement Constenumtostringnocomments | spike | frontend/syntax | see `issues/done/1458-implement-constEnumToStringNoComments.md` |
-| 1459 | Implement Constenumtostringwithcomments | spike | frontend/syntax | see `issues/done/1459-implement-constEnumToStringWithComments.md` |
-| 1460 | Implement Constenums | spike | frontend/syntax | see `issues/done/1460-implement-constEnums.md` |
-| 1461 | Implement Constinclassexpression | spike | frontend/syntax | see `issues/done/1461-implement-constInClassExpression.md` |
-| 1462 | Implement Constindexedaccess | spike | frontend/syntax | see `issues/done/1462-implement-constIndexedAccess.md` |
-| 1463 | Implement Constwithnonnull | spike | frontend/syntax | see `issues/done/1463-implement-constWithNonNull.md` |
-| 1464 | Implement Constantenumassert | spike | frontend/syntax | see `issues/done/1464-implement-constantEnumAssert.md` |
-| 1465 | Implement Constraintcheckingenericbasetypereference | spike | frontend/semantics | see `issues/done/1465-implement-constraintCheckInGenericBaseTypeReference.md` |
-| 1466 | Implement Constraints | spike | frontend/resolver | see `issues/done/1466-implement-constraints.md` |
-| 1467 | Implement Constraintsthatreferenceothercontstraints | spike | frontend/syntax | see `issues/done/1467-implement-constraintsThatReferenceOtherContstraints.md` |
-| 1468 | Implement Constraintsusedinprototypeproperty | spike | frontend/syntax | see `issues/done/1468-implement-constraintsUsedInPrototypeProperty.md` |
-| 1469 | Implement Constructorargwithgenericcallsignature | spike | frontend/syntax | see `issues/done/1469-implement-constructorArgWithGenericCallSignature.md` |
-| 1470 | Implement Constructorargserrors | spike | frontend/syntax | see `issues/done/1470-implement-constructorArgsErrors.md` |
-| 1471 | Implement Constructorastype | spike | frontend/resolver | see `issues/done/1471-implement-constructorAsType.md` |
-| 1472 | Implement Constructorinvocationwithtoofewtypeargs | spike | frontend/syntax | see `issues/done/1472-implement-constructorInvocationWithTooFewTypeArgs.md` |
-| 1473 | Implement Constructoroverloads Import Export | spike | frontend/syntax | see `issues/done/1473-implement-constructorOverloads-import-export.md` |
-| 1474 | Implement Constructoroverloads Name Resolution | spike | frontend/resolver | see `issues/done/1474-implement-constructorOverloads-name-resolution.md` |
-| 1475 | Implement Constructoroverloads Parser Syntax | spike | frontend/syntax | see `issues/done/1475-implement-constructorOverloads-parser-syntax.md` |
-| 1476 | Implement Constructorparametersinvariabledeclarations | spike | frontend/syntax | see `issues/done/1476-implement-constructorParametersInVariableDeclarations.md` |
-| 1477 | Implement Constructorparametersthatshadowexternalnamesinvariabledeclarations | spike | frontend/syntax | see `issues/done/1477-implement-constructorParametersThatShadowExternalNamesInVariableDeclarations.md` |
-| 1478 | Implement Constructorreturningaprimitive | spike | frontend/syntax | see `issues/done/1478-implement-constructorReturningAPrimitive.md` |
-| 1479 | Implement Constructorstaticparamname | spike | frontend/syntax | see `issues/done/1479-implement-constructorStaticParamName.md` |
-| 1480 | Implement Constructorstaticparamnameerrors | spike | frontend/syntax | see `issues/done/1480-implement-constructorStaticParamNameErrors.md` |
-| 1481 | Implement Constructorwithcapturedsuper | spike | frontend/syntax | see `issues/done/1481-implement-constructorWithCapturedSuper.md` |
-| 1482 | Implement Constructorwithincompletetypeannotation | spike | frontend/syntax | see `issues/done/1482-implement-constructorWithIncompleteTypeAnnotation.md` |
-| 1483 | Implement Constructorwithparameterpropertiesandprivatefields | spike | frontend/syntax | see `issues/done/1483-implement-constructorWithParameterPropertiesAndPrivateFields.md` |
-| 1484 | Implement Constructorwithsuperandprologue | spike | frontend/syntax | see `issues/done/1484-implement-constructorWithSuperAndPrologue.md` |
-| 1485 | Implement Constructorswithspecializedsignatures | spike | frontend/syntax | see `issues/done/1485-implement-constructorsWithSpecializedSignatures.md` |
-| 1486 | Implement Contextsensitivereturntypeinference | spike | frontend/resolver | see `issues/done/1486-implement-contextSensitiveReturnTypeInference.md` |
-| 1487 | Implement Contextualcomputednonbindablepropertytype | spike | frontend/syntax | see `issues/done/1487-implement-contextualComputedNonBindablePropertyType.md` |
-| 1488 | Implement Contextualexpressiontypecheckingdoesntblowstack | spike | frontend/syntax | see `issues/done/1488-implement-contextualExpressionTypecheckingDoesntBlowStack.md` |
-| 1489 | Implement Contextualoutertypeparameters | spike | frontend/syntax | see `issues/done/1489-implement-contextualOuterTypeParameters.md` |
-| 1490 | Implement Contextualoverloadlistfromarrayunion | spike | frontend/syntax | see `issues/done/1490-implement-contextualOverloadListFromArrayUnion.md` |
-| 1491 | Implement Contextualparamtypevsnestedreturntypeinference | spike | frontend/semantics | see `issues/done/1491-implement-contextualParamTypeVsNestedReturnTypeInference.md` |
-| 1492 | Implement Contextualparameterandselfreferentialconstraint | spike | frontend/syntax | see `issues/done/1492-implement-contextualParameterAndSelfReferentialConstraint.md` |
-| 1493 | Implement Contextualpropertyofgenericfilteringmappedtype | spike | frontend/semantics | see `issues/done/1493-implement-contextualPropertyOfGenericFilteringMappedType.md` |
-| 1494 | Implement Contextualpropertyofgenericmappedtype | spike | frontend/resolver | see `issues/done/1494-implement-contextualPropertyOfGenericMappedType.md` |
-| 1495 | Implement Contextualreturntypeofiife Import Export | spike | frontend/syntax | see `issues/done/1495-implement-contextualReturnTypeOfIIFE-import-export.md` |
 | 1496 | Implement Contextualreturntypeofiife Unknown Unsupported | spike | frontend/syntax | see `issues/done/1496-implement-contextualReturnTypeOfIIFE-unknown-unsupported.md` |
-| 1497 | Implement Contextualsignatureconditionaltypeinstantiationusingdefault | spike | frontend/semantics | see `issues/done/1497-implement-contextualSignatureConditionalTypeInstantiationUsingDefault.md` |
-| 1498 | Implement Contextualsignatureinarrayelementlibes | spike | frontend/syntax | see `issues/done/1498-implement-contextualSignatureInArrayElementLibEs.md` |
-| 1499 | Implement Contextualsignatureinobjectfreeze | spike | frontend/resolver | see `issues/done/1499-implement-contextualSignatureInObjectFreeze.md` |
 | 1500 | Implement Contextualsignatureinstantiation Duplicate Local | spike | reference/triage | see `issues/done/1500-implement-contextualSignatureInstantiation-duplicate-local.md` |
-| 1501 | Implement Contextualsignatureinstantiation Parser Syntax | spike | frontend/syntax | see `issues/done/1501-implement-contextualSignatureInstantiation-parser-syntax.md` |
-| 1502 | Implement Contextualsignatureinstantiation Unknown Unsupported | spike | frontend/syntax | see `issues/done/1502-implement-contextualSignatureInstantiation-unknown-unsupported.md` |
-| 1503 | Implement Contextualsignatureinstantiationwithtypeparameterconstrainedtooutertypeparameter | spike | frontend/syntax | see `issues/done/1503-implement-contextualSignatureInstantiationWithTypeParameterConstrainedToOuterTypeParameter.md` |
-| 1504 | Implement Contextualsignatureinstatiationcontravariance | spike | frontend/resolver | see `issues/done/1504-implement-contextualSignatureInstatiationContravariance.md` |
-| 1505 | Implement Contextualtupletypeparameterreadonly | spike | frontend/syntax | see `issues/done/1505-implement-contextualTupleTypeParameterReadonly.md` |
-| 1506 | Implement Contextualtypearrayreturntype | spike | frontend/syntax | see `issues/done/1506-implement-contextualTypeArrayReturnType.md` |
-| 1507 | Implement Contextualtypebasedonintersectionwithanyinthemix Name Resolution | spike | frontend/resolver | see `issues/done/1507-implement-contextualTypeBasedOnIntersectionWithAnyInTheMix-name-resolution.md` |
-| 1508 | Implement Contextualtypebasedonintersectionwithanyinthemix Unknown Unsupported | spike | frontend/syntax | see `issues/done/1508-implement-contextualTypeBasedOnIntersectionWithAnyInTheMix-unknown-unsupported.md` |
-| 1509 | Implement Contextualtypecaching | spike | frontend/syntax | see `issues/done/1509-implement-contextualTypeCaching.md` |
-| 1510 | Implement Contextualtypeforinitalizedvariablesfiltersundefined | spike | reference/triage | see `issues/done/1510-implement-contextualTypeForInitalizedVariablesFiltersUndefined.md` |
-| 1511 | Implement Contextualtypefunctionobjectpropertyintersection | spike | frontend/syntax | see `issues/done/1511-implement-contextualTypeFunctionObjectPropertyIntersection.md` |
-| 1512 | Implement Contextualtypeiterableunions | spike | frontend/syntax | see `issues/done/1512-implement-contextualTypeIterableUnions.md` |
-| 1513 | Implement Contextualtypeofindexedaccessparameter | spike | frontend/resolver | see `issues/done/1513-implement-contextualTypeOfIndexedAccessParameter.md` |
-| 1514 | Implement Contextualtypeonyield | spike | frontend/syntax | see `issues/done/1514-implement-contextualTypeOnYield.md` |
-| 1515 | Implement Contextualtypeselfreferencing | spike | frontend/resolver | see `issues/done/1515-implement-contextualTypeSelfReferencing.md` |
-| 1516 | Implement Contextualtypeshouldbeliteral | spike | reference/triage | see `issues/done/1516-implement-contextualTypeShouldBeLiteral.md` |
-| 1517 | Implement Contextualtypesnegatedtypelikeconstraintingenericmappedtype | spike | frontend/syntax | see `issues/done/1517-implement-contextualTypesNegatedTypeLikeConstraintInGenericMappedType.md` |
-| 1518 | Implement Contextualtyping Import Export | spike | frontend/syntax | see `issues/done/1518-implement-contextualTyping-import-export.md` |
-| 1519 | Implement Contextualtyping Parser Syntax | spike | frontend/syntax | see `issues/done/1519-implement-contextualTyping-parser-syntax.md` |
-| 1520 | Implement Contextualtyping Unknown Unsupported | spike | frontend/syntax | see `issues/done/1520-implement-contextualTyping-unknown-unsupported.md` |
-| 1521 | Implement Contextualtypingarraydestructuringwithdefaults | spike | reference/triage | see `issues/done/1521-implement-contextualTypingArrayDestructuringWithDefaults.md` |
-| 1522 | Implement Contextualtypingfunctionreturningfunction | spike | frontend/syntax | see `issues/done/1522-implement-contextualTypingFunctionReturningFunction.md` |
-| 1523 | Implement Contextualtypingofaccessors | spike | frontend/syntax | see `issues/done/1523-implement-contextualTypingOfAccessors.md` |
-| 1524 | Implement Contextualtypingofarrayliterals | spike | frontend/syntax | see `issues/done/1524-implement-contextualTypingOfArrayLiterals.md` |
-| 1525 | Implement Contextualtypingofconditionalexpression | spike | frontend/semantics | see `issues/done/1525-implement-contextualTypingOfConditionalExpression.md` |
-| 1526 | Implement Contextualtypingofgenericfunctiontypedarguments | spike | frontend/semantics | see `issues/done/1526-implement-contextualTypingOfGenericFunctionTypedArguments.md` |
-| 1527 | Implement Contextualtypingoflambdareturnexpression | spike | frontend/syntax | see `issues/done/1527-implement-contextualTypingOfLambdaReturnExpression.md` |
-| 1528 | Implement Contextualtypingoflambdawithmultiplesignatures | spike | frontend/syntax | see `issues/done/1528-implement-contextualTypingOfLambdaWithMultipleSignatures.md` |
-| 1529 | Implement Contextualtypingoftooshortoverloads | spike | frontend/syntax | see `issues/done/1529-implement-contextualTypingOfTooShortOverloads.md` |
-| 1530 | Implement Contextualtypingreturnstatementwithreturntypeannotation | spike | frontend/resolver | see `issues/done/1530-implement-contextualTypingReturnStatementWithReturnTypeAnnotation.md` |
-| 1531 | Implement Contextualtypingtwoinstancesofsametypeparameter | spike | frontend/syntax | see `issues/done/1531-implement-contextualTypingTwoInstancesOfSameTypeParameter.md` |
-| 1532 | Implement Contextualtypingwithfixedtypeparameters | spike | frontend/syntax | see `issues/done/1532-implement-contextualTypingWithFixedTypeParameters.md` |
-| 1533 | Implement Contextualtypingwithgenericandnongenericsignature | spike | frontend/semantics | see `issues/done/1533-implement-contextualTypingWithGenericAndNonGenericSignature.md` |
-| 1534 | Implement Contextualtypingwithgenericsignature | spike | frontend/semantics | see `issues/done/1534-implement-contextualTypingWithGenericSignature.md` |
-| 1535 | Implement Contextuallytypeargumentskeyword | spike | frontend/syntax | see `issues/done/1535-implement-contextuallyTypeArgumentsKeyword.md` |
 | 2050 | Implement Duplicatelocalvariable Duplicate Local | spike | reference/triage | see `issues/done/2050-implement-duplicateLocalVariable-duplicate-local.md` |
 | 3002 | Implement Isolateddeclarationerrorsdefault | spike | runtime/builtins | see `issues/done/3002-implement-isolatedDeclarationErrorsDefault.md` |
 | 3131 | Implement Jsxfactorynotidentifierorqualifiedname | spike | reference/triage | see `issues/done/3131-implement-jsxFactoryNotIdentifierOrQualifiedName.md` |
@@ -5081,7 +5090,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 3996 | Implement Compiler (dup) | spike | frontend/syntax | see `issues/done/3996-implement-reference-typescript-tests-cases-compiler.md` |
 | 4210 | Implement Splicetuples | spike | frontend/resolver | see `issues/done/4210-implement-spliceTuples.md` |
 | 4228 | Implement Standalonebreak | spike | frontend/syntax | see `issues/done/4228-implement-standaloneBreak.md` |
-| 4262 | Implement Staticsinconstructorbodies | spike | frontend/syntax | see `issues/done/4262-implement-staticsInConstructorBodies.md` |
 | 4284 | Implement Stringincludes (audit reopened #4284) | spike | runtime/builtins | see `issues/done/4284-implement-stringIncludes.md` |
 | 4291 | Implement Stringmatchall | spike | reference/triage | see `issues/done/4291-implement-stringMatchAll.md` |
 | 4294 | Implement Stringtrim | spike | runtime/builtins | see `issues/done/4294-implement-stringTrim.md` |
@@ -5244,14 +5252,12 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5153 | Erase union types in as assertions | feature | frontend/syntax | see `issues/done/5153-erase-union-types-in-as-assertions.md` |
 | 5154 | Parse angle-bracket type assertion statements | feature | frontend/syntax | see `issues/done/5154-parse-angle-bracket-type-assertion-statements.md` |
 | 5155 | removed / merged / duplicate — gap filler | cleanup | docs | see file |
-| 5156 | Parse generic type arguments in class heritage clauses | feature | frontend/syntax | see `issues/done/5156-parse-generic-type-arguments-in-class-heritage.md` |
 | 5157 | Report set accessor rest parameter diagnostics | feature | frontend/syntax | see `issues/done/5157-report-set-accessor-rest-parameter-diagnostic.md` |
 | 5158 | Report interface private member clashes | feature | frontend/resolver | see `issues/done/5158-report-interface-private-member-clash.md` |
 | 5159 | Recover colon type annotations after expression statements | feature | frontend/syntax | see `issues/done/5159-recover-colon-type-annotation-after-expression-statement.md` |
 | 5160 | Lower plain ternary conditional expressions | feature | frontend/semantics | see `issues/done/5160-lower-plain-ternary-conditional-expressions.md` |
 | 5161 | Model ambient value declarations for name resolution | feature | frontend/resolver | see `issues/done/5161-model-ambient-value-declarations-for-name-resolution.md` |
 | 5162 | Allow compatible var redeclarations | feature | frontend/syntax | see `issues/done/5162-allow-compatible-var-redeclarations.md` |
-| 5163 | Lower nested call expression callees | feature | frontend/semantics | see `issues/done/5163-lower-nested-call-expression-callees.md` |
 | 5164 | Parse exponentiation compound assignment | feature | frontend/syntax | see `issues/done/5164-parse-exponentiation-compound-assignment.md` |
 | 5165 | Support typed array subarray builtins | feature | ir/builtin-resolver | see `issues/done/5165-support-typed-array-subarray-builtins.md` |
 | 5166 | Parse string-literal module specifier aliases | feature | frontend/syntax | see `issues/done/5166-parse-string-literal-module-specifier-aliases.md` |
@@ -5272,23 +5278,18 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5181 | Support prefix update expressions in call arguments | feature | frontend/semantics | see `issues/done/5181-support-prefix-update-expressions-in-call-arguments.md` |
 | 5182 | Parse comma-separated for update expressions | feature | frontend/syntax | see `issues/done/5182-parse-comma-separated-for-update-expressions.md` |
 | 5183 | Report typed getter null return diagnostics | feature | frontend/semantics | see `issues/done/5183-report-typed-getter-null-return-diagnostics.md` |
-| 5184 | Parse const enum declarations | feature | frontend/syntax | see `issues/done/5184-parse-const-enum-declarations.md` |
 | 5185 | Source-span unresolved class method function calls | feature | frontend/resolver | see `issues/done/5185-source-span-unresolved-class-method-function-calls.md` |
-| 5186 | Parse export assignment expressions | feature | frontend/syntax | see `issues/done/5186-parse-export-assignment-for-diagnostics.md` |
 | 5187 | Lower namespace-only multi-section files | feature | compiler | see `issues/done/5187-lower-namespace-only-multi-section-files.md` |
 | 5188 | Report block-scoped function call arity diagnostics | feature | frontend/semantics | see `issues/done/5188-report-block-scoped-function-call-arity-diagnostics.md` |
 | 5189 | Parse ASI after class expression variable initializer | feature | frontend/syntax | see `issues/done/5189-parse-asi-after-class-expression-variable-initializer.md` |
 | 5190 | Skip implements in ambient class declarations | feature | frontend/syntax | see `issues/done/5190-skip-implements-in-ambient-class-declarations.md` |
 | 5191 | Parse leading decimal numeric literals | feature | frontend/syntax | see `issues/done/5191-parse-leading-decimal-numeric-literals.md` |
-| 5192 | Support first-class class constructor values | feature | ir/runtime | see `issues/done/5192-support-first-class-class-constructor-values.md` |
 | 5193 | Parse ASI after ambient variable declarations | feature | frontend/syntax | see `issues/done/5193-parse-asi-after-ambient-variable-declarations.md` |
 | 5194 | Report empty call type arguments | feature | frontend/syntax | see `issues/done/5194-report-empty-call-type-arguments.md` |
-| 5195 | Support callable interface-typed local calls | feature | ir/lowering | see `issues/done/5195-support-callable-interface-typed-local-calls.md` |
 | 5196 | Support callable conditional-typed parameter calls | feature | ir/lowering | see `issues/done/5196-support-callable-conditional-typed-parameter-calls.md` |
 | 5197 | Report class called without new | feature | frontend/resolver | see `issues/done/5197-report-class-called-without-new.md` |
 | 5198 | Support class method overload signatures for element access calls | feature | frontend/resolver | see `issues/done/5198-support-class-method-overload-signatures-for-element-access-calls.md` |
 | 5199 | Report function overload list class merge diagnostics | feature | frontend/resolver | see `issues/done/5199-report-function-overload-list-class-merge-diagnostics.md` |
-| 5200 | Validate top-level function overload implementations | feature | frontend/resolver | see `issues/done/5200-validate-top-level-function-overload-implementations.md` |
 | 5201 | Parse object type literal call signatures | feature | frontend/parser | see `issues/done/5201-parse-object-type-literal-call-signatures.md` |
 | 5202 | Parse member call explicit type arguments | feature | frontend/parser | see `issues/done/5202-parse-member-call-explicit-type-arguments.md` |
 | 5203 | Report indexed new type-only callee diagnostics | feature | frontend/resolver | see `issues/done/5203-report-indexed-new-type-only-callee-diagnostics.md` |
@@ -5333,7 +5334,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5243 | Implement non-literal Date constructor inputs | feature | runtime/builtins | see file |
 | 5244 | Define timezone formatting policy for Date.prototype.toString | design | runtime/builtins | see file |
 | 5245 | Implement ECMAScript iterator protocol runtime for spread operator | feature | runtime/semantics | see `issues/done/5245-iterator-protocol-runtime.md` |
-| 5386 | Bind DOM setTimeout global | feature | frontend/resolver | see `issues/done/5386-bind-dom-settimeout-global.md` |
 <!-- generated:done:end -->
 
 ## Index generation contract
