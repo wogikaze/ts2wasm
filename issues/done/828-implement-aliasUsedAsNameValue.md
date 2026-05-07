@@ -118,7 +118,7 @@ Follow-up issues:
 
 - `issues/done/128-implement-aliasUsedAsNameValue.md` - Implement Aliasusedasnamevalue (same reference path, same group key, title overlap)
 - `issues/done/507-implement-aliasUsedAsNameValue.md` - Implement Aliasusedasnamevalue (same reference path, same feature label, same group key, title overlap)
-- `issues/open/593-implement-aliasUsedAsNameValue.md` - Implement Aliasusedasnamevalue (same reference path, same feature label, same group key, title overlap)
+- `issues/done/593-implement-aliasUsedAsNameValue.md` - Implement Aliasusedasnamevalue (same reference path, same feature label, same group key, title overlap)
 
 ## Smart triage
 
@@ -128,7 +128,7 @@ Not generated. Rerun with `--triage-limit 1` or higher.
 ## 重複整理メモ
 
 この issue はタイトルが重複しているため、内容がより充実している
-`issues/open/593-implement-aliasUsedAsNameValue.md` に統合されました。
+`issues/done/593-implement-aliasUsedAsNameValue.md` に統合されました。
 そちらを参照してください。
 ## Completion evidence
 
