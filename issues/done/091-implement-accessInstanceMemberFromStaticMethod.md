@@ -437,7 +437,7 @@ error: [UnsupportedSyntax] expected LeftParen, got Some(Colon) at 45..46
 ## 重複整理メモ
 
 この issue はタイトルが重複しているため、内容がより充実している
-`issues/open/562-implement-accessInstanceMemberFromStaticMethod.md` に統合されました。
+`issues/done/562-implement-accessInstanceMemberFromStaticMethod.md` に統合されました。
 そちらを参照してください。
 ## Completion evidence
 

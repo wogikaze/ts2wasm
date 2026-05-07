@@ -1,52 +1,60 @@
 ---
-id: 562
-title: "Implement Accessinstancememberfromstaticmethod"
+id: 564
+title: "Implement Accessstaticmemberfrominstancemethod"
 type: spike
 area: frontend/resolver
-class: blocked
+class: done
 priority: P1
-depends_on: [5005]
+depends_on: [5392]
 blocks: []
 created: 2026-05-01
-updated: 2026-05-01
+updated: 2026-05-07
+completed: 2026-05-07
 ---
 
 ## Summary
 
-Triage accessInstanceMemberFromStaticMethod across 1 failing reference test cases and split this bucket into implementation-ready child issues.
+Close `accessStaticMemberFromInstanceMethod` after splitting the current
+unqualified class-member diagnostic blocker into issue 5392.
 
 ## Problem
 
-Reference test results show 1 cases fail in directory `accessInstanceMemberFromStaticMethod` with diagnostics: name-resolution. The compiler cannot handle these syntax/semantics, preventing compilation of code in this category.
+Reference test results originally showed 1 case failing in directory
+`accessStaticMemberFromInstanceMethod` with diagnostics: name-resolution. Fresh
+triage on 2026-05-07 confirms the current failure is the mirrored unqualified
+`foo` class-member diagnostic gap now owned by issue 5392.
 
-Problem: accessInstanceMemberFromStaticMethod has 1 reference failures and needs smart-triage evidence before implementation starts.
+Problem: `accessStaticMemberFromInstanceMethod01.ts` currently reports generic
+`UnresolvedName: foo` where TypeScript reports TS2304 for the unqualified name
+and separately TS2564 for strict-property initialization.
 
 ## Current failure
 
 Representative reproduction:
 
 ```sh
-mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/accessInstanceMemberFromStaticMethod01.ts
+mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/accessStaticMemberFromInstanceMethod01.ts
 ```
 
 Coverage window:
 
 ```sh
-mise run reference-coverage -- tsc --path-filter reference/typescript/tests/cases/compiler/accessInstanceMemberFromStaticMethod01.ts --detail
+mise run reference-coverage -- tsc --path-filter reference/typescript/tests/cases/compiler/accessStaticMemberFromInstanceMethod01.ts --detail
 ```
 
 ## Desired final state
 
-This generated bucket is either split into implementation-ready child issues or superseded by an existing open/done issue with matching evidence. Do not implement directly from this bucket.
+This generated bucket is closed after splitting the exact current blocker into
+issue 5392.
 
 ## Scope
 
 In scope:
 
-- [ ] Inspect the smart triage report below
-- [ ] Confirm whether existing open/done issues already cover this bucket
-- [ ] Split one feature family, one observable behavior, or one fixed reference window into child issues
-- [ ] Preserve exact reproduction commands and representative AST/diagnostic evidence in each child issue
+- [x] Inspect the smart triage report below
+- [x] Confirm whether existing open/done issues already cover this bucket
+- [x] Split one feature family, one observable behavior, or one fixed reference window into child issues
+- [x] Preserve exact reproduction commands and representative AST/diagnostic evidence in issue 5392
 
 Out of scope:
 
@@ -68,10 +76,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] Duplicate candidates below are confirmed as no-match or this issue is superseded
-- [ ] At least one child issue contains an exact `mise run reference-triage -- ...` command
-- [ ] Child issue includes failing path, diagnostic code, source context, visible symbols, and parser/TypeScript AST evidence
-- [ ] Child issue acceptance names the exact fixture/reference path and diagnostic/stdout change
+- [x] Duplicate candidates below are confirmed as no-match for the exact current failure
+- [x] Child issue 5392 contains exact `reference-triage` commands
+- [x] Child issue 5392 includes failing path, diagnostic code, source context, visible symbols, and parser/TypeScript AST evidence
+- [x] Child issue 5392 acceptance names the exact reference path and diagnostic/stdout change
 
 ## Validation
 
@@ -86,52 +94,89 @@ Impacted commands:
 
 ```sh
 mise run reference-coverage -- tsc --limit 2
-mise run reference-coverage -- tsc --path-filter reference/typescript/tests/cases/compiler/accessInstanceMemberFromStaticMethod01.ts --detail
-mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/accessInstanceMemberFromStaticMethod01.ts
+mise run reference-coverage -- tsc --path-filter reference/typescript/tests/cases/compiler/accessStaticMemberFromInstanceMethod01.ts --detail
+mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/accessStaticMemberFromInstanceMethod01.ts
 ```
 
 Not run:
 
-- none
+- `cargo fmt --all --check` and `cargo nextest run`; this close is an
+  issue-lifecycle-only split update, so focused reference and issue checks were
+  used instead.
 
 ## Docs / current-state / issue sync
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] updated: `current-state.md` (repo root)
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] created: `issues/open/5392-report-unqualified-instance-member-name-diagnostics.md`
 
 ## Notes
 
 ## Affected test files
 
-- `reference/typescript/tests/cases/compiler/accessInstanceMemberFromStaticMethod01.ts`
+- `reference/typescript/tests/cases/compiler/accessStaticMemberFromInstanceMethod01.ts`
 
 ## Duplicate detection
 
-- `issues/done/091-implement-accessInstanceMemberFromStaticMethod.md` - Implement Accessinstancememberfromstaticmethod (same reference path, same group key, title overlap)
-- `issues/done/476-implement-accessInstanceMemberFromStaticMethod.md` - Implement Accessinstancememberfromstaticmethod (same reference path, same feature label, same group key, title overlap)
+- `issues/done/093-implement-accessStaticMemberFromInstanceMethod.md` - Implement Accessstaticmemberfrominstancemethod (same reference path, same group key, title overlap)
+- `issues/done/478-implement-accessStaticMemberFromInstanceMethod.md` - Implement Accessstaticmemberfrominstancemethod (same reference path, same feature label, same group key, title overlap)
 
 ## Smart triage
 
-### Smart triage: Triage name resolution: accessInstanceMemberFromStaticMethod01
+Generated 2026-05-07.
+
+```text
+command:
+env TS2WASM_BINARY=/tmp/ts2wasm-issue-blockers-target/debug/ts2wasm python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/accessStaticMemberFromInstanceMethod01.ts
+
+result:
+UnresolvedName / name-resolution
+
+current diagnostic:
+unresolved name: `foo`
+
+source:
+class C {
+    foo: string;
+    static bar() {
+        let k = foo;
+    }
+}
+
+compiler evidence:
+tokens: ok
+ast: ok
+resolved/lowered: fails with UnresolvedName `foo`
+
+TypeScript oracle:
+TS2304 at `foo`: "Cannot find name 'foo'."
+TS2564 for `foo` strict-property-initialization is out of scope.
+
+decision:
+split to issues/open/5392-report-unqualified-instance-member-name-diagnostics.md
+```
+
+## Historical smart triage
+
+### Smart triage: Triage name resolution: accessStaticMemberFromInstanceMethod01
 
 - Issue class: `triage-needed`
 - Feature label: `name-resolution`
 - Diagnostic: `UnresolvedName` / `resolver-symbol`
-- Path: `reference/typescript/tests/cases/compiler/accessInstanceMemberFromStaticMethod01.ts`
+- Path: `reference/typescript/tests/cases/compiler/accessStaticMemberFromInstanceMethod01.ts`
 
 Reproduction:
 
 ```sh
-mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/accessInstanceMemberFromStaticMethod01.ts
+mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/accessStaticMemberFromInstanceMethod01.ts
 ```
 
 Source overview:
@@ -166,9 +211,9 @@ Source context:
 ```text
 // @target: es2015
 class C {
-    static foo: string;
+    foo: string;
 
-    bar() {
+    static bar() {
         let k = foo;
     }
 }
@@ -206,8 +251,8 @@ Duplicate candidates:
   },
   {
     "state": "open",
-    "path": "issues/done/091-implement-accessInstanceMemberFromStaticMethod.md",
-    "title": "Implement Accessinstancememberfromstaticmethod",
+    "path": "issues/done/093-implement-accessStaticMemberFromInstanceMethod.md",
+    "title": "Implement Accessstaticmemberfrominstancemethod",
     "reason": "same reference path"
   },
   {
@@ -218,8 +263,8 @@ Duplicate candidates:
   },
   {
     "state": "open",
-    "path": "issues/done/476-implement-accessInstanceMemberFromStaticMethod.md",
-    "title": "Implement Accessinstancememberfromstaticmethod",
+    "path": "issues/done/478-implement-accessStaticMemberFromInstanceMethod.md",
+    "title": "Implement Accessstaticmemberfrominstancemethod",
     "reason": "same reference path, same feature label"
   }
 ]
@@ -278,26 +323,19 @@ Compiler dumps:
         },
     },
     SpannedToken {
-        kind: Static,
-        span: Span {
-            start: 35,
-            end: 41,
-        },
-    },
-    SpannedToken {
         kind: Ident(
             "foo",
         ),
         span: Span {
-            start: 42,
-            end: 45,
+            start: 35,
+            end: 38,
         },
     },
     SpannedToken {
         kind: Colon,
         span: Span {
-            start: 45,
-            end: 46,
+            start: 38,
+            end: 39,
         },
     },
     SpannedToken {
@@ -305,15 +343,22 @@ Compiler dumps:
             "string",
         ),
         span: Span {
-            start: 47,
-            end: 53,
+            start: 40,
+            end: 46,
         },
     },
     SpannedToken {
         kind: Semicolon,
         span: Span {
-            start: 53,
-            end: 54,
+            start: 46,
+            end: 47,
+        },
+    },
+    SpannedToken {
+        kind: Static,
+        span: Span {
+            start: 55,
+            end: 61,
         },
     },
     SpannedToken {
@@ -415,7 +460,7 @@ Compiler dumps:
         extends: None,
         body: [
             Function {
-                name: "bar",
+                name: "static::bar",
                 params: [],
                 body: [
                     Let {
@@ -469,10 +514,20 @@ TypeScript/JavaScript oracle:
     "ok": false,
     "diagnostics": [
       {
-        "code": 2662,
+        "code": 2564,
         "category": "Error",
-        "message": "Cannot find name 'foo'. Did you mean the static member 'C.foo'?",
-        "file": "/home/wogikaze/wgkz/ts2wasm/reference/typescript/tests/cases/compiler/accessInstanceMemberFromStaticMethod01.ts",
+        "message": "Property 'foo' has no initializer and is not definitely assigned in the constructor.",
+        "file": "/home/wogikaze/wgkz/ts2wasm/reference/typescript/tests/cases/compiler/accessStaticMemberFromInstanceMethod01.ts",
+        "start": 35,
+        "length": 3,
+        "line": 3,
+        "character": 5
+      },
+      {
+        "code": 2304,
+        "category": "Error",
+        "message": "Cannot find name 'foo'.",
+        "file": "/home/wogikaze/wgkz/ts2wasm/reference/typescript/tests/cases/compiler/accessStaticMemberFromInstanceMethod01.ts",
         "start": 87,
         "length": 3,
         "line": 6,
@@ -483,7 +538,7 @@ TypeScript/JavaScript oracle:
       {
         "kind": "binding",
         "typeText": "any",
-        "file": "/home/wogikaze/wgkz/ts2wasm/reference/typescript/tests/cases/compiler/accessInstanceMemberFromStaticMethod01.ts",
+        "file": "/home/wogikaze/wgkz/ts2wasm/reference/typescript/tests/cases/compiler/accessStaticMemberFromInstanceMethod01.ts",
         "start": 83,
         "length": 1,
         "line": 6,
@@ -498,20 +553,29 @@ TypeScript/JavaScript oracle:
 
 ## Completion evidence
 
-Fill only when moving to `done/`.
-
 Commits:
 
-- `...`
+- Split current unqualified class-member diagnostic blocker to issue 5392; no
+  direct implementation from this generated bucket.
 
 Validation result:
 
 ```text
 command:
+env TS2WASM_BINARY=/tmp/ts2wasm-issue-blockers-target/debug/ts2wasm python scripts/manager.py reference-coverage tsc --path-filter reference/typescript/tests/cases/compiler/accessStaticMemberFromInstanceMethod01.ts --detail --no-dashboard-data
 result:
+executed=1, build_pass=0, unsupported=1, unsupported_diagcodes=UnresolvedName:1
 date:
+2026-05-07
+
+command:
+env TS2WASM_BINARY=/tmp/ts2wasm-issue-blockers-target/debug/ts2wasm python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/accessStaticMemberFromInstanceMethod01.ts
+result:
+UnresolvedName / name-resolution; current diagnostic is `unresolved name: foo`; TypeScript oracle reports TS2304 for `foo` and TS2564 out of scope
+date:
+2026-05-07
 ```
 
 Remaining risks:
 
-- none
+- Issue 5392 owns implementation and follow-up verification.
