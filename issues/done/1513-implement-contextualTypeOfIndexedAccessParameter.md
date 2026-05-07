@@ -3,12 +3,12 @@ id: 1513
 title: "Implement Contextualtypeofindexedaccessparameter"
 type: spike
 area: frontend/resolver
-class: blocked
+class: done
 priority: P1
-depends_on: [5005]
+depends_on: []
 blocks: []
 created: 2026-05-01
-updated: 2026-05-01
+updated: 2026-05-07
 ---
 
 ## Summary
@@ -43,10 +43,10 @@ This generated bucket is either split into implementation-ready child issues or 
 
 In scope:
 
-- [ ] Inspect the smart triage report below
-- [ ] Confirm whether existing open/done issues already cover this bucket
-- [ ] Split one feature family, one observable behavior, or one fixed reference window into child issues
-- [ ] Preserve exact reproduction commands and representative AST/diagnostic evidence in each child issue
+- [x] Inspect the smart triage report below
+- [x] Confirm whether existing open/done issues already cover this bucket
+- [x] Close as stale because the representative path now build-passes
+- [x] Preserve exact reproduction commands and representative AST/diagnostic evidence
 
 Out of scope:
 
@@ -68,10 +68,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] Duplicate candidates below are confirmed as no-match or this issue is superseded
-- [ ] At least one child issue contains an exact `mise run reference-triage -- ...` command
-- [ ] Child issue includes failing path, diagnostic code, source context, visible symbols, and parser/TypeScript AST evidence
-- [ ] Child issue acceptance names the exact fixture/reference path and diagnostic/stdout change
+- [x] Duplicate candidates below are confirmed; no child issue is needed
+- [x] No child issue created because the compiler now reports build_pass
+- [x] This issue includes path, diagnostic status, source context, visible symbols, and parser/TypeScript AST evidence
+- [x] Completion evidence names the exact reference path and build-pass result
 
 ## Validation
 
@@ -98,15 +98,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] updated: `current-state.md` (repo root)
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] none; current compiler build has no name-resolution blocker on this path
 
 ## Notes
 
@@ -120,7 +120,37 @@ Follow-up issues:
 
 ## Smart triage
 
-Not generated. Rerun with `--triage-limit 1` or higher.
+Fresh coverage and triage on 2026-05-07 show the generated name-resolution
+bucket is stale. The focused reference path now build-passes.
+
+Current status:
+
+```text
+BuildPass: ts2wasm build succeeded
+```
+
+Focused coverage:
+
+```text
+executed=1
+build_pass=1
+unsupported=0
+blocked=0
+unsupported_diagcodes=
+unsupported_features=
+```
+
+Compiler evidence:
+
+```text
+tokens: ok through indexed-access type annotations and ambient function declaration
+ast: ok; ambient function `f`, call with object callback, and function `g`
+resolved: ok; `f` call and `g` parameters/body resolve
+TypeScript oracle: ok, diagnostics=[]
+```
+
+No child issue was created because there is no current compiler blocker in the
+build path.
 
 ## Completion evidence
 
@@ -128,14 +158,18 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- `...`
+- pending
 
 Validation result:
 
 ```text
-command:
-result:
-date:
+command: env TS2WASM_BINARY=/home/wogikaze/wgkz/ts2wasm/target/debug/ts2wasm python scripts/manager.py reference-coverage tsc --path-filter reference/typescript/tests/cases/compiler/contextualTypeOfIndexedAccessParameter.ts --detail --no-dashboard-data
+result: pass; build_pass=1, unsupported=0, blocked=0
+date: 2026-05-07
+
+command: env TS2WASM_BINARY=/home/wogikaze/wgkz/ts2wasm/target/debug/ts2wasm python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/contextualTypeOfIndexedAccessParameter.ts
+result: pass; BuildPass, TypeScript oracle diagnostics=[]
+date: 2026-05-07
 ```
 
 Remaining risks:
