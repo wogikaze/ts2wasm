@@ -179,6 +179,12 @@ Also owns `issues/done/3358-implement-modulePreserve.md` for
 `modulePreserve1.ts`: fresh triage stops at dependency module `export class A`
 in virtual `/a.ts` before `export = class B {}`, static import, import-equals,
 or module-preserve emit diagnostics become actionable.
+Also owns the in-node_modules symlink subset of
+`issues/done/3387-implement-moduleResolutionWithSymlinks-import-export.md`:
+fresh triage for `moduleResolutionWithSymlinks.ts` and
+`moduleResolutionWithSymlinks_withOutDir.ts` stops at dependency module
+`export class MyClass` before symlinked package realpath, duplicate/private
+class diagnostics, or outDir behavior becomes actionable.
 
 ## Completion evidence
 

@@ -167,6 +167,12 @@ four UnsupportedSyntax/module-resolution paths, and representative triage for
 `moduleResolutionWithSuffixes_one_externalModule_withPaths.ts` stops in
 virtual `/tsconfig.json` at the first JSON property colon before package
 subpath, path mapping, or moduleSuffixes behavior becomes actionable.
+Also owns the later config-section blocker for
+`issues/done/3387-implement-moduleResolutionWithSymlinks-import-export.md`:
+fresh triage for `moduleResolutionWithSymlinks_notInNodeModules.ts` first
+needs symlink alias module resolution owned by issue 5426, and its dumps also
+show virtual `/src/tsconfig.json` JSON parsing before outDir behavior becomes
+actionable.
 
 ## Completion evidence
 
