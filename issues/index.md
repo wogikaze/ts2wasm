@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 6 | 5 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4564 | 3469 | 1095 |
+| frontend | 4565 | 3469 | 1096 |
 | harness | 1 | 0 | 1 |
 | ir | 74 | 52 | 22 |
 | issues | 4 | 0 | 4 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5219 | 3766 | 1453 |
+| total | 5220 | 3766 | 1454 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -339,6 +339,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5382 | Parse typed arrow ternary branches | feature | frontend/syntax | implementation-ready | P1 |  | typed arrow functions used as ternary conditional branches are rejected during AST construction before contextual typ... |
 | 5383 | Classify number parameter toFixed calls | feature | ir/lowering | implementation-ready | P1 |  | `x.toFixed()` inside an arrow callback with `x: number` falls through to `issue-211: unknown receiver class for metho... |
 | 5384 | Resolve ambient function value references | feature | frontend/resolver | implementation-ready | P1 |  | `contextualTypingReturnStatementWithReturnTypeAnnotation.ts` currently |
+| 5385 | Parse arrow body assignment expressions | feature | frontend/syntax | implementation-ready | P1 | 5000 | `contextualTypingTwoInstancesOfSameTypeParameter.ts` currently fails |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -598,7 +599,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 759 | Implement Asynciife | spike | frontend/syntax | class: triage-needed | Implement Asynciife |
 | 760 | Implement Asyncimportnestedyield | spike | reference/triage | class: triage-needed | Implement Asyncimportnestedyield |
 | 761 | Implement Asynciteratorextraparameters | spike | runtime/builtins | class: triage-needed | Implement Asynciteratorextraparameters |
-| 1531 | Implement Contextualtypingtwoinstancesofsametypeparameter | spike | frontend/syntax | class: blocked | Implement Contextualtypingtwoinstancesofsametypeparameter |
 | 1532 | Implement Contextualtypingwithfixedtypeparameters | spike | frontend/syntax | class: blocked | Implement Contextualtypingwithfixedtypeparameters |
 | 1533 | Implement Contextualtypingwithgenericandnongenericsignature | spike | frontend/semantics | class: blocked | Implement Contextualtypingwithgenericandnongenericsignature |
 | 1534 | Implement Contextualtypingwithgenericsignature | spike | frontend/semantics | class: blocked | Implement Contextualtypingwithgenericsignature |
@@ -5175,6 +5175,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1528 | Implement Contextualtypingoflambdawithmultiplesignatures | spike | frontend/syntax | see `issues/done/1528-implement-contextualTypingOfLambdaWithMultipleSignatures.md` |
 | 1529 | Implement Contextualtypingoftooshortoverloads | spike | frontend/syntax | see `issues/done/1529-implement-contextualTypingOfTooShortOverloads.md` |
 | 1530 | Implement Contextualtypingreturnstatementwithreturntypeannotation | spike | frontend/resolver | see `issues/done/1530-implement-contextualTypingReturnStatementWithReturnTypeAnnotation.md` |
+| 1531 | Implement Contextualtypingtwoinstancesofsametypeparameter | spike | frontend/syntax | see `issues/done/1531-implement-contextualTypingTwoInstancesOfSameTypeParameter.md` |
 | 2050 | Implement Duplicatelocalvariable Duplicate Local | spike | reference/triage | see `issues/done/2050-implement-duplicateLocalVariable-duplicate-local.md` |
 | 3002 | Implement Isolateddeclarationerrorsdefault | spike | runtime/builtins | see `issues/done/3002-implement-isolatedDeclarationErrorsDefault.md` |
 | 3131 | Implement Jsxfactorynotidentifierorqualifiedname | spike | reference/triage | see `issues/done/3131-implement-jsxFactoryNotIdentifierOrQualifiedName.md` |
