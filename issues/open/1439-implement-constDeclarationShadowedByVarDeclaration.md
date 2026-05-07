@@ -130,7 +130,7 @@ Follow-up issues:
 
 - `issues/open/5387-parse-function-expression-statements-in-nested-blocks.md`
   is related but covers function expression statements.
-- `issues/open/5250-parse-class-declarations-in-nested-block-statements.md`
+- `issues/done/5250-parse-class-declarations-in-nested-block-statements.md`
   is related but covers class declarations.
 - Split into `issues/open/5310-parse-nested-block-statements-with-variable-declarations.md`.
 

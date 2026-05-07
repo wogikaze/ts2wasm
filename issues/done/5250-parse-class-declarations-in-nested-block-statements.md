@@ -39,9 +39,9 @@ UnsupportedSyntax: expected Comma, got Some(Ident("C")) at 90..91
 
 In scope:
 
-- [ ] Dispatch `class` declarations correctly inside nested block statement parsing.
-- [ ] Preserve following statements in the same nested block, such as `var c2 = C;`.
-- [ ] Add focused parser/CLI coverage for `function f(){ { class C {} var c2 = C; } }`.
+- [x] Dispatch `class` declarations correctly inside nested block statement parsing.
+- [x] Preserve following statements in the same nested block, such as `var c2 = C;`.
+- [x] Add focused parser/CLI coverage for `function f(){ { class C {} var c2 = C; } }`.
 
 Out of scope:
 
@@ -56,9 +56,9 @@ Do not touch: backend/runtime ABI.
 
 ## Acceptance criteria
 
-- [ ] `classDeclarationBlockScoping2.ts` advances past `expected Comma, got Some(Ident("C"))`.
-- [ ] A focused test covers class declarations inside nested block statements.
-- [ ] Existing object literal/block parsing tests still pass.
+- [x] `classDeclarationBlockScoping2.ts` advances past `expected Comma, got Some(Ident("C"))`.
+- [x] A focused test covers class declarations inside nested block statements.
+- [x] Existing object literal/block parsing tests still pass.
 
 ## Validation
 
