@@ -8,7 +8,7 @@ priority: P1
 depends_on: []
 blocks: []
 created: 2026-05-06
-updated: 2026-05-06
+updated: 2026-05-07
 ---
 
 ## Summary
@@ -101,6 +101,8 @@ Do not touch:
 - [ ] `collisionThisExpressionAndLocalVarInConstructor.ts` no longer reports
   `unsupported expression: Some(SpannedToken { kind: RightParen ... })` at the
   second arrow.
+- [ ] `collisionThisExpressionAndLocalVarInAccessors.ts` no longer reports the
+  same nested zero-argument arrow parser failure inside class accessor bodies.
 - [ ] A focused parser test covers `(callback) => () => { return callback(this); }`.
 - [ ] Existing arrow function expression tests still pass.
 - [ ] The representative reference triage records the next diagnostic or pass
@@ -145,9 +147,16 @@ Follow-up issues:
 Split from generated bucket
 `issues/done/1325-implement-collisionThisExpressionAndLocalVarInConstructor.md`.
 Also supersedes
+`issues/done/1324-implement-collisionThisExpressionAndLocalVarInAccessors.md`,
 `issues/done/1327-implement-collisionThisExpressionAndLocalVarInLambda.md`
 and `issues/done/1328-implement-collisionThisExpressionAndLocalVarInMethod.md`,
-which both stop at the same `(callback) => () => { ... }` parser failure.
+which stop at the same `(callback) => () => { ... }` parser failure.
+
+2026-05-07 additional evidence: `collisionThisExpressionAndLocalVarInAccessors.ts`
+stops at span `141..143` on the second arrow in
+`doStuff: (callback) => () => { ... }` inside a getter body. TypeScript accepts
+the source and reports no diagnostics; its AST path has nested `ArrowFunction`
+nodes under a `PropertyAssignment` inside `GetAccessor`.
 
 Related but distinct:
 
