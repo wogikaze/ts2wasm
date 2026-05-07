@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 5 | 4 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4540 | 3525 | 1015 |
+| frontend | 4541 | 3525 | 1016 |
 | harness | 1 | 0 | 1 |
 | ir | 65 | 43 | 22 |
 | issues | 4 | 0 | 4 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5185 | 3816 | 1369 |
+| total | 5186 | 3816 | 1370 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -50,7 +50,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 5000 (Meta: TypeScript Compiler Parser Syntax Coverage) [done/design] ch:456 open:381 done:75
 ├── 5002 (Meta: TypeScript Compiler Type System Coverage) [done/done] ch:230 open:213 done:17 (also ← 5005)
 ├── 5003 (Meta: TypeScript Compiler Declaration Emit Coverage) [done/done] ch:102 open:91 done:11 (also ← 5001)
-5001 (Meta: TypeScript Compiler Semantic Analysis Coverage) [done/done] ch:570 open:316 done:254
+5001 (Meta: TypeScript Compiler Semantic Analysis Coverage) [done/done] ch:569 open:315 done:254
 5004 (Meta: Runtime Builtins Coverage (test262) (audit reopened #5004)) [done/done] ch:24 open:3 done:21
 5005 (Meta: TypeScript Compiler Name Resolution Coverage) [done/done] ch:412 open:360 done:52
 ├── 5006 (Meta: TypeScript Compiler Scope Analysis Coverage) [done/done] ch:28 open:20 done:8
@@ -67,7 +67,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | Order | ID | Title | State | Class | Area | Priority | Depends on | Direct children | Open children | Done children |
 |-----:|---:|------|-------|-------|------|--------:|-----------:|----------------:|--------------:|--------------:|
 | 1 | 5000 | Meta: TypeScript Compiler Parser Syntax Coverage | done | design | frontend/syntax | P1 | - | 456 | 381 | 75 |
-| 2 | 5001 | Meta: TypeScript Compiler Semantic Analysis Coverage | done | done | frontend/semantics | P1 | - | 570 | 316 | 254 |
+| 2 | 5001 | Meta: TypeScript Compiler Semantic Analysis Coverage | done | done | frontend/semantics | P1 | - | 569 | 315 | 254 |
 | 3 | 5004 | Meta: Runtime Builtins Coverage (test262) (audit reopened #5004) | done | done | runtime/builtins | P1 | - | 24 | 3 | 21 |
 | 4 | 5005 | Meta: TypeScript Compiler Name Resolution Coverage | done | done | frontend/resolver | P1 | - | 412 | 360 | 52 |
 | 5 | 5002 | Meta: TypeScript Compiler Type System Coverage | done | done | frontend/semantics | P1 | 5000, 5005 | 230 | 213 | 17 |
@@ -305,6 +305,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5348 | Resolve const declarations before use diagnostics | bug | frontend/resolver | implementation-ready | P1 |  | lexical const bindings are not registered early enough for |
 | 5349 | Parse multiplicative compound assignment operators | feature | frontend/syntax | implementation-ready | P1 |  | Parse multiplicative compound assignment operators |
 | 5350 | Report missing const initializer diagnostics | feature | frontend/parser | implementation-ready | P1 |  | Report missing const initializer diagnostics |
+| 5351 | Accept large decimal integer number literals | feature | frontend/lexer | implementation-ready | P1 |  | Accept large decimal integer number literals |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -564,7 +565,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 759 | Implement Asynciife | spike | frontend/syntax | class: triage-needed | Implement Asynciife |
 | 760 | Implement Asyncimportnestedyield | spike | reference/triage | class: triage-needed | Implement Asyncimportnestedyield |
 | 761 | Implement Asynciteratorextraparameters | spike | runtime/builtins | class: triage-needed | Implement Asynciteratorextraparameters |
-| 1447 | Implement Constenumerrors | spike | frontend/syntax | class: blocked | Implement Constenumerrors |
 | 1448 | Implement Constenumexternalmodule | spike | frontend/syntax | class: blocked | Implement Constenumexternalmodule |
 | 1449 | Implement Constenummergingwithvalues Import Export | spike | frontend/syntax | class: blocked | Implement Constenummergingwithvalues Import Export |
 | 1450 | Implement Constenummergingwithvalues Parser Syntax | spike | frontend/syntax | class: triage-needed | Implement Constenummergingwithvalues Parser Syntax |
@@ -5141,6 +5141,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1444 | Implement Constdeclarations Unknown Unsupported | spike | frontend/syntax | see `issues/done/1444-implement-constDeclarations-unknown-unsupported.md` |
 | 1445 | Implement Constenumbadpropertynames | spike | frontend/syntax | see `issues/done/1445-implement-constEnumBadPropertyNames.md` |
 | 1446 | Implement Constenumdeclarations | spike | frontend/syntax | see `issues/done/1446-implement-constEnumDeclarations.md` |
+| 1447 | Implement Constenumerrors | spike | frontend/syntax | see `issues/done/1447-implement-constEnumErrors.md` |
 | 2050 | Implement Duplicatelocalvariable Duplicate Local | spike | reference/triage | see `issues/done/2050-implement-duplicateLocalVariable-duplicate-local.md` |
 | 3002 | Implement Isolateddeclarationerrorsdefault | spike | runtime/builtins | see `issues/done/3002-implement-isolatedDeclarationErrorsDefault.md` |
 | 3131 | Implement Jsxfactorynotidentifierorqualifiedname | spike | reference/triage | see `issues/done/3131-implement-jsxFactoryNotIdentifierOrQualifiedName.md` |
