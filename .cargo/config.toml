@@ -1,3 +1,2 @@
 [build]
-target-dir = "/home/wogikaze/wgkz/ts2wasm/target"
 rustflags = ["-C", "link-arg=-fuse-ld=mold"]
