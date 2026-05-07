@@ -18,7 +18,7 @@ Issue files are the source of truth for work items. The generated section below 
 | docs | 5 | 0 | 5 |
 | frontend | 4546 | 3853 | 693 |
 | harness | 1 | 0 | 1 |
-| ir | 72 | 27 | 45 |
+| ir | 72 | 26 | 46 |
 | issues | 5 | 0 | 5 |
 | parser | 1 | 0 | 1 |
 | reference | 212 | 163 | 49 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 8 | 0 | 8 |
 | wasi | 4 | 0 | 4 |
-| total | 5223 | 4133 | 1090 |
+| total | 5223 | 4132 | 1091 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -365,7 +365,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5254 | Parse ASI between static class fields | feature | frontend/parser | implementation-ready | P1 |  | `classExpressionWithStaticProperties2.ts` parses `static b` as the |
 | 5255 | Resolve super property accesses | feature | frontend/resolver | implementation-ready | P1 |  | `classExtendingAny.ts` parses class declarations, `extends Err`, and |
 | 5257 | Parse object type literal construct signatures | feature | frontend/parser | implementation-ready | P1 |  | `classExtendsInterfaceInExpression.ts` fails before class heritage can |
-| 5259 | Report super property access in class extends null | feature | ir/resolver | implementation-ready | P1 |  | `classExtendsNull3.ts` parses two classes with `extends null` and |
 | 5260 | Report class heritage trailing comma | feature | frontend/parser | implementation-ready | P1 |  | `classHeritageWithTrailingSeparator.ts` tokenizes the class heritage |
 | 5261 | Report class-typed missing instance method calls | feature | ir/lowering | implementation-ready | P1 |  | Report class-typed missing instance method calls |
 | 5262 | Resolve import-equals aliases in class implements clauses | feature | frontend/resolver | implementation-ready | P1 |  | Resolve import-equals aliases in class implements clauses |
@@ -5334,6 +5333,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5252 | Support call-expression class heritage | feature | ir/resolver | see file |
 | 5256 | Report non-constructor class heritage expressions | feature | ir/resolver | see file |
 | 5258 | Report super calls in class extends null constructors | feature | ir/resolver | see file |
+| 5259 | Report super property access in class extends null | feature | ir/resolver | see file |
 <!-- generated:done:end -->
 
 ## Index generation contract
