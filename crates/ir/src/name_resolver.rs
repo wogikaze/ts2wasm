@@ -1278,6 +1278,36 @@ impl NameResolver {
         })
     }
 
+    fn literal_reference_comparison_gap(
+        &self,
+        left: &Expr,
+        op: BinaryOp,
+        right: &Expr,
+        span: Span,
+    ) -> Option<Diagnostic> {
+        let is_reference_op = matches!(
+            op,
+            BinaryOp::StrictEqual | BinaryOp::StrictNotEqual | BinaryOp::EqualEqual | BinaryOp::BangEqual
+        );
+        if !is_reference_op {
+            return None;
+        }
+        let is_left_literal = matches!(left, Expr::Object { .. } | Expr::Array { .. });
+        let is_right_literal = matches!(right, Expr::Object { .. } | Expr::Array { .. });
+        if is_left_literal || is_right_literal {
+            Some(Diagnostic {
+                code: DiagCode::UnsupportedSyntax,
+                message: format!(
+                    "issue-5301: this comparison between object/array literals always evaluates to `{}` because each literal creates a distinct reference",
+                    if matches!(op, BinaryOp::StrictEqual | BinaryOp::EqualEqual) { "false" } else { "true" }
+                ),
+                span: Some(span),
+            })
+        } else {
+            None
+        }
+    }
+
     fn bigint_number_model_gap_value(&self, expr: &Expr) -> Option<String> {
         match expr {
             Expr::Ident { name, .. }
