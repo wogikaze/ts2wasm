@@ -183,6 +183,15 @@ Additional superseded bucket:
   `declare const wat: Wat<number>; wat as Wat<string>;`. TypeScript later
   reports TS2352 conversion diagnostics, but the current compiler blocker is
   still resolver visibility for declaration-only ambient const values.
+- `issues/done/3372-implement-moduleResolution-name-resolution.md` reaches the
+  same ambient value name-resolution boundary in
+  `moduleResolution_automaticTypeDirectiveNames.ts`. Fresh triage on
+  2026-05-08 tokenizes two `declare const a` declarations from reference
+  sections, erases them from the executable AST, and then reports
+  `UnresolvedName: unresolved name: \`a\`` for the later `a;` expression.
+  TypeScript later reports duplicate block-scoped variable diagnostics for the
+  two ambient declarations, but the current compiler blocker is still
+  resolver visibility for declaration-only ambient const values.
 
 ## Completion evidence
 
