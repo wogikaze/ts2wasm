@@ -192,6 +192,13 @@ stops in `/shared/node_modules/troublesome-lib/package.json` at the first JSON
 property colon before package-id relative/absolute path behavior, path mapping,
 or virtual node_modules resolution becomes actionable.
 
+Also owns the later package-json blocker for
+`issues/done/3381-implement-moduleResolutionWithExtensions-module-resolution.md`:
+fresh triage for `moduleResolutionWithExtensions_unexpected.ts` and
+`moduleResolutionWithExtensions_unexpected2.ts` first stops in unread fixture
+asset text owned by issue 5424; after that skip, both files contain virtual
+`package.json` bodies whose JSON property-colon boundary is owned here.
+
 ## Completion evidence
 
 Fill only when moving to `done/`.
