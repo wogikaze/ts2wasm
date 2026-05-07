@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 6 | 5 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4559 | 3476 | 1083 |
+| frontend | 4560 | 3476 | 1084 |
 | harness | 1 | 0 | 1 |
 | ir | 72 | 50 | 22 |
 | issues | 4 | 0 | 4 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5212 | 3772 | 1440 |
+| total | 5213 | 3772 | 1441 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -332,6 +332,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5375 | Support callable ambient interface local calls | feature | ir/lowering | implementation-ready | P1 |  | ambient locals typed by callable interfaces currently fall into the |
 | 5376 | Support ambient generic factory local calls | feature | ir/lowering | implementation-ready | P1 |  | ambient generic factory locals currently fall into the generic |
 | 5377 | Support callable ambient interface local calls with key remap | feature | ir/lowering | implementation-ready | P1 |  | callable ambient interface locals after mapped-type key remapping fall |
+| 5378 | Report mixed ambient function overload diagnostics | feature | frontend/resolver | implementation-ready | P1 |  | mixed ambient/non-ambient top-level function overload groups report a |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -591,7 +592,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 759 | Implement Asynciife | spike | frontend/syntax | class: triage-needed | Implement Asynciife |
 | 760 | Implement Asyncimportnestedyield | spike | reference/triage | class: triage-needed | Implement Asyncimportnestedyield |
 | 761 | Implement Asynciteratorextraparameters | spike | runtime/builtins | class: triage-needed | Implement Asynciteratorextraparameters |
-| 1518 | Implement Contextualtyping Import Export | spike | frontend/syntax | class: blocked | Implement Contextualtyping Import Export |
 | 1519 | Implement Contextualtyping Parser Syntax | spike | frontend/syntax | class: triage-needed | Implement Contextualtyping Parser Syntax |
 | 1520 | Implement Contextualtyping Unknown Unsupported | spike | frontend/syntax | class: triage-needed | Implement Contextualtyping Unknown Unsupported |
 | 1521 | Implement Contextualtypingarraydestructuringwithdefaults | spike | reference/triage | class: triage-needed | Implement Contextualtypingarraydestructuringwithdefaults |
@@ -5168,6 +5168,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1515 | Implement Contextualtypeselfreferencing | spike | frontend/resolver | see `issues/done/1515-implement-contextualTypeSelfReferencing.md` |
 | 1516 | Implement Contextualtypeshouldbeliteral | spike | reference/triage | see `issues/done/1516-implement-contextualTypeShouldBeLiteral.md` |
 | 1517 | Implement Contextualtypesnegatedtypelikeconstraintingenericmappedtype | spike | frontend/syntax | see `issues/done/1517-implement-contextualTypesNegatedTypeLikeConstraintInGenericMappedType.md` |
+| 1518 | Implement Contextualtyping Import Export | spike | frontend/syntax | see `issues/done/1518-implement-contextualTyping-import-export.md` |
 | 2050 | Implement Duplicatelocalvariable Duplicate Local | spike | reference/triage | see `issues/done/2050-implement-duplicateLocalVariable-duplicate-local.md` |
 | 3002 | Implement Isolateddeclarationerrorsdefault | spike | runtime/builtins | see `issues/done/3002-implement-isolatedDeclarationErrorsDefault.md` |
 | 3131 | Implement Jsxfactorynotidentifierorqualifiedname | spike | reference/triage | see `issues/done/3131-implement-jsxFactoryNotIdentifierOrQualifiedName.md` |

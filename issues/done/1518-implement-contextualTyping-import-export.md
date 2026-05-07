@@ -5,10 +5,10 @@ type: spike
 area: frontend/syntax
 class: blocked
 priority: P1
-depends_on: [432]
+depends_on: []
 blocks: []
 created: 2026-05-01
-updated: 2026-05-01
+updated: 2026-05-07
 ---
 
 ## Summary
@@ -43,10 +43,10 @@ This generated bucket is either split into implementation-ready child issues or 
 
 In scope:
 
-- [ ] Inspect the smart triage report below
-- [ ] Confirm whether existing open/done issues already cover this bucket
-- [ ] Split one feature family, one observable behavior, or one fixed reference window into child issues
-- [ ] Preserve exact reproduction commands and representative AST/diagnostic evidence in each child issue
+- [x] Inspect the smart triage report below
+- [x] Confirm whether existing open/done issues already cover this bucket
+- [x] Split one feature family, one observable behavior, or one fixed reference window into child issues
+- [x] Preserve exact reproduction commands and representative AST/diagnostic evidence in each child issue
 
 Out of scope:
 
@@ -68,10 +68,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] Duplicate candidates below are confirmed as no-match or this issue is superseded
-- [ ] At least one child issue contains an exact `mise run reference-triage -- ...` command
-- [ ] Child issue includes failing path, diagnostic code, source context, visible symbols, and parser/TypeScript AST evidence
-- [ ] Child issue acceptance names the exact fixture/reference path and diagnostic/stdout change
+- [x] Duplicate candidates below are confirmed as no-match or this issue is superseded
+- [x] At least one child issue contains an exact `mise run reference-triage -- ...` command
+- [x] Child issue includes failing path, diagnostic code, source context, visible symbols, and parser/TypeScript AST evidence
+- [x] Child issue acceptance names the exact fixture/reference path and diagnostic/stdout change
 
 ## Validation
 
@@ -98,15 +98,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] updated: `current-state.md` (repo root)
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] created: `issues/open/5378-report-mixed-ambient-function-overload-diagnostics.md`
 
 ## Notes
 
@@ -128,7 +128,55 @@ Follow-up issues:
 
 ## Smart triage
 
-Not generated. Rerun with `--triage-limit 1` or higher.
+Date: 2026-05-07
+
+Command:
+
+```sh
+env TS2WASM_BINARY=/home/wogikaze/wgkz/ts2wasm/target/debug/ts2wasm python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/contextualTyping.ts
+```
+
+Result: split to
+`issues/open/5378-report-mixed-ambient-function-overload-diagnostics.md`.
+
+Current diagnostic:
+
+```text
+DuplicateLocal: duplicate local variable: `EF1` at 5033..5064
+feature_label: duplicate-local
+```
+
+Source context:
+
+```ts
+declare function EF1(a:number, b:number):number;
+
+function EF1(a,b) { return a+b; }
+
+var efv = EF1(1,2);
+```
+
+Compiler evidence:
+
+- tokens: ok
+- ast: ok through contextual typing cases, including `EF1` declarations
+- visible symbols include bodyless ambient function `EF1`, concrete function
+  `EF1`, and binding `efv`
+- resolved/name resolution: fails with generic `DuplicateLocal` before the
+  TypeScript mixed ambient/non-ambient overload diagnostic is reached
+- TypeScript oracle reports TS2384, `Overload signatures must all be ambient or
+  non-ambient.`, at the ambient `EF1` signature
+
+Duplicate review:
+
+- `issues/open/5200-validate-top-level-function-overload-implementations.md`
+  owns valid non-ambient overload signatures plus implementations, not mixed
+  ambient/non-ambient diagnostics.
+- `issues/open/5226-allow-ambient-function-overload-declarations.md` owns
+  multiple ambient overload declarations, not a mixed ambient signature plus
+  non-ambient implementation.
+- `issues/open/5307-report-var-function-duplicate-identifier-diagnostics.md`
+  owns var/function duplicate identifier diagnostics, not overload ambientness.
 
 ## Completion evidence
 
@@ -136,16 +184,21 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- `...`
+- split to `issues/open/5378-report-mixed-ambient-function-overload-diagnostics.md`
 
 Validation result:
 
 ```text
-command:
-result:
-date:
+command: env TS2WASM_BINARY=/home/wogikaze/wgkz/ts2wasm/target/debug/ts2wasm python scripts/manager.py reference-coverage tsc --path-filter reference/typescript/tests/cases/compiler/contextualTyping.ts --detail --no-dashboard-data
+result: pass; executed=1, unsupported=1, current failure is DuplicateLocal duplicate-local
+date: 2026-05-07
+
+command: env TS2WASM_BINARY=/home/wogikaze/wgkz/ts2wasm/target/debug/ts2wasm python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/contextualTyping.ts
+result: pass; reproduced generic DuplicateLocal for mixed ambient/non-ambient EF1 overload and split to issue 5378
+date: 2026-05-07
 ```
 
 Remaining risks:
 
-- none
+- The reference path remains unsupported until issue 5378 reports the
+  source-spanned mixed ambient/non-ambient overload diagnostic.
