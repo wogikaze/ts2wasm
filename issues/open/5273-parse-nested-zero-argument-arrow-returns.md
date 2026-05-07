@@ -106,6 +106,9 @@ Do not touch:
 - [ ] `collisionThisExpressionAndLocalVarInProperty.ts` no longer reports the
   same nested zero-argument arrow parser failure inside class property
   initializers.
+- [ ] `collisionThisExpressionAndParameter.ts` no longer reports the same
+  nested zero-argument arrow parser failure inside a constructor object-literal
+  property initializer.
 - [ ] A focused parser test covers `(callback) => () => { return callback(this); }`.
 - [ ] Existing arrow function expression tests still pass.
 - [ ] The representative reference triage records the next diagnostic or pass
@@ -168,6 +171,15 @@ stops at span `111..113` on the second arrow in
 initializer. TypeScript accepts the source and reports no diagnostics; its AST
 path has nested `ArrowFunction` nodes under a `PropertyAssignment` inside
 `PropertyDeclaration`.
+
+2026-05-07 additional evidence: `collisionThisExpressionAndParameter.ts`
+stops at span `1073..1075` on the second arrow in
+`doStuff: (callback) => () => { ... }` inside the `Foo1` constructor. Tokens
+succeed through the nested arrow and callback body, while AST construction
+fails with `UnsupportedSyntax: unsupported expression: Some(SpannedToken {
+kind: RightParen, span: Span { start: 1071, end: 1072 } })`. TypeScript accepts
+that nested arrow shape and later reports TS2683 implicit-`this` diagnostics
+plus duplicate global `console` diagnostics.
 
 Related but distinct:
 
