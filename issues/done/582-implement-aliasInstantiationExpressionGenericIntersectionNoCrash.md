@@ -3,12 +3,13 @@ id: 582
 title: "Implement Aliasinstantiationexpressiongenericintersectionnocrash"
 type: spike
 area: frontend/syntax
-class: blocked
+class: done
 priority: P1
-depends_on: [345]
+depends_on: [5161]
 blocks: []
 created: 2026-05-01
-updated: 2026-05-01
+updated: 2026-05-08
+completed: 2026-05-08
 ---
 
 ## Summary
@@ -17,9 +18,16 @@ Triage aliasInstantiationExpressionGenericIntersectionNoCrash across 2 failing r
 
 ## Problem
 
-Reference test results show 2 cases fail in directory `aliasInstantiationExpressionGenericIntersectionNoCrash` with diagnostics: type-alias. The compiler cannot handle these syntax/semantics, preventing compilation of code in this category.
+Reference test results showed 2 cases in
+`aliasInstantiationExpressionGenericIntersectionNoCrash` with diagnostics:
+type-alias. Fresh coverage and triage show the parser/type-alias boundary has
+advanced; both files now fail because declaration-only ambient `declare const`
+values are not resolver-visible when referenced in the following `as`
+expression.
 
-Problem: aliasInstantiationExpressionGenericIntersectionNoCrash has 2 reference failures and needs smart-triage evidence before implementation starts.
+Problem: aliasInstantiationExpressionGenericIntersectionNoCrash had 2 generated
+bucket failures and needed smart-triage evidence. No new child is needed because
+issue 5161 already owns resolver-visible ambient value declarations.
 
 ## Current failure
 
@@ -43,10 +51,10 @@ This generated bucket is either split into implementation-ready child issues or 
 
 In scope:
 
-- [ ] Inspect the smart triage report below
-- [ ] Confirm whether existing open/done issues already cover this bucket
-- [ ] Split one feature family, one observable behavior, or one fixed reference window into child issues
-- [ ] Preserve exact reproduction commands and representative AST/diagnostic evidence in each child issue
+- [x] Inspect the smart triage report below
+- [x] Confirm whether existing open/done issues already cover this bucket
+- [x] Supersede this generated bucket with issue 5161
+- [x] Preserve exact reproduction commands and representative AST/diagnostic evidence
 
 Out of scope:
 
@@ -68,10 +76,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] Duplicate candidates below are confirmed as no-match or this issue is superseded
-- [ ] At least one child issue contains an exact `mise run reference-triage -- ...` command
-- [ ] Child issue includes failing path, diagnostic code, source context, visible symbols, and parser/TypeScript AST evidence
-- [ ] Child issue acceptance names the exact fixture/reference path and diagnostic/stdout change
+- [x] Duplicate candidates below are confirmed as no-match or this issue is superseded
+- [x] Existing issue 5161 contains the implementation-ready ambient value declaration owner
+- [x] This issue includes failing paths, diagnostic code, source context, visible symbols, and parser/TypeScript AST evidence
+- [x] Coverage names the exact reference window and diagnostic classification
 
 ## Validation
 
@@ -98,15 +106,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] updated: `current-state.md` (repo root)
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 
@@ -568,20 +576,26 @@ error: [UnsupportedSyntax] expected LeftBrace, got Some(Less) at 56..57
 
 ## Completion evidence
 
-Fill only when moving to `done/`.
-
 Commits:
 
-- `...`
+- pending
 
 Validation result:
 
 ```text
-command:
-result:
-date:
+command: env TS2WASM_BINARY=/tmp/ts2wasm-issue-blockers-target/debug/ts2wasm python scripts/manager.py reference-coverage tsc --path-filter reference/typescript/tests/cases/compiler/aliasInstantiationExpressionGenericIntersectionNoCrash --detail --no-dashboard-data
+result: pass; executed=2, build_pass=0, unsupported=2, unsupported_diagcodes=UnresolvedName:2, unsupported_features=name-resolution:2
+date: 2026-05-08
+
+command: env TS2WASM_BINARY=/tmp/ts2wasm-issue-blockers-target/debug/ts2wasm python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/aliasInstantiationExpressionGenericIntersectionNoCrash1.ts
+result: pass; tokens/AST succeed, current blocker is UnresolvedName for ambient `declare const e`, superseded by issue 5161
+date: 2026-05-08
+
+command: env TS2WASM_BINARY=/tmp/ts2wasm-issue-blockers-target/debug/ts2wasm python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/aliasInstantiationExpressionGenericIntersectionNoCrash2.ts
+result: pass; tokens/AST succeed, current blocker is UnresolvedName for ambient `declare const wat`, superseded by issue 5161
+date: 2026-05-08
 ```
 
 Remaining risks:
 
-- none
+- Implementation remains open in `issues/open/5161-model-ambient-value-declarations-for-name-resolution.md`.

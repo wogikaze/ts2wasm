@@ -444,7 +444,7 @@ error: [UnsupportedSyntax] expected LeftBrace, got Some(Less) at 50..51
 ## 重複整理メモ
 
 この issue はタイトルが重複しているため、内容がより充実している
-`issues/open/582-implement-aliasInstantiationExpressionGenericIntersectionNoCrash.md` に統合されました。
+`issues/done/582-implement-aliasInstantiationExpressionGenericIntersectionNoCrash.md` に統合されました。
 そちらを参照してください。
 ## Completion evidence
 
