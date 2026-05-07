@@ -658,7 +658,7 @@ error: [UnsupportedSyntax] issue-211: unknown receiver class for method `propert
 ## 重複整理メモ
 
 この issue はタイトルが重複しているため、内容がより充実している
-`issues/open/565-implement-accessorAccidentalCallDiagnostic.md` に統合されました。
+`issues/done/565-implement-accessorAccidentalCallDiagnostic.md` に統合されました。
 そちらを参照してください。
 ## Completion evidence
 

@@ -3,12 +3,13 @@ id: 565
 title: "Implement Accessoraccidentalcalldiagnostic"
 type: spike
 area: frontend/syntax
-class: blocked
+class: done
 priority: P1
-depends_on: [5001]
+depends_on: [5393]
 blocks: []
 created: 2026-05-01
-updated: 2026-05-01
+updated: 2026-05-08
+completed: 2026-05-08
 ---
 
 ## Summary
@@ -17,9 +18,14 @@ Triage accessorAccidentalCallDiagnostic across 1 failing reference test cases an
 
 ## Problem
 
-Reference test results show 1 cases fail in directory `accessorAccidentalCallDiagnostic` with diagnostics: class-accessor. The compiler cannot handle these syntax/semantics, preventing compilation of code in this category.
+Reference test results show 1 case in `accessorAccidentalCallDiagnostic`.
+Fresh triage shows tokens and AST succeed; lowering stops at the current
+`issue-211` unknown receiver class diagnostic before TypeScript-compatible
+TS6234 get-accessor accidental-call reporting.
 
-Problem: accessorAccidentalCallDiagnostic has 1 reference failures and needs smart-triage evidence before implementation starts.
+Problem: accessorAccidentalCallDiagnostic had 1 generated bucket failure and
+needed smart-triage evidence before implementation starts. That work is now
+split to issue 5393.
 
 ## Current failure
 
@@ -43,10 +49,10 @@ This generated bucket is either split into implementation-ready child issues or 
 
 In scope:
 
-- [ ] Inspect the smart triage report below
-- [ ] Confirm whether existing open/done issues already cover this bucket
-- [ ] Split one feature family, one observable behavior, or one fixed reference window into child issues
-- [ ] Preserve exact reproduction commands and representative AST/diagnostic evidence in each child issue
+- [x] Inspect the smart triage report below
+- [x] Confirm whether existing open/done issues already cover this bucket
+- [x] Split one feature family, one observable behavior, or one fixed reference window into child issues
+- [x] Preserve exact reproduction commands and representative AST/diagnostic evidence in each child issue
 
 Out of scope:
 
@@ -68,10 +74,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] Duplicate candidates below are confirmed as no-match or this issue is superseded
-- [ ] At least one child issue contains an exact `mise run reference-triage -- ...` command
-- [ ] Child issue includes failing path, diagnostic code, source context, visible symbols, and parser/TypeScript AST evidence
-- [ ] Child issue acceptance names the exact fixture/reference path and diagnostic/stdout change
+- [x] Duplicate candidates below are confirmed as no-match or this issue is superseded
+- [x] At least one child issue contains an exact `mise run reference-triage -- ...` command
+- [x] Child issue includes failing path, diagnostic code, source context, visible symbols, and parser/TypeScript AST evidence
+- [x] Child issue acceptance names the exact fixture/reference path and diagnostic/stdout change
 
 ## Validation
 
@@ -98,15 +104,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] updated: `current-state.md` (repo root)
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 
@@ -667,16 +673,20 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- `...`
+- pending
 
 Validation result:
 
 ```text
-command:
-result:
-date:
+command: env TS2WASM_BINARY=/tmp/ts2wasm-issue-blockers-target/debug/ts2wasm python scripts/manager.py reference-coverage tsc --path-filter reference/typescript/tests/cases/compiler/accessorAccidentalCallDiagnostic.ts --detail --no-dashboard-data
+result: pass; executed=1, build_pass=0, unsupported=1, UnsupportedSyntax/class-accessor remains
+date: 2026-05-08
+
+command: env TS2WASM_BINARY=/tmp/ts2wasm-issue-blockers-target/debug/ts2wasm python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/accessorAccidentalCallDiagnostic.ts
+result: pass; tokens and AST succeed, lowering reports issue-211 unknown receiver class for method property; TypeScript oracle reports TS6234 get accessor accidental call
+date: 2026-05-08
 ```
 
 Remaining risks:
 
-- none
+- Implementation remains open in `issues/open/5393-report-get-accessor-accidental-call-diagnostics.md`.

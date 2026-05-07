@@ -119,7 +119,7 @@ Follow-up issues:
 - `issues/done/094-implement-accessorAccidentalCallDiagnostic.md` - Implement Accessoraccidentalcalldiagnostic (same reference path, same feature label, same group key, title overlap)
 - `issues/open/422-implement-class-accessor.md` - Implement class-accessor support (same feature label, same group key, title overlap)
 - `issues/done/479-implement-accessorAccidentalCallDiagnostic.md` - Implement Accessoraccidentalcalldiagnostic (same reference path, same feature label, same group key, title overlap)
-- `issues/open/565-implement-accessorAccidentalCallDiagnostic.md` - Implement Accessoraccidentalcalldiagnostic (same reference path, same feature label, same group key, title overlap)
+- `issues/done/565-implement-accessorAccidentalCallDiagnostic.md` - Implement Accessoraccidentalcalldiagnostic (same reference path, same feature label, same group key, title overlap)
 
 ## Smart triage
 
@@ -129,7 +129,7 @@ Not generated. Rerun with `--triage-limit 1` or higher.
 ## 重複整理メモ
 
 この issue はタイトルが重複しているため、内容がより充実している
-`issues/open/565-implement-accessorAccidentalCallDiagnostic.md` に統合されました。
+`issues/done/565-implement-accessorAccidentalCallDiagnostic.md` に統合されました。
 そちらを参照してください。
 ## Completion evidence
 
