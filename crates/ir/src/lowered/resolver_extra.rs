@@ -989,11 +989,22 @@ impl<'a> Resolver<'a> {
         value: &LoweredExpr,
         source: Option<&ResolvedExpr>,
     ) -> Result<Vec<LoweredStmt>, Diagnostic> {
-        let property_value = LoweredExpr::PropertyGet {
-            obj: Box::new(value.clone()),
-            key: binding.key.clone(),
-        
-            span: Span::generated("prop_get"),};
+        let property_value = if binding.computed {
+            // Computed key: resolve the identifier inside [foo] and use dynamic lookup
+            let key_expr = binding.key.trim_start_matches('[').trim_end_matches(']');
+            let key_local = self.resolve_local(key_expr)?;
+            LoweredExpr::PropertyGetDynamic {
+                obj: Box::new(value.clone()),
+                key: Box::new(LoweredExpr::Local(key_local, Span::generated("local"))),
+                span: Span::generated("prop_get_dynamic"),
+            }
+        } else {
+            LoweredExpr::PropertyGet {
+                obj: Box::new(value.clone()),
+                key: binding.key.clone(),
+                span: Span::generated("prop_get"),
+            }
+        };
         let Some(name) = binding.target.identifier() else {
             if let Some(pattern) = binding.target.pattern() {
                 return self.lower_binding_pattern_declarations(pattern, property_value, None);

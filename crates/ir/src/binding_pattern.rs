@@ -11,6 +11,7 @@ pub struct ArrayBinding {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ObjectBinding {
     pub key: String,
+    pub computed: bool,
     pub target: BindingTarget,
     pub default: Option<BindingDefault>,
     pub is_rest: bool,
@@ -182,6 +183,7 @@ fn parse_object_binding_pattern(
             }
             bindings.push(ObjectBinding {
                 key: String::new(),
+                computed: false,
                 target: BindingTarget::Identifier(target.to_owned()),
                 default: None,
                 is_rest: true,
@@ -191,12 +193,14 @@ fn parse_object_binding_pattern(
         }
         let (target_part, default) = split_binding_default(part, span)?;
 
+        let mut is_computed = false;
         let (key, target) = if let Some((key, target)) = split_top_level_once(target_part, ':') {
             let key = key.trim();
             let target = target.trim();
             let nested_target = target.starts_with('{');
             reject_unsupported_target(target, span)?;
-            if !is_identifier(key) {
+            is_computed = key.starts_with('[') && key.ends_with(']');
+            if !is_identifier(key) && !is_computed {
                 return Err(issue_251(
                     "object binding aliases must use identifier keys in this runtime slice",
                     span,
@@ -235,7 +239,8 @@ fn parse_object_binding_pattern(
             )
         };
         bindings.push(ObjectBinding {
-            key,
+            key: key.clone(),
+            computed: is_computed,
             target,
             default,
             is_rest: false,
