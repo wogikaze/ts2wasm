@@ -181,6 +181,9 @@ actionable.
   1 and 2 stops at unresolved namespace root `M` for same-file qualified value
   accesses such as `new M.C()`, `M.x`, `M.E.A`, and `M.exported_var`. Cases 3
   and 4 now build.
+- Also owns `issues/done/3398-implement-moduleWithTryStatement.md`: fresh
+  triage gets past namespace-body try/catch syntax and stops at unresolved
+  namespace root `M` for the bare value read `var v = M;`.
 
 ## Completion evidence
 
