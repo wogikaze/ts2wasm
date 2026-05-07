@@ -76,12 +76,28 @@ impl<'a> Lexer<'a> {
         let mut previous_was_separator = false;
         let mut saw_separator = false;
 
+        let mut has_fraction = false;
         while let Some(ch) = self.peek_char() {
             match ch {
                 '0'..='9' => {
                     digits.push(ch);
                     previous_was_separator = false;
                     self.advance_char();
+                }
+                '.' if !has_fraction && digits.len() > 0 => {
+                    has_fraction = true;
+                    digits.push('.');
+                    previous_was_separator = false;
+                    self.advance_char();
+                    // Consume fractional digits
+                    while let Some(fch) = self.peek_char() {
+                        if matches!(fch, '0'..='9') {
+                            digits.push(fch);
+                            self.advance_char();
+                        } else {
+                            break;
+                        }
+                    }
                 }
                 '_' => {
                     if digits == "0" {
@@ -226,6 +242,15 @@ impl<'a> Lexer<'a> {
     }
 
     fn number_value(&self, digits: &str, radix: u32, start: usize) -> Result<i32, Diagnostic> {
+        // Fractional literals: truncate to integer part for the small-int subset
+        let digits = if radix == 10 && digits.contains('.') {
+            digits.split('.').next().unwrap_or(digits)
+        } else {
+            digits
+        };
+        if digits.is_empty() {
+            return Ok(0);
+        }
         if radix == 16 {
             let value = u32::from_str_radix(digits, radix).map_err(|error| Diagnostic {
                 code: DiagCode::UnsupportedSyntax,
