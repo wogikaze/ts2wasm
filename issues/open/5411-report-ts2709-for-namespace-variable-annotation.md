@@ -143,6 +143,11 @@ Also owns `issues/done/3331-implement-moduleCrashBug.md`: fresh triage for
 TS2709 for `var m: _modes;`, the same namespace-root variable annotation
 diagnostic shape.
 
+Also owns `issues/done/3397-implement-moduleWithNoValuesAsType.md`: fresh
+triage now build-passes while the TypeScript oracle reports TS2709 for
+`var a: A;`, `var b: B;`, and `var c: C;` after same-file namespace
+declarations.
+
 ## Completion evidence
 
 Fill when implemented.
