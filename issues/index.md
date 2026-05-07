@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 23 | 12 | 11 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4578 | 3337 | 1241 |
+| frontend | 4579 | 3337 | 1242 |
 | harness | 1 | 0 | 1 |
 | ir | 82 | 59 | 23 |
 | issues | 4 | 0 | 4 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5263 | 3641 | 1622 |
+| total | 5264 | 3641 | 1623 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -52,7 +52,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 ├── 5003 (Meta: TypeScript Compiler Declaration Emit Coverage) [done/done] ch:100 open:89 done:11 (also ← 5001)
 5001 (Meta: TypeScript Compiler Semantic Analysis Coverage) [done/done] ch:556 open:297 done:259
 5004 (Meta: Runtime Builtins Coverage (test262) (audit reopened #5004)) [done/done] ch:24 open:3 done:21
-5005 (Meta: TypeScript Compiler Name Resolution Coverage) [done/done] ch:399 open:342 done:57
+5005 (Meta: TypeScript Compiler Name Resolution Coverage) [done/done] ch:399 open:341 done:58
 ├── 5006 (Meta: TypeScript Compiler Scope Analysis Coverage) [done/done] ch:28 open:20 done:8
 ├── 5007 (Meta: TypeScript Compiler Module Resolution Coverage (audit reopened #5007)) [done/done] ch:20 open:12 done:8
 ```
@@ -69,7 +69,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1 | 5000 | Meta: TypeScript Compiler Parser Syntax Coverage | done | design | frontend/syntax | P1 | - | 446 | 361 | 85 |
 | 2 | 5001 | Meta: TypeScript Compiler Semantic Analysis Coverage | done | done | frontend/semantics | P1 | - | 556 | 297 | 259 |
 | 3 | 5004 | Meta: Runtime Builtins Coverage (test262) (audit reopened #5004) | done | done | runtime/builtins | P1 | - | 24 | 3 | 21 |
-| 4 | 5005 | Meta: TypeScript Compiler Name Resolution Coverage | done | done | frontend/resolver | P1 | - | 399 | 342 | 57 |
+| 4 | 5005 | Meta: TypeScript Compiler Name Resolution Coverage | done | done | frontend/resolver | P1 | - | 399 | 341 | 58 |
 | 5 | 5002 | Meta: TypeScript Compiler Type System Coverage | done | done | frontend/semantics | P1 | 5000, 5005 | 224 | 205 | 19 |
 | 6 | 5003 | Meta: TypeScript Compiler Declaration Emit Coverage | done | done | frontend/syntax | P2 | 5000, 5001 | 100 | 89 | 11 |
 | 7 | 5006 | Meta: TypeScript Compiler Scope Analysis Coverage | done | done | frontend/resolver | P2 | 5005 | 28 | 20 | 8 |
@@ -380,6 +380,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5425 | Resolve local require between @Filename sections | feature | compiler/module-graph | implementation-ready | P1 |  | local CommonJS require calls can create dangling `ModuleLoad` |
 | 5426 | Resolve @symlink filename aliases for local imports | feature | compiler/module-graph | implementation-ready | P1 |  | `@symlink` aliases are not registered as virtual module paths for |
 | 5427 | Resolve reference types to virtual @types packages | feature | frontend/semantics | implementation-ready | P1 | 227 | Resolve reference types to virtual @types packages |
+| 5429 | Bind DOM self.cancelAnimationFrame global | feature | frontend/resolver | implementation-ready | P1 |  | DOM `self.cancelAnimationFrame(0)` currently fails with generic |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -2335,7 +2336,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 3302 | Implement Modulealiasasfunctionargument | spike | frontend/syntax | class: blocked | Implement Modulealiasasfunctionargument |
 | 3303 | Implement Modulealiasinterface | spike | frontend/syntax | class: blocked | Implement Modulealiasinterface |
 | 3304 | Implement Moduleandinterfacesharingname | spike | frontend/syntax | class: blocked | Implement Moduleandinterfacesharingname |
-| 3402 | Implement Multiextendssplitinterfaces | spike | frontend/resolver | class: blocked | Implement Multiextendssplitinterfaces |
 | 3403 | Implement Multiimportexport | spike | frontend/syntax | class: blocked | Implement Multiimportexport |
 | 3404 | Implement Multilineerrors | spike | runtime/builtins | class: triage-needed | Implement Multilineerrors |
 | 3405 | Implement Multilinepropertyaccessandarrowfunctionindent | spike | reference/triage | class: triage-needed | Implement Multilinepropertyaccessandarrowfunctionindent |
@@ -5224,6 +5224,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 3399 | Close moduleWithValuesAsType bucket to TS2709 variable annotation owner | maintenance | frontend/semantics | see `issues/done/3399-implement-moduleWithValuesAsType.md` |
 | 3400 | Close moduledecl bucket to ambient namespace value owner | maintenance | frontend/resolver | see `issues/done/3400-implement-moduledecl.md` |
 | 3401 | Close multiCallOverloads bucket to nested default-parameter closure owner | maintenance | ir/lowering | see `issues/done/3401-implement-multiCallOverloads.md` |
+| 3402 | Split multiExtendsSplitInterfaces bucket to DOM self global issue | maintenance | frontend/resolver | see `issues/done/3402-implement-multiExtendsSplitInterfaces.md` |
 | 3690 | Implement Optionaltupleelementsandundefined | spike | reference/triage | see `issues/done/3690-implement-optionalTupleElementsAndUndefined.md` |
 | 3996 | Implement Compiler (dup) | spike | frontend/syntax | see `issues/done/3996-implement-reference-typescript-tests-cases-compiler.md` |
 | 4210 | Implement Splicetuples | spike | frontend/resolver | see `issues/done/4210-implement-spliceTuples.md` |
