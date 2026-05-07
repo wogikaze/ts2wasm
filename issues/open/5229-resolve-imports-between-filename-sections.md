@@ -152,6 +152,11 @@ triage for `moduleResolutionNoTsCJS.ts` parses virtual `x.ts`, `y.tsx`,
 `z.d.ts`, and `user.ts` sections, then reports issue-232 missing local module
 `./x.ts` before CommonJS explicit-TypeScript-extension diagnostics become
 actionable.
+Also owns `issues/done/3378-implement-moduleResolutionNoTsESM.md`: fresh
+triage for `moduleResolutionNoTsESM.ts` reaches the same virtual `x.ts`,
+`y.tsx`, `z.d.ts`, and `user.ts` section layout, then reports issue-232
+missing local module `./x.ts` before ESM explicit-TypeScript-extension
+diagnostics become actionable.
 
 ## Completion evidence
 
