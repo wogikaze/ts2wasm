@@ -16,9 +16,9 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 7 | 4 | 3 |
 | coverage | 44 | 1 | 43 |
 | docs | 5 | 0 | 5 |
-| frontend | 4562 | 3768 | 794 |
+| frontend | 4562 | 3766 | 796 |
 | harness | 1 | 0 | 1 |
-| ir | 77 | 25 | 52 |
+| ir | 77 | 24 | 53 |
 | issues | 5 | 0 | 5 |
 | parser | 1 | 0 | 1 |
 | reference | 212 | 160 | 52 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 8 | 0 | 8 |
 | wasi | 4 | 0 | 4 |
-| total | 5245 | 4042 | 1203 |
+| total | 5245 | 4039 | 1206 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -374,7 +374,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5274 | Parse general comma expressions | feature | frontend | implementation-ready | P1 |  | Parse general comma expressions |
 | 5275 | Parse modified static class methods | feature | frontend | implementation-ready | P1 |  | Parse modified static class methods |
 | 5276 | Report class declaration decorator boundary | feature | frontend/lexer | implementation-ready | P1 |  | `commentOnDecoratedClassDeclaration.ts` stops in tokenization at the |
-| 5279 | Report function-typed local call definite assignment | feature | ir/lowering | implementation-ready | P2 |  | `commentOnParenthesizedExpressionOpenParen1.ts` parses successfully, |
 | 5280 | Validate commented top-level function overloads | feature | frontend/resolver | implementation-ready | P1 |  | `commentOnSignature1.ts` parses successfully, but `validate_ast` |
 | 5281 | Resolve arrow rest parameter bindings | feature | ir/name-resolution | implementation-ready | P1 |  | arrow rest parameters are not made visible under their identifier name |
 | 5287 | Bind namespace declarations for qualified value access | feature | frontend/name-resolution | implementation-ready | P1 |  | a same-file non-ambient namespace declaration is erased before it |
@@ -389,10 +388,8 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5298 | Parse for-of array binding pattern heads | feature | frontend/syntax | implementation-ready | P1 |  | array binding patterns in `for-of` declaration heads are parsed as |
 | 5299 | Lower computed object binding parameters | feature | frontend/semantics | implementation-ready | P1 |  | computed object binding aliases in parameters parse, but name |
 | 5300 | Report assignment to class binding diagnostics | feature | frontend/resolver | implementation-ready | P1 |  | assignment to a class binding currently parses, but name resolution |
-| 5304 | Parse generic arrow functions with typed parameters | feature | frontend/syntax | implementation-ready | P1 |  | generic arrow functions with typed parameters currently fail with |
 | 5306 | Report export assignment with other exports | bug | frontend/syntax | implementation-ready | P1 |  | `ExportAssignment8.ts` stops at generic issue-055 instead of reporting the specific `export =` plus other exports rule. |
 | 5307 | Report var/function duplicate identifier diagnostics | bug | frontend/resolver | implementation-ready | P2 |  | var/function declaration collisions report generic `DuplicateLocal` |
-| 5309 | Skip generic type arguments in type annotations | feature | frontend/parser | implementation-ready | P1 |  | function parameter annotations such as `x: Record<'a', string>` fail with `expected Comma, got Some(Greater)`. |
 | 5310 | Parse nested block statements with variable declarations | feature | frontend/parser | implementation-ready | P1 |  | a nested block containing `var y = 0;` reports `expected Comma, got Some(Ident("y"))` instead of parsing as a block s... |
 | 5311 | Parse namespace property += assignment | feature | frontend/syntax | implementation-ready | P1 |  | `M.x += 2` in `constDeclarations-access3.ts` fails with |
 | 5312 | Parse export abstract class declarations | feature | frontend/syntax | implementation-ready | P1 |  | `export abstract class ConvenientObservable<T, TChange> ...` in |
@@ -5339,6 +5336,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5268 | Support derived constructor parameter properties after super | feature | ir | see `issues/done/5268-support-derived-constructor-parameter-properties-after-super.md` |
 | 5277 | Parse export enum declarations to enum boundary | feature | frontend/module-syntax | see file |
 | 5278 | Parse trailing comma in function parameters with comments | feature | frontend/syntax | see file |
+| 5279 | Report function-typed local call definite assignment | feature | ir/lowering | see file |
 | 5282 | Parse labeled empty statements | feature | frontend/syntax | see `issues/done/5282-parse-labeled-empty-statements.md` |
 | 5283 | Support entry-module export var declarations | feature | frontend/module-syntax | see `issues/done/5283-support-entry-export-var-declarations.md` |
 | 5284 | Bind plain enum declarations before member access | feature | frontend/syntax | see `issues/done/5284-bind-plain-enum-declarations-before-member-access.md` |
@@ -5349,8 +5347,10 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5301 | Report literal reference comparison diagnostics | feature | frontend/semantics | see file |
 | 5302 | Parse fractional number literals in expressions | feature | frontend/syntax | see file |
 | 5303 | Parse trailing comma in typed function parameters | feature | frontend/syntax | see `issues/done/5303-parse-trailing-comma-in-typed-function-parameters.md` |
+| 5304 | Parse generic arrow functions with typed parameters | feature | frontend/syntax | see `issues/done/5304-parse-generic-arrow-functions-with-typed-parameters.md` |
 | 5305 | Report merge conflict marker diagnostics | feature | frontend/syntax | see `issues/done/5305-report-merge-conflict-marker-diagnostics.md` |
 | 5308 | Parse ASI after instance class field initializers | feature | frontend/parser | see `issues/done/5308-parse-asi-after-instance-class-field-initializers.md` |
+| 5309 | Skip generic type arguments in type annotations | feature | frontend/parser | see `issues/done/5309-skip-generic-type-arguments-in-type-annotations.md` |
 | 5351 | Accept large decimal integer number literals | feature | frontend/lexer | see `issues/done/5351-accept-large-decimal-integer-number-literals.md` |
 | 5357 | Avoid eval diagnostic for qualified Function constructors | bug | ir/resolver | see `issues/done/5357-avoid-eval-diagnostic-for-qualified-function-constructors.md` |
 | 5364 | Report unterminated string literal at raw newline | bug | frontend/lexer | see `issues/done/5364-report-unterminated-string-literal-at-raw-newline.md` |

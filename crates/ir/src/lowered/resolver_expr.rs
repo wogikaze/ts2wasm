@@ -651,7 +651,7 @@ impl<'a> Resolver<'a> {
                         return Err(Diagnostic {
                             code: DiagCode::UnsupportedSyntax,
                             message: format!(
-                                "issue-211: function-valued local calls such as extracted method `{func_name}(...)` are not supported; call receiver.method(...) directly"
+                                "issue-211: function-valued local calls such as extracted method `{func_name}(...)` are not supported; call receiver.method(...) directly (issue-5279: the variable may be unassigned or have no function-typed annotation)"
                             ),
                             span: Some(*span),
                         });
