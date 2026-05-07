@@ -169,6 +169,11 @@ Related but not duplicates:
   `issues/open/5244-support-namespace-merged-function-static-properties.md`
   cover adjacent namespace shapes, not same-file namespace value access.
 
+Also owns `issues/done/3305-implement-moduleAndInterfaceWithSameName.md`: fresh
+triage reaches the same non-ambient same-file namespace binding boundary for
+`Foo2` before the later `Foo2.Bar` interface/value visibility diagnostic becomes
+actionable.
+
 ## Completion evidence
 
 Fill when implemented.
