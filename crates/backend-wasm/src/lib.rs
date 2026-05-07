@@ -115,7 +115,7 @@ mod tests {
     use std::fs;
     use std::path::Path;
     use std::process::Command;
-    use ts2wasm_frontend::DiagCode;
+    use ts2wasm_frontend::{DiagCode, Span};
     use ts2wasm_frontend::{Lexer, Parser};
     use ts2wasm_ir::builtin::BuiltinId;
     use ts2wasm_ir::lowered::{
@@ -130,9 +130,9 @@ mod tests {
     fn emit_wat_rejects_residual_method_call_before_emission() {
         let program = LoweredProgram {
             top_level_statements: vec![LoweredStmt::Expr(LoweredExpr::MethodCall {
-                object: Box::new(LoweredExpr::Undefined),
+                object: Box::new(LoweredExpr::Undefined(Span::generated("test"))),
                 method: "trim".to_owned(),
-            })],
+            }), span: Span::generated("test")],
             top_level_locals: vec![],
             functions: vec![],
             modules: vec![],
@@ -146,7 +146,7 @@ mod tests {
     #[test]
     fn emit_wat_rejects_residual_this_before_emission() {
         let program = LoweredProgram {
-            top_level_statements: vec![LoweredStmt::Expr(LoweredExpr::This)],
+            top_level_statements: vec![LoweredStmt::Expr(LoweredExpr::This, Span::generated("test"))],
             top_level_locals: vec![],
             functions: vec![],
             modules: vec![],
@@ -225,7 +225,7 @@ mod tests {
         let program = LoweredProgram {
             top_level_statements: vec![LoweredStmt::Expr(LoweredExpr::Call {
                 kind: FunctionCallKind::Builtin(BuiltinId::ConsoleLog),
-                args: vec![LoweredExpr::Number(42)],
+                args: vec![LoweredExpr::Number(42, Span::generated("test"))],
             })],
             top_level_locals: vec![],
             functions: vec![],
@@ -264,7 +264,7 @@ mod tests {
     fn direct_wasm_binary_mvp_local_variable() {
         let program = LoweredProgram {
             top_level_statements: vec![
-                LoweredStmt::Let(LocalId(0), LoweredExpr::Number(42)),
+                LoweredStmt::Let(LocalId(0), LoweredExpr::Number(42, Span::generated("test"))),
                 LoweredStmt::Expr(LoweredExpr::Call {
                     kind: FunctionCallKind::Builtin(BuiltinId::ConsoleLog),
                     args: vec![LoweredExpr::Local(LocalId(0))],
@@ -311,10 +311,10 @@ mod tests {
             top_level_statements: vec![LoweredStmt::Expr(LoweredExpr::Call {
                 kind: FunctionCallKind::Builtin(BuiltinId::ConsoleLog),
                 args: vec![LoweredExpr::Binary {
-                    left: Box::new(LoweredExpr::Number(10)),
+                    left: Box::new(LoweredExpr::Number(10, Span::generated("test"))),
                     op: LoweredBinaryOp::Add,
-                    right: Box::new(LoweredExpr::Number(32)),
-                }],
+                    right: Box::new(LoweredExpr::Number(32, Span::generated("test"))),
+                span: Span::generated("test") }],
             })],
             top_level_locals: vec![],
             functions: vec![],
@@ -359,7 +359,7 @@ mod tests {
                 }),
                 LoweredStmt::Expr(LoweredExpr::Call {
                     kind: FunctionCallKind::Builtin(BuiltinId::ConsoleLog),
-                    args: vec![LoweredExpr::Number(42)],
+                    args: vec![LoweredExpr::Number(42, Span::generated("test"))],
                 }),
             ],
             top_level_locals: vec![],
@@ -411,6 +411,7 @@ mod tests {
                 rest_param_index: None,
                 locals: vec![],
                 body: vec![],
+                recursion_depth: 0,
             }],
             modules: vec![],
         };
@@ -842,7 +843,7 @@ mod tests {
     #[test]
     fn module_runtime_helpers_are_not_emitted_without_module_ir() {
         let program = LoweredProgram {
-            top_level_statements: vec![LoweredStmt::Expr(LoweredExpr::Number(1))],
+            top_level_statements: vec![LoweredStmt::Expr(LoweredExpr::Number(1, Span::generated("test")))],
             top_level_locals: vec![],
             functions: vec![],
             modules: vec![],
@@ -874,7 +875,7 @@ mod tests {
                     specifier: "./nested".to_owned(),
                     statements: vec![LoweredStmt::Export {
                         name: "nested".to_owned(),
-                        expr: LoweredExpr::Number(2),
+                        expr: LoweredExpr::Number(2, Span::generated("test")),
                     }],
                     locals_count: 0,
                 },
@@ -883,7 +884,7 @@ mod tests {
                     specifier: "./source".to_owned(),
                     statements: vec![LoweredStmt::Export {
                         name: "value".to_owned(),
-                        expr: LoweredExpr::Number(1),
+                        expr: LoweredExpr::Number(1, Span::generated("test")),
                     }],
                     locals_count: 0,
                 },
@@ -933,6 +934,7 @@ mod tests {
                 rest_param_index: None,
                 locals: vec![],
                 body: vec![],
+                recursion_depth: 0,
             }],
             modules: vec![],
         };
@@ -959,9 +961,9 @@ mod tests {
                     runtime_fn: "PrivateFieldSet".to_owned(),
                     args: vec![
                         LoweredExpr::Local(LocalId(0)),
-                        LoweredExpr::Number(1),
-                        LoweredExpr::Number(0),
-                        LoweredExpr::Number(7),
+                        LoweredExpr::Number(1, Span::generated("test")),
+                        LoweredExpr::Number(0, Span::generated("test")),
+                        LoweredExpr::Number(7, Span::generated("test")),
                     ],
                 }),
                 LoweredStmt::Expr(LoweredExpr::Call {
@@ -970,8 +972,8 @@ mod tests {
                         runtime_fn: "PrivateFieldGet".to_owned(),
                         args: vec![
                             LoweredExpr::Local(LocalId(0)),
-                            LoweredExpr::Number(1),
-                            LoweredExpr::Number(0),
+                            LoweredExpr::Number(1, Span::generated("test")),
+                            LoweredExpr::Number(0, Span::generated("test")),
                         ],
                     }],
                 }),
@@ -1046,8 +1048,8 @@ mod tests {
                         runtime_fn: "PrivateFieldGet".to_owned(),
                         args: vec![
                             LoweredExpr::Local(LocalId(0)),
-                            LoweredExpr::Number(1),
-                            LoweredExpr::Number(0),
+                            LoweredExpr::Number(1, Span::generated("test")),
+                            LoweredExpr::Number(0, Span::generated("test")),
                         ],
                     }],
                 }),
@@ -1064,9 +1066,9 @@ mod tests {
                     runtime_fn: "PrivateFieldSet".to_owned(),
                     args: vec![
                         LoweredExpr::Local(LocalId(0)),
-                        LoweredExpr::Number(1),
-                        LoweredExpr::Number(0),
-                        LoweredExpr::Number(3),
+                        LoweredExpr::Number(1, Span::generated("test")),
+                        LoweredExpr::Number(0, Span::generated("test")),
+                        LoweredExpr::Number(3, Span::generated("test")),
                     ],
                 })],
             }],
@@ -1121,8 +1123,8 @@ mod tests {
                     runtime_fn: "PrivateFieldGet".to_owned(),
                     args: vec![
                         LoweredExpr::Local(LocalId(0)),
-                        LoweredExpr::Number(2),
-                        LoweredExpr::Number(0),
+                        LoweredExpr::Number(2, Span::generated("test")),
+                        LoweredExpr::Number(0, Span::generated("test")),
                     ],
                 }),
             ],
@@ -1135,6 +1137,7 @@ mod tests {
                 rest_param_index: None,
                 locals: vec![],
                 body: vec![],
+                recursion_depth: 0,
             }],
             modules: vec![],
         };
@@ -1194,8 +1197,8 @@ mod tests {
                         runtime_fn: "PrivateFieldGet".to_owned(),
                         args: vec![
                             LoweredExpr::Local(LocalId(0)),
-                            LoweredExpr::Number(1),
-                            LoweredExpr::Number(0),
+                            LoweredExpr::Number(1, Span::generated("test")),
+                            LoweredExpr::Number(0, Span::generated("test")),
                         ],
                     })],
                     catch_var: Some(LocalId(1)),
@@ -1259,12 +1262,12 @@ mod tests {
                 ),
                 LoweredStmt::Expr(LoweredExpr::RuntimeCall {
                     runtime_fn: "PrivateBrandCheck".to_owned(),
-                    args: vec![LoweredExpr::Local(LocalId(0)), LoweredExpr::Number(1)],
+                    args: vec![LoweredExpr::Local(LocalId(0)), LoweredExpr::Number(1, Span::generated("test"))],
                 }),
                 LoweredStmt::TryCatch {
                     try_body: vec![LoweredStmt::Expr(LoweredExpr::RuntimeCall {
                         runtime_fn: "PrivateBrandCheck".to_owned(),
-                        args: vec![LoweredExpr::Local(LocalId(0)), LoweredExpr::Number(2)],
+                        args: vec![LoweredExpr::Local(LocalId(0)), LoweredExpr::Number(2, Span::generated("test"))],
                     })],
                     catch_var: Some(LocalId(1)),
                     catch_body: Some(vec![LoweredStmt::Expr(LoweredExpr::Call {
@@ -1287,6 +1290,7 @@ mod tests {
                 rest_param_index: None,
                 locals: vec![],
                 body: vec![],
+                recursion_depth: 0,
             }],
             modules: vec![],
         };
