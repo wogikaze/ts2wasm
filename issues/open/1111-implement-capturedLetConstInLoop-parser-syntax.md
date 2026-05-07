@@ -116,7 +116,7 @@ Follow-up issues:
 - [x] `issues/done/5209-support-class-instance-method-receiver-calls.md`
 - [x] `issues/done/5210-array-map-sparse-array-holes.md`
 - [x] `issues/done/5211-sparse-array-spread-support.md`
-- [x] `issues/open/5387-parse-function-expression-statements-in-nested-blocks.md`
+- [x] `issues/open/5409-parse-function-expression-statements-in-nested-blocks.md`
 
 ## Notes
 
@@ -613,7 +613,7 @@ Source context:
 
 TypeScript accepts the parenthesized function expression statement inside the
 nested block. Child issue
-`issues/open/5387-parse-function-expression-statements-in-nested-blocks.md`
+`issues/open/5409-parse-function-expression-statements-in-nested-blocks.md`
 owns this parser slice.
 
 ### Smart triage: capturedLetConstInLoop9_ES6
@@ -651,7 +651,7 @@ Source context:
 
 TypeScript accepts the parenthesized function expression statement inside the
 nested block. Child issue
-`issues/open/5387-parse-function-expression-statements-in-nested-blocks.md`
+`issues/open/5409-parse-function-expression-statements-in-nested-blocks.md`
 owns this parser slice.
 
 ### Folded triage from #1109: capturedLetConstInLoop4

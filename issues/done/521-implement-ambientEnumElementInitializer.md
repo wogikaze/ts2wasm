@@ -218,7 +218,7 @@ Duplicate candidates:
 [
   {
     "state": "done",
-    "path": "issues/done/146-implement-ambientEnumElementInitializer.md",
+    "path": "#146",
     "title": "Implement Ambientenumelementinitializer",
     "reason": "same reference path"
   },

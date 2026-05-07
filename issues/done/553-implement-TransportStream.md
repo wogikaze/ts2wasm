@@ -122,7 +122,7 @@ Follow-up issues:
 - Superseded by `issues/done/081-implement-TransportStream.md`.
 - `issues/done/081-implement-TransportStream.md` classifies the file as
   binary test data, not a parser implementation bug.
-- `issues/done/467-implement-TransportStream.md` and
+- `#467` and
   `issues/done/788-implement-TransportStream.md` are historical duplicate
   generated buckets for the same path.
 
@@ -233,7 +233,7 @@ Duplicate candidates:
   },
   {
     "state": "open",
-    "path": "issues/done/467-implement-TransportStream.md",
+    "path": "#467",
     "title": "Implement Transportstream",
     "reason": "same reference path, same feature label, title overlap"
   },

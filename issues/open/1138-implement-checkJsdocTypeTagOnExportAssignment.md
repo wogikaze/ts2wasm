@@ -134,7 +134,7 @@ local imports between `@Filename` virtual sections.
 
 No-match rationale:
 
-- `issues/open/5186-parse-export-assignment-for-diagnostics.md` covers
+- `issues/done/5186-parse-export-assignment-for-diagnostics.md` covers
   `export = expr` syntax, while this representative already builds AST for
   `export default` and `import b from "./b"`.
 - `issues/done/5127-implement-export-default-multifile-lowering.md` fixed

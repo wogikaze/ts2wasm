@@ -573,4 +573,4 @@ date: 2026-05-08
 
 Remaining risks:
 
-- Implementation remains open in `issues/open/5285-support-export-var-initializer-declarations.md`.
+- Implementation remains open in `issues/done/5285-support-export-var-initializer-declarations.md`.

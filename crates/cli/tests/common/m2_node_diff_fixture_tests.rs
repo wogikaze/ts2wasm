@@ -690,10 +690,17 @@ fn bigint_mixed_number_fractional_builds_successfully() {
         "fixtures/core-semantics/bigint-mixed-number-fractional-unsupported.ts",
         "fixtures/core-semantics/bigint-mixed-number-fractional-left-unsupported.ts",
     ] {
-        let fixture_path = Path::new(env!("CARGO_MANIFEST_DIR")).join("../../").join(fixture);
+        let fixture_path = Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("../../")
+            .join(fixture);
         let output = temp_wasm_path(fixture);
         let build = std::process::Command::new(env!("CARGO_BIN_EXE_ts2wasm"))
-            .arg("build").arg(&fixture_path).arg("-o").arg(&output).output().unwrap();
+            .arg("build")
+            .arg(&fixture_path)
+            .arg("-o")
+            .arg(&output)
+            .output()
+            .unwrap();
     }
 }
 

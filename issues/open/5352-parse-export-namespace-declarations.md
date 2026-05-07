@@ -97,7 +97,7 @@ Out of scope:
 - Nested `const enum` parsing, tracked by
   `issues/open/5184-parse-const-enum-declarations.md`.
 - Export-assignment parsing and diagnostics, tracked separately by
-  `issues/open/5186-parse-export-assignment-for-diagnostics.md` and
+  `issues/done/5186-parse-export-assignment-for-diagnostics.md` and
   `issues/open/5306-report-export-assignment-with-other-exports.md`.
 - Import-equals/`require` module loading.
 - Namespace value binding or namespace emit/lowering.

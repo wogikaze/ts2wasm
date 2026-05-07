@@ -502,4 +502,4 @@ date: 2026-05-08
 
 Remaining risks:
 
-- Implementation remains open in `issues/open/5232-support-entry-export-class-declarations.md`.
+- Implementation remains open in `issues/done/5232-w0-fixture-ize-runtimelinkplan-linker-structure-tests.md`.

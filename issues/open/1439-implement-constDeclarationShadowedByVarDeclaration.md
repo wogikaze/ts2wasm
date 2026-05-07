@@ -128,7 +128,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/open/5387-parse-function-expression-statements-in-nested-blocks.md`
+- `issues/open/5409-parse-function-expression-statements-in-nested-blocks.md`
   is related but covers function expression statements.
 - `issues/done/5250-parse-class-declarations-in-nested-block-statements.md`
   is related but covers class declarations.

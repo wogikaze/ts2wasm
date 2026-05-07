@@ -3549,6 +3549,41 @@ b /* parameter b */,
     }
 
     #[test]
+    fn parses_namespace_property_compound_assignment() {
+        // M.x += 2 should parse as property assignment with binary value
+        let program = parse_program("M.x += 2;").unwrap();
+        assert_eq!(program.len(), 1);
+        match &program[0] {
+            Stmt::Expr {
+                expr:
+                    Expr::PropertyAssign {
+                        object,
+                        property,
+                        value,
+                        ..
+                    },
+                ..
+            } => {
+                assert!(matches!(object.as_ref(), Expr::Ident { name, .. } if name == "M"));
+                assert_eq!(property, "x");
+                match value.as_ref() {
+                    Expr::Binary {
+                        op: BinaryOp::Add,
+                        left,
+                        right,
+                        ..
+                    } => {
+                        assert!(matches!(left.as_ref(), Expr::Member { object: _, property: p, .. } if p == "x"));
+                        assert!(matches!(right.as_ref(), Expr::Number { value: 2, .. }));
+                    }
+                    other => panic!("expected Binary with Add op, got {other:?}"),
+                }
+            }
+            other => panic!("expected PropertyAssign, got {other:?}"),
+        }
+    }
+
+    #[test]
     fn parses_const_enum_declaration() {
         let result = parse_program("const enum E { A }");
         assert!(

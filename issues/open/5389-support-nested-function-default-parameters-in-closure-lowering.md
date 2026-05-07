@@ -87,9 +87,9 @@ In scope:
 Out of scope:
 
 - Rest parameters, tracked by
-  `issues/open/5236-support-nested-function-rest-parameters.md`.
+  `issues/done/5236-w1-implement-wasi-args-and-environment-variable-lowering.md`.
 - Nested functions using `this` or `arguments`, tracked by
-  `issues/open/5218-support-nested-function-closures-capturing-this.md`.
+  `issues/done/5218-parse-typescript-this-parameters-in-function-expressions.md`.
 - Mutable captured environment support beyond existing issue-062e boundaries.
 - Full TypeScript contextual typing or TS2345 semantic diagnostics if lowering
   advances to a later semantic gap.
@@ -163,7 +163,7 @@ Split from generated bucket
 
 Related but distinct:
 
-- `issues/open/5236-support-nested-function-rest-parameters.md` owns rest
+- `issues/done/5236-w1-implement-wasi-args-and-environment-variable-lowering.md` owns rest
   parameters and explicitly excludes nested function default parameters.
 - `issues/done/062e-function-closures.md` records the historical closure work
   and broader issue-062e boundary.

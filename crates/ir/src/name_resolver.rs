@@ -595,6 +595,28 @@ impl NameResolver {
                     span: *span,
                 })
             }
+            Stmt::Block {
+                statements,
+                span: block_span,
+            } => {
+                self.enter_scope();
+                // Register block-scoped class declarations in the current scope
+                // so they don't collide with outer scope names during resolution.
+                for stmt in statements {
+                    if let Stmt::ClassDecl { name, .. } = stmt {
+                        self.declare_variable(name, Some(*block_span), false)?;
+                    }
+                }
+                let resolved = statements
+                    .iter()
+                    .map(|s| self.resolve_stmt(s))
+                    .collect::<Result<Vec<_>, _>>()?;
+                self.exit_scope();
+                Ok(Stmt::Block {
+                    statements: resolved,
+                    span: *block_span,
+                })
+            }
             Stmt::Continue { label, span } => {
                 if let Some(label) = label {
                     match self
@@ -1095,9 +1117,12 @@ impl NameResolver {
             {
                 return Err(diagnostic);
             }
-            if let Some(diagnostic) =
-                self.literal_reference_comparison_gap(current_left, current_op, current_right, current_span)
-            {
+            if let Some(diagnostic) = self.literal_reference_comparison_gap(
+                current_left,
+                current_op,
+                current_right,
+                current_span,
+            ) {
                 return Err(diagnostic);
             }
             chain.push((current_op, current_right, current_span));
@@ -1292,7 +1317,10 @@ impl NameResolver {
     ) -> Option<Diagnostic> {
         let is_reference_op = matches!(
             op,
-            BinaryOp::StrictEqual | BinaryOp::StrictNotEqual | BinaryOp::EqualEqual | BinaryOp::BangEqual
+            BinaryOp::StrictEqual
+                | BinaryOp::StrictNotEqual
+                | BinaryOp::EqualEqual
+                | BinaryOp::BangEqual
         );
         if !is_reference_op {
             return None;
@@ -1304,7 +1332,11 @@ impl NameResolver {
                 code: DiagCode::UnsupportedSyntax,
                 message: format!(
                     "issue-5301: this comparison between object/array literals always results in `{}` because each literal creates a distinct reference",
-                    if matches!(op, BinaryOp::StrictEqual | BinaryOp::EqualEqual) { "false" } else { "true" }
+                    if matches!(op, BinaryOp::StrictEqual | BinaryOp::EqualEqual) {
+                        "false"
+                    } else {
+                        "true"
+                    }
                 ),
                 span: Some(span),
             })

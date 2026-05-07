@@ -117,7 +117,7 @@ Follow-up issues:
 ## Duplicate detection
 
 - No exact existing owner found.
-- `issues/open/5222-support-interface-typed-method-calls-on-erased-locals.md`
+- `issues/done/5222-parse-ambient-generic-variable-type-annotations.md`
   is related, but owns interface-typed erased locals such as
   `var s: Sequence<string>; s.groupBy(...)`; this bucket fails on a function
   parameter typed as a discriminated union alias.
@@ -131,7 +131,7 @@ Follow-up issues:
   `issues/open/663-implement-arrayAssignmentTest-parser-syntax.md`,
   `issues/open/734-implement-assignmentCompatability-parser-syntax.md`,
   `issues/open/753-implement-asyncFunctionReturnType-parser-syntax.md`,
-  `issues/done/767-implement-augmentedTypesEnum-parser-syntax.md`,
+  `#767`,
   `issues/open/059-implement-parser-syntax-extensions.md`,
   `issues/done/065-implement-parser-syntax.md`, and
   `issues/done/065a-merge-duplicate-parser-syntax-issue-into-059.md`.

@@ -118,7 +118,7 @@ Follow-up issues:
 
 - `issues/done/149-implement-ambientExternalModuleInAnotherExternalModule.md` - Implement Ambientexternalmoduleinanotherexternalmodule (same reference path, same group key, title overlap)
 - `issues/done/524-implement-ambientExternalModuleInAnotherExternalModule.md` - Implement Ambientexternalmoduleinanotherexternalmodule (same reference path, same feature label, same group key, title overlap)
-- `issues/done/548-implement-ExportAssignment.md` - Implement Exportassignment (same feature label, same group key, title overlap)
+- `#548` - Implement Exportassignment (same feature label, same group key, title overlap)
 - `issues/done/610-implement-ambientExternalModuleInAnotherExternalModule.md` - Implement Ambientexternalmoduleinanotherexternalmodule (same reference path, same feature label, same group key, title overlap)
 
 ## Smart triage

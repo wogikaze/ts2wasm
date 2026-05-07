@@ -121,7 +121,7 @@ Follow-up issues:
 
 - Split current failure to
   `issues/open/5390-report-abstract-property-constructor-access-diagnostics.md`.
-- `issues/open/5261-report-class-typed-missing-instance-method-calls.md` is
+- `issues/done/5261-report-class-typed-missing-instance-method-calls.md` is
   related but not exact: it handles class-typed ambient locals whose requested
   instance method is missing.
 - `issues/open/5322-support-callable-class-auto-accessor-fields.md` is related

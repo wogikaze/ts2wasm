@@ -324,6 +324,10 @@ pub enum Stmt {
         label: Option<String>,
         span: Span,
     },
+    Block {
+        statements: Vec<Stmt>,
+        span: Span,
+    },
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -540,7 +544,8 @@ impl Stmt {
             | Self::ForOf { span, .. }
             | Self::Labeled { span, .. }
             | Self::Break { span, .. }
-            | Self::Continue { span, .. } => *span,
+            | Self::Continue { span, .. }
+            | Self::Block { span, .. } => *span,
         }
     }
 }

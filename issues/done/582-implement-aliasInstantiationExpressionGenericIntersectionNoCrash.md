@@ -598,4 +598,4 @@ date: 2026-05-08
 
 Remaining risks:
 
-- Implementation remains open in `issues/open/5161-model-ambient-value-declarations-for-name-resolution.md`.
+- Implementation remains open in `issues/done/5161-model-ambient-value-declarations-for-name-resolution.md`.

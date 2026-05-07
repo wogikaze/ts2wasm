@@ -143,7 +143,7 @@ Split from `issues/done/558-implement-abstractPropertyInConstructor.md`.
 
 Related but not duplicate:
 
-- `issues/open/5261-report-class-typed-missing-instance-method-calls.md`
+- `issues/done/5261-report-class-typed-missing-instance-method-calls.md`
   handles class-typed ambient locals whose requested method is absent.
 - `issues/open/5322-support-callable-class-auto-accessor-fields.md` handles
   callable auto-accessor field dispatch through `this`.

@@ -693,4 +693,4 @@ UnsupportedModule: issue-055: unsupported variable export; module resolution and
 
 Remaining risks:
 
-- Implementation remains open in `issues/open/5285-support-export-var-initializer-declarations.md`.
+- Implementation remains open in `issues/done/5285-support-export-var-initializer-declarations.md`.

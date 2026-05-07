@@ -791,7 +791,7 @@ error: [UnsupportedTypeScriptSyntax] TypeScript enum declarations require an exp
 
 Closed as a stale generated bucket after fresh 2026-05-08 triage confirmed
 the current blocker is already owned by
-`issues/open/5302-parse-fractional-number-literals-in-expressions.md`.
+`issues/done/5302-parse-fractional-number-literals-in-expressions.md`.
 
 Fresh coverage with the current binary:
 

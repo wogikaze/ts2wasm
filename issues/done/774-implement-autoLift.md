@@ -229,7 +229,7 @@ Duplicate candidates:
   },
   {
     "state": "open",
-    "path": "issues/done/767-implement-augmentedTypesEnum-parser-syntax.md",
+    "path": "#767",
     "title": "Implement Augmentedtypesenum Parser Syntax",
     "reason": "same feature label, title overlap"
   },

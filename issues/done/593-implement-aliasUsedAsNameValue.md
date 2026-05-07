@@ -640,4 +640,4 @@ UnsupportedModule: issue-055: unsupported variable export; module resolution and
 
 Remaining risks:
 
-- Implementation remains open in `issues/open/5283-support-entry-export-var-declarations.md`.
+- Implementation remains open in `issues/done/5283-support-entry-export-var-declarations.md`.

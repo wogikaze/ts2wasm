@@ -44,7 +44,7 @@ mise run reference-coverage -- tsc --path-filter reference/typescript/tests/case
 
 This generated bucket is closed as superseded. The ambient class element erasure
 behavior is covered by issue 400, and the residual compiler invariant is owned
-by `issues/open/5247-fix-js-noemit-class-constructor-funcid-invariant.md`.
+by `issues/done/5247-fix-js-noemit-class-constructor-funcid-invariant.md`.
 Do not implement directly from this bucket.
 
 ## Scope
@@ -116,7 +116,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] existing owner: `issues/open/5247-fix-js-noemit-class-constructor-funcid-invariant.md`
+- [x] existing owner: `issues/done/5247-fix-js-noemit-class-constructor-funcid-invariant.md`
 
 ## Notes
 
@@ -160,7 +160,7 @@ class Foo {
 The compiler now parses `declare prop: string;` inside the class and erases that
 ambient class element. The residual invariant is the same JS noEmit class
 constructor FuncId family tracked by
-`issues/open/5247-fix-js-noemit-class-constructor-funcid-invariant.md`.
+`issues/done/5247-fix-js-noemit-class-constructor-funcid-invariant.md`.
 
 ### Smart triage: Triage ambient declaration: ambientPropertyDeclarationInJs
 
@@ -476,7 +476,7 @@ date: 2026-05-08
 
 The ambient class element declaration itself now parses and erases. The
 residual invariant belongs to
-`issues/open/5247-fix-js-noemit-class-constructor-funcid-invariant.md`.
+`issues/done/5247-fix-js-noemit-class-constructor-funcid-invariant.md`.
 
 Commits:
 

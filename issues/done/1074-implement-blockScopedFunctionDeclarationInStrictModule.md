@@ -108,7 +108,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] added: `issues/open/5186-parse-export-assignment-for-diagnostics.md`
+- [x] added: `issues/done/5186-parse-export-assignment-for-diagnostics.md`
 
 ## Notes
 
@@ -132,7 +132,7 @@ Generated on 2026-05-06.
 - Visible symbols before failure: function `foo` declared inside the `if` block.
 - Compiler evidence: tokenization succeeds and includes `Export`, `Equal`, `Ident("foo")`, and `Semicolon`; AST construction fails at `export` before an export-assignment node or expression diagnostic can be produced.
 - TypeScript oracle: `TS2304: Cannot find name 'foo'.` at byte `111`, the `foo` identifier in `export = foo`.
-- Superseding child: `issues/open/5186-parse-export-assignment-for-diagnostics.md`
+- Superseding child: `issues/done/5186-parse-export-assignment-for-diagnostics.md`
 
 ## Completion evidence
 

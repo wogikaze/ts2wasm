@@ -105,7 +105,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] folded into: `issues/open/5236-support-nested-function-rest-parameters.md`
+- [x] folded into: `issues/done/5236-w1-implement-wasi-args-and-environment-variable-lowering.md`
 
 ## Notes
 
@@ -116,7 +116,7 @@ Follow-up issues:
 ## Duplicate detection
 
 - Superseded by
-  `issues/open/5236-support-nested-function-rest-parameters.md`, which owns
+  `issues/done/5236-w1-implement-wasi-args-and-environment-variable-lowering.md`, which owns
   the same issue-062e closure guard for function expressions with rest
   parameters.
 - `issues/open/5389-support-nested-function-default-parameters-in-closure-lowering.md`
@@ -170,7 +170,7 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- folded into `issues/open/5236-support-nested-function-rest-parameters.md`
+- folded into `issues/done/5236-w1-implement-wasi-args-and-environment-variable-lowering.md`
 
 Validation result:
 

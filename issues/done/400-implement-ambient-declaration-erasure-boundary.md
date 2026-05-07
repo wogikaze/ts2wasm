@@ -30,7 +30,7 @@ Representative generated issues with `feature_label: ambient-declaration` includ
 - `issues/done/144-implement-ambientConstLiterals.md`
 - `issues/done/145-implement-ambientEnum.md`
 - `issues/done/148-implement-ambientExportDefaultErrors.md`
-- `issues/done/150-implement-ambientExternalModuleReopen.md`
+- `#150`
 - `issues/done/160-implement-ambientModules.md`
 - `issues/done/162-implement-ambientPropertyDeclarationInJs.md`
 
@@ -140,10 +140,10 @@ Representative generated buckets re-triaged into this boundary slice:
 
 - `issues/done/140-implement-ambientClassDeclarationWithExtends.md`: `declare class A { }` / `declare class B extends A { }` is declaration-only and now parses/erases before runtime lowering.
 - `issues/done/145-implement-ambientEnum.md`: `declare enum E1 { ... }` is declaration-only and now parses/erases before runtime lowering.
-- `issues/done/150-implement-ambientExternalModuleReopen.md`: `declare module "fs" { ... }` is module-shaped and now routes to `UnsupportedModule` instead of a generic parser error.
+- `#150`: `declare module "fs" { ... }` is module-shaped and now routes to `UnsupportedModule` instead of a generic parser error.
 - `issues/done/160-implement-ambientModules.md`: `declare namespace Foo.Bar { ... }` is module-shaped and now routes to `UnsupportedModule`.
 - `issues/done/162-implement-ambientPropertyDeclarationInJs.md`: `declare prop: string;` inside a class is declaration-only and now parses/erases without adding a runtime class element.
-- `issues/done/1184-implement-classExpressionPropertyModifiers.md`: `declare [Symbol.toStringTag] = "uh";` inside a class expression remains on the source-spanned `UnsupportedTypeScriptSyntax` rejection boundary because ambient class element initializers would affect runtime bindings.
+- `#1184`: `declare [Symbol.toStringTag] = "uh";` inside a class expression remains on the source-spanned `UnsupportedTypeScriptSyntax` rejection boundary because ambient class element initializers would affect runtime bindings.
 
 ## Completion evidence
 

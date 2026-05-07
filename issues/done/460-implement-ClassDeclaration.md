@@ -208,7 +208,7 @@ Duplicate candidates:
 [
   {
     "state": "open",
-    "path": "issues/done/072-implement-ClassDeclaration.md",
+    "path": "#072",
     "title": "Implement Classdeclaration",
     "reason": "same reference path, same feature label"
   },

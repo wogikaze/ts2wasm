@@ -195,7 +195,7 @@ Duplicate candidates:
 [
   {
     "state": "open",
-    "path": "issues/done/092-implement-accessOverriddenBaseClassMember.md",
+    "path": "#092",
     "title": "Implement Accessoverriddenbaseclassmember",
     "reason": "same reference path, same feature label"
   },

@@ -184,7 +184,7 @@ Duplicate candidates:
 [
   {
     "state": "open",
-    "path": "issues/done/150-implement-ambientExternalModuleReopen.md",
+    "path": "#150",
     "title": "Implement Ambientexternalmodulereopen",
     "reason": "same reference path, title overlap"
   },

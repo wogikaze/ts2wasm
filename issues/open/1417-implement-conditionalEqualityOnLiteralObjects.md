@@ -174,7 +174,7 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- Split to `issues/open/5301-report-literal-reference-comparison-diagnostics.md`.
+- Split to `issues/done/5301-report-literal-reference-comparison-diagnostics.md`.
 
 Validation result:
 

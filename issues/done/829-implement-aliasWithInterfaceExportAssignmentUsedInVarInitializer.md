@@ -118,7 +118,7 @@ Follow-up issues:
 
 - `issues/done/129-implement-aliasWithInterfaceExportAssignmentUsedInVarInitializer.md` - Implement Aliaswithinterfaceexportassignmentusedinvarinitializer (same reference path, same group key, title overlap)
 - `issues/done/508-implement-aliasWithInterfaceExportAssignmentUsedInVarInitializer.md` - Implement Aliaswithinterfaceexportassignmentusedinvarinitializer (same reference path, same feature label, same group key, title overlap)
-- `issues/done/548-implement-ExportAssignment.md` - Implement Exportassignment (same feature label, same group key, title overlap)
+- `#548` - Implement Exportassignment (same feature label, same group key, title overlap)
 - `issues/done/594-implement-aliasWithInterfaceExportAssignmentUsedInVarInitializer.md` - Implement Aliaswithinterfaceexportassignmentusedinvarinitializer (same reference path, same feature label, same group key, title overlap)
 
 ## Smart triage

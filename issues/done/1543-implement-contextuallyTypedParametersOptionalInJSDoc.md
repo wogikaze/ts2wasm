@@ -120,7 +120,7 @@ Follow-up issues:
 - `issues/done/5062-implement-arity.md` listed this bucket as a broad arity
   duplicate candidate, but it was itself superseded by
   `issues/done/413-implement-arity.md`.
-- `issues/open/5188-report-block-scoped-function-call-arity-diagnostics.md`
+- `issues/done/5188-report-block-scoped-function-call-arity-diagnostics.md`
   is related to TS2554, but it owns a gap where the compiler builds while
   TypeScript reports block-scoped same-name function arity diagnostics. This
   bucket already reports the oracle-matching arity diagnostic.

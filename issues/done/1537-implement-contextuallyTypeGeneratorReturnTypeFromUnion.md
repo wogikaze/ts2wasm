@@ -117,10 +117,10 @@ Follow-up issues:
 ## Duplicate detection
 
 - No exact existing owner found.
-- `issues/open/5213-parse-generator-function-expressions-in-parameter-initializers.md`
+- `issues/done/5213-generator-function-syntax-prerequisite-for-iterator-spread.md`
   is related but owns parameter initializer expressions, not typed const
   initializers.
-- `issues/done/1514-implement-contextualTypeOnYield.md` covered
+- `#1514` covered
   `contextualTypeOnYield*.ts`; this reference still reports the raw parser
   boundary with the current shared binary.
 

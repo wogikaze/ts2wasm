@@ -700,6 +700,98 @@ impl Parser {
                 }
             }
         }
+        // Handle compound assignment operators (+=, -=, *=, etc.) on member/index expressions
+        if let Some(op) = self.compound_assignment_operator() {
+            match &expr {
+                Expr::OptionalMember { .. }
+                | Expr::OptionalIndex { .. }
+                | Expr::OptionalCall { .. } => {
+                    return Err(self.invalid_optional_chain_target(expr.span()));
+                }
+                Expr::Member {
+                    object,
+                    property,
+                    span,
+                } if !property.is_empty() => {
+                    let right = self.expression()?;
+                    let end = self.statement_terminator_end(right.span().end)?;
+                    let member_span = *span;
+                    let bin = Expr::Binary {
+                        left: Box::new(Expr::Member {
+                            object: object.clone(),
+                            property: property.clone(),
+                            span: member_span,
+                        }),
+                        op,
+                        right: Box::new(right),
+                        span: Span {
+                            start: member_span.start,
+                            end,
+                        },
+                    };
+                    return Ok(Stmt::Expr {
+                        expr: Expr::PropertyAssign {
+                            object: object.clone(),
+                            property: property.clone(),
+                            value: Box::new(bin),
+                            span: Span {
+                                start: member_span.start,
+                                end,
+                            },
+                        },
+                        span: Span {
+                            start: member_span.start,
+                            end,
+                        },
+                    });
+                }
+                Expr::Index {
+                    object,
+                    index,
+                    span: index_span,
+                } => {
+                    let right = self.expression()?;
+                    let end = self.statement_terminator_end(right.span().end)?;
+                    let bin = Expr::Binary {
+                        left: Box::new(Expr::Index {
+                            object: object.clone(),
+                            index: index.clone(),
+                            span: *index_span,
+                        }),
+                        op,
+                        right: Box::new(right),
+                        span: Span {
+                            start: index_span.start,
+                            end,
+                        },
+                    };
+                    return Ok(Stmt::Expr {
+                        expr: Expr::IndexAssign {
+                            object: object.clone(),
+                            index: index.clone(),
+                            value: Box::new(bin),
+                            span: Span {
+                                start: index_span.start,
+                                end,
+                            },
+                        },
+                        span: Span {
+                            start: index_span.start,
+                            end,
+                        },
+                    });
+                }
+                _ => {
+                    return Err(Diagnostic {
+                        code: DiagCode::UnsupportedSyntax,
+                        message: String::from(
+                            "left-hand side of compound assignment must be a property or index access",
+                        ),
+                        span: Some(expr.span()),
+                    });
+                }
+            }
+        }
         if self.is_optional_chain_expr(&expr)
             && (matches!(self.peek(), Some(Token::Increment))
                 || matches!(self.peek(), Some(Token::Decrement)))
@@ -1876,13 +1968,53 @@ impl Parser {
             }
             // Handle nested block statements (e.g. `{ class C {} }`)
             if matches!(self.peek(), Some(Token::LeftBrace)) {
-                let nested = self.block()?;
-                statements.extend(nested);
+                statements.push(self.block_as_stmt()?);
                 continue;
             }
             statements.push(self.statement()?);
         }
         Ok(statements)
+    }
+
+    /// Parse a standalone block statement and return it wrapped in `Stmt::Block`.
+    /// Unlike `block()`, this preserves the block boundary in the AST so that
+    /// block-scoped declarations (e.g. `class C {}`) are distinguishable from
+    /// top-level declarations during name resolution.
+    fn block_as_stmt(&mut self) -> Result<Stmt, Diagnostic> {
+        let left_brace = self.expect(TokenKind::LeftBrace)?;
+        let mut stmts = Vec::new();
+        while !self.consume(TokenKind::RightBrace) {
+            if self.is_at_end() {
+                return Err(Diagnostic {
+                    code: DiagCode::UnsupportedSyntax,
+                    message: "unterminated block".to_owned(),
+                    span: self.prev_span().or_else(|| self.peek_span()),
+                });
+            }
+            if self.consume(TokenKind::Semicolon) {
+                continue;
+            }
+            if let Some(stmt) = self.take_pending_statement() {
+                stmts.push(stmt);
+                continue;
+            }
+            if self.consume_erasable_typescript_declaration()? {
+                continue;
+            }
+            if matches!(self.peek(), Some(Token::LeftBrace)) {
+                stmts.push(self.block_as_stmt()?);
+                continue;
+            }
+            stmts.push(self.statement()?);
+        }
+        let end_span = self.prev_span().unwrap_or(left_brace);
+        Ok(Stmt::Block {
+            statements: stmts,
+            span: Span {
+                start: left_brace.start,
+                end: end_span.end,
+            },
+        })
     }
 
     fn statement_body(&mut self) -> Result<Vec<Stmt>, Diagnostic> {

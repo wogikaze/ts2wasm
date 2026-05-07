@@ -582,7 +582,7 @@ error: [UnsupportedModule] issue-055: unsupported variable export; module resolu
 
 Closed as a stale generated bucket after fresh 2026-05-08 triage confirmed
 that the representative failure is already owned by
-`issues/open/5285-support-export-var-initializer-declarations.md`.
+`issues/done/5285-support-export-var-initializer-declarations.md`.
 
 Fresh coverage with the current binary:
 

@@ -130,7 +130,7 @@ Follow-up issues:
 - `issues/open/5324-support-dependency-export-class-declarations.md` owns the
   current issue-5005 boundary for dependency virtual files that start with
   `export class`.
-- `issues/open/5229-resolve-imports-between-filename-sections.md` is a likely
+- `issues/done/5229-w0-user-runtime-string-origin.md` is a likely
   later owner for local `./m1` and `./m3` virtual-section resolution after
   dependency export-class support advances.
 

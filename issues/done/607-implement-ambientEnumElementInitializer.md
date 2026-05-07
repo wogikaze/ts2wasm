@@ -116,7 +116,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/146-implement-ambientEnumElementInitializer.md` - Implement Ambientenumelementinitializer (same reference path, same group key, title overlap)
+- `#146` - Implement Ambientenumelementinitializer (same reference path, same group key, title overlap)
 - `issues/done/521-implement-ambientEnumElementInitializer.md` - Implement Ambientenumelementinitializer (same reference path, same feature label, same group key, title overlap)
 
 ## Smart triage
@@ -183,7 +183,7 @@ Duplicate candidates:
 [
   {
     "state": "open",
-    "path": "issues/done/146-implement-ambientEnumElementInitializer.md",
+    "path": "#146",
     "title": "Implement Ambientenumelementinitializer",
     "reason": "same reference path"
   },
