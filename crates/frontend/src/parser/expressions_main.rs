@@ -4,7 +4,7 @@ impl Parser {
     }
 
     fn assignment(&mut self) -> Result<Expr, Diagnostic> {
-        // Check for arrow function: (params) => expr or id => expr
+        // Check for arrow function: (params) => expr, id => expr, or <T>(params) => expr
         let saved_cursor = self.cursor;
 
         // Try to parse arrow function
@@ -13,6 +13,16 @@ impl Parser {
         } else if matches!(self.peek(), Some(Token::Ident(_))) {
             self.advance();
             self.consume(TokenKind::Arrow)
+        } else if matches!(self.peek(), Some(Token::Less)) {
+            // Speculative parse: <T>(params) => expr — generic arrow function
+            let probe = self.cursor;
+            let has_generic = self.consume_typescript_generic_parameter_list().unwrap_or(false);
+            if has_generic && matches!(self.peek(), Some(Token::LeftParen)) {
+                self.probe_parenthesized_arrow_params().unwrap_or(false)
+            } else {
+                self.cursor = probe;
+                false
+            }
         } else {
             false
         };
@@ -20,6 +30,10 @@ impl Parser {
         self.cursor = saved_cursor;
 
         if is_arrow {
+            // Consume generic type parameters before parsing the arrow
+            if matches!(self.peek(), Some(Token::Less)) {
+                let _has_generic = self.consume_typescript_generic_parameter_list().unwrap_or(false);
+            }
             return self.arrow_function();
         }
 
