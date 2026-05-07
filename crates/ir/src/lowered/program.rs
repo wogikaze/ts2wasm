@@ -915,6 +915,7 @@ fn collect_function_signatures(
                     FunctionSignature {
                         explicit_params: ctor_params_len,
                         has_rest: ctor_has_rest,
+                        needs_receiver: true,
                         returns_heap_closure: ctor_returns_heap_closure,
                         returns_dense_array: ctor_returns_dense_array,
                         ..FunctionSignature::default()
