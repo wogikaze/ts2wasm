@@ -120,7 +120,7 @@ Follow-up issues:
 - `issues/done/087-implement-abstractPropertyInConstructor.md` - Implement Abstractpropertyinconstructor (same feature label, same group key, title overlap)
 - `issues/done/092-implement-accessOverriddenBaseClassMember.md` - Implement Accessoverriddenbaseclassmember (same feature label, same group key, title overlap)
 - `issues/done/178-implement-anonterface.md` - Implement Anonterface (same feature label, same group key, title overlap)
-- `issues/open/199-implement-reference-typescript-tests-cases-compiler.md` - Implement Compiler (same feature label, same group key, title overlap)
+- `issues/done/199-implement-reference-typescript-tests-cases-compiler.md` - Implement Compiler (same feature label, same group key, title overlap)
 - `issues/open/419-implement-builtin-api.md` - Implement built-in API support (same feature label, same group key, title overlap)
 - `issues/open/425-implement-destructuring.md` - Implement destructuring (same feature label, same group key, title overlap)
 - `issues/open/441-implement-object-literal.md` - Implement object literal enhancements (same feature label, same group key, title overlap)

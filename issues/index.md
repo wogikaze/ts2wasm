@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 6 | 5 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4567 | 3461 | 1106 |
+| frontend | 4567 | 3460 | 1107 |
 | harness | 1 | 0 | 1 |
 | ir | 76 | 54 | 22 |
 | issues | 4 | 0 | 4 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5224 | 3755 | 1469 |
+| total | 5224 | 3754 | 1470 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -365,7 +365,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 162 | Implement Ambientpropertydeclarationinjs | spike | frontend/syntax | class: blocked | Implement Ambientpropertydeclarationinjs |
 | 168 | Implement Ambiguousoverload | spike | frontend/syntax | class: blocked | Implement Ambiguousoverload |
 | 194 | Implement Argumentsaspropertyname | spike | frontend/semantics | class: blocked | Implement Argumentsaspropertyname |
-| 199 | Implement Compiler | spike | frontend/syntax | class: triage-needed | Implement Compiler |
 | 274 | Implement spread operator (audit reopened #274) | meta | frontend/semantics | class: blocked | Implement spread operator (audit reopened #274) |
 | 294 | Support ABC451 D original submission without source rewrite | feature | frontend/runtime | class: blocked | Support ABC451 D original submission without source rewrite |
 | 300 | Support ABC451 large integer number boundary | feature | runtime | class: blocked | Support ABC451 large integer number boundary |
@@ -4077,6 +4076,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 196 | Implement Argumentsobjectcreatesrestforjs (dup) | spike | frontend/resolver | see `issues/done/196-implement-argumentsObjectCreatesRestForJs.md` |
 | 197 | Implement Argumentsobjectiterator (dup) | spike | frontend/semantics | see `issues/done/197-implement-argumentsObjectIterator.md` |
 | 198 | Implement Argumentspropertynameinjsmode (dup) | spike | frontend/semantics | see `issues/done/198-implement-argumentsPropertyNameInJsMode.md` |
+| 199 | Implement Compiler | spike | frontend/syntax | see `issues/done/199-implement-reference-typescript-tests-cases-compiler.md` |
 | 200 | Implement parser syntax extensions (dup) | spike | frontend/syntax | see `issues/done/200-implement-parser-syntax.md` |
 | 201 | Investigate and classify unknown-unsupported cases (dup) | spike | reference/triage | see `issues/done/201-implement-unknown-unsupported.md` |
 | 202 | Implement RegExp literal support | feature | frontend/semantics | see `issues/done/202-implement-regexp-literal-support.md` |
