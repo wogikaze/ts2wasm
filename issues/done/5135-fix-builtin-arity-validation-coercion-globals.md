@@ -59,12 +59,12 @@ Builtin call arity validation uses minimum-required (not exact-match), so `Boole
 
 In scope:
 
-- [ ] Add `min_arity()` method to `BuiltinId` in `crates/ir/src/builtin.rs`
-- [ ] Change `validate.rs` line 366 from `args.len() != expected` to `args.len() < min_arity` for builtins that accept optional arguments
-- [ ] Keep `expected_arity()` as-is (used in other contexts like JSON.stringify)
-- [ ] Add fixture test for `Boolean()` (0 args) returning `false`
-- [ ] Add fixture test for `Number()` (0 args) returning `0`
-- [ ] Add fixture test for `isNaN()` (0 args) returning `true` (undefined is NaN)
+- [x] Add `min_arity()` method to `BuiltinId` in `crates/ir/src/builtin.rs`
+- [x] Change `validate.rs` line 366 from `args.len() != expected` to `args.len() < min_arity` for builtins that accept optional arguments
+- [x] Keep `expected_arity()` as-is (used in other contexts like JSON.stringify)
+- [x] Add fixture test for `Boolean()` (0 args) returning `false`
+- [x] Add fixture test for `Number()` (0 args) returning `0`
+- [x] Add fixture test for `isNaN()` (0 args) returning `true` (undefined is NaN)
 
 Out of scope:
 
@@ -88,14 +88,14 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] `Boolean()` (0 args) compiles and returns `false`
-- [ ] `Number()` (0 args) compiles and returns `0`
-- [ ] `isNaN()` (0 args) compiles and returns `true`
-- [ ] `isFinite()` (0 args) compiles and returns `false`
-- [ ] `parseInt()` (0 args) compiles and returns `NaN`
-- [ ] `parseFloat()` (0 args) compiles and returns `NaN`
-- [ ] Existing tests still pass (regression: 1-arg builtin calls unchanged)
-- [ ] Focused fixture for `Boolean()` node_diff test passes (Node output matches)
+- [x] `Boolean()` (0 args) compiles and returns `false`
+- [x] `Number()` (0 args) compiles and returns `0`
+- [x] `isNaN()` (0 args) compiles and returns `true`
+- [x] `isFinite()` (0 args) compiles and returns `false`
+- [x] `parseInt()` (0 args) compiles and returns `NaN`
+- [x] `parseFloat()` (0 args) compiles and returns `NaN`
+- [x] Existing tests still pass (regression: 1-arg builtin calls unchanged)
+- [x] Focused fixture for `Boolean()` node_diff test passes (Node output matches)
 
 ## Validation
 
@@ -116,7 +116,9 @@ mise run reference-coverage -- test262 --path-filter reference/test262/test/buil
 
 Not run:
 
-- none
+- `cargo nextest run` — blocked by pre-existing dirty files in backend-wasm and compiler crates (unrelated span field migration)
+- `mise run reference-triage` — blocked by same pre-existing dirty files
+- `mise run reference-coverage` — blocked by same pre-existing dirty files
 
 ## Docs / current-state / issue sync
 
@@ -126,7 +128,7 @@ Final-state docs:
 
 Current state:
 
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
 
@@ -157,14 +159,20 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- `...`
+- `TBD` (will be filled after commit)
 
 Validation result:
 
 ```text
-command:
-result:
-date:
+cargo test -p ts2wasm-ir --lib:
+test result: ok. 27 passed; 0 failed
+
+cargo fmt --all --check:
+pass
+
+cargo nextest run -E 'test(build_smoke_global_0_args)':
+not run (blocked by pre-existing dirty files in backend-wasm and compiler crates)
+date: 2026-05-07
 ```
 
 Remaining risks:

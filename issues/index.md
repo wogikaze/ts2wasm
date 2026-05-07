@@ -18,7 +18,7 @@ Issue files are the source of truth for work items. The generated section below 
 | docs | 5 | 0 | 5 |
 | frontend | 4438 | 3711 | 727 |
 | harness | 1 | 0 | 1 |
-| ir | 42 | 2 | 40 |
+| ir | 42 | 1 | 41 |
 | issues | 5 | 0 | 5 |
 | parser | 1 | 0 | 1 |
 | reference | 211 | 163 | 48 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 8 | 0 | 8 |
 | wasi | 4 | 0 | 4 |
-| total | 5080 | 3963 | 1117 |
+| total | 5080 | 3962 | 1118 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -4061,7 +4061,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5015 | Implement function support | spike | frontend/syntax | class: triage-needed | Implement function support |
 | 5018 | Implement legacy-global-builtin support | spike | frontend/syntax | class: triage-needed | Implement legacy-global-builtin support |
 | 5020 | Implement RegExp literal support | spike | frontend/syntax | class: triage-needed | Implement RegExp literal support |
-| 5135 | Fix builtin arity validation for coercion/math globals | bug | ir | class: blocked | Fix builtin arity validation for coercion/math globals |
 | 5136 | Fix arity validation for RegExp/String prototype methods | bug | ir | class: blocked | Fix arity validation for RegExp/String prototype methods |
 | 5212 | Implement remaining BigInt mixed runtime coercion edges | feature | runtime/semantics | class: blocked | Implement remaining BigInt mixed runtime coercion edges |
 | 5214 | Implement computed Symbol.iterator prerequisite for spread | feature | frontend/syntax | class: blocked | Implement computed Symbol.iterator prerequisite for spread |
@@ -5085,6 +5084,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5132 | Add ABC451 non-top array separation attribution | infra | runtime/memory | see `issues/done/5132-add-abc451-non-top-array-separation-attribution.md` |
 | 5133 | Implement single-statement loop bodies for break and continue | feature | frontend/syntax | see `issues/done/5133-implement-single-statement-loop-body-break-continue.md` |
 | 5134 | Admit generators and async-functions features through Python test262 harness | spike | scripts | see `issues/done/5134-admit-generators-and-async-functions-through-python-harness.md` |
+| 5135 | Fix builtin arity validation for coercion/math globals | bug | ir | see `issues/done/5135-fix-builtin-arity-validation-coercion-globals.md` |
 | 5137 | Split remaining Date API scope | cleanup | runtime/builtins | see file |
 | 5138 | Split Reflect.construct isConstructor reference window | spike | runtime/builtins | see file |
 | 5139 | Split APISample parser leftovers | cleanup | frontend/syntax | see `issues/done/5139-split-apisample-parser-leftovers.md` |

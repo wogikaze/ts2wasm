@@ -70,6 +70,41 @@ impl BuiltinId {
         }
     }
 
+    /// Minimum number of arguments required.
+    ///
+    /// JavaScript builtins accept fewer args than `expected_arity` — missing
+    /// arguments become `undefined` at runtime. Most coercions/math globals
+    /// accept 0 args. `ConsoleLog` needs at least 1.
+    pub const fn min_arity(self) -> usize {
+        match self {
+            Self::ConsoleLog => 1,
+            Self::ReadStdinUtf8 => 0,
+            Self::FsReadFileSync => 2,
+            Self::FsWriteFileSync => 2,
+            Self::FsAppendFileSync => 2,
+            Self::ProcessArgv => 0,
+            Self::ProcessEnv => 0,
+            Self::ProcessExit => 0,
+            Self::PathJoin => 2,
+            Self::PathResolve => 1,
+            Self::PathBasename => 0,
+            Self::PathDirname => 0,
+            Self::CryptoRandomBytes => 1,
+            Self::InstanceOf => 2,
+            Self::MathPow => 2,
+            Self::IsNaN => 0,
+            Self::ParseInt => 0,
+            Self::ParseFloat => 0,
+            Self::IsFinite => 0,
+            Self::BooleanCoerce => 0,
+            Self::NumberCoerce => 0,
+            Self::EncodeURI => 0,
+            Self::DecodeURI => 0,
+            Self::Escape => 0,
+            Self::Unescape => 0,
+        }
+    }
+
     pub const fn result(self) -> BuiltinResult {
         match self {
             Self::ConsoleLog => BuiltinResult::EffectOnly,

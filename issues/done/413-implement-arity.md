@@ -121,7 +121,7 @@ Follow-up issues:
 - `issues/open/2460-implement-functionParameterArityMismatch.md` — NOT a match. This is about TypeScript compiler's `functionParameterArityMismatch` diagnostic (a TS type-checking error), blocked on issue 5005. Different domain and fix location.
 
 **Child issues created**:
-- `issues/open/5135-fix-builtin-arity-validation-coercion-globals.md` — Fix validate.rs + builtin.rs for Boolean, Number, isNaN, isFinite, parseInt, parseFloat, encodeURI, decodeURI, escape, unescape (~20-25 test cases)
+- `issues/done/5135-fix-builtin-arity-validation-coercion-globals.md` — Fix validate.rs + builtin.rs for Boolean, Number, isNaN, isFinite, parseInt, parseFloat, encodeURI, decodeURI, escape, unescape (~20-25 test cases)
 - `issues/open/5136-fix-arity-validation-regexp-string-prototype.md` — Fix program_builtins.rs + resolver_expr.rs for RegExp.prototype.exec/test and String.prototype.match/search (~10 test cases)
 
 ## Affected test files
@@ -691,7 +691,7 @@ result: PASS — split into 2 implementation-ready child issues (5135, 5136)
 date: 2026-05-06
 
 Child issues:
-- issues/open/5135-fix-builtin-arity-validation-coercion-globals.md (coercion/math globals)
+- issues/done/5135-fix-builtin-arity-validation-coercion-globals.md (coercion/math globals)
 - issues/open/5136-fix-arity-validation-regexp-string-prototype.md (RegExp/String prototype methods)
 
 Duplicate check:

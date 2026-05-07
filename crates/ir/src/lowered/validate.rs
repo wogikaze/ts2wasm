@@ -384,12 +384,14 @@ fn validate_expr(
                 }
                 FunctionCallKind::Builtin(builtin) => {
                     let expected = builtin.expected_arity();
-                    if args.len() != expected {
+                    let min_required = builtin.min_arity();
+                    if args.len() < min_required || args.len() > expected {
                         errors.push(Diagnostic {
                             code: DiagCode::ArityMismatch,
                             message: format!(
-                                "builtin {:?} expects {} argument(s), got {}",
+                                "builtin {:?} expects {}-{} argument(s), got {}",
                                 builtin,
+                                min_required,
                                 expected,
                                 args.len()
                             ),

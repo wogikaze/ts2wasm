@@ -799,6 +799,17 @@ fn build_smoke_regexp_question() {
     );
 }
 
+// Global 0-arg builtin calls (issue 5135)
+#[test]
+fn build_smoke_global_0_args() {
+    let result = run_fixture("builtins-and-io/global-0-args.ts");
+    assert!(
+        result.is_ok(),
+        "global-0-args should build: {:?}",
+        result.err()
+    );
+}
+
 // Global number functions (issue 341a)
 
 #[test]
