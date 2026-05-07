@@ -103,6 +103,7 @@ Do not touch:
 ## Acceptance criteria
 
 - [ ] `const enum E { A }` parses as an enum declaration or reports an enum-specific diagnostic, not `const declarations require an initializer`.
+- [ ] `constEnumBadPropertyNames.ts` no longer reports `const declarations require an initializer` at `const enum E { A }`.
 - [ ] A function-block `const enum E { A }` no longer creates a bogus binding named `enum`.
 - [ ] Ordinary `const x;` still reports the missing-initializer diagnostic.
 - [ ] `python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/blockScopedEnumVariablesUseBeforeDef.ts` no longer reports the current const-initializer diagnostic at `const enum E`.
@@ -122,6 +123,7 @@ Impacted commands:
 ```sh
 python scripts/manager.py check-issue-readiness -- --fail-ready-below 80
 python scripts/manager.py reference-coverage tsc --path-filter reference/typescript/tests/cases/compiler/commentsdoNotEmitComments.ts --detail --no-dashboard-data
+python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/constEnumBadPropertyNames.ts
 ```
 
 Not run:
@@ -154,6 +156,10 @@ Additional superseded bucket:
   bogus visible binding named `enum`, then `var shade: color = color.green`
   fails with `UnresolvedName` for `color`. Comment emit behavior is not reached
   before this const-enum parser/binding boundary.
+- `issues/done/1445-implement-constEnumBadPropertyNames.md` reaches the same
+  `const enum` parser boundary at top level. Fresh triage on 2026-05-07 reports
+  `const declarations require an initializer at 26..30` for `const enum E { A }`;
+  TypeScript parses the enum and reports TS2339 for the later `E["B"]` access.
 
 ## Completion evidence
 
