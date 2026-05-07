@@ -5,48 +5,56 @@ type: spike
 area: frontend/syntax
 class: blocked
 priority: P1
-depends_on: [5000]
+depends_on: []
 blocks: []
 created: 2026-05-01
-updated: 2026-05-01
+updated: 2026-05-07
+completed: 2026-05-07
+status: done
 ---
 
 ## Summary
 
-Triage asyncYieldStarContextualType across 1 failing reference test cases and split this bucket into implementation-ready child issues.
+Closed this generated bucket by splitting the current concrete blocker to
+`issues/open/5345-parse-generic-ambient-const-type-annotations.md`.
 
 ## Problem
 
-Reference test results show 1 cases fail in directory `asyncYieldStarContextualType` with diagnostics: parser-syntax. The compiler cannot handle these syntax/semantics, preventing compilation of code in this category.
+Fresh triage shows the current first blocker is not `yield*` contextual typing
+yet. The compiler stops while parsing the ambient declaration
+`declare const authorPromise: Promise<Result<Author, "NOT_FOUND_AUTHOR">>;`,
+before it reaches the async generator body.
 
-Problem: asyncYieldStarContextualType has 1 reference failures and needs smart-triage evidence before implementation starts.
+Problem: nested generic ambient const annotations are not erased as complete
+TypeScript type annotations before ambient declaration parsing resumes.
 
 ## Current failure
 
 Representative reproduction:
 
 ```sh
-mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/asyncYieldStarContextualType.ts
+env TS2WASM_BINARY=/tmp/ts2wasm-issue-blockers-target/debug/ts2wasm python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/asyncYieldStarContextualType.ts
 ```
 
 Coverage window:
 
 ```sh
-mise run reference-coverage -- tsc --path-filter reference/typescript/tests/cases/compiler/asyncYieldStarContextualType.ts --detail
+env TS2WASM_BINARY=/tmp/ts2wasm-issue-blockers-target/debug/ts2wasm python scripts/manager.py reference-coverage tsc --path-filter reference/typescript/tests/cases/compiler/asyncYieldStarContextualType.ts --detail --no-dashboard-data
 ```
 
 ## Desired final state
 
-This generated bucket is either split into implementation-ready child issues or superseded by an existing open/done issue with matching evidence. Do not implement directly from this bucket.
+This generated bucket is closed. Implement from
+`issues/open/5345-parse-generic-ambient-const-type-annotations.md`.
 
 ## Scope
 
 In scope:
 
-- [ ] Inspect the smart triage report below
-- [ ] Confirm whether existing open/done issues already cover this bucket
-- [ ] Split one feature family, one observable behavior, or one fixed reference window into child issues
-- [ ] Preserve exact reproduction commands and representative AST/diagnostic evidence in each child issue
+- [x] Inspect the smart triage report below
+- [x] Confirm whether existing open/done issues already cover this bucket
+- [x] Split one feature family, one observable behavior, or one fixed reference window into child issues
+- [x] Preserve exact reproduction commands and representative AST/diagnostic evidence in the child issue
 
 Out of scope:
 
@@ -68,45 +76,45 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] Duplicate candidates below are confirmed as no-match or this issue is superseded
-- [ ] At least one child issue contains an exact `mise run reference-triage -- ...` command
-- [ ] Child issue includes failing path, diagnostic code, source context, visible symbols, and parser/TypeScript AST evidence
-- [ ] Child issue acceptance names the exact fixture/reference path and diagnostic/stdout change
+- [x] Duplicate candidates below are confirmed as no-match or this issue is superseded
+- [x] Child issue contains an exact `reference-triage` command
+- [x] Child issue includes failing path, diagnostic code, source context, visible symbols, and parser/TypeScript AST evidence
+- [x] Child issue acceptance names the exact fixture/reference path and diagnostic/stdout change
 
 ## Validation
 
 Required commands:
 
 ```sh
-cargo fmt --all --check
-cargo nextest run
+python scripts/manager.py update-issue-index --check
+python scripts/manager.py check-issue-health
+python scripts/manager.py check-issue-readiness -- --fail-ready-below 80
 ```
 
 Impacted commands:
 
 ```sh
-mise run reference-coverage -- tsc --limit 2
-mise run reference-coverage -- tsc --path-filter reference/typescript/tests/cases/compiler/asyncYieldStarContextualType.ts --detail
-mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/asyncYieldStarContextualType.ts
+env TS2WASM_BINARY=/tmp/ts2wasm-issue-blockers-target/debug/ts2wasm python scripts/manager.py reference-coverage tsc --path-filter reference/typescript/tests/cases/compiler/asyncYieldStarContextualType.ts --detail --no-dashboard-data
+env TS2WASM_BINARY=/tmp/ts2wasm-issue-blockers-target/debug/ts2wasm python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/asyncYieldStarContextualType.ts
 ```
 
 Not run:
 
-- none
+- cargo fmt / nextest not run for this metadata-only issue lifecycle closure
 
 ## Docs / current-state / issue sync
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] updated: `current-state.md` (repo root)
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] `issues/open/5345-parse-generic-ambient-const-type-annotations.md`
 
 ## Notes
 
@@ -116,7 +124,16 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- none found by path/title/feature scan
+Split to `issues/open/5345-parse-generic-ambient-const-type-annotations.md`.
+
+No exact existing owner was found. Related no-match issues:
+
+- `issues/open/5193-parse-asi-after-ambient-variable-declarations.md` covers
+  ASI after ambient declarations, not nested generic annotation erasure.
+- `issues/open/5242-parse-direct-generic-call-type-arguments-for-callable-consts.md`
+  covers later generic call expression syntax, not declaration parsing.
+- `issues/done/5148-parse-generic-async-generator-declarations.md` covers the
+  async generator declaration after this ambient declaration blocker advances.
 
 ## Smart triage
 
@@ -661,20 +678,22 @@ error: [UnsupportedTypeScriptSyntax] issue-400: expected ambient variable declar
 
 ## Completion evidence
 
-Fill only when moving to `done/`.
-
 Commits:
 
-- `...`
+- this commit
 
 Validation result:
 
 ```text
-command:
-result:
-date:
+command: env TS2WASM_BINARY=/tmp/ts2wasm-issue-blockers-target/debug/ts2wasm python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/asyncYieldStarContextualType.ts
+result: pass; reproduced issue-400 expected ambient variable declaration name and split to issue 5345
+date: 2026-05-07
+
+command: env TS2WASM_BINARY=/tmp/ts2wasm-issue-blockers-target/debug/ts2wasm python scripts/manager.py reference-coverage tsc --path-filter reference/typescript/tests/cases/compiler/asyncYieldStarContextualType.ts --detail --no-dashboard-data
+result: pass; executed=1, unsupported=1, UnsupportedTypeScriptSyntax=1
+date: 2026-05-07
 ```
 
 Remaining risks:
 
-- none
+- Issue 5345 still needs implementation; this closure only removes the generated bucket from the blocked queue.
