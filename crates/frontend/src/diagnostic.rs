@@ -143,6 +143,7 @@ impl Diagnostic {
             || message.contains("ambient")
             || message.contains("parameter propert")
             || message.contains("type alias")
+            || message.contains("decorator")
         {
             return DiagCode::UnsupportedTypeScriptSyntax;
         }

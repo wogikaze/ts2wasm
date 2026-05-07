@@ -1808,6 +1808,27 @@ impl Parser {
                     },
                 })
             }
+            Some(SpannedToken {
+                kind: Token::At,
+                span: at_span,
+            }) => {
+                // Consume the decorator identifier if present
+                let decorator_end = if matches!(self.peek(), Some(Token::Ident(_))) {
+                    let ident_span = self.peek_span().unwrap_or(at_span);
+                    self.advance();
+                    ident_span.end
+                } else {
+                    at_span.end
+                };
+                Err(Diagnostic {
+                    code: DiagCode::UnsupportedTypeScriptSyntax,
+                    message: "issue-5253: TypeScript decorator syntax is not supported".to_owned(),
+                    span: Some(Span {
+                        start: at_span.start,
+                        end: decorator_end,
+                    }),
+                })
+            }
             other => Err(Diagnostic {
                 code: DiagCode::UnsupportedSyntax,
                 message: format!("unsupported expression: {other:?}"),

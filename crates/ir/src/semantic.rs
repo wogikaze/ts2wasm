@@ -119,10 +119,7 @@ pub fn lower_to_hir(program: &[ResolvedStmt]) -> Result<HirProgram, Diagnostic> 
     for stmt in program {
         match stmt {
             ResolvedStmt::Function {
-                name,
-                params,
-                body,
-                ..
+                name, params, body, ..
             } => {
                 // Skip bodyless TypeScript overload signatures.
                 if body.is_empty() {
@@ -827,10 +824,7 @@ fn collect_function_ids(
 ) -> Result<HashMap<String, HirFunctionId>, Diagnostic> {
     let mut ids = HashMap::new();
     for stmt in program {
-        if let ResolvedStmt::Function {
-            name, body, ..
-        } = stmt
-        {
+        if let ResolvedStmt::Function { name, body, .. } = stmt {
             // Skip bodyless overload signatures.
             if body.is_empty() {
                 continue;

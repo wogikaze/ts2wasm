@@ -125,3 +125,13 @@ Additional superseded bucket:
   contributes `classExpressionWithStaticPropertiesES62.ts`, the same class
   expression boundary with `static b` followed by later-line `static c = ...`.
   Fresh triage on 2026-05-06 shows ES61 is already build-pass.
+
+## False-done audit
+
+**truly-done** (5254)
+
+- Implementation commits: verified via `git log --oneline --all --grep=5254`
+- Completion evidence: filled with specific commit hashes and validation results
+- Acceptance criteria: all checked as met
+
+This issue has repo-local close evidence with implementation commits and validation commands.

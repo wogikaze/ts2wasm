@@ -111,6 +111,8 @@ pub enum Token {
     Colon,
     Dot,
     Semicolon,
+    /// TypeScript decorator marker `@`. Not supported in runtime subset.
+    At,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -215,6 +217,7 @@ pub enum TokenKind {
     TemplateLiteral,
     RegExp,
     BigIntLiteral,
+    At,
 }
 
 impl TokenKind {
@@ -315,6 +318,7 @@ impl TokenKind {
                 | (Self::TemplateLiteral, Token::TemplateLiteral(_))
                 | (Self::RegExp, Token::RegExp { .. })
                 | (Self::BigIntLiteral, Token::BigIntLiteral(_))
+                | (Self::At, Token::At)
         )
     }
 }

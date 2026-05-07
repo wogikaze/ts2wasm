@@ -1044,6 +1044,19 @@ impl<'a> Lexer<'a> {
                         },
                     );
                 }
+                '@' => {
+                    self.advance_char();
+                    self.add_token(
+                        &mut tokens,
+                        SpannedToken {
+                            kind: Token::At,
+                            span: Span {
+                                start,
+                                end: self.cursor,
+                            },
+                        },
+                    );
+                }
                 other => {
                     return Err(Diagnostic {
                         code: DiagCode::UnsupportedSyntax,

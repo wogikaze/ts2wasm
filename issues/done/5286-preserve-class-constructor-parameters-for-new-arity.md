@@ -170,3 +170,13 @@ Related but not duplicates:
 - Build-smoke test: `build_smoke_class_default_derived_ctor_arity`.
 - `commentsInheritance.ts` now builds (reference-coverage: build_pass).
 - 793 tests pass (cargo nextest, ir + cli + compiler).
+
+## False-done audit
+
+**truly-done** (5286)
+
+- Implementation commits: verified via `git log --oneline --all --grep=5286`
+- Completion evidence: filled with specific commit hashes and validation results
+- Acceptance criteria: all checked as met
+
+This issue has repo-local close evidence with implementation commits and validation commands.

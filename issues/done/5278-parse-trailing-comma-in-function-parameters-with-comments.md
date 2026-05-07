@@ -116,3 +116,13 @@ python scripts/manager.py reference-coverage tsc --path-filter reference/typescr
 
 Split from generated bucket `issues/open/1352-implement-commentOnParameter.md`.
 Related typed class method slice: `issues/done/5149-parse-trailing-comma-in-typed-class-method-parameters.md`.
+
+## False-done audit
+
+**truly-done** (5278)
+
+- Implementation commits: verified via `git log --oneline --all --grep=5278`
+- Completion evidence: filled with specific commit hashes and validation results
+- Acceptance criteria: all checked as met
+
+This issue has repo-local close evidence with implementation commits and validation commands.
