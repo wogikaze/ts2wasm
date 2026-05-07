@@ -3,12 +3,12 @@ id: 1493
 title: "Implement Contextualpropertyofgenericfilteringmappedtype"
 type: spike
 area: frontend/semantics
-class: blocked
+class: done
 priority: P1
-depends_on: [5002]
+depends_on: []
 blocks: []
 created: 2026-05-01
-updated: 2026-05-01
+updated: 2026-05-07
 ---
 
 ## Summary
@@ -43,10 +43,10 @@ This generated bucket is either split into implementation-ready child issues or 
 
 In scope:
 
-- [ ] Inspect the smart triage report below
-- [ ] Confirm whether existing open/done issues already cover this bucket
-- [ ] Split one feature family, one observable behavior, or one fixed reference window into child issues
-- [ ] Preserve exact reproduction commands and representative AST/diagnostic evidence in each child issue
+- [x] Inspect the smart triage report below
+- [x] Confirm whether existing open/done issues already cover this bucket
+- [x] Split one feature family, one observable behavior, or one fixed reference window into child issues
+- [x] Preserve exact reproduction commands and representative AST/diagnostic evidence in each child issue
 
 Out of scope:
 
@@ -68,10 +68,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] Duplicate candidates below are confirmed as no-match or this issue is superseded
-- [ ] At least one child issue contains an exact `mise run reference-triage -- ...` command
-- [ ] Child issue includes failing path, diagnostic code, source context, visible symbols, and parser/TypeScript AST evidence
-- [ ] Child issue acceptance names the exact fixture/reference path and diagnostic/stdout change
+- [x] Duplicate candidates below are confirmed as no-match or this issue is superseded
+- [x] At least one child issue contains an exact `mise run reference-triage -- ...` command
+- [x] Child issue includes failing path, diagnostic code, source context, visible symbols, and parser/TypeScript AST evidence
+- [x] Child issue acceptance names the exact fixture/reference path and diagnostic/stdout change
 
 ## Validation
 
@@ -98,15 +98,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] updated: `current-state.md` (repo root)
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 
@@ -120,7 +120,31 @@ Follow-up issues:
 
 ## Smart triage
 
-Not generated. Rerun with `--triage-limit 1` or higher.
+Fresh triage on 2026-05-07 shows this generated type-system bucket is stale as
+a compiler build blocker.
+
+Current diagnostic:
+
+```text
+BuildPass: ts2wasm build succeeded
+```
+
+Focused coverage result:
+
+```text
+executed=1
+build_pass=1
+unsupported=0
+semantic_enabled=0
+```
+
+The AST and resolved dumps include `f1`, `f2`, object literal arguments, and
+arrow callback parameters. TypeScript oracle reports the intended later TS2353
+excess-property diagnostic for the final `foo` handler, but semantic coverage
+is not enabled for this no-emit reference window.
+
+No child issue was created because there is no current compiler build blocker
+to split from this generated bucket.
 
 ## Completion evidence
 
@@ -128,16 +152,21 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- `...`
+- `...` (filled by commit that moves this issue)
 
 Validation result:
 
 ```text
-command:
-result:
-date:
+command: python scripts/manager.py reference-coverage tsc --path-filter reference/typescript/tests/cases/compiler/contextualPropertyOfGenericFilteringMappedType.ts --detail --no-dashboard-data
+result: pass; executed=1, build_pass=1, unsupported=0
+date: 2026-05-07
+
+command: python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/contextualPropertyOfGenericFilteringMappedType.ts
+result: pass; BuildPass / build-pass
+date: 2026-05-07
 ```
 
 Remaining risks:
 
-- none
+- TypeScript semantic parity for TS2353 excess-property diagnostics is not
+  proven by this build-pass close.
