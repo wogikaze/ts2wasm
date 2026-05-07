@@ -58,6 +58,9 @@ SUPPORTED_FEATURES = (
     "regexp-duplicate-named-groups",
     "regexp-lookbehind",
     "regexp-dotall",
+    "String.prototype.matchAll",
+    "String.prototype.replaceAll",
+    "String.prototype.trimStart",
 )
 ASSERT_FAILURE_SENTINEL = "__TS2WASM_TEST262_ASSERT_FAIL__"
 
