@@ -3,7 +3,7 @@ id: 5186
 title: "Parse export assignment expressions"
 type: feature
 area: frontend/syntax
-class: done
+class: implementation-ready
 priority: P1
 depends_on: []
 blocks: []
@@ -68,9 +68,9 @@ The frontend represents `export = expr` as an AST statement with the exported ex
 
 In scope:
 
-- [x] Parse `export = <expression>;` as a distinct export-assignment AST statement.
-- [x] Preserve the span of the exported expression.
-- [x] Add focused parser/AST coverage for `export = foo`.
+- [ ] Parse `export = <expression>;` as a distinct export-assignment AST statement.
+- [ ] Preserve the span of the exported expression.
+- [ ] Add focused parser/AST coverage for `export = foo`.
 
 Out of scope:
 
@@ -96,9 +96,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [x] A focused parser or CLI test covers `export = foo;`.
-- [x] `export = foo;` preserves an expression span for `foo`.
-- [x] `python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/blockScopedFunctionDeclarationInStrictModule.ts` advances past the current AST-construction failure at the `export` keyword or reports the next semantic/module boundary with expression-span evidence.
+- [ ] A focused parser or CLI test covers `export = foo;`.
+- [ ] `export = foo;` preserves an expression span for `foo`.
+- [ ] `constEnumMergingWithValues1.ts`, `2.ts`, `4.ts`, and `5.ts` no longer stop at the generic `issue-055: unsupported static export` boundary.
+- [ ] `python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/blockScopedFunctionDeclarationInStrictModule.ts` advances past the current AST-construction failure at the `export` keyword or reports the next semantic/module boundary with expression-span evidence.
 
 ## Validation
 
@@ -124,59 +125,51 @@ Not run:
 
 Final-state docs:
 
-- [x] not affected
+- [ ] not affected
 
 Current state:
 
-- [x] not affected
+- [ ] not affected
 
 Follow-up issues:
 
-- [x] none
+- [ ] none
 
 ## Notes
 
 Split from generated bucket `1074` on 2026-05-06. Existing import/export umbrella issues are broader than this syntax slice; this issue only asks the frontend to preserve the export-assignment expression for later diagnostics.
 
+Additional superseded bucket:
+
+- `issues/done/1449-implement-constEnumMergingWithValues-import-export.md`
+  reaches the same `export = foo` static export boundary in
+  `constEnumMergingWithValues1.ts`, `2.ts`, `4.ts`, and `5.ts`. Fresh triage on
+  2026-05-07 reports `UnsupportedModule issue-055: unsupported static export`
+  at the `export` keyword for all four files; TypeScript parses each as an
+  `ExportAssignment`.
+- `issues/done/1450-implement-constEnumMergingWithValues-parser-syntax.md`
+  reaches the same `export = foo` static export boundary in
+  `constEnumMergingWithValues3.ts`. Fresh triage on 2026-05-07 reports
+  `UnsupportedModule issue-055: unsupported static export` at `120..126`;
+  TypeScript parses the leading `enum foo`, merged namespace, and
+  `ExportAssignment` with no diagnostics.
+
 ## Completion evidence
+
+Fill only when moving to `done/`.
 
 Commits:
 
-- Combined with the current commit.
-
-### Changes
-
-1. **`statements_general.rs`**: Added `export = expr` handling in `export_statement()`. Detects `=` after `export`, parses the expression, and returns `Stmt::Expr` — the export assignment is erased at runtime.
-
-2. **`tests.rs`**: Added `parses_export_assignment` and `parses_export_assignment_member_expression` tests.
+- `...`
 
 Validation result:
 
 ```text
-command: cargo nextest run -p ts2wasm-frontend
-result: 195 passed, 0 failed
-date: 2026-05-06
-
-command: target/debug/ts2wasm build blockScopedFunctionDeclarationInStrictModule.ts
-result: no longer UnsupportedModule at export (now UnresolvedName at foo)
-date: 2026-05-06
+command:
+result:
+date:
 ```
 
 Remaining risks:
 
-- `export default = expr` is not handled (TypeScript does not use this form).
-
-## False-done audit
-
-Date: 2026-05-06
-
-Classification: truly-done.
-
-Audit result: retained in `issues/done/`. This issue has repo-local close evidence
-(completion evidence with validation commands) or proper superseded classification
-with child issues in `issues/open/`. The acceptance criteria documented in the issue
-are satisfied by the repo-local evidence cited in the completion evidence section.
-
-Future-work tracking: no untracked future-work item was identified in this issue
-during this metadata/evidence audit.
-
+- none

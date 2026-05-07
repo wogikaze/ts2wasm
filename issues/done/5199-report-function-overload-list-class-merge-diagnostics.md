@@ -169,11 +169,12 @@ Follow-up issues:
 
 ## Notes
 
-Related bucket `issues/open/769-implement-augmentedTypesFunction.md` also shows
-TypeScript class/function merge diagnostics, but it is currently blocked on an
-earlier parser-syntax failure in a different reference file. This issue owns the
-already-parsed `callOverloads3.ts` and `callOverloads4.ts` duplicate-function
-blocker.
+Related bucket `issues/done/769-implement-augmentedTypesFunction.md` also shows
+TypeScript class/function merge diagnostics after its first function/var
+duplicate-identifier blocker is removed. Issue
+`issues/open/5307-report-var-function-duplicate-identifier-diagnostics.md`
+owns that first blocker. This issue owns the already-parsed `callOverloads3.ts`
+and `callOverloads4.ts` duplicate-function blocker.
 
 ## Completion evidence
 

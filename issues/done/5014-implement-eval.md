@@ -126,7 +126,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/open/1170-implement-class.md` - Implement Class (same feature label, same group key, title overlap)
+- `issues/done/1170-implement-class.md` - Implement Class (same feature label, same group key, title overlap; split to issue 5246)
 - `issues/done/128-implement-aliasUsedAsNameValue.md` - Implement Aliasusedasnamevalue (same feature label, same group key, title overlap)
 - `issues/done/132-implement-allowJsClassThisTypeCrash.md` - Implement Allowjsclassthistypecrash (same feature label, same group key, title overlap)
 - `issues/open/1988-implement-discriminantUsingEvaluatableTemplateExpression.md` - Implement Discriminantusingevaluatabletemplateexpression (same feature label, same group key, title overlap)
@@ -225,19 +225,19 @@ Duplicate candidates:
   },
   {
     "state": "open",
-    "path": "issues/open/1432-implement-conflictMarkerDiff-unknown-unsupported.md",
+    "path": "issues/done/1432-implement-conflictMarkerDiff-unknown-unsupported.md",
     "title": "Implement Conflictmarkerdiff Unknown Unsupported",
     "reason": "same feature label, title overlap"
   },
   {
     "state": "open",
-    "path": "issues/open/1434-implement-conflictMarkerTrivia-unknown-unsupported.md",
+    "path": "issues/done/1434-implement-conflictMarkerTrivia-unknown-unsupported.md",
     "title": "Implement Conflictmarkertrivia Unknown Unsupported",
     "reason": "same feature label, title overlap"
   },
   {
     "state": "open",
-    "path": "issues/open/1444-implement-constDeclarations-unknown-unsupported.md",
+    "path": "issues/done/1444-implement-constDeclarations-unknown-unsupported.md",
     "title": "Implement Constdeclarations Unknown Unsupported",
     "reason": "same feature label, title overlap"
   },

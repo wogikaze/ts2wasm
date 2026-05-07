@@ -118,7 +118,7 @@ Follow-up issues:
 
 - `issues/done/148-implement-ambientExportDefaultErrors.md` - Implement Ambientexportdefaulterrors (same reference path, same group key, title overlap)
 - `issues/done/523-implement-ambientExportDefaultErrors.md` - Implement Ambientexportdefaulterrors (same reference path, same feature label, same group key, title overlap)
-- `issues/open/548-implement-ExportAssignment.md` - Implement Exportassignment (same feature label, same group key, title overlap)
+- `issues/done/548-implement-ExportAssignment.md` - Implement Exportassignment (same feature label, same group key, title overlap)
 - `issues/open/609-implement-ambientExportDefaultErrors.md` - Implement Ambientexportdefaulterrors (same reference path, same feature label, same group key, title overlap)
 
 ## Smart triage

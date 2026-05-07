@@ -81,6 +81,28 @@ Compiler evidence:
 - AST fails because class heritage parsing consumes past the class body and expects a later `{`.
 - TypeScript oracle accepts the nested heritage syntax; its only diagnostic is unrelated TS2564 for `Wrapper.property`.
 
+Additional folded representative:
+
+```sh
+python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/classExtendsInterfaceInModule.ts
+```
+
+```ts
+class C2<T> extends M.I2<T> {}
+```
+
+Current diagnostic:
+
+```text
+UnsupportedSyntax: expected LeftBrace, got Some(Ident("namespace"))
+```
+
+Compiler evidence:
+
+- Tokens include `class C2`, `<T>`, `extends`, qualified name `M.I2`, type argument `<T>`, `{}`, followed by `namespace Mod`.
+- AST fails at the following namespace because class heritage parsing consumes the type-argument tokens as runtime expression syntax.
+- TypeScript oracle accepts the syntax and reports later TS2689 class-extends-interface diagnostics.
+
 ## Desired final state
 
 The parser erases TypeScript type arguments in class heritage expressions before class body parsing. The representative case should advance past parser syntax and either compile further or report the next semantic/runtime diagnostic.
@@ -89,10 +111,10 @@ The parser erases TypeScript type arguments in class heritage expressions before
 
 In scope:
 
-- [x] Parse or skip TypeScript type-argument lists in `extends` heritage expressions such as `extends Class3<T>` and nested `extends CBaseBase<Wrapper<T2>>`.
-- [x] Preserve existing parsing for plain runtime heritage expressions such as `extends Base` and `extends mixin(Base)`.
-- [x] Add focused parser regressions for `class Class4<T> extends Class3<T> {}` and a nested `RightShift` generic heritage clause.
-- [x] Re-run the exact `baseTypeOrderChecking.ts` triage and record the new diagnostic if a downstream blocker remains.
+- [ ] Parse or skip TypeScript type-argument lists in `extends` heritage expressions such as `extends Class3<T>`, nested `extends CBaseBase<Wrapper<T2>>`, and qualified `extends M.I2<T>`.
+- [ ] Preserve existing parsing for plain runtime heritage expressions such as `extends Base` and `extends mixin(Base)`.
+- [ ] Add focused parser regressions for `class Class4<T> extends Class3<T> {}` and a nested `RightShift` generic heritage clause.
+- [ ] Re-run the exact `baseTypeOrderChecking.ts` triage and record the new diagnostic if a downstream blocker remains.
 
 Out of scope:
 
@@ -115,12 +137,12 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [x] `class Class4<T> extends Class3<T> {}` parses without treating `<T>` as runtime comparison syntax.
-- [x] `class CBase<T> extends CBaseBase<Wrapper<T>> {}` parses without consuming `>>` as runtime right-shift syntax.
-- [x] `python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/baseTypeOrderChecking.ts` no longer reports `UnsupportedSyntax: expected LeftBrace, got None`.
-- [x] `python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/baseTypeWrappingInstantiationChain.ts` no longer reports `UnsupportedSyntax: expected LeftBrace, got Some(Class)`.
-- [x] A parser test or fixture covers a generic class declaration with a generic heritage clause.
-- [x] Existing class heritage expression tests continue to pass.
+- [ ] `class Class4<T> extends Class3<T> {}` parses without treating `<T>` as runtime comparison syntax.
+- [ ] `class CBase<T> extends CBaseBase<Wrapper<T>> {}` parses without consuming `>>` as runtime right-shift syntax.
+- [ ] `python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/baseTypeOrderChecking.ts` no longer reports `UnsupportedSyntax: expected LeftBrace, got None`.
+- [ ] `python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/baseTypeWrappingInstantiationChain.ts` no longer reports `UnsupportedSyntax: expected LeftBrace, got Some(Class)`.
+- [ ] A parser test or fixture covers a generic class declaration with a generic heritage clause.
+- [ ] Existing class heritage expression tests continue to pass.
 
 ## Validation
 
@@ -146,57 +168,38 @@ Not run:
 
 Final-state docs:
 
-- [x] not affected
+- [ ] not affected
 
 Current state:
 
-- [x] not affected
+- [ ] not affected
 
 Follow-up issues:
 
-- [x] none
+- [ ] none
 
 ## Notes
 
 `class_statement` already calls `consume_typescript_generic_parameter_list()` after the class name. The missing boundary is the `class_extends()` path, which currently delegates directly to expression parsing.
 
+Also owns the matching qualified generic heritage parser blocker folded from `issues/done/1202-implement-classExtendsInterfaceInModule.md`.
+
 ## Completion evidence
+
+Fill only when moving to `done/`.
 
 Commits:
 
-- Already implemented in existing codebase (`class_extends` skips TypeScript generic heritage arguments)
+- `...`
 
 Validation result:
 
 ```text
-command: cargo nextest run -p ts2wasm-frontend generic_class
-result: pass
-date: 2026-05-06
-
-command: python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/baseTypeOrderChecking.ts
-result: no longer reports `expected LeftBrace, got None`
-date: 2026-05-06
-
-command: python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/baseTypeWrappingInstantiationChain.ts
-result: no longer reports `expected LeftBrace, got Some(Class)`
-date: 2026-05-06
+command:
+result:
+date:
 ```
 
 Remaining risks:
 
 - none
-
-## False-done audit
-
-Date: 2026-05-06
-
-Classification: truly-done.
-
-Audit result: retained in `issues/done/`. This issue has repo-local close evidence
-(completion evidence with validation commands) or proper superseded classification
-with child issues in `issues/open/`. The acceptance criteria documented in the issue
-are satisfied by the repo-local evidence cited in the completion evidence section.
-
-Future-work tracking: no untracked future-work item was identified in this issue
-during this metadata/evidence audit.
-

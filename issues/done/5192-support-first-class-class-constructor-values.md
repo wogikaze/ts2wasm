@@ -24,7 +24,7 @@ declarations, but name resolution still rejects `MenuWorkbenchToolBar` when it i
 used as a value argument. TypeScript accepts this pattern because class
 declarations are both types and constructor values.
 
-Problem: class constructor bindings used as expression values still fail with `issue-5011`, blocking reference cases that pass constructors to helper functions.
+Problem: class constructor bindings used as expression values still fail with `issue-5011`, blocking reference cases that pass constructors to helper functions or cast/access class constructor values.
 
 ## Current failure
 
@@ -64,6 +64,44 @@ resolved: issue-5011 at identifier MenuWorkbenchToolBar
 TypeScript oracle: ok, diagnostics: []
 ```
 
+Additional generated bucket evidence:
+
+```sh
+mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/castParentheses.ts
+```
+
+Current diagnostic:
+
+```text
+error: [UnsupportedSyntax] issue-5011: class `a` cannot be used as a value — class runtime is not yet supported at 73..74
+```
+
+Source context:
+
+```ts
+class a {
+    static b: any;
+}
+
+var b = (<any>a);
+var b = (<any>a).b;
+var b = (<any>a.b).c;
+var b = (<any>a.b()).c;
+var b = (<any>new a);
+var b = (<any>new a.b);
+var b = (<any>new a).b
+```
+
+Parser evidence:
+
+```text
+ast: ok
+top-level class: ClassDecl { name: "a" }
+failing expression: Let b = Ident("a") from `(<any>a)`
+resolved: issue-5011 at identifier `a`
+TypeScript oracle: ok, diagnostics: []
+```
+
 ## Desired final state
 
 Class constructor bindings can be represented as first-class runtime values where
@@ -75,10 +113,10 @@ fails with `issue-5011`.
 
 In scope:
 
-- [x] Represent a class constructor binding as a value in lowered IR/runtime data
-- [x] Preserve existing direct `new C()` and method-call class behavior
-- [x] Support passing a class constructor value as an argument to a function
-- [x] Add a focused fixture covering `createInstance(C, args)` or an equivalent constructor factory
+- [ ] Represent a class constructor binding as a value in lowered IR/runtime data
+- [ ] Preserve existing direct `new C()` and method-call class behavior
+- [ ] Support passing a class constructor value as an argument to a function
+- [ ] Add a focused fixture covering `createInstance(C, args)` or an equivalent constructor factory
 
 Out of scope:
 
@@ -102,10 +140,11 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [x] `cachedContextualTypes.ts` no longer reports `issue-5011` for `MenuWorkbenchToolBar`
-- [x] A focused fixture passes for a class constructor value passed to a helper and used to construct an instance
-- [x] Existing direct class fixtures, including `new C()` and static method calls, still pass
-- [x] Unsupported class-value cases that remain out of scope keep a source-spanned diagnostic
+- [ ] `cachedContextualTypes.ts` no longer reports `issue-5011` for `MenuWorkbenchToolBar`
+- [ ] `castParentheses.ts` no longer reports `issue-5011` for the first class constructor value use `(<any>a)`
+- [ ] A focused fixture passes for a class constructor value passed to a helper and used to construct an instance
+- [ ] Existing direct class fixtures, including `new C()` and static method calls, still pass
+- [ ] Unsupported class-value cases that remain out of scope keep a source-spanned diagnostic
 
 ## Validation
 
@@ -131,15 +170,15 @@ Not run:
 
 Final-state docs:
 
-- [x] not affected
+- [ ] not affected
 
 Current state:
 
-- [x] not affected
+- [ ] not affected
 
 Follow-up issues:
 
-- [x] none
+- [ ] none
 
 ## Notes
 
@@ -167,12 +206,3 @@ date:
 Remaining risks:
 
 - none
-
-## False-done audit
-
-Date: 2026-05-06
-
-Classification: truly-done.
-
-Audit result: retained in issues/done/. Implementation commits confirmed.
-Future-work tracking: none identified.

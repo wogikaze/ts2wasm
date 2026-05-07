@@ -8,7 +8,7 @@ priority: P1
 depends_on: []
 blocks: []
 created: 2026-05-06
-updated: 2026-05-06
+updated: 2026-05-07
 ---
 
 ## Summary
@@ -99,20 +99,20 @@ implementation names, or missing implementations.
 
 In scope:
 
-- [x] Distinguish bodyless top-level function overload signatures from
+- [ ] Distinguish bodyless top-level function overload signatures from
   implemented function declarations
-- [x] Accept a bodyless overload signature immediately followed by one
+- [ ] Accept a bodyless overload signature immediately followed by one
   implementation for the same name
-- [x] Accept multiple bodyless overload signatures immediately followed by one
+- [ ] Accept multiple bodyless overload signatures immediately followed by one
   implementation for the same name
-- [x] Preserve/report duplicate implementation diagnostics for multiple
+- [ ] Preserve/report duplicate implementation diagnostics for multiple
   function bodies with the same name
-- [x] Report a source-spanned missing-implementation diagnostic for a bodyless
+- [ ] Report a source-spanned missing-implementation diagnostic for a bodyless
   overload declaration with no following implementation
 
 Out of scope:
 
-- Class/function merge diagnostics, tracked by `issues/done/5199-report-function-overload-list-class-merge-diagnostics.md`
+- Class/function merge diagnostics, tracked by `issues/open/5199-report-function-overload-list-class-merge-diagnostics.md`
 - Ambient declaration merging
 - Full overload compatibility checking between signatures and implementation
   body types
@@ -133,21 +133,24 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [x] `callOverloads1.ts` no longer reports `DuplicateFunction` for the valid
+- [ ] `callOverloads1.ts` no longer reports `DuplicateFunction` for the valid
   `F1` overload signature plus implementation
-- [x] `callOverloads2.ts` reports a narrower duplicate implementation
+- [ ] `callOverloads2.ts` reports a narrower duplicate implementation
   diagnostic for the two implemented `F1` declarations
-- [x] `callbackArgsDifferByOptionality.ts` no longer reports
+- [ ] `callbackArgsDifferByOptionality.ts` no longer reports
   `DuplicateFunction` for the valid `x3` overload signatures plus
   implementation
-- [x] A focused fixture covers one bodyless overload signature followed by one
+- [ ] `contextualTypingOfLambdaReturnExpression.ts` no longer reports
+  `DuplicateLocal` for the valid `callb` overload signatures plus
+  implementation
+- [ ] A focused fixture covers one bodyless overload signature followed by one
   implementation for the same name
-- [x] A focused fixture covers two bodyless overload signatures followed by one
+- [ ] A focused fixture covers two bodyless overload signatures followed by one
   implementation, including a function-typed callback parameter with an
   optional string-literal parameter
-- [x] A focused fixture covers two implemented function declarations with the
+- [ ] A focused fixture covers two implemented function declarations with the
   same name and preserves a duplicate implementation diagnostic
-- [x] A focused fixture covers one bodyless overload signature with no
+- [ ] A focused fixture covers one bodyless overload signature with no
   implementation and reports a missing implementation diagnostic
 
 ## Validation
@@ -165,6 +168,7 @@ Impacted commands:
 mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/callOverloads1.ts
 mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/callOverloads2.ts
 mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/callbackArgsDifferByOptionality.ts
+python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/contextualTypingOfLambdaReturnExpression.ts
 ```
 
 Not run:
@@ -175,21 +179,30 @@ Not run:
 
 Final-state docs:
 
-- [x] not affected
+- [ ] not affected
 
 Current state:
 
-- [x] not affected
+- [ ] not affected
 
 Follow-up issues:
 
-- [x] none
+- [ ] none
 
 ## Notes
 
 This issue only handles top-level function overload implementation grouping.
 The `Foo` class/function merge errors in the same reference files are owned by
 issue 5199.
+
+2026-05-07 additional superseded bucket:
+
+- `issues/done/1527-implement-contextualTypingOfLambdaReturnExpression.md`
+  reaches the same top-level overload grouping boundary. The source has two
+  bodyless `callb(lam: ...)` overload signatures followed by one implementation
+  `function callb(a) { }`; resolver reports
+  `DuplicateLocal: duplicate local variable: callb at 82..90` before TypeScript's
+  intended lambda contextual member diagnostics on `a.length`.
 
 ## Completion evidence
 
@@ -210,12 +223,3 @@ date:
 Remaining risks:
 
 - none
-
-
-## False-done audit
-
-Date: 2026-05-07
-
-Classification: truly-done.
-
-Audit result: retained in issues/done/. Implementation commits confirmed.

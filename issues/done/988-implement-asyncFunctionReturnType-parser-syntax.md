@@ -123,9 +123,9 @@ Follow-up issues:
 - `issues/open/734-implement-assignmentCompatability-parser-syntax.md` - Implement Assignmentcompatability Parser Syntax (same feature label, title overlap)
 - `issues/open/753-implement-asyncFunctionReturnType-parser-syntax.md` - Implement Asyncfunctionreturntype Parser Syntax (same reference path, same feature label, same group key, title overlap)
 - `issues/open/761-implement-asyncIteratorExtraParameters.md` - Implement Asynciteratorextraparameters (same feature label, same group key, title overlap)
-- `issues/open/762-implement-asyncYieldStarContextualType.md` - Implement Asyncyieldstarcontextualtype (same feature label, same group key, title overlap)
-- `issues/open/765-implement-augmentedTypesClass.md` - Implement Augmentedtypesclass (same feature label, same group key, title overlap)
-- `issues/open/767-implement-augmentedTypesEnum-parser-syntax.md` - Implement Augmentedtypesenum Parser Syntax (same feature label, same group key, title overlap)
+- `issues/done/762-implement-asyncYieldStarContextualType.md` - Implement Asyncyieldstarcontextualtype (same feature label, same group key, title overlap)
+- `issues/done/765-implement-augmentedTypesClass.md` - Implement Augmentedtypesclass (same feature label, same group key, title overlap)
+- `issues/done/767-implement-augmentedTypesEnum-parser-syntax.md` - Implement Augmentedtypesenum Parser Syntax (same feature label, same group key, title overlap)
 
 ## Smart triage
 

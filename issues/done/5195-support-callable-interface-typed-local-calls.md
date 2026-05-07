@@ -8,7 +8,7 @@ priority: P1
 depends_on: []
 blocks: []
 created: 2026-05-06
-updated: 2026-05-06
+updated: 2026-05-07
 ---
 
 ## Summary
@@ -30,6 +30,12 @@ Additional representative
 `issue-211` boundary before TypeScript's call-signature specialization can
 reject the boolean argument.
 
+Additional representative `contextualTypingOfTooShortOverloads.ts` now reaches
+the dedicated `issue-5195` boundary for `var use: Overload; use(...)`, where
+`Overload` is an interface with multiple call signatures. TypeScript reports
+TS2454 definite-assignment diagnostics before any unsupported function
+resolution boundary.
+
 Problem: callable interface-typed locals currently lower to `Undefined` values and calls to them stop with `issue-211`.
 
 ## Current failure
@@ -37,12 +43,14 @@ Problem: callable interface-typed locals currently lower to `Undefined` values a
 ```sh
 mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/callExpressionWithTypeParameterConstrainedToOuterTypeParameter.ts
 mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/callSignaturesShouldBeResolvedBeforeSpecialization.ts
+mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/contextualTypingOfTooShortOverloads.ts
 ```
 
 Current diagnostic:
 
 ```text
 error: [UnsupportedSyntax] issue-211: function-valued local calls such as extracted method `i(...)` are not supported; call receiver.method(...) directly at 92..97
+error: [UnsupportedTypeScriptSyntax] issue-5195: callable interface-typed local `use` is not callable — the variable is never assigned at 96..117
 ```
 
 Source:
@@ -65,6 +73,9 @@ Triage evidence:
   and `test(true)`.
 - TypeScript oracle reports TS2345 for `test(true)` after resolving the
   callable interface signature against `I1<string>`.
+- For `contextualTypingOfTooShortOverloads.ts`, AST succeeds with
+  `Let use = Undefined`, `Call(Ident use, ArrowFn req,res)`, and later
+  `app.use(...)`; TypeScript oracle reports TS2454 for `use` and `app`.
 
 ## Desired final state
 
@@ -77,11 +88,11 @@ the callable-local path when the value is initialized.
 
 In scope:
 
-- [x] Preserve enough callable interface metadata for local variables with call signatures
-- [x] Detect calls to uninitialized callable interface locals before generic lowering rejection
-- [x] Specialize generic callable interface signatures before classifying local
+- [ ] Preserve enough callable interface metadata for local variables with call signatures
+- [ ] Detect calls to uninitialized callable interface locals before generic lowering rejection
+- [ ] Specialize generic callable interface signatures before classifying local
   calls
-- [x] Keep existing unsupported diagnostics for arbitrary extracted method calls
+- [ ] Keep existing unsupported diagnostics for arbitrary extracted method calls
 
 Out of scope:
 
@@ -105,15 +116,18 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [x] `callExpressionWithTypeParameterConstrainedToOuterTypeParameter.ts` no longer reports the generic `issue-211` extracted-method diagnostic for `i("")`
-- [x] `callSignaturesShouldBeResolvedBeforeSpecialization.ts` no longer reports
+- [ ] `callExpressionWithTypeParameterConstrainedToOuterTypeParameter.ts` no longer reports the generic `issue-211` extracted-method diagnostic for `i("")`
+- [ ] `callSignaturesShouldBeResolvedBeforeSpecialization.ts` no longer reports
   the generic `issue-211` extracted-method diagnostic for `test(...)`
-- [x] A focused fixture covers calling an uninitialized callable interface local and reports a source-spanned diagnostic at `i`
-- [x] A focused fixture covers `interface I1<T> { (value: T): void; field1:
+- [ ] `contextualTypingOfTooShortOverloads.ts` no longer reports
+  `issue-5195` or an unspanned `UnresolvedFunction` for the local `use(...)`
+  call
+- [ ] A focused fixture covers calling an uninitialized callable interface local and reports a source-spanned diagnostic at `i`
+- [ ] A focused fixture covers `interface I1<T> { (value: T): void; field1:
   I1<boolean>; }` with a local `I1<string>` call, and the boolean argument path
   reaches a type diagnostic instead of unsupported lowering
-- [x] Existing issue-211 extracted method fixtures continue to report unsupported diagnostics
-- [x] Valid direct function declarations and arrow/function variable calls keep passing
+- [ ] Existing issue-211 extracted method fixtures continue to report unsupported diagnostics
+- [ ] Valid direct function declarations and arrow/function variable calls keep passing
 
 ## Validation
 
@@ -129,6 +143,7 @@ Impacted commands:
 ```sh
 mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/callExpressionWithTypeParameterConstrainedToOuterTypeParameter.ts
 mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/callSignaturesShouldBeResolvedBeforeSpecialization.ts
+mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/contextualTypingOfTooShortOverloads.ts
 ```
 
 Not run:
@@ -139,15 +154,15 @@ Not run:
 
 Final-state docs:
 
-- [x] not affected
+- [ ] not affected
 
 Current state:
 
-- [x] not affected
+- [ ] not affected
 
 Follow-up issues:
 
-- [x] none
+- [ ] none
 
 ## Notes
 
@@ -174,12 +189,3 @@ date:
 Remaining risks:
 
 - none
-
-
-## False-done audit
-
-Date: 2026-05-07
-
-Classification: truly-done.
-
-Audit result: retained in issues/done/. Implementation commits confirmed.

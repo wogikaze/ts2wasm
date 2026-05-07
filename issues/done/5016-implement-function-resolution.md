@@ -284,19 +284,19 @@ Duplicate candidates:
   },
   {
     "state": "open",
-    "path": "issues/open/1432-implement-conflictMarkerDiff-unknown-unsupported.md",
+    "path": "issues/done/1432-implement-conflictMarkerDiff-unknown-unsupported.md",
     "title": "Implement Conflictmarkerdiff Unknown Unsupported",
     "reason": "same feature label, title overlap"
   },
   {
     "state": "open",
-    "path": "issues/open/1434-implement-conflictMarkerTrivia-unknown-unsupported.md",
+    "path": "issues/done/1434-implement-conflictMarkerTrivia-unknown-unsupported.md",
     "title": "Implement Conflictmarkertrivia Unknown Unsupported",
     "reason": "same feature label, title overlap"
   },
   {
     "state": "open",
-    "path": "issues/open/1444-implement-constDeclarations-unknown-unsupported.md",
+    "path": "issues/done/1444-implement-constDeclarations-unknown-unsupported.md",
     "title": "Implement Constdeclarations Unknown Unsupported",
     "reason": "same feature label, title overlap"
   },

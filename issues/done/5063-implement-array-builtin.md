@@ -126,7 +126,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/open/1170-implement-class.md` - Implement Class (same feature label, same group key, title overlap)
+- `issues/done/1170-implement-class.md` - Implement Class (same feature label, same group key, title overlap; split to issue 5246)
 - `issues/open/2410-implement-for.md` - Implement For (same feature label, same group key, title overlap)
 - `issues/open/313-implement-array-builtin.md` - Implement array-builtin support (same feature label, same group key, title overlap)
 - `issues/open/3198-implement-m.md` - Implement M (same feature label, same group key, title overlap)
