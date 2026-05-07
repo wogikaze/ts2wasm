@@ -168,6 +168,13 @@ Additional superseded bucket:
   `UnresolvedName: unresolved name: \`v1\` at 204..206` for `var y = v1.x.a;`;
   TypeScript parses the declarations and later reports TS2344 because `B` does
   not satisfy the generic constraint `A`.
+- `issues/done/1508-implement-contextualTypeBasedOnIntersectionWithAnyInTheMix-unknown-unsupported.md`
+  first hit an interface generic-default parser-erasure bug. After that parser
+  boundary was fixed, fresh triage reports
+  `UnresolvedName: unresolved name: \`styled\` at 806..812` for
+  `declare const styled: StyledInterface; export const StyledSelect = styled(Flex).attrs(...)`.
+  This is the same ambient `declare const` value reference boundary covered by
+  this issue.
 
 ## Completion evidence
 

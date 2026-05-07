@@ -70,6 +70,7 @@ impl Parser {
                 });
             }
         }
+        self.consume_typescript_generic_parameter_list()?;
         while !self.is_at_end() && !matches!(self.peek(), Some(Token::LeftBrace)) {
             self.advance();
         }

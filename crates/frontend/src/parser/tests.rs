@@ -79,6 +79,26 @@ mod tests {
     }
 
     #[test]
+    fn parses_typescript_interface_generic_defaults_as_erased_syntax() {
+        let source = r#"
+            type ComponentType<P> = (p: P) => any;
+            interface StyledFunction<
+                C extends ComponentType<any>,
+                O extends object = {},
+                A extends keyof any = never,
+            > {
+                attrs<U, NewA extends Partial<U> = {}>(
+                    attrs: NewA,
+                ): StyledFunction<C, O & NewA, A | keyof NewA>;
+            }
+            let done = 1;
+        "#;
+        let program = parse_program(source).unwrap();
+        assert_eq!(program.len(), 1);
+        assert!(matches!(program[0], Stmt::Let { ref name, .. } if name == "done"));
+    }
+
+    #[test]
     fn parses_top_level_block_by_flattening_statements() {
         let program = parse_program("{ let x = 1; } let y = 2;").unwrap();
         assert_eq!(program.len(), 2);
