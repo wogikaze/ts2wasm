@@ -1717,11 +1717,21 @@ fn class_static_block_unsupported_forms_report_issue_254() {
 }
 
 #[test]
-fn class_value_unsupported_reports_issue_5011() {
-    assert_build_fails_with_unsupported_syntax(
-        "fixtures/core-semantics/class-value-unsupported.ts",
-        "issue-5011:",
-    );
+fn class_value_unsupported_builds_successfully() {
+    // issue-5011 (class used as value) was implemented — build now succeeds
+    let fixture = "fixtures/core-semantics/class-value-unsupported.ts";
+    let fixture_path = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("../../")
+        .join(fixture);
+    let output = temp_wasm_path(fixture);
+    let build = std::process::Command::new(env!("CARGO_BIN_EXE_ts2wasm"))
+        .arg("build")
+        .arg(&fixture_path)
+        .arg("-o")
+        .arg(&output)
+        .output()
+        .unwrap();
+    assert!(build.status.success(), "build failed for {fixture}");
 }
 
 #[test]
