@@ -3,12 +3,12 @@ id: 1507
 title: "Implement Contextualtypebasedonintersectionwithanyinthemix Name Resolution"
 type: spike
 area: frontend/resolver
-class: blocked
+class: done
 priority: P1
-depends_on: [5005]
+depends_on: []
 blocks: []
 created: 2026-05-01
-updated: 2026-05-01
+updated: 2026-05-07
 ---
 
 ## Summary
@@ -43,10 +43,10 @@ This generated bucket is either split into implementation-ready child issues or 
 
 In scope:
 
-- [ ] Inspect the smart triage report below
-- [ ] Confirm whether existing open/done issues already cover this bucket
-- [ ] Split one feature family, one observable behavior, or one fixed reference window into child issues
-- [ ] Preserve exact reproduction commands and representative AST/diagnostic evidence in each child issue
+- [x] Inspect the smart triage report below
+- [x] Confirm whether existing open/done issues already cover this bucket
+- [x] Close as stale because all affected paths now build-pass
+- [x] Preserve exact reproduction commands and representative AST/diagnostic evidence
 
 Out of scope:
 
@@ -68,10 +68,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] Duplicate candidates below are confirmed as no-match or this issue is superseded
-- [ ] At least one child issue contains an exact `mise run reference-triage -- ...` command
-- [ ] Child issue includes failing path, diagnostic code, source context, visible symbols, and parser/TypeScript AST evidence
-- [ ] Child issue acceptance names the exact fixture/reference path and diagnostic/stdout change
+- [x] Duplicate candidates below are confirmed; no child issue is needed
+- [x] No child issue created because the compiler now reports build_pass for all affected paths
+- [x] This issue includes affected paths, diagnostic status, source context, visible symbols, and parser/TypeScript evidence
+- [x] Completion evidence names the exact reference paths and build-pass results
 
 ## Validation
 
@@ -98,15 +98,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] updated: `current-state.md` (repo root)
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] none; current compiler build has no name-resolution blocker on these paths
 
 ## Notes
 
@@ -129,7 +129,14 @@ Follow-up issues:
 
 ## Smart triage
 
-Not generated. Rerun with `--triage-limit 1` or higher.
+Fresh coverage on 2026-05-07 shows the generated name-resolution bucket is stale:
+
+- `contextualTypeBasedOnIntersectionWithAnyInTheMix2.ts`: `build_pass=1`, `blocked=0`, `unsupported_diagcodes=[]`, `unsupported_features=[]`; `reference-triage` reports `BuildPass` and TypeScript oracle diagnostics `[]`.
+- `contextualTypeBasedOnIntersectionWithAnyInTheMix3.ts`: `build_pass=1`, `blocked=0`, `unsupported_diagcodes=[]`, `unsupported_features=[]`; `reference-triage` reports `BuildPass`. The TypeScript oracle still reports TS2322 for `const d`, which is semantic parity evidence rather than a ts2wasm build blocker.
+- `contextualTypeBasedOnIntersectionWithAnyInTheMix4.ts`: `build_pass=1`, `blocked=0`, `unsupported_diagcodes=[]`, `unsupported_features=[]`; `reference-triage` reports `BuildPass`. The TypeScript oracle still reports TS2322 string-literal assignability diagnostics, which are semantic parity evidence rather than a ts2wasm build blocker.
+- `contextualTypeBasedOnIntersectionWithAnyInTheMix5.ts`: `build_pass=1`, `blocked=0`, `unsupported_diagcodes=[]`, `unsupported_features=[]`; `reference-triage` reports `BuildPass` and TypeScript oracle diagnostics `[]`.
+
+No child issue is required for the original generated name-resolution blocker.
 
 ## Completion evidence
 
@@ -137,16 +144,32 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- `...`
+- pending
 
 Validation result:
 
 ```text
-command:
-result:
-date:
+command: env TS2WASM_BINARY=/tmp/ts2wasm-issue-blockers-target/debug/ts2wasm python scripts/manager.py reference-coverage tsc --path-filter <each affected contextualTypeBasedOnIntersectionWithAnyInTheMix*.ts> --detail --no-dashboard-data
+result: pass; all four affected files are build_pass with blocked=0 and empty unsupported diagnostics/features
+date: 2026-05-07
+
+command: env TS2WASM_BINARY=/tmp/ts2wasm-issue-blockers-target/debug/ts2wasm python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/contextualTypeBasedOnIntersectionWithAnyInTheMix2.ts
+result: pass; BuildPass; TypeScript oracle diagnostics=[]
+date: 2026-05-07
+
+command: env TS2WASM_BINARY=/tmp/ts2wasm-issue-blockers-target/debug/ts2wasm python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/contextualTypeBasedOnIntersectionWithAnyInTheMix3.ts
+result: pass; BuildPass; TypeScript oracle reports semantic TS2322 on const d
+date: 2026-05-07
+
+command: env TS2WASM_BINARY=/tmp/ts2wasm-issue-blockers-target/debug/ts2wasm python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/contextualTypeBasedOnIntersectionWithAnyInTheMix4.ts
+result: pass; BuildPass; TypeScript oracle reports semantic TS2322 string-literal assignability diagnostics
+date: 2026-05-07
+
+command: env TS2WASM_BINARY=/tmp/ts2wasm-issue-blockers-target/debug/ts2wasm python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/contextualTypeBasedOnIntersectionWithAnyInTheMix5.ts
+result: pass; BuildPass; TypeScript oracle diagnostics=[]
+date: 2026-05-07
 ```
 
 Remaining risks:
 
-- none
+- TypeScript semantic diagnostics in cases 3 and 4 remain outside this build-blocker cleanup because semantic parity is not the current gate.
