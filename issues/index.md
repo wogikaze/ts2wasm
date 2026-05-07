@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 7 | 6 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4578 | 3422 | 1156 |
+| frontend | 4579 | 3422 | 1157 |
 | harness | 1 | 0 | 1 |
 | ir | 79 | 57 | 22 |
 | issues | 4 | 0 | 4 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5239 | 3720 | 1519 |
+| total | 5240 | 3720 | 1520 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -357,6 +357,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5401 | Parse export default interface declarations | feature | frontend/parser | implementation-ready | P1 |  | `export default interface zzz { ... }` stops with `expected Semicolon` before the frontend can represent the interfac... |
 | 5402 | Skip package.json @Filename sections in reference harness | feature | compiler/multi-section | implementation-ready | P1 |  | reference-style `package.json` virtual sections are treated as module bodies instead of package metadata or non-code ... |
 | 5403 | Support type-only default exports of local interfaces | feature | frontend/name-resolution | implementation-ready | P1 |  | the resolver treats `export default Color;` as a value export |
+| 5405 | Bind require fs local method calls | feature | frontend/resolver | implementation-ready | P1 |  | `ambientRequireFunction.ts` currently reaches issue-211 unknown |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -435,7 +436,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 555 | Implement Abstractclassinlocalscopeisabstract | spike | frontend/resolver | class: blocked | Implement Abstractclassinlocalscopeisabstract |
 | 556 | Implement Abstractclassunioninstantiation | spike | frontend/resolver | class: blocked | Implement Abstractclassunioninstantiation |
 | 597 | Implement Allowjsclassthistypecrash | spike | reference/triage | class: triage-needed | Implement Allowjsclassthistypecrash |
-| 622 | Implement Ambientrequirefunction | spike | frontend/syntax | class: blocked | Implement Ambientrequirefunction |
 | 625 | Implement Ambiguouscallswherereturntypesagree | spike | frontend/syntax | class: triage-needed | Implement Ambiguouscallswherereturntypesagree |
 | 626 | Implement Ambiguousgenericassertion | spike | frontend/syntax | class: blocked | Implement Ambiguousgenericassertion |
 | 627 | Implement Ambiguousoverloadresolution | spike | frontend/resolver | class: blocked | Implement Ambiguousoverloadresolution |
@@ -4400,6 +4400,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 619 | Implement Ambientmodulewithtemplateliterals | spike | frontend/syntax | see `issues/done/619-implement-ambientModuleWithTemplateLiterals.md` |
 | 620 | Implement Ambientmodules | spike | frontend/syntax | see `issues/done/620-implement-ambientModules.md` |
 | 621 | Implement Ambientnamerestrictions (audit reopened #621) | spike | frontend/syntax | see `issues/done/621-implement-ambientNameRestrictions.md` |
+| 622 | Implement Ambientrequirefunction | spike | frontend/syntax | see `issues/done/622-implement-ambientRequireFunction.md` |
 | 623 | Implement Ambientstatement (audit reopened #623) | spike | frontend/syntax | see `issues/done/623-implement-ambientStatement.md` |
 | 624 | Implement Ambientwithstatements (audit reopened #624) | spike | frontend/syntax | see `issues/done/624-implement-ambientWithStatements.md` |
 | 638 | Implement Anonymousclassexpression (audit reopened #638) | spike | frontend/syntax | see `issues/done/638-implement-anonymousClassExpression.md` |

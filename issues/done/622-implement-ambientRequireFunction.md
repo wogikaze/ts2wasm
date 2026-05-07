@@ -3,12 +3,14 @@ id: 622
 title: "Implement Ambientrequirefunction"
 type: spike
 area: frontend/syntax
-class: blocked
+class: done
 priority: P1
-depends_on: [432]
+depends_on: []
 blocks: []
 created: 2026-05-01
-updated: 2026-05-01
+updated: 2026-05-08
+completed: 2026-05-08
+status: done
 ---
 
 ## Summary
@@ -17,9 +19,12 @@ Triage ambientRequireFunction across 1 failing reference test cases and split th
 
 ## Problem
 
-Reference test results show 1 cases fail in directory `ambientRequireFunction` with diagnostics: import-export. The compiler cannot handle these syntax/semantics, preventing compilation of code in this category.
+Fresh reference evidence shows this bucket now reaches a `require("fs")` local
+alias builtin receiver blocker.
 
-Problem: ambientRequireFunction has 1 reference failures and needs smart-triage evidence before implementation starts.
+Problem: this generated import/export bucket is not a standalone
+implementation order; its current blocker is issue-211 unknown receiver class
+for `fs.readFileSync(...)`.
 
 ## Current failure
 
@@ -37,16 +42,18 @@ mise run reference-coverage -- tsc --path-filter reference/typescript/tests/case
 
 ## Desired final state
 
-This generated bucket is either split into implementation-ready child issues or superseded by an existing open/done issue with matching evidence. Do not implement directly from this bucket.
+This generated bucket was split to
+`issues/open/5405-bind-require-fs-local-method-calls.md`. Do not implement
+directly from this bucket.
 
 ## Scope
 
 In scope:
 
-- [ ] Inspect the smart triage report below
-- [ ] Confirm whether existing open/done issues already cover this bucket
-- [ ] Split one feature family, one observable behavior, or one fixed reference window into child issues
-- [ ] Preserve exact reproduction commands and representative AST/diagnostic evidence in each child issue
+- [x] Inspect the smart triage report below
+- [x] Confirm whether existing open/done issues already cover this bucket
+- [x] Split require("fs") local method-call binding to issue 5405
+- [x] Preserve exact reproduction commands and representative AST/diagnostic evidence in the child issue
 
 Out of scope:
 
@@ -68,18 +75,20 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] Duplicate candidates below are confirmed as no-match or this issue is superseded
-- [ ] At least one child issue contains an exact `mise run reference-triage -- ...` command
-- [ ] Child issue includes failing path, diagnostic code, source context, visible symbols, and parser/TypeScript AST evidence
-- [ ] Child issue acceptance names the exact fixture/reference path and diagnostic/stdout change
+- [x] Duplicate candidates below are confirmed as no-match or this issue is split
+- [x] Child issue contains an exact `python scripts/manager.py reference-triage ...` command
+- [x] Child issue includes failing path, diagnostic code, source context, visible symbols, and parser/TypeScript AST evidence
+- [x] Child issue acceptance names the exact fixture/reference path and diagnostic/stdout change
 
 ## Validation
 
 Required commands:
 
 ```sh
-cargo fmt --all --check
-cargo nextest run
+python scripts/manager.py update-issue-index --check
+python scripts/manager.py check-issue-health
+python scripts/manager.py check-issue-readiness -- --fail-ready-below 80
+git diff --check
 ```
 
 Impacted commands:
@@ -92,21 +101,22 @@ mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/ambie
 
 Not run:
 
-- none
+- `cargo fmt --all --check`; issue cleanup only, no Rust code changed
+- `cargo nextest run`; issue cleanup only, no implementation changed
 
 ## Docs / current-state / issue sync
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] updated: `current-state.md` (repo root)
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] created: `issues/open/5405-bind-require-fs-local-method-calls.md`
 
 ## Notes
 
@@ -120,6 +130,36 @@ Follow-up issues:
 - `issues/done/536-implement-ambientRequireFunction.md` - Implement Ambientrequirefunction (same reference path, same feature label, same group key, title overlap)
 
 ## Smart triage
+
+Fresh triage on 2026-05-08 shows this generated import/export bucket now
+reaches a lower builtin/method-call blocker:
+
+```text
+reference/typescript/tests/cases/compiler/ambientRequireFunction.ts: UnsupportedSyntax: ambient-declaration
+```
+
+Focused triage reports:
+
+```text
+issue-211: unknown receiver class for method `readFileSync`
+```
+
+Representative source context:
+
+```ts
+declare function require(moduleName: string): any;
+declare module "fs" {
+    export function readFileSync(s: string): string;
+}
+const fs = require("fs");
+const text = fs.readFileSync("/a/b/c");
+```
+
+The compiler tokenizes and parses the ambient declarations and runtime
+statements. The AST contains the `require("fs")` local and `fs.readFileSync`
+call, then lowering cannot classify the local `fs` receiver as a builtin module
+object. The specific work was split to
+`issues/open/5405-bind-require-fs-local-method-calls.md`.
 
 ### Smart triage: Triage import export: ambientRequireFunction
 
@@ -597,18 +637,48 @@ error: [UnsupportedModule] issue-400: ambient module declarations require module
 
 ## Completion evidence
 
-Fill only when moving to `done/`.
+Closed after splitting the current blocker to
+`issues/open/5405-bind-require-fs-local-method-calls.md`.
+
+Fresh coverage with the current binary:
+
+```text
+env TS2WASM_BINARY=/tmp/ts2wasm-issue-blockers-target/debug/ts2wasm python scripts/manager.py reference-coverage tsc --path-filter reference/typescript/tests/cases/compiler/ambientRequireFunction.ts --detail --no-dashboard-data
+suite=tsc
+executed=1
+unsupported=1
+unsupported_diagcodes=UnsupportedSyntax:1
+unsupported_features=ambient-declaration:1
+reference/typescript/tests/cases/compiler/ambientRequireFunction.ts: UnsupportedSyntax: ambient-declaration
+```
+
+Fresh triage:
+
+```text
+env TS2WASM_BINARY=/tmp/ts2wasm-issue-blockers-target/debug/ts2wasm python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/ambientRequireFunction.ts
+```
+
+Observed owner boundary:
+
+```text
+[pipeline] lower_program
+error: [UnsupportedSyntax] issue-211: unknown receiver class for method `readFileSync`
+```
 
 Commits:
 
-- `...`
+- split to `issues/open/5405-bind-require-fs-local-method-calls.md`
 
 Validation result:
 
 ```text
-command:
-result:
-date:
+command: env TS2WASM_BINARY=/tmp/ts2wasm-issue-blockers-target/debug/ts2wasm python scripts/manager.py reference-coverage tsc --path-filter reference/typescript/tests/cases/compiler/ambientRequireFunction.ts --detail --no-dashboard-data
+result: pass; executed=1, unsupported=1, unsupported_diagcodes=UnsupportedSyntax:1
+date: 2026-05-08
+
+command: env TS2WASM_BINARY=/tmp/ts2wasm-issue-blockers-target/debug/ts2wasm python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/ambientRequireFunction.ts
+result: pass; lowered dump reaches require("fs") local method-call blocker split to issue 5405
+date: 2026-05-08
 ```
 
 Remaining risks:
