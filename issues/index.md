@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 5 | 4 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4551 | 3501 | 1050 |
+| frontend | 4552 | 3501 | 1051 |
 | harness | 1 | 0 | 1 |
 | ir | 67 | 45 | 22 |
 | issues | 4 | 0 | 4 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5198 | 3794 | 1404 |
+| total | 5199 | 3794 | 1405 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -318,6 +318,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5361 | Report invalid constructor return value diagnostics | feature | frontend/semantics | implementation-ready | P2 |  | constructor return value semantic validation currently does not reject |
 | 5362 | Report strict-mode static constructor parameter name | bug | frontend/parser | implementation-ready | P1 |  | the compiler currently reports an unsupported parser failure, |
 | 5363 | Support class constructor outer local return captures | feature | ir | implementation-ready | P1 |  | class constructor bodies cannot currently resolve and lower direct |
+| 5364 | Report unterminated string literal at raw newline | bug | frontend/lexer | implementation-ready | P1 |  | Report unterminated string literal at raw newline |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -577,7 +578,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 759 | Implement Asynciife | spike | frontend/syntax | class: triage-needed | Implement Asynciife |
 | 760 | Implement Asyncimportnestedyield | spike | reference/triage | class: triage-needed | Implement Asyncimportnestedyield |
 | 761 | Implement Asynciteratorextraparameters | spike | runtime/builtins | class: triage-needed | Implement Asynciteratorextraparameters |
-| 1482 | Implement Constructorwithincompletetypeannotation | spike | frontend/syntax | class: triage-needed | Implement Constructorwithincompletetypeannotation |
 | 1483 | Implement Constructorwithparameterpropertiesandprivatefields | spike | frontend/syntax | class: blocked | Implement Constructorwithparameterpropertiesandprivatefields |
 | 1484 | Implement Constructorwithsuperandprologue | spike | frontend/syntax | class: blocked | Implement Constructorwithsuperandprologue |
 | 1485 | Implement Constructorswithspecializedsignatures | spike | frontend/syntax | class: triage-needed | Implement Constructorswithspecializedsignatures |
@@ -5154,6 +5154,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1479 | Implement Constructorstaticparamname | spike | frontend/syntax | see `issues/done/1479-implement-constructorStaticParamName.md` |
 | 1480 | Implement Constructorstaticparamnameerrors | spike | frontend/syntax | see `issues/done/1480-implement-constructorStaticParamNameErrors.md` |
 | 1481 | Implement Constructorwithcapturedsuper | spike | frontend/syntax | see `issues/done/1481-implement-constructorWithCapturedSuper.md` |
+| 1482 | Implement Constructorwithincompletetypeannotation | spike | frontend/syntax | see `issues/done/1482-implement-constructorWithIncompleteTypeAnnotation.md` |
 | 2050 | Implement Duplicatelocalvariable Duplicate Local | spike | reference/triage | see `issues/done/2050-implement-duplicateLocalVariable-duplicate-local.md` |
 | 3002 | Implement Isolateddeclarationerrorsdefault | spike | runtime/builtins | see `issues/done/3002-implement-isolatedDeclarationErrorsDefault.md` |
 | 3131 | Implement Jsxfactorynotidentifierorqualifiedname | spike | reference/triage | see `issues/done/3131-implement-jsxFactoryNotIdentifierOrQualifiedName.md` |

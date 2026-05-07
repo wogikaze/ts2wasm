@@ -3,12 +3,12 @@ id: 1482
 title: "Implement Constructorwithincompletetypeannotation"
 type: spike
 area: frontend/syntax
-class: triage-needed
+class: done
 priority: P1
 depends_on: []
 blocks: []
 created: 2026-05-01
-updated: 2026-05-01
+updated: 2026-05-07
 ---
 
 ## Summary
@@ -43,10 +43,10 @@ This generated bucket is either split into implementation-ready child issues or 
 
 In scope:
 
-- [ ] Inspect the smart triage report below
-- [ ] Confirm whether existing open/done issues already cover this bucket
-- [ ] Split one feature family, one observable behavior, or one fixed reference window into child issues
-- [ ] Preserve exact reproduction commands and representative AST/diagnostic evidence in each child issue
+- [x] Inspect the smart triage report below
+- [x] Confirm whether existing open/done issues already cover this bucket
+- [x] Split one feature family, one observable behavior, or one fixed reference window into child issues
+- [x] Preserve exact reproduction commands and representative AST/diagnostic evidence in each child issue
 
 Out of scope:
 
@@ -68,10 +68,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] Duplicate candidates below are confirmed as no-match or this issue is superseded
-- [ ] At least one child issue contains an exact `mise run reference-triage -- ...` command
-- [ ] Child issue includes failing path, diagnostic code, source context, visible symbols, and parser/TypeScript AST evidence
-- [ ] Child issue acceptance names the exact fixture/reference path and diagnostic/stdout change
+- [x] Duplicate candidates below are confirmed as no-match or this issue is superseded
+- [x] At least one child issue contains an exact `mise run reference-triage -- ...` command
+- [x] Child issue includes failing path, diagnostic code, source context, visible symbols, and parser/TypeScript AST evidence
+- [x] Child issue acceptance names the exact fixture/reference path and diagnostic/stdout change
 
 ## Validation
 
@@ -98,15 +98,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] updated: `current-state.md` (repo root)
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] split to `issues/open/5364-report-unterminated-string-literal-at-raw-newline.md`
 
 ## Notes
 
@@ -120,7 +120,27 @@ Follow-up issues:
 
 ## Smart triage
 
-Not generated. Rerun with `--triage-limit 1` or higher.
+Fresh triage on 2026-05-07 shows this generated bucket is stopped before the
+constructor declaration. The lexer rejects a raw newline inside a string literal
+in `retValue = bfs.OPERATOR ' );`, while TypeScript reports TS1002
+`Unterminated string literal`.
+
+Current diagnostic:
+
+```text
+error: [UnsupportedSyntax] raw newline in string literal is not allowed at 984..985
+```
+
+Source context:
+
+```text
+44 |                 retValue = bfs.OPERATOR ' );
+45 |                 if (retValue != 0) {
+46 |
+47 |                     return 1;
+```
+
+This bucket was split to `issues/open/5364-report-unterminated-string-literal-at-raw-newline.md`.
 
 ## Completion evidence
 
@@ -128,16 +148,21 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- `...`
+- `...` (filled by commit that moves this issue)
 
 Validation result:
 
 ```text
-command:
-result:
-date:
+command: python scripts/manager.py reference-coverage tsc --path-filter reference/typescript/tests/cases/compiler/constructorWithIncompleteTypeAnnotation.ts --detail --no-dashboard-data
+result: pass; executed=1, build_pass=0, unsupported=1, diagnostic UnsupportedSyntax
+date: 2026-05-07
+
+command: python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/constructorWithIncompleteTypeAnnotation.ts
+result: pass; reproduced raw-newline string literal blocker and split child issue 5364
+date: 2026-05-07
 ```
 
 Remaining risks:
 
-- none
+- Later malformed constructs in this intentionally broken reference file remain
+  hidden until issue 5364 advances past the first raw-newline string blocker.
