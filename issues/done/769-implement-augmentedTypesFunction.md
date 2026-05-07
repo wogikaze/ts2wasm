@@ -2,13 +2,15 @@
 id: 769
 title: "Implement Augmentedtypesfunction"
 type: spike
-area: frontend/syntax
-class: blocked
+area: frontend/resolver
+class: superseded
 priority: P1
-depends_on: [5000]
+depends_on: []
 blocks: []
 created: 2026-05-01
-updated: 2026-05-01
+updated: 2026-05-07
+completed: 2026-05-07
+status: done
 ---
 
 ## Summary
@@ -17,9 +19,13 @@ Triage augmentedTypesFunction across 1 failing reference test cases and split th
 
 ## Problem
 
-Reference test results show 1 cases fail in directory `augmentedTypesFunction` with diagnostics: parser-syntax. The compiler cannot handle these syntax/semantics, preventing compilation of code in this category.
+Closed this generated bucket as superseded by
+`issues/open/5307-report-var-function-duplicate-identifier-diagnostics.md`.
 
-Problem: augmentedTypesFunction has 1 reference failures and needs smart-triage evidence before implementation starts.
+Fresh triage shows the old parser-syntax blocker is stale. The current first
+blocker is a resolver duplicate-identifier boundary for `function y1() { }`
+followed by `var y1 = 1;`, which belongs with issue 5307's var/function
+duplicate diagnostic work.
 
 ## Current failure
 
@@ -37,16 +43,17 @@ mise run reference-coverage -- tsc --path-filter reference/typescript/tests/case
 
 ## Desired final state
 
-This generated bucket is either split into implementation-ready child issues or superseded by an existing open/done issue with matching evidence. Do not implement directly from this bucket.
+This generated bucket is closed. Implement from
+`issues/open/5307-report-var-function-duplicate-identifier-diagnostics.md`.
 
 ## Scope
 
 In scope:
 
-- [ ] Inspect the smart triage report below
-- [ ] Confirm whether existing open/done issues already cover this bucket
-- [ ] Split one feature family, one observable behavior, or one fixed reference window into child issues
-- [ ] Preserve exact reproduction commands and representative AST/diagnostic evidence in each child issue
+- [x] Inspect the smart triage report below
+- [x] Confirm whether existing open/done issues already cover this bucket
+- [x] Supersede this generated bucket with the existing implementation-ready issue
+- [x] Preserve exact reproduction commands and representative diagnostic evidence
 
 Out of scope:
 
@@ -68,45 +75,45 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] Duplicate candidates below are confirmed as no-match or this issue is superseded
-- [ ] At least one child issue contains an exact `mise run reference-triage -- ...` command
-- [ ] Child issue includes failing path, diagnostic code, source context, visible symbols, and parser/TypeScript AST evidence
-- [ ] Child issue acceptance names the exact fixture/reference path and diagnostic/stdout change
+- [x] Duplicate candidates below are confirmed and this issue is superseded
+- [x] Superseding issue 5307 contains the implementation scope
+- [x] Current triage evidence is recorded
+- [x] Superseding issue acceptance names the var/function diagnostic change
 
 ## Validation
 
 Required commands:
 
 ```sh
-cargo fmt --all --check
-cargo nextest run
+python scripts/manager.py update-issue-index --check
+python scripts/manager.py check-issue-health
+python scripts/manager.py check-issue-readiness -- --fail-ready-below 80
 ```
 
 Impacted commands:
 
 ```sh
-mise run reference-coverage -- tsc --limit 2
-mise run reference-coverage -- tsc --path-filter reference/typescript/tests/cases/compiler/augmentedTypesFunction.ts --detail
-mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/augmentedTypesFunction.ts
+env TS2WASM_BINARY=/tmp/ts2wasm-issue-blockers-target/debug/ts2wasm python scripts/manager.py reference-coverage tsc --path-filter reference/typescript/tests/cases/compiler/augmentedTypesFunction.ts --detail --no-dashboard-data
+env TS2WASM_BINARY=/tmp/ts2wasm-issue-blockers-target/debug/ts2wasm python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/augmentedTypesFunction.ts
 ```
 
 Not run:
 
-- none
+- cargo fmt / nextest not run for this metadata-only issue lifecycle closure
 
 ## Docs / current-state / issue sync
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] updated: `current-state.md` (repo root)
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] `issues/open/5307-report-var-function-duplicate-identifier-diagnostics.md`
 
 ## Notes
 
@@ -116,9 +123,81 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- none found by path/title/feature scan
+Superseded by `issues/open/5307-report-var-function-duplicate-identifier-diagnostics.md`.
 
-## Smart triage
+Evidence:
+
+- Current diagnostic: `DuplicateLocal`
+- Current message: top-level lexical binding `y1` conflicts with function
+  declaration at `70..81`
+- Current source:
+
+```text
+function y1() { } // error
+var y1 = 1; // error
+```
+
+- TypeScript oracle reports duplicate identifier TS2300 diagnostics at both
+  `y1` identifiers.
+- Related issue `issues/open/5199-report-function-overload-list-class-merge-diagnostics.md`
+  owns the later class/function merge diagnostics in this same reference file
+  family, but not this first function/var duplicate-identifier blocker.
+
+Current coverage:
+
+```text
+executed=1
+build_pass=0
+unsupported=1
+unsupported_diagcodes=DuplicateLocal:1
+unsupported_features=duplicate-local:1
+semantic_enabled=0
+reference/typescript/tests/cases/compiler/augmentedTypesFunction.ts: DuplicateLocal: duplicate-local
+```
+
+## Current smart triage
+
+### Smart triage: Triage duplicate local: augmentedTypesFunction
+
+- Issue class: `triage-needed`
+- Feature label: `duplicate-local`
+- Diagnostic: `DuplicateLocal` / `compiler-diagnostic`
+- Path: `reference/typescript/tests/cases/compiler/augmentedTypesFunction.ts`
+
+Reproduction:
+
+```sh
+env TS2WASM_BINARY=/tmp/ts2wasm-issue-blockers-target/debug/ts2wasm python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/augmentedTypesFunction.ts
+```
+
+Failure location:
+
+```json
+{
+  "code": "DuplicateLocal",
+  "message": "top-level lexical binding `y1` conflicts with function declaration at 70..81",
+  "span_start": 70,
+  "span_end": 81,
+  "line": 4,
+  "column": 4,
+  "feature_label": "duplicate-local",
+  "error_type": "compiler-diagnostic"
+}
+```
+
+Source context:
+
+```text
+1 | // @target: es2015
+2 | // function then var
+3 | function y1() { } // error
+4 | var y1 = 1; // error
+5 |
+6 | // function then function
+7 | function y2() { } // error
+```
+
+## Stale generated smart triage
 
 ### Smart triage: Triage parser syntax: augmentedTypesFunction
 

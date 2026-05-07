@@ -172,7 +172,7 @@ Evidence:
   `issues/open/2600-implement-getAndSetNotIdenticalType-duplicate-function.md`,
   and `issues/open/4258-implement-staticVisibility-duplicate-function.md` are
   no-match buckets for different duplicate-function windows.
-- Related `issues/open/769-implement-augmentedTypesFunction.md` is a different
+- Related `issues/done/769-implement-augmentedTypesFunction.md` is a different
   parser-syntax bucket; child issue
   `issues/open/5199-report-function-overload-list-class-merge-diagnostics.md`
   owns this already-parsed callOverloads blocker.
