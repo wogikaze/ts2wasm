@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 7 | 6 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4577 | 3429 | 1148 |
+| frontend | 4577 | 3428 | 1149 |
 | harness | 1 | 0 | 1 |
 | ir | 79 | 57 | 22 |
 | issues | 4 | 0 | 4 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5238 | 3727 | 1511 |
+| total | 5238 | 3726 | 1512 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -435,7 +435,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 555 | Implement Abstractclassinlocalscopeisabstract | spike | frontend/resolver | class: blocked | Implement Abstractclassinlocalscopeisabstract |
 | 556 | Implement Abstractclassunioninstantiation | spike | frontend/resolver | class: blocked | Implement Abstractclassunioninstantiation |
 | 597 | Implement Allowjsclassthistypecrash | spike | reference/triage | class: triage-needed | Implement Allowjsclassthistypecrash |
-| 606 | Implement Ambientconstliterals | spike | frontend/syntax | class: triage-needed | Implement Ambientconstliterals |
 | 609 | Implement Ambientexportdefaulterrors | spike | frontend/syntax | class: blocked | Implement Ambientexportdefaulterrors |
 | 610 | Implement Ambientexternalmoduleinanotherexternalmodule | spike | frontend/syntax | class: blocked | Implement Ambientexternalmoduleinanotherexternalmodule |
 | 612 | Implement Ambientexternalmodulewithinternalimportdeclaration | spike | frontend/syntax | class: blocked | Implement Ambientexternalmodulewithinternalimportdeclaration |
@@ -4391,6 +4390,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 603 | Implement Alwaysstrictnoimplicitusestrict (audit reopened #603) | spike | frontend/syntax | see `issues/done/603-implement-alwaysStrictNoImplicitUseStrict.md` |
 | 604 | Implement Ambientclassdeclarationwithextends (audit reopened #604) | spike | frontend/syntax | see `issues/done/604-implement-ambientClassDeclarationWithExtends.md` |
 | 605 | Implement Ambientclassdeclaredbeforebase | spike | frontend/syntax | see `issues/done/605-implement-ambientClassDeclaredBeforeBase.md` |
+| 606 | Implement Ambientconstliterals | spike | frontend/syntax | see `issues/done/606-implement-ambientConstLiterals.md` |
 | 607 | Implement Ambientenumelementinitializer (dup) | spike | frontend/syntax | see `issues/done/607-implement-ambientEnumElementInitializer.md` |
 | 608 | Implement Ambienterrors | spike | runtime/builtins | see `issues/done/608-implement-ambientErrors.md` |
 | 611 | Implement Ambientexternalmodulereopen (audit reopened #611) | spike | frontend/syntax | see `issues/done/611-implement-ambientExternalModuleReopen.md` |
