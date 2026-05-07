@@ -1972,6 +1972,7 @@ fn write_wasm_from_wat(wat: &str, output: &Path) -> Result<(), Diagnostic> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use ts2wasm_frontend::Span;
 
     #[test]
     fn parses_console_log_string() {
@@ -2487,11 +2488,11 @@ console.log(value);
                 .expect("static module exports should populate lowered metadata");
 
         match &lowered_program.top_level_statements[0] {
-            lowered::LoweredStmt::Let(_, lowered::LoweredExpr::PropertyGet { obj, key }) => {
+            lowered::LoweredStmt::Let(_, lowered::LoweredExpr::PropertyGet { obj, key, .. }, _) => {
                 assert_eq!(key, "value");
                 assert!(matches!(
                     obj.as_ref(),
-                    lowered::LoweredExpr::ModuleLoad { module_id: 1 }
+                    lowered::LoweredExpr::ModuleLoad { module_id: 1, .. }
                 ));
             }
             other => panic!("unexpected lowered import read statement: {other:?}"),
@@ -2504,10 +2505,11 @@ console.log(value);
         assert_eq!(
             module.statements,
             vec![
-                lowered::LoweredStmt::Let(lowered::LocalId(0), lowered::LoweredExpr::Number(1)),
+                lowered::LoweredStmt::Let(lowered::LocalId(0), lowered::LoweredExpr::Number(1, Span::generated("test")), Span::generated("test")),
                 lowered::LoweredStmt::Export {
                     name: "value".to_owned(),
-                    expr: lowered::LoweredExpr::Number(1),
+                    expr: lowered::LoweredExpr::Number(1, Span::generated("test")),
+                    span: Span::generated("test"),
                 },
             ]
         );
@@ -2616,6 +2618,7 @@ export default 2;
                             representation: lowered::ClosureRepresentation::DirectLocalToken,
                             ..
                         },
+                    span: _,
                 },
             ] => assert_eq!(name, "f"),
             other => panic!("unexpected entry module export statements: {other:?}"),
