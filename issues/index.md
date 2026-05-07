@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 7 | 4 | 3 |
 | coverage | 44 | 1 | 43 |
 | docs | 5 | 0 | 5 |
-| frontend | 4563 | 3775 | 788 |
+| frontend | 4563 | 3769 | 794 |
 | harness | 1 | 0 | 1 |
 | ir | 77 | 27 | 50 |
 | issues | 5 | 0 | 5 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 8 | 0 | 8 |
 | wasi | 4 | 0 | 4 |
-| total | 5246 | 4051 | 1195 |
+| total | 5246 | 4045 | 1201 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -365,8 +365,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5260 | Report class heritage trailing comma | feature | frontend/parser | implementation-ready | P1 |  | `classHeritageWithTrailingSeparator.ts` tokenizes the class heritage |
 | 5262 | Resolve import-equals aliases in class implements clauses | feature | frontend/resolver | implementation-ready | P1 |  | Resolve import-equals aliases in class implements clauses |
 | 5263 | Report primitive implements clauses on class expressions | feature | frontend/parser | implementation-ready | P1 |  | Report primitive implements clauses on class expressions |
-| 5264 | Parse typed const declarations before initializers | feature | frontend/parser | implementation-ready | P1 |  | Parse typed const declarations before initializers |
-| 5265 | Report missing class member identifier after modifier | feature | frontend/parser | implementation-ready | P1 |  | Report missing class member identifier after modifier |
 | 5266 | Support class constructor new of later class binding | feature | ir | implementation-ready | P1 |  | `reference/typescript/tests/cases/compiler/classOrderBug.ts` reports |
 | 5267 | Parse string literal class member names | feature | frontend | implementation-ready | P1 |  | `reference/typescript/tests/cases/compiler/classStaticPropertyAccess.ts` |
 | 5269 | Parse optional class property declarations | feature | frontend | implementation-ready | P1 |  | `reference/typescript/tests/cases/compiler/classUsedBeforeInitializedVariables.ts` |
@@ -383,22 +381,18 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5287 | Bind namespace declarations for qualified value access | feature | frontend/name-resolution | implementation-ready | P1 |  | a same-file non-ambient namespace declaration is erased before it |
 | 5288 | Parse typed modified static class fields | feature | frontend/parser | implementation-ready | P1 |  | `reference/typescript/tests/cases/compiler/commentsOnStaticMembers.ts` |
 | 5289 | Validate commentsOverloads top-level functions | feature | frontend/resolver | implementation-ready | P1 |  | `reference/typescript/tests/cases/compiler/commentsOverloads.ts` |
-| 5290 | Parse private static generic class methods | feature | frontend/parser | implementation-ready | P1 |  | `reference/typescript/tests/cases/compiler/commentsTypeParameters.ts` |
 | 5291 | Report malformed export type declarations | feature | frontend/parser | implementation-ready | P1 |  | malformed `export type` declarations are not diagnosed or recovered |
 | 5292 | Skip tsconfig @Filename sections in reference harness | feature | compiler/multi-section | implementation-ready | P1 |  | reference-style `tsconfig.json` virtual sections are treated as module |
 | 5293 | Handle recursive generic self-heritage class lowering | bug | frontend/semantics | implementation-ready | P1 |  | recursive generic self-heritage classes fail with an opaque |
 | 5294 | Resolve sibling namespaces in nested namespace scopes | feature | frontend/name-resolution | implementation-ready | P1 |  | nested namespace resolution does not predeclare or look up sibling |
 | 5295 | Resolve import-equals require to virtual node_modules class export | feature | frontend/module-resolution | implementation-ready | P1 |  | bare `require("myModule")` aliases do not bind to a virtual |
-| 5296 | Parse double-dot numeric literal property access | feature | frontend/parser | implementation-ready | P1 |  | the parser treats the first dot as member access and rejects the |
 | 5297 | Lower computed object binding aliases | feature | frontend/semantics | implementation-ready | P1 |  | object binding aliases can only use identifier keys, so computed keys |
 | 5298 | Parse for-of array binding pattern heads | feature | frontend/syntax | implementation-ready | P1 |  | array binding patterns in `for-of` declaration heads are parsed as |
 | 5299 | Lower computed object binding parameters | feature | frontend/semantics | implementation-ready | P1 |  | computed object binding aliases in parameters parse, but name |
 | 5300 | Report assignment to class binding diagnostics | feature | frontend/resolver | implementation-ready | P1 |  | assignment to a class binding currently parses, but name resolution |
-| 5303 | Parse trailing comma in typed function parameters | feature | frontend/syntax | implementation-ready | P1 |  | typed function declaration parameter lists with a trailing comma |
 | 5304 | Parse generic arrow functions with typed parameters | feature | frontend/syntax | implementation-ready | P1 |  | generic arrow functions with typed parameters currently fail with |
 | 5306 | Report export assignment with other exports | bug | frontend/syntax | implementation-ready | P1 |  | `ExportAssignment8.ts` stops at generic issue-055 instead of reporting the specific `export =` plus other exports rule. |
 | 5307 | Report var/function duplicate identifier diagnostics | bug | frontend/resolver | implementation-ready | P2 |  | var/function declaration collisions report generic `DuplicateLocal` |
-| 5308 | Parse ASI after instance class field initializers | feature | frontend/parser | implementation-ready | P1 |  | `conflictingTypeParameterSymbolTransfer.ts` reports `expected property name, got Equal` after `foo = this.t` instead ... |
 | 5309 | Skip generic type arguments in type annotations | feature | frontend/parser | implementation-ready | P1 |  | function parameter annotations such as `x: Record<'a', string>` fail with `expected Comma, got Some(Greater)`. |
 | 5310 | Parse nested block statements with variable declarations | feature | frontend/parser | implementation-ready | P1 |  | a nested block containing `var y = 0;` reports `expected Comma, got Some(Ident("y"))` instead of parsing as a block s... |
 | 5311 | Parse namespace property += assignment | feature | frontend/syntax | implementation-ready | P1 |  | `M.x += 2` in `constDeclarations-access3.ts` fails with |
@@ -5343,6 +5337,8 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5259 | Report super property access in class extends null | feature | ir/resolver | see file |
 | 5261 | Report class-typed missing instance method calls | feature | ir/lowering | see file |
 | 5263 | Report primitive implements clauses on class expressions | feature | frontend/parser | see file |
+| 5264 | Parse typed const declarations before initializers | feature | frontend/parser | see file |
+| 5265 | Report missing class member identifier after modifier | feature | frontend/parser | see file |
 | 5268 | Support derived constructor parameter properties after super | feature | ir | see `issues/done/5268-support-derived-constructor-parameter-properties-after-super.md` |
 | 5277 | Parse export enum declarations to enum boundary | feature | frontend/module-syntax | see file |
 | 5278 | Parse trailing comma in function parameters with comments | feature | frontend/syntax | see file |
@@ -5351,9 +5347,13 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5284 | Bind plain enum declarations before member access | feature | frontend/syntax | see `issues/done/5284-bind-plain-enum-declarations-before-member-access.md` |
 | 5285 | Support export var initializer declarations | feature | frontend/module-syntax | see `issues/done/5285-support-export-var-initializer-declarations.md` |
 | 5286 | Preserve class constructor parameters for new arity | feature | ir | see `issues/done/5286-preserve-class-constructor-parameters-for-new-arity.md` |
+| 5290 | Parse private static generic class methods | feature | frontend/parser | see `issues/done/5290-parse-private-static-generic-class-method.md` |
+| 5296 | Parse double-dot numeric literal property access | feature | frontend/parser | see `issues/done/5296-parse-double-dot-numeric-literal-property-access.md` |
 | 5301 | Report literal reference comparison diagnostics | feature | frontend/semantics | see file |
 | 5302 | Parse fractional number literals in expressions | feature | frontend/syntax | see file |
+| 5303 | Parse trailing comma in typed function parameters | feature | frontend/syntax | see `issues/done/5303-parse-trailing-comma-in-typed-function-parameters.md` |
 | 5305 | Report merge conflict marker diagnostics | feature | frontend/syntax | see `issues/done/5305-report-merge-conflict-marker-diagnostics.md` |
+| 5308 | Parse ASI after instance class field initializers | feature | frontend/parser | see `issues/done/5308-parse-asi-after-instance-class-field-initializers.md` |
 | 5351 | Accept large decimal integer number literals | feature | frontend/lexer | see `issues/done/5351-accept-large-decimal-integer-number-literals.md` |
 | 5357 | Avoid eval diagnostic for qualified Function constructors | bug | ir/resolver | see `issues/done/5357-avoid-eval-diagnostic-for-qualified-function-constructors.md` |
 | 5364 | Report unterminated string literal at raw newline | bug | frontend/lexer | see `issues/done/5364-report-unterminated-string-literal-at-raw-newline.md` |
