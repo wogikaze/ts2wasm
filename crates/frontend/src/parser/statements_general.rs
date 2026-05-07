@@ -236,7 +236,50 @@ impl Parser {
                 return self.unsupported_module_form(export_span, "default function export");
             }
             Some(Token::Class) => {
-                return self.unsupported_module_form(export_span, "default class export");
+                self.advance(); // consume 'class'
+                // Optionally consume a class name (handles both named and anonymous)
+                if matches!(self.peek(), Some(Token::Ident(_))) {
+                    self.advance();
+                }
+                // Optionally consume generic type parameters
+                let _ = self.consume_typescript_generic_parameter_list()?;
+                // Consume optional extends clause
+                if self.consume(TokenKind::Extends) {
+                    self.skip_type_annotation_until(&[TokenKind::LeftBrace])
+                        .map_err(|_| {
+                            self.unsupported_typescript_syntax(
+                                export_span,
+                                "issue-5300: unterminated default class export extends clause",
+                            )
+                        })?;
+                }
+                // Consume optional implements clause (no extends clause case)
+                if self.peek_contextual_keyword("implements") {
+                    self.advance();
+                    while !self.is_at_end()
+                        && !matches!(self.peek(), Some(Token::LeftBrace))
+                    {
+                        self.advance();
+                    }
+                }
+                // Skip the class body
+                let body_cursor = self.cursor;
+                self.skip_balanced_brace_block(export_span)?;
+                let end = self.tokens[body_cursor - 1].span.end;
+                self.consume(TokenKind::Semicolon);
+                return Ok(Stmt::ExportDefault {
+                    expr: Expr::Undefined {
+                        span: Span {
+                            start: default_span.start,
+                            end,
+                        },
+                    },
+                    default_span,
+                    span: Span {
+                        start: export_span.start,
+                        end,
+                    },
+                });
             }
             _ => {}
         }

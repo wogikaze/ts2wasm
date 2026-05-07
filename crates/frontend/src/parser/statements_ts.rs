@@ -801,6 +801,35 @@ impl Parser {
         }
     }
 
+    /// Consume an `abstract class` body in an erasable context (`export abstract class`).
+    /// This skips the class name, generic type parameters, extends clause,
+    /// implements clause, and the class body.
+    fn consume_erasable_abstract_class_body(&mut self) -> Result<(), Diagnostic> {
+        self.expect(TokenKind::Class)?; // consume 'class'
+        self.expect_ident()?; // class name
+        let _ = self.consume_typescript_generic_parameter_list()?;
+        // Skip 'extends' clause
+        if self.consume(TokenKind::Extends) {
+            while !self.is_at_end() && !matches!(self.peek(), Some(Token::LeftBrace)) {
+                self.advance();
+            }
+        }
+        // Skip 'implements' clause
+        if self.peek_contextual_keyword("implements") {
+            self.advance();
+            while !self.is_at_end() && !matches!(self.peek(), Some(Token::LeftBrace)) {
+                self.advance();
+            }
+        }
+        // Skip the class body
+        let span = self.peek_span().unwrap_or(Span {
+            start: self.cursor,
+            end: self.cursor,
+        });
+        self.skip_balanced_brace_block(span)?;
+        Ok(())
+    }
+
     fn unsupported_typescript_syntax(&self, span: Span, message: &str) -> Diagnostic {
         Diagnostic {
             code: DiagCode::UnsupportedTypeScriptSyntax,

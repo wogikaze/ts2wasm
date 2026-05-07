@@ -177,6 +177,40 @@ mod tests {
     }
 
     #[test]
+    fn parses_export_abstract_class_declarations_as_erased_syntax() {
+        // Minimal export abstract class
+        let program = parse_program("export abstract class A {};").unwrap();
+        assert_eq!(program.len(), 0, "export abstract class A should be erased");
+
+        // With type parameters and implements
+        let program = parse_program(
+            "export abstract class ConvenientObservable<T, TChange> implements IObservable<T, TChange> { }",
+        )
+        .unwrap();
+        assert_eq!(
+            program.len(),
+            0,
+            "export abstract class with type params and implements should be erased"
+        );
+
+        // With extends
+        let program =
+            parse_program("export abstract class B extends C { }").unwrap();
+        assert_eq!(program.len(), 0);
+
+        // Runtime statements after erased syntax still parse
+        let program =
+            parse_program("export abstract class A {} let x = 1;").unwrap();
+        assert_eq!(program.len(), 1);
+        assert!(matches!(program[0], Stmt::Let { .. }));
+
+        // export class Foo {} (non-abstract) still works unchanged
+        let program = parse_program("export class C {};").unwrap();
+        assert_eq!(program.len(), 1);
+        assert!(matches!(program[0], Stmt::ExportDecl { .. }));
+    }
+
+    #[test]
     fn parses_generator_function_declaration_metadata() {
         let program = parse_program("function* gen() { yield 1; yield 2; }").unwrap();
         assert_eq!(program.len(), 1);
@@ -2496,7 +2530,7 @@ b /* parameter b */,
     }
 
     #[test]
-    fn keeps_default_function_and_class_exports_unsupported_for_narrow_slice() {
+    fn keeps_default_function_exports_unsupported_for_narrow_slice() {
         let function_err = parse_program("export default function value() {};").unwrap_err();
         assert_eq!(function_err.code, DiagCode::UnsupportedSyntax);
         assert!(function_err.message.contains("issue-055"));
@@ -2504,14 +2538,47 @@ b /* parameter b */,
             .message
             .contains("unsupported default function export"));
         assert_eq!(function_err.span, Some(Span { start: 0, end: 6 }));
+    }
 
-        let class_err = parse_program("export default class Value {};").unwrap_err();
-        assert_eq!(class_err.code, DiagCode::UnsupportedSyntax);
-        assert!(class_err.message.contains("issue-055"));
-        assert!(class_err
-            .message
-            .contains("unsupported default class export"));
-        assert_eq!(class_err.span, Some(Span { start: 0, end: 6 }));
+    #[test]
+    fn parses_default_class_export_as_erasable_form() {
+        // Named default class export
+        let program = parse_program("export default class Value {};").unwrap();
+        assert_eq!(program.len(), 1);
+        match &program[0] {
+            Stmt::ExportDefault {
+                expr: Expr::Undefined { .. },
+                ..
+            } => {} // ok
+            other => panic!("expected ExportDefault(Undefined), got {other:?}"),
+        }
+
+        // Anonymous default class export with extends clause (issue-5326)
+        let program = parse_program(
+            "export default class extends Foo {
+                readonly observer = this.handleIntersection;
+            }",
+        )
+        .unwrap();
+        assert_eq!(program.len(), 1);
+        match &program[0] {
+            Stmt::ExportDefault {
+                expr: Expr::Undefined { .. },
+                ..
+            } => {} // ok
+            other => panic!("expected ExportDefault(Undefined), got {other:?}"),
+        }
+
+        // Anonymous default class without extends clause
+        let program = parse_program("export default class {}").unwrap();
+        assert_eq!(program.len(), 1);
+        match &program[0] {
+            Stmt::ExportDefault {
+                expr: Expr::Undefined { .. },
+                ..
+            } => {} // ok
+            other => panic!("expected ExportDefault(Undefined), got {other:?}"),
+        }
     }
 
     #[test]
