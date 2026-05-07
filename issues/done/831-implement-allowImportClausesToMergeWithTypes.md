@@ -121,7 +121,7 @@ Follow-up issues:
 - `issues/done/462-implement-ExportAssignment.md` - Implement Exportassignment (same feature label, same group key, title overlap)
 - `issues/done/510-implement-allowImportClausesToMergeWithTypes.md` - Implement Allowimportclausestomergewithtypes (same reference path, same feature label, same group key, title overlap)
 - `issues/done/548-implement-ExportAssignment.md` - Implement Exportassignment (same feature label, same group key, title overlap)
-- `issues/open/596-implement-allowImportClausesToMergeWithTypes.md` - Implement Allowimportclausestomergewithtypes (same reference path, same feature label, same group key, title overlap)
+- `issues/done/596-implement-allowImportClausesToMergeWithTypes.md` - Implement Allowimportclausestomergewithtypes (same reference path, same feature label, same group key, title overlap)
 
 ## Smart triage
 
@@ -131,7 +131,7 @@ Not generated. Rerun with `--triage-limit 1` or higher.
 ## 重複整理メモ
 
 この issue はタイトルが重複しているため、内容がより充実している
-`issues/open/596-implement-allowImportClausesToMergeWithTypes.md` に統合されました。
+`issues/done/596-implement-allowImportClausesToMergeWithTypes.md` に統合されました。
 そちらを参照してください。
 ## Completion evidence
 

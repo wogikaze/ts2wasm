@@ -3,12 +3,13 @@ id: 596
 title: "Implement Allowimportclausestomergewithtypes"
 type: spike
 area: frontend/syntax
-class: blocked
+class: done
 priority: P1
-depends_on: [432]
+depends_on: [5401]
 blocks: []
 created: 2026-05-01
-updated: 2026-05-01
+updated: 2026-05-08
+completed: 2026-05-08
 ---
 
 ## Summary
@@ -17,9 +18,9 @@ Triage allowImportClausesToMergeWithTypes across 1 failing reference test cases 
 
 ## Problem
 
-Reference test results show 1 cases fail in directory `allowImportClausesToMergeWithTypes` with diagnostics: import-export. The compiler cannot handle these syntax/semantics, preventing compilation of code in this category.
+Reference test results show 1 case failing in directory `allowImportClausesToMergeWithTypes` with diagnostics: import-export. Fresh triage shows the current failure is the `export default interface zzz` parser error, split to issue 5401.
 
-Problem: allowImportClausesToMergeWithTypes has 1 reference failures and needs smart-triage evidence before implementation starts.
+Problem: `allowImportClausesToMergeWithTypes` had 1 generated bucket failure and needed smart-triage evidence. The current parser blocker is now tracked by issue 5401.
 
 ## Current failure
 
@@ -43,10 +44,10 @@ This generated bucket is either split into implementation-ready child issues or 
 
 In scope:
 
-- [ ] Inspect the smart triage report below
-- [ ] Confirm whether existing open/done issues already cover this bucket
-- [ ] Split one feature family, one observable behavior, or one fixed reference window into child issues
-- [ ] Preserve exact reproduction commands and representative AST/diagnostic evidence in each child issue
+- [x] Inspect the smart triage report below
+- [x] Confirm whether existing open/done issues already cover this bucket
+- [x] Split default-exported interface declarations to issue 5401
+- [x] Preserve exact reproduction commands and representative AST/diagnostic evidence in the child issue
 
 Out of scope:
 
@@ -68,10 +69,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] Duplicate candidates below are confirmed as no-match or this issue is superseded
-- [ ] At least one child issue contains an exact `mise run reference-triage -- ...` command
-- [ ] Child issue includes failing path, diagnostic code, source context, visible symbols, and parser/TypeScript AST evidence
-- [ ] Child issue acceptance names the exact fixture/reference path and diagnostic/stdout change
+- [x] Duplicate candidates below are confirmed as no-match or this issue is superseded
+- [x] Child issue 5401 contains an exact `reference-triage` command
+- [x] Child issue includes failing path, diagnostic code, source context, visible symbols, and parser/TypeScript AST evidence
+- [x] Child issue acceptance names the exact reference path and diagnostic change
 
 ## Validation
 
@@ -92,21 +93,22 @@ mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/allow
 
 Not run:
 
-- none
+- `cargo fmt --all --check`; issue cleanup only, no Rust code changed
+- `cargo nextest run`; issue cleanup only, no implementation changed
 
 ## Docs / current-state / issue sync
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] updated: `current-state.md` (repo root)
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] created: `issues/open/5401-parse-export-default-interface-declarations.md`
 
 ## Notes
 
@@ -768,16 +770,26 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- `...`
+- pending
 
 Validation result:
 
 ```text
-command:
-result:
-date:
+command: env TS2WASM_BINARY=/tmp/ts2wasm-issue-blockers-target/debug/ts2wasm python scripts/manager.py reference-coverage tsc --path-filter reference/typescript/tests/cases/compiler/allowImportClausesToMergeWithTypes.ts --detail --no-dashboard-data
+result: pass; executed=1, build_pass=0, unsupported=1, unsupported_diagcodes=UnsupportedSyntax:1, unsupported_features=import-export:1
+date: 2026-05-08
+
+command: env TS2WASM_BINARY=/tmp/ts2wasm-issue-blockers-target/debug/ts2wasm python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/allowImportClausesToMergeWithTypes.ts
+result: pass; tokens succeed, current blocker is `export default interface` parser error, split to issue 5401
+date: 2026-05-08
+```
+
+Current compiler failure:
+
+```text
+UnsupportedSyntax: expected Semicolon, got Some(Ident("zzz")) at 154..157
 ```
 
 Remaining risks:
 
-- none
+- Implementation remains open in `issues/open/5401-parse-export-default-interface-declarations.md`.

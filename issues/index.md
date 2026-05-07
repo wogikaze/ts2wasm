@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 6 | 5 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4575 | 3434 | 1141 |
+| frontend | 4576 | 3434 | 1142 |
 | harness | 1 | 0 | 1 |
 | ir | 79 | 57 | 22 |
 | issues | 4 | 0 | 4 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5235 | 3731 | 1504 |
+| total | 5236 | 3731 | 1505 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -354,6 +354,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5396 | Report setter body mismatch with getter annotation | feature | frontend/semantics | implementation-ready | P1 |  | `accessors_spec_section-4.5_error-cases.ts` build-passes even though |
 | 5397 | Report missing namespace alias member diagnostics | feature | frontend/semantics | implementation-ready | P1 |  | `aliasBug.ts` now build-passes even though TypeScript reports TS2694 |
 | 5400 | Parse exported import-equals declarations | feature | frontend/parser | implementation-ready | P1 |  | exported import-equals declarations stop at generic issue-055 static export before the parser can preserve the alias ... |
+| 5401 | Parse export default interface declarations | feature | frontend/parser | implementation-ready | P1 |  | `export default interface zzz { ... }` stops with `expected Semicolon` before the frontend can represent the interfac... |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -432,7 +433,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 554 | Implement Abstractclassinlocalscope | spike | frontend/resolver | class: blocked | Implement Abstractclassinlocalscope |
 | 555 | Implement Abstractclassinlocalscopeisabstract | spike | frontend/resolver | class: blocked | Implement Abstractclassinlocalscopeisabstract |
 | 556 | Implement Abstractclassunioninstantiation | spike | frontend/resolver | class: blocked | Implement Abstractclassunioninstantiation |
-| 596 | Implement Allowimportclausestomergewithtypes | spike | frontend/syntax | class: blocked | Implement Allowimportclausestomergewithtypes |
 | 597 | Implement Allowjsclassthistypecrash | spike | reference/triage | class: triage-needed | Implement Allowjsclassthistypecrash |
 | 598 | Implement Allowjscrossmonorepopackage | spike | frontend/syntax | class: blocked | Implement Allowjscrossmonorepopackage |
 | 599 | Implement Allowjscheckjstypeparameternocrash | spike | frontend/syntax | class: blocked | Implement Allowjscheckjstypeparameternocrash |
@@ -4385,6 +4385,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 593 | Implement Aliasusedasnamevalue | spike | frontend/syntax | see `issues/done/593-implement-aliasUsedAsNameValue.md` |
 | 594 | Implement Aliaswithinterfaceexportassignmentusedinvarinitializer | spike | frontend/syntax | see `issues/done/594-implement-aliasWithInterfaceExportAssignmentUsedInVarInitializer.md` |
 | 595 | Implement Aliasesinsystemmodule | spike | frontend/syntax | see `issues/done/595-implement-aliasesInSystemModule.md` |
+| 596 | Implement Allowimportclausestomergewithtypes | spike | frontend/syntax | see `issues/done/596-implement-allowImportClausesToMergeWithTypes.md` |
 | 602 | Implement Alwaysstrictmodule (audit reopened #602) | spike | frontend/syntax | see `issues/done/602-implement-alwaysStrictModule.md` |
 | 603 | Implement Alwaysstrictnoimplicitusestrict (audit reopened #603) | spike | frontend/syntax | see `issues/done/603-implement-alwaysStrictNoImplicitUseStrict.md` |
 | 604 | Implement Ambientclassdeclarationwithextends (audit reopened #604) | spike | frontend/syntax | see `issues/done/604-implement-ambientClassDeclarationWithExtends.md` |
