@@ -162,6 +162,12 @@ Additional superseded bucket:
   expression; TypeScript parses the use as
   `PostfixUnaryExpression -> NonNullExpression -> Identifier` and then reports
   TS2588 because assignment to the ambient const is illegal.
+- `issues/done/1466-implement-constraints.md` reaches the same ambient value
+  name-resolution boundary for `declare var v1: C<A>;` and
+  `declare var v2: C<B>;`. Fresh triage on 2026-05-07 reports
+  `UnresolvedName: unresolved name: \`v1\` at 204..206` for `var y = v1.x.a;`;
+  TypeScript parses the declarations and later reports TS2344 because `B` does
+  not satisfy the generic constraint `A`.
 
 ## Completion evidence
 
