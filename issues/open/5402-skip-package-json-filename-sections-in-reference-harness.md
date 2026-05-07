@@ -156,6 +156,11 @@ Related but not duplicates:
   buckets cover later module/package lookup behavior after metadata sections
   are skipped.
 
+Also owns `issues/done/3336-implement-moduleExportNonStructured.md`: fresh
+triage for `moduleExportNonStructured.ts` stops in its virtual `package.json`
+section at the first property colon before `.mts`, `.cjs`, `.d.cts`, or
+CommonJS `export =` diagnostics become reachable.
+
 ## Completion evidence
 
 Fill only when moving to `done/`.

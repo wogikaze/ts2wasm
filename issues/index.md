@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 7 | 6 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4583 | 3397 | 1186 |
+| frontend | 4583 | 3396 | 1187 |
 | harness | 1 | 0 | 1 |
 | ir | 79 | 57 | 22 |
 | issues | 4 | 0 | 4 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5244 | 3695 | 1549 |
+| total | 5244 | 3694 | 1550 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -2324,7 +2324,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 3333 | Implement Moduledetectionisolatedmodulescjsfilescope | spike | reference/triage | class: triage-needed | Implement Moduledetectionisolatedmodulescjsfilescope |
 | 3334 | Implement Moduleduplicateidentifiers | spike | frontend/syntax | class: blocked | Implement Moduleduplicateidentifiers |
 | 3335 | Implement Moduleelementsinwrongcontext | spike | frontend/syntax | class: blocked | Implement Moduleelementsinwrongcontext |
-| 3336 | Implement Moduleexportnonstructured | spike | frontend/syntax | class: blocked | Implement Moduleexportnonstructured |
 | 3337 | Implement Moduleexports | spike | frontend/syntax | class: blocked | Implement Moduleexports |
 | 3338 | Implement Moduleexportstypenoexcesspropertycheckfromcontainedliteral | spike | frontend/syntax | class: blocked | Implement Moduleexportstypenoexcesspropertycheckfromcontainedliteral |
 | 3339 | Implement Moduleexportsunaryexpression | spike | frontend/syntax | class: blocked | Implement Moduleexportsunaryexpression |
@@ -5205,6 +5204,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 3328 | Implement Moduleclassarraycodegentest | spike | frontend/syntax | see `issues/done/3328-implement-moduleClassArrayCodeGenTest.md` |
 | 3329 | Implement Modulecodegentest | spike | frontend/syntax | see `issues/done/3329-implement-moduleCodeGenTest.md` |
 | 3330 | Implement Modulecodegentest | spike | frontend/syntax | see `issues/done/3330-implement-moduleCodegenTest.md` |
+| 3336 | Implement Moduleexportnonstructured | spike | frontend/syntax | see `issues/done/3336-implement-moduleExportNonStructured.md` |
 | 3690 | Implement Optionaltupleelementsandundefined | spike | reference/triage | see `issues/done/3690-implement-optionalTupleElementsAndUndefined.md` |
 | 3996 | Implement Compiler (dup) | spike | frontend/syntax | see `issues/done/3996-implement-reference-typescript-tests-cases-compiler.md` |
 | 4210 | Implement Splicetuples | spike | frontend/resolver | see `issues/done/4210-implement-spliceTuples.md` |
