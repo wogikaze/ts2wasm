@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 7 | 6 | 1 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4577 | 3422 | 1155 |
+| frontend | 4578 | 3422 | 1156 |
 | harness | 1 | 0 | 1 |
 | ir | 79 | 57 | 22 |
 | issues | 4 | 0 | 4 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5238 | 3720 | 1518 |
+| total | 5239 | 3720 | 1519 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -435,7 +435,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 555 | Implement Abstractclassinlocalscopeisabstract | spike | frontend/resolver | class: blocked | Implement Abstractclassinlocalscopeisabstract |
 | 556 | Implement Abstractclassunioninstantiation | spike | frontend/resolver | class: blocked | Implement Abstractclassunioninstantiation |
 | 597 | Implement Allowjsclassthistypecrash | spike | reference/triage | class: triage-needed | Implement Allowjsclassthistypecrash |
-| 620 | Implement Ambientmodules | spike | frontend/syntax | class: blocked | Implement Ambientmodules |
 | 622 | Implement Ambientrequirefunction | spike | frontend/syntax | class: blocked | Implement Ambientrequirefunction |
 | 625 | Implement Ambiguouscallswherereturntypesagree | spike | frontend/syntax | class: triage-needed | Implement Ambiguouscallswherereturntypesagree |
 | 626 | Implement Ambiguousgenericassertion | spike | frontend/syntax | class: blocked | Implement Ambiguousgenericassertion |
@@ -3822,6 +3821,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5136 | Fix arity validation for RegExp/String prototype methods | bug | ir | class: blocked | Fix arity validation for RegExp/String prototype methods |
 | 5398 | Resolve namespace import-equals alias value access | feature | frontend/name-resolution | 5287 | Resolve namespace import-equals alias value access |
 | 5399 | Resolve ambient namespace import alias in declare module | feature | frontend/name-resolution | 5370 | Resolve ambient namespace import alias in declare module |
+| 5404 | Bind dotted ambient namespace qualified access | feature | frontend/resolver | 5370 | Bind dotted ambient namespace qualified access |
 <!-- generated:blocked:end -->
 
 ## Done queue
@@ -4398,6 +4398,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 617 | Implement Ambientmoduleexports | spike | frontend/syntax | see `issues/done/617-implement-ambientModuleExports.md` |
 | 618 | Implement Ambientmodulewithclassdeclarationwithextends (audit reopened #618) | spike | frontend/syntax | see `issues/done/618-implement-ambientModuleWithClassDeclarationWithExtends.md` |
 | 619 | Implement Ambientmodulewithtemplateliterals | spike | frontend/syntax | see `issues/done/619-implement-ambientModuleWithTemplateLiterals.md` |
+| 620 | Implement Ambientmodules | spike | frontend/syntax | see `issues/done/620-implement-ambientModules.md` |
 | 621 | Implement Ambientnamerestrictions (audit reopened #621) | spike | frontend/syntax | see `issues/done/621-implement-ambientNameRestrictions.md` |
 | 623 | Implement Ambientstatement (audit reopened #623) | spike | frontend/syntax | see `issues/done/623-implement-ambientStatement.md` |
 | 624 | Implement Ambientwithstatements (audit reopened #624) | spike | frontend/syntax | see `issues/done/624-implement-ambientWithStatements.md` |

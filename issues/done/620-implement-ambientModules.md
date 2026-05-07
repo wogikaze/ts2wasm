@@ -3,12 +3,14 @@ id: 620
 title: "Implement Ambientmodules"
 type: spike
 area: frontend/syntax
-class: blocked
+class: done
 priority: P1
-depends_on: [432]
+depends_on: []
 blocks: []
 created: 2026-05-01
-updated: 2026-05-01
+updated: 2026-05-08
+completed: 2026-05-08
+status: done
 ---
 
 ## Summary
@@ -17,9 +19,12 @@ Triage ambientModules across 1 failing reference test cases and split this bucke
 
 ## Problem
 
-Reference test results show 1 cases fail in directory `ambientModules` with diagnostics: import-export. The compiler cannot handle these syntax/semantics, preventing compilation of code in this category.
+Fresh reference evidence shows this bucket now reaches a dotted ambient
+namespace qualified value-access blocker.
 
-Problem: ambientModules has 1 reference failures and needs smart-triage evidence before implementation starts.
+Problem: this generated import/export bucket is not a standalone
+implementation order; its current blocker is `UnresolvedName` for the erased
+dotted ambient namespace root `Foo`.
 
 ## Current failure
 
@@ -37,16 +42,18 @@ mise run reference-coverage -- tsc --path-filter reference/typescript/tests/case
 
 ## Desired final state
 
-This generated bucket is either split into implementation-ready child issues or superseded by an existing open/done issue with matching evidence. Do not implement directly from this bucket.
+This generated bucket was split to
+`issues/open/5404-bind-dotted-ambient-namespace-qualified-access.md`. Do not
+implement directly from this bucket.
 
 ## Scope
 
 In scope:
 
-- [ ] Inspect the smart triage report below
-- [ ] Confirm whether existing open/done issues already cover this bucket
-- [ ] Split one feature family, one observable behavior, or one fixed reference window into child issues
-- [ ] Preserve exact reproduction commands and representative AST/diagnostic evidence in each child issue
+- [x] Inspect the smart triage report below
+- [x] Confirm whether existing open/done issues already cover this bucket
+- [x] Split dotted ambient namespace qualified value access to issue 5404
+- [x] Preserve exact reproduction commands and representative AST/diagnostic evidence in the child issue
 
 Out of scope:
 
@@ -68,18 +75,20 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] Duplicate candidates below are confirmed as no-match or this issue is superseded
-- [ ] At least one child issue contains an exact `mise run reference-triage -- ...` command
-- [ ] Child issue includes failing path, diagnostic code, source context, visible symbols, and parser/TypeScript AST evidence
-- [ ] Child issue acceptance names the exact fixture/reference path and diagnostic/stdout change
+- [x] Duplicate candidates below are confirmed as no-match or this issue is split
+- [x] Child issue contains an exact `python scripts/manager.py reference-triage ...` command
+- [x] Child issue includes failing path, diagnostic code, source context, visible symbols, and parser/TypeScript AST evidence
+- [x] Child issue acceptance names the exact fixture/reference path and diagnostic/stdout change
 
 ## Validation
 
 Required commands:
 
 ```sh
-cargo fmt --all --check
-cargo nextest run
+python scripts/manager.py update-issue-index --check
+python scripts/manager.py check-issue-health
+python scripts/manager.py check-issue-readiness -- --fail-ready-below 80
+git diff --check
 ```
 
 Impacted commands:
@@ -92,21 +101,22 @@ mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/ambie
 
 Not run:
 
-- none
+- `cargo fmt --all --check`; issue cleanup only, no Rust code changed
+- `cargo nextest run`; issue cleanup only, no implementation changed
 
 ## Docs / current-state / issue sync
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] updated: `current-state.md` (repo root)
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] created: `issues/open/5404-bind-dotted-ambient-namespace-qualified-access.md`
 
 ## Notes
 
@@ -120,6 +130,37 @@ Follow-up issues:
 - `issues/done/534-implement-ambientModules.md` - Implement Ambientmodules (same reference path, same feature label, same group key, title overlap)
 
 ## Smart triage
+
+Fresh triage on 2026-05-08 shows this generated import/export bucket now
+reaches a name-resolution blocker:
+
+```text
+reference/typescript/tests/cases/compiler/ambientModules.ts: UnresolvedName: name-resolution
+```
+
+Focused triage reports:
+
+```text
+UnresolvedName: unresolved name: `Foo` at 90..93
+```
+
+Representative source context:
+
+```ts
+declare namespace Foo.Bar { export var foo; };
+Foo.Bar.foo = 5;
+```
+
+The compiler tokenizes and parses the dotted ambient namespace declaration and
+qualified assignment. The AST keeps the outside `Foo.Bar.foo = 5` assignment,
+then `resolve_names` cannot find the top-level ambient namespace identifier
+`Foo`. TypeScript accepts the file with no diagnostics.
+
+This is related to
+`issues/open/5370-bind-ambient-namespace-declarations-for-qualified-value-access.md`,
+but the source uses a dotted ambient namespace declaration. The specific
+dotted-path work was split to
+`issues/open/5404-bind-dotted-ambient-namespace-qualified-access.md`.
 
 ### Smart triage: Triage import export: ambientModules
 
@@ -494,18 +535,48 @@ error: [UnsupportedModule] issue-400: ambient namespace declarations require mod
 
 ## Completion evidence
 
-Fill only when moving to `done/`.
+Closed after splitting the current blocker to
+`issues/open/5404-bind-dotted-ambient-namespace-qualified-access.md`.
+
+Fresh coverage with the current binary:
+
+```text
+env TS2WASM_BINARY=/tmp/ts2wasm-issue-blockers-target/debug/ts2wasm python scripts/manager.py reference-coverage tsc --path-filter reference/typescript/tests/cases/compiler/ambientModules.ts --detail --no-dashboard-data
+suite=tsc
+executed=1
+unsupported=1
+unsupported_diagcodes=UnresolvedName:1
+unsupported_features=name-resolution:1
+reference/typescript/tests/cases/compiler/ambientModules.ts: UnresolvedName: name-resolution
+```
+
+Fresh triage:
+
+```text
+env TS2WASM_BINARY=/tmp/ts2wasm-issue-blockers-target/debug/ts2wasm python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/ambientModules.ts
+```
+
+Observed owner boundary:
+
+```text
+[pipeline] resolve_names
+error: [UnresolvedName] unresolved name: `Foo` at 90..93
+```
 
 Commits:
 
-- `...`
+- split to `issues/open/5404-bind-dotted-ambient-namespace-qualified-access.md`
 
 Validation result:
 
 ```text
-command:
-result:
-date:
+command: env TS2WASM_BINARY=/tmp/ts2wasm-issue-blockers-target/debug/ts2wasm python scripts/manager.py reference-coverage tsc --path-filter reference/typescript/tests/cases/compiler/ambientModules.ts --detail --no-dashboard-data
+result: pass; executed=1, unsupported=1, unsupported_diagcodes=UnresolvedName:1
+date: 2026-05-08
+
+command: env TS2WASM_BINARY=/tmp/ts2wasm-issue-blockers-target/debug/ts2wasm python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/ambientModules.ts
+result: pass; resolved dump reaches dotted ambient namespace qualified value-access blocker split to issue 5404
+date: 2026-05-08
 ```
 
 Remaining risks:
