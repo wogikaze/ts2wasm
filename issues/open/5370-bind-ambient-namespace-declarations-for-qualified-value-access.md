@@ -121,6 +121,10 @@ Related:
 
 - `issues/open/5287-bind-namespace-declarations-for-qualified-value-access.md` covers non-ambient namespaces and explicitly excludes ambient `declare namespace`.
 - `issues/open/5161-model-ambient-value-declarations-for-name-resolution.md` covers erased ambient variables/lets/consts, not ambient namespace roots.
+- Also owns `issues/done/3400-implement-moduledecl.md`: fresh triage for the
+  broad module declaration reference stops at unresolved ambient namespace root
+  `mAmbient` for qualified value accesses such as `mAmbient.foo()` and
+  `new mAmbient.m3.C()`.
 
 ## Completion evidence
 

@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 23 | 12 | 11 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4579 | 3339 | 1240 |
+| frontend | 4579 | 3338 | 1241 |
 | harness | 1 | 0 | 1 |
 | ir | 81 | 59 | 22 |
 | issues | 4 | 0 | 4 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5263 | 3643 | 1620 |
+| total | 5263 | 3642 | 1621 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -2335,7 +2335,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 3302 | Implement Modulealiasasfunctionargument | spike | frontend/syntax | class: blocked | Implement Modulealiasasfunctionargument |
 | 3303 | Implement Modulealiasinterface | spike | frontend/syntax | class: blocked | Implement Modulealiasinterface |
 | 3304 | Implement Moduleandinterfacesharingname | spike | frontend/syntax | class: blocked | Implement Moduleandinterfacesharingname |
-| 3400 | Implement Moduledecl | spike | frontend/syntax | class: blocked | Implement Moduledecl |
 | 3401 | Implement Multicalloverloads | spike | frontend/syntax | class: blocked | Implement Multicalloverloads |
 | 3402 | Implement Multiextendssplitinterfaces | spike | frontend/resolver | class: blocked | Implement Multiextendssplitinterfaces |
 | 3403 | Implement Multiimportexport | spike | frontend/syntax | class: blocked | Implement Multiimportexport |
@@ -5224,6 +5223,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 3397 | Close moduleWithNoValuesAsType bucket to TS2709 variable annotation owner | maintenance | frontend/semantics | see `issues/done/3397-implement-moduleWithNoValuesAsType.md` |
 | 3398 | Close moduleWithTryStatement bucket to namespace value owner | maintenance | frontend/name-resolution | see `issues/done/3398-implement-moduleWithTryStatement.md` |
 | 3399 | Close moduleWithValuesAsType bucket to TS2709 variable annotation owner | maintenance | frontend/semantics | see `issues/done/3399-implement-moduleWithValuesAsType.md` |
+| 3400 | Close moduledecl bucket to ambient namespace value owner | maintenance | frontend/resolver | see `issues/done/3400-implement-moduledecl.md` |
 | 3690 | Implement Optionaltupleelementsandundefined | spike | reference/triage | see `issues/done/3690-implement-optionalTupleElementsAndUndefined.md` |
 | 3996 | Implement Compiler (dup) | spike | frontend/syntax | see `issues/done/3996-implement-reference-typescript-tests-cases-compiler.md` |
 | 4210 | Implement Splicetuples | spike | frontend/resolver | see `issues/done/4210-implement-spliceTuples.md` |
