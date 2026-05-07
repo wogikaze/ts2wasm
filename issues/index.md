@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 25 | 13 | 12 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4583 | 3338 | 1245 |
+| frontend | 4583 | 3337 | 1246 |
 | harness | 1 | 0 | 1 |
 | ir | 82 | 59 | 23 |
 | issues | 4 | 0 | 4 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5267 | 3640 | 1627 |
+| total | 5267 | 3639 | 1628 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -2339,7 +2339,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 3302 | Implement Modulealiasasfunctionargument | spike | frontend/syntax | class: blocked | Implement Modulealiasasfunctionargument |
 | 3303 | Implement Modulealiasinterface | spike | frontend/syntax | class: blocked | Implement Modulealiasinterface |
 | 3304 | Implement Moduleandinterfacesharingname | spike | frontend/syntax | class: blocked | Implement Moduleandinterfacesharingname |
-| 3407 | Implement Multimodulefundule | spike | frontend/syntax | class: blocked | Implement Multimodulefundule |
 | 3408 | Implement Multiplebaseinterfaeswithincompatibleproperties | spike | frontend/syntax | class: blocked | Implement Multiplebaseinterfaeswithincompatibleproperties |
 | 3409 | Implement Multipleclasspropertymodifiers | spike | frontend/syntax | class: triage-needed | Implement Multipleclasspropertymodifiers |
 | 3410 | Implement Multipleclasspropertymodifierserrors | spike | runtime/builtins | class: triage-needed | Implement Multipleclasspropertymodifierserrors |
@@ -5228,6 +5227,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 3404 | Split multiLineErrors bucket to object return type parser issue | maintenance | frontend/parser | see `issues/done/3404-implement-multiLineErrors.md` |
 | 3405 | Close multiLinePropertyAccessAndArrowFunctionIndent to TS1108 owner | maintenance | compiler/diagnostics | see `issues/done/3405-implement-multiLinePropertyAccessAndArrowFunctionIndent.md` |
 | 3406 | Split multiModuleClodule to class namespace merge owner | maintenance | frontend/semantics | see `issues/done/3406-implement-multiModuleClodule.md` |
+| 3407 | Close multiModuleFundule to function namespace merge owner | maintenance | frontend/semantics | see `issues/done/3407-implement-multiModuleFundule.md` |
 | 3690 | Implement Optionaltupleelementsandundefined | spike | reference/triage | see `issues/done/3690-implement-optionalTupleElementsAndUndefined.md` |
 | 3996 | Implement Compiler (dup) | spike | frontend/syntax | see `issues/done/3996-implement-reference-typescript-tests-cases-compiler.md` |
 | 4210 | Implement Splicetuples | spike | frontend/resolver | see `issues/done/4210-implement-spliceTuples.md` |

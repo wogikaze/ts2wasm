@@ -156,6 +156,11 @@ Follow-up issues:
 
 Split from generated bucket `issues/done/1167-implement-circularTypeofWithFunctionModule.md`.
 
+Also owns `issues/done/3407-implement-multiModuleFundule.md`: fresh triage for
+`multiModuleFundule1.ts` reaches the same function/namespace merge static
+property boundary at `C.foo()`, reported as `issue-211: unknown receiver class
+for method foo`.
+
 ## Completion evidence
 
 Fill when implemented.
