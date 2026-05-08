@@ -2302,10 +2302,24 @@ impl<'a> Resolver<'a> {
             ResolvedExpr::New {
                 class_name,
                 args,
-                span: _,
+                span,
             } => {
                 if class_name == "RegExp" {
                     return Ok(LoweredExpr::String(regexp_constructor_literal(args)?, Span::generated("str")));
+                }
+                if class_name == "Proxy" {
+                    return Err(Diagnostic {
+                        code: DiagCode::UnsupportedSyntax,
+                        message: "issue-106: Proxy constructor — Proxy is not implemented yet; use plain objects instead".to_owned(),
+                        span: Some(*span),
+                    });
+                }
+                if class_name == "Reflect" {
+                    return Err(Diagnostic {
+                        code: DiagCode::UnsupportedSyntax,
+                        message: "issue-106: Reflect API is not implemented yet".to_owned(),
+                        span: Some(*span),
+                    });
                 }
                 if class_name == "Date" {
                     if args.is_empty() {

@@ -1203,3 +1203,19 @@ fn build_smoke_array_reduce() {
         result.err()
     );
 }
+
+// Proxy/Reflect unsupported diagnostic (issue 106)
+#[test]
+fn proxy_reflect_unsupported_diagnostic() {
+    let result = run_fixture("builtins-and-io/proxy-reflect-unsupported-diagnostic.ts");
+    assert!(
+        result.is_err(),
+        "Proxy should produce unsupported diagnostic"
+    );
+    let err_msg = result.err().unwrap();
+    assert!(
+        err_msg.contains("Proxy"),
+        "Diagnostic should mention Proxy: {}",
+        err_msg
+    );
+}
