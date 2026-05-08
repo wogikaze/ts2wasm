@@ -762,10 +762,29 @@ impl<'a> Resolver<'a> {
                     return Err(private_storage_observable_access_diagnostic(Some(*span)));
                 }
                 if matches!(object.as_ref(), ResolvedExpr::Ident(name) if name == "super") {
-                    return Err(Diagnostic {
+                    let class_name = self.current_class.as_ref().ok_or_else(|| Diagnostic {
                         code: DiagCode::UnsupportedSyntax,
-                        message: format!("issue-5255: super property access `super.{key}` is not supported in this milestone"),
+                        message: "super property access requires class context".to_owned(),
                         span: Some(*span),
+                    })?;
+                    let parent_name = self
+                        .class_parents
+                        .get(class_name)
+                        .and_then(|p| p.clone())
+                        .ok_or_else(|| Diagnostic {
+                            code: DiagCode::UnsupportedSyntax,
+                            message: "super property access used in class without extends"
+                                .to_owned(),
+                            span: Some(*span),
+                        })?;
+                    let parent_ref = self.class_prototype_ref(&parent_name)?;
+                    return Ok(LoweredExpr::PropertyGet {
+                        obj: Box::new(LoweredExpr::ClassPrototype(
+                            parent_ref,
+                            Span::generated("class_proto"),
+                        )),
+                        key: key.clone(),
+                        span: Span::generated("super_prop_get"),
                     });
                 }
                 if is_array_prototype_push_property(object, key) {
@@ -930,6 +949,33 @@ impl<'a> Resolver<'a> {
             ResolvedExpr::ComputedIndex { object, index } => {
                 if self.expr_has_private_progress_storage(object) {
                     return Err(private_storage_observable_access_diagnostic(None));
+                }
+                // super['prop'] — look up on parent prototype using dynamic key
+                if matches!(object.as_ref(), ResolvedExpr::Ident(name) if name == "super") {
+                    let class_name = self.current_class.as_ref().ok_or_else(|| Diagnostic {
+                        code: DiagCode::UnsupportedSyntax,
+                        message: "super computed access requires class context".to_owned(),
+                        span: None,
+                    })?;
+                    let parent_name = self
+                        .class_parents
+                        .get(class_name)
+                        .and_then(|p| p.clone())
+                        .ok_or_else(|| Diagnostic {
+                            code: DiagCode::UnsupportedSyntax,
+                            message: "super computed access used in class without extends"
+                                .to_owned(),
+                            span: None,
+                        })?;
+                    let parent_ref = self.class_prototype_ref(&parent_name)?;
+                    return Ok(LoweredExpr::PropertyGetDynamic {
+                        obj: Box::new(LoweredExpr::ClassPrototype(
+                            parent_ref,
+                            Span::generated("class_proto"),
+                        )),
+                        key: Box::new(self.lower_expr(index)?),
+                        span: Span::generated("super_index_get"),
+                    });
                 }
                 // Lower the object first to determine its type
                 let lowered_object = self.lower_expr(object)?;
@@ -2166,6 +2212,33 @@ impl<'a> Resolver<'a> {
                     
                         span: Span::generated("runtime_call"),});
                 }
+                // super.prop = value — writes to `this`, not the parent prototype
+                if matches!(object.as_ref(), ResolvedExpr::Ident(name) if name == "super") {
+                    let class_name = self.current_class.as_ref().ok_or_else(|| Diagnostic {
+                        code: DiagCode::UnsupportedSyntax,
+                        message: "super property assignment requires class context".to_owned(),
+                        span: Some(*span),
+                    })?;
+                    let _parent_name = self
+                        .class_parents
+                        .get(class_name)
+                        .and_then(|p| p.clone())
+                        .ok_or_else(|| Diagnostic {
+                            code: DiagCode::UnsupportedSyntax,
+                            message: "super property assignment used in class without extends"
+                                .to_owned(),
+                            span: Some(*span),
+                        })?;
+                    return Ok(LoweredExpr::PropertySet {
+                        object: Box::new(LoweredExpr::Local(
+                            self.resolve_local("this")?,
+                            Span::generated("local"),
+                        )),
+                        key: key.clone(),
+                        value: Box::new(self.lower_expr(value)?),
+                        span: Span::generated("super_prop_set"),
+                    });
+                }
                 Ok(LoweredExpr::PropertySet {
                     object: Box::new(self.lower_expr(object)?),
                     key: key.clone(),
@@ -2181,6 +2254,33 @@ impl<'a> Resolver<'a> {
                 }
                 if self.expr_has_private_progress_storage(object) {
                     return Err(private_storage_observable_access_diagnostic(None));
+                }
+                // super['prop'] = value — writes to `this`, not the parent prototype
+                if matches!(object.as_ref(), ResolvedExpr::Ident(name) if name == "super") {
+                    let class_name = self.current_class.as_ref().ok_or_else(|| Diagnostic {
+                        code: DiagCode::UnsupportedSyntax,
+                        message: "super computed assignment requires class context".to_owned(),
+                        span: None,
+                    })?;
+                    let _parent_name = self
+                        .class_parents
+                        .get(class_name)
+                        .and_then(|p| p.clone())
+                        .ok_or_else(|| Diagnostic {
+                            code: DiagCode::UnsupportedSyntax,
+                            message: "super computed assignment used in class without extends"
+                                .to_owned(),
+                            span: None,
+                        })?;
+                    return Ok(LoweredExpr::PropertySetDynamic {
+                        object: Box::new(LoweredExpr::Local(
+                            self.resolve_local("this")?,
+                            Span::generated("local"),
+                        )),
+                        index: Box::new(self.lower_expr(key)?),
+                        value: Box::new(self.lower_expr(value)?),
+                        span: Span::generated("super_prop_set_dyn"),
+                    });
                 }
                 Ok(LoweredExpr::PropertySetDynamic {
                     object: Box::new(self.lower_expr(object)?),
