@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 27 | 14 | 13 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4614 | 3213 | 1401 |
+| frontend | 4615 | 3213 | 1402 |
 | harness | 1 | 0 | 1 |
 | ir | 99 | 71 | 28 |
 | issues | 4 | 0 | 4 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5316 | 3522 | 1794 |
+| total | 5317 | 3522 | 1795 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -52,7 +52,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 ├── 5003 (Meta: TypeScript Compiler Declaration Emit Coverage) [done/done] ch:100 open:89 done:11 (also ← 5001)
 5001 (Meta: TypeScript Compiler Semantic Analysis Coverage) [done/done] ch:550 open:275 done:275
 5004 (Meta: Runtime Builtins Coverage (test262) (audit reopened #5004)) [done/done] ch:24 open:3 done:21
-5005 (Meta: TypeScript Compiler Name Resolution Coverage) [done/done] ch:390 open:321 done:69
+5005 (Meta: TypeScript Compiler Name Resolution Coverage) [done/done] ch:390 open:320 done:70
 ├── 5006 (Meta: TypeScript Compiler Scope Analysis Coverage) [done/done] ch:28 open:18 done:10
 ├── 5007 (Meta: TypeScript Compiler Module Resolution Coverage (audit reopened #5007)) [done/done] ch:20 open:12 done:8
 ```
@@ -69,7 +69,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1 | 5000 | Meta: TypeScript Compiler Parser Syntax Coverage | done | design | frontend/syntax | P1 | - | 435 | 327 | 108 |
 | 2 | 5001 | Meta: TypeScript Compiler Semantic Analysis Coverage | done | done | frontend/semantics | P1 | - | 550 | 275 | 275 |
 | 3 | 5004 | Meta: Runtime Builtins Coverage (test262) (audit reopened #5004) | done | done | runtime/builtins | P1 | - | 24 | 3 | 21 |
-| 4 | 5005 | Meta: TypeScript Compiler Name Resolution Coverage | done | done | frontend/resolver | P1 | - | 390 | 321 | 69 |
+| 4 | 5005 | Meta: TypeScript Compiler Name Resolution Coverage | done | done | frontend/resolver | P1 | - | 390 | 320 | 70 |
 | 5 | 5002 | Meta: TypeScript Compiler Type System Coverage | done | done | frontend/semantics | P1 | 5000, 5005 | 223 | 199 | 24 |
 | 6 | 5003 | Meta: TypeScript Compiler Declaration Emit Coverage | done | done | frontend/syntax | P2 | 5000, 5001 | 100 | 89 | 11 |
 | 7 | 5006 | Meta: TypeScript Compiler Scope Analysis Coverage | done | done | frontend/resolver | P2 | 5005 | 28 | 18 | 10 |
@@ -434,6 +434,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5479 | Bind DOM worker self/importScripts globals | feature | frontend/resolver | implementation-ready | P1 |  | `reference/typescript/tests/cases/compiler/noParameterReassignmentIIFEAnnotated.ts` |
 | 5480 | Report missing class return type arguments | feature | frontend/semantics | implementation-ready | P1 |  | `foo(): A` inside `class A<T>` silently build-passes instead of |
 | 5481 | Represent object destructuring assignment statements | feature | frontend/parser | implementation-ready | P1 |  | object destructuring assignment statements are parsed into a string |
+| 5482 | Represent array destructuring assignment statements | feature | frontend/parser | implementation-ready | P1 |  | array destructuring assignment statements are parsed into a string |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -2388,7 +2389,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 3302 | Implement Modulealiasasfunctionargument | spike | frontend/syntax | class: blocked | Implement Modulealiasasfunctionargument |
 | 3303 | Implement Modulealiasinterface | spike | frontend/syntax | class: blocked | Implement Modulealiasinterface |
 | 3304 | Implement Moduleandinterfacesharingname | spike | frontend/syntax | class: blocked | Implement Moduleandinterfacesharingname |
-| 3573 | Implement Nounusedlocals Name Resolution | spike | frontend/resolver | class: blocked | Implement Nounusedlocals Name Resolution |
 | 3574 | Implement Nounusedlocals Parser Syntax | spike | frontend/syntax | class: blocked | Implement Nounusedlocals Parser Syntax |
 | 3575 | Implement Nousedbeforedefinederrorintypecontext | spike | frontend/syntax | class: triage-needed | Implement Nousedbeforedefinederrorintypecontext |
 | 3576 | Implement Nodecolonmoduleresolution | spike | frontend/syntax | class: blocked | Implement Nodecolonmoduleresolution |
@@ -5276,6 +5276,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 3570 | Implement Nouncheckedindexedaccesscompoundassignments | spike | frontend/syntax | see `issues/done/3570-implement-noUncheckedIndexedAccessCompoundAssignments.md` |
 | 3571 | Implement Nounusedlocals Destructuring | spike | frontend/syntax | see `issues/done/3571-implement-noUnusedLocals-destructuring.md` |
 | 3572 | Implement Nounusedlocals Import Export | spike | frontend/syntax | see `issues/done/3572-implement-noUnusedLocals-import-export.md` |
+| 3573 | Implement Nounusedlocals Name Resolution | spike | frontend/resolver | see `issues/done/3573-implement-noUnusedLocals-name-resolution.md` |
 | 3690 | Implement Optionaltupleelementsandundefined | spike | reference/triage | see `issues/done/3690-implement-optionalTupleElementsAndUndefined.md` |
 | 3996 | Implement Compiler (dup) | spike | frontend/syntax | see `issues/done/3996-implement-reference-typescript-tests-cases-compiler.md` |
 | 4210 | Implement Splicetuples | spike | frontend/resolver | see `issues/done/4210-implement-spliceTuples.md` |

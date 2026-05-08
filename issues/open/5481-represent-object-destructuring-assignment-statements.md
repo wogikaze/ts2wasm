@@ -64,6 +64,7 @@ class C {
         return x;
     }
 }
+
 ```
 
 Compiler evidence:
