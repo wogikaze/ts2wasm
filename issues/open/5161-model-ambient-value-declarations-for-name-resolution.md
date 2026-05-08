@@ -110,6 +110,7 @@ Do not touch:
 - [ ] `declare var b2: boolean; b = b2;` resolves the ambient value name without emitting a runtime declaration.
 - [ ] `declare let anys: Ari<any>; var xs = anys.filter(Bullean);` resolves the ambient value name before later filter/type-predicate behavior is evaluated.
 - [ ] `declare let obj: Slugs; call(obj, cb);` resolves the ambient value name before later rest-destructuring callback narrowing is evaluated.
+- [ ] `declare const foo: string; if ((typeof foo) === "string") { foo; }` resolves the ambient value name before parenthesized `typeof` narrowing is evaluated.
 - [ ] Ambient declarations with initializers, such as `declare var e = 1;`, remain rejected.
 - [ ] `python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/bestCommonTypeWithContextualTyping.ts` no longer reports `UnresolvedName: unresolved name: \`e\``.
 - [ ] `narrowUnknownByTypePredicate.ts` no longer reports `UnresolvedName` for
@@ -229,6 +230,13 @@ Additional superseded bucket:
   `UnresolvedName: unresolved name: \`obj\` at 188..191`; TypeScript parses the
   file with no diagnostics, so rest-generic-call narrowing remains unproven
   until ambient let visibility is implemented.
+- `issues/done/3466-implement-narrowingTypeofParenthesized.md` reaches the
+  same ambient value name-resolution boundary for
+  `declare const foo: string;` followed by parenthesized `typeof foo` checks in
+  `narrowingTypeofParenthesized1.ts`. Fresh triage on 2026-05-08 reports
+  `UnresolvedName: unresolved name: \`foo\` at 151..154`; TypeScript parses the
+  file with no diagnostics, so parenthesized `typeof` narrowing remains
+  unproven until ambient const visibility is implemented.
 
 ## Completion evidence
 
