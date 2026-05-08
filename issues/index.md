@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 25 | 13 | 12 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4607 | 3273 | 1334 |
+| frontend | 4608 | 3273 | 1335 |
 | harness | 1 | 0 | 1 |
 | ir | 92 | 69 | 23 |
 | issues | 4 | 0 | 4 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5300 | 3582 | 1718 |
+| total | 5301 | 3582 | 1719 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -418,6 +418,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5463 | Parse nested let declarations named status | bug | frontend/parser | implementation-ready | P2 |  | `nestedRedeclarationInES6AMD.ts` is currently labeled as an AMD module |
 | 5464 | Report nested unary expression syntax diagnostics | bug | frontend/parser | implementation-ready | P2 |  | `nestedUnaryExpressionHang.ts` no longer hangs, but the compiler still |
 | 5465 | Parse abstract anonymous default class exports | bug | frontend/module-syntax | implementation-ready | P1 |  | `newAbstractInstance2.ts` stops before AST construction on the |
+| 5466 | Report malformed new angle-bracket casts | bug | frontend/parser | implementation-ready | P2 |  | `newExpressionWithCast.ts` contains both valid and invalid new/cast |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -2372,7 +2373,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 3302 | Implement Modulealiasasfunctionargument | spike | frontend/syntax | class: blocked | Implement Modulealiasasfunctionargument |
 | 3303 | Implement Modulealiasinterface | spike | frontend/syntax | class: blocked | Implement Modulealiasinterface |
 | 3304 | Implement Moduleandinterfacesharingname | spike | frontend/syntax | class: blocked | Implement Moduleandinterfacesharingname |
-| 3497 | Implement Newexpressionwithcast | spike | frontend/syntax | class: triage-needed | Implement Newexpressionwithcast |
 | 3498 | Implement Newexpressionwithtypeparameterconstrainedtooutertypeparameter | spike | frontend/syntax | class: blocked | Implement Newexpressionwithtypeparameterconstrainedtooutertypeparameter |
 | 3499 | Implement Newfunctionimplicitany | spike | frontend/syntax | class: blocked | Implement Newfunctionimplicitany |
 | 3500 | Implement Newlexicalenvironmentforconvertedloop | spike | frontend/syntax | class: triage-needed | Implement Newlexicalenvironmentforconvertedloop |
@@ -5260,6 +5260,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 3494 | Implement Newabstractinstance Name Resolution | spike | frontend/resolver | see `issues/done/3494-implement-newAbstractInstance-name-resolution.md` |
 | 3495 | Implement Newabstractinstance Parser Syntax | spike | frontend/syntax | see `issues/done/3495-implement-newAbstractInstance-parser-syntax.md` |
 | 3496 | Implement Newarrays | spike | frontend/syntax | see `issues/done/3496-implement-newArrays.md` |
+| 3497 | Implement Newexpressionwithcast | spike | frontend/syntax | see `issues/done/3497-implement-newExpressionWithCast.md` |
 | 3690 | Implement Optionaltupleelementsandundefined | spike | reference/triage | see `issues/done/3690-implement-optionalTupleElementsAndUndefined.md` |
 | 3996 | Implement Compiler (dup) | spike | frontend/syntax | see `issues/done/3996-implement-reference-typescript-tests-cases-compiler.md` |
 | 4210 | Implement Splicetuples | spike | frontend/resolver | see `issues/done/4210-implement-spliceTuples.md` |
