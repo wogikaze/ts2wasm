@@ -131,11 +131,11 @@ curl -LsSf https://get.nexte.st/latest/linux | tar zxf - -C ${CARGO_HOME:-~/.car
 
 **ビルド高速化**: プロジェクトは `mold` linker を使用してビルド時間を短縮しています。Nix devshell には含まれていますが、手動環境では別途インストールが必要です。
 
-`pre-commit` では `cargo fmt --all --check`、ステージした Markdown 向け `markdownlint`、必要に応じた `issues/index.md` の再生成、および `mise run check issues`（`issues/` の番号・パス等の不変条件）を実行する。hook を有効にするには init 時に `scripts/dev/install-git-hooks.sh` を実行する。
+`pre-commit` では `cargo fmt --all --check`、ステージした Markdown 向け `markdownlint`、および `assert(true)` 検出を実行する。hook を有効にするには init 時に `scripts/dev/install-git-hooks.sh` を実行する。
 
 ### parent/child worktree 開発
 
-複数 child に分ける開発では `mise run spawn-worktrees` で issue ごとの worktree と assignment を作成し、`mise run worktree-status` で状態を集約する。prompt は `.agents/prompts/autonomous-parent-orchestrator.md` と `.agents/prompts/autonomous-child-worker.md`。この loop は tracked state を持たず、Discord 報告は `mise run discord-report` で行う。
+複数 child に分ける開発では `mise run spawn-worktrees` で worktree を作成し、`mise run worktree-status` で状態を集約する。child worker 用の prompt は `.agents/prompts/autonomous-child-worker.md`。
 
 ## FAQ
 

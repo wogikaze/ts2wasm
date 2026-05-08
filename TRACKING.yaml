@@ -11,6 +11,639 @@ meta:
     generated_entries: forbidden
     canonical_source: TRACKING.yaml
 
-open: []
+open:
+  # ── W4: Promise (highest test262 impact, ~hundreds of cases) ──
+  - id: 1
+    title: "Promise constructor + .then/.catch/.finally"
+    priority: P0
+    type: runtime-builtin
+    area: runtime
+    status: open
+    created: 2026-05-09
+    updated: 2026-05-09
+    owner: human
+    acceptance:
+      - "cargo nextest run -p ts2wasm-cli --test m6_builtin_methods"
+    non_goals:
+      - "No microtask queue scheduling beyond basic Promise execution."
+      - "No async/await lowering — separate item."
+    evidence: null
+
+  - id: 2
+    title: "Promise.all / Promise.race / Promise.resolve / Promise.reject"
+    priority: P0
+    type: runtime-builtin
+    area: runtime
+    status: open
+    created: 2026-05-09
+    updated: 2026-05-09
+    owner: human
+    acceptance:
+      - "cargo nextest run -p ts2wasm-cli --test m6_builtin_methods"
+    non_goals:
+      - "No Promise.allSettled/any/withResolvers — separate item."
+    evidence: null
+
+  # ── W2: RegExp literal flags (highest syntax impact, ~45 cases) ──
+  - id: 3
+    title: "RegExp literal flags (g, i, m, s, u, y, d)"
+    priority: P0
+    type: feature
+    area: frontend
+    status: open
+    created: 2026-05-09
+    updated: 2026-05-09
+    owner: human
+    acceptance:
+      - "cargo nextest run -p ts2wasm-cli --test m6_builtin_methods"
+    non_goals:
+      - "No RegExp runtime execution beyond basic test/exec."
+      - "No full Unicode property escapes."
+    evidence: null
+
+  # ── W4: Proxy/Reflect (high test262 impact, ~hundreds) ──
+  - id: 4
+    title: "Proxy constructor + 13 fundamental handler traps"
+    priority: P1
+    type: runtime-builtin
+    area: runtime
+    status: open
+    created: 2026-05-09
+    updated: 2026-05-09
+    owner: human
+    acceptance:
+      - "cargo nextest run -p ts2wasm-cli --test m6_builtin_methods"
+    non_goals:
+      - "No Proxy.revocable — separate item."
+      - "No Reflect.* — separate item."
+    evidence: null
+
+  - id: 5
+    title: "Reflect API (construct, apply, get, set, has, deleteProperty, etc.)"
+    priority: P1
+    type: runtime-builtin
+    area: runtime
+    status: open
+    created: 2026-05-09
+    updated: 2026-05-09
+    owner: human
+    acceptance:
+      - "cargo nextest run -p ts2wasm-cli --test m6_builtin_methods"
+    evidence: null
+
+  # ── W4: TypedArrays / ArrayBuffer (medium test262 impact) ──
+  - id: 6
+    title: "TypedArray constructors (11 types) + basic methods"
+    priority: P1
+    type: runtime-builtin
+    area: runtime
+    status: open
+    created: 2026-05-09
+    updated: 2026-05-09
+    owner: human
+    acceptance:
+      - "cargo nextest run -p ts2wasm-cli --test m6_builtin_methods"
+    non_goals:
+      - "No SharedArrayBuffer/Atomics — separate items."
+    evidence: null
+
+  - id: 7
+    title: "ArrayBuffer / DataView"
+    priority: P1
+    type: runtime-builtin
+    area: runtime
+    status: open
+    created: 2026-05-09
+    updated: 2026-05-09
+    owner: human
+    acceptance:
+      - "cargo nextest run -p ts2wasm-cli --test m6_builtin_methods"
+    evidence: null
+
+  # ── W3: Global builtin registration (attack UnresolvedName=120) ──
+  - id: 8
+    title: "Register all ECMAScript global builtins (Symbol, Proxy, Reflect, Map, Set, WeakMap, WeakSet, Promise, Error types, ArrayBuffer, DataView, Atomics, Intl, globalThis, etc.)"
+    priority: P0
+    type: feature
+    area: ir
+    status: open
+    created: 2026-05-09
+    updated: 2026-05-09
+    owner: human
+    acceptance:
+      - "mise run reference-coverage -- test262 --limit 500 --detail 2>&1 | grep -c 'UnresolvedName'"
+    non_goals:
+      - "No TypedArray constructors — separate item."
+    evidence: null
+
+  - id: 9
+    title: "Register all TypedArray constructors and well-known symbols"
+    priority: P1
+    type: feature
+    area: ir
+    status: open
+    created: 2026-05-09
+    updated: 2026-05-09
+    owner: human
+    acceptance:
+      - "mise run reference-coverage -- test262 --limit 500 --detail 2>&1 | grep -c 'UnresolvedName'"
+    non_goals:
+      - "No Symbol.iterator runtime — just name registration."
+    evidence: null
+
+  # ── W3: Function resolution (attack UnresolvedFunction=70) ──
+  - id: 10
+    title: "Complete builtin method dispatch table (all String/Array/Object/Number/Function.prototype methods routed)"
+    priority: P0
+    type: feature
+    area: ir
+    status: open
+    created: 2026-05-09
+    updated: 2026-05-09
+    owner: human
+    acceptance:
+      - "mise run reference-coverage -- test262 --limit 500 --detail 2>&1 | grep -c 'UnresolvedFunction'"
+    evidence: null
+
+  # ── W5: Iterator protocol ──
+  - id: 11
+    title: "Iterator protocol (Symbol.iterator for Array/String/Map/Set, Iterator.prototype.next/return/throw)"
+    priority: P0
+    type: feature
+    area: runtime
+    status: open
+    created: 2026-05-09
+    updated: 2026-05-09
+    owner: human
+    acceptance:
+      - "cargo nextest run -p ts2wasm-cli --test m2_node_diff"
+    non_goals:
+      - "No Generator functions — separate item."
+      - "No async iteration."
+    evidence: null
+
+  # ── W5: Prototype chain completeness ──
+  - id: 12
+    title: "Well-known symbol wiring (hasInstance, toPrimitive, toStringTag, iterator)"
+    priority: P0
+    type: feature
+    area: runtime
+    status: open
+    created: 2026-05-09
+    updated: 2026-05-09
+    owner: human
+    acceptance:
+      - "cargo nextest run -p ts2wasm-cli --test m2_node_diff"
+    evidence: null
+
+  # ── W5: Complete completion records ──
+  - id: 13
+    title: "Proper completion records for all statement types (if/switch/try/for/while)"
+    priority: P1
+    type: feature
+    area: ir
+    status: open
+    created: 2026-05-09
+    updated: 2026-05-09
+    owner: human
+    acceptance:
+      - "cargo nextest run -p ts2wasm-cli --test m7_control_flow"
+    evidence: null
+
+  # ── W2: Remaining syntax ──
+  - id: 14
+    title: "Expression forms: SequenceExpression, yield/generator, async/await, optional chaining, nullish coalescing"
+    priority: P1
+    type: feature
+    area: frontend
+    status: open
+    created: 2026-05-09
+    updated: 2026-05-09
+    owner: human
+    acceptance:
+      - "mise run reference-coverage -- test262 --limit 500 --detail 2>&1 | grep 'UnsupportedSyntax'"
+    evidence: null
+
+  - id: 15
+    title: "Statement forms: with, debugger, Annex B block-level function hoisting"
+    priority: P2
+    type: feature
+    area: frontend
+    status: open
+    created: 2026-05-09
+    updated: 2026-05-09
+    owner: human
+    acceptance:
+      - "mise run reference-coverage -- test262 --limit 500 --detail 2>&1 | grep 'UnsupportedSyntax'"
+    evidence: null
+
+  # ── W4: String/Array semantic parity ──
+  - id: 16
+    title: "String.prototype.replace/replaceAll with full RegExp match semantics and capture groups"
+    priority: P1
+    type: runtime-builtin
+    area: runtime
+    status: open
+    created: 2026-05-09
+    updated: 2026-05-09
+    owner: human
+    acceptance:
+      - "cargo nextest run -p ts2wasm-cli --test m6_builtin_methods"
+    evidence: null
+
+  - id: 17
+    title: "Array.prototype.sort implementation"
+    priority: P1
+    type: runtime-builtin
+    area: runtime
+    status: open
+    created: 2026-05-09
+    updated: 2026-05-09
+    owner: human
+    acceptance:
+      - "cargo nextest run -p ts2wasm-cli --test m6_builtin_methods"
+    non_goals:
+      - "No localeCompare sorting."
+    evidence: null
+
+  - id: 18
+    title: "Array.prototype.reduce/reduceRight"
+    priority: P2
+    type: runtime-builtin
+    area: runtime
+    status: open
+    created: 2026-05-09
+    updated: 2026-05-09
+    owner: human
+    acceptance:
+      - "cargo nextest run -p ts2wasm-cli --test m6_builtin_methods"
+    evidence: null
+
+  - id: 19
+    title: "String.prototype.matchAll"
+    priority: P2
+    type: runtime-builtin
+    area: runtime
+    status: open
+    created: 2026-05-09
+    updated: 2026-05-09
+    owner: human
+    acceptance:
+      - "cargo nextest run -p ts2wasm-cli --test m6_builtin_methods"
+    evidence: null
+
+  # ── W5: Generator functions ──
+  - id: 20
+    title: "Generator functions (function*, yield, yield*, Generator.prototype.next/return/throw)"
+    priority: P1
+    type: feature
+    area: runtime
+    status: open
+    created: 2026-05-09
+    updated: 2026-05-09
+    owner: human
+    acceptance:
+      - "cargo nextest run -p ts2wasm-cli --test m7_control_flow"
+    non_goals:
+      - "No async generators."
+      - "No for-await-of."
+    evidence: null
+
+  # ── W5: Object model completeness ──
+  - id: 21
+    title: "Property descriptor completeness + Object.seal/freeze/preventExtensions"
+    priority: P1
+    type: feature
+    area: runtime
+    status: open
+    created: 2026-05-09
+    updated: 2026-05-09
+    owner: human
+    acceptance:
+      - "cargo nextest run -p ts2wasm-cli --test m2_node_diff"
+    evidence: null
+
+  # ── W4: WeakMap/WeakSet ──
+  - id: 22
+    title: "WeakMap / WeakSet"
+    priority: P2
+    type: runtime-builtin
+    area: runtime
+    status: open
+    created: 2026-05-09
+    updated: 2026-05-09
+    owner: human
+    acceptance:
+      - "cargo nextest run -p ts2wasm-cli --test m6_builtin_methods"
+    evidence: null
+
+  - id: 23
+    title: "Symbol (well-known symbols: iterator, toStringTag, hasInstance, toPrimitive, for, keyFor)"
+    priority: P2
+    type: runtime-builtin
+    area: runtime
+    status: open
+    created: 2026-05-09
+    updated: 2026-05-09
+    owner: human
+    acceptance:
+      - "cargo nextest run -p ts2wasm-cli --test m6_builtin_methods"
+    evidence: null
+
+  # ── W5: Module live bindings ──
+  - id: 24
+    title: "ES module live binding updates + module namespace objects (import * as ns)"
+    priority: P2
+    type: feature
+    area: runtime
+    status: open
+    created: 2026-05-09
+    updated: 2026-05-09
+    owner: human
+    acceptance:
+      - "cargo nextest run -p ts2wasm-cli --test m9_modules"
+    non_goals:
+      - "No dynamic import (import()) — separate item."
+    evidence: null
+
+  - id: 25
+    title: "Dynamic import (import()) + circular dependency evaluation"
+    priority: P2
+    type: feature
+    area: runtime
+    status: open
+    created: 2026-05-09
+    updated: 2026-05-09
+    owner: human
+    acceptance:
+      - "cargo nextest run -p ts2wasm-cli --test m9_modules"
+    evidence: null
+
+  # ── W5: Closure completeness ──
+  - id: 26
+    title: "Mutable capture environments for escaping closures"
+    priority: P2
+    type: feature
+    area: runtime
+    status: open
+    created: 2026-05-09
+    updated: 2026-05-09
+    owner: human
+    acceptance:
+      - "cargo nextest run -p ts2wasm-cli --test m2_node_diff"
+    evidence: null
+
+  # ── W2: TypeScript parser gaps (lower test262 priority) ──
+  - id: 27
+    title: "JSX parsing support"
+    priority: P2
+    type: feature
+    area: frontend
+    status: open
+    created: 2026-05-09
+    updated: 2026-05-09
+    owner: human
+    acceptance:
+      - "cargo nextest run -p ts2wasm-cli --test m6_builtin_methods"
+    non_goals:
+      - "No JSX runtime — parsing only."
+    evidence: null
+
+  - id: 28
+    title: "Decorator parsing + parameter property parsing"
+    priority: P2
+    type: feature
+    area: frontend
+    status: open
+    created: 2026-05-09
+    updated: 2026-05-09
+    owner: human
+    acceptance:
+      - "cargo nextest run -p ts2wasm-cli --test m6_builtin_methods"
+    evidence: null
+
+  # ── W0: Binary WASM emitter (architecture debt) ──
+  - id: 29
+    title: "Production-quality binary WASM emitter (replace WAT text dominance)"
+    priority: P2
+    type: design
+    area: backend
+    status: open
+    created: 2026-05-09
+    updated: 2026-05-09
+    owner: human
+    acceptance:
+      - "cargo nextest run -p ts2wasm-cli --test m7_control_flow"
+    non_goals:
+      - "No full WAT replacement — just sufficient binary emitter for production paths."
+    evidence: null
+
+  - id: 30
+    title: "Runtime core WAT template reduction (part1/part2 typed writer replacement)"
+    priority: P2
+    type: design
+    area: backend
+    status: open
+    created: 2026-05-09
+    updated: 2026-05-09
+    owner: human
+    acceptance:
+      - "cargo nextest run -p ts2wasm-cli --test m6_builtin_methods"
+    evidence: null
+
+  - id: 31
+    title: "ABI bridge: fix i64 logical ABI vs i32 wire representation discrepancy"
+    priority: P2
+    type: design
+    area: backend
+    status: open
+    created: 2026-05-09
+    updated: 2026-05-09
+    owner: human
+    acceptance:
+      - "cargo nextest run -p ts2wasm-cli --test m2_node_diff"
+    evidence: null
+
+  # ── W1: WASI surface ──
+  - id: 32
+    title: "WASI args (args_get/args_sizes_get) for process.argv"
+    priority: P3
+    type: feature
+    area: runtime
+    status: open
+    created: 2026-05-09
+    updated: 2026-05-09
+    owner: human
+    acceptance:
+      - "cargo nextest run -p ts2wasm-cli --test m1_iwasm"
+    evidence: null
+
+  - id: 33
+    title: "WASI env (environ_get/environ_sizes_get) for process.env"
+    priority: P3
+    type: feature
+    area: runtime
+    status: open
+    created: 2026-05-09
+    updated: 2026-05-09
+    owner: human
+    acceptance:
+      - "cargo nextest run -p ts2wasm-cli --test m1_iwasm"
+    evidence: null
+
+  - id: 34
+    title: "WASI proc_exit clean exit with code"
+    priority: P3
+    type: feature
+    area: runtime
+    status: open
+    created: 2026-05-09
+    updated: 2026-05-09
+    owner: human
+    acceptance:
+      - "cargo nextest run -p ts2wasm-cli --test m1_iwasm"
+    evidence: null
+
+  # ── W6: Coverage ramp ──
+  - id: 35
+    title: "Ramp test262 coverage from 500 → 2,000 (parallel execution, caching)"
+    priority: P1
+    type: infra
+    area: scripts
+    status: open
+    created: 2026-05-09
+    updated: 2026-05-09
+    owner: human
+    acceptance:
+      - "mise run reference-coverage -- test262 --limit 2000 2>&1 | grep 'executed=2000'"
+    non_goals:
+      - "No dashboard trend graphs — separate items."
+    evidence: null
+
+  - id: 36
+    title: "Regression detection: compare ramp runs and fail on build_pass/semantic_pass decrease"
+    priority: P2
+    type: infra
+    area: scripts
+    status: open
+    created: 2026-05-09
+    updated: 2026-05-09
+    owner: human
+    acceptance:
+      - "mise run reference-coverage -- test262 --limit 500 --check"
+    evidence: null
+
+  - id: 37
+    title: "Coverage dashboard: trend graph (semantic_pass % over time) + feature-level burn-down"
+    priority: P2
+    type: infra
+    area: scripts
+    status: open
+    created: 2026-05-09
+    updated: 2026-05-09
+    owner: human
+    acceptance:
+      - "python3 -c 'import json; json.load(open(\"site/docs/coverage/web-ui/public/data/dashboard.json\"))'"
+    evidence: null
+
+  # ── W7: Host capability ──
+  - id: 38
+    title: "Full host import audit (run --emit-manifest on all fixtures, verify accuracy)"
+    priority: P2
+    type: infra
+    area: scripts
+    status: open
+    created: 2026-05-09
+    updated: 2026-05-09
+    owner: human
+    acceptance:
+      - "cargo nextest run -p ts2wasm-cli --test m11_host_deny"
+    evidence: null
+
+  - id: 39
+    title: "Expand host-deny test matrix + manifest golden tests"
+    priority: P3
+    type: infra
+    area: scripts
+    status: open
+    created: 2026-05-09
+    updated: 2026-05-09
+    owner: human
+    acceptance:
+      - "cargo nextest run -p ts2wasm-cli --test m11_host_deny"
+    evidence: null
+
+  - id: 40
+    title: "Capability review checklist in coding standard"
+    priority: P3
+    type: docs
+    area: scripts
+    status: open
+    created: 2026-05-09
+    updated: 2026-05-09
+    owner: human
+    acceptance:
+      - "grep -q 'capability' docs/12-coding-standard.md"
+    evidence: null
+
+  # ── W3: TypeScript-specific name resolution ──
+  - id: 41
+    title: "Nested namespace/module resolution (A.B.C) + type-only imports"
+    priority: P2
+    type: feature
+    area: ir
+    status: open
+    created: 2026-05-09
+    updated: 2026-05-09
+    owner: human
+    acceptance:
+      - "cargo nextest run -p ts2wasm-cli --test m9_modules"
+    evidence: null
+
+  - id: 42
+    title: "Triple-slash directives + module augmentation"
+    priority: P3
+    type: feature
+    area: ir
+    status: open
+    created: 2026-05-09
+    updated: 2026-05-09
+    owner: human
+    acceptance:
+      - "cargo nextest run -p ts2wasm-cli --test m9_modules"
+    evidence: null
+
+  # ── W4: Async/await ──
+  - id: 43
+    title: "async/await lowering and runtime (on top of Promise)"
+    priority: P1
+    type: feature
+    area: runtime
+    status: open
+    created: 2026-05-09
+    updated: 2026-05-09
+    owner: human
+    acceptance:
+      - "cargo nextest run -p ts2wasm-cli --test m7_control_flow"
+    non_goals:
+      - "No async generators."
+    evidence: null
+
+  # ── W8: Deferred optimization items (minimal, post-90%) ──
+  - id: 44
+    title: "Benchmark suite + regression tracker (post-90% test262)"
+    priority: P3
+    type: infra
+    area: scripts
+    status: open
+    created: 2026-05-09
+    updated: 2026-05-09
+    owner: human
+    acceptance:
+      - "mise run benchmark-tracker --help"
+    non_goals:
+      - "No optimization passes until Gate H reached."
+    evidence: null
+
 active: []
 done: []
