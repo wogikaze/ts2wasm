@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 30 | 17 | 13 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4618 | 3194 | 1424 |
+| frontend | 4619 | 3194 | 1425 |
 | harness | 1 | 0 | 1 |
 | ir | 99 | 71 | 28 |
 | issues | 4 | 0 | 4 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5323 | 3506 | 1817 |
+| total | 5324 | 3506 | 1818 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -441,6 +441,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5486 | Report non-exported merged namespace value member access | feature | frontend/semantics | implementation-ready | P1 |  | namespace member export/visibility state is not checked when merged |
 | 5487 | Report non-identical type parameters across merged declarations | feature | frontend/semantics | implementation-ready | P1 |  | merged declarations with non-identical type parameter lists are |
 | 5488 | Parse array type suffixes in erased type positions | feature | frontend/parser | implementation-ready | P1 |  | array type suffixes such as `any[]`, `Args[]`, and object literal |
+| 5489 | Report mixed exported and local var/function merges | feature | frontend/semantics | implementation-ready | P1 |  | local `var f` plus exported `function f` overload declarations report |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -2395,7 +2396,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 3302 | Implement Modulealiasasfunctionargument | spike | frontend/syntax | class: blocked | Implement Modulealiasasfunctionargument |
 | 3303 | Implement Modulealiasinterface | spike | frontend/syntax | class: blocked | Implement Modulealiasinterface |
 | 3304 | Implement Moduleandinterfacesharingname | spike | frontend/syntax | class: blocked | Implement Moduleandinterfacesharingname |
-| 3596 | Implement Nonmergedoverloads | spike | frontend/syntax | class: blocked | Implement Nonmergedoverloads |
 | 3597 | Implement Nonnullfullinference | spike | frontend/semantics | class: blocked | Implement Nonnullfullinference |
 | 3598 | Implement Nonnullmappedtype | spike | frontend/syntax | class: blocked | Implement Nonnullmappedtype |
 | 3599 | Implement Nonnullparameterextendingstringassignabletostring | spike | frontend/syntax | class: blocked | Implement Nonnullparameterextendingstringassignabletostring |
@@ -5283,6 +5283,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 3593 | Implement Nonidenticaltypeconstraints | spike | frontend/syntax | see `issues/done/3593-implement-nonIdenticalTypeConstraints.md` |
 | 3594 | Implement Noninferrabletypepropagation Parser Syntax | spike | frontend/syntax | see `issues/done/3594-implement-nonInferrableTypePropagation-parser-syntax.md` |
 | 3595 | Implement Noninferrabletypepropagation Type System | spike | frontend/semantics | see `issues/done/3595-implement-nonInferrableTypePropagation-type-system.md` |
+| 3596 | Implement Nonmergedoverloads | spike | frontend/syntax | see `issues/done/3596-implement-nonMergedOverloads.md` |
 | 3690 | Implement Optionaltupleelementsandundefined | spike | reference/triage | see `issues/done/3690-implement-optionalTupleElementsAndUndefined.md` |
 | 3996 | Implement Compiler (dup) | spike | frontend/syntax | see `issues/done/3996-implement-reference-typescript-tests-cases-compiler.md` |
 | 4210 | Implement Splicetuples | spike | frontend/resolver | see `issues/done/4210-implement-spliceTuples.md` |
