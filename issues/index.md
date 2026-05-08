@@ -16,9 +16,9 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 25 | 13 | 12 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4599 | 3296 | 1303 |
+| frontend | 4599 | 3295 | 1304 |
 | harness | 1 | 0 | 1 |
-| ir | 89 | 66 | 23 |
+| ir | 90 | 67 | 23 |
 | issues | 4 | 0 | 4 |
 | parser | 1 | 0 | 1 |
 | reference | 215 | 143 | 72 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5289 | 3603 | 1686 |
+| total | 5290 | 3603 | 1687 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -50,7 +50,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 5000 (Meta: TypeScript Compiler Parser Syntax Coverage) [done/design] ch:446 open:346 done:100
 ├── 5002 (Meta: TypeScript Compiler Type System Coverage) [done/done] ch:223 open:201 done:22 (also ← 5005)
 ├── 5003 (Meta: TypeScript Compiler Declaration Emit Coverage) [done/done] ch:100 open:89 done:11 (also ← 5001)
-5001 (Meta: TypeScript Compiler Semantic Analysis Coverage) [done/done] ch:556 open:294 done:262
+5001 (Meta: TypeScript Compiler Semantic Analysis Coverage) [done/done] ch:556 open:293 done:263
 5004 (Meta: Runtime Builtins Coverage (test262) (audit reopened #5004)) [done/done] ch:24 open:3 done:21
 5005 (Meta: TypeScript Compiler Name Resolution Coverage) [done/done] ch:397 open:335 done:62
 ├── 5006 (Meta: TypeScript Compiler Scope Analysis Coverage) [done/done] ch:28 open:19 done:9
@@ -67,7 +67,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | Order | ID | Title | State | Class | Area | Priority | Depends on | Direct children | Open children | Done children |
 |-----:|---:|------|-------|-------|------|--------:|-----------:|----------------:|--------------:|--------------:|
 | 1 | 5000 | Meta: TypeScript Compiler Parser Syntax Coverage | done | design | frontend/syntax | P1 | - | 446 | 346 | 100 |
-| 2 | 5001 | Meta: TypeScript Compiler Semantic Analysis Coverage | done | done | frontend/semantics | P1 | - | 556 | 294 | 262 |
+| 2 | 5001 | Meta: TypeScript Compiler Semantic Analysis Coverage | done | done | frontend/semantics | P1 | - | 556 | 293 | 263 |
 | 3 | 5004 | Meta: Runtime Builtins Coverage (test262) (audit reopened #5004) | done | done | runtime/builtins | P1 | - | 24 | 3 | 21 |
 | 4 | 5005 | Meta: TypeScript Compiler Name Resolution Coverage | done | done | frontend/resolver | P1 | - | 397 | 335 | 62 |
 | 5 | 5002 | Meta: TypeScript Compiler Type System Coverage | done | done | frontend/semantics | P1 | 5000, 5005 | 223 | 201 | 22 |
@@ -407,6 +407,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5452 | Lower nested object rest binding from narrowed source | feature | ir/lowering | implementation-ready | P2 |  | `narrowingDestructuring.ts` parses and resolves, then lower_program |
 | 5453 | Support typed export let declarations without initializers | feature | frontend/module-syntax | implementation-ready | P1 |  | `narrowingPastLastAssignmentInModule.ts` tokenizes the exported `let` |
 | 5454 | Parse while statements with non-block bodies | feature | frontend/syntax | implementation-ready | P1 |  | `narrowingPlainJsNoCrash1.ts` tokenizes `while (d !== a$b);`, but |
+| 5455 | Report nullable object receiver after typeof object check | feature | ir/lowering | implementation-ready | P1 |  | `narrowingTruthyObject.ts` parses and resolves, then lower_program |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -2361,7 +2362,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 3302 | Implement Modulealiasasfunctionargument | spike | frontend/syntax | class: blocked | Implement Modulealiasasfunctionargument |
 | 3303 | Implement Modulealiasinterface | spike | frontend/syntax | class: blocked | Implement Modulealiasinterface |
 | 3304 | Implement Moduleandinterfacesharingname | spike | frontend/syntax | class: blocked | Implement Moduleandinterfacesharingname |
-| 3465 | Implement Narrowingtruthyobject | spike | frontend/syntax | class: blocked | Implement Narrowingtruthyobject |
 | 3466 | Implement Narrowingtypeofparenthesized | spike | frontend/resolver | class: blocked | Implement Narrowingtypeofparenthesized |
 | 3467 | Implement Narrowingtypeofundefined Name Resolution | spike | frontend/resolver | class: blocked | Implement Narrowingtypeofundefined Name Resolution |
 | 3468 | Implement Narrowingtypeofundefined Parser Syntax | spike | frontend/syntax | class: blocked | Implement Narrowingtypeofundefined Parser Syntax |
@@ -5249,6 +5249,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 3462 | Implement Narrowingpastlastassignmentinmodule | spike | frontend/syntax | see `issues/done/3462-implement-narrowingPastLastAssignmentInModule.md` |
 | 3463 | Implement Narrowingplainjsnocrash | spike | frontend/syntax | see `issues/done/3463-implement-narrowingPlainJsNoCrash.md` |
 | 3464 | Implement Narrowingrestgenericcall | spike | frontend/semantics | see `issues/done/3464-implement-narrowingRestGenericCall.md` |
+| 3465 | Implement Narrowingtruthyobject | spike | frontend/syntax | see `issues/done/3465-implement-narrowingTruthyObject.md` |
 | 3690 | Implement Optionaltupleelementsandundefined | spike | reference/triage | see `issues/done/3690-implement-optionalTupleElementsAndUndefined.md` |
 | 3996 | Implement Compiler (dup) | spike | frontend/syntax | see `issues/done/3996-implement-reference-typescript-tests-cases-compiler.md` |
 | 4210 | Implement Splicetuples | spike | frontend/resolver | see `issues/done/4210-implement-spliceTuples.md` |
