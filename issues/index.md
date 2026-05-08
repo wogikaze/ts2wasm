@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 25 | 13 | 12 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4597 | 3301 | 1296 |
+| frontend | 4597 | 3300 | 1297 |
 | harness | 1 | 0 | 1 |
 | ir | 89 | 66 | 23 |
 | issues | 4 | 0 | 4 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5287 | 3608 | 1679 |
+| total | 5287 | 3607 | 1680 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -48,7 +48,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 
 ```
 5000 (Meta: TypeScript Compiler Parser Syntax Coverage) [done/design] ch:446 open:349 done:97
-├── 5002 (Meta: TypeScript Compiler Type System Coverage) [done/done] ch:223 open:203 done:20 (also ← 5005)
+├── 5002 (Meta: TypeScript Compiler Type System Coverage) [done/done] ch:223 open:202 done:21 (also ← 5005)
 ├── 5003 (Meta: TypeScript Compiler Declaration Emit Coverage) [done/done] ch:100 open:89 done:11 (also ← 5001)
 5001 (Meta: TypeScript Compiler Semantic Analysis Coverage) [done/done] ch:556 open:295 done:261
 5004 (Meta: Runtime Builtins Coverage (test262) (audit reopened #5004)) [done/done] ch:24 open:3 done:21
@@ -70,7 +70,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 2 | 5001 | Meta: TypeScript Compiler Semantic Analysis Coverage | done | done | frontend/semantics | P1 | - | 556 | 295 | 261 |
 | 3 | 5004 | Meta: Runtime Builtins Coverage (test262) (audit reopened #5004) | done | done | runtime/builtins | P1 | - | 24 | 3 | 21 |
 | 4 | 5005 | Meta: TypeScript Compiler Name Resolution Coverage | done | done | frontend/resolver | P1 | - | 397 | 335 | 62 |
-| 5 | 5002 | Meta: TypeScript Compiler Type System Coverage | done | done | frontend/semantics | P1 | 5000, 5005 | 223 | 203 | 20 |
+| 5 | 5002 | Meta: TypeScript Compiler Type System Coverage | done | done | frontend/semantics | P1 | 5000, 5005 | 223 | 202 | 21 |
 | 6 | 5003 | Meta: TypeScript Compiler Declaration Emit Coverage | done | done | frontend/syntax | P2 | 5000, 5001 | 100 | 89 | 11 |
 | 7 | 5006 | Meta: TypeScript Compiler Scope Analysis Coverage | done | done | frontend/resolver | P2 | 5005 | 28 | 19 | 9 |
 | 8 | 5007 | Meta: TypeScript Compiler Module Resolution Coverage (audit reopened #5007) | done | done | frontend/resolver | P2 | 5005 | 20 | 12 | 8 |
@@ -2359,7 +2359,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 3302 | Implement Modulealiasasfunctionargument | spike | frontend/syntax | class: blocked | Implement Modulealiasasfunctionargument |
 | 3303 | Implement Modulealiasinterface | spike | frontend/syntax | class: blocked | Implement Modulealiasinterface |
 | 3304 | Implement Moduleandinterfacesharingname | spike | frontend/syntax | class: blocked | Implement Moduleandinterfacesharingname |
-| 3458 | Implement Narrowingnoinfer | spike | frontend/semantics | class: blocked | Implement Narrowingnoinfer |
 | 3459 | Implement Narrowingofdottednames | spike | frontend/syntax | class: blocked | Implement Narrowingofdottednames |
 | 3460 | Implement Narrowingofqualifiednames | spike | frontend/syntax | class: blocked | Implement Narrowingofqualifiednames |
 | 3461 | Implement Narrowingpastlastassignment | spike | frontend/syntax | class: blocked | Implement Narrowingpastlastassignment |
@@ -5247,6 +5246,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 3455 | Implement Narrowingdestructuring | spike | reference/triage | see `issues/done/3455-implement-narrowingDestructuring.md` |
 | 3456 | Implement Narrowingincaseclauseaftercaseclausewithreturn | spike | frontend/syntax | see `issues/done/3456-implement-narrowingInCaseClauseAfterCaseClauseWithReturn.md` |
 | 3457 | Implement Narrowingmutualsubtypes | spike | frontend/syntax | see `issues/done/3457-implement-narrowingMutualSubtypes.md` |
+| 3458 | Implement Narrowingnoinfer | spike | frontend/semantics | see `issues/done/3458-implement-narrowingNoInfer.md` |
 | 3690 | Implement Optionaltupleelementsandundefined | spike | reference/triage | see `issues/done/3690-implement-optionalTupleElementsAndUndefined.md` |
 | 3996 | Implement Compiler (dup) | spike | frontend/syntax | see `issues/done/3996-implement-reference-typescript-tests-cases-compiler.md` |
 | 4210 | Implement Splicetuples | spike | frontend/resolver | see `issues/done/4210-implement-spliceTuples.md` |
