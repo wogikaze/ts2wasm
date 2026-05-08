@@ -219,7 +219,7 @@ reference/typescript/tests/cases/compiler/nonNullMappedType.ts: build_pass
 
 Commits:
 
-- pending local commit
+- dd025b850
 
 Validation result:
 
