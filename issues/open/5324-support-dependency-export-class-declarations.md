@@ -185,6 +185,11 @@ fresh triage for `moduleResolutionWithSymlinks.ts` and
 `moduleResolutionWithSymlinks_withOutDir.ts` stops at dependency module
 `export class MyClass` before symlinked package realpath, duplicate/private
 class diagnostics, or outDir behavior becomes actionable.
+Also owns `issues/done/3508-implement-noBundledEmitFromNodeModules.md`: fresh
+triage for `noBundledEmitFromNodeModules.ts` stops at the virtual
+`/node_modules/projB/index.ts` dependency module `export class C` issue-5005
+boundary before node_modules bundling, bare specifier `projB`, or no-bundled
+emit parity becomes actionable.
 
 ## Completion evidence
 
