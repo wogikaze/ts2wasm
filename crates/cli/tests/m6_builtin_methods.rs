@@ -1165,3 +1165,14 @@ fn build_smoke_regexp_flags_gim() {
         result.err()
     );
 }
+
+// RegExp literal flags s, u, y, d (issue 110)
+#[test]
+fn build_smoke_regexp_flags_suy() {
+    let result = run_fixture("builtins-and-io/regexp-flags-suy-d.ts");
+    assert!(
+        result.is_ok(),
+        "RegExp flags s, u, y should build: {:?}",
+        result.err()
+    );
+}
