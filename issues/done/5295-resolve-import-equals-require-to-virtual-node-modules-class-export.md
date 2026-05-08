@@ -5,7 +5,7 @@ type: feature
 area: frontend/module-resolution
 class: implementation-ready
 priority: P1
-depends_on: []
+depends_on: [5005]
 blocks: []
 created: 2026-05-07
 updated: 2026-05-07
