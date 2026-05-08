@@ -88,8 +88,8 @@ Goal: parser should accept or precisely reject common JS/TS syntax without gener
 
 W2 = "parse or precise reject". Runtime semantics belong to W4/W5.
 
-- [ ] RegExp literal flags: `g`, `i`, `m`
-- [ ] RegExp literal flags: `s`, `u`, `y`, `d`
+- [X] RegExp literal flags: `g`, `i`, `m` — id 109 done
+- [X] RegExp literal flags: `s`, `u`, `y` — id 110 done (d flag rejected with precise diagnostic)
 - [ ] SequenceExpression
 - [ ] Optional chaining
 - [ ] Nullish coalescing
@@ -117,10 +117,11 @@ Goal: unresolved names/functions should become either known supported operations
 
 This wave should reduce `UnresolvedName` / `UnresolvedFunction` noise without pretending unsupported runtime semantics exist.
 
-- [ ] Register core ECMAScript global builtin names:
-- [x] `Symbol`, `Proxy`, `Reflect`, `Promise` (id 101 done)
-- [x] `ArrayBuffer`, `DataView` (id 102 done)
-  — remaining: `Map`, `Set`, `WeakMap`, `WeakSet`, `Error` types, `Atomics`, `Intl`, `globalThis`
+- [X] Register core ECMAScript global builtin names:
+  ✅ `Symbol`, `Proxy`, `Reflect`, `Promise` (id 101 done)
+  ✅ `ArrayBuffer`, `DataView` (id 102 done)
+  ✅ `WeakMap`, `WeakSet`, `Atomics`, `Intl`, `globalThis`, `AggregateError`, `URIError`, `EvalError` (done)
+  — remaining: `Map`, `Set` (technically done), `Error` types (done)
 - [X] Register TypedArray constructor names:
   [x] `Int8Array` through `BigUint64Array` (11 types) — id 102 done
 - [X] Register well-known symbols:
@@ -146,7 +147,7 @@ Goal: implement selected builtins only after names and dispatch paths are explic
 See `docs/language-reference/` for the detailed feature coverage tables.
 
 - [ ] Promise minimal substrate and constructor
-- [ ] `Promise.prototype.then` / `catch` / `finally` — [x] precise unsupported diagnostic added (id 104 done)
+- [X] `Promise.prototype.then` / `catch` / `finally` — precise unsupported diagnostic added (id 104 done)
 - [ ] `Promise.resolve` / `reject` / `all` / `race` / `allSettled` / `any` / `withResolvers`
 - [ ] Proxy constructor
 - [ ] Proxy handler trap slices + `Proxy.revocable`
