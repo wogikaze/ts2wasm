@@ -156,7 +156,7 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- `pending`
+- `5abc9cc6`
 
 Validation result:
 
