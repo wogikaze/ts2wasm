@@ -54,6 +54,7 @@ struct ParsedParam {
 #[derive(Debug, Clone, PartialEq, Eq)]
 struct ParsedBindingPattern {
     text: String,
+    span: Span,
     is_identifier: bool,
 }
 
