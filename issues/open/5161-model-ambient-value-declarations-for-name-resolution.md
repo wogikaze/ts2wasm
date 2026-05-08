@@ -111,6 +111,8 @@ Do not touch:
 - [ ] `declare let anys: Ari<any>; var xs = anys.filter(Bullean);` resolves the ambient value name before later filter/type-predicate behavior is evaluated.
 - [ ] Ambient declarations with initializers, such as `declare var e = 1;`, remain rejected.
 - [ ] `python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/bestCommonTypeWithContextualTyping.ts` no longer reports `UnresolvedName: unresolved name: \`e\``.
+- [ ] `narrowUnknownByTypePredicate.ts` no longer reports `UnresolvedName` for
+  `value1` declared by `declare const value1: unknown;`.
 
 ## Validation
 
@@ -212,6 +214,13 @@ Additional superseded bucket:
   `narrowByClauseExpressionInSwitchTrue2.ts`. Fresh triage on 2026-05-08
   reports `UnresolvedName: unresolved name: \`f\` at 170..171`; TypeScript
   parses the file with no diagnostics.
+- `issues/done/3449-implement-narrowUnknownByTypePredicate.md` reaches the same
+  ambient value name-resolution boundary for
+  `declare const value1: unknown;` followed by `isNotNullish(value1)` in
+  `narrowUnknownByTypePredicate.ts`. Fresh triage on 2026-05-08 reports
+  `UnresolvedName: unresolved name: \`value1\` at 234..240`; TypeScript parses
+  the file with no diagnostics and later type-predicate narrowing remains
+  unproven until ambient const visibility is implemented.
 
 ## Completion evidence
 
