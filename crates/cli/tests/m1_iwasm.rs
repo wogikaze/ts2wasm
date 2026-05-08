@@ -133,6 +133,98 @@ fn exit_code_with_normal_termination() {
 }
 
 #[test]
+fn abi_bridge_mismatch_detection() {
+    // Verifies the ABI bridge between logical i64 JsVal and i32 wire RawValue.
+    // Exercises value encoding/decoding through arithmetic + console.log.
+    let temp = std::env::temp_dir().join(format!("ts2wasm-m1-abi-bridge-{}", std::process::id()));
+    fs::create_dir_all(&temp).unwrap();
+
+    let input = temp.join("abi_bridge.ts");
+    let output = temp.join("abi_bridge.wasm");
+    fs::write(
+        &input,
+        "console.log(10 + 32);\nconsole.log(100 - 1);\nconsole.log(6 * 7);\n",
+    )
+    .unwrap();
+
+    let build = Command::new(env!("CARGO_BIN_EXE_ts2wasm"))
+        .arg("build")
+        .arg(&input)
+        .arg("-o")
+        .arg(&output)
+        .output()
+        .unwrap();
+
+    assert!(
+        build.status.success(),
+        "ABI bridge build failed\nstdout:\n{}\nstderr:\n{}",
+        String::from_utf8_lossy(&build.stdout),
+        String::from_utf8_lossy(&build.stderr)
+    );
+
+    let run = run_iwasm_with_timeout(Command::new("iwasm").arg(&output)).unwrap();
+    assert!(
+        !run.timed_out,
+        "iwasm timed out\nstdout:\n{}\nstderr:\n{}",
+        String::from_utf8_lossy(&run.output.stdout),
+        String::from_utf8_lossy(&run.output.stderr)
+    );
+    assert!(
+        run.output.status.success(),
+        "iwasm failed\nstdout:\n{}\nstderr:\n{}",
+        String::from_utf8_lossy(&run.output.stdout),
+        String::from_utf8_lossy(&run.output.stderr)
+    );
+    assert_eq!(String::from_utf8_lossy(&run.output.stdout), "42\n99\n42\n");
+}
+
+#[test]
+fn runtime_value_representation_smoke() {
+    // Verifies all basic JS value types (undefined, null, bool, number, string)
+    // are correctly encoded/decoded through the i32 RawValue representation.
+    let temp = std::env::temp_dir().join(format!("ts2wasm-m1-value-repr-{}", std::process::id()));
+    fs::create_dir_all(&temp).unwrap();
+
+    let input = temp.join("value_repr.ts");
+    let output = temp.join("value_repr.wasm");
+    fs::write(
+        &input,
+        "let u;\nconsole.log(u);\nconsole.log(null);\nconsole.log(true);\nconsole.log(false);\nconsole.log(42);\nconsole.log(\"hi\");\n",
+    )
+    .unwrap();
+
+    let build = Command::new(env!("CARGO_BIN_EXE_ts2wasm"))
+        .arg("build")
+        .arg(&input)
+        .arg("-o")
+        .arg(&output)
+        .output()
+        .unwrap();
+
+    assert!(
+        build.status.success(),
+        "value repr build failed\nstdout:\n{}\nstderr:\n{}",
+        String::from_utf8_lossy(&build.stdout),
+        String::from_utf8_lossy(&build.stderr)
+    );
+
+    let run = run_iwasm_with_timeout(Command::new("iwasm").arg(&output)).unwrap();
+    assert!(
+        !run.timed_out,
+        "iwasm timed out\nstdout:\n{}\nstderr:\n{}",
+        String::from_utf8_lossy(&run.output.stdout),
+        String::from_utf8_lossy(&run.output.stderr)
+    );
+    assert!(
+        run.output.status.success(),
+        "iwasm failed\nstdout:\n{}\nstderr:\n{}",
+        String::from_utf8_lossy(&run.output.stdout),
+        String::from_utf8_lossy(&run.output.stderr)
+    );
+    assert_eq!(String::from_utf8_lossy(&run.output.stdout), "undefined\nnull\ntrue\nfalse\n42\nhi\n");
+}
+
+#[test]
 fn binary_mvp_const_export() {
     let temp = std::env::temp_dir().join(format!("ts2wasm-m1-binary-mvp-{}", std::process::id()));
     fs::create_dir_all(&temp).unwrap();
