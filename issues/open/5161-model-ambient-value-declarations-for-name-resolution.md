@@ -199,6 +199,13 @@ Additional superseded bucket:
   TS2845 always-true/false diagnostics for comparisons with the global `NaN`,
   but the current compiler blocker is still resolver visibility for the
   declaration-only ambient const.
+- `issues/done/3438-implement-narrowByClauseExpressionInSwitchTrue-name-resolution.md`
+  reaches the same ambient value name-resolution boundary for
+  `declare const f: 'a' | 'b' | 'c';` followed by `case f === "a":` in
+  `narrowByClauseExpressionInSwitchTrue4.ts`. Fresh triage on 2026-05-08
+  reports `UnresolvedName: unresolved name: \`f\` at 112..113`; TypeScript
+  parses the file with no diagnostics, so the current compiler blocker is
+  still resolver visibility for the declaration-only ambient const.
 
 ## Completion evidence
 
