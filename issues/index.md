@@ -13,10 +13,10 @@ Issue files are the source of truth for work items. The generated section below 
 | backend | 13 | 1 | 12 |
 | backend-wasm | 4 | 2 | 2 |
 | cli | 15 | 0 | 15 |
-| compiler | 27 | 14 | 13 |
+| compiler | 28 | 15 | 13 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4615 | 3209 | 1406 |
+| frontend | 4615 | 3208 | 1407 |
 | harness | 1 | 0 | 1 |
 | ir | 99 | 71 | 28 |
 | issues | 4 | 0 | 4 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5317 | 3518 | 1799 |
+| total | 5318 | 3518 | 1800 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -435,6 +435,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5480 | Report missing class return type arguments | feature | frontend/semantics | implementation-ready | P1 |  | `foo(): A` inside `class A<T>` silently build-passes instead of |
 | 5481 | Represent object destructuring assignment statements | feature | frontend/parser | implementation-ready | P1 |  | object destructuring assignment statements are parsed into a string |
 | 5482 | Represent array destructuring assignment statements | feature | frontend/parser | implementation-ready | P1 |  | array destructuring assignment statements are parsed into a string |
+| 5483 | Support dependency named exports of default-import bindings | feature | compiler/module-graph | implementation-ready | P1 |  | dependency-module named export validation does not recognize the |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -2389,7 +2390,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 3302 | Implement Modulealiasasfunctionargument | spike | frontend/syntax | class: blocked | Implement Modulealiasasfunctionargument |
 | 3303 | Implement Modulealiasinterface | spike | frontend/syntax | class: blocked | Implement Modulealiasinterface |
 | 3304 | Implement Moduleandinterfacesharingname | spike | frontend/syntax | class: blocked | Implement Moduleandinterfacesharingname |
-| 3578 | Implement Nodenextcjsnamespaceimportdefault | spike | frontend/syntax | class: blocked | Implement Nodenextcjsnamespaceimportdefault |
 | 3579 | Implement Nodenextesmimportsofpackageswithextensionlessmains | spike | frontend/syntax | class: blocked | Implement Nodenextesmimportsofpackageswithextensionlessmains |
 | 3580 | Implement Nodenextimportmodeimplicitindexresolution Import Export | spike | frontend/syntax | class: blocked | Implement Nodenextimportmodeimplicitindexresolution Import Export |
 | 3581 | Implement Nodenextimportmodeimplicitindexresolution Module Resolution | spike | frontend/syntax | class: blocked | Implement Nodenextimportmodeimplicitindexresolution Module Resolution |
@@ -5277,6 +5277,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 3575 | Implement Nousedbeforedefinederrorintypecontext | spike | frontend/syntax | see `issues/done/3575-implement-noUsedBeforeDefinedErrorInTypeContext.md` |
 | 3576 | Implement Nodecolonmoduleresolution | spike | frontend/syntax | see `issues/done/3576-implement-nodeColonModuleResolution.md` |
 | 3577 | Implement Nodemodulereexportfromdottedpath | spike | frontend/syntax | see `issues/done/3577-implement-nodeModuleReexportFromDottedPath.md` |
+| 3578 | Implement Nodenextcjsnamespaceimportdefault | spike | frontend/syntax | see `issues/done/3578-implement-nodeNextCjsNamespaceImportDefault.md` |
 | 3690 | Implement Optionaltupleelementsandundefined | spike | reference/triage | see `issues/done/3690-implement-optionalTupleElementsAndUndefined.md` |
 | 3996 | Implement Compiler (dup) | spike | frontend/syntax | see `issues/done/3996-implement-reference-typescript-tests-cases-compiler.md` |
 | 4210 | Implement Splicetuples | spike | frontend/resolver | see `issues/done/4210-implement-spliceTuples.md` |
