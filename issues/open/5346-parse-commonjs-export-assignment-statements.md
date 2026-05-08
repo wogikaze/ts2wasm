@@ -181,6 +181,12 @@ Related but not duplicate:
   `export = a;` with `UnsupportedModule: issue-055: unsupported static export`.
   Later surfaces include `import a = require("./a")` and virtual filename
   section resolution.
+- Also owns `issues/done/3512-implement-noCircularDefinitionOnExportOfPrivateInMergedNamespace.md`:
+  fresh triage for `noCircularDefinitionOnExportOfPrivateInMergedNamespace.ts`
+  tokenizes `const cat`, `class Foo`, `export = Foo`, and merged
+  `declare namespace Foo { export { cat }; }`, then stops at the
+  `export = Foo;` issue-055 static export boundary before the merged namespace
+  export-of-private behavior becomes actionable.
 
 ## Completion evidence
 
