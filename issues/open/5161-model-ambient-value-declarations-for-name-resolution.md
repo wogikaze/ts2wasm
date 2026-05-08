@@ -237,6 +237,14 @@ Additional superseded bucket:
   `UnresolvedName: unresolved name: \`foo\` at 151..154`; TypeScript parses the
   file with no diagnostics, so parenthesized `typeof` narrowing remains
   unproven until ambient const visibility is implemented.
+- `issues/done/3561-implement-noInferCommonPropertyCheck.md` reaches the same
+  ambient value name-resolution boundary for
+  `declare const partialObj1: Partial<{ a: unknown; b: unknown }>;` followed by
+  `test1(partialObj1, someObj1);` in `noInferCommonPropertyCheck1.ts`. Fresh
+  triage on 2026-05-08 reports
+  `UnresolvedName: unresolved name: \`partialObj1\` at 304..315`; TypeScript
+  later reports TS2559 common-property diagnostics, so `NoInfer` checking
+  remains unproven until ambient const visibility is implemented.
 
 ## Completion evidence
 
