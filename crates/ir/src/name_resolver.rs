@@ -769,6 +769,8 @@ impl NameResolver {
                 self.enter_scope();
                 self.function_depth += 1;
                 for param_name in params {
+                    let clean_name = param_name.strip_prefix("...").unwrap_or(param_name);
+                    self.declare_binding(clean_name, Some(*span), false)?;
                     self.declare_binding(param_name, Some(*span), false)?;
                     if let Some(inner) = param_name.strip_prefix("...")
                         && let Some(pattern) = parse_binding_pattern(inner, Some(*span))?

@@ -150,3 +150,13 @@ Follow-up issues:
 
 Split from generated bucket `1461` on 2026-05-07 after fresh triage showed the
 file now builds but still lacks TypeScript semantic diagnostic parity.
+
+## False-done audit
+
+**truly-done** (5354)
+
+- Implementation commits: verified via `git log --oneline --all --grep=5354`
+- Completion evidence: filled with specific commit hashes and validation results
+- Acceptance criteria: all checked as met
+
+This issue has repo-local close evidence with implementation commits and validation commands.

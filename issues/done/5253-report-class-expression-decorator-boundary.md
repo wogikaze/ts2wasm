@@ -57,10 +57,10 @@ VariableDeclaration -> ClassExpression "@decorate class C { static p = 1 }" -> D
 
 In scope:
 
-- [ ] Tokenize `@` in TypeScript sources as decorator syntax rather than an unsupported character.
-- [ ] Recognize a decorator before a class expression in expression position.
-- [ ] Emit a source-spanned `UnsupportedTypeScriptSyntax` diagnostic for the decorator transform boundary.
-- [ ] Add focused frontend/CLI coverage for `var v = @decorate class C {}`.
+- [x] Tokenize `@` in TypeScript sources as decorator syntax rather than an unsupported character.
+- [x] Recognize a decorator before a class expression in expression position.
+- [x] Emit a source-spanned `UnsupportedTypeScriptSyntax` diagnostic for the decorator transform boundary.
+- [x] Add focused frontend/CLI coverage for `var v = @decorate class C {}`.
 
 Out of scope:
 
@@ -84,10 +84,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] `classExpressionWithDecorator1.ts` no longer reports `unsupported character: @`.
-- [ ] A focused test proves `var v = @decorate class C {}` reaches a source-spanned decorator boundary diagnostic.
-- [ ] Existing non-decorator uses of unsupported characters still report lexer diagnostics.
-- [ ] If parsing advances to a broader decorator transform blocker, that next blocker is recorded separately.
+- [x] `classExpressionWithDecorator1.ts` no longer reports `unsupported character: @`.
+- [x] A focused test proves `var v = @decorate class C {}` reaches a source-spanned decorator boundary diagnostic.
+- [x] Existing non-decorator uses of unsupported characters still report lexer diagnostics.
+- [x] If parsing advances to a broader decorator transform blocker, that next blocker is recorded separately.
 
 ## Validation
 

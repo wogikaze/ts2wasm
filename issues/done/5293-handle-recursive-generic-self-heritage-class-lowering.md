@@ -191,3 +191,13 @@ Remaining risks:
 
 - Supporting the current lowering boundary may expose later runtime behavior for
   JavaScript's `class S18 extends S18 {}` temporal-dead-zone failure.
+
+## False-done audit
+
+**truly-done** (5293)
+
+- Implementation commits: verified via `git log --oneline --all --grep=5293`
+- Completion evidence: filled with specific commit hashes and validation results
+- Acceptance criteria: all checked as met
+
+This issue has repo-local close evidence with implementation commits and validation commands.

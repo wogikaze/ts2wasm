@@ -85,16 +85,16 @@ function decorator(x: string)
 
 In scope:
 
-- [x] Tokenize `@` before class declarations in TypeScript sources as decorator syntax rather than an unsupported character.
-- [x] Recognize one or more decorators before a `class` declaration in statement/exportable declaration position.
-- [x] Preserve comments/trivia around decorated class declarations while advancing to a source-spanned decorator boundary diagnostic.
-- [x] Add focused frontend/CLI coverage for decorated class declarations.
+- [ ] Tokenize `@` before class declarations in TypeScript sources as decorator syntax rather than an unsupported character.
+- [ ] Recognize one or more decorators before a `class` declaration in statement/exportable declaration position.
+- [ ] Preserve comments/trivia around decorated class declarations while advancing to a source-spanned decorator boundary diagnostic.
+- [ ] Add focused frontend/CLI coverage for decorated class declarations.
 
 Out of scope:
 
 - Full decorator transform or runtime decorator calls.
 - Decorator metadata emit.
-- Class expression decorator handling, which is tracked separately by `issues/done/5253-report-class-expression-decorator-boundary.md`.
+- Class expression decorator handling, which is tracked separately by `issues/open/5253-report-class-expression-decorator-boundary.md`.
 - Parameter, method, property, accessor, or export-position decorator semantics beyond preserving the same boundary diagnostic if encountered.
 
 ## Affected paths
@@ -114,11 +114,11 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [x] `commentOnDecoratedClassDeclaration.ts` no longer reports `unsupported character: @`.
-- [x] A focused test proves `@decorator("hello") class Remote {}` reaches a source-spanned decorator boundary diagnostic.
-- [x] Leading/floating comments around the decorated declarations do not regress tokenization or parser recovery.
-- [x] Existing non-decorator unsupported characters still report lexer diagnostics.
-- [x] If parsing advances to a broader decorator transform blocker, that next blocker is recorded separately.
+- [ ] `commentOnDecoratedClassDeclaration.ts` no longer reports `unsupported character: @`.
+- [ ] A focused test proves `@decorator("hello") class Remote {}` reaches a source-spanned decorator boundary diagnostic.
+- [ ] Leading/floating comments around the decorated declarations do not regress tokenization or parser recovery.
+- [ ] Existing non-decorator unsupported characters still report lexer diagnostics.
+- [ ] If parsing advances to a broader decorator transform blocker, that next blocker is recorded separately.
 
 ## Validation
 
@@ -140,4 +140,4 @@ python scripts/manager.py reference-coverage tsc --path-filter reference/typescr
 
 Split from `issues/open/1348-implement-commentOnDecoratedClassDeclaration.md`.
 Related broad decorator bucket: `issues/open/4807-implement-decorator.md`.
-Related class-expression decorator boundary: `issues/done/5253-report-class-expression-decorator-boundary.md`.
+Related class-expression decorator boundary: `issues/open/5253-report-class-expression-decorator-boundary.md`.

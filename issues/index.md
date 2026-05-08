@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 7 | 4 | 3 |
 | coverage | 44 | 1 | 43 |
 | docs | 5 | 0 | 5 |
-| frontend | 4561 | 3749 | 812 |
+| frontend | 4561 | 3748 | 813 |
 | harness | 1 | 0 | 1 |
 | ir | 76 | 23 | 53 |
 | issues | 5 | 0 | 5 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 8 | 0 | 8 |
 | wasi | 4 | 0 | 4 |
-| total | 5243 | 4021 | 1222 |
+| total | 5243 | 4020 | 1223 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -363,7 +363,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5246 | Report static declarations inside constructor bodies | feature | frontend/parser | implementation-ready | P1 |  | invalid `static` declarations in constructor bodies report generic unsupported expression instead of a spanned parser... |
 | 5248 | Lower class expressions | feature | ir/compiler | implementation-ready | P1 |  | `classBlockScoping.ts` reports `UnsupportedSyntax: issue-313: class expression lowering not yet implemented`. |
 | 5249 | Scope block-local class declarations | feature | frontend/resolver | implementation-ready | P1 |  | `classDeclarationBlockScoping1.ts` reports `DuplicateLocal` for an inner block-local `class C {}` that TypeScript acc... |
-| 5253 | Report class expression decorator boundary | feature | frontend/lexer | implementation-ready | P1 |  | `classExpressionWithDecorator1.ts` stops in tokenization at |
 | 5255 | Resolve super property accesses | feature | frontend/resolver | implementation-ready | P1 |  | `classExtendingAny.ts` parses class declarations, `extends Err`, and |
 | 5260 | Report class heritage trailing comma | feature | frontend/parser | implementation-ready | P1 |  | `classHeritageWithTrailingSeparator.ts` tokenizes the class heritage |
 | 5262 | Resolve import-equals aliases in class implements clauses | feature | frontend/resolver | implementation-ready | P1 |  | Resolve import-equals aliases in class implements clauses |
@@ -5306,6 +5305,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5250 | Parse class declarations in nested block statements | feature | frontend/parser | see file |
 | 5251 | Parse computed class member names in class declarations | feature | frontend/parser | see file |
 | 5252 | Support call-expression class heritage | feature | ir/resolver | see file |
+| 5253 | Report class expression decorator boundary | feature | frontend/lexer | see file |
 | 5254 | Parse ASI between static class fields | feature | frontend/parser | see file |
 | 5256 | Report non-constructor class heritage expressions | feature | ir/resolver | see file |
 | 5257 | Parse object type literal construct signatures | feature | frontend/parser | see file |

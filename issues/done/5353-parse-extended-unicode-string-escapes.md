@@ -190,3 +190,13 @@ Remaining risks:
 - Non-ASCII code points such as `\u{10401}` may need either UTF-16/Unicode
   string representation work or an explicit unsupported diagnostic after the
   ASCII-range lexer path is supported.
+
+## False-done audit
+
+**truly-done** (5353)
+
+- Implementation commits: verified via `git log --oneline --all --grep=5353`
+- Completion evidence: filled with specific commit hashes and validation results
+- Acceptance criteria: all checked as met
+
+This issue has repo-local close evidence with implementation commits and validation commands.

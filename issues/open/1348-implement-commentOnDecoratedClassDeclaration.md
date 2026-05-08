@@ -138,7 +138,7 @@ Follow-up issues:
   syntax epic, not an exact implementation slice.
 - `issues/open/4807-implement-decorator.md` is a broad decorator bucket, not an
   exact implementation slice.
-- `issues/open/5253-report-class-expression-decorator-boundary.md` covers class
+- `issues/done/5253-report-class-expression-decorator-boundary.md` covers class
   expression decorators in expression position. This issue needs a separate
   statement/declaration-position class decorator slice.
 - Other smart-triage duplicate candidates share `parser-syntax` only and do not

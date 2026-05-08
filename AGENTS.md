@@ -46,7 +46,7 @@ git status --short
 
 - 既存の未コミット変更がある場合は、自分の作業と混ぜない。
 - ユーザーの変更らしき差分は勝手に revert / overwrite しない。
-- 作業前に、対象 issue / docs / tests / 近い実装を `rg` で確認する。
+- 作業前に、対象 issue / docs / tests / 近い実装を `codebase_search`（morph-mcp）で確認する。
 
 まず見るドキュメント:
 
@@ -201,7 +201,7 @@ cargo fmt --all --check
 cargo nextest run
 ```
 
-テキスト検索は `rg`（ripgrep）。
+コード検索は `codebase_search`（morph-mcp）を使う。
 
 スクリプトは `mise` を使う。タスク一覧は次で確認する。
 
