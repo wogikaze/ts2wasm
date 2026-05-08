@@ -115,6 +115,8 @@ Do not touch:
 ## Acceptance criteria
 
 - [ ] `commentOnDecoratedClassDeclaration.ts` no longer reports `unsupported character: @`.
+- [ ] `noEmitHelpers2.ts` no longer reports `unsupported character: @` at the
+  class declaration decorator before `class A`.
 - [ ] A focused test proves `@decorator("hello") class Remote {}` reaches a source-spanned decorator boundary diagnostic.
 - [ ] Leading/floating comments around the decorated declarations do not regress tokenization or parser recovery.
 - [ ] Existing non-decorator unsupported characters still report lexer diagnostics.
@@ -145,3 +147,9 @@ Also owns `issues/done/3359-implement-modulePreserveImportHelpers.md`: fresh
 triage for `modulePreserveImportHelpers.ts` stops at `@dec()` before exported
 and non-exported class declarations before import helpers, package metadata, or
 tslib declarations become actionable.
+Also owns `issues/done/3529-implement-noEmitHelpers.md`: fresh triage for
+`noEmitHelpers2.ts` stops at the class declaration decorator `@decorator`
+before `class A`. The same file also contains a constructor parameter decorator
+that TypeScript reports as TS1206; parameter decorator semantics remain outside
+this issue and should be recorded separately after the class-decorator lexer
+boundary advances.
