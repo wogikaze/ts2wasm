@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 27 | 14 | 13 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4615 | 3212 | 1403 |
+| frontend | 4615 | 3211 | 1404 |
 | harness | 1 | 0 | 1 |
 | ir | 99 | 71 | 28 |
 | issues | 4 | 0 | 4 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5317 | 3521 | 1796 |
+| total | 5317 | 3520 | 1797 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -2389,7 +2389,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 3302 | Implement Modulealiasasfunctionargument | spike | frontend/syntax | class: blocked | Implement Modulealiasasfunctionargument |
 | 3303 | Implement Modulealiasinterface | spike | frontend/syntax | class: blocked | Implement Modulealiasinterface |
 | 3304 | Implement Moduleandinterfacesharingname | spike | frontend/syntax | class: blocked | Implement Moduleandinterfacesharingname |
-| 3575 | Implement Nousedbeforedefinederrorintypecontext | spike | frontend/syntax | class: triage-needed | Implement Nousedbeforedefinederrorintypecontext |
 | 3576 | Implement Nodecolonmoduleresolution | spike | frontend/syntax | class: blocked | Implement Nodecolonmoduleresolution |
 | 3577 | Implement Nodemodulereexportfromdottedpath | spike | frontend/syntax | class: blocked | Implement Nodemodulereexportfromdottedpath |
 | 3578 | Implement Nodenextcjsnamespaceimportdefault | spike | frontend/syntax | class: blocked | Implement Nodenextcjsnamespaceimportdefault |
@@ -5277,6 +5276,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 3572 | Implement Nounusedlocals Import Export | spike | frontend/syntax | see `issues/done/3572-implement-noUnusedLocals-import-export.md` |
 | 3573 | Implement Nounusedlocals Name Resolution | spike | frontend/resolver | see `issues/done/3573-implement-noUnusedLocals-name-resolution.md` |
 | 3574 | Implement Nounusedlocals Parser Syntax | spike | frontend/syntax | see `issues/done/3574-implement-noUnusedLocals-parser-syntax.md` |
+| 3575 | Implement Nousedbeforedefinederrorintypecontext | spike | frontend/syntax | see `issues/done/3575-implement-noUsedBeforeDefinedErrorInTypeContext.md` |
 | 3690 | Implement Optionaltupleelementsandundefined | spike | reference/triage | see `issues/done/3690-implement-optionalTupleElementsAndUndefined.md` |
 | 3996 | Implement Compiler (dup) | spike | frontend/syntax | see `issues/done/3996-implement-reference-typescript-tests-cases-compiler.md` |
 | 4210 | Implement Splicetuples | spike | frontend/resolver | see `issues/done/4210-implement-spliceTuples.md` |
