@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 25 | 13 | 12 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4609 | 3268 | 1341 |
+| frontend | 4610 | 3268 | 1342 |
 | harness | 1 | 0 | 1 |
 | ir | 92 | 69 | 23 |
 | issues | 4 | 0 | 4 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5302 | 3577 | 1725 |
+| total | 5303 | 3577 | 1726 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -52,7 +52,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 ├── 5003 (Meta: TypeScript Compiler Declaration Emit Coverage) [done/done] ch:100 open:89 done:11 (also ← 5001)
 5001 (Meta: TypeScript Compiler Semantic Analysis Coverage) [done/done] ch:556 open:287 done:269
 5004 (Meta: Runtime Builtins Coverage (test262) (audit reopened #5004)) [done/done] ch:24 open:3 done:21
-5005 (Meta: TypeScript Compiler Name Resolution Coverage) [done/done] ch:397 open:329 done:68
+5005 (Meta: TypeScript Compiler Name Resolution Coverage) [done/done] ch:397 open:328 done:69
 ├── 5006 (Meta: TypeScript Compiler Scope Analysis Coverage) [done/done] ch:28 open:18 done:10
 ├── 5007 (Meta: TypeScript Compiler Module Resolution Coverage (audit reopened #5007)) [done/done] ch:20 open:12 done:8
 ```
@@ -69,7 +69,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1 | 5000 | Meta: TypeScript Compiler Parser Syntax Coverage | done | design | frontend/syntax | P1 | - | 446 | 342 | 104 |
 | 2 | 5001 | Meta: TypeScript Compiler Semantic Analysis Coverage | done | done | frontend/semantics | P1 | - | 556 | 287 | 269 |
 | 3 | 5004 | Meta: Runtime Builtins Coverage (test262) (audit reopened #5004) | done | done | runtime/builtins | P1 | - | 24 | 3 | 21 |
-| 4 | 5005 | Meta: TypeScript Compiler Name Resolution Coverage | done | done | frontend/resolver | P1 | - | 397 | 329 | 68 |
+| 4 | 5005 | Meta: TypeScript Compiler Name Resolution Coverage | done | done | frontend/resolver | P1 | - | 397 | 328 | 69 |
 | 5 | 5002 | Meta: TypeScript Compiler Type System Coverage | done | done | frontend/semantics | P1 | 5000, 5005 | 223 | 199 | 24 |
 | 6 | 5003 | Meta: TypeScript Compiler Declaration Emit Coverage | done | done | frontend/syntax | P2 | 5000, 5001 | 100 | 89 | 11 |
 | 7 | 5006 | Meta: TypeScript Compiler Scope Analysis Coverage | done | done | frontend/resolver | P2 | 5005 | 28 | 18 | 10 |
@@ -420,6 +420,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5465 | Parse abstract anonymous default class exports | bug | frontend/module-syntax | implementation-ready | P1 |  | `newAbstractInstance2.ts` stops before AST construction on the |
 | 5466 | Report malformed new angle-bracket casts | bug | frontend/parser | implementation-ready | P2 |  | `newExpressionWithCast.ts` contains both valid and invalid new/cast |
 | 5467 | Report missing new expression callee | bug | frontend/parser | implementation-ready | P2 |  | `newMissingIdentifier.ts` contains malformed `new ()` syntax. The |
+| 5468 | Report direct new type-only callee diagnostics | bug | frontend/resolver | implementation-ready | P1 |  | `newNonReferenceType.ts` now builds successfully, but TypeScript |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -2374,7 +2375,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 3302 | Implement Modulealiasasfunctionargument | spike | frontend/syntax | class: blocked | Implement Modulealiasasfunctionargument |
 | 3303 | Implement Modulealiasinterface | spike | frontend/syntax | class: blocked | Implement Modulealiasinterface |
 | 3304 | Implement Moduleandinterfacesharingname | spike | frontend/syntax | class: blocked | Implement Moduleandinterfacesharingname |
-| 3504 | Implement Newnonreferencetype | spike | frontend/resolver | class: blocked | Implement Newnonreferencetype |
 | 3505 | Implement Newoninstancesymbol | spike | frontend/syntax | class: blocked | Implement Newoninstancesymbol |
 | 3506 | Implement Newoperator | spike | frontend/syntax | class: triage-needed | Implement Newoperator |
 | 3507 | Implement Noasconstnamelookup | spike | frontend/syntax | class: blocked | Implement Noasconstnamelookup |
@@ -5262,6 +5262,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 3501 | Implement Newmap | spike | frontend/resolver | see `issues/done/3501-implement-newMap.md` |
 | 3502 | Implement Newmissingidentifier | spike | frontend/syntax | see `issues/done/3502-implement-newMissingIdentifier.md` |
 | 3503 | Implement Newnamesinglobalaugmentations | spike | frontend/syntax | see `issues/done/3503-implement-newNamesInGlobalAugmentations.md` |
+| 3504 | Implement Newnonreferencetype | spike | frontend/resolver | see `issues/done/3504-implement-newNonReferenceType.md` |
 | 3690 | Implement Optionaltupleelementsandundefined | spike | reference/triage | see `issues/done/3690-implement-optionalTupleElementsAndUndefined.md` |
 | 3996 | Implement Compiler (dup) | spike | frontend/syntax | see `issues/done/3996-implement-reference-typescript-tests-cases-compiler.md` |
 | 4210 | Implement Splicetuples | spike | frontend/resolver | see `issues/done/4210-implement-spliceTuples.md` |
