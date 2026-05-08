@@ -178,6 +178,12 @@ Also owns the config-section blocker from
 `nodeColonModuleResolution2.ts` stops in virtual `/a/b/tsconfig.json` at
 `compilerOptions` / `paths` property colons before `fake:thing` path mapping or
 non-local module resolution becomes actionable.
+Also owns `issues/done/3585-implement-nodeNextPackageSelfNameWithOutDirDeclDirComposite.md`:
+fresh triage stops in virtual `tsconfig.json` at the first
+`compilerOptions` property colon before the later `package.json` section,
+package self-name `@this/package` resolution, conditional `exports`
+`default`/`types`, `outDir`/`declarationDir`, or `composite` behavior become
+actionable.
 
 ## Completion evidence
 
