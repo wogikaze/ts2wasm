@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 27 | 14 | 13 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4610 | 3229 | 1381 |
+| frontend | 4610 | 3228 | 1382 |
 | harness | 1 | 0 | 1 |
 | ir | 99 | 71 | 28 |
 | issues | 4 | 0 | 4 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5312 | 3540 | 1772 |
+| total | 5312 | 3539 | 1773 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -2384,7 +2384,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 3302 | Implement Modulealiasasfunctionargument | spike | frontend/syntax | class: blocked | Implement Modulealiasasfunctionargument |
 | 3303 | Implement Modulealiasinterface | spike | frontend/syntax | class: blocked | Implement Modulealiasinterface |
 | 3304 | Implement Moduleandinterfacesharingname | spike | frontend/syntax | class: blocked | Implement Moduleandinterfacesharingname |
-| 3551 | Implement Noimplicitanyparametersinmodule | spike | frontend/syntax | class: blocked | Implement Noimplicitanyparametersinmodule |
 | 3552 | Implement Noimplicitanystringindexeronobject | spike | frontend/syntax | class: blocked | Implement Noimplicitanystringindexeronobject |
 | 3553 | Implement Noimplicitanywithoverloads | spike | frontend/syntax | class: blocked | Implement Noimplicitanywithoverloads |
 | 3554 | Implement Noimplicitreturnsexclusions | spike | frontend/syntax | class: triage-needed | Implement Noimplicitreturnsexclusions |
@@ -5272,6 +5271,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 3548 | Implement Noimplicitanynamelessparameter | spike | frontend/syntax | see `issues/done/3548-implement-noImplicitAnyNamelessParameter.md` |
 | 3549 | Implement Noimplicitanyparametersinambientmodule | spike | frontend/syntax | see `issues/done/3549-implement-noImplicitAnyParametersInAmbientModule.md` |
 | 3550 | Implement Noimplicitanyparametersinclass | spike | frontend/syntax | see `issues/done/3550-implement-noImplicitAnyParametersInClass.md` |
+| 3551 | Implement Noimplicitanyparametersinmodule | spike | frontend/syntax | see `issues/done/3551-implement-noImplicitAnyParametersInModule.md` |
 | 3690 | Implement Optionaltupleelementsandundefined | spike | reference/triage | see `issues/done/3690-implement-optionalTupleElementsAndUndefined.md` |
 | 3996 | Implement Compiler (dup) | spike | frontend/syntax | see `issues/done/3996-implement-reference-typescript-tests-cases-compiler.md` |
 | 4210 | Implement Splicetuples | spike | frontend/resolver | see `issues/done/4210-implement-spliceTuples.md` |
