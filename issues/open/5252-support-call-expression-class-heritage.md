@@ -67,7 +67,7 @@ hint: makeBaseClass has type typeof Base
 
 In scope:
 
-- [ ] Accept `extends <identifier>()` in class heritage during builtin resolution.
+- [ ] Accept `extends <identifier>(...)` in class heritage during builtin resolution.
 - [ ] Preserve existing resolution of the identifier callee, including later function declarations.
 - [ ] Add focused coverage for `class Derived extends makeBaseClass() {}`.
 
@@ -96,6 +96,7 @@ Do not touch:
 
 - [ ] `classDeclaredBeforeClassFactory.ts` no longer reports `only simple inheritance (extends ClassName) is supported`.
 - [ ] A focused test covers `class Derived extends makeBaseClass() {}` with `makeBaseClass` declared later in the file.
+- [ ] `noCrashOnMixin.ts` and `noCrashOnMixin2.ts` no longer report `only simple inheritance (extends ClassName) is supported` for `class CrashTrigger extends Mixin(Empty)`.
 - [ ] If runtime support for dynamically evaluated heritage remains incomplete, the next blocker is recorded after resolver acceptance.
 
 ## Validation
@@ -118,3 +119,9 @@ python scripts/manager.py reference-coverage tsc --path-filter reference/typescr
 
 Split from `issues/done/1179-implement-classDeclaredBeforeClassFactory.md`.
 Related generated bucket: `issues/open/1741-implement-declarationEmitExpressionInExtends-declaration-emit.md`.
+
+Also owns `issues/done/3524-implement-noCrashOnMixin.md`: fresh triage for both
+`noCrashOnMixin.ts` and `noCrashOnMixin2.ts` reaches the same builtin resolver
+gate, with AST containing `ClassDecl CrashTrigger extends Call(callee=Ident
+Mixin, args=[Ident Empty])` before `UnsupportedSyntax: only simple inheritance
+(extends ClassName) is supported`.
