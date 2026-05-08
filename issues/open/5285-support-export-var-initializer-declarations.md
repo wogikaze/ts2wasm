@@ -162,6 +162,10 @@ Related but not duplicates:
   triage for `moduleResolutionNoResolve.ts` parses the import-equals section
   and then stops at `export var c = '';` in `b.ts` before `--noResolve`
   relative import diagnostics become actionable.
+- Also owns the initialized export-var subset of
+  `issues/done/3590-implement-nodeResolution.md`: fresh triage for
+  `nodeResolution1.ts` stops at `export var x = 1;` before local
+  import-equals require resolution becomes actionable.
 - Also owns `issues/done/3530-implement-noErrorUsingImportExportModuleAugmentationInDeclarationFile.md`:
   representative 2 stops at initialized `export var j = "hello";` with the
   same issue-055 variable export boundary. Representatives 1 and 3 first stop
