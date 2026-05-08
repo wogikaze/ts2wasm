@@ -147,6 +147,58 @@ open:
       - "No binary emitter expansion."
     evidence: null
 
+  - id: 115
+    title: "ABI contract document: logical jsval (i64) vs wire representation (i32 RawValue)"
+    priority: P2
+    type: docs
+    area: backend
+    status: open
+    created: 2026-05-09
+    updated: 2026-05-09
+    owner: human
+    roadmap: W0
+    ready: true
+    acceptance:
+      - "grep -q 'logical ABI' docs/14-runtime-abi.md"
+      - "grep -q 'wire representation' docs/14-runtime-abi.md"
+    non_goals:
+      - "No full ABI bridge implementation."
+    evidence: null
+
+  - id: 116
+    title: "ABI bridge smoke test for i64 logical vs i32 wire mismatch detection"
+    priority: P2
+    type: test
+    area: backend
+    status: open
+    created: 2026-05-09
+    updated: 2026-05-09
+    owner: human
+    roadmap: W0
+    ready: true
+    acceptance:
+      - "cargo nextest run -p ts2wasm-cli --test m1_iwasm"
+    non_goals:
+      - "No full WAT replacement."
+    evidence: null
+
+  - id: 117
+    title: "Runtime value representation smoke test under iwasm (undef, null, bool, number, string)"
+    priority: P2
+    type: test
+    area: backend
+    status: open
+    created: 2026-05-09
+    updated: 2026-05-09
+    owner: human
+    roadmap: W0
+    ready: true
+    acceptance:
+      - "cargo nextest run -p ts2wasm-cli --test m1_iwasm"
+    non_goals:
+      - "No fractional/NaN/infinity coverage."
+    evidence: null
+
   - id: 113
     title: "Add capability review checklist to docs/12-coding-standard.md"
     priority: P3
