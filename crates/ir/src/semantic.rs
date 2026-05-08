@@ -980,6 +980,18 @@ impl<'a> HirLowerer<'a> {
                     Err(unsupported("String(...) calls in initial HIR slice"))
                 }
                 ResolvedExpr::Ident(name) => {
+                    // Before failing with UnresolvedFunction, check if the
+                    // name is a local variable (not a function). This covers
+                    // callable interface-typed locals such as
+                    // `var i: I<string>; i("")`. Return UnsupportedSyntax so
+                    // that validate_optimized_hir_slice swallows the error and
+                    // the pipeline continues to the full lowered resolver,
+                    // which produces a more precise issue-5195 diagnostic.
+                    if self.resolve_local(name).is_ok() {
+                        return Err(unsupported(&format!(
+                            "issue-5195: callable interface-typed local `{name}` is not callable in initial HIR slice"
+                        )));
+                    }
                     let function =
                         self.function_ids
                             .get(name.as_str())

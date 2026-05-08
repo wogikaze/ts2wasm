@@ -281,7 +281,7 @@ fn validate_stmt(
                 });
             }
             for (_, method_id) in methods.iter().chain(static_methods.iter()) {
-                if method_id.0 >= num_funcs {
+                if num_funcs > 0 && method_id.0 >= num_funcs {
                     errors.push(Diagnostic {
                         code: DiagCode::InvariantViolation,
                         message: format!(

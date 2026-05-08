@@ -1945,6 +1945,22 @@ fn arrow_assigned_recursive_reassignment_reports_function_valued_call_gap() {
 }
 
 #[test]
+fn callable_interface_typed_local_uninitialized_reports_issue_5195() {
+    assert_build_fails_with_unsupported_syntax(
+        "fixtures/core-semantics/callable-interface-local-uninitialized.ts",
+        "issue-5195:",
+    );
+}
+
+#[test]
+fn callable_interface_typed_local_with_call_signature_fields_reports_issue_5195() {
+    assert_build_fails_with_unsupported_syntax(
+        "fixtures/core-semantics/callable-interface-local-with-fields.ts",
+        "issue-5195:",
+    );
+}
+
+#[test]
 fn ordinary_function_direct_call_fixtures_match_node_output_under_iwasm() {
     for fixture in [
         "fixtures/primitives-control-flow/function.ts",

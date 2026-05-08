@@ -270,6 +270,7 @@ mod tests {
                 is_generator: false,
                 is_ambient: false,
                 overload_signature: false,
+                return_type_generic_constraint: None,
                 span: Span { start: 10, end: 25 },
             },
         ];
@@ -318,6 +319,7 @@ mod tests {
                 is_generator: false,
                 is_ambient: false,
                 overload_signature: false,
+                return_type_generic_constraint: None,
                 span: Span { start: 0, end: 20 },
             },
             Stmt::Function {
@@ -327,6 +329,7 @@ mod tests {
                 is_generator: false,
                 is_ambient: false,
                 overload_signature: false,
+                return_type_generic_constraint: None,
                 span: Span { start: 21, end: 41 },
             },
             Stmt::Expr {
@@ -431,6 +434,7 @@ mod tests {
                 is_generator: false,
                 is_ambient: false,
                 overload_signature: false,
+                return_type_generic_constraint: None,
                 span: Span { start: 10, end: 40 },
             },
         ];
@@ -472,6 +476,7 @@ mod tests {
                 is_generator: false,
                 is_ambient: false,
                 overload_signature: false,
+                return_type_generic_constraint: None,
                 span: Span { start: 19, end: 56 },
             },
         ];
@@ -638,6 +643,7 @@ mod tests {
             is_generator: false,
             is_ambient: false,
             overload_signature: false,
+                return_type_generic_constraint: None,
             span: Span { start: 0, end: 20 },
         }];
 
@@ -670,6 +676,7 @@ mod tests {
             is_generator: false,
             is_ambient: false,
             overload_signature: false,
+                return_type_generic_constraint: None,
             span: Span { start: 0, end: 25 },
         }];
 
@@ -704,6 +711,7 @@ mod tests {
                     is_generator: false,
                     is_ambient: false,
                     overload_signature: false,
+                return_type_generic_constraint: None,
                     span: Span { start: 20, end: 60 },
                 }],
                 static_blocks: vec![],
@@ -761,6 +769,7 @@ mod tests {
                     is_generator: false,
                     is_ambient: false,
                     overload_signature: false,
+                return_type_generic_constraint: None,
                     span: Span { start: 20, end: 35 },
                 }],
                 static_blocks: vec![],

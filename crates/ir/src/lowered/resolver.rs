@@ -45,6 +45,7 @@ struct Resolver<'a> {
     string_literal_locals: HashMap<LocalId, String>,
     native_set_add_locals: HashSet<LocalId>,
     generator_function_names: HashSet<String>,
+    generic_return_constraints: HashMap<String, String>,
     current_class: Option<String>,
     in_constructor: bool,
 }
@@ -85,6 +86,7 @@ impl<'a> Resolver<'a> {
         class_private_fields: ClassPrivateFieldSlots,
         class_static_private_fields: ClassStaticPrivateFields,
         generator_function_names: HashSet<String>,
+        generic_return_constraints: HashMap<String, String>,
         next_func_id: usize,
     ) -> Self {
         let (class_constructor_ids, class_method_ids, class_static_method_ids) =
@@ -132,6 +134,7 @@ impl<'a> Resolver<'a> {
             string_literal_locals: HashMap::new(),
             native_set_add_locals: HashSet::new(),
             generator_function_names,
+            generic_return_constraints,
             current_class: None,
             in_constructor: false,
         }
@@ -153,6 +156,7 @@ impl<'a> Resolver<'a> {
         class_static_private_fields: ClassStaticPrivateFields,
         current_class: Option<&str>,
         in_constructor: bool,
+        generic_return_constraints: HashMap<String, String>,
         next_func_id: usize,
     ) -> Result<(Self, Vec<LocalId>), Diagnostic> {
         let (class_constructor_ids, class_method_ids, class_static_method_ids) =
@@ -200,6 +204,7 @@ impl<'a> Resolver<'a> {
             string_literal_locals: HashMap::new(),
             native_set_add_locals: HashSet::new(),
             generator_function_names: HashSet::new(),
+            generic_return_constraints,
             current_class: current_class.map(ToOwned::to_owned),
             in_constructor,
         };

@@ -1433,6 +1433,85 @@ impl Parser {
         Ok(true)
     }
 
+    /// Like `consume_typescript_generic_parameter_list` but also extracts
+    /// `extends` constraints for each type parameter. Only captures simple
+    /// constraints of the form `Param extends ConstraintName` (a single
+    /// identifier). Complex constraint types are silently ignored.
+    fn consume_typescript_generic_param_constraints(&mut self) -> Result<Option<HashMap<String, String>>, Diagnostic> {
+        let Some(less_span) = self.consume_span(TokenKind::Less) else {
+            return Ok(None);
+        };
+        let mut constraints = HashMap::new();
+        let mut angle_depth: usize = 1;
+        let mut paren_depth: usize = 0;
+        let mut bracket_depth: usize = 0;
+        let mut brace_depth: usize = 0;
+        let mut last_ident: Option<String> = None;
+        let mut after_extends = false;
+        let mut has_type_tokens = false;
+
+        while let Some(token) = self.advance() {
+            let at_top_level = paren_depth == 0 && bracket_depth == 0 && brace_depth == 0;
+            match token.kind {
+                Token::LeftParen => paren_depth += 1,
+                Token::RightParen => paren_depth = paren_depth.saturating_sub(1),
+                Token::LeftBracket => bracket_depth += 1,
+                Token::RightBracket => bracket_depth = bracket_depth.saturating_sub(1),
+                Token::LeftBrace => brace_depth += 1,
+                Token::RightBrace => brace_depth = brace_depth.saturating_sub(1),
+                Token::Less if at_top_level => angle_depth += 1,
+                Token::Greater if at_top_level => {
+                    angle_depth -= 1;
+                    if angle_depth == 0 {
+                        break;
+                    }
+                }
+                Token::RightShift if at_top_level => {
+                    if angle_depth <= 2 {
+                        break;
+                    }
+                    angle_depth -= 2;
+                }
+                Token::Comma if at_top_level => {
+                    last_ident = None;
+                    after_extends = false;
+                }
+                Token::Extends if at_top_level => {
+                    after_extends = true;
+                }
+                Token::Ident(name) if at_top_level => {
+                    if after_extends {
+                        // Previous token was 'extends', this is the constraint name
+                        if let Some(param_name) = last_ident.take() {
+                            constraints.insert(param_name, name);
+                        }
+                        after_extends = false;
+                    } else {
+                        // This might be a type parameter name or a complex type reference
+                        last_ident = Some(name);
+                    }
+                    has_type_tokens = true;
+                }
+                // Any other token at top level (e.g. `=`, `{`, `keyof`, etc.) resets tracking
+                _ if at_top_level => {
+                    last_ident = None;
+                    after_extends = false;
+                }
+                _ => {}
+            }
+        }
+
+        if has_type_tokens {
+            Ok(Some(constraints))
+        } else {
+            Err(Diagnostic {
+                code: DiagCode::UnsupportedSyntax,
+                message: "expected TypeScript generic parameter list".to_owned(),
+                span: Some(less_span),
+            })
+        }
+    }
+
     fn try_consume_typescript_call_type_arguments(
         &mut self,
         callee: &Expr,

@@ -39,6 +39,7 @@ pub enum ResolvedStmt {
         body: Vec<ResolvedStmt>,
         is_generator: bool,
         is_ambient: bool,
+        return_type_generic_constraint: Option<String>,
     },
     TryCatch {
         try_block: Vec<ResolvedStmt>,

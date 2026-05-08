@@ -503,6 +503,7 @@ impl<'a> Resolver<'a> {
             self.class_method_mutable_captures,
             &self.env_cell_names,
             &self.heap_closure_names,
+            self.generic_return_constraints.clone(),
             self.class_parents.clone(),
             self.class_private_fields.clone(),
             self.class_static_private_fields.clone(),
@@ -1631,6 +1632,7 @@ impl<'a> Resolver<'a> {
             self.class_method_mutable_captures,
             &self.env_cell_names,
             &self.heap_closure_names,
+            self.generic_return_constraints.clone(),
             self.class_parents.clone(),
             self.class_private_fields.clone(),
             self.class_static_private_fields.clone(),
@@ -1757,6 +1759,7 @@ impl<'a> Resolver<'a> {
             self.class_method_mutable_captures,
             &self.env_cell_names,
             &self.heap_closure_names,
+            self.generic_return_constraints.clone(),
             self.class_parents.clone(),
             self.class_private_fields.clone(),
             self.class_static_private_fields.clone(),
@@ -3801,6 +3804,16 @@ impl<'a> Resolver<'a> {
                 .resolve_local(name)
                 .ok()
                 .and_then(|local_id| self.local_classes.get(&local_id).cloned()),
+            ResolvedExpr::Call { callee, .. } => {
+                // When a local is initialized from a generic function call whose return
+                // type is constrained to an interface/class, infer that constraint as
+                // the local's class for method call dispatch.
+                if let ResolvedExpr::Ident(func_name) = callee.as_ref() {
+                    self.generic_return_constraints.get(func_name).cloned()
+                } else {
+                    None
+                }
+            }
             _ => None,
         }
     }

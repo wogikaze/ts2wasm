@@ -255,6 +255,10 @@ pub enum Stmt {
         /// Used to distinguish bodyless TypeScript overload signatures
         /// from concrete implementations with an empty block body `{}`.
         overload_signature: bool,
+        /// When the return type is a generic type parameter with an `extends`
+        /// constraint, stores the constraint interface/class name.
+        /// E.g. for `function make<T extends HasMethod>(...): T`, this is `Some("HasMethod")`.
+        return_type_generic_constraint: Option<String>,
         span: Span,
     },
     Return {
