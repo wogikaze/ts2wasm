@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 25 | 13 | 12 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4610 | 3264 | 1346 |
+| frontend | 4610 | 3263 | 1347 |
 | harness | 1 | 0 | 1 |
 | ir | 92 | 69 | 23 |
 | issues | 4 | 0 | 4 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5303 | 3573 | 1730 |
+| total | 5303 | 3572 | 1731 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -2375,7 +2375,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 3302 | Implement Modulealiasasfunctionargument | spike | frontend/syntax | class: blocked | Implement Modulealiasasfunctionargument |
 | 3303 | Implement Modulealiasinterface | spike | frontend/syntax | class: blocked | Implement Modulealiasinterface |
 | 3304 | Implement Moduleandinterfacesharingname | spike | frontend/syntax | class: blocked | Implement Moduleandinterfacesharingname |
-| 3509 | Implement Nocheckdoesnotreporterror | spike | frontend/syntax | class: blocked | Implement Nocheckdoesnotreporterror |
 | 3510 | Implement Nochecknoemit | spike | frontend/syntax | class: blocked | Implement Nochecknoemit |
 | 3511 | Implement Nocheckrequiresemitdeclarationonly | spike | frontend/syntax | class: blocked | Implement Nocheckrequiresemitdeclarationonly |
 | 3512 | Implement Nocirculardefinitiononexportofprivateinmergednamespace | spike | frontend/syntax | class: blocked | Implement Nocirculardefinitiononexportofprivateinmergednamespace |
@@ -5263,6 +5262,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 3506 | Implement Newoperator | spike | frontend/syntax | see `issues/done/3506-implement-newOperator.md` |
 | 3507 | Implement Noasconstnamelookup | spike | frontend/syntax | see `issues/done/3507-implement-noAsConstNameLookup.md` |
 | 3508 | Implement Nobundledemitfromnodemodules | spike | frontend/syntax | see `issues/done/3508-implement-noBundledEmitFromNodeModules.md` |
+| 3509 | Implement Nocheckdoesnotreporterror | spike | frontend/syntax | see `issues/done/3509-implement-noCheckDoesNotReportError.md` |
 | 3690 | Implement Optionaltupleelementsandundefined | spike | reference/triage | see `issues/done/3690-implement-optionalTupleElementsAndUndefined.md` |
 | 3996 | Implement Compiler (dup) | spike | frontend/syntax | see `issues/done/3996-implement-reference-typescript-tests-cases-compiler.md` |
 | 4210 | Implement Splicetuples | spike | frontend/resolver | see `issues/done/4210-implement-spliceTuples.md` |
