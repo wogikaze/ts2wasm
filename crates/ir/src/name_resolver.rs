@@ -896,6 +896,16 @@ impl NameResolver {
             }
             Expr::Assign { name, expr, span } => {
                 self.resolve_identifier(name, *span)?;
+                // Reject assignment to class bindings
+                if self.classes.contains_key(name) {
+                    return Err(Diagnostic {
+                        code: DiagCode::UnsupportedSyntax,
+                        message: format!(
+                            "cannot assign to `{name}` because it is a class declaration"
+                        ),
+                        span: Some(*span),
+                    });
+                }
                 Ok(Expr::Assign {
                     name: name.clone(),
                     expr: Box::new(self.resolve_expr(expr)?),
@@ -909,6 +919,16 @@ impl NameResolver {
                 span,
             } => {
                 self.resolve_identifier(name, *span)?;
+                // Reject assignment to class bindings
+                if self.classes.contains_key(name) {
+                    return Err(Diagnostic {
+                        code: DiagCode::UnsupportedSyntax,
+                        message: format!(
+                            "cannot assign to `{name}` because it is a class declaration"
+                        ),
+                        span: Some(*span),
+                    });
+                }
                 Ok(Expr::LogicalAssign {
                     name: name.clone(),
                     op: *op,
@@ -1234,6 +1254,9 @@ impl NameResolver {
         self.enter_scope();
         for stmt in block {
             if let Stmt::Function { name, span, .. } = stmt {
+                self.declare_variable(name, Some(*span), false)?;
+            }
+            if let Stmt::ClassDecl { name, span, .. } = stmt {
                 self.declare_variable(name, Some(*span), false)?;
             }
         }
