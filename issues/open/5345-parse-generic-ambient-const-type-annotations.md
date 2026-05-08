@@ -94,6 +94,7 @@ parser, resolver, or async/generator diagnostic.
 In scope:
 
 - [ ] Erase nested generic type references in ambient `declare const` annotations, including commas and string literal type arguments inside `<...>`.
+- [ ] Erase array suffixes after nested generic ambient const annotations, such as `Either<string, number>[]`.
 - [ ] Erase utility type annotations such as `Record<string, any> | undefined` on ambient `declare const` bindings.
 - [ ] Erase generic callable ambient const annotations such as `<T>(result: Result<T, E>) => Result<T, E>`.
 - [ ] Erase zero-argument generic callable annotations such as `<T, U, V>() => AsyncGenerator<T, U, V>`.
@@ -124,6 +125,7 @@ Do not touch:
 ## Acceptance criteria
 
 - [ ] `declare const authorPromise: Promise<Result<Author, "NOT_FOUND_AUTHOR">>;` no longer reports `expected ambient variable declaration name`.
+- [ ] `declare const es: Either<string, number>[];` no longer reports `issue-400: unterminated ambient variable declaration`.
 - [ ] `declare const broken: Record<string, any> | undefined;` no longer reports `issue-400: unterminated ambient variable declaration`.
 - [ ] A focused parser test covers an ambient const annotation with nested generic type arguments and string literal type arguments.
 - [ ] A focused parser test or reference triage covers an ambient const generic callable annotation.
@@ -190,6 +192,18 @@ Split from `issues/done/762-implement-asyncYieldStarContextualType.md`.
   declaration at 5171..5178`.
 - TypeScript oracle accepts the declarations and later narrowing expressions
   with no diagnostics.
+
+2026-05-08 fold-in:
+
+- `issues/done/3594-implement-nonInferrableTypePropagation-parser-syntax.md`
+  reaches the same ambient const generic annotation boundary for
+  `declare const es: Either<string, number>[];`.
+- Fresh triage reports
+  `UnsupportedTypeScriptSyntax: issue-400: unterminated ambient variable
+  declaration at 804..811`.
+- TypeScript oracle accepts the declaration and reports `es` as
+  `Either<string, number>[]`; the later non-inferrable type propagation
+  behavior is not reachable until this parser boundary advances.
 
 Related but not duplicate:
 
