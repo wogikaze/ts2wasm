@@ -1192,3 +1192,14 @@ fn dynamic_eval_unsupported_diagnostic() {
         err_msg
     );
 }
+
+// Array.prototype.reduce build_smoke (issue 105)
+#[test]
+fn build_smoke_array_reduce() {
+    let result = run_fixture("builtins-and-io/array-reduce-unsupported-diagnostic.ts");
+    assert!(
+        result.is_ok(),
+        "Array.reduce should build: {:?}",
+        result.err()
+    );
+}
