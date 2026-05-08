@@ -1138,3 +1138,19 @@ fn build_smoke_global_names_well_known_symbols() {
         result.err()
     );
 }
+
+// Precise unsupported diagnostic for Promise.then (issue 104)
+#[test]
+fn promise_then_unsupported_diagnostic() {
+    let result = run_fixture("builtins-and-io/promise-then-unsupported-diagnostic.ts");
+    assert!(
+        result.is_err(),
+        "Promise.then should produce unsupported diagnostic"
+    );
+    let err_msg = result.err().unwrap();
+    assert!(
+        err_msg.contains("Promise.prototype.then"),
+        "Diagnostic should mention Promise.prototype.then: {}",
+        err_msg
+    );
+}
