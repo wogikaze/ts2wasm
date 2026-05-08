@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 30 | 17 | 13 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4619 | 3194 | 1425 |
+| frontend | 4620 | 3194 | 1426 |
 | harness | 1 | 0 | 1 |
 | ir | 99 | 71 | 28 |
 | issues | 4 | 0 | 4 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5324 | 3506 | 1818 |
+| total | 5325 | 3506 | 1819 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -48,7 +48,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 
 ```
 5000 (Meta: TypeScript Compiler Parser Syntax Coverage) [done/design] ch:434 open:325 done:109
-├── 5002 (Meta: TypeScript Compiler Type System Coverage) [done/done] ch:221 open:197 done:24 (also ← 5005)
+├── 5002 (Meta: TypeScript Compiler Type System Coverage) [done/done] ch:220 open:196 done:24 (also ← 5005)
 ├── 5003 (Meta: TypeScript Compiler Declaration Emit Coverage) [done/done] ch:100 open:89 done:11 (also ← 5001)
 5001 (Meta: TypeScript Compiler Semantic Analysis Coverage) [done/done] ch:550 open:275 done:275
 5004 (Meta: Runtime Builtins Coverage (test262) (audit reopened #5004)) [done/done] ch:24 open:3 done:21
@@ -70,7 +70,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 2 | 5001 | Meta: TypeScript Compiler Semantic Analysis Coverage | done | done | frontend/semantics | P1 | - | 550 | 275 | 275 |
 | 3 | 5004 | Meta: Runtime Builtins Coverage (test262) (audit reopened #5004) | done | done | runtime/builtins | P1 | - | 24 | 3 | 21 |
 | 4 | 5005 | Meta: TypeScript Compiler Name Resolution Coverage | done | done | frontend/resolver | P1 | - | 390 | 320 | 70 |
-| 5 | 5002 | Meta: TypeScript Compiler Type System Coverage | done | done | frontend/semantics | P1 | 5000, 5005 | 221 | 197 | 24 |
+| 5 | 5002 | Meta: TypeScript Compiler Type System Coverage | done | done | frontend/semantics | P1 | 5000, 5005 | 220 | 196 | 24 |
 | 6 | 5003 | Meta: TypeScript Compiler Declaration Emit Coverage | done | done | frontend/syntax | P2 | 5000, 5001 | 100 | 89 | 11 |
 | 7 | 5006 | Meta: TypeScript Compiler Scope Analysis Coverage | done | done | frontend/resolver | P2 | 5005 | 28 | 18 | 10 |
 | 8 | 5007 | Meta: TypeScript Compiler Module Resolution Coverage (audit reopened #5007) | done | done | frontend/resolver | P2 | 5005 | 19 | 11 | 8 |
@@ -442,6 +442,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5487 | Report non-identical type parameters across merged declarations | feature | frontend/semantics | implementation-ready | P1 |  | merged declarations with non-identical type parameter lists are |
 | 5488 | Parse array type suffixes in erased type positions | feature | frontend/parser | implementation-ready | P1 |  | array type suffixes such as `any[]`, `Args[]`, and object literal |
 | 5489 | Report mixed exported and local var/function merges | feature | frontend/semantics | implementation-ready | P1 |  | local `var f` plus exported `function f` overload declarations report |
+| 5490 | Report array push into never array | feature | frontend/semantics | implementation-ready | P1 |  | `arr.push(n)` on an empty-array local inferred as `never[]` is accepted |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -2396,7 +2397,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 3302 | Implement Modulealiasasfunctionargument | spike | frontend/syntax | class: blocked | Implement Modulealiasasfunctionargument |
 | 3303 | Implement Modulealiasinterface | spike | frontend/syntax | class: blocked | Implement Modulealiasinterface |
 | 3304 | Implement Moduleandinterfacesharingname | spike | frontend/syntax | class: blocked | Implement Moduleandinterfacesharingname |
-| 3597 | Implement Nonnullfullinference | spike | frontend/semantics | class: blocked | Implement Nonnullfullinference |
 | 3598 | Implement Nonnullmappedtype | spike | frontend/syntax | class: blocked | Implement Nonnullmappedtype |
 | 3599 | Implement Nonnullparameterextendingstringassignabletostring | spike | frontend/syntax | class: blocked | Implement Nonnullparameterextendingstringassignabletostring |
 | 3600 | Implement Nonnullreferencematching | spike | frontend/syntax | class: blocked | Implement Nonnullreferencematching |
@@ -5284,6 +5284,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 3594 | Implement Noninferrabletypepropagation Parser Syntax | spike | frontend/syntax | see `issues/done/3594-implement-nonInferrableTypePropagation-parser-syntax.md` |
 | 3595 | Implement Noninferrabletypepropagation Type System | spike | frontend/semantics | see `issues/done/3595-implement-nonInferrableTypePropagation-type-system.md` |
 | 3596 | Implement Nonmergedoverloads | spike | frontend/syntax | see `issues/done/3596-implement-nonMergedOverloads.md` |
+| 3597 | Implement Nonnullfullinference | spike | frontend/semantics | see `issues/done/3597-implement-nonNullFullInference.md` |
 | 3690 | Implement Optionaltupleelementsandundefined | spike | reference/triage | see `issues/done/3690-implement-optionalTupleElementsAndUndefined.md` |
 | 3996 | Implement Compiler (dup) | spike | frontend/syntax | see `issues/done/3996-implement-reference-typescript-tests-cases-compiler.md` |
 | 4210 | Implement Splicetuples | spike | frontend/resolver | see `issues/done/4210-implement-spliceTuples.md` |
