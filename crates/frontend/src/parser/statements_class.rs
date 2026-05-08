@@ -189,7 +189,12 @@ impl Parser {
             if matches!(self.peek(), Some(Token::PrivateIdentifier(_)))
                 || (matches!(self.peek(), Some(Token::Ident(name)) if name == "get" || name == "set")
                     && matches!(self.peek_n(1), Some(Token::PrivateIdentifier(_))))
+                || (matches!(self.peek(), Some(Token::Ident(name)) if name == "readonly")
+                    && matches!(self.peek_n(1), Some(Token::PrivateIdentifier(_))))
             {
+                if matches!(self.peek(), Some(Token::Ident(name)) if name == "readonly") {
+                    self.advance(); // consume readonly TypeScript modifier
+                }
                 private_elements.push(self.class_private_element(is_static)?);
                 continue;
             }

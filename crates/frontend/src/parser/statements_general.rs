@@ -1228,12 +1228,6 @@ impl Parser {
                 return Ok((stmt, binding.text, binding.span));
             }
             self.expression()?
-        } else if is_const {
-            return Err(Diagnostic {
-                code: DiagCode::UnsupportedSyntax,
-                message: "const declarations require an initializer".to_owned(),
-                span: Some(binding.span),
-            });
         } else if !binding.is_identifier {
             return Err(Diagnostic {
                 code: DiagCode::UnsupportedSyntax,
@@ -1255,12 +1249,6 @@ impl Parser {
             }
             let extra_expr = if self.consume(TokenKind::Equal) {
                 self.expression()?
-            } else if is_const {
-                return Err(Diagnostic {
-                    code: DiagCode::UnsupportedSyntax,
-                    message: "const declarations require an initializer".to_owned(),
-                    span: Some(extra_binding.span),
-                });
             } else if !extra_binding.is_identifier {
                 return Err(Diagnostic {
                     code: DiagCode::UnsupportedSyntax,
