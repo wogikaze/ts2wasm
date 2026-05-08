@@ -958,10 +958,17 @@ fn bigint_runtime_mixed_object_toprimitive_primitive_builds_successfully() {
         "fixtures/core-semantics/bigint-runtime-mixed-object-toprimitive-primitive.ts",
         "fixtures/core-semantics/bigint-runtime-mixed-object-toprimitive-method.ts",
     ] {
-        let fp = Path::new(env!("CARGO_MANIFEST_DIR")).join("../../").join(fixture);
+        let fp = Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("../../")
+            .join(fixture);
         let out = temp_wasm_path(fixture);
         let build = std::process::Command::new(env!("CARGO_BIN_EXE_ts2wasm"))
-            .arg("build").arg(&fp).arg("-o").arg(&out).output().unwrap();
+            .arg("build")
+            .arg(&fp)
+            .arg("-o")
+            .arg(&out)
+            .output()
+            .unwrap();
     }
 }
 

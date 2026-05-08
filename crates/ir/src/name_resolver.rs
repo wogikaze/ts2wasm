@@ -98,6 +98,14 @@ impl NameResolver {
     }
 
     fn resolve_program(&mut self, program: &[Stmt]) -> Result<Vec<Stmt>, Diagnostic> {
+        eprintln!("[dbg] resolve_program: {} stmts", program.len());
+        for (i, stmt) in program.iter().enumerate() {
+            match stmt {
+                Stmt::ClassDecl { name, .. } => eprintln!("[dbg]   stmt[{i}] ClassDecl: {name}"),
+                Stmt::Assign { name, .. } => eprintln!("[dbg]   stmt[{i}] Assign: {name}"),
+                _ => eprintln!("[dbg]   stmt[{i}] other"),
+            }
+        }
         // First pass: collect body-ful function declarations (hoisting).
         // Bodyless function declarations are TypeScript overload signatures.
         // Only concrete (body-ful) duplicates are rejected.
@@ -260,6 +268,12 @@ impl NameResolver {
                 is_var: *is_var,
             }),
             Stmt::Assign { name, expr, span } => {
+                eprintln!(
+                    "[dbg] resolve_stmt Assign: name={name}, classes={:?}",
+                    self.classes.keys().cloned().collect::<Vec<_>>()
+                );
+                eprintln!("[dbg]   is_declared({name})={}", self.is_declared(name));
+                eprintln!("[dbg]   is_class_only({name})={}", self.is_class_only(name));
                 self.resolve_identifier(name, *span)?;
                 Ok(Stmt::Assign {
                     name: name.clone(),
@@ -795,6 +809,10 @@ impl NameResolver {
                 })
             }
             Expr::Ident { name, span } => {
+                eprintln!("[dbg] resolve_expr Ident: name={name}, scopes_len={}, classes_keys={:?}, functions_keys={:?}",
+                    self.scopes.len(),
+                    self.classes.keys().cloned().collect::<Vec<_>>(),
+                    self.functions.keys().cloned().collect::<Vec<_>>());
                 // 'super' is a special keyword, not a regular identifier.
                 // Don't try to resolve it as a variable name.
                 if name == "super" {
@@ -848,7 +866,10 @@ impl NameResolver {
                 op,
                 right,
                 span,
-            } => self.resolve_binary_chain(left, *op, right, *span),
+            } => {
+                eprintln!("[dbg] resolve_expr Binary op={:?}", op);
+                self.resolve_binary_chain(left, *op, right, *span)
+            }
             Expr::Call { callee, args, span } => {
                 if self.is_test262_assert_reference_error_probe(callee, args)
                     || self.is_test262_assert_comparison_probe(callee, args)

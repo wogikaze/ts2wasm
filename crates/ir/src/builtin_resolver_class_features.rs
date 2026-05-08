@@ -444,9 +444,7 @@ pub(super) fn validate_static_block_stmt(stmt: &Stmt) -> Result<(), Diagnostic> 
             validate_static_block_stmts(body)
         }
         Stmt::Labeled { body, .. } => validate_static_block_stmt(body),
-        Stmt::Break { .. }
-        | Stmt::Continue { .. }
-        | Stmt::AmbientValueDecl { .. } => Ok(()),
+        Stmt::Break { .. } | Stmt::Continue { .. } | Stmt::AmbientValueDecl { .. } => Ok(()),
         Stmt::ImportSideEffect { span, .. }
         | Stmt::ImportNamed { span, .. }
         | Stmt::ImportDefault { span, .. }
