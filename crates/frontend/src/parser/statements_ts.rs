@@ -527,7 +527,6 @@ impl Parser {
             is_generator: false,
             is_ambient: true,
             overload_signature: true,
-            return_type_generic_constraint: None,
             span: name_span,
         });
         Ok(())

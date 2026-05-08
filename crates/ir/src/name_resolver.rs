@@ -314,7 +314,6 @@ impl NameResolver {
                 is_generator,
                 is_ambient,
                 overload_signature,
-                return_type_generic_constraint,
                 span,
                 ..
             } => {
@@ -351,7 +350,6 @@ impl NameResolver {
                     is_generator: *is_generator,
                     is_ambient: *is_ambient,
                     overload_signature: *overload_signature,
-                    return_type_generic_constraint: return_type_generic_constraint.clone(),
                     span: *span,
                 })
             }

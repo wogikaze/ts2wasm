@@ -40,7 +40,6 @@ pub fn lower_program(program: &[ResolvedStmt]) -> Result<LoweredProgram, Diagnos
     let class_private_fields = collect_class_private_fields(program);
     let class_static_private_fields = collect_class_static_private_fields(program);
     let function_recursion_depths = compute_recursion_depths(program, &function_ids);
-    let generic_return_constraints = collect_generic_return_constraints(program);
     let mut next_func_id = function_ids.len();
     let mut functions_by_id = vec![None; function_ids.len()];
     let mut generated_functions = Vec::new();
@@ -74,7 +73,6 @@ pub fn lower_program(program: &[ResolvedStmt]) -> Result<LoweredProgram, Diagnos
                     &class_method_mutable_captures,
                     &function_env_cell_names,
                     &HashSet::new(),
-                    generic_return_constraints.clone(),
                     class_parents.clone(),
                     class_private_fields.clone(),
                     class_static_private_fields.clone(),
@@ -140,7 +138,6 @@ pub fn lower_program(program: &[ResolvedStmt]) -> Result<LoweredProgram, Diagnos
                     &class_method_mutable_captures,
                     &HashSet::new(),
                     &HashSet::new(),
-                    generic_return_constraints.clone(),
                     class_parents.clone(),
                     class_private_fields.clone(),
                     class_static_private_fields.clone(),
@@ -196,7 +193,6 @@ pub fn lower_program(program: &[ResolvedStmt]) -> Result<LoweredProgram, Diagnos
                         &class_method_mutable_captures,
                         &method_env_cell_names,
                         &HashSet::new(),
-                        generic_return_constraints.clone(),
                         class_parents.clone(),
                         class_private_fields.clone(),
                         class_static_private_fields.clone(),
@@ -230,7 +226,6 @@ pub fn lower_program(program: &[ResolvedStmt]) -> Result<LoweredProgram, Diagnos
         class_private_fields,
         class_static_private_fields,
         generator_function_names,
-        generic_return_constraints.clone(),
         next_func_id,
     );
     let mut top_level_statements = Vec::new();
@@ -467,20 +462,6 @@ fn collect_function_ids(program: &[ResolvedStmt]) -> Result<HashMap<String, Func
     }
 
     Ok(function_ids)
-}
-
-fn collect_generic_return_constraints(program: &[ResolvedStmt]) -> HashMap<String, String> {
-    program
-        .iter()
-        .filter_map(|stmt| match stmt {
-            ResolvedStmt::Function {
-                name,
-                return_type_generic_constraint: Some(constraint),
-                ..
-            } => Some((name.clone(), constraint.clone())),
-            _ => None,
-        })
-        .collect()
 }
 
 fn collect_generator_function_names(program: &[ResolvedStmt]) -> HashSet<String> {
@@ -2098,7 +2079,6 @@ fn lower_function(
     class_method_mutable_captures: &HashMap<FuncId, Vec<String>>,
     env_cell_names: &HashSet<String>,
     heap_closure_names: &HashSet<String>,
-    generic_return_constraints: HashMap<String, String>,
     class_parents: HashMap<String, Option<String>>,
     class_private_fields: ClassPrivateFieldSlots,
     class_static_private_fields: ClassStaticPrivateFields,
@@ -2150,7 +2130,6 @@ fn lower_function(
         class_static_private_fields,
         options.current_class,
         options.in_constructor,
-        generic_return_constraints,
         options.next_func_id,
     )?;
 

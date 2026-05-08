@@ -415,8 +415,7 @@ impl Parser {
                     body: Vec::new(),
                     is_generator: false,
                     is_ambient: false,
-                    overload_signature: false,
-                    return_type_generic_constraint: None,
+                overload_signature: false,
                     span: Span {
                         start: method_span.start,
                         end: method_span.end,
@@ -456,7 +455,6 @@ impl Parser {
                 is_generator: false,
                 is_ambient: false,
                 overload_signature: false,
-                return_type_generic_constraint: None,
                 span: Span {
                     start: method_span.start,
                     end: method_end,

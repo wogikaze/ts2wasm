@@ -170,7 +170,6 @@ impl BigIntStaticBuiltinFolder {
                 is_generator,
                 is_ambient,
                 overload_signature,
-                return_type_generic_constraint,
                 span,
             } => Stmt::Function {
                 name: name.clone(),
@@ -179,7 +178,6 @@ impl BigIntStaticBuiltinFolder {
                 is_generator: *is_generator,
                 is_ambient: *is_ambient,
                 overload_signature: *overload_signature,
-                return_type_generic_constraint: return_type_generic_constraint.clone(),
                 span: *span,
             },
             Stmt::Return { expr, span } => Stmt::Return {
@@ -1057,7 +1055,6 @@ fn resolve_stmt_with_outer_bindings(
             body,
             is_generator,
             is_ambient,
-            return_type_generic_constraint,
             span,
             ..
         } => {
@@ -1081,7 +1078,6 @@ fn resolve_stmt_with_outer_bindings(
                     .collect::<Result<Vec<_>, _>>()?,
                 is_generator: *is_generator,
                 is_ambient: *is_ambient,
-                return_type_generic_constraint: return_type_generic_constraint.clone(),
             })
         }
         Stmt::ClassDecl {

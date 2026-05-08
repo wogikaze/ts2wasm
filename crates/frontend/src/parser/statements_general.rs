@@ -1030,7 +1030,6 @@ impl Parser {
                 is_generator,
                 is_ambient: false,
                 overload_signature: false,
-                return_type_generic_constraint: None,
                 span: eval_span,
             })),
             _ => Ok(None),
@@ -1412,8 +1411,8 @@ impl Parser {
             return self.finish_generator_function_statement(start);
         }
         let (name, _) = self.expect_ident()?;
-        let generic_param_constraints = self.consume_typescript_generic_param_constraints()?;
-        if generic_param_constraints.is_some() {
+        let has_generic_params = self.consume_typescript_generic_parameter_list()?;
+        if has_generic_params {
             self.typescript_generic_functions.insert(name.clone());
         }
         self.expect(TokenKind::LeftParen)?;
@@ -1437,20 +1436,9 @@ impl Parser {
                 self.expect(TokenKind::Comma)?;
             }
         }
-        let return_type_generic_constraint = if self.consume(TokenKind::Colon) {
-            // Peek at the return type to check if it matches a generic type parameter
-            // with an extends constraint
-            let constraint = match self.peek() {
-                Some(Token::Ident(type_name)) => generic_param_constraints
-                    .as_ref()
-                    .and_then(|m| m.get(type_name).cloned()),
-                _ => None,
-            };
+        if self.consume(TokenKind::Colon) {
             self.skip_type_annotation_until(&[TokenKind::LeftBrace, TokenKind::Semicolon])?;
-            constraint
-        } else {
-            None
-        };
+        }
         if self.consume(TokenKind::Semicolon) {
             // Function signature without body (overload)
             return Ok(Stmt::Function {
@@ -1460,7 +1448,6 @@ impl Parser {
                 is_generator: false,
                 is_ambient: false,
                 overload_signature: true,
-                return_type_generic_constraint: None,
                 span: Span {
                     start: start.start,
                     end: start.end,
@@ -1476,7 +1463,6 @@ impl Parser {
             is_generator: false,
             is_ambient: false,
             overload_signature: false,
-            return_type_generic_constraint: None,
             span: Span {
                 start: start.start,
                 end,
@@ -1519,7 +1505,6 @@ impl Parser {
             is_generator: true,
             is_ambient: false,
             overload_signature: false,
-            return_type_generic_constraint: None,
             span: Span {
                 start: start.start,
                 end,
@@ -1566,7 +1551,6 @@ impl Parser {
                 is_generator: true,
                 is_ambient: false,
                 overload_signature: false,
-                return_type_generic_constraint: None,
                 span: Span {
                     start: async_span.start,
                     end,
@@ -1608,7 +1592,6 @@ impl Parser {
             is_generator: false,
             is_ambient: false,
             overload_signature: false,
-            return_type_generic_constraint: None,
             span: Span {
                 start: async_span.start,
                 end,
