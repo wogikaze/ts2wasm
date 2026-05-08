@@ -19,7 +19,7 @@ updated: 2026-05-06
 
 Closed by splitting the current namespace import-equals alias resolver blocker
 to
-`issues/open/5262-resolve-import-equals-aliases-in-class-implements-clauses.md`.
+`issues/done/5262-resolve-import-equals-aliases-in-class-implements-clauses.md`.
 
 ## Problem
 
@@ -116,7 +116,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] `issues/open/5262-resolve-import-equals-aliases-in-class-implements-clauses.md`
+- [x] `issues/done/5262-resolve-import-equals-aliases-in-class-implements-clauses.md`
 
 ## Notes
 
@@ -176,7 +176,7 @@ TypeScript AST path: ModuleDeclaration -> ModuleBlock -> ClassDeclaration ->
 
 Split issue:
 
-- `issues/open/5262-resolve-import-equals-aliases-in-class-implements-clauses.md`
+- `issues/done/5262-resolve-import-equals-aliases-in-class-implements-clauses.md`
 
 ## Completion evidence
 
@@ -184,7 +184,7 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- Split to `issues/open/5262-resolve-import-equals-aliases-in-class-implements-clauses.md`; see local commit for this issue cleanup.
+- Split to `issues/done/5262-resolve-import-equals-aliases-in-class-implements-clauses.md`; see local commit for this issue cleanup.
 
 Validation result:
 

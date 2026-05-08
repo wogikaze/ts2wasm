@@ -72,11 +72,11 @@ build-pass or to the next more specific unsupported boundary.
 
 In scope:
 
-- [ ] Bind `setTimeout` as a known DOM/global callable when the source requests
+- [x] Bind `setTimeout` as a known DOM/global callable when the source requests
   a DOM lib or when the reference runner provides DOM globals.
-- [ ] Keep the diagnostic source-spanned at the `setTimeout` identifier if the
+- [x] Keep the diagnostic source-spanned at the `setTimeout` identifier if the
   runtime remains unsupported.
-- [ ] Add focused coverage for `setTimeout(function() {}, 0)` in a DOM-lib
+- [x] Add focused coverage for `setTimeout(function() {}, 0)` in a DOM-lib
   TypeScript input.
 
 Out of scope:
@@ -103,12 +103,12 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] `contextuallyTypeArgumentsKeyword.ts` no longer reports
+- [x] `contextuallyTypeArgumentsKeyword.ts` no longer reports
   `UnresolvedName` for `setTimeout`.
-- [ ] A focused fixture covers a DOM-lib `setTimeout(function() {}, 0)` call.
-- [ ] Non-DOM unknown globals still report ordinary unresolved-name
+- [x] A focused fixture covers a DOM-lib `setTimeout(function() {}, 0)` call.
+- [x] Non-DOM unknown globals still report ordinary unresolved-name
   diagnostics.
-- [ ] If timers remain unsupported, the diagnostic names the DOM timer boundary
+- [x] If timers remain unsupported, the diagnostic names the DOM timer boundary
   instead of generic name resolution.
 
 ## Validation
@@ -135,15 +135,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 

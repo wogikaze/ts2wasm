@@ -111,10 +111,10 @@ identifier rule. The parser and AST shape should remain unchanged.
 
 In scope:
 
-- [ ] Adjust the duplicate function-vs-var binding diagnostic span to the duplicate identifier.
-- [ ] Handle both declaration orders: `var foo; function foo() { }` and `function foo() { } var foo = 1;`.
-- [ ] Preserve duplicate-local rejection for the representative conflict.
-- [ ] Add focused regressions for typed `var foo` followed by `function foo`
+- [x] Adjust the duplicate function-vs-var binding diagnostic span to the duplicate identifier.
+- [x] Handle both declaration orders: `var foo; function foo() { }` and `function foo() { } var foo = 1;`.
+- [x] Preserve duplicate-local rejection for the representative conflict.
+- [x] Add focused regressions for typed `var foo` followed by `function foo`
   and concrete `function y1` followed by `var y1`.
 
 Out of scope:
@@ -137,15 +137,15 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] `conflictingTypeAnnotatedVar.ts` no longer reports the first blocker at the `function` keyword span `38..46`.
-- [ ] `augmentedTypesFunction.ts` no longer reports the first blocker as a
+- [x] `conflictingTypeAnnotatedVar.ts` no longer reports the first blocker at the `function` keyword span `38..46`.
+- [x] `augmentedTypesFunction.ts` no longer reports the first blocker as a
   generic `DuplicateLocal` at the whole `var y1 = 1;` span `70..81`.
-- [ ] `augmentedTypesVar.ts` no longer reports the first blocker as a generic
+- [x] `augmentedTypesVar.ts` no longer reports the first blocker as a generic
   `DuplicateLocal` at the `function` keyword span `109..117`.
-- [ ] The duplicate diagnostic is source-spanned at a `foo` identifier and names the duplicate identifier rule.
-- [ ] The duplicate diagnostic is source-spanned at a `y1` identifier and names the duplicate identifier rule.
-- [ ] The duplicate diagnostic is source-spanned at an `x2` identifier and names the duplicate identifier rule.
-- [ ] Focused regressions preserve rejection for `var foo: string; function foo(): number { }`, `function y1() { } var y1 = 1;`, and `var x2 = 1; function x2() { }`.
+- [x] The duplicate diagnostic is source-spanned at a `foo` identifier and names the duplicate identifier rule.
+- [x] The duplicate diagnostic is source-spanned at a `y1` identifier and names the duplicate identifier rule.
+- [x] The duplicate diagnostic is source-spanned at an `x2` identifier and names the duplicate identifier rule.
+- [x] Focused regressions preserve rejection for `var foo: string; function foo(): number { }`, `function y1() { } var y1 = 1;`, and `var x2 = 1; function x2() { }`.
 
 ## Validation
 
@@ -172,15 +172,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 

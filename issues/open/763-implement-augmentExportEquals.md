@@ -20,7 +20,7 @@ status: done
 ## Summary
 
 Closed this generated bucket by splitting the current concrete blocker to
-`issues/open/5346-parse-commonjs-export-assignment-statements.md`.
+`issues/done/5346-parse-commonjs-export-assignment-statements.md`.
 
 ## Problem
 
@@ -53,7 +53,7 @@ env TS2WASM_BINARY=/tmp/ts2wasm-issue-blockers-target/debug/ts2wasm python scrip
 ## Desired final state
 
 This generated bucket is closed. Implement from
-`issues/open/5346-parse-commonjs-export-assignment-statements.md`.
+`issues/done/5346-parse-commonjs-export-assignment-statements.md`.
 
 ## Scope
 
@@ -122,7 +122,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] `issues/open/5346-parse-commonjs-export-assignment-statements.md`
+- [x] `issues/done/5346-parse-commonjs-export-assignment-statements.md`
 
 ## Notes
 
@@ -142,7 +142,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-Split to `issues/open/5346-parse-commonjs-export-assignment-statements.md`.
+Split to `issues/done/5346-parse-commonjs-export-assignment-statements.md`.
 
 Related no-match issues:
 

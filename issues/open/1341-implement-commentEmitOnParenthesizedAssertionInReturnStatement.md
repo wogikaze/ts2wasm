@@ -138,7 +138,7 @@ Follow-up issues:
 ## Duplicate detection
 
 - `issues/done/5232-w0-fixture-ize-runtimelinkplan-linker-structure-tests.md` owns the current issue-5005 entry-module `export class` boundary.
-- `issues/open/5324-support-dependency-export-class-declarations.md` is related but covers dependency virtual files, not the entry module.
+- `issues/done/5324-support-dependency-export-class-declarations.md` is related but covers dependency virtual files, not the entry module.
 - Later comment emit, parenthesized assertion preservation, `satisfies`, and `this.client.getThing()` lowering behavior remains unproven until issue 5232 advances past the export-class boundary.
 
 ## Smart triage

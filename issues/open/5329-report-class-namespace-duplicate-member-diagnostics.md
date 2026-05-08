@@ -94,7 +94,7 @@ Out of scope:
 
 - Full declaration merge semantics for arbitrary namespaces.
 - Runtime namespace member lowering.
-- Var/function duplicate identifier diagnostics; tracked by `issues/open/5307-report-var-function-duplicate-identifier-diagnostics.md`.
+- Var/function duplicate identifier diagnostics; tracked by `issues/done/5307-report-var-function-duplicate-identifier-diagnostics.md`.
 - Object type literal duplicate property diagnostics.
 
 ## Affected paths
@@ -164,7 +164,7 @@ Split from `issues/open/1257-implement-cloduleWithDuplicateMember.md` on
 
 Related but not duplicates:
 
-- `issues/open/5307-report-var-function-duplicate-identifier-diagnostics.md`
+- `issues/done/5307-report-var-function-duplicate-identifier-diagnostics.md`
   covers var/function duplicate diagnostics.
 - `issues/open/343-implement-duplicate-local-detection.md` is broader duplicate
   local infrastructure and explicitly leaves TypeScript-specific duplicate

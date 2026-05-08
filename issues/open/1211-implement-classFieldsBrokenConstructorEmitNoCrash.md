@@ -114,7 +114,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] created: `issues/open/5323-report-missing-constructor-parameter-list.md`
+- [x] created: `issues/done/5323-report-missing-constructor-parameter-list.md`
 
 ## Notes
 

@@ -18,7 +18,7 @@ updated: 2026-05-07
 ## Summary
 
 Closed as superseded by
-`issues/open/5287-bind-namespace-declarations-for-qualified-value-access.md`.
+`issues/done/5287-bind-namespace-declarations-for-qualified-value-access.md`.
 
 Fresh triage shows this bucket stops at the same same-file namespace value
 binding boundary: `namespace Test { export function F...; export class
@@ -160,7 +160,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] superseded by: `issues/open/5287-bind-namespace-declarations-for-qualified-value-access.md`
+- [x] superseded by: `issues/done/5287-bind-namespace-declarations-for-qualified-value-access.md`
 
 ## Notes
 
@@ -170,12 +170,12 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/open/5287-bind-namespace-declarations-for-qualified-value-access.md`
+- `issues/done/5287-bind-namespace-declarations-for-qualified-value-access.md`
   owns binding same-file non-ambient namespace declarations as namespace values
   so qualified accesses can resolve exported members.
 - `issues/done/5225-w0-typed-wat-writer.md` is related but
   covers qualified names in class heritage clauses, not value access.
-- `issues/open/5294-resolve-sibling-namespaces-in-nested-namespace-scopes.md`
+- `issues/done/5294-resolve-sibling-namespaces-in-nested-namespace-scopes.md`
   is related but covers nested sibling namespace lookup.
 
 ## Smart triage

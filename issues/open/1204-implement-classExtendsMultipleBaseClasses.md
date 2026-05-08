@@ -114,7 +114,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] created: `issues/open/5317-report-multiple-class-heritage-bases.md`
+- [x] created: `issues/done/5317-report-multiple-class-heritage-bases.md`
 
 ## Notes
 

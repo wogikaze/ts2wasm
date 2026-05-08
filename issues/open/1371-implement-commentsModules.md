@@ -134,7 +134,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] created: `issues/open/5287-bind-namespace-declarations-for-qualified-value-access.md`
+- [x] created: `issues/done/5287-bind-namespace-declarations-for-qualified-value-access.md`
 
 ## Notes
 

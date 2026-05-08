@@ -110,7 +110,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] split to `issues/open/5363-support-class-constructor-outer-local-return-captures.md`
+- [x] split to `issues/done/5363-support-class-constructor-outer-local-return-captures.md`
 
 ## Notes
 
@@ -149,7 +149,7 @@ class A {
 
 TypeScript oracle: accepted with no diagnostics.
 
-This bucket was split to `issues/open/5363-support-class-constructor-outer-local-return-captures.md`.
+This bucket was split to `issues/done/5363-support-class-constructor-outer-local-return-captures.md`.
 
 ## Completion evidence
 

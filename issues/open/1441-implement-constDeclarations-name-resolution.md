@@ -20,7 +20,7 @@ status: done
 ## Summary
 
 Closed this generated name-resolution bucket after splitting the current
-resolver work to `issues/open/5348-resolve-const-declarations-before-use.md`.
+resolver work to `issues/done/5348-resolve-const-declarations-before-use.md`.
 
 ## Problem
 
@@ -49,7 +49,7 @@ mise run reference-coverage -- tsc --path-filter reference/typescript/tests/case
 ## Desired final state
 
 This generated bucket is closed. Implement from
-`issues/open/5348-resolve-const-declarations-before-use.md`.
+`issues/done/5348-resolve-const-declarations-before-use.md`.
 
 ## Scope
 
@@ -119,7 +119,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] created: `issues/open/5348-resolve-const-declarations-before-use.md`
+- [x] created: `issues/done/5348-resolve-const-declarations-before-use.md`
 
 ## Notes
 
@@ -130,7 +130,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-Split to `issues/open/5348-resolve-const-declarations-before-use.md`.
+Split to `issues/done/5348-resolve-const-declarations-before-use.md`.
 
 No exact existing owner was found. Nearby no-match issues:
 

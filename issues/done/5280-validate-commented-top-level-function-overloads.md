@@ -71,10 +71,10 @@ diagnostics: []
 
 In scope:
 
-- [ ] Distinguish commented bodyless top-level function overload signatures from duplicate concrete implementations.
-- [ ] Accept two commented/bodyless `foo` overload signatures followed by one `foo` implementation.
-- [ ] Preserve comments as trivia; no comment emit fidelity is required in this slice.
-- [ ] Re-run `commentOnSignature1.ts` and record the next blocker if constructor or class method overloads appear.
+- [x] Distinguish commented bodyless top-level function overload signatures from duplicate concrete implementations.
+- [x] Accept two commented/bodyless `foo` overload signatures followed by one `foo` implementation.
+- [x] Preserve comments as trivia; no comment emit fidelity is required in this slice.
+- [x] Re-run `commentOnSignature1.ts` and record the next blocker if constructor or class method overloads appear.
 
 Out of scope:
 
@@ -99,10 +99,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] `commentOnSignature1.ts` no longer reports `DuplicateFunction` for the second bodyless top-level `foo` overload signature.
-- [ ] A focused fixture covers a commented overload group with two signatures and one implementation.
-- [ ] Existing multiple concrete function implementation diagnostics still report duplicate-function.
-- [ ] Any later constructor or class method overload blocker from this reference is recorded separately.
+- [x] `commentOnSignature1.ts` no longer reports `DuplicateFunction` for the second bodyless top-level `foo` overload signature.
+- [x] A focused fixture covers a commented overload group with two signatures and one implementation.
+- [x] Existing multiple concrete function implementation diagnostics still report duplicate-function.
+- [x] Any later constructor or class method overload blocker from this reference is recorded separately.
 
 ## Validation
 

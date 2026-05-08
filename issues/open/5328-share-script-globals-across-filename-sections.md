@@ -99,7 +99,7 @@ Out of scope:
 
 - Local imports between `@Filename` sections; tracked by `issues/done/5229-w0-user-runtime-string-origin.md`.
 - Namespace-only multi-section body preservation; tracked by `issues/done/5187-lower-namespace-only-multi-section-files.md`.
-- Same-file namespace value binding; tracked by `issues/open/5287-bind-namespace-declarations-for-qualified-value-access.md`.
+- Same-file namespace value binding; tracked by `issues/done/5287-bind-namespace-declarations-for-qualified-value-access.md`.
 - Full declaration emit or AMD/outFile behavior.
 
 ## Affected paths
@@ -168,7 +168,7 @@ Split from `issues/open/1254-implement-cloduleSplitAcrossFiles.md` on
 
 Related but not duplicates:
 
-- `issues/open/5287-bind-namespace-declarations-for-qualified-value-access.md`
+- `issues/done/5287-bind-namespace-declarations-for-qualified-value-access.md`
   covers same-file namespace declarations such as `namespace m1 { ... }`
   followed by `m1.fooExport()`.
 - `issues/done/5187-lower-namespace-only-multi-section-files.md` covers

@@ -18,7 +18,7 @@ updated: 2026-05-07
 ## Summary
 
 Closed after splitting the current reference-harness blocker to
-`issues/open/5292-skip-tsconfig-filename-sections-in-reference-harness.md`.
+`issues/done/5292-skip-tsconfig-filename-sections-in-reference-harness.md`.
 
 Fresh focused triage shows the failing boundary is not isolatedModules
 semantics itself. The compiler is parsing the virtual `tsconfig.json` section
@@ -134,7 +134,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] added: `issues/open/5292-skip-tsconfig-filename-sections-in-reference-harness.md`
+- [x] added: `issues/done/5292-skip-tsconfig-filename-sections-in-reference-harness.md`
 
 ## Notes
 

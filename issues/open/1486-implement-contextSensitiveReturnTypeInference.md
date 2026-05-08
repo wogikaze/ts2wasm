@@ -110,7 +110,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] split to `issues/open/5366-restore-call-argument-scope-after-typed-arrow-callbacks.md`
+- [x] split to `issues/done/5366-restore-call-argument-scope-after-typed-arrow-callbacks.md`
 
 ## Notes
 
@@ -149,7 +149,7 @@ test(
 
 TypeScript oracle: accepted with no diagnostics.
 
-This bucket was split to `issues/open/5366-restore-call-argument-scope-after-typed-arrow-callbacks.md`.
+This bucket was split to `issues/done/5366-restore-call-argument-scope-after-typed-arrow-callbacks.md`.
 
 ## Completion evidence
 

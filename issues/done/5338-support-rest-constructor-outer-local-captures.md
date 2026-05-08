@@ -64,9 +64,9 @@ constructor capture blocker.
 
 In scope:
 
-- [ ] Represent constructor rest parameters and hidden outer-local captures without ABI collision.
-- [ ] Preserve existing rest constructor calls without captures.
-- [ ] Preserve existing issue-289 diagnostics for unsupported non-rest constructor capture shapes.
+- [x] Represent constructor rest parameters and hidden outer-local captures without ABI collision.
+- [x] Preserve existing rest constructor calls without captures.
+- [x] Preserve existing issue-289 diagnostics for unsupported non-rest constructor capture shapes.
 
 Out of scope:
 
@@ -88,9 +88,9 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] `collisionRestParameterUnderscoreIUsage.ts` no longer reports issue-289 for `_i` captured from a rest-parameter constructor.
-- [ ] A focused fixture covers `class C { constructor(...args: any[]) { use(outer); } }`.
-- [ ] Existing constructor rest parameter fixtures still pass.
+- [x] `collisionRestParameterUnderscoreIUsage.ts` no longer reports issue-289 for `_i` captured from a rest-parameter constructor.
+- [x] A focused fixture covers `class C { constructor(...args: any[]) { use(outer); } }`.
+- [x] Existing constructor rest parameter fixtures still pass.
 
 ## Validation
 
@@ -120,15 +120,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 

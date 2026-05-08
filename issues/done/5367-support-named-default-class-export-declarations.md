@@ -83,13 +83,13 @@ to the next narrower parser, resolver, or semantic diagnostic.
 
 In scope:
 
-- [ ] Parse named `export default class Name {}` declarations and preserve the class name.
-- [ ] Add one focused parser/module regression for that exact form.
-- [ ] Re-run the representative reference triage and confirm the issue-055 default class export boundary is gone.
+- [x] Parse named `export default class Name {}` declarations and preserve the class name.
+- [x] Add one focused parser/module regression for that exact form.
+- [x] Re-run the representative reference triage and confirm the issue-055 default class export boundary is gone.
 
 Out of scope:
 
-- Anonymous `export default class extends Foo {}`; covered by `issues/open/5326-support-default-class-export-declarations.md`.
+- Anonymous `export default class extends Foo {}`; covered by `issues/done/5326-support-default-class-export-declarations.md`.
 - Default function exports.
 - Default interface/type exports.
 - Module loading or package resolution.
@@ -111,9 +111,9 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] `export default class Operation {}` no longer reports `issue-055: unsupported default class export`.
-- [ ] A focused regression proves the default export marker and class name are preserved.
-- [ ] `contextualExpressionTypecheckingDoesntBlowStack.ts` advances to the next narrower diagnostic or build pass.
+- [x] `export default class Operation {}` no longer reports `issue-055: unsupported default class export`.
+- [x] A focused regression proves the default export marker and class name are preserved.
+- [x] `contextualExpressionTypecheckingDoesntBlowStack.ts` advances to the next narrower diagnostic or build pass.
 
 ## Validation
 
@@ -140,15 +140,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 
@@ -157,7 +157,7 @@ Split from generated bucket
 
 Related but not duplicates:
 
-- `issues/open/5326-support-default-class-export-declarations.md` covers the
+- `issues/done/5326-support-default-class-export-declarations.md` covers the
   anonymous `export default class extends Foo {}` form and explicitly keeps
   named default classes out of scope unless they fall out of the same parser
   path.

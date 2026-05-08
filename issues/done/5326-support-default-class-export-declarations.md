@@ -85,9 +85,9 @@ module or semantic blocker.
 
 In scope:
 
-- [ ] Parse anonymous `export default class extends Foo {}` and preserve `extends Foo`.
-- [ ] Add one focused parser/module regression for that exact form.
-- [ ] Re-run the representative reference triage and confirm the issue-055 default class export boundary is gone.
+- [x] Parse anonymous `export default class extends Foo {}` and preserve `extends Foo`.
+- [x] Add one focused parser/module regression for that exact form.
+- [x] Re-run the representative reference triage and confirm the issue-055 default class export boundary is gone.
 
 Out of scope:
 
@@ -113,9 +113,9 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] `export default class extends Foo {}` no longer reports `issue-055: unsupported default class export`.
-- [ ] A focused regression proves the default export marker and `extends Foo` are preserved.
-- [ ] The representative reference triage advances to the next narrower diagnostic or build pass.
+- [x] `export default class extends Foo {}` no longer reports `issue-055: unsupported default class export`.
+- [x] A focused regression proves the default export marker and `extends Foo` are preserved.
+- [x] The representative reference triage advances to the next narrower diagnostic or build pass.
 
 ## Validation
 
@@ -142,15 +142,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 

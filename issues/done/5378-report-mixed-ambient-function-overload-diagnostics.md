@@ -67,12 +67,12 @@ are considered.
 
 In scope:
 
-- [ ] Detect a top-level `declare function f(...); function f(...) { ... }`
+- [x] Detect a top-level `declare function f(...); function f(...) { ... }`
   mixed ambient/non-ambient overload group.
-- [ ] Report a source-spanned diagnostic at the offending overload identifier.
-- [ ] Preserve valid non-ambient overload grouping for issue 5200.
-- [ ] Preserve valid ambient overload grouping for issue 5226.
-- [ ] Add a focused regression for `declare function f(...); function f(...)`.
+- [x] Report a source-spanned diagnostic at the offending overload identifier.
+- [x] Preserve valid non-ambient overload grouping for issue 5200.
+- [x] Preserve valid ambient overload grouping for issue 5226.
+- [x] Add a focused regression for `declare function f(...); function f(...)`.
 
 Out of scope:
 
@@ -97,13 +97,13 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] `contextualTyping.ts` no longer reports generic `DuplicateLocal` for
+- [x] `contextualTyping.ts` no longer reports generic `DuplicateLocal` for
   `EF1`.
-- [ ] A focused fixture reports a mixed ambient/non-ambient overload diagnostic
+- [x] A focused fixture reports a mixed ambient/non-ambient overload diagnostic
   for `declare function f(a: number): number; function f(a) { return a; }`.
-- [ ] Valid non-ambient overload implementation fixtures from issue 5200 remain
+- [x] Valid non-ambient overload implementation fixtures from issue 5200 remain
   on their existing path.
-- [ ] Valid ambient overload declaration fixtures from issue 5226 remain on
+- [x] Valid ambient overload declaration fixtures from issue 5226 remain on
   their existing path.
 
 ## Validation
@@ -126,15 +126,15 @@ env TS2WASM_BINARY=/home/wogikaze/wgkz/ts2wasm/target/debug/ts2wasm python scrip
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 

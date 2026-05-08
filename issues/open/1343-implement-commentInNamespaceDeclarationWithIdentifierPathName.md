@@ -130,8 +130,8 @@ Follow-up issues:
 
 No duplicate implementation issue is needed because the current focused window
 is build-pass. Adjacent namespace issues such as
-`issues/open/5287-bind-namespace-declarations-for-qualified-value-access.md`
-and `issues/open/5294-resolve-sibling-namespaces-in-nested-namespace-scopes.md`
+`issues/done/5287-bind-namespace-declarations-for-qualified-value-access.md`
+and `issues/done/5294-resolve-sibling-namespaces-in-nested-namespace-scopes.md`
 own later namespace value/name-resolution blockers in other reference files,
 but this path has no current unresolved-name or module-lowering failure.
 

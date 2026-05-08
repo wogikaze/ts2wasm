@@ -52,10 +52,10 @@ boundary instead of a generic missing-left-brace parser error.
 
 In scope:
 
-- [ ] Detect `class C extends A,B {}` at the comma after the first heritage
+- [x] Detect `class C extends A,B {}` at the comma after the first heritage
   expression.
-- [ ] Emit a source-spanned diagnostic equivalent to TS1174.
-- [ ] Add a focused parser or CLI regression for the representative source.
+- [x] Emit a source-spanned diagnostic equivalent to TS1174.
+- [x] Add a focused parser or CLI regression for the representative source.
 
 Out of scope:
 
@@ -78,11 +78,11 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] `classExtendsMultipleBaseClasses.ts` no longer reports
+- [x] `classExtendsMultipleBaseClasses.ts` no longer reports
   `expected LeftBrace, got Some(Comma)`.
-- [ ] The new diagnostic is source-spanned at the comma or second base `B` and
+- [x] The new diagnostic is source-spanned at the comma or second base `B` and
   names the single-base-class rule.
-- [ ] `class C extends A {}` still parses.
+- [x] `class C extends A {}` still parses.
 
 ## Validation
 
@@ -109,15 +109,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 

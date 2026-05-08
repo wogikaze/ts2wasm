@@ -110,7 +110,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] created: `issues/open/5370-bind-ambient-namespace-declarations-for-qualified-value-access.md`
+- [x] created: `issues/done/5370-bind-ambient-namespace-declarations-for-qualified-value-access.md`
 
 ## Notes
 
@@ -172,13 +172,13 @@ cannot find the top-level `app` identifier. TypeScript accepts both files with
 no diagnostics.
 
 This is adjacent to, but not covered by,
-`issues/open/5287-bind-namespace-declarations-for-qualified-value-access.md`,
+`issues/done/5287-bind-namespace-declarations-for-qualified-value-access.md`,
 which explicitly scopes non-ambient namespaces and excludes ambient
 `declare namespace`. It is also narrower than broad import/export umbrella
 `issues/open/432-implement-import-export.md`.
 
 The ambient namespace value-access blocker was split to
-`issues/open/5370-bind-ambient-namespace-declarations-for-qualified-value-access.md`.
+`issues/done/5370-bind-ambient-namespace-declarations-for-qualified-value-access.md`.
 
 ## Completion evidence
 

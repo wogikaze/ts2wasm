@@ -46,7 +46,7 @@ env TS2WASM_BINARY=/tmp/ts2wasm-issue-blockers-target/debug/ts2wasm python scrip
 ## Desired final state
 
 This generated bucket is closed. Implement from
-`issues/open/5324-support-dependency-export-class-declarations.md`.
+`issues/done/5324-support-dependency-export-class-declarations.md`.
 
 ## Scope
 
@@ -67,7 +67,7 @@ Out of scope:
 
 Expected:
 
-- `issues/open/5324-support-dependency-export-class-declarations.md`
+- `issues/done/5324-support-dependency-export-class-declarations.md`
 
 Do not touch:
 
@@ -117,7 +117,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] existing owner: `issues/open/5324-support-dependency-export-class-declarations.md`
+- [x] existing owner: `issues/done/5324-support-dependency-export-class-declarations.md`
 
 ## Notes
 
@@ -132,7 +132,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/open/5324-support-dependency-export-class-declarations.md` owns the
+- `issues/done/5324-support-dependency-export-class-declarations.md` owns the
   current issue-5005 boundary for dependency virtual files that start with
   `export class`.
 - `issues/done/5229-w0-user-runtime-string-origin.md` is related

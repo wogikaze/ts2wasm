@@ -115,7 +115,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] created: `issues/open/5307-report-var-function-duplicate-identifier-diagnostics.md`
+- [x] created: `issues/done/5307-report-var-function-duplicate-identifier-diagnostics.md`
 
 ## Notes
 
@@ -130,7 +130,7 @@ Follow-up issues:
 - `issues/done/5205-restore-backend-residual-expression-rejection.md`
   is related but starts after duplicate-local blockers are gone and covers
   repeated `var` type compatibility.
-- Split into `issues/open/5307-report-var-function-duplicate-identifier-diagnostics.md`.
+- Split into `issues/done/5307-report-var-function-duplicate-identifier-diagnostics.md`.
 
 ## Smart triage
 
@@ -224,7 +224,7 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- split into `issues/open/5307-report-var-function-duplicate-identifier-diagnostics.md`
+- split into `issues/done/5307-report-var-function-duplicate-identifier-diagnostics.md`
 
 Validation result:
 

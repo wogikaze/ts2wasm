@@ -119,7 +119,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] created: `issues/open/5326-support-default-class-export-declarations.md`
+- [x] created: `issues/done/5326-support-default-class-export-declarations.md`
 
 ## Notes
 
@@ -198,13 +198,13 @@ AST topLevel includes a default-exported anonymous ClassDeclaration extending Fo
 
 Split result:
 
-- `issues/open/5326-support-default-class-export-declarations.md`
+- `issues/done/5326-support-default-class-export-declarations.md`
 
 ## Completion evidence
 
 Commits:
 
-- Split to `issues/open/5326-support-default-class-export-declarations.md`; see local commit for this issue cleanup.
+- Split to `issues/done/5326-support-default-class-export-declarations.md`; see local commit for this issue cleanup.
 
 Validation result:
 

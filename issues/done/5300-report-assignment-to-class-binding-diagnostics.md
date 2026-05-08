@@ -72,9 +72,9 @@ TypeScript oracle: TS2629 Cannot assign to 'f' because it is a class.
 
 In scope:
 
-- [ ] Detect assignment and compound-assignment targets that resolve to class bindings.
-- [ ] Emit a source-spanned class-assignment diagnostic for `class f { } f += '';`.
-- [ ] Add a focused regression for `concatClassAndString.ts` or an equivalent fixture.
+- [x] Detect assignment and compound-assignment targets that resolve to class bindings.
+- [x] Emit a source-spanned class-assignment diagnostic for `class f { } f += '';`.
+- [x] Add a focused regression for `concatClassAndString.ts` or an equivalent fixture.
 
 Out of scope:
 
@@ -125,15 +125,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 

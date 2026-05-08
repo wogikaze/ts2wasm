@@ -66,14 +66,14 @@ UnresolvedName: unresolved name: `super` at 252..257
 
 In scope:
 
-- [ ] Treat `super` as a special receiver in member and element access
+- [x] Treat `super` as a special receiver in member and element access
   expressions during name resolution.
-- [ ] Advance `classExtendingAny.ts` past the bare unresolved-name diagnostic
+- [x] Advance `classExtendingAny.ts` past the bare unresolved-name diagnostic
   at `super['unknown']`.
-- [ ] Preserve valid `super()` constructor-call handling in derived classes.
-- [ ] Emit a source-spanned unsupported/semantic diagnostic if full runtime
+- [x] Preserve valid `super()` constructor-call handling in derived classes.
+- [x] Emit a source-spanned unsupported/semantic diagnostic if full runtime
   support for `super.x` or `super["x"]` remains deferred.
-- [ ] Keep invalid `super` use outside class/object method contexts diagnostic.
+- [x] Keep invalid `super` use outside class/object method contexts diagnostic.
 
 Out of scope:
 
@@ -102,12 +102,12 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] `classExtendingAny.ts` no longer reports
+- [x] `classExtendingAny.ts` no longer reports
   `UnresolvedName` for the `super` receiver.
-- [ ] A focused fixture covers `class A extends B { constructor() { super.x; super["x"]; } }`.
-- [ ] Invalid `super` use outside class/object method contexts remains
+- [x] A focused fixture covers `class A extends B { constructor() { super.x; super["x"]; } }`.
+- [x] Invalid `super` use outside class/object method contexts remains
   diagnosed with a source span.
-- [ ] If runtime support is deferred, the new diagnostic names the super
+- [x] If runtime support is deferred, the new diagnostic names the super
   property-access semantic boundary instead of resolver-symbol failure.
 
 ## Validation

@@ -110,7 +110,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] split to `issues/open/5365-parse-readonly-private-field-type-annotations.md`
+- [x] split to `issues/done/5365-parse-readonly-private-field-type-annotations.md`
 
 ## Notes
 
@@ -148,7 +148,7 @@ class A {
 
 TypeScript oracle: accepted with no diagnostics.
 
-This bucket was split to `issues/open/5365-parse-readonly-private-field-type-annotations.md`.
+This bucket was split to `issues/done/5365-parse-readonly-private-field-type-annotations.md`.
 
 ## Completion evidence
 

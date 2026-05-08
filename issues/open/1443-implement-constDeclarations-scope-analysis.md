@@ -21,7 +21,7 @@ status: done
 
 Closed this generated const-declaration scope-analysis bucket because fresh
 triage stops at the nested-block parser boundary already owned by
-`issues/open/5310-parse-nested-block-statements-with-variable-declarations.md`.
+`issues/done/5310-parse-nested-block-statements-with-variable-declarations.md`.
 
 ## Problem
 
@@ -46,7 +46,7 @@ mise run reference-coverage -- tsc --path-filter reference/typescript/tests/case
 ## Desired final state
 
 This generated bucket is closed. Implement from
-`issues/open/5310-parse-nested-block-statements-with-variable-declarations.md`.
+`issues/done/5310-parse-nested-block-statements-with-variable-declarations.md`.
 
 ## Scope
 
@@ -115,7 +115,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] superseded by: `issues/open/5310-parse-nested-block-statements-with-variable-declarations.md`
+- [x] superseded by: `issues/done/5310-parse-nested-block-statements-with-variable-declarations.md`
 
 ## Notes
 
@@ -137,7 +137,7 @@ Generated on 2026-05-07.
 - Current failing construct: nested block containing `const c = false;`
 - Visible symbols before failure include top-level `c`, `n`, and many prior block-local `c` bindings.
 - TypeScript oracle parses the file and reports earlier strict-mode `with` and invalid-label diagnostics.
-- Superseding issue: `issues/open/5310-parse-nested-block-statements-with-variable-declarations.md`
+- Superseding issue: `issues/done/5310-parse-nested-block-statements-with-variable-declarations.md`
 
 ## Completion evidence
 

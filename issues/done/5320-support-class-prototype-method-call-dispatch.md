@@ -52,10 +52,10 @@ receiver-bound call to class method `D.prototype.foo` with `this = obj`.
 
 In scope:
 
-- [ ] Detect direct `ClassName.prototype.method.call(receiver)` calls for known
+- [x] Detect direct `ClassName.prototype.method.call(receiver)` calls for known
   class declarations.
-- [ ] Dispatch the prototype method with the explicit receiver as `this`.
-- [ ] Add focused coverage for `D.prototype.foo.call(obj)`.
+- [x] Dispatch the prototype method with the explicit receiver as `this`.
+- [x] Add focused coverage for `D.prototype.foo.call(obj)`.
 
 Out of scope:
 
@@ -79,11 +79,11 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] `classFieldSuperAccessibleJs2.ts` no longer reports
+- [x] `classFieldSuperAccessibleJs2.ts` no longer reports
   `issue-211: D.prototype.foo.call is not supported`.
-- [ ] A focused fixture covers `D.prototype.foo.call(obj)` and verifies receiver
+- [x] A focused fixture covers `D.prototype.foo.call(obj)` and verifies receiver
   binding.
-- [ ] Existing unsupported dynamic/function-valued issue-211 diagnostics remain
+- [x] Existing unsupported dynamic/function-valued issue-211 diagnostics remain
   source-spanned.
 
 ## Validation
@@ -111,15 +111,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 

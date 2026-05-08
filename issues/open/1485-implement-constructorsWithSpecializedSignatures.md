@@ -110,7 +110,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] superseded by `issues/open/5334-parse-class-constructor-overload-signatures.md`
+- [x] superseded by `issues/done/5334-parse-class-constructor-overload-signatures.md`
 
 ## Notes
 
@@ -146,7 +146,7 @@ class D {
 
 TypeScript oracle: TS2394 on incompatible specialized overload signatures.
 
-This bucket was superseded by `issues/open/5334-parse-class-constructor-overload-signatures.md`.
+This bucket was superseded by `issues/done/5334-parse-class-constructor-overload-signatures.md`.
 
 ## Completion evidence
 

@@ -110,7 +110,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] split/superseded: `issues/done/5161-model-ambient-value-declarations-for-name-resolution.md`, `issues/open/5369-parse-call-expression-type-arguments-in-class-heritage.md`
+- [x] split/superseded: `issues/done/5161-model-ambient-value-declarations-for-name-resolution.md`, `issues/done/5369-parse-call-expression-type-arguments-in-class-heritage.md`
 
 ## Notes
 
@@ -171,7 +171,7 @@ class Foo extends Tag("Foo")<
 
 TypeScript accepts all four files with no diagnostics. The call-expression
 heritage type-argument blocker was split to
-`issues/open/5369-parse-call-expression-type-arguments-in-class-heritage.md`.
+`issues/done/5369-parse-call-expression-type-arguments-in-class-heritage.md`.
 
 ## Completion evidence
 

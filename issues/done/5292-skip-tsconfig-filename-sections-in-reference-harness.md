@@ -77,9 +77,9 @@ CommonJS `module.exports` limitation must be reported as its own blocker.
 
 In scope:
 
-- [ ] In `build_multi_section_file`, do not pass a `tsconfig.json` section to
+- [x] In `build_multi_section_file`, do not pass a `tsconfig.json` section to
       `lower_source_as_module_body`.
-- [ ] Add one focused regression fixture with `tsconfig.json` followed by
+- [x] Add one focused regression fixture with `tsconfig.json` followed by
       `index.js`.
 
 Out of scope:
@@ -104,9 +104,9 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] `commonJsIsolatedModules.ts` no longer reports `UnsupportedSyntax` from parsing the `tsconfig.json` body as source.
-- [ ] A focused compiler test proves a `// @Filename: tsconfig.json` section is skipped before a `.js` section.
-- [ ] If `module.exports` remains unsupported after the skip, the diagnostic points at the `index.js` section and does not mention the JSON boundary.
+- [x] `commonJsIsolatedModules.ts` no longer reports `UnsupportedSyntax` from parsing the `tsconfig.json` body as source.
+- [x] A focused compiler test proves a `// @Filename: tsconfig.json` section is skipped before a `.js` section.
+- [x] If `module.exports` remains unsupported after the skip, the diagnostic points at the `index.js` section and does not mention the JSON boundary.
 
 ## Validation
 
@@ -132,15 +132,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 

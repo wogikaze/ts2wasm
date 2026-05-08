@@ -98,12 +98,12 @@ diagnostics as separate work if needed.
 
 In scope:
 
-- [ ] Parse object type literal call-signature members with rest parameters.
-- [ ] Parse object type literal construct-signature members with rest parameters.
-- [ ] Parse object type literal method-signature members with rest parameters.
-- [ ] Parse object type literal function-valued property signatures with rest parameters.
-- [ ] Preserve or erase the parsed TypeScript-only type metadata consistently with existing annotation handling.
-- [ ] Re-run the representative triage and record the next TS1100-style diagnostic separately if exposed.
+- [x] Parse object type literal call-signature members with rest parameters.
+- [x] Parse object type literal construct-signature members with rest parameters.
+- [x] Parse object type literal method-signature members with rest parameters.
+- [x] Parse object type literal function-valued property signatures with rest parameters.
+- [x] Preserve or erase the parsed TypeScript-only type metadata consistently with existing annotation handling.
+- [x] Re-run the representative triage and record the next TS1100-style diagnostic separately if exposed.
 
 Out of scope:
 
@@ -112,7 +112,7 @@ Out of scope:
 - Strict-mode `arguments` binding diagnostics after this parser blocker
   advances.
 - Interface call signatures, tracked by
-  `issues/open/5332-parse-interface-call-signatures.md`.
+  `issues/done/5332-parse-interface-call-signatures.md`.
 
 ## Affected paths
 
@@ -130,11 +130,11 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] `collisionArgumentsInType.ts` no longer reports `unterminated TypeScript type annotation` at `837..838`.
-- [ ] A focused parser fixture covers `{ (x: number, ...rest): void; }` in a variable type annotation.
-- [ ] A focused parser fixture covers `{ new (x: number, ...rest): C; }` in a variable type annotation.
-- [ ] A focused parser fixture covers `{ foo(x: number, ...rest): void; prop: (x: number, ...rest) => void; }`.
-- [ ] Existing object literal expression parsing remains unchanged.
+- [x] `collisionArgumentsInType.ts` no longer reports `unterminated TypeScript type annotation` at `837..838`.
+- [x] A focused parser fixture covers `{ (x: number, ...rest): void; }` in a variable type annotation.
+- [x] A focused parser fixture covers `{ new (x: number, ...rest): C; }` in a variable type annotation.
+- [x] A focused parser fixture covers `{ foo(x: number, ...rest): void; prop: (x: number, ...rest) => void; }`.
+- [x] Existing object literal expression parsing remains unchanged.
 
 ## Validation
 
@@ -165,15 +165,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 

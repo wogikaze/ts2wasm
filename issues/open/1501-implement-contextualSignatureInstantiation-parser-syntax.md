@@ -110,8 +110,8 @@ Current state:
 
 Follow-up issues:
 
-- [x] created: `issues/open/5371-parse-generic-function-type-annotations.md`
-- [x] created: `issues/open/5372-parse-ambient-function-asi-with-constructor-types.md`
+- [x] created: `issues/done/5371-parse-generic-function-type-annotations.md`
+- [x] created: `issues/done/5372-parse-ambient-function-asi-with-constructor-types.md`
 
 ## Notes
 
@@ -162,7 +162,7 @@ TypeScript oracle: parses FunctionType nodes and only reports later TS2454 for `
 ```
 
 This parser slice was split to
-`issues/open/5371-parse-generic-function-type-annotations.md`.
+`issues/done/5371-parse-generic-function-type-annotations.md`.
 
 `contextualSignatureInstantiation4.ts` fails on ASI after an ambient function
 declaration whose parameter type is a constructor signature:
@@ -189,7 +189,7 @@ TypeScript oracle: diagnostics=[]; accepts the declaration and infers Banana<any
 This is adjacent to `issues/open/705-implement-asiAmbientFunctionDeclaration.md`,
 but 705 is still a generated triage-needed bucket. The implementation-ready
 child for this concrete shape was split to
-`issues/open/5372-parse-ambient-function-asi-with-constructor-types.md`.
+`issues/done/5372-parse-ambient-function-asi-with-constructor-types.md`.
 
 ## Completion evidence
 

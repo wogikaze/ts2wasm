@@ -190,7 +190,7 @@ binding hint: y has type string
 
 Duplicate review:
 
-- `issues/open/5287-bind-namespace-declarations-for-qualified-value-access.md`
+- `issues/done/5287-bind-namespace-declarations-for-qualified-value-access.md`
   is related but owns same-file namespace value access, not class declarations
   shared across `@Filename` script sections.
 - `issues/done/5187-lower-namespace-only-multi-section-files.md` is related

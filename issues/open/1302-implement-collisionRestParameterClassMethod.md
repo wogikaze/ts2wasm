@@ -134,7 +134,7 @@ Follow-up issues:
 
 - `issues/done/5198-support-class-method-overload-signatures-for-element-access-calls.md` - exact owner for valid class method overload signatures currently reported as duplicate methods
 - `issues/open/5327-report-class-method-overload-wrong-implementation-name.md` - related invalid class method overload implementation-name/order diagnostics, not this valid same-name overload group
-- `issues/open/5337-parse-rest-parameter-constructor-overload-signatures.md` - related rest-parameter constructor overload issue, not class methods
+- `issues/done/5337-parse-rest-parameter-constructor-overload-signatures.md` - related rest-parameter constructor overload issue, not class methods
 
 ## Smart triage
 

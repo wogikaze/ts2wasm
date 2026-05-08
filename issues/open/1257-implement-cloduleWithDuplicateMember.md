@@ -133,7 +133,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/open/5307-report-var-function-duplicate-identifier-diagnostics.md`
+- `issues/done/5307-report-var-function-duplicate-identifier-diagnostics.md`
   is related but covers var/function duplicate identifiers.
 - `issues/open/343-implement-duplicate-local-detection.md` is related but does
   not own TypeScript-specific class/namespace duplicate member diagnostics.

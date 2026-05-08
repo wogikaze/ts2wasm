@@ -117,7 +117,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] created: `issues/open/5310-parse-nested-block-statements-with-variable-declarations.md`
+- [x] created: `issues/done/5310-parse-nested-block-statements-with-variable-declarations.md`
 
 ## Notes
 
@@ -132,7 +132,7 @@ Follow-up issues:
   is related but covers function expression statements.
 - `issues/done/5250-parse-class-declarations-in-nested-block-statements.md`
   is related but covers class declarations.
-- Split into `issues/open/5310-parse-nested-block-statements-with-variable-declarations.md`.
+- Split into `issues/done/5310-parse-nested-block-statements-with-variable-declarations.md`.
 
 ## Smart triage
 
@@ -220,7 +220,7 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- split into `issues/open/5310-parse-nested-block-statements-with-variable-declarations.md`
+- split into `issues/done/5310-parse-nested-block-statements-with-variable-declarations.md`
 
 Validation result:
 

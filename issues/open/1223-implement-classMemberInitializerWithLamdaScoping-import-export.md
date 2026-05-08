@@ -122,7 +122,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] created: `issues/open/5324-support-dependency-export-class-declarations.md`
+- [x] created: `issues/done/5324-support-dependency-export-class-declarations.md`
 - [x] superseded in part by `issues/done/5283-support-entry-export-var-declarations.md`
 
 ## Notes
@@ -145,7 +145,7 @@ Follow-up issues:
 - `issues/done/055-implement-import-export.md` - Umbrella: implement import and export (same feature label, title overlap)
 - `issues/done/5283-support-entry-export-var-declarations.md` - exact owner for the `classMemberInitializerWithLamdaScoping4.ts` first blocker, `export var field1: string`
 - `issues/done/5232-w0-fixture-ize-runtimelinkplan-linker-structure-tests.md` - related entry-module export-class owner, not exact for dependency virtual files
-- `issues/open/5295-resolve-import-equals-require-to-virtual-node-modules-class-export.md` - related node_modules dependency export-class shape, not exact for this fixed reference window
+- `issues/done/5295-resolve-import-equals-require-to-virtual-node-modules-class-export.md` - related node_modules dependency export-class shape, not exact for this fixed reference window
 
 ## Smart triage
 
@@ -264,13 +264,13 @@ diagnostic TS2301: Initializer of instance member variable 'messageHandler' cann
 
 Split result:
 
-- `issues/open/5324-support-dependency-export-class-declarations.md`
+- `issues/done/5324-support-dependency-export-class-declarations.md`
 
 ## Completion evidence
 
 Commits:
 
-- Split to `issues/open/5324-support-dependency-export-class-declarations.md`; see local commit for this issue cleanup.
+- Split to `issues/done/5324-support-dependency-export-class-declarations.md`; see local commit for this issue cleanup.
 
 Validation result:
 

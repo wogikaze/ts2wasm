@@ -129,7 +129,7 @@ Follow-up issues:
 ## Duplicate detection
 
 - `issues/done/5232-w0-fixture-ize-runtimelinkplan-linker-structure-tests.md` - exact current first blocker for entry-module `export class`
-- `issues/open/5255-resolve-super-property-accesses.md` and element-access issues are not current blockers; this case resolves `this['x']`, `this['y']`, `this['z']`, and `this[0]` before module build fails
+- `issues/done/5255-resolve-super-property-accesses.md` and element-access issues are not current blockers; this case resolves `this['x']`, `this['y']`, `this['z']`, and `this[0]` before module build fails
 
 ## Smart triage
 

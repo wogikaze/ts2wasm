@@ -155,7 +155,7 @@ Follow-up issues:
 - `issues/done/5187-lower-namespace-only-multi-section-files.md` owns keeping
   namespace-only/declaration-only multi-section `.d.ts` bodies observable enough
   for the next namespace/scope diagnostic.
-- `issues/open/5292-skip-tsconfig-filename-sections-in-reference-harness.md`
+- `issues/done/5292-skip-tsconfig-filename-sections-in-reference-harness.md`
   is a later adjacent risk for the `tsconfig.json` sections in these files, but
   focused triage reports declaration-file handling first.
 

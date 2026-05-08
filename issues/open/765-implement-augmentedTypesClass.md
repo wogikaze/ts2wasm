@@ -21,7 +21,7 @@ status: done
 
 Closed this generated parser-syntax bucket by splitting the current concrete
 non-parser blocker to
-`issues/open/5347-align-class-var-redeclaration-diagnostics.md`.
+`issues/done/5347-align-class-var-redeclaration-diagnostics.md`.
 
 ## Problem
 
@@ -49,7 +49,7 @@ env TS2WASM_BINARY=/tmp/ts2wasm-issue-blockers-target/debug/ts2wasm python scrip
 ## Desired final state
 
 This generated bucket is closed. Implement from
-`issues/open/5347-align-class-var-redeclaration-diagnostics.md`.
+`issues/done/5347-align-class-var-redeclaration-diagnostics.md`.
 
 ## Scope
 
@@ -118,7 +118,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] `issues/open/5347-align-class-var-redeclaration-diagnostics.md`
+- [x] `issues/done/5347-align-class-var-redeclaration-diagnostics.md`
 
 ## Notes
 
@@ -132,13 +132,13 @@ Follow-up issues:
 
 ## Duplicate detection
 
-Split to `issues/open/5347-align-class-var-redeclaration-diagnostics.md`.
+Split to `issues/done/5347-align-class-var-redeclaration-diagnostics.md`.
 
 Related no-match issues:
 
 - `issues/done/5162-allow-compatible-var-redeclarations.md` handles compatible
   duplicate `var` declarations.
-- `issues/open/5249-scope-block-local-class-declarations.md` handles nested
+- `issues/done/5249-scope-block-local-class-declarations.md` handles nested
   block-local classes colliding with outer classes.
 - `issues/open/767-implement-augmentedTypesEnum-parser-syntax.md` is an
   enum-focused generated bucket, not the first current `class`/`var` blocker.

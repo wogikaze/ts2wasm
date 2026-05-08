@@ -77,10 +77,10 @@ preserves existing interface erasure behavior, and lets
 
 In scope:
 
-- [ ] Parse interface members of the form `(param: Type): ReturnType;`.
-- [ ] Support defaulted interface type parameters such as `<P = {}>` in the focused path.
-- [ ] Skip return types with generic type arguments such as `ReactElement<any>`.
-- [ ] Preserve existing parsing for interface property, method, and construct-signature members.
+- [x] Parse interface members of the form `(param: Type): ReturnType;`.
+- [x] Support defaulted interface type parameters such as `<P = {}>` in the focused path.
+- [x] Skip return types with generic type arguments such as `ReactElement<any>`.
+- [x] Preserve existing parsing for interface property, method, and construct-signature members.
 
 Out of scope:
 
@@ -105,10 +105,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] `coAndContraVariantInferences6.ts` no longer reports the current `unsupported expression ... Greater` diagnostic at `interface FunctionComponent<P = {}>`.
-- [ ] A focused parser fixture accepts `interface F<P = {}> { (props: P): R<P> | null; }`.
-- [ ] Existing interface property and construct-signature parser coverage still passes.
-- [ ] If the reference advances to TS2322 or another semantic blocker, record that blocker separately.
+- [x] `coAndContraVariantInferences6.ts` no longer reports the current `unsupported expression ... Greater` diagnostic at `interface FunctionComponent<P = {}>`.
+- [x] A focused parser fixture accepts `interface F<P = {}> { (props: P): R<P> | null; }`.
+- [x] Existing interface property and construct-signature parser coverage still passes.
+- [x] If the reference advances to TS2322 or another semantic blocker, record that blocker separately.
 
 ## Validation
 
@@ -138,15 +138,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 
@@ -159,7 +159,7 @@ Related but not duplicates:
   construct-signature members.
 - `issues/done/5201-parse-object-type-literal-call-signatures.md` covers call
   signatures inside object type literals.
-- `issues/open/5195-support-callable-interface-typed-local-calls.md` covers
+- `issues/done/5195-support-callable-interface-typed-local-calls.md` covers
   lowering/semantic behavior after callable interfaces parse.
 
 ## Completion evidence

@@ -66,10 +66,10 @@ boundary to the next narrower module/import or augmentation diagnostic.
 
 In scope:
 
-- [ ] Parse top-level `export = expr;` as a distinct TypeScript export assignment shape or equivalent frontend representation.
-- [ ] Preserve the expression span for the exported value.
-- [ ] Add focused frontend coverage for `var x = 1; export = x;`.
-- [ ] Re-run `augmentExportEquals1.ts` and record the next diagnostic.
+- [x] Parse top-level `export = expr;` as a distinct TypeScript export assignment shape or equivalent frontend representation.
+- [x] Preserve the expression span for the exported value.
+- [x] Add focused frontend coverage for `var x = 1; export = x;`.
+- [x] Re-run `augmentExportEquals1.ts` and record the next diagnostic.
 
 Out of scope:
 
@@ -97,10 +97,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] `export = x;` no longer reports `issue-055: unsupported static export`.
-- [ ] A focused test proves `var x = 1; export = x;` parses as a CommonJS export assignment.
-- [ ] Existing unsupported ES module export forms still report issue-055 where they are not in this slice.
-- [ ] `python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/augmentExportEquals1.ts` advances past the current static export diagnostic.
+- [x] `export = x;` no longer reports `issue-055: unsupported static export`.
+- [x] A focused test proves `var x = 1; export = x;` parses as a CommonJS export assignment.
+- [x] Existing unsupported ES module export forms still report issue-055 where they are not in this slice.
+- [x] `python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/augmentExportEquals1.ts` advances past the current static export diagnostic.
 
 ## Validation
 
@@ -126,15 +126,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 

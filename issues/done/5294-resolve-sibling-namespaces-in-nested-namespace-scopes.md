@@ -86,13 +86,13 @@ file.
 
 In scope:
 
-- [ ] Predeclare namespace names within an enclosing namespace scope before
+- [x] Predeclare namespace names within an enclosing namespace scope before
       resolving nested namespace/class bodies.
-- [ ] Resolve an unqualified sibling namespace reference such as `m3.i3` from
+- [x] Resolve an unqualified sibling namespace reference such as `m3.i3` from
       inside `namespace m1.m2`.
-- [ ] Preserve existing same-file namespace value lookup work tracked by issue
+- [x] Preserve existing same-file namespace value lookup work tracked by issue
       5287 without merging this issue into that broader qualified-access slice.
-- [ ] Add a focused regression for a nested namespace referencing a later
+- [x] Add a focused regression for a nested namespace referencing a later
       sibling namespace in an `implements` clause or equivalent type-only
       position.
 
@@ -117,10 +117,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] `python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/complicatedPrivacy.ts` no longer reports `unresolved name: m3` at `226..228`.
-- [ ] Focused coverage for the same path no longer reports `unsupported_diagcodes=UnresolvedName:1` for `m3`.
-- [ ] A focused test covers `namespace A { namespace B { class C implements D.I {} } namespace D { export interface I {} } }`.
-- [ ] Any next blocker in `complicatedPrivacy.ts` is recorded in this issue or split to a follow-up if outside namespace sibling lookup.
+- [x] `python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/complicatedPrivacy.ts` no longer reports `unresolved name: m3` at `226..228`.
+- [x] Focused coverage for the same path no longer reports `unsupported_diagcodes=UnresolvedName:1` for `m3`.
+- [x] A focused test covers `namespace A { namespace B { class C implements D.I {} } namespace D { export interface I {} } }`.
+- [x] Any next blocker in `complicatedPrivacy.ts` is recorded in this issue or split to a follow-up if outside namespace sibling lookup.
 
 ## Validation
 
@@ -147,15 +147,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 

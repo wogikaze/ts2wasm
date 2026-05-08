@@ -88,9 +88,9 @@ implementation diagnostic before later runtime statements are lowered.
 
 In scope:
 
-- [ ] Detect `constructor(...) { ... }` inside `declare class` bodies and emit a source-spanned diagnostic equivalent to TS1183.
-- [ ] Add focused parser coverage for one rejecting body case.
-- [ ] Re-run `constructorOverloads6.ts` triage and confirm it no longer reports `method Foo.bar1 not found`.
+- [x] Detect `constructor(...) { ... }` inside `declare class` bodies and emit a source-spanned diagnostic equivalent to TS1183.
+- [x] Add focused parser coverage for one rejecting body case.
+- [x] Re-run `constructorOverloads6.ts` triage and confirm it no longer reports `method Foo.bar1 not found`.
 
 Out of scope:
 
@@ -113,9 +113,9 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] `constructorOverloads6.ts` no longer reports `method Foo.bar1 not found`.
-- [ ] `declare class C { constructor(x: number) {} }` reports the ambient implementation diagnostic with a source span at the constructor body.
-- [ ] `declare class C { constructor(x: number); m(): void; }` remains accepted and erased.
+- [x] `constructorOverloads6.ts` no longer reports `method Foo.bar1 not found`.
+- [x] `declare class C { constructor(x: number) {} }` reports the ambient implementation diagnostic with a source span at the constructor body.
+- [x] `declare class C { constructor(x: number); m(): void; }` remains accepted and erased.
 
 ## Validation
 
@@ -145,15 +145,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 
@@ -162,7 +162,7 @@ on 2026-05-07.
 
 Related but not exact:
 
-- `issues/open/5334-parse-class-constructor-overload-signatures.md` handles
+- `issues/done/5334-parse-class-constructor-overload-signatures.md` handles
   valid runtime class overload signatures; this issue handles invalid bodies in
   ambient class declarations.
 - `issues/done/5261-report-class-typed-missing-instance-method-calls.md`

@@ -77,12 +77,12 @@ the implements clause and expose the next blocker or build-pass result.
 
 In scope:
 
-- [ ] Parse/preserve enough import-equals alias information for
+- [x] Parse/preserve enough import-equals alias information for
   `import T = M1.I` inside a namespace block.
-- [ ] Resolve `T` when used in `class C implements T`.
-- [ ] Keep the resolved alias type-only so it does not create runtime module
+- [x] Resolve `T` when used in `class C implements T`.
+- [x] Keep the resolved alias type-only so it does not create runtime module
   loading requirements.
-- [ ] Preserve existing unsupported diagnostics for external `require(...)`
+- [x] Preserve existing unsupported diagnostics for external `require(...)`
   import-equals forms.
 
 Out of scope:
@@ -108,12 +108,12 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] `classImplementsImportedInterface.ts` no longer reports unresolved name
+- [x] `classImplementsImportedInterface.ts` no longer reports unresolved name
   `T` at the `implements T` clause.
-- [ ] A focused fixture covers `namespace M2 { import T = M1.I; class C implements T {} }`.
-- [ ] Existing import-equals `require(...)` unsupported behavior remains
+- [x] A focused fixture covers `namespace M2 { import T = M1.I; class C implements T {} }`.
+- [x] Existing import-equals `require(...)` unsupported behavior remains
   source-spanned and unchanged.
-- [ ] A negative fixture or assertion covers unresolved aliases that are not
+- [x] A negative fixture or assertion covers unresolved aliases that are not
   declared in the namespace scope.
 
 ## Validation

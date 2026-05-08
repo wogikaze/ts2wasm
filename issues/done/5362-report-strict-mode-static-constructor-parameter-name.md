@@ -65,9 +65,9 @@ generic binding parser failure.
 
 In scope:
 
-- [ ] Detect `static` as a parameter name in class constructor parameter lists.
-- [ ] Emit a source-spanned strict-mode reserved-word diagnostic at the `static` token.
-- [ ] Re-run the representative triage and confirm it no longer reports issue-247.
+- [x] Detect `static` as a parameter name in class constructor parameter lists.
+- [x] Emit a source-spanned strict-mode reserved-word diagnostic at the `static` token.
+- [x] Re-run the representative triage and confirm it no longer reports issue-247.
 
 Out of scope:
 
@@ -90,9 +90,9 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] `constructorStaticParamName.ts` no longer reports `issue-247: expected binding identifier or pattern`.
-- [ ] A focused parser/frontend test covers `class C { constructor(static) {} }`.
-- [ ] Existing invalid modifier diagnostics from issue 5355 remain separate and are not widened by this slice.
+- [x] `constructorStaticParamName.ts` no longer reports `issue-247: expected binding identifier or pattern`.
+- [x] A focused parser/frontend test covers `class C { constructor(static) {} }`.
+- [x] Existing invalid modifier diagnostics from issue 5355 remain separate and are not widened by this slice.
 
 ## Validation
 
@@ -122,15 +122,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 
@@ -146,7 +146,7 @@ Additional superseded bucket:
 
 Related but not exact:
 
-- `issues/open/5355-report-invalid-constructor-parameter-modifiers.md` owns
+- `issues/done/5355-report-invalid-constructor-parameter-modifiers.md` owns
   invalid modifier forms where `static` or `export` appears before a parameter
   binding.
 

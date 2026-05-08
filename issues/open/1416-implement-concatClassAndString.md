@@ -175,7 +175,7 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- Split to `issues/open/5300-report-assignment-to-class-binding-diagnostics.md`.
+- Split to `issues/done/5300-report-assignment-to-class-binding-diagnostics.md`.
 
 Validation result:
 

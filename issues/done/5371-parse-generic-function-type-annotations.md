@@ -67,9 +67,9 @@ definite-assignment diagnostic.
 
 In scope:
 
-- [ ] Erase variable type annotations that start with a generic function type.
-- [ ] Support nested function type return annotations such as `=> <U>(...) => ...`.
-- [ ] Add focused parser or CLI coverage for a `var f: <T>(x: T) => T;` annotation.
+- [x] Erase variable type annotations that start with a generic function type.
+- [x] Support nested function type return annotations such as `=> <U>(...) => ...`.
+- [x] Add focused parser or CLI coverage for a `var f: <T>(x: T) => T;` annotation.
 
 Out of scope:
 
@@ -87,13 +87,13 @@ Expected:
 
 ## Acceptance criteria
 
-- [ ] `contextualSignatureInstantiation2.ts` no longer reports
+- [x] `contextualSignatureInstantiation2.ts` no longer reports
   `expected Semicolon, got Some(Greater)` at the generic function type annotation.
-- [ ] `contextualSignatureInstantiationWithTypeParameterConstrainedToOuterTypeParameter.ts`
+- [x] `contextualSignatureInstantiationWithTypeParameterConstrainedToOuterTypeParameter.ts`
   no longer reports `expected Semicolon, got Some(Greater)` at `var h: <V, W>`.
-- [ ] A focused test accepts `var f: <T>(x: T) => T;`.
-- [ ] A focused test or reference triage covers a nested function type return.
-- [ ] If the file advances to TS2454 or another semantic blocker, record that
+- [x] A focused test accepts `var f: <T>(x: T) => T;`.
+- [x] A focused test or reference triage covers a nested function type return.
+- [x] If the file advances to TS2454 or another semantic blocker, record that
   blocker separately.
 
 ## Validation
@@ -116,15 +116,15 @@ env TS2WASM_BINARY=/tmp/ts2wasm-issue-blockers-target/debug/ts2wasm python scrip
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 
@@ -134,7 +134,7 @@ Related but not duplicates:
 
 - `issues/done/5304-parse-generic-arrow-functions-with-typed-parameters.md`
   covers generic arrow expressions in value position.
-- `issues/open/5345-parse-generic-ambient-const-type-annotations.md` covers
+- `issues/done/5345-parse-generic-ambient-const-type-annotations.md` covers
   generic callable annotations on `declare const`.
 
 2026-05-07 fold-in:

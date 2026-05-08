@@ -50,7 +50,7 @@ python scripts/manager.py reference-coverage tsc --path-filter reference/typescr
 ## Desired final state
 
 This generated bucket is closed after splitting the current observable blocker
-into `issues/open/5338-support-rest-constructor-outer-local-captures.md`.
+into `issues/done/5338-support-rest-constructor-outer-local-captures.md`.
 
 ## Scope
 
@@ -121,7 +121,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] created: `issues/open/5338-support-rest-constructor-outer-local-captures.md`
+- [x] created: `issues/done/5338-support-rest-constructor-outer-local-captures.md`
 
 ## Notes
 
@@ -201,13 +201,13 @@ TS2403: Subsequent variable declarations must have the same type for console
 
 Split result:
 
-- `issues/open/5338-support-rest-constructor-outer-local-captures.md`
+- `issues/done/5338-support-rest-constructor-outer-local-captures.md`
 
 ## Completion evidence
 
 Commits:
 
-- Split to `issues/open/5338-support-rest-constructor-outer-local-captures.md`.
+- Split to `issues/done/5338-support-rest-constructor-outer-local-captures.md`.
 
 Validation result:
 

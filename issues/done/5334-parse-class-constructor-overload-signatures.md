@@ -78,15 +78,15 @@ The representative reference should advance past the current
 
 In scope:
 
-- [ ] Parse `constructor(...);` class members as overload signatures.
-- [ ] Allow multiple bodyless constructor overload signatures before one constructor implementation.
-- [ ] Preserve duplicate-constructor diagnostics for multiple constructor bodies.
-- [ ] Keep `declare class` constructor signatures erased.
-- [ ] Re-run the representative triage and record the next strict-mode diagnostic separately if exposed.
+- [x] Parse `constructor(...);` class members as overload signatures.
+- [x] Allow multiple bodyless constructor overload signatures before one constructor implementation.
+- [x] Preserve duplicate-constructor diagnostics for multiple constructor bodies.
+- [x] Keep `declare class` constructor signatures erased.
+- [x] Re-run the representative triage and record the next strict-mode diagnostic separately if exposed.
 
 Out of scope:
 
-- Missing constructor parameter-list diagnostics, tracked by `issues/open/5323-report-missing-constructor-parameter-list.md`.
+- Missing constructor parameter-list diagnostics, tracked by `issues/done/5323-report-missing-constructor-parameter-list.md`.
 - Top-level function/class overload merges, tracked by `issues/done/5199-report-function-overload-list-class-merge-diagnostics.md`.
 - Strict-mode `arguments` binding diagnostics after constructor overloads parse.
 
@@ -106,11 +106,11 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] `collisionArgumentsClassConstructor.ts` no longer reports `DuplicateFunction: duplicate constructor definition` for bodyless constructor overload signatures.
-- [ ] `collisionThisExpressionAndPropertyNameAsConstuctorParameter.ts` no longer reports `DuplicateFunction: duplicate constructor definition` for bodyless constructor overload signatures before the `_this` parameter-property cases.
-- [ ] A focused parser/resolver test accepts `class C { constructor(x: number); constructor(x: string); constructor(x: any) {} }`.
-- [ ] A focused negative test still rejects two constructor bodies in one class.
-- [ ] `declare class C { constructor(x: number); constructor(x: string); }` remains erased/accepted if currently parsed.
+- [x] `collisionArgumentsClassConstructor.ts` no longer reports `DuplicateFunction: duplicate constructor definition` for bodyless constructor overload signatures.
+- [x] `collisionThisExpressionAndPropertyNameAsConstuctorParameter.ts` no longer reports `DuplicateFunction: duplicate constructor definition` for bodyless constructor overload signatures before the `_this` parameter-property cases.
+- [x] A focused parser/resolver test accepts `class C { constructor(x: number); constructor(x: string); constructor(x: any) {} }`.
+- [x] A focused negative test still rejects two constructor bodies in one class.
+- [x] `declare class C { constructor(x: number); constructor(x: string); }` remains erased/accepted if currently parsed.
 
 ## Validation
 
@@ -141,15 +141,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 

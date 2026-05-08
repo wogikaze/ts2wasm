@@ -28,7 +28,7 @@ frontend blockers:
   `issues/done/5184-parse-const-enum-declarations.md`.
 - `constEnumNamespaceReferenceCausesNoImport2.ts` stops at a top-level
   `export namespace ConstEnumOnlyModule { ... }` static export boundary, split
-  to `issues/open/5352-parse-export-namespace-declarations.md`.
+  to `issues/done/5352-parse-export-namespace-declarations.md`.
 
 ## Problem
 
@@ -96,7 +96,7 @@ Do not touch:
 - [x] Duplicate/owner candidates are confirmed and this issue is split.
 - [x] `issues/done/5184-parse-const-enum-declarations.md` records the
       `constEnumNamespaceReferenceCausesNoImport.ts` first blocker.
-- [x] `issues/open/5352-parse-export-namespace-declarations.md` records the
+- [x] `issues/done/5352-parse-export-namespace-declarations.md` records the
       `constEnumNamespaceReferenceCausesNoImport2.ts` first blocker.
 - [x] Completion evidence names the exact reference paths and current
       diagnostics.
@@ -138,7 +138,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] created: `issues/open/5352-parse-export-namespace-declarations.md`
+- [x] created: `issues/done/5352-parse-export-namespace-declarations.md`
 - [x] updated: `issues/done/5184-parse-const-enum-declarations.md`
 
 ## Notes

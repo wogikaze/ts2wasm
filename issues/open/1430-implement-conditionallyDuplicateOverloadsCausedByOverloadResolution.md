@@ -131,7 +131,7 @@ Follow-up issues:
 - `issues/open/5200-validate-top-level-function-overload-implementations.md`
   is related but not exact because it covers non-ambient overload signatures
   plus implementation declarations.
-- `issues/open/5280-validate-commented-top-level-function-overloads.md` and
+- `issues/done/5280-validate-commented-top-level-function-overloads.md` and
   `issues/open/5289-validate-comments-overloads-top-level-functions.md` are
   comment/trivia-specific non-ambient overload slices.
 

@@ -68,9 +68,9 @@ diagnostic.
 
 In scope:
 
-- [ ] Resolve `super.method()` in method-local arrow bodies against the enclosing derived method context.
-- [ ] Avoid emitting unresolved synthetic `this` for that lexical super access.
-- [ ] Re-run the representative reference triage and record the next diagnostic.
+- [x] Resolve `super.method()` in method-local arrow bodies against the enclosing derived method context.
+- [x] Avoid emitting unresolved synthetic `this` for that lexical super access.
+- [x] Re-run the representative reference triage and record the next diagnostic.
 
 Out of scope:
 
@@ -93,9 +93,9 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] `collisionThisExpressionAndLocalVarWithSuperExperssion.ts` no longer reports `UnresolvedName: unresolved name: this`.
-- [ ] A focused fixture covers `class B extends A { m() { let f = () => super.m(); } }`.
-- [ ] Existing invalid `super` use outside class/object method contexts remains diagnosed.
+- [x] `collisionThisExpressionAndLocalVarWithSuperExperssion.ts` no longer reports `UnresolvedName: unresolved name: this`.
+- [x] A focused fixture covers `class B extends A { m() { let f = () => super.m(); } }`.
+- [x] Existing invalid `super` use outside class/object method contexts remains diagnosed.
 
 ## Validation
 
@@ -121,15 +121,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 
@@ -138,7 +138,7 @@ Split from `issues/open/1330-implement-collisionThisExpressionAndLocalVarWithSup
 Related but distinct:
 
 - `issues/done/5204-resolve-lexical-super-property-captures-in-super-call-arguments.md` covers arrows passed to `super(...)`.
-- `issues/open/5255-resolve-super-property-accesses.md` covers bare `super` receiver lookup.
+- `issues/done/5255-resolve-super-property-accesses.md` covers bare `super` receiver lookup.
 
 ## Completion evidence
 

@@ -634,7 +634,7 @@ date: 2026-05-08
 
 Remaining risks:
 
-- Implementation remains open in `issues/open/5324-support-dependency-export-class-declarations.md`.
+- Implementation remains open in `issues/done/5324-support-dependency-export-class-declarations.md`.
 
 ## False-done audit
 

@@ -110,7 +110,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] created: `issues/open/5336-parse-object-type-literal-signatures-with-rest-parameters.md`
+- [x] created: `issues/done/5336-parse-object-type-literal-signatures-with-rest-parameters.md`
 
 ## Notes
 
@@ -187,7 +187,7 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- split to `issues/open/5336-parse-object-type-literal-signatures-with-rest-parameters.md`
+- split to `issues/done/5336-parse-object-type-literal-signatures-with-rest-parameters.md`
 
 Validation result:
 

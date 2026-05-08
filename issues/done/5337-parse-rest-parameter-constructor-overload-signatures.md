@@ -68,13 +68,13 @@ implementation.
 
 In scope:
 
-- [ ] Accept multiple bodyless constructor overload signatures with rest parameters before one constructor implementation.
-- [ ] Preserve duplicate-constructor diagnostics for multiple constructor bodies.
-- [ ] Keep `declare class` constructor signatures with rest parameters accepted.
+- [x] Accept multiple bodyless constructor overload signatures with rest parameters before one constructor implementation.
+- [x] Preserve duplicate-constructor diagnostics for multiple constructor bodies.
+- [x] Keep `declare class` constructor signatures with rest parameters accepted.
 
 Out of scope:
 
-- Non-rest constructor overload signatures, tracked by `issues/open/5334-parse-class-constructor-overload-signatures.md`.
+- Non-rest constructor overload signatures, tracked by `issues/done/5334-parse-class-constructor-overload-signatures.md`.
 - Top-level function and class method overload work.
 - Later collision diagnostics after this blocker advances.
 
@@ -94,9 +94,9 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] `collisionRestParameterClassConstructor.ts` no longer reports `DuplicateFunction: duplicate constructor definition`.
-- [ ] A focused parser/resolver test accepts `class C { constructor(x: number, ...rest); constructor(x: string, ...rest); constructor(x: any, ...rest) {} }`.
-- [ ] A focused negative test still rejects two constructor bodies in one class.
+- [x] `collisionRestParameterClassConstructor.ts` no longer reports `DuplicateFunction: duplicate constructor definition`.
+- [x] A focused parser/resolver test accepts `class C { constructor(x: number, ...rest); constructor(x: string, ...rest); constructor(x: any, ...rest) {} }`.
+- [x] A focused negative test still rejects two constructor bodies in one class.
 
 ## Validation
 
@@ -126,15 +126,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 

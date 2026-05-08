@@ -69,9 +69,9 @@ initializer references a constructor parameter or constructor-local binding.
 
 In scope:
 
-- [ ] Detect constructor-scope identifiers referenced from instance field initializers.
-- [ ] Emit source-spanned TS2301-equivalent diagnostics for direct, object-literal, and arrow field initializer references.
-- [ ] Re-run the representative triage and confirm it no longer reports BuildPass.
+- [x] Detect constructor-scope identifiers referenced from instance field initializers.
+- [x] Emit source-spanned TS2301-equivalent diagnostics for direct, object-literal, and arrow field initializer references.
+- [x] Re-run the representative triage and confirm it no longer reports BuildPass.
 
 Out of scope:
 
@@ -94,10 +94,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] `constructorParametersInVariableDeclarations.ts` no longer reports BuildPass.
-- [ ] A focused test reports the diagnostic for `class A { a = x; constructor(x) {} }`.
-- [ ] A focused test reports the diagnostic through `{ p: x }` and `() => x` field initializers.
-- [ ] Constructor body locals remain usable inside constructor bodies.
+- [x] `constructorParametersInVariableDeclarations.ts` no longer reports BuildPass.
+- [x] A focused test reports the diagnostic for `class A { a = x; constructor(x) {} }`.
+- [x] A focused test reports the diagnostic through `{ p: x }` and `() => x` field initializers.
+- [x] Constructor body locals remain usable inside constructor bodies.
 
 ## Validation
 
@@ -127,15 +127,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 

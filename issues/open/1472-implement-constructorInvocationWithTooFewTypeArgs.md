@@ -18,7 +18,7 @@ updated: 2026-05-07
 ## Summary
 
 Closed by splitting the current concrete false-pass blocker to
-`issues/open/5356-report-uninitialized-generic-class-fields.md`.
+`issues/done/5356-report-uninitialized-generic-class-fields.md`.
 
 Fresh coverage shows `constructorInvocationWithTooFewTypeArgs.ts` now builds in
 ts2wasm. TypeScript still reports TS2564 for uninitialized fields `x` and `y`
@@ -145,7 +145,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] created: `issues/open/5356-report-uninitialized-generic-class-fields.md`
+- [x] created: `issues/done/5356-report-uninitialized-generic-class-fields.md`
 
 ## Notes
 

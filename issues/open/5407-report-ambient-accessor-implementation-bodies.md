@@ -127,7 +127,7 @@ the generated build blocker was resolved by ambient declaration erasure.
 
 Related issue:
 
-- `issues/open/5358-report-constructor-bodies-in-ambient-class-declarations.md` covers the same TS1183 boundary for constructor bodies.
+- `issues/done/5358-report-constructor-bodies-in-ambient-class-declarations.md` covers the same TS1183 boundary for constructor bodies.
 
 ## Completion evidence
 

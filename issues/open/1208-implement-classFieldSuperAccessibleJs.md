@@ -114,8 +114,8 @@ Current state:
 
 Follow-up issues:
 
-- [x] created: `issues/open/5319-support-super-property-reads-in-class-static-blocks.md`
-- [x] created: `issues/open/5320-support-class-prototype-method-call-dispatch.md`
+- [x] created: `issues/done/5319-support-super-property-reads-in-class-static-blocks.md`
+- [x] created: `issues/done/5320-support-class-prototype-method-call-dispatch.md`
 
 ## Notes
 

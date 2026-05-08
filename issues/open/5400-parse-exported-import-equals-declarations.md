@@ -144,9 +144,9 @@ Split from `issues/done/595-implement-aliasesInSystemModule.md`.
 
 Related but not duplicates:
 
-- `issues/open/5295-resolve-import-equals-require-to-virtual-node-modules-class-export.md` covers `require(...)` resolution through virtual node_modules.
+- `issues/done/5295-resolve-import-equals-require-to-virtual-node-modules-class-export.md` covers `require(...)` resolution through virtual node_modules.
 - `issues/open/5398-resolve-namespace-import-equals-alias-value-access.md` covers value access after import-equals aliases are already parsed.
-- `issues/open/5262-resolve-import-equals-aliases-in-class-implements-clauses.md` covers class heritage resolution for parsed import-equals aliases.
+- `issues/done/5262-resolve-import-equals-aliases-in-class-implements-clauses.md` covers class heritage resolution for parsed import-equals aliases.
 
 ## Completion evidence
 

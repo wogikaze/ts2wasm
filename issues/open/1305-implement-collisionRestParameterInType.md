@@ -51,7 +51,7 @@ python scripts/manager.py reference-coverage tsc --path-filter reference/typescr
 
 This generated bucket is closed because the current observable blocker is
 owned by
-`issues/open/5336-parse-object-type-literal-signatures-with-rest-parameters.md`.
+`issues/done/5336-parse-object-type-literal-signatures-with-rest-parameters.md`.
 
 ## Scope
 
@@ -122,7 +122,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] none; superseded by `issues/open/5336-parse-object-type-literal-signatures-with-rest-parameters.md`
+- [x] none; superseded by `issues/done/5336-parse-object-type-literal-signatures-with-rest-parameters.md`
 
 ## Notes
 
@@ -132,7 +132,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/open/5336-parse-object-type-literal-signatures-with-rest-parameters.md` - exact owner for object type literal call/construct/method/property signatures with rest parameters
+- `issues/done/5336-parse-object-type-literal-signatures-with-rest-parameters.md` - exact owner for object type literal call/construct/method/property signatures with rest parameters
 - `issues/done/5201-parse-object-type-literal-call-signatures.md` - related call-signature-only parser issue, narrower than this mixed signature shape
 - `issues/done/5257-parse-object-type-literal-construct-signatures.md` - related construct-signature-only parser issue, narrower than this mixed signature shape
 
@@ -202,13 +202,13 @@ diagnostics: []
 
 Superseded by:
 
-- `issues/open/5336-parse-object-type-literal-signatures-with-rest-parameters.md`
+- `issues/done/5336-parse-object-type-literal-signatures-with-rest-parameters.md`
 
 ## Completion evidence
 
 Commits:
 
-- Superseded by `issues/open/5336-parse-object-type-literal-signatures-with-rest-parameters.md`.
+- Superseded by `issues/done/5336-parse-object-type-literal-signatures-with-rest-parameters.md`.
 
 Validation result:
 

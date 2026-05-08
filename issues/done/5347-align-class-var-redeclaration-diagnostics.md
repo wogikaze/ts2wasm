@@ -68,17 +68,17 @@ generic `DuplicateLocal` boundary.
 
 In scope:
 
-- [ ] Detect same-scope `class C {}` plus `var C = ...`.
-- [ ] Report a TS2300-style duplicate identifier diagnostic for that collision.
-- [ ] Add focused resolver coverage for `class C { public m() {} } var C = 1;`.
-- [ ] Re-run `augmentedTypesClass.ts` and record the next diagnostic.
+- [x] Detect same-scope `class C {}` plus `var C = ...`.
+- [x] Report a TS2300-style duplicate identifier diagnostic for that collision.
+- [x] Add focused resolver coverage for `class C { public m() {} } var C = 1;`.
+- [x] Re-run `augmentedTypesClass.ts` and record the next diagnostic.
 
 Out of scope:
 
 - Class/enum merge diagnostics later in the same file.
 - Interface/class and function/class augmented type buckets.
 - Compatible duplicate `var` redeclarations, tracked separately by `issues/done/5162-allow-compatible-var-redeclarations.md`.
-- Block-local class scoping, tracked by `issues/open/5249-scope-block-local-class-declarations.md`.
+- Block-local class scoping, tracked by `issues/done/5249-scope-block-local-class-declarations.md`.
 - Parser changes for accessibility-modified class methods.
 
 ## Affected paths
@@ -96,9 +96,9 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] `augmentedTypesClass.ts` no longer reports the current generic `DuplicateLocal` message for `class c1` / `var c1`.
-- [ ] A focused test covers `class C { public m() {} } var C = 1;`.
-- [ ] The next `reference-triage` result for `augmentedTypesClass.ts` is recorded in the issue or follow-up commit.
+- [x] `augmentedTypesClass.ts` no longer reports the current generic `DuplicateLocal` message for `class c1` / `var c1`.
+- [x] A focused test covers `class C { public m() {} } var C = 1;`.
+- [x] The next `reference-triage` result for `augmentedTypesClass.ts` is recorded in the issue or follow-up commit.
 
 ## Validation
 
@@ -125,15 +125,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 
@@ -143,7 +143,7 @@ Related but not duplicate:
 
 - `issues/done/5162-allow-compatible-var-redeclarations.md` handles compatible
   duplicate `var` declarations.
-- `issues/open/5249-scope-block-local-class-declarations.md` handles nested
+- `issues/done/5249-scope-block-local-class-declarations.md` handles nested
   block-local classes colliding with outer classes.
 - `issues/open/767-implement-augmentedTypesEnum-parser-syntax.md` owns a
   generated enum-focused bucket and may become relevant after this class/var

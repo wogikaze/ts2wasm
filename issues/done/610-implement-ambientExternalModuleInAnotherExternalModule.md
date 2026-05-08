@@ -577,7 +577,7 @@ error: [UnsupportedModule] issue-055: unsupported static export; module resoluti
 
 Closed as a stale generated bucket after fresh 2026-05-08 triage confirmed
 the current blocker is already owned by
-`issues/open/5346-parse-commonjs-export-assignment-statements.md`.
+`issues/done/5346-parse-commonjs-export-assignment-statements.md`.
 
 Fresh coverage with the current binary:
 

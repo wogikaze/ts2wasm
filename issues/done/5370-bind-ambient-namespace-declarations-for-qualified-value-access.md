@@ -53,13 +53,13 @@ The resolver preserves enough ambient namespace metadata to resolve qualified ac
 
 In scope:
 
-- [ ] Bind `declare namespace app { var foo: ... }` as a namespace value for same-file qualified accesses.
-- [ ] Preserve erasure: ambient namespace declarations must not emit runtime declarations.
-- [ ] Add focused resolver coverage and re-run both contextual IIFE references.
+- [x] Bind `declare namespace app { var foo: ... }` as a namespace value for same-file qualified accesses.
+- [x] Preserve erasure: ambient namespace declarations must not emit runtime declarations.
+- [x] Add focused resolver coverage and re-run both contextual IIFE references.
 
 Out of scope:
 
-- Non-ambient namespace value access, tracked by `issues/open/5287-bind-namespace-declarations-for-qualified-value-access.md`.
+- Non-ambient namespace value access, tracked by `issues/done/5287-bind-namespace-declarations-for-qualified-value-access.md`.
 - Plain ambient `declare var` / `declare let` / `declare const` value references, tracked by `issues/done/5161-model-ambient-value-declarations-for-name-resolution.md`.
 - Full namespace lowering, module ownership, runtime namespace object materialization, and contextual return type inference.
 
@@ -78,11 +78,11 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] `declare namespace app { var foo: { bar: number }; } app.foo.bar;` no longer reports `UnresolvedName` for `app`.
-- [ ] `contextualReturnTypeOfIIFE3.ts` no longer reports `UnresolvedName: unresolved name: \`app\`` at `173..176`.
-- [ ] `contextualReturnTypeOfIIFE2.ts` no longer reports `UnresolvedName: unresolved name: \`app\`` at `119..122`.
-- [ ] Ambient namespace declarations remain erased and do not introduce runtime initialization.
-- [ ] Any next blocker from the two reference files is recorded here or split to a follow-up if outside this scope.
+- [x] `declare namespace app { var foo: { bar: number }; } app.foo.bar;` no longer reports `UnresolvedName` for `app`.
+- [x] `contextualReturnTypeOfIIFE3.ts` no longer reports `UnresolvedName: unresolved name: \`app\`` at `173..176`.
+- [x] `contextualReturnTypeOfIIFE2.ts` no longer reports `UnresolvedName: unresolved name: \`app\`` at `119..122`.
+- [x] Ambient namespace declarations remain erased and do not introduce runtime initialization.
+- [x] Any next blocker from the two reference files is recorded here or split to a follow-up if outside this scope.
 
 ## Validation
 
@@ -103,15 +103,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 
@@ -119,7 +119,7 @@ Split from generated bucket `issues/open/1495-implement-contextualReturnTypeOfII
 
 Related:
 
-- `issues/open/5287-bind-namespace-declarations-for-qualified-value-access.md` covers non-ambient namespaces and explicitly excludes ambient `declare namespace`.
+- `issues/done/5287-bind-namespace-declarations-for-qualified-value-access.md` covers non-ambient namespaces and explicitly excludes ambient `declare namespace`.
 - `issues/done/5161-model-ambient-value-declarations-for-name-resolution.md` covers erased ambient variables/lets/consts, not ambient namespace roots.
 
 ## Completion evidence

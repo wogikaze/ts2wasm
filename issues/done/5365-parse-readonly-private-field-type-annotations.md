@@ -71,11 +71,11 @@ The parser accepts readonly private field declarations with erased TypeScript ty
 
 In scope:
 
-- [ ] Parse `readonly #name: Type;` in class bodies.
-- [ ] Preserve existing support for non-readonly private fields and public readonly fields.
-- [ ] Erase the TypeScript type annotation consistently with other class fields.
-- [ ] Add a focused parser/AST regression for `class C { readonly #x: string; }`.
-- [ ] Re-run the representative reference path and split any next blocker separately if outside this parser shape.
+- [x] Parse `readonly #name: Type;` in class bodies.
+- [x] Preserve existing support for non-readonly private fields and public readonly fields.
+- [x] Erase the TypeScript type annotation consistently with other class fields.
+- [x] Add a focused parser/AST regression for `class C { readonly #x: string; }`.
+- [x] Re-run the representative reference path and split any next blocker separately if outside this parser shape.
 
 Out of scope:
 
@@ -96,10 +96,10 @@ Do not touch: unrelated runtime/backend code.
 
 ## Acceptance Criteria
 
-- [ ] `constructorWithParameterPropertiesAndPrivateFields.es2015.ts` no longer reports `expected property name, got PrivateIdentifier` at `readonly #privateField`.
-- [ ] A focused parser regression covers `readonly #x: string;`.
-- [ ] Existing private field parser tests from issue 248 still pass.
-- [ ] Any next blocker from the reference path is recorded here or split to a follow-up.
+- [x] `constructorWithParameterPropertiesAndPrivateFields.es2015.ts` no longer reports `expected property name, got PrivateIdentifier` at `readonly #privateField`.
+- [x] A focused parser regression covers `readonly #x: string;`.
+- [x] Existing private field parser tests from issue 248 still pass.
+- [x] Any next blocker from the reference path is recorded here or split to a follow-up.
 
 ## Validation
 
@@ -125,15 +125,15 @@ python scripts/manager.py reference-coverage tsc --path-filter reference/typescr
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 

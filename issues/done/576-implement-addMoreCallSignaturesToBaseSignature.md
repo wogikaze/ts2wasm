@@ -595,7 +595,7 @@ date: 2026-05-08
 
 Remaining risks:
 
-- Implementation remains open in `issues/open/5195-support-callable-interface-typed-local-calls.md`.
+- Implementation remains open in `issues/done/5195-support-callable-interface-typed-local-calls.md`.
 
 ## False-done audit
 

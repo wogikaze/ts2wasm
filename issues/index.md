@@ -13,12 +13,12 @@ Issue files are the source of truth for work items. The generated section below 
 | backend | 18 | 1 | 17 |
 | backend-wasm | 2 | 0 | 2 |
 | cli | 17 | 1 | 16 |
-| compiler | 8 | 3 | 5 |
+| compiler | 7 | 2 | 5 |
 | coverage | 45 | 2 | 43 |
 | docs | 5 | 0 | 5 |
-| frontend | 4579 | 3724 | 855 |
+| frontend | 4562 | 3707 | 855 |
 | harness | 1 | 0 | 1 |
-| ir | 78 | 14 | 64 |
+| ir | 77 | 13 | 64 |
 | issues | 5 | 0 | 5 |
 | other | 2 | 0 | 2 |
 | parser | 1 | 0 | 1 |
@@ -28,7 +28,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 8 | 0 | 8 |
 | wasi | 5 | 1 | 4 |
-| total | 5272 | 3992 | 1280 |
+| total | 5253 | 3973 | 1280 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -292,6 +292,8 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1440 | Implement Constdeclarations Import Export | spike | frontend/syntax | done | P1 |  | constDeclarations-import-export has 5 reference failures and needs smart-triage evidence before implementation starts. |
 | 1441 | Implement Constdeclarations Name Resolution | spike | frontend/resolver | superseded | P1 |  | the generated bucket remained blocked instead of pointing to an |
 | 1442 | Implement Constdeclarations Parser Syntax | spike | frontend/syntax | superseded | P1 | 5349 | constDeclarations-parser-syntax has 6 reference failures and needs smart-triage evidence before implementation starts. |
+| 1443 | Implement Constdeclarations Scope Analysis | spike | frontend/resolver | superseded | P2 | 5310 | constDeclarations-scope-analysis has 1 reference failures and needs smart-triage evidence before implementation starts. |
+| 1444 | Implement Constdeclarations Unknown Unsupported | spike | frontend/syntax | superseded | P2 | 5350 | constDeclarations-unknown-unsupported has 1 reference failures and needs smart-triage evidence before implementation ... |
 | 1445 | Implement Constenumbadpropertynames | spike | frontend/syntax | superseded | P1 | 5184 | constEnumBadPropertyNames has 1 reference failures and needs smart-triage evidence before implementation starts. |
 | 1446 | Implement Constenumdeclarations | spike | frontend/syntax | superseded | P1 | 5184 | constEnumDeclarations has 1 reference failures and needs smart-triage evidence before implementation starts. |
 | 1447 | Implement Constenumerrors | spike | frontend/syntax | superseded | P1 | 5351 | constEnumErrors has 1 reference failures and needs smart-triage evidence before implementation starts. |
@@ -374,40 +376,21 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5275 | Parse modified static class methods | feature | frontend | implementation-ready | P1 |  | Parse modified static class methods |
 | 5289 | Validate commentsOverloads top-level functions | feature | frontend/resolver | implementation-ready | P1 |  | `reference/typescript/tests/cases/compiler/commentsOverloads.ts` |
 | 5291 | Report malformed export type declarations | feature | frontend/parser | implementation-ready | P1 |  | malformed `export type` declarations are not diagnosed or recovered |
-| 5292 | Skip tsconfig @Filename sections in reference harness | feature | compiler/multi-section | implementation-ready | P1 |  | reference-style `tsconfig.json` virtual sections are treated as module |
 | 5297 | Lower computed object binding aliases | feature | frontend/semantics | implementation-ready | P1 |  | object binding aliases can only use identifier keys, so computed keys |
 | 5298 | Parse for-of array binding pattern heads | feature | frontend/syntax | implementation-ready | P1 |  | array binding patterns in `for-of` declaration heads are parsed as |
 | 5299 | Lower computed object binding parameters | feature | frontend/semantics | implementation-ready | P1 |  | computed object binding aliases in parameters parse, but name |
 | 5306 | Report export assignment with other exports | bug | frontend/syntax | implementation-ready | P1 |  | `ExportAssignment8.ts` stops at generic issue-055 instead of reporting the specific `export =` plus other exports rule. |
-| 5310 | Parse nested block statements with variable declarations | feature | frontend/parser | implementation-ready | P1 |  | a nested block containing `var y = 0;` reports `expected Comma, got Some(Ident("y"))` instead of parsing as a block s... |
 | 5313 | Report non-exported namespace member in qualified heritage | feature | frontend/name-resolution | implementation-ready | P1 |  | `classExtendingQualifiedName.ts` now builds successfully, but |
 | 5314 | Report non-constructor local class heritage | feature | frontend/name-resolution | implementation-ready | P1 |  | `classExtendsClauseClassMergedWithModuleNotReferingConstructor.ts` |
 | 5315 | Report class extends interface diagnostics | feature | frontend/name-resolution | implementation-ready | P1 |  | `classExtendsInterface.ts` now build-passes, but TypeScript reports |
 | 5316 | Report class implements interface private member mismatch | feature | frontend/resolver | implementation-ready | P1 |  | `classExtendsInterfaceThatExtendsClassWithPrivates1.ts` now |
-| 5317 | Report multiple class heritage bases | feature | frontend/parser | implementation-ready | P1 |  | `classExtendsMultipleBaseClasses.ts` currently stops in the parser |
-| 5323 | Report missing constructor parameter list | feature | frontend/parser | implementation-ready | P1 |  | `classFieldsBrokenConstructorEmitNoCrash1.ts` currently reports a |
-| 5325 | Fix multifile class constructor FuncId invariant | feature | ir/compiler | implementation-ready | P1 |  | a class with a constructor in the second virtual file can produce a |
 | 5327 | Report class method overload wrong implementation name | feature | frontend/resolver | implementation-ready | P1 |  | `classWithOverloadImplementationOfWrongName2.ts` reports `DuplicateFunction: duplicate method definition: C.foo` inst... |
 | 5328 | Share script globals across @Filename sections for class namespace merge | feature | compiler/name-resolution | implementation-ready | P1 |  | cross-section global script declarations are not shared, so the second |
 | 5329 | Report class namespace duplicate member diagnostics | feature | frontend/semantics | implementation-ready | P1 |  | class/namespace duplicate member names currently produce a false build |
 | 5330 | Report namespace before class merge diagnostic | feature | frontend/semantics | implementation-ready | P1 |  | prior instantiated namespace/class merge ordering currently produces a |
 | 5331 | Report class namespace static side inheritance diagnostic | feature | frontend/semantics | implementation-ready | P1 |  | namespace-augmented static-side inheritance compatibility currently |
-| 5332 | Parse interface call signatures | feature | frontend/parser | implementation-ready | P1 |  | interface call-signature members are not parsed as erasable TypeScript |
-| 5334 | Parse class constructor overload signatures | feature | frontend/parser | implementation-ready | P1 |  | class constructor overload signatures are not represented separately |
-| 5336 | Parse object type literal signatures with rest parameters | feature | frontend/parser | implementation-ready | P1 |  | object type literal signature members with rest parameters are not |
-| 5337 | Parse rest parameter constructor overload signatures | feature | frontend/parser | implementation-ready | P1 |  | bodyless constructor overload signatures with rest parameters are |
 | 5343 | Track array-typed erased locals for callback methods | feature | frontend/semantics | implementation-ready | P1 | 5005 | declaration-only array locals such as `var s: string[];` lose their |
-| 5345 | Parse generic ambient const type annotations | feature | frontend/parser | implementation-ready | P1 |  | nested generic ambient const annotations are not erased as a complete |
-| 5346 | Parse CommonJS export assignment statements | feature | frontend/parser | implementation-ready | P1 |  | Parse CommonJS export assignment statements |
-| 5350 | Report missing const initializer diagnostics | feature | frontend/parser | implementation-ready | P1 |  | Report missing const initializer diagnostics |
-| 5355 | Report invalid constructor parameter modifiers | bug | frontend/parser | implementation-ready | P1 |  | current failure is `expected Comma, got Some(Static)` for |
-| 5358 | Report constructor bodies in ambient class declarations | feature | frontend/parser | implementation-ready | P1 |  | implementation bodies inside ambient class declarations are not |
 | 5359 | Report multiple constructor implementation diagnostics | feature | frontend/diagnostics | implementation-ready | P1 |  | invalid multiple constructor implementations are not reported with |
-| 5362 | Report strict-mode static constructor parameter name | bug | frontend/parser | implementation-ready | P1 |  | the compiler currently reports an unsupported parser failure, |
-| 5365 | Parse readonly private field type annotations | feature | frontend/parser | implementation-ready | P1 |  | `constructorWithParameterPropertiesAndPrivateFields.es2015.ts` currently reports `UnsupportedSyntax: expected propert... |
-| 5369 | Parse call-expression type arguments in class heritage | feature | frontend/parser | implementation-ready | P1 |  | the class heritage parser expects the class body after `Tag("Foo")` |
-| 5371 | Parse generic function type annotations | feature | frontend/parser | implementation-ready | P1 |  | generic function type annotations in variable declarations are not |
-| 5372 | Parse ambient function ASI with constructor types | feature | frontend/parser | implementation-ready | P1 |  | ambient function declaration erasure still requires a terminator for |
 | 5373 | Lower complex default binding initializers | feature | ir/lowering | implementation-ready | P2 |  | complex default binding initializers in object binding parameters are |
 | 5374 | Support callable ambient const local calls | feature | ir/lowering | implementation-ready | P1 |  | callable ambient const locals with generic call signatures currently |
 | 5375 | Support callable ambient interface local calls | feature | ir/lowering | implementation-ready | P1 |  | ambient locals typed by callable interfaces currently fall into the |
@@ -826,8 +809,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1425 | Implement Conditionaltypediscriminatinglargeunionregulartypefetchingspeedreasonable | spike | frontend/syntax | 432 | Implement Conditionaltypediscriminatinglargeunionregulartypefetchingspeedreasonable |
 | 1426 | Implement Conditionaltypedoesntspinforever | spike | frontend/syntax | 432 | Implement Conditionaltypedoesntspinforever |
 | 1427 | Implement Conditionaltyperelaxingconstraintassignability | spike | frontend/syntax | 432 | Implement Conditionaltyperelaxingconstraintassignability |
-| 1443 | Implement Constdeclarations Scope Analysis | spike | frontend/resolver | 5310 | Implement Constdeclarations Scope Analysis |
-| 1444 | Implement Constdeclarations Unknown Unsupported | spike | frontend/syntax | 5350 | Implement Constdeclarations Unknown Unsupported |
 | 1469 | Implement Constructorargwithgenericcallsignature | spike | frontend/syntax | 432 | Implement Constructorargwithgenericcallsignature |
 | 1473 | Implement Constructoroverloads Import Export | spike | frontend/syntax | 432 | Implement Constructoroverloads Import Export |
 | 1515 | Implement Contextualtypeselfreferencing | spike | frontend/resolver | class: blocked | Implement Contextualtypeselfreferencing |

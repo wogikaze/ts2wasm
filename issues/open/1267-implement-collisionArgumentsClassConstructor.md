@@ -51,7 +51,7 @@ python scripts/manager.py reference-coverage tsc --path-filter reference/typescr
 ## Desired final state
 
 This generated bucket is closed after splitting the current observable blocker
-into `issues/open/5334-parse-class-constructor-overload-signatures.md`.
+into `issues/done/5334-parse-class-constructor-overload-signatures.md`.
 
 ## Scope
 
@@ -120,7 +120,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] created: `issues/open/5334-parse-class-constructor-overload-signatures.md`
+- [x] created: `issues/done/5334-parse-class-constructor-overload-signatures.md`
 
 ## Notes
 
@@ -131,7 +131,7 @@ Follow-up issues:
 ## Duplicate detection
 
 - `issues/done/5199-report-function-overload-list-class-merge-diagnostics.md` - related top-level function/class overload merge issue, not constructor overload ownership
-- `issues/open/5323-report-missing-constructor-parameter-list.md` - related malformed bare-constructor diagnostic, not valid overload signatures
+- `issues/done/5323-report-missing-constructor-parameter-list.md` - related malformed bare-constructor diagnostic, not valid overload signatures
 - no exact existing owner found for valid class constructor overload signatures
 
 ## Smart triage
@@ -194,13 +194,13 @@ TS1210: Code contained in a class is evaluated in JavaScript's strict mode which
 
 Split result:
 
-- `issues/open/5334-parse-class-constructor-overload-signatures.md`
+- `issues/done/5334-parse-class-constructor-overload-signatures.md`
 
 ## Completion evidence
 
 Commits:
 
-- Split to `issues/open/5334-parse-class-constructor-overload-signatures.md`.
+- Split to `issues/done/5334-parse-class-constructor-overload-signatures.md`.
 
 Validation result:
 

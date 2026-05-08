@@ -134,7 +134,7 @@ Related but not duplicates:
   current unsupported qualified heritage implementation blocker. This issue is
   the semantic diagnostic for namespace-private qualified heritage after the
   representative `classExtendingQualifiedName.ts` path now build-passes.
-- `issues/open/5287-bind-namespace-declarations-for-qualified-value-access.md`
+- `issues/done/5287-bind-namespace-declarations-for-qualified-value-access.md`
   handles value access such as `m1.fooExport()`, not class heritage diagnostics.
 
 ## Completion Evidence

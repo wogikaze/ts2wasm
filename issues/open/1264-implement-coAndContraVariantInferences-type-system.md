@@ -125,7 +125,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] created: `issues/open/5332-parse-interface-call-signatures.md`
+- [x] created: `issues/done/5332-parse-interface-call-signatures.md`
 - [x] superseded by `issues/done/5184-parse-const-enum-declarations.md`
 - [x] superseded by `issues/done/5303-parse-trailing-comma-in-typed-function-parameters.md`
 - [x] superseded by `issues/done/5309-skip-generic-type-arguments-in-type-annotations.md`
@@ -146,7 +146,7 @@ Follow-up issues:
 - `issues/done/5184-parse-const-enum-declarations.md` - exact owner for `coAndContraVariantInferences3.ts` and `coAndContraVariantInferences4.ts` current `const enum` parser blocker
 - `issues/done/5303-parse-trailing-comma-in-typed-function-parameters.md` - exact owner for `coAndContraVariantInferences5.ts` trailing comma in typed function parameters
 - `issues/done/5309-skip-generic-type-arguments-in-type-annotations.md` - exact owner for `coAndContraVariantInferences.ts` generic type arguments inside function parameter annotations
-- `issues/open/5332-parse-interface-call-signatures.md` - new child for `coAndContraVariantInferences6.ts` interface call-signature parsing
+- `issues/done/5332-parse-interface-call-signatures.md` - new child for `coAndContraVariantInferences6.ts` interface call-signature parsing
 - `issues/open/345-implement-tsc-type-alias-coverage.md` - Implement TypeScript type alias coverage for tsc suite (23 cases) (same feature label, title overlap)
 
 ## Smart triage
@@ -202,7 +202,7 @@ the `2.ts` generated bucket history.
 - Diagnostic: `UnsupportedSyntax`
 - Message: `unsupported expression: Some(SpannedToken { kind: Greater, span: Span { start: 190, end: 191 } }) at 192..193`
 - Source: `interface FunctionComponent<P = {}> { (props: P): ReactElement<any> | null; }`
-- Split result: `issues/open/5332-parse-interface-call-signatures.md`
+- Split result: `issues/done/5332-parse-interface-call-signatures.md`
 
 ### coAndContraVariantInferences7.ts
 
@@ -214,7 +214,7 @@ the `2.ts` generated bucket history.
 
 Commits:
 
-- Split to `issues/open/5332-parse-interface-call-signatures.md`; other current blockers superseded by existing implementation-ready issues.
+- Split to `issues/done/5332-parse-interface-call-signatures.md`; other current blockers superseded by existing implementation-ready issues.
 
 Validation result:
 

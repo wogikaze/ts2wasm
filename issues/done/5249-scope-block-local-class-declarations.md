@@ -39,9 +39,9 @@ DuplicateLocal: duplicate local variable: `C` at 43..59
 
 In scope:
 
-- [ ] Represent block statement scopes for class declarations.
-- [ ] Bind class declarations inside nested blocks without colliding with outer block/module bindings.
-- [ ] Add focused resolver coverage for top-level `class C {}` plus `{ class C {} }`.
+- [x] Represent block statement scopes for class declarations.
+- [x] Bind class declarations inside nested blocks without colliding with outer block/module bindings.
+- [x] Add focused resolver coverage for top-level `class C {}` plus `{ class C {} }`.
 
 Out of scope:
 
@@ -56,9 +56,9 @@ Do not touch: backend/runtime ABI.
 
 ## Acceptance criteria
 
-- [ ] `classDeclarationBlockScoping1.ts` no longer reports `DuplicateLocal` for the inner `class C`.
-- [ ] A focused test proves same-name class declarations in nested blocks are distinct bindings.
-- [ ] Existing duplicate-local diagnostics for same-scope declarations still pass.
+- [x] `classDeclarationBlockScoping1.ts` no longer reports `DuplicateLocal` for the inner `class C`.
+- [x] A focused test proves same-name class declarations in nested blocks are distinct bindings.
+- [x] Existing duplicate-local diagnostics for same-scope declarations still pass.
 
 ## Validation
 

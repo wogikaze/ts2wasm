@@ -93,11 +93,11 @@ parser, resolver, or async/generator diagnostic.
 
 In scope:
 
-- [ ] Erase nested generic type references in ambient `declare const` annotations, including commas and string literal type arguments inside `<...>`.
-- [ ] Erase generic callable ambient const annotations such as `<T>(result: Result<T, E>) => Result<T, E>`.
-- [ ] Erase zero-argument generic callable annotations such as `<T, U, V>() => AsyncGenerator<T, U, V>`.
-- [ ] Add focused parser coverage for `declare const p: Promise<Result<A, "E">>;`.
-- [ ] Re-run `asyncYieldStarContextualType.ts` and record the next diagnostic.
+- [x] Erase nested generic type references in ambient `declare const` annotations, including commas and string literal type arguments inside `<...>`.
+- [x] Erase generic callable ambient const annotations such as `<T>(result: Result<T, E>) => Result<T, E>`.
+- [x] Erase zero-argument generic callable annotations such as `<T, U, V>() => AsyncGenerator<T, U, V>`.
+- [x] Add focused parser coverage for `declare const p: Promise<Result<A, "E">>;`.
+- [x] Re-run `asyncYieldStarContextualType.ts` and record the next diagnostic.
 
 Out of scope:
 
@@ -122,11 +122,11 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] `declare const authorPromise: Promise<Result<Author, "NOT_FOUND_AUTHOR">>;` no longer reports `expected ambient variable declaration name`.
-- [ ] A focused parser test covers an ambient const annotation with nested generic type arguments and string literal type arguments.
-- [ ] A focused parser test or reference triage covers an ambient const generic callable annotation.
-- [ ] Ambient declaration initializers remain rejected.
-- [ ] `python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/asyncYieldStarContextualType.ts` advances past the current issue-400 diagnostic.
+- [x] `declare const authorPromise: Promise<Result<Author, "NOT_FOUND_AUTHOR">>;` no longer reports `expected ambient variable declaration name`.
+- [x] A focused parser test covers an ambient const annotation with nested generic type arguments and string literal type arguments.
+- [x] A focused parser test or reference triage covers an ambient const generic callable annotation.
+- [x] Ambient declaration initializers remain rejected.
+- [x] `python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/asyncYieldStarContextualType.ts` advances past the current issue-400 diagnostic.
 
 ## Validation
 
@@ -153,15 +153,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 

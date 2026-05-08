@@ -78,11 +78,11 @@ reference should advance past the current `DuplicateLocal` blocker.
 
 In scope:
 
-- [ ] Distinguish bodyless nested function overload signatures from local duplicate bindings.
-- [ ] Accept multiple bodyless nested overload signatures followed by one implementation for the same name.
-- [ ] Preserve duplicate-local diagnostics for genuinely duplicate local bindings.
-- [ ] Preserve duplicate-function diagnostics for multiple concrete nested function bodies if currently reported.
-- [ ] Re-run the representative triage and record the next strict-mode diagnostic separately if exposed.
+- [x] Distinguish bodyless nested function overload signatures from local duplicate bindings.
+- [x] Accept multiple bodyless nested overload signatures followed by one implementation for the same name.
+- [x] Preserve duplicate-local diagnostics for genuinely duplicate local bindings.
+- [x] Preserve duplicate-function diagnostics for multiple concrete nested function bodies if currently reported.
+- [x] Re-run the representative triage and record the next strict-mode diagnostic separately if exposed.
 
 Out of scope:
 
@@ -105,10 +105,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] `collisionArgumentsFunctionExpressions.ts` no longer reports `DuplicateLocal` for nested overload signatures named `f4`.
-- [ ] A focused fixture accepts `function outer() { function f(x: number); function f(x: string); function f(x: any) {} }`.
-- [ ] A focused negative fixture still reports a duplicate diagnostic for two concrete nested function bodies with the same name.
-- [ ] Top-level overload behavior remains delegated to issue 5200.
+- [x] `collisionArgumentsFunctionExpressions.ts` no longer reports `DuplicateLocal` for nested overload signatures named `f4`.
+- [x] A focused fixture accepts `function outer() { function f(x: number); function f(x: string); function f(x: any) {} }`.
+- [x] A focused negative fixture still reports a duplicate diagnostic for two concrete nested function bodies with the same name.
+- [x] Top-level overload behavior remains delegated to issue 5200.
 
 ## Validation
 
@@ -139,15 +139,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 

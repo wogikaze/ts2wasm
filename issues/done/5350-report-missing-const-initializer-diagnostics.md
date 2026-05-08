@@ -53,9 +53,9 @@ continues parsing the declaration list so later const errors can be compared.
 
 In scope:
 
-- [ ] Accept `const c1;` as a recoverable diagnostic case.
-- [ ] Preserve source spans for missing-initializer diagnostics.
-- [ ] Add focused negative coverage for untyped and typed missing const initializers.
+- [x] Accept `const c1;` as a recoverable diagnostic case.
+- [x] Preserve source spans for missing-initializer diagnostics.
+- [x] Add focused negative coverage for untyped and typed missing const initializers.
 
 Out of scope:
 
@@ -78,9 +78,9 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] `constDeclarations-errors.ts` no longer reports `UnsupportedSyntax` at `const c1;`.
-- [ ] Diagnostics include source spans for `c1` and `c2`.
-- [ ] A focused test covers `const c1;` and `const c2: number;`.
+- [x] `constDeclarations-errors.ts` no longer reports `UnsupportedSyntax` at `const c1;`.
+- [x] Diagnostics include source spans for `c1` and `c2`.
+- [x] A focused test covers `const c1;` and `const c2: number;`.
 
 ## Validation
 

@@ -18,7 +18,7 @@ updated: 2026-05-07
 ## Summary
 
 Closed by splitting the current representative blocker to
-`issues/open/5358-report-constructor-bodies-in-ambient-class-declarations.md`.
+`issues/done/5358-report-constructor-bodies-in-ambient-class-declarations.md`.
 
 Fresh triage shows this generated `constructorOverloads-name-resolution` bucket
 is stale: the representative no longer fails with `name-resolution`. The
@@ -170,7 +170,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] created: `issues/open/5358-report-constructor-bodies-in-ambient-class-declarations.md`
+- [x] created: `issues/done/5358-report-constructor-bodies-in-ambient-class-declarations.md`
 
 ## Notes
 
@@ -190,7 +190,7 @@ Follow-up issues:
 - `issues/done/5161-model-ambient-value-declarations-for-name-resolution.md`
   handles `declare var` / `declare let` / `declare const` value visibility,
   not `declare class` constructor bodies.
-- `issues/open/5334-parse-class-constructor-overload-signatures.md` handles
+- `issues/done/5334-parse-class-constructor-overload-signatures.md` handles
   valid bodyless constructor overload signatures followed by an implementation
   in runtime classes; this representative's first oracle diagnostic is a body
   inside an ambient class declaration.

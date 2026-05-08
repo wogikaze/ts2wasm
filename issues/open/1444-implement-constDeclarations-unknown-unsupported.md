@@ -21,7 +21,7 @@ status: done
 
 Closed this generated unknown-unsupported bucket after splitting the current
 missing const initializer diagnostic boundary to
-`issues/open/5350-report-missing-const-initializer-diagnostics.md`.
+`issues/done/5350-report-missing-const-initializer-diagnostics.md`.
 
 ## Problem
 
@@ -46,7 +46,7 @@ mise run reference-coverage -- tsc --path-filter reference/typescript/tests/case
 ## Desired final state
 
 This generated bucket is closed. Implement from
-`issues/open/5350-report-missing-const-initializer-diagnostics.md`.
+`issues/done/5350-report-missing-const-initializer-diagnostics.md`.
 
 ## Scope
 
@@ -115,7 +115,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] created: `issues/open/5350-report-missing-const-initializer-diagnostics.md`
+- [x] created: `issues/done/5350-report-missing-const-initializer-diagnostics.md`
 
 ## Notes
 
@@ -137,7 +137,7 @@ Generated on 2026-05-07.
 - First failing source: `const c1;`
 - Visible symbol before failure: binding `c1`
 - TypeScript oracle parses the file and reports TS1155 for `c1`, `c2`, `c3`, `c4`, `c5`, `c6`, `c9`, and `c11`, plus TS2588 for assigning to `c8`.
-- Superseding child: `issues/open/5350-report-missing-const-initializer-diagnostics.md`
+- Superseding child: `issues/done/5350-report-missing-const-initializer-diagnostics.md`
 
 Nearby non-owners:
 

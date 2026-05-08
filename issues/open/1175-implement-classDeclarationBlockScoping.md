@@ -21,7 +21,7 @@ status: done
 
 Closed after splitting the two current representative blockers:
 
-- `issues/open/5249-scope-block-local-class-declarations.md`
+- `issues/done/5249-scope-block-local-class-declarations.md`
 - `issues/done/5250-parse-class-declarations-in-nested-block-statements.md`
 
 ## Problem

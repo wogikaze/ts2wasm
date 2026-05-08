@@ -43,7 +43,7 @@ mise run reference-coverage -- tsc --path-filter reference/typescript/tests/case
 ## Desired final state
 
 This generated bucket is superseded by
-`issues/open/5370-bind-ambient-namespace-declarations-for-qualified-value-access.md`.
+`issues/done/5370-bind-ambient-namespace-declarations-for-qualified-value-access.md`.
 Do not implement directly from this bucket.
 
 ## Scope
@@ -116,7 +116,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] existing: `issues/open/5370-bind-ambient-namespace-declarations-for-qualified-value-access.md`
+- [x] existing: `issues/done/5370-bind-ambient-namespace-declarations-for-qualified-value-access.md`
 
 ## Notes
 
@@ -164,7 +164,7 @@ expressions. The AST keeps only the outside runtime statements, then
 TypeScript accepts the file with no diagnostics.
 
 This is covered by
-`issues/open/5370-bind-ambient-namespace-declarations-for-qualified-value-access.md`,
+`issues/done/5370-bind-ambient-namespace-declarations-for-qualified-value-access.md`,
 which owns binding same-file ambient `declare namespace` declarations as
 resolver-visible namespace values without emitting runtime namespace
 initialization.
@@ -662,7 +662,7 @@ error: [UnsupportedModule] issue-400: ambient namespace declarations require mod
 ## Completion evidence
 
 Closed as superseded by
-`issues/open/5370-bind-ambient-namespace-declarations-for-qualified-value-access.md`.
+`issues/done/5370-bind-ambient-namespace-declarations-for-qualified-value-access.md`.
 
 Fresh coverage with the current binary:
 
@@ -696,7 +696,7 @@ issue is created.
 
 Commits:
 
-- superseded by `issues/open/5370-bind-ambient-namespace-declarations-for-qualified-value-access.md`
+- superseded by `issues/done/5370-bind-ambient-namespace-declarations-for-qualified-value-access.md`
 
 Validation result:
 

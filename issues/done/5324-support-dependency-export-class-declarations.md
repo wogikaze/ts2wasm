@@ -88,10 +88,10 @@ instead of rejecting the declaration as outside the static export slice.
 
 In scope:
 
-- [ ] Rewrite dependency-module `ExportDecl(ClassDecl)` as a local class declaration plus module export metadata.
-- [ ] Export under the declared class name for dependency virtual files.
-- [ ] Add a focused module/build regression for a dependency file containing `export class Test1 {}`.
-- [ ] Re-run the representative reference triage and confirm it no longer reports the dependency export-class issue-5005 boundary.
+- [x] Rewrite dependency-module `ExportDecl(ClassDecl)` as a local class declaration plus module export metadata.
+- [x] Export under the declared class name for dependency virtual files.
+- [x] Add a focused module/build regression for a dependency file containing `export class Test1 {}`.
+- [x] Re-run the representative reference triage and confirm it no longer reports the dependency export-class issue-5005 boundary.
 
 Out of scope:
 
@@ -115,10 +115,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] A dependency virtual file with `export class Test1 {}` builds far enough to expose `Test1` through the existing static module export path.
-- [ ] `python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/classMemberInitializerWithLamdaScoping3.ts` no longer reports `issue-5005: dependency module declaration export uses a form outside the current static export slice`.
-- [ ] Unsupported dependency export forms outside this slice still produce clear issue-5005 diagnostics.
-- [ ] The next observed diagnostic, if any, is recorded in a narrower follow-up issue instead of hidden behind the export-class boundary.
+- [x] A dependency virtual file with `export class Test1 {}` builds far enough to expose `Test1` through the existing static module export path.
+- [x] `python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/classMemberInitializerWithLamdaScoping3.ts` no longer reports `issue-5005: dependency module declaration export uses a form outside the current static export slice`.
+- [x] Unsupported dependency export forms outside this slice still produce clear issue-5005 diagnostics.
+- [x] The next observed diagnostic, if any, is recorded in a narrower follow-up issue instead of hidden behind the export-class boundary.
 
 ## Validation
 
@@ -145,15 +145,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 
@@ -163,7 +163,7 @@ Split from generated bucket
 Related but not duplicates:
 
 - `issues/done/5232-w0-fixture-ize-runtimelinkplan-linker-structure-tests.md` covers entry-module `export class`, not dependency virtual files.
-- `issues/open/5295-resolve-import-equals-require-to-virtual-node-modules-class-export.md` covers bare `require("myModule")` resolution plus a node_modules dependency class export shape.
+- `issues/done/5295-resolve-import-equals-require-to-virtual-node-modules-class-export.md` covers bare `require("myModule")` resolution plus a node_modules dependency class export shape.
 - `issues/done/5283-support-entry-export-var-declarations.md` covers the sibling `classMemberInitializerWithLamdaScoping4.ts` first blocker, `export var field1: string`.
 
 Also owns `issues/done/3320-implement-moduleAugmentationImportsAndExports.md`: fresh triage for `moduleAugmentationImportsAndExports1.ts` and `moduleAugmentationImportsAndExports4.ts` reaches the same issue-5005 dependency-module `export class` boundary for virtual `f1.ts` / `f2.ts` sections before module augmentation semantics become actionable.

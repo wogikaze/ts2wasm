@@ -66,10 +66,10 @@ for `super.field()` and reports a source-spanned TS2855-equivalent diagnostic.
 
 In scope:
 
-- [ ] Preserve enough class field metadata to identify `T.field` as a field, not
+- [x] Preserve enough class field metadata to identify `T.field` as a field, not
   a prototype method.
-- [ ] Diagnose `super.field()` when `field` is a parent class field.
-- [ ] Add focused coverage for `class T { field = () => {} } class U extends T { m() { super.field(); } }`.
+- [x] Diagnose `super.field()` when `field` is a parent class field.
+- [x] Add focused coverage for `class T { field = () => {} } class U extends T { m() { super.field(); } }`.
 
 Out of scope:
 
@@ -93,11 +93,11 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] `classFieldSuperNotAccessible.ts` no longer reports
+- [x] `classFieldSuperNotAccessible.ts` no longer reports
   `super method T.field not found`.
-- [ ] The new diagnostic is source-spanned at `field` or `super.field()` and
+- [x] The new diagnostic is source-spanned at `field` or `super.field()` and
   names the class-field-via-super boundary.
-- [ ] Parent prototype method calls through `super.method()` remain accepted.
+- [x] Parent prototype method calls through `super.method()` remain accepted.
 
 ## Validation
 
@@ -124,15 +124,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 
@@ -141,7 +141,7 @@ Split from stale generated bucket
 
 Related but not duplicate:
 
-- `issues/open/5255-resolve-super-property-accesses.md` covers broad `super.x`
+- `issues/done/5255-resolve-super-property-accesses.md` covers broad `super.x`
   receiver resolution; this issue is the narrower TS2855 class-field diagnostic.
 
 ## Completion evidence

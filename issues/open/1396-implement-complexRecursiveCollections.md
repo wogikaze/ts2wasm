@@ -176,7 +176,7 @@ Follow-up issues:
 - `issues/done/5187-lower-namespace-only-multi-section-files.md` owns keeping
   namespace-only/declaration-only multi-section bodies observable enough for
   the next namespace/scope/type diagnostic.
-- `issues/open/5292-skip-tsconfig-filename-sections-in-reference-harness.md`
+- `issues/done/5292-skip-tsconfig-filename-sections-in-reference-harness.md`
   is unrelated; this file has source/declaration virtual sections, not a
   `tsconfig.json` section.
 - Broader type-system issues are later blockers because the current smart triage

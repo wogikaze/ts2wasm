@@ -61,10 +61,10 @@ TypeScript-compatible property diagnostic in the representative file.
 
 In scope:
 
-- [ ] Preserve `accessor b = () => {}` as a callable instance member or
+- [x] Preserve `accessor b = () => {}` as a callable instance member or
   receiver-bound field value.
-- [ ] Resolve `this.b()` against that callable auto-accessor member.
-- [ ] Add focused coverage for `class C { accessor b = () => {}; m() { this.b(); } }`.
+- [x] Resolve `this.b()` against that callable auto-accessor member.
+- [x] Add focused coverage for `class C { accessor b = () => {}; m() { this.b(); } }`.
 
 Out of scope:
 
@@ -87,11 +87,11 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] `classFieldSuperNotAccessibleJs.ts` no longer reports
+- [x] `classFieldSuperNotAccessibleJs.ts` no longer reports
   `method YaddaBase.b not found` for `this.b()`.
-- [ ] A focused fixture covers an auto-accessor field initialized to an arrow
+- [x] A focused fixture covers an auto-accessor field initialized to an arrow
   function and called through `this`.
-- [ ] If the reference advances to `super.<field>` diagnostics, that next blocker
+- [x] If the reference advances to `super.<field>` diagnostics, that next blocker
   is recorded separately or tied to an existing exact issue.
 
 ## Validation
@@ -119,15 +119,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 

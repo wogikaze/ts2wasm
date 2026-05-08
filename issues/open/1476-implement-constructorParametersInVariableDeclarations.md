@@ -147,7 +147,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] created: `issues/open/5360-report-class-field-initializer-constructor-scope-captures.md`
+- [x] created: `issues/done/5360-report-class-field-initializer-constructor-scope-captures.md`
 
 ## Notes
 

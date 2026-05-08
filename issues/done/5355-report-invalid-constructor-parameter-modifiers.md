@@ -84,10 +84,10 @@ on a parameter. The three representative cases no longer report generic
 
 In scope:
 
-- [ ] Detect `static`, `public static`, and `export` before a constructor parameter binding.
-- [ ] Report the diagnostic at the invalid modifier token.
-- [ ] Preserve valid constructor parameter properties for `public`, `private`, `protected`, and `readonly`.
-- [ ] Add focused parser/frontend coverage for the invalid modifier variants.
+- [x] Detect `static`, `public static`, and `export` before a constructor parameter binding.
+- [x] Report the diagnostic at the invalid modifier token.
+- [x] Preserve valid constructor parameter properties for `public`, `private`, `protected`, and `readonly`.
+- [x] Add focused parser/frontend coverage for the invalid modifier variants.
 
 Out of scope:
 
@@ -108,9 +108,9 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] `constructorArgsErrors1.ts`, `constructorArgsErrors2.ts`, and `constructorArgsErrors5.ts` no longer report the current generic parser failures for invalid parameter modifiers.
-- [ ] A focused parser/frontend test covers `constructor(static a: number)`, `constructor(public static a: number)`, and `constructor(export a: number)`.
-- [ ] Existing valid constructor parameter property tests still pass.
+- [x] `constructorArgsErrors1.ts`, `constructorArgsErrors2.ts`, and `constructorArgsErrors5.ts` no longer report the current generic parser failures for invalid parameter modifiers.
+- [x] A focused parser/frontend test covers `constructor(static a: number)`, `constructor(public static a: number)`, and `constructor(export a: number)`.
+- [x] Existing valid constructor parameter property tests still pass.
 
 ## Validation
 
@@ -138,15 +138,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none expected
+- [x] none expected
 
 ## Notes
 

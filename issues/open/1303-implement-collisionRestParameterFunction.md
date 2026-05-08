@@ -133,7 +133,7 @@ Follow-up issues:
 ## Duplicate detection
 
 - `issues/open/5200-validate-top-level-function-overload-implementations.md` - exact owner for valid top-level function overload signatures currently reported as duplicate functions
-- `issues/open/5335-validate-nested-function-overload-implementations.md` - related nested function overload issue, not top-level
+- `issues/done/5335-validate-nested-function-overload-implementations.md` - related nested function overload issue, not top-level
 - `issues/done/5199-report-function-overload-list-class-merge-diagnostics.md` - related top-level function/class merge diagnostic, not this valid overload group
 
 ## Smart triage

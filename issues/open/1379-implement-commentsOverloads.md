@@ -147,7 +147,7 @@ Follow-up issues:
 - `issues/open/5289-validate-comments-overloads-top-level-functions.md` owns
   the exact first blocker: commented top-level overload signatures followed by
   one implementation, currently rejected as `DuplicateFunction`.
-- `issues/open/5280-validate-commented-top-level-function-overloads.md` is
+- `issues/done/5280-validate-commented-top-level-function-overloads.md` is
   related, but folding this larger reference file into it made the issue too
   large for readiness gates.
 - `issues/open/5200-validate-top-level-function-overload-implementations.md`

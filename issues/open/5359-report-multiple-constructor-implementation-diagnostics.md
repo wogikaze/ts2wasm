@@ -143,7 +143,7 @@ on 2026-05-07.
 
 Related:
 
-- `issues/open/5334-parse-class-constructor-overload-signatures.md` owns valid
+- `issues/done/5334-parse-class-constructor-overload-signatures.md` owns valid
   bodyless constructor overload signatures. This issue owns only invalid
   multiple implementation bodies.
 

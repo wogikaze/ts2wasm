@@ -67,9 +67,9 @@ statements whose returned value is not assignable to the class instance type.
 
 In scope:
 
-- [ ] Detect constructor `return` statements with a value expression.
-- [ ] Emit a source-spanned constructor return-value diagnostic for `return x` in the representative generic class.
-- [ ] Re-run the representative triage and confirm it no longer reports BuildPass.
+- [x] Detect constructor `return` statements with a value expression.
+- [x] Emit a source-spanned constructor return-value diagnostic for `return x` in the representative generic class.
+- [x] Re-run the representative triage and confirm it no longer reports BuildPass.
 
 Out of scope:
 
@@ -92,10 +92,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] `constructorReturningAPrimitive.ts` no longer reports BuildPass.
-- [ ] A focused test reports the diagnostic for `class B<T> { constructor() { var x: T; return x; } }`.
-- [ ] Constructors with no value return, such as `return;`, remain accepted if currently supported.
-- [ ] Definite-assignment for `x` remains out of scope or is recorded as a follow-up if exposed first.
+- [x] `constructorReturningAPrimitive.ts` no longer reports BuildPass.
+- [x] A focused test reports the diagnostic for `class B<T> { constructor() { var x: T; return x; } }`.
+- [x] Constructors with no value return, such as `return;`, remain accepted if currently supported.
+- [x] Definite-assignment for `x` remains out of scope or is recorded as a follow-up if exposed first.
 
 ## Validation
 
@@ -125,15 +125,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 

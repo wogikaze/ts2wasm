@@ -68,7 +68,7 @@ Do not touch:
 
 - `crates/frontend/` — parser out of scope
 - `crates/ir/` — IR out of scope
-- `crates/backend-wasm/src/runtime_*.rs` — runtime function code out of scope
+-  — runtime function code out of scope
 - `crates/backend-wasm/src/runtime_fn.rs` — catalog out of scope
 
 ## Acceptance criteria

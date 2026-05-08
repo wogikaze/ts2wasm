@@ -63,10 +63,10 @@ diagnostic.
 
 In scope:
 
-- [ ] Resolve `super.<staticName>` inside class static blocks against the base
+- [x] Resolve `super.<staticName>` inside class static blocks against the base
   class constructor/static side.
-- [ ] Preserve existing class static block execution order.
-- [ ] Add focused coverage for `class D extends C { static { super.x; } }`.
+- [x] Preserve existing class static block execution order.
+- [x] Add focused coverage for `class D extends C { static { super.x; } }`.
 
 Out of scope:
 
@@ -90,11 +90,11 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] `classFieldSuperAccessibleJs1.ts` no longer reports issue-254 for
+- [x] `classFieldSuperAccessibleJs1.ts` no longer reports issue-254 for
   `super.blah1` in the static block.
-- [ ] A focused fixture covers a static block reading a base static property
+- [x] A focused fixture covers a static block reading a base static property
   through `super`.
-- [ ] If `super.blah2` or `C.blah2` remains unsupported/diagnostic-only, the next
+- [x] If `super.blah2` or `C.blah2` remains unsupported/diagnostic-only, the next
   blocker is recorded separately.
 
 ## Validation
@@ -122,15 +122,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 

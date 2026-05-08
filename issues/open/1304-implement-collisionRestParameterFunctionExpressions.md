@@ -51,7 +51,7 @@ python scripts/manager.py reference-coverage tsc --path-filter reference/typescr
 
 This generated bucket is closed because the current observable blocker is
 owned by
-`issues/open/5335-validate-nested-function-overload-implementations.md`.
+`issues/done/5335-validate-nested-function-overload-implementations.md`.
 
 ## Scope
 
@@ -122,7 +122,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] none; superseded by `issues/open/5335-validate-nested-function-overload-implementations.md`
+- [x] none; superseded by `issues/done/5335-validate-nested-function-overload-implementations.md`
 
 ## Notes
 
@@ -132,7 +132,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/open/5335-validate-nested-function-overload-implementations.md` - exact owner for valid nested function overload signatures currently reported as duplicate locals
+- `issues/done/5335-validate-nested-function-overload-implementations.md` - exact owner for valid nested function overload signatures currently reported as duplicate locals
 - `issues/open/5200-validate-top-level-function-overload-implementations.md` - related top-level function overload issue, not nested
 - `issues/done/5198-support-class-method-overload-signatures-for-element-access-calls.md` - related class method overload issue, not nested functions
 
@@ -202,13 +202,13 @@ diagnostics: []
 
 Superseded by:
 
-- `issues/open/5335-validate-nested-function-overload-implementations.md`
+- `issues/done/5335-validate-nested-function-overload-implementations.md`
 
 ## Completion evidence
 
 Commits:
 
-- Superseded by `issues/open/5335-validate-nested-function-overload-implementations.md`.
+- Superseded by `issues/done/5335-validate-nested-function-overload-implementations.md`.
 
 Validation result:
 

@@ -51,7 +51,7 @@ python scripts/manager.py reference-coverage tsc --path-filter reference/typescr
 ## Desired final state
 
 This generated bucket is closed after splitting the current observable blocker
-into `issues/open/5335-validate-nested-function-overload-implementations.md`.
+into `issues/done/5335-validate-nested-function-overload-implementations.md`.
 
 ## Scope
 
@@ -120,7 +120,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] created: `issues/open/5335-validate-nested-function-overload-implementations.md`
+- [x] created: `issues/done/5335-validate-nested-function-overload-implementations.md`
 
 ## Notes
 
@@ -195,13 +195,13 @@ TS1100: Invalid use of 'arguments' in strict mode.
 
 Split result:
 
-- `issues/open/5335-validate-nested-function-overload-implementations.md`
+- `issues/done/5335-validate-nested-function-overload-implementations.md`
 
 ## Completion evidence
 
 Commits:
 
-- Split to `issues/open/5335-validate-nested-function-overload-implementations.md`.
+- Split to `issues/done/5335-validate-nested-function-overload-implementations.md`.
 
 Validation result:
 

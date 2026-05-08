@@ -89,10 +89,10 @@ next narrower diagnostic without emitting a runtime declaration for `x`.
 
 In scope:
 
-- [ ] Preserve resolver-visible metadata for declaration-only ambient `var` declarations used as assignment targets.
-- [ ] Resolve `declare var x: number; x = 2;` without emitting a runtime declaration for `x`.
-- [ ] Add focused resolver coverage for an ambient `var` assignment target.
-- [ ] Re-run `commentOnAmbientVariable2.ts` and record the next diagnostic if the file advances.
+- [x] Preserve resolver-visible metadata for declaration-only ambient `var` declarations used as assignment targets.
+- [x] Resolve `declare var x: number; x = 2;` without emitting a runtime declaration for `x`.
+- [x] Add focused resolver coverage for an ambient `var` assignment target.
+- [x] Re-run `commentOnAmbientVariable2.ts` and record the next diagnostic if the file advances.
 
 Out of scope:
 
@@ -116,13 +116,13 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] `declare var x: number; x = 2;` no longer reports `UnresolvedName` for `x`.
-- [ ] `contextualSignatureInstatiationContravariance.ts` no longer reports
+- [x] `declare var x: number; x = 2;` no longer reports `UnresolvedName` for `x`.
+- [x] `contextualSignatureInstatiationContravariance.ts` no longer reports
   `UnresolvedName` for ambient assignment target `g2` in `g2 = f2`.
-- [ ] A focused resolver test proves the ambient `var` binding is resolver-visible for assignment targets without adding a runtime local.
-- [ ] Existing ambient value expression cases in issue 5161 remain unchanged or are explicitly advanced by the same implementation.
-- [ ] Ambient declarations with initializers, such as `declare var x = 1;`, remain rejected.
-- [ ] `python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/commentOnAmbientVariable2.ts` advances past the current `UnresolvedName` for `x`.
+- [x] A focused resolver test proves the ambient `var` binding is resolver-visible for assignment targets without adding a runtime local.
+- [x] Existing ambient value expression cases in issue 5161 remain unchanged or are explicitly advanced by the same implementation.
+- [x] Ambient declarations with initializers, such as `declare var x = 1;`, remain rejected.
+- [x] `python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/commentOnAmbientVariable2.ts` advances past the current `UnresolvedName` for `x`.
 
 ## Validation
 
@@ -150,15 +150,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 

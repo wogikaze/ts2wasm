@@ -18,7 +18,7 @@ updated: 2026-05-07
 ## Summary
 
 Closed as superseded by
-`issues/open/5362-report-strict-mode-static-constructor-parameter-name.md`.
+`issues/done/5362-report-strict-mode-static-constructor-parameter-name.md`.
 
 Fresh triage shows the explicit `'use strict'` variant reaches the same
 `constructor(static)` parser failure and TypeScript TS1213 oracle diagnostic as
@@ -146,7 +146,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] existing: `issues/open/5362-report-strict-mode-static-constructor-parameter-name.md`
+- [x] existing: `issues/done/5362-report-strict-mode-static-constructor-parameter-name.md`
 
 ## Notes
 
@@ -156,7 +156,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/open/5362-report-strict-mode-static-constructor-parameter-name.md`
+- `issues/done/5362-report-strict-mode-static-constructor-parameter-name.md`
   owns both implicit class strict-mode and explicit `'use strict'` forms of
   `constructor(static)`.
 

@@ -172,7 +172,7 @@ Follow-up issues:
 Related bucket `issues/open/769-implement-augmentedTypesFunction.md` also shows
 TypeScript class/function merge diagnostics after its first function/var
 duplicate-identifier blocker is removed. Issue
-`issues/open/5307-report-var-function-duplicate-identifier-diagnostics.md`
+`issues/done/5307-report-var-function-duplicate-identifier-diagnostics.md`
 owns that first blocker. This issue owns the already-parsed `callOverloads3.ts`
 and `callOverloads4.ts` duplicate-function blocker.
 

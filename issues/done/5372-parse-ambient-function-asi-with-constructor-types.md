@@ -71,9 +71,9 @@ are erased when followed by ASI, and the representative file advances.
 
 In scope:
 
-- [ ] Accept ASI after `declare function f<T>(arg: Type): ReturnType`.
-- [ ] Consume constructor function parameter types such as `new (...args: any[]) => T`.
-- [ ] Preserve ambient declaration erasure so no runtime function binding is emitted.
+- [x] Accept ASI after `declare function f<T>(arg: Type): ReturnType`.
+- [x] Consume constructor function parameter types such as `new (...args: any[]) => T`.
+- [x] Preserve ambient declaration erasure so no runtime function binding is emitted.
 
 Out of scope:
 
@@ -91,11 +91,11 @@ Expected:
 
 ## Acceptance criteria
 
-- [ ] `contextualSignatureInstantiation4.ts` no longer reports
+- [x] `contextualSignatureInstantiation4.ts` no longer reports
   `issue-400: unterminated ambient function declaration` at the first
   `fruitFactory` declaration.
-- [ ] A focused parser or CLI test accepts `declare function f<T>(C: new (...args: any[]) => T): T` followed by a newline and runtime statement.
-- [ ] Ambient function declarations remain erased from runtime AST/lowering.
+- [x] A focused parser or CLI test accepts `declare function f<T>(C: new (...args: any[]) => T): T` followed by a newline and runtime statement.
+- [x] Ambient function declarations remain erased from runtime AST/lowering.
 
 ## Validation
 
@@ -117,15 +117,15 @@ env TS2WASM_BINARY=/tmp/ts2wasm-issue-blockers-target/debug/ts2wasm python scrip
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 

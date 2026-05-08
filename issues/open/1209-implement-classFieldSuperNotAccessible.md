@@ -114,7 +114,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] created: `issues/open/5321-report-super-class-field-access-diagnostic.md`
+- [x] created: `issues/done/5321-report-super-class-field-access-diagnostic.md`
 
 ## Notes
 
@@ -154,7 +154,7 @@ Compiler evidence:
 
 Duplicate review:
 
-- `issues/open/5255-resolve-super-property-accesses.md` is related but broader
+- `issues/done/5255-resolve-super-property-accesses.md` is related but broader
   to `super.x` receiver resolution.
 - No exact open/done owner was found for the TS2855 parent class field via
   `super` diagnostic.

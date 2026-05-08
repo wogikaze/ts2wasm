@@ -64,9 +64,9 @@ The representative path advances past `myModule` lookup and dependency
 
 In scope:
 
-- [ ] Bind `require("myModule")` to `/foo/node_modules/myModule/index.ts`.
-- [ ] Expose exported class `c` for `new myModule.c()`.
-- [ ] Add one focused regression for this exact shape.
+- [x] Bind `require("myModule")` to `/foo/node_modules/myModule/index.ts`.
+- [x] Expose exported class `c` for `new myModule.c()`.
+- [x] Add one focused regression for this exact shape.
 
 Out of scope:
 
@@ -88,10 +88,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] Triage no longer reports unsupported non-local module specifier `myModule`.
-- [ ] Triage no longer reports unsupported dependency `export class c`.
-- [ ] Focused coverage no longer reports `UnsupportedModule:1` for this boundary.
-- [ ] A regression covers `import alias = require("pkg"); new alias.C();`.
+- [x] Triage no longer reports unsupported non-local module specifier `myModule`.
+- [x] Triage no longer reports unsupported dependency `export class c`.
+- [x] Focused coverage no longer reports `UnsupportedModule:1` for this boundary.
+- [x] A regression covers `import alias = require("pkg"); new alias.C();`.
 
 ## Validation
 
@@ -118,15 +118,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 

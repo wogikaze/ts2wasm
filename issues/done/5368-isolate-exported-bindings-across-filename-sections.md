@@ -85,9 +85,9 @@ diagnostic.
 
 In scope:
 
-- [ ] Isolate top-level exported value bindings per external-module `@filename` section.
-- [ ] Add a focused multi-section test with two sections that both use `export const sameName = ...`.
-- [ ] Re-run `contextualOverloadListFromArrayUnion.ts` and record the next blocker if this path advances.
+- [x] Isolate top-level exported value bindings per external-module `@filename` section.
+- [x] Add a focused multi-section test with two sections that both use `export const sameName = ...`.
+- [x] Re-run `contextualOverloadListFromArrayUnion.ts` and record the next blocker if this path advances.
 
 Out of scope:
 
@@ -112,8 +112,8 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] `contextualOverloadListFromArrayUnion.ts` no longer reports `DuplicateLocal` for the second `export const yThen`.
-- [ ] A focused regression proves duplicate exported names are allowed across separate external-module `@filename` sections.
+- [x] `contextualOverloadListFromArrayUnion.ts` no longer reports `DuplicateLocal` for the second `export const yThen`.
+- [x] A focused regression proves duplicate exported names are allowed across separate external-module `@filename` sections.
 
 ## Validation
 
@@ -143,15 +143,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 

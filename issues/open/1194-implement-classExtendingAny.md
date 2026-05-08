@@ -18,7 +18,7 @@ updated: 2026-05-06
 ## Summary
 
 Closed by splitting the current name-resolution blocker to
-`issues/open/5255-resolve-super-property-accesses.md`.
+`issues/done/5255-resolve-super-property-accesses.md`.
 
 ## Problem
 
@@ -113,7 +113,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] `issues/open/5255-resolve-super-property-accesses.md`
+- [x] `issues/done/5255-resolve-super-property-accesses.md`
 
 ## Notes
 
@@ -173,7 +173,7 @@ receiver or explicit super-property semantic boundary.
 
 Split issue:
 
-- `issues/open/5255-resolve-super-property-accesses.md`
+- `issues/done/5255-resolve-super-property-accesses.md`
 
 ## Completion evidence
 
@@ -181,7 +181,7 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- Split to `issues/open/5255-resolve-super-property-accesses.md`; see local commit for this issue cleanup.
+- Split to `issues/done/5255-resolve-super-property-accesses.md`; see local commit for this issue cleanup.
 
 Validation result:
 

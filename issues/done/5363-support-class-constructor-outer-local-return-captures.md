@@ -74,10 +74,10 @@ Constructor bodies can resolve and lower a direct immutable outer local read use
 
 In scope:
 
-- [ ] Resolve direct constructor-body reads of immutable outer locals.
-- [ ] Lower `return outerLocal;` from a class constructor without losing existing returned value semantics.
-- [ ] Add or update a focused regression for `let oneA: A; class A { constructor() { return oneA; } }`.
-- [ ] Re-run `constructorWithCapturedSuper.ts` and split any later blocker separately.
+- [x] Resolve direct constructor-body reads of immutable outer locals.
+- [x] Lower `return outerLocal;` from a class constructor without losing existing returned value semantics.
+- [x] Add or update a focused regression for `let oneA: A; class A { constructor() { return oneA; } }`.
+- [x] Re-run `constructorWithCapturedSuper.ts` and split any later blocker separately.
 
 Out of scope:
 
@@ -99,10 +99,10 @@ Do not touch: package/module resolution, unrelated class parser behavior, unrela
 
 ## Acceptance criteria
 
-- [ ] `python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/constructorWithCapturedSuper.ts` no longer reports issue-289 for `oneA`.
-- [ ] A focused fixture proves `let oneA: A; class A { constructor() { return oneA; } }` resolves past constructor lexical capture.
-- [ ] Existing diagnostics remain for unsupported constructor capture shapes outside this scope.
-- [ ] Any next blocker from `constructorWithCapturedSuper.ts` is recorded here or split to a follow-up.
+- [x] `python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/constructorWithCapturedSuper.ts` no longer reports issue-289 for `oneA`.
+- [x] A focused fixture proves `let oneA: A; class A { constructor() { return oneA; } }` resolves past constructor lexical capture.
+- [x] Existing diagnostics remain for unsupported constructor capture shapes outside this scope.
+- [x] Any next blocker from `constructorWithCapturedSuper.ts` is recorded here or split to a follow-up.
 
 ## Validation
 
@@ -128,15 +128,15 @@ python scripts/manager.py reference-coverage tsc --path-filter reference/typescr
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 
@@ -147,7 +147,7 @@ Related but distinct open issues:
 - `issues/done/5152-support-class-constructor-outer-callback-captures.md`
 - `issues/done/5204-resolve-lexical-super-property-captures-in-super-call-arguments.md`
 - 
-- `issues/open/5338-support-rest-constructor-outer-local-captures.md`
+- `issues/done/5338-support-rest-constructor-outer-local-captures.md`
 
 ## Completion evidence
 

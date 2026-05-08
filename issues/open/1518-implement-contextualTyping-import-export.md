@@ -110,7 +110,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] created: `issues/open/5378-report-mixed-ambient-function-overload-diagnostics.md`
+- [x] created: `issues/done/5378-report-mixed-ambient-function-overload-diagnostics.md`
 
 ## Notes
 
@@ -141,7 +141,7 @@ env TS2WASM_BINARY=/home/wogikaze/wgkz/ts2wasm/target/debug/ts2wasm python scrip
 ```
 
 Result: split to
-`issues/open/5378-report-mixed-ambient-function-overload-diagnostics.md`.
+`issues/done/5378-report-mixed-ambient-function-overload-diagnostics.md`.
 
 Current diagnostic:
 
@@ -179,7 +179,7 @@ Duplicate review:
 - `issues/done/5226-w0-ast-node-span-requirement.md` owns
   multiple ambient overload declarations, not a mixed ambient signature plus
   non-ambient implementation.
-- `issues/open/5307-report-var-function-duplicate-identifier-diagnostics.md`
+- `issues/done/5307-report-var-function-duplicate-identifier-diagnostics.md`
   owns var/function duplicate identifier diagnostics, not overload ambientness.
 
 ## Completion evidence
@@ -188,7 +188,7 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- split to `issues/open/5378-report-mixed-ambient-function-overload-diagnostics.md`
+- split to `issues/done/5378-report-mixed-ambient-function-overload-diagnostics.md`
 
 Validation result:
 

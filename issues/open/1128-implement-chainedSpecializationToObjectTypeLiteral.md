@@ -126,7 +126,7 @@ Follow-up issues:
 ## Duplicate detection
 
 - `issues/done/5201-parse-object-type-literal-call-signatures.md` is not an exact match: 1128's AST succeeds, while 5201 is parser-owned and fails on object type literal call-signature annotation parsing.
-- `issues/open/5195-support-callable-interface-typed-local-calls.md` is related but not an exact match: it handles direct calls to callable interface locals, while 1128 calls a method through an interface-typed receiver.
+- `issues/done/5195-support-callable-interface-typed-local-calls.md` is related but not an exact match: it handles direct calls to callable interface locals, while 1128 calls a method through an interface-typed receiver.
 - Broad object-literal buckets are not exact matches because the first blocker is a method-call receiver classification diagnostic.
 
 ## Smart triage

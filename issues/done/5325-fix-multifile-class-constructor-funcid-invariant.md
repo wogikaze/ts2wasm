@@ -86,9 +86,9 @@ removes the constructor reference consistently when no function is emitted, so
 
 In scope:
 
-- [ ] Fix the zero-emitted-function class constructor metadata path for this multi-file TypeScript shape.
-- [ ] Add focused validation coverage for a class constructor in a non-exported virtual file when no functions are emitted.
-- [ ] Re-run the representative reference triage and confirm the invariant is gone.
+- [x] Fix the zero-emitted-function class constructor metadata path for this multi-file TypeScript shape.
+- [x] Add focused validation coverage for a class constructor in a non-exported virtual file when no functions are emitted.
+- [x] Re-run the representative reference triage and confirm the invariant is gone.
 
 Out of scope:
 
@@ -112,9 +112,9 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] `python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/classMemberInitializerWithLamdaScoping2.ts` no longer reports `ClassDecl constructor FuncId 0 is out of range`.
-- [ ] Focused coverage remains `build_pass=1` or advances to a narrower non-invariant diagnostic.
-- [ ] Existing class constructor lowering tests still pass.
+- [x] `python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/classMemberInitializerWithLamdaScoping2.ts` no longer reports `ClassDecl constructor FuncId 0 is out of range`.
+- [x] Focused coverage remains `build_pass=1` or advances to a narrower non-invariant diagnostic.
+- [x] Existing class constructor lowering tests still pass.
 
 ## Validation
 
@@ -141,15 +141,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 

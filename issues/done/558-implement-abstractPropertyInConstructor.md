@@ -124,7 +124,7 @@ Follow-up issues:
 - `issues/done/5261-report-class-typed-missing-instance-method-calls.md` is
   related but not exact: it handles class-typed ambient locals whose requested
   instance method is missing.
-- `issues/open/5322-support-callable-class-auto-accessor-fields.md` is related
+- `issues/done/5322-support-callable-class-auto-accessor-fields.md` is related
   but not exact: it handles callable auto-accessor fields, not abstract
   property constructor diagnostics.
 

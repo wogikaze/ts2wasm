@@ -123,7 +123,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] created: `issues/open/5295-resolve-import-equals-require-to-virtual-node-modules-class-export.md`
+- [x] created: `issues/done/5295-resolve-import-equals-require-to-virtual-node-modules-class-export.md`
 
 ## Notes
 

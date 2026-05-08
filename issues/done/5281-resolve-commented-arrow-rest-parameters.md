@@ -81,9 +81,9 @@ references like `args.length` and `rest.length` resolve.
 
 In scope:
 
-- [ ] Normalize arrow function rest parameter names for resolver parameter binding.
-- [ ] Add focused coverage for `(.../* comment */args) => args.length`.
-- [ ] Re-run `commentsAfterSpread.ts` and confirm the failure advances past
+- [x] Normalize arrow function rest parameter names for resolver parameter binding.
+- [x] Add focused coverage for `(.../* comment */args) => args.length`.
+- [x] Re-run `commentsAfterSpread.ts` and confirm the failure advances past
       `UnresolvedName: args`.
 
 Out of scope:
@@ -111,11 +111,11 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] `(.../* comment */args) => args.length` and `(first, .../* comment */rest) => rest.length` resolve their rest parameters.
-- [ ] `contextualTupleTypeParameterReadonly.ts` no longer reports
+- [x] `(.../* comment */args) => args.length` and `(first, .../* comment */rest) => rest.length` resolve their rest parameters.
+- [x] `contextualTupleTypeParameterReadonly.ts` no longer reports
   `UnresolvedName` for `args` inside `eacher((...args) => { ... })`.
-- [ ] Existing non-rest arrow parameter tests still pass.
-- [ ] `python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/commentsAfterSpread.ts` no longer reports `UnresolvedName: unresolved name: \`args\``.
+- [x] Existing non-rest arrow parameter tests still pass.
+- [x] `python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/commentsAfterSpread.ts` no longer reports `UnresolvedName: unresolved name: \`args\``.
 
 ## Validation
 
@@ -142,15 +142,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 

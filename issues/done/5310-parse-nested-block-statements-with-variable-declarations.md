@@ -80,9 +80,9 @@ the current parser failure.
 
 In scope:
 
-- [ ] Dispatch `LeftBrace` as a nested block statement inside `statement()`.
-- [ ] Preserve variable declarations inside nested blocks.
-- [ ] Add focused parser coverage for `{ const y = 0; { var y = 0; } }` and an inner `const` declaration.
+- [x] Dispatch `LeftBrace` as a nested block statement inside `statement()`.
+- [x] Preserve variable declarations inside nested blocks.
+- [x] Add focused parser coverage for `{ const y = 0; { var y = 0; } }` and an inner `const` declaration.
 
 Out of scope:
 
@@ -103,10 +103,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] `constDeclarationShadowedByVarDeclaration.ts` no longer reports `expected Comma, got Some(Ident("y"))`.
-- [ ] `constDeclarations-scopes.ts` no longer reports `expected Comma, got Some(Ident("c"))`.
-- [ ] A focused parser test accepts `{ const y = 0; { var y = 0; } }`.
-- [ ] Existing top-level block flattening behavior remains unchanged.
+- [x] `constDeclarationShadowedByVarDeclaration.ts` no longer reports `expected Comma, got Some(Ident("y"))`.
+- [x] `constDeclarations-scopes.ts` no longer reports `expected Comma, got Some(Ident("c"))`.
+- [x] A focused parser test accepts `{ const y = 0; { var y = 0; } }`.
+- [x] Existing top-level block flattening behavior remains unchanged.
 
 ## Validation
 
@@ -132,15 +132,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 

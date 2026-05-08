@@ -110,7 +110,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] superseded by `issues/open/5195-support-callable-interface-typed-local-calls.md`
+- [x] superseded by `issues/done/5195-support-callable-interface-typed-local-calls.md`
 
 ## Notes
 
@@ -120,7 +120,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- Superseded by `issues/open/5195-support-callable-interface-typed-local-calls.md`.
+- Superseded by `issues/done/5195-support-callable-interface-typed-local-calls.md`.
   The first current blocker is a call to a local `var use: Overload;` whose
   interface type has call signatures.
 
@@ -160,7 +160,7 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- superseded by `issues/open/5195-support-callable-interface-typed-local-calls.md`
+- superseded by `issues/done/5195-support-callable-interface-typed-local-calls.md`
 
 Validation result:
 

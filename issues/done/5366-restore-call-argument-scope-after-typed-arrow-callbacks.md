@@ -68,10 +68,10 @@ The resolver restores the caller/module scope after resolving typed arrow callba
 
 In scope:
 
-- [ ] Preserve or restore the enclosing call-argument scope after resolving arrow function arguments.
-- [ ] Resolve top-level const arguments following typed arrow callbacks.
-- [ ] Add a focused resolver regression for `const DEPS = {}; test((x: typeof DEPS) => ({ fn() { return x; } }), DEPS);`.
-- [ ] Re-run the representative reference path and split any next blocker separately if outside this resolver-scope issue.
+- [x] Preserve or restore the enclosing call-argument scope after resolving arrow function arguments.
+- [x] Resolve top-level const arguments following typed arrow callbacks.
+- [x] Add a focused resolver regression for `const DEPS = {}; test((x: typeof DEPS) => ({ fn() { return x; } }), DEPS);`.
+- [x] Re-run the representative reference path and split any next blocker separately if outside this resolver-scope issue.
 
 Out of scope:
 
@@ -91,10 +91,10 @@ Do not touch: backend/runtime lowering.
 
 ## Acceptance criteria
 
-- [ ] `contextSensitiveReturnTypeInference.ts` no longer reports `UnresolvedName` for the final `DEPS` argument in the typed-arrow call.
-- [ ] A focused resolver test covers a typed arrow callback followed by a const argument from the enclosing scope.
-- [ ] Existing arrow callback parameter resolution tests still pass.
-- [ ] Any next blocker from the reference path is recorded here or split to a follow-up.
+- [x] `contextSensitiveReturnTypeInference.ts` no longer reports `UnresolvedName` for the final `DEPS` argument in the typed-arrow call.
+- [x] A focused resolver test covers a typed arrow callback followed by a const argument from the enclosing scope.
+- [x] Existing arrow callback parameter resolution tests still pass.
+- [x] Any next blocker from the reference path is recorded here or split to a follow-up.
 
 ## Validation
 
@@ -120,21 +120,21 @@ python scripts/manager.py reference-coverage tsc --path-filter reference/typescr
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 
 Split from generated bucket `issues/open/1486-implement-contextSensitiveReturnTypeInference.md` on 2026-05-07.
 
-Related but distinct issue: `issues/open/5348-resolve-const-declarations-before-use.md` owns use-before-declaration and same-for-header const predeclaration. This issue's `DEPS` binding is declared before the call and visible in triage.
+Related but distinct issue: `issues/done/5348-resolve-const-declarations-before-use.md` owns use-before-declaration and same-for-header const predeclaration. This issue's `DEPS` binding is declared before the call and visible in triage.
 
 ## Completion evidence
 

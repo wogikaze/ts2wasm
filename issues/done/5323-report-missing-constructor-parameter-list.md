@@ -56,9 +56,9 @@ list/body instead of a generic `expected LeftParen` parser failure.
 
 In scope:
 
-- [ ] Detect `constructor }` while parsing class members.
-- [ ] Emit a source-spanned diagnostic at `constructor` or the following `}`.
-- [ ] Add focused parser coverage for `class C { field = 1; constructor }`.
+- [x] Detect `constructor }` while parsing class members.
+- [x] Emit a source-spanned diagnostic at `constructor` or the following `}`.
+- [x] Add focused parser coverage for `class C { field = 1; constructor }`.
 
 Out of scope:
 
@@ -82,10 +82,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] `classFieldsBrokenConstructorEmitNoCrash1.ts` no longer reports generic
+- [x] `classFieldsBrokenConstructorEmitNoCrash1.ts` no longer reports generic
   `expected LeftParen, got Some(RightBrace)`.
-- [ ] The new diagnostic names the missing constructor parameter list/body.
-- [ ] Valid `constructor() {}` parsing remains unchanged.
+- [x] The new diagnostic names the missing constructor parameter list/body.
+- [x] Valid `constructor() {}` parsing remains unchanged.
 
 ## Validation
 
@@ -112,15 +112,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 

@@ -124,7 +124,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] created: `issues/open/5325-fix-multifile-class-constructor-funcid-invariant.md`
+- [x] created: `issues/done/5325-fix-multifile-class-constructor-funcid-invariant.md`
 
 ## Notes
 
@@ -203,7 +203,7 @@ triage: InvariantViolation ClassDecl constructor FuncId 0 is out of range
 
 Split result:
 
-- `issues/open/5325-fix-multifile-class-constructor-funcid-invariant.md`
+- `issues/done/5325-fix-multifile-class-constructor-funcid-invariant.md`
 
 ### Smart triage: Build pass: classMemberInitializerWithLamdaScoping5
 
@@ -229,7 +229,7 @@ unsupported=0
 
 Commits:
 
-- Split to `issues/open/5325-fix-multifile-class-constructor-funcid-invariant.md`; see local commit for this issue cleanup.
+- Split to `issues/done/5325-fix-multifile-class-constructor-funcid-invariant.md`; see local commit for this issue cleanup.
 
 Validation result:
 

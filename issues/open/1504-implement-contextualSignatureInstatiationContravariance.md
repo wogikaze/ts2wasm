@@ -110,7 +110,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] superseded by `issues/open/5344-resolve-ambient-var-assignment-targets.md`
+- [x] superseded by `issues/done/5344-resolve-ambient-var-assignment-targets.md`
 
 ## Notes
 
@@ -126,7 +126,7 @@ Follow-up issues:
 
 Fresh triage on 2026-05-07 shows this generated blocked bucket is now the same
 ambient `declare var` assignment-target name-resolution boundary owned by
-`issues/open/5344-resolve-ambient-var-assignment-targets.md`.
+`issues/done/5344-resolve-ambient-var-assignment-targets.md`.
 
 Current diagnostic:
 

@@ -18,7 +18,7 @@ updated: 2026-05-07
 ## Summary
 
 Closed by splitting the current `constructor(static)` parser failure to
-`issues/open/5362-report-strict-mode-static-constructor-parameter-name.md`.
+`issues/done/5362-report-strict-mode-static-constructor-parameter-name.md`.
 
 Fresh triage shows the current blocker is not broad parser-syntax work. It is a
 focused strict-mode reserved-word parameter-name diagnostic for `static` inside
@@ -147,7 +147,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] created: `issues/open/5362-report-strict-mode-static-constructor-parameter-name.md`
+- [x] created: `issues/done/5362-report-strict-mode-static-constructor-parameter-name.md`
 
 ## Notes
 
@@ -157,7 +157,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/open/5355-report-invalid-constructor-parameter-modifiers.md` is
+- `issues/done/5355-report-invalid-constructor-parameter-modifiers.md` is
   related but not exact: it owns `static a`, `public static a`, and `export a`
   invalid parameter modifiers. This issue owns `static` as the parameter name in
   a class constructor.

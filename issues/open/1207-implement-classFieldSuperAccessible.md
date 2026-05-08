@@ -114,7 +114,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] created: `issues/open/5318-support-class-expression-class-heritage.md`
+- [x] created: `issues/done/5318-support-class-expression-class-heritage.md`
 
 ## Notes
 

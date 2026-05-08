@@ -114,7 +114,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] created: `issues/open/5322-support-callable-class-auto-accessor-fields.md`
+- [x] created: `issues/done/5322-support-callable-class-auto-accessor-fields.md`
 
 ## Notes
 

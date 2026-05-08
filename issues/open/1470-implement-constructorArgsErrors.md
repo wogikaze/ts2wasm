@@ -18,7 +18,7 @@ updated: 2026-05-07
 ## Summary
 
 Closed by splitting the current concrete blocker to
-`issues/open/5355-report-invalid-constructor-parameter-modifiers.md`.
+`issues/done/5355-report-invalid-constructor-parameter-modifiers.md`.
 
 Fresh coverage shows the group now contains two stale build-pass files and three
 shared parser/diagnostic failures for invalid constructor parameter modifiers.
@@ -152,7 +152,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] created: `issues/open/5355-report-invalid-constructor-parameter-modifiers.md`
+- [x] created: `issues/done/5355-report-invalid-constructor-parameter-modifiers.md`
 
 ## Notes
 

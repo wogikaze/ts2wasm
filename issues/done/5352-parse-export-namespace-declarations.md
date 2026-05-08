@@ -84,12 +84,12 @@ should no longer stop at generic issue-055 on the leading `export` keyword.
 
 In scope:
 
-- [ ] Recognize top-level `export namespace Name { ... }` before the generic
+- [x] Recognize top-level `export namespace Name { ... }` before the generic
       unsupported static export branch.
-- [ ] Preserve the namespace name and declaration span for later diagnostics.
-- [ ] Add focused parser/frontend coverage for
+- [x] Preserve the namespace name and declaration span for later diagnostics.
+- [x] Add focused parser/frontend coverage for
       `export namespace ConstEnumOnlyModule {}`.
-- [ ] Re-run the representative triage and record the next blocker if it
+- [x] Re-run the representative triage and record the next blocker if it
       advances beyond the exported namespace boundary.
 
 Out of scope:
@@ -120,15 +120,15 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] `constEnumNamespaceReferenceCausesNoImport2.ts` no longer reports
+- [x] `constEnumNamespaceReferenceCausesNoImport2.ts` no longer reports
       generic `issue-055: unsupported static export` at the leading
       `export namespace ConstEnumOnlyModule`.
-- [ ] A focused parser or CLI AST test proves
+- [x] A focused parser or CLI AST test proves
       `export namespace ConstEnumOnlyModule {}` is recognized or reported with
       a namespace-specific diagnostic.
-- [ ] Existing unsupported static export diagnostics still apply to unrelated
+- [x] Existing unsupported static export diagnostics still apply to unrelated
       export forms.
-- [ ] Any next blocker in
+- [x] Any next blocker in
       `constEnumNamespaceReferenceCausesNoImport2.ts` is recorded here or split
       to a follow-up issue if outside this scope.
 
@@ -157,15 +157,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 
@@ -178,8 +178,8 @@ Related but not duplicates:
   `export as namespace Name;`, not namespace declarations with bodies.
 - `issues/done/5277-parse-export-enum-declarations-to-enum-boundary.md` covers
   `export enum`, not `export namespace`.
-- `issues/open/5287-bind-namespace-declarations-for-qualified-value-access.md`
-  and `issues/open/5294-resolve-sibling-namespaces-in-nested-namespace-scopes.md`
+- `issues/done/5287-bind-namespace-declarations-for-qualified-value-access.md`
+  and `issues/done/5294-resolve-sibling-namespaces-in-nested-namespace-scopes.md`
   cover namespace binding/resolution after namespace declarations parse.
 
 ## Completion evidence

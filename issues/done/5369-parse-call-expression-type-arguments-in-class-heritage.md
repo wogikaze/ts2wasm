@@ -81,8 +81,8 @@ advance to the next parser, resolver, or semantic diagnostic.
 
 In scope:
 
-- [ ] Parse `class C extends factory()<T>() {}` style heritage expressions.
-- [ ] Add a focused parser regression for `extends Tag("Foo")<Foo, Shape>()`.
+- [x] Parse `class C extends factory()<T>() {}` style heritage expressions.
+- [x] Add a focused parser regression for `extends Tag("Foo")<Foo, Shape>()`.
 
 Out of scope:
 
@@ -106,9 +106,9 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] `class Foo extends Tag("Foo")<Foo, Shape>() {}` parses without `expected LeftBrace, got Some(Comma)`.
-- [ ] `contextualParamTypeVsNestedReturnTypeInference2.ts` advances past the current class heritage parser diagnostic.
-- [ ] Existing `extends Base` and `extends Base<T>` class heritage tests continue to pass.
+- [x] `class Foo extends Tag("Foo")<Foo, Shape>() {}` parses without `expected LeftBrace, got Some(Comma)`.
+- [x] `contextualParamTypeVsNestedReturnTypeInference2.ts` advances past the current class heritage parser diagnostic.
+- [x] Existing `extends Base` and `extends Base<T>` class heritage tests continue to pass.
 
 ## Validation
 
@@ -135,15 +135,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 

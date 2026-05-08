@@ -63,10 +63,10 @@ advances the representative file past the generic simple-inheritance rejection.
 
 In scope:
 
-- [ ] Accept `extends class Expr {}` as a class heritage constructor source.
-- [ ] Preserve the nested class expression name for diagnostics or generated
+- [x] Accept `extends class Expr {}` as a class heritage constructor source.
+- [x] Preserve the nested class expression name for diagnostics or generated
   constructor metadata.
-- [ ] Add focused coverage for `class A extends class Expr {} {}`.
+- [x] Add focused coverage for `class A extends class Expr {} {}`.
 
 Out of scope:
 
@@ -92,11 +92,11 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] `classFieldSuperAccessible.ts` no longer reports the generic
+- [x] `classFieldSuperAccessible.ts` no longer reports the generic
   `only simple inheritance (extends ClassName) is supported` diagnostic for
   `extends class Expr {}`.
-- [ ] A focused regression covers direct class-expression heritage.
-- [ ] If later `super` runtime behavior still blocks the file, the next
+- [x] A focused regression covers direct class-expression heritage.
+- [x] If later `super` runtime behavior still blocks the file, the next
   diagnostic is recorded in a follow-up issue.
 
 ## Validation
@@ -124,15 +124,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 

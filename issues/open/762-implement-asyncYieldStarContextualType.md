@@ -20,7 +20,7 @@ status: done
 ## Summary
 
 Closed this generated bucket by splitting the current concrete blocker to
-`issues/open/5345-parse-generic-ambient-const-type-annotations.md`.
+`issues/done/5345-parse-generic-ambient-const-type-annotations.md`.
 
 ## Problem
 
@@ -49,7 +49,7 @@ env TS2WASM_BINARY=/tmp/ts2wasm-issue-blockers-target/debug/ts2wasm python scrip
 ## Desired final state
 
 This generated bucket is closed. Implement from
-`issues/open/5345-parse-generic-ambient-const-type-annotations.md`.
+`issues/done/5345-parse-generic-ambient-const-type-annotations.md`.
 
 ## Scope
 
@@ -118,7 +118,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] `issues/open/5345-parse-generic-ambient-const-type-annotations.md`
+- [x] `issues/done/5345-parse-generic-ambient-const-type-annotations.md`
 
 ## Notes
 
@@ -128,7 +128,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-Split to `issues/open/5345-parse-generic-ambient-const-type-annotations.md`.
+Split to `issues/done/5345-parse-generic-ambient-const-type-annotations.md`.
 
 No exact existing owner was found. Related no-match issues:
 

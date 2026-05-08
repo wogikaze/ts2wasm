@@ -76,9 +76,9 @@ later TS2558 type-argument diagnostic is recorded separately if still uncovered.
 
 In scope:
 
-- [ ] Preserve enough typed instance field metadata to detect uninitialized fields in the representative class.
-- [ ] Report source-spanned diagnostics at fields `x` and `y`.
-- [ ] Add focused parser/compiler coverage for `class D<T, U> { x: T; y: U }`.
+- [x] Preserve enough typed instance field metadata to detect uninitialized fields in the representative class.
+- [x] Report source-spanned diagnostics at fields `x` and `y`.
+- [x] Add focused parser/compiler coverage for `class D<T, U> { x: T; y: U }`.
 
 Out of scope:
 
@@ -101,9 +101,9 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] `constructorInvocationWithTooFewTypeArgs.ts` no longer reports `BuildPass`; it reports a source-spanned diagnostic for `x` or `y`.
-- [ ] A focused test covers `class D<T, U> { x: T; y: U }`.
-- [ ] `new D<number>()` remains parsed so a later TS2558 issue can be triaged after TS2564 advances.
+- [x] `constructorInvocationWithTooFewTypeArgs.ts` no longer reports `BuildPass`; it reports a source-spanned diagnostic for `x` or `y`.
+- [x] A focused test covers `class D<T, U> { x: T; y: U }`.
+- [x] `new D<number>()` remains parsed so a later TS2558 issue can be triaged after TS2564 advances.
 
 ## Validation
 
@@ -129,15 +129,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] create a TS2558 type-argument-count issue if that remains after TS2564 advances.
+- [x] create a TS2558 type-argument-count issue if that remains after TS2564 advances.
 
 ## Notes
 

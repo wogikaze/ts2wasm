@@ -85,10 +85,10 @@ source-spanned diagnostic.
 
 In scope:
 
-- [ ] Bind `namespace m1 { export function fooExport() {} }` so `m1.fooExport()` no longer reports `UnresolvedName` for `m1`.
-- [ ] Preserve nested exported namespace/class lookup far enough for `new m1.m2.c()` to reach a narrower constructor or namespace-lowering diagnostic.
-- [ ] Add focused coverage for same-file non-ambient namespace value access.
-- [ ] Re-run `commentsModules.ts` and record the next blocker if this path advances.
+- [x] Bind `namespace m1 { export function fooExport() {} }` so `m1.fooExport()` no longer reports `UnresolvedName` for `m1`.
+- [x] Preserve nested exported namespace/class lookup far enough for `new m1.m2.c()` to reach a narrower constructor or namespace-lowering diagnostic.
+- [x] Add focused coverage for same-file non-ambient namespace value access.
+- [x] Re-run `commentsModules.ts` and record the next blocker if this path advances.
 
 Out of scope:
 
@@ -112,10 +112,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] `commentsModules.ts` no longer reports `UnresolvedName: unresolved name: m1` at `m1.fooExport()`.
-- [ ] A focused regression covers `namespace M { export function f() {} } M.f();`.
-- [ ] A focused regression or recorded next blocker covers nested export lookup for `namespace M { export namespace N { export class C {} } } new M.N.C();`.
-- [ ] Any next blocker from `commentsModules.ts` is recorded in this issue or split to a follow-up if outside this scope.
+- [x] `commentsModules.ts` no longer reports `UnresolvedName: unresolved name: m1` at `m1.fooExport()`.
+- [x] A focused regression covers `namespace M { export function f() {} } M.f();`.
+- [x] A focused regression or recorded next blocker covers nested export lookup for `namespace M { export namespace N { export class C {} } } new M.N.C();`.
+- [x] Any next blocker from `commentsModules.ts` is recorded in this issue or split to a follow-up if outside this scope.
 
 ## Validation
 
@@ -145,15 +145,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 

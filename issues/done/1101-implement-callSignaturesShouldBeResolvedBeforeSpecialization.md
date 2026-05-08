@@ -106,7 +106,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] `issues/open/5195-support-callable-interface-typed-local-calls.md`
+- [x] `issues/done/5195-support-callable-interface-typed-local-calls.md`
 
 ## Notes
 
@@ -162,7 +162,7 @@ Evidence:
 - TypeScript oracle specializes `I1<string>` and reports TS2345 for the boolean
   argument path.
 - Existing child issue
-  `issues/open/5195-support-callable-interface-typed-local-calls.md` owns the
+  `issues/done/5195-support-callable-interface-typed-local-calls.md` owns the
   same generic callable interface local call boundary and has been expanded
   with this reference path.
 

@@ -72,9 +72,9 @@ diagnostic boundary, and the `for` initializer case resolves `c6`.
 
 In scope:
 
-- [ ] Predeclare same-scope lexical `const` names before resolving expression reads.
-- [ ] Register all declarators in a multi-declarator `const` list before resolving the `for` condition.
-- [ ] Preserve duplicate lexical binding diagnostics.
+- [x] Predeclare same-scope lexical `const` names before resolving expression reads.
+- [x] Register all declarators in a multi-declarator `const` list before resolving the `for` condition.
+- [x] Preserve duplicate lexical binding diagnostics.
 
 Out of scope:
 
@@ -96,10 +96,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] `constDeclarations-useBeforeDefinition2.ts` no longer reports generic `UnresolvedName` for `c`.
-- [ ] `constDeclarations.ts` no longer reports generic `UnresolvedName` for `c6`.
-- [ ] A focused resolver test covers `c; const c = 0;`.
-- [ ] A focused resolver test covers `for (const a = 0, b = 0; a < b;) {}`.
+- [x] `constDeclarations-useBeforeDefinition2.ts` no longer reports generic `UnresolvedName` for `c`.
+- [x] `constDeclarations.ts` no longer reports generic `UnresolvedName` for `c6`.
+- [x] A focused resolver test covers `c; const c = 0;`.
+- [x] A focused resolver test covers `for (const a = 0, b = 0; a < b;) {}`.
 
 ## Validation
 
@@ -127,15 +127,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 
