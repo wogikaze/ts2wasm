@@ -18,10 +18,21 @@ REQUIRED = {
     "done": ["id", "title", "priority", "type", "area", "status", "created", "updated", "closed", "acceptance", "evidence"],
 }
 
+VALID_PRIORITIES = {"P0", "P1", "P2", "P3"}
+VALID_TYPES = {"feature", "runtime-builtin", "diagnostic", "infra", "design", "docs", "bug", "test"}
+VALID_AREAS = {"frontend", "ir", "runtime", "backend", "scripts", "docs", "shared", "cli"}
+
+# Words that suggest an item is roadmap-scale (too large for a single session)
+ROADMAP_WORDS = {"all", "complete", "full", "entire", "every", "comprehensive", "11 types", "13 traps"}
+
 
 def fail(msg: str) -> None:
     print(f"tracking: invalid: {msg}", file=sys.stderr)
     sys.exit(1)
+
+
+def warn(msg: str) -> None:
+    print(f"tracking: warning: {msg}", file=sys.stderr)
 
 
 def main() -> None:
@@ -44,6 +55,7 @@ def main() -> None:
     active_limit = int(meta.get("active_limit", 1))
 
     ids: set[int] = set()
+    has_warnings = False
 
     for section in SECTIONS:
         items = data.get(section, [])
@@ -73,12 +85,48 @@ def main() -> None:
             if item.get("status") != section:
                 fail(f"id {item_id}: status must be '{section}'")
 
+            # Priority validation
+            priority = item.get("priority")
+            if priority not in VALID_PRIORITIES:
+                fail(f"id {item_id}: invalid priority '{priority}'; must be P0/P1/P2/P3")
+
+            # Type validation
+            item_type = item.get("type")
+            if item_type not in VALID_TYPES:
+                fail(f"id {item_id}: invalid type '{item_type}'")
+
+            # Area validation
+            area = item.get("area")
+            if area not in VALID_AREAS:
+                fail(f"id {item_id}: invalid area '{area}'")
+
+            # Acceptance must be non-empty list
             acceptance = item.get("acceptance")
             if not isinstance(acceptance, list) or not acceptance:
                 fail(f"id {item_id}: acceptance must be a non-empty list")
 
+            # Warn on observation-only acceptance (grep -c without threshold)
+            for cmd in acceptance:
+                if "grep -c" in cmd and "--max" not in cmd and "--min" not in cmd:
+                    warn(f"id {item_id}: acceptance uses grep -c without threshold — observation only")
+
+            # Warn on roadmap-scale words in title
+            title_lower = item.get("title", "").lower()
+            for word in ROADMAP_WORDS:
+                if word in title_lower:
+                    warn(f"id {item_id}: title contains roadmap-scale word '{word}'")
+                    break
+
+            # ready check for active items
+            if section == "active":
+                if not item.get("ready", False):
+                    fail(f"id {item_id}: active item must have ready: true")
+
             if section == "done":
                 evidence = item.get("evidence")
+                if evidence is None:
+                    fail(f"id {item_id}: evidence is required for done items")
+
                 if not isinstance(evidence, dict):
                     fail(f"id {item_id}: evidence must be a mapping")
 
@@ -97,12 +145,15 @@ def main() -> None:
                     if cmd.get("exit") != 0:
                         fail(f"id {item_id}: evidence command did not exit 0")
 
-    print(
-        f"tracking: valid "
-        f"({len(data.get('open', []) or [])} open, "
-        f"{len(data.get('active', []) or [])} active, "
-        f"{len(data.get('done', []) or [])} done)"
-    )
+    # Summary
+    open_count = len(data.get("open", []) or [])
+    active_count = len(data.get("active", []) or [])
+    done_count = len(data.get("done", []) or [])
+
+    if has_warnings:
+        print(f"tracking: valid with warnings ({open_count} open, {active_count} active, {done_count} done)")
+    else:
+        print(f"tracking: valid ({open_count} open, {active_count} active, {done_count} done)")
 
 
 if __name__ == "__main__":
