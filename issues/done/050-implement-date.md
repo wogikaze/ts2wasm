@@ -51,11 +51,11 @@ That deterministic epoch fixture passes today, so it is not the blocker. The par
 
 In scope:
 
-- [ ] Implement Date constructor
+- [x] Implement Date constructor
 - [x] Implement Date.now()
-- [ ] Implement Date.prototype.getTime
-- [ ] Implement Date.prototype.toString
-- [ ] Add fixtures for Date behavior
+- [x] Implement Date.prototype.getTime
+- [x] Implement Date.prototype.toString
+- [x] Add fixtures for Date behavior
 
 Out of scope:
 
@@ -74,9 +74,9 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] Deterministic `new Date(<epoch-ms integer>)` fixtures still match Node/iwasm stdout for `fixtures/builtins-and-io/date-epoch-get-time.ts` and `fixtures/builtins-and-io/date-epoch-value-of.ts`.
-- [ ] Live-time `Date.now()` and no-argument `new Date()` fixtures still emit the audited `wasi.clock.realtime` manifest reason and `wasi_snapshot_preview1.clock_time_get` import.
-- [ ] Issue 5137 closes with a concrete remaining-Date API issue split or evidence that no open Date child work remains.
+- [x] Deterministic `new Date(<epoch-ms integer>)` fixtures still match Node/iwasm stdout for `fixtures/builtins-and-io/date-epoch-get-time.ts` and `fixtures/builtins-and-io/date-epoch-value-of.ts`.
+- [x] Live-time `Date.now()` and no-argument `new Date()` fixtures still emit the audited `wasi.clock.realtime` manifest reason and `wasi_snapshot_preview1.clock_time_get` import.
+- [x] Issue 5137 closes with a concrete remaining-Date API issue split or evidence that no open Date child work remains.
 
 ## Validation
 
@@ -102,15 +102,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 

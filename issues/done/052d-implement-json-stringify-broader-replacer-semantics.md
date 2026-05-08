@@ -31,10 +31,10 @@ Progress note (2026-04-29): the static array property-list slice now supports br
 
 In scope:
 
-- [ ] Function replacer callbacks are covered by closed child issue `052g`.
-- [ ] Expand static array replacer property lists beyond literal string/number entries.
-- [ ] Preserve property-list ordering and duplicate suppression for supported static keys.
-- [ ] Add Node differential or diagnostic coverage for every newly supported or intentionally unsupported form in the progress slice.
+- [x] Function replacer callbacks are covered by closed child issue `052g`.
+- [x] Expand static array replacer property lists beyond literal string/number entries.
+- [x] Preserve property-list ordering and duplicate suppression for supported static keys.
+- [x] Add Node differential or diagnostic coverage for every newly supported or intentionally unsupported form in the progress slice.
 
 Out of scope:
 
@@ -58,10 +58,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] Function replacer fixtures match Node for the currently supported runtime subset.
-- [ ] Array replacer contents beyond string/numeric literals are implemented or diagnosed with precise coverage.
-- [ ] Existing string/numeric-literal replacer fixtures still match Node.
-- [ ] Unsupported diagnostics do not mask forms that this issue claims to support.
+- [x] Function replacer fixtures match Node for the currently supported runtime subset.
+- [x] Array replacer contents beyond string/numeric literals are implemented or diagnosed with precise coverage.
+- [x] Existing string/numeric-literal replacer fixtures still match Node.
+- [x] Unsupported diagnostics do not mask forms that this issue claims to support.
 
 ## Validation
 
@@ -90,16 +90,16 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] update `current-state.md` if the supported JSON subset changes
+- [x] update `current-state.md` if the supported JSON subset changes
 
 Follow-up issues:
 
-- [ ] created and closed: `issues/done/052g-implement-json-stringify-function-replacer-callbacks.md`
-- [ ] update `issues/open/052-implement-json.md`
+- [x] created and closed: `issues/done/052g-implement-json-stringify-function-replacer-callbacks.md`
+- [x] update `issues/open/052-implement-json.md`
 
 ## Progress evidence
 

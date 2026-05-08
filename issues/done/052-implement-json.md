@@ -77,9 +77,9 @@ The validated callback/static-property-list subset has pass evidence in closed c
 
 In scope:
 
-- [ ] Implement full JSON.parse through child issues.
-- [ ] Implement full JSON.stringify through child issues.
-- [ ] Add fixtures for each completed JSON behavior.
+- [x] Implement full JSON.parse through child issues.
+- [x] Implement full JSON.stringify through child issues.
+- [x] Add fixtures for each completed JSON behavior.
 
 Out of scope:
 
@@ -99,10 +99,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] Child issue 052d is closed or superseded by narrower follow-ups.
-- [ ] `JSON.parse` final-state coverage names the exact fixtures and stdout/stderr evidence that define the supported contract.
-- [ ] `JSON.stringify` final-state coverage names the exact replacer, `space`, and object-coercion fixtures or issue-linked diagnostics that define the supported contract.
-- [ ] Existing JSON fixtures under `fixtures/builtins-and-io/` still pass under the JSON Node/iwasm differential nextest filters.
+- [x] Child issue 052d is closed or superseded by narrower follow-ups.
+- [x] `JSON.parse` final-state coverage names the exact fixtures and stdout/stderr evidence that define the supported contract.
+- [x] `JSON.stringify` final-state coverage names the exact replacer, `space`, and object-coercion fixtures or issue-linked diagnostics that define the supported contract.
+- [x] Existing JSON fixtures under `fixtures/builtins-and-io/` still pass under the JSON Node/iwasm differential nextest filters.
 
 ## Validation
 
@@ -128,15 +128,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 
