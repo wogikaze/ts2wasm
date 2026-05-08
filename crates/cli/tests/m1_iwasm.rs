@@ -131,3 +131,47 @@ fn exit_code_with_normal_termination() {
     );
     assert_eq!(String::from_utf8_lossy(&run.output.stdout), "ok\n");
 }
+
+#[test]
+fn binary_mvp_const_export() {
+    let temp = std::env::temp_dir().join(format!("ts2wasm-m1-binary-mvp-{}", std::process::id()));
+    fs::create_dir_all(&temp).unwrap();
+
+    let input = temp.join("const_export.ts");
+    let output = temp.join("const_export.wasm");
+    fs::write(
+        &input,
+        "export const x: number = 42;\nconsole.log(x);\n",
+    )
+    .unwrap();
+
+    let build = Command::new(env!("CARGO_BIN_EXE_ts2wasm"))
+        .arg("build")
+        .arg(&input)
+        .arg("-o")
+        .arg(&output)
+        .output()
+        .unwrap();
+
+    assert!(
+        build.status.success(),
+        "binary_mvp const export build failed\nstdout:\n{}\nstderr:\n{}",
+        String::from_utf8_lossy(&build.stdout),
+        String::from_utf8_lossy(&build.stderr)
+    );
+
+    let run = run_iwasm_with_timeout(Command::new("iwasm").arg(&output)).unwrap();
+    assert!(
+        !run.timed_out,
+        "iwasm timed out\nstdout:\n{}\nstderr:\n{}",
+        String::from_utf8_lossy(&run.output.stdout),
+        String::from_utf8_lossy(&run.output.stderr)
+    );
+    assert!(
+        run.output.status.success(),
+        "iwasm failed\nstdout:\n{}\nstderr:\n{}",
+        String::from_utf8_lossy(&run.output.stdout),
+        String::from_utf8_lossy(&run.output.stderr)
+    );
+    assert_eq!(String::from_utf8_lossy(&run.output.stdout), "42\n");
+}
