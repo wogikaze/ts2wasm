@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 27 | 14 | 13 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4612 | 3217 | 1395 |
+| frontend | 4612 | 3216 | 1396 |
 | harness | 1 | 0 | 1 |
 | ir | 99 | 71 | 28 |
 | issues | 4 | 0 | 4 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5314 | 3526 | 1788 |
+| total | 5314 | 3525 | 1789 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -2386,7 +2386,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 3302 | Implement Modulealiasasfunctionargument | spike | frontend/syntax | class: blocked | Implement Modulealiasasfunctionargument |
 | 3303 | Implement Modulealiasinterface | spike | frontend/syntax | class: blocked | Implement Modulealiasinterface |
 | 3304 | Implement Moduleandinterfacesharingname | spike | frontend/syntax | class: blocked | Implement Moduleandinterfacesharingname |
-| 3567 | Implement Nosymbolformergecrash | spike | frontend/syntax | class: blocked | Implement Nosymbolformergecrash |
 | 3568 | Implement Notypeargumentonreturntype | spike | frontend/syntax | class: blocked | Implement Notypeargumentonreturntype |
 | 3569 | Implement Nouncheckedindexaccess | spike | frontend/syntax | class: triage-needed | Implement Nouncheckedindexaccess |
 | 3570 | Implement Nouncheckedindexedaccesscompoundassignments | spike | frontend/syntax | class: blocked | Implement Nouncheckedindexedaccesscompoundassignments |
@@ -5274,6 +5273,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 3564 | Implement Noparameterreassignmentiifeannotated | spike | frontend/resolver | see `issues/done/3564-implement-noParameterReassignmentIIFEAnnotated.md` |
 | 3565 | Implement Noparameterreassignmentjsiife | spike | frontend/resolver | see `issues/done/3565-implement-noParameterReassignmentJSIIFE.md` |
 | 3566 | Implement Nosubtypereduction | spike | frontend/syntax | see `issues/done/3566-implement-noSubtypeReduction.md` |
+| 3567 | Implement Nosymbolformergecrash | spike | frontend/syntax | see `issues/done/3567-implement-noSymbolForMergeCrash.md` |
 | 3690 | Implement Optionaltupleelementsandundefined | spike | reference/triage | see `issues/done/3690-implement-optionalTupleElementsAndUndefined.md` |
 | 3996 | Implement Compiler (dup) | spike | frontend/syntax | see `issues/done/3996-implement-reference-typescript-tests-cases-compiler.md` |
 | 4210 | Implement Splicetuples | spike | frontend/resolver | see `issues/done/4210-implement-spliceTuples.md` |
