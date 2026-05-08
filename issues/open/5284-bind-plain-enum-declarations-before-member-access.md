@@ -173,6 +173,9 @@ Related but not duplicates:
   enum binding boundary for `enum MyEmusEnum { emu }` followed by
   `MyEmusEnum[0]`; detailed indexing follow-up should be re-triaged after this
   enum binding issue advances.
+- `issues/done/3543-implement-noImplicitAnyIndexingSuppressed.md` reaches the
+  same plain enum binding boundary in the suppressed variant before the fixture
+  can expose its narrower noImplicitAny indexing behavior.
 
 ## Completion evidence
 
