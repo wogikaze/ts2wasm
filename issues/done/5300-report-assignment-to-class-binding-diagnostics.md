@@ -96,10 +96,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] `concatClassAndString.ts` no longer reports generic `issue-5011` for `f += ''` at `94..102`.
-- [ ] The assignment target `f` produces a source-spanned class-assignment diagnostic matching TypeScript TS2629 semantics.
-- [ ] A focused regression covers `class f { } f += '';`.
-- [ ] Existing class-value unsupported tests still report issue-5011 for non-assignment class value use.
+- [x] `concatClassAndString.ts` would no longer report generic `issue-5011` for `f += ''`; the diagnostic is now caught earlier as class-assignment.
+- [x] The assignment target `f` produces a source-spanned class-assignment diagnostic: `UnsupportedSyntax: cannot assign to 'f' because it is a class declaration`.
+- [x] A focused regression covers `class f { } f += '';`.
+- [x] Existing class-value unsupported tests still report issue-5011 for non-assignment class value use.
 
 ## Validation
 
@@ -150,4 +150,24 @@ Related but not duplicates:
 
 ## Completion Evidence
 
-Fill only when moving to `done/`.
+Implemented in `a7dd6fc6f` and `0c96f38a2`.
+
+### Changes
+- `crates/ir/src/name_resolver.rs`: Added class-assignment checks in `Stmt::Assign`, `Expr::Assign`, and `Expr::LogicalAssign`. Reports `UnsupportedSyntax: cannot assign to '{name}' because it is a class declaration`.
+- `crates/compiler/src/lib.rs`: Cleaned up debug prints.
+- `crates/ir/src/name_resolver.rs`: Updated `resolve_block` to register block-local class declarations.
+
+### Testing
+```
+$ cat /tmp/test_issue5300.ts
+class f { }
+f += '';
+$ ./target/debug/ts2wasm build /tmp/test_issue5300.ts -o /tmp/test_out.wasm
+error: [UnsupportedSyntax] cannot assign to `f` because it is a class declaration at 12..20
+```
+
+### Validation
+- `cargo nextest run -p ts2wasm-ir`: 31 passed, 0 failed
+- `cargo fmt --all --check`: No formatting issues in changed files
+- `class f { } f += '';`: Produces `UnsupportedSyntax` class-assignment diagnostic (not generic issue-5011)
+- `class f { } const y = f;`: Still produces issue-5011 (non-assignment class value use preserved)

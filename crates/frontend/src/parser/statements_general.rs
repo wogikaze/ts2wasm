@@ -58,6 +58,13 @@ impl Parser {
             {
                 self.assign_statement()
             }
+            Some(Token::LeftBrace) => {
+                // Parse `{ ... }` as a nested block statement at the statement level.
+                // This handles cases like:
+                //   { var y = 0; }
+                //   if (x) { { const c = false; } }
+                self.block_as_stmt()
+            }
             _ => self.expression_statement(),
         }
     }
