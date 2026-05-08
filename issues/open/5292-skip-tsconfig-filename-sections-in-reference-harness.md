@@ -184,6 +184,12 @@ fresh triage stops in virtual `tsconfig.json` at the first
 package self-name `@this/package` resolution, conditional `exports`
 `default`/`types`, `outDir`/`declarationDir`, or `composite` behavior become
 actionable.
+Also owns `issues/done/3586-implement-nodeNextPackageSelfNameWithOutDirDeclDirCompositeNestedDirs.md`:
+fresh triage stops in virtual `tsconfig.json` at the first
+`compilerOptions` property colon before the later `package.json` section,
+relative export `./src/thing.js`, package self-name `@this/package`,
+conditional `exports` `default`/`types`, `outDir`/`declarationDir`, or
+`composite` nested-directory behavior become actionable.
 
 ## Completion evidence
 
