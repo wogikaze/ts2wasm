@@ -16,9 +16,9 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 7 | 4 | 3 |
 | coverage | 44 | 1 | 43 |
 | docs | 5 | 0 | 5 |
-| frontend | 4562 | 3750 | 812 |
+| frontend | 4561 | 3749 | 812 |
 | harness | 1 | 0 | 1 |
-| ir | 77 | 24 | 53 |
+| ir | 76 | 23 | 53 |
 | issues | 5 | 0 | 5 |
 | parser | 1 | 0 | 1 |
 | reference | 212 | 160 | 52 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 8 | 0 | 8 |
 | wasi | 4 | 0 | 4 |
-| total | 5245 | 4023 | 1222 |
+| total | 5243 | 4021 | 1222 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -168,6 +168,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1140 | Implement Checkmergedglobalumdsymbol | spike | frontend/syntax | done | P1 | 5231 | checkMergedGlobalUMDSymbol has 1 reference failures and needs smart-triage evidence before implementation starts. |
 | 1141 | Implement Checksupercallbeforethisaccess | spike | frontend/syntax | done | P1 | 5232 | checkSuperCallBeforeThisAccess has 1 reference failures and needs smart-triage evidence before implementation starts. |
 | 1142 | Implement Checksupercallbeforethisaccessing Class | spike | frontend/syntax | done | P1 | 5233 | checkSuperCallBeforeThisAccessing-class has 1 reference failures and needs smart-triage evidence before implementatio... |
+| 1143 | Implement Checksupercallbeforethisaccessing Parser Syntax | spike | frontend/syntax | done | P1 | 5163 | checkSuperCallBeforeThisAccessing-parser-syntax has 5 reference failures and needs smart-triage evidence before imple... |
 | 1145 | Implement Checktypepredicateforredundantproperties | spike | frontend/semantics | done | P1 | 5235 | checkTypePredicateForRedundantProperties has 1 reference failures and needs smart-triage evidence before implementati... |
 | 1146 | Implement Checkerinitializationcrash | spike | frontend/syntax | done | P1 |  | checkerInitializationCrash has 1 reference failures and needs smart-triage evidence before implementation starts. |
 | 1147 | Implement Checkingobjectdefinepropertyonfunctionnonexistentpropertynocrash | spike | frontend/syntax | done | P1 | 5236 | checkingObjectDefinePropertyOnFunctionNonexistentPropertyNoCrash has 1 reference failures and needs smart-triage evid... |
@@ -184,6 +185,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1159 | Implement Circularmoduleimports | spike | frontend/syntax | done | P1 |  | `circularModuleImports.ts` no longer has a current compiler build blocker in this runner view. TypeScript still repor... |
 | 1160 | Implement Circularobjectliteralaccessors | spike | frontend/syntax | done | P1 |  | `circularObjectLiteralAccessors.ts` no longer has a current compiler build blocker in this runner view. TypeScript al... |
 | 1161 | Implement Circularoptionalityremoval | spike | frontend/resolver | superseded | P1 |  | `circularOptionalityRemoval` is not a standalone implementation order; the current build failure is an oracle-matchin... |
+| 1163 | Implement Circularreferenceinreturntype Name Resolution | spike | frontend/resolver | done | P1 | 5163 | `circularReferenceInReturnType.ts` is not a standalone name-resolution implementation order in the current runner vie... |
 | 1164 | Implement Circularreferenceinreturntype Parser Syntax | spike | frontend/syntax | done | P1 | 5242 | `circularReferenceInReturnType2.ts` is not a standalone generated parser bucket. The current first blocker is the foc... |
 | 1165 | Implement Circularresolvedsignature | spike | frontend/syntax | done | P1 | 5243 | `circularResolvedSignature.ts` is not a standalone generated import/export bucket in the current runner view. The act... |
 | 1166 | Implement Circulartypeargumentslocalandouternocrash | spike | frontend/syntax | done | P1 |  | the generated blocker is stale in the current runner view. There is no current ts2wasm build blocker for `circularTyp... |
@@ -356,7 +358,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1514 | Implement Contextualtypeonyield | spike | frontend/syntax | done | P1 |  | contextualTypeOnYield has 2 reference failures and needs smart-triage evidence before implementation starts. |
 | 1999 | Report symbol WeakSet.add diagnostics | feature | frontend/resolver | implementation-ready | P1 |  | weak collection symbol negative tests currently fail with |
 | 5156 | Parse generic type arguments in class heritage clauses | feature | frontend/syntax | implementation-ready | P1 |  | `reference/typescript/tests/cases/compiler/baseTypeOrderChecking.ts` fails parsing on `class Class4<T> extends Class3... |
-| 5163 | Lower nested call expression callees | feature | frontend/semantics | implementation-ready | P2 |  | `reference/typescript/tests/cases/compiler/betterErrorForAccidentalCall.ts` currently reports `UnsupportedSyntax: onl... |
 | 5195 | Support callable interface-typed local calls | feature | ir/lowering | implementation-ready | P1 |  | callable interface-typed locals currently lower to `Undefined` values and calls to them stop with `issue-211`. |
 | 5200 | Validate top-level function overload implementations | feature | frontend/resolver | implementation-ready | P1 |  | top-level function overload implementation groups are currently classified as duplicate concrete functions. |
 | 5246 | Report static declarations inside constructor bodies | feature | frontend/parser | implementation-ready | P1 |  | invalid `static` declarations in constructor bodies report generic unsupported expression instead of a spanned parser... |
@@ -366,7 +367,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5255 | Resolve super property accesses | feature | frontend/resolver | implementation-ready | P1 |  | `classExtendingAny.ts` parses class declarations, `extends Err`, and |
 | 5260 | Report class heritage trailing comma | feature | frontend/parser | implementation-ready | P1 |  | `classHeritageWithTrailingSeparator.ts` tokenizes the class heritage |
 | 5262 | Resolve import-equals aliases in class implements clauses | feature | frontend/resolver | implementation-ready | P1 |  | Resolve import-equals aliases in class implements clauses |
-| 5266 | Support class constructor new of later class binding | feature | ir | implementation-ready | P1 |  | `reference/typescript/tests/cases/compiler/classOrderBug.ts` reports |
 | 5267 | Parse string literal class member names | feature | frontend | implementation-ready | P1 |  | `reference/typescript/tests/cases/compiler/classStaticPropertyAccess.ts` |
 | 5269 | Parse optional class property declarations | feature | frontend | implementation-ready | P1 |  | `reference/typescript/tests/cases/compiler/classUsedBeforeInitializedVariables.ts` |
 | 5270 | Parse modified class accessor declarations | feature | frontend | implementation-ready | P1 |  | `reference/typescript/tests/cases/compiler/classdecl.ts` reports |
@@ -683,9 +683,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1109 | Implement Capturedletconstinloop Import Export | spike | reference/triage | class: triage-needed | Implement Capturedletconstinloop Import Export |
 | 1110 | Implement Capturedletconstinloop Name Resolution | spike | frontend/resolver | class: triage-needed | Implement Capturedletconstinloop Name Resolution |
 | 1119 | Implement Castofawait | spike | reference/triage | class: triage-needed | Implement Castofawait |
-| 1143 | Implement Checksupercallbeforethisaccessing Parser Syntax | spike | frontend/syntax | 5163 | Implement Checksupercallbeforethisaccessing Parser Syntax |
 | 1162 | Implement Circularreferenceinimport | spike | frontend/syntax | class: blocked | Implement Circularreferenceinimport |
-| 1163 | Implement Circularreferenceinreturntype Name Resolution | spike | frontend/resolver | 5163 | Implement Circularreferenceinreturntype Name Resolution |
 | 1170 | Implement Class | spike | frontend/syntax | 5246 | Implement Class |
 | 1174 | Implement Classblockscoping | spike | frontend/syntax | 5248 | Implement Classblockscoping |
 | 1175 | Implement Classdeclarationblockscoping | spike | frontend/syntax | 5249, 5250 | Implement Classdeclarationblockscoping |
