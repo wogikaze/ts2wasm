@@ -196,6 +196,11 @@ Also owns `issues/done/3528-implement-noCrashWithVerbatimModuleSyntaxAndImportsN
 fresh triage stops at dependency virtual file `export class A {}` before the
 later virtual `./file` import-resolution boundary tracked by issue 5229 or the
 TypeScript TS2395 merged declaration diagnostics become actionable.
+Also owns `issues/done/3577-implement-nodeModuleReexportFromDottedPath.md`:
+fresh triage stops at dependency virtual file
+`/node_modules/.prisma/client/index.d.ts` `export class PrismaClient` before
+the later `.prisma/client` dotted-path re-export or `@prisma/client` virtual
+node_modules package-resolution blockers become actionable.
 
 ## Completion evidence
 
