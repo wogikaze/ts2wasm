@@ -16,9 +16,9 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 25 | 13 | 12 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4597 | 3308 | 1289 |
+| frontend | 4597 | 3307 | 1290 |
 | harness | 1 | 0 | 1 |
-| ir | 85 | 62 | 23 |
+| ir | 86 | 63 | 23 |
 | issues | 4 | 0 | 4 |
 | parser | 1 | 0 | 1 |
 | reference | 215 | 144 | 71 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5283 | 3612 | 1671 |
+| total | 5284 | 3612 | 1672 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -401,6 +401,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5446 | Parse empty statements in switch case bodies | feature | frontend/parser | implementation-ready | P1 |  | ordinary empty statements in switch case bodies are not accepted as |
 | 5447 | Support instanceof callable prototype RHS | feature | ir/runtime | implementation-ready | P1 |  | `instanceof` RHS resolution only accepts the currently supported class |
 | 5448 | Support class constructor values in instanceof RHS | feature | ir/runtime | implementation-ready | P1 |  | `narrowTypeByInstanceof.ts` parses successfully, but name resolution |
+| 5449 | Lower anonymous class expressions in return statements | feature | ir/compiler | implementation-ready | P2 |  | `narrowedConstInMethod.ts` parses and resolves, then lower_program |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -2355,7 +2356,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 3302 | Implement Modulealiasasfunctionargument | spike | frontend/syntax | class: blocked | Implement Modulealiasasfunctionargument |
 | 3303 | Implement Modulealiasinterface | spike | frontend/syntax | class: blocked | Implement Modulealiasinterface |
 | 3304 | Implement Moduleandinterfacesharingname | spike | frontend/syntax | class: blocked | Implement Moduleandinterfacesharingname |
-| 3450 | Implement Narrowedconstinmethod | spike | frontend/syntax | class: triage-needed | Implement Narrowedconstinmethod |
 | 3451 | Implement Narrowedimports | spike | frontend/syntax | class: blocked | Implement Narrowedimports |
 | 3452 | Implement Narrowingassignmentreadonlyrespectsassertion | spike | frontend/syntax | class: triage-needed | Implement Narrowingassignmentreadonlyrespectsassertion |
 | 3453 | Implement Narrowingbytypeofinswitch | spike | frontend/syntax | class: blocked | Implement Narrowingbytypeofinswitch |
@@ -5243,6 +5243,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 3447 | Implement Narrowswitchoptionalchaincontainmentevolvingarraynocrash | spike | frontend/syntax | see `issues/done/3447-implement-narrowSwitchOptionalChainContainmentEvolvingArrayNoCrash.md` |
 | 3448 | Implement Narrowtypebyinstanceof | spike | frontend/syntax | see `issues/done/3448-implement-narrowTypeByInstanceof.md` |
 | 3449 | Implement Narrowunknownbytypepredicate | spike | frontend/resolver | see `issues/done/3449-implement-narrowUnknownByTypePredicate.md` |
+| 3450 | Implement Narrowedconstinmethod | spike | frontend/syntax | see `issues/done/3450-implement-narrowedConstInMethod.md` |
 | 3690 | Implement Optionaltupleelementsandundefined | spike | reference/triage | see `issues/done/3690-implement-optionalTupleElementsAndUndefined.md` |
 | 3996 | Implement Compiler (dup) | spike | frontend/syntax | see `issues/done/3996-implement-reference-typescript-tests-cases-compiler.md` |
 | 4210 | Implement Splicetuples | spike | frontend/resolver | see `issues/done/4210-implement-spliceTuples.md` |
