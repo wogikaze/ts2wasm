@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 25 | 13 | 12 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4604 | 3279 | 1325 |
+| frontend | 4605 | 3279 | 1326 |
 | harness | 1 | 0 | 1 |
 | ir | 92 | 69 | 23 |
 | issues | 4 | 0 | 4 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5297 | 3589 | 1708 |
+| total | 5298 | 3589 | 1709 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -415,6 +415,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5460 | Report invalid global class member syntax | bug | frontend/parser | implementation-ready | P2 |  | `nestedGlobalNamespaceInClass.ts` contains invalid source intended to |
 | 5461 | Parse nested single-statement for-of loop bodies | feature | frontend/parser | implementation-ready | P2 |  | `nestedLoopWithOnlyInnerLetCaptured.ts` is currently blocked before |
 | 5462 | Parse for-of assignment heads with nested object rest | feature | frontend/parser | implementation-ready | P2 |  | `nestedObjectRest.ts` parses the preceding destructuring assignment |
+| 5463 | Parse nested let declarations named status | bug | frontend/parser | implementation-ready | P2 |  | `nestedRedeclarationInES6AMD.ts` is currently labeled as an AMD module |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -2369,7 +2370,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 3302 | Implement Modulealiasasfunctionargument | spike | frontend/syntax | class: blocked | Implement Modulealiasasfunctionargument |
 | 3303 | Implement Modulealiasinterface | spike | frontend/syntax | class: blocked | Implement Modulealiasinterface |
 | 3304 | Implement Moduleandinterfacesharingname | spike | frontend/syntax | class: blocked | Implement Moduleandinterfacesharingname |
-| 3487 | Implement Nestedredeclarationines | spike | frontend/syntax | class: blocked | Implement Nestedredeclarationines |
 | 3488 | Implement Nestedself | spike | frontend/syntax | class: blocked | Implement Nestedself |
 | 3489 | Implement Nestedsupercallemit | spike | frontend/resolver | class: blocked | Implement Nestedsupercallemit |
 | 3490 | Implement Nestedthiscontainer | spike | reference/triage | class: triage-needed | Implement Nestedthiscontainer |
@@ -5257,6 +5257,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 3484 | Implement Nestedmoduleprivateaccess | spike | frontend/syntax | see `issues/done/3484-implement-nestedModulePrivateAccess.md` |
 | 3485 | Implement Nestedobjectrest | spike | frontend/syntax | see `issues/done/3485-implement-nestedObjectRest.md` |
 | 3486 | Implement Nestedrecursivelambda | spike | frontend/syntax | see `issues/done/3486-implement-nestedRecursiveLambda.md` |
+| 3487 | Implement Nestedredeclarationines | spike | frontend/syntax | see `issues/done/3487-implement-nestedRedeclarationInES.md` |
 | 3690 | Implement Optionaltupleelementsandundefined | spike | reference/triage | see `issues/done/3690-implement-optionalTupleElementsAndUndefined.md` |
 | 3996 | Implement Compiler (dup) | spike | frontend/syntax | see `issues/done/3996-implement-reference-typescript-tests-cases-compiler.md` |
 | 4210 | Implement Splicetuples | spike | frontend/resolver | see `issues/done/4210-implement-spliceTuples.md` |
