@@ -23,6 +23,8 @@ struct NameResolver {
     classes: std::collections::HashMap<String, Option<Span>>,
     /// Global identifiers that are allowed (builtins like console, require, etc.)
     allowed_globals: std::collections::HashSet<String>,
+    /// Names forward-declared for TDZ references (const/let before declaration).
+    predeclared_names: std::collections::HashSet<String>,
     /// Active ECMAScript labels and whether their target is an iteration statement.
     labels: Vec<LabelBinding>,
     loop_depth: usize,
@@ -90,6 +92,7 @@ impl NameResolver {
             functions: std::collections::HashMap::new(),
             classes: std::collections::HashMap::new(),
             allowed_globals,
+            predeclared_names: std::collections::HashSet::new(),
             labels: Vec::new(),
             loop_depth: 0,
             breakable_depth: 0,
@@ -161,7 +164,9 @@ impl NameResolver {
                 if self.classes.contains_key(name) {
                     return Err(Diagnostic {
                         code: DiagCode::DuplicateLocal,
-                        message: format!("duplicate local variable: `{name}`"),
+                        message: format!(
+                            "duplicate identifier: `{name}` conflicts with existing declaration"
+                        ),
                         span: Some(*span),
                     });
                 }
@@ -184,6 +189,25 @@ impl NameResolver {
                     });
                 }
                 self.declare_binding(name, Some(*span), *is_var)?;
+            }
+        }
+
+        // First pass: collect let/const names for forward reference resolution
+        // (e.g. `c; const c = 0;`). var names are hoisted to scope normally.
+        for stmt in program {
+            if let Stmt::Let {
+                name, is_var: true, ..
+            } = stmt
+            {
+                self.declare_binding(name, None, true)?;
+            }
+            if let Stmt::Let {
+                name,
+                is_var: false,
+                ..
+            } = stmt
+            {
+                self.predeclare_name(name);
             }
         }
 
@@ -246,7 +270,7 @@ impl NameResolver {
                 span,
                 is_var,
             } => {
-                self.declare_binding(name, Some(*span), *is_var)?;
+                // Binding already declared in forward pass
                 Ok(Stmt::Let {
                     name: name.clone(),
                     expr: self.resolve_expr(expr)?,
@@ -781,7 +805,10 @@ impl NameResolver {
                 for param_name in params {
                     let clean_name = param_name.strip_prefix("...").unwrap_or(param_name);
                     self.declare_binding(clean_name, Some(*span), false)?;
-                    self.declare_binding(param_name, Some(*span), false)?;
+                    // Only declare param_name separately for rest params
+                    if clean_name != param_name {
+                        self.declare_binding(param_name, Some(*span), false)?;
+                    }
                     if let Some(inner) = param_name.strip_prefix("...")
                         && let Some(pattern) = parse_binding_pattern(inner, Some(*span))?
                     {
@@ -864,9 +891,7 @@ impl NameResolver {
                 op,
                 right,
                 span,
-            } => {
-                self.resolve_binary_chain(left, *op, right, *span)
-            }
+            } => self.resolve_binary_chain(left, *op, right, *span),
             Expr::Call { callee, args, span } => {
                 if self.is_test262_assert_reference_error_probe(callee, args)
                     || self.is_test262_assert_comparison_probe(callee, args)
@@ -1253,8 +1278,17 @@ impl NameResolver {
     fn resolve_block(&mut self, block: &[Stmt]) -> Result<Vec<Stmt>, Diagnostic> {
         self.enter_scope();
         for stmt in block {
-            if let Stmt::Function { name, span, .. } = stmt {
-                self.declare_variable(name, Some(*span), false)?;
+            if let Stmt::Function {
+                name,
+                span,
+                overload_signature,
+                ..
+            } = stmt
+            {
+                // Skip bodyless overload signatures when pre-declaring
+                if !overload_signature {
+                    self.declare_variable(name, Some(*span), false)?;
+                }
             }
             if let Stmt::ClassDecl { name, span, .. } = stmt {
                 self.declare_variable(name, Some(*span), false)?;
@@ -1302,7 +1336,9 @@ impl NameResolver {
         {
             return Err(Diagnostic {
                 code: DiagCode::DuplicateLocal,
-                message: format!("duplicate local variable: `{name}`"),
+                message: format!(
+                    "duplicate identifier: `{name}` conflicts with existing declaration"
+                ),
                 span,
             });
         }
@@ -1313,7 +1349,9 @@ impl NameResolver {
             } else {
                 Err(Diagnostic {
                     code: DiagCode::DuplicateLocal,
-                    message: format!("duplicate local variable: `{name}`"),
+                    message: format!(
+                        "duplicate identifier: `{name}` conflicts with existing declaration"
+                    ),
                     span,
                 })
             }
@@ -1330,6 +1368,10 @@ impl NameResolver {
         }
         // Check class declarations (hoisting)
         if self.classes.contains_key(name) {
+            return true;
+        }
+        // Check forward-declared names (const/let TDZ references)
+        if self.predeclared_names.contains(name) {
             return true;
         }
         // Check allowed global identifiers
@@ -1543,6 +1585,12 @@ impl NameResolver {
 
     fn is_implicit_arguments(&self, name: &str) -> bool {
         name == "arguments" && self.function_depth > 0
+    }
+
+    /// Predeclare a name for forward reference resolution without adding it
+    /// to the current scope. Used for const/let TDZ cases (issue 5348).
+    fn predeclare_name(&mut self, name: &str) {
+        self.predeclared_names.insert(name.to_string());
     }
 }
 

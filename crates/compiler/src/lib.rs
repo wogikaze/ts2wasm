@@ -1741,7 +1741,7 @@ fn validate_ast(program: &[Stmt]) -> Result<(), Diagnostic> {
                     return Err(Diagnostic {
                         code: DiagCode::DuplicateLocal,
                         message: format!(
-                            "top-level function `{name}` conflicts with existing lexical binding"
+                            "top-level function `{name}` conflicts with existing lexical binding (TS2300: duplicate identifier)"
                         ),
                         span: Some(*span),
                     });
@@ -1754,7 +1754,9 @@ fn validate_ast(program: &[Stmt]) -> Result<(), Diagnostic> {
                 } else if top_functions.contains_key(name) {
                     return Err(Diagnostic {
                         code: DiagCode::DuplicateFunction,
-                        message: format!("duplicate function definition: `{name}`"),
+                        message: format!(
+                            "duplicate function definition: `{name}` (TS2300: duplicate identifier)"
+                        ),
                         span: Some(*span),
                     });
                 } else {
@@ -1813,7 +1815,7 @@ fn validate_stmt(
                     return Err(Diagnostic {
                         code: DiagCode::DuplicateLocal,
                         message: format!(
-                            "top-level lexical binding `{name}` conflicts with function declaration"
+                            "top-level lexical binding `{name}` conflicts with function declaration (TS2300: duplicate identifier)"
                         ),
                         span: Some(*span),
                     });
@@ -1824,7 +1826,9 @@ fn validate_stmt(
                     }
                     return Err(Diagnostic {
                         code: DiagCode::DuplicateLocal,
-                        message: format!("duplicate local binding: `{name}`"),
+                        message: format!(
+                            "duplicate identifier: `{name}` (TS2300: duplicate identifier)"
+                        ),
                         span: Some(*span),
                     });
                 }

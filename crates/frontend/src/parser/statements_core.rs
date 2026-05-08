@@ -27,6 +27,7 @@ impl Parser {
             in_async_fn: false,
             fn_depth: 0,
             class_private_fields: HashMap::new(),
+            namespace_names_encountered: HashSet::new(),
         }
     }
 
