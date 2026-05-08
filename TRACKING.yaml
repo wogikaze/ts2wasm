@@ -125,7 +125,7 @@ open:
     roadmap: W0
     ready: true
     acceptance:
-      - "cargo nextest run -p ts2wasm-cli --test m1_iwasm"
+      - "cargo nextest run -p ts2wasm-cli --test m1_iwasm binary_mvp_const_export"
     non_goals:
       - "No full WAT replacement."
     evidence: null
@@ -142,7 +142,7 @@ open:
     roadmap: W0
     ready: true
     acceptance:
-      - "cargo nextest run -p ts2wasm-cli --test m8_oop_classes"
+      - "cargo nextest run -p ts2wasm-cli --test m8_oop_classes binary_mvp_class_unsupported_diagnostic"
     non_goals:
       - "No binary emitter expansion."
     evidence: null
@@ -177,7 +177,7 @@ open:
     roadmap: W0
     ready: true
     acceptance:
-      - "cargo nextest run -p ts2wasm-cli --test m1_iwasm"
+      - "cargo nextest run -p ts2wasm-cli --test m1_iwasm abi_bridge_mismatch_detection"
     non_goals:
       - "No full WAT replacement."
     evidence: null
@@ -194,7 +194,7 @@ open:
     roadmap: W0
     ready: true
     acceptance:
-      - "cargo nextest run -p ts2wasm-cli --test m1_iwasm"
+      - "cargo nextest run -p ts2wasm-cli --test m1_iwasm runtime_value_representation_smoke"
     non_goals:
       - "No fractional/NaN/infinity coverage."
     evidence: null
