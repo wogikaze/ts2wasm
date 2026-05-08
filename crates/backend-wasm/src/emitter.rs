@@ -8,7 +8,7 @@ use ts2wasm_ir::lowered::{
 use ts2wasm_runtime_abi::Layout;
 use ts2wasm_runtime_abi::ValueTag;
 
-use super::runtime_fn::{NATIVE_SET_ADD_SENTINEL, RuntimeFn, RuntimeGlobal, StringOrigin};
+use super::runtime_fn::{RuntimeFn, RuntimeGlobal, StringOrigin, NATIVE_SET_ADD_SENTINEL};
 use super::runtime_link_plan::RuntimeLinkPlan;
 use super::wat_writer::{WatModuleBuilder, WatWriter};
 
@@ -171,6 +171,9 @@ impl<'a> WatEmitter<'a> {
         self.emit_imports_from_catalog(&mut buf);
         writer.push_str(&buf);
         buf.clear();
+
+        // WASI proc_exit for clean program termination
+        writer.push_str("  (import \"wasi_snapshot_preview1\" \"proc_exit\" (func $wasi_proc_exit (param i32)))\n");
 
         writer.line_fmt(
             2,
@@ -1609,6 +1612,9 @@ impl<'a> WatEmitter<'a> {
             writer.push_str("    (global.set $current_module_id (i32.const 1))\n");
         }
         self.emit_top_level_statements(writer, 4, &frame);
+        // Normal termination: call wasi_proc_exit(0) to exit cleanly
+        writer.push_str("    (call $wasi_proc_exit (i32.const 0))\n");
+        writer.push_str("    (unreachable)\n");
         writer.push_str("  )\n");
     }
 

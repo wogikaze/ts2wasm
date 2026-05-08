@@ -101,6 +101,96 @@ fn compile_and_run_standalone(fixture_path: &str) -> StandaloneResult {
     }
 }
 
+/// Compile a fixture, then run under iwasm with piped stdin content.
+fn compile_and_run_standalone_with_stdin(
+    fixture_path: &str,
+    stdin_data: &[u8],
+) -> StandaloneResult {
+    use std::io::Write;
+
+    let fixture = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("../..")
+        .join("fixtures")
+        .join(fixture_path);
+
+    assert!(fixture.exists(), "Fixture not found: {:?}", fixture);
+
+    let temp_dir = std::env::temp_dir().join(format!(
+        "ts2wasm-standalone-{}-{}",
+        fixture_path.replace(['/', '.'], "_"),
+        std::process::id()
+    ));
+    fs::create_dir_all(&temp_dir).expect("temp dir should be created");
+
+    let output_wasm = temp_dir.join("out.wasm");
+    let output_manifest = temp_dir.join("manifest.json");
+
+    // Compile with --host-deny node + --emit-manifest
+    let build = Command::new(env!("CARGO_BIN_EXE_ts2wasm"))
+        .arg("build")
+        .arg(&fixture)
+        .arg("-o")
+        .arg(&output_wasm)
+        .arg("--emit-manifest")
+        .arg(&output_manifest)
+        .arg("--host-deny")
+        .arg("node")
+        .output()
+        .expect("ts2wasm build should execute");
+
+    assert!(
+        build.status.success(),
+        "build with --host-deny node should succeed for standalone fixture {}:\nstdout: {}\nstderr: {}",
+        fixture_path,
+        String::from_utf8_lossy(&build.stdout),
+        String::from_utf8_lossy(&build.stderr),
+    );
+
+    // Read and parse manifest
+    assert!(
+        output_manifest.exists(),
+        "manifest should be emitted for {}",
+        fixture_path
+    );
+    let manifest_content =
+        fs::read_to_string(&output_manifest).expect("manifest should be readable");
+    let manifest: serde_json::Value =
+        serde_json::from_str(&manifest_content).expect("manifest should be valid JSON");
+
+    // Read wasm binary
+    let wasm_bytes = fs::read(&output_wasm).expect("wasm binary should be readable");
+
+    // Spawn iwasm with piped stdin
+    let mut child = Command::new("iwasm")
+        .arg(&output_wasm)
+        .stdin(std::process::Stdio::piped())
+        .stdout(std::process::Stdio::piped())
+        .stderr(std::process::Stdio::piped())
+        .spawn()
+        .expect("iwasm should spawn");
+
+    // Write stdin data
+    if let Some(ref mut stdin) = child.stdin {
+        let _ = stdin.write_all(stdin_data);
+        let _ = stdin.flush();
+    }
+    // Drop stdin handle to close the pipe
+    drop(child.stdin.take());
+
+    // Wait for iwasm to finish
+    let iwasm =
+        iwasm_runtime::run_iwasm_child_with_timeout_duration(child, IWASM_TIMEOUT_STANDALONE)
+            .expect("iwasm should execute");
+    let iwasm_stdout = String::from_utf8_lossy(&iwasm.output.stdout).to_string();
+
+    StandaloneResult {
+        manifest,
+        wasm_bytes,
+        iwasm_stdout,
+        iwasm_success: !iwasm.timed_out && iwasm.output.status.success(),
+    }
+}
+
 /// Verify common standalone manifest properties.
 fn assert_standalone_manifest(manifest: &serde_json::Value, fixture_name: &str) {
     assert_eq!(
@@ -530,6 +620,79 @@ console.log(fs.readFileSync('/etc/hostname', 'utf-8'));
         stderr.contains("host-deny") || stderr.contains("denied") || stderr.contains("Unsupported"),
         "stderr should indicate host import rejection:\n{stderr}"
     );
+}
+
+#[test]
+fn standalone_wasi_exit_code() {
+    // Normal program termination should call proc_exit(0) and exit cleanly
+    let result = compile_and_run_standalone("basics-hello/exit-code.ts");
+
+    assert!(
+        result.iwasm_success,
+        "iwasm should succeed for exit-code.ts"
+    );
+    assert_eq!(result.iwasm_stdout, "ok\n", "stdout should be 'ok\\n'");
+
+    assert_standalone_manifest(&result.manifest, "exit-code.ts");
+    assert_no_node_host_imports(&result.wasm_bytes, "exit-code.ts");
+}
+
+#[test]
+fn standalone_wasi_stdin_empty() {
+    // Empty stdin should produce empty output without hanging
+    let result = compile_and_run_standalone_with_stdin("basics-hello/stdin-empty.ts", b"");
+
+    assert!(
+        result.iwasm_success,
+        "iwasm should succeed for stdin-empty.ts"
+    );
+    assert_eq!(
+        result.iwasm_stdout, "\n",
+        "stdout should be just newline from logging empty string"
+    );
+
+    assert_standalone_manifest(&result.manifest, "stdin-empty.ts");
+    assert_no_node_host_imports(&result.wasm_bytes, "stdin-empty.ts");
+}
+
+#[test]
+fn standalone_wasi_stdin_read() {
+    // Pipe a known string to iwasm and verify it is echoed back
+    let input = b"hello from pipe\n";
+    let result = compile_and_run_standalone_with_stdin("basics-hello/stdin-read.ts", input);
+
+    assert!(
+        result.iwasm_success,
+        "iwasm should succeed for stdin-read.ts"
+    );
+    assert_eq!(
+        result.iwasm_stdout, "hello from pipe\n\n",
+        "stdout should echo the piped input"
+    );
+
+    assert_standalone_manifest(&result.manifest, "stdin-read.ts");
+    assert_no_node_host_imports(&result.wasm_bytes, "stdin-read.ts");
+}
+
+#[test]
+fn standalone_wasi_stdin_large() {
+    // 10KB+ stdin should be fully read without truncation
+    let input = vec![b'A'; 10000];
+    let mut expected = String::from_utf8(input.clone()).unwrap();
+    expected.push('\n');
+    let result = compile_and_run_standalone_with_stdin("basics-hello/stdin-read.ts", &input);
+
+    assert!(
+        result.iwasm_success,
+        "iwasm should succeed for stdin-read.ts with large input"
+    );
+    assert_eq!(
+        result.iwasm_stdout, expected,
+        "stdout should contain the full 10KB input"
+    );
+
+    assert_standalone_manifest(&result.manifest, "stdin-read.ts");
+    assert_no_node_host_imports(&result.wasm_bytes, "stdin-read.ts");
 }
 
 #[test]

@@ -88,7 +88,10 @@ impl WatEmitter<'_> {
             self.emit_gc_backend_temp_roots_clear(&mut buf, &pad, frame);
             writer.push_str(buf.as_str());
             writer.line(indent, "(if (global.get $exception_pending)");
-            writer.line(indent + 2, "(then (unreachable)))");
+            writer.line(indent + 2, "(then");
+            writer.line(indent + 4, "(call $wasi_proc_exit (i32.const 1))");
+            writer.line(indent + 4, "(unreachable)");
+            writer.line(indent + 2, "))");
         }
     }
 

@@ -41,13 +41,13 @@ iwasm output.wasm
 
 In scope:
 
-- [ ] Wire `wasi_snapshot_preview1.proc_exit` in the WASM emitter
-- [ ] Emit `proc_exit(0)` at the end of the program's `_start` function for normal termination
-- [ ] Emit `proc_exit(code)` on uncaught exception/trap
-- [ ] Add test fixture for empty stdin (`echo -n "" | ts2wasm build ...`)
-- [ ] Add test fixture for large stdin (10KB+ piped input)
-- [ ] Add test fixture for stdin pipe from another process
-- [ ] Add test functions in `m_standalone_wasi.rs`
+- [x] Wire `wasi_snapshot_preview1.proc_exit` in the WASM emitter
+- [x] Emit `proc_exit(0)` at the end of the program's `_start` function for normal termination
+- [x] Emit `proc_exit(code)` on uncaught exception/trap
+- [x] Add test fixture for empty stdin (`echo -n "" | ts2wasm build ...`)
+- [x] Add test fixture for large stdin (10KB+ piped input)
+- [x] Add test fixture for stdin pipe from another process
+- [x] Add test functions in `m_standalone_wasi.rs`
 
 Out of scope:
 
@@ -61,10 +61,12 @@ Out of scope:
 Expected:
 
 - `crates/backend-wasm/src/emitter.rs` — add proc_exit import + call in _start
+- `crates/backend-wasm/src/stmt_emit.rs` — change uncaught exception handler from unreachable to proc_exit(1)
 - `crates/cli/tests/m_standalone_wasi.rs` — add tests for proc_exit and stdin
 - `crates/cli/tests/m1_iwasm.rs` — add basic exit code test
 - `fixtures/basics-hello/exit-code.ts` — fixture for exit code
-- `fixtures/basics-hello/stdin-*.ts` — fixtures for stdin edge cases
+- `fixtures/basics-hello/stdin-empty.ts` — fixture for empty stdin
+- `fixtures/basics-hello/stdin-read.ts` — fixture for piped stdin
 
 Do not touch:
 
@@ -74,11 +76,11 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] `proc_exit` import appears in emitted WAT for programs that need it
-- [ ] Normal program termination calls `proc_exit(0)` instead of trapping
-- [ ] Uncaught exception calls `proc_exit(1)` (non-zero)
-- [ ] Empty stdin produces empty output without hanging
-- [ ] Large stdin (10KB+) is fully read without truncation
+- [x] `proc_exit` import appears in emitted WAT for programs that need it
+- [x] Normal program termination calls `proc_exit(0)` instead of trapping
+- [x] Uncaught exception calls `proc_exit(1)` (non-zero)
+- [x] Empty stdin produces empty output without hanging
+- [x] Large stdin (10KB+) is fully read without truncation
 
 ## Validation
 
