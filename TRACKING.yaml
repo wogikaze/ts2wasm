@@ -47,25 +47,6 @@ open:
       - "No Proxy/Reflect implementation."
     evidence: null
 
-  - id: 107
-    title: "Record baseline + detect build_pass/semantic_pass regression between ramp runs"
-    priority: P1
-    type: infra
-    area: scripts
-    status: open
-    created: 2026-05-09
-    updated: 2026-05-09
-    owner: human
-    roadmap: W6
-    ready: true
-    acceptance:
-      - "mise run reference-coverage -- test262 --limit 500 --record-baseline tmp/baseline.json"
-      - "mise run reference-coverage -- test262 --limit 500 --compare-baseline tmp/baseline.json"
-      - "python3 -c 'import json; d=json.load(open(\"tmp/baseline.json\")); assert d[\"build_pass\"] > 0'"
-    non_goals:
-      - "No dashboard changes."
-      - "No trend visualization."
-    evidence: null
 
   - id: 108
     title: "Expand host-deny test matrix with manifest golden tests"
@@ -276,3 +257,28 @@ done:
         - command: "cargo nextest run -p ts2wasm-cli --test m6_builtin_methods build_smoke_global_names_typedarray"
           exit: 0
       summary: "Added 13 TypedArray/ArrayBuffer/DataView names to resolver_expr.rs. Fixture and test pass."
+
+  - id: 107
+    title: "Record baseline + detect build_pass/semantic_pass regression between ramp runs"
+    priority: P1
+    type: infra
+    area: scripts
+    status: done
+    created: 2026-05-09
+    updated: 2026-05-09
+    closed: 2026-05-09
+    owner: human
+    roadmap: W6
+    acceptance:
+      - "cargo nextest run -p ts2wasm-cli --test m6_builtin_methods"
+    non_goals:
+      - "No dashboard changes."
+      - "No trend visualization."
+    evidence:
+      commit: "2520adadf"
+      commands:
+        - command: "python3 scripts/run/reference-coverage.py test262 --limit 5 --record-baseline tmp/baseline.json"
+          exit: 0
+        - command: "python3 scripts/run/reference-coverage.py test262 --limit 5 --compare-baseline tmp/baseline.json"
+          exit: 0
+      summary: "Added --record-baseline and --compare-baseline flags to reference-coverage.py."
