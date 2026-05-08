@@ -260,3 +260,15 @@ date:
 Remaining risks:
 
 - Later triage may expose ordinary enum parsing, enum used-before-declaration diagnostics, const-enum inlining, or export/module handling after this parser boundary is removed.
+## Completion evidence
+
+Implemented Stmt::EnumDecl for const enum declarations. Parser produces Stmt::EnumDecl nodes, name resolver registers enum names.
+
+Commits:
+- `60c3d26ba` frontend: implement Stmt::EnumDecl for const enum and plain enum (5184, 5284)
+
+Validation:
+```sh
+echo 'const enum E { A, B }; let x: any = E' | ./target/debug/ts2wasm build --stdin -o /tmp/out.wasm
+# => exit 0 (enum name resolves)
+```

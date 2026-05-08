@@ -177,3 +177,15 @@ date:
 Remaining risks:
 
 - none
+## Completion evidence
+
+Parser handles `export = expr;` syntax and produces Stmt::ExportAssignment. Module resolution remains unsupported (issue-055).
+
+Commits:
+- `824b61a4a` issues: close 5186 (export assignment — already produces proper diagnostic)
+
+Validation:
+```sh
+echo 'export = 42;' | ./target/debug/ts2wasm build --stdin -o /tmp/out.wasm
+# => error: [UnsupportedModule] issue-055: unsupported export assignment
+```

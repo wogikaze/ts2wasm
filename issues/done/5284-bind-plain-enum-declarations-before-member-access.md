@@ -172,3 +172,15 @@ Fill when implemented.
 - Acceptance criteria: all checked as met
 
 This issue has repo-local close evidence with implementation commits and validation commands.
+## Completion evidence
+
+Implemented Stmt::EnumDecl for plain enum declarations. Parser produces Stmt::EnumDecl nodes, name resolver registers enum names.
+
+Commits:
+- `60c3d26ba` frontend: implement Stmt::EnumDecl for const enum and plain enum (5184, 5284)
+
+Validation:
+```sh
+echo 'enum E { A, B }; let x: any = E' | ./target/debug/ts2wasm build --stdin -o /tmp/out.wasm
+# => exit 0 (enum name resolves)
+```

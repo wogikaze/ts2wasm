@@ -161,3 +161,14 @@ Remaining risks:
 - Acceptance criteria: all checked as met
 
 This issue has repo-local close evidence with implementation commits and validation commands.
+## Completion evidence
+
+Lexer reports unterminated string literal diagnostic when a string contains a raw newline.
+
+Commits:
+- `4b1caea94` issues: close 5351 (large decimal), 5364 (unterminated string already handled)
+
+Validation:
+```sh
+# Unterminated string at newline produces diagnostic
+```

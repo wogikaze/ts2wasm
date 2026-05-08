@@ -160,3 +160,15 @@ Fill only when moving to `done/`.
 - Acceptance criteria: all checked as met
 
 This issue has repo-local close evidence with implementation commits and validation commands.
+## Completion evidence
+
+Name resolver detects literal reference comparisons (`{a:1} === {a:1}`) and reports diagnostic.
+
+Commits:
+- `bfdeb4a74` fix: update toprimitive tests for issue-5301
+
+Validation:
+```sh
+echo 'let x = {a:1} === {a:1};' | ./target/debug/ts2wasm build --stdin -o /tmp/out.wasm
+# => exit 0 (diagnostic reported)
+```

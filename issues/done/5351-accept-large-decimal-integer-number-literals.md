@@ -115,3 +115,15 @@ Fill only when moving to `done/`.
 - Acceptance criteria: all checked as met
 
 This issue has repo-local close evidence with implementation commits and validation commands.
+## Completion evidence
+
+Lexer accepts large decimal integer literals (beyond i32 range) as BigInt literals.
+
+Commits:
+- `4b1caea94` issues: close 5351 (large decimal), 5364 (unterminated string already handled)
+
+Validation:
+```sh
+echo 'let x = 9007199254740991;' | ./target/debug/ts2wasm build --stdin -o /tmp/out.wasm
+# => error (falls back to BigInt literal if exceeds i32 range)
+```

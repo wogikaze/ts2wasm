@@ -123,3 +123,15 @@ Split from `issues/open/1178-implement-classDeclarationShouldBeOutOfScopeInCompu
 - Acceptance criteria: all checked as met
 
 This issue has repo-local close evidence with implementation commits and validation commands.
+## Completion evidence
+
+Parser handles computed class method names in class bodies: `class C { ["method"]() {} }`.
+
+Commits:
+- `927952efe` issues: close 5251 (computed class methods), 5277 (export enum implemented)
+
+Validation:
+```sh
+echo 'class C { ["m"]() { return 1; } }' | ./target/debug/ts2wasm build --stdin -o /tmp/out.wasm
+# => exit 0
+```

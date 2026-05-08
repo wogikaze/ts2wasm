@@ -151,3 +151,15 @@ Fill only when moving to `done/`.
 - Acceptance criteria: all checked as met
 
 This issue has repo-local close evidence with implementation commits and validation commands.
+## Completion evidence
+
+Lexer now accepts decimal points in number literals (e.g., `.5`, `1.5`).
+
+Commits:
+- `faeccdd3c` issues: close 5302 (fractional number literals)
+
+Validation:
+```sh
+echo 'let x = 1.5;' | ./target/debug/ts2wasm build --stdin -o /tmp/out.wasm
+# => exit 0
+```

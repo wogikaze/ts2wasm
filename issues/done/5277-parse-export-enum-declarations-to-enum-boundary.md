@@ -142,3 +142,15 @@ Related broad enum bucket: `issues/open/428-implement-enum.md`.
 - Acceptance criteria: all checked as met
 
 This issue has repo-local close evidence with implementation commits and validation commands.
+## Completion evidence
+
+Parser handles `export enum` declarations, routing them to the enum erasure boundary instead of the generic export boundary.
+
+Commits:
+- `927952efe` issues: close 5251 (computed class methods), 5277 (export enum implemented)
+
+Validation:
+```sh
+echo 'export enum E { A, B }' | ./target/debug/ts2wasm build --stdin -o /tmp/out.wasm
+# => exit 0
+```
