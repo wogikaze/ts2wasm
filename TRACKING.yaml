@@ -14,6 +14,8 @@ meta:
 
 open:
   - id: 105
+    status: done
+    closed: 2026-05-09
     title: "Route Array.prototype.reduce to explicit unsupported diagnostic"
     priority: P2
     type: diagnostic
@@ -31,6 +33,8 @@ open:
     evidence: null
 
   - id: 106
+    status: done
+    closed: 2026-05-09
     title: "Route Proxy and Reflect usage to unsupported diagnostic"
     priority: P2
     type: diagnostic
@@ -49,6 +53,8 @@ open:
 
 
   - id: 108
+    status: done
+    closed: 2026-05-09
     title: "Expand host-deny test matrix with manifest golden tests"
     priority: P2
     type: infra
@@ -64,6 +70,8 @@ open:
     evidence: null
 
   - id: 109
+    status: done
+    closed: 2026-05-09
     title: "Add parser support for RegExp literal flags (g, i, m)"
     priority: P1
     type: feature
@@ -82,6 +90,8 @@ open:
     evidence: null
 
   - id: 110
+    status: done
+    closed: 2026-05-09
     title: "Add parser support for RegExp literal flags (s, u, y, d)"
     priority: P2
     type: feature
@@ -97,6 +107,8 @@ open:
     evidence: null
 
   - id: 111
+    status: done
+    closed: 2026-05-09
     title: "Add precise unsupported diagnostic for dynamic eval strings"
     priority: P2
     type: diagnostic
@@ -115,6 +127,8 @@ open:
 
 
   - id: 114
+    status: done
+    closed: 2026-05-09
     title: "Document binary_mvp unsupported constructs with precise diagnostics"
     priority: P2
     type: diagnostic
@@ -133,6 +147,8 @@ open:
 
 
   - id: 116
+    status: done
+    closed: 2026-05-09
     title: "ABI bridge smoke test for i64 logical vs i32 wire mismatch detection"
     priority: P2
     type: test
@@ -150,6 +166,8 @@ open:
     evidence: null
 
   - id: 117
+    status: done
+    closed: 2026-05-09
     title: "Runtime value representation smoke test under iwasm (undef, null, bool, number, string)"
     priority: P2
     type: test
@@ -167,6 +185,8 @@ open:
     evidence: null
 
   - id: 113
+    status: done
+    closed: 2026-05-09
     title: "Add capability review checklist to docs/12-coding-standard.md"
     priority: P3
     type: docs
