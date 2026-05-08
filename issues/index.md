@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 27 | 14 | 13 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4606 | 3243 | 1363 |
+| frontend | 4607 | 3243 | 1364 |
 | harness | 1 | 0 | 1 |
 | ir | 97 | 70 | 27 |
 | issues | 4 | 0 | 4 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5305 | 3553 | 1752 |
+| total | 5306 | 3553 | 1753 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -50,7 +50,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 5000 (Meta: TypeScript Compiler Parser Syntax Coverage) [done/design] ch:444 open:338 done:106
 ├── 5002 (Meta: TypeScript Compiler Type System Coverage) [done/done] ch:223 open:199 done:24 (also ← 5005)
 ├── 5003 (Meta: TypeScript Compiler Declaration Emit Coverage) [done/done] ch:100 open:89 done:11 (also ← 5001)
-5001 (Meta: TypeScript Compiler Semantic Analysis Coverage) [done/done] ch:553 open:283 done:270
+5001 (Meta: TypeScript Compiler Semantic Analysis Coverage) [done/done] ch:552 open:282 done:270
 5004 (Meta: Runtime Builtins Coverage (test262) (audit reopened #5004)) [done/done] ch:24 open:3 done:21
 5005 (Meta: TypeScript Compiler Name Resolution Coverage) [done/done] ch:396 open:327 done:69
 ├── 5006 (Meta: TypeScript Compiler Scope Analysis Coverage) [done/done] ch:28 open:18 done:10
@@ -67,7 +67,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | Order | ID | Title | State | Class | Area | Priority | Depends on | Direct children | Open children | Done children |
 |-----:|---:|------|-------|-------|------|--------:|-----------:|----------------:|--------------:|--------------:|
 | 1 | 5000 | Meta: TypeScript Compiler Parser Syntax Coverage | done | design | frontend/syntax | P1 | - | 444 | 338 | 106 |
-| 2 | 5001 | Meta: TypeScript Compiler Semantic Analysis Coverage | done | done | frontend/semantics | P1 | - | 553 | 283 | 270 |
+| 2 | 5001 | Meta: TypeScript Compiler Semantic Analysis Coverage | done | done | frontend/semantics | P1 | - | 552 | 282 | 270 |
 | 3 | 5004 | Meta: Runtime Builtins Coverage (test262) (audit reopened #5004) | done | done | runtime/builtins | P1 | - | 24 | 3 | 21 |
 | 4 | 5005 | Meta: TypeScript Compiler Name Resolution Coverage | done | done | frontend/resolver | P1 | - | 396 | 327 | 69 |
 | 5 | 5002 | Meta: TypeScript Compiler Type System Coverage | done | done | frontend/semantics | P1 | 5000, 5005 | 223 | 199 | 24 |
@@ -423,6 +423,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5468 | Report direct new type-only callee diagnostics | bug | frontend/resolver | implementation-ready | P1 |  | `newNonReferenceType.ts` now builds successfully, but TypeScript |
 | 5469 | Support named exports of namespace imports in dependency modules | feature | compiler/module-graph | implementation-ready | P1 |  | dependency-module named export validation does not recognize namespace |
 | 5470 | Support array spread over array fallback expressions | feature | ir/lowering | implementation-ready | P1 |  | the array spread lowering recognizes dense array literals and dense |
+| 5471 | Report constructor argument type diagnostics | feature | frontend/semantics | implementation-ready | P1 |  | class constructor calls can build even when TypeScript reports an |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -2377,7 +2378,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 3302 | Implement Modulealiasasfunctionargument | spike | frontend/syntax | class: blocked | Implement Modulealiasasfunctionargument |
 | 3303 | Implement Modulealiasinterface | spike | frontend/syntax | class: blocked | Implement Modulealiasinterface |
 | 3304 | Implement Moduleandinterfacesharingname | spike | frontend/syntax | class: blocked | Implement Moduleandinterfacesharingname |
-| 3531 | Implement Noerrorsincallback | spike | frontend/syntax | class: blocked | Implement Noerrorsincallback |
 | 3532 | Implement Noexcessivestackdeptherror | spike | reference/triage | class: triage-needed | Implement Noexcessivestackdeptherror |
 | 3533 | Implement Noimplicitanyandprivatememberswithouttypeannotations | spike | frontend/resolver | class: blocked | Implement Noimplicitanyandprivatememberswithouttypeannotations |
 | 3534 | Implement Noimplicitanydestructuringinprivatemethod | spike | frontend/syntax | class: blocked | Implement Noimplicitanydestructuringinprivatemethod |
@@ -5265,6 +5265,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 3528 | Implement Nocrashwithverbatimmodulesyntaxandimportsnotusedasvalues | spike | ir/compiler | see `issues/done/3528-implement-noCrashWithVerbatimModuleSyntaxAndImportsNotUsedAsValues.md` |
 | 3529 | Implement Noemithelpers | spike | frontend/lexer | see `issues/done/3529-implement-noEmitHelpers.md` |
 | 3530 | Implement Noerrorusingimportexportmoduleaugmentationindeclarationfile | spike | frontend/parser | see `issues/done/3530-implement-noErrorUsingImportExportModuleAugmentationInDeclarationFile.md` |
+| 3531 | Implement Noerrorsincallback | spike | frontend/semantics | see `issues/done/3531-implement-noErrorsInCallback.md` |
 | 3690 | Implement Optionaltupleelementsandundefined | spike | reference/triage | see `issues/done/3690-implement-optionalTupleElementsAndUndefined.md` |
 | 3996 | Implement Compiler (dup) | spike | frontend/syntax | see `issues/done/3996-implement-reference-typescript-tests-cases-compiler.md` |
 | 4210 | Implement Splicetuples | spike | frontend/resolver | see `issues/done/4210-implement-spliceTuples.md` |
