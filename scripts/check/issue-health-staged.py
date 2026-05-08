@@ -53,6 +53,10 @@ def check_file(rel_path: str) -> list[str]:
     name = abspath.name
     name_id = id_from_name(name)
 
+    # Skip non-issue files (e.g. .gitkeep, README.md) — no numeric prefix
+    if not name_id:
+        return errors
+
     # Extract title for migration detection
     title_m = re.search(r"^title:\s*\"(.+?)\"\s*$", text, re.M)
     title = title_m.group(1).lower() if title_m else ""
