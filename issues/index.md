@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 25 | 13 | 12 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4596 | 3317 | 1279 |
+| frontend | 4597 | 3317 | 1280 |
 | harness | 1 | 0 | 1 |
 | ir | 83 | 60 | 23 |
 | issues | 4 | 0 | 4 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5280 | 3619 | 1661 |
+| total | 5281 | 3619 | 1662 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -398,6 +398,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5443 | Report duplicate type alias identifiers | feature | frontend/semantics | implementation-ready | P1 |  | erased type aliases hide duplicate type-only declarations, so the |
 | 5444 | Resolve const arrow predicate calls in switch true clauses | feature | frontend/resolver | implementation-ready | P1 |  | const arrow predicate bindings are visible as bindings, but direct |
 | 5445 | Parse braced switch case clause statements | feature | frontend/parser | implementation-ready | P1 |  | switch case clause parsing does not correctly dispatch a braced block |
+| 5446 | Parse empty statements in switch case bodies | feature | frontend/parser | implementation-ready | P1 |  | ordinary empty statements in switch case bodies are not accepted as |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -2352,7 +2353,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 3302 | Implement Modulealiasasfunctionargument | spike | frontend/syntax | class: blocked | Implement Modulealiasasfunctionargument |
 | 3303 | Implement Modulealiasinterface | spike | frontend/syntax | class: blocked | Implement Modulealiasinterface |
 | 3304 | Implement Moduleandinterfacesharingname | spike | frontend/syntax | class: blocked | Implement Moduleandinterfacesharingname |
-| 3440 | Implement Narrowbyclauseexpressioninswitchtrue Unknown Unsupported | spike | frontend/syntax | class: triage-needed | Implement Narrowbyclauseexpressioninswitchtrue Unknown Unsupported |
 | 3441 | Implement Narrowbyequality | spike | frontend/syntax | class: blocked | Implement Narrowbyequality |
 | 3442 | Implement Narrowbyinstanceof | spike | frontend/syntax | class: blocked | Implement Narrowbyinstanceof |
 | 3443 | Implement Narrowbyparenthesizedswitchexpression | spike | frontend/syntax | class: blocked | Implement Narrowbyparenthesizedswitchexpression |
@@ -5240,6 +5240,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 3437 | Implement Narrowbybooleancomparison | spike | frontend/syntax | see `issues/done/3437-implement-narrowByBooleanComparison.md` |
 | 3438 | Implement Narrowbyclauseexpressioninswitchtrue Name Resolution | spike | frontend/resolver | see `issues/done/3438-implement-narrowByClauseExpressionInSwitchTrue-name-resolution.md` |
 | 3439 | Implement Narrowbyclauseexpressioninswitchtrue Parser Syntax | spike | frontend/syntax | see `issues/done/3439-implement-narrowByClauseExpressionInSwitchTrue-parser-syntax.md` |
+| 3440 | Implement Narrowbyclauseexpressioninswitchtrue Unknown Unsupported | spike | frontend/syntax | see `issues/done/3440-implement-narrowByClauseExpressionInSwitchTrue-unknown-unsupported.md` |
 | 3690 | Implement Optionaltupleelementsandundefined | spike | reference/triage | see `issues/done/3690-implement-optionalTupleElementsAndUndefined.md` |
 | 3996 | Implement Compiler (dup) | spike | frontend/syntax | see `issues/done/3996-implement-reference-typescript-tests-cases-compiler.md` |
 | 4210 | Implement Splicetuples | spike | frontend/resolver | see `issues/done/4210-implement-spliceTuples.md` |
