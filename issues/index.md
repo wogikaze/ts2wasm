@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 30 | 17 | 13 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4620 | 3186 | 1434 |
+| frontend | 4621 | 3186 | 1435 |
 | harness | 1 | 0 | 1 |
 | ir | 99 | 71 | 28 |
 | issues | 4 | 0 | 4 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5325 | 3498 | 1827 |
+| total | 5326 | 3498 | 1828 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -443,6 +443,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5488 | Parse array type suffixes in erased type positions | feature | frontend/parser | implementation-ready | P1 |  | array type suffixes such as `any[]`, `Args[]`, and object literal |
 | 5489 | Report mixed exported and local var/function merges | feature | frontend/semantics | implementation-ready | P1 |  | local `var f` plus exported `function f` overload declarations report |
 | 5490 | Report array push into never array | feature | frontend/semantics | implementation-ready | P1 |  | `arr.push(n)` on an empty-array local inferred as `never[]` is accepted |
+| 5491 | Bind DOM document.querySelector global | feature | frontend/resolver | implementation-ready | P1 |  | `reference/typescript/tests/cases/compiler/nonnullAssertionPropegatesContextualType.ts` |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -2397,7 +2398,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 3302 | Implement Modulealiasasfunctionargument | spike | frontend/syntax | class: blocked | Implement Modulealiasasfunctionargument |
 | 3303 | Implement Modulealiasinterface | spike | frontend/syntax | class: blocked | Implement Modulealiasinterface |
 | 3304 | Implement Moduleandinterfacesharingname | spike | frontend/syntax | class: blocked | Implement Moduleandinterfacesharingname |
-| 3606 | Implement Nonnullassertionpropegatescontextualtype | spike | frontend/syntax | class: blocked | Implement Nonnullassertionpropegatescontextualtype |
 | 3607 | Implement Normalizedintersectiontoocomplex | spike | frontend/resolver | class: blocked | Implement Normalizedintersectiontoocomplex |
 | 3608 | Implement Nounusedtypeparameterconstraint | spike | frontend/syntax | class: blocked | Implement Nounusedtypeparameterconstraint |
 | 3609 | Implement Nullablefunctionerror | spike | frontend/syntax | class: blocked | Implement Nullablefunctionerror |
@@ -5285,6 +5285,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 3603 | Implement Nonnullabletypes | spike | frontend/syntax | see `issues/done/3603-implement-nonNullableTypes.md` |
 | 3604 | Implement Nonnullablewithnullablegenericindexedaccessarg | spike | frontend/semantics | see `issues/done/3604-implement-nonNullableWithNullableGenericIndexedAccessArg.md` |
 | 3605 | Implement Nongenericpartialinstantiationsrelatedinbothdirections | spike | frontend/resolver | see `issues/done/3605-implement-nongenericPartialInstantiationsRelatedInBothDirections.md` |
+| 3606 | Implement Nonnullassertionpropegatescontextualtype | spike | frontend/syntax | see `issues/done/3606-implement-nonnullAssertionPropegatesContextualType.md` |
 | 3690 | Implement Optionaltupleelementsandundefined | spike | reference/triage | see `issues/done/3690-implement-optionalTupleElementsAndUndefined.md` |
 | 3996 | Implement Compiler (dup) | spike | frontend/syntax | see `issues/done/3996-implement-reference-typescript-tests-cases-compiler.md` |
 | 4210 | Implement Splicetuples | spike | frontend/resolver | see `issues/done/4210-implement-spliceTuples.md` |
