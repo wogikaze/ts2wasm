@@ -51,10 +51,6 @@ from pathlib import Path
 from concurrent.futures import ThreadPoolExecutor, as_completed, wait, FIRST_COMPLETED
 from datetime import datetime
 
-# Path for auto-issue generation subprocess
-GEN_ISSUES_SCRIPT = Path(__file__).parent.parent / "gen" / "coverage-to-issues.py"
-UPDATE_ISSUE_INDEX_SCRIPT = Path(__file__).parent.parent / "gen" / "update-issue-index.py"
-
 sys.path.insert(0, str(Path(__file__).parent.parent / "lib"))
 # Lazy import: test262_harness is only needed for test262 suite;
 # tsc/tsgo suites use raw source directly.
@@ -756,7 +752,6 @@ def main():
     sample = None
     category_pattern = None
     server_mode = True
-    auto_issues = False
     suite_detail_rows = []
     suite_detail_counter = [0]
     
@@ -833,9 +828,6 @@ def main():
             i += 2
         elif args[i] == "--no-server":
             server_mode = False
-            i += 1
-        elif args[i] == "--auto-issues":
-            auto_issues = True
             i += 1
         else:
             print(f"unknown option: {args[i]}", file=sys.stderr)
@@ -2616,33 +2608,6 @@ def main():
             print("\n# Per-file details")
             for detail in file_details:
                 print(detail)
-
-    # Auto-issue generation: pipe detail lines to gen-issues-from-coverage
-    if auto_issues and detail_output:
-        print("# Auto-generating issues from coverage details...", file=sys.stderr)
-        detail_text = "\n".join(file_details) + "\n"
-        try:
-            gen_result = subprocess.run(
-                [sys.executable, str(GEN_ISSUES_SCRIPT), "--suite", suite],
-                input=detail_text,
-                capture_output=True,
-                text=True,
-                cwd=REPO_ROOT,
-            )
-            if gen_result.stdout:
-                print(gen_result.stdout, end="", file=sys.stderr)
-            if gen_result.returncode != 0:
-                print(f"# Issue generation stderr: {gen_result.stderr}", file=sys.stderr)
-            else:
-                # Update issue index after generation
-                subprocess.run(
-                    [sys.executable, str(UPDATE_ISSUE_INDEX_SCRIPT)],
-                    capture_output=True,
-                    cwd=REPO_ROOT,
-                )
-                print("# Issue index updated", file=sys.stderr)
-        except Exception as e:
-            print(f"# Auto-issue generation failed: {e}", file=sys.stderr)
 
 if __name__ == "__main__":
     main()

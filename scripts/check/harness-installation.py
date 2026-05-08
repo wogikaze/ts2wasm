@@ -97,7 +97,6 @@ def main():
     print("== required repo gates (script files) ==", file=sys.stderr)
     required_gates = [
         "scripts/check/shell-syntax.py",
-        "scripts/check/issue-health.py",
         "scripts/gen/coverage-matrix.py",
         "scripts/gate/fast-gate.py",
         "scripts/check/manifest-imports.py",

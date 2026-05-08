@@ -11,57 +11,10 @@ scripts/manager check-fast-gate --skip-nextest
 echo "pre-push: architecture rules (file size, crate layers)"
 python3 scripts/check/architecture-rules.py
 
-echo "pre-push: false-done issues in issues/done/"
-python3 scripts/check/false-done-pre-push.py
-
 echo "pre-push: manifest vs wasm imports"
 scripts/manager check-manifest-imports
 
 echo "pre-push: one Node differential smoke (m2)"
 cargo nextest run -p ts2wasm-cli --test m2_node_diff m2_fixtures_match_node_output_under_iwasm
-
-echo "pre-push: required webhook report"
-run_id="pre-push-$(date -u +%Y%m%d-%H%M%S)"
-report_file="$(mktemp)"
-trap 'rm -f "$report_file"' EXIT
-{
-  echo "## 状態"
-  echo
-  echo "pre-push gate は成功しました。これから push を開始します。"
-  echo
-  echo "## 目的"
-  echo
-  echo "ローカルコミットを push する前に、開発 webhook へ監査用レポートを送信する。"
-  echo
-  echo "## 実施内容"
-  echo
-  echo "- scripts/manager check-fast-gate --skip-nextest"
-  echo "- python3 scripts/check/false-done-pre-push.py"
-  echo "- scripts/manager check-manifest-imports"
-  echo "- cargo nextest run -p ts2wasm-cli --test m2_node_diff m2_fixtures_match_node_output_under_iwasm"
-  echo "- git status --short:"
-  git status --short | sed 's/^/  /'
-  echo
-  echo "## 判断と根拠"
-  echo
-  echo "webhook 送信は push 前に必須の監査ステップとして扱う。"
-  echo
-  echo "## 詰まり・ロス"
-  echo
-  echo "なし"
-  echo
-  echo "## リスク"
-  echo
-  echo "この local hook が完了しても、remote 側で push が拒否される可能性は残る。"
-  echo
-  echo "## 次にやるべきこと"
-  echo
-  echo "push 後に remote CI の結果を確認する。"
-  echo
-  echo "## 完了・追加"
-  echo
-  echo "${run_id} の pre-push webhook を送信した。"
-} > "$report_file"
-scripts/manager discord-report --run-id "$run_id" < "$report_file"
 
 echo "pre-push: OK"

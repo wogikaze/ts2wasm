@@ -34,10 +34,6 @@ COMMANDS = {
     "check-assert-true-detect": ("python", "scripts/check/assert-true-detect.py"),
     "check-runtimefn-invariants": ("python", "scripts/check/runtimefn-invariants.py"),
     "check-wasm-validation": ("python", "scripts/check/wasm-validation.py"),
-    "check-issue-index": ("python", "scripts/check/issue-health.py"),
-    "check-issue-health": ("python", "scripts/check/issue-health.py"),
-    "check-issue-readiness": ("python", "scripts/check/issue-readiness.py"),
-    "update-issue-index": ("python", "scripts/gen/update-issue-index.py"),
     "install-hooks": ("bash", "scripts/dev/install-git-hooks.sh"),
     "link-reference": ("python", "scripts/dev/link-reference.py"),
     "spawn-worktrees": ("bash", "scripts/dev/spawn-worktrees.sh"),
@@ -55,8 +51,6 @@ COMMANDS = {
     "test-differential-reporter": ("python", "scripts/report/differential.py"),
     "gen-site": ("python", "scripts/gen-site.py"),
     "create-run-dir": ("python", "scripts/gen/create-run-dir.py"),
-    "discord-report": ("python", "scripts/report/discord-report.py"),
-    "coverage-to-issues": ("python", "scripts/gen/coverage-to-issues.py --run"),
     "fmt": ("cargo", "fmt --all --check"),
     "clippy": ("cargo", "clippy --all-targets -- -D warnings"),
     "nextest": ("cargo", "nextest run"),
@@ -65,12 +59,6 @@ COMMANDS = {
 CHECK_PARTS = {
     "scripts": "check-scripts",
     "shell-syntax": "check-scripts",
-    "issue": "check-issue-health",
-    "issues": "check-issue-health",
-    "issue-health": "check-issue-health",
-    "issue-index": "check-issue-index",
-    "issue-readiness": "check-issue-readiness",
-    "readiness": "check-issue-readiness",
     "manifest": "check-manifest-imports",
     "manifest-imports": "check-manifest-imports",
     "records": "check-test-records-schema",
@@ -110,19 +98,17 @@ def usage():
     print("Examples:")
     print("  python scripts/manager.py gate")
     print("  python scripts/manager.py gate-fast")
-    print("  python scripts/manager.py check issues")
-    print("  python scripts/manager.py update-issue-index --check")
+    print("  python scripts/manager.py check")
     print("  python scripts/manager.py nextest -- --no-fail-fast")
     print()
     print("Commands:")
     
     # Format command list
     cmd_list = [
-        ("gate", "Standard gate: fmt + issues + architecture + coverage matrix + nextest"),
+        ("gate", "Standard gate: fmt + architecture + coverage matrix + nextest"),
         ("gate-fast", "Fast gate: standard gate without nextest"),
         ("gate-all", "Full gate: harness/toolchain baseline plus project gates"),
         ("check", "Run check-repo-smoke, or run a part with `check <part>`"),
-        ("update-issue-index", "Regenerate index tables (add --check to verify only)"),
         ("install-hooks", "Install .githooks via git config core.hooksPath"),
         ("link-reference", "Symlink ignored reference/ corpus into worktrees"),
         ("spawn-worktrees", "Create child worktrees and local assignment files"),
@@ -139,9 +125,7 @@ def usage():
         ("benchmark-tracker", "Performance metrics JSON"),
         ("test262", "[use 'mise run test262' instead — alias for reference-coverage test262 --jsonl]"),
         ("test-differential-reporter", "Report from test262 JSONL (stdin)"),
-        ("coverage-to-issues", "Run coverage and auto-generate issues"),
         ("create-run-dir", "Create reports/runs/<run_id>/ directory"),
-        ("discord-report", "Send a Markdown report or Discord JSON payload to Discord"),
         ("fmt", "cargo fmt --all --check"),
         ("clippy", "cargo clippy --all-targets -- -D warnings"),
         ("nextest", "cargo nextest run"),
@@ -191,7 +175,6 @@ def run_repo_smoke():
     run_sequence([
         ["cargo", "fmt", "--all", "--check"],
         [PYTHON_BIN, str(REPO_ROOT / "scripts/check/shell-syntax.py")],
-        [PYTHON_BIN, str(REPO_ROOT / "scripts/check/issue-health.py")],
     ])
 
 def check_usage():

@@ -46,7 +46,7 @@ git status --short
 
 - 既存の未コミット変更がある場合は、自分の作業と混ぜない。
 - ユーザーの変更らしき差分は勝手に revert / overwrite しない。
-- 作業前に、対象 issue / docs / tests / 近い実装を `codebase_search`（morph-mcp）で確認する。
+- 作業前に、対象 docs / tests / 近い実装を `codebase_search`（morph-mcp）で確認する。
 
 まず見るドキュメント:
 
@@ -67,7 +67,7 @@ git status --short
 ユーザーが実装依頼をした場合、以下の順で進める。
 
 1. **問題を再現または現状確認する**
-   - 近いテスト、coverage case、issue、既存コードを確認する。
+   - 近いテスト、coverage case、既存コードを確認する。
    - バグ修正では、可能なら失敗する focused test を先に用意する。
 
 2. **最小の完了単位を決める**
@@ -76,7 +76,7 @@ git status --short
 
 3. **実装する**
    - 既存の architecture / IR contract / runtime ABI を優先する。
-   - 仕様判断は docs に寄せる。曖昧な場合は、実装内コメントではなく docs / issue に根拠を残す。
+   - 仕様判断は docs に寄せる。曖昧な場合は、実装内コメントではなく docs に根拠を残す。
 
 4. **focused gate を回す**
    - 変更範囲に最も近いテストを先に回す。
@@ -125,7 +125,7 @@ child は調査だけで終わらない。
 
 ### worktree 操作
 
-- parent/child 並列開発は `.agents/prompts/autonomous-parent-orchestrator.md` と `.agents/prompts/autonomous-child-worker.md` を使う。
+- child worker 用に `.agents/prompts/autonomous-child-worker.md` を使う。
 - worktree 作成は `mise run spawn-worktrees`、状況確認は `mise run worktree-status`。
 - `.agents/state`、`current_task.json`、`project_state.json`、`dev-loop` は使わない。
 
@@ -211,7 +211,7 @@ mise tasks
 
 ## 7) ファイル構成
 
-実装は `crates/cli` に集約。`crates/shared` は共有定義。`crates/frontend`, `crates/ir`, `crates/runtime-abi` は移行済み（issues 024, 025, 027 done）。`crates/backend-wasm` は issue 026 で進行中。
+実装は `crates/cli` に集約。`crates/shared` は共有定義。`crates/frontend`, `crates/ir`, `crates/runtime-abi` は移行済み。`crates/backend-wasm` は進行中。
 
 Target layout:
 
@@ -228,7 +228,6 @@ Target layout:
 - `fixtures/`: テストフィクスチャ
 - `scripts/`: テスト / カバレッジ / 検証スクリプト
 - `artifacts/coverage/`: 生成カバレッジ
-- `issues/`: issue tracking
 - `reports/`: 実行報告、blocker、WIP patch
 
 ## 8) scripts の使い方
@@ -239,8 +238,6 @@ mise タスク利用推奨。
 mise run gate                                      # 標準ゲート
 mise run gate-fast                                 # nextest 抜きの高速ゲート
 mise run gate-all                                  # harness/toolchain 含むフルゲート
-mise run check issues                              # issue health
-mise run update-issue-index                        # issue index 更新
 mise run check manifest                            # manifest/wasm import 一致確認
 mise run reference-coverage -- test262 --limit 50  # カバレッジ計測（ramp）
 mise run update-coverage-matrix                    # カバレッジ表更新
@@ -257,7 +254,7 @@ reference coverage の運用:
 - `mise run reference-coverage` および `mise run test262` は、デフォルトで coverage dashboard data を再生成する。
 - dashboard data 更新を避ける場合は `--no-dashboard-data` を使う。
 
-## 9) coverage dashboard と issues の更新
+## 9) coverage dashboard
 
 ### coverage dashboard
 
@@ -265,36 +262,6 @@ reference coverage の運用:
 - 手動生成: `mise run coverage-dashboard-data`
 - ブラウザ確認: `cd site && npm run dev` 後に `/coverage`
 - `npm run build` していない場合、`dist/` の data は古いままなので注意する。
-
-### test262 結果から issue を生成する
-
-```bash
-mise run reference-coverage -- test262 --limit 500 --detail | \
-  mise run gen-issues-from-coverage -- --suite test262
-mise run update-issue-index
-mise run check issues
-ls issues/open/
-```
-
-### 手動で issue を追加する
-
-```bash
-cp issues/templates/issue.md issues/open/NNN-your-title.md
-# ID, title, type, class, area, problem などを記入
-mise run update-issue-index
-mise run check issues
-```
-
-### issue を close する
-
-```bash
-mv issues/open/NNN-your-title.md issues/done/
-mise run update-issue-index
-mise run check issues
-mise run discord-report
-```
-
-Discord 報告は必須。送信できない場合は `reports/runs/` に payload を保存する。
 
 ## 10) ast-grep（最小運用）
 

@@ -15,13 +15,6 @@ else
   echo "pre-commit: skip cargo fmt and clippy; no staged Rust changes"
 fi
 
-if printf '%s\n' "$staged_files" | grep -Eq '^(issues/|scripts/gen/update-issue-index\.py|scripts/check/issue-health\.py)'; then
-  echo "pre-commit: issues/ mechanical checks (staged files only)"
-  echo "$staged_files" | python3 scripts/check/issue-health-staged.py
-else
-  echo "pre-commit: skip issues check; no staged issues/scripts changes"
-fi
-
 md_files="$(printf '%s\n' "$staged_files" | grep -E '\.md$' || true)"
 
 if [ -n "$md_files" ]; then
