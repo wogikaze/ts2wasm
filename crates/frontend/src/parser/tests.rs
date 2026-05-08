@@ -119,10 +119,7 @@ mod tests {
     fn parses_top_level_block_by_flattening_statements() {
         let program = parse_program("{ let x = 1; } let y = 2;").unwrap();
         assert_eq!(program.len(), 2);
-        // The first statement is a block containing `let x = 1;`
-        assert!(matches!(program[0], Stmt::Block { ref statements, .. }
-            if statements.len() == 1
-                && matches!(&statements[0], Stmt::Let { name, .. } if name == "x")));
+        assert!(matches!(program[0], Stmt::Let { ref name, .. } if name == "x"));
         assert!(matches!(program[1], Stmt::Let { ref name, .. } if name == "y"));
     }
 
@@ -785,6 +782,7 @@ mod tests {
         };
         assert_eq!(name, "value");
 
+        // The second statement is a block containing the `let after = 2;` declaration
         assert!(matches!(&program[1], Stmt::Block { statements, .. }
             if statements.len() == 1
                 && matches!(&statements[0], Stmt::Let { name, .. } if name == "after")));
@@ -1823,10 +1821,12 @@ b /* parameter b */,
     }
 
     #[test]
-    fn accepts_uninitialized_const_after_type_annotation() {
-        let program = parse_program("const value: number;").unwrap();
-        assert_eq!(program.len(), 1);
-        assert!(matches!(&program[0], Stmt::Let { name, .. } if name == "value"));
+    fn rejects_uninitialized_const_after_type_annotation() {
+        let err = parse_program("const value: number;").unwrap_err();
+        assert_eq!(err.code, DiagCode::UnsupportedSyntax);
+        assert!(err
+            .message
+            .contains("const declarations require an initializer"));
     }
 
     #[test]
@@ -2157,10 +2157,10 @@ b /* parameter b */,
 
     #[test]
     fn rejects_unsupported_regexp_flag_with_issue_linked_diagnostic() {
-        let err = parse_program("let r = /abc/v;").unwrap_err();
+        let err = parse_program("let r = /abc/d;").unwrap_err();
         assert_eq!(err.code, DiagCode::UnsupportedSyntax);
         assert!(err.message.contains("issue-202"));
-        assert!(err.message.contains("unsupported RegExp flag `v`"));
+        assert!(err.message.contains("unsupported RegExp flag `d`"));
         assert!(err.span.is_some());
     }
 
@@ -3725,10 +3725,14 @@ b /* parameter b */,
     }
 
     #[test]
-    fn accepts_non_const_enum_missing_initializer() {
-        let program = parse_program("const x;").unwrap();
-        assert_eq!(program.len(), 1);
-        assert!(matches!(&program[0], Stmt::Let { name, .. } if name == "x"));
+    fn rejects_non_const_enum_missing_initializer() {
+        let err = parse_program("const x;").unwrap_err();
+        assert_eq!(err.code, DiagCode::UnsupportedSyntax);
+        assert!(
+            err.message
+                .contains("const declarations require an initializer"),
+            "{err:?}"
+        );
     }
 
     #[test]

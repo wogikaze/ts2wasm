@@ -502,6 +502,14 @@ impl WatEmitter<'_> {
     }
 
     pub(super) fn emit_string_replace(&self, wat: &mut String) {
+        // Emit $regexp_match_from helper first (needed for regexp replace)
+        self.emit_regexp_match_from(wat);
+        // Emit $string_expand_dollar helper
+        self.emit_string_expand_dollar(wat);
+        // Emit $string_length helper
+        self.emit_string_length(wat);
+        // Emit $string_replace_regexp helper
+        self.emit_string_replace_regexp(wat);
         wat.push_str(&format!(
             r#"
   (func $string_replace (param $s i32) (param $search i32) (param $replace i32) (result i32)
@@ -516,194 +524,473 @@ impl WatEmitter<'_> {
     (local $post_len i32)
     (local $result_len i32)
     (local $result_ptr i32)
+    (local $first_byte i32)
+    (local $is_regexp i32)
     ;; Guard: $s must be string
     (if (i32.eqz (call $is_string (local.get $s))) (then (return (local.get $s))))
-    ;; Guard: $search must be string
-    (if (i32.eqz (call $is_string (local.get $search))) (then (return (local.get $s))))
     (local.set $s_obj (i32.and (local.get $s) (i32.const {heap_mask})))
-    (local.set $search_obj (i32.and (local.get $search) (i32.const {heap_mask})))
-    (local.set $replace_obj (i32.and (local.get $replace) (i32.const {heap_mask})))
     (local.set $s_len (i32.load (local.get $s_obj)))
-    (local.set $search_len (i32.load (local.get $search_obj)))
-    (local.set $replace_len (i32.load (local.get $replace_obj)))
-    ;; If search is empty, mem_equal(0) matches at pos 0, so skip early return
-    ;; and let the search loop handle it naturally.
-    ;; Search loop for first occurrence
-    (local.set $pos (i32.const {zero}))
-    (block $not_found
-      (loop $search
-        (br_if $not_found (i32.gt_u (local.get $pos) (i32.sub (local.get $s_len) (local.get $search_len))))
-        (if (call $mem_equal
-              (i32.add (i32.add (local.get $s_obj) (i32.const {str_header})) (local.get $pos))
-              (i32.add (local.get $search_obj) (i32.const {str_header}))
-              (local.get $search_len))
-          (then (br $not_found)))
-        (local.set $pos (i32.add (local.get $pos) (i32.const {one})))
-        (br $search)))
-    ;; If pos > h_len - search_len, not found; return $s
-    (if (i32.gt_u (local.get $pos) (i32.sub (local.get $s_len) (local.get $search_len)))
-      (then (return (local.get $s))))
-    ;; Found at pos: construct result = prefix + replace + suffix
-    (local.set $pre_len (local.get $pos))
-    (local.set $post_len (i32.sub (i32.sub (local.get $s_len) (local.get $pos)) (local.get $search_len)))
-    (local.set $result_len (i32.add (i32.add (local.get $pre_len) (local.get $replace_len)) (local.get $post_len)))
-    (local.set $result_ptr (call $alloc_heap (i32.add (i32.const {str_header}) (local.get $result_len))))
-    (i32.store (local.get $result_ptr) (local.get $result_len))
-    ;; Copy prefix
-    (call $copy
-      (i32.add (local.get $s_obj) (i32.const {str_header}))
-      (i32.add (local.get $result_ptr) (i32.const {str_header}))
-      (local.get $pre_len))
-    ;; Copy replacement
-    (call $copy
-      (i32.add (local.get $replace_obj) (i32.const {str_header}))
-      (i32.add (i32.add (local.get $result_ptr) (i32.const {str_header})) (local.get $pre_len))
-      (local.get $replace_len))
-    ;; Copy suffix
-    (call $copy
-      (i32.add (i32.add (local.get $s_obj) (i32.const {str_header})) (i32.add (local.get $pos) (local.get $search_len)))
-      (i32.add (i32.add (local.get $result_ptr) (i32.const {str_header})) (i32.add (local.get $pre_len) (local.get $replace_len)))
-      (local.get $post_len))
-    (i32.or (local.get $result_ptr) (i32.const {string_tag})))
+    ;; Check if search is a RegExp pattern (starts with '/')
+    (if (result i32)
+      (call $is_string (local.get $search))
+      (then
+        (local.set $search_obj (i32.and (local.get $search) (i32.const {heap_mask})))
+        (local.set $search_len (i32.load (local.get $search_obj)))
+        (local.set $first_byte
+          (i32.load8_u (i32.add (local.get $search_obj) (i32.const {str_header}))))
+        (if (i32.eq (local.get $first_byte) (i32.const {slash}))
+          (then (local.set $is_regexp (i32.const 1)))
+          (else (local.set $is_regexp (i32.const 0))))
+        (i32.const 1))
+      (else
+        (local.set $is_regexp (i32.const 0))
+        (i32.const 0)))
+    (if (local.get $is_regexp)
+      (then
+        ;; === RegExp path ===
+        (return
+          (call $string_replace_regexp
+            (local.get $s) (local.get $search) (local.get $replace))))
+      (else
+        ;; === String path (existing behavior) ===
+        (if (i32.eqz (call $is_string (local.get $search)))
+          (then (return (local.get $s))))
+        (if (i32.eqz (call $is_string (local.get $replace)))
+          (then (return (local.get $s))))
+        (local.set $search_obj (i32.and (local.get $search) (i32.const {heap_mask})))
+        (local.set $replace_obj (i32.and (local.get $replace) (i32.const {heap_mask})))
+        (local.set $search_len (i32.load (local.get $search_obj)))
+        (local.set $replace_len (i32.load (local.get $replace_obj)))
+        ;; Search loop for first occurrence
+        (local.set $pos (i32.const {zero}))
+        (block $not_found
+          (loop $search
+            (br_if $not_found (i32.gt_u (local.get $pos) (i32.sub (local.get $s_len) (local.get $search_len))))
+            (if (call $mem_equal
+                  (i32.add (i32.add (local.get $s_obj) (i32.const {str_header})) (local.get $pos))
+                  (i32.add (local.get $search_obj) (i32.const {str_header}))
+                  (local.get $search_len))
+              (then (br $not_found)))
+            (local.set $pos (i32.add (local.get $pos) (i32.const {one})))
+            (br $search)))
+        (if (i32.gt_u (local.get $pos) (i32.sub (local.get $s_len) (local.get $search_len)))
+          (then (return (local.get $s))))
+        (local.set $pre_len (local.get $pos))
+        (local.set $post_len (i32.sub (i32.sub (local.get $s_len) (local.get $pos)) (local.get $search_len)))
+        (local.set $result_len (i32.add (i32.add (local.get $pre_len) (local.get $replace_len)) (local.get $post_len)))
+        (local.set $result_ptr (call $alloc_heap (i32.add (i32.const {str_header}) (local.get $result_len))))
+        (i32.store (local.get $result_ptr) (local.get $result_len))
+        (call $copy
+          (i32.add (local.get $s_obj) (i32.const {str_header}))
+          (i32.add (local.get $result_ptr) (i32.const {str_header}))
+          (local.get $pre_len))
+        (call $copy
+          (i32.add (local.get $replace_obj) (i32.const {str_header}))
+          (i32.add (i32.add (local.get $result_ptr) (i32.const {str_header})) (local.get $pre_len))
+          (local.get $replace_len))
+        (call $copy
+          (i32.add (i32.add (local.get $s_obj) (i32.const {str_header})) (i32.add (local.get $pos) (local.get $search_len)))
+          (i32.add (i32.add (local.get $result_ptr) (i32.const {str_header})) (i32.add (local.get $pre_len) (local.get $replace_len)))
+          (local.get $post_len))
+        (i32.or (local.get $result_ptr) (i32.const {string_tag}))))
 "#,
             heap_mask = ValueTag::HEAP_MASK,
             string_tag = ValueTag::STRING,
+            str_header = Layout::STRING_HEADER_SIZE,
+            slash = b'/' as i32,
+            zero = RuntimeConst::ZERO,
+            one = RuntimeConst::ONE,
+        ));
+    }
+
+    /// Helper: return the byte length of a string value (raw i32, not tagged)
+    pub(super) fn emit_string_length(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"  (func $string_length (param $s i32) (result i32)
+    (if (i32.eqz (call $is_string (local.get $s))) (then (return (i32.const {zero}))))
+    (i32.load (i32.and (local.get $s) (i32.const {heap_mask}))))"#,
+            heap_mask = ValueTag::HEAP_MASK,
+            zero = RuntimeConst::ZERO,
+        ));
+    }
+
+    pub(super) fn emit_string_expand_dollar(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  ;; Helper: expand dollar patterns in replacement string
+  ;; $replace - replacement template string
+  ;; $match - matched text
+  ;; $pre - text before match
+  ;; $post - text after match
+  ;; $result - pre-allocated buffer pointer (without header) where output is written
+  ;; returns bytes written
+  (func $string_expand_dollar (param $replace i32) (param $match i32) (param $pre i32) (param $post i32) (param $result i32) (result i32)
+    (local $r_obj i32)
+    (local $r_len i32)
+    (local $i i32)
+    (local $dst i32)
+    (local $ch i32)
+    (local $next_ch i32)
+    (local $expand_obj i32)
+    (local $expand_len i32)
+    (if (i32.eqz (call $is_string (local.get $replace)))
+      (then (return (i32.const {zero}))))
+    (local.set $r_obj (i32.and (local.get $replace) (i32.const {heap_mask})))
+    (local.set $r_len (i32.load (local.get $r_obj)))
+    (local.set $dst (i32.const {zero}))
+    (block $done
+      (loop $scan
+        (br_if $done (i32.ge_u (local.get $i) (local.get $r_len)))
+        (local.set $ch (i32.load8_u (i32.add (i32.add (local.get $r_obj) (i32.const {str_header})) (local.get $i))))
+        (if (i32.eq (local.get $ch) (i32.const 0x24))
+          (then
+            ;; Found '$', check next char
+            (local.set $i (i32.add (local.get $i) (i32.const {one})))
+            (if (i32.ge_u (local.get $i) (local.get $r_len))
+              (then
+                ;; '$' at end: copy literal '$'
+                (i32.store8 (i32.add (local.get $result) (local.get $dst)) (i32.const 0x24))
+                (local.set $dst (i32.add (local.get $dst) (i32.const {one})))
+                (br $done)))
+            (local.set $next_ch (i32.load8_u (i32.add (i32.add (local.get $r_obj) (i32.const {str_header})) (local.get $i))))
+            (if (i32.eq (local.get $next_ch) (i32.const 0x24))
+              (then
+                ;; $$ → literal $
+                (i32.store8 (i32.add (local.get $result) (local.get $dst)) (i32.const 0x24))
+                (local.set $dst (i32.add (local.get $dst) (i32.const {one})))
+                (local.set $i (i32.add (local.get $i) (i32.const {one}))))
+              (else
+                (if (i32.eq (local.get $next_ch) (i32.const 0x26))
+                  (then
+                    ;; $& → match text
+                    (if (call $is_string (local.get $match))
+                      (then
+                        (local.set $expand_obj (i32.and (local.get $match) (i32.const {heap_mask})))
+                        (local.set $expand_len (i32.load (local.get $expand_obj)))
+                        (call $copy
+                          (i32.add (local.get $expand_obj) (i32.const {str_header}))
+                          (i32.add (local.get $result) (local.get $dst))
+                          (local.get $expand_len))
+                        (local.set $dst (i32.add (local.get $dst) (local.get $expand_len)))))
+                    (local.set $i (i32.add (local.get $i) (i32.const {one}))))
+                  (else
+                    (if (i32.eq (local.get $next_ch) (i32.const 0x60))
+                      (then
+                        ;; $` → text before match
+                        (if (call $is_string (local.get $pre))
+                          (then
+                            (local.set $expand_obj (i32.and (local.get $pre) (i32.const {heap_mask})))
+                            (local.set $expand_len (i32.load (local.get $expand_obj)))
+                            (call $copy
+                              (i32.add (local.get $expand_obj) (i32.const {str_header}))
+                              (i32.add (local.get $result) (local.get $dst))
+                              (local.get $expand_len))
+                            (local.set $dst (i32.add (local.get $dst) (local.get $expand_len)))))
+                        (local.set $i (i32.add (local.get $i) (i32.const {one}))))
+                      (else
+                        (if (i32.eq (local.get $next_ch) (i32.const 0x27))
+                          (then
+                            ;; $' → text after match
+                            (if (call $is_string (local.get $post))
+                              (then
+                                (local.set $expand_obj (i32.and (local.get $post) (i32.const {heap_mask})))
+                                (local.set $expand_len (i32.load (local.get $expand_obj)))
+                                (call $copy
+                                  (i32.add (local.get $expand_obj) (i32.const {str_header}))
+                                  (i32.add (local.get $result) (local.get $dst))
+                                  (local.get $expand_len))
+                                (local.set $dst (i32.add (local.get $dst) (local.get $expand_len)))))
+                            (local.set $i (i32.add (local.get $i) (i32.const {one}))))
+                          (else
+                            ;; $n or other: just copy '$' and the char literally
+                            (i32.store8 (i32.add (local.get $result) (local.get $dst)) (i32.const 0x24))
+                            (local.set $dst (i32.add (local.get $dst) (i32.const {one})))
+                            ;; Also copy the char after $ (e.g., for $1, copy '1')
+                            (i32.store8 (i32.add (local.get $result) (local.get $dst)) (local.get $next_ch))
+                            (local.set $dst (i32.add (local.get $dst) (i32.const {one})))
+                            (local.set $i (i32.add (local.get $i) (i32.const {one})))))))))))
+          (else
+            ;; Not '$', copy character literally
+            (i32.store8 (i32.add (local.get $result) (local.get $dst)) (local.get $ch))
+            (local.set $dst (i32.add (local.get $dst) (i32.const {one})))
+            (local.set $i (i32.add (local.get $i) (i32.const {one}))))
+        (br $scan)))
+    (local.get $dst))
+"#,
+            heap_mask = ValueTag::HEAP_MASK,
             str_header = Layout::STRING_HEADER_SIZE,
             zero = RuntimeConst::ZERO,
             one = RuntimeConst::ONE,
         ));
     }
 
-    pub(super) fn emit_string_replace_all(&self, wat: &mut String) {
+    pub(super) fn emit_string_replace_regexp(&self, wat: &mut String) {
         wat.push_str(&format!(
             r#"
-  (func $string_replace_all (param $s i32) (param $search i32) (param $replace i32) (result i32)
-    (local $s_obj i32)
-    (local $search_obj i32)
-    (local $replace_obj i32)
-    (local $s_len i32)
-    (local $search_len i32)
-    (local $replace_len i32)
-    (local $pos i32)
-    (local $count i32)
-    (local $result_len i32)
+  ;; Internal: Replace using RegExp pattern
+  ;; $pattern - RegExp pattern string (e.g., "/abc/g")
+  ;; $input - input string
+  ;; $replace - replacement string
+  (func $string_replace_regexp (param $input i32) (param $pattern i32) (param $replace i32) (result i32)
+    (local $i_obj i32)
+    (local $i_len i32)
+    (local $p_obj i32)
+    (local $p_len i32)
+    (local $delimiter i32)
+    (local $is_global i32)
+    (local $search_pos i32)
+    (local $match_str i32)
+    (local $match_end i32)
+    (local $match_len i32)
     (local $result_ptr i32)
+    (local $result_len i32)
     (local $dst i32)
-    (local $prev_end i32)
+    (local $expanded_len i32)
+    (local $pre_str i32)
+    (local $post_str i32)
     (local $seg_len i32)
-    (local $is_empty i32)
-    (if (i32.eqz (call $is_string (local.get $s))) (then (return (local.get $s))))
-    (if (i32.eqz (call $is_string (local.get $search))) (then (return (local.get $s))))
-    (local.set $s_obj (i32.and (local.get $s) (i32.const {heap_mask})))
-    (local.set $search_obj (i32.and (local.get $search) (i32.const {heap_mask})))
+    (local $prev_end i32)
+    (local $replace_obj i32)
+    (local $replace_len i32)
+    (local $expand_needed i32)
+    (local $match_start i32)
+    (if (i32.eqz (call $is_string (local.get $input)))
+      (then (return (local.get $input))))
+    (if (i32.eqz (call $is_string (local.get $pattern)))
+      (then (return (local.get $input))))
+    (if (i32.eqz (call $is_string (local.get $replace)))
+      (then (return (local.get $input))))
+    (local.set $i_obj (i32.and (local.get $input) (i32.const {heap_mask})))
+    (local.set $i_len (i32.load (local.get $i_obj)))
+    (local.set $p_obj (i32.and (local.get $pattern) (i32.const {heap_mask})))
+    (local.set $p_len (i32.load (local.get $p_obj)))
     (local.set $replace_obj (i32.and (local.get $replace) (i32.const {heap_mask})))
-    (local.set $s_len (i32.load (local.get $s_obj)))
-    (local.set $search_len (i32.load (local.get $search_obj)))
     (local.set $replace_len (i32.load (local.get $replace_obj)))
-    (if (i32.lt_u (local.get $s_len) (local.get $search_len))
-      (then (return (local.get $s))))
-    (local.set $is_empty (i32.eqz (local.get $search_len)))
-    (if (local.get $is_empty)
+    (if (i32.lt_u (local.get $p_len) (i32.const 2))
+      (then (return (local.get $input))))
+    ;; Find closing slash delimiter
+    (local.set $delimiter (i32.sub (local.get $p_len) (i32.const {one})))
+    (block $find_delim
+      (loop $find_loop
+        (br_if $find_delim
+          (i32.eq
+            (i32.load8_u (i32.add (i32.add (local.get $p_obj) (i32.const {str_header})) (local.get $delimiter)))
+            (i32.const {slash})))
+        (if (i32.eqz (local.get $delimiter))
+          (then (return (local.get $input))))
+        (local.set $delimiter (i32.sub (local.get $delimiter) (i32.const {one})))
+        (br $find_loop)))
+    ;; Check for 'g' flag (after the closing slash)
+    (local.set $is_global (i32.const {zero}))
+    (block $check_flags
+      (local.set $p_len (i32.add (local.get $delimiter) (i32.const {one})))
+      (loop $flag_loop
+        (br_if $check_flags (i32.ge_u (local.get $p_len) (i32.load (i32.and (local.get $pattern) (i32.const {heap_mask})))))
+        (if (i32.eq
+              (i32.load8_u (i32.add (i32.add (local.get $p_obj) (i32.const {str_header})) (local.get $p_len)))
+              (i32.const 0x67))
+          (then (local.set $is_global (i32.const 1))))
+        (local.set $p_len (i32.add (local.get $p_len) (i32.const {one})))
+        (br $flag_loop)))
+    ;; Restore p_len
+    (local.set $p_len (i32.load (i32.and (local.get $pattern) (i32.const {heap_mask}))))
+    ;; Check if replace contains dollar patterns
+    (local.set $expand_needed (i32.const {zero}))
+    (block $check_dollar_done
+      (local.set $p_len (i32.const {zero})) ;; reuse as scan index
+      (loop $check_dollar
+        (br_if $check_dollar_done (i32.ge_u (local.get $p_len) (local.get $replace_len)))
+        (if (i32.eq
+              (i32.load8_u (i32.add (local.get $replace_obj) (i32.add (i32.const {str_header}) (local.get $p_len))))
+              (i32.const 0x24))
+          (then
+            (local.set $expand_needed (i32.const 1))
+            (br $check_dollar_done)))
+        (local.set $p_len (i32.add (local.get $p_len) (i32.const {one})))
+        (br $check_dollar)))
+    ;; Restore p_len
+    (local.set $p_len (i32.load (i32.and (local.get $pattern) (i32.const {heap_mask}))))
+    (if (local.get $is_global)
       (then
-        (local.set $count (i32.add (local.get $s_len) (i32.const {one})))
-        (local.set $result_len
-          (i32.add (local.get $s_len)
-            (i32.mul (local.get $count) (local.get $replace_len)))))
-      (else
-        (local.set $pos (i32.const {zero}))
-        (local.set $count (i32.const {zero}))
+        ;; === Global regexp replace ===
+        ;; First pass: count total result length
+        (local.set $result_len (i32.const {zero}))
+        (local.set $prev_end (i32.const {zero}))
+        (local.set $search_pos (i32.const {zero}))
         (block $count_done
           (loop $count_loop
-            (br_if $count_done
-              (i32.gt_u (local.get $pos)
-                (i32.sub (local.get $s_len) (local.get $search_len))))
-            (if (call $mem_equal
-                  (i32.add (i32.add (local.get $s_obj) (i32.const {str_header})) (local.get $pos))
-                  (i32.add (local.get $search_obj) (i32.const {str_header}))
-                  (local.get $search_len))
+            (local.set $match_str (call $regexp_match_from (local.get $pattern) (local.get $input) (local.get $search_pos)))
+            (if (i32.eqz (call $is_string (local.get $match_str)))
+              (then (br $count_done)))
+            ;; Read match_end from scratch (stored by regexp_match_from)
+            (local.set $match_end (i32.load (i32.const {scratch})))
+            (local.set $match_len (i32.load (i32.and (local.get $match_str) (i32.const {heap_mask}))))
+            (local.set $match_start (i32.sub (local.get $match_end) (local.get $match_len)))
+            ;; Add prefix length: prev_end to match_start
+            (local.set $result_len (i32.add (local.get $result_len) (i32.sub (local.get $match_start) (local.get $prev_end))))
+            ;; Add replacement length
+            (if (local.get $expand_needed)
               (then
-                (local.set $count (i32.add (local.get $count) (i32.const {one})))
-                (local.set $pos (i32.add (local.get $pos) (local.get $search_len))))
+                ;; Compute exact expanded replacement length
+                ;; We need pre and post strings for dollar expansion
+                ;; For counting pass, just use replace_len as estimate (close enough)
+                (local.set $result_len (i32.add (local.get $result_len) (local.get $replace_len)))
+                )
               (else
-                (local.set $pos (i32.add (local.get $pos) (i32.const {one})))))
+                (local.set $result_len (i32.add (local.get $result_len) (local.get $replace_len)))))
+            (local.set $prev_end (local.get $match_end))
+            ;; Advance past match; for zero-length, advance by 1
+            (local.set $search_pos (local.get $match_end))
+            (if (i32.eq (local.get $match_len) (i32.const {zero}))
+              (then (local.set $search_pos (i32.add (local.get $search_pos) (i32.const {one})))))
             (br $count_loop)))
-        (if (i32.eqz (local.get $count))
-          (then (return (local.get $s))))
-        (local.set $result_len
-          (i32.add (local.get $s_len)
-            (i32.mul (local.get $count)
-              (i32.sub (local.get $replace_len) (local.get $search_len))))))
-    )
-    (local.set $result_ptr
-      (call $alloc_heap (i32.add (i32.const {str_header}) (local.get $result_len))))
-    (i32.store (local.get $result_ptr) (local.get $result_len))
-    (local.set $dst (i32.const {zero}))
-    (if (local.get $is_empty)
-      (then
-        (local.set $pos (i32.const {zero}))
-        (block $empty_done
-          (loop $empty_loop
-            (call $copy
-              (i32.add (local.get $replace_obj) (i32.const {str_header}))
-              (i32.add (i32.add (local.get $result_ptr) (i32.const {str_header})) (local.get $dst))
-              (local.get $replace_len))
-            (local.set $dst (i32.add (local.get $dst) (local.get $replace_len)))
-            (br_if $empty_done (i32.eq (local.get $pos) (local.get $s_len)))
-            (i32.store8
-              (i32.add (i32.add (local.get $result_ptr) (i32.const {str_header})) (local.get $dst))
-              (i32.load8_u
-                (i32.add (i32.add (local.get $s_obj) (i32.const {str_header})) (local.get $pos))))
-            (local.set $dst (i32.add (local.get $dst) (i32.const {one})))
-            (local.set $pos (i32.add (local.get $pos) (i32.const {one})))
-            (br $empty_loop))))
-      (else
+        ;; Add remaining suffix
+        (local.set $result_len (i32.add (local.get $result_len) (i32.sub (local.get $i_len) (local.get $prev_end))))
+        ;; Allocate result buffer
+        (local.set $result_ptr (call $alloc_heap (i32.add (i32.const {str_header}) (local.get $result_len))))
+        (i32.store (local.get $result_ptr) (local.get $result_len))
+        ;; Second pass: build result
+        (local.set $dst (i32.const {zero}))
         (local.set $prev_end (i32.const {zero}))
-        (local.set $pos (i32.const {zero}))
+        (local.set $search_pos (i32.const {zero}))
         (block $build_done
           (loop $build_loop
-            (br_if $build_done
-              (i32.gt_u (local.get $pos)
-                (i32.sub (local.get $s_len) (local.get $search_len))))
-            (if (call $mem_equal
-                  (i32.add (i32.add (local.get $s_obj) (i32.const {str_header})) (local.get $pos))
-                  (i32.add (local.get $search_obj) (i32.const {str_header}))
-                  (local.get $search_len))
+            (local.set $match_str (call $regexp_match_from (local.get $pattern) (local.get $input) (local.get $search_pos)))
+            (if (i32.eqz (call $is_string (local.get $match_str)))
+              (then (br $build_done)))
+            (local.set $match_end (i32.load (i32.const {scratch})))
+            (local.set $match_len (i32.load (i32.and (local.get $match_str) (i32.const {heap_mask}))))
+            (local.set $match_start (i32.sub (local.get $match_end) (local.get $match_len)))
+            ;; Copy prefix: input[prev_end .. match_start) → result[dst ..]
+            (local.set $seg_len (i32.sub (local.get $match_start) (local.get $prev_end)))
+            (if (i32.gt_u (local.get $seg_len) (i32.const {zero}))
               (then
-                (local.set $seg_len (i32.sub (local.get $pos) (local.get $prev_end)))
-                (if (i32.gt_u (local.get $seg_len) (i32.const {zero}))
-                  (then
-                    (call $copy
-                      (i32.add (i32.add (local.get $s_obj) (i32.const {str_header})) (local.get $prev_end))
-                      (i32.add (i32.add (local.get $result_ptr) (i32.const {str_header})) (local.get $dst))
-                      (local.get $seg_len))
-                    (local.set $dst (i32.add (local.get $dst) (local.get $seg_len)))))
+                (call $copy
+                  (i32.add (i32.add (local.get $i_obj) (i32.const {str_header})) (local.get $prev_end))
+                  (i32.add (i32.add (local.get $result_ptr) (i32.const {str_header})) (local.get $dst))
+                  (local.get $seg_len))
+                (local.set $dst (i32.add (local.get $dst) (local.get $seg_len)))))
+            ;; Build replacement
+            (if (local.get $expand_needed)
+              (then
+                ;; Create pre and post strings for dollar expansion
+                (local.set $pre_str (call $string_substring
+                  (local.get $input)
+                  (i32.or (i32.shl (i32.const {zero}) (i32.const {number_shift})) (i32.const {number_tag}))
+                  (i32.or (i32.shl (local.get $match_start) (i32.const {number_shift})) (i32.const {number_tag}))))
+                (local.set $post_str (call $string_substring
+                  (local.get $input)
+                  (i32.or (i32.shl (local.get $match_end) (i32.const {number_shift})) (i32.const {number_tag}))
+                  (i32.or (i32.shl (local.get $i_len) (i32.const {number_shift})) (i32.const {number_tag}))))
+                ;; Render expanded replacement to scratch buffer
+                (local.set $expanded_len
+                  (call $string_expand_dollar
+                    (local.get $replace) (local.get $match_str) (local.get $pre_str) (local.get $post_str)
+                    (i32.const {scratch})))
+                ;; Copy expanded replacement from scratch to result
+                (call $copy
+                  (i32.const {scratch})
+                  (i32.add (i32.add (local.get $result_ptr) (i32.const {str_header})) (local.get $dst))
+                  (local.get $expanded_len))
+                (local.set $dst (i32.add (local.get $dst) (local.get $expanded_len))))
+              (else
+                ;; Plain string replacement
                 (call $copy
                   (i32.add (local.get $replace_obj) (i32.const {str_header}))
                   (i32.add (i32.add (local.get $result_ptr) (i32.const {str_header})) (local.get $dst))
                   (local.get $replace_len))
-                (local.set $dst (i32.add (local.get $dst) (local.get $replace_len)))
-                (local.set $prev_end (i32.add (local.get $pos) (local.get $search_len)))
-                (local.set $pos (local.get $prev_end)))
-              (else
-                (local.set $pos (i32.add (local.get $pos) (i32.const {one})))))
+                (local.set $dst (i32.add (local.get $dst) (local.get $replace_len)))))
+            (local.set $prev_end (local.get $match_end))
+            (local.set $search_pos (local.get $match_end))
+            (if (i32.eq (local.get $match_len) (i32.const {zero}))
+              (then (local.set $search_pos (i32.add (local.get $search_pos) (i32.const {one})))))
             (br $build_loop)))
-        (local.set $seg_len (i32.sub (local.get $s_len) (local.get $prev_end)))
+        ;; Copy remaining suffix
+        (local.set $seg_len (i32.sub (local.get $i_len) (local.get $prev_end)))
         (if (i32.gt_u (local.get $seg_len) (i32.const {zero}))
           (then
             (call $copy
-              (i32.add (i32.add (local.get $s_obj) (i32.const {str_header})) (local.get $prev_end))
+              (i32.add (i32.add (local.get $i_obj) (i32.const {str_header})) (local.get $prev_end))
               (i32.add (i32.add (local.get $result_ptr) (i32.const {str_header})) (local.get $dst))
               (local.get $seg_len))))
-        )
-    )
-    (i32.or (local.get $result_ptr) (i32.const {string_tag}))
-    )
+        (i32.or (local.get $result_ptr) (i32.const {string_tag})))
+      (else
+        ;; === Non-global regexp replace ===
+        ;; Find first match from position 0
+        (local.set $match_str (call $regexp_match_from (local.get $pattern) (local.get $input) (i32.const {zero})))
+        (if (i32.eqz (call $is_string (local.get $match_str)))
+          (then (return (local.get $input))))
+        (local.set $match_end (i32.load (i32.const {scratch}))) ;; stored by regexp_match_from
+        (local.set $match_len (i32.load (i32.and (local.get $match_str) (i32.const {heap_mask}))))
+        (local.set $match_start (i32.sub (local.get $match_end) (local.get $match_len)))
+        (if (local.get $expand_needed)
+          (then
+            ;; Dollar expansion: render to scratch first to measure
+            (local.set $pre_str (call $string_substring
+              (local.get $input)
+              (i32.or (i32.shl (i32.const {zero}) (i32.const {number_shift})) (i32.const {number_tag}))
+              (i32.or (i32.shl (local.get $match_start) (i32.const {number_shift})) (i32.const {number_tag}))))
+            (local.set $post_str (call $string_substring
+              (local.get $input)
+              (i32.or (i32.shl (local.get $match_end) (i32.const {number_shift})) (i32.const {number_tag}))
+              (i32.or (i32.shl (local.get $i_len) (i32.const {number_shift})) (i32.const {number_tag}))))
+            ;; Render expanded replacement to scratch
+            (local.set $expanded_len
+              (call $string_expand_dollar
+                (local.get $replace) (local.get $match_str) (local.get $pre_str) (local.get $post_str)
+                (i32.const {scratch})))
+            ;; Compute result: prefix + expanded_replacement + suffix
+            (local.set $result_len (i32.add
+              (local.get $match_start)
+              (i32.add (local.get $expanded_len) (i32.sub (local.get $i_len) (local.get $match_end)))))
+            (local.set $result_ptr (call $alloc_heap (i32.add (i32.const {str_header}) (local.get $result_len))))
+            (i32.store (local.get $result_ptr) (local.get $result_len))
+            ;; Copy prefix
+            (call $copy
+              (i32.add (local.get $i_obj) (i32.const {str_header}))
+              (i32.add (local.get $result_ptr) (i32.const {str_header}))
+              (local.get $match_start))
+            ;; Copy expanded replacement from scratch
+            (call $copy
+              (i32.const {scratch})
+              (i32.add (i32.add (local.get $result_ptr) (i32.const {str_header})) (local.get $match_start))
+              (local.get $expanded_len))
+            ;; Copy suffix
+            (call $copy
+              (i32.add (i32.add (local.get $i_obj) (i32.const {str_header})) (local.get $match_end))
+              (i32.add (i32.add (local.get $result_ptr) (i32.const {str_header})) (i32.add (local.get $match_start) (local.get $expanded_len)))
+              (i32.sub (local.get $i_len) (local.get $match_end)))
+            (i32.or (local.get $result_ptr) (i32.const {string_tag})))
+          (else
+            ;; Plain string replacement (no dollar patterns)
+            (local.set $result_len (i32.add
+              (local.get $match_start)
+              (i32.add (local.get $replace_len) (i32.sub (local.get $i_len) (local.get $match_end)))))
+            (local.set $result_ptr (call $alloc_heap (i32.add (i32.const {str_header}) (local.get $result_len))))
+            (i32.store (local.get $result_ptr) (local.get $result_len))
+            (call $copy
+              (i32.add (local.get $i_obj) (i32.const {str_header}))
+              (i32.add (local.get $result_ptr) (i32.const {str_header}))
+              (local.get $match_start))
+            (call $copy
+              (i32.add (local.get $replace_obj) (i32.const {str_header}))
+              (i32.add (i32.add (local.get $result_ptr) (i32.const {str_header})) (local.get $match_start))
+              (local.get $replace_len))
+            (call $copy
+              (i32.add (i32.add (local.get $i_obj) (i32.const {str_header})) (local.get $match_end))
+              (i32.add (i32.add (local.get $result_ptr) (i32.const {str_header})) (i32.add (local.get $match_start) (local.get $replace_len)))
+              (i32.sub (local.get $i_len) (local.get $match_end)))
+            (i32.or (local.get $result_ptr) (i32.const {string_tag}))))))
 "#,
             heap_mask = ValueTag::HEAP_MASK,
             string_tag = ValueTag::STRING,
             str_header = Layout::STRING_HEADER_SIZE,
+            scratch = Layout::SCRATCH_OFFSET,
+            slash = b'/' as i32,
             zero = RuntimeConst::ZERO,
             one = RuntimeConst::ONE,
+            number_shift = ValueTag::NUMBER_SHIFT,
+            number_tag = ValueTag::NUMBER,
         ));
     }
 
@@ -1421,5 +1708,4 @@ impl WatEmitter<'_> {
             scratch = Layout::SCRATCH_OFFSET,
         ));
     }
-
 }
