@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 25 | 13 | 12 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4605 | 3279 | 1326 |
+| frontend | 4605 | 3278 | 1327 |
 | harness | 1 | 0 | 1 |
 | ir | 92 | 69 | 23 |
 | issues | 4 | 0 | 4 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5298 | 3589 | 1709 |
+| total | 5298 | 3588 | 1710 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -2370,7 +2370,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 3302 | Implement Modulealiasasfunctionargument | spike | frontend/syntax | class: blocked | Implement Modulealiasasfunctionargument |
 | 3303 | Implement Modulealiasinterface | spike | frontend/syntax | class: blocked | Implement Modulealiasinterface |
 | 3304 | Implement Moduleandinterfacesharingname | spike | frontend/syntax | class: blocked | Implement Moduleandinterfacesharingname |
-| 3488 | Implement Nestedself | spike | frontend/syntax | class: blocked | Implement Nestedself |
 | 3489 | Implement Nestedsupercallemit | spike | frontend/resolver | class: blocked | Implement Nestedsupercallemit |
 | 3490 | Implement Nestedthiscontainer | spike | reference/triage | class: triage-needed | Implement Nestedthiscontainer |
 | 3491 | Implement Nestedtypevariableinfersliteral | spike | frontend/syntax | class: triage-needed | Implement Nestedtypevariableinfersliteral |
@@ -5258,6 +5257,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 3485 | Implement Nestedobjectrest | spike | frontend/syntax | see `issues/done/3485-implement-nestedObjectRest.md` |
 | 3486 | Implement Nestedrecursivelambda | spike | frontend/syntax | see `issues/done/3486-implement-nestedRecursiveLambda.md` |
 | 3487 | Implement Nestedredeclarationines | spike | frontend/syntax | see `issues/done/3487-implement-nestedRedeclarationInES.md` |
+| 3488 | Implement Nestedself | spike | frontend/syntax | see `issues/done/3488-implement-nestedSelf.md` |
 | 3690 | Implement Optionaltupleelementsandundefined | spike | reference/triage | see `issues/done/3690-implement-optionalTupleElementsAndUndefined.md` |
 | 3996 | Implement Compiler (dup) | spike | frontend/syntax | see `issues/done/3996-implement-reference-typescript-tests-cases-compiler.md` |
 | 4210 | Implement Splicetuples | spike | frontend/resolver | see `issues/done/4210-implement-spliceTuples.md` |
