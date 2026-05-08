@@ -118,14 +118,14 @@ Goal: unresolved names/functions should become either known supported operations
 This wave should reduce `UnresolvedName` / `UnresolvedFunction` noise without pretending unsupported runtime semantics exist.
 
 - [X] Register core ECMAScript global builtin names:
-  ✅ `Symbol`, `Proxy`, `Reflect`, `Promise` (id 101 done)
-  ✅ `ArrayBuffer`, `DataView` (id 102 done)
-  ✅ `WeakMap`, `WeakSet`, `Atomics`, `Intl`, `globalThis`, `AggregateError`, `URIError`, `EvalError` (done)
-  ✅ `Map`, `Set`, `Error`, `TypeError`, `RangeError`, `ReferenceError`, `SyntaxError` (already registered)
+  [x] `Symbol`, `Proxy`, `Reflect`, `Promise` (id 101 done)
+  [x] `ArrayBuffer`, `DataView` (id 102 done)
+  [x] `WeakMap`, `WeakSet`, `Atomics`, `Intl`, `globalThis`, `AggregateError`, `URIError`, `EvalError` (done)
+  [x] `Map`, `Set`, `Error`, `TypeError`, `RangeError`, `ReferenceError`, `SyntaxError` (already registered)
 - [X] Register TypedArray constructor names:
-  ✅ `Int8Array` through `BigUint64Array` (11 types) — id 102 done
+  [x] `Int8Array` through `BigUint64Array` (11 types) — id 102 done
 - [X] Register well-known symbols:
-  ✅ `Symbol.iterator`, `toStringTag`, `hasInstance`, `toPrimitive`, `for`, `keyFor` — id 103 done
+  [x] `Symbol.iterator`, `toStringTag`, `hasInstance`, `toPrimitive`, `for`, `keyFor` — id 103 done
 - [ ] Builtin method dispatch table for supported or explicitly unsupported methods
 - [ ] String / Array / Object / Number / Function.prototype method dispatch routing
 - [ ] Nested namespace/module resolution: `A.B.C`
@@ -149,9 +149,9 @@ See `docs/language-reference/` for the detailed feature coverage tables.
 - [ ] Promise minimal substrate and constructor
 - [X] `Promise.prototype.then` / `catch` / `finally` — precise unsupported diagnostic added (id 104 done)
 - [ ] `Promise.resolve` / `reject` / `all` / `race` / `allSettled` / `any` / `withResolvers`
-- [ ] Proxy constructor — ✅ precise unsupported diagnostic (id 106 done)
+- [ ] Proxy constructor — [x] precise unsupported diagnostic (id 106 done)
 - [ ] Proxy handler trap slices + `Proxy.revocable`
-- [ ] Reflect API — ✅ precise unsupported diagnostic (id 106 done)
+- [ ] Reflect API — [x] precise unsupported diagnostic (id 106 done)
 - [ ] TypedArray constructors by family + basic read/write
 - [ ] ArrayBuffer / SharedArrayBuffer / DataView
 - [ ] WeakMap / WeakSet
@@ -159,7 +159,7 @@ See `docs/language-reference/` for the detailed feature coverage tables.
 - [ ] Atomics / Intl
 - [ ] `String.prototype.replace` / `replaceAll` / `matchAll`
 - [ ] `Array.prototype.sort` / `reduceRight`
-- [X] `Array.prototype.reduce` — ✅ already works via array-like routing (id 105 done)
+- [X] `Array.prototype.reduce` — [x] already works via array-like routing (id 105 done)
 - [ ] Upgrade selected existing builtins from build_smoke to semantic_diff
 
 Non-goals:
@@ -204,7 +204,7 @@ Work here runs in parallel with W2-W5 implementation: each feature change should
 
 - [ ] Ramp 500 → 2,000 with stable parallel execution and caching
 - [ ] Ramp 2,000 → 10,000 / 10,000 → 30,000 / 30,000 → 53,445
-- [X] Regression detection: fail on build_pass / semantic_pass decrease — ✅ `--record-baseline` / `--compare-baseline` flags (id 107 done)
+- [X] Regression detection: fail on build_pass / semantic_pass decrease — [x] `--record-baseline` / `--compare-baseline` flags (id 107 done)
 - [ ] Delta reporting: feature-level and diagnostic-class pass/fail deltas
 - [ ] Coverage dashboard: trend graph, feature-level burn-down, diagnostic burn-down
 - [ ] Gate progress visualization
@@ -227,7 +227,7 @@ generated WASM should not silently depend on Node.js or hidden host capabilities
 - [ ] Manifest golden tests for all supported fixtures
 - [ ] Host-deny test matrix expansion
 - [ ] Standalone assurance for new features (Promise, Proxy, Reflect, TypedArray, WASI args/env)
-- [X] Capability review checklist in coding standard — ✅ already documented (id 113 done)
+- [X] Capability review checklist in coding standard — [x] already documented (id 113 done)
 - [ ] CI gate for unexpected host imports
 
 Non-goals:
