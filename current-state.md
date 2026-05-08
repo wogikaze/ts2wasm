@@ -87,6 +87,7 @@ Compile-only tests for class/module/Node API are explicitly marked as build_smok
 - 生成テーブル: `artifacts/coverage/reference-coverage-matrix.md`
 - ポリシーと列定義: `docs/15-coverage-matrix.md`
 - 列 `build_pass` / `semantic_pass` は `mise run reference-coverage` の出力に対応（semantic-pass は Node + `iwasm` が利用可能な環境でのみ増分）。
+- Issue 5430 full corpus re-run (2026-05-08): test262 build 17.72% (9470/53449), semantic 5.41% (2890/53449), unsupported 42818. Matrix reflects batches 5411-5426 cumulative impact.
 - issue 060 is closed against a fixed `test262` window: `TS2WASM_REFERENCE_ROOT=./reference mise run reference-coverage -- test262 --limit 17000 --detail` passed on 2026-04-29 with `unknown-unsupported=0` (executed=17000; build_pass=5; semantic_pass=3; unsupported=16994; blocked=1). Later stored matrix context includes test262 limit 18000, tsc limit 200, and tsgo limit 120. The exact assigned tsc root `./reference` lacks `TypeScript`, so tsc validation from that root remains a residual external-reference risk; existing tsc evidence used `/tmp/ts2wasm-issue060-reference`. Future unknown-unsupported expansion should use separate fixed-window ramp issues.
 
 ## Implemented (high-level)
