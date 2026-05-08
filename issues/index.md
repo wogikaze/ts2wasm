@@ -13,13 +13,14 @@ Issue files are the source of truth for work items. The generated section below 
 | backend | 18 | 1 | 17 |
 | backend-wasm | 2 | 0 | 2 |
 | cli | 16 | 0 | 16 |
-| compiler | 7 | 4 | 3 |
+| compiler | 7 | 3 | 4 |
 | coverage | 44 | 1 | 43 |
 | docs | 5 | 0 | 5 |
-| frontend | 4561 | 3747 | 814 |
+| frontend | 4561 | 3733 | 828 |
 | harness | 1 | 0 | 1 |
-| ir | 76 | 23 | 53 |
+| ir | 76 | 21 | 55 |
 | issues | 5 | 0 | 5 |
+| other | 2 | 0 | 2 |
 | parser | 1 | 0 | 1 |
 | reference | 212 | 160 | 52 |
 | runtime | 272 | 83 | 189 |
@@ -27,7 +28,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 8 | 0 | 8 |
 | wasi | 4 | 0 | 4 |
-| total | 5243 | 4019 | 1224 |
+| total | 5245 | 4002 | 1243 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -52,7 +53,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 ├── 5003 (Meta: TypeScript Compiler Declaration Emit Coverage) [done/done] ch:101 open:91 done:10 (also ← 5001)
 5001 (Meta: TypeScript Compiler Semantic Analysis Coverage) [done/done] ch:554 open:330 done:224
 5004 (Meta: Runtime Builtins Coverage (test262) (audit reopened #5004)) [done/done] ch:24 open:3 done:21
-5005 (Meta: TypeScript Compiler Name Resolution Coverage) [done/done] ch:399 open:351 done:48
+5005 (Meta: TypeScript Compiler Name Resolution Coverage) [done/done] ch:406 open:354 done:52
 ├── 5006 (Meta: TypeScript Compiler Scope Analysis Coverage) [done/done] ch:27 open:19 done:8
 ├── 5007 (Meta: TypeScript Compiler Module Resolution Coverage (audit reopened #5007)) [done/done] ch:20 open:20 done:0
 ```
@@ -69,7 +70,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1 | 5000 | Meta: TypeScript Compiler Parser Syntax Coverage | done | design | frontend/syntax | P1 | - | 440 | 376 | 64 |
 | 2 | 5001 | Meta: TypeScript Compiler Semantic Analysis Coverage | done | done | frontend/semantics | P1 | - | 554 | 330 | 224 |
 | 3 | 5004 | Meta: Runtime Builtins Coverage (test262) (audit reopened #5004) | done | done | runtime/builtins | P1 | - | 24 | 3 | 21 |
-| 4 | 5005 | Meta: TypeScript Compiler Name Resolution Coverage | done | done | frontend/resolver | P1 | - | 399 | 351 | 48 |
+| 4 | 5005 | Meta: TypeScript Compiler Name Resolution Coverage | done | done | frontend/resolver | P1 | - | 406 | 354 | 52 |
 | 5 | 5002 | Meta: TypeScript Compiler Type System Coverage | done | done | frontend/semantics | P1 | 5000, 5005 | 224 | 216 | 8 |
 | 6 | 5003 | Meta: TypeScript Compiler Declaration Emit Coverage | done | done | frontend/syntax | P2 | 5000, 5001 | 101 | 91 | 10 |
 | 7 | 5006 | Meta: TypeScript Compiler Scope Analysis Coverage | done | done | frontend/resolver | P2 | 5005 | 27 | 19 | 8 |
@@ -195,6 +196,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1171 | Implement Classaccessorinitializationinferencewithelementaccess | spike | frontend/syntax | done | P1 | 5232 | `classAccessorInitializationInferenceWithElementAccess1.ts` no longer |
 | 1172 | Implement Classattributeinferencetemplate | spike | frontend/semantics | done | P1 |  | `classAttributeInferenceTemplate.ts` no longer has a compiler blocker; |
 | 1173 | Implement Classattributeinferencetemplatejs | spike | frontend/semantics | done | P1 | 5247 | `classAttributeInferenceTemplateJS.ts` is not a broad type-system |
+| 1175 | Implement Classdeclarationblockscoping | spike | frontend/syntax | done | P1 | 5249, 5250 | `classDeclarationBlockScoping` is a generated bucket with two distinct |
 | 1176 | Implement Classdeclarationcheckusedbeforedefinitioninitself | spike | frontend/syntax | done | P1 |  | `classDeclarationCheckUsedBeforeDefinitionInItself.ts` no longer has a compiler blocker; fresh coverage and triage bo... |
 | 1177 | Implement Classdeclarationmergedinmodulewithcontinuation | spike | frontend/syntax | done | P1 |  | `classDeclarationMergedInModuleWithContinuation.ts` no longer has a compiler blocker; fresh coverage and triage both ... |
 | 1193 | Implement Classextendingabstractclasswithmembercalledthesameasitsowntypeparam | spike | frontend/syntax | done | P1 |  | classExtendingAbstractClassWithMemberCalledTheSameAsItsOwnTypeParam has 1 reference failures and needs smart-triage e... |
@@ -358,34 +360,24 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1514 | Implement Contextualtypeonyield | spike | frontend/syntax | done | P1 |  | contextualTypeOnYield has 2 reference failures and needs smart-triage evidence before implementation starts. |
 | 1999 | Report symbol WeakSet.add diagnostics | feature | frontend/resolver | implementation-ready | P1 |  | weak collection symbol negative tests currently fail with |
 | 5156 | Parse generic type arguments in class heritage clauses | feature | frontend/syntax | implementation-ready | P1 |  | `reference/typescript/tests/cases/compiler/baseTypeOrderChecking.ts` fails parsing on `class Class4<T> extends Class3... |
-| 5195 | Support callable interface-typed local calls | feature | ir/lowering | implementation-ready | P1 |  | callable interface-typed locals currently lower to `Undefined` values and calls to them stop with `issue-211`. |
 | 5200 | Validate top-level function overload implementations | feature | frontend/resolver | implementation-ready | P1 |  | top-level function overload implementation groups are currently classified as duplicate concrete functions. |
 | 5246 | Report static declarations inside constructor bodies | feature | frontend/parser | implementation-ready | P1 |  | invalid `static` declarations in constructor bodies report generic unsupported expression instead of a spanned parser... |
 | 5248 | Lower class expressions | feature | ir/compiler | implementation-ready | P1 |  | `classBlockScoping.ts` reports `UnsupportedSyntax: issue-313: class expression lowering not yet implemented`. |
-| 5249 | Scope block-local class declarations | feature | frontend/resolver | implementation-ready | P1 |  | `classDeclarationBlockScoping1.ts` reports `DuplicateLocal` for an inner block-local `class C {}` that TypeScript acc... |
-| 5255 | Resolve super property accesses | feature | frontend/resolver | implementation-ready | P1 |  | `classExtendingAny.ts` parses class declarations, `extends Err`, and |
 | 5260 | Report class heritage trailing comma | feature | frontend/parser | implementation-ready | P1 |  | `classHeritageWithTrailingSeparator.ts` tokenizes the class heritage |
-| 5262 | Resolve import-equals aliases in class implements clauses | feature | frontend/resolver | implementation-ready | P1 |  | Resolve import-equals aliases in class implements clauses |
 | 5267 | Parse string literal class member names | feature | frontend | implementation-ready | P1 |  | `reference/typescript/tests/cases/compiler/classStaticPropertyAccess.ts` |
 | 5269 | Parse optional class property declarations | feature | frontend | implementation-ready | P1 |  | `reference/typescript/tests/cases/compiler/classUsedBeforeInitializedVariables.ts` |
 | 5270 | Parse modified class accessor declarations | feature | frontend | implementation-ready | P1 |  | `reference/typescript/tests/cases/compiler/classdecl.ts` reports |
 | 5271 | Parse modified static class fields | feature | frontend | implementation-ready | P1 |  | `reference/typescript/tests/cases/compiler/cloduleStaticMembers.ts` |
-| 5272 | Support generic return interface method receivers | feature | ir/lowering | implementation-ready | P1 |  | Support generic return interface method receivers |
+| 5272 | Support generic return interface method receivers | feature | ir/lowering | implementation-ready | P1 | 5005 | Support generic return interface method receivers |
 | 5273 | Parse nested zero-argument arrow returns | feature | frontend | implementation-ready | P1 |  | Parse nested zero-argument arrow returns |
 | 5274 | Parse general comma expressions | feature | frontend | implementation-ready | P1 |  | Parse general comma expressions |
 | 5275 | Parse modified static class methods | feature | frontend | implementation-ready | P1 |  | Parse modified static class methods |
-| 5280 | Validate commented top-level function overloads | feature | frontend/resolver | implementation-ready | P1 |  | `commentOnSignature1.ts` parses successfully, but `validate_ast` |
 | 5281 | Resolve arrow rest parameter bindings | feature | ir/name-resolution | implementation-ready | P1 |  | arrow rest parameters are not made visible under their identifier name |
-| 5287 | Bind namespace declarations for qualified value access | feature | frontend/name-resolution | implementation-ready | P1 |  | a same-file non-ambient namespace declaration is erased before it |
 | 5289 | Validate commentsOverloads top-level functions | feature | frontend/resolver | implementation-ready | P1 |  | `reference/typescript/tests/cases/compiler/commentsOverloads.ts` |
 | 5291 | Report malformed export type declarations | feature | frontend/parser | implementation-ready | P1 |  | malformed `export type` declarations are not diagnosed or recovered |
-| 5292 | Skip tsconfig @Filename sections in reference harness | feature | compiler/multi-section | implementation-ready | P1 |  | reference-style `tsconfig.json` virtual sections are treated as module |
-| 5294 | Resolve sibling namespaces in nested namespace scopes | feature | frontend/name-resolution | implementation-ready | P1 |  | nested namespace resolution does not predeclare or look up sibling |
-| 5295 | Resolve import-equals require to virtual node_modules class export | feature | frontend/module-resolution | implementation-ready | P1 |  | bare `require("myModule")` aliases do not bind to a virtual |
 | 5297 | Lower computed object binding aliases | feature | frontend/semantics | implementation-ready | P1 |  | object binding aliases can only use identifier keys, so computed keys |
 | 5298 | Parse for-of array binding pattern heads | feature | frontend/syntax | implementation-ready | P1 |  | array binding patterns in `for-of` declaration heads are parsed as |
 | 5299 | Lower computed object binding parameters | feature | frontend/semantics | implementation-ready | P1 |  | computed object binding aliases in parameters parse, but name |
-| 5300 | Report assignment to class binding diagnostics | feature | frontend/resolver | implementation-ready | P1 |  | assignment to a class binding currently parses, but name resolution |
 | 5306 | Report export assignment with other exports | bug | frontend/syntax | implementation-ready | P1 |  | `ExportAssignment8.ts` stops at generic issue-055 instead of reporting the specific `export =` plus other exports rule. |
 | 5307 | Report var/function duplicate identifier diagnostics | bug | frontend/resolver | implementation-ready | P2 |  | var/function declaration collisions report generic `DuplicateLocal` |
 | 5310 | Parse nested block statements with variable declarations | feature | frontend/parser | implementation-ready | P1 |  | a nested block containing `var y = 0;` reports `expected Comma, got Some(Ident("y"))` instead of parsing as a block s... |
@@ -401,8 +393,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5322 | Support callable class auto-accessor fields | feature | ir/runtime | implementation-ready | P1 |  | `classFieldSuperNotAccessibleJs.ts` parses successfully, but lowering |
 | 5323 | Report missing constructor parameter list | feature | frontend/parser | implementation-ready | P1 |  | `classFieldsBrokenConstructorEmitNoCrash1.ts` currently reports a |
 | 5324 | Support dependency-module export class declarations | feature | ir/compiler | implementation-ready | P1 |  | dependency-module `export class Test1 { ... }` currently reports |
-| 5325 | Fix multifile class constructor FuncId invariant | feature | ir/compiler | implementation-ready | P1 |  | a class with a constructor in the second virtual file can produce a |
-| 5326 | Parse anonymous default class export | feature | frontend/module-syntax | implementation-ready | P1 |  | this single anonymous default class form is still treated as an |
 | 5327 | Report class method overload wrong implementation name | feature | frontend/resolver | implementation-ready | P1 |  | `classWithOverloadImplementationOfWrongName2.ts` reports `DuplicateFunction: duplicate method definition: C.foo` inst... |
 | 5328 | Share script globals across @Filename sections for class namespace merge | feature | compiler/name-resolution | implementation-ready | P1 |  | cross-section global script declarations are not shared, so the second |
 | 5329 | Report class namespace duplicate member diagnostics | feature | frontend/semantics | implementation-ready | P1 |  | class/namespace duplicate member names currently produce a false build |
@@ -415,25 +405,20 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5337 | Parse rest parameter constructor overload signatures | feature | frontend/parser | implementation-ready | P1 |  | bodyless constructor overload signatures with rest parameters are |
 | 5338 | Support rest constructor outer local captures | feature | ir/lowering | implementation-ready | P1 |  | constructor rest parameters and hidden lexical-capture parameters |
 | 5341 | Resolve lexical super captures in method arrows | feature | frontend/resolver | implementation-ready | P1 |  | lexical `super.foo()` inside an arrow in a derived class method is not resolved against the method's derived instance... |
-| 5343 | Track array-typed erased locals for callback methods | feature | frontend/semantics | implementation-ready | P1 |  | declaration-only array locals such as `var s: string[];` lose their |
+| 5343 | Track array-typed erased locals for callback methods | feature | frontend/semantics | implementation-ready | P1 | 5005 | declaration-only array locals such as `var s: string[];` lose their |
 | 5344 | Resolve ambient var assignment targets | feature | frontend/resolver | implementation-ready | P1 |  | declaration-only ambient variable assignment targets are not |
 | 5345 | Parse generic ambient const type annotations | feature | frontend/parser | implementation-ready | P1 |  | nested generic ambient const annotations are not erased as a complete |
 | 5346 | Parse CommonJS export assignment statements | feature | frontend/parser | implementation-ready | P1 |  | Parse CommonJS export assignment statements |
 | 5347 | Align class var redeclaration diagnostics | feature | frontend/resolver | implementation-ready | P1 |  | Align class var redeclaration diagnostics |
 | 5348 | Resolve const declarations before use diagnostics | bug | frontend/resolver | implementation-ready | P1 |  | lexical const bindings are not registered early enough for |
 | 5350 | Report missing const initializer diagnostics | feature | frontend/parser | implementation-ready | P1 |  | Report missing const initializer diagnostics |
-| 5352 | Parse export namespace declarations | feature | frontend/module-syntax | implementation-ready | P1 |  | `export namespace Name { ... }` is treated as an unsupported static |
 | 5355 | Report invalid constructor parameter modifiers | bug | frontend/parser | implementation-ready | P1 |  | current failure is `expected Comma, got Some(Static)` for |
-| 5356 | Report uninitialized generic class fields | bug | frontend/semantics | implementation-ready | P1 |  | current failure is a false build pass for `class D<T, U> { x: T; y: U }`, where TypeScript reports uninitialized prop... |
 | 5358 | Report constructor bodies in ambient class declarations | feature | frontend/parser | implementation-ready | P1 |  | implementation bodies inside ambient class declarations are not |
 | 5359 | Report multiple constructor implementation diagnostics | feature | frontend/diagnostics | implementation-ready | P1 |  | invalid multiple constructor implementations are not reported with |
-| 5360 | Report class field initializer constructor-scope captures | feature | frontend/semantics | implementation-ready | P2 |  | class field initializer semantic validation currently does not reject |
-| 5361 | Report invalid constructor return value diagnostics | feature | frontend/semantics | implementation-ready | P2 |  | constructor return value semantic validation currently does not reject |
 | 5362 | Report strict-mode static constructor parameter name | bug | frontend/parser | implementation-ready | P1 |  | the compiler currently reports an unsupported parser failure, |
 | 5363 | Support class constructor outer local return captures | feature | ir | implementation-ready | P1 |  | class constructor bodies cannot currently resolve and lower direct |
 | 5365 | Parse readonly private field type annotations | feature | frontend/parser | implementation-ready | P1 |  | `constructorWithParameterPropertiesAndPrivateFields.es2015.ts` currently reports `UnsupportedSyntax: expected propert... |
 | 5366 | Restore call argument scope after typed arrow callbacks | bug | frontend/resolver | implementation-ready | P1 |  | `contextSensitiveReturnTypeInference.ts` currently reports `UnresolvedName: unresolved name: DEPS` for a call argumen... |
-| 5367 | Parse named default class export | feature | frontend/module-syntax | implementation-ready | P1 |  | a named default class export is still treated as an unsupported module |
 | 5368 | Isolate exported bindings across @filename sections | feature | compiler/multi-section | implementation-ready | P1 |  | external-module `@filename` sections are not isolated during name |
 | 5369 | Parse call-expression type arguments in class heritage | feature | frontend/parser | implementation-ready | P1 |  | the class heritage parser expects the class body after `Tag("Foo")` |
 | 5370 | Bind ambient namespace declarations for qualified value access | feature | frontend/resolver | implementation-ready | P1 |  | ambient namespace declarations are not visible as namespace values for same-file qualified value access. |
@@ -445,7 +430,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5376 | Support ambient generic factory local calls | feature | ir/lowering | implementation-ready | P1 |  | ambient generic factory locals currently fall into the generic |
 | 5377 | Support callable ambient interface local calls with key remap | feature | ir/lowering | implementation-ready | P1 |  | callable ambient interface locals after mapped-type key remapping fall |
 | 5378 | Report mixed ambient function overload diagnostics | feature | frontend/resolver | implementation-ready | P1 |  | mixed ambient/non-ambient top-level function overload groups report a |
-| 5380 | Report array literal index-signature element mismatch | feature | frontend/semantics | implementation-ready | P1 |  | array literals assigned to numeric-index-signature interfaces can skip the invalid element diagnostic and fall throug... |
+| 5380 | Report array literal index-signature element mismatch | feature | frontend/semantics | implementation-ready | P1 | 5005 | array literals assigned to numeric-index-signature interfaces can skip the invalid element diagnostic and fall throug... |
 | 5386 | Bind DOM setTimeout global | feature | frontend/resolver | implementation-ready | P1 |  | `contextuallyTypeArgumentsKeyword.ts` requests `// @lib: es2017, dom` |
 | 5388 | Support discriminated union parameter method calls | feature | ir/lowering | implementation-ready | P1 |  | Support discriminated union parameter method calls |
 | 5389 | Support nested function default parameters in closure lowering | feature | ir/lowering | implementation-ready | P1 |  | Support nested function default parameters in closure lowering |
@@ -457,6 +442,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5395 | Report getter return mismatch with setter annotation | feature | frontend/semantics | implementation-ready | P1 |  | `accessors_spec_section-4.5_error-cases.ts` build-passes even though |
 | 5396 | Report setter body mismatch with getter annotation | feature | frontend/semantics | implementation-ready | P1 |  | `accessors_spec_section-4.5_error-cases.ts` build-passes even though |
 | 5397 | Report missing namespace alias member diagnostics | feature | frontend/semantics | implementation-ready | P1 |  | `aliasBug.ts` now build-passes even though TypeScript reports TS2694 |
+| 5398 | Resolve namespace import-equals alias value access | feature | frontend/name-resolution | implementation-ready | P1 | 5287 | `aliasErrors.ts` currently fails in `resolve_names` with |
 | 5400 | Parse exported import-equals declarations | feature | frontend/parser | implementation-ready | P1 |  | exported import-equals declarations stop at generic issue-055 static export before the parser can preserve the alias ... |
 | 5401 | Parse export default interface declarations | feature | frontend/parser | implementation-ready | P1 |  | `export default interface zzz { ... }` stops with `expected Semicolon` before the frontend can represent the interfac... |
 | 5402 | Skip package.json @Filename sections in reference harness | feature | compiler/multi-section | implementation-ready | P1 |  | reference-style `package.json` virtual sections are treated as module bodies instead of package metadata or non-code ... |
@@ -684,7 +670,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1162 | Implement Circularreferenceinimport | spike | frontend/syntax | class: blocked | Implement Circularreferenceinimport |
 | 1170 | Implement Class | spike | frontend/syntax | 5246 | Implement Class |
 | 1174 | Implement Classblockscoping | spike | frontend/syntax | 5248 | Implement Classblockscoping |
-| 1175 | Implement Classdeclarationblockscoping | spike | frontend/syntax | 5249, 5250 | Implement Classdeclarationblockscoping |
 | 1178 | Implement Classdeclarationshouldbeoutofscopeincomputednames | spike | frontend/resolver | class: blocked | Implement Classdeclarationshouldbeoutofscopeincomputednames |
 | 1179 | Implement Classdeclaredbeforeclassfactory | spike | frontend/syntax | class: blocked | Implement Classdeclaredbeforeclassfactory |
 | 1180 | Implement Classexpressionassignment | spike | frontend/syntax | class: triage-needed | Implement Classexpressionassignment |
@@ -4117,7 +4102,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5018 | Implement legacy-global-builtin support | spike | frontend/syntax | class: triage-needed | Implement legacy-global-builtin support |
 | 5020 | Implement RegExp literal support | spike | frontend/syntax | class: triage-needed | Implement RegExp literal support |
 | 5212 | Implement remaining BigInt mixed runtime coercion edges | feature | runtime/semantics | class: blocked | Implement remaining BigInt mixed runtime coercion edges |
-| 5398 | Resolve namespace import-equals alias value access | feature | frontend/name-resolution | 5287 | Resolve namespace import-equals alias value access |
 | 5399 | Resolve ambient namespace import alias in declare module | feature | frontend/name-resolution | 5370 | Resolve ambient namespace import alias in declare module |
 | 5404 | Bind dotted ambient namespace qualified access | feature | frontend/resolver | 5370 | Bind dotted ambient namespace qualified access |
 <!-- generated:blocked:end -->
@@ -5221,6 +5205,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5160 | Lower plain ternary conditional expressions | feature | frontend/semantics | see `issues/done/5160-lower-plain-ternary-conditional-expressions.md` |
 | 5161 | Model ambient value declarations for name resolution | feature | frontend/resolver | see `issues/done/5161-model-ambient-value-declarations-for-name-resolution.md` |
 | 5162 | Allow compatible var redeclarations | feature | frontend/syntax | see `issues/done/5162-allow-compatible-var-redeclarations.md` |
+| 5163 | placeholder | placeholder | other | see file |
 | 5164 | Parse exponentiation compound assignment | feature | frontend/syntax | see `issues/done/5164-parse-exponentiation-compound-assignment.md` |
 | 5165 | Support typed array subarray builtins | feature | ir/builtin-resolver | see `issues/done/5165-support-typed-array-subarray-builtins.md` |
 | 5166 | Parse string-literal module specifier aliases | feature | frontend/syntax | see `issues/done/5166-parse-string-literal-module-specifier-aliases.md` |
@@ -5252,6 +5237,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5192 | Support first-class class constructor values | feature | ir/runtime | see `issues/done/5192-support-first-class-class-constructor-values.md` |
 | 5193 | Parse ASI after ambient variable declarations | feature | frontend/syntax | see `issues/done/5193-parse-asi-after-ambient-variable-declarations.md` |
 | 5194 | Report empty call type arguments | feature | frontend/syntax | see `issues/done/5194-report-empty-call-type-arguments.md` |
+| 5195 | Support callable interface-typed local calls | feature | ir/lowering | see `issues/done/5195-support-callable-interface-typed-local-calls.md` |
 | 5196 | Support callable conditional-typed parameter calls | feature | ir/lowering | see `issues/done/5196-support-callable-conditional-typed-parameter-calls.md` |
 | 5197 | Report class called without new | feature | frontend/resolver | see `issues/done/5197-report-class-called-without-new.md` |
 | 5198 | Support class method overload signatures for element access calls | feature | frontend/resolver | see `issues/done/5198-support-class-method-overload-signatures-for-element-access-calls.md` |
@@ -5301,33 +5287,43 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5244 | Define timezone formatting policy for Date.prototype.toString | design | runtime/builtins | see file |
 | 5245 | Implement ECMAScript iterator protocol runtime for spread operator | feature | runtime/semantics | see `issues/done/5245-iterator-protocol-runtime.md` |
 | 5247 | Fix JS noEmit class constructor FuncId invariant | feature | ir/compiler | see file |
+| 5249 | Scope block-local class declarations | feature | frontend/resolver | see file |
 | 5250 | Parse class declarations in nested block statements | feature | frontend/parser | see file |
 | 5251 | Parse computed class member names in class declarations | feature | frontend/parser | see file |
 | 5252 | Support call-expression class heritage | feature | ir/resolver | see file |
 | 5253 | Report class expression decorator boundary | feature | frontend/lexer | see file |
 | 5254 | Parse ASI between static class fields | feature | frontend/parser | see file |
+| 5255 | Resolve super property accesses | feature | frontend/resolver | see file |
 | 5256 | Report non-constructor class heritage expressions | feature | ir/resolver | see file |
 | 5257 | Parse object type literal construct signatures | feature | frontend/parser | see file |
 | 5258 | Report super calls in class extends null constructors | feature | ir/resolver | see file |
 | 5259 | Report super property access in class extends null | feature | ir/resolver | see file |
 | 5261 | Report class-typed missing instance method calls | feature | ir/lowering | see file |
+| 5262 | Resolve import-equals aliases in class implements clauses | feature | frontend/resolver | see file |
 | 5263 | Report primitive implements clauses on class expressions | feature | frontend/parser | see file |
 | 5264 | Parse typed const declarations before initializers | feature | frontend/parser | see file |
 | 5265 | Report missing class member identifier after modifier | feature | frontend/parser | see file |
+| 5266 | placeholder | placeholder | other | see file |
 | 5268 | Support derived constructor parameter properties after super | feature | ir | see `issues/done/5268-support-derived-constructor-parameter-properties-after-super.md` |
 | 5276 | Report class declaration decorator boundary | feature | frontend/lexer | see file |
 | 5277 | Parse export enum declarations to enum boundary | feature | frontend/module-syntax | see file |
 | 5278 | Parse trailing comma in function parameters with comments | feature | frontend/syntax | see file |
 | 5279 | Report function-typed local call definite assignment | feature | ir/lowering | see file |
+| 5280 | Validate commented top-level function overloads | feature | frontend/resolver | see file |
 | 5282 | Parse labeled empty statements | feature | frontend/syntax | see `issues/done/5282-parse-labeled-empty-statements.md` |
 | 5283 | Support entry-module export var declarations | feature | frontend/module-syntax | see `issues/done/5283-support-entry-export-var-declarations.md` |
 | 5284 | Bind plain enum declarations before member access | feature | frontend/syntax | see `issues/done/5284-bind-plain-enum-declarations-before-member-access.md` |
 | 5285 | Support export var initializer declarations | feature | frontend/module-syntax | see `issues/done/5285-support-export-var-initializer-declarations.md` |
 | 5286 | Preserve class constructor parameters for new arity | feature | ir | see `issues/done/5286-preserve-class-constructor-parameters-for-new-arity.md` |
+| 5287 | Bind namespace declarations for qualified value access | feature | frontend/name-resolution | see `issues/done/5287-bind-namespace-declarations-for-qualified-value-access.md` |
 | 5288 | Parse typed modified static class fields | feature | frontend/parser | see `issues/done/5288-parse-typed-modified-static-class-fields.md` |
 | 5290 | Parse private static generic class methods | feature | frontend/parser | see `issues/done/5290-parse-private-static-generic-class-method.md` |
+| 5292 | Skip tsconfig @Filename sections in reference harness | feature | compiler/multi-section | see `issues/done/5292-skip-tsconfig-filename-sections-in-reference-harness.md` |
 | 5293 | Handle recursive generic self-heritage class lowering | bug | frontend/semantics | see `issues/done/5293-handle-recursive-generic-self-heritage-class-lowering.md` |
+| 5294 | Resolve sibling namespaces in nested namespace scopes | feature | frontend/name-resolution | see `issues/done/5294-resolve-sibling-namespaces-in-nested-namespace-scopes.md` |
+| 5295 | Resolve import-equals require to virtual node_modules class export | feature | frontend/module-resolution | see `issues/done/5295-resolve-import-equals-require-to-virtual-node-modules-class-export.md` |
 | 5296 | Parse double-dot numeric literal property access | feature | frontend/parser | see `issues/done/5296-parse-double-dot-numeric-literal-property-access.md` |
+| 5300 | Report assignment to class binding diagnostics | feature | frontend/resolver | see file |
 | 5301 | Report literal reference comparison diagnostics | feature | frontend/semantics | see file |
 | 5302 | Parse fractional number literals in expressions | feature | frontend/syntax | see file |
 | 5303 | Parse trailing comma in typed function parameters | feature | frontend/syntax | see `issues/done/5303-parse-trailing-comma-in-typed-function-parameters.md` |
@@ -5337,16 +5333,23 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5309 | Skip generic type arguments in type annotations | feature | frontend/parser | see `issues/done/5309-skip-generic-type-arguments-in-type-annotations.md` |
 | 5311 | Parse namespace property += assignment | feature | frontend/syntax | see file |
 | 5312 | Parse export abstract class declarations | feature | frontend/syntax | see file |
+| 5325 | Fix multifile class constructor FuncId invariant | feature | ir/compiler | see `issues/done/5325-fix-multifile-class-constructor-funcid-invariant.md` |
+| 5326 | Parse anonymous default class export | feature | frontend/module-syntax | see `issues/done/5326-support-default-class-export-declarations.md` |
 | 5333 | Report strict mode arguments binding diagnostics | feature | frontend/semantics | see `issues/done/5333-report-strict-mode-arguments-binding-diagnostics.md` |
 | 5339 | Preserve var after object type declaration | feature | frontend/syntax | see file |
 | 5340 | Preserve function after object type declaration | feature | frontend/syntax | see `issues/done/5340-preserve-function-after-object-type-declaration.md` |
 | 5342 | Preserve class after object type declaration | feature | frontend/syntax | see `issues/done/5342-preserve-class-after-object-type-declaration.md` |
 | 5349 | Parse multiplicative compound assignment operators | feature | frontend/syntax | see `issues/done/5349-parse-multiplicative-compound-assignment-operators.md` |
 | 5351 | Accept large decimal integer number literals | feature | frontend/lexer | see `issues/done/5351-accept-large-decimal-integer-number-literals.md` |
+| 5352 | Parse export namespace declarations | feature | frontend/module-syntax | see `issues/done/5352-parse-export-namespace-declarations.md` |
 | 5353 | Parse extended Unicode string escapes | feature | frontend/syntax | see `issues/done/5353-parse-extended-unicode-string-escapes.md` |
 | 5354 | Report invalid const class members | feature | frontend/semantics | see file |
+| 5356 | Report uninitialized generic class fields | bug | frontend/semantics | see `issues/done/5356-report-uninitialized-generic-class-fields.md` |
 | 5357 | Avoid eval diagnostic for qualified Function constructors | bug | ir/resolver | see `issues/done/5357-avoid-eval-diagnostic-for-qualified-function-constructors.md` |
+| 5360 | Report class field initializer constructor-scope captures | feature | frontend/semantics | see `issues/done/5360-report-class-field-initializer-constructor-scope-captures.md` |
+| 5361 | Report invalid constructor return value diagnostics | feature | frontend/semantics | see `issues/done/5361-report-invalid-constructor-return-value-diagnostics.md` |
 | 5364 | Report unterminated string literal at raw newline | bug | frontend/lexer | see `issues/done/5364-report-unterminated-string-literal-at-raw-newline.md` |
+| 5367 | Parse named default class export | feature | frontend/module-syntax | see `issues/done/5367-support-named-default-class-export-declarations.md` |
 | 5379 | Lower array binding object default initializers | feature | ir/lowering | see `issues/done/5379-lower-array-binding-object-default-initializers.md` |
 | 5381 | Parse untyped arrow ternary branches | feature | frontend/syntax | see `issues/done/5381-parse-arrow-functions-in-ternary-branches.md` |
 | 5382 | Parse typed arrow ternary branches | feature | frontend/syntax | see `issues/done/5382-parse-typed-arrow-ternary-branches.md` |
