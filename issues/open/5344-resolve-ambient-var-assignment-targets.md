@@ -126,6 +126,9 @@ Do not touch:
   `UnresolvedName` for ambient assignment target `g2` in `g2 = f2`.
 - [ ] `nestedCallbackErrorNotFlattened.ts` no longer reports `UnresolvedName`
   for ambient assignment target `y` in `y = x`.
+- [ ] `nongenericPartialInstantiationsRelatedInBothDirections.ts` no longer
+  reports `UnresolvedName` for ambient assignment target `cfoo` in
+  `cfoo = cafoo`.
 - [ ] A focused resolver test proves the ambient `var` binding is resolver-visible for assignment targets without adding a runtime local.
 - [ ] Existing ambient value expression cases in issue 5161 remain unchanged or are explicitly advanced by the same implementation.
 - [ ] Ambient declarations with initializers, such as `declare var x = 1;`, remain rejected.
@@ -208,6 +211,17 @@ Related but not duplicate:
   assignment.
 - TypeScript oracle reports the later TS2322 nested callback return-type
   assignability diagnostic once the ambient assignment target resolves.
+
+2026-05-08 fold-in:
+
+- `issues/done/3605-implement-nongenericPartialInstantiationsRelatedInBothDirections.md`
+  reaches the same ambient assignment-target resolver boundary for
+  `declare let cfoo: ObjectContaining<Foo>; cfoo = cafoo;`.
+- Current diagnostic: `UnresolvedName: unresolved name: \`cfoo\`` at the
+  assignment.
+- TypeScript oracle reports no diagnostics for the file; partial-instantiation
+  assignability semantics are not reached until the ambient assignment target
+  resolves.
 
 ## Completion evidence
 
