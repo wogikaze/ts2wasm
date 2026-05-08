@@ -22,12 +22,12 @@ Issue files are the source of truth for work items. The generated section below 
 | issues | 4 | 0 | 4 |
 | parser | 1 | 0 | 1 |
 | reference | 213 | 138 | 75 |
-| runtime | 263 | 82 | 181 |
+| runtime | 263 | 81 | 182 |
 | scripts | 3 | 1 | 2 |
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5326 | 3495 | 1831 |
+| total | 5326 | 3494 | 1832 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -2398,7 +2398,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 3302 | Implement Modulealiasasfunctionargument | spike | frontend/syntax | class: blocked | Implement Modulealiasasfunctionargument |
 | 3303 | Implement Modulealiasinterface | spike | frontend/syntax | class: blocked | Implement Modulealiasinterface |
 | 3304 | Implement Moduleandinterfacesharingname | spike | frontend/syntax | class: blocked | Implement Moduleandinterfacesharingname |
-| 3610 | Implement Numberassignabletoenuminsideunion | spike | runtime/builtins | class: triage-needed | Implement Numberassignabletoenuminsideunion |
 | 3611 | Implement Numberliteralswithleadingzeros | spike | frontend/syntax | class: triage-needed | Implement Numberliteralswithleadingzeros |
 | 3612 | Implement Numbervsbigintoperations | spike | runtime/builtins | class: triage-needed | Implement Numbervsbigintoperations |
 | 3613 | Implement Numericclassmembers | spike | frontend/syntax | class: triage-needed | Implement Numericclassmembers |
@@ -5286,6 +5285,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 3607 | Implement Normalizedintersectiontoocomplex | spike | frontend/resolver | see `issues/done/3607-implement-normalizedIntersectionTooComplex.md` |
 | 3608 | Implement Nounusedtypeparameterconstraint | spike | frontend/syntax | see `issues/done/3608-implement-nounusedTypeParameterConstraint.md` |
 | 3609 | Implement Nullablefunctionerror | spike | frontend/syntax | see `issues/done/3609-implement-nullableFunctionError.md` |
+| 3610 | Implement Numberassignabletoenuminsideunion | spike | runtime/builtins | see `issues/done/3610-implement-numberAssignableToEnumInsideUnion.md` |
 | 3690 | Implement Optionaltupleelementsandundefined | spike | reference/triage | see `issues/done/3690-implement-optionalTupleElementsAndUndefined.md` |
 | 3996 | Implement Compiler (dup) | spike | frontend/syntax | see `issues/done/3996-implement-reference-typescript-tests-cases-compiler.md` |
 | 4210 | Implement Splicetuples | spike | frontend/resolver | see `issues/done/4210-implement-spliceTuples.md` |
