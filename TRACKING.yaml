@@ -13,24 +13,6 @@ meta:
     roadmap_source: docs/roadmap.md
 
 open:
-  - id: 103
-    title: "Register well-known symbols (iterator, toStringTag, hasInstance, toPrimitive)"
-    priority: P1
-    type: feature
-    area: ir
-    status: open
-    created: 2026-05-09
-    updated: 2026-05-09
-    owner: human
-    roadmap: W3
-    ready: true
-    acceptance:
-      - "cargo nextest run -p ts2wasm-cli --test m6_builtin_methods"
-    non_goals:
-      - "No Symbol constructor implementation."
-      - "No runtime wiring."
-    evidence: null
-
   - id: 104
     title: "Add precise unsupported diagnostic for Promise.then runtime use"
     priority: P1
@@ -218,6 +200,31 @@ open:
 
 active: []
 done:
+
+  - id: 103
+    title: "Register well-known symbols (iterator, toStringTag, hasInstance, toPrimitive)"
+    priority: P1
+    type: feature
+    area: ir
+    status: done
+    created: 2026-05-09
+    updated: 2026-05-09
+    closed: 2026-05-09
+    owner: human
+    roadmap: W3
+    ready: true
+    acceptance:
+      - "cargo nextest run -p ts2wasm-cli --test m6_builtin_methods"
+    non_goals:
+      - "No Symbol constructor implementation."
+      - "No runtime wiring."
+    evidence:
+      commit: "5a6fb46fd"
+      commands:
+        - command: "cargo nextest run -p ts2wasm-cli --test m6_builtin_methods build_smoke_global_names_well_known_symbols"
+          exit: 0
+      summary: "Well-known Symbol properties already work via generic lowering. Added fixture + test."
+
   - id: 101
     title: "Register Promise, Symbol, Reflect, Proxy as known global names"
     priority: P1
