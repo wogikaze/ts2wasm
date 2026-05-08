@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 25 | 13 | 12 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4608 | 3271 | 1337 |
+| frontend | 4608 | 3270 | 1338 |
 | harness | 1 | 0 | 1 |
 | ir | 92 | 69 | 23 |
 | issues | 4 | 0 | 4 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5301 | 3580 | 1721 |
+| total | 5301 | 3579 | 1722 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -2373,7 +2373,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 3302 | Implement Modulealiasasfunctionargument | spike | frontend/syntax | class: blocked | Implement Modulealiasasfunctionargument |
 | 3303 | Implement Modulealiasinterface | spike | frontend/syntax | class: blocked | Implement Modulealiasinterface |
 | 3304 | Implement Moduleandinterfacesharingname | spike | frontend/syntax | class: blocked | Implement Moduleandinterfacesharingname |
-| 3500 | Implement Newlexicalenvironmentforconvertedloop | spike | frontend/syntax | class: triage-needed | Implement Newlexicalenvironmentforconvertedloop |
 | 3501 | Implement Newmap | spike | frontend/resolver | class: blocked | Implement Newmap |
 | 3502 | Implement Newmissingidentifier | spike | frontend/syntax | class: triage-needed | Implement Newmissingidentifier |
 | 3503 | Implement Newnamesinglobalaugmentations | spike | frontend/syntax | class: blocked | Implement Newnamesinglobalaugmentations |
@@ -5261,6 +5260,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 3497 | Implement Newexpressionwithcast | spike | frontend/syntax | see `issues/done/3497-implement-newExpressionWithCast.md` |
 | 3498 | Implement Newexpressionwithtypeparameterconstrainedtooutertypeparameter | spike | frontend/syntax | see `issues/done/3498-implement-newExpressionWithTypeParameterConstrainedToOuterTypeParameter.md` |
 | 3499 | Implement Newfunctionimplicitany | spike | frontend/syntax | see `issues/done/3499-implement-newFunctionImplicitAny.md` |
+| 3500 | Implement Newlexicalenvironmentforconvertedloop | spike | frontend/syntax | see `issues/done/3500-implement-newLexicalEnvironmentForConvertedLoop.md` |
 | 3690 | Implement Optionaltupleelementsandundefined | spike | reference/triage | see `issues/done/3690-implement-optionalTupleElementsAndUndefined.md` |
 | 3996 | Implement Compiler (dup) | spike | frontend/syntax | see `issues/done/3996-implement-reference-typescript-tests-cases-compiler.md` |
 | 4210 | Implement Splicetuples | spike | frontend/resolver | see `issues/done/4210-implement-spliceTuples.md` |
