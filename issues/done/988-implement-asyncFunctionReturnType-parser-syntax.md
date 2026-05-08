@@ -116,7 +116,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/442-implement-parser-syntax.md` - Implement parser syntax extensions (same feature label, title overlap)
+- `issues/open/442-implement-parser-syntax.md` - Implement parser syntax extensions (same feature label, title overlap)
 - `issues/done/464-implement-FunctionDeclaration-parser-syntax.md` - Implement Functiondeclaration Parser Syntax (same feature label, title overlap)
 - `issues/done/550-implement-FunctionDeclaration-parser-syntax.md` - Implement Functiondeclaration Parser Syntax (same feature label, title overlap)
 - `issues/done/663-implement-arrayAssignmentTest-parser-syntax.md` - Implement Arrayassignmenttest Parser Syntax (same feature label, title overlap)
