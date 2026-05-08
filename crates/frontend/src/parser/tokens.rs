@@ -40,6 +40,7 @@ fn keyword_to_property_name(token: &Token) -> Option<&'static str> {
         Token::Switch => Some("switch"),
         Token::Break => Some("break"),
         Token::Continue => Some("continue"),
+        Token::With => Some("with"),
         _ => None,
     }
 }
@@ -131,12 +132,13 @@ impl Parser {
                     Token::False => "false",
                     Token::Null => "null",
                     Token::Undefined => "undefined",
+                    Token::With => "with",
                     _ => {
                         return Err(Diagnostic {
                             code: DiagCode::UnsupportedSyntax,
                             message: format!("expected property name, got {kind:?}"),
                             span: self.peek_span(),
-                        })
+                        });
                     }
                 };
                 Ok((name.to_string(), span))

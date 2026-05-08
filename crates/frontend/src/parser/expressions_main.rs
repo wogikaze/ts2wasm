@@ -16,7 +16,9 @@ impl Parser {
         } else if matches!(self.peek(), Some(Token::Less)) {
             // Speculative parse: <T>(params) => expr — generic arrow function
             let probe = self.cursor;
-            let has_generic = self.consume_typescript_generic_parameter_list().unwrap_or(false);
+            let has_generic = self
+                .consume_typescript_generic_parameter_list()
+                .unwrap_or(false);
             if has_generic && matches!(self.peek(), Some(Token::LeftParen)) {
                 self.probe_parenthesized_arrow_params().unwrap_or(false)
             } else {
@@ -32,7 +34,9 @@ impl Parser {
         if is_arrow {
             // Consume generic type parameters before parsing the arrow
             if matches!(self.peek(), Some(Token::Less)) {
-                let _has_generic = self.consume_typescript_generic_parameter_list().unwrap_or(false);
+                let _has_generic = self
+                    .consume_typescript_generic_parameter_list()
+                    .unwrap_or(false);
             }
             return self.arrow_function();
         }
@@ -267,7 +271,6 @@ impl Parser {
         Ok(expr)
     }
 
-
     fn logical_assignment_operator(&mut self) -> Option<LogicalAssignOp> {
         if self.consume(TokenKind::AndAndEqual) {
             Some(LogicalAssignOp::And)
@@ -445,13 +448,25 @@ impl Parser {
                 let param = self.parse_param(false, false)?;
                 let is_rest = param.is_rest;
                 let param_name = if let Some(default) = param.default {
-                    format!("{} = {}", param.name, self.binding_default_expr_text(&default))
+                    format!(
+                        "{} = {}",
+                        param.name,
+                        self.binding_default_expr_text(&default)
+                    )
                 } else {
                     param.name
                 };
-                params.push(if is_rest { format!("...{param_name}") } else { param_name });
-                if self.consume(TokenKind::RightParen) { break; }
-                if is_rest { return Err(self.invalid_rest_binding_diagnostic(param.span)); }
+                params.push(if is_rest {
+                    format!("...{param_name}")
+                } else {
+                    param_name
+                });
+                if self.consume(TokenKind::RightParen) {
+                    break;
+                }
+                if is_rest {
+                    return Err(self.invalid_rest_binding_diagnostic(param.span));
+                }
                 self.expect(TokenKind::Comma)?;
             }
         }
@@ -478,7 +493,9 @@ impl Parser {
                         self.cursor = saved;
                         break;
                     }
-                    _ => { self.advance(); }
+                    _ => {
+                        self.advance();
+                    }
                 }
             }
         }
@@ -491,7 +508,9 @@ impl Parser {
                     body_stmts.extend_from_slice(rest);
                     expr.clone()
                 }
-                _ => Expr::Undefined { span: Span::generated("undef") },
+                _ => Expr::Undefined {
+                    span: Span::generated("undef"),
+                },
             }
         } else {
             self.expression()?
@@ -1070,7 +1089,10 @@ impl Parser {
         } else if let Some(await_span) = self.consume_span(TokenKind::Await) {
             // Outside async functions, `await(...)` is a call expression whose
             // callee is the identifier `await`, matching TypeScript semantics.
-            if self.fn_depth > 0 && !self.in_async_fn && matches!(self.peek(), Some(Token::LeftParen)) {
+            if self.fn_depth > 0
+                && !self.in_async_fn
+                && matches!(self.peek(), Some(Token::LeftParen))
+            {
                 self.advance(); // consume `(`
                 let mut args = Vec::new();
                 if !self.consume(TokenKind::RightParen) {
@@ -1280,7 +1302,9 @@ impl Parser {
                 if matches!(self.peek(), Some(Token::RightBracket)) {
                     return Err(Diagnostic {
                         code: DiagCode::UnsupportedSyntax,
-                        message: "issue-5150: empty element access `expr[]` requires an index expression".to_owned(),
+                        message:
+                            "issue-5150: empty element access `expr[]` requires an index expression"
+                                .to_owned(),
                         span: None,
                     });
                 }
@@ -1328,9 +1352,7 @@ impl Parser {
                     end: call_end,
                 })
             }
-            Expr::Index { index, span, .. } | Expr::OptionalIndex { index, span, .. }
-                if matches!(index.as_ref(), Expr::String { value, .. } if value == "eval") =>
-            {
+            Expr::Index { index, span, .. } | Expr::OptionalIndex { index, span, .. } if matches!(index.as_ref(), Expr::String { value, .. } if value == "eval") => {
                 Some(Span {
                     start: span.start,
                     end: call_end,
@@ -1388,8 +1410,9 @@ impl Parser {
     fn invalid_optional_chain_target(&self, span: Span) -> Diagnostic {
         Diagnostic {
             code: DiagCode::UnsupportedSyntax,
-            message: "issue-246: optional chaining cannot be used as an assignment or update target"
-                .to_owned(),
+            message:
+                "issue-246: optional chaining cannot be used as an assignment or update target"
+                    .to_owned(),
             span: Some(span),
         }
     }
@@ -1491,8 +1514,10 @@ impl Parser {
             return Ok(());
         }
 
-        let greater_span =
-            self.skip_typescript_angle_list_after_less(less_span, "new expression type argument list")?;
+        let greater_span = self.skip_typescript_angle_list_after_less(
+            less_span,
+            "new expression type argument list",
+        )?;
         if matches!(self.peek(), Some(Token::LeftParen))
             && self
                 .peek_span()
@@ -1533,7 +1558,8 @@ impl Parser {
         let mut consumed_type_token = false;
 
         while !self.is_at_end() {
-            let at_top_level = paren_depth == 0 && bracket_depth == 0 && brace_depth == 0 && angle_depth == 0;
+            let at_top_level =
+                paren_depth == 0 && bracket_depth == 0 && brace_depth == 0 && angle_depth == 0;
             if at_top_level
                 && consumed_type_token
                 && (self.peek_contextual_keyword("as")
@@ -1729,12 +1755,8 @@ impl Parser {
                     {
                         return Err(Self::indirect_eval_call_diagnostic(span));
                     }
-                    return Err(Diagnostic {
-                        code: DiagCode::UnsupportedSyntax,
-                        message: "comma expressions are not supported in this parser slice"
-                            .to_owned(),
-                        span: Some(span),
-                    });
+                    self.parenthesized_expr_spans.insert((span.start, span.end));
+                    return Ok(last_expr);
                 }
                 self.expect(TokenKind::RightParen)?;
                 self.parenthesized_expr_spans
@@ -1798,12 +1820,10 @@ impl Parser {
                             props.push((OBJECT_SPREAD_SENTINEL.to_owned(), val));
                         } else {
                             let key = self.parse_object_key()?;
-                            let key_span = self
-                                .prev_span()
-                                .unwrap_or(Span {
-                                    start: start.start,
-                                    end: start.start,
-                                });
+                            let key_span = self.prev_span().unwrap_or(Span {
+                                start: start.start,
+                                end: start.start,
+                            });
                             let key_start = key_span.start;
 
                             // Handle getter/setter accessor in object literals: { get foo() {} }
@@ -1817,7 +1837,8 @@ impl Parser {
                                     let mut params = Vec::new();
                                     if !self.consume(TokenKind::RightParen) {
                                         loop {
-                                            let param = self.parse_param(false, params.is_empty())?;
+                                            let param =
+                                                self.parse_param(false, params.is_empty())?;
                                             let is_rest = param.is_rest;
                                             if !param.is_this_parameter {
                                                 params.push((param.name, param.default, is_rest));
@@ -1826,13 +1847,15 @@ impl Parser {
                                                 break;
                                             }
                                             if is_rest {
-                                                return Err(self.invalid_rest_binding_diagnostic(param.span));
+                                                return Err(self
+                                                    .invalid_rest_binding_diagnostic(param.span));
                                             }
                                             self.expect(TokenKind::Comma)?;
                                         }
                                     }
                                     if self.consume(TokenKind::Colon) {
-                                        self.skip_type_annotation_until(&[TokenKind::LeftBrace]).ok();
+                                        self.skip_type_annotation_until(&[TokenKind::LeftBrace])
+                                            .ok();
                                     }
                                     // Try to consume function body; if absent (ambient/getter without body),
                                     // use an empty body
@@ -1846,7 +1869,10 @@ impl Parser {
                                         name: format!("{accessor_kind} {prop_name}"),
                                         params,
                                         body,
-                                        span: Span { start: key_start, end },
+                                        span: Span {
+                                            start: key_start,
+                                            end,
+                                        },
                                     };
                                     props.push((prop_name, expr));
                                     if self.consume(TokenKind::RightBrace) {
@@ -1863,7 +1889,9 @@ impl Parser {
                                     // Not an accessor, fall through to normal property handling
                                 }
                             }
-                            if let Some(val) = self.parse_object_literal_method(key.clone(), key_start)? {
+                            if let Some(val) =
+                                self.parse_object_literal_method(key.clone(), key_start)?
+                            {
                                 props.push((key, val));
                             } else if matches!(self.peek(), Some(Token::Colon)) {
                                 self.expect(TokenKind::Colon)?;
@@ -1997,7 +2025,10 @@ impl Parser {
         }
 
         let body = self.block()?;
-        let end = body.last().map(|stmt| stmt.span().end).unwrap_or(method_start);
+        let end = body
+            .last()
+            .map(|stmt| stmt.span().end)
+            .unwrap_or(method_start);
 
         Ok(Some(Expr::FunctionExpr {
             name,
@@ -2132,9 +2163,11 @@ fn bigint_fractional_number_diagnostic(value: &str, span: Span) -> Diagnostic {
 fn parser_expr_is_bigint_literal_operand(expr: &Expr) -> bool {
     match expr {
         Expr::BigInt { .. } => true,
-        Expr::Unary { op: UnaryOp::Plus | UnaryOp::Negate, expr, .. } => {
-            parser_expr_is_bigint_literal_operand(expr)
-        }
+        Expr::Unary {
+            op: UnaryOp::Plus | UnaryOp::Negate,
+            expr,
+            ..
+        } => parser_expr_is_bigint_literal_operand(expr),
         Expr::FunctionExpr { .. }
         | Expr::ClassExpr { .. }
         | Expr::Number { .. }

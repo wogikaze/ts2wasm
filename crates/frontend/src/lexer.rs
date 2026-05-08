@@ -84,7 +84,8 @@ impl<'a> Lexer<'a> {
             | Some(Token::Case)
             | Some(Token::Do)
             | Some(Token::In)
-            | Some(Token::Of) => true,
+            | Some(Token::Of)
+            | Some(Token::With) => true,
             _ => false,
         }
     }

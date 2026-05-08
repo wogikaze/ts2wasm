@@ -54,6 +54,7 @@ pub enum Token {
     Switch,
     Break,
     Continue,
+    With,
     // Operators
     Plus,
     Minus,
@@ -159,6 +160,7 @@ pub enum TokenKind {
     Switch,
     Break,
     Continue,
+    With,
     Plus,
     Minus,
     Less,
@@ -260,6 +262,7 @@ impl TokenKind {
                 | (Self::Switch, Token::Switch)
                 | (Self::Break, Token::Break)
                 | (Self::Continue, Token::Continue)
+                | (Self::With, Token::With)
                 | (Self::Plus, Token::Plus)
                 | (Self::Minus, Token::Minus)
                 | (Self::Less, Token::Less)
