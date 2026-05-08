@@ -13,7 +13,7 @@ meta:
     roadmap_source: docs/roadmap.md
 
 open:
-  # ── Registration / diagnostic (W3/W4, small, high impact) ──
+  # ── Registration (W3, small, high impact) ──
   - id: 101
     title: "Register Promise, Symbol, Reflect, Proxy as known global names"
     priority: P1
@@ -67,7 +67,7 @@ open:
       - "No runtime wiring — name registration only."
     evidence: null
 
-  # ── Diagnostic routing (small, enables precise error messages) ──
+  # ── Diagnostic routing (W4, small, enables precise error messages) ──
   - id: 104
     title: "Add precise unsupported diagnostic for Promise.then runtime use"
     priority: P1
@@ -119,9 +119,9 @@ open:
       - "No Proxy/Reflect implementation."
     evidence: null
 
-  # ── Infra / testing (small, measurable) ──
+  # ── Infra / testing (W6/W7, small, measurable) ──
   - id: 107
-    title: "Add regression detection: compare ramp runs, fail on build_pass/semantic_pass decrease"
+    title: "Record baseline + detect build_pass/semantic_pass regression between ramp runs"
     priority: P1
     type: infra
     area: scripts
@@ -132,7 +132,9 @@ open:
     roadmap: W6
     ready: true
     acceptance:
-      - "mise run reference-coverage -- test262 --limit 500 --check 2>&1; test $? -eq 1"
+      - "mise run reference-coverage -- test262 --limit 500 --record-baseline tmp/baseline.json"
+      - "mise run reference-coverage -- test262 --limit 500 --compare-baseline tmp/baseline.json"
+      - "python3 -c 'import json; d=json.load(open(\"tmp/baseline.json\")); assert d[\"build_pass\"] > 0'"
     non_goals:
       - "No dashboard changes."
       - "No trend visualization."
@@ -153,7 +155,7 @@ open:
       - "cargo nextest run -p ts2wasm-cli --test m11_host_deny"
     evidence: null
 
-  # ── Parser / frontend (well-scoped, measurable via coverage) ──
+  # ── Parser / frontend (W2, well-scoped) ──
   - id: 109
     title: "Add parser support for RegExp literal flags (g, i, m)"
     priority: P1
@@ -204,11 +206,28 @@ open:
       - "No eval runtime changes."
     evidence: null
 
-  # ─── WAT / backend (architecture debt, measurable) ──
+  # ── WAT / backend (W0, architecture debt) ──
   - id: 112
-    title: "Extract binary WASM emitter to handle simple class/build_smoke programs"
+    title: "Add binary_mvp smoke fixture for numeric const export"
     priority: P2
-    type: design
+    type: infra
+    area: backend
+    status: open
+    created: 2026-05-09
+    updated: 2026-05-09
+    owner: human
+    roadmap: W0
+    ready: true
+    acceptance:
+      - "cargo nextest run -p ts2wasm-cli --test m1_iwasm"
+    non_goals:
+      - "No full WAT replacement."
+    evidence: null
+
+  - id: 114
+    title: "Document binary_mvp unsupported constructs with precise diagnostics"
+    priority: P2
+    type: diagnostic
     area: backend
     status: open
     created: 2026-05-09
@@ -219,8 +238,7 @@ open:
     acceptance:
       - "cargo nextest run -p ts2wasm-cli --test m8_oop_classes"
     non_goals:
-      - "No full WAT replacement."
-      - "No optimization passes."
+      - "No binary emitter expansion — documentation + diagnostics only."
     evidence: null
 
   - id: 113

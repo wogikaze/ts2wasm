@@ -1,94 +1,254 @@
 # ts2wasm Roadmap
 
-大きな未実装領域を W0-W8 で整理する。このファイルは **epic 一覧**であり、個別の実装作業は `TRACKING.yaml` で管理する。
+大きな未実装領域を W0-W8 で整理する。
 
-## W0: Runtime substrate（Gate A precondition）
+このファイルは **epic 一覧**であり、個別の実装作業は `TRACKING.yaml` で管理する。
 
-- [ ] Binary WASM emitter 拡充 (`crates/backend-wasm/src/binary_mvp.rs`)
-- [ ] Runtime core の raw WAT 削減（`runtime_core_emitter_part[12].rs`）
-- [ ] ABI 二重表現の解消（論理 `i64` vs wire `i32`）
+## Roadmap model
 
-## W1: Standalone WASI execution
+W0-W8 は厳密な直列フェーズではない。
 
-- [ ] WASI args (`args_get`/`args_sizes_get`)
-- [ ] WASI env (`environ_get`/`environ_sizes_get`)
-- [ ] WASI proc_exit clean exit
-- [ ] WASI clock resolution (`clock_res_get`)
-- [ ] Standalone test coverage 拡充
+- **W0-W5**: 主な実装レーン
+- **W6-W7**: 横断的な検証レーン（W2-W5 の各実装と同時に進む）
+- **W8**: 後回しの最適化領域（semantic coverage が安定した後）
 
-## W2: Syntax coverage（parser gaps）
+```txt
+TRACKING.yaml   = 今週の作業台帳（最大 20 件、active 1 件）
+docs/roadmap.md = 大きな未実装領域の分類
+artifacts/coverage/ = 診断データ（自動生成、TRACKING.yaml には書かない）
+```
 
-- [ ] RegExp literal flags (g, i, m, s, u, y, d) — ~45 test262 cases
-- [ ] Expression forms: SequenceExpression, yield/generator, async/await, optional chaining, nullish coalescing
-- [ ] Statement forms: with, debugger, Annex B block-level function hoisting
-- [ ] Cover initializers / labelled function declarations
+## Rules
+
+- Roadmap item は epic であり、そのまま `TRACKING.yaml` にコピーしない。
+- `TRACKING.yaml` には、Roadmap から手で切り出した小さな作業だけを入れる（1 PR / 1 agent session の粒度）。
+- coverage / reference-coverage / dashboard の結果から `TRACKING.yaml` を自動生成しない。
+- `TRACKING.yaml` の item は acceptance command と done evidence を必須にする。
+- `TRACKING.yaml` の active item は最大 1 件。
+
+## Gate overview
+
+| Gate | Meaning | Main waves |
+|------|---------|------------|
+| Gate A | Stable runtime substrate | W0 |
+| Gate B | Standalone WASI execution | W1 |
+| Gate C | Parser does not block common fixtures | W2 |
+| Gate D | Known names and builtin dispatch are explicit | W3 |
+| Gate E | Core runtime builtins are implemented or precisely rejected | W4 |
+| Gate F | JS/TS runtime semantics become coherent | W5 |
+| Gate G | test262 ramp is measurable and regression-safe | W6 |
+| Gate H | Host capability boundary is auditable | W7 |
+| Post-Gate H | Optimization and large backend replacement | W8 |
+
+---
+
+## W0: Runtime substrate / ABI baseline（Gate A precondition）
+
+Goal: generated WASM should have a stable runtime substrate before adding large JS semantics.
+
+This wave is about **minimum correctness and maintainability**, not full optimization.
+W8 handles the post-90% full replacement.
+
+- [ ] Minimal binary WASM emitter path for simple programs
+- [ ] Runtime core raw WAT reduction where it blocks maintainability
+- [ ] ABI contract document: logical values vs wire representation
+- [ ] ABI mismatch tests for `i64` logical value vs `i32` wire handle/value representation
+- [ ] Runtime value representation smoke tests under iwasm/WAMR
+
+Non-goals:
+- No full WAT replacement — that is W8.
+- No optimization passes — that is W8.
+- No post-90% binary emitter rewrite — that is W8.
+
+---
+
+## W1: Standalone WASI baseline
+
+Goal: generated WASM should run as a standalone WASI program where the supported host capabilities are explicit.
+
+W1 is the **initial baseline gate**. Ongoing host capability auditing belongs to W7 (cross-cutting validation track).
+
+- [ ] WASI args support: `args_get` / `args_sizes_get`
+- [ ] WASI env support: `environ_get` / `environ_sizes_get`
+- [ ] WASI `proc_exit` clean exit
+- [ ] WASI clock resolution: `clock_res_get`
+- [ ] Standalone iwasm/WAMR smoke test coverage
+- [ ] Capability manifest entries for every new WASI import
+
+Non-goals:
+- No implicit Node.js compatibility layer.
+- No broad `process` emulation.
+- No hidden host import expansion.
+
+---
+
+## W2: Syntax acceptance and precise rejection
+
+Goal: parser should accept or precisely reject common JS/TS syntax without generic parse failures.
+
+W2 = "parse or precise reject". Runtime semantics belong to W4/W5.
+
+- [ ] RegExp literal flags: `g`, `i`, `m`
+- [ ] RegExp literal flags: `s`, `u`, `y`, `d`
+- [ ] SequenceExpression
+- [ ] Optional chaining
+- [ ] Nullish coalescing
+- [ ] `yield` / generator syntax parsing
+- [ ] `async` / `await` syntax parsing
+- [ ] `with` / `debugger`
+- [ ] Annex B block-level function hoisting syntax handling
+- [ ] Cover initializers
+- [ ] Labelled function declarations
 - [ ] JSX parsing
-- [ ] Decorator parsing + parameter property parsing
-- [ ] Parser-specific test coverage
+- [ ] Decorator parsing
+- [ ] TypeScript parameter property parsing
+- [ ] Parser-specific regression tests
 
-## W3: Name resolution
+Non-goals:
+- Parser support does not imply runtime semantics.
+- `async`, `yield`, decorators, JSX may initially lower to explicit unsupported diagnostics.
+- Do not combine syntax parsing with runtime implementation unless the feature is tiny.
 
-- [ ] Register all ECMAScript global builtins (Symbol, Proxy, Reflect, Map, Set, WeakMap, WeakSet, Promise, Error types, ArrayBuffer, DataView, Atomics, Intl, globalThis, etc.)
-- [ ] Register TypedArray constructors (Int8Array through Float64Array)
-- [ ] Register well-known symbols (Symbol.iterator, toStringTag, hasInstance, toPrimitive, for, keyFor)
-- [ ] Complete builtin method dispatch table (all String/Array/Object/Number/Function.prototype methods)
-- [ ] Nested namespace/module resolution (A.B.C)
-- [ ] Type-only imports / triple-slash directives / module augmentation
+---
 
-## W4: Runtime builtins
+## W3: Name/call resolution and builtin dispatch
 
-- [ ] Promise constructor + .then/.catch/.finally
-- [ ] Promise.all / race / resolve / reject / allSettled / any / withResolvers
-- [ ] async/await lowering and runtime
-- [ ] Proxy constructor + 13 fundamental handler traps
-- [ ] Proxy.revocable
-- [ ] Reflect API (construct, apply, get, set, has, deleteProperty, etc.)
-- [ ] TypedArray constructors (11 types) + methods
+Goal: unresolved names/functions should become either known supported operations or precise unsupported diagnostics.
+
+This wave should reduce `UnresolvedName` / `UnresolvedFunction` noise without pretending unsupported runtime semantics exist.
+
+- [ ] Register core ECMAScript global builtin names:
+  `Symbol`, `Proxy`, `Reflect`, `Map`, `Set`, `WeakMap`, `WeakSet`, `Promise`,
+  `Error` types, `ArrayBuffer`, `DataView`, `Atomics`, `Intl`, `globalThis`
+- [ ] Register TypedArray constructor names:
+  `Int8Array` through `BigUint64Array` (11 types)
+- [ ] Register well-known symbols:
+  `Symbol.iterator`, `toStringTag`, `hasInstance`, `toPrimitive`, `for`, `keyFor`
+- [ ] Builtin method dispatch table for supported or explicitly unsupported methods
+- [ ] String / Array / Object / Number / Function.prototype method dispatch routing
+- [ ] Nested namespace/module resolution: `A.B.C`
+- [ ] Type-only imports
+- [ ] Triple-slash directives
+- [ ] Module augmentation
+
+Non-goals:
+- Name registration does not imply runtime implementation.
+- Unsupported builtins should route to precise diagnostics.
+- Avoid "complete all methods" as one work item.
+
+---
+
+## W4: Builtin API semantics
+
+Goal: implement selected builtins only after names and dispatch paths are explicit.
+
+See `docs/language-reference/` for the detailed feature coverage tables.
+
+- [ ] Promise minimal substrate and constructor
+- [ ] `Promise.prototype.then` / `catch` / `finally`
+- [ ] `Promise.resolve` / `reject` / `all` / `race` / `allSettled` / `any` / `withResolvers`
+- [ ] Proxy constructor
+- [ ] Proxy handler trap slices + `Proxy.revocable`
+- [ ] Reflect API: `get`, `set`, `has`, `deleteProperty`, `apply`, `construct`
+- [ ] TypedArray constructors by family + basic read/write
 - [ ] ArrayBuffer / SharedArrayBuffer / DataView
 - [ ] WeakMap / WeakSet
-- [ ] Symbol constructor + well-known symbols
+- [ ] Symbol constructor + well-known symbol runtime behavior
 - [ ] Atomics / Intl
-- [ ] String.prototype.replace/replaceAll full RegExp semantics
-- [ ] String.prototype.matchAll
-- [ ] Array.prototype.sort / reduce / reduceRight
-- [ ] Build_smoke → semantic_diff upgrade for existing builtins
+- [ ] `String.prototype.replace` / `replaceAll` / `matchAll`
+- [ ] `Array.prototype.sort` / `reduce` / `reduceRight`
+- [ ] Upgrade selected existing builtins from build_smoke to semantic_diff
 
-## W5: Runtime semantics
+Non-goals:
+- Do not implement whole builtin families as single work items.
+- Do not add async/await lowering here — that is W5 (after Promise substrate exists).
+- Do not implement Proxy/Reflect fully before object model invariants are clear.
 
-- [ ] Iterator protocol (Symbol.iterator for Array/String/Map/Set, Iterator.prototype)
-- [ ] Well-known symbol wiring (hasInstance, toPrimitive, toStringTag, iterator)
-- [ ] Proper completion records for all statement types
-- [ ] Generator functions (function*, yield, yield*, Generator.prototype)
-- [ ] async generators + for-await-of
-- [ ] Object model completeness (property descriptors, seal/freeze, [[GetPrototypeOf]]/[[SetPrototypeOf]])
+---
+
+## W5: Language runtime semantics
+
+Goal: runtime behavior should match the supported JS/TS subset, not only parse or build.
+
+W4 = API surface / builtin method behavior.
+W5 = language execution model / control flow / object model invariants.
+
+- [ ] Iterator protocol: Array/String/Map/Set iterators + `Iterator.prototype`
+- [ ] Well-known symbol runtime wiring: `Symbol.iterator`, `hasInstance`, `toPrimitive`, `toStringTag`
+- [ ] Proper completion records for `if`/`switch`/`try`/`for`/`while`/`break`/`continue`/`return`/`throw`
+- [ ] Generator functions: `function*`, `yield`, `yield*`, `Generator.prototype`
+- [ ] Promise-backed async/await lowering
+- [ ] Async generators + `for-await-of`
+- [ ] Object model completeness: property descriptors, `seal`/`freeze`, `[[GetPrototypeOf]]`/`[[SetPrototypeOf]]`
 - [ ] ES module live binding updates + module namespace objects
 - [ ] Dynamic import + circular dependency evaluation
 - [ ] Mutable capture environments for escaping closures
-- [ ] This binding (global this, strict-mode receiver)
+- [ ] `this` binding: global this, strict-mode receiver, method receiver
 
-## W6: test262 coverage ramp
+Non-goals:
+- Do not use W5 as a dumping ground for parser gaps.
+- Do not start generators or async before completion records are reliable.
+- Do not implement object model invariants partially without diagnostics.
 
-- [ ] Ramp 500 → 2,000（parallel execution, caching）
-- [ ] Ramp 2,000 → 10,000
-- [ ] Ramp 10,000 → 30,000
-- [ ] Ramp 30,000 → 53,445
-- [ ] Regression detection (compare ramp runs, fail on regression)
-- [ ] Delta reporting (feature-level pass/fail deltas)
-- [ ] Coverage dashboard: trend graph + feature-level burn-down
+---
+
+## W6: Coverage and regression infrastructure
+
+Goal: coverage growth should be measurable, reproducible, and regression-safe.
+
+This is a **cross-cutting validation track**, not a sequential phase.
+Work here runs in parallel with W2-W5 implementation: each feature change should be accompanied by coverage measurement, regression detection, and delta reporting.
+
+- [ ] Ramp 500 → 2,000 with stable parallel execution and caching
+- [ ] Ramp 2,000 → 10,000 / 10,000 → 30,000 / 30,000 → 53,445
+- [ ] Regression detection: fail on build_pass / semantic_pass decrease
+- [ ] Delta reporting: feature-level and diagnostic-class pass/fail deltas
+- [ ] Coverage dashboard: trend graph, feature-level burn-down, diagnostic burn-down
 - [ ] Gate progress visualization
+
+Non-goals:
+- Do not auto-create `TRACKING.yaml` entries from coverage gaps.
+- Do not treat coverage summaries as issue lists.
+- Do not block normal build on dashboard generation.
+
+---
 
 ## W7: Host capability boundary
 
-- [ ] Full host import audit (--emit-manifest on all fixtures)
-- [ ] Expand host-deny test matrix + manifest golden tests
-- [ ] Standalone assurance for new features (Promise, Proxy, etc.)
+Goal: every host interaction should be explicit, auditable, and deny-testable.
+
+This is a **cross-cutting validation track** that protects the core project constraint:
+generated WASM should not silently depend on Node.js or hidden host capabilities.
+
+- [ ] Full host import audit with `--emit-manifest`
+- [ ] Manifest golden tests for all supported fixtures
+- [ ] Host-deny test matrix expansion
+- [ ] Standalone assurance for new features (Promise, Proxy, Reflect, TypedArray, WASI args/env)
 - [ ] Capability review checklist in coding standard
+- [ ] CI gate for unexpected host imports
 
-## W8: Optimization（deferred to post-90% test262）
+Non-goals:
+- No broad host shim.
+- No hidden Node.js delegation.
+- No "temporary" imports without manifest entries.
 
-- [ ] Benchmark suite + regression tracker
+---
+
+## W8: Optimization and backend replacement（deferred）
+
+Goal: after semantic coverage is high enough, improve speed, size, maintainability, and backend quality.
+
+**Entry condition**: semantic_diff coverage is stable, host capability boundary is audited,
+test262 ramp is regression-safe, major runtime semantics are no longer moving daily.
+
+- [ ] Benchmark suite + performance regression tracker
 - [ ] Typed fast path / packed array / devirtualization
 - [ ] Property inline cache / dead code elimination / constant folding / inlining
-- [ ] Full binary WASM emitter (replace WAT text dependency)
+- [ ] Full binary WASM emitter replacing WAT text dependency
 - [ ] Replace giant WAT templates with typed writers
-- [ ] ABI bridge: fix logical vs wire representation
+- [ ] ABI bridge cleanup after logical/wire contract is stable
+
+Non-goals:
+- Do not start broad optimization before semantic correctness.
+- Do not replace WAT wholesale while runtime semantics are still unstable.
+- Do not treat W8 as a prerequisite for early test262 growth.
