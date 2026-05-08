@@ -130,9 +130,9 @@ Follow-up issues:
   explicitly kept dynamic-source object rest out of scope.
 - `issues/done/5049-ir-destructuring.md` is related but not a match for the
   same reason; the fresh reference triage still reports issue-251.
-- `issues/open/3485-implement-nestedObjectRest.md` is related but still a
-  generated triage bucket with stale object-literal diagnostics, not an exact
-  implementation-ready owner for this path.
+- `issues/done/3485-implement-nestedObjectRest.md` is related but split to the
+  parser-only `issues/open/5462-parse-for-of-assignment-heads-with-nested-object-rest.md`,
+  not the dynamic-source nested declaration object-rest owner for this path.
 - Computed/default binding issues 5297, 5299, 5373, and 5379 are no-match for
   this nested object rest source-shape blocker.
 

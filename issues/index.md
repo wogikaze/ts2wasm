@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 25 | 13 | 12 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4603 | 3280 | 1323 |
+| frontend | 4604 | 3280 | 1324 |
 | harness | 1 | 0 | 1 |
 | ir | 92 | 69 | 23 |
 | issues | 4 | 0 | 4 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5296 | 3590 | 1706 |
+| total | 5297 | 3590 | 1707 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -50,7 +50,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 5000 (Meta: TypeScript Compiler Parser Syntax Coverage) [done/design] ch:446 open:342 done:104
 ├── 5002 (Meta: TypeScript Compiler Type System Coverage) [done/done] ch:223 open:199 done:24 (also ← 5005)
 ├── 5003 (Meta: TypeScript Compiler Declaration Emit Coverage) [done/done] ch:100 open:89 done:11 (also ← 5001)
-5001 (Meta: TypeScript Compiler Semantic Analysis Coverage) [done/done] ch:556 open:291 done:265
+5001 (Meta: TypeScript Compiler Semantic Analysis Coverage) [done/done] ch:556 open:290 done:266
 5004 (Meta: Runtime Builtins Coverage (test262) (audit reopened #5004)) [done/done] ch:24 open:3 done:21
 5005 (Meta: TypeScript Compiler Name Resolution Coverage) [done/done] ch:397 open:332 done:65
 ├── 5006 (Meta: TypeScript Compiler Scope Analysis Coverage) [done/done] ch:28 open:18 done:10
@@ -67,7 +67,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | Order | ID | Title | State | Class | Area | Priority | Depends on | Direct children | Open children | Done children |
 |-----:|---:|------|-------|-------|------|--------:|-----------:|----------------:|--------------:|--------------:|
 | 1 | 5000 | Meta: TypeScript Compiler Parser Syntax Coverage | done | design | frontend/syntax | P1 | - | 446 | 342 | 104 |
-| 2 | 5001 | Meta: TypeScript Compiler Semantic Analysis Coverage | done | done | frontend/semantics | P1 | - | 556 | 291 | 265 |
+| 2 | 5001 | Meta: TypeScript Compiler Semantic Analysis Coverage | done | done | frontend/semantics | P1 | - | 556 | 290 | 266 |
 | 3 | 5004 | Meta: Runtime Builtins Coverage (test262) (audit reopened #5004) | done | done | runtime/builtins | P1 | - | 24 | 3 | 21 |
 | 4 | 5005 | Meta: TypeScript Compiler Name Resolution Coverage | done | done | frontend/resolver | P1 | - | 397 | 332 | 65 |
 | 5 | 5002 | Meta: TypeScript Compiler Type System Coverage | done | done | frontend/semantics | P1 | 5000, 5005 | 223 | 199 | 24 |
@@ -414,6 +414,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5459 | Check nested object literal excess properties through contextual types | feature | frontend/semantics | implementation-ready | P2 |  | `nestedFreshLiteral.ts` now builds successfully in ts2wasm, so the old |
 | 5460 | Report invalid global class member syntax | bug | frontend/parser | implementation-ready | P2 |  | `nestedGlobalNamespaceInClass.ts` contains invalid source intended to |
 | 5461 | Parse nested single-statement for-of loop bodies | feature | frontend/parser | implementation-ready | P2 |  | `nestedLoopWithOnlyInnerLetCaptured.ts` is currently blocked before |
+| 5462 | Parse for-of assignment heads with nested object rest | feature | frontend/parser | implementation-ready | P2 |  | `nestedObjectRest.ts` parses the preceding destructuring assignment |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -2368,7 +2369,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 3302 | Implement Modulealiasasfunctionargument | spike | frontend/syntax | class: blocked | Implement Modulealiasasfunctionargument |
 | 3303 | Implement Modulealiasinterface | spike | frontend/syntax | class: blocked | Implement Modulealiasinterface |
 | 3304 | Implement Moduleandinterfacesharingname | spike | frontend/syntax | class: blocked | Implement Moduleandinterfacesharingname |
-| 3485 | Implement Nestedobjectrest | spike | frontend/syntax | class: blocked | Implement Nestedobjectrest |
 | 3486 | Implement Nestedrecursivelambda | spike | frontend/syntax | class: blocked | Implement Nestedrecursivelambda |
 | 3487 | Implement Nestedredeclarationines | spike | frontend/syntax | class: blocked | Implement Nestedredeclarationines |
 | 3488 | Implement Nestedself | spike | frontend/syntax | class: blocked | Implement Nestedself |
@@ -5256,6 +5256,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 3482 | Implement Nestedloopwithonlyinnerletcaptured | spike | frontend/syntax | see `issues/done/3482-implement-nestedLoopWithOnlyInnerLetCaptured.md` |
 | 3483 | Implement Nestedloops | spike | frontend/syntax | see `issues/done/3483-implement-nestedLoops.md` |
 | 3484 | Implement Nestedmoduleprivateaccess | spike | frontend/syntax | see `issues/done/3484-implement-nestedModulePrivateAccess.md` |
+| 3485 | Implement Nestedobjectrest | spike | frontend/syntax | see `issues/done/3485-implement-nestedObjectRest.md` |
 | 3690 | Implement Optionaltupleelementsandundefined | spike | reference/triage | see `issues/done/3690-implement-optionalTupleElementsAndUndefined.md` |
 | 3996 | Implement Compiler (dup) | spike | frontend/syntax | see `issues/done/3996-implement-reference-typescript-tests-cases-compiler.md` |
 | 4210 | Implement Splicetuples | spike | frontend/resolver | see `issues/done/4210-implement-spliceTuples.md` |
