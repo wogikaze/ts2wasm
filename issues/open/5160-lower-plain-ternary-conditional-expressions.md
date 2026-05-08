@@ -8,7 +8,7 @@ priority: P2
 depends_on: []
 blocks: []
 created: 2026-05-06
-updated: 2026-05-06
+updated: 2026-05-08
 ---
 
 ## Summary
@@ -104,6 +104,7 @@ Do not touch:
 
 - [ ] `fixtures/core-semantics/ternary.ts` no longer reports `ternary operator not yet supported` and matches Node output.
 - [ ] `python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/bestChoiceType.ts` no longer reports `UnsupportedSyntax: ternary operator not yet supported`.
+- [ ] `python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/nonNullParameterExtendingStringAssignableToString.ts` no longer reports `UnsupportedSyntax: ternary operator not yet supported` for `Boolean() ? one : two`.
 - [ ] A focused unit or fixture test covers `let y = x ? x : [];`.
 - [ ] Existing parser ternary AST coverage remains passing.
 
@@ -145,7 +146,18 @@ Follow-up issues:
 
 ## Notes
 
-Split from generated bucket `1043` on 2026-05-06. Other generated ternary buckets may become duplicates once this implementation-ready slice lands, but they still need current triage before closure.
+Split from generated bucket `1043` on 2026-05-06.
+
+Additional generated buckets confirmed as current duplicates:
+
+- `issues/done/3599-implement-nonNullParameterExtendingStringAssignableToString.md`
+  stops on `let three = Boolean() ? one : two;` with the same
+  `ternary operator not yet supported` diagnostic before non-null parameter
+  assignability semantics are reached.
+
+Other generated ternary buckets may become duplicates once this
+implementation-ready slice lands, but they still need current triage before
+closure.
 
 ## Completion evidence
 
