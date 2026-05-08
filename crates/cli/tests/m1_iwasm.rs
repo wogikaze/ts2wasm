@@ -221,7 +221,10 @@ fn runtime_value_representation_smoke() {
         String::from_utf8_lossy(&run.output.stdout),
         String::from_utf8_lossy(&run.output.stderr)
     );
-    assert_eq!(String::from_utf8_lossy(&run.output.stdout), "undefined\nnull\ntrue\nfalse\n42\nhi\n");
+    assert_eq!(
+        String::from_utf8_lossy(&run.output.stdout),
+        "undefined\nnull\ntrue\nfalse\n42\nhi\n"
+    );
 }
 
 #[test]
@@ -231,11 +234,7 @@ fn binary_mvp_const_export() {
 
     let input = temp.join("const_export.ts");
     let output = temp.join("const_export.wasm");
-    fs::write(
-        &input,
-        "export const x: number = 42;\nconsole.log(x);\n",
-    )
-    .unwrap();
+    fs::write(&input, "export const x: number = 42;\nconsole.log(x);\n").unwrap();
 
     let build = Command::new(env!("CARGO_BIN_EXE_ts2wasm"))
         .arg("build")

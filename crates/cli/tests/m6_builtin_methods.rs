@@ -1230,3 +1230,192 @@ fn build_smoke_global_names_remaining() {
         result.err()
     );
 }
+
+// === W2: Syntax acceptance tests (TDD — tests first, implementation after) ===
+
+// SequenceExpression (comma operator) — W2
+#[test]
+fn build_smoke_comma_operator() {
+    let result = run_fixture("core-semantics/comma-operator.ts");
+    assert!(
+        result.is_ok(),
+        "comma-operator should build: {:?}",
+        result.err()
+    );
+}
+
+// Generator function syntax — W2: should fail to build (TODO: precise diagnostic)
+// Current error: UnresolvedFunction (parser doesn't handle function* yet)
+#[test]
+fn generator_function_unsupported_diagnostic() {
+    let result = run_fixture("core-semantics/generator-function-unsupported.ts");
+    assert!(
+        result.is_err(),
+        "Generator function should produce unsupported diagnostic"
+    );
+}
+
+// with statement — W2: should produce unsupported diagnostic
+// Current error: [UnsupportedSyntax] unsupported expression: With
+#[test]
+fn with_statement_unsupported_diagnostic() {
+    let result = run_fixture("core-semantics/with-statement-unsupported.ts");
+    assert!(
+        result.is_err(),
+        "with statement should produce unsupported diagnostic"
+    );
+    let err_msg = result.err().unwrap();
+    assert!(
+        err_msg.contains("unsupported"),
+        "Diagnostic should mention unsupported: {}",
+        err_msg
+    );
+}
+
+// Cover initializer — W2: should fail to build (TODO: precise diagnostic)
+// Current error: UnresolvedName (parser doesn't handle parenthesized destructuring)
+#[test]
+fn cover_initializer_unsupported_diagnostic() {
+    let result = run_fixture("core-semantics/cover-initializer-unsupported.ts");
+    assert!(
+        result.is_err(),
+        "Cover initializer should produce unsupported diagnostic"
+    );
+}
+
+// Labelled function declaration — W2: should fail to build (TODO: precise diagnostic)
+// Current error: UnresolvedName (labelled function `f` not hoisted)
+#[test]
+fn labelled_function_unsupported_diagnostic() {
+    let result = run_fixture("core-semantics/labelled-function-unsupported.ts");
+    assert!(
+        result.is_err(),
+        "Labelled function should produce unsupported diagnostic"
+    );
+}
+
+// TS parameter property — W2: already handled by parser, should build
+#[test]
+fn build_smoke_ts_parameter_property() {
+    let result = run_fixture("core-semantics/ts-parameter-property-unsupported.ts");
+    assert!(
+        result.is_ok(),
+        "TS parameter property should build: {:?}",
+        result.err()
+    );
+}
+
+// === W3: Name/call resolution (TDD) ===
+
+// Type-only imports — W3: should fail to build (TODO: precise diagnostic)
+// Current error: UnsupportedSyntax: expected Comma, got Some(Ident("MyType"))
+#[test]
+fn type_only_import_unsupported_diagnostic() {
+    let result = run_fixture("typescript-directives/type-only-import-unsupported.ts");
+    assert!(
+        result.is_err(),
+        "Type-only import should produce unsupported diagnostic"
+    );
+}
+
+// === W4: Builtin API semantics (TDD) ===
+
+// String.prototype.matchAll — W4: build smoke (fixture exists)
+#[test]
+fn build_smoke_string_match_all() {
+    let result = run_fixture("builtins-and-io/string-match-all.ts");
+    assert!(
+        result.is_ok(),
+        "String.matchAll should build: {:?}",
+        result.err()
+    );
+}
+
+// Array.prototype.sort — W4: precise unsupported diagnostic for non-comparator sort
+// Current: "Array.prototype.sort is currently supported only for dense numeric arrays with comparator"
+#[test]
+fn build_smoke_array_sort_unsupported_diagnostic() {
+    let result = run_fixture("builtins-and-io/array-sort.ts");
+    assert!(
+        result.is_err(),
+        "Array.sort (non-comparator) should produce unsupported diagnostic"
+    );
+    let err_msg = result.err().unwrap();
+    assert!(
+        err_msg.contains("sort") && err_msg.contains("supported only"),
+        "Diagnostic should mention sort conditional support: {}",
+        err_msg
+    );
+}
+
+// Promise static methods (resolve, reject, all, race) — W4: unsupported diagnostic
+#[test]
+fn promise_static_methods_unsupported_diagnostic() {
+    let result = run_fixture("builtins-and-io/promise-static-methods-unsupported-diagnostic.ts");
+    assert!(
+        result.is_err(),
+        "Promise static methods should produce unsupported diagnostic"
+    );
+    let err_msg = result.err().unwrap();
+    assert!(
+        err_msg.contains("Promise"),
+        "Diagnostic should mention Promise: {}",
+        err_msg
+    );
+}
+
+// === More W2/W3/W4 tests ===
+
+// Optional chaining (call) — W2: build smoke
+#[test]
+fn build_smoke_optional_chaining_call() {
+    let result = run_fixture("core-semantics/optional-chaining-call.ts");
+    assert!(
+        result.is_ok(),
+        "Optional chaining call should build: {:?}",
+        result.err()
+    );
+}
+
+// Optional chaining (member/index) — W2: build smoke
+#[test]
+fn build_smoke_optional_chaining_member_index() {
+    let result = run_fixture("core-semantics/optional-chaining-member-index.ts");
+    assert!(
+        result.is_ok(),
+        "Optional chaining member/index should build: {:?}",
+        result.err()
+    );
+}
+
+// Async/await syntax — W2: parser already handles async/await, builds successfully
+#[test]
+fn build_smoke_async_await() {
+    let result = run_fixture("core-semantics/async-await-unsupported.ts");
+    assert!(
+        result.is_ok(),
+        "Async/await should build: {:?}",
+        result.err()
+    );
+}
+
+// Nested namespace A.B.C — W3: namespace not resolved, should produce diagnostic
+#[test]
+fn nested_namespace_abc_unsupported_diagnostic() {
+    let result = run_fixture("core-semantics/nested-namespace-abc.ts");
+    assert!(
+        result.is_err(),
+        "Nested namespace A.B.C should produce unsupported diagnostic"
+    );
+}
+
+// Triple-slash reference directives — W3: already handled by parser, builds successfully
+#[test]
+fn build_smoke_triple_slash_reference() {
+    let result = run_fixture("typescript-directives/triple-slash-reference-unsupported.ts");
+    assert!(
+        result.is_ok(),
+        "Triple-slash reference should build: {:?}",
+        result.err()
+    );
+}
