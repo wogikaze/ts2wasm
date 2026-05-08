@@ -117,6 +117,8 @@ Do not touch:
 
 - [ ] A dependency virtual file with `export class Test1 {}` builds far enough to expose `Test1` through the existing static module export path.
 - [ ] `python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/classMemberInitializerWithLamdaScoping3.ts` no longer reports `issue-5005: dependency module declaration export uses a form outside the current static export slice`.
+- [ ] `noCrashWithVerbatimModuleSyntaxAndImportsNotUsedAsValues.ts` no longer
+  reports `issue-5005` for dependency virtual file `export class A {}`.
 - [ ] Unsupported dependency export forms outside this slice still produce clear issue-5005 diagnostics.
 - [ ] The next observed diagnostic, if any, is recorded in a narrower follow-up issue instead of hidden behind the export-class boundary.
 
@@ -190,6 +192,10 @@ triage for `noBundledEmitFromNodeModules.ts` stops at the virtual
 `/node_modules/projB/index.ts` dependency module `export class C` issue-5005
 boundary before node_modules bundling, bare specifier `projB`, or no-bundled
 emit parity becomes actionable.
+Also owns `issues/done/3528-implement-noCrashWithVerbatimModuleSyntaxAndImportsNotUsedAsValues.md`:
+fresh triage stops at dependency virtual file `export class A {}` before the
+later virtual `./file` import-resolution boundary tracked by issue 5229 or the
+TypeScript TS2395 merged declaration diagnostics become actionable.
 
 ## Completion evidence
 
