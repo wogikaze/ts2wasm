@@ -145,6 +145,9 @@ Additional superseded buckets:
 - `issues/done/3490-implement-nestedThisContainer.md` reaches the same
   issue-062e boundary for `foo.bar = function () { const self = this; }`;
   TypeScript accepts it with diagnostics `[]`.
+- `issues/done/3558-implement-noImplicitThisBigThis.md` reaches the same
+  issue-062e boundary for object-literal method shorthand returning `this`;
+  TypeScript accepts the file with diagnostics `[]`.
 
 ## Completion Evidence
 
