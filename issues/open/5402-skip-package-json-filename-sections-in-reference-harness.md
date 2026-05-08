@@ -218,6 +218,15 @@ actionable.
 Also owns `issues/done/3582-implement-nodeNextPackageImportMapRootDir.md`:
 fresh triage stops in virtual `package.json` at the first JSON property colon
 before package `"imports"` map resolution for `#dep` becomes actionable.
+Also owns `issues/done/3583-implement-nodeNextPackageSelfNameWithOutDir.md`:
+fresh triage stops in virtual `package.json` at the first JSON property colon
+before package self-name `@this/package` resolution and `outDir` behavior
+become actionable.
+Also owns `issues/done/3584-implement-nodeNextPackageSelfNameWithOutDirDeclDir.md`:
+fresh triage stops in virtual `package.json` at the first JSON property colon
+before package self-name `@this/package` resolution, conditional `exports`
+`default`/`types` branches, and `outDir`/`declarationDir` behavior become
+actionable.
 
 ## Completion evidence
 
