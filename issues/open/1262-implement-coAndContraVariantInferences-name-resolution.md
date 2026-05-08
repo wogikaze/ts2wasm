@@ -118,7 +118,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] superseded by `issues/done/5161-model-ambient-value-declarations-for-name-resolution.md`
+- [x] superseded by `issues/open/5161-model-ambient-value-declarations-for-name-resolution.md`
 
 ## Notes
 
@@ -128,14 +128,14 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/5161-model-ambient-value-declarations-for-name-resolution.md` - exact owner for `declare const` values being visible to expression name resolution
+- `issues/open/5161-model-ambient-value-declarations-for-name-resolution.md` - exact owner for `declare const` values being visible to expression name resolution
 - `issues/open/064-implement-name-resolution.md` - Implement name resolution (triaged - superseded by test262 metadata issues) (same feature label, title overlap)
-- `issues/done/437-implement-name-resolution.md` - Implement name resolution (same feature label, title overlap)
-- `issues/done/648-implement-argumentsAsPropertyName-name-resolution.md` - Implement Argumentsaspropertyname Name Resolution (same feature label, title overlap)
-- `issues/done/654-implement-argumentsReferenceInConstructor-name-resolution.md` - Implement Argumentsreferenceinconstructor Name Resolution (same feature label, title overlap)
-- `issues/done/657-implement-argumentsReferenceInMethod-name-resolution.md` - Implement Argumentsreferenceinmethod Name Resolution (same feature label, title overlap)
-- `issues/done/693-implement-arrayToLocaleStringES-name-resolution.md` - Implement Arraytolocalestringes Name Resolution (same feature label, title overlap)
-- `issues/done/733-implement-assignmentCompatability-name-resolution.md` - Implement Assignmentcompatability Name Resolution (same feature label, title overlap)
+- `issues/open/437-implement-name-resolution.md` - Implement name resolution (same feature label, title overlap)
+- `issues/open/648-implement-argumentsAsPropertyName-name-resolution.md` - Implement Argumentsaspropertyname Name Resolution (same feature label, title overlap)
+- `issues/open/654-implement-argumentsReferenceInConstructor-name-resolution.md` - Implement Argumentsreferenceinconstructor Name Resolution (same feature label, title overlap)
+- `issues/open/657-implement-argumentsReferenceInMethod-name-resolution.md` - Implement Argumentsreferenceinmethod Name Resolution (same feature label, title overlap)
+- `issues/open/693-implement-arrayToLocaleStringES-name-resolution.md` - Implement Arraytolocalestringes Name Resolution (same feature label, title overlap)
+- `issues/open/733-implement-assignmentCompatability-name-resolution.md` - Implement Assignmentcompatability Name Resolution (same feature label, title overlap)
 
 ## Smart triage
 
@@ -201,13 +201,13 @@ binding fn type: (() => void) | ((a: number) => void)
 
 Superseding owner:
 
-- `issues/done/5161-model-ambient-value-declarations-for-name-resolution.md`
+- `issues/open/5161-model-ambient-value-declarations-for-name-resolution.md`
 
 ## Completion evidence
 
 Commits:
 
-- Superseded by `issues/done/5161-model-ambient-value-declarations-for-name-resolution.md`; see local commit for this issue cleanup.
+- Superseded by `issues/open/5161-model-ambient-value-declarations-for-name-resolution.md`; see local commit for this issue cleanup.
 
 Validation result:
 

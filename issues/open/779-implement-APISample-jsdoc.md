@@ -116,9 +116,9 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/070-implement-APISample.md` - Implement Apisample (same reference path, same feature label, title overlap)
-- `issues/done/458-implement-APISample-jsdoc.md` - Implement Apisample Jsdoc (same reference path, same feature label, same group key, title overlap)
-- `issues/done/544-implement-APISample-jsdoc.md` - Implement Apisample Jsdoc (same reference path, same feature label, same group key, title overlap)
+- `issues/open/070-implement-APISample.md` - Implement Apisample (same reference path, same feature label, title overlap)
+- `issues/open/458-implement-APISample-jsdoc.md` - Implement Apisample Jsdoc (same reference path, same feature label, same group key, title overlap)
+- `issues/open/544-implement-APISample-jsdoc.md` - Implement Apisample Jsdoc (same reference path, same feature label, same group key, title overlap)
 
 ## Smart triage
 
@@ -128,7 +128,7 @@ Not generated. Rerun with `--triage-limit 1` or higher.
 ## 重複整理メモ
 
 この issue はタイトルが重複しているため、内容がより充実している
-`issues/done/544-implement-APISample-jsdoc.md` に統合されました。
+`issues/open/544-implement-APISample-jsdoc.md` に統合されました。
 そちらを参照してください。
 ## Completion evidence
 
@@ -159,7 +159,7 @@ Classification: truly-done.
 Audit result: retained in `issues/done/`. The issue has repo-local completion evidence, is not marked `blocked` or `triage-needed`, and `python scripts/manager.py check issues` validates the resulting issue graph.
 
 Evidence files:
-- `issues/done/779-implement-APISample-jsdoc.md`
+- `issues/open/779-implement-APISample-jsdoc.md`
 - `issues/index.md` after regeneration
 
 Future-work tracking: no untracked future-work item was identified in this issue during this metadata/evidence audit.

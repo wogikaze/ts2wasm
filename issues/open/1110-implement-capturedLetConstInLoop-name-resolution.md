@@ -110,7 +110,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] `issues/done/5206-resolve-issue-id-collisions-and-open-done-conflicts.md`
+- [x] `issues/open/5206-resolve-issue-id-collisions-and-open-done-conflicts.md`
 
 ## Notes
 
@@ -122,19 +122,19 @@ Follow-up issues:
 ## Duplicate detection
 
 - `issues/open/064-implement-name-resolution.md` - Implement name resolution (triaged - superseded by test262 metadata issues) (same feature label, title overlap)
-- `issues/done/437-implement-name-resolution.md` - Implement name resolution (same feature label, title overlap)
-- `issues/done/648-implement-argumentsAsPropertyName-name-resolution.md` - Implement Argumentsaspropertyname Name Resolution (same feature label, title overlap)
-- `issues/done/654-implement-argumentsReferenceInConstructor-name-resolution.md` - Implement Argumentsreferenceinconstructor Name Resolution (same feature label, title overlap)
-- `issues/done/657-implement-argumentsReferenceInMethod-name-resolution.md` - Implement Argumentsreferenceinmethod Name Resolution (same feature label, title overlap)
-- `issues/done/693-implement-arrayToLocaleStringES-name-resolution.md` - Implement Arraytolocalestringes Name Resolution (same feature label, title overlap)
-- `issues/done/733-implement-assignmentCompatability-name-resolution.md` - Implement Assignmentcompatability Name Resolution (same feature label, title overlap)
+- `issues/open/437-implement-name-resolution.md` - Implement name resolution (same feature label, title overlap)
+- `issues/open/648-implement-argumentsAsPropertyName-name-resolution.md` - Implement Argumentsaspropertyname Name Resolution (same feature label, title overlap)
+- `issues/open/654-implement-argumentsReferenceInConstructor-name-resolution.md` - Implement Argumentsreferenceinconstructor Name Resolution (same feature label, title overlap)
+- `issues/open/657-implement-argumentsReferenceInMethod-name-resolution.md` - Implement Argumentsreferenceinmethod Name Resolution (same feature label, title overlap)
+- `issues/open/693-implement-arrayToLocaleStringES-name-resolution.md` - Implement Arraytolocalestringes Name Resolution (same feature label, title overlap)
+- `issues/open/733-implement-assignmentCompatability-name-resolution.md` - Implement Assignmentcompatability Name Resolution (same feature label, title overlap)
 
 ## Smart triage
 
 Fresh triage shows both affected files parse and produce AST successfully. The
 current blocker is name resolution for `var v` declared inside loop bodies and
 read after the loop. Child issue
-`issues/done/5206-resolve-issue-id-collisions-and-open-done-conflicts.md`
+`issues/open/5206-resolve-issue-id-collisions-and-open-done-conflicts.md`
 owns the implementation-ready resolver slice.
 
 ### Smart triage: capturedLetConstInLoop3_ES6

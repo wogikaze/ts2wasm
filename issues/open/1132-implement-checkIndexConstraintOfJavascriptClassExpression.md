@@ -43,7 +43,7 @@ mise run reference-coverage -- tsc --path-filter reference/typescript/tests/case
 
 ## Desired final state
 
-This generated bucket is closed as superseded by `issues/done/056-implement-name-resolution.md` for the current unresolved-name diagnostic. Do not implement directly from this bucket.
+This generated bucket is closed as superseded by `issues/open/056-implement-name-resolution.md` for the current unresolved-name diagnostic. Do not implement directly from this bucket.
 
 ## Scope
 
@@ -125,7 +125,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/056-implement-name-resolution.md` owns the basic name resolution contract: genuinely unresolved names emit `UnresolvedName`.
+- `issues/open/056-implement-name-resolution.md` owns the basic name resolution contract: genuinely unresolved names emit `UnresolvedName`.
 - Broad name-resolution buckets are not exact matches for implementation because TypeScript reports the same unresolved name in the current runner view.
 
 ## Smart triage
@@ -200,7 +200,7 @@ failure is superseded by issue 056 unresolved-name diagnostics.
 
 Commits:
 
-- superseded by `issues/done/056-implement-name-resolution.md`
+- superseded by `issues/open/056-implement-name-resolution.md`
 
 Validation result:
 

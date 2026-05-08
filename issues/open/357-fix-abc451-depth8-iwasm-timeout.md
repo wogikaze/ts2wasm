@@ -78,7 +78,7 @@ Expected:
 - `crates/backend-wasm/src/`
 - `crates/cli/tests/`
 - `fixtures/core-semantics/abc451-depth8-live-set.ts` only if adding instrumentation-safe comments is unavoidable
-- `issues/done/357-fix-abc451-depth8-iwasm-timeout.md`
+- `issues/open/357-fix-abc451-depth8-iwasm-timeout.md`
 - `issues/index.md`
 
 Do not touch:

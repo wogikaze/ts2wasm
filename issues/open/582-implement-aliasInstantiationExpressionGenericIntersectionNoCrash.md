@@ -125,9 +125,9 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/116-implement-aliasInstantiationExpressionGenericIntersectionNoCrash.md` - Implement Aliasinstantiationexpressiongenericintersectionnocrash (same reference path, same feature label, same group key, title overlap)
+- `issues/open/116-implement-aliasInstantiationExpressionGenericIntersectionNoCrash.md` - Implement Aliasinstantiationexpressiongenericintersectionnocrash (same reference path, same feature label, same group key, title overlap)
 - `issues/open/452-implement-type-alias.md` - Implement type-alias support (same feature label, same group key, title overlap)
-- `issues/done/496-implement-aliasInstantiationExpressionGenericIntersectionNoCrash.md` - Implement Aliasinstantiationexpressiongenericintersectionnocrash (same reference path, same feature label, same group key, title overlap)
+- `issues/open/496-implement-aliasInstantiationExpressionGenericIntersectionNoCrash.md` - Implement Aliasinstantiationexpressiongenericintersectionnocrash (same reference path, same feature label, same group key, title overlap)
 
 ## Smart triage
 
@@ -598,7 +598,7 @@ date: 2026-05-08
 
 Remaining risks:
 
-- Implementation remains open in `issues/done/5161-model-ambient-value-declarations-for-name-resolution.md`.
+- Implementation remains open in `issues/open/5161-model-ambient-value-declarations-for-name-resolution.md`.
 
 ## False-done audit
 

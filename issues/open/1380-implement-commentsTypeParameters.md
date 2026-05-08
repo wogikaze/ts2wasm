@@ -18,7 +18,7 @@ updated: 2026-05-07
 ## Summary
 
 Closed after splitting the executable parser work into
-`issues/done/5290-parse-private-static-generic-class-method.md`.
+`issues/open/5290-parse-private-static-generic-class-method.md`.
 
 Fresh triage shows the first blocker is not the general type-parameter comment
 surface. The parser stops earlier at `private static privatestaticmethod`, the
@@ -59,7 +59,7 @@ unsupported_features=unknown-unsupported:1
 ## Desired final state
 
 This generated bucket is closed. Implementation should proceed through
-`issues/done/5290-parse-private-static-generic-class-method.md`; type parameter
+`issues/open/5290-parse-private-static-generic-class-method.md`; type parameter
 comment fidelity should be rechecked after the modified static method parser
 blocker advances.
 
@@ -133,7 +133,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] created/updated: `issues/done/5290-parse-private-static-generic-class-method.md`
+- [x] created/updated: `issues/open/5290-parse-private-static-generic-class-method.md`
 
 ## Notes
 
@@ -143,7 +143,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/5290-parse-private-static-generic-class-method.md` owns the
+- `issues/open/5290-parse-private-static-generic-class-method.md` owns the
   exact current parser boundary: `private static` followed by a generic
   identifier-named method.
 - `issues/open/5275-parse-modified-static-class-methods.md` is related but

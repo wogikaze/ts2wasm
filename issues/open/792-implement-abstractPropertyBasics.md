@@ -116,13 +116,13 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/086-implement-abstractPropertyBasics.md` - Implement Abstractpropertybasics (same reference path, same feature label, same group key, title overlap)
-- `issues/done/442-implement-parser-syntax.md` - Implement parser syntax extensions (same feature label, same group key, title overlap)
-- `issues/done/460-implement-ClassDeclaration.md` - Implement Classdeclaration (same feature label, same group key, title overlap)
-- `issues/done/471-implement-abstractPropertyBasics.md` - Implement Abstractpropertybasics (same reference path, same feature label, same group key, title overlap)
-- `issues/done/546-implement-ClassDeclaration.md` - Implement Classdeclaration (same feature label, same group key, title overlap)
-- `issues/done/550-implement-FunctionDeclaration-parser-syntax.md` - Implement Functiondeclaration Parser Syntax (same feature label, same group key, title overlap)
-- `issues/done/557-implement-abstractPropertyBasics.md` - Implement Abstractpropertybasics (same reference path, same feature label, same group key, title overlap)
+- `issues/open/086-implement-abstractPropertyBasics.md` - Implement Abstractpropertybasics (same reference path, same feature label, same group key, title overlap)
+- `issues/open/442-implement-parser-syntax.md` - Implement parser syntax extensions (same feature label, same group key, title overlap)
+- `issues/open/460-implement-ClassDeclaration.md` - Implement Classdeclaration (same feature label, same group key, title overlap)
+- `issues/open/471-implement-abstractPropertyBasics.md` - Implement Abstractpropertybasics (same reference path, same feature label, same group key, title overlap)
+- `issues/open/546-implement-ClassDeclaration.md` - Implement Classdeclaration (same feature label, same group key, title overlap)
+- `issues/open/550-implement-FunctionDeclaration-parser-syntax.md` - Implement Functiondeclaration Parser Syntax (same feature label, same group key, title overlap)
+- `issues/open/557-implement-abstractPropertyBasics.md` - Implement Abstractpropertybasics (same reference path, same feature label, same group key, title overlap)
 
 ## Smart triage
 
@@ -132,7 +132,7 @@ Not generated. Rerun with `--triage-limit 1` or higher.
 ## 重複整理メモ
 
 この issue はタイトルが重複しているため、内容がより充実している
-`issues/done/557-implement-abstractPropertyBasics.md` に統合されました。
+`issues/open/557-implement-abstractPropertyBasics.md` に統合されました。
 そちらを参照してください。
 ## Completion evidence
 
@@ -163,7 +163,7 @@ Classification: truly-done.
 Audit result: retained in `issues/done/`. The issue has repo-local completion evidence, is not marked `blocked` or `triage-needed`, and `python scripts/manager.py check issues` validates the resulting issue graph.
 
 Evidence files:
-- `issues/done/792-implement-abstractPropertyBasics.md`
+- `issues/open/792-implement-abstractPropertyBasics.md`
 - `issues/index.md` after regeneration
 
 Future-work tracking: no untracked future-work item was identified in this issue during this metadata/evidence audit.

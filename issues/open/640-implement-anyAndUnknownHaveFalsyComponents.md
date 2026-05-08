@@ -116,7 +116,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/182-implement-anyAndUnknownHaveFalsyComponents.md` - Implement Anyandunknownhavefalsycomponents (same reference path, same group key, title overlap)
+- `issues/open/182-implement-anyAndUnknownHaveFalsyComponents.md` - Implement Anyandunknownhavefalsycomponents (same reference path, same group key, title overlap)
 
 ## Smart triage
 

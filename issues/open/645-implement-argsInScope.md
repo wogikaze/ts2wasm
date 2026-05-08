@@ -116,7 +116,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/192-implement-argsInScope.md` - Implement Argsinscope (same reference path, same feature label, same group key, title overlap)
+- `issues/open/192-implement-argsInScope.md` - Implement Argsinscope (same reference path, same feature label, same group key, title overlap)
 - `issues/open/446-implement-scope-analysis.md` - Implement scope-analysis support (same feature label, same group key, title overlap)
 
 ## Smart triage

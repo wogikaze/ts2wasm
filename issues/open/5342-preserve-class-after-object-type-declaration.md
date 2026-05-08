@@ -155,12 +155,12 @@ Follow-up issues:
 
 ## Notes
 
-Split from `issues/done/1332-implement-collisionThisExpressionAndNameResolution.md`.
+Split from `issues/open/1332-implement-collisionThisExpressionAndNameResolution.md`.
 
 Related but not duplicate:
 
-- `issues/done/5339-preserve-var-after-object-type-declaration.md` covers a following `var` declaration.
-- `issues/done/5340-preserve-function-after-object-type-declaration.md` covers a following `function` declaration.
+- `issues/open/5339-preserve-var-after-object-type-declaration.md` covers a following `var` declaration.
+- `issues/open/5340-preserve-function-after-object-type-declaration.md` covers a following `function` declaration.
 
 The current failure happens before the class body is parsed, so this issue does
 not own the later `return x => this` lexical receiver behavior.

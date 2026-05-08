@@ -102,4 +102,4 @@ python scripts/manager.py reference-coverage tsc --path-filter reference/typescr
 
 ## Notes
 
-Split from `issues/done/1214-implement-classHeritageWithTrailingSeparator.md`.
+Split from `issues/open/1214-implement-classHeritageWithTrailingSeparator.md`.

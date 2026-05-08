@@ -128,7 +128,7 @@ Generated on 2026-05-06.
 - Failure: `duplicate local binding: \`x\` at 32..42`
 - Source context: `var x = 1;` followed by `var x = 2;`
 - TypeScript oracle: compatible `var x` and `var y` redeclarations are accepted; incompatible `var z` later reports TS2403.
-- Split child: `issues/done/5162-allow-compatible-var-redeclarations.md`
+- Split child: `issues/open/5162-allow-compatible-var-redeclarations.md`
 
 ## Completion evidence
 

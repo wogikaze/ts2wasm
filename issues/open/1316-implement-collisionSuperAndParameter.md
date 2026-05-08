@@ -19,7 +19,7 @@ status: done
 
 ## Summary
 
-Closed as superseded by `issues/done/5334-parse-class-constructor-overload-signatures.md`.
+Closed as superseded by `issues/open/5334-parse-class-constructor-overload-signatures.md`.
 
 ## Problem
 
@@ -43,7 +43,7 @@ mise run reference-coverage -- tsc --path-filter reference/typescript/tests/case
 
 ## Desired final state
 
-This generated bucket is closed. Implementation should proceed through `issues/done/5334-parse-class-constructor-overload-signatures.md`.
+This generated bucket is closed. Implementation should proceed through `issues/open/5334-parse-class-constructor-overload-signatures.md`.
 
 ## Scope
 
@@ -116,7 +116,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] `issues/done/5334-parse-class-constructor-overload-signatures.md`
+- [x] `issues/open/5334-parse-class-constructor-overload-signatures.md`
 
 ## Notes
 
@@ -127,9 +127,9 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/5334-parse-class-constructor-overload-signatures.md` owns the current `DuplicateFunction: duplicate constructor definition` blocker for bodyless class constructor overload signatures.
-- `issues/done/5337-parse-rest-parameter-constructor-overload-signatures.md` is related but covers rest-parameter constructor overload signatures.
-- `issues/done/5199-report-function-overload-list-class-merge-diagnostics.md` is related but covers top-level function/class overload merge diagnostics, not class constructor overload signatures.
+- `issues/open/5334-parse-class-constructor-overload-signatures.md` owns the current `DuplicateFunction: duplicate constructor definition` blocker for bodyless class constructor overload signatures.
+- `issues/open/5337-parse-rest-parameter-constructor-overload-signatures.md` is related but covers rest-parameter constructor overload signatures.
+- `issues/open/5199-report-function-overload-list-class-merge-diagnostics.md` is related but covers top-level function/class overload merge diagnostics, not class constructor overload signatures.
 
 ## Smart triage
 

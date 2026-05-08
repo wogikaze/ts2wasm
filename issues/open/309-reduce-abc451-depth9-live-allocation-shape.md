@@ -96,9 +96,9 @@ Expected:
 - `fixtures/atcoder/`
 - `docs/14-runtime-abi.md` if runtime memory or GC policy changes
 - `current-state.md` if runtime facts change
-- `issues/done/300-support-abc451-large-integer-number-boundary.md`
+- `issues/open/300-support-abc451-large-integer-number-boundary.md`
 - `issues/done/308-implement-abc451-depth9-gc-cadence-policy.md`
-- `issues/done/309-reduce-abc451-depth9-live-allocation-shape.md`
+- `issues/open/309-reduce-abc451-depth9-live-allocation-shape.md`
 - `issues/index.md`
 
 Do not touch:

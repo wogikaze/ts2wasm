@@ -22,7 +22,7 @@ status: done
 Closed as superseded. Fresh triage shows
 `reference/typescript/tests/cases/compiler/constraints0.ts` currently stops at
 the ambient `declare var v1` name-resolution boundary already owned by
-`issues/done/5161-model-ambient-value-declarations-for-name-resolution.md`.
+`issues/open/5161-model-ambient-value-declarations-for-name-resolution.md`.
 
 ## Problem
 
@@ -52,7 +52,7 @@ env TS2WASM_BINARY=/tmp/ts2wasm-issue-blockers-target/debug/ts2wasm python scrip
 ## Desired final state
 
 This generated bucket is closed as superseded by
-`issues/done/5161-model-ambient-value-declarations-for-name-resolution.md`. Do
+`issues/open/5161-model-ambient-value-declarations-for-name-resolution.md`. Do
 not implement directly from this bucket.
 
 ## Scope
@@ -140,7 +140,7 @@ Follow-up issues:
 ## Duplicate detection
 
 Current first blocker is covered by
-`issues/done/5161-model-ambient-value-declarations-for-name-resolution.md`.
+`issues/open/5161-model-ambient-value-declarations-for-name-resolution.md`.
 
 Resolution:
 

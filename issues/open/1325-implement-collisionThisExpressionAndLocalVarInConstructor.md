@@ -138,9 +138,9 @@ class class1 {
 
 ## Duplicate detection
 
-- `issues/done/5240-w2-docs-audit-and-stale-entries.md` is related but
+- `issues/open/5240-w2-docs-audit-and-stale-entries.md` is related but
   not exact: it handles async arrows, not plain nested `() =>`.
-- `issues/done/5152-support-class-constructor-outer-callback-captures.md` is
+- `issues/open/5152-support-class-constructor-outer-callback-captures.md` is
   related but not exact: it handles constructor nested callback lowering after
   parsing succeeds.
 - Existing broad arrow-function issues are done or own later lowering/runtime

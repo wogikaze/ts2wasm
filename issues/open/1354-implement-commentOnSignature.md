@@ -18,7 +18,7 @@ updated: 2026-05-06
 ## Summary
 
 Closed after splitting the current duplicate-function blocker into
-`issues/done/5280-validate-commented-top-level-function-overloads.md`.
+`issues/open/5280-validate-commented-top-level-function-overloads.md`.
 
 ## Problem
 
@@ -53,7 +53,7 @@ TypeScript oracle: ok, no diagnostics
 ## Desired final state
 
 This generated bucket is closed. Implementation should proceed through
-`issues/done/5280-validate-commented-top-level-function-overloads.md`.
+`issues/open/5280-validate-commented-top-level-function-overloads.md`.
 
 ## Scope
 
@@ -125,7 +125,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] `issues/done/5280-validate-commented-top-level-function-overloads.md`
+- [x] `issues/open/5280-validate-commented-top-level-function-overloads.md`
 
 ## Notes
 
@@ -138,11 +138,11 @@ Follow-up issues:
 - `issues/open/5200-validate-top-level-function-overload-implementations.md`
   is related, but broadening it with this comments/signature reference made the
   issue too large for readiness gates.
-- `issues/done/5280-validate-commented-top-level-function-overloads.md` owns
+- `issues/open/5280-validate-commented-top-level-function-overloads.md` owns
   this narrower commented top-level overload group.
-- `issues/done/5199-report-function-overload-list-class-merge-diagnostics.md`
+- `issues/open/5199-report-function-overload-list-class-merge-diagnostics.md`
   is related but covers function overload lists followed by a class merge.
-- `issues/done/5198-support-class-method-overload-signatures-for-element-access-calls.md`
+- `issues/open/5198-support-class-method-overload-signatures-for-element-access-calls.md`
   is related but covers class method overload signatures; it is not the first
   blocker in this path.
 

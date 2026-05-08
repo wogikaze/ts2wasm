@@ -163,16 +163,16 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/194-implement-argumentsAsPropertyName.md` - Implement Argumentsaspropertyname (same feature label, same group key, title overlap)
-- `issues/done/197-implement-argumentsObjectIterator.md` - Implement Argumentsobjectiterator (same feature label, same group key, title overlap)
-- `issues/done/198-implement-argumentsPropertyNameInJsMode.md` - Implement Argumentspropertynameinjsmode (same feature label, same group key, title overlap)
-- `issues/done/311-fix-test262-arguments-object-index-assignment.md` - Fix test262 arguments object index assignment semantics (same feature label, same group key)
-- `issues/done/060-investigate-unknown-unsupported-cases.md` - Investigate and classify unknown-unsupported diagnostic cases (same feature label, same group key)
-- `issues/done/284-support-test262-async-flag-runner-coverage.md` - Support test262 async flag in reference coverage (same feature label, same group key, title overlap)
-- `issues/done/285-support-test262-module-flag-runner-coverage.md` - Support test262 module flag in reference coverage (same feature label, same group key, title overlap)
-- `issues/done/287-fix-arguments-object-arity-mismatch.md` - Fix arguments-object arity mismatch bucket (same feature label, same group key, title overlap)
-- `issues/done/288-provide-test262-assert-harness-binding.md` - Provide test262 assert harness binding (same feature label, same group key)
-- `issues/done/291-provide-object-global-binding-for-test262.md` - Provide Object global binding for test262 cases (same feature label, same group key)
+- `issues/open/194-implement-argumentsAsPropertyName.md` - Implement Argumentsaspropertyname (same feature label, same group key, title overlap)
+- `issues/open/197-implement-argumentsObjectIterator.md` - Implement Argumentsobjectiterator (same feature label, same group key, title overlap)
+- `issues/open/198-implement-argumentsPropertyNameInJsMode.md` - Implement Argumentspropertynameinjsmode (same feature label, same group key, title overlap)
+- `issues/open/311-fix-test262-arguments-object-index-assignment.md` - Fix test262 arguments object index assignment semantics (same feature label, same group key)
+- `issues/open/060-investigate-unknown-unsupported-cases.md` - Investigate and classify unknown-unsupported diagnostic cases (same feature label, same group key)
+- `issues/open/284-support-test262-async-flag-runner-coverage.md` - Support test262 async flag in reference coverage (same feature label, same group key, title overlap)
+- `issues/open/285-support-test262-module-flag-runner-coverage.md` - Support test262 module flag in reference coverage (same feature label, same group key, title overlap)
+- `issues/open/287-fix-arguments-object-arity-mismatch.md` - Fix arguments-object arity mismatch bucket (same feature label, same group key, title overlap)
+- `issues/open/288-provide-test262-assert-harness-binding.md` - Provide test262 assert harness binding (same feature label, same group key)
+- `issues/open/291-provide-object-global-binding-for-test262.md` - Provide Object global binding for test262 cases (same feature label, same group key)
 
 ## Smart triage
 

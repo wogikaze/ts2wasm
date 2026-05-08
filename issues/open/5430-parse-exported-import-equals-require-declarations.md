@@ -143,7 +143,7 @@ Follow-up issues:
 
 ## Notes
 
-Split from `issues/done/3403-implement-multiImportExport.md`.
+Split from `issues/open/3403-implement-multiImportExport.md`.
 
 Related but distinct:
 

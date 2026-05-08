@@ -117,11 +117,11 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/106-implement-accessors.md` - Implement Accessors (same reference path, same feature label, same group key, title overlap)
-- `issues/done/107-implement-accessorsEmit.md` - Implement Accessorsemit (same feature label, same group key, title overlap)
-- `issues/done/108-implement-accessorsInAmbientContext.md` - Implement Accessorsinambientcontext (same feature label, same group key, title overlap)
-- `issues/done/119-implement-aliasUsageInAccessorsOfClass.md` - Implement Aliasusageinaccessorsofclass (same feature label, same group key, title overlap)
-- `issues/done/399-define-typescript-parse-erase-emit-boundary.md` - Define TypeScript parse, erase, and emit boundary contract (same feature label, same group key)
+- `issues/open/106-implement-accessors.md` - Implement Accessors (same reference path, same feature label, same group key, title overlap)
+- `issues/open/107-implement-accessorsEmit.md` - Implement Accessorsemit (same feature label, same group key, title overlap)
+- `issues/open/108-implement-accessorsInAmbientContext.md` - Implement Accessorsinambientcontext (same feature label, same group key, title overlap)
+- `issues/open/119-implement-aliasUsageInAccessorsOfClass.md` - Implement Aliasusageinaccessorsofclass (same feature label, same group key, title overlap)
+- `issues/open/399-define-typescript-parse-erase-emit-boundary.md` - Define TypeScript parse, erase, and emit boundary contract (same feature label, same group key)
 
 ## Smart triage
 
@@ -597,7 +597,7 @@ error: [UnsupportedSyntax] expected LeftParen, got Some(Ident("set")) at 77..80
 ## 重複整理メモ
 
 この issue はタイトルが重複しているため、内容がより充実している
-`issues/done/574-implement-accessors.md` に統合されました。
+`issues/open/574-implement-accessors.md` に統合されました。
 そちらを参照してください。
 ## Completion evidence
 
@@ -628,7 +628,7 @@ Classification: truly-done.
 Audit result: retained in `issues/done/`. The issue has repo-local completion evidence, is not marked `blocked` or `triage-needed`, and `python scripts/manager.py check issues` validates the resulting issue graph.
 
 Evidence files:
-- `issues/done/488-implement-accessors.md`
+- `issues/open/488-implement-accessors.md`
 - `issues/index.md` after regeneration
 
 Future-work tracking: no untracked future-work item was identified in this issue during this metadata/evidence audit.

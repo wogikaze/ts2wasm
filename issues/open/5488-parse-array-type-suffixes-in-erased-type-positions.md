@@ -152,7 +152,7 @@ Related but not duplicate:
 
 - `issues/open/5309-skip-generic-type-arguments-in-type-annotations.md`
   covers comma handling inside generic type argument lists.
-- `issues/done/5150-report-empty-element-access-diagnostics.md` covers the
+- `issues/open/5150-report-empty-element-access-diagnostics.md` covers the
   value-position diagnostic.
 - `issues/open/5345-parse-generic-ambient-const-type-annotations.md` covers
   ambient const annotations such as `declare const es: Either<string, number>[];`.

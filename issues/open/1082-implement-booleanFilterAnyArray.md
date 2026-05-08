@@ -108,7 +108,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] folded into `issues/done/5161-model-ambient-value-declarations-for-name-resolution.md`
+- [x] folded into `issues/open/5161-model-ambient-value-declarations-for-name-resolution.md`
 
 ## Notes
 
@@ -118,8 +118,8 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/5161-model-ambient-value-declarations-for-name-resolution.md` is an exact implementation-ready owner for this ambient `declare let` name-resolution gap.
-- `issues/done/675-implement-arrayFilter.md` is not a match: its current evidence is a parser/ASI statement-dispatch blocker in `arrayFilter.ts`, while this case parses and reaches name resolution.
+- `issues/open/5161-model-ambient-value-declarations-for-name-resolution.md` is an exact implementation-ready owner for this ambient `declare let` name-resolution gap.
+- `issues/open/675-implement-arrayFilter.md` is not a match: its current evidence is a parser/ASI statement-dispatch blocker in `arrayFilter.ts`, while this case parses and reaches name resolution.
 - Generic name-resolution buckets are not matches; they share only the broad feature label.
 
 ## Smart triage
@@ -132,7 +132,7 @@ Generated on 2026-05-06.
 - Source context: `declare let anys: Ari<any>; var xs = anys.filter(Bullean)`
 - Compiler evidence: tokens and AST succeed; visible-symbol extraction lists `anys` from the ambient declaration, and name resolution rejects `anys` in the call receiver.
 - TypeScript oracle: no diagnostics; it binds `anys` as `Ari<any>` and later filter examples as array values.
-- Superseded by child: `issues/done/5161-model-ambient-value-declarations-for-name-resolution.md`
+- Superseded by child: `issues/open/5161-model-ambient-value-declarations-for-name-resolution.md`
 
 ## Completion evidence
 

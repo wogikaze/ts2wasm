@@ -121,7 +121,7 @@ Expected:
 - `docs/14-runtime-abi.md`
 - `docs/05-compatibility-and-semantics.md` only if user-visible runtime limits
   are described there
-- `issues/done/300-support-abc451-large-integer-number-boundary.md`
+- `issues/open/300-support-abc451-large-integer-number-boundary.md`
 - `issues/index.md`
 
 Do not touch:
@@ -237,7 +237,7 @@ Classification: truly-done.
 Audit result: retained in `issues/done/`. The issue has repo-local completion evidence, is not marked `blocked` or `triage-needed`, and `python scripts/manager.py check issues` validates the resulting issue graph.
 
 Evidence files:
-- `issues/done/303-define-runtime-memory-limit-policy-for-large-live-sets.md`
+- `issues/open/303-define-runtime-memory-limit-policy-for-large-live-sets.md`
 - `issues/index.md` after regeneration
 
 Future-work tracking: no untracked future-work item was identified in this issue during this metadata/evidence audit.

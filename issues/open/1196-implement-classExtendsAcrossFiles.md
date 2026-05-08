@@ -111,7 +111,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] superseded by existing `issues/done/5229-w0-user-runtime-string-origin.md`
+- [x] superseded by existing `issues/open/5229-resolve-imports-between-filename-sections.md`
 
 ## Notes
 

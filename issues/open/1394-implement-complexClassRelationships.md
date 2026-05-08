@@ -165,7 +165,7 @@ Follow-up issues:
 - `issues/open/5270-parse-modified-class-accessor-declarations.md` is related
   but owns `public static get name()`.
 - `issues/open/5271-parse-modified-static-class-fields.md` and
-  `issues/done/5288-parse-typed-modified-static-class-fields.md` are related
+  `issues/open/5288-parse-typed-modified-static-class-fields.md` are related
   but own static field declarations, not methods.
 
 ## Smart triage

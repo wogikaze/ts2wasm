@@ -121,13 +121,13 @@ Follow-up issues:
 
 ## Notes
 
-Split from stale generated bucket `issues/done/1199-implement-classExtendsInterface-parser-syntax.md`.
+Split from stale generated bucket `issues/open/1199-implement-classExtendsInterface-parser-syntax.md`.
 
 Related but not duplicates:
 
 - `issues/open/5314-report-non-constructor-local-class-heritage.md` handles
   non-constructor local value bindings used as heritage.
-- `issues/done/5256-report-non-constructor-class-heritage-expressions.md`
+- `issues/open/5256-report-non-constructor-class-heritage-expressions.md`
   handles member-expression heritage diagnostics.
 
 ## Completion Evidence

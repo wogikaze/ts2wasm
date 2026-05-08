@@ -433,7 +433,7 @@ error: [UnsupportedSyntax] const declarations require an initializer at 132..136
 ## 重複整理メモ
 
 この issue はタイトルが重複しているため、内容がより充実している
-`issues/done/633-implement-amdModuleConstEnumUsage.md` に統合されました。
+`issues/open/633-implement-amdModuleConstEnumUsage.md` に統合されました。
 そちらを参照してください。
 ## Completion evidence
 
@@ -464,7 +464,7 @@ Classification: truly-done.
 Audit result: retained in `issues/done/`. The issue has repo-local completion evidence, is not marked `blocked` or `triage-needed`, and `python scripts/manager.py check issues` validates the resulting issue graph.
 
 Evidence files:
-- `issues/done/175-implement-amdModuleConstEnumUsage.md`
+- `issues/open/175-implement-amdModuleConstEnumUsage.md`
 - `issues/index.md` after regeneration
 
 Future-work tracking: no untracked future-work item was identified in this issue during this metadata/evidence audit.

@@ -603,7 +603,7 @@ Reopen reason: frontmatter still says `class: triage-needed`; generated triage b
 Violated acceptance: the issue cannot provide repo-local close evidence for its checked acceptance criteria while it remains in this state. Acceptance checkboxes were reset for re-verification.
 
 Evidence files:
-- `issues/done/675-implement-arrayFilter.md` before this move
-- `issues/done/675-implement-arrayFilter.md` after this move
+- `issues/open/675-implement-arrayFilter.md` before this move
+- `issues/open/675-implement-arrayFilter.md` after this move
 
 Split follow-up: none created in this audit wave; this reopened issue remains the tracking item.

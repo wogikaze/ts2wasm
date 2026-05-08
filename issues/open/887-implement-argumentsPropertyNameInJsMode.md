@@ -116,10 +116,10 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/198-implement-argumentsPropertyNameInJsMode.md` - Implement Argumentspropertynameinjsmode (same reference path, same feature label, same group key, title overlap)
+- `issues/open/198-implement-argumentsPropertyNameInJsMode.md` - Implement Argumentspropertynameinjsmode (same reference path, same feature label, same group key, title overlap)
 - `issues/done/412-implement-arguments-object.md` - Implement arguments-object support (same feature label, same group key, title overlap)
-- `issues/done/646-implement-arguments.md` - Implement Arguments (same feature label, same group key, title overlap)
-- `issues/done/652-implement-argumentsPropertyNameInJsMode.md` - Implement Argumentspropertynameinjsmode (same reference path, same feature label, same group key, title overlap)
+- `issues/open/646-implement-arguments.md` - Implement Arguments (same feature label, same group key, title overlap)
+- `issues/open/652-implement-argumentsPropertyNameInJsMode.md` - Implement Argumentspropertynameinjsmode (same reference path, same feature label, same group key, title overlap)
 
 ## Smart triage
 
@@ -129,7 +129,7 @@ Not generated. Rerun with `--triage-limit 1` or higher.
 ## 重複整理メモ
 
 この issue はタイトルが重複しているため、内容がより充実している
-`issues/done/652-implement-argumentsPropertyNameInJsMode.md` に統合されました。
+`issues/open/652-implement-argumentsPropertyNameInJsMode.md` に統合されました。
 そちらを参照してください。
 ## Completion evidence
 
@@ -160,7 +160,7 @@ Classification: truly-done.
 Audit result: retained in `issues/done/`. The issue has repo-local completion evidence, is not marked `blocked` or `triage-needed`, and `python scripts/manager.py check issues` validates the resulting issue graph.
 
 Evidence files:
-- `issues/done/887-implement-argumentsPropertyNameInJsMode.md`
+- `issues/open/887-implement-argumentsPropertyNameInJsMode.md`
 - `issues/index.md` after regeneration
 
 Future-work tracking: no untracked future-work item was identified in this issue during this metadata/evidence audit.

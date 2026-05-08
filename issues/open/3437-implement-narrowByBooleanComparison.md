@@ -223,7 +223,7 @@ Remaining risks:
 
 ### Changed files
 
-- `issues/done/3437-implement-narrowByBooleanComparison.md`
+- `issues/open/3437-implement-narrowByBooleanComparison.md`
 - `issues/open/5269-parse-optional-class-property-declarations.md`
 - `issues/index.md`
 

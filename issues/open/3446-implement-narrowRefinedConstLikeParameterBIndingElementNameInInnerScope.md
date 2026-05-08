@@ -130,7 +130,7 @@ Follow-up issues:
 
 No-match candidates:
 
-- `issues/open/5210-parse-do-while-asi-before-block-end-or-expression.md`
+- `issues/open/5210-array-map-sparse-array-holes.md`
   owns the special `do ... while (...)` optional semicolon boundary, not a
   general expression statement.
 

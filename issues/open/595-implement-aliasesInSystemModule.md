@@ -119,8 +119,8 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/130-implement-aliasesInSystemModule.md` - Implement Aliasesinsystemmodule (same reference path, same group key, title overlap)
-- `issues/done/509-implement-aliasesInSystemModule.md` - Implement Aliasesinsystemmodule (same reference path, same feature label, same group key, title overlap)
+- `issues/open/130-implement-aliasesInSystemModule.md` - Implement Aliasesinsystemmodule (same reference path, same group key, title overlap)
+- `issues/open/509-implement-aliasesInSystemModule.md` - Implement Aliasesinsystemmodule (same reference path, same feature label, same group key, title overlap)
 
 ## Smart triage
 

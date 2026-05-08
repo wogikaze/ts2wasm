@@ -138,10 +138,10 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/3425-implement-namedFunctionExpressionCall.md` is related to
+- `issues/open/3425-implement-namedFunctionExpressionCall.md` is related to
   named function expressions after parsing; its child issue 5440 owns
   function-valued local call lowering, not generic function-expression parsing.
-- `issues/done/5148-parse-generic-async-generator-declarations.md` covered
+- `issues/open/5148-parse-generic-async-generator-declarations.md` covered
   generic async generator declarations, not generic function expressions.
 - Split to `issues/open/5475-parse-generic-function-expressions.md`.
 

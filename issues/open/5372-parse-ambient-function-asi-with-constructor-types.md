@@ -133,7 +133,7 @@ Split from `issues/open/1501-implement-contextualSignatureInstantiation-parser-s
 
 Related but not duplicates:
 
-- `issues/done/705-implement-asiAmbientFunctionDeclaration.md` is the older
+- `issues/open/705-implement-asiAmbientFunctionDeclaration.md` is the older
   generated triage bucket for the minimal `declare function foo()` ASI case.
 - `issues/done/400-implement-ambient-declaration-erasure-boundary.md` covers
   the completed baseline ambient function erasure boundary with explicit
@@ -141,7 +141,7 @@ Related but not duplicates:
 
 Additional superseded buckets:
 
-- `issues/done/3491-implement-nestedTypeVariableInfersLiteral.md` reaches the
+- `issues/open/3491-implement-nestedTypeVariableInfersLiteral.md` reaches the
   same ASI boundary for `declare function direct<A extends string>(...):
   Record<A, string>` followed by another `declare function`; TypeScript accepts
   the file with diagnostics `[]`.

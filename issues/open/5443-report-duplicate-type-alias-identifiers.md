@@ -146,7 +146,7 @@ Follow-up issues:
 ## Notes
 
 Split from
-`issues/done/3435-implement-namespacesWithTypeAliasOnlyExportsMerge.md` on
+`issues/open/3435-implement-namespacesWithTypeAliasOnlyExportsMerge.md` on
 2026-05-08 after fresh coverage showed the generated import/export blocker was
 stale and the first current mismatch is a false build-pass hiding TS2300.
 

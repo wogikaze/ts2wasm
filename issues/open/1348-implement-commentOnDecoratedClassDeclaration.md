@@ -18,7 +18,7 @@ updated: 2026-05-06
 ## Summary
 
 Closed after splitting the current parser blocker into
-`issues/done/5276-report-class-declaration-decorator-boundary.md`.
+`issues/open/5276-report-class-declaration-decorator-boundary.md`.
 
 ## Problem
 
@@ -52,7 +52,7 @@ unsupported_features=unknown-unsupported:1
 ## Desired final state
 
 This generated bucket is closed. Implementation should proceed through
-`issues/done/5276-report-class-declaration-decorator-boundary.md`.
+`issues/open/5276-report-class-declaration-decorator-boundary.md`.
 
 ## Scope
 
@@ -124,7 +124,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] `issues/done/5276-report-class-declaration-decorator-boundary.md`
+- [x] `issues/open/5276-report-class-declaration-decorator-boundary.md`
 
 ## Notes
 
@@ -138,7 +138,7 @@ Follow-up issues:
   syntax epic, not an exact implementation slice.
 - `issues/open/4807-implement-decorator.md` is a broad decorator bucket, not an
   exact implementation slice.
-- `issues/done/5253-report-class-expression-decorator-boundary.md` covers class
+- `issues/open/5253-report-class-expression-decorator-boundary.md` covers class
   expression decorators in expression position. This issue needs a separate
   statement/declaration-position class decorator slice.
 - Other smart-triage duplicate candidates share `parser-syntax` only and do not

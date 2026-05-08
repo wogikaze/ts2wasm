@@ -151,11 +151,11 @@ Follow-up issues:
 ## Notes
 
 Split from stale generated bucket
-`issues/done/1203-implement-classExtendsInterfaceThatExtendsClassWithPrivates.md`.
+`issues/open/1203-implement-classExtendsInterfaceThatExtendsClassWithPrivates.md`.
 
 Related but not duplicates:
 
-- `issues/done/5158-report-interface-private-member-clash.md` handles
+- `issues/open/5158-report-interface-private-member-clash.md` handles
   `interface Z extends X, Y` private-member clashes.
 - `issues/open/5315-report-class-extends-interface-diagnostics.md` handles
   class `extends` interface diagnostics.

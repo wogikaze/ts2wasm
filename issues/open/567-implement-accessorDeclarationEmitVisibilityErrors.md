@@ -122,8 +122,8 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/097-implement-accessorDeclarationEmitVisibilityErrors.md` - Implement Accessordeclarationemitvisibilityerrors (same reference path, same group key, title overlap)
-- `issues/done/481-implement-accessorDeclarationEmitVisibilityErrors.md` - Implement Accessordeclarationemitvisibilityerrors (same reference path, same feature label, same group key, title overlap)
+- `issues/open/097-implement-accessorDeclarationEmitVisibilityErrors.md` - Implement Accessordeclarationemitvisibilityerrors (same reference path, same group key, title overlap)
+- `issues/open/481-implement-accessorDeclarationEmitVisibilityErrors.md` - Implement Accessordeclarationemitvisibilityerrors (same reference path, same feature label, same group key, title overlap)
 
 ## Smart triage
 
@@ -502,7 +502,7 @@ date: 2026-05-08
 
 Remaining risks:
 
-- Implementation remains open in `issues/done/5232-w0-fixture-ize-runtimelinkplan-linker-structure-tests.md`.
+- Implementation remains open in `issues/open/5232-w0-fixture-ize-runtimelinkplan-linker-structure-tests.md`.
 
 ## False-done audit
 

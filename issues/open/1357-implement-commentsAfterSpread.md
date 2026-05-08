@@ -18,7 +18,7 @@ updated: 2026-05-06
 ## Summary
 
 Closed after splitting the current resolver blocker into
-`issues/done/5281-resolve-commented-arrow-rest-parameters.md`.
+`issues/open/5281-resolve-commented-arrow-rest-parameters.md`.
 
 ## Problem
 
@@ -55,7 +55,7 @@ unsupported_features=name-resolution:1
 ## Desired final state
 
 This generated bucket is closed. Implementation should proceed through
-`issues/done/5281-resolve-commented-arrow-rest-parameters.md`.
+`issues/open/5281-resolve-commented-arrow-rest-parameters.md`.
 
 ## Scope
 
@@ -127,7 +127,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] `issues/done/5281-resolve-commented-arrow-rest-parameters.md`
+- [x] `issues/open/5281-resolve-commented-arrow-rest-parameters.md`
 
 ## Notes
 
@@ -137,16 +137,16 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/1300-implement-collisionRestParameterArrowFunctions.md` is
+- `issues/open/1300-implement-collisionRestParameterArrowFunctions.md` is
   related but is a generated collision bucket without matching current
   `UnresolvedName: args` evidence.
 - `issues/done/038-implement-rest-parameters.md` and
-  `issues/done/212-implement-rest-parameter-argument-collection.md` are related
+  `issues/open/212-implement-rest-parameter-argument-collection.md` are related
   rest-parameter history, but this reference still fails in arrow rest
   parameter name resolution.
-- `issues/done/5064-implement-arrow-function.md` is the broad arrow-function
+- `issues/open/5064-implement-arrow-function.md` is the broad arrow-function
   generated bucket and was superseded by narrower children.
-- `issues/done/5281-resolve-commented-arrow-rest-parameters.md` owns this
+- `issues/open/5281-resolve-commented-arrow-rest-parameters.md` owns this
   current blocker.
 
 ## Smart triage

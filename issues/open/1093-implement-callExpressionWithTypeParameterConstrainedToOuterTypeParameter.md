@@ -106,11 +106,11 @@ Current state:
 
 Follow-up issues:
 
-- [x] created: `issues/done/5195-support-callable-interface-typed-local-calls.md`
+- [x] created: `issues/open/5195-support-callable-interface-typed-local-calls.md`
 
 ## Notes
 
-Superseded by `issues/done/5195-support-callable-interface-typed-local-calls.md`.
+Superseded by `issues/open/5195-support-callable-interface-typed-local-calls.md`.
 Fresh triage shows the source parses and resolves; the current blocker is the
 `issue-211` function-valued local call diagnostic for `i("")`.
 
@@ -131,12 +131,12 @@ Generated on 2026-05-06:
 - AST: `Let i = Undefined`; `Let y = Call(Ident i, String "")`
 - visible symbols: local bindings `i` and `y`
 - TypeScript oracle: TS2454 `Variable 'i' is used before being assigned`
-- follow-up: `issues/done/5195-support-callable-interface-typed-local-calls.md`
+- follow-up: `issues/open/5195-support-callable-interface-typed-local-calls.md`
 
 ## Completion evidence
 
 Closed as a generated triage bucket. The actionable callable-local semantic
-gap is tracked by `issues/done/5195-support-callable-interface-typed-local-calls.md`.
+gap is tracked by `issues/open/5195-support-callable-interface-typed-local-calls.md`.
 
 Commits:
 

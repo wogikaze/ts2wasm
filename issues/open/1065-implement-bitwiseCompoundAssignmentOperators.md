@@ -112,7 +112,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] added: `issues/done/5178-parse-bitwise-compound-assignment-operators.md`
+- [x] added: `issues/open/5178-parse-bitwise-compound-assignment-operators.md`
 
 ## Notes
 
@@ -123,9 +123,9 @@ Follow-up issues:
 ## Duplicate detection
 
 - Generic `unknown-unsupported` buckets are not matches; they share only the generated feature label.
-- `issues/done/661-implement-arithAssignTyping.md` is related but not an exact match. Its first parser blocker was arithmetic `*=` in a different reference file, while this bucket stops at bitwise `^=`.
-- `issues/done/5164-parse-exponentiation-compound-assignment.md` is related but owns only `**=`.
-- `issues/done/5170-support-bitwise-or-binary-lowering.md` is not a match because it explicitly excludes `|=` compound assignment.
+- `issues/open/661-implement-arithAssignTyping.md` is related but not an exact match. Its first parser blocker was arithmetic `*=` in a different reference file, while this bucket stops at bitwise `^=`.
+- `issues/open/5164-parse-exponentiation-compound-assignment.md` is related but owns only `**=`.
+- `issues/open/5170-support-bitwise-or-binary-lowering.md` is not a match because it explicitly excludes `|=` compound assignment.
 
 ## Smart triage
 
@@ -138,7 +138,7 @@ Generated on 2026-05-06.
 - Visible symbols before failure: binding `a` initialized to `true`, binding `b` initialized to `1`
 - Compiler evidence: token dump emits `Ident("a")`, `Caret`, `Equal`, `Ident("a")`; AST/resolved construction fails at `Equal` before representing `^=`.
 - TypeScript oracle: reports `TS2447` for boolean `^=`, `TS2362` for invalid left-hand operands, and `TS2363` for invalid right-hand operands; the same file exercises `&=` and `|=`.
-- Superseding child: `issues/done/5178-parse-bitwise-compound-assignment-operators.md`
+- Superseding child: `issues/open/5178-parse-bitwise-compound-assignment-operators.md`
 
 ## Completion evidence
 

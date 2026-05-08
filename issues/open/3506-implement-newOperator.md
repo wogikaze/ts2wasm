@@ -44,7 +44,7 @@ mise run reference-coverage -- tsc --path-filter reference/typescript/tests/case
 
 This generated bucket is closed. Do not implement from this issue; the current
 observed behavior is covered by
-`issues/done/5150-report-empty-element-access-diagnostics.md`.
+`issues/open/5150-report-empty-element-access-diagnostics.md`.
 
 ## Scope
 
@@ -117,7 +117,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] superseded by `issues/done/5150-report-empty-element-access-diagnostics.md`
+- [x] superseded by `issues/open/5150-report-empty-element-access-diagnostics.md`
 
 ## Notes
 
@@ -127,9 +127,9 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/5150-report-empty-element-access-diagnostics.md` owns the
+- `issues/open/5150-report-empty-element-access-diagnostics.md` owns the
   current issue-5150 empty element access diagnostic.
-- `issues/done/1104-implement-cannotInvokeNewOnErrorExpression.md` already
+- `issues/open/1104-implement-cannotInvokeNewOnErrorExpression.md` already
   closes the adjacent `new M.ClassA[]` generated bucket against the same
   completed issue-5150 diagnostic.
 

@@ -110,7 +110,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] superseded by `issues/done/5281-resolve-commented-arrow-rest-parameters.md`
+- [x] superseded by `issues/open/5281-resolve-commented-arrow-rest-parameters.md`
 
 ## Notes
 
@@ -126,7 +126,7 @@ Follow-up issues:
 
 Fresh triage on 2026-05-07 shows this generated blocked bucket is now the same
 arrow rest parameter resolver binding gap owned by
-`issues/done/5281-resolve-commented-arrow-rest-parameters.md`.
+`issues/open/5281-resolve-commented-arrow-rest-parameters.md`.
 
 Current diagnostic:
 

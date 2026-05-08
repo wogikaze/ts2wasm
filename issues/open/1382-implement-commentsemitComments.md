@@ -18,7 +18,7 @@ updated: 2026-05-07
 ## Summary
 
 Closed as superseded by
-`issues/done/5279-report-function-typed-local-call-definite-assignment.md`.
+`issues/open/5279-report-function-typed-local-call-definite-assignment.md`.
 
 Fresh triage shows this generated bucket is not currently blocked by comment
 emit behavior. The first reported blocker is an unspanned function-resolution
@@ -60,7 +60,7 @@ unsupported_features=function-resolution:1
 ## Desired final state
 
 This generated bucket is closed. Implementation should proceed through
-`issues/done/5279-report-function-typed-local-call-definite-assignment.md`;
+`issues/open/5279-report-function-typed-local-call-definite-assignment.md`;
 comment emit behavior should be rechecked after the function-typed local call
 blocker advances.
 
@@ -134,7 +134,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] superseded by: `issues/done/5279-report-function-typed-local-call-definite-assignment.md`
+- [x] superseded by: `issues/open/5279-report-function-typed-local-call-definite-assignment.md`
 
 ## Notes
 
@@ -144,11 +144,11 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/5279-report-function-typed-local-call-definite-assignment.md`
+- `issues/open/5279-report-function-typed-local-call-definite-assignment.md`
   owns the exact first blocker: `var fooVar: () => void; fooVar();` should
   report a source-spanned TS2454-like diagnostic instead of unspanned
   `UnresolvedFunction`.
-- `issues/done/5198-support-class-method-overload-signatures-for-element-access-calls.md`
+- `issues/open/5198-support-class-method-overload-signatures-for-element-access-calls.md`
   is adjacent for the later `c.foo1` overload group, but it is not the first
   diagnostic reported by current coverage.
 

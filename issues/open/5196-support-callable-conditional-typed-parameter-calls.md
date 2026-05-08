@@ -130,7 +130,7 @@ Follow-up issues:
 
 ## Notes
 
-This is related to `issues/done/5195-support-callable-interface-typed-local-calls.md`
+This is related to `issues/open/5195-support-callable-interface-typed-local-calls.md`
 but covers parameters whose callability comes from a conditional type alias. Keep
 the implementation slice narrow enough to avoid taking on full type-system
 evaluation.

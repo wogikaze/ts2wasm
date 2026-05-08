@@ -106,7 +106,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] Superseded by `issues/done/5150-report-empty-element-access-diagnostics.md`
+- [x] Superseded by `issues/open/5150-report-empty-element-access-diagnostics.md`
 
 ## Notes
 
@@ -153,7 +153,7 @@ Evidence:
 
 - Tokens succeed and show `new M.ClassA[]`.
 - TypeScript oracle reports TS1011 for the empty element access expression.
-- Completed issue `issues/done/5150-report-empty-element-access-diagnostics.md`
+- Completed issue `issues/open/5150-report-empty-element-access-diagnostics.md`
   already owns and implements the targeted empty element access diagnostic.
 
 ## Completion evidence

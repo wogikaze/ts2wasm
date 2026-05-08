@@ -170,10 +170,10 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/247-implement-destructuring-binding-pattern-parser.md` is
+- `issues/open/247-implement-destructuring-binding-pattern-parser.md` is
   related parser support but does not own TS1182-style missing initializer
   diagnostics.
-- `issues/done/251-implement-destructuring-binding-runtime-semantics.md` is
+- `issues/open/251-implement-destructuring-binding-runtime-semantics.md` is
   related runtime support for initialized destructuring, not this missing
   initializer diagnostic.
 - Split to `issues/open/5473-report-destructuring-declaration-missing-initializer.md`.

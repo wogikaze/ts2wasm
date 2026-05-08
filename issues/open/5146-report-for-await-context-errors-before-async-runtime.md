@@ -140,13 +140,13 @@ Follow-up issues:
 
 ## Notes
 
-Split from generated bucket `issues/done/1019-implement-awaitInNonAsyncFunction.md`.
+Split from generated bucket `issues/open/1019-implement-awaitInNonAsyncFunction.md`.
 
 Related follow-up for ordinary `await(...)` call parsing:
 
-- `issues/done/5145-parse-await-as-call-outside-async-context.md`
+- `issues/open/5145-parse-await-as-call-outside-async-context.md`
 
-Also owns `issues/done/3360-implement-modulePreserveTopLevelAwait.md`: fresh
+Also owns `issues/open/3360-implement-modulePreserveTopLevelAwait.md`: fresh
 triage for `modulePreserveTopLevelAwait1.ts` stops at top-level
 `for await (const x of []) {}` with issue-230 before TypeScript's TS1432
 context diagnostic and before the following top-level `await Promise.resolve()`

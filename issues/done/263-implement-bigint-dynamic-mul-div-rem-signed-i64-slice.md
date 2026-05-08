@@ -65,7 +65,7 @@ Expected:
 - `docs/14-runtime-abi.md`
 - `docs/language-reference/javascript-features.md`
 - `current-state.md`
-- `issues/done/260-implement-bigint-arithmetic-operators.md`
+- `issues/open/260-implement-bigint-arithmetic-operators.md`
 - `issues/done/263-implement-bigint-dynamic-mul-div-rem-signed-i64-slice.md`
 
 Do not touch:

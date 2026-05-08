@@ -145,7 +145,7 @@ Follow-up issues:
 ## Notes
 
 Split from generated bucket
-`issues/done/1439-implement-constDeclarationShadowedByVarDeclaration.md`.
+`issues/open/1439-implement-constDeclarationShadowedByVarDeclaration.md`.
 Also supersedes the current parser boundary from
 `issues/open/1443-implement-constDeclarations-scope-analysis.md`.
 

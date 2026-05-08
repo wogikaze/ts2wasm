@@ -18,7 +18,7 @@ updated: 2026-05-07
 ## Summary
 
 Closed after splitting the current reference-harness blocker to
-`issues/done/5292-skip-tsconfig-filename-sections-in-reference-harness.md`.
+`issues/open/5292-skip-tsconfig-filename-sections-in-reference-harness.md`.
 
 Fresh focused triage shows the failing boundary is not isolatedModules
 semantics itself. The compiler is parsing the virtual `tsconfig.json` section
@@ -134,7 +134,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] added: `issues/done/5292-skip-tsconfig-filename-sections-in-reference-harness.md`
+- [x] added: `issues/open/5292-skip-tsconfig-filename-sections-in-reference-harness.md`
 
 ## Notes
 
@@ -146,10 +146,10 @@ Follow-up issues:
 
 - No exact existing implementation-ready issue was found for
   `tsconfig.json` virtual section handling.
-- `issues/done/5229-w0-user-runtime-string-origin.md` is related
+- `issues/open/5229-resolve-imports-between-filename-sections.md` is related
   but owns local import resolution between code sections, not config-section
   filtering.
-- `issues/done/5187-lower-namespace-only-multi-section-files.md` is related
+- `issues/open/5187-lower-namespace-only-multi-section-files.md` is related
   but owns namespace-only code sections, not JSON config sections.
 
 ## Smart triage

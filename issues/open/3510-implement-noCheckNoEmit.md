@@ -127,7 +127,7 @@ Follow-up issues:
 - Fresh triage found no current compiler blocker and no exact open owner for
   the remaining TypeScript TS2322 semantic/declaration-mode oracle diagnostic.
 - This is the same stale generated-bucket pattern as
-  `issues/done/3509-implement-noCheckDoesNotReportError.md`.
+  `issues/open/3509-implement-noCheckDoesNotReportError.md`.
 
 ## Smart triage
 

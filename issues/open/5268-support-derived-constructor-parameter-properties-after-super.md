@@ -149,8 +149,8 @@ Follow-up issues:
 
 ## Notes
 
-Split from generated bucket `issues/done/1242-implement-classUpdateTests.md`.
-Related done issue: `issues/done/226-implement-parameter-properties.md`.
+Split from generated bucket `issues/open/1242-implement-classUpdateTests.md`.
+Related done issue: `issues/open/226-implement-parameter-properties.md`.
 
 ## Completion evidence
 

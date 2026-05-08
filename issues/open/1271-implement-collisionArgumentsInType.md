@@ -110,7 +110,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] created: `issues/done/5336-parse-object-type-literal-signatures-with-rest-parameters.md`
+- [x] created: `issues/open/5336-parse-object-type-literal-signatures-with-rest-parameters.md`
 
 ## Notes
 
@@ -120,9 +120,9 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/5201-parse-object-type-literal-call-signatures.md` covers object type literal call-signature members only.
-- `issues/done/5257-parse-object-type-literal-construct-signatures.md` covers construct signatures only.
-- `issues/done/5333-report-strict-mode-arguments-binding-diagnostics.md` covers strict-mode `arguments` diagnostics after syntax parsing succeeds.
+- `issues/open/5201-parse-object-type-literal-call-signatures.md` covers object type literal call-signature members only.
+- `issues/open/5257-parse-object-type-literal-construct-signatures.md` covers construct signatures only.
+- `issues/open/5333-report-strict-mode-arguments-binding-diagnostics.md` covers strict-mode `arguments` diagnostics after syntax parsing succeeds.
 - none fully cover the mixed call, construct, method, and property signature members with rest parameters in this reference.
 
 ## Smart triage
@@ -187,7 +187,7 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- split to `issues/done/5336-parse-object-type-literal-signatures-with-rest-parameters.md`
+- split to `issues/open/5336-parse-object-type-literal-signatures-with-rest-parameters.md`
 
 Validation result:
 

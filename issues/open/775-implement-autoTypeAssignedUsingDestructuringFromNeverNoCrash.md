@@ -20,7 +20,7 @@ status: done
 ## Summary
 
 Closed this generated name-resolution bucket as superseded by
-`issues/done/5161-model-ambient-value-declarations-for-name-resolution.md`.
+`issues/open/5161-model-ambient-value-declarations-for-name-resolution.md`.
 
 ## Problem
 
@@ -49,7 +49,7 @@ mise run reference-coverage -- tsc --path-filter reference/typescript/tests/case
 ## Desired final state
 
 This generated bucket is closed. Implement from
-`issues/done/5161-model-ambient-value-declarations-for-name-resolution.md`.
+`issues/open/5161-model-ambient-value-declarations-for-name-resolution.md`.
 
 ## Scope
 
@@ -118,7 +118,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] `issues/done/5161-model-ambient-value-declarations-for-name-resolution.md`
+- [x] `issues/open/5161-model-ambient-value-declarations-for-name-resolution.md`
 
 ## Notes
 
@@ -128,7 +128,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-Superseded by `issues/done/5161-model-ambient-value-declarations-for-name-resolution.md`.
+Superseded by `issues/open/5161-model-ambient-value-declarations-for-name-resolution.md`.
 
 Evidence:
 

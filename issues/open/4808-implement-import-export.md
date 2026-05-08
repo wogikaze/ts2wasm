@@ -126,16 +126,16 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/075-implement-ExportAssignment.md` - Implement Exportassignment (same feature label, same group key, title overlap)
-- `issues/done/1001-implement-augmentedTypesEnum-import-export.md` - Implement Augmentedtypesenum Import Export (same feature label, same group key, title overlap)
-- `issues/done/1003-implement-augmentedTypesExternalModule.md` - Implement Augmentedtypesexternalmodule (same feature label, same group key, title overlap)
-- `issues/done/1006-implement-augmentedTypesModules.md` - Implement Augmentedtypesmodules (same feature label, same group key, title overlap)
-- `issues/done/1015-implement-avoidNarrowingUsingConstVariableFromBindingElementWithLiteralInitializer.md` - Implement Avoidnarrowingusingconstvariablefrombindingelementwithliteralinitializer (same feature label, same group key, title overlap)
-- `issues/done/1028-implement-badExternalModuleReference.md` - Implement Badexternalmodulereference (same feature label, same group key, title overlap; superseded by issue 232)
-- `issues/done/1032-implement-bangInModuleName.md` - Implement Banginmodulename (same feature label, same group key, title overlap; superseded by issue 232)
-- `issues/done/1035-implement-baseConstraintOfDecorator.md` - Implement Baseconstraintofdecorator (same feature label, same group key, title overlap; superseded by issue 5144)
-- `issues/done/1057-implement-bind.md` - Implement Bind (same feature label, same group key, title overlap)
-- `issues/done/1063-implement-bindingPatternOmittedExpressionNesting.md` - Implement Bindingpatternomittedexpressionnesting (same feature label, same group key, title overlap)
+- `issues/open/075-implement-ExportAssignment.md` - Implement Exportassignment (same feature label, same group key, title overlap)
+- `issues/open/1001-implement-augmentedTypesEnum-import-export.md` - Implement Augmentedtypesenum Import Export (same feature label, same group key, title overlap)
+- `issues/open/1003-implement-augmentedTypesExternalModule.md` - Implement Augmentedtypesexternalmodule (same feature label, same group key, title overlap)
+- `issues/open/1006-implement-augmentedTypesModules.md` - Implement Augmentedtypesmodules (same feature label, same group key, title overlap)
+- `issues/open/1015-implement-avoidNarrowingUsingConstVariableFromBindingElementWithLiteralInitializer.md` - Implement Avoidnarrowingusingconstvariablefrombindingelementwithliteralinitializer (same feature label, same group key, title overlap)
+- `issues/open/1028-implement-badExternalModuleReference.md` - Implement Badexternalmodulereference (same feature label, same group key, title overlap; superseded by issue 232)
+- `issues/open/1032-implement-bangInModuleName.md` - Implement Banginmodulename (same feature label, same group key, title overlap; superseded by issue 232)
+- `issues/open/1035-implement-baseConstraintOfDecorator.md` - Implement Baseconstraintofdecorator (same feature label, same group key, title overlap; superseded by issue 5144)
+- `issues/open/1057-implement-bind.md` - Implement Bind (same feature label, same group key, title overlap)
+- `issues/open/1063-implement-bindingPatternOmittedExpressionNesting.md` - Implement Bindingpatternomittedexpressionnesting (same feature label, same group key, title overlap)
 
 ## Smart triage
 
@@ -145,7 +145,7 @@ Not generated. Rerun with `--triage-limit 1` or higher.
 ## 重複整理メモ
 
 この issue はタイトルが重複しているため、内容がより充実している
-`issues/done/432-implement-import-export.md` に統合されました。
+`issues/open/432-implement-import-export.md` に統合されました。
 そちらを参照してください。
 ## Completion evidence
 
@@ -176,7 +176,7 @@ Classification: truly-done.
 Audit result: retained in `issues/done/`. The issue has repo-local completion evidence, is not marked `blocked` or `triage-needed`, and `python scripts/manager.py check issues` validates the resulting issue graph.
 
 Evidence files:
-- `issues/done/4808-implement-import-export.md`
+- `issues/open/4808-implement-import-export.md`
 - `issues/index.md` after regeneration
 
 Future-work tracking: no untracked future-work item was identified in this issue during this metadata/evidence audit.

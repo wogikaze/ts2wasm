@@ -142,7 +142,7 @@ Follow-up issues:
 
 ## Notes
 
-Split from `issues/done/3597-implement-nonNullFullInference.md`.
+Split from `issues/open/3597-implement-nonNullFullInference.md`.
 
 Related but not duplicate:
 

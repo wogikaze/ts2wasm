@@ -163,9 +163,9 @@ Related but not duplicates:
 
 - `issues/open/5481-represent-object-destructuring-assignment-statements.md`
   owns object destructuring assignment statements such as `({ x } = this);`.
-- `issues/open/5224-parse-destructuring-assignment-call-arguments.md` owns
+- `issues/open/5224-handle-package-json-virtual-sections-in-multifile-references.md` owns
   parenthesized destructuring assignments in call-argument position.
-- `issues/open/5208-parse-arrow-body-destructuring-assignments.md` owns
+- `issues/open/5208-support-regexp-match-fallback-array-map-receiver.md` owns
   concise arrow body destructuring assignments.
 
 ## Completion evidence

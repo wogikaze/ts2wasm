@@ -458,7 +458,7 @@ error: [UnsupportedSyntax] expected Semicolon, got Some(Export) at 155..161
 ## 重複整理メモ
 
 この issue はタイトルが重複しているため、内容がより充実している
-`issues/done/628-implement-amdDeclarationEmitNoExtraDeclare.md` に統合されました。
+`issues/open/628-implement-amdDeclarationEmitNoExtraDeclare.md` に統合されました。
 そちらを参照してください。
 ## Completion evidence
 
@@ -489,7 +489,7 @@ Classification: truly-done.
 Audit result: retained in `issues/done/`. The issue has repo-local completion evidence, is not marked `blocked` or `triage-needed`, and `python scripts/manager.py check issues` validates the resulting issue graph.
 
 Evidence files:
-- `issues/done/170-implement-amdDeclarationEmitNoExtraDeclare.md`
+- `issues/open/170-implement-amdDeclarationEmitNoExtraDeclare.md`
 - `issues/index.md` after regeneration
 
 Future-work tracking: no untracked future-work item was identified in this issue during this metadata/evidence audit.

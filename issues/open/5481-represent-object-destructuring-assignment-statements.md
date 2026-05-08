@@ -175,12 +175,12 @@ triage on 2026-05-08.
 
 Related but not duplicates:
 
-- `issues/done/252-implement-destructuring-assignment-pattern-parser.md`
+- `issues/open/252-implement-destructuring-assignment-pattern-parser.md`
   completed broad parser support but left runtime/semantic destructuring
   assignment behavior out of scope.
-- `issues/open/5224-parse-destructuring-assignment-call-arguments.md` owns
+- `issues/open/5224-handle-package-json-virtual-sections-in-multifile-references.md` owns
   parenthesized destructuring assignments in call-argument position.
-- `issues/open/5208-parse-arrow-body-destructuring-assignments.md` owns
+- `issues/open/5208-support-regexp-match-fallback-array-map-receiver.md` owns
   concise arrow body destructuring assignments.
 
 ## Completion evidence

@@ -125,8 +125,8 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/229-implement-legacy-octal-escape-handling.md` - Implement legacy octal escape handling (same reference path, title overlap)
-- `issues/done/286-classify-negative-syntax-tests-correctly.md` - Classify expected negative SyntaxError tests correctly (same feature label, same group key)
+- `issues/open/229-implement-legacy-octal-escape-handling.md` - Implement legacy octal escape handling (same reference path, title overlap)
+- `issues/open/286-classify-negative-syntax-tests-correctly.md` - Classify expected negative SyntaxError tests correctly (same feature label, same group key)
 
 ## Smart triage
 

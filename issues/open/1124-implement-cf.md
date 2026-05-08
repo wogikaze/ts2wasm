@@ -25,7 +25,7 @@ Triage cf across 1 failing reference test case and fold the current blocker into
 
 Reference test results show 1 case failing in directory `cf` with diagnostics: name-resolution. Fresh triage shows the specific blocker is `UnresolvedName` for `k` after `var k` was declared in a previous `for` initializer.
 
-Problem: cf has 1 reference failure whose actionable blocker is now tracked by `issues/done/5220-preserve-ambient-function-parameters-for-arity.md`.
+Problem: cf has 1 reference failure whose actionable blocker is now tracked by `issues/open/5220-preserve-ambient-function-parameters-for-arity.md`.
 
 ## Current failure
 
@@ -43,7 +43,7 @@ mise run reference-coverage -- tsc --path-filter reference/typescript/tests/case
 
 ## Desired final state
 
-This generated bucket is superseded by `issues/done/5220-preserve-ambient-function-parameters-for-arity.md`.
+This generated bucket is superseded by `issues/open/5220-preserve-ambient-function-parameters-for-arity.md`.
 
 ## Scope
 
@@ -115,7 +115,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] created: `issues/done/5220-preserve-ambient-function-parameters-for-arity.md`
+- [x] created: `issues/open/5220-preserve-ambient-function-parameters-for-arity.md`
 
 ## Notes
 
@@ -125,7 +125,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/427-implement-duplicate-local.md` - Implement duplicate-local support (same feature label, same group key, title overlap)
+- `issues/open/427-implement-duplicate-local.md` - Implement duplicate-local support (same feature label, same group key, title overlap)
 
 ## Smart triage
 
@@ -136,7 +136,7 @@ Generated on 2026-05-06:
 - feature label: `name-resolution`
 - diagnostic: `UnresolvedName` / `resolver-symbol`
 - message: `unresolved name: k at 0..0`
-- child issue: `issues/done/5220-preserve-ambient-function-parameters-for-arity.md`
+- child issue: `issues/open/5220-preserve-ambient-function-parameters-for-arity.md`
 
 Representative source:
 

@@ -136,12 +136,12 @@ Follow-up issues:
 
 ## Notes
 
-Split from generated bucket `issues/done/1015-implement-avoidNarrowingUsingConstVariableFromBindingElementWithLiteralInitializer.md`.
+Split from generated bucket `issues/open/1015-implement-avoidNarrowingUsingConstVariableFromBindingElementWithLiteralInitializer.md`.
 
 Related module-export history:
 
 - `issues/done/5008-static-es-module-export-default-namespace-reexport.md`
-- `issues/done/5010-remaining-es-module-export-forms.md`
+- `issues/open/5010-remaining-es-module-export-forms.md`
 
 ## Completion evidence
 

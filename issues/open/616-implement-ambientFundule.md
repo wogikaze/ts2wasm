@@ -118,8 +118,8 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/155-implement-ambientFundule.md` - Implement Ambientfundule (same reference path, same group key, title overlap)
-- `issues/done/530-implement-ambientFundule.md` - Implement Ambientfundule (same reference path, same feature label, same group key, title overlap)
+- `issues/open/155-implement-ambientFundule.md` - Implement Ambientfundule (same reference path, same group key, title overlap)
+- `issues/open/530-implement-ambientFundule.md` - Implement Ambientfundule (same reference path, same feature label, same group key, title overlap)
 
 ## Smart triage
 
@@ -569,6 +569,6 @@ Violated acceptance: the issue cannot provide repo-local close evidence for its 
 
 Evidence files:
 - open issue file before this move
-- `issues/done/616-implement-ambientFundule.md` after this move
+- `issues/open/616-implement-ambientFundule.md` after this move
 
 Split follow-up: none created in this audit wave; this reopened issue remains the tracking item.

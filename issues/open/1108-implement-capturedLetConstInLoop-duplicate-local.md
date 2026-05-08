@@ -109,7 +109,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] `issues/done/5205-restore-backend-residual-expression-rejection.md`
+- [x] `issues/open/5205-report-incompatible-var-redeclaration-type-diagnostics.md`
 
 ## Notes
 
@@ -154,12 +154,12 @@ Evidence:
 - Tokens, AST, and resolved dumps succeed.
 - The reference file contains `var v = 1`, then a nested `do` body with
   bodyless `var v` and `var v = 2`.
-- Existing issue `issues/done/5162-allow-compatible-var-redeclarations.md` is
+- Existing issue `issues/open/5162-allow-compatible-var-redeclarations.md` is
   related but no-match: it removes false duplicate-local blockers for
   compatible redeclarations, while this bucket now needs the incompatible
   redeclaration diagnostic after build pass.
 - Child issue
-  `issues/done/5205-restore-backend-residual-expression-rejection.md`
+  `issues/open/5205-report-incompatible-var-redeclaration-type-diagnostics.md`
   owns the diagnostic implementation slice.
 
 ## Completion evidence

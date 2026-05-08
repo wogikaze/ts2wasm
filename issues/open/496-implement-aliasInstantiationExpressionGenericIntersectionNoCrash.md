@@ -117,7 +117,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/116-implement-aliasInstantiationExpressionGenericIntersectionNoCrash.md` - Implement Aliasinstantiationexpressiongenericintersectionnocrash (same reference path, same feature label, same group key, title overlap)
+- `issues/open/116-implement-aliasInstantiationExpressionGenericIntersectionNoCrash.md` - Implement Aliasinstantiationexpressiongenericintersectionnocrash (same reference path, same feature label, same group key, title overlap)
 - `issues/open/452-implement-type-alias.md` - Implement type-alias support (same feature label, same group key, title overlap)
 
 ## Smart triage
@@ -549,7 +549,7 @@ error: [UnsupportedSyntax] expected LeftBrace, got Some(Less) at 50..51
 ## 重複整理メモ
 
 この issue はタイトルが重複しているため、内容がより充実している
-`issues/done/582-implement-aliasInstantiationExpressionGenericIntersectionNoCrash.md` に統合されました。
+`issues/open/582-implement-aliasInstantiationExpressionGenericIntersectionNoCrash.md` に統合されました。
 そちらを参照してください。
 ## Completion evidence
 
@@ -580,7 +580,7 @@ Classification: truly-done.
 Audit result: retained in `issues/done/`. The issue has repo-local completion evidence, is not marked `blocked` or `triage-needed`, and `python scripts/manager.py check issues` validates the resulting issue graph.
 
 Evidence files:
-- `issues/done/496-implement-aliasInstantiationExpressionGenericIntersectionNoCrash.md`
+- `issues/open/496-implement-aliasInstantiationExpressionGenericIntersectionNoCrash.md`
 - `issues/index.md` after regeneration
 
 Future-work tracking: no untracked future-work item was identified in this issue during this metadata/evidence audit.

@@ -18,7 +18,7 @@ literals when an outer contextual type determines the nested target property
 type.
 
 Split from generated bucket
-`issues/done/3478-implement-nestedFreshLiteral.md`.
+`issues/open/3478-implement-nestedFreshLiteral.md`.
 
 ## Problem
 

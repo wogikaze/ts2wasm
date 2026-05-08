@@ -108,7 +108,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] added: `issues/done/5187-lower-namespace-only-multi-section-files.md`
+- [x] added: `issues/open/5187-lower-namespace-only-multi-section-files.md`
 
 ## Notes
 
@@ -131,7 +131,7 @@ Generated on 2026-05-06.
 - Source context: `// @Filename: test.ts` contains `namespace C { export class Name { ... } }`; `// @Filename: typings.d.ts` contains `declare namespace A { namespace AA { ... } }`.
 - Compiler evidence: tokens include namespace/class/declaration content, but AST and resolved dumps are empty because the multi-section lowering path drops sections with no static module body.
 - TypeScript oracle: `TS2729: Property 'AA' is used before its initialization.` at the `A.AA` static member initializers.
-- Superseding child: `issues/done/5187-lower-namespace-only-multi-section-files.md`
+- Superseding child: `issues/open/5187-lower-namespace-only-multi-section-files.md`
 
 ## Completion evidence
 

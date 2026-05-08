@@ -131,7 +131,7 @@ Follow-up issues:
 ## Notes
 
 Split from generated bucket
-`issues/done/3335-implement-moduleElementsInWrongContext.md`. The bare-block
+`issues/open/3335-implement-moduleElementsInWrongContext.md`. The bare-block
 and function-body variants still stop at `export = M;`; issue 5186 owns that
 parser boundary. Later import/export wrong-context diagnostics should be split
 after this first diagnostic lands.

@@ -93,8 +93,8 @@ In scope:
 Out of scope:
 
 - Ambient `declare namespace`, tracked by ambient declaration boundary work.
-- Multi-section namespace-only body preservation, tracked by `issues/done/5187-lower-namespace-only-multi-section-files.md`.
-- Function/namespace merging, tracked by `issues/done/5244-date-timezone-formatting-policy.md`.
+- Multi-section namespace-only body preservation, tracked by `issues/open/5187-lower-namespace-only-multi-section-files.md`.
+- Function/namespace merging, tracked by `issues/open/5244-date-timezone-formatting-policy.md`.
 - AMD/outFile emit and full declaration comment fidelity.
 
 ## Affected paths
@@ -157,31 +157,31 @@ Follow-up issues:
 
 ## Notes
 
-Split from `issues/done/1371-implement-commentsModules.md`.
+Split from `issues/open/1371-implement-commentsModules.md`.
 
 Related but not duplicates:
 
-- `issues/done/399-define-typescript-parse-erase-emit-boundary.md` defines the
+- `issues/open/399-define-typescript-parse-erase-emit-boundary.md` defines the
   namespace ownership contract.
-- `issues/done/432-implement-import-export.md` is the broad triage parent.
-- `issues/done/5187-lower-namespace-only-multi-section-files.md`,
-  `issues/done/5225-w0-typed-wat-writer.md`, and
-  `issues/done/5244-date-timezone-formatting-policy.md`
+- `issues/open/432-implement-import-export.md` is the broad triage parent.
+- `issues/open/5187-lower-namespace-only-multi-section-files.md`,
+  `issues/open/5225-w0-typed-wat-writer.md`, and
+  `issues/open/5244-date-timezone-formatting-policy.md`
   cover adjacent namespace shapes, not same-file namespace value access.
 
-Also owns `issues/done/3305-implement-moduleAndInterfaceWithSameName.md`: fresh
+Also owns `issues/open/3305-implement-moduleAndInterfaceWithSameName.md`: fresh
 triage reaches the same non-ambient same-file namespace binding boundary for
 `Foo2` before the later `Foo2.Bar` interface/value visibility diagnostic becomes
 actionable.
-- Also owns `issues/done/3340-implement-moduleIdentifiers.md`: fresh triage
+- Also owns `issues/open/3340-implement-moduleIdentifiers.md`: fresh triage
   reaches the same non-ambient same-file namespace binding boundary for
   `namespace M { export var a = 1 }` followed by `var x1 = M.a;`.
 - Also owns the remaining failing subset of
-  `issues/done/3396-implement-moduleVisibilityTest.md`: fresh triage for cases
+  `issues/open/3396-implement-moduleVisibilityTest.md`: fresh triage for cases
   1 and 2 stops at unresolved namespace root `M` for same-file qualified value
   accesses such as `new M.C()`, `M.x`, `M.E.A`, and `M.exported_var`. Cases 3
   and 4 now build.
-- Also owns `issues/done/3398-implement-moduleWithTryStatement.md`: fresh
+- Also owns `issues/open/3398-implement-moduleWithTryStatement.md`: fresh
   triage gets past namespace-body try/catch syntax and stops at unresolved
   namespace root `M` for the bare value read `var v = M;`.
 

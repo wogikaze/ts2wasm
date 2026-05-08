@@ -51,7 +51,7 @@ python scripts/manager.py reference-coverage tsc --path-filter reference/typescr
 ## Desired final state
 
 This generated bucket is closed because the current observable blocker is
-owned by `issues/done/5337-parse-rest-parameter-constructor-overload-signatures.md`.
+owned by `issues/open/5337-parse-rest-parameter-constructor-overload-signatures.md`.
 
 ## Scope
 
@@ -122,7 +122,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] created: `issues/done/5337-parse-rest-parameter-constructor-overload-signatures.md`
+- [x] created: `issues/open/5337-parse-rest-parameter-constructor-overload-signatures.md`
 
 ## Notes
 
@@ -132,9 +132,9 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/5334-parse-class-constructor-overload-signatures.md` - related non-rest constructor overload signature issue, kept separate to avoid enlarging that implementation slice
-- `issues/done/5337-parse-rest-parameter-constructor-overload-signatures.md` - exact owner for bodyless class constructor overload signatures with rest parameters currently reported as duplicate constructor definitions
-- `issues/done/5199-report-function-overload-list-class-merge-diagnostics.md` - related top-level function/class overload merge issue, not constructor overload ownership
+- `issues/open/5334-parse-class-constructor-overload-signatures.md` - related non-rest constructor overload signature issue, kept separate to avoid enlarging that implementation slice
+- `issues/open/5337-parse-rest-parameter-constructor-overload-signatures.md` - exact owner for bodyless class constructor overload signatures with rest parameters currently reported as duplicate constructor definitions
+- `issues/open/5199-report-function-overload-list-class-merge-diagnostics.md` - related top-level function/class overload merge issue, not constructor overload ownership
 - `issues/open/5200-validate-top-level-function-overload-implementations.md` - related top-level function overload implementation grouping, not class constructor overload ownership
 - `issues/open/5327-report-class-method-overload-wrong-implementation-name.md` - related class method overload diagnostics, explicitly out of constructor overload scope
 
@@ -205,13 +205,13 @@ diagnostics: []
 
 Split result:
 
-- `issues/done/5337-parse-rest-parameter-constructor-overload-signatures.md`
+- `issues/open/5337-parse-rest-parameter-constructor-overload-signatures.md`
 
 ## Completion evidence
 
 Commits:
 
-- Split to `issues/done/5337-parse-rest-parameter-constructor-overload-signatures.md`.
+- Split to `issues/open/5337-parse-rest-parameter-constructor-overload-signatures.md`.
 
 Validation result:
 

@@ -81,7 +81,7 @@ Out of scope:
 
 - Full lexical `this` lowering inside nested arrow callbacks.
 - Runtime support for invoking arbitrary object-literal callback factories.
-- Async arrow parsing, tracked by `issues/done/5240-w2-docs-audit-and-stale-entries.md`.
+- Async arrow parsing, tracked by `issues/open/5240-w2-docs-audit-and-stale-entries.md`.
 
 ## Affected paths
 
@@ -161,11 +161,11 @@ Follow-up issues:
 ## Notes
 
 Split from generated bucket
-`issues/done/1325-implement-collisionThisExpressionAndLocalVarInConstructor.md`.
+`issues/open/1325-implement-collisionThisExpressionAndLocalVarInConstructor.md`.
 Also supersedes
-`issues/done/1324-implement-collisionThisExpressionAndLocalVarInAccessors.md`,
-`issues/done/1329-implement-collisionThisExpressionAndLocalVarInProperty.md`,
-`issues/done/1327-implement-collisionThisExpressionAndLocalVarInLambda.md`
+`issues/open/1324-implement-collisionThisExpressionAndLocalVarInAccessors.md`,
+`issues/open/1329-implement-collisionThisExpressionAndLocalVarInProperty.md`,
+`issues/open/1327-implement-collisionThisExpressionAndLocalVarInLambda.md`
 and `issues/open/1328-implement-collisionThisExpressionAndLocalVarInMethod.md`,
 which stop at the same `(callback) => () => { ... }` parser failure.
 
@@ -193,8 +193,8 @@ plus duplicate global `console` diagnostics.
 
 Related but distinct:
 
-- `issues/done/5240-w2-docs-audit-and-stale-entries.md` owns `async () =>`.
-- `issues/done/5152-support-class-constructor-outer-callback-captures.md` owns
+- `issues/open/5240-w2-docs-audit-and-stale-entries.md` owns `async () =>`.
+- `issues/open/5152-support-class-constructor-outer-callback-captures.md` owns
   class-constructor nested callback lowering after parsing succeeds.
 
 2026-05-07 additional evidence: generated bucket
@@ -228,7 +228,7 @@ property access and TS2345 for the later fixed type-parameter argument
 diagnostic after parsing succeeds.
 
 2026-05-08 additional evidence: generated bucket
-`issues/done/3559-implement-noImplicitThisFunctions.md` is superseded here.
+`issues/open/3559-implement-noImplicitThisFunctions.md` is superseded here.
 `noImplicitThisFunctions.ts` fails at the inner arrow in
 `let f5 = () => () => this;`; TypeScript parses it and later reports
 implicit/global-`this` diagnostics.

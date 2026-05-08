@@ -126,12 +126,12 @@ Follow-up issues:
 
 ## Notes
 
-`issues/done/227-implement-type-reference-directive-resolution.md` remains a
+`issues/open/227-implement-type-reference-directive-resolution.md` remains a
 valid completed diagnostic slice. It explicitly left full TypeScript type
 package resolution unimplemented by design, so it is not a duplicate of issue
 5427.
 
-`issues/done/232-resolve-local-relative-es-module-graph.md` remains a valid
+`issues/open/232-resolve-local-relative-es-module-graph.md` remains a valid
 completed local-relative module graph slice. It explicitly left package
 resolution and `node_modules` traversal out of scope, so it is not a duplicate
 of issue 5428.

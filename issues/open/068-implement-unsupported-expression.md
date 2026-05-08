@@ -110,7 +110,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] created: `issues/done/5138-split-reflect-construct-isconstructor-window.md`
+- [x] created: `issues/open/5138-split-reflect-construct-isconstructor-window.md`
 
 ## Notes
 

@@ -71,9 +71,9 @@ In scope:
 Out of scope:
 
 - Untyped arrow branches in ternaries, tracked by
-  `issues/done/5381-parse-arrow-functions-in-ternary-branches.md`.
+  `issues/open/5381-parse-arrow-functions-in-ternary-branches.md`.
 - Lowering `Expr::Ternary`, tracked by
-  `issues/done/5160-lower-plain-ternary-conditional-expressions.md`.
+  `issues/open/5160-lower-plain-ternary-conditional-expressions.md`.
 - Contextual function type assignability for branch unions.
 
 ## Affected paths

@@ -59,8 +59,8 @@ In scope:
 
 Out of scope:
 
-- Non-ambient namespace value access, tracked by `issues/done/5287-bind-namespace-declarations-for-qualified-value-access.md`.
-- Plain ambient `declare var` / `declare let` / `declare const` value references, tracked by `issues/done/5161-model-ambient-value-declarations-for-name-resolution.md`.
+- Non-ambient namespace value access, tracked by `issues/open/5287-bind-namespace-declarations-for-qualified-value-access.md`.
+- Plain ambient `declare var` / `declare let` / `declare const` value references, tracked by `issues/open/5161-model-ambient-value-declarations-for-name-resolution.md`.
 - Full namespace lowering, module ownership, runtime namespace object materialization, and contextual return type inference.
 
 ## Affected paths
@@ -119,8 +119,8 @@ Split from generated bucket `issues/open/1495-implement-contextualReturnTypeOfII
 
 Related:
 
-- `issues/done/5287-bind-namespace-declarations-for-qualified-value-access.md` covers non-ambient namespaces and explicitly excludes ambient `declare namespace`.
-- `issues/done/5161-model-ambient-value-declarations-for-name-resolution.md` covers erased ambient variables/lets/consts, not ambient namespace roots.
+- `issues/open/5287-bind-namespace-declarations-for-qualified-value-access.md` covers non-ambient namespaces and explicitly excludes ambient `declare namespace`.
+- `issues/open/5161-model-ambient-value-declarations-for-name-resolution.md` covers erased ambient variables/lets/consts, not ambient namespace roots.
 
 ## Completion evidence
 

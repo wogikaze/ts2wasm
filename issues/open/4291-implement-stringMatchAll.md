@@ -117,7 +117,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] completed: `issues/done/5129-implement-string-match-all-literal-regexp.md`
+- [x] completed: `issues/open/5129-implement-string-match-all-literal-regexp.md`
 
 ## Notes
 

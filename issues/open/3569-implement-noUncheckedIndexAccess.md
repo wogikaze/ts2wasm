@@ -45,7 +45,7 @@ mise run reference-coverage -- tsc --path-filter reference/typescript/tests/case
 ## Desired final state
 
 This generated bucket is closed as superseded by
-`issues/open/5284-bind-plain-enum-declarations-before-member-access.md`. Do
+`issues/done/5284-bind-plain-enum-declarations-before-member-access.md`. Do
 not implement directly from this bucket.
 
 ## Scope
@@ -117,7 +117,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] folded into: `issues/open/5284-bind-plain-enum-declarations-before-member-access.md`
+- [x] folded into: `issues/done/5284-bind-plain-enum-declarations-before-member-access.md`
 
 ## Notes
 

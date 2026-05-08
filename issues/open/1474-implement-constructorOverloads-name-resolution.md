@@ -18,7 +18,7 @@ updated: 2026-05-07
 ## Summary
 
 Closed by splitting the current representative blocker to
-`issues/done/5358-report-constructor-bodies-in-ambient-class-declarations.md`.
+`issues/open/5358-report-constructor-bodies-in-ambient-class-declarations.md`.
 
 Fresh triage shows this generated `constructorOverloads-name-resolution` bucket
 is stale: the representative no longer fails with `name-resolution`. The
@@ -170,7 +170,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] created: `issues/done/5358-report-constructor-bodies-in-ambient-class-declarations.md`
+- [x] created: `issues/open/5358-report-constructor-bodies-in-ambient-class-declarations.md`
 
 ## Notes
 
@@ -180,17 +180,17 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/435-implement-method-call.md` is a broad method-call bucket, but
+- `issues/open/435-implement-method-call.md` is a broad method-call bucket, but
   the oracle first diagnostic is the earlier ambient constructor implementation
   diagnostic.
-- `issues/done/5261-report-class-typed-missing-instance-method-calls.md`
+- `issues/open/5261-report-class-typed-missing-instance-method-calls.md`
   handles known class-typed ambient locals whose requested method is missing;
   this representative has a method declared in `Foo` and should not reach that
   missing-method path before TS1183.
-- `issues/done/5161-model-ambient-value-declarations-for-name-resolution.md`
+- `issues/open/5161-model-ambient-value-declarations-for-name-resolution.md`
   handles `declare var` / `declare let` / `declare const` value visibility,
   not `declare class` constructor bodies.
-- `issues/done/5334-parse-class-constructor-overload-signatures.md` handles
+- `issues/open/5334-parse-class-constructor-overload-signatures.md` handles
   valid bodyless constructor overload signatures followed by an implementation
   in runtime classes; this representative's first oracle diagnostic is a body
   inside an ambient class declaration.

@@ -117,8 +117,8 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/149-implement-ambientExternalModuleInAnotherExternalModule.md` - Implement Ambientexternalmoduleinanotherexternalmodule (same reference path, same group key, title overlap)
-- `issues/done/524-implement-ambientExternalModuleInAnotherExternalModule.md` - Implement Ambientexternalmoduleinanotherexternalmodule (same reference path, same feature label, same group key, title overlap)
+- `issues/open/149-implement-ambientExternalModuleInAnotherExternalModule.md` - Implement Ambientexternalmoduleinanotherexternalmodule (same reference path, same group key, title overlap)
+- `issues/open/524-implement-ambientExternalModuleInAnotherExternalModule.md` - Implement Ambientexternalmoduleinanotherexternalmodule (same reference path, same feature label, same group key, title overlap)
 
 ## Smart triage
 
@@ -577,7 +577,7 @@ error: [UnsupportedModule] issue-055: unsupported static export; module resoluti
 
 Closed as a stale generated bucket after fresh 2026-05-08 triage confirmed
 the current blocker is already owned by
-`issues/done/5346-parse-commonjs-export-assignment-statements.md`.
+`issues/open/5346-parse-commonjs-export-assignment-statements.md`.
 
 Fresh coverage with the current binary:
 

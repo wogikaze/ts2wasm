@@ -107,7 +107,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] added: `issues/done/5183-report-typed-getter-null-return-diagnostics.md`
+- [x] added: `issues/open/5183-report-typed-getter-null-return-diagnostics.md`
 
 ## Notes
 
@@ -118,7 +118,7 @@ Follow-up issues:
 ## Duplicate detection
 
 - Older accessor buckets share the `class-accessor` feature label, but none owns the current typed getter false build-pass.
-- `issues/done/574-implement-accessors.md` is a broad generated accessor bucket, not an implementation-ready child for this current `TS2322` mismatch.
+- `issues/open/574-implement-accessors.md` is a broad generated accessor bucket, not an implementation-ready child for this current `TS2322` mismatch.
 
 ## Smart triage
 
@@ -131,7 +131,7 @@ Generated on 2026-05-06.
 - Visible symbols before mismatch: classes `Result`, `Test`, `Test2`, and getter-local bindings `x`
 - Compiler evidence: tokens include `get`, `Property`, `:`, `Result`, and `return null`; AST and resolved output represent the getter as a class method named `get Property`, but the return type annotation is not preserved for diagnostics.
 - TypeScript oracle: `TS2322: Type 'null' is not assignable to type 'Result'.` at the first getter's `return null`.
-- Superseding child: `issues/done/5183-report-typed-getter-null-return-diagnostics.md`
+- Superseding child: `issues/open/5183-report-typed-getter-null-return-diagnostics.md`
 
 ## Completion evidence
 

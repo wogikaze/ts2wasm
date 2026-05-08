@@ -108,12 +108,12 @@ Current state:
 
 Follow-up issues:
 
-- [x] created: `issues/done/5133-implement-single-statement-loop-body-break-continue.md`
+- [x] created: `issues/open/5133-implement-single-statement-loop-body-break-continue.md`
 
 ## Notes
 
 Split to implementation-ready child issue
-`issues/done/5133-implement-single-statement-loop-body-break-continue.md`.
+`issues/open/5133-implement-single-statement-loop-body-break-continue.md`.
 
 ## Affected test files
 

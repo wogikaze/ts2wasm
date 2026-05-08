@@ -123,8 +123,8 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/113-implement-aliasDoesNotDuplicateSignatures.md` - Implement Aliasdoesnotduplicatesignatures (same reference path, same group key, title overlap)
-- `issues/done/493-implement-aliasDoesNotDuplicateSignatures.md` - Implement Aliasdoesnotduplicatesignatures (same reference path, same feature label, same group key, title overlap)
+- `issues/open/113-implement-aliasDoesNotDuplicateSignatures.md` - Implement Aliasdoesnotduplicatesignatures (same reference path, same group key, title overlap)
+- `issues/open/493-implement-aliasDoesNotDuplicateSignatures.md` - Implement Aliasdoesnotduplicatesignatures (same reference path, same feature label, same group key, title overlap)
 
 ## Smart triage
 

@@ -118,8 +118,8 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/128-implement-aliasUsedAsNameValue.md` - Implement Aliasusedasnamevalue (same reference path, same group key, title overlap)
-- `issues/done/507-implement-aliasUsedAsNameValue.md` - Implement Aliasusedasnamevalue (same reference path, same feature label, same group key, title overlap)
+- `issues/open/128-implement-aliasUsedAsNameValue.md` - Implement Aliasusedasnamevalue (same reference path, same group key, title overlap)
+- `issues/open/507-implement-aliasUsedAsNameValue.md` - Implement Aliasusedasnamevalue (same reference path, same feature label, same group key, title overlap)
 
 ## Smart triage
 

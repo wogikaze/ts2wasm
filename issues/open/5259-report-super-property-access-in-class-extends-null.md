@@ -61,7 +61,7 @@ In scope:
 Out of scope:
 
 - Constructor `super()` diagnostics for `extends null`, tracked by
-  `issues/done/5258-support-class-extends-null-boundary.md`.
+  `issues/open/5258-support-class-extends-null-boundary.md`.
 - Full runtime implementation of `extends null`.
 - General `super` property runtime lowering.
 
@@ -105,7 +105,7 @@ python scripts/manager.py reference-coverage tsc --path-filter reference/typescr
 
 ## Notes
 
-Split from `issues/done/1205-implement-classExtendsNull.md`.
+Split from `issues/open/1205-implement-classExtendsNull.md`.
 ## False-done audit
 
 **truly-done** (5259)

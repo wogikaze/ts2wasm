@@ -18,7 +18,7 @@ updated: 2026-05-07
 ## Summary
 
 Closed as superseded by
-`issues/done/5287-bind-namespace-declarations-for-qualified-value-access.md`.
+`issues/open/5287-bind-namespace-declarations-for-qualified-value-access.md`.
 
 Fresh focused triage shows `complexNarrowingWithAny.ts` currently stops at the
 same namespace value binding boundary already owned by issue 5287. The file
@@ -158,7 +158,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] superseded by: `issues/done/5287-bind-namespace-declarations-for-qualified-value-access.md`
+- [x] superseded by: `issues/open/5287-bind-namespace-declarations-for-qualified-value-access.md`
 
 ## Notes
 
@@ -168,12 +168,12 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/5287-bind-namespace-declarations-for-qualified-value-access.md`
+- `issues/open/5287-bind-namespace-declarations-for-qualified-value-access.md`
   owns binding same-file non-ambient namespace declarations as namespace values
   so qualified accesses can resolve exported members.
-- `issues/done/5187-lower-namespace-only-multi-section-files.md` is related
+- `issues/open/5187-lower-namespace-only-multi-section-files.md` is related
   but covers namespace-only multi-section preservation.
-- `issues/done/5244-date-timezone-formatting-policy.md` is
+- `issues/open/5244-date-timezone-formatting-policy.md` is
   related but covers function/namespace merging and exported static members.
 
 ## Smart triage
@@ -222,7 +222,7 @@ class fields, showing the namespace declaration itself is accepted.
 
 Commits:
 
-- superseded by `issues/done/5287-bind-namespace-declarations-for-qualified-value-access.md`
+- superseded by `issues/open/5287-bind-namespace-declarations-for-qualified-value-access.md`
 
 Validation result:
 

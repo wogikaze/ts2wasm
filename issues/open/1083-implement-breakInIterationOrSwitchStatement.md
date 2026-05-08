@@ -39,7 +39,7 @@ mise run reference-coverage -- tsc --path-filter reference/typescript/tests/case
 
 ## Desired final state
 
-This generated bucket is closed as superseded by `issues/done/056-implement-name-resolution.md` for the current unresolved-name diagnostic. Do not implement directly from this bucket.
+This generated bucket is closed as superseded by `issues/open/056-implement-name-resolution.md` for the current unresolved-name diagnostic. Do not implement directly from this bucket.
 
 ## Scope
 
@@ -121,7 +121,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/056-implement-name-resolution.md` is an exact owner for a genuine unresolved identifier diagnostic.
+- `issues/open/056-implement-name-resolution.md` is an exact owner for a genuine unresolved identifier diagnostic.
 - Break/continue parser issues are not matches: tokens and AST succeed for `for (var i in something) { break; }`.
 
 ## Smart triage
@@ -180,7 +180,7 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- superseded by `issues/done/056-implement-name-resolution.md`
+- superseded by `issues/open/056-implement-name-resolution.md`
 
 Validation result:
 

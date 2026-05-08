@@ -39,7 +39,7 @@ mise run reference-coverage -- tsc --path-filter reference/typescript/tests/case
 
 ## Desired final state
 
-This generated bucket is closed as superseded by `issues/done/232-resolve-local-relative-es-module-graph.md`. Do not implement directly from this bucket.
+This generated bucket is closed as superseded by `issues/open/232-resolve-local-relative-es-module-graph.md`. Do not implement directly from this bucket.
 
 ## Scope
 
@@ -121,8 +121,8 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/118-implement-aliasOnMergedModuleInterface.md` - Implement Aliasonmergedmoduleinterface (same reference path, same group key, title overlap)
-- `issues/done/497-implement-aliasOnMergedModuleInterface.md` - Implement Aliasonmergedmoduleinterface (same reference path, same feature label, same group key, title overlap)
+- `issues/open/118-implement-aliasOnMergedModuleInterface.md` - Implement Aliasonmergedmoduleinterface (same reference path, same group key, title overlap)
+- `issues/open/497-implement-aliasOnMergedModuleInterface.md` - Implement Aliasonmergedmoduleinterface (same reference path, same feature label, same group key, title overlap)
 
 ## Smart triage
 
@@ -596,7 +596,7 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- superseded by `issues/done/232-resolve-local-relative-es-module-graph.md`
+- superseded by `issues/open/232-resolve-local-relative-es-module-graph.md`
 
 Validation result:
 

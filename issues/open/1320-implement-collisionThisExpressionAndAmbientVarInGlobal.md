@@ -19,7 +19,7 @@ status: done
 
 ## Summary
 
-Closed as superseded by `issues/done/5161-model-ambient-value-declarations-for-name-resolution.md`.
+Closed as superseded by `issues/open/5161-model-ambient-value-declarations-for-name-resolution.md`.
 
 ## Problem
 
@@ -43,7 +43,7 @@ mise run reference-coverage -- tsc --path-filter reference/typescript/tests/case
 
 ## Desired final state
 
-This generated bucket is closed. Implementation should proceed through `issues/done/5161-model-ambient-value-declarations-for-name-resolution.md`.
+This generated bucket is closed. Implementation should proceed through `issues/open/5161-model-ambient-value-declarations-for-name-resolution.md`.
 
 ## Scope
 
@@ -116,7 +116,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] `issues/done/5161-model-ambient-value-declarations-for-name-resolution.md`
+- [x] `issues/open/5161-model-ambient-value-declarations-for-name-resolution.md`
 
 ## Notes
 
@@ -126,7 +126,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/5161-model-ambient-value-declarations-for-name-resolution.md` is the exact implementation-ready owner for this ambient `declare var` name-resolution gap.
+- `issues/open/5161-model-ambient-value-declarations-for-name-resolution.md` is the exact implementation-ready owner for this ambient `declare var` name-resolution gap.
 - Generic name-resolution buckets are not matches; they share only the broad feature label.
 
 ## Smart triage

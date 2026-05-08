@@ -129,7 +129,7 @@ Follow-up issues:
 No implementation child needed. Fresh triage reports `BuildPass`; focused
 coverage reports `build_pass=1`, `unsupported=0`, and `blocked=0`.
 
-Duplicate bucket `issues/done/999-implement-augmentedClassWithPrototypePropertyOnModule.md`
+Duplicate bucket `issues/open/999-implement-augmentedClassWithPrototypePropertyOnModule.md`
 is retained as the stale duplicate record.
 
 ## Smart triage

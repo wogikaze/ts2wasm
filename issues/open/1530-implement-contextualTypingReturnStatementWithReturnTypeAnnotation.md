@@ -110,7 +110,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] created: `issues/done/5384-resolve-ambient-function-value-references.md`
+- [x] created: `issues/open/5384-resolve-ambient-function-value-references.md`
 
 ## Notes
 
@@ -123,7 +123,7 @@ Follow-up issues:
 - No exact existing owner found.
 - `issues/open/064-implement-name-resolution.md` is a superseded test262
   metadata bucket, not this TypeScript ambient function value-reference gap.
-- `issues/done/5161-model-ambient-value-declarations-for-name-resolution.md`
+- `issues/open/5161-model-ambient-value-declarations-for-name-resolution.md`
   is related but owns ambient value declarations such as `declare const`, not
   ambient `declare function` identifiers passed as callback values.
 
@@ -168,7 +168,7 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- split to `issues/done/5384-resolve-ambient-function-value-references.md`
+- split to `issues/open/5384-resolve-ambient-function-value-references.md`
 
 Validation result:
 

@@ -390,7 +390,7 @@ error: [UnsupportedSyntax] expected Semicolon, got Some(Ident("M")) at 53..54
 ## 重複整理メモ
 
 この issue はタイトルが重複しているため、内容がより充実している
-`issues/done/581-implement-aliasInaccessibleModule.md` に統合されました。
+`issues/open/581-implement-aliasInaccessibleModule.md` に統合されました。
 そちらを参照してください。
 ## Completion evidence
 

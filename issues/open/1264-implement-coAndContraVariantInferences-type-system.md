@@ -125,10 +125,10 @@ Current state:
 
 Follow-up issues:
 
-- [x] created: `issues/done/5332-parse-interface-call-signatures.md`
+- [x] created: `issues/open/5332-parse-interface-call-signatures.md`
 - [x] superseded by `issues/done/5184-parse-const-enum-declarations.md`
-- [x] superseded by `issues/done/5303-parse-trailing-comma-in-typed-function-parameters.md`
-- [x] superseded by `issues/done/5309-skip-generic-type-arguments-in-type-annotations.md`
+- [x] superseded by `issues/open/5303-parse-trailing-comma-in-typed-function-parameters.md`
+- [x] superseded by `issues/open/5309-skip-generic-type-arguments-in-type-annotations.md`
 
 ## Notes
 
@@ -144,10 +144,10 @@ Follow-up issues:
 ## Duplicate detection
 
 - `issues/done/5184-parse-const-enum-declarations.md` - exact owner for `coAndContraVariantInferences3.ts` and `coAndContraVariantInferences4.ts` current `const enum` parser blocker
-- `issues/done/5303-parse-trailing-comma-in-typed-function-parameters.md` - exact owner for `coAndContraVariantInferences5.ts` trailing comma in typed function parameters
-- `issues/done/5309-skip-generic-type-arguments-in-type-annotations.md` - exact owner for `coAndContraVariantInferences.ts` generic type arguments inside function parameter annotations
-- `issues/done/5332-parse-interface-call-signatures.md` - new child for `coAndContraVariantInferences6.ts` interface call-signature parsing
-- `issues/done/345-implement-tsc-type-alias-coverage.md` - Implement TypeScript type alias coverage for tsc suite (23 cases) (same feature label, title overlap)
+- `issues/open/5303-parse-trailing-comma-in-typed-function-parameters.md` - exact owner for `coAndContraVariantInferences5.ts` trailing comma in typed function parameters
+- `issues/open/5309-skip-generic-type-arguments-in-type-annotations.md` - exact owner for `coAndContraVariantInferences.ts` generic type arguments inside function parameter annotations
+- `issues/open/5332-parse-interface-call-signatures.md` - new child for `coAndContraVariantInferences6.ts` interface call-signature parsing
+- `issues/open/345-implement-tsc-type-alias-coverage.md` - Implement TypeScript type alias coverage for tsc suite (23 cases) (same feature label, title overlap)
 
 ## Smart triage
 
@@ -174,7 +174,7 @@ the `2.ts` generated bucket history.
 - Diagnostic: `UnsupportedSyntax`
 - Message: `expected Comma, got Some(Greater) at 655..656`
 - Source: `fn: (action: Action<TName,TPayload>)=> any`
-- Owner: `issues/done/5309-skip-generic-type-arguments-in-type-annotations.md`
+- Owner: `issues/open/5309-skip-generic-type-arguments-in-type-annotations.md`
 
 ### coAndContraVariantInferences3.ts
 
@@ -195,14 +195,14 @@ the `2.ts` generated bucket history.
 - Diagnostic: `UnsupportedSyntax`
 - Message: `issue-247: expected binding identifier or pattern, got Some(RightParen) at 181..182`
 - Source: trailing comma after `onChange: (status: Thing | null) => void,`
-- Owner: `issues/done/5303-parse-trailing-comma-in-typed-function-parameters.md`
+- Owner: `issues/open/5303-parse-trailing-comma-in-typed-function-parameters.md`
 
 ### coAndContraVariantInferences6.ts
 
 - Diagnostic: `UnsupportedSyntax`
 - Message: `unsupported expression: Some(SpannedToken { kind: Greater, span: Span { start: 190, end: 191 } }) at 192..193`
 - Source: `interface FunctionComponent<P = {}> { (props: P): ReactElement<any> | null; }`
-- Split result: `issues/done/5332-parse-interface-call-signatures.md`
+- Split result: `issues/open/5332-parse-interface-call-signatures.md`
 
 ### coAndContraVariantInferences7.ts
 
@@ -214,7 +214,7 @@ the `2.ts` generated bucket history.
 
 Commits:
 
-- Split to `issues/done/5332-parse-interface-call-signatures.md`; other current blockers superseded by existing implementation-ready issues.
+- Split to `issues/open/5332-parse-interface-call-signatures.md`; other current blockers superseded by existing implementation-ready issues.
 
 Validation result:
 

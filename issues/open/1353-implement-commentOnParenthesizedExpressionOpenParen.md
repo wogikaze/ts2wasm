@@ -18,7 +18,7 @@ updated: 2026-05-06
 ## Summary
 
 Closed after splitting the current method-call/lowering blocker into
-`issues/done/5279-report-function-typed-local-call-definite-assignment.md`.
+`issues/open/5279-report-function-typed-local-call-definite-assignment.md`.
 
 ## Problem
 
@@ -53,7 +53,7 @@ unsupported_features=unknown-unsupported:1
 ## Desired final state
 
 This generated bucket is closed. Implementation should proceed through
-`issues/done/5279-report-function-typed-local-call-definite-assignment.md`.
+`issues/open/5279-report-function-typed-local-call-definite-assignment.md`.
 
 ## Scope
 
@@ -125,7 +125,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] `issues/done/5279-report-function-typed-local-call-definite-assignment.md`
+- [x] `issues/open/5279-report-function-typed-local-call-definite-assignment.md`
 
 ## Notes
 
@@ -137,13 +137,13 @@ Follow-up issues:
 
 - `issues/done/211-complete-this-receiver-binding-semantics.md` established
   issue-211 diagnostics for unsupported dynamic/function-valued local calls.
-- `issues/done/435-implement-method-call.md` is the broad method-call bucket,
+- `issues/open/435-implement-method-call.md` is the broad method-call bucket,
   not an executable slice.
-- `issues/done/5195-support-callable-interface-typed-local-calls.md` and
-  `issues/done/5196-support-callable-conditional-typed-parameter-calls.md`
+- `issues/open/5195-support-callable-interface-typed-local-calls.md` and
+  `issues/open/5196-support-callable-conditional-typed-parameter-calls.md`
   cover related callable typed locals, but not this `var f: () => any; f()`
   definite-assignment oracle.
-- `issues/done/5279-report-function-typed-local-call-definite-assignment.md`
+- `issues/open/5279-report-function-typed-local-call-definite-assignment.md`
   owns this exact current blocker.
 
 ## Smart triage

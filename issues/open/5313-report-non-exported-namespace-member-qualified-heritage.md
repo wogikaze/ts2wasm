@@ -126,15 +126,15 @@ Follow-up issues:
 
 ## Notes
 
-Split from stale generated bucket `issues/done/1195-implement-classExtendingQualifiedName.md`.
+Split from stale generated bucket `issues/open/1195-implement-classExtendingQualifiedName.md`.
 
 Related but not duplicates:
 
-- `issues/done/5225-w0-typed-wat-writer.md` handles a
+- `issues/open/5225-w0-typed-wat-writer.md` handles a
   current unsupported qualified heritage implementation blocker. This issue is
   the semantic diagnostic for namespace-private qualified heritage after the
   representative `classExtendingQualifiedName.ts` path now build-passes.
-- `issues/done/5287-bind-namespace-declarations-for-qualified-value-access.md`
+- `issues/open/5287-bind-namespace-declarations-for-qualified-value-access.md`
   handles value access such as `m1.fooExport()`, not class heritage diagnostics.
 
 ## Completion Evidence

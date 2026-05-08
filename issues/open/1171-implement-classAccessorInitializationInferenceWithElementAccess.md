@@ -19,7 +19,7 @@ status: done
 
 ## Summary
 
-Closed as superseded by `issues/done/5232-w0-fixture-ize-runtimelinkplan-linker-structure-tests.md`.
+Closed as superseded by `issues/open/5232-w0-fixture-ize-runtimelinkplan-linker-structure-tests.md`.
 
 ## Problem
 
@@ -87,7 +87,7 @@ Out of scope:
 
 Expected:
 
-- `issues/done/5232-w0-fixture-ize-runtimelinkplan-linker-structure-tests.md`
+- `issues/open/5232-w0-fixture-ize-runtimelinkplan-linker-structure-tests.md`
 
 Do not touch:
 

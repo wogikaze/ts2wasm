@@ -117,8 +117,8 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/148-implement-ambientExportDefaultErrors.md` - Implement Ambientexportdefaulterrors (same reference path, same group key, title overlap)
-- `issues/done/523-implement-ambientExportDefaultErrors.md` - Implement Ambientexportdefaulterrors (same reference path, same feature label, same group key, title overlap)
+- `issues/open/148-implement-ambientExportDefaultErrors.md` - Implement Ambientexportdefaulterrors (same reference path, same group key, title overlap)
+- `issues/open/523-implement-ambientExportDefaultErrors.md` - Implement Ambientexportdefaulterrors (same reference path, same feature label, same group key, title overlap)
 
 ## Smart triage
 
@@ -725,7 +725,7 @@ error: [UnsupportedModule] issue-055: unsupported static export; module resoluti
 
 Closed as a stale generated bucket after fresh 2026-05-08 triage confirmed
 the current blocker is already owned by
-`issues/done/5231-w0-typed-wat-writer-expr-emit-migration.md`.
+`issues/open/5231-parse-export-as-namespace-declarations.md`.
 
 Fresh coverage with the current binary:
 

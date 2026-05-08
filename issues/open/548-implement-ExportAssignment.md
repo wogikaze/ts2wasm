@@ -131,16 +131,16 @@ The child also includes the matching
 
 ## Duplicate detection
 
-- `issues/done/075-implement-ExportAssignment.md` - Implement Exportassignment (same reference path, same feature label, same group key, title overlap)
-- `issues/done/131-implement-allowImportClausesToMergeWithTypes.md` - Implement Allowimportclausestomergewithtypes (same feature label, same group key, title overlap)
-- `issues/done/136-implement-allowSyntheticDefaultImportsCanPaintCrossModuleDeclaration.md` - Implement Allowsyntheticdefaultimportscanpaintcrossmoduledeclaration (same feature label, same group key, title overlap)
-- `issues/done/432-implement-import-export.md` - Implement import/export module syntax (same feature label, same group key, title overlap)
-- `issues/done/462-implement-ExportAssignment.md` - Implement Exportassignment (same reference path, same feature label, same group key, title overlap)
-- `issues/done/508-implement-aliasWithInterfaceExportAssignmentUsedInVarInitializer.md` - Implement Aliaswithinterfaceexportassignmentusedinvarinitializer (same feature label, same group key, title overlap)
-- `issues/done/510-implement-allowImportClausesToMergeWithTypes.md` - Implement Allowimportclausestomergewithtypes (same feature label, same group key, title overlap)
-- `issues/done/515-implement-allowSyntheticDefaultImportsCanPaintCrossModuleDeclaration.md` - Implement Allowsyntheticdefaultimportscanpaintcrossmoduledeclaration (same feature label, same group key, title overlap)
-- `issues/done/523-implement-ambientExportDefaultErrors.md` - Implement Ambientexportdefaulterrors (same feature label, same group key, title overlap)
-- `issues/done/524-implement-ambientExternalModuleInAnotherExternalModule.md` - Implement Ambientexternalmoduleinanotherexternalmodule (same feature label, same group key, title overlap)
+- `issues/open/075-implement-ExportAssignment.md` - Implement Exportassignment (same reference path, same feature label, same group key, title overlap)
+- `issues/open/131-implement-allowImportClausesToMergeWithTypes.md` - Implement Allowimportclausestomergewithtypes (same feature label, same group key, title overlap)
+- `issues/open/136-implement-allowSyntheticDefaultImportsCanPaintCrossModuleDeclaration.md` - Implement Allowsyntheticdefaultimportscanpaintcrossmoduledeclaration (same feature label, same group key, title overlap)
+- `issues/open/432-implement-import-export.md` - Implement import/export module syntax (same feature label, same group key, title overlap)
+- `issues/open/462-implement-ExportAssignment.md` - Implement Exportassignment (same reference path, same feature label, same group key, title overlap)
+- `issues/open/508-implement-aliasWithInterfaceExportAssignmentUsedInVarInitializer.md` - Implement Aliaswithinterfaceexportassignmentusedinvarinitializer (same feature label, same group key, title overlap)
+- `issues/open/510-implement-allowImportClausesToMergeWithTypes.md` - Implement Allowimportclausestomergewithtypes (same feature label, same group key, title overlap)
+- `issues/open/515-implement-allowSyntheticDefaultImportsCanPaintCrossModuleDeclaration.md` - Implement Allowsyntheticdefaultimportscanpaintcrossmoduledeclaration (same feature label, same group key, title overlap)
+- `issues/open/523-implement-ambientExportDefaultErrors.md` - Implement Ambientexportdefaulterrors (same feature label, same group key, title overlap)
+- `issues/open/524-implement-ambientExternalModuleInAnotherExternalModule.md` - Implement Ambientexternalmoduleinanotherexternalmodule (same feature label, same group key, title overlap)
 
 ## Smart triage
 

@@ -110,7 +110,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] added: `issues/done/5383-classify-number-parameter-tofixed-calls.md`
+- [x] added: `issues/open/5383-classify-number-parameter-tofixed-calls.md`
 
 ## Notes
 
@@ -120,7 +120,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- No exact owner found. `issues/done/5202-parse-member-call-explicit-type-arguments.md`
+- No exact owner found. `issues/open/5202-parse-member-call-explicit-type-arguments.md`
   owns the older explicit member-call type argument parser boundary, but this
   representative now parses and reaches `x.toFixed()` lowering.
 
@@ -150,7 +150,7 @@ var r6 = _.forEach<number>(c2, (x) => { return x.toFixed() });
 ```
 
 The generated bucket was split to
-`issues/done/5383-classify-number-parameter-tofixed-calls.md`.
+`issues/open/5383-classify-number-parameter-tofixed-calls.md`.
 
 ## Completion evidence
 
@@ -158,7 +158,7 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- child issue: `issues/done/5383-classify-number-parameter-tofixed-calls.md`
+- child issue: `issues/open/5383-classify-number-parameter-tofixed-calls.md`
 
 Validation result:
 

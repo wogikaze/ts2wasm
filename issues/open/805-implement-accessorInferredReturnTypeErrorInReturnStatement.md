@@ -116,11 +116,11 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/100-implement-accessorInferredReturnTypeErrorInReturnStatement.md` - Implement Accessorinferredreturntypeerrorinreturnstatement (same reference path, same group key, title overlap)
-- `issues/done/484-implement-accessorInferredReturnTypeErrorInReturnStatement.md` - Implement Accessorinferredreturntypeerrorinreturnstatement (same reference path, same feature label, same group key, title overlap)
-- `issues/done/543-implement-APISample-import-export.md` - Implement Apisample Import Export (same feature label, same group key, title overlap)
-- `issues/done/549-implement-FunctionDeclaration-import-export.md` - Implement Functiondeclaration Import Export (same feature label, same group key, title overlap)
-- `issues/done/570-implement-accessorInferredReturnTypeErrorInReturnStatement.md` - Implement Accessorinferredreturntypeerrorinreturnstatement (same reference path, same feature label, same group key, title overlap)
+- `issues/open/100-implement-accessorInferredReturnTypeErrorInReturnStatement.md` - Implement Accessorinferredreturntypeerrorinreturnstatement (same reference path, same group key, title overlap)
+- `issues/open/484-implement-accessorInferredReturnTypeErrorInReturnStatement.md` - Implement Accessorinferredreturntypeerrorinreturnstatement (same reference path, same feature label, same group key, title overlap)
+- `issues/open/543-implement-APISample-import-export.md` - Implement Apisample Import Export (same feature label, same group key, title overlap)
+- `issues/open/549-implement-FunctionDeclaration-import-export.md` - Implement Functiondeclaration Import Export (same feature label, same group key, title overlap)
+- `issues/open/570-implement-accessorInferredReturnTypeErrorInReturnStatement.md` - Implement Accessorinferredreturntypeerrorinreturnstatement (same reference path, same feature label, same group key, title overlap)
 
 ## Smart triage
 
@@ -130,7 +130,7 @@ Not generated. Rerun with `--triage-limit 1` or higher.
 ## 重複整理メモ
 
 この issue はタイトルが重複しているため、内容がより充実している
-`issues/done/570-implement-accessorInferredReturnTypeErrorInReturnStatement.md` に統合されました。
+`issues/open/570-implement-accessorInferredReturnTypeErrorInReturnStatement.md` に統合されました。
 そちらを参照してください。
 ## Completion evidence
 
@@ -161,7 +161,7 @@ Classification: truly-done.
 Audit result: retained in `issues/done/`. The issue has repo-local completion evidence, is not marked `blocked` or `triage-needed`, and `python scripts/manager.py check issues` validates the resulting issue graph.
 
 Evidence files:
-- `issues/done/805-implement-accessorInferredReturnTypeErrorInReturnStatement.md`
+- `issues/open/805-implement-accessorInferredReturnTypeErrorInReturnStatement.md`
 - `issues/index.md` after regeneration
 
 Future-work tracking: no untracked future-work item was identified in this issue during this metadata/evidence audit.

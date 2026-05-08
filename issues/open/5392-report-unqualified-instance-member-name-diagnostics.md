@@ -118,7 +118,7 @@ Follow-up issues:
 
 Split from:
 
-- `issues/done/564-implement-accessStaticMemberFromInstanceMethod.md`
+- `issues/open/564-implement-accessStaticMemberFromInstanceMethod.md`
 
 Related but not duplicate:
 

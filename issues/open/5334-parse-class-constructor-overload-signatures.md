@@ -86,8 +86,8 @@ In scope:
 
 Out of scope:
 
-- Missing constructor parameter-list diagnostics, tracked by `issues/done/5323-report-missing-constructor-parameter-list.md`.
-- Top-level function/class overload merges, tracked by `issues/done/5199-report-function-overload-list-class-merge-diagnostics.md`.
+- Missing constructor parameter-list diagnostics, tracked by `issues/open/5323-report-missing-constructor-parameter-list.md`.
+- Top-level function/class overload merges, tracked by `issues/open/5199-report-function-overload-list-class-merge-diagnostics.md`.
 - Strict-mode `arguments` binding diagnostics after constructor overloads parse.
 
 ## Affected paths
@@ -153,12 +153,12 @@ Follow-up issues:
 
 ## Notes
 
-Split from `issues/done/1267-implement-collisionArgumentsClassConstructor.md`
+Split from `issues/open/1267-implement-collisionArgumentsClassConstructor.md`
 on 2026-05-07.
 
 2026-05-07 additional evidence:
 
-- `issues/done/1317-implement-collisionSuperAndPropertyNameAsConstuctorParameter.md` reaches the same `DuplicateFunction: duplicate constructor definition` boundary before `_super` parameter-property cases.
+- `issues/open/1317-implement-collisionSuperAndPropertyNameAsConstuctorParameter.md` reaches the same `DuplicateFunction: duplicate constructor definition` boundary before `_super` parameter-property cases.
 - `issues/open/1485-implement-constructorsWithSpecializedSignatures.md` reaches the same boundary before TypeScript's TS2394 specialized overload compatibility diagnostics.
 
 ## Completion evidence

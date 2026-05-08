@@ -117,15 +117,15 @@ Follow-up issues:
 ## Duplicate detection
 
 - `issues/open/064-implement-name-resolution.md` - Implement name resolution (triaged - superseded by test262 metadata issues) (same feature label, same group key, title overlap)
-- `issues/done/089-implement-acceptSymbolAsWeakType.md` - Implement Acceptsymbolasweaktype (same feature label, same group key, title overlap)
-- `issues/done/193-implement-arguments.md` - Implement Arguments (same feature label, same group key, title overlap)
-- `issues/done/195-implement-argumentsBindsToFunctionScopeArgumentList.md` - Implement Argumentsbindstofunctionscopeargumentlist (same feature label, same group key, title overlap)
-- `issues/done/196-implement-argumentsObjectCreatesRestForJs.md` - Implement Argumentsobjectcreatesrestforjs (same feature label, same group key, title overlap)
-- `issues/done/314-implement-string-builtin.md` - Implement string-builtin support (same feature label, same group key, title overlap)
-- `issues/done/421-implement-class.md` - Implement class syntax (same feature label, same group key, title overlap)
-- `issues/done/423-implement-date.md` - Implement Date object support (same feature label, same group key, title overlap)
-- `issues/done/427-implement-duplicate-local.md` - Implement duplicate-local support (same feature label, same group key, title overlap)
-- `issues/done/430-implement-function.md` - Implement function support (same feature label, same group key, title overlap)
+- `issues/open/089-implement-acceptSymbolAsWeakType.md` - Implement Acceptsymbolasweaktype (same feature label, same group key, title overlap)
+- `issues/open/193-implement-arguments.md` - Implement Arguments (same feature label, same group key, title overlap)
+- `issues/open/195-implement-argumentsBindsToFunctionScopeArgumentList.md` - Implement Argumentsbindstofunctionscopeargumentlist (same feature label, same group key, title overlap)
+- `issues/open/196-implement-argumentsObjectCreatesRestForJs.md` - Implement Argumentsobjectcreatesrestforjs (same feature label, same group key, title overlap)
+- `issues/open/314-implement-string-builtin.md` - Implement string-builtin support (same feature label, same group key, title overlap)
+- `issues/open/421-implement-class.md` - Implement class syntax (same feature label, same group key, title overlap)
+- `issues/open/423-implement-date.md` - Implement Date object support (same feature label, same group key, title overlap)
+- `issues/open/427-implement-duplicate-local.md` - Implement duplicate-local support (same feature label, same group key, title overlap)
+- `issues/open/430-implement-function.md` - Implement function support (same feature label, same group key, title overlap)
 
 ## Smart triage
 

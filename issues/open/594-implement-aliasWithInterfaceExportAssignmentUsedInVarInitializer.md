@@ -118,8 +118,8 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/129-implement-aliasWithInterfaceExportAssignmentUsedInVarInitializer.md` - Implement Aliaswithinterfaceexportassignmentusedinvarinitializer (same reference path, same group key, title overlap)
-- `issues/done/508-implement-aliasWithInterfaceExportAssignmentUsedInVarInitializer.md` - Implement Aliaswithinterfaceexportassignmentusedinvarinitializer (same reference path, same feature label, same group key, title overlap)
+- `issues/open/129-implement-aliasWithInterfaceExportAssignmentUsedInVarInitializer.md` - Implement Aliaswithinterfaceexportassignmentusedinvarinitializer (same reference path, same group key, title overlap)
+- `issues/open/508-implement-aliasWithInterfaceExportAssignmentUsedInVarInitializer.md` - Implement Aliaswithinterfaceexportassignmentusedinvarinitializer (same reference path, same feature label, same group key, title overlap)
 
 ## Smart triage
 
@@ -586,7 +586,7 @@ AST/resolved dump: same issue-055 static export boundary at 152..158
 
 Remaining risks:
 
-- Implementation remains open in `issues/done/5346-parse-commonjs-export-assignment-statements.md`.
+- Implementation remains open in `issues/open/5346-parse-commonjs-export-assignment-statements.md`.
 
 ## False-done audit
 

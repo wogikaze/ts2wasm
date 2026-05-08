@@ -115,7 +115,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/754-implement-asyncFunctionReturnType-runtime-subset.md` - Implement Asyncfunctionreturntype Runtime Subset (same feature label, title overlap)
+- `issues/open/754-implement-asyncFunctionReturnType-runtime-subset.md` - Implement Asyncfunctionreturntype Runtime Subset (same feature label, title overlap)
 
 ## Smart triage
 

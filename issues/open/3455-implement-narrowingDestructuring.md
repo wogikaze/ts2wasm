@@ -125,12 +125,12 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/251-implement-destructuring-binding-runtime-semantics.md` is
+- `issues/open/251-implement-destructuring-binding-runtime-semantics.md` is
   related but not a match: it implemented static object literal object rest and
   explicitly kept dynamic-source object rest out of scope.
-- `issues/done/5049-ir-destructuring.md` is related but not a match for the
+- `issues/open/5049-ir-destructuring.md` is related but not a match for the
   same reason; the fresh reference triage still reports issue-251.
-- `issues/done/3485-implement-nestedObjectRest.md` is related but split to the
+- `issues/open/3485-implement-nestedObjectRest.md` is related but split to the
   parser-only `issues/open/5462-parse-for-of-assignment-heads-with-nested-object-rest.md`,
   not the dynamic-source nested declaration object-rest owner for this path.
 - Computed/default binding issues 5297, 5299, 5373, and 5379 are no-match for

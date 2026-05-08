@@ -137,11 +137,11 @@ Follow-up issues:
 ## Notes
 
 Split from stale generated bucket
-`issues/done/1209-implement-classFieldSuperNotAccessible.md`.
+`issues/open/1209-implement-classFieldSuperNotAccessible.md`.
 
 Related but not duplicate:
 
-- `issues/done/5255-resolve-super-property-accesses.md` covers broad `super.x`
+- `issues/open/5255-resolve-super-property-accesses.md` covers broad `super.x`
   receiver resolution; this issue is the narrower TS2855 class-field diagnostic.
 
 ## Completion evidence

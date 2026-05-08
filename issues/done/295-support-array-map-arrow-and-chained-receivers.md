@@ -94,7 +94,7 @@ Expected:
 - `crates/cli/tests/m2_node_diff.rs`
 - `fixtures/core-semantics/`
 - `fixtures/atcoder/`
-- `issues/done/294-support-abc451-d-original-submission-without-source-rewrite.md`
+- `issues/open/294-support-abc451-d-original-submission-without-source-rewrite.md`
 
 Do not touch:
 
@@ -148,7 +148,7 @@ Current state:
 Follow-up issues:
 
 - none: false; issue 294 was updated with the next blocker.
-- [x] created/updated: `issues/done/294-support-abc451-d-original-submission-without-source-rewrite.md`
+- [x] created/updated: `issues/open/294-support-abc451-d-original-submission-without-source-rewrite.md`
 
 ## Notes
 

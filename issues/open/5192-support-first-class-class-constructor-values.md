@@ -191,7 +191,7 @@ diagnostic. This issue narrows the next semantic step: support constructor value
 that are actually needed for factory-call flows, without reopening broad dynamic
 class alias semantics.
 
-Additional generated bucket evidence: `issues/done/3514-implement-noCollisionThisExpressionAndClassInGlobal.md` is owned by this issue; it reaches `issue-5011` for `_this` used as an arrow return value.
+Additional generated bucket evidence: `issues/open/3514-implement-noCollisionThisExpressionAndClassInGlobal.md` is owned by this issue; it reaches `issue-5011` for `_this` used as an arrow return value.
 
 ## Completion evidence
 

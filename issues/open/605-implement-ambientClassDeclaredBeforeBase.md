@@ -117,8 +117,8 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/141-implement-ambientClassDeclaredBeforeBase.md` - Implement Ambientclassdeclaredbeforebase (same reference path, same group key, title overlap)
-- `issues/done/519-implement-ambientClassDeclaredBeforeBase.md` - Implement Ambientclassdeclaredbeforebase (same reference path, same feature label, same group key, title overlap)
+- `issues/open/141-implement-ambientClassDeclaredBeforeBase.md` - Implement Ambientclassdeclaredbeforebase (same reference path, same group key, title overlap)
+- `issues/open/519-implement-ambientClassDeclaredBeforeBase.md` - Implement Ambientclassdeclaredbeforebase (same reference path, same feature label, same group key, title overlap)
 
 ## Smart triage
 

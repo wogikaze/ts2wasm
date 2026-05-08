@@ -126,8 +126,8 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/163-implement-ambientRequireFunction.md` - Implement Ambientrequirefunction (same reference path, same group key, title overlap)
-- `issues/done/536-implement-ambientRequireFunction.md` - Implement Ambientrequirefunction (same reference path, same feature label, same group key, title overlap)
+- `issues/open/163-implement-ambientRequireFunction.md` - Implement Ambientrequirefunction (same reference path, same group key, title overlap)
+- `issues/open/536-implement-ambientRequireFunction.md` - Implement Ambientrequirefunction (same reference path, same feature label, same group key, title overlap)
 
 ## Smart triage
 

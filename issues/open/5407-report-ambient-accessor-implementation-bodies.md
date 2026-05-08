@@ -122,12 +122,12 @@ Follow-up issues: none.
 
 ## Notes
 
-Split from `issues/done/156-implement-ambientGetters.md` on 2026-05-08 after
+Split from `issues/open/156-implement-ambientGetters.md` on 2026-05-08 after
 the generated build blocker was resolved by ambient declaration erasure.
 
 Related issue:
 
-- `issues/done/5358-report-constructor-bodies-in-ambient-class-declarations.md` covers the same TS1183 boundary for constructor bodies.
+- `issues/open/5358-report-constructor-bodies-in-ambient-class-declarations.md` covers the same TS1183 boundary for constructor bodies.
 
 ## Completion evidence
 

@@ -140,7 +140,7 @@ Follow-up issues:
 
 ## Notes
 
-Split from `issues/done/3358-implement-modulePreserve.md`.
+Split from `issues/open/3358-implement-modulePreserve.md`.
 
 This issue intentionally targets static import declarations first. After it
 lands, `modulePreserve5.ts` may expose the dynamic import second-argument

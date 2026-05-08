@@ -111,7 +111,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] created: `issues/done/5232-w0-fixture-ize-runtimelinkplan-linker-structure-tests.md`
+- [x] created: `issues/open/5232-w0-fixture-ize-runtimelinkplan-linker-structure-tests.md`
 
 ## Notes
 
@@ -128,7 +128,7 @@ Fresh duplicate scan found related module-export history but no exact open
   mentions `export class Foo {}` in the original broad scope, but its close
   evidence only verifies `export const` and `export default`; later function
   work was split separately.
-- `issues/done/5144-support-entry-export-function-declarations.md` is the
+- `issues/open/5144-support-entry-export-function-declarations.md` is the
   sibling `export function` slice and explicitly excludes `export class`.
 - Existing `checkSuperCallBeforeThisAccessing*` issues cover different
   reference paths and are not exact duplicates of this entry-module export
@@ -201,7 +201,7 @@ TypeScript oracle: TS17009 and TS17011 this-before-super diagnostics
 
 Split result:
 
-- `issues/done/5232-w0-fixture-ize-runtimelinkplan-linker-structure-tests.md`
+- `issues/open/5232-w0-fixture-ize-runtimelinkplan-linker-structure-tests.md`
 
 ## Completion evidence
 

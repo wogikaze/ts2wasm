@@ -42,7 +42,7 @@ mise run reference-coverage -- tsc --path-filter reference/typescript/tests/case
 
 ## Desired final state
 
-This generated bucket is closed as superseded by `issues/done/232-resolve-local-relative-es-module-graph.md` for the current missing local module diagnostic. Do not implement directly from this bucket.
+This generated bucket is closed as superseded by `issues/open/232-resolve-local-relative-es-module-graph.md` for the current missing local module diagnostic. Do not implement directly from this bucket.
 
 ## Scope
 
@@ -188,7 +188,7 @@ The current failure is superseded by issue 232 missing local module diagnostics.
 
 Commits:
 
-- superseded by `issues/done/232-resolve-local-relative-es-module-graph.md`
+- superseded by `issues/open/232-resolve-local-relative-es-module-graph.md`
 
 Validation result:
 

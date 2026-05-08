@@ -154,17 +154,17 @@ Split from generated bucket `1070` on 2026-05-06. Bucket `1071` was later supers
 
 Additional superseded bucket:
 
-- `issues/done/1381-implement-commentsdoNotEmitComments.md` reaches the same
+- `issues/open/1381-implement-commentsdoNotEmitComments.md` reaches the same
   `const enum` misclassification family at
   `const enum color { red, green, blue }`. Fresh triage on 2026-05-07 shows a
   bogus visible binding named `enum`, then `var shade: color = color.green`
   fails with `UnresolvedName` for `color`. Comment emit behavior is not reached
   before this const-enum parser/binding boundary.
-- `issues/done/1445-implement-constEnumBadPropertyNames.md` reaches the same
+- `issues/open/1445-implement-constEnumBadPropertyNames.md` reaches the same
   `const enum` parser boundary at top level. Fresh triage on 2026-05-07 reports
   `const declarations require an initializer at 26..30` for `const enum E { A }`;
   TypeScript parses the enum and reports TS2339 for the later `E["B"]` access.
-- `issues/done/1446-implement-constEnumDeclarations.md` reaches the same
+- `issues/open/1446-implement-constEnumDeclarations.md` reaches the same
   parser boundary for ordinary top-level const enum declarations. Fresh triage
   on 2026-05-07 reports `const declarations require an initializer at 51..55`
   for `const enum E { ... }`; TypeScript accepts both `E` and `E2` const enum
@@ -174,68 +174,68 @@ Additional superseded bucket:
   reports `const declarations require an initializer at 62..66` for
   `const enum E { V = 100 }`; TypeScript parses the enum, `export = E`, and
   `import A = require('m1')` before reporting TS2307 for module resolution.
-- `issues/done/1451-implement-constEnumNamespaceReferenceCausesNoImport.md`
+- `issues/open/1451-implement-constEnumNamespaceReferenceCausesNoImport.md`
   includes `constEnumNamespaceReferenceCausesNoImport.ts`, which reaches the
   same parser boundary through `export const enum ConstFooEnum { ... }`. Fresh
   triage on 2026-05-07 reports `const declarations require an initializer at
   112..116` at `Ident("enum")`; TypeScript parses the declaration as an
   exported `EnumDeclaration` and only reports later TS2307 for `./foo`.
-- `issues/done/1452-implement-constEnumNoEmitReexport.md` reaches the same
+- `issues/open/1452-implement-constEnumNoEmitReexport.md` reaches the same
   parser boundary before no-emit re-export behavior. Fresh triage on
   2026-05-07 reports `const declarations require an initializer at 82..86` for
   `export const enum MyConstEnum { ... }`; TypeScript parses the declaration and
   then reports later duplicate identifier, export consistency, default export,
   and missing module diagnostics.
-- `issues/done/1453-implement-constEnumNoPreserveDeclarationReexport.md`
+- `issues/open/1453-implement-constEnumNoPreserveDeclarationReexport.md`
   reaches the same parser boundary before declaration re-export behavior. Fresh
   triage on 2026-05-07 reports `const declarations require an initializer at
   84..88` for `export const enum MyConstEnum { ... }`; TypeScript parses the
   declaration and then reports later duplicate identifier, export consistency,
   multiple default export, and missing module diagnostics.
-- `issues/done/1455-implement-constEnumPreserveEmitNamedExport.md` reaches the
+- `issues/open/1455-implement-constEnumPreserveEmitNamedExport.md` reaches the
   same parser boundary before preserve-emit named export behavior. Fresh triage
   on 2026-05-07 reports `const declarations require an initializer at 74..78`
   for the first `const enum A { ... }` in both
   `constEnumPreserveEmitNamedExport1.ts` and
   `constEnumPreserveEmitNamedExport2.ts`; TypeScript parses both declarations
   and then reports later duplicate identifier or missing module diagnostics.
-- `issues/done/1456-implement-constEnumPreserveEmitReexport.md` reaches the
+- `issues/open/1456-implement-constEnumPreserveEmitReexport.md` reaches the
   same parser boundary before preserve-emit re-export behavior. Fresh triage on
   2026-05-07 reports `const declarations require an initializer at 112..116`
   for `export const enum MyConstEnum { ... }`; TypeScript parses the
   declaration and then reports later export consistency, multiple default
   export, and missing module diagnostics.
-- `issues/done/1458-implement-constEnumToStringNoComments.md` reaches the same
+- `issues/open/1458-implement-constEnumToStringNoComments.md` reaches the same
   parser boundary before toString/no-comments behavior. Fresh triage on
   2026-05-07 reports `const declarations require an initializer at 52..56` for
   `const enum Foo { ... }`; TypeScript parses the enum, reports no diagnostics,
   and sees later `Foo.X.toString()` and `Foo["X"].toString()` statements that
   are not reached before this parser boundary.
-- `issues/done/1459-implement-constEnumToStringWithComments.md` reaches the
+- `issues/open/1459-implement-constEnumToStringWithComments.md` reaches the
   same parser boundary before toString/with-comments behavior. Fresh triage on
   2026-05-07 reports `const declarations require an initializer at 53..57` for
   `const enum Foo { ... }`; TypeScript parses the enum, reports no diagnostics,
   and sees the same later `Foo.X.toString()` and `Foo["X"].toString()`
   statements before any comment-preservation behavior is reached.
-- `issues/done/1460-implement-constEnums.md` reaches the same parser boundary
+- `issues/open/1460-implement-constEnums.md` reaches the same parser boundary
   before broad const-enum semantics. Fresh triage on 2026-05-07 reports
   `const declarations require an initializer at 26..30` for
   `const enum Enum1 { A0 = 100 }`; TypeScript parses later duplicate const
   enums, nested namespace const enums, import aliases, and switch tests before
   reporting a later TS2366 missing-return diagnostic.
-- `issues/done/1462-implement-constIndexedAccess.md` reaches the same parser
+- `issues/open/1462-implement-constIndexedAccess.md` reaches the same parser
   boundary before indexed access behavior. Fresh triage on 2026-05-07 reports
   `const declarations require an initializer at 31..35` for
   `const enum numbers { ... }`; TypeScript parses the enum, interface numeric
   properties, const-enum indexed accesses, and later ordinary enum indexed
   accesses before reporting TS2454 definite-assignment diagnostics for `test`.
-- `issues/done/1464-implement-constantEnumAssert.md` reaches the same parser
+- `issues/open/1464-implement-constantEnumAssert.md` reaches the same parser
   boundary before const assertion behavior. Fresh triage on 2026-05-07 reports
   `const declarations require an initializer at 145..149` for
   `const enum E4 { ... }`; TypeScript parses preceding ordinary enums, the
   const enum, and later enum member `as const` expressions before reporting a
   later TS1355 invalid const-assertion diagnostic.
-- `issues/done/3029-implement-isolatedModulesNonAmbientConstEnum.md` reaches
+- `issues/open/3029-implement-isolatedModulesNonAmbientConstEnum.md` reaches
   the same parser boundary before isolated-modules const-enum usage. Fresh
   triage on 2026-05-08 reports `const declarations require an initializer at
   95..99` for `const enum E { X = 100 }`; TypeScript parses the enum,

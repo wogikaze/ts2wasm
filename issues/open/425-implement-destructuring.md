@@ -126,16 +126,16 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/005-add-fine-grained-unsupported-feature-breakdown.md` - issues/done/005-add-fine-grained-unsupported-feature-breakdown.md (same feature label, same group key)
+- `issues/open/005-add-fine-grained-unsupported-feature-breakdown.md` - issues/done/005-add-fine-grained-unsupported-feature-breakdown.md (same feature label, same group key)
 - `issues/open/059-implement-parser-syntax-extensions.md` - Implement parser syntax extensions for TypeScript and advanced JS (same feature label, same group key, title overlap)
-- `issues/done/060-investigate-unknown-unsupported-cases.md` - Investigate and classify unknown-unsupported diagnostic cases (same feature label, same group key)
-- `issues/done/247-implement-destructuring-binding-pattern-parser.md` - Implement destructuring binding pattern parser support (same feature label, same group key, title overlap)
-- `issues/done/251-implement-destructuring-binding-runtime-semantics.md` - Implement destructuring binding runtime semantics (same feature label, same group key, title overlap)
-- `issues/done/252-implement-destructuring-assignment-pattern-parser.md` - Implement destructuring assignment pattern parser support (same feature label, same group key, title overlap)
+- `issues/open/060-investigate-unknown-unsupported-cases.md` - Investigate and classify unknown-unsupported diagnostic cases (same feature label, same group key)
+- `issues/open/247-implement-destructuring-binding-pattern-parser.md` - Implement destructuring binding pattern parser support (same feature label, same group key, title overlap)
+- `issues/open/251-implement-destructuring-binding-runtime-semantics.md` - Implement destructuring binding runtime semantics (same feature label, same group key, title overlap)
+- `issues/open/252-implement-destructuring-assignment-pattern-parser.md` - Implement destructuring assignment pattern parser support (same feature label, same group key, title overlap)
 - `issues/done/289-resolve-callcount-binding-in-class-destructuring.md` - Resolve callCount binding in class destructuring tests (same feature label, same group key, title overlap)
 - `issues/done/292-resolve-initcount-binding-in-class-destructuring.md` - Resolve initCount binding in class destructuring defaults (same feature label, same group key, title overlap)
-- `issues/done/301-implement-mutable-class-method-outer-environment-cells.md` - Implement mutable class-method outer environment cells (same feature label, same group key, title overlap)
-- `issues/done/404-mutable-outer-local-callback-captures.md` - Support mutable outer local captures in callback functions (same feature label, same group key)
+- `issues/open/301-implement-mutable-class-method-outer-environment-cells.md` - Implement mutable class-method outer environment cells (same feature label, same group key, title overlap)
+- `issues/open/404-mutable-outer-local-callback-captures.md` - Support mutable outer local captures in callback functions (same feature label, same group key)
 
 ## Smart triage
 

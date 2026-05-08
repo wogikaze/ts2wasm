@@ -142,11 +142,11 @@ Follow-up issues:
 
 ## Notes
 
-Split from `issues/done/3358-implement-modulePreserve.md`.
+Split from `issues/open/3358-implement-modulePreserve.md`.
 
 Related but not duplicates:
 
-- `issues/open/5230-tokenize-jsx-elements-before-regexp-fallback.md` covers a
+- `issues/open/5230-w0-lowered-ir-span-requirement.md` covers a
   lexer fallback where JSX closing tags become unterminated RegExp literals.
   This issue starts after tokenization succeeds and targets the parser's
   parenthesized self-closing JSX expression boundary.

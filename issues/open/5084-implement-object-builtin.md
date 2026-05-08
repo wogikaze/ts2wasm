@@ -126,9 +126,9 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/342-implement-object-builtin-coverage.md` - Implement Object builtin method coverage (1,721 test262 cases) (same feature label, same group key, title overlap)
-- `issues/done/440-implement-object-builtin.md` - Implement object-builtin support (same reference path, same feature label, same group key, title overlap)
-- `issues/done/060-investigate-unknown-unsupported-cases.md` - Investigate and classify unknown-unsupported diagnostic cases (same feature label, same group key)
+- `issues/open/342-implement-object-builtin-coverage.md` - Implement Object builtin method coverage (1,721 test262 cases) (same feature label, same group key, title overlap)
+- `issues/open/440-implement-object-builtin.md` - Implement object-builtin support (same reference path, same feature label, same group key, title overlap)
+- `issues/open/060-investigate-unknown-unsupported-cases.md` - Investigate and classify unknown-unsupported diagnostic cases (same feature label, same group key)
 
 ## Smart triage
 
@@ -151,7 +151,7 @@ AttributeError: 'NoneType' object has no attribute 'parse_test262_metadata'
 ## 重複整理メモ
 
 この issue はタイトルが重複しているため、内容がより充実している
-`issues/done/440-implement-object-builtin.md` に統合されました。
+`issues/open/440-implement-object-builtin.md` に統合されました。
 そちらを参照してください。
 ## Completion evidence
 
@@ -182,7 +182,7 @@ Classification: truly-done.
 Audit result: retained in `issues/done/`. The issue has repo-local completion evidence, is not marked `blocked` or `triage-needed`, and `python scripts/manager.py check issues` validates the resulting issue graph.
 
 Evidence files:
-- `issues/done/5084-implement-object-builtin.md`
+- `issues/open/5084-implement-object-builtin.md`
 - `issues/index.md` after regeneration
 
 Future-work tracking: no untracked future-work item was identified in this issue during this metadata/evidence audit.

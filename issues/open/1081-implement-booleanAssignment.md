@@ -108,7 +108,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] folded into `issues/done/5161-model-ambient-value-declarations-for-name-resolution.md`
+- [x] folded into `issues/open/5161-model-ambient-value-declarations-for-name-resolution.md`
 
 ## Notes
 
@@ -118,7 +118,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/5161-model-ambient-value-declarations-for-name-resolution.md` is an exact implementation-ready owner for this ambient `declare var` name-resolution gap.
+- `issues/open/5161-model-ambient-value-declarations-for-name-resolution.md` is an exact implementation-ready owner for this ambient `declare var` name-resolution gap.
 - Generic name-resolution buckets are not matches; they share only the broad feature label.
 
 ## Smart triage
@@ -131,7 +131,7 @@ Generated on 2026-05-06.
 - Source context: `declare var b2:boolean; b = b2;`
 - Compiler evidence: tokens and AST succeed; the ambient variable declaration is erased from AST, visible-symbol extraction lists `b2`, and name resolution rejects `b2` in the assignment expression.
 - TypeScript oracle: no unresolved-name diagnostic for `b2`; instead TypeScript reports earlier assignment type errors.
-- Superseded by child: `issues/done/5161-model-ambient-value-declarations-for-name-resolution.md`
+- Superseded by child: `issues/open/5161-model-ambient-value-declarations-for-name-resolution.md`
 
 ## Completion evidence
 

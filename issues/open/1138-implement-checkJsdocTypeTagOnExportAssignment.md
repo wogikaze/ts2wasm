@@ -111,7 +111,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] created: `issues/done/5229-w0-user-runtime-string-origin.md`
+- [x] created: `issues/open/5229-resolve-imports-between-filename-sections.md`
 
 ## Notes
 
@@ -137,7 +137,7 @@ No-match rationale:
 - `issues/done/5186-parse-export-assignment-for-diagnostics.md` covers
   `export = expr` syntax, while this representative already builds AST for
   `export default` and `import b from "./b"`.
-- `issues/done/5127-implement-export-default-multifile-lowering.md` fixed
+- `issues/open/5127-implement-export-default-multifile-lowering.md` fixed
   duplicate default-export locals in multi-section files, but this
   representative fails earlier in module graph resolution for a sibling
   virtual section.
@@ -200,7 +200,7 @@ TypeScript oracle: TS2307 for ./b in this reference window
 
 Split result:
 
-- `issues/done/5229-w0-user-runtime-string-origin.md`
+- `issues/open/5229-resolve-imports-between-filename-sections.md`
 
 ## Completion evidence
 

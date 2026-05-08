@@ -111,7 +111,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] created: `issues/done/5237-w1-standalone-wasi-execution-validation-test-suite.md`
+- [x] created: `issues/open/5237-w1-standalone-wasi-execution-validation-test-suite.md`
 
 ## Notes
 
@@ -125,17 +125,17 @@ Fresh duplicate scan found related object-literal computed-key issues, but no
 exact implementation-ready issue for a `this`-rooted property access in a
 computed object literal key:
 
-- `issues/done/5228-w0-wasm-binary-backend-mvp.md` covers
+- `issues/open/5228-w0-wasm-binary-backend-mvp.md` covers
   `[identifier]`.
-- `issues/done/5209-support-class-instance-method-receiver-calls.md`
+- `issues/open/5209-support-class-instance-method-receiver-calls.md`
   covers binary key expressions such as `[name + ".a"]`.
-- `issues/done/5223-report-iterator-type-only-value-use-diagnostics.md` covers
+- `issues/open/5223-report-iterator-type-only-value-use-diagnostics.md` covers
   computed properties after object spread.
 - Broad object-literal buckets are not exact implementation-ready matches.
 
 Split result:
 
-- `issues/done/5237-w1-standalone-wasi-execution-validation-test-suite.md`
+- `issues/open/5237-w1-standalone-wasi-execution-validation-test-suite.md`
 
 ## Smart triage
 
@@ -194,7 +194,7 @@ TypeScript oracle: TS2339 Property 'a' does not exist on type '{ doit(): { [x: n
 
 Split result:
 
-- `issues/done/5237-w1-standalone-wasi-execution-validation-test-suite.md`
+- `issues/open/5237-w1-standalone-wasi-execution-validation-test-suite.md`
 
 ## Completion evidence
 

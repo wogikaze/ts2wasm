@@ -110,7 +110,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] folded into `issues/done/5226-w0-ast-node-span-requirement.md`
+- [x] folded into `issues/open/5226-w0-ast-node-span-requirement.md`
 
 ## Notes
 
@@ -126,7 +126,7 @@ Follow-up issues:
 
 Fresh triage on 2026-05-07 shows this generated bucket currently stops at the
 ambient `declare function` overload boundary already tracked by
-`issues/done/5226-w0-ast-node-span-requirement.md`.
+`issues/open/5226-w0-ast-node-span-requirement.md`.
 
 Current diagnostic:
 

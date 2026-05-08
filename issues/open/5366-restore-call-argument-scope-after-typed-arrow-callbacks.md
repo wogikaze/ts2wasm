@@ -132,9 +132,9 @@ Follow-up issues:
 
 ## Notes
 
-Split from generated bucket `issues/done/1486-implement-contextSensitiveReturnTypeInference.md` on 2026-05-07.
+Split from generated bucket `issues/open/1486-implement-contextSensitiveReturnTypeInference.md` on 2026-05-07.
 
-Related but distinct issue: `issues/done/5348-resolve-const-declarations-before-use.md` owns use-before-declaration and same-for-header const predeclaration. This issue's `DEPS` binding is declared before the call and visible in triage.
+Related but distinct issue: `issues/open/5348-resolve-const-declarations-before-use.md` owns use-before-declaration and same-for-header const predeclaration. This issue's `DEPS` binding is declared before the call and visible in triage.
 
 ## Completion evidence
 

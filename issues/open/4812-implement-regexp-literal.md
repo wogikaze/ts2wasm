@@ -130,9 +130,9 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/066-implement-regexp-literal.md` - Implement RegExp literal support (same feature label, same group key, title overlap)
-- `issues/done/1139-implement-checkJsxNotSetError.md` - Implement Checkjsxnotseterror (same feature label, same group key, title overlap)
-- `issues/done/201-implement-unknown-unsupported.md` - Investigate and classify unknown-unsupported cases (same reference path)
+- `issues/open/066-implement-regexp-literal.md` - Implement RegExp literal support (same feature label, same group key, title overlap)
+- `issues/open/1139-implement-checkJsxNotSetError.md` - Implement Checkjsxnotseterror (same feature label, same group key, title overlap)
+- `issues/open/201-implement-unknown-unsupported.md` - Investigate and classify unknown-unsupported cases (same reference path)
 - `issues/open/2230-implement-excessiveStackDepthFlatArray.md` - Implement Excessivestackdepthflatarray (same feature label, same group key, title overlap)
 - `issues/open/2872-implement-initializedDestructuringAssignmentTypes.md` - Implement Initializeddestructuringassignmenttypes (same feature label, same group key, title overlap)
 - `issues/open/3097-implement-jsFileCompilationTypeArgumentSyntaxOfCall.md` - Implement Jsfilecompilationtypeargumentsyntaxofcall (same feature label, same group key, title overlap)
@@ -173,7 +173,7 @@ Remaining risks:
 
 ## Close note
 
-Closed as duplicate of `issues/done/066-implement-regexp-literal.md`. All work tracked under issue 066.
+Closed as duplicate of `issues/open/066-implement-regexp-literal.md`. All work tracked under issue 066.
 
 superseded-by: 066
 

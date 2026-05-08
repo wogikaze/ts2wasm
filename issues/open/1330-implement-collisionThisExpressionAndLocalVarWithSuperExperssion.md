@@ -20,7 +20,7 @@ status: done
 ## Summary
 
 Closed after splitting the current blocker to
-`issues/done/5341-resolve-lexical-super-property-captures-in-method-arrows.md`.
+`issues/open/5341-resolve-lexical-super-property-captures-in-method-arrows.md`.
 
 ## Problem
 
@@ -122,7 +122,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] created: `issues/done/5341-resolve-lexical-super-property-captures-in-method-arrows.md`
+- [x] created: `issues/open/5341-resolve-lexical-super-property-captures-in-method-arrows.md`
 
 ## Notes
 
@@ -132,8 +132,8 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/5255-resolve-super-property-accesses.md` is related but covers bare `super` property receivers resolving as normal identifiers, not the unresolved synthetic `this` produced by lexical `super.foo()` in arrows.
-- `issues/done/5204-resolve-lexical-super-property-captures-in-super-call-arguments.md` is related but scoped to arrow arguments passed to `super(...)`, not arrows inside ordinary derived class methods.
+- `issues/open/5255-resolve-super-property-accesses.md` is related but covers bare `super` property receivers resolving as normal identifiers, not the unresolved synthetic `this` produced by lexical `super.foo()` in arrows.
+- `issues/open/5204-resolve-lexical-super-property-captures-in-super-call-arguments.md` is related but scoped to arrow arguments passed to `super(...)`, not arrows inside ordinary derived class methods.
 - No exact existing implementation-ready issue owned this method-arrow lexical `super.foo()` blocker, so this bucket was split to issue 5341.
 
 ## Smart triage
@@ -168,7 +168,7 @@ Child issue: 5341
 
 Commits:
 
-- Split to `issues/done/5341-resolve-lexical-super-property-captures-in-method-arrows.md`; see local commit for this issue cleanup.
+- Split to `issues/open/5341-resolve-lexical-super-property-captures-in-method-arrows.md`; see local commit for this issue cleanup.
 
 Validation result:
 

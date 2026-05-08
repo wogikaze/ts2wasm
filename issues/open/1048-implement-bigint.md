@@ -108,7 +108,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] created: `issues/done/5165-support-typed-array-subarray-builtins.md`
+- [x] created: `issues/open/5165-support-typed-array-subarray-builtins.md`
 
 ## Notes
 
@@ -120,14 +120,14 @@ Follow-up issues:
 
 - `issues/done/369-implement-full-multilimb-bigint-arithmetic.md` - Implement full multi-limb BigInt arithmetic (same group key, title overlap)
 - `issues/done/370-implement-bigint-arithmetic-exception-parity.md` - Implement BigInt arithmetic RangeError and TypeError parity (same group key, title overlap)
-- `issues/done/244-implement-bigint-literal-parser-classification.md` - Implement BigInt literal parser classification (same group key, title overlap)
-- `issues/done/259-implement-bigint-literal-runtime-values.md` - Implement BigInt literal runtime values (same group key, title overlap)
-- `issues/done/260-implement-bigint-arithmetic-operators.md` - Implement BigInt arithmetic operators (same group key, title overlap)
-- `issues/done/261-implement-bigint-equality-comparison-coercion.md` - Implement BigInt equality comparison and coercion boundaries (same group key, title overlap)
-- `issues/done/262-implement-bigint-builtins-and-string-conversion.md` - Implement BigInt builtins and string conversion (same group key, title overlap)
+- `issues/open/244-implement-bigint-literal-parser-classification.md` - Implement BigInt literal parser classification (same group key, title overlap)
+- `issues/open/259-implement-bigint-literal-runtime-values.md` - Implement BigInt literal runtime values (same group key, title overlap)
+- `issues/open/260-implement-bigint-arithmetic-operators.md` - Implement BigInt arithmetic operators (same group key, title overlap)
+- `issues/open/261-implement-bigint-equality-comparison-coercion.md` - Implement BigInt equality comparison and coercion boundaries (same group key, title overlap)
+- `issues/open/262-implement-bigint-builtins-and-string-conversion.md` - Implement BigInt builtins and string conversion (same group key, title overlap)
 - `issues/done/263-implement-bigint-dynamic-mul-div-rem-signed-i64-slice.md` - Implement BigInt dynamic mul/div/rem signed-i64 runtime slice (same group key, title overlap)
 - `issues/done/280-implement-dynamic-bigint-builtin-inputs.md` - Implement dynamic BigInt builtin inputs (same group key, title overlap)
-- `issues/done/281-implement-bigint-number-edge-equality-comparison.md` - Implement BigInt/Number edge equality and comparison (same group key, title overlap)
+- `issues/open/281-implement-bigint-number-edge-equality-comparison.md` - Implement BigInt/Number edge equality and comparison (same group key, title overlap)
 
 ## Smart triage
 
@@ -140,7 +140,7 @@ Generated on 2026-05-06.
 - Visible symbol: `arr: BigInt64Array<ArrayBuffer>`
 - Compiler stage: tokens and AST succeed; `resolve_builtins` / `lower_program` fails during method-call lowering.
 - TypeScript AST path: `FunctionDeclaration -> Block -> ExpressionStatement -> CallExpression -> PropertyAccessExpression`
-- Split child: `issues/done/5165-support-typed-array-subarray-builtins.md`
+- Split child: `issues/open/5165-support-typed-array-subarray-builtins.md`
 
 ## Completion evidence
 

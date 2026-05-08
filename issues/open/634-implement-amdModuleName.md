@@ -117,7 +117,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/176-implement-amdModuleName.md` - Implement Amdmodulename (same reference path, same group key, title overlap)
+- `issues/open/176-implement-amdModuleName.md` - Implement Amdmodulename (same reference path, same group key, title overlap)
 
 ## Smart triage
 

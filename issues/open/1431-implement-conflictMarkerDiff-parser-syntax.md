@@ -115,7 +115,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] created: `issues/done/5305-report-merge-conflict-marker-diagnostics.md`
+- [x] created: `issues/open/5305-report-merge-conflict-marker-diagnostics.md`
 
 ## Notes
 
@@ -129,7 +129,7 @@ Follow-up issues:
 - Generic parser-syntax buckets are no-match because this bucket needs a
   specific source diagnostic for conflict marker lines, not broad parser
   extension work.
-- Sibling generated bucket `issues/done/1432-implement-conflictMarkerDiff-unknown-unsupported.md`
+- Sibling generated bucket `issues/open/1432-implement-conflictMarkerDiff-unknown-unsupported.md`
   is also superseded by issue 5305.
 
 ## Smart triage

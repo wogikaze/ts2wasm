@@ -77,7 +77,7 @@ Out of scope:
 - Async generator expressions such as `async function* () {}`.
 - Type inference for `Generator<Yield, Return, Next>`.
 - Parameter initializer generator expressions; see
-  `issues/done/5213-generator-function-syntax-prerequisite-for-iterator-spread.md`.
+  `issues/open/5213-generator-function-syntax-prerequisite-for-iterator-spread.md`.
 
 ## Affected paths
 
@@ -138,11 +138,11 @@ Follow-up issues:
 ## Notes
 
 Split from generated bucket
-`issues/done/1537-implement-contextuallyTypeGeneratorReturnTypeFromUnion.md`.
+`issues/open/1537-implement-contextuallyTypeGeneratorReturnTypeFromUnion.md`.
 
 Related but distinct:
 
-- `issues/done/5213-generator-function-syntax-prerequisite-for-iterator-spread.md`
+- `issues/open/5213-generator-function-syntax-prerequisite-for-iterator-spread.md`
   owns `function*` expressions inside default parameter initializers.
 - `#1514` covered the
   `contextualTypeOnYield*.ts` fixed paths; this reference still reports the raw

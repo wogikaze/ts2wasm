@@ -22,7 +22,7 @@ status: done
 Closed as superseded. Fresh triage shows
 `reference/typescript/tests/cases/compiler/collisionExportsRequireAndClass.ts`
 currently stops at the entry-module `export class` issue-5005 boundary already
-owned by `issues/done/5232-w0-fixture-ize-runtimelinkplan-linker-structure-tests.md`.
+owned by `issues/open/5232-w0-fixture-ize-runtimelinkplan-linker-structure-tests.md`.
 
 ## Problem
 
@@ -52,7 +52,7 @@ python scripts/manager.py reference-coverage tsc --path-filter reference/typescr
 ## Desired final state
 
 This generated bucket is closed as superseded by
-`issues/done/5232-w0-fixture-ize-runtimelinkplan-linker-structure-tests.md`. Do not implement
+`issues/open/5232-w0-fixture-ize-runtimelinkplan-linker-structure-tests.md`. Do not implement
 directly from this bucket.
 
 ## Scope
@@ -136,7 +136,7 @@ Follow-up issues:
 ## Duplicate detection
 
 Current first blocker is covered by
-`issues/done/5232-w0-fixture-ize-runtimelinkplan-linker-structure-tests.md`.
+`issues/open/5232-w0-fixture-ize-runtimelinkplan-linker-structure-tests.md`.
 
 Resolution:
 

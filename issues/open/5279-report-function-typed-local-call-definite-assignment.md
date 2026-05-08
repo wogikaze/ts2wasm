@@ -85,8 +85,8 @@ In scope:
 Out of scope:
 
 - Runtime support for arbitrary function-valued local calls.
-- Callable interface locals, tracked by `issues/done/5195-support-callable-interface-typed-local-calls.md`.
-- Conditional callable types, tracked by `issues/done/5196-support-callable-conditional-typed-parameter-calls.md`.
+- Callable interface locals, tracked by `issues/open/5195-support-callable-interface-typed-local-calls.md`.
+- Conditional callable types, tracked by `issues/open/5196-support-callable-conditional-typed-parameter-calls.md`.
 - Method receiver support for `obj.method()`.
 
 ## Affected paths
@@ -128,12 +128,12 @@ python scripts/manager.py reference-coverage tsc --path-filter reference/typescr
 
 ## Notes
 
-Split from `issues/done/1353-implement-commentOnParenthesizedExpressionOpenParen.md`.
-Related broad method-call bucket: `issues/done/435-implement-method-call.md`.
+Split from `issues/open/1353-implement-commentOnParenthesizedExpressionOpenParen.md`.
+Related broad method-call bucket: `issues/open/435-implement-method-call.md`.
 
 Additional superseded bucket:
 
-- `issues/done/1382-implement-commentsemitComments.md` reaches the same
+- `issues/open/1382-implement-commentsemitComments.md` reaches the same
   function-typed local call definite-assignment boundary at
   `var fooVar: () => void; fooVar();`. Fresh triage on 2026-05-07 reports
   unspanned `UnresolvedFunction` for `fooVar`, while TypeScript reports TS2454

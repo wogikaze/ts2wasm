@@ -79,9 +79,9 @@ Expected:
 
 - `crates/backend-wasm/src/`
 - `scripts/run/abc451-runtime-costs.py` only if attribution categories need a compatible update
-- `issues/done/365-reduce-abc451-array-growth-allocation-copy-pressure.md`
-- `issues/done/363-reduce-abc451-allocation-and-sweep-volume-after-bulk-copy-narrowing.md`
-- `issues/done/357-fix-abc451-depth8-iwasm-timeout.md` only if closure is verified
+- `issues/open/365-reduce-abc451-array-growth-allocation-copy-pressure.md`
+- `issues/open/363-reduce-abc451-allocation-and-sweep-volume-after-bulk-copy-narrowing.md`
+- `issues/open/357-fix-abc451-depth8-iwasm-timeout.md` only if closure is verified
 - `issues/index.md`
 
 Do not touch:
@@ -139,7 +139,7 @@ Current state:
 Follow-up issues:
 
 - [x] split design child: `issues/done/5131-design-abc451-non-top-array-growth-strategy.md`
-- [x] split attribution child: `issues/done/5132-add-abc451-non-top-array-separation-attribution.md`
+- [x] split attribution child: `issues/open/5132-add-abc451-non-top-array-separation-attribution.md`
 
 ## Notes
 

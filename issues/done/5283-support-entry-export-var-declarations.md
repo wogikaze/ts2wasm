@@ -138,23 +138,23 @@ Follow-up issues:
 
 ## Notes
 
-Split from `issues/done/1360-implement-commentsBeforeVariableStatement.md`.
+Split from `issues/open/1360-implement-commentsBeforeVariableStatement.md`.
 
 Related but not duplicates:
 
 - `issues/done/5175-support-export-let-destructuring-declarations.md` covers
   `export let` destructuring and explicitly excludes general `export var`.
-- `issues/done/5144-support-entry-export-function-declarations.md`,
-  `issues/done/5232-w0-fixture-ize-runtimelinkplan-linker-structure-tests.md`, and
+- `issues/open/5144-support-entry-export-function-declarations.md`,
+  `issues/open/5232-w0-fixture-ize-runtimelinkplan-linker-structure-tests.md`, and
   `issues/done/5277-parse-export-enum-declarations-to-enum-boundary.md` cover
   sibling export forms.
-- `issues/done/432-implement-import-export.md` is the broad generated
+- `issues/open/432-implement-import-export.md` is the broad generated
   import/export bucket and is too wide to implement directly.
-- `issues/done/3560-implement-noImplicitUseStrict.md` reaches the same
+- `issues/open/3560-implement-noImplicitUseStrict.md` reaches the same
   `export var x = 0;` issue-055 boundary across commonjs, amd, es6, system,
   and umd module-target variants.
 - Also owns the non-initialized export-var subset of
-  `issues/done/3590-implement-nodeResolution.md`.
+  `issues/open/3590-implement-nodeResolution.md`.
 
 ## Completion evidence
 

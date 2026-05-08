@@ -35,8 +35,8 @@ Out of scope:
 
 Expected:
 
-- `issues/done/062-implement-function.md`
-- `issues/done/063-implement-function-resolution.md`
+- `issues/open/062-implement-function.md`
+- `issues/open/063-implement-function-resolution.md`
 - `issues/open/`
 - `issues/done/`
 - `issues/index.md`

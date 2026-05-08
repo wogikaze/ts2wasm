@@ -18,7 +18,7 @@ updated: 2026-05-06
 ## Summary
 
 Closed after splitting the current blocker to
-`issues/done/5268-support-derived-constructor-parameter-properties-after-super.md`.
+`issues/open/5268-support-derived-constructor-parameter-properties-after-super.md`.
 Fresh triage shows the current failure is the issue-226 derived constructor
 parameter-property boundary.
 
@@ -117,7 +117,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] created: `issues/done/5268-support-derived-constructor-parameter-properties-after-super.md`
+- [x] created: `issues/open/5268-support-derived-constructor-parameter-properties-after-super.md`
 
 ## Notes
 
@@ -137,7 +137,7 @@ class L extends G {
 
 ## Duplicate detection
 
-- `issues/done/226-implement-parameter-properties.md` covers the basic
+- `issues/open/226-implement-parameter-properties.md` covers the basic
   parameter-property slice and records remaining unsupported forms as precise
   diagnostics.
 - No existing open issue owned the derived constructor + leading `super()`
@@ -175,7 +175,7 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- Split to `issues/done/5268-support-derived-constructor-parameter-properties-after-super.md`; see local commit for this issue cleanup.
+- Split to `issues/open/5268-support-derived-constructor-parameter-properties-after-super.md`; see local commit for this issue cleanup.
 
 Validation result:
 

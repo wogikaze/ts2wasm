@@ -162,7 +162,7 @@ Follow-up issues:
 
 ## Notes
 
-Split from `issues/done/1261-implement-clodulesDerivedClasses.md` on
+Split from `issues/open/1261-implement-clodulesDerivedClasses.md` on
 2026-05-07.
 
 Related but not duplicates:
@@ -171,7 +171,7 @@ Related but not duplicates:
   non-constructor local values in heritage clauses.
 - `issues/open/5315-report-class-extends-interface-diagnostics.md` covers
   class-extends-interface diagnostics.
-- `issues/done/5225-w0-typed-wat-writer.md` covers qualified
+- `issues/open/5225-w0-typed-wat-writer.md` covers qualified
   heritage parsing/lowering, not namespace-augmented static-side compatibility.
 
 ## Completion evidence

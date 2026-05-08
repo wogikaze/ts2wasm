@@ -89,7 +89,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] Math.random capability/randomness policy tracked by `issues/done/215-define-math-random-capability-policy.md`
+- [x] Math.random capability/randomness policy tracked by `issues/open/215-define-math-random-capability-policy.md`
 
 ## Notes
 
@@ -112,7 +112,7 @@ date: 2026-04-26
 
 Remaining risks:
 
-- Math.random() capability/randomness policy is tracked by `issues/done/215-define-math-random-capability-policy.md`.
+- Math.random() capability/randomness policy is tracked by `issues/open/215-define-math-random-capability-policy.md`.
 
 ## False-done audit
 

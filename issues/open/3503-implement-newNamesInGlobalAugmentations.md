@@ -128,8 +128,8 @@ Follow-up issues:
 
 - `issues/done/400-implement-ambient-declaration-erasure-boundary.md` owns the
   ambient global declaration rejection boundary.
-- `issues/done/3318-implement-moduleAugmentationGlobal-import-export.md` and
-  `issues/done/3319-implement-moduleAugmentationGlobal-parser-syntax.md` record
+- `issues/open/3318-implement-moduleAugmentationGlobal-import-export.md` and
+  `issues/open/3319-implement-moduleAugmentationGlobal-parser-syntax.md` record
   the same closure rule for neighboring `declare global { ... }` generated
   buckets.
 - `issues/open/5408-parse-bare-global-augmentation-blocks.md` is not an owner

@@ -126,15 +126,15 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/1073-implement-blockScopedFunctionDeclarationInStrictClass.md` - Implement Blockscopedfunctiondeclarationinstrictclass (same feature label, same group key, title overlap)
-- `issues/done/109-implement-addMoreCallSignaturesToBaseSignature.md` - Implement Addmorecallsignaturestobasesignature (same feature label, same group key, title overlap)
-- `issues/done/1095-implement-callOnClass.md` - Implement Callonclass (same feature label, same group key, title overlap; split to issue 5197)
-- `issues/done/132-implement-allowJsClassThisTypeCrash.md` - Implement Allowjsclassthistypecrash (same feature label, same group key, title overlap)
+- `issues/open/1073-implement-blockScopedFunctionDeclarationInStrictClass.md` - Implement Blockscopedfunctiondeclarationinstrictclass (same feature label, same group key, title overlap)
+- `issues/open/109-implement-addMoreCallSignaturesToBaseSignature.md` - Implement Addmorecallsignaturestobasesignature (same feature label, same group key, title overlap)
+- `issues/open/1095-implement-callOnClass.md` - Implement Callonclass (same feature label, same group key, title overlap; split to issue 5197)
+- `issues/open/132-implement-allowJsClassThisTypeCrash.md` - Implement Allowjsclassthistypecrash (same feature label, same group key, title overlap)
 - `issues/open/2507-implement-genericCapturingFunctionNarrowing.md` - Implement Genericcapturingfunctionnarrowing (same feature label, same group key, title overlap)
-- `issues/done/429-implement-eval.md` - Implement eval support (same feature label, same group key, title overlap)
-- `issues/done/430-implement-function.md` - Implement function support (same feature label, same group key, title overlap)
-- `issues/done/431-implement-function-resolution.md` - Implement function resolution (same feature label, same group key, title overlap)
-- `issues/done/433-implement-legacy-global-builtin.md` - Implement legacy-global-builtin support (same reference path, title overlap)
+- `issues/open/429-implement-eval.md` - Implement eval support (same feature label, same group key, title overlap)
+- `issues/open/430-implement-function.md` - Implement function support (same feature label, same group key, title overlap)
+- `issues/open/431-implement-function-resolution.md` - Implement function resolution (same feature label, same group key, title overlap)
+- `issues/open/433-implement-legacy-global-builtin.md` - Implement legacy-global-builtin support (same reference path, title overlap)
 - `issues/open/4442-implement-thisReferencedInFunctionInsideArrowFunction.md` - Implement Thisreferencedinfunctioninsidearrowfunction (same feature label, same group key, title overlap)
 
 ## Smart triage
@@ -158,7 +158,7 @@ AttributeError: 'NoneType' object has no attribute 'parse_test262_metadata'
 ## 重複整理メモ
 
 この issue はタイトルが重複しているため、内容がより充実している
-`issues/done/431-implement-function-resolution.md` に統合されました。
+`issues/open/431-implement-function-resolution.md` に統合されました。
 そちらを参照してください。
 ## Completion evidence
 
@@ -189,7 +189,7 @@ Classification: truly-done.
 Audit result: retained in `issues/done/`. The issue has repo-local completion evidence, is not marked `blocked` or `triage-needed`, and `python scripts/manager.py check issues` validates the resulting issue graph.
 
 Evidence files:
-- `issues/done/5078-implement-function-resolution.md`
+- `issues/open/5078-implement-function-resolution.md`
 - `issues/index.md` after regeneration
 
 Future-work tracking: no untracked future-work item was identified in this issue during this metadata/evidence audit.

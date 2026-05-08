@@ -54,7 +54,7 @@ env TS2WASM_BINARY=/tmp/ts2wasm-issue-blockers-target/debug/ts2wasm python scrip
 ## Desired final state
 
 This generated bucket is closed. Implement the current first blocker from
-`issues/open/5175-support-export-let-destructuring-declarations.md`.
+`issues/done/5175-support-export-let-destructuring-declarations.md`.
 
 ## Scope
 
@@ -76,7 +76,7 @@ Out of scope:
 
 Expected:
 
-- `issues/open/5175-support-export-let-destructuring-declarations.md`
+- `issues/done/5175-support-export-let-destructuring-declarations.md`
 
 Do not touch:
 
@@ -135,10 +135,10 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/open/5175-support-export-let-destructuring-declarations.md` owns the
+- `issues/done/5175-support-export-let-destructuring-declarations.md` owns the
   current first blocker: `export let a = 1;` reports generic issue-055 before
   AST construction.
-- `issues/open/5285-support-export-var-initializer-declarations.md` owns the
+- `issues/done/5285-support-export-var-initializer-declarations.md` owns the
   later initialized `export var x = 1;` boundary in the virtual
   `observable.ts` section.
 - `issues/open/5229-resolve-imports-between-filename-sections.md` owns later

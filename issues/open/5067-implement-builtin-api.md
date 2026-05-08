@@ -129,12 +129,12 @@ Follow-up issues:
 - `issues/open/2348-implement-expr.md` - Implement Expr (same feature label, same group key, title overlap)
 - `issues/open/2421-implement-forOfTransformsExpression.md` - Implement Foroftransformsexpression (same feature label, same group key, title overlap)
 - `issues/open/4000-implement-regExpWithSlashInCharClass.md` - Implement Regexpwithslashincharclass (same feature label, same group key, title overlap)
-- `issues/done/419-implement-builtin-api.md` - Implement built-in API support (same feature label, same group key, title overlap)
-- `issues/done/4291-implement-stringMatchAll.md` - Implement Stringmatchall (same feature label, same group key, title overlap)
-- `issues/done/060-investigate-unknown-unsupported-cases.md` - Investigate and classify unknown-unsupported diagnostic cases (same feature label, same group key)
-- `issues/done/224-implement-annexb-html-comments.md` - Implement Annex B HTML-like comments (same feature label, same group key, title overlap)
+- `issues/open/419-implement-builtin-api.md` - Implement built-in API support (same feature label, same group key, title overlap)
+- `issues/open/4291-implement-stringMatchAll.md` - Implement Stringmatchall (same feature label, same group key, title overlap)
+- `issues/open/060-investigate-unknown-unsupported-cases.md` - Investigate and classify unknown-unsupported diagnostic cases (same feature label, same group key)
+- `issues/open/224-implement-annexb-html-comments.md` - Implement Annex B HTML-like comments (same feature label, same group key, title overlap)
 - `issues/done/228-implement-logical-assignment-operators.md` - Implement logical assignment operators (same feature label, same group key, title overlap)
-- `issues/done/341-implement-core-builtin-api-coverage.md` - Implement core builtin API coverage (3,190 test262 cases) (same feature label, same group key, title overlap)
+- `issues/open/341-implement-core-builtin-api-coverage.md` - Implement core builtin API coverage (3,190 test262 cases) (same feature label, same group key, title overlap)
 - `issues/done/341a-global-number-functions.md` - Implement isNaN, parseInt, parseFloat, isFinite global functions (same feature label, same group key, title overlap)
 
 ## Smart triage
@@ -158,7 +158,7 @@ AttributeError: 'NoneType' object has no attribute 'parse_test262_metadata'
 ## 重複整理メモ
 
 この issue はタイトルが重複しているため、内容がより充実している
-`issues/done/419-implement-builtin-api.md` に統合されました。
+`issues/open/419-implement-builtin-api.md` に統合されました。
 そちらを参照してください。
 ## Completion evidence
 
@@ -189,7 +189,7 @@ Classification: truly-done.
 Audit result: retained in `issues/done/`. The issue has repo-local completion evidence, is not marked `blocked` or `triage-needed`, and `python scripts/manager.py check issues` validates the resulting issue graph.
 
 Evidence files:
-- `issues/done/5067-implement-builtin-api.md`
+- `issues/open/5067-implement-builtin-api.md`
 - `issues/index.md` after regeneration
 
 Future-work tracking: no untracked future-work item was identified in this issue during this metadata/evidence audit.

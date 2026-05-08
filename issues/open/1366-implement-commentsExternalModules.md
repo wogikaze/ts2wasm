@@ -60,7 +60,7 @@ commentsExternalModules3.ts: UnsupportedSyntax import-export; issue-055 unsuppor
 
 This generated bucket is closed. Implementation should proceed through
 `issues/done/5285-support-export-var-initializer-declarations.md`; the bare
-module specifier behavior remains covered by `issues/done/232-resolve-local-relative-es-module-graph.md`.
+module specifier behavior remains covered by `issues/open/232-resolve-local-relative-es-module-graph.md`.
 
 ## Scope
 
@@ -146,7 +146,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/232-resolve-local-relative-es-module-graph.md` covers the
+- `issues/open/232-resolve-local-relative-es-module-graph.md` covers the
   intentional bare/non-local module specifier diagnostic seen in
   `commentsExternalModules.ts`.
 - `issues/done/5283-support-entry-export-var-declarations.md` covers a simple

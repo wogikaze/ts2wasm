@@ -126,8 +126,8 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/160-implement-ambientModules.md` - Implement Ambientmodules (same reference path, same group key, title overlap)
-- `issues/done/534-implement-ambientModules.md` - Implement Ambientmodules (same reference path, same feature label, same group key, title overlap)
+- `issues/open/160-implement-ambientModules.md` - Implement Ambientmodules (same reference path, same group key, title overlap)
+- `issues/open/534-implement-ambientModules.md` - Implement Ambientmodules (same reference path, same feature label, same group key, title overlap)
 
 ## Smart triage
 
@@ -157,7 +157,7 @@ then `resolve_names` cannot find the top-level ambient namespace identifier
 `Foo`. TypeScript accepts the file with no diagnostics.
 
 This is related to
-`issues/done/5370-bind-ambient-namespace-declarations-for-qualified-value-access.md`,
+`issues/open/5370-bind-ambient-namespace-declarations-for-qualified-value-access.md`,
 but the source uses a dotted ambient namespace declaration. The specific
 dotted-path work was split to
 `issues/open/5404-bind-dotted-ambient-namespace-qualified-access.md`.

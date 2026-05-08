@@ -18,7 +18,7 @@ updated: 2026-05-06
 ## Summary
 
 Closed as superseded by
-`issues/done/5226-w0-ast-node-span-requirement.md`. Fresh triage
+`issues/open/5226-w0-ast-node-span-requirement.md`. Fresh triage
 shows both references now parse and stop at the same ambient `declare function`
 overload `DuplicateFunction` boundary owned by issue 5226.
 
@@ -117,7 +117,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] superseded by `issues/done/5226-w0-ast-node-span-requirement.md`
+- [x] superseded by `issues/open/5226-w0-ast-node-span-requirement.md`
 
 ## Notes
 
@@ -140,12 +140,12 @@ declare function callme(x: object): string;
 
 ## Duplicate detection
 
-- `issues/done/5226-w0-ast-node-span-requirement.md` is the
+- `issues/open/5226-w0-ast-node-span-requirement.md` is the
   exact owner for multiple bodyless ambient `declare function` declarations with
   the same name.
 - `issues/open/5200-validate-top-level-function-overload-implementations.md` is
   related but covers non-ambient overload signatures with implementation bodies.
-- `issues/done/5199-report-function-overload-list-class-merge-diagnostics.md`
+- `issues/open/5199-report-function-overload-list-class-merge-diagnostics.md`
   is related but covers function overload lists merged with classes.
 
 ## Smart triage
@@ -192,7 +192,7 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- Superseded by `issues/done/5226-w0-ast-node-span-requirement.md`; see local commit for this issue cleanup.
+- Superseded by `issues/open/5226-w0-ast-node-span-requirement.md`; see local commit for this issue cleanup.
 
 Validation result:
 

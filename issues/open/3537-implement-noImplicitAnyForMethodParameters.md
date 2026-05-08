@@ -140,7 +140,7 @@ Follow-up issues:
 - `issues/open/5149-parse-trailing-comma-in-typed-class-method-parameters.md`
   is related to class method parameter parsing, but its scope is trailing
   commas after typed parameters in a different fixture.
-- `issues/open/5234-track-array-typed-parameters-for-callback-methods.md` is
+- `issues/open/5234-w0-implement-host-deny-and-auditable-e2e-manifest-verification.md` is
   related to class-method parameter metadata, but its scope is array-shaped
   typed parameters for callback methods.
 - No child issue was created because this representative now build-passes.

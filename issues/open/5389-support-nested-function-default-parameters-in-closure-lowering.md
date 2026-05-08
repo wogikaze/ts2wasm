@@ -87,9 +87,9 @@ In scope:
 Out of scope:
 
 - Rest parameters, tracked by
-  `issues/done/5236-w1-implement-wasi-args-and-environment-variable-lowering.md`.
+  `issues/open/5236-w1-implement-wasi-args-and-environment-variable-lowering.md`.
 - Nested functions using `this` or `arguments`, tracked by
-  `issues/done/5218-parse-typescript-this-parameters-in-function-expressions.md`.
+  `issues/open/5218-parse-typescript-this-parameters-in-function-expressions.md`.
 - Mutable captured environment support beyond existing issue-062e boundaries.
 - Full TypeScript contextual typing or TS2345 semantic diagnostics if lowering
   advances to a later semantic gap.
@@ -159,15 +159,15 @@ Follow-up issues:
 ## Notes
 
 Split from generated bucket
-`issues/done/1547-implement-contextuallyTypedParametersWithQuestionToken.md`.
+`issues/open/1547-implement-contextuallyTypedParametersWithQuestionToken.md`.
 
 Related but distinct:
 
-- `issues/done/5236-w1-implement-wasi-args-and-environment-variable-lowering.md` owns rest
+- `issues/open/5236-w1-implement-wasi-args-and-environment-variable-lowering.md` owns rest
   parameters and explicitly excludes nested function default parameters.
 - `issues/done/062e-function-closures.md` records the historical closure work
   and broader issue-062e boundary.
-- Also owns `issues/done/3401-implement-multiCallOverloads.md`: fresh triage
+- Also owns `issues/open/3401-implement-multiCallOverloads.md`: fresh triage
   for `multiCallOverloads.ts` gets through interface call signatures and stops
   at the same issue-062e guard for anonymous function expressions with optional
   parameters, such as `function(z?) {}`.

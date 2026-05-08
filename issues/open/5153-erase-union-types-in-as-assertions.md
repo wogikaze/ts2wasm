@@ -132,7 +132,7 @@ Follow-up issues:
 
 ## Notes
 
-Split from generated bucket `issues/done/1034-implement-baseClassImprovedMismatchErrors.md`.
+Split from generated bucket `issues/open/1034-implement-baseClassImprovedMismatchErrors.md`.
 
 ## Completion evidence
 

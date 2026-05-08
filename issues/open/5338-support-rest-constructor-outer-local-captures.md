@@ -70,7 +70,7 @@ In scope:
 
 Out of scope:
 
-- General constructor callback capture behavior, tracked by `issues/done/5152-support-class-constructor-outer-callback-captures.md`.
+- General constructor callback capture behavior, tracked by `issues/open/5152-support-class-constructor-outer-callback-captures.md`.
 - Later TypeScript `console` redeclaration diagnostics.
 
 ## Affected paths
@@ -133,7 +133,7 @@ Follow-up issues:
 ## Notes
 
 Split from
-`issues/done/1306-implement-collisionRestParameterUnderscoreIUsage.md`.
+`issues/open/1306-implement-collisionRestParameterUnderscoreIUsage.md`.
 
 ## Completion evidence
 

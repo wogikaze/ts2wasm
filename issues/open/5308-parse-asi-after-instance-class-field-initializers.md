@@ -132,7 +132,7 @@ Follow-up issues:
 ## Notes
 
 Split from generated bucket
-`issues/done/1437-implement-conflictingTypeParameterSymbolTransfer.md`.
+`issues/open/1437-implement-conflictingTypeParameterSymbolTransfer.md`.
 
 The same parser area has a static-field-only ASI issue, 5254; this issue is for
 instance fields with initializers.

@@ -110,7 +110,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] `issues/done/5202-parse-member-call-explicit-type-arguments.md`
+- [x] `issues/open/5202-parse-member-call-explicit-type-arguments.md`
 
 ## Notes
 
@@ -121,7 +121,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/5202-parse-member-call-explicit-type-arguments.md` owns the current parser blocker: explicit TypeScript type arguments on member calls such as `v.f<string>()`.
+- `issues/open/5202-parse-member-call-explicit-type-arguments.md` owns the current parser blocker: explicit TypeScript type arguments on member calls such as `v.f<string>()`.
 
 ## Smart triage
 

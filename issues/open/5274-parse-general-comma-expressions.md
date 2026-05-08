@@ -86,7 +86,7 @@ Out of scope:
 - Runtime lowering for arbitrary comma expressions beyond proving the parser
   shape is represented.
 - Comma-separated `for` update expressions, tracked by
-  `issues/done/5182-parse-comma-separated-for-update-expressions.md`.
+  `issues/open/5182-parse-comma-separated-for-update-expressions.md`.
 
 ## Affected paths
 
@@ -153,13 +153,13 @@ Follow-up issues:
 
 ## Notes
 
-Split from generated bucket `issues/done/1336-implement-commaOperator.md`.
+Split from generated bucket `issues/open/1336-implement-commaOperator.md`.
 
 Related but distinct:
 
-- `issues/done/5182-parse-comma-separated-for-update-expressions.md` handles
+- `issues/open/5182-parse-comma-separated-for-update-expressions.md` handles
   the narrow `for (...; ...; ++x, --y)` update slot.
-- `issues/done/1338-implement-commaOperatorLeftSideUnused.md` is a generated
+- `issues/open/1338-implement-commaOperatorLeftSideUnused.md` is a generated
   blocked bucket for TS2695 diagnostics after parser support exists.
 
 2026-05-07 additional evidence: `commaOperatorLeftSideUnused.ts` stops before
@@ -171,7 +171,7 @@ left operand. The later parenthesized comma expressions in assignments and
 calls remain unproven until this case-label parser boundary advances.
 
 2026-05-08 additional evidence: generated bucket
-`issues/done/3445-implement-narrowCommaOperatorNestedWithinLHS.md` folds into
+`issues/open/3445-implement-narrowCommaOperatorNestedWithinLHS.md` folds into
 this general parser owner. `narrowCommaOperatorNestedWithinLHS.ts` fails before
 control-flow narrowing at `typeof (otherValue(), value).inner === 'number'`:
 tokens are ok, TypeScript oracle has no diagnostics, and AST construction

@@ -111,7 +111,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] created: `issues/done/5235-w1-implement-wasi-stdin-fd_read-lowering-for-input.md`
+- [x] created: `issues/open/5235-w1-implement-wasi-stdin-fd_read-lowering-for-input.md`
 
 ## Notes
 
@@ -187,7 +187,7 @@ TypeScript oracle: TS2300 Duplicate identifier 'a' on the two object type proper
 
 Split result:
 
-- `issues/done/5235-w1-implement-wasi-stdin-fd_read-lowering-for-input.md`
+- `issues/open/5235-w1-implement-wasi-stdin-fd_read-lowering-for-input.md`
 
 ## Completion evidence
 

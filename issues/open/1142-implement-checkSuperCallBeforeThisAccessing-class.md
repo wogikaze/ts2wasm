@@ -111,7 +111,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] created: `issues/done/5233-w0-harden-reference-coverage-prerequisites.md`
+- [x] created: `issues/open/5233-w0-harden-reference-coverage-prerequisites.md`
 
 ## Notes
 
@@ -125,9 +125,9 @@ Fresh duplicate scan found broad class/super buckets, but no exact open issue
 for converting `super()` in a non-derived class from unsupported syntax into a
 TS2335-style diagnostic:
 
-- `issues/done/449-implement-super.md` is a broad test262 `super` triage bucket.
+- `issues/open/449-implement-super.md` is a broad test262 `super` triage bucket.
 - `issues/done/047-implement-super-keyword.md` covers legal `super()` calls.
-- `issues/done/421-implement-class.md` is broad class syntax and not an exact
+- `issues/open/421-implement-class.md` is broad class syntax and not an exact
   diagnostic work order.
 - Private/static class element issues do not cover this constructor `super()`
   diagnostic.
@@ -190,7 +190,7 @@ TypeScript oracle: TS2335 "'super' can only be referenced in a derived class."
 
 Split result:
 
-- `issues/done/5233-w0-harden-reference-coverage-prerequisites.md`
+- `issues/open/5233-w0-harden-reference-coverage-prerequisites.md`
 
 ## Completion evidence
 

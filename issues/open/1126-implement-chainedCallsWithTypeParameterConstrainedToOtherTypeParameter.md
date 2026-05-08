@@ -25,7 +25,7 @@ Triage chainedCallsWithTypeParameterConstrainedToOtherTypeParameter across 2 fai
 
 Reference test results showed 2 cases failing in directory `chainedCallsWithTypeParameterConstrainedToOtherTypeParameter` with diagnostics: parser-syntax. Fresh triage shows both paths parse and build AST successfully, then lowering stops at the existing `issue-211` call-expression method receiver boundary.
 
-Problem: chainedCallsWithTypeParameterConstrainedToOtherTypeParameter has 2 reference failures whose actionable blocker is now tracked by `issues/done/5221-support-bitwise-and-xor-binary-lowering.md`.
+Problem: chainedCallsWithTypeParameterConstrainedToOtherTypeParameter has 2 reference failures whose actionable blocker is now tracked by `issues/open/5221-support-bitwise-and-xor-binary-lowering.md`.
 
 ## Current failure
 
@@ -43,7 +43,7 @@ mise run reference-coverage -- tsc --path-filter reference/typescript/tests/case
 
 ## Desired final state
 
-This generated bucket is superseded by `issues/done/5221-support-bitwise-and-xor-binary-lowering.md`.
+This generated bucket is superseded by `issues/open/5221-support-bitwise-and-xor-binary-lowering.md`.
 
 ## Scope
 
@@ -115,7 +115,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] created: `issues/done/5221-support-bitwise-and-xor-binary-lowering.md`
+- [x] created: `issues/open/5221-support-bitwise-and-xor-binary-lowering.md`
 
 ## Notes
 
@@ -137,7 +137,7 @@ Generated on 2026-05-06:
 - feature label: `method-call`
 - diagnostic: `UnsupportedSyntax` / `parser-or-frontend-unsupported`
 - message: `issue-211: method then requires an identifier receiver at 323..408`
-- child issue: `issues/done/5221-support-bitwise-and-xor-binary-lowering.md`
+- child issue: `issues/open/5221-support-bitwise-and-xor-binary-lowering.md`
 
 Source context:
 
@@ -153,7 +153,7 @@ Generated on 2026-05-06:
 - feature label: `method-call`
 - diagnostic: `UnsupportedSyntax` / `parser-or-frontend-unsupported`
 - message: `issue-211: method then requires an identifier receiver at 257..298`
-- child issue: `issues/done/5221-support-bitwise-and-xor-binary-lowering.md`
+- child issue: `issues/open/5221-support-bitwise-and-xor-binary-lowering.md`
 
 Source context:
 

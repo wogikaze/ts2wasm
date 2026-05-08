@@ -19,7 +19,7 @@ updated: 2026-05-06
 
 Closed by splitting the only remaining current blocker in the
 `classImplementsClass` reference family to
-`issues/done/5261-report-class-typed-missing-instance-method-calls.md`.
+`issues/open/5261-report-class-typed-missing-instance-method-calls.md`.
 
 ## Problem
 
@@ -116,7 +116,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] `issues/done/5261-report-class-typed-missing-instance-method-calls.md`
+- [x] `issues/open/5261-report-class-typed-missing-instance-method-calls.md`
 
 ## Notes
 
@@ -146,7 +146,7 @@ unsupported: classImplementsClass6.ts
 
 ## Duplicate detection
 
-- `issues/done/5222-parse-ambient-generic-variable-type-annotations.md`
+- `issues/open/5222-parse-ambient-generic-variable-type-annotations.md`
   is related but not exact: it covers interface-typed erased receivers such as
   `var s: Sequence<string>; s.groupBy(...)`, while this bucket has class-typed
   ambient locals `declare var c: C; c.bar()`.
@@ -181,7 +181,7 @@ TypeScript oracle: TS2339 on c.bar and TS2576 on c2.bar
 
 Split issue:
 
-- `issues/done/5261-report-class-typed-missing-instance-method-calls.md`
+- `issues/open/5261-report-class-typed-missing-instance-method-calls.md`
 
 ## Completion evidence
 
@@ -189,7 +189,7 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- Split to `issues/done/5261-report-class-typed-missing-instance-method-calls.md`; see local commit for this issue cleanup.
+- Split to `issues/open/5261-report-class-typed-missing-instance-method-calls.md`; see local commit for this issue cleanup.
 
 Validation result:
 

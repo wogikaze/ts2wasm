@@ -20,7 +20,7 @@ status: done
 ## Summary
 
 Closed after splitting the current JS/noEmit invariant blocker to
-`issues/done/5247-fix-js-noemit-class-constructor-funcid-invariant.md`.
+`issues/open/5247-fix-js-noemit-class-constructor-funcid-invariant.md`.
 
 ## Problem
 

@@ -147,8 +147,8 @@ Current state:
 Follow-up issues:
 
 - [x] created: `issues/done/5357-avoid-eval-diagnostic-for-qualified-function-constructors.md`
-- [x] existing: `issues/done/5232-w0-fixture-ize-runtimelinkplan-linker-structure-tests.md`
-- [x] existing: `issues/done/5334-parse-class-constructor-overload-signatures.md`
+- [x] existing: `issues/open/5232-w0-fixture-ize-runtimelinkplan-linker-structure-tests.md`
+- [x] existing: `issues/open/5334-parse-class-constructor-overload-signatures.md`
 
 ## Notes
 
@@ -160,9 +160,9 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/5232-w0-fixture-ize-runtimelinkplan-linker-structure-tests.md` owns the
+- `issues/open/5232-w0-fixture-ize-runtimelinkplan-linker-structure-tests.md` owns the
   issue-5005 entry-module `export class C` blocker.
-- `issues/done/5334-parse-class-constructor-overload-signatures.md` owns the
+- `issues/open/5334-parse-class-constructor-overload-signatures.md` owns the
   `DuplicateFunction: duplicate constructor definition` blocker exposed after
   the module-export boundary.
 - No exact open issue was found for the qualified `M.Function` false eval

@@ -112,7 +112,7 @@ Out of scope:
 - Strict-mode `arguments` binding diagnostics after this parser blocker
   advances.
 - Interface call signatures, tracked by
-  `issues/done/5332-parse-interface-call-signatures.md`.
+  `issues/open/5332-parse-interface-call-signatures.md`.
 
 ## Affected paths
 
@@ -177,18 +177,18 @@ Follow-up issues:
 
 ## Notes
 
-Split from `issues/done/1271-implement-collisionArgumentsInType.md` on
+Split from `issues/open/1271-implement-collisionArgumentsInType.md` on
 2026-05-07.
 
 Related but not duplicates:
 
-- `issues/done/5201-parse-object-type-literal-call-signatures.md` covers
+- `issues/open/5201-parse-object-type-literal-call-signatures.md` covers
   overload-like call-signature members in object type literals, without the
   construct, method, property, and rest-parameter mix from this reference.
-- `issues/done/5257-parse-object-type-literal-construct-signatures.md` covers
+- `issues/open/5257-parse-object-type-literal-construct-signatures.md` covers
   zero-argument construct signatures, without the mixed rest-parameter
   signature members from this reference.
-- `issues/done/5333-report-strict-mode-arguments-binding-diagnostics.md`
+- `issues/open/5333-report-strict-mode-arguments-binding-diagnostics.md`
   covers strict-mode `arguments` diagnostics for runtime bindings after syntax
   parsing succeeds.
 

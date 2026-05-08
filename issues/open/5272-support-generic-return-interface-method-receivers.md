@@ -95,9 +95,9 @@ Out of scope:
 - Full TypeScript generic inference or assignability.
 - Runtime implementation of arbitrary erased interface values.
 - Interface-typed erased local method calls without generic call inference,
-  tracked by `issues/done/5222-parse-ambient-generic-variable-type-annotations.md`.
+  tracked by `issues/open/5222-parse-ambient-generic-variable-type-annotations.md`.
 - Array-typed parameter receiver tracking, tracked by
-  `issues/done/5234-w0-implement-host-deny-and-auditable-e2e-manifest-verification.md`.
+  `issues/open/5234-w0-implement-host-deny-and-auditable-e2e-manifest-verification.md`.
 
 ## Affected paths
 
@@ -160,15 +160,15 @@ Follow-up issues:
 
 ## Notes
 
-Split from generated bucket `issues/done/1265-implement-collectionPatternNoError.md`.
+Split from generated bucket `issues/open/1265-implement-collectionPatternNoError.md`.
 
 Related but distinct:
 
-- `issues/done/5222-parse-ambient-generic-variable-type-annotations.md`
+- `issues/open/5222-parse-ambient-generic-variable-type-annotations.md`
   handles method calls on locals directly annotated with interface types.
-- `issues/done/5234-w0-implement-host-deny-and-auditable-e2e-manifest-verification.md`
+- `issues/open/5234-w0-implement-host-deny-and-auditable-e2e-manifest-verification.md`
   handles array-shaped parameter annotations.
-- `issues/done/5261-report-class-typed-missing-instance-method-calls.md`
+- `issues/open/5261-report-class-typed-missing-instance-method-calls.md`
   handles class-typed ambient locals and missing instance methods.
 
 ## Completion evidence

@@ -50,7 +50,7 @@ python scripts/manager.py reference-coverage tsc --path-filter reference/typescr
 ## Desired final state
 
 This generated bucket is closed after splitting the current observable blocker
-into `issues/done/5338-support-rest-constructor-outer-local-captures.md`.
+into `issues/open/5338-support-rest-constructor-outer-local-captures.md`.
 
 ## Scope
 
@@ -121,7 +121,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] created: `issues/done/5338-support-rest-constructor-outer-local-captures.md`
+- [x] created: `issues/open/5338-support-rest-constructor-outer-local-captures.md`
 
 ## Notes
 
@@ -131,7 +131,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/5152-support-class-constructor-outer-callback-captures.md` - related constructor capture support, but does not own rest-parameter constructor ABI collision
+- `issues/open/5152-support-class-constructor-outer-callback-captures.md` - related constructor capture support, but does not own rest-parameter constructor ABI collision
 -  - related issue-289 constructor capture, but covers later class binding
 - no exact existing owner found for rest-parameter constructor hidden-capture ABI collision
 
@@ -201,13 +201,13 @@ TS2403: Subsequent variable declarations must have the same type for console
 
 Split result:
 
-- `issues/done/5338-support-rest-constructor-outer-local-captures.md`
+- `issues/open/5338-support-rest-constructor-outer-local-captures.md`
 
 ## Completion evidence
 
 Commits:
 
-- Split to `issues/done/5338-support-rest-constructor-outer-local-captures.md`.
+- Split to `issues/open/5338-support-rest-constructor-outer-local-captures.md`.
 
 Validation result:
 

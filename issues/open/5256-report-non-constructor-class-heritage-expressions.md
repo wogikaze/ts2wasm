@@ -74,9 +74,9 @@ Out of scope:
 
 - Runtime lowering for arbitrary evaluated heritage expressions.
 - `extends makeBaseClass()` support, tracked by
-  `issues/done/5252-support-call-expression-class-heritage.md`.
+  `issues/open/5252-support-call-expression-class-heritage.md`.
 - Qualified class heritage names such as `extends Foo.Object`, tracked by
-  `issues/done/5225-w0-typed-wat-writer.md`.
+  `issues/open/5225-w0-typed-wat-writer.md`.
 - Generic type arguments in class heritage, tracked by
   `issues/done/5156-parse-generic-type-arguments-in-class-heritage.md`.
 
@@ -121,7 +121,7 @@ python scripts/manager.py reference-coverage tsc --path-filter reference/typescr
 
 ## Notes
 
-Split from `issues/done/1200-implement-classExtendsInterface-unknown-unsupported.md`.
+Split from `issues/open/1200-implement-classExtendsInterface-unknown-unsupported.md`.
 ## False-done audit
 
 **truly-done** (5256)

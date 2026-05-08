@@ -116,7 +116,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/198-implement-argumentsPropertyNameInJsMode.md` - Implement Argumentspropertynameinjsmode (same reference path, same feature label, same group key, title overlap)
+- `issues/open/198-implement-argumentsPropertyNameInJsMode.md` - Implement Argumentspropertynameinjsmode (same reference path, same feature label, same group key, title overlap)
 - `issues/done/412-implement-arguments-object.md` - Implement arguments-object support (same feature label, same group key, title overlap)
 
 ## Smart triage

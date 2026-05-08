@@ -117,11 +117,11 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/311-fix-test262-arguments-object-index-assignment.md` - Fix test262 arguments object index assignment semantics (same feature label, title overlap)
-- `issues/done/646-implement-arguments.md` - Implement Arguments (same feature label, title overlap)
-- `issues/done/647-implement-argumentsAsPropertyName-arguments-object.md` - Implement Argumentsaspropertyname Arguments Object (same feature label, title overlap)
-- `issues/done/653-implement-argumentsReferenceInConstructor-arguments-object.md` - Implement Argumentsreferenceinconstructor Arguments Object (same feature label, title overlap)
-- `issues/done/656-implement-argumentsReferenceInMethod-arguments-object.md` - Implement Argumentsreferenceinmethod Arguments Object (same feature label, title overlap)
+- `issues/open/311-fix-test262-arguments-object-index-assignment.md` - Fix test262 arguments object index assignment semantics (same feature label, title overlap)
+- `issues/open/646-implement-arguments.md` - Implement Arguments (same feature label, title overlap)
+- `issues/open/647-implement-argumentsAsPropertyName-arguments-object.md` - Implement Argumentsaspropertyname Arguments Object (same feature label, title overlap)
+- `issues/open/653-implement-argumentsReferenceInConstructor-arguments-object.md` - Implement Argumentsreferenceinconstructor Arguments Object (same feature label, title overlap)
+- `issues/open/656-implement-argumentsReferenceInMethod-arguments-object.md` - Implement Argumentsreferenceinmethod Arguments Object (same feature label, title overlap)
 
 ## Smart triage
 

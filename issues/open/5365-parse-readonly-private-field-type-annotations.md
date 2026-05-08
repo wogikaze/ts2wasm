@@ -137,13 +137,13 @@ Follow-up issues:
 
 ## Notes
 
-Split from generated bucket `issues/done/1483-implement-constructorWithParameterPropertiesAndPrivateFields.md` on 2026-05-07.
+Split from generated bucket `issues/open/1483-implement-constructorWithParameterPropertiesAndPrivateFields.md` on 2026-05-07.
 
 Related but distinct issues:
 
-- `issues/done/248-implement-private-class-element-parser.md` owns private identifier tokenization and basic private element parsing.
+- `issues/open/248-implement-private-class-element-parser.md` owns private identifier tokenization and basic private element parsing.
 - `issues/done/255-implement-private-class-element-runtime-semantics.md` owns runtime private field semantics.
-- `issues/done/5268-support-derived-constructor-parameter-properties-after-super.md` owns derived constructor parameter-property ordering.
+- `issues/open/5268-support-derived-constructor-parameter-properties-after-super.md` owns derived constructor parameter-property ordering.
 
 ## Completion Evidence
 

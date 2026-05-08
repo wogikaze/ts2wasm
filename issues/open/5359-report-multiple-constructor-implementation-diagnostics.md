@@ -138,12 +138,12 @@ Follow-up issues:
 
 ## Notes
 
-Split from `issues/done/1475-implement-constructorOverloads-parser-syntax.md`
+Split from `issues/open/1475-implement-constructorOverloads-parser-syntax.md`
 on 2026-05-07.
 
 Related:
 
-- `issues/done/5334-parse-class-constructor-overload-signatures.md` owns valid
+- `issues/open/5334-parse-class-constructor-overload-signatures.md` owns valid
   bodyless constructor overload signatures. This issue owns only invalid
   multiple implementation bodies.
 

@@ -164,7 +164,7 @@ Follow-up issues:
 
 ## Notes
 
-Split from generated bucket `issues/done/3306-implement-moduleAsBaseType.md`.
+Split from generated bucket `issues/open/3306-implement-moduleAsBaseType.md`.
 
 Related but not duplicates:
 

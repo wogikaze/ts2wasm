@@ -15,7 +15,7 @@ updated: 2026-05-08
 ## Summary
 
 Closed after folding the current plain-enum binding blocker into
-`issues/open/5284-bind-plain-enum-declarations-before-member-access.md`.
+`issues/done/5284-bind-plain-enum-declarations-before-member-access.md`.
 
 ## Problem
 
@@ -113,7 +113,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] updated: `issues/open/5284-bind-plain-enum-declarations-before-member-access.md`
+- [x] updated: `issues/done/5284-bind-plain-enum-declarations-before-member-access.md`
 
 ## Notes
 
@@ -123,7 +123,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- folded into `issues/open/5284-bind-plain-enum-declarations-before-member-access.md`
+- folded into `issues/done/5284-bind-plain-enum-declarations-before-member-access.md`
   because the current failure is a plain enum declaration not binding before
   `E.A`.
 

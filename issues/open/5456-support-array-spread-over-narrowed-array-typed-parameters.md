@@ -98,7 +98,7 @@ Out of scope:
 - Full TypeScript generic constraint solving beyond the array-or-undefined
   shape in the representative.
 - Parser support for spread arguments in `new` expressions, tracked by
-  `issues/open/5241-parse-spread-arguments-in-new-expressions.md`.
+  `issues/open/5241-w2-number-model-sentinels.md`.
 
 ## Affected paths
 

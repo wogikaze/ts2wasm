@@ -117,8 +117,8 @@ Current state:
 
 Follow-up issues:
 
-- [x] created: `issues/done/372-implement-bigint-object-toprimitive-non-bigint-primitive-returns.md`
-- [x] created: `issues/done/373-handle-bigint-object-toprimitive-invalid-out-of-range-string-returns.md`
+- [x] created: `issues/open/372-implement-bigint-object-toprimitive-non-bigint-primitive-returns.md`
+- [x] created: `issues/open/373-handle-bigint-object-toprimitive-invalid-out-of-range-string-returns.md`
 - [x] created: `issues/done/374-design-broader-object-toprimitive-for-bigint-comparisons.md`
 - [x] created: `issues/done/375-handle-non-source-backed-out-of-range-bigint-string-comparisons.md`
 
@@ -166,7 +166,7 @@ Classification: truly-done.
 Audit result: retained in `issues/done/`. The issue has repo-local completion evidence, is not marked `blocked` or `triage-needed`, and `python scripts/manager.py check issues` validates the resulting issue graph.
 
 Evidence files:
-- `issues/done/368-implement-remaining-bigint-mixed-runtime-coercion-edges.md`
+- `issues/open/368-implement-remaining-bigint-mixed-runtime-coercion-edges.md`
 - `issues/index.md` after regeneration
 
 Future-work tracking: no untracked future-work item was identified in this issue during this metadata/evidence audit.

@@ -118,7 +118,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] superseded by `issues/done/5232-w0-fixture-ize-runtimelinkplan-linker-structure-tests.md`
+- [x] superseded by `issues/open/5232-w0-fixture-ize-runtimelinkplan-linker-structure-tests.md`
 
 ## Notes
 
@@ -128,8 +128,8 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/5232-w0-fixture-ize-runtimelinkplan-linker-structure-tests.md` - exact current first blocker for entry-module `export class`
-- `issues/done/5255-resolve-super-property-accesses.md` and element-access issues are not current blockers; this case resolves `this['x']`, `this['y']`, `this['z']`, and `this[0]` before module build fails
+- `issues/open/5232-w0-fixture-ize-runtimelinkplan-linker-structure-tests.md` - exact current first blocker for entry-module `export class`
+- `issues/open/5255-resolve-super-property-accesses.md` and element-access issues are not current blockers; this case resolves `this['x']`, `this['y']`, `this['z']`, and `this[0]` before module build fails
 
 ## Smart triage
 
@@ -202,13 +202,13 @@ AST topLevel includes exported ClassDeclaration Cls.
 
 Superseding owner:
 
-- `issues/done/5232-w0-fixture-ize-runtimelinkplan-linker-structure-tests.md`
+- `issues/open/5232-w0-fixture-ize-runtimelinkplan-linker-structure-tests.md`
 
 ## Completion evidence
 
 Commits:
 
-- Superseded by `issues/done/5232-w0-fixture-ize-runtimelinkplan-linker-structure-tests.md`; see local commit for this issue cleanup.
+- Superseded by `issues/open/5232-w0-fixture-ize-runtimelinkplan-linker-structure-tests.md`; see local commit for this issue cleanup.
 
 Validation result:
 

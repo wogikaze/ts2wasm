@@ -132,11 +132,11 @@ Follow-up issues:
 ## Notes
 
 Split from stale generated bucket
-`issues/done/1210-implement-classFieldSuperNotAccessibleJs.md`.
+`issues/open/1210-implement-classFieldSuperNotAccessibleJs.md`.
 
 Related but not duplicate:
 
-- `issues/done/422-implement-class-accessor.md` is a broad generated
+- `issues/open/422-implement-class-accessor.md` is a broad generated
   class-accessor bucket, not a narrow implementation-ready owner for this
   callable auto-accessor receiver shape.
 

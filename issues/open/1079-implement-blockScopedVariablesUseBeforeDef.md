@@ -108,7 +108,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] added: `issues/done/5189-parse-asi-after-class-expression-variable-initializer.md`
+- [x] added: `issues/open/5189-parse-asi-after-class-expression-variable-initializer.md`
 
 ## Notes
 
@@ -118,7 +118,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/5169-parse-asi-after-expression-statement.md` is not a match; this failure is a variable declaration initializer, not a completed expression statement.
+- `issues/open/5169-parse-asi-after-expression-statement.md` is not a match; this failure is a variable declaration initializer, not a completed expression statement.
 - Generic scope-analysis buckets are not matches because the current blocker is parser ASI before scope diagnostics.
 
 ## Smart triage
@@ -131,7 +131,7 @@ Generated on 2026-05-06.
 - Source context: `function foo9() { let y = class { static a = x; } let x; }`
 - Compiler evidence: tokens succeed through the class expression and following `Let`; AST/resolved construction fails at the following `let x;`.
 - TypeScript oracle: `TS2448: Block-scoped variable 'x' used before its declaration.` at the `x` inside the static class field initializer.
-- Superseding child: `issues/done/5189-parse-asi-after-class-expression-variable-initializer.md`
+- Superseding child: `issues/open/5189-parse-asi-after-class-expression-variable-initializer.md`
 
 ## Completion evidence
 

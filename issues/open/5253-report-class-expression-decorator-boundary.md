@@ -107,7 +107,7 @@ python scripts/manager.py reference-coverage tsc --path-filter reference/typescr
 
 ## Notes
 
-Split from `issues/done/1186-implement-classExpressionWithDecorator.md`.
+Split from `issues/open/1186-implement-classExpressionWithDecorator.md`.
 Related broad decorator bucket: `issues/open/4807-implement-decorator.md`.
 
 ## False-done audit

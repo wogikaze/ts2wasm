@@ -110,7 +110,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] folded into `issues/done/5345-parse-generic-ambient-const-type-annotations.md`
+- [x] folded into `issues/open/5345-parse-generic-ambient-const-type-annotations.md`
 
 ## Notes
 
@@ -126,7 +126,7 @@ Follow-up issues:
 
 Fresh triage on 2026-05-07 shows this generated parser-syntax bucket is the
 same ambient const generic callable annotation boundary already tracked by
-`issues/done/5345-parse-generic-ambient-const-type-annotations.md`.
+`issues/open/5345-parse-generic-ambient-const-type-annotations.md`.
 
 Current diagnostic:
 

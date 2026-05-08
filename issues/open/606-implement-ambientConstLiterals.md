@@ -117,8 +117,8 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/144-implement-ambientConstLiterals.md` - Implement Ambientconstliterals (same reference path, same group key, title overlap)
-- `issues/done/520-implement-ambientConstLiterals.md` - Implement Ambientconstliterals (same reference path, same feature label, same group key, title overlap)
+- `issues/open/144-implement-ambientConstLiterals.md` - Implement Ambientconstliterals (same reference path, same group key, title overlap)
+- `issues/open/520-implement-ambientConstLiterals.md` - Implement Ambientconstliterals (same reference path, same feature label, same group key, title overlap)
 
 ## Smart triage
 

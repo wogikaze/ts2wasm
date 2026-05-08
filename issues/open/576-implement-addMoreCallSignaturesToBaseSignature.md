@@ -123,8 +123,8 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/109-implement-addMoreCallSignaturesToBaseSignature.md` - Implement Addmorecallsignaturestobasesignature (same reference path, same group key, title overlap)
-- `issues/done/490-implement-addMoreCallSignaturesToBaseSignature.md` - Implement Addmorecallsignaturestobasesignature (same reference path, same group key, title overlap)
+- `issues/open/109-implement-addMoreCallSignaturesToBaseSignature.md` - Implement Addmorecallsignaturestobasesignature (same reference path, same group key, title overlap)
+- `issues/open/490-implement-addMoreCallSignaturesToBaseSignature.md` - Implement Addmorecallsignaturestobasesignature (same reference path, same group key, title overlap)
 
 ## Smart triage
 
@@ -595,7 +595,7 @@ date: 2026-05-08
 
 Remaining risks:
 
-- Implementation remains open in `issues/done/5195-support-callable-interface-typed-local-calls.md`.
+- Implementation remains open in `issues/open/5195-support-callable-interface-typed-local-calls.md`.
 
 ## False-done audit
 

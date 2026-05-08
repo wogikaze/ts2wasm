@@ -126,12 +126,12 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/132-implement-allowJsClassThisTypeCrash.md` - Implement Allowjsclassthistypecrash (same feature label, same group key, title overlap)
+- `issues/open/132-implement-allowJsClassThisTypeCrash.md` - Implement Allowjsclassthistypecrash (same feature label, same group key, title overlap)
 - `issues/done/036-implement-arrow-function.md` - Implement arrow function (same feature label, same group key, title overlap)
 - `issues/done/037-implement-this-binding.md` - Implement this binding (same feature label, same group key, title overlap)
 - `issues/done/062d-function-this-and-arguments.md` - Implement function this and arguments semantics (same feature label, same group key, title overlap)
 - `issues/done/203-reconcile-partial-feature-semantics.md` - Reconcile partial feature semantics and placeholder completions (same feature label, same group key)
-- `issues/done/210-implement-arrow-function-closure-lexical-this.md` - Implement arrow function closure and lexical this semantics (same feature label, same group key, title overlap)
+- `issues/open/210-implement-arrow-function-closure-lexical-this.md` - Implement arrow function closure and lexical this semantics (same feature label, same group key, title overlap)
 
 ## Smart triage
 

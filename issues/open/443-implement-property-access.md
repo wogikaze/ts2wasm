@@ -120,7 +120,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/005-add-fine-grained-unsupported-feature-breakdown.md` - issues/done/005-add-fine-grained-unsupported-feature-breakdown.md (same feature label, same group key)
+- `issues/open/005-add-fine-grained-unsupported-feature-breakdown.md` - issues/done/005-add-fine-grained-unsupported-feature-breakdown.md (same feature label, same group key)
 
 ## Smart triage
 

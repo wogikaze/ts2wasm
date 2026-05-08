@@ -88,8 +88,8 @@ Reopen reason: no `## Completion evidence` section is present, so close evidence
 Violated acceptance: the issue cannot provide repo-local close evidence for its checked acceptance criteria while it remains in this state. Acceptance checkboxes were reset for re-verification.
 
 Evidence files:
-- `issues/done/5007-meta-tsc-module-resolution.md` before this move
-- `issues/done/5007-meta-tsc-module-resolution.md` after this move
+- `issues/open/5007-meta-tsc-module-resolution.md` before this move
+- `issues/open/5007-meta-tsc-module-resolution.md` after this move
 
 Split follow-up: none created in this audit wave; this reopened issue remains the tracking item.
 

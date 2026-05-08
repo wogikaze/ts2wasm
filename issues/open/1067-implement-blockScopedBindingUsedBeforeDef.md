@@ -108,7 +108,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] added: `issues/done/5180-parse-computed-property-object-binding-patterns.md`
+- [x] added: `issues/open/5180-parse-computed-property-object-binding-patterns.md`
 
 ## Notes
 
@@ -118,7 +118,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/5006-meta-tsc-scope-analysis.md` is not an implementation-ready child for this current parser blocker.
+- `issues/open/5006-meta-tsc-scope-analysis.md` is not an implementation-ready child for this current parser blocker.
 - Other `scope-analysis` generated buckets share only the broad feature label.
 - No open issue was found for computed property names in object binding patterns.
 
@@ -134,7 +134,7 @@ Generated on 2026-05-06.
 - Compiler evidence: token dump includes `LeftBrace`, `LeftBracket`, `Ident("a")`, `RightBracket`, `Colon`, and target `Ident("a")`; AST/resolved construction fails before representing the binding element.
 - TypeScript AST path: `ForOfStatement -> VariableDeclarationList -> VariableDeclaration -> ObjectBindingPattern -> BindingElement -> ComputedPropertyName -> Identifier`
 - TypeScript oracle: reports `TS2448` used-before-declaration and `TS2538` invalid index type diagnostics for the computed key identifiers.
-- Superseding child: `issues/done/5180-parse-computed-property-object-binding-patterns.md`
+- Superseding child: `issues/open/5180-parse-computed-property-object-binding-patterns.md`
 
 ## Completion evidence
 

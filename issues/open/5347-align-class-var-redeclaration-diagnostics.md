@@ -77,8 +77,8 @@ Out of scope:
 
 - Class/enum merge diagnostics later in the same file.
 - Interface/class and function/class augmented type buckets.
-- Compatible duplicate `var` redeclarations, tracked separately by `issues/done/5162-allow-compatible-var-redeclarations.md`.
-- Block-local class scoping, tracked by `issues/done/5249-scope-block-local-class-declarations.md`.
+- Compatible duplicate `var` redeclarations, tracked separately by `issues/open/5162-allow-compatible-var-redeclarations.md`.
+- Block-local class scoping, tracked by `issues/open/5249-scope-block-local-class-declarations.md`.
 - Parser changes for accessibility-modified class methods.
 
 ## Affected paths
@@ -137,15 +137,15 @@ Follow-up issues:
 
 ## Notes
 
-Split from `issues/done/765-implement-augmentedTypesClass.md`.
+Split from `issues/open/765-implement-augmentedTypesClass.md`.
 
 Related but not duplicate:
 
-- `issues/done/5162-allow-compatible-var-redeclarations.md` handles compatible
+- `issues/open/5162-allow-compatible-var-redeclarations.md` handles compatible
   duplicate `var` declarations.
-- `issues/done/5249-scope-block-local-class-declarations.md` handles nested
+- `issues/open/5249-scope-block-local-class-declarations.md` handles nested
   block-local classes colliding with outer classes.
-- `issues/done/767-implement-augmentedTypesEnum-parser-syntax.md` owns a
+- `issues/open/767-implement-augmentedTypesEnum-parser-syntax.md` owns a
   generated enum-focused bucket and may become relevant after this class/var
   blocker advances.
 

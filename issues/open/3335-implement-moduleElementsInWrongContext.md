@@ -18,7 +18,7 @@ status: done
 Closed this generated import/export bucket by splitting its current parser and
 semantic blockers:
 
-- `issues/open/5186-parse-export-assignment-for-diagnostics.md` owns the
+- `issues/done/5186-parse-export-assignment-for-diagnostics.md` owns the
   immediate `export = M;` parser boundary seen in two cases.
 - `issues/open/5413-report-module-elements-in-wrong-context.md` owns the first
   currently reachable wrong-context diagnostic for a nested namespace
@@ -76,7 +76,7 @@ moduleElementsInWrongContext2.ts:
   source context: export = M; inside a function body
 ```
 
-`issues/open/5186-parse-export-assignment-for-diagnostics.md` is the existing
+`issues/done/5186-parse-export-assignment-for-diagnostics.md` is the existing
 implementation-ready owner for representing `export = expr;` so later
 diagnostics can use the exported expression span.
 
@@ -133,7 +133,7 @@ Do not touch from this bucket:
 
 ## Acceptance criteria
 
-- [x] Existing parser owner recorded: `issues/open/5186-parse-export-assignment-for-diagnostics.md`.
+- [x] Existing parser owner recorded: `issues/done/5186-parse-export-assignment-for-diagnostics.md`.
 - [x] New semantic diagnostics owner created: `issues/open/5413-report-module-elements-in-wrong-context.md`.
 - [x] The generated bucket no longer remains as a stale blocked import/export issue.
 

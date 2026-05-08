@@ -118,8 +118,8 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/078-implement-MemberAccessorDeclaration.md` - Implement Memberaccessordeclaration (same reference path, same feature label, same group key, title overlap)
-- `issues/done/422-implement-class-accessor.md` - Implement class-accessor support (same feature label, same group key, title overlap)
+- `issues/open/078-implement-MemberAccessorDeclaration.md` - Implement Memberaccessordeclaration (same reference path, same feature label, same group key, title overlap)
+- `issues/open/422-implement-class-accessor.md` - Implement class-accessor support (same feature label, same group key, title overlap)
 
 ## Smart triage
 
@@ -490,6 +490,6 @@ Violated acceptance: the issue cannot provide repo-local close evidence for its 
 
 Evidence files:
 - open issue file before this move
-- `issues/done/465-implement-MemberAccessorDeclaration.md` after this move
+- `issues/open/465-implement-MemberAccessorDeclaration.md` after this move
 
 Split follow-up: none created in this audit wave; this reopened issue remains the tracking item.

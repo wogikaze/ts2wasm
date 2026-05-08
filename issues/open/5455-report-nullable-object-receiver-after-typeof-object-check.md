@@ -17,7 +17,7 @@ Report a TypeScript-style possibly-null diagnostic for method calls on
 `unknown` values narrowed only by `typeof x === "object"`.
 
 Split from generated bucket
-`issues/done/3465-implement-narrowingTruthyObject.md`.
+`issues/open/3465-implement-narrowingTruthyObject.md`.
 
 ## Problem
 

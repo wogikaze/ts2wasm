@@ -154,7 +154,7 @@ Follow-up issues:
 - `issues/done/5283-support-entry-export-var-declarations.md` covers typed
   export-var declarations without initializers and is too narrow for this
   first blocker.
-- `issues/done/232-resolve-local-relative-es-module-graph.md` may cover later
+- `issues/open/232-resolve-local-relative-es-module-graph.md` may cover later
   missing `./0` / `./1` module diagnostics after export-var parsing advances,
   but it is not the first current blocker.
 

@@ -17,7 +17,7 @@ Classify `x.toString(radix)` as a number method call when `x` has been narrowed
 by a `switch (typeof x)` case.
 
 Split from generated bucket
-`issues/done/3453-implement-narrowingByTypeofInSwitch.md`.
+`issues/open/3453-implement-narrowingByTypeofInSwitch.md`.
 
 ## Problem
 

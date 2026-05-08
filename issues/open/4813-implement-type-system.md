@@ -118,16 +118,16 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/1029-implement-badInferenceLowerPriorityThanGoodInference.md` - Implement Badinferencelowerprioritythangoodinference (same feature label, same group key, title overlap; split to issue 5151)
-- `issues/done/1094-implement-callOfConditionalTypeWithConcreteBranches.md` - Implement Callofconditionaltypewithconcretebranches (same feature label, same group key, title overlap; split to issue 5196)
-- `issues/done/1145-implement-checkTypePredicateForRedundantProperties.md` - Implement Checktypepredicateforredundantproperties (same feature label, same group key, title overlap)
-- `issues/done/1155-implement-circularInferredTypeOfVariable.md` - Implement Circularinferredtypeofvariable (same feature label, same group key, title overlap; split to issue 5240)
+- `issues/open/1029-implement-badInferenceLowerPriorityThanGoodInference.md` - Implement Badinferencelowerprioritythangoodinference (same feature label, same group key, title overlap; split to issue 5151)
+- `issues/open/1094-implement-callOfConditionalTypeWithConcreteBranches.md` - Implement Callofconditionaltypewithconcretebranches (same feature label, same group key, title overlap; split to issue 5196)
+- `issues/open/1145-implement-checkTypePredicateForRedundantProperties.md` - Implement Checktypepredicateforredundantproperties (same feature label, same group key, title overlap)
+- `issues/open/1155-implement-circularInferredTypeOfVariable.md` - Implement Circularinferredtypeofvariable (same feature label, same group key, title overlap; split to issue 5240)
 - `issues/open/1156-implement-circularInlineMappedGenericTupleTypeNoCrash.md` - Implement Circularinlinemappedgenerictupletypenocrash (same feature label, same group key, title overlap; split to issue 5241)
 - `issues/open/1168-implement-circularlyConstrainedMappedTypeContainingConditionalNoInfiniteInstantiationDepth.md` - Implement Circularlyconstrainedmappedtypecontainingconditionalnoinfiniteinstantiationdepth (same feature label, same group key, title overlap; split to issue 5245)
-- `issues/done/1169-implement-circularlySimplifyingConditionalTypesNoCrash.md` - Implement Circularlysimplifyingconditionaltypesnocrash (same feature label, same group key, title overlap; stale build-pass)
-- `issues/done/1172-implement-classAttributeInferenceTemplate.md` - stale build-pass; no longer open
-- `issues/done/1173-implement-classAttributeInferenceTemplateJS.md` - split to `issues/done/5247-fix-js-noemit-class-constructor-funcid-invariant.md`
-- `issues/done/1234-implement-classPropertyInferenceFromBroaderTypeConst.md` - Implement Classpropertyinferencefrombroadertypeconst (same feature label, same group key, title overlap)
+- `issues/open/1169-implement-circularlySimplifyingConditionalTypesNoCrash.md` - Implement Circularlysimplifyingconditionaltypesnocrash (same feature label, same group key, title overlap; stale build-pass)
+- `issues/open/1172-implement-classAttributeInferenceTemplate.md` - stale build-pass; no longer open
+- `issues/open/1173-implement-classAttributeInferenceTemplateJS.md` - split to `issues/open/5247-fix-js-noemit-class-constructor-funcid-invariant.md`
+- `issues/open/1234-implement-classPropertyInferenceFromBroaderTypeConst.md` - Implement Classpropertyinferencefrombroadertypeconst (same feature label, same group key, title overlap)
 
 ## Smart triage
 
@@ -137,7 +137,7 @@ Not generated. Rerun with `--triage-limit 1` or higher.
 ## 重複整理メモ
 
 この issue はタイトルが重複しているため、内容がより充実している
-`issues/done/453-implement-type-system.md` に統合されました。
+`issues/open/453-implement-type-system.md` に統合されました。
 そちらを参照してください。
 ## Completion evidence
 
@@ -168,7 +168,7 @@ Classification: truly-done.
 Audit result: retained in `issues/done/`. The issue has repo-local completion evidence, is not marked `blocked` or `triage-needed`, and `python scripts/manager.py check issues` validates the resulting issue graph.
 
 Evidence files:
-- `issues/done/4813-implement-type-system.md`
+- `issues/open/4813-implement-type-system.md`
 - `issues/index.md` after regeneration
 
 Future-work tracking: no untracked future-work item was identified in this issue during this metadata/evidence audit.

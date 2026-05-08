@@ -116,7 +116,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/070-implement-APISample.md` - Implement Apisample (same reference path, same feature label, title overlap)
+- `issues/open/070-implement-APISample.md` - Implement Apisample (same reference path, same feature label, title overlap)
 
 ## Smart triage
 
@@ -710,7 +710,7 @@ error: [UnsupportedSyntax] issue-247: expected binding identifier or pattern, go
 ## 重複整理メモ
 
 この issue はタイトルが重複しているため、内容がより充実している
-`issues/done/544-implement-APISample-jsdoc.md` に統合されました。
+`issues/open/544-implement-APISample-jsdoc.md` に統合されました。
 そちらを参照してください。
 ## Completion evidence
 
@@ -741,7 +741,7 @@ Classification: truly-done.
 Audit result: retained in `issues/done/`. The issue has repo-local completion evidence, is not marked `blocked` or `triage-needed`, and `python scripts/manager.py check issues` validates the resulting issue graph.
 
 Evidence files:
-- `issues/done/458-implement-APISample-jsdoc.md`
+- `issues/open/458-implement-APISample-jsdoc.md`
 - `issues/index.md` after regeneration
 
 Future-work tracking: no untracked future-work item was identified in this issue during this metadata/evidence audit.

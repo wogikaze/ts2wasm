@@ -110,7 +110,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] split to `issues/done/5368-isolate-exported-bindings-across-filename-sections.md`
+- [x] split to `issues/open/5368-isolate-exported-bindings-across-filename-sections.md`
 
 ## Notes
 
@@ -160,7 +160,7 @@ The repeated `export const yThen` declarations belong to different
 in one shared binding scope.
 
 This bucket was split to
-`issues/done/5368-isolate-exported-bindings-across-filename-sections.md`.
+`issues/open/5368-isolate-exported-bindings-across-filename-sections.md`.
 
 ## Completion evidence
 

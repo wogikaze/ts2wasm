@@ -107,7 +107,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] added: `issues/done/5179-report-implicit-this-before-closure-runtime-guard.md`
+- [x] added: `issues/open/5179-report-implicit-this-before-closure-runtime-guard.md`
 
 ## Notes
 
@@ -119,7 +119,7 @@ Follow-up issues:
 
 - Generic `runtime-subset` buckets are not matches; they share only the generated feature label.
 - `issues/done/062e-function-closures.md` is related but already completed a narrower closure slice and explicitly left broader `this`/`arguments` closure support out of scope.
-- `issues/done/597-implement-allowJsClassThisTypeCrash.md` has the same `issue-062e` diagnostic in a different reference file, but remains a generated triage bucket rather than an implementation-ready child.
+- `issues/open/597-implement-allowJsClassThisTypeCrash.md` has the same `issue-062e` diagnostic in a different reference file, but remains a generated triage bucket rather than an implementation-ready child.
 
 ## Smart triage
 
@@ -132,7 +132,7 @@ Generated on 2026-05-06.
 - Visible symbols before failure: binding `someKey`
 - Compiler evidence: token dump includes `This`, member `helloWorld`, `for-in` binding `someKey`, and nested arrow `() => someKey`; AST construction succeeds; resolved/lowered pipeline fails at `issue-062e`.
 - TypeScript oracle: `TS2683: 'this' implicitly has type 'any' because it does not have a type annotation.` at the `this` token.
-- Superseding child: `issues/done/5179-report-implicit-this-before-closure-runtime-guard.md`
+- Superseding child: `issues/open/5179-report-implicit-this-before-closure-runtime-guard.md`
 
 ## Completion evidence
 

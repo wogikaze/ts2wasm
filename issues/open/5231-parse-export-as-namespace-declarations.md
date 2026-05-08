@@ -129,9 +129,9 @@ Follow-up issues:
 
 ## Notes
 
-Split from generated bucket `issues/done/1140-implement-checkMergedGlobalUMDSymbol.md`.
+Split from generated bucket `issues/open/1140-implement-checkMergedGlobalUMDSymbol.md`.
 
-Also owns `issues/done/3527-implement-noCrashUMDMergedWithGlobalValue.md`:
+Also owns `issues/open/3527-implement-noCrashUMDMergedWithGlobalValue.md`:
 fresh triage stops before AST at `export as namespace SomeInterface;` with the
 same generic `issue-055: unsupported static export` boundary. TypeScript parses
 the statement as `NamespaceExportDeclaration` and reports TS1315 in this

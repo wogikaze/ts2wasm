@@ -74,7 +74,7 @@ In scope:
 Out of scope:
 
 - Destructuring assignment arrow bodies; see
-  `issues/done/5208-support-regexp-match-fallback-array-map-receiver.md`.
+  `issues/open/5208-support-regexp-match-fallback-array-map-receiver.md`.
 - Compound assignment operators beyond existing supported assignment forms.
 - Type inference for contextual generic callback parameters after parsing.
 
@@ -140,7 +140,7 @@ Split from generated bucket
 
 Related but distinct:
 
-- `issues/done/5208-support-regexp-match-fallback-array-map-receiver.md` owns
+- `issues/open/5208-support-regexp-match-fallback-array-map-receiver.md` owns
   destructuring assignment bodies such as `() => [i] = [i + 1]`; this issue
   owns plain identifier assignment bodies.
 

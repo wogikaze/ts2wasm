@@ -106,7 +106,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] folded into: `issues/done/5228-w0-wasm-binary-backend-mvp.md`
+- [x] folded into: `issues/open/5228-w0-wasm-binary-backend-mvp.md`
 
 ## Notes
 
@@ -117,11 +117,11 @@ Follow-up issues:
 ## Duplicate detection
 
 - Superseded by
-  `issues/done/5228-w0-wasm-binary-backend-mvp.md`, which owns
+  `issues/open/5228-w0-wasm-binary-backend-mvp.md`, which owns
   the same simple identifier computed object-literal key parser boundary.
 - `issues/done/402-computed-symbol-iterator-prerequisite-for-spread.md` is
   related but only completed the narrow `[Symbol.iterator]` object-key shape.
-- `issues/done/5209-support-class-instance-method-receiver-calls.md`
+- `issues/open/5209-support-class-instance-method-receiver-calls.md`
   owns broader computed expression keys, not simple identifier keys.
 
 ## Smart triage
@@ -163,7 +163,7 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- folded into `issues/done/5228-w0-wasm-binary-backend-mvp.md`
+- folded into `issues/open/5228-w0-wasm-binary-backend-mvp.md`
 
 Validation result:
 

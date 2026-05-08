@@ -153,14 +153,14 @@ Follow-up issues:
 ## Notes
 
 Split from
-`issues/done/3538-implement-noImplicitAnyFunctionExpressionAssignment.md`.
+`issues/open/3538-implement-noImplicitAnyFunctionExpressionAssignment.md`.
 
 Related but not duplicates:
 
-- `issues/done/3425-implement-namedFunctionExpressionCall.md` covers behavior
+- `issues/open/3425-implement-namedFunctionExpressionCall.md` covers behavior
   after named function expressions parse; its child issue 5440 owns
   function-valued local call lowering.
-- `issues/done/5148-parse-generic-async-generator-declarations.md` covered
+- `issues/open/5148-parse-generic-async-generator-declarations.md` covered
   generic async generator declarations, not generic function expressions.
 
 ## Completion evidence

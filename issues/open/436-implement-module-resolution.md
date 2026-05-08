@@ -135,12 +135,12 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/133-implement-allowJsCrossMonorepoPackage.md` - Implement Allowjscrossmonorepopackage (same feature label, same group key, title overlap)
-- `issues/done/169-implement-ambiguousOverloadResolution.md` - Implement Ambiguousoverloadresolution (same feature label, same group key, title overlap)
-- `issues/done/409-implement-tsgo-declaration-emit-package-json-subpath.md` - Implement tsgo declaration emit: package-json exports and subpath reexport cases (same feature label, same group key, title overlap)
-- `issues/done/410-implement-tsgo-declaration-emit-subpath-import-links.md` - Implement tsgo declaration emit: subpath import declaration emit cases (same feature label, same group key, title overlap)
-- `issues/done/060-investigate-unknown-unsupported-cases.md` - Investigate and classify unknown-unsupported diagnostic cases (same feature label, same group key)
-- `issues/done/399-define-typescript-parse-erase-emit-boundary.md` - Define TypeScript parse, erase, and emit boundary contract (same feature label, same group key)
+- `issues/open/133-implement-allowJsCrossMonorepoPackage.md` - Implement Allowjscrossmonorepopackage (same feature label, same group key, title overlap)
+- `issues/open/169-implement-ambiguousOverloadResolution.md` - Implement Ambiguousoverloadresolution (same feature label, same group key, title overlap)
+- `issues/open/409-implement-tsgo-declaration-emit-package-json-subpath.md` - Implement tsgo declaration emit: package-json exports and subpath reexport cases (same feature label, same group key, title overlap)
+- `issues/open/410-implement-tsgo-declaration-emit-subpath-import-links.md` - Implement tsgo declaration emit: subpath import declaration emit cases (same feature label, same group key, title overlap)
+- `issues/open/060-investigate-unknown-unsupported-cases.md` - Investigate and classify unknown-unsupported diagnostic cases (same feature label, same group key)
+- `issues/open/399-define-typescript-parse-erase-emit-boundary.md` - Define TypeScript parse, erase, and emit boundary contract (same feature label, same group key)
 
 ## Smart triage
 

@@ -127,14 +127,14 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/067-implement-unknown-unsupported.md` - Investigate and classify unknown-unsupported cases (same reference path)
-- `issues/done/341-implement-core-builtin-api-coverage.md` - Implement core builtin API coverage (3,190 test262 cases) (same feature label, same group key, title overlap)
-- `issues/done/060-investigate-unknown-unsupported-cases.md` - Investigate and classify unknown-unsupported diagnostic cases (same feature label, same group key)
-- `issues/done/065-implement-parser-syntax.md` - Implement parser syntax extensions (same reference path, title overlap)
-- `issues/done/224-implement-annexb-html-comments.md` - Implement Annex B HTML-like comments (same feature label, same group key, title overlap)
+- `issues/open/067-implement-unknown-unsupported.md` - Investigate and classify unknown-unsupported cases (same reference path)
+- `issues/open/341-implement-core-builtin-api-coverage.md` - Implement core builtin API coverage (3,190 test262 cases) (same feature label, same group key, title overlap)
+- `issues/open/060-investigate-unknown-unsupported-cases.md` - Investigate and classify unknown-unsupported diagnostic cases (same feature label, same group key)
+- `issues/open/065-implement-parser-syntax.md` - Implement parser syntax extensions (same reference path, title overlap)
+- `issues/open/224-implement-annexb-html-comments.md` - Implement Annex B HTML-like comments (same feature label, same group key, title overlap)
 - `issues/done/228-implement-logical-assignment-operators.md` - Implement logical assignment operators (same feature label, same group key, title overlap)
 - `issues/done/341a-global-number-functions.md` - Implement isNaN, parseInt, parseFloat, isFinite global functions (same feature label, same group key, title overlap)
-- `issues/done/406-direct-eval-annexb-existing-binding-residuals.md` - Direct eval Annex B existing binding residuals (same feature label, same group key)
+- `issues/open/406-direct-eval-annexb-existing-binding-residuals.md` - Direct eval Annex B existing binding residuals (same feature label, same group key)
 
 ## Smart triage
 

@@ -125,7 +125,7 @@ Follow-up issues:
 
 ## Notes
 
-Split from `issues/done/3590-implement-nodeResolution.md`.
+Split from `issues/open/3590-implement-nodeResolution.md`.
 
 Related but not duplicates:
 
@@ -133,7 +133,7 @@ Related but not duplicates:
   covers direct `node_modules/<pkg>.d.ts` files.
 - `issues/open/5295-resolve-import-equals-require-to-virtual-node-modules-class-export.md`
   covers virtual `node_modules/pkg/index.ts` class-export values.
-- `issues/done/232-resolve-local-relative-es-module-graph.md` intentionally
+- `issues/open/232-resolve-local-relative-es-module-graph.md` intentionally
   rejects unmatched bare specifiers and excludes package/node_modules lookup.
 
 ## Completion evidence

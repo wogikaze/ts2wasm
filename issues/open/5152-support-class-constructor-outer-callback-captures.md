@@ -136,7 +136,7 @@ Follow-up issues:
 
 ## Notes
 
-Split from generated bucket `issues/done/1031-implement-badThisBinding.md`.
+Split from generated bucket `issues/open/1031-implement-badThisBinding.md`.
 
 ## Completion evidence
 

@@ -114,7 +114,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] created: `issues/done/5304-parse-generic-arrow-functions-with-typed-parameters.md`
+- [x] created: `issues/open/5304-parse-generic-arrow-functions-with-typed-parameters.md`
 
 ## Notes
 
@@ -125,7 +125,7 @@ Follow-up issues:
 ## Duplicate detection
 
 - No existing open/done issue owns this exact parser gap.
-- `issues/done/5154-parse-angle-bracket-type-assertion-statements.md` is related
+- `issues/open/5154-parse-angle-bracket-type-assertion-statements.md` is related
   but explicitly excludes ambiguous generic arrow parsing such as
   `<T>(x: T) => x`.
 - Generic type-system duplicate candidates are no-match because the current

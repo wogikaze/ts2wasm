@@ -18,7 +18,7 @@ updated: 2026-05-07
 ## Summary
 
 Closed as superseded by
-`issues/done/056-implement-name-resolution.md`.
+`issues/open/056-implement-name-resolution.md`.
 
 Fresh focused triage shows `commonjsAccessExports.ts` currently stops at a
 genuinely unresolved top-level `exports` identifier. TypeScript also reports
@@ -145,7 +145,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] superseded by: `issues/done/056-implement-name-resolution.md`
+- [x] superseded by: `issues/open/056-implement-name-resolution.md`
 
 ## Notes
 
@@ -155,10 +155,10 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/056-implement-name-resolution.md` owns the expected
+- `issues/open/056-implement-name-resolution.md` owns the expected
   `UnresolvedName` diagnostic behavior for genuinely unresolved identifiers.
 - `issues/open/064-implement-name-resolution.md` and
-  `issues/done/437-implement-name-resolution.md` are broad blocked/generated
+  `issues/open/437-implement-name-resolution.md` are broad blocked/generated
   buckets and should not receive this standalone invalid-source case.
 - No open CommonJS/module issue matched this current first diagnostic; the
   fixture does not reach CommonJS lowering.
@@ -221,7 +221,7 @@ diagnostics:
 
 Commits:
 
-- superseded by `issues/done/056-implement-name-resolution.md`
+- superseded by `issues/open/056-implement-name-resolution.md`
 
 Validation result:
 

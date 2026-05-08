@@ -106,11 +106,11 @@ Current state:
 
 Follow-up issues:
 
-- [x] created: `issues/done/5193-parse-asi-after-ambient-variable-declarations.md`
+- [x] created: `issues/open/5193-parse-asi-after-ambient-variable-declarations.md`
 
 ## Notes
 
-Superseded by `issues/done/5193-parse-asi-after-ambient-variable-declarations.md`.
+Superseded by `issues/open/5193-parse-asi-after-ambient-variable-declarations.md`.
 Fresh triage shows the generated bucket's first actionable blocker is ASI after
 `export declare let x: number` in the virtual `foo.d.ts` section. The resolved
 dump also shows a downstream `issue-232` unsupported non-local module specifier
@@ -142,12 +142,12 @@ Generated on 2026-05-06:
 - parser tokens: `export declare let x: number` followed by `import` with no semicolon token
 - resolved dump: reaches `UnsupportedModule`, `issue-232: unsupported non-local module specifier foo`
 - TypeScript oracle: reports duplicate identifier `x`, exported/local merge diagnostics, and TS2307 for `foo`
-- follow-up: `issues/done/5193-parse-asi-after-ambient-variable-declarations.md`
+- follow-up: `issues/open/5193-parse-asi-after-ambient-variable-declarations.md`
 
 ## Completion evidence
 
 Closed as a generated triage bucket. The first actionable blocker is tracked by
-`issues/done/5193-parse-asi-after-ambient-variable-declarations.md`.
+`issues/open/5193-parse-asi-after-ambient-variable-declarations.md`.
 
 Commits:
 

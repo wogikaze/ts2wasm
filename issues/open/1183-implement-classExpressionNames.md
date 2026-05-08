@@ -110,7 +110,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] `issues/done/5169-parse-asi-after-expression-statement.md`
+- [x] `issues/open/5169-parse-asi-after-expression-statement.md`
 
 ## Notes
 
@@ -120,7 +120,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/5169-parse-asi-after-expression-statement.md` owns the current parser blocker: a completed expression statement followed by a later-line statement starter.
+- `issues/open/5169-parse-asi-after-expression-statement.md` owns the current parser blocker: a completed expression statement followed by a later-line statement starter.
 - Broad parser-syntax epic `issues/open/059-implement-parser-syntax-extensions.md` is related but not directly selectable.
 
 ## Smart triage

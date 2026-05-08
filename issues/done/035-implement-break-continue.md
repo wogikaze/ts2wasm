@@ -90,7 +90,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] Implement labeled break/continue (P2; tracked by `issues/done/209-implement-labeled-break-continue.md`)
+- [x] Implement labeled break/continue (P2; tracked by `issues/open/209-implement-labeled-break-continue.md`)
 
 ## Notes
 
@@ -117,7 +117,7 @@ date: 2026-04-26
   - Tests: 5 break/continue related tests already pass
 
 **Remaining risks:**
-- Labeled break/continue is implemented and tracked by `issues/done/209-implement-labeled-break-continue.md`
+- Labeled break/continue is implemented and tracked by `issues/open/209-implement-labeled-break-continue.md`
 
 ## False-done audit
 

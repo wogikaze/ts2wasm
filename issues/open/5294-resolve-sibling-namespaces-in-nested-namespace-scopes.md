@@ -159,7 +159,7 @@ Follow-up issues:
 
 ## Notes
 
-Split from generated bucket `issues/done/1400-implement-complicatedPrivacy.md`.
+Split from generated bucket `issues/open/1400-implement-complicatedPrivacy.md`.
 
 Related but not duplicates:
 

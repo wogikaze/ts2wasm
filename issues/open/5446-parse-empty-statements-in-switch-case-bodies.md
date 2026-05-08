@@ -148,7 +148,7 @@ Follow-up issues:
 
 ## Notes
 
-Related but distinct issue: `issues/open/5282-parse-labeled-empty-statements.md`
+Related but distinct issue: `issues/done/5282-parse-labeled-empty-statements.md`
 owns `Input: ;`; this issue owns ordinary unlabeled empty statements in switch
 case bodies.
 

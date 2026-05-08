@@ -86,7 +86,7 @@ Out of scope:
 
 - Package or bare module resolution for `foo`
 - TypeScript duplicate identifier and merged-declaration diagnostics
-- General ASI for ambient function declarations, tracked separately by `issues/done/705-implement-asiAmbientFunctionDeclaration.md`
+- General ASI for ambient function declarations, tracked separately by `issues/open/705-implement-asiAmbientFunctionDeclaration.md`
 
 ## Affected paths
 

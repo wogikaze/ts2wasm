@@ -68,7 +68,7 @@ Expected:
 - `crates/frontend/src/parser/`
 - `crates/frontend/src/parser/tests.rs`
 - `fixtures/` only if a compiler-level regression fixture is needed
-- `issues/done/5133-implement-single-statement-loop-body-break-continue.md`
+- `issues/open/5133-implement-single-statement-loop-body-break-continue.md`
 
 Do not touch:
 

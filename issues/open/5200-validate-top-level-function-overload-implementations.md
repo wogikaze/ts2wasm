@@ -116,7 +116,7 @@ In scope:
 
 Out of scope:
 
-- Class/function merge diagnostics, tracked by `issues/done/5199-report-function-overload-list-class-merge-diagnostics.md`
+- Class/function merge diagnostics, tracked by `issues/open/5199-report-function-overload-list-class-merge-diagnostics.md`
 - Ambient declaration merging
 - Full overload compatibility checking between signatures and implementation
   body types
@@ -210,13 +210,13 @@ issue 5199.
 
 2026-05-08 additional superseded bucket:
 
-- `issues/done/3539-implement-noImplicitAnyFunctions.md` reaches the same
+- `issues/open/3539-implement-noImplicitAnyFunctions.md` reaches the same
   top-level overload grouping boundary. The source has two bodyless
   `function f6(...)` overload signatures followed by one implementation
   `function f6(x: string, y) { return null; }`; validation reports
   `DuplicateFunction: duplicate function definition: f6 at 254..262`, while the
   TypeScript oracle reports no diagnostics.
-- `issues/done/3553-implement-noImplicitAnyWithOverloads.md` reaches the same
+- `issues/open/3553-implement-noImplicitAnyWithOverloads.md` reaches the same
   top-level overload grouping boundary. The source has two bodyless
   `function callb(lam: ...)` overload signatures followed by one implementation
   `function callb(a) { }`; validation reports `DuplicateFunction` for the

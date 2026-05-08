@@ -549,7 +549,7 @@ error: [UnsupportedSyntax] expected LeftParen, got Some(Ident("toString")) at 10
 ## 重複整理メモ
 
 この issue はタイトルが重複しているため、内容がより充実している
-`issues/done/563-implement-accessOverriddenBaseClassMember.md` に統合されました。
+`issues/open/563-implement-accessOverriddenBaseClassMember.md` に統合されました。
 そちらを参照してください。
 ## Completion evidence
 

@@ -119,16 +119,16 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/075-implement-ExportAssignment.md` - Implement Exportassignment (same feature label, same group key, title overlap)
-- `issues/done/131-implement-allowImportClausesToMergeWithTypes.md` - Implement Allowimportclausestomergewithtypes (same feature label, same group key, title overlap)
-- `issues/done/135-implement-allowSyntheticDefaultImports.md` - Implement Allowsyntheticdefaultimports (same feature label, same group key, title overlap)
-- `issues/done/136-implement-allowSyntheticDefaultImportsCanPaintCrossModuleDeclaration.md` - Implement Allowsyntheticdefaultimportscanpaintcrossmoduledeclaration (same feature label, same group key, title overlap)
-- `issues/done/138-implement-alwaysStrictModule.md` - Implement Alwaysstrictmodule (same feature label, same group key, title overlap)
-- `issues/done/181-implement-anonymousModules.md` - Implement Anonymousmodules (same feature label, same group key, title overlap)
-- `issues/done/410-implement-tsgo-declaration-emit-subpath-import-links.md` - Implement tsgo declaration emit: subpath import declaration emit cases (same group key, title overlap)
-- `issues/done/432-implement-import-export.md` - Implement import/export module syntax (same feature label, same group key, title overlap)
-- `issues/done/455-implement-APILibCheck.md` - Implement Apilibcheck (same feature label, same group key, title overlap)
-- `issues/done/457-implement-APISample-import-export.md` - Implement Apisample Import Export (same feature label, same group key, title overlap)
+- `issues/open/075-implement-ExportAssignment.md` - Implement Exportassignment (same feature label, same group key, title overlap)
+- `issues/open/131-implement-allowImportClausesToMergeWithTypes.md` - Implement Allowimportclausestomergewithtypes (same feature label, same group key, title overlap)
+- `issues/open/135-implement-allowSyntheticDefaultImports.md` - Implement Allowsyntheticdefaultimports (same feature label, same group key, title overlap)
+- `issues/open/136-implement-allowSyntheticDefaultImportsCanPaintCrossModuleDeclaration.md` - Implement Allowsyntheticdefaultimportscanpaintcrossmoduledeclaration (same feature label, same group key, title overlap)
+- `issues/open/138-implement-alwaysStrictModule.md` - Implement Alwaysstrictmodule (same feature label, same group key, title overlap)
+- `issues/open/181-implement-anonymousModules.md` - Implement Anonymousmodules (same feature label, same group key, title overlap)
+- `issues/open/410-implement-tsgo-declaration-emit-subpath-import-links.md` - Implement tsgo declaration emit: subpath import declaration emit cases (same group key, title overlap)
+- `issues/open/432-implement-import-export.md` - Implement import/export module syntax (same feature label, same group key, title overlap)
+- `issues/open/455-implement-APILibCheck.md` - Implement Apilibcheck (same feature label, same group key, title overlap)
+- `issues/open/457-implement-APISample-import-export.md` - Implement Apisample Import Export (same feature label, same group key, title overlap)
 
 ## Smart triage
 

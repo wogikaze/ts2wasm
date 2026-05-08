@@ -45,7 +45,7 @@ Expected:
 - `crates/frontend/src/`
 - `crates/cli/tests/`
 - `fixtures/`
-- `issues/done/062-implement-function.md`
+- `issues/open/062-implement-function.md`
 
 Do not touch:
 

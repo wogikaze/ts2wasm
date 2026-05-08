@@ -67,8 +67,8 @@ Expected:
 
 - `crates/backend-wasm/src/`
 - `scripts/run/abc451-runtime-costs.py` if attribution matching must adapt to the helper boundary
-- `issues/done/367-extract-arraypushgrow-runtime-helper.md`
-- `issues/done/365-reduce-abc451-array-growth-allocation-copy-pressure.md`
+- `issues/open/367-extract-arraypushgrow-runtime-helper.md`
+- `issues/open/365-reduce-abc451-array-growth-allocation-copy-pressure.md`
 - `issues/index.md`
 
 Do not touch:
@@ -205,7 +205,7 @@ Classification: truly-done.
 Audit result: retained in `issues/done/`. The issue has repo-local completion evidence, is not marked `blocked` or `triage-needed`, and `python scripts/manager.py check issues` validates the resulting issue graph.
 
 Evidence files:
-- `issues/done/367-extract-arraypushgrow-runtime-helper.md`
+- `issues/open/367-extract-arraypushgrow-runtime-helper.md`
 - `issues/index.md` after regeneration
 
 Future-work tracking: no untracked future-work item was identified in this issue during this metadata/evidence audit.

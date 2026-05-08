@@ -137,7 +137,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/428-implement-enum.md` is the broad enum generated bucket and is
+- `issues/open/428-implement-enum.md` is the broad enum generated bucket and is
   too wide to implement directly.
 - `issues/open/2121-implement-enumBasics-parser-syntax.md` and
   `issues/open/2143-implement-enumPropertyAccess.md` are generated buckets that

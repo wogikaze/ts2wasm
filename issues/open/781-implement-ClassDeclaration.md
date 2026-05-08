@@ -126,16 +126,16 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/072-implement-ClassDeclaration.md` - Implement Classdeclaration (same reference path, same feature label, same group key, title overlap)
-- `issues/done/073-implement-ClassDeclarationWithInvalidConstOnPropertyDeclaration.md` - Implement Classdeclarationwithinvalidconstonpropertydeclaration (same feature label, same group key, title overlap)
-- `issues/done/084-implement-abstractClassUnionInstantiation.md` - Implement Abstractclassunioninstantiation (same feature label, same group key, title overlap)
-- `issues/done/086-implement-abstractPropertyBasics.md` - Implement Abstractpropertybasics (same feature label, same group key, title overlap)
-- `issues/done/088-implement-abstractPropertyNegative.md` - Implement Abstractpropertynegative (same feature label, same group key, title overlap)
-- `issues/done/091-implement-accessInstanceMemberFromStaticMethod.md` - Implement Accessinstancememberfromstaticmethod (same feature label, same group key, title overlap)
-- `issues/done/092-implement-accessOverriddenBaseClassMember.md` - Implement Accessoverriddenbaseclassmember (same feature label, same group key, title overlap)
-- `issues/done/093-implement-accessStaticMemberFromInstanceMethod.md` - Implement Accessstaticmemberfrominstancemethod (same feature label, same group key, title overlap)
-- `issues/done/166-implement-ambiguousCallsWhereReturnTypesAgree.md` - Implement Ambiguouscallswherereturntypesagree (same feature label, same group key, title overlap)
-- `issues/done/185-implement-anyIdenticalToItself.md` - Implement Anyidenticaltoitself (same feature label, same group key, title overlap)
+- `issues/open/072-implement-ClassDeclaration.md` - Implement Classdeclaration (same reference path, same feature label, same group key, title overlap)
+- `issues/open/073-implement-ClassDeclarationWithInvalidConstOnPropertyDeclaration.md` - Implement Classdeclarationwithinvalidconstonpropertydeclaration (same feature label, same group key, title overlap)
+- `issues/open/084-implement-abstractClassUnionInstantiation.md` - Implement Abstractclassunioninstantiation (same feature label, same group key, title overlap)
+- `issues/open/086-implement-abstractPropertyBasics.md` - Implement Abstractpropertybasics (same feature label, same group key, title overlap)
+- `issues/open/088-implement-abstractPropertyNegative.md` - Implement Abstractpropertynegative (same feature label, same group key, title overlap)
+- `issues/open/091-implement-accessInstanceMemberFromStaticMethod.md` - Implement Accessinstancememberfromstaticmethod (same feature label, same group key, title overlap)
+- `issues/open/092-implement-accessOverriddenBaseClassMember.md` - Implement Accessoverriddenbaseclassmember (same feature label, same group key, title overlap)
+- `issues/open/093-implement-accessStaticMemberFromInstanceMethod.md` - Implement Accessstaticmemberfrominstancemethod (same feature label, same group key, title overlap)
+- `issues/open/166-implement-ambiguousCallsWhereReturnTypesAgree.md` - Implement Ambiguouscallswherereturntypesagree (same feature label, same group key, title overlap)
+- `issues/open/185-implement-anyIdenticalToItself.md` - Implement Anyidenticaltoitself (same feature label, same group key, title overlap)
 
 ## Smart triage
 
@@ -176,8 +176,8 @@ Reopen reason: frontmatter still says `class: blocked`, which is incompatible wi
 Violated acceptance: the issue cannot provide repo-local close evidence for its checked acceptance criteria while it remains in this state. Acceptance checkboxes were reset for re-verification.
 
 Evidence files:
-- `issues/done/781-implement-ClassDeclaration.md` before this move
-- `issues/done/781-implement-ClassDeclaration.md` after this move
+- `issues/open/781-implement-ClassDeclaration.md` before this move
+- `issues/open/781-implement-ClassDeclaration.md` after this move
 
 Split follow-up: none created in this audit wave; this reopened issue remains the tracking item.
 
@@ -190,5 +190,5 @@ Classification: truly-done duplicate/superseded tracking issue.
 Audit result: returned to `issues/done/` after review feedback. The title contains `(dup)`, which marks this issue as a duplicate/superseded tracker; duplicate closure issues must not remain in `issues/open/` unless the duplicate mapping itself is invalid.
 
 Evidence files:
-- `issues/done/781-implement-ClassDeclaration.md` after this correction
+- `issues/open/781-implement-ClassDeclaration.md` after this correction
 - `issues/index.md` after regeneration

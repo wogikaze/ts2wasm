@@ -24,7 +24,7 @@ Triage augmentedTypesFunction across 1 failing reference test cases and split th
 ## Problem
 
 Closed this generated bucket as superseded by
-`issues/done/5307-report-var-function-duplicate-identifier-diagnostics.md`.
+`issues/open/5307-report-var-function-duplicate-identifier-diagnostics.md`.
 
 Fresh triage shows the old parser-syntax blocker is stale. The current first
 blocker is a resolver duplicate-identifier boundary for `function y1() { }`
@@ -48,7 +48,7 @@ mise run reference-coverage -- tsc --path-filter reference/typescript/tests/case
 ## Desired final state
 
 This generated bucket is closed. Implement from
-`issues/done/5307-report-var-function-duplicate-identifier-diagnostics.md`.
+`issues/open/5307-report-var-function-duplicate-identifier-diagnostics.md`.
 
 ## Scope
 
@@ -117,7 +117,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] `issues/done/5307-report-var-function-duplicate-identifier-diagnostics.md`
+- [x] `issues/open/5307-report-var-function-duplicate-identifier-diagnostics.md`
 
 ## Notes
 
@@ -127,7 +127,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-Superseded by `issues/done/5307-report-var-function-duplicate-identifier-diagnostics.md`.
+Superseded by `issues/open/5307-report-var-function-duplicate-identifier-diagnostics.md`.
 
 Evidence:
 
@@ -143,7 +143,7 @@ var y1 = 1; // error
 
 - TypeScript oracle reports duplicate identifier TS2300 diagnostics at both
   `y1` identifiers.
-- Related issue `issues/done/5199-report-function-overload-list-class-merge-diagnostics.md`
+- Related issue `issues/open/5199-report-function-overload-list-class-merge-diagnostics.md`
   owns the later class/function merge diagnostics in this same reference file
   family, but not this first function/var duplicate-identifier blocker.
 

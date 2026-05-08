@@ -132,7 +132,7 @@ Follow-up issues:
 
 - `issues/open/5324-support-dependency-export-class-declarations.md` owns the
   current dependency virtual-file `export class` issue-5005 boundary.
-- `issues/done/232-resolve-local-relative-es-module-graph.md` documents that
+- `issues/open/232-resolve-local-relative-es-module-graph.md` documents that
   package resolution, `node_modules`, and bare specifiers are out of scope for
   the completed local-relative graph slice. The current triage dump also sees
   `projB` as a non-local specifier, but the headline/stack first blocker is the

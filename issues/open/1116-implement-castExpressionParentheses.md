@@ -111,7 +111,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] `issues/done/5216-allow-extra-arguments-for-functions-reading-arguments-object.md`
+- [x] `issues/open/5216-allow-extra-arguments-for-functions-reading-arguments-object.md`
 
 ## Notes
 
@@ -173,7 +173,7 @@ resolved: same lexer failure
 TypeScript AST sees `ExpressionStatement -> ParenthesizedExpression ->
 TypeAssertionExpression -> FirstLiteralToken "12e+34"` and reports no
 diagnostics. Child issue
-`issues/done/5216-allow-extra-arguments-for-functions-reading-arguments-object.md` owns this
+`issues/open/5216-allow-extra-arguments-for-functions-reading-arguments-object.md` owns this
 lexer/parser prerequisite.
 
 ## Completion evidence

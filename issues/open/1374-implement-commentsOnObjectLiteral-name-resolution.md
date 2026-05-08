@@ -17,7 +17,7 @@ updated: 2026-05-07
 
 ## Summary
 
-Closed as superseded by `issues/done/056-implement-name-resolution.md`.
+Closed as superseded by `issues/open/056-implement-name-resolution.md`.
 
 Fresh triage shows both representatives now fail with an oracle-matching
 `UnresolvedName` diagnostic for the genuinely missing helper `makeClass`.
@@ -155,11 +155,11 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/056-implement-name-resolution.md` established source-spanned
+- `issues/open/056-implement-name-resolution.md` established source-spanned
   `UnresolvedName` as the correct compiler diagnostic for genuinely unresolved
   identifiers.
 - Broad generated buckets `issues/open/064-implement-name-resolution.md`,
-  `issues/done/437-implement-name-resolution.md`, and meta issue 5005 are not
+  `issues/open/437-implement-name-resolution.md`, and meta issue 5005 are not
   narrower implementation orders for this oracle-matching invalid-source case.
 
 ## Smart triage

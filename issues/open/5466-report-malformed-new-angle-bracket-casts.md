@@ -18,7 +18,7 @@ Report a source-spanned syntax/type diagnostic for malformed
 `unsupported expression` boundary at the `<` token.
 
 Split from generated bucket
-`issues/done/3497-implement-newExpressionWithCast.md`.
+`issues/open/3497-implement-newExpressionWithCast.md`.
 
 ## Problem
 

@@ -153,14 +153,14 @@ Follow-up issues:
 
 ## Notes
 
-Split from `issues/done/1369-implement-commentsInheritance.md`.
+Split from `issues/open/1369-implement-commentsInheritance.md`.
 
 Related but not duplicates:
 
-- `issues/done/413-implement-arity.md` covered broader historical arity work, not this class-constructor lowering bug.
-- `issues/done/5135-fix-builtin-arity-validation-coercion-globals.md` and `issues/done/5136-fix-arity-validation-regexp-string-prototype.md` cover builtin constructor and method arity validation.
+- `issues/open/413-implement-arity.md` covered broader historical arity work, not this class-constructor lowering bug.
+- `issues/open/5135-fix-builtin-arity-validation-coercion-globals.md` and `issues/open/5136-fix-arity-validation-regexp-string-prototype.md` cover builtin constructor and method arity validation.
 - `issues/open/2460-implement-functionParameterArityMismatch.md` is a generated TypeScript function arity bucket, not a class `new` constructor issue.
-- `issues/done/5268-support-derived-constructor-parameter-properties-after-super.md` covers derived constructor parameter properties, not ordinary constructor arity metadata.
+- `issues/open/5268-support-derived-constructor-parameter-properties-after-super.md` covers derived constructor parameter properties, not ordinary constructor arity metadata.
 
 ## Completion evidence
 

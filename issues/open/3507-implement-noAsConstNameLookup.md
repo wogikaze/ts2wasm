@@ -18,7 +18,7 @@ status: done
 Triage noAsConstNameLookup across 1 failing reference test cases and split this bucket into implementation-ready child issues.
 
 Closed as superseded by
-`issues/open/5232-support-entry-export-class-declarations.md`. Fresh triage
+`issues/open/5232-w0-fixture-ize-runtimelinkplan-linker-structure-tests.md`. Fresh triage
 shows the current first blocker is the entry-module `export class`
 issue-5005 boundary after the parser accepts the `as const` portions.
 
@@ -47,7 +47,7 @@ mise run reference-coverage -- tsc --path-filter reference/typescript/tests/case
 ## Desired final state
 
 This generated bucket is closed. Implement the current blocker through
-`issues/open/5232-support-entry-export-class-declarations.md`.
+`issues/open/5232-w0-fixture-ize-runtimelinkplan-linker-structure-tests.md`.
 
 ## Scope
 
@@ -130,7 +130,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/open/5232-support-entry-export-class-declarations.md` owns the
+- `issues/open/5232-w0-fixture-ize-runtimelinkplan-linker-structure-tests.md` owns the
   current entry-module `export class` issue-5005 boundary.
 - `issues/done/059a-implement-typescript-satisfies-and-const-assertion-erasure.md`
   owns the completed parser erasure for `as const` and `<const>`, so the

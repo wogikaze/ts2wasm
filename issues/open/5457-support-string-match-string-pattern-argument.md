@@ -18,7 +18,7 @@ Support the TypeScript/JavaScript-compatible
 plain RegExp pattern for the current supported subset.
 
 Split from generated bucket
-`issues/done/3471-implement-narrowingWithNonNullExpression.md`.
+`issues/open/3471-implement-narrowingWithNonNullExpression.md`.
 
 ## Problem
 

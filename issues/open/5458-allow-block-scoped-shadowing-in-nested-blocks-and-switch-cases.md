@@ -17,7 +17,7 @@ Allow `let` declarations in nested block scopes and switch case scopes to
 shadow outer `var` declarations without reporting `DuplicateLocal`.
 
 Split from generated bucket
-`issues/done/3475-implement-nestedBlockScopedBindings.md`.
+`issues/open/3475-implement-nestedBlockScopedBindings.md`.
 
 ## Problem
 

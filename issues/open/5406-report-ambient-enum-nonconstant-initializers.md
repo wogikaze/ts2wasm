@@ -97,7 +97,7 @@ Follow-up issues: none.
 
 ## Notes
 
-Split from `issues/done/145-implement-ambientEnum.md` on 2026-05-08 after the
+Split from `issues/open/145-implement-ambientEnum.md` on 2026-05-08 after the
 build blocker was resolved by issue 400.
 
 ## Completion evidence

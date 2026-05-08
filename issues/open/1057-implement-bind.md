@@ -108,7 +108,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] added: `issues/done/5172-report-unresolved-implements-in-erased-namespace.md`
+- [x] added: `issues/open/5172-report-unresolved-implements-in-erased-namespace.md`
 
 ## Notes
 
@@ -118,7 +118,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/432-implement-import-export.md` is not a match for the current blocker: `bind1.ts` contains a TypeScript namespace declaration and now builds, while the remaining mismatch is a missing `TS2304` diagnostic.
+- `issues/open/432-implement-import-export.md` is not a match for the current blocker: `bind1.ts` contains a TypeScript namespace declaration and now builds, while the remaining mismatch is a missing `TS2304` diagnostic.
 - No open issue was found for unresolved `implements I` inside an erased namespace body.
 
 ## Smart triage
@@ -132,7 +132,7 @@ Generated on 2026-05-06.
 - Visible symbols before mismatch: class `C`
 - Compiler evidence: tokens include `namespace`, `export`, `class`, `implements`, and `I`; AST and resolved dumps are empty because the namespace body is erased.
 - TypeScript oracle: reports `TS2304` at the `I` token.
-- Superseding child: `issues/done/5172-report-unresolved-implements-in-erased-namespace.md`
+- Superseding child: `issues/open/5172-report-unresolved-implements-in-erased-namespace.md`
 
 ## Completion evidence
 

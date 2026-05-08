@@ -111,8 +111,8 @@ Current state:
 
 Follow-up issues:
 
-- [x] `issues/done/5213-generator-function-syntax-prerequisite-for-iterator-spread.md`
-- [x] `issues/done/5214-computed-symbol-iterator-prerequisite-for-spread.md`
+- [x] `issues/open/5213-generator-function-syntax-prerequisite-for-iterator-spread.md`
+- [x] `issues/open/5214-computed-symbol-iterator-prerequisite-for-spread.md`
 
 ## Notes
 
@@ -169,7 +169,7 @@ Source context:
 
 TypeScript parses the generator function expression and reports later TS2373
 parameter capture diagnostics. Child issue
-`issues/done/5213-generator-function-syntax-prerequisite-for-iterator-spread.md`
+`issues/open/5213-generator-function-syntax-prerequisite-for-iterator-spread.md`
 owns this parser slice.
 
 ### Smart triage: capturedParametersInInitializers2
@@ -208,7 +208,7 @@ Source context:
 
 TypeScript AST sees `Parameter -> ClassExpression -> GetAccessor ->
 ComputedPropertyName` for `[x]`. Child issue
-`issues/done/5214-computed-symbol-iterator-prerequisite-for-spread.md`
+`issues/open/5214-computed-symbol-iterator-prerequisite-for-spread.md`
 owns this parser slice.
 
 ## Completion evidence

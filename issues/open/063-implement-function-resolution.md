@@ -145,8 +145,8 @@ Reopen reason: frontmatter still says `class: superseded`, which is incompatible
 Violated acceptance: the issue cannot provide repo-local close evidence for its checked acceptance criteria while it remains in this state. Acceptance checkboxes were reset for re-verification.
 
 Evidence files:
-- `issues/done/063-implement-function-resolution.md` before this move
-- `issues/done/063-implement-function-resolution.md` after this move
+- `issues/open/063-implement-function-resolution.md` before this move
+- `issues/open/063-implement-function-resolution.md` after this move
 
 Split follow-up: none created in this audit wave; this reopened issue remains the tracking item.
 
@@ -159,5 +159,5 @@ Classification: truly-done duplicate/superseded tracking issue.
 Audit result: returned to `issues/done/` after review feedback. The title contains `(dup)`, which marks this issue as a duplicate/superseded tracker; duplicate closure issues must not remain in `issues/open/` unless the duplicate mapping itself is invalid.
 
 Evidence files:
-- `issues/done/063-implement-function-resolution.md` after this correction
+- `issues/open/063-implement-function-resolution.md` after this correction
 - `issues/index.md` after regeneration

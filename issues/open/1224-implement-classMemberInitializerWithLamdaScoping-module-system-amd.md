@@ -124,7 +124,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] created: `issues/done/5325-fix-multifile-class-constructor-funcid-invariant.md`
+- [x] created: `issues/open/5325-fix-multifile-class-constructor-funcid-invariant.md`
 
 ## Notes
 
@@ -136,7 +136,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/5247-fix-js-noemit-class-constructor-funcid-invariant.md` - related same invariant in a JS/noEmit path, not exact for this multi-file TypeScript reference window
+- `issues/open/5247-fix-js-noemit-class-constructor-funcid-invariant.md` - related same invariant in a JS/noEmit path, not exact for this multi-file TypeScript reference window
 
 ## Smart triage
 
@@ -203,7 +203,7 @@ triage: InvariantViolation ClassDecl constructor FuncId 0 is out of range
 
 Split result:
 
-- `issues/done/5325-fix-multifile-class-constructor-funcid-invariant.md`
+- `issues/open/5325-fix-multifile-class-constructor-funcid-invariant.md`
 
 ### Smart triage: Build pass: classMemberInitializerWithLamdaScoping5
 
@@ -229,7 +229,7 @@ unsupported=0
 
 Commits:
 
-- Split to `issues/done/5325-fix-multifile-class-constructor-funcid-invariant.md`; see local commit for this issue cleanup.
+- Split to `issues/open/5325-fix-multifile-class-constructor-funcid-invariant.md`; see local commit for this issue cleanup.
 
 Validation result:
 

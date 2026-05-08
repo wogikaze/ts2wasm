@@ -604,7 +604,7 @@ error: [UnsupportedSyntax] issue-211: `this` is only supported inside receiver-b
 ## 重複整理メモ
 
 この issue はタイトルが重複しているため、内容がより充実している
-`issues/done/641-implement-anyAsReturnTypeForNewOnCall.md` に統合されました。
+`issues/open/641-implement-anyAsReturnTypeForNewOnCall.md` に統合されました。
 そちらを参照してください。
 ## Completion evidence
 

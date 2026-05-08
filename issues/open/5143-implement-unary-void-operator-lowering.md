@@ -133,11 +133,11 @@ Current state:
 
 Follow-up issues:
 
-- [x] created: `issues/done/5209-support-class-instance-method-receiver-calls.md`
+- [x] created: `issues/open/5209-support-class-instance-method-receiver-calls.md`
 
 ## Notes
 
-Split from generated bucket `issues/done/1014-implement-avoidCycleWithVoidExpressionReturnedFromArrow.md`.
+Split from generated bucket `issues/open/1014-implement-avoidCycleWithVoidExpressionReturnedFromArrow.md`.
 
 ## Completion evidence
 

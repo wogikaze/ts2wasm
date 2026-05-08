@@ -111,7 +111,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] `issues/done/5217-preserve-ambient-value-declarations-through-name-resolution.md`
+- [x] `issues/open/5217-preserve-ambient-value-declarations-through-name-resolution.md`
 
 ## Notes
 
@@ -170,7 +170,7 @@ resolved/lowered: issue-211 method `foo` requires an identifier receiver
 TypeScript AST sees `CallExpression -> PropertyAccessExpression ->
 CallExpression -> ParenthesizedExpression -> AsExpression ->
 FunctionExpression` and reports no diagnostics. Child issue
-`issues/done/5217-preserve-ambient-value-declarations-through-name-resolution.md` owns
+`issues/open/5217-preserve-ambient-value-declarations-through-name-resolution.md` owns
 this receiver-lowering slice.
 
 ## Completion evidence

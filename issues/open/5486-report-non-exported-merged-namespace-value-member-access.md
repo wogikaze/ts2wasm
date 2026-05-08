@@ -147,7 +147,7 @@ Follow-up issues:
 
 ## Notes
 
-Split from `issues/done/3591-implement-nonExportedElementsOfMergedModules.md`.
+Split from `issues/open/3591-implement-nonExportedElementsOfMergedModules.md`.
 
 Related but not duplicates:
 

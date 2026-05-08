@@ -79,7 +79,7 @@ python scripts/manager.py reference-coverage tsc --path-filter reference/typescr
 
 ## Notes
 
-Split from `issues/done/1175-implement-classDeclarationBlockScoping.md`.
+Split from `issues/open/1175-implement-classDeclarationBlockScoping.md`.
 
 ## False-done audit
 

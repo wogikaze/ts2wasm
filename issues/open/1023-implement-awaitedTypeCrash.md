@@ -39,7 +39,7 @@ mise run reference-coverage -- tsc --path-filter reference/typescript/tests/case
 
 ## Desired final state
 
-This generated bucket is superseded by `issues/done/5148-parse-generic-async-generator-declarations.md`.
+This generated bucket is superseded by `issues/open/5148-parse-generic-async-generator-declarations.md`.
 
 ## Scope
 
@@ -110,7 +110,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] created: `issues/done/5148-parse-generic-async-generator-declarations.md`
+- [x] created: `issues/open/5148-parse-generic-async-generator-declarations.md`
 
 ## Notes
 

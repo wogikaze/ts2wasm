@@ -20,7 +20,7 @@ status: done
 ## Summary
 
 Closed after splitting the current first blocker into
-`issues/done/5354-report-invalid-const-class-members.md`. Fresh triage shows
+`issues/open/5354-report-invalid-const-class-members.md`. Fresh triage shows
 `constInClassExpression.ts` now builds, but TypeScript rejects the invalid
 `const a = 4;` class member with TS1248.
 
@@ -52,7 +52,7 @@ env TS2WASM_BINARY=/tmp/ts2wasm-issue-blockers-target/debug/ts2wasm python scrip
 ## Desired final state
 
 This generated bucket is closed. The implementation-ready follow-up is
-`issues/done/5354-report-invalid-const-class-members.md`.
+`issues/open/5354-report-invalid-const-class-members.md`.
 
 ## Scope
 
@@ -132,7 +132,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] `issues/done/5354-report-invalid-const-class-members.md`
+- [x] `issues/open/5354-report-invalid-const-class-members.md`
 
 ## Notes
 
@@ -144,7 +144,7 @@ Follow-up issues:
 
 Related done buckets exist for the class-declaration invalid-const property
 case, including
-`issues/done/547-implement-ClassDeclarationWithInvalidConstOnPropertyDeclaration.md`.
+`issues/open/547-implement-ClassDeclarationWithInvalidConstOnPropertyDeclaration.md`.
 Those are not open implementation owners for the current class-expression
 build-pass semantic diagnostic gap.
 

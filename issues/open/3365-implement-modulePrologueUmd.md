@@ -16,7 +16,7 @@ status: done
 ## Summary
 
 Closed as superseded by
-`issues/open/5232-support-entry-export-class-declarations.md`. Fresh triage for
+`issues/open/5232-w0-fixture-ize-runtimelinkplan-linker-structure-tests.md`. Fresh triage for
 `modulePrologueUmd.ts` reaches the existing entry-module `export class`
 issue-5005 boundary after parsing the `"use strict"` prologue.
 
@@ -196,7 +196,7 @@ AST topLevel includes ExpressionStatement `"use strict";` and ClassDeclaration `
 
 Superseding issue:
 
-- `issues/open/5232-support-entry-export-class-declarations.md`
+- `issues/open/5232-w0-fixture-ize-runtimelinkplan-linker-structure-tests.md`
 
 ## Completion evidence
 

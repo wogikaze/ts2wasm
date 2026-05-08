@@ -116,7 +116,7 @@ Violated acceptance: all 4 acceptance criteria (validate_lowered Function check,
 test, docs sync, cargo test pass) are unmet.
 
 Evidence files:
-- This file (now in `issues/done/5227-w0-validate-lowered-completeness.md`)
+- This file (now in `issues/open/5227-w0-validate-lowered-completeness.md`)
 
 Split follow-up: none created in this audit wave; this reopened issue remains the
 tracking item.

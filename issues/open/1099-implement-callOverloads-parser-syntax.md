@@ -106,7 +106,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] `issues/done/5199-report-function-overload-list-class-merge-diagnostics.md`
+- [x] `issues/open/5199-report-function-overload-list-class-merge-diagnostics.md`
 - [x] `issues/open/5200-validate-top-level-function-overload-implementations.md`
 
 ## Notes
@@ -119,15 +119,15 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/442-implement-parser-syntax.md` - Implement parser syntax extensions (same feature label, title overlap)
-- `issues/done/464-implement-FunctionDeclaration-parser-syntax.md` - Implement Functiondeclaration Parser Syntax (same feature label, title overlap)
-- `issues/done/550-implement-FunctionDeclaration-parser-syntax.md` - Implement Functiondeclaration Parser Syntax (same feature label, title overlap)
-- `issues/done/663-implement-arrayAssignmentTest-parser-syntax.md` - Implement Arrayassignmenttest Parser Syntax (same feature label, title overlap)
-- `issues/done/734-implement-assignmentCompatability-parser-syntax.md` - Implement Assignmentcompatability Parser Syntax (same feature label, title overlap)
-- `issues/done/753-implement-asyncFunctionReturnType-parser-syntax.md` - Implement Asyncfunctionreturntype Parser Syntax (same feature label, title overlap)
-- `issues/done/767-implement-augmentedTypesEnum-parser-syntax.md` - Implement Augmentedtypesenum Parser Syntax (same feature label, title overlap)
+- `issues/open/442-implement-parser-syntax.md` - Implement parser syntax extensions (same feature label, title overlap)
+- `issues/open/464-implement-FunctionDeclaration-parser-syntax.md` - Implement Functiondeclaration Parser Syntax (same feature label, title overlap)
+- `issues/open/550-implement-FunctionDeclaration-parser-syntax.md` - Implement Functiondeclaration Parser Syntax (same feature label, title overlap)
+- `issues/open/663-implement-arrayAssignmentTest-parser-syntax.md` - Implement Arrayassignmenttest Parser Syntax (same feature label, title overlap)
+- `issues/open/734-implement-assignmentCompatability-parser-syntax.md` - Implement Assignmentcompatability Parser Syntax (same feature label, title overlap)
+- `issues/open/753-implement-asyncFunctionReturnType-parser-syntax.md` - Implement Asyncfunctionreturntype Parser Syntax (same feature label, title overlap)
+- `issues/open/767-implement-augmentedTypesEnum-parser-syntax.md` - Implement Augmentedtypesenum Parser Syntax (same feature label, title overlap)
 - `issues/open/059-implement-parser-syntax-extensions.md` - Implement parser syntax extensions for TypeScript and advanced JS (same feature label, title overlap)
-- `issues/done/065-implement-parser-syntax.md` - Implement parser syntax extensions (same feature label, title overlap)
+- `issues/open/065-implement-parser-syntax.md` - Implement parser syntax extensions (same feature label, title overlap)
 - `issues/done/065a-merge-duplicate-parser-syntax-issue-into-059.md` - Merge duplicate parser syntax issue into 059 (same feature label, title overlap)
 
 ## Smart triage
@@ -172,12 +172,12 @@ Evidence:
 - TypeScript oracle reports class/function merge diagnostics for `Foo`; it also
   reports duplicate implementation and missing implementation diagnostics for
   the invalid top-level function overload shapes.
-- Child issue `issues/done/5199-report-function-overload-list-class-merge-diagnostics.md`
+- Child issue `issues/open/5199-report-function-overload-list-class-merge-diagnostics.md`
   owns the `Foo` class/function merge blocker.
 - Child issue `issues/open/5200-validate-top-level-function-overload-implementations.md`
   owns the `F1` and `Goo` top-level function overload implementation blockers.
-- Duplicate candidates `issues/done/442-implement-parser-syntax.md`,
-  `issues/done/550-implement-FunctionDeclaration-parser-syntax.md`, and broad
+- Duplicate candidates `issues/open/442-implement-parser-syntax.md`,
+  `issues/open/550-implement-FunctionDeclaration-parser-syntax.md`, and broad
   parser-syntax buckets are no-match owners because this fresh triage already
   passes tokenization and AST construction.
 

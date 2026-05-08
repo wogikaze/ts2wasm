@@ -122,7 +122,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] created: `issues/done/5293-handle-recursive-generic-self-heritage-class-lowering.md`
+- [x] created: `issues/open/5293-handle-recursive-generic-self-heritage-class-lowering.md`
 
 ## Notes
 
@@ -136,7 +136,7 @@ Fresh smart triage listed broad same-feature type-system candidates, but none
 was an exact owner for this self-referential generic class heritage
 lower-program failure:
 
-- `issues/done/1264-implement-coAndContraVariantInferences-type-system.md`
+- `issues/open/1264-implement-coAndContraVariantInferences-type-system.md`
 - `issues/open/2497-implement-genericCallInferenceConditionalType-type-system.md`
 - `issues/open/2543-implement-genericFunctionsWithOptionalParameters-type-system.md`
 - `issues/open/2560-implement-genericMergedDeclarationUsingTypeParameter-type-system.md`
@@ -144,7 +144,7 @@ lower-program failure:
 - `issues/open/2812-implement-inferenceContextualReturnTypeUnion-type-system.md`
 - `issues/open/2859-implement-inheritanceOfGenericConstructorMethod-type-system.md`
 - `issues/open/3223-implement-mappedTypeRecursiveInference-type-system.md`
-- `issues/done/345-implement-tsc-type-alias-coverage.md`
+- `issues/open/345-implement-tsc-type-alias-coverage.md`
 
 Related issue 5156 covers parser failures on generic type arguments in class
 heritage. It is not a duplicate because this case already reaches AST and fails

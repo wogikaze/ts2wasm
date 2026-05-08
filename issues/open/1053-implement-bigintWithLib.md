@@ -108,7 +108,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] created: `issues/done/5169-parse-asi-after-expression-statement.md`
+- [x] created: `issues/open/5169-parse-asi-after-expression-statement.md`
 
 ## Notes
 
@@ -131,7 +131,7 @@ Generated on 2026-05-06.
 - Visible symbols before failure: `bigintVal`, `stringVal`, `bigIntArray`
 - Compiler evidence: tokens succeed; AST/resolved fail because expression-statement ASI does not apply before the next `let`.
 - TypeScript oracle: accepts this ASI boundary and reports later BigInt library/type diagnostics.
-- Split child: `issues/done/5169-parse-asi-after-expression-statement.md`
+- Split child: `issues/open/5169-parse-asi-after-expression-statement.md`
 
 ## Completion evidence
 

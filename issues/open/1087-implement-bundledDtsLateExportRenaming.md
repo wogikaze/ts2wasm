@@ -39,7 +39,7 @@ mise run reference-coverage -- tsc --path-filter reference/typescript/tests/case
 
 ## Desired final state
 
-This generated bucket is closed as superseded by `issues/done/232-resolve-local-relative-es-module-graph.md` for the current missing local module diagnostic. Do not implement directly from this bucket.
+This generated bucket is closed as superseded by `issues/open/232-resolve-local-relative-es-module-graph.md` for the current missing local module diagnostic. Do not implement directly from this bucket.
 
 ## Scope
 
@@ -121,7 +121,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/232-resolve-local-relative-es-module-graph.md` owns source-spanned missing local module diagnostics for static imports and re-exports.
+- `issues/open/232-resolve-local-relative-es-module-graph.md` owns source-spanned missing local module diagnostics for static imports and re-exports.
 - Declaration emit issues are not exact matches for the current blocker because triage stops at missing module resolution before declaration emit behavior.
 
 ## Smart triage
@@ -178,7 +178,7 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- superseded by `issues/done/232-resolve-local-relative-es-module-graph.md`
+- superseded by `issues/open/232-resolve-local-relative-es-module-graph.md`
 
 Validation result:
 

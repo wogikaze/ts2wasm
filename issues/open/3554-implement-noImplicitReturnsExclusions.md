@@ -54,7 +54,7 @@ triage: UnsupportedSyntax unsupported expression: Some(SpannedToken { kind: Asyn
 ## Desired final state
 
 This generated bucket is closed as superseded by
-`issues/open/5240-parse-async-arrow-function-expressions.md`. Do not implement
+`issues/open/5240-w2-docs-audit-and-stale-entries.md`. Do not implement
 directly from this bucket.
 
 ## Scope
@@ -126,7 +126,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] folded into: `issues/open/5240-parse-async-arrow-function-expressions.md`
+- [x] folded into: `issues/open/5240-w2-docs-audit-and-stale-entries.md`
 
 ## Notes
 
@@ -136,7 +136,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/open/5240-parse-async-arrow-function-expressions.md` is the exact
+- `issues/open/5240-w2-docs-audit-and-stale-entries.md` is the exact
   owner for `async (item) => { ... }` failing with raw
   `unsupported expression: Async` before AST construction.
 - `issues/open/750-implement-asyncFunctionContextuallyTypedReturns.md`,

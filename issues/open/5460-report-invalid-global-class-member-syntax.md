@@ -18,7 +18,7 @@ body instead of treating `global` as a method name and failing with a generic
 `expected LeftParen` parser error.
 
 Split from generated bucket
-`issues/done/3480-implement-nestedGlobalNamespaceInClass.md`.
+`issues/open/3480-implement-nestedGlobalNamespaceInClass.md`.
 
 ## Problem
 

@@ -118,9 +118,9 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/153-implement-ambientExternalModuleWithRelativeModuleName.md` - Implement Ambientexternalmodulewithrelativemodulename (same reference path, same group key, title overlap)
-- `issues/done/528-implement-ambientExternalModuleWithRelativeModuleName.md` - Implement Ambientexternalmodulewithrelativemodulename (same reference path, same feature label, same group key, title overlap)
-- `issues/done/614-implement-ambientExternalModuleWithRelativeModuleName.md` - Implement Ambientexternalmodulewithrelativemodulename (same reference path, same feature label, same group key, title overlap)
+- `issues/open/153-implement-ambientExternalModuleWithRelativeModuleName.md` - Implement Ambientexternalmodulewithrelativemodulename (same reference path, same group key, title overlap)
+- `issues/open/528-implement-ambientExternalModuleWithRelativeModuleName.md` - Implement Ambientexternalmodulewithrelativemodulename (same reference path, same feature label, same group key, title overlap)
+- `issues/open/614-implement-ambientExternalModuleWithRelativeModuleName.md` - Implement Ambientexternalmodulewithrelativemodulename (same reference path, same feature label, same group key, title overlap)
 
 ## Smart triage
 
@@ -162,6 +162,6 @@ Violated acceptance: the issue cannot provide repo-local close evidence for its 
 
 Evidence files:
 - open issue file before this move
-- `issues/done/849-implement-ambientExternalModuleWithRelativeModuleName.md` after this move
+- `issues/open/849-implement-ambientExternalModuleWithRelativeModuleName.md` after this move
 
 Split follow-up: none created in this audit wave; this reopened issue remains the tracking item.

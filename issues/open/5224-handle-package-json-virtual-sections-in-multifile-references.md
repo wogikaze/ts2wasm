@@ -132,7 +132,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] existing: `issues/done/543-implement-APISample-import-export.md`
+- [x] existing: `issues/open/543-implement-APISample-import-export.md`
 
 ## Notes
 

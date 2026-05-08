@@ -123,8 +123,8 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/114-implement-aliasErrors.md` - Implement Aliaserrors (same reference path, same group key, title overlap)
-- `issues/done/494-implement-aliasErrors.md` - Implement Aliaserrors (same reference path, same feature label, same group key, title overlap)
+- `issues/open/114-implement-aliasErrors.md` - Implement Aliaserrors (same reference path, same group key, title overlap)
+- `issues/open/494-implement-aliasErrors.md` - Implement Aliaserrors (same reference path, same feature label, same group key, title overlap)
 
 ## Smart triage
 

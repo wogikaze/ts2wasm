@@ -73,7 +73,7 @@ Out of scope:
 
 Expected:
 
-- `issues/done/365-reduce-abc451-array-growth-allocation-copy-pressure.md`
+- `issues/open/365-reduce-abc451-array-growth-allocation-copy-pressure.md`
 - `issues/done/5131-design-abc451-non-top-array-growth-strategy.md`
 - `current-state.md`
 
@@ -124,7 +124,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] created: `issues/done/5132-add-abc451-non-top-array-separation-attribution.md`
+- [x] created: `issues/open/5132-add-abc451-non-top-array-separation-attribution.md`
 
 ## Notes
 

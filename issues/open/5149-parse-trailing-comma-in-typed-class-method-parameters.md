@@ -138,7 +138,7 @@ Follow-up issues:
 
 ## Notes
 
-Split from generated bucket `issues/done/1024-implement-awaitedTypeNoLib.md`.
+Split from generated bucket `issues/open/1024-implement-awaitedTypeNoLib.md`.
 
 ## Completion evidence
 

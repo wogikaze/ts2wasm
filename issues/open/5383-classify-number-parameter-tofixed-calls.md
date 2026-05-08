@@ -81,7 +81,7 @@ Out of scope:
 - Generic member overload resolution for `_.forEach<number>(...)`.
 - Reporting the final TS2345 callback return mismatch.
 - Explicit member-call type argument parsing; see
-  `issues/done/5202-parse-member-call-explicit-type-arguments.md`.
+  `issues/open/5202-parse-member-call-explicit-type-arguments.md`.
 
 ## Affected paths
 
@@ -148,7 +148,7 @@ Split from generated bucket
 
 Related but distinct:
 
-- `issues/done/5202-parse-member-call-explicit-type-arguments.md` owned the
+- `issues/open/5202-parse-member-call-explicit-type-arguments.md` owned the
   earlier parser boundary for `_.map<number, string>(...)`; this representative
   now parses explicit type arguments and reaches callback body lowering.
 

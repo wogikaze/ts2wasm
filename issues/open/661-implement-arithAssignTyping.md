@@ -21,7 +21,7 @@ status: done
 
 Closed this generated arithmetic-assignment bucket after splitting the current
 `*=`, `/=`, and `%=` parser boundary to
-`issues/done/5349-parse-multiplicative-compound-assignment-operators.md`.
+`issues/open/5349-parse-multiplicative-compound-assignment-operators.md`.
 
 ## Problem
 
@@ -46,7 +46,7 @@ mise run reference-coverage -- tsc --path-filter reference/typescript/tests/case
 ## Desired final state
 
 This generated bucket is closed. Implement from
-`issues/done/5349-parse-multiplicative-compound-assignment-operators.md`.
+`issues/open/5349-parse-multiplicative-compound-assignment-operators.md`.
 
 ## Scope
 
@@ -115,7 +115,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] created: `issues/done/5349-parse-multiplicative-compound-assignment-operators.md`
+- [x] created: `issues/open/5349-parse-multiplicative-compound-assignment-operators.md`
 
 ## Notes
 
@@ -125,14 +125,14 @@ Follow-up issues:
 
 ## Duplicate detection
 
-Split to `issues/done/5349-parse-multiplicative-compound-assignment-operators.md`.
+Split to `issues/open/5349-parse-multiplicative-compound-assignment-operators.md`.
 
 No exact existing implementation-ready owner covered identifier-target `*=`,
 `/=`, and `%=`:
 
-- `issues/done/5178-parse-bitwise-compound-assignment-operators.md` owns bitwise `^=`, `&=`, and `|=`.
-- `issues/done/5164-parse-exponentiation-compound-assignment.md` owns `**=`.
-- `issues/done/5311-parse-property-access-arithmetic-compound-assignments.md` owns namespace property `+=`.
+- `issues/open/5178-parse-bitwise-compound-assignment-operators.md` owns bitwise `^=`, `&=`, and `|=`.
+- `issues/open/5164-parse-exponentiation-compound-assignment.md` owns `**=`.
+- `issues/open/5311-parse-property-access-arithmetic-compound-assignments.md` owns namespace property `+=`.
 
 Current evidence:
 

@@ -18,7 +18,7 @@ pattern, including nested array/object rest such as
 `for ([{ ...y }] of [[{ abc: 1 }]]) ;`.
 
 Split from generated bucket
-`issues/done/3485-implement-nestedObjectRest.md`.
+`issues/open/3485-implement-nestedObjectRest.md`.
 
 ## Problem
 
@@ -103,7 +103,7 @@ In scope:
 Out of scope:
 
 - Declaration heads such as `for (const [key, value] of expr)`, tracked by
-  `issues/open/5298-parse-for-of-array-binding-pattern-heads.md`.
+  `issues/done/5298-parse-for-of-array-binding-pattern-heads.md`.
 - Runtime lowering for dynamic-source object rest, tracked for declaration
   shapes by `issues/open/5452-lower-nested-object-rest-binding-from-narrowed-source.md`
   and broader issue-251 follow-ups.

@@ -116,9 +116,9 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/274-implement-spread-operator.md` - Implement spread operator (same feature label, title overlap)
-- `issues/done/353-spread-iterator-protocol.md` - Implement iterator protocol integration for spread operator (same feature label, title overlap)
-- `issues/done/447-implement-spread.md` - Implement spread operator (same feature label, title overlap)
+- `issues/open/274-implement-spread-operator.md` - Implement spread operator (same feature label, title overlap)
+- `issues/open/353-spread-iterator-protocol.md` - Implement iterator protocol integration for spread operator (same feature label, title overlap)
+- `issues/open/447-implement-spread.md` - Implement spread operator (same feature label, title overlap)
 - `issues/done/029-implement-typeof-operator.md` - Implement typeof operator (same feature label, title overlap)
 - `issues/done/030-implement-instanceof-operator.md` - Implement instanceof operator (same feature label, title overlap)
 - `issues/done/031-implement-in-operator.md` - Implement in operator (same feature label, title overlap)

@@ -17,7 +17,7 @@ updated: 2026-05-06
 
 ## Summary
 
-Closed as superseded by `issues/done/5280-validate-commented-top-level-function-overloads.md`.
+Closed as superseded by `issues/open/5280-validate-commented-top-level-function-overloads.md`.
 
 ## Problem
 
@@ -52,7 +52,7 @@ DuplicateFunction: duplicate function definition: `f1` at 2455..2463
 ## Desired final state
 
 This generated bucket is closed. Implementation should proceed through
-`issues/done/5280-validate-commented-top-level-function-overloads.md`.
+`issues/open/5280-validate-commented-top-level-function-overloads.md`.
 
 ## Scope
 
@@ -124,7 +124,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] superseded by `issues/done/5280-validate-commented-top-level-function-overloads.md`
+- [x] superseded by `issues/open/5280-validate-commented-top-level-function-overloads.md`
 
 ## Notes
 
@@ -134,14 +134,14 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/5280-validate-commented-top-level-function-overloads.md` owns
+- `issues/open/5280-validate-commented-top-level-function-overloads.md` owns
   commented bodyless top-level overload signatures followed by one
   implementation. `commentsCommentParsing.ts` fails in the same feature family
   at the commented `f1` overload group.
 - `issues/open/5200-validate-top-level-function-overload-implementations.md`
   owns general top-level overload grouping without the comment/trivia-specific
   focus.
-- `issues/done/5199-report-function-overload-list-class-merge-diagnostics.md`
+- `issues/open/5199-report-function-overload-list-class-merge-diagnostics.md`
   covers function overload lists followed by class merge diagnostics and is not
   this blocker.
 

@@ -152,14 +152,14 @@ Follow-up issues:
 ## Notes
 
 Split from
-`issues/done/3535-implement-noImplicitAnyDestructuringVarDeclaration.md`.
+`issues/open/3535-implement-noImplicitAnyDestructuringVarDeclaration.md`.
 
 Related but not duplicates:
 
-- `issues/done/247-implement-destructuring-binding-pattern-parser.md` added
+- `issues/open/247-implement-destructuring-binding-pattern-parser.md` added
   general binding-pattern parser support but intentionally left unsupported
   forms on issue-linked diagnostics.
-- `issues/done/251-implement-destructuring-binding-runtime-semantics.md` covers
+- `issues/open/251-implement-destructuring-binding-runtime-semantics.md` covers
   runtime semantics for supported initialized destructuring, not missing
   initializer diagnostics.
 

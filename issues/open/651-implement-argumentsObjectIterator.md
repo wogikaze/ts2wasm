@@ -119,7 +119,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/197-implement-argumentsObjectIterator.md` - Implement Argumentsobjectiterator (same reference path, same feature label, same group key, title overlap)
+- `issues/open/197-implement-argumentsObjectIterator.md` - Implement Argumentsobjectiterator (same reference path, same feature label, same group key, title overlap)
 - `issues/done/412-implement-arguments-object.md` - Implement arguments-object support (same feature label, same group key, title overlap)
 
 ## Smart triage

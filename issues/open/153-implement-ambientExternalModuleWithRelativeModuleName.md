@@ -430,7 +430,7 @@ error: [UnsupportedSyntax] expected Semicolon, got Some(Ident("module")) at 28..
 ## 重複整理メモ
 
 この issue はタイトルが重複しているため、内容がより充実している
-`issues/done/614-implement-ambientExternalModuleWithRelativeModuleName.md` に統合されました。
+`issues/open/614-implement-ambientExternalModuleWithRelativeModuleName.md` に統合されました。
 そちらを参照してください。
 ## Completion evidence
 

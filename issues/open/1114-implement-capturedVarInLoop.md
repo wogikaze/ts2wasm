@@ -111,7 +111,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] `issues/done/5215-fix-array-includes-wat-stack-mismatch.md`
+- [x] `issues/open/5215-fix-array-includes-wat-stack-mismatch.md`
 
 ## Notes
 
@@ -171,7 +171,7 @@ resolved/lowered: issue-211 function-valued local call at lambda1(len)
 ```
 
 TypeScript oracle reports no diagnostics. Child issue
-`issues/done/5215-fix-array-includes-wat-stack-mismatch.md` owns
+`issues/open/5215-fix-array-includes-wat-stack-mismatch.md` owns
 this lowering slice.
 
 ## Completion evidence

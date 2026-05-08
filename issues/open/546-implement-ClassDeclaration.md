@@ -131,20 +131,20 @@ Follow-up issues:
 
 - No implementation child issue is needed for the affected files.
 - `#072`,
-  `issues/done/460-implement-ClassDeclaration.md`, and
-  `issues/done/781-implement-ClassDeclaration.md` are historical duplicates
+  `issues/open/460-implement-ClassDeclaration.md`, and
+  `issues/open/781-implement-ClassDeclaration.md` are historical duplicates
   for the same bucket; the current focused window is build-pass.
 
 - `#072` - Implement Classdeclaration (same reference path, same feature label, same group key, title overlap)
 - `#073` - Implement Classdeclarationwithinvalidconstonpropertydeclaration (same feature label, same group key, title overlap)
-- `issues/done/084-implement-abstractClassUnionInstantiation.md` - Implement Abstractclassunioninstantiation (same feature label, same group key, title overlap)
-- `issues/done/086-implement-abstractPropertyBasics.md` - Implement Abstractpropertybasics (same feature label, same group key, title overlap)
-- `issues/done/088-implement-abstractPropertyNegative.md` - Implement Abstractpropertynegative (same feature label, same group key, title overlap)
-- `issues/done/091-implement-accessInstanceMemberFromStaticMethod.md` - Implement Accessinstancememberfromstaticmethod (same feature label, same group key, title overlap)
+- `issues/open/084-implement-abstractClassUnionInstantiation.md` - Implement Abstractclassunioninstantiation (same feature label, same group key, title overlap)
+- `issues/open/086-implement-abstractPropertyBasics.md` - Implement Abstractpropertybasics (same feature label, same group key, title overlap)
+- `issues/open/088-implement-abstractPropertyNegative.md` - Implement Abstractpropertynegative (same feature label, same group key, title overlap)
+- `issues/open/091-implement-accessInstanceMemberFromStaticMethod.md` - Implement Accessinstancememberfromstaticmethod (same feature label, same group key, title overlap)
 - `#092` - Implement Accessoverriddenbaseclassmember (same feature label, same group key, title overlap)
-- `issues/done/093-implement-accessStaticMemberFromInstanceMethod.md` - Implement Accessstaticmemberfrominstancemethod (same feature label, same group key, title overlap)
-- `issues/done/166-implement-ambiguousCallsWhereReturnTypesAgree.md` - Implement Ambiguouscallswherereturntypesagree (same feature label, same group key, title overlap)
-- `issues/done/185-implement-anyIdenticalToItself.md` - Implement Anyidenticaltoitself (same feature label, same group key, title overlap)
+- `issues/open/093-implement-accessStaticMemberFromInstanceMethod.md` - Implement Accessstaticmemberfrominstancemethod (same feature label, same group key, title overlap)
+- `issues/open/166-implement-ambiguousCallsWhereReturnTypesAgree.md` - Implement Ambiguouscallswherereturntypesagree (same feature label, same group key, title overlap)
+- `issues/open/185-implement-anyIdenticalToItself.md` - Implement Anyidenticaltoitself (same feature label, same group key, title overlap)
 
 ## Smart triage
 

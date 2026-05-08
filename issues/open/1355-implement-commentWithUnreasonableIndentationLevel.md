@@ -19,7 +19,7 @@ updated: 2026-05-06
 
 Closed as superseded by the existing implementation-ready `export class`
 module export slice:
-`issues/done/5232-w0-fixture-ize-runtimelinkplan-linker-structure-tests.md`.
+`issues/open/5232-w0-fixture-ize-runtimelinkplan-linker-structure-tests.md`.
 
 ## Problem
 
@@ -58,7 +58,7 @@ const and export default are supported at 46633..46664
 ## Desired final state
 
 This generated bucket is closed as a duplicate/superseded wrapper. Work should
-continue through `issues/done/5232-w0-fixture-ize-runtimelinkplan-linker-structure-tests.md`.
+continue through `issues/open/5232-w0-fixture-ize-runtimelinkplan-linker-structure-tests.md`.
 
 ## Scope
 
@@ -130,7 +130,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] superseded by existing `issues/done/5232-w0-fixture-ize-runtimelinkplan-linker-structure-tests.md`
+- [x] superseded by existing `issues/open/5232-w0-fixture-ize-runtimelinkplan-linker-structure-tests.md`
 
 ## Notes
 
@@ -140,11 +140,11 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/5232-w0-fixture-ize-runtimelinkplan-linker-structure-tests.md` is the exact
+- `issues/open/5232-w0-fixture-ize-runtimelinkplan-linker-structure-tests.md` is the exact
   implementation-ready owner for the current `export class` boundary.
-- `issues/done/5144-support-entry-export-function-declarations.md` is a sibling
+- `issues/open/5144-support-entry-export-function-declarations.md` is a sibling
   static export slice and explicitly excludes `export class`.
-- `issues/done/432-implement-import-export.md` is the broad
+- `issues/open/432-implement-import-export.md` is the broad
   generated import/export bucket and is too wide to use directly.
 
 ## Smart triage

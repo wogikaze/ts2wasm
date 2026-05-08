@@ -130,16 +130,16 @@ followed by `s.map(...)`.
 
 No-match candidates:
 
-- `issues/done/5234-w0-implement-host-deny-and-auditable-e2e-manifest-verification.md`
+- `issues/open/5234-w0-implement-host-deny-and-auditable-e2e-manifest-verification.md`
   covers array-shaped function/class-method parameters, not declaration-only
   locals.
-- `issues/done/5222-parse-ambient-generic-variable-type-annotations.md`
+- `issues/open/5222-parse-ambient-generic-variable-type-annotations.md`
   covers interface-typed erased locals such as `Sequence<string>`, not array
   callback receivers.
 - `issues/done/297-track-pushed-dense-array-locals-for-map.md` covers
   initialized dense arrays built through pushes, not erased declaration-only
   locals.
-- `issues/done/435-implement-method-call.md` is a broad umbrella and does not
+- `issues/open/435-implement-method-call.md` is a broad umbrella and does not
   carry this reference path's array-typed local evidence.
 
 ## Smart triage

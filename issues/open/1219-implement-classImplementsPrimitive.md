@@ -19,7 +19,7 @@ updated: 2026-05-06
 
 Closed by splitting the current class expression `implements` primitive parser
 blocker to
-`issues/done/5263-report-primitive-implements-on-class-expressions.md`.
+`issues/open/5263-report-primitive-implements-on-class-expressions.md`.
 
 ## Problem
 
@@ -117,7 +117,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] `issues/done/5263-report-primitive-implements-on-class-expressions.md`
+- [x] `issues/open/5263-report-primitive-implements-on-class-expressions.md`
 
 ## Notes
 
@@ -178,7 +178,7 @@ TypeScript AST path: FirstStatement -> VariableDeclaration -> ClassExpression
 
 Split issue:
 
-- `issues/done/5263-report-primitive-implements-on-class-expressions.md`
+- `issues/open/5263-report-primitive-implements-on-class-expressions.md`
 
 ## Completion evidence
 
@@ -186,7 +186,7 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- Split to `issues/done/5263-report-primitive-implements-on-class-expressions.md`; see local commit for this issue cleanup.
+- Split to `issues/open/5263-report-primitive-implements-on-class-expressions.md`; see local commit for this issue cleanup.
 
 Validation result:
 

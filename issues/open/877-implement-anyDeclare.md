@@ -118,8 +118,8 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/184-implement-anyDeclare.md` - Implement Anydeclare (same reference path, same group key, title overlap)
-- `issues/done/642-implement-anyDeclare.md` - Implement Anydeclare (same reference path, same feature label, same group key, title overlap)
+- `issues/open/184-implement-anyDeclare.md` - Implement Anydeclare (same reference path, same group key, title overlap)
+- `issues/open/642-implement-anyDeclare.md` - Implement Anydeclare (same reference path, same feature label, same group key, title overlap)
 
 ## Smart triage
 
@@ -159,6 +159,6 @@ Violated acceptance: the issue cannot provide repo-local close evidence for its 
 
 Evidence files:
 - open issue file before this move
-- `issues/done/877-implement-anyDeclare.md` after this move
+- `issues/open/877-implement-anyDeclare.md` after this move
 
 Split follow-up: none created in this audit wave; this reopened issue remains the tracking item.

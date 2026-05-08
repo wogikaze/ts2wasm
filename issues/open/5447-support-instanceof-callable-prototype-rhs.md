@@ -16,7 +16,7 @@ updated: 2026-05-08
 Support `instanceof` right-hand sides that are callable/prototype-bearing
 values, such as a function parameter typed `{ (): void; prototype: A; }`.
 
-Split from generated bucket `issues/done/3442-implement-narrowByInstanceof.md`.
+Split from generated bucket `issues/open/3442-implement-narrowByInstanceof.md`.
 
 ## Problem
 

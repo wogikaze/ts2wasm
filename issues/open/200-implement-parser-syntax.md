@@ -73,7 +73,7 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [x] Duplicate candidates are confirmed as superseding issues: `issues/open/059-implement-parser-syntax-extensions.md`, `issues/done/065-implement-parser-syntax.md`, and `issues/done/065a-merge-duplicate-parser-syntax-issue-into-059.md`.
+- [x] Duplicate candidates are confirmed as superseding issues: `issues/open/059-implement-parser-syntax-extensions.md`, `issues/open/065-implement-parser-syntax.md`, and `issues/done/065a-merge-duplicate-parser-syntax-issue-into-059.md`.
 - [x] No new child issue is required for the representative path because focused coverage now reports `build_pass`.
 - [x] Source context, diagnostic code, visible symbols, and AST/resolved evidence are recorded below.
 - [x] The exact reference path and diagnostic/stdout change are named below.
@@ -131,7 +131,7 @@ Follow-up issues:
 ## Duplicate detection
 
 - `issues/open/059-implement-parser-syntax-extensions.md` - Implement parser syntax extensions for TypeScript and advanced JS (same feature label, title overlap)
-- `issues/done/065-implement-parser-syntax.md` - Implement parser syntax extensions (same feature label, title overlap)
+- `issues/open/065-implement-parser-syntax.md` - Implement parser syntax extensions (same feature label, title overlap)
 - `issues/done/065a-merge-duplicate-parser-syntax-issue-into-059.md` - Merge duplicate parser syntax issue into 059 (same feature label, title overlap)
 
 ## Closure note
@@ -142,7 +142,7 @@ Issue 200 is a generated parser-syntax bucket and is not a direct implementation
 ## 重複整理メモ
 
 この issue はタイトルが重複しているため、内容がより充実している
-`issues/done/442-implement-parser-syntax.md` に統合されました。
+`issues/open/442-implement-parser-syntax.md` に統合されました。
 そちらを参照してください。
 ## Completion evidence
 

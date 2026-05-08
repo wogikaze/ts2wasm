@@ -127,16 +127,16 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/066-implement-regexp-literal.md` - Implement RegExp literal support (same reference path, same feature label, same group key, title overlap)
-- `issues/done/005-add-fine-grained-unsupported-feature-breakdown.md` - issues/done/005-add-fine-grained-unsupported-feature-breakdown.md (same feature label, same group key)
-- `issues/done/009-select-first-coverage-improvement-feature-slice.md` - issues/done/009-select-first-coverage-improvement-feature-slice.md (same feature label, same group key)
-- `issues/done/022-expand-test262-differential-coverage.md` - issues/done/022-expand-test262-differential-coverage.md (same feature label, same group key)
+- `issues/open/066-implement-regexp-literal.md` - Implement RegExp literal support (same reference path, same feature label, same group key, title overlap)
+- `issues/open/005-add-fine-grained-unsupported-feature-breakdown.md` - issues/done/005-add-fine-grained-unsupported-feature-breakdown.md (same feature label, same group key)
+- `issues/open/009-select-first-coverage-improvement-feature-slice.md` - issues/done/009-select-first-coverage-improvement-feature-slice.md (same feature label, same group key)
+- `issues/open/022-expand-test262-differential-coverage.md` - issues/done/022-expand-test262-differential-coverage.md (same feature label, same group key)
 - `issues/done/051-implement-regexp.md` - Implement RegExp (same feature label, same group key, title overlap)
-- `issues/done/060-investigate-unknown-unsupported-cases.md` - Investigate and classify unknown-unsupported diagnostic cases (same feature label, same group key)
+- `issues/open/060-investigate-unknown-unsupported-cases.md` - Investigate and classify unknown-unsupported diagnostic cases (same feature label, same group key)
 - `issues/done/202-implement-regexp-literal-support.md` - issues/done/202-implement-regexp-literal-support.md (same feature label, same group key)
-- `issues/done/224-implement-annexb-html-comments.md` - Implement Annex B HTML-like comments (same feature label, same group key, title overlap)
+- `issues/open/224-implement-annexb-html-comments.md` - Implement Annex B HTML-like comments (same feature label, same group key, title overlap)
 - `issues/done/228-implement-logical-assignment-operators.md` - Implement logical assignment operators (same feature label, same group key, title overlap)
-- `issues/done/406-direct-eval-annexb-existing-binding-residuals.md` - Direct eval Annex B existing binding residuals (same feature label, same group key)
+- `issues/open/406-direct-eval-annexb-existing-binding-residuals.md` - Direct eval Annex B existing binding residuals (same feature label, same group key)
 
 ## Smart triage
 
@@ -419,7 +419,7 @@ Remaining risks:
 
 ## Close note
 
-Closed as duplicate of `issues/done/066-implement-regexp-literal.md`. All work tracked under issue 066.
+Closed as duplicate of `issues/open/066-implement-regexp-literal.md`. All work tracked under issue 066.
 
 superseded-by: 066
 
@@ -434,8 +434,8 @@ Reopen reason: frontmatter still says `class: blocked`, which is incompatible wi
 Violated acceptance: the issue cannot provide repo-local close evidence for its checked acceptance criteria while it remains in this state. Acceptance checkboxes were reset for re-verification.
 
 Evidence files:
-- `issues/done/444-implement-regexp-literal.md` before this move
-- `issues/done/444-implement-regexp-literal.md` after this move
+- `issues/open/444-implement-regexp-literal.md` before this move
+- `issues/open/444-implement-regexp-literal.md` after this move
 
 Split follow-up: none created in this audit wave; this reopened issue remains the tracking item.
 
@@ -448,5 +448,5 @@ Classification: truly-done duplicate/superseded tracking issue.
 Audit result: returned to `issues/done/` after review feedback. The title contains `(dup)`, which marks this issue as a duplicate/superseded tracker; duplicate closure issues must not remain in `issues/open/` unless the duplicate mapping itself is invalid.
 
 Evidence files:
-- `issues/done/444-implement-regexp-literal.md` after this correction
+- `issues/open/444-implement-regexp-literal.md` after this correction
 - `issues/index.md` after regeneration

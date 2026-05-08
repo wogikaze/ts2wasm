@@ -139,11 +139,11 @@ Follow-up issues:
 - `issues/done/5175-support-export-let-destructuring-declarations.md` is
   related but covers `export let` destructuring and excludes general
   `export var`.
-- `issues/done/5144-support-entry-export-function-declarations.md`,
-  `issues/done/5232-w0-fixture-ize-runtimelinkplan-linker-structure-tests.md`, and
+- `issues/open/5144-support-entry-export-function-declarations.md`,
+  `issues/open/5232-w0-fixture-ize-runtimelinkplan-linker-structure-tests.md`, and
   `issues/done/5277-parse-export-enum-declarations-to-enum-boundary.md` cover
   sibling export forms.
-- `issues/done/432-implement-import-export.md` is the broad import/export
+- `issues/open/432-implement-import-export.md` is the broad import/export
   generated bucket and is too wide.
 - `issues/done/5283-support-entry-export-var-declarations.md` owns this current
   blocker.

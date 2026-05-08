@@ -42,7 +42,7 @@ mise run reference-coverage -- tsc --path-filter reference/typescript/tests/case
 ## Desired final state
 
 This generated bucket is superseded by
-`issues/done/232-resolve-local-relative-es-module-graph.md`. Do not implement
+`issues/open/232-resolve-local-relative-es-module-graph.md`. Do not implement
 directly from this bucket.
 
 ## Scope
@@ -125,8 +125,8 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/151-implement-ambientExternalModuleWithInternalImportDeclaration.md` - Implement Ambientexternalmodulewithinternalimportdeclaration (same reference path, same group key, title overlap)
-- `issues/done/526-implement-ambientExternalModuleWithInternalImportDeclaration.md` - Implement Ambientexternalmodulewithinternalimportdeclaration (same reference path, same feature label, same group key, title overlap)
+- `issues/open/151-implement-ambientExternalModuleWithInternalImportDeclaration.md` - Implement Ambientexternalmodulewithinternalimportdeclaration (same reference path, same group key, title overlap)
+- `issues/open/526-implement-ambientExternalModuleWithInternalImportDeclaration.md` - Implement Ambientexternalmodulewithinternalimportdeclaration (same reference path, same feature label, same group key, title overlap)
 
 ## Smart triage
 
@@ -573,7 +573,7 @@ error: [UnsupportedModule] issue-400: ambient module declarations require module
 
 ## Completion evidence
 
-Closed as superseded by `issues/done/232-resolve-local-relative-es-module-graph.md`.
+Closed as superseded by `issues/open/232-resolve-local-relative-es-module-graph.md`.
 
 Fresh coverage with the current binary:
 
@@ -613,7 +613,7 @@ generated bucket.
 
 Commits:
 
-- superseded by `issues/done/232-resolve-local-relative-es-module-graph.md`
+- superseded by `issues/open/232-resolve-local-relative-es-module-graph.md`
 
 Validation result:
 

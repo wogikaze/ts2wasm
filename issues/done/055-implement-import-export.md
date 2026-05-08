@@ -45,8 +45,8 @@ Out of scope:
 Expected:
 
 - `issues/done/231-parse-static-es-module-declarations.md`
-- `issues/done/232-resolve-local-relative-es-module-graph.md`
-- `issues/done/233-emit-static-es-module-bindings.md`
+- `issues/open/232-resolve-local-relative-es-module-graph.md`
+- `issues/open/233-emit-static-es-module-bindings.md`
 - `issues/done/234-cover-static-es-module-execution.md`
 
 Do not touch:
@@ -93,8 +93,8 @@ Current state:
 Follow-up issues:
 
 - [x] created/updated: `issues/done/231-parse-static-es-module-declarations.md`
-- [x] created/updated: `issues/done/232-resolve-local-relative-es-module-graph.md`
-- [x] created/updated: `issues/done/233-emit-static-es-module-bindings.md`
+- [x] created/updated: `issues/open/232-resolve-local-relative-es-module-graph.md`
+- [x] created/updated: `issues/open/233-emit-static-es-module-bindings.md`
 - [x] created/updated: `issues/done/234-cover-static-es-module-execution.md`
 
 ## Notes
@@ -153,8 +153,8 @@ Remaining scope: parser representation for supported module declarations, module
 Issue 055 is a coordination umbrella. The implementation was split into issues 231, 232, 233, and 234, and all split issue files now live under `issues/done/` with completed frontmatter and completion evidence:
 
 - `issues/done/231-parse-static-es-module-declarations.md`
-- `issues/done/232-resolve-local-relative-es-module-graph.md`
-- `issues/done/233-emit-static-es-module-bindings.md`
+- `issues/open/232-resolve-local-relative-es-module-graph.md`
+- `issues/open/233-emit-static-es-module-bindings.md`
 - `issues/done/234-cover-static-es-module-execution.md`
 
 The narrow supported static ES module subset remains documented by the split issue evidence. Broader import/export forms remain out of scope for this umbrella close and are not claimed as complete here.

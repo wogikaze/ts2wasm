@@ -127,11 +127,11 @@ Follow-up issues:
 
 Split from:
 
-- `issues/done/562-implement-accessInstanceMemberFromStaticMethod.md`
+- `issues/open/562-implement-accessInstanceMemberFromStaticMethod.md`
 
 Related but not duplicate:
 
-- `issues/done/437-implement-name-resolution.md` is a broad generated name-resolution bucket.
+- `issues/open/437-implement-name-resolution.md` is a broad generated name-resolution bucket.
 - `issues/open/5392-report-unqualified-instance-member-name-diagnostics.md`
   owns the mirrored static-method/instance-member TS2304 case.
 

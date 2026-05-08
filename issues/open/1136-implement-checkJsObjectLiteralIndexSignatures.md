@@ -111,7 +111,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] created: `issues/done/5228-w0-wasm-binary-backend-mvp.md`
+- [x] created: `issues/open/5228-w0-wasm-binary-backend-mvp.md`
 
 ## Notes
 
@@ -128,7 +128,7 @@ representative is a smaller simple-identifier key slice.
 
 Split to:
 
-- `issues/done/5228-w0-wasm-binary-backend-mvp.md`
+- `issues/open/5228-w0-wasm-binary-backend-mvp.md`
 
 ## Smart triage
 

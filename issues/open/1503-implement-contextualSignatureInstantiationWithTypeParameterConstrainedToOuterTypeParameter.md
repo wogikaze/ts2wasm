@@ -110,7 +110,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] superseded by `issues/done/5371-parse-generic-function-type-annotations.md`
+- [x] superseded by `issues/open/5371-parse-generic-function-type-annotations.md`
 
 ## Notes
 
@@ -126,7 +126,7 @@ Follow-up issues:
 
 Fresh triage on 2026-05-07 shows this generated blocked bucket is now the same
 generic function type annotation parser boundary owned by
-`issues/done/5371-parse-generic-function-type-annotations.md`.
+`issues/open/5371-parse-generic-function-type-annotations.md`.
 
 Current diagnostic:
 

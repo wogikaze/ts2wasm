@@ -124,15 +124,15 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/067-implement-unknown-unsupported.md` - Investigate and classify unknown-unsupported cases (same feature label, same group key)
-- `issues/done/106-implement-accessors.md` - Implement Accessors (same feature label, same group key, title overlap)
-- `issues/done/193-implement-arguments.md` - Implement Arguments (same feature label, same group key, title overlap)
-- `issues/done/201-implement-unknown-unsupported.md` - Investigate and classify unknown-unsupported cases (same feature label, same group key)
-- `issues/done/225-implement-eval-annexb-function-declarations.md` - Implement eval and Annex B function declaration semantics (same feature label, same group key, title overlap)
+- `issues/open/067-implement-unknown-unsupported.md` - Investigate and classify unknown-unsupported cases (same feature label, same group key)
+- `issues/open/106-implement-accessors.md` - Implement Accessors (same feature label, same group key, title overlap)
+- `issues/open/193-implement-arguments.md` - Implement Arguments (same feature label, same group key, title overlap)
+- `issues/open/201-implement-unknown-unsupported.md` - Investigate and classify unknown-unsupported cases (same feature label, same group key)
+- `issues/open/225-implement-eval-annexb-function-declarations.md` - Implement eval and Annex B function declaration semantics (same feature label, same group key, title overlap)
 - `issues/done/255-implement-private-class-element-runtime-semantics.md` - Implement private class element runtime semantics (same group key, title overlap)
-- `issues/done/313-implement-array-builtin.md` - Implement array-builtin support (same feature label, same group key, title overlap)
-- `issues/done/314-implement-string-builtin.md` - Implement string-builtin support (same feature label, same group key, title overlap)
-- `issues/done/411-implement-annexb-ishtmldda.md` - Implement annexb-ishtmldda support (same feature label, same group key, title overlap)
+- `issues/open/313-implement-array-builtin.md` - Implement array-builtin support (same feature label, same group key, title overlap)
+- `issues/open/314-implement-string-builtin.md` - Implement string-builtin support (same feature label, same group key, title overlap)
+- `issues/open/411-implement-annexb-ishtmldda.md` - Implement annexb-ishtmldda support (same feature label, same group key, title overlap)
 - `issues/done/412-implement-arguments-object.md` - Implement arguments-object support (same feature label, same group key, title overlap)
 
 ## Smart triage

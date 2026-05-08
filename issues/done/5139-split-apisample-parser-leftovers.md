@@ -69,7 +69,7 @@ Out of scope:
 Expected:
 
 - `issues/open/`
-- `issues/done/070-implement-APISample.md`
+- `issues/open/070-implement-APISample.md`
 - `reference/typescript/tests/cases/compiler/APISample_linter.ts`
 - `reference/typescript/tests/cases/compiler/APISample_transform.ts`
 
@@ -118,7 +118,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] completed: `issues/done/5224-handle-package-json-virtual-sections-in-multifile-references.md`
+- [x] completed: `issues/open/5224-handle-package-json-virtual-sections-in-multifile-references.md`
 
 ## Resolution
 

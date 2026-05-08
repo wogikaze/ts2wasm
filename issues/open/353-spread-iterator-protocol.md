@@ -172,7 +172,7 @@ Follow-up issues:
 
 - [x] created/updated: `issues/done/401-generator-function-syntax-prerequisite-for-iterator-spread.md`
 - [x] created/updated: `issues/done/402-computed-symbol-iterator-prerequisite-for-spread.md`
-- [x] created/updated: `issues/done/407-map-spread-key-preserving-iterator-storage.md`
+- [x] created/updated: `issues/open/407-map-spread-key-preserving-iterator-storage.md`
 
 ## Notes
 

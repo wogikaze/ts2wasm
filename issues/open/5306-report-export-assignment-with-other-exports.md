@@ -132,8 +132,8 @@ Follow-up issues:
 
 Split from generated buckets:
 
-- `issues/done/548-implement-ExportAssignment.md`
-- `issues/done/1435-implement-conflictingDeclarationsImportFromNamespace.md`
+- `issues/open/548-implement-ExportAssignment.md`
+- `issues/open/1435-implement-conflictingDeclarationsImportFromNamespace.md`
 
 After this focused diagnostic lands, re-triage the larger namespace bucket to
 decide the next blocker.

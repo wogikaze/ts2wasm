@@ -19,7 +19,7 @@ status: done
 
 ## Summary
 
-Closed as superseded by `issues/done/5232-w0-fixture-ize-runtimelinkplan-linker-structure-tests.md` for the current entry-module `export class` issue-5005 boundary.
+Closed as superseded by `issues/open/5232-w0-fixture-ize-runtimelinkplan-linker-structure-tests.md` for the current entry-module `export class` issue-5005 boundary.
 
 ## Problem
 
@@ -137,8 +137,8 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/5232-w0-fixture-ize-runtimelinkplan-linker-structure-tests.md` owns the current issue-5005 entry-module `export class` boundary.
-- `issues/done/5324-support-dependency-export-class-declarations.md` is related but covers dependency virtual files, not the entry module.
+- `issues/open/5232-w0-fixture-ize-runtimelinkplan-linker-structure-tests.md` owns the current issue-5005 entry-module `export class` boundary.
+- `issues/open/5324-support-dependency-export-class-declarations.md` is related but covers dependency virtual files, not the entry module.
 - Later comment emit, parenthesized assertion preservation, `satisfies`, and `this.client.getThing()` lowering behavior remains unproven until issue 5232 advances past the export-class boundary.
 
 ## Smart triage

@@ -111,7 +111,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] created: `issues/done/5236-w1-implement-wasi-args-and-environment-variable-lowering.md`
+- [x] created: `issues/open/5236-w1-implement-wasi-args-and-environment-variable-lowering.md`
 
 ## Notes
 
@@ -125,18 +125,18 @@ Fresh duplicate scan found related runtime-subset and closure buckets, but no
 exact implementation-ready issue for nested function expressions with rest or
 default parameters:
 
-- `issues/done/445-implement-runtime-subset.md` is a broad generated
+- `issues/open/445-implement-runtime-subset.md` is a broad generated
   runtime-subset bucket and includes the same diagnostic family, but is not an
   implementation-ready child.
 - `issues/done/062e-function-closures.md` implemented the base closure slice
   and intentionally left unsupported closure forms on issue-linked diagnostics.
-- `issues/done/212-implement-rest-parameter-argument-collection.md` and
+- `issues/open/212-implement-rest-parameter-argument-collection.md` and
   `issues/done/040-implement-default-parameters.md` cover ordinary function
   rest parameter lowering, not the nested closure guard.
 
 Split result:
 
-- `issues/done/5236-w1-implement-wasi-args-and-environment-variable-lowering.md`
+- `issues/open/5236-w1-implement-wasi-args-and-environment-variable-lowering.md`
 
 ## Smart triage
 
@@ -198,7 +198,7 @@ TypeScript oracle: TS2339 Property 'fn' does not exist on type '(...args: any[])
 
 Split result:
 
-- `issues/done/5236-w1-implement-wasi-args-and-environment-variable-lowering.md`
+- `issues/open/5236-w1-implement-wasi-args-and-environment-variable-lowering.md`
 
 ## Completion evidence
 

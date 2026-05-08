@@ -111,11 +111,11 @@ Current state:
 
 Follow-up issues:
 
-- [x] `issues/done/5207-support-ambient-interface-filter-receiver.md`
-- [x] `issues/done/5208-support-regexp-match-fallback-array-map-receiver.md`
-- [x] `issues/done/5209-support-class-instance-method-receiver-calls.md`
-- [x] `issues/done/5210-array-map-sparse-array-holes.md`
-- [x] `issues/done/5211-sparse-array-spread-support.md`
+- [x] `issues/open/5207-support-ambient-interface-filter-receiver.md`
+- [x] `issues/open/5208-support-regexp-match-fallback-array-map-receiver.md`
+- [x] `issues/open/5209-support-class-instance-method-receiver-calls.md`
+- [x] `issues/open/5210-array-map-sparse-array-holes.md`
+- [x] `issues/open/5211-sparse-array-spread-support.md`
 - [x] `issues/open/5409-parse-function-expression-statements-in-nested-blocks.md`
 
 ## Notes
@@ -138,22 +138,22 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/442-implement-parser-syntax.md` - Implement parser syntax extensions (same feature label, title overlap)
-- `issues/done/464-implement-FunctionDeclaration-parser-syntax.md` - Implement Functiondeclaration Parser Syntax (same feature label, title overlap)
-- `issues/done/550-implement-FunctionDeclaration-parser-syntax.md` - Implement Functiondeclaration Parser Syntax (same feature label, title overlap)
-- `issues/done/663-implement-arrayAssignmentTest-parser-syntax.md` - Implement Arrayassignmenttest Parser Syntax (same feature label, title overlap)
-- `issues/done/734-implement-assignmentCompatability-parser-syntax.md` - Implement Assignmentcompatability Parser Syntax (same feature label, title overlap)
-- `issues/done/753-implement-asyncFunctionReturnType-parser-syntax.md` - Implement Asyncfunctionreturntype Parser Syntax (same feature label, title overlap)
-- `issues/done/767-implement-augmentedTypesEnum-parser-syntax.md` - Implement Augmentedtypesenum Parser Syntax (same feature label, title overlap)
+- `issues/open/442-implement-parser-syntax.md` - Implement parser syntax extensions (same feature label, title overlap)
+- `issues/open/464-implement-FunctionDeclaration-parser-syntax.md` - Implement Functiondeclaration Parser Syntax (same feature label, title overlap)
+- `issues/open/550-implement-FunctionDeclaration-parser-syntax.md` - Implement Functiondeclaration Parser Syntax (same feature label, title overlap)
+- `issues/open/663-implement-arrayAssignmentTest-parser-syntax.md` - Implement Arrayassignmenttest Parser Syntax (same feature label, title overlap)
+- `issues/open/734-implement-assignmentCompatability-parser-syntax.md` - Implement Assignmentcompatability Parser Syntax (same feature label, title overlap)
+- `issues/open/753-implement-asyncFunctionReturnType-parser-syntax.md` - Implement Asyncfunctionreturntype Parser Syntax (same feature label, title overlap)
+- `issues/open/767-implement-augmentedTypesEnum-parser-syntax.md` - Implement Augmentedtypesenum Parser Syntax (same feature label, title overlap)
 - `issues/open/059-implement-parser-syntax-extensions.md` - Implement parser syntax extensions for TypeScript and advanced JS (same feature label, title overlap)
-- `issues/done/065-implement-parser-syntax.md` - Implement parser syntax extensions (same feature label, title overlap)
+- `issues/open/065-implement-parser-syntax.md` - Implement parser syntax extensions (same feature label, title overlap)
 - `issues/done/065a-merge-duplicate-parser-syntax-issue-into-059.md` - Merge duplicate parser syntax issue into 059 (same feature label, title overlap)
 
 ## Smart triage
 
 Fresh triage has started. The repeated `expected Semicolon, got Some(For)`
 subfamily is split to
-`issues/done/5207-support-ambient-interface-filter-receiver.md`; remaining
+`issues/open/5207-support-ambient-interface-filter-receiver.md`; remaining
 subfamilies still need child issues.
 
 ### Smart triage: capturedLetConstInLoop1
@@ -190,7 +190,7 @@ Source context:
 ```
 
 TypeScript oracle succeeds with no diagnostics.
-Child issue `issues/done/5207-support-ambient-interface-filter-receiver.md`
+Child issue `issues/open/5207-support-ambient-interface-filter-receiver.md`
 owns this ASI slice.
 
 ### Smart triage: capturedLetConstInLoop1_ES6
@@ -227,7 +227,7 @@ Source context:
 ```
 
 TypeScript oracle succeeds with no diagnostics.
-Child issue `issues/done/5207-support-ambient-interface-filter-receiver.md`
+Child issue `issues/open/5207-support-ambient-interface-filter-receiver.md`
 owns this ASI slice.
 
 ### Smart triage: capturedLetConstInLoop6
@@ -267,7 +267,7 @@ TypeScript oracle succeeds with no diagnostics. This is the same
 no-semicolon `do while` before `for` parser boundary as capturedLetConstInLoop1,
 with `break` and `continue` statements already parsed inside the preceding
 body. Child issue
-`issues/done/5207-support-ambient-interface-filter-receiver.md` owns this ASI
+`issues/open/5207-support-ambient-interface-filter-receiver.md` owns this ASI
 slice.
 
 ### Smart triage: capturedLetConstInLoop6_ES6
@@ -307,7 +307,7 @@ TypeScript oracle succeeds with no diagnostics. This is the same
 no-semicolon `do while` before `for` parser boundary as capturedLetConstInLoop1,
 with `break` and `continue` statements already parsed inside the preceding
 body. Child issue
-`issues/done/5207-support-ambient-interface-filter-receiver.md` owns this ASI
+`issues/open/5207-support-ambient-interface-filter-receiver.md` owns this ASI
 slice.
 
 ### Smart triage: capturedLetConstInLoop12
@@ -344,7 +344,7 @@ Source context:
 
 TypeScript AST sees the arrow body as a `BinaryExpression` assignment
 `[i] = [i + 1]` and reports no diagnostics. Child issue
-`issues/done/5208-support-regexp-match-fallback-array-map-receiver.md` owns this
+`issues/open/5208-support-regexp-match-fallback-array-map-receiver.md` owns this
 parser slice.
 
 ### Smart triage: capturedLetConstInLoop13
@@ -381,7 +381,7 @@ Source context:
 
 TypeScript AST sees `PropertyAssignment -> ComputedPropertyName ->
 BinaryExpression` for `name + ".a"` and reports no diagnostics. Child issue
-`issues/done/5209-support-class-instance-method-receiver-calls.md` owns
+`issues/open/5209-support-class-instance-method-receiver-calls.md` owns
 this parser slice.
 
 ### Smart triage: capturedLetConstInLoop2
@@ -410,7 +410,7 @@ Failure location:
 
 Source context includes the preceding `do { ... } while (1 === 1)` with no
 explicit semicolon before the enclosing function closes. Child issue
-`issues/done/5210-array-map-sparse-array-holes.md` owns
+`issues/open/5210-array-map-sparse-array-holes.md` owns
 this ASI slice.
 
 ### Smart triage: capturedLetConstInLoop2_ES6
@@ -439,7 +439,7 @@ Failure location:
 
 Source context includes the preceding `do { ... } while (1 === 1)` with no
 explicit semicolon before the enclosing function closes. Child issue
-`issues/done/5210-array-map-sparse-array-holes.md` owns
+`issues/open/5210-array-map-sparse-array-holes.md` owns
 this ASI slice.
 
 ### Smart triage: capturedLetConstInLoop5
@@ -469,7 +469,7 @@ Failure location:
 Source context includes a preceding `do { ... } while (1 === 1)` with no
 explicit semicolon before the following `use(v);` expression. TypeScript
 advances and reports TS2454 use-before-assigned diagnostics. Child issue
-`issues/done/5210-array-map-sparse-array-holes.md` owns
+`issues/open/5210-array-map-sparse-array-holes.md` owns
 this ASI slice.
 
 ### Smart triage: capturedLetConstInLoop5_ES6
@@ -499,7 +499,7 @@ Failure location:
 Source context includes a preceding `do { ... } while (1 === 1)` with no
 explicit semicolon before the following `use(v);` expression. TypeScript
 advances and reports TS2454 use-before-assigned diagnostics. Child issue
-`issues/done/5210-array-map-sparse-array-holes.md` owns
+`issues/open/5210-array-map-sparse-array-holes.md` owns
 this ASI slice.
 
 ### Smart triage: capturedLetConstInLoop7
@@ -537,7 +537,7 @@ Source context:
 
 TypeScript oracle accepts the no-semicolon `do while` before the labeled
 statement. Child issue
-`issues/done/5211-sparse-array-spread-support.md` owns this ASI
+`issues/open/5211-sparse-array-spread-support.md` owns this ASI
 slice.
 
 ### Smart triage: capturedLetConstInLoop7_ES6
@@ -575,7 +575,7 @@ Source context:
 
 TypeScript oracle accepts the no-semicolon `do while` before the labeled
 statement. Child issue
-`issues/done/5211-sparse-array-spread-support.md` owns this ASI
+`issues/open/5211-sparse-array-spread-support.md` owns this ASI
 slice.
 
 ### Smart triage: capturedLetConstInLoop9
@@ -694,7 +694,7 @@ Compiler tokens succeed; AST and resolved dumps fail with the same
 `UnsupportedSyntax` parser error. TypeScript oracle succeeds with no
 diagnostics. This is the same no-semicolon `do while` before `for` boundary as
 capturedLetConstInLoop1, with captured `var` use in the surrounding body. Child
-issue `issues/done/5207-support-ambient-interface-filter-receiver.md` owns this
+issue `issues/open/5207-support-ambient-interface-filter-receiver.md` owns this
 ASI slice.
 
 ### Folded triage from #1109: capturedLetConstInLoop4_ES6
@@ -737,7 +737,7 @@ Compiler tokens succeed; AST and resolved dumps fail with the same
 `UnsupportedSyntax` parser error. TypeScript oracle succeeds with no
 diagnostics. This is the same no-semicolon `do while` before `for` boundary as
 capturedLetConstInLoop1, with captured `var` use in the surrounding body. Child
-issue `issues/done/5207-support-ambient-interface-filter-receiver.md` owns this
+issue `issues/open/5207-support-ambient-interface-filter-receiver.md` owns this
 ASI slice.
 
 ## Completion evidence

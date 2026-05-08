@@ -19,7 +19,7 @@ updated: 2026-05-06
 
 Closed by splitting the current namespace import-equals alias resolver blocker
 to
-`issues/done/5262-resolve-import-equals-aliases-in-class-implements-clauses.md`.
+`issues/open/5262-resolve-import-equals-aliases-in-class-implements-clauses.md`.
 
 ## Problem
 
@@ -116,7 +116,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] `issues/done/5262-resolve-import-equals-aliases-in-class-implements-clauses.md`
+- [x] `issues/open/5262-resolve-import-equals-aliases-in-class-implements-clauses.md`
 
 ## Notes
 
@@ -143,7 +143,7 @@ namespace M2 {
 
 ## Duplicate detection
 
-- `issues/done/432-implement-import-export.md` is a broad umbrella for module
+- `issues/open/432-implement-import-export.md` is a broad umbrella for module
   syntax and not an exact implementation-ready alias-in-heritage slice.
 - Existing alias/import-equals buckets cover other reference paths and do not
   own `classImplementsImportedInterface.ts` or `implements T`.
@@ -176,7 +176,7 @@ TypeScript AST path: ModuleDeclaration -> ModuleBlock -> ClassDeclaration ->
 
 Split issue:
 
-- `issues/done/5262-resolve-import-equals-aliases-in-class-implements-clauses.md`
+- `issues/open/5262-resolve-import-equals-aliases-in-class-implements-clauses.md`
 
 ## Completion evidence
 
@@ -184,7 +184,7 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- Split to `issues/done/5262-resolve-import-equals-aliases-in-class-implements-clauses.md`; see local commit for this issue cleanup.
+- Split to `issues/open/5262-resolve-import-equals-aliases-in-class-implements-clauses.md`; see local commit for this issue cleanup.
 
 Validation result:
 

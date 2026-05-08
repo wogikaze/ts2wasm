@@ -135,7 +135,7 @@ Follow-up issues:
   but covers local non-constructor heritage values.
 - `issues/open/5315-report-class-extends-interface-diagnostics.md` is related
   but covers class-extends-interface diagnostics.
-- `issues/done/5225-w0-typed-wat-writer.md` is related but
+- `issues/open/5225-w0-typed-wat-writer.md` is related but
   covers qualified heritage implementation.
 - No exact open issue covered namespace-augmented static-side inheritance
   compatibility, so issue 5331 was created.

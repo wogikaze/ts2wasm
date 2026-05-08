@@ -119,10 +119,10 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/425-implement-destructuring.md` - Implement destructuring (same feature label, title overlap)
-- `issues/done/247-implement-destructuring-binding-pattern-parser.md` - Implement destructuring binding pattern parser support (same feature label, title overlap)
-- `issues/done/251-implement-destructuring-binding-runtime-semantics.md` - Implement destructuring binding runtime semantics (same feature label, title overlap)
-- `issues/done/252-implement-destructuring-assignment-pattern-parser.md` - Implement destructuring assignment pattern parser support (same feature label, title overlap)
+- `issues/open/425-implement-destructuring.md` - Implement destructuring (same feature label, title overlap)
+- `issues/open/247-implement-destructuring-binding-pattern-parser.md` - Implement destructuring binding pattern parser support (same feature label, title overlap)
+- `issues/open/251-implement-destructuring-binding-runtime-semantics.md` - Implement destructuring binding runtime semantics (same feature label, title overlap)
+- `issues/open/252-implement-destructuring-assignment-pattern-parser.md` - Implement destructuring assignment pattern parser support (same feature label, title overlap)
 
 ## Smart triage
 

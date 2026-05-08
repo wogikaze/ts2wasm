@@ -129,7 +129,7 @@ Follow-up issues:
   records the same closure precedent for a build-passing TS2351 constructability
   oracle diagnostic.
 - Open construct-signature parser issues such as
-  `issues/open/5245-parse-interface-construct-signatures.md` and
+  `issues/open/5245-iterator-protocol-runtime.md` and
   `issues/open/5257-parse-object-type-literal-construct-signatures.md` cover
   type syntax parsing, not this build-passing `new x()` diagnostic.
 

@@ -156,12 +156,12 @@ initialization false-pass slice.
   `L<RT extends { a: 'a' | 'b', b: any }> extends T<RT[RT['a']]>`, erases the
   typed fields, and returns `build_pass`.
 
-Also owns `issues/done/3592-implement-nonGenericClassExtendingGenericClassWithAny.md`:
+Also owns `issues/open/3592-implement-nonGenericClassExtendingGenericClassWithAny.md`:
 fresh triage now build-passes and TypeScript reports TS2564 for generic field
 `Foo<T>.t` before any `Foo<any>` heritage parity gap is actionable.
 
 Also owns the TS2564 diagnostics in
-`issues/done/3593-implement-nonIdenticalTypeConstraints.md`: fresh triage now
+`issues/open/3593-implement-nonIdenticalTypeConstraints.md`: fresh triage now
 build-passes and TypeScript reports TS2564 for uninitialized fields in
 `Different`, `Foo`, `Qux`, `Bar`, `Baz`, and `Quux`. The TS2428 merged
 declaration type-parameter diagnostics were split to issue 5487.

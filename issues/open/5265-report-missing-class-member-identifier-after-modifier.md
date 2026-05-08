@@ -129,7 +129,7 @@ python scripts/manager.py reference-coverage tsc --path-filter classMemberWithMi
 
 ## Notes
 
-Split from `issues/done/1225-implement-classMemberWithMissingIdentifier.md`.
+Split from `issues/open/1225-implement-classMemberWithMissingIdentifier.md`.
 
 ## False-done audit
 

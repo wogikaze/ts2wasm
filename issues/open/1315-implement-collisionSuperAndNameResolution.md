@@ -19,7 +19,7 @@ status: done
 
 ## Summary
 
-Closed after splitting the current parser/name-resolution blocker into `issues/done/5339-preserve-var-after-object-type-declaration.md`.
+Closed after splitting the current parser/name-resolution blocker into `issues/open/5339-preserve-var-after-object-type-declaration.md`.
 
 ## Problem
 
@@ -43,7 +43,7 @@ mise run reference-coverage -- tsc --path-filter reference/typescript/tests/case
 
 ## Desired final state
 
-This generated bucket is closed. Implementation should proceed through `issues/done/5339-preserve-var-after-object-type-declaration.md`.
+This generated bucket is closed. Implementation should proceed through `issues/open/5339-preserve-var-after-object-type-declaration.md`.
 
 ## Scope
 
@@ -116,7 +116,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] `issues/done/5339-preserve-var-after-object-type-declaration.md`
+- [x] `issues/open/5339-preserve-var-after-object-type-declaration.md`
 
 ## Notes
 
@@ -127,7 +127,7 @@ Follow-up issues:
 ## Duplicate detection
 
 - Broad name-resolution issues were found by feature label, but none owns this exact `collisionSuperAndNameResolution.ts` parser/name-resolution blocker.
-- `issues/done/5339-preserve-var-after-object-type-declaration.md` owns this current blocker.
+- `issues/open/5339-preserve-var-after-object-type-declaration.md` owns this current blocker.
 
 ## Smart triage
 

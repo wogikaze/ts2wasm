@@ -117,8 +117,8 @@ Follow-up issues:
 ## Duplicate detection
 
 - `#146` - Implement Ambientenumelementinitializer (same reference path, same group key, title overlap)
-- `issues/done/521-implement-ambientEnumElementInitializer.md` - Implement Ambientenumelementinitializer (same reference path, same feature label, same group key, title overlap)
-- `issues/done/607-implement-ambientEnumElementInitializer.md` - Implement Ambientenumelementinitializer (same reference path, same feature label, same group key, title overlap)
+- `issues/open/521-implement-ambientEnumElementInitializer.md` - Implement Ambientenumelementinitializer (same reference path, same feature label, same group key, title overlap)
+- `issues/open/607-implement-ambientEnumElementInitializer.md` - Implement Ambientenumelementinitializer (same reference path, same feature label, same group key, title overlap)
 
 ## Smart triage
 
@@ -159,8 +159,8 @@ Reopen reason: frontmatter still says `class: blocked`, which is incompatible wi
 Violated acceptance: the issue cannot provide repo-local close evidence for its checked acceptance criteria while it remains in this state. Acceptance checkboxes were reset for re-verification.
 
 Evidence files:
-- `issues/done/842-implement-ambientEnumElementInitializer.md` before this move
-- `issues/done/842-implement-ambientEnumElementInitializer.md` after this move
+- `issues/open/842-implement-ambientEnumElementInitializer.md` before this move
+- `issues/open/842-implement-ambientEnumElementInitializer.md` after this move
 
 Split follow-up: none created in this audit wave; this reopened issue remains the tracking item.
 
@@ -173,5 +173,5 @@ Classification: truly-done duplicate/superseded tracking issue.
 Audit result: returned to `issues/done/` after review feedback. The title contains `(dup)`, which marks this issue as a duplicate/superseded tracker; duplicate closure issues must not remain in `issues/open/` unless the duplicate mapping itself is invalid.
 
 Evidence files:
-- `issues/done/842-implement-ambientEnumElementInitializer.md` after this correction
+- `issues/open/842-implement-ambientEnumElementInitializer.md` after this correction
 - `issues/index.md` after regeneration

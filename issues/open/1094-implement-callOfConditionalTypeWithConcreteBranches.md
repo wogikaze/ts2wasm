@@ -106,11 +106,11 @@ Current state:
 
 Follow-up issues:
 
-- [x] created: `issues/done/5196-support-callable-conditional-typed-parameter-calls.md`
+- [x] created: `issues/open/5196-support-callable-conditional-typed-parameter-calls.md`
 
 ## Notes
 
-Superseded by `issues/done/5196-support-callable-conditional-typed-parameter-calls.md`.
+Superseded by `issues/open/5196-support-callable-conditional-typed-parameter-calls.md`.
 Fresh triage shows this bucket is no longer parser-owned; the source parses and
 then lowering reports `issue-211` for the callable conditional-typed parameter
 call `arg(10)`.
@@ -131,13 +131,13 @@ Generated on 2026-05-06:
 - diagnostic: `UnsupportedSyntax`, `issue-211: function-valued local calls such as extracted method arg(...) are not supported`
 - AST: `Function fn` with parameter `arg`; body contains `Call(Ident arg, Number 10)`
 - TypeScript oracle: ok, diagnostics: []
-- follow-up: `issues/done/5196-support-callable-conditional-typed-parameter-calls.md`
+- follow-up: `issues/open/5196-support-callable-conditional-typed-parameter-calls.md`
 
 ## Completion evidence
 
 Closed as a generated triage bucket. The actionable callable conditional-typed
 parameter call gap is tracked by
-`issues/done/5196-support-callable-conditional-typed-parameter-calls.md`.
+`issues/open/5196-support-callable-conditional-typed-parameter-calls.md`.
 
 Commits:
 

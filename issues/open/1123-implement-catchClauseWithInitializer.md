@@ -43,7 +43,7 @@ mise run reference-coverage -- tsc --path-filter reference/typescript/tests/case
 
 ## Desired final state
 
-This generated bucket is superseded by `issues/done/5219-support-explicit-this-parameter-function-expression-lowering.md`.
+This generated bucket is superseded by `issues/open/5219-support-explicit-this-parameter-function-expression-lowering.md`.
 
 ## Scope
 
@@ -115,7 +115,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] created: `issues/done/5219-support-explicit-this-parameter-function-expression-lowering.md`
+- [x] created: `issues/open/5219-support-explicit-this-parameter-function-expression-lowering.md`
 
 ## Notes
 
@@ -136,7 +136,7 @@ Generated on 2026-05-06:
 - feature label: `parser-syntax`
 - diagnostic: `UnsupportedSyntax` / `parser-or-frontend-unsupported`
 - message: `expected RightParen, got Some(Equal) at 39..40`
-- child issue: `issues/done/5219-support-explicit-this-parameter-function-expression-lowering.md`
+- child issue: `issues/open/5219-support-explicit-this-parameter-function-expression-lowering.md`
 
 Source context:
 

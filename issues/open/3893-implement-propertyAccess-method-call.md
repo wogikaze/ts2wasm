@@ -117,7 +117,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/435-implement-method-call.md` - Implement method call support (same feature label, title overlap)
+- `issues/open/435-implement-method-call.md` - Implement method call support (same feature label, title overlap)
 
 ## Smart triage
 

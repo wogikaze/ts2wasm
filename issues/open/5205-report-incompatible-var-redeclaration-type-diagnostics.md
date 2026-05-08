@@ -155,7 +155,7 @@ Related issue 5162 removes false `DuplicateLocal` blockers for compatible
 `var` redeclarations. This issue handles the next diagnostic step once the
 compiler already accepts the declarations.
 
-Also owns `issues/done/3532-implement-noExcessiveStackDepthError.md`: fresh
+Also owns `issues/open/3532-implement-noExcessiveStackDepthError.md`: fresh
 triage for `noExcessiveStackDepthError.ts` now build-passes after erasing the
 recursive interface/type declarations and both repeated `var x` declarations.
 TypeScript reports TS2403 at the second `var x`, where

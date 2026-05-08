@@ -126,7 +126,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/548-implement-ExportAssignment.md` covers the same
+- `issues/open/548-implement-ExportAssignment.md` covers the same
   `ExportAssignment` plus other exported elements behavior for
   `ExportAssignment7.ts` and `ExportAssignment8.ts`.
 - Split into `issues/open/5306-report-export-assignment-with-other-exports.md`.

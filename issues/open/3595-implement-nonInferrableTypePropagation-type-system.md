@@ -117,7 +117,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/345-implement-tsc-type-alias-coverage.md` - Implement TypeScript type alias coverage for tsc suite (23 cases) (same feature label, title overlap)
+- `issues/open/345-implement-tsc-type-alias-coverage.md` - Implement TypeScript type alias coverage for tsc suite (23 cases) (same feature label, title overlap)
 
 ## Smart triage
 

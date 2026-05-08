@@ -126,15 +126,15 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/082-implement-abstractClassInLocalScope.md` - Implement Abstractclassinlocalscope (same feature label, same group key, title overlap)
-- `issues/done/083-implement-abstractClassInLocalScopeIsAbstract.md` - Implement Abstractclassinlocalscopeisabstract (same feature label, same group key, title overlap)
-- `issues/done/1067-implement-blockScopedBindingUsedBeforeDef.md` - Implement Blockscopedbindingusedbeforedef (same feature label, same group key, title overlap)
-- `issues/done/1069-implement-blockScopedBindingsReassignedInLoop-scope-analysis.md` - Implement Blockscopedbindingsreassignedinloop Scope Analysis (same feature label, same group key, title overlap)
-- `issues/done/1079-implement-blockScopedVariablesUseBeforeDef.md` - Implement Blockscopedvariablesusebeforedef (same feature label, same group key, title overlap)
-- `issues/done/1178-implement-classDeclarationShouldBeOutOfScopeInComputedNames.md` - Implement Classdeclarationshouldbeoutofscopeincomputednames (same feature label, same group key, title overlap; split to issue 5251)
+- `issues/open/082-implement-abstractClassInLocalScope.md` - Implement Abstractclassinlocalscope (same feature label, same group key, title overlap)
+- `issues/open/083-implement-abstractClassInLocalScopeIsAbstract.md` - Implement Abstractclassinlocalscopeisabstract (same feature label, same group key, title overlap)
+- `issues/open/1067-implement-blockScopedBindingUsedBeforeDef.md` - Implement Blockscopedbindingusedbeforedef (same feature label, same group key, title overlap)
+- `issues/open/1069-implement-blockScopedBindingsReassignedInLoop-scope-analysis.md` - Implement Blockscopedbindingsreassignedinloop Scope Analysis (same feature label, same group key, title overlap)
+- `issues/open/1079-implement-blockScopedVariablesUseBeforeDef.md` - Implement Blockscopedvariablesusebeforedef (same feature label, same group key, title overlap)
+- `issues/open/1178-implement-classDeclarationShouldBeOutOfScopeInComputedNames.md` - Implement Classdeclarationshouldbeoutofscopeincomputednames (same feature label, same group key, title overlap; split to issue 5251)
 - `issues/open/1443-implement-constDeclarations-scope-analysis.md` - Implement Constdeclarations Scope Analysis (same feature label, same group key, title overlap)
 - `issues/open/1551-implement-continueInLoopsWithCapturedBlockScopedBindings.md` - Implement Continueinloopswithcapturedblockscopedbindings (same feature label, same group key, title overlap)
-- `issues/done/192-implement-argsInScope.md` - Implement Argsinscope (same feature label, same group key, title overlap)
+- `issues/open/192-implement-argsInScope.md` - Implement Argsinscope (same feature label, same group key, title overlap)
 - `issues/open/1982-implement-disallowedBlockScopedInPresenceOfParseErrors.md` - Implement Disallowedblockscopedinpresenceofparseerrors (same feature label, same group key, title overlap)
 
 ## Smart triage
@@ -189,7 +189,7 @@ Classification: truly-done.
 Audit result: retained in `issues/done/`. The issue has repo-local completion evidence, is not marked `blocked` or `triage-needed`, and `python scripts/manager.py check issues` validates the resulting issue graph.
 
 Evidence files:
-- `issues/done/5087-implement-scope-analysis.md`
+- `issues/open/5087-implement-scope-analysis.md`
 - `issues/index.md` after regeneration
 
 Future-work tracking: no untracked future-work item was identified in this issue during this metadata/evidence audit.

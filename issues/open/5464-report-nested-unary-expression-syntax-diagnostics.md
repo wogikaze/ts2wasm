@@ -19,7 +19,7 @@ operand, instead of failing with `UnsupportedSyntax: unsupported expression:
 None`.
 
 Split from generated bucket
-`issues/done/3492-implement-nestedUnaryExpressionHang.md`.
+`issues/open/3492-implement-nestedUnaryExpressionHang.md`.
 
 ## Problem
 

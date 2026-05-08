@@ -110,7 +110,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] created: `issues/done/5386-bind-dom-settimeout-global.md`
+- [x] created: `issues/open/5386-bind-dom-settimeout-global.md`
 
 ## Notes
 
@@ -160,7 +160,7 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- split to `issues/done/5386-bind-dom-settimeout-global.md`
+- split to `issues/open/5386-bind-dom-settimeout-global.md`
 
 Validation result:
 

@@ -166,7 +166,7 @@ Follow-up issues:
 
 ## Notes
 
-Split from `issues/done/3355-implement-moduleNoneDynamicImport.md`.
+Split from `issues/open/3355-implement-moduleNoneDynamicImport.md`.
 
 Related but not duplicates:
 

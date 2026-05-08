@@ -150,7 +150,7 @@ Follow-up issues:
 ## Notes
 
 This issue was split from generated bucket
-`issues/done/3593-implement-nonIdenticalTypeConstraints.md`. The parser and
+`issues/open/3593-implement-nonIdenticalTypeConstraints.md`. The parser and
 resolver already traverse the fixture; the missing work is semantic parity.
 
 ## Completion evidence

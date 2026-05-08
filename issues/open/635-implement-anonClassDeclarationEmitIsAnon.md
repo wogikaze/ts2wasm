@@ -116,7 +116,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/177-implement-anonClassDeclarationEmitIsAnon.md` - Implement Anonclassdeclarationemitisanon (same reference path, same group key, title overlap)
+- `issues/open/177-implement-anonClassDeclarationEmitIsAnon.md` - Implement Anonclassdeclarationemitisanon (same reference path, same group key, title overlap)
 
 ## Smart triage
 

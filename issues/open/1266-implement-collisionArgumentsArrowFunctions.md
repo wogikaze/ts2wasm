@@ -50,7 +50,7 @@ python scripts/manager.py reference-coverage tsc --path-filter reference/typescr
 ## Desired final state
 
 This generated bucket is closed after splitting the current observable behavior
-into `issues/done/5333-report-strict-mode-arguments-binding-diagnostics.md`.
+into `issues/open/5333-report-strict-mode-arguments-binding-diagnostics.md`.
 
 ## Scope
 
@@ -119,7 +119,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] created: `issues/done/5333-report-strict-mode-arguments-binding-diagnostics.md`
+- [x] created: `issues/open/5333-report-strict-mode-arguments-binding-diagnostics.md`
 
 ## Notes
 
@@ -129,8 +129,8 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/649-implement-argumentsBindsToFunctionScopeArgumentList.md` - related generated name-resolution bucket for implicit function-scope `arguments`, not the strict-mode binding diagnostic
-- `issues/done/658-implement-argumentsReferenceInObjectLiteral.md` - related generated arguments-object bucket for object literal reference parsing, not this diagnostic
+- `issues/open/649-implement-argumentsBindsToFunctionScopeArgumentList.md` - related generated name-resolution bucket for implicit function-scope `arguments`, not the strict-mode binding diagnostic
+- `issues/open/658-implement-argumentsReferenceInObjectLiteral.md` - related generated arguments-object bucket for object literal reference parsing, not this diagnostic
 - no exact existing owner found for TS1100 strict-mode `arguments` binding diagnostics
 
 ## Smart triage
@@ -192,13 +192,13 @@ TS1100: Invalid use of 'arguments' in strict mode.
 
 Split result:
 
-- `issues/done/5333-report-strict-mode-arguments-binding-diagnostics.md`
+- `issues/open/5333-report-strict-mode-arguments-binding-diagnostics.md`
 
 ## Completion evidence
 
 Commits:
 
-- Split to `issues/done/5333-report-strict-mode-arguments-binding-diagnostics.md`.
+- Split to `issues/open/5333-report-strict-mode-arguments-binding-diagnostics.md`.
 
 Validation result:
 

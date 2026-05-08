@@ -136,7 +136,7 @@ Follow-up issues:
 
 ## Notes
 
-Split from `issues/done/3353-implement-moduleNodeDefaultImports.md`.
+Split from `issues/open/3353-implement-moduleNodeDefaultImports.md`.
 
 Related but not duplicates:
 

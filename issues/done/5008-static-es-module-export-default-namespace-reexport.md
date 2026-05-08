@@ -105,7 +105,7 @@ Final-state docs:
 Follow-up issues:
 
 - [x] none created by this closure
-- [x] existing follow-up: `issues/done/5010-remaining-es-module-export-forms.md`
+- [x] existing follow-up: `issues/open/5010-remaining-es-module-export-forms.md`
 
 ## Reopened by audit
 

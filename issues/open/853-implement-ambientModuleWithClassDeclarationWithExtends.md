@@ -118,9 +118,9 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/158-implement-ambientModuleWithClassDeclarationWithExtends.md` - Implement Ambientmodulewithclassdeclarationwithextends (same reference path, same group key, title overlap)
-- `issues/done/532-implement-ambientModuleWithClassDeclarationWithExtends.md` - Implement Ambientmodulewithclassdeclarationwithextends (same reference path, same feature label, same group key, title overlap)
-- `issues/done/618-implement-ambientModuleWithClassDeclarationWithExtends.md` - Implement Ambientmodulewithclassdeclarationwithextends (same reference path, same feature label, same group key, title overlap)
+- `issues/open/158-implement-ambientModuleWithClassDeclarationWithExtends.md` - Implement Ambientmodulewithclassdeclarationwithextends (same reference path, same group key, title overlap)
+- `issues/open/532-implement-ambientModuleWithClassDeclarationWithExtends.md` - Implement Ambientmodulewithclassdeclarationwithextends (same reference path, same feature label, same group key, title overlap)
+- `issues/open/618-implement-ambientModuleWithClassDeclarationWithExtends.md` - Implement Ambientmodulewithclassdeclarationwithextends (same reference path, same feature label, same group key, title overlap)
 
 ## Smart triage
 
@@ -162,6 +162,6 @@ Violated acceptance: the issue cannot provide repo-local close evidence for its 
 
 Evidence files:
 - open issue file before this move
-- `issues/done/853-implement-ambientModuleWithClassDeclarationWithExtends.md` after this move
+- `issues/open/853-implement-ambientModuleWithClassDeclarationWithExtends.md` after this move
 
 Split follow-up: none created in this audit wave; this reopened issue remains the tracking item.

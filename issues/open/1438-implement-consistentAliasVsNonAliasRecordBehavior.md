@@ -116,7 +116,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] created: `issues/done/5309-skip-generic-type-arguments-in-type-annotations.md`
+- [x] created: `issues/open/5309-skip-generic-type-arguments-in-type-annotations.md`
 
 ## Notes
 
@@ -126,10 +126,10 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/345-implement-tsc-type-alias-coverage.md` is the broad parent.
+- `issues/open/345-implement-tsc-type-alias-coverage.md` is the broad parent.
   This bucket is now narrowed to a parser helper gap rather than broad
   type-alias erasure.
-- Split into `issues/done/5309-skip-generic-type-arguments-in-type-annotations.md`.
+- Split into `issues/open/5309-skip-generic-type-arguments-in-type-annotations.md`.
 
 ## Smart triage
 
@@ -208,7 +208,7 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- split into `issues/done/5309-skip-generic-type-arguments-in-type-annotations.md`
+- split into `issues/open/5309-skip-generic-type-arguments-in-type-annotations.md`
 
 Validation result:
 

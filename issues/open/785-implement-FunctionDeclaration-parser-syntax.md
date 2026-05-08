@@ -118,16 +118,16 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/076-implement-FunctionDeclaration.md` - Implement Functiondeclaration (same reference path, same feature label, title overlap)
-- `issues/done/442-implement-parser-syntax.md` - Implement parser syntax extensions (same feature label, title overlap)
-- `issues/done/464-implement-FunctionDeclaration-parser-syntax.md` - Implement Functiondeclaration Parser Syntax (same reference path, same feature label, same group key, title overlap)
-- `issues/done/466-implement-ParameterList.md` - Implement Parameterlist (same feature label, same group key, title overlap)
+- `issues/open/076-implement-FunctionDeclaration.md` - Implement Functiondeclaration (same reference path, same feature label, title overlap)
+- `issues/open/442-implement-parser-syntax.md` - Implement parser syntax extensions (same feature label, title overlap)
+- `issues/open/464-implement-FunctionDeclaration-parser-syntax.md` - Implement Functiondeclaration Parser Syntax (same reference path, same feature label, same group key, title overlap)
+- `issues/open/466-implement-ParameterList.md` - Implement Parameterlist (same feature label, same group key, title overlap)
 - `issues/open/467-implement-TransportStream.md (closed as duplicate)` - Implement Transportstream (same feature label, same group key, title overlap)
-- `issues/done/471-implement-abstractPropertyBasics.md` - Implement Abstractpropertybasics (same feature label, same group key, title overlap)
-- `issues/done/472-implement-abstractPropertyInConstructor.md` - Implement Abstractpropertyinconstructor (same feature label, same group key, title overlap)
-- `issues/done/473-implement-abstractPropertyNegative.md` - Implement Abstractpropertynegative (same feature label, same group key, title overlap)
-- `issues/done/477-implement-accessOverriddenBaseClassMember.md` - Implement Accessoverriddenbaseclassmember (same feature label, same group key, title overlap)
-- `issues/done/520-implement-ambientConstLiterals.md` - Implement Ambientconstliterals (same feature label, same group key, title overlap)
+- `issues/open/471-implement-abstractPropertyBasics.md` - Implement Abstractpropertybasics (same feature label, same group key, title overlap)
+- `issues/open/472-implement-abstractPropertyInConstructor.md` - Implement Abstractpropertyinconstructor (same feature label, same group key, title overlap)
+- `issues/open/473-implement-abstractPropertyNegative.md` - Implement Abstractpropertynegative (same feature label, same group key, title overlap)
+- `issues/open/477-implement-accessOverriddenBaseClassMember.md` - Implement Accessoverriddenbaseclassmember (same feature label, same group key, title overlap)
+- `issues/open/520-implement-ambientConstLiterals.md` - Implement Ambientconstliterals (same feature label, same group key, title overlap)
 
 ## Smart triage
 
@@ -137,7 +137,7 @@ Not generated. Rerun with `--triage-limit 1` or higher.
 ## 重複整理メモ
 
 この issue はタイトルが重複しているため、内容がより充実している
-`issues/done/550-implement-FunctionDeclaration-parser-syntax.md` に統合されました。
+`issues/open/550-implement-FunctionDeclaration-parser-syntax.md` に統合されました。
 そちらを参照してください。
 ## Completion evidence
 
@@ -168,7 +168,7 @@ Classification: truly-done.
 Audit result: retained in `issues/done/`. The issue has repo-local completion evidence, is not marked `blocked` or `triage-needed`, and `python scripts/manager.py check issues` validates the resulting issue graph.
 
 Evidence files:
-- `issues/done/785-implement-FunctionDeclaration-parser-syntax.md`
+- `issues/open/785-implement-FunctionDeclaration-parser-syntax.md`
 - `issues/index.md` after regeneration
 
 Future-work tracking: no untracked future-work item was identified in this issue during this metadata/evidence audit.

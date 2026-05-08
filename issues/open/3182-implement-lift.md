@@ -116,7 +116,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/774-implement-autoLift.md` - Implement Autolift (same feature label, same group key, title overlap)
+- `issues/open/774-implement-autoLift.md` - Implement Autolift (same feature label, same group key, title overlap)
 
 ## Smart triage
 

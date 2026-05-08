@@ -118,11 +118,11 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/108-implement-accessorsInAmbientContext.md` - Implement Accessorsinambientcontext (same reference path, same group key, title overlap)
-- `issues/done/489-implement-accessorsInAmbientContext.md` - Implement Accessorsinambientcontext (same reference path, same feature label, same group key, title overlap)
-- `issues/done/543-implement-APISample-import-export.md` - Implement Apisample Import Export (same feature label, same group key, title overlap)
-- `issues/done/549-implement-FunctionDeclaration-import-export.md` - Implement Functiondeclaration Import Export (same feature label, same group key, title overlap)
-- `issues/done/575-implement-accessorsInAmbientContext.md` - Implement Accessorsinambientcontext (same reference path, same feature label, same group key, title overlap)
+- `issues/open/108-implement-accessorsInAmbientContext.md` - Implement Accessorsinambientcontext (same reference path, same group key, title overlap)
+- `issues/open/489-implement-accessorsInAmbientContext.md` - Implement Accessorsinambientcontext (same reference path, same feature label, same group key, title overlap)
+- `issues/open/543-implement-APISample-import-export.md` - Implement Apisample Import Export (same feature label, same group key, title overlap)
+- `issues/open/549-implement-FunctionDeclaration-import-export.md` - Implement Functiondeclaration Import Export (same feature label, same group key, title overlap)
+- `issues/open/575-implement-accessorsInAmbientContext.md` - Implement Accessorsinambientcontext (same reference path, same feature label, same group key, title overlap)
 
 ## Smart triage
 
@@ -164,6 +164,6 @@ Violated acceptance: the issue cannot provide repo-local close evidence for its 
 
 Evidence files:
 - open issue file before this move
-- `issues/done/810-implement-accessorsInAmbientContext.md` after this move
+- `issues/open/810-implement-accessorsInAmbientContext.md` after this move
 
 Split follow-up: none created in this audit wave; this reopened issue remains the tracking item.

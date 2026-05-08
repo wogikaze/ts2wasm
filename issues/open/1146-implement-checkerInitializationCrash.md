@@ -137,7 +137,7 @@ currently emits the expected issue-400 diagnostic for that construct.
 
 Potential later blockers are already split or remain outside this first
 observable blocker: `export as namespace` is tracked by
-`issues/done/5231-w0-typed-wat-writer-expr-emit-migration.md`; external package
+`issues/open/5231-parse-export-as-namespace-declarations.md`; external package
 module resolution and declaration-file checker behavior are not reached while
 `declare global` is rejected.
 

@@ -17,7 +17,7 @@ Support the narrow `export let name: Type;` declaration form far enough to
 advance past the current issue-055 variable export boundary.
 
 Split from generated bucket
-`issues/done/3462-implement-narrowingPastLastAssignmentInModule.md`.
+`issues/open/3462-implement-narrowingPastLastAssignmentInModule.md`.
 
 ## Problem
 
@@ -85,9 +85,9 @@ In scope:
 Out of scope:
 
 - Initialized `export let` and export-let destructuring forms, tracked by
-  `issues/open/5175-support-export-let-destructuring-declarations.md`.
+  `issues/done/5175-support-export-let-destructuring-declarations.md`.
 - `export var`, tracked by
-  `issues/open/5283-support-entry-export-var-declarations.md`.
+  `issues/done/5283-support-entry-export-var-declarations.md`.
 - Named export declarations such as `export { x2 };`.
 - Default exports such as `export default x4;`.
 - Full module graph loading or emit fidelity.

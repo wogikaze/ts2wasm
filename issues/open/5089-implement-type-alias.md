@@ -118,16 +118,16 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/090-implement-acceptableAlias.md` - Implement Acceptablealias (same feature label, same group key, title overlap)
-- `issues/done/111-implement-aliasAssignments.md` - Implement Aliasassignments (same feature label, same group key, title overlap)
-- `issues/done/112-implement-aliasBug.md` - Implement Aliasbug (same feature label, same group key, title overlap)
-- `issues/done/113-implement-aliasDoesNotDuplicateSignatures.md` - Implement Aliasdoesnotduplicatesignatures (same feature label, same group key, title overlap)
-- `issues/done/114-implement-aliasErrors.md` - Implement Aliaserrors (same feature label, same group key, title overlap)
-- `issues/done/115-implement-aliasInaccessibleModule.md` - Implement Aliasinaccessiblemodule (same feature label, same group key, title overlap)
-- `issues/done/116-implement-aliasInstantiationExpressionGenericIntersectionNoCrash.md` - Implement Aliasinstantiationexpressiongenericintersectionnocrash (same feature label, same group key, title overlap)
-- `issues/done/117-implement-aliasOfGenericFunctionWithRestBehavedSameAsUnaliased.md` - Implement Aliasofgenericfunctionwithrestbehavedsameasunaliased (same feature label, same group key, title overlap; stale build-pass)
-- `issues/done/118-implement-aliasOnMergedModuleInterface.md` - Implement Aliasonmergedmoduleinterface (same feature label, same group key, title overlap)
-- `issues/done/120-implement-aliasUsageInArray.md` - Implement Aliasusageinarray (same feature label, same group key, title overlap)
+- `issues/open/090-implement-acceptableAlias.md` - Implement Acceptablealias (same feature label, same group key, title overlap)
+- `issues/open/111-implement-aliasAssignments.md` - Implement Aliasassignments (same feature label, same group key, title overlap)
+- `issues/open/112-implement-aliasBug.md` - Implement Aliasbug (same feature label, same group key, title overlap)
+- `issues/open/113-implement-aliasDoesNotDuplicateSignatures.md` - Implement Aliasdoesnotduplicatesignatures (same feature label, same group key, title overlap)
+- `issues/open/114-implement-aliasErrors.md` - Implement Aliaserrors (same feature label, same group key, title overlap)
+- `issues/open/115-implement-aliasInaccessibleModule.md` - Implement Aliasinaccessiblemodule (same feature label, same group key, title overlap)
+- `issues/open/116-implement-aliasInstantiationExpressionGenericIntersectionNoCrash.md` - Implement Aliasinstantiationexpressiongenericintersectionnocrash (same feature label, same group key, title overlap)
+- `issues/open/117-implement-aliasOfGenericFunctionWithRestBehavedSameAsUnaliased.md` - Implement Aliasofgenericfunctionwithrestbehavedsameasunaliased (same feature label, same group key, title overlap; stale build-pass)
+- `issues/open/118-implement-aliasOnMergedModuleInterface.md` - Implement Aliasonmergedmoduleinterface (same feature label, same group key, title overlap)
+- `issues/open/120-implement-aliasUsageInArray.md` - Implement Aliasusageinarray (same feature label, same group key, title overlap)
 
 ## Smart triage
 
@@ -181,7 +181,7 @@ Classification: truly-done.
 Audit result: retained in `issues/done/`. The issue has repo-local completion evidence, is not marked `blocked` or `triage-needed`, and `python scripts/manager.py check issues` validates the resulting issue graph.
 
 Evidence files:
-- `issues/done/5089-implement-type-alias.md`
+- `issues/open/5089-implement-type-alias.md`
 - `issues/index.md` after regeneration
 
 Future-work tracking: no untracked future-work item was identified in this issue during this metadata/evidence audit.

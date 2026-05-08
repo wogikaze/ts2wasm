@@ -102,7 +102,7 @@ Out of scope:
 - Import-equals/`require` module loading.
 - Namespace value binding or namespace emit/lowering.
 - `export as namespace Name;`, tracked by
-  `issues/done/5231-w0-typed-wat-writer-expr-emit-migration.md`.
+  `issues/open/5231-parse-export-as-namespace-declarations.md`.
 
 ## Affected paths
 
@@ -170,16 +170,16 @@ Follow-up issues:
 ## Notes
 
 Split from generated bucket
-`issues/done/1451-implement-constEnumNamespaceReferenceCausesNoImport.md`.
+`issues/open/1451-implement-constEnumNamespaceReferenceCausesNoImport.md`.
 
 Related but not duplicates:
 
-- `issues/done/5231-w0-typed-wat-writer-expr-emit-migration.md` covers
+- `issues/open/5231-parse-export-as-namespace-declarations.md` covers
   `export as namespace Name;`, not namespace declarations with bodies.
 - `issues/done/5277-parse-export-enum-declarations-to-enum-boundary.md` covers
   `export enum`, not `export namespace`.
-- `issues/done/5287-bind-namespace-declarations-for-qualified-value-access.md`
-  and `issues/done/5294-resolve-sibling-namespaces-in-nested-namespace-scopes.md`
+- `issues/open/5287-bind-namespace-declarations-for-qualified-value-access.md`
+  and `issues/open/5294-resolve-sibling-namespaces-in-nested-namespace-scopes.md`
   cover namespace binding/resolution after namespace declarations parse.
 
 ## Completion evidence

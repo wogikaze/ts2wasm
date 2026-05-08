@@ -138,7 +138,7 @@ Follow-up issues:
 - `issues/open/5169-parse-asi-after-expression-statement.md` is a match: it
   explicitly covers `expected Semicolon, got Some(RightBrace)` after a
   completed expression statement before a closing block.
-- `issues/open/5210-parse-do-while-asi-before-block-end-or-expression.md` is
+- `issues/open/5210-array-map-sparse-array-holes.md` is
   related but no-match: it is do-while-specific.
 - Broad parser-syntax buckets such as 059 are no-match because 5169 is the
   narrower implementation-ready owner.

@@ -452,7 +452,7 @@ error: [UnsupportedSyntax] issue-055: unsupported variable export; module resolu
 ## 重複整理メモ
 
 この issue はタイトルが重複しているため、内容がより充実している
-`issues/done/570-implement-accessorInferredReturnTypeErrorInReturnStatement.md` に統合されました。
+`issues/open/570-implement-accessorInferredReturnTypeErrorInReturnStatement.md` に統合されました。
 そちらを参照してください。
 ## Completion evidence
 
@@ -482,7 +482,7 @@ Remaining risks:
 ## 重複整理メモ
 
 この issue はタイトルが重複しているため、内容がより充実している
-`issues/done/570-implement-accessorInferredReturnTypeErrorInReturnStatement.md` に統合されました。
+`issues/open/570-implement-accessorInferredReturnTypeErrorInReturnStatement.md` に統合されました。
 そちらを参照してください。
 ## Completion evidence` section has empty template values (`...` for commits, empty validation result). The test still fails with `issue-055: unsupported variable export; module resolution and loading are not implemented`.
 

@@ -94,7 +94,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] created: `issues/done/242-implement-date-live-time-wasi-clock.md`
+- [x] created: `issues/open/242-implement-date-live-time-wasi-clock.md`
 
 ## Notes
 

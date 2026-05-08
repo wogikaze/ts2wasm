@@ -16,7 +16,7 @@ status: done
 ## Summary
 
 Closed this generated import/export bucket as superseded by the completed
-module-graph policy boundary in `issues/done/232-resolve-local-relative-es-module-graph.md`.
+module-graph policy boundary in `issues/open/232-resolve-local-relative-es-module-graph.md`.
 
 ## Problem
 
@@ -109,7 +109,7 @@ No implementation paths are assigned from this generated bucket.
 ## Acceptance criteria
 
 - [x] Exact reproduction commands and diagnostics are recorded.
-- [x] Superseding completed issue identified: `issues/done/232-resolve-local-relative-es-module-graph.md`.
+- [x] Superseding completed issue identified: `issues/open/232-resolve-local-relative-es-module-graph.md`.
 - [x] The generated bucket no longer remains as a stale blocked import/export issue.
 
 ## Validation

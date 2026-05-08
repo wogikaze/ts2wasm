@@ -66,7 +66,7 @@ Expected:
 - `crates/backend-wasm/src/`
 - `crates/cli/tests/` if adding a diagnostic test hook
 - `scripts/` only if a small diagnostic runner is the cleanest path
-- `issues/done/358-instrument-abc451-depth8-runtime-costs.md`
+- `issues/open/358-instrument-abc451-depth8-runtime-costs.md`
 - `issues/index.md`
 
 Do not touch:
@@ -223,7 +223,7 @@ Classification: truly-done.
 Audit result: retained in `issues/done/`. The issue has repo-local completion evidence, is not marked `blocked` or `triage-needed`, and `python scripts/manager.py check issues` validates the resulting issue graph.
 
 Evidence files:
-- `issues/done/358-instrument-abc451-depth8-runtime-costs.md`
+- `issues/open/358-instrument-abc451-depth8-runtime-costs.md`
 - `issues/index.md` after regeneration
 
 Future-work tracking: no untracked future-work item was identified in this issue during this metadata/evidence audit.

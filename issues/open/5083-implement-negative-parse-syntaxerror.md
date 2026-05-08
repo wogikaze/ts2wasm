@@ -125,9 +125,9 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/438-implement-negative-parse-syntaxerror.md` - Implement negative-parse-syntaxerror support (same reference path, same feature label, same group key, title overlap)
-- `issues/done/229-implement-legacy-octal-escape-handling.md` - Implement legacy octal escape handling (same reference path, title overlap)
-- `issues/done/286-classify-negative-syntax-tests-correctly.md` - Classify expected negative SyntaxError tests correctly (same feature label, same group key)
+- `issues/open/438-implement-negative-parse-syntaxerror.md` - Implement negative-parse-syntaxerror support (same reference path, same feature label, same group key, title overlap)
+- `issues/open/229-implement-legacy-octal-escape-handling.md` - Implement legacy octal escape handling (same reference path, title overlap)
+- `issues/open/286-classify-negative-syntax-tests-correctly.md` - Classify expected negative SyntaxError tests correctly (same feature label, same group key)
 
 ## Smart triage
 
@@ -150,7 +150,7 @@ AttributeError: 'NoneType' object has no attribute 'parse_test262_metadata'
 ## 重複整理メモ
 
 この issue はタイトルが重複しているため、内容がより充実している
-`issues/done/438-implement-negative-parse-syntaxerror.md` に統合されました。
+`issues/open/438-implement-negative-parse-syntaxerror.md` に統合されました。
 そちらを参照してください。
 ## Completion evidence
 
@@ -181,7 +181,7 @@ Classification: truly-done.
 Audit result: retained in `issues/done/`. The issue has repo-local completion evidence, is not marked `blocked` or `triage-needed`, and `python scripts/manager.py check issues` validates the resulting issue graph.
 
 Evidence files:
-- `issues/done/5083-implement-negative-parse-syntaxerror.md`
+- `issues/open/5083-implement-negative-parse-syntaxerror.md`
 - `issues/index.md` after regeneration
 
 Future-work tracking: no untracked future-work item was identified in this issue during this metadata/evidence audit.

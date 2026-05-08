@@ -125,7 +125,7 @@ Not run:
 
 ## Notes
 
-Split from generated bucket `issues/done/1121-implement-castTest.md`.
+Split from generated bucket `issues/open/1121-implement-castTest.md`.
 Issue `issues/open/5179-report-implicit-this-before-closure-runtime-guard.md`
 is related but narrower: it handles a TypeScript implicit-`this` diagnostic
 before the runtime guard. This issue tracks the runtime/diagnostic boundary for
@@ -133,19 +133,19 @@ an object literal function where TypeScript provides contextual member evidence.
 
 Additional superseded buckets:
 
-- `issues/done/1516-implement-contextualTypeShouldBeLiteral.md` reaches the
+- `issues/open/1516-implement-contextualTypeShouldBeLiteral.md` reaches the
   same object-literal/contextual receiver `this` boundary for method shorthand:
   `method() { this; this.type; this.value; }`. Fresh triage on 2026-05-07
   reports `UnsupportedTypeScriptSyntax issue-5179` for `method`, while the
   TypeScript oracle accepts the file with diagnostics `[]`.
-- `issues/done/1375-implement-commentsOnObjectLiteral-object-literal.md` reaches
+- `issues/open/1375-implement-commentsOnObjectLiteral-object-literal.md` reaches
   the same issue-062e boundary for an object-literal accessor:
   `get a() { return this.prop; }`. `commentsOnObjectLiteral4.ts` from the same
   bucket is already a build pass.
-- `issues/done/3490-implement-nestedThisContainer.md` reaches the same
+- `issues/open/3490-implement-nestedThisContainer.md` reaches the same
   issue-062e boundary for `foo.bar = function () { const self = this; }`;
   TypeScript accepts it with diagnostics `[]`.
-- `issues/done/3558-implement-noImplicitThisBigThis.md` reaches the same
+- `issues/open/3558-implement-noImplicitThisBigThis.md` reaches the same
   issue-062e boundary for object-literal method shorthand returning `this`;
   TypeScript accepts the file with diagnostics `[]`.
 

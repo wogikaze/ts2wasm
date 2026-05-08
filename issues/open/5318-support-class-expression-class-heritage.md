@@ -137,15 +137,15 @@ Follow-up issues:
 ## Notes
 
 Split from stale generated bucket
-`issues/done/1207-implement-classFieldSuperAccessible.md`.
+`issues/open/1207-implement-classFieldSuperAccessible.md`.
 
 Related but not duplicates:
 
 - `issues/open/5248-lower-class-expressions.md` handles class expressions used
   as ordinary assignment/initializer values.
-- `issues/done/5252-support-call-expression-class-heritage.md` handles
+- `issues/open/5252-support-call-expression-class-heritage.md` handles
   `extends makeBaseClass()`.
-- `issues/done/5256-report-non-constructor-class-heritage-expressions.md`
+- `issues/open/5256-report-non-constructor-class-heritage-expressions.md`
   handles invalid non-constructor heritage diagnostics.
 
 ## Completion evidence

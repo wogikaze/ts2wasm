@@ -19,7 +19,7 @@ status: done
 
 ## Summary
 
-Closed as superseded by `issues/done/5334-parse-class-constructor-overload-signatures.md` for the current class constructor overload `DuplicateFunction` blocker.
+Closed as superseded by `issues/open/5334-parse-class-constructor-overload-signatures.md` for the current class constructor overload `DuplicateFunction` blocker.
 
 ## Problem
 
@@ -134,8 +134,8 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/5334-parse-class-constructor-overload-signatures.md` owns the current `DuplicateFunction: duplicate constructor definition` blocker for bodyless constructor overload signatures.
-- `issues/done/5337-parse-rest-parameter-constructor-overload-signatures.md` is related but covers rest-parameter constructor overload signatures.
+- `issues/open/5334-parse-class-constructor-overload-signatures.md` owns the current `DuplicateFunction: duplicate constructor definition` blocker for bodyless constructor overload signatures.
+- `issues/open/5337-parse-rest-parameter-constructor-overload-signatures.md` is related but covers rest-parameter constructor overload signatures.
 - Later `_this` parameter-property collision and lexical `this` behavior remains unproven until issue 5334 advances past the constructor overload failure.
 
 ## Smart triage

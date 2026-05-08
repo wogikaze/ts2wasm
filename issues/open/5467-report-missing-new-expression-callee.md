@@ -17,7 +17,7 @@ Report a source-spanned syntax diagnostic for `new ()` instead of failing with
 a generic `unsupported expression` boundary at the closing parenthesis.
 
 Split from generated bucket
-`issues/done/3502-implement-newMissingIdentifier.md`.
+`issues/open/3502-implement-newMissingIdentifier.md`.
 
 ## Problem
 

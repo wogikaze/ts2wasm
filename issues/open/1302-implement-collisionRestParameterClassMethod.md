@@ -51,7 +51,7 @@ python scripts/manager.py reference-coverage tsc --path-filter reference/typescr
 
 This generated bucket is closed because the current observable blocker is
 owned by
-`issues/done/5198-support-class-method-overload-signatures-for-element-access-calls.md`.
+`issues/open/5198-support-class-method-overload-signatures-for-element-access-calls.md`.
 
 ## Scope
 
@@ -122,7 +122,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] none; superseded by `issues/done/5198-support-class-method-overload-signatures-for-element-access-calls.md`
+- [x] none; superseded by `issues/open/5198-support-class-method-overload-signatures-for-element-access-calls.md`
 
 ## Notes
 
@@ -132,9 +132,9 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/5198-support-class-method-overload-signatures-for-element-access-calls.md` - exact owner for valid class method overload signatures currently reported as duplicate methods
+- `issues/open/5198-support-class-method-overload-signatures-for-element-access-calls.md` - exact owner for valid class method overload signatures currently reported as duplicate methods
 - `issues/open/5327-report-class-method-overload-wrong-implementation-name.md` - related invalid class method overload implementation-name/order diagnostics, not this valid same-name overload group
-- `issues/done/5337-parse-rest-parameter-constructor-overload-signatures.md` - related rest-parameter constructor overload issue, not class methods
+- `issues/open/5337-parse-rest-parameter-constructor-overload-signatures.md` - related rest-parameter constructor overload issue, not class methods
 
 ## Smart triage
 
@@ -204,13 +204,13 @@ diagnostics: []
 
 Superseded by:
 
-- `issues/done/5198-support-class-method-overload-signatures-for-element-access-calls.md`
+- `issues/open/5198-support-class-method-overload-signatures-for-element-access-calls.md`
 
 ## Completion evidence
 
 Commits:
 
-- Superseded by `issues/done/5198-support-class-method-overload-signatures-for-element-access-calls.md`.
+- Superseded by `issues/open/5198-support-class-method-overload-signatures-for-element-access-calls.md`.
 
 Validation result:
 

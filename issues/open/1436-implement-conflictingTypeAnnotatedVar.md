@@ -115,7 +115,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] created: `issues/done/5307-report-var-function-duplicate-identifier-diagnostics.md`
+- [x] created: `issues/open/5307-report-var-function-duplicate-identifier-diagnostics.md`
 
 ## Notes
 
@@ -125,12 +125,12 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/5162-allow-compatible-var-redeclarations.md` is related but
+- `issues/open/5162-allow-compatible-var-redeclarations.md` is related but
   covers compatible `var` redeclarations, not this var/function conflict.
-- `issues/done/5205-restore-backend-residual-expression-rejection.md`
+- `issues/open/5205-report-incompatible-var-redeclaration-type-diagnostics.md`
   is related but starts after duplicate-local blockers are gone and covers
   repeated `var` type compatibility.
-- Split into `issues/done/5307-report-var-function-duplicate-identifier-diagnostics.md`.
+- Split into `issues/open/5307-report-var-function-duplicate-identifier-diagnostics.md`.
 
 ## Smart triage
 
@@ -224,7 +224,7 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- split into `issues/done/5307-report-var-function-duplicate-identifier-diagnostics.md`
+- split into `issues/open/5307-report-var-function-duplicate-identifier-diagnostics.md`
 
 Validation result:
 

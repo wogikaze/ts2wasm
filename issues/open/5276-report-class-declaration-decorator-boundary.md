@@ -94,7 +94,7 @@ Out of scope:
 
 - Full decorator transform or runtime decorator calls.
 - Decorator metadata emit.
-- Class expression decorator handling, which is tracked separately by `issues/done/5253-report-class-expression-decorator-boundary.md`.
+- Class expression decorator handling, which is tracked separately by `issues/open/5253-report-class-expression-decorator-boundary.md`.
 - Parameter, method, property, accessor, or export-position decorator semantics beyond preserving the same boundary diagnostic if encountered.
 
 ## Affected paths
@@ -138,9 +138,9 @@ python scripts/manager.py reference-coverage tsc --path-filter reference/typescr
 
 ## Notes
 
-Split from `issues/done/1348-implement-commentOnDecoratedClassDeclaration.md`.
+Split from `issues/open/1348-implement-commentOnDecoratedClassDeclaration.md`.
 Related broad decorator bucket: `issues/open/4807-implement-decorator.md`.
-Related class-expression decorator boundary: `issues/done/5253-report-class-expression-decorator-boundary.md`.
+Related class-expression decorator boundary: `issues/open/5253-report-class-expression-decorator-boundary.md`.
 
 ## False-done audit
 

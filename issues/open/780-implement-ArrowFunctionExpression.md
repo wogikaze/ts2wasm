@@ -119,10 +119,10 @@ Follow-up issues:
 ## Duplicate detection
 
 - `#071` - Implement Arrowfunctionexpression (same reference path, same feature label, same group key, title overlap)
-- `issues/done/199-implement-reference-typescript-tests-cases-compiler.md` - Implement Compiler (same feature label, same group key, title overlap)
-- `issues/done/442-implement-parser-syntax.md` - Implement parser syntax extensions (same feature label, same group key, title overlap)
-- `issues/done/459-implement-ArrowFunctionExpression.md` - Implement Arrowfunctionexpression (same reference path, same feature label, same group key, title overlap)
-- `issues/done/545-implement-ArrowFunctionExpression.md` - Implement Arrowfunctionexpression (same reference path, same feature label, same group key, title overlap)
+- `issues/open/199-implement-reference-typescript-tests-cases-compiler.md` - Implement Compiler (same feature label, same group key, title overlap)
+- `issues/open/442-implement-parser-syntax.md` - Implement parser syntax extensions (same feature label, same group key, title overlap)
+- `issues/open/459-implement-ArrowFunctionExpression.md` - Implement Arrowfunctionexpression (same reference path, same feature label, same group key, title overlap)
+- `issues/open/545-implement-ArrowFunctionExpression.md` - Implement Arrowfunctionexpression (same reference path, same feature label, same group key, title overlap)
 
 ## Smart triage
 
@@ -164,6 +164,6 @@ Violated acceptance: the issue cannot provide repo-local close evidence for its 
 
 Evidence files:
 - open issue file before this move
-- `issues/done/780-implement-ArrowFunctionExpression.md` after this move
+- `issues/open/780-implement-ArrowFunctionExpression.md` after this move
 
 Split follow-up: none created in this audit wave; this reopened issue remains the tracking item.

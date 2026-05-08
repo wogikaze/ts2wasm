@@ -124,11 +124,11 @@ Follow-up issues:
 ## Notes
 
 Split from stale generated bucket
-`issues/done/1208-implement-classFieldSuperAccessibleJs.md`.
+`issues/open/1208-implement-classFieldSuperAccessibleJs.md`.
 
 Related but not duplicate:
 
-- `issues/done/435-implement-method-call.md` is a broad method-call bucket; this
+- `issues/open/435-implement-method-call.md` is a broad method-call bucket; this
   issue is the narrow class-prototype `.call` shape emitted by issue-211.
 
 ## Completion evidence

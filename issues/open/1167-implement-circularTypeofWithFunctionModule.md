@@ -43,7 +43,7 @@ mise run reference-coverage -- tsc --path-filter reference/typescript/tests/case
 
 ## Desired final state
 
-This generated bucket is closed after splitting `issues/done/5244-date-timezone-formatting-policy.md`. Do not implement directly from this bucket.
+This generated bucket is closed after splitting `issues/open/5244-date-timezone-formatting-policy.md`. Do not implement directly from this bucket.
 
 ## Scope
 
@@ -114,7 +114,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] created: `issues/done/5244-date-timezone-formatting-policy.md`
+- [x] created: `issues/open/5244-date-timezone-formatting-policy.md`
 
 ## Notes
 
@@ -125,7 +125,7 @@ Follow-up issues:
 ## Duplicate detection
 
 - `issues/done/062f-function-object-metadata.md` owns the supported `name` and `length` metadata subset and explicit unsupported metadata diagnostics; it does not implement namespace-merged function static properties.
-- `issues/done/1212-implement-classFunctionMerging-import-export.md` is a related generated bucket, but fresh triage shows it is now a build pass, not a focused implementation-ready owner.
+- `issues/open/1212-implement-classFunctionMerging-import-export.md` is a related generated bucket, but fresh triage shows it is now a build pass, not a focused implementation-ready owner.
 - Broad import/export buckets are not exact owners for the current lowering diagnostic.
 
 ## Smart triage
@@ -193,7 +193,7 @@ function maker type: typeof Bar
 
 Split result:
 
-- `issues/done/5244-date-timezone-formatting-policy.md`
+- `issues/open/5244-date-timezone-formatting-policy.md`
 
 ## Completion evidence
 
@@ -203,7 +203,7 @@ The `circularTypeofWithFunctionModule` bucket is complete. The current failure i
 
 Commits:
 
-- split to `issues/done/5244-date-timezone-formatting-policy.md`
+- split to `issues/open/5244-date-timezone-formatting-policy.md`
 
 Validation result:
 

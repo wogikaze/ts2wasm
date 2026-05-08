@@ -14,7 +14,7 @@ updated: 2026-05-07
 ## Summary
 
 Closed as superseded by
-`issues/done/5240-w2-docs-audit-and-stale-entries.md`.
+`issues/open/5240-w2-docs-audit-and-stale-entries.md`.
 
 Fresh focused triage shows this generated bucket currently stops at the same
 raw async-arrow parser boundary already owned by issue 5240.
@@ -128,7 +128,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] superseded by: `issues/done/5240-w2-docs-audit-and-stale-entries.md`
+- [x] superseded by: `issues/open/5240-w2-docs-audit-and-stale-entries.md`
 
 ## Notes
 
@@ -138,7 +138,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/5240-w2-docs-audit-and-stale-entries.md` owns
+- `issues/open/5240-w2-docs-audit-and-stale-entries.md` owns
   `async () => expr` / `(async () => { ... })` parser support and records the
   same raw `unsupported expression: Async` failure family.
 - Broader generated async buckets such as 751, 759, and 3758 already appear in

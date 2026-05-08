@@ -120,7 +120,7 @@ Follow-up issues:
 
 - `issues/done/035-implement-break-continue.md` - Implement break and continue statements (same feature label, same group key, title overlap)
 - `issues/done/203-reconcile-partial-feature-semantics.md` - Reconcile partial feature semantics and placeholder completions (same feature label, same group key)
-- `issues/done/209-implement-labeled-break-continue.md` - Implement labeled break and continue (same feature label, same group key, title overlap)
+- `issues/open/209-implement-labeled-break-continue.md` - Implement labeled break and continue (same feature label, same group key, title overlap)
 
 ## Smart triage
 

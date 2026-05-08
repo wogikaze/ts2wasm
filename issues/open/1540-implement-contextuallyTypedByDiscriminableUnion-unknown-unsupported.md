@@ -106,7 +106,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] folded into: `issues/done/5304-parse-generic-arrow-functions-with-typed-parameters.md`
+- [x] folded into: `issues/open/5304-parse-generic-arrow-functions-with-typed-parameters.md`
 
 ## Notes
 
@@ -117,10 +117,10 @@ Follow-up issues:
 ## Duplicate detection
 
 - Superseded by
-  `issues/done/5304-parse-generic-arrow-functions-with-typed-parameters.md`.
+  `issues/open/5304-parse-generic-arrow-functions-with-typed-parameters.md`.
   This bucket reaches the same parser boundary for a generic arrow function
   with typed parameters.
-- `issues/done/694-implement-arrayToLocaleStringES-unknown-unsupported.md` is a
+- `issues/open/694-implement-arrayToLocaleStringES-unknown-unsupported.md` is a
   generated same-label candidate but not a syntax match.
 
 ## Smart triage
@@ -157,7 +157,7 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- folded into `issues/done/5304-parse-generic-arrow-functions-with-typed-parameters.md`
+- folded into `issues/open/5304-parse-generic-arrow-functions-with-typed-parameters.md`
 
 Validation result:
 

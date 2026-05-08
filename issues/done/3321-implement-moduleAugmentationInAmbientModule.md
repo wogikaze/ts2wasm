@@ -72,7 +72,7 @@ Out of scope:
 
 Expected:
 
-- `issues/done/232-resolve-local-relative-es-module-graph.md`
+- `issues/open/232-resolve-local-relative-es-module-graph.md`
 
 Do not touch:
 
@@ -137,9 +137,9 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/232-resolve-local-relative-es-module-graph.md` owns the current
+- `issues/open/232-resolve-local-relative-es-module-graph.md` owns the current
   source-spanned rejection of bare/non-local module specifiers.
-- `issues/done/3316-implement-moduleAugmentationExtendAmbientModule.md` is the
+- `issues/open/3316-implement-moduleAugmentationExtendAmbientModule.md` is the
   closest closed module-augmentation precedent: it also closed against issue
   232 for a bare module specifier.
 

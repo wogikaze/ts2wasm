@@ -118,8 +118,8 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/134-implement-allowJscheckJsTypeParameterNoCrash.md` - Implement Allowjscheckjstypeparameternocrash (same reference path, same group key, title overlap)
-- `issues/done/513-implement-allowJscheckJsTypeParameterNoCrash.md` - Implement Allowjscheckjstypeparameternocrash (same reference path, same feature label, same group key, title overlap)
+- `issues/open/134-implement-allowJscheckJsTypeParameterNoCrash.md` - Implement Allowjscheckjstypeparameternocrash (same reference path, same group key, title overlap)
+- `issues/open/513-implement-allowJscheckJsTypeParameterNoCrash.md` - Implement Allowjscheckjstypeparameternocrash (same reference path, same feature label, same group key, title overlap)
 
 ## Smart triage
 

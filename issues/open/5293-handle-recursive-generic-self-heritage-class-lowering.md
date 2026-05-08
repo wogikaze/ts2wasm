@@ -167,7 +167,7 @@ Follow-up issues:
 ## Notes
 
 Split from generated bucket
-`issues/done/1397-implement-complicatedGenericRecursiveBaseClassReference.md`.
+`issues/open/1397-implement-complicatedGenericRecursiveBaseClassReference.md`.
 Related parser issue 5156 covers heritage type-argument parsing failures; this
 case already reaches AST and fails later.
 

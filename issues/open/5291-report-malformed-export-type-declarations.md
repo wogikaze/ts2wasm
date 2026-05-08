@@ -150,7 +150,7 @@ Follow-up issues:
 ## Notes
 
 Split from generated bucket
-`issues/done/1383-implement-commonJsExportTypeDeclarationError.md`.
+`issues/open/1383-implement-commonJsExportTypeDeclarationError.md`.
 
 ## Completion evidence
 

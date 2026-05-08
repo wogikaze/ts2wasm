@@ -140,7 +140,7 @@ Follow-up issues:
 - `issues/open/5200-validate-top-level-function-overload-implementations.md`
   is the exact owner for valid top-level overload signatures followed by one
   implementation currently being treated as duplicate functions.
-- `issues/open/5226-allow-ambient-function-overload-declarations.md` is related
+- `issues/open/5226-w0-ast-node-span-requirement.md` is related
   but only covers ambient `declare function` overload declarations.
 - `issues/open/5335-validate-nested-function-overload-implementations.md` is
   related but covers nested function overload declarations.

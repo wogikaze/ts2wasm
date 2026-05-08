@@ -116,8 +116,8 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/082-implement-abstractClassInLocalScope.md` - Implement Abstractclassinlocalscope (same reference path, same feature label, same group key, title overlap)
-- `issues/done/083-implement-abstractClassInLocalScopeIsAbstract.md` - Implement Abstractclassinlocalscopeisabstract (same feature label, same group key, title overlap)
+- `issues/open/082-implement-abstractClassInLocalScope.md` - Implement Abstractclassinlocalscope (same reference path, same feature label, same group key, title overlap)
+- `issues/open/083-implement-abstractClassInLocalScopeIsAbstract.md` - Implement Abstractclassinlocalscopeisabstract (same feature label, same group key, title overlap)
 - `issues/open/446-implement-scope-analysis.md` - Implement scope-analysis support (same feature label, same group key, title overlap)
 
 ## Smart triage
@@ -489,7 +489,7 @@ error: [UnsupportedSyntax] arrow function block bodies support a single return s
 ## 重複整理メモ
 
 この issue はタイトルが重複しているため、内容がより充実している
-`issues/done/554-implement-abstractClassInLocalScope.md` に統合されました。
+`issues/open/554-implement-abstractClassInLocalScope.md` に統合されました。
 そちらを参照してください。
 ## Completion evidence
 
@@ -520,7 +520,7 @@ Classification: truly-done.
 Audit result: retained in `issues/done/`. The issue has repo-local completion evidence, is not marked `blocked` or `triage-needed`, and `python scripts/manager.py check issues` validates the resulting issue graph.
 
 Evidence files:
-- `issues/done/468-implement-abstractClassInLocalScope.md`
+- `issues/open/468-implement-abstractClassInLocalScope.md`
 - `issues/index.md` after regeneration
 
 Future-work tracking: no untracked future-work item was identified in this issue during this metadata/evidence audit.

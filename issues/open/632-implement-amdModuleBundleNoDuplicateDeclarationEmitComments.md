@@ -116,7 +116,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/174-implement-amdModuleBundleNoDuplicateDeclarationEmitComments.md` - Implement Amdmodulebundlenoduplicatedeclarationemitcomments (same reference path, same group key, title overlap)
+- `issues/open/174-implement-amdModuleBundleNoDuplicateDeclarationEmitComments.md` - Implement Amdmodulebundlenoduplicatedeclarationemitcomments (same reference path, same group key, title overlap)
 
 ## Smart triage
 

@@ -19,7 +19,7 @@ Triage moduleAugmentationExtendFileModule across 2 failing reference test cases 
 
 ## Problem
 
-Reference test results show 2 cases fail in directory `moduleAugmentationExtendFileModule` with diagnostics: import-export. Fresh triage shows the actionable blocker is virtual `@filename` section module resolution for local specifiers like `./observable` and `./map`, which is already owned by `issues/done/5229-w0-user-runtime-string-origin.md`.
+Reference test results show 2 cases fail in directory `moduleAugmentationExtendFileModule` with diagnostics: import-export. Fresh triage shows the actionable blocker is virtual `@filename` section module resolution for local specifiers like `./observable` and `./map`, which is already owned by `issues/open/5229-resolve-imports-between-filename-sections.md`.
 
 Problem: moduleAugmentationExtendFileModule has 2 reference failures, but this generated bucket duplicates the existing `@filename` virtual-section import-resolution owner in issue 5229.
 
@@ -39,7 +39,7 @@ mise run reference-coverage -- tsc --path-filter reference/typescript/tests/case
 
 ## Desired final state
 
-This generated bucket is closed as superseded by `issues/done/5229-w0-user-runtime-string-origin.md`. Do not implement directly from this bucket.
+This generated bucket is closed as superseded by `issues/open/5229-resolve-imports-between-filename-sections.md`. Do not implement directly from this bucket.
 
 ## Scope
 
@@ -112,7 +112,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] existing owner: `issues/done/5229-w0-user-runtime-string-origin.md`
+- [x] existing owner: `issues/open/5229-resolve-imports-between-filename-sections.md`
 
 ## Notes
 
@@ -162,7 +162,7 @@ import "./observable";
 import "./map";
 ```
 
-This is the `@filename` virtual-section resolution family already owned by `issues/done/5229-w0-user-runtime-string-origin.md`.
+This is the `@filename` virtual-section resolution family already owned by `issues/open/5229-resolve-imports-between-filename-sections.md`.
 
 ## Completion evidence
 

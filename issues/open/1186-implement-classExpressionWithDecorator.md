@@ -110,7 +110,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] `issues/done/5253-report-class-expression-decorator-boundary.md`
+- [x] `issues/open/5253-report-class-expression-decorator-boundary.md`
 
 ## Notes
 

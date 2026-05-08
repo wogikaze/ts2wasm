@@ -106,7 +106,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] created: `issues/done/5387-parse-generator-function-expressions-in-const-initializers.md`
+- [x] created: `issues/open/5387-parse-generator-function-expressions-in-const-initializers.md`
 
 ## Notes
 
@@ -117,7 +117,7 @@ Follow-up issues:
 ## Duplicate detection
 
 - No exact existing owner found.
-- `issues/done/5213-generator-function-syntax-prerequisite-for-iterator-spread.md`
+- `issues/open/5213-generator-function-syntax-prerequisite-for-iterator-spread.md`
   is related but owns parameter initializer expressions, not typed const
   initializers.
 - `#1514` covered
@@ -158,7 +158,7 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- split to `issues/done/5387-parse-generator-function-expressions-in-const-initializers.md`
+- split to `issues/open/5387-parse-generator-function-expressions-in-const-initializers.md`
 
 Validation result:
 

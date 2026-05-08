@@ -20,7 +20,7 @@ status: done
 ## Summary
 
 Closed this generated bucket by splitting the current concrete blocker to
-`issues/done/5344-resolve-ambient-var-assignment-targets.md`.
+`issues/open/5344-resolve-ambient-var-assignment-targets.md`.
 
 ## Problem
 
@@ -49,7 +49,7 @@ env TS2WASM_BINARY=/tmp/ts2wasm-issue-blockers-target/debug/ts2wasm python scrip
 ## Desired final state
 
 This generated bucket is closed. Implement from
-`issues/done/5344-resolve-ambient-var-assignment-targets.md`.
+`issues/open/5344-resolve-ambient-var-assignment-targets.md`.
 
 ## Scope
 
@@ -118,7 +118,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] `issues/done/5344-resolve-ambient-var-assignment-targets.md`
+- [x] `issues/open/5344-resolve-ambient-var-assignment-targets.md`
 
 ## Notes
 
@@ -128,7 +128,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-Split to `issues/done/5344-resolve-ambient-var-assignment-targets.md`.
+Split to `issues/open/5344-resolve-ambient-var-assignment-targets.md`.
 
 Issue 5161 owns declaration-only ambient values in expression positions. This
 bucket is narrower: the current first blocker is assignment target resolution

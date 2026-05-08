@@ -39,7 +39,7 @@ mise run reference-coverage -- tsc --path-filter reference/typescript/tests/case
 
 ## Desired final state
 
-This generated bucket is superseded by `issues/done/5143-implement-unary-void-operator-lowering.md`.
+This generated bucket is superseded by `issues/open/5143-implement-unary-void-operator-lowering.md`.
 
 ## Scope
 
@@ -111,7 +111,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] created: `issues/done/5143-implement-unary-void-operator-lowering.md`
+- [x] created: `issues/open/5143-implement-unary-void-operator-lowering.md`
 
 ## Notes
 

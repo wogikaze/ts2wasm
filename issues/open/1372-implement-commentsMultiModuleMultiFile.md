@@ -17,7 +17,7 @@ updated: 2026-05-07
 
 ## Summary
 
-Closed as superseded by `issues/done/232-resolve-local-relative-es-module-graph.md`.
+Closed as superseded by `issues/open/232-resolve-local-relative-es-module-graph.md`.
 
 Fresh triage shows this generated bucket now reaches the completed issue-232
 module graph diagnostic for a non-local specifier,
@@ -148,14 +148,14 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/232-resolve-local-relative-es-module-graph.md` covers this
+- `issues/open/232-resolve-local-relative-es-module-graph.md` covers this
   issue's current first blocker: source-spanned rejection of non-local/bare
   module specifiers with an issue-linked diagnostic.
-- `issues/done/5229-w0-user-runtime-string-origin.md` is related
+- `issues/open/5229-resolve-imports-between-filename-sections.md` is related
   but not exact. It covers local relative imports such as `./b` between
   `@Filename` sections; this file uses a non-local specifier
   `commentsMultiModuleMultiFile_0`.
-- `issues/done/436-implement-module-resolution.md` is a broad triage bucket and
+- `issues/open/436-implement-module-resolution.md` is a broad triage bucket and
   should not duplicate the completed issue-232 diagnostic boundary.
 
 ## Smart triage

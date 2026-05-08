@@ -118,9 +118,9 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/139-implement-alwaysStrictNoImplicitUseStrict.md` - Implement Alwaysstrictnoimplicitusestrict (same reference path, same group key, title overlap)
-- `issues/done/517-implement-alwaysStrictNoImplicitUseStrict.md` - Implement Alwaysstrictnoimplicitusestrict (same reference path, same feature label, same group key, title overlap)
-- `issues/done/603-implement-alwaysStrictNoImplicitUseStrict.md` - Implement Alwaysstrictnoimplicitusestrict (same reference path, same feature label, same group key, title overlap)
+- `issues/open/139-implement-alwaysStrictNoImplicitUseStrict.md` - Implement Alwaysstrictnoimplicitusestrict (same reference path, same group key, title overlap)
+- `issues/open/517-implement-alwaysStrictNoImplicitUseStrict.md` - Implement Alwaysstrictnoimplicitusestrict (same reference path, same feature label, same group key, title overlap)
+- `issues/open/603-implement-alwaysStrictNoImplicitUseStrict.md` - Implement Alwaysstrictnoimplicitusestrict (same reference path, same feature label, same group key, title overlap)
 
 ## Smart triage
 
@@ -162,6 +162,6 @@ Violated acceptance: the issue cannot provide repo-local close evidence for its 
 
 Evidence files:
 - open issue file before this move
-- `issues/done/838-implement-alwaysStrictNoImplicitUseStrict.md` after this move
+- `issues/open/838-implement-alwaysStrictNoImplicitUseStrict.md` after this move
 
 Split follow-up: none created in this audit wave; this reopened issue remains the tracking item.

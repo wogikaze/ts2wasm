@@ -18,7 +18,7 @@ updated: 2026-05-07
 ## Summary
 
 Closed as superseded by
-`issues/done/5229-w0-user-runtime-string-origin.md`.
+`issues/open/5229-resolve-imports-between-filename-sections.md`.
 
 Fresh focused triage shows `commonjsSafeImport.ts` currently stops in module
 graph construction because `./10_lib` is a TypeScript reference
@@ -165,7 +165,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] superseded by: `issues/done/5229-w0-user-runtime-string-origin.md`
+- [x] superseded by: `issues/open/5229-resolve-imports-between-filename-sections.md`
 
 ## Notes
 
@@ -175,15 +175,15 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/5229-w0-user-runtime-string-origin.md` owns
+- `issues/open/5229-resolve-imports-between-filename-sections.md` owns
   registering TypeScript reference `@Filename` / `@filename` sections as
   virtual module paths and resolving local imports between them.
-- `issues/done/232-resolve-local-relative-es-module-graph.md` owns real
+- `issues/open/232-resolve-local-relative-es-module-graph.md` owns real
   on-disk local relative module graph diagnostics, but not virtual section
   registration.
-- `issues/done/1384-implement-commonJsImportClassExpression.md`,
-  `issues/done/1127-implement-chainedImportAlias.md`, and
-  `issues/done/1162-implement-circularReferenceInImport.md` are prior generated
+- `issues/open/1384-implement-commonJsImportClassExpression.md`,
+  `issues/open/1127-implement-chainedImportAlias.md`, and
+  `issues/open/1162-implement-circularReferenceInImport.md` are prior generated
   buckets closed on the same missing virtual module boundary.
 
 ## Smart triage
@@ -232,7 +232,7 @@ TS2307 Cannot find module './10_lib' or its corresponding type declarations.
 
 Commits:
 
-- superseded by `issues/done/5229-w0-user-runtime-string-origin.md`
+- superseded by `issues/open/5229-resolve-imports-between-filename-sections.md`
 
 Validation result:
 

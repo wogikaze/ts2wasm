@@ -125,10 +125,10 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/066-implement-regexp-literal.md` - Implement RegExp literal support (same reference path, title overlap)
-- `issues/done/1170-implement-class.md` - Implement Class (same feature label, same group key, title overlap; split to issue 5246)
-- `issues/done/128-implement-aliasUsedAsNameValue.md` - Implement Aliasusedasnamevalue (same feature label, same group key, title overlap)
-- `issues/done/132-implement-allowJsClassThisTypeCrash.md` - Implement Allowjsclassthistypecrash (same feature label, same group key, title overlap)
+- `issues/open/066-implement-regexp-literal.md` - Implement RegExp literal support (same reference path, title overlap)
+- `issues/open/1170-implement-class.md` - Implement Class (same feature label, same group key, title overlap; split to issue 5246)
+- `issues/open/128-implement-aliasUsedAsNameValue.md` - Implement Aliasusedasnamevalue (same feature label, same group key, title overlap)
+- `issues/open/132-implement-allowJsClassThisTypeCrash.md` - Implement Allowjsclassthistypecrash (same feature label, same group key, title overlap)
 - `issues/open/1988-implement-discriminantUsingEvaluatableTemplateExpression.md` - Implement Discriminantusingevaluatabletemplateexpression (same feature label, same group key, title overlap)
 - `issues/open/2068-implement-dynamicImportEvaluateSpecifier.md` - Implement Dynamicimportevaluatespecifier (same feature label, same group key, title overlap)
 - `issues/open/2214-implement-evalAfter.md` - Implement Evalafter (same feature label, same group key, title overlap)
@@ -157,7 +157,7 @@ AttributeError: 'NoneType' object has no attribute 'parse_test262_metadata'
 ## 重複整理メモ
 
 この issue はタイトルが重複しているため、内容がより充実している
-`issues/done/429-implement-eval.md` に統合されました。
+`issues/open/429-implement-eval.md` に統合されました。
 そちらを参照してください。
 ## Completion evidence
 
@@ -188,7 +188,7 @@ Classification: truly-done.
 Audit result: retained in `issues/done/`. The issue has repo-local completion evidence, is not marked `blocked` or `triage-needed`, and `python scripts/manager.py check issues` validates the resulting issue graph.
 
 Evidence files:
-- `issues/done/5076-implement-eval.md`
+- `issues/open/5076-implement-eval.md`
 - `issues/index.md` after regeneration
 
 Future-work tracking: no untracked future-work item was identified in this issue during this metadata/evidence audit.

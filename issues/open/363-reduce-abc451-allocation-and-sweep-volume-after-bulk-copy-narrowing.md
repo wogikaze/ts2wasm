@@ -108,8 +108,8 @@ Expected:
 
 - `crates/backend-wasm/src/`
 - `crates/cli/tests/` only if regression coverage needs a small assertion update
-- `issues/done/363-reduce-abc451-allocation-and-sweep-volume-after-bulk-copy-narrowing.md`
-- `issues/done/357-fix-abc451-depth8-iwasm-timeout.md` only if closure is verified
+- `issues/open/363-reduce-abc451-allocation-and-sweep-volume-after-bulk-copy-narrowing.md`
+- `issues/open/357-fix-abc451-depth8-iwasm-timeout.md` only if closure is verified
 - `issues/index.md`
 
 Do not touch:

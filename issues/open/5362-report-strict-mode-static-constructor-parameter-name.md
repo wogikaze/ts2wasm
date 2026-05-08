@@ -134,19 +134,19 @@ Follow-up issues:
 
 ## Notes
 
-Split from `issues/done/1479-implement-constructorStaticParamName.md` on
+Split from `issues/open/1479-implement-constructorStaticParamName.md` on
 2026-05-07.
 
 Additional superseded bucket:
 
-- `issues/done/1480-implement-constructorStaticParamNameErrors.md` reaches the
+- `issues/open/1480-implement-constructorStaticParamNameErrors.md` reaches the
   same issue-247 parser failure for an explicit `'use strict'` file with
   `constructor(static)`. Fresh triage on 2026-05-07 reports TS1213 at the same
   `static` parameter-name shape.
 
 Related but not exact:
 
-- `issues/done/5355-report-invalid-constructor-parameter-modifiers.md` owns
+- `issues/open/5355-report-invalid-constructor-parameter-modifiers.md` owns
   invalid modifier forms where `static` or `export` appears before a parameter
   binding.
 

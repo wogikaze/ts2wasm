@@ -147,8 +147,8 @@ Follow-up issues:
 
 ## Notes
 
-Related broad buckets such as `issues/done/420-implement-call-expression.md` and
-`issues/done/1481-implement-constructorWithCapturedSuper.md` are generated
+Related broad buckets such as `issues/open/420-implement-call-expression.md` and
+`issues/open/1481-implement-constructorWithCapturedSuper.md` are generated
 buckets split to narrower child issues. This issue owns the exact already-parsed
 `captureSuperPropertyAccessInSuperCall01.ts` unresolved-`this` blocker.
 

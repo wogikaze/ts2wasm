@@ -163,7 +163,7 @@ Follow-up issues:
 
 ## Notes
 
-Split from generated bucket `issues/done/3345-implement-moduleKeywordRepeatError.md`.
+Split from generated bucket `issues/open/3345-implement-moduleKeywordRepeatError.md`.
 This issue intentionally targets the current observable misclassification. If
 later semantic diagnostics need exact TS1005/TS2591 parity, split that after the
 parser stops hiding the malformed block behind name resolution.

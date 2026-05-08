@@ -121,10 +121,10 @@ Follow-up issues:
 
 ## Notes
 
-Split from `issues/done/1326-implement-collisionThisExpressionAndLocalVarInFunction.md`.
-Related: `issues/done/5339-preserve-var-after-object-type-declaration.md`
+Split from `issues/open/1326-implement-collisionThisExpressionAndLocalVarInFunction.md`.
+Related: `issues/open/5339-preserve-var-after-object-type-declaration.md`
 covers the same type declaration followed by another `var`.
-Also owns `issues/done/3517-implement-noCollisionThisExpressionAndLocalVarInFunction.md`, which stops at the same unterminated object type annotation before `function x()`.
+Also owns `issues/open/3517-implement-noCollisionThisExpressionAndLocalVarInFunction.md`, which stops at the same unterminated object type annotation before `function x()`.
 
 ## Completion evidence
 

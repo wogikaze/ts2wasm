@@ -138,7 +138,7 @@ Follow-up issues:
 
 ## Notes
 
-Split from generated bucket `issues/done/1026-implement-badArrayIndex.md`.
+Split from generated bucket `issues/open/1026-implement-badArrayIndex.md`.
 
 ## Completion evidence
 
@@ -169,7 +169,7 @@ Implemented empty element access diagnostic in parser:
 
 Additional stale bucket closed against this completed diagnostic:
 
-- `issues/done/1104-implement-cannotInvokeNewOnErrorExpression.md`:
+- `issues/open/1104-implement-cannotInvokeNewOnErrorExpression.md`:
   `new M.ClassA[]` now reproduces the targeted `issue-5150` empty element
   access diagnostic, matching TypeScript TS1011 for the empty `[]` portion.
 

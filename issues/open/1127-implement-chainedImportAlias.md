@@ -43,7 +43,7 @@ mise run reference-coverage -- tsc --path-filter reference/typescript/tests/case
 
 ## Desired final state
 
-This generated bucket is closed as superseded by `issues/done/232-resolve-local-relative-es-module-graph.md` for the current missing local module diagnostic. Do not implement directly from this bucket.
+This generated bucket is closed as superseded by `issues/open/232-resolve-local-relative-es-module-graph.md` for the current missing local module diagnostic. Do not implement directly from this bucket.
 
 ## Scope
 
@@ -125,7 +125,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/232-resolve-local-relative-es-module-graph.md` owns source-spanned missing local module diagnostics for local relative module graph construction.
+- `issues/open/232-resolve-local-relative-es-module-graph.md` owns source-spanned missing local module diagnostics for local relative module graph construction.
 - Import alias issues are not exact matches for the current first blocker because triage stops at missing module resolution before alias binding or namespace member lookup.
 
 ## Smart triage
@@ -206,7 +206,7 @@ chainedImportAlias triage is complete. The current failure is superseded by issu
 
 Commits:
 
-- superseded by `issues/done/232-resolve-local-relative-es-module-graph.md`
+- superseded by `issues/open/232-resolve-local-relative-es-module-graph.md`
 
 Validation result:
 

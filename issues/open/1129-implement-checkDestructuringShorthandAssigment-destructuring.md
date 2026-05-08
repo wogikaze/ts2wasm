@@ -25,7 +25,7 @@ Triage checkDestructuringShorthandAssigment-destructuring across 1 failing refer
 
 Reference test results show 1 case failing in directory `checkDestructuringShorthandAssigment-destructuring` with diagnostics: destructuring. Fresh triage shows tokenization succeeds, but AST construction fails at the computed property name `[k]` after an object spread entry.
 
-Problem: `checkDestructuringShorthandAssigment2.ts` is too broad for direct implementation. Its current observable blocker is now tracked by `issues/done/5223-report-iterator-type-only-value-use-diagnostics.md`.
+Problem: `checkDestructuringShorthandAssigment2.ts` is too broad for direct implementation. Its current observable blocker is now tracked by `issues/open/5223-report-iterator-type-only-value-use-diagnostics.md`.
 
 ## Current failure
 
@@ -43,7 +43,7 @@ mise run reference-coverage -- tsc --path-filter reference/typescript/tests/case
 
 ## Desired final state
 
-This generated bucket is superseded by `issues/done/5223-report-iterator-type-only-value-use-diagnostics.md`. Do not implement directly from this bucket.
+This generated bucket is superseded by `issues/open/5223-report-iterator-type-only-value-use-diagnostics.md`. Do not implement directly from this bucket.
 
 ## Scope
 
@@ -115,7 +115,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] created: `issues/done/5223-report-iterator-type-only-value-use-diagnostics.md`
+- [x] created: `issues/open/5223-report-iterator-type-only-value-use-diagnostics.md`
 
 ## Notes
 
@@ -125,8 +125,8 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/425-implement-destructuring.md` is a broad generated bucket and is not implementation-ready for this exact parser failure.
-- `issues/done/247-implement-destructuring-binding-pattern-parser.md`, `issues/done/251-implement-destructuring-binding-runtime-semantics.md`, and `issues/done/252-implement-destructuring-assignment-pattern-parser.md` are related but do not cover computed property assignments after object spread in object literal initializers.
+- `issues/open/425-implement-destructuring.md` is a broad generated bucket and is not implementation-ready for this exact parser failure.
+- `issues/open/247-implement-destructuring-binding-pattern-parser.md`, `issues/open/251-implement-destructuring-binding-runtime-semantics.md`, and `issues/open/252-implement-destructuring-assignment-pattern-parser.md` are related but do not cover computed property assignments after object spread in object literal initializers.
 
 ## Smart triage
 
@@ -189,7 +189,7 @@ blocker is tracked by child issue 5223.
 
 Commits:
 
-- child issue: `issues/done/5223-report-iterator-type-only-value-use-diagnostics.md`
+- child issue: `issues/open/5223-report-iterator-type-only-value-use-diagnostics.md`
 
 Validation result:
 

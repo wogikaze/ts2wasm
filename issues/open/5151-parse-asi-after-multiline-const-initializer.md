@@ -127,11 +127,11 @@ Current state:
 
 Follow-up issues:
 
-- [x] created: `issues/done/5220-preserve-ambient-function-parameters-for-arity.md`
+- [x] created: `issues/open/5220-preserve-ambient-function-parameters-for-arity.md`
 
 ## Notes
 
-Split from generated bucket `issues/done/1029-implement-badInferenceLowerPriorityThanGoodInference.md`.
+Split from generated bucket `issues/open/1029-implement-badInferenceLowerPriorityThanGoodInference.md`.
 
 ## Completion evidence
 

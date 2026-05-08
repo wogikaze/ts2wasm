@@ -116,7 +116,7 @@ Follow-up issues:
 ## Duplicate detection
 
 - No exact existing owner found.
-- `issues/done/5236-w1-implement-wasi-args-and-environment-variable-lowering.md` is related but
+- `issues/open/5236-w1-implement-wasi-args-and-environment-variable-lowering.md` is related but
   explicitly excludes nested function default parameters and asks for a
   follow-up after a representative default-parameter closure case is triaged.
 - `issues/done/062e-function-closures.md` is the broader historical closure

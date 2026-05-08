@@ -110,7 +110,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] created: `issues/done/5385-parse-arrow-body-assignment-expressions.md`
+- [x] created: `issues/open/5385-parse-arrow-body-assignment-expressions.md`
 
 ## Notes
 
@@ -121,7 +121,7 @@ Follow-up issues:
 ## Duplicate detection
 
 - No exact existing owner found.
-- `issues/done/5208-support-regexp-match-fallback-array-map-receiver.md` is related
+- `issues/open/5208-support-regexp-match-fallback-array-map-receiver.md` is related
   but owns destructuring assignment bodies such as `() => [i] = [i + 1]`, not
   this plain identifier assignment body `y => x = y`.
 
@@ -157,7 +157,7 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- split to `issues/done/5385-parse-arrow-body-assignment-expressions.md`
+- split to `issues/open/5385-parse-arrow-body-assignment-expressions.md`
 
 Validation result:
 

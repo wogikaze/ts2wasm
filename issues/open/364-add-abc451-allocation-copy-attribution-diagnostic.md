@@ -80,8 +80,8 @@ Expected:
 
 - `scripts/run/abc451-runtime-costs.py`
 - `mise.toml` or `scripts/manager.py` only if the task contract changes
-- `issues/done/364-add-abc451-allocation-copy-attribution-diagnostic.md`
-- `issues/done/363-reduce-abc451-allocation-and-sweep-volume-after-bulk-copy-narrowing.md`
+- `issues/open/364-add-abc451-allocation-copy-attribution-diagnostic.md`
+- `issues/open/363-reduce-abc451-allocation-and-sweep-volume-after-bulk-copy-narrowing.md`
 - `issues/index.md`
 
 Do not touch:
@@ -232,7 +232,7 @@ Classification: truly-done.
 Audit result: retained in `issues/done/`. The issue has repo-local completion evidence, is not marked `blocked` or `triage-needed`, and `python scripts/manager.py check issues` validates the resulting issue graph.
 
 Evidence files:
-- `issues/done/364-add-abc451-allocation-copy-attribution-diagnostic.md`
+- `issues/open/364-add-abc451-allocation-copy-attribution-diagnostic.md`
 - `issues/index.md` after regeneration
 
 Future-work tracking: no untracked future-work item was identified in this issue during this metadata/evidence audit.

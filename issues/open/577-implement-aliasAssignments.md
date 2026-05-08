@@ -121,8 +121,8 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/111-implement-aliasAssignments.md` - Implement Aliasassignments (same reference path, same group key, title overlap)
-- `issues/done/491-implement-aliasAssignments.md` - Implement Aliasassignments (same reference path, same feature label, same group key, title overlap)
+- `issues/open/111-implement-aliasAssignments.md` - Implement Aliasassignments (same reference path, same group key, title overlap)
+- `issues/open/491-implement-aliasAssignments.md` - Implement Aliasassignments (same reference path, same feature label, same group key, title overlap)
 
 ## Smart triage
 
@@ -634,7 +634,7 @@ date: 2026-05-08
 
 Remaining risks:
 
-- Implementation remains open in `issues/done/5324-support-dependency-export-class-declarations.md`.
+- Implementation remains open in `issues/open/5324-support-dependency-export-class-declarations.md`.
 
 ## False-done audit
 

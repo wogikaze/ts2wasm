@@ -111,7 +111,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] created: `issues/done/5312-parse-export-abstract-class-declarations.md`
+- [x] created: `issues/open/5312-parse-export-abstract-class-declarations.md`
 
 ## Notes
 
@@ -167,7 +167,7 @@ diagnostics: []
 topLevel includes exported InterfaceDeclaration, exported ClassDeclaration ConvenientObservable, and exported ClassDeclaration BaseObservable
 ```
 
-Split child: `issues/done/5312-parse-export-abstract-class-declarations.md`.
+Split child: `issues/open/5312-parse-export-abstract-class-declarations.md`.
 
 Related issues are no-match for this exact parser blocker:
 

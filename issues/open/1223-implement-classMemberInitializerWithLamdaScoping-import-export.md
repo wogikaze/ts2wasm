@@ -122,7 +122,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] created: `issues/done/5324-support-dependency-export-class-declarations.md`
+- [x] created: `issues/open/5324-support-dependency-export-class-declarations.md`
 - [x] superseded in part by `issues/done/5283-support-entry-export-var-declarations.md`
 
 ## Notes
@@ -134,18 +134,18 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/432-implement-import-export.md` - Implement import/export module syntax (same feature label, title overlap)
-- `issues/done/457-implement-APISample-import-export.md` - Implement Apisample Import Export (same feature label, title overlap)
-- `issues/done/463-implement-FunctionDeclaration-import-export.md` - Implement Functiondeclaration Import Export (same feature label, title overlap)
-- `issues/done/543-implement-APISample-import-export.md` - Implement Apisample Import Export (same feature label, title overlap)
-- `issues/done/549-implement-FunctionDeclaration-import-export.md` - Implement Functiondeclaration Import Export (same feature label, title overlap)
-- `issues/done/662-implement-arrayAssignmentTest-import-export.md` - Implement Arrayassignmenttest Import Export (same feature label, title overlap)
-- `issues/done/732-implement-assignmentCompatability-import-export.md` - Implement Assignmentcompatability Import Export (same feature label, title overlap)
-- `issues/done/766-implement-augmentedTypesEnum-import-export.md` - Implement Augmentedtypesenum Import Export (same feature label, title overlap)
+- `issues/open/432-implement-import-export.md` - Implement import/export module syntax (same feature label, title overlap)
+- `issues/open/457-implement-APISample-import-export.md` - Implement Apisample Import Export (same feature label, title overlap)
+- `issues/open/463-implement-FunctionDeclaration-import-export.md` - Implement Functiondeclaration Import Export (same feature label, title overlap)
+- `issues/open/543-implement-APISample-import-export.md` - Implement Apisample Import Export (same feature label, title overlap)
+- `issues/open/549-implement-FunctionDeclaration-import-export.md` - Implement Functiondeclaration Import Export (same feature label, title overlap)
+- `issues/open/662-implement-arrayAssignmentTest-import-export.md` - Implement Arrayassignmenttest Import Export (same feature label, title overlap)
+- `issues/open/732-implement-assignmentCompatability-import-export.md` - Implement Assignmentcompatability Import Export (same feature label, title overlap)
+- `issues/open/766-implement-augmentedTypesEnum-import-export.md` - Implement Augmentedtypesenum Import Export (same feature label, title overlap)
 - `issues/done/055-implement-import-export.md` - Umbrella: implement import and export (same feature label, title overlap)
 - `issues/done/5283-support-entry-export-var-declarations.md` - exact owner for the `classMemberInitializerWithLamdaScoping4.ts` first blocker, `export var field1: string`
-- `issues/done/5232-w0-fixture-ize-runtimelinkplan-linker-structure-tests.md` - related entry-module export-class owner, not exact for dependency virtual files
-- `issues/done/5295-resolve-import-equals-require-to-virtual-node-modules-class-export.md` - related node_modules dependency export-class shape, not exact for this fixed reference window
+- `issues/open/5232-w0-fixture-ize-runtimelinkplan-linker-structure-tests.md` - related entry-module export-class owner, not exact for dependency virtual files
+- `issues/open/5295-resolve-import-equals-require-to-virtual-node-modules-class-export.md` - related node_modules dependency export-class shape, not exact for this fixed reference window
 
 ## Smart triage
 
@@ -264,13 +264,13 @@ diagnostic TS2301: Initializer of instance member variable 'messageHandler' cann
 
 Split result:
 
-- `issues/done/5324-support-dependency-export-class-declarations.md`
+- `issues/open/5324-support-dependency-export-class-declarations.md`
 
 ## Completion evidence
 
 Commits:
 
-- Split to `issues/done/5324-support-dependency-export-class-declarations.md`; see local commit for this issue cleanup.
+- Split to `issues/open/5324-support-dependency-export-class-declarations.md`; see local commit for this issue cleanup.
 
 Validation result:
 

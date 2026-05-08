@@ -124,7 +124,7 @@ Follow-up issues:
 
 ## Notes
 
-Split from generated bucket `issues/done/1415-implement-computerPropertiesInES.md`.
+Split from generated bucket `issues/open/1415-implement-computerPropertiesInES.md`.
 
 Related but not duplicates:
 

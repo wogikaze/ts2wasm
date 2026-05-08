@@ -125,7 +125,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] created: `issues/done/337-implement-test262-features-directive.md`
+- [x] created: `issues/open/337-implement-test262-features-directive.md`
 
 ## Notes
 
@@ -256,7 +256,7 @@ Classification: truly-done.
 Audit result: retained in `issues/done/`. The issue has repo-local completion evidence, is not marked `blocked` or `triage-needed`, and `python scripts/manager.py check issues` validates the resulting issue graph.
 
 Evidence files:
-- `issues/done/336-implement-test262-includes-directive.md`
+- `issues/open/336-implement-test262-includes-directive.md`
 - `issues/index.md` after regeneration
 
 Future-work tracking: no untracked future-work item was identified in this issue during this metadata/evidence audit.

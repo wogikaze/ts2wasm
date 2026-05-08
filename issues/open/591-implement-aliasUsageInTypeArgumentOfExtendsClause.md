@@ -118,8 +118,8 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/126-implement-aliasUsageInTypeArgumentOfExtendsClause.md` - Implement Aliasusageintypeargumentofextendsclause (same reference path, same group key, title overlap)
-- `issues/done/505-implement-aliasUsageInTypeArgumentOfExtendsClause.md` - Implement Aliasusageintypeargumentofextendsclause (same reference path, same feature label, same group key, title overlap)
+- `issues/open/126-implement-aliasUsageInTypeArgumentOfExtendsClause.md` - Implement Aliasusageintypeargumentofextendsclause (same reference path, same group key, title overlap)
+- `issues/open/505-implement-aliasUsageInTypeArgumentOfExtendsClause.md` - Implement Aliasusageintypeargumentofextendsclause (same reference path, same feature label, same group key, title overlap)
 
 ## Smart triage
 
@@ -678,7 +678,7 @@ UnsupportedModule: issue-5005: dependency module declaration export uses a form 
 
 Remaining risks:
 
-- Implementation remains open in `issues/done/5324-support-dependency-export-class-declarations.md`.
+- Implementation remains open in `issues/open/5324-support-dependency-export-class-declarations.md`.
 
 ## False-done audit
 

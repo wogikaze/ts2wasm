@@ -66,9 +66,9 @@ Out of scope:
 - Runtime construct-signature semantics.
 - Type checking construct signatures.
 - Interface construct signatures, tracked by
-  `issues/done/5245-iterator-protocol-runtime.md`.
+  `issues/open/5245-iterator-protocol-runtime.md`.
 - Class heritage call-expression support for `extends factory(A)`, tracked
-  separately by `issues/done/5252-support-call-expression-class-heritage.md`
+  separately by `issues/open/5252-support-call-expression-class-heritage.md`
   if it remains after this parser blocker advances.
 
 ## Affected paths
@@ -126,8 +126,8 @@ python scripts/manager.py reference-coverage tsc --path-filter reference/typescr
 
 ## Notes
 
-Split from `issues/done/1201-implement-classExtendsInterfaceInExpression.md`.
-Related parser owner: `issues/done/5245-iterator-protocol-runtime.md`.
+Split from `issues/open/1201-implement-classExtendsInterfaceInExpression.md`.
+Related parser owner: `issues/open/5245-iterator-protocol-runtime.md`.
 
 ## False-done audit
 

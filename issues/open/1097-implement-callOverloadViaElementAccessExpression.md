@@ -106,7 +106,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] `issues/done/5198-support-class-method-overload-signatures-for-element-access-calls.md`
+- [x] `issues/open/5198-support-class-method-overload-signatures-for-element-access-calls.md`
 
 ## Notes
 
@@ -167,7 +167,7 @@ Evidence:
   `issues/open/2600-implement-getAndSetNotIdenticalType-duplicate-function.md`,
   and `issues/open/4258-implement-staticVisibility-duplicate-function.md` are
   no-match buckets for other duplicate-function windows.
-- Child issue `issues/done/5198-support-class-method-overload-signatures-for-element-access-calls.md`
+- Child issue `issues/open/5198-support-class-method-overload-signatures-for-element-access-calls.md`
   owns the exact blocker.
 
 ## Completion evidence

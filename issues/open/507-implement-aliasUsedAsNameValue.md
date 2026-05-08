@@ -116,7 +116,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/128-implement-aliasUsedAsNameValue.md` - Implement Aliasusedasnamevalue (same reference path, same group key, title overlap)
+- `issues/open/128-implement-aliasUsedAsNameValue.md` - Implement Aliasusedasnamevalue (same reference path, same group key, title overlap)
 
 ## Smart triage
 
@@ -595,7 +595,7 @@ error: [UnsupportedModule] issue-055: unsupported variable export; module resolu
 ## 重複整理メモ
 
 この issue はタイトルが重複しているため、内容がより充実している
-`issues/done/593-implement-aliasUsedAsNameValue.md` に統合されました。
+`issues/open/593-implement-aliasUsedAsNameValue.md` に統合されました。
 そちらを参照してください。
 ## Completion evidence
 
@@ -626,7 +626,7 @@ Classification: truly-done.
 Audit result: retained in `issues/done/`. The issue has repo-local completion evidence, is not marked `blocked` or `triage-needed`, and `python scripts/manager.py check issues` validates the resulting issue graph.
 
 Evidence files:
-- `issues/done/507-implement-aliasUsedAsNameValue.md`
+- `issues/open/507-implement-aliasUsedAsNameValue.md`
 - `issues/index.md` after regeneration
 
 Future-work tracking: no untracked future-work item was identified in this issue during this metadata/evidence audit.

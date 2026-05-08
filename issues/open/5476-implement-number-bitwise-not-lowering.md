@@ -151,7 +151,7 @@ Follow-up issues:
 ## Notes
 
 Split from generated bucket
-`issues/done/3544-implement-noImplicitAnyLoopCrash.md`.
+`issues/open/3544-implement-noImplicitAnyLoopCrash.md`.
 
 `lower_unary_op` currently maps `UnaryOp::Void` to `LoweredUnaryOp::Void` but
 returns `UnsupportedSyntax` for `UnaryOp::BitwiseNot`. BigInt bitwise-not has

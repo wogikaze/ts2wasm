@@ -20,7 +20,7 @@ updated: 2026-05-07
 Closed as a stale compile blocker. Fresh coverage shows
 `constructorParametersThatShadowExternalNamesInVariableDeclarations.ts` now
 build-passes; the remaining TS2301 semantic gap is already owned by
-`issues/done/5360-report-class-field-initializer-constructor-scope-captures.md`.
+`issues/open/5360-report-class-field-initializer-constructor-scope-captures.md`.
 
 ## Problem
 
@@ -164,7 +164,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] existing: `issues/done/5360-report-class-field-initializer-constructor-scope-captures.md`
+- [x] existing: `issues/open/5360-report-class-field-initializer-constructor-scope-captures.md`
 
 ## Notes
 
@@ -174,7 +174,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/5360-report-class-field-initializer-constructor-scope-captures.md`
+- `issues/open/5360-report-class-field-initializer-constructor-scope-captures.md`
   owns the focused TS2301 semantic diagnostic for class field initializers that
   reference constructor-scope bindings.
 

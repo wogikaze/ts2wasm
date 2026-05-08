@@ -121,8 +121,8 @@ Follow-up issues:
 
 - `#072` - Implement Classdeclaration (same feature label, same group key, title overlap)
 - `#073` - Implement Classdeclarationwithinvalidconstonpropertydeclaration (same reference path, same feature label, same group key, title overlap)
-- `issues/done/199-implement-reference-typescript-tests-cases-compiler.md` - Implement Compiler (same feature label, same group key, title overlap)
-- `issues/done/442-implement-parser-syntax.md` - Implement parser syntax extensions (same feature label, same group key, title overlap)
+- `issues/open/199-implement-reference-typescript-tests-cases-compiler.md` - Implement Compiler (same feature label, same group key, title overlap)
+- `issues/open/442-implement-parser-syntax.md` - Implement parser syntax extensions (same feature label, same group key, title overlap)
 
 ## Smart triage
 
@@ -477,6 +477,6 @@ Violated acceptance: the issue cannot provide repo-local close evidence for its 
 
 Evidence files:
 - open issue file before this move
-- `issues/done/461-implement-ClassDeclarationWithInvalidConstOnPropertyDeclaration.md` after this move
+- `issues/open/461-implement-ClassDeclarationWithInvalidConstOnPropertyDeclaration.md` after this move
 
 Split follow-up: none created in this audit wave; this reopened issue remains the tracking item.

@@ -160,7 +160,7 @@ Follow-up issues:
 
 ## Notes
 
-Split from `issues/done/3533-implement-noImplicitAnyAndPrivateMembersWithoutTypeAnnotations.md`.
+Split from `issues/open/3533-implement-noImplicitAnyAndPrivateMembersWithoutTypeAnnotations.md`.
 
 `crates/backend-wasm/src/emitter.rs` already emits `global.set
 $current_module_id` in module init paths. The implementation should make the

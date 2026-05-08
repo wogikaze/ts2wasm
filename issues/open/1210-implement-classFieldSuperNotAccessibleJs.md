@@ -114,7 +114,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] created: `issues/done/5322-support-callable-class-auto-accessor-fields.md`
+- [x] created: `issues/open/5322-support-callable-class-auto-accessor-fields.md`
 
 ## Notes
 
@@ -159,7 +159,7 @@ TypeScript oracle evidence:
 
 Duplicate review:
 
-- `issues/done/422-implement-class-accessor.md` is related but is a broad
+- `issues/open/422-implement-class-accessor.md` is related but is a broad
   generated triage bucket.
 - No exact open/done owner was found for callable class auto-accessor fields.
 

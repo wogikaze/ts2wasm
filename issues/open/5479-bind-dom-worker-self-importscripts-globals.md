@@ -143,12 +143,12 @@ Follow-up issues:
 ## Notes
 
 Split from generated bucket
-`issues/done/3564-implement-noParameterReassignmentIIFEAnnotated.md` after
+`issues/open/3564-implement-noParameterReassignmentIIFEAnnotated.md` after
 fresh triage on 2026-05-08 showed the first blocker is `self`, not IIFE
 parameter reassignment.
 
 Also supersedes generated bucket
-`issues/done/3565-implement-noParameterReassignmentJSIIFE.md`: fresh triage
+`issues/open/3565-implement-noParameterReassignmentJSIIFE.md`: fresh triage
 shows the same top-level `self.importScripts = (...)` shape in
 `noParameterReassignmentJSIIFE.ts`, with
 `UnresolvedName: unresolved name: \`self\` at 127..131` before the compiler can

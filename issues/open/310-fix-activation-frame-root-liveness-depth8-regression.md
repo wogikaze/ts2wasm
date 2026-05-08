@@ -70,10 +70,10 @@ Expected:
 - `crates/cli/tests/`
 - `fixtures/core-semantics/`
 - `fixtures/atcoder/`
-- `issues/done/300-support-abc451-large-integer-number-boundary.md`
+- `issues/open/300-support-abc451-large-integer-number-boundary.md`
 - `issues/done/308-implement-abc451-depth9-gc-cadence-policy.md`
-- `issues/done/309-reduce-abc451-depth9-live-allocation-shape.md`
-- `issues/done/310-fix-activation-frame-root-liveness-depth8-regression.md`
+- `issues/open/309-reduce-abc451-depth9-live-allocation-shape.md`
+- `issues/open/310-fix-activation-frame-root-liveness-depth8-regression.md`
 - `issues/index.md`
 
 Do not touch:
@@ -196,7 +196,7 @@ Classification: truly-done.
 Audit result: retained in `issues/done/`. The issue has repo-local completion evidence, is not marked `blocked` or `triage-needed`, and `python scripts/manager.py check issues` validates the resulting issue graph.
 
 Evidence files:
-- `issues/done/310-fix-activation-frame-root-liveness-depth8-regression.md`
+- `issues/open/310-fix-activation-frame-root-liveness-depth8-regression.md`
 - `issues/index.md` after regeneration
 
 Future-work tracking: no untracked future-work item was identified in this issue during this metadata/evidence audit.

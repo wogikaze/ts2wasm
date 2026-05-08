@@ -140,14 +140,14 @@ Follow-up issues:
 
 ## Notes
 
-Split from generated bucket `issues/done/1481-implement-constructorWithCapturedSuper.md` on 2026-05-07.
+Split from generated bucket `issues/open/1481-implement-constructorWithCapturedSuper.md` on 2026-05-07.
 
 Related but distinct open issues:
 
-- `issues/done/5152-support-class-constructor-outer-callback-captures.md`
-- `issues/done/5204-resolve-lexical-super-property-captures-in-super-call-arguments.md`
+- `issues/open/5152-support-class-constructor-outer-callback-captures.md`
+- `issues/open/5204-resolve-lexical-super-property-captures-in-super-call-arguments.md`
 - 
-- `issues/done/5338-support-rest-constructor-outer-local-captures.md`
+- `issues/open/5338-support-rest-constructor-outer-local-captures.md`
 
 ## Completion evidence
 

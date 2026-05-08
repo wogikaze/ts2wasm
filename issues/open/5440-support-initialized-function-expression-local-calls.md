@@ -99,7 +99,7 @@ In scope:
 Out of scope:
 
 - Uninitialized function-typed local diagnostics, tracked by `issues/open/5279-report-function-typed-local-call-definite-assignment.md`.
-- Loop-local arrow calls from arrow closures, tracked by `issues/open/5215-support-loop-local-arrow-calls-from-arrow-closures.md`.
+- Loop-local arrow calls from arrow closures, tracked by `issues/open/5215-fix-array-includes-wat-stack-mismatch.md`.
 - Callable interface locals, tracked by `issues/open/5195-support-callable-interface-typed-local-calls.md`.
 - Arbitrary extracted method calls where the callee is not a known local function binding.
 

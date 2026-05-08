@@ -144,7 +144,7 @@ Follow-up issues:
 
 ## Notes
 
-Split from `issues/done/3596-implement-nonMergedOverloads.md`.
+Split from `issues/open/3596-implement-nonMergedOverloads.md`.
 
 Related but not duplicates:
 

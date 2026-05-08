@@ -19,7 +19,7 @@ Triage badArraySyntax across 1 failing reference test cases and split this bucke
 
 ## Problem
 
-Reference test results show 1 case failing in directory `badArraySyntax` with diagnostics: parser-syntax. Fresh smart triage shows the failure is the same empty element access diagnostic gap already split to `issues/done/5150-report-empty-element-access-diagnostics.md`.
+Reference test results show 1 case failing in directory `badArraySyntax` with diagnostics: parser-syntax. Fresh smart triage shows the failure is the same empty element access diagnostic gap already split to `issues/open/5150-report-empty-element-access-diagnostics.md`.
 
 Problem: `badArraySyntax` is not a standalone implementation order; it is another reference path for issue 5150.
 
@@ -111,7 +111,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] updated: `issues/done/5150-report-empty-element-access-diagnostics.md`
+- [x] updated: `issues/open/5150-report-empty-element-access-diagnostics.md`
 
 ## Notes
 
@@ -174,7 +174,7 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- superseded by `issues/done/5150-report-empty-element-access-diagnostics.md`
+- superseded by `issues/open/5150-report-empty-element-access-diagnostics.md`
 
 Validation result:
 

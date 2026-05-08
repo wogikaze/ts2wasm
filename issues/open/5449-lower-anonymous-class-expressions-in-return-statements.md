@@ -15,7 +15,7 @@ updated: 2026-05-08
 
 Lower anonymous `class { ... }` expressions when they appear as returned values.
 
-Split from generated bucket `issues/done/3450-implement-narrowedConstInMethod.md`.
+Split from generated bucket `issues/open/3450-implement-narrowedConstInMethod.md`.
 
 ## Problem
 

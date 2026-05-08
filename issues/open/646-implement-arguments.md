@@ -116,16 +116,16 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/193-implement-arguments.md` - Implement Arguments (same reference path, same group key, title overlap)
-- `issues/done/194-implement-argumentsAsPropertyName.md` - Implement Argumentsaspropertyname (same feature label, same group key, title overlap)
-- `issues/done/197-implement-argumentsObjectIterator.md` - Implement Argumentsobjectiterator (same feature label, same group key, title overlap)
-- `issues/done/198-implement-argumentsPropertyNameInJsMode.md` - Implement Argumentspropertynameinjsmode (same feature label, same group key, title overlap)
-- `issues/done/311-fix-test262-arguments-object-index-assignment.md` - Fix test262 arguments object index assignment semantics (same feature label, same group key, title overlap)
+- `issues/open/193-implement-arguments.md` - Implement Arguments (same reference path, same group key, title overlap)
+- `issues/open/194-implement-argumentsAsPropertyName.md` - Implement Argumentsaspropertyname (same feature label, same group key, title overlap)
+- `issues/open/197-implement-argumentsObjectIterator.md` - Implement Argumentsobjectiterator (same feature label, same group key, title overlap)
+- `issues/open/198-implement-argumentsPropertyNameInJsMode.md` - Implement Argumentspropertynameinjsmode (same feature label, same group key, title overlap)
+- `issues/open/311-fix-test262-arguments-object-index-assignment.md` - Fix test262 arguments object index assignment semantics (same feature label, same group key, title overlap)
 - `issues/done/412-implement-arguments-object.md` - Implement arguments-object support (same feature label, same group key, title overlap)
-- `issues/done/413-implement-arity.md` - Implement arity support (same feature label, same group key, title overlap)
+- `issues/open/413-implement-arity.md` - Implement arity support (same feature label, same group key, title overlap)
 - `issues/done/416-implement-async.md` - Implement async/await support (same feature label, same group key, title overlap)
-- `issues/done/420-implement-call-expression.md` - Implement call expression support (same feature label, same group key, title overlap)
-- `issues/done/422-implement-class-accessor.md` - Implement class-accessor support (same feature label, same group key, title overlap)
+- `issues/open/420-implement-call-expression.md` - Implement call expression support (same feature label, same group key, title overlap)
+- `issues/open/422-implement-class-accessor.md` - Implement class-accessor support (same feature label, same group key, title overlap)
 
 ## Smart triage
 

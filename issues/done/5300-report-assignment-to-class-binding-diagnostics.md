@@ -137,7 +137,7 @@ Follow-up issues:
 
 ## Notes
 
-Split from generated bucket `issues/done/1416-implement-concatClassAndString.md`.
+Split from generated bucket `issues/open/1416-implement-concatClassAndString.md`.
 
 Related but not duplicates:
 

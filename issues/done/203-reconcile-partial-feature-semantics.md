@@ -31,7 +31,7 @@ Known partial areas:
 - template literal `${...}` interpolation (`issues/done/041-implement-template-literals.md`)
 - string method placeholder implementations (`issues/done/042-implement-string-methods.md`)
 - `Math.random` deterministic placeholder / capability policy (`issues/done/053-implement-math.md`)
-- abstract equality coercion (`issues/done/058-implement-equality-operators.md`)
+- abstract equality coercion (`issues/open/058-implement-equality-operators.md`)
 
 ## Desired final state
 

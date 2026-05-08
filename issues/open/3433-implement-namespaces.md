@@ -117,7 +117,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/713-implement-assertionFunctionWildcardImport.md` - Implement Assertionfunctionwildcardimport (same feature label, same group key, title overlap)
+- `issues/open/713-implement-assertionFunctionWildcardImport.md` - Implement Assertionfunctionwildcardimport (same feature label, same group key, title overlap)
 
 ## Smart triage
 

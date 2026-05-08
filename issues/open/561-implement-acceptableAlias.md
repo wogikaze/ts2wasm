@@ -125,8 +125,8 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/090-implement-acceptableAlias.md` - Implement Acceptablealias (same reference path, same group key, title overlap)
-- `issues/done/475-implement-acceptableAlias.md` - Implement Acceptablealias (same reference path, same feature label, same group key, title overlap)
+- `issues/open/090-implement-acceptableAlias.md` - Implement Acceptablealias (same reference path, same group key, title overlap)
+- `issues/open/475-implement-acceptableAlias.md` - Implement Acceptablealias (same reference path, same feature label, same group key, title overlap)
 
 ## Smart triage
 

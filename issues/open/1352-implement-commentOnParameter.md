@@ -135,7 +135,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/5149-parse-trailing-comma-in-typed-class-method-parameters.md`
+- `issues/open/5149-parse-trailing-comma-in-typed-class-method-parameters.md`
   tracks a related typed class method trailing comma blocker, but broadening it
   made the work order too large for readiness gates.
 - `issues/done/5278-parse-trailing-comma-in-function-parameters-with-comments.md`

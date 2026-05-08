@@ -130,7 +130,7 @@ Follow-up issues:
 ## Duplicate detection
 
 - `issues/open/5200-validate-top-level-function-overload-implementations.md` - exact owner for valid top-level function overload signatures currently reported as duplicate functions
-- `issues/done/5199-report-function-overload-list-class-merge-diagnostics.md` - related function overload/class merge diagnostic, not this implementation group
+- `issues/open/5199-report-function-overload-list-class-merge-diagnostics.md` - related function overload/class merge diagnostic, not this implementation group
 - broad duplicate-function generated buckets are not exact owners for this current first blocker
 
 ## Smart triage

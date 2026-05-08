@@ -110,7 +110,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] superseded by `issues/done/5304-parse-generic-arrow-functions-with-typed-parameters.md`
+- [x] superseded by `issues/open/5304-parse-generic-arrow-functions-with-typed-parameters.md`
 
 ## Notes
 
@@ -120,13 +120,13 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/694-implement-arrayToLocaleStringES-unknown-unsupported.md` - Implement Arraytolocalestringes Unknown Unsupported (same feature label, title overlap)
+- `issues/open/694-implement-arrayToLocaleStringES-unknown-unsupported.md` - Implement Arraytolocalestringes Unknown Unsupported (same feature label, title overlap)
 
 ## Smart triage
 
 Fresh triage on 2026-05-07 shows this generated unknown-unsupported bucket is
 now the same parser boundary already owned by
-`issues/done/5304-parse-generic-arrow-functions-with-typed-parameters.md`.
+`issues/open/5304-parse-generic-arrow-functions-with-typed-parameters.md`.
 
 Current diagnostic:
 

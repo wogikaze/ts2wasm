@@ -117,7 +117,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/171-implement-amdDependencyComment.md` - Implement Amddependencycomment (same reference path, same group key, title overlap)
+- `issues/open/171-implement-amdDependencyComment.md` - Implement Amddependencycomment (same reference path, same group key, title overlap)
 
 ## Smart triage
 

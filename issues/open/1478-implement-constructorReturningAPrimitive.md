@@ -147,7 +147,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] created: `issues/done/5361-report-invalid-constructor-return-value-diagnostics.md`
+- [x] created: `issues/open/5361-report-invalid-constructor-return-value-diagnostics.md`
 
 ## Notes
 

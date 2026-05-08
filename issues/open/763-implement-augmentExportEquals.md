@@ -20,7 +20,7 @@ status: done
 ## Summary
 
 Closed this generated bucket by splitting the current concrete blocker to
-`issues/done/5346-parse-commonjs-export-assignment-statements.md`.
+`issues/open/5346-parse-commonjs-export-assignment-statements.md`.
 
 ## Problem
 
@@ -53,7 +53,7 @@ env TS2WASM_BINARY=/tmp/ts2wasm-issue-blockers-target/debug/ts2wasm python scrip
 ## Desired final state
 
 This generated bucket is closed. Implement from
-`issues/done/5346-parse-commonjs-export-assignment-statements.md`.
+`issues/open/5346-parse-commonjs-export-assignment-statements.md`.
 
 ## Scope
 
@@ -122,7 +122,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] `issues/done/5346-parse-commonjs-export-assignment-statements.md`
+- [x] `issues/open/5346-parse-commonjs-export-assignment-statements.md`
 
 ## Notes
 
@@ -142,16 +142,16 @@ Follow-up issues:
 
 ## Duplicate detection
 
-Split to `issues/done/5346-parse-commonjs-export-assignment-statements.md`.
+Split to `issues/open/5346-parse-commonjs-export-assignment-statements.md`.
 
 Related no-match issues:
 
 - `issues/open/5306-report-export-assignment-with-other-exports.md` covers the
   invalid `export =` plus other exported declarations rule, not a plain
   CommonJS export assignment.
-- `issues/done/5229-w0-user-runtime-string-origin.md` covers
+- `issues/open/5229-resolve-imports-between-filename-sections.md` covers
   virtual file import resolution after import syntax is parsed.
-- `issues/done/432-implement-import-export.md` is the broad import/export
+- `issues/open/432-implement-import-export.md` is the broad import/export
   umbrella and is too large to implement directly.
 
 ## Smart triage

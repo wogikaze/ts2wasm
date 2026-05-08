@@ -111,7 +111,7 @@ Not run:
 
 ## Notes
 
-Related precedent: `issues/done/3344-implement-moduleKeywordDeprecated.md`
+Related precedent: `issues/open/3344-implement-moduleKeywordDeprecated.md`
 uses the same closure model where coverage reports `build_pass` but direct
 triage still exposes the issue-5187 empty-body guard.
 

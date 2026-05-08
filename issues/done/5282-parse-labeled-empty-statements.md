@@ -137,12 +137,12 @@ Follow-up issues:
 
 ## Notes
 
-Split from `issues/done/1358-implement-commentsAtEndOfFile.md`.
+Split from `issues/open/1358-implement-commentsAtEndOfFile.md`.
 
 Related but not duplicates:
 
-- `issues/done/290-fix-asi-eof-semicolon-parser-bucket.md` covered `expected Semicolon, got None`, not a labeled empty statement.
-- `issues/done/5211-sparse-array-spread-support.md` covers an ASI boundary before a following label, not `label: ;`.
+- `issues/open/290-fix-asi-eof-semicolon-parser-bucket.md` covered `expected Semicolon, got None`, not a labeled empty statement.
+- `issues/open/5211-sparse-array-spread-support.md` covers an ASI boundary before a following label, not `label: ;`.
 - Broad unknown-unsupported buckets are not exact owners for this current failure.
 
 ## Completion evidence

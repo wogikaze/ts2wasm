@@ -20,7 +20,7 @@ status: done
 ## Summary
 
 Closed this generated bucket by splitting the current concrete blocker to
-`issues/done/5345-parse-generic-ambient-const-type-annotations.md`.
+`issues/open/5345-parse-generic-ambient-const-type-annotations.md`.
 
 ## Problem
 
@@ -49,7 +49,7 @@ env TS2WASM_BINARY=/tmp/ts2wasm-issue-blockers-target/debug/ts2wasm python scrip
 ## Desired final state
 
 This generated bucket is closed. Implement from
-`issues/done/5345-parse-generic-ambient-const-type-annotations.md`.
+`issues/open/5345-parse-generic-ambient-const-type-annotations.md`.
 
 ## Scope
 
@@ -118,7 +118,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] `issues/done/5345-parse-generic-ambient-const-type-annotations.md`
+- [x] `issues/open/5345-parse-generic-ambient-const-type-annotations.md`
 
 ## Notes
 
@@ -128,15 +128,15 @@ Follow-up issues:
 
 ## Duplicate detection
 
-Split to `issues/done/5345-parse-generic-ambient-const-type-annotations.md`.
+Split to `issues/open/5345-parse-generic-ambient-const-type-annotations.md`.
 
 No exact existing owner was found. Related no-match issues:
 
-- `issues/done/5193-parse-asi-after-ambient-variable-declarations.md` covers
+- `issues/open/5193-parse-asi-after-ambient-variable-declarations.md` covers
   ASI after ambient declarations, not nested generic annotation erasure.
-- `issues/done/5242-w2-completion-declaration.md`
+- `issues/open/5242-w2-completion-declaration.md`
   covers later generic call expression syntax, not declaration parsing.
-- `issues/done/5148-parse-generic-async-generator-declarations.md` covers the
+- `issues/open/5148-parse-generic-async-generator-declarations.md` covers the
   async generator declaration after this ambient declaration blocker advances.
 
 ## Smart triage

@@ -13,7 +13,7 @@ updated: 2026-05-08
 
 ## Summary
 
-Superseded by `issues/open/5232-support-entry-export-class-declarations.md`. Fresh triage reports the current module boundary as entry-module `export class ObservableValue<T>` issue-5005.
+Superseded by `issues/open/5232-w0-fixture-ize-runtimelinkplan-linker-structure-tests.md`. Fresh triage reports the current module boundary as entry-module `export class ObservableValue<T>` issue-5005.
 
 ## Problem
 
@@ -146,7 +146,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] existing: `issues/open/5232-support-entry-export-class-declarations.md`
+- [x] existing: `issues/open/5232-w0-fixture-ize-runtimelinkplan-linker-structure-tests.md`
 
 ## Notes
 
@@ -156,7 +156,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/open/5232-support-entry-export-class-declarations.md`: exact owner for the current entry-module `export class` issue-5005 boundary.
+- `issues/open/5232-w0-fixture-ize-runtimelinkplan-linker-structure-tests.md`: exact owner for the current entry-module `export class` issue-5005 boundary.
 - Later issue-289 constructor capture evidence may require a narrower follow-up after issue 5232 advances this reference.
 
 ## Smart triage

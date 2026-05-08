@@ -106,7 +106,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] `issues/done/5202-parse-member-call-explicit-type-arguments.md`
+- [x] `issues/open/5202-parse-member-call-explicit-type-arguments.md`
 
 ## Notes
 
@@ -159,7 +159,7 @@ Evidence:
   diagnostics for `_` and `c2`.
 - Broad parser-syntax candidates are no-match owners for this exact member-call
   type argument blocker.
-- Child issue `issues/done/5202-parse-member-call-explicit-type-arguments.md`
+- Child issue `issues/open/5202-parse-member-call-explicit-type-arguments.md`
   owns the implementation slice.
 
 ## Completion evidence

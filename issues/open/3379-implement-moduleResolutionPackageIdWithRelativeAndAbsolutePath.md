@@ -231,8 +231,8 @@ Reopen reason: frontmatter still says `class: blocked`, which is incompatible wi
 Violated acceptance: the issue cannot provide repo-local close evidence for its checked acceptance criteria while it remains in this state. Acceptance checkboxes were reset for re-verification.
 
 Evidence files:
-- `issues/done/3379-implement-moduleResolutionPackageIdWithRelativeAndAbsolutePath.md` before this move
-- `issues/done/3379-implement-moduleResolutionPackageIdWithRelativeAndAbsolutePath.md` after this move
+- `issues/open/3379-implement-moduleResolutionPackageIdWithRelativeAndAbsolutePath.md` before this move
+- `issues/open/3379-implement-moduleResolutionPackageIdWithRelativeAndAbsolutePath.md` after this move
 
 Split follow-up: none created; existing issue `5402` is the tracking item for
 the current first blocker.

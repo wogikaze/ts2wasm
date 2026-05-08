@@ -119,8 +119,8 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/105-implement-accessorWithoutBody.md` - Implement Accessorwithoutbody (same reference path, same feature label, same group key, title overlap)
-- `issues/done/422-implement-class-accessor.md` - Implement class-accessor support (same feature label, same group key, title overlap)
+- `issues/open/105-implement-accessorWithoutBody.md` - Implement Accessorwithoutbody (same reference path, same feature label, same group key, title overlap)
+- `issues/open/422-implement-class-accessor.md` - Implement class-accessor support (same feature label, same group key, title overlap)
 
 ## Smart triage
 
@@ -462,6 +462,6 @@ Violated acceptance: the issue cannot provide repo-local close evidence for its 
 
 Evidence files:
 - open issue file before this move
-- `issues/done/487-implement-accessorWithoutBody.md` after this move
+- `issues/open/487-implement-accessorWithoutBody.md` after this move
 
 Split follow-up: none created in this audit wave; this reopened issue remains the tracking item.

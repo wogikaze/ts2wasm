@@ -54,7 +54,7 @@ triage: UnresolvedName unresolved name: `MyEmusEnum` at 188..198
 ## Desired final state
 
 This generated bucket is closed as superseded by
-`issues/open/5284-bind-plain-enum-declarations-before-member-access.md`. Do not
+`issues/done/5284-bind-plain-enum-declarations-before-member-access.md`. Do not
 implement directly from this bucket.
 
 ## Scope
@@ -126,7 +126,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] folded into: `issues/open/5284-bind-plain-enum-declarations-before-member-access.md`
+- [x] folded into: `issues/done/5284-bind-plain-enum-declarations-before-member-access.md`
 
 ## Notes
 
@@ -136,12 +136,12 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/open/5284-bind-plain-enum-declarations-before-member-access.md` is
+- `issues/done/5284-bind-plain-enum-declarations-before-member-access.md` is
   the exact owner for plain enum declarations being omitted before later
   enum member or index access.
-- `issues/open/5184-parse-const-enum-declarations.md` covers `const enum`, not
+- `issues/done/5184-parse-const-enum-declarations.md` covers `const enum`, not
   this plain enum declaration.
-- `issues/open/5277-parse-export-enum-declarations-to-enum-boundary.md` covers
+- `issues/done/5277-parse-export-enum-declarations-to-enum-boundary.md` covers
   `export enum`, not this plain top-level enum declaration.
 - Folded into issue 5284.
 

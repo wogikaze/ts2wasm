@@ -118,7 +118,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/183-implement-anyAsReturnTypeForNewOnCall.md` - Implement Anyasreturntypefornewoncall (same reference path, same feature label, same group key, title overlap)
+- `issues/open/183-implement-anyAsReturnTypeForNewOnCall.md` - Implement Anyasreturntypefornewoncall (same reference path, same feature label, same group key, title overlap)
 
 ## Smart triage
 
@@ -783,6 +783,6 @@ Violated acceptance: the issue cannot provide repo-local close evidence for its 
 
 Evidence files:
 - open issue file before this move
-- `issues/done/641-implement-anyAsReturnTypeForNewOnCall.md` after this move
+- `issues/open/641-implement-anyAsReturnTypeForNewOnCall.md` after this move
 
 Split follow-up: none created in this audit wave; this reopened issue remains the tracking item.

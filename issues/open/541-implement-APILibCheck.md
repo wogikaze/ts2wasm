@@ -116,8 +116,8 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/069-implement-APILibCheck.md` - Implement Apilibcheck (same reference path, same group key, title overlap)
-- `issues/done/455-implement-APILibCheck.md` - Implement Apilibcheck (same reference path, same feature label, same group key, title overlap)
+- `issues/open/069-implement-APILibCheck.md` - Implement Apilibcheck (same reference path, same group key, title overlap)
+- `issues/open/455-implement-APILibCheck.md` - Implement Apilibcheck (same reference path, same feature label, same group key, title overlap)
 
 ## Smart triage
 

@@ -150,7 +150,7 @@ Follow-up issues:
 
 ## Notes
 
-Split from `issues/done/3432-implement-namespaceNotMergedWithFunctionDefaultExport.md`
+Split from `issues/open/3432-implement-namespaceNotMergedWithFunctionDefaultExport.md`
 on 2026-05-08 after fresh coverage showed the generated import/export blocker
 was stale and the current mismatch is a false build-pass.
 

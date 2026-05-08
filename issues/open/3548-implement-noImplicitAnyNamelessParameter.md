@@ -141,7 +141,7 @@ Follow-up issues:
 - `issues/open/5336-parse-object-type-literal-signatures-with-rest-parameters.md`
   covers a broader rest-parameter mix. The current `d` failure has no rest
   parameter and specifically needs nameless method parameters.
-- `issues/open/5245-parse-interface-construct-signatures.md` and
+- `issues/open/5245-iterator-protocol-runtime.md` and
   `issues/open/5257-parse-object-type-literal-construct-signatures.md` cover
   construct signatures, not this method signature.
 - Split to issue 5477.

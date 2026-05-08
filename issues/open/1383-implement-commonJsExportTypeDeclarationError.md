@@ -143,7 +143,7 @@ Follow-up issues:
 ## Duplicate detection
 
 - No existing focused issue owns malformed `export type Name` parser recovery.
-- Broad import/export buckets such as `issues/done/432-implement-import-export.md`
+- Broad import/export buckets such as `issues/open/432-implement-import-export.md`
   are not implementation-ready owners for this exact parser diagnostic.
 
 ## Smart triage

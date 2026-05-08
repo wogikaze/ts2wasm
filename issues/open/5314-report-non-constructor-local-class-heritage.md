@@ -125,15 +125,15 @@ Follow-up issues:
 
 ## Notes
 
-Split from stale generated bucket `issues/done/1197-implement-classExtendsClauseClassMergedWithModuleNotReferingConstructor.md`.
+Split from stale generated bucket `issues/open/1197-implement-classExtendsClauseClassMergedWithModuleNotReferingConstructor.md`.
 Also owns the matching first residual semantic gap folded from
-`issues/done/1198-implement-classExtendsClauseClassNotReferringConstructor.md`.
+`issues/open/1198-implement-classExtendsClauseClassNotReferringConstructor.md`.
 
 Related but not duplicates:
 
-- `issues/done/5256-report-non-constructor-class-heritage-expressions.md`
+- `issues/open/5256-report-non-constructor-class-heritage-expressions.md`
   handles member-expression heritage diagnostics.
-- `issues/done/5225-w0-typed-wat-writer.md` handles
+- `issues/open/5225-w0-typed-wat-writer.md` handles
   qualified class heritage implementation.
 
 ## Completion Evidence

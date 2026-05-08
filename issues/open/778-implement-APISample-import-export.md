@@ -122,16 +122,16 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/070-implement-APISample.md` - Implement Apisample (same reference path, title overlap)
-- `issues/done/432-implement-import-export.md` - Implement import/export module syntax (same feature label, title overlap)
-- `issues/done/457-implement-APISample-import-export.md` - Implement Apisample Import Export (same reference path, same feature label, same group key, title overlap)
-- `issues/done/462-implement-ExportAssignment.md` - Implement Exportassignment (same feature label, same group key, title overlap)
-- `issues/done/463-implement-FunctionDeclaration-import-export.md` - Implement Functiondeclaration Import Export (same feature label, same group key, title overlap)
-- `issues/done/475-implement-acceptableAlias.md` - Implement Acceptablealias (same feature label, same group key, title overlap)
-- `issues/done/481-implement-accessorDeclarationEmitVisibilityErrors.md` - Implement Accessordeclarationemitvisibilityerrors (same feature label, same group key, title overlap)
-- `issues/done/483-implement-accessorInAmbientContextES.md` - Implement Accessorinambientcontextes (same feature label, same group key, title overlap)
-- `issues/done/484-implement-accessorInferredReturnTypeErrorInReturnStatement.md` - Implement Accessorinferredreturntypeerrorinreturnstatement (same feature label, same group key, title overlap)
-- `issues/done/489-implement-accessorsInAmbientContext.md` - Implement Accessorsinambientcontext (same feature label, same group key, title overlap)
+- `issues/open/070-implement-APISample.md` - Implement Apisample (same reference path, title overlap)
+- `issues/open/432-implement-import-export.md` - Implement import/export module syntax (same feature label, title overlap)
+- `issues/open/457-implement-APISample-import-export.md` - Implement Apisample Import Export (same reference path, same feature label, same group key, title overlap)
+- `issues/open/462-implement-ExportAssignment.md` - Implement Exportassignment (same feature label, same group key, title overlap)
+- `issues/open/463-implement-FunctionDeclaration-import-export.md` - Implement Functiondeclaration Import Export (same feature label, same group key, title overlap)
+- `issues/open/475-implement-acceptableAlias.md` - Implement Acceptablealias (same feature label, same group key, title overlap)
+- `issues/open/481-implement-accessorDeclarationEmitVisibilityErrors.md` - Implement Accessordeclarationemitvisibilityerrors (same feature label, same group key, title overlap)
+- `issues/open/483-implement-accessorInAmbientContextES.md` - Implement Accessorinambientcontextes (same feature label, same group key, title overlap)
+- `issues/open/484-implement-accessorInferredReturnTypeErrorInReturnStatement.md` - Implement Accessorinferredreturntypeerrorinreturnstatement (same feature label, same group key, title overlap)
+- `issues/open/489-implement-accessorsInAmbientContext.md` - Implement Accessorsinambientcontext (same feature label, same group key, title overlap)
 
 ## Smart triage
 
@@ -141,7 +141,7 @@ Not generated. Rerun with `--triage-limit 1` or higher.
 ## 重複整理メモ
 
 この issue はタイトルが重複しているため、内容がより充実している
-`issues/done/543-implement-APISample-import-export.md` に統合されました。
+`issues/open/543-implement-APISample-import-export.md` に統合されました。
 そちらを参照してください。
 ## Completion evidence
 
@@ -172,7 +172,7 @@ Classification: truly-done.
 Audit result: retained in `issues/done/`. The issue has repo-local completion evidence, is not marked `blocked` or `triage-needed`, and `python scripts/manager.py check issues` validates the resulting issue graph.
 
 Evidence files:
-- `issues/done/778-implement-APISample-import-export.md`
+- `issues/open/778-implement-APISample-import-export.md`
 - `issues/index.md` after regeneration
 
 Future-work tracking: no untracked future-work item was identified in this issue during this metadata/evidence audit.

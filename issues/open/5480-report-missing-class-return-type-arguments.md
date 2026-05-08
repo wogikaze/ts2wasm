@@ -117,7 +117,7 @@ Do not touch:
 - [ ] A focused regression covers `class A<T> { foo(): A { return null; } }`.
 - [ ] Valid class method return annotations without missing class type
   arguments continue to parse and lower as before.
-- [ ] The generated bucket `issues/done/3568-implement-noTypeArgumentOnReturnType.md`
+- [ ] The generated bucket `issues/open/3568-implement-noTypeArgumentOnReturnType.md`
   remains closed as split to this child issue.
 
 ## Validation
@@ -158,7 +158,7 @@ Follow-up issues:
 ## Notes
 
 Split from generated bucket
-`issues/done/3568-implement-noTypeArgumentOnReturnType.md` after fresh triage
+`issues/open/3568-implement-noTypeArgumentOnReturnType.md` after fresh triage
 on 2026-05-08.
 
 Related but not duplicates:

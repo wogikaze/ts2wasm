@@ -18,7 +18,7 @@ unbraced single-statement body, covering nested loop shapes such as
 `for (let a1 of []) for (let a2 of a1.someArray) doSomething(() => a2);`.
 
 Split from generated bucket
-`issues/done/3482-implement-nestedLoopWithOnlyInnerLetCaptured.md`.
+`issues/open/3482-implement-nestedLoopWithOnlyInnerLetCaptured.md`.
 
 ## Problem
 
@@ -107,7 +107,7 @@ Out of scope:
 - Closure environment lowering for captured `let` variables.
 - TypeScript semantic diagnostics for `never.someArray`.
 - Single-statement loop bodies already covered for `while break/continue` by
-  `issues/done/5133-implement-single-statement-loop-body-break-continue.md`.
+  `issues/open/5133-implement-single-statement-loop-body-break-continue.md`.
 - Labeled statement, ASI, or arbitrary statement-body recovery beyond the
   focused loop/expression body forms.
 
@@ -183,7 +183,7 @@ but current evidence shows the first blocker is loop-body parsing.
 
 2026-05-08 fold-in:
 
-- `issues/done/3483-implement-nestedLoops.md` reaches the same parser boundary
+- `issues/open/3483-implement-nestedLoops.md` reaches the same parser boundary
   after parsing `export class Test`, the constructor, typed arrays, and the
   outer `for..of`.
 - Current diagnostic: `UnsupportedSyntax: expected LeftBrace, got Some(For)` at

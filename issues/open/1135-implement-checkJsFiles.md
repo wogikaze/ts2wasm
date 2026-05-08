@@ -111,7 +111,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] created: `issues/done/5227-w0-validate-lowered-completeness.md`
+- [x] created: `issues/open/5227-w0-validate-lowered-completeness.md`
 
 ## Notes
 
@@ -131,9 +131,9 @@ No-match rationale:
   leaves dynamic/function-valued local calls as issue-linked unsupported forms.
   This bucket's first blocker is not making `x()` executable; it is honoring a
   TypeScript directive that suppresses the diagnostic for selected calls.
-- `issues/done/431-implement-function-resolution.md` is a broad generated
+- `issues/open/431-implement-function-resolution.md` is a broad generated
   test262 function-resolution bucket and is not an executable work order.
-- `issues/done/057-implement-function-resolution.md` covers ordinary function
+- `issues/open/057-implement-function-resolution.md` covers ordinary function
   declaration/name resolution and does not cover JavaScript comment directive
   suppression.
 
@@ -212,7 +212,7 @@ TypeScript oracle: TS2349 only for the block-comment pseudo-directive calls at l
 
 Split result:
 
-- `issues/done/5227-w0-validate-lowered-completeness.md`
+- `issues/open/5227-w0-validate-lowered-completeness.md`
 
 ## Completion evidence
 

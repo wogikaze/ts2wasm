@@ -16,7 +16,7 @@ updated: 2026-05-08
 Triage neverAsDiscriminantType across 1 failing reference test cases and split this bucket into implementation-ready child issues.
 
 Closed as superseded by
-`issues/open/5277-parse-export-enum-declarations-to-enum-boundary.md`. Fresh
+`issues/done/5277-parse-export-enum-declarations-to-enum-boundary.md`. Fresh
 triage shows the first current blocker is the shared `export enum` issue-055
 static export boundary, before the later `never` discriminant behavior.
 
@@ -45,7 +45,7 @@ mise run reference-coverage -- tsc --path-filter reference/typescript/tests/case
 ## Desired final state
 
 This generated bucket is closed. Implementation should proceed through
-`issues/open/5277-parse-export-enum-declarations-to-enum-boundary.md`.
+`issues/done/5277-parse-export-enum-declarations-to-enum-boundary.md`.
 
 ## Scope
 
@@ -119,7 +119,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] superseded by: `issues/open/5277-parse-export-enum-declarations-to-enum-boundary.md`
+- [x] superseded by: `issues/done/5277-parse-export-enum-declarations-to-enum-boundary.md`
 
 ## Notes
 
@@ -129,7 +129,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/open/5277-parse-export-enum-declarations-to-enum-boundary.md` owns
+- `issues/done/5277-parse-export-enum-declarations-to-enum-boundary.md` owns
   the current `export enum` issue-055 static export boundary.
 - `issues/open/432-implement-import-export.md` is the broad import/export
   generated bucket and is not the narrow implementation owner.

@@ -128,7 +128,7 @@ Follow-up issues:
 - `issues/open/5195-support-callable-interface-typed-local-calls.md` owns the
   analogous callable interface local call path, but this representative uses a
   construct signature through `new i("")` and currently build-passes.
-- `issues/open/5245-parse-interface-construct-signatures.md` owns parser
+- `issues/open/5245-iterator-protocol-runtime.md` owns parser
   support for interface construct signatures. This representative already
   parses, erases the interface, and resolves the `new i("")` expression.
 

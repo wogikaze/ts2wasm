@@ -120,7 +120,7 @@ Follow-up issues:
 ## Duplicate detection
 
 - `issues/open/064-implement-name-resolution.md` - Implement name resolution (triaged - superseded by test262 metadata issues) (same feature label, title overlap)
-- `issues/done/437-implement-name-resolution.md` - Implement name resolution (same feature label, title overlap)
+- `issues/open/437-implement-name-resolution.md` - Implement name resolution (same feature label, title overlap)
 
 ## Smart triage
 

@@ -146,47 +146,47 @@ Follow-up issues:
 
 ## Notes
 
-Split from `issues/done/598-implement-allowJsCrossMonorepoPackage.md`.
+Split from `issues/open/598-implement-allowJsCrossMonorepoPackage.md`.
 
 Related but not duplicates:
 
-- `issues/done/5292-skip-tsconfig-filename-sections-in-reference-harness.md`
+- `issues/open/5292-skip-tsconfig-filename-sections-in-reference-harness.md`
   covers the same non-code-section behavior for `tsconfig.json`.
-- `issues/done/436-implement-module-resolution.md` and package-resolution
+- `issues/open/436-implement-module-resolution.md` and package-resolution
   buckets cover later module/package lookup behavior after metadata sections
   are skipped.
 
-Also owns `issues/done/3336-implement-moduleExportNonStructured.md`: fresh
+Also owns `issues/open/3336-implement-moduleExportNonStructured.md`: fresh
 triage for `moduleExportNonStructured.ts` stops in its virtual `package.json`
 section at the first property colon before `.mts`, `.cjs`, `.d.cts`, or
 CommonJS `export =` diagnostics become reachable.
-Also owns `issues/done/3346-implement-moduleLocalImportNotIncorrectlyRedirected.md`:
+Also owns `issues/open/3346-implement-moduleLocalImportNotIncorrectlyRedirected.md`:
 fresh triage stops in `node_modules/troublesome-lib/package.json` at the first
 JSON property colon before package resolution or local import redirection
 semantics become reachable.
-Also owns `issues/done/3354-implement-moduleNodeImportRequireEmit.md`: fresh
+Also owns `issues/open/3354-implement-moduleNodeImportRequireEmit.md`: fresh
 triage stops in `// @filename: package.json` at the first JSON property colon
 before `declare module "foo";`, `import foo = require("foo");`, or NodeNext
 emit diagnostics become reachable.
-Also owns `issues/done/3358-implement-modulePreserve.md` for
+Also owns `issues/open/3358-implement-modulePreserve.md` for
 `modulePreserve2.ts`: fresh triage stops in virtual `package.json` at the first
 JSON property colon before package `exports`, ESM/CJS conditional resolution,
 or module-preserve import/require diagnostics become reachable.
 
 Also owns the package-json subset of
-`issues/done/3371-implement-moduleResolution-module-resolution.md`: fresh
+`issues/open/3371-implement-moduleResolution-module-resolution.md`: fresh
 coverage for `moduleResolution_packageJson_*` reports six
 UnsupportedSyntax/module-resolution paths, and representative triage for
 `moduleResolution_packageJson_scopedPackage.ts` stops at the virtual
 `package.json` property colon before scoped package resolution becomes
 actionable.
 
-Also owns `issues/done/3374-implement-moduleResolutionAsTypeReferenceDirectiveAmbient.md`:
+Also owns `issues/open/3374-implement-moduleResolutionAsTypeReferenceDirectiveAmbient.md`:
 fresh triage for `moduleResolutionAsTypeReferenceDirectiveAmbient.ts` parses
 `declare module "phaser" { export const a2: number; }`, then stops in the
 virtual `/typings/phaser/package.json` body at the first JSON property colon
 before type-root or package resolution becomes actionable.
-Also owns `issues/done/3379-implement-moduleResolutionPackageIdWithRelativeAndAbsolutePath.md`:
+Also owns `issues/open/3379-implement-moduleResolutionPackageIdWithRelativeAndAbsolutePath.md`:
 fresh triage for `moduleResolutionPackageIdWithRelativeAndAbsolutePath.ts`
 stops in `/shared/node_modules/troublesome-lib/package.json` at the first JSON
 property colon before package-id relative/absolute path behavior, path mapping,
@@ -218,21 +218,21 @@ actionable.
 Also owns `issues/done/3582-implement-nodeNextPackageImportMapRootDir.md`:
 fresh triage stops in virtual `package.json` at the first JSON property colon
 before package `"imports"` map resolution for `#dep` becomes actionable.
-Also owns `issues/done/3583-implement-nodeNextPackageSelfNameWithOutDir.md`:
+Also owns `issues/open/3583-implement-nodeNextPackageSelfNameWithOutDir.md`:
 fresh triage stops in virtual `package.json` at the first JSON property colon
 before package self-name `@this/package` resolution and `outDir` behavior
 become actionable.
-Also owns `issues/done/3584-implement-nodeNextPackageSelfNameWithOutDirDeclDir.md`:
+Also owns `issues/open/3584-implement-nodeNextPackageSelfNameWithOutDirDeclDir.md`:
 fresh triage stops in virtual `package.json` at the first JSON property colon
 before package self-name `@this/package` resolution, conditional `exports`
 `default`/`types` branches, and `outDir`/`declarationDir` behavior become
 actionable.
-Also owns `issues/done/3588-implement-nodeNextPackageSelfNameWithOutDirDeclDirRootDir.md`:
+Also owns `issues/open/3588-implement-nodeNextPackageSelfNameWithOutDirDeclDirRootDir.md`:
 fresh triage stops in virtual `/pkg/package.json` at the first JSON property
 colon before package self-name `@this/package` resolution, conditional
 `exports` `default`/`types`, `outDir`/`declarationDir`, or `rootDir` behavior
 become actionable.
-Also owns `issues/done/3589-implement-nodeNextPackageSelfNameWithOutDirRootDir.md`:
+Also owns `issues/open/3589-implement-nodeNextPackageSelfNameWithOutDirRootDir.md`:
 fresh triage stops in virtual `package.json` at the first JSON property colon
 before package self-name `@this/package` resolution, package `exports`,
 `outDir`, or `rootDir` behavior become actionable.

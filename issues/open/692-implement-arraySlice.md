@@ -636,7 +636,7 @@ Reopen reason: frontmatter still says `class: blocked`, which is incompatible wi
 Violated acceptance: the issue cannot provide repo-local close evidence for its checked acceptance criteria while it remains in this state. Acceptance checkboxes were reset for re-verification.
 
 Evidence files:
-- `issues/done/692-implement-arraySlice.md` before this move
-- `issues/done/692-implement-arraySlice.md` after this move
+- `issues/open/692-implement-arraySlice.md` before this move
+- `issues/open/692-implement-arraySlice.md` after this move
 
 Split follow-up: none created in this audit wave; this reopened issue remains the tracking item.

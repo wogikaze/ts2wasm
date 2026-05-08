@@ -58,7 +58,7 @@ commonjs/es6/system/umd/amd triage: UnsupportedModule issue-055 unsupported vari
 ## Desired final state
 
 This generated bucket is closed as superseded by
-`issues/open/5283-support-entry-export-var-declarations.md`. Do not implement
+`issues/done/5283-support-entry-export-var-declarations.md`. Do not implement
 directly from this bucket.
 
 ## Scope
@@ -130,7 +130,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] folded into: `issues/open/5283-support-entry-export-var-declarations.md`
+- [x] folded into: `issues/done/5283-support-entry-export-var-declarations.md`
 
 ## Notes
 
@@ -144,10 +144,10 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/open/5283-support-entry-export-var-declarations.md` is the exact
+- `issues/done/5283-support-entry-export-var-declarations.md` is the exact
   owner for the current `export var x = 0;` issue-055 boundary.
-- `issues/done/517-implement-alwaysStrictNoImplicitUseStrict.md` and
-  `issues/done/603-implement-alwaysStrictNoImplicitUseStrict.md` are older
+- `issues/open/517-implement-alwaysStrictNoImplicitUseStrict.md` and
+  `issues/open/603-implement-alwaysStrictNoImplicitUseStrict.md` are older
   same-theme generated buckets, not the current implementation owner.
 - `issues/open/432-implement-import-export.md` is broader than the current
   executable slice.

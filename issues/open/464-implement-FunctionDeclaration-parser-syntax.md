@@ -118,16 +118,16 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/076-implement-FunctionDeclaration.md` - Implement Functiondeclaration (same reference path, same feature label, title overlap)
-- `issues/done/442-implement-parser-syntax.md` - Implement parser syntax extensions (same feature label, title overlap)
+- `issues/open/076-implement-FunctionDeclaration.md` - Implement Functiondeclaration (same reference path, same feature label, title overlap)
+- `issues/open/442-implement-parser-syntax.md` - Implement parser syntax extensions (same feature label, title overlap)
 - `issues/open/059-implement-parser-syntax-extensions.md` - Implement parser syntax extensions for TypeScript and advanced JS (same feature label, title overlap)
-- `issues/done/065-implement-parser-syntax.md` - Implement parser syntax extensions (same feature label, title overlap)
+- `issues/open/065-implement-parser-syntax.md` - Implement parser syntax extensions (same feature label, title overlap)
 - `issues/done/065a-merge-duplicate-parser-syntax-issue-into-059.md` - Merge duplicate parser syntax issue into 059 (same feature label, title overlap)
-- `issues/done/200-implement-parser-syntax.md` - Implement parser syntax extensions (same feature label, title overlap)
-- `issues/done/243-implement-numeric-literal-separator-parser.md` - Implement numeric literal separator parser support (same feature label, title overlap)
-- `issues/done/244-implement-bigint-literal-parser-classification.md` - Implement BigInt literal parser classification (same feature label, title overlap)
-- `issues/done/246-implement-optional-chaining-parser-support.md` - Implement optional chaining parser support (same feature label, title overlap)
-- `issues/done/247-implement-destructuring-binding-pattern-parser.md` - Implement destructuring binding pattern parser support (same feature label, title overlap)
+- `issues/open/200-implement-parser-syntax.md` - Implement parser syntax extensions (same feature label, title overlap)
+- `issues/open/243-implement-numeric-literal-separator-parser.md` - Implement numeric literal separator parser support (same feature label, title overlap)
+- `issues/open/244-implement-bigint-literal-parser-classification.md` - Implement BigInt literal parser classification (same feature label, title overlap)
+- `issues/open/246-implement-optional-chaining-parser-support.md` - Implement optional chaining parser support (same feature label, title overlap)
+- `issues/open/247-implement-destructuring-binding-pattern-parser.md` - Implement destructuring binding pattern parser support (same feature label, title overlap)
 
 ## Smart triage
 
@@ -403,7 +403,7 @@ error: [UnsupportedSyntax] expected LeftBrace, got Some(Semicolon) at 33..34
 ## 重複整理メモ
 
 この issue はタイトルが重複しているため、内容がより充実している
-`issues/done/550-implement-FunctionDeclaration-parser-syntax.md` に統合されました。
+`issues/open/550-implement-FunctionDeclaration-parser-syntax.md` に統合されました。
 そちらを参照してください。
 ## Completion evidence
 
@@ -434,7 +434,7 @@ Classification: truly-done.
 Audit result: retained in `issues/done/`. The issue has repo-local completion evidence, is not marked `blocked` or `triage-needed`, and `python scripts/manager.py check issues` validates the resulting issue graph.
 
 Evidence files:
-- `issues/done/464-implement-FunctionDeclaration-parser-syntax.md`
+- `issues/open/464-implement-FunctionDeclaration-parser-syntax.md`
 - `issues/index.md` after regeneration
 
 Future-work tracking: no untracked future-work item was identified in this issue during this metadata/evidence audit.

@@ -108,7 +108,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] updated: `issues/done/5164-parse-exponentiation-compound-assignment.md`
+- [x] updated: `issues/open/5164-parse-exponentiation-compound-assignment.md`
 
 ## Notes
 
@@ -130,7 +130,7 @@ Generated on 2026-05-06.
 - Source context: `foo **= BigInt(2);`
 - Visible symbol: `foo: bigint`
 - TypeScript AST path: `ExpressionStatement -> BinaryExpression -> AsteriskAsteriskEqualsToken`
-- Superseding child: `issues/done/5164-parse-exponentiation-compound-assignment.md`
+- Superseding child: `issues/open/5164-parse-exponentiation-compound-assignment.md`
 
 ## Completion evidence
 

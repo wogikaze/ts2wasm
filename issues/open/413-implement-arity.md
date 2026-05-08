@@ -116,13 +116,13 @@ Follow-up issues:
 **Root cause**: `validate.rs` line 364-377 checks builtin arity with `args.len() != expected`, which is too strict. JavaScript allows calling any function with fewer arguments (missing args become `undefined`). The same pattern exists in `program_builtins.rs` for RegExp/String prototype method arity checks.
 
 **Duplicate detection results**:
-- `issues/done/287-fix-arguments-object-arity-mismatch.md` — NOT a match. Issue 287 was about `arguments` object arity mismatch for **user-defined functions** (`function 5 expects at least 3 argument(s), got 2`). Issue 413 is about **builtin** arity mismatch. Different fix location (validate.rs builtin branch vs. user function min_required_params).
+- `issues/open/287-fix-arguments-object-arity-mismatch.md` — NOT a match. Issue 287 was about `arguments` object arity mismatch for **user-defined functions** (`function 5 expects at least 3 argument(s), got 2`). Issue 413 is about **builtin** arity mismatch. Different fix location (validate.rs builtin branch vs. user function min_required_params).
 - `issues/done/341c-boolean-global.md` — Partial overlap. Implements `Boolean(x)` for 1-arg calls, but does NOT cover `Boolean()` with 0 args. The 0-arg case is covered by child issue 5135.
 - `issues/open/2460-implement-functionParameterArityMismatch.md` — NOT a match. This is about TypeScript compiler's `functionParameterArityMismatch` diagnostic (a TS type-checking error), blocked on issue 5005. Different domain and fix location.
 
 **Child issues created**:
-- `issues/done/5135-fix-builtin-arity-validation-coercion-globals.md` — Fix validate.rs + builtin.rs for Boolean, Number, isNaN, isFinite, parseInt, parseFloat, encodeURI, decodeURI, escape, unescape (~20-25 test cases)
-- `issues/done/5136-fix-arity-validation-regexp-string-prototype.md` — Fix program_builtins.rs + resolver_expr.rs for RegExp.prototype.exec/test and String.prototype.match/search (~10 test cases)
+- `issues/open/5135-fix-builtin-arity-validation-coercion-globals.md` — Fix validate.rs + builtin.rs for Boolean, Number, isNaN, isFinite, parseInt, parseFloat, encodeURI, decodeURI, escape, unescape (~20-25 test cases)
+- `issues/open/5136-fix-arity-validation-regexp-string-prototype.md` — Fix program_builtins.rs + resolver_expr.rs for RegExp.prototype.exec/test and String.prototype.match/search (~10 test cases)
 
 ## Affected test files
 
@@ -142,11 +142,11 @@ Follow-up issues:
 
 - `issues/open/021-implement-full-wasm-backend.md` - issues/open/021-implement-full-wasm-backend.md (same feature label, same group key)
 - `issues/done/052-implement-json.md` - Implement JSON (same feature label, same group key, title overlap)
-- `issues/done/274-implement-spread-operator.md` - Implement spread operator (same feature label, same group key, title overlap)
-- `issues/done/300-support-abc451-large-integer-number-boundary.md` - Support ABC451 large integer number boundary (same feature label, same group key, title overlap)
+- `issues/open/274-implement-spread-operator.md` - Implement spread operator (same feature label, same group key, title overlap)
+- `issues/open/300-support-abc451-large-integer-number-boundary.md` - Support ABC451 large integer number boundary (same feature label, same group key, title overlap)
 - `issues/done/370-implement-bigint-arithmetic-exception-parity.md` - Implement BigInt arithmetic RangeError and TypeError parity (same feature label, same group key, title overlap)
 - `issues/done/374-design-broader-object-toprimitive-for-bigint-comparisons.md` - Design broader object ToPrimitive for mixed BigInt comparisons (same feature label, same group key)
-- `issues/done/407-map-spread-key-preserving-iterator-storage.md` - Implement key-preserving Map entry storage for spread iteration (same feature label, same group key, title overlap)
+- `issues/open/407-map-spread-key-preserving-iterator-storage.md` - Implement key-preserving Map entry storage for spread iteration (same feature label, same group key, title overlap)
 - `issues/done/021a-implement-wasm-encoder-hello-binary-mvp.md` - Implement wasm-encoder hello binary MVP (same feature label, same group key, title overlap)
 - `issues/done/033-implement-switch-statement.md` - Implement switch statement (same feature label, same group key, title overlap)
 - `issues/done/049-implement-map-set.md` - Implement Map and Set (same feature label, same group key, title overlap)

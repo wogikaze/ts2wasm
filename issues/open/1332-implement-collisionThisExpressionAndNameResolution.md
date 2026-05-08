@@ -19,7 +19,7 @@ status: done
 
 ## Summary
 
-Closed by splitting the current object type declaration parser boundary into `issues/done/5342-preserve-class-after-object-type-declaration.md`.
+Closed by splitting the current object type declaration parser boundary into `issues/open/5342-preserve-class-after-object-type-declaration.md`.
 
 ## Problem
 
@@ -121,7 +121,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] created `issues/done/5342-preserve-class-after-object-type-declaration.md`
+- [x] created `issues/open/5342-preserve-class-after-object-type-declaration.md`
 
 ## Notes
 
@@ -131,8 +131,8 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/5339-preserve-var-after-object-type-declaration.md` is related but owns an object type declaration followed by another `var` declaration.
-- `issues/done/5340-preserve-function-after-object-type-declaration.md` is related but owns an object type declaration followed by a `function` declaration.
+- `issues/open/5339-preserve-var-after-object-type-declaration.md` is related but owns an object type declaration followed by another `var` declaration.
+- `issues/open/5340-preserve-function-after-object-type-declaration.md` is related but owns an object type declaration followed by a `function` declaration.
 - No existing issue owns the object type declaration followed by a `class` declaration shape, so issue 5342 was created.
 
 ## Smart triage

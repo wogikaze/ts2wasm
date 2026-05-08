@@ -17,7 +17,7 @@ updated: 2026-05-06
 
 ## Summary
 
-Closed as superseded by `issues/done/232-resolve-local-relative-es-module-graph.md`.
+Closed as superseded by `issues/open/232-resolve-local-relative-es-module-graph.md`.
 All three current `commentOnImportStatement` representatives parse far enough
 to reach the completed issue-232 missing local module diagnostic for `./foo`,
 and TypeScript reports TS2307 for the same specifier.
@@ -142,13 +142,13 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/232-resolve-local-relative-es-module-graph.md` owns
+- `issues/open/232-resolve-local-relative-es-module-graph.md` owns
   source-spanned missing local module diagnostics for local relative module
   graph construction.
 - Prior generated buckets with the same current issue-232 missing-module shape
   were closed as superseded by issue 232, including
-  `issues/done/1087-implement-bundledDtsLateExportRenaming.md` and
-  `issues/done/1127-implement-chainedImportAlias.md`.
+  `issues/open/1087-implement-bundledDtsLateExportRenaming.md` and
+  `issues/open/1127-implement-chainedImportAlias.md`.
 - Other smart-triage duplicate candidates share the broad `import-export` label
   only and do not supersede this exact missing `./foo` diagnostic evidence.
 

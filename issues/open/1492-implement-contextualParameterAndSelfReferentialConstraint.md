@@ -110,7 +110,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] superseded by `issues/done/5161-model-ambient-value-declarations-for-name-resolution.md`
+- [x] superseded by `issues/open/5161-model-ambient-value-declarations-for-name-resolution.md`
 
 ## Notes
 
@@ -153,7 +153,7 @@ failure. TypeScript accepts the file with no diagnostics and infers the nested
 callback parameter `x` as `boolean`.
 
 This bucket is superseded by
-`issues/done/5161-model-ambient-value-declarations-for-name-resolution.md`,
+`issues/open/5161-model-ambient-value-declarations-for-name-resolution.md`,
 which owns declaration-only `declare var` / `declare let` / `declare const`
 values being resolver-visible without runtime emission.
 

@@ -39,7 +39,7 @@ mise run reference-coverage -- tsc --path-filter reference/typescript/tests/case
 
 ## Desired final state
 
-This generated bucket is closed as superseded by `issues/done/232-resolve-local-relative-es-module-graph.md`. Do not implement directly from this bucket.
+This generated bucket is closed as superseded by `issues/open/232-resolve-local-relative-es-module-graph.md`. Do not implement directly from this bucket.
 
 ## Scope
 
@@ -178,7 +178,7 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- superseded by `issues/done/232-resolve-local-relative-es-module-graph.md`
+- superseded by `issues/open/232-resolve-local-relative-es-module-graph.md`
 
 Validation result:
 

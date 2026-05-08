@@ -47,7 +47,7 @@ env TS2WASM_BINARY=/tmp/ts2wasm-issue-blockers-target/debug/ts2wasm python scrip
 ## Desired final state
 
 This generated bucket is closed. Implement from
-`issues/done/5324-support-dependency-export-class-declarations.md`.
+`issues/open/5324-support-dependency-export-class-declarations.md`.
 
 ## Scope
 
@@ -69,7 +69,7 @@ Out of scope:
 
 Expected:
 
-- `issues/done/5324-support-dependency-export-class-declarations.md`
+- `issues/open/5324-support-dependency-export-class-declarations.md`
 
 Do not touch:
 
@@ -119,7 +119,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] existing owner: `issues/done/5324-support-dependency-export-class-declarations.md`
+- [x] existing owner: `issues/open/5324-support-dependency-export-class-declarations.md`
 
 ## Notes
 
@@ -132,13 +132,13 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/5324-support-dependency-export-class-declarations.md` owns the
+- `issues/open/5324-support-dependency-export-class-declarations.md` owns the
   current issue-5005 boundary for dependency virtual files that start with
   `export class`.
-- `issues/done/5229-w0-user-runtime-string-origin.md` is a likely
+- `issues/open/5229-resolve-imports-between-filename-sections.md` is a likely
   later owner for local `./a` and `./b` virtual-section resolution after
   dependency export-class support advances.
-- `issues/done/232-resolve-local-relative-es-module-graph.md` owns the bare
+- `issues/open/232-resolve-local-relative-es-module-graph.md` owns the bare
   module specifier boundary for `"C"` if the local virtual-section blockers
   advance far enough to expose it.
 

@@ -27,7 +27,7 @@ module build reports issue-5005 for entry-module `export class Bar`.
 Focused coverage still classifies the representative as `UnsupportedSyntax:
 destructuring`, but smart triage exposes the concrete first module blocker as
 the entry-module export-class boundary. The matching owner is
-`issues/open/5232-support-entry-export-class-declarations.md`.
+`issues/open/5232-w0-fixture-ize-runtimelinkplan-linker-structure-tests.md`.
 
 Problem: generated import/export bucket is superseded by issue 5232's
 entry-module `export class` implementation slice.
@@ -89,7 +89,7 @@ TypeScript oracle: ok, diagnostics=[]
 ## Desired final state
 
 This generated bucket is closed as superseded by
-`issues/open/5232-support-entry-export-class-declarations.md`. Do not implement
+`issues/open/5232-w0-fixture-ize-runtimelinkplan-linker-structure-tests.md`. Do not implement
 directly from this bucket.
 
 ## Scope
@@ -161,7 +161,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] existing: `issues/open/5232-support-entry-export-class-declarations.md`
+- [x] existing: `issues/open/5232-w0-fixture-ize-runtimelinkplan-linker-structure-tests.md`
 
 ## Notes
 
@@ -171,7 +171,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/open/5232-support-entry-export-class-declarations.md` is the exact
+- `issues/open/5232-w0-fixture-ize-runtimelinkplan-linker-structure-tests.md` is the exact
   owner for the current entry-module `export class Bar` issue-5005 boundary.
 - Destructuring/private-method semantics remain later surfaces after issue 5232
   advances this representative.

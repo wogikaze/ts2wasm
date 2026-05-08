@@ -137,9 +137,9 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/290-fix-asi-eof-semicolon-parser-bucket.md` is related ASI
+- `issues/open/290-fix-asi-eof-semicolon-parser-bucket.md` is related ASI
   history but covered `expected Semicolon, got None`, not labeled `;`.
-- `issues/done/5211-sparse-array-spread-support.md` is about
+- `issues/open/5211-sparse-array-spread-support.md` is about
   the boundary before a following label, not a label whose body is `;`.
 - Broad unknown-unsupported buckets are not exact matches.
 - `issues/done/5282-parse-labeled-empty-statements.md` owns this current

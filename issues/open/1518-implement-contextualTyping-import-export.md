@@ -110,7 +110,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] created: `issues/done/5378-report-mixed-ambient-function-overload-diagnostics.md`
+- [x] created: `issues/open/5378-report-mixed-ambient-function-overload-diagnostics.md`
 
 ## Notes
 
@@ -120,14 +120,14 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/432-implement-import-export.md` - Implement import/export module syntax (same feature label, title overlap)
-- `issues/done/457-implement-APISample-import-export.md` - Implement Apisample Import Export (same feature label, title overlap)
-- `issues/done/463-implement-FunctionDeclaration-import-export.md` - Implement Functiondeclaration Import Export (same feature label, title overlap)
-- `issues/done/543-implement-APISample-import-export.md` - Implement Apisample Import Export (same feature label, title overlap)
-- `issues/done/549-implement-FunctionDeclaration-import-export.md` - Implement Functiondeclaration Import Export (same feature label, title overlap)
-- `issues/done/662-implement-arrayAssignmentTest-import-export.md` - Implement Arrayassignmenttest Import Export (same feature label, title overlap)
-- `issues/done/732-implement-assignmentCompatability-import-export.md` - Implement Assignmentcompatability Import Export (same feature label, title overlap)
-- `issues/done/766-implement-augmentedTypesEnum-import-export.md` - Implement Augmentedtypesenum Import Export (same feature label, title overlap)
+- `issues/open/432-implement-import-export.md` - Implement import/export module syntax (same feature label, title overlap)
+- `issues/open/457-implement-APISample-import-export.md` - Implement Apisample Import Export (same feature label, title overlap)
+- `issues/open/463-implement-FunctionDeclaration-import-export.md` - Implement Functiondeclaration Import Export (same feature label, title overlap)
+- `issues/open/543-implement-APISample-import-export.md` - Implement Apisample Import Export (same feature label, title overlap)
+- `issues/open/549-implement-FunctionDeclaration-import-export.md` - Implement Functiondeclaration Import Export (same feature label, title overlap)
+- `issues/open/662-implement-arrayAssignmentTest-import-export.md` - Implement Arrayassignmenttest Import Export (same feature label, title overlap)
+- `issues/open/732-implement-assignmentCompatability-import-export.md` - Implement Assignmentcompatability Import Export (same feature label, title overlap)
+- `issues/open/766-implement-augmentedTypesEnum-import-export.md` - Implement Augmentedtypesenum Import Export (same feature label, title overlap)
 - `issues/done/055-implement-import-export.md` - Umbrella: implement import and export (same feature label, title overlap)
 
 ## Smart triage
@@ -141,7 +141,7 @@ env TS2WASM_BINARY=/home/wogikaze/wgkz/ts2wasm/target/debug/ts2wasm python scrip
 ```
 
 Result: split to
-`issues/done/5378-report-mixed-ambient-function-overload-diagnostics.md`.
+`issues/open/5378-report-mixed-ambient-function-overload-diagnostics.md`.
 
 Current diagnostic:
 
@@ -176,10 +176,10 @@ Duplicate review:
 - `issues/open/5200-validate-top-level-function-overload-implementations.md`
   owns valid non-ambient overload signatures plus implementations, not mixed
   ambient/non-ambient diagnostics.
-- `issues/done/5226-w0-ast-node-span-requirement.md` owns
+- `issues/open/5226-w0-ast-node-span-requirement.md` owns
   multiple ambient overload declarations, not a mixed ambient signature plus
   non-ambient implementation.
-- `issues/done/5307-report-var-function-duplicate-identifier-diagnostics.md`
+- `issues/open/5307-report-var-function-duplicate-identifier-diagnostics.md`
   owns var/function duplicate identifier diagnostics, not overload ambientness.
 
 ## Completion evidence
@@ -188,7 +188,7 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- split to `issues/done/5378-report-mixed-ambient-function-overload-diagnostics.md`
+- split to `issues/open/5378-report-mixed-ambient-function-overload-diagnostics.md`
 
 Validation result:
 

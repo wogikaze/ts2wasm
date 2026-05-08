@@ -39,7 +39,7 @@ mise run reference-coverage -- tsc --path-filter reference/typescript/tests/case
 
 ## Desired final state
 
-This generated bucket is closed as superseded by `issues/done/056-implement-name-resolution.md` for the current unresolved-name diagnostic. Do not implement directly from this bucket.
+This generated bucket is closed as superseded by `issues/open/056-implement-name-resolution.md` for the current unresolved-name diagnostic. Do not implement directly from this bucket.
 
 ## Scope
 
@@ -175,7 +175,7 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- superseded by `issues/done/056-implement-name-resolution.md`
+- superseded by `issues/open/056-implement-name-resolution.md`
 
 Validation result:
 

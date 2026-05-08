@@ -116,10 +116,10 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/121-implement-aliasUsageInFunctionExpression.md` - Implement Aliasusageinfunctionexpression (same reference path, same group key, title overlap)
-- `issues/done/500-implement-aliasUsageInFunctionExpression.md` - Implement Aliasusageinfunctionexpression (same reference path, same feature label, same group key, title overlap)
-- `issues/done/586-implement-aliasUsageInFunctionExpression.md` - Implement Aliasusageinfunctionexpression (same reference path, same feature label, same group key, title overlap)
-- `issues/done/715-implement-assign.md` - Implement Assign (same feature label, same group key, title overlap)
+- `issues/open/121-implement-aliasUsageInFunctionExpression.md` - Implement Aliasusageinfunctionexpression (same reference path, same group key, title overlap)
+- `issues/open/500-implement-aliasUsageInFunctionExpression.md` - Implement Aliasusageinfunctionexpression (same reference path, same feature label, same group key, title overlap)
+- `issues/open/586-implement-aliasUsageInFunctionExpression.md` - Implement Aliasusageinfunctionexpression (same reference path, same feature label, same group key, title overlap)
+- `issues/open/715-implement-assign.md` - Implement Assign (same feature label, same group key, title overlap)
 
 ## Smart triage
 
@@ -129,7 +129,7 @@ Not generated. Rerun with `--triage-limit 1` or higher.
 ## 重複整理メモ
 
 この issue はタイトルが重複しているため、内容がより充実している
-`issues/done/586-implement-aliasUsageInFunctionExpression.md` に統合されました。
+`issues/open/586-implement-aliasUsageInFunctionExpression.md` に統合されました。
 そちらを参照してください。
 ## Completion evidence
 
@@ -160,7 +160,7 @@ Classification: truly-done.
 Audit result: retained in `issues/done/`. The issue has repo-local completion evidence, is not marked `blocked` or `triage-needed`, and `python scripts/manager.py check issues` validates the resulting issue graph.
 
 Evidence files:
-- `issues/done/821-implement-aliasUsageInFunctionExpression.md`
+- `issues/open/821-implement-aliasUsageInFunctionExpression.md`
 - `issues/index.md` after regeneration
 
 Future-work tracking: no untracked future-work item was identified in this issue during this metadata/evidence audit.

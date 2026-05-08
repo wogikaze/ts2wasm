@@ -121,9 +121,9 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- Superseded by `issues/done/5229-w0-user-runtime-string-origin.md` for resolving `import { a } from "./a"` between `// @filename:` sections in the same reference file.
-- Related next blocker: `issues/done/5167-support-global-symbol-builtin-call.md` for global `Symbol()`.
-- Broad module umbrella `issues/done/432-implement-import-export.md` remains too coarse for direct implementation.
+- Superseded by `issues/open/5229-resolve-imports-between-filename-sections.md` for resolving `import { a } from "./a"` between `// @filename:` sections in the same reference file.
+- Related next blocker: `issues/open/5167-support-global-symbol-builtin-call.md` for global `Symbol()`.
+- Broad module umbrella `issues/open/432-implement-import-export.md` remains too coarse for direct implementation.
 
 ## Smart triage
 
@@ -170,7 +170,7 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- Superseded by `issues/done/5229-w0-user-runtime-string-origin.md`; related next blocker `issues/done/5167-support-global-symbol-builtin-call.md`.
+- Superseded by `issues/open/5229-resolve-imports-between-filename-sections.md`; related next blocker `issues/open/5167-support-global-symbol-builtin-call.md`.
 
 Validation result:
 

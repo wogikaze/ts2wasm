@@ -125,7 +125,7 @@ Follow-up issues:
 ## Duplicate detection
 
 - `issues/open/694-implement-arrayToLocaleStringES-unknown-unsupported.md` - Implement Arraytolocalestringes Unknown Unsupported (same feature label, title overlap)
-- `issues/open/5282-parse-labeled-empty-statements.md` is related but
+- `issues/done/5282-parse-labeled-empty-statements.md` is related but
   distinct; it owns labeled empty statements, not ordinary `;;` inside switch
   case bodies.
 

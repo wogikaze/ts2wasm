@@ -143,7 +143,7 @@ Follow-up issues:
 Related paths from the same generated bucket are owned by issue 5161 (`declare const f`) and issue 5192 (`instanceof Derived1` class value).
 
 Also supersedes generated bucket
-`issues/done/3447-implement-narrowSwitchOptionalChainContainmentEvolvingArrayNoCrash.md`.
+`issues/open/3447-implement-narrowSwitchOptionalChainContainmentEvolvingArrayNoCrash.md`.
 Fresh triage for `narrowSwitchOptionalChainContainmentEvolvingArrayNoCrash1.ts`
 parses the optional-chain switch discriminants and the first unbraced case body,
 then stops inside the second braced case body at `bar.push("baz");` with

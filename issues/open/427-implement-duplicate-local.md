@@ -126,11 +126,11 @@ Follow-up issues:
 ## Duplicate detection
 
 - `issues/open/064-implement-name-resolution.md` - Implement name resolution (triaged - superseded by test262 metadata issues) (same reference path, title overlap)
-- `issues/done/060-investigate-unknown-unsupported-cases.md` - Investigate and classify unknown-unsupported diagnostic cases (same feature label, same group key)
-- `issues/done/237-implement-annexb-ishtmldda-compatibility.md` - Implement Annex B IsHTMLDDA compatibility (same reference path, title overlap)
+- `issues/open/060-investigate-unknown-unsupported-cases.md` - Investigate and classify unknown-unsupported diagnostic cases (same feature label, same group key)
+- `issues/open/237-implement-annexb-ishtmldda-compatibility.md` - Implement Annex B IsHTMLDDA compatibility (same reference path, title overlap)
 - `issues/done/298-allow-reused-for-loop-local-names.md` - Allow reused for-loop local names in separate loop scopes (same feature label, same group key)
-- `issues/done/337-implement-test262-features-directive.md` - Implement test262 features directive and $262 object (same reference path, title overlap)
-- `issues/done/406-direct-eval-annexb-existing-binding-residuals.md` - Direct eval Annex B existing binding residuals (same feature label, same group key)
+- `issues/open/337-implement-test262-features-directive.md` - Implement test262 features directive and $262 object (same reference path, title overlap)
+- `issues/open/406-direct-eval-annexb-existing-binding-residuals.md` - Direct eval Annex B existing binding residuals (same feature label, same group key)
 
 ## Smart triage
 
@@ -859,7 +859,7 @@ error: [DuplicateLocal] duplicate local binding: `$262` at 1426..1440
 ## 重複整理メモ
 
 この issue はタイトルが重複しているため、内容がより充実している
-`issues/done/5013-implement-duplicate-local.md` に統合されました。
+`issues/open/5013-implement-duplicate-local.md` に統合されました。
 そちらを参照してください。
 ## Completion evidence
 
@@ -890,7 +890,7 @@ Classification: truly-done.
 Audit result: retained in `issues/done/`. The issue has repo-local completion evidence, is not marked `blocked` or `triage-needed`, and `python scripts/manager.py check issues` validates the resulting issue graph.
 
 Evidence files:
-- `issues/done/427-implement-duplicate-local.md`
+- `issues/open/427-implement-duplicate-local.md`
 - `issues/index.md` after regeneration
 
 Future-work tracking: no untracked future-work item was identified in this issue during this metadata/evidence audit.

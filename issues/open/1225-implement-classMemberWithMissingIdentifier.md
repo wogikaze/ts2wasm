@@ -19,7 +19,7 @@ updated: 2026-05-06
 
 Closed by splitting the current missing class member identifier parser
 diagnostic to
-`issues/done/5265-report-missing-class-member-identifier-after-modifier.md`.
+`issues/open/5265-report-missing-class-member-identifier-after-modifier.md`.
 
 ## Problem
 
@@ -116,7 +116,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] `issues/done/5265-report-missing-class-member-identifier-after-modifier.md`
+- [x] `issues/open/5265-report-missing-class-member-identifier-after-modifier.md`
 
 ## Notes
 
@@ -178,7 +178,7 @@ classMemberWithMissingIdentifier2.ts:
 
 Split issue:
 
-- `issues/done/5265-report-missing-class-member-identifier-after-modifier.md`
+- `issues/open/5265-report-missing-class-member-identifier-after-modifier.md`
 
 ## Completion evidence
 
@@ -186,7 +186,7 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- Split to `issues/done/5265-report-missing-class-member-identifier-after-modifier.md`; see local commit for this issue cleanup.
+- Split to `issues/open/5265-report-missing-class-member-identifier-after-modifier.md`; see local commit for this issue cleanup.
 
 Validation result:
 

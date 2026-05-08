@@ -111,7 +111,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] created: `issues/done/5231-w0-typed-wat-writer-expr-emit-migration.md`
+- [x] created: `issues/open/5231-parse-export-as-namespace-declarations.md`
 
 ## Notes
 
@@ -121,14 +121,14 @@ Follow-up issues:
 
 ## Duplicate detection
 
-Fresh duplicate scan found `issues/done/609-implement-ambientExportDefaultErrors.md`,
+Fresh duplicate scan found `issues/open/609-implement-ambientExportDefaultErrors.md`,
 which hits the same `export as namespace` syntax, but it is still a broad
 blocked generated bucket. This bucket was split to the exact parser slice
 instead of depending on another blocked bucket.
 
 Related but no-match:
 
-- `issues/done/609-implement-ambientExportDefaultErrors.md` is a generated
+- `issues/open/609-implement-ambientExportDefaultErrors.md` is a generated
   bucket with the same first syntax boundary.
 - Broad import/export buckets are not implementation-ready work orders.
 
@@ -186,7 +186,7 @@ TypeScript oracle: TS1315 Global module exports may only appear in declaration f
 
 Split result:
 
-- `issues/done/5231-w0-typed-wat-writer-expr-emit-migration.md`
+- `issues/open/5231-parse-export-as-namespace-declarations.md`
 
 ## Completion evidence
 

@@ -157,15 +157,15 @@ Follow-up issues:
 
 ## Notes
 
-Split from `issues/done/1474-implement-constructorOverloads-name-resolution.md`
+Split from `issues/open/1474-implement-constructorOverloads-name-resolution.md`
 on 2026-05-07.
 
 Related but not exact:
 
-- `issues/done/5334-parse-class-constructor-overload-signatures.md` handles
+- `issues/open/5334-parse-class-constructor-overload-signatures.md` handles
   valid runtime class overload signatures; this issue handles invalid bodies in
   ambient class declarations.
-- `issues/done/5261-report-class-typed-missing-instance-method-calls.md`
+- `issues/open/5261-report-class-typed-missing-instance-method-calls.md`
   handles missing methods on known class-typed ambient locals; this issue should
   prevent `constructorOverloads6.ts` from reaching that method-call family.
 

@@ -76,8 +76,8 @@ Out of scope:
 Expected:
 
 - `scripts/run/abc451-runtime-costs.py`
-- `issues/done/366-add-arraypushgrow-miss-attribution-diagnostic.md`
-- `issues/done/365-reduce-abc451-array-growth-allocation-copy-pressure.md`
+- `issues/open/366-add-arraypushgrow-miss-attribution-diagnostic.md`
+- `issues/open/365-reduce-abc451-array-growth-allocation-copy-pressure.md`
 - `issues/index.md`
 
 Do not touch:
@@ -242,7 +242,7 @@ Classification: truly-done.
 Audit result: retained in `issues/done/`. The issue has repo-local completion evidence, is not marked `blocked` or `triage-needed`, and `python scripts/manager.py check issues` validates the resulting issue graph.
 
 Evidence files:
-- `issues/done/366-add-arraypushgrow-miss-attribution-diagnostic.md`
+- `issues/open/366-add-arraypushgrow-miss-attribution-diagnostic.md`
 - `issues/index.md` after regeneration
 
 Future-work tracking: no untracked future-work item was identified in this issue during this metadata/evidence audit.

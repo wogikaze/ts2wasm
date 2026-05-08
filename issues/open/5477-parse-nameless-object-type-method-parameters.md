@@ -129,7 +129,7 @@ Follow-up issues:
 
 ## Notes
 
-Split from `issues/done/3548-implement-noImplicitAnyNamelessParameter.md`.
+Split from `issues/open/3548-implement-noImplicitAnyNamelessParameter.md`.
 
 Related but not duplicates:
 

@@ -148,7 +148,7 @@ Follow-up issues:
 
 ## Notes
 
-Split from `issues/done/3536-implement-noImplicitAnyForIn.md`.
+Split from `issues/open/3536-implement-noImplicitAnyForIn.md`.
 
 Related but not duplicates:
 

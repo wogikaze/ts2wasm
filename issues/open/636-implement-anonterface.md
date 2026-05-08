@@ -116,7 +116,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/178-implement-anonterface.md` - Implement Anonterface (same reference path, same group key, title overlap)
+- `issues/open/178-implement-anonterface.md` - Implement Anonterface (same reference path, same group key, title overlap)
 
 ## Smart triage
 

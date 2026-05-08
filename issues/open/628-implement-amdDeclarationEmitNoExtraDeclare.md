@@ -116,8 +116,8 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/170-implement-amdDeclarationEmitNoExtraDeclare.md` - Implement Amddeclarationemitnoextradeclare (same reference path, same feature label, same group key, title overlap)
-- `issues/done/424-implement-declaration-emit.md` - Implement declaration-emit support (same feature label, same group key, title overlap)
+- `issues/open/170-implement-amdDeclarationEmitNoExtraDeclare.md` - Implement Amddeclarationemitnoextradeclare (same reference path, same feature label, same group key, title overlap)
+- `issues/open/424-implement-declaration-emit.md` - Implement declaration-emit support (same feature label, same group key, title overlap)
 
 ## Smart triage
 

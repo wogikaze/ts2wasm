@@ -127,8 +127,8 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/081-implement-TransportStream.md` - Implement Transportstream (same reference path, same feature label, same group key, title overlap)
-- `issues/done/442-implement-parser-syntax.md` - Implement parser syntax extensions (same feature label, same group key, title overlap)
+- `issues/open/081-implement-TransportStream.md` - Implement Transportstream (same reference path, same feature label, same group key, title overlap)
+- `issues/open/442-implement-parser-syntax.md` - Implement parser syntax extensions (same feature label, same group key, title overlap)
 
 ## Smart triage
 
@@ -410,7 +410,7 @@ error: [UnsupportedSyntax] unsupported character: @ at 20..21
 ## 重複整理メモ
 
 この issue はタイトルが重複しているため、内容がより充実している
-`issues/done/553-implement-TransportStream.md` に統合されました。
+`issues/open/553-implement-TransportStream.md` に統合されました。
 そちらを参照してください。
 ## Completion evidence
 

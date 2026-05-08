@@ -115,8 +115,8 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/132-implement-allowJsClassThisTypeCrash.md` - Implement Allowjsclassthistypecrash (same reference path, same group key, title overlap)
-- `issues/done/511-implement-allowJsClassThisTypeCrash.md` - Implement Allowjsclassthistypecrash (same reference path, same feature label, same group key, title overlap)
+- `issues/open/132-implement-allowJsClassThisTypeCrash.md` - Implement Allowjsclassthistypecrash (same reference path, same group key, title overlap)
+- `issues/open/511-implement-allowJsClassThisTypeCrash.md` - Implement Allowjsclassthistypecrash (same reference path, same feature label, same group key, title overlap)
 
 ## Smart triage
 

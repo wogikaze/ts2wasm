@@ -121,7 +121,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/4228-implement-standaloneBreak.md` has the same standalone `break;` evidence and was closed in the same triage slice.
+- `issues/open/4228-implement-standaloneBreak.md` has the same standalone `break;` evidence and was closed in the same triage slice.
 - `issues/done/035-implement-break-continue.md` owns break/continue statement support and the current invalid-break diagnostic behavior.
 - Switch implementation issues are not matches: no switch syntax is present in this reference case.
 

@@ -118,9 +118,9 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/092-implement-accessOverriddenBaseClassMember.md` - Implement Accessoverriddenbaseclassmember (same reference path, same feature label, same group key, title overlap)
-- `issues/done/460-implement-ClassDeclaration.md` - Implement Classdeclaration (same feature label, same group key, title overlap)
-- `issues/done/477-implement-accessOverriddenBaseClassMember.md` - Implement Accessoverriddenbaseclassmember (same reference path, same feature label, same group key, title overlap)
+- `issues/open/092-implement-accessOverriddenBaseClassMember.md` - Implement Accessoverriddenbaseclassmember (same reference path, same feature label, same group key, title overlap)
+- `issues/open/460-implement-ClassDeclaration.md` - Implement Classdeclaration (same feature label, same group key, title overlap)
+- `issues/open/477-implement-accessOverriddenBaseClassMember.md` - Implement Accessoverriddenbaseclassmember (same reference path, same feature label, same group key, title overlap)
 
 ## Smart triage
 
@@ -702,6 +702,6 @@ Violated acceptance: the issue cannot provide repo-local close evidence for its 
 
 Evidence files:
 - open issue file before this move
-- `issues/done/563-implement-accessOverriddenBaseClassMember.md` after this move
+- `issues/open/563-implement-accessOverriddenBaseClassMember.md` after this move
 
 Split follow-up: none created in this audit wave; this reopened issue remains the tracking item.

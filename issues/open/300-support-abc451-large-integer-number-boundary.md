@@ -83,8 +83,8 @@ Expected:
 - `crates/cli/tests/`
 - `fixtures/core-semantics/`
 - `fixtures/atcoder/`
-- `issues/done/294-support-abc451-d-original-submission-without-source-rewrite.md`
-- `issues/done/300-support-abc451-large-integer-number-boundary.md`
+- `issues/open/294-support-abc451-d-original-submission-without-source-rewrite.md`
+- `issues/open/300-support-abc451-large-integer-number-boundary.md`
 
 Do not touch:
 

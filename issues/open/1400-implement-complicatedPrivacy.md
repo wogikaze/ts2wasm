@@ -120,7 +120,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] created: `issues/done/5294-resolve-sibling-namespaces-in-nested-namespace-scopes.md`
+- [x] created: `issues/open/5294-resolve-sibling-namespaces-in-nested-namespace-scopes.md`
 
 ## Notes
 

@@ -127,7 +127,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/140-implement-ambientClassDeclarationWithExtends.md` - Implement Ambientclassdeclarationwithextends (same reference path, same group key, title overlap)
+- `issues/open/140-implement-ambientClassDeclarationWithExtends.md` - Implement Ambientclassdeclarationwithextends (same reference path, same group key, title overlap)
 
 ## Smart triage
 
@@ -619,7 +619,7 @@ error: [UnsupportedModule] issue-399: TypeScript namespace/internal module decla
 ## 重複整理メモ
 
 この issue はタイトルが重複しているため、内容がより充実している
-`issues/done/604-implement-ambientClassDeclarationWithExtends.md` に統合されました。
+`issues/open/604-implement-ambientClassDeclarationWithExtends.md` に統合されました。
 そちらを参照してください。
 ## Completion evidence
 

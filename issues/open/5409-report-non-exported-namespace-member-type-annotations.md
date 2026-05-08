@@ -16,7 +16,7 @@ updated: 2026-05-08
 Report a TS2694-like diagnostic when a qualified type annotation references a
 non-exported member of a namespace.
 
-This issue was split from `issues/done/3328-implement-moduleClassArrayCodeGenTest.md`.
+This issue was split from `issues/open/3328-implement-moduleClassArrayCodeGenTest.md`.
 
 ## Problem
 
@@ -130,7 +130,7 @@ Related but not duplicates:
 - `issues/open/5397-report-missing-namespace-alias-member-diagnostic.md` covers
   import-equals aliases.
 
-Also owns `issues/done/3434-implement-namespacesDeclaration.md`: fresh triage
+Also owns `issues/open/3434-implement-namespacesDeclaration.md`: fresh triage
 shows `namespacesDeclaration2.ts` build-passes while TypeScript reports TS2694
 for qualified type annotations `N.S`, `M.F`, and `ns.A`. The first two refer
 to non-exported namespace functions; the ambient `ns.A` case is the same

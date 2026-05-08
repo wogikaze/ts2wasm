@@ -116,7 +116,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/144-implement-ambientConstLiterals.md` - Implement Ambientconstliterals (same reference path, same group key, title overlap)
+- `issues/open/144-implement-ambientConstLiterals.md` - Implement Ambientconstliterals (same reference path, same group key, title overlap)
 
 ## Smart triage
 
@@ -789,7 +789,7 @@ error: [UnsupportedTypeScriptSyntax] TypeScript enum declarations require an exp
 ## 重複整理メモ
 
 この issue はタイトルが重複しているため、内容がより充実している
-`issues/done/606-implement-ambientConstLiterals.md` に統合されました。
+`issues/open/606-implement-ambientConstLiterals.md` に統合されました。
 そちらを参照してください。
 ## Completion evidence
 
@@ -820,7 +820,7 @@ Classification: truly-done.
 Audit result: retained in `issues/done/`. The issue has repo-local completion evidence, is not marked `blocked` or `triage-needed`, and `python scripts/manager.py check issues` validates the resulting issue graph.
 
 Evidence files:
-- `issues/done/520-implement-ambientConstLiterals.md`
+- `issues/open/520-implement-ambientConstLiterals.md`
 - `issues/index.md` after regeneration
 
 Future-work tracking: no untracked future-work item was identified in this issue during this metadata/evidence audit.

@@ -110,7 +110,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] split to `issues/done/5367-support-named-default-class-export-declarations.md`
+- [x] split to `issues/open/5367-support-named-default-class-export-declarations.md`
 
 ## Notes
 
@@ -147,7 +147,7 @@ TypeScript oracle: accepted with no diagnostics. AST top level includes
 for `Operation`.
 
 This bucket was split to
-`issues/done/5367-support-named-default-class-export-declarations.md`.
+`issues/open/5367-support-named-default-class-export-declarations.md`.
 
 ## Completion evidence
 

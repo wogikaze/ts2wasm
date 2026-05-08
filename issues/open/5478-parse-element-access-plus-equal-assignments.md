@@ -131,7 +131,7 @@ Follow-up issues:
 ## Notes
 
 Split from
-`issues/done/3552-implement-noImplicitAnyStringIndexerOnObject.md`.
+`issues/open/3552-implement-noImplicitAnyStringIndexerOnObject.md`.
 
 Related but not duplicates:
 

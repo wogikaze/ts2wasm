@@ -120,8 +120,8 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/112-implement-aliasBug.md` - Implement Aliasbug (same reference path, same group key, title overlap)
-- `issues/done/492-implement-aliasBug.md` - Implement Aliasbug (same reference path, same feature label, same group key, title overlap)
+- `issues/open/112-implement-aliasBug.md` - Implement Aliasbug (same reference path, same group key, title overlap)
+- `issues/open/492-implement-aliasBug.md` - Implement Aliasbug (same reference path, same feature label, same group key, title overlap)
 
 ## Smart triage
 

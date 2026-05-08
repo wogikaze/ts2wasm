@@ -116,7 +116,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/173-implement-amdLikeInputDeclarationEmit.md` - Implement Amdlikeinputdeclarationemit (same reference path, same group key, title overlap)
+- `issues/open/173-implement-amdLikeInputDeclarationEmit.md` - Implement Amdlikeinputdeclarationemit (same reference path, same group key, title overlap)
 
 ## Smart triage
 

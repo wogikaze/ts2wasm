@@ -166,7 +166,7 @@ Related but not duplicates:
   bucket that includes the same lexer failure for `escape('\u{10401}')`.
 - `issues/open/4642-implement-unicodeStringLiteral.md` is a generated
   string-literal bucket that still needs smart triage.
-- `issues/done/293-parse-unicode-escaped-identifier-parts.md` covers
+- `issues/open/293-parse-unicode-escaped-identifier-parts.md` covers
   identifier escapes, not string literal code point escapes.
 
 ## Completion evidence

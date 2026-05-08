@@ -120,7 +120,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] superseded by `issues/done/5288-parse-typed-modified-static-class-fields.md`
+- [x] superseded by `issues/open/5288-parse-typed-modified-static-class-fields.md`
 - [x] related subset: `issues/open/5271-parse-modified-static-class-fields.md`
 
 ## Notes
@@ -131,7 +131,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/5288-parse-typed-modified-static-class-fields.md` - exact owner for `public/private static name: Type` class fields after accessibility modifiers
+- `issues/open/5288-parse-typed-modified-static-class-fields.md` - exact owner for `public/private static name: Type` class fields after accessibility modifiers
 - `issues/open/5271-parse-modified-static-class-fields.md` - related untyped `private static x = 10` / `public static y = 10` subset
 - Broad parser-syntax buckets are no-match for this current evidence because 5288 is the narrower implementation-ready owner.
 
@@ -202,7 +202,7 @@ AST path: ClassDeclaration -> PropertyDeclaration -> Identifier `_a`
 
 Superseding owner:
 
-- `issues/done/5288-parse-typed-modified-static-class-fields.md`
+- `issues/open/5288-parse-typed-modified-static-class-fields.md`
 
 ## Completion evidence
 

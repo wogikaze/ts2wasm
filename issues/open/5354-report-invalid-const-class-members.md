@@ -86,7 +86,7 @@ Out of scope:
 - Full TypeScript diagnostic-code parity.
 - Static `static const H = 1;` class declaration coverage already represented
   by prior done buckets such as
-  `issues/done/547-implement-ClassDeclarationWithInvalidConstOnPropertyDeclaration.md`.
+  `issues/open/547-implement-ClassDeclarationWithInvalidConstOnPropertyDeclaration.md`.
 - General class field implementation beyond the invalid `const` modifier case.
 
 ## Affected paths

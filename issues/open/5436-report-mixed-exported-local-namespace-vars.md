@@ -119,16 +119,16 @@ Follow-up issues:
 
 ## Notes
 
-Split from generated bucket `issues/done/3416-implement-multivar.md`.
+Split from generated bucket `issues/open/3416-implement-multivar.md`.
 
 Related but not duplicates:
 
-- `issues/open/5283-support-entry-export-var-declarations.md` and
-  `issues/open/5285-support-export-var-initializer-declarations.md` cover
+- `issues/done/5283-support-entry-export-var-declarations.md` and
+  `issues/done/5285-support-export-var-initializer-declarations.md` cover
   entry-module export-var parser/module boundaries, not namespace merge
   diagnostics after `multivar.ts` already build-passes.
 - Older stale buckets such as
-  `issues/done/1290-implement-collisionExportsRequireAndAmbientVar.md` record
+  `issues/open/1290-implement-collisionExportsRequireAndAmbientVar.md` record
   TS2395 as remaining semantic parity risk but do not provide an
   implementation-ready owner.
 

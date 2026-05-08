@@ -122,7 +122,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] created: `issues/done/5296-parse-double-dot-numeric-literal-property-access.md`
+- [x] created: `issues/open/5296-parse-double-dot-numeric-literal-property-access.md`
 
 ## Notes
 
@@ -133,7 +133,7 @@ Follow-up issues:
 ## Duplicate detection
 
 Fresh smart triage listed `issues/open/1406-implement-computedEnumMemberSyntacticallyString-parser-syntax.md`,
-`issues/done/428-implement-enum.md`, and enum-related done issues. Issue 1406
+`issues/open/428-implement-enum.md`, and enum-related done issues. Issue 1406
 tracks the sibling `computedEnumMemberSyntacticallyString2.ts` reference path,
 which does not start with `2..toFixed(0)`. Issue 428 is a broad generated enum
 bucket whose body currently points at unrelated test262 non-enumerable-global

@@ -126,16 +126,16 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/1102-implement-callbackArgsDifferByOptionality.md` - Implement Callbackargsdifferbyoptionality (same feature label, same group key, title overlap; closed into issue 5200)
-- `issues/done/1166-implement-circularTypeArgumentsLocalAndOuterNoCrash.md` - Implement Circulartypeargumentslocalandouternocrash (same feature label, same group key, title overlap; stale build-pass)
-- `issues/done/1170-implement-class.md` - Implement Class (same feature label, same group key, title overlap; split to issue 5246)
-- `issues/done/1218-implement-classImplementsMethodWIthTupleArgs.md` - Implement Classimplementsmethodwithtupleargs (same feature label, same group key, title overlap; stale build-pass)
-- `issues/done/1266-implement-collisionArgumentsArrowFunctions.md` - Implement Collisionargumentsarrowfunctions (same feature label, same group key, title overlap)
-- `issues/done/1267-implement-collisionArgumentsClassConstructor.md` - Implement Collisionargumentsclassconstructor (same feature label, same group key, title overlap)
-- `issues/done/1268-implement-collisionArgumentsClassMethod.md` - Implement Collisionargumentsclassmethod (same feature label, same group key, title overlap)
-- `issues/done/1269-implement-collisionArgumentsFunction.md` - Implement Collisionargumentsfunction (same feature label, same group key, title overlap)
-- `issues/done/1270-implement-collisionArgumentsFunctionExpressions.md` - Implement Collisionargumentsfunctionexpressions (same feature label, same group key, title overlap)
-- `issues/done/1470-implement-constructorArgsErrors.md` - Implement Constructorargserrors (same feature label, same group key, title overlap)
+- `issues/open/1102-implement-callbackArgsDifferByOptionality.md` - Implement Callbackargsdifferbyoptionality (same feature label, same group key, title overlap; closed into issue 5200)
+- `issues/open/1166-implement-circularTypeArgumentsLocalAndOuterNoCrash.md` - Implement Circulartypeargumentslocalandouternocrash (same feature label, same group key, title overlap; stale build-pass)
+- `issues/open/1170-implement-class.md` - Implement Class (same feature label, same group key, title overlap; split to issue 5246)
+- `issues/open/1218-implement-classImplementsMethodWIthTupleArgs.md` - Implement Classimplementsmethodwithtupleargs (same feature label, same group key, title overlap; stale build-pass)
+- `issues/open/1266-implement-collisionArgumentsArrowFunctions.md` - Implement Collisionargumentsarrowfunctions (same feature label, same group key, title overlap)
+- `issues/open/1267-implement-collisionArgumentsClassConstructor.md` - Implement Collisionargumentsclassconstructor (same feature label, same group key, title overlap)
+- `issues/open/1268-implement-collisionArgumentsClassMethod.md` - Implement Collisionargumentsclassmethod (same feature label, same group key, title overlap)
+- `issues/open/1269-implement-collisionArgumentsFunction.md` - Implement Collisionargumentsfunction (same feature label, same group key, title overlap)
+- `issues/open/1270-implement-collisionArgumentsFunctionExpressions.md` - Implement Collisionargumentsfunctionexpressions (same feature label, same group key, title overlap)
+- `issues/open/1470-implement-constructorArgsErrors.md` - Implement Constructorargserrors (same feature label, same group key, title overlap)
 
 ## Smart triage
 
@@ -189,7 +189,7 @@ Classification: truly-done.
 Audit result: retained in `issues/done/`. The issue has repo-local completion evidence, is not marked `blocked` or `triage-needed`, and `python scripts/manager.py check issues` validates the resulting issue graph.
 
 Evidence files:
-- `issues/done/5061-implement-arguments-object.md`
+- `issues/open/5061-implement-arguments-object.md`
 - `issues/index.md` after regeneration
 
 Future-work tracking: no untracked future-work item was identified in this issue during this metadata/evidence audit.

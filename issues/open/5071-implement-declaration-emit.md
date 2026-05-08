@@ -126,11 +126,11 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/096-implement-accessorDeclarationEmitJs.md` - Implement Accessordeclarationemitjs (same feature label, same group key, title overlap)
-- `issues/done/097-implement-accessorDeclarationEmitVisibilityErrors.md` - Implement Accessordeclarationemitvisibilityerrors (same feature label, same group key, title overlap)
-- `issues/done/1179-implement-classDeclaredBeforeClassFactory.md` - Implement Classdeclaredbeforeclassfactory (same feature label, same group key, title overlap; split to issue 5252)
-- `issues/done/1249-implement-classdecl.md` - Implement Classdecl (same feature label, same group key, title overlap)
-- `issues/done/141-implement-ambientClassDeclaredBeforeBase.md` - Implement Ambientclassdeclaredbeforebase (same feature label, same group key, title overlap)
+- `issues/open/096-implement-accessorDeclarationEmitJs.md` - Implement Accessordeclarationemitjs (same feature label, same group key, title overlap)
+- `issues/open/097-implement-accessorDeclarationEmitVisibilityErrors.md` - Implement Accessordeclarationemitvisibilityerrors (same feature label, same group key, title overlap)
+- `issues/open/1179-implement-classDeclaredBeforeClassFactory.md` - Implement Classdeclaredbeforeclassfactory (same feature label, same group key, title overlap; split to issue 5252)
+- `issues/open/1249-implement-classdecl.md` - Implement Classdecl (same feature label, same group key, title overlap)
+- `issues/open/141-implement-ambientClassDeclaredBeforeBase.md` - Implement Ambientclassdeclaredbeforebase (same feature label, same group key, title overlap)
 - `issues/open/1599-implement-crashDeclareGlobalTypeofExport.md` - Implement Crashdeclareglobaltypeofexport (same feature label, same group key, title overlap)
 - `issues/open/1683-implement-declarationEmitAliasInlineing.md` - Implement Declarationemitaliasinlineing (same feature label, same group key, title overlap)
 - `issues/open/1687-implement-declarationEmitArrowFunctionNoRenaming.md` - Implement Declarationemitarrowfunctionnorenaming (same feature label, same group key, title overlap)
@@ -158,7 +158,7 @@ AttributeError: 'NoneType' object has no attribute 'parse_test262_metadata'
 ## 重複整理メモ
 
 この issue はタイトルが重複しているため、内容がより充実している
-`issues/done/424-implement-declaration-emit.md` に統合されました。
+`issues/open/424-implement-declaration-emit.md` に統合されました。
 そちらを参照してください。
 ## Completion evidence
 
@@ -189,7 +189,7 @@ Classification: truly-done.
 Audit result: retained in `issues/done/`. The issue has repo-local completion evidence, is not marked `blocked` or `triage-needed`, and `python scripts/manager.py check issues` validates the resulting issue graph.
 
 Evidence files:
-- `issues/done/5071-implement-declaration-emit.md`
+- `issues/open/5071-implement-declaration-emit.md`
 - `issues/index.md` after regeneration
 
 Future-work tracking: no untracked future-work item was identified in this issue during this metadata/evidence audit.

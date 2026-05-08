@@ -111,7 +111,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] created: `issues/done/5238-w1-implement-wasi-filesystem-read-write-through-preopens.md`
+- [x] created: `issues/open/5238-w1-implement-wasi-filesystem-read-write-through-preopens.md`
 
 ## Notes
 
@@ -125,7 +125,7 @@ Fresh duplicate scan found broad name-resolution issues and the completed
 general name-resolution contract, but no exact open issue for template
 interpolation expression spans:
 
-- `issues/done/056-implement-name-resolution.md` owns the general rule that
+- `issues/open/056-implement-name-resolution.md` owns the general rule that
   genuinely unresolved identifiers report `UnresolvedName`.
 - The current unresolved `a` is oracle-matching in diagnostic kind, but its
   compiler span is synthetic `0..1`, unlike TypeScript's source location inside
@@ -135,7 +135,7 @@ interpolation expression spans:
 
 Split result:
 
-- `issues/done/5238-w1-implement-wasi-filesystem-read-write-through-preopens.md`
+- `issues/open/5238-w1-implement-wasi-filesystem-read-write-through-preopens.md`
 
 ## Smart triage
 
@@ -199,7 +199,7 @@ TypeScript oracle: TS2304 Cannot find name 'a' at line 18, character 8
 
 Split result:
 
-- `issues/done/5238-w1-implement-wasi-filesystem-read-write-through-preopens.md`
+- `issues/open/5238-w1-implement-wasi-filesystem-read-write-through-preopens.md`
 
 ## Completion evidence
 

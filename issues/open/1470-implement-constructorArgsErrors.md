@@ -18,7 +18,7 @@ updated: 2026-05-07
 ## Summary
 
 Closed by splitting the current concrete blocker to
-`issues/done/5355-report-invalid-constructor-parameter-modifiers.md`.
+`issues/open/5355-report-invalid-constructor-parameter-modifiers.md`.
 
 Fresh coverage shows the group now contains two stale build-pass files and three
 shared parser/diagnostic failures for invalid constructor parameter modifiers.
@@ -152,7 +152,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] created: `issues/done/5355-report-invalid-constructor-parameter-modifiers.md`
+- [x] created: `issues/open/5355-report-invalid-constructor-parameter-modifiers.md`
 
 ## Notes
 
@@ -166,7 +166,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/226-implement-parameter-properties.md` covers valid constructor
+- `issues/open/226-implement-parameter-properties.md` covers valid constructor
   parameter properties, not invalid modifier diagnostics.
 - No existing open issue was found for TS1090-style `static` or `export`
   modifier diagnostics on parameters.

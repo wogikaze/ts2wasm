@@ -63,8 +63,8 @@ Expected:
 - `docs/05-compatibility-and-semantics.md`
 - `docs/language-reference/javascript-features.md`
 - `current-state.md`
-- `issues/done/372-implement-bigint-object-toprimitive-non-bigint-primitive-returns.md`
-- `issues/done/373-handle-bigint-object-toprimitive-invalid-out-of-range-string-returns.md`
+- `issues/open/372-implement-bigint-object-toprimitive-non-bigint-primitive-returns.md`
+- `issues/open/373-handle-bigint-object-toprimitive-invalid-out-of-range-string-returns.md`
 - `issues/done/374-design-broader-object-toprimitive-for-bigint-comparisons.md`
 - `issues/done/375-handle-non-source-backed-out-of-range-bigint-string-comparisons.md`
 - `crates/cli/tests/` only for diagnostic characterization if needed
@@ -116,7 +116,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] created: `issues/done/5130-implement-object-method-toprimitive-for-bigint-comparisons.md`
+- [x] created: `issues/open/5130-implement-object-method-toprimitive-for-bigint-comparisons.md`
 
 ## Notes
 

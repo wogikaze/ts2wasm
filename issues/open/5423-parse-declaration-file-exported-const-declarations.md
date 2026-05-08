@@ -141,18 +141,18 @@ python scripts/manager.py check-issue-readiness -- --fail-ready-below 80
 
 ## Notes
 
-Split from `issues/done/3373-implement-moduleResolutionAsTypeReferenceDirective.md`.
+Split from `issues/open/3373-implement-moduleResolutionAsTypeReferenceDirective.md`.
 Issue `5350` was checked and is intentionally kept as the executable `.ts`
 negative-diagnostic owner, not the declaration-file acceptance owner.
 
-Also owns `issues/done/3375-implement-moduleResolutionAsTypeReferenceDirectiveScoped.md`:
+Also owns `issues/open/3375-implement-moduleResolutionAsTypeReferenceDirectiveScoped.md`:
 fresh triage for `moduleResolutionAsTypeReferenceDirectiveScoped.ts` stops on
 the first virtual `.d.ts` section, `/a/types/dummy/index.d.ts`, at
 `export const dummy: number;`. The scoped type-root and `@types` package
 resolution cases are not reachable until these declaration-file exported const
 declarations parse as ambient metadata.
 
-Also owns `issues/done/3451-implement-narrowedImports.md` for
+Also owns `issues/open/3451-implement-narrowedImports.md` for
 `narrowedImports.ts`: fresh triage on 2026-05-08 stops in the `/a.d.ts`
 virtual section at `export const a1: number | undefined;` with
 `UnsupportedSyntax: const declarations require an initializer at 160..162`.

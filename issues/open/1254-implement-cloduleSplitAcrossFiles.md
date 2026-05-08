@@ -190,12 +190,12 @@ binding hint: y has type string
 
 Duplicate review:
 
-- `issues/done/5287-bind-namespace-declarations-for-qualified-value-access.md`
+- `issues/open/5287-bind-namespace-declarations-for-qualified-value-access.md`
   is related but owns same-file namespace value access, not class declarations
   shared across `@Filename` script sections.
-- `issues/done/5187-lower-namespace-only-multi-section-files.md` is related
+- `issues/open/5187-lower-namespace-only-multi-section-files.md` is related
   but owns namespace-only/declaration-only sections dropped as empty bodies.
-- `issues/done/5229-w0-user-runtime-string-origin.md` is related
+- `issues/open/5229-resolve-imports-between-filename-sections.md` is related
   but owns local import specifier resolution between virtual files.
 
 ## Completion evidence

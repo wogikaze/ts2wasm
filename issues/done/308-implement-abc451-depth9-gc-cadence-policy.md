@@ -58,7 +58,7 @@ Expected:
 - `fixtures/core-semantics/`
 - `docs/14-runtime-abi.md` if memory or GC policy changes
 - `current-state.md` if runtime facts change
-- `issues/done/300-support-abc451-large-integer-number-boundary.md`
+- `issues/open/300-support-abc451-large-integer-number-boundary.md`
 - `issues/done/308-implement-abc451-depth9-gc-cadence-policy.md`
 - `issues/index.md`
 
@@ -127,7 +127,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] created: `issues/done/309-reduce-abc451-depth9-live-allocation-shape.md`
+- [x] created: `issues/open/309-reduce-abc451-depth9-live-allocation-shape.md`
       owns the remaining allocation/live-set blocker after GC cadence and
       free-list policy slices.
 

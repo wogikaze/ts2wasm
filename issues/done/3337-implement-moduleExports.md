@@ -17,7 +17,7 @@ status: done
 
 Closed this generated import/export bucket as superseded by the completed
 name-resolution diagnostic issue:
-`issues/done/056-implement-name-resolution.md`.
+`issues/open/056-implement-name-resolution.md`.
 
 ## Problem
 
@@ -153,7 +153,7 @@ Follow-up issues:
 
 ## Notes
 
-Superseded by `issues/done/056-implement-name-resolution.md`.
+Superseded by `issues/open/056-implement-name-resolution.md`.
 
 ## Completion evidence
 

@@ -18,7 +18,7 @@ updated: 2026-05-06
 ## Summary
 
 Closed as superseded by
-`issues/done/5192-support-first-class-class-constructor-values.md`. Fresh triage
+`issues/open/5192-support-first-class-class-constructor-values.md`. Fresh triage
 shows the static class elements parse, and the current blocker is the existing
 `issue-5011` class constructor value boundary at `const oldFoo = Foo`.
 
@@ -117,7 +117,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] superseded by `issues/done/5192-support-first-class-class-constructor-values.md`
+- [x] superseded by `issues/open/5192-support-first-class-class-constructor-values.md`
 
 ## Notes
 
@@ -145,7 +145,7 @@ new oldFoo().x();
 
 ## Duplicate detection
 
-- `issues/done/5192-support-first-class-class-constructor-values.md` is an exact
+- `issues/open/5192-support-first-class-class-constructor-values.md` is an exact
   owner for the current `issue-5011` class constructor value boundary.
 - `issues/done/5011-class-runtime-value-semantics.md` documents the current
   structural rejection of class values, but 5192 is the open implementation
@@ -183,7 +183,7 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- Superseded by `issues/done/5192-support-first-class-class-constructor-values.md`; see local commit for this issue cleanup.
+- Superseded by `issues/open/5192-support-first-class-class-constructor-values.md`; see local commit for this issue cleanup.
 
 Validation result:
 

@@ -126,16 +126,16 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/1170-implement-class.md` - Implement Class (same feature label, same group key, title overlap; split to issue 5246)
+- `issues/open/1170-implement-class.md` - Implement Class (same feature label, same group key, title overlap; split to issue 5246)
 - `issues/open/2410-implement-for.md` - Implement For (same feature label, same group key, title overlap)
-- `issues/done/313-implement-array-builtin.md` - Implement array-builtin support (same feature label, same group key, title overlap)
+- `issues/open/313-implement-array-builtin.md` - Implement array-builtin support (same feature label, same group key, title overlap)
 - `issues/open/3198-implement-m.md` - Implement M (same feature label, same group key, title overlap)
-- `issues/done/414-implement-array-builtin.md` - Implement array-builtin support (same reference path, same feature label, same group key, title overlap)
-- `issues/done/434-implement-loop.md` - Implement loop constructs (same feature label, same group key, title overlap)
+- `issues/open/414-implement-array-builtin.md` - Implement array-builtin support (same reference path, same feature label, same group key, title overlap)
+- `issues/open/434-implement-loop.md` - Implement loop constructs (same feature label, same group key, title overlap)
 - `issues/open/454-implement-unknown-unsupported.md` - Investigate and classify unknown-unsupported cases (same feature label, same group key)
-- `issues/done/060-investigate-unknown-unsupported-cases.md` - Investigate and classify unknown-unsupported diagnostic cases (same feature label, same group key)
-- `issues/done/224-implement-annexb-html-comments.md` - Implement Annex B HTML-like comments (same feature label, same group key, title overlap)
-- `issues/done/406-direct-eval-annexb-existing-binding-residuals.md` - Direct eval Annex B existing binding residuals (same feature label, same group key)
+- `issues/open/060-investigate-unknown-unsupported-cases.md` - Investigate and classify unknown-unsupported diagnostic cases (same feature label, same group key)
+- `issues/open/224-implement-annexb-html-comments.md` - Implement Annex B HTML-like comments (same feature label, same group key, title overlap)
+- `issues/open/406-direct-eval-annexb-existing-binding-residuals.md` - Direct eval Annex B existing binding residuals (same feature label, same group key)
 
 ## Smart triage
 
@@ -158,7 +158,7 @@ AttributeError: 'NoneType' object has no attribute 'parse_test262_metadata'
 ## 重複整理メモ
 
 この issue はタイトルが重複しているため、内容がより充実している
-`issues/done/313-implement-array-builtin.md` に統合されました。
+`issues/open/313-implement-array-builtin.md` に統合されました。
 そちらを参照してください。
 ## Completion evidence
 
@@ -189,7 +189,7 @@ Classification: truly-done.
 Audit result: retained in `issues/done/`. The issue has repo-local completion evidence, is not marked `blocked` or `triage-needed`, and `python scripts/manager.py check issues` validates the resulting issue graph.
 
 Evidence files:
-- `issues/done/5063-implement-array-builtin.md`
+- `issues/open/5063-implement-array-builtin.md`
 - `issues/index.md` after regeneration
 
 Future-work tracking: no untracked future-work item was identified in this issue during this metadata/evidence audit.

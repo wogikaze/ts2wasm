@@ -41,8 +41,8 @@ mise run reference-coverage -- tsc --path-filter reference/typescript/tests/case
 
 This generated bucket is split/superseded by narrower issues:
 
-- `issues/open/5283-support-entry-export-var-declarations.md`
-- `issues/open/5285-support-export-var-initializer-declarations.md`
+- `issues/done/5283-support-entry-export-var-declarations.md`
+- `issues/done/5285-support-export-var-initializer-declarations.md`
 - `issues/open/5484-resolve-import-equals-require-to-virtual-node-modules-declarations.md`
 - `issues/open/5485-resolve-import-equals-require-to-virtual-node-modules-index-declarations.md`
 
@@ -136,9 +136,9 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/open/5283-support-entry-export-var-declarations.md` covers simple
+- `issues/done/5283-support-entry-export-var-declarations.md` covers simple
   typed and untyped `export var` declarations without initializers.
-- `issues/open/5285-support-export-var-initializer-declarations.md` covers
+- `issues/done/5285-support-export-var-initializer-declarations.md` covers
   initialized `export var` declarations.
 - `issues/open/5295-resolve-import-equals-require-to-virtual-node-modules-class-export.md`
   is related but not a duplicate: it covers class exports from virtual

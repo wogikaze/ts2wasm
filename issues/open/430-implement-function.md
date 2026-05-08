@@ -131,11 +131,11 @@ Follow-up issues:
 - `issues/done/052-implement-json.md` - Implement JSON (same feature label, same group key, title overlap)
 - `issues/open/052d-implement-json-stringify-broader-replacer-semantics.md` - Implement broader JSON.stringify replacer semantics (same feature label, same group key, title overlap)
 - `issues/open/064-implement-name-resolution.md` - Implement name resolution (triaged - superseded by test262 metadata issues) (same feature label, same group key, title overlap)
-- `issues/done/067-implement-unknown-unsupported.md` - Investigate and classify unknown-unsupported cases (same feature label, same group key)
-- `issues/done/070-implement-APISample.md` - Implement Apisample (same feature label, same group key, title overlap)
-- `issues/done/071-implement-ArrowFunctionExpression.md` - Implement Arrowfunctionexpression (same feature label, same group key, title overlap)
-- `issues/done/076-implement-FunctionDeclaration.md` - Implement Functiondeclaration (same feature label, same group key, title overlap)
-- `issues/done/079-implement-ParameterList.md` - Implement Parameterlist (same feature label, same group key, title overlap)
+- `issues/open/067-implement-unknown-unsupported.md` - Investigate and classify unknown-unsupported cases (same feature label, same group key)
+- `issues/open/070-implement-APISample.md` - Implement Apisample (same feature label, same group key, title overlap)
+- `issues/open/071-implement-ArrowFunctionExpression.md` - Implement Arrowfunctionexpression (same feature label, same group key, title overlap)
+- `issues/open/076-implement-FunctionDeclaration.md` - Implement Functiondeclaration (same feature label, same group key, title overlap)
+- `issues/open/079-implement-ParameterList.md` - Implement Parameterlist (same feature label, same group key, title overlap)
 
 ## Smart triage
 
@@ -782,7 +782,7 @@ Classification: truly-done.
 Audit result: retained in `issues/done/`. The issue has repo-local completion evidence, is not marked `blocked` or `triage-needed`, and `python scripts/manager.py check issues` validates the resulting issue graph.
 
 Evidence files:
-- `issues/done/430-implement-function.md`
+- `issues/open/430-implement-function.md`
 - `issues/index.md` after regeneration
 
 Future-work tracking: no untracked future-work item was identified in this issue during this metadata/evidence audit.

@@ -119,7 +119,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] superseded by `issues/done/232-resolve-local-relative-es-module-graph.md`
+- [x] superseded by `issues/open/232-resolve-local-relative-es-module-graph.md`
 
 ## Notes
 
@@ -188,7 +188,7 @@ TS2307: Cannot find module 'foo' or its corresponding type declarations.
 
 Superseded by:
 
-- `issues/done/232-resolve-local-relative-es-module-graph.md`
+- `issues/open/232-resolve-local-relative-es-module-graph.md`
 
 ## Completion evidence
 

@@ -73,7 +73,7 @@ In scope:
 Out of scope:
 
 - `export default interface Name { ... }`, tracked by `issues/open/5401-parse-export-default-interface-declarations.md`.
-- Resolving imports between virtual `@filename` sections, tracked by `issues/done/5229-w0-user-runtime-string-origin.md`.
+- Resolving imports between virtual `@filename` sections, tracked by `issues/open/5229-resolve-imports-between-filename-sections.md`.
 - General unresolved-name cleanup unrelated to type-only default exports.
 
 ## Affected paths
@@ -137,11 +137,11 @@ Follow-up issues:
 
 ## Notes
 
-Split from `issues/done/601-implement-allowSyntheticDefaultImportsCanPaintCrossModuleDeclaration.md`.
+Split from `issues/open/601-implement-allowSyntheticDefaultImportsCanPaintCrossModuleDeclaration.md`.
 
 Related: issue 5401 covers `export default interface Name { ... }`; issue 5229
 covers the later virtual-file imports `./color` and `./file1`.
-Also owns `issues/done/3324-implement-moduleAugmentationOfAlias.md`: fresh
+Also owns `issues/open/3324-implement-moduleAugmentationOfAlias.md`: fresh
 triage for `moduleAugmentationOfAlias.ts` stops at `export default I;` after a
 local `interface I {}` declaration, before the later issue 5401
 `export default interface I { x: number; }` and issue 5229 `./a`

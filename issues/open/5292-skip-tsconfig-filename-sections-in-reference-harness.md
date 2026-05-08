@@ -145,7 +145,7 @@ Follow-up issues:
 ## Notes
 
 Split from generated bucket
-`issues/done/1385-implement-commonJsIsolatedModules.md`.
+`issues/open/1385-implement-commonJsIsolatedModules.md`.
 Also owns the `tsconfig.json` subset of
 `issues/done/3380-implement-moduleResolutionWithExtensions-import-export.md`:
 fresh triage for `moduleResolutionWithExtensions_withPaths.ts` stops in the
@@ -160,7 +160,7 @@ UnsupportedSyntax/module-resolution paths, and representative triage for
 `moduleResolutionWithSuffixes_one_externalModule.ts` stops in virtual
 `/tsconfig.json` at the first JSON property colon before moduleSuffixes,
 JSON-module, JS-module, or external package behavior becomes actionable.
-Also owns `issues/done/3386-implement-moduleResolutionWithSuffixes-module-resolution.md`:
+Also owns `issues/open/3386-implement-moduleResolutionWithSuffixes-module-resolution.md`:
 fresh coverage for the listed external-module and json-module subset reports
 four UnsupportedSyntax/module-resolution paths, and representative triage for
 `moduleResolutionWithSuffixes_one_externalModulePath.ts` and
@@ -178,19 +178,19 @@ Also owns the config-section blocker from
 `nodeColonModuleResolution2.ts` stops in virtual `/a/b/tsconfig.json` at
 `compilerOptions` / `paths` property colons before `fake:thing` path mapping or
 non-local module resolution becomes actionable.
-Also owns `issues/done/3585-implement-nodeNextPackageSelfNameWithOutDirDeclDirComposite.md`:
+Also owns `issues/open/3585-implement-nodeNextPackageSelfNameWithOutDirDeclDirComposite.md`:
 fresh triage stops in virtual `tsconfig.json` at the first
 `compilerOptions` property colon before the later `package.json` section,
 package self-name `@this/package` resolution, conditional `exports`
 `default`/`types`, `outDir`/`declarationDir`, or `composite` behavior become
 actionable.
-Also owns `issues/done/3586-implement-nodeNextPackageSelfNameWithOutDirDeclDirCompositeNestedDirs.md`:
+Also owns `issues/open/3586-implement-nodeNextPackageSelfNameWithOutDirDeclDirCompositeNestedDirs.md`:
 fresh triage stops in virtual `tsconfig.json` at the first
 `compilerOptions` property colon before the later `package.json` section,
 relative export `./src/thing.js`, package self-name `@this/package`,
 conditional `exports` `default`/`types`, `outDir`/`declarationDir`, or
 `composite` nested-directory behavior become actionable.
-Also owns `issues/done/3587-implement-nodeNextPackageSelfNameWithOutDirDeclDirNestedDirs.md`:
+Also owns `issues/open/3587-implement-nodeNextPackageSelfNameWithOutDirDeclDirNestedDirs.md`:
 fresh triage stops in virtual `tsconfig.json` at the first
 `compilerOptions` property colon before the later `package.json` section,
 relative export `./src/thing.js`, package self-name `@this/package`,

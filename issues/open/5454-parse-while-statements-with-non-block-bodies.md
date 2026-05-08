@@ -18,7 +18,7 @@ statements, starting with empty-statement bodies and expression-statement
 bodies.
 
 Split from generated bucket
-`issues/done/3463-implement-narrowingPlainJsNoCrash.md`.
+`issues/open/3463-implement-narrowingPlainJsNoCrash.md`.
 
 ## Problem
 
@@ -85,7 +85,7 @@ In scope:
 Out of scope:
 
 - `do ... while` ASI behavior, tracked by
-  `issues/open/5210-parse-do-while-asi-before-block-end-or-expression.md`.
+  `issues/open/5210-array-map-sparse-array-holes.md`.
 - General `for`/`if` non-block body support unless shared parser code already
   handles it as part of statement parsing.
 - JavaScript control-flow narrowing semantics after parsing succeeds.

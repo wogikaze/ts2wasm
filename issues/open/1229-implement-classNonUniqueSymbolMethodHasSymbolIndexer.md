@@ -129,7 +129,7 @@ Follow-up issues:
 ## Duplicate detection
 
 - `issues/done/5251-parse-computed-class-member-names-in-class-declarations.md` - exact feature family for computed class member names in class declarations, including instance computed methods
-- `issues/done/5214-computed-symbol-iterator-prerequisite-for-spread.md` - related class-expression shape, not exact for this top-level class declaration
+- `issues/open/5214-computed-symbol-iterator-prerequisite-for-spread.md` - related class-expression shape, not exact for this top-level class declaration
 
 ## Smart triage
 

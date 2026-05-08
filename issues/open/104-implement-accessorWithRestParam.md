@@ -52,7 +52,7 @@ error: [BackendIo] wat2wasm failed
 
 ## Desired final state
 
-This generated bucket is closed as superseded by `issues/done/5157-report-set-accessor-rest-parameter-diagnostic.md`. Do not implement directly from this bucket.
+This generated bucket is closed as superseded by `issues/open/5157-report-set-accessor-rest-parameter-diagnostic.md`. Do not implement directly from this bucket.
 
 ## Scope
 
@@ -123,7 +123,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] created: `issues/done/5157-report-set-accessor-rest-parameter-diagnostic.md`
+- [x] created: `issues/open/5157-report-set-accessor-rest-parameter-diagnostic.md`
 
 ## Notes
 
@@ -133,7 +133,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/422-implement-class-accessor.md` is the broad class-accessor triage bucket, not an executable child for this exact setter rest-parameter diagnostic.
+- `issues/open/422-implement-class-accessor.md` is the broad class-accessor triage bucket, not an executable child for this exact setter rest-parameter diagnostic.
 - No existing implementation-ready issue matched the exact TS1053 setter rest-parameter shape.
 
 ## Smart triage
@@ -200,7 +200,7 @@ Issue 5157 now owns the concrete frontend diagnostic contract. The shared backen
 
 Commits:
 
-- superseded by `issues/done/5157-report-set-accessor-rest-parameter-diagnostic.md`
+- superseded by `issues/open/5157-report-set-accessor-rest-parameter-diagnostic.md`
 
 Validation result:
 

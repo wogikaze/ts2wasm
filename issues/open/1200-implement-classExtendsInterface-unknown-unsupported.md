@@ -18,7 +18,7 @@ updated: 2026-05-06
 ## Summary
 
 Closed by splitting the current class heritage diagnostic boundary to
-`issues/done/5256-report-non-constructor-class-heritage-expressions.md`.
+`issues/open/5256-report-non-constructor-class-heritage-expressions.md`.
 
 ## Problem
 
@@ -115,7 +115,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] `issues/done/5256-report-non-constructor-class-heritage-expressions.md`
+- [x] `issues/open/5256-report-non-constructor-class-heritage-expressions.md`
 
 ## Notes
 
@@ -131,7 +131,7 @@ class C extends "".bogus {}
 
 ## Duplicate detection
 
-- `issues/done/694-implement-arrayToLocaleStringES-unknown-unsupported.md` - Implement Arraytolocalestringes Unknown Unsupported (same feature label, title overlap)
+- `issues/open/694-implement-arrayToLocaleStringES-unknown-unsupported.md` - Implement Arraytolocalestringes Unknown Unsupported (same feature label, title overlap)
 
 ## Smart triage
 
@@ -163,7 +163,7 @@ expression.
 
 Split issue:
 
-- `issues/done/5256-report-non-constructor-class-heritage-expressions.md`
+- `issues/open/5256-report-non-constructor-class-heritage-expressions.md`
 
 ## Completion evidence
 
@@ -171,7 +171,7 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- Split to `issues/done/5256-report-non-constructor-class-heritage-expressions.md`; see local commit for this issue cleanup.
+- Split to `issues/open/5256-report-non-constructor-class-heritage-expressions.md`; see local commit for this issue cleanup.
 
 Validation result:
 

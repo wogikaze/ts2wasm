@@ -84,7 +84,7 @@ Follow-up issues: none.
 
 ## Notes
 
-Split from `issues/done/620-implement-ambientModules.md` on 2026-05-08.
+Split from `issues/open/620-implement-ambientModules.md` on 2026-05-08.
 Depends on 5370 because root ambient namespace binding must exist first.
 
 ## Completion evidence

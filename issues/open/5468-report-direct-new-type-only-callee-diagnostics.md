@@ -17,7 +17,7 @@ Report TypeScript-style diagnostics for direct `new` expressions whose callee is
 a type-only primitive name such as `any` or `boolean`.
 
 Split from generated bucket
-`issues/done/3504-implement-newNonReferenceType.md`.
+`issues/open/3504-implement-newNonReferenceType.md`.
 
 ## Problem
 

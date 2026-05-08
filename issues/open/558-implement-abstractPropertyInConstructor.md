@@ -121,15 +121,15 @@ Follow-up issues:
 
 - Split current failure to
   `issues/open/5390-report-abstract-property-constructor-access-diagnostics.md`.
-- `issues/done/5261-report-class-typed-missing-instance-method-calls.md` is
+- `issues/open/5261-report-class-typed-missing-instance-method-calls.md` is
   related but not exact: it handles class-typed ambient locals whose requested
   instance method is missing.
-- `issues/done/5322-support-callable-class-auto-accessor-fields.md` is related
+- `issues/open/5322-support-callable-class-auto-accessor-fields.md` is related
   but not exact: it handles callable auto-accessor fields, not abstract
   property constructor diagnostics.
 
-- `issues/done/087-implement-abstractPropertyInConstructor.md` - Implement Abstractpropertyinconstructor (same reference path, same feature label, same group key, title overlap)
-- `issues/done/472-implement-abstractPropertyInConstructor.md` - Implement Abstractpropertyinconstructor (same reference path, same feature label, same group key, title overlap)
+- `issues/open/087-implement-abstractPropertyInConstructor.md` - Implement Abstractpropertyinconstructor (same reference path, same feature label, same group key, title overlap)
+- `issues/open/472-implement-abstractPropertyInConstructor.md` - Implement Abstractpropertyinconstructor (same reference path, same feature label, same group key, title overlap)
 
 ## Smart triage
 

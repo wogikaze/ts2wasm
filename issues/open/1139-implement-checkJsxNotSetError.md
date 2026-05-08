@@ -112,7 +112,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] created: `issues/done/5230-w0-lowered-ir-span-requirement.md`
+- [x] created: `issues/open/5230-w0-lowered-ir-span-requirement.md`
 
 ## Notes
 
@@ -187,7 +187,7 @@ TypeScript oracle: TS2304 for div, TS2552 for foo, TS1161 for the closing tag
 
 Split result:
 
-- `issues/done/5230-w0-lowered-ir-span-requirement.md`
+- `issues/open/5230-w0-lowered-ir-span-requirement.md`
 
 ## Completion evidence
 

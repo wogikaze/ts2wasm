@@ -108,7 +108,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] created: `issues/done/5167-support-global-symbol-builtin-call.md`
+- [x] created: `issues/open/5167-support-global-symbol-builtin-call.md`
 
 ## Notes
 
@@ -131,7 +131,7 @@ Generated on 2026-05-06.
 - Visible symbols before failure: `arr`, `num`, `key`, `bigNum`, `typedArray`
 - Compiler evidence: tokens and AST succeed; resolved/lowered pipeline fails at builtin/function resolution for global `Symbol()`.
 - TypeScript oracle: intended reference diagnostics are BigInt index/type diagnostics, including `Type 'bigint' cannot be used as an index type.`
-- Split child: `issues/done/5167-support-global-symbol-builtin-call.md`
+- Split child: `issues/open/5167-support-global-symbol-builtin-call.md`
 
 ## Completion evidence
 

@@ -87,7 +87,7 @@ Violated acceptance: the issue cannot provide repo-local close evidence for its 
 Evidence files:
 - `crates/frontend/src/ast.rs`
 - `crates/frontend/src/parser/tests.rs`
-- `issues/done/5041-frontend-expr-fixture-coverage.md`
+- `issues/open/5041-frontend-expr-fixture-coverage.md`
 
 Split follow-up: none created in this audit wave; this reopened issue remains the tracking item.
 

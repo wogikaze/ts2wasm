@@ -110,8 +110,8 @@ Current state:
 
 Follow-up issues:
 
-- [x] added: `issues/done/5381-parse-arrow-functions-in-ternary-branches.md`
-- [x] added: `issues/done/5382-parse-typed-arrow-ternary-branches.md`
+- [x] added: `issues/open/5381-parse-arrow-functions-in-ternary-branches.md`
+- [x] added: `issues/open/5382-parse-typed-arrow-ternary-branches.md`
 
 ## Notes
 
@@ -122,7 +122,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- No exact existing owner found. `issues/done/5160-lower-plain-ternary-conditional-expressions.md`
+- No exact existing owner found. `issues/open/5160-lower-plain-ternary-conditional-expressions.md`
   is related but starts after parser success; this bucket currently stops
   during AST construction on arrow-function ternary branches.
 
@@ -159,9 +159,9 @@ TypeScript AST: ConditionalExpression with ArrowFunction branch nodes
 ```
 
 The generated bucket was split to
-`issues/done/5381-parse-arrow-functions-in-ternary-branches.md` for the
+`issues/open/5381-parse-arrow-functions-in-ternary-branches.md` for the
 untyped branch case and
-`issues/done/5382-parse-typed-arrow-ternary-branches.md` for the typed branch
+`issues/open/5382-parse-typed-arrow-ternary-branches.md` for the typed branch
 case.
 
 ## Completion evidence
@@ -171,8 +171,8 @@ Fill only when moving to `done/`.
 Commits:
 
 - child issues:
-  `issues/done/5381-parse-arrow-functions-in-ternary-branches.md`,
-  `issues/done/5382-parse-typed-arrow-ternary-branches.md`
+  `issues/open/5381-parse-arrow-functions-in-ternary-branches.md`,
+  `issues/open/5382-parse-typed-arrow-ternary-branches.md`
 
 Validation result:
 

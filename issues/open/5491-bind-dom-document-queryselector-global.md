@@ -153,7 +153,7 @@ Follow-up issues:
 ## Notes
 
 Split from generated bucket
-`issues/done/3606-implement-nonnullAssertionPropegatesContextualType.md` after
+`issues/open/3606-implement-nonnullAssertionPropegatesContextualType.md` after
 fresh triage on 2026-05-08 showed the first blocker is DOM `document` name
 resolution, not type assertion or non-null assertion parsing.
 

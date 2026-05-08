@@ -17,7 +17,7 @@ Support the next issue-251 destructuring slice: nested object rest binding from
 a non-literal source whose discriminant branch narrows the source shape.
 
 Split from generated bucket
-`issues/done/3455-implement-narrowingDestructuring.md`.
+`issues/open/3455-implement-narrowingDestructuring.md`.
 
 ## Problem
 
@@ -94,8 +94,8 @@ Out of scope:
 - Destructuring assignment expressions.
 - Array rest narrowing in `farr`; that is a later blocker if it appears.
 - Computed object binding aliases, tracked by
-  `issues/open/5297-lower-computed-object-binding-aliases.md` and
-  `issues/open/5299-lower-computed-object-binding-parameters.md`.
+  `issues/done/5297-lower-computed-object-binding-aliases.md` and
+  `issues/done/5299-lower-computed-object-binding-parameters.md`.
 - Default binding initializer support, tracked by issues 5373 and 5379.
 
 ## Affected paths

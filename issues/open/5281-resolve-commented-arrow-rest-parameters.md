@@ -154,18 +154,18 @@ Follow-up issues:
 
 ## Notes
 
-Split from `issues/done/1357-implement-commentsAfterSpread.md`.
+Split from `issues/open/1357-implement-commentsAfterSpread.md`.
 
 Related but not duplicates:
 
-- `issues/done/1300-implement-collisionRestParameterArrowFunctions.md` is a
+- `issues/open/1300-implement-collisionRestParameterArrowFunctions.md` is a
   generated semantic collision bucket and lacks current smart-triage evidence
   for this resolver failure.
 - `issues/done/038-implement-rest-parameters.md` and
-  `issues/done/212-implement-rest-parameter-argument-collection.md` cover
+  `issues/open/212-implement-rest-parameter-argument-collection.md` cover
   general rest parameter support, but this reference still shows an arrow
   resolver binding gap.
-- `issues/done/5064-implement-arrow-function.md` is the broad arrow-function
+- `issues/open/5064-implement-arrow-function.md` is the broad arrow-function
   generated bucket and was superseded by narrower children.
 
 2026-05-07 fold-in:

@@ -114,7 +114,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] created: `issues/done/5239-w0-expr-emit-multi-line-to-linefmt.md`
+- [x] created: `issues/open/5239-w0-expr-emit-multi-line-to-linefmt.md`
 
 ## Notes
 
@@ -127,7 +127,7 @@ Follow-up issues:
 Fresh duplicate scan found related class-value work, but no exact match for this
 raw name-resolution failure:
 
-- `issues/done/5192-support-first-class-class-constructor-values.md` covers class constructor bindings after they already resolve and then fail as values with `issue-5011`.
+- `issues/open/5192-support-first-class-class-constructor-values.md` covers class constructor bindings after they already resolve and then fail as values with `issue-5011`.
 - `issues/done/5011-class-runtime-value-semantics.md` records the current structural rejection of unsupported class values.
 
 Issue 5239 is a narrower precondition: bind the nested local `ClassDecl` so

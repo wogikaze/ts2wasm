@@ -90,8 +90,8 @@ Expected:
 
 - `crates/backend-wasm/src/`
 - `crates/cli/tests/` only if regression coverage needs a small assertion update
-- `issues/done/362-drive-abc451-depth8-under-iwasm-timeout-after-copy-reductions.md`
-- `issues/done/357-fix-abc451-depth8-iwasm-timeout.md` only if closure is verified
+- `issues/open/362-drive-abc451-depth8-under-iwasm-timeout-after-copy-reductions.md`
+- `issues/open/357-fix-abc451-depth8-iwasm-timeout.md` only if closure is verified
 - `issues/index.md`
 
 Do not touch:
@@ -263,7 +263,7 @@ Classification: truly-done.
 Audit result: retained in `issues/done/`. The issue has repo-local completion evidence, is not marked `blocked` or `triage-needed`, and `python scripts/manager.py check issues` validates the resulting issue graph.
 
 Evidence files:
-- `issues/done/362-drive-abc451-depth8-under-iwasm-timeout-after-copy-reductions.md`
+- `issues/open/362-drive-abc451-depth8-under-iwasm-timeout-after-copy-reductions.md`
 - `issues/index.md` after regeneration
 
 Future-work tracking: no untracked future-work item was identified in this issue during this metadata/evidence audit.

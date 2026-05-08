@@ -116,16 +116,16 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/194-implement-argumentsAsPropertyName.md` - Implement Argumentsaspropertyname (same reference path, same feature label, title overlap)
-- `issues/done/311-fix-test262-arguments-object-index-assignment.md` - Fix test262 arguments object index assignment semantics (same feature label, title overlap)
-- `issues/done/646-implement-arguments.md` - Implement Arguments (same feature label, title overlap)
-- `issues/done/647-implement-argumentsAsPropertyName-arguments-object.md` - Implement Argumentsaspropertyname Arguments Object (same reference path, same feature label, same group key, title overlap)
-- `issues/done/650-implement-argumentsObjectCreatesRestForJs.md` - Implement Argumentsobjectcreatesrestforjs (same feature label, same group key, title overlap)
-- `issues/done/651-implement-argumentsObjectIterator.md` - Implement Argumentsobjectiterator (same feature label, same group key, title overlap)
-- `issues/done/652-implement-argumentsPropertyNameInJsMode.md` - Implement Argumentspropertynameinjsmode (same feature label, same group key, title overlap)
-- `issues/done/653-implement-argumentsReferenceInConstructor-arguments-object.md` - Implement Argumentsreferenceinconstructor Arguments Object (same feature label, same group key, title overlap)
-- `issues/done/655-implement-argumentsReferenceInFunction.md` - Implement Argumentsreferenceinfunction (same feature label, same group key, title overlap)
-- `issues/done/656-implement-argumentsReferenceInMethod-arguments-object.md` - Implement Argumentsreferenceinmethod Arguments Object (same feature label, same group key, title overlap)
+- `issues/open/194-implement-argumentsAsPropertyName.md` - Implement Argumentsaspropertyname (same reference path, same feature label, title overlap)
+- `issues/open/311-fix-test262-arguments-object-index-assignment.md` - Fix test262 arguments object index assignment semantics (same feature label, title overlap)
+- `issues/open/646-implement-arguments.md` - Implement Arguments (same feature label, title overlap)
+- `issues/open/647-implement-argumentsAsPropertyName-arguments-object.md` - Implement Argumentsaspropertyname Arguments Object (same reference path, same feature label, same group key, title overlap)
+- `issues/open/650-implement-argumentsObjectCreatesRestForJs.md` - Implement Argumentsobjectcreatesrestforjs (same feature label, same group key, title overlap)
+- `issues/open/651-implement-argumentsObjectIterator.md` - Implement Argumentsobjectiterator (same feature label, same group key, title overlap)
+- `issues/open/652-implement-argumentsPropertyNameInJsMode.md` - Implement Argumentspropertynameinjsmode (same feature label, same group key, title overlap)
+- `issues/open/653-implement-argumentsReferenceInConstructor-arguments-object.md` - Implement Argumentsreferenceinconstructor Arguments Object (same feature label, same group key, title overlap)
+- `issues/open/655-implement-argumentsReferenceInFunction.md` - Implement Argumentsreferenceinfunction (same feature label, same group key, title overlap)
+- `issues/open/656-implement-argumentsReferenceInMethod-arguments-object.md` - Implement Argumentsreferenceinmethod Arguments Object (same feature label, same group key, title overlap)
 
 ## Smart triage
 
@@ -135,7 +135,7 @@ Not generated. Rerun with `--triage-limit 1` or higher.
 ## 重複整理メモ
 
 この issue はタイトルが重複しているため、内容がより充実している
-`issues/done/647-implement-argumentsAsPropertyName-arguments-object.md` に統合されました。
+`issues/open/647-implement-argumentsAsPropertyName-arguments-object.md` に統合されました。
 そちらを参照してください。
 ## Completion evidence
 
@@ -166,7 +166,7 @@ Classification: truly-done.
 Audit result: retained in `issues/done/`. The issue has repo-local completion evidence, is not marked `blocked` or `triage-needed`, and `python scripts/manager.py check issues` validates the resulting issue graph.
 
 Evidence files:
-- `issues/done/882-implement-argumentsAsPropertyName-arguments-object.md`
+- `issues/open/882-implement-argumentsAsPropertyName-arguments-object.md`
 - `issues/index.md` after regeneration
 
 Future-work tracking: no untracked future-work item was identified in this issue during this metadata/evidence audit.

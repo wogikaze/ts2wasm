@@ -140,7 +140,7 @@ Follow-up issues:
 ## Duplicate detection
 
 - Smart triage found only this issue by exact path.
-- `issues/done/5073-implement-duplicate-function.md` is a broad superseded
+- `issues/open/5073-implement-duplicate-function.md` is a broad superseded
   duplicate-function bucket and listed 1347 as a duplicate candidate, but the
   current representative path now builds and does not need to be merged into a
   duplicate-function child.

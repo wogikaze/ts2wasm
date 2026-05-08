@@ -134,10 +134,10 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/5180-parse-computed-property-object-binding-patterns.md` is
+- `issues/open/5180-parse-computed-property-object-binding-patterns.md` is
   related but not a duplicate: it covers parser acceptance for computed binding
   keys. The current representative already has `tokens: ok` and `ast: ok`.
-- `issues/done/251-implement-destructuring-binding-runtime-semantics.md`
+- `issues/open/251-implement-destructuring-binding-runtime-semantics.md`
   completed the supported destructuring subset and intentionally leaves
   unsupported forms behind source-spanned issue-251 diagnostics.
 - Broad generated destructuring buckets such as issue 425 are not

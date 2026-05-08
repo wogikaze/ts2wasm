@@ -141,7 +141,7 @@ Follow-up issues:
 
 ## Notes
 
-Split from generated bucket `issues/done/1016-implement-awaitCallExpressionInSyncFunction.md`.
+Split from generated bucket `issues/open/1016-implement-awaitCallExpressionInSyncFunction.md`.
 
 ## Completion evidence
 

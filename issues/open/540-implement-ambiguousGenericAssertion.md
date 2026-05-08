@@ -116,7 +116,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/167-implement-ambiguousGenericAssertion.md` - Implement Ambiguousgenericassertion (same reference path, same feature label, same group key, title overlap)
+- `issues/open/167-implement-ambiguousGenericAssertion.md` - Implement Ambiguousgenericassertion (same reference path, same feature label, same group key, title overlap)
 
 ## Smart triage
 
@@ -678,7 +678,7 @@ error: [UnsupportedSyntax] unsupported expression: Some(SpannedToken { kind: Les
 ## 重複整理メモ
 
 この issue はタイトルが重複しているため、内容がより充実している
-`issues/done/626-implement-ambiguousGenericAssertion.md` に統合されました。
+`issues/open/626-implement-ambiguousGenericAssertion.md` に統合されました。
 そちらを参照してください。
 ## Completion evidence
 
@@ -709,7 +709,7 @@ Classification: truly-done.
 Audit result: retained in `issues/done/`. The issue has repo-local completion evidence, is not marked `blocked` or `triage-needed`, and `python scripts/manager.py check issues` validates the resulting issue graph.
 
 Evidence files:
-- `issues/done/540-implement-ambiguousGenericAssertion.md`
+- `issues/open/540-implement-ambiguousGenericAssertion.md`
 - `issues/index.md` after regeneration
 
 Future-work tracking: no untracked future-work item was identified in this issue during this metadata/evidence audit.

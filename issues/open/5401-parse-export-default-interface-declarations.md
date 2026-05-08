@@ -141,7 +141,7 @@ Follow-up issues:
 
 ## Notes
 
-Split from `issues/done/596-implement-allowImportClausesToMergeWithTypes.md`.
+Split from `issues/open/596-implement-allowImportClausesToMergeWithTypes.md`.
 
 Related but not duplicates:
 

@@ -129,7 +129,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/open/5210-parse-do-while-asi-before-block-end-or-expression.md`
+- `issues/open/5210-array-map-sparse-array-holes.md`
   is related but no-match: it owns `do ... while` ASI, not ordinary `while`
   statement bodies.
 - `issues/open/5154-parse-angle-bracket-type-assertion-statements.md` is

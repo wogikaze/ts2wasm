@@ -109,7 +109,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] created: `issues/done/5379-lower-array-binding-object-default-initializers.md`
+- [x] created: `issues/open/5379-lower-array-binding-object-default-initializers.md`
 
 ## Notes
 
@@ -132,7 +132,7 @@ env TS2WASM_BINARY=/home/wogikaze/wgkz/ts2wasm/target/debug/ts2wasm python scrip
 ```
 
 Result: split to
-`issues/done/5379-lower-array-binding-object-default-initializers.md`.
+`issues/open/5379-lower-array-binding-object-default-initializers.md`.
 
 Current diagnostic:
 
@@ -174,7 +174,7 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- split to `issues/done/5379-lower-array-binding-object-default-initializers.md`
+- split to `issues/open/5379-lower-array-binding-object-default-initializers.md`
 
 Validation result:
 

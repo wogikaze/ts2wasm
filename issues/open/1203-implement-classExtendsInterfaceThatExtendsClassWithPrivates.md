@@ -160,7 +160,7 @@ Current compiler evidence:
 
 Duplicate review:
 
-- `issues/done/5158-report-interface-private-member-clash.md` is related but
+- `issues/open/5158-report-interface-private-member-clash.md` is related but
   narrower to `interface Z extends X, Y` TS2320 private-member clashes.
 - `issues/open/5315-report-class-extends-interface-diagnostics.md` is related
   but narrower to TS2689 for `class ... extends Interface`.

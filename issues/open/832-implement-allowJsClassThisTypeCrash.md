@@ -115,9 +115,9 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/132-implement-allowJsClassThisTypeCrash.md` - Implement Allowjsclassthistypecrash (same reference path, same group key, title overlap)
-- `issues/done/511-implement-allowJsClassThisTypeCrash.md` - Implement Allowjsclassthistypecrash (same reference path, same feature label, same group key, title overlap)
-- `issues/done/597-implement-allowJsClassThisTypeCrash.md` - Implement Allowjsclassthistypecrash (same reference path, same feature label, same group key, title overlap)
+- `issues/open/132-implement-allowJsClassThisTypeCrash.md` - Implement Allowjsclassthistypecrash (same reference path, same group key, title overlap)
+- `issues/open/511-implement-allowJsClassThisTypeCrash.md` - Implement Allowjsclassthistypecrash (same reference path, same feature label, same group key, title overlap)
+- `issues/open/597-implement-allowJsClassThisTypeCrash.md` - Implement Allowjsclassthistypecrash (same reference path, same feature label, same group key, title overlap)
 
 ## Smart triage
 
@@ -127,7 +127,7 @@ Not generated. Rerun with `--triage-limit 1` or higher.
 ## 重複整理メモ
 
 この issue はタイトルが重複しているため、内容がより充実している
-`issues/done/597-implement-allowJsClassThisTypeCrash.md` に統合されました。
+`issues/open/597-implement-allowJsClassThisTypeCrash.md` に統合されました。
 そちらを参照してください。
 ## Completion evidence
 
@@ -158,7 +158,7 @@ Classification: truly-done.
 Audit result: retained in `issues/done/`. The issue has repo-local completion evidence, is not marked `blocked` or `triage-needed`, and `python scripts/manager.py check issues` validates the resulting issue graph.
 
 Evidence files:
-- `issues/done/832-implement-allowJsClassThisTypeCrash.md`
+- `issues/open/832-implement-allowJsClassThisTypeCrash.md`
 - `issues/index.md` after regeneration
 
 Future-work tracking: no untracked future-work item was identified in this issue during this metadata/evidence audit.

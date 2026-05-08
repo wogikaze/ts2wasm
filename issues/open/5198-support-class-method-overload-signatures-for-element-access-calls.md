@@ -161,7 +161,7 @@ have no body.
 
 2026-05-08 fold-in:
 
-- `issues/done/3550-implement-noImplicitAnyParametersInClass.md` reaches the
+- `issues/open/3550-implement-noImplicitAnyParametersInClass.md` reaches the
   same valid class-method overload boundary for `C.pub_f8`; its first two
   `pub_f8` members are bodyless overload signatures and the third is the
   implementation. The noImplicitAny parameter diagnostics should be re-triaged

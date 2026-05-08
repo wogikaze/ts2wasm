@@ -43,7 +43,7 @@ mise run reference-coverage -- tsc --path-filter reference/typescript/tests/case
 
 ## Desired final state
 
-This generated bucket is closed after splitting `issues/done/5245-iterator-protocol-runtime.md`. Do not implement directly from this bucket.
+This generated bucket is closed after splitting `issues/open/5245-iterator-protocol-runtime.md`. Do not implement directly from this bucket.
 
 ## Scope
 
@@ -114,7 +114,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] created: `issues/done/5245-iterator-protocol-runtime.md`
+- [x] created: `issues/open/5245-iterator-protocol-runtime.md`
 
 ## Notes
 
@@ -124,7 +124,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/5201-parse-object-type-literal-call-signatures.md` covers object type literal call signatures, not interface construct signatures.
+- `issues/open/5201-parse-object-type-literal-call-signatures.md` covers object type literal call signatures, not interface construct signatures.
 - Broad type-system buckets are not exact owners for the current parser diagnostic.
 
 ## Smart triage
@@ -187,7 +187,7 @@ TypeScript accepts the construct signature and reaches later TS2344 mapped/condi
 
 Split result:
 
-- `issues/done/5245-iterator-protocol-runtime.md`
+- `issues/open/5245-iterator-protocol-runtime.md`
 
 ## Completion evidence
 
@@ -197,7 +197,7 @@ The `circularlyConstrainedMappedTypeContainingConditionalNoInfiniteInstantiation
 
 Commits:
 
-- split to `issues/done/5245-iterator-protocol-runtime.md`
+- split to `issues/open/5245-iterator-protocol-runtime.md`
 
 Validation result:
 

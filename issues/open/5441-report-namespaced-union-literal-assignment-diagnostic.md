@@ -157,7 +157,7 @@ Follow-up issues:
 
 ## Notes
 
-Split from `issues/done/3429-implement-namespaceDisambiguationInUnion.md` on
+Split from `issues/open/3429-implement-namespaceDisambiguationInUnion.md` on
 2026-05-08 after fresh triage showed the original import/export blocker was
 stale and the current mismatch is a false build-pass.
 

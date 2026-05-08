@@ -109,7 +109,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] superseded by `issues/done/5218-parse-typescript-this-parameters-in-function-expressions.md`
+- [x] superseded by `issues/open/5218-parse-typescript-this-parameters-in-function-expressions.md`
 
 ## Notes
 
@@ -132,7 +132,7 @@ env TS2WASM_BINARY=/home/wogikaze/wgkz/ts2wasm/target/debug/ts2wasm python scrip
 ```
 
 Result: superseded by
-`issues/done/5218-parse-typescript-this-parameters-in-function-expressions.md`.
+`issues/open/5218-parse-typescript-this-parameters-in-function-expressions.md`.
 
 Current diagnostic:
 
@@ -167,10 +167,10 @@ Compiler evidence:
 
 Duplicate review:
 
-- `issues/done/5179-report-implicit-this-before-closure-runtime-guard.md` is
+- `issues/open/5179-report-implicit-this-before-closure-runtime-guard.md` is
   related but not exact: it owns cases where TypeScript reports TS2683 before a
   runtime closure guard. This reference is accepted by TypeScript.
-- `issues/done/5218-parse-typescript-this-parameters-in-function-expressions.md` is the
+- `issues/open/5218-parse-typescript-this-parameters-in-function-expressions.md` is the
   exact implementation owner: it already covers object literal/contextual
   receiver function values that read `this`; this bucket adds the method
   shorthand/contextual-object form.
@@ -184,7 +184,7 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- superseded by `issues/done/5218-parse-typescript-this-parameters-in-function-expressions.md`
+- superseded by `issues/open/5218-parse-typescript-this-parameters-in-function-expressions.md`
 
 Validation result:
 

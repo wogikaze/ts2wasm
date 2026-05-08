@@ -19,7 +19,7 @@ Triage badArrayIndex across 1 failing reference test cases and split this bucket
 
 ## Problem
 
-Reference test results show 1 case failing in directory `badArrayIndex` with diagnostics: unknown-unsupported. Fresh smart triage shows this bucket is a narrow empty element access diagnostic gap and is superseded by `issues/done/5150-report-empty-element-access-diagnostics.md`.
+Reference test results show 1 case failing in directory `badArrayIndex` with diagnostics: unknown-unsupported. Fresh smart triage shows this bucket is a narrow empty element access diagnostic gap and is superseded by `issues/open/5150-report-empty-element-access-diagnostics.md`.
 
 Problem: `badArrayIndex` is not a standalone implementation order; the executable parser diagnostic work is split to issue 5150.
 
@@ -111,7 +111,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] created: `issues/done/5150-report-empty-element-access-diagnostics.md`
+- [x] created: `issues/open/5150-report-empty-element-access-diagnostics.md`
 
 ## Notes
 
@@ -171,7 +171,7 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- split to `issues/done/5150-report-empty-element-access-diagnostics.md`
+- split to `issues/open/5150-report-empty-element-access-diagnostics.md`
 
 Validation result:
 

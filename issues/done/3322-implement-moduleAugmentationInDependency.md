@@ -51,7 +51,7 @@ env TS2WASM_BINARY=/tmp/ts2wasm-issue-blockers-target/debug/ts2wasm python scrip
 ## Desired final state
 
 This generated bucket is closed. The current observable blocker remains covered
-by `issues/done/232-resolve-local-relative-es-module-graph.md`, which
+by `issues/open/232-resolve-local-relative-es-module-graph.md`, which
 intentionally rejects bare/non-local module specifiers with an issue-linked
 diagnostic.
 
@@ -136,7 +136,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/232-resolve-local-relative-es-module-graph.md` is the current
+- `issues/open/232-resolve-local-relative-es-module-graph.md` is the current
   owner. It explicitly keeps package resolution, `node_modules`, import maps,
   TypeScript path mapping, and other non-local module specifiers out of scope
   and rejects bare specifiers with issue-linked diagnostics.

@@ -63,7 +63,7 @@ Out of scope:
 
 - Full runtime implementation of `extends null` object construction.
 - `super.x` diagnostics in `extends null` classes, tracked by
-  `issues/done/5259-report-super-property-access-in-class-extends-null.md`.
+  `issues/open/5259-report-super-property-access-in-class-extends-null.md`.
 - Interface-merge/static-side diagnostics for `classExtendsNull2.ts`.
 - Broad arbitrary heritage expression support.
 - Object global builtin support if later exposed by `Object.create(null)`.
@@ -109,8 +109,8 @@ python scripts/manager.py reference-coverage tsc --path-filter reference/typescr
 
 ## Notes
 
-Split from `issues/done/1205-implement-classExtendsNull.md`.
-Sibling split: `issues/done/5259-report-super-property-access-in-class-extends-null.md`.
+Split from `issues/open/1205-implement-classExtendsNull.md`.
+Sibling split: `issues/open/5259-report-super-property-access-in-class-extends-null.md`.
 ## False-done audit
 
 **truly-done** (5258)

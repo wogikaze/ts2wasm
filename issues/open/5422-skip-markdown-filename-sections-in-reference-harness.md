@@ -125,7 +125,7 @@ Follow-up issues:
 
 ## Notes
 
-Split from `issues/done/3371-implement-moduleResolution-module-resolution.md`.
+Split from `issues/open/3371-implement-moduleResolution-module-resolution.md`.
 
 ## Completion evidence
 

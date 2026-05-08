@@ -105,7 +105,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] superseded by `issues/done/5234-w0-implement-host-deny-and-auditable-e2e-manifest-verification.md`
+- [x] superseded by `issues/open/5234-w0-implement-host-deny-and-auditable-e2e-manifest-verification.md`
 
 ## Notes
 
@@ -121,7 +121,7 @@ Follow-up issues:
 
 Fresh triage on 2026-05-07 shows the original duplicate-local bucket has
 advanced to the existing array-typed parameter receiver blocker owned by
-`issues/done/5234-w0-implement-host-deny-and-auditable-e2e-manifest-verification.md`.
+`issues/open/5234-w0-implement-host-deny-and-auditable-e2e-manifest-verification.md`.
 
 Current diagnostic:
 

@@ -17,7 +17,7 @@ Support or precisely classify direct calls to function parameters with ordinary
 function type annotations, such as `subFunc: () => T[]`.
 
 Split from generated bucket
-`issues/done/3452-implement-narrowingAssignmentReadonlyRespectsAssertion.md`.
+`issues/open/3452-implement-narrowingAssignmentReadonlyRespectsAssertion.md`.
 
 ## Problem
 

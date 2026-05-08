@@ -156,7 +156,7 @@ Follow-up issues:
 ## Notes
 
 Split from generated bucket
-`issues/done/3333-implement-moduleDetectionIsolatedModulesCjsFileScope.md`.
+`issues/open/3333-implement-moduleDetectionIsolatedModulesCjsFileScope.md`.
 
 Related but not duplicates:
 

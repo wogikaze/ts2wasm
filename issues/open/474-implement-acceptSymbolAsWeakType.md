@@ -116,8 +116,8 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/089-implement-acceptSymbolAsWeakType.md` - Implement Acceptsymbolasweaktype (same reference path, same feature label, same group key, title overlap)
-- `issues/done/437-implement-name-resolution.md` - Implement name resolution (same feature label, same group key, title overlap)
+- `issues/open/089-implement-acceptSymbolAsWeakType.md` - Implement Acceptsymbolasweaktype (same reference path, same feature label, same group key, title overlap)
+- `issues/open/437-implement-name-resolution.md` - Implement name resolution (same feature label, same group key, title overlap)
 
 ## Smart triage
 
@@ -812,7 +812,7 @@ error: [UnresolvedName] unresolved name: `WeakSet` at 100..107
 ## 重複整理メモ
 
 この issue はタイトルが重複しているため、内容がより充実している
-`issues/done/560-implement-acceptSymbolAsWeakType.md` に統合されました。
+`issues/open/560-implement-acceptSymbolAsWeakType.md` に統合されました。
 そちらを参照してください。
 ## Completion evidence
 
@@ -843,7 +843,7 @@ Classification: truly-done.
 Audit result: retained in `issues/done/`. The issue has repo-local completion evidence, is not marked `blocked` or `triage-needed`, and `python scripts/manager.py check issues` validates the resulting issue graph.
 
 Evidence files:
-- `issues/done/474-implement-acceptSymbolAsWeakType.md`
+- `issues/open/474-implement-acceptSymbolAsWeakType.md`
 - `issues/index.md` after regeneration
 
 Future-work tracking: no untracked future-work item was identified in this issue during this metadata/evidence audit.

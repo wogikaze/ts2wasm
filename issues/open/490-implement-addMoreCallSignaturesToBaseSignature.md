@@ -117,8 +117,8 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/109-implement-addMoreCallSignaturesToBaseSignature.md` - Implement Addmorecallsignaturestobasesignature (same reference path, same feature label, same group key, title overlap)
-- `issues/done/431-implement-function-resolution.md` - Implement function resolution (same feature label, same group key, title overlap)
+- `issues/open/109-implement-addMoreCallSignaturesToBaseSignature.md` - Implement Addmorecallsignaturestobasesignature (same reference path, same feature label, same group key, title overlap)
+- `issues/open/431-implement-function-resolution.md` - Implement function resolution (same feature label, same group key, title overlap)
 
 ## Smart triage
 
@@ -561,7 +561,7 @@ TypeScript/JavaScript oracle:
 ## 重複整理メモ
 
 この issue はタイトルが重複しているため、内容がより充実している
-`issues/done/576-implement-addMoreCallSignaturesToBaseSignature.md` に統合されました。
+`issues/open/576-implement-addMoreCallSignaturesToBaseSignature.md` に統合されました。
 そちらを参照してください。
 ## Completion evidence
 
@@ -592,7 +592,7 @@ Classification: truly-done.
 Audit result: retained in `issues/done/`. The issue has repo-local completion evidence, is not marked `blocked` or `triage-needed`, and `python scripts/manager.py check issues` validates the resulting issue graph.
 
 Evidence files:
-- `issues/done/490-implement-addMoreCallSignaturesToBaseSignature.md`
+- `issues/open/490-implement-addMoreCallSignaturesToBaseSignature.md`
 - `issues/index.md` after regeneration
 
 Future-work tracking: no untracked future-work item was identified in this issue during this metadata/evidence audit.

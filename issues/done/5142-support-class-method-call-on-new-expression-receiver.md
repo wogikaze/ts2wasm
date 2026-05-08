@@ -142,11 +142,11 @@ Follow-up issues:
 
 ## Notes
 
-Split from generated bucket `issues/done/1013-implement-avoid.md`.
+Split from generated bucket `issues/open/1013-implement-avoid.md`.
 
 Related broad parent:
 
-- `issues/done/435-implement-method-call.md`
+- `issues/open/435-implement-method-call.md`
 
 ## Completion evidence
 

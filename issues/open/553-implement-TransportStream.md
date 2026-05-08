@@ -18,7 +18,7 @@ Close `TransportStream` as superseded by issue 081: fresh triage confirms this i
 
 ## Problem
 
-Reference test results show 1 case failing in directory `TransportStream` with diagnostics: parser-syntax. Fresh triage on 2026-05-07 confirms the root cause already recorded by `issues/done/081-implement-TransportStream.md`: `TransportStream.ts` is binary test data, not parsable TypeScript source.
+Reference test results show 1 case failing in directory `TransportStream` with diagnostics: parser-syntax. Fresh triage on 2026-05-07 confirms the root cause already recorded by `issues/open/081-implement-TransportStream.md`: `TransportStream.ts` is binary test data, not parsable TypeScript source.
 
 Problem: this generated bucket is a duplicate/superseded issue, not an implementation work order. TypeScript itself reports TS1490 "File appears to be binary."
 
@@ -119,16 +119,16 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- Superseded by `issues/done/081-implement-TransportStream.md`.
-- `issues/done/081-implement-TransportStream.md` classifies the file as
+- Superseded by `issues/open/081-implement-TransportStream.md`.
+- `issues/open/081-implement-TransportStream.md` classifies the file as
   binary test data, not a parser implementation bug.
 - `#467` and
-  `issues/done/788-implement-TransportStream.md` are historical duplicate
+  `issues/open/788-implement-TransportStream.md` are historical duplicate
   generated buckets for the same path.
 
-- `issues/done/081-implement-TransportStream.md` - Implement Transportstream (same reference path, same feature label, same group key, title overlap)
-- `issues/done/442-implement-parser-syntax.md` - Implement parser syntax extensions (same feature label, same group key, title overlap)
-- `issues/done/467-implement-TransportStream.md` - Implement Transportstream (same reference path, same feature label, same group key, title overlap)
+- `issues/open/081-implement-TransportStream.md` - Implement Transportstream (same reference path, same feature label, same group key, title overlap)
+- `issues/open/442-implement-parser-syntax.md` - Implement parser syntax extensions (same feature label, same group key, title overlap)
+- `issues/open/467-implement-TransportStream.md` - Implement Transportstream (same reference path, same feature label, same group key, title overlap)
 
 ## Smart triage
 

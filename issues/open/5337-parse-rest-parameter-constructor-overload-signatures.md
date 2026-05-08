@@ -74,7 +74,7 @@ In scope:
 
 Out of scope:
 
-- Non-rest constructor overload signatures, tracked by `issues/done/5334-parse-class-constructor-overload-signatures.md`.
+- Non-rest constructor overload signatures, tracked by `issues/open/5334-parse-class-constructor-overload-signatures.md`.
 - Top-level function and class method overload work.
 - Later collision diagnostics after this blocker advances.
 
@@ -138,7 +138,7 @@ Follow-up issues:
 
 ## Notes
 
-Split from `issues/done/1301-implement-collisionRestParameterClassConstructor.md`
+Split from `issues/open/1301-implement-collisionRestParameterClassConstructor.md`
 on 2026-05-07.
 
 ## Completion evidence

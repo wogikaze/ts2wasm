@@ -117,14 +117,14 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/694-implement-arrayToLocaleStringES-unknown-unsupported.md` - Implement Arraytolocalestringes Unknown Unsupported (same reference path, same feature label, same group key, title overlap)
-- `issues/done/699-implement-arrowFunctionMissingCurlyWithSemicolon.md` - Implement Arrowfunctionmissingcurlywithsemicolon (same feature label, same group key, title overlap)
-- `issues/done/744-implement-assignmentToInstantiationExpression.md` - Implement Assignmenttoinstantiationexpression (same feature label, same group key, title overlap)
-- `issues/done/750-implement-asyncFunctionContextuallyTypedReturns.md` - Implement Asyncfunctioncontextuallytypedreturns (same feature label, same group key, title overlap)
-- `issues/done/751-implement-asyncFunctionNoReturnType.md` - Implement Asyncfunctionnoreturntype (same feature label, same group key, title overlap)
-- `issues/done/755-implement-asyncFunctionTempVariableScoping.md` - Implement Asyncfunctiontempvariablescoping (same feature label, same group key, title overlap)
-- `issues/done/757-implement-asyncFunctionsAcrossFiles.md` - Implement Asyncfunctionsacrossfiles (same feature label, same group key, title overlap)
-- `issues/done/759-implement-asyncIIFE.md` - Implement Asynciife (same feature label, same group key, title overlap)
+- `issues/open/694-implement-arrayToLocaleStringES-unknown-unsupported.md` - Implement Arraytolocalestringes Unknown Unsupported (same reference path, same feature label, same group key, title overlap)
+- `issues/open/699-implement-arrowFunctionMissingCurlyWithSemicolon.md` - Implement Arrowfunctionmissingcurlywithsemicolon (same feature label, same group key, title overlap)
+- `issues/open/744-implement-assignmentToInstantiationExpression.md` - Implement Assignmenttoinstantiationexpression (same feature label, same group key, title overlap)
+- `issues/open/750-implement-asyncFunctionContextuallyTypedReturns.md` - Implement Asyncfunctioncontextuallytypedreturns (same feature label, same group key, title overlap)
+- `issues/open/751-implement-asyncFunctionNoReturnType.md` - Implement Asyncfunctionnoreturntype (same feature label, same group key, title overlap)
+- `issues/open/755-implement-asyncFunctionTempVariableScoping.md` - Implement Asyncfunctiontempvariablescoping (same feature label, same group key, title overlap)
+- `issues/open/757-implement-asyncFunctionsAcrossFiles.md` - Implement Asyncfunctionsacrossfiles (same feature label, same group key, title overlap)
+- `issues/open/759-implement-asyncIIFE.md` - Implement Asynciife (same feature label, same group key, title overlap)
 
 ## Smart triage
 
@@ -134,7 +134,7 @@ Not generated. Rerun with `--triage-limit 1` or higher.
 ## 重複整理メモ
 
 この issue はタイトルが重複しているため、内容がより充実している
-`issues/done/694-implement-arrayToLocaleStringES-unknown-unsupported.md` に統合されました。
+`issues/open/694-implement-arrayToLocaleStringES-unknown-unsupported.md` に統合されました。
 そちらを参照してください。
 ## Completion evidence
 
@@ -165,7 +165,7 @@ Classification: truly-done.
 Audit result: retained in `issues/done/`. The issue has repo-local completion evidence, is not marked `blocked` or `triage-needed`, and `python scripts/manager.py check issues` validates the resulting issue graph.
 
 Evidence files:
-- `issues/done/929-implement-arrayToLocaleStringES-unknown-unsupported.md`
+- `issues/open/929-implement-arrayToLocaleStringES-unknown-unsupported.md`
 - `issues/index.md` after regeneration
 
 Future-work tracking: no untracked future-work item was identified in this issue during this metadata/evidence audit.

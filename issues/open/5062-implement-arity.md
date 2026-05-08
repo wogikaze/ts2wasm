@@ -127,12 +127,12 @@ Follow-up issues:
 
 - `issues/open/021-implement-full-wasm-backend.md` - Implement full wasm backend (same feature label, same group key, title overlap)
 - `issues/done/052-implement-json.md` - Implement JSON (same feature label, same group key, title overlap)
-- `issues/done/1048-implement-bigint.md` - Implement Bigint (same feature label, same group key, title overlap)
-- `issues/done/1077-implement-blockScopedSameNameFunctionDeclarationES.md` - Implement Blockscopedsamenamefunctiondeclarationes (same feature label, same group key, title overlap)
-- `issues/done/1078-implement-blockScopedSameNameFunctionDeclarationStrictES.md` - Implement Blockscopedsamenamefunctiondeclarationstrictes (same feature label, same group key, title overlap)
+- `issues/open/1048-implement-bigint.md` - Implement Bigint (same feature label, same group key, title overlap)
+- `issues/open/1077-implement-blockScopedSameNameFunctionDeclarationES.md` - Implement Blockscopedsamenamefunctiondeclarationes (same feature label, same group key, title overlap)
+- `issues/open/1078-implement-blockScopedSameNameFunctionDeclarationStrictES.md` - Implement Blockscopedsamenamefunctiondeclarationstrictes (same feature label, same group key, title overlap)
 - `#1244` - Implement Classvariancecircularity (same feature label, same group key, title overlap)
 - `#1245` - Implement Classvarianceresolvecircularity (same feature label, same group key, title overlap)
-- `issues/done/1543-implement-contextuallyTypedParametersOptionalInJSDoc.md` - Implement Contextuallytypedparametersoptionalinjsdoc (same feature label, same group key, title overlap)
+- `issues/open/1543-implement-contextuallyTypedParametersOptionalInJSDoc.md` - Implement Contextuallytypedparametersoptionalinjsdoc (same feature label, same group key, title overlap)
 - `issues/open/2169-implement-errorForwardReferenceForwadingConstructor.md` - Implement Errorforwardreferenceforwadingconstructor (same feature label, same group key, title overlap)
 - `issues/open/2232-implement-exhaustiveSwitchCheckCircularity.md` - Implement Exhaustiveswitchcheckcircularity (same feature label, same group key, title overlap)
 
@@ -157,7 +157,7 @@ AttributeError: 'NoneType' object has no attribute 'parse_test262_metadata'
 ## 重複整理メモ
 
 この issue はタイトルが重複しているため、内容がより充実している
-`issues/done/413-implement-arity.md` に統合されました。
+`issues/open/413-implement-arity.md` に統合されました。
 そちらを参照してください。
 ## Completion evidence
 
@@ -188,7 +188,7 @@ Classification: truly-done.
 Audit result: retained in `issues/done/`. The issue has repo-local completion evidence, is not marked `blocked` or `triage-needed`, and `python scripts/manager.py check issues` validates the resulting issue graph.
 
 Evidence files:
-- `issues/done/5062-implement-arity.md`
+- `issues/open/5062-implement-arity.md`
 - `issues/index.md` after regeneration
 
 Future-work tracking: no untracked future-work item was identified in this issue during this metadata/evidence audit.

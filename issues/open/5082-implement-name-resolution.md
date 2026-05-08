@@ -127,15 +127,15 @@ Follow-up issues:
 ## Duplicate detection
 
 - `issues/open/064-implement-name-resolution.md` - Implement name resolution (triaged - superseded by test262 metadata issues) (same feature label, same group key, title overlap)
-- `issues/done/066-implement-regexp-literal.md` - Implement RegExp literal support (same reference path, title overlap)
-- `issues/done/068-implement-unsupported-expression.md` - Implement unsupported expression types (same reference path, title overlap)
-- `issues/done/089-implement-acceptSymbolAsWeakType.md` - Implement Acceptsymbolasweaktype (same feature label, same group key, title overlap)
-- `issues/done/1010-implement-autoTypeAssignedUsingDestructuringFromNeverNoCrash.md` - Implement Autotypeassignedusingdestructuringfromnevernocrash (same feature label, same group key, title overlap)
-- `issues/done/1033-implement-baseCheck.md` - Implement Basecheck (same feature label, same group key, title overlap; superseded by issue 056)
-- `issues/done/1044-implement-bestCommonTypeWithContextualTyping.md` - Implement Bestcommontypewithcontextualtyping (same feature label, same group key, title overlap)
-- `issues/done/1048-implement-bigint.md` - Implement Bigint (same feature label, same group key, title overlap)
-- `issues/done/1051-implement-bigintIndex.md` - Implement Bigintindex (same feature label, same group key, title overlap)
-- `issues/done/1061-implement-bindingPatternContextualTypeDoesNotCauseWidening.md` - Implement Bindingpatterncontextualtypedoesnotcausewidening (same feature label, same group key, title overlap)
+- `issues/open/066-implement-regexp-literal.md` - Implement RegExp literal support (same reference path, title overlap)
+- `issues/open/068-implement-unsupported-expression.md` - Implement unsupported expression types (same reference path, title overlap)
+- `issues/open/089-implement-acceptSymbolAsWeakType.md` - Implement Acceptsymbolasweaktype (same feature label, same group key, title overlap)
+- `issues/open/1010-implement-autoTypeAssignedUsingDestructuringFromNeverNoCrash.md` - Implement Autotypeassignedusingdestructuringfromnevernocrash (same feature label, same group key, title overlap)
+- `issues/open/1033-implement-baseCheck.md` - Implement Basecheck (same feature label, same group key, title overlap; superseded by issue 056)
+- `issues/open/1044-implement-bestCommonTypeWithContextualTyping.md` - Implement Bestcommontypewithcontextualtyping (same feature label, same group key, title overlap)
+- `issues/open/1048-implement-bigint.md` - Implement Bigint (same feature label, same group key, title overlap)
+- `issues/open/1051-implement-bigintIndex.md` - Implement Bigintindex (same feature label, same group key, title overlap)
+- `issues/open/1061-implement-bindingPatternContextualTypeDoesNotCauseWidening.md` - Implement Bindingpatterncontextualtypedoesnotcausewidening (same feature label, same group key, title overlap)
 
 ## Smart triage
 
@@ -158,7 +158,7 @@ AttributeError: 'NoneType' object has no attribute 'parse_test262_metadata'
 ## 重複整理メモ
 
 この issue はタイトルが重複しているため、内容がより充実している
-`issues/done/437-implement-name-resolution.md` に統合されました。
+`issues/open/437-implement-name-resolution.md` に統合されました。
 そちらを参照してください。
 ## Completion evidence
 
@@ -189,7 +189,7 @@ Classification: truly-done.
 Audit result: retained in `issues/done/`. The issue has repo-local completion evidence, is not marked `blocked` or `triage-needed`, and `python scripts/manager.py check issues` validates the resulting issue graph.
 
 Evidence files:
-- `issues/done/5082-implement-name-resolution.md`
+- `issues/open/5082-implement-name-resolution.md`
 - `issues/index.md` after regeneration
 
 Future-work tracking: no untracked future-work item was identified in this issue during this metadata/evidence audit.

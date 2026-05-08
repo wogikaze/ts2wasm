@@ -166,7 +166,7 @@ Follow-up issues:
 
 - No exact existing owner found for WAT that references `$current_module_id`
   without declaring it.
-- `issues/open/5155-fix-exception-pending-runtime-link-for-top-level-statements.md`
+- `issues/open/5155-removed-merged-or-duplicate.md`
   is related backend-io infrastructure but covers missing `$exception_pending`,
   not `$current_module_id`.
 

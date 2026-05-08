@@ -120,15 +120,15 @@ Follow-up issues:
 ## Duplicate detection
 
 - No implementation child issue is needed for the affected file.
-- `issues/done/086-implement-abstractPropertyBasics.md`,
-  `issues/done/471-implement-abstractPropertyBasics.md`, and
-  `issues/done/792-implement-abstractPropertyBasics.md` are historical
+- `issues/open/086-implement-abstractPropertyBasics.md`,
+  `issues/open/471-implement-abstractPropertyBasics.md`, and
+  `issues/open/792-implement-abstractPropertyBasics.md` are historical
   duplicates for the same reference bucket.
 
-- `issues/done/086-implement-abstractPropertyBasics.md` - Implement Abstractpropertybasics (same reference path, same feature label, same group key, title overlap)
-- `issues/done/442-implement-parser-syntax.md` - Implement parser syntax extensions (same feature label, same group key, title overlap)
-- `issues/done/460-implement-ClassDeclaration.md` - Implement Classdeclaration (same feature label, same group key, title overlap)
-- `issues/done/471-implement-abstractPropertyBasics.md` - Implement Abstractpropertybasics (same reference path, same feature label, same group key, title overlap)
+- `issues/open/086-implement-abstractPropertyBasics.md` - Implement Abstractpropertybasics (same reference path, same feature label, same group key, title overlap)
+- `issues/open/442-implement-parser-syntax.md` - Implement parser syntax extensions (same feature label, same group key, title overlap)
+- `issues/open/460-implement-ClassDeclaration.md` - Implement Classdeclaration (same feature label, same group key, title overlap)
+- `issues/open/471-implement-abstractPropertyBasics.md` - Implement Abstractpropertybasics (same reference path, same feature label, same group key, title overlap)
 
 ## Smart triage
 

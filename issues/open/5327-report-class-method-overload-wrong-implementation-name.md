@@ -112,7 +112,7 @@ Do not touch:
 - [ ] The representative path reports a TS2389-equivalent diagnostic at `bar`
   or a TS2391-equivalent diagnostic at the later bodyless `foo`.
 - [ ] A focused fixture or test covers `class C { foo(): string; bar(x): any {} foo(x): number; }`.
-- [ ] The valid overload group from `issues/done/5198-support-class-method-overload-signatures-for-element-access-calls.md`
+- [ ] The valid overload group from `issues/open/5198-support-class-method-overload-signatures-for-element-access-calls.md`
   remains under issue 5198 and is not converted into an error by this slice.
 
 ## Validation
@@ -153,11 +153,11 @@ Follow-up issues:
 ## Notes
 
 Split from generated bucket
-`issues/done/1248-implement-classWithOverloadImplementationOfWrongName.md`.
+`issues/open/1248-implement-classWithOverloadImplementationOfWrongName.md`.
 
 Related but distinct issues:
 
-- `issues/done/5198-support-class-method-overload-signatures-for-element-access-calls.md`
+- `issues/open/5198-support-class-method-overload-signatures-for-element-access-calls.md`
   handles valid class method overload signature merging.
 - `issues/open/5200-validate-top-level-function-overload-implementations.md`
   handles top-level function overload implementation grouping.

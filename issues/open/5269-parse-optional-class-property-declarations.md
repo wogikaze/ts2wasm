@@ -151,13 +151,13 @@ Follow-up issues:
 ## Notes
 
 Split from generated bucket
-`issues/done/1243-implement-classUsedBeforeInitializedVariables.md`.
+`issues/open/1243-implement-classUsedBeforeInitializedVariables.md`.
 Related generated bucket with the same parser gap:
-`issues/done/3437-implement-narrowByBooleanComparison.md`.
+`issues/open/3437-implement-narrowByBooleanComparison.md`.
 
 Additional superseded bucket:
 
-- `issues/done/3437-implement-narrowByBooleanComparison.md` reaches the same
+- `issues/open/3437-implement-narrowByBooleanComparison.md` reaches the same
   optional class property parser boundary for `status?: number;` in
   `class WebError extends URIError`. Fresh triage on 2026-05-08 reports
   `UnsupportedSyntax: expected LeftParen, got Some(Question) at 1079..1080`;

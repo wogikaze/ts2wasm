@@ -21,7 +21,7 @@ status: done
 
 Closed this generated const-declaration parser bucket after splitting the
 current `*=`, `/=`, and `%=` parser boundary to
-`issues/done/5349-parse-multiplicative-compound-assignment-operators.md`.
+`issues/open/5349-parse-multiplicative-compound-assignment-operators.md`.
 
 ## Problem
 
@@ -46,7 +46,7 @@ mise run reference-coverage -- tsc --path-filter reference/typescript/tests/case
 ## Desired final state
 
 This generated bucket is closed. Implement the current parser boundary from
-`issues/done/5349-parse-multiplicative-compound-assignment-operators.md`.
+`issues/open/5349-parse-multiplicative-compound-assignment-operators.md`.
 
 ## Scope
 
@@ -115,7 +115,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] created: `issues/done/5349-parse-multiplicative-compound-assignment-operators.md`
+- [x] created: `issues/open/5349-parse-multiplicative-compound-assignment-operators.md`
 
 ## Notes
 
@@ -130,15 +130,15 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/442-implement-parser-syntax.md` - Implement parser syntax extensions (same feature label, title overlap)
-- `issues/done/464-implement-FunctionDeclaration-parser-syntax.md` - Implement Functiondeclaration Parser Syntax (same feature label, title overlap)
-- `issues/done/550-implement-FunctionDeclaration-parser-syntax.md` - Implement Functiondeclaration Parser Syntax (same feature label, title overlap)
-- `issues/done/663-implement-arrayAssignmentTest-parser-syntax.md` - Implement Arrayassignmenttest Parser Syntax (same feature label, title overlap)
-- `issues/done/734-implement-assignmentCompatability-parser-syntax.md` - Implement Assignmentcompatability Parser Syntax (same feature label, title overlap)
-- `issues/done/753-implement-asyncFunctionReturnType-parser-syntax.md` - Implement Asyncfunctionreturntype Parser Syntax (same feature label, title overlap)
-- `issues/done/767-implement-augmentedTypesEnum-parser-syntax.md` - Implement Augmentedtypesenum Parser Syntax (same feature label, title overlap)
+- `issues/open/442-implement-parser-syntax.md` - Implement parser syntax extensions (same feature label, title overlap)
+- `issues/open/464-implement-FunctionDeclaration-parser-syntax.md` - Implement Functiondeclaration Parser Syntax (same feature label, title overlap)
+- `issues/open/550-implement-FunctionDeclaration-parser-syntax.md` - Implement Functiondeclaration Parser Syntax (same feature label, title overlap)
+- `issues/open/663-implement-arrayAssignmentTest-parser-syntax.md` - Implement Arrayassignmenttest Parser Syntax (same feature label, title overlap)
+- `issues/open/734-implement-assignmentCompatability-parser-syntax.md` - Implement Assignmentcompatability Parser Syntax (same feature label, title overlap)
+- `issues/open/753-implement-asyncFunctionReturnType-parser-syntax.md` - Implement Asyncfunctionreturntype Parser Syntax (same feature label, title overlap)
+- `issues/open/767-implement-augmentedTypesEnum-parser-syntax.md` - Implement Augmentedtypesenum Parser Syntax (same feature label, title overlap)
 - `issues/open/059-implement-parser-syntax-extensions.md` - Implement parser syntax extensions for TypeScript and advanced JS (same feature label, title overlap)
-- `issues/done/065-implement-parser-syntax.md` - Implement parser syntax extensions (same feature label, title overlap)
+- `issues/open/065-implement-parser-syntax.md` - Implement parser syntax extensions (same feature label, title overlap)
 - `issues/done/065a-merge-duplicate-parser-syntax-issue-into-059.md` - Merge duplicate parser syntax issue into 059 (same feature label, title overlap)
 
 ## Smart triage
@@ -152,13 +152,13 @@ Generated on 2026-05-07.
 - Visible symbol before failure: const binding `x` initialized to `0`
 - Compiler evidence: token dump emits `Ident("x")`, `StarEqual`, `Number(4)`, `Semicolon`; AST/resolved construction fails before representing `x *= 4`.
 - TypeScript oracle: reports TS2588 "Cannot assign to 'x' because it is a constant." for the assignment and update expressions.
-- Superseding child: `issues/done/5349-parse-multiplicative-compound-assignment-operators.md`
+- Superseding child: `issues/open/5349-parse-multiplicative-compound-assignment-operators.md`
 
 Nearby non-owners:
 
-- `issues/done/5178-parse-bitwise-compound-assignment-operators.md` owns bitwise `^=`, `&=`, and `|=`.
-- `issues/done/5164-parse-exponentiation-compound-assignment.md` owns `**=`.
-- `issues/done/5311-parse-property-access-arithmetic-compound-assignments.md` owns namespace property `+=`.
+- `issues/open/5178-parse-bitwise-compound-assignment-operators.md` owns bitwise `^=`, `&=`, and `|=`.
+- `issues/open/5164-parse-exponentiation-compound-assignment.md` owns `**=`.
+- `issues/open/5311-parse-property-access-arithmetic-compound-assignments.md` owns namespace property `+=`.
 
 ## Completion evidence
 

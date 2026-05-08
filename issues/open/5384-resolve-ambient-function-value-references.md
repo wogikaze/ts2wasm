@@ -161,7 +161,7 @@ Related but distinct:
 - `issues/open/064-implement-name-resolution.md` is a superseded test262
   metadata bucket and does not own this TypeScript ambient function value
   reference.
-- `issues/done/5161-model-ambient-value-declarations-for-name-resolution.md`
+- `issues/open/5161-model-ambient-value-declarations-for-name-resolution.md`
   owns ambient value declarations such as `declare const`, not
   `declare function` value references.
 

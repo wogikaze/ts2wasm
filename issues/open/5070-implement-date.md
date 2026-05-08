@@ -131,11 +131,11 @@ Follow-up issues:
 - `issues/done/050-implement-date.md` - Implement Date (same feature label, same group key, title overlap)
 - `issues/done/052-implement-json.md` - Implement JSON (same feature label, same group key, title overlap)
 - `issues/open/064-implement-name-resolution.md` - Implement name resolution (triaged - superseded by test262 metadata issues) (same reference path, same feature label, same group key, title overlap)
-- `issues/done/066-implement-regexp-literal.md` - Implement RegExp literal support (same feature label, same group key, title overlap)
-- `issues/done/067-implement-unknown-unsupported.md` - Investigate and classify unknown-unsupported cases (same feature label, same group key)
-- `issues/done/068-implement-unsupported-expression.md` - Implement unsupported expression types (same feature label, same group key, title overlap)
-- `issues/done/069-implement-APILibCheck.md` - Implement Apilibcheck (same feature label, same group key, title overlap)
-- `issues/done/070-implement-APISample.md` - Implement Apisample (same feature label, same group key, title overlap)
+- `issues/open/066-implement-regexp-literal.md` - Implement RegExp literal support (same feature label, same group key, title overlap)
+- `issues/open/067-implement-unknown-unsupported.md` - Investigate and classify unknown-unsupported cases (same feature label, same group key)
+- `issues/open/068-implement-unsupported-expression.md` - Implement unsupported expression types (same feature label, same group key, title overlap)
+- `issues/open/069-implement-APILibCheck.md` - Implement Apilibcheck (same feature label, same group key, title overlap)
+- `issues/open/070-implement-APISample.md` - Implement Apisample (same feature label, same group key, title overlap)
 
 ## Smart triage
 
@@ -189,7 +189,7 @@ Classification: truly-done.
 Audit result: retained in `issues/done/`. The issue has repo-local completion evidence, is not marked `blocked` or `triage-needed`, and `python scripts/manager.py check issues` validates the resulting issue graph.
 
 Evidence files:
-- `issues/done/5070-implement-date.md`
+- `issues/open/5070-implement-date.md`
 - `issues/index.md` after regeneration
 
 Future-work tracking: no untracked future-work item was identified in this issue during this metadata/evidence audit.

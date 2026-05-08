@@ -132,7 +132,7 @@ Follow-up issues:
 
 ## Notes
 
-Split from generated bucket `issues/done/1036-implement-baseExpressionTypeParameters.md`.
+Split from generated bucket `issues/open/1036-implement-baseExpressionTypeParameters.md`.
 
 ## Completion evidence
 

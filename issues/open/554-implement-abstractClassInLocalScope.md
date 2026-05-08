@@ -116,11 +116,11 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/082-implement-abstractClassInLocalScope.md` - Implement Abstractclassinlocalscope (same reference path, same feature label, same group key, title overlap)
-- `issues/done/083-implement-abstractClassInLocalScopeIsAbstract.md` - Implement Abstractclassinlocalscopeisabstract (same feature label, same group key, title overlap)
+- `issues/open/082-implement-abstractClassInLocalScope.md` - Implement Abstractclassinlocalscope (same reference path, same feature label, same group key, title overlap)
+- `issues/open/083-implement-abstractClassInLocalScopeIsAbstract.md` - Implement Abstractclassinlocalscopeisabstract (same feature label, same group key, title overlap)
 - `issues/open/446-implement-scope-analysis.md` - Implement scope-analysis support (same feature label, same group key, title overlap)
-- `issues/done/468-implement-abstractClassInLocalScope.md` - Implement Abstractclassinlocalscope (same reference path, same feature label, same group key, title overlap)
-- `issues/done/469-implement-abstractClassInLocalScopeIsAbstract.md` - Implement Abstractclassinlocalscopeisabstract (same feature label, same group key, title overlap)
+- `issues/open/468-implement-abstractClassInLocalScope.md` - Implement Abstractclassinlocalscope (same reference path, same feature label, same group key, title overlap)
+- `issues/open/469-implement-abstractClassInLocalScopeIsAbstract.md` - Implement Abstractclassinlocalscopeisabstract (same feature label, same group key, title overlap)
 
 ## Smart triage
 

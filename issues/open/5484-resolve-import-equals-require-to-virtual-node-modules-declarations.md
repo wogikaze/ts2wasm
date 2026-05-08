@@ -81,7 +81,7 @@ Out of scope:
 - `node_modules/<pkg>/index.d.ts`, tracked by `issues/open/5485-resolve-import-equals-require-to-virtual-node-modules-index-declarations.md`.
 - Class-export package shapes already covered by `issues/open/5295-resolve-import-equals-require-to-virtual-node-modules-class-export.md`.
 - Static ES import/export virtual-section resolution covered by `issues/open/5229-resolve-imports-between-filename-sections.md`.
-- `export var` parser boundaries covered by `issues/open/5283-support-entry-export-var-declarations.md` and `issues/open/5285-support-export-var-initializer-declarations.md`.
+- `export var` parser boundaries covered by `issues/done/5283-support-entry-export-var-declarations.md` and `issues/done/5285-support-export-var-initializer-declarations.md`.
 
 ## Affected paths
 
@@ -140,7 +140,7 @@ Follow-up issues:
 
 ## Notes
 
-Split from `issues/done/3590-implement-nodeResolution.md`.
+Split from `issues/open/3590-implement-nodeResolution.md`.
 
 Related but not duplicates:
 
@@ -151,7 +151,7 @@ Related but not duplicates:
   covers `node_modules/<pkg>/index.d.ts`.
 - `issues/open/5229-resolve-imports-between-filename-sections.md` covers
   local static import/export source specifiers between virtual sections.
-- `issues/done/232-resolve-local-relative-es-module-graph.md` intentionally
+- `issues/open/232-resolve-local-relative-es-module-graph.md` intentionally
   rejects unmatched bare specifiers and excludes package/node_modules lookup.
 
 ## Completion evidence

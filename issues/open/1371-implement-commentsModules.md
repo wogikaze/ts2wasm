@@ -134,7 +134,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] created: `issues/done/5287-bind-namespace-declarations-for-qualified-value-access.md`
+- [x] created: `issues/open/5287-bind-namespace-declarations-for-qualified-value-access.md`
 
 ## Notes
 
@@ -148,16 +148,16 @@ No exact duplicate found by path/title/feature scan.
 
 Related but not duplicates:
 
-- `issues/done/399-define-typescript-parse-erase-emit-boundary.md` defines the
+- `issues/open/399-define-typescript-parse-erase-emit-boundary.md` defines the
   TypeScript namespace parse/erase/emit boundary but does not implement this
   resolver binding.
-- `issues/done/432-implement-import-export.md` is the broad import/export
+- `issues/open/432-implement-import-export.md` is the broad import/export
   triage parent and is too broad for direct implementation.
-- `issues/done/5187-lower-namespace-only-multi-section-files.md` only preserves
+- `issues/open/5187-lower-namespace-only-multi-section-files.md` only preserves
   namespace-only multi-section bodies before triage.
-- `issues/done/5225-w0-typed-wat-writer.md` covers namespace
+- `issues/open/5225-w0-typed-wat-writer.md` covers namespace
   qualification in `extends` clauses, not top-level value access.
-- `issues/done/5244-date-timezone-formatting-policy.md`
+- `issues/open/5244-date-timezone-formatting-policy.md`
   covers function/namespace merging, not plain namespace value binding.
 
 ## Smart triage

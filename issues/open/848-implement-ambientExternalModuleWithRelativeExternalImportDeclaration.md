@@ -118,9 +118,9 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/152-implement-ambientExternalModuleWithRelativeExternalImportDeclaration.md` - Implement Ambientexternalmodulewithrelativeexternalimportdeclaration (same reference path, same group key, title overlap)
-- `issues/done/527-implement-ambientExternalModuleWithRelativeExternalImportDeclaration.md` - Implement Ambientexternalmodulewithrelativeexternalimportdeclaration (same reference path, same feature label, same group key, title overlap)
-- `issues/done/613-implement-ambientExternalModuleWithRelativeExternalImportDeclaration.md` - Implement Ambientexternalmodulewithrelativeexternalimportdeclaration (same reference path, same feature label, same group key, title overlap)
+- `issues/open/152-implement-ambientExternalModuleWithRelativeExternalImportDeclaration.md` - Implement Ambientexternalmodulewithrelativeexternalimportdeclaration (same reference path, same group key, title overlap)
+- `issues/open/527-implement-ambientExternalModuleWithRelativeExternalImportDeclaration.md` - Implement Ambientexternalmodulewithrelativeexternalimportdeclaration (same reference path, same feature label, same group key, title overlap)
+- `issues/open/613-implement-ambientExternalModuleWithRelativeExternalImportDeclaration.md` - Implement Ambientexternalmodulewithrelativeexternalimportdeclaration (same reference path, same feature label, same group key, title overlap)
 
 ## Smart triage
 
@@ -162,6 +162,6 @@ Violated acceptance: the issue cannot provide repo-local close evidence for its 
 
 Evidence files:
 - open issue file before this move
-- `issues/done/848-implement-ambientExternalModuleWithRelativeExternalImportDeclaration.md` after this move
+- `issues/open/848-implement-ambientExternalModuleWithRelativeExternalImportDeclaration.md` after this move
 
 Split follow-up: none created in this audit wave; this reopened issue remains the tracking item.

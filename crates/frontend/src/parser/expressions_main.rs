@@ -281,7 +281,7 @@ impl Parser {
     }
 
     fn arrow_function(&mut self) -> Result<Expr, Diagnostic> {
-        let _start_span = self.peek_span().unwrap_or(Span { start: 0, end: 0 });
+        let start_span = self.peek_span().unwrap_or(Span { start: 0, end: 0 });
         let mut params = Vec::new();
 
         if self.consume(TokenKind::LeftParen) {

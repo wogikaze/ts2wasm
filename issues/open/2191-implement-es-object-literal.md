@@ -117,9 +117,9 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/441-implement-object-literal.md` - Implement object literal enhancements (same feature label, title overlap)
+- `issues/open/441-implement-object-literal.md` - Implement object literal enhancements (same feature label, title overlap)
 - `issues/done/355-dynamic-object-enumeration-spread.md` - Implement dynamic object property enumeration spread (same feature label, title overlap)
-- `issues/done/372-implement-bigint-object-toprimitive-non-bigint-primitive-returns.md` - Implement BigInt object ToPrimitive non-BigInt primitive returns (same feature label, title overlap)
+- `issues/open/372-implement-bigint-object-toprimitive-non-bigint-primitive-returns.md` - Implement BigInt object ToPrimitive non-BigInt primitive returns (same feature label, title overlap)
 
 ## Smart triage
 

@@ -143,7 +143,7 @@ Follow-up issues:
 - `issues/open/5199-report-function-overload-list-class-merge-diagnostics.md`
   covers overload lists followed by a class declaration, not this valid
   overload implementation group.
-- `issues/open/5226-allow-ambient-function-overload-declarations.md` covers
+- `issues/open/5226-w0-ast-node-span-requirement.md` covers
   ambient declarations, not this non-ambient implementation group.
 - Folded into issue 5200.
 

@@ -116,7 +116,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/175-implement-amdModuleConstEnumUsage.md` - Implement Amdmoduleconstenumusage (same reference path, same feature label, same group key, title overlap)
+- `issues/open/175-implement-amdModuleConstEnumUsage.md` - Implement Amdmoduleconstenumusage (same reference path, same feature label, same group key, title overlap)
 
 ## Smart triage
 

@@ -108,7 +108,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] created/updated: `issues/done/5160-lower-plain-ternary-conditional-expressions.md`
+- [x] created/updated: `issues/open/5160-lower-plain-ternary-conditional-expressions.md`
 
 ## Notes
 
@@ -129,7 +129,7 @@ Generated on 2026-05-06.
 - Failure: `ternary operator not yet supported at 317..327`
 - Source context: `let y = x ? x : [];` in `function f2()`
 - TypeScript AST path: `FunctionDeclaration -> Block -> FirstStatement -> VariableDeclarationList -> VariableDeclaration -> ConditionalExpression -> Identifier(x)`
-- Split child: `issues/done/5160-lower-plain-ternary-conditional-expressions.md`
+- Split child: `issues/open/5160-lower-plain-ternary-conditional-expressions.md`
 
 ## Completion evidence
 

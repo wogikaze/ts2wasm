@@ -18,7 +18,7 @@ updated: 2026-05-07
 ## Summary
 
 Closed as superseded by
-`issues/done/5161-model-ambient-value-declarations-for-name-resolution.md`.
+`issues/open/5161-model-ambient-value-declarations-for-name-resolution.md`.
 
 Fresh triage shows `constructorAsType.ts` currently stops at the same ambient
 value name-resolution boundary: `declare var Person2` is erased from the runtime
@@ -160,7 +160,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] superseded by: `issues/done/5161-model-ambient-value-declarations-for-name-resolution.md`
+- [x] superseded by: `issues/open/5161-model-ambient-value-declarations-for-name-resolution.md`
 
 ## Notes
 
@@ -170,10 +170,10 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/5161-model-ambient-value-declarations-for-name-resolution.md`
+- `issues/open/5161-model-ambient-value-declarations-for-name-resolution.md`
   owns declaration-only ambient `declare var` / `declare let` / `declare const`
   names being visible to expression name resolution.
-- `issues/done/5193-parse-asi-after-ambient-variable-declarations.md` is
+- `issues/open/5193-parse-asi-after-ambient-variable-declarations.md` is
   related to ambient variable parsing, but this file has explicit semicolons and
   already parses to AST.
 - Construct-signature parser issues are related by syntax text only; this

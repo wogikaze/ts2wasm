@@ -117,7 +117,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] completed: `issues/done/5223-report-iterator-type-only-value-use-diagnostics.md`
+- [x] completed: `issues/open/5223-report-iterator-type-only-value-use-diagnostics.md`
 
 ## Notes
 

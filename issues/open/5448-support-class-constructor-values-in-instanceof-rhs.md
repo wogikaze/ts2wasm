@@ -16,7 +16,7 @@ updated: 2026-05-08
 Allow direct class constructor bindings to be used as the right-hand side of
 `instanceof` expressions.
 
-Split from generated bucket `issues/done/3448-implement-narrowTypeByInstanceof.md`.
+Split from generated bucket `issues/open/3448-implement-narrowTypeByInstanceof.md`.
 
 ## Problem
 

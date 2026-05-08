@@ -39,7 +39,7 @@ mise run reference-coverage -- tsc --path-filter reference/typescript/tests/case
 
 ## Desired final state
 
-This generated bucket is closed as superseded by `issues/done/5144-support-entry-export-function-declarations.md`. Do not implement directly from this bucket.
+This generated bucket is closed as superseded by `issues/open/5144-support-entry-export-function-declarations.md`. Do not implement directly from this bucket.
 
 ## Scope
 
@@ -111,7 +111,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] existing: `issues/done/5144-support-entry-export-function-declarations.md`
+- [x] existing: `issues/open/5144-support-entry-export-function-declarations.md`
 
 ## Notes
 
@@ -173,7 +173,7 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- superseded by `issues/done/5144-support-entry-export-function-declarations.md`
+- superseded by `issues/open/5144-support-entry-export-function-declarations.md`
 
 Validation result:
 

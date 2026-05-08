@@ -477,7 +477,7 @@ error: [UnsupportedSyntax] expected Semicolon, got Some(Ident("M")) at 30..31
 ## 重複整理メモ
 
 この issue はタイトルが重複しているため、内容がより充実している
-`issues/done/636-implement-anonterface.md` に統合されました。
+`issues/open/636-implement-anonterface.md` に統合されました。
 そちらを参照してください。
 ## Completion evidence
 
@@ -508,7 +508,7 @@ Classification: truly-done.
 Audit result: retained in `issues/done/`. The issue has repo-local completion evidence, is not marked `blocked` or `triage-needed`, and `python scripts/manager.py check issues` validates the resulting issue graph.
 
 Evidence files:
-- `issues/done/178-implement-anonterface.md`
+- `issues/open/178-implement-anonterface.md`
 - `issues/index.md` after regeneration
 
 Future-work tracking: no untracked future-work item was identified in this issue during this metadata/evidence audit.

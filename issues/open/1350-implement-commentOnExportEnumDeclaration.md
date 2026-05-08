@@ -135,7 +135,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/432-implement-import-export.md` is a broad import/export bucket,
+- `issues/open/432-implement-import-export.md` is a broad import/export bucket,
   not an executable implementation slice.
 - `issues/done/055-implement-import-export.md` is a completed umbrella and
   explicitly leaves broader import/export forms outside the narrow completed

@@ -126,16 +126,16 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/067-implement-unknown-unsupported.md` - Investigate and classify unknown-unsupported cases (same reference path, same feature label, same group key)
-- `issues/done/068-implement-unsupported-expression.md` - Implement unsupported expression types (same reference path, title overlap)
-- `issues/done/1170-implement-class.md` - Implement Class (same feature label, same group key, title overlap; split to issue 5246)
+- `issues/open/067-implement-unknown-unsupported.md` - Investigate and classify unknown-unsupported cases (same reference path, same feature label, same group key)
+- `issues/open/068-implement-unsupported-expression.md` - Implement unsupported expression types (same reference path, title overlap)
+- `issues/open/1170-implement-class.md` - Implement Class (same feature label, same group key, title overlap; split to issue 5246)
 - `issues/open/2410-implement-for.md` - Implement For (same feature label, same group key, title overlap)
 - `issues/open/2627-implement-i.md` - Implement I (same feature label, same group key, title overlap)
-- `issues/done/314-implement-string-builtin.md` - Implement string-builtin support (same feature label, same group key, title overlap)
+- `issues/open/314-implement-string-builtin.md` - Implement string-builtin support (same feature label, same group key, title overlap)
 - `issues/open/3198-implement-m.md` - Implement M (same feature label, same group key, title overlap)
-- `issues/done/419-implement-builtin-api.md` - Implement built-in API support (same reference path, title overlap)
-- `issues/done/437-implement-name-resolution.md` - Implement name resolution (same feature label, same group key, title overlap)
-- `issues/done/448-implement-string-builtin.md` - Implement string-builtin support (same reference path, same feature label, same group key, title overlap)
+- `issues/open/419-implement-builtin-api.md` - Implement built-in API support (same reference path, title overlap)
+- `issues/open/437-implement-name-resolution.md` - Implement name resolution (same feature label, same group key, title overlap)
+- `issues/open/448-implement-string-builtin.md` - Implement string-builtin support (same reference path, same feature label, same group key, title overlap)
 
 ## Smart triage
 

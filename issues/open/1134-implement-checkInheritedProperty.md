@@ -125,7 +125,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/200-implement-parser-syntax.md` is related only as historical parser-syntax cleanup; the current TSC path now builds.
+- `issues/open/200-implement-parser-syntax.md` is related only as historical parser-syntax cleanup; the current TSC path now builds.
 
 ## Smart triage
 

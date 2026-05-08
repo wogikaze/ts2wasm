@@ -122,7 +122,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] created: `issues/done/5218-parse-typescript-this-parameters-in-function-expressions.md`
+- [x] created: `issues/open/5218-parse-typescript-this-parameters-in-function-expressions.md`
 
 ## Notes
 

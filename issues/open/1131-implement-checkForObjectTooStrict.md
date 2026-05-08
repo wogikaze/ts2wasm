@@ -25,7 +25,7 @@ Triage checkForObjectTooStrict across 1 failing reference test cases and split t
 
 Reference test results show 1 case failing in directory `checkForObjectTooStrict`. Fresh triage shows tokens and AST succeed; the current blocker is `builtin_resolver` rejecting `class Bar extends Foo.Object` with the generic simple-inheritance diagnostic.
 
-Problem: `checkForObjectTooStrict.ts` is too broad for direct implementation. Its current observable blocker is now tracked by `issues/done/5225-w0-typed-wat-writer.md`.
+Problem: `checkForObjectTooStrict.ts` is too broad for direct implementation. Its current observable blocker is now tracked by `issues/open/5225-w0-typed-wat-writer.md`.
 
 ## Current failure
 
@@ -43,7 +43,7 @@ mise run reference-coverage -- tsc --path-filter reference/typescript/tests/case
 
 ## Desired final state
 
-This generated bucket is superseded by `issues/done/5225-w0-typed-wat-writer.md`. Do not implement directly from this bucket.
+This generated bucket is superseded by `issues/open/5225-w0-typed-wat-writer.md`. Do not implement directly from this bucket.
 
 ## Scope
 
@@ -115,7 +115,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] created: `issues/done/5225-w0-typed-wat-writer.md`
+- [x] created: `issues/open/5225-w0-typed-wat-writer.md`
 
 ## Notes
 
@@ -125,7 +125,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/1195-implement-classExtendingQualifiedName.md` is related but was a generated blocked bucket; issue 5225 records the exact current implementation-ready blocker.
+- `issues/open/1195-implement-classExtendingQualifiedName.md` is related but was a generated blocked bucket; issue 5225 records the exact current implementation-ready blocker.
 - Broad object-literal/import-export buckets are not exact matches because the AST succeeds and the failure is class heritage resolution.
 
 ## Smart triage
@@ -203,7 +203,7 @@ by child issue 5225.
 
 Commits:
 
-- child issue: `issues/done/5225-w0-typed-wat-writer.md`
+- child issue: `issues/open/5225-w0-typed-wat-writer.md`
 
 Validation result:
 

@@ -116,16 +116,16 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/075-implement-ExportAssignment.md` - Implement Exportassignment (same feature label, same group key, title overlap)
-- `issues/done/135-implement-allowSyntheticDefaultImports.md` - Implement Allowsyntheticdefaultimports (same feature label, same group key, title overlap)
-- `issues/done/432-implement-import-export.md` - Implement import/export module syntax (same feature label, same group key, title overlap)
-- `issues/done/462-implement-ExportAssignment.md` - Implement Exportassignment (same feature label, same group key, title overlap)
-- `issues/done/483-implement-accessorInAmbientContextES.md` - Implement Accessorinambientcontextes (same feature label, same group key, title overlap)
-- `issues/done/491-implement-aliasAssignments.md` - Implement Aliasassignments (same feature label, same group key, title overlap)
-- `issues/done/493-implement-aliasDoesNotDuplicateSignatures.md` - Implement Aliasdoesnotduplicatesignatures (same feature label, same group key, title overlap)
-- `issues/done/498-implement-aliasUsageInAccessorsOfClass.md` - Implement Aliasusageinaccessorsofclass (same feature label, same group key, title overlap)
-- `issues/done/499-implement-aliasUsageInArray.md` - Implement Aliasusageinarray (same feature label, same group key, title overlap)
-- `issues/done/500-implement-aliasUsageInFunctionExpression.md` - Implement Aliasusageinfunctionexpression (same feature label, same group key, title overlap)
+- `issues/open/075-implement-ExportAssignment.md` - Implement Exportassignment (same feature label, same group key, title overlap)
+- `issues/open/135-implement-allowSyntheticDefaultImports.md` - Implement Allowsyntheticdefaultimports (same feature label, same group key, title overlap)
+- `issues/open/432-implement-import-export.md` - Implement import/export module syntax (same feature label, same group key, title overlap)
+- `issues/open/462-implement-ExportAssignment.md` - Implement Exportassignment (same feature label, same group key, title overlap)
+- `issues/open/483-implement-accessorInAmbientContextES.md` - Implement Accessorinambientcontextes (same feature label, same group key, title overlap)
+- `issues/open/491-implement-aliasAssignments.md` - Implement Aliasassignments (same feature label, same group key, title overlap)
+- `issues/open/493-implement-aliasDoesNotDuplicateSignatures.md` - Implement Aliasdoesnotduplicatesignatures (same feature label, same group key, title overlap)
+- `issues/open/498-implement-aliasUsageInAccessorsOfClass.md` - Implement Aliasusageinaccessorsofclass (same feature label, same group key, title overlap)
+- `issues/open/499-implement-aliasUsageInArray.md` - Implement Aliasusageinarray (same feature label, same group key, title overlap)
+- `issues/open/500-implement-aliasUsageInFunctionExpression.md` - Implement Aliasusageinfunctionexpression (same feature label, same group key, title overlap)
 
 ## Smart triage
 
@@ -135,7 +135,7 @@ Not generated. Rerun with `--triage-limit 1` or higher.
 ## 重複整理メモ
 
 この issue はタイトルが重複しているため、内容がより充実している
-`issues/done/715-implement-assign.md` に統合されました。
+`issues/open/715-implement-assign.md` に統合されました。
 そちらを参照してください。
 ## Completion evidence
 
@@ -166,7 +166,7 @@ Classification: truly-done.
 Audit result: retained in `issues/done/`. The issue has repo-local completion evidence, is not marked `blocked` or `triage-needed`, and `python scripts/manager.py check issues` validates the resulting issue graph.
 
 Evidence files:
-- `issues/done/950-implement-assign.md`
+- `issues/open/950-implement-assign.md`
 - `issues/index.md` after regeneration
 
 Future-work tracking: no untracked future-work item was identified in this issue during this metadata/evidence audit.

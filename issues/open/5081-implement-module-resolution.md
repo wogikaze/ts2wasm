@@ -126,16 +126,16 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/1037-implement-baseIndexSignatureResolution.md` - Implement Baseindexsignatureresolution (same feature label, same group key, title overlap; stale build-pass bucket)
-- `issues/done/133-implement-allowJsCrossMonorepoPackage.md` - Implement Allowjscrossmonorepopackage (same feature label, same group key, title overlap)
+- `issues/open/1037-implement-baseIndexSignatureResolution.md` - Implement Baseindexsignatureresolution (same feature label, same group key, title overlap; stale build-pass bucket)
+- `issues/open/133-implement-allowJsCrossMonorepoPackage.md` - Implement Allowjscrossmonorepopackage (same feature label, same group key, title overlap)
 - `#1430` - Implement Conditionallyduplicateoverloadscausedbyoverloadresolution (same feature label, same group key, title overlap)
-- `issues/done/169-implement-ambiguousOverloadResolution.md` - Implement Ambiguousoverloadresolution (same feature label, same group key, title overlap)
+- `issues/open/169-implement-ambiguousOverloadResolution.md` - Implement Ambiguousoverloadresolution (same feature label, same group key, title overlap)
 - `issues/open/2058-implement-duplicatePackage-module-resolution.md` - Implement Duplicatepackage Module Resolution (same feature label, same group key, title overlap)
 - `issues/open/2443-implement-functionDeclarationWithResolutionOfTypeNamedArguments.md` - Implement Functiondeclarationwithresolutionoftypenamedarguments (same feature label, same group key, title overlap)
 - `issues/open/2444-implement-functionDeclarationWithResolutionOfTypeOfSameName.md` - Implement Functiondeclarationwithresolutionoftypeofsamename (same feature label, same group key, title overlap)
 - `issues/open/2448-implement-functionExpressionWithResolutionOfTypeNamedArguments.md` - Implement Functionexpressionwithresolutionoftypenamedarguments (same feature label, same group key, title overlap)
 - `issues/open/2449-implement-functionExpressionWithResolutionOfTypeOfSameName.md` - Implement Functionexpressionwithresolutionoftypeofsamename (same feature label, same group key, title overlap)
-- `issues/done/3371-implement-moduleResolution-module-resolution.md` - Implement Moduleresolution Module Resolution (same feature label, same group key, title overlap)
+- `issues/open/3371-implement-moduleResolution-module-resolution.md` - Implement Moduleresolution Module Resolution (same feature label, same group key, title overlap)
 
 ## Smart triage
 
@@ -158,7 +158,7 @@ AttributeError: 'NoneType' object has no attribute 'parse_test262_metadata'
 ## 重複整理メモ
 
 この issue はタイトルが重複しているため、内容がより充実している
-`issues/done/436-implement-module-resolution.md` に統合されました。
+`issues/open/436-implement-module-resolution.md` に統合されました。
 そちらを参照してください。
 ## Completion evidence
 
@@ -189,7 +189,7 @@ Classification: truly-done.
 Audit result: retained in `issues/done/`. The issue has repo-local completion evidence, is not marked `blocked` or `triage-needed`, and `python scripts/manager.py check issues` validates the resulting issue graph.
 
 Evidence files:
-- `issues/done/5081-implement-module-resolution.md`
+- `issues/open/5081-implement-module-resolution.md`
 - `issues/index.md` after regeneration
 
 Future-work tracking: no untracked future-work item was identified in this issue during this metadata/evidence audit.

@@ -96,7 +96,7 @@ Follow-up issues:
 
 ## Notes
 
-Created from issue 203 audit of `issues/done/058-implement-equality-operators.md`.
+Created from issue 203 audit of `issues/open/058-implement-equality-operators.md`.
 
 ## Completion evidence
 

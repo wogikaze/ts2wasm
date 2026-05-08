@@ -110,7 +110,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] folded residual name-resolution blocker into `issues/done/5161-model-ambient-value-declarations-for-name-resolution.md`
+- [x] folded residual name-resolution blocker into `issues/open/5161-model-ambient-value-declarations-for-name-resolution.md`
 
 ## Notes
 
@@ -120,7 +120,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/694-implement-arrayToLocaleStringES-unknown-unsupported.md` - Implement Arraytolocalestringes Unknown Unsupported (same feature label, title overlap)
+- `issues/open/694-implement-arrayToLocaleStringES-unknown-unsupported.md` - Implement Arraytolocalestringes Unknown Unsupported (same feature label, title overlap)
 
 ## Smart triage
 
@@ -164,7 +164,7 @@ export const StyledSelect = styled(Flex).attrs({
 ```
 
 The residual `declare const styled` expression reference is covered by
-`issues/done/5161-model-ambient-value-declarations-for-name-resolution.md`.
+`issues/open/5161-model-ambient-value-declarations-for-name-resolution.md`.
 
 ## Completion evidence
 

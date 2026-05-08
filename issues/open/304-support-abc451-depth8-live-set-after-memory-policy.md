@@ -137,7 +137,7 @@ Expected:
 - `fixtures/core-semantics/`
 - `docs/14-runtime-abi.md` if runtime memory policy/layout changes
 - `current-state.md` if supported live-set behavior changes
-- `issues/done/300-support-abc451-large-integer-number-boundary.md`
+- `issues/open/300-support-abc451-large-integer-number-boundary.md`
 - `issues/index.md`
 
 Do not touch:
@@ -253,7 +253,7 @@ Classification: truly-done.
 Audit result: retained in `issues/done/`. The issue has repo-local completion evidence, is not marked `blocked` or `triage-needed`, and `python scripts/manager.py check issues` validates the resulting issue graph.
 
 Evidence files:
-- `issues/done/304-support-abc451-depth8-live-set-after-memory-policy.md`
+- `issues/open/304-support-abc451-depth8-live-set-after-memory-policy.md`
 - `issues/index.md` after regeneration
 
 Future-work tracking: no untracked future-work item was identified in this issue during this metadata/evidence audit.

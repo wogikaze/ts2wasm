@@ -108,8 +108,8 @@ Current state:
 
 Follow-up issues:
 
-- [x] added: `issues/done/5176-report-ambient-var-lib-redeclaration-diagnostics.md`
-- [x] added: `issues/done/5177-report-strict-null-in-erased-namespace-methods.md`
+- [x] added: `issues/open/5176-report-ambient-var-lib-redeclaration-diagnostics.md`
+- [x] added: `issues/open/5177-report-strict-null-in-erased-namespace-methods.md`
 
 ## Notes
 
@@ -119,8 +119,8 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/432-implement-import-export.md` is not a match for the current blocker: the reference case now builds successfully, and current evidence is about hidden TypeScript oracle diagnostics.
-- `issues/done/5162-allow-compatible-var-redeclarations.md` is related but not an exact match. It covers compatible duplicate `var` declarations; the current first oracle diagnostic is an ambient `declare var console;` conflict with a lib global.
+- `issues/open/432-implement-import-export.md` is not a match for the current blocker: the reference case now builds successfully, and current evidence is about hidden TypeScript oracle diagnostics.
+- `issues/open/5162-allow-compatible-var-redeclarations.md` is related but not an exact match. It covers compatible duplicate `var` declarations; the current first oracle diagnostic is an ambient `declare var console;` conflict with a lib global.
 - No open issue was found for the namespace class method `var name: string = null` diagnostic hidden by namespace erasure.
 
 ## Smart triage
@@ -137,8 +137,8 @@ Generated on 2026-05-06.
   - `TS2403`: `Variable 'console' must be of type 'Console', but here has type 'any'.`
   - `TS2322`: `Type 'null' is not assignable to type 'string'.`
 - Superseding children:
-  - `issues/done/5176-report-ambient-var-lib-redeclaration-diagnostics.md`
-  - `issues/done/5177-report-strict-null-in-erased-namespace-methods.md`
+  - `issues/open/5176-report-ambient-var-lib-redeclaration-diagnostics.md`
+  - `issues/open/5177-report-strict-null-in-erased-namespace-methods.md`
 
 ## Completion evidence
 

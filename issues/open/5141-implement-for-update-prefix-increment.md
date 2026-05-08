@@ -80,7 +80,7 @@ Expected:
 - `crates/frontend/src/parser/`
 - `crates/frontend/src/parser/tests.rs`
 - `fixtures/`
-- `issues/done/080-implement-SystemModuleForStatementNoInitializer.md`
+- `issues/open/080-implement-SystemModuleForStatementNoInitializer.md`
 
 Do not touch:
 

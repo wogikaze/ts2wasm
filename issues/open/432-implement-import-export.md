@@ -126,16 +126,16 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/075-implement-ExportAssignment.md` - Implement Exportassignment (same feature label, same group key, title overlap)
-- `issues/done/131-implement-allowImportClausesToMergeWithTypes.md` - Implement Allowimportclausestomergewithtypes (same feature label, same group key, title overlap)
-- `issues/done/135-implement-allowSyntheticDefaultImports.md` - Implement Allowsyntheticdefaultimports (same feature label, same group key, title overlap)
-- `issues/done/136-implement-allowSyntheticDefaultImportsCanPaintCrossModuleDeclaration.md` - Implement Allowsyntheticdefaultimportscanpaintcrossmoduledeclaration (same feature label, same group key, title overlap)
-- `issues/done/138-implement-alwaysStrictModule.md` - Implement Alwaysstrictmodule (same feature label, same group key, title overlap)
-- `issues/done/181-implement-anonymousModules.md` - Implement Anonymousmodules (same feature label, same group key, title overlap)
+- `issues/open/075-implement-ExportAssignment.md` - Implement Exportassignment (same feature label, same group key, title overlap)
+- `issues/open/131-implement-allowImportClausesToMergeWithTypes.md` - Implement Allowimportclausestomergewithtypes (same feature label, same group key, title overlap)
+- `issues/open/135-implement-allowSyntheticDefaultImports.md` - Implement Allowsyntheticdefaultimports (same feature label, same group key, title overlap)
+- `issues/open/136-implement-allowSyntheticDefaultImportsCanPaintCrossModuleDeclaration.md` - Implement Allowsyntheticdefaultimportscanpaintcrossmoduledeclaration (same feature label, same group key, title overlap)
+- `issues/open/138-implement-alwaysStrictModule.md` - Implement Alwaysstrictmodule (same feature label, same group key, title overlap)
+- `issues/open/181-implement-anonymousModules.md` - Implement Anonymousmodules (same feature label, same group key, title overlap)
 - `issues/done/055-implement-import-export.md` - Umbrella: implement import and export (same feature label, same group key, title overlap)
-- `issues/done/060-investigate-unknown-unsupported-cases.md` - Investigate and classify unknown-unsupported diagnostic cases (same feature label, same group key)
-- `issues/done/227-implement-type-reference-directive-resolution.md` - Implement type reference directive resolution (same feature label, same group key, title overlap)
-- `issues/done/233-emit-static-es-module-bindings.md` - Emit static ES module bindings (same feature label, same group key, title overlap)
+- `issues/open/060-investigate-unknown-unsupported-cases.md` - Investigate and classify unknown-unsupported diagnostic cases (same feature label, same group key)
+- `issues/open/227-implement-type-reference-directive-resolution.md` - Implement type reference directive resolution (same feature label, same group key, title overlap)
+- `issues/open/233-emit-static-es-module-bindings.md` - Emit static ES module bindings (same feature label, same group key, title overlap)
 
 ## Smart triage
 

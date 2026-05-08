@@ -116,16 +116,16 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/069-implement-APILibCheck.md` - Implement Apilibcheck (same feature label, same group key, title overlap)
-- `issues/done/070-implement-APISample.md` - Implement Apisample (same feature label, same group key, title overlap)
-- `issues/done/071-implement-ArrowFunctionExpression.md` - Implement Arrowfunctionexpression (same feature label, same group key, title overlap)
-- `issues/done/072-implement-ClassDeclaration.md` - Implement Classdeclaration (same feature label, same group key, title overlap)
-- `issues/done/073-implement-ClassDeclarationWithInvalidConstOnPropertyDeclaration.md` - Implement Classdeclarationwithinvalidconstonpropertydeclaration (same feature label, same group key, title overlap)
-- `issues/done/076-implement-FunctionDeclaration.md` - Implement Functiondeclaration (same feature label, same group key, title overlap)
-- `issues/done/079-implement-ParameterList.md` - Implement Parameterlist (same feature label, same group key, title overlap)
-- `issues/done/081-implement-TransportStream.md` - Implement Transportstream (same feature label, same group key, title overlap)
-- `issues/done/084-implement-abstractClassUnionInstantiation.md` - Implement Abstractclassunioninstantiation (same feature label, same group key, title overlap)
-- `issues/done/086-implement-abstractPropertyBasics.md` - Implement Abstractpropertybasics (same feature label, same group key, title overlap)
+- `issues/open/069-implement-APILibCheck.md` - Implement Apilibcheck (same feature label, same group key, title overlap)
+- `issues/open/070-implement-APISample.md` - Implement Apisample (same feature label, same group key, title overlap)
+- `issues/open/071-implement-ArrowFunctionExpression.md` - Implement Arrowfunctionexpression (same feature label, same group key, title overlap)
+- `issues/open/072-implement-ClassDeclaration.md` - Implement Classdeclaration (same feature label, same group key, title overlap)
+- `issues/open/073-implement-ClassDeclarationWithInvalidConstOnPropertyDeclaration.md` - Implement Classdeclarationwithinvalidconstonpropertydeclaration (same feature label, same group key, title overlap)
+- `issues/open/076-implement-FunctionDeclaration.md` - Implement Functiondeclaration (same feature label, same group key, title overlap)
+- `issues/open/079-implement-ParameterList.md` - Implement Parameterlist (same feature label, same group key, title overlap)
+- `issues/open/081-implement-TransportStream.md` - Implement Transportstream (same feature label, same group key, title overlap)
+- `issues/open/084-implement-abstractClassUnionInstantiation.md` - Implement Abstractclassunioninstantiation (same feature label, same group key, title overlap)
+- `issues/open/086-implement-abstractPropertyBasics.md` - Implement Abstractpropertybasics (same feature label, same group key, title overlap)
 
 ## Smart triage
 
@@ -166,8 +166,8 @@ Reopen reason: frontmatter still says `class: blocked`, which is incompatible wi
 Violated acceptance: the issue cannot provide repo-local close evidence for its checked acceptance criteria while it remains in this state. Acceptance checkboxes were reset for re-verification.
 
 Evidence files:
-- `issues/done/3996-implement-reference-typescript-tests-cases-compiler.md` before this move
-- `issues/done/3996-implement-reference-typescript-tests-cases-compiler.md` after this move
+- `issues/open/3996-implement-reference-typescript-tests-cases-compiler.md` before this move
+- `issues/open/3996-implement-reference-typescript-tests-cases-compiler.md` after this move
 
 Split follow-up: none created in this audit wave; this reopened issue remains the tracking item.
 
@@ -180,5 +180,5 @@ Classification: truly-done duplicate/superseded tracking issue.
 Audit result: returned to `issues/done/` after review feedback. The title contains `(dup)`, which marks this issue as a duplicate/superseded tracker; duplicate closure issues must not remain in `issues/open/` unless the duplicate mapping itself is invalid.
 
 Evidence files:
-- `issues/done/3996-implement-reference-typescript-tests-cases-compiler.md` after this correction
+- `issues/open/3996-implement-reference-typescript-tests-cases-compiler.md` after this correction
 - `issues/index.md` after regeneration

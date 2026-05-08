@@ -91,9 +91,9 @@ In scope:
 
 Out of scope:
 
-- Local imports between `@filename` sections; tracked by `issues/done/5229-w0-user-runtime-string-origin.md`.
+- Local imports between `@filename` sections; tracked by `issues/open/5229-resolve-imports-between-filename-sections.md`.
 - Sharing non-module script globals between `@filename` sections; tracked by `issues/open/5328-share-script-globals-across-filename-sections.md`.
-- Namespace-only multi-section body preservation; tracked by `issues/done/5187-lower-namespace-only-multi-section-files.md`.
+- Namespace-only multi-section body preservation; tracked by `issues/open/5187-lower-namespace-only-multi-section-files.md`.
 - Contextual overload list type inference after this binding-scope boundary.
 
 ## Affected paths
@@ -156,17 +156,17 @@ Follow-up issues:
 ## Notes
 
 Split from generated bucket
-`issues/done/1490-implement-contextualOverloadListFromArrayUnion.md` on
+`issues/open/1490-implement-contextualOverloadListFromArrayUnion.md` on
 2026-05-07.
 
 Related but not duplicates:
 
-- `issues/done/5229-w0-user-runtime-string-origin.md` covers local
+- `issues/open/5229-resolve-imports-between-filename-sections.md` covers local
   import specifiers between virtual files.
 - `issues/open/5328-share-script-globals-across-filename-sections.md` covers
   global script declarations shared across virtual files, not external-module
   exported binding isolation.
-- `issues/done/5127-implement-export-default-multifile-lowering.md` fixed only
+- `issues/open/5127-implement-export-default-multifile-lowering.md` fixed only
   duplicate synthetic default export locals.
 
 ## Completion evidence

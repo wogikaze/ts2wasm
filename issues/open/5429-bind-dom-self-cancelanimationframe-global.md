@@ -144,7 +144,7 @@ Follow-up issues:
 
 ## Notes
 
-Split from `issues/done/3402-implement-multiExtendsSplitInterfaces.md`.
+Split from `issues/open/3402-implement-multiExtendsSplitInterfaces.md`.
 
 Related but distinct:
 

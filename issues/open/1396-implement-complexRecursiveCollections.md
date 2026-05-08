@@ -18,7 +18,7 @@ updated: 2026-05-07
 ## Summary
 
 Closed as superseded by
-`issues/done/5187-lower-namespace-only-multi-section-files.md`.
+`issues/open/5187-lower-namespace-only-multi-section-files.md`.
 
 Fresh focused triage shows `complexRecursiveCollections.ts` currently exposes
 the same namespace-only multi-section boundary already owned by issue 5187: the
@@ -163,7 +163,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] superseded by: `issues/done/5187-lower-namespace-only-multi-section-files.md`
+- [x] superseded by: `issues/open/5187-lower-namespace-only-multi-section-files.md`
 
 ## Notes
 
@@ -173,10 +173,10 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/5187-lower-namespace-only-multi-section-files.md` owns keeping
+- `issues/open/5187-lower-namespace-only-multi-section-files.md` owns keeping
   namespace-only/declaration-only multi-section bodies observable enough for
   the next namespace/scope/type diagnostic.
-- `issues/done/5292-skip-tsconfig-filename-sections-in-reference-harness.md`
+- `issues/open/5292-skip-tsconfig-filename-sections-in-reference-harness.md`
   is unrelated; this file has source/declaration virtual sections, not a
   `tsconfig.json` section.
 - Broader type-system issues are later blockers because the current smart triage
@@ -222,7 +222,7 @@ after parsing succeeds.
 
 Commits:
 
-- superseded by `issues/done/5187-lower-namespace-only-multi-section-files.md`
+- superseded by `issues/open/5187-lower-namespace-only-multi-section-files.md`
 
 Validation result:
 

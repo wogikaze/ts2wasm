@@ -117,15 +117,15 @@ Follow-up issues:
 ## Duplicate detection
 
 - `issues/open/442-implement-parser-syntax.md` - Implement parser syntax extensions (same feature label, title overlap)
-- `issues/done/464-implement-FunctionDeclaration-parser-syntax.md` - Implement Functiondeclaration Parser Syntax (same feature label, title overlap)
-- `issues/done/550-implement-FunctionDeclaration-parser-syntax.md` - Implement Functiondeclaration Parser Syntax (same feature label, title overlap)
-- `issues/done/663-implement-arrayAssignmentTest-parser-syntax.md` - Implement Arrayassignmenttest Parser Syntax (same feature label, title overlap)
-- `issues/done/734-implement-assignmentCompatability-parser-syntax.md` - Implement Assignmentcompatability Parser Syntax (same feature label, title overlap)
-- `issues/done/753-implement-asyncFunctionReturnType-parser-syntax.md` - Implement Asyncfunctionreturntype Parser Syntax (same reference path, same feature label, same group key, title overlap)
-- `issues/done/761-implement-asyncIteratorExtraParameters.md` - Implement Asynciteratorextraparameters (same feature label, same group key, title overlap)
-- `issues/done/762-implement-asyncYieldStarContextualType.md` - Implement Asyncyieldstarcontextualtype (same feature label, same group key, title overlap)
-- `issues/done/765-implement-augmentedTypesClass.md` - Implement Augmentedtypesclass (same feature label, same group key, title overlap)
-- `issues/done/767-implement-augmentedTypesEnum-parser-syntax.md` - Implement Augmentedtypesenum Parser Syntax (same feature label, same group key, title overlap)
+- `issues/open/464-implement-FunctionDeclaration-parser-syntax.md` - Implement Functiondeclaration Parser Syntax (same feature label, title overlap)
+- `issues/open/550-implement-FunctionDeclaration-parser-syntax.md` - Implement Functiondeclaration Parser Syntax (same feature label, title overlap)
+- `issues/open/663-implement-arrayAssignmentTest-parser-syntax.md` - Implement Arrayassignmenttest Parser Syntax (same feature label, title overlap)
+- `issues/open/734-implement-assignmentCompatability-parser-syntax.md` - Implement Assignmentcompatability Parser Syntax (same feature label, title overlap)
+- `issues/open/753-implement-asyncFunctionReturnType-parser-syntax.md` - Implement Asyncfunctionreturntype Parser Syntax (same reference path, same feature label, same group key, title overlap)
+- `issues/open/761-implement-asyncIteratorExtraParameters.md` - Implement Asynciteratorextraparameters (same feature label, same group key, title overlap)
+- `issues/open/762-implement-asyncYieldStarContextualType.md` - Implement Asyncyieldstarcontextualtype (same feature label, same group key, title overlap)
+- `issues/open/765-implement-augmentedTypesClass.md` - Implement Augmentedtypesclass (same feature label, same group key, title overlap)
+- `issues/open/767-implement-augmentedTypesEnum-parser-syntax.md` - Implement Augmentedtypesenum Parser Syntax (same feature label, same group key, title overlap)
 
 ## Smart triage
 
@@ -135,7 +135,7 @@ Not generated. Rerun with `--triage-limit 1` or higher.
 ## 重複整理メモ
 
 この issue はタイトルが重複しているため、内容がより充実している
-`issues/done/753-implement-asyncFunctionReturnType-parser-syntax.md` に統合されました。
+`issues/open/753-implement-asyncFunctionReturnType-parser-syntax.md` に統合されました。
 そちらを参照してください。
 ## Completion evidence
 
@@ -166,7 +166,7 @@ Classification: truly-done.
 Audit result: retained in `issues/done/`. The issue has repo-local completion evidence, is not marked `blocked` or `triage-needed`, and `python scripts/manager.py check issues` validates the resulting issue graph.
 
 Evidence files:
-- `issues/done/988-implement-asyncFunctionReturnType-parser-syntax.md`
+- `issues/open/988-implement-asyncFunctionReturnType-parser-syntax.md`
 - `issues/index.md` after regeneration
 
 Future-work tracking: no untracked future-work item was identified in this issue during this metadata/evidence audit.

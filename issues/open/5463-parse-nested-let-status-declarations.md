@@ -18,7 +18,7 @@ block instead of treating `let` as the start of an expression statement and
 failing at the following identifier.
 
 Split from generated bucket
-`issues/done/3487-implement-nestedRedeclarationInES.md`.
+`issues/open/3487-implement-nestedRedeclarationInES.md`.
 
 ## Problem
 
@@ -109,7 +109,7 @@ Out of scope:
 - General block-scoped shadowing behavior, tracked by related scope issues such
   as `issues/open/5458-allow-block-scoped-shadowing-in-nested-blocks-and-switch-cases.md`.
 - Parenthesized function expression statements in nested blocks, tracked by
-  `issues/open/5212-parse-function-expression-statements-in-nested-blocks.md`.
+  `issues/open/5212-implement-remaining-bigint-mixed-runtime-coercion-edges.md`.
 
 ## Affected paths
 

@@ -116,12 +116,12 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/070-implement-APISample.md` - Implement Apisample (same reference path, title overlap)
+- `issues/open/070-implement-APISample.md` - Implement Apisample (same reference path, title overlap)
 - `issues/done/415-implement-arrow-function.md` - Implement arrow functions (same feature label, title overlap)
-- `issues/done/430-implement-function.md` - Implement function support (same feature label, title overlap)
+- `issues/open/430-implement-function.md` - Implement function support (same feature label, title overlap)
 - `issues/done/036-implement-arrow-function.md` - Implement arrow function (same feature label, title overlap)
 - `issues/done/062d-function-this-and-arguments.md` - Implement function this and arguments semantics (same feature label, title overlap)
-- `issues/done/210-implement-arrow-function-closure-lexical-this.md` - Implement arrow function closure and lexical this semantics (same feature label, title overlap)
+- `issues/open/210-implement-arrow-function-closure-lexical-this.md` - Implement arrow function closure and lexical this semantics (same feature label, title overlap)
 
 ## Smart triage
 
@@ -766,7 +766,7 @@ error: [UnsupportedSyntax] arrow function block bodies support a single return s
 ## 重複整理メモ
 
 この issue はタイトルが重複しているため、内容がより充実している
-`issues/done/542-implement-APISample-arrow-function.md` に統合されました。
+`issues/open/542-implement-APISample-arrow-function.md` に統合されました。
 そちらを参照してください。
 ## Completion evidence
 
@@ -797,7 +797,7 @@ Classification: truly-done.
 Audit result: retained in `issues/done/`. The issue has repo-local completion evidence, is not marked `blocked` or `triage-needed`, and `python scripts/manager.py check issues` validates the resulting issue graph.
 
 Evidence files:
-- `issues/done/456-implement-APISample-arrow-function.md`
+- `issues/open/456-implement-APISample-arrow-function.md`
 - `issues/index.md` after regeneration
 
 Future-work tracking: no untracked future-work item was identified in this issue during this metadata/evidence audit.

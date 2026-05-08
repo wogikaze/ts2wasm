@@ -89,7 +89,7 @@ In scope:
 
 Out of scope:
 
-- Anonymous `export default class extends Foo {}`; covered by `issues/done/5326-support-default-class-export-declarations.md`.
+- Anonymous `export default class extends Foo {}`; covered by `issues/open/5326-support-default-class-export-declarations.md`.
 - Default function exports.
 - Default interface/type exports.
 - Module loading or package resolution.
@@ -153,11 +153,11 @@ Follow-up issues:
 ## Notes
 
 Split from generated bucket
-`issues/done/1488-implement-contextualExpressionTypecheckingDoesntBlowStack.md`.
+`issues/open/1488-implement-contextualExpressionTypecheckingDoesntBlowStack.md`.
 
 Related but not duplicates:
 
-- `issues/done/5326-support-default-class-export-declarations.md` covers the
+- `issues/open/5326-support-default-class-export-declarations.md` covers the
   anonymous `export default class extends Foo {}` form and explicitly keeps
   named default classes out of scope unless they fall out of the same parser
   path.

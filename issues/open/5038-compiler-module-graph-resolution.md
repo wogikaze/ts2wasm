@@ -116,6 +116,6 @@ Reopen reason: no `## Completion evidence` section is present, so close evidence
 Violated acceptance: the issue cannot provide repo-local close evidence for its checked acceptance criteria while it remains in this state. Acceptance checkboxes were reset for re-verification.
 
 Evidence files:
-- `issues/done/5038-compiler-module-graph-resolution.md` (moved back from done/ per audit, no completion evidence added)
+- `issues/open/5038-compiler-module-graph-resolution.md` (moved back from done/ per audit, no completion evidence added)
 
 Split follow-up: none created in this audit wave; this reopened issue remains the tracking item.

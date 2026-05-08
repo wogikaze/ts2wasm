@@ -125,11 +125,11 @@ Follow-up issues:
 ## Notes
 
 Split from stale generated bucket
-`issues/done/1211-implement-classFieldsBrokenConstructorEmitNoCrash.md`.
+`issues/open/1211-implement-classFieldsBrokenConstructorEmitNoCrash.md`.
 
 Related but not duplicate:
 
-- `issues/done/546-implement-ClassDeclaration.md` is a broad class declaration
+- `issues/open/546-implement-ClassDeclaration.md` is a broad class declaration
   triage bucket containing constructor overload declarations; this issue is the
   narrow malformed bare-constructor case.
 

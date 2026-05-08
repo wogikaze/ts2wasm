@@ -118,7 +118,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/099-implement-accessorInAmbientContextES.md` - Implement Accessorinambientcontextes (same reference path, same group key, title overlap)
+- `issues/open/099-implement-accessorInAmbientContextES.md` - Implement Accessorinambientcontextes (same reference path, same group key, title overlap)
 
 ## Smart triage
 
@@ -562,6 +562,6 @@ Violated acceptance: the issue cannot provide repo-local close evidence for its 
 
 Evidence files:
 - open issue file before this move
-- `issues/done/483-implement-accessorInAmbientContextES.md` after this move
+- `issues/open/483-implement-accessorInAmbientContextES.md` after this move
 
 Split follow-up: none created in this audit wave; this reopened issue remains the tracking item.

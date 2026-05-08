@@ -19,7 +19,7 @@ completed: 2026-05-07
 ## Summary
 
 Closed as superseded by
-`issues/done/5228-w0-wasm-binary-backend-mvp.md`.
+`issues/open/5228-w0-wasm-binary-backend-mvp.md`.
 
 Fresh triage shows the current first blocker is the simple computed object
 literal key parser gap for `{ [x]: 1 }`.
@@ -124,7 +124,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] superseded by: `issues/done/5228-w0-wasm-binary-backend-mvp.md`
+- [x] superseded by: `issues/open/5228-w0-wasm-binary-backend-mvp.md`
 
 ## Notes
 
@@ -134,10 +134,10 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/5228-w0-wasm-binary-backend-mvp.md` owns the
+- `issues/open/5228-w0-wasm-binary-backend-mvp.md` owns the
   current first blocker: parsing an object literal property assignment whose
   computed key is a simple identifier such as `{ [x]: 1 }`.
-- `issues/done/5209-support-class-instance-method-receiver-calls.md`
+- `issues/open/5209-support-class-instance-method-receiver-calls.md`
   covers later non-simple key expressions such as binary expressions.
 
 ## Smart triage

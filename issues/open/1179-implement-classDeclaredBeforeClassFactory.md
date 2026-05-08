@@ -110,7 +110,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] `issues/done/5252-support-call-expression-class-heritage.md`
+- [x] `issues/open/5252-support-call-expression-class-heritage.md`
 
 ## Notes
 
@@ -121,7 +121,7 @@ Follow-up issues:
 ## Duplicate detection
 
 - `issues/open/1741-implement-declarationEmitExpressionInExtends-declaration-emit.md` is related and covers other expression-in-extends declaration-emit cases.
-- `issues/done/5225-w0-typed-wat-writer.md` is related but limited to qualified/member heritage names such as `extends Foo.Object`.
+- `issues/open/5225-w0-typed-wat-writer.md` is related but limited to qualified/member heritage names such as `extends Foo.Object`.
 - No existing implementation-ready issue covered the call-expression heritage factory case exactly.
 
 ## Smart triage

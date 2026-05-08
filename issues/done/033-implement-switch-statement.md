@@ -89,11 +89,11 @@ Current state:
 
 Follow-up issues:
 
-- [x] Implement fall-through behavior for switch statements (P2; completed in `issues/done/208-implement-switch-fall-through-semantics.md`)
+- [x] Implement fall-through behavior for switch statements (P2; completed in `issues/open/208-implement-switch-fall-through-semantics.md`)
 
 ## Notes
 
-Switch is lowered to structured case-entry blocks rather than a jump table. Fall-through support is completed in `issues/done/208-implement-switch-fall-through-semantics.md`.
+Switch is lowered to structured case-entry blocks rather than a jump table. Fall-through support is completed in `issues/open/208-implement-switch-fall-through-semantics.md`.
 
 ## Completion evidence
 
@@ -129,7 +129,7 @@ date: 2026-04-26
 - This is simpler than JavaScript semantics but functional for basic use cases
 
 **Remaining risks:**
-- Fall-through behavior is implemented and tracked by `issues/done/208-implement-switch-fall-through-semantics.md`
+- Fall-through behavior is implemented and tracked by `issues/open/208-implement-switch-fall-through-semantics.md`
 - This differs from JavaScript semantics and must not be counted as full switch semantic parity
 
 ## False-done audit

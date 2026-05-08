@@ -17,7 +17,7 @@ Treat TypeScript `global { ... }` augmentation blocks as TypeScript syntax
 rather than runtime expression statements.
 
 This is the one remaining executable slice split from
-`issues/done/3318-implement-moduleAugmentationGlobal-import-export.md`.
+`issues/open/3318-implement-moduleAugmentationGlobal-import-export.md`.
 
 ## Problem
 

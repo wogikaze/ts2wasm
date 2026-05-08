@@ -133,9 +133,9 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/5307-report-var-function-duplicate-identifier-diagnostics.md`
+- `issues/open/5307-report-var-function-duplicate-identifier-diagnostics.md`
   is related but covers var/function duplicate identifiers.
-- `issues/done/343-implement-duplicate-local-detection.md` is related but does
+- `issues/open/343-implement-duplicate-local-detection.md` is related but does
   not own TypeScript-specific class/namespace duplicate member diagnostics.
 - No exact open issue covered static class members/accessors colliding with
   exported namespace members, so issue 5329 was created.

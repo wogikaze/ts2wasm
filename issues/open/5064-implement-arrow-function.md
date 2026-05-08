@@ -126,16 +126,16 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/1031-implement-badThisBinding.md` - Implement Badthisbinding (same feature label, same group key, title overlap; split to issue 5152)
-- `issues/done/1107-implement-capturedLetConstInLoop-arrow-function.md` - Implement Capturedletconstinloop Arrow Function (same feature label, same group key, title overlap; stale build-pass bucket)
-- `issues/done/1144-implement-checkSwitchStatementIfCaseTypeIsString.md` - Implement Checkswitchstatementifcasetypeisstring (same feature label, same group key, title overlap)
+- `issues/open/1031-implement-badThisBinding.md` - Implement Badthisbinding (same feature label, same group key, title overlap; split to issue 5152)
+- `issues/open/1107-implement-capturedLetConstInLoop-arrow-function.md` - Implement Capturedletconstinloop Arrow Function (same feature label, same group key, title overlap; stale build-pass bucket)
+- `issues/open/1144-implement-checkSwitchStatementIfCaseTypeIsString.md` - Implement Checkswitchstatementifcasetypeisstring (same feature label, same group key, title overlap)
 - `issues/open/1196-implement-classExtendsAcrossFiles.md` - Implement Classextendsacrossfiles (same feature label, same group key, title overlap)
-- `issues/done/1300-implement-collisionRestParameterArrowFunctions.md` - Implement Collisionrestparameterarrowfunctions (same feature label, same group key, title overlap; stale build-pass bucket)
-- `issues/done/1308-implement-collisionSuperAndLocalFunctionInConstructor.md` - Implement Collisionsuperandlocalfunctioninconstructor (same feature label, same group key, title overlap; stale build-pass bucket)
-- `issues/done/1312-implement-collisionSuperAndLocalVarInConstructor.md` - Implement Collisionsuperandlocalvarinconstructor (same feature label, same group key, title overlap)
-- `issues/done/132-implement-allowJsClassThisTypeCrash.md` - Implement Allowjsclassthistypecrash (same feature label, same group key, title overlap)
-- `issues/done/1401-implement-compositeContextualSignature.md` - Implement Compositecontextualsignature (same feature label, same group key, title overlap; now closed as stale build-pass)
-- `issues/done/1490-implement-contextualOverloadListFromArrayUnion.md` - Implement Contextualoverloadlistfromarrayunion (same feature label, same group key, title overlap)
+- `issues/open/1300-implement-collisionRestParameterArrowFunctions.md` - Implement Collisionrestparameterarrowfunctions (same feature label, same group key, title overlap; stale build-pass bucket)
+- `issues/open/1308-implement-collisionSuperAndLocalFunctionInConstructor.md` - Implement Collisionsuperandlocalfunctioninconstructor (same feature label, same group key, title overlap; stale build-pass bucket)
+- `issues/open/1312-implement-collisionSuperAndLocalVarInConstructor.md` - Implement Collisionsuperandlocalvarinconstructor (same feature label, same group key, title overlap)
+- `issues/open/132-implement-allowJsClassThisTypeCrash.md` - Implement Allowjsclassthistypecrash (same feature label, same group key, title overlap)
+- `issues/open/1401-implement-compositeContextualSignature.md` - Implement Compositecontextualsignature (same feature label, same group key, title overlap; now closed as stale build-pass)
+- `issues/open/1490-implement-contextualOverloadListFromArrayUnion.md` - Implement Contextualoverloadlistfromarrayunion (same feature label, same group key, title overlap)
 
 ## Smart triage
 
@@ -189,7 +189,7 @@ Classification: truly-done.
 Audit result: retained in `issues/done/`. The issue has repo-local completion evidence, is not marked `blocked` or `triage-needed`, and `python scripts/manager.py check issues` validates the resulting issue graph.
 
 Evidence files:
-- `issues/done/5064-implement-arrow-function.md`
+- `issues/open/5064-implement-arrow-function.md`
 - `issues/index.md` after regeneration
 
 Future-work tracking: no untracked future-work item was identified in this issue during this metadata/evidence audit.

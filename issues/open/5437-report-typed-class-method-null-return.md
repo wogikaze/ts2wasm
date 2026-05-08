@@ -119,7 +119,7 @@ Follow-up issues:
 ## Notes
 
 Split from generated bucket
-`issues/done/3418-implement-mutuallyRecursiveGenericBaseTypes.md`.
+`issues/open/3418-implement-mutuallyRecursiveGenericBaseTypes.md`.
 
 Related but not duplicates:
 

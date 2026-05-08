@@ -18,7 +18,7 @@ updated: 2026-05-07
 ## Summary
 
 Closed as superseded by
-`issues/done/232-resolve-local-relative-es-module-graph.md`.
+`issues/open/232-resolve-local-relative-es-module-graph.md`.
 
 Fresh focused coverage shows the current blocker is an oracle-matching missing
 local module diagnostic for `./mod1`, not a standalone CommonJS class
@@ -134,7 +134,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] superseded by: `issues/done/232-resolve-local-relative-es-module-graph.md`
+- [x] superseded by: `issues/open/232-resolve-local-relative-es-module-graph.md`
 
 ## Notes
 
@@ -144,7 +144,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/232-resolve-local-relative-es-module-graph.md` owns the exact
+- `issues/open/232-resolve-local-relative-es-module-graph.md` owns the exact
   current behavior: source-spanned missing local relative module diagnostics for
   static imports and import-equals module specifiers.
 - Class expression lowering appears in one triage diagnostic path, but current

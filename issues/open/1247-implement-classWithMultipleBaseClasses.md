@@ -135,7 +135,7 @@ Follow-up issues:
 
 No exact implementation child is created because the original parser-syntax
 blocker no longer reproduces. This is distinct from
-`issues/done/5317-report-multiple-class-heritage-bases.md`, which covers
+`issues/open/5317-report-multiple-class-heritage-bases.md`, which covers
 invalid `class C extends A,B {}` syntax; this reference instead uses valid
 interface multiple inheritance and class `implements`.
 

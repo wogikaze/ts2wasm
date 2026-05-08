@@ -114,7 +114,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] created: `issues/done/376-implement-dynamic-bigint-exponentiation.md`, `issues/done/377-implement-bigint-bitwise-not-and-or-xor.md`, `issues/done/378-implement-bigint-shift-operators.md`
+- [x] created: `issues/done/376-implement-dynamic-bigint-exponentiation.md`, `issues/open/377-implement-bigint-bitwise-not-and-or-xor.md`, `issues/done/378-implement-bigint-shift-operators.md`
 
 ## Notes
 
@@ -153,7 +153,7 @@ Classification: truly-done.
 Audit result: retained in `issues/done/`. The issue has repo-local completion evidence, is not marked `blocked` or `triage-needed`, and `python scripts/manager.py check issues` validates the resulting issue graph.
 
 Evidence files:
-- `issues/done/371-define-bigint-bitwise-and-exponentiation-policy.md`
+- `issues/open/371-define-bigint-bitwise-and-exponentiation-policy.md`
 - `issues/index.md` after regeneration
 
 Future-work tracking: no untracked future-work item was identified in this issue during this metadata/evidence audit.

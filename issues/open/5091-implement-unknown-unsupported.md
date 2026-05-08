@@ -126,16 +126,16 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/067-implement-unknown-unsupported.md` - Investigate and classify unknown-unsupported cases (same feature label, same group key, title overlap)
-- `issues/done/1026-implement-badArrayIndex.md` - Implement Badarrayindex (same feature label, same group key; superseded by issue 5150)
-- `issues/done/1030-implement-badOverloadError.md` - Implement Badoverloaderror (same feature label, same group key; stale build-pass bucket)
-- `issues/done/1043-implement-bestChoiceType.md` - Implement Bestchoicetype (same feature label, same group key)
-- `issues/done/1045-implement-betterErrorForAccidentalCall.md` - Implement Bettererrorforaccidentalcall (same feature label, same group key)
-- `issues/done/1058-implement-binderBinaryExpressionStress.md` - Implement Binderbinaryexpressionstress (same feature label, same group key)
-- `issues/done/1059-implement-binderBinaryExpressionStressJs.md` - Implement Binderbinaryexpressionstressjs (same feature label, same group key)
-- `issues/done/106-implement-accessors.md` - Implement Accessors (same feature label, same group key)
+- `issues/open/067-implement-unknown-unsupported.md` - Investigate and classify unknown-unsupported cases (same feature label, same group key, title overlap)
+- `issues/open/1026-implement-badArrayIndex.md` - Implement Badarrayindex (same feature label, same group key; superseded by issue 5150)
+- `issues/open/1030-implement-badOverloadError.md` - Implement Badoverloaderror (same feature label, same group key; stale build-pass bucket)
+- `issues/open/1043-implement-bestChoiceType.md` - Implement Bestchoicetype (same feature label, same group key)
+- `issues/open/1045-implement-betterErrorForAccidentalCall.md` - Implement Bettererrorforaccidentalcall (same feature label, same group key)
+- `issues/open/1058-implement-binderBinaryExpressionStress.md` - Implement Binderbinaryexpressionstress (same feature label, same group key)
+- `issues/open/1059-implement-binderBinaryExpressionStressJs.md` - Implement Binderbinaryexpressionstressjs (same feature label, same group key)
+- `issues/open/106-implement-accessors.md` - Implement Accessors (same feature label, same group key)
 - `issues/open/1065-implement-bitwiseCompoundAssignmentOperators.md` - Implement Bitwisecompoundassignmentoperators (same feature label, same group key)
-- `issues/done/1086-implement-builtinIterator.md` - Implement Builtiniterator (same feature label, same group key; superseded by issue 5191)
+- `issues/open/1086-implement-builtinIterator.md` - Implement Builtiniterator (same feature label, same group key; superseded by issue 5191)
 
 ## Smart triage
 
@@ -189,7 +189,7 @@ Classification: truly-done.
 Audit result: retained in `issues/done/`. The issue has repo-local completion evidence, is not marked `blocked` or `triage-needed`, and `python scripts/manager.py check issues` validates the resulting issue graph.
 
 Evidence files:
-- `issues/done/5091-implement-unknown-unsupported.md`
+- `issues/open/5091-implement-unknown-unsupported.md`
 - `issues/index.md` after regeneration
 
 Future-work tracking: no untracked future-work item was identified in this issue during this metadata/evidence audit.

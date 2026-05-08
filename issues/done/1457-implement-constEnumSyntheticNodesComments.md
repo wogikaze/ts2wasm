@@ -25,7 +25,7 @@ lexer rejects the ES extended Unicode code point escape inside the string
 literal `"\u{44}"`.
 
 The focused implementation slice is
-`issues/done/5353-parse-extended-unicode-string-escapes.md`.
+`issues/open/5353-parse-extended-unicode-string-escapes.md`.
 
 ## Problem
 
@@ -54,7 +54,7 @@ env TS2WASM_BINARY=/tmp/ts2wasm-issue-blockers-target/debug/ts2wasm python scrip
 ## Desired final state
 
 This generated bucket is closed. Implementation proceeds through the focused
-lexer issue `issues/done/5353-parse-extended-unicode-string-escapes.md`.
+lexer issue `issues/open/5353-parse-extended-unicode-string-escapes.md`.
 
 ## Scope
 
@@ -130,7 +130,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] created: `issues/done/5353-parse-extended-unicode-string-escapes.md`
+- [x] created: `issues/open/5353-parse-extended-unicode-string-escapes.md`
 
 ## Notes
 
@@ -145,7 +145,7 @@ Follow-up issues:
   generated bucket, not a focused implementation-ready child.
 - `issues/open/4642-implement-unicodeStringLiteral.md` is another generated
   string-literal bucket without smart triage evidence.
-- Existing enum issues such as `issues/done/428-implement-enum.md` and
+- Existing enum issues such as `issues/open/428-implement-enum.md` and
   `issues/open/1406-implement-computedEnumMemberSyntacticallyString-parser-syntax.md`
   do not own this string-literal lexer blocker.
 

@@ -141,7 +141,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] created/updated: `issues/done/5208-support-regexp-match-fallback-array-map-receiver.md`
+- [x] created/updated: `issues/open/5208-support-regexp-match-fallback-array-map-receiver.md`
 
 ## Notes
 

@@ -106,7 +106,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] superseded by `issues/done/5240-w2-docs-audit-and-stale-entries.md`
+- [x] superseded by `issues/open/5240-w2-docs-audit-and-stale-entries.md`
 
 ## Notes
 
@@ -116,7 +116,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- Superseded by `issues/done/5240-w2-docs-audit-and-stale-entries.md`.
+- Superseded by `issues/open/5240-w2-docs-audit-and-stale-entries.md`.
   The current first blocker is the same raw async-arrow parser boundary, here
   in object property value `test: async () => Promise.reject(...)`.
 
@@ -155,7 +155,7 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- superseded by `issues/done/5240-w2-docs-audit-and-stale-entries.md`
+- superseded by `issues/open/5240-w2-docs-audit-and-stale-entries.md`
 
 Validation result:
 

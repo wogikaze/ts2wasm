@@ -108,7 +108,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] added: `issues/done/5182-parse-comma-separated-for-update-expressions.md`
+- [x] added: `issues/open/5182-parse-comma-separated-for-update-expressions.md`
 
 ## Notes
 
@@ -123,7 +123,7 @@ Follow-up issues:
 ## Duplicate detection
 
 - Other `scope-analysis` generated buckets share only the broad feature label.
-- `issues/done/746-implement-assignmentToParenthesizedExpression.md` also reports `expected RightParen, got Some(Comma)`, but it covers parenthesized assignment/comma-expression parsing in a different reference path rather than for-loop update slots.
+- `issues/open/746-implement-assignmentToParenthesizedExpression.md` also reports `expected RightParen, got Some(Comma)`, but it covers parenthesized assignment/comma-expression parsing in a different reference path rather than for-loop update slots.
 - No open issue was found for comma-separated `for` update expressions.
 
 ## Smart triage
@@ -138,7 +138,7 @@ Generated on 2026-05-06.
 - Compiler evidence: token dump includes `Increment`, `Ident("x")`, `Comma`, `Decrement`, and `Ident("y")`; AST/resolved construction fails before representing the `ForStatement`.
 - TypeScript oracle: no diagnostics for the representative file.
 - TypeScript AST path at the failure: `ForStatement -> BinaryExpression -> PrefixUnaryExpression -> CommaToken`
-- Superseding child: `issues/done/5182-parse-comma-separated-for-update-expressions.md`
+- Superseding child: `issues/open/5182-parse-comma-separated-for-update-expressions.md`
 
 ## Completion evidence
 

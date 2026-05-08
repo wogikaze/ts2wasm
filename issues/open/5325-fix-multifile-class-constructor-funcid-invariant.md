@@ -154,11 +154,11 @@ Follow-up issues:
 ## Notes
 
 Split from generated bucket
-`issues/done/1224-implement-classMemberInitializerWithLamdaScoping-module-system-amd.md`.
+`issues/open/1224-implement-classMemberInitializerWithLamdaScoping-module-system-amd.md`.
 
 Related but not duplicates:
 
-- `issues/done/5247-fix-js-noemit-class-constructor-funcid-invariant.md`
+- `issues/open/5247-fix-js-noemit-class-constructor-funcid-invariant.md`
   owns the same invariant in a JS/noEmit reference path. This issue keeps the
   multi-file TypeScript reference window explicit so the fix is verified against
   both shapes.

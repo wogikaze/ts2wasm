@@ -106,7 +106,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] `issues/done/5204-resolve-lexical-super-property-captures-in-super-call-arguments.md`
+- [x] `issues/open/5204-resolve-lexical-super-property-captures-in-super-call-arguments.md`
 
 ## Notes
 
@@ -164,7 +164,7 @@ Evidence:
 - Existing broad name-resolution/call-expression buckets are no-match owners
   because this already has a narrow captured lexical `super` failure shape.
 - Child issue
-  `issues/done/5204-resolve-lexical-super-property-captures-in-super-call-arguments.md`
+  `issues/open/5204-resolve-lexical-super-property-captures-in-super-call-arguments.md`
   owns the implementation slice.
 
 ## Completion evidence

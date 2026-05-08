@@ -149,7 +149,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] existing: `issues/done/5334-parse-class-constructor-overload-signatures.md`
+- [x] existing: `issues/open/5334-parse-class-constructor-overload-signatures.md`
 - [x] created: `issues/open/5359-report-multiple-constructor-implementation-diagnostics.md`
 
 ## Notes
@@ -163,7 +163,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/5334-parse-class-constructor-overload-signatures.md` is an
+- `issues/open/5334-parse-class-constructor-overload-signatures.md` is an
   exact owner for valid bodyless constructor signatures in
   `constructorOverloads2.ts` and `constructorOverloads3.ts`.
 - No exact issue existed for TS2392-style multiple constructor implementation

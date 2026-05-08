@@ -122,7 +122,7 @@ python scripts/manager.py reference-coverage tsc --path-filter reference/typescr
 
 ## Notes
 
-Split from `issues/done/1354-implement-commentOnSignature.md`.
+Split from `issues/open/1354-implement-commentOnSignature.md`.
 Related top-level overload issue: `issues/open/5200-validate-top-level-function-overload-implementations.md`.
 
 ## False-done audit

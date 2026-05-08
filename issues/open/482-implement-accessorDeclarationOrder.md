@@ -118,8 +118,8 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/098-implement-accessorDeclarationOrder.md` - Implement Accessordeclarationorder (same reference path, same feature label, same group key, title overlap)
-- `issues/done/422-implement-class-accessor.md` - Implement class-accessor support (same feature label, same group key, title overlap)
+- `issues/open/098-implement-accessorDeclarationOrder.md` - Implement Accessordeclarationorder (same reference path, same feature label, same group key, title overlap)
+- `issues/open/422-implement-class-accessor.md` - Implement class-accessor support (same feature label, same group key, title overlap)
 
 ## Smart triage
 
@@ -642,6 +642,6 @@ Violated acceptance: the issue cannot provide repo-local close evidence for its 
 
 Evidence files:
 - open issue file before this move
-- `issues/done/482-implement-accessorDeclarationOrder.md` after this move
+- `issues/open/482-implement-accessorDeclarationOrder.md` after this move
 
 Split follow-up: none created in this audit wave; this reopened issue remains the tracking item.

@@ -129,7 +129,7 @@ Follow-up issues:
 ## Notes
 
 Split from generated bucket
-`issues/done/1422-implement-conditionalTypeAssignabilityWhenDeferred.md`.
+`issues/open/1422-implement-conditionalTypeAssignabilityWhenDeferred.md`.
 
 Related but not duplicates:
 

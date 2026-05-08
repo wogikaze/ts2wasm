@@ -85,7 +85,7 @@ Follow-up issues: none.
 
 ## Notes
 
-Split from `issues/done/622-implement-ambientRequireFunction.md` on
+Split from `issues/open/622-implement-ambientRequireFunction.md` on
 2026-05-08.
 
 ## Completion evidence

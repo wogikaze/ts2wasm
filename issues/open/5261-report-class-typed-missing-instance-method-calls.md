@@ -142,7 +142,7 @@ python scripts/manager.py reference-coverage tsc --path-filter classImplementsCl
 
 ## Notes
 
-Split from `issues/done/1216-implement-classImplementsClass.md`. The sibling
+Split from `issues/open/1216-implement-classImplementsClass.md`. The sibling
 references `classImplementsClass1.ts`, `2.ts`, `3.ts`, `4.ts`, `5.ts`, and
 `7.ts` are currently build-pass.
 

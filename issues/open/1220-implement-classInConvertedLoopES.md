@@ -18,7 +18,7 @@ updated: 2026-05-06
 ## Summary
 
 Closed by splitting the current typed const declaration parser blocker to
-`issues/done/5264-parse-typed-const-declarations-before-initializers.md`.
+`issues/open/5264-parse-typed-const-declarations-before-initializers.md`.
 
 ## Problem
 
@@ -116,7 +116,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] `issues/done/5264-parse-typed-const-declarations-before-initializers.md`
+- [x] `issues/open/5264-parse-typed-const-declarations-before-initializers.md`
 
 ## Notes
 
@@ -142,7 +142,7 @@ for (const row of ['1', '2', '3', '4', '5']) {
 - `issues/done/5184-parse-const-enum-declarations.md` is related only by the
   generic missing-initializer diagnostic; it covers `const enum`, not typed
   variable declarations with initializers.
-- `issues/done/1444-implement-constDeclarations-unknown-unsupported.md` is a
+- `issues/open/1444-implement-constDeclarations-unknown-unsupported.md` is a
   generated bucket for a different reference and is not an exact owner for
   `classInConvertedLoopES5.ts`.
 
@@ -174,7 +174,7 @@ TypeScript AST path: VariableDeclarationList -> VariableDeclaration ->
 
 Split issue:
 
-- `issues/done/5264-parse-typed-const-declarations-before-initializers.md`
+- `issues/open/5264-parse-typed-const-declarations-before-initializers.md`
 
 ## Completion evidence
 
@@ -182,7 +182,7 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- Split to `issues/done/5264-parse-typed-const-declarations-before-initializers.md`; see local commit for this issue cleanup.
+- Split to `issues/open/5264-parse-typed-const-declarations-before-initializers.md`; see local commit for this issue cleanup.
 
 Validation result:
 

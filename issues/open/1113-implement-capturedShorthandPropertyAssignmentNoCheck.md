@@ -112,7 +112,7 @@ Current state:
 Follow-up issues:
 
 - [x] superseded by `issues/done/211-complete-this-receiver-binding-semantics.md`
-- [x] related umbrella: `issues/done/435-implement-method-call.md`
+- [x] related umbrella: `issues/open/435-implement-method-call.md`
 
 ## Notes
 
@@ -177,7 +177,7 @@ TypeScript AST sees `CallExpression -> ArrowFunction -> CallExpression "fn()"`.
 The current blocker is not parser-syntax and is superseded by
 `issues/done/211-complete-this-receiver-binding-semantics.md`, which explicitly
 keeps dynamic/function-valued local calls issue-linked as unsupported, and by
-the broader method-call umbrella `issues/done/435-implement-method-call.md`.
+the broader method-call umbrella `issues/open/435-implement-method-call.md`.
 
 ## Completion evidence
 

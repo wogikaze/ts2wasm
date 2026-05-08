@@ -21,7 +21,7 @@ Closed after fresh triage split the bucket outcomes:
 
 - `commentsOnObjectLiteral4.ts` is stale and now builds successfully.
 - `commentsOnObjectLiteral3.ts` is superseded by
-  `issues/done/5218-parse-typescript-this-parameters-in-function-expressions.md`, the
+  `issues/open/5218-parse-typescript-this-parameters-in-function-expressions.md`, the
   existing implementation-ready issue for object-literal nested functions that
   hit the issue-062e `this` capture runtime guard.
 
@@ -63,7 +63,7 @@ commentsOnObjectLiteral4.ts: BuildPass; ts2wasm build succeeded
 ## Desired final state
 
 This generated bucket is closed. Implementation should proceed through
-`issues/done/5218-parse-typescript-this-parameters-in-function-expressions.md`; the
+`issues/open/5218-parse-typescript-this-parameters-in-function-expressions.md`; the
 `commentsOnObjectLiteral4.ts` representative needs no child issue.
 
 ## Scope
@@ -138,7 +138,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] superseded by: `issues/done/5218-parse-typescript-this-parameters-in-function-expressions.md`
+- [x] superseded by: `issues/open/5218-parse-typescript-this-parameters-in-function-expressions.md`
 
 ## Notes
 
@@ -149,11 +149,11 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/5218-parse-typescript-this-parameters-in-function-expressions.md` owns the
+- `issues/open/5218-parse-typescript-this-parameters-in-function-expressions.md` owns the
   current issue-062e object-literal nested-function `this` capture boundary.
   Its representative is a normal object-literal property function; this bucket
   adds the getter/setter accessor variant as a related representative.
-- `issues/done/5179-report-implicit-this-before-closure-runtime-guard.md` is
+- `issues/open/5179-report-implicit-this-before-closure-runtime-guard.md` is
   related but not exact. That issue handles a TypeScript implicit-`this`
   diagnostic before the runtime guard; `commentsOnObjectLiteral3.ts` has no
   TypeScript oracle diagnostics.

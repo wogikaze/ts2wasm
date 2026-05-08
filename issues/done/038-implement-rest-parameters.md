@@ -28,7 +28,7 @@ Rest parameters are not implemented. They are a common ES6 feature for variadic 
 In scope:
 
 - [x] Add rest parameter syntax to lexer/parser
-- [x] Lower rest parameters to array collection (placeholder implementation; semantic collection completed by `issues/done/212-implement-rest-parameter-argument-collection.md`)
+- [x] Lower rest parameters to array collection (placeholder implementation; semantic collection completed by `issues/open/212-implement-rest-parameter-argument-collection.md`)
 - [x] Add fixtures for rest parameter behavior
 
 Out of scope:
@@ -50,7 +50,7 @@ Do not touch:
 ## Acceptance criteria
 
 - [x] Rest parameter parses correctly
-- [x] Rest parameter collects arguments into array (placeholder implementation; semantic collection completed by `issues/done/212-implement-rest-parameter-argument-collection.md`)
+- [x] Rest parameter collects arguments into array (placeholder implementation; semantic collection completed by `issues/open/212-implement-rest-parameter-argument-collection.md`)
 - [x] Fixtures cover rest parameter behavior
 - [x] No regression in existing fixtures
 
@@ -86,7 +86,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] Rest parameter argument collection completed by `issues/done/212-implement-rest-parameter-argument-collection.md`
+- [x] Rest parameter argument collection completed by `issues/open/212-implement-rest-parameter-argument-collection.md`
 
 ## Notes
 
@@ -95,7 +95,7 @@ Follow-up issues:
 Commits:
 
 - Rest parameter syntax already parsed in lexer/parser with is_rest flag
-- Implemented rest parameter lowering to create empty array as placeholder; full collection completed by `issues/done/212-implement-rest-parameter-argument-collection.md`
+- Implemented rest parameter lowering to create empty array as placeholder; full collection completed by `issues/open/212-implement-rest-parameter-argument-collection.md`
 - Full implementation requires access to all argument locals to collect remaining arguments
 - Added fixture fixtures/rest-parameters/rest-basic.ts
 
@@ -113,7 +113,7 @@ date: 2026-04-26
 
 Remaining risks:
 
-- Full rest parameter argument collection is completed by `issues/done/212-implement-rest-parameter-argument-collection.md`
+- Full rest parameter argument collection is completed by `issues/open/212-implement-rest-parameter-argument-collection.md`
 - Full implementation requires collecting remaining arguments from call site
 - This requires access to all argument locals in the lowering phase
 

@@ -39,7 +39,7 @@ mise run reference-coverage -- tsc --path-filter reference/typescript/tests/case
 
 ## Desired final state
 
-This generated bucket is closed as superseded by `issues/done/209-implement-labeled-break-continue.md` for the current undefined break-label diagnostic. Do not implement directly from this bucket.
+This generated bucket is closed as superseded by `issues/open/209-implement-labeled-break-continue.md` for the current undefined break-label diagnostic. Do not implement directly from this bucket.
 
 ## Scope
 
@@ -121,7 +121,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/209-implement-labeled-break-continue.md` owns labeled break/continue behavior and invalid label diagnostics.
+- `issues/open/209-implement-labeled-break-continue.md` owns labeled break/continue behavior and invalid label diagnostics.
 - `issues/done/035-implement-break-continue.md` owns unlabeled break/continue support.
 - Generic break/continue buckets are not exact matches; this bucket is specifically the undefined target label diagnostic.
 
@@ -180,7 +180,7 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- superseded by `issues/done/209-implement-labeled-break-continue.md`
+- superseded by `issues/open/209-implement-labeled-break-continue.md`
 
 Validation result:
 

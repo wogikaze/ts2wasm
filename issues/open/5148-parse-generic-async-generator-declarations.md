@@ -140,12 +140,12 @@ Follow-up issues:
 
 ## Notes
 
-Split from generated bucket `issues/done/1023-implement-awaitedTypeCrash.md`.
+Split from generated bucket `issues/open/1023-implement-awaitedTypeCrash.md`.
 
 Related broader issues:
 
 - `issues/open/059-implement-parser-syntax-extensions.md`
-- `issues/done/5134-admit-generators-and-async-functions-through-python-harness.md`
+- `issues/open/5134-admit-generators-and-async-functions-through-python-harness.md`
 
 ## Completion evidence
 

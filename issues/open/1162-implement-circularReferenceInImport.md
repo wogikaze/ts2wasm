@@ -43,7 +43,7 @@ mise run reference-coverage -- tsc --path-filter reference/typescript/tests/case
 
 ## Desired final state
 
-This generated bucket is closed as superseded by `issues/done/5229-w0-user-runtime-string-origin.md` for the current virtual-file module graph blocker. Do not implement directly from this bucket.
+This generated bucket is closed as superseded by `issues/open/5229-resolve-imports-between-filename-sections.md` for the current virtual-file module graph blocker. Do not implement directly from this bucket.
 
 ## Scope
 
@@ -114,7 +114,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] folded into `issues/done/5229-w0-user-runtime-string-origin.md`
+- [x] folded into `issues/open/5229-resolve-imports-between-filename-sections.md`
 
 ## Notes
 
@@ -124,9 +124,9 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/5229-w0-user-runtime-string-origin.md` owns resolving local imports between TypeScript reference `// @Filename:` / `// @filename:` virtual sections.
-- `issues/done/232-resolve-local-relative-es-module-graph.md` owns real on-disk local relative module graph diagnostics, but not virtual `@filename` section registration.
-- `issues/done/432-implement-import-export.md` is a broad import/export triage bucket and is not an implementation-ready owner.
+- `issues/open/5229-resolve-imports-between-filename-sections.md` owns resolving local imports between TypeScript reference `// @Filename:` / `// @filename:` virtual sections.
+- `issues/open/232-resolve-local-relative-es-module-graph.md` owns real on-disk local relative module graph diagnostics, but not virtual `@filename` section registration.
+- `issues/open/432-implement-import-export.md` is a broad import/export triage bucket and is not an implementation-ready owner.
 
 ## Smart triage
 
@@ -227,7 +227,7 @@ The `circularReferenceInImport` triage bucket is complete. The current failure i
 
 Commits:
 
-- superseded by `issues/done/5229-w0-user-runtime-string-origin.md`
+- superseded by `issues/open/5229-resolve-imports-between-filename-sections.md`
 
 Validation result:
 

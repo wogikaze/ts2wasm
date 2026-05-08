@@ -73,7 +73,7 @@ Do not touch:
 ## Acceptance criteria
 
 - [x] Duplicate candidates below are confirmed as no-match or this issue is superseded
-- [x] Superseded by `issues/done/5287-bind-namespace-declarations-for-qualified-value-access.md`
+- [x] Superseded by `issues/open/5287-bind-namespace-declarations-for-qualified-value-access.md`
 - [x] Smart triage evidence below includes failing path, diagnostic code, source context, visible symbols, and parser/TypeScript evidence
 - [x] Superseding issue 5287 acceptance names the same diagnostic family and qualified namespace access behavior
 
@@ -110,7 +110,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] superseded by: `issues/done/5287-bind-namespace-declarations-for-qualified-value-access.md`
+- [x] superseded by: `issues/open/5287-bind-namespace-declarations-for-qualified-value-access.md`
 
 ## Notes
 
@@ -120,7 +120,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/5287-bind-namespace-declarations-for-qualified-value-access.md` owns same-file non-ambient namespace value binding for qualified access.
+- `issues/open/5287-bind-namespace-declarations-for-qualified-value-access.md` owns same-file non-ambient namespace value binding for qualified access.
 
 ## Smart triage
 
@@ -177,7 +177,7 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- superseded by `issues/done/5287-bind-namespace-declarations-for-qualified-value-access.md`
+- superseded by `issues/open/5287-bind-namespace-declarations-for-qualified-value-access.md`
 
 Validation result:
 

@@ -77,7 +77,7 @@ Reopen reason: no `## Completion evidence` section is present, so close evidence
 Violated acceptance: the issue cannot provide repo-local close evidence for its checked acceptance criteria while it remains in this state. Acceptance checkboxes were reset for re-verification.
 
 Evidence files:
-- `issues/done/5039-compiler-test262-preprocessor.md` (moved from open/ per close evidence)
+- `issues/open/5039-compiler-test262-preprocessor.md` (moved from open/ per close evidence)
 
 Split follow-up: none created in this audit wave; this reopened issue remains the tracking item.
 

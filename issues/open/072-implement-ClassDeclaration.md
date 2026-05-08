@@ -136,9 +136,9 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/073-implement-ClassDeclarationWithInvalidConstOnPropertyDeclaration.md` - Implement Classdeclarationwithinvalidconstonpropertydeclaration (same feature label, same group key, title overlap)
-- `issues/done/140-implement-ambientClassDeclarationWithExtends.md` - Implement Ambientclassdeclarationwithextends (same feature label, same group key, title overlap)
-- `issues/done/158-implement-ambientModuleWithClassDeclarationWithExtends.md` - Implement Ambientmodulewithclassdeclarationwithextends (same feature label, same group key, title overlap)
+- `issues/open/073-implement-ClassDeclarationWithInvalidConstOnPropertyDeclaration.md` - Implement Classdeclarationwithinvalidconstonpropertydeclaration (same feature label, same group key, title overlap)
+- `issues/open/140-implement-ambientClassDeclarationWithExtends.md` - Implement Ambientclassdeclarationwithextends (same feature label, same group key, title overlap)
+- `issues/open/158-implement-ambientModuleWithClassDeclarationWithExtends.md` - Implement Ambientmodulewithclassdeclarationwithextends (same feature label, same group key, title overlap)
 
 ## Smart triage
 
@@ -444,7 +444,7 @@ error: [UnsupportedSyntax] expected LeftBrace, got Some(Semicolon) at 66..67
 ## 重複整理メモ
 
 この issue はタイトルが重複しているため、内容がより充実している
-`issues/done/546-implement-ClassDeclaration.md` に統合されました。
+`issues/open/546-implement-ClassDeclaration.md` に統合されました。
 そちらを参照してください。
 ## Completion evidence
 

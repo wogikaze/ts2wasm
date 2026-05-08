@@ -134,8 +134,8 @@ Follow-up issues:
   current CommonJS `export = expr;` issue-055 static export boundary.
 - Related export-assignment generated buckets such as
   `issues/done/3411-implement-multipleExportAssignments.md`,
-  `issues/done/3428-implement-namedImportNonExistentName.md`, and
-  `issues/done/3451-implement-narrowedImports.md` already fold the same first
+  `issues/open/3428-implement-namedImportNonExistentName.md`, and
+  `issues/open/3451-implement-narrowedImports.md` already fold the same first
   blocker into issue 5346.
 
 ## Smart triage

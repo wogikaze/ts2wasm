@@ -79,11 +79,11 @@ Out of scope:
 
 - Full runtime semantics for every `super` property read/write.
 - `super[...]()` call lowering; broad call-expression cases remain under
-  `issues/done/420-implement-call-expression.md`.
+  `issues/open/420-implement-call-expression.md`.
 - Lexical `super` capture in arrow arguments to `super(...)`, tracked by
-  `issues/done/5204-resolve-lexical-super-property-captures-in-super-call-arguments.md`.
+  `issues/open/5204-resolve-lexical-super-property-captures-in-super-call-arguments.md`.
 - Non-derived `super()` diagnostics, tracked by
-  `issues/done/5233-w0-harden-reference-coverage-prerequisites.md`.
+  `issues/open/5233-w0-harden-reference-coverage-prerequisites.md`.
 
 ## Affected paths
 
@@ -128,15 +128,15 @@ python scripts/manager.py reference-coverage tsc --path-filter reference/typescr
 
 ## Notes
 
-Split from `issues/done/1194-implement-classExtendingAny.md`.
+Split from `issues/open/1194-implement-classExtendingAny.md`.
 
 Related but not owners for this exact boundary:
 
-- `issues/done/420-implement-call-expression.md` covers `super[...]()` call
+- `issues/open/420-implement-call-expression.md` covers `super[...]()` call
   expression semantics in broader test262 windows.
-- `issues/done/5204-resolve-lexical-super-property-captures-in-super-call-arguments.md`
+- `issues/open/5204-resolve-lexical-super-property-captures-in-super-call-arguments.md`
   excludes dynamic `super[expr]` property access.
-- `issues/done/5233-w0-harden-reference-coverage-prerequisites.md` excludes
+- `issues/open/5233-w0-harden-reference-coverage-prerequisites.md` excludes
   `super.method(...)` and `super.x` beyond its non-derived `super()` diagnostic.
 
 ## False-done audit

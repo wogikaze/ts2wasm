@@ -125,13 +125,13 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/1060-implement-bindingPatternCannotBeOnlyInferenceSource.md` - Implement Bindingpatterncannotbeonlyinferencesource (same feature label, same group key, title overlap)
-- `issues/done/1108-implement-capturedLetConstInLoop-duplicate-local.md` - Implement Capturedletconstinloop Duplicate Local (same feature label, same group key, title overlap)
-- `issues/done/1122-implement-catch.md` - Implement Catch (same feature label, same group key, title overlap)
+- `issues/open/1060-implement-bindingPatternCannotBeOnlyInferenceSource.md` - Implement Bindingpatterncannotbeonlyinferencesource (same feature label, same group key, title overlap)
+- `issues/open/1108-implement-capturedLetConstInLoop-duplicate-local.md` - Implement Capturedletconstinloop Duplicate Local (same feature label, same group key, title overlap)
+- `issues/open/1122-implement-catch.md` - Implement Catch (same feature label, same group key, title overlap)
 - `issues/open/1124-implement-cf.md` - Implement Cf (same feature label, same group key, title overlap)
 - `issues/open/1402-implement-compositeGenericFunction.md` - Implement Compositegenericfunction (same feature label, same group key, title overlap; now closed as stale build-pass)
-- `issues/done/1436-implement-conflictingTypeAnnotatedVar.md` - Implement Conflictingtypeannotatedvar (same feature label, same group key, title overlap)
-- `issues/done/1500-implement-contextualSignatureInstantiation-duplicate-local.md` - Implement Contextualsignatureinstantiation Duplicate Local (same feature label, same group key, title overlap; folded into issue 5234)
+- `issues/open/1436-implement-conflictingTypeAnnotatedVar.md` - Implement Conflictingtypeannotatedvar (same feature label, same group key, title overlap)
+- `issues/open/1500-implement-contextualSignatureInstantiation-duplicate-local.md` - Implement Contextualsignatureinstantiation Duplicate Local (same feature label, same group key, title overlap; folded into issue 5234)
 - `issues/open/1777-implement-declarationEmitMappedTypeTemplateTypeofSymbol.md` - Implement Declarationemitmappedtypetemplatetypeofsymbol (same feature label, same group key, title overlap)
 - `issues/open/2008-implement-doNotEmitPinnedCommentNotOnTopOfFile.md` - Implement Donotemitpinnedcommentnotontopoffile (same feature label, same group key, title overlap)
 - `issues/open/2037-implement-duplicateIdentifierBindingElementInParameterDeclaration.md` - Implement Duplicateidentifierbindingelementinparameterdeclaration (same feature label, same group key, title overlap)
@@ -157,7 +157,7 @@ AttributeError: 'NoneType' object has no attribute 'parse_test262_metadata'
 ## 重複整理メモ
 
 この issue はタイトルが重複しているため、内容がより充実している
-`issues/done/427-implement-duplicate-local.md` に統合されました。
+`issues/open/427-implement-duplicate-local.md` に統合されました。
 そちらを参照してください。
 ## Completion evidence
 
@@ -188,7 +188,7 @@ Classification: truly-done.
 Audit result: retained in `issues/done/`. The issue has repo-local completion evidence, is not marked `blocked` or `triage-needed`, and `python scripts/manager.py check issues` validates the resulting issue graph.
 
 Evidence files:
-- `issues/done/5074-implement-duplicate-local.md`
+- `issues/open/5074-implement-duplicate-local.md`
 - `issues/index.md` after regeneration
 
 Future-work tracking: no untracked future-work item was identified in this issue during this metadata/evidence audit.

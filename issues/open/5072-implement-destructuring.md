@@ -126,11 +126,11 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/1010-implement-autoTypeAssignedUsingDestructuringFromNeverNoCrash.md` - Implement Autotypeassignedusingdestructuringfromnevernocrash (same feature label, same group key, title overlap)
-- `issues/done/1062-implement-bindingPatternInParameter.md` - Implement Bindingpatterninparameter (same feature label, same group key, title overlap)
-- `issues/done/1129-implement-checkDestructuringShorthandAssigment-destructuring.md` - Implement Checkdestructuringshorthandassigment Destructuring (same feature label, same group key, title overlap)
-- `issues/done/1130-implement-checkDestructuringShorthandAssigment-name-resolution.md` - Implement Checkdestructuringshorthandassigment Name Resolution (same feature label, same group key, title overlap)
-- `issues/done/1408-implement-computedPropertiesInDestructuring.md` - Implement Computedpropertiesindestructuring (same feature label, same group key, title overlap)
+- `issues/open/1010-implement-autoTypeAssignedUsingDestructuringFromNeverNoCrash.md` - Implement Autotypeassignedusingdestructuringfromnevernocrash (same feature label, same group key, title overlap)
+- `issues/open/1062-implement-bindingPatternInParameter.md` - Implement Bindingpatterninparameter (same feature label, same group key, title overlap)
+- `issues/open/1129-implement-checkDestructuringShorthandAssigment-destructuring.md` - Implement Checkdestructuringshorthandassigment Destructuring (same feature label, same group key, title overlap)
+- `issues/open/1130-implement-checkDestructuringShorthandAssigment-name-resolution.md` - Implement Checkdestructuringshorthandassigment Name Resolution (same feature label, same group key, title overlap)
+- `issues/open/1408-implement-computedPropertiesInDestructuring.md` - Implement Computedpropertiesindestructuring (same feature label, same group key, title overlap)
 - `issues/open/1521-implement-contextualTypingArrayDestructuringWithDefaults.md` - Implement Contextualtypingarraydestructuringwithdefaults (same feature label, same group key, title overlap)
 - `issues/open/1568-implement-controlFlowDestructuringLoop.md` - Implement Controlflowdestructuringloop (same feature label, same group key, title overlap)
 - `issues/open/1569-implement-controlFlowDestructuringVariablesInTryCatch.md` - Implement Controlflowdestructuringvariablesintrycatch (same feature label, same group key, title overlap)
@@ -158,7 +158,7 @@ AttributeError: 'NoneType' object has no attribute 'parse_test262_metadata'
 ## 重複整理メモ
 
 この issue はタイトルが重複しているため、内容がより充実している
-`issues/done/425-implement-destructuring.md` に統合されました。
+`issues/open/425-implement-destructuring.md` に統合されました。
 そちらを参照してください。
 ## Completion evidence
 
@@ -189,7 +189,7 @@ Classification: truly-done.
 Audit result: retained in `issues/done/`. The issue has repo-local completion evidence, is not marked `blocked` or `triage-needed`, and `python scripts/manager.py check issues` validates the resulting issue graph.
 
 Evidence files:
-- `issues/done/5072-implement-destructuring.md`
+- `issues/open/5072-implement-destructuring.md`
 - `issues/index.md` after regeneration
 
 Future-work tracking: no untracked future-work item was identified in this issue during this metadata/evidence audit.

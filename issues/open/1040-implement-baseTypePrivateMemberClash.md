@@ -39,7 +39,7 @@ BackendIo: wat2wasm failed
 
 ## Desired final state
 
-This generated bucket is closed as superseded by `issues/done/5158-report-interface-private-member-clash.md`. Do not implement directly from this bucket.
+This generated bucket is closed as superseded by `issues/open/5158-report-interface-private-member-clash.md`. Do not implement directly from this bucket.
 
 ## Scope
 
@@ -110,7 +110,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] created: `issues/done/5158-report-interface-private-member-clash.md`
+- [x] created: `issues/open/5158-report-interface-private-member-clash.md`
 
 ## Notes
 
@@ -194,7 +194,7 @@ Issue 5158 now owns the concrete frontend/resolver diagnostic contract. Definite
 
 Commits:
 
-- superseded by `issues/done/5158-report-interface-private-member-clash.md`
+- superseded by `issues/open/5158-report-interface-private-member-clash.md`
 
 Validation result:
 

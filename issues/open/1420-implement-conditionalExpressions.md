@@ -174,7 +174,7 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- Superseded by `issues/done/5160-lower-plain-ternary-conditional-expressions.md`.
+- Superseded by `issues/open/5160-lower-plain-ternary-conditional-expressions.md`.
 
 Validation result:
 

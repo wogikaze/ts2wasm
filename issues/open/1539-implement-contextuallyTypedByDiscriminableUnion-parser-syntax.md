@@ -117,23 +117,23 @@ Follow-up issues:
 ## Duplicate detection
 
 - No exact existing owner found.
-- `issues/done/5222-parse-ambient-generic-variable-type-annotations.md`
+- `issues/open/5222-parse-ambient-generic-variable-type-annotations.md`
   is related, but owns interface-typed erased locals such as
   `var s: Sequence<string>; s.groupBy(...)`; this bucket fails on a function
   parameter typed as a discriminated union alias.
-- `issues/done/435-implement-method-call.md` is a broad method-call bucket, not
+- `issues/open/435-implement-method-call.md` is a broad method-call bucket, not
   a fixed acceptance owner for the discriminated union parameter receiver.
 - Generated parser-syntax duplicates listed below were no-match because current
   triage proves parsing succeeds and lowering reports issue-211:
-  `issues/done/442-implement-parser-syntax.md`,
-  `issues/done/464-implement-FunctionDeclaration-parser-syntax.md`,
-  `issues/done/550-implement-FunctionDeclaration-parser-syntax.md`,
-  `issues/done/663-implement-arrayAssignmentTest-parser-syntax.md`,
-  `issues/done/734-implement-assignmentCompatability-parser-syntax.md`,
-  `issues/done/753-implement-asyncFunctionReturnType-parser-syntax.md`,
+  `issues/open/442-implement-parser-syntax.md`,
+  `issues/open/464-implement-FunctionDeclaration-parser-syntax.md`,
+  `issues/open/550-implement-FunctionDeclaration-parser-syntax.md`,
+  `issues/open/663-implement-arrayAssignmentTest-parser-syntax.md`,
+  `issues/open/734-implement-assignmentCompatability-parser-syntax.md`,
+  `issues/open/753-implement-asyncFunctionReturnType-parser-syntax.md`,
   `#767`,
   `issues/open/059-implement-parser-syntax-extensions.md`,
-  `issues/done/065-implement-parser-syntax.md`, and
+  `issues/open/065-implement-parser-syntax.md`, and
   `issues/done/065a-merge-duplicate-parser-syntax-issue-into-059.md`.
 
 ## Smart triage

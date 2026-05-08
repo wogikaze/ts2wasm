@@ -141,12 +141,12 @@ Follow-up issues:
 
 ## Notes
 
-Split from generated bucket `issues/done/1020-implement-awaitLiteralValues.md`.
+Split from generated bucket `issues/open/1020-implement-awaitLiteralValues.md`.
 
 Related await-context issues:
 
-- `issues/done/5145-parse-await-as-call-outside-async-context.md`
-- `issues/done/5146-report-for-await-context-errors-before-async-runtime.md`
+- `issues/open/5145-parse-await-as-call-outside-async-context.md`
+- `issues/open/5146-report-for-await-context-errors-before-async-runtime.md`
 
 ## Completion evidence
 

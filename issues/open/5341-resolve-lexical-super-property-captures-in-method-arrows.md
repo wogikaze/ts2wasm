@@ -133,12 +133,12 @@ Follow-up issues:
 
 ## Notes
 
-Split from `issues/done/1330-implement-collisionThisExpressionAndLocalVarWithSuperExperssion.md`.
+Split from `issues/open/1330-implement-collisionThisExpressionAndLocalVarWithSuperExperssion.md`.
 
 Related but distinct:
 
-- `issues/done/5204-resolve-lexical-super-property-captures-in-super-call-arguments.md` covers arrows passed to `super(...)`.
-- `issues/done/5255-resolve-super-property-accesses.md` covers bare `super` receiver lookup.
+- `issues/open/5204-resolve-lexical-super-property-captures-in-super-call-arguments.md` covers arrows passed to `super(...)`.
+- `issues/open/5255-resolve-super-property-accesses.md` covers bare `super` receiver lookup.
 
 ## Completion evidence
 

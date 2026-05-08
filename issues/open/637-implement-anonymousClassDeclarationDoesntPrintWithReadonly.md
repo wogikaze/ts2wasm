@@ -116,7 +116,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/179-implement-anonymousClassDeclarationDoesntPrintWithReadonly.md` - Implement Anonymousclassdeclarationdoesntprintwithreadonly (same reference path, same group key, title overlap)
+- `issues/open/179-implement-anonymousClassDeclarationDoesntPrintWithReadonly.md` - Implement Anonymousclassdeclarationdoesntprintwithreadonly (same reference path, same group key, title overlap)
 
 ## Smart triage
 

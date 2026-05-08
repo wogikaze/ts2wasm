@@ -125,7 +125,7 @@ Follow-up issues: none.
 ## Notes
 
 Split from generated bucket
-`issues/done/3339-implement-moduleExportsUnaryExpression.md`.
+`issues/open/3339-implement-moduleExportsUnaryExpression.md`.
 
 Related but not duplicate:
 

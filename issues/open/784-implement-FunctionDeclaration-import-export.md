@@ -118,16 +118,16 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/076-implement-FunctionDeclaration.md` - Implement Functiondeclaration (same reference path, title overlap)
-- `issues/done/432-implement-import-export.md` - Implement import/export module syntax (same feature label, title overlap)
-- `issues/done/457-implement-APISample-import-export.md` - Implement Apisample Import Export (same feature label, title overlap)
-- `issues/done/463-implement-FunctionDeclaration-import-export.md` - Implement Functiondeclaration Import Export (same reference path, same feature label, same group key, title overlap)
-- `issues/done/475-implement-acceptableAlias.md` - Implement Acceptablealias (same feature label, same group key, title overlap)
-- `issues/done/481-implement-accessorDeclarationEmitVisibilityErrors.md` - Implement Accessordeclarationemitvisibilityerrors (same feature label, same group key, title overlap)
-- `issues/done/483-implement-accessorInAmbientContextES.md` - Implement Accessorinambientcontextes (same feature label, same group key, title overlap)
-- `issues/done/484-implement-accessorInferredReturnTypeErrorInReturnStatement.md` - Implement Accessorinferredreturntypeerrorinreturnstatement (same feature label, same group key, title overlap)
-- `issues/done/489-implement-accessorsInAmbientContext.md` - Implement Accessorsinambientcontext (same feature label, same group key, title overlap)
-- `issues/done/491-implement-aliasAssignments.md` - Implement Aliasassignments (same feature label, same group key, title overlap)
+- `issues/open/076-implement-FunctionDeclaration.md` - Implement Functiondeclaration (same reference path, title overlap)
+- `issues/open/432-implement-import-export.md` - Implement import/export module syntax (same feature label, title overlap)
+- `issues/open/457-implement-APISample-import-export.md` - Implement Apisample Import Export (same feature label, title overlap)
+- `issues/open/463-implement-FunctionDeclaration-import-export.md` - Implement Functiondeclaration Import Export (same reference path, same feature label, same group key, title overlap)
+- `issues/open/475-implement-acceptableAlias.md` - Implement Acceptablealias (same feature label, same group key, title overlap)
+- `issues/open/481-implement-accessorDeclarationEmitVisibilityErrors.md` - Implement Accessordeclarationemitvisibilityerrors (same feature label, same group key, title overlap)
+- `issues/open/483-implement-accessorInAmbientContextES.md` - Implement Accessorinambientcontextes (same feature label, same group key, title overlap)
+- `issues/open/484-implement-accessorInferredReturnTypeErrorInReturnStatement.md` - Implement Accessorinferredreturntypeerrorinreturnstatement (same feature label, same group key, title overlap)
+- `issues/open/489-implement-accessorsInAmbientContext.md` - Implement Accessorsinambientcontext (same feature label, same group key, title overlap)
+- `issues/open/491-implement-aliasAssignments.md` - Implement Aliasassignments (same feature label, same group key, title overlap)
 
 ## Smart triage
 
@@ -167,6 +167,6 @@ Violated acceptance: the issue cannot provide repo-local close evidence for its 
 
 Evidence files:
 - open issue file before this move
-- `issues/done/784-implement-FunctionDeclaration-import-export.md` after this move
+- `issues/open/784-implement-FunctionDeclaration-import-export.md` after this move
 
 Split follow-up: none created in this audit wave; this reopened issue remains the tracking item.

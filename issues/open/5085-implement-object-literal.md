@@ -128,9 +128,9 @@ Follow-up issues:
 
 - `issues/done/052-implement-json.md` - Implement JSON (same feature label, same group key, title overlap)
 - `issues/open/1118-implement-castNewObjectBug.md` - Implement Castnewobjectbug (same feature label, same group key, title overlap)
-- `issues/done/1128-implement-chainedSpecializationToObjectTypeLiteral.md` - Implement Chainedspecializationtoobjecttypeliteral (same feature label, same group key, title overlap)
-- `issues/done/1136-implement-checkJsObjectLiteralIndexSignatures.md` - Implement Checkjsobjectliteralindexsignatures (same feature label, same group key, title overlap)
-- `issues/done/1148-implement-checkingObjectWithThisInNamePositionNoCrash.md` - Implement Checkingobjectwiththisinnamepositionnocrash (same feature label, same group key, title overlap; split to issue 5237)
+- `issues/open/1128-implement-chainedSpecializationToObjectTypeLiteral.md` - Implement Chainedspecializationtoobjecttypeliteral (same feature label, same group key, title overlap)
+- `issues/open/1136-implement-checkJsObjectLiteralIndexSignatures.md` - Implement Checkjsobjectliteralindexsignatures (same feature label, same group key, title overlap)
+- `issues/open/1148-implement-checkingObjectWithThisInNamePositionNoCrash.md` - Implement Checkingobjectwiththisinnamepositionnocrash (same feature label, same group key, title overlap; split to issue 5237)
 - `issues/open/1375-implement-commentsOnObjectLiteral-object-literal.md` - Implement Commentsonobjectliteral Object Literal (same feature label, same group key, title overlap)
 - `issues/open/1511-implement-contextualTypeFunctionObjectPropertyIntersection.md` - Implement Contextualtypefunctionobjectpropertyintersection (same feature label, same group key, title overlap)
 - `issues/open/1591-implement-convertClassExpressionToFunctionFromObjectProperty.md` - Implement Convertclassexpressiontofunctionfromobjectproperty (same feature label, same group key, title overlap)
@@ -158,7 +158,7 @@ AttributeError: 'NoneType' object has no attribute 'parse_test262_metadata'
 ## 重複整理メモ
 
 この issue はタイトルが重複しているため、内容がより充実している
-`issues/done/441-implement-object-literal.md` に統合されました。
+`issues/open/441-implement-object-literal.md` に統合されました。
 そちらを参照してください。
 ## Completion evidence
 
@@ -189,7 +189,7 @@ Classification: truly-done.
 Audit result: retained in `issues/done/`. The issue has repo-local completion evidence, is not marked `blocked` or `triage-needed`, and `python scripts/manager.py check issues` validates the resulting issue graph.
 
 Evidence files:
-- `issues/done/5085-implement-object-literal.md`
+- `issues/open/5085-implement-object-literal.md`
 - `issues/index.md` after regeneration
 
 Future-work tracking: no untracked future-work item was identified in this issue during this metadata/evidence audit.

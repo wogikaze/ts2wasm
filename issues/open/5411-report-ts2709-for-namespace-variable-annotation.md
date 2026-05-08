@@ -132,23 +132,23 @@ Follow-up issues:
 
 ## Notes
 
-Split from `issues/done/3307-implement-moduleAssignmentCompat.md`.
+Split from `issues/open/3307-implement-moduleAssignmentCompat.md`.
 
 Sibling cases `moduleAssignmentCompat2.ts` through
 `moduleAssignmentCompat4.ts` show the same TS2709 oracle shape and should be
 rechecked after this representative diagnostic lands.
 
-Also owns `issues/done/3331-implement-moduleCrashBug.md`: fresh triage for
+Also owns `issues/open/3331-implement-moduleCrashBug.md`: fresh triage for
 `moduleCrashBug1.ts` now build-passes while the TypeScript oracle reports
 TS2709 for `var m: _modes;`, the same namespace-root variable annotation
 diagnostic shape.
 
-Also owns `issues/done/3397-implement-moduleWithNoValuesAsType.md`: fresh
+Also owns `issues/open/3397-implement-moduleWithNoValuesAsType.md`: fresh
 triage now build-passes while the TypeScript oracle reports TS2709 for
 `var a: A;`, `var b: B;`, and `var c: C;` after same-file namespace
 declarations.
 
-Also owns `issues/done/3399-implement-moduleWithValuesAsType.md`: fresh triage
+Also owns `issues/open/3399-implement-moduleWithValuesAsType.md`: fresh triage
 now build-passes while the TypeScript oracle reports TS2709 for `var a: A;`
 after a same-file namespace that contains a value declaration.
 

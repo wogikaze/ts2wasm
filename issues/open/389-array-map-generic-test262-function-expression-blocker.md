@@ -85,7 +85,7 @@ Outcome:
 - Parent validation showed the remaining blocker is a harness-shim parser issue:
   `var undefined = void 0;` is tokenized as keyword `Undefined` and rejected as
   a binding name with a closed `issue-247` diagnostic.
-- `issues/done/390-test262-harness-undefined-binding-name.md` records the
+- `issues/open/390-test262-harness-undefined-binding-name.md` records the
   actual remaining blocker with source-backed evidence.
 
 Validation result:
@@ -116,7 +116,7 @@ Classification: truly-done.
 Audit result: retained in `issues/done/`. The issue has repo-local completion evidence, is not marked `blocked` or `triage-needed`, and `python scripts/manager.py check issues` validates the resulting issue graph.
 
 Evidence files:
-- `issues/done/389-array-map-generic-test262-function-expression-blocker.md`
+- `issues/open/389-array-map-generic-test262-function-expression-blocker.md`
 - `issues/index.md` after regeneration
 
 Future-work tracking: no untracked future-work item was identified in this issue during this metadata/evidence audit.
