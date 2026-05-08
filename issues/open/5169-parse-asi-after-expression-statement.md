@@ -57,13 +57,18 @@ TS accepts the semicolonless expression statement and reports later BigInt libra
 
 ## Desired final state
 
-The parser accepts ASI after a completed expression statement when the next token starts a new statement on a later line. The representative reference should no longer fail with `expected Semicolon, got Some(Let)`.
+The parser accepts ASI after a completed expression statement when the next
+token starts a new statement on a later line or closes the containing block.
+The representative references should no longer fail with `expected Semicolon,
+got Some(Let)` or `expected Semicolon, got Some(RightBrace)`.
 
 ## Scope
 
 In scope:
 
 - [ ] Accept ASI after a completed expression statement before `let`, `const`, `var`, `function`, `class`, `import`, `export`, or other established statement starters when separated by a line terminator.
+- [ ] Accept ASI after a completed expression statement before a closing block,
+  such as `b = () => { ... }\n}`.
 - [ ] Preserve required semicolon behavior where ASI must not apply, especially postfix/continuation tokens.
 - [ ] Add focused parser coverage for a method-call assignment expression followed by `let`.
 - [ ] Re-run representative triage and confirm the current `Some(Let)` parser blocker is gone.
@@ -95,6 +100,9 @@ Do not touch:
 - [ ] Existing invalid continuation cases remain rejected.
 - [ ] `python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/bigintWithLib.ts` no longer reports `expected Semicolon, got Some(Let)`.
 - [ ] `python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/bigintWithoutLib.ts` no longer reports `expected Semicolon, got Some(Let)`.
+- [ ] `narrowRefinedConstLikeParameterBIndingElementNameInInnerScope.ts` no
+  longer reports `expected Semicolon, got Some(RightBrace)` after
+  `b = () => { ... }`.
 
 ## Validation
 
@@ -136,6 +144,13 @@ Follow-up issues:
 Split from generated bucket `1053` on 2026-05-06 and expanded with generated bucket `1054` after both representative files stopped at the same expression-statement ASI boundary. Any BigInt library semantics that appear after this parser blocker should be triaged separately.
 
 Also supersedes generated bucket `issues/done/1183-implement-classExpressionNames.md`: fresh triage for `classExpressionNames.ts` stops after the completed expression statement `A = class {}` before the later-line `var a = new A()`, which is the same ASI-after-expression-statement parser boundary.
+
+Also supersedes generated bucket
+`issues/done/3446-implement-narrowRefinedConstLikeParameterBIndingElementNameInInnerScope.md`:
+fresh triage stops after the completed assignment expression statement
+`b = () => { const x: string = a; }` before the closing `}` of the `if` block.
+Tokens and TypeScript oracle are ok, and AST construction reports
+`UnsupportedSyntax: expected Semicolon, got Some(RightBrace) at 196..197`.
 
 ## Completion evidence
 
