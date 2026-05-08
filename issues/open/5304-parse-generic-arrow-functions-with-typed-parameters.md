@@ -8,7 +8,7 @@ priority: P1
 depends_on: []
 blocks: []
 created: 2026-05-07
-updated: 2026-05-07
+updated: 2026-05-08
 ---
 
 ## Summary
@@ -78,6 +78,8 @@ continues parsing the arrow body.
 In scope:
 
 - [ ] Parse `<T>(value: Type) => expr` as a generic arrow function expression.
+- [ ] Parse `<T>() => { ... }` as a zero-parameter generic arrow function
+  with a block body.
 - [ ] Erase TypeScript parameter type annotations inside the generic arrow parameter list.
 - [ ] Erase optional typed parameters such as `y?: K` in the generic arrow
   parameter list.
@@ -116,6 +118,9 @@ Do not touch:
   `expected RightParen, got Some(Colon)` at
   `<I extends Identifiable>(props: MyComponentProps<I>) =>`.
 - [ ] Existing arrow-function and angle-bracket assertion parser tests continue to pass.
+- [ ] `nearbyIdenticalGenericLambdasAssignable.ts` no longer reports
+  `unsupported expression: Some(SpannedToken { kind: RightParen, ... })` at
+  `<T>() =>`.
 - [ ] If parsing advances to a new blocker, that next blocker is recorded separately.
 - [ ] Issue state stays synchronized with `issues/index.md`.
 
@@ -180,6 +185,17 @@ explicitly excludes ambiguous generic arrow parsing.
   at `const MyComponent = <I extends Identifiable>(props: MyComponentProps<I>) => {};`.
 - TypeScript oracle accepts the generic arrow and infers
   `<I extends Identifiable>(props: MyComponentProps<I>) => void`.
+
+2026-05-08 fold-in:
+
+- `issues/done/3473-implement-nearbyIdenticalGenericLambdasAssignable.md`
+  reaches the same generic-arrow parser dispatch boundary, but with an empty
+  parameter list and a block body.
+- Current diagnostic: `UnsupportedSyntax: unsupported expression:
+  Some(SpannedToken { kind: RightParen, span: Span { start: 73, end: 74 } })
+  at 75..77` at `const fB = <T>() => {`.
+- TypeScript oracle accepts the source with no diagnostics and infers `fA`,
+  `fB`, and `fC` as `<T>() => { v: T; }`.
 
 ## Completion evidence
 
