@@ -630,6 +630,10 @@ impl<'a> Resolver<'a> {
                     return Ok(LoweredExpr::Undefined(Span::generated("undef")));
                 }
 
+                if func_name == "setTimeout" {
+                    return Ok(LoweredExpr::Undefined(Span::generated("undef")));
+                }
+
                 // Global setTimeout(): DOM timer host APIs are outside
                 // the WASM subset. Return Undefined to advance past the
                 // UnresolvedFunction blocker.
@@ -637,18 +641,6 @@ impl<'a> Resolver<'a> {
                     return Ok(LoweredExpr::Undefined(Span::generated("undef")));
                 }
 
-<<<<<<< Updated upstream
-||||||| Stash base
-=======
-                // Global setTimeout(): DOM timer host APIs are outside
-                // the WASM subset. Return Undefined to advance past the
-                // UnresolvedFunction blocker.
-                if func_name == "setTimeout" {
-                    return Ok(LoweredExpr::Undefined(Span::generated("undef")));
-                }
-
->>>>>>> Stashed changes
-                // Before falling through to the generic function-valued local
                 // diagnostic, check if the callee is a local whose value is
                 // null/undefined — this covers TypeScript callable interface
                 // typed locals such as `var i: I<string>; i("")`. These are

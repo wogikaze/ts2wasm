@@ -91,11 +91,11 @@ impl NameResolver {
             functions: std::collections::HashMap::new(),
             classes: std::collections::HashMap::new(),
             allowed_globals,
-            predeclared_names: std::collections::HashSet::new(),
             labels: Vec::new(),
             loop_depth: 0,
             breakable_depth: 0,
             function_depth: 0,
+            predeclared_names: std::collections::HashSet::new(),
         }
     }
 

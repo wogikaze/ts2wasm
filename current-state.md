@@ -1,6 +1,8 @@
 # Current State
 
-Last updated: 2026-05-06
+Last updated: 2026-05-08
+
+**Primary goal: test262 semantic_pass 90%（Gate H）**
 
 この文書は、現在の実装状態と検証の事実だけを記録する。設計は `docs/` 側に置き、ここでは「今何が動くか」「何が未実装か」「何を確認すればよいか」を扱う。
 
@@ -10,7 +12,7 @@ Last updated: 2026-05-06
 
 - **Gate A（テスト）**: `cargo fmt --all --check` と `cargo nextest run`（フル suite。重いテストを分離する場合は `docs/11` の filterset 方針に従う）。
 - **Gate D（coverage artifact）**: `mise run update-coverage-matrix -- --check` が `artifacts/coverage/reference-coverage-matrix.md` を検証。
-- **その他（B–C, E–G）**: ポリシーと checklist は `docs/11` / `docs/12-coding-standard.md`（§19）に記載。証拠コマンドは下記「Last verified commands」。
+- **その他（B–C, E–H）**: ポリシーと checklist は `docs/11` / `docs/12-coding-standard.md`（§19）に記載。証拠コマンドは下記「Last verified commands」。
 
 ## Last verified commands（代表）
 

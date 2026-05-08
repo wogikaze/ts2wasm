@@ -5,21 +5,11 @@ impl Parser {
         self.consume(TokenKind::Abstract); // TypeScript abstract modifier — erased at runtime
         let start = self.expect(TokenKind::Class)?;
         let (name, _) = self.expect_ident()?;
-<<<<<<< Updated upstream
         if self.namespace_names_encountered.contains(&name) {
             let span = self.prev_span().unwrap_or(Span { start: 0, end: 0 });
             return Err(Diagnostic {
                 code: DiagCode::UnsupportedSyntax,
                 message: format!("namespace before class: `{name}`"),
-||||||| Stash base
-=======
-        // Report TS(2440): namespace before class merge diagnostic
-        if self.namespace_names_encountered.contains(&name) {
-            let span = self.prev_span().unwrap_or(Span { start: 0, end: 0 });
-            return Err(Diagnostic {
-                code: DiagCode::UnsupportedSyntax,
-                message: format!("namespace declaration cannot be located prior to a class declaration with the same name `{name}` (TS(2440))"),
->>>>>>> Stashed changes
                 span: Some(span),
             });
         }
