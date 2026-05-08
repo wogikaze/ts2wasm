@@ -1,7 +1,7 @@
 # TRACKING.yaml
 # Human-maintained near-term work tracker.
 # Do not auto-generate entries.
-# Do not store roadmap-scale epics here — put those in docs/roadmap.md.
+# Do not store roadmap-scale epics here -- put those in docs/roadmap.md.
 
 meta:
   version: 1
@@ -13,42 +13,6 @@ meta:
     roadmap_source: docs/roadmap.md
 
 open:
-  # ── Registration (W3, small, high impact) ──
-  - id: 101
-    title: "Register Promise, Symbol, Reflect, Proxy as known global names"
-    priority: P1
-    type: feature
-    area: ir
-    status: open
-    created: 2026-05-09
-    updated: 2026-05-09
-    owner: human
-    roadmap: W3
-    ready: true
-    acceptance:
-      - "cargo nextest run -p ts2wasm-cli --test m6_builtin_methods"
-    non_goals:
-      - "No runtime implementation for any of these."
-      - "No method dispatch."
-    evidence: null
-
-  - id: 102
-    title: "Register ArrayBuffer, DataView, and TypedArray constructor names"
-    priority: P1
-    type: feature
-    area: ir
-    status: open
-    created: 2026-05-09
-    updated: 2026-05-09
-    owner: human
-    roadmap: W3
-    ready: true
-    acceptance:
-      - "cargo nextest run -p ts2wasm-cli --test m6_builtin_methods"
-    non_goals:
-      - "No TypedArray runtime semantics."
-    evidence: null
-
   - id: 103
     title: "Register well-known symbols (iterator, toStringTag, hasInstance, toPrimitive)"
     priority: P1
@@ -64,10 +28,9 @@ open:
       - "cargo nextest run -p ts2wasm-cli --test m6_builtin_methods"
     non_goals:
       - "No Symbol constructor implementation."
-      - "No runtime wiring — name registration only."
+      - "No runtime wiring."
     evidence: null
 
-  # ── Diagnostic routing (W4, small, enables precise error messages) ──
   - id: 104
     title: "Add precise unsupported diagnostic for Promise.then runtime use"
     priority: P1
@@ -119,7 +82,6 @@ open:
       - "No Proxy/Reflect implementation."
     evidence: null
 
-  # ── Infra / testing (W6/W7, small, measurable) ──
   - id: 107
     title: "Record baseline + detect build_pass/semantic_pass regression between ramp runs"
     priority: P1
@@ -155,7 +117,6 @@ open:
       - "cargo nextest run -p ts2wasm-cli --test m11_host_deny"
     evidence: null
 
-  # ── Parser / frontend (W2, well-scoped) ──
   - id: 109
     title: "Add parser support for RegExp literal flags (g, i, m)"
     priority: P1
@@ -170,7 +131,7 @@ open:
     acceptance:
       - "cargo nextest run -p ts2wasm-cli --test m6_builtin_methods"
     non_goals:
-      - "No s/u/y/d flags — separate item."
+      - "No s/u/y/d flags."
       - "No RegExp execution changes."
     evidence: null
 
@@ -206,7 +167,6 @@ open:
       - "No eval runtime changes."
     evidence: null
 
-  # ── WAT / backend (W0, architecture debt) ──
   - id: 112
     title: "Add binary_mvp smoke fixture for numeric const export"
     priority: P2
@@ -238,7 +198,7 @@ open:
     acceptance:
       - "cargo nextest run -p ts2wasm-cli --test m8_oop_classes"
     non_goals:
-      - "No binary emitter expansion — documentation + diagnostics only."
+      - "No binary emitter expansion."
     evidence: null
 
   - id: 113
@@ -257,4 +217,48 @@ open:
     evidence: null
 
 active: []
-done: []
+done:
+  - id: 101
+    title: "Register Promise, Symbol, Reflect, Proxy as known global names"
+    priority: P1
+    type: feature
+    area: ir
+    status: done
+    created: 2026-05-09
+    updated: 2026-05-09
+    closed: 2026-05-09
+    owner: human
+    roadmap: W3
+    acceptance:
+      - "cargo nextest run -p ts2wasm-cli --test m6_builtin_methods build_smoke_global_names_promise_symbol_reflect_proxy"
+    non_goals:
+      - "No runtime implementation."
+      - "No method dispatch."
+    evidence:
+      commit: "dd77ce968"
+      commands:
+        - command: "cargo nextest run -p ts2wasm-cli --test m6_builtin_methods build_smoke_global_names_promise_symbol_reflect_proxy"
+          exit: 0
+      summary: "Proxy already registered. Added fixture and test."
+
+  - id: 102
+    title: "Register ArrayBuffer, DataView, and TypedArray constructor names"
+    priority: P1
+    type: feature
+    area: ir
+    status: done
+    created: 2026-05-09
+    updated: 2026-05-09
+    closed: 2026-05-09
+    owner: human
+    roadmap: W3
+    acceptance:
+      - "cargo nextest run -p ts2wasm-cli --test m6_builtin_methods build_smoke_global_names_typedarray"
+    non_goals:
+      - "No TypedArray runtime semantics."
+    evidence:
+      commit: "9ca02a59b"
+      commands:
+        - command: "cargo nextest run -p ts2wasm-cli --test m6_builtin_methods build_smoke_global_names_typedarray"
+          exit: 0
+      summary: "Added 13 TypedArray/ArrayBuffer/DataView names to resolver_expr.rs. Fixture and test pass."
