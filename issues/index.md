@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 30 | 17 | 13 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4615 | 3196 | 1419 |
+| frontend | 4616 | 3196 | 1420 |
 | harness | 1 | 0 | 1 |
 | ir | 99 | 71 | 28 |
 | issues | 4 | 0 | 4 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5320 | 3508 | 1812 |
+| total | 5321 | 3508 | 1813 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -438,6 +438,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5483 | Support dependency named exports of default-import bindings | feature | compiler/module-graph | implementation-ready | P1 |  | dependency-module named export validation does not recognize the |
 | 5484 | Resolve import-equals require to virtual node_modules d.ts file | feature | compiler/module-graph | implementation-ready | P1 |  | `import = require("pkg")` does not search virtual |
 | 5485 | Resolve import-equals require to virtual node_modules index d.ts | feature | compiler/module-graph | implementation-ready | P1 |  | Resolve import-equals require to virtual node_modules index d.ts |
+| 5486 | Report non-exported merged namespace value member access | feature | frontend/semantics | implementation-ready | P1 |  | namespace member export/visibility state is not checked when merged |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -2392,7 +2393,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 3302 | Implement Modulealiasasfunctionargument | spike | frontend/syntax | class: blocked | Implement Modulealiasasfunctionargument |
 | 3303 | Implement Modulealiasinterface | spike | frontend/syntax | class: blocked | Implement Modulealiasinterface |
 | 3304 | Implement Moduleandinterfacesharingname | spike | frontend/syntax | class: blocked | Implement Moduleandinterfacesharingname |
-| 3591 | Implement Nonexportedelementsofmergedmodules | spike | frontend/syntax | class: blocked | Implement Nonexportedelementsofmergedmodules |
 | 3592 | Implement Nongenericclassextendinggenericclasswithany | spike | frontend/semantics | class: blocked | Implement Nongenericclassextendinggenericclasswithany |
 | 3593 | Implement Nonidenticaltypeconstraints | spike | frontend/syntax | class: blocked | Implement Nonidenticaltypeconstraints |
 | 3594 | Implement Noninferrabletypepropagation Parser Syntax | spike | frontend/syntax | class: triage-needed | Implement Noninferrabletypepropagation Parser Syntax |
@@ -5280,6 +5280,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 3588 | Implement Nodenextpackageselfnamewithoutdirdecldirrootdir | spike | frontend/syntax | see `issues/done/3588-implement-nodeNextPackageSelfNameWithOutDirDeclDirRootDir.md` |
 | 3589 | Implement Nodenextpackageselfnamewithoutdirrootdir | spike | frontend/syntax | see `issues/done/3589-implement-nodeNextPackageSelfNameWithOutDirRootDir.md` |
 | 3590 | Implement Noderesolution | spike | frontend/syntax | see `issues/done/3590-implement-nodeResolution.md` |
+| 3591 | Implement Nonexportedelementsofmergedmodules | spike | frontend/syntax | see `issues/done/3591-implement-nonExportedElementsOfMergedModules.md` |
 | 3690 | Implement Optionaltupleelementsandundefined | spike | reference/triage | see `issues/done/3690-implement-optionalTupleElementsAndUndefined.md` |
 | 3996 | Implement Compiler (dup) | spike | frontend/syntax | see `issues/done/3996-implement-reference-typescript-tests-cases-compiler.md` |
 | 4210 | Implement Splicetuples | spike | frontend/resolver | see `issues/done/4210-implement-spliceTuples.md` |
