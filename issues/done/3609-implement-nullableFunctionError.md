@@ -167,7 +167,7 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- `pending local commit`
+- `c0e1b1590`
 
 Validation result:
 
