@@ -239,7 +239,7 @@ reference/typescript/tests/cases/compiler/nonNullableTypes1.ts: build_pass
 
 Commits:
 
-- pending local commit
+- a870c8931
 
 Validation result:
 
