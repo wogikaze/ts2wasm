@@ -71,7 +71,11 @@ impl Parser {
                 end: self.cursor,
             });
             self.advance(); // consume 'enum'
-            self.expect_ident()?; // consume enum name
+            let (name, name_span) = self.expect_ident()?;
+            self.pending_statements.push(Stmt::EnumDecl {
+                name: name.clone(),
+                span: name_span,
+            });
             self.skip_balanced_brace_block(enum_span)?; // skip { ... } body
             return Ok(true);
         }
@@ -82,7 +86,11 @@ impl Parser {
                 end: self.cursor,
             });
             self.advance(); // consume 'enum'
-            self.expect_ident()?; // consume enum name
+            let (name, name_span) = self.expect_ident()?;
+            self.pending_statements.push(Stmt::EnumDecl {
+                name: name.clone(),
+                span: name_span,
+            });
             self.skip_balanced_brace_block(enum_span)?; // skip { ... } body
             return Ok(true);
         }
@@ -96,7 +104,11 @@ impl Parser {
                 end: self.cursor,
             });
             self.advance(); // consume 'enum'
-            self.expect_ident()?; // consume enum name
+            let (name, name_span) = self.expect_ident()?;
+            self.pending_statements.push(Stmt::EnumDecl {
+                name: name.clone(),
+                span: name_span,
+            });
             self.skip_balanced_brace_block(enum_span)?; // skip { ... } body
             return Ok(true);
         }

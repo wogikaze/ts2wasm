@@ -514,6 +514,9 @@ fn unparse_stmt(out: &mut String, stmt: &Stmt, indent: usize) {
         Stmt::Return { expr, .. } => {
             let _ = writeln!(out, "return {};", unparse_expr(expr));
         }
+        Stmt::EnumDecl { name, .. } => {
+            let _ = writeln!(out, "enum {name} {{}}");
+        }
         Stmt::ClassDecl {
             name,
             extends,

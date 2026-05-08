@@ -216,6 +216,13 @@ impl NameResolver {
             }
         }
 
+        // First pass: register enum names so they can be looked up as identifiers
+        for stmt in program {
+            if let Stmt::EnumDecl { name, span } = stmt {
+                self.declare_variable(name, Some(*span), false)?;
+            }
+        }
+
         // First pass: collect let/const names for forward reference resolution
         // (e.g. `c; const c = 0;`). var names are hoisted to scope normally.
         for stmt in program {
@@ -470,6 +477,10 @@ impl NameResolver {
                     span: *span,
                 })
             }
+            Stmt::EnumDecl { name, span } => Ok(Stmt::EnumDecl {
+                name: name.clone(),
+                span: *span,
+            }),
             Stmt::TryCatch {
                 try_block,
                 catch_param,

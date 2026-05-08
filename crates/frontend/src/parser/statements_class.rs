@@ -772,6 +772,7 @@ fn find_null_return_in_stmts(stmts: &[Stmt]) -> Option<Span> {
             | Stmt::Break { .. }
             | Stmt::Continue { .. }
             | Stmt::Throw { .. }
+            | Stmt::EnumDecl { .. }
             | Stmt::ImportSideEffect { .. }
             | Stmt::ImportNamed { .. }
             | Stmt::ImportDefault { .. }

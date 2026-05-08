@@ -834,6 +834,7 @@ impl BigIntRuntimeGuard {
             | Stmt::Break { .. }
             | Stmt::Continue { .. } => Ok(()),
             Stmt::Block { .. } => Ok(()),
+            Stmt::EnumDecl { .. } => Ok(()),
         }
     }
 

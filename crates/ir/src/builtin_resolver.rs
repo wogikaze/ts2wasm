@@ -387,6 +387,7 @@ impl BigIntStaticBuiltinFolder {
             | Stmt::ExportNamespaceFrom { .. }
             | Stmt::ExportAssignment { .. }
             | Stmt::AmbientValueDecl { .. }
+            | Stmt::EnumDecl { .. }
             | Stmt::Break { .. }
             | Stmt::Continue { .. } => stmt.clone(),
         }
@@ -1080,6 +1081,7 @@ fn resolve_stmt_with_outer_bindings(
                 is_ambient: *is_ambient,
             })
         }
+        Stmt::EnumDecl { name, .. } => Ok(ResolvedStmt::AmbientValue(name.clone())),
         Stmt::ClassDecl {
             name,
             extends,

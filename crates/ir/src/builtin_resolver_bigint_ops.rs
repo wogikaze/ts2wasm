@@ -281,6 +281,7 @@ pub(super) fn collect_assigned_names_in_stmt(stmt: &Stmt, names: &mut HashSet<St
         | Stmt::Break { .. }
         | Stmt::Continue { .. } => {}
         Stmt::Block { .. } => {}
+        Stmt::EnumDecl { .. } => {}
     }
 }
 

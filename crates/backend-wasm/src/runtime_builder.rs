@@ -156,7 +156,7 @@ impl WatEmitter<'_> {
                 RuntimeFn::StringToWellFormed => self.emit_string_to_well_formed(wat),
                 RuntimeFn::StringFromCharCode => self.emit_string_from_char_code(wat),
                 RuntimeFn::StringReplace => self.emit_string_replace(wat),
-                RuntimeFn::StringReplaceAll => self.emit_string_replace_all(wat),
+                RuntimeFn::StringReplaceAll => self.emit_string_replace(wat),
                 RuntimeFn::RegexpMatchInner => self.emit_regexp_match_inner(wat),
                 RuntimeFn::RegExpTest => self.emit_regexp_test(wat),
                 RuntimeFn::RegExpMatch => self.emit_regexp_match(wat),

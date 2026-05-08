@@ -271,6 +271,10 @@ pub enum Stmt {
         interface_heritage: Vec<Expr>,
         span: Span,
     },
+    EnumDecl {
+        name: String,
+        span: Span,
+    },
     TryCatch {
         try_block: Vec<Stmt>,
         catch_param: Option<String>,
@@ -535,6 +539,7 @@ impl Stmt {
             | Self::Function { span, .. }
             | Self::Return { span, .. }
             | Self::ClassDecl { span, .. }
+            | Self::EnumDecl { span, .. }
             | Self::TryCatch { span, .. }
             | Self::Throw { span, .. }
             | Self::Switch { span, .. }

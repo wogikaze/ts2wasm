@@ -9,12 +9,15 @@ pub(super) fn collect_top_level_bindings(program: &[Stmt]) -> Result<HashSet<Str
     Ok(bindings)
 }
 
-/// Collects only class declaration names from the top-level program.
+/// Collects class and enum declaration names from the top-level program.
 pub(super) fn collect_top_level_class_names(program: &[Stmt]) -> HashSet<String> {
     let mut names = HashSet::new();
     for stmt in program {
-        if let Stmt::ClassDecl { name, .. } = stmt {
-            names.insert(name.clone());
+        match stmt {
+            Stmt::ClassDecl { name, .. } | Stmt::EnumDecl { name, .. } => {
+                names.insert(name.clone());
+            }
+            _ => {}
         }
     }
     names
@@ -28,7 +31,9 @@ pub(super) fn collect_stmt_declared_bindings(
         Stmt::Let { name, span, .. } => {
             collect_binding_names(name, Some(*span), bindings)?;
         }
-        Stmt::Function { name, .. } | Stmt::ClassDecl { name, .. } => {
+        Stmt::Function { name, .. }
+        | Stmt::ClassDecl { name, .. }
+        | Stmt::EnumDecl { name, .. } => {
             bindings.insert(name.clone());
         }
         Stmt::TryCatch {
@@ -396,7 +401,10 @@ pub(super) fn first_outer_local_reference_in_stmt(
         Stmt::Labeled { body, .. } => {
             first_outer_local_reference_in_stmt(body, outer_bindings, method_locals, class_names)
         }
-        Stmt::Function { .. } | Stmt::ClassDecl { .. } | Stmt::AmbientValueDecl { .. } => None,
+        Stmt::Function { .. }
+        | Stmt::ClassDecl { .. }
+        | Stmt::EnumDecl { .. }
+        | Stmt::AmbientValueDecl { .. } => None,
         Stmt::ImportSideEffect { .. }
         | Stmt::ImportNamed { .. }
         | Stmt::ImportDefault { .. }
