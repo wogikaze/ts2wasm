@@ -113,22 +113,6 @@ open:
       - "No eval runtime changes."
     evidence: null
 
-  - id: 112
-    title: "Add binary_mvp smoke fixture for numeric const export"
-    priority: P2
-    type: infra
-    area: backend
-    status: open
-    created: 2026-05-09
-    updated: 2026-05-09
-    owner: human
-    roadmap: W0
-    ready: true
-    acceptance:
-      - "cargo nextest run -p ts2wasm-cli --test m1_iwasm binary_mvp_const_export"
-    non_goals:
-      - "No full WAT replacement."
-    evidence: null
 
   - id: 114
     title: "Document binary_mvp unsupported constructs with precise diagnostics"
@@ -147,23 +131,6 @@ open:
       - "No binary emitter expansion."
     evidence: null
 
-  - id: 115
-    title: "ABI contract document: logical jsval (i64) vs wire representation (i32 RawValue)"
-    priority: P2
-    type: docs
-    area: backend
-    status: open
-    created: 2026-05-09
-    updated: 2026-05-09
-    owner: human
-    roadmap: W0
-    ready: true
-    acceptance:
-      - "grep -q 'logical ABI' docs/14-runtime-abi.md"
-      - "grep -q 'wire representation' docs/14-runtime-abi.md"
-    non_goals:
-      - "No full ABI bridge implementation."
-    evidence: null
 
   - id: 116
     title: "ABI bridge smoke test for i64 logical vs i32 wire mismatch detection"
@@ -309,6 +276,53 @@ done:
         - command: "cargo nextest run -p ts2wasm-cli --test m6_builtin_methods build_smoke_global_names_typedarray"
           exit: 0
       summary: "Added 13 TypedArray/ArrayBuffer/DataView names to resolver_expr.rs. Fixture and test pass."
+
+  - id: 112
+    title: "Add binary_mvp smoke fixture for numeric const export"
+    priority: P2
+    type: infra
+    area: backend
+    status: done
+    created: 2026-05-09
+    updated: 2026-05-09
+    closed: 2026-05-09
+    owner: human
+    roadmap: W0
+    acceptance:
+      - "cargo nextest run -p ts2wasm-cli --test m1_iwasm binary_mvp_const_export"
+    non_goals:
+      - "No full WAT replacement."
+    evidence:
+      commit: "785396926"
+      commands:
+        - command: "cargo nextest run -p ts2wasm-cli --test m1_iwasm binary_mvp_const_export"
+          exit: 0
+      summary: "Added binary_mvp const export smoke test with fixture and iwasm verification."
+
+  - id: 115
+    title: "ABI contract document: logical jsval (i64) vs wire representation (i32 RawValue)"
+    priority: P2
+    type: docs
+    area: backend
+    status: done
+    created: 2026-05-09
+    updated: 2026-05-09
+    closed: 2026-05-09
+    owner: human
+    roadmap: W0
+    acceptance:
+      - "grep -q 'logical ABI' docs/14-runtime-abi.md"
+      - "grep -q 'wire representation' docs/14-runtime-abi.md"
+    non_goals:
+      - "No full ABI bridge implementation."
+    evidence:
+      commit: "9d2146a98"
+      commands:
+        - command: "grep -q 'logical ABI' docs/14-runtime-abi.md"
+          exit: 0
+        - command: "grep -q 'wire representation' docs/14-runtime-abi.md"
+          exit: 0
+      summary: "Added ABI contract summary section to docs/14-runtime-abi.md."
 
   - id: 107
     title: "Record baseline + detect build_pass/semantic_pass regression between ramp runs"
