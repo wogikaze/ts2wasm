@@ -212,6 +212,12 @@ issue 5199.
   `function f6(x: string, y) { return null; }`; validation reports
   `DuplicateFunction: duplicate function definition: f6 at 254..262`, while the
   TypeScript oracle reports no diagnostics.
+- `issues/done/3553-implement-noImplicitAnyWithOverloads.md` reaches the same
+  top-level overload grouping boundary. The source has two bodyless
+  `function callb(lam: ...)` overload signatures followed by one implementation
+  `function callb(a) { }`; validation reports `DuplicateFunction` for the
+  second overload signature before the contextual lambda member diagnostics can
+  be observed.
 
 ## Completion evidence
 
