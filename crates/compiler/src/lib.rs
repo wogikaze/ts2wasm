@@ -118,13 +118,9 @@ pub fn build_file_with_host_deny(
     module_graph::validate_init_order(&module_graph)?;
     let static_module_binding =
         lower_static_named_import_bindings_for_build(&program, &module_graph)?;
-    eprintln!("[dbg-pipe] name_resolver");
     let name_resolved = name_resolver::resolve_names(&static_module_binding.rewritten_program)?;
-    eprintln!("[dbg-pipe] builtin_resolver");
     let resolved = builtin_resolver::resolve_builtins(&name_resolved)?;
-    eprintln!("[dbg-pipe] typescript_semantics");
     validate_typescript_semantics_for_path(input, &resolved)?;
-    eprintln!("[dbg-pipe] validate_optimized_hir_slice");
     validate_optimized_hir_slice(&resolved, OptimizationLevel::O0)?;
     let lowered = lowered::lower_program(&resolved)?;
     let lowered =
@@ -600,7 +596,7 @@ fn lower_static_named_import_bindings_for_build(
                 }
             }
             Stmt::ExportDefault { expr, span, .. } => {
-                let index = lowered_statement_index;
+                let index = rewritten.len();
                 let local_name = format!("__ts2wasm_default_{index}");
                 rewritten.push(Stmt::Let {
                     name: local_name.clone(),
