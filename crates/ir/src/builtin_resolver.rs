@@ -454,19 +454,15 @@ impl BigIntStaticBuiltinFolder {
                 // Iterative left-spine flattening to avoid stack overflow on deep chains.
                 let mut stack: Vec<(BinaryOp, &Expr, Span)> = Vec::new();
                 let mut cur = left;
-                loop {
-                    match &**cur {
-                        Expr::Binary {
-                            left: l,
-                            op,
-                            right,
-                            span,
-                        } => {
-                            stack.push((*op, right, *span));
-                            cur = l;
-                        }
-                        _ => break,
-                    }
+                while let Expr::Binary {
+                    left: l,
+                    op,
+                    right,
+                    span,
+                } = &**cur
+                {
+                    stack.push((*op, right, *span));
+                    cur = l;
                 }
                 stack.push((*first_op, first_right, *first_span));
                 stack.reverse();
@@ -1518,19 +1514,15 @@ fn resolve_expr(expr: &Expr) -> Result<ResolvedExpr, Diagnostic> {
             // resolve the leaf, then process each level from leaf outward.
             let mut stack: Vec<(BinaryOp, &Expr, Span)> = Vec::new();
             let mut cur = left;
-            loop {
-                match &**cur {
-                    Expr::Binary {
-                        left: l,
-                        op,
-                        right,
-                        span,
-                    } => {
-                        stack.push((*op, right, *span));
-                        cur = l;
-                    }
-                    _ => break,
-                }
+            while let Expr::Binary {
+                left: l,
+                op,
+                right,
+                span,
+            } = &**cur
+            {
+                stack.push((*op, right, *span));
+                cur = l;
             }
             stack.push((*first_op, first_right, *first_span));
             stack.reverse();

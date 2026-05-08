@@ -602,6 +602,7 @@ impl<'a> Resolver<'a> {
         Ok(None)
     }
 
+    #[allow(dead_code)]
     pub(super) fn is_known_dense_array_local_spread_operand(&self, spread_expr: &ResolvedExpr) -> bool {
         let ResolvedExpr::Ident(name) = spread_expr else {
             return false;
@@ -660,6 +661,7 @@ impl<'a> Resolver<'a> {
         Ok(None)
     }
 
+    #[allow(dead_code)]
     pub(super) fn is_known_set_local_spread_operand(&self, spread_expr: &ResolvedExpr) -> bool {
         let ResolvedExpr::Ident(name) = spread_expr else {
             return false;
@@ -672,6 +674,7 @@ impl<'a> Resolver<'a> {
             .is_some_and(|class_name| class_name == "Set")
     }
 
+    #[allow(dead_code)]
     pub(super) fn is_known_map_local_spread_operand(&self, spread_expr: &ResolvedExpr) -> bool {
         let ResolvedExpr::Ident(name) = spread_expr else {
             return false;
@@ -2302,8 +2305,7 @@ impl<'a> Resolver<'a> {
         let iterator = self.alloc_temp();
         let result_arr = self.alloc_temp();
         let done_val = self.alloc_temp();
-        let mut stmts = Vec::new();
-        stmts.push(LoweredStmt::Let(
+        let mut stmts = vec![LoweredStmt::Let(
             iter_fn,
             LoweredExpr::PropertyGetDynamic {
                 obj: Box::new(iterable),
@@ -2311,7 +2313,7 @@ impl<'a> Resolver<'a> {
                 span,
             },
             span,
-        ));
+        )];
         stmts.push(LoweredStmt::Let(
             iterator,
             LoweredExpr::RuntimeCall {
@@ -2362,8 +2364,7 @@ impl<'a> Resolver<'a> {
             },
             span,
         ));
-        let mut push_body = Vec::new();
-        push_body.push(LoweredStmt::Let(
+        let mut push_body = vec![LoweredStmt::Let(
             value,
             LoweredExpr::PropertyGetDynamic {
                 obj: Box::new(LoweredExpr::Local(r, Span::generated("local"))),
@@ -2371,7 +2372,7 @@ impl<'a> Resolver<'a> {
                 span,
             },
             span,
-        ));
+        )];
         push_body.push(LoweredStmt::Expr(
             LoweredExpr::RuntimeCall {
                 runtime_fn: "ArrayPush".to_owned(),
@@ -2582,7 +2583,7 @@ impl<'a> Resolver<'a> {
             }),
             // Logical OR/AND where either side produces a dense array
             // (e.g., `x || []`, `x && []`)
-            ResolvedExpr::Binary { left, op, right } if matches!(op, BinaryOp::Or | BinaryOp::And) => {
+            ResolvedExpr::Binary { left, op: BinaryOp::Or | BinaryOp::And, right } => {
                 self.resolved_expr_produces_dense_array(left)
                     || self.resolved_expr_produces_dense_array(right)
             }
