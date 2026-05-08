@@ -8,7 +8,7 @@ priority: P1
 depends_on: []
 blocks: []
 created: 2026-05-06
-updated: 2026-05-06
+updated: 2026-05-08
 ---
 
 ## Summary
@@ -109,6 +109,7 @@ Do not touch:
 - [ ] `declare const c: number; var obj = { c };` resolves the ambient value name without emitting a runtime declaration.
 - [ ] `declare var b2: boolean; b = b2;` resolves the ambient value name without emitting a runtime declaration.
 - [ ] `declare let anys: Ari<any>; var xs = anys.filter(Bullean);` resolves the ambient value name before later filter/type-predicate behavior is evaluated.
+- [ ] `declare let obj: Slugs; call(obj, cb);` resolves the ambient value name before later rest-destructuring callback narrowing is evaluated.
 - [ ] Ambient declarations with initializers, such as `declare var e = 1;`, remain rejected.
 - [ ] `python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/bestCommonTypeWithContextualTyping.ts` no longer reports `UnresolvedName: unresolved name: \`e\``.
 - [ ] `narrowUnknownByTypePredicate.ts` no longer reports `UnresolvedName` for
@@ -221,6 +222,13 @@ Additional superseded bucket:
   `UnresolvedName: unresolved name: \`value1\` at 234..240`; TypeScript parses
   the file with no diagnostics and later type-predicate narrowing remains
   unproven until ambient const visibility is implemented.
+- `issues/done/3464-implement-narrowingRestGenericCall.md` reaches the same
+  ambient value name-resolution boundary for `declare let obj: Slugs;`
+  followed by `call(obj, ({foo, ...rest}) => { console.log(rest.bar); });` in
+  `narrowingRestGenericCall.ts`. Fresh triage on 2026-05-08 reports
+  `UnresolvedName: unresolved name: \`obj\` at 188..191`; TypeScript parses the
+  file with no diagnostics, so rest-generic-call narrowing remains unproven
+  until ambient let visibility is implemented.
 
 ## Completion evidence
 
