@@ -60,7 +60,10 @@ impl<'a> Resolver<'a> {
                     || name == "Set" || name == "Symbol" || name == "Promise"
                     || name == "console" || name == "process" || name == "Buffer"
                     || name == "TypeError" || name == "ReferenceError" || name == "SyntaxError"
-                    || name == "RangeError"
+                    || name == "RangeError" || name == "URIError" || name == "EvalError"
+                    || name == "AggregateError"
+                    || name == "WeakMap" || name == "WeakSet"
+                    || name == "Atomics" || name == "Intl" || name == "globalThis"
                     // TypedArray/ArrayBuffer/DataView constructors
                     || name == "ArrayBuffer" || name == "DataView"
                     || name == "Int8Array" || name == "Uint8Array"

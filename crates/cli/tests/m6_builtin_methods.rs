@@ -1219,3 +1219,14 @@ fn proxy_reflect_unsupported_diagnostic() {
         err_msg
     );
 }
+
+// Remaining ECMAScript global builtin names
+#[test]
+fn build_smoke_global_names_remaining() {
+    let result = run_fixture("builtins-and-io/global-names-remaining.ts");
+    assert!(
+        result.is_ok(),
+        "Remaining global builtin names should build: {:?}",
+        result.err()
+    );
+}
