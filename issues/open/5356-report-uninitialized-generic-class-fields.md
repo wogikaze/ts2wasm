@@ -160,6 +160,12 @@ Also owns `issues/done/3592-implement-nonGenericClassExtendingGenericClassWithAn
 fresh triage now build-passes and TypeScript reports TS2564 for generic field
 `Foo<T>.t` before any `Foo<any>` heritage parity gap is actionable.
 
+Also owns the TS2564 diagnostics in
+`issues/done/3593-implement-nonIdenticalTypeConstraints.md`: fresh triage now
+build-passes and TypeScript reports TS2564 for uninitialized fields in
+`Different`, `Foo`, `Qux`, `Bar`, `Baz`, and `Quux`. The TS2428 merged
+declaration type-parameter diagnostics were split to issue 5487.
+
 ## Completion evidence
 
 Fill only when moving to `done/`.

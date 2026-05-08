@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 30 | 17 | 13 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4616 | 3195 | 1421 |
+| frontend | 4617 | 3195 | 1422 |
 | harness | 1 | 0 | 1 |
 | ir | 99 | 71 | 28 |
 | issues | 4 | 0 | 4 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5321 | 3507 | 1814 |
+| total | 5322 | 3507 | 1815 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -47,7 +47,7 @@ Issue files are the source of truth for work items. The generated section below 
 Direct child counts are derived from issue-file `depends_on` links. A meta issue can be `done` as a classification/design umbrella while implementation child issues remain open.
 
 ```
-5000 (Meta: TypeScript Compiler Parser Syntax Coverage) [done/design] ch:435 open:326 done:109
+5000 (Meta: TypeScript Compiler Parser Syntax Coverage) [done/design] ch:434 open:325 done:109
 ├── 5002 (Meta: TypeScript Compiler Type System Coverage) [done/done] ch:222 open:198 done:24 (also ← 5005)
 ├── 5003 (Meta: TypeScript Compiler Declaration Emit Coverage) [done/done] ch:100 open:89 done:11 (also ← 5001)
 5001 (Meta: TypeScript Compiler Semantic Analysis Coverage) [done/done] ch:550 open:275 done:275
@@ -66,7 +66,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 
 | Order | ID | Title | State | Class | Area | Priority | Depends on | Direct children | Open children | Done children |
 |-----:|---:|------|-------|-------|------|--------:|-----------:|----------------:|--------------:|--------------:|
-| 1 | 5000 | Meta: TypeScript Compiler Parser Syntax Coverage | done | design | frontend/syntax | P1 | - | 435 | 326 | 109 |
+| 1 | 5000 | Meta: TypeScript Compiler Parser Syntax Coverage | done | design | frontend/syntax | P1 | - | 434 | 325 | 109 |
 | 2 | 5001 | Meta: TypeScript Compiler Semantic Analysis Coverage | done | done | frontend/semantics | P1 | - | 550 | 275 | 275 |
 | 3 | 5004 | Meta: Runtime Builtins Coverage (test262) (audit reopened #5004) | done | done | runtime/builtins | P1 | - | 24 | 3 | 21 |
 | 4 | 5005 | Meta: TypeScript Compiler Name Resolution Coverage | done | done | frontend/resolver | P1 | - | 390 | 320 | 70 |
@@ -439,6 +439,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5484 | Resolve import-equals require to virtual node_modules d.ts file | feature | compiler/module-graph | implementation-ready | P1 |  | `import = require("pkg")` does not search virtual |
 | 5485 | Resolve import-equals require to virtual node_modules index d.ts | feature | compiler/module-graph | implementation-ready | P1 |  | Resolve import-equals require to virtual node_modules index d.ts |
 | 5486 | Report non-exported merged namespace value member access | feature | frontend/semantics | implementation-ready | P1 |  | namespace member export/visibility state is not checked when merged |
+| 5487 | Report non-identical type parameters across merged declarations | feature | frontend/semantics | implementation-ready | P1 |  | merged declarations with non-identical type parameter lists are |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -2393,7 +2394,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 3302 | Implement Modulealiasasfunctionargument | spike | frontend/syntax | class: blocked | Implement Modulealiasasfunctionargument |
 | 3303 | Implement Modulealiasinterface | spike | frontend/syntax | class: blocked | Implement Modulealiasinterface |
 | 3304 | Implement Moduleandinterfacesharingname | spike | frontend/syntax | class: blocked | Implement Moduleandinterfacesharingname |
-| 3593 | Implement Nonidenticaltypeconstraints | spike | frontend/syntax | class: blocked | Implement Nonidenticaltypeconstraints |
 | 3594 | Implement Noninferrabletypepropagation Parser Syntax | spike | frontend/syntax | class: triage-needed | Implement Noninferrabletypepropagation Parser Syntax |
 | 3595 | Implement Noninferrabletypepropagation Type System | spike | frontend/semantics | class: blocked | Implement Noninferrabletypepropagation Type System |
 | 3596 | Implement Nonmergedoverloads | spike | frontend/syntax | class: blocked | Implement Nonmergedoverloads |
@@ -5281,6 +5281,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 3590 | Implement Noderesolution | spike | frontend/syntax | see `issues/done/3590-implement-nodeResolution.md` |
 | 3591 | Implement Nonexportedelementsofmergedmodules | spike | frontend/syntax | see `issues/done/3591-implement-nonExportedElementsOfMergedModules.md` |
 | 3592 | Implement Nongenericclassextendinggenericclasswithany | spike | frontend/semantics | see `issues/done/3592-implement-nonGenericClassExtendingGenericClassWithAny.md` |
+| 3593 | Implement Nonidenticaltypeconstraints | spike | frontend/syntax | see `issues/done/3593-implement-nonIdenticalTypeConstraints.md` |
 | 3690 | Implement Optionaltupleelementsandundefined | spike | reference/triage | see `issues/done/3690-implement-optionalTupleElementsAndUndefined.md` |
 | 3996 | Implement Compiler (dup) | spike | frontend/syntax | see `issues/done/3996-implement-reference-typescript-tests-cases-compiler.md` |
 | 4210 | Implement Splicetuples | spike | frontend/resolver | see `issues/done/4210-implement-spliceTuples.md` |
