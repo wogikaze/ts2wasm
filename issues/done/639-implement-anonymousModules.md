@@ -191,7 +191,7 @@ Duplicate candidates:
   },
   {
     "state": "open",
-    "path": "issues/open/432-implement-import-export.md",
+    "path": "",
     "title": "Implement import/export module syntax",
     "reason": "same feature label, title overlap"
   },

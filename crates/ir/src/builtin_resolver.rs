@@ -1551,13 +1551,11 @@ fn resolve_expr(expr: &Expr) -> Result<ResolvedExpr, Diagnostic> {
                         if let (Some(left_value), Some(right_value)) = (
                             bigint_from_resolved(&accumulated),
                             bigint_from_resolved(&right_resolved),
-                        ) {
-                            if let Ok(result) =
-                                fold_bigint_binary(left_value, op, right_value, span)
-                            {
-                                accumulated = bigint_to_resolved(result);
-                                continue;
-                            }
+                        ) && let Ok(result) =
+                            fold_bigint_binary(left_value, op, right_value, span)
+                        {
+                            accumulated = bigint_to_resolved(result);
+                            continue;
                         }
                         if matches!(
                             op,
@@ -1602,13 +1600,11 @@ fn resolve_expr(expr: &Expr) -> Result<ResolvedExpr, Diagnostic> {
                         if let (Some(left_value), Some(right_value)) = (
                             bigint_from_resolved(&accumulated),
                             bigint_from_resolved(&right_resolved),
-                        ) {
-                            if let Ok(result) =
-                                fold_bigint_binary(left_value, op, right_value, span)
-                            {
-                                accumulated = bigint_to_resolved(result);
-                                continue;
-                            }
+                        ) && let Ok(result) =
+                            fold_bigint_binary(left_value, op, right_value, span)
+                        {
+                            accumulated = bigint_to_resolved(result);
+                            continue;
                         }
                         accumulated = ResolvedExpr::Binary {
                             left: Box::new(accumulated),

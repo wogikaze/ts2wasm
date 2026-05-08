@@ -653,8 +653,8 @@ impl<'a> Resolver<'a> {
                 // typed locals such as `var i: I<string>; i("")`. These are
                 // not extracted methods but simply uninitialized variables,
                 // and deserve a more precise diagnostic.
-                if let Ok(local_id) = self.resolve_local(func_name) {
-                    if self.nullish_locals.contains(&local_id) {
+                if let Ok(local_id) = self.resolve_local(func_name)
+                    && self.nullish_locals.contains(&local_id) {
                         return Err(Diagnostic {
                             code: DiagCode::UnsupportedSyntax,
                             message: format!(
@@ -663,7 +663,6 @@ impl<'a> Resolver<'a> {
                             span: Some(*span),
                         });
                     }
-                }
 
                 let func_id = match self.resolve_func(func_name) {
                     Ok(func_id) => func_id,
@@ -1801,8 +1800,8 @@ impl<'a> Resolver<'a> {
                         _ => {
                             // Non-identifier receiver (e.g. `[1].indexOf(2)`, `"hi".charAt(0)`)
                             // Handle ClassName.prototype.method.call(thisArg, ...args) pattern
-                            if method == "call" {
-                                if let Some((class_name, proto_method)) =
+                            if method == "call"
+                                && let Some((class_name, proto_method)) =
                                     extract_prototype_method_name(object)
                                 {
                                     if let Some((receiver, call_args)) = args.split_first() {
@@ -1827,8 +1826,7 @@ impl<'a> Resolver<'a> {
                                                 || proto_method == "reduce"
                                                 || proto_method == "reduceRight"
                                                 || proto_method == "flatMap")
-                                        {
-                                            if self.is_known_array_expr(receiver) {
+                                            && self.is_known_array_expr(receiver) {
                                                 let lowered_receiver =
                                                     self.lower_expr(receiver)?;
                                                 return self.lower_array_callback_method(
@@ -1839,7 +1837,6 @@ impl<'a> Resolver<'a> {
                                                     *span,
                                                 );
                                             }
-                                        }
                                         // For String HTML wrapper methods, route through IR-level Concat lowering
                                         if class_name == "String"
                                             && is_html_wrapper_string_method(proto_method)
@@ -1885,7 +1882,6 @@ impl<'a> Resolver<'a> {
                                     });
                                 }
                                 // Fall through to issue-211 error below
-                            }
                             if let Some(runtime_fn) =
                                 collection_method_runtime_fn_arg(method)
                             {
@@ -1911,8 +1907,8 @@ impl<'a> Resolver<'a> {
                                     span: Span::generated("runtime_call"),});
                             }
                             // new C().method() — lower through class method dispatch
-                            if let ResolvedExpr::New { class_name, .. } = object.as_ref() {
-                                if let Some(method_id) =
+                            if let ResolvedExpr::New { class_name, .. } = object.as_ref()
+                                && let Some(method_id) =
                                     self.resolve_class_method(class_name, method)
                                 {
                                     let lowered_receiver = self.lower_expr(object)?;
@@ -1932,7 +1928,6 @@ impl<'a> Resolver<'a> {
                                     
                                         span: Span::generated("call"),});
                                 }
-                            }
                             return Err(Diagnostic {
                                 code: DiagCode::UnsupportedSyntax,
                                 message: format!(
@@ -2533,7 +2528,7 @@ fn global_builtin_function_length(name: &str) -> i32 {
 
 /// Extract `(class_name, method_name)` from `ClassName.prototype.methodName` patterns.
 /// Used for unwrapping `Array.prototype.every.call(obj, fn)` into `ArrayEvery`.
-fn extract_prototype_method_name<'a>(expr: &'a ResolvedExpr) -> Option<(&'a str, &'a str)> {
+fn extract_prototype_method_name(expr: &ResolvedExpr) -> Option<(&str, &str)> {
     let ResolvedExpr::PropertyAccess {
         object,
         key: method_name,

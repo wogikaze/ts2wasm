@@ -11,6 +11,9 @@ scripts/manager check-fast-gate --skip-nextest
 echo "pre-push: architecture rules (file size, crate layers)"
 python3 scripts/check/architecture-rules.py
 
+echo "pre-push: false-done issues in issues/done/"
+python3 scripts/check/false-done-pre-push.py
+
 echo "pre-push: manifest vs wasm imports"
 scripts/manager check-manifest-imports
 
@@ -33,6 +36,7 @@ trap 'rm -f "$report_file"' EXIT
   echo "## 実施内容"
   echo
   echo "- scripts/manager check-fast-gate --skip-nextest"
+  echo "- python3 scripts/check/false-done-pre-push.py"
   echo "- scripts/manager check-manifest-imports"
   echo "- cargo nextest run -p ts2wasm-cli --test m2_node_diff m2_fixtures_match_node_output_under_iwasm"
   echo "- git status --short:"

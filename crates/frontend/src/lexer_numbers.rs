@@ -96,14 +96,14 @@ impl<'a> Lexer<'a> {
                     previous_was_separator = false;
                     self.advance_char();
                 }
-                '.' if !has_fraction && digits.len() > 0 => {
+                '.' if !has_fraction && !digits.is_empty() => {
                     has_fraction = true;
                     digits.push('.');
                     previous_was_separator = false;
                     self.advance_char();
                     // Consume fractional digits
                     while let Some(fch) = self.peek_char() {
-                        if matches!(fch, '0'..='9') {
+                        if fch.is_ascii_digit() {
                             digits.push(fch);
                             self.advance_char();
                         } else {

@@ -13,6 +13,12 @@ pub enum SymbolKind {
     Namespace,
 }
 
+impl Default for Scope {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl Scope {
     pub fn new() -> Self {
         Scope {

@@ -296,9 +296,7 @@ fn populate_static_module_exports_for_build(
                         } else {
                             return Err(Diagnostic {
                                 code: DiagCode::UnsupportedSyntax,
-                                message: format!(
-                                    "issue-5005: entry module `export const {{...}}` contains non-let statement"
-                                ),
+                                message: "issue-5005: entry module `export const {...}` contains non-let statement".to_string(),
                                 span: None,
                             });
                         }

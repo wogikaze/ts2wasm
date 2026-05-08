@@ -3956,13 +3956,13 @@ fn stmt_contains_super_ref(stmt: &ResolvedStmt) -> bool {
             body,
             ..
         } => {
-            init.as_ref().map_or(false, |s| stmt_contains_super_ref(s))
+            init.as_ref().is_some_and(|s| stmt_contains_super_ref(s))
                 || condition
                     .as_ref()
-                    .map_or(false, |c| expr_contains_super_ref(c))
+                    .is_some_and(expr_contains_super_ref)
                 || update
                     .as_ref()
-                    .map_or(false, |u| expr_contains_super_ref(u))
+                    .is_some_and(expr_contains_super_ref)
                 || block_contains_super_ref(body)
         }
         ResolvedStmt::ForIn { var: _, iter, body, .. }
@@ -3979,10 +3979,10 @@ fn stmt_contains_super_ref(stmt: &ResolvedStmt) -> bool {
             block_contains_super_ref(try_block)
                 || catch_block
                     .as_ref()
-                    .map_or(false, |b| block_contains_super_ref(b))
+                    .is_some_and(|b| block_contains_super_ref(b))
                 || finally_block
                     .as_ref()
-                    .map_or(false, |b| block_contains_super_ref(b))
+                    .is_some_and(|b| block_contains_super_ref(b))
         }
         ResolvedStmt::Throw(expr) => expr_contains_super_ref(expr),
         ResolvedStmt::Switch { expr, cases } => {

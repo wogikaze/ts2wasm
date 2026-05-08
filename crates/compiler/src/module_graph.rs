@@ -204,7 +204,7 @@ pub(crate) fn validate_init_order(graph: &ModuleGraph) -> Result<(), Diagnostic>
     // Every dependency must be initialized before the dependent.
     let n = graph.modules.len();
     // Validate that all resolved module IDs are in bounds.
-    for (_mid, module) in graph.modules.iter().enumerate() {
+    for module in graph.modules.iter() {
         for dep in &module.dependencies {
             if dep.resolved_module_id >= n {
                 return Err(Diagnostic {
@@ -454,48 +454,46 @@ fn resolve_local_specifier(
         // Check for package.json in parent directory
         if let Some(parent) = candidate.parent() {
             let pkg_json = parent.join("package.json");
-            if pkg_json.is_file() {
-                if let Ok(pkg_content) = std::fs::read_to_string(&pkg_json) {
-                    if let Ok(pkg) = serde_json::from_str::<serde_json::Value>(&pkg_content) {
-                        if let Some(types) = pkg.get("types").and_then(|v| v.as_str()) {
-                            let types_path = parent.join(types);
-                            if types_path.is_file() {
-                                return canonicalize_existing_path(&types_path);
-                            }
+            if pkg_json.is_file()
+                && let Ok(pkg_content) = std::fs::read_to_string(&pkg_json)
+                && let Ok(pkg) = serde_json::from_str::<serde_json::Value>(&pkg_content)
+            {
+                if let Some(types) = pkg.get("types").and_then(|v| v.as_str()) {
+                    let types_path = parent.join(types);
+                    if types_path.is_file() {
+                        return canonicalize_existing_path(&types_path);
+                    }
+                }
+                if let Some(main) = pkg.get("main").and_then(|v| v.as_str()) {
+                    let main_path = parent.join(main);
+                    if main_path.is_file() {
+                        return canonicalize_existing_path(&main_path);
+                    }
+                }
+                // Check package.json exports field (dot-separated key)
+                if let Some(imports) = pkg.get("imports").and_then(|v| v.as_object())
+                    && let Some(dot) = imports.get("#").or_else(|| imports.get("."))
+                    && let Some(val) = dot.as_str()
+                {
+                    let imp_path = parent.join(val);
+                    if imp_path.is_file() {
+                        return canonicalize_existing_path(&imp_path);
+                    }
+                }
+                if let Some(exports) = pkg.get("exports") {
+                    if let Some(export_str) = exports.as_str() {
+                        let exp_path = parent.join(export_str);
+                        if exp_path.is_file() {
+                            return canonicalize_existing_path(&exp_path);
                         }
-                        if let Some(main) = pkg.get("main").and_then(|v| v.as_str()) {
-                            let main_path = parent.join(main);
-                            if main_path.is_file() {
-                                return canonicalize_existing_path(&main_path);
-                            }
-                        }
-                        // Check package.json exports field (dot-separated key)
-                        if let Some(imports) = pkg.get("imports").and_then(|v| v.as_object()) {
-                            if let Some(dot) = imports.get("#").or_else(|| imports.get(".")) {
-                                if let Some(val) = dot.as_str() {
-                                    let imp_path = parent.join(val);
-                                    if imp_path.is_file() {
-                                        return canonicalize_existing_path(&imp_path);
-                                    }
-                                }
-                            }
-                        }
-                        if let Some(exports) = pkg.get("exports") {
-                            if let Some(export_str) = exports.as_str() {
-                                let exp_path = parent.join(export_str);
-                                if exp_path.is_file() {
-                                    return canonicalize_existing_path(&exp_path);
-                                }
-                            } else if let Some(export_map) = exports.as_object() {
-                                // Check "." key (main entry)
-                                if let Some(default_export) = export_map.get(".") {
-                                    if let Some(val) = default_export.as_str() {
-                                        let exp_path = parent.join(val);
-                                        if exp_path.is_file() {
-                                            return canonicalize_existing_path(&exp_path);
-                                        }
-                                    }
-                                }
+                    } else if let Some(export_map) = exports.as_object() {
+                        // Check "." key (main entry)
+                        if let Some(default_export) = export_map.get(".")
+                            && let Some(val) = default_export.as_str()
+                        {
+                            let exp_path = parent.join(val);
+                            if exp_path.is_file() {
+                                return canonicalize_existing_path(&exp_path);
                             }
                         }
                     }

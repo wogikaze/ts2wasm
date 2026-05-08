@@ -9,7 +9,6 @@ use ts2wasm_runtime_abi::ValueTag;
 
 use super::runtime_fn::{
     Capability, GLOBALS_EXCEPTION_RUNTIME, HostAbi, HostImport, RuntimeFn, RuntimeGlobal,
-    StringOrigin,
 };
 
 #[derive(Debug, Clone)]

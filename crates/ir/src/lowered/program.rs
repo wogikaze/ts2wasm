@@ -1282,16 +1282,15 @@ fn compute_recursion_depths(
     let mut func_to_idx: HashMap<FuncId, usize> = HashMap::new();
     let mut next_idx = 0;
     for (name, &id) in function_ids {
-        if call_graph.contains_key(&id) || program.iter().any(|stmt| match stmt {
+        if (call_graph.contains_key(&id) || program.iter().any(|stmt| match stmt {
             ResolvedStmt::Function { name: n, .. } => n == name,
             ResolvedStmt::ClassDecl { name: n, .. } => n == name,
             _ => false,
-        }) {
-            if !func_to_idx.contains_key(&id) {
-                func_to_idx.insert(id, next_idx);
+        }))
+            && let std::collections::hash_map::Entry::Vacant(e) = func_to_idx.entry(id) {
+                e.insert(next_idx);
                 next_idx += 1;
             }
-        }
     }
 
     let n = func_to_idx.len();
@@ -1305,13 +1304,11 @@ fn compute_recursion_depths(
     for (&caller_id, callee_names) in &call_graph {
         if let Some(&caller_idx) = func_to_idx.get(&caller_id) {
             for callee_name in callee_names {
-                if let Some(&callee_id) = function_ids.get(callee_name.as_str()) {
-                    if let Some(&callee_idx) = func_to_idx.get(&callee_id) {
-                        if !adj[caller_idx].contains(&callee_idx) {
+                if let Some(&callee_id) = function_ids.get(callee_name.as_str())
+                    && let Some(&callee_idx) = func_to_idx.get(&callee_id)
+                        && !adj[caller_idx].contains(&callee_idx) {
                             adj[caller_idx].push(callee_idx);
                         }
-                    }
-                }
             }
         }
     }

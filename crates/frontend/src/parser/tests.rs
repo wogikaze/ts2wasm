@@ -1053,7 +1053,7 @@ mod tests {
                     } => {
                         assert_eq!(*inner_op, BinaryOp::Less);
                         assert!(
-                            matches!(inner_left.as_ref(), Expr::Member { property, .. } if property == "b"),
+                            matches!(inner_left.as_ref(), Expr::Member { object, property, .. } if property == "b"),
                             "expected a.b as left operand, got {inner_left:?}"
                         );
                         assert!(
@@ -1295,7 +1295,7 @@ mod tests {
         for stmt in &stmts {
             match stmt {
                 Stmt::Let {
-                    expr: Expr::Member { property, .. },
+                    expr: Expr::Member { object, property, .. },
                     ..
                 } => {
                     assert!(["if", "class", "for"].contains(&property.as_str()));
@@ -1314,7 +1314,7 @@ mod tests {
                 expr: Expr::Call { callee, .. },
                 ..
             } => match callee.as_ref() {
-                Expr::Member { property, .. } => assert_eq!(property, "delete"),
+                Expr::Member { object, property, .. } => assert_eq!(property, "delete"),
                 other => panic!("unexpected callee expression: {other:?}"),
             },
             other => panic!("unexpected delete member call statement: {other:?}"),

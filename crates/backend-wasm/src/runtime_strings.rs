@@ -1608,17 +1608,19 @@ impl WatEmitter<'_> {
     }
 
     pub(super) fn emit_string_match(&self, wat: &mut String) {
-        wat.push_str(&format!(
-            r#"  (func $string_match (param $str i32) (param $pattern i32) (result i32)
-    (return (call $regexp_match (local.get $pattern) (local.get $str))))"#,
-        ));
+        wat.push_str(
+            &r#"  (func $string_match (param $str i32) (param $pattern i32) (result i32)
+    (return (call $regexp_match (local.get $pattern) (local.get $str))))"#
+                .to_string(),
+        );
     }
 
     pub(super) fn emit_string_search(&self, wat: &mut String) {
-        wat.push_str(&format!(
-            r#"  (func $string_search (param $str i32) (param $pattern i32) (result i32)
-    (return (call $regexp_search (local.get $pattern) (local.get $str))))"#,
-        ));
+        wat.push_str(
+            &r#"  (func $string_search (param $str i32) (param $pattern i32) (result i32)
+    (return (call $regexp_search (local.get $pattern) (local.get $str))))"#
+                .to_string(),
+        );
     }
 
     pub(super) fn emit_string_is_well_formed(&self, wat: &mut String) {
@@ -1633,10 +1635,11 @@ impl WatEmitter<'_> {
 
     pub(super) fn emit_string_to_well_formed(&self, wat: &mut String) {
         // Strings are byte-level (no UTF-16 surrogates), so no replacement needed.
-        wat.push_str(&format!(
-            r#"  (func $string_to_well_formed (param $s i32) (result i32)
-    (local.get $s))"#,
-        ));
+        wat.push_str(
+            &r#"  (func $string_to_well_formed (param $s i32) (result i32)
+    (local.get $s))"#
+                .to_string(),
+        );
     }
 
     // Array methods (M10)

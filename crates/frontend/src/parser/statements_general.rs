@@ -188,10 +188,10 @@ impl Parser {
                 }
                 // `import X = N[.M. ...]` — local alias, skip (erased at runtime)
                 self.skip_to_semicolon()?;
-                return Ok(Stmt::Expr {
+                Ok(Stmt::Expr {
                     expr: crate::Expr::Undefined { span: import_span },
                     span: Span { start: import_span.start, end: import_span.start },
-                });
+                })
             }
             Some(Token::Ident(_)) => self.default_import_statement(import_span),
             Some(Token::LeftParen) => self.unsupported_module_form(import_span, "dynamic import"),
@@ -593,7 +593,7 @@ impl Parser {
             specifiers,
             span: Span {
                 start: export_span.start,
-                end: end,
+                end,
             },
         })
     }
@@ -929,15 +929,14 @@ impl Parser {
         // consecutive block function declarations, e.g.
         //   {function f(){...}}{function f(){...}}rest
         // (issue 1001e Category A: existing-function patterns).
-        if prefix.is_empty() && !block.suffix.trim().is_empty() {
-            if let Some(suffix_statements) =
+        if prefix.is_empty() && !block.suffix.trim().is_empty()
+            && let Some(suffix_statements) =
                 self.static_block_function_eval_expansion(block.suffix, eval_span)?
             {
                 let mut statements = vec![function];
                 statements.extend(suffix_statements);
                 return Ok(Some(statements));
             }
-        }
 
         let suffix_is_only_block_functions =
             self.source_contains_only_static_eval_function_blocks(block.suffix, eval_span)?;
@@ -1199,7 +1198,7 @@ impl Parser {
     }
 
     fn let_statement_with_name_span(&mut self) -> Result<(Stmt, String, Span), Diagnostic> {
-        let (start, is_const, kind) = match self.advance() {
+        let (start, _is_const, kind) = match self.advance() {
             Some(SpannedToken {
                 kind: Token::Let,
                 span,
@@ -2103,9 +2102,7 @@ impl Parser {
                     self.advance();
                 }
                 Some(Token::RightParen) => {
-                    if paren_depth > 0 {
-                        paren_depth -= 1;
-                    }
+                    paren_depth = paren_depth.saturating_sub(1);
                     self.advance();
                 }
                 Some(Token::LeftBracket) => {
@@ -2113,9 +2110,7 @@ impl Parser {
                     self.advance();
                 }
                 Some(Token::RightBracket) => {
-                    if bracket_depth > 0 {
-                        bracket_depth -= 1;
-                    }
+                    bracket_depth = bracket_depth.saturating_sub(1);
                     self.advance();
                 }
                 Some(Token::LeftBrace) => {
@@ -2123,9 +2118,7 @@ impl Parser {
                     self.advance();
                 }
                 Some(Token::RightBrace) => {
-                    if brace_depth > 0 {
-                        brace_depth -= 1;
-                    }
+                    brace_depth = brace_depth.saturating_sub(1);
                     self.advance();
                 }
                 Some(token)

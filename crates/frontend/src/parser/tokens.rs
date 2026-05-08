@@ -266,14 +266,12 @@ impl Parser {
         let start = self.expect(TokenKind::LeftBracket)?;
         // Handle BigInt literal computed keys: [1n]
         if matches!(self.peek(), Some(Token::BigIntLiteral(_))) {
-            let bigint_span = self.peek_span();
+            let _bigint_span = self.peek_span();
             self.advance();
             let end = self.expect(TokenKind::RightBracket)?;
             return Err(Diagnostic {
                 code: DiagCode::UnsupportedSyntax,
-                message: format!(
-                    "issue-5168: a computed property name must be of type 'string', 'number', 'symbol', or 'any', got 'bigint'"
-                ),
+                message: "issue-5168: a computed property name must be of type 'string', 'number', 'symbol', or 'any', got 'bigint'".to_string(),
                 span: Some(Span {
                     start: start.start,
                     end: end.end,

@@ -193,16 +193,17 @@ impl NameResolver {
                 span,
                 ..
             } = stmt
+                && *overload_signature
+                && !*is_ambient
+                && !concrete_names.contains(name.as_str())
             {
-                if *overload_signature && !*is_ambient && !concrete_names.contains(name.as_str()) {
-                    return Err(Diagnostic {
-                        code: DiagCode::UnsupportedSyntax,
-                        message: format!(
-                            "TS2391: function overload signature `{name}` has no implementation"
-                        ),
-                        span: Some(*span),
-                    });
-                }
+                return Err(Diagnostic {
+                    code: DiagCode::UnsupportedSyntax,
+                    message: format!(
+                        "TS2391: function overload signature `{name}` has no implementation"
+                    ),
+                    span: Some(*span),
+                });
             }
         }
         // First pass: collect all class declarations (hoisting)

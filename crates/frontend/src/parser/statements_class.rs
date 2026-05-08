@@ -162,8 +162,8 @@ impl Parser {
         if self.peek_contextual_keyword("implements") {
             self.advance();
             while !self.is_at_end() && !matches!(self.peek(), Some(Token::LeftBrace)) {
-                if let Some(Token::Ident(name)) = self.peek().cloned() {
-                    if matches!(name.as_str(), "string" | "number" | "boolean") {
+                if let Some(Token::Ident(name)) = self.peek().cloned()
+                    && matches!(name.as_str(), "string" | "number" | "boolean") {
                         let span = self.peek_span().expect("ident token must have span");
                         self.advance();
                         return Err(Diagnostic {
@@ -175,7 +175,6 @@ impl Parser {
                             span: Some(span),
                         });
                     }
-                }
                 self.advance();
             }
         }
@@ -467,14 +466,13 @@ impl Parser {
             let mut method_body = self.block()?;
 
             // issue-5183: reject null return in typed getter
-            if has_getter_return_type {
-                if let Some(null_span) = find_null_return_in_stmts(&method_body) {
+            if has_getter_return_type
+                && let Some(null_span) = find_null_return_in_stmts(&method_body) {
                     return Err(self.unsupported_typescript_syntax(
                         null_span,
                         "issue-5183: Type 'null' is not assignable to type of getter return type",
                     ));
                 }
-            }
 
             if method_name == "constructor" && !parameter_property_assignments.is_empty() {
                 method_body = merge_constructor_parameter_property_assignments(
@@ -724,16 +722,14 @@ fn find_null_return_in_stmts(stmts: &[Stmt]) -> Option<Span> {
                 if let Some(span) = find_null_return_in_stmts(try_block) {
                     return Some(span);
                 }
-                if let Some(catch) = catch_block {
-                    if let Some(span) = find_null_return_in_stmts(catch) {
+                if let Some(catch) = catch_block
+                    && let Some(span) = find_null_return_in_stmts(catch) {
                         return Some(span);
                     }
-                }
-                if let Some(finally) = finally_block {
-                    if let Some(span) = find_null_return_in_stmts(finally) {
+                if let Some(finally) = finally_block
+                    && let Some(span) = find_null_return_in_stmts(finally) {
                         return Some(span);
                     }
-                }
             }
             Stmt::Labeled { body, .. } => {
                 if let Some(span) = find_null_return_in_stmts(std::slice::from_ref(body.as_ref()))

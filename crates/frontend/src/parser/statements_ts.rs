@@ -158,9 +158,7 @@ impl Parser {
                         self.advance();
                     }
                     Some(Token::Greater) => {
-                        if angle_depth > 0 {
-                            angle_depth -= 1;
-                        }
+                        angle_depth = angle_depth.saturating_sub(1);
                         self.advance();
                     }
                     Some(Token::Comma) if angle_depth == 0 => {
@@ -427,8 +425,8 @@ impl Parser {
     ) -> Result<(), Diagnostic> {
         if self.peek_contextual_keyword("module") || self.peek_contextual_keyword("namespace") {
             // Capture namespace name before the body is erased (issue 5370).
-            if self.cursor + 1 < self.tokens.len() {
-                if let crate::Token::Ident(ns_name) = &self.tokens[self.cursor + 1].kind {
+            if self.cursor + 1 < self.tokens.len()
+                && let crate::Token::Ident(ns_name) = &self.tokens[self.cursor + 1].kind {
                     let name_span = self.tokens[self.cursor + 1].span;
                     self.pending_statements.push(crate::Stmt::AmbientValueDecl {
                         name: ns_name.clone(),
@@ -436,7 +434,6 @@ impl Parser {
                         is_var: false,
                     });
                 }
-            }
             self.consume_module_or_namespace_declaration()?;
             return Ok(());
         }

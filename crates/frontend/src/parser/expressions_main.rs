@@ -104,33 +104,30 @@ impl Parser {
             }
         }
         if matches!(self.peek(), Some(Token::PowerEqual)) {
-            match expr {
-                Expr::Ident { name, span } => {
-                    self.advance();
-                    let value = self.assignment()?;
-                    let end = value.span().end;
-                    let bin = Expr::Binary {
-                        left: Box::new(Expr::Ident {
-                            name: name.clone(),
-                            span,
-                        }),
-                        op: BinaryOp::Power,
-                        right: Box::new(value),
-                        span: Span {
-                            start: span.start,
-                            end,
-                        },
-                    };
-                    return Ok(Expr::Assign {
-                        name,
-                        span: Span {
-                            start: span.start,
-                            end,
-                        },
-                        expr: Box::new(bin),
-                    });
-                }
-                _ => {}
+            if let Expr::Ident { name, span } = expr {
+                self.advance();
+                let value = self.assignment()?;
+                let end = value.span().end;
+                let bin = Expr::Binary {
+                    left: Box::new(Expr::Ident {
+                        name: name.clone(),
+                        span,
+                    }),
+                    op: BinaryOp::Power,
+                    right: Box::new(value),
+                    span: Span {
+                        start: span.start,
+                        end,
+                    },
+                };
+                return Ok(Expr::Assign {
+                    name,
+                    span: Span {
+                        start: span.start,
+                        end,
+                    },
+                    expr: Box::new(bin),
+                });
             }
         }
         if let Some(op) = self.logical_assignment_operator() {
@@ -284,7 +281,7 @@ impl Parser {
     }
 
     fn arrow_function(&mut self) -> Result<Expr, Diagnostic> {
-        let start_span = self.peek_span().unwrap_or(Span { start: 0, end: 0 });
+        let _start_span = self.peek_span().unwrap_or(Span { start: 0, end: 0 });
         let mut params = Vec::new();
 
         if self.consume(TokenKind::LeftParen) {
@@ -440,7 +437,7 @@ impl Parser {
     /// Parse arrow function without consuming return type `:`, to avoid
     /// conflicting with the ternary's else-branch separator.
     fn parse_arrow_function_without_return_type(&mut self) -> Result<Expr, Diagnostic> {
-        let start_span = self.peek_span().unwrap_or(Span { start: 0, end: 0 });
+        let _start_span = self.peek_span().unwrap_or(Span { start: 0, end: 0 });
         let mut params = Vec::new();
         self.expect(TokenKind::LeftParen)?;
         if !self.consume(TokenKind::RightParen) {
