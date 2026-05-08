@@ -12,7 +12,113 @@ meta:
     canonical_source: TRACKING.yaml
     roadmap_source: docs/roadmap.md
 
-open: []
+open:
+  # W2: Parser (small, well-scoped)
+  - id: 124
+    title: "Add parser support for `for (var x = y in obj)` cover initializer"
+    priority: P1
+    type: feature
+    area: frontend
+    status: open
+    created: 2026-05-09
+    updated: 2026-05-09
+    owner: human
+    roadmap: W2
+    ready: true
+    acceptance:
+      - "cargo nextest run -p ts2wasm-cli --test m6_builtin_methods"
+    non_goals:
+      - "No runtime semantics -- parser only."
+    evidence: null
+
+  - id: 125
+    title: "Add precise unsupported diagnostic for `with` statement"
+    priority: P1
+    type: diagnostic
+    area: frontend
+    status: open
+    created: 2026-05-09
+    updated: 2026-05-09
+    owner: human
+    roadmap: W2
+    ready: true
+    acceptance:
+      - "cargo nextest run -p ts2wasm-cli --test m6_builtin_methods"
+    non_goals:
+      - "No with statement implementation."
+    evidence: null
+
+  - id: 126
+    title: "Add parser support for labelled function declarations"
+    priority: P2
+    type: feature
+    area: frontend
+    status: open
+    created: 2026-05-09
+    updated: 2026-05-09
+    owner: human
+    roadmap: W2
+    ready: true
+    acceptance:
+      - "cargo nextest run -p ts2wasm-cli --test m6_builtin_methods"
+    non_goals:
+      - "No runtime semantics changes."
+    evidence: null
+
+  # W4: Builtin (moderate scope)
+  - id: 127
+    title: "Add Array.prototype.sort build_smoke fixture and test"
+    priority: P2
+    type: test
+    area: runtime
+    status: open
+    created: 2026-05-09
+    updated: 2026-05-09
+    owner: human
+    roadmap: W4
+    ready: true
+    acceptance:
+      - "cargo nextest run -p ts2wasm-cli --test m6_builtin_methods"
+    non_goals:
+      - "No full sort implementation -- build smoke only."
+    evidence: null
+
+  # W6: Infra (well-scoped)
+  - id: 128
+    title: "Add delta reporting for feature-level pass/fail changes between ramp runs"
+    priority: P2
+    type: infra
+    area: scripts
+    status: open
+    created: 2026-05-09
+    updated: 2026-05-09
+    owner: human
+    roadmap: W6
+    ready: true
+    acceptance:
+      - "mise run reference-coverage -- test262 --limit 100 --delta-report 2>&1 | grep 'delta'"
+    non_goals:
+      - "No dashboard changes."
+    evidence: null
+
+  # W7: Host capability (systematic)
+  - id: 129
+    title: "Full host import audit: run --emit-manifest on all fixture files"
+    priority: P2
+    type: infra
+    area: scripts
+    status: open
+    created: 2026-05-09
+    updated: 2026-05-09
+    owner: human
+    roadmap: W7
+    ready: true
+    acceptance:
+      - "cargo nextest run -p ts2wasm-cli --test m11_host_deny"
+    non_goals:
+      - "No manifest schema changes."
+    evidence: null
+
 active: []
 
 done:

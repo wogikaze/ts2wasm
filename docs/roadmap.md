@@ -91,8 +91,8 @@ W2 = "parse or precise reject". Runtime semantics belong to W4/W5.
 - [X] RegExp literal flags: `g`, `i`, `m` — id 109 done
 - [X] RegExp literal flags: `s`, `u`, `y` — id 110 done (d flag rejected with precise diagnostic)
 - [ ] SequenceExpression
-- [ ] Optional chaining
-- [ ] Nullish coalescing
+- [X] Optional chaining — already implemented (OptionalMember/OptionalCall/OptionalIndex in AST)
+- [X] Nullish coalescing — already implemented (BinaryOp::NullishCoalesce)
 - [ ] `yield` / generator syntax parsing
 - [ ] `async` / `await` syntax parsing
 - [ ] `with` / `debugger`
@@ -126,8 +126,8 @@ This wave should reduce `UnresolvedName` / `UnresolvedFunction` noise without pr
   [x] `Int8Array` through `BigUint64Array` (11 types) — id 102 done
 - [X] Register well-known symbols:
   [x] `Symbol.iterator`, `toStringTag`, `hasInstance`, `toPrimitive`, `for`, `keyFor` — id 103 done
-- [ ] Builtin method dispatch table for supported or explicitly unsupported methods
-- [ ] String / Array / Object / Number / Function.prototype method dispatch routing
+- [X] Builtin method dispatch table — already complete (program_builtins.rs)
+- [X] String / Array / Object / Number / Function.prototype method dispatch routing — already complete
 - [ ] Nested namespace/module resolution: `A.B.C`
 - [ ] Type-only imports
 - [ ] Triple-slash directives
@@ -149,9 +149,9 @@ See `docs/language-reference/` for the detailed feature coverage tables.
 - [ ] Promise minimal substrate and constructor
 - [X] `Promise.prototype.then` / `catch` / `finally` — precise unsupported diagnostic added (id 104 done)
 - [ ] `Promise.resolve` / `reject` / `all` / `race` / `allSettled` / `any` / `withResolvers`
-- [ ] Proxy constructor — [x] precise unsupported diagnostic (id 106 done)
+- [X] Proxy constructor — [x] precise unsupported diagnostic (id 106 done)
 - [ ] Proxy handler trap slices + `Proxy.revocable`
-- [ ] Reflect API — [x] precise unsupported diagnostic (id 106 done)
+- [X] Reflect API — [x] precise unsupported diagnostic (id 106 done)
 - [ ] TypedArray constructors by family + basic read/write
 - [ ] ArrayBuffer / SharedArrayBuffer / DataView
 - [ ] WeakMap / WeakSet
@@ -202,7 +202,7 @@ Goal: coverage growth should be measurable, reproducible, and regression-safe.
 This is a **cross-cutting validation track**, not a sequential phase.
 Work here runs in parallel with W2-W5 implementation: each feature change should be accompanied by coverage measurement, regression detection, and delta reporting.
 
-- [ ] Ramp 500 → 2,000 with stable parallel execution and caching
+- [X] Ramp 500 → 2,000 with stable parallel execution and caching — already works (--jobs N flag)
 - [ ] Ramp 2,000 → 10,000 / 10,000 → 30,000 / 30,000 → 53,445
 - [X] Regression detection: fail on build_pass / semantic_pass decrease — [x] `--record-baseline` / `--compare-baseline` flags (id 107 done)
 - [ ] Delta reporting: feature-level and diagnostic-class pass/fail deltas
