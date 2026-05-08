@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 25 | 13 | 12 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4597 | 3304 | 1293 |
+| frontend | 4597 | 3303 | 1294 |
 | harness | 1 | 0 | 1 |
 | ir | 88 | 65 | 23 |
 | issues | 4 | 0 | 4 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5286 | 3611 | 1675 |
+| total | 5286 | 3610 | 1676 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -2358,7 +2358,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 3302 | Implement Modulealiasasfunctionargument | spike | frontend/syntax | class: blocked | Implement Modulealiasasfunctionargument |
 | 3303 | Implement Modulealiasinterface | spike | frontend/syntax | class: blocked | Implement Modulealiasinterface |
 | 3304 | Implement Moduleandinterfacesharingname | spike | frontend/syntax | class: blocked | Implement Moduleandinterfacesharingname |
-| 3454 | Implement Narrowingconstrainedtypeparameter | spike | frontend/syntax | class: blocked | Implement Narrowingconstrainedtypeparameter |
 | 3455 | Implement Narrowingdestructuring | spike | reference/triage | class: triage-needed | Implement Narrowingdestructuring |
 | 3456 | Implement Narrowingincaseclauseaftercaseclausewithreturn | spike | frontend/syntax | class: blocked | Implement Narrowingincaseclauseaftercaseclausewithreturn |
 | 3457 | Implement Narrowingmutualsubtypes | spike | frontend/syntax | class: blocked | Implement Narrowingmutualsubtypes |
@@ -5246,6 +5245,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 3451 | Implement Narrowedimports | spike | frontend/syntax | see `issues/done/3451-implement-narrowedImports.md` |
 | 3452 | Implement Narrowingassignmentreadonlyrespectsassertion | spike | frontend/syntax | see `issues/done/3452-implement-narrowingAssignmentReadonlyRespectsAssertion.md` |
 | 3453 | Implement Narrowingbytypeofinswitch | spike | frontend/syntax | see `issues/done/3453-implement-narrowingByTypeofInSwitch.md` |
+| 3454 | Implement Narrowingconstrainedtypeparameter | spike | frontend/syntax | see `issues/done/3454-implement-narrowingConstrainedTypeParameter.md` |
 | 3690 | Implement Optionaltupleelementsandundefined | spike | reference/triage | see `issues/done/3690-implement-optionalTupleElementsAndUndefined.md` |
 | 3996 | Implement Compiler (dup) | spike | frontend/syntax | see `issues/done/3996-implement-reference-typescript-tests-cases-compiler.md` |
 | 4210 | Implement Splicetuples | spike | frontend/resolver | see `issues/done/4210-implement-spliceTuples.md` |
