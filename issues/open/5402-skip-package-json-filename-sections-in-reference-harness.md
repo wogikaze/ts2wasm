@@ -227,6 +227,11 @@ fresh triage stops in virtual `package.json` at the first JSON property colon
 before package self-name `@this/package` resolution, conditional `exports`
 `default`/`types` branches, and `outDir`/`declarationDir` behavior become
 actionable.
+Also owns `issues/done/3588-implement-nodeNextPackageSelfNameWithOutDirDeclDirRootDir.md`:
+fresh triage stops in virtual `/pkg/package.json` at the first JSON property
+colon before package self-name `@this/package` resolution, conditional
+`exports` `default`/`types`, `outDir`/`declarationDir`, or `rootDir` behavior
+become actionable.
 
 ## Completion evidence
 
