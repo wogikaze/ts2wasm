@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 25 | 13 | 12 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4599 | 3293 | 1306 |
+| frontend | 4599 | 3292 | 1307 |
 | harness | 1 | 0 | 1 |
 | ir | 91 | 68 | 23 |
 | issues | 4 | 0 | 4 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5291 | 3602 | 1689 |
+| total | 5291 | 3601 | 1690 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -47,7 +47,7 @@ Issue files are the source of truth for work items. The generated section below 
 Direct child counts are derived from issue-file `depends_on` links. A meta issue can be `done` as a classification/design umbrella while implementation child issues remain open.
 
 ```
-5000 (Meta: TypeScript Compiler Parser Syntax Coverage) [done/design] ch:446 open:346 done:100
+5000 (Meta: TypeScript Compiler Parser Syntax Coverage) [done/design] ch:446 open:345 done:101
 ├── 5002 (Meta: TypeScript Compiler Type System Coverage) [done/done] ch:223 open:201 done:22 (also ← 5005)
 ├── 5003 (Meta: TypeScript Compiler Declaration Emit Coverage) [done/done] ch:100 open:89 done:11 (also ← 5001)
 5001 (Meta: TypeScript Compiler Semantic Analysis Coverage) [done/done] ch:556 open:293 done:263
@@ -66,7 +66,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 
 | Order | ID | Title | State | Class | Area | Priority | Depends on | Direct children | Open children | Done children |
 |-----:|---:|------|-------|-------|------|--------:|-----------:|----------------:|--------------:|--------------:|
-| 1 | 5000 | Meta: TypeScript Compiler Parser Syntax Coverage | done | design | frontend/syntax | P1 | - | 446 | 346 | 100 |
+| 1 | 5000 | Meta: TypeScript Compiler Parser Syntax Coverage | done | design | frontend/syntax | P1 | - | 446 | 345 | 101 |
 | 2 | 5001 | Meta: TypeScript Compiler Semantic Analysis Coverage | done | done | frontend/semantics | P1 | - | 556 | 293 | 263 |
 | 3 | 5004 | Meta: Runtime Builtins Coverage (test262) (audit reopened #5004) | done | done | runtime/builtins | P1 | - | 24 | 3 | 21 |
 | 4 | 5005 | Meta: TypeScript Compiler Name Resolution Coverage | done | done | frontend/resolver | P1 | - | 397 | 333 | 64 |
@@ -2363,7 +2363,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 3302 | Implement Modulealiasasfunctionargument | spike | frontend/syntax | class: blocked | Implement Modulealiasasfunctionargument |
 | 3303 | Implement Modulealiasinterface | spike | frontend/syntax | class: blocked | Implement Modulealiasinterface |
 | 3304 | Implement Moduleandinterfacesharingname | spike | frontend/syntax | class: blocked | Implement Moduleandinterfacesharingname |
-| 3468 | Implement Narrowingtypeofundefined Parser Syntax | spike | frontend/syntax | class: blocked | Implement Narrowingtypeofundefined Parser Syntax |
 | 3469 | Implement Narrowinguniontounion | spike | frontend/syntax | class: blocked | Implement Narrowinguniontounion |
 | 3470 | Implement Narrowingunionwithbang | spike | frontend/syntax | class: blocked | Implement Narrowingunionwithbang |
 | 3471 | Implement Narrowingwithnonnullexpression | spike | frontend/syntax | class: blocked | Implement Narrowingwithnonnullexpression |
@@ -5251,6 +5250,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 3465 | Implement Narrowingtruthyobject | spike | frontend/syntax | see `issues/done/3465-implement-narrowingTruthyObject.md` |
 | 3466 | Implement Narrowingtypeofparenthesized | spike | frontend/resolver | see `issues/done/3466-implement-narrowingTypeofParenthesized.md` |
 | 3467 | Implement Narrowingtypeofundefined Name Resolution | spike | frontend/resolver | see `issues/done/3467-implement-narrowingTypeofUndefined-name-resolution.md` |
+| 3468 | Implement Narrowingtypeofundefined Parser Syntax | spike | frontend/syntax | see `issues/done/3468-implement-narrowingTypeofUndefined-parser-syntax.md` |
 | 3690 | Implement Optionaltupleelementsandundefined | spike | reference/triage | see `issues/done/3690-implement-optionalTupleElementsAndUndefined.md` |
 | 3996 | Implement Compiler (dup) | spike | frontend/syntax | see `issues/done/3996-implement-reference-typescript-tests-cases-compiler.md` |
 | 4210 | Implement Splicetuples | spike | frontend/resolver | see `issues/done/4210-implement-spliceTuples.md` |

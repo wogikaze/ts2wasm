@@ -8,7 +8,7 @@ priority: P1
 depends_on: []
 blocks: []
 created: 2026-05-06
-updated: 2026-05-06
+updated: 2026-05-08
 ---
 
 ## Summary
@@ -79,6 +79,7 @@ In scope:
 - [ ] Accept ASI after `declare var`, `declare let`, and `declare const`
 - [ ] Accept ASI after exported declaration-only ambient variables, such as `export declare let x: number`
 - [ ] Accept ASI after ambient variable type literals with call and construct signatures
+- [ ] Accept ASI after ambient variable union annotations containing nested object type literals
 - [ ] Preserve rejection for ambient variable declarations with initializers
 - [ ] Add a focused parser/build regression fixture without relying on broad module resolution
 
@@ -107,6 +108,7 @@ Do not touch:
 - [ ] `export declare let x: number` followed by a newline parses as an erased ambient value declaration without `issue-400`
 - [ ] `declare var foo:{ ( ):void; }` followed by `foo = bar;` parses the assignment as a separate expression, not an ambient initializer
 - [ ] `declare const c: number` followed by EOF or another statement parses without requiring an explicit semicolon
+- [ ] `declare const a: { error: { prop: string }, result: undefined } | { error: undefined, result: { prop: number } }` followed by `if` parses without `issue-400`
 - [ ] `declare var x = 1` remains rejected as an ambient initializer
 - [ ] `cachedModuleResolution2.ts` no longer stops at `issue-400: unterminated ambient variable declaration type`
 - [ ] `callConstructAssignment.ts` no longer stops at `issue-400: ambient variable declarations with initializers would affect runtime bindings`
@@ -158,6 +160,12 @@ literals.
 Generated bucket `3441` was folded in on 2026-05-08 after fresh triage showed
 the same ASI gap for `declare let xAndObj: number | string | boolean | object`
 followed by `if (xAndObj == {})`.
+
+Generated bucket `3468` was folded in on 2026-05-08 after fresh triage showed
+the same issue-400 ambient variable parser boundary for
+`declare const a: { error: { prop: string }, result: undefined } | { error:
+undefined, result: { prop: number } }` followed by `if (typeof a.error ===
+'undefined')`.
 
 ## Completion evidence
 
