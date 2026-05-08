@@ -1255,8 +1255,8 @@ fn generator_function_unsupported_diagnostic() {
     );
 }
 
-// with statement — W2: should produce unsupported diagnostic
-// Current error: [UnsupportedSyntax] unsupported expression: With
+// with statement — W2: should produce precise unsupported diagnostic (id 125)
+// Current error: [UnsupportedSyntax] unsupported expression: With (already precise)
 #[test]
 fn with_statement_unsupported_diagnostic() {
     let result = run_fixture("core-semantics/with-statement-unsupported.ts");
@@ -1266,8 +1266,8 @@ fn with_statement_unsupported_diagnostic() {
     );
     let err_msg = result.err().unwrap();
     assert!(
-        err_msg.contains("unsupported"),
-        "Diagnostic should mention unsupported: {}",
+        err_msg.contains("With"),
+        "Diagnostic should mention With: {}",
         err_msg
     );
 }
@@ -1523,5 +1523,71 @@ fn build_smoke_array_last_index_of() {
         result.is_ok(),
         "Array.lastIndexOf should build: {:?}",
         result.err()
+    );
+}
+
+// === New tests for open TRACKING.yaml items and remaining roadmap items ===
+
+// id 124: Cover initializer for (var x = y in obj) — RED test (TODO: implement parser)
+// Current error: [UnsupportedSyntax] unsupported expression: RightParen
+// Upgrade to build_smoke after parser implementation (from user's WIP stash)
+#[test]
+fn cover_initializer_for_var_in_unsupported_diagnostic() {
+    let result = run_fixture("core-semantics/cover-initializer-for-var-in.ts");
+    assert!(
+        result.is_err(),
+        "Cover initializer for-var-in should produce unsupported diagnostic (not implemented yet)"
+    );
+}
+
+// id 127: Array.sort with comparator (should build)
+#[test]
+fn build_smoke_array_sort_comparator() {
+    let result = run_fixture("builtins-and-io/array-sort-comparator.ts");
+    assert!(
+        result.is_ok(),
+        "Array.sort with comparator should build: {:?}",
+        result.err()
+    );
+}
+
+// W2: debugger statement (already handled by parser, builds successfully)
+#[test]
+fn build_smoke_debugger_statement() {
+    let result = run_fixture("core-semantics/debugger-statement-unsupported.ts");
+    assert!(
+        result.is_ok(),
+        "debugger should build: {:?}",
+        result.err()
+    );
+}
+
+// W2: JSX element
+#[test]
+fn jsx_element_unsupported_diagnostic() {
+    let result = run_fixture("core-semantics/jsx-element-unsupported.ts");
+    assert!(
+        result.is_err(),
+        "JSX element should produce unsupported diagnostic"
+    );
+}
+
+// W2: Decorator
+#[test]
+fn decorator_unsupported_diagnostic() {
+    let result = run_fixture("core-semantics/decorator-unsupported.ts");
+    assert!(
+        result.is_err(),
+        "Decorator should produce unsupported diagnostic"
+    );
+}
+
+// W2: Annex B block-level function hoisting
+#[test]
+fn annex_b_hoisted_function_in_block_unsupported_diagnostic() {
+    let result = run_fixture("core-semantics/annex-b-hoisted-function-in-block-unsupported.ts");
+    assert!(
+        result.is_err(),
+        "Annex B block-level function hoisting should produce unsupported diagnostic"
     );
 }
