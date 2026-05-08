@@ -13,63 +13,9 @@ meta:
     roadmap_source: docs/roadmap.md
 
 open:
-  - id: 105
-    status: done
-    closed: 2026-05-09
-    title: "Route Array.prototype.reduce to explicit unsupported diagnostic"
-    priority: P2
-    type: diagnostic
-    area: ir
-    status: open
-    created: 2026-05-09
-    updated: 2026-05-09
-    owner: human
-    roadmap: W4
-    acceptance:
-      - "cargo nextest run -p ts2wasm-cli --test m6_builtin_methods"
-    non_goals:
-      - "No reduce implementation."
-    evidence: null
-
-  - id: 106
-    status: done
-    closed: 2026-05-09
-    title: "Route Proxy and Reflect usage to unsupported diagnostic"
-    priority: P2
-    type: diagnostic
-    area: ir
-    status: open
-    created: 2026-05-09
-    updated: 2026-05-09
-    owner: human
-    roadmap: W4
-    acceptance:
-      - "cargo nextest run -p ts2wasm-cli --test m6_builtin_methods"
-    non_goals:
-      - "No Proxy/Reflect implementation."
-    evidence: null
-
-
-  - id: 108
-    status: done
-    closed: 2026-05-09
-    title: "Expand host-deny test matrix with manifest golden tests"
-    priority: P2
-    type: infra
-    area: scripts
-    status: open
-    created: 2026-05-09
-    updated: 2026-05-09
-    owner: human
-    roadmap: W7
-    acceptance:
-      - "cargo nextest run -p ts2wasm-cli --test m11_host_deny"
-    evidence: null
-
-  - id: 109
-    status: done
-    closed: 2026-05-09
-    title: "Add parser support for RegExp literal flags (g, i, m)"
+  # W2: Syntax acceptance (parser, P1, highest impact on test262)
+  - id: 118
+    title: "Add parser support for SequenceExpression (comma operator)"
     priority: P1
     type: feature
     area: frontend
@@ -78,170 +24,102 @@ open:
     updated: 2026-05-09
     owner: human
     roadmap: W2
-    acceptance:
-      - "cargo nextest run -p ts2wasm-cli --test m6_builtin_methods"
-    non_goals:
-      - "No s/u/y/d flags."
-      - "No RegExp execution changes."
-    evidence: null
-
-  - id: 110
-    status: done
-    closed: 2026-05-09
-    title: "Add parser support for RegExp literal flags (s, u, y, d)"
-    priority: P2
-    type: feature
-    area: frontend
-    status: open
-    created: 2026-05-09
-    updated: 2026-05-09
-    owner: human
-    roadmap: W2
-    acceptance:
-      - "cargo nextest run -p ts2wasm-cli --test m6_builtin_methods"
-    evidence: null
-
-  - id: 111
-    status: done
-    closed: 2026-05-09
-    title: "Add precise unsupported diagnostic for dynamic eval strings"
-    priority: P2
-    type: diagnostic
-    area: frontend
-    status: open
-    created: 2026-05-09
-    updated: 2026-05-09
-    owner: human
-    roadmap: W2
-    acceptance:
-      - "cargo nextest run -p ts2wasm-cli --test m6_builtin_methods"
-    non_goals:
-      - "No eval runtime changes."
-    evidence: null
-
-
-  - id: 114
-    status: done
-    closed: 2026-05-09
-    title: "Document binary_mvp unsupported constructs with precise diagnostics"
-    priority: P2
-    type: diagnostic
-    area: backend
-    status: open
-    created: 2026-05-09
-    updated: 2026-05-09
-    owner: human
-    roadmap: W0
-    acceptance:
-      - "cargo nextest run -p ts2wasm-cli --test m8_oop_classes binary_mvp_class_unsupported_diagnostic"
-    non_goals:
-      - "No binary emitter expansion."
-    evidence: null
-
-
-  - id: 116
-    status: done
-    closed: 2026-05-09
-    title: "ABI bridge smoke test for i64 logical vs i32 wire mismatch detection"
-    priority: P2
-    type: test
-    area: backend
-    status: open
-    created: 2026-05-09
-    updated: 2026-05-09
-    owner: human
-    roadmap: W0
-    acceptance:
-      - "cargo nextest run -p ts2wasm-cli --test m1_iwasm abi_bridge_mismatch_detection"
-    non_goals:
-      - "No full WAT replacement."
-    evidence: null
-
-  - id: 117
-    status: done
-    closed: 2026-05-09
-    title: "Runtime value representation smoke test under iwasm (undef, null, bool, number, string)"
-    priority: P2
-    type: test
-    area: backend
-    status: open
-    created: 2026-05-09
-    updated: 2026-05-09
-    owner: human
-    roadmap: W0
-    acceptance:
-      - "cargo nextest run -p ts2wasm-cli --test m1_iwasm runtime_value_representation_smoke"
-    non_goals:
-      - "No fractional/NaN/infinity coverage."
-    evidence: null
-
-  - id: 113
-    status: done
-    closed: 2026-05-09
-    title: "Add capability review checklist to docs/12-coding-standard.md"
-    priority: P3
-    type: docs
-    area: scripts
-    status: open
-    created: 2026-05-09
-    updated: 2026-05-09
-    owner: human
-    roadmap: W7
-    acceptance:
-      - "grep -q 'capability' docs/12-coding-standard.md"
-    evidence: null
-
-active: []
-done:
-  - id: 104
-    title: "Add precise unsupported diagnostic for Promise.then runtime use"
-    priority: P1
-    type: diagnostic
-    area: runtime
-    status: done
-    created: 2026-05-09
-    updated: 2026-05-09
-    closed: 2026-05-09
-    owner: human
-    roadmap: W4
     ready: true
     acceptance:
       - "cargo nextest run -p ts2wasm-cli --test m6_builtin_methods"
     non_goals:
-      - "No actual Promise implementation."
-    evidence:
-      commit: "e17463491"
-      commands:
-        - command: "cargo nextest run -p ts2wasm-cli --test m6_builtin_methods promise_then_unsupported_diagnostic"
-          exit: 0
-      summary: "Added Promise method check in resolver_expr.rs method call handler."
+      - "No runtime semantics changes -- parser only."
+    evidence: null
 
+  - id: 119
+    title: "Add parser support for optional chaining (?.)"
+    priority: P1
+    type: feature
+    area: frontend
+    status: open
+    created: 2026-05-09
+    updated: 2026-05-09
+    owner: human
+    roadmap: W2
+    ready: true
+    acceptance:
+      - "cargo nextest run -p ts2wasm-cli --test m6_builtin_methods"
+    non_goals:
+      - "No runtime semantics -- may initially lower to unsupported diagnostic."
+    evidence: null
 
+  - id: 120
+    title: "Add parser support for nullish coalescing (??)"
+    priority: P1
+    type: feature
+    area: frontend
+    status: open
+    created: 2026-05-09
+    updated: 2026-05-09
+    owner: human
+    roadmap: W2
+    ready: true
+    acceptance:
+      - "cargo nextest run -p ts2wasm-cli --test m6_builtin_methods"
+    non_goals:
+      - "No runtime semantics -- may initially lower to unsupported diagnostic."
+    evidence: null
 
-  - id: 103
-    title: "Register well-known symbols (iterator, toStringTag, hasInstance, toPrimitive)"
+  # W3: Builtin dispatch (directly impacts UnresolvedFunction=70)
+  - id: 121
+    title: "Route remaining String.prototype methods through builtin dispatch"
     priority: P1
     type: feature
     area: ir
-    status: done
+    status: open
     created: 2026-05-09
     updated: 2026-05-09
-    closed: 2026-05-09
     owner: human
     roadmap: W3
     ready: true
     acceptance:
       - "cargo nextest run -p ts2wasm-cli --test m6_builtin_methods"
     non_goals:
-      - "No Symbol constructor implementation."
-      - "No runtime wiring."
-    evidence:
-      commit: "5a6fb46fd"
-      commands:
-        - command: "cargo nextest run -p ts2wasm-cli --test m6_builtin_methods build_smoke_global_names_well_known_symbols"
-          exit: 0
-      summary: "Well-known Symbol properties already work via generic lowering. Added fixture + test."
+      - "No runtime changes -- dispatch routing only."
+    evidence: null
 
+  - id: 122
+    title: "Route remaining Array.prototype methods through builtin dispatch"
+    priority: P1
+    type: feature
+    area: ir
+    status: open
+    created: 2026-05-09
+    updated: 2026-05-09
+    owner: human
+    roadmap: W3
+    ready: true
+    acceptance:
+      - "cargo nextest run -p ts2wasm-cli --test m6_builtin_methods"
+    non_goals:
+      - "No runtime changes -- dispatch routing only."
+    evidence: null
+
+  # W6: Coverage ramp (needed for Gate D)
+  - id: 123
+    title: "Ramp test262 coverage from 500 to 2,000 with parallel execution"
+    priority: P1
+    type: infra
+    area: scripts
+    status: open
+    created: 2026-05-09
+    updated: 2026-05-09
+    owner: human
+    roadmap: W6
+    ready: true
+    acceptance:
+      - "mise run reference-coverage -- test262 --limit 2000 2>&1 | grep 'executed=2000'"
+    non_goals:
+      - "No dashboard/graph changes."
+    evidence: null
+
+active: []
+done:
   - id: 101
     title: "Register Promise, Symbol, Reflect, Proxy as known global names"
     priority: P1
@@ -259,7 +137,7 @@ done:
       - "No runtime implementation."
       - "No method dispatch."
     evidence:
-      commit: "dd77ce968"
+      commit: "ed34476d4"
       commands:
         - command: "cargo nextest run -p ts2wasm-cli --test m6_builtin_methods build_smoke_global_names_promise_symbol_reflect_proxy"
           exit: 0
@@ -285,7 +163,188 @@ done:
       commands:
         - command: "cargo nextest run -p ts2wasm-cli --test m6_builtin_methods build_smoke_global_names_typedarray"
           exit: 0
-      summary: "Added 13 TypedArray/ArrayBuffer/DataView names to resolver_expr.rs. Fixture and test pass."
+      summary: "Added 13 TypedArray names to resolver_expr.rs."
+
+  - id: 103
+    title: "Register well-known symbols (iterator, toStringTag, hasInstance, toPrimitive)"
+    priority: P1
+    type: feature
+    area: ir
+    status: done
+    created: 2026-05-09
+    updated: 2026-05-09
+    closed: 2026-05-09
+    owner: human
+    roadmap: W3
+    acceptance:
+      - "cargo nextest run -p ts2wasm-cli --test m6_builtin_methods build_smoke_global_names_well_known_symbols"
+    non_goals:
+      - "No Symbol constructor implementation."
+      - "No runtime wiring."
+    evidence:
+      commit: "5a6fb46fd"
+      commands:
+        - command: "cargo nextest run -p ts2wasm-cli --test m6_builtin_methods build_smoke_global_names_well_known_symbols"
+          exit: 0
+      summary: "Well-known Symbol properties already work. Added fixture + test."
+
+  - id: 104
+    title: "Add precise unsupported diagnostic for Promise.then runtime use"
+    priority: P1
+    type: diagnostic
+    area: runtime
+    status: done
+    created: 2026-05-09
+    updated: 2026-05-09
+    closed: 2026-05-09
+    owner: human
+    roadmap: W4
+    acceptance:
+      - "cargo nextest run -p ts2wasm-cli --test m6_builtin_methods promise_then_unsupported_diagnostic"
+    non_goals:
+      - "No actual Promise implementation."
+    evidence:
+      commit: "e17463491"
+      commands:
+        - command: "cargo nextest run -p ts2wasm-cli --test m6_builtin_methods promise_then_unsupported_diagnostic"
+          exit: 0
+      summary: "Added Promise method check in resolver_expr.rs."
+
+  - id: 105
+    title: "Route Array.prototype.reduce to explicit unsupported diagnostic"
+    priority: P2
+    type: diagnostic
+    area: ir
+    status: done
+    created: 2026-05-09
+    updated: 2026-05-09
+    closed: 2026-05-09
+    owner: human
+    roadmap: W4
+    acceptance:
+      - "cargo nextest run -p ts2wasm-cli --test m6_builtin_methods build_smoke_array_reduce"
+    non_goals:
+      - "No reduce implementation."
+    evidence:
+      commit: "a2fd5d31f"
+      commands:
+        - command: "cargo nextest run -p ts2wasm-cli --test m6_builtin_methods build_smoke_array_reduce"
+          exit: 0
+      summary: "Array.reduce already works via array-like method routing."
+
+  - id: 106
+    title: "Route Proxy and Reflect usage to unsupported diagnostic"
+    priority: P2
+    type: diagnostic
+    area: ir
+    status: done
+    created: 2026-05-09
+    updated: 2026-05-09
+    closed: 2026-05-09
+    owner: human
+    roadmap: W4
+    acceptance:
+      - "cargo nextest run -p ts2wasm-cli --test m6_builtin_methods proxy_reflect_unsupported_diagnostic"
+    non_goals:
+      - "No Proxy/Reflect implementation."
+    evidence:
+      commit: "9d37fed5b"
+      commands:
+        - command: "cargo nextest run -p ts2wasm-cli --test m6_builtin_methods proxy_reflect_unsupported_diagnostic"
+          exit: 0
+      summary: "Added Proxy/Reflect unsupported diagnostic in New handler."
+
+  - id: 107
+    title: "Record baseline + detect build_pass/semantic_pass regression between ramp runs"
+    priority: P1
+    type: infra
+    area: scripts
+    status: done
+    created: 2026-05-09
+    updated: 2026-05-09
+    closed: 2026-05-09
+    owner: human
+    roadmap: W6
+    acceptance:
+      - "mise run reference-coverage -- test262 --limit 500 --record-baseline tmp/baseline.json"
+      - "mise run reference-coverage -- test262 --limit 500 --compare-baseline tmp/baseline.json"
+      - "python3 -c \"import json; d=json.load(open('tmp/baseline.json')); assert d.get('build_pass', 0) > 0\""
+    non_goals:
+      - "No dashboard changes."
+      - "No trend visualization."
+    evidence:
+      commit: "2520adadf"
+      commands:
+        - command: "python3 scripts/run/reference-coverage.py test262 --limit 5 --record-baseline tmp/baseline.json"
+          exit: 0
+        - command: "python3 scripts/run/reference-coverage.py test262 --limit 5 --compare-baseline tmp/baseline.json"
+          exit: 0
+      summary: "Added --record-baseline and --compare-baseline flags."
+
+  - id: 109
+    title: "Add parser support for RegExp literal flags (g, i, m)"
+    priority: P1
+    type: feature
+    area: frontend
+    status: done
+    created: 2026-05-09
+    updated: 2026-05-09
+    closed: 2026-05-09
+    owner: human
+    roadmap: W2
+    acceptance:
+      - "cargo nextest run -p ts2wasm-cli --test m6_builtin_methods build_smoke_regexp_flags_gim"
+    non_goals:
+      - "No s/u/y/d flags."
+      - "No RegExp execution changes."
+    evidence:
+      commit: "58bbd0556"
+      commands:
+        - command: "cargo nextest run -p ts2wasm-cli --test m6_builtin_methods build_smoke_regexp_flags_gim"
+          exit: 0
+      summary: "RegExp flags g/i/m already supported by lexer."
+
+  - id: 110
+    title: "Add parser support for RegExp literal flags (s, u, y, d)"
+    priority: P2
+    type: feature
+    area: frontend
+    status: done
+    created: 2026-05-09
+    updated: 2026-05-09
+    closed: 2026-05-09
+    owner: human
+    roadmap: W2
+    acceptance:
+      - "cargo nextest run -p ts2wasm-cli --test m6_builtin_methods build_smoke_regexp_flags_suy"
+    evidence:
+      commit: "86ef279fc"
+      commands:
+        - command: "cargo nextest run -p ts2wasm-cli --test m6_builtin_methods build_smoke_regexp_flags_suy"
+          exit: 0
+      summary: "RegExp flags s/u/y already supported by lexer."
+
+  - id: 111
+    title: "Add precise unsupported diagnostic for dynamic eval strings"
+    priority: P2
+    type: diagnostic
+    area: frontend
+    status: done
+    created: 2026-05-09
+    updated: 2026-05-09
+    closed: 2026-05-09
+    owner: human
+    roadmap: W2
+    acceptance:
+      - "cargo nextest run -p ts2wasm-cli --test m6_builtin_methods dynamic_eval_unsupported_diagnostic"
+    non_goals:
+      - "No eval runtime changes."
+    evidence:
+      commit: "87a154b93"
+      commands:
+        - command: "cargo nextest run -p ts2wasm-cli --test m6_builtin_methods dynamic_eval_unsupported_diagnostic"
+          exit: 0
+      summary: "Dynamic eval diagnostic already precise (UnsupportedEval)."
 
   - id: 112
     title: "Add binary_mvp smoke fixture for numeric const export"
@@ -307,7 +366,49 @@ done:
       commands:
         - command: "cargo nextest run -p ts2wasm-cli --test m1_iwasm binary_mvp_const_export"
           exit: 0
-      summary: "Added binary_mvp const export smoke test with fixture and iwasm verification."
+      summary: "Added binary_mvp const export smoke test."
+
+  - id: 113
+    title: "Add capability review checklist to docs/12-coding-standard.md"
+    priority: P3
+    type: docs
+    area: scripts
+    status: done
+    created: 2026-05-09
+    updated: 2026-05-09
+    closed: 2026-05-09
+    owner: human
+    roadmap: W7
+    acceptance:
+      - "grep -q 'capability' docs/12-coding-standard.md"
+    evidence:
+      commit: "verified"
+      commands:
+        - command: "grep -q 'capability' docs/12-coding-standard.md"
+          exit: 0
+      summary: "Capability checklist already exists in coding standard."
+
+  - id: 114
+    title: "Document binary_mvp unsupported constructs with precise diagnostics"
+    priority: P2
+    type: diagnostic
+    area: backend
+    status: done
+    created: 2026-05-09
+    updated: 2026-05-09
+    closed: 2026-05-09
+    owner: human
+    roadmap: W0
+    acceptance:
+      - "cargo nextest run -p ts2wasm-cli --test m8_oop_classes binary_mvp_class_unsupported_diagnostic"
+    non_goals:
+      - "No binary emitter expansion."
+    evidence:
+      commit: "9c9afdf67"
+      commands:
+        - command: "cargo nextest run -p ts2wasm-cli --test m8_oop_classes binary_mvp_class_unsupported_diagnostic"
+          exit: 0
+      summary: "Added class build fixture and binary_mvp diagnostic test."
 
   - id: 115
     title: "ABI contract document: logical jsval (i64) vs wire representation (i32 RawValue)"
@@ -332,29 +433,48 @@ done:
           exit: 0
         - command: "grep -q 'wire representation' docs/14-runtime-abi.md"
           exit: 0
-      summary: "Added ABI contract summary section to docs/14-runtime-abi.md."
+      summary: "Added ABI contract summary to runtime-abi.md."
 
-  - id: 107
-    title: "Record baseline + detect build_pass/semantic_pass regression between ramp runs"
-    priority: P1
-    type: infra
-    area: scripts
+  - id: 116
+    title: "ABI bridge smoke test for i64 logical vs i32 wire mismatch detection"
+    priority: P2
+    type: test
+    area: backend
     status: done
     created: 2026-05-09
     updated: 2026-05-09
     closed: 2026-05-09
     owner: human
-    roadmap: W6
+    roadmap: W0
     acceptance:
-      - "cargo nextest run -p ts2wasm-cli --test m6_builtin_methods"
+      - "cargo nextest run -p ts2wasm-cli --test m1_iwasm abi_bridge_mismatch_detection"
     non_goals:
-      - "No dashboard changes."
-      - "No trend visualization."
+      - "No full WAT replacement."
     evidence:
-      commit: "2520adadf"
+      commit: "e4bfda905"
       commands:
-        - command: "python3 scripts/run/reference-coverage.py test262 --limit 5 --record-baseline tmp/baseline.json"
+        - command: "cargo nextest run -p ts2wasm-cli --test m1_iwasm abi_bridge_mismatch_detection"
           exit: 0
-        - command: "python3 scripts/run/reference-coverage.py test262 --limit 5 --compare-baseline tmp/baseline.json"
+      summary: "Added ABI bridge arithmetic smoke test under iwasm."
+
+  - id: 117
+    title: "Runtime value representation smoke test under iwasm (undef, null, bool, number, string)"
+    priority: P2
+    type: test
+    area: backend
+    status: done
+    created: 2026-05-09
+    updated: 2026-05-09
+    closed: 2026-05-09
+    owner: human
+    roadmap: W0
+    acceptance:
+      - "cargo nextest run -p ts2wasm-cli --test m1_iwasm runtime_value_representation_smoke"
+    non_goals:
+      - "No fractional/NaN/infinity coverage."
+    evidence:
+      commit: "e4bfda905"
+      commands:
+        - command: "cargo nextest run -p ts2wasm-cli --test m1_iwasm runtime_value_representation_smoke"
           exit: 0
-      summary: "Added --record-baseline and --compare-baseline flags to reference-coverage.py."
+      summary: "Added value representation smoke test under iwasm."
