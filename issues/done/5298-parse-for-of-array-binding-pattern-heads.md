@@ -8,7 +8,7 @@ priority: P1
 depends_on: []
 blocks: []
 created: 2026-05-07
-updated: 2026-05-07
+updated: 2026-05-08
 ---
 
 ## Summary
@@ -20,6 +20,10 @@ for (const [key, value] of Object.entries(e)) {
   this.setState({ [key]: value });
 }
 ```
+
+Also owns the same parser boundary in
+`newLexicalEnvironmentForConvertedLoop.ts`, folded from
+`issues/done/3500-implement-newLexicalEnvironmentForConvertedLoop.md`.
 
 ## Problem
 
@@ -73,6 +77,23 @@ tokens: ok; For Const LeftBracket Ident("key") Comma Ident("value") RightBracket
 ast/resolved: same UnsupportedSyntax at 265..277
 visible symbols before failure: class Test
 TypeScript AST path: ForOfStatement -> VariableDeclarationList -> VariableDeclaration -> ArrayBindingPattern
+```
+
+Fold-in evidence from `newLexicalEnvironmentForConvertedLoop.ts` on
+2026-05-08:
+
+```text
+coverage: executed=1, build_pass=0, unsupported=1, blocked=0
+unsupported_diagcodes=UnsupportedSyntax:1
+unsupported_features=unknown-unsupported:1
+line 7, column 20
+failure: const declarations require an initializer at 113..123
+source: for (const [value, i] of baz(set.values)) { ... }
+tokens: ok; For Const LeftBracket Ident("value") Comma Ident("i") RightBracket Of Ident("baz")
+ast/resolved: same UnsupportedSyntax at 113..123
+visible symbols before failure: functions baz and foo
+TypeScript AST path: ForOfStatement -> VariableDeclarationList -> VariableDeclaration -> ArrayBindingPattern
+TypeScript diagnostics: none
 ```
 
 ## Scope

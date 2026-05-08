@@ -145,6 +145,18 @@ Follow-up issues:
 ## Notes
 
 Split from generated bucket `1076` on 2026-05-06. Broader namespace semantics remain separate work; this issue only removes the empty multi-section body blocker.
+Also owns the direct-triage empty-body guard for `issues/done/3344-implement-moduleKeywordDeprecated.md`: fresh coverage for `moduleKeywordDeprecated.ts` is `build_pass`, but direct triage still reports `multi-section file has no module bodies` before module-keyword deprecation diagnostics can be inspected.
+Also owns the direct-triage empty-body guard for
+`issues/done/3392-implement-moduleSymbolMerging.md`: fresh coverage for
+`moduleSymbolMerging.ts` is `build_pass`, but direct triage still reports
+`multi-section file has no module bodies` for namespace-only virtual sections
+before the later TS2322 assignability diagnostic can be inspected.
+Also owns the direct-triage empty-body guard for
+`issues/done/3567-implement-noSymbolForMergeCrash.md`: fresh coverage for
+`noSymbolForMergeCrash.ts` is `build_pass`, but direct triage reports
+`multi-section file has no module bodies` for virtual sections containing
+`interface A {}`, `namespace A {}`, and `type A = {}` before the later TS2300
+duplicate identifier diagnostics can be inspected.
 
 ## Completion evidence
 

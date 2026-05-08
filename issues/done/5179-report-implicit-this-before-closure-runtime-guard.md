@@ -8,7 +8,7 @@ priority: P1
 depends_on: []
 blocks: []
 created: 2026-05-06
-updated: 2026-05-06
+updated: 2026-05-08
 ---
 
 ## Summary
@@ -142,6 +142,8 @@ Follow-up issues:
 ## Notes
 
 Split from generated bucket `1066` on 2026-05-06. Completed issue `062e` intentionally left broader nested-function `this`/`arguments` closure semantics out of scope; this issue is narrower because the TSC reference case should surface an earlier TypeScript diagnostic instead of requiring runtime closure support.
+
+Also owns `issues/done/3521-implement-noCollisionThisExpressionInFunctionAndVarInGlobal.md`: fresh triage reaches `UnresolvedName: this` inside an arrow in `function x()`, while TypeScript reports TS2683 at that `this`.
 
 ## Completion evidence
 

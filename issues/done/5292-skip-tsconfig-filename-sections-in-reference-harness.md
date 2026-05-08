@@ -146,6 +146,56 @@ Follow-up issues:
 
 Split from generated bucket
 `issues/done/1385-implement-commonJsIsolatedModules.md`.
+Also owns the `tsconfig.json` subset of
+`issues/done/3380-implement-moduleResolutionWithExtensions-import-export.md`:
+fresh triage for `moduleResolutionWithExtensions_withPaths.ts` stops in the
+virtual `/tsconfig.json` section at the first JSON property colon before path
+mapping or extension resolution diagnostics become actionable.
+Also owns `issues/done/3385-implement-moduleResolutionWithSuffixes-import-export.md`:
+fresh prefix coverage for `moduleResolutionWithSuffixes_` reports 16
+UnsupportedSyntax/module-resolution paths, and representative triage for
+`moduleResolutionWithSuffixes_notSpecified.ts`,
+`moduleResolutionWithSuffixes_one_jsonModule.ts`,
+`moduleResolutionWithSuffixes_one_jsModule.ts`, and
+`moduleResolutionWithSuffixes_one_externalModule.ts` stops in virtual
+`/tsconfig.json` at the first JSON property colon before moduleSuffixes,
+JSON-module, JS-module, or external package behavior becomes actionable.
+Also owns `issues/done/3386-implement-moduleResolutionWithSuffixes-module-resolution.md`:
+fresh coverage for the listed external-module and json-module subset reports
+four UnsupportedSyntax/module-resolution paths, and representative triage for
+`moduleResolutionWithSuffixes_one_externalModulePath.ts` and
+`moduleResolutionWithSuffixes_one_externalModule_withPaths.ts` stops in
+virtual `/tsconfig.json` at the first JSON property colon before package
+subpath, path mapping, or moduleSuffixes behavior becomes actionable.
+Also owns the later config-section blocker for
+`issues/done/3387-implement-moduleResolutionWithSymlinks-import-export.md`:
+fresh triage for `moduleResolutionWithSymlinks_notInNodeModules.ts` first
+needs symlink alias module resolution owned by issue 5426, and its dumps also
+show virtual `/src/tsconfig.json` JSON parsing before outDir behavior becomes
+actionable.
+Also owns the config-section blocker from
+`issues/done/3576-implement-nodeColonModuleResolution.md`: fresh triage for
+`nodeColonModuleResolution2.ts` stops in virtual `/a/b/tsconfig.json` at
+`compilerOptions` / `paths` property colons before `fake:thing` path mapping or
+non-local module resolution becomes actionable.
+Also owns `issues/done/3585-implement-nodeNextPackageSelfNameWithOutDirDeclDirComposite.md`:
+fresh triage stops in virtual `tsconfig.json` at the first
+`compilerOptions` property colon before the later `package.json` section,
+package self-name `@this/package` resolution, conditional `exports`
+`default`/`types`, `outDir`/`declarationDir`, or `composite` behavior become
+actionable.
+Also owns `issues/done/3586-implement-nodeNextPackageSelfNameWithOutDirDeclDirCompositeNestedDirs.md`:
+fresh triage stops in virtual `tsconfig.json` at the first
+`compilerOptions` property colon before the later `package.json` section,
+relative export `./src/thing.js`, package self-name `@this/package`,
+conditional `exports` `default`/`types`, `outDir`/`declarationDir`, or
+`composite` nested-directory behavior become actionable.
+Also owns `issues/done/3587-implement-nodeNextPackageSelfNameWithOutDirDeclDirNestedDirs.md`:
+fresh triage stops in virtual `tsconfig.json` at the first
+`compilerOptions` property colon before the later `package.json` section,
+relative export `./src/thing.js`, package self-name `@this/package`,
+conditional `exports` `default`/`types`, `outDir`/`declarationDir`, or
+nested-directory behavior become actionable.
 
 ## Completion evidence
 

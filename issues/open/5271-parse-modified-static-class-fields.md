@@ -146,6 +146,12 @@ Follow-up issues:
 Split from generated bucket `issues/done/1255-implement-cloduleStaticMembers.md`.
 Related but distinct issue: `issues/done/5254-parse-asi-between-static-class-fields.md`.
 
+Also owns `issues/done/3409-implement-multipleClassPropertyModifiers.md`:
+fresh triage for `multipleClassPropertyModifiers.ts` stops at the same parser
+boundary on uninitialized `public static p1;`. After this parser slice accepts
+modified static fields, the invalid modifier order cases `static public p2;`
+and `static private p4;` may need a separate TS1029 diagnostic issue.
+
 ## Completion evidence
 
 Fill only when moving to `done/`.

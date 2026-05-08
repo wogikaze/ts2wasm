@@ -140,7 +140,7 @@ class Test {
 
 ## Duplicate detection
 
-- `issues/open/3437-implement-narrowByBooleanComparison.md` records the same
+- `issues/done/3437-implement-narrowByBooleanComparison.md` records the same
   `Question` parser gap at `status?: number;`, but did not create an
   implementation-ready child.
 - No existing child issue owned optional class property declarations, so this

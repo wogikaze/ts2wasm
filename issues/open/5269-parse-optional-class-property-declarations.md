@@ -153,7 +153,17 @@ Follow-up issues:
 Split from generated bucket
 `issues/done/1243-implement-classUsedBeforeInitializedVariables.md`.
 Related generated bucket with the same parser gap:
-`issues/open/3437-implement-narrowByBooleanComparison.md`.
+`issues/done/3437-implement-narrowByBooleanComparison.md`.
+
+Additional superseded bucket:
+
+- `issues/done/3437-implement-narrowByBooleanComparison.md` reaches the same
+  optional class property parser boundary for `status?: number;` in
+  `class WebError extends URIError`. Fresh triage on 2026-05-08 reports
+  `UnsupportedSyntax: expected LeftParen, got Some(Question) at 1079..1080`;
+  TypeScript parses the file with no diagnostics, so the current compiler
+  blocker is still parser support for `name?: Type;` class property
+  declarations.
 
 ## Completion evidence
 

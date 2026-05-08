@@ -162,6 +162,9 @@ was rechecked while triaging issue 580. Its first current blocker is the
 runtime/value-position namespace alias `beez.baz.boo`, split separately as
 issue 5398; after that advances, `aliasErrors.ts` is expected to expose this
 same TS2694 `booz.bar` diagnostic.
+- Also owns `issues/done/3341-implement-moduleImport.md`: fresh triage for
+  `moduleImport.ts` build-passes in ts2wasm while TypeScript reports TS2694 for
+  `import XYZ = X.Y.Z;` because namespace `X` has no exported member `Y`.
 
 ## Completion evidence
 

@@ -8,7 +8,7 @@ priority: P1
 depends_on: []
 blocks: []
 created: 2026-05-06
-updated: 2026-05-06
+updated: 2026-05-08
 ---
 > **Reopened by false-done audit** (2026-05-07)
 > Classification: must-reopen
@@ -190,6 +190,8 @@ Issue 5011 deliberately replaced silent class-value erasure with a structural
 diagnostic. This issue narrows the next semantic step: support constructor values
 that are actually needed for factory-call flows, without reopening broad dynamic
 class alias semantics.
+
+Additional generated bucket evidence: `issues/done/3514-implement-noCollisionThisExpressionAndClassInGlobal.md` is owned by this issue; it reaches `issue-5011` for `_this` used as an arrow return value.
 
 ## Completion evidence
 

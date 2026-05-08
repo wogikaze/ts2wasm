@@ -141,6 +141,11 @@ Split from `issues/done/601-implement-allowSyntheticDefaultImportsCanPaintCrossM
 
 Related: issue 5401 covers `export default interface Name { ... }`; issue 5229
 covers the later virtual-file imports `./color` and `./file1`.
+Also owns `issues/done/3324-implement-moduleAugmentationOfAlias.md`: fresh
+triage for `moduleAugmentationOfAlias.ts` stops at `export default I;` after a
+local `interface I {}` declaration, before the later issue 5401
+`export default interface I { x: number; }` and issue 5229 `./a`
+virtual-section import blockers.
 
 ## Completion evidence
 

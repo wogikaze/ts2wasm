@@ -139,6 +139,13 @@ Related but not duplicates:
   the completed baseline ambient function erasure boundary with explicit
   terminators.
 
+Additional superseded buckets:
+
+- `issues/done/3491-implement-nestedTypeVariableInfersLiteral.md` reaches the
+  same ASI boundary for `declare function direct<A extends string>(...):
+  Record<A, string>` followed by another `declare function`; TypeScript accepts
+  the file with diagnostics `[]`.
+
 ## Completion evidence
 
 Fill only when implemented.

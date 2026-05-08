@@ -8,7 +8,7 @@ priority: P1
 depends_on: []
 blocks: []
 created: 2026-05-07
-updated: 2026-05-07
+updated: 2026-05-08
 ---
 
 ## Summary
@@ -144,6 +144,27 @@ Follow-up issues:
 Several older buckets mention TS2564 as later oracle diagnostics, but no open
 implementation-ready owner was found for this representative strict-property
 initialization false-pass slice.
+
+2026-05-08 fold-in from generated bucket `3419`:
+
+- `mutuallyRecursiveInference.ts` also returns a false build pass while the
+  TypeScript oracle reports TS2564 for uninitialized typed instance fields.
+- Source context includes `class T<A> { a: A; b: any }` and
+  `class X extends L<X> { a: 'a' | 'b'; b: number }`.
+- Oracle diagnostics are TS2564 for `T.a`, `X.a`, and `X.b`; current compiler
+  evidence parses and resolves the mutually recursive generic heritage
+  `L<RT extends { a: 'a' | 'b', b: any }> extends T<RT[RT['a']]>`, erases the
+  typed fields, and returns `build_pass`.
+
+Also owns `issues/done/3592-implement-nonGenericClassExtendingGenericClassWithAny.md`:
+fresh triage now build-passes and TypeScript reports TS2564 for generic field
+`Foo<T>.t` before any `Foo<any>` heritage parity gap is actionable.
+
+Also owns the TS2564 diagnostics in
+`issues/done/3593-implement-nonIdenticalTypeConstraints.md`: fresh triage now
+build-passes and TypeScript reports TS2564 for uninitialized fields in
+`Different`, `Foo`, `Qux`, `Bar`, `Baz`, and `Quux`. The TS2428 merged
+declaration type-parameter diagnostics were split to issue 5487.
 
 ## Completion evidence
 

@@ -227,6 +227,12 @@ TypeScript parses the call argument as nested `ArrowFunction` nodes:
 property access and TS2345 for the later fixed type-parameter argument
 diagnostic after parsing succeeds.
 
+2026-05-08 additional evidence: generated bucket
+`issues/done/3559-implement-noImplicitThisFunctions.md` is superseded here.
+`noImplicitThisFunctions.ts` fails at the inner arrow in
+`let f5 = () => () => this;`; TypeScript parses it and later reports
+implicit/global-`this` diagnostics.
+
 ## Completion evidence
 
 Fill when implemented.

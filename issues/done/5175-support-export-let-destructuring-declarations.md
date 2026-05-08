@@ -131,6 +131,7 @@ Follow-up issues:
 ## Notes
 
 Split from generated bucket `1063` on 2026-05-06. Generated bucket `1088` was folded in on the same date after fresh triage showed the same `export let` variable-export boundary for `export let x = 1;`. Later declaration emit, duplicate binding diagnostics, or module export metadata gaps should be triaged separately after this parser boundary advances.
+Also owns `issues/done/3310-implement-moduleAugmentationDisallowedExtensions.md`: fresh triage for `moduleAugmentationDisallowedExtensions.ts` stops at entry-section `export let a = 1;` before AST construction. Later blockers include initialized `export var x = 1;` (issue 5285), virtual imports between `@filename` sections (issue 5229), and `export = N1` (issue 5346).
 
 ## Completion evidence
 

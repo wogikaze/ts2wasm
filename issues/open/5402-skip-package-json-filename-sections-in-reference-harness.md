@@ -156,6 +156,87 @@ Related but not duplicates:
   buckets cover later module/package lookup behavior after metadata sections
   are skipped.
 
+Also owns `issues/done/3336-implement-moduleExportNonStructured.md`: fresh
+triage for `moduleExportNonStructured.ts` stops in its virtual `package.json`
+section at the first property colon before `.mts`, `.cjs`, `.d.cts`, or
+CommonJS `export =` diagnostics become reachable.
+Also owns `issues/done/3346-implement-moduleLocalImportNotIncorrectlyRedirected.md`:
+fresh triage stops in `node_modules/troublesome-lib/package.json` at the first
+JSON property colon before package resolution or local import redirection
+semantics become reachable.
+Also owns `issues/done/3354-implement-moduleNodeImportRequireEmit.md`: fresh
+triage stops in `// @filename: package.json` at the first JSON property colon
+before `declare module "foo";`, `import foo = require("foo");`, or NodeNext
+emit diagnostics become reachable.
+Also owns `issues/done/3358-implement-modulePreserve.md` for
+`modulePreserve2.ts`: fresh triage stops in virtual `package.json` at the first
+JSON property colon before package `exports`, ESM/CJS conditional resolution,
+or module-preserve import/require diagnostics become reachable.
+
+Also owns the package-json subset of
+`issues/done/3371-implement-moduleResolution-module-resolution.md`: fresh
+coverage for `moduleResolution_packageJson_*` reports six
+UnsupportedSyntax/module-resolution paths, and representative triage for
+`moduleResolution_packageJson_scopedPackage.ts` stops at the virtual
+`package.json` property colon before scoped package resolution becomes
+actionable.
+
+Also owns `issues/done/3374-implement-moduleResolutionAsTypeReferenceDirectiveAmbient.md`:
+fresh triage for `moduleResolutionAsTypeReferenceDirectiveAmbient.ts` parses
+`declare module "phaser" { export const a2: number; }`, then stops in the
+virtual `/typings/phaser/package.json` body at the first JSON property colon
+before type-root or package resolution becomes actionable.
+Also owns `issues/done/3379-implement-moduleResolutionPackageIdWithRelativeAndAbsolutePath.md`:
+fresh triage for `moduleResolutionPackageIdWithRelativeAndAbsolutePath.ts`
+stops in `/shared/node_modules/troublesome-lib/package.json` at the first JSON
+property colon before package-id relative/absolute path behavior, path mapping,
+or virtual node_modules resolution becomes actionable.
+
+Also owns the later package-json blocker for
+`issues/done/3381-implement-moduleResolutionWithExtensions-module-resolution.md`:
+fresh triage for `moduleResolutionWithExtensions_unexpected.ts` and
+`moduleResolutionWithExtensions_unexpected2.ts` first stops in unread fixture
+asset text owned by issue 5424; after that skip, both files contain virtual
+`package.json` bodies whose JSON property-colon boundary is owned here.
+Also owns `issues/done/3382-implement-moduleResolutionWithModule.md`: fresh
+triage for `moduleResolutionWithModule.ts` stops in
+`node_modules/pkg/package.json` at the first JSON property colon before
+`export declare function thing(): void;`, `import * as p from "pkg";`,
+package `exports`, or Node16/NodeNext module resolution becomes actionable.
+Also owns `issues/done/3579-implement-nodeNextEsmImportsOfPackagesWithExtensionlessMains.md`:
+fresh triage stops in virtual `node_modules/@types/ip/package.json` at the
+first JSON property colon before package `main` / `types` resolution for
+extensionless mains becomes actionable.
+Also owns `issues/done/3580-implement-nodeNextImportModeImplicitIndexResolution-import-export.md`:
+fresh triage stops in virtual `/node_modules/@types/dedent/package.json` at the
+first JSON property colon before NodeNext implicit index package resolution
+becomes actionable.
+Also owns `issues/done/3581-implement-nodeNextImportModeImplicitIndexResolution-module-resolution.md`:
+fresh triage stops in virtual `node_modules/pkg/package.json` at the first JSON
+property colon before NodeNext implicit index package resolution becomes
+actionable.
+Also owns `issues/done/3582-implement-nodeNextPackageImportMapRootDir.md`:
+fresh triage stops in virtual `package.json` at the first JSON property colon
+before package `"imports"` map resolution for `#dep` becomes actionable.
+Also owns `issues/done/3583-implement-nodeNextPackageSelfNameWithOutDir.md`:
+fresh triage stops in virtual `package.json` at the first JSON property colon
+before package self-name `@this/package` resolution and `outDir` behavior
+become actionable.
+Also owns `issues/done/3584-implement-nodeNextPackageSelfNameWithOutDirDeclDir.md`:
+fresh triage stops in virtual `package.json` at the first JSON property colon
+before package self-name `@this/package` resolution, conditional `exports`
+`default`/`types` branches, and `outDir`/`declarationDir` behavior become
+actionable.
+Also owns `issues/done/3588-implement-nodeNextPackageSelfNameWithOutDirDeclDirRootDir.md`:
+fresh triage stops in virtual `/pkg/package.json` at the first JSON property
+colon before package self-name `@this/package` resolution, conditional
+`exports` `default`/`types`, `outDir`/`declarationDir`, or `rootDir` behavior
+become actionable.
+Also owns `issues/done/3589-implement-nodeNextPackageSelfNameWithOutDirRootDir.md`:
+fresh triage stops in virtual `package.json` at the first JSON property colon
+before package self-name `@this/package` resolution, package `exports`,
+`outDir`, or `rootDir` behavior become actionable.
+
 ## Completion evidence
 
 Fill only when moving to `done/`.
