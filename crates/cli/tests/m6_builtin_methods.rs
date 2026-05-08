@@ -1176,3 +1176,19 @@ fn build_smoke_regexp_flags_suy() {
         result.err()
     );
 }
+
+// Dynamic eval unsupported diagnostic (issue 111)
+#[test]
+fn dynamic_eval_unsupported_diagnostic() {
+    let result = run_fixture("builtins-and-io/dynamic-eval-unsupported-diagnostic.ts");
+    assert!(
+        result.is_err(),
+        "Dynamic eval should produce unsupported diagnostic"
+    );
+    let err_msg = result.err().unwrap();
+    assert!(
+        err_msg.contains("eval is not supported"),
+        "Diagnostic should mention eval: {}",
+        err_msg
+    );
+}
