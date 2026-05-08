@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 25 | 13 | 12 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4603 | 3282 | 1321 |
+| frontend | 4603 | 3281 | 1322 |
 | harness | 1 | 0 | 1 |
 | ir | 92 | 69 | 23 |
 | issues | 4 | 0 | 4 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5296 | 3592 | 1704 |
+| total | 5296 | 3591 | 1705 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -2368,7 +2368,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 3302 | Implement Modulealiasasfunctionargument | spike | frontend/syntax | class: blocked | Implement Modulealiasasfunctionargument |
 | 3303 | Implement Modulealiasinterface | spike | frontend/syntax | class: blocked | Implement Modulealiasinterface |
 | 3304 | Implement Moduleandinterfacesharingname | spike | frontend/syntax | class: blocked | Implement Moduleandinterfacesharingname |
-| 3483 | Implement Nestedloops | spike | frontend/syntax | class: blocked | Implement Nestedloops |
 | 3484 | Implement Nestedmoduleprivateaccess | spike | frontend/syntax | class: blocked | Implement Nestedmoduleprivateaccess |
 | 3485 | Implement Nestedobjectrest | spike | frontend/syntax | class: blocked | Implement Nestedobjectrest |
 | 3486 | Implement Nestedrecursivelambda | spike | frontend/syntax | class: blocked | Implement Nestedrecursivelambda |
@@ -5256,6 +5255,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 3480 | Implement Nestedglobalnamespaceinclass | spike | frontend/syntax | see `issues/done/3480-implement-nestedGlobalNamespaceInClass.md` |
 | 3481 | Implement Nestedindexer | spike | frontend/syntax | see `issues/done/3481-implement-nestedIndexer.md` |
 | 3482 | Implement Nestedloopwithonlyinnerletcaptured | spike | frontend/syntax | see `issues/done/3482-implement-nestedLoopWithOnlyInnerLetCaptured.md` |
+| 3483 | Implement Nestedloops | spike | frontend/syntax | see `issues/done/3483-implement-nestedLoops.md` |
 | 3690 | Implement Optionaltupleelementsandundefined | spike | reference/triage | see `issues/done/3690-implement-optionalTupleElementsAndUndefined.md` |
 | 3996 | Implement Compiler (dup) | spike | frontend/syntax | see `issues/done/3996-implement-reference-typescript-tests-cases-compiler.md` |
 | 4210 | Implement Splicetuples | spike | frontend/resolver | see `issues/done/4210-implement-spliceTuples.md` |

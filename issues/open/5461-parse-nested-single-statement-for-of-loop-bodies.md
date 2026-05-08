@@ -128,6 +128,8 @@ Do not touch:
 
 - [ ] `nestedLoopWithOnlyInnerLetCaptured.ts` no longer reports
   `expected LeftBrace, got Some(For)` at the inner `for`.
+- [ ] `nestedLoops.ts` no longer reports `expected LeftBrace, got Some(For)`
+  at the inner unbraced `for (let inner of innerArray)`.
 - [ ] A focused parser test covers
   `for (let a1 of []) for (let a2 of a1.someArray) doSomething(() => a2);`.
 - [ ] A focused parser test covers `for (let x of xs) call(x);`.
@@ -178,6 +180,16 @@ Follow-up issues:
 
 This is a parser-only slice. The reference file name mentions captured `let`,
 but current evidence shows the first blocker is loop-body parsing.
+
+2026-05-08 fold-in:
+
+- `issues/done/3483-implement-nestedLoops.md` reaches the same parser boundary
+  after parsing `export class Test`, the constructor, typed arrays, and the
+  outer `for..of`.
+- Current diagnostic: `UnsupportedSyntax: expected LeftBrace, got Some(For)` at
+  the inner `for (let inner of innerArray)`.
+- TypeScript oracle accepts the source with no diagnostics and shows
+  `ClassDeclaration -> Constructor -> Block -> ForOfStatement -> ForOfStatement`.
 
 ## Completion evidence
 
