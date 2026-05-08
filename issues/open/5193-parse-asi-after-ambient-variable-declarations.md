@@ -155,6 +155,10 @@ Generated bucket `1091` was folded in on 2026-05-06 after fresh triage showed
 the same `issue-400` ambient variable ASI gap for call/construct signature type
 literals.
 
+Generated bucket `3441` was folded in on 2026-05-08 after fresh triage showed
+the same ASI gap for `declare let xAndObj: number | string | boolean | object`
+followed by `if (xAndObj == {})`.
+
 ## Completion evidence
 
 Fill only when moving to `done/`.
