@@ -206,6 +206,12 @@ Additional superseded bucket:
   reports `UnresolvedName: unresolved name: \`f\` at 112..113`; TypeScript
   parses the file with no diagnostics, so the current compiler blocker is
   still resolver visibility for the declaration-only ambient const.
+- `issues/done/3439-implement-narrowByClauseExpressionInSwitchTrue-parser-syntax.md`
+  also reaches the same ambient value name-resolution boundary for
+  `declare const f: 'a' | 'b' | 'c';` followed by `case f === 'a':` in
+  `narrowByClauseExpressionInSwitchTrue2.ts`. Fresh triage on 2026-05-08
+  reports `UnresolvedName: unresolved name: \`f\` at 170..171`; TypeScript
+  parses the file with no diagnostics.
 
 ## Completion evidence
 

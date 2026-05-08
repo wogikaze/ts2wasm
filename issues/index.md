@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 25 | 13 | 12 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4595 | 3317 | 1278 |
+| frontend | 4596 | 3317 | 1279 |
 | harness | 1 | 0 | 1 |
 | ir | 83 | 60 | 23 |
 | issues | 4 | 0 | 4 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5279 | 3619 | 1660 |
+| total | 5280 | 3619 | 1661 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -47,7 +47,7 @@ Issue files are the source of truth for work items. The generated section below 
 Direct child counts are derived from issue-file `depends_on` links. A meta issue can be `done` as a classification/design umbrella while implementation child issues remain open.
 
 ```
-5000 (Meta: TypeScript Compiler Parser Syntax Coverage) [done/design] ch:446 open:359 done:87
+5000 (Meta: TypeScript Compiler Parser Syntax Coverage) [done/design] ch:446 open:358 done:88
 ├── 5002 (Meta: TypeScript Compiler Type System Coverage) [done/done] ch:223 open:203 done:20 (also ← 5005)
 ├── 5003 (Meta: TypeScript Compiler Declaration Emit Coverage) [done/done] ch:100 open:89 done:11 (also ← 5001)
 5001 (Meta: TypeScript Compiler Semantic Analysis Coverage) [done/done] ch:556 open:296 done:260
@@ -66,7 +66,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 
 | Order | ID | Title | State | Class | Area | Priority | Depends on | Direct children | Open children | Done children |
 |-----:|---:|------|-------|-------|------|--------:|-----------:|----------------:|--------------:|--------------:|
-| 1 | 5000 | Meta: TypeScript Compiler Parser Syntax Coverage | done | design | frontend/syntax | P1 | - | 446 | 359 | 87 |
+| 1 | 5000 | Meta: TypeScript Compiler Parser Syntax Coverage | done | design | frontend/syntax | P1 | - | 446 | 358 | 88 |
 | 2 | 5001 | Meta: TypeScript Compiler Semantic Analysis Coverage | done | done | frontend/semantics | P1 | - | 556 | 296 | 260 |
 | 3 | 5004 | Meta: Runtime Builtins Coverage (test262) (audit reopened #5004) | done | done | runtime/builtins | P1 | - | 24 | 3 | 21 |
 | 4 | 5005 | Meta: TypeScript Compiler Name Resolution Coverage | done | done | frontend/resolver | P1 | - | 397 | 336 | 61 |
@@ -397,6 +397,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5442 | Report mixed default function namespace merge diagnostic | feature | frontend/semantics | implementation-ready | P1 |  | ambient module declaration bodies are erased before declaration export |
 | 5443 | Report duplicate type alias identifiers | feature | frontend/semantics | implementation-ready | P1 |  | erased type aliases hide duplicate type-only declarations, so the |
 | 5444 | Resolve const arrow predicate calls in switch true clauses | feature | frontend/resolver | implementation-ready | P1 |  | const arrow predicate bindings are visible as bindings, but direct |
+| 5445 | Parse braced switch case clause statements | feature | frontend/parser | implementation-ready | P1 |  | switch case clause parsing does not correctly dispatch a braced block |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -2351,7 +2352,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 3302 | Implement Modulealiasasfunctionargument | spike | frontend/syntax | class: blocked | Implement Modulealiasasfunctionargument |
 | 3303 | Implement Modulealiasinterface | spike | frontend/syntax | class: blocked | Implement Modulealiasinterface |
 | 3304 | Implement Moduleandinterfacesharingname | spike | frontend/syntax | class: blocked | Implement Moduleandinterfacesharingname |
-| 3439 | Implement Narrowbyclauseexpressioninswitchtrue Parser Syntax | spike | frontend/syntax | class: blocked | Implement Narrowbyclauseexpressioninswitchtrue Parser Syntax |
 | 3440 | Implement Narrowbyclauseexpressioninswitchtrue Unknown Unsupported | spike | frontend/syntax | class: triage-needed | Implement Narrowbyclauseexpressioninswitchtrue Unknown Unsupported |
 | 3441 | Implement Narrowbyequality | spike | frontend/syntax | class: blocked | Implement Narrowbyequality |
 | 3442 | Implement Narrowbyinstanceof | spike | frontend/syntax | class: blocked | Implement Narrowbyinstanceof |
@@ -5239,6 +5239,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 3436 | Implement Nanequality | spike | frontend/resolver | see `issues/done/3436-implement-nanEquality.md` |
 | 3437 | Implement Narrowbybooleancomparison | spike | frontend/syntax | see `issues/done/3437-implement-narrowByBooleanComparison.md` |
 | 3438 | Implement Narrowbyclauseexpressioninswitchtrue Name Resolution | spike | frontend/resolver | see `issues/done/3438-implement-narrowByClauseExpressionInSwitchTrue-name-resolution.md` |
+| 3439 | Implement Narrowbyclauseexpressioninswitchtrue Parser Syntax | spike | frontend/syntax | see `issues/done/3439-implement-narrowByClauseExpressionInSwitchTrue-parser-syntax.md` |
 | 3690 | Implement Optionaltupleelementsandundefined | spike | reference/triage | see `issues/done/3690-implement-optionalTupleElementsAndUndefined.md` |
 | 3996 | Implement Compiler (dup) | spike | frontend/syntax | see `issues/done/3996-implement-reference-typescript-tests-cases-compiler.md` |
 | 4210 | Implement Splicetuples | spike | frontend/resolver | see `issues/done/4210-implement-spliceTuples.md` |
