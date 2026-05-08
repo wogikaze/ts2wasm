@@ -15,8 +15,12 @@ updated: 2026-05-06
 
 Parse JavaScript/TypeScript comma expressions in ordinary expression positions,
 including parenthesized initializer expressions and return expressions.
+This also covers parenthesized comma expressions used as member/call receivers,
+such as `(otherValue(), value).inner`.
 
 ## Problem
+
+Problem: general comma expressions currently fail with UnsupportedSyntax before AST construction in ordinary expression positions.
 
 `commaOperator1.ts` tokenizes successfully, but AST construction rejects the
 first parenthesized comma expression in `var v1 = ((1, 2, 3), 4, 5, (6, 7));`.
@@ -67,6 +71,8 @@ In scope:
 - [ ] Parse comma expressions in variable initializers.
 - [ ] Parse comma expressions in return expressions.
 - [ ] Parse comma expressions in `case` label expressions, such as `case 0, 1:`.
+- [ ] Parse parenthesized comma expressions before member access and call
+  arguments, such as `(otherValue(), value).inner`.
 - [ ] Preserve left-to-right expression order in the AST/dump or equivalent
   representation.
 - [ ] Add focused parser tests for `((1, 2, 3), 4, 5, (6, 7))` and
@@ -106,6 +112,9 @@ Do not touch:
 - [ ] A focused parser test covers comma expressions in a return statement.
 - [ ] `commaOperatorLeftSideUnused.ts` no longer reports `expected Colon, got
   Some(Comma)` for `case 0, 1:`.
+- [ ] `narrowCommaOperatorNestedWithinLHS.ts` no longer reports `comma
+  expressions are not supported in this parser slice` for
+  `(otherValue(), value).inner`.
 - [ ] Existing expression precedence tests still pass.
 
 ## Validation
@@ -160,6 +169,15 @@ the later TS2695 diagnostic cases at `case 0, 1:`. Tokens are present for
 parses this as a comma expression in the case label and reports TS2695 on the
 left operand. The later parenthesized comma expressions in assignments and
 calls remain unproven until this case-label parser boundary advances.
+
+2026-05-08 additional evidence: generated bucket
+`issues/done/3445-implement-narrowCommaOperatorNestedWithinLHS.md` folds into
+this general parser owner. `narrowCommaOperatorNestedWithinLHS.ts` fails before
+control-flow narrowing at `typeof (otherValue(), value).inner === 'number'`:
+tokens are ok, TypeScript oracle has no diagnostics, and AST construction
+reports `UnsupportedSyntax: comma expressions are not supported in this parser
+slice at 226..247` for the parenthesized comma expression used as the member
+receiver.
 
 ## Completion evidence
 
