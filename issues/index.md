@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 27 | 14 | 13 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4609 | 3239 | 1370 |
+| frontend | 4609 | 3238 | 1371 |
 | harness | 1 | 0 | 1 |
 | ir | 98 | 70 | 28 |
 | issues | 4 | 0 | 4 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5310 | 3549 | 1761 |
+| total | 5310 | 3548 | 1762 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -2382,7 +2382,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 3302 | Implement Modulealiasasfunctionargument | spike | frontend/syntax | class: blocked | Implement Modulealiasasfunctionargument |
 | 3303 | Implement Modulealiasinterface | spike | frontend/syntax | class: blocked | Implement Modulealiasinterface |
 | 3304 | Implement Moduleandinterfacesharingname | spike | frontend/syntax | class: blocked | Implement Moduleandinterfacesharingname |
-| 3540 | Implement Noimplicitanyincastexpression | spike | frontend/syntax | class: triage-needed | Implement Noimplicitanyincastexpression |
 | 3541 | Implement Noimplicitanyincontextuallytypesfunctionparamter | spike | frontend/syntax | class: blocked | Implement Noimplicitanyincontextuallytypesfunctionparamter |
 | 3542 | Implement Noimplicitanyindexing | spike | frontend/syntax | class: blocked | Implement Noimplicitanyindexing |
 | 3543 | Implement Noimplicitanyindexingsuppressed | spike | frontend/syntax | class: blocked | Implement Noimplicitanyindexingsuppressed |
@@ -5270,6 +5269,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 3537 | Implement Noimplicitanyformethodparameters | spike | frontend/syntax | see `issues/done/3537-implement-noImplicitAnyForMethodParameters.md` |
 | 3538 | Implement Noimplicitanyfunctionexpressionassignment | spike | frontend/syntax | see `issues/done/3538-implement-noImplicitAnyFunctionExpressionAssignment.md` |
 | 3539 | Implement Noimplicitanyfunctions | spike | frontend/syntax | see `issues/done/3539-implement-noImplicitAnyFunctions.md` |
+| 3540 | Implement Noimplicitanyincastexpression | spike | frontend/syntax | see `issues/done/3540-implement-noImplicitAnyInCastExpression.md` |
 | 3690 | Implement Optionaltupleelementsandundefined | spike | reference/triage | see `issues/done/3690-implement-optionalTupleElementsAndUndefined.md` |
 | 3996 | Implement Compiler (dup) | spike | frontend/syntax | see `issues/done/3996-implement-reference-typescript-tests-cases-compiler.md` |
 | 4210 | Implement Splicetuples | spike | frontend/resolver | see `issues/done/4210-implement-spliceTuples.md` |
