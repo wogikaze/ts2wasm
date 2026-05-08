@@ -224,7 +224,7 @@ reference/typescript/tests/cases/compiler/nonNullableReductionNonStrict.ts: buil
 
 Commits:
 
-- pending local commit
+- e3380c679
 
 Validation result:
 
