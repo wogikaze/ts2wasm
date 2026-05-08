@@ -21,13 +21,13 @@ Issue files are the source of truth for work items. The generated section below 
 | ir | 99 | 71 | 28 |
 | issues | 4 | 0 | 4 |
 | parser | 1 | 0 | 1 |
-| reference | 213 | 140 | 73 |
+| reference | 213 | 139 | 74 |
 | runtime | 263 | 82 | 181 |
 | scripts | 3 | 1 | 2 |
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5313 | 3537 | 1776 |
+| total | 5313 | 3536 | 1777 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -2385,7 +2385,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 3302 | Implement Modulealiasasfunctionargument | spike | frontend/syntax | class: blocked | Implement Modulealiasasfunctionargument |
 | 3303 | Implement Modulealiasinterface | spike | frontend/syntax | class: blocked | Implement Modulealiasinterface |
 | 3304 | Implement Moduleandinterfacesharingname | spike | frontend/syntax | class: blocked | Implement Moduleandinterfacesharingname |
-| 3555 | Implement Noimplicitreturnsinasync | spike | reference/triage | class: triage-needed | Implement Noimplicitreturnsinasync |
 | 3556 | Implement Noimplicitreturnswithprotectedblocks | spike | frontend/resolver | class: blocked | Implement Noimplicitreturnswithprotectedblocks |
 | 3557 | Implement Noimplicitsymboltostring | spike | frontend/syntax | class: triage-needed | Implement Noimplicitsymboltostring |
 | 3558 | Implement Noimplicitthisbigthis | spike | reference/triage | class: triage-needed | Implement Noimplicitthisbigthis |
@@ -5273,6 +5272,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 3552 | Implement Noimplicitanystringindexeronobject | spike | frontend/syntax | see `issues/done/3552-implement-noImplicitAnyStringIndexerOnObject.md` |
 | 3553 | Implement Noimplicitanywithoverloads | spike | frontend/syntax | see `issues/done/3553-implement-noImplicitAnyWithOverloads.md` |
 | 3554 | Implement Noimplicitreturnsexclusions | spike | frontend/syntax | see `issues/done/3554-implement-noImplicitReturnsExclusions.md` |
+| 3555 | Implement Noimplicitreturnsinasync | spike | reference/triage | see `issues/done/3555-implement-noImplicitReturnsInAsync.md` |
 | 3690 | Implement Optionaltupleelementsandundefined | spike | reference/triage | see `issues/done/3690-implement-optionalTupleElementsAndUndefined.md` |
 | 3996 | Implement Compiler (dup) | spike | frontend/syntax | see `issues/done/3996-implement-reference-typescript-tests-cases-compiler.md` |
 | 4210 | Implement Splicetuples | spike | frontend/resolver | see `issues/done/4210-implement-spliceTuples.md` |
