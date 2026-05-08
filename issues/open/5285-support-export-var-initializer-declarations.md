@@ -101,6 +101,9 @@ Do not touch:
 ## Acceptance criteria
 
 - [ ] `commentsExternalModules2.ts` no longer reports issue-055 `unsupported variable export` at `export var newVar`.
+- [ ] `noErrorUsingImportExportModuleAugmentationInDeclarationFile2.ts` no
+  longer reports issue-055 `unsupported variable export` at
+  `export var j = "hello";`.
 - [ ] A focused fixture covers `export var name = expr;` and preserves unrelated unsupported module specifier diagnostics.
 
 ## Validation
@@ -159,6 +162,11 @@ Related but not duplicates:
   triage for `moduleResolutionNoResolve.ts` parses the import-equals section
   and then stops at `export var c = '';` in `b.ts` before `--noResolve`
   relative import diagnostics become actionable.
+- Also owns `issues/done/3530-implement-noErrorUsingImportExportModuleAugmentationInDeclarationFile.md`:
+  representative 2 stops at initialized `export var j = "hello";` with the
+  same issue-055 variable export boundary. Representatives 1 and 3 first stop
+  at `export = a;`, owned by issue 5346. The later TS2309 invalid
+  export-assignment combination is owned by issue 5306.
 
 ## Completion evidence
 

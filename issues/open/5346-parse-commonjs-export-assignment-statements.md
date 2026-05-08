@@ -100,6 +100,9 @@ Do not touch:
 - [ ] `export = x;` no longer reports `issue-055: unsupported static export`.
 - [ ] `narrowedImports_assumeInitialized.ts` no longer reports issue-055 at
   `export = a;` in the `/a.d.ts` section.
+- [ ] `noErrorUsingImportExportModuleAugmentationInDeclarationFile1.ts` and
+  `noErrorUsingImportExportModuleAugmentationInDeclarationFile3.ts` no longer
+  report issue-055 at `export = a;`.
 - [ ] A focused test proves `var x = 1; export = x;` parses as a CommonJS export assignment.
 - [ ] Existing unsupported ES module export forms still report issue-055 where they are not in this slice.
 - [ ] `python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/augmentExportEquals1.ts` advances past the current static export diagnostic.
@@ -187,6 +190,11 @@ Related but not duplicate:
   `declare namespace Foo { export { cat }; }`, then stops at the
   `export = Foo;` issue-055 static export boundary before the merged namespace
   export-of-private behavior becomes actionable.
+- Also owns `issues/done/3530-implement-noErrorUsingImportExportModuleAugmentationInDeclarationFile.md`:
+  representatives 1 and 3 stop at `export = a;` with the same issue-055 static
+  export boundary. Representative 2 first stops at initialized `export var`,
+  owned by issue 5285. The later TS2309 invalid export-assignment combination
+  is owned by issue 5306.
 
 ## Completion evidence
 
