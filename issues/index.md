@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 25 | 13 | 12 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4608 | 3269 | 1339 |
+| frontend | 4609 | 3269 | 1340 |
 | harness | 1 | 0 | 1 |
 | ir | 92 | 69 | 23 |
 | issues | 4 | 0 | 4 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5301 | 3578 | 1723 |
+| total | 5302 | 3578 | 1724 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -419,6 +419,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5464 | Report nested unary expression syntax diagnostics | bug | frontend/parser | implementation-ready | P2 |  | `nestedUnaryExpressionHang.ts` no longer hangs, but the compiler still |
 | 5465 | Parse abstract anonymous default class exports | bug | frontend/module-syntax | implementation-ready | P1 |  | `newAbstractInstance2.ts` stops before AST construction on the |
 | 5466 | Report malformed new angle-bracket casts | bug | frontend/parser | implementation-ready | P2 |  | `newExpressionWithCast.ts` contains both valid and invalid new/cast |
+| 5467 | Report missing new expression callee | bug | frontend/parser | implementation-ready | P2 |  | `newMissingIdentifier.ts` contains malformed `new ()` syntax. The |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -2373,7 +2374,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 3302 | Implement Modulealiasasfunctionargument | spike | frontend/syntax | class: blocked | Implement Modulealiasasfunctionargument |
 | 3303 | Implement Modulealiasinterface | spike | frontend/syntax | class: blocked | Implement Modulealiasinterface |
 | 3304 | Implement Moduleandinterfacesharingname | spike | frontend/syntax | class: blocked | Implement Moduleandinterfacesharingname |
-| 3502 | Implement Newmissingidentifier | spike | frontend/syntax | class: triage-needed | Implement Newmissingidentifier |
 | 3503 | Implement Newnamesinglobalaugmentations | spike | frontend/syntax | class: blocked | Implement Newnamesinglobalaugmentations |
 | 3504 | Implement Newnonreferencetype | spike | frontend/resolver | class: blocked | Implement Newnonreferencetype |
 | 3505 | Implement Newoninstancesymbol | spike | frontend/syntax | class: blocked | Implement Newoninstancesymbol |
@@ -5261,6 +5261,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 3499 | Implement Newfunctionimplicitany | spike | frontend/syntax | see `issues/done/3499-implement-newFunctionImplicitAny.md` |
 | 3500 | Implement Newlexicalenvironmentforconvertedloop | spike | frontend/syntax | see `issues/done/3500-implement-newLexicalEnvironmentForConvertedLoop.md` |
 | 3501 | Implement Newmap | spike | frontend/resolver | see `issues/done/3501-implement-newMap.md` |
+| 3502 | Implement Newmissingidentifier | spike | frontend/syntax | see `issues/done/3502-implement-newMissingIdentifier.md` |
 | 3690 | Implement Optionaltupleelementsandundefined | spike | reference/triage | see `issues/done/3690-implement-optionalTupleElementsAndUndefined.md` |
 | 3996 | Implement Compiler (dup) | spike | frontend/syntax | see `issues/done/3996-implement-reference-typescript-tests-cases-compiler.md` |
 | 4210 | Implement Splicetuples | spike | frontend/resolver | see `issues/done/4210-implement-spliceTuples.md` |
