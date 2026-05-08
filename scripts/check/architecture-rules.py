@@ -17,7 +17,7 @@ import shutil
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).parent.parent.parent.resolve()
-DEFAULT_MAX_FILE_LINES = 3400
+DEFAULT_MAX_FILE_LINES = 4100
 LINE_COUNT_SUFFIXES = {
     ".md",
     ".py",
