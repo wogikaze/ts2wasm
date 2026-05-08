@@ -67,6 +67,9 @@ SUPPORTED_FEATURES = (
 )
 ASSERT_FAILURE_SENTINEL = "__TS2WASM_TEST262_ASSERT_FAIL__"
 
+# Track unknown features already logged to stderr (deduplication).
+_seen_unknown_test262_features = set()
+
 TEST262_HOST_PRELUDE = r"""
 function print(message) {
   console.log(message);
@@ -187,8 +190,9 @@ class Test262Metadata:
             if flag in self.flags:
                 return f"test262 flag `{flag}` is not supported by this runner slice"
         for feature in self.features:
-            if feature not in SUPPORTED_FEATURES:
-                return f"test262 feature `{feature}` is not supported by this runner slice"
+            if feature not in SUPPORTED_FEATURES and feature not in _seen_unknown_test262_features:
+                _seen_unknown_test262_features.add(feature)
+                print(f"warn: unknown test262 feature `{feature}`", file=sys.stderr)
         return None
 
     @property

@@ -995,7 +995,7 @@ def main():
         )
         metadata_cache_file = REPO_ROOT / "artifacts" / "coverage" / "cache" / "test262-metadata-v2.json"
         metadata_cache_signature = {
-            "version": 2,
+            "version": 3,
             "unsupported_flags": list(t262.UNSUPPORTED_FLAGS),
             "supported_features": list(t262.SUPPORTED_FEATURES),
         }
@@ -1275,7 +1275,7 @@ def main():
             if cache_entry_valid(cached_metadata_entry, stat_result):
                 metadata = metadata_from_cache(cached_metadata_entry)
                 item["metadata"] = metadata
-                unsupported_reason = cached_metadata_entry.get("unsupported_reason") or metadata.unsupported_reason
+                unsupported_reason = metadata.unsupported_reason
                 if unsupported_reason:
                     if include_jsonl_source:
                         try:
