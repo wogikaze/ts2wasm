@@ -230,7 +230,6 @@ impl RuntimeLinkPlan {
                 } => {
                     self.collect_required_runtime_expr(condition);
                     self.add_required_runtime(RuntimeFn::TruthyBool);
-                                    span: _
                     self.collect_required_runtime_stmts(then_body);
                     self.collect_required_runtime_stmts(else_body);
                 }
@@ -239,13 +238,11 @@ impl RuntimeLinkPlan {
                 } => {
                     self.collect_required_runtime_expr(condition);
                     self.add_required_runtime(RuntimeFn::TruthyBool);
-                                    span: _
                     self.collect_required_runtime_stmts(body);
                 }
                 LoweredStmt::TryCatch {
                     try_body,
                     catch_var: _,
-                                    span: _
                     catch_body,
                     finally_body,
                     ..
@@ -265,7 +262,6 @@ impl RuntimeLinkPlan {
                         if let Some(cond_expr) = cond {
                             self.collect_required_runtime_expr(cond_expr);
                             self.add_required_runtime(RuntimeFn::StrictEqual);
-                                            span: _
                         }
                         self.collect_required_runtime_stmts(case_body);
                     }
@@ -275,7 +271,6 @@ impl RuntimeLinkPlan {
                 } => {
                     self.collect_required_runtime_expr(condition);
                     self.add_required_runtime(RuntimeFn::TruthyBool);
-                                    span: _
                     self.collect_required_runtime_stmts(body);
                 }
                 LoweredStmt::For {
@@ -291,7 +286,6 @@ impl RuntimeLinkPlan {
                     if let Some(expr) = condition {
                         self.collect_required_runtime_expr(expr);
                         self.add_required_runtime(RuntimeFn::TruthyBool);
-                                        span: _
                     }
                     if let Some(expr) = update {
                         self.collect_required_runtime_expr(expr);
@@ -308,7 +302,6 @@ impl RuntimeLinkPlan {
                     self.add_required_runtime(RuntimeFn::TruthyBool);
                     self.add_required_runtime(RuntimeFn::ArrayGet);
                     self.add_required_runtime(RuntimeFn::Add);
-                                    span: _
                     self.collect_required_runtime_stmts(body);
                 }
                 LoweredStmt::ForOf {
@@ -320,29 +313,24 @@ impl RuntimeLinkPlan {
                     self.add_required_runtime(RuntimeFn::TruthyBool);
                     self.add_required_runtime(RuntimeFn::ArrayGet);
                     self.add_required_runtime(RuntimeFn::Add);
-                                    span: _
                     self.collect_required_runtime_stmts(body);
                 }
                 LoweredStmt::Labeled { body, .. } => {
                     self.collect_required_runtime_stmts(std::slice::from_ref(body.as_ref()));
-                                    span: _
                 }
                 LoweredStmt::Break { .. } | LoweredStmt::Continue { .. } => {}
                 LoweredStmt::Export { expr, .. } => {
                     self.collect_required_runtime_expr(expr);
                     self.add_required_runtime(RuntimeFn::ModuleExportsSet);
-                                    span: _
                 }
                 LoweredStmt::ModuleExportsAssign { expr, .. } => {
                     self.collect_required_runtime_expr(expr);
                     self.add_required_runtime(RuntimeFn::ModuleExportsAssign);
-                                    span: _
                 }
                 LoweredStmt::ClassDecl { methods, .. } => {
                     self.add_required_runtime(RuntimeFn::AllocHeap);
                     if !methods.is_empty() {
                         self.add_required_runtime(RuntimeFn::PropertySet);
-                                        span: _
                     }
                 }
             }
@@ -362,14 +350,12 @@ impl RuntimeLinkPlan {
                         // Delete is handled specially, no runtime function needed
                     }
                     LoweredUnaryOp::Void => {
-                                    span: _
                         // Void evaluates inner expr for side effects, no runtime function needed
                     }
                 }
             }
             LoweredExpr::Assign { expr, .. } => {
                 self.collect_required_runtime_expr(expr);
-                                span: _
             }
             LoweredExpr::EnvCellNew(expr, _) => {
                 self.add_required_runtime(RuntimeFn::AllocHeap);
@@ -378,13 +364,11 @@ impl RuntimeLinkPlan {
             LoweredExpr::EnvCellGet(_, _) => {}
             LoweredExpr::EnvCellSet { expr, .. } => {
                 self.collect_required_runtime_expr(expr);
-                                span: _
             }
             LoweredExpr::LogicalAssign { op, expr, .. } => {
                 self.collect_required_runtime_expr(expr);
                 if matches!(op, LoweredLogicalAssignOp::And | LoweredLogicalAssignOp::Or) {
                     self.add_required_runtime(RuntimeFn::TruthyBool);
-                                    span: _
                 }
             }
             LoweredExpr::LogicalPropertyAssign { op, expr, .. } => {
@@ -393,7 +377,6 @@ impl RuntimeLinkPlan {
                 self.collect_required_runtime_expr(expr);
                 if matches!(op, LoweredLogicalAssignOp::And | LoweredLogicalAssignOp::Or) {
                     self.add_required_runtime(RuntimeFn::TruthyBool);
-                                    span: _
                 }
             }
             LoweredExpr::LogicalMemberAssign {
@@ -405,7 +388,6 @@ impl RuntimeLinkPlan {
                 self.collect_required_runtime_expr(expr);
                 if matches!(op, LoweredLogicalAssignOp::And | LoweredLogicalAssignOp::Or) {
                     self.add_required_runtime(RuntimeFn::TruthyBool);
-                                    span: _
                 }
             }
             LoweredExpr::LogicalComputedPropertyAssign { op, key, expr, .. } => {
@@ -416,7 +398,6 @@ impl RuntimeLinkPlan {
                 self.collect_required_runtime_expr(expr);
                 if matches!(op, LoweredLogicalAssignOp::And | LoweredLogicalAssignOp::Or) {
                     self.add_required_runtime(RuntimeFn::TruthyBool);
-                                    span: _
                 }
             }
             LoweredExpr::LogicalComputedMemberAssign {
@@ -434,7 +415,6 @@ impl RuntimeLinkPlan {
                 self.collect_required_runtime_expr(expr);
                 if matches!(op, LoweredLogicalAssignOp::And | LoweredLogicalAssignOp::Or) {
                     self.add_required_runtime(RuntimeFn::TruthyBool);
-                                    span: _
                 }
             }
             LoweredExpr::Binary {
@@ -540,7 +520,6 @@ impl RuntimeLinkPlan {
                         self.add_required_runtime(RuntimeFn::TruthyBool)
                     }
                     LoweredBinaryOp::NullishCoalesce => {}
-                                    span: _
                 }
             }
             LoweredExpr::Call { kind, args, .. } => {
@@ -549,7 +528,6 @@ impl RuntimeLinkPlan {
                 }
                 if let FunctionCallKind::Builtin(builtin) = kind {
                     self.add_required_runtime(RuntimeFn::from_builtin(*builtin));
-                                    span: _
                 }
             }
             LoweredExpr::Number(value, _) => {
@@ -566,16 +544,13 @@ impl RuntimeLinkPlan {
             LoweredExpr::ArrowFn { representation, .. } => {
                 if matches!(representation, ClosureRepresentation::HeapObject) {
                     self.add_required_runtime(RuntimeFn::AllocHeap);
-                                    span: _
                 }
             }
             LoweredExpr::BigIntLiteral { .. } => {
                 self.add_required_runtime(RuntimeFn::MakeBigIntLiteral);
-                                span: _
             }
             LoweredExpr::ArrayNew { elements, .. } => {
                 self.add_required_runtime(RuntimeFn::AllocHeap);
-                                span: _
                 for elem in elements {
                     self.collect_required_runtime_expr(elem);
                 }
@@ -584,20 +559,17 @@ impl RuntimeLinkPlan {
                 self.add_required_runtime(RuntimeFn::AllocHeap);
                 for slot in slots {
                     if let ts2wasm_ir::lowered::LoweredArraySlot::Present(elem) = slot {
-                                    span: _
                         self.collect_required_runtime_expr(elem);
                     }
                 }
             }
             LoweredExpr::ArrayGet { arr, index, .. } => {
                 self.add_required_runtime(RuntimeFn::ArrayGet);
-                                span: _
                 self.collect_required_runtime_expr(arr);
                 self.collect_required_runtime_expr(index);
             }
             LoweredExpr::Index { object, index, .. } => {
                 self.add_required_runtime(RuntimeFn::Index);
-                                span: _
                 self.collect_required_runtime_expr(object);
                 self.collect_required_runtime_expr(index);
             }
@@ -607,7 +579,6 @@ impl RuntimeLinkPlan {
             }
             LoweredExpr::ObjectNew { props, .. } => {
                 self.add_required_runtime(RuntimeFn::AllocHeap);
-                                span: _
                 for (_, val) in props {
                     self.collect_required_runtime_expr(val);
                 }
@@ -615,40 +586,33 @@ impl RuntimeLinkPlan {
             LoweredExpr::ErrorNew { message, .. } => {
                 self.add_required_runtime(RuntimeFn::AllocHeap);
                 self.add_required_runtime(RuntimeFn::Concat);
-                                span: _
                 self.collect_required_runtime_expr(message);
             }
             LoweredExpr::PropertyGet { obj, .. } => {
                 self.add_required_runtime(RuntimeFn::PropertyGet);
-                                span: _
                 self.collect_required_runtime_expr(obj);
             }
             LoweredExpr::OptionalPropertyGet { obj, .. } => {
                 self.add_required_runtime(RuntimeFn::PropertyGet);
-                                span: _
                 self.collect_required_runtime_expr(obj);
             }
             LoweredExpr::PropertyGetDynamic { obj, key, .. } => {
                 self.add_required_runtime(RuntimeFn::PropertyGet);
                 self.add_required_runtime(RuntimeFn::ValueToStringInto);
-                                span: _
                 self.collect_required_runtime_expr(obj);
                 self.collect_required_runtime_expr(key);
             }
             LoweredExpr::OptionalIndex { object, index, .. } => {
                 self.add_required_runtime(RuntimeFn::Index);
-                                span: _
                 self.collect_required_runtime_expr(object);
                 self.collect_required_runtime_expr(index);
             }
             LoweredExpr::OptionalCall { callee, call, .. } => {
                 self.collect_required_runtime_expr(callee);
-                                span: _
                 self.collect_required_runtime_expr(call);
             }
             LoweredExpr::PropertySet { object, value, .. } => {
                 self.add_required_runtime(RuntimeFn::PropertySet);
-                                span: _
                 self.collect_required_runtime_expr(object);
                 self.collect_required_runtime_expr(value);
             }
@@ -660,14 +624,12 @@ impl RuntimeLinkPlan {
             } => {
                 self.add_required_runtime(RuntimeFn::PropertySet);
                 self.add_required_runtime(RuntimeFn::ValueToStringInto);
-                                span: _
                 self.collect_required_runtime_expr(object);
                 self.collect_required_runtime_expr(index);
                 self.collect_required_runtime_expr(value);
             }
             LoweredExpr::New { args, .. } => {
                 self.add_required_runtime(RuntimeFn::AllocHeap);
-                                span: _
                 for arg in args {
                     self.collect_required_runtime_expr(arg);
                 }
@@ -681,14 +643,12 @@ impl RuntimeLinkPlan {
             LoweredExpr::Block { stmts, result, .. } => {
                 for stmt in stmts {
                     self.collect_required_runtime_stmts(std::slice::from_ref(stmt));
-                                    span: _
                 }
                 self.collect_required_runtime_expr(result);
             }
             LoweredExpr::MethodCall { .. } => {}
             LoweredExpr::ModuleLoad { .. } => {
                 self.add_required_runtime(RuntimeFn::ModuleRequire);
-                                span: _
             }
             LoweredExpr::RuntimeCall {
                 runtime_fn, args, ..
@@ -708,7 +668,6 @@ impl RuntimeLinkPlan {
                     self.add_required_runtime(RuntimeFn::PrivateBrandTypeError);
                 }
                 if let Some(runtime_fn_enum) = super::runtime_fn::runtime_fn_from_name(runtime_fn) {
-                                span: _
                     self.add_required_runtime(runtime_fn_enum);
                 }
                 for arg in args {
@@ -718,26 +677,22 @@ impl RuntimeLinkPlan {
             LoweredExpr::PropertyDelete { object, key: _, .. } => {
                 self.collect_required_runtime_expr(object);
                 self.add_required_runtime(RuntimeFn::PropertyDelete);
-                                span: _
             }
             LoweredExpr::PropertyDeleteDynamic { object, key, .. } => {
                 self.collect_required_runtime_expr(object);
                 self.collect_required_runtime_expr(key);
                 self.add_required_runtime(RuntimeFn::PropertyDelete);
                 self.add_required_runtime(RuntimeFn::ValueToStringInto);
-                                span: _
             }
             LoweredExpr::PropertyIn { obj, key: _, .. } => {
                 self.collect_required_runtime_expr(obj);
                 self.add_required_runtime(RuntimeFn::PropertyHas);
-                                span: _
             }
             LoweredExpr::PropertyInDynamic { obj, key, .. } => {
                 self.collect_required_runtime_expr(obj);
                 self.collect_required_runtime_expr(key);
                 self.add_required_runtime(RuntimeFn::PropertyHas);
                 self.add_required_runtime(RuntimeFn::ValueToStringInto);
-                                span: _
             }
         }
     }
@@ -847,7 +802,6 @@ mod tests {
                 statements: vec![LoweredStmt::Export {
                     name: "value".to_owned(),
                     expr: LoweredExpr::Number(1, Span::generated("test")),
-                                    span: _
                 }],
                 locals_count: 0,
             }],
@@ -875,20 +829,17 @@ mod tests {
                     args: vec![
                         LoweredExpr::Local(ts2wasm_ir::lowered::LocalId(0)),
                         LoweredExpr::Local(ts2wasm_ir::lowered::LocalId(0)),
-                                        span: _
                     ],
                 }),
                 LoweredStmt::Expr(LoweredExpr::RuntimeCall {
                     runtime_fn: "BigIntUnaryMinus".to_owned(),
                     args: vec![LoweredExpr::Local(ts2wasm_ir::lowered::LocalId(0))],
-                                    span: _
                 }),
                 LoweredStmt::Expr(LoweredExpr::RuntimeCall {
                     runtime_fn: "BigIntMul".to_owned(),
                     args: vec![
                         LoweredExpr::Local(ts2wasm_ir::lowered::LocalId(0)),
                         LoweredExpr::Local(ts2wasm_ir::lowered::LocalId(0)),
-                                        span: _
                     ],
                 }),
                 LoweredStmt::Expr(LoweredExpr::RuntimeCall {
@@ -896,7 +847,6 @@ mod tests {
                     args: vec![
                         LoweredExpr::Local(ts2wasm_ir::lowered::LocalId(0)),
                         LoweredExpr::Local(ts2wasm_ir::lowered::LocalId(0)),
-                                        span: _
                     ],
                 }),
                 LoweredStmt::Expr(LoweredExpr::RuntimeCall {
@@ -904,7 +854,6 @@ mod tests {
                     args: vec![
                         LoweredExpr::Local(ts2wasm_ir::lowered::LocalId(0)),
                         LoweredExpr::Local(ts2wasm_ir::lowered::LocalId(0)),
-                                        span: _
                     ],
                 }),
                 LoweredStmt::Expr(LoweredExpr::RuntimeCall {
@@ -912,7 +861,6 @@ mod tests {
                     args: vec![
                         LoweredExpr::Local(ts2wasm_ir::lowered::LocalId(0)),
                         LoweredExpr::Local(ts2wasm_ir::lowered::LocalId(0)),
-                                        span: _
                     ],
                 }),
                 LoweredStmt::Expr(LoweredExpr::RuntimeCall {
@@ -920,20 +868,17 @@ mod tests {
                     args: vec![
                         LoweredExpr::Local(ts2wasm_ir::lowered::LocalId(0)),
                         LoweredExpr::Number(2, Span::generated("test")),
-                                        span: _
                     ],
                 }),
                 LoweredStmt::Expr(LoweredExpr::RuntimeCall {
                     runtime_fn: "BigIntBitwiseNot".to_owned(),
                     args: vec![LoweredExpr::Local(ts2wasm_ir::lowered::LocalId(0))],
-                                    span: _
                 }),
                 LoweredStmt::Expr(LoweredExpr::RuntimeCall {
                     runtime_fn: "BigIntBitwiseAnd".to_owned(),
                     args: vec![
                         LoweredExpr::Local(ts2wasm_ir::lowered::LocalId(0)),
                         LoweredExpr::Local(ts2wasm_ir::lowered::LocalId(0)),
-                                        span: _
                     ],
                 }),
                 LoweredStmt::Expr(LoweredExpr::RuntimeCall {
@@ -941,7 +886,6 @@ mod tests {
                     args: vec![
                         LoweredExpr::Local(ts2wasm_ir::lowered::LocalId(0)),
                         LoweredExpr::Local(ts2wasm_ir::lowered::LocalId(0)),
-                                        span: _
                     ],
                 }),
                 LoweredStmt::Expr(LoweredExpr::RuntimeCall {
@@ -949,20 +893,17 @@ mod tests {
                     args: vec![
                         LoweredExpr::Local(ts2wasm_ir::lowered::LocalId(0)),
                         LoweredExpr::Local(ts2wasm_ir::lowered::LocalId(0)),
-                                        span: _
                     ],
                 }),
                 LoweredStmt::Expr(LoweredExpr::RuntimeCall {
                     runtime_fn: "BigIntFromValue".to_owned(),
                     args: vec![LoweredExpr::Local(ts2wasm_ir::lowered::LocalId(0))],
-                                    span: _
                 }),
                 LoweredStmt::Expr(LoweredExpr::RuntimeCall {
                     runtime_fn: "BigIntAsIntN".to_owned(),
                     args: vec![
                         LoweredExpr::Number(8, Span::generated("test")),
                         LoweredExpr::Local(ts2wasm_ir::lowered::LocalId(0)),
-                                        span: _
                     ],
                 }),
                 LoweredStmt::Expr(LoweredExpr::RuntimeCall {
@@ -970,7 +911,6 @@ mod tests {
                     args: vec![
                         LoweredExpr::Number(8, Span::generated("test")),
                         LoweredExpr::Local(ts2wasm_ir::lowered::LocalId(0)),
-                                        span: _
                     ],
                 }),
             ],
@@ -1059,13 +999,11 @@ mod tests {
                     left: Box::new(LoweredExpr::Local(ts2wasm_ir::lowered::LocalId(0))),
                     op: LoweredBinaryOp::StrictEqual,
                     right: Box::new(LoweredExpr::Local(ts2wasm_ir::lowered::LocalId(1))),
-                    span: _
                 }),
                 LoweredStmt::Expr(LoweredExpr::Binary {
                     left: Box::new(LoweredExpr::Local(ts2wasm_ir::lowered::LocalId(0))),
                     op: LoweredBinaryOp::Less,
                     right: Box::new(LoweredExpr::Local(ts2wasm_ir::lowered::LocalId(1))),
-                    span: _
                 }),
             ],
             top_level_locals: vec![
@@ -1099,7 +1037,6 @@ mod tests {
                     sign: 1,
                     limb_low: 10,
                     limb_high: 0,
-                                    span: _
                 }],
             })],
             top_level_locals: vec![],
@@ -1133,7 +1070,6 @@ mod tests {
                 methods: vec![("bar".to_owned(), FuncId(1))],
                 static_methods: vec![],
                 private_fields: vec![],
-                                span: _
             }],
             top_level_locals: vec![],
             functions: vec![],
@@ -1223,7 +1159,6 @@ mod tests {
             top_level_statements: vec![LoweredStmt::Expr(LoweredExpr::Call {
                 kind: FunctionCallKind::Builtin(BuiltinId::ConsoleLog),
                 args: vec![LoweredExpr::Number(42, Span::generated("test"))],
-                                span: _
             })],
             top_level_locals: vec![],
             functions: vec![],
