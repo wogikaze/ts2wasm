@@ -106,6 +106,29 @@ impl NameResolver {
             "Float64Array",
             "encodeURIComponent",
             "decodeURIComponent",
+            // Test262 harness globals (issue 5424)
+            "$262",
+            "Test262Error",
+            "assert",
+            "$ERROR",
+            "$DONOTEVALUATE",
+            // Test262 harness helpers (issue 5424)
+            "verifyProperty",
+            "verifyWritable",
+            "verifyNotWritable",
+            "verifyEnumerable",
+            "verifyNotEnumerable",
+            "verifyConfigurable",
+            "verifyNotConfigurable",
+            "isSameValue",
+            "isEqualTo",
+            "isConstructor",
+            // Host builtins (issue 5424)
+            "print",
+            // Timer builtins (issue 5424)
+            "clearTimeout",
+            "setInterval",
+            "clearInterval",
         ]
         .iter()
         .map(|s| s.to_string())
