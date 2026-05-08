@@ -1116,3 +1116,14 @@ fn build_smoke_global_names_promise_symbol_reflect_proxy() {
         result.err()
     );
 }
+
+// Global name registration: ArrayBuffer, DataView, TypedArray constructors (issue 102)
+#[test]
+fn build_smoke_global_names_typedarray() {
+    let result = run_fixture("builtins-and-io/global-names-arraybuffer-typedarray-dataview.ts");
+    assert!(
+        result.is_ok(),
+        "ArrayBuffer, DataView, TypedArray global names should build: {:?}",
+        result.err()
+    );
+}

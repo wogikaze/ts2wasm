@@ -61,6 +61,14 @@ impl<'a> Resolver<'a> {
                     || name == "console" || name == "process" || name == "Buffer"
                     || name == "TypeError" || name == "ReferenceError" || name == "SyntaxError"
                     || name == "RangeError"
+                    // TypedArray/ArrayBuffer/DataView constructors
+                    || name == "ArrayBuffer" || name == "DataView"
+                    || name == "Int8Array" || name == "Uint8Array"
+                    || name == "Uint8ClampedArray"
+                    || name == "Int16Array" || name == "Uint16Array"
+                    || name == "Int32Array" || name == "Uint32Array"
+                    || name == "Float32Array" || name == "Float64Array"
+                    || name == "BigInt64Array" || name == "BigUint64Array"
                     // Global functions registered as BuiltinId (callable via builtin_resolver)
                     // but treated as Undefined when referenced as bare identifiers or property targets
                     || name == "escape" || name == "unescape"
