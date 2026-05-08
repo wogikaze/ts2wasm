@@ -219,7 +219,7 @@ reference/typescript/tests/cases/compiler/nonNullReferenceMatching.ts: build_pas
 
 Commits:
 
-- pending local commit
+- 0d54e90f0
 
 Validation result:
 
