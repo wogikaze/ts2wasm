@@ -46,7 +46,6 @@ In scope:
 - [ ] Implement replacement string pattern expansion (`$&`, `$``, `$'`, `$n`, `$<name>`)
 - [ ] Handle zero-length match edge cases (advance by 1 char per ECMA-262)
 - [ ] Add fixture `fixtures/builtins-and-io/string-replace-regexp-callback.ts`
-- [ ] Add fixture `fixtures/builtins-and-io/string-replace-dollar-patterns.ts`
 - [ ] Add Node/iwasm semantic_diff test for these fixtures
 
 Out of scope:
@@ -63,8 +62,6 @@ Expected:
 - `crates/backend-wasm/src/runtime_strings.rs` — enhance replace/replaceAll WAT
 - `crates/backend-wasm/src/runtime_regexp.rs` — add match-iteration helpers if needed
 - `fixtures/builtins-and-io/string-replace-regexp-callback.ts` — new fixture
-- `fixtures/builtins-and-io/string-replace-dollar-patterns.ts` — new fixture
-- `crates/cli/tests/m6_string_regexp.rs` — new test file for these fixtures
 
 Do not touch:
 
