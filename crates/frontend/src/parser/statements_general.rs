@@ -31,6 +31,15 @@ impl Parser {
             self.class_statement()
         }
             Some(Token::Class) => self.class_statement(),
+            Some(Token::Static) => {
+                let span = self.peek_span();
+                self.advance();
+                Err(Diagnostic {
+                    code: DiagCode::UnsupportedSyntax,
+                    message: "static declarations are not valid in constructor/function bodies".to_owned(),
+                    span,
+                })
+            }
             Some(Token::Return) => self.return_statement(),
             Some(Token::Async) if matches!(self.peek_n(1), Some(Token::Function)) => {
                 self.async_function_statement()
@@ -1727,8 +1736,12 @@ impl Parser {
         let is_for_in_of = if matches!(self.peek(), Some(Token::Var | Token::Let | Token::Const)) {
             self.advance();
             match self.peek() {
-                Some(Token::Ident(_)) => {
-                    self.advance();
+                Some(Token::Ident(_) | Token::LeftBracket) => {
+                    if matches!(self.peek(), Some(Token::Ident(_))) {
+                        self.advance();
+                    } else {
+                        self.skip_balanced_bracket_block()?;
+                    }
                     // Skip optional TypeScript type annotation (`: Type`) in for-in/of
                     if self.consume(TokenKind::Colon) {
                         let _ = self.skip_type_annotation_until(&[TokenKind::In, TokenKind::Of]);
@@ -1751,7 +1764,16 @@ impl Parser {
             if matches!(self.peek(), Some(Token::Var | Token::Let | Token::Const)) {
                 self.advance();
             }
-            let (var_name, _) = self.expect_ident()?;
+            let var_name = if matches!(self.peek(), Some(Token::LeftBracket)) {
+                // Array binding pattern in for-of head (issue 5298):
+                // for (const [key, value] of Object.entries(e))
+                // Use a synthesized name since the Parser has no source field
+                self.skip_balanced_bracket_block()?;
+                "_binding".to_owned()
+            } else {
+                let (name, _) = self.expect_ident()?;
+                name
+            };
             // Skip optional TypeScript type annotation (`: Type`) in for-in/of
             if self.consume(TokenKind::Colon) {
                 self.skip_type_annotation_until(&[TokenKind::In, TokenKind::Of])?;
