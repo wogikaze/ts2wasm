@@ -14,21 +14,21 @@ Issue files are the source of truth for work items. The generated section below 
 | backend-wasm | 2 | 0 | 2 |
 | cli | 17 | 0 | 17 |
 | compiler | 7 | 2 | 5 |
-| coverage | 45 | 2 | 43 |
+| coverage | 45 | 1 | 44 |
 | docs | 5 | 0 | 5 |
-| frontend | 4562 | 3706 | 856 |
+| frontend | 4563 | 3707 | 856 |
 | harness | 1 | 0 | 1 |
 | ir | 77 | 12 | 65 |
 | issues | 5 | 0 | 5 |
 | other | 2 | 0 | 2 |
 | parser | 1 | 0 | 1 |
 | reference | 212 | 160 | 52 |
-| runtime | 275 | 83 | 192 |
-| scripts | 3 | 0 | 3 |
+| runtime | 277 | 85 | 192 |
+| scripts | 4 | 1 | 3 |
 | security | 1 | 0 | 1 |
 | tests | 8 | 0 | 8 |
 | wasi | 5 | 0 | 5 |
-| total | 5253 | 3966 | 1287 |
+| total | 5257 | 3969 | 1288 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -420,7 +420,10 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5408 | Parse bare global augmentation blocks | bug | frontend/syntax | implementation-ready | P1 |  | bare TypeScript global augmentation syntax falls through to runtime |
 | 5409 | Parse function expression statements in nested blocks | feature | frontend/syntax | implementation-ready | P2 | 5000 | capturedLetConstInLoop parser tests reject `(function() { return x })` |
 | 5410 | W5: test262 coverage ramp from 100 to 500 executed | feature | coverage | design-ready | P1 |  | W5: test262 coverage ramp from 100 to 500 executed |
-| 5417 | W6: test262 coverage ramp from 500 to 2000 | feature | coverage | implementation-ready | P1 |  | test262 executed=500/53445. Gate D requires >= 2000. |
+| 5419 | W6: Fix test262-metadata rejection — allow compilation despite unknown features | feature | scripts | implementation-ready | P1 |  | 27,417 test262 files rejected at metadata level without compilation attempt. |
+| 5420 | W0: Fix pre-existing dirty files to unblock cargo fmt and nextest | bug | frontend | implementation-ready | P0 |  | Pre-existing dirty files prevent fmt and nextest from passing on master. |
+| 5421 | W4: Implement Array.prototype.sort with comparator semantics | feature | runtime | implementation-ready | P1 |  | Array.sort missing runtime implementation — reports issue-299 diagnostic. |
+| 5422 | W4: Implement Promise constructor and basic methods | feature | runtime | implementation-ready | P1 |  | Promise runtime not implemented. |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -5364,6 +5367,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5414 | W4: Implement String.replace with RegExp callback semantics | feature | runtime | see file |
 | 5415 | W4: Implement Array iteration methods with thisArg correctness | feature | runtime | see file |
 | 5416 | W4: Implement Object.assign/defineProperty runtime descriptor handling | feature | runtime | see file |
+| 5417 | W6: test262 coverage ramp from 500 to 2000 | feature | coverage | see file |
 | 5418 | W7: Expand host-deny test matrix and WASI-only audit | feature | cli | see file |
 <!-- generated:done:end -->
 
