@@ -203,6 +203,10 @@ triage for `moduleResolutionWithModule.ts` stops in
 `node_modules/pkg/package.json` at the first JSON property colon before
 `export declare function thing(): void;`, `import * as p from "pkg";`,
 package `exports`, or Node16/NodeNext module resolution becomes actionable.
+Also owns `issues/done/3579-implement-nodeNextEsmImportsOfPackagesWithExtensionlessMains.md`:
+fresh triage stops in virtual `node_modules/@types/ip/package.json` at the
+first JSON property colon before package `main` / `types` resolution for
+extensionless mains becomes actionable.
 
 ## Completion evidence
 
