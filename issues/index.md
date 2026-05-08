@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 28 | 15 | 13 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4615 | 3207 | 1408 |
+| frontend | 4615 | 3206 | 1409 |
 | harness | 1 | 0 | 1 |
 | ir | 99 | 71 | 28 |
 | issues | 4 | 0 | 4 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5318 | 3517 | 1801 |
+| total | 5318 | 3516 | 1802 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -2390,7 +2390,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 3302 | Implement Modulealiasasfunctionargument | spike | frontend/syntax | class: blocked | Implement Modulealiasasfunctionargument |
 | 3303 | Implement Modulealiasinterface | spike | frontend/syntax | class: blocked | Implement Modulealiasinterface |
 | 3304 | Implement Moduleandinterfacesharingname | spike | frontend/syntax | class: blocked | Implement Moduleandinterfacesharingname |
-| 3580 | Implement Nodenextimportmodeimplicitindexresolution Import Export | spike | frontend/syntax | class: blocked | Implement Nodenextimportmodeimplicitindexresolution Import Export |
 | 3581 | Implement Nodenextimportmodeimplicitindexresolution Module Resolution | spike | frontend/syntax | class: blocked | Implement Nodenextimportmodeimplicitindexresolution Module Resolution |
 | 3582 | Implement Nodenextpackageimportmaprootdir | spike | frontend/syntax | class: blocked | Implement Nodenextpackageimportmaprootdir |
 | 3583 | Implement Nodenextpackageselfnamewithoutdir | spike | frontend/syntax | class: blocked | Implement Nodenextpackageselfnamewithoutdir |
@@ -5278,6 +5277,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 3577 | Implement Nodemodulereexportfromdottedpath | spike | frontend/syntax | see `issues/done/3577-implement-nodeModuleReexportFromDottedPath.md` |
 | 3578 | Implement Nodenextcjsnamespaceimportdefault | spike | frontend/syntax | see `issues/done/3578-implement-nodeNextCjsNamespaceImportDefault.md` |
 | 3579 | Implement Nodenextesmimportsofpackageswithextensionlessmains | spike | frontend/syntax | see `issues/done/3579-implement-nodeNextEsmImportsOfPackagesWithExtensionlessMains.md` |
+| 3580 | Implement Nodenextimportmodeimplicitindexresolution Import Export | spike | frontend/syntax | see `issues/done/3580-implement-nodeNextImportModeImplicitIndexResolution-import-export.md` |
 | 3690 | Implement Optionaltupleelementsandundefined | spike | reference/triage | see `issues/done/3690-implement-optionalTupleElementsAndUndefined.md` |
 | 3996 | Implement Compiler (dup) | spike | frontend/syntax | see `issues/done/3996-implement-reference-typescript-tests-cases-compiler.md` |
 | 4210 | Implement Splicetuples | spike | frontend/resolver | see `issues/done/4210-implement-spliceTuples.md` |
