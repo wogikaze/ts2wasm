@@ -6,9 +6,9 @@ area: frontend/syntax
 class: blocked
 priority: P1
 depends_on: [5000]
-blocks: []
+blocks: [5480]
 created: 2026-05-01
-updated: 2026-05-01
+updated: 2026-05-08
 ---
 
 ## Summary
@@ -43,10 +43,10 @@ This generated bucket is either split into implementation-ready child issues or 
 
 In scope:
 
-- [ ] Inspect the smart triage report below
-- [ ] Confirm whether existing open/done issues already cover this bucket
-- [ ] Split one feature family, one observable behavior, or one fixed reference window into child issues
-- [ ] Preserve exact reproduction commands and representative AST/diagnostic evidence in each child issue
+- [x] Inspect the smart triage report below
+- [x] Confirm whether existing open/done issues already cover this bucket
+- [x] Split one feature family, one observable behavior, or one fixed reference window into child issues
+- [x] Preserve exact reproduction commands and representative AST/diagnostic evidence in each child issue
 
 Out of scope:
 
@@ -68,10 +68,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] Duplicate candidates below are confirmed as no-match or this issue is superseded
-- [ ] At least one child issue contains an exact `mise run reference-triage -- ...` command
-- [ ] Child issue includes failing path, diagnostic code, source context, visible symbols, and parser/TypeScript AST evidence
-- [ ] Child issue acceptance names the exact fixture/reference path and diagnostic/stdout change
+- [x] Duplicate candidates below are confirmed as no-match or this issue is superseded
+- [x] At least one child issue contains an exact `mise run reference-triage -- ...` command
+- [x] Child issue includes failing path, diagnostic code, source context, visible symbols, and parser/TypeScript AST evidence
+- [x] Child issue acceptance names the exact fixture/reference path and diagnostic/stdout change
 
 ## Validation
 
@@ -98,15 +98,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] updated: `current-state.md` (repo root)
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] created: `issues/open/5480-report-missing-class-return-type-arguments.md`
 
 ## Notes
 
@@ -124,20 +124,24 @@ Not generated. Rerun with `--triage-limit 1` or higher.
 
 ## Completion evidence
 
-Fill only when moving to `done/`.
+Status: done
 
 Commits:
 
-- `...`
+- this local issue-cleanup commit
 
 Validation result:
 
 ```text
-command:
-result:
-date:
+command: env TS2WASM_BINARY=/tmp/ts2wasm-issue-blockers-target/debug/ts2wasm python scripts/manager.py reference-coverage tsc --path-filter reference/typescript/tests/cases/compiler/noTypeArgumentOnReturnType1.ts --detail --no-dashboard-data
+result: pass; representative path now reports build_pass, so the original parser-syntax blocker is stale
+date: 2026-05-08
+
+command: env TS2WASM_BINARY=/tmp/ts2wasm-issue-blockers-target/debug/ts2wasm python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/noTypeArgumentOnReturnType1.ts
+result: pass; fresh triage shows TypeScript oracle diagnostic TS2314 for missing generic class type arguments at method return annotation `A`, split to issue 5480
+date: 2026-05-08
 ```
 
 Remaining risks:
 
-- none
+- The semantic diagnostic is not implemented yet; issue 5480 owns the remaining work.
