@@ -138,7 +138,7 @@ Follow-up issues:
 - `issues/open/5154-parse-angle-bracket-type-assertion-statements.md` is
   related but owns top-level `<T>expr;` assertion statements. This
   representative's parenthesized cast expressions now parse and build-pass.
-- `issues/done/5125-implement-as-type-assertion-expression.md` covers `as`
+- `issues/open/5125-implement-as-type-assertion-expression.md` covers `as`
   assertions, not this angle-bracket form.
 - No child issue was created because this representative now build-passes.
 

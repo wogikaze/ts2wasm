@@ -55,7 +55,7 @@ Expected:
 - `crates/cli/tests/`
 - `fixtures/builtins-and-io/`
 - `docs/`
-- `issues/done/050-implement-date.md`
+- `issues/open/050-implement-date.md`
 
 Do not touch:
 
@@ -155,7 +155,7 @@ Date: 2026-05-05
 
 Classification: truly-done.
 
-Audit result: retained in `issues/done/`. The issue has repo-local completion evidence, is not marked `blocked` or `triage-needed`, and `python scripts/manager.py check issues` validates the resulting issue graph.
+Audit result: retained in `issues/open/`. The issue has repo-local completion evidence, is not marked `blocked` or `triage-needed`, and `python scripts/manager.py check issues` validates the resulting issue graph.
 
 Evidence files:
 - `issues/open/242-implement-date-live-time-wasi-clock.md`

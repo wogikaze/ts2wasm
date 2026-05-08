@@ -150,7 +150,7 @@ Follow-up issues:
 ## Duplicate detection
 
 - `issues/open/5324-support-dependency-export-class-declarations.md`: exact owner for the current dependency-module `export class` issue-5005 boundary.
-- `issues/open/5229-resolve-imports-between-filename-sections.md`: likely later owner for the `./file` virtual import-resolution boundary after 5324 advances this reference.
+- `issues/open/5229a-resolve-imports-between-filename-sections.md`: likely later owner for the `./file` virtual import-resolution boundary after 5324 advances this reference.
 
 ## Smart triage
 

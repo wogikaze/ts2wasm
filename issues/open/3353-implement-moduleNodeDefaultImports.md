@@ -117,7 +117,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] created: `issues/open/5417-parse-default-keyword-import-export-specifiers.md`
+- [x] created: `issues/open/5417a-parse-default-keyword-import-export-specifiers.md`
 
 ## Notes
 
@@ -192,7 +192,7 @@ Diagnostics include TS2528 multiple default exports and TS2307 missing local `.c
 
 Split to:
 
-- `issues/open/5417-parse-default-keyword-import-export-specifiers.md`
+- `issues/open/5417a-parse-default-keyword-import-export-specifiers.md`
 
 ## Completion evidence
 

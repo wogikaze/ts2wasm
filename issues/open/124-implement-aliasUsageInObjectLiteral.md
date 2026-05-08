@@ -181,7 +181,7 @@ Duplicate candidates:
 [
   {
     "state": "open",
-    "path": "issues/done/124-implement-aliasUsageInObjectLiteral.md",
+    "path": "issues/open/124-implement-aliasUsageInObjectLiteral.md",
     "title": "Implement Aliasusageinobjectliteral",
     "reason": "same reference path, title overlap"
   }
@@ -570,7 +570,7 @@ Date: 2026-05-05
 
 Classification: truly-done.
 
-Audit result: retained in `issues/done/`. The issue has repo-local completion evidence, is not marked `blocked` or `triage-needed`, and `python scripts/manager.py check issues` validates the resulting issue graph.
+Audit result: retained in `issues/open/`. The issue has repo-local completion evidence, is not marked `blocked` or `triage-needed`, and `python scripts/manager.py check issues` validates the resulting issue graph.
 
 Evidence files:
 - `issues/open/124-implement-aliasUsageInObjectLiteral.md`

@@ -161,7 +161,7 @@ Follow-up issues:
 
 - No exact existing owner found for constructor argument TS2345-style type
   diagnostics.
-- `issues/done/5286-preserve-class-constructor-parameters-for-new-arity.md`
+- `issues/open/5286-preserve-class-constructor-parameters-for-new-arity.md`
   is related but covers lowering-time constructor arity metadata, not this
   false build-pass type compatibility diagnostic.
 - `issues/open/5188-report-block-scoped-function-call-arity-diagnostics.md`

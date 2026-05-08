@@ -116,7 +116,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] created: `issues/open/5416-report-invalid-block-after-member-expression-statement.md`
+- [x] created: `issues/open/5416a-report-invalid-block-after-member-expression-statement.md`
 
 ## Notes
 
@@ -180,7 +180,7 @@ TS1005: ';' expected. at the `{` after `module.module`
 
 Split to:
 
-- `issues/open/5416-report-invalid-block-after-member-expression-statement.md`
+- `issues/open/5416a-report-invalid-block-after-member-expression-statement.md`
 
 ## Completion evidence
 

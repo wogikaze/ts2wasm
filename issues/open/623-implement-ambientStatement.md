@@ -185,7 +185,7 @@ Duplicate candidates:
 [
   {
     "state": "open",
-    "path": "issues/done/164-implement-ambientStatement.md",
+    "path": "issues/open/164-implement-ambientStatement.md",
     "title": "Implement Ambientstatement",
     "reason": "same reference path"
   },
@@ -197,19 +197,19 @@ Duplicate candidates:
   },
   {
     "state": "open",
-    "path": "issues/done/457-implement-APISample-import-export.md",
+    "path": "issues/open/457-implement-APISample-import-export.md",
     "title": "Implement Apisample Import Export",
     "reason": "same feature label, title overlap"
   },
   {
     "state": "open",
-    "path": "issues/done/463-implement-FunctionDeclaration-import-export.md",
+    "path": "issues/open/463-implement-FunctionDeclaration-import-export.md",
     "title": "Implement Functiondeclaration Import Export",
     "reason": "same feature label, title overlap"
   },
   {
     "state": "open",
-    "path": "issues/done/537-implement-ambientStatement.md",
+    "path": "issues/open/537-implement-ambientStatement.md",
     "title": "Implement Ambientstatement",
     "reason": "same reference path, same feature label"
   },
@@ -221,13 +221,13 @@ Duplicate candidates:
   },
   {
     "state": "open",
-    "path": "issues/done/549-implement-FunctionDeclaration-import-export.md",
+    "path": "issues/open/549-implement-FunctionDeclaration-import-export.md",
     "title": "Implement Functiondeclaration Import Export",
     "reason": "same feature label, title overlap"
   },
   {
     "state": "done",
-    "path": "issues/done/055-implement-import-export.md",
+    "path": "issues/open/055-implement-import-export.md",
     "title": "Umbrella: implement import and export",
     "reason": "same feature label, title overlap"
   }

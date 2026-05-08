@@ -139,9 +139,9 @@ Follow-up issues:
 - `issues/open/5346-parse-commonjs-export-assignment-statements.md` owns the
   current first blocker: `export = Foo;` reports generic issue-055 before AST
   construction.
-- `issues/open/5231-parse-export-as-namespace-declarations.md` owns later
+- `issues/open/5231a-parse-export-as-namespace-declarations.md` owns later
   `export as namespace Foo;` / `export as namespace Bar;` parsing.
-- `issues/open/5229-resolve-imports-between-filename-sections.md` owns later
+- `issues/open/5229a-resolve-imports-between-filename-sections.md` owns later
   virtual `@filename` section resolution for `import { Bar } from "./foo";`.
 - `issues/open/5306-report-export-assignment-with-other-exports.md` is related
   but not the current first blocker because it covers a specific TS2309 mixed

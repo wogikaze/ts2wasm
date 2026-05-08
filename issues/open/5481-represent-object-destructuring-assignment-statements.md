@@ -170,7 +170,7 @@ Follow-up issues:
 ## Notes
 
 Split from generated bucket
-`issues/done/3571-implement-noUnusedLocals-destructuring.md` after fresh
+`issues/open/3571-implement-noUnusedLocals-destructuring.md` after fresh
 triage on 2026-05-08.
 
 Related but not duplicates:

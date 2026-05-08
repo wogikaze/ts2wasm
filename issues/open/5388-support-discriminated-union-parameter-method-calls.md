@@ -89,7 +89,7 @@ Out of scope:
 - Full TypeScript control-flow narrowing.
 - Runtime implementation of arbitrary erased object-union values.
 - Interface-typed erased locals, covered by
-  `issues/open/5222-parse-ambient-generic-variable-type-annotations.md`.
+  `issues/open/5222a-parse-ambient-generic-variable-type-annotations.md`.
 - Broad method-call support outside this discriminated union parameter shape.
 
 ## Affected paths
@@ -159,7 +159,7 @@ Split from generated bucket
 
 Related but distinct:
 
-- `issues/open/5222-parse-ambient-generic-variable-type-annotations.md`
+- `issues/open/5222a-parse-ambient-generic-variable-type-annotations.md`
   owns method calls on interface-typed erased locals such as
   `var s: Sequence<string>; s.groupBy(...)`.
 - `issues/open/435-implement-method-call.md` is a broad method-call bucket and

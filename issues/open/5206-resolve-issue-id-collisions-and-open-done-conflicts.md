@@ -14,7 +14,7 @@ completed: 2026-05-06
 
 ## Summary
 
-Repair the issue queue health failures caused by duplicate open issue IDs and issue IDs that exist in both `issues/open/` and `issues/done/`.
+Repair the issue queue health failures caused by duplicate open issue IDs and issue IDs that exist in both `issues/open/` and `issues/open/`.
 
 ## Problem
 
@@ -36,11 +36,11 @@ Current diagnostics include:
 duplicate id prefix in issues/open: 5191
 duplicate id prefix in issues/open: 5192
 duplicate id prefix in issues/open: 5193
-id present in both issues/open/ and issues/done/: 338
-id present in both issues/open/ and issues/done/: 354
-id present in both issues/open/ and issues/done/: 368
-id present in both issues/open/ and issues/done/: 401
-id present in both issues/open/ and issues/done/: 402
+id present in both issues/open/ and issues/open/: 338
+id present in both issues/open/ and issues/open/: 354
+id present in both issues/open/ and issues/open/: 368
+id present in both issues/open/ and issues/open/: 401
+id present in both issues/open/ and issues/open/: 402
 ```
 
 ## Desired final state
@@ -65,7 +65,7 @@ Out of scope:
 Expected:
 
 - `issues/open/`
-- `issues/done/`
+- `issues/open/`
 - `issues/index.md`
 
 Do not touch:
@@ -172,7 +172,7 @@ Date: 2026-05-06
 
 Classification: truly-done.
 
-Audit result: retained in `issues/done/`. This issue has repo-local close evidence
+Audit result: retained in `issues/open/`. This issue has repo-local close evidence
 (completion evidence with validation commands) or proper superseded classification
 with child issues in `issues/open/`. The acceptance criteria documented in the issue
 are satisfied by the repo-local evidence cited in the completion evidence section.

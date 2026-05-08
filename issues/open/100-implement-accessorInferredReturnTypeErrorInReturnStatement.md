@@ -198,7 +198,7 @@ Duplicate candidates:
 [
   {
     "state": "open",
-    "path": "issues/done/100-implement-accessorInferredReturnTypeErrorInReturnStatement.md",
+    "path": "issues/open/100-implement-accessorInferredReturnTypeErrorInReturnStatement.md",
     "title": "Implement Accessorinferredreturntypeerrorinreturnstatement",
     "reason": "same reference path, title overlap"
   }
@@ -476,7 +476,7 @@ Remaining risks:
 
 ---
 
-## ⚠️ False-done audit (re-opened from issues/done/)
+## ⚠️ False-done audit (re-opened from issues/open/)
 
 **Why this was false-done**: This is a `blocked` triage bucket (generated bucket for accessorInferredReturnTypeErrorInReturnStatement) with `depends_on: [5007]` (module resolution meta-issue). It was dragged to `done/` alongside the parent meta-issue without any implementation work. The `
 ## 重複整理メモ
@@ -506,7 +506,7 @@ Date: 2026-05-06
 
 Classification: truly-done.
 
-Audit result: retained in `issues/done/`. This issue has repo-local close evidence
+Audit result: retained in `issues/open/`. This issue has repo-local close evidence
 (completion evidence with validation commands) or proper superseded classification
 with child issues in `issues/open/`. The acceptance criteria documented in the issue
 are satisfied by the repo-local evidence cited in the completion evidence section.

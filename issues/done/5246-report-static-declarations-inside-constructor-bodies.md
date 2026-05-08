@@ -1,7 +1,7 @@
 ---
 id: 5246
 title: "Report static declarations inside constructor bodies"
-type: feature
+type: report
 area: frontend/parser
 class: implementation-ready
 priority: P1

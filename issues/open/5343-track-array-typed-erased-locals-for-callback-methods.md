@@ -108,7 +108,7 @@ In scope:
 Out of scope:
 
 - Array-typed parameters, tracked by `issues/open/5234-w0-implement-host-deny-and-auditable-e2e-manifest-verification.md`.
-- Interface-typed erased locals, tracked by `issues/open/5222-parse-ambient-generic-variable-type-annotations.md`.
+- Interface-typed erased locals, tracked by `issues/open/5222a-parse-ambient-generic-variable-type-annotations.md`.
 - Runtime implementation for arbitrary uninitialized arrays.
 - Comment emit preservation; the current lexer/parser path already skips the comments and builds the call AST.
 
@@ -177,7 +177,7 @@ Split from `issues/open/1342-implement-commentInMethodCall.md`.
 Related but not duplicate:
 
 - `issues/open/5234-w0-implement-host-deny-and-auditable-e2e-manifest-verification.md` covers array-shaped parameter annotations, not declaration-only locals.
-- `issues/open/5222-parse-ambient-generic-variable-type-annotations.md` covers interface-typed erased locals such as `Sequence<string>`, not array callback receivers.
+- `issues/open/5222a-parse-ambient-generic-variable-type-annotations.md` covers interface-typed erased locals such as `Sequence<string>`, not array callback receivers.
 - `issues/done/297-track-pushed-dense-array-locals-for-map.md` covers initialized dense arrays built through pushes, not erased declaration-only locals.
 - `issues/open/435-implement-method-call.md` is the broad method-call bucket; this issue owns the narrow array-typed local receiver evidence.
 

@@ -3,23 +3,29 @@ id: 3495
 title: "Implement Newabstractinstance Parser Syntax"
 type: spike
 area: frontend/syntax
-class: triage-needed
+class: done
 priority: P1
 depends_on: []
-blocks: []
+blocks: [5465]
 created: 2026-05-01
-updated: 2026-05-01
+updated: 2026-05-08
 ---
 
 ## Summary
 
 Triage newAbstractInstance-parser-syntax across 1 failing reference test cases and split this bucket into implementation-ready child issues.
 
+Closed after splitting the current `export default abstract class {}` parser
+blocker to
+`issues/open/5465-parse-abstract-anonymous-default-class-exports.md`.
+
 ## Problem
 
 Reference test results show 1 cases fail in directory `newAbstractInstance-parser-syntax` with diagnostics: parser-syntax. The compiler cannot handle these syntax/semantics, preventing compilation of code in this category.
 
-Problem: newAbstractInstance-parser-syntax has 1 reference failures and needs smart-triage evidence before implementation starts.
+Problem: newAbstractInstance-parser-syntax has 1 current reference failure.
+Fresh evidence shows the blocker is the abstract anonymous default class export
+form, not a broad parser-syntax bucket.
 
 ## Current failure
 
@@ -37,16 +43,17 @@ mise run reference-coverage -- tsc --path-filter reference/typescript/tests/case
 
 ## Desired final state
 
-This generated bucket is either split into implementation-ready child issues or superseded by an existing open/done issue with matching evidence. Do not implement directly from this bucket.
+This generated bucket is closed. Implementation should proceed through
+`issues/open/5465-parse-abstract-anonymous-default-class-exports.md`.
 
 ## Scope
 
 In scope:
 
-- [ ] Inspect the smart triage report below
-- [ ] Confirm whether existing open/done issues already cover this bucket
-- [ ] Split one feature family, one observable behavior, or one fixed reference window into child issues
-- [ ] Preserve exact reproduction commands and representative AST/diagnostic evidence in each child issue
+- [x] Inspect the smart triage report below
+- [x] Confirm whether existing open/done issues already cover this bucket
+- [x] Split one feature family, one observable behavior, or one fixed reference window into child issues
+- [x] Preserve exact reproduction commands and representative AST/diagnostic evidence in each child issue
 
 Out of scope:
 
@@ -68,18 +75,21 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] Duplicate candidates below are confirmed as no-match or this issue is superseded
-- [ ] At least one child issue contains an exact `mise run reference-triage -- ...` command
-- [ ] Child issue includes failing path, diagnostic code, source context, visible symbols, and parser/TypeScript AST evidence
-- [ ] Child issue acceptance names the exact fixture/reference path and diagnostic/stdout change
+- [x] Duplicate candidates below are confirmed as no-match or this issue is superseded
+- [x] Child issue contains an exact reference-triage command
+- [x] Child issue includes failing path, diagnostic code, source context,
+  visible symbols, parser evidence, and TypeScript oracle evidence
+- [x] Child issue acceptance names the exact reference path and diagnostic/stdout change
 
 ## Validation
 
 Required commands:
 
 ```sh
-cargo fmt --all --check
-cargo nextest run
+git diff --check
+python scripts/manager.py update-issue-index --check
+python scripts/manager.py check-issue-health
+python scripts/manager.py check-issue-readiness -- --fail-ready-below 80
 ```
 
 Impacted commands:
@@ -92,21 +102,22 @@ mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/newAb
 
 Not run:
 
-- none
+- `cargo fmt --all --check` (issue metadata only)
+- `cargo nextest run` (issue metadata only)
 
 ## Docs / current-state / issue sync
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] updated: `current-state.md` (repo root)
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] created: `issues/open/5465-parse-abstract-anonymous-default-class-exports.md`
 
 ## Notes
 
@@ -116,20 +127,75 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/open/442-implement-parser-syntax.md` - Implement parser syntax extensions (same feature label, title overlap)
-- `issues/open/464-implement-FunctionDeclaration-parser-syntax.md` - Implement Functiondeclaration Parser Syntax (same feature label, title overlap)
-- `issues/open/550-implement-FunctionDeclaration-parser-syntax.md` - Implement Functiondeclaration Parser Syntax (same feature label, title overlap)
-- `issues/open/663-implement-arrayAssignmentTest-parser-syntax.md` - Implement Arrayassignmenttest Parser Syntax (same feature label, title overlap)
-- `issues/open/734-implement-assignmentCompatability-parser-syntax.md` - Implement Assignmentcompatability Parser Syntax (same feature label, title overlap)
-- `issues/open/753-implement-asyncFunctionReturnType-parser-syntax.md` - Implement Asyncfunctionreturntype Parser Syntax (same feature label, title overlap)
-- `issues/open/767-implement-augmentedTypesEnum-parser-syntax.md` - Implement Augmentedtypesenum Parser Syntax (same feature label, title overlap)
-- `issues/open/059-implement-parser-syntax-extensions.md` - Implement parser syntax extensions for TypeScript and advanced JS (same feature label, title overlap)
-- `issues/open/065-implement-parser-syntax.md` - Implement parser syntax extensions (same feature label, title overlap)
-- `issues/done/065a-merge-duplicate-parser-syntax-issue-into-059.md` - Merge duplicate parser syntax issue into 059 (same feature label, title overlap)
+- `issues/open/5326-support-default-class-export-declarations.md` owns the
+  anonymous default class export form without `abstract`.
+- `issues/open/5367-support-named-default-class-export-declarations.md` owns the
+  named default class export form.
+- No exact implementation-ready owner was found for the `abstract` modifier
+  variant, so this bucket was split to issue 5465.
 
 ## Smart triage
 
-Not generated. Rerun with `--triage-limit 1` or higher.
+Generated 2026-05-08.
+
+```text
+### Smart triage: Triage unknown unsupported: newAbstractInstance2
+
+- Issue class: triage-needed
+- Feature label: unknown-unsupported
+- Diagnostic: UnsupportedSyntax / parser-or-frontend-unsupported
+- Path: reference/typescript/tests/cases/compiler/newAbstractInstance2.ts
+```
+
+Current compiler diagnostic:
+
+```text
+UnsupportedSyntax: unsupported expression: Some(SpannedToken { kind: Abstract, ... }) at 86..91
+```
+
+Focused coverage:
+
+```text
+suite=tsc
+executed=1
+build_pass=0
+unsupported=1
+unsupported_diagcodes=UnsupportedSyntax:1
+unsupported_features=unknown-unsupported:1
+semantic_enabled=0
+
+reference/typescript/tests/cases/compiler/newAbstractInstance2.ts: UnsupportedSyntax: unknown-unsupported
+```
+
+Source context:
+
+```ts
+// @Filename: /a.ts
+export default abstract class {}
+
+// @Filename: /b.ts
+import A from "./a";
+new A();
+```
+
+Compiler evidence:
+
+```text
+tokens: ok; Export, Default, Abstract, Class, LeftBrace, RightBrace, Import, New A()
+ast: fails before AST construction
+resolved: fails with the same UnsupportedSyntax
+visible symbols before failure: []
+```
+
+TypeScript oracle evidence:
+
+```text
+AST topLevel includes:
+- ClassDeclaration "export default abstract class {}"
+- ImportDeclaration "import A from \"./a\";"
+- ExpressionStatement "new A();"
+diagnostics: TS2307 for later import resolution of "./a"
+```
 
 ## Completion evidence
 
@@ -137,16 +203,21 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- `...`
+- this commit
 
 Validation result:
 
 ```text
-command:
-result:
-date:
+command: env TS2WASM_BINARY=/tmp/ts2wasm-issue-blockers-target/debug/ts2wasm python scripts/manager.py reference-coverage tsc --path-filter reference/typescript/tests/cases/compiler/newAbstractInstance2.ts --detail --no-dashboard-data
+result: pass; executed=1 build_pass=0 unsupported=1 unsupported_diagcodes=UnsupportedSyntax:1 unsupported_features=unknown-unsupported:1
+date: 2026-05-08
+
+command: env TS2WASM_BINARY=/tmp/ts2wasm-issue-blockers-target/debug/ts2wasm python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/newAbstractInstance2.ts
+result: pass; current blocker split to issue 5465
+date: 2026-05-08
 ```
 
 Remaining risks:
 
-- none
+- Issue 5465 may expose a later import-resolution or abstract-class
+  constructability diagnostic after the default abstract class export parses.

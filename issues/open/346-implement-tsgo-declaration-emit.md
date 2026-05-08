@@ -117,12 +117,12 @@ Similar to type alias erasure, many `declare` declarations are compile-time only
   - `crates/frontend/src/parser/expressions.rs`
   - `crates/frontend/src/parser/statements.rs`
   - `crates/frontend/src/parser/tests.rs`
-- The issue file was moved from `issues/open/` to `issues/done/`.
+- The issue file was moved from `issues/open/` to `issues/open/`.
 - `issues/index.md` was regenerated via `mise run update-issue-index`.
 
 ---
 
-## ⚠️ False-done audit (re-opened from issues/done/)
+## ⚠️ False-done audit (re-opened from issues/open/)
 
 **Why this was false-done**: This is a `triage-needed` issue (class: triage-needed) with `depends_on: [399]`. It was moved to `done/` with completion evidence that claims credit for parser changes made under unrelated issues (issue-400, issue-410). No implementation commits reference #346. The `class: triage-needed` in `done/` violates the project convention — issues needing triage cannot be considered done.
 

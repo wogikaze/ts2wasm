@@ -233,7 +233,7 @@ Duplicate candidates:
 [
   {
     "state": "done",
-    "path": "issues/done/162-implement-ambientPropertyDeclarationInJs.md",
+    "path": "issues/open/162-implement-ambientPropertyDeclarationInJs.md",
     "title": "Implement Ambientpropertydeclarationinjs",
     "reason": "same reference path, title overlap"
   }

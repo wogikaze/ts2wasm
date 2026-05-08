@@ -27,7 +27,7 @@ resolved IR are empty, and the compiler no longer reports duplicate-local.
 TypeScript still reports TS2403 at the second repeated `var x` declaration,
 where `FindConditions<Entity>` conflicts with the earlier
 `FindConditions<any>`. That semantic diagnostic gap is covered by
-`issues/open/5205-report-incompatible-var-redeclaration-type-diagnostics.md`.
+`issues/open/5205a-report-incompatible-var-redeclaration-type-diagnostics.md`.
 
 Problem: the generated duplicate-local bucket is stale; the remaining
 incompatible `var` redeclaration type diagnostic is owned by issue 5205.
@@ -71,7 +71,7 @@ TS2403: Subsequent variable declarations must have the same type. Variable 'x' m
 ## Desired final state
 
 This generated bucket is closed as superseded by
-`issues/open/5205-report-incompatible-var-redeclaration-type-diagnostics.md`.
+`issues/open/5205a-report-incompatible-var-redeclaration-type-diagnostics.md`.
 Do not implement directly from this bucket.
 
 ## Scope
@@ -142,7 +142,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] existing: `issues/open/5205-report-incompatible-var-redeclaration-type-diagnostics.md`
+- [x] existing: `issues/open/5205a-report-incompatible-var-redeclaration-type-diagnostics.md`
 
 ## Notes
 
@@ -152,7 +152,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/open/5205-report-incompatible-var-redeclaration-type-diagnostics.md`
+- `issues/open/5205a-report-incompatible-var-redeclaration-type-diagnostics.md`
   is the matching owner for the current TS2403 incompatible same-scope `var`
   redeclaration false build-pass gap.
 - `issues/open/5162-allow-compatible-var-redeclarations.md` is related but

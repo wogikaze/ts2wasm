@@ -12,7 +12,7 @@ updated: 2026-05-07
 ---
 > **Reopened by false-done audit** (2026-05-07)
 > Classification: must-reopen
-> Reason: Batch-migrated to issues/done/ without implementation commits.
+> Reason: Batch-migrated to issues/open/ without implementation commits.
 > Evidence: Empty completion evidence. No feat/fix commit for #1385.
 
 ## Summary
@@ -146,7 +146,7 @@ Follow-up issues:
 
 - No exact existing implementation-ready issue was found for
   `tsconfig.json` virtual section handling.
-- `issues/open/5229-resolve-imports-between-filename-sections.md` is related
+- `issues/open/5229a-resolve-imports-between-filename-sections.md` is related
   but owns local import resolution between code sections, not config-section
   filtering.
 - `issues/open/5187-lower-namespace-only-multi-section-files.md` is related

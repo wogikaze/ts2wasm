@@ -16,7 +16,7 @@ updated: 2026-05-08
 Triage newLexicalEnvironmentForConvertedLoop across 1 failing reference test cases and split this bucket into implementation-ready child issues.
 
 Closed after fresh triage showed the current first blocker is already owned by
-`issues/done/5298-parse-for-of-array-binding-pattern-heads.md`.
+`issues/open/5298-parse-for-of-array-binding-pattern-heads.md`.
 
 ## Problem
 
@@ -43,7 +43,7 @@ mise run reference-coverage -- tsc --path-filter reference/typescript/tests/case
 ## Desired final state
 
 This generated bucket is superseded by
-`issues/done/5298-parse-for-of-array-binding-pattern-heads.md`.
+`issues/open/5298-parse-for-of-array-binding-pattern-heads.md`.
 
 ## Scope
 
@@ -116,7 +116,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] folded into: `issues/done/5298-parse-for-of-array-binding-pattern-heads.md`
+- [x] folded into: `issues/open/5298-parse-for-of-array-binding-pattern-heads.md`
 
 ## Notes
 
@@ -126,7 +126,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- Exact owner found: `issues/done/5298-parse-for-of-array-binding-pattern-heads.md`.
+- Exact owner found: `issues/open/5298-parse-for-of-array-binding-pattern-heads.md`.
 - Completed destructuring parser/runtime issues 247, 251, and 252 explicitly
   left `for-in` / `for-of` destructuring heads out of scope.
 - Issue 5461 covers unbraced nested `for..of` loop bodies, not declaration

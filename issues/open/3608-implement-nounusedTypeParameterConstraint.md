@@ -41,7 +41,7 @@ mise run reference-coverage -- tsc --path-filter reference/typescript/tests/case
 This generated bucket is either split into implementation-ready child issues or superseded by an existing open/done issue with matching evidence. Do not implement directly from this bucket.
 
 Current close decision: superseded by
-`issues/open/5229-resolve-imports-between-filename-sections.md`.
+`issues/open/5229a-resolve-imports-between-filename-sections.md`.
 
 ## Scope
 

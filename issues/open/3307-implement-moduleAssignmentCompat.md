@@ -17,7 +17,7 @@ status: done
 
 Closed this generated import/export bucket by splitting the current false
 build-pass window into a focused implementation issue:
-`issues/open/5411-report-ts2709-for-namespace-variable-annotation.md`.
+`issues/open/5411a-report-ts2709-for-namespace-variable-annotation.md`.
 
 ## Problem
 
@@ -92,7 +92,7 @@ moduleAssignmentCompat4.ts: TS2709 for A and B
 ## Desired final state
 
 Implement the representative focused diagnostic work in
-`issues/open/5411-report-ts2709-for-namespace-variable-annotation.md`.
+`issues/open/5411a-report-ts2709-for-namespace-variable-annotation.md`.
 Re-triage the sibling `moduleAssignmentCompat2.ts` through
 `moduleAssignmentCompat4.ts` cases after that lands and split follow-ups if
 their next blockers differ.
@@ -127,7 +127,7 @@ Do not touch from this bucket:
 
 ## Acceptance criteria
 
-- [x] Created `issues/open/5411-report-ts2709-for-namespace-variable-annotation.md`.
+- [x] Created `issues/open/5411a-report-ts2709-for-namespace-variable-annotation.md`.
 - [x] Exact reproduction commands and observed diagnostics are recorded.
 - [x] The generated bucket no longer remains as a stale blocked import/export issue.
 
@@ -171,12 +171,12 @@ Current state:
 
 Follow-up issues:
 
-- [x] created: `issues/open/5411-report-ts2709-for-namespace-variable-annotation.md`
+- [x] created: `issues/open/5411a-report-ts2709-for-namespace-variable-annotation.md`
 
 ## Notes
 
 Split to
-`issues/open/5411-report-ts2709-for-namespace-variable-annotation.md`.
+`issues/open/5411a-report-ts2709-for-namespace-variable-annotation.md`.
 
 ## Completion evidence
 

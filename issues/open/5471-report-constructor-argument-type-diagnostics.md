@@ -98,7 +98,7 @@ Out of scope:
 
 - Full TypeScript structural assignability.
 - Generic, overload, union, optional, or rest constructor parameter semantics.
-- Runtime constructor arity preservation, tracked separately by `issues/done/5286-preserve-class-constructor-parameters-for-new-arity.md`.
+- Runtime constructor arity preservation, tracked separately by `issues/open/5286-preserve-class-constructor-parameters-for-new-arity.md`.
 - Array callback library typing or contextual typing of `forEach` callback parameters.
 
 ## Affected paths
@@ -167,7 +167,7 @@ Split from `issues/open/3531-implement-noErrorsInCallback.md`.
 
 Related but not duplicates:
 
-- `issues/done/5286-preserve-class-constructor-parameters-for-new-arity.md`
+- `issues/open/5286-preserve-class-constructor-parameters-for-new-arity.md`
   covers false zero-argument constructor arity in lowering, not source-spanned
   TS2345-style type compatibility diagnostics.
 - `issues/open/5188-report-block-scoped-function-call-arity-diagnostics.md`

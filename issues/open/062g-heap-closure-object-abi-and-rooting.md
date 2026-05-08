@@ -190,8 +190,8 @@ Reopen reason: frontmatter still says `class: blocked`, which is incompatible wi
 Violated acceptance: the issue cannot provide repo-local close evidence for its checked acceptance criteria while it remains in this state. Acceptance checkboxes were reset for re-verification.
 
 Evidence files:
-- `issues/done/062g-heap-closure-object-abi-and-rooting.md` before this move
-- `issues/done/062g-heap-closure-object-abi-and-rooting.md` after this move
+- `issues/open/062g-heap-closure-object-abi-and-rooting.md` before this move
+- `issues/open/062g-heap-closure-object-abi-and-rooting.md` after this move
 
 Split follow-up: none created in this audit wave; this reopened issue remains the tracking item.
 
@@ -200,7 +200,7 @@ Split follow-up: none created in this audit wave; this reopened issue remains th
 Date: 2026-05-06
 
 Reason: the explicit child dependencies `256`, `257`, and `258` are in
-`issues/done/`, and this parent already carries completion evidence for the
+`issues/open/`, and this parent already carries completion evidence for the
 heap closure ABI, lowering, backend dispatch, GC rooting, and allocation-pressure
 fixture validation. The open blocker was stale parent state, not remaining
 implementation work.

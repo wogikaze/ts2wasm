@@ -14,7 +14,7 @@ updated: 2026-05-01
 ## Summary
 
 Closed as superseded by
-`issues/open/5409-report-non-exported-namespace-member-type-annotations.md`.
+`issues/open/5409a-report-non-exported-namespace-member-type-annotations.md`.
 
 Fresh focused coverage shows both affected references now build-pass.
 `namespacesDeclaration1.ts` also has a clean TypeScript oracle. The remaining
@@ -129,7 +129,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/open/5409-report-non-exported-namespace-member-type-annotations.md`
+- `issues/open/5409a-report-non-exported-namespace-member-type-annotations.md`
   owns TS2694-like diagnostics for qualified namespace type annotations whose
   requested member is not exported or not present.
 

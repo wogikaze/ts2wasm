@@ -186,7 +186,7 @@ Duplicate candidates:
 [
   {
     "state": "open",
-    "path": "issues/done/148-implement-ambientExportDefaultErrors.md",
+    "path": "issues/open/148-implement-ambientExportDefaultErrors.md",
     "title": "Implement Ambientexportdefaulterrors",
     "reason": "same reference path, title overlap"
   },
@@ -198,19 +198,19 @@ Duplicate candidates:
   },
   {
     "state": "open",
-    "path": "issues/done/457-implement-APISample-import-export.md",
+    "path": "issues/open/457-implement-APISample-import-export.md",
     "title": "Implement Apisample Import Export",
     "reason": "same feature label, title overlap"
   },
   {
     "state": "open",
-    "path": "issues/done/463-implement-FunctionDeclaration-import-export.md",
+    "path": "issues/open/463-implement-FunctionDeclaration-import-export.md",
     "title": "Implement Functiondeclaration Import Export",
     "reason": "same feature label, title overlap"
   },
   {
     "state": "open",
-    "path": "issues/done/523-implement-ambientExportDefaultErrors.md",
+    "path": "issues/open/523-implement-ambientExportDefaultErrors.md",
     "title": "Implement Ambientexportdefaulterrors",
     "reason": "same reference path, same feature label, title overlap"
   },
@@ -222,13 +222,13 @@ Duplicate candidates:
   },
   {
     "state": "open",
-    "path": "issues/done/549-implement-FunctionDeclaration-import-export.md",
+    "path": "issues/open/549-implement-FunctionDeclaration-import-export.md",
     "title": "Implement Functiondeclaration Import Export",
     "reason": "same feature label, title overlap"
   },
   {
     "state": "done",
-    "path": "issues/done/055-implement-import-export.md",
+    "path": "issues/open/055-implement-import-export.md",
     "title": "Umbrella: implement import and export",
     "reason": "same feature label, title overlap"
   }
@@ -725,7 +725,7 @@ error: [UnsupportedModule] issue-055: unsupported static export; module resoluti
 
 Closed as a stale generated bucket after fresh 2026-05-08 triage confirmed
 the current blocker is already owned by
-`issues/open/5231-parse-export-as-namespace-declarations.md`.
+`issues/open/5231a-parse-export-as-namespace-declarations.md`.
 
 Fresh coverage with the current binary:
 

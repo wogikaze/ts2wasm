@@ -13,7 +13,7 @@ completed: 2026-05-07
 ---
 > **Reopened by false-done audit** (2026-05-07)
 > Classification: must-reopen
-> Reason: Batch-migrated to issues/done/ without implementation commits.
+> Reason: Batch-migrated to issues/open/ without implementation commits.
 > Evidence: Empty completion evidence. No feat/fix commit for #1414.
 
 ## Summary
@@ -121,7 +121,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- Superseded by `issues/open/5229-resolve-imports-between-filename-sections.md` for resolving `import { a } from "./a"` between `// @filename:` sections in the same reference file.
+- Superseded by `issues/open/5229a-resolve-imports-between-filename-sections.md` for resolving `import { a } from "./a"` between `// @filename:` sections in the same reference file.
 - Related next blocker: `issues/open/5167-support-global-symbol-builtin-call.md` for global `Symbol()`.
 - Broad module umbrella `issues/open/432-implement-import-export.md` remains too coarse for direct implementation.
 
@@ -170,7 +170,7 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- Superseded by `issues/open/5229-resolve-imports-between-filename-sections.md`; related next blocker `issues/open/5167-support-global-symbol-builtin-call.md`.
+- Superseded by `issues/open/5229a-resolve-imports-between-filename-sections.md`; related next blocker `issues/open/5167-support-global-symbol-builtin-call.md`.
 
 Validation result:
 

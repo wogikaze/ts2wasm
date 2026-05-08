@@ -68,9 +68,9 @@ Follow-up issues:
 
 ---
 
-## ⚠️ False-done audit (re-opened from issues/done/)
+## ⚠️ False-done audit (re-opened from issues/open/)
 
-**Why this was false-done**: Created directly in `issues/done/` as part of a review-derived batch (commit `2c655baf`, issues 5026-5060) without any implementation. The `## Completion evidence` section is entirely absent. Commit `9496b22f` claims to add memory region tests in its message but the actual diff only modifies `expressions_main.rs` — no memory map validation was ever added. The current `crates/runtime-abi/src/layout.rs` contains no region/overlap/headroom tests.
+**Why this was false-done**: Created directly in `issues/open/` as part of a review-derived batch (commit `2c655baf`, issues 5026-5060) without any implementation. The `## Completion evidence` section is entirely absent. Commit `9496b22f` claims to add memory region tests in its message but the actual diff only modifies `expressions_main.rs` — no memory map validation was ever added. The current `crates/runtime-abi/src/layout.rs` contains no region/overlap/headroom tests.
 
 **True-done checklist** (all must pass):
 
@@ -118,7 +118,7 @@ Date: 2026-05-06
 
 Classification: truly-done.
 
-Audit result: retained in `issues/done/`. This issue has repo-local close evidence
+Audit result: retained in `issues/open/`. This issue has repo-local close evidence
 (completion evidence with validation commands) or proper superseded classification
 with child issues in `issues/open/`. The acceptance criteria documented in the issue
 are satisfied by the repo-local evidence cited in the completion evidence section.

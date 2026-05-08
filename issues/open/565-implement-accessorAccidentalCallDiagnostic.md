@@ -204,13 +204,13 @@ Duplicate candidates:
 [
   {
     "state": "open",
-    "path": "issues/done/094-implement-accessorAccidentalCallDiagnostic.md",
+    "path": "issues/open/094-implement-accessorAccidentalCallDiagnostic.md",
     "title": "Implement Accessoraccidentalcalldiagnostic",
     "reason": "same reference path, same feature label, title overlap"
   },
   {
     "state": "open",
-    "path": "issues/done/479-implement-accessorAccidentalCallDiagnostic.md",
+    "path": "issues/open/479-implement-accessorAccidentalCallDiagnostic.md",
     "title": "Implement Accessoraccidentalcalldiagnostic",
     "reason": "same reference path, same feature label, title overlap"
   }

@@ -121,7 +121,7 @@ Follow-up issues:
 - `issues/open/060-investigate-unknown-unsupported-cases.md` - Investigate and classify unknown-unsupported diagnostic cases (same feature label, same group key)
 - `issues/open/233-emit-static-es-module-bindings.md` - Emit static ES module bindings (same feature label, same group key)
 - `issues/done/341a-global-number-functions.md` - Implement isNaN, parseInt, parseFloat, isFinite global functions (same group key, title overlap)
-- `issues/done/341c-boolean-global.md` - Implement Boolean global (same group key, title overlap)
+- `issues/open/341c-boolean-global.md` - Implement Boolean global (same group key, title overlap)
 
 ## Smart triage
 

@@ -12,7 +12,7 @@ updated: 2026-05-06
 ---
 > **Reopened by false-done audit** (2026-05-07)
 > Classification: must-reopen
-> Reason: Batch-migrated to issues/done/ without implementation commits.
+> Reason: Batch-migrated to issues/open/ without implementation commits.
 > Evidence: Empty completion evidence. No feat/fix commit for #1216.
 
 ## Summary
@@ -146,7 +146,7 @@ unsupported: classImplementsClass6.ts
 
 ## Duplicate detection
 
-- `issues/open/5222-parse-ambient-generic-variable-type-annotations.md`
+- `issues/open/5222a-parse-ambient-generic-variable-type-annotations.md`
   is related but not exact: it covers interface-typed erased receivers such as
   `var s: Sequence<string>; s.groupBy(...)`, while this bucket has class-typed
   ambient locals `declare var c: C; c.bar()`.

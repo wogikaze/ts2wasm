@@ -255,19 +255,19 @@ Duplicate candidates:
 [
   {
     "state": "open",
-    "path": "issues/done/225-implement-eval-annexb-function-declarations.md",
+    "path": "issues/open/225-implement-eval-annexb-function-declarations.md",
     "title": "Implement eval and Annex B function declaration semantics",
     "reason": "same feature label, title overlap"
   },
   {
     "state": "done",
-    "path": "issues/done/062b-dynamic-function-constructor-diagnostics.md",
+    "path": "issues/open/062b-dynamic-function-constructor-diagnostics.md",
     "title": "Own dynamic Function constructor diagnostics",
     "reason": "same reference path, same feature label"
   },
   {
     "state": "done",
-    "path": "issues/done/063-implement-function-resolution.md",
+    "path": "issues/open/063-implement-function-resolution.md",
     "title": "Implement function resolution",
     "reason": "same reference path"
   },
@@ -303,7 +303,7 @@ Duplicate candidates:
   },
   {
     "state": "done",
-    "path": "issues/done/406-direct-eval-annexb-existing-binding-residuals.md",
+    "path": "issues/open/406-direct-eval-annexb-existing-binding-residuals.md",
     "title": "Direct eval Annex B existing binding residuals",
     "reason": "same feature label, title overlap"
   }

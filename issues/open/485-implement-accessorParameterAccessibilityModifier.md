@@ -193,7 +193,7 @@ Duplicate candidates:
 [
   {
     "state": "open",
-    "path": "issues/done/101-implement-accessorParameterAccessibilityModifier.md",
+    "path": "issues/open/101-implement-accessorParameterAccessibilityModifier.md",
     "title": "Implement Accessorparameteraccessibilitymodifier",
     "reason": "same reference path, same feature label, title overlap"
   }

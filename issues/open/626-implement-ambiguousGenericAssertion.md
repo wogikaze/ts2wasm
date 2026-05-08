@@ -192,13 +192,13 @@ Duplicate candidates:
 [
   {
     "state": "open",
-    "path": "issues/done/167-implement-ambiguousGenericAssertion.md",
+    "path": "issues/open/167-implement-ambiguousGenericAssertion.md",
     "title": "Implement Ambiguousgenericassertion",
     "reason": "same reference path, same feature label"
   },
   {
     "state": "open",
-    "path": "issues/done/540-implement-ambiguousGenericAssertion.md",
+    "path": "issues/open/540-implement-ambiguousGenericAssertion.md",
     "title": "Implement Ambiguousgenericassertion",
     "reason": "same reference path, same feature label"
   }

@@ -12,13 +12,13 @@ updated: 2026-05-07
 ---
 > **Reopened by false-done audit** (2026-05-07)
 > Classification: must-reopen
-> Reason: Batch-migrated to issues/done/ without implementation commits.
+> Reason: Batch-migrated to issues/open/ without implementation commits.
 > Evidence: Empty completion evidence. No feat/fix commit for #1376.
 
 ## Summary
 
 Closed as superseded by
-`issues/done/5285-support-export-var-initializer-declarations.md`.
+`issues/open/5285-support-export-var-initializer-declarations.md`.
 
 Fresh triage shows the first blocker is the same `issue-055` initialized
 `export var` declaration boundary, before the later re-export statements or
@@ -65,7 +65,7 @@ error: [UnsupportedModule] issue-055: unsupported variable export; module resolu
 ## Desired final state
 
 This generated bucket is closed. Implementation should proceed through
-`issues/done/5285-support-export-var-initializer-declarations.md`; later
+`issues/open/5285-support-export-var-initializer-declarations.md`; later
 re-export or missing-module diagnostics should be recorded after that blocker
 advances.
 
@@ -139,7 +139,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] superseded by: `issues/done/5285-support-export-var-initializer-declarations.md`
+- [x] superseded by: `issues/open/5285-support-export-var-initializer-declarations.md`
 
 ## Notes
 
@@ -149,9 +149,9 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/5285-support-export-var-initializer-declarations.md` owns this
+- `issues/open/5285-support-export-var-initializer-declarations.md` owns this
   initialized `export var name = expr;` boundary.
-- `issues/done/5283-support-entry-export-var-declarations.md` covers typed
+- `issues/open/5283-support-entry-export-var-declarations.md` covers typed
   export-var declarations without initializers and is too narrow for this
   first blocker.
 - `issues/open/232-resolve-local-relative-es-module-graph.md` may cover later

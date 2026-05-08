@@ -135,7 +135,7 @@ Follow-up issues:
 - `issues/open/274-implement-spread-operator.md` - Implement spread operator (same feature label, same group key, title overlap)
 - `issues/open/336-implement-test262-includes-directive.md` - Implement test262 includes directive processing (same feature label, same group key, title overlap)
 - `issues/open/353-spread-iterator-protocol.md` - Implement iterator protocol integration for spread operator (same feature label, same group key, title overlap)
-- `issues/done/020a-design-javascript-semantic-ir.md` - issues/done/020a-design-javascript-semantic-ir.md (same feature label, same group key)
+- `issues/open/020a-design-javascript-semantic-ir.md` - issues/open/020a-design-javascript-semantic-ir.md (same feature label, same group key)
 
 ## Smart triage
 

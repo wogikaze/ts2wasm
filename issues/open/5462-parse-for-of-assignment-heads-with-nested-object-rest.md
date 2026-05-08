@@ -103,7 +103,7 @@ In scope:
 Out of scope:
 
 - Declaration heads such as `for (const [key, value] of expr)`, tracked by
-  `issues/done/5298-parse-for-of-array-binding-pattern-heads.md`.
+  `issues/open/5298-parse-for-of-array-binding-pattern-heads.md`.
 - Runtime lowering for dynamic-source object rest, tracked for declaration
   shapes by `issues/open/5452-lower-nested-object-rest-binding-from-narrowed-source.md`
   and broader issue-251 follow-ups.

@@ -113,7 +113,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] `issues/open/5423-parse-declaration-file-exported-const-declarations.md`
+- [x] `issues/open/5423a-parse-declaration-file-exported-const-declarations.md`
 - [x] `issues/open/5346-parse-commonjs-export-assignment-statements.md`
 
 ## Notes
@@ -126,7 +126,7 @@ Follow-up issues:
 ## Duplicate detection
 
 - `reference/typescript/tests/cases/compiler/narrowedImports.ts` is
-  superseded by `issues/open/5423-parse-declaration-file-exported-const-declarations.md`.
+  superseded by `issues/open/5423a-parse-declaration-file-exported-const-declarations.md`.
 - `reference/typescript/tests/cases/compiler/narrowedImports_assumeInitialized.ts`
   is superseded by `issues/open/5346-parse-commonjs-export-assignment-statements.md`.
 

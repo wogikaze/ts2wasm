@@ -12,13 +12,13 @@ updated: 2026-05-07
 ---
 > **Reopened by false-done audit** (2026-05-07)
 > Classification: must-reopen
-> Reason: Batch-migrated to issues/done/ without implementation commits.
+> Reason: Batch-migrated to issues/open/ without implementation commits.
 > Evidence: Empty completion evidence. No feat/fix commit for #1366.
 
 ## Summary
 
 Closed after splitting the current exported variable initializer blocker into
-`issues/done/5285-support-export-var-initializer-declarations.md`.
+`issues/open/5285-support-export-var-initializer-declarations.md`.
 
 ## Problem
 
@@ -59,7 +59,7 @@ commentsExternalModules3.ts: UnsupportedSyntax import-export; issue-055 unsuppor
 ## Desired final state
 
 This generated bucket is closed. Implementation should proceed through
-`issues/done/5285-support-export-var-initializer-declarations.md`; the bare
+`issues/open/5285-support-export-var-initializer-declarations.md`; the bare
 module specifier behavior remains covered by `issues/open/232-resolve-local-relative-es-module-graph.md`.
 
 ## Scope
@@ -134,7 +134,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] `issues/done/5285-support-export-var-initializer-declarations.md`
+- [x] `issues/open/5285-support-export-var-initializer-declarations.md`
 
 ## Notes
 
@@ -149,10 +149,10 @@ Follow-up issues:
 - `issues/open/232-resolve-local-relative-es-module-graph.md` covers the
   intentional bare/non-local module specifier diagnostic seen in
   `commentsExternalModules.ts`.
-- `issues/done/5283-support-entry-export-var-declarations.md` covers a simple
+- `issues/open/5283-support-entry-export-var-declarations.md` covers a simple
   typed `export var b: number;` declaration and is too narrow for initialized
   exported variables that depend on imported module values.
-- `issues/done/5285-support-export-var-initializer-declarations.md` owns the
+- `issues/open/5285-support-export-var-initializer-declarations.md` owns the
   current `export var newVar = new extMod...` blocker.
 
 ## Smart triage

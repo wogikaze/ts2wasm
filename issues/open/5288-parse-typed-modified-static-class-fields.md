@@ -141,7 +141,7 @@ Split from generated bucket `issues/open/1378-implement-commentsOnStaticMembers.
 Related but distinct parser issues:
 
 - `issues/open/5271-parse-modified-static-class-fields.md`
-- `issues/done/5254-parse-asi-between-static-class-fields.md`
+- `issues/open/5254-parse-asi-between-static-class-fields.md`
 
 Additional superseded bucket:
 

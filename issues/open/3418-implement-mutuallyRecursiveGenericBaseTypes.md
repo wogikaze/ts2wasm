@@ -19,7 +19,7 @@ Closed the generated `mutuallyRecursiveGenericBaseTypes` bucket after splitting
 the two current reference outcomes:
 
 - `mutuallyRecursiveGenericBaseTypes1.ts` is superseded by
-  `issues/open/5222-support-interface-typed-method-calls-on-erased-locals.md`.
+  `issues/open/5222a-support-interface-typed-method-calls-on-erased-locals.md`.
 - `mutuallyRecursiveGenericBaseTypes2.ts` is split to
   `issues/open/5437-report-typed-class-method-null-return.md`.
 

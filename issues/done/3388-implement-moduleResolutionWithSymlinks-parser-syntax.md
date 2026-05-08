@@ -56,8 +56,8 @@ symlinked dependency file.
 This generated bucket remains closed. The actionable work is tracked by focused
 successor issues:
 
-- `issues/open/5427-resolve-reference-types-to-virtual-at-types-packages.md`
-- `issues/open/5428-resolve-symlinked-node-modules-static-reexports.md`
+- `issues/open/5427a-resolve-reference-types-to-virtual-at-types-packages.md`
+- `issues/open/5428a-resolve-symlinked-node-modules-static-reexports.md`
 
 ## Scope
 

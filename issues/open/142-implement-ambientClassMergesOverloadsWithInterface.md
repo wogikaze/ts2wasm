@@ -218,7 +218,7 @@ Duplicate candidates:
 [
   {
     "state": "done",
-    "path": "issues/done/142-implement-ambientClassMergesOverloadsWithInterface.md",
+    "path": "issues/open/142-implement-ambientClassMergesOverloadsWithInterface.md",
     "title": "Implement Ambientclassmergesoverloadswithinterface",
     "reason": "same reference path, title overlap"
   }

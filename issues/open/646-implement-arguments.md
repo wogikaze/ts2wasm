@@ -208,19 +208,19 @@ Duplicate candidates:
 [
   {
     "state": "open",
-    "path": "issues/done/193-implement-arguments.md",
+    "path": "issues/open/193-implement-arguments.md",
     "title": "Implement Arguments",
     "reason": "same reference path, title overlap"
   },
   {
     "state": "open",
-    "path": "issues/done/311-fix-test262-arguments-object-index-assignment.md",
+    "path": "issues/open/311-fix-test262-arguments-object-index-assignment.md",
     "title": "Fix test262 arguments object index assignment semantics",
     "reason": "same feature label, title overlap"
   },
   {
     "state": "done",
-    "path": "issues/done/291-provide-object-global-binding-for-test262.md",
+    "path": "issues/open/291-provide-object-global-binding-for-test262.md",
     "title": "Provide Object global binding for test262 cases",
     "reason": "same feature label, title overlap"
   }

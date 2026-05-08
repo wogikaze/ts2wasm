@@ -195,7 +195,7 @@ Duplicate candidates:
 [
   {
     "state": "open",
-    "path": "issues/open/255-implement-private-class-element-runtime-semantics.md",
+    "path": "issues/done/255-implement-private-class-element-runtime-semantics.md",
     "title": "Implement private class element runtime semantics",
     "reason": "same feature label, title overlap"
   },
@@ -213,19 +213,19 @@ Duplicate candidates:
   },
   {
     "state": "done",
-    "path": "issues/done/045-implement-class-syntax.md",
+    "path": "issues/open/045-implement-class-syntax.md",
     "title": "Implement class declaration and expression",
     "reason": "same feature label, title overlap"
   },
   {
     "state": "done",
-    "path": "issues/done/248-implement-private-class-element-parser.md",
+    "path": "issues/open/248-implement-private-class-element-parser.md",
     "title": "Implement private class element parser support",
     "reason": "same feature label, title overlap"
   },
   {
     "state": "done",
-    "path": "issues/done/249-implement-class-static-block-parser.md",
+    "path": "issues/open/249-implement-class-static-block-parser.md",
     "title": "Implement class static block parser support",
     "reason": "same feature label, title overlap"
   },

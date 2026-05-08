@@ -14,14 +14,14 @@ status: done
 ---
 > **Reopened by false-done audit** (2026-05-07)
 > Classification: must-reopen
-> Reason: Batch-migrated to issues/done/ without implementation commits.
+> Reason: Batch-migrated to issues/open/ without implementation commits.
 > Evidence: Empty completion evidence. No feat/fix commit for #1448.
 
 ## Summary
 
 Closed this generated external-module bucket because fresh triage stops at the
 `const enum` parser boundary already owned by
-`issues/done/5184-parse-const-enum-declarations.md`.
+`issues/open/5184-parse-const-enum-declarations.md`.
 
 ## Problem
 
@@ -46,7 +46,7 @@ mise run reference-coverage -- tsc --path-filter reference/typescript/tests/case
 ## Desired final state
 
 This generated bucket is closed. Implement from
-`issues/done/5184-parse-const-enum-declarations.md`.
+`issues/open/5184-parse-const-enum-declarations.md`.
 
 ## Scope
 
@@ -115,7 +115,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] superseded by: `issues/done/5184-parse-const-enum-declarations.md`
+- [x] superseded by: `issues/open/5184-parse-const-enum-declarations.md`
 
 ## Notes
 
@@ -138,7 +138,7 @@ Generated on 2026-05-07.
 - Token evidence includes `Const`, `Ident("enum")`, `Ident("E")`, enum body tokens, `Export`, `Equal`, `Import`, `require`, and `A.V`.
 - Visible symbol extraction reports a bogus binding named `enu`.
 - TypeScript oracle parses `EnumDeclaration`, `ExportAssignment`, `ImportEqualsDeclaration`, and `var v = A.V`, then reports TS2307 for `m1`.
-- Superseding issue: `issues/done/5184-parse-const-enum-declarations.md`
+- Superseding issue: `issues/open/5184-parse-const-enum-declarations.md`
 
 ## Completion evidence
 

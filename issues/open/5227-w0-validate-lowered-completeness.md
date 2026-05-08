@@ -107,7 +107,7 @@ Date: 2026-05-06
 
 Classification: must-reopen.
 
-Reopen reason: moved to `issues/done/` without any implementation commits or completion
+Reopen reason: moved to `issues/open/` without any implementation commits or completion
 evidence. All acceptance criteria remain unchecked (14 unchecked items, 0 checked).
 No `## Completion evidence` section was added. The issue has no implementation in any
 crate. This is a genuine false-done — a design-ready TODO item that was never worked on.
@@ -128,5 +128,5 @@ Date: 2026-05-06
 
 Classification: truly-done.
 
-Audit result: retained in issues/done/. Implementation commits confirmed.
+Audit result: retained in issues/open/. Implementation commits confirmed.
 Future-work tracking: none identified.

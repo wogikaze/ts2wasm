@@ -17,7 +17,7 @@ status: done
 
 Closed this generated import/export bucket by splitting the current false
 build-pass into a focused implementation issue:
-`issues/open/5410-report-namespace-as-base-type-diagnostics.md`.
+`issues/open/5410a-report-namespace-as-base-type-diagnostics.md`.
 
 ## Problem
 
@@ -81,7 +81,7 @@ TS2709: Cannot use namespace 'M' as a type.         // class C2 implements M
 ## Desired final state
 
 Implement the focused diagnostic work in
-`issues/open/5410-report-namespace-as-base-type-diagnostics.md`.
+`issues/open/5410a-report-namespace-as-base-type-diagnostics.md`.
 
 ## Scope
 
@@ -113,7 +113,7 @@ Do not touch from this bucket:
 
 ## Acceptance criteria
 
-- [x] Created `issues/open/5410-report-namespace-as-base-type-diagnostics.md`.
+- [x] Created `issues/open/5410a-report-namespace-as-base-type-diagnostics.md`.
 - [x] Exact reproduction commands and observed diagnostics are recorded.
 - [x] The generated bucket no longer remains as a stale blocked import/export issue.
 
@@ -154,11 +154,11 @@ Current state:
 
 Follow-up issues:
 
-- [x] created: `issues/open/5410-report-namespace-as-base-type-diagnostics.md`
+- [x] created: `issues/open/5410a-report-namespace-as-base-type-diagnostics.md`
 
 ## Notes
 
-Split to `issues/open/5410-report-namespace-as-base-type-diagnostics.md`.
+Split to `issues/open/5410a-report-namespace-as-base-type-diagnostics.md`.
 
 ## Completion evidence
 

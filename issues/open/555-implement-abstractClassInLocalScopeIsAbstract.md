@@ -185,13 +185,13 @@ Duplicate candidates:
 [
   {
     "state": "open",
-    "path": "issues/done/083-implement-abstractClassInLocalScopeIsAbstract.md",
+    "path": "issues/open/083-implement-abstractClassInLocalScopeIsAbstract.md",
     "title": "Implement Abstractclassinlocalscopeisabstract",
     "reason": "same reference path, same feature label, title overlap"
   },
   {
     "state": "open",
-    "path": "issues/done/469-implement-abstractClassInLocalScopeIsAbstract.md",
+    "path": "issues/open/469-implement-abstractClassInLocalScopeIsAbstract.md",
     "title": "Implement Abstractclassinlocalscopeisabstract",
     "reason": "same reference path, same feature label, title overlap"
   }

@@ -46,7 +46,7 @@ env TS2WASM_BINARY=/tmp/ts2wasm-issue-blockers-target/debug/ts2wasm python scrip
 ## Desired final state
 
 This generated bucket is closed. Implement from
-`issues/open/5229-resolve-imports-between-filename-sections.md`.
+`issues/open/5229a-resolve-imports-between-filename-sections.md`.
 
 ## Scope
 
@@ -67,7 +67,7 @@ Out of scope:
 
 Expected:
 
-- `issues/open/5229-resolve-imports-between-filename-sections.md`
+- `issues/open/5229a-resolve-imports-between-filename-sections.md`
 
 Do not touch:
 
@@ -116,7 +116,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] existing owner: `issues/open/5229-resolve-imports-between-filename-sections.md`
+- [x] existing owner: `issues/open/5229a-resolve-imports-between-filename-sections.md`
 
 ## Notes
 
@@ -126,7 +126,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/open/5229-resolve-imports-between-filename-sections.md` owns local
+- `issues/open/5229a-resolve-imports-between-filename-sections.md` owns local
   import resolution between `// @filename:` virtual sections.
 - `issues/open/3317-implement-moduleAugmentationExtendFileModule.md` is the
   closest closed module-augmentation precedent: it also closes against issue

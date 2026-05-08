@@ -52,7 +52,7 @@ triage: UnsupportedRuntimeSubset issue-062e nested function func1 closures with 
 ## Desired final state
 
 This generated bucket is closed as superseded by
-`issues/open/5218-support-nested-function-closures-capturing-this.md`. Do not
+`issues/open/5218a-support-nested-function-closures-capturing-this.md`. Do not
 implement directly from this bucket.
 
 ## Scope
@@ -123,7 +123,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] folded into: `issues/open/5218-support-nested-function-closures-capturing-this.md`
+- [x] folded into: `issues/open/5218a-support-nested-function-closures-capturing-this.md`
 
 ## Notes
 
@@ -133,7 +133,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/open/5218-support-nested-function-closures-capturing-this.md` is the
+- `issues/open/5218a-support-nested-function-closures-capturing-this.md` is the
   exact owner for the current `issue-062e` nested-function/object-literal
   member `this` capture boundary.
 - `issues/open/5179-report-implicit-this-before-closure-runtime-guard.md` is

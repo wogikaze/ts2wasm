@@ -25,7 +25,7 @@ The bucket contains three generated representatives:
   at `export = a;`, owned by `issues/open/5346-parse-commonjs-export-assignment-statements.md`.
 - `noErrorUsingImportExportModuleAugmentationInDeclarationFile2.ts` first stops
   at initialized `export var j = "hello";`, owned by
-  `issues/done/5285-support-export-var-initializer-declarations.md`.
+  `issues/open/5285-support-export-var-initializer-declarations.md`.
 - `noErrorUsingImportExportModuleAugmentationInDeclarationFile3.ts` first stops
   at `export = a;`, owned by `issues/open/5346-parse-commonjs-export-assignment-statements.md`.
 
@@ -154,7 +154,7 @@ Current state:
 Follow-up issues:
 
 - [x] `issues/open/5346-parse-commonjs-export-assignment-statements.md`
-- [x] `issues/done/5285-support-export-var-initializer-declarations.md`
+- [x] `issues/open/5285-support-export-var-initializer-declarations.md`
 - [x] `issues/open/5306-report-export-assignment-with-other-exports.md`
 
 ## Notes
@@ -169,7 +169,7 @@ Follow-up issues:
 
 - `issues/open/5346-parse-commonjs-export-assignment-statements.md` owns
   representatives 1 and 3 at `export = a;`.
-- `issues/done/5285-support-export-var-initializer-declarations.md` owns
+- `issues/open/5285-support-export-var-initializer-declarations.md` owns
   representative 2 at `export var j = "hello";`.
 - `issues/open/5306-report-export-assignment-with-other-exports.md` owns the
   later TS2309 invalid export-assignment combination in representatives 2 and 3.

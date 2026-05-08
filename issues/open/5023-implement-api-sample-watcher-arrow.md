@@ -65,9 +65,9 @@ cargo nextest run
 
 ---
 
-## ⚠️ False-done audit (re-opened from issues/done/)
+## ⚠️ False-done audit (re-opened from issues/open/)
 
-**Why this was false-done**: This issue was created in commit `f0d3d720` as a triage split from unknown-unsupported alongside 5022, 5024, and 5025. Unlike 5022 (which received a real fix in `d5b1b669`), this issue was moved to `issues/done/` **without any implementation commits**. All scope and acceptance criteria checkboxes remain unchecked (11 unchecked) and there is no completion evidence section, no close note, and no implementation commits referencing #5023. The only commits mentioning 5023 are `d2028658` (for 5053) and `64fbc646` (re-open false-dones 5024/5025).
+**Why this was false-done**: This issue was created in commit `f0d3d720` as a triage split from unknown-unsupported alongside 5022, 5024, and 5025. Unlike 5022 (which received a real fix in `d5b1b669`), this issue was moved to `issues/open/` **without any implementation commits**. All scope and acceptance criteria checkboxes remain unchecked (11 unchecked) and there is no completion evidence section, no close note, and no implementation commits referencing #5023. The only commits mentioning 5023 are `d2028658` (for 5053) and `64fbc646` (re-open false-dones 5024/5025).
 
 **True-done checklist** (all must pass):
 
@@ -107,7 +107,7 @@ Date: 2026-05-06
 
 Classification: truly-done.
 
-Audit result: retained in `issues/done/`. This issue has repo-local close evidence
+Audit result: retained in `issues/open/`. This issue has repo-local close evidence
 (completion evidence with validation commands) or proper superseded classification
 with child issues in `issues/open/`. The acceptance criteria documented in the issue
 are satisfied by the repo-local evidence cited in the completion evidence section.

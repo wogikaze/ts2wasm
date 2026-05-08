@@ -120,7 +120,7 @@ Follow-up issues:
 - `issues/open/430-implement-function.md` - Implement function support (same feature label, title overlap)
 - `issues/open/456-implement-APISample-arrow-function.md` - Implement Apisample Arrow Function (same feature label, title overlap)
 - `issues/open/542-implement-APISample-arrow-function.md` - Implement Apisample Arrow Function (same feature label, title overlap)
-- `issues/done/036-implement-arrow-function.md` - Implement arrow function (same feature label, title overlap)
+- `issues/open/036-implement-arrow-function.md` - Implement arrow function (same feature label, title overlap)
 - `issues/done/062d-function-this-and-arguments.md` - Implement function this and arguments semantics (same feature label, title overlap)
 - `issues/open/210-implement-arrow-function-closure-lexical-this.md` - Implement arrow function closure and lexical this semantics (same feature label, title overlap)
 

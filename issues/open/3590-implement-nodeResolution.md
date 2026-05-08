@@ -41,8 +41,8 @@ mise run reference-coverage -- tsc --path-filter reference/typescript/tests/case
 
 This generated bucket is split/superseded by narrower issues:
 
-- `issues/done/5283-support-entry-export-var-declarations.md`
-- `issues/done/5285-support-export-var-initializer-declarations.md`
+- `issues/open/5283-support-entry-export-var-declarations.md`
+- `issues/open/5285-support-export-var-initializer-declarations.md`
 - `issues/open/5484-resolve-import-equals-require-to-virtual-node-modules-declarations.md`
 - `issues/open/5485-resolve-import-equals-require-to-virtual-node-modules-index-declarations.md`
 
@@ -136,14 +136,14 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/5283-support-entry-export-var-declarations.md` covers simple
+- `issues/open/5283-support-entry-export-var-declarations.md` covers simple
   typed and untyped `export var` declarations without initializers.
-- `issues/done/5285-support-export-var-initializer-declarations.md` covers
+- `issues/open/5285-support-export-var-initializer-declarations.md` covers
   initialized `export var` declarations.
 - `issues/open/5295-resolve-import-equals-require-to-virtual-node-modules-class-export.md`
   is related but not a duplicate: it covers class exports from virtual
   `node_modules` source sections, not declaration-file package shapes.
-- `issues/open/5229-resolve-imports-between-filename-sections.md` is related
+- `issues/open/5229a-resolve-imports-between-filename-sections.md` is related
   but not a duplicate: it covers local static import/export source specifiers,
   not bare `import = require("pkg")` package lookup.
 

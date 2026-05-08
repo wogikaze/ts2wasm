@@ -128,7 +128,7 @@ Follow-up issues:
 - `issues/open/767-implement-augmentedTypesEnum-parser-syntax.md` - Implement Augmentedtypesenum Parser Syntax (same feature label, title overlap)
 - `issues/open/059-implement-parser-syntax-extensions.md` - Implement parser syntax extensions for TypeScript and advanced JS (same feature label, title overlap)
 - `issues/open/065-implement-parser-syntax.md` - Implement parser syntax extensions (same feature label, title overlap)
-- `issues/done/065a-merge-duplicate-parser-syntax-issue-into-059.md` - Merge duplicate parser syntax issue into 059 (same feature label, title overlap)
+- `issues/open/065a-merge-duplicate-parser-syntax-issue-into-059.md` - Merge duplicate parser syntax issue into 059 (same feature label, title overlap)
 
 ## Smart triage
 
@@ -215,7 +215,7 @@ Date: 2026-05-06
 
 Classification: truly-done.
 
-Audit result: retained in `issues/done/`. This issue has repo-local close evidence
+Audit result: retained in `issues/open/`. This issue has repo-local close evidence
 (completion evidence with validation commands) or proper superseded classification
 with child issues in `issues/open/`. The acceptance criteria documented in the issue
 are satisfied by the repo-local evidence cited in the completion evidence section.

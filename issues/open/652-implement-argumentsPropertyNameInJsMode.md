@@ -193,13 +193,13 @@ Duplicate candidates:
 [
   {
     "state": "open",
-    "path": "issues/done/198-implement-argumentsPropertyNameInJsMode.md",
+    "path": "issues/open/198-implement-argumentsPropertyNameInJsMode.md",
     "title": "Implement Argumentspropertynameinjsmode",
     "reason": "same reference path, same feature label"
   },
   {
     "state": "open",
-    "path": "issues/done/311-fix-test262-arguments-object-index-assignment.md",
+    "path": "issues/open/311-fix-test262-arguments-object-index-assignment.md",
     "title": "Fix test262 arguments object index assignment semantics",
     "reason": "same feature label, title overlap"
   },
@@ -217,7 +217,7 @@ Duplicate candidates:
   },
   {
     "state": "done",
-    "path": "issues/done/291-provide-object-global-binding-for-test262.md",
+    "path": "issues/open/291-provide-object-global-binding-for-test262.md",
     "title": "Provide Object global binding for test262 cases",
     "reason": "same feature label, title overlap"
   }

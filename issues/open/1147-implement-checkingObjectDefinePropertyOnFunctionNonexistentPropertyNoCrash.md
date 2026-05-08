@@ -13,7 +13,7 @@ completed: 2026-05-06
 ---
 > **Reopened by false-done audit** (2026-05-07)
 > Classification: must-reopen
-> Reason: Batch-migrated to issues/done/ without implementation commits.
+> Reason: Batch-migrated to issues/open/ without implementation commits.
 > Evidence: Empty completion evidence. No feat/fix commit for #1147.
 
 ## Summary
@@ -128,10 +128,10 @@ default parameters:
 - `issues/open/445-implement-runtime-subset.md` is a broad generated
   runtime-subset bucket and includes the same diagnostic family, but is not an
   implementation-ready child.
-- `issues/done/062e-function-closures.md` implemented the base closure slice
+- `issues/open/062e-function-closures.md` implemented the base closure slice
   and intentionally left unsupported closure forms on issue-linked diagnostics.
 - `issues/open/212-implement-rest-parameter-argument-collection.md` and
-  `issues/done/040-implement-default-parameters.md` cover ordinary function
+  `issues/open/040-implement-default-parameters.md` cover ordinary function
   rest parameter lowering, not the nested closure guard.
 
 Split result:

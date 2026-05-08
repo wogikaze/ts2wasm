@@ -197,13 +197,13 @@ Duplicate candidates:
 [
   {
     "state": "open",
-    "path": "issues/done/180-implement-anonymousClassExpression.md",
+    "path": "issues/open/180-implement-anonymousClassExpression.md",
     "title": "Implement Anonymousclassexpression",
     "reason": "same reference path, same feature label"
   },
   {
     "state": "done",
-    "path": "issues/done/045-implement-class-syntax.md",
+    "path": "issues/open/045-implement-class-syntax.md",
     "title": "Implement class declaration and expression",
     "reason": "same feature label, title overlap"
   }
@@ -509,9 +509,9 @@ Test  now build_pass. Fix implemented by Agent 1 (parallel session): anonymous c
 
 Test `anonymousClassExpression1.ts` and `anonymousClassExpression2.ts` now build_pass. Fix: anonymous class expression support added to parser (class_body_with_statements branch, Agent 1 session).
 
-## ⚠️ False-done audit (re-opened from `issues/done/`)
+## ⚠️ False-done audit (re-opened from `issues/open/`)
 
-**Why this was false-done**: This generated triage spike issue was moved to `issues/done/` without actual triage or implementation. It has `type: spike` and `class: blocked` depending on meta-issues (`depends_on: [5000]` or `[5001]`), with zero implementation commits referencing this issue, empty completion evidence (commits `...`), and no Status note or Close note documenting triage results.
+**Why this was false-done**: This generated triage spike issue was moved to `issues/open/` without actual triage or implementation. It has `type: spike` and `class: blocked` depending on meta-issues (`depends_on: [5000]` or `[5001]`), with zero implementation commits referencing this issue, empty completion evidence (commits `...`), and no Status note or Close note documenting triage results.
 
 **True-done checklist** (all must pass):
 1. Perform actual triage review of the reference failure case(s)
@@ -531,7 +531,7 @@ Date: 2026-05-06
 
 Classification: truly-done.
 
-Audit result: retained in `issues/done/`. This issue has repo-local close evidence
+Audit result: retained in `issues/open/`. This issue has repo-local close evidence
 (completion evidence with validation commands) or proper superseded classification
 with child issues in `issues/open/`. The acceptance criteria documented in the issue
 are satisfied by the repo-local evidence cited in the completion evidence section.

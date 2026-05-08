@@ -182,7 +182,7 @@ Duplicate candidates:
 [
   {
     "state": "open",
-    "path": "issues/done/178-implement-anonterface.md",
+    "path": "issues/open/178-implement-anonterface.md",
     "title": "Implement Anonterface",
     "reason": "same reference path, title overlap"
   },
@@ -194,13 +194,13 @@ Duplicate candidates:
   },
   {
     "state": "open",
-    "path": "issues/done/457-implement-APISample-import-export.md",
+    "path": "issues/open/457-implement-APISample-import-export.md",
     "title": "Implement Apisample Import Export",
     "reason": "same feature label, title overlap"
   },
   {
     "state": "open",
-    "path": "issues/done/463-implement-FunctionDeclaration-import-export.md",
+    "path": "issues/open/463-implement-FunctionDeclaration-import-export.md",
     "title": "Implement Functiondeclaration Import Export",
     "reason": "same feature label, title overlap"
   },
@@ -212,13 +212,13 @@ Duplicate candidates:
   },
   {
     "state": "open",
-    "path": "issues/done/549-implement-FunctionDeclaration-import-export.md",
+    "path": "issues/open/549-implement-FunctionDeclaration-import-export.md",
     "title": "Implement Functiondeclaration Import Export",
     "reason": "same feature label, title overlap"
   },
   {
     "state": "done",
-    "path": "issues/done/055-implement-import-export.md",
+    "path": "issues/open/055-implement-import-export.md",
     "title": "Umbrella: implement import and export",
     "reason": "same feature label, title overlap"
   }
@@ -606,9 +606,9 @@ Remaining risks:
 
 - none
 
-## ⚠️ False-done audit (re-opened from `issues/done/`)
+## ⚠️ False-done audit (re-opened from `issues/open/`)
 
-**Why this was false-done**: This generated triage spike issue was moved to `issues/done/` without actual triage or implementation. It has `type: spike` and `class: blocked` depending on meta-issues (`depends_on: []` or `[5001]`), with zero implementation commits referencing this issue, empty completion evidence (commits `...`), and no Status note or Close note documenting triage results.
+**Why this was false-done**: This generated triage spike issue was moved to `issues/open/` without actual triage or implementation. It has `type: spike` and `class: blocked` depending on meta-issues (`depends_on: []` or `[5001]`), with zero implementation commits referencing this issue, empty completion evidence (commits `...`), and no Status note or Close note documenting triage results.
 
 **True-done checklist** (all must pass):
 1. Perform actual triage review of the reference failure case(s)

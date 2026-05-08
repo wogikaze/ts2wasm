@@ -70,7 +70,7 @@ reference/typescript/tests/cases/compiler/moduleResolutionWithExtensions_unexpec
 This generated bucket is closed. The current blockers are owned by narrower
 implementation-ready issues:
 
-- `issues/open/5424-skip-unread-asset-filename-sections-in-reference-harness.md`
+- `issues/open/5424a-skip-unread-asset-filename-sections-in-reference-harness.md`
 - `issues/open/5402-skip-package-json-filename-sections-in-reference-harness.md`
 
 After those harness boundaries are removed, any remaining package field or
@@ -140,7 +140,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] `issues/open/5424-skip-unread-asset-filename-sections-in-reference-harness.md`
+- [x] `issues/open/5424a-skip-unread-asset-filename-sections-in-reference-harness.md`
 - [x] `issues/open/5402-skip-package-json-filename-sections-in-reference-harness.md`
 
 ## Notes

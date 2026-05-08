@@ -278,7 +278,7 @@ Duplicate candidates:
 [
   {
     "state": "done",
-    "path": "issues/done/060a-close-unknown-unsupported-fixed-window-spike.md",
+    "path": "issues/open/060a-close-unknown-unsupported-fixed-window-spike.md",
     "title": "Close unknown-unsupported fixed-window spike",
     "reason": "same feature label, title overlap"
   },

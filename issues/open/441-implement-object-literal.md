@@ -126,15 +126,15 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/052-implement-json.md` - Implement JSON (same feature label, same group key, title overlap)
+- `issues/open/052-implement-json.md` - Implement JSON (same feature label, same group key, title overlap)
 - `issues/open/052d-implement-json-stringify-broader-replacer-semantics.md` - Implement broader JSON.stringify replacer semantics (same feature label, same group key, title overlap)
 - `issues/open/274-implement-spread-operator.md` - Implement spread operator (same feature label, same group key, title overlap)
 - `issues/done/374-design-broader-object-toprimitive-for-bigint-comparisons.md` - Design broader object ToPrimitive for mixed BigInt comparisons (same feature label, same group key, title overlap)
 - `issues/open/059-implement-parser-syntax-extensions.md` - Implement parser syntax extensions for TypeScript and advanced JS (same feature label, same group key, title overlap)
 - `issues/open/060-investigate-unknown-unsupported-cases.md` - Investigate and classify unknown-unsupported diagnostic cases (same feature label, same group key)
 - `issues/done/062d-function-this-and-arguments.md` - Implement function this and arguments semantics (same feature label, same group key, title overlap)
-- `issues/done/228-implement-logical-assignment-operators.md` - Implement logical assignment operators (same feature label, same group key, title overlap)
-- `issues/done/340-array-map-generic-call.md` - Generic call for Array.prototype.map (static dense receiver slice) (same feature label, same group key)
+- `issues/open/228-implement-logical-assignment-operators.md` - Implement logical assignment operators (same feature label, same group key, title overlap)
+- `issues/open/340-array-map-generic-call.md` - Generic call for Array.prototype.map (static dense receiver slice) (same feature label, same group key)
 - `issues/done/355-dynamic-object-enumeration-spread.md` - Implement dynamic object property enumeration spread (same feature label, same group key, title overlap)
 
 ## Smart triage
@@ -288,19 +288,19 @@ Duplicate candidates:
   },
   {
     "state": "done",
-    "path": "issues/done/247-implement-destructuring-binding-pattern-parser.md",
+    "path": "issues/open/247-implement-destructuring-binding-pattern-parser.md",
     "title": "Implement destructuring binding pattern parser support",
     "reason": "same feature label, title overlap"
   },
   {
     "state": "done",
-    "path": "issues/done/251-implement-destructuring-binding-runtime-semantics.md",
+    "path": "issues/open/251-implement-destructuring-binding-runtime-semantics.md",
     "title": "Implement destructuring binding runtime semantics",
     "reason": "same feature label, title overlap"
   },
   {
     "state": "done",
-    "path": "issues/done/252-implement-destructuring-assignment-pattern-parser.md",
+    "path": "issues/open/252-implement-destructuring-assignment-pattern-parser.md",
     "title": "Implement destructuring assignment pattern parser support",
     "reason": "same feature label, title overlap"
   },

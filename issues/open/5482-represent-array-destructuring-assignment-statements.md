@@ -156,7 +156,7 @@ Follow-up issues:
 ## Notes
 
 Split from generated bucket
-`issues/done/3573-implement-noUnusedLocals-name-resolution.md` after fresh
+`issues/open/3573-implement-noUnusedLocals-name-resolution.md` after fresh
 triage on 2026-05-08.
 
 Related but not duplicates:

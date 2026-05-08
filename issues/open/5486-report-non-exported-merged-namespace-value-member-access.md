@@ -85,7 +85,7 @@ In scope:
 
 Out of scope:
 
-- Namespace member type annotations, tracked by `issues/open/5409-report-non-exported-namespace-member-type-annotations.md`.
+- Namespace member type annotations, tracked by `issues/open/5409a-report-non-exported-namespace-member-type-annotations.md`.
 - Qualified heritage diagnostics, tracked by `issues/open/5313-report-non-exported-namespace-member-qualified-heritage.md`.
 - Mixed exported/local same-name var diagnostics, tracked by `issues/open/5436-report-mixed-exported-local-namespace-vars.md`.
 - Runtime namespace member lowering.
@@ -153,7 +153,7 @@ Related but not duplicates:
 
 - `issues/open/5287-bind-namespace-declarations-for-qualified-value-access.md`
   covers unresolved namespace roots; this representative already build-passes.
-- `issues/open/5409-report-non-exported-namespace-member-type-annotations.md`
+- `issues/open/5409a-report-non-exported-namespace-member-type-annotations.md`
   covers type annotations, not value access.
 - `issues/open/5313-report-non-exported-namespace-member-qualified-heritage.md`
   covers class heritage, not value access.

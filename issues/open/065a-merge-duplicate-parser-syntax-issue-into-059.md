@@ -37,7 +37,7 @@ Expected:
 
 - `issues/open/059-implement-parser-syntax-extensions.md`
 - `issues/open/065-implement-parser-syntax.md`
-- `issues/done/`
+- `issues/open/`
 - `issues/index.md`
 
 Do not touch:
@@ -72,7 +72,7 @@ Not run:
 
 ## Completion evidence
 
-Issue 065 affected-test evidence was summarized in issue 059, and issue 065 was moved to `issues/done/` as superseded.
+Issue 065 affected-test evidence was summarized in issue 059, and issue 065 was moved to `issues/open/` as superseded.
 
 Commits:
 
@@ -96,10 +96,10 @@ Date: 2026-05-05
 
 Classification: truly-done.
 
-Audit result: retained in `issues/done/`. The issue has repo-local completion evidence, is not marked `blocked` or `triage-needed`, and `python scripts/manager.py check issues` validates the resulting issue graph.
+Audit result: retained in `issues/open/`. The issue has repo-local completion evidence, is not marked `blocked` or `triage-needed`, and `python scripts/manager.py check issues` validates the resulting issue graph.
 
 Evidence files:
-- `issues/done/065a-merge-duplicate-parser-syntax-issue-into-059.md`
+- `issues/open/065a-merge-duplicate-parser-syntax-issue-into-059.md`
 - `issues/index.md` after regeneration
 
 Future-work tracking: no untracked future-work item was identified in this issue during this metadata/evidence audit.

@@ -260,7 +260,7 @@ Duplicate candidates:
   },
   {
     "state": "done",
-    "path": "issues/done/237-implement-annexb-ishtmldda-compatibility.md",
+    "path": "issues/open/237-implement-annexb-ishtmldda-compatibility.md",
     "title": "Implement Annex B IsHTMLDDA compatibility",
     "reason": "same reference path"
   },
@@ -272,7 +272,7 @@ Duplicate candidates:
   },
   {
     "state": "done",
-    "path": "issues/done/337-implement-test262-features-directive.md",
+    "path": "issues/open/337-implement-test262-features-directive.md",
     "title": "Implement test262 features directive and $262 object",
     "reason": "same reference path"
   }
@@ -887,7 +887,7 @@ Date: 2026-05-05
 
 Classification: truly-done.
 
-Audit result: retained in `issues/done/`. The issue has repo-local completion evidence, is not marked `blocked` or `triage-needed`, and `python scripts/manager.py check issues` validates the resulting issue graph.
+Audit result: retained in `issues/open/`. The issue has repo-local completion evidence, is not marked `blocked` or `triage-needed`, and `python scripts/manager.py check issues` validates the resulting issue graph.
 
 Evidence files:
 - `issues/open/427-implement-duplicate-local.md`

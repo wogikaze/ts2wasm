@@ -137,7 +137,7 @@ class DataProvider<T extends Message, U extends MessageList<T>> {
 
 ## Duplicate detection
 
-- `issues/open/5222-parse-ambient-generic-variable-type-annotations.md`
+- `issues/open/5222a-parse-ambient-generic-variable-type-annotations.md`
   is related but not exact: it handles locals directly annotated with interface
   types, while this bucket's current blocker is a local inferred from a generic
   function return constrained to an interface.

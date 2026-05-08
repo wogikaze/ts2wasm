@@ -73,7 +73,7 @@ In scope:
 Out of scope:
 
 - `export default interface Name { ... }`, tracked by `issues/open/5401-parse-export-default-interface-declarations.md`.
-- Resolving imports between virtual `@filename` sections, tracked by `issues/open/5229-resolve-imports-between-filename-sections.md`.
+- Resolving imports between virtual `@filename` sections, tracked by `issues/open/5229a-resolve-imports-between-filename-sections.md`.
 - General unresolved-name cleanup unrelated to type-only default exports.
 
 ## Affected paths

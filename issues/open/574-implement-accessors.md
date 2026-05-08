@@ -201,19 +201,19 @@ Duplicate candidates:
 [
   {
     "state": "open",
-    "path": "issues/done/106-implement-accessors.md",
+    "path": "issues/open/106-implement-accessors.md",
     "title": "Implement Accessors",
     "reason": "same reference path, same feature label, title overlap"
   },
   {
     "state": "open",
-    "path": "issues/done/488-implement-accessors.md",
+    "path": "issues/open/488-implement-accessors.md",
     "title": "Implement Accessors",
     "reason": "same reference path, same feature label, title overlap"
   },
   {
     "state": "done",
-    "path": "issues/done/060-investigate-unknown-unsupported-cases.md",
+    "path": "issues/open/060-investigate-unknown-unsupported-cases.md",
     "title": "Investigate and classify unknown-unsupported diagnostic cases",
     "reason": "same feature label, title overlap"
   }

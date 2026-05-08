@@ -12,13 +12,13 @@ updated: 2026-05-07
 ---
 > **Reopened by false-done audit** (2026-05-07)
 > Classification: must-reopen
-> Reason: Batch-migrated to issues/done/ without implementation commits.
+> Reason: Batch-migrated to issues/open/ without implementation commits.
 > Evidence: Empty completion evidence. No feat/fix commit for #1387.
 
 ## Summary
 
 Closed as superseded by
-`issues/done/5285-support-export-var-initializer-declarations.md`.
+`issues/open/5285-support-export-var-initializer-declarations.md`.
 
 Fresh focused triage shows both `commonSourceDir5.ts` and
 `commonSourceDir6.ts` currently stop at the same initialized `export var`
@@ -137,7 +137,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] superseded by: `issues/done/5285-support-export-var-initializer-declarations.md`
+- [x] superseded by: `issues/open/5285-support-export-var-initializer-declarations.md`
 
 ## Notes
 
@@ -148,12 +148,12 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/5285-support-export-var-initializer-declarations.md` owns
+- `issues/open/5285-support-export-var-initializer-declarations.md` owns
   initialized `export var name = expr;` declarations that currently stop at
   issue-055 unsupported variable export.
-- `issues/done/5283-support-entry-export-var-declarations.md` is related but
+- `issues/open/5283-support-entry-export-var-declarations.md` is related but
   covers simple typed `export var name: type;`, not initialized exports.
-- `issues/done/055-implement-import-export.md` is the closed import/export
+- `issues/open/055-implement-import-export.md` is the closed import/export
   umbrella; remaining executable work is tracked by narrower child issues.
 
 ## Smart triage

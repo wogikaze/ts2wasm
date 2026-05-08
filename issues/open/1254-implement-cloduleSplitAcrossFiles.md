@@ -14,7 +14,7 @@ status: done
 ---
 > **Reopened by false-done audit** (2026-05-07)
 > Classification: must-reopen
-> Reason: Batch-migrated to issues/done/ without implementation commits.
+> Reason: Batch-migrated to issues/open/ without implementation commits.
 > Evidence: Empty completion evidence. No feat/fix commit for #1254.
 
 ## Summary
@@ -195,7 +195,7 @@ Duplicate review:
   shared across `@Filename` script sections.
 - `issues/open/5187-lower-namespace-only-multi-section-files.md` is related
   but owns namespace-only/declaration-only sections dropped as empty bodies.
-- `issues/open/5229-resolve-imports-between-filename-sections.md` is related
+- `issues/open/5229a-resolve-imports-between-filename-sections.md` is related
   but owns local import specifier resolution between virtual files.
 
 ## Completion evidence

@@ -94,7 +94,7 @@ result: passed; issues/index.md OK
 date: 2026-04-29
 
 command: mise run check issues
-result: failed on unrelated pre-existing missing report paths in issues/open/052-implement-json.md and issues/done/228-implement-logical-assignment-operators.md; no Date issue errors were reported
+result: failed on unrelated pre-existing missing report paths in issues/open/052-implement-json.md and issues/open/228-implement-logical-assignment-operators.md; no Date issue errors were reported
 date: 2026-04-29
 
 command: mise run check-agent-state
@@ -112,7 +112,7 @@ Date: 2026-05-06
 
 Classification: truly-done.
 
-Audit result: retained in `issues/done/`. This issue has repo-local close evidence
+Audit result: retained in `issues/open/`. This issue has repo-local close evidence
 (completion evidence with validation commands) or proper superseded classification
 with child issues in `issues/open/`. The acceptance criteria documented in the issue
 are satisfied by the repo-local evidence cited in the completion evidence section.

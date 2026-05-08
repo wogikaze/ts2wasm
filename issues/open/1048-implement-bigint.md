@@ -118,8 +118,8 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/369-implement-full-multilimb-bigint-arithmetic.md` - Implement full multi-limb BigInt arithmetic (same group key, title overlap)
-- `issues/done/370-implement-bigint-arithmetic-exception-parity.md` - Implement BigInt arithmetic RangeError and TypeError parity (same group key, title overlap)
+- `issues/open/369-implement-full-multilimb-bigint-arithmetic.md` - Implement full multi-limb BigInt arithmetic (same group key, title overlap)
+- `issues/open/370-implement-bigint-arithmetic-exception-parity.md` - Implement BigInt arithmetic RangeError and TypeError parity (same group key, title overlap)
 - `issues/open/244-implement-bigint-literal-parser-classification.md` - Implement BigInt literal parser classification (same group key, title overlap)
 - `issues/open/259-implement-bigint-literal-runtime-values.md` - Implement BigInt literal runtime values (same group key, title overlap)
 - `issues/open/260-implement-bigint-arithmetic-operators.md` - Implement BigInt arithmetic operators (same group key, title overlap)
@@ -168,7 +168,7 @@ Date: 2026-05-06
 
 Classification: truly-done.
 
-Audit result: retained in `issues/done/`. This issue has repo-local close evidence
+Audit result: retained in `issues/open/`. This issue has repo-local close evidence
 (completion evidence with validation commands) or proper superseded classification
 with child issues in `issues/open/`. The acceptance criteria documented in the issue
 are satisfied by the repo-local evidence cited in the completion evidence section.

@@ -119,7 +119,7 @@ Follow-up issues:
 
 - `issues/done/255-implement-private-class-element-runtime-semantics.md` - Implement private class element runtime semantics (same feature label, title overlap)
 - `issues/open/421-implement-class.md` - Implement class syntax (same feature label, title overlap)
-- `issues/done/045-implement-class-syntax.md` - Implement class declaration and expression (same feature label, title overlap)
+- `issues/open/045-implement-class-syntax.md` - Implement class declaration and expression (same feature label, title overlap)
 - `issues/open/248-implement-private-class-element-parser.md` - Implement private class element parser support (same feature label, title overlap)
 - `issues/open/249-implement-class-static-block-parser.md` - Implement class static block parser support (same feature label, title overlap)
 - `issues/done/254-implement-class-static-block-runtime-semantics.md` - Implement class static block runtime semantics (same feature label, title overlap)
@@ -207,7 +207,7 @@ Date: 2026-05-06
 
 Classification: truly-done.
 
-Audit result: retained in `issues/done/`. This issue has repo-local close evidence
+Audit result: retained in `issues/open/`. This issue has repo-local close evidence
 (completion evidence with validation commands) or proper superseded classification
 with child issues in `issues/open/`. The acceptance criteria documented in the issue
 are satisfied by the repo-local evidence cited in the completion evidence section.

@@ -159,10 +159,10 @@ Split from generated bucket
 
 Related but not duplicates:
 
-- `issues/done/231-parse-static-es-module-declarations.md` explicitly kept
+- `issues/open/231-parse-static-es-module-declarations.md` explicitly kept
   default function/class exports out of the parser-only `export default`
   expression slice.
-- `issues/done/5008-static-es-module-export-default-namespace-reexport.md`
+- `issues/open/5008-static-es-module-export-default-namespace-reexport.md`
   completed expression default exports and static module infrastructure, but
   this current reference path still reports issue-055 for default class export.
 - Generated default-class buckets such as

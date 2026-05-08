@@ -135,7 +135,7 @@ Follow-up issues:
 
 - `issues/open/5402-skip-package-json-filename-sections-in-reference-harness.md`
   owns the current virtual `package.json` parsing boundary.
-- `issues/done/3580-implement-nodeNextImportModeImplicitIndexResolution-import-export.md`
+- `issues/open/3580-implement-nodeNextImportModeImplicitIndexResolution-import-export.md`
   is the sibling generated bucket for `nodeNextImportModeImplicitIndexResolution2.ts`
   with the same package.json section blocker.
 

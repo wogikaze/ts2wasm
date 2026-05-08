@@ -14,7 +14,7 @@ status: done
 ---
 > **Reopened by false-done audit** (2026-05-07)
 > Classification: must-reopen
-> Reason: Batch-migrated to issues/done/ without implementation commits.
+> Reason: Batch-migrated to issues/open/ without implementation commits.
 > Evidence: Empty completion evidence. No feat/fix commit for #1292.
 
 ## Summary
@@ -22,7 +22,7 @@ status: done
 Closed as superseded. Fresh triage shows
 `reference/typescript/tests/cases/compiler/collisionExportsRequireAndEnum.ts`
 currently stops at the `export enum` issue-055 module-syntax boundary already
-owned by `issues/done/5277-parse-export-enum-declarations-to-enum-boundary.md`.
+owned by `issues/open/5277-parse-export-enum-declarations-to-enum-boundary.md`.
 
 ## Problem
 
@@ -51,7 +51,7 @@ python scripts/manager.py reference-coverage tsc --path-filter reference/typescr
 ## Desired final state
 
 This generated bucket is closed as superseded by
-`issues/done/5277-parse-export-enum-declarations-to-enum-boundary.md`. Do not
+`issues/open/5277-parse-export-enum-declarations-to-enum-boundary.md`. Do not
 implement directly from this bucket.
 
 ## Scope
@@ -135,7 +135,7 @@ Follow-up issues:
 ## Duplicate detection
 
 Current first blocker is covered by
-`issues/done/5277-parse-export-enum-declarations-to-enum-boundary.md`.
+`issues/open/5277-parse-export-enum-declarations-to-enum-boundary.md`.
 
 Resolution:
 

@@ -131,10 +131,10 @@ Follow-up issues:
   current first blocker, `export = Foo;`, and the expected frontend advance:
   parse CommonJS export assignment instead of reporting issue-055 static export.
 - Related later blockers after 5346 advances:
-  `issues/open/5231-parse-export-as-namespace-declarations.md` for
+  `issues/open/5231a-parse-export-as-namespace-declarations.md` for
   `export as namespace Foo;`, `issues/open/5306-report-export-assignment-with-other-exports.md`
   for invalid mixed/duplicate export-assignment diagnostics, and
-  `issues/open/5229-resolve-imports-between-filename-sections.md` for virtual
+  `issues/open/5229a-resolve-imports-between-filename-sections.md` for virtual
   `./foo` and `./foo2` imports.
 
 ## Smart triage

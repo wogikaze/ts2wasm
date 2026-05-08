@@ -150,7 +150,7 @@ Also owns `issues/open/3312-implement-moduleAugmentationDoesNamespaceEnumMergeOf
 Also owns `issues/open/3313-implement-moduleAugmentationDoesNamespaceMergeOfReexport.md`: `moduleAugmentationDoesNamespaceMergeOfReexport.ts` parses virtual `file.ts`, `reexport.ts`, and `augment.ts` sections, then reports issue-232 missing local module `./file` for `export * from "./file"` before namespace merge diagnostics.
 Also owns `issues/open/3332-implement-moduleDeclarationExportStarShadowingGlobalIsNameable.md`: fresh triage for `moduleDeclarationExportStarShadowingGlobalIsNameable.ts` stops at issue-232 missing local module `./account` for `export * from "./account"` in virtual `model/index.ts` before ambient `declare global`, `./model`, or declaration nameability diagnostics become actionable.
 Also owns `issues/open/3347-implement-moduleMemberMissingErrorIsRelative.md`: fresh triage for `moduleMemberMissingErrorIsRelative.ts` parses virtual `folder/foo.ts` and `folder/bar.ts`, then reports issue-232 missing local module `./foo` before the intended missing exported member diagnostic for `nosuch` becomes reachable.
-Also owns part of `issues/done/3370-implement-moduleResolution-import-export.md`: fresh triage for `moduleResolution_relativeImportJsFile.ts` and `moduleResolution_relativeImportJsFile_noImplicitAny.ts` parses virtual `/src/b.js` plus `/src/a.ts`, then reports issue-232 missing local module `./b`; `moduleResolution_explicitNodeModulesImport.ts` and `_implicitAny.ts` parse virtual `/node_modules/foo/index.js` plus `/src/index.ts`, then report issue-232 missing local module `../node_modules/foo` before module-resolution diagnostics become actionable.
+Also owns part of `issues/open/3370-implement-moduleResolution-import-export.md`: fresh triage for `moduleResolution_relativeImportJsFile.ts` and `moduleResolution_relativeImportJsFile_noImplicitAny.ts` parses virtual `/src/b.js` plus `/src/a.ts`, then reports issue-232 missing local module `./b`; `moduleResolution_explicitNodeModulesImport.ts` and `_implicitAny.ts` parse virtual `/node_modules/foo/index.js` plus `/src/index.ts`, then report issue-232 missing local module `../node_modules/foo` before module-resolution diagnostics become actionable.
 Also owns `issues/open/3377-implement-moduleResolutionNoTsCJS.md`: fresh
 triage for `moduleResolutionNoTsCJS.ts` parses virtual `x.ts`, `y.tsx`,
 `z.d.ts`, and `user.ts` sections, then reports issue-232 missing local module
@@ -167,7 +167,7 @@ coverage reaches issue-232 missing local module `./file1` for
 `file1.ts`. Later oracle diagnostics include namespace-as-value and missing
 namespace member checks.
 Also owns the local-virtual-section subset of
-`issues/done/3380-implement-moduleResolutionWithExtensions-import-export.md`:
+`issues/open/3380-implement-moduleResolutionWithExtensions-import-export.md`:
 fresh triage for `moduleResolutionWithExtensions_notSupported*.ts` parses the
 entry imports and then reports issue-232 missing local module `./tsx` or
 `./jsx` instead of resolving the sibling empty virtual `.tsx` / `.jsx` sections.

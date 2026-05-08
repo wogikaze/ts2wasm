@@ -198,13 +198,13 @@ Duplicate candidates:
 [
   {
     "state": "open",
-    "path": "issues/done/070-implement-APISample.md",
+    "path": "issues/open/070-implement-APISample.md",
     "title": "Implement Apisample",
     "reason": "same reference path, same feature label, title overlap"
   },
   {
     "state": "open",
-    "path": "issues/done/458-implement-APISample-jsdoc.md",
+    "path": "issues/open/458-implement-APISample-jsdoc.md",
     "title": "Implement Apisample Jsdoc",
     "reason": "same reference path, same feature label, title overlap"
   }

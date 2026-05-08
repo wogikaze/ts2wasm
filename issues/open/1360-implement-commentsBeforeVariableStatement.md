@@ -12,13 +12,13 @@ updated: 2026-05-06
 ---
 > **Reopened by false-done audit** (2026-05-07)
 > Classification: must-reopen
-> Reason: Batch-migrated to issues/done/ without implementation commits.
+> Reason: Batch-migrated to issues/open/ without implementation commits.
 > Evidence: Empty completion evidence. No feat/fix commit for #1360.
 
 ## Summary
 
 Closed after splitting the current `export var` module-syntax blocker into
-`issues/done/5283-support-entry-export-var-declarations.md`.
+`issues/open/5283-support-entry-export-var-declarations.md`.
 
 ## Problem
 
@@ -54,7 +54,7 @@ unsupported_features=unknown-unsupported:1
 ## Desired final state
 
 This generated bucket is closed. Implementation should proceed through
-`issues/done/5283-support-entry-export-var-declarations.md`.
+`issues/open/5283-support-entry-export-var-declarations.md`.
 
 ## Scope
 
@@ -126,7 +126,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] `issues/done/5283-support-entry-export-var-declarations.md`
+- [x] `issues/open/5283-support-entry-export-var-declarations.md`
 
 ## Notes
 
@@ -136,16 +136,16 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/5175-support-export-let-destructuring-declarations.md` is
+- `issues/open/5175-support-export-let-destructuring-declarations.md` is
   related but covers `export let` destructuring and excludes general
   `export var`.
 - `issues/open/5144-support-entry-export-function-declarations.md`,
   `issues/open/5232-w0-fixture-ize-runtimelinkplan-linker-structure-tests.md`, and
-  `issues/done/5277-parse-export-enum-declarations-to-enum-boundary.md` cover
+  `issues/open/5277-parse-export-enum-declarations-to-enum-boundary.md` cover
   sibling export forms.
 - `issues/open/432-implement-import-export.md` is the broad import/export
   generated bucket and is too wide.
-- `issues/done/5283-support-entry-export-var-declarations.md` owns this current
+- `issues/open/5283-support-entry-export-var-declarations.md` owns this current
   blocker.
 
 ## Smart triage

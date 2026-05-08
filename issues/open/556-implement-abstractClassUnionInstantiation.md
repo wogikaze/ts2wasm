@@ -204,7 +204,7 @@ Duplicate candidates:
   },
   {
     "state": "open",
-    "path": "issues/done/084-implement-abstractClassUnionInstantiation.md",
+    "path": "issues/open/084-implement-abstractClassUnionInstantiation.md",
     "title": "Implement Abstractclassunioninstantiation",
     "reason": "same reference path, title overlap"
   },
@@ -216,7 +216,7 @@ Duplicate candidates:
   },
   {
     "state": "open",
-    "path": "issues/done/470-implement-abstractClassUnionInstantiation.md",
+    "path": "issues/open/470-implement-abstractClassUnionInstantiation.md",
     "title": "Implement Abstractclassunioninstantiation",
     "reason": "same reference path, same feature label, title overlap"
   }

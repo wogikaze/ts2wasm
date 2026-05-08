@@ -18,7 +18,7 @@ default-exported abstract anonymous class or report the existing default-class
 export boundary, instead of treating `abstract` as an unsupported expression.
 
 Split from generated bucket
-`issues/done/3495-implement-newAbstractInstance-parser-syntax.md`.
+`issues/open/3495-implement-newAbstractInstance-parser-syntax.md`.
 
 ## Problem
 

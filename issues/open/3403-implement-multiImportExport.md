@@ -61,7 +61,7 @@ TypeScript oracle: topLevel includes ImportEqualsDeclaration for the exported re
 
 This generated bucket remains closed. The exported `import = require(...)`
 parser blocker is owned by
-`issues/open/5430-parse-exported-import-equals-require-declarations.md`.
+`issues/open/5430a-parse-exported-import-equals-require-declarations.md`.
 
 ## Scope
 

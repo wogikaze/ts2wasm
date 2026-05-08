@@ -12,7 +12,7 @@ updated: 2026-05-07
 ---
 > **Reopened by false-done audit** (2026-05-07)
 > Classification: must-reopen
-> Reason: Batch-migrated to issues/done/ without implementation commits.
+> Reason: Batch-migrated to issues/open/ without implementation commits.
 > Evidence: Empty completion evidence. No feat/fix commit for #1370.
 
 ## Summary
@@ -62,7 +62,7 @@ error: [UnsupportedSyntax] issue-211: unknown receiver class for method `foo` at
 ## Desired final state
 
 This generated bucket is superseded by
-`issues/open/5222-parse-ambient-generic-variable-type-annotations.md`.
+`issues/open/5222a-parse-ambient-generic-variable-type-annotations.md`.
 Do not implement directly from this bucket.
 
 ## Scope
@@ -135,7 +135,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] superseded by: `issues/open/5222-parse-ambient-generic-variable-type-annotations.md`
+- [x] superseded by: `issues/open/5222a-parse-ambient-generic-variable-type-annotations.md`
 
 ## Notes
 
@@ -145,7 +145,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-`issues/open/5222-parse-ambient-generic-variable-type-annotations.md` is
+`issues/open/5222a-parse-ambient-generic-variable-type-annotations.md` is
 an exact behavioral match. Its representative case is `var s: Sequence<string>;
 s.groupBy(...)`; this bucket's representative shape is the same unsupported
 receiver family:
@@ -164,7 +164,7 @@ runtime class instance.
 
 Other candidates are related but not exact:
 
-- `issues/done/211-complete-this-receiver-binding-semantics.md` completed
+- `issues/open/211-complete-this-receiver-binding-semantics.md` completed
   receiver-bound `this` semantics and explicitly left unsupported receiver
   forms as issue-linked diagnostics.
 - `issues/open/435-implement-method-call.md` is broader method-call support and

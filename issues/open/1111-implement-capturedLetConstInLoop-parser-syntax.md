@@ -13,7 +13,7 @@ completed: 2026-05-06
 ---
 > **Reopened by false-done audit** (2026-05-07)
 > Classification: must-reopen
-> Reason: Batch-migrated to issues/done/ without implementation commits.
+> Reason: Batch-migrated to issues/open/ without implementation commits.
 > Evidence: Empty completion evidence. No feat/fix commit for #1111.
 
 ## Summary
@@ -116,7 +116,7 @@ Follow-up issues:
 - [x] `issues/open/5209-support-class-instance-method-receiver-calls.md`
 - [x] `issues/open/5210-array-map-sparse-array-holes.md`
 - [x] `issues/open/5211-sparse-array-spread-support.md`
-- [x] `issues/open/5409-parse-function-expression-statements-in-nested-blocks.md`
+- [x] `issues/open/5409a-parse-function-expression-statements-in-nested-blocks.md`
 
 ## Notes
 
@@ -147,7 +147,7 @@ Follow-up issues:
 - `issues/open/767-implement-augmentedTypesEnum-parser-syntax.md` - Implement Augmentedtypesenum Parser Syntax (same feature label, title overlap)
 - `issues/open/059-implement-parser-syntax-extensions.md` - Implement parser syntax extensions for TypeScript and advanced JS (same feature label, title overlap)
 - `issues/open/065-implement-parser-syntax.md` - Implement parser syntax extensions (same feature label, title overlap)
-- `issues/done/065a-merge-duplicate-parser-syntax-issue-into-059.md` - Merge duplicate parser syntax issue into 059 (same feature label, title overlap)
+- `issues/open/065a-merge-duplicate-parser-syntax-issue-into-059.md` - Merge duplicate parser syntax issue into 059 (same feature label, title overlap)
 
 ## Smart triage
 
@@ -613,7 +613,7 @@ Source context:
 
 TypeScript accepts the parenthesized function expression statement inside the
 nested block. Child issue
-`issues/open/5409-parse-function-expression-statements-in-nested-blocks.md`
+`issues/open/5409a-parse-function-expression-statements-in-nested-blocks.md`
 owns this parser slice.
 
 ### Smart triage: capturedLetConstInLoop9_ES6
@@ -651,7 +651,7 @@ Source context:
 
 TypeScript accepts the parenthesized function expression statement inside the
 nested block. Child issue
-`issues/open/5409-parse-function-expression-statements-in-nested-blocks.md`
+`issues/open/5409a-parse-function-expression-statements-in-nested-blocks.md`
 owns this parser slice.
 
 ### Folded triage from #1109: capturedLetConstInLoop4

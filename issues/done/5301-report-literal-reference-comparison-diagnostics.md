@@ -1,7 +1,7 @@
 ---
 id: 5301
 title: "Report literal reference comparison diagnostics"
-type: feature
+type: report
 area: frontend/semantics
 class: implementation-ready
 priority: P1

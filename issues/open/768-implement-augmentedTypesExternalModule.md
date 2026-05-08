@@ -14,13 +14,13 @@ status: done
 ---
 > **Reopened by false-done audit** (2026-05-07)
 > Classification: must-reopen
-> Reason: Batch-migrated to issues/done/ without implementation commits.
+> Reason: Batch-migrated to issues/open/ without implementation commits.
 > Evidence: Empty completion evidence. No feat/fix commit for #768.
 
 ## Summary
 
 Closed this generated bucket as superseded by
-`issues/done/5285-support-export-var-initializer-declarations.md`.
+`issues/open/5285-support-export-var-initializer-declarations.md`.
 
 ## Problem
 
@@ -49,7 +49,7 @@ env TS2WASM_BINARY=/tmp/ts2wasm-issue-blockers-target/debug/ts2wasm python scrip
 ## Desired final state
 
 This generated bucket is closed. Implement from
-`issues/done/5285-support-export-var-initializer-declarations.md`.
+`issues/open/5285-support-export-var-initializer-declarations.md`.
 
 ## Scope
 
@@ -118,7 +118,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] `issues/done/5285-support-export-var-initializer-declarations.md`
+- [x] `issues/open/5285-support-export-var-initializer-declarations.md`
 
 ## Notes
 
@@ -128,7 +128,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-Superseded by `issues/done/5285-support-export-var-initializer-declarations.md`.
+Superseded by `issues/open/5285-support-export-var-initializer-declarations.md`.
 
 Evidence:
 
@@ -138,9 +138,9 @@ Evidence:
 
 Related no-match issues:
 
-- `issues/done/5283-support-entry-export-var-declarations.md` covers typed
+- `issues/open/5283-support-entry-export-var-declarations.md` covers typed
   declaration-only `export var name: type;`.
-- `issues/done/5175-support-export-let-destructuring-declarations.md` covers
+- `issues/open/5175-support-export-let-destructuring-declarations.md` covers
   exported `let` destructuring.
 
 ## Smart triage
@@ -213,13 +213,13 @@ Duplicate candidates:
   },
   {
     "state": "open",
-    "path": "issues/done/457-implement-APISample-import-export.md",
+    "path": "issues/open/457-implement-APISample-import-export.md",
     "title": "Implement Apisample Import Export",
     "reason": "same feature label, title overlap"
   },
   {
     "state": "open",
-    "path": "issues/done/463-implement-FunctionDeclaration-import-export.md",
+    "path": "issues/open/463-implement-FunctionDeclaration-import-export.md",
     "title": "Implement Functiondeclaration Import Export",
     "reason": "same feature label, title overlap"
   },
@@ -231,7 +231,7 @@ Duplicate candidates:
   },
   {
     "state": "open",
-    "path": "issues/done/549-implement-FunctionDeclaration-import-export.md",
+    "path": "issues/open/549-implement-FunctionDeclaration-import-export.md",
     "title": "Implement Functiondeclaration Import Export",
     "reason": "same feature label, title overlap"
   },
@@ -249,13 +249,13 @@ Duplicate candidates:
   },
   {
     "state": "open",
-    "path": "issues/done/766-implement-augmentedTypesEnum-import-export.md",
+    "path": "issues/open/766-implement-augmentedTypesEnum-import-export.md",
     "title": "Implement Augmentedtypesenum Import Export",
     "reason": "same feature label, title overlap"
   },
   {
     "state": "done",
-    "path": "issues/done/055-implement-import-export.md",
+    "path": "issues/open/055-implement-import-export.md",
     "title": "Umbrella: implement import and export",
     "reason": "same feature label, title overlap"
   }

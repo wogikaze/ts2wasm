@@ -117,7 +117,7 @@ Follow-up issues:
 
 - `issues/done/062d-function-this-and-arguments.md` - Implement function this and arguments semantics (same group key, title overlap)
 - `issues/open/195-implement-argumentsBindsToFunctionScopeArgumentList.md` - Implement Argumentsbindstofunctionscopeargumentlist (same feature label, same group key, title overlap)
-- `issues/done/039-implement-spread-arguments.md` - Implement spread arguments (same group key, title overlap)
+- `issues/open/039-implement-spread-arguments.md` - Implement spread arguments (same group key, title overlap)
 - `issues/open/060-investigate-unknown-unsupported-cases.md` - Investigate and classify unknown-unsupported diagnostic cases (same feature label, same group key)
 
 ## Smart triage
@@ -206,7 +206,7 @@ Duplicate candidates:
   },
   {
     "state": "open",
-    "path": "issues/done/193-implement-arguments.md",
+    "path": "issues/open/193-implement-arguments.md",
     "title": "Implement Arguments",
     "reason": "same reference path, title overlap"
   }
@@ -682,7 +682,7 @@ Date: 2026-05-05
 
 Classification: truly-done.
 
-Audit result: retained in `issues/done/`. The issue has repo-local completion evidence, is not marked `blocked` or `triage-needed`, and `python scripts/manager.py check issues` validates the resulting issue graph.
+Audit result: retained in `issues/open/`. The issue has repo-local completion evidence, is not marked `blocked` or `triage-needed`, and `python scripts/manager.py check issues` validates the resulting issue graph.
 
 Evidence files:
 - `issues/open/193-implement-arguments.md`

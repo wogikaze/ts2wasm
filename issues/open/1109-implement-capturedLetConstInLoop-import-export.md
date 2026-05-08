@@ -12,7 +12,7 @@ updated: 2026-05-06
 ---
 > **Reopened by false-done audit** (2026-05-07)
 > Classification: must-reopen
-> Reason: Batch-migrated to issues/done/ without implementation commits.
+> Reason: Batch-migrated to issues/open/ without implementation commits.
 > Evidence: Empty completion evidence. No feat/fix commit for #1109.
 
 ## Summary
@@ -129,7 +129,7 @@ Follow-up issues:
 - `issues/open/662-implement-arrayAssignmentTest-import-export.md` - Implement Arrayassignmenttest Import Export (same feature label, title overlap)
 - `issues/open/732-implement-assignmentCompatability-import-export.md` - Implement Assignmentcompatability Import Export (same feature label, title overlap)
 - `issues/open/766-implement-augmentedTypesEnum-import-export.md` - Implement Augmentedtypesenum Import Export (same feature label, title overlap)
-- `issues/done/055-implement-import-export.md` - Umbrella: implement import and export (same feature label, title overlap)
+- `issues/open/055-implement-import-export.md` - Umbrella: implement import and export (same feature label, title overlap)
 
 ## Smart triage
 

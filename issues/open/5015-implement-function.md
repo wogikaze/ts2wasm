@@ -123,7 +123,7 @@ Follow-up issues:
 
 - `issues/done/017b-implement-gc-strategy.md` - Implement GC strategy (same feature label, same group key, title overlap)
 - `issues/open/021-implement-full-wasm-backend.md` - Implement full wasm backend (same feature label, same group key, title overlap)
-- `issues/done/052-implement-json.md` - Implement JSON (same feature label, same group key, title overlap)
+- `issues/open/052-implement-json.md` - Implement JSON (same feature label, same group key, title overlap)
 - `issues/open/064-implement-name-resolution.md` - Implement name resolution (triaged - superseded by test262 metadata issues) (same feature label, same group key, title overlap)
 - `issues/open/067-implement-unknown-unsupported.md` - Investigate and classify unknown-unsupported cases (same feature label, same group key)
 - `issues/open/070-implement-APISample.md` - Implement Apisample (same feature label, same group key, title overlap)
@@ -263,19 +263,19 @@ Duplicate candidates:
   },
   {
     "state": "done",
-    "path": "issues/done/062b-dynamic-function-constructor-diagnostics.md",
+    "path": "issues/open/062b-dynamic-function-constructor-diagnostics.md",
     "title": "Own dynamic Function constructor diagnostics",
     "reason": "same reference path, same feature label"
   },
   {
     "state": "done",
-    "path": "issues/done/063-implement-function-resolution.md",
+    "path": "issues/open/063-implement-function-resolution.md",
     "title": "Implement function resolution",
     "reason": "same reference path"
   },
   {
     "state": "done",
-    "path": "issues/done/225-implement-eval-annexb-function-declarations.md",
+    "path": "issues/open/225-implement-eval-annexb-function-declarations.md",
     "title": "Implement eval and Annex B function declaration semantics",
     "reason": "same feature label, title overlap"
   },

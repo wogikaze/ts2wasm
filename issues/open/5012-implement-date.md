@@ -128,8 +128,8 @@ Follow-up issues:
 
 - `issues/done/017b-implement-gc-strategy.md` - Implement GC strategy (same feature label, same group key, title overlap)
 - `issues/open/021-implement-full-wasm-backend.md` - Implement full wasm backend (same feature label, same group key, title overlap)
-- `issues/done/050-implement-date.md` - Implement Date (same feature label, same group key, title overlap)
-- `issues/done/052-implement-json.md` - Implement JSON (same feature label, same group key, title overlap)
+- `issues/open/050-implement-date.md` - Implement Date (same feature label, same group key, title overlap)
+- `issues/open/052-implement-json.md` - Implement JSON (same feature label, same group key, title overlap)
 - `issues/open/064-implement-name-resolution.md` - Implement name resolution (triaged - superseded by test262 metadata issues) (same reference path, same feature label, same group key, title overlap)
 - `issues/open/066-implement-regexp-literal.md` - Implement RegExp literal support (same feature label, same group key, title overlap)
 - `issues/open/067-implement-unknown-unsupported.md` - Investigate and classify unknown-unsupported cases (same feature label, same group key)
@@ -384,19 +384,19 @@ Duplicate candidates:
   },
   {
     "state": "open",
-    "path": "issues/done/1432-implement-conflictMarkerDiff-unknown-unsupported.md",
+    "path": "issues/open/1432-implement-conflictMarkerDiff-unknown-unsupported.md",
     "title": "Implement Conflictmarkerdiff Unknown Unsupported",
     "reason": "same feature label, title overlap"
   },
   {
     "state": "open",
-    "path": "issues/done/1434-implement-conflictMarkerTrivia-unknown-unsupported.md",
+    "path": "issues/open/1434-implement-conflictMarkerTrivia-unknown-unsupported.md",
     "title": "Implement Conflictmarkertrivia Unknown Unsupported",
     "reason": "same feature label, title overlap"
   },
   {
     "state": "open",
-    "path": "issues/done/1444-implement-constDeclarations-unknown-unsupported.md",
+    "path": "issues/open/1444-implement-constDeclarations-unknown-unsupported.md",
     "title": "Implement Constdeclarations Unknown Unsupported",
     "reason": "same feature label, title overlap"
   },

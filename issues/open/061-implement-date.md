@@ -161,7 +161,7 @@ Date: 2026-05-05
 
 Classification: truly-done duplicate/superseded tracking issue.
 
-Audit result: returned to `issues/done/` after review feedback. The title contains `(dup)`, which marks this issue as a duplicate/superseded tracker; duplicate closure issues must not remain in `issues/open/` unless the duplicate mapping itself is invalid.
+Audit result: returned to `issues/open/` after review feedback. The title contains `(dup)`, which marks this issue as a duplicate/superseded tracker; duplicate closure issues must not remain in `issues/open/` unless the duplicate mapping itself is invalid.
 
 Evidence files:
 - `issues/open/061-implement-date.md` after this correction

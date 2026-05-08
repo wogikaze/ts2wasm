@@ -207,13 +207,13 @@ Duplicate candidates:
 [
   {
     "state": "open",
-    "path": "issues/done/197-implement-argumentsObjectIterator.md",
+    "path": "issues/open/197-implement-argumentsObjectIterator.md",
     "title": "Implement Argumentsobjectiterator",
     "reason": "same reference path, same feature label"
   },
   {
     "state": "open",
-    "path": "issues/done/311-fix-test262-arguments-object-index-assignment.md",
+    "path": "issues/open/311-fix-test262-arguments-object-index-assignment.md",
     "title": "Fix test262 arguments object index assignment semantics",
     "reason": "same feature label, title overlap"
   },
@@ -231,7 +231,7 @@ Duplicate candidates:
   },
   {
     "state": "done",
-    "path": "issues/done/291-provide-object-global-binding-for-test262.md",
+    "path": "issues/open/291-provide-object-global-binding-for-test262.md",
     "title": "Provide Object global binding for test262 cases",
     "reason": "same feature label, title overlap"
   }

@@ -195,19 +195,19 @@ Duplicate candidates:
   },
   {
     "state": "open",
-    "path": "issues/done/457-implement-APISample-import-export.md",
+    "path": "issues/open/457-implement-APISample-import-export.md",
     "title": "Implement Apisample Import Export",
     "reason": "same feature label, title overlap"
   },
   {
     "state": "open",
-    "path": "issues/done/463-implement-FunctionDeclaration-import-export.md",
+    "path": "issues/open/463-implement-FunctionDeclaration-import-export.md",
     "title": "Implement Functiondeclaration Import Export",
     "reason": "same feature label, title overlap"
   },
   {
     "state": "done",
-    "path": "issues/done/521-implement-ambientEnumElementInitializer.md",
+    "path": "issues/open/521-implement-ambientEnumElementInitializer.md",
     "title": "Implement Ambientenumelementinitializer",
     "reason": "same reference path, same feature label"
   },
@@ -219,13 +219,13 @@ Duplicate candidates:
   },
   {
     "state": "open",
-    "path": "issues/done/549-implement-FunctionDeclaration-import-export.md",
+    "path": "issues/open/549-implement-FunctionDeclaration-import-export.md",
     "title": "Implement Functiondeclaration Import Export",
     "reason": "same feature label, title overlap"
   },
   {
     "state": "done",
-    "path": "issues/done/055-implement-import-export.md",
+    "path": "issues/open/055-implement-import-export.md",
     "title": "Umbrella: implement import and export",
     "reason": "same feature label, title overlap"
   }
@@ -456,7 +456,7 @@ Date: 2026-05-05
 
 Classification: truly-done duplicate/superseded tracking issue.
 
-Audit result: returned to `issues/done/` after review feedback. The title contains `(dup)`, which marks this issue as a duplicate/superseded tracker; duplicate closure issues must not remain in `issues/open/` unless the duplicate mapping itself is invalid.
+Audit result: returned to `issues/open/` after review feedback. The title contains `(dup)`, which marks this issue as a duplicate/superseded tracker; duplicate closure issues must not remain in `issues/open/` unless the duplicate mapping itself is invalid.
 
 Evidence files:
 - `issues/open/607-implement-ambientEnumElementInitializer.md` after this correction

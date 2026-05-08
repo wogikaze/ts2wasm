@@ -23,4 +23,4 @@ Date: 2026-05-07
 
 Classification: truly-done.
 
-Audit result: retained in issues/done/. Implementation commits confirmed.
+Audit result: retained in issues/open/. Implementation commits confirmed.

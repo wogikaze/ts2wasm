@@ -204,7 +204,7 @@ Duplicate candidates:
   },
   {
     "state": "open",
-    "path": "issues/done/182-implement-anyAndUnknownHaveFalsyComponents.md",
+    "path": "issues/open/182-implement-anyAndUnknownHaveFalsyComponents.md",
     "title": "Implement Anyandunknownhavefalsycomponents",
     "reason": "same reference path, title overlap"
   },

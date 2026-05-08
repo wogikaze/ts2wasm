@@ -14,7 +14,7 @@ status: done
 ---
 > **Reopened by false-done audit** (2026-05-07)
 > Classification: must-reopen
-> Reason: Batch-migrated to issues/done/ without implementation commits.
+> Reason: Batch-migrated to issues/open/ without implementation commits.
 > Evidence: Empty completion evidence. No feat/fix commit for #1444.
 
 ## Summary
@@ -142,7 +142,7 @@ Generated on 2026-05-07.
 Nearby non-owners:
 
 - `issues/open/5264-parse-typed-const-declarations-before-initializers.md` covers typed const declarations with valid initializers, not missing-initializer diagnostics.
-- `issues/done/5184-parse-const-enum-declarations.md` covers `const enum`, not ordinary const variable declarations.
+- `issues/open/5184-parse-const-enum-declarations.md` covers `const enum`, not ordinary const variable declarations.
 
 ## Completion evidence
 

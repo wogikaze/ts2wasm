@@ -94,8 +94,8 @@ Out of scope:
 - Destructuring assignment expressions.
 - Array rest narrowing in `farr`; that is a later blocker if it appears.
 - Computed object binding aliases, tracked by
-  `issues/done/5297-lower-computed-object-binding-aliases.md` and
-  `issues/done/5299-lower-computed-object-binding-parameters.md`.
+  `issues/open/5297-lower-computed-object-binding-aliases.md` and
+  `issues/open/5299-lower-computed-object-binding-parameters.md`.
 - Default binding initializer support, tracked by issues 5373 and 5379.
 
 ## Affected paths

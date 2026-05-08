@@ -118,7 +118,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/035-implement-break-continue.md` - Implement break and continue statements (same feature label, same group key, title overlap)
+- `issues/open/035-implement-break-continue.md` - Implement break and continue statements (same feature label, same group key, title overlap)
 - `issues/done/203-reconcile-partial-feature-semantics.md` - Reconcile partial feature semantics and placeholder completions (same feature label, same group key)
 - `issues/open/209-implement-labeled-break-continue.md` - Implement labeled break and continue (same feature label, same group key, title overlap)
 
@@ -250,13 +250,13 @@ Duplicate candidates:
 [
   {
     "state": "done",
-    "path": "issues/done/035-implement-break-continue.md",
+    "path": "issues/open/035-implement-break-continue.md",
     "title": "Implement break and continue statements",
     "reason": "same feature label, title overlap"
   },
   {
     "state": "done",
-    "path": "issues/done/209-implement-labeled-break-continue.md",
+    "path": "issues/open/209-implement-labeled-break-continue.md",
     "title": "Implement labeled break and continue",
     "reason": "same feature label, title overlap"
   }

@@ -132,9 +132,9 @@ Follow-up issues:
 - `issues/open/309-reduce-abc451-depth9-live-allocation-shape.md` - Reduce ABC451 depth-9 live allocation shape (same feature label, same group key)
 - `issues/open/313-implement-array-builtin.md` - Implement array-builtin support (same feature label, same group key, title overlap)
 - `issues/open/363-reduce-abc451-allocation-and-sweep-volume-after-bulk-copy-narrowing.md` - Reduce ABC451 allocation and sweep volume after bulk copy narrowing (same feature label, same group key)
-- `issues/done/369-implement-full-multilimb-bigint-arithmetic.md` - Implement full multi-limb BigInt arithmetic (same feature label, same group key, title overlap)
-- `issues/done/034-implement-while-do-while-loops.md` - Implement while and do-while loops (same feature label, same group key, title overlap)
-- `issues/done/035-implement-break-continue.md` - Implement break and continue statements (same feature label, same group key, title overlap)
+- `issues/open/369-implement-full-multilimb-bigint-arithmetic.md` - Implement full multi-limb BigInt arithmetic (same feature label, same group key, title overlap)
+- `issues/open/034-implement-while-do-while-loops.md` - Implement while and do-while loops (same feature label, same group key, title overlap)
+- `issues/open/035-implement-break-continue.md` - Implement break and continue statements (same feature label, same group key, title overlap)
 - `issues/open/209-implement-labeled-break-continue.md` - Implement labeled break and continue (same feature label, same group key, title overlap)
 
 ## Smart triage

@@ -13,7 +13,7 @@ updated: 2026-05-08
 
 ## Summary
 
-Superseded by `issues/open/5231-parse-export-as-namespace-declarations.md`. Fresh triage shows the current blocker is `export as namespace SomeInterface;`, the exact declaration form owned by issue 5231.
+Superseded by `issues/open/5231a-parse-export-as-namespace-declarations.md`. Fresh triage shows the current blocker is `export as namespace SomeInterface;`, the exact declaration form owned by issue 5231.
 
 ## Problem
 
@@ -138,7 +138,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] existing: `issues/open/5231-parse-export-as-namespace-declarations.md`
+- [x] existing: `issues/open/5231a-parse-export-as-namespace-declarations.md`
 
 ## Notes
 
@@ -148,7 +148,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/open/5231-parse-export-as-namespace-declarations.md`: exact owner for the current `export as namespace` issue-055 boundary.
+- `issues/open/5231a-parse-export-as-namespace-declarations.md`: exact owner for the current `export as namespace` issue-055 boundary.
 
 ## Smart triage
 

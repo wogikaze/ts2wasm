@@ -12,13 +12,13 @@ updated: 2026-05-06
 ---
 > **Reopened by false-done audit** (2026-05-07)
 > Classification: must-reopen
-> Reason: Batch-migrated to issues/done/ without implementation commits.
+> Reason: Batch-migrated to issues/open/ without implementation commits.
 > Evidence: Empty completion evidence. No feat/fix commit for #1350.
 
 ## Summary
 
 Closed after splitting the current module-syntax blocker into
-`issues/done/5277-parse-export-enum-declarations-to-enum-boundary.md`.
+`issues/open/5277-parse-export-enum-declarations-to-enum-boundary.md`.
 
 ## Problem
 
@@ -53,7 +53,7 @@ unsupported_features=import-export:1
 ## Desired final state
 
 This generated bucket is closed. Implementation should proceed through
-`issues/done/5277-parse-export-enum-declarations-to-enum-boundary.md`.
+`issues/open/5277-parse-export-enum-declarations-to-enum-boundary.md`.
 
 ## Scope
 
@@ -125,7 +125,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] `issues/done/5277-parse-export-enum-declarations-to-enum-boundary.md`
+- [x] `issues/open/5277-parse-export-enum-declarations-to-enum-boundary.md`
 
 ## Notes
 
@@ -137,7 +137,7 @@ Follow-up issues:
 
 - `issues/open/432-implement-import-export.md` is a broad import/export bucket,
   not an executable implementation slice.
-- `issues/done/055-implement-import-export.md` is a completed umbrella and
+- `issues/open/055-implement-import-export.md` is a completed umbrella and
   explicitly leaves broader import/export forms outside the narrow completed
   subset.
 - Existing export declaration slices cover `export function` and `export let`,

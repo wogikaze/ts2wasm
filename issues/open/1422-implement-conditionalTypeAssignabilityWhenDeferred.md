@@ -13,7 +13,7 @@ completed: 2026-05-07
 ---
 > **Reopened by false-done audit** (2026-05-07)
 > Classification: must-reopen
-> Reason: Batch-migrated to issues/done/ without implementation commits.
+> Reason: Batch-migrated to issues/open/ without implementation commits.
 > Evidence: Empty completion evidence. No feat/fix commit for #1422.
 
 ## Summary
@@ -173,7 +173,7 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- Split to `issues/done/5302-parse-fractional-number-literals-in-expressions.md`.
+- Split to `issues/open/5302-parse-fractional-number-literals-in-expressions.md`.
 
 Validation result:
 

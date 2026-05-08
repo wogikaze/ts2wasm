@@ -91,7 +91,7 @@ In scope:
 
 Out of scope:
 
-- Local imports between `@filename` sections; tracked by `issues/open/5229-resolve-imports-between-filename-sections.md`.
+- Local imports between `@filename` sections; tracked by `issues/open/5229a-resolve-imports-between-filename-sections.md`.
 - Sharing non-module script globals between `@filename` sections; tracked by `issues/open/5328-share-script-globals-across-filename-sections.md`.
 - Namespace-only multi-section body preservation; tracked by `issues/open/5187-lower-namespace-only-multi-section-files.md`.
 - Contextual overload list type inference after this binding-scope boundary.
@@ -161,7 +161,7 @@ Split from generated bucket
 
 Related but not duplicates:
 
-- `issues/open/5229-resolve-imports-between-filename-sections.md` covers local
+- `issues/open/5229a-resolve-imports-between-filename-sections.md` covers local
   import specifiers between virtual files.
 - `issues/open/5328-share-script-globals-across-filename-sections.md` covers
   global script declarations shared across virtual files, not external-module

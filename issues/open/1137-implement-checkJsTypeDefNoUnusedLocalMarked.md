@@ -13,7 +13,7 @@ completed: 2026-05-06
 ---
 > **Reopened by false-done audit** (2026-05-07)
 > Classification: must-reopen
-> Reason: Batch-migrated to issues/done/ without implementation commits.
+> Reason: Batch-migrated to issues/open/ without implementation commits.
 > Evidence: Empty completion evidence. No feat/fix commit for #1137.
 
 ## Summary
@@ -111,7 +111,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] none; superseded by `issues/done/400-implement-ambient-declaration-erasure-boundary.md` and `issues/done/5044-frontend-ambient-erasure.md`
+- [x] none; superseded by `issues/done/400-implement-ambient-declaration-erasure-boundary.md` and `issues/open/5044-frontend-ambient-erasure.md`
 
 ## Notes
 
@@ -128,7 +128,7 @@ already-defined issue-400 ambient declaration boundary, not a new
 Superseded by:
 
 - `issues/done/400-implement-ambient-declaration-erasure-boundary.md`
-- `issues/done/5044-frontend-ambient-erasure.md`
+- `issues/open/5044-frontend-ambient-erasure.md`
 
 Rationale: this representative stops at `declare global { ... }`.
 `docs/language-reference/typescript-features.md` classifies `declare global`

@@ -5,15 +5,25 @@ Scan issues/done/ and flag every issue whose "slice" (test case) claims to
 execute correctly but lacks semantic (Node-matching) proof in completion
 evidence.
 
-An issue is "false-done" (cannot prove correct execution) if any of:
-1. Has no `## Completion evidence` section.
-2. The section body is a template placeholder ("Fill only when moving").
-3. The issue YAML type is "feature" or "bug" AND the evidence has no
-   reference to Node / iwasm / semantic_diff / semantic_pass / node_diff
-   (i.e., it relies solely on build_smoke / build_pass).
+Rules (by YAML `type:` field):
 
-Issues whose YAML type is "test" / "docs" / "infra" / "refactor" /
-"cleanup" / "spike" are exempt — they do not claim executable correctness.
+  feature, bug    → MUST have Node-comparison evidence in completion
+                    (semantic_pass, node_diff, iwasm, m2_node, etc.)
+                    Build-only evidence (build_smoke or nextest) is INSUFFICIENT.
+
+  report          → "emit diagnostic X" tasks.  Done with diagnostic-test
+                    evidence; Node runtime comparison NOT required.
+
+  spike, design,
+  meta, maintenance,
+  test, docs,
+  infra, refactor,
+  cleanup         → Exempt: do not claim executable correctness.
+                    Still must NOT have empty/pending evidence.
+
+  NO_TYPE (missing
+  YAML front
+  matter)         → Lenient: must have non-empty completion evidence.
 
 Exit code: 0 if clean, 1 if any false-done issues found.
 """
@@ -27,11 +37,12 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).parent.parent.parent.resolve()
 DONE_DIR = REPO_ROOT / "issues" / "done"
 
-# Front-matter field extractors
+# ---------------------------------------------------------------------------
+# Regex helpers
+# ---------------------------------------------------------------------------
 YAML_TYPE_RE = re.compile(r"^type:\s*(\S+)", re.M)
-YAML_CLASS_RE = re.compile(r"^class:\s*(\S+)", re.M)
 
-# Completion evidence keywords that prove semantic correctness
+# Completion evidence keywords that prove SEMANTIC correctness
 # (iwasm output compared against Node.js)
 STRONG_EVIDENCE_KW = {
     "semantic_pass",
@@ -46,8 +57,7 @@ STRONG_EVIDENCE_KW = {
     "fixtures_match_node",
 }
 
-# Weak evidence that only proves build (not semantic correctness)
-# Presence of these without STRONG_EVIDENCE_KW → false-done for feature/bug
+# Weak evidence that only proves build (NOT semantic correctness)
 WEAK_EVIDENCE_KW = {
     "build_pass",
     "build_smoke",
@@ -57,11 +67,30 @@ WEAK_EVIDENCE_KW = {
     "cargo fmt",
 }
 
-# Issue types that explicitly claim to produce runnable output
+# -- Type classification ---------------------------------------------------
+
+# Types whose job is emitting runnable wasm → MUST have strong evidence
 CLAIMS_EXECUTABLE = {"feature", "bug"}
 
-# Issue types that do NOT claim executable correctness
-EXEMPT_TYPES = {"test", "docs", "infra", "refactor", "cleanup", "spike", "spike?"}
+# Types that do NOT claim to produce correct runtime output.
+# report = "emit diagnostic X" — diagnostic evidence is sufficient.
+# The others are architectural / meta / investigation / infrastructure.
+EXEMPT_TYPES = {
+    "report",
+    "spike",
+    "design",
+    "meta",
+    "maintenance",
+    "test",
+    "docs",
+    "infra",
+    "refactor",
+    "cleanup",
+}
+
+# ---------------------------------------------------------------------------
+# Helpers
+# ---------------------------------------------------------------------------
 
 
 def yaml_field(text: str, field_pattern: re.Pattern) -> str:
@@ -72,11 +101,6 @@ def yaml_field(text: str, field_pattern: re.Pattern) -> str:
 def has_strong_evidence(evidence: str) -> bool:
     ev_lower = evidence.lower()
     return any(kw in ev_lower for kw in STRONG_EVIDENCE_KW)
-
-
-def has_weak_evidence(evidence: str) -> bool:
-    ev_lower = evidence.lower()
-    return any(kw in ev_lower for kw in WEAK_EVIDENCE_KW)
 
 
 def is_template_placeholder(evidence: str) -> bool:
@@ -90,47 +114,55 @@ def is_template_placeholder(evidence: str) -> bool:
     return False
 
 
+# ---------------------------------------------------------------------------
+# Per-issue check
+# ---------------------------------------------------------------------------
+
+
 def check_issue(path: Path) -> tuple[str, str] | None:
-    """Return (issue_id, reason) if the issue is false-done, else None."""
+    """Return (filename_slug, reason) if the issue is false-done, else None."""
     text = path.read_text(encoding="utf-8")
-
-    # Determine issue type from YAML front matter
-    type_val = yaml_field(text, YAML_TYPE_RE)
-
-    # Exempt non-executable types
-    if type_val in EXEMPT_TYPES:
-        return None
-
-    # Build display ID from filename
     name_id = path.name.replace(".md", "")
 
-    # Check for completion evidence section
+    type_val = yaml_field(text, YAML_TYPE_RE)
+
+    # -- Section existence ------------------------------------------------
     m = re.search(r"## Completion evidence(.*?)(?:^## |\Z)", text, re.DOTALL | re.M)
-    if not m:
+    has_section = m is not None
+    evidence = m.group(1).strip() if m else ""
+
+    # -- 1. No section at all → always a violation -----------------------
+    if not has_section:
         return (name_id, "no `## Completion evidence` section")
 
-    evidence = m.group(1).strip()
-
-    # Template / empty evidence
+    # -- 2. Empty / template evidence → always a violation ---------------
     if is_template_placeholder(evidence):
         return (name_id, "completion evidence is template/empty")
 
-    # For feature/bug types, strong evidence is REQUIRED
+    # -- 3. For NO_TYPE (missing YAML), we're lenient --------------------
+    if not type_val:
+        return None  # non-empty evidence exists; good enough
+
+    # -- 4. Exempt types → non-empty evidence is sufficient --------------
+    if type_val in EXEMPT_TYPES:
+        return None
+
+    # -- 5. feature / bug → MUST have strong (Node) evidence ------------
     if type_val in CLAIMS_EXECUTABLE:
         if not has_strong_evidence(evidence):
-            if has_weak_evidence(evidence):
-                return (
-                    name_id,
-                    "build-only evidence (no Node/semantic comparison)",
-                )
-            else:
-                return (
-                    name_id,
-                    "no verifiable execution evidence",
-                )
+            return (name_id, "build-only evidence (no Node/semantic comparison)")
+        return None
 
-    # For unknown types, at minimum check evidence is not empty
+    # -- 6. Unknown type → safe side: require strong evidence ------------
+    if not has_strong_evidence(evidence):
+        return (name_id, f"unknown type '{type_val}'; requires semantic evidence")
+
     return None
+
+
+# ---------------------------------------------------------------------------
+# Main
+# ---------------------------------------------------------------------------
 
 
 def main() -> int:
@@ -138,7 +170,7 @@ def main() -> int:
         print(f"ERROR: {DONE_DIR} not found", file=sys.stderr)
         return 1
 
-    violations: list[tuple[str, str, str]] = []  # (id, title_prefix, reason)
+    violations: list[tuple[str, str, str]] = []
 
     for issue_file in sorted(DONE_DIR.glob("*.md")):
         result = check_issue(issue_file)
@@ -146,7 +178,6 @@ def main() -> int:
             name_id, reason = result
             violations.append((name_id, issue_file.name, reason))
 
-    # Summary
     total = sum(1 for _ in DONE_DIR.glob("*.md"))
 
     if not violations:
@@ -161,7 +192,6 @@ def main() -> int:
         f"{len(violations)}/{total} issues cannot prove correct execution\n"
     )
 
-    # Group by reason for readability
     from collections import defaultdict
 
     by_reason: dict[str, list[str]] = defaultdict(list)
@@ -175,10 +205,9 @@ def main() -> int:
         print()
 
     print(
-        "Fix: move each issue back to issues/open/ or add semantic "
+        "Fix: move each issue to issues/open/ or add semantic "
         "(Node-matching) completion evidence."
     )
-    print("See docs/16-commit-and-push-policy.md §issue close の検証ルール.")
     return 1
 
 

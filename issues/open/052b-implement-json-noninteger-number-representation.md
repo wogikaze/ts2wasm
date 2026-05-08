@@ -48,7 +48,7 @@ Expected:
 - `crates/ir/src/`
 - `fixtures/builtins-and-io/`
 - `crates/cli/tests/`
-- `issues/done/052-implement-json.md`
+- `issues/open/052-implement-json.md`
 
 Do not touch:
 
@@ -96,7 +96,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] updated `issues/done/052-implement-json.md`
+- [x] updated `issues/open/052-implement-json.md`
 
 ## Completion evidence
 
@@ -176,10 +176,10 @@ Date: 2026-05-05
 
 Classification: truly-done.
 
-Audit result: retained in `issues/done/`. The issue has repo-local completion evidence, is not marked `blocked` or `triage-needed`, and `python scripts/manager.py check issues` validates the resulting issue graph.
+Audit result: retained in `issues/open/`. The issue has repo-local completion evidence, is not marked `blocked` or `triage-needed`, and `python scripts/manager.py check issues` validates the resulting issue graph.
 
 Evidence files:
-- `issues/done/052b-implement-json-noninteger-number-representation.md`
+- `issues/open/052b-implement-json-noninteger-number-representation.md`
 - `issues/index.md` after regeneration
 
 Future-work tracking: no untracked future-work item was identified in this issue during this metadata/evidence audit.

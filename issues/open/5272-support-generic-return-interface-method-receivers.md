@@ -95,7 +95,7 @@ Out of scope:
 - Full TypeScript generic inference or assignability.
 - Runtime implementation of arbitrary erased interface values.
 - Interface-typed erased local method calls without generic call inference,
-  tracked by `issues/open/5222-parse-ambient-generic-variable-type-annotations.md`.
+  tracked by `issues/open/5222a-parse-ambient-generic-variable-type-annotations.md`.
 - Array-typed parameter receiver tracking, tracked by
   `issues/open/5234-w0-implement-host-deny-and-auditable-e2e-manifest-verification.md`.
 
@@ -164,7 +164,7 @@ Split from generated bucket `issues/open/1265-implement-collectionPatternNoError
 
 Related but distinct:
 
-- `issues/open/5222-parse-ambient-generic-variable-type-annotations.md`
+- `issues/open/5222a-parse-ambient-generic-variable-type-annotations.md`
   handles method calls on locals directly annotated with interface types.
 - `issues/open/5234-w0-implement-host-deny-and-auditable-e2e-manifest-verification.md`
   handles array-shaped parameter annotations.

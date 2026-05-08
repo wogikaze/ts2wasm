@@ -14,7 +14,7 @@ status: done
 ---
 > **Reopened by false-done audit** (2026-05-07)
 > Classification: must-reopen
-> Reason: Batch-migrated to issues/done/ without implementation commits.
+> Reason: Batch-migrated to issues/open/ without implementation commits.
 > Evidence: Empty completion evidence. No feat/fix commit for #1121.
 
 ## Summary
@@ -43,7 +43,7 @@ mise run reference-coverage -- tsc --path-filter reference/typescript/tests/case
 
 ## Desired final state
 
-This generated bucket is superseded by `issues/open/5218-parse-typescript-this-parameters-in-function-expressions.md`.
+This generated bucket is superseded by `issues/open/5218a-parse-typescript-this-parameters-in-function-expressions.md`.
 
 ## Scope
 
@@ -115,7 +115,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] created: `issues/open/5218-parse-typescript-this-parameters-in-function-expressions.md`
+- [x] created: `issues/open/5218a-parse-typescript-this-parameters-in-function-expressions.md`
 
 ## Notes
 
@@ -136,7 +136,7 @@ Generated on 2026-05-06:
 - feature label: `runtime-subset`
 - diagnostic: `UnsupportedRuntimeSubset` / `unsupported-feature-boundary`
 - message: `issue-062e: nested function closures with this or arguments are not supported in this slice`
-- child issue: `issues/open/5218-parse-typescript-this-parameters-in-function-expressions.md`
+- child issue: `issues/open/5218a-parse-typescript-this-parameters-in-function-expressions.md`
 
 Source context:
 

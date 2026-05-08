@@ -12,13 +12,13 @@ updated: 2026-05-07
 ---
 > **Reopened by false-done audit** (2026-05-07)
 > Classification: must-reopen
-> Reason: Batch-migrated to issues/done/ without implementation commits.
+> Reason: Batch-migrated to issues/open/ without implementation commits.
 > Evidence: Empty completion evidence. No feat/fix commit for #1390.
 
 ## Summary
 
 Closed as superseded by
-`issues/open/5229-resolve-imports-between-filename-sections.md`.
+`issues/open/5229a-resolve-imports-between-filename-sections.md`.
 
 Fresh focused triage shows `commonjsSafeImport.ts` currently stops in module
 graph construction because `./10_lib` is a TypeScript reference
@@ -165,7 +165,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] superseded by: `issues/open/5229-resolve-imports-between-filename-sections.md`
+- [x] superseded by: `issues/open/5229a-resolve-imports-between-filename-sections.md`
 
 ## Notes
 
@@ -175,7 +175,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/open/5229-resolve-imports-between-filename-sections.md` owns
+- `issues/open/5229a-resolve-imports-between-filename-sections.md` owns
   registering TypeScript reference `@Filename` / `@filename` sections as
   virtual module paths and resolving local imports between them.
 - `issues/open/232-resolve-local-relative-es-module-graph.md` owns real
@@ -232,7 +232,7 @@ TS2307 Cannot find module './10_lib' or its corresponding type declarations.
 
 Commits:
 
-- superseded by `issues/open/5229-resolve-imports-between-filename-sections.md`
+- superseded by `issues/open/5229a-resolve-imports-between-filename-sections.md`
 
 Validation result:
 

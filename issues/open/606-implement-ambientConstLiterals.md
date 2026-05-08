@@ -186,7 +186,7 @@ Duplicate candidates:
 [
   {
     "state": "open",
-    "path": "issues/done/144-implement-ambientConstLiterals.md",
+    "path": "issues/open/144-implement-ambientConstLiterals.md",
     "title": "Implement Ambientconstliterals",
     "reason": "same reference path, title overlap"
   },
@@ -198,19 +198,19 @@ Duplicate candidates:
   },
   {
     "state": "open",
-    "path": "issues/done/464-implement-FunctionDeclaration-parser-syntax.md",
+    "path": "issues/open/464-implement-FunctionDeclaration-parser-syntax.md",
     "title": "Implement Functiondeclaration Parser Syntax",
     "reason": "same feature label, title overlap"
   },
   {
     "state": "open",
-    "path": "issues/done/520-implement-ambientConstLiterals.md",
+    "path": "issues/open/520-implement-ambientConstLiterals.md",
     "title": "Implement Ambientconstliterals",
     "reason": "same reference path, same feature label, title overlap"
   },
   {
     "state": "open",
-    "path": "issues/done/550-implement-FunctionDeclaration-parser-syntax.md",
+    "path": "issues/open/550-implement-FunctionDeclaration-parser-syntax.md",
     "title": "Implement Functiondeclaration Parser Syntax",
     "reason": "same feature label, title overlap"
   },
@@ -222,25 +222,25 @@ Duplicate candidates:
   },
   {
     "state": "done",
-    "path": "issues/done/065-implement-parser-syntax.md",
+    "path": "issues/open/065-implement-parser-syntax.md",
     "title": "Implement parser syntax extensions",
     "reason": "same feature label, title overlap"
   },
   {
     "state": "done",
-    "path": "issues/done/065a-merge-duplicate-parser-syntax-issue-into-059.md",
+    "path": "issues/open/065a-merge-duplicate-parser-syntax-issue-into-059.md",
     "title": "Merge duplicate parser syntax issue into 059",
     "reason": "same feature label, title overlap"
   },
   {
     "state": "done",
-    "path": "issues/done/200-implement-parser-syntax.md",
+    "path": "issues/open/200-implement-parser-syntax.md",
     "title": "Implement parser syntax extensions",
     "reason": "same feature label, title overlap"
   },
   {
     "state": "done",
-    "path": "issues/done/243-implement-numeric-literal-separator-parser.md",
+    "path": "issues/open/243-implement-numeric-literal-separator-parser.md",
     "title": "Implement numeric literal separator parser support",
     "reason": "same feature label, title overlap"
   }
@@ -791,7 +791,7 @@ error: [UnsupportedTypeScriptSyntax] TypeScript enum declarations require an exp
 
 Closed as a stale generated bucket after fresh 2026-05-08 triage confirmed
 the current blocker is already owned by
-`issues/done/5302-parse-fractional-number-literals-in-expressions.md`.
+`issues/open/5302-parse-fractional-number-literals-in-expressions.md`.
 
 Fresh coverage with the current binary:
 

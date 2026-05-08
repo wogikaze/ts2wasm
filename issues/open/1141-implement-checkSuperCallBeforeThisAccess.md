@@ -13,7 +13,7 @@ completed: 2026-05-06
 ---
 > **Reopened by false-done audit** (2026-05-07)
 > Classification: must-reopen
-> Reason: Batch-migrated to issues/done/ without implementation commits.
+> Reason: Batch-migrated to issues/open/ without implementation commits.
 > Evidence: Empty completion evidence. No feat/fix commit for #1141.
 
 ## Summary
@@ -124,7 +124,7 @@ Follow-up issues:
 Fresh duplicate scan found related module-export history but no exact open
 `export class` implementation slice:
 
-- `issues/done/5008-static-es-module-export-default-namespace-reexport.md`
+- `issues/open/5008-static-es-module-export-default-namespace-reexport.md`
   mentions `export class Foo {}` in the original broad scope, but its close
   evidence only verifies `export const` and `export default`; later function
   work was split separately.

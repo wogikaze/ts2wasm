@@ -16,7 +16,7 @@ status: done
 ## Summary
 
 Closed this generated import/export bucket by splitting its current first
-blocker into `issues/open/5415-support-identifier-update-expressions-in-value-positions.md`.
+blocker into `issues/open/5415a-support-identifier-update-expressions-in-value-positions.md`.
 
 ## Problem
 
@@ -114,7 +114,7 @@ Expected implementation owner:
 
 ## Acceptance criteria
 
-- [x] Current blocker is represented in `issues/open/5415-support-identifier-update-expressions-in-value-positions.md`.
+- [x] Current blocker is represented in `issues/open/5415a-support-identifier-update-expressions-in-value-positions.md`.
 - [x] Existing issue 5181 is documented as related but narrower than this postfix value-position failure.
 - [x] The generated bucket no longer remains as a stale blocked import/export issue.
 
@@ -155,7 +155,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] `issues/open/5415-support-identifier-update-expressions-in-value-positions.md`
+- [x] `issues/open/5415a-support-identifier-update-expressions-in-value-positions.md`
 
 ## Notes
 

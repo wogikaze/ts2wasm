@@ -39,7 +39,7 @@ error: [UnsupportedSyntax] expected LeftBrace, got Some(Class) at 144..149
 
 ## Desired final state
 
-This generated bucket is closed as superseded by `issues/done/5156-parse-generic-type-arguments-in-class-heritage.md`. Do not implement directly from this bucket.
+This generated bucket is closed as superseded by `issues/open/5156-parse-generic-type-arguments-in-class-heritage.md`. Do not implement directly from this bucket.
 
 ## Scope
 
@@ -109,7 +109,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] updated: `issues/done/5156-parse-generic-type-arguments-in-class-heritage.md`
+- [x] updated: `issues/open/5156-parse-generic-type-arguments-in-class-heritage.md`
 
 ## Notes
 
@@ -119,7 +119,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/5156-parse-generic-type-arguments-in-class-heritage.md` already owns generic class heritage parsing and now includes the nested `RightShift` variant from this bucket.
+- `issues/open/5156-parse-generic-type-arguments-in-class-heritage.md` already owns generic class heritage parsing and now includes the nested `RightShift` variant from this bucket.
 
 ## Smart triage
 
@@ -191,7 +191,7 @@ Issue 5156 now owns the nested generic heritage parser contract for this referen
 
 Commits:
 
-- superseded by `issues/done/5156-parse-generic-type-arguments-in-class-heritage.md`
+- superseded by `issues/open/5156-parse-generic-type-arguments-in-class-heritage.md`
 
 Validation result:
 
@@ -211,7 +211,7 @@ Date: 2026-05-06
 
 Classification: truly-done.
 
-Audit result: retained in `issues/done/`. This issue has repo-local close evidence
+Audit result: retained in `issues/open/`. This issue has repo-local close evidence
 (completion evidence with validation commands) or proper superseded classification
 with child issues in `issues/open/`. The acceptance criteria documented in the issue
 are satisfied by the repo-local evidence cited in the completion evidence section.

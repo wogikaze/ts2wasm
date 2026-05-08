@@ -141,7 +141,7 @@ Follow-up issues:
 - `issues/open/5303-parse-trailing-comma-in-typed-function-parameters.md` is
   a match: it owns trailing commas before `)` in ordinary typed function
   declaration parameter lists.
-- `issues/done/5278-parse-trailing-comma-in-function-parameters-with-comments.md`
+- `issues/open/5278-parse-trailing-comma-in-function-parameters-with-comments.md`
   is related but no-match: it is comment-specific.
 - `issues/open/5149-parse-trailing-comma-in-typed-class-method-parameters.md`
   is related but no-match: it is class-method-specific.

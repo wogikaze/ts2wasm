@@ -284,19 +284,19 @@ Duplicate candidates:
   },
   {
     "state": "done",
-    "path": "issues/done/247-implement-destructuring-binding-pattern-parser.md",
+    "path": "issues/open/247-implement-destructuring-binding-pattern-parser.md",
     "title": "Implement destructuring binding pattern parser support",
     "reason": "same feature label, title overlap"
   },
   {
     "state": "done",
-    "path": "issues/done/251-implement-destructuring-binding-runtime-semantics.md",
+    "path": "issues/open/251-implement-destructuring-binding-runtime-semantics.md",
     "title": "Implement destructuring binding runtime semantics",
     "reason": "same feature label, title overlap"
   },
   {
     "state": "done",
-    "path": "issues/done/252-implement-destructuring-assignment-pattern-parser.md",
+    "path": "issues/open/252-implement-destructuring-assignment-pattern-parser.md",
     "title": "Implement destructuring assignment pattern parser support",
     "reason": "same feature label, title overlap"
   },
@@ -392,11 +392,11 @@ Remaining risks:
 
 ---
 
-## ⚠️ False-done audit (re-opened from issues/done/)
+## ⚠️ False-done audit (re-opened from issues/open/)
 
 **Why this was false-done**: This issue was created as a generated triage bucket
 (`class: triage-needed`) for module-resolution failures across 40 test262
-cases. It was moved to `issues/done/` without any triage work completed: the
+cases. It was moved to `issues/open/` without any triage work completed: the
 `## Completion evidence` section is unfilled (commits placeholder `...`,
 validation result empty). The representative test case still fails with
 `UnsupportedTest262Metadata: test262 feature destructuring-assignment is not

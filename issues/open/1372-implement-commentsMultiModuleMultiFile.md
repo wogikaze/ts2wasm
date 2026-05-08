@@ -12,7 +12,7 @@ updated: 2026-05-07
 ---
 > **Reopened by false-done audit** (2026-05-07)
 > Classification: must-reopen
-> Reason: Batch-migrated to issues/done/ without implementation commits.
+> Reason: Batch-migrated to issues/open/ without implementation commits.
 > Evidence: Empty completion evidence. No feat/fix commit for #1372.
 
 ## Summary
@@ -151,7 +151,7 @@ Follow-up issues:
 - `issues/open/232-resolve-local-relative-es-module-graph.md` covers this
   issue's current first blocker: source-spanned rejection of non-local/bare
   module specifiers with an issue-linked diagnostic.
-- `issues/open/5229-resolve-imports-between-filename-sections.md` is related
+- `issues/open/5229a-resolve-imports-between-filename-sections.md` is related
   but not exact. It covers local relative imports such as `./b` between
   `@Filename` sections; this file uses a non-local specifier
   `commentsMultiModuleMultiFile_0`.

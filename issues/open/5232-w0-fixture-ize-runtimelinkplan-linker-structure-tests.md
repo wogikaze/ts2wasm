@@ -63,4 +63,4 @@ Date: 2026-05-06
 
 Classification: truly-done.
 
-Audit result: retained in issues/done/. Implemented by agent (commit fd789fa8).
+Audit result: retained in issues/open/. Implemented by agent (commit fd789fa8).

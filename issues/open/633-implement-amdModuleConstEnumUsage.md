@@ -191,7 +191,7 @@ Duplicate candidates:
 [
   {
     "state": "open",
-    "path": "issues/done/175-implement-amdModuleConstEnumUsage.md",
+    "path": "issues/open/175-implement-amdModuleConstEnumUsage.md",
     "title": "Implement Amdmoduleconstenumusage",
     "reason": "same reference path, same feature label, title overlap"
   }

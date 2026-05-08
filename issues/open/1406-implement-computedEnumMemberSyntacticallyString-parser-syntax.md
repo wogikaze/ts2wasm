@@ -13,13 +13,13 @@ completed: 2026-05-07
 ---
 > **Reopened by false-done audit** (2026-05-07)
 > Classification: must-reopen
-> Reason: Batch-migrated to issues/done/ without implementation commits.
+> Reason: Batch-migrated to issues/open/ without implementation commits.
 > Evidence: Empty completion evidence. No feat/fix commit for #1406.
 
 ## Summary
 
 Closed as superseded by
-`issues/open/5229-resolve-imports-between-filename-sections.md`.
+`issues/open/5229a-resolve-imports-between-filename-sections.md`.
 
 Fresh triage shows the original parser-syntax label is stale:
 `computedEnumMemberSyntacticallyString2.ts` now parses and builds far enough to
@@ -127,7 +127,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] superseded by: `issues/open/5229-resolve-imports-between-filename-sections.md`
+- [x] superseded by: `issues/open/5229a-resolve-imports-between-filename-sections.md`
 
 ## Notes
 
@@ -137,7 +137,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/open/5229-resolve-imports-between-filename-sections.md` owns the
+- `issues/open/5229a-resolve-imports-between-filename-sections.md` owns the
   current first blocker: local imports between TypeScript reference
   `// @Filename:` / `// @filename:` virtual sections.
 - `issues/open/5296-parse-double-dot-numeric-literal-property-access.md` covers

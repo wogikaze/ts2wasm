@@ -208,7 +208,7 @@ Duplicate candidates:
   },
   {
     "state": "open",
-    "path": "issues/done/195-implement-argumentsBindsToFunctionScopeArgumentList.md",
+    "path": "issues/open/195-implement-argumentsBindsToFunctionScopeArgumentList.md",
     "title": "Implement Argumentsbindstofunctionscopeargumentlist",
     "reason": "same reference path, same feature label, title overlap"
   },

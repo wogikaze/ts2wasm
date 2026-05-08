@@ -219,7 +219,7 @@ Duplicate candidates:
 [
   {
     "state": "done",
-    "path": "issues/done/145-implement-ambientEnum.md",
+    "path": "issues/open/145-implement-ambientEnum.md",
     "title": "Implement Ambientenum",
     "reason": "same reference path"
   }

@@ -76,7 +76,7 @@ Let c = Undefined
 
 This generated bucket remains closed. The TS2709 namespace-root variable
 annotation diagnostic is owned by
-`issues/open/5411-report-ts2709-for-namespace-variable-annotation.md`.
+`issues/open/5411a-report-ts2709-for-namespace-variable-annotation.md`.
 
 ## Scope
 

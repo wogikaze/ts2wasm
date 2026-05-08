@@ -13,7 +13,7 @@ completed: 2026-05-07
 ---
 > **Reopened by false-done audit** (2026-05-07)
 > Classification: must-reopen
-> Reason: Batch-migrated to issues/done/ without implementation commits.
+> Reason: Batch-migrated to issues/open/ without implementation commits.
 > Evidence: Empty completion evidence. No feat/fix commit for #1439.
 
 ## Summary
@@ -128,9 +128,9 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/open/5409-parse-function-expression-statements-in-nested-blocks.md`
+- `issues/open/5409a-parse-function-expression-statements-in-nested-blocks.md`
   is related but covers function expression statements.
-- `issues/done/5250-parse-class-declarations-in-nested-block-statements.md`
+- `issues/open/5250-parse-class-declarations-in-nested-block-statements.md`
   is related but covers class declarations.
 - Split into `issues/open/5310-parse-nested-block-statements-with-variable-declarations.md`.
 

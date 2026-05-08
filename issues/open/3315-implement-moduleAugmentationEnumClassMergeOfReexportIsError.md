@@ -103,7 +103,7 @@ Implement the first blocker in
 `issues/open/5324-support-dependency-export-class-declarations.md`. After that
 lands, rerun this case to expose the next actionable blocker. The later virtual
 re-export source resolution shape is already tracked by
-`issues/open/5229-resolve-imports-between-filename-sections.md`.
+`issues/open/5229a-resolve-imports-between-filename-sections.md`.
 
 ## Scope
 
@@ -136,7 +136,7 @@ Do not touch from this bucket:
 
 - [x] Duplicate/superseding issue identified: `issues/open/5324-support-dependency-export-class-declarations.md`.
 - [x] Exact reproduction commands and observed diagnostics are recorded.
-- [x] Later virtual re-export blocker is noted as `issues/open/5229-resolve-imports-between-filename-sections.md`.
+- [x] Later virtual re-export blocker is noted as `issues/open/5229a-resolve-imports-between-filename-sections.md`.
 
 ## Validation
 

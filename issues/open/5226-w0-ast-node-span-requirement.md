@@ -121,5 +121,5 @@ Date: 2026-05-06
 
 Classification: truly-done.
 
-Audit result: retained in issues/done/. Commit ef19fb16 (Diagnostic split/Span refactoring)
+Audit result: retained in issues/open/. Commit ef19fb16 (Diagnostic split/Span refactoring)
 Future-work tracking: none identified.

@@ -17,7 +17,7 @@ status: done
 
 Closed this generated import/export bucket as superseded by the initialized
 `export var` implementation issue:
-`issues/done/5285-support-export-var-initializer-declarations.md`.
+`issues/open/5285-support-export-var-initializer-declarations.md`.
 
 ## Problem
 
@@ -105,7 +105,7 @@ TS2300: Duplicate identifier 'Kettle'.
 ## Desired final state
 
 Implement the first blocker in
-`issues/done/5285-support-export-var-initializer-declarations.md`. After that
+`issues/open/5285-support-export-var-initializer-declarations.md`. After that
 lands, rerun this case and split any duplicate exported variable or duplicate
 class diagnostics that become reachable.
 
@@ -139,7 +139,7 @@ Do not touch from this bucket:
 
 ## Acceptance criteria
 
-- [x] Superseding issue identified: `issues/done/5285-support-export-var-initializer-declarations.md`.
+- [x] Superseding issue identified: `issues/open/5285-support-export-var-initializer-declarations.md`.
 - [x] Exact reproduction commands and observed diagnostics are recorded.
 - [x] The generated bucket no longer remains as a stale blocked import/export issue.
 
@@ -185,7 +185,7 @@ Follow-up issues:
 ## Notes
 
 Superseded by
-`issues/done/5285-support-export-var-initializer-declarations.md`.
+`issues/open/5285-support-export-var-initializer-declarations.md`.
 
 ## Completion evidence
 

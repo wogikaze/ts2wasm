@@ -163,7 +163,7 @@ stale and the current mismatch is a false build-pass.
 
 Related but distinct:
 
-- `issues/open/5409-report-non-exported-namespace-member-type-annotations.md`
+- `issues/open/5409a-report-non-exported-namespace-member-type-annotations.md`
   covers a missing/non-exported namespace member in a type annotation, not
   assignment compatibility for exported namespace type aliases.
 

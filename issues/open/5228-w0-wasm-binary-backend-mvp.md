@@ -132,5 +132,5 @@ Date: 2026-05-06
 
 Classification: truly-done.
 
-Audit result: retained in issues/done/. Commit d83eed28 (wasm binary MVP expansion)
+Audit result: retained in issues/open/. Commit d83eed28 (wasm binary MVP expansion)
 Future-work tracking: none identified.

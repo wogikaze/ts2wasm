@@ -16,7 +16,7 @@ updated: 2026-05-08
 Triage nestedThisContainer across 1 failing reference test cases and split this bucket into implementation-ready child issues.
 
 Closed as superseded by
-`issues/open/5218-support-nested-function-closures-capturing-this.md`. Fresh
+`issues/open/5218a-support-nested-function-closures-capturing-this.md`. Fresh
 triage shows this generated runtime-subset bucket reaches the same issue-062e
 nested-function `this` closure boundary for a property-assigned function.
 
@@ -45,7 +45,7 @@ mise run reference-coverage -- tsc --path-filter reference/typescript/tests/case
 ## Desired final state
 
 This generated bucket is closed. Implementation should proceed through
-`issues/open/5218-support-nested-function-closures-capturing-this.md`.
+`issues/open/5218a-support-nested-function-closures-capturing-this.md`.
 
 ## Scope
 
@@ -118,7 +118,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] superseded by: `issues/open/5218-support-nested-function-closures-capturing-this.md`
+- [x] superseded by: `issues/open/5218a-support-nested-function-closures-capturing-this.md`
 
 ## Notes
 
@@ -128,7 +128,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/open/5218-support-nested-function-closures-capturing-this.md` owns the
+- `issues/open/5218a-support-nested-function-closures-capturing-this.md` owns the
   current issue-062e nested-function `this` capture runtime boundary. Its
   existing representatives cover object-literal property functions and
   contextual/object-literal receivers; this bucket adds the property-assignment

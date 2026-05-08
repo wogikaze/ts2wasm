@@ -13,7 +13,7 @@ completed: 2026-05-06
 ---
 > **Reopened by false-done audit** (2026-05-07)
 > Classification: must-reopen
-> Reason: Batch-migrated to issues/done/ without implementation commits.
+> Reason: Batch-migrated to issues/open/ without implementation commits.
 > Evidence: Empty completion evidence. No feat/fix commit for #1113.
 
 ## Summary
@@ -111,7 +111,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] superseded by `issues/done/211-complete-this-receiver-binding-semantics.md`
+- [x] superseded by `issues/open/211-complete-this-receiver-binding-semantics.md`
 - [x] related umbrella: `issues/open/435-implement-method-call.md`
 
 ## Notes
@@ -175,7 +175,7 @@ resolved/lowered: issue-211 function-valued local call at `fn()`
 
 TypeScript AST sees `CallExpression -> ArrowFunction -> CallExpression "fn()"`.
 The current blocker is not parser-syntax and is superseded by
-`issues/done/211-complete-this-receiver-binding-semantics.md`, which explicitly
+`issues/open/211-complete-this-receiver-binding-semantics.md`, which explicitly
 keeps dynamic/function-valued local calls issue-linked as unsupported, and by
 the broader method-call umbrella `issues/open/435-implement-method-call.md`.
 

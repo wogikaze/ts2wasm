@@ -16,7 +16,7 @@ updated: 2026-05-08
 Parse braced statement blocks immediately after `case` clauses, such as
 `case x.kind === "a": { x.aProps; break; }`.
 
-Split from generated bucket `issues/done/3439-implement-narrowByClauseExpressionInSwitchTrue-parser-syntax.md`.
+Split from generated bucket `issues/open/3439-implement-narrowByClauseExpressionInSwitchTrue-parser-syntax.md`.
 
 ## Problem
 

@@ -128,14 +128,14 @@ Follow-up issues:
 ## Duplicate detection
 
 - `issues/open/066-implement-regexp-literal.md` - Implement RegExp literal support (same reference path, same feature label, same group key, title overlap)
-- `issues/open/005-add-fine-grained-unsupported-feature-breakdown.md` - issues/done/005-add-fine-grained-unsupported-feature-breakdown.md (same feature label, same group key)
-- `issues/open/009-select-first-coverage-improvement-feature-slice.md` - issues/done/009-select-first-coverage-improvement-feature-slice.md (same feature label, same group key)
-- `issues/open/022-expand-test262-differential-coverage.md` - issues/done/022-expand-test262-differential-coverage.md (same feature label, same group key)
+- `issues/open/005-add-fine-grained-unsupported-feature-breakdown.md` - issues/open/005-add-fine-grained-unsupported-feature-breakdown.md (same feature label, same group key)
+- `issues/open/009-select-first-coverage-improvement-feature-slice.md` - issues/open/009-select-first-coverage-improvement-feature-slice.md (same feature label, same group key)
+- `issues/open/022-expand-test262-differential-coverage.md` - issues/open/022-expand-test262-differential-coverage.md (same feature label, same group key)
 - `issues/done/051-implement-regexp.md` - Implement RegExp (same feature label, same group key, title overlap)
 - `issues/open/060-investigate-unknown-unsupported-cases.md` - Investigate and classify unknown-unsupported diagnostic cases (same feature label, same group key)
 - `issues/done/202-implement-regexp-literal-support.md` - issues/done/202-implement-regexp-literal-support.md (same feature label, same group key)
 - `issues/open/224-implement-annexb-html-comments.md` - Implement Annex B HTML-like comments (same feature label, same group key, title overlap)
-- `issues/done/228-implement-logical-assignment-operators.md` - Implement logical assignment operators (same feature label, same group key, title overlap)
+- `issues/open/228-implement-logical-assignment-operators.md` - Implement logical assignment operators (same feature label, same group key, title overlap)
 - `issues/open/406-direct-eval-annexb-existing-binding-residuals.md` - Direct eval Annex B existing binding residuals (same feature label, same group key)
 
 ## Smart triage
@@ -317,13 +317,13 @@ Duplicate candidates:
 [
   {
     "state": "open",
-    "path": "issues/done/066-implement-regexp-literal.md",
+    "path": "issues/open/066-implement-regexp-literal.md",
     "title": "Implement RegExp literal support",
     "reason": "same reference path, title overlap"
   },
   {
     "state": "open",
-    "path": "issues/open/416-implement-async.md",
+    "path": "issues/done/416-implement-async.md",
     "title": "Implement async/await support",
     "reason": "same feature label, title overlap"
   },
@@ -335,7 +335,7 @@ Duplicate candidates:
   },
   {
     "state": "done",
-    "path": "issues/done/284-support-test262-async-flag-runner-coverage.md",
+    "path": "issues/open/284-support-test262-async-flag-runner-coverage.md",
     "title": "Support test262 async flag in reference coverage",
     "reason": "same feature label, title overlap"
   }
@@ -445,7 +445,7 @@ Date: 2026-05-05
 
 Classification: truly-done duplicate/superseded tracking issue.
 
-Audit result: returned to `issues/done/` after review feedback. The title contains `(dup)`, which marks this issue as a duplicate/superseded tracker; duplicate closure issues must not remain in `issues/open/` unless the duplicate mapping itself is invalid.
+Audit result: returned to `issues/open/` after review feedback. The title contains `(dup)`, which marks this issue as a duplicate/superseded tracker; duplicate closure issues must not remain in `issues/open/` unless the duplicate mapping itself is invalid.
 
 Evidence files:
 - `issues/open/444-implement-regexp-literal.md` after this correction

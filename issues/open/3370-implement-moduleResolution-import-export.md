@@ -1,25 +1,42 @@
 ---
 id: 3370
 title: "Implement Moduleresolution Import Export"
-type: spike
+type: maintenance
 area: frontend/syntax
-class: blocked
+class: superseded
 priority: P1
-depends_on: [432]
+depends_on: [432, 5229, 5421]
 blocks: []
 created: 2026-05-01
-updated: 2026-05-01
+updated: 2026-05-08
+completed: 2026-05-08
+status: done
 ---
 
 ## Summary
 
-Triage moduleResolution-import-export across 5 failing reference test cases and split this bucket into implementation-ready child issues.
+Closed as split/superseded. Fresh coverage still reports the 5 original
+import/export paths as unsupported, but smart triage shows their concrete
+current blockers are module graph issue-232 shapes already owned by issue 5229
+or split to new issue 5421.
 
 ## Problem
 
-Reference test results show 5 cases fail in directory `moduleResolution-import-export` with diagnostics: import-export. The compiler cannot handle these syntax/semantics, preventing compilation of code in this category.
+Reference test results show 5 cases fail in directory
+`moduleResolution-import-export` with diagnostics: import-export. Fresh coverage
+on 2026-05-08 reports:
 
-Problem: moduleResolution-import-export has 5 reference failures and needs smart-triage evidence before implementation starts.
+```text
+moduleResolution_explicitNodeModulesImport.ts: UnsupportedModule/import-export
+moduleResolution_classicPrefersTs.ts: UnsupportedModule/import-export
+moduleResolution_explicitNodeModulesImport_implicitAny.ts: UnsupportedModule/import-export
+moduleResolution_relativeImportJsFile.ts: UnsupportedModule/import-export
+moduleResolution_relativeImportJsFile_noImplicitAny.ts: UnsupportedModule/import-export
+```
+
+Problem: this generated bucket is too broad for direct implementation. Four
+paths are virtual `@Filename` local module resolution misses covered by issue
+5229, and the remaining classic bare import case is split to issue 5421.
 
 ## Current failure
 
@@ -43,10 +60,10 @@ This generated bucket is either split into implementation-ready child issues or 
 
 In scope:
 
-- [ ] Inspect the smart triage report below
-- [ ] Confirm whether existing open/done issues already cover this bucket
-- [ ] Split one feature family, one observable behavior, or one fixed reference window into child issues
-- [ ] Preserve exact reproduction commands and representative AST/diagnostic evidence in each child issue
+- [x] Inspect the smart triage report below
+- [x] Confirm whether existing open/done issues already cover this bucket
+- [x] Split one feature family, one observable behavior, or one fixed reference window into child issues
+- [x] Preserve exact reproduction commands and representative AST/diagnostic evidence in each child issue or owner
 
 Out of scope:
 
@@ -68,45 +85,53 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] Duplicate candidates below are confirmed as no-match or this issue is superseded
-- [ ] At least one child issue contains an exact `mise run reference-triage -- ...` command
-- [ ] Child issue includes failing path, diagnostic code, source context, visible symbols, and parser/TypeScript AST evidence
-- [ ] Child issue acceptance names the exact fixture/reference path and diagnostic/stdout change
+- [x] Duplicate candidates below are confirmed as no-match or this issue is superseded
+- [x] Existing issue 5229 owns the virtual local `@Filename` section resolution misses
+- [x] New issue 5421 owns the classic bare import resolution slice
+- [x] Child/owner evidence includes failing path, diagnostic code, source context, visible symbols, parser/TypeScript AST evidence, and exact diagnostic/stdout change
 
 ## Validation
 
-Required commands:
+Required commands for this closure:
+
+```sh
+env TS2WASM_BINARY=/tmp/ts2wasm-issue-blockers-target/debug/ts2wasm python scripts/manager.py reference-coverage tsc --path-filter reference/typescript/tests/cases/compiler/moduleResolution_ --detail --no-dashboard-data
+env TS2WASM_BINARY=/tmp/ts2wasm-issue-blockers-target/debug/ts2wasm python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/moduleResolution_explicitNodeModulesImport.ts
+env TS2WASM_BINARY=/tmp/ts2wasm-issue-blockers-target/debug/ts2wasm python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/moduleResolution_classicPrefersTs.ts
+env TS2WASM_BINARY=/tmp/ts2wasm-issue-blockers-target/debug/ts2wasm python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/moduleResolution_explicitNodeModulesImport_implicitAny.ts
+env TS2WASM_BINARY=/tmp/ts2wasm-issue-blockers-target/debug/ts2wasm python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/moduleResolution_relativeImportJsFile.ts
+env TS2WASM_BINARY=/tmp/ts2wasm-issue-blockers-target/debug/ts2wasm python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/moduleResolution_relativeImportJsFile_noImplicitAny.ts
+python scripts/manager.py update-issue-index
+python scripts/manager.py update-issue-index --check
+python scripts/manager.py check-issue-health
+python scripts/manager.py check-issue-readiness -- --fail-ready-below 80
+git diff --check
+```
+
+Impacted commands:
 
 ```sh
 cargo fmt --all --check
 cargo nextest run
 ```
 
-Impacted commands:
-
-```sh
-mise run reference-coverage -- tsc --limit 10
-mise run reference-coverage -- tsc --path-filter reference/typescript/tests/cases/compiler/moduleResolution_explicitNodeModulesImport.ts --detail
-mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/moduleResolution_explicitNodeModulesImport.ts
-```
-
 Not run:
 
-- none
+- Cargo gates; no Rust source changed.
 
 ## Docs / current-state / issue sync
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] updated: `current-state.md` (repo root)
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] created `issues/open/5421a-resolve-classic-module-resolution-bare-imports.md`
 
 ## Notes
 
@@ -128,11 +153,63 @@ Follow-up issues:
 - `issues/open/662-implement-arrayAssignmentTest-import-export.md` - Implement Arrayassignmenttest Import Export (same feature label, title overlap)
 - `issues/open/732-implement-assignmentCompatability-import-export.md` - Implement Assignmentcompatability Import Export (same feature label, title overlap)
 - `issues/open/766-implement-augmentedTypesEnum-import-export.md` - Implement Augmentedtypesenum Import Export (same feature label, title overlap)
-- `issues/done/055-implement-import-export.md` - Umbrella: implement import and export (same feature label, title overlap)
+- `issues/open/055-implement-import-export.md` - Umbrella: implement import and export (same feature label, title overlap)
 
 ## Smart triage
 
-Not generated. Rerun with `--triage-limit 1` or higher.
+Fresh run on 2026-05-08:
+
+```sh
+env TS2WASM_BINARY=/tmp/ts2wasm-issue-blockers-target/debug/ts2wasm python scripts/manager.py reference-coverage tsc --path-filter reference/typescript/tests/cases/compiler/moduleResolution_ --detail --no-dashboard-data
+```
+
+Coverage result:
+
+```text
+executed=13
+unsupported=13
+unsupported_diagcodes=UnsupportedSyntax:7,UnsupportedModule:5,UnresolvedName:1
+unsupported_features=module-resolution:7,import-export:5,name-resolution:1
+```
+
+The 5 paths owned by this bucket are the `UnsupportedModule/import-export`
+entries.
+
+Representative smart triage:
+
+```text
+moduleResolution_explicitNodeModulesImport.ts:
+  ast: PropertyAssign exports.x, ImportNamed "../node_modules/foo"
+  module_graph: issue-232 missing local module `../node_modules/foo`
+  TypeScript: TS2304 exports, TS2307 ../node_modules/foo
+
+moduleResolution_explicitNodeModulesImport_implicitAny.ts:
+  ast: PropertyAssign exports.x, ImportNamed "../node_modules/foo"
+  module_graph: issue-232 missing local module `../node_modules/foo`
+  TypeScript: TS2304 exports, TS2307 ../node_modules/foo
+
+moduleResolution_relativeImportJsFile.ts:
+  ast: ExportDecl const x, ImportNamespace "./b"
+  module_graph: issue-232 missing local module `./b`
+  TypeScript: TS2307 ./b
+
+moduleResolution_relativeImportJsFile_noImplicitAny.ts:
+  ast: ExportDecl const x, ImportNamespace "./b"
+  module_graph: issue-232 missing local module `./b`
+  TypeScript: TS2307 ./b
+
+moduleResolution_classicPrefersTs.ts:
+  ast: two ExportDefault string declarations and ImportDefault source "a"
+  module_graph: issue-232 unsupported non-local module specifier `a`
+  TypeScript raw-source oracle: TS2528 duplicate default exports and TS2307 a
+```
+
+Ownership:
+
+- `issues/open/5229a-resolve-imports-between-filename-sections.md` owns the
+  virtual local `@Filename` section misses for `./b` and `../node_modules/foo`.
+- `issues/open/5421a-resolve-classic-module-resolution-bare-imports.md` owns the
+  classic bare import `a` resolution slice.
 
 ## Completion evidence
 
@@ -140,16 +217,38 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- `...`
+- local closure commit; see git log for this issue file
 
 Validation result:
 
 ```text
-command:
-result:
-date:
+command: env TS2WASM_BINARY=/tmp/ts2wasm-issue-blockers-target/debug/ts2wasm python scripts/manager.py reference-coverage tsc --path-filter reference/typescript/tests/cases/compiler/moduleResolution_ --detail --no-dashboard-data
+result: pass; 5 import-export paths still unsupported and mapped to issue 5229 / 5421
+date: 2026-05-08
+
+command: env TS2WASM_BINARY=/tmp/ts2wasm-issue-blockers-target/debug/ts2wasm python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/moduleResolution_explicitNodeModulesImport.ts
+result: pass; resolved dump reports issue-232 missing local module ../node_modules/foo
+date: 2026-05-08
+
+command: env TS2WASM_BINARY=/tmp/ts2wasm-issue-blockers-target/debug/ts2wasm python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/moduleResolution_classicPrefersTs.ts
+result: pass; resolved dump reports issue-232 unsupported non-local module specifier a
+date: 2026-05-08
+
+command: env TS2WASM_BINARY=/tmp/ts2wasm-issue-blockers-target/debug/ts2wasm python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/moduleResolution_explicitNodeModulesImport_implicitAny.ts
+result: pass; resolved dump reports issue-232 missing local module ../node_modules/foo
+date: 2026-05-08
+
+command: env TS2WASM_BINARY=/tmp/ts2wasm-issue-blockers-target/debug/ts2wasm python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/moduleResolution_relativeImportJsFile.ts
+result: pass; resolved dump reports issue-232 missing local module ./b
+date: 2026-05-08
+
+command: env TS2WASM_BINARY=/tmp/ts2wasm-issue-blockers-target/debug/ts2wasm python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/moduleResolution_relativeImportJsFile_noImplicitAny.ts
+result: pass; resolved dump reports issue-232 missing local module ./b
+date: 2026-05-08
 ```
 
 Remaining risks:
 
-- none
+- After issues 5229 and 5421 land, these references may expose CommonJS emit,
+  noImplicitAny, duplicate default export, or deeper module-resolution parity
+  work.

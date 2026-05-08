@@ -13,7 +13,7 @@ completed: 2026-05-07
 ---
 > **Reopened by false-done audit** (2026-05-07)
 > Classification: must-reopen
-> Reason: Batch-migrated to issues/done/ without implementation commits.
+> Reason: Batch-migrated to issues/open/ without implementation commits.
 > Evidence: Empty completion evidence. No feat/fix commit for #1437.
 
 ## Summary
@@ -125,7 +125,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/5254-parse-asi-between-static-class-fields.md` is related but
+- `issues/open/5254-parse-asi-between-static-class-fields.md` is related but
   static-only; this case is instance class field ASI after an initializer.
 - Split into `issues/open/5308-parse-asi-after-instance-class-field-initializers.md`.
 

@@ -263,7 +263,7 @@ Duplicate candidates:
   },
   {
     "state": "done",
-    "path": "issues/done/212-implement-rest-parameter-argument-collection.md",
+    "path": "issues/open/212-implement-rest-parameter-argument-collection.md",
     "title": "Implement rest parameter argument collection",
     "reason": "same feature label, title overlap"
   }

@@ -13,7 +13,7 @@ updated: 2026-05-01
 
 ## Summary
 
-Closed as superseded by `issues/open/5229-resolve-imports-between-filename-sections.md`.
+Closed as superseded by `issues/open/5229a-resolve-imports-between-filename-sections.md`.
 
 Fresh focused coverage shows `namespaceMergedWithImportAliasNoCrash.ts` parses
 the static namespace import, then reaches the existing issue-232 missing local
@@ -127,7 +127,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/open/5229-resolve-imports-between-filename-sections.md` owns the
+- `issues/open/5229a-resolve-imports-between-filename-sections.md` owns the
   current module graph boundary: resolve `import * as Lib from "./file1"` from
   the `file2.ts` virtual section to the sibling `file1.ts` section.
 - Related later semantic diagnostics after 5229 advances include TS2708 for

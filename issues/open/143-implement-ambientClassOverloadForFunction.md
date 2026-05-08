@@ -212,7 +212,7 @@ Duplicate candidates:
 [
   {
     "state": "done",
-    "path": "issues/done/143-implement-ambientClassOverloadForFunction.md",
+    "path": "issues/open/143-implement-ambientClassOverloadForFunction.md",
     "title": "Implement Ambientclassoverloadforfunction",
     "reason": "same reference path, title overlap"
   }

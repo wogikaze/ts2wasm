@@ -132,7 +132,7 @@ Follow-up issues:
 - `issues/open/136-implement-allowSyntheticDefaultImportsCanPaintCrossModuleDeclaration.md` - Implement Allowsyntheticdefaultimportscanpaintcrossmoduledeclaration (same feature label, same group key, title overlap)
 - `issues/open/138-implement-alwaysStrictModule.md` - Implement Alwaysstrictmodule (same feature label, same group key, title overlap)
 - `issues/open/181-implement-anonymousModules.md` - Implement Anonymousmodules (same feature label, same group key, title overlap)
-- `issues/done/055-implement-import-export.md` - Umbrella: implement import and export (same feature label, same group key, title overlap)
+- `issues/open/055-implement-import-export.md` - Umbrella: implement import and export (same feature label, same group key, title overlap)
 - `issues/open/060-investigate-unknown-unsupported-cases.md` - Investigate and classify unknown-unsupported diagnostic cases (same feature label, same group key)
 - `issues/open/227-implement-type-reference-directive-resolution.md` - Implement type reference directive resolution (same feature label, same group key, title overlap)
 - `issues/open/233-emit-static-es-module-bindings.md` - Emit static ES module bindings (same feature label, same group key, title overlap)
@@ -251,7 +251,7 @@ Duplicate candidates:
 [
   {
     "state": "done",
-    "path": "issues/done/055-implement-import-export.md",
+    "path": "issues/open/055-implement-import-export.md",
     "title": "Umbrella: implement import and export",
     "reason": "same feature label, title overlap"
   }

@@ -171,5 +171,5 @@ Date: 2026-05-06
 
 Classification: truly-done.
 
-Audit result: retained in issues/done/. Commit 2555793f
+Audit result: retained in issues/open/. Commit 2555793f
 Future-work tracking: none identified.

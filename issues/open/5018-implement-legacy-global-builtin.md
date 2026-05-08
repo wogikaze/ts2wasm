@@ -131,7 +131,7 @@ Follow-up issues:
 - `issues/open/433-implement-legacy-global-builtin.md` - Implement legacy-global-builtin support (same reference path, same feature label, same group key, title overlap)
 - `issues/open/060-investigate-unknown-unsupported-cases.md` - Investigate and classify unknown-unsupported diagnostic cases (same feature label, same group key)
 - `issues/open/224-implement-annexb-html-comments.md` - Implement Annex B HTML-like comments (same feature label, same group key, title overlap)
-- `issues/done/228-implement-logical-assignment-operators.md` - Implement logical assignment operators (same feature label, same group key, title overlap)
+- `issues/open/228-implement-logical-assignment-operators.md` - Implement logical assignment operators (same feature label, same group key, title overlap)
 - `issues/open/344-implement-legacy-global-builtin-bindings.md` - Implement legacy global builtin bindings (8 test262 cases) (same feature label, same group key, title overlap)
 - `issues/open/406-direct-eval-annexb-existing-binding-residuals.md` - Direct eval Annex B existing binding residuals (same feature label, same group key)
 
@@ -255,7 +255,7 @@ Duplicate candidates:
 [
   {
     "state": "open",
-    "path": "issues/done/067-implement-unknown-unsupported.md",
+    "path": "issues/open/067-implement-unknown-unsupported.md",
     "title": "Investigate and classify unknown-unsupported cases",
     "reason": "same reference path, same feature label"
   },
@@ -279,19 +279,19 @@ Duplicate candidates:
   },
   {
     "state": "open",
-    "path": "issues/done/1432-implement-conflictMarkerDiff-unknown-unsupported.md",
+    "path": "issues/open/1432-implement-conflictMarkerDiff-unknown-unsupported.md",
     "title": "Implement Conflictmarkerdiff Unknown Unsupported",
     "reason": "same feature label, title overlap"
   },
   {
     "state": "open",
-    "path": "issues/done/1434-implement-conflictMarkerTrivia-unknown-unsupported.md",
+    "path": "issues/open/1434-implement-conflictMarkerTrivia-unknown-unsupported.md",
     "title": "Implement Conflictmarkertrivia Unknown Unsupported",
     "reason": "same feature label, title overlap"
   },
   {
     "state": "open",
-    "path": "issues/done/1444-implement-constDeclarations-unknown-unsupported.md",
+    "path": "issues/open/1444-implement-constDeclarations-unknown-unsupported.md",
     "title": "Implement Constdeclarations Unknown Unsupported",
     "reason": "same feature label, title overlap"
   },

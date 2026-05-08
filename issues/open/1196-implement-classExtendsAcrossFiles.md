@@ -13,7 +13,7 @@ completed: 2026-05-07
 ---
 > **Reopened by false-done audit** (2026-05-07)
 > Classification: must-reopen
-> Reason: Batch-migrated to issues/done/ without implementation commits.
+> Reason: Batch-migrated to issues/open/ without implementation commits.
 > Evidence: Empty completion evidence. No feat/fix commit for #1196.
 
 ## Summary
@@ -111,7 +111,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] superseded by existing `issues/open/5229-resolve-imports-between-filename-sections.md`
+- [x] superseded by existing `issues/open/5229a-resolve-imports-between-filename-sections.md`
 
 ## Notes
 

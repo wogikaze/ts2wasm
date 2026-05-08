@@ -194,7 +194,7 @@ Superseded by:
 
 Related later boundary:
 
-- `issues/open/5229-resolve-imports-between-filename-sections.md` owns virtual `@Filename` sibling import resolution when the current dependency export-class blocker is removed.
+- `issues/open/5229a-resolve-imports-between-filename-sections.md` owns virtual `@Filename` sibling import resolution when the current dependency export-class blocker is removed.
 
 ## Completion evidence
 

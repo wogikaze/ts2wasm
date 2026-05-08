@@ -197,13 +197,13 @@ Duplicate candidates:
 [
   {
     "state": "open",
-    "path": "issues/done/135-implement-allowSyntheticDefaultImports.md",
+    "path": "issues/open/135-implement-allowSyntheticDefaultImports.md",
     "title": "Implement Allowsyntheticdefaultimports",
     "reason": "same reference path"
   },
   {
     "state": "done",
-    "path": "issues/done/055-implement-import-export.md",
+    "path": "issues/open/055-implement-import-export.md",
     "title": "Umbrella: implement import and export",
     "reason": "same feature label, title overlap"
   }
@@ -473,7 +473,7 @@ Date: 2026-05-05
 
 Classification: truly-done.
 
-Audit result: retained in `issues/done/`. The issue has repo-local completion evidence, is not marked `blocked` or `triage-needed`, and `python scripts/manager.py check issues` validates the resulting issue graph.
+Audit result: retained in `issues/open/`. The issue has repo-local completion evidence, is not marked `blocked` or `triage-needed`, and `python scripts/manager.py check issues` validates the resulting issue graph.
 
 Evidence files:
 - `issues/open/135-implement-allowSyntheticDefaultImports.md`

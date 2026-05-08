@@ -13,7 +13,7 @@ completed: 2026-05-06
 ---
 > **Reopened by false-done audit** (2026-05-07)
 > Classification: must-reopen
-> Reason: Batch-migrated to issues/done/ without implementation commits.
+> Reason: Batch-migrated to issues/open/ without implementation commits.
 > Evidence: Empty completion evidence. No feat/fix commit for #1138.
 
 ## Summary
@@ -111,7 +111,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] created: `issues/open/5229-resolve-imports-between-filename-sections.md`
+- [x] created: `issues/open/5229a-resolve-imports-between-filename-sections.md`
 
 ## Notes
 
@@ -134,7 +134,7 @@ local imports between `@Filename` virtual sections.
 
 No-match rationale:
 
-- `issues/done/5186-parse-export-assignment-for-diagnostics.md` covers
+- `issues/open/5186-parse-export-assignment-for-diagnostics.md` covers
   `export = expr` syntax, while this representative already builds AST for
   `export default` and `import b from "./b"`.
 - `issues/open/5127-implement-export-default-multifile-lowering.md` fixed
@@ -200,7 +200,7 @@ TypeScript oracle: TS2307 for ./b in this reference window
 
 Split result:
 
-- `issues/open/5229-resolve-imports-between-filename-sections.md`
+- `issues/open/5229a-resolve-imports-between-filename-sections.md`
 
 ## Completion evidence
 

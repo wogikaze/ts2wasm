@@ -192,25 +192,25 @@ Duplicate candidates:
 [
   {
     "state": "open",
-    "path": "issues/done/170-implement-amdDeclarationEmitNoExtraDeclare.md",
+    "path": "issues/open/170-implement-amdDeclarationEmitNoExtraDeclare.md",
     "title": "Implement Amddeclarationemitnoextradeclare",
     "reason": "same reference path, same feature label, title overlap"
   },
   {
     "state": "open",
-    "path": "issues/done/408-implement-tsgo-declaration-emit-asconst-and-generic-methods.md",
+    "path": "issues/open/408-implement-tsgo-declaration-emit-asconst-and-generic-methods.md",
     "title": "Implement tsgo declaration emit: AsConstSatisfies/const generic method cases",
     "reason": "same feature label, title overlap"
   },
   {
     "state": "open",
-    "path": "issues/done/409-implement-tsgo-declaration-emit-package-json-subpath.md",
+    "path": "issues/open/409-implement-tsgo-declaration-emit-package-json-subpath.md",
     "title": "Implement tsgo declaration emit: package-json exports and subpath reexport cases",
     "reason": "same feature label, title overlap"
   },
   {
     "state": "open",
-    "path": "issues/done/410-implement-tsgo-declaration-emit-subpath-import-links.md",
+    "path": "issues/open/410-implement-tsgo-declaration-emit-subpath-import-links.md",
     "title": "Implement tsgo declaration emit: subpath import declaration emit cases",
     "reason": "same feature label, title overlap"
   },
@@ -222,7 +222,7 @@ Duplicate candidates:
   },
   {
     "state": "done",
-    "path": "issues/done/399-define-typescript-parse-erase-emit-boundary.md",
+    "path": "issues/open/399-define-typescript-parse-erase-emit-boundary.md",
     "title": "Define TypeScript parse, erase, and emit boundary contract",
     "reason": "same feature label, title overlap"
   },

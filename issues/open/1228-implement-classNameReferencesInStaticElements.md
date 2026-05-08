@@ -12,7 +12,7 @@ updated: 2026-05-06
 ---
 > **Reopened by false-done audit** (2026-05-07)
 > Classification: must-reopen
-> Reason: Batch-migrated to issues/done/ without implementation commits.
+> Reason: Batch-migrated to issues/open/ without implementation commits.
 > Evidence: Empty completion evidence. No feat/fix commit for #1228.
 
 ## Summary
@@ -147,7 +147,7 @@ new oldFoo().x();
 
 - `issues/open/5192-support-first-class-class-constructor-values.md` is an exact
   owner for the current `issue-5011` class constructor value boundary.
-- `issues/done/5011-class-runtime-value-semantics.md` documents the current
+- `issues/open/5011-class-runtime-value-semantics.md` documents the current
   structural rejection of class values, but 5192 is the open implementation
   issue for supporting them.
 

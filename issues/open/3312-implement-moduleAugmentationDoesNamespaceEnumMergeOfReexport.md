@@ -51,7 +51,7 @@ env TS2WASM_BINARY=/tmp/ts2wasm-issue-blockers-target/debug/ts2wasm python scrip
 
 This generated bucket is closed. Implement virtual `@Filename` import/re-export
 specifier resolution from
-`issues/open/5229-resolve-imports-between-filename-sections.md` before
+`issues/open/5229a-resolve-imports-between-filename-sections.md` before
 re-triaging namespace/enum merge behavior.
 
 ## Scope
@@ -73,7 +73,7 @@ Out of scope:
 
 Expected:
 
-- `issues/open/5229-resolve-imports-between-filename-sections.md`
+- `issues/open/5229a-resolve-imports-between-filename-sections.md`
 
 Do not touch:
 
@@ -132,7 +132,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/open/5229-resolve-imports-between-filename-sections.md` owns the
+- `issues/open/5229a-resolve-imports-between-filename-sections.md` owns the
   current virtual `./file` re-export source resolution blocker.
 - Generic import/export candidates from smart triage do not own this exact
   virtual multi-file module graph boundary.

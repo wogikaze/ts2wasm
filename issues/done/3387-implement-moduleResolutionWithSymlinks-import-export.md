@@ -59,7 +59,7 @@ unsupported_features=module-resolution:3,import-export:2
 This generated bucket is closed as superseded by:
 
 - `issues/open/5324-support-dependency-export-class-declarations.md`
-- `issues/open/5426-resolve-symlink-filename-aliases-for-local-imports.md`
+- `issues/open/5426a-resolve-symlink-filename-aliases-for-local-imports.md`
 - `issues/open/5292-skip-tsconfig-filename-sections-in-reference-harness.md`
 
 ## Scope
@@ -128,7 +128,7 @@ Current state:
 Follow-up issues:
 
 - [x] `issues/open/5324-support-dependency-export-class-declarations.md`
-- [x] `issues/open/5426-resolve-symlink-filename-aliases-for-local-imports.md`
+- [x] `issues/open/5426a-resolve-symlink-filename-aliases-for-local-imports.md`
 - [x] `issues/open/5292-skip-tsconfig-filename-sections-in-reference-harness.md`
 
 ## Notes

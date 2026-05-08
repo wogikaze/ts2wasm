@@ -85,9 +85,9 @@ In scope:
 Out of scope:
 
 - Initialized `export let` and export-let destructuring forms, tracked by
-  `issues/done/5175-support-export-let-destructuring-declarations.md`.
+  `issues/open/5175-support-export-let-destructuring-declarations.md`.
 - `export var`, tracked by
-  `issues/done/5283-support-entry-export-var-declarations.md`.
+  `issues/open/5283-support-entry-export-var-declarations.md`.
 - Named export declarations such as `export { x2 };`.
 - Default exports such as `export default x4;`.
 - Full module graph loading or emit fidelity.

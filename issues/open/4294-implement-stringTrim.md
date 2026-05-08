@@ -150,12 +150,12 @@ Already implemented. `RuntimeFn::StringTrim` exists in the codebase with WAT emi
 
 ---
 
-## ⚠️ False-done audit (re-opened from issues/done/)
+## ⚠️ False-done audit (re-opened from issues/open/)
 
 **Why this was false-done**: This is a generated triage bucket issue. It was
 created as a `class: blocked` spike with `depends_on` pointing to a parent
 meta-issue (5004 or 5007). When the parent meta-issue was moved to
-`issues/done/`, this child issue was dragged along without any implementation
+`issues/open/`, this child issue was dragged along without any implementation
 or triage work. The `## Completion evidence` section is unfilled (commits
 placeholder `...`, validation result empty). Zero implementation commits
 reference this issue.
@@ -184,7 +184,7 @@ Date: 2026-05-06
 
 Classification: truly-done.
 
-Audit result: retained in `issues/done/`. This issue has repo-local close evidence
+Audit result: retained in `issues/open/`. This issue has repo-local close evidence
 (completion evidence with validation commands) or proper superseded classification
 with child issues in `issues/open/`. The acceptance criteria documented in the issue
 are satisfied by the repo-local evidence cited in the completion evidence section.

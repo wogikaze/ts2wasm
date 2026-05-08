@@ -12,7 +12,7 @@ updated: 2026-05-06
 ---
 > **Reopened by false-done audit** (2026-05-07)
 > Classification: must-reopen
-> Reason: Batch-migrated to issues/done/ without implementation commits.
+> Reason: Batch-migrated to issues/open/ without implementation commits.
 > Evidence: Empty completion evidence. No feat/fix commit for #1239.
 
 ## Summary
@@ -139,7 +139,7 @@ class A {
 
 - `issues/open/059-implement-parser-syntax-extensions.md` is the broader parser
   syntax epic and should not be selected directly.
-- `issues/done/5251-parse-computed-class-member-names-in-class-declarations.md`
+- `issues/open/5251-parse-computed-class-member-names-in-class-declarations.md`
   is related but covers computed member names, not quoted string-literal names.
 - No existing open issue owned the exact `public static "\""() {}` parser
   failure, so this bucket was split to issue 5267.

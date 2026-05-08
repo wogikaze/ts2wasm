@@ -268,49 +268,49 @@ Duplicate candidates:
   },
   {
     "state": "done",
-    "path": "issues/done/065-implement-parser-syntax.md",
+    "path": "issues/open/065-implement-parser-syntax.md",
     "title": "Implement parser syntax extensions",
     "reason": "same feature label, title overlap"
   },
   {
     "state": "done",
-    "path": "issues/done/065a-merge-duplicate-parser-syntax-issue-into-059.md",
+    "path": "issues/open/065a-merge-duplicate-parser-syntax-issue-into-059.md",
     "title": "Merge duplicate parser syntax issue into 059",
     "reason": "same feature label, title overlap"
   },
   {
     "state": "done",
-    "path": "issues/done/200-implement-parser-syntax.md",
+    "path": "issues/open/200-implement-parser-syntax.md",
     "title": "Implement parser syntax extensions",
     "reason": "same feature label, title overlap"
   },
   {
     "state": "done",
-    "path": "issues/done/243-implement-numeric-literal-separator-parser.md",
+    "path": "issues/open/243-implement-numeric-literal-separator-parser.md",
     "title": "Implement numeric literal separator parser support",
     "reason": "same feature label, title overlap"
   },
   {
     "state": "done",
-    "path": "issues/done/244-implement-bigint-literal-parser-classification.md",
+    "path": "issues/open/244-implement-bigint-literal-parser-classification.md",
     "title": "Implement BigInt literal parser classification",
     "reason": "same feature label, title overlap"
   },
   {
     "state": "done",
-    "path": "issues/done/246-implement-optional-chaining-parser-support.md",
+    "path": "issues/open/246-implement-optional-chaining-parser-support.md",
     "title": "Implement optional chaining parser support",
     "reason": "same feature label, title overlap"
   },
   {
     "state": "done",
-    "path": "issues/done/247-implement-destructuring-binding-pattern-parser.md",
+    "path": "issues/open/247-implement-destructuring-binding-pattern-parser.md",
     "title": "Implement destructuring binding pattern parser support",
     "reason": "same feature label, title overlap"
   },
   {
     "state": "done",
-    "path": "issues/done/290-fix-asi-eof-semicolon-parser-bucket.md",
+    "path": "issues/open/290-fix-asi-eof-semicolon-parser-bucket.md",
     "title": "Fix ASI EOF semicolon parser bucket",
     "reason": "same feature label, title overlap"
   }

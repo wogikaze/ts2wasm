@@ -192,7 +192,7 @@ Duplicate candidates:
 [
   {
     "state": "open",
-    "path": "issues/done/105-implement-accessorWithoutBody.md",
+    "path": "issues/open/105-implement-accessorWithoutBody.md",
     "title": "Implement Accessorwithoutbody",
     "reason": "same reference path, same feature label"
   }

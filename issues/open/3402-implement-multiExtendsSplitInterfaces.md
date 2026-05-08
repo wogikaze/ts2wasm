@@ -63,7 +63,7 @@ TypeScript oracle: accepts the file with diagnostics=[]
 
 This generated bucket remains closed. The DOM `self.cancelAnimationFrame`
 global binding or precise unsupported-DOM diagnostic is owned by
-`issues/open/5429-bind-dom-self-cancelanimationframe-global.md`.
+`issues/open/5429a-bind-dom-self-cancelanimationframe-global.md`.
 
 ## Scope
 

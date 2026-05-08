@@ -15,7 +15,7 @@ status: done
 
 ## Summary
 
-Closed as superseded by `issues/open/5229-resolve-imports-between-filename-sections.md`.
+Closed as superseded by `issues/open/5229a-resolve-imports-between-filename-sections.md`.
 Fresh triage for `moduleMemberMissingErrorIsRelative.ts` reaches the existing
 virtual `@Filename` sibling import resolution blocker before missing exported
 member diagnostics become actionable.
@@ -83,7 +83,7 @@ Do not touch:
 ## Acceptance criteria
 
 - [x] Duplicate candidates below are confirmed as no-match or this issue is superseded
-- [x] Existing owner `issues/open/5229-resolve-imports-between-filename-sections.md` contains the implementation-ready acceptance criteria
+- [x] Existing owner `issues/open/5229a-resolve-imports-between-filename-sections.md` contains the implementation-ready acceptance criteria
 - [x] This closed bucket preserves the exact reference path, diagnostic, source context, visible import, parser AST, and TypeScript oracle evidence
 - [x] No new child issue was needed because the blocker matches an existing open owner
 
@@ -120,7 +120,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] superseded by `issues/open/5229-resolve-imports-between-filename-sections.md`
+- [x] superseded by `issues/open/5229a-resolve-imports-between-filename-sections.md`
 
 ## Notes
 
@@ -185,7 +185,7 @@ TS2307: Cannot find module './foo' or its corresponding type declarations.
 
 Superseded by:
 
-- `issues/open/5229-resolve-imports-between-filename-sections.md`
+- `issues/open/5229a-resolve-imports-between-filename-sections.md`
 
 ## Completion evidence
 

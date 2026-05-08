@@ -12,7 +12,7 @@ updated: 2026-05-06
 ---
 > **Reopened by false-done audit** (2026-05-07)
 > Classification: must-reopen
-> Reason: Batch-migrated to issues/done/ without implementation commits.
+> Reason: Batch-migrated to issues/open/ without implementation commits.
 > Evidence: Empty completion evidence. No feat/fix commit for #1353.
 
 ## Summary
@@ -135,7 +135,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/211-complete-this-receiver-binding-semantics.md` established
+- `issues/open/211-complete-this-receiver-binding-semantics.md` established
   issue-211 diagnostics for unsupported dynamic/function-valued local calls.
 - `issues/open/435-implement-method-call.md` is the broad method-call bucket,
   not an executable slice.

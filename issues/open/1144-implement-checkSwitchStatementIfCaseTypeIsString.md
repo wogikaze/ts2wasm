@@ -126,7 +126,7 @@ issue for array-shaped function/class-method parameter annotations:
   `issues/open/677-implement-arrayFlatMap.md` hit similar issue-211 unknown
   receiver boundaries for array locals, but they are generated buckets and do
   not cover class method parameter annotation tracking.
-- `issues/open/5222-parse-ambient-generic-variable-type-annotations.md`
+- `issues/open/5222a-parse-ambient-generic-variable-type-annotations.md`
   is related for interface-typed receivers, but not array-shaped parameters and
   built-in callback methods.
 

@@ -120,10 +120,10 @@ Current state:
 Follow-up issues:
 
 - [x] created/updated:
-  - `issues/done/267a-web-ui-data-generation-and-script-integration.md`
-  - `issues/done/267b-web-ui-interactive-charts-regression-and-performance-trends.md`
-  - `issues/done/267c-web-ui-real-time-test-run-updates.md`
-  - `issues/done/267d-web-ui-export-theme-and-usage-docs.md`
+  - `issues/open/267a-web-ui-data-generation-and-script-integration.md`
+  - `issues/open/267b-web-ui-interactive-charts-regression-and-performance-trends.md`
+  - `issues/open/267c-web-ui-real-time-test-run-updates.md`
+  - `issues/open/267d-web-ui-export-theme-and-usage-docs.md`
 
 ## Notes
 
@@ -223,7 +223,7 @@ Date: 2026-05-05
 
 Classification: truly-done.
 
-Audit result: retained in `issues/done/`. The issue has repo-local completion evidence, is not marked `blocked` or `triage-needed`, and `python scripts/manager.py check issues` validates the resulting issue graph.
+Audit result: retained in `issues/open/`. The issue has repo-local completion evidence, is not marked `blocked` or `triage-needed`, and `python scripts/manager.py check issues` validates the resulting issue graph.
 
 Evidence files:
 - `issues/open/267-implement-interactive-web-ui-for-test-results.md`

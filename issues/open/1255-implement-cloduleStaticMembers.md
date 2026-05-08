@@ -12,7 +12,7 @@ updated: 2026-05-06
 ---
 > **Reopened by false-done audit** (2026-05-07)
 > Classification: must-reopen
-> Reason: Batch-migrated to issues/done/ without implementation commits.
+> Reason: Batch-migrated to issues/open/ without implementation commits.
 > Evidence: Empty completion evidence. No feat/fix commit for #1255.
 
 ## Summary
@@ -133,7 +133,7 @@ class Clod {
 
 ## Duplicate detection
 
-- `issues/done/5254-parse-asi-between-static-class-fields.md` is related but
+- `issues/open/5254-parse-asi-between-static-class-fields.md` is related but
   owns ASI between uninitialized static fields, not modifier-prefixed static
   fields with initializers.
 - No existing implementation-ready child owned `private static x = 10;`, so

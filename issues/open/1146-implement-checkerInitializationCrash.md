@@ -13,7 +13,7 @@ completed: 2026-05-06
 ---
 > **Reopened by false-done audit** (2026-05-07)
 > Classification: must-reopen
-> Reason: Batch-migrated to issues/done/ without implementation commits.
+> Reason: Batch-migrated to issues/open/ without implementation commits.
 > Evidence: Empty completion evidence. No feat/fix commit for #1146.
 
 ## Summary
@@ -111,7 +111,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] none; superseded by `issues/done/400-implement-ambient-declaration-erasure-boundary.md` and `issues/done/5044-frontend-ambient-erasure.md`
+- [x] none; superseded by `issues/done/400-implement-ambient-declaration-erasure-boundary.md` and `issues/open/5044-frontend-ambient-erasure.md`
 
 ## Notes
 
@@ -128,7 +128,7 @@ initialization or module-resolution implementation slice.
 Superseded by:
 
 - `issues/done/400-implement-ambient-declaration-erasure-boundary.md`
-- `issues/done/5044-frontend-ambient-erasure.md`
+- `issues/open/5044-frontend-ambient-erasure.md`
 
 Rationale: this representative stops at the first `declare global { ... }`.
 `docs/language-reference/typescript-features.md` classifies `declare global`
@@ -137,7 +137,7 @@ currently emits the expected issue-400 diagnostic for that construct.
 
 Potential later blockers are already split or remain outside this first
 observable blocker: `export as namespace` is tracked by
-`issues/open/5231-parse-export-as-namespace-declarations.md`; external package
+`issues/open/5231a-parse-export-as-namespace-declarations.md`; external package
 module resolution and declaration-file checker behavior are not reached while
 `declare global` is rejected.
 

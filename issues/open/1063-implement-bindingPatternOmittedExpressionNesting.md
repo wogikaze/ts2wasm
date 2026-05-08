@@ -108,7 +108,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] added: `issues/done/5175-support-export-let-destructuring-declarations.md`
+- [x] added: `issues/open/5175-support-export-let-destructuring-declarations.md`
 
 ## Notes
 
@@ -132,7 +132,7 @@ Generated on 2026-05-06.
 - Visible symbols before failure: none
 - Compiler evidence: tokens succeed; AST and resolved dumps fail at the `export` token before parsing the declaration.
 - TypeScript oracle: accepts the file with no diagnostics.
-- Superseding child: `issues/done/5175-support-export-let-destructuring-declarations.md`
+- Superseding child: `issues/open/5175-support-export-let-destructuring-declarations.md`
 
 ## Completion evidence
 
@@ -160,7 +160,7 @@ Date: 2026-05-06
 
 Classification: truly-done.
 
-Audit result: retained in `issues/done/`. This issue has repo-local close evidence
+Audit result: retained in `issues/open/`. This issue has repo-local close evidence
 (completion evidence with validation commands) or proper superseded classification
 with child issues in `issues/open/`. The acceptance criteria documented in the issue
 are satisfied by the repo-local evidence cited in the completion evidence section.

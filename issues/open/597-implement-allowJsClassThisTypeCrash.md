@@ -200,13 +200,13 @@ Duplicate candidates:
 [
   {
     "state": "open",
-    "path": "issues/done/132-implement-allowJsClassThisTypeCrash.md",
+    "path": "issues/open/132-implement-allowJsClassThisTypeCrash.md",
     "title": "Implement Allowjsclassthistypecrash",
     "reason": "same reference path, title overlap"
   },
   {
     "state": "open",
-    "path": "issues/done/511-implement-allowJsClassThisTypeCrash.md",
+    "path": "issues/open/511-implement-allowJsClassThisTypeCrash.md",
     "title": "Implement Allowjsclassthistypecrash",
     "reason": "same reference path, same feature label, title overlap"
   }

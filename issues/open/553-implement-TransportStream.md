@@ -215,7 +215,7 @@ Duplicate candidates:
 [
   {
     "state": "open",
-    "path": "issues/done/081-implement-TransportStream.md",
+    "path": "issues/open/081-implement-TransportStream.md",
     "title": "Implement Transportstream",
     "reason": "same reference path, same feature label, title overlap"
   },
@@ -227,7 +227,7 @@ Duplicate candidates:
   },
   {
     "state": "open",
-    "path": "issues/done/464-implement-FunctionDeclaration-parser-syntax.md",
+    "path": "issues/open/464-implement-FunctionDeclaration-parser-syntax.md",
     "title": "Implement Functiondeclaration Parser Syntax",
     "reason": "same feature label, title overlap"
   },
@@ -239,7 +239,7 @@ Duplicate candidates:
   },
   {
     "state": "open",
-    "path": "issues/done/550-implement-FunctionDeclaration-parser-syntax.md",
+    "path": "issues/open/550-implement-FunctionDeclaration-parser-syntax.md",
     "title": "Implement Functiondeclaration Parser Syntax",
     "reason": "same feature label, title overlap"
   },
@@ -251,25 +251,25 @@ Duplicate candidates:
   },
   {
     "state": "done",
-    "path": "issues/done/065-implement-parser-syntax.md",
+    "path": "issues/open/065-implement-parser-syntax.md",
     "title": "Implement parser syntax extensions",
     "reason": "same feature label, title overlap"
   },
   {
     "state": "done",
-    "path": "issues/done/065a-merge-duplicate-parser-syntax-issue-into-059.md",
+    "path": "issues/open/065a-merge-duplicate-parser-syntax-issue-into-059.md",
     "title": "Merge duplicate parser syntax issue into 059",
     "reason": "same feature label, title overlap"
   },
   {
     "state": "done",
-    "path": "issues/done/200-implement-parser-syntax.md",
+    "path": "issues/open/200-implement-parser-syntax.md",
     "title": "Implement parser syntax extensions",
     "reason": "same feature label, title overlap"
   },
   {
     "state": "done",
-    "path": "issues/done/243-implement-numeric-literal-separator-parser.md",
+    "path": "issues/open/243-implement-numeric-literal-separator-parser.md",
     "title": "Implement numeric literal separator parser support",
     "reason": "same feature label, title overlap"
   }
@@ -460,9 +460,9 @@ Remaining risks:
 
 - none
 
-## ⚠️ False-done audit (re-opened from `issues/done/`)
+## ⚠️ False-done audit (re-opened from `issues/open/`)
 
-**Why this was false-done**: This generated triage spike issue was moved to `issues/done/` without actual triage or implementation. It has `type: spike` and `class: blocked` depending on meta-issues (`depends_on: []` or `[5001]`), with zero implementation commits referencing this issue, empty completion evidence (commits `...`), and no Status note or Close note documenting triage results.
+**Why this was false-done**: This generated triage spike issue was moved to `issues/open/` without actual triage or implementation. It has `type: spike` and `class: blocked` depending on meta-issues (`depends_on: []` or `[5001]`), with zero implementation commits referencing this issue, empty completion evidence (commits `...`), and no Status note or Close note documenting triage results.
 
 **True-done checklist** (all must pass):
 1. [x] Perform actual triage review of the reference failure case(s)

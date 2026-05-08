@@ -39,7 +39,7 @@ mise run reference-coverage -- tsc --path-filter reference/typescript/tests/case
 
 ## Desired final state
 
-This generated bucket is closed as superseded by `issues/done/035-implement-break-continue.md` for the current invalid-break diagnostic. Do not implement directly from this bucket.
+This generated bucket is closed as superseded by `issues/open/035-implement-break-continue.md` for the current invalid-break diagnostic. Do not implement directly from this bucket.
 
 ## Scope
 
@@ -122,7 +122,7 @@ Follow-up issues:
 ## Duplicate detection
 
 - `issues/open/1084-implement-breakNotInIterationOrSwitchStatement.md` has the same standalone `break;` evidence and was closed in the same triage slice.
-- `issues/done/035-implement-break-continue.md` owns break/continue statement support and the current invalid-break diagnostic behavior.
+- `issues/open/035-implement-break-continue.md` owns break/continue statement support and the current invalid-break diagnostic behavior.
 - Switch implementation issues are not matches: no switch syntax is present in this reference case.
 
 ## Smart triage
@@ -178,7 +178,7 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- superseded by `issues/done/035-implement-break-continue.md`
+- superseded by `issues/open/035-implement-break-continue.md`
 
 Validation result:
 
@@ -198,7 +198,7 @@ Date: 2026-05-06
 
 Classification: truly-done.
 
-Audit result: retained in `issues/done/`. This issue has repo-local close evidence
+Audit result: retained in `issues/open/`. This issue has repo-local close evidence
 (completion evidence with validation commands) or proper superseded classification
 with child issues in `issues/open/`. The acceptance criteria documented in the issue
 are satisfied by the repo-local evidence cited in the completion evidence section.

@@ -138,8 +138,8 @@ Follow-up issues:
 
 - `issues/done/017b-implement-gc-strategy.md` - issues/done/017b-implement-gc-strategy.md (same feature label, same group key)
 - `issues/open/021-implement-full-wasm-backend.md` - issues/open/021-implement-full-wasm-backend.md (same feature label, same group key)
-- `issues/done/050-implement-date.md` - Implement Date (same feature label, same group key, title overlap)
-- `issues/done/052-implement-json.md` - Implement JSON (same feature label, same group key, title overlap)
+- `issues/open/050-implement-date.md` - Implement Date (same feature label, same group key, title overlap)
+- `issues/open/052-implement-json.md` - Implement JSON (same feature label, same group key, title overlap)
 - `issues/open/052d-implement-json-stringify-broader-replacer-semantics.md` - Implement broader JSON.stringify replacer semantics (same feature label, same group key, title overlap)
 - `issues/open/064-implement-name-resolution.md` - Implement name resolution (triaged - superseded by test262 metadata issues) (same reference path, same feature label, same group key, title overlap)
 - `issues/open/066-implement-regexp-literal.md` - Implement RegExp literal support (same feature label, same group key, title overlap)
@@ -865,19 +865,19 @@ Remaining risks:
 
 ## Close note
 
-Closed as duplicate of `issues/done/050-implement-date.md`. All work tracked under issue 050.
+Closed as duplicate of `issues/open/050-implement-date.md`. All work tracked under issue 050.
 
 superseded-by: 050
 
 
 ---
 
-## ⚠️ False-done audit (re-opened from issues/done/)
+## ⚠️ False-done audit (re-opened from issues/open/)
 
 **Why this was false-done**: This is a generated triage bucket issue. It was
 created as a `class: blocked` spike with `depends_on` pointing to a parent
 meta-issue (5004 or 5007). When the parent meta-issue was moved to
-`issues/done/`, this child issue was dragged along without any implementation
+`issues/open/`, this child issue was dragged along without any implementation
 or triage work. The `
 ## 重複整理メモ
 

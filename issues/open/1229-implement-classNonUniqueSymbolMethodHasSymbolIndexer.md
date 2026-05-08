@@ -14,7 +14,7 @@ status: done
 ---
 > **Reopened by false-done audit** (2026-05-07)
 > Classification: must-reopen
-> Reason: Batch-migrated to issues/done/ without implementation commits.
+> Reason: Batch-migrated to issues/open/ without implementation commits.
 > Evidence: Empty completion evidence. No feat/fix commit for #1229.
 
 ## Summary
@@ -118,7 +118,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] superseded by `issues/done/5251-parse-computed-class-member-names-in-class-declarations.md`
+- [x] superseded by `issues/open/5251-parse-computed-class-member-names-in-class-declarations.md`
 
 ## Notes
 
@@ -128,7 +128,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/5251-parse-computed-class-member-names-in-class-declarations.md` - exact feature family for computed class member names in class declarations, including instance computed methods
+- `issues/open/5251-parse-computed-class-member-names-in-class-declarations.md` - exact feature family for computed class member names in class declarations, including instance computed methods
 - `issues/open/5214-computed-symbol-iterator-prerequisite-for-spread.md` - related class-expression shape, not exact for this top-level class declaration
 
 ## Smart triage
@@ -192,13 +192,13 @@ binding e1 type: () => number
 
 Superseding owner:
 
-- `issues/done/5251-parse-computed-class-member-names-in-class-declarations.md`
+- `issues/open/5251-parse-computed-class-member-names-in-class-declarations.md`
 
 ## Completion evidence
 
 Commits:
 
-- Superseded by `issues/done/5251-parse-computed-class-member-names-in-class-declarations.md`; see local commit for this issue cleanup.
+- Superseded by `issues/open/5251-parse-computed-class-member-names-in-class-declarations.md`; see local commit for this issue cleanup.
 
 Validation result:
 

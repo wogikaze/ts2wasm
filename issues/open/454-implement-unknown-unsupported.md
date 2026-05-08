@@ -134,7 +134,7 @@ Follow-up issues:
 - `issues/open/313-implement-array-builtin.md` - Implement array-builtin support (same feature label, same group key)
 - `issues/open/314-implement-string-builtin.md` - Implement string-builtin support (same feature label, same group key)
 - `issues/open/060-investigate-unknown-unsupported-cases.md` - Investigate and classify unknown-unsupported diagnostic cases (same feature label, same group key, title overlap)
-- `issues/done/060a-close-unknown-unsupported-fixed-window-spike.md` - Close unknown-unsupported fixed-window spike (same feature label, same group key, title overlap)
+- `issues/open/060a-close-unknown-unsupported-fixed-window-spike.md` - Close unknown-unsupported fixed-window spike (same feature label, same group key, title overlap)
 - `issues/open/226-implement-parameter-properties.md` - Implement TypeScript parameter properties (same feature label, same group key)
 
 ## Smart triage

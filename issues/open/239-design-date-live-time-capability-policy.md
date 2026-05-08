@@ -21,7 +21,7 @@ Problem: `new Date()` and `Date.now()` currently have issue-linked unsupported d
 
 ## Current failure
 
-`issues/done/050-implement-date.md` records diagnostics for `Date.now()` and no-argument `new Date()` that require an auditable time capability policy before those entry points are enabled.
+`issues/open/050-implement-date.md` records diagnostics for `Date.now()` and no-argument `new Date()` that require an auditable time capability policy before those entry points are enabled.
 
 ## Desired final state
 
@@ -48,7 +48,7 @@ Out of scope:
 Expected:
 
 - `docs/`
-- `issues/done/050-implement-date.md`
+- `issues/open/050-implement-date.md`
 - `issues/open/`
 
 Do not touch:
@@ -146,7 +146,7 @@ Date: 2026-05-06
 
 Classification: truly-done.
 
-Audit result: retained in `issues/done/`. This issue has repo-local close evidence
+Audit result: retained in `issues/open/`. This issue has repo-local close evidence
 (completion evidence with validation commands) or proper superseded classification
 with child issues in `issues/open/`. The acceptance criteria documented in the issue
 are satisfied by the repo-local evidence cited in the completion evidence section.

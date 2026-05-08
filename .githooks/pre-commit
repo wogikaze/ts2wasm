@@ -16,8 +16,8 @@ else
 fi
 
 if printf '%s\n' "$staged_files" | grep -Eq '^(issues/|scripts/gen/update-issue-index\.py|scripts/check/issue-health\.py)'; then
-  echo "pre-commit: issues/ mechanical checks"
-  python3 scripts/check/issue-health.py
+  echo "pre-commit: issues/ mechanical checks (staged files only)"
+  echo "$staged_files" | python3 scripts/check/issue-health-staged.py
 else
   echo "pre-commit: skip issues check; no staged issues/scripts changes"
 fi

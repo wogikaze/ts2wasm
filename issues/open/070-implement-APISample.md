@@ -250,25 +250,25 @@ Duplicate candidates:
   },
   {
     "state": "open",
-    "path": "issues/done/070-implement-APISample.md",
+    "path": "issues/open/070-implement-APISample.md",
     "title": "Implement Apisample",
     "reason": "same reference path, same feature label, title overlap"
   },
   {
     "state": "open",
-    "path": "issues/done/200-implement-parser-syntax.md",
+    "path": "issues/open/200-implement-parser-syntax.md",
     "title": "Implement parser syntax extensions",
     "reason": "same feature label, title overlap"
   },
   {
     "state": "done",
-    "path": "issues/done/065-implement-parser-syntax.md",
+    "path": "issues/open/065-implement-parser-syntax.md",
     "title": "Implement parser syntax extensions",
     "reason": "same feature label, title overlap"
   },
   {
     "state": "done",
-    "path": "issues/done/065a-merge-duplicate-parser-syntax-issue-into-059.md",
+    "path": "issues/open/065a-merge-duplicate-parser-syntax-issue-into-059.md",
     "title": "Merge duplicate parser syntax issue into 059",
     "reason": "same feature label, title overlap"
   }
@@ -720,7 +720,7 @@ Date: 2026-05-06
 
 Classification: truly-done.
 
-Audit result: retained in `issues/done/`. This issue has repo-local close evidence
+Audit result: retained in `issues/open/`. This issue has repo-local close evidence
 (completion evidence with validation commands) or proper superseded classification
 with child issues in `issues/open/`. The acceptance criteria documented in the issue
 are satisfied by the repo-local evidence cited in the completion evidence section.

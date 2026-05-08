@@ -117,7 +117,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] created: `issues/open/5418-parse-dynamic-import-call-expressions.md`
+- [x] created: `issues/open/5418a-parse-dynamic-import-call-expressions.md`
 
 ## Notes
 
@@ -192,7 +192,7 @@ missing `./b`, but that is hidden until the parser accepts dynamic import calls.
 
 Split to:
 
-- `issues/open/5418-parse-dynamic-import-call-expressions.md`
+- `issues/open/5418a-parse-dynamic-import-call-expressions.md`
 
 ## Completion evidence
 

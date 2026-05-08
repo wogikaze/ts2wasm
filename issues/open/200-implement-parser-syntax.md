@@ -73,7 +73,7 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [x] Duplicate candidates are confirmed as superseding issues: `issues/open/059-implement-parser-syntax-extensions.md`, `issues/open/065-implement-parser-syntax.md`, and `issues/done/065a-merge-duplicate-parser-syntax-issue-into-059.md`.
+- [x] Duplicate candidates are confirmed as superseding issues: `issues/open/059-implement-parser-syntax-extensions.md`, `issues/open/065-implement-parser-syntax.md`, and `issues/open/065a-merge-duplicate-parser-syntax-issue-into-059.md`.
 - [x] No new child issue is required for the representative path because focused coverage now reports `build_pass`.
 - [x] Source context, diagnostic code, visible symbols, and AST/resolved evidence are recorded below.
 - [x] The exact reference path and diagnostic/stdout change are named below.
@@ -132,7 +132,7 @@ Follow-up issues:
 
 - `issues/open/059-implement-parser-syntax-extensions.md` - Implement parser syntax extensions for TypeScript and advanced JS (same feature label, title overlap)
 - `issues/open/065-implement-parser-syntax.md` - Implement parser syntax extensions (same feature label, title overlap)
-- `issues/done/065a-merge-duplicate-parser-syntax-issue-into-059.md` - Merge duplicate parser syntax issue into 059 (same feature label, title overlap)
+- `issues/open/065a-merge-duplicate-parser-syntax-issue-into-059.md` - Merge duplicate parser syntax issue into 059 (same feature label, title overlap)
 
 ## Closure note
 
@@ -171,10 +171,10 @@ Remaining risks:
 
 ---
 
-## ⚠️ False-done audit (re-opened from issues/done/)
+## ⚠️ False-done audit (re-opened from issues/open/)
 
 **Why this was false-done**: This issue has `class: triage-needed` and was moved to
-`issues/done/` as part of a batch close cycle without actual triage completion.
+`issues/open/` as part of a batch close cycle without actual triage completion.
 All scope/acceptance checkboxes were batch-checked (`[x]`) but there is no "Status"
 note, no close note, and no implementation commits. No completion evidence is filled.
 
@@ -199,7 +199,7 @@ Date: 2026-05-06
 
 Classification: truly-done.
 
-Audit result: retained in `issues/done/`. This issue has repo-local close evidence
+Audit result: retained in `issues/open/`. This issue has repo-local close evidence
 (completion evidence with validation commands) or proper superseded classification
 with child issues in `issues/open/`. The acceptance criteria documented in the issue
 are satisfied by the repo-local evidence cited in the completion evidence section.

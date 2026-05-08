@@ -145,7 +145,7 @@ Follow-up issues:
 
 - [x] created: `issues/open/5469-support-named-exports-of-namespace-imports-in-dependency-modules.md`
 - [x] existing: `issues/open/5438-support-named-exports-of-local-interfaces.md`
-- [x] existing: `issues/open/5412-report-ts2451-duplicate-const-filename-sections.md`
+- [x] existing: `issues/open/5412a-report-ts2451-duplicate-const-filename-sections.md`
 
 ## Notes
 
@@ -156,7 +156,7 @@ Follow-up issues:
 ## Duplicate detection
 
 - `issues/open/5438-support-named-exports-of-local-interfaces.md`: related type-only named export owner, but not exact for namespace-import value export from a dependency module.
-- `issues/open/5412-report-ts2451-duplicate-const-filename-sections.md`: related duplicate-const diagnostic owner for the broad coverage classification.
+- `issues/open/5412a-report-ts2451-duplicate-const-filename-sections.md`: related duplicate-const diagnostic owner for the broad coverage classification.
 - No exact existing implementation-ready owner was found for dependency-module `export { B }` over a namespace-import value binding, so issue 5469 was created.
 
 ## Smart triage

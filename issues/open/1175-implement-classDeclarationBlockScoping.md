@@ -14,7 +14,7 @@ status: done
 ---
 > **Reopened by false-done audit** (2026-05-07)
 > Classification: must-reopen
-> Reason: Batch-migrated to issues/done/ without implementation commits.
+> Reason: Batch-migrated to issues/open/ without implementation commits.
 > Evidence: Empty completion evidence. No feat/fix commit for #1175.
 
 ## Summary
@@ -22,7 +22,7 @@ status: done
 Closed after splitting the two current representative blockers:
 
 - `issues/open/5249-scope-block-local-class-declarations.md`
-- `issues/done/5250-parse-class-declarations-in-nested-block-statements.md`
+- `issues/open/5250-parse-class-declarations-in-nested-block-statements.md`
 
 ## Problem
 

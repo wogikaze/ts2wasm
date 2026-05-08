@@ -153,7 +153,7 @@ Follow-up issues:
 Split from generated bucket
 `issues/open/1239-implement-classStaticPropertyAccess.md`.
 Related but distinct open issue:
-`issues/done/5251-parse-computed-class-member-names-in-class-declarations.md`.
+`issues/open/5251-parse-computed-class-member-names-in-class-declarations.md`.
 
 ## Completion evidence
 

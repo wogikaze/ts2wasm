@@ -218,19 +218,19 @@ Duplicate candidates:
   },
   {
     "state": "open",
-    "path": "issues/done/200-implement-parser-syntax.md",
+    "path": "issues/open/200-implement-parser-syntax.md",
     "title": "Implement parser syntax extensions",
     "reason": "same feature label, title overlap"
   },
   {
     "state": "done",
-    "path": "issues/done/065-implement-parser-syntax.md",
+    "path": "issues/open/065-implement-parser-syntax.md",
     "title": "Implement parser syntax extensions",
     "reason": "same feature label, title overlap"
   },
   {
     "state": "done",
-    "path": "issues/done/065a-merge-duplicate-parser-syntax-issue-into-059.md",
+    "path": "issues/open/065a-merge-duplicate-parser-syntax-issue-into-059.md",
     "title": "Merge duplicate parser syntax issue into 059",
     "reason": "same feature label, title overlap"
   }
@@ -473,9 +473,9 @@ Remaining risks:
 - none
 ---
 
-## ⚠️ False-done audit (re-opened from issues/done/)
+## ⚠️ False-done audit (re-opened from issues/open/)
 
-**Why this was false-done**: This generated triage spike issue was copy-closed to `issues/done/` as part of a batch close cycle without actual triage completion. The old done/ copy only changed checkbox state without adding a status note, child issues, implementation commits, or completion evidence. This pass fills the missing evidence and closes it as stale build-pass.
+**Why this was false-done**: This generated triage spike issue was copy-closed to `issues/open/` as part of a batch close cycle without actual triage completion. The old done/ copy only changed checkbox state without adding a status note, child issues, implementation commits, or completion evidence. This pass fills the missing evidence and closes it as stale build-pass.
 
 **True-done checklist** (all must pass):
 

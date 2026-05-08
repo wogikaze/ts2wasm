@@ -125,7 +125,7 @@ Follow-up issues:
 ## Duplicate detection
 
 - Fresh triage found no current compiler blocker.
-- `issues/done/3494-implement-newAbstractInstance-name-resolution.md`
+- `issues/open/3494-implement-newAbstractInstance-name-resolution.md`
   records the same closure precedent for a build-passing TS2351 constructability
   oracle diagnostic.
 - Open construct-signature parser issues such as

@@ -118,7 +118,7 @@ Follow-up issues:
 ## Duplicate detection
 
 - `issues/open/418-implement-break-continue.md` - Implement break/continue (same feature label, title overlap)
-- `issues/done/035-implement-break-continue.md` - Implement break and continue statements (same feature label, title overlap)
+- `issues/open/035-implement-break-continue.md` - Implement break and continue statements (same feature label, title overlap)
 - `issues/open/209-implement-labeled-break-continue.md` - Implement labeled break and continue (same feature label, title overlap)
 
 ## Smart triage

@@ -14,7 +14,7 @@ status: done
 ---
 > **Reopened by false-done audit** (2026-05-07)
 > Classification: must-reopen
-> Reason: Batch-migrated to issues/done/ without implementation commits.
+> Reason: Batch-migrated to issues/open/ without implementation commits.
 > Evidence: Empty completion evidence. No feat/fix commit for #1128.
 
 ## Summary
@@ -25,7 +25,7 @@ Triage chainedSpecializationToObjectTypeLiteral across 1 failing reference test 
 
 Reference test results show 1 case failing in directory `chainedSpecializationToObjectTypeLiteral` with diagnostics: object-literal. Fresh triage shows tokens and AST succeed; lowering stops at the current `issue-211` unknown receiver class diagnostic for `s.groupBy(...)`.
 
-Problem: `chainedSpecializationToObjectTypeLiteral` is too broad for direct implementation. Its current observable blocker is now tracked by `issues/open/5222-parse-ambient-generic-variable-type-annotations.md`.
+Problem: `chainedSpecializationToObjectTypeLiteral` is too broad for direct implementation. Its current observable blocker is now tracked by `issues/open/5222a-parse-ambient-generic-variable-type-annotations.md`.
 
 ## Current failure
 
@@ -43,7 +43,7 @@ mise run reference-coverage -- tsc --path-filter reference/typescript/tests/case
 
 ## Desired final state
 
-This generated bucket is superseded by `issues/open/5222-parse-ambient-generic-variable-type-annotations.md`. Do not implement directly from this bucket.
+This generated bucket is superseded by `issues/open/5222a-parse-ambient-generic-variable-type-annotations.md`. Do not implement directly from this bucket.
 
 ## Scope
 
@@ -115,7 +115,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] created: `issues/open/5222-parse-ambient-generic-variable-type-annotations.md`
+- [x] created: `issues/open/5222a-parse-ambient-generic-variable-type-annotations.md`
 
 ## Notes
 
@@ -206,7 +206,7 @@ blocker is tracked by child issue 5222.
 
 Commits:
 
-- child issue: `issues/open/5222-parse-ambient-generic-variable-type-annotations.md`
+- child issue: `issues/open/5222a-parse-ambient-generic-variable-type-annotations.md`
 
 Validation result:
 

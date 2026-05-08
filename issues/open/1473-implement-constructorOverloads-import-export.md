@@ -12,13 +12,13 @@ updated: 2026-05-07
 ---
 > **Reopened by false-done audit** (2026-05-07)
 > Classification: must-reopen
-> Reason: Batch-migrated to issues/done/ without implementation commits.
+> Reason: Batch-migrated to issues/open/ without implementation commits.
 > Evidence: Empty completion evidence. No feat/fix commit for #1473.
 
 ## Summary
 
 Closed by splitting the current representative blocker to
-`issues/done/5357-avoid-eval-diagnostic-for-qualified-function-constructors.md`
+`issues/open/5357-avoid-eval-diagnostic-for-qualified-function-constructors.md`
 and mapping the remaining affected files to existing owners.
 
 Fresh coverage shows the original import/export bucket is stale: one affected
@@ -146,7 +146,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] created: `issues/done/5357-avoid-eval-diagnostic-for-qualified-function-constructors.md`
+- [x] created: `issues/open/5357-avoid-eval-diagnostic-for-qualified-function-constructors.md`
 - [x] existing: `issues/open/5232-w0-fixture-ize-runtimelinkplan-linker-structure-tests.md`
 - [x] existing: `issues/open/5334-parse-class-constructor-overload-signatures.md`
 

@@ -12,7 +12,7 @@ updated: 2026-05-06
 ---
 > **Reopened by false-done audit** (2026-05-07)
 > Classification: must-reopen
-> Reason: Batch-migrated to issues/done/ without implementation commits.
+> Reason: Batch-migrated to issues/open/ without implementation commits.
 > Evidence: Empty completion evidence. No feat/fix commit for #1220.
 
 ## Summary
@@ -139,7 +139,7 @@ for (const row of ['1', '2', '3', '4', '5']) {
 
 ## Duplicate detection
 
-- `issues/done/5184-parse-const-enum-declarations.md` is related only by the
+- `issues/open/5184-parse-const-enum-declarations.md` is related only by the
   generic missing-initializer diagnostic; it covers `const enum`, not typed
   variable declarations with initializers.
 - `issues/open/1444-implement-constDeclarations-unknown-unsupported.md` is a

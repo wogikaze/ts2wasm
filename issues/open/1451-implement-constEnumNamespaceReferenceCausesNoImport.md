@@ -14,7 +14,7 @@ status: done
 ---
 > **Reopened by false-done audit** (2026-05-07)
 > Classification: must-reopen
-> Reason: Batch-migrated to issues/done/ without implementation commits.
+> Reason: Batch-migrated to issues/open/ without implementation commits.
 > Evidence: Empty completion evidence. No feat/fix commit for #1451.
 
 ## Summary
@@ -25,7 +25,7 @@ frontend blockers:
 
 - `constEnumNamespaceReferenceCausesNoImport.ts` stops at the existing
   `const enum` parser misclassification owned by
-  `issues/done/5184-parse-const-enum-declarations.md`.
+  `issues/open/5184-parse-const-enum-declarations.md`.
 - `constEnumNamespaceReferenceCausesNoImport2.ts` stops at a top-level
   `export namespace ConstEnumOnlyModule { ... }` static export boundary, split
   to `issues/open/5352-parse-export-namespace-declarations.md`.
@@ -94,7 +94,7 @@ Do not touch:
 ## Acceptance criteria
 
 - [x] Duplicate/owner candidates are confirmed and this issue is split.
-- [x] `issues/done/5184-parse-const-enum-declarations.md` records the
+- [x] `issues/open/5184-parse-const-enum-declarations.md` records the
       `constEnumNamespaceReferenceCausesNoImport.ts` first blocker.
 - [x] `issues/open/5352-parse-export-namespace-declarations.md` records the
       `constEnumNamespaceReferenceCausesNoImport2.ts` first blocker.
@@ -139,7 +139,7 @@ Current state:
 Follow-up issues:
 
 - [x] created: `issues/open/5352-parse-export-namespace-declarations.md`
-- [x] updated: `issues/done/5184-parse-const-enum-declarations.md`
+- [x] updated: `issues/open/5184-parse-const-enum-declarations.md`
 
 ## Notes
 
@@ -150,7 +150,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/5184-parse-const-enum-declarations.md` covers the first file's
+- `issues/open/5184-parse-const-enum-declarations.md` covers the first file's
   current `const enum` parser misclassification.
 - No existing issue matched the second file's top-level
   `export namespace ConstEnumOnlyModule { ... }` static export boundary; issue

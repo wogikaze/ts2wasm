@@ -54,7 +54,7 @@ Out of scope:
 
 Expected:
 
-- `issues/done/050-implement-date.md`
+- `issues/open/050-implement-date.md`
 - `issues/open/`
 - `issues/index.md`
 - `fixtures/builtins-and-io/`
@@ -112,4 +112,4 @@ Date: 2026-05-07
 
 Classification: truly-done.
 
-Audit result: retained in issues/done/. Implementation commits confirmed.
+Audit result: retained in issues/open/. Implementation commits confirmed.

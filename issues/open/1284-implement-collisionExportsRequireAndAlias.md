@@ -12,7 +12,7 @@ updated: 2026-05-07
 ---
 > **Reopened by false-done audit** (2026-05-07)
 > Classification: must-reopen
-> Reason: Batch-migrated to issues/done/ without implementation commits.
+> Reason: Batch-migrated to issues/open/ without implementation commits.
 > Evidence: Empty completion evidence. No feat/fix commit for #1284.
 
 ## Summary
@@ -73,7 +73,7 @@ Do not touch:
 ## Acceptance criteria
 
 - [x] Duplicate candidates below are confirmed as no-match or this issue is superseded
-- [x] Superseded by `issues/open/5229-resolve-imports-between-filename-sections.md`
+- [x] Superseded by `issues/open/5229a-resolve-imports-between-filename-sections.md`
 - [x] Smart triage evidence below includes failing path, diagnostic code, source context, visible symbols, and parser/TypeScript evidence
 - [x] Superseding issue 5229 acceptance names the same virtual `@Filename` module-resolution behavior
 
@@ -110,7 +110,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] superseded by: `issues/open/5229-resolve-imports-between-filename-sections.md`
+- [x] superseded by: `issues/open/5229a-resolve-imports-between-filename-sections.md`
 
 ## Notes
 
@@ -120,7 +120,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/open/5229-resolve-imports-between-filename-sections.md` owns registering TypeScript reference `// @Filename:` sections as virtual module paths and resolving local imports between them.
+- `issues/open/5229a-resolve-imports-between-filename-sections.md` owns registering TypeScript reference `// @Filename:` sections as virtual module paths and resolving local imports between them.
 
 ## Smart triage
 
@@ -183,7 +183,7 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- superseded by `issues/open/5229-resolve-imports-between-filename-sections.md`
+- superseded by `issues/open/5229a-resolve-imports-between-filename-sections.md`
 
 Validation result:
 

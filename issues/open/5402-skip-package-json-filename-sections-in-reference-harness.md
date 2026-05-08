@@ -207,7 +207,7 @@ Also owns `issues/done/3579-implement-nodeNextEsmImportsOfPackagesWithExtensionl
 fresh triage stops in virtual `node_modules/@types/ip/package.json` at the
 first JSON property colon before package `main` / `types` resolution for
 extensionless mains becomes actionable.
-Also owns `issues/done/3580-implement-nodeNextImportModeImplicitIndexResolution-import-export.md`:
+Also owns `issues/open/3580-implement-nodeNextImportModeImplicitIndexResolution-import-export.md`:
 fresh triage stops in virtual `/node_modules/@types/dedent/package.json` at the
 first JSON property colon before NodeNext implicit index package resolution
 becomes actionable.

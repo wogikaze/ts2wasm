@@ -54,7 +54,7 @@ the `./b` / `./c` virtual re-export graph resolves.
 ## Desired final state
 
 This generated bucket remains closed. The first actionable blocker is owned by
-`issues/open/5229-resolve-imports-between-filename-sections.md`.
+`issues/open/5229a-resolve-imports-between-filename-sections.md`.
 
 ## Scope
 

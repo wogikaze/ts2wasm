@@ -143,7 +143,7 @@ Follow-up issues:
 
 ## Notes
 
-Split from `issues/done/3595-implement-nonInferrableTypePropagation-type-system.md`.
+Split from `issues/open/3595-implement-nonInferrableTypePropagation-type-system.md`.
 The completed issue 5150 owns the diagnostic for true empty element access in
 value position; this issue owns preventing type-only `T[]` syntax from reaching
 that value-position diagnostic.

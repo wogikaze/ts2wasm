@@ -207,7 +207,7 @@ Duplicate candidates:
 [
   {
     "state": "open",
-    "path": "issues/done/192-implement-argsInScope.md",
+    "path": "issues/open/192-implement-argsInScope.md",
     "title": "Implement Argsinscope",
     "reason": "same reference path, same feature label, title overlap"
   }

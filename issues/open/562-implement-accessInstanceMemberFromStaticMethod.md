@@ -251,7 +251,7 @@ Duplicate candidates:
   },
   {
     "state": "open",
-    "path": "issues/done/091-implement-accessInstanceMemberFromStaticMethod.md",
+    "path": "issues/open/091-implement-accessInstanceMemberFromStaticMethod.md",
     "title": "Implement Accessinstancememberfromstaticmethod",
     "reason": "same reference path"
   },
@@ -263,7 +263,7 @@ Duplicate candidates:
   },
   {
     "state": "open",
-    "path": "issues/done/476-implement-accessInstanceMemberFromStaticMethod.md",
+    "path": "issues/open/476-implement-accessInstanceMemberFromStaticMethod.md",
     "title": "Implement Accessinstancememberfromstaticmethod",
     "reason": "same reference path, same feature label"
   }

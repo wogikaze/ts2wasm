@@ -202,7 +202,7 @@ Duplicate candidates:
 [
   {
     "state": "open",
-    "path": "issues/done/116-implement-aliasInstantiationExpressionGenericIntersectionNoCrash.md",
+    "path": "issues/open/116-implement-aliasInstantiationExpressionGenericIntersectionNoCrash.md",
     "title": "Implement Aliasinstantiationexpressiongenericintersectionnocrash",
     "reason": "same reference path, same feature label"
   },
@@ -214,7 +214,7 @@ Duplicate candidates:
   },
   {
     "state": "open",
-    "path": "issues/done/496-implement-aliasInstantiationExpressionGenericIntersectionNoCrash.md",
+    "path": "issues/open/496-implement-aliasInstantiationExpressionGenericIntersectionNoCrash.md",
     "title": "Implement Aliasinstantiationexpressiongenericintersectionnocrash",
     "reason": "same reference path, same feature label"
   }

@@ -122,7 +122,7 @@ Follow-up issues:
 
 - `issues/open/5287-bind-namespace-declarations-for-qualified-value-access.md`
   is related but not a duplicate because this path already build-passes.
-- `issues/open/5409-report-non-exported-namespace-member-type-annotations.md`
+- `issues/open/5409a-report-non-exported-namespace-member-type-annotations.md`
   covers type annotations, not value access.
 - `issues/open/5313-report-non-exported-namespace-member-qualified-heritage.md`
   covers class heritage, not value access.

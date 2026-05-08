@@ -50,7 +50,7 @@ In scope:
 - [x] Update `docs/11-shared-definitions.md` W2 row with completion note
 - [x] Update `docs/05-compatibility-and-semantics.md` W2 coverage
 - [x] Update `current-state.md`
-- [x] Move 5240, 5241, 5242 to issues/done/
+- [x] Move 5240, 5241, 5242 to issues/open/
 
 Out of scope:
 
@@ -123,4 +123,4 @@ Date: 2026-05-07
 
 Classification: truly-done.
 
-Audit result: retained in issues/done/. Implementation commits confirmed.
+Audit result: retained in issues/open/. Implementation commits confirmed.

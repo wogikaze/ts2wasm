@@ -17,7 +17,7 @@ Support array literal spread over a function parameter whose TypeScript type is
 known to be array-like after a `typeof value !== "undefined"` guard.
 
 Split from generated bucket
-`issues/done/3467-implement-narrowingTypeofUndefined-name-resolution.md`.
+`issues/open/3467-implement-narrowingTypeofUndefined-name-resolution.md`.
 
 ## Problem
 

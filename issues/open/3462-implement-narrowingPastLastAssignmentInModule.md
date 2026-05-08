@@ -127,10 +127,10 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/5175-support-export-let-destructuring-declarations.md` is
+- `issues/open/5175-support-export-let-destructuring-declarations.md` is
   related but no-match: it owns initialized `export let` and destructuring
   forms, while this case is typed and uninitialized.
-- `issues/done/5283-support-entry-export-var-declarations.md` is related but
+- `issues/open/5283-support-entry-export-var-declarations.md` is related but
   no-match: it owns `export var`, not `export let`.
 - Broad import/export bucket 432 is no-match because the new issue 5453 is the
   narrow implementation owner.

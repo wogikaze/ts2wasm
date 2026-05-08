@@ -14,7 +14,7 @@ status: done
 ---
 > **Reopened by false-done audit** (2026-05-07)
 > Classification: must-reopen
-> Reason: Batch-migrated to issues/done/ without implementation commits.
+> Reason: Batch-migrated to issues/open/ without implementation commits.
 > Evidence: Empty completion evidence. No feat/fix commit for #1464.
 
 ## Summary
@@ -22,7 +22,7 @@ status: done
 Closed as superseded. Fresh triage shows
 `reference/typescript/tests/cases/compiler/constantEnumAssert.ts` currently
 stops at the same top-level `const enum E4 { ... }` parser misclassification
-already owned by `issues/done/5184-parse-const-enum-declarations.md`.
+already owned by `issues/open/5184-parse-const-enum-declarations.md`.
 
 ## Problem
 
@@ -51,7 +51,7 @@ env TS2WASM_BINARY=/tmp/ts2wasm-issue-blockers-target/debug/ts2wasm python scrip
 ## Desired final state
 
 This generated bucket is closed as superseded by
-`issues/done/5184-parse-const-enum-declarations.md`. Do not implement directly
+`issues/open/5184-parse-const-enum-declarations.md`. Do not implement directly
 from this bucket.
 
 ## Scope
@@ -137,7 +137,7 @@ Follow-up issues:
 ## Duplicate detection
 
 Current first blocker is covered by
-`issues/done/5184-parse-const-enum-declarations.md`.
+`issues/open/5184-parse-const-enum-declarations.md`.
 
 Resolution:
 

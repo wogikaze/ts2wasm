@@ -1,14 +1,16 @@
 ---
 id: 3380
 title: "Implement Moduleresolutionwithextensions Import Export (audit reopened #3380)"
-type: spike
+type: maintenance
 area: frontend/syntax
-class: blocked
+class: superseded
 priority: P1
-depends_on: [432]
+depends_on: [432, 5229, 5292]
 blocks: []
 created: 2026-05-01
-updated: 2026-05-05status: open
+updated: 2026-05-08
+completed: 2026-05-08
+status: done
 ---
 
 ## Summary
@@ -17,9 +19,21 @@ Triage moduleResolutionWithExtensions-import-export across 5 failing reference t
 
 ## Problem
 
-Reference test results show 5 cases fail in directory `moduleResolutionWithExtensions-import-export` with diagnostics: import-export. The compiler cannot handle these syntax/semantics, preventing compilation of code in this category.
+Reference test results show 5 cases in
+`moduleResolutionWithExtensions-import-export`. Fresh triage splits the current
+first blockers across existing owners:
 
-Problem: moduleResolutionWithExtensions-import-export has 5 reference failures and needs smart-triage evidence before implementation starts.
+- `notSupported`, `notSupported2`, and `notSupported3` parse default imports
+  from empty virtual `.tsx` / `.jsx` / `.js` sections and then stop at issue-232
+  missing local module diagnostics, owned by issue `5229`.
+- `withAmbientPresent` parses the ambient module and named import, then stops
+  at completed issue `232`'s unsupported non-local module specifier boundary
+  for bare specifier `js`.
+- `withPaths` stops in the virtual `/tsconfig.json` body, owned by issue
+  `5292`.
+
+Problem: this generated bucket is superseded by existing narrower owners and
+should not be implemented directly.
 
 ## Current failure
 
@@ -37,16 +51,18 @@ mise run reference-coverage -- tsc --path-filter reference/typescript/tests/case
 
 ## Desired final state
 
-This generated bucket is either split into implementation-ready child issues or superseded by an existing open/done issue with matching evidence. Do not implement directly from this bucket.
+This generated bucket is closed. The actionable blockers are tracked by issues
+`5229` and `5292`, with the completed non-local specifier boundary covered by
+issue `232`.
 
 ## Scope
 
 In scope:
 
-- [ ] Inspect the smart triage report below
-- [ ] Confirm whether existing open/done issues already cover this bucket
-- [ ] Split one feature family, one observable behavior, or one fixed reference window into child issues
-- [ ] Preserve exact reproduction commands and representative AST/diagnostic evidence in each child issue
+- [x] Inspect the smart triage report below
+- [x] Confirm whether existing open/done issues already cover this bucket
+- [x] Supersede with existing implementation-ready issues `5229` and `5292`
+- [x] Preserve exact reproduction commands and representative AST/diagnostic evidence in the superseding issue notes
 
 Out of scope:
 
@@ -68,10 +84,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] Duplicate candidates below are confirmed as no-match or this issue is superseded
-- [ ] At least one child issue contains an exact `mise run reference-triage -- ...` command
-- [ ] Child issue includes failing path, diagnostic code, source context, visible symbols, and parser/TypeScript AST evidence
-- [ ] Child issue acceptance names the exact fixture/reference path and diagnostic/stdout change
+- [x] Duplicate candidates below are confirmed as no-match or this issue is superseded
+- [x] Superseding issues contain exact `reference-triage` ownership evidence
+- [x] Superseding issues include failing path, diagnostic code, source context, visible symbols, and parser/TypeScript AST evidence
+- [x] Superseding issues or this close evidence name the exact fixture/reference path and diagnostic/stdout change
 
 ## Validation
 
@@ -92,21 +108,23 @@ mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/modul
 
 Not run:
 
-- none
+- `cargo fmt --all --check` and `cargo nextest run`; this close only moves a
+  generated triage bucket and updates issue metadata, with no Rust source
+  changes.
 
 ## Docs / current-state / issue sync
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] updated: `current-state.md` (repo root)
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] none; superseded by existing issues `5229`, `5292`, and completed issue `232`
 
 ## Notes
 
@@ -128,11 +146,88 @@ Follow-up issues:
 - `issues/open/662-implement-arrayAssignmentTest-import-export.md` - Implement Arrayassignmenttest Import Export (same feature label, title overlap)
 - `issues/open/732-implement-assignmentCompatability-import-export.md` - Implement Assignmentcompatability Import Export (same feature label, title overlap)
 - `issues/open/766-implement-augmentedTypesEnum-import-export.md` - Implement Augmentedtypesenum Import Export (same feature label, title overlap)
-- `issues/done/055-implement-import-export.md` - Umbrella: implement import and export (same feature label, title overlap)
+- `issues/open/055-implement-import-export.md` - Umbrella: implement import and export (same feature label, title overlap)
 
 ## Smart triage
 
-Not generated. Rerun with `--triage-limit 1` or higher.
+Generated manually on 2026-05-08:
+
+```sh
+env TS2WASM_BINARY=/tmp/ts2wasm-issue-blockers-target/debug/ts2wasm \
+  python scripts/manager.py reference-coverage tsc \
+  --path-filter reference/typescript/tests/cases/compiler/moduleResolutionWithExtensions_ \
+  --detail --no-dashboard-data
+```
+
+Result for the full prefix window:
+
+```text
+executed=7
+build_pass=0
+unsupported=7
+unsupported_diagcodes=UnsupportedModule:4,UnsupportedSyntax:3
+unsupported_features=import-export:4,module-resolution:3
+```
+
+The 5 files owned by this bucket map as follows:
+
+```text
+moduleResolutionWithExtensions_notSupported.ts: issue-232 missing local module `./tsx` after parsing imports; superseded by issue 5229
+moduleResolutionWithExtensions_notSupported2.ts: issue-232 missing local module `./jsx` after parsing imports; superseded by issue 5229
+moduleResolutionWithExtensions_notSupported3.ts: issue-232 missing local module `./jsx` after parsing imports; superseded by issue 5229
+moduleResolutionWithExtensions_withAmbientPresent.ts: issue-232 unsupported non-local module specifier `js`; completed issue 232 policy boundary
+moduleResolutionWithExtensions_withPaths.ts: `tsconfig.json` JSON property colon; superseded by issue 5292
+```
+
+Representative focused triage:
+
+```sh
+env TS2WASM_BINARY=/tmp/ts2wasm-issue-blockers-target/debug/ts2wasm \
+  python scripts/manager.py reference-triage tsc \
+  reference/typescript/tests/cases/compiler/moduleResolutionWithExtensions_notSupported.ts
+```
+
+Observed:
+
+```text
+tokens/ast: ok for import tsx/jsx/js from local specifiers
+resolved/module_graph: issue-232 missing local module `./tsx`
+source:
+// @Filename: /tsx.tsx
+// @Filename: /jsx.jsx
+// @Filename: /js.js
+// @Filename: /a.ts
+import tsx from "./tsx";
+import jsx from "./jsx";
+import js from "./js";
+```
+
+Additional focused triage:
+
+```sh
+env TS2WASM_BINARY=/tmp/ts2wasm-issue-blockers-target/debug/ts2wasm \
+  python scripts/manager.py reference-triage tsc \
+  reference/typescript/tests/cases/compiler/moduleResolutionWithExtensions_withPaths.ts
+```
+
+Observed:
+
+```text
+diagnosis: UnsupportedSyntax / parser-or-frontend-unsupported
+message: expected Semicolon, got Some(Colon) at 20..21
+actual AST/resolved error: expected Semicolon, got Some(Colon) at 71..72
+source:
+// @filename: /tsconfig.json
+{
+  "compilerOptions": {
+```
+
+`moduleResolutionWithExtensions_withAmbientPresent.ts` was also triaged:
+
+```text
+tokens: ok for declare module "js" and import { x } from "js"
+resolved/module_graph: issue-232 unsupported non-local module specifier `js`
+```
 
 ## Completion evidence
 
@@ -140,24 +235,37 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- `...`
+- this close/supersedence commit
 
 Validation result:
 
 ```text
-command:
-result:
-date:
+command: env TS2WASM_BINARY=/tmp/ts2wasm-issue-blockers-target/debug/ts2wasm python scripts/manager.py reference-coverage tsc --path-filter reference/typescript/tests/cases/compiler/moduleResolutionWithExtensions_ --detail --no-dashboard-data
+result: pass; reproduced 7-prefix window and mapped the 5 issue-3380 files to existing owners
+date: 2026-05-08
+
+command: env TS2WASM_BINARY=/tmp/ts2wasm-issue-blockers-target/debug/ts2wasm python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/moduleResolutionWithExtensions_notSupported.ts
+result: pass; first actionable blocker is virtual local import resolution, superseded by issue 5229
+date: 2026-05-08
+
+command: env TS2WASM_BINARY=/tmp/ts2wasm-issue-blockers-target/debug/ts2wasm python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/moduleResolutionWithExtensions_withPaths.ts
+result: pass; first actionable blocker is virtual tsconfig parsing, superseded by issue 5292
+date: 2026-05-08
 ```
 
 Remaining risks:
 
-- none
+- After issues `5229` and `5292`, these references may advance to extension
+  filtering, JSX/allowJs policy, path mapping, or package/module resolution
+  diagnostics.
+
 ## Close note
 
-Superseded by meta-issue 5005 (TypeScript Compiler Name Resolution Coverage), which covers module resolution as a sub-area.
+Superseded by issues `5229` and `5292`, plus completed issue `232` for the
+existing non-local module specifier boundary. Fresh triage shows no unique
+import/export implementation slice remains in this generated bucket.
 
-superseded-by: 5005
+superseded-by: 5229, 5292, 232
 
 ## Reopened by audit
 
@@ -173,4 +281,5 @@ Evidence files:
 - `issues/open/3380-implement-moduleResolutionWithExtensions-import-export.md` before this move
 - `issues/open/3380-implement-moduleResolutionWithExtensions-import-export.md` after this move
 
-Split follow-up: none created in this audit wave; this reopened issue remains the tracking item.
+Split follow-up: none created; existing issues `5229` and `5292` are the
+tracking items for the current open blockers.

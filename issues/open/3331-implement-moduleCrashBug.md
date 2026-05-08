@@ -17,7 +17,7 @@ status: done
 
 Closed this generated import/export bucket as superseded by the namespace
 variable annotation diagnostic issue:
-`issues/open/5411-report-ts2709-for-namespace-variable-annotation.md`.
+`issues/open/5411a-report-ts2709-for-namespace-variable-annotation.md`.
 
 ## Problem
 
@@ -85,7 +85,7 @@ TS2709: Cannot use namespace '_modes' as a type. at line 19, character 9
 ## Desired final state
 
 Implement the first blocker in
-`issues/open/5411-report-ts2709-for-namespace-variable-annotation.md`.
+`issues/open/5411a-report-ts2709-for-namespace-variable-annotation.md`.
 
 ## Scope
 
@@ -115,7 +115,7 @@ Do not touch from this bucket:
 
 ## Acceptance criteria
 
-- [x] Superseding issue identified: `issues/open/5411-report-ts2709-for-namespace-variable-annotation.md`.
+- [x] Superseding issue identified: `issues/open/5411a-report-ts2709-for-namespace-variable-annotation.md`.
 - [x] Exact reproduction commands and observed diagnostics are recorded.
 - [x] The generated bucket no longer remains as a stale blocked import/export issue.
 
@@ -161,7 +161,7 @@ Follow-up issues:
 ## Notes
 
 Superseded by
-`issues/open/5411-report-ts2709-for-namespace-variable-annotation.md`.
+`issues/open/5411a-report-ts2709-for-namespace-variable-annotation.md`.
 
 ## Completion evidence
 

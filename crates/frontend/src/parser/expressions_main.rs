@@ -103,32 +103,32 @@ impl Parser {
                 }
             }
         }
-        if matches!(self.peek(), Some(Token::PowerEqual)) {
-            if let Expr::Ident { name, span } = expr {
-                self.advance();
-                let value = self.assignment()?;
-                let end = value.span().end;
-                let bin = Expr::Binary {
-                    left: Box::new(Expr::Ident {
-                        name: name.clone(),
-                        span,
-                    }),
-                    op: BinaryOp::Power,
-                    right: Box::new(value),
-                    span: Span {
-                        start: span.start,
-                        end,
-                    },
-                };
-                return Ok(Expr::Assign {
-                    name,
-                    span: Span {
-                        start: span.start,
-                        end,
-                    },
-                    expr: Box::new(bin),
-                });
-            }
+        if matches!(self.peek(), Some(Token::PowerEqual))
+            && let Expr::Ident { name, span } = expr
+        {
+            self.advance();
+            let value = self.assignment()?;
+            let end = value.span().end;
+            let bin = Expr::Binary {
+                left: Box::new(Expr::Ident {
+                    name: name.clone(),
+                    span,
+                }),
+                op: BinaryOp::Power,
+                right: Box::new(value),
+                span: Span {
+                    start: span.start,
+                    end,
+                },
+            };
+            return Ok(Expr::Assign {
+                name,
+                span: Span {
+                    start: span.start,
+                    end,
+                },
+                expr: Box::new(bin),
+            });
         }
         if let Some(op) = self.logical_assignment_operator() {
             let target_span = expr.span();

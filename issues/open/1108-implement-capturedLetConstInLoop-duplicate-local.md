@@ -12,7 +12,7 @@ updated: 2026-05-06
 ---
 > **Reopened by false-done audit** (2026-05-07)
 > Classification: must-reopen
-> Reason: Batch-migrated to issues/done/ without implementation commits.
+> Reason: Batch-migrated to issues/open/ without implementation commits.
 > Evidence: Empty completion evidence. No feat/fix commit for #1108.
 
 ## Summary
@@ -109,7 +109,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] `issues/open/5205-report-incompatible-var-redeclaration-type-diagnostics.md`
+- [x] `issues/open/5205a-report-incompatible-var-redeclaration-type-diagnostics.md`
 
 ## Notes
 
@@ -159,7 +159,7 @@ Evidence:
   compatible redeclarations, while this bucket now needs the incompatible
   redeclaration diagnostic after build pass.
 - Child issue
-  `issues/open/5205-report-incompatible-var-redeclaration-type-diagnostics.md`
+  `issues/open/5205a-report-incompatible-var-redeclaration-type-diagnostics.md`
   owns the diagnostic implementation slice.
 
 ## Completion evidence

@@ -17,7 +17,7 @@ status: done
 
 Closed this generated duplicate-local bucket by splitting the current blocker
 into a focused implementation issue:
-`issues/open/5412-report-ts2451-duplicate-const-filename-sections.md`.
+`issues/open/5412a-report-ts2451-duplicate-const-filename-sections.md`.
 
 ## Problem
 
@@ -76,7 +76,7 @@ TS2451: Cannot redeclare block-scoped variable 'a'. at line 9, character 7
 ## Desired final state
 
 Implement the focused diagnostic work in
-`issues/open/5412-report-ts2451-duplicate-const-filename-sections.md`.
+`issues/open/5412a-report-ts2451-duplicate-const-filename-sections.md`.
 
 ## Scope
 
@@ -106,7 +106,7 @@ Do not touch from this bucket:
 
 ## Acceptance criteria
 
-- [x] Created `issues/open/5412-report-ts2451-duplicate-const-filename-sections.md`.
+- [x] Created `issues/open/5412a-report-ts2451-duplicate-const-filename-sections.md`.
 - [x] Exact reproduction commands and observed diagnostics are recorded.
 - [x] The generated bucket no longer remains as a broad triage-needed issue.
 
@@ -147,11 +147,11 @@ Current state:
 
 Follow-up issues:
 
-- [x] created: `issues/open/5412-report-ts2451-duplicate-const-filename-sections.md`
+- [x] created: `issues/open/5412a-report-ts2451-duplicate-const-filename-sections.md`
 
 ## Notes
 
-Split to `issues/open/5412-report-ts2451-duplicate-const-filename-sections.md`.
+Split to `issues/open/5412a-report-ts2451-duplicate-const-filename-sections.md`.
 
 ## Completion evidence
 

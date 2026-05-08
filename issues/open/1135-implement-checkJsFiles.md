@@ -13,7 +13,7 @@ completed: 2026-05-06
 ---
 > **Reopened by false-done audit** (2026-05-07)
 > Classification: must-reopen
-> Reason: Batch-migrated to issues/done/ without implementation commits.
+> Reason: Batch-migrated to issues/open/ without implementation commits.
 > Evidence: Empty completion evidence. No feat/fix commit for #1135.
 
 ## Summary
@@ -127,7 +127,7 @@ of call-expression diagnostics.
 
 No-match rationale:
 
-- `issues/done/211-complete-this-receiver-binding-semantics.md` intentionally
+- `issues/open/211-complete-this-receiver-binding-semantics.md` intentionally
   leaves dynamic/function-valued local calls as issue-linked unsupported forms.
   This bucket's first blocker is not making `x()` executable; it is honoring a
   TypeScript directive that suppresses the diagnostic for selected calls.

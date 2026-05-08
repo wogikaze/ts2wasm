@@ -166,9 +166,9 @@ Superseded by issue #103. Duplicate from separate coverage run.
 
 ---
 
-## ⚠️ False-done audit (re-opened from issues/done/)
+## ⚠️ False-done audit (re-opened from issues/open/)
 
-**Why this was false-done**: This issue has `class: triage-needed` in `issues/done/`.
+**Why this was false-done**: This issue has `class: triage-needed` in `issues/open/`.
 The "Status" note claims supersedence by issue #103, but issue #103 was itself
 identified as false-done and moved back to `issues/open/`. The supersedence chain
 is therefore invalid. No implementation commits, no close note, no completion
@@ -195,7 +195,7 @@ Date: 2026-05-06
 
 Classification: truly-done.
 
-Audit result: retained in `issues/done/`. This issue has repo-local close evidence
+Audit result: retained in `issues/open/`. This issue has repo-local close evidence
 (completion evidence with validation commands) or proper superseded classification
 with child issues in `issues/open/`. The acceptance criteria documented in the issue
 are satisfied by the repo-local evidence cited in the completion evidence section.

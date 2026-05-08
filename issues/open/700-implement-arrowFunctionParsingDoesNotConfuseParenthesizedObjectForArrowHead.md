@@ -222,13 +222,13 @@ Duplicate candidates:
   },
   {
     "state": "done",
-    "path": "issues/done/372-implement-bigint-object-toprimitive-non-bigint-primitive-returns.md",
+    "path": "issues/open/372-implement-bigint-object-toprimitive-non-bigint-primitive-returns.md",
     "title": "Implement BigInt object ToPrimitive non-BigInt primitive returns",
     "reason": "same feature label, title overlap"
   },
   {
     "state": "done",
-    "path": "issues/done/373-handle-bigint-object-toprimitive-invalid-out-of-range-string-returns.md",
+    "path": "issues/open/373-handle-bigint-object-toprimitive-invalid-out-of-range-string-returns.md",
     "title": "Handle BigInt object ToPrimitive invalid and out-of-range string returns",
     "reason": "same feature label, title overlap"
   }

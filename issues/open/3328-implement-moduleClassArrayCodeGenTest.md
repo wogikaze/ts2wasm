@@ -44,7 +44,7 @@ env TS2WASM_BINARY=/tmp/ts2wasm-issue-blockers-target/debug/ts2wasm python scrip
 ## Desired final state
 
 This generated bucket is closed. Implement semantic parity from
-`issues/open/5409-report-non-exported-namespace-member-type-annotations.md`.
+`issues/open/5409a-report-non-exported-namespace-member-type-annotations.md`.
 
 ## Scope
 
@@ -66,7 +66,7 @@ Out of scope:
 
 Expected:
 
-- `issues/open/5409-report-non-exported-namespace-member-type-annotations.md`
+- `issues/open/5409a-report-non-exported-namespace-member-type-annotations.md`
 
 Do not touch:
 
@@ -115,7 +115,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] created: `issues/open/5409-report-non-exported-namespace-member-type-annotations.md`
+- [x] created: `issues/open/5409a-report-non-exported-namespace-member-type-annotations.md`
 
 ## Notes
 

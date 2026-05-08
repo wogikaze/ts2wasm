@@ -147,11 +147,11 @@ Follow-up issues:
 Split from generated bucket
 `issues/open/1385-implement-commonJsIsolatedModules.md`.
 Also owns the `tsconfig.json` subset of
-`issues/done/3380-implement-moduleResolutionWithExtensions-import-export.md`:
+`issues/open/3380-implement-moduleResolutionWithExtensions-import-export.md`:
 fresh triage for `moduleResolutionWithExtensions_withPaths.ts` stops in the
 virtual `/tsconfig.json` section at the first JSON property colon before path
 mapping or extension resolution diagnostics become actionable.
-Also owns `issues/done/3385-implement-moduleResolutionWithSuffixes-import-export.md`:
+Also owns `issues/open/3385-implement-moduleResolutionWithSuffixes-import-export.md`:
 fresh prefix coverage for `moduleResolutionWithSuffixes_` reports 16
 UnsupportedSyntax/module-resolution paths, and representative triage for
 `moduleResolutionWithSuffixes_notSpecified.ts`,
@@ -168,7 +168,7 @@ four UnsupportedSyntax/module-resolution paths, and representative triage for
 virtual `/tsconfig.json` at the first JSON property colon before package
 subpath, path mapping, or moduleSuffixes behavior becomes actionable.
 Also owns the later config-section blocker for
-`issues/done/3387-implement-moduleResolutionWithSymlinks-import-export.md`:
+`issues/open/3387-implement-moduleResolutionWithSymlinks-import-export.md`:
 fresh triage for `moduleResolutionWithSymlinks_notInNodeModules.ts` first
 needs symlink alias module resolution owned by issue 5426, and its dumps also
 show virtual `/src/tsconfig.json` JSON parsing before outDir behavior becomes

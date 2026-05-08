@@ -253,13 +253,13 @@ Duplicate candidates:
   },
   {
     "state": "open",
-    "path": "issues/done/460-implement-ClassDeclaration.md",
+    "path": "issues/open/460-implement-ClassDeclaration.md",
     "title": "Implement Classdeclaration",
     "reason": "same reference path, same feature label"
   },
   {
     "state": "open",
-    "path": "issues/done/464-implement-FunctionDeclaration-parser-syntax.md",
+    "path": "issues/open/464-implement-FunctionDeclaration-parser-syntax.md",
     "title": "Implement Functiondeclaration Parser Syntax",
     "reason": "same feature label, title overlap"
   },
@@ -271,31 +271,31 @@ Duplicate candidates:
   },
   {
     "state": "done",
-    "path": "issues/done/065-implement-parser-syntax.md",
+    "path": "issues/open/065-implement-parser-syntax.md",
     "title": "Implement parser syntax extensions",
     "reason": "same feature label, title overlap"
   },
   {
     "state": "done",
-    "path": "issues/done/065a-merge-duplicate-parser-syntax-issue-into-059.md",
+    "path": "issues/open/065a-merge-duplicate-parser-syntax-issue-into-059.md",
     "title": "Merge duplicate parser syntax issue into 059",
     "reason": "same feature label, title overlap"
   },
   {
     "state": "done",
-    "path": "issues/done/200-implement-parser-syntax.md",
+    "path": "issues/open/200-implement-parser-syntax.md",
     "title": "Implement parser syntax extensions",
     "reason": "same feature label, title overlap"
   },
   {
     "state": "done",
-    "path": "issues/done/243-implement-numeric-literal-separator-parser.md",
+    "path": "issues/open/243-implement-numeric-literal-separator-parser.md",
     "title": "Implement numeric literal separator parser support",
     "reason": "same feature label, title overlap"
   },
   {
     "state": "done",
-    "path": "issues/done/244-implement-bigint-literal-parser-classification.md",
+    "path": "issues/open/244-implement-bigint-literal-parser-classification.md",
     "title": "Implement BigInt literal parser classification",
     "reason": "same feature label, title overlap"
   }
@@ -531,9 +531,9 @@ Remaining risks:
 - none
 ---
 
-## ⚠️ False-done audit (re-opened from issues/done/)
+## ⚠️ False-done audit (re-opened from issues/open/)
 
-**Why this was false-done**: This generated triage spike issue was copy-closed to `issues/done/` as part of a batch close cycle without actual triage completion. The old done/ copy only changed checkbox state without adding a status note, child issues, implementation commits, or completion evidence. This pass fills the missing evidence and closes it as stale build-pass.
+**Why this was false-done**: This generated triage spike issue was copy-closed to `issues/open/` as part of a batch close cycle without actual triage completion. The old done/ copy only changed checkbox state without adding a status note, child issues, implementation commits, or completion evidence. This pass fills the missing evidence and closes it as stale build-pass.
 
 **True-done checklist** (all must pass):
 

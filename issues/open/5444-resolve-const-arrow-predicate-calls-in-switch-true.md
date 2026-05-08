@@ -18,7 +18,7 @@ functions when they appear as `switch (true)` case expressions, such as
 `case isA(x):`.
 
 Split from generated bucket
-`issues/done/3438-implement-narrowByClauseExpressionInSwitchTrue-name-resolution.md`.
+`issues/open/3438-implement-narrowByClauseExpressionInSwitchTrue-name-resolution.md`.
 
 ## Problem
 

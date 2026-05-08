@@ -14,7 +14,7 @@ status: done
 ---
 > **Reopened by false-done audit** (2026-05-07)
 > Classification: must-reopen
-> Reason: Batch-migrated to issues/done/ without implementation commits.
+> Reason: Batch-migrated to issues/open/ without implementation commits.
 > Evidence: Empty completion evidence. No feat/fix commit for #1250.
 
 ## Summary
@@ -121,7 +121,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] superseded by `issues/done/5186-parse-export-assignment-for-diagnostics.md`
+- [x] superseded by `issues/open/5186-parse-export-assignment-for-diagnostics.md`
 
 ## Notes
 
@@ -131,7 +131,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/5186-parse-export-assignment-for-diagnostics.md` - exact current owner for representing `export = expr;` instead of stopping at generic `issue-055`
+- `issues/open/5186-parse-export-assignment-for-diagnostics.md` - exact current owner for representing `export = expr;` instead of stopping at generic `issue-055`
 - `issues/open/5306-report-export-assignment-with-other-exports.md` is related but covers the additional rule for `export =` mixed with other exported declarations, which is not the current `clinterfaces.ts` shape.
 - Generated export-assignment buckets such as `2259` and `2263` are no-match parent buckets because 5186 is the narrower implementation-ready owner.
 
@@ -204,7 +204,7 @@ diagnostics: TS2564 for uninitialized class properties `b`; no export-assignment
 
 Superseding owner:
 
-- `issues/done/5186-parse-export-assignment-for-diagnostics.md`
+- `issues/open/5186-parse-export-assignment-for-diagnostics.md`
 
 ## Completion evidence
 

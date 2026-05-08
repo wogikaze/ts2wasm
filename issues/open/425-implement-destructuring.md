@@ -126,7 +126,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/open/005-add-fine-grained-unsupported-feature-breakdown.md` - issues/done/005-add-fine-grained-unsupported-feature-breakdown.md (same feature label, same group key)
+- `issues/open/005-add-fine-grained-unsupported-feature-breakdown.md` - issues/open/005-add-fine-grained-unsupported-feature-breakdown.md (same feature label, same group key)
 - `issues/open/059-implement-parser-syntax-extensions.md` - Implement parser syntax extensions for TypeScript and advanced JS (same feature label, same group key, title overlap)
 - `issues/open/060-investigate-unknown-unsupported-cases.md` - Investigate and classify unknown-unsupported diagnostic cases (same feature label, same group key)
 - `issues/open/247-implement-destructuring-binding-pattern-parser.md` - Implement destructuring binding pattern parser support (same feature label, same group key, title overlap)
@@ -296,19 +296,19 @@ Duplicate candidates:
 [
   {
     "state": "done",
-    "path": "issues/done/247-implement-destructuring-binding-pattern-parser.md",
+    "path": "issues/open/247-implement-destructuring-binding-pattern-parser.md",
     "title": "Implement destructuring binding pattern parser support",
     "reason": "same feature label, title overlap"
   },
   {
     "state": "done",
-    "path": "issues/done/251-implement-destructuring-binding-runtime-semantics.md",
+    "path": "issues/open/251-implement-destructuring-binding-runtime-semantics.md",
     "title": "Implement destructuring binding runtime semantics",
     "reason": "same feature label, title overlap"
   },
   {
     "state": "done",
-    "path": "issues/done/252-implement-destructuring-assignment-pattern-parser.md",
+    "path": "issues/open/252-implement-destructuring-assignment-pattern-parser.md",
     "title": "Implement destructuring assignment pattern parser support",
     "reason": "same feature label, title overlap"
   },

@@ -197,19 +197,19 @@ Duplicate candidates:
   },
   {
     "state": "done",
-    "path": "issues/done/247-implement-destructuring-binding-pattern-parser.md",
+    "path": "issues/open/247-implement-destructuring-binding-pattern-parser.md",
     "title": "Implement destructuring binding pattern parser support",
     "reason": "same feature label, title overlap"
   },
   {
     "state": "done",
-    "path": "issues/done/251-implement-destructuring-binding-runtime-semantics.md",
+    "path": "issues/open/251-implement-destructuring-binding-runtime-semantics.md",
     "title": "Implement destructuring binding runtime semantics",
     "reason": "same feature label, title overlap"
   },
   {
     "state": "done",
-    "path": "issues/done/252-implement-destructuring-assignment-pattern-parser.md",
+    "path": "issues/open/252-implement-destructuring-assignment-pattern-parser.md",
     "title": "Implement destructuring assignment pattern parser support",
     "reason": "same feature label, title overlap"
   },

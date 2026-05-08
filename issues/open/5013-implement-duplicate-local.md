@@ -197,13 +197,13 @@ Duplicate candidates:
 [
   {
     "state": "open",
-    "path": "issues/done/1108-implement-capturedLetConstInLoop-duplicate-local.md",
+    "path": "issues/open/1108-implement-capturedLetConstInLoop-duplicate-local.md",
     "title": "Implement Capturedletconstinloop Duplicate Local",
     "reason": "same feature label, title overlap"
   },
   {
     "state": "open",
-    "path": "issues/done/1500-implement-contextualSignatureInstantiation-duplicate-local.md",
+    "path": "issues/open/1500-implement-contextualSignatureInstantiation-duplicate-local.md",
     "title": "Implement Contextualsignatureinstantiation Duplicate Local",
     "reason": "same feature label, title overlap"
   },
@@ -245,7 +245,7 @@ Duplicate candidates:
   },
   {
     "state": "open",
-    "path": "issues/done/427-implement-duplicate-local.md",
+    "path": "issues/open/427-implement-duplicate-local.md",
     "title": "Implement duplicate-local support",
     "reason": "same reference path, same feature label"
   },
@@ -830,7 +830,7 @@ Date: 2026-05-05
 
 Classification: truly-done.
 
-Audit result: retained in `issues/done/`. The issue has repo-local completion evidence, is not marked `blocked` or `triage-needed`, and `python scripts/manager.py check issues` validates the resulting issue graph.
+Audit result: retained in `issues/open/`. The issue has repo-local completion evidence, is not marked `blocked` or `triage-needed`, and `python scripts/manager.py check issues` validates the resulting issue graph.
 
 Evidence files:
 - `issues/open/5013-implement-duplicate-local.md`

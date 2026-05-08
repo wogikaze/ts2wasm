@@ -119,7 +119,7 @@ Follow-up issues:
 - `issues/open/5236-w1-implement-wasi-args-and-environment-variable-lowering.md` is related but
   explicitly excludes nested function default parameters and asks for a
   follow-up after a representative default-parameter closure case is triaged.
-- `issues/done/062e-function-closures.md` is the broader historical closure
+- `issues/open/062e-function-closures.md` is the broader historical closure
   work, not an open implementation owner for this default-parameter slice.
 - Other runtime-subset duplicate candidates from smart triage were same-label
   generated buckets but not this issue-062e default-parameter closure shape.

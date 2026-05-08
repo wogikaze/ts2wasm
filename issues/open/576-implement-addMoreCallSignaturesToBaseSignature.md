@@ -207,13 +207,13 @@ Duplicate candidates:
 [
   {
     "state": "open",
-    "path": "issues/done/109-implement-addMoreCallSignaturesToBaseSignature.md",
+    "path": "issues/open/109-implement-addMoreCallSignaturesToBaseSignature.md",
     "title": "Implement Addmorecallsignaturestobasesignature",
     "reason": "same reference path, same feature label, title overlap"
   },
   {
     "state": "open",
-    "path": "issues/done/430-implement-function.md",
+    "path": "issues/open/430-implement-function.md",
     "title": "Implement function support",
     "reason": "same feature label, title overlap"
   },
@@ -225,19 +225,19 @@ Duplicate candidates:
   },
   {
     "state": "open",
-    "path": "issues/done/490-implement-addMoreCallSignaturesToBaseSignature.md",
+    "path": "issues/open/490-implement-addMoreCallSignaturesToBaseSignature.md",
     "title": "Implement Addmorecallsignaturestobasesignature",
     "reason": "same reference path, same feature label, title overlap"
   },
   {
     "state": "done",
-    "path": "issues/done/062a-split-function-epic-into-callable-child-issues.md",
+    "path": "issues/open/062a-split-function-epic-into-callable-child-issues.md",
     "title": "Split function epic into callable child issues",
     "reason": "same feature label, title overlap"
   },
   {
     "state": "done",
-    "path": "issues/done/063-implement-function-resolution.md",
+    "path": "issues/open/063-implement-function-resolution.md",
     "title": "Implement function resolution",
     "reason": "same feature label, title overlap"
   }

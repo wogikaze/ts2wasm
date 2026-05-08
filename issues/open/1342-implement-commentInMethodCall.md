@@ -133,7 +133,7 @@ No-match candidates:
 - `issues/open/5234-w0-implement-host-deny-and-auditable-e2e-manifest-verification.md`
   covers array-shaped function/class-method parameters, not declaration-only
   locals.
-- `issues/open/5222-parse-ambient-generic-variable-type-annotations.md`
+- `issues/open/5222a-parse-ambient-generic-variable-type-annotations.md`
   covers interface-typed erased locals such as `Sequence<string>`, not array
   callback receivers.
 - `issues/done/297-track-pushed-dense-array-locals-for-map.md` covers

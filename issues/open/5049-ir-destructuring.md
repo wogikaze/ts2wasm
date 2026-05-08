@@ -58,9 +58,9 @@ cargo nextest run
 
 ---
 
-## ⚠️ False-done audit (re-opened from issues/done/)
+## ⚠️ False-done audit (re-opened from issues/open/)
 
-**Why this was false-done**: This `implementation-ready` issue was found in `issues/done/` with all 11 checkboxes unchecked (5 scope, 3 acceptance criteria, 3 docs/state), no completion evidence section, no close note, and zero git commits referencing #5049. There is no evidence of any implementation work. The issue was likely created as part of a review-derived batch and moved to done/ prematurely without any code changes.
+**Why this was false-done**: This `implementation-ready` issue was found in `issues/open/` with all 11 checkboxes unchecked (5 scope, 3 acceptance criteria, 3 docs/state), no completion evidence section, no close note, and zero git commits referencing #5049. There is no evidence of any implementation work. The issue was likely created as part of a review-derived batch and moved to done/ prematurely without any code changes.
 
 **True-done checklist** (all must pass):
 
@@ -112,7 +112,7 @@ Date: 2026-05-06
 
 Classification: truly-done.
 
-Audit result: retained in `issues/done/`. This issue has repo-local close evidence
+Audit result: retained in `issues/open/`. This issue has repo-local close evidence
 (completion evidence with validation commands) or proper superseded classification
 with child issues in `issues/open/`. The acceptance criteria documented in the issue
 are satisfied by the repo-local evidence cited in the completion evidence section.

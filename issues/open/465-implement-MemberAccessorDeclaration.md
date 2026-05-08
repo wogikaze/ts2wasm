@@ -191,7 +191,7 @@ Duplicate candidates:
 [
   {
     "state": "open",
-    "path": "issues/done/078-implement-MemberAccessorDeclaration.md",
+    "path": "issues/open/078-implement-MemberAccessorDeclaration.md",
     "title": "Implement Memberaccessordeclaration",
     "reason": "same reference path, same feature label"
   }

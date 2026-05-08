@@ -39,7 +39,7 @@ mise run reference-coverage -- tsc --path-filter reference/typescript/tests/case
 
 ## Desired final state
 
-This generated bucket is closed as superseded by `issues/done/5175-support-export-let-destructuring-declarations.md`, which now owns both identifier and destructuring `export let` declarations.
+This generated bucket is closed as superseded by `issues/open/5175-support-export-let-destructuring-declarations.md`, which now owns both identifier and destructuring `export let` declarations.
 
 ## Scope
 
@@ -111,7 +111,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] folded into `issues/done/5175-support-export-let-destructuring-declarations.md`
+- [x] folded into `issues/open/5175-support-export-let-destructuring-declarations.md`
 
 ## Notes
 
@@ -121,7 +121,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/5175-support-export-let-destructuring-declarations.md` is an exact owner for the current `export let` variable-export parser/module-syntax boundary.
+- `issues/open/5175-support-export-let-destructuring-declarations.md` is an exact owner for the current `export let` variable-export parser/module-syntax boundary.
 - Broad import/export buckets are not exact matches; this bucket stops before module-resolution caching behavior.
 
 ## Smart triage
@@ -134,7 +134,7 @@ Generated on 2026-05-06.
 - Source context: `export let x = 1;`
 - Compiler evidence: tokens succeed for three `export let x = 1;` declarations; AST construction fails at the first `Export` token.
 - TypeScript oracle: accepts the syntax and reports three TS2451 duplicate block-scoped variable diagnostics for `x`.
-- Superseded by child: `issues/done/5175-support-export-let-destructuring-declarations.md`
+- Superseded by child: `issues/open/5175-support-export-let-destructuring-declarations.md`
 
 ## Completion evidence
 
@@ -162,7 +162,7 @@ Date: 2026-05-06
 
 Classification: truly-done.
 
-Audit result: retained in `issues/done/`. This issue has repo-local close evidence
+Audit result: retained in `issues/open/`. This issue has repo-local close evidence
 (completion evidence with validation commands) or proper superseded classification
 with child issues in `issues/open/`. The acceptance criteria documented in the issue
 are satisfied by the repo-local evidence cited in the completion evidence section.

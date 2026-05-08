@@ -168,7 +168,7 @@ Reopen reason: no `## Completion evidence` section is present, so close evidence
 Violated acceptance: the issue cannot provide repo-local close evidence for its checked acceptance criteria while it remains in this state. Acceptance checkboxes were reset for re-verification.
 
 Evidence files:
-- `issues/done/5010-remaining-es-module-export-forms.md (closed with completion evidence)` before this move
-- `issues/done/5010-remaining-es-module-export-forms.md (closed with completion evidence)` after this move
+- `issues/open/5010-remaining-es-module-export-forms.md (closed with completion evidence)` before this move
+- `issues/open/5010-remaining-es-module-export-forms.md (closed with completion evidence)` after this move
 
 Split follow-up: none created in this audit wave; this reopened issue remains the tracking item.

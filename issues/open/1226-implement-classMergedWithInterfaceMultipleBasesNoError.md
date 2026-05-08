@@ -14,7 +14,7 @@ status: done
 ---
 > **Reopened by false-done audit** (2026-05-07)
 > Classification: must-reopen
-> Reason: Batch-migrated to issues/done/ without implementation commits.
+> Reason: Batch-migrated to issues/open/ without implementation commits.
 > Evidence: Empty completion evidence. No feat/fix commit for #1226.
 
 ## Summary
@@ -129,8 +129,8 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/231-parse-static-es-module-declarations.md` - related parser work but explicitly kept default class exports out of scope
-- `issues/done/5008-static-es-module-export-default-namespace-reexport.md` - related static default export infrastructure, but current triage still reports issue-055 default class export
+- `issues/open/231-parse-static-es-module-declarations.md` - related parser work but explicitly kept default class exports out of scope
+- `issues/open/5008-static-es-module-export-default-namespace-reexport.md` - related static default export infrastructure, but current triage still reports issue-055 default class export
 - `issues/open/2282-implement-exportDefaultClassAndValue.md` and sibling generated default-class buckets - related generated buckets that still need smart triage before superseding
 
 ## Smart triage

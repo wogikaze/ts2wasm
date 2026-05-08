@@ -132,8 +132,8 @@ Current state:
 
 Follow-up issues:
 
-- [x] created: `issues/open/5419-parse-parenthesized-self-closing-jsx-expressions.md`
-- [x] created: `issues/open/5420-parse-import-attributes-with-clauses.md`
+- [x] created: `issues/open/5419a-parse-parenthesized-self-closing-jsx-expressions.md`
+- [x] created: `issues/open/5420a-parse-import-attributes-with-clauses.md`
 
 ## Notes
 
@@ -234,7 +234,7 @@ Evidence:
 source: `(<div />);`
 tokens: ok as LeftParen, Less, Ident("div"), Slash, Greater, RightParen, Semicolon
 TypeScript oracle: AST contains ExpressionStatement `(<div />);`
-split to: issues/open/5419-parse-parenthesized-self-closing-jsx-expressions.md
+split to: issues/open/5419a-parse-parenthesized-self-closing-jsx-expressions.md
 ```
 
 ### modulePreserve4.ts
@@ -276,7 +276,7 @@ Evidence:
 source: `import data1 from "./data.json" with { type: "json" };`
 tokens: static import tokens include Ident("with"), attribute object braces, Ident("type"), Colon, and String("json")
 TypeScript oracle: AST contains ImportDeclaration with the import attribute clause
-split to: issues/open/5420-parse-import-attributes-with-clauses.md
+split to: issues/open/5420a-parse-import-attributes-with-clauses.md
 ```
 
 ## Completion evidence

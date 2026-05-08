@@ -195,7 +195,7 @@ Duplicate candidates:
 [
   {
     "state": "open",
-    "path": "issues/done/134-implement-allowJscheckJsTypeParameterNoCrash.md",
+    "path": "issues/open/134-implement-allowJscheckJsTypeParameterNoCrash.md",
     "title": "Implement Allowjscheckjstypeparameternocrash",
     "reason": "same reference path, title overlap"
   },
@@ -207,19 +207,19 @@ Duplicate candidates:
   },
   {
     "state": "open",
-    "path": "issues/done/457-implement-APISample-import-export.md",
+    "path": "issues/open/457-implement-APISample-import-export.md",
     "title": "Implement Apisample Import Export",
     "reason": "same feature label, title overlap"
   },
   {
     "state": "open",
-    "path": "issues/done/463-implement-FunctionDeclaration-import-export.md",
+    "path": "issues/open/463-implement-FunctionDeclaration-import-export.md",
     "title": "Implement Functiondeclaration Import Export",
     "reason": "same feature label, title overlap"
   },
   {
     "state": "open",
-    "path": "issues/done/513-implement-allowJscheckJsTypeParameterNoCrash.md",
+    "path": "issues/open/513-implement-allowJscheckJsTypeParameterNoCrash.md",
     "title": "Implement Allowjscheckjstypeparameternocrash",
     "reason": "same reference path, same feature label, title overlap"
   },
@@ -231,13 +231,13 @@ Duplicate candidates:
   },
   {
     "state": "open",
-    "path": "issues/done/549-implement-FunctionDeclaration-import-export.md",
+    "path": "issues/open/549-implement-FunctionDeclaration-import-export.md",
     "title": "Implement Functiondeclaration Import Export",
     "reason": "same feature label, title overlap"
   },
   {
     "state": "done",
-    "path": "issues/done/055-implement-import-export.md",
+    "path": "issues/open/055-implement-import-export.md",
     "title": "Umbrella: implement import and export",
     "reason": "same feature label, title overlap"
   }
@@ -693,7 +693,7 @@ UnsupportedModule: issue-055: unsupported variable export; module resolution and
 
 Remaining risks:
 
-- Implementation remains open in `issues/done/5285-support-export-var-initializer-declarations.md`.
+- Implementation remains open in `issues/open/5285-support-export-var-initializer-declarations.md`.
 
 ## False-done audit
 

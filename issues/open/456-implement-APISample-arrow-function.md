@@ -119,7 +119,7 @@ Follow-up issues:
 - `issues/open/070-implement-APISample.md` - Implement Apisample (same reference path, title overlap)
 - `issues/done/415-implement-arrow-function.md` - Implement arrow functions (same feature label, title overlap)
 - `issues/open/430-implement-function.md` - Implement function support (same feature label, title overlap)
-- `issues/done/036-implement-arrow-function.md` - Implement arrow function (same feature label, title overlap)
+- `issues/open/036-implement-arrow-function.md` - Implement arrow function (same feature label, title overlap)
 - `issues/done/062d-function-this-and-arguments.md` - Implement function this and arguments semantics (same feature label, title overlap)
 - `issues/open/210-implement-arrow-function-closure-lexical-this.md` - Implement arrow function closure and lexical this semantics (same feature label, title overlap)
 
@@ -233,7 +233,7 @@ Duplicate candidates:
 [
   {
     "state": "open",
-    "path": "issues/done/070-implement-APISample.md",
+    "path": "issues/open/070-implement-APISample.md",
     "title": "Implement Apisample",
     "reason": "same reference path, title overlap"
   },
@@ -245,13 +245,13 @@ Duplicate candidates:
   },
   {
     "state": "open",
-    "path": "issues/done/430-implement-function.md",
+    "path": "issues/open/430-implement-function.md",
     "title": "Implement function support",
     "reason": "same feature label, title overlap"
   },
   {
     "state": "done",
-    "path": "issues/done/036-implement-arrow-function.md",
+    "path": "issues/open/036-implement-arrow-function.md",
     "title": "Implement arrow function",
     "reason": "same feature label, title overlap"
   },
@@ -263,7 +263,7 @@ Duplicate candidates:
   },
   {
     "state": "done",
-    "path": "issues/done/210-implement-arrow-function-closure-lexical-this.md",
+    "path": "issues/open/210-implement-arrow-function-closure-lexical-this.md",
     "title": "Implement arrow function closure and lexical this semantics",
     "reason": "same feature label, title overlap"
   }
@@ -794,7 +794,7 @@ Date: 2026-05-05
 
 Classification: truly-done.
 
-Audit result: retained in `issues/done/`. The issue has repo-local completion evidence, is not marked `blocked` or `triage-needed`, and `python scripts/manager.py check issues` validates the resulting issue graph.
+Audit result: retained in `issues/open/`. The issue has repo-local completion evidence, is not marked `blocked` or `triage-needed`, and `python scripts/manager.py check issues` validates the resulting issue graph.
 
 Evidence files:
 - `issues/open/456-implement-APISample-arrow-function.md`

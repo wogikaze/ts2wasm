@@ -14,7 +14,7 @@ status: done
 ---
 > **Reopened by false-done audit** (2026-05-07)
 > Classification: must-reopen
-> Reason: Batch-migrated to issues/done/ without implementation commits.
+> Reason: Batch-migrated to issues/open/ without implementation commits.
 > Evidence: Empty completion evidence. No feat/fix commit for #1256.
 
 ## Summary
@@ -141,7 +141,7 @@ Follow-up issues:
   `$('.foo').addClass('bar')`.
 - `issues/open/5221-support-bitwise-and-xor-binary-lowering.md`
   is related but covers longer chained `.then` expressions.
-- `issues/done/5142-support-class-method-call-on-new-expression-receiver.md`
+- `issues/open/5142-support-class-method-call-on-new-expression-receiver.md`
   is related but only covers `new C().g()`.
 
 ## Smart triage

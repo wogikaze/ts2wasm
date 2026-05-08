@@ -138,7 +138,7 @@ Split from generated bucket `1051` on 2026-05-06. The current reference file als
 
 2026-05-08 fold-in:
 
-- `issues/done/3574-implement-noUnusedLocals-parser-syntax.md` reaches the same
+- `issues/open/3574-implement-noUnusedLocals-parser-syntax.md` reaches the same
   unresolved global `Symbol()` blocker for `const x = Symbol("x")` in
   `noUnusedLocals_writeOnlyProperty_dynamicNames.ts`.
 
@@ -168,5 +168,5 @@ Date: 2026-05-06
 
 Classification: truly-done.
 
-Audit result: retained in issues/done/. Implementation commits confirmed.
+Audit result: retained in issues/open/. Implementation commits confirmed.
 Future-work tracking: none identified.

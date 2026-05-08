@@ -142,7 +142,7 @@ Follow-up issues:
 - `issues/open/5401-parse-export-default-interface-declarations.md` owns the
   later `export default interface I { x: number; }` construct inside the
   `declare module "./a"` block.
-- `issues/open/5229-resolve-imports-between-filename-sections.md` owns the
+- `issues/open/5229a-resolve-imports-between-filename-sections.md` owns the
   later missing virtual local module `./a` imported from another `@Filename`
   section.
 

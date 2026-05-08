@@ -253,7 +253,7 @@ Duplicate candidates:
 [
   {
     "state": "done",
-    "path": "issues/done/229-implement-legacy-octal-escape-handling.md",
+    "path": "issues/open/229-implement-legacy-octal-escape-handling.md",
     "title": "Implement legacy octal escape handling",
     "reason": "same reference path, title overlap"
   }

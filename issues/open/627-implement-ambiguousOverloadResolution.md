@@ -226,7 +226,7 @@ Duplicate candidates:
   },
   {
     "state": "open",
-    "path": "issues/done/169-implement-ambiguousOverloadResolution.md",
+    "path": "issues/open/169-implement-ambiguousOverloadResolution.md",
     "title": "Implement Ambiguousoverloadresolution",
     "reason": "same reference path, title overlap"
   },

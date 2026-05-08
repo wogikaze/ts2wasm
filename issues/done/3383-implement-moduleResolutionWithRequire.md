@@ -50,7 +50,7 @@ coverage: unsupported_diagcodes=UnsupportedModule:1, unsupported_features=import
 ## Desired final state
 
 This generated bucket is closed as superseded by
-`issues/open/5425-resolve-local-require-between-filename-sections.md`.
+`issues/open/5425a-resolve-local-require-between-filename-sections.md`.
 
 ## Scope
 
@@ -115,7 +115,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] `issues/open/5425-resolve-local-require-between-filename-sections.md`
+- [x] `issues/open/5425a-resolve-local-require-between-filename-sections.md`
 
 ## Notes
 
@@ -125,7 +125,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/open/5229-resolve-imports-between-filename-sections.md` covers
+- `issues/open/5229a-resolve-imports-between-filename-sections.md` covers
   static import/export source specifiers between virtual sections, not
   CommonJS `require("./other")` lowered `ModuleLoad` validation.
 - `issues/open/5295-resolve-import-equals-require-to-virtual-node-modules-class-export.md`

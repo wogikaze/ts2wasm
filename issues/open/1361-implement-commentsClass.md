@@ -12,7 +12,7 @@ updated: 2026-05-06
 ---
 > **Reopened by false-done audit** (2026-05-07)
 > Classification: must-reopen
-> Reason: Batch-migrated to issues/done/ without implementation commits.
+> Reason: Batch-migrated to issues/open/ without implementation commits.
 > Evidence: Empty completion evidence. No feat/fix commit for #1361.
 
 ## Summary
@@ -136,7 +136,7 @@ Follow-up issues:
 - `issues/open/5192-support-first-class-class-constructor-values.md` owns the
   shared class constructor value boundary. `commentsClass.ts` fails at
   `var i2_c = c2;`, which is the same `issue-5011` family.
-- `issues/done/5011-class-runtime-value-semantics.md` documents the current
+- `issues/open/5011-class-runtime-value-semantics.md` documents the current
   structural diagnostic that prevents silent class value erasure.
 - `issues/open/421-implement-class.md` is the broad class syntax issue and is
   too wide for this current blocker.

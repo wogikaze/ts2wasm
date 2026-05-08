@@ -195,13 +195,13 @@ Duplicate candidates:
 [
   {
     "state": "open",
-    "path": "issues/done/098-implement-accessorDeclarationOrder.md",
+    "path": "issues/open/098-implement-accessorDeclarationOrder.md",
     "title": "Implement Accessordeclarationorder",
     "reason": "same reference path, same feature label, title overlap"
   },
   {
     "state": "open",
-    "path": "issues/done/482-implement-accessorDeclarationOrder.md",
+    "path": "issues/open/482-implement-accessorDeclarationOrder.md",
     "title": "Implement Accessordeclarationorder",
     "reason": "same reference path, same feature label, title overlap"
   }

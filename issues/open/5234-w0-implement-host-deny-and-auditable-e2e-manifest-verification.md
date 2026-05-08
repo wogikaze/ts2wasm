@@ -73,4 +73,4 @@ Date: 2026-05-06
 
 Classification: truly-done.
 
-Audit result: retained in issues/done/. Implemented by child agent.
+Audit result: retained in issues/open/. Implemented by child agent.

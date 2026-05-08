@@ -192,7 +192,7 @@ Duplicate candidates:
 [
   {
     "state": "open",
-    "path": "issues/done/086-implement-abstractPropertyBasics.md",
+    "path": "issues/open/086-implement-abstractPropertyBasics.md",
     "title": "Implement Abstractpropertybasics",
     "reason": "same reference path, same feature label, title overlap"
   },
@@ -204,7 +204,7 @@ Duplicate candidates:
   },
   {
     "state": "open",
-    "path": "issues/done/464-implement-FunctionDeclaration-parser-syntax.md",
+    "path": "issues/open/464-implement-FunctionDeclaration-parser-syntax.md",
     "title": "Implement Functiondeclaration Parser Syntax",
     "reason": "same feature label, title overlap"
   },
@@ -216,37 +216,37 @@ Duplicate candidates:
   },
   {
     "state": "done",
-    "path": "issues/done/065-implement-parser-syntax.md",
+    "path": "issues/open/065-implement-parser-syntax.md",
     "title": "Implement parser syntax extensions",
     "reason": "same feature label, title overlap"
   },
   {
     "state": "done",
-    "path": "issues/done/065a-merge-duplicate-parser-syntax-issue-into-059.md",
+    "path": "issues/open/065a-merge-duplicate-parser-syntax-issue-into-059.md",
     "title": "Merge duplicate parser syntax issue into 059",
     "reason": "same feature label, title overlap"
   },
   {
     "state": "done",
-    "path": "issues/done/200-implement-parser-syntax.md",
+    "path": "issues/open/200-implement-parser-syntax.md",
     "title": "Implement parser syntax extensions",
     "reason": "same feature label, title overlap"
   },
   {
     "state": "done",
-    "path": "issues/done/243-implement-numeric-literal-separator-parser.md",
+    "path": "issues/open/243-implement-numeric-literal-separator-parser.md",
     "title": "Implement numeric literal separator parser support",
     "reason": "same feature label, title overlap"
   },
   {
     "state": "done",
-    "path": "issues/done/244-implement-bigint-literal-parser-classification.md",
+    "path": "issues/open/244-implement-bigint-literal-parser-classification.md",
     "title": "Implement BigInt literal parser classification",
     "reason": "same feature label, title overlap"
   },
   {
     "state": "done",
-    "path": "issues/done/246-implement-optional-chaining-parser-support.md",
+    "path": "issues/open/246-implement-optional-chaining-parser-support.md",
     "title": "Implement optional chaining parser support",
     "reason": "same feature label, title overlap"
   }
@@ -601,7 +601,7 @@ Date: 2026-05-05
 
 Classification: truly-done.
 
-Audit result: retained in `issues/done/`. The issue has repo-local completion evidence, is not marked `blocked` or `triage-needed`, and `python scripts/manager.py check issues` validates the resulting issue graph.
+Audit result: retained in `issues/open/`. The issue has repo-local completion evidence, is not marked `blocked` or `triage-needed`, and `python scripts/manager.py check issues` validates the resulting issue graph.
 
 Evidence files:
 - `issues/open/471-implement-abstractPropertyBasics.md`

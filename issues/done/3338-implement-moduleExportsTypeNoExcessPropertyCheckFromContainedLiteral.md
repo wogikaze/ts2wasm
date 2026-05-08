@@ -16,7 +16,7 @@ status: done
 ## Summary
 
 Closed this generated import/export bucket by splitting its current blocker into
-`issues/open/5414-classify-non-builtin-require-result-method-calls.md`.
+`issues/open/5414a-classify-non-builtin-require-result-method-calls.md`.
 
 ## Problem
 
@@ -106,7 +106,7 @@ Expected implementation owner:
 
 ## Acceptance criteria
 
-- [x] Current blocker is represented in `issues/open/5414-classify-non-builtin-require-result-method-calls.md`.
+- [x] Current blocker is represented in `issues/open/5414a-classify-non-builtin-require-result-method-calls.md`.
 - [x] Existing nearby issues 5405 and 5222 are not exact owners for this shape.
 - [x] The generated bucket no longer remains as a stale blocked import/export issue.
 
@@ -147,7 +147,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] `issues/open/5414-classify-non-builtin-require-result-method-calls.md`
+- [x] `issues/open/5414a-classify-non-builtin-require-result-method-calls.md`
 
 ## Notes
 

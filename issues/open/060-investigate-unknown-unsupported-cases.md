@@ -810,7 +810,7 @@ Split follow-up: none created in this audit wave; this reopened issue remains th
 
 Date: 2026-05-06
 
-Reason: child issue `060a` is in `issues/done/` and records the fixed close
+Reason: child issue `060a` is in `issues/open/` and records the fixed close
 boundary for this parent spike: `TS2WASM_REFERENCE_ROOT=./reference mise run
 reference-coverage -- test262 --limit 17000 --detail` with
 `unknown-unsupported=0`. Future unknown-unsupported work must use separate

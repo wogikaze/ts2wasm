@@ -128,7 +128,7 @@ Follow-up issues:
 - Fresh triage found no current compiler blocker.
 - This is ordinary function declaration plus `new Test()`, not dynamic
   `new Function(...)`; dynamic constructor diagnostics are tracked by
-  `issues/done/062b-dynamic-function-constructor-diagnostics.md`.
+  `issues/open/062b-dynamic-function-constructor-diagnostics.md`.
 
 ## Smart triage
 

@@ -190,13 +190,13 @@ Duplicate candidates:
   },
   {
     "state": "done",
-    "path": "issues/done/035-implement-break-continue.md",
+    "path": "issues/open/035-implement-break-continue.md",
     "title": "Implement break and continue statements",
     "reason": "same feature label, title overlap"
   },
   {
     "state": "done",
-    "path": "issues/done/209-implement-labeled-break-continue.md",
+    "path": "issues/open/209-implement-labeled-break-continue.md",
     "title": "Implement labeled break and continue",
     "reason": "same feature label, title overlap"
   }
@@ -353,7 +353,7 @@ Date: 2026-05-06
 
 Classification: truly-done.
 
-Audit result: retained in `issues/done/`. This issue has repo-local close evidence
+Audit result: retained in `issues/open/`. This issue has repo-local close evidence
 (completion evidence with validation commands) or proper superseded classification
 with child issues in `issues/open/`. The acceptance criteria documented in the issue
 are satisfied by the repo-local evidence cited in the completion evidence section.

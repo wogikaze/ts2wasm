@@ -94,7 +94,7 @@ Out of scope:
 - Number `toString` receiver classification, tracked by
   `issues/open/5451-classify-number-tostring-after-typeof-switch-narrowing.md`.
 - Interface-typed erased-local method receivers, tracked by
-  `issues/open/5222-support-interface-typed-method-calls-on-erased-locals.md`.
+  `issues/open/5222a-support-interface-typed-method-calls-on-erased-locals.md`.
 - Broad Object builtin coverage, tracked by `issues/open/342-implement-object-builtin-coverage.md`.
 
 ## Affected paths

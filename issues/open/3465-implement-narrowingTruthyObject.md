@@ -129,7 +129,7 @@ Follow-up issues:
 - `issues/open/5451-classify-number-tostring-after-typeof-switch-narrowing.md`
   is related but no-match: it owns number `toString(radix)` after a
   `typeof` switch branch.
-- `issues/open/5222-support-interface-typed-method-calls-on-erased-locals.md`
+- `issues/open/5222a-support-interface-typed-method-calls-on-erased-locals.md`
   is related but no-match: it owns interface-typed erased-local method calls.
 - `issues/open/342-implement-object-builtin-coverage.md` is a broad Object
   builtin umbrella and not a narrow owner for this nullable receiver.

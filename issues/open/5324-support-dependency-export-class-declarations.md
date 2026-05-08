@@ -96,7 +96,7 @@ In scope:
 Out of scope:
 
 - Entry-module export class declarations, tracked by `issues/open/5232-w0-fixture-ize-runtimelinkplan-linker-structure-tests.md`.
-- Exported variables, tracked by `issues/done/5283-support-entry-export-var-declarations.md` and related variable-export slices.
+- Exported variables, tracked by `issues/open/5283-support-entry-export-var-declarations.md` and related variable-export slices.
 - Full TS2301 class field initializer scoping diagnostics.
 - AMD/CommonJS emit parity beyond the static dependency export-class boundary.
 
@@ -164,7 +164,7 @@ Related but not duplicates:
 
 - `issues/open/5232-w0-fixture-ize-runtimelinkplan-linker-structure-tests.md` covers entry-module `export class`, not dependency virtual files.
 - `issues/open/5295-resolve-import-equals-require-to-virtual-node-modules-class-export.md` covers bare `require("myModule")` resolution plus a node_modules dependency class export shape.
-- `issues/done/5283-support-entry-export-var-declarations.md` covers the sibling `classMemberInitializerWithLamdaScoping4.ts` first blocker, `export var field1: string`.
+- `issues/open/5283-support-entry-export-var-declarations.md` covers the sibling `classMemberInitializerWithLamdaScoping4.ts` first blocker, `export var field1: string`.
 
 Also owns `issues/open/3320-implement-moduleAugmentationImportsAndExports.md`: fresh triage for `moduleAugmentationImportsAndExports1.ts` and `moduleAugmentationImportsAndExports4.ts` reaches the same issue-5005 dependency-module `export class` boundary for virtual `f1.ts` / `f2.ts` sections before module augmentation semantics become actionable.
 Also owns `issues/open/3326-implement-moduleAugmentationsBundledOutput.md`: `moduleAugmentationsBundledOutput1.ts` reaches issue-5005 dependency-module `export class` for virtual `m1.ts` / `m3.ts` sections before bundled output or augmentation semantics become actionable.

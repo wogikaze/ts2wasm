@@ -17,7 +17,7 @@ status: done
 
 Closed this generated parser-syntax bucket as superseded by the virtual
 `@filename` local re-export resolution issue:
-`issues/open/5229-resolve-imports-between-filename-sections.md`.
+`issues/open/5229a-resolve-imports-between-filename-sections.md`.
 
 ## Problem
 
@@ -103,7 +103,7 @@ TS2307: Cannot find module './model' or its corresponding type declarations.
 ## Desired final state
 
 Implement the first blocker in
-`issues/open/5229-resolve-imports-between-filename-sections.md`.
+`issues/open/5229a-resolve-imports-between-filename-sections.md`.
 
 ## Scope
 
@@ -134,7 +134,7 @@ Do not touch from this bucket:
 
 ## Acceptance criteria
 
-- [x] Superseding issue identified: `issues/open/5229-resolve-imports-between-filename-sections.md`.
+- [x] Superseding issue identified: `issues/open/5229a-resolve-imports-between-filename-sections.md`.
 - [x] Exact reproduction commands and observed diagnostics are recorded.
 - [x] The generated bucket no longer remains as a stale blocked parser-syntax issue.
 
@@ -180,7 +180,7 @@ Follow-up issues:
 ## Notes
 
 Superseded by
-`issues/open/5229-resolve-imports-between-filename-sections.md`.
+`issues/open/5229a-resolve-imports-between-filename-sections.md`.
 
 ## Completion evidence
 

@@ -80,8 +80,8 @@ Out of scope:
 - Runtime CommonJS emit.
 - `node_modules/<pkg>/index.d.ts`, tracked by `issues/open/5485-resolve-import-equals-require-to-virtual-node-modules-index-declarations.md`.
 - Class-export package shapes already covered by `issues/open/5295-resolve-import-equals-require-to-virtual-node-modules-class-export.md`.
-- Static ES import/export virtual-section resolution covered by `issues/open/5229-resolve-imports-between-filename-sections.md`.
-- `export var` parser boundaries covered by `issues/done/5283-support-entry-export-var-declarations.md` and `issues/done/5285-support-export-var-initializer-declarations.md`.
+- Static ES import/export virtual-section resolution covered by `issues/open/5229a-resolve-imports-between-filename-sections.md`.
+- `export var` parser boundaries covered by `issues/open/5283-support-entry-export-var-declarations.md` and `issues/open/5285-support-export-var-initializer-declarations.md`.
 
 ## Affected paths
 
@@ -149,7 +149,7 @@ Related but not duplicates:
   with exported class values.
 - `issues/open/5485-resolve-import-equals-require-to-virtual-node-modules-index-declarations.md`
   covers `node_modules/<pkg>/index.d.ts`.
-- `issues/open/5229-resolve-imports-between-filename-sections.md` covers
+- `issues/open/5229a-resolve-imports-between-filename-sections.md` covers
   local static import/export source specifiers between virtual sections.
 - `issues/open/232-resolve-local-relative-es-module-graph.md` intentionally
   rejects unmatched bare specifiers and excludes package/node_modules lookup.

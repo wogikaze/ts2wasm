@@ -126,7 +126,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/041-implement-template-literals.md` - Implement template literals (same feature label, same group key, title overlap)
+- `issues/open/041-implement-template-literals.md` - Implement template literals (same feature label, same group key, title overlap)
 - `issues/open/060-investigate-unknown-unsupported-cases.md` - Investigate and classify unknown-unsupported diagnostic cases (same feature label, same group key)
 - `issues/done/203-reconcile-partial-feature-semantics.md` - Reconcile partial feature semantics and placeholder completions (same feature label, same group key)
 - `issues/done/213-implement-template-literal-interpolation.md` - Implement template literal interpolation (same feature label, same group key, title overlap)
@@ -288,7 +288,7 @@ Duplicate candidates:
 [
   {
     "state": "done",
-    "path": "issues/done/041-implement-template-literals.md",
+    "path": "issues/open/041-implement-template-literals.md",
     "title": "Implement template literals",
     "reason": "same feature label, title overlap"
   },

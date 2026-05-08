@@ -19,7 +19,7 @@ Problem: deterministic Date values support epoch-millisecond extraction, but `Da
 
 ## Current failure
 
-`issues/done/050-implement-date.md` records this diagnostic:
+`issues/open/050-implement-date.md` records this diagnostic:
 
 ```text
 error: [UnsupportedSyntax] issue-050: Date.prototype.toString() requires timezone/host formatting policy; use getTime() or valueOf() for deterministic epoch milliseconds
@@ -50,7 +50,7 @@ Expected:
 
 - `crates/`
 - `fixtures/`
-- `issues/done/050-implement-date.md`
+- `issues/open/050-implement-date.md`
 - `current-state.md`
 
 Do not touch:
@@ -141,7 +141,7 @@ Date: 2026-05-05
 
 Classification: truly-done.
 
-Audit result: retained in `issues/done/`. The issue has repo-local completion evidence, is not marked `blocked` or `triage-needed`, and `python scripts/manager.py check issues` validates the resulting issue graph.
+Audit result: retained in `issues/open/`. The issue has repo-local completion evidence, is not marked `blocked` or `triage-needed`, and `python scripts/manager.py check issues` validates the resulting issue graph.
 
 Evidence files:
 - `issues/open/240-implement-date-timezone-aware-to-string-policy.md`

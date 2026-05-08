@@ -13,7 +13,7 @@ completed: 2026-05-06
 ---
 > **Reopened by false-done audit** (2026-05-07)
 > Classification: must-reopen
-> Reason: Batch-migrated to issues/done/ without implementation commits.
+> Reason: Batch-migrated to issues/open/ without implementation commits.
 > Evidence: Empty completion evidence. No feat/fix commit for #1156.
 
 ## Summary
@@ -129,7 +129,7 @@ owner for constructor-call spread parsing:
 
 - `issues/open/274-implement-spread-operator.md` is the broad spread meta issue.
 - `issues/open/353-spread-iterator-protocol.md` owns general iterator protocol semantics.
-- `issues/done/039-implement-spread-arguments.md` completed ordinary call spread syntax.
+- `issues/open/039-implement-spread-arguments.md` completed ordinary call spread syntax.
 
 Issue 5241 is narrower: parse spread arguments in `new` expressions so the
 representative case advances past the raw parser boundary.

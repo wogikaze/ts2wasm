@@ -12,13 +12,13 @@ updated: 2026-05-07
 ---
 > **Reopened by false-done audit** (2026-05-07)
 > Classification: must-reopen
-> Reason: Batch-migrated to issues/done/ without implementation commits.
+> Reason: Batch-migrated to issues/open/ without implementation commits.
 > Evidence: Empty completion evidence. No feat/fix commit for #1365.
 
 ## Summary
 
 Closed after splitting the current plain enum declaration binding blocker into
-`issues/done/5284-bind-plain-enum-declarations-before-member-access.md`.
+`issues/open/5284-bind-plain-enum-declarations-before-member-access.md`.
 
 ## Problem
 
@@ -55,7 +55,7 @@ unsupported_features=name-resolution:1
 ## Desired final state
 
 This generated bucket is closed. Implementation should proceed through
-`issues/done/5284-bind-plain-enum-declarations-before-member-access.md`.
+`issues/open/5284-bind-plain-enum-declarations-before-member-access.md`.
 
 ## Scope
 
@@ -127,7 +127,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] `issues/done/5284-bind-plain-enum-declarations-before-member-access.md`
+- [x] `issues/open/5284-bind-plain-enum-declarations-before-member-access.md`
 
 ## Notes
 
@@ -143,10 +143,10 @@ Follow-up issues:
   `issues/open/2143-implement-enumPropertyAccess.md` are generated buckets that
   may expose the same family later, but they are not implementation-ready
   children.
-- `issues/done/5184-parse-const-enum-declarations.md` covers `const enum`.
-- `issues/done/5277-parse-export-enum-declarations-to-enum-boundary.md` covers
+- `issues/open/5184-parse-const-enum-declarations.md` covers `const enum`.
+- `issues/open/5277-parse-export-enum-declarations-to-enum-boundary.md` covers
   `export enum`.
-- `issues/done/5284-bind-plain-enum-declarations-before-member-access.md` owns
+- `issues/open/5284-bind-plain-enum-declarations-before-member-access.md` owns
   this current plain enum binding blocker.
 
 ## Smart triage

@@ -13,7 +13,7 @@ completed: 2026-05-07
 ---
 > **Reopened by false-done audit** (2026-05-07)
 > Classification: must-reopen
-> Reason: Batch-migrated to issues/done/ without implementation commits.
+> Reason: Batch-migrated to issues/open/ without implementation commits.
 > Evidence: Empty completion evidence. No feat/fix commit for #1436.
 
 ## Summary
@@ -127,7 +127,7 @@ Follow-up issues:
 
 - `issues/open/5162-allow-compatible-var-redeclarations.md` is related but
   covers compatible `var` redeclarations, not this var/function conflict.
-- `issues/open/5205-report-incompatible-var-redeclaration-type-diagnostics.md`
+- `issues/open/5205a-report-incompatible-var-redeclaration-type-diagnostics.md`
   is related but starts after duplicate-local blockers are gone and covers
   repeated `var` type compatibility.
 - Split into `issues/open/5307-report-var-function-duplicate-identifier-diagnostics.md`.

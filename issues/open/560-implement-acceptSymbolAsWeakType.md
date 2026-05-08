@@ -245,7 +245,7 @@ Duplicate candidates:
   },
   {
     "state": "open",
-    "path": "issues/done/089-implement-acceptSymbolAsWeakType.md",
+    "path": "issues/open/089-implement-acceptSymbolAsWeakType.md",
     "title": "Implement Acceptsymbolasweaktype",
     "reason": "same reference path, same feature label, title overlap"
   },
@@ -257,7 +257,7 @@ Duplicate candidates:
   },
   {
     "state": "open",
-    "path": "issues/done/474-implement-acceptSymbolAsWeakType.md",
+    "path": "issues/open/474-implement-acceptSymbolAsWeakType.md",
     "title": "Implement Acceptsymbolasweaktype",
     "reason": "same reference path, same feature label, title overlap"
   }

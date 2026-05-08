@@ -122,7 +122,7 @@ Follow-up issues:
 ## Duplicate detection
 
 - `issues/open/209-implement-labeled-break-continue.md` owns labeled break/continue behavior and invalid label diagnostics.
-- `issues/done/035-implement-break-continue.md` owns unlabeled break/continue support.
+- `issues/open/035-implement-break-continue.md` owns unlabeled break/continue support.
 - Generic break/continue buckets are not exact matches; this bucket is specifically the undefined target label diagnostic.
 
 ## Smart triage
@@ -200,7 +200,7 @@ Date: 2026-05-06
 
 Classification: truly-done.
 
-Audit result: retained in `issues/done/`. This issue has repo-local close evidence
+Audit result: retained in `issues/open/`. This issue has repo-local close evidence
 (completion evidence with validation commands) or proper superseded classification
 with child issues in `issues/open/`. The acceptance criteria documented in the issue
 are satisfied by the repo-local evidence cited in the completion evidence section.

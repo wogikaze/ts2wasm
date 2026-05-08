@@ -192,7 +192,7 @@ Duplicate candidates:
 [
   {
     "state": "open",
-    "path": "issues/done/187-implement-anyInferenceAnonymousFunctions.md",
+    "path": "issues/open/187-implement-anyInferenceAnonymousFunctions.md",
     "title": "Implement Anyinferenceanonymousfunctions",
     "reason": "same reference path, same feature label, title overlap"
   },

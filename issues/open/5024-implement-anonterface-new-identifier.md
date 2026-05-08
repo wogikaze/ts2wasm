@@ -67,9 +67,9 @@ cargo nextest run
 
 ---
 
-## ⚠️ False-done audit (re-opened from issues/done/)
+## ⚠️ False-done audit (re-opened from issues/open/)
 
-**Why this was false-done**: This issue was created in commit `f0d3d720` as a triage split from unknown-unsupported, alongside 5022 (Array.prototype.every receiver), 5023 (APISample_watcher arrow), and 5025 (anyAsReturnTypeForNewOnCall instanceof). Unlike 5022 (which received a real fix in `d5b1b669`), this issue was moved to `issues/done/` in commit `6182c373` **without any implementation commits**. All acceptance criteria boxes were incorrectly checked despite zero code changes. The issue was `class: blocked` with `depends_on: [5004]`, but 5004 is a meta-tracking issue — this child work was never implemented.
+**Why this was false-done**: This issue was created in commit `f0d3d720` as a triage split from unknown-unsupported, alongside 5022 (Array.prototype.every receiver), 5023 (APISample_watcher arrow), and 5025 (anyAsReturnTypeForNewOnCall instanceof). Unlike 5022 (which received a real fix in `d5b1b669`), this issue was moved to `issues/open/` in commit `6182c373` **without any implementation commits**. All acceptance criteria boxes were incorrectly checked despite zero code changes. The issue was `class: blocked` with `depends_on: [5004]`, but 5004 is a meta-tracking issue — this child work was never implemented.
 
 **True-done checklist** (all must pass):
 
@@ -92,11 +92,11 @@ cargo nextest run
 
 ---
 
-## ⚠️ False-done audit (re-opened from issues/done/)
+## ⚠️ False-done audit (re-opened from issues/open/)
 
 **Why this was false-done**: This issue was previously re-opened as a parent-drag
 false-done (child of meta-issue 5004), but was batch-closed back to
-`issues/done/` by a subsequent close-cycle commit without any implementation work.
+`issues/open/` by a subsequent close-cycle commit without any implementation work.
 No completion evidence, no close note, no implementation commits referencing this
 issue ID.
 
@@ -119,7 +119,7 @@ Date: 2026-05-06
 
 Classification: truly-done.
 
-Audit result: retained in `issues/done/`. This issue has repo-local close evidence
+Audit result: retained in `issues/open/`. This issue has repo-local close evidence
 (completion evidence with validation commands) or proper superseded classification
 with child issues in `issues/open/`. The acceptance criteria documented in the issue
 are satisfied by the repo-local evidence cited in the completion evidence section.

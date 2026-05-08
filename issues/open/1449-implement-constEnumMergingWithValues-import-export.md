@@ -14,14 +14,14 @@ status: done
 ---
 > **Reopened by false-done audit** (2026-05-07)
 > Classification: must-reopen
-> Reason: Batch-migrated to issues/done/ without implementation commits.
+> Reason: Batch-migrated to issues/open/ without implementation commits.
 > Evidence: Empty completion evidence. No feat/fix commit for #1449.
 
 ## Summary
 
 Closed this generated import-export bucket because fresh triage for its four
 reference files stops at the `export = foo` parser/module boundary already
-owned by `issues/done/5186-parse-export-assignment-for-diagnostics.md`.
+owned by `issues/open/5186-parse-export-assignment-for-diagnostics.md`.
 
 ## Problem
 
@@ -46,7 +46,7 @@ mise run reference-coverage -- tsc --path-filter reference/typescript/tests/case
 ## Desired final state
 
 This generated bucket is closed. Implement from
-`issues/done/5186-parse-export-assignment-for-diagnostics.md`.
+`issues/open/5186-parse-export-assignment-for-diagnostics.md`.
 
 ## Scope
 
@@ -115,7 +115,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] superseded by: `issues/done/5186-parse-export-assignment-for-diagnostics.md`
+- [x] superseded by: `issues/open/5186-parse-export-assignment-for-diagnostics.md`
 
 ## Notes
 
@@ -136,7 +136,7 @@ Follow-up issues:
 - `issues/open/662-implement-arrayAssignmentTest-import-export.md` - Implement Arrayassignmenttest Import Export (same feature label, title overlap)
 - `issues/open/732-implement-assignmentCompatability-import-export.md` - Implement Assignmentcompatability Import Export (same feature label, title overlap)
 - `issues/open/766-implement-augmentedTypesEnum-import-export.md` - Implement Augmentedtypesenum Import Export (same feature label, title overlap)
-- `issues/done/055-implement-import-export.md` - Umbrella: implement import and export (same feature label, title overlap)
+- `issues/open/055-implement-import-export.md` - Umbrella: implement import and export (same feature label, title overlap)
 
 ## Smart triage
 
@@ -161,7 +161,7 @@ diagnostics. The files differ in the value merged with namespace `foo`
 (`function`, `class`, namespace/var, and `preserveConstEnums`), but the current
 compiler boundary is identical: the frontend does not represent `export = foo`.
 
-Superseding issue: `issues/done/5186-parse-export-assignment-for-diagnostics.md`.
+Superseding issue: `issues/open/5186-parse-export-assignment-for-diagnostics.md`.
 
 ## Completion evidence
 

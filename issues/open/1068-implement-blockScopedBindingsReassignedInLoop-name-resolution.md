@@ -125,7 +125,7 @@ Follow-up issues:
 - `issues/open/657-implement-argumentsReferenceInMethod-name-resolution.md` - Implement Argumentsreferenceinmethod Name Resolution (same feature label, title overlap)
 - `issues/open/693-implement-arrayToLocaleStringES-name-resolution.md` - Implement Arraytolocalestringes Name Resolution (same feature label, title overlap)
 - `issues/open/733-implement-assignmentCompatability-name-resolution.md` - Implement Assignmentcompatability Name Resolution (same feature label, title overlap)
-- `issues/done/268-implement-for-loop-increment-operator.md` is related but not a match. It completed for-loop update-slot support, while the current blocker is `++i` in a call argument expression.
+- `issues/open/268-implement-for-loop-increment-operator.md` is related but not a match. It completed for-loop update-slot support, while the current blocker is `++i` in a call argument expression.
 - `issues/open/1069-implement-blockScopedBindingsReassignedInLoop-scope-analysis.md` is a sibling generated bucket, not an implementation-ready child for the current issue-268 diagnostic.
 
 ## Smart triage
@@ -168,7 +168,7 @@ Date: 2026-05-06
 
 Classification: truly-done.
 
-Audit result: retained in `issues/done/`. This issue has repo-local close evidence
+Audit result: retained in `issues/open/`. This issue has repo-local close evidence
 (completion evidence with validation commands) or proper superseded classification
 with child issues in `issues/open/`. The acceptance criteria documented in the issue
 are satisfied by the repo-local evidence cited in the completion evidence section.

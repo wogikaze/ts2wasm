@@ -13,7 +13,7 @@ completed: 2026-05-07
 ---
 > **Reopened by false-done audit** (2026-05-07)
 > Classification: must-reopen
-> Reason: Batch-migrated to issues/done/ without implementation commits.
+> Reason: Batch-migrated to issues/open/ without implementation commits.
 > Evidence: Empty completion evidence. No feat/fix commit for #1425.
 
 ## Summary
@@ -125,7 +125,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/5278-parse-trailing-comma-in-function-parameters-with-comments.md`
+- `issues/open/5278-parse-trailing-comma-in-function-parameters-with-comments.md`
   is related but narrower: ordinary function parameters with comments.
 - `issues/open/5149-parse-trailing-comma-in-typed-class-method-parameters.md`
   is related but covers class methods, not exported function declarations.

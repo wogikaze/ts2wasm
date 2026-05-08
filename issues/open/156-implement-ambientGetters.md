@@ -221,7 +221,7 @@ Duplicate candidates:
 [
   {
     "state": "done",
-    "path": "issues/done/156-implement-ambientGetters.md",
+    "path": "issues/open/156-implement-ambientGetters.md",
     "title": "Implement Ambientgetters",
     "reason": "same reference path, title overlap"
   }

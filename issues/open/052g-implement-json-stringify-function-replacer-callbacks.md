@@ -54,7 +54,7 @@ Expected:
 - `crates/backend-wasm/src/`
 - `fixtures/builtins-and-io/`
 - `crates/cli/tests/`
-- `issues/done/052-implement-json.md`
+- `issues/open/052-implement-json.md`
 - `issues/open/052d-implement-json-stringify-broader-replacer-semantics.md`
 
 Do not touch:
@@ -151,10 +151,10 @@ Date: 2026-05-05
 
 Classification: truly-done.
 
-Audit result: retained in `issues/done/`. The issue has repo-local completion evidence, is not marked `blocked` or `triage-needed`, and `python scripts/manager.py check issues` validates the resulting issue graph.
+Audit result: retained in `issues/open/`. The issue has repo-local completion evidence, is not marked `blocked` or `triage-needed`, and `python scripts/manager.py check issues` validates the resulting issue graph.
 
 Evidence files:
-- `issues/done/052g-implement-json-stringify-function-replacer-callbacks.md`
+- `issues/open/052g-implement-json-stringify-function-replacer-callbacks.md`
 - `issues/index.md` after regeneration
 
 Future-work tracking: no untracked future-work item was identified in this issue during this metadata/evidence audit.

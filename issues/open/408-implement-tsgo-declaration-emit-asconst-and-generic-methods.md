@@ -95,7 +95,7 @@ Follow-up issues:
 
 ---
 
-## ⚠️ False-done audit (re-opened from issues/done/)
+## ⚠️ False-done audit (re-opened from issues/open/)
 
 **Why this was false-done**: This is an `implementation-ready` child issue of meta-issue 399 (`depends_on: [399]`) with no completion evidence section, no git commits referencing #408 for implementation, and no validation results. The only commits are "verifier: close issue 408" (admin close action). All scope and acceptance checkboxes are checked but without any evidence of implementation work.
 
@@ -123,7 +123,7 @@ Date: 2026-05-06
 
 Classification: truly-done.
 
-Audit result: retained in `issues/done/`. This issue has repo-local close evidence
+Audit result: retained in `issues/open/`. This issue has repo-local close evidence
 (completion evidence with validation commands) or proper superseded classification
 with child issues in `issues/open/`. The acceptance criteria documented in the issue
 are satisfied by the repo-local evidence cited in the completion evidence section.

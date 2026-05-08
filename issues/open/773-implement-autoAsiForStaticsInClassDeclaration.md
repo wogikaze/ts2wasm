@@ -14,13 +14,13 @@ status: done
 ---
 > **Reopened by false-done audit** (2026-05-07)
 > Classification: must-reopen
-> Reason: Batch-migrated to issues/done/ without implementation commits.
+> Reason: Batch-migrated to issues/open/ without implementation commits.
 > Evidence: Empty completion evidence. No feat/fix commit for #773.
 
 ## Summary
 
 Closed this generated parser-syntax bucket as superseded by
-`issues/done/5254-parse-asi-between-static-class-fields.md`.
+`issues/open/5254-parse-asi-between-static-class-fields.md`.
 
 ## Problem
 
@@ -48,7 +48,7 @@ mise run reference-coverage -- tsc --path-filter reference/typescript/tests/case
 ## Desired final state
 
 This generated bucket is closed. Implement from
-`issues/done/5254-parse-asi-between-static-class-fields.md`.
+`issues/open/5254-parse-asi-between-static-class-fields.md`.
 
 ## Scope
 
@@ -117,7 +117,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] `issues/done/5254-parse-asi-between-static-class-fields.md`
+- [x] `issues/open/5254-parse-asi-between-static-class-fields.md`
 
 ## Notes
 
@@ -127,7 +127,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-Superseded by `issues/done/5254-parse-asi-between-static-class-fields.md`.
+Superseded by `issues/open/5254-parse-asi-between-static-class-fields.md`.
 
 Evidence:
 
@@ -236,13 +236,13 @@ Duplicate candidates:
   },
   {
     "state": "open",
-    "path": "issues/done/464-implement-FunctionDeclaration-parser-syntax.md",
+    "path": "issues/open/464-implement-FunctionDeclaration-parser-syntax.md",
     "title": "Implement Functiondeclaration Parser Syntax",
     "reason": "same feature label, title overlap"
   },
   {
     "state": "open",
-    "path": "issues/done/550-implement-FunctionDeclaration-parser-syntax.md",
+    "path": "issues/open/550-implement-FunctionDeclaration-parser-syntax.md",
     "title": "Implement Functiondeclaration Parser Syntax",
     "reason": "same feature label, title overlap"
   },
@@ -266,7 +266,7 @@ Duplicate candidates:
   },
   {
     "state": "open",
-    "path": "issues/done/767-implement-augmentedTypesEnum-parser-syntax.md",
+    "path": "issues/open/767-implement-augmentedTypesEnum-parser-syntax.md",
     "title": "Implement Augmentedtypesenum Parser Syntax",
     "reason": "same feature label, title overlap"
   },
@@ -278,13 +278,13 @@ Duplicate candidates:
   },
   {
     "state": "done",
-    "path": "issues/done/065-implement-parser-syntax.md",
+    "path": "issues/open/065-implement-parser-syntax.md",
     "title": "Implement parser syntax extensions",
     "reason": "same feature label, title overlap"
   },
   {
     "state": "done",
-    "path": "issues/done/065a-merge-duplicate-parser-syntax-issue-into-059.md",
+    "path": "issues/open/065a-merge-duplicate-parser-syntax-issue-into-059.md",
     "title": "Merge duplicate parser syntax issue into 059",
     "reason": "same feature label, title overlap"
   }

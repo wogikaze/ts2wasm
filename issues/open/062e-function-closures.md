@@ -62,7 +62,7 @@ Do not touch:
 - Mutable captured outer locals remain rejected with `issue-062e` because the
   current narrow slice passes captures as hidden values, not as a shared mutable
   heap environment.
-- Follow-up issue `issues/done/062g-heap-closure-object-abi-and-rooting.md`
+- Follow-up issue `issues/open/062g-heap-closure-object-abi-and-rooting.md`
   completed returned closure object ABI, dispatch, and GC rooting.
 
 ## Acceptance criteria
@@ -135,10 +135,10 @@ Date: 2026-05-05
 
 Classification: truly-done.
 
-Audit result: retained in `issues/done/`. The issue has repo-local completion evidence, is not marked `blocked` or `triage-needed`, and `python scripts/manager.py check issues` validates the resulting issue graph.
+Audit result: retained in `issues/open/`. The issue has repo-local completion evidence, is not marked `blocked` or `triage-needed`, and `python scripts/manager.py check issues` validates the resulting issue graph.
 
 Evidence files:
-- `issues/done/062e-function-closures.md`
+- `issues/open/062e-function-closures.md`
 - `issues/index.md` after regeneration
 
 Future-work tracking: no untracked future-work item was identified in this issue during this metadata/evidence audit.

@@ -13,7 +13,7 @@ completed: 2026-05-06
 ---
 > **Reopened by false-done audit** (2026-05-07)
 > Classification: must-reopen
-> Reason: Batch-migrated to issues/done/ without implementation commits.
+> Reason: Batch-migrated to issues/open/ without implementation commits.
 > Evidence: Empty completion evidence. No feat/fix commit for #1140.
 
 ## Summary
@@ -111,7 +111,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] created: `issues/open/5231-parse-export-as-namespace-declarations.md`
+- [x] created: `issues/open/5231a-parse-export-as-namespace-declarations.md`
 
 ## Notes
 
@@ -186,7 +186,7 @@ TypeScript oracle: TS1315 Global module exports may only appear in declaration f
 
 Split result:
 
-- `issues/open/5231-parse-export-as-namespace-declarations.md`
+- `issues/open/5231a-parse-export-as-namespace-declarations.md`
 
 ## Completion evidence
 

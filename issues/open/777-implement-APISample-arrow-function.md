@@ -121,7 +121,7 @@ Follow-up issues:
 - `issues/open/430-implement-function.md` - Implement function support (same feature label, title overlap)
 - `issues/open/456-implement-APISample-arrow-function.md` - Implement Apisample Arrow Function (same reference path, same feature label, same group key, title overlap)
 - `issues/open/542-implement-APISample-arrow-function.md` - Implement Apisample Arrow Function (same reference path, same feature label, same group key, title overlap)
-- `issues/done/036-implement-arrow-function.md` - Implement arrow function (same feature label, title overlap)
+- `issues/open/036-implement-arrow-function.md` - Implement arrow function (same feature label, title overlap)
 - `issues/done/062d-function-this-and-arguments.md` - Implement function this and arguments semantics (same feature label, title overlap)
 - `issues/open/210-implement-arrow-function-closure-lexical-this.md` - Implement arrow function closure and lexical this semantics (same feature label, title overlap)
 
@@ -161,7 +161,7 @@ Date: 2026-05-05
 
 Classification: truly-done.
 
-Audit result: retained in `issues/done/`. The issue has repo-local completion evidence, is not marked `blocked` or `triage-needed`, and `python scripts/manager.py check issues` validates the resulting issue graph.
+Audit result: retained in `issues/open/`. The issue has repo-local completion evidence, is not marked `blocked` or `triage-needed`, and `python scripts/manager.py check issues` validates the resulting issue graph.
 
 Evidence files:
 - `issues/open/777-implement-APISample-arrow-function.md`

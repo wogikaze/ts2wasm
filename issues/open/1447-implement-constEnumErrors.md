@@ -14,14 +14,14 @@ status: done
 ---
 > **Reopened by false-done audit** (2026-05-07)
 > Classification: must-reopen
-> Reason: Batch-migrated to issues/done/ without implementation commits.
+> Reason: Batch-migrated to issues/open/ without implementation commits.
 > Evidence: Empty completion evidence. No feat/fix commit for #1447.
 
 ## Summary
 
 Closed this generated const-enum errors bucket after splitting the current
 large decimal integer literal lexer boundary to
-`issues/done/5351-accept-large-decimal-integer-number-literals.md`.
+`issues/open/5351-accept-large-decimal-integer-number-literals.md`.
 
 ## Problem
 
@@ -46,7 +46,7 @@ mise run reference-coverage -- tsc --path-filter reference/typescript/tests/case
 ## Desired final state
 
 This generated bucket is closed. Implement the current lexer boundary from
-`issues/done/5351-accept-large-decimal-integer-number-literals.md`.
+`issues/open/5351-accept-large-decimal-integer-number-literals.md`.
 
 ## Scope
 
@@ -115,7 +115,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] created: `issues/done/5351-accept-large-decimal-integer-number-literals.md`
+- [x] created: `issues/open/5351-accept-large-decimal-integer-number-literals.md`
 
 ## Notes
 
@@ -137,14 +137,14 @@ Generated on 2026-05-07.
 - Current failing source: `A = 9007199254740992`
 - Compiler dumps fail before token output, AST, or resolved construction.
 - TypeScript oracle parses the file and reports later enum diagnostics including TS2567, TS2651, TS2474, TS2475, TS2476, TS2477, and TS2478.
-- Superseding child: `issues/done/5351-accept-large-decimal-integer-number-literals.md`
+- Superseding child: `issues/open/5351-accept-large-decimal-integer-number-literals.md`
 
 Nearby non-owners:
 
 - `issues/open/5171-accept-unsigned-32-bit-hex-literals.md` covers large hex masks.
 - `issues/open/5216-allow-extra-arguments-for-functions-reading-arguments-object.md` covers exponent notation.
 - `issues/open/300-support-abc451-large-integer-number-boundary.md` covers runtime representation after parsing.
-- `issues/done/5184-parse-const-enum-declarations.md` covers the const-enum parser boundary, not the current lexer failure.
+- `issues/open/5184-parse-const-enum-declarations.md` covers the const-enum parser boundary, not the current lexer failure.
 
 ## Completion evidence
 

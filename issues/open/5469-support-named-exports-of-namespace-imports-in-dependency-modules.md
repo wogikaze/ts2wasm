@@ -111,8 +111,8 @@ In scope:
 Out of scope:
 
 - Named exports of local type-only interface declarations, tracked by `issues/open/5438-support-named-exports-of-local-interfaces.md`.
-- Local imports between `// @filename:` virtual sections, tracked by `issues/open/5229-resolve-imports-between-filename-sections.md`.
-- TS2451-style duplicate `const` diagnostics, tracked by `issues/open/5412-report-ts2451-duplicate-const-filename-sections.md`.
+- Local imports between `// @filename:` virtual sections, tracked by `issues/open/5229a-resolve-imports-between-filename-sections.md`.
+- TS2451-style duplicate `const` diagnostics, tracked by `issues/open/5412a-report-ts2451-duplicate-const-filename-sections.md`.
 - Full TypeScript namespace/type/value merge semantics outside this exact namespace-import export boundary.
 
 ## Affected paths

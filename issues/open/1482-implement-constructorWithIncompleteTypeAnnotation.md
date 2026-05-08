@@ -12,7 +12,7 @@ updated: 2026-05-07
 ---
 > **Reopened by false-done audit** (2026-05-07)
 > Classification: must-reopen
-> Reason: Batch-migrated to issues/done/ without implementation commits.
+> Reason: Batch-migrated to issues/open/ without implementation commits.
 > Evidence: Empty completion evidence. No feat/fix commit for #1482.
 
 ## Summary
@@ -110,7 +110,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] split to `issues/done/5364-report-unterminated-string-literal-at-raw-newline.md`
+- [x] split to `issues/open/5364-report-unterminated-string-literal-at-raw-newline.md`
 
 ## Notes
 
@@ -144,7 +144,7 @@ Source context:
 47 |                     return 1;
 ```
 
-This bucket was split to `issues/done/5364-report-unterminated-string-literal-at-raw-newline.md`.
+This bucket was split to `issues/open/5364-report-unterminated-string-literal-at-raw-newline.md`.
 
 ## Completion evidence
 
