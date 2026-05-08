@@ -173,6 +173,11 @@ fresh triage for `moduleResolutionWithSymlinks_notInNodeModules.ts` first
 needs symlink alias module resolution owned by issue 5426, and its dumps also
 show virtual `/src/tsconfig.json` JSON parsing before outDir behavior becomes
 actionable.
+Also owns the config-section blocker from
+`issues/done/3576-implement-nodeColonModuleResolution.md`: fresh triage for
+`nodeColonModuleResolution2.ts` stops in virtual `/a/b/tsconfig.json` at
+`compilerOptions` / `paths` property colons before `fake:thing` path mapping or
+non-local module resolution becomes actionable.
 
 ## Completion evidence
 
