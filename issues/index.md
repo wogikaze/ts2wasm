@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 30 | 17 | 13 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4621 | 3185 | 1436 |
+| frontend | 4621 | 3184 | 1437 |
 | harness | 1 | 0 | 1 |
 | ir | 99 | 71 | 28 |
 | issues | 4 | 0 | 4 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5326 | 3497 | 1829 |
+| total | 5326 | 3496 | 1830 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -2398,7 +2398,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 3302 | Implement Modulealiasasfunctionargument | spike | frontend/syntax | class: blocked | Implement Modulealiasasfunctionargument |
 | 3303 | Implement Modulealiasinterface | spike | frontend/syntax | class: blocked | Implement Modulealiasinterface |
 | 3304 | Implement Moduleandinterfacesharingname | spike | frontend/syntax | class: blocked | Implement Moduleandinterfacesharingname |
-| 3608 | Implement Nounusedtypeparameterconstraint | spike | frontend/syntax | class: blocked | Implement Nounusedtypeparameterconstraint |
 | 3609 | Implement Nullablefunctionerror | spike | frontend/syntax | class: blocked | Implement Nullablefunctionerror |
 | 3610 | Implement Numberassignabletoenuminsideunion | spike | runtime/builtins | class: triage-needed | Implement Numberassignabletoenuminsideunion |
 | 3611 | Implement Numberliteralswithleadingzeros | spike | frontend/syntax | class: triage-needed | Implement Numberliteralswithleadingzeros |
@@ -5286,6 +5285,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 3605 | Implement Nongenericpartialinstantiationsrelatedinbothdirections | spike | frontend/resolver | see `issues/done/3605-implement-nongenericPartialInstantiationsRelatedInBothDirections.md` |
 | 3606 | Implement Nonnullassertionpropegatescontextualtype | spike | frontend/syntax | see `issues/done/3606-implement-nonnullAssertionPropegatesContextualType.md` |
 | 3607 | Implement Normalizedintersectiontoocomplex | spike | frontend/resolver | see `issues/done/3607-implement-normalizedIntersectionTooComplex.md` |
+| 3608 | Implement Nounusedtypeparameterconstraint | spike | frontend/syntax | see `issues/done/3608-implement-nounusedTypeParameterConstraint.md` |
 | 3690 | Implement Optionaltupleelementsandundefined | spike | reference/triage | see `issues/done/3690-implement-optionalTupleElementsAndUndefined.md` |
 | 3996 | Implement Compiler (dup) | spike | frontend/syntax | see `issues/done/3996-implement-reference-typescript-tests-cases-compiler.md` |
 | 4210 | Implement Splicetuples | spike | frontend/resolver | see `issues/done/4210-implement-spliceTuples.md` |

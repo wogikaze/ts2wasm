@@ -96,6 +96,10 @@ Do not touch:
 - [ ] `checkJsdocTypeTagOnExportAssignment2.ts` no longer reports `issue-232: missing local module ./b`.
 - [ ] `circularReferenceInImport.ts` no longer reports `issue-232: missing local module ./db`.
 - [ ] `moduleAugmentationDoesInterfaceMergeOfReexport.ts` no longer reports `issue-232: missing local module ./file` for `export * from "./file"`.
+- [ ] `nounusedTypeParameterConstraint.ts` no longer reports
+  `issue-232: missing local module ./bar` for `import { IEventSourcedEntity }
+  from "./bar"` between `//@filename: bar.ts` and `//@filename: test.ts`
+  sections.
 - [ ] A focused compiler test proves `// @Filename: b.js` is resolved by `import "./b"` from another section.
 - [ ] Existing missing real local module diagnostics still report issue-232.
 
@@ -172,6 +176,11 @@ fresh triage for both `moduleSameValueDuplicateExportedBindings1.ts` and
 `moduleSameValueDuplicateExportedBindings2.ts` stops at issue-232 missing local
 module `./b` for `export * from "./b"` in virtual `a.ts` before duplicate
 exported-binding semantics become actionable.
+Also owns `issues/done/3608-implement-nounusedTypeParameterConstraint.md`:
+fresh triage for `nounusedTypeParameterConstraint.ts` parses virtual
+`bar.ts` and `test.ts` sections, then reports issue-232 missing local module
+`./bar` for `import { IEventSourcedEntity } from "./bar"` before no-unused
+type-parameter or type-only import/export diagnostics become actionable.
 
 ## Completion evidence
 
