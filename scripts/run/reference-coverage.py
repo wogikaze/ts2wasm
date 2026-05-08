@@ -743,6 +743,8 @@ def main():
     limit = None
     json_output = False
     detail_output = False
+    record_baseline = None
+    compare_baseline = None
     paths_file = None
     path_filters = []
     web_ui = True
@@ -829,6 +831,18 @@ def main():
         elif args[i] == "--no-server":
             server_mode = False
             i += 1
+        elif args[i] == "--record-baseline":
+            if i + 1 >= len(args):
+                print("--record-baseline requires a file path", file=sys.stderr)
+                sys.exit(1)
+            record_baseline = args[i + 1]
+            i += 2
+        elif args[i] == "--compare-baseline":
+            if i + 1 >= len(args):
+                print("--compare-baseline requires a file path", file=sys.stderr)
+                sys.exit(1)
+            compare_baseline = args[i + 1]
+            i += 2
         else:
             print(f"unknown option: {args[i]}", file=sys.stderr)
             usage()
@@ -2571,6 +2585,38 @@ def main():
         },
         "evidence": evidence,
     }
+
+    # Baseline recording and comparison
+    if record_baseline:
+        baseline_path = Path(record_baseline)
+        baseline_path.parent.mkdir(parents=True, exist_ok=True)
+        baseline_data = {
+            "suite": summary["suite"],
+            "build_pass": summary["build_pass"],
+            "semantic_pass": summary["semantic_pass"],
+            "executed": summary["executed"],
+            "denominator": summary["denominator"],
+            "recorded_at": datetime.utcnow().isoformat(),
+        }
+        baseline_path.write_text(json.dumps(baseline_data, indent=2))
+        print(f"# Baseline recorded: {record_baseline}", file=sys.stderr)
+
+    if compare_baseline:
+        baseline_path = Path(compare_baseline)
+        if not baseline_path.exists():
+            print(f"# Baseline file not found: {compare_baseline}", file=sys.stderr)
+            sys.exit(1)
+        baseline_data = json.loads(baseline_path.read_text())
+        regressions = []
+        for key in ("build_pass", "semantic_pass"):
+            current = summary.get(key, 0)
+            previous = baseline_data.get(key, 0)
+            if current < previous:
+                regressions.append(f"{key}: {current} < {previous}")
+        if regressions:
+            print(f"# REGRESSION detected: {', '.join(regressions)}", file=sys.stderr)
+            sys.exit(1)
+        print(f"# Baseline comparison passed against {compare_baseline}", file=sys.stderr)
 
     if web_ui:
         write_coverage_result(summary)
