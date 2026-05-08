@@ -1154,3 +1154,14 @@ fn promise_then_unsupported_diagnostic() {
         err_msg
     );
 }
+
+// RegExp literal flags g, i, m (issue 109)
+#[test]
+fn build_smoke_regexp_flags_gim() {
+    let result = run_fixture("builtins-and-io/regexp-flags-gim.ts");
+    assert!(
+        result.is_ok(),
+        "RegExp flags g, i, m should build: {:?}",
+        result.err()
+    );
+}
