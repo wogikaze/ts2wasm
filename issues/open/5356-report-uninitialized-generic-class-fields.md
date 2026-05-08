@@ -156,6 +156,10 @@ initialization false-pass slice.
   `L<RT extends { a: 'a' | 'b', b: any }> extends T<RT[RT['a']]>`, erases the
   typed fields, and returns `build_pass`.
 
+Also owns `issues/done/3592-implement-nonGenericClassExtendingGenericClassWithAny.md`:
+fresh triage now build-passes and TypeScript reports TS2564 for generic field
+`Foo<T>.t` before any `Foo<any>` heritage parity gap is actionable.
+
 ## Completion evidence
 
 Fill only when moving to `done/`.
