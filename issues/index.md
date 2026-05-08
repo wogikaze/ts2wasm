@@ -16,9 +16,9 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 27 | 14 | 13 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4607 | 3242 | 1365 |
+| frontend | 4606 | 3241 | 1365 |
 | harness | 1 | 0 | 1 |
-| ir | 97 | 70 | 27 |
+| ir | 98 | 70 | 28 |
 | issues | 4 | 0 | 4 |
 | parser | 1 | 0 | 1 |
 | reference | 213 | 140 | 73 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5307 | 3552 | 1755 |
+| total | 5307 | 3551 | 1756 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -2379,7 +2379,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 3302 | Implement Modulealiasasfunctionargument | spike | frontend/syntax | class: blocked | Implement Modulealiasasfunctionargument |
 | 3303 | Implement Modulealiasinterface | spike | frontend/syntax | class: blocked | Implement Modulealiasinterface |
 | 3304 | Implement Moduleandinterfacesharingname | spike | frontend/syntax | class: blocked | Implement Moduleandinterfacesharingname |
-| 3534 | Implement Noimplicitanydestructuringinprivatemethod | spike | frontend/syntax | class: blocked | Implement Noimplicitanydestructuringinprivatemethod |
 | 3535 | Implement Noimplicitanydestructuringvardeclaration | spike | frontend/syntax | class: blocked | Implement Noimplicitanydestructuringvardeclaration |
 | 3536 | Implement Noimplicitanyforin | spike | frontend/syntax | class: blocked | Implement Noimplicitanyforin |
 | 3537 | Implement Noimplicitanyformethodparameters | spike | frontend/syntax | class: blocked | Implement Noimplicitanyformethodparameters |
@@ -5267,6 +5266,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 3531 | Implement Noerrorsincallback | spike | frontend/semantics | see `issues/done/3531-implement-noErrorsInCallback.md` |
 | 3532 | Implement Noexcessivestackdeptherror | spike | frontend/resolver | see `issues/done/3532-implement-noExcessiveStackDepthError.md` |
 | 3533 | Implement Noimplicitanyandprivatememberswithouttypeannotations | spike | backend-wasm | see `issues/done/3533-implement-noImplicitAnyAndPrivateMembersWithoutTypeAnnotations.md` |
+| 3534 | Implement Noimplicitanydestructuringinprivatemethod | spike | ir/compiler | see `issues/done/3534-implement-noImplicitAnyDestructuringInPrivateMethod.md` |
 | 3690 | Implement Optionaltupleelementsandundefined | spike | reference/triage | see `issues/done/3690-implement-optionalTupleElementsAndUndefined.md` |
 | 3996 | Implement Compiler (dup) | spike | frontend/syntax | see `issues/done/3996-implement-reference-typescript-tests-cases-compiler.md` |
 | 4210 | Implement Splicetuples | spike | frontend/resolver | see `issues/done/4210-implement-spliceTuples.md` |

@@ -114,6 +114,8 @@ Do not touch:
   issue-5005 for their entry-module `export class Foo` declarations.
 - [ ] `noCrashOnThisTypeUsage.ts` no longer reports issue-5005 for entry-module
   `export class ObservableValue<T>`.
+- [ ] `noImplicitAnyDestructuringInPrivateMethod.ts` no longer reports
+  issue-5005 for entry-module `export class Bar`.
 - [ ] Unsupported export forms outside this slice still produce clear issue-5005 diagnostics.
 
 ## Validation
@@ -201,6 +203,14 @@ Also owns `issues/done/3507-implement-noAsConstNameLookup.md`: fresh triage for
 parameters, and `as const`, then stops at entry-module
 `export class FeatureRunner` with issue-5005 before no-as-const name lookup
 behavior becomes actionable.
+Also owns `issues/done/3534-implement-noImplicitAnyDestructuringInPrivateMethod.md`:
+fresh triage for `noImplicitAnyDestructuringInPrivateMethod.ts` parses the type
+alias, entry-module `export class Bar`, and private method object-binding
+parameter `{ a, }: Arg`, then stops at the same entry-module `export class`
+issue-5005 boundary before the later destructuring/private-method semantics
+become actionable. Focused coverage still classifies the representative under
+`destructuring`, but the smart-triage module build stack identifies the first
+reported module blocker as entry-module `export class Bar`.
 
 ## Completion evidence
 
