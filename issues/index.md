@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 25 | 13 | 12 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4610 | 3266 | 1344 |
+| frontend | 4610 | 3265 | 1345 |
 | harness | 1 | 0 | 1 |
 | ir | 92 | 69 | 23 |
 | issues | 4 | 0 | 4 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5303 | 3575 | 1728 |
+| total | 5303 | 3574 | 1729 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -2375,7 +2375,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 3302 | Implement Modulealiasasfunctionargument | spike | frontend/syntax | class: blocked | Implement Modulealiasasfunctionargument |
 | 3303 | Implement Modulealiasinterface | spike | frontend/syntax | class: blocked | Implement Modulealiasinterface |
 | 3304 | Implement Moduleandinterfacesharingname | spike | frontend/syntax | class: blocked | Implement Moduleandinterfacesharingname |
-| 3507 | Implement Noasconstnamelookup | spike | frontend/syntax | class: blocked | Implement Noasconstnamelookup |
 | 3508 | Implement Nobundledemitfromnodemodules | spike | frontend/syntax | class: blocked | Implement Nobundledemitfromnodemodules |
 | 3509 | Implement Nocheckdoesnotreporterror | spike | frontend/syntax | class: blocked | Implement Nocheckdoesnotreporterror |
 | 3510 | Implement Nochecknoemit | spike | frontend/syntax | class: blocked | Implement Nochecknoemit |
@@ -5263,6 +5262,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 3504 | Implement Newnonreferencetype | spike | frontend/resolver | see `issues/done/3504-implement-newNonReferenceType.md` |
 | 3505 | Implement Newoninstancesymbol | spike | frontend/syntax | see `issues/done/3505-implement-newOnInstanceSymbol.md` |
 | 3506 | Implement Newoperator | spike | frontend/syntax | see `issues/done/3506-implement-newOperator.md` |
+| 3507 | Implement Noasconstnamelookup | spike | frontend/syntax | see `issues/done/3507-implement-noAsConstNameLookup.md` |
 | 3690 | Implement Optionaltupleelementsandundefined | spike | reference/triage | see `issues/done/3690-implement-optionalTupleElementsAndUndefined.md` |
 | 3996 | Implement Compiler (dup) | spike | frontend/syntax | see `issues/done/3996-implement-reference-typescript-tests-cases-compiler.md` |
 | 4210 | Implement Splicetuples | spike | frontend/resolver | see `issues/done/4210-implement-spliceTuples.md` |

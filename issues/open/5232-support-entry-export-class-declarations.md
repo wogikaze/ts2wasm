@@ -186,6 +186,11 @@ Also owns `issues/done/3365-implement-modulePrologueUmd.md`: fresh triage for
 `modulePrologueUmd.ts` parses the `"use strict"` prologue and then stops at
 entry-module `export class Foo {}` with issue-5005 before UMD module prologue
 emit parity becomes actionable.
+Also owns `issues/done/3507-implement-noAsConstNameLookup.md`: fresh triage for
+`noAsConstNameLookup.ts` parses and erases type aliases, `export type`, generic
+parameters, and `as const`, then stops at entry-module
+`export class FeatureRunner` with issue-5005 before no-as-const name lookup
+behavior becomes actionable.
 
 ## Completion evidence
 
