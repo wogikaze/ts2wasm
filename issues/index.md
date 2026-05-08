@@ -16,9 +16,9 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 25 | 13 | 12 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4597 | 3305 | 1292 |
+| frontend | 4597 | 3304 | 1293 |
 | harness | 1 | 0 | 1 |
-| ir | 87 | 64 | 23 |
+| ir | 88 | 65 | 23 |
 | issues | 4 | 0 | 4 |
 | parser | 1 | 0 | 1 |
 | reference | 215 | 144 | 71 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5285 | 3611 | 1674 |
+| total | 5286 | 3611 | 1675 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -50,7 +50,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 5000 (Meta: TypeScript Compiler Parser Syntax Coverage) [done/design] ch:446 open:351 done:95
 ├── 5002 (Meta: TypeScript Compiler Type System Coverage) [done/done] ch:223 open:203 done:20 (also ← 5005)
 ├── 5003 (Meta: TypeScript Compiler Declaration Emit Coverage) [done/done] ch:100 open:89 done:11 (also ← 5001)
-5001 (Meta: TypeScript Compiler Semantic Analysis Coverage) [done/done] ch:556 open:296 done:260
+5001 (Meta: TypeScript Compiler Semantic Analysis Coverage) [done/done] ch:556 open:295 done:261
 5004 (Meta: Runtime Builtins Coverage (test262) (audit reopened #5004)) [done/done] ch:24 open:3 done:21
 5005 (Meta: TypeScript Compiler Name Resolution Coverage) [done/done] ch:397 open:335 done:62
 ├── 5006 (Meta: TypeScript Compiler Scope Analysis Coverage) [done/done] ch:28 open:19 done:9
@@ -67,7 +67,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | Order | ID | Title | State | Class | Area | Priority | Depends on | Direct children | Open children | Done children |
 |-----:|---:|------|-------|-------|------|--------:|-----------:|----------------:|--------------:|--------------:|
 | 1 | 5000 | Meta: TypeScript Compiler Parser Syntax Coverage | done | design | frontend/syntax | P1 | - | 446 | 351 | 95 |
-| 2 | 5001 | Meta: TypeScript Compiler Semantic Analysis Coverage | done | done | frontend/semantics | P1 | - | 556 | 296 | 260 |
+| 2 | 5001 | Meta: TypeScript Compiler Semantic Analysis Coverage | done | done | frontend/semantics | P1 | - | 556 | 295 | 261 |
 | 3 | 5004 | Meta: Runtime Builtins Coverage (test262) (audit reopened #5004) | done | done | runtime/builtins | P1 | - | 24 | 3 | 21 |
 | 4 | 5005 | Meta: TypeScript Compiler Name Resolution Coverage | done | done | frontend/resolver | P1 | - | 397 | 335 | 62 |
 | 5 | 5002 | Meta: TypeScript Compiler Type System Coverage | done | done | frontend/semantics | P1 | 5000, 5005 | 223 | 203 | 20 |
@@ -403,6 +403,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5448 | Support class constructor values in instanceof RHS | feature | ir/runtime | implementation-ready | P1 |  | `narrowTypeByInstanceof.ts` parses successfully, but name resolution |
 | 5449 | Lower anonymous class expressions in return statements | feature | ir/compiler | implementation-ready | P2 |  | `narrowedConstInMethod.ts` parses and resolves, then lower_program |
 | 5450 | Support function-typed parameter local calls | feature | ir/lowering | implementation-ready | P1 |  | `narrowingAssignmentReadonlyRespectsAssertion.ts` parses and resolves, |
+| 5451 | Classify number toString after typeof switch narrowing | feature | ir/lowering | implementation-ready | P1 |  | `narrowingByTypeofInSwitch.ts` parses and resolves, then |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -2357,7 +2358,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 3302 | Implement Modulealiasasfunctionargument | spike | frontend/syntax | class: blocked | Implement Modulealiasasfunctionargument |
 | 3303 | Implement Modulealiasinterface | spike | frontend/syntax | class: blocked | Implement Modulealiasinterface |
 | 3304 | Implement Moduleandinterfacesharingname | spike | frontend/syntax | class: blocked | Implement Moduleandinterfacesharingname |
-| 3453 | Implement Narrowingbytypeofinswitch | spike | frontend/syntax | class: blocked | Implement Narrowingbytypeofinswitch |
 | 3454 | Implement Narrowingconstrainedtypeparameter | spike | frontend/syntax | class: blocked | Implement Narrowingconstrainedtypeparameter |
 | 3455 | Implement Narrowingdestructuring | spike | reference/triage | class: triage-needed | Implement Narrowingdestructuring |
 | 3456 | Implement Narrowingincaseclauseaftercaseclausewithreturn | spike | frontend/syntax | class: blocked | Implement Narrowingincaseclauseaftercaseclausewithreturn |
@@ -5245,6 +5245,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 3450 | Implement Narrowedconstinmethod | spike | frontend/syntax | see `issues/done/3450-implement-narrowedConstInMethod.md` |
 | 3451 | Implement Narrowedimports | spike | frontend/syntax | see `issues/done/3451-implement-narrowedImports.md` |
 | 3452 | Implement Narrowingassignmentreadonlyrespectsassertion | spike | frontend/syntax | see `issues/done/3452-implement-narrowingAssignmentReadonlyRespectsAssertion.md` |
+| 3453 | Implement Narrowingbytypeofinswitch | spike | frontend/syntax | see `issues/done/3453-implement-narrowingByTypeofInSwitch.md` |
 | 3690 | Implement Optionaltupleelementsandundefined | spike | reference/triage | see `issues/done/3690-implement-optionalTupleElementsAndUndefined.md` |
 | 3996 | Implement Compiler (dup) | spike | frontend/syntax | see `issues/done/3996-implement-reference-typescript-tests-cases-compiler.md` |
 | 4210 | Implement Splicetuples | spike | frontend/resolver | see `issues/done/4210-implement-spliceTuples.md` |
