@@ -13,8 +13,9 @@ updated: 2026-05-08
 
 ## Summary
 
-Preserve declaration-only ambient `var` bindings well enough for assignment
-targets such as `x = 2` to resolve without emitting a runtime declaration.
+Preserve declaration-only ambient `var` / `let` bindings well enough for
+assignment targets such as `x = 2` and `y = x` to resolve without emitting a
+runtime declaration.
 
 ## Problem
 
@@ -80,17 +81,21 @@ semantic_enabled=0
 
 ## Desired final state
 
-Declaration-only ambient `var` bindings are visible to name resolution as
-ambient values when they are used as assignment targets. The representative
-path should no longer fail at `x = 2`; it should either build or advance to the
-next narrower diagnostic without emitting a runtime declaration for `x`.
+Declaration-only ambient `var` / `let` bindings are visible to name resolution
+as ambient values when they are used as assignment targets. The representative
+paths should no longer fail at `x = 2` or `y = x`; they should either build or
+advance to the next narrower diagnostic without emitting runtime declarations
+for the ambient values.
 
 ## Scope
 
 In scope:
 
-- [ ] Preserve resolver-visible metadata for declaration-only ambient `var` declarations used as assignment targets.
+- [ ] Preserve resolver-visible metadata for declaration-only ambient `var` and
+  `let` declarations used as assignment targets.
 - [ ] Resolve `declare var x: number; x = 2;` without emitting a runtime declaration for `x`.
+- [ ] Resolve `declare let y: Cb<...>; y = x;` without emitting a runtime
+  declaration for `y`.
 - [ ] Add focused resolver coverage for an ambient `var` assignment target.
 - [ ] Re-run `commentOnAmbientVariable2.ts` and record the next diagnostic if the file advances.
 
@@ -119,6 +124,8 @@ Do not touch:
 - [ ] `declare var x: number; x = 2;` no longer reports `UnresolvedName` for `x`.
 - [ ] `contextualSignatureInstatiationContravariance.ts` no longer reports
   `UnresolvedName` for ambient assignment target `g2` in `g2 = f2`.
+- [ ] `nestedCallbackErrorNotFlattened.ts` no longer reports `UnresolvedName`
+  for ambient assignment target `y` in `y = x`.
 - [ ] A focused resolver test proves the ambient `var` binding is resolver-visible for assignment targets without adding a runtime local.
 - [ ] Existing ambient value expression cases in issue 5161 remain unchanged or are explicitly advanced by the same implementation.
 - [ ] Ambient declarations with initializers, such as `declare var x = 1;`, remain rejected.
@@ -191,6 +198,16 @@ Related but not duplicate:
 - Current diagnostic: `UnresolvedName: unresolved name: \`bar\`` at the assignment.
 - TypeScript oracle reports later TS2322 recursive callback assignability once
   the ambient assignment target resolves.
+
+2026-05-08 fold-in:
+
+- `issues/done/3476-implement-nestedCallbackErrorNotFlattened.md` reaches the
+  same ambient assignment-target resolver boundary for
+  `declare let y: Cb<Cb<Cb<Cb<string>>>>; y = x;`.
+- Current diagnostic: `UnresolvedName: unresolved name: \`y\`` at the
+  assignment.
+- TypeScript oracle reports the later TS2322 nested callback return-type
+  assignability diagnostic once the ambient assignment target resolves.
 
 ## Completion evidence
 
