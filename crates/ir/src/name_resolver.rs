@@ -23,7 +23,6 @@ struct NameResolver {
     classes: std::collections::HashMap<String, Option<Span>>,
     /// Global identifiers that are allowed (builtins like console, require, etc.)
     allowed_globals: std::collections::HashSet<String>,
-    /// Names forward-declared for TDZ references (const/let before declaration).
     predeclared_names: std::collections::HashSet<String>,
     /// Active ECMAScript labels and whether their target is an iteration statement.
     labels: Vec<LabelBinding>,
