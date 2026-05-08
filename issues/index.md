@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 25 | 13 | 12 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4608 | 3272 | 1336 |
+| frontend | 4608 | 3271 | 1337 |
 | harness | 1 | 0 | 1 |
 | ir | 92 | 69 | 23 |
 | issues | 4 | 0 | 4 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5301 | 3581 | 1720 |
+| total | 5301 | 3580 | 1721 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -50,7 +50,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 5000 (Meta: TypeScript Compiler Parser Syntax Coverage) [done/design] ch:446 open:342 done:104
 ├── 5002 (Meta: TypeScript Compiler Type System Coverage) [done/done] ch:223 open:199 done:24 (also ← 5005)
 ├── 5003 (Meta: TypeScript Compiler Declaration Emit Coverage) [done/done] ch:100 open:89 done:11 (also ← 5001)
-5001 (Meta: TypeScript Compiler Semantic Analysis Coverage) [done/done] ch:556 open:288 done:268
+5001 (Meta: TypeScript Compiler Semantic Analysis Coverage) [done/done] ch:556 open:287 done:269
 5004 (Meta: Runtime Builtins Coverage (test262) (audit reopened #5004)) [done/done] ch:24 open:3 done:21
 5005 (Meta: TypeScript Compiler Name Resolution Coverage) [done/done] ch:397 open:330 done:67
 ├── 5006 (Meta: TypeScript Compiler Scope Analysis Coverage) [done/done] ch:28 open:18 done:10
@@ -67,7 +67,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | Order | ID | Title | State | Class | Area | Priority | Depends on | Direct children | Open children | Done children |
 |-----:|---:|------|-------|-------|------|--------:|-----------:|----------------:|--------------:|--------------:|
 | 1 | 5000 | Meta: TypeScript Compiler Parser Syntax Coverage | done | design | frontend/syntax | P1 | - | 446 | 342 | 104 |
-| 2 | 5001 | Meta: TypeScript Compiler Semantic Analysis Coverage | done | done | frontend/semantics | P1 | - | 556 | 288 | 268 |
+| 2 | 5001 | Meta: TypeScript Compiler Semantic Analysis Coverage | done | done | frontend/semantics | P1 | - | 556 | 287 | 269 |
 | 3 | 5004 | Meta: Runtime Builtins Coverage (test262) (audit reopened #5004) | done | done | runtime/builtins | P1 | - | 24 | 3 | 21 |
 | 4 | 5005 | Meta: TypeScript Compiler Name Resolution Coverage | done | done | frontend/resolver | P1 | - | 397 | 330 | 67 |
 | 5 | 5002 | Meta: TypeScript Compiler Type System Coverage | done | done | frontend/semantics | P1 | 5000, 5005 | 223 | 199 | 24 |
@@ -2373,7 +2373,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 3302 | Implement Modulealiasasfunctionargument | spike | frontend/syntax | class: blocked | Implement Modulealiasasfunctionargument |
 | 3303 | Implement Modulealiasinterface | spike | frontend/syntax | class: blocked | Implement Modulealiasinterface |
 | 3304 | Implement Moduleandinterfacesharingname | spike | frontend/syntax | class: blocked | Implement Moduleandinterfacesharingname |
-| 3499 | Implement Newfunctionimplicitany | spike | frontend/syntax | class: blocked | Implement Newfunctionimplicitany |
 | 3500 | Implement Newlexicalenvironmentforconvertedloop | spike | frontend/syntax | class: triage-needed | Implement Newlexicalenvironmentforconvertedloop |
 | 3501 | Implement Newmap | spike | frontend/resolver | class: blocked | Implement Newmap |
 | 3502 | Implement Newmissingidentifier | spike | frontend/syntax | class: triage-needed | Implement Newmissingidentifier |
@@ -5261,6 +5260,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 3496 | Implement Newarrays | spike | frontend/syntax | see `issues/done/3496-implement-newArrays.md` |
 | 3497 | Implement Newexpressionwithcast | spike | frontend/syntax | see `issues/done/3497-implement-newExpressionWithCast.md` |
 | 3498 | Implement Newexpressionwithtypeparameterconstrainedtooutertypeparameter | spike | frontend/syntax | see `issues/done/3498-implement-newExpressionWithTypeParameterConstrainedToOuterTypeParameter.md` |
+| 3499 | Implement Newfunctionimplicitany | spike | frontend/syntax | see `issues/done/3499-implement-newFunctionImplicitAny.md` |
 | 3690 | Implement Optionaltupleelementsandundefined | spike | reference/triage | see `issues/done/3690-implement-optionalTupleElementsAndUndefined.md` |
 | 3996 | Implement Compiler (dup) | spike | frontend/syntax | see `issues/done/3996-implement-reference-typescript-tests-cases-compiler.md` |
 | 4210 | Implement Splicetuples | spike | frontend/resolver | see `issues/done/4210-implement-spliceTuples.md` |
