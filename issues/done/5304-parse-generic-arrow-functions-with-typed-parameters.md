@@ -77,13 +77,13 @@ continues parsing the arrow body.
 
 In scope:
 
-- [ ] Parse `<T>(value: Type) => expr` as a generic arrow function expression.
-- [ ] Erase TypeScript parameter type annotations inside the generic arrow parameter list.
-- [ ] Erase optional typed parameters such as `y?: K` in the generic arrow
+- [x] Parse `<T>(value: Type) => expr` as a generic arrow function expression.
+- [x] Erase TypeScript parameter type annotations inside the generic arrow parameter list.
+- [x] Erase optional typed parameters such as `y?: K` in the generic arrow
   parameter list.
-- [ ] Erase the return type annotation between `)` and `=>`.
-- [ ] Add focused parser coverage for `const fn = <T>(value: Box<T>): T => value;`.
-- [ ] Re-run the representative triage and record any next blocker separately.
+- [x] Erase the return type annotation between `)` and `=>`.
+- [x] Add focused parser coverage for `const fn = <T>(value: Box<T>): T => value;`.
+- [x] Re-run the representative triage and record any next blocker separately.
 
 Out of scope:
 
@@ -108,16 +108,16 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] A focused parser test accepts `const fn = <T>(value: Box<T>): T => value;`.
-- [ ] `contextualSignatureInstantiation1.ts` no longer reports
+- [x] A focused parser test accepts `const fn = <T>(value: Box<T>): T => value;`.
+- [x] `contextualSignatureInstantiation1.ts` no longer reports
   `expected RightParen, got Some(Colon)` at `var e = <K>(x: string, y?: K) =>`.
-- [ ] `conditionalTypesSimplifyWhenTrivial.ts` no longer reports `expected RightParen, got Some(Colon)` at the `params:` annotation.
-- [ ] `contextuallyTypedByDiscriminableUnion2.ts` no longer reports
+- [x] `conditionalTypesSimplifyWhenTrivial.ts` no longer reports `expected RightParen, got Some(Colon)` at the `params:` annotation.
+- [x] `contextuallyTypedByDiscriminableUnion2.ts` no longer reports
   `expected RightParen, got Some(Colon)` at
   `<I extends Identifiable>(props: MyComponentProps<I>) =>`.
-- [ ] Existing arrow-function and angle-bracket assertion parser tests continue to pass.
-- [ ] If parsing advances to a new blocker, that next blocker is recorded separately.
-- [ ] Issue state stays synchronized with `issues/index.md`.
+- [x] Existing arrow-function and angle-bracket assertion parser tests continue to pass.
+- [x] If parsing advances to a new blocker, that next blocker is recorded separately.
+- [x] Issue state stays synchronized with `issues/index.md`.
 
 ## Validation
 

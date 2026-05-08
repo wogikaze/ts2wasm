@@ -110,7 +110,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] superseded by `issues/open/5304-parse-generic-arrow-functions-with-typed-parameters.md`
+- [x] superseded by `issues/done/5304-parse-generic-arrow-functions-with-typed-parameters.md`
 
 ## Notes
 
@@ -126,7 +126,7 @@ Follow-up issues:
 
 Fresh triage on 2026-05-07 shows this generated unknown-unsupported bucket is
 now the same parser boundary already owned by
-`issues/open/5304-parse-generic-arrow-functions-with-typed-parameters.md`.
+`issues/done/5304-parse-generic-arrow-functions-with-typed-parameters.md`.
 
 Current diagnostic:
 

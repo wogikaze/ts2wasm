@@ -106,7 +106,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] created: `issues/open/5387-parse-generator-function-expressions-in-const-initializers.md`
+- [x] created: `issues/done/5387-parse-generator-function-expressions-in-const-initializers.md`
 
 ## Notes
 
@@ -158,7 +158,7 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- split to `issues/open/5387-parse-generator-function-expressions-in-const-initializers.md`
+- split to `issues/done/5387-parse-generator-function-expressions-in-const-initializers.md`
 
 Validation result:
 

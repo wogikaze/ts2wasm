@@ -21,7 +21,7 @@ status: done
 
 Closed this generated const-declaration parser bucket after splitting the
 current `*=`, `/=`, and `%=` parser boundary to
-`issues/open/5349-parse-multiplicative-compound-assignment-operators.md`.
+`issues/done/5349-parse-multiplicative-compound-assignment-operators.md`.
 
 ## Problem
 
@@ -46,7 +46,7 @@ mise run reference-coverage -- tsc --path-filter reference/typescript/tests/case
 ## Desired final state
 
 This generated bucket is closed. Implement the current parser boundary from
-`issues/open/5349-parse-multiplicative-compound-assignment-operators.md`.
+`issues/done/5349-parse-multiplicative-compound-assignment-operators.md`.
 
 ## Scope
 
@@ -115,7 +115,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] created: `issues/open/5349-parse-multiplicative-compound-assignment-operators.md`
+- [x] created: `issues/done/5349-parse-multiplicative-compound-assignment-operators.md`
 
 ## Notes
 
@@ -152,13 +152,13 @@ Generated on 2026-05-07.
 - Visible symbol before failure: const binding `x` initialized to `0`
 - Compiler evidence: token dump emits `Ident("x")`, `StarEqual`, `Number(4)`, `Semicolon`; AST/resolved construction fails before representing `x *= 4`.
 - TypeScript oracle: reports TS2588 "Cannot assign to 'x' because it is a constant." for the assignment and update expressions.
-- Superseding child: `issues/open/5349-parse-multiplicative-compound-assignment-operators.md`
+- Superseding child: `issues/done/5349-parse-multiplicative-compound-assignment-operators.md`
 
 Nearby non-owners:
 
 - `issues/done/5178-parse-bitwise-compound-assignment-operators.md` owns bitwise `^=`, `&=`, and `|=`.
 - `issues/done/5164-parse-exponentiation-compound-assignment.md` owns `**=`.
-- `issues/open/5311-parse-property-access-arithmetic-compound-assignments.md` owns namespace property `+=`.
+- `issues/done/5311-parse-property-access-arithmetic-compound-assignments.md` owns namespace property `+=`.
 
 ## Completion evidence
 

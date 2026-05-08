@@ -22,7 +22,7 @@ status: done
 Closed as superseded. Fresh triage shows
 `reference/typescript/tests/cases/compiler/constraintsThatReferenceOtherContstraints1.ts`
 currently stops at the generic type-argument skipper boundary already owned by
-`issues/open/5309-skip-generic-type-arguments-in-type-annotations.md`.
+`issues/done/5309-skip-generic-type-arguments-in-type-annotations.md`.
 
 ## Problem
 
@@ -52,7 +52,7 @@ env TS2WASM_BINARY=/tmp/ts2wasm-issue-blockers-target/debug/ts2wasm python scrip
 ## Desired final state
 
 This generated bucket is closed as superseded by
-`issues/open/5309-skip-generic-type-arguments-in-type-annotations.md`. Do not
+`issues/done/5309-skip-generic-type-arguments-in-type-annotations.md`. Do not
 implement directly from this bucket.
 
 ## Scope
@@ -137,7 +137,7 @@ Follow-up issues:
 ## Duplicate detection
 
 Current first blocker is covered by
-`issues/open/5309-skip-generic-type-arguments-in-type-annotations.md`.
+`issues/done/5309-skip-generic-type-arguments-in-type-annotations.md`.
 
 Resolution:
 

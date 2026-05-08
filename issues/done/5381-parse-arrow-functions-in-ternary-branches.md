@@ -61,11 +61,11 @@ advance past AST construction to the next semantic/type-system blocker.
 
 In scope:
 
-- [ ] Parse untyped parenthesized arrow branches in ternaries, such as
+- [x] Parse untyped parenthesized arrow branches in ternaries, such as
   `true ? (a) => a.toExponential() : (b) => b.toFixed()`.
-- [ ] Preserve the branch expression as an arrow-function AST node under the
+- [x] Preserve the branch expression as an arrow-function AST node under the
   ternary expression.
-- [ ] Add focused parser coverage for an untyped arrow alternate branch in a
+- [x] Add focused parser coverage for an untyped arrow alternate branch in a
   ternary conditional.
 
 Out of scope:
@@ -73,7 +73,7 @@ Out of scope:
 - Lowering `Expr::Ternary`, tracked by
   `issues/done/5160-lower-plain-ternary-conditional-expressions.md`.
 - Typed arrow parameters in ternary branches, tracked by
-  `issues/open/5382-parse-typed-arrow-ternary-branches.md`.
+  `issues/done/5382-parse-typed-arrow-ternary-branches.md`.
 - Contextual function type assignability for ternary branch unions.
 - Strict property initialization diagnostics for class fields.
 
@@ -93,10 +93,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] `contextualTypingOfConditionalExpression.ts` no longer reports
+- [x] `contextualTypingOfConditionalExpression.ts` no longer reports
   `expected Semicolon, got Some(Arrow)` at the alternate arrow branch.
-- [ ] A focused parser test covers `true ? (a) => a.x : (b) => b.y`.
-- [ ] Existing arrow-function expression and ternary parser tests still pass.
+- [x] A focused parser test covers `true ? (a) => a.x : (b) => b.y`.
+- [x] Existing arrow-function expression and ternary parser tests still pass.
 
 ## Validation
 
@@ -122,15 +122,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 
@@ -141,7 +141,7 @@ Related but distinct:
 
 - `issues/done/5160-lower-plain-ternary-conditional-expressions.md` owns
   lowering for ternaries that already parse as `Expr::Ternary`.
-- `issues/open/5382-parse-typed-arrow-ternary-branches.md` owns the typed
+- `issues/done/5382-parse-typed-arrow-ternary-branches.md` owns the typed
   branch shape `true ? (a: C) => a.foo : (b: number) => { }`.
 
 ## Completion evidence

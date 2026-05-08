@@ -69,10 +69,10 @@ TypeScript type annotations and continues parsing later class members.
 
 In scope:
 
-- [ ] Parse `public static name: Type = expr;` as a class field.
-- [ ] Parse `private static name: Type;` as a class field.
-- [ ] Preserve existing static method parsing for `public static name()`.
-- [ ] Add focused parser/frontend coverage for typed modified static fields.
+- [x] Parse `public static name: Type = expr;` as a class field.
+- [x] Parse `private static name: Type;` as a class field.
+- [x] Preserve existing static method parsing for `public static name()`.
+- [x] Add focused parser/frontend coverage for typed modified static fields.
 
 Out of scope:
 
@@ -96,10 +96,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] `python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/commentsOnStaticMembers.ts` no longer reports `expected LeftParen, got Some(Ident("p1"))`.
-- [ ] A focused parser test accepts `class C { public static p1: string = ""; private static p2: string; }`.
-- [ ] Existing modified static method parsing remains unchanged.
-- [ ] Any later comment-output blocker from this reference path is recorded separately.
+- [x] `python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/commentsOnStaticMembers.ts` no longer reports `expected LeftParen, got Some(Ident("p1"))`.
+- [x] A focused parser test accepts `class C { public static p1: string = ""; private static p2: string; }`.
+- [x] Existing modified static method parsing remains unchanged.
+- [x] Any later comment-output blocker from this reference path is recorded separately.
 
 ## Validation
 
@@ -125,15 +125,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 

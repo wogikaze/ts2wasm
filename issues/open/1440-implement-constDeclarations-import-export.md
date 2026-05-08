@@ -111,7 +111,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] created: `issues/open/5311-parse-property-access-arithmetic-compound-assignments.md`
+- [x] created: `issues/done/5311-parse-property-access-arithmetic-compound-assignments.md`
 
 ## Notes
 
@@ -182,7 +182,7 @@ constDeclarations-access3.ts: UnsupportedSyntax unknown-unsupported
 constDeclarations-access5.ts: UnsupportedSyntax unknown-unsupported
 ```
 
-Split child: `issues/open/5311-parse-property-access-arithmetic-compound-assignments.md`.
+Split child: `issues/done/5311-parse-property-access-arithmetic-compound-assignments.md`.
 
 Existing related issues are no-match for this exact first blocker:
 

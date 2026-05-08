@@ -110,7 +110,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] added: `issues/open/5383-classify-number-parameter-tofixed-calls.md`
+- [x] added: `issues/done/5383-classify-number-parameter-tofixed-calls.md`
 
 ## Notes
 
@@ -150,7 +150,7 @@ var r6 = _.forEach<number>(c2, (x) => { return x.toFixed() });
 ```
 
 The generated bucket was split to
-`issues/open/5383-classify-number-parameter-tofixed-calls.md`.
+`issues/done/5383-classify-number-parameter-tofixed-calls.md`.
 
 ## Completion evidence
 
@@ -158,7 +158,7 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- child issue: `issues/open/5383-classify-number-parameter-tofixed-calls.md`
+- child issue: `issues/done/5383-classify-number-parameter-tofixed-calls.md`
 
 Validation result:
 

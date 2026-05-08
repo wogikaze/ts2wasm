@@ -110,7 +110,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] created: `issues/open/5385-parse-arrow-body-assignment-expressions.md`
+- [x] created: `issues/done/5385-parse-arrow-body-assignment-expressions.md`
 
 ## Notes
 
@@ -157,7 +157,7 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- split to `issues/open/5385-parse-arrow-body-assignment-expressions.md`
+- split to `issues/done/5385-parse-arrow-body-assignment-expressions.md`
 
 Validation result:
 

@@ -57,9 +57,9 @@ The parser erases the object type annotation and preserves the following
 
 In scope:
 
-- [ ] Preserve a following function declaration after `var typed: { ... }`.
-- [ ] Add a focused parser regression for `var typed: { m(x: any); }\nfunction next() {}`.
-- [ ] Re-run the reference triage and record the next diagnostic.
+- [x] Preserve a following function declaration after `var typed: { ... }`.
+- [x] Add a focused parser regression for `var typed: { m(x: any); }\nfunction next() {}`.
+- [x] Re-run the reference triage and record the next diagnostic.
 
 Out of scope:
 
@@ -81,9 +81,9 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] `collisionThisExpressionAndLocalVarInFunction.ts` no longer reports `unterminated TypeScript type annotation` at `164..165`.
-- [ ] A focused parser regression proves `function next() {}` is preserved after an object type annotation declaration.
-- [ ] Existing parser behavior for the following-var case remains covered by issue 5339.
+- [x] `collisionThisExpressionAndLocalVarInFunction.ts` no longer reports `unterminated TypeScript type annotation` at `164..165`.
+- [x] A focused parser regression proves `function next() {}` is preserved after an object type annotation declaration.
+- [x] Existing parser behavior for the following-var case remains covered by issue 5339.
 
 ## Validation
 
@@ -109,20 +109,20 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 
 Split from `issues/open/1326-implement-collisionThisExpressionAndLocalVarInFunction.md`.
-Related: `issues/open/5339-preserve-var-after-object-type-declaration.md`
+Related: `issues/done/5339-preserve-var-after-object-type-declaration.md`
 covers the same type declaration followed by another `var`.
 
 ## Completion evidence

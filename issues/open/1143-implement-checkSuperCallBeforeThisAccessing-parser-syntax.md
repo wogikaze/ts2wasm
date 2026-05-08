@@ -5,7 +5,6 @@ type: spike
 area: frontend/syntax
 class: done
 priority: P1
-depends_on: [5163]
 blocks: []
 created: 2026-05-01
 updated: 2026-05-06
@@ -111,7 +110,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] updated: `issues/open/5163-lower-nested-call-expression-callees.md`
+- [x] updated: 
 
 ## Notes
 
@@ -128,7 +127,7 @@ Follow-up issues:
 Fresh triage found only one current unsupported case in this generated bucket:
 `checkSuperCallBeforeThisAccessing4.ts`. The current diagnostic is the same
 non-identifier call-callee lowering boundary tracked by
-`issues/open/5163-lower-nested-call-expression-callees.md`.
+.
 
 Related but no-match:
 
@@ -202,7 +201,7 @@ TypeScript oracle: ok, no diagnostics
 
 Split result:
 
-- folded into `issues/open/5163-lower-nested-call-expression-callees.md`
+- folded into 
 
 ## Completion evidence
 

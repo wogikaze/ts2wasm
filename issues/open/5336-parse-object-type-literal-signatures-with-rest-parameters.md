@@ -188,7 +188,7 @@ Related but not duplicates:
 - `issues/done/5257-parse-object-type-literal-construct-signatures.md` covers
   zero-argument construct signatures, without the mixed rest-parameter
   signature members from this reference.
-- `issues/open/5333-report-strict-mode-arguments-binding-diagnostics.md`
+- `issues/done/5333-report-strict-mode-arguments-binding-diagnostics.md`
   covers strict-mode `arguments` diagnostics for runtime bindings after syntax
   parsing succeeds.
 

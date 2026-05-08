@@ -61,17 +61,17 @@ semantic/type-system blocker.
 
 In scope:
 
-- [ ] Parse typed parenthesized arrow branches in ternaries, such as
+- [x] Parse typed parenthesized arrow branches in ternaries, such as
   `true ? (a: C) => a.foo : (b: number) => { }`.
-- [ ] Preserve typed arrow branch parameters in the parser AST shape already
+- [x] Preserve typed arrow branch parameters in the parser AST shape already
   used for typed arrow functions.
-- [ ] Add focused parser coverage for a typed arrow alternate branch in a
+- [x] Add focused parser coverage for a typed arrow alternate branch in a
   ternary conditional.
 
 Out of scope:
 
 - Untyped arrow branches in ternaries, tracked by
-  `issues/open/5381-parse-arrow-functions-in-ternary-branches.md`.
+  `issues/done/5381-parse-arrow-functions-in-ternary-branches.md`.
 - Lowering `Expr::Ternary`, tracked by
   `issues/done/5160-lower-plain-ternary-conditional-expressions.md`.
 - Contextual function type assignability for branch unions.
@@ -92,10 +92,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] `contextualTypingOfConditionalExpression2.ts` no longer reports
+- [x] `contextualTypingOfConditionalExpression2.ts` no longer reports
   `expected RightParen, got Some(Colon)` at the typed alternate arrow branch.
-- [ ] A focused parser test covers `true ? (a: C) => a.foo : (b: number) => { }`.
-- [ ] Existing typed arrow-function expression and ternary parser tests still
+- [x] A focused parser test covers `true ? (a: C) => a.foo : (b: number) => { }`.
+- [x] Existing typed arrow-function expression and ternary parser tests still
   pass.
 
 ## Validation
@@ -122,15 +122,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 

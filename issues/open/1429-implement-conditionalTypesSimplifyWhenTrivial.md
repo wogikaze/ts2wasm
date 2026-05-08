@@ -114,7 +114,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] created: `issues/open/5304-parse-generic-arrow-functions-with-typed-parameters.md`
+- [x] created: `issues/done/5304-parse-generic-arrow-functions-with-typed-parameters.md`
 
 ## Notes
 

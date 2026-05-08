@@ -96,7 +96,7 @@ Out of scope:
   `issues/done/5196-support-callable-conditional-typed-parameter-calls.md`.
 - Definite-assignment diagnostics for uninitialized function-typed locals,
   tracked by
-  `issues/open/5279-report-function-typed-local-call-definite-assignment.md`.
+  `issues/done/5279-report-function-typed-local-call-definite-assignment.md`.
 - Method receiver semantics for `obj.method()` or extracted class methods.
 
 ## Affected paths

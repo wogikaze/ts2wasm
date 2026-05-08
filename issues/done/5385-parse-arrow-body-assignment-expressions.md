@@ -66,10 +66,10 @@ or the next more specific unsupported boundary.
 
 In scope:
 
-- [ ] Parse identifier-target assignment expressions in concise arrow bodies.
-- [ ] Preserve nested arrow AST shape when the assignment body appears inside
+- [x] Parse identifier-target assignment expressions in concise arrow bodies.
+- [x] Preserve nested arrow AST shape when the assignment body appears inside
   another call argument.
-- [ ] Add focused parser coverage for `f(x => g(y => x = y));`.
+- [x] Add focused parser coverage for `f(x => g(y => x = y));`.
 
 Out of scope:
 
@@ -92,11 +92,11 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] `contextualTypingTwoInstancesOfSameTypeParameter.ts` no longer reports
+- [x] `contextualTypingTwoInstancesOfSameTypeParameter.ts` no longer reports
   `expected Comma, got Some(Equal)` at `x = y`.
-- [ ] A focused fixture proves `f(x => g(y => x = y));` parses with the
+- [x] A focused fixture proves `f(x => g(y => x = y));` parses with the
   assignment inside the nested arrow body.
-- [ ] Existing call-argument comma parsing remains unchanged for invalid
+- [x] Existing call-argument comma parsing remains unchanged for invalid
   argument lists.
 
 ## Validation
@@ -123,15 +123,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 

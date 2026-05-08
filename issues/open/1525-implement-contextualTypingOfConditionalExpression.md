@@ -110,8 +110,8 @@ Current state:
 
 Follow-up issues:
 
-- [x] added: `issues/open/5381-parse-arrow-functions-in-ternary-branches.md`
-- [x] added: `issues/open/5382-parse-typed-arrow-ternary-branches.md`
+- [x] added: `issues/done/5381-parse-arrow-functions-in-ternary-branches.md`
+- [x] added: `issues/done/5382-parse-typed-arrow-ternary-branches.md`
 
 ## Notes
 
@@ -159,9 +159,9 @@ TypeScript AST: ConditionalExpression with ArrowFunction branch nodes
 ```
 
 The generated bucket was split to
-`issues/open/5381-parse-arrow-functions-in-ternary-branches.md` for the
+`issues/done/5381-parse-arrow-functions-in-ternary-branches.md` for the
 untyped branch case and
-`issues/open/5382-parse-typed-arrow-ternary-branches.md` for the typed branch
+`issues/done/5382-parse-typed-arrow-ternary-branches.md` for the typed branch
 case.
 
 ## Completion evidence
@@ -171,8 +171,8 @@ Fill only when moving to `done/`.
 Commits:
 
 - child issues:
-  `issues/open/5381-parse-arrow-functions-in-ternary-branches.md`,
-  `issues/open/5382-parse-typed-arrow-ternary-branches.md`
+  `issues/done/5381-parse-arrow-functions-in-ternary-branches.md`,
+  `issues/done/5382-parse-typed-arrow-ternary-branches.md`
 
 Validation result:
 

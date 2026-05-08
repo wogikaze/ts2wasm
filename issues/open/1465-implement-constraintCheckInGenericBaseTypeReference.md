@@ -22,7 +22,7 @@ status: done
 Closed as superseded. Fresh triage shows
 `reference/typescript/tests/cases/compiler/constraintCheckInGenericBaseTypeReference.ts`
 currently stops at the typed modified static class field parser boundary already
-owned by `issues/open/5288-parse-typed-modified-static-class-fields.md`.
+owned by `issues/done/5288-parse-typed-modified-static-class-fields.md`.
 
 ## Problem
 
@@ -52,7 +52,7 @@ env TS2WASM_BINARY=/tmp/ts2wasm-issue-blockers-target/debug/ts2wasm python scrip
 ## Desired final state
 
 This generated bucket is closed as superseded by
-`issues/open/5288-parse-typed-modified-static-class-fields.md`. Do not implement
+`issues/done/5288-parse-typed-modified-static-class-fields.md`. Do not implement
 directly from this bucket.
 
 ## Scope
@@ -137,7 +137,7 @@ Follow-up issues:
 ## Duplicate detection
 
 Current first blocker is covered by
-`issues/open/5288-parse-typed-modified-static-class-fields.md`.
+`issues/done/5288-parse-typed-modified-static-class-fields.md`.
 
 Resolution:
 

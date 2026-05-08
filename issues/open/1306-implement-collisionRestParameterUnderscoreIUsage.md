@@ -132,7 +132,7 @@ Follow-up issues:
 ## Duplicate detection
 
 - `issues/done/5152-support-class-constructor-outer-callback-captures.md` - related constructor capture support, but does not own rest-parameter constructor ABI collision
-- `issues/open/5266-support-class-constructor-new-of-later-class-binding.md` - related issue-289 constructor capture, but covers later class binding
+-  - related issue-289 constructor capture, but covers later class binding
 - no exact existing owner found for rest-parameter constructor hidden-capture ABI collision
 
 ## Smart triage

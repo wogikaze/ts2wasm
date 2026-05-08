@@ -18,7 +18,7 @@ updated: 2026-05-06
 ## Summary
 
 Closed after splitting the current blocker to
-`issues/open/5266-support-class-constructor-new-of-later-class-binding.md`.
+.
 Fresh triage shows parsing succeeds and the remaining failure is the issue-289
 constructor lexical-capture boundary for `new foo()`.
 
@@ -116,7 +116,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] created: `issues/open/5266-support-class-constructor-new-of-later-class-binding.md`
+- [x] created: 
 
 ## Notes
 
@@ -179,7 +179,7 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- Split to `issues/open/5266-support-class-constructor-new-of-later-class-binding.md`; see local commit for this issue cleanup.
+- Split to ; see local commit for this issue cleanup.
 
 Validation result:
 

@@ -90,9 +90,9 @@ The parser erases the object type annotation and preserves the following
 
 In scope:
 
-- [ ] Preserve a following class declaration after `var typed: { ... }`.
-- [ ] Add a focused parser regression for `var typed: { m(x: any); }\nclass Next {}`.
-- [ ] Re-run the reference triage and record the next diagnostic.
+- [x] Preserve a following class declaration after `var typed: { ... }`.
+- [x] Add a focused parser regression for `var typed: { m(x: any); }\nclass Next {}`.
+- [x] Re-run the reference triage and record the next diagnostic.
 
 Out of scope:
 
@@ -114,9 +114,9 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] `collisionThisExpressionAndNameResolution.ts` no longer reports `unterminated TypeScript type annotation` at `440..441`.
-- [ ] A focused parser regression proves `class Next {}` is preserved after an object type annotation declaration.
-- [ ] Existing parser behavior for the following-var and following-function cases remains covered by issues 5339 and 5340.
+- [x] `collisionThisExpressionAndNameResolution.ts` no longer reports `unterminated TypeScript type annotation` at `440..441`.
+- [x] A focused parser regression proves `class Next {}` is preserved after an object type annotation declaration.
+- [x] Existing parser behavior for the following-var and following-function cases remains covered by issues 5339 and 5340.
 
 ## Validation
 
@@ -143,15 +143,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 
@@ -159,8 +159,8 @@ Split from `issues/open/1332-implement-collisionThisExpressionAndNameResolution.
 
 Related but not duplicate:
 
-- `issues/open/5339-preserve-var-after-object-type-declaration.md` covers a following `var` declaration.
-- `issues/open/5340-preserve-function-after-object-type-declaration.md` covers a following `function` declaration.
+- `issues/done/5339-preserve-var-after-object-type-declaration.md` covers a following `var` declaration.
+- `issues/done/5340-preserve-function-after-object-type-declaration.md` covers a following `function` declaration.
 
 The current failure happens before the class body is parsed, so this issue does
 not own the later `return x => this` lexical receiver behavior.

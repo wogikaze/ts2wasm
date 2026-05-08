@@ -77,10 +77,10 @@ BinaryExpression "j = f()" -> CallExpression "f()" -> Identifier "f"
 
 In scope:
 
-- [ ] Preserve enough `() => any` function type annotation metadata for `var f: () => any`.
-- [ ] Detect calls to uninitialized function-typed locals before the generic issue-211 extracted-method diagnostic.
-- [ ] Report a source-spanned diagnostic at the call-site identifier `f`.
-- [ ] Add focused coverage for `<any>( /* Preserve */ j = f());`.
+- [x] Preserve enough `() => any` function type annotation metadata for `var f: () => any`.
+- [x] Detect calls to uninitialized function-typed locals before the generic issue-211 extracted-method diagnostic.
+- [x] Report a source-spanned diagnostic at the call-site identifier `f`.
+- [x] Add focused coverage for `<any>( /* Preserve */ j = f());`.
 
 Out of scope:
 
@@ -105,10 +105,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] `commentOnParenthesizedExpressionOpenParen1.ts` no longer reports generic issue-211 for `f()`.
-- [ ] A focused fixture covers `var f: () => any; f();` and reports a source-spanned definite-assignment/type diagnostic at `f`.
-- [ ] Type assertion and parenthesized assignment syntax around the call continue to parse.
-- [ ] Existing arbitrary extracted method/function-valued local call fixtures still report their established unsupported diagnostics.
+- [x] `commentOnParenthesizedExpressionOpenParen1.ts` no longer reports generic issue-211 for `f()`.
+- [x] A focused fixture covers `var f: () => any; f();` and reports a source-spanned definite-assignment/type diagnostic at `f`.
+- [x] Type assertion and parenthesized assignment syntax around the call continue to parse.
+- [x] Existing arbitrary extracted method/function-valued local call fixtures still report their established unsupported diagnostics.
 
 ## Validation
 

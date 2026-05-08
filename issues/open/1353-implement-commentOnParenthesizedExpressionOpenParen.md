@@ -18,7 +18,7 @@ updated: 2026-05-06
 ## Summary
 
 Closed after splitting the current method-call/lowering blocker into
-`issues/open/5279-report-function-typed-local-call-definite-assignment.md`.
+`issues/done/5279-report-function-typed-local-call-definite-assignment.md`.
 
 ## Problem
 
@@ -53,7 +53,7 @@ unsupported_features=unknown-unsupported:1
 ## Desired final state
 
 This generated bucket is closed. Implementation should proceed through
-`issues/open/5279-report-function-typed-local-call-definite-assignment.md`.
+`issues/done/5279-report-function-typed-local-call-definite-assignment.md`.
 
 ## Scope
 
@@ -125,7 +125,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] `issues/open/5279-report-function-typed-local-call-definite-assignment.md`
+- [x] `issues/done/5279-report-function-typed-local-call-definite-assignment.md`
 
 ## Notes
 
@@ -143,7 +143,7 @@ Follow-up issues:
   `issues/done/5196-support-callable-conditional-typed-parameter-calls.md`
   cover related callable typed locals, but not this `var f: () => any; f()`
   definite-assignment oracle.
-- `issues/open/5279-report-function-typed-local-call-definite-assignment.md`
+- `issues/done/5279-report-function-typed-local-call-definite-assignment.md`
   owns this exact current blocker.
 
 ## Smart triage

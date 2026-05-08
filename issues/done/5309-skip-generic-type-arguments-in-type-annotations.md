@@ -64,9 +64,9 @@ inside `<...>`, and resumes parameter parsing at the comma between `x` and `y`.
 
 In scope:
 
-- [ ] Track angle-bracket depth in `skip_type_annotation_until`.
-- [ ] Preserve existing stop behavior for true parameter separators outside generic type arguments.
-- [ ] Add focused parser coverage for a parameter annotation like `Record<'a', string>`.
+- [x] Track angle-bracket depth in `skip_type_annotation_until`.
+- [x] Preserve existing stop behavior for true parameter separators outside generic type arguments.
+- [x] Add focused parser coverage for a parameter annotation like `Record<'a', string>`.
 
 Out of scope:
 
@@ -87,9 +87,9 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] `consistentAliasVsNonAliasRecordBehavior.ts` no longer reports `expected Comma, got Some(Greater)` at `Record<'a', string>`.
-- [ ] A focused parser test accepts `function f(x: Record<'a', string>, y: Record<string, string>) {}`.
-- [ ] Existing typed parameter parsing without generic arguments still passes.
+- [x] `consistentAliasVsNonAliasRecordBehavior.ts` no longer reports `expected Comma, got Some(Greater)` at `Record<'a', string>`.
+- [x] A focused parser test accepts `function f(x: Record<'a', string>, y: Record<string, string>) {}`.
+- [x] Existing typed parameter parsing without generic arguments still passes.
 
 ## Validation
 
@@ -114,15 +114,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 

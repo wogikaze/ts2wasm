@@ -5,7 +5,6 @@ type: spike
 area: frontend/resolver
 class: done
 priority: P1
-depends_on: [5163]
 blocks: []
 created: 2026-05-01
 updated: 2026-05-06
@@ -43,7 +42,7 @@ mise run reference-coverage -- tsc --path-filter reference/typescript/tests/case
 
 ## Desired final state
 
-This generated bucket is closed as superseded by `issues/open/5163-lower-nested-call-expression-callees.md` for the current nested-call callee lowering blocker. Do not implement directly from this bucket.
+This generated bucket is closed as superseded by  for the current nested-call callee lowering blocker. Do not implement directly from this bucket.
 
 ## Scope
 
@@ -114,7 +113,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] folded into `issues/open/5163-lower-nested-call-expression-callees.md`
+- [x] folded into 
 
 ## Notes
 
@@ -124,7 +123,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/open/5163-lower-nested-call-expression-callees.md` owns the current `only identifier calls are supported in expression context` lowering diagnostic for nested call callees.
+-  owns the current `only identifier calls are supported in expression context` lowering diagnostic for nested call callees.
 - Name-resolution umbrella issues are not exact matches for the current first blocker because parser/AST succeed and the pipeline stops during lowering.
 - Broad call-expression issue 420 is a parent bucket, not the focused implementation-ready owner.
 
@@ -205,7 +204,7 @@ The `circularReferenceInReturnType` name-resolution bucket is complete. The curr
 
 Commits:
 
-- superseded by `issues/open/5163-lower-nested-call-expression-callees.md`
+- superseded by 
 
 Validation result:
 

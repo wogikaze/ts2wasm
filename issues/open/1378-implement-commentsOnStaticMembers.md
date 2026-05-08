@@ -18,7 +18,7 @@ updated: 2026-05-07
 ## Summary
 
 Closed after splitting the executable parser work into
-`issues/open/5288-parse-typed-modified-static-class-fields.md`.
+`issues/done/5288-parse-typed-modified-static-class-fields.md`.
 
 Fresh triage shows this generated bucket is not currently blocked by comment
 emit fidelity. The parser stops earlier at `public static p1: string = ""`,
@@ -59,7 +59,7 @@ unsupported_features=unknown-unsupported:1
 ## Desired final state
 
 This generated bucket is closed. Implementation should proceed through
-`issues/open/5288-parse-typed-modified-static-class-fields.md`; static member comment
+`issues/done/5288-parse-typed-modified-static-class-fields.md`; static member comment
 emit fidelity should be rechecked after the modified static field parser blocker
 advances.
 
@@ -133,7 +133,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] created/updated: `issues/open/5288-parse-typed-modified-static-class-fields.md`
+- [x] created/updated: `issues/done/5288-parse-typed-modified-static-class-fields.md`
 
 ## Notes
 
@@ -143,7 +143,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/open/5288-parse-typed-modified-static-class-fields.md` owns the exact
+- `issues/done/5288-parse-typed-modified-static-class-fields.md` owns the exact
   parser family: class field declarations with accessibility modifiers before
   `static`, followed by an identifier-named field with a TypeScript type
   annotation and optional initializer.

@@ -127,7 +127,7 @@ Not generated. Rerun with `--triage-limit 1` or higher.
 
 この issue はタイトルが重複しているため、内容がより充実している
 `issues/open/661-implement-arithAssignTyping.md` に統合されました。
-現在の実装対象は `issues/open/5349-parse-multiplicative-compound-assignment-operators.md` です。
+現在の実装対象は `issues/done/5349-parse-multiplicative-compound-assignment-operators.md` です。
 ## Completion evidence
 
 Fill only when moving to `done/`.

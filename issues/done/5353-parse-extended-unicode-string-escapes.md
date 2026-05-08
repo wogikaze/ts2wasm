@@ -78,12 +78,12 @@ The representative TypeScript case must no longer stop at
 
 In scope:
 
-- [ ] Parse brace-delimited Unicode code point escapes in string literals.
-- [ ] Accept at least ASCII-range code points such as `\u{44}` and preserve the
+- [x] Parse brace-delimited Unicode code point escapes in string literals.
+- [x] Accept at least ASCII-range code points such as `\u{44}` and preserve the
       decoded string value as `"D"`.
-- [ ] Preserve source spans for malformed brace escapes.
-- [ ] Add focused lexer/parser coverage for `"\u{44}"`.
-- [ ] Re-run `constEnumSyntheticNodesComments.ts` and record the next blocker if
+- [x] Preserve source spans for malformed brace escapes.
+- [x] Add focused lexer/parser coverage for `"\u{44}"`.
+- [x] Re-run `constEnumSyntheticNodesComments.ts` and record the next blocker if
       it advances.
 
 Out of scope:
@@ -111,12 +111,12 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] A focused lexer/parser test accepts `"\u{44}"` as a string literal whose
+- [x] A focused lexer/parser test accepts `"\u{44}"` as a string literal whose
       value is equivalent to `"D"`.
-- [ ] Malformed extended escapes keep a source-spanned diagnostic instead of
+- [x] Malformed extended escapes keep a source-spanned diagnostic instead of
       panicking or silently accepting invalid text.
-- [ ] `python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/constEnumSyntheticNodesComments.ts` no longer reports `invalid unicode escape sequence at 329..332`.
-- [ ] Any next blocker exposed by that reference file is recorded in this issue
+- [x] `python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/constEnumSyntheticNodesComments.ts` no longer reports `invalid unicode escape sequence at 329..332`.
+- [x] Any next blocker exposed by that reference file is recorded in this issue
       or split to a follow-up if outside string lexing.
 
 ## Validation
@@ -145,15 +145,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 

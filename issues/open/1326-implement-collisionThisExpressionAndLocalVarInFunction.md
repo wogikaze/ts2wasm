@@ -19,7 +19,7 @@ status: done
 
 ## Summary
 
-Closed as superseded by `issues/open/5340-preserve-function-after-object-type-declaration.md`.
+Closed as superseded by `issues/done/5340-preserve-function-after-object-type-declaration.md`.
 
 ## Problem
 
@@ -116,7 +116,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] created: `issues/open/5340-preserve-function-after-object-type-declaration.md`
+- [x] created: `issues/done/5340-preserve-function-after-object-type-declaration.md`
 
 ## Notes
 
@@ -126,8 +126,8 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/open/5340-preserve-function-after-object-type-declaration.md` is the exact owner for `var console: { log(...); }` followed by `function x()`.
-- `issues/open/5339-preserve-var-after-object-type-declaration.md` is related but covers the same object type declaration followed by another `var` declaration.
+- `issues/done/5340-preserve-function-after-object-type-declaration.md` is the exact owner for `var console: { log(...); }` followed by `function x()`.
+- `issues/done/5339-preserve-var-after-object-type-declaration.md` is related but covers the same object type declaration followed by another `var` declaration.
 - `issues/done/5201-parse-object-type-literal-call-signatures.md` is related but narrower: it covers call-signature members like `(name: string): string`, not method signatures like `log(val: any);`.
 - Arrow and `this.x` behavior after parsing remains unproven until issue 5340 advances past the object type declaration boundary.
 
@@ -164,7 +164,7 @@ Superseded by: 5340
 
 Commits:
 
-- Superseded by `issues/open/5340-preserve-function-after-object-type-declaration.md`; see local commit for this issue cleanup.
+- Superseded by `issues/done/5340-preserve-function-after-object-type-declaration.md`; see local commit for this issue cleanup.
 
 Validation result:
 

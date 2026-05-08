@@ -25,7 +25,7 @@ lexer rejects the ES extended Unicode code point escape inside the string
 literal `"\u{44}"`.
 
 The focused implementation slice is
-`issues/open/5353-parse-extended-unicode-string-escapes.md`.
+`issues/done/5353-parse-extended-unicode-string-escapes.md`.
 
 ## Problem
 
@@ -54,7 +54,7 @@ env TS2WASM_BINARY=/tmp/ts2wasm-issue-blockers-target/debug/ts2wasm python scrip
 ## Desired final state
 
 This generated bucket is closed. Implementation proceeds through the focused
-lexer issue `issues/open/5353-parse-extended-unicode-string-escapes.md`.
+lexer issue `issues/done/5353-parse-extended-unicode-string-escapes.md`.
 
 ## Scope
 
@@ -130,7 +130,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] created: `issues/open/5353-parse-extended-unicode-string-escapes.md`
+- [x] created: `issues/done/5353-parse-extended-unicode-string-escapes.md`
 
 ## Notes
 

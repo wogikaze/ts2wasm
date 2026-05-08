@@ -49,9 +49,9 @@ keeps the target span available for later semantic diagnostics.
 
 In scope:
 
-- [ ] Parse `M.x += 2` in `constDeclarations-access3.ts`.
-- [ ] Preserve a source span for the `M.x` assignment target.
-- [ ] Add one focused parser/frontend regression for namespace property `+=`.
+- [x] Parse `M.x += 2` in `constDeclarations-access3.ts`.
+- [x] Preserve a source span for the `M.x` assignment target.
+- [x] Add one focused parser/frontend regression for namespace property `+=`.
 
 Out of scope:
 
@@ -72,9 +72,9 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] `constDeclarations-access3.ts` no longer reports `expected Semicolon, got Some(PlusEqual)` for `M.x += 2`.
-- [ ] A focused regression covers namespace property `+=`.
-- [ ] Existing identifier-target `+=` parsing still passes.
+- [x] `constDeclarations-access3.ts` no longer reports `expected Semicolon, got Some(PlusEqual)` for `M.x += 2`.
+- [x] A focused regression covers namespace property `+=`.
+- [x] Existing identifier-target `+=` parsing still passes.
 
 ## Validation
 
@@ -100,15 +100,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 

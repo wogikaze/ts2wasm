@@ -93,9 +93,9 @@ consuming the following `var _super = 10` declaration.
 
 In scope:
 
-- [ ] Preserve the initialized declaration following `var typed: { ... }`.
-- [ ] Add one focused parser regression for `var typed: { m(x: any); }\nvar next = 10;`.
-- [ ] Re-run `collisionSuperAndNameResolution.ts` and record the next diagnostic.
+- [x] Preserve the initialized declaration following `var typed: { ... }`.
+- [x] Add one focused parser regression for `var typed: { m(x: any); }\nvar next = 10;`.
+- [x] Re-run `collisionSuperAndNameResolution.ts` and record the next diagnostic.
 
 Out of scope:
 
@@ -118,9 +118,9 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] The parser no longer folds `var _super = 10` into the preceding `var console: { ... }` declaration.
-- [ ] A focused parser regression proves `var next = 10` is preserved after an object type annotation declaration.
-- [ ] `reference-triage` for `collisionSuperAndNameResolution.ts` no longer reports `UnresolvedName: unresolved name: \`_super\`` or records the next diagnostic in this issue.
+- [x] The parser no longer folds `var _super = 10` into the preceding `var console: { ... }` declaration.
+- [x] A focused parser regression proves `var next = 10` is preserved after an object type annotation declaration.
+- [x] `reference-triage` for `collisionSuperAndNameResolution.ts` no longer reports `UnresolvedName: unresolved name: \`_super\`` or records the next diagnostic in this issue.
 
 ## Validation
 
@@ -147,15 +147,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 

@@ -93,13 +93,13 @@ specific unsupported diagnostic with a span on the recursive class heritage.
 
 In scope:
 
-- [ ] Identify the `lower_program` failure path for a class whose heritage
+- [x] Identify the `lower_program` failure path for a class whose heritage
       expression resolves to the class currently being declared.
-- [ ] Preserve current parsing of generic type arguments in the heritage clause;
+- [x] Preserve current parsing of generic type arguments in the heritage clause;
       this issue starts after AST is available.
-- [ ] Replace the empty `Unknown` blocker with either successful lowering or a
+- [x] Replace the empty `Unknown` blocker with either successful lowering or a
       named unsupported diagnostic such as `recursive-class-heritage`.
-- [ ] Add a focused regression fixture or reference assertion for the exact
+- [x] Add a focused regression fixture or reference assertion for the exact
       `complicatedGenericRecursiveBaseClassReference.ts` shape.
 
 Out of scope:
@@ -124,10 +124,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] `python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/complicatedGenericRecursiveBaseClassReference.ts` no longer reports `Diagnostic: Unknown / unknown`.
-- [ ] Focused coverage for the same path no longer reports `blocked=1` with an empty diagnostic.
-- [ ] A regression test or fixture covers `class S18<B, A, C> extends S18<A[], ...>`.
-- [ ] If the final behavior is an unsupported diagnostic, it has a stable diagnostic code/name and a span on the recursive heritage clause.
+- [x] `python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/complicatedGenericRecursiveBaseClassReference.ts` no longer reports `Diagnostic: Unknown / unknown`.
+- [x] Focused coverage for the same path no longer reports `blocked=1` with an empty diagnostic.
+- [x] A regression test or fixture covers `class S18<B, A, C> extends S18<A[], ...>`.
+- [x] If the final behavior is an unsupported diagnostic, it has a stable diagnostic code/name and a span on the recursive heritage clause.
 
 ## Validation
 
@@ -154,15 +154,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 

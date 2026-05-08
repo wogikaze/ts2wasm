@@ -77,11 +77,11 @@ pass.
 
 In scope:
 
-- [ ] Detect `arguments` used as an arrow function rest parameter in strict mode.
-- [ ] Detect `arguments` used as an arrow function ordinary parameter in strict mode.
-- [ ] Detect local `var arguments` declarations in strict-mode arrow bodies.
-- [ ] Report a TS1100-style diagnostic at the offending identifier span.
-- [ ] Preserve non-strict behavior where the same binding is allowed.
+- [x] Detect `arguments` used as an arrow function rest parameter in strict mode.
+- [x] Detect `arguments` used as an arrow function ordinary parameter in strict mode.
+- [x] Detect local `var arguments` declarations in strict-mode arrow bodies.
+- [x] Report a TS1100-style diagnostic at the offending identifier span.
+- [x] Preserve non-strict behavior where the same binding is allowed.
 
 Out of scope:
 
@@ -106,11 +106,11 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] `collisionArgumentsArrowFunctions.ts` no longer build-passes silently; it reports TS1100-style diagnostics for invalid strict-mode `arguments` bindings.
-- [ ] A focused test covers `(...arguments) => {}` in strict mode.
-- [ ] A focused test covers `(arguments) => {}` in strict mode.
-- [ ] A focused test covers `() => { var arguments = 1; }` in strict mode.
-- [ ] A non-strict fixture with `arguments` binding remains accepted if currently supported.
+- [x] `collisionArgumentsArrowFunctions.ts` no longer build-passes silently; it reports TS1100-style diagnostics for invalid strict-mode `arguments` bindings.
+- [x] A focused test covers `(...arguments) => {}` in strict mode.
+- [x] A focused test covers `(arguments) => {}` in strict mode.
+- [x] A focused test covers `() => { var arguments = 1; }` in strict mode.
+- [x] A non-strict fixture with `arguments` binding remains accepted if currently supported.
 
 ## Validation
 
@@ -140,15 +140,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 

@@ -122,7 +122,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] created: `issues/open/5293-handle-recursive-generic-self-heritage-class-lowering.md`
+- [x] created: `issues/done/5293-handle-recursive-generic-self-heritage-class-lowering.md`
 
 ## Notes
 

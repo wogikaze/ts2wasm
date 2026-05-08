@@ -65,9 +65,9 @@ span for later semantic diagnostics.
 
 In scope:
 
-- [ ] Parse identifier-target `*=`, `/=`, and `%=`.
-- [ ] Add focused parser/frontend regression coverage for all three operators.
-- [ ] Confirm existing identifier-target `+=` and `-=` behavior remains covered.
+- [x] Parse identifier-target `*=`, `/=`, and `%=`.
+- [x] Add focused parser/frontend regression coverage for all three operators.
+- [x] Confirm existing identifier-target `+=` and `-=` behavior remains covered.
 
 Out of scope:
 
@@ -93,10 +93,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] `arithAssignTyping.ts` no longer reports `expected Semicolon, got Some(StarEqual)` at `f *= 1`.
-- [ ] `constDeclarations-access2.ts` no longer reports `expected Semicolon, got Some(StarEqual)` at `x *= 4`.
-- [ ] `/=` and `%=` use the same compound-assignment representation.
-- [ ] Focused frontend tests cover `*=`, `/=`, and `%=`.
+- [x] `arithAssignTyping.ts` no longer reports `expected Semicolon, got Some(StarEqual)` at `f *= 1`.
+- [x] `constDeclarations-access2.ts` no longer reports `expected Semicolon, got Some(StarEqual)` at `x *= 4`.
+- [x] `/=` and `%=` use the same compound-assignment representation.
+- [x] Focused frontend tests cover `*=`, `/=`, and `%=`.
 
 ## Validation
 

@@ -69,11 +69,11 @@ another more specific blocker.
 
 In scope:
 
-- [ ] Preserve or consult the `x: number` parameter annotation for direct
+- [x] Preserve or consult the `x: number` parameter annotation for direct
   `x.toFixed()` calls inside arrow bodies.
-- [ ] Classify `toFixed()` on a number-typed local before the generic
+- [x] Classify `toFixed()` on a number-typed local before the generic
   issue-211 unknown receiver path.
-- [ ] Add focused coverage for `(x: number) => { return x.toFixed() }`.
+- [x] Add focused coverage for `(x: number) => { return x.toFixed() }`.
 
 Out of scope:
 
@@ -100,11 +100,11 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] `contextualTypingOfGenericFunctionTypedArguments1.ts` no longer reports
+- [x] `contextualTypingOfGenericFunctionTypedArguments1.ts` no longer reports
   `issue-211: unknown receiver class for method toFixed` at the standalone
   `var f = (x: number) => ...` callback body.
-- [ ] A focused test covers `let f = (x: number) => { return x.toFixed() };`.
-- [ ] Existing unsupported arbitrary method-call receiver diagnostics remain
+- [x] A focused test covers `let f = (x: number) => { return x.toFixed() };`.
+- [x] Existing unsupported arbitrary method-call receiver diagnostics remain
   source-spanned and unchanged.
 
 ## Validation
@@ -131,15 +131,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 

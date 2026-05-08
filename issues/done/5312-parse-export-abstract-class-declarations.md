@@ -50,9 +50,9 @@ then advance to the existing module-build export-class blocker.
 
 In scope:
 
-- [ ] Parse `export abstract class ConvenientObservable<T, TChange> ...`.
-- [ ] Preserve the abstract modifier and declared class name in the AST.
-- [ ] Add one focused parser/frontend regression for `export abstract class`.
+- [x] Parse `export abstract class ConvenientObservable<T, TChange> ...`.
+- [x] Preserve the abstract modifier and declared class name in the AST.
+- [x] Add one focused parser/frontend regression for `export abstract class`.
 
 Out of scope:
 
@@ -73,9 +73,9 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] The representative reference path no longer reports issue-055 at `export abstract class`.
-- [ ] A focused regression shows AST output for `export abstract class A {}`.
-- [ ] Existing `export class Foo {}` behavior is unchanged.
+- [x] The representative reference path no longer reports issue-055 at `export abstract class`.
+- [x] A focused regression shows AST output for `export abstract class A {}`.
+- [x] Existing `export class Foo {}` behavior is unchanged.
 
 ## Validation
 
@@ -101,15 +101,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 

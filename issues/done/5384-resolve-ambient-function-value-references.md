@@ -79,11 +79,11 @@ more specific unsupported boundary.
 
 In scope:
 
-- [ ] Bind top-level ambient `declare function` declarations in the value
+- [x] Bind top-level ambient `declare function` declarations in the value
   namespace used by expression references.
-- [ ] Resolve an ambient function identifier when passed as a callback argument.
-- [ ] Preserve existing declaration erasure for emitted runtime code.
-- [ ] Add focused coverage for `declare function pred(x: unknown): boolean;`
+- [x] Resolve an ambient function identifier when passed as a callback argument.
+- [x] Preserve existing declaration erasure for emitted runtime code.
+- [x] Add focused coverage for `declare function pred(x: unknown): boolean;`
   followed by `use(pred)`.
 
 Out of scope:
@@ -109,13 +109,13 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] `contextualTypingReturnStatementWithReturnTypeAnnotation.ts` no longer
+- [x] `contextualTypingReturnStatementWithReturnTypeAnnotation.ts` no longer
   reports `UnresolvedName` for `isString`.
-- [ ] A focused test covers passing an ambient declared function as a callback
+- [x] A focused test covers passing an ambient declared function as a callback
   value.
-- [ ] Type-only ambient declarations remain erased and do not create runtime
+- [x] Type-only ambient declarations remain erased and do not create runtime
   values.
-- [ ] Ordinary unresolved identifier diagnostics still report unresolved names.
+- [x] Ordinary unresolved identifier diagnostics still report unresolved names.
 
 ## Validation
 
@@ -141,15 +141,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 

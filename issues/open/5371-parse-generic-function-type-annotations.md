@@ -132,7 +132,7 @@ Split from `issues/open/1501-implement-contextualSignatureInstantiation-parser-s
 
 Related but not duplicates:
 
-- `issues/open/5304-parse-generic-arrow-functions-with-typed-parameters.md`
+- `issues/done/5304-parse-generic-arrow-functions-with-typed-parameters.md`
   covers generic arrow expressions in value position.
 - `issues/open/5345-parse-generic-ambient-const-type-annotations.md` covers
   generic callable annotations on `declare const`.

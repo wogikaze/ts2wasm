@@ -64,11 +64,11 @@ runtime/lowering diagnostic.
 
 In scope:
 
-- [ ] Parse `const x: T = function* () { ... }` as a generator function
+- [x] Parse `const x: T = function* () { ... }` as a generator function
   expression.
-- [ ] Preserve enough AST shape or erasure behavior to advance past the raw
+- [x] Preserve enough AST shape or erasure behavior to advance past the raw
   `expected LeftParen, got Some(Star)` parser failure.
-- [ ] Add focused parser coverage for a typed const initialized by
+- [x] Add focused parser coverage for a typed const initialized by
   `function* () { yield ""; }`.
 
 Out of scope:
@@ -93,12 +93,12 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] `contextuallyTypeGeneratorReturnTypeFromUnion.ts` no longer reports
+- [x] `contextuallyTypeGeneratorReturnTypeFromUnion.ts` no longer reports
   `expected LeftParen, got Some(Star)` at `const test1: Action = function* ()`.
-- [ ] A focused parser fixture proves `const g: T = function* () { yield ""; }`
+- [x] A focused parser fixture proves `const g: T = function* () { yield ""; }`
   parses.
-- [ ] Existing generator function declarations still parse.
-- [ ] If generator lowering remains unsupported, the next diagnostic is
+- [x] Existing generator function declarations still parse.
+- [x] If generator lowering remains unsupported, the next diagnostic is
   source-spanned and specific rather than a raw parser token error.
 
 ## Validation
@@ -125,15 +125,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 

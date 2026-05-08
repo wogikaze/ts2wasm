@@ -50,7 +50,7 @@ python scripts/manager.py reference-coverage tsc --path-filter reference/typescr
 ## Desired final state
 
 This generated bucket is closed after splitting the current observable behavior
-into `issues/open/5333-report-strict-mode-arguments-binding-diagnostics.md`.
+into `issues/done/5333-report-strict-mode-arguments-binding-diagnostics.md`.
 
 ## Scope
 
@@ -119,7 +119,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] created: `issues/open/5333-report-strict-mode-arguments-binding-diagnostics.md`
+- [x] created: `issues/done/5333-report-strict-mode-arguments-binding-diagnostics.md`
 
 ## Notes
 
@@ -192,13 +192,13 @@ TS1100: Invalid use of 'arguments' in strict mode.
 
 Split result:
 
-- `issues/open/5333-report-strict-mode-arguments-binding-diagnostics.md`
+- `issues/done/5333-report-strict-mode-arguments-binding-diagnostics.md`
 
 ## Completion evidence
 
 Commits:
 
-- Split to `issues/open/5333-report-strict-mode-arguments-binding-diagnostics.md`.
+- Split to `issues/done/5333-report-strict-mode-arguments-binding-diagnostics.md`.
 
 Validation result:
 

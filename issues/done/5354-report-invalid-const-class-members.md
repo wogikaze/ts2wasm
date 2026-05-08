@@ -71,14 +71,14 @@ as a build pass or silently dropping the member.
 
 In scope:
 
-- [ ] Add parser diagnostic handling for `const` in class expression bodies where a class member is being
+- [x] Add parser diagnostic handling for `const` in class expression bodies where a class member is being
       parsed.
-- [ ] Report an explicit diagnostic aligned with TS1248 wording or an internal
+- [x] Report an explicit diagnostic aligned with TS1248 wording or an internal
       equivalent that reference triage can classify.
-- [ ] Preserve normal class expression AST representation for valid members.
-- [ ] Add focused frontend/compiler regression coverage for `let C = class {
+- [x] Preserve normal class expression AST representation for valid members.
+- [x] Add focused frontend/compiler regression coverage for `let C = class {
       const a = 4; };`.
-- [ ] Re-run the reference triage and confirm the result is no longer
+- [x] Re-run the reference triage and confirm the result is no longer
       `BuildPass`.
 
 Out of scope:
@@ -105,12 +105,12 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] `reference/typescript/tests/cases/compiler/constInClassExpression.ts`
+- [x] `reference/typescript/tests/cases/compiler/constInClassExpression.ts`
       no longer reports `BuildPass` in `reference-triage`.
-- [ ] A focused parser/frontend diagnostic test for `class { const a = 4; }` reports an
+- [x] A focused parser/frontend diagnostic test for `class { const a = 4; }` reports an
       invalid class-member `const` diagnostic.
-- [ ] Valid class expressions with ordinary methods still parse.
-- [ ] The invalid member is not silently dropped from the class body AST representation.
+- [x] Valid class expressions with ordinary methods still parse.
+- [x] The invalid member is not silently dropped from the class body AST representation.
 
 ## Validation
 
@@ -136,15 +136,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 
