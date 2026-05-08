@@ -306,7 +306,10 @@ pub(super) fn stmt_contains_return_stmt(stmt: &Stmt) -> bool {
             .iter()
             .any(|(_, body)| block_contains_return_stmt(body)),
         Stmt::Labeled { body, .. } => stmt_contains_return_stmt(body),
-        Stmt::Function { .. } | Stmt::ClassDecl { .. } | Stmt::AmbientValueDecl { .. } | Stmt::EnumDecl { .. } => false,
+        Stmt::Function { .. }
+        | Stmt::ClassDecl { .. }
+        | Stmt::AmbientValueDecl { .. }
+        | Stmt::EnumDecl { .. } => false,
         Stmt::ImportSideEffect { .. }
         | Stmt::ImportNamed { .. }
         | Stmt::ImportDefault { .. }
@@ -444,7 +447,10 @@ pub(super) fn validate_static_block_stmt(stmt: &Stmt) -> Result<(), Diagnostic> 
             validate_static_block_stmts(body)
         }
         Stmt::Labeled { body, .. } => validate_static_block_stmt(body),
-        Stmt::Break { .. } | Stmt::Continue { .. } | Stmt::AmbientValueDecl { .. } | Stmt::EnumDecl { .. } => Ok(()),
+        Stmt::Break { .. }
+        | Stmt::Continue { .. }
+        | Stmt::AmbientValueDecl { .. }
+        | Stmt::EnumDecl { .. } => Ok(()),
         Stmt::ImportSideEffect { span, .. }
         | Stmt::ImportNamed { span, .. }
         | Stmt::ImportDefault { span, .. }

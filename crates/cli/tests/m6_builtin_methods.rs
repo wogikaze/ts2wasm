@@ -170,6 +170,46 @@ fn build_smoke_object_freeze() {
 }
 
 #[test]
+fn build_smoke_object_prevent_extensions() {
+    let result = run_fixture("builtins-and-io/object-prevent-extensions.ts");
+    assert!(
+        result.is_ok(),
+        "Object.preventExtensions should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
+fn build_smoke_object_is_extensible() {
+    let result = run_fixture("builtins-and-io/object-is-extensible.ts");
+    assert!(
+        result.is_ok(),
+        "Object.isExtensible should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
+fn build_smoke_object_is_sealed() {
+    let result = run_fixture("builtins-and-io/object-is-sealed.ts");
+    assert!(
+        result.is_ok(),
+        "Object.isSealed should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
+fn build_smoke_object_is_frozen() {
+    let result = run_fixture("builtins-and-io/object-is-frozen.ts");
+    assert!(
+        result.is_ok(),
+        "Object.isFrozen should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
 fn build_smoke_object_define_property() {
     let result = run_fixture("builtins-and-io/object-define-property.ts");
     assert!(

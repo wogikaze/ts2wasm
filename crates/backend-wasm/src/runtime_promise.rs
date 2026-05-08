@@ -1,8 +1,5 @@
 use super::emitter::WatEmitter;
-use ts2wasm_runtime_abi::{
-    layout::Layout,
-    value::ValueTag,
-};
+use ts2wasm_runtime_abi::{layout::Layout, value::ValueTag};
 
 impl WatEmitter<'_> {
     pub(super) fn emit_promise_constructor(&self, wat: &mut String) {

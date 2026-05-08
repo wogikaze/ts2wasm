@@ -210,11 +210,13 @@ fn math_random_declares_wasi_random_without_node_host() {
     assert_eq!(manifest["standalone"], true);
     assert_eq!(manifest["node_host"]["required"], false);
     assert_eq!(manifest["wasi"]["random"], true);
-    assert!(manifest["capability_reasons"]["wasi.random"]
-        .as_array()
-        .expect("wasi.random should have reasons")
-        .iter()
-        .any(|reason| reason == "Math.random"));
+    assert!(
+        manifest["capability_reasons"]["wasi.random"]
+            .as_array()
+            .expect("wasi.random should have reasons")
+            .iter()
+            .any(|reason| reason == "Math.random")
+    );
 
     let wasm = std::fs::read(&output_wasm).expect("Failed to read wasm");
     assert!(
@@ -272,11 +274,13 @@ fn date_live_time_declares_wasi_realtime_without_node_host() {
         assert_eq!(manifest["standalone"], true);
         assert_eq!(manifest["node_host"]["required"], false);
         assert_eq!(manifest["wasi"]["clock"]["realtime"], true);
-        assert!(manifest["capability_reasons"]["wasi.clock.realtime"]
-            .as_array()
-            .expect("wasi.clock.realtime should have reasons")
-            .iter()
-            .any(|entry| entry == reason));
+        assert!(
+            manifest["capability_reasons"]["wasi.clock.realtime"]
+                .as_array()
+                .expect("wasi.clock.realtime should have reasons")
+                .iter()
+                .any(|entry| entry == reason)
+        );
 
         let wasm = std::fs::read(&output_wasm).expect("Failed to read wasm");
         assert!(
@@ -326,9 +330,11 @@ fn date_deterministic_epoch_omits_wasi_realtime() {
     let manifest: serde_json::Value =
         serde_json::from_str(&manifest_content).expect("Manifest should be valid JSON");
     assert_ne!(manifest["wasi"]["clock"]["realtime"], true);
-    assert!(manifest["capability_reasons"]
-        .get("wasi.clock.realtime")
-        .is_none());
+    assert!(
+        manifest["capability_reasons"]
+            .get("wasi.clock.realtime")
+            .is_none()
+    );
 
     let wasm = std::fs::read(&output_wasm).expect("Failed to read wasm");
     assert!(

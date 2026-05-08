@@ -8,7 +8,7 @@ use ts2wasm_ir::lowered::{
 use ts2wasm_runtime_abi::Layout;
 use ts2wasm_runtime_abi::ValueTag;
 
-use super::runtime_fn::{RuntimeFn, RuntimeGlobal, StringOrigin, NATIVE_SET_ADD_SENTINEL};
+use super::runtime_fn::{NATIVE_SET_ADD_SENTINEL, RuntimeFn, RuntimeGlobal, StringOrigin};
 use super::runtime_link_plan::RuntimeLinkPlan;
 use super::wat_writer::{WatModuleBuilder, WatWriter};
 

@@ -313,6 +313,14 @@ pub(crate) enum RuntimeFn {
     ObjectSetPrototypeOf,
     /// Object.freeze(obj) — sets the OBJECT_FLAG_FROZEN flag
     ObjectFreeze,
+    /// Object.preventExtensions(obj) — sets the OBJECT_FLAG_SEALED flag (non-extensible)
+    ObjectPreventExtensions,
+    /// Object.isExtensible(obj) — returns 1 if object is extensible, 0 otherwise
+    ObjectIsExtensible,
+    /// Object.isSealed(obj) — returns 1 if object has SEALED flag, 0 otherwise
+    ObjectIsSealed,
+    /// Object.isFrozen(obj) — returns 1 if object has FROZEN flag, 0 otherwise
+    ObjectIsFrozen,
     /// Object.defineProperty(obj, prop, descriptor)
     ObjectDefineProperty,
     /// Object.assign(target, ...sources) — copies own enumerable properties
@@ -755,6 +763,10 @@ pub(crate) fn runtime_fn_from_name(name: &str) -> Option<RuntimeFn> {
         "ObjectGetPrototypeOf" => Some(RuntimeFn::ObjectGetPrototypeOf),
         "ObjectSetPrototypeOf" => Some(RuntimeFn::ObjectSetPrototypeOf),
         "ObjectFreeze" => Some(RuntimeFn::ObjectFreeze),
+        "ObjectPreventExtensions" => Some(RuntimeFn::ObjectPreventExtensions),
+        "ObjectIsExtensible" => Some(RuntimeFn::ObjectIsExtensible),
+        "ObjectIsSealed" => Some(RuntimeFn::ObjectIsSealed),
+        "ObjectIsFrozen" => Some(RuntimeFn::ObjectIsFrozen),
         "ObjectDefineProperty" => Some(RuntimeFn::ObjectDefineProperty),
         "ObjectAssign" => Some(RuntimeFn::ObjectAssign),
         "ObjectCreate" => Some(RuntimeFn::ObjectCreate),

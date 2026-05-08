@@ -761,6 +761,108 @@ impl WatEmitter<'_> {
         ));
     }
 
+    pub(super) fn emit_object_prevent_extensions(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $object_prevent_extensions (param $obj i32) (result i32)
+    (local $tag i32)
+    (local $base i32)
+    (local $flags i32)
+    (local.set $tag (i32.and (local.get $obj) (i32.const {tag_mask})))
+    (if (i32.ne (local.get $tag) (i32.const {object_tag}))
+      (then (return (local.get $obj))))
+    (local.set $base (i32.and (local.get $obj) (i32.const {heap_mask})))
+    (local.set $flags (i32.load (i32.add (local.get $base) (i32.const {obj_flags}))))
+    (i32.store (i32.add (local.get $base) (i32.const {obj_flags}))
+      (i32.or (local.get $flags) (i32.const {sealed_flag})))
+    (local.get $obj))
+"#,
+            tag_mask = ValueTag::TAG_MASK,
+            object_tag = ValueTag::OBJECT,
+            heap_mask = ValueTag::HEAP_MASK,
+            obj_flags = Layout::OBJECT_FLAGS_OFFSET,
+            sealed_flag = Layout::OBJECT_FLAG_SEALED,
+        ));
+    }
+
+    pub(super) fn emit_object_is_extensible(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $object_is_extensible (param $obj i32) (result i32)
+    (local $tag i32)
+    (local $base i32)
+    (local $flags i32)
+    (local.set $tag (i32.and (local.get $obj) (i32.const {tag_mask})))
+    (if (i32.ne (local.get $tag) (i32.const {object_tag}))
+      (then (return (i32.const {false_val}))))
+    (local.set $base (i32.and (local.get $obj) (i32.const {heap_mask})))
+    (local.set $flags (i32.load (i32.add (local.get $base) (i32.const {obj_flags}))))
+    (if (i32.and (local.get $flags) (i32.const {sealed_flag}))
+      (then (return (i32.const {false_val}))))
+    (i32.const {true_val}))
+"#,
+            tag_mask = ValueTag::TAG_MASK,
+            object_tag = ValueTag::OBJECT,
+            heap_mask = ValueTag::HEAP_MASK,
+            obj_flags = Layout::OBJECT_FLAGS_OFFSET,
+            sealed_flag = Layout::OBJECT_FLAG_SEALED,
+            true_val = ValueTag::TRUE,
+            false_val = ValueTag::FALSE,
+        ));
+    }
+
+    pub(super) fn emit_object_is_sealed(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $object_is_sealed (param $obj i32) (result i32)
+    (local $tag i32)
+    (local $base i32)
+    (local $flags i32)
+    (local.set $tag (i32.and (local.get $obj) (i32.const {tag_mask})))
+    (if (i32.ne (local.get $tag) (i32.const {object_tag}))
+      (then (return (i32.const {true_val}))))
+    (local.set $base (i32.and (local.get $obj) (i32.const {heap_mask})))
+    (local.set $flags (i32.load (i32.add (local.get $base) (i32.const {obj_flags}))))
+    (if (i32.and (local.get $flags) (i32.const {sealed_flag}))
+      (then (return (i32.const {true_val}))))
+    (i32.const {false_val}))
+"#,
+            tag_mask = ValueTag::TAG_MASK,
+            object_tag = ValueTag::OBJECT,
+            heap_mask = ValueTag::HEAP_MASK,
+            obj_flags = Layout::OBJECT_FLAGS_OFFSET,
+            sealed_flag = Layout::OBJECT_FLAG_SEALED,
+            true_val = ValueTag::TRUE,
+            false_val = ValueTag::FALSE,
+        ));
+    }
+
+    pub(super) fn emit_object_is_frozen(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $object_is_frozen (param $obj i32) (result i32)
+    (local $tag i32)
+    (local $base i32)
+    (local $flags i32)
+    (local.set $tag (i32.and (local.get $obj) (i32.const {tag_mask})))
+    (if (i32.ne (local.get $tag) (i32.const {object_tag}))
+      (then (return (i32.const {true_val}))))
+    (local.set $base (i32.and (local.get $obj) (i32.const {heap_mask})))
+    (local.set $flags (i32.load (i32.add (local.get $base) (i32.const {obj_flags}))))
+    (if (i32.and (local.get $flags) (i32.const {frozen_flag}))
+      (then (return (i32.const {true_val}))))
+    (i32.const {false_val}))
+"#,
+            tag_mask = ValueTag::TAG_MASK,
+            object_tag = ValueTag::OBJECT,
+            heap_mask = ValueTag::HEAP_MASK,
+            obj_flags = Layout::OBJECT_FLAGS_OFFSET,
+            frozen_flag = Layout::OBJECT_FLAG_FROZEN,
+            true_val = ValueTag::TRUE,
+            false_val = ValueTag::FALSE,
+        ));
+    }
+
     pub(super) fn emit_object_define_property(&self, wat: &mut String) {
         wat.push_str(&format!(
             r#"

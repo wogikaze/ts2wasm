@@ -1592,7 +1592,10 @@ fn rewrite_static_module_body_for_build(
 }
 
 fn lowers_to_top_level_statement(stmt: &Stmt) -> bool {
-    !matches!(stmt, Stmt::Function { .. } | Stmt::ClassDecl { .. } | Stmt::EnumDecl { .. })
+    !matches!(
+        stmt,
+        Stmt::Function { .. } | Stmt::ClassDecl { .. } | Stmt::EnumDecl { .. }
+    )
 }
 
 fn collect_literal_named_exports(path: &Path) -> Result<BTreeMap<String, Expr>, Diagnostic> {
