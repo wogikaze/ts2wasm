@@ -150,6 +150,9 @@ Related but not duplicates:
   sibling export forms.
 - `issues/open/432-implement-import-export.md` is the broad generated
   import/export bucket and is too wide to implement directly.
+- `issues/done/3560-implement-noImplicitUseStrict.md` reaches the same
+  `export var x = 0;` issue-055 boundary across commonjs, amd, es6, system,
+  and umd module-target variants.
 
 ## Completion evidence
 
