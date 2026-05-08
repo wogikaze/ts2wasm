@@ -1127,3 +1127,14 @@ fn build_smoke_global_names_typedarray() {
         result.err()
     );
 }
+
+// Global name registration: well-known Symbol properties (issue 103)
+#[test]
+fn build_smoke_global_names_well_known_symbols() {
+    let result = run_fixture("builtins-and-io/global-names-well-known-symbols.ts");
+    assert!(
+        result.is_ok(),
+        "Well-known Symbol properties should build: {:?}",
+        result.err()
+    );
+}
