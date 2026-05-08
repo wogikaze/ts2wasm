@@ -1,6 +1,6 @@
 ---
 id: 5311
-title: "Parse namespace property += assignment"
+title: "Parse property-access += assignments"
 type: feature
 area: frontend/syntax
 class: implementation-ready
@@ -13,14 +13,15 @@ updated: 2026-05-07
 
 ## Summary
 
-Accept the first const-declaration parser blocker: arithmetic compound
-assignment where the target is a namespace property access.
+Accept the first property-access compound-assignment parser blocker:
+arithmetic `+=` where the target is a property access.
 
 ## Problem
 
-Problem: `M.x += 2` in `constDeclarations-access3.ts` fails with
+Problem: `M.x += 2` in `constDeclarations-access3.ts` and
+`stringMap.foo += 1` in `noUncheckedIndexedAccessCompoundAssignments.ts` fail with
 `UnsupportedSyntax: expected Semicolon, got Some(PlusEqual)` before the compiler
-can reach the readonly-property diagnostic that TypeScript reports.
+can reach the relevant semantic diagnostics that TypeScript reports or accepts.
 
 ## Current failure
 
@@ -42,22 +43,26 @@ TypeScript oracle: TS2540 Cannot assign to 'x' because it is a read-only propert
 
 ## Desired final state
 
-The frontend parses `M.x += 2` as a property-access assignment expression and
-keeps the target span available for later semantic diagnostics.
+The frontend parses property-access `+=` expressions such as `M.x += 2` and
+`stringMap.foo += 1` as assignment expressions and keeps the target span
+available for later semantic diagnostics.
 
 ## Scope
 
 In scope:
 
 - [ ] Parse `M.x += 2` in `constDeclarations-access3.ts`.
-- [ ] Preserve a source span for the `M.x` assignment target.
-- [ ] Add one focused parser/frontend regression for namespace property `+=`.
+- [ ] Parse `stringMap.foo += 1` in `noUncheckedIndexedAccessCompoundAssignments.ts`.
+- [ ] Preserve a source span for the property-access assignment target.
+- [ ] Add one focused parser/frontend regression for property-access `+=`.
 
 Out of scope:
 
 - The final readonly-property diagnostic.
 - Imported property access in `constDeclarations-access5.ts`.
-- Other compound assignment operators; issues 5164 and 5178 own existing non-`+=` slices.
+- Other compound assignment operators such as property-access `*=`.
+- Element-access compound assignments; see issue 5478 for element-access `+=`.
+- Bitwise/exponentiation compound operators; issues 5164 and 5178 own existing non-arithmetic slices.
 
 ## Affected paths
 
@@ -73,7 +78,8 @@ Do not touch:
 ## Acceptance criteria
 
 - [ ] `constDeclarations-access3.ts` no longer reports `expected Semicolon, got Some(PlusEqual)` for `M.x += 2`.
-- [ ] A focused regression covers namespace property `+=`.
+- [ ] `noUncheckedIndexedAccessCompoundAssignments.ts` no longer reports `expected Semicolon, got Some(PlusEqual)` for `stringMap.foo += 1`.
+- [ ] A focused regression covers property-access `+=`.
 - [ ] Existing identifier-target `+=` parsing still passes.
 
 ## Validation
@@ -114,7 +120,16 @@ Follow-up issues:
 
 Split from generated bucket `issues/done/1440-implement-constDeclarations-import-export.md`.
 Issue 661 covers identifier-target arithmetic assignment evidence, while this
-issue is limited to the first namespace property `+=` parser blocker.
+issue is limited to property-access `+=` parser blockers.
+
+2026-05-08 fold-in:
+
+- `issues/done/3570-implement-noUncheckedIndexedAccessCompoundAssignments.md`
+  reaches the same property-access `+=` parser boundary at
+  `stringMap.foo += 1`.
+- The later property-access `*=`, element-access updates, element-access `+=`,
+  and noUncheckedIndexedAccess-specific semantic diagnostics should be
+  re-triaged after this issue advances.
 
 ## Completion Evidence
 
