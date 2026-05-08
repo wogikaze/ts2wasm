@@ -8,7 +8,7 @@ priority: P1
 depends_on: []
 blocks: []
 created: 2026-05-07
-updated: 2026-05-07
+updated: 2026-05-08
 ---
 
 ## Summary
@@ -94,6 +94,7 @@ parser, resolver, or async/generator diagnostic.
 In scope:
 
 - [ ] Erase nested generic type references in ambient `declare const` annotations, including commas and string literal type arguments inside `<...>`.
+- [ ] Erase utility type annotations such as `Record<string, any> | undefined` on ambient `declare const` bindings.
 - [ ] Erase generic callable ambient const annotations such as `<T>(result: Result<T, E>) => Result<T, E>`.
 - [ ] Erase zero-argument generic callable annotations such as `<T, U, V>() => AsyncGenerator<T, U, V>`.
 - [ ] Add focused parser coverage for `declare const p: Promise<Result<A, "E">>;`.
@@ -123,6 +124,7 @@ Do not touch:
 ## Acceptance criteria
 
 - [ ] `declare const authorPromise: Promise<Result<Author, "NOT_FOUND_AUTHOR">>;` no longer reports `expected ambient variable declaration name`.
+- [ ] `declare const broken: Record<string, any> | undefined;` no longer reports `issue-400: unterminated ambient variable declaration`.
 - [ ] A focused parser test covers an ambient const annotation with nested generic type arguments and string literal type arguments.
 - [ ] A focused parser test or reference triage covers an ambient const generic callable annotation.
 - [ ] Ambient declaration initializers remain rejected.
@@ -176,6 +178,18 @@ Split from `issues/done/762-implement-asyncYieldStarContextualType.md`.
   `UnsupportedTypeScriptSyntax: issue-400: unterminated ambient variable declaration at 864..871`.
 - TypeScript oracle accepts the declaration and reports `A` as
   `<T, P extends keyof T>(obj: T, prop: P, factory: () => T[P]) => void`.
+
+2026-05-08 fold-in:
+
+- `issues/done/3469-implement-narrowingUnionToUnion.md` reaches the same
+  ambient const generic annotation boundary for
+  `declare const broken: Record<string, any> | undefined;` and
+  `declare const workingAgain: Record<string, any> | undefined | unknown;`.
+- Fresh triage reports
+  `UnsupportedTypeScriptSyntax: issue-400: unterminated ambient variable
+  declaration at 5171..5178`.
+- TypeScript oracle accepts the declarations and later narrowing expressions
+  with no diagnostics.
 
 Related but not duplicate:
 
