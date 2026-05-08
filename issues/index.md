@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 25 | 13 | 12 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4599 | 3287 | 1312 |
+| frontend | 4599 | 3286 | 1313 |
 | harness | 1 | 0 | 1 |
 | ir | 92 | 69 | 23 |
 | issues | 4 | 0 | 4 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5292 | 3597 | 1695 |
+| total | 5292 | 3596 | 1696 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -2364,7 +2364,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 3302 | Implement Modulealiasasfunctionargument | spike | frontend/syntax | class: blocked | Implement Modulealiasasfunctionargument |
 | 3303 | Implement Modulealiasinterface | spike | frontend/syntax | class: blocked | Implement Modulealiasinterface |
 | 3304 | Implement Moduleandinterfacesharingname | spike | frontend/syntax | class: blocked | Implement Moduleandinterfacesharingname |
-| 3474 | Implement Negativezero | spike | frontend/syntax | class: triage-needed | Implement Negativezero |
 | 3475 | Implement Nestedblockscopedbindings | spike | frontend/resolver | class: blocked | Implement Nestedblockscopedbindings |
 | 3476 | Implement Nestedcallbackerrornotflattened | spike | frontend/resolver | class: blocked | Implement Nestedcallbackerrornotflattened |
 | 3477 | Implement Nestedexcesspropertychecking | spike | frontend/syntax | class: blocked | Implement Nestedexcesspropertychecking |
@@ -5252,6 +5251,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 3471 | Implement Narrowingwithnonnullexpression | spike | frontend/syntax | see `issues/done/3471-implement-narrowingWithNonNullExpression.md` |
 | 3472 | Implement Nativetoboxedtypes | spike | frontend/syntax | see `issues/done/3472-implement-nativeToBoxedTypes.md` |
 | 3473 | Implement Nearbyidenticalgenericlambdasassignable | spike | frontend/semantics | see `issues/done/3473-implement-nearbyIdenticalGenericLambdasAssignable.md` |
+| 3474 | Implement Negativezero | spike | frontend/syntax | see `issues/done/3474-implement-negativeZero.md` |
 | 3690 | Implement Optionaltupleelementsandundefined | spike | reference/triage | see `issues/done/3690-implement-optionalTupleElementsAndUndefined.md` |
 | 3996 | Implement Compiler (dup) | spike | frontend/syntax | see `issues/done/3996-implement-reference-typescript-tests-cases-compiler.md` |
 | 4210 | Implement Splicetuples | spike | frontend/resolver | see `issues/done/4210-implement-spliceTuples.md` |
