@@ -93,6 +93,16 @@ impl Layout {
     pub const OBJECT_FLAG_SEALED: u32 = 2;
     /// Bits 2+ of flags: per-property non-enumerable mask (bit (2+i) = property i is non-enumerable).
     pub const OBJECT_NON_ENUM_SHIFT: u32 = 2;
+    /// Per-property non-writable mask (bit (10+i) = property i is non-writable).
+    /// Supports properties 0-7 (8 properties max for full attribute tracking).
+    pub const OBJECT_NON_WRITABLE_SHIFT: u32 = 10;
+    /// Per-property non-configurable mask (bit (18+i) = property i is non-configurable).
+    /// Supports properties 0-7 (8 properties max for full attribute tracking).
+    pub const OBJECT_NON_CONFIGURABLE_SHIFT: u32 = 18;
+    /// Per-property accessor descriptor flag (bit (26+i) = property i is accessor).
+    /// When set, the entry's value field stores the getter function.
+    /// Supports properties 0-5 (6 properties max for accessor tracking).
+    pub const OBJECT_ACCESSOR_PROP_SHIFT: u32 = 26;
 
     // ---- GC layout --------------------------------------------------------
     /// Bytes reserved immediately before each GC-managed heap payload.

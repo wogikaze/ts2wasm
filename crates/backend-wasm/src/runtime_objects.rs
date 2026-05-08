@@ -344,11 +344,14 @@ impl WatEmitter<'_> {
     (local $entry_value i32)
     (local $desc i32)
     (local $key_len i32)
+    (local $flags i32)
+    (local $prop_offset i32)
     (if (i32.ne (i32.and (local.get $obj) (i32.const {tag_mask})) (i32.const {object_tag}))
       (then (return (i32.const {undefined}))))
     (local.set $key_len (call $value_to_string_into (local.get $key) (i32.const {scratch_offset})))
     (local.set $base (i32.and (local.get $obj) (i32.const {heap_mask})))
     (local.set $count (i32.load (local.get $base)))
+    (local.set $flags (i32.load (i32.add (local.get $base) (i32.const {obj_flags}))))
     (block $desc_done (result i32)
       (local.set $i (local.get $count))
       (loop $desc_loop
@@ -372,83 +375,168 @@ impl WatEmitter<'_> {
                 (local.set $desc (call $alloc_heap (i32.const {collection_size})))
                 (i32.store (local.get $desc) (i32.const {zero}))
                 (i32.store (i32.add (local.get $desc) (i32.const {obj_proto})) (i32.const {zero}))
-                (i32.store8 (i32.const {scratch_offset}) (i32.const 118))
-                (i32.store8 (i32.add (i32.const {scratch_offset}) (i32.const 1)) (i32.const 97))
-                (i32.store8 (i32.add (i32.const {scratch_offset}) (i32.const 2)) (i32.const 108))
-                (i32.store8 (i32.add (i32.const {scratch_offset}) (i32.const 3)) (i32.const 117))
-                (i32.store8 (i32.add (i32.const {scratch_offset}) (i32.const 4)) (i32.const 101))
-                (drop
-                  (call $property_set
-                    (i32.or (local.get $desc) (i32.const {object_tag}))
-                    (i32.const {scratch_offset})
-                    (i32.const 5)
-                    (local.get $entry_value)))
-                (i32.store8 (i32.const {scratch_offset}) (i32.const 119))
-                (i32.store8 (i32.add (i32.const {scratch_offset}) (i32.const 1)) (i32.const 114))
-                (i32.store8 (i32.add (i32.const {scratch_offset}) (i32.const 2)) (i32.const 105))
-                (i32.store8 (i32.add (i32.const {scratch_offset}) (i32.const 3)) (i32.const 116))
-                (i32.store8 (i32.add (i32.const {scratch_offset}) (i32.const 4)) (i32.const 97))
-                (i32.store8 (i32.add (i32.const {scratch_offset}) (i32.const 5)) (i32.const 98))
-                (i32.store8 (i32.add (i32.const {scratch_offset}) (i32.const 6)) (i32.const 108))
-                (i32.store8 (i32.add (i32.const {scratch_offset}) (i32.const 7)) (i32.const 101))
-                (drop
-                  (call $property_set
-                    (i32.or (local.get $desc) (i32.const {object_tag}))
-                    (i32.const {scratch_offset})
-                    (i32.const 8)
-                    (i32.const {true})))
-                (i32.store8 (i32.const {scratch_offset}) (i32.const 101))
-                (i32.store8 (i32.add (i32.const {scratch_offset}) (i32.const 1)) (i32.const 110))
-                (i32.store8 (i32.add (i32.const {scratch_offset}) (i32.const 2)) (i32.const 117))
-                (i32.store8 (i32.add (i32.const {scratch_offset}) (i32.const 3)) (i32.const 109))
-                (i32.store8 (i32.add (i32.const {scratch_offset}) (i32.const 4)) (i32.const 101))
-                (i32.store8 (i32.add (i32.const {scratch_offset}) (i32.const 5)) (i32.const 114))
-                (i32.store8 (i32.add (i32.const {scratch_offset}) (i32.const 6)) (i32.const 97))
-                (i32.store8 (i32.add (i32.const {scratch_offset}) (i32.const 7)) (i32.const 98))
-                (i32.store8 (i32.add (i32.const {scratch_offset}) (i32.const 8)) (i32.const 108))
-                (i32.store8 (i32.add (i32.const {scratch_offset}) (i32.const 9)) (i32.const 101))
-                (drop
-                  (call $property_set
-                    (i32.or (local.get $desc) (i32.const {object_tag}))
-                    (i32.const {scratch_offset})
-                    (i32.const 10)
-                    (i32.const {true})))
-                (i32.store8 (i32.const {scratch_offset}) (i32.const 99))
-                (i32.store8 (i32.add (i32.const {scratch_offset}) (i32.const 1)) (i32.const 111))
-                (i32.store8 (i32.add (i32.const {scratch_offset}) (i32.const 2)) (i32.const 110))
-                (i32.store8 (i32.add (i32.const {scratch_offset}) (i32.const 3)) (i32.const 102))
-                (i32.store8 (i32.add (i32.const {scratch_offset}) (i32.const 4)) (i32.const 105))
-                (i32.store8 (i32.add (i32.const {scratch_offset}) (i32.const 5)) (i32.const 103))
-                (i32.store8 (i32.add (i32.const {scratch_offset}) (i32.const 6)) (i32.const 117))
-                (i32.store8 (i32.add (i32.const {scratch_offset}) (i32.const 7)) (i32.const 114))
-                (i32.store8 (i32.add (i32.const {scratch_offset}) (i32.const 8)) (i32.const 97))
-                (i32.store8 (i32.add (i32.const {scratch_offset}) (i32.const 9)) (i32.const 98))
-                (i32.store8 (i32.add (i32.const {scratch_offset}) (i32.const 10)) (i32.const 108))
-                (i32.store8 (i32.add (i32.const {scratch_offset}) (i32.const 11)) (i32.const 101))
-                (drop
-                  (call $property_set
-                    (i32.or (local.get $desc) (i32.const {object_tag}))
-                    (i32.const {scratch_offset})
-                    (i32.const 12)
-                    (i32.const {true})))
-                (i32.store8 (i32.const {scratch_offset}) (i32.const 103))
-                (i32.store8 (i32.add (i32.const {scratch_offset}) (i32.const 1)) (i32.const 101))
-                (i32.store8 (i32.add (i32.const {scratch_offset}) (i32.const 2)) (i32.const 116))
-                (drop
-                  (call $property_set
-                    (i32.or (local.get $desc) (i32.const {object_tag}))
-                    (i32.const {scratch_offset})
-                    (i32.const 3)
-                    (i32.const {undefined})))
-                (i32.store8 (i32.const {scratch_offset}) (i32.const 115))
-                (i32.store8 (i32.add (i32.const {scratch_offset}) (i32.const 1)) (i32.const 101))
-                (i32.store8 (i32.add (i32.const {scratch_offset}) (i32.const 2)) (i32.const 116))
-                (drop
-                  (call $property_set
-                    (i32.or (local.get $desc) (i32.const {object_tag}))
-                    (i32.const {scratch_offset})
-                    (i32.const 3)
-                    (i32.const {undefined})))
+                ;; Use scratch + 64 for property name strings to avoid clobbering key
+                (local.set $prop_offset (i32.add (i32.const {scratch_offset}) (i32.const 64)))
+                ;; Check if this is an accessor descriptor
+                (if (i32.and (local.get $flags) (i32.shl (i32.const 1) (i32.add (local.get $i) (i32.const {accessor_shift}))))
+                  (then
+                    ;; Accessor descriptor: return get/set/enumerable/configurable
+                    ;; Write "get" with the stored getter value
+                    (i32.store8 (local.get $prop_offset) (i32.const 103))
+                    (i32.store8 (i32.add (local.get $prop_offset) (i32.const 1)) (i32.const 101))
+                    (i32.store8 (i32.add (local.get $prop_offset) (i32.const 2)) (i32.const 116))
+                    (drop
+                      (call $property_set
+                        (i32.or (local.get $desc) (i32.const {object_tag}))
+                        (local.get $prop_offset)
+                        (i32.const 3)
+                        (local.get $entry_value)))
+                    ;; Write "set": always undefined
+                    (i32.store8 (local.get $prop_offset) (i32.const 115))
+                    (i32.store8 (i32.add (local.get $prop_offset) (i32.const 1)) (i32.const 101))
+                    (i32.store8 (i32.add (local.get $prop_offset) (i32.const 2)) (i32.const 116))
+                    (drop
+                      (call $property_set
+                        (i32.or (local.get $desc) (i32.const {object_tag}))
+                        (local.get $prop_offset)
+                        (i32.const 3)
+                        (i32.const {undefined})))
+                    ;; Write "enumerable"
+                    (i32.store8 (local.get $prop_offset) (i32.const 101))
+                    (i32.store8 (i32.add (local.get $prop_offset) (i32.const 1)) (i32.const 110))
+                    (i32.store8 (i32.add (local.get $prop_offset) (i32.const 2)) (i32.const 117))
+                    (i32.store8 (i32.add (local.get $prop_offset) (i32.const 3)) (i32.const 109))
+                    (i32.store8 (i32.add (local.get $prop_offset) (i32.const 4)) (i32.const 101))
+                    (i32.store8 (i32.add (local.get $prop_offset) (i32.const 5)) (i32.const 114))
+                    (i32.store8 (i32.add (local.get $prop_offset) (i32.const 6)) (i32.const 97))
+                    (i32.store8 (i32.add (local.get $prop_offset) (i32.const 7)) (i32.const 98))
+                    (i32.store8 (i32.add (local.get $prop_offset) (i32.const 8)) (i32.const 108))
+                    (i32.store8 (i32.add (local.get $prop_offset) (i32.const 9)) (i32.const 101))
+                    (drop
+                      (call $property_set
+                        (i32.or (local.get $desc) (i32.const {object_tag}))
+                        (local.get $prop_offset)
+                        (i32.const 10)
+                        (if (result i32)
+                          (i32.eqz (i32.and (local.get $flags) (i32.shl (i32.const 1) (i32.add (local.get $i) (i32.const {non_enum_shift})))))
+                          (then (i32.const {true}))
+                          (else (i32.const {false})))))
+                    ;; Write "configurable"
+                    (i32.store8 (local.get $prop_offset) (i32.const 99))
+                    (i32.store8 (i32.add (local.get $prop_offset) (i32.const 1)) (i32.const 111))
+                    (i32.store8 (i32.add (local.get $prop_offset) (i32.const 2)) (i32.const 110))
+                    (i32.store8 (i32.add (local.get $prop_offset) (i32.const 3)) (i32.const 102))
+                    (i32.store8 (i32.add (local.get $prop_offset) (i32.const 4)) (i32.const 105))
+                    (i32.store8 (i32.add (local.get $prop_offset) (i32.const 5)) (i32.const 103))
+                    (i32.store8 (i32.add (local.get $prop_offset) (i32.const 6)) (i32.const 117))
+                    (i32.store8 (i32.add (local.get $prop_offset) (i32.const 7)) (i32.const 114))
+                    (i32.store8 (i32.add (local.get $prop_offset) (i32.const 8)) (i32.const 97))
+                    (i32.store8 (i32.add (local.get $prop_offset) (i32.const 9)) (i32.const 98))
+                    (i32.store8 (i32.add (local.get $prop_offset) (i32.const 10)) (i32.const 108))
+                    (i32.store8 (i32.add (local.get $prop_offset) (i32.const 11)) (i32.const 101))
+                    (drop
+                      (call $property_set
+                        (i32.or (local.get $desc) (i32.const {object_tag}))
+                        (local.get $prop_offset)
+                        (i32.const 12)
+                        (if (result i32)
+                          (i32.eqz (i32.and (local.get $flags) (i32.shl (i32.const 1) (i32.add (local.get $i) (i32.const {non_configurable_shift})))))
+                          (then (i32.const {true}))
+                          (else (i32.const {false}))))))
+                  (else
+                    ;; Data descriptor: return value/writable/enumerable/configurable
+                    ;; Write "value"
+                    (i32.store8 (local.get $prop_offset) (i32.const 118))
+                    (i32.store8 (i32.add (local.get $prop_offset) (i32.const 1)) (i32.const 97))
+                    (i32.store8 (i32.add (local.get $prop_offset) (i32.const 2)) (i32.const 108))
+                    (i32.store8 (i32.add (local.get $prop_offset) (i32.const 3)) (i32.const 117))
+                    (i32.store8 (i32.add (local.get $prop_offset) (i32.const 4)) (i32.const 101))
+                    (drop
+                      (call $property_set
+                        (i32.or (local.get $desc) (i32.const {object_tag}))
+                        (local.get $prop_offset)
+                        (i32.const 5)
+                        (local.get $entry_value)))
+                    ;; Write "writable"
+                    (i32.store8 (local.get $prop_offset) (i32.const 119))
+                    (i32.store8 (i32.add (local.get $prop_offset) (i32.const 1)) (i32.const 114))
+                    (i32.store8 (i32.add (local.get $prop_offset) (i32.const 2)) (i32.const 105))
+                    (i32.store8 (i32.add (local.get $prop_offset) (i32.const 3)) (i32.const 116))
+                    (i32.store8 (i32.add (local.get $prop_offset) (i32.const 4)) (i32.const 97))
+                    (i32.store8 (i32.add (local.get $prop_offset) (i32.const 5)) (i32.const 98))
+                    (i32.store8 (i32.add (local.get $prop_offset) (i32.const 6)) (i32.const 108))
+                    (i32.store8 (i32.add (local.get $prop_offset) (i32.const 7)) (i32.const 101))
+                    (drop
+                      (call $property_set
+                        (i32.or (local.get $desc) (i32.const {object_tag}))
+                        (local.get $prop_offset)
+                        (i32.const 8)
+                        (if (result i32)
+                          (i32.eqz (i32.and (local.get $flags) (i32.shl (i32.const 1) (i32.add (local.get $i) (i32.const {non_writable_shift})))))
+                          (then (i32.const {true}))
+                          (else (i32.const {false})))))
+                    ;; Write "enumerable"
+                    (i32.store8 (local.get $prop_offset) (i32.const 101))
+                    (i32.store8 (i32.add (local.get $prop_offset) (i32.const 1)) (i32.const 110))
+                    (i32.store8 (i32.add (local.get $prop_offset) (i32.const 2)) (i32.const 117))
+                    (i32.store8 (i32.add (local.get $prop_offset) (i32.const 3)) (i32.const 109))
+                    (i32.store8 (i32.add (local.get $prop_offset) (i32.const 4)) (i32.const 101))
+                    (i32.store8 (i32.add (local.get $prop_offset) (i32.const 5)) (i32.const 114))
+                    (i32.store8 (i32.add (local.get $prop_offset) (i32.const 6)) (i32.const 97))
+                    (i32.store8 (i32.add (local.get $prop_offset) (i32.const 7)) (i32.const 98))
+                    (i32.store8 (i32.add (local.get $prop_offset) (i32.const 8)) (i32.const 108))
+                    (i32.store8 (i32.add (local.get $prop_offset) (i32.const 9)) (i32.const 101))
+                    (drop
+                      (call $property_set
+                        (i32.or (local.get $desc) (i32.const {object_tag}))
+                        (local.get $prop_offset)
+                        (i32.const 10)
+                        (if (result i32)
+                          (i32.eqz (i32.and (local.get $flags) (i32.shl (i32.const 1) (i32.add (local.get $i) (i32.const {non_enum_shift})))))
+                          (then (i32.const {true}))
+                          (else (i32.const {false})))))
+                    ;; Write "configurable"
+                    (i32.store8 (local.get $prop_offset) (i32.const 99))
+                    (i32.store8 (i32.add (local.get $prop_offset) (i32.const 1)) (i32.const 111))
+                    (i32.store8 (i32.add (local.get $prop_offset) (i32.const 2)) (i32.const 110))
+                    (i32.store8 (i32.add (local.get $prop_offset) (i32.const 3)) (i32.const 102))
+                    (i32.store8 (i32.add (local.get $prop_offset) (i32.const 4)) (i32.const 105))
+                    (i32.store8 (i32.add (local.get $prop_offset) (i32.const 5)) (i32.const 103))
+                    (i32.store8 (i32.add (local.get $prop_offset) (i32.const 6)) (i32.const 117))
+                    (i32.store8 (i32.add (local.get $prop_offset) (i32.const 7)) (i32.const 114))
+                    (i32.store8 (i32.add (local.get $prop_offset) (i32.const 8)) (i32.const 97))
+                    (i32.store8 (i32.add (local.get $prop_offset) (i32.const 9)) (i32.const 98))
+                    (i32.store8 (i32.add (local.get $prop_offset) (i32.const 10)) (i32.const 108))
+                    (i32.store8 (i32.add (local.get $prop_offset) (i32.const 11)) (i32.const 101))
+                    (drop
+                      (call $property_set
+                        (i32.or (local.get $desc) (i32.const {object_tag}))
+                        (local.get $prop_offset)
+                        (i32.const 12)
+                        (if (result i32)
+                          (i32.eqz (i32.and (local.get $flags) (i32.shl (i32.const 1) (i32.add (local.get $i) (i32.const {non_configurable_shift})))))
+                          (then (i32.const {true}))
+                          (else (i32.const {false})))))
+                    ;; Write "get": undefined
+                    (i32.store8 (local.get $prop_offset) (i32.const 103))
+                    (i32.store8 (i32.add (local.get $prop_offset) (i32.const 1)) (i32.const 101))
+                    (i32.store8 (i32.add (local.get $prop_offset) (i32.const 2)) (i32.const 116))
+                    (drop
+                      (call $property_set
+                        (i32.or (local.get $desc) (i32.const {object_tag}))
+                        (local.get $prop_offset)
+                        (i32.const 3)
+                        (i32.const {undefined})))
+                    ;; Write "set": undefined
+                    (i32.store8 (local.get $prop_offset) (i32.const 115))
+                    (i32.store8 (i32.add (local.get $prop_offset) (i32.const 1)) (i32.const 101))
+                    (i32.store8 (i32.add (local.get $prop_offset) (i32.const 2)) (i32.const 116))
+                    (drop
+                      (call $property_set
+                        (i32.or (local.get $desc) (i32.const {object_tag}))
+                        (local.get $prop_offset)
+                        (i32.const 3)
+                        (i32.const {undefined})))))
                 (br $desc_done (i32.or (local.get $desc) (i32.const {object_tag})))))))
         (br $desc_loop))
       (i32.const {undefined})))
@@ -457,10 +545,15 @@ impl WatEmitter<'_> {
             object_tag = ValueTag::OBJECT,
             heap_mask = ValueTag::HEAP_MASK,
             obj_header = Layout::OBJECT_HEADER_SIZE,
+            obj_flags = Layout::OBJECT_FLAGS_OFFSET,
             obj_proto = Layout::OBJECT_PROTOTYPE_OFFSET,
             entry_shift = Layout::OBJECT_ENTRY_SHIFT,
             str_header = Layout::STRING_HEADER_SIZE,
             value_off = Layout::OBJECT_VALUE_OFFSET,
+            non_enum_shift = Layout::OBJECT_NON_ENUM_SHIFT,
+            non_writable_shift = Layout::OBJECT_NON_WRITABLE_SHIFT,
+            non_configurable_shift = Layout::OBJECT_NON_CONFIGURABLE_SHIFT,
+            accessor_shift = Layout::OBJECT_ACCESSOR_PROP_SHIFT,
             collection_size =
                 (Layout::OBJECT_HEADER_SIZE + (32 * Layout::OBJECT_ENTRY_SIZE)) as i32,
             scratch_offset = Layout::SCRATCH_OFFSET,
@@ -468,6 +561,7 @@ impl WatEmitter<'_> {
             one = RuntimeConst::ONE,
             undefined = ValueTag::UNDEFINED,
             true = ValueTag::TRUE,
+            false = ValueTag::FALSE,
         ));
     }
 
@@ -672,34 +766,264 @@ impl WatEmitter<'_> {
             r#"
   (func $object_define_property (param $obj i32) (param $key i32) (param $desc i32) (result i32)
     (local $tag i32)
+    (local $base i32)
     (local $key_len i32)
+    (local $desc_off i32)
     (local $value i32)
-    (local $desc_prop_offset i32)
+    (local $get i32)
+    (local $set i32)
+    (local $writable i32)
+    (local $enumerable i32)
+    (local $configurable i32)
+    (local $has_value i32)
+    (local $has_get i32)
+    (local $i i32)
+    (local $count i32)
+    (local $entry_base i32)
+    (local $pk_raw i32)
+    (local $pk_ptr i32)
+    (local $pk_len i32)
+    (local $flags i32)
     (local.set $tag (i32.and (local.get $obj) (i32.const {tag_mask})))
     (if (i32.ne (local.get $tag) (i32.const {object_tag}))
       (then (return (local.get $obj))))
+    (local.set $base (i32.and (local.get $obj) (i32.const {heap_mask})))
     ;; Store key string at scratch_offset
     (local.set $key_len (call $value_to_string_into (local.get $key) (i32.const {scratch_offset})))
-    ;; Write "value" at scratch_offset + 64 so it doesn't clobber the key
-    (local.set $desc_prop_offset (i32.add (i32.const {scratch_offset}) (i32.const 64)))
-    (i32.store8 (local.get $desc_prop_offset) (i32.const 118))
-    (i32.store8 (i32.add (local.get $desc_prop_offset) (i32.const 1)) (i32.const 97))
-    (i32.store8 (i32.add (local.get $desc_prop_offset) (i32.const 2)) (i32.const 108))
-    (i32.store8 (i32.add (local.get $desc_prop_offset) (i32.const 3)) (i32.const 117))
-    (i32.store8 (i32.add (local.get $desc_prop_offset) (i32.const 4)) (i32.const 101))
-    (local.set $value
-      (call $property_get (local.get $desc) (local.get $desc_prop_offset) (i32.const 5)))
-    (drop
-      (call $property_set
-        (local.get $obj)
-        (i32.const {scratch_offset})
-        (local.get $key_len)
-        (local.get $value)))
+    ;; Use scratch+128 for descriptor property names to avoid clobbering the key
+    (local.set $desc_off (i32.add (i32.const {scratch_offset}) (i32.const 128)))
+
+    ;; Check for "value" in descriptor
+    (i32.store8 (local.get $desc_off) (i32.const 118))
+    (i32.store8 (i32.add (local.get $desc_off) (i32.const 1)) (i32.const 97))
+    (i32.store8 (i32.add (local.get $desc_off) (i32.const 2)) (i32.const 108))
+    (i32.store8 (i32.add (local.get $desc_off) (i32.const 3)) (i32.const 117))
+    (i32.store8 (i32.add (local.get $desc_off) (i32.const 4)) (i32.const 101))
+    (local.set $value (call $property_get (local.get $desc) (local.get $desc_off) (i32.const 5)))
+    ;; "has_value" = value is not undefined (practical check for descriptor existence)
+    (local.set $has_value (i32.ne (local.get $value) (i32.const {undefined})))
+
+    ;; Check for "get" in descriptor
+    (i32.store8 (local.get $desc_off) (i32.const 103))
+    (i32.store8 (i32.add (local.get $desc_off) (i32.const 1)) (i32.const 101))
+    (i32.store8 (i32.add (local.get $desc_off) (i32.const 2)) (i32.const 116))
+    (local.set $get (call $property_get (local.get $desc) (local.get $desc_off) (i32.const 3)))
+    (local.set $has_get (i32.ne (local.get $get) (i32.const {undefined})))
+
+    ;; Check for "set" in descriptor
+    (i32.store8 (local.get $desc_off) (i32.const 115))
+    (i32.store8 (i32.add (local.get $desc_off) (i32.const 1)) (i32.const 101))
+    (i32.store8 (i32.add (local.get $desc_off) (i32.const 2)) (i32.const 116))
+    (local.set $set (call $property_get (local.get $desc) (local.get $desc_off) (i32.const 3)))
+
+    ;; Determine descriptor type: accessor if has_get
+    (if (local.get $has_get)
+      (then
+        ;; Accessor descriptor: store getter value
+        (drop (call $property_set (local.get $obj) (i32.const {scratch_offset}) (local.get $key_len) (local.get $get)))
+        ;; Read enumerable/configurable from descriptor for accessor attributes
+        (i32.store8 (local.get $desc_off) (i32.const 101))
+        (i32.store8 (i32.add (local.get $desc_off) (i32.const 1)) (i32.const 110))
+        (i32.store8 (i32.add (local.get $desc_off) (i32.const 2)) (i32.const 117))
+        (i32.store8 (i32.add (local.get $desc_off) (i32.const 3)) (i32.const 109))
+        (i32.store8 (i32.add (local.get $desc_off) (i32.const 4)) (i32.const 101))
+        (i32.store8 (i32.add (local.get $desc_off) (i32.const 5)) (i32.const 114))
+        (i32.store8 (i32.add (local.get $desc_off) (i32.const 6)) (i32.const 97))
+        (i32.store8 (i32.add (local.get $desc_off) (i32.const 7)) (i32.const 98))
+        (i32.store8 (i32.add (local.get $desc_off) (i32.const 8)) (i32.const 108))
+        (i32.store8 (i32.add (local.get $desc_off) (i32.const 9)) (i32.const 101))
+        (local.set $enumerable (call $property_get (local.get $desc) (local.get $desc_off) (i32.const 10)))
+        (i32.store8 (local.get $desc_off) (i32.const 99))
+        (i32.store8 (i32.add (local.get $desc_off) (i32.const 1)) (i32.const 111))
+        (i32.store8 (i32.add (local.get $desc_off) (i32.const 2)) (i32.const 110))
+        (i32.store8 (i32.add (local.get $desc_off) (i32.const 3)) (i32.const 102))
+        (i32.store8 (i32.add (local.get $desc_off) (i32.const 4)) (i32.const 105))
+        (i32.store8 (i32.add (local.get $desc_off) (i32.const 5)) (i32.const 103))
+        (i32.store8 (i32.add (local.get $desc_off) (i32.const 6)) (i32.const 117))
+        (i32.store8 (i32.add (local.get $desc_off) (i32.const 7)) (i32.const 114))
+        (i32.store8 (i32.add (local.get $desc_off) (i32.const 8)) (i32.const 97))
+        (i32.store8 (i32.add (local.get $desc_off) (i32.const 9)) (i32.const 98))
+        (i32.store8 (i32.add (local.get $desc_off) (i32.const 10)) (i32.const 108))
+        (i32.store8 (i32.add (local.get $desc_off) (i32.const 11)) (i32.const 101))
+        (local.set $configurable (call $property_get (local.get $desc) (local.get $desc_off) (i32.const 12)))
+        ;; Find the property entry index to set accessor and attribute flags
+        (local.set $count (i32.load (local.get $base)))
+        (local.set $i (i32.const {zero}))
+        (block $find_acc_done
+          (loop $find_acc_loop
+            (br_if $find_acc_done (i32.ge_u (local.get $i) (local.get $count)))
+            (local.set $entry_base
+              (i32.add (local.get $base)
+                (i32.add (i32.const {obj_header})
+                  (i32.shl (local.get $i) (i32.const {entry_shift})))))
+            (local.set $pk_raw (i32.load (local.get $entry_base)))
+            (local.set $pk_ptr
+              (i32.add (i32.and (local.get $pk_raw) (i32.const {heap_mask})) (i32.const {str_header})))
+            (local.set $pk_len
+              (i32.load (i32.and (local.get $pk_raw) (i32.const {heap_mask}))))
+            (if (i32.eq (local.get $key_len) (local.get $pk_len))
+              (then
+                (if (call $mem_equal (i32.const {scratch_offset}) (local.get $pk_ptr) (local.get $key_len))
+                  (then
+                    (local.set $flags (i32.load (i32.add (local.get $base) (i32.const {obj_flags}))))
+                    ;; Set accessor flag
+                    (local.set $flags
+                      (i32.or (local.get $flags) (i32.shl (i32.const 1) (i32.add (local.get $i) (i32.const {accessor_shift})))))
+                    ;; Non-enumerable: default true (false) when missing
+                    (if (i32.eq (local.get $enumerable) (i32.const {undefined}))
+                      (then
+                        (local.set $flags
+                          (i32.or (local.get $flags) (i32.shl (i32.const 1) (i32.add (local.get $i) (i32.const {non_enum_shift}))))))
+                      (else
+                        (if (i32.eq (local.get $enumerable) (i32.const {false}))
+                          (then
+                            (local.set $flags
+                              (i32.or (local.get $flags) (i32.shl (i32.const 1) (i32.add (local.get $i) (i32.const {non_enum_shift}))))))
+                          (else
+                            (local.set $flags
+                              (i32.and (local.get $flags) (i32.xor (i32.shl (i32.const 1) (i32.add (local.get $i) (i32.const {non_enum_shift}))) (i32.const -1))))))))
+                    ;; Non-configurable: default true (false) when missing
+                    (if (i32.eq (local.get $configurable) (i32.const {undefined}))
+                      (then
+                        (local.set $flags
+                          (i32.or (local.get $flags) (i32.shl (i32.const 1) (i32.add (local.get $i) (i32.const {non_configurable_shift}))))))
+                      (else
+                        (if (i32.eq (local.get $configurable) (i32.const {false}))
+                          (then
+                            (local.set $flags
+                              (i32.or (local.get $flags) (i32.shl (i32.const 1) (i32.add (local.get $i) (i32.const {non_configurable_shift}))))))
+                          (else
+                            (local.set $flags
+                              (i32.and (local.get $flags) (i32.xor (i32.shl (i32.const 1) (i32.add (local.get $i) (i32.const {non_configurable_shift}))) (i32.const -1))))))))
+                    (i32.store (i32.add (local.get $base) (i32.const {obj_flags})) (local.get $flags))
+                    (br $find_acc_done)))))
+            (local.set $i (i32.add (local.get $i) (i32.const {one})))
+            (br $find_acc_loop))
+        (return (local.get $obj)))
+
+    ;; Data descriptor path: store value (default undefined if not provided)
+    (if (i32.eqz (local.get $has_value))
+      (then (local.set $value (i32.const {undefined}))))
+    (drop (call $property_set (local.get $obj) (i32.const {scratch_offset}) (local.get $key_len) (local.get $value)))
+
+    ;; Read desc attributes: writable, enumerable, configurable
+    (i32.store8 (local.get $desc_off) (i32.const 119))
+    (i32.store8 (i32.add (local.get $desc_off) (i32.const 1)) (i32.const 114))
+    (i32.store8 (i32.add (local.get $desc_off) (i32.const 2)) (i32.const 105))
+    (i32.store8 (i32.add (local.get $desc_off) (i32.const 3)) (i32.const 116))
+    (i32.store8 (i32.add (local.get $desc_off) (i32.const 4)) (i32.const 97))
+    (i32.store8 (i32.add (local.get $desc_off) (i32.const 5)) (i32.const 98))
+    (i32.store8 (i32.add (local.get $desc_off) (i32.const 6)) (i32.const 108))
+    (i32.store8 (i32.add (local.get $desc_off) (i32.const 7)) (i32.const 101))
+    (local.set $writable (call $property_get (local.get $desc) (local.get $desc_off) (i32.const 8)))
+
+    (i32.store8 (local.get $desc_off) (i32.const 101))
+    (i32.store8 (i32.add (local.get $desc_off) (i32.const 1)) (i32.const 110))
+    (i32.store8 (i32.add (local.get $desc_off) (i32.const 2)) (i32.const 117))
+    (i32.store8 (i32.add (local.get $desc_off) (i32.const 3)) (i32.const 109))
+    (i32.store8 (i32.add (local.get $desc_off) (i32.const 4)) (i32.const 101))
+    (i32.store8 (i32.add (local.get $desc_off) (i32.const 5)) (i32.const 114))
+    (i32.store8 (i32.add (local.get $desc_off) (i32.const 6)) (i32.const 97))
+    (i32.store8 (i32.add (local.get $desc_off) (i32.const 7)) (i32.const 98))
+    (i32.store8 (i32.add (local.get $desc_off) (i32.const 8)) (i32.const 108))
+    (i32.store8 (i32.add (local.get $desc_off) (i32.const 9)) (i32.const 101))
+    (local.set $enumerable (call $property_get (local.get $desc) (local.get $desc_off) (i32.const 10)))
+
+    (i32.store8 (local.get $desc_off) (i32.const 99))
+    (i32.store8 (i32.add (local.get $desc_off) (i32.const 1)) (i32.const 111))
+    (i32.store8 (i32.add (local.get $desc_off) (i32.const 2)) (i32.const 110))
+    (i32.store8 (i32.add (local.get $desc_off) (i32.const 3)) (i32.const 102))
+    (i32.store8 (i32.add (local.get $desc_off) (i32.const 4)) (i32.const 105))
+    (i32.store8 (i32.add (local.get $desc_off) (i32.const 5)) (i32.const 103))
+    (i32.store8 (i32.add (local.get $desc_off) (i32.const 6)) (i32.const 117))
+    (i32.store8 (i32.add (local.get $desc_off) (i32.const 7)) (i32.const 114))
+    (i32.store8 (i32.add (local.get $desc_off) (i32.const 8)) (i32.const 97))
+    (i32.store8 (i32.add (local.get $desc_off) (i32.const 9)) (i32.const 98))
+    (i32.store8 (i32.add (local.get $desc_off) (i32.const 10)) (i32.const 108))
+    (i32.store8 (i32.add (local.get $desc_off) (i32.const 11)) (i32.const 101))
+    (local.set $configurable (call $property_get (local.get $desc) (local.get $desc_off) (i32.const 12)))
+
+    ;; Find the property entry index to update flags
+    (local.set $count (i32.load (local.get $base)))
+    (local.set $i (i32.const {zero}))
+    (block $find_entry_done
+      (loop $find_entry_loop
+        (br_if $find_entry_done (i32.ge_u (local.get $i) (local.get $count)))
+        (local.set $entry_base
+          (i32.add (local.get $base)
+            (i32.add (i32.const {obj_header})
+              (i32.shl (local.get $i) (i32.const {entry_shift})))))
+        (local.set $pk_raw (i32.load (local.get $entry_base)))
+        (local.set $pk_ptr
+          (i32.add (i32.and (local.get $pk_raw) (i32.const {heap_mask})) (i32.const {str_header})))
+        (local.set $pk_len
+          (i32.load (i32.and (local.get $pk_raw) (i32.const {heap_mask}))))
+        (if (i32.eq (local.get $key_len) (local.get $pk_len))
+          (then
+            (if (call $mem_equal (i32.const {scratch_offset}) (local.get $pk_ptr) (local.get $key_len))
+              (then
+                (local.set $flags (i32.load (i32.add (local.get $base) (i32.const {obj_flags}))))
+                ;; Non-writable: default true (false) when missing in data descriptor
+                (if (i32.eq (local.get $writable) (i32.const {undefined}))
+                  (then
+                    (local.set $flags
+                      (i32.or (local.get $flags) (i32.shl (i32.const 1) (i32.add (local.get $i) (i32.const {non_writable_shift}))))))
+                  (else
+                    (if (i32.eq (local.get $writable) (i32.const {false}))
+                      (then
+                        (local.set $flags
+                          (i32.or (local.get $flags) (i32.shl (i32.const 1) (i32.add (local.get $i) (i32.const {non_writable_shift}))))))
+                      (else
+                        (local.set $flags
+                          (i32.and (local.get $flags) (i32.xor (i32.shl (i32.const 1) (i32.add (local.get $i) (i32.const {non_writable_shift}))) (i32.const -1))))))))
+                ;; Non-enumerable: default true (false) when missing
+                (if (i32.eq (local.get $enumerable) (i32.const {undefined}))
+                  (then
+                    (local.set $flags
+                      (i32.or (local.get $flags) (i32.shl (i32.const 1) (i32.add (local.get $i) (i32.const {non_enum_shift}))))))
+                  (else
+                    (if (i32.eq (local.get $enumerable) (i32.const {false}))
+                      (then
+                        (local.set $flags
+                          (i32.or (local.get $flags) (i32.shl (i32.const 1) (i32.add (local.get $i) (i32.const {non_enum_shift}))))))
+                      (else
+                        (local.set $flags
+                          (i32.and (local.get $flags) (i32.xor (i32.shl (i32.const 1) (i32.add (local.get $i) (i32.const {non_enum_shift}))) (i32.const -1))))))))
+                ;; Non-configurable: default true (false) when missing
+                (if (i32.eq (local.get $configurable) (i32.const {undefined}))
+                  (then
+                    (local.set $flags
+                      (i32.or (local.get $flags) (i32.shl (i32.const 1) (i32.add (local.get $i) (i32.const {non_configurable_shift}))))))
+                  (else
+                    (if (i32.eq (local.get $configurable) (i32.const {false}))
+                      (then
+                        (local.set $flags
+                          (i32.or (local.get $flags) (i32.shl (i32.const 1) (i32.add (local.get $i) (i32.const {non_configurable_shift}))))))
+                      (else
+                        (local.set $flags
+                          (i32.and (local.get $flags) (i32.xor (i32.shl (i32.const 1) (i32.add (local.get $i) (i32.const {non_configurable_shift}))) (i32.const -1))))))))
+                (i32.store (i32.add (local.get $base) (i32.const {obj_flags})) (local.get $flags))
+                (br $find_entry_done))))
+        (local.set $i (i32.add (local.get $i) (i32.const {one})))
+        (br $find_entry_loop))
     (local.get $obj))
 "#,
             tag_mask = ValueTag::TAG_MASK,
             object_tag = ValueTag::OBJECT,
+            heap_mask = ValueTag::HEAP_MASK,
             scratch_offset = Layout::SCRATCH_OFFSET,
+            obj_header = Layout::OBJECT_HEADER_SIZE,
+            obj_flags = Layout::OBJECT_FLAGS_OFFSET,
+            entry_shift = Layout::OBJECT_ENTRY_SHIFT,
+            str_header = Layout::STRING_HEADER_SIZE,
+            non_enum_shift = Layout::OBJECT_NON_ENUM_SHIFT,
+            non_writable_shift = Layout::OBJECT_NON_WRITABLE_SHIFT,
+            non_configurable_shift = Layout::OBJECT_NON_CONFIGURABLE_SHIFT,
+            accessor_shift = Layout::OBJECT_ACCESSOR_PROP_SHIFT,
+            zero = RuntimeConst::ZERO,
+            one = RuntimeConst::ONE,
+            undefined = ValueTag::UNDEFINED,
+            false = ValueTag::FALSE,
         ));
     }
 
