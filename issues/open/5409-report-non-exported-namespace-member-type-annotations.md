@@ -130,6 +130,12 @@ Related but not duplicates:
 - `issues/open/5397-report-missing-namespace-alias-member-diagnostic.md` covers
   import-equals aliases.
 
+Also owns `issues/done/3434-implement-namespacesDeclaration.md`: fresh triage
+shows `namespacesDeclaration2.ts` build-passes while TypeScript reports TS2694
+for qualified type annotations `N.S`, `M.F`, and `ns.A`. The first two refer
+to non-exported namespace functions; the ambient `ns.A` case is the same
+qualified namespace-member annotation diagnostic shape with an absent member.
+
 ## Completion evidence
 
 Fill only when moving to `done/`.
