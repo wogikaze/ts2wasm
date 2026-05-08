@@ -215,6 +215,9 @@ Also owns `issues/done/3581-implement-nodeNextImportModeImplicitIndexResolution-
 fresh triage stops in virtual `node_modules/pkg/package.json` at the first JSON
 property colon before NodeNext implicit index package resolution becomes
 actionable.
+Also owns `issues/done/3582-implement-nodeNextPackageImportMapRootDir.md`:
+fresh triage stops in virtual `package.json` at the first JSON property colon
+before package `"imports"` map resolution for `#dep` becomes actionable.
 
 ## Completion evidence
 
