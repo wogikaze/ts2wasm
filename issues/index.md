@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 7 | 4 | 3 |
 | coverage | 44 | 1 | 43 |
 | docs | 5 | 0 | 5 |
-| frontend | 4561 | 3748 | 813 |
+| frontend | 4561 | 3747 | 814 |
 | harness | 1 | 0 | 1 |
 | ir | 76 | 23 | 53 |
 | issues | 5 | 0 | 5 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 8 | 0 | 8 |
 | wasi | 4 | 0 | 4 |
-| total | 5243 | 4020 | 1223 |
+| total | 5243 | 4019 | 1224 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -374,7 +374,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5273 | Parse nested zero-argument arrow returns | feature | frontend | implementation-ready | P1 |  | Parse nested zero-argument arrow returns |
 | 5274 | Parse general comma expressions | feature | frontend | implementation-ready | P1 |  | Parse general comma expressions |
 | 5275 | Parse modified static class methods | feature | frontend | implementation-ready | P1 |  | Parse modified static class methods |
-| 5276 | Report class declaration decorator boundary | feature | frontend/lexer | implementation-ready | P1 |  | `commentOnDecoratedClassDeclaration.ts` stops in tokenization at the |
 | 5280 | Validate commented top-level function overloads | feature | frontend/resolver | implementation-ready | P1 |  | `commentOnSignature1.ts` parses successfully, but `validate_ast` |
 | 5281 | Resolve arrow rest parameter bindings | feature | ir/name-resolution | implementation-ready | P1 |  | arrow rest parameters are not made visible under their identifier name |
 | 5287 | Bind namespace declarations for qualified value access | feature | frontend/name-resolution | implementation-ready | P1 |  | a same-file non-ambient namespace declaration is erased before it |
@@ -5316,6 +5315,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5264 | Parse typed const declarations before initializers | feature | frontend/parser | see file |
 | 5265 | Report missing class member identifier after modifier | feature | frontend/parser | see file |
 | 5268 | Support derived constructor parameter properties after super | feature | ir | see `issues/done/5268-support-derived-constructor-parameter-properties-after-super.md` |
+| 5276 | Report class declaration decorator boundary | feature | frontend/lexer | see file |
 | 5277 | Parse export enum declarations to enum boundary | feature | frontend/module-syntax | see file |
 | 5278 | Parse trailing comma in function parameters with comments | feature | frontend/syntax | see file |
 | 5279 | Report function-typed local call definite assignment | feature | ir/lowering | see file |
