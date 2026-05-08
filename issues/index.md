@@ -16,19 +16,19 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 7 | 2 | 5 |
 | coverage | 45 | 1 | 44 |
 | docs | 5 | 0 | 5 |
-| frontend | 4563 | 3667 | 896 |
+| frontend | 4564 | 3643 | 921 |
 | harness | 1 | 0 | 1 |
-| ir | 77 | 12 | 65 |
+| ir | 79 | 12 | 67 |
 | issues | 5 | 0 | 5 |
 | other | 2 | 0 | 2 |
 | parser | 1 | 0 | 1 |
-| reference | 212 | 160 | 52 |
-| runtime | 277 | 71 | 206 |
+| reference | 212 | 156 | 56 |
+| runtime | 278 | 69 | 209 |
 | scripts | 4 | 0 | 4 |
 | security | 1 | 0 | 1 |
 | tests | 8 | 0 | 8 |
 | wasi | 5 | 0 | 5 |
-| total | 5257 | 3914 | 1343 |
+| total | 5261 | 3884 | 1377 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -51,9 +51,9 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 5000 (Meta: TypeScript Compiler Parser Syntax Coverage) [done/design] ch:440 open:369 done:71
 ├── 5002 (Meta: TypeScript Compiler Type System Coverage) [done/done] ch:224 open:216 done:8 (also ← 5005)
 ├── 5003 (Meta: TypeScript Compiler Declaration Emit Coverage) [done/done] ch:101 open:90 done:11 (also ← 5001)
-5001 (Meta: TypeScript Compiler Semantic Analysis Coverage) [done/done] ch:554 open:309 done:245
-5004 (Meta: Runtime Builtins Coverage (test262) (audit reopened #5004)) [done/done] ch:24 open:2 done:22
-5005 (Meta: TypeScript Compiler Name Resolution Coverage) [done/done] ch:406 open:353 done:53
+5001 (Meta: TypeScript Compiler Semantic Analysis Coverage) [done/done] ch:554 open:303 done:251
+5004 (Meta: Runtime Builtins Coverage (test262) (audit reopened #5004)) [done/done] ch:24 open:1 done:23
+5005 (Meta: TypeScript Compiler Name Resolution Coverage) [done/done] ch:406 open:351 done:55
 ├── 5006 (Meta: TypeScript Compiler Scope Analysis Coverage) [done/done] ch:27 open:19 done:8
 ├── 5007 (Meta: TypeScript Compiler Module Resolution Coverage (audit reopened #5007)) [done/done] ch:20 open:18 done:2
 ```
@@ -68,9 +68,9 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | Order | ID | Title | State | Class | Area | Priority | Depends on | Direct children | Open children | Done children |
 |-----:|---:|------|-------|-------|------|--------:|-----------:|----------------:|--------------:|--------------:|
 | 1 | 5000 | Meta: TypeScript Compiler Parser Syntax Coverage | done | design | frontend/syntax | P1 | - | 440 | 369 | 71 |
-| 2 | 5001 | Meta: TypeScript Compiler Semantic Analysis Coverage | done | done | frontend/semantics | P1 | - | 554 | 309 | 245 |
-| 3 | 5004 | Meta: Runtime Builtins Coverage (test262) (audit reopened #5004) | done | done | runtime/builtins | P1 | - | 24 | 2 | 22 |
-| 4 | 5005 | Meta: TypeScript Compiler Name Resolution Coverage | done | done | frontend/resolver | P1 | - | 406 | 353 | 53 |
+| 2 | 5001 | Meta: TypeScript Compiler Semantic Analysis Coverage | done | done | frontend/semantics | P1 | - | 554 | 303 | 251 |
+| 3 | 5004 | Meta: Runtime Builtins Coverage (test262) (audit reopened #5004) | done | done | runtime/builtins | P1 | - | 24 | 1 | 23 |
+| 4 | 5005 | Meta: TypeScript Compiler Name Resolution Coverage | done | done | frontend/resolver | P1 | - | 406 | 351 | 55 |
 | 5 | 5002 | Meta: TypeScript Compiler Type System Coverage | done | done | frontend/semantics | P1 | 5000, 5005 | 224 | 216 | 8 |
 | 6 | 5003 | Meta: TypeScript Compiler Declaration Emit Coverage | done | done | frontend/syntax | P2 | 5000, 5001 | 101 | 90 | 11 |
 | 7 | 5006 | Meta: TypeScript Compiler Scope Analysis Coverage | done | done | frontend/resolver | P2 | 5005 | 27 | 19 | 8 |
@@ -163,6 +163,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1167 | Implement Circulartypeofwithfunctionmodule | spike | frontend/syntax | done | P1 | 5244 | `circularTypeofWithFunctionModule.ts` is not a standalone generated import/export bucket in the current runner view. ... |
 | 1168 | Implement Circularlyconstrainedmappedtypecontainingconditionalnoinfiniteinstantiationdepth | spike | frontend/semantics | done | P1 | 5245 | this generated type-system bucket is not directly implementation-ready in the current runner view. The first actionab... |
 | 1169 | Implement Circularlysimplifyingconditionaltypesnocrash | spike | frontend/semantics | done | P1 |  | the generated blocker is stale in the current runner view. There is no current ts2wasm build blocker for `circularlyS... |
+| 1170 | Implement Class | spike | frontend/syntax | done | P2 | 5246 | `class2.ts` is not a broad class implementation order. The first blocker is a focused invalid `static` statement diag... |
 | 1171 | Implement Classaccessorinitializationinferencewithelementaccess | spike | frontend/syntax | done | P1 | 5232 | `classAccessorInitializationInferenceWithElementAccess1.ts` no longer |
 | 1172 | Implement Classattributeinferencetemplate | spike | frontend/semantics | done | P1 |  | `classAttributeInferenceTemplate.ts` no longer has a compiler blocker; |
 | 1173 | Implement Classattributeinferencetemplatejs | spike | frontend/semantics | done | P1 | 5247 | `classAttributeInferenceTemplateJS.ts` is not a broad type-system |
@@ -234,23 +235,35 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1307 | Implement Collisionsuperandlocalfunctioninaccessors | spike | frontend/syntax | done | P1 |  | the generated class-accessor bucket is stale. TypeScript oracle |
 | 1308 | Implement Collisionsuperandlocalfunctioninconstructor | spike | frontend/syntax | done | P1 |  | the generated arrow-function bucket is stale. TypeScript oracle |
 | 1397 | Implement Complicatedgenericrecursivebaseclassreference | spike | frontend/semantics | done | P1 | 5002 | `complicatedGenericRecursiveBaseClassReference.ts` reaches tokens and |
+| 1398 | Implement Complicatedindexedaccesskeyofreliesonkeyofneverupperbound | spike | frontend/syntax | done | P1 | 432 | the generated blocker is stale; there is no current compiler blocker |
 | 1399 | Implement Complicatedindexesofintersectionsareinferencable | spike | frontend/semantics | done | P1 | 5002 | the generated blocker is stale; there is no current compiler or |
+| 1400 | Implement Complicatedprivacy | spike | frontend/syntax | done | P1 | 432 | `complicatedPrivacy.ts` reports `UnresolvedName` for `m3` at |
 | 1401 | Implement Compositecontextualsignature | spike | frontend/syntax | done | P1 | 5001 | the generated blocker is stale; there is no current compiler or |
 | 1402 | Implement Compositegenericfunction | spike | reference/triage | done | P2 |  | the generated duplicate-local/compiler blocker is stale; there is no |
+| 1403 | Implement Compositewithnodemodulessourcefile | spike | frontend/syntax | done | P1 | 432 | `compositeWithNodeModulesSourceFile.ts` reports `UnsupportedModule` |
+| 1404 | Implement Compoundvardecl | spike | frontend/syntax | done | P1 | 432 | the generated blocker is stale; there is no current compiler or |
 | 1405 | Implement Computedenummembersyntacticallystring Enum | spike | frontend/syntax | done | P1 | 5001 | `computedEnumMemberSyntacticallyString.ts` reports |
 | 1406 | Implement Computedenummembersyntacticallystring Parser Syntax | spike | frontend/syntax | superseded | P1 |  | 1406 is not a standalone parser implementation order. The current |
 | 1407 | Implement Computedenumtypewidening | spike | frontend/syntax | superseded | P1 |  | 1407 is not a standalone computed-enum type-widening work order in the |
 | 1408 | Implement Computedpropertiesindestructuring | spike | frontend/syntax | done | P1 | 5001 | `computedPropertiesInDestructuring1.ts` reports |
+| 1409 | Implement Computedpropertiesnarrowed | spike | frontend/syntax | superseded | P1 | 432 | 1409 is not a standalone computed-property narrowing work order in the |
+| 1410 | Implement Computedpropertiestransformedinotherwisenontsclasses | spike | frontend/syntax | done | P1 | 432 | 1410 is stale in the current runner view; there is no actionable |
 | 1411 | Implement Computedpropertieswithsetterassignment | spike | frontend/syntax | superseded | P2 |  | 1411 is not a standalone computed setter assignment work order in the |
+| 1412 | Implement Computedpropertybindingelementdeclarationnocrash | spike | frontend/syntax | done | P1 | 432 | computedPropertyBindingElementDeclarationNoCrash has 1 reference failures and needs smart-triage evidence before impl... |
 | 1413 | Implement Computedpropertynameandtypeparameterconflict | spike | frontend/syntax | done | P1 | 5000 | computedPropertyNameAndTypeParameterConflict has 1 reference failures and needs smart-triage evidence before implemen... |
+| 1414 | Implement Computedpropertynamewithimportedkey | spike | frontend/syntax | done | P1 | 432 | computedPropertyNameWithImportedKey has 1 reference failures and needs smart-triage evidence before implementation st... |
 | 1416 | Implement Concatclassandstring | spike | frontend/resolver | done | P1 | 5005 | concatClassAndString has 1 reference failures and needs smart-triage evidence before implementation starts. |
 | 1417 | Implement Conditionalequalityonliteralobjects | spike | frontend/semantics | done | P1 | 5002 | conditionalEqualityOnLiteralObjects has 1 reference failures and needs smart-triage evidence before implementation st... |
 | 1418 | Implement Conditionalexpression | spike | frontend/semantics | done | P1 | 5002 | conditionalExpression has 1 reference failures and needs smart-triage evidence before implementation starts. |
 | 1419 | Implement Conditionalexpressionnewline | spike | frontend/resolver | done | P1 | 5005 | conditionalExpressionNewLine has 10 reference failures and needs smart-triage evidence before implementation starts. |
 | 1420 | Implement Conditionalexpressions | spike | frontend/semantics | done | P1 | 5002 | conditionalExpressions has 1 reference failures and needs smart-triage evidence before implementation starts. |
 | 1421 | Implement Conditionalreturnexpression | spike | frontend/resolver | done | P1 | 5005 | conditionalReturnExpression has 1 reference failures and needs smart-triage evidence before implementation starts. |
+| 1422 | Implement Conditionaltypeassignabilitywhendeferred | spike | frontend/syntax | done | P1 | 432 | conditionalTypeAssignabilityWhenDeferred has 1 reference failures and needs smart-triage evidence before implementati... |
 | 1423 | Implement Conditionaltypebasedcontextualtypereturntypewidening | spike | frontend/semantics | done | P1 | 5002 | conditionalTypeBasedContextualTypeReturnTypeWidening has 1 reference failures and needs smart-triage evidence before ... |
 | 1424 | Implement Conditionaltypeclassmembers | spike | frontend/semantics | done | P1 | 5002 | conditionalTypeClassMembers has 1 reference failures and needs smart-triage evidence before implementation starts. |
+| 1425 | Implement Conditionaltypediscriminatinglargeunionregulartypefetchingspeedreasonable | spike | frontend/syntax | done | P1 | 432 | conditionalTypeDiscriminatingLargeUnionRegularTypeFetchingSpeedReasonable has 1 reference failures and needs smart-tr... |
+| 1426 | Implement Conditionaltypedoesntspinforever | spike | frontend/syntax | done | P1 | 432 | conditionalTypeDoesntSpinForever has 1 reference failures and needs smart-triage evidence before implementation starts. |
+| 1427 | Implement Conditionaltyperelaxingconstraintassignability | spike | frontend/syntax | done | P1 | 432 | conditionalTypeRelaxingConstraintAssignability has 1 reference failures and needs smart-triage evidence before implem... |
 | 1428 | Implement Conditionaltypesubclassextendstypeparam | spike | frontend/semantics | done | P1 | 5002 | conditionalTypeSubclassExtendsTypeParam has 1 reference failures and needs smart-triage evidence before implementatio... |
 | 1429 | Implement Conditionaltypessimplifywhentrivial | spike | frontend/semantics | done | P1 | 5002 | conditionalTypesSimplifyWhenTrivial has 1 reference failures and needs smart-triage evidence before implementation st... |
 | 1430 | Implement Conditionallyduplicateoverloadscausedbyoverloadresolution | spike | frontend/syntax | done | P2 | 5005 | conditionallyDuplicateOverloadsCausedByOverloadResolution has 1 reference failures and needs smart-triage evidence be... |
@@ -288,9 +301,11 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1466 | Implement Constraints | spike | frontend/resolver | done | P1 |  | `constraints0.ts` is blocked by ambient `declare var` name-resolution |
 | 1467 | Implement Constraintsthatreferenceothercontstraints | spike | frontend/syntax | done | P1 |  | `constraintsThatReferenceOtherContstraints1.ts` is blocked by generic |
 | 1468 | Implement Constraintsusedinprototypeproperty | spike | frontend/syntax | superseded | P1 | 5000 | Implement Constraintsusedinprototypeproperty |
+| 1469 | Implement Constructorargwithgenericcallsignature | spike | frontend/syntax | superseded | P1 | 432 | non-ambient namespace declarations are parsed far enough for later |
 | 1470 | Implement Constructorargserrors | spike | frontend/syntax | superseded | P1 | 5001 | `constructorArgsErrors` needed a focused implementation-ready child |
 | 1471 | Implement Constructorastype | spike | frontend/resolver | superseded | P1 | 5005 | `constructorAsType.ts` is blocked by ambient `declare var` |
 | 1472 | Implement Constructorinvocationwithtoofewtypeargs | spike | frontend/syntax | superseded | P1 | 5001 | `constructorInvocationWithTooFewTypeArgs.ts` needed a focused child for |
+| 1473 | Implement Constructoroverloads Import Export | spike | frontend/syntax | superseded | P1 | 432 | `constructorOverloads-import-export` needed focused current ownership |
 | 1474 | Implement Constructoroverloads Name Resolution | spike | frontend/resolver | superseded | P1 | 5005 | this bucket needs a focused owner for the ambient-class constructor |
 | 1475 | Implement Constructoroverloads Parser Syntax | spike | frontend/syntax | superseded | P1 | 5000 | this generated parser-syntax bucket needs focused ownership instead |
 | 1476 | Implement Constructorparametersinvariabledeclarations | spike | frontend/syntax | superseded | P1 | 5000 | the generated parser-syntax bucket no longer represents a compiler |
@@ -330,9 +345,8 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1513 | Implement Contextualtypeofindexedaccessparameter | spike | frontend/resolver | done | P1 |  | contextualTypeOfIndexedAccessParameter has 1 reference failures and needs smart-triage evidence before implementation... |
 | 1514 | Implement Contextualtypeonyield | spike | frontend/syntax | done | P1 |  | contextualTypeOnYield has 2 reference failures and needs smart-triage evidence before implementation starts. |
 | 1999 | Report symbol WeakSet.add diagnostics | feature | frontend/resolver | implementation-ready | P1 |  | weak collection symbol negative tests currently fail with |
-| 5156 | Parse generic type arguments in class heritage clauses | feature | frontend/syntax | implementation-ready | P1 |  | `reference/typescript/tests/cases/compiler/baseTypeOrderChecking.ts` fails parsing on `class Class4<T> extends Class3... |
+| 4262 | Implement Staticsinconstructorbodies | spike | frontend/syntax | done | P2 | 5246 | this generated bucket is not a direct implementation order. The first blocker is a focused invalid `static` statement... |
 | 5200 | Validate top-level function overload implementations | feature | frontend/resolver | implementation-ready | P1 |  | top-level function overload implementation groups are currently classified as duplicate concrete functions. |
-| 5246 | Report static declarations inside constructor bodies | feature | frontend/parser | implementation-ready | P1 |  | invalid `static` declarations in constructor bodies report generic unsupported expression instead of a spanned parser... |
 | 5248 | Lower class expressions | feature | ir/compiler | implementation-ready | P1 |  | `classBlockScoping.ts` reports `UnsupportedSyntax: issue-313: class expression lowering not yet implemented`. |
 | 5260 | Report class heritage trailing comma | feature | frontend/parser | implementation-ready | P1 |  | `classHeritageWithTrailingSeparator.ts` tokenizes the class heritage |
 | 5267 | Parse string literal class member names | feature | frontend | implementation-ready | P1 |  | `reference/typescript/tests/cases/compiler/classStaticPropertyAccess.ts` |
@@ -345,9 +359,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5275 | Parse modified static class methods | feature | frontend | implementation-ready | P1 |  | Parse modified static class methods |
 | 5289 | Validate commentsOverloads top-level functions | feature | frontend/resolver | implementation-ready | P1 |  | `reference/typescript/tests/cases/compiler/commentsOverloads.ts` |
 | 5291 | Report malformed export type declarations | feature | frontend/parser | implementation-ready | P1 |  | malformed `export type` declarations are not diagnosed or recovered |
-| 5297 | Lower computed object binding aliases | feature | frontend/semantics | implementation-ready | P1 |  | object binding aliases can only use identifier keys, so computed keys |
-| 5298 | Parse for-of array binding pattern heads | feature | frontend/syntax | implementation-ready | P1 |  | array binding patterns in `for-of` declaration heads are parsed as |
-| 5299 | Lower computed object binding parameters | feature | frontend/semantics | implementation-ready | P1 |  | computed object binding aliases in parameters parse, but name |
 | 5306 | Report export assignment with other exports | bug | frontend/syntax | implementation-ready | P1 |  | `ExportAssignment8.ts` stops at generic issue-055 instead of reporting the specific `export =` plus other exports rule. |
 | 5313 | Report non-exported namespace member in qualified heritage | feature | frontend/name-resolution | implementation-ready | P1 |  | `classExtendingQualifiedName.ts` now builds successfully, but |
 | 5314 | Report non-constructor local class heritage | feature | frontend/name-resolution | implementation-ready | P1 |  | `classExtendsClauseClassMergedWithModuleNotReferingConstructor.ts` |
@@ -400,32 +411,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 059 | Implement parser syntax extensions for TypeScript and advanced JS (audit reopened #059) | feature | frontend | class: blocked | Implement parser syntax extensions for TypeScript and advanced JS (audit reopened #059) |
 | 064 | Implement name resolution (triaged - superseded by test262 metadata issues) | spike | frontend/resolver | class: blocked | Implement name resolution (triaged - superseded by test262 metadata issues) |
 | 312 | Triage test262 blocked P0 window | spike | reference | class: triage-needed | Triage test262 blocked P0 window |
-| 411 | Implement annexb-ishtmldda support | spike | frontend/syntax | class: triage-needed | Implement annexb-ishtmldda support |
-| 416 | Implement async/await support | spike | frontend/syntax | class: triage-needed | Implement async/await support |
-| 417 | Implement async-iteration support | spike | frontend/syntax | class: triage-needed | Implement async-iteration support |
-| 418 | Implement break/continue | spike | frontend/syntax | class: blocked | Implement break/continue |
-| 419 | Implement built-in API support | spike | runtime/builtins | class: triage-needed | Implement built-in API support |
-| 420 | Implement call expression support | spike | frontend/syntax | class: blocked | Implement call expression support |
-| 421 | Implement class syntax | spike | frontend/syntax | class: triage-needed | Implement class syntax |
 | 422 | Implement class-accessor support | spike | frontend/syntax | class: triage-needed | Implement class-accessor support |
-| 423 | Implement Date object support (dup) | spike | runtime/builtins | class: blocked | Implement Date object support (dup) |
-| 424 | Implement declaration-emit support | spike | frontend/syntax | class: triage-needed | Implement declaration-emit support |
-| 425 | Implement destructuring | spike | frontend/syntax | class: triage-needed | Implement destructuring |
-| 426 | Implement duplicate-function support | spike | reference/triage | class: triage-needed | Implement duplicate-function support |
-| 429 | Implement eval support | spike | reference/triage | class: blocked | Implement eval support |
-| 431 | Implement function resolution | spike | frontend/resolver | class: triage-needed | Implement function resolution |
-| 432 | Implement import/export module syntax | spike | frontend/syntax | class: triage-needed | Implement import/export module syntax |
-| 434 | Implement loop constructs | spike | frontend/syntax | class: blocked | Implement loop constructs |
-| 435 | Implement method call support | spike | frontend/syntax | class: blocked | Implement method call support |
-| 436 | Implement module-resolution support | spike | frontend/syntax | class: triage-needed | Implement module-resolution support |
-| 437 | Implement name resolution | spike | frontend/resolver | class: blocked | Implement name resolution |
-| 438 | Implement negative-parse-syntaxerror support | spike | reference/triage | class: triage-needed | Implement negative-parse-syntaxerror support |
-| 439 | Implement new expression | spike | frontend/syntax | class: blocked | Implement new expression |
-| 440 | Implement object-builtin support | spike | frontend/syntax | class: triage-needed | Implement object-builtin support |
-| 441 | Implement object literal enhancements | spike | frontend/syntax | class: triage-needed | Implement object literal enhancements |
-| 442 | Implement parser syntax extensions | spike | frontend/syntax | class: triage-needed | Implement parser syntax extensions |
-| 443 | Implement property access support | spike | frontend/syntax | class: blocked | Implement property access support |
-| 445 | Implement runtime-subset support | spike | reference/triage | class: triage-needed | Implement runtime-subset support |
 | 446 | Implement scope-analysis support | spike | frontend/syntax | class: triage-needed | Implement scope-analysis support |
 | 449 | Implement super keyword | spike | frontend/syntax | class: triage-needed | Implement super keyword |
 | 450 | Implement template literals | spike | frontend/syntax | class: triage-needed | Implement template literals |
@@ -584,7 +570,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1110 | Implement Capturedletconstinloop Name Resolution | spike | frontend/resolver | class: triage-needed | Implement Capturedletconstinloop Name Resolution |
 | 1119 | Implement Castofawait | spike | reference/triage | class: triage-needed | Implement Castofawait |
 | 1162 | Implement Circularreferenceinimport | spike | frontend/syntax | class: blocked | Implement Circularreferenceinimport |
-| 1170 | Implement Class | spike | frontend/syntax | 5246 | Implement Class |
 | 1174 | Implement Classblockscoping | spike | frontend/syntax | 5248 | Implement Classblockscoping |
 | 1178 | Implement Classdeclarationshouldbeoutofscopeincomputednames | spike | frontend/resolver | class: blocked | Implement Classdeclarationshouldbeoutofscopeincomputednames |
 | 1179 | Implement Classdeclaredbeforeclassfactory | spike | frontend/syntax | class: blocked | Implement Classdeclaredbeforeclassfactory |
@@ -737,21 +722,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1394 | Implement Complexclassrelationships | spike | frontend/syntax | class: triage-needed | Implement Complexclassrelationships |
 | 1395 | Implement Complexnarrowingwithany | spike | frontend/syntax | class: blocked | Implement Complexnarrowingwithany |
 | 1396 | Implement Complexrecursivecollections | spike | frontend/syntax | class: blocked | Implement Complexrecursivecollections |
-| 1398 | Implement Complicatedindexedaccesskeyofreliesonkeyofneverupperbound | spike | frontend/syntax | 432 | Implement Complicatedindexedaccesskeyofreliesonkeyofneverupperbound |
-| 1400 | Implement Complicatedprivacy | spike | frontend/syntax | 432 | Implement Complicatedprivacy |
-| 1403 | Implement Compositewithnodemodulessourcefile | spike | frontend/syntax | 432 | Implement Compositewithnodemodulessourcefile |
-| 1404 | Implement Compoundvardecl | spike | frontend/syntax | 432 | Implement Compoundvardecl |
-| 1409 | Implement Computedpropertiesnarrowed | spike | frontend/syntax | 432 | Implement Computedpropertiesnarrowed |
-| 1410 | Implement Computedpropertiestransformedinotherwisenontsclasses | spike | frontend/syntax | 432 | Implement Computedpropertiestransformedinotherwisenontsclasses |
-| 1412 | Implement Computedpropertybindingelementdeclarationnocrash | spike | frontend/syntax | 432 | Implement Computedpropertybindingelementdeclarationnocrash |
-| 1414 | Implement Computedpropertynamewithimportedkey | spike | frontend/syntax | 432 | Implement Computedpropertynamewithimportedkey |
 | 1415 | Implement Computerpropertiesines | spike | frontend/syntax | 059 | Implement Computerpropertiesines |
-| 1422 | Implement Conditionaltypeassignabilitywhendeferred | spike | frontend/syntax | 432 | Implement Conditionaltypeassignabilitywhendeferred |
-| 1425 | Implement Conditionaltypediscriminatinglargeunionregulartypefetchingspeedreasonable | spike | frontend/syntax | 432 | Implement Conditionaltypediscriminatinglargeunionregulartypefetchingspeedreasonable |
-| 1426 | Implement Conditionaltypedoesntspinforever | spike | frontend/syntax | 432 | Implement Conditionaltypedoesntspinforever |
-| 1427 | Implement Conditionaltyperelaxingconstraintassignability | spike | frontend/syntax | 432 | Implement Conditionaltyperelaxingconstraintassignability |
-| 1469 | Implement Constructorargwithgenericcallsignature | spike | frontend/syntax | 432 | Implement Constructorargwithgenericcallsignature |
-| 1473 | Implement Constructoroverloads Import Export | spike | frontend/syntax | 432 | Implement Constructoroverloads Import Export |
 | 1515 | Implement Contextualtypeselfreferencing | spike | frontend/resolver | class: blocked | Implement Contextualtypeselfreferencing |
 | 1516 | Implement Contextualtypeshouldbeliteral | spike | reference/triage | class: triage-needed | Implement Contextualtypeshouldbeliteral |
 | 1517 | Implement Contextualtypesnegatedtypelikeconstraintingenericmappedtype | spike | frontend/syntax | class: blocked | Implement Contextualtypesnegatedtypelikeconstraintingenericmappedtype |
@@ -3469,7 +3440,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 4259 | Implement Staticvisibility Parser Syntax | spike | frontend/syntax | class: triage-needed | Implement Staticvisibility Parser Syntax |
 | 4260 | Implement Statics | spike | frontend/syntax | class: blocked | Implement Statics |
 | 4261 | Implement Staticsinafunction | spike | frontend/syntax | class: triage-needed | Implement Staticsinafunction |
-| 4262 | Implement Staticsinconstructorbodies | spike | frontend/syntax | 5246 | Implement Staticsinconstructorbodies |
 | 4263 | Implement Staticsnotinscopeinclodule | spike | frontend/resolver | class: blocked | Implement Staticsnotinscopeinclodule |
 | 4264 | Implement Stradac | spike | frontend/resolver | class: blocked | Implement Stradac |
 | 4265 | Implement Strictfunctiontypes | spike | frontend/resolver | class: blocked | Implement Strictfunctiontypes |
@@ -4451,15 +4421,40 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 408 | Implement tsgo declaration emit: AsConstSatisfies/const generic method cases | feature | frontend/syntax | see file |
 | 409 | Implement tsgo declaration emit: package-json exports and subpath reexport cases | feature | frontend/syntax | see `issues/done/409-implement-tsgo-declaration-emit-package-json-subpath.md` |
 | 410 | Implement tsgo declaration emit: subpath import declaration emit cases | feature | frontend/syntax | see `issues/done/410-implement-tsgo-declaration-emit-subpath-import-links.md` |
+| 411 | Implement annexb-ishtmldda support | spike | frontend/syntax | see `issues/done/411-implement-annexb-ishtmldda.md` |
 | 412 | Implement arguments-object support | spike | runtime/builtins | see `issues/done/412-implement-arguments-object.md` |
 | 413 | Implement arity support | spike | reference/triage | see `issues/done/413-implement-arity.md` |
 | 414 | Implement array-builtin support (dup) | spike | frontend/syntax | see `issues/done/414-implement-array-builtin.md` |
 | 415 | Implement arrow functions | spike | frontend/syntax | see `issues/done/415-implement-arrow-function.md` |
+| 416 | Implement async/await support | spike | frontend/syntax | see `issues/done/416-implement-async.md` |
+| 417 | Implement async-iteration support | spike | frontend/syntax | see `issues/done/417-implement-async-iteration.md` |
+| 418 | Implement break/continue | spike | frontend/syntax | see `issues/done/418-implement-break-continue.md` |
+| 419 | Implement built-in API support | spike | runtime/builtins | see `issues/done/419-implement-builtin-api.md` |
+| 420 | Implement call expression support | spike | frontend/syntax | see `issues/done/420-implement-call-expression.md` |
+| 421 | Implement class syntax | spike | frontend/syntax | see `issues/done/421-implement-class.md` |
+| 423 | Implement Date object support (dup) | spike | runtime/builtins | see `issues/done/423-implement-date.md` |
+| 424 | Implement declaration-emit support | spike | frontend/syntax | see `issues/done/424-implement-declaration-emit.md` |
+| 425 | Implement destructuring | spike | frontend/syntax | see `issues/done/425-implement-destructuring.md` |
+| 426 | Implement duplicate-function support | spike | reference/triage | see `issues/done/426-implement-duplicate-function.md` |
 | 427 | Implement duplicate-local support | spike | reference/triage | see `issues/done/427-implement-duplicate-local.md` |
 | 428 | Implement enum support | spike | frontend/syntax | see `issues/done/428-implement-enum.md` |
+| 429 | Implement eval support | spike | reference/triage | see `issues/done/429-implement-eval.md` |
 | 430 | Implement function support (dup) | spike | frontend/syntax | see `issues/done/430-implement-function.md` |
+| 431 | Implement function resolution | spike | frontend/resolver | see `issues/done/431-implement-function-resolution.md` |
+| 432 | Implement import/export module syntax | spike | frontend/syntax | see `issues/done/432-implement-import-export.md` |
 | 433 | Implement legacy-global-builtin support (dup) | spike | frontend/syntax | see `issues/done/433-implement-legacy-global-builtin.md` |
+| 434 | Implement loop constructs | spike | frontend/syntax | see `issues/done/434-implement-loop.md` |
+| 435 | Implement method call support | spike | frontend/syntax | see `issues/done/435-implement-method-call.md` |
+| 436 | Implement module-resolution support | spike | frontend/syntax | see `issues/done/436-implement-module-resolution.md` |
+| 437 | Implement name resolution | spike | frontend/resolver | see `issues/done/437-implement-name-resolution.md` |
+| 438 | Implement negative-parse-syntaxerror support | spike | reference/triage | see `issues/done/438-implement-negative-parse-syntaxerror.md` |
+| 439 | Implement new expression | spike | frontend/syntax | see `issues/done/439-implement-new-expression.md` |
+| 440 | Implement object-builtin support | spike | frontend/syntax | see `issues/done/440-implement-object-builtin.md` |
+| 441 | Implement object literal enhancements | spike | frontend/syntax | see `issues/done/441-implement-object-literal.md` |
+| 442 | Implement parser syntax extensions | spike | frontend/syntax | see `issues/done/442-implement-parser-syntax.md` |
+| 443 | Implement property access support | spike | frontend/syntax | see `issues/done/443-implement-property-access.md` |
 | 444 | Implement RegExp literal support (dup) | spike | runtime/builtins | see `issues/done/444-implement-regexp-literal.md` |
+| 445 | Implement runtime-subset support | spike | reference/triage | see `issues/done/445-implement-runtime-subset.md` |
 | 447 | Implement spread operator | spike | frontend/syntax | see `issues/done/447-implement-spread.md` |
 | 448 | Implement string-builtin support | spike | frontend/syntax | see `issues/done/448-implement-string-builtin.md` |
 | 455 | Implement Apilibcheck (dup) | spike | frontend/syntax | see `issues/done/455-implement-APILibCheck.md` |
@@ -5162,6 +5157,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5153 | Erase union types in as assertions | feature | frontend/syntax | see `issues/done/5153-erase-union-types-in-as-assertions.md` |
 | 5154 | Parse angle-bracket type assertion statements | feature | frontend/syntax | see `issues/done/5154-parse-angle-bracket-type-assertion-statements.md` |
 | 5155 | removed / merged / duplicate — gap filler | cleanup | docs | see file |
+| 5156 | Parse generic type arguments in class heritage clauses | feature | frontend/syntax | see `issues/done/5156-parse-generic-type-arguments-in-class-heritage.md` |
 | 5157 | Report set accessor rest parameter diagnostics | feature | frontend/syntax | see `issues/done/5157-report-set-accessor-rest-parameter-diagnostic.md` |
 | 5158 | Report interface private member clashes | feature | frontend/resolver | see `issues/done/5158-report-interface-private-member-clash.md` |
 | 5159 | Recover colon type annotations after expression statements | feature | frontend/syntax | see `issues/done/5159-recover-colon-type-annotation-after-expression-statement.md` |
@@ -5249,10 +5245,11 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5243 | Implement non-literal Date constructor inputs | feature | runtime/builtins | see file |
 | 5244 | Define timezone formatting policy for Date.prototype.toString | design | runtime/builtins | see file |
 | 5245 | Implement ECMAScript iterator protocol runtime for spread operator | feature | runtime/semantics | see `issues/done/5245-iterator-protocol-runtime.md` |
+| 5246 | Report static declarations inside constructor bodies | feature | frontend/parser | see file |
 | 5247 | Fix JS noEmit class constructor FuncId invariant | feature | ir/compiler | see file |
 | 5249 | Scope block-local class declarations | feature | frontend/resolver | see file |
 | 5250 | Parse class declarations in nested block statements | feature | frontend/parser | see file |
-| 5251 | Parse computed class member names in class declarations | feature | frontend/parser | see file |
+| 5251 | Parse computed class member names in class declarations | feature | frontend/parser | see `issues/done/5251-parse-computed-class-member-names-in-class-declarations.md` |
 | 5252 | Support call-expression class heritage | feature | ir/resolver | see file |
 | 5253 | Report class expression decorator boundary | feature | frontend/lexer | see file |
 | 5254 | Parse ASI between static class fields | feature | frontend/parser | see file |
@@ -5269,7 +5266,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5266 | placeholder | placeholder | other | see file |
 | 5268 | Support derived constructor parameter properties after super | feature | ir | see `issues/done/5268-support-derived-constructor-parameter-properties-after-super.md` |
 | 5276 | Report class declaration decorator boundary | feature | frontend/lexer | see file |
-| 5277 | Parse export enum declarations to enum boundary | feature | frontend/module-syntax | see file |
+| 5277 | Parse export enum declarations to enum boundary | feature | frontend/module-syntax | see `issues/done/5277-parse-export-enum-declarations-to-enum-boundary.md` |
 | 5278 | Parse trailing comma in function parameters with comments | feature | frontend/syntax | see file |
 | 5279 | Report function-typed local call definite assignment | feature | ir/lowering | see file |
 | 5280 | Validate commented top-level function overloads | feature | frontend/resolver | see file |
@@ -5287,9 +5284,12 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5294 | Resolve sibling namespaces in nested namespace scopes | feature | frontend/name-resolution | see `issues/done/5294-resolve-sibling-namespaces-in-nested-namespace-scopes.md` |
 | 5295 | Resolve import-equals require to virtual node_modules class export | feature | frontend/module-resolution | see `issues/done/5295-resolve-import-equals-require-to-virtual-node-modules-class-export.md` |
 | 5296 | Parse double-dot numeric literal property access | feature | frontend/parser | see `issues/done/5296-parse-double-dot-numeric-literal-property-access.md` |
+| 5297 | Lower computed object binding aliases | feature | frontend/semantics | see file |
+| 5298 | Parse for-of array binding pattern heads | feature | frontend/syntax | see file |
+| 5299 | Lower computed object binding parameters | feature | frontend/semantics | see file |
 | 5300 | Report assignment to class binding diagnostics | feature | frontend/resolver | see file |
-| 5301 | Report literal reference comparison diagnostics | feature | frontend/semantics | see file |
-| 5302 | Parse fractional number literals in expressions | feature | frontend/syntax | see file |
+| 5301 | Report literal reference comparison diagnostics | feature | frontend/semantics | see `issues/done/5301-report-literal-reference-comparison-diagnostics.md` |
+| 5302 | Parse fractional number literals in expressions | feature | frontend/syntax | see `issues/done/5302-parse-fractional-number-literals-in-expressions.md` |
 | 5303 | Parse trailing comma in typed function parameters | feature | frontend/syntax | see `issues/done/5303-parse-trailing-comma-in-typed-function-parameters.md` |
 | 5304 | Parse generic arrow functions with typed parameters | feature | frontend/syntax | see `issues/done/5304-parse-generic-arrow-functions-with-typed-parameters.md` |
 | 5305 | Report merge conflict marker diagnostics | feature | frontend/syntax | see `issues/done/5305-report-merge-conflict-marker-diagnostics.md` |
@@ -5369,6 +5369,10 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5420 | W0: Fix pre-existing dirty files to unblock cargo fmt and nextest | bug | frontend | see file |
 | 5421 | W4: Implement Array.prototype.sort with comparator semantics | feature | runtime | see file |
 | 5422 | W4: Implement Promise constructor and basic methods | feature | runtime | see file |
+| 5423 | W2: Fix top test262 parser syntax gaps (UnsupportedSyntax) | feature | frontend | see file |
+| 5424 | W3: Name resolution round 2 — register more test262-encountered builtins | feature | ir | see file |
+| 5425 | W4: Expand builtin API routing for test262-encountered builtins | feature | runtime | see file |
+| 5426 | W5: Implement async/await on top of Promise runtime | feature | ir | see file |
 <!-- generated:done:end -->
 
 ## Index generation contract
