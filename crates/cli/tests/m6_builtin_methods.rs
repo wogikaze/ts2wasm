@@ -1105,3 +1105,14 @@ fn build_smoke_string_substr() {
         result.err()
     );
 }
+
+// Global name registration: Promise, Symbol, Reflect, Proxy (issue 101)
+#[test]
+fn build_smoke_global_names_promise_symbol_reflect_proxy() {
+    let result = run_fixture("builtins-and-io/global-names-promise-symbol-reflect-proxy.ts");
+    assert!(
+        result.is_ok(),
+        "Promise, Symbol, Reflect, Proxy global names should build: {:?}",
+        result.err()
+    );
+}
