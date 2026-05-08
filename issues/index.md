@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 27 | 14 | 13 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4611 | 3220 | 1391 |
+| frontend | 4611 | 3219 | 1392 |
 | harness | 1 | 0 | 1 |
 | ir | 99 | 71 | 28 |
 | issues | 4 | 0 | 4 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5313 | 3529 | 1784 |
+| total | 5313 | 3528 | 1785 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -2385,7 +2385,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 3302 | Implement Modulealiasasfunctionargument | spike | frontend/syntax | class: blocked | Implement Modulealiasasfunctionargument |
 | 3303 | Implement Modulealiasinterface | spike | frontend/syntax | class: blocked | Implement Modulealiasinterface |
 | 3304 | Implement Moduleandinterfacesharingname | spike | frontend/syntax | class: blocked | Implement Moduleandinterfacesharingname |
-| 3563 | Implement Noiterationtypeerrorsincfa | spike | frontend/syntax | class: blocked | Implement Noiterationtypeerrorsincfa |
 | 3564 | Implement Noparameterreassignmentiifeannotated | spike | frontend/resolver | class: blocked | Implement Noparameterreassignmentiifeannotated |
 | 3565 | Implement Noparameterreassignmentjsiife | spike | frontend/resolver | class: blocked | Implement Noparameterreassignmentjsiife |
 | 3566 | Implement Nosubtypereduction | spike | frontend/syntax | class: blocked | Implement Nosubtypereduction |
@@ -5273,6 +5272,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 3560 | Implement Noimplicitusestrict | spike | frontend/syntax | see `issues/done/3560-implement-noImplicitUseStrict.md` |
 | 3561 | Implement Noinfercommonpropertycheck | spike | frontend/resolver | see `issues/done/3561-implement-noInferCommonPropertyCheck.md` |
 | 3562 | Implement Noinferunionexcesspropertycheck | spike | frontend/resolver | see `issues/done/3562-implement-noInferUnionExcessPropertyCheck.md` |
+| 3563 | Implement Noiterationtypeerrorsincfa | spike | frontend/syntax | see `issues/done/3563-implement-noIterationTypeErrorsInCFA.md` |
 | 3690 | Implement Optionaltupleelementsandundefined | spike | reference/triage | see `issues/done/3690-implement-optionalTupleElementsAndUndefined.md` |
 | 3996 | Implement Compiler (dup) | spike | frontend/syntax | see `issues/done/3996-implement-reference-typescript-tests-cases-compiler.md` |
 | 4210 | Implement Splicetuples | spike | frontend/resolver | see `issues/done/4210-implement-spliceTuples.md` |

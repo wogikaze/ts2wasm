@@ -152,6 +152,13 @@ fresh triage stops after the completed assignment expression statement
 Tokens and TypeScript oracle are ok, and AST construction reports
 `UnsupportedSyntax: expected Semicolon, got Some(RightBrace) at 196..197`.
 
+Also supersedes generated bucket
+`issues/done/3563-implement-noIterationTypeErrorsInCFA.md`: fresh triage stops
+after the completed assignment expression statement `dds = [dds]` before the
+closing `}` of the `if` block. Tokens are ok through the following `RightBrace`,
+TypeScript oracle reports no diagnostics, and AST construction reports
+`UnsupportedSyntax: expected Semicolon, got Some(RightBrace) at 172..173`.
+
 ## Completion evidence
 
 Fill only when moving to `done/`.
