@@ -551,7 +551,10 @@ impl<'a> WatEmitter<'a> {
             | LoweredExpr::Undefined(..)
             | LoweredExpr::This(..)
             | LoweredExpr::Local(_, _)
-            | LoweredExpr::ArrowFn { .. } => {}
+            | LoweredExpr::PromiseGetValue { expr, .. } => {
+            self.emit_expr(writer, expr, indent, frame);
+        }
+        LoweredExpr::ArrowFn { .. } => {}
             LoweredExpr::Unary { expr, .. } => self.collect_expr_strings(expr),
             LoweredExpr::Assign { expr, .. } => self.collect_expr_strings(expr),
             LoweredExpr::EnvCellNew(expr, _) => self.collect_expr_strings(expr),
@@ -1195,7 +1198,10 @@ impl<'a> WatEmitter<'a> {
             | LoweredExpr::Local(_, _)
             | LoweredExpr::ModuleLoad { .. }
             | LoweredExpr::This(..)
-            | LoweredExpr::ArrowFn { .. } => {}
+            | LoweredExpr::PromiseGetValue { expr, .. } => {
+            self.emit_expr(writer, expr, indent, frame);
+        }
+        LoweredExpr::ArrowFn { .. } => {}
         }
     }
 
@@ -1333,7 +1339,10 @@ impl<'a> WatEmitter<'a> {
             | LoweredExpr::ClassPrototype(_, _)
             | LoweredExpr::ModuleLoad { .. }
             | LoweredExpr::This(..)
-            | LoweredExpr::ArrowFn { .. } => {}
+            | LoweredExpr::PromiseGetValue { expr, .. } => {
+            self.emit_expr(writer, expr, indent, frame);
+        }
+        LoweredExpr::ArrowFn { .. } => {}
         }
     }
 

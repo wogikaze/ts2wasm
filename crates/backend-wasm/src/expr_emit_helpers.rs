@@ -217,6 +217,7 @@ pub(super) fn expr_uses_caller_backend_tmp(expr: &LoweredExpr) -> bool {
         }
         LoweredExpr::Call { args, .. } => args.iter().any(expr_uses_caller_backend_tmp),
         LoweredExpr::RuntimeCall { runtime_fn, .. } if runtime_fn == "HeapClosureCall" => true,
+        LoweredExpr::PromiseGetValue { .. } => true,
         LoweredExpr::RuntimeCall { runtime_fn, .. }
             if runtime_fn == "PrivateFieldGet"
                 || runtime_fn == "PrivateFieldSet"

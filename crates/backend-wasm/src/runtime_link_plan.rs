@@ -541,7 +541,7 @@ impl RuntimeLinkPlan {
             | LoweredExpr::Undefined(..)
             | LoweredExpr::This(..)
             | LoweredExpr::Local(_, _) => {}
-            LoweredExpr::ArrowFn { representation, .. } => {
+            LoweredExpr::PromiseGetValue { .. } | LoweredExpr::ArrowFn { representation, .. } => {
                 if matches!(representation, ClosureRepresentation::HeapObject) {
                     self.add_required_runtime(RuntimeFn::AllocHeap);
                 }
