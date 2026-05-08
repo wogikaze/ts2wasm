@@ -245,6 +245,13 @@ Additional superseded bucket:
   `UnresolvedName: unresolved name: \`partialObj1\` at 304..315`; TypeScript
   later reports TS2559 common-property diagnostics, so `NoInfer` checking
   remains unproven until ambient const visibility is implemented.
+- `issues/done/3595-implement-nonInferrableTypePropagation-type-system.md`
+  reaches the same ambient value name-resolution boundary for
+  `declare const thing: Thing<number>;` followed by
+  `createAndUnbox(() => thing.pipe(...))` in
+  `nonInferrableTypePropagation1.ts`. Fresh triage on 2026-05-08 reports
+  `UnresolvedName: unresolved name: \`thing\` at 609..614`; TypeScript parses
+  the file with no diagnostics and reports `thing` as `Thing<number>`.
 
 ## Completion evidence
 
