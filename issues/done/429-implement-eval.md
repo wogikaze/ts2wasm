@@ -869,3 +869,13 @@ date:
 Remaining risks:
 
 - none
+
+## False-done audit
+
+**truly-done** (429)
+
+- Implementation commits: verified via `git log --oneline --all --grep=429`
+- Completion evidence: filled with specific commit hashes and validation results
+- Acceptance criteria: all checked as met
+
+This issue has repo-local close evidence with implementation commits and validation commands.

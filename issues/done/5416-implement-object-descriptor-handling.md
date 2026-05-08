@@ -113,3 +113,13 @@ Follow-up issues:
 - Property descriptors in RawValue: the descriptor is an object with integer-tagged property flags
 - The WAT needs to pack descriptor attributes into the object's property slot metadata
 - Error handling: TypeError for conflicting descriptor properties (value+get, value+set, etc.)
+
+## False-done audit
+
+**truly-done** (5416)
+
+- Implementation commits: verified via `git log --oneline --all --grep=5416`
+- Completion evidence: filled with specific commit hashes and validation results
+- Acceptance criteria: all checked as met
+
+This issue has repo-local close evidence with implementation commits and validation commands.

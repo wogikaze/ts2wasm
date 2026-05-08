@@ -119,3 +119,13 @@ Follow-up issues:
 - The import declaration goes in the WAT `(import "wasi_snapshot_preview1" "proc_exit" (func ...))`
 - Look at existing WASI import pattern in emitter.rs for reference (fd_write, fd_read, random_get, clock_time_get)
 - In WAT: `call $wasi_proc_exit` followed by `unreachable` (since proc_exit never returns)
+
+## False-done audit
+
+**truly-done** (5413)
+
+- Implementation commits: verified via `git log --oneline --all --grep=5413`
+- Completion evidence: filled with specific commit hashes and validation results
+- Acceptance criteria: all checked as met
+
+This issue has repo-local close evidence with implementation commits and validation commands.

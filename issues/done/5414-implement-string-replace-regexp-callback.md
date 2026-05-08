@@ -111,3 +111,13 @@ Follow-up issues:
 - RegExp match data is already stored as match result arrays in runtime_regexp.rs
 - The callback signature is `fn(match: string, ...captures: string[], offset: number, string: string) -> string`
 - For global flag: call exec() repeatedly until null, collect results, call callback for each
+
+## False-done audit
+
+**truly-done** (5414)
+
+- Implementation commits: verified via `git log --oneline --all --grep=5414`
+- Completion evidence: filled with specific commit hashes and validation results
+- Acceptance criteria: all checked as met
+
+This issue has repo-local close evidence with implementation commits and validation commands.

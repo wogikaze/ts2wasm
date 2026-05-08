@@ -107,3 +107,13 @@ cargo nextest run -- m6_promise
 - RuntimeFn variants: `Promise_Constructor`, `Promise_Resolve`, `Promise_Reject`, `Promise_Then`, `Promise_Catch` (or similar naming)
 - program_builtins.rs: route `new Promise(...)`, `Promise.resolve(...)`, `Promise.reject(...)`, `.then(...)`, `.catch(...)`
 - For the first slice: executor runs synchronously during Promise constructor call; resolve/reject store the value; then/catch callbacks invoke synchronously on resolve
+
+## False-done audit
+
+**truly-done** (5422)
+
+- Implementation commits: verified via `git log --oneline --all --grep=5422`
+- Completion evidence: filled with specific commit hashes and validation results
+- Acceptance criteria: all checked as met
+
+This issue has repo-local close evidence with implementation commits and validation commands.

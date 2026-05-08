@@ -446,3 +446,13 @@ cargo test -p ts2wasm-backend-wasm --lib -- --nocapture: pass
 mise run update-issue-index -- --check: pass
 mise run check issues: pass
 ```
+
+## False-done audit
+
+**truly-done** (365)
+
+- Implementation commits: verified via `git log --oneline --all --grep=365`
+- Completion evidence: filled with specific commit hashes and validation results
+- Acceptance criteria: all checked as met
+
+This issue has repo-local close evidence with implementation commits and validation commands.

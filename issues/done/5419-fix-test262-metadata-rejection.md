@@ -91,3 +91,13 @@ mise run update-coverage-matrix -- --check
 - Change from `return f"test262 feature..."` to `print(f"warn: unknown feature...", file=sys.stderr)` and `return None`
 - Also reconsider `UNSUPPORTED_FLAGS = ("IsHTMLDDA",)` — IsHTMLDDA is already in SUPPORTED_FEATURES, so the flag check may be redundant
 - After the fix, many files that were `test262-metadata` will become `UnsupportedSyntax`, `UnresolvedName`, or `build_pass` — this is expected and desirable
+
+## False-done audit
+
+**truly-done** (5419)
+
+- Implementation commits: verified via `git log --oneline --all --grep=5419`
+- Completion evidence: filled with specific commit hashes and validation results
+- Acceptance criteria: all checked as met
+
+This issue has repo-local close evidence with implementation commits and validation commands.

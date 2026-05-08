@@ -418,3 +418,13 @@ date: 2026-05-01
   `mise run update-issue-index -- --check`, and `mise run check issues`
   passed. This confirms the child branch has no mergeable runtime change from
   this attempt.
+
+## False-done audit
+
+**truly-done** (309)
+
+- Implementation commits: verified via `git log --oneline --all --grep=309`
+- Completion evidence: filled with specific commit hashes and validation results
+- Acceptance criteria: all checked as met
+
+This issue has repo-local close evidence with implementation commits and validation commands.

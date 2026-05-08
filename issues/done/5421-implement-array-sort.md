@@ -92,3 +92,13 @@ cargo nextest run -- m6_array_sort
 - The WAT implementation needs: a sorting algorithm (merge sort recommended for stability), element access via [[Get]]/[[Set]], ToString for default comparator
 - Use insertion sort for n <= 10, merge sort for larger, to satisfy stability requirement
 - For the comparator path: call the JS function as `fn(a, b)` and check the return value
+
+## False-done audit
+
+**truly-done** (5421)
+
+- Implementation commits: verified via `git log --oneline --all --grep=5421`
+- Completion evidence: filled with specific commit hashes and validation results
+- Acceptance criteria: all checked as met
+
+This issue has repo-local close evidence with implementation commits and validation commands.

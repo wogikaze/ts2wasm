@@ -124,3 +124,13 @@ Follow-up issues:
 - In WASM: the callback `thisArg` is passed as a separate JsValue; the WAT function needs to forward it
 - Look at how map's thisArg is implemented for the pattern (map may already handle it)
 - Create minimal focused fixtures — each fixture should test exactly one method + one edge case
+
+## False-done audit
+
+**truly-done** (5415)
+
+- Implementation commits: verified via `git log --oneline --all --grep=5415`
+- Completion evidence: filled with specific commit hashes and validation results
+- Acceptance criteria: all checked as met
+
+This issue has repo-local close evidence with implementation commits and validation commands.

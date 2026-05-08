@@ -109,3 +109,13 @@ Follow-up issues:
 - Reference: crates/frontend/src/parser/expressions.rs (~2000 lines), find the RegExp literal parsing section
 - The existing parser already handles basic RegExp without flags or with `g`/`i`/`m`
 - Flag enum values match the ASCII character — store as bitmask for easy combination checking
+
+## False-done audit
+
+**truly-done** (5411)
+
+- Implementation commits: verified via `git log --oneline --all --grep=5411`
+- Completion evidence: filled with specific commit hashes and validation results
+- Acceptance criteria: all checked as met
+
+This issue has repo-local close evidence with implementation commits and validation commands.

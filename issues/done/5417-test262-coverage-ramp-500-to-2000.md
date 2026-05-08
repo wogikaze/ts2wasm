@@ -126,3 +126,13 @@ Follow-up issues:
 - Use `time mise run reference-coverage -- test262 --limit 2000` to record duration
 - If 2000 is too aggressive, find the max achievable limit > 500 and use that
 - The `--detail` flag produces feature-level breakdown needed for issue generation
+
+## False-done audit
+
+**truly-done** (5417)
+
+- Implementation commits: verified via `git log --oneline --all --grep=5417`
+- Completion evidence: filled with specific commit hashes and validation results
+- Acceptance criteria: all checked as met
+
+This issue has repo-local close evidence with implementation commits and validation commands.

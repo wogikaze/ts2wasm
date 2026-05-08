@@ -115,3 +115,13 @@ Follow-up issues:
 ## Notes
 
 This is a triage-need umbrella. The first step is to inventory specific missing Object methods and create child issues for each major method group. Issue 316 (Object.keys backend-io) is a known sub-problem.
+
+## False-done audit
+
+**truly-done** (342)
+
+- Implementation commits: verified via `git log --oneline --all --grep=342`
+- Completion evidence: filled with specific commit hashes and validation results
+- Acceptance criteria: all checked as met
+
+This issue has repo-local close evidence with implementation commits and validation commands.

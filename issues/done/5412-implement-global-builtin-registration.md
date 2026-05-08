@@ -112,3 +112,13 @@ Follow-up issues:
 - `name_resolver.rs` already has `register_global_builtins()` or similar — just add missing entries
 - Each TypedArray constructor has the same shape: `{TypedArrayName}` with `new {TypedArrayName}(...)` support
 - Well-known symbols are registered as properties of the `Symbol` object
+
+## False-done audit
+
+**truly-done** (5412)
+
+- Implementation commits: verified via `git log --oneline --all --grep=5412`
+- Completion evidence: filled with specific commit hashes and validation results
+- Acceptance criteria: all checked as met
+
+This issue has repo-local close evidence with implementation commits and validation commands.

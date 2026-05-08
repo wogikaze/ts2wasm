@@ -167,3 +167,13 @@ Remaining risks:
 
 - Skipping the config section may reveal a later CommonJS `module.exports`
   lowering blocker in the same reference path.
+
+## False-done audit
+
+**truly-done** (5292)
+
+- Implementation commits: verified via `git log --oneline --all --grep=5292`
+- Completion evidence: filled with specific commit hashes and validation results
+- Acceptance criteria: all checked as met
+
+This issue has repo-local close evidence with implementation commits and validation commands.

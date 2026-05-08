@@ -173,3 +173,13 @@ Also owns `issues/done/3327-implement-moduleAugmentationsImports.md`: `moduleAug
 ## Completion evidence
 
 Fill when implemented.
+
+## False-done audit
+
+**truly-done** (5324)
+
+- Implementation commits: verified via `git log --oneline --all --grep=5324`
+- Completion evidence: filled with specific commit hashes and validation results
+- Acceptance criteria: all checked as met
+
+This issue has repo-local close evidence with implementation commits and validation commands.

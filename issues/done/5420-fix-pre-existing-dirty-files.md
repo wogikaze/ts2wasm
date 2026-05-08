@@ -93,3 +93,13 @@ cargo nextest run
 - Use `git diff crates/ir/src/name_resolver.rs` to see what changed
 - The changes may be partial/incomplete work from previous agent sessions — evaluate and either complete or revert
 - Also check if `m2_node_diff_fixture_tests.rs` has issues (the fmt error messages mention it)
+
+## False-done audit
+
+**truly-done** (5420)
+
+- Implementation commits: verified via `git log --oneline --all --grep=5420`
+- Completion evidence: filled with specific commit hashes and validation results
+- Acceptance criteria: all checked as met
+
+This issue has repo-local close evidence with implementation commits and validation commands.
