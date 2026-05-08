@@ -13,7 +13,7 @@ Issue files are the source of truth for work items. The generated section below 
 | backend | 13 | 1 | 12 |
 | backend-wasm | 2 | 1 | 1 |
 | cli | 15 | 0 | 15 |
-| compiler | 25 | 13 | 12 |
+| compiler | 27 | 14 | 13 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
 | frontend | 4610 | 3250 | 1360 |
@@ -21,13 +21,13 @@ Issue files are the source of truth for work items. The generated section below 
 | ir | 92 | 69 | 23 |
 | issues | 4 | 0 | 4 |
 | parser | 1 | 0 | 1 |
-| reference | 215 | 142 | 73 |
+| reference | 214 | 141 | 73 |
 | runtime | 263 | 82 | 181 |
 | scripts | 3 | 1 | 2 |
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5303 | 3559 | 1744 |
+| total | 5304 | 3559 | 1745 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -421,6 +421,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5466 | Report malformed new angle-bracket casts | bug | frontend/parser | implementation-ready | P2 |  | `newExpressionWithCast.ts` contains both valid and invalid new/cast |
 | 5467 | Report missing new expression callee | bug | frontend/parser | implementation-ready | P2 |  | `newMissingIdentifier.ts` contains malformed `new ()` syntax. The |
 | 5468 | Report direct new type-only callee diagnostics | bug | frontend/resolver | implementation-ready | P1 |  | `newNonReferenceType.ts` now builds successfully, but TypeScript |
+| 5469 | Support named exports of namespace imports in dependency modules | feature | compiler/module-graph | implementation-ready | P1 |  | dependency-module named export validation does not recognize namespace |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -2375,7 +2376,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 3302 | Implement Modulealiasasfunctionargument | spike | frontend/syntax | class: blocked | Implement Modulealiasasfunctionargument |
 | 3303 | Implement Modulealiasinterface | spike | frontend/syntax | class: blocked | Implement Modulealiasinterface |
 | 3304 | Implement Moduleandinterfacesharingname | spike | frontend/syntax | class: blocked | Implement Moduleandinterfacesharingname |
-| 3523 | Implement Nocrashonimportshadowing | spike | reference/triage | class: triage-needed | Implement Nocrashonimportshadowing |
 | 3524 | Implement Nocrashonmixin | spike | frontend/syntax | class: blocked | Implement Nocrashonmixin |
 | 3525 | Implement Nocrashonnolib | spike | frontend/syntax | class: blocked | Implement Nocrashonnolib |
 | 3526 | Implement Nocrashonthistypeusage | spike | frontend/syntax | class: blocked | Implement Nocrashonthistypeusage |
@@ -5263,6 +5263,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 3520 | Implement Nocollisionthisexpressionandlocalvarinproperty | spike | frontend/syntax | see `issues/done/3520-implement-noCollisionThisExpressionAndLocalVarInProperty.md` |
 | 3521 | Implement Nocollisionthisexpressioninfunctionandvaringlobal | spike | frontend/syntax | see `issues/done/3521-implement-noCollisionThisExpressionInFunctionAndVarInGlobal.md` |
 | 3522 | Implement Noconstraintinreturntype | spike | frontend/syntax | see `issues/done/3522-implement-noConstraintInReturnType.md` |
+| 3523 | Implement Nocrashonimportshadowing | spike | compiler/module-graph | see `issues/done/3523-implement-noCrashOnImportShadowing.md` |
 | 3690 | Implement Optionaltupleelementsandundefined | spike | reference/triage | see `issues/done/3690-implement-optionalTupleElementsAndUndefined.md` |
 | 3996 | Implement Compiler (dup) | spike | frontend/syntax | see `issues/done/3996-implement-reference-typescript-tests-cases-compiler.md` |
 | 4210 | Implement Splicetuples | spike | frontend/resolver | see `issues/done/4210-implement-spliceTuples.md` |
