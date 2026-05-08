@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 25 | 13 | 12 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4602 | 3283 | 1319 |
+| frontend | 4602 | 3282 | 1320 |
 | harness | 1 | 0 | 1 |
 | ir | 92 | 69 | 23 |
 | issues | 4 | 0 | 4 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5295 | 3593 | 1702 |
+| total | 5295 | 3592 | 1703 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -2367,7 +2367,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 3302 | Implement Modulealiasasfunctionargument | spike | frontend/syntax | class: blocked | Implement Modulealiasasfunctionargument |
 | 3303 | Implement Modulealiasinterface | spike | frontend/syntax | class: blocked | Implement Modulealiasinterface |
 | 3304 | Implement Moduleandinterfacesharingname | spike | frontend/syntax | class: blocked | Implement Moduleandinterfacesharingname |
-| 3481 | Implement Nestedindexer | spike | frontend/syntax | class: triage-needed | Implement Nestedindexer |
 | 3482 | Implement Nestedloopwithonlyinnerletcaptured | spike | frontend/syntax | class: triage-needed | Implement Nestedloopwithonlyinnerletcaptured |
 | 3483 | Implement Nestedloops | spike | frontend/syntax | class: blocked | Implement Nestedloops |
 | 3484 | Implement Nestedmoduleprivateaccess | spike | frontend/syntax | class: blocked | Implement Nestedmoduleprivateaccess |
@@ -5255,6 +5254,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 3478 | Implement Nestedfreshliteral | spike | frontend/syntax | see `issues/done/3478-implement-nestedFreshLiteral.md` |
 | 3479 | Implement Nestedgenericspreadinference | spike | frontend/semantics | see `issues/done/3479-implement-nestedGenericSpreadInference.md` |
 | 3480 | Implement Nestedglobalnamespaceinclass | spike | frontend/syntax | see `issues/done/3480-implement-nestedGlobalNamespaceInClass.md` |
+| 3481 | Implement Nestedindexer | spike | frontend/syntax | see `issues/done/3481-implement-nestedIndexer.md` |
 | 3690 | Implement Optionaltupleelementsandundefined | spike | reference/triage | see `issues/done/3690-implement-optionalTupleElementsAndUndefined.md` |
 | 3996 | Implement Compiler (dup) | spike | frontend/syntax | see `issues/done/3996-implement-reference-typescript-tests-cases-compiler.md` |
 | 4210 | Implement Splicetuples | spike | frontend/resolver | see `issues/done/4210-implement-spliceTuples.md` |
