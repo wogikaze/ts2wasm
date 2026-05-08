@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 25 | 13 | 12 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4610 | 3255 | 1355 |
+| frontend | 4610 | 3254 | 1356 |
 | harness | 1 | 0 | 1 |
 | ir | 92 | 69 | 23 |
 | issues | 4 | 0 | 4 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5303 | 3564 | 1739 |
+| total | 5303 | 3563 | 1740 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -2375,7 +2375,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 3302 | Implement Modulealiasasfunctionargument | spike | frontend/syntax | class: blocked | Implement Modulealiasasfunctionargument |
 | 3303 | Implement Modulealiasinterface | spike | frontend/syntax | class: blocked | Implement Modulealiasinterface |
 | 3304 | Implement Moduleandinterfacesharingname | spike | frontend/syntax | class: blocked | Implement Moduleandinterfacesharingname |
-| 3518 | Implement Nocollisionthisexpressionandlocalvarinlambda | spike | frontend/syntax | class: triage-needed | Implement Nocollisionthisexpressionandlocalvarinlambda |
 | 3519 | Implement Nocollisionthisexpressionandlocalvarinmethod | spike | frontend/syntax | class: triage-needed | Implement Nocollisionthisexpressionandlocalvarinmethod |
 | 3520 | Implement Nocollisionthisexpressionandlocalvarinproperty | spike | frontend/syntax | class: blocked | Implement Nocollisionthisexpressionandlocalvarinproperty |
 | 3521 | Implement Nocollisionthisexpressioninfunctionandvaringlobal | spike | frontend/syntax | class: blocked | Implement Nocollisionthisexpressioninfunctionandvaringlobal |
@@ -5263,6 +5262,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 3515 | Implement Nocollisionthisexpressionandlocalvarinaccessors | spike | frontend/syntax | see `issues/done/3515-implement-noCollisionThisExpressionAndLocalVarInAccessors.md` |
 | 3516 | Implement Nocollisionthisexpressionandlocalvarinconstructor | spike | frontend/syntax | see `issues/done/3516-implement-noCollisionThisExpressionAndLocalVarInConstructor.md` |
 | 3517 | Implement Nocollisionthisexpressionandlocalvarinfunction | spike | frontend/syntax | see `issues/done/3517-implement-noCollisionThisExpressionAndLocalVarInFunction.md` |
+| 3518 | Implement Nocollisionthisexpressionandlocalvarinlambda | spike | frontend/syntax | see `issues/done/3518-implement-noCollisionThisExpressionAndLocalVarInLambda.md` |
 | 3690 | Implement Optionaltupleelementsandundefined | spike | reference/triage | see `issues/done/3690-implement-optionalTupleElementsAndUndefined.md` |
 | 3996 | Implement Compiler (dup) | spike | frontend/syntax | see `issues/done/3996-implement-reference-typescript-tests-cases-compiler.md` |
 | 4210 | Implement Splicetuples | spike | frontend/resolver | see `issues/done/4210-implement-spliceTuples.md` |
