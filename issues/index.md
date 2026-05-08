@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 28 | 15 | 13 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4615 | 3206 | 1409 |
+| frontend | 4615 | 3205 | 1410 |
 | harness | 1 | 0 | 1 |
 | ir | 99 | 71 | 28 |
 | issues | 4 | 0 | 4 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5318 | 3516 | 1802 |
+| total | 5318 | 3515 | 1803 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -54,7 +54,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 5004 (Meta: Runtime Builtins Coverage (test262) (audit reopened #5004)) [done/done] ch:24 open:3 done:21
 5005 (Meta: TypeScript Compiler Name Resolution Coverage) [done/done] ch:390 open:320 done:70
 ├── 5006 (Meta: TypeScript Compiler Scope Analysis Coverage) [done/done] ch:28 open:18 done:10
-├── 5007 (Meta: TypeScript Compiler Module Resolution Coverage (audit reopened #5007)) [done/done] ch:20 open:12 done:8
+├── 5007 (Meta: TypeScript Compiler Module Resolution Coverage (audit reopened #5007)) [done/done] ch:19 open:11 done:8
 ```
 
 ### Multi-parent notes
@@ -73,7 +73,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5 | 5002 | Meta: TypeScript Compiler Type System Coverage | done | done | frontend/semantics | P1 | 5000, 5005 | 223 | 199 | 24 |
 | 6 | 5003 | Meta: TypeScript Compiler Declaration Emit Coverage | done | done | frontend/syntax | P2 | 5000, 5001 | 100 | 89 | 11 |
 | 7 | 5006 | Meta: TypeScript Compiler Scope Analysis Coverage | done | done | frontend/resolver | P2 | 5005 | 28 | 18 | 10 |
-| 8 | 5007 | Meta: TypeScript Compiler Module Resolution Coverage (audit reopened #5007) | done | done | frontend/resolver | P2 | 5005 | 20 | 12 | 8 |
+| 8 | 5007 | Meta: TypeScript Compiler Module Resolution Coverage (audit reopened #5007) | done | done | frontend/resolver | P2 | 5005 | 19 | 11 | 8 |
 
 ### Topological order
 
@@ -2390,7 +2390,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 3302 | Implement Modulealiasasfunctionargument | spike | frontend/syntax | class: blocked | Implement Modulealiasasfunctionargument |
 | 3303 | Implement Modulealiasinterface | spike | frontend/syntax | class: blocked | Implement Modulealiasinterface |
 | 3304 | Implement Moduleandinterfacesharingname | spike | frontend/syntax | class: blocked | Implement Moduleandinterfacesharingname |
-| 3581 | Implement Nodenextimportmodeimplicitindexresolution Module Resolution | spike | frontend/syntax | class: blocked | Implement Nodenextimportmodeimplicitindexresolution Module Resolution |
 | 3582 | Implement Nodenextpackageimportmaprootdir | spike | frontend/syntax | class: blocked | Implement Nodenextpackageimportmaprootdir |
 | 3583 | Implement Nodenextpackageselfnamewithoutdir | spike | frontend/syntax | class: blocked | Implement Nodenextpackageselfnamewithoutdir |
 | 3584 | Implement Nodenextpackageselfnamewithoutdirdecldir | spike | frontend/syntax | class: blocked | Implement Nodenextpackageselfnamewithoutdirdecldir |
@@ -5278,6 +5277,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 3578 | Implement Nodenextcjsnamespaceimportdefault | spike | frontend/syntax | see `issues/done/3578-implement-nodeNextCjsNamespaceImportDefault.md` |
 | 3579 | Implement Nodenextesmimportsofpackageswithextensionlessmains | spike | frontend/syntax | see `issues/done/3579-implement-nodeNextEsmImportsOfPackagesWithExtensionlessMains.md` |
 | 3580 | Implement Nodenextimportmodeimplicitindexresolution Import Export | spike | frontend/syntax | see `issues/done/3580-implement-nodeNextImportModeImplicitIndexResolution-import-export.md` |
+| 3581 | Implement Nodenextimportmodeimplicitindexresolution Module Resolution | spike | frontend/syntax | see `issues/done/3581-implement-nodeNextImportModeImplicitIndexResolution-module-resolution.md` |
 | 3690 | Implement Optionaltupleelementsandundefined | spike | reference/triage | see `issues/done/3690-implement-optionalTupleElementsAndUndefined.md` |
 | 3996 | Implement Compiler (dup) | spike | frontend/syntax | see `issues/done/3996-implement-reference-typescript-tests-cases-compiler.md` |
 | 4210 | Implement Splicetuples | spike | frontend/resolver | see `issues/done/4210-implement-spliceTuples.md` |

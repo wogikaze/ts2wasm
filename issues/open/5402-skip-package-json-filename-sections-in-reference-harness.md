@@ -211,6 +211,10 @@ Also owns `issues/done/3580-implement-nodeNextImportModeImplicitIndexResolution-
 fresh triage stops in virtual `/node_modules/@types/dedent/package.json` at the
 first JSON property colon before NodeNext implicit index package resolution
 becomes actionable.
+Also owns `issues/done/3581-implement-nodeNextImportModeImplicitIndexResolution-module-resolution.md`:
+fresh triage stops in virtual `node_modules/pkg/package.json` at the first JSON
+property colon before NodeNext implicit index package resolution becomes
+actionable.
 
 ## Completion evidence
 
