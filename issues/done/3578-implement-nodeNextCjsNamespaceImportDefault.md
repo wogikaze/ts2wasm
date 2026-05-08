@@ -129,7 +129,6 @@ Follow-up issues:
 ## Duplicate detection
 
 - `issues/open/5469-support-named-exports-of-namespace-imports-in-dependency-modules.md` covers the related `ns` export-list binding if namespace imports become the next blocker, but does not cover the default-import local `d`.
-- `issues/open/5229a-resolve-imports-between-filename-sections.md` is related to later local virtual section resolution, but the current stack first blocker is dependency export validation for `d`.
 
 ## Smart triage
 

@@ -25,12 +25,10 @@ Known partial areas:
 - `instanceof` full prototype-chain semantics (`issues/done/030-implement-instanceof-operator.md`)
 - `switch` fall-through semantics (`issues/done/033-implement-switch-statement.md`)
 - labeled `break` / `continue` (`issues/done/035-implement-break-continue.md`)
-- arrow function closure + lexical `this` semantics (`issues/done/036-implement-arrow-function.md`)
 - `this` binding placeholder verification (`issues/done/037-implement-this-binding.md`)
 - rest parameter argument collection (`issues/done/038-implement-rest-parameters.md`)
 - template literal `${...}` interpolation (`issues/done/041-implement-template-literals.md`)
 - string method placeholder implementations (`issues/done/042-implement-string-methods.md`)
-- `Math.random` deterministic placeholder / capability policy (`issues/done/053-implement-math.md`)
 - abstract equality coercion (`issues/open/058-implement-equality-operators.md`)
 
 ## Desired final state

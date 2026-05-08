@@ -308,7 +308,6 @@ Duplicate candidates:
   },
   {
     "state": "done",
-    "path": "issues/done/065a-merge-duplicate-parser-syntax-issue-into-059.md",
     "title": "Merge duplicate parser syntax issue into 059",
     "reason": "same feature label, title overlap"
   },

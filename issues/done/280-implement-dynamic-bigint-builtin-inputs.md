@@ -117,7 +117,6 @@ Current state:
 
 Follow-up issues:
 
-- [x] created: `issues/done/333-implement-bigint-dynamic-string-exception-parity.md`
 
 ## Notes
 

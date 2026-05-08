@@ -139,8 +139,6 @@ Follow-up issues:
 - `issues/open/060-investigate-unknown-unsupported-cases.md` - Investigate and classify unknown-unsupported diagnostic cases (same feature label, same group key)
 - `issues/open/062-implement-function.md` - Implement function support (same feature label, same group key, title overlap)
 - `issues/done/062c-ordinary-function-declarations-and-calls.md` - Implement ordinary function declarations and direct calls (same feature label, same group key, title overlap)
-- `issues/done/062e-function-closures.md` - Implement function closures (same feature label, same group key, title overlap)
-- `issues/done/062g-heap-closure-object-abi-and-rooting.md` - Define and implement heap closure object ABI and rooting (same feature label, same group key, title overlap)
 - `issues/done/230-implement-async-iteration-for-await-of.md` - Implement async iteration and for-await-of (same feature label, same group key, title overlap)
 - `issues/open/249-implement-class-static-block-parser.md` - Implement class static block parser support (same feature label, same group key, title overlap)
 - `issues/open/256-lower-returned-immutable-closures-to-heap-values.md` - Lower returned immutable closures to heap closure values (same feature label, same group key)

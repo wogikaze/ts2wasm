@@ -13,10 +13,10 @@ Issue files are the source of truth for work items. The generated section below 
 | backend | 18 | 14 | 4 |
 | backend-wasm | 4 | 4 | 0 |
 | cli | 17 | 14 | 3 |
-| compiler | 30 | 24 | 6 |
+| compiler | 27 | 24 | 3 |
 | coverage | 46 | 43 | 3 |
 | docs | 5 | 3 | 2 |
-| frontend | 4619 | 4570 | 49 |
+| frontend | 4609 | 4570 | 39 |
 | harness | 1 | 1 | 0 |
 | ir | 102 | 96 | 6 |
 | issues | 5 | 5 | 0 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 8 | 5 | 3 |
 | wasi | 5 | 4 | 1 |
-| total | 5364 | 5216 | 148 |
+| total | 5351 | 5216 | 135 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -47,12 +47,12 @@ Issue files are the source of truth for work items. The generated section below 
 Direct child counts are derived from issue-file `depends_on` links. A meta issue can be `done` as a classification/design umbrella while implementation child issues remain open.
 
 ```
-5000 (Meta: TypeScript Compiler Parser Syntax Coverage) [open/design] ch:424 open:421 done:3
+5000 (Meta: TypeScript Compiler Parser Syntax Coverage) [open/design] ch:421 open:421 done:0
 ├── 5002 (Meta: TypeScript Compiler Type System Coverage) [open/done] ch:219 open:219 done:0 (also ← 5005)
 ├── 5003 (Meta: TypeScript Compiler Declaration Emit Coverage) [open/done] ch:100 open:100 done:0 (also ← 5001)
-5001 (Meta: TypeScript Compiler Semantic Analysis Coverage) [open/done] ch:548 open:546 done:2
+5001 (Meta: TypeScript Compiler Semantic Analysis Coverage) [open/done] ch:547 open:546 done:1
 5004 (Meta: Runtime Builtins Coverage (test262) (audit reopened #5004)) [done/done] ch:24 open:23 done:1
-5005 (Meta: TypeScript Compiler Name Resolution Coverage) [open/done] ch:397 open:395 done:2
+5005 (Meta: TypeScript Compiler Name Resolution Coverage) [open/done] ch:395 open:395 done:0
 ├── 5006 (Meta: TypeScript Compiler Scope Analysis Coverage) [open/done] ch:27 open:27 done:0
 ├── 5007 (Meta: TypeScript Compiler Module Resolution Coverage (audit reopened #5007)) [open/done] ch:19 open:18 done:1
 ```
@@ -66,10 +66,10 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 
 | Order | ID | Title | State | Class | Area | Priority | Depends on | Direct children | Open children | Done children |
 |-----:|---:|------|-------|-------|------|--------:|-----------:|----------------:|--------------:|--------------:|
-| 1 | 5000 | Meta: TypeScript Compiler Parser Syntax Coverage | open | design | frontend/syntax | P1 | - | 424 | 421 | 3 |
-| 2 | 5001 | Meta: TypeScript Compiler Semantic Analysis Coverage | open | done | frontend/semantics | P1 | - | 548 | 546 | 2 |
+| 1 | 5000 | Meta: TypeScript Compiler Parser Syntax Coverage | open | design | frontend/syntax | P1 | - | 421 | 421 | 0 |
+| 2 | 5001 | Meta: TypeScript Compiler Semantic Analysis Coverage | open | done | frontend/semantics | P1 | - | 547 | 546 | 1 |
 | 3 | 5004 | Meta: Runtime Builtins Coverage (test262) (audit reopened #5004) | done | done | runtime/builtins | P1 | - | 24 | 23 | 1 |
-| 4 | 5005 | Meta: TypeScript Compiler Name Resolution Coverage | open | done | frontend/resolver | P1 | - | 397 | 395 | 2 |
+| 4 | 5005 | Meta: TypeScript Compiler Name Resolution Coverage | open | done | frontend/resolver | P1 | - | 395 | 395 | 0 |
 | 5 | 5002 | Meta: TypeScript Compiler Type System Coverage | open | done | frontend/semantics | P1 | 5000, 5005 | 219 | 219 | 0 |
 | 6 | 5003 | Meta: TypeScript Compiler Declaration Emit Coverage | open | done | frontend/syntax | P2 | 5000, 5001 | 100 | 100 | 0 |
 | 7 | 5006 | Meta: TypeScript Compiler Scope Analysis Coverage | open | done | frontend/resolver | P2 | 5005 | 27 | 27 | 0 |
@@ -5434,25 +5434,12 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 3381 | Implement Moduleresolutionwithextensions Module Resolution | maintenance | compiler/multi-section | see `issues/done/3381-implement-moduleResolutionWithExtensions-module-resolution.md` |
 | 3382 | Implement Moduleresolutionwithmodule (audit reopened #3382) | maintenance | compiler/multi-section | see `issues/done/3382-implement-moduleResolutionWithModule.md` |
 | 3383 | Implement Moduleresolutionwithrequire (audit reopened #3383) | maintenance | compiler/module-graph | see `issues/done/3383-implement-moduleResolutionWithRequire.md` |
-| 3385 | Implement Moduleresolutionwithsuffixes Import Export (audit reopened #3385) | maintenance | compiler/multi-section | see `issues/done/3385-implement-moduleResolutionWithSuffixes-import-export.md` |
-| 3387 | Implement Moduleresolutionwithsymlinks Import Export | maintenance | compiler/module-graph | see `issues/done/3387-implement-moduleResolutionWithSymlinks-import-export.md` |
-| 3388 | Split moduleResolutionWithSymlinks parser-syntax bucket | maintenance | compiler/module-resolution | see `issues/done/3388-implement-moduleResolutionWithSymlinks-parser-syntax.md` |
-| 3400 | Close moduledecl bucket to ambient namespace value owner | maintenance | frontend/resolver | see `issues/done/3400-implement-moduledecl.md` |
 | 3411 | Close multipleExportAssignments to CommonJS export assignment parser owner | maintenance | frontend/parser | see `issues/done/3411-implement-multipleExportAssignments.md` |
-| 3433 | Implement Namespaces | spike | frontend/syntax | see `issues/done/3433-implement-namespaces.md` |
-| 3438 | Implement Narrowbyclauseexpressioninswitchtrue Name Resolution | spike | frontend/resolver | see `issues/done/3438-implement-narrowByClauseExpressionInSwitchTrue-name-resolution.md` |
-| 3439 | Implement Narrowbyclauseexpressioninswitchtrue Parser Syntax | spike | frontend/syntax | see `issues/done/3439-implement-narrowByClauseExpressionInSwitchTrue-parser-syntax.md` |
-| 3440 | Implement Narrowbyclauseexpressioninswitchtrue Unknown Unsupported | spike | frontend/syntax | see `issues/done/3440-implement-narrowByClauseExpressionInSwitchTrue-unknown-unsupported.md` |
 | 3508 | Implement Nobundledemitfromnodemodules | spike | frontend/syntax | see `issues/done/3508-implement-noBundledEmitFromNodeModules.md` |
-| 3571 | Implement Nounusedlocals Destructuring | spike | frontend/syntax | see `issues/done/3571-implement-noUnusedLocals-destructuring.md` |
-| 3572 | Implement Nounusedlocals Import Export | spike | frontend/syntax | see `issues/done/3572-implement-noUnusedLocals-import-export.md` |
-| 3573 | Implement Nounusedlocals Name Resolution | spike | frontend/resolver | see `issues/done/3573-implement-noUnusedLocals-name-resolution.md` |
-| 3574 | Implement Nounusedlocals Parser Syntax | spike | frontend/syntax | see `issues/done/3574-implement-noUnusedLocals-parser-syntax.md` |
 | 3576 | Implement Nodecolonmoduleresolution | spike | frontend/syntax | see `issues/done/3576-implement-nodeColonModuleResolution.md` |
 | 3577 | Implement Nodemodulereexportfromdottedpath | spike | frontend/syntax | see `issues/done/3577-implement-nodeModuleReexportFromDottedPath.md` |
 | 3578 | Implement Nodenextcjsnamespaceimportdefault | spike | frontend/syntax | see `issues/done/3578-implement-nodeNextCjsNamespaceImportDefault.md` |
 | 3579 | Implement Nodenextesmimportsofpackageswithextensionlessmains | spike | frontend/syntax | see `issues/done/3579-implement-nodeNextEsmImportsOfPackagesWithExtensionlessMains.md` |
-| 3580 | Implement Nodenextimportmodeimplicitindexresolution Import Export | spike | frontend/syntax | see `issues/done/3580-implement-nodeNextImportModeImplicitIndexResolution-import-export.md` |
 | 3581 | Implement Nodenextimportmodeimplicitindexresolution Module Resolution | spike | frontend/syntax | see `issues/done/3581-implement-nodeNextImportModeImplicitIndexResolution-module-resolution.md` |
 | 3582 | Implement Nodenextpackageimportmaprootdir | spike | frontend/syntax | see `issues/done/3582-implement-nodeNextPackageImportMapRootDir.md` |
 | 4284 | Implement Stringincludes (audit reopened #4284) | spike | runtime/builtins | see `issues/done/4284-implement-stringIncludes.md` |

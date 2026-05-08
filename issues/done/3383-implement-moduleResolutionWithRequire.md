@@ -125,7 +125,6 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/open/5229a-resolve-imports-between-filename-sections.md` covers
   static import/export source specifiers between virtual sections, not
   CommonJS `require("./other")` lowered `ModuleLoad` validation.
 - `issues/open/5295-resolve-import-equals-require-to-virtual-node-modules-class-export.md`

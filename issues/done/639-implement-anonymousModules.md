@@ -221,7 +221,6 @@ Duplicate candidates:
   },
   {
     "state": "done",
-    "path": "issues/done/055-implement-import-export.md",
     "title": "Umbrella: implement import and export",
     "reason": "same feature label, title overlap"
   }

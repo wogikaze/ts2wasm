@@ -96,7 +96,6 @@ Follow-up issues:
 
 ## Notes
 
-Created from issue 203 audit of `issues/done/041-implement-template-literals.md`.
 
 ## Completion evidence
 

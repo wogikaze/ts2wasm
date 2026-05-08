@@ -94,7 +94,6 @@ Follow-up issues:
 
 ## Notes
 
-Created from issue 203 audit of `issues/done/030-implement-instanceof-operator.md`.
 
 ## Completion evidence
 
