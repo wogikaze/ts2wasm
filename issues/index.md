@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 25 | 13 | 12 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4606 | 3275 | 1331 |
+| frontend | 4606 | 3274 | 1332 |
 | harness | 1 | 0 | 1 |
 | ir | 92 | 69 | 23 |
 | issues | 4 | 0 | 4 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5299 | 3584 | 1715 |
+| total | 5299 | 3583 | 1716 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -52,7 +52,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 ├── 5003 (Meta: TypeScript Compiler Declaration Emit Coverage) [done/done] ch:100 open:89 done:11 (also ← 5001)
 5001 (Meta: TypeScript Compiler Semantic Analysis Coverage) [done/done] ch:556 open:289 done:267
 5004 (Meta: Runtime Builtins Coverage (test262) (audit reopened #5004)) [done/done] ch:24 open:3 done:21
-5005 (Meta: TypeScript Compiler Name Resolution Coverage) [done/done] ch:397 open:331 done:66
+5005 (Meta: TypeScript Compiler Name Resolution Coverage) [done/done] ch:397 open:330 done:67
 ├── 5006 (Meta: TypeScript Compiler Scope Analysis Coverage) [done/done] ch:28 open:18 done:10
 ├── 5007 (Meta: TypeScript Compiler Module Resolution Coverage (audit reopened #5007)) [done/done] ch:20 open:12 done:8
 ```
@@ -69,7 +69,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1 | 5000 | Meta: TypeScript Compiler Parser Syntax Coverage | done | design | frontend/syntax | P1 | - | 446 | 342 | 104 |
 | 2 | 5001 | Meta: TypeScript Compiler Semantic Analysis Coverage | done | done | frontend/semantics | P1 | - | 556 | 289 | 267 |
 | 3 | 5004 | Meta: Runtime Builtins Coverage (test262) (audit reopened #5004) | done | done | runtime/builtins | P1 | - | 24 | 3 | 21 |
-| 4 | 5005 | Meta: TypeScript Compiler Name Resolution Coverage | done | done | frontend/resolver | P1 | - | 397 | 331 | 66 |
+| 4 | 5005 | Meta: TypeScript Compiler Name Resolution Coverage | done | done | frontend/resolver | P1 | - | 397 | 330 | 67 |
 | 5 | 5002 | Meta: TypeScript Compiler Type System Coverage | done | done | frontend/semantics | P1 | 5000, 5005 | 223 | 199 | 24 |
 | 6 | 5003 | Meta: TypeScript Compiler Declaration Emit Coverage | done | done | frontend/syntax | P2 | 5000, 5001 | 100 | 89 | 11 |
 | 7 | 5006 | Meta: TypeScript Compiler Scope Analysis Coverage | done | done | frontend/resolver | P2 | 5005 | 28 | 18 | 10 |
@@ -2371,7 +2371,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 3302 | Implement Modulealiasasfunctionargument | spike | frontend/syntax | class: blocked | Implement Modulealiasasfunctionargument |
 | 3303 | Implement Modulealiasinterface | spike | frontend/syntax | class: blocked | Implement Modulealiasinterface |
 | 3304 | Implement Moduleandinterfacesharingname | spike | frontend/syntax | class: blocked | Implement Moduleandinterfacesharingname |
-| 3494 | Implement Newabstractinstance Name Resolution | spike | frontend/resolver | class: blocked | Implement Newabstractinstance Name Resolution |
 | 3495 | Implement Newabstractinstance Parser Syntax | spike | frontend/syntax | class: triage-needed | Implement Newabstractinstance Parser Syntax |
 | 3496 | Implement Newarrays | spike | frontend/syntax | class: blocked | Implement Newarrays |
 | 3497 | Implement Newexpressionwithcast | spike | frontend/syntax | class: triage-needed | Implement Newexpressionwithcast |
@@ -5259,6 +5258,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 3491 | Implement Nestedtypevariableinfersliteral | spike | frontend/syntax | see `issues/done/3491-implement-nestedTypeVariableInfersLiteral.md` |
 | 3492 | Implement Nestedunaryexpressionhang | spike | frontend/syntax | see `issues/done/3492-implement-nestedUnaryExpressionHang.md` |
 | 3493 | Implement Neverasdiscriminanttype | spike | frontend/syntax | see `issues/done/3493-implement-neverAsDiscriminantType.md` |
+| 3494 | Implement Newabstractinstance Name Resolution | spike | frontend/resolver | see `issues/done/3494-implement-newAbstractInstance-name-resolution.md` |
 | 3690 | Implement Optionaltupleelementsandundefined | spike | reference/triage | see `issues/done/3690-implement-optionalTupleElementsAndUndefined.md` |
 | 3996 | Implement Compiler (dup) | spike | frontend/syntax | see `issues/done/3996-implement-reference-typescript-tests-cases-compiler.md` |
 | 4210 | Implement Splicetuples | spike | frontend/resolver | see `issues/done/4210-implement-spliceTuples.md` |
