@@ -106,8 +106,8 @@ Final-state docs:
 
 Current state:
 
-- [ ] not affected
-- [ ] updated: `current-state.md` (repo root)
+- [x] not affected
+- [x] updated: `current-state.md` (repo root)
 
 Follow-up issues:
 

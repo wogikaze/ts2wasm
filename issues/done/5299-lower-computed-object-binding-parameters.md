@@ -64,7 +64,7 @@ TypeScript oracle: ok, diagnostics=[]
 
 In scope:
 
-- [ ] Lower the static template-key parameter binding and add a focused regression.
+- [x] Lower the static template-key parameter binding and add a focused regression.
 
 Out of scope:
 
@@ -87,9 +87,9 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] The representative triage no longer reports `object binding aliases must use identifier keys` at `54..87`.
-- [ ] A focused regression proves ``const b = ({ [`key`]: renamed }) => renamed;`` returns the bound property.
-- [ ] Any next blocker in `computerPropertiesInES5ShouldBeTransformed.ts` is recorded here or split if outside this parameter shape.
+- [x] The representative triage no longer reports `object binding aliases must use identifier keys` at `54..87`.
+- [x] A focused regression proves ``const b = ({ [`key`]: renamed }) => renamed;`` returns the bound property.
+- [x] Any next blocker in `computerPropertiesInES5ShouldBeTransformed.ts` is recorded here or split if outside this parameter shape.
 
 ## Validation
 
@@ -112,15 +112,15 @@ python scripts/manager.py check-issue-readiness -- --fail-ready-below 80
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 

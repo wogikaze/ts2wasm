@@ -119,7 +119,7 @@ Follow-up issues:
 - `issues/done/113-implement-aliasDoesNotDuplicateSignatures.md` - Implement Aliasdoesnotduplicatesignatures (same reference path, same group key, title overlap)
 - `issues/done/493-implement-aliasDoesNotDuplicateSignatures.md` - Implement Aliasdoesnotduplicatesignatures (same reference path, same feature label, same group key, title overlap)
 - `issues/done/579-implement-aliasDoesNotDuplicateSignatures.md` - Implement Aliasdoesnotduplicatesignatures (same reference path, same feature label, same group key, title overlap)
-- `issues/open/715-implement-assign.md` - Implement Assign (same feature label, same group key, title overlap)
+- `issues/done/715-implement-assign.md` - Implement Assign (same feature label, same group key, title overlap)
 
 ## Smart triage
 

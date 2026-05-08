@@ -123,7 +123,7 @@ Follow-up issues:
 ## Duplicate detection
 
 - `issues/done/070-implement-APISample.md` - Implement Apisample (same reference path, title overlap)
-- `issues/open/432-implement-import-export.md` - Implement import/export module syntax (same feature label, title overlap)
+- `issues/done/432-implement-import-export.md` - Implement import/export module syntax (same feature label, title overlap)
 - `issues/done/055-implement-import-export.md` - Umbrella: implement import and export (same feature label, title overlap)
 
 ## Smart triage
@@ -740,7 +740,7 @@ error: [UnsupportedModule] issue-055: unsupported default import; module resolut
 ## 重複整理メモ
 
 この issue はタイトルが重複しているため、内容がより充実している
-`issues/open/543-implement-APISample-import-export.md` に統合されました。
+`issues/done/543-implement-APISample-import-export.md` に統合されました。
 そちらを参照してください。
 ## Completion evidence
 

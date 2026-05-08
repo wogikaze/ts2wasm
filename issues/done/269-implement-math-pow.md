@@ -76,7 +76,7 @@ Next close bar resolution:
 
 - This issue is narrowed to the implemented integer-only `Math.pow` slice.
 - Residual full `Math.pow` number compatibility is split to
-  `issues/open/335-implement-full-math-pow-number-semantics.md`.
+  `issues/done/335-implement-full-math-pow-number-semantics.md`.
 
 ## Completion evidence
 

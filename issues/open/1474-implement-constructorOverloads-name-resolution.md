@@ -180,7 +180,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/open/435-implement-method-call.md` is a broad method-call bucket, but
+- `issues/done/435-implement-method-call.md` is a broad method-call bucket, but
   the oracle first diagnostic is the earlier ambient constructor implementation
   diagnostic.
 - `issues/done/5261-report-class-typed-missing-instance-method-calls.md`

@@ -119,12 +119,12 @@ Follow-up issues:
 ## Duplicate detection
 
 - `issues/open/064-implement-name-resolution.md` - Implement name resolution (triaged - superseded by test262 metadata issues) (same feature label, title overlap)
-- `issues/open/437-implement-name-resolution.md` - Implement name resolution (same feature label, title overlap)
-- `issues/open/648-implement-argumentsAsPropertyName-name-resolution.md` - Implement Argumentsaspropertyname Name Resolution (same feature label, title overlap)
-- `issues/open/654-implement-argumentsReferenceInConstructor-name-resolution.md` - Implement Argumentsreferenceinconstructor Name Resolution (same feature label, title overlap)
-- `issues/open/657-implement-argumentsReferenceInMethod-name-resolution.md` - Implement Argumentsreferenceinmethod Name Resolution (same feature label, title overlap)
-- `issues/open/693-implement-arrayToLocaleStringES-name-resolution.md` - Implement Arraytolocalestringes Name Resolution (same feature label, title overlap)
-- `issues/open/733-implement-assignmentCompatability-name-resolution.md` - Implement Assignmentcompatability Name Resolution (same feature label, title overlap)
+- `issues/done/437-implement-name-resolution.md` - Implement name resolution (same feature label, title overlap)
+- `issues/done/648-implement-argumentsAsPropertyName-name-resolution.md` - Implement Argumentsaspropertyname Name Resolution (same feature label, title overlap)
+- `issues/done/654-implement-argumentsReferenceInConstructor-name-resolution.md` - Implement Argumentsreferenceinconstructor Name Resolution (same feature label, title overlap)
+- `issues/done/657-implement-argumentsReferenceInMethod-name-resolution.md` - Implement Argumentsreferenceinmethod Name Resolution (same feature label, title overlap)
+- `issues/done/693-implement-arrayToLocaleStringES-name-resolution.md` - Implement Arraytolocalestringes Name Resolution (same feature label, title overlap)
+- `issues/done/733-implement-assignmentCompatability-name-resolution.md` - Implement Assignmentcompatability Name Resolution (same feature label, title overlap)
 - `issues/done/268-implement-for-loop-increment-operator.md` is related but not a match. It completed for-loop update-slot support, while the current blocker is `++i` in a call argument expression.
 - `issues/done/1069-implement-blockScopedBindingsReassignedInLoop-scope-analysis.md` is a sibling generated bucket, not an implementation-ready child for the current issue-268 diagnostic.
 

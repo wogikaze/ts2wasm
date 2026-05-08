@@ -165,7 +165,7 @@ Follow-up issues:
 
 ## Notes
 
-Split from `issues/open/762-implement-asyncYieldStarContextualType.md`.
+Split from `issues/done/762-implement-asyncYieldStarContextualType.md`.
 
 2026-05-07 fold-in:
 

@@ -134,14 +134,14 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/open/432-implement-import-export.md` - Implement import/export module syntax (same feature label, title overlap)
+- `issues/done/432-implement-import-export.md` - Implement import/export module syntax (same feature label, title overlap)
 - `issues/done/457-implement-APISample-import-export.md` - Implement Apisample Import Export (same feature label, title overlap)
-- `issues/open/463-implement-FunctionDeclaration-import-export.md` - Implement Functiondeclaration Import Export (same feature label, title overlap)
-- `issues/open/543-implement-APISample-import-export.md` - Implement Apisample Import Export (same feature label, title overlap)
+- `issues/done/463-implement-FunctionDeclaration-import-export.md` - Implement Functiondeclaration Import Export (same feature label, title overlap)
+- `issues/done/543-implement-APISample-import-export.md` - Implement Apisample Import Export (same feature label, title overlap)
 - `issues/done/549-implement-FunctionDeclaration-import-export.md` - Implement Functiondeclaration Import Export (same feature label, title overlap)
-- `issues/open/662-implement-arrayAssignmentTest-import-export.md` - Implement Arrayassignmenttest Import Export (same feature label, title overlap)
-- `issues/open/732-implement-assignmentCompatability-import-export.md` - Implement Assignmentcompatability Import Export (same feature label, title overlap)
-- `issues/open/766-implement-augmentedTypesEnum-import-export.md` - Implement Augmentedtypesenum Import Export (same feature label, title overlap)
+- `issues/done/662-implement-arrayAssignmentTest-import-export.md` - Implement Arrayassignmenttest Import Export (same feature label, title overlap)
+- `issues/done/732-implement-assignmentCompatability-import-export.md` - Implement Assignmentcompatability Import Export (same feature label, title overlap)
+- `issues/done/766-implement-augmentedTypesEnum-import-export.md` - Implement Augmentedtypesenum Import Export (same feature label, title overlap)
 - `issues/done/055-implement-import-export.md` - Umbrella: implement import and export (same feature label, title overlap)
 - `issues/done/5283-support-entry-export-var-declarations.md` - exact owner for the `classMemberInitializerWithLamdaScoping4.ts` first blocker, `export var field1: string`
 - `issues/done/5232-w0-fixture-ize-runtimelinkplan-linker-structure-tests.md` - related entry-module export-class owner, not exact for dependency virtual files

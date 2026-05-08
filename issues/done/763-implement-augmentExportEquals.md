@@ -151,7 +151,7 @@ Related no-match issues:
   CommonJS export assignment.
 - `issues/done/5229-w0-user-runtime-string-origin.md` covers
   virtual file import resolution after import syntax is parsed.
-- `issues/open/432-implement-import-export.md` is the broad import/export
+- `issues/done/432-implement-import-export.md` is the broad import/export
   umbrella and is too large to implement directly.
 
 ## Smart triage

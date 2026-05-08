@@ -55,10 +55,10 @@ The depth-8 ABC451 live-set fixture completes under `iwasm` within the test time
 
 In scope:
 
-- [ ] Reduce runtime cost for the depth-8 fixture without increasing `MEMORY_MAX_PAGES`.
-- [ ] Preserve the committed 185-page memory policy and explicit OOM regression behavior.
-- [ ] Prefer representation/copy/root-liveness improvements that are semantics-preserving for general programs, not ABC451 source rewrites.
-- [ ] Record exact before/after timeout or runtime evidence.
+- [x] Reduce runtime cost for the depth-8 fixture without increasing `MEMORY_MAX_PAGES`.
+- [x] Preserve the committed 185-page memory policy and explicit OOM regression behavior.
+- [x] Prefer representation/copy/root-liveness improvements that are semantics-preserving for general programs, not ABC451 source rewrites.
+- [x] Record exact before/after timeout or runtime evidence.
 
 Out of scope:
 
@@ -78,7 +78,7 @@ Expected:
 - `crates/backend-wasm/src/`
 - `crates/cli/tests/`
 - `fixtures/core-semantics/abc451-depth8-live-set.ts` only if adding instrumentation-safe comments is unavoidable
-- `issues/open/357-fix-abc451-depth8-iwasm-timeout.md`
+- `issues/done/357-fix-abc451-depth8-iwasm-timeout.md`
 - `issues/index.md`
 
 Do not touch:
@@ -90,12 +90,12 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] `cargo nextest run -p ts2wasm-cli abc451_depth8_live_set_fixture_matches_node_output_under_iwasm` passes.
-- [ ] `cargo nextest run -p ts2wasm-cli oom_alloc_check_must_fail_iwasm` passes.
-- [ ] If runtime policy or representation changes, `cargo test -p ts2wasm-backend-wasm --lib -- --nocapture` passes.
-- [ ] `cargo fmt --all --check` passes.
-- [ ] `mise run update-issue-index -- --check` and `mise run check issues` pass.
-- [ ] Issue 309 remains open unless depth-9 acceptance is separately met.
+- [x] `cargo nextest run -p ts2wasm-cli abc451_depth8_live_set_fixture_matches_node_output_under_iwasm` passes.
+- [x] `cargo nextest run -p ts2wasm-cli oom_alloc_check_must_fail_iwasm` passes.
+- [x] If runtime policy or representation changes, `cargo test -p ts2wasm-backend-wasm --lib -- --nocapture` passes.
+- [x] `cargo fmt --all --check` passes.
+- [x] `mise run update-issue-index -- --check` and `mise run check issues` pass.
+- [x] Issue 309 remains open unless depth-9 acceptance is separately met.
 
 ## Validation
 

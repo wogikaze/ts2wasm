@@ -543,7 +543,7 @@ error: [UnsupportedSyntax] expected LeftParen, got Some(Ident("bar")) at 48..51
 ## 重複整理メモ
 
 この issue はタイトルが重複しているため、内容がより充実している
-`issues/open/625-implement-ambiguousCallsWhereReturnTypesAgree.md` に統合されました。
+`issues/done/625-implement-ambiguousCallsWhereReturnTypesAgree.md` に統合されました。
 そちらを参照してください。
 ## Completion evidence
 

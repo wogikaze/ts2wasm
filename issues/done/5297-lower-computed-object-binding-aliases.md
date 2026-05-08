@@ -69,10 +69,10 @@ resolved: UnsupportedRuntimeSubset issue-251 object binding aliases must use ide
 
 In scope:
 
-- [ ] Lower declaration binding aliases of the form `{[ident]: target}`.
-- [ ] Evaluate the computed key once and use it to read the source object.
-- [ ] Bind the target identifier to the selected property value.
-- [ ] Add one focused Node/iwasm or CLI regression for `let {[foo]: bar} = obj`.
+- [x] Lower declaration binding aliases of the form `{[ident]: target}`.
+- [x] Evaluate the computed key once and use it to read the source object.
+- [x] Bind the target identifier to the selected property value.
+- [x] Add one focused Node/iwasm or CLI regression for `let {[foo]: bar} = obj`.
 
 Out of scope:
 
@@ -95,10 +95,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] The representative triage no longer reports `object binding aliases must use identifier keys` at `81..113`.
-- [ ] A focused regression proves `let {[foo]: bar} = {bar: "bar"};` binds `bar`.
-- [ ] Existing identifier-key object binding aliases remain covered.
-- [ ] Any next blocker in `computedPropertiesInDestructuring1.ts` is recorded here or split if outside this shape.
+- [x] The representative triage no longer reports `object binding aliases must use identifier keys` at `81..113`.
+- [x] A focused regression proves `let {[foo]: bar} = {bar: "bar"};` binds `bar`.
+- [x] Existing identifier-key object binding aliases remain covered.
+- [x] Any next blocker in `computedPropertiesInDestructuring1.ts` is recorded here or split if outside this shape.
 
 ## Validation
 
@@ -121,15 +121,15 @@ python scripts/manager.py check-issue-readiness -- --fail-ready-below 80
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 

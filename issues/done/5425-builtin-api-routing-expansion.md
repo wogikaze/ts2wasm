@@ -39,11 +39,11 @@ Based on feature breakdown (object-builtin: 813, array-builtin: 1,035, string-bu
 
 In scope:
 
-- [ ] Add RuntimeFn variants for missing builtins in runtime_fn.rs
-- [ ] Add RuntimeSpec entries in runtime_fn_impl.rs
-- [ ] Add IR routing entries in program_builtins.rs
-- [ ] Build_smoke fixtures for each new routing
-- [ ] Verify with full corpus run
+- [x] Add RuntimeFn variants for missing builtins in runtime_fn.rs
+- [x] Add RuntimeSpec entries in runtime_fn_impl.rs
+- [x] Add IR routing entries in program_builtins.rs
+- [x] Build_smoke fixtures for each new routing
+- [x] Verify with full corpus run
 
 Out of scope:
 

@@ -50,7 +50,7 @@ Expected:
 - `crates/backend-wasm/src/`
 - `fixtures/builtins-and-io/`
 - `crates/cli/tests/`
-- `issues/open/052-implement-json.md`
+- `issues/done/052-implement-json.md`
 
 Do not touch:
 
@@ -99,7 +99,7 @@ Current state:
 Follow-up issues:
 
 - [x] created and closed: `issues/done/052g-implement-json-stringify-function-replacer-callbacks.md`
-- [x] update `issues/open/052-implement-json.md`
+- [x] update `issues/done/052-implement-json.md`
 
 ## Progress evidence
 

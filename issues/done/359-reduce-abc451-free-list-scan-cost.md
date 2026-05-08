@@ -95,7 +95,7 @@ Expected:
 - `crates/backend-wasm/src/`
 - `crates/cli/tests/` only if regression coverage needs a small assertion update
 - `issues/done/359-reduce-abc451-free-list-scan-cost.md`
-- `issues/open/357-fix-abc451-depth8-iwasm-timeout.md` only if the parent verifies closure
+- `issues/done/357-fix-abc451-depth8-iwasm-timeout.md` only if the parent verifies closure
 - `issues/index.md`
 
 Do not touch:

@@ -137,7 +137,7 @@ Follow-up issues:
 
 - `issues/done/211-complete-this-receiver-binding-semantics.md` established
   issue-211 diagnostics for unsupported dynamic/function-valued local calls.
-- `issues/open/435-implement-method-call.md` is the broad method-call bucket,
+- `issues/done/435-implement-method-call.md` is the broad method-call bucket,
   not an executable slice.
 - `issues/done/5195-support-callable-interface-typed-local-calls.md` and
   `issues/done/5196-support-callable-conditional-typed-parameter-calls.md`

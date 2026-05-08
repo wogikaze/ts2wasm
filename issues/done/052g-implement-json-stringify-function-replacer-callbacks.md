@@ -54,7 +54,7 @@ Expected:
 - `crates/backend-wasm/src/`
 - `fixtures/builtins-and-io/`
 - `crates/cli/tests/`
-- `issues/open/052-implement-json.md`
+- `issues/done/052-implement-json.md`
 - `issues/open/052d-implement-json-stringify-broader-replacer-semantics.md`
 
 Do not touch:

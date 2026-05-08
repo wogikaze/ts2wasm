@@ -35,7 +35,7 @@ Out of scope:
 Expected:
 
 - `current-state.md`
-- `issues/open/052-implement-json.md`
+- `issues/done/052-implement-json.md`
 - `issues/open/`
 
 Do not touch:

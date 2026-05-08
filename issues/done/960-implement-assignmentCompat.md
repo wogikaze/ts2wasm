@@ -116,11 +116,11 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/open/725-implement-assignmentCompat.md` - Implement Assignmentcompat (same reference path, same feature label, same group key, title overlap)
-- `issues/open/730-implement-assignmentCompatOnNew.md` - Implement Assignmentcompatonnew (same feature label, same group key, title overlap)
-- `issues/open/733-implement-assignmentCompatability-name-resolution.md` - Implement Assignmentcompatability Name Resolution (same feature label, same group key, title overlap)
-- `issues/open/738-implement-assignmentRestElementWithErrorSourceType.md` - Implement Assignmentrestelementwitherrorsourcetype (same feature label, same group key, title overlap)
-- `issues/open/775-implement-autoTypeAssignedUsingDestructuringFromNeverNoCrash.md` - Implement Autotypeassignedusingdestructuringfromnevernocrash (same feature label, same group key, title overlap)
+- `issues/done/725-implement-assignmentCompat.md` - Implement Assignmentcompat (same reference path, same feature label, same group key, title overlap)
+- `issues/done/730-implement-assignmentCompatOnNew.md` - Implement Assignmentcompatonnew (same feature label, same group key, title overlap)
+- `issues/done/733-implement-assignmentCompatability-name-resolution.md` - Implement Assignmentcompatability Name Resolution (same feature label, same group key, title overlap)
+- `issues/done/738-implement-assignmentRestElementWithErrorSourceType.md` - Implement Assignmentrestelementwitherrorsourcetype (same feature label, same group key, title overlap)
+- `issues/done/775-implement-autoTypeAssignedUsingDestructuringFromNeverNoCrash.md` - Implement Autotypeassignedusingdestructuringfromnevernocrash (same feature label, same group key, title overlap)
 
 ## Smart triage
 
@@ -130,7 +130,7 @@ Not generated. Rerun with `--triage-limit 1` or higher.
 ## 重複整理メモ
 
 この issue はタイトルが重複しているため、内容がより充実している
-`issues/open/725-implement-assignmentCompat.md` に統合されました。
+`issues/done/725-implement-assignmentCompat.md` に統合されました。
 そちらを参照してください。
 ## Completion evidence
 

@@ -144,7 +144,7 @@ Follow-up issues:
   implementation-ready owner for the current `export class` boundary.
 - `issues/done/5144-support-entry-export-function-declarations.md` is a sibling
   static export slice and explicitly excludes `export class`.
-- `issues/open/432-implement-import-export.md` is the broad
+- `issues/done/432-implement-import-export.md` is the broad
   generated import/export bucket and is too wide to use directly.
 
 ## Smart triage

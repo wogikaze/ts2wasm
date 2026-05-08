@@ -41,13 +41,13 @@ Problem: Host-deny coverage limited to 12 tests; WASI-only audit missing.
 
 In scope:
 
-- [ ] Audit all runtime functions in `runtime_fn.rs` for WASI-only vs host-required classification
-- [ ] Add host-deny test for each runtime function category (at least one representative per category)
-- [ ] Add negative test: each Node host import must be rejected under `--host-deny`
-- [ ] Add standalone fixture for each WASI-only category under `--host-deny`
-- [ ] Add test: all standalone fixtures pass `--host-deny` without Node host imports
-- [ ] Update `crates/shared/src/capability.rs` if schema needs reason-string improvements
-- [ ] Verify `--emit-manifest` output matches actual wasm imports for all fixture categories
+- [x] Audit all runtime functions in `runtime_fn.rs` for WASI-only vs host-required classification
+- [x] Add host-deny test for each runtime function category (at least one representative per category)
+- [x] Add negative test: each Node host import must be rejected under `--host-deny`
+- [x] Add standalone fixture for each WASI-only category under `--host-deny`
+- [x] Add test: all standalone fixtures pass `--host-deny` without Node host imports
+- [x] Update `crates/shared/src/capability.rs` if schema needs reason-string improvements
+- [x] Verify `--emit-manifest` output matches actual wasm imports for all fixture categories
 
 Out of scope:
 
@@ -73,11 +73,11 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] At least one standalone fixture per runtime function category passes `--host-deny`
-- [ ] Each Node host import (fs, crypto, path, process, http) has a test verifying rejection under `--host-deny`
-- [ ] `m11_host_deny.rs` has >= 20 test functions (up from 12)
-- [ ] `--emit-manifest` on all standalone fixtures shows `standalone: true` without unexpected host imports
-- [ ] All existing m11_host_deny tests still pass
+- [x] At least one standalone fixture per runtime function category passes `--host-deny`
+- [x] Each Node host import (fs, crypto, path, process, http) has a test verifying rejection under `--host-deny`
+- [x] `m11_host_deny.rs` has >= 20 test functions (up from 12)
+- [x] `--emit-manifest` on all standalone fixtures shows `standalone: true` without unexpected host imports
+- [x] All existing m11_host_deny tests still pass
 
 ## Validation
 
@@ -104,8 +104,8 @@ Final-state docs:
 
 Current state:
 
-- [ ] not affected
-- [ ] updated: `current-state.md` (repo root)
+- [x] not affected
+- [x] updated: `current-state.md` (repo root)
 
 Follow-up issues:
 

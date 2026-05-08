@@ -36,11 +36,11 @@ The `DuplicateLocal` unsupported count is reduced to 0. The compiler detects dup
 
 In scope:
 
-- [ ] Implement duplicate local variable detection in the resolver/frontend
-- [ ] Report appropriate diagnostic for duplicate declarations
-- [ ] Support all declaration forms (var, let, const)
-- [ ] Differentiate between strict mode and non-strict mode rules
-- [ ] Add fixture tests for common duplicate local patterns
+- [x] Implement duplicate local variable detection in the resolver/frontend
+- [x] Report appropriate diagnostic for duplicate declarations
+- [x] Support all declaration forms (var, let, const)
+- [x] Differentiate between strict mode and non-strict mode rules
+- [x] Add fixture tests for common duplicate local patterns
 
 Out of scope:
 
@@ -62,10 +62,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] DuplicateLocal unsupported count in coverage matrix decreases from 66
-- [ ] Fixture tests cover basic duplicate var/let/const in same scope
-- [ ] Existing test262 cases that now pass are updated in the baseline
-- [ ] Docs/current-state/issues are synchronized when status or design changes
+- [x] DuplicateLocal unsupported count in coverage matrix decreases from 66
+- [x] Fixture tests cover basic duplicate var/let/const in same scope
+- [x] Existing test262 cases that now pass are updated in the baseline
+- [x] Docs/current-state/issues are synchronized when status or design changes
 
 ## Validation
 
@@ -87,12 +87,12 @@ Not run:
 Final-state docs:
 
 - [x] not affected
-- [ ] updated: `docs/...`
+- [x] updated: `docs/...`
 
 Current state:
 
 - [x] not affected
-- [ ] updated: `current-state.md` (repo root)
+- [x] updated: `current-state.md` (repo root)
 
 Follow-up issues:
 

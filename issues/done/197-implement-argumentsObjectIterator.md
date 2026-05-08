@@ -515,7 +515,7 @@ error: [UnsupportedSyntax] unsupported expression: Some(SpannedToken { kind: Les
 ## 重複整理メモ
 
 この issue はタイトルが重複しているため、内容がより充実している
-`issues/open/651-implement-argumentsObjectIterator.md` に統合されました。
+`issues/done/651-implement-argumentsObjectIterator.md` に統合されました。
 そちらを参照してください。
 ## Completion evidence
 

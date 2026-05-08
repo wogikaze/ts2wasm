@@ -125,7 +125,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/open/425-implement-destructuring.md` is a broad generated bucket and is not implementation-ready for this exact parser failure.
+- `issues/done/425-implement-destructuring.md` is a broad generated bucket and is not implementation-ready for this exact parser failure.
 - `issues/done/247-implement-destructuring-binding-pattern-parser.md`, `issues/done/251-implement-destructuring-binding-runtime-semantics.md`, and `issues/done/252-implement-destructuring-assignment-pattern-parser.md` are related but do not cover computed property assignments after object spread in object literal initializers.
 
 ## Smart triage

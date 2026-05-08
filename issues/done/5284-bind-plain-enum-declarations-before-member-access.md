@@ -151,7 +151,7 @@ Split from `issues/open/1365-implement-commentsEnums.md`.
 
 Related but not duplicates:
 
-- `issues/open/428-implement-enum.md` is the broad enum generated bucket.
+- `issues/done/428-implement-enum.md` is the broad enum generated bucket.
 - `issues/open/2121-implement-enumBasics-parser-syntax.md` and
   `issues/open/2143-implement-enumPropertyAccess.md` are generated buckets, not
   implementation-ready slices.

@@ -143,7 +143,7 @@ namespace M2 {
 
 ## Duplicate detection
 
-- `issues/open/432-implement-import-export.md` is a broad umbrella for module
+- `issues/done/432-implement-import-export.md` is a broad umbrella for module
   syntax and not an exact implementation-ready alias-in-heritage slice.
 - Existing alias/import-equals buckets cover other reference paths and do not
   own `classImplementsImportedInterface.ts` or `implements T`.

@@ -896,7 +896,7 @@ error: [UnresolvedName] unresolved name: `abstract` at 57..65
 ## 重複整理メモ
 
 この issue はタイトルが重複しているため、内容がより充実している
-`issues/open/556-implement-abstractClassUnionInstantiation.md` に統合されました。
+`issues/done/556-implement-abstractClassUnionInstantiation.md` に統合されました。
 そちらを参照してください。
 ## Completion evidence
 

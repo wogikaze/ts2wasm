@@ -443,7 +443,7 @@ error: [UnsupportedSyntax] expected Semicolon, got Some(Function) at 173..181
 ## 重複整理メモ
 
 この issue はタイトルが重複しているため、内容がより充実している
-`issues/open/652-implement-argumentsPropertyNameInJsMode.md` に統合されました。
+`issues/done/652-implement-argumentsPropertyNameInJsMode.md` に統合されました。
 そちらを参照してください。
 ## Completion evidence
 

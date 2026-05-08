@@ -147,7 +147,7 @@ Follow-up issues:
 - `issues/done/5303-parse-trailing-comma-in-typed-function-parameters.md` - exact owner for `coAndContraVariantInferences5.ts` trailing comma in typed function parameters
 - `issues/done/5309-skip-generic-type-arguments-in-type-annotations.md` - exact owner for `coAndContraVariantInferences.ts` generic type arguments inside function parameter annotations
 - `issues/done/5332-parse-interface-call-signatures.md` - new child for `coAndContraVariantInferences6.ts` interface call-signature parsing
-- `issues/open/345-implement-tsc-type-alias-coverage.md` - Implement TypeScript type alias coverage for tsc suite (23 cases) (same feature label, title overlap)
+- `issues/done/345-implement-tsc-type-alias-coverage.md` - Implement TypeScript type alias coverage for tsc suite (23 cases) (same feature label, title overlap)
 
 ## Smart triage
 

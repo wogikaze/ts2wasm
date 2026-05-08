@@ -135,7 +135,7 @@ Split to `issues/done/5348-resolve-const-declarations-before-use.md`.
 No exact existing owner was found. Nearby no-match issues:
 
 - `issues/open/064-implement-name-resolution.md` is a test262 metadata bucket.
-- `issues/open/437-implement-name-resolution.md` is a broad generated bucket.
+- `issues/done/437-implement-name-resolution.md` is a broad generated bucket.
 - captured-let/argument/assignment name-resolution buckets cover different
   reference windows.
 

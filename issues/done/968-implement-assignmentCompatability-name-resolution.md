@@ -120,14 +120,14 @@ Follow-up issues:
 ## Duplicate detection
 
 - `issues/open/064-implement-name-resolution.md` - Implement name resolution (triaged - superseded by test262 metadata issues) (same feature label, title overlap)
-- `issues/open/437-implement-name-resolution.md` - Implement name resolution (same feature label, title overlap)
-- `issues/open/648-implement-argumentsAsPropertyName-name-resolution.md` - Implement Argumentsaspropertyname Name Resolution (same feature label, title overlap)
-- `issues/open/654-implement-argumentsReferenceInConstructor-name-resolution.md` - Implement Argumentsreferenceinconstructor Name Resolution (same feature label, title overlap)
-- `issues/open/657-implement-argumentsReferenceInMethod-name-resolution.md` - Implement Argumentsreferenceinmethod Name Resolution (same feature label, title overlap)
-- `issues/open/693-implement-arrayToLocaleStringES-name-resolution.md` - Implement Arraytolocalestringes Name Resolution (same feature label, title overlap)
-- `issues/open/733-implement-assignmentCompatability-name-resolution.md` - Implement Assignmentcompatability Name Resolution (same reference path, same feature label, same group key, title overlap)
-- `issues/open/738-implement-assignmentRestElementWithErrorSourceType.md` - Implement Assignmentrestelementwitherrorsourcetype (same feature label, same group key, title overlap)
-- `issues/open/775-implement-autoTypeAssignedUsingDestructuringFromNeverNoCrash.md` - Implement Autotypeassignedusingdestructuringfromnevernocrash (same feature label, same group key, title overlap)
+- `issues/done/437-implement-name-resolution.md` - Implement name resolution (same feature label, title overlap)
+- `issues/done/648-implement-argumentsAsPropertyName-name-resolution.md` - Implement Argumentsaspropertyname Name Resolution (same feature label, title overlap)
+- `issues/done/654-implement-argumentsReferenceInConstructor-name-resolution.md` - Implement Argumentsreferenceinconstructor Name Resolution (same feature label, title overlap)
+- `issues/done/657-implement-argumentsReferenceInMethod-name-resolution.md` - Implement Argumentsreferenceinmethod Name Resolution (same feature label, title overlap)
+- `issues/done/693-implement-arrayToLocaleStringES-name-resolution.md` - Implement Arraytolocalestringes Name Resolution (same feature label, title overlap)
+- `issues/done/733-implement-assignmentCompatability-name-resolution.md` - Implement Assignmentcompatability Name Resolution (same reference path, same feature label, same group key, title overlap)
+- `issues/done/738-implement-assignmentRestElementWithErrorSourceType.md` - Implement Assignmentrestelementwitherrorsourcetype (same feature label, same group key, title overlap)
+- `issues/done/775-implement-autoTypeAssignedUsingDestructuringFromNeverNoCrash.md` - Implement Autotypeassignedusingdestructuringfromnevernocrash (same feature label, same group key, title overlap)
 
 ## Smart triage
 
@@ -137,7 +137,7 @@ Not generated. Rerun with `--triage-limit 1` or higher.
 ## 重複整理メモ
 
 この issue はタイトルが重複しているため、内容がより充実している
-`issues/open/733-implement-assignmentCompatability-name-resolution.md` に統合されました。
+`issues/done/733-implement-assignmentCompatability-name-resolution.md` に統合されました。
 そちらを参照してください。
 ## Completion evidence
 

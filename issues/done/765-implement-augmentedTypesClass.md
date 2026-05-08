@@ -140,7 +140,7 @@ Related no-match issues:
   duplicate `var` declarations.
 - `issues/done/5249-scope-block-local-class-declarations.md` handles nested
   block-local classes colliding with outer classes.
-- `issues/open/767-implement-augmentedTypesEnum-parser-syntax.md` is an
+- `issues/done/767-implement-augmentedTypesEnum-parser-syntax.md` is an
   enum-focused generated bucket, not the first current `class`/`var` blocker.
 
 ## Smart triage

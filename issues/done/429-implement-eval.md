@@ -43,10 +43,10 @@ This generated bucket is either split into implementation-ready child issues or 
 
 In scope:
 
-- [ ] Inspect the smart triage report below
-- [ ] Confirm whether existing open/done issues already cover this bucket
-- [ ] Split one feature family, one observable behavior, or one fixed reference window into child issues
-- [ ] Preserve exact reproduction commands and representative AST/diagnostic evidence in each child issue
+- [x] Inspect the smart triage report below
+- [x] Confirm whether existing open/done issues already cover this bucket
+- [x] Split one feature family, one observable behavior, or one fixed reference window into child issues
+- [x] Preserve exact reproduction commands and representative AST/diagnostic evidence in each child issue
 
 Out of scope:
 
@@ -67,10 +67,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] Duplicate candidates below are confirmed as no-match or this issue is superseded
-- [ ] At least one child issue contains an exact `mise run reference-triage -- ...` command
-- [ ] Child issue includes failing path, diagnostic code, source context, visible symbols, and parser/TypeScript AST evidence
-- [ ] Child issue acceptance names the exact fixture/reference path and diagnostic/stdout change
+- [x] Duplicate candidates below are confirmed as no-match or this issue is superseded
+- [x] At least one child issue contains an exact `mise run reference-triage -- ...` command
+- [x] Child issue includes failing path, diagnostic code, source context, visible symbols, and parser/TypeScript AST evidence
+- [x] Child issue acceptance names the exact fixture/reference path and diagnostic/stdout change
 
 ## Validation
 
@@ -97,15 +97,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] updated: `current-state.md` (repo root)
+- [x] updated: `current-state.md` (repo root)
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 
@@ -129,12 +129,12 @@ Follow-up issues:
 - `issues/done/128-implement-aliasUsedAsNameValue.md` - Implement Aliasusedasnamevalue (same feature label, same group key, title overlap)
 - `issues/done/132-implement-allowJsClassThisTypeCrash.md` - Implement Allowjsclassthistypecrash (same feature label, same group key, title overlap)
 - `issues/done/225-implement-eval-annexb-function-declarations.md` - Implement eval and Annex B function declaration semantics (same feature label, same group key, title overlap)
-- `issues/open/308-implement-abc451-depth9-gc-cadence-policy.md` - Implement ABC451 depth-9 GC cadence policy (same feature label, same group key, title overlap)
-- `issues/open/309-reduce-abc451-depth9-live-allocation-shape.md` - Reduce ABC451 depth-9 live allocation shape (same feature label, same group key)
+- `issues/done/308-implement-abc451-depth9-gc-cadence-policy.md` - Implement ABC451 depth-9 GC cadence policy (same feature label, same group key, title overlap)
+- `issues/done/309-reduce-abc451-depth9-live-allocation-shape.md` - Reduce ABC451 depth-9 live allocation shape (same feature label, same group key)
 - `issues/done/351-private-brand-storage-brand-checks.md` - Implement full private brand storage and brand-checking semantics (same feature label, same group key, title overlap)
-- `issues/open/357-fix-abc451-depth8-iwasm-timeout.md` - Fix ABC451 depth-8 iwasm timeout (same feature label, same group key)
-- `issues/open/363-reduce-abc451-allocation-and-sweep-volume-after-bulk-copy-narrowing.md` - Reduce ABC451 allocation and sweep volume after bulk copy narrowing (same feature label, same group key)
-- `issues/open/365-reduce-abc451-array-growth-allocation-copy-pressure.md` - Reduce ABC451 array-growth allocation and copy pressure (same feature label, same group key)
+- `issues/done/357-fix-abc451-depth8-iwasm-timeout.md` - Fix ABC451 depth-8 iwasm timeout (same feature label, same group key)
+- `issues/done/363-reduce-abc451-allocation-and-sweep-volume-after-bulk-copy-narrowing.md` - Reduce ABC451 allocation and sweep volume after bulk copy narrowing (same feature label, same group key)
+- `issues/done/365-reduce-abc451-array-growth-allocation-copy-pressure.md` - Reduce ABC451 array-growth allocation and copy pressure (same feature label, same group key)
 
 ## Smart triage
 

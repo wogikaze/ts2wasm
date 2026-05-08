@@ -131,7 +131,7 @@ No-match rationale:
   leaves dynamic/function-valued local calls as issue-linked unsupported forms.
   This bucket's first blocker is not making `x()` executable; it is honoring a
   TypeScript directive that suppresses the diagnostic for selected calls.
-- `issues/open/431-implement-function-resolution.md` is a broad generated
+- `issues/done/431-implement-function-resolution.md` is a broad generated
   test262 function-resolution bucket and is not an executable work order.
 - `issues/done/057-implement-function-resolution.md` covers ordinary function
   declaration/name resolution and does not cover JavaScript comment directive

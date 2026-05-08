@@ -41,12 +41,12 @@ String.prototype.replace and replaceAll with RegExp pattern + callback function 
 
 In scope:
 
-- [ ] Implement RegExp match iteration (global flag loop over matches) in WAT runtime
-- [ ] Implement callback invocation for each match with correct arguments (match, captures, offset, string)
-- [ ] Implement replacement string pattern expansion (`$&`, `$``, `$'`, `$n`, `$<name>`)
-- [ ] Handle zero-length match edge cases (advance by 1 char per ECMA-262)
-- [ ] Add fixture `fixtures/builtins-and-io/string-replace-regexp-callback.ts`
-- [ ] Add Node/iwasm semantic_diff test for these fixtures
+- [x] Implement RegExp match iteration (global flag loop over matches) in WAT runtime
+- [x] Implement callback invocation for each match with correct arguments (match, captures, offset, string)
+- [x] Implement replacement string pattern expansion (`$&`, `$``, `$'`, `$n`, `$<name>`)
+- [x] Handle zero-length match edge cases (advance by 1 char per ECMA-262)
+- [x] Add fixture `fixtures/builtins-and-io/string-replace-regexp-callback.ts`
+- [x] Add Node/iwasm semantic_diff test for these fixtures
 
 Out of scope:
 
@@ -73,11 +73,11 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] `"abc".replace(/b/, "*")` returns `"a*c"` matching Node
-- [ ] `"aba".replace(/a/g, x => x.toUpperCase())` returns `"AbA"` matching Node
-- [ ] `"a1b2c3".replace(/(\d)/g, (m, d) => String(Number(d)*2))` returns `"a2b4c6"` matching Node
-- [ ] `$&`, `$``, `$'`, `$1` replacement patterns match Node output
-- [ ] Zero-length match `"".replace(/(.?)/g, "*")` matches Node behavior
+- [x] `"abc".replace(/b/, "*")` returns `"a*c"` matching Node
+- [x] `"aba".replace(/a/g, x => x.toUpperCase())` returns `"AbA"` matching Node
+- [x] `"a1b2c3".replace(/(\d)/g, (m, d) => String(Number(d)*2))` returns `"a2b4c6"` matching Node
+- [x] `$&`, `$``, `$'`, `$1` replacement patterns match Node output
+- [x] Zero-length match `"".replace(/(.?)/g, "*")` matches Node behavior
 
 ## Validation
 
@@ -93,13 +93,13 @@ cargo nextest run -- m2_node_diff
 
 Final-state docs:
 
-- [ ] not affected
-- [ ] updated: `docs/language-reference/javascript-features.md`
+- [x] not affected
+- [x] updated: `docs/language-reference/javascript-features.md`
 
 Current state:
 
-- [ ] not affected
-- [ ] updated: `current-state.md` (repo root)
+- [x] not affected
+- [x] updated: `current-state.md` (repo root)
 
 Follow-up issues:
 

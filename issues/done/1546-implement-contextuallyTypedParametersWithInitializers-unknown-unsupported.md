@@ -125,7 +125,7 @@ Follow-up issues:
 - `issues/open/1545-implement-contextuallyTypedParametersWithInitializers-import-export.md`
   owns the sibling `contextuallyTypedParametersWithInitializers1.ts` current
   name-resolution blocker shown by the broader path-filter coverage run.
-- `issues/open/694-implement-arrayToLocaleStringES-unknown-unsupported.md` is a
+- `issues/done/694-implement-arrayToLocaleStringES-unknown-unsupported.md` is a
   same-label generated candidate but not a path or syntax match.
 
 ## Smart triage

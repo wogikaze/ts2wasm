@@ -49,7 +49,7 @@ Expected:
 - `crates/ir/src/`
 - `fixtures/builtins-and-io/`
 - `crates/cli/tests/`
-- `issues/open/052-implement-json.md`
+- `issues/done/052-implement-json.md`
 
 Do not touch:
 
@@ -96,7 +96,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] update `issues/open/052-implement-json.md`
+- [x] update `issues/done/052-implement-json.md`
 
 ## Completion evidence
 

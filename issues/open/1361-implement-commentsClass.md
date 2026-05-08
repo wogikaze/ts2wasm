@@ -138,7 +138,7 @@ Follow-up issues:
   `var i2_c = c2;`, which is the same `issue-5011` family.
 - `issues/done/5011-class-runtime-value-semantics.md` documents the current
   structural diagnostic that prevents silent class value erasure.
-- `issues/open/421-implement-class.md` is the broad class syntax issue and is
+- `issues/done/421-implement-class.md` is the broad class syntax issue and is
   too wide for this current blocker.
 
 ## Smart triage

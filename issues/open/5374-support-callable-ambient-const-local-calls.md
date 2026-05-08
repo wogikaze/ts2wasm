@@ -160,7 +160,7 @@ Follow-up issues:
 ## Notes
 
 Split from `issues/open/1515-implement-contextualTypeSelfReferencing.md`.
-Related broad method-call bucket: `issues/open/435-implement-method-call.md`.
+Related broad method-call bucket: `issues/done/435-implement-method-call.md`.
 
 ## Completion evidence
 

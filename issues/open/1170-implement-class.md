@@ -43,7 +43,7 @@ mise run reference-coverage -- tsc --path-filter reference/typescript/tests/case
 
 ## Desired final state
 
-This generated bucket is closed after splitting `issues/open/5246-report-static-declarations-inside-constructor-bodies.md`. Do not implement directly from this bucket.
+This generated bucket is closed after splitting `issues/done/5246-report-static-declarations-inside-constructor-bodies.md`. Do not implement directly from this bucket.
 
 ## Scope
 
@@ -114,7 +114,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] created: `issues/open/5246-report-static-declarations-inside-constructor-bodies.md`
+- [x] created: `issues/done/5246-report-static-declarations-inside-constructor-bodies.md`
 
 ## Notes
 
@@ -130,9 +130,9 @@ Follow-up issues:
 - `issues/done/201-implement-unknown-unsupported.md` - Investigate and classify unknown-unsupported cases (same feature label, same group key)
 - `issues/done/225-implement-eval-annexb-function-declarations.md` - Implement eval and Annex B function declaration semantics (same feature label, same group key, title overlap)
 - `issues/done/255-implement-private-class-element-runtime-semantics.md` - Implement private class element runtime semantics (same group key, title overlap)
-- `issues/open/313-implement-array-builtin.md` - Implement array-builtin support (same feature label, same group key, title overlap)
+- `issues/done/313-implement-array-builtin.md` - Implement array-builtin support (same feature label, same group key, title overlap)
 - `issues/done/314-implement-string-builtin.md` - Implement string-builtin support (same feature label, same group key, title overlap)
-- `issues/open/411-implement-annexb-ishtmldda.md` - Implement annexb-ishtmldda support (same feature label, same group key, title overlap)
+- `issues/done/411-implement-annexb-ishtmldda.md` - Implement annexb-ishtmldda support (same feature label, same group key, title overlap)
 - `issues/done/412-implement-arguments-object.md` - Implement arguments-object support (same feature label, same group key, title overlap)
 
 ## Smart triage
@@ -189,7 +189,7 @@ TS1128: Declaration or statement expected.
 
 Split result:
 
-- `issues/open/5246-report-static-declarations-inside-constructor-bodies.md`
+- `issues/done/5246-report-static-declarations-inside-constructor-bodies.md`
 
 ## Completion evidence
 
@@ -199,7 +199,7 @@ The `class2` generated bucket is complete. The current failure is split to issue
 
 Commits:
 
-- split to `issues/open/5246-report-static-declarations-inside-constructor-bodies.md`
+- split to `issues/done/5246-report-static-declarations-inside-constructor-bodies.md`
 
 Validation result:
 

@@ -133,7 +133,7 @@ Split from `issues/open/1501-implement-contextualSignatureInstantiation-parser-s
 
 Related but not duplicates:
 
-- `issues/open/705-implement-asiAmbientFunctionDeclaration.md` is the older
+- `issues/done/705-implement-asiAmbientFunctionDeclaration.md` is the older
   generated triage bucket for the minimal `declare function foo()` ASI case.
 - `issues/done/400-implement-ambient-declaration-erasure-boundary.md` covers
   the completed baseline ambient function erasure boundary with explicit

@@ -119,8 +119,8 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/open/428-implement-enum.md` - Implement enum support (same feature label, title overlap)
-- `issues/open/1446-implement-constEnumDeclarations.md`, `issues/open/633-implement-amdModuleConstEnumUsage.md`, and `issues/open/737-implement-assignmentNonObjectTypeConstraints.md` show the same `const enum` parser boundary, but they are generated buckets rather than a focused implementation-ready child.
+- `issues/done/428-implement-enum.md` - Implement enum support (same feature label, title overlap)
+- `issues/open/1446-implement-constEnumDeclarations.md`, `issues/done/633-implement-amdModuleConstEnumUsage.md`, and `issues/done/737-implement-assignmentNonObjectTypeConstraints.md` show the same `const enum` parser boundary, but they are generated buckets rather than a focused implementation-ready child.
 
 ## Smart triage
 

@@ -152,7 +152,7 @@ Related but not duplicates:
 
 - `issues/done/5292-skip-tsconfig-filename-sections-in-reference-harness.md`
   covers the same non-code-section behavior for `tsconfig.json`.
-- `issues/open/436-implement-module-resolution.md` and package-resolution
+- `issues/done/436-implement-module-resolution.md` and package-resolution
   buckets cover later module/package lookup behavior after metadata sections
   are skipped.
 

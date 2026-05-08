@@ -118,7 +118,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/open/152-implement-ambientExternalModuleWithRelativeExternalImportDeclaration.md` - Implement Ambientexternalmodulewithrelativeexternalimportdeclaration (same reference path, same group key, title overlap)
+- `issues/done/152-implement-ambientExternalModuleWithRelativeExternalImportDeclaration.md` - Implement Ambientexternalmodulewithrelativeexternalimportdeclaration (same reference path, same group key, title overlap)
 - `issues/done/527-implement-ambientExternalModuleWithRelativeExternalImportDeclaration.md` - Implement Ambientexternalmodulewithrelativeexternalimportdeclaration (same reference path, same feature label, same group key, title overlap)
 
 ## Smart triage

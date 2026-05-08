@@ -117,16 +117,16 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/open/432-implement-import-export.md` - Implement import/export module syntax (same feature label, title overlap)
+- `issues/done/432-implement-import-export.md` - Implement import/export module syntax (same feature label, title overlap)
 - `issues/done/457-implement-APISample-import-export.md` - Implement Apisample Import Export (same feature label, title overlap)
-- `issues/open/463-implement-FunctionDeclaration-import-export.md` - Implement Functiondeclaration Import Export (same feature label, title overlap)
-- `issues/open/543-implement-APISample-import-export.md` - Implement Apisample Import Export (same feature label, title overlap)
+- `issues/done/463-implement-FunctionDeclaration-import-export.md` - Implement Functiondeclaration Import Export (same feature label, title overlap)
+- `issues/done/543-implement-APISample-import-export.md` - Implement Apisample Import Export (same feature label, title overlap)
 - `issues/done/549-implement-FunctionDeclaration-import-export.md` - Implement Functiondeclaration Import Export (same feature label, title overlap)
-- `issues/open/662-implement-arrayAssignmentTest-import-export.md` - Implement Arrayassignmenttest Import Export (same reference path, same feature label, same group key, title overlap)
-- `issues/open/665-implement-arrayBestCommonTypes.md` - Implement Arraybestcommontypes (same feature label, same group key, title overlap)
-- `issues/open/672-implement-arrayDestructuringInSwitch.md` - Implement Arraydestructuringinswitch (same feature label, same group key, title overlap)
-- `issues/open/688-implement-arrayOfExportedClass.md` - Implement Arrayofexportedclass (same feature label, same group key, title overlap)
-- `issues/open/691-implement-arraySigChecking.md` - Implement Arraysigchecking (same feature label, same group key, title overlap)
+- `issues/done/662-implement-arrayAssignmentTest-import-export.md` - Implement Arrayassignmenttest Import Export (same reference path, same feature label, same group key, title overlap)
+- `issues/done/665-implement-arrayBestCommonTypes.md` - Implement Arraybestcommontypes (same feature label, same group key, title overlap)
+- `issues/done/672-implement-arrayDestructuringInSwitch.md` - Implement Arraydestructuringinswitch (same feature label, same group key, title overlap)
+- `issues/done/688-implement-arrayOfExportedClass.md` - Implement Arrayofexportedclass (same feature label, same group key, title overlap)
+- `issues/done/691-implement-arraySigChecking.md` - Implement Arraysigchecking (same feature label, same group key, title overlap)
 
 ## Smart triage
 
@@ -136,7 +136,7 @@ Not generated. Rerun with `--triage-limit 1` or higher.
 ## 重複整理メモ
 
 この issue はタイトルが重複しているため、内容がより充実している
-`issues/open/662-implement-arrayAssignmentTest-import-export.md` に統合されました。
+`issues/done/662-implement-arrayAssignmentTest-import-export.md` に統合されました。
 そちらを参照してください。
 ## Completion evidence
 

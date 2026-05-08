@@ -528,7 +528,7 @@ error: [UnsupportedSyntax] expected Semicolon, got Some(Let) at 55..58
 ## 重複整理メモ
 
 この issue はタイトルが重複しているため、内容がより充実している
-`issues/open/640-implement-anyAndUnknownHaveFalsyComponents.md` に統合されました。
+`issues/done/640-implement-anyAndUnknownHaveFalsyComponents.md` に統合されました。
 そちらを参照してください。
 ## Completion evidence
 

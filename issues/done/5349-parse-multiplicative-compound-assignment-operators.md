@@ -119,7 +119,7 @@ python scripts/manager.py check-issue-readiness -- --fail-ready-below 80
 
 Split from generated buckets:
 
-- `issues/open/661-implement-arithAssignTyping.md`
+- `issues/done/661-implement-arithAssignTyping.md`
 - `issues/open/1442-implement-constDeclarations-parser-syntax.md`
 
 ## Completion evidence

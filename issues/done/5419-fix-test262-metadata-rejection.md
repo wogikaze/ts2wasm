@@ -45,10 +45,10 @@ This prevents the compiler from even seeing the file. The fix: log the unknown f
 
 In scope:
 
-- [ ] Change `unsupported_reason` property to log unknown features but not reject
-- [ ] Add a warning/stats counter for unknown features
-- [ ] Run `mise run reference-coverage -- test262 --limit 2000` to verify the change
-- [ ] Run `mise run update-coverage-matrix` to refresh data
+- [x] Change `unsupported_reason` property to log unknown features but not reject
+- [x] Add a warning/stats counter for unknown features
+- [x] Run `mise run reference-coverage -- test262 --limit 2000` to verify the change
+- [x] Run `mise run update-coverage-matrix` to refresh data
 
 Out of scope:
 
@@ -71,9 +71,9 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] `mise run reference-coverage -- test262 --limit 2000` shows `test262-metadata` unsupported count decreased from 165 to near 0
-- [ ] Unknown features are logged to stderr or a stats file for triage
-- [ ] `mise run update-coverage-matrix -- --check` passes
+- [x] `mise run reference-coverage -- test262 --limit 2000` shows `test262-metadata` unsupported count decreased from 165 to near 0
+- [x] Unknown features are logged to stderr or a stats file for triage
+- [x] `mise run update-coverage-matrix -- --check` passes
 
 ## Validation
 

@@ -135,7 +135,7 @@ Follow-up issues:
 - `issues/open/2215-implement-evalOrArgumentsInDeclarationFunctions.md` - Implement Evalorargumentsindeclarationfunctions (same feature label, same group key, title overlap)
 - `issues/open/2410-implement-for.md` - Implement For (same feature label, same group key, title overlap)
 - `issues/open/2465-implement-functionType.md` - Implement Functiontype (same feature label, same group key, title overlap)
-- `issues/open/308-implement-abc451-depth9-gc-cadence-policy.md` - Implement ABC451 depth-9 GC cadence policy (same feature label, same group key, title overlap)
+- `issues/done/308-implement-abc451-depth9-gc-cadence-policy.md` - Implement ABC451 depth-9 GC cadence policy (same feature label, same group key, title overlap)
 
 ## Smart triage
 
@@ -813,7 +813,7 @@ error: [UnsupportedSyntax] issue-292: top-level function mutation of outer bindi
 ## 重複整理メモ
 
 この issue はタイトルが重複しているため、内容がより充実している
-`issues/open/429-implement-eval.md` に統合されました。
+`issues/done/429-implement-eval.md` に統合されました。
 そちらを参照してください。
 ## Completion evidence
 

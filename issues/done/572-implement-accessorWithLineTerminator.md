@@ -128,7 +128,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/open/103-implement-accessorWithLineTerminator.md` - Implement Accessorwithlineterminator (same reference path, same group key, title overlap)
+- `issues/done/103-implement-accessorWithLineTerminator.md` - Implement Accessorwithlineterminator (same reference path, same group key, title overlap)
 - `issues/done/486-implement-accessorWithLineTerminator.md` - Implement Accessorwithlineterminator (same reference path, same feature label, same group key, title overlap)
 
 ## Smart triage

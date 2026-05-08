@@ -126,7 +126,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/open/103-implement-accessorWithLineTerminator.md` - Implement Accessorwithlineterminator (same reference path, same group key, title overlap)
+- `issues/done/103-implement-accessorWithLineTerminator.md` - Implement Accessorwithlineterminator (same reference path, same group key, title overlap)
 
 ## Smart triage
 
@@ -475,7 +475,7 @@ TypeScript/JavaScript oracle:
 ## 重複整理メモ
 
 この issue はタイトルが重複しているため、内容がより充実している
-`issues/open/572-implement-accessorWithLineTerminator.md` に統合されました。
+`issues/done/572-implement-accessorWithLineTerminator.md` に統合されました。
 そちらを参照してください。
 ## Completion evidence
 

@@ -25,7 +25,7 @@ Closed as superseded by `issues/done/062d-function-this-and-arguments.md` for th
 
 Reference test results previously showed 1 case failing in directory `collisionThisExpressionAndEnumInGlobal` with parser-syntax diagnostics. Fresh triage shows the current first blocker is the top-level arrow `this` expression, where ts2wasm reports the issue-062d unsupported `this` diagnostic and TypeScript reports TS7041 at the same span.
 
-Problem: `collisionThisExpressionAndEnumInGlobal.ts` is not a standalone implementation order; the current failure is an oracle-matching invalid global `this` capture diagnostic covered by issue 062d. The broader enum declaration support remains tracked separately by `issues/open/428-implement-enum.md`.
+Problem: `collisionThisExpressionAndEnumInGlobal.ts` is not a standalone implementation order; the current failure is an oracle-matching invalid global `this` capture diagnostic covered by issue 062d. The broader enum declaration support remains tracked separately by `issues/done/428-implement-enum.md`.
 
 ## Current failure
 
@@ -127,7 +127,7 @@ Follow-up issues:
 ## Duplicate detection
 
 - `issues/done/062d-function-this-and-arguments.md` owns the current issue-linked unsupported `this` diagnostic policy for top-level or unsupported receiver forms.
-- `issues/open/428-implement-enum.md` remains the broad enum support tracker, but this file's current first compiler diagnostic is the top-level arrow `this` span rather than an actionable enum parser/lowering blocker.
+- `issues/done/428-implement-enum.md` remains the broad enum support tracker, but this file's current first compiler diagnostic is the top-level arrow `this` span rather than an actionable enum parser/lowering blocker.
 
 ## Smart triage
 
@@ -209,4 +209,4 @@ date: 2026-05-07
 
 Remaining risks:
 
-- Coverage labels the file as `enum` because the source contains an enum declaration, and the AST dump does not retain that declaration today. This closure does not implement or close enum support; broader enum work remains tracked by `issues/open/428-implement-enum.md`.
+- Coverage labels the file as `enum` because the source contains an enum declaration, and the AST dump does not retain that declaration today. This closure does not implement or close enum support; broader enum work remains tracked by `issues/done/428-implement-enum.md`.

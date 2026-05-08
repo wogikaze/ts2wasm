@@ -438,7 +438,7 @@ error: [UnsupportedSyntax] expected Semicolon, got Some(Class) at 43..48
 ## 重複整理メモ
 
 この issue はタイトルが重複しているため、内容がより充実している
-`issues/open/555-implement-abstractClassInLocalScopeIsAbstract.md` に統合されました。
+`issues/done/555-implement-abstractClassInLocalScopeIsAbstract.md` に統合されました。
 そちらを参照してください。
 ## Completion evidence
 

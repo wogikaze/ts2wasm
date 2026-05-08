@@ -126,8 +126,8 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/open/342-implement-object-builtin-coverage.md` - Implement Object builtin method coverage (1,721 test262 cases) (same feature label, same group key, title overlap)
-- `issues/open/440-implement-object-builtin.md` - Implement object-builtin support (same reference path, same feature label, same group key, title overlap)
+- `issues/done/342-implement-object-builtin-coverage.md` - Implement Object builtin method coverage (1,721 test262 cases) (same feature label, same group key, title overlap)
+- `issues/done/440-implement-object-builtin.md` - Implement object-builtin support (same reference path, same feature label, same group key, title overlap)
 - `issues/done/060-investigate-unknown-unsupported-cases.md` - Investigate and classify unknown-unsupported diagnostic cases (same feature label, same group key)
 
 ## Smart triage
@@ -151,7 +151,7 @@ AttributeError: 'NoneType' object has no attribute 'parse_test262_metadata'
 ## 重複整理メモ
 
 この issue はタイトルが重複しているため、内容がより充実している
-`issues/open/440-implement-object-builtin.md` に統合されました。
+`issues/done/440-implement-object-builtin.md` に統合されました。
 そちらを参照してください。
 ## Completion evidence
 

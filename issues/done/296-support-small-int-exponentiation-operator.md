@@ -78,7 +78,7 @@ Expected:
 - `crates/cli/tests/`
 - `fixtures/core-semantics/`
 - `fixtures/atcoder/`
-- `issues/open/294-support-abc451-d-original-submission-without-source-rewrite.md`
+- `issues/done/294-support-abc451-d-original-submission-without-source-rewrite.md`
 
 Do not touch:
 
@@ -129,7 +129,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] created/updated: `issues/open/294-support-abc451-d-original-submission-without-source-rewrite.md`
+- [x] created/updated: `issues/done/294-support-abc451-d-original-submission-without-source-rewrite.md`
 
 ## Notes
 

@@ -125,9 +125,9 @@ Fresh duplicate scan found broad class/super buckets, but no exact open issue
 for converting `super()` in a non-derived class from unsupported syntax into a
 TS2335-style diagnostic:
 
-- `issues/open/449-implement-super.md` is a broad test262 `super` triage bucket.
+- `issues/done/449-implement-super.md` is a broad test262 `super` triage bucket.
 - `issues/done/047-implement-super-keyword.md` covers legal `super()` calls.
-- `issues/open/421-implement-class.md` is broad class syntax and not an exact
+- `issues/done/421-implement-class.md` is broad class syntax and not an exact
   diagnostic work order.
 - Private/static class element issues do not cover this constructor `super()`
   diagnostic.

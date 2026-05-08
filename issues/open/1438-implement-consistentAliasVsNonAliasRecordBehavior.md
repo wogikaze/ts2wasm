@@ -126,7 +126,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/open/345-implement-tsc-type-alias-coverage.md` is the broad parent.
+- `issues/done/345-implement-tsc-type-alias-coverage.md` is the broad parent.
   This bucket is now narrowed to a parser helper gap rather than broad
   type-alias erasure.
 - Split into `issues/done/5309-skip-generic-type-arguments-in-type-annotations.md`.

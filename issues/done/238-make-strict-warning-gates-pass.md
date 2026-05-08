@@ -179,7 +179,7 @@ Remaining risks:
 - `mise run check-architecture-rules`: pass; no oversized-file errors remain.
 - `cargo nextest run`: pass, 414 passed, 4 skipped.
 - `mise run gate-all`: code/toolchain/custom harness portions pass, including `cargo nextest (RUSTFLAGS=-D warnings)` and `mise run check architecture`; final aggregate result still fails because `mise run gate-fast`/`mise run check issues` report missing historical ignored report artifacts referenced by unrelated issue files:
-  - `issues/open/052-implement-json.md`: missing historical report artifact paths.
+  - `issues/done/052-implement-json.md`: missing historical report artifact paths.
   - `issues/done/228-implement-logical-assignment-operators.md`: missing historical report artifact path.
 
 Parent re-validation on 2026-04-29 used the parent checkout with local report artifacts present; `mise run gate-fast`, `cargo nextest run`, `mise run gate-all`, and `mise run check issues` all passed, so the earlier child-worktree report-artifact blocker no longer applies.

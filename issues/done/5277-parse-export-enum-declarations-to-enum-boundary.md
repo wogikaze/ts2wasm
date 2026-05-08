@@ -130,8 +130,8 @@ python scripts/manager.py reference-coverage tsc --path-filter reference/typescr
 ## Notes
 
 Split from `issues/open/1350-implement-commentOnExportEnumDeclaration.md`.
-Related module syntax bucket: `issues/open/432-implement-import-export.md`.
-Related broad enum bucket: `issues/open/428-implement-enum.md`.
+Related module syntax bucket: `issues/done/432-implement-import-export.md`.
+Related broad enum bucket: `issues/done/428-implement-enum.md`.
 
 ## False-done audit
 

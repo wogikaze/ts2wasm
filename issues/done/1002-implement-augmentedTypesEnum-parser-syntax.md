@@ -117,16 +117,16 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/open/442-implement-parser-syntax.md` - Implement parser syntax extensions (same feature label, title overlap)
+- `issues/done/442-implement-parser-syntax.md` - Implement parser syntax extensions (same feature label, title overlap)
 - `issues/done/464-implement-FunctionDeclaration-parser-syntax.md` - Implement Functiondeclaration Parser Syntax (same feature label, title overlap)
 - `issues/done/550-implement-FunctionDeclaration-parser-syntax.md` - Implement Functiondeclaration Parser Syntax (same feature label, title overlap)
-- `issues/open/663-implement-arrayAssignmentTest-parser-syntax.md` - Implement Arrayassignmenttest Parser Syntax (same feature label, title overlap)
-- `issues/open/734-implement-assignmentCompatability-parser-syntax.md` - Implement Assignmentcompatability Parser Syntax (same feature label, title overlap)
-- `issues/open/753-implement-asyncFunctionReturnType-parser-syntax.md` - Implement Asyncfunctionreturntype Parser Syntax (same feature label, title overlap)
-- `issues/open/767-implement-augmentedTypesEnum-parser-syntax.md` - Implement Augmentedtypesenum Parser Syntax (same reference path, same feature label, same group key, title overlap)
-- `issues/open/769-implement-augmentedTypesFunction.md` - Implement Augmentedtypesfunction (same feature label, same group key, title overlap)
-- `issues/open/770-implement-augmentedTypesInterface.md` - Implement Augmentedtypesinterface (same feature label, same group key, title overlap)
-- `issues/open/772-implement-augmentedTypesVar.md` - Implement Augmentedtypesvar (same feature label, same group key, title overlap)
+- `issues/done/663-implement-arrayAssignmentTest-parser-syntax.md` - Implement Arrayassignmenttest Parser Syntax (same feature label, title overlap)
+- `issues/done/734-implement-assignmentCompatability-parser-syntax.md` - Implement Assignmentcompatability Parser Syntax (same feature label, title overlap)
+- `issues/done/753-implement-asyncFunctionReturnType-parser-syntax.md` - Implement Asyncfunctionreturntype Parser Syntax (same feature label, title overlap)
+- `issues/done/767-implement-augmentedTypesEnum-parser-syntax.md` - Implement Augmentedtypesenum Parser Syntax (same reference path, same feature label, same group key, title overlap)
+- `issues/done/769-implement-augmentedTypesFunction.md` - Implement Augmentedtypesfunction (same feature label, same group key, title overlap)
+- `issues/done/770-implement-augmentedTypesInterface.md` - Implement Augmentedtypesinterface (same feature label, same group key, title overlap)
+- `issues/done/772-implement-augmentedTypesVar.md` - Implement Augmentedtypesvar (same feature label, same group key, title overlap)
 
 ## Smart triage
 
@@ -136,7 +136,7 @@ Not generated. Rerun with `--triage-limit 1` or higher.
 ## 重複整理メモ
 
 この issue はタイトルが重複しているため、内容がより充実している
-`issues/open/767-implement-augmentedTypesEnum-parser-syntax.md` に統合されました。
+`issues/done/767-implement-augmentedTypesEnum-parser-syntax.md` に統合されました。
 そちらを参照してください。
 ## Completion evidence
 

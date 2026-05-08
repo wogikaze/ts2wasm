@@ -125,7 +125,7 @@ Fresh duplicate scan found related runtime-subset and closure buckets, but no
 exact implementation-ready issue for nested function expressions with rest or
 default parameters:
 
-- `issues/open/445-implement-runtime-subset.md` is a broad generated
+- `issues/done/445-implement-runtime-subset.md` is a broad generated
   runtime-subset bucket and includes the same diagnostic family, but is not an
   implementation-ready child.
 - `issues/done/062e-function-closures.md` implemented the base closure slice

@@ -120,7 +120,7 @@ Follow-up issues:
   `issues/done/5304-parse-generic-arrow-functions-with-typed-parameters.md`.
   This bucket reaches the same parser boundary for a generic arrow function
   with typed parameters.
-- `issues/open/694-implement-arrayToLocaleStringES-unknown-unsupported.md` is a
+- `issues/done/694-implement-arrayToLocaleStringES-unknown-unsupported.md` is a
   generated same-label candidate but not a syntax match.
 
 ## Smart triage

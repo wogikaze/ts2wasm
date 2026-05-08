@@ -35,7 +35,7 @@ Out of scope:
 
 Expected:
 
-- `issues/open/050-implement-date.md`
+- `issues/done/050-implement-date.md`
 - `issues/done/061-implement-date.md`
 - `issues/done/`
 - `issues/index.md`

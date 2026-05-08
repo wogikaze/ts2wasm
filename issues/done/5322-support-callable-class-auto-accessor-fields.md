@@ -136,7 +136,7 @@ Split from stale generated bucket
 
 Related but not duplicate:
 
-- `issues/open/422-implement-class-accessor.md` is a broad generated
+- `issues/done/422-implement-class-accessor.md` is a broad generated
   class-accessor bucket, not a narrow implementation-ready owner for this
   callable auto-accessor receiver shape.
 

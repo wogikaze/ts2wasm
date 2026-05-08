@@ -118,7 +118,7 @@ Follow-up issues:
 ## Duplicate detection
 
 - `issues/done/255-implement-private-class-element-runtime-semantics.md` - Implement private class element runtime semantics (same feature label, title overlap)
-- `issues/open/421-implement-class.md` - Implement class syntax (same feature label, title overlap)
+- `issues/done/421-implement-class.md` - Implement class syntax (same feature label, title overlap)
 - `issues/done/045-implement-class-syntax.md` - Implement class declaration and expression (same feature label, title overlap)
 - `issues/done/248-implement-private-class-element-parser.md` - Implement private class element parser support (same feature label, title overlap)
 - `issues/done/249-implement-class-static-block-parser.md` - Implement class static block parser support (same feature label, title overlap)
@@ -172,7 +172,7 @@ Evidence:
   `issues/open/2600-implement-getAndSetNotIdenticalType-duplicate-function.md`,
   and `issues/open/4258-implement-staticVisibility-duplicate-function.md` are
   no-match buckets for different duplicate-function windows.
-- Related `issues/open/769-implement-augmentedTypesFunction.md` is a different
+- Related `issues/done/769-implement-augmentedTypesFunction.md` is a different
   parser-syntax bucket; child issue
   `issues/done/5199-report-function-overload-list-class-merge-diagnostics.md`
   owns this already-parsed callOverloads blocker.

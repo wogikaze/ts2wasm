@@ -127,7 +127,7 @@ Follow-up issues:
 ## Duplicate detection
 
 - `issues/done/089-implement-acceptSymbolAsWeakType.md` - Implement Acceptsymbolasweaktype (same reference path, same feature label, same group key, title overlap)
-- `issues/open/437-implement-name-resolution.md` - Implement name resolution (same feature label, same group key, title overlap)
+- `issues/done/437-implement-name-resolution.md` - Implement name resolution (same feature label, same group key, title overlap)
 - `issues/done/474-implement-acceptSymbolAsWeakType.md` - Implement Acceptsymbolasweaktype (same reference path, same feature label, same group key, title overlap)
 
 ## Smart triage

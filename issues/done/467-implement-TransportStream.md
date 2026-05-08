@@ -128,7 +128,7 @@ Follow-up issues:
 ## Duplicate detection
 
 - `issues/done/081-implement-TransportStream.md` - Implement Transportstream (same reference path, same feature label, same group key, title overlap)
-- `issues/open/442-implement-parser-syntax.md` - Implement parser syntax extensions (same feature label, same group key, title overlap)
+- `issues/done/442-implement-parser-syntax.md` - Implement parser syntax extensions (same feature label, same group key, title overlap)
 
 ## Smart triage
 

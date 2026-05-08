@@ -122,8 +122,8 @@ Follow-up issues:
 
 Fresh triage surfaced several related async-arrow parser buckets:
 
-- `issues/open/759-implement-asyncIIFE.md` has the same raw `Async` parser failure for `(async () => { ... })()`.
-- `issues/open/751-implement-asyncFunctionNoReturnType.md` has the same raw `Async` parser failure for bare `async () => { ... }`.
+- `issues/done/759-implement-asyncIIFE.md` has the same raw `Async` parser failure for `(async () => { ... })()`.
+- `issues/done/751-implement-asyncFunctionNoReturnType.md` has the same raw `Async` parser failure for bare `async () => { ... }`.
 - `issues/open/3758-implement-parenthesizedAsyncArrowFunction.md` is a generated bucket for parenthesized async arrows but still needs fresh triage.
 
 No existing implementation-ready issue owned this exact parser boundary, so

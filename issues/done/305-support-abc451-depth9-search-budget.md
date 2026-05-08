@@ -102,7 +102,7 @@ Expected:
 - `fixtures/core-semantics/`
 - `docs/14-runtime-abi.md` if memory policy changes
 - `current-state.md` if supported runtime facts change
-- `issues/open/300-support-abc451-large-integer-number-boundary.md`
+- `issues/done/300-support-abc451-large-integer-number-boundary.md`
 - `issues/index.md`
 
 Do not touch:

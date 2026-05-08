@@ -119,8 +119,8 @@ Follow-up issues:
 
 - `issues/done/106-implement-accessors.md` - Implement Accessors (same reference path, same feature label, same group key, title overlap)
 - `issues/done/107-implement-accessorsEmit.md` - Implement Accessorsemit (same feature label, same group key, title overlap)
-- `issues/open/108-implement-accessorsInAmbientContext.md` - Implement Accessorsinambientcontext (same feature label, same group key, title overlap)
-- `issues/open/119-implement-aliasUsageInAccessorsOfClass.md` - Implement Aliasusageinaccessorsofclass (same feature label, same group key, title overlap)
+- `issues/done/108-implement-accessorsInAmbientContext.md` - Implement Accessorsinambientcontext (same feature label, same group key, title overlap)
+- `issues/done/119-implement-aliasUsageInAccessorsOfClass.md` - Implement Aliasusageinaccessorsofclass (same feature label, same group key, title overlap)
 - `issues/done/488-implement-accessors.md` - Implement Accessors (same reference path, same feature label, same group key, title overlap)
 - `issues/done/574-implement-accessors.md` - Implement Accessors (same reference path, same feature label, same group key, title overlap)
 - `issues/done/399-define-typescript-parse-erase-emit-boundary.md` - Define TypeScript parse, erase, and emit boundary contract (same feature label, same group key)

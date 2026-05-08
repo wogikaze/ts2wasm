@@ -121,7 +121,7 @@ Expected:
 - `docs/14-runtime-abi.md`
 - `docs/05-compatibility-and-semantics.md` only if user-visible runtime limits
   are described there
-- `issues/open/300-support-abc451-large-integer-number-boundary.md`
+- `issues/done/300-support-abc451-large-integer-number-boundary.md`
 - `issues/index.md`
 
 Do not touch:

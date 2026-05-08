@@ -19,7 +19,7 @@ Problem: deterministic Date values support epoch-millisecond extraction, but `Da
 
 ## Current failure
 
-`issues/open/050-implement-date.md` records this diagnostic:
+`issues/done/050-implement-date.md` records this diagnostic:
 
 ```text
 error: [UnsupportedSyntax] issue-050: Date.prototype.toString() requires timezone/host formatting policy; use getTime() or valueOf() for deterministic epoch milliseconds
@@ -50,7 +50,7 @@ Expected:
 
 - `crates/`
 - `fixtures/`
-- `issues/open/050-implement-date.md`
+- `issues/done/050-implement-date.md`
 - `current-state.md`
 
 Do not touch:

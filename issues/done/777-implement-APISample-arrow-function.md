@@ -120,7 +120,7 @@ Follow-up issues:
 - `issues/done/415-implement-arrow-function.md` - Implement arrow functions (same feature label, title overlap)
 - `issues/done/430-implement-function.md` - Implement function support (same feature label, title overlap)
 - `issues/done/456-implement-APISample-arrow-function.md` - Implement Apisample Arrow Function (same reference path, same feature label, same group key, title overlap)
-- `issues/open/542-implement-APISample-arrow-function.md` - Implement Apisample Arrow Function (same reference path, same feature label, same group key, title overlap)
+- `issues/done/542-implement-APISample-arrow-function.md` - Implement Apisample Arrow Function (same reference path, same feature label, same group key, title overlap)
 - `issues/done/036-implement-arrow-function.md` - Implement arrow function (same feature label, title overlap)
 - `issues/done/062d-function-this-and-arguments.md` - Implement function this and arguments semantics (same feature label, title overlap)
 - `issues/done/210-implement-arrow-function-closure-lexical-this.md` - Implement arrow function closure and lexical this semantics (same feature label, title overlap)
@@ -133,7 +133,7 @@ Not generated. Rerun with `--triage-limit 1` or higher.
 ## 重複整理メモ
 
 この issue はタイトルが重複しているため、内容がより充実している
-`issues/open/542-implement-APISample-arrow-function.md` に統合されました。
+`issues/done/542-implement-APISample-arrow-function.md` に統合されました。
 そちらを参照してください。
 ## Completion evidence
 

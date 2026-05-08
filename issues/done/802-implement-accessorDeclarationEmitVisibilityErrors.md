@@ -118,7 +118,7 @@ Follow-up issues:
 
 - `issues/done/097-implement-accessorDeclarationEmitVisibilityErrors.md` - Implement Accessordeclarationemitvisibilityerrors (same reference path, same group key, title overlap)
 - `issues/done/481-implement-accessorDeclarationEmitVisibilityErrors.md` - Implement Accessordeclarationemitvisibilityerrors (same reference path, same feature label, same group key, title overlap)
-- `issues/open/543-implement-APISample-import-export.md` - Implement Apisample Import Export (same feature label, same group key, title overlap)
+- `issues/done/543-implement-APISample-import-export.md` - Implement Apisample Import Export (same feature label, same group key, title overlap)
 - `issues/done/549-implement-FunctionDeclaration-import-export.md` - Implement Functiondeclaration Import Export (same feature label, same group key, title overlap)
 - `issues/done/567-implement-accessorDeclarationEmitVisibilityErrors.md` - Implement Accessordeclarationemitvisibilityerrors (same reference path, same feature label, same group key, title overlap)
 

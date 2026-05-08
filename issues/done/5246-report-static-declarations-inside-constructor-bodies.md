@@ -37,10 +37,10 @@ TypeScript instead reports TS1128 at the invalid `static` token.
 
 In scope:
 
-- [ ] Detect statement-position `static` before expression parsing reports generic unsupported syntax.
-- [ ] Emit a source-spanned invalid statement/declaration diagnostic at `static`.
-- [ ] Preserve valid class-member `static` fields and methods.
-- [ ] Add focused parser or CLI diagnostic coverage.
+- [x] Detect statement-position `static` before expression parsing reports generic unsupported syntax.
+- [x] Emit a source-spanned invalid statement/declaration diagnostic at `static`.
+- [x] Preserve valid class-member `static` fields and methods.
+- [x] Add focused parser or CLI diagnostic coverage.
 
 Out of scope: runtime semantics and invalid-code AST recovery beyond this
 diagnostic.
@@ -53,9 +53,9 @@ Do not touch: `crates/backend-wasm/` or runtime semantics.
 
 ## Acceptance criteria
 
-- [ ] `class2.ts` and `staticsInConstructorBodies.ts` no longer report generic `unsupported expression`.
-- [ ] Valid `class C { static f = 3; }` passes.
-- [ ] The diagnostic reports the invalid `static` keyword span.
+- [x] `class2.ts` and `staticsInConstructorBodies.ts` no longer report generic `unsupported expression`.
+- [x] Valid `class C { static f = 3; }` passes.
+- [x] The diagnostic reports the invalid `static` keyword span.
 
 ## Validation
 

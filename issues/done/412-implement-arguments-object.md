@@ -163,7 +163,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/open/194-implement-argumentsAsPropertyName.md` - Implement Argumentsaspropertyname (same feature label, same group key, title overlap)
+- `issues/done/194-implement-argumentsAsPropertyName.md` - Implement Argumentsaspropertyname (same feature label, same group key, title overlap)
 - `issues/done/197-implement-argumentsObjectIterator.md` - Implement Argumentsobjectiterator (same feature label, same group key, title overlap)
 - `issues/done/198-implement-argumentsPropertyNameInJsMode.md` - Implement Argumentspropertynameinjsmode (same feature label, same group key, title overlap)
 - `issues/done/311-fix-test262-arguments-object-index-assignment.md` - Fix test262 arguments object index assignment semantics (same feature label, same group key)

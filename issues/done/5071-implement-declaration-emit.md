@@ -158,7 +158,7 @@ AttributeError: 'NoneType' object has no attribute 'parse_test262_metadata'
 ## 重複整理メモ
 
 この issue はタイトルが重複しているため、内容がより充実している
-`issues/open/424-implement-declaration-emit.md` に統合されました。
+`issues/done/424-implement-declaration-emit.md` に統合されました。
 そちらを参照してください。
 ## Completion evidence
 

@@ -179,7 +179,7 @@ Related but not duplicate:
 - `issues/done/5234-w0-implement-host-deny-and-auditable-e2e-manifest-verification.md` covers array-shaped parameter annotations, not declaration-only locals.
 - `issues/done/5222-parse-ambient-generic-variable-type-annotations.md` covers interface-typed erased locals such as `Sequence<string>`, not array callback receivers.
 - `issues/done/297-track-pushed-dense-array-locals-for-map.md` covers initialized dense arrays built through pushes, not erased declaration-only locals.
-- `issues/open/435-implement-method-call.md` is the broad method-call bucket; this issue owns the narrow array-typed local receiver evidence.
+- `issues/done/435-implement-method-call.md` is the broad method-call bucket; this issue owns the narrow array-typed local receiver evidence.
 
 ## Completion evidence
 

@@ -126,7 +126,7 @@ Follow-up issues:
   duplicates for the same reference bucket.
 
 - `issues/done/086-implement-abstractPropertyBasics.md` - Implement Abstractpropertybasics (same reference path, same feature label, same group key, title overlap)
-- `issues/open/442-implement-parser-syntax.md` - Implement parser syntax extensions (same feature label, same group key, title overlap)
+- `issues/done/442-implement-parser-syntax.md` - Implement parser syntax extensions (same feature label, same group key, title overlap)
 - `issues/done/460-implement-ClassDeclaration.md` - Implement Classdeclaration (same feature label, same group key, title overlap)
 - `issues/done/471-implement-abstractPropertyBasics.md` - Implement Abstractpropertybasics (same reference path, same feature label, same group key, title overlap)
 

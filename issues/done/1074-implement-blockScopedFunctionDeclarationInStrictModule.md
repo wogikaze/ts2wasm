@@ -118,7 +118,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/open/432-implement-import-export.md` is a broad import/export triage bucket, not a focused implementation-ready owner for `export = expr` diagnostics.
+- `issues/done/432-implement-import-export.md` is a broad import/export triage bucket, not a focused implementation-ready owner for `export = expr` diagnostics.
 - Existing export-assignment generated buckets share the broad module feature label but do not contain the strict-module block-scoped function diagnostic slice.
 
 ## Smart triage

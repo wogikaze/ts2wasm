@@ -186,9 +186,9 @@ Follow-up issues:
 
 Split from generated bucket `issues/open/1436-implement-conflictingTypeAnnotatedVar.md`.
 Also supersedes stale parser-syntax bucket
-`issues/open/769-implement-augmentedTypesFunction.md`.
+`issues/done/769-implement-augmentedTypesFunction.md`.
 Also supersedes stale parser-syntax bucket
-`issues/open/772-implement-augmentedTypesVar.md`.
+`issues/done/772-implement-augmentedTypesVar.md`.
 
 ## Completion evidence
 

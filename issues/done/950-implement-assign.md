@@ -118,7 +118,7 @@ Follow-up issues:
 
 - `issues/done/075-implement-ExportAssignment.md` - Implement Exportassignment (same feature label, same group key, title overlap)
 - `issues/done/135-implement-allowSyntheticDefaultImports.md` - Implement Allowsyntheticdefaultimports (same feature label, same group key, title overlap)
-- `issues/open/432-implement-import-export.md` - Implement import/export module syntax (same feature label, same group key, title overlap)
+- `issues/done/432-implement-import-export.md` - Implement import/export module syntax (same feature label, same group key, title overlap)
 - `issues/done/462-implement-ExportAssignment.md` - Implement Exportassignment (same feature label, same group key, title overlap)
 - `issues/done/483-implement-accessorInAmbientContextES.md` - Implement Accessorinambientcontextes (same feature label, same group key, title overlap)
 - `issues/done/491-implement-aliasAssignments.md` - Implement Aliasassignments (same feature label, same group key, title overlap)
@@ -135,7 +135,7 @@ Not generated. Rerun with `--triage-limit 1` or higher.
 ## 重複整理メモ
 
 この issue はタイトルが重複しているため、内容がより充実している
-`issues/open/715-implement-assign.md` に統合されました。
+`issues/done/715-implement-assign.md` に統合されました。
 そちらを参照してください。
 ## Completion evidence
 

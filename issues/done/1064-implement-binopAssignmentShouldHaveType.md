@@ -119,7 +119,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/open/432-implement-import-export.md` is not a match for the current blocker: the reference case now builds successfully, and current evidence is about hidden TypeScript oracle diagnostics.
+- `issues/done/432-implement-import-export.md` is not a match for the current blocker: the reference case now builds successfully, and current evidence is about hidden TypeScript oracle diagnostics.
 - `issues/done/5162-allow-compatible-var-redeclarations.md` is related but not an exact match. It covers compatible duplicate `var` declarations; the current first oracle diagnostic is an ambient `declare var console;` conflict with a lib global.
 - No open issue was found for the namespace class method `var name: string = null` diagnostic hidden by namespace erasure.
 

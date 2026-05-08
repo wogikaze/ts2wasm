@@ -391,7 +391,7 @@ error: [UnsupportedSyntax] issue-055: unsupported default import; module resolut
 ## 重複整理メモ
 
 この issue はタイトルが重複しているため、内容がより充実している
-`issues/open/630-implement-amdDependencyCommentName.md` に統合されました。
+`issues/done/630-implement-amdDependencyCommentName.md` に統合されました。
 そちらを参照してください。
 ## Completion evidence
 

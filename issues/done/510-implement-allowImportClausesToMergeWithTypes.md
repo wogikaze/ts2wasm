@@ -117,7 +117,7 @@ Follow-up issues:
 ## Duplicate detection
 
 - `issues/done/131-implement-allowImportClausesToMergeWithTypes.md` - Implement Allowimportclausestomergewithtypes (same reference path, same feature label, same group key, title overlap)
-- `issues/open/432-implement-import-export.md` - Implement import/export module syntax (same feature label, same group key, title overlap)
+- `issues/done/432-implement-import-export.md` - Implement import/export module syntax (same feature label, same group key, title overlap)
 
 ## Smart triage
 

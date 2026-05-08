@@ -142,7 +142,7 @@ Issue 200 is a generated parser-syntax bucket and is not a direct implementation
 ## 重複整理メモ
 
 この issue はタイトルが重複しているため、内容がより充実している
-`issues/open/442-implement-parser-syntax.md` に統合されました。
+`issues/done/442-implement-parser-syntax.md` に統合されました。
 そちらを参照してください。
 ## Completion evidence
 

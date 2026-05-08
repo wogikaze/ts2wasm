@@ -167,7 +167,7 @@ Other candidates are related but not exact:
 - `issues/done/211-complete-this-receiver-binding-semantics.md` completed
   receiver-bound `this` semantics and explicitly left unsupported receiver
   forms as issue-linked diagnostics.
-- `issues/open/435-implement-method-call.md` is broader method-call support and
+- `issues/done/435-implement-method-call.md` is broader method-call support and
   should not duplicate the narrower interface-typed receiver issue.
 - `issues/done/5217-preserve-ambient-value-declarations-through-name-resolution.md` covers
   call-expression receivers, not identifier locals annotated with interface

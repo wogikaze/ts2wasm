@@ -123,7 +123,7 @@ Follow-up issues:
 ## Duplicate detection
 
 - `issues/done/094-implement-accessorAccidentalCallDiagnostic.md` - Implement Accessoraccidentalcalldiagnostic (same reference path, same feature label, same group key, title overlap)
-- `issues/open/422-implement-class-accessor.md` - Implement class-accessor support (same feature label, same group key, title overlap)
+- `issues/done/422-implement-class-accessor.md` - Implement class-accessor support (same feature label, same group key, title overlap)
 - `issues/done/479-implement-accessorAccidentalCallDiagnostic.md` - Implement Accessoraccidentalcalldiagnostic (same reference path, same feature label, same group key, title overlap)
 
 ## Smart triage

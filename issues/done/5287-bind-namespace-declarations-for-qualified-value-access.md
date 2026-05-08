@@ -163,7 +163,7 @@ Related but not duplicates:
 
 - `issues/done/399-define-typescript-parse-erase-emit-boundary.md` defines the
   namespace ownership contract.
-- `issues/open/432-implement-import-export.md` is the broad triage parent.
+- `issues/done/432-implement-import-export.md` is the broad triage parent.
 - `issues/done/5187-lower-namespace-only-multi-section-files.md`,
   `issues/done/5225-w0-typed-wat-writer.md`, and
   `issues/done/5244-date-timezone-formatting-policy.md`

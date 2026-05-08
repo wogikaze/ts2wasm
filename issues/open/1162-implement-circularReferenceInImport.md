@@ -126,7 +126,7 @@ Follow-up issues:
 
 - `issues/done/5229-w0-user-runtime-string-origin.md` owns resolving local imports between TypeScript reference `// @Filename:` / `// @filename:` virtual sections.
 - `issues/done/232-resolve-local-relative-es-module-graph.md` owns real on-disk local relative module graph diagnostics, but not virtual `@filename` section registration.
-- `issues/open/432-implement-import-export.md` is a broad import/export triage bucket and is not an implementation-ready owner.
+- `issues/done/432-implement-import-export.md` is a broad import/export triage bucket and is not an implementation-ready owner.
 
 ## Smart triage
 

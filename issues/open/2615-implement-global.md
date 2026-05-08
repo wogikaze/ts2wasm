@@ -117,7 +117,7 @@ Follow-up issues:
 ## Duplicate detection
 
 - `issues/done/344-implement-legacy-global-builtin-bindings.md` - Implement legacy global builtin bindings (8 test262 cases) (same group key, title overlap)
-- `issues/open/432-implement-import-export.md` - Implement import/export module syntax (same feature label, same group key, title overlap)
+- `issues/done/432-implement-import-export.md` - Implement import/export module syntax (same feature label, same group key, title overlap)
 - `issues/done/060-investigate-unknown-unsupported-cases.md` - Investigate and classify unknown-unsupported diagnostic cases (same feature label, same group key)
 - `issues/done/233-emit-static-es-module-bindings.md` - Emit static ES module bindings (same feature label, same group key)
 - `issues/done/341a-global-number-functions.md` - Implement isNaN, parseInt, parseFloat, isFinite global functions (same group key, title overlap)

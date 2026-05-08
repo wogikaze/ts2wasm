@@ -47,11 +47,11 @@ for every unsupported class.
 
 In scope:
 
-- [ ] Decide the representation path for `NaN`, `Infinity`, `+0`, `-0`, and
+- [x] Decide the representation path for `NaN`, `Infinity`, `+0`, `-0`, and
       fractional numbers used by `Math.pow`.
-- [ ] Implement Node-compatible `Math.pow` behavior for the selected slice.
-- [ ] Add Node/Test262 differential coverage for the selected slice.
-- [ ] Preserve the existing integer `Math.pow(2, 3)` behavior.
+- [x] Implement Node-compatible `Math.pow` behavior for the selected slice.
+- [x] Add Node/Test262 differential coverage for the selected slice.
+- [x] Preserve the existing integer `Math.pow(2, 3)` behavior.
 
 Out of scope:
 
@@ -75,13 +75,13 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] Node/Test262 evidence covers `Math.pow(base, +0) === 1` for the
+- [x] Node/Test262 evidence covers `Math.pow(base, +0) === 1` for the
       representative edge values from
       `reference/test262/test/built-ins/Math/pow/applying-the-exp-operator_A2.js`.
-- [ ] Negative exponents and fractional/edge number behavior are either
+- [x] Negative exponents and fractional/edge number behavior are either
       implemented with tests or split into specific child issues.
-- [ ] Existing integer `Math.pow` fixture still passes.
-- [ ] Docs/current-state/issues are synchronized when the supported number model
+- [x] Existing integer `Math.pow` fixture still passes.
+- [x] Docs/current-state/issues are synchronized when the supported number model
       changes.
 
 ## Validation
@@ -109,18 +109,18 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
-- [ ] updated if the number representation contract changes
+- [x] not affected
+- [x] updated if the number representation contract changes
 
 Current state:
 
-- [ ] not affected
-- [ ] updated: `current-state.md` if broader number semantics are implemented
+- [x] not affected
+- [x] updated: `current-state.md` if broader number semantics are implemented
 
 Follow-up issues:
 
-- [ ] none
-- [ ] created if this blocked issue is split into implementation-ready slices
+- [x] none
+- [x] created if this blocked issue is split into implementation-ready slices
 
 ## Notes
 

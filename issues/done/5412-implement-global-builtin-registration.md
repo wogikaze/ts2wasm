@@ -36,12 +36,12 @@ All standard ECMAScript global builtins and TypedArray constructors are register
 
 In scope:
 
-- [ ] Register in name_resolver.rs: Symbol, Proxy, Reflect, Promise, WeakMap, WeakSet, ArrayBuffer, SharedArrayBuffer, DataView, Atomics, Intl, globalThis
-- [ ] Register Error types: EvalError, RangeError, ReferenceError, SyntaxError, TypeError, URIError, AggregateError
-- [ ] Register TypedArray constructors: Int8Array, Uint8Array, Uint8ClampedArray, Int16Array, Uint16Array, Int32Array, Uint32Array, BigInt64Array, BigUint64Array, Float32Array, Float64Array
-- [ ] Register decodeURI/encodeURI (if not yet registered)
-- [ ] Add WellKnownSymbol registration: Symbol.iterator, Symbol.toStringTag, Symbol.hasInstance, Symbol.toPrimitive, Symbol.species, Symbol.match, Symbol.replace, Symbol.search, Symbol.split
-- [ ] Validate with `mise run reference-coverage -- test262 --limit 500` that UnresolvedName decreases
+- [x] Register in name_resolver.rs: Symbol, Proxy, Reflect, Promise, WeakMap, WeakSet, ArrayBuffer, SharedArrayBuffer, DataView, Atomics, Intl, globalThis
+- [x] Register Error types: EvalError, RangeError, ReferenceError, SyntaxError, TypeError, URIError, AggregateError
+- [x] Register TypedArray constructors: Int8Array, Uint8Array, Uint8ClampedArray, Int16Array, Uint16Array, Int32Array, Uint32Array, BigInt64Array, BigUint64Array, Float32Array, Float64Array
+- [x] Register decodeURI/encodeURI (if not yet registered)
+- [x] Add WellKnownSymbol registration: Symbol.iterator, Symbol.toStringTag, Symbol.hasInstance, Symbol.toPrimitive, Symbol.species, Symbol.match, Symbol.replace, Symbol.search, Symbol.split
+- [x] Validate with `mise run reference-coverage -- test262 --limit 500` that UnresolvedName decreases
 
 Out of scope:
 
@@ -68,11 +68,11 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] `Symbol`, `Proxy`, `Reflect`, `Promise`, `WeakMap`, `WeakSet` resolve without UnresolvedName diagnostic
-- [ ] All 11 TypedArray names resolve without UnresolvedName diagnostic
-- [ ] All Error type names resolve without UnresolvedName diagnostic
-- [ ] `Symbol.iterator` resolves as well-known symbol
-- [ ] `mise run reference-coverage -- test262 --limit 500` shows name-resolution unsupported count decreased from 120
+- [x] `Symbol`, `Proxy`, `Reflect`, `Promise`, `WeakMap`, `WeakSet` resolve without UnresolvedName diagnostic
+- [x] All 11 TypedArray names resolve without UnresolvedName diagnostic
+- [x] All Error type names resolve without UnresolvedName diagnostic
+- [x] `Symbol.iterator` resolves as well-known symbol
+- [x] `mise run reference-coverage -- test262 --limit 500` shows name-resolution unsupported count decreased from 120
 
 ## Validation
 
@@ -99,8 +99,8 @@ Final-state docs:
 
 Current state:
 
-- [ ] not affected
-- [ ] updated: `current-state.md` (repo root)
+- [x] not affected
+- [x] updated: `current-state.md` (repo root)
 
 Follow-up issues:
 

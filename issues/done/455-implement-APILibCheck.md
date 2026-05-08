@@ -671,7 +671,7 @@ error: [UnsupportedModule] issue-055: unsupported default import; module resolut
 ## 重複整理メモ
 
 この issue はタイトルが重複しているため、内容がより充実している
-`issues/open/541-implement-APILibCheck.md` に統合されました。
+`issues/done/541-implement-APILibCheck.md` に統合されました。
 そちらを参照してください。
 ## Completion evidence
 

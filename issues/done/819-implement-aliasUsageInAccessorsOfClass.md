@@ -116,10 +116,10 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/open/119-implement-aliasUsageInAccessorsOfClass.md` - Implement Aliasusageinaccessorsofclass (same reference path, same group key, title overlap)
+- `issues/done/119-implement-aliasUsageInAccessorsOfClass.md` - Implement Aliasusageinaccessorsofclass (same reference path, same group key, title overlap)
 - `issues/done/498-implement-aliasUsageInAccessorsOfClass.md` - Implement Aliasusageinaccessorsofclass (same reference path, same feature label, same group key, title overlap)
 - `issues/done/584-implement-aliasUsageInAccessorsOfClass.md` - Implement Aliasusageinaccessorsofclass (same reference path, same feature label, same group key, title overlap)
-- `issues/open/715-implement-assign.md` - Implement Assign (same feature label, same group key, title overlap)
+- `issues/done/715-implement-assign.md` - Implement Assign (same feature label, same group key, title overlap)
 
 ## Smart triage
 

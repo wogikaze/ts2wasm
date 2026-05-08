@@ -119,7 +119,7 @@ Follow-up issues:
 
 - `issues/done/171-implement-amdDependencyComment.md` - Implement Amddependencycomment (same reference path, same group key, title overlap)
 - `issues/open/629-implement-amdDependencyComment.md` - Implement Amddependencycomment (same reference path, same feature label, same group key, title overlap)
-- `issues/open/630-implement-amdDependencyCommentName.md` - Implement Amddependencycommentname (same feature label, same group key, title overlap)
+- `issues/done/630-implement-amdDependencyCommentName.md` - Implement Amddependencycommentname (same feature label, same group key, title overlap)
 
 ## Smart triage
 

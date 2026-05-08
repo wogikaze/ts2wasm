@@ -144,7 +144,7 @@ lower-program failure:
 - `issues/open/2812-implement-inferenceContextualReturnTypeUnion-type-system.md`
 - `issues/open/2859-implement-inheritanceOfGenericConstructorMethod-type-system.md`
 - `issues/open/3223-implement-mappedTypeRecursiveInference-type-system.md`
-- `issues/open/345-implement-tsc-type-alias-coverage.md`
+- `issues/done/345-implement-tsc-type-alias-coverage.md`
 
 Related issue 5156 covers parser failures on generic type arguments in class
 heritage. It is not a duplicate because this case already reaches AST and fails

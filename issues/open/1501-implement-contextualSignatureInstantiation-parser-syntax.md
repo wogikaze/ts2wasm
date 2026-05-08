@@ -122,13 +122,13 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/open/442-implement-parser-syntax.md` - Implement parser syntax extensions (same feature label, title overlap)
+- `issues/done/442-implement-parser-syntax.md` - Implement parser syntax extensions (same feature label, title overlap)
 - `issues/done/464-implement-FunctionDeclaration-parser-syntax.md` - Implement Functiondeclaration Parser Syntax (same feature label, title overlap)
 - `issues/done/550-implement-FunctionDeclaration-parser-syntax.md` - Implement Functiondeclaration Parser Syntax (same feature label, title overlap)
-- `issues/open/663-implement-arrayAssignmentTest-parser-syntax.md` - Implement Arrayassignmenttest Parser Syntax (same feature label, title overlap)
-- `issues/open/734-implement-assignmentCompatability-parser-syntax.md` - Implement Assignmentcompatability Parser Syntax (same feature label, title overlap)
-- `issues/open/753-implement-asyncFunctionReturnType-parser-syntax.md` - Implement Asyncfunctionreturntype Parser Syntax (same feature label, title overlap)
-- `issues/open/767-implement-augmentedTypesEnum-parser-syntax.md` - Implement Augmentedtypesenum Parser Syntax (same feature label, title overlap)
+- `issues/done/663-implement-arrayAssignmentTest-parser-syntax.md` - Implement Arrayassignmenttest Parser Syntax (same feature label, title overlap)
+- `issues/done/734-implement-assignmentCompatability-parser-syntax.md` - Implement Assignmentcompatability Parser Syntax (same feature label, title overlap)
+- `issues/done/753-implement-asyncFunctionReturnType-parser-syntax.md` - Implement Asyncfunctionreturntype Parser Syntax (same feature label, title overlap)
+- `issues/done/767-implement-augmentedTypesEnum-parser-syntax.md` - Implement Augmentedtypesenum Parser Syntax (same feature label, title overlap)
 - `issues/open/059-implement-parser-syntax-extensions.md` - Implement parser syntax extensions for TypeScript and advanced JS (same feature label, title overlap)
 - `issues/done/065-implement-parser-syntax.md` - Implement parser syntax extensions (same feature label, title overlap)
 - `issues/done/065a-merge-duplicate-parser-syntax-issue-into-059.md` - Merge duplicate parser syntax issue into 059 (same feature label, title overlap)
@@ -186,7 +186,7 @@ ast/resolved: fail at `declare` with the issue-400 unterminated ambient function
 TypeScript oracle: diagnostics=[]; accepts the declaration and infers Banana<any>
 ```
 
-This is adjacent to `issues/open/705-implement-asiAmbientFunctionDeclaration.md`,
+This is adjacent to `issues/done/705-implement-asiAmbientFunctionDeclaration.md`,
 but 705 is still a generated triage-needed bucket. The implementation-ready
 child for this concrete shape was split to
 `issues/done/5372-parse-ambient-function-asi-with-constructor-types.md`.

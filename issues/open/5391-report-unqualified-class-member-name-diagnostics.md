@@ -131,7 +131,7 @@ Split from:
 
 Related but not duplicate:
 
-- `issues/open/437-implement-name-resolution.md` is a broad generated name-resolution bucket.
+- `issues/done/437-implement-name-resolution.md` is a broad generated name-resolution bucket.
 - `issues/open/5392-report-unqualified-instance-member-name-diagnostics.md`
   owns the mirrored static-method/instance-member TS2304 case.
 

@@ -159,7 +159,7 @@ Follow-up issues:
   `UnresolvedName` as the correct compiler diagnostic for genuinely unresolved
   identifiers.
 - Broad generated buckets `issues/open/064-implement-name-resolution.md`,
-  `issues/open/437-implement-name-resolution.md`, and meta issue 5005 are not
+  `issues/done/437-implement-name-resolution.md`, and meta issue 5005 are not
   narrower implementation orders for this oracle-matching invalid-source case.
 
 ## Smart triage

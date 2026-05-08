@@ -73,7 +73,7 @@ Out of scope:
 
 Expected:
 
-- `issues/open/365-reduce-abc451-array-growth-allocation-copy-pressure.md`
+- `issues/done/365-reduce-abc451-array-growth-allocation-copy-pressure.md`
 - `issues/done/5131-design-abc451-non-top-array-growth-strategy.md`
 - `current-state.md`
 

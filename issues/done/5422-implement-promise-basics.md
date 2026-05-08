@@ -42,18 +42,18 @@ Note: This is a first slice — not full spec compliance. Microtask queue orderi
 
 In scope:
 
-- [ ] Add `Promise` to global builtins in name_resolver (already planned in 5412 but may need verification)
-- [ ] Add RuntimeFn variants for Promise in runtime_fn.rs
-- [ ] Add RuntimeSpec entries in runtime_fn_impl.rs
-- [ ] Add IR routing in program_builtins.rs (Promise / Promise.resolve / Promise.reject)
-- [ ] Create new file `crates/backend-wasm/src/runtime_promise.rs` with WAT:
+- [x] Add `Promise` to global builtins in name_resolver (already planned in 5412 but may need verification)
+- [x] Add RuntimeFn variants for Promise in runtime_fn.rs
+- [x] Add RuntimeSpec entries in runtime_fn_impl.rs
+- [x] Add IR routing in program_builtins.rs (Promise / Promise.resolve / Promise.reject)
+- [x] Create new file `crates/backend-wasm/src/runtime_promise.rs` with WAT:
   - Promise constructor (executor called synchronously with resolve/reject)
   - Promise.prototype.then (callback invocation, chaining)
   - Promise.prototype.catch (delegates to then)
   - Promise.resolve / Promise.reject
-- [ ] Register `runtime_promise` module in lib.rs
-- [ ] Add build_smoke fixtures for basic Promise
-- [ ] Add test file `crates/cli/tests/m6_promise.rs`
+- [x] Register `runtime_promise` module in lib.rs
+- [x] Add build_smoke fixtures for basic Promise
+- [x] Add test file `crates/cli/tests/m6_promise.rs`
 
 Out of scope:
 
@@ -85,12 +85,12 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] `new Promise((resolve) => resolve(42))` compiles without error
-- [ ] `Promise.resolve(42)` compiles without error
-- [ ] `Promise.reject("err")` compiles without error
-- [ ] `.then(value => ...)` compiles with arrow callback
-- [ ] `.catch(err => ...)` compiles with arrow callback
-- [ ] Build_smoke fixtures pass
+- [x] `new Promise((resolve) => resolve(42))` compiles without error
+- [x] `Promise.resolve(42)` compiles without error
+- [x] `Promise.reject("err")` compiles without error
+- [x] `.then(value => ...)` compiles with arrow callback
+- [x] `.catch(err => ...)` compiles with arrow callback
+- [x] Build_smoke fixtures pass
 
 ## Validation
 

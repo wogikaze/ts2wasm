@@ -128,8 +128,8 @@ Follow-up issues:
 
 - `issues/done/017b-implement-gc-strategy.md` - Implement GC strategy (same feature label, same group key, title overlap)
 - `issues/open/021-implement-full-wasm-backend.md` - Implement full wasm backend (same feature label, same group key, title overlap)
-- `issues/open/050-implement-date.md` - Implement Date (same feature label, same group key, title overlap)
-- `issues/open/052-implement-json.md` - Implement JSON (same feature label, same group key, title overlap)
+- `issues/done/050-implement-date.md` - Implement Date (same feature label, same group key, title overlap)
+- `issues/done/052-implement-json.md` - Implement JSON (same feature label, same group key, title overlap)
 - `issues/open/064-implement-name-resolution.md` - Implement name resolution (triaged - superseded by test262 metadata issues) (same feature label, same group key, title overlap)
 - `issues/done/066-implement-regexp-literal.md` - Implement RegExp literal support (same feature label, same group key, title overlap)
 - `issues/done/067-implement-unknown-unsupported.md` - Investigate and classify unknown-unsupported cases (same feature label, same group key)
@@ -158,7 +158,7 @@ AttributeError: 'NoneType' object has no attribute 'parse_test262_metadata'
 ## 重複整理メモ
 
 この issue はタイトルが重複しているため、内容がより充実している
-`issues/open/421-implement-class.md` に統合されました。
+`issues/done/421-implement-class.md` に統合されました。
 そちらを参照してください。
 ## Completion evidence
 

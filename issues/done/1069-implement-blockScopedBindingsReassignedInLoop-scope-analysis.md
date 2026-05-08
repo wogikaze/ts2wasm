@@ -123,7 +123,7 @@ Follow-up issues:
 ## Duplicate detection
 
 - Other `scope-analysis` generated buckets share only the broad feature label.
-- `issues/open/746-implement-assignmentToParenthesizedExpression.md` also reports `expected RightParen, got Some(Comma)`, but it covers parenthesized assignment/comma-expression parsing in a different reference path rather than for-loop update slots.
+- `issues/done/746-implement-assignmentToParenthesizedExpression.md` also reports `expected RightParen, got Some(Comma)`, but it covers parenthesized assignment/comma-expression parsing in a different reference path rather than for-loop update slots.
 - No open issue was found for comma-separated `for` update expressions.
 
 ## Smart triage

@@ -182,7 +182,7 @@ Follow-up issues:
   on-disk local relative module graph diagnostics, but not virtual section
   registration.
 - `issues/open/1384-implement-commonJsImportClassExpression.md`,
-  `issues/open/1127-implement-chainedImportAlias.md`, and
+  `issues/done/1127-implement-chainedImportAlias.md`, and
   `issues/open/1162-implement-circularReferenceInImport.md` are prior generated
   buckets closed on the same missing virtual module boundary.
 

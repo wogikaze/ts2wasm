@@ -42,10 +42,10 @@ Based on feature breakdown (regexp-literal: 813, eval: 736, object-literal: 619,
 
 In scope:
 
-- [ ] Identify most common UnsupportedSyntax patterns from test262 detail output
-- [ ] Fix at least 5 distinct syntax patterns
-- [ ] Add build_smoke fixtures for each fixed pattern
-- [ ] Run full corpus to measure reduction
+- [x] Identify most common UnsupportedSyntax patterns from test262 detail output
+- [x] Fix at least 5 distinct syntax patterns
+- [x] Add build_smoke fixtures for each fixed pattern
+- [x] Run full corpus to measure reduction
 
 Out of scope:
 
@@ -69,9 +69,9 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] At least 5 distinct syntax patterns that previously produced UnsupportedSyntax now parse without diagnostic
-- [ ] Each pattern has a build_smoke fixture
-- [ ] `mise run reference-coverage -- test262` shows UnsupportedSyntax decreased
+- [x] At least 5 distinct syntax patterns that previously produced UnsupportedSyntax now parse without diagnostic
+- [x] Each pattern has a build_smoke fixture
+- [x] `mise run reference-coverage -- test262` shows UnsupportedSyntax decreased
 
 ## Validation
 

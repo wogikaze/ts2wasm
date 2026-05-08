@@ -139,9 +139,9 @@ Current state:
 
 Follow-up issues:
 
-- [x] existing: `issues/open/543-implement-APISample-import-export.md`
-- [x] existing: `issues/open/544-implement-APISample-jsdoc.md`
-- [x] existing: `issues/open/542-implement-APISample-arrow-function.md`
+- [x] existing: `issues/done/543-implement-APISample-import-export.md`
+- [x] existing: `issues/done/544-implement-APISample-jsdoc.md`
+- [x] existing: `issues/done/542-implement-APISample-arrow-function.md`
 - [x] done: `issues/done/5023-implement-api-sample-watcher-arrow.md`
 - [x] completed: `issues/done/5139-split-apisample-parser-leftovers.md`
 

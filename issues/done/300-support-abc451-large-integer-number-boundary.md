@@ -56,14 +56,14 @@ For this slice, it is acceptable to implement either:
 
 In scope:
 
-- [ ] Represent or lower ordinary `number` values needed by ABC451 up to at
+- [x] Represent or lower ordinary `number` values needed by ABC451 up to at
       least `1_000_000_000`.
-- [ ] Preserve correct behavior for `2 ** i <= 1000000000`, `String(n)`,
+- [x] Preserve correct behavior for `2 ** i <= 1000000000`, `String(n)`,
       numeric sort comparator values, `Set<number>`, and the official sample
       output path through `819264512`.
-- [ ] Keep existing small-int behavior unchanged for values already
+- [x] Keep existing small-int behavior unchanged for values already
       representable by `ValueTag`.
-- [ ] Add focused regression coverage for the new large-integer number path.
+- [x] Add focused regression coverage for the new large-integer number path.
 
 Out of scope:
 
@@ -83,8 +83,8 @@ Expected:
 - `crates/cli/tests/`
 - `fixtures/core-semantics/`
 - `fixtures/atcoder/`
-- `issues/open/294-support-abc451-d-original-submission-without-source-rewrite.md`
-- `issues/open/300-support-abc451-large-integer-number-boundary.md`
+- `issues/done/294-support-abc451-d-original-submission-without-source-rewrite.md`
+- `issues/done/300-support-abc451-large-integer-number-boundary.md`
 
 Do not touch:
 
@@ -93,14 +93,14 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] `fixtures/atcoder/abc451-d-concat-power2.ts` builds past the current
+- [x] `fixtures/atcoder/abc451-d-concat-power2.ts` builds past the current
       `NumberOutOfRange` diagnostic for `1000000000`.
-- [ ] A focused regression fixture proves the supported large integer number
+- [x] A focused regression fixture proves the supported large integer number
       path matches Node under `iwasm`.
-- [ ] Existing small-int tests still pass.
-- [ ] Unsupported number forms outside this slice still produce explicit
+- [x] Existing small-int tests still pass.
+- [x] Unsupported number forms outside this slice still produce explicit
       diagnostics or traps instead of silent miscompilation.
-- [ ] Issue 294 is updated with the new next blocker or closed if the official
+- [x] Issue 294 is updated with the new next blocker or closed if the official
       sample outputs are fully verified.
 
 ## Validation
@@ -131,20 +131,20 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
-- [ ] updated: `docs/14-runtime-abi.md` if the runtime ABI representation changes
-- [ ] updated: `docs/05-compatibility-and-semantics.md` if supported number
+- [x] not affected
+- [x] updated: `docs/14-runtime-abi.md` if the runtime ABI representation changes
+- [x] updated: `docs/05-compatibility-and-semantics.md` if supported number
       semantics change
 
 Current state:
 
-- [ ] not affected
-- [ ] updated: `current-state.md` (repo root) if the supported subset changes
+- [x] not affected
+- [x] updated: `current-state.md` (repo root) if the supported subset changes
 
 Follow-up issues:
 
-- [ ] none
-- [ ] created/updated if the slice proves a broader number-model design is
+- [x] none
+- [x] created/updated if the slice proves a broader number-model design is
       required before implementation.
 
 ## Notes

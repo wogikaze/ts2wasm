@@ -118,7 +118,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/open/099-implement-accessorInAmbientContextES.md` - Implement Accessorinambientcontextes (same reference path, same group key, title overlap)
+- `issues/done/099-implement-accessorInAmbientContextES.md` - Implement Accessorinambientcontextes (same reference path, same group key, title overlap)
 
 ## Smart triage
 

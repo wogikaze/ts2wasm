@@ -151,7 +151,7 @@ Related but not duplicates:
 - `issues/done/399-define-typescript-parse-erase-emit-boundary.md` defines the
   TypeScript namespace parse/erase/emit boundary but does not implement this
   resolver binding.
-- `issues/open/432-implement-import-export.md` is the broad import/export
+- `issues/done/432-implement-import-export.md` is the broad import/export
   triage parent and is too broad for direct implementation.
 - `issues/done/5187-lower-namespace-only-multi-section-files.md` only preserves
   namespace-only multi-section bodies before triage.

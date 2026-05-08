@@ -118,7 +118,7 @@ Follow-up issues:
 ## Duplicate detection
 
 - `issues/done/109-implement-addMoreCallSignaturesToBaseSignature.md` - Implement Addmorecallsignaturestobasesignature (same reference path, same feature label, same group key, title overlap)
-- `issues/open/431-implement-function-resolution.md` - Implement function resolution (same feature label, same group key, title overlap)
+- `issues/done/431-implement-function-resolution.md` - Implement function resolution (same feature label, same group key, title overlap)
 
 ## Smart triage
 

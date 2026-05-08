@@ -477,7 +477,7 @@ error: [UnsupportedSyntax] expected Semicolon, got Some(Ident("M")) at 30..31
 ## 重複整理メモ
 
 この issue はタイトルが重複しているため、内容がより充実している
-`issues/open/636-implement-anonterface.md` に統合されました。
+`issues/done/636-implement-anonterface.md` に統合されました。
 そちらを参照してください。
 ## Completion evidence
 

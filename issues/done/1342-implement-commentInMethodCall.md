@@ -139,7 +139,7 @@ No-match candidates:
 - `issues/done/297-track-pushed-dense-array-locals-for-map.md` covers
   initialized dense arrays built through pushes, not erased declaration-only
   locals.
-- `issues/open/435-implement-method-call.md` is a broad umbrella and does not
+- `issues/done/435-implement-method-call.md` is a broad umbrella and does not
   carry this reference path's array-typed local evidence.
 
 ## Smart triage

@@ -64,7 +64,7 @@ Already completed (not tracked by child issues):
 4. Spread in object literals works (static object literals, known object-literal locals)
 
 Child issues:
-- [ ] Issue 353: Iterator protocol integration (separate feature, tracked independently)
+- [x] Issue 353: Iterator protocol integration (separate feature, tracked independently)
 - [x] Issue 354: Implement sparse array spread support
 - [x] Issue 355: Implement dynamic object property enumeration spread
 

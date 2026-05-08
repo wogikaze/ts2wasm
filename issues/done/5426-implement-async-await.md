@@ -41,11 +41,11 @@ Alternatively, simpler first slice: lower `async function foo() { await x; }` by
 
 In scope:
 
-- [ ] Lower async function declaration in resolver_expr.rs (transform to Promise.then chain)
-- [ ] Lower await expression in resolver_expr.rs
-- [ ] Add IR support for async function state machines
-- [ ] Add build_smoke fixtures for basic async/await
-- [ ] Verify async unsupported count decreases at full corpus
+- [x] Lower async function declaration in resolver_expr.rs (transform to Promise.then chain)
+- [x] Lower await expression in resolver_expr.rs
+- [x] Add IR support for async function state machines
+- [x] Add build_smoke fixtures for basic async/await
+- [x] Verify async unsupported count decreases at full corpus
 
 Out of scope:
 

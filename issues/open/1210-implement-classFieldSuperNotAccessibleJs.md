@@ -159,7 +159,7 @@ TypeScript oracle evidence:
 
 Duplicate review:
 
-- `issues/open/422-implement-class-accessor.md` is related but is a broad
+- `issues/done/422-implement-class-accessor.md` is related but is a broad
   generated triage bucket.
 - No exact open/done owner was found for callable class auto-accessor fields.
 

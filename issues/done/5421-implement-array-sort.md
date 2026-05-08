@@ -41,11 +41,11 @@ Array.prototype.sort works with:
 
 In scope:
 
-- [ ] Implement default sort (ToString comparison) WAT in runtime_arrays.rs
-- [ ] Implement comparator function sort with callback invocation
-- [ ] Implement stable sort algorithm (insertion sort for small arrays, merge sort for large)
-- [ ] Handle sparse array holes, undefined, null, NaN
-- [ ] Add build_smoke fixture and test file `m6_array_sort.rs`
+- [x] Implement default sort (ToString comparison) WAT in runtime_arrays.rs
+- [x] Implement comparator function sort with callback invocation
+- [x] Implement stable sort algorithm (insertion sort for small arrays, merge sort for large)
+- [x] Handle sparse array holes, undefined, null, NaN
+- [x] Add build_smoke fixture and test file `m6_array_sort.rs`
 
 Out of scope:
 
@@ -71,11 +71,11 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] `[3, 1, 2].sort()` returns `[1, 2, 3]` matching Node
-- [ ] `[3, 1, 2].sort((a,b) => a - b)` returns `[1, 2, 3]` matching Node
-- [ ] `[3, 1, 2].sort((a,b) => b - a)` returns `[3, 2, 1]` matching Node
-- [ ] Sparse `[1, , 3].sort()` sorts holes to end matching Node
-- [ ] Sort is stable: equal elements retain original order
+- [x] `[3, 1, 2].sort()` returns `[1, 2, 3]` matching Node
+- [x] `[3, 1, 2].sort((a,b) => a - b)` returns `[1, 2, 3]` matching Node
+- [x] `[3, 1, 2].sort((a,b) => b - a)` returns `[3, 2, 1]` matching Node
+- [x] Sparse `[1, , 3].sort()` sorts holes to end matching Node
+- [x] Sort is stable: equal elements retain original order
 
 ## Validation
 

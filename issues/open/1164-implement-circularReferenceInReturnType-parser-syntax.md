@@ -126,7 +126,7 @@ Follow-up issues:
 
 - `issues/done/5194-report-empty-call-type-arguments.md` covers malformed empty call type-argument lists; this case is valid syntax.
 - `issues/done/5202-parse-member-call-explicit-type-arguments.md` covers member callees such as `obj.method<T>()`; this case is a direct identifier call.
-- `issues/open/059-implement-parser-syntax-extensions.md` and `issues/open/442-implement-parser-syntax.md` are broad parser parents, not focused implementation-ready owners.
+- `issues/open/059-implement-parser-syntax-extensions.md` and `issues/done/442-implement-parser-syntax.md` are broad parser parents, not focused implementation-ready owners.
 
 ## Smart triage
 

@@ -126,7 +126,7 @@ Follow-up issues:
 ## Duplicate detection
 
 - `issues/open/021-implement-full-wasm-backend.md` - Implement full wasm backend (same feature label, same group key, title overlap)
-- `issues/open/052-implement-json.md` - Implement JSON (same feature label, same group key, title overlap)
+- `issues/done/052-implement-json.md` - Implement JSON (same feature label, same group key, title overlap)
 - `issues/done/1048-implement-bigint.md` - Implement Bigint (same feature label, same group key, title overlap)
 - `issues/done/1077-implement-blockScopedSameNameFunctionDeclarationES.md` - Implement Blockscopedsamenamefunctiondeclarationes (same feature label, same group key, title overlap)
 - `issues/done/1078-implement-blockScopedSameNameFunctionDeclarationStrictES.md` - Implement Blockscopedsamenamefunctiondeclarationstrictes (same feature label, same group key, title overlap)

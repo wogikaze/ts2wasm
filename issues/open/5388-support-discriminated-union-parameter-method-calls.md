@@ -162,7 +162,7 @@ Related but distinct:
 - `issues/done/5222-parse-ambient-generic-variable-type-annotations.md`
   owns method calls on interface-typed erased locals such as
   `var s: Sequence<string>; s.groupBy(...)`.
-- `issues/open/435-implement-method-call.md` is a broad method-call bucket and
+- `issues/done/435-implement-method-call.md` is a broad method-call bucket and
   does not provide fixed acceptance for this reference path.
 
 ## Completion evidence

@@ -169,7 +169,7 @@ Follow-up issues:
 
 ## Notes
 
-Related bucket `issues/open/769-implement-augmentedTypesFunction.md` also shows
+Related bucket `issues/done/769-implement-augmentedTypesFunction.md` also shows
 TypeScript class/function merge diagnostics after its first function/var
 duplicate-identifier blocker is removed. Issue
 `issues/done/5307-report-var-function-duplicate-identifier-diagnostics.md`

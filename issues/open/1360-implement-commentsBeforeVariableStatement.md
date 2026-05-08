@@ -143,7 +143,7 @@ Follow-up issues:
   `issues/done/5232-w0-fixture-ize-runtimelinkplan-linker-structure-tests.md`, and
   `issues/done/5277-parse-export-enum-declarations-to-enum-boundary.md` cover
   sibling export forms.
-- `issues/open/432-implement-import-export.md` is the broad import/export
+- `issues/done/432-implement-import-export.md` is the broad import/export
   generated bucket and is too wide.
 - `issues/done/5283-support-entry-export-var-declarations.md` owns this current
   blocker.

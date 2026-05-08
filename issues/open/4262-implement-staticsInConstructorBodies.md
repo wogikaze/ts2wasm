@@ -43,7 +43,7 @@ mise run reference-coverage -- tsc --path-filter reference/typescript/tests/case
 
 ## Desired final state
 
-This generated bucket is closed after splitting `issues/open/5246-report-static-declarations-inside-constructor-bodies.md`. Do not implement directly from this bucket.
+This generated bucket is closed after splitting `issues/done/5246-report-static-declarations-inside-constructor-bodies.md`. Do not implement directly from this bucket.
 
 ## Scope
 
@@ -114,7 +114,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] created: `issues/open/5246-report-static-declarations-inside-constructor-bodies.md`
+- [x] created: `issues/done/5246-report-static-declarations-inside-constructor-bodies.md`
 
 ## Notes
 
@@ -133,7 +133,7 @@ invalid constructor-body `static` syntax as issue 1170.
 
 Split result:
 
-- `issues/open/5246-report-static-declarations-inside-constructor-bodies.md`
+- `issues/done/5246-report-static-declarations-inside-constructor-bodies.md`
 
 ## Completion evidence
 
@@ -143,7 +143,7 @@ The `staticsInConstructorBodies` generated bucket is complete. The current failu
 
 Commits:
 
-- split to `issues/open/5246-report-static-declarations-inside-constructor-bodies.md`
+- split to `issues/done/5246-report-static-declarations-inside-constructor-bodies.md`
 
 Validation result:
 

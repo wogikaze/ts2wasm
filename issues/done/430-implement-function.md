@@ -128,12 +128,12 @@ Follow-up issues:
 
 - `issues/done/017b-implement-gc-strategy.md` - issues/done/017b-implement-gc-strategy.md (same feature label, same group key)
 - `issues/open/021-implement-full-wasm-backend.md` - issues/open/021-implement-full-wasm-backend.md (same feature label, same group key)
-- `issues/open/052-implement-json.md` - Implement JSON (same feature label, same group key, title overlap)
+- `issues/done/052-implement-json.md` - Implement JSON (same feature label, same group key, title overlap)
 - `issues/open/052d-implement-json-stringify-broader-replacer-semantics.md` - Implement broader JSON.stringify replacer semantics (same feature label, same group key, title overlap)
 - `issues/open/064-implement-name-resolution.md` - Implement name resolution (triaged - superseded by test262 metadata issues) (same feature label, same group key, title overlap)
 - `issues/done/067-implement-unknown-unsupported.md` - Investigate and classify unknown-unsupported cases (same feature label, same group key)
 - `issues/done/070-implement-APISample.md` - Implement Apisample (same feature label, same group key, title overlap)
-- `issues/open/071-implement-ArrowFunctionExpression.md` - Implement Arrowfunctionexpression (same feature label, same group key, title overlap)
+- `issues/done/071-implement-ArrowFunctionExpression.md` - Implement Arrowfunctionexpression (same feature label, same group key, title overlap)
 - `issues/done/076-implement-FunctionDeclaration.md` - Implement Functiondeclaration (same feature label, same group key, title overlap)
 - `issues/done/079-implement-ParameterList.md` - Implement Parameterlist (same feature label, same group key, title overlap)
 

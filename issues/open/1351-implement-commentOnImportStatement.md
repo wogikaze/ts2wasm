@@ -148,7 +148,7 @@ Follow-up issues:
 - Prior generated buckets with the same current issue-232 missing-module shape
   were closed as superseded by issue 232, including
   `issues/done/1087-implement-bundledDtsLateExportRenaming.md` and
-  `issues/open/1127-implement-chainedImportAlias.md`.
+  `issues/done/1127-implement-chainedImportAlias.md`.
 - Other smart-triage duplicate candidates share the broad `import-export` label
   only and do not supersede this exact missing `./foo` diagnostic evidence.
 

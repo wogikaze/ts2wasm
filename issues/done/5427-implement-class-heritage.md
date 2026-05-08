@@ -25,12 +25,12 @@ Problem: 6,526 class unsupported at full corpus.
 
 In scope:
 
-- [ ] Lower `extends` clause (set up prototype chain) in resolver_expr.rs
-- [ ] Lower `super()` call in derived constructors
-- [ ] Lower `super.method()` calls
-- [ ] Lower `super.property` access
-- [ ] Add build_smoke fixtures for each form
-- [ ] Add test file `crates/cli/tests/m8_class_heritage.rs`
+- [x] Lower `extends` clause (set up prototype chain) in resolver_expr.rs
+- [x] Lower `super()` call in derived constructors
+- [x] Lower `super.method()` calls
+- [x] Lower `super.property` access
+- [x] Add build_smoke fixtures for each form
+- [x] Add test file `crates/cli/tests/m8_class_heritage.rs`
 
 Out of scope:
 

@@ -123,9 +123,9 @@ Follow-up issues:
 - `issues/done/1095-implement-callOnClass.md` - Implement Callonclass (same feature label, same group key, title overlap; split to issue 5197)
 - `issues/done/132-implement-allowJsClassThisTypeCrash.md` - Implement Allowjsclassthistypecrash (same feature label, same group key, title overlap)
 - `issues/open/2507-implement-genericCapturingFunctionNarrowing.md` - Implement Genericcapturingfunctionnarrowing (same feature label, same group key, title overlap)
-- `issues/open/429-implement-eval.md` - Implement eval support (same feature label, same group key, title overlap)
+- `issues/done/429-implement-eval.md` - Implement eval support (same feature label, same group key, title overlap)
 - `issues/done/430-implement-function.md` - Implement function support (same feature label, same group key, title overlap)
-- `issues/open/431-implement-function-resolution.md` - Implement function resolution (same feature label, same group key, title overlap)
+- `issues/done/431-implement-function-resolution.md` - Implement function resolution (same feature label, same group key, title overlap)
 - `issues/done/433-implement-legacy-global-builtin.md` - Implement legacy-global-builtin support (same reference path, title overlap)
 - `issues/open/4442-implement-thisReferencedInFunctionInsideArrowFunction.md` - Implement Thisreferencedinfunctioninsidearrowfunction (same feature label, same group key, title overlap)
 
@@ -386,7 +386,7 @@ TypeScript/JavaScript oracle:
 ## 重複整理メモ
 
 この issue はタイトルが重複しているため、内容がより充実している
-`issues/open/431-implement-function-resolution.md` に統合されました。
+`issues/done/431-implement-function-resolution.md` に統合されました。
 そちらを参照してください。
 ## Completion evidence
 

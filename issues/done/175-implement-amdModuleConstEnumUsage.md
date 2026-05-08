@@ -433,7 +433,7 @@ error: [UnsupportedSyntax] const declarations require an initializer at 132..136
 ## 重複整理メモ
 
 この issue はタイトルが重複しているため、内容がより充実している
-`issues/open/633-implement-amdModuleConstEnumUsage.md` に統合されました。
+`issues/done/633-implement-amdModuleConstEnumUsage.md` に統合されました。
 そちらを参照してください。
 ## Completion evidence
 

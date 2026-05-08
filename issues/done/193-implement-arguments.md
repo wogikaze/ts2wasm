@@ -654,7 +654,7 @@ error: [UnresolvedName] unresolved name: `arguments` at 43..52
 ## 重複整理メモ
 
 この issue はタイトルが重複しているため、内容がより充実している
-`issues/open/646-implement-arguments.md` に統合されました。
+`issues/done/646-implement-arguments.md` に統合されました。
 そちらを参照してください。
 ## Completion evidence
 

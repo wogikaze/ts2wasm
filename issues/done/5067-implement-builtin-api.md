@@ -129,7 +129,7 @@ Follow-up issues:
 - `issues/open/2348-implement-expr.md` - Implement Expr (same feature label, same group key, title overlap)
 - `issues/open/2421-implement-forOfTransformsExpression.md` - Implement Foroftransformsexpression (same feature label, same group key, title overlap)
 - `issues/open/4000-implement-regExpWithSlashInCharClass.md` - Implement Regexpwithslashincharclass (same feature label, same group key, title overlap)
-- `issues/open/419-implement-builtin-api.md` - Implement built-in API support (same feature label, same group key, title overlap)
+- `issues/done/419-implement-builtin-api.md` - Implement built-in API support (same feature label, same group key, title overlap)
 - `issues/done/4291-implement-stringMatchAll.md` - Implement Stringmatchall (same feature label, same group key, title overlap)
 - `issues/done/060-investigate-unknown-unsupported-cases.md` - Investigate and classify unknown-unsupported diagnostic cases (same feature label, same group key)
 - `issues/done/224-implement-annexb-html-comments.md` - Implement Annex B HTML-like comments (same feature label, same group key, title overlap)
@@ -158,7 +158,7 @@ AttributeError: 'NoneType' object has no attribute 'parse_test262_metadata'
 ## 重複整理メモ
 
 この issue はタイトルが重複しているため、内容がより充実している
-`issues/open/419-implement-builtin-api.md` に統合されました。
+`issues/done/419-implement-builtin-api.md` に統合されました。
 そちらを参照してください。
 ## Completion evidence
 

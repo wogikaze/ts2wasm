@@ -25,12 +25,12 @@ Problem: 813 object-builtin unsupported at full corpus.
 
 In scope:
 
-- [ ] Check runtime_objects.rs for existing Object.values WAT
-- [ ] If missing, add Object.values WAT (iterate own enumerable properties, push values to array)
-- [ ] Check Object.getPrototypeOf WAT — add if missing
-- [ ] Check Object.setPrototypeOf WAT — add if missing
-- [ ] Add build_smoke fixtures
-- [ ] Add test file `crates/cli/tests/m6_object_methods.rs`
+- [x] Check runtime_objects.rs for existing Object.values WAT
+- [x] If missing, add Object.values WAT (iterate own enumerable properties, push values to array)
+- [x] Check Object.getPrototypeOf WAT — add if missing
+- [x] Check Object.setPrototypeOf WAT — add if missing
+- [x] Add build_smoke fixtures
+- [x] Add test file `crates/cli/tests/m6_object_methods.rs`
 
 Out of scope:
 

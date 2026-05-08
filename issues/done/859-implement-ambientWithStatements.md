@@ -118,7 +118,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/open/165-implement-ambientWithStatements.md` - Implement Ambientwithstatements (same reference path, same group key, title overlap)
+- `issues/done/165-implement-ambientWithStatements.md` - Implement Ambientwithstatements (same reference path, same group key, title overlap)
 - `issues/done/538-implement-ambientWithStatements.md` - Implement Ambientwithstatements (same reference path, same feature label, same group key, title overlap)
 - `issues/done/624-implement-ambientWithStatements.md` - Implement Ambientwithstatements (same reference path, same feature label, same group key, title overlap)
 

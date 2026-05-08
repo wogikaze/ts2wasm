@@ -119,7 +119,7 @@ Follow-up issues:
 ## Duplicate detection
 
 - `issues/done/5161-model-ambient-value-declarations-for-name-resolution.md` is an exact implementation-ready owner for this ambient `declare let` name-resolution gap.
-- `issues/open/675-implement-arrayFilter.md` is not a match: its current evidence is a parser/ASI statement-dispatch blocker in `arrayFilter.ts`, while this case parses and reaches name resolution.
+- `issues/done/675-implement-arrayFilter.md` is not a match: its current evidence is a parser/ASI statement-dispatch blocker in `arrayFilter.ts`, while this case parses and reaches name resolution.
 - Generic name-resolution buckets are not matches; they share only the broad feature label.
 
 ## Smart triage

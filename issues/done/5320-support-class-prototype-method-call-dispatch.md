@@ -128,7 +128,7 @@ Split from stale generated bucket
 
 Related but not duplicate:
 
-- `issues/open/435-implement-method-call.md` is a broad method-call bucket; this
+- `issues/done/435-implement-method-call.md` is a broad method-call bucket; this
   issue is the narrow class-prototype `.call` shape emitted by issue-211.
 
 ## Completion evidence

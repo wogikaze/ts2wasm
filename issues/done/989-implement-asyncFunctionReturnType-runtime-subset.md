@@ -115,9 +115,9 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/open/754-implement-asyncFunctionReturnType-runtime-subset.md` - Implement Asyncfunctionreturntype Runtime Subset (same reference path, same feature label, same group key, title overlap)
-- `issues/open/756-implement-asyncFunctionWithForStatementNoInitializer.md` - Implement Asyncfunctionwithforstatementnoinitializer (same feature label, same group key, title overlap)
-- `issues/open/760-implement-asyncImportNestedYield.md` - Implement Asyncimportnestedyield (same feature label, same group key, title overlap)
+- `issues/done/754-implement-asyncFunctionReturnType-runtime-subset.md` - Implement Asyncfunctionreturntype Runtime Subset (same reference path, same feature label, same group key, title overlap)
+- `issues/done/756-implement-asyncFunctionWithForStatementNoInitializer.md` - Implement Asyncfunctionwithforstatementnoinitializer (same feature label, same group key, title overlap)
+- `issues/done/760-implement-asyncImportNestedYield.md` - Implement Asyncimportnestedyield (same feature label, same group key, title overlap)
 
 ## Smart triage
 
@@ -127,7 +127,7 @@ Not generated. Rerun with `--triage-limit 1` or higher.
 ## 重複整理メモ
 
 この issue はタイトルが重複しているため、内容がより充実している
-`issues/open/754-implement-asyncFunctionReturnType-runtime-subset.md` に統合されました。
+`issues/done/754-implement-asyncFunctionReturnType-runtime-subset.md` に統合されました。
 そちらを参照してください。
 ## Completion evidence
 

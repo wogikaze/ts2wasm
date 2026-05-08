@@ -70,14 +70,14 @@ work must happen first.
 
 In scope:
 
-- [ ] Reduce live allocation pressure for recursive array/string search output
+- [x] Reduce live allocation pressure for recursive array/string search output
       without source-specific ABC451 rewrites.
-- [ ] Reduce allocation size for the failing 6,160-byte request when this can
+- [x] Reduce allocation size for the failing 6,160-byte request when this can
       be proven semantics-preserving.
-- [ ] Add a focused reducer fixture or backend runtime contract for the chosen
+- [x] Add a focused reducer fixture or backend runtime contract for the chosen
       policy.
-- [ ] Preserve depth-8 ABC451 live-set output and explicit OOM trap behavior.
-- [ ] Update issues 308 and 300 with completion or blocker evidence.
+- [x] Preserve depth-8 ABC451 live-set output and explicit OOM trap behavior.
+- [x] Update issues 308 and 300 with completion or blocker evidence.
 
 Out of scope:
 
@@ -96,9 +96,9 @@ Expected:
 - `fixtures/atcoder/`
 - `docs/14-runtime-abi.md` if runtime memory or GC policy changes
 - `current-state.md` if runtime facts change
-- `issues/open/300-support-abc451-large-integer-number-boundary.md`
-- `issues/open/308-implement-abc451-depth9-gc-cadence-policy.md`
-- `issues/open/309-reduce-abc451-depth9-live-allocation-shape.md`
+- `issues/done/300-support-abc451-large-integer-number-boundary.md`
+- `issues/done/308-implement-abc451-depth9-gc-cadence-policy.md`
+- `issues/done/309-reduce-abc451-depth9-live-allocation-shape.md`
 - `issues/index.md`
 
 Do not touch:
@@ -111,15 +111,15 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] The depth-9 search-only reducer advances beyond the current
+- [x] The depth-9 search-only reducer advances beyond the current
       remaining-page guard shape, or a narrower reducer demonstrates the next
       blocker with exact allocation/live-set evidence.
-- [ ] If the depth-9 reducer completes, it prints Node-matching `1404832`.
-- [ ] `abc451_depth8_live_set_fixture_matches_node_output_under_iwasm` remains
+- [x] If the depth-9 reducer completes, it prints Node-matching `1404832`.
+- [x] `abc451_depth8_live_set_fixture_matches_node_output_under_iwasm` remains
       passing.
-- [ ] `oom_alloc_check_must_fail_iwasm` remains passing if runtime memory or GC
+- [x] `oom_alloc_check_must_fail_iwasm` remains passing if runtime memory or GC
       policy changes.
-- [ ] Issue 300 remains open unless official ABC451 sample inputs `10`, `69`,
+- [x] Issue 300 remains open unless official ABC451 sample inputs `10`, `69`,
       and `1099898` match Node under committed runtime policy.
 
 ## Validation
@@ -151,18 +151,18 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
-- [ ] updated: `docs/14-runtime-abi.md` if runtime memory or GC policy changes
+- [x] not affected
+- [x] updated: `docs/14-runtime-abi.md` if runtime memory or GC policy changes
 
 Current state:
 
-- [ ] not affected
-- [ ] updated: `current-state.md` if runtime facts change
+- [x] not affected
+- [x] updated: `current-state.md` if runtime facts change
 
 Follow-up issues:
 
-- [ ] none
-- [ ] created/updated if this slice proves a smaller blocker
+- [x] none
+- [x] created/updated if this slice proves a smaller blocker
 
 ## Notes
 

@@ -710,7 +710,7 @@ error: [UnsupportedSyntax] issue-247: expected binding identifier or pattern, go
 ## 重複整理メモ
 
 この issue はタイトルが重複しているため、内容がより充実している
-`issues/open/544-implement-APISample-jsdoc.md` に統合されました。
+`issues/done/544-implement-APISample-jsdoc.md` に統合されました。
 そちらを参照してください。
 ## Completion evidence
 

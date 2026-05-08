@@ -118,7 +118,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/open/432-implement-import-export.md` is not a match for the current blocker: `bind1.ts` contains a TypeScript namespace declaration and now builds, while the remaining mismatch is a missing `TS2304` diagnostic.
+- `issues/done/432-implement-import-export.md` is not a match for the current blocker: `bind1.ts` contains a TypeScript namespace declaration and now builds, while the remaining mismatch is a missing `TS2304` diagnostic.
 - No open issue was found for unresolved `implements I` inside an erased namespace body.
 
 ## Smart triage

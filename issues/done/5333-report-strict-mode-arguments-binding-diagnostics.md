@@ -157,10 +157,10 @@ Split from `issues/open/1266-implement-collisionArgumentsArrowFunctions.md` on
 
 Related but not duplicates:
 
-- `issues/open/649-implement-argumentsBindsToFunctionScopeArgumentList.md`
+- `issues/done/649-implement-argumentsBindsToFunctionScopeArgumentList.md`
   currently tracks a generated name-resolution bucket for implicit
   function-scope `arguments`, not strict-mode binding diagnostics.
-- `issues/open/658-implement-argumentsReferenceInObjectLiteral.md` tracks
+- `issues/done/658-implement-argumentsReferenceInObjectLiteral.md` tracks
   object literal parsing/reference behavior.
 
 ## Completion evidence

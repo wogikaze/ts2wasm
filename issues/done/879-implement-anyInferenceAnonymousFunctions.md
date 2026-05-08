@@ -117,8 +117,8 @@ Follow-up issues:
 ## Duplicate detection
 
 - `issues/done/187-implement-anyInferenceAnonymousFunctions.md` - Implement Anyinferenceanonymousfunctions (same reference path, same feature label, same group key, title overlap)
-- `issues/open/453-implement-type-system.md` - Implement type-system support (same feature label, same group key, title overlap)
-- `issues/open/644-implement-anyInferenceAnonymousFunctions.md` - Implement Anyinferenceanonymousfunctions (same reference path, same feature label, same group key, title overlap)
+- `issues/done/453-implement-type-system.md` - Implement type-system support (same feature label, same group key, title overlap)
+- `issues/done/644-implement-anyInferenceAnonymousFunctions.md` - Implement Anyinferenceanonymousfunctions (same reference path, same feature label, same group key, title overlap)
 
 ## Smart triage
 
@@ -128,7 +128,7 @@ Not generated. Rerun with `--triage-limit 1` or higher.
 ## 重複整理メモ
 
 この issue はタイトルが重複しているため、内容がより充実している
-`issues/open/644-implement-anyInferenceAnonymousFunctions.md` に統合されました。
+`issues/done/644-implement-anyInferenceAnonymousFunctions.md` に統合されました。
 そちらを参照してください。
 ## Completion evidence
 

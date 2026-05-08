@@ -134,7 +134,7 @@ The child also includes the matching
 - `issues/done/075-implement-ExportAssignment.md` - Implement Exportassignment (same reference path, same feature label, same group key, title overlap)
 - `issues/done/131-implement-allowImportClausesToMergeWithTypes.md` - Implement Allowimportclausestomergewithtypes (same feature label, same group key, title overlap)
 - `issues/done/136-implement-allowSyntheticDefaultImportsCanPaintCrossModuleDeclaration.md` - Implement Allowsyntheticdefaultimportscanpaintcrossmoduledeclaration (same feature label, same group key, title overlap)
-- `issues/open/432-implement-import-export.md` - Implement import/export module syntax (same feature label, same group key, title overlap)
+- `issues/done/432-implement-import-export.md` - Implement import/export module syntax (same feature label, same group key, title overlap)
 - `issues/done/462-implement-ExportAssignment.md` - Implement Exportassignment (same reference path, same feature label, same group key, title overlap)
 - `issues/done/508-implement-aliasWithInterfaceExportAssignmentUsedInVarInitializer.md` - Implement Aliaswithinterfaceexportassignmentusedinvarinitializer (same feature label, same group key, title overlap)
 - `issues/done/510-implement-allowImportClausesToMergeWithTypes.md` - Implement Allowimportclausestomergewithtypes (same feature label, same group key, title overlap)

@@ -82,7 +82,7 @@ Expected:
 - `scripts/manager.py`
 - `crates/backend-wasm/src/`
 - `crates/cli/tests/`
-- `issues/open/365-reduce-abc451-array-growth-allocation-copy-pressure.md`
+- `issues/done/365-reduce-abc451-array-growth-allocation-copy-pressure.md`
 - `current-state.md`
 
 Do not touch:

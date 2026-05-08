@@ -133,7 +133,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/open/422-implement-class-accessor.md` is the broad class-accessor triage bucket, not an executable child for this exact setter rest-parameter diagnostic.
+- `issues/done/422-implement-class-accessor.md` is the broad class-accessor triage bucket, not an executable child for this exact setter rest-parameter diagnostic.
 - No existing implementation-ready issue matched the exact TS1053 setter rest-parameter shape.
 
 ## Smart triage

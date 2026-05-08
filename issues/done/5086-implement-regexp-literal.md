@@ -128,7 +128,7 @@ Follow-up issues:
 
 - `issues/open/064-implement-name-resolution.md` - Implement name resolution (triaged - superseded by test262 metadata issues) (same reference path, title overlap)
 - `issues/done/066-implement-regexp-literal.md` - Implement RegExp literal support (same reference path, same feature label, same group key, title overlap)
-- `issues/open/1139-implement-checkJsxNotSetError.md` - Implement Checkjsxnotseterror (same feature label, same group key, title overlap)
+- `issues/done/1139-implement-checkJsxNotSetError.md` - Implement Checkjsxnotseterror (same feature label, same group key, title overlap)
 - `issues/open/2230-implement-excessiveStackDepthFlatArray.md` - Implement Excessivestackdepthflatarray (same feature label, same group key, title overlap)
 - `issues/open/2872-implement-initializedDestructuringAssignmentTypes.md` - Implement Initializeddestructuringassignmenttypes (same feature label, same group key, title overlap)
 - `issues/open/3097-implement-jsFileCompilationTypeArgumentSyntaxOfCall.md` - Implement Jsfilecompilationtypeargumentsyntaxofcall (same feature label, same group key, title overlap)

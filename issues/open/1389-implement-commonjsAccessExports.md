@@ -158,7 +158,7 @@ Follow-up issues:
 - `issues/done/056-implement-name-resolution.md` owns the expected
   `UnresolvedName` diagnostic behavior for genuinely unresolved identifiers.
 - `issues/open/064-implement-name-resolution.md` and
-  `issues/open/437-implement-name-resolution.md` are broad blocked/generated
+  `issues/done/437-implement-name-resolution.md` are broad blocked/generated
   buckets and should not receive this standalone invalid-source case.
 - No open CommonJS/module issue matched this current first diagnostic; the
   fixture does not reach CommonJS lowering.

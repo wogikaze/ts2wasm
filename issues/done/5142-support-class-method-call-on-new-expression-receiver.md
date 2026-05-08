@@ -146,7 +146,7 @@ Split from generated bucket `issues/done/1013-implement-avoid.md`.
 
 Related broad parent:
 
-- `issues/open/435-implement-method-call.md`
+- `issues/done/435-implement-method-call.md`
 
 ## Completion evidence
 

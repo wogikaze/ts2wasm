@@ -132,7 +132,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/open/771-implement-augmentedTypesModules.md` is related but remains a
+- `issues/done/771-implement-augmentedTypesModules.md` is related but remains a
   broad generated bucket with five files and older namespace/module ownership
   evidence.
 - `issues/open/5329-report-class-namespace-duplicate-member-diagnostics.md` is

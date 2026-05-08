@@ -120,7 +120,7 @@ Follow-up issues:
 
 - `#071` - Implement Arrowfunctionexpression (same reference path, same feature label, same group key, title overlap)
 - `issues/done/199-implement-reference-typescript-tests-cases-compiler.md` - Implement Compiler (same feature label, same group key, title overlap)
-- `issues/open/442-implement-parser-syntax.md` - Implement parser syntax extensions (same feature label, same group key, title overlap)
+- `issues/done/442-implement-parser-syntax.md` - Implement parser syntax extensions (same feature label, same group key, title overlap)
 
 ## Smart triage
 

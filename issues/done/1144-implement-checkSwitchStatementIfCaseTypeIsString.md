@@ -120,10 +120,10 @@ Follow-up issues:
 Fresh duplicate scan found related Array/method-call buckets but no exact open
 issue for array-shaped function/class-method parameter annotations:
 
-- `issues/open/313-implement-array-builtin.md` is a broad Array builtin
+- `issues/done/313-implement-array-builtin.md` is a broad Array builtin
   umbrella, not an implementation-ready typed-parameter receiver slice.
-- `issues/open/673-implement-arrayEvery.md` and
-  `issues/open/677-implement-arrayFlatMap.md` hit similar issue-211 unknown
+- `issues/done/673-implement-arrayEvery.md` and
+  `issues/done/677-implement-arrayFlatMap.md` hit similar issue-211 unknown
   receiver boundaries for array locals, but they are generated buckets and do
   not cover class method parameter annotation tracking.
 - `issues/done/5222-parse-ambient-generic-variable-type-annotations.md`

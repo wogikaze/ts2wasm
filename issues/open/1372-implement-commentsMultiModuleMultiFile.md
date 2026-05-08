@@ -155,7 +155,7 @@ Follow-up issues:
   but not exact. It covers local relative imports such as `./b` between
   `@Filename` sections; this file uses a non-local specifier
   `commentsMultiModuleMultiFile_0`.
-- `issues/open/436-implement-module-resolution.md` is a broad triage bucket and
+- `issues/done/436-implement-module-resolution.md` is a broad triage bucket and
   should not duplicate the completed issue-232 diagnostic boundary.
 
 ## Smart triage

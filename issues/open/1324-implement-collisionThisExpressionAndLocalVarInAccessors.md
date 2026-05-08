@@ -127,7 +127,7 @@ Follow-up issues:
 ## Duplicate detection
 
 - `issues/open/5273-parse-nested-zero-argument-arrow-returns.md` is the exact owner for `(callback) => () => { ... }` parser failures.
-- `issues/open/422-implement-class-accessor.md` is broader and less actionable for this current first blocker.
+- `issues/done/422-implement-class-accessor.md` is broader and less actionable for this current first blocker.
 - Accessor and lexical `this` behavior after parsing remains unproven until issue 5273 advances past the nested arrow parser failure.
 
 ## Smart triage

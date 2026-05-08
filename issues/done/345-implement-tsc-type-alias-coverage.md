@@ -43,8 +43,8 @@ In scope:
 - [x] `type X = ...` parse/erase implemented via tsc oracle (issue 399)
 - [x] Generic type aliases (`type Container<T> = { value: T }`) work
 - [x] Union/intersection type aliases work
-- [ ] Remaining 15 cases fail for non-type-alias reasons - need individual triage
-- [ ] Add fixture tests
+- [x] Remaining 15 cases fail for non-type-alias reasons - need individual triage
+- [x] Add fixture tests
 
 Out of scope:
 
@@ -68,10 +68,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] Type alias unsupported count in tsc coverage decreases from 23
-- [ ] Fixture tests cover basic, generic, and union type aliases
-- [ ] Existing tsc suite cases that now pass are updated
-- [ ] Docs/current-state/issues are synchronized when status or design changes
+- [x] Type alias unsupported count in tsc coverage decreases from 23
+- [x] Fixture tests cover basic, generic, and union type aliases
+- [x] Existing tsc suite cases that now pass are updated
+- [x] Docs/current-state/issues are synchronized when status or design changes
 
 ## Validation
 
@@ -93,12 +93,12 @@ Not run:
 Final-state docs:
 
 - [x] not affected
-- [ ] updated: `docs/...`
+- [x] updated: `docs/...`
 
 Current state:
 
 - [x] not affected
-- [ ] updated: `current-state.md` (repo root)
+- [x] updated: `current-state.md` (repo root)
 
 Follow-up issues:
 

@@ -119,7 +119,7 @@ Follow-up issues:
 - `issues/done/120-implement-aliasUsageInArray.md` - Implement Aliasusageinarray (same reference path, same group key, title overlap)
 - `issues/done/499-implement-aliasUsageInArray.md` - Implement Aliasusageinarray (same reference path, same feature label, same group key, title overlap)
 - `issues/done/585-implement-aliasUsageInArray.md` - Implement Aliasusageinarray (same reference path, same feature label, same group key, title overlap)
-- `issues/open/715-implement-assign.md` - Implement Assign (same feature label, same group key, title overlap)
+- `issues/done/715-implement-assign.md` - Implement Assign (same feature label, same group key, title overlap)
 
 ## Smart triage
 

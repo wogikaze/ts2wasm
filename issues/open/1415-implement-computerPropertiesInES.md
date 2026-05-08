@@ -165,7 +165,7 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- Split to `issues/open/5299-lower-computed-object-binding-parameters.md`.
+- Split to `issues/done/5299-lower-computed-object-binding-parameters.md`.
 
 Validation result:
 

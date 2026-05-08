@@ -40,9 +40,9 @@ Based on test262 harness usage:
 
 In scope:
 
-- [ ] Analyze UnresolvedName list at full corpus to identify top unresolved names
-- [ ] Register top missing builtins in name_resolver.rs
-- [ ] Verify with full corpus run
+- [x] Analyze UnresolvedName list at full corpus to identify top unresolved names
+- [x] Register top missing builtins in name_resolver.rs
+- [x] Verify with full corpus run
 
 Out of scope:
 

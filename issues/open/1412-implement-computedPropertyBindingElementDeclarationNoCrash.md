@@ -168,7 +168,7 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- Split to `issues/open/5298-parse-for-of-array-binding-pattern-heads.md`.
+- Split to `issues/done/5298-parse-for-of-array-binding-pattern-heads.md`.
 
 Validation result:
 

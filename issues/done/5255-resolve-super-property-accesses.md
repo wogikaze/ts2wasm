@@ -79,7 +79,7 @@ Out of scope:
 
 - Full runtime semantics for every `super` property read/write.
 - `super[...]()` call lowering; broad call-expression cases remain under
-  `issues/open/420-implement-call-expression.md`.
+  `issues/done/420-implement-call-expression.md`.
 - Lexical `super` capture in arrow arguments to `super(...)`, tracked by
   `issues/done/5204-resolve-lexical-super-property-captures-in-super-call-arguments.md`.
 - Non-derived `super()` diagnostics, tracked by
@@ -132,7 +132,7 @@ Split from `issues/open/1194-implement-classExtendingAny.md`.
 
 Related but not owners for this exact boundary:
 
-- `issues/open/420-implement-call-expression.md` covers `super[...]()` call
+- `issues/done/420-implement-call-expression.md` covers `super[...]()` call
   expression semantics in broader test262 windows.
 - `issues/done/5204-resolve-lexical-super-property-captures-in-super-call-arguments.md`
   excludes dynamic `super[expr]` property access.

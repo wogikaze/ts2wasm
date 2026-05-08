@@ -578,7 +578,7 @@ error: [UnsupportedSyntax] unsupported expression: Some(SpannedToken { kind: Les
 ## 重複整理メモ
 
 この issue はタイトルが重複しているため、内容がより充実している
-`issues/open/626-implement-ambiguousGenericAssertion.md` に統合されました。
+`issues/done/626-implement-ambiguousGenericAssertion.md` に統合されました。
 そちらを参照してください。
 ## Completion evidence
 

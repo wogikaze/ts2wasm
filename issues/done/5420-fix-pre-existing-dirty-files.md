@@ -46,10 +46,10 @@ cargo nextest run
 
 In scope:
 
-- [ ] Investigate the diff in each dirty file
-- [ ] Fix the parse errors and compilation failures
-- [ ] Verify `cargo fmt --all --check` passes
-- [ ] Verify `cargo nextest run` passes (or document remaining failures with reasons)
+- [x] Investigate the diff in each dirty file
+- [x] Fix the parse errors and compilation failures
+- [x] Verify `cargo fmt --all --check` passes
+- [x] Verify `cargo nextest run` passes (or document remaining failures with reasons)
 
 Out of scope:
 
@@ -74,8 +74,8 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] `cargo fmt --all --check` passes
-- [ ] `cargo nextest run` compiles and runs (all pass, or known failures documented)
+- [x] `cargo fmt --all --check` passes
+- [x] `cargo nextest run` compiles and runs (all pass, or known failures documented)
 
 ## Validation
 

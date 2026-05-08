@@ -78,7 +78,7 @@ Out of scope:
 - Qualified class heritage names such as `extends Foo.Object`, tracked by
   `issues/done/5225-w0-typed-wat-writer.md`.
 - Generic type arguments in class heritage, tracked by
-  `issues/open/5156-parse-generic-type-arguments-in-class-heritage.md`.
+  `issues/done/5156-parse-generic-type-arguments-in-class-heritage.md`.
 
 ## Affected paths
 

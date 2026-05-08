@@ -127,7 +127,7 @@ Follow-up issues:
 Fresh duplicate scan found broad spread issues but no exact implementation-ready
 owner for constructor-call spread parsing:
 
-- `issues/open/274-implement-spread-operator.md` is the broad spread meta issue.
+- `issues/done/274-implement-spread-operator.md` is the broad spread meta issue.
 - `issues/done/353-spread-iterator-protocol.md` owns general iterator protocol semantics.
 - `issues/done/039-implement-spread-arguments.md` completed ordinary call spread syntax.
 

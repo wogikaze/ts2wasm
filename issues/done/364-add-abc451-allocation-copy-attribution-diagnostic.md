@@ -81,7 +81,7 @@ Expected:
 - `scripts/run/abc451-runtime-costs.py`
 - `mise.toml` or `scripts/manager.py` only if the task contract changes
 - `issues/done/364-add-abc451-allocation-copy-attribution-diagnostic.md`
-- `issues/open/363-reduce-abc451-allocation-and-sweep-volume-after-bulk-copy-narrowing.md`
+- `issues/done/363-reduce-abc451-allocation-and-sweep-volume-after-bulk-copy-narrowing.md`
 - `issues/index.md`
 
 Do not touch:

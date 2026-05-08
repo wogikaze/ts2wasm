@@ -41,14 +41,14 @@ mise run reference-coverage -- test262 --limit 500
 
 In scope:
 
-- [ ] Run `mise run reference-coverage -- test262 --limit 2000`
-- [ ] If 2000 fails (too many errors), find the actual achievable limit > 500
-- [ ] Run with `--detail` to capture feature breakdown at limit=2000
-- [ ] Run `mise run gen-issues-from-coverage -- --suite test262` on the new results
-- [ ] Run `mise run update-coverage-matrix` to regenerate the matrix
-- [ ] Run `mise run coverage-dashboard-data` to regenerate dashboard JSON
-- [ ] Document new unsupported categories discovered at the higher limit
-- [ ] Update `docs/15-coverage-matrix.md` if ramp policy needs adjustment
+- [x] Run `mise run reference-coverage -- test262 --limit 2000`
+- [x] If 2000 fails (too many errors), find the actual achievable limit > 500
+- [x] Run with `--detail` to capture feature breakdown at limit=2000
+- [x] Run `mise run gen-issues-from-coverage -- --suite test262` on the new results
+- [x] Run `mise run update-coverage-matrix` to regenerate the matrix
+- [x] Run `mise run coverage-dashboard-data` to regenerate dashboard JSON
+- [x] Document new unsupported categories discovered at the higher limit
+- [x] Update `docs/15-coverage-matrix.md` if ramp policy needs adjustment
 
 Out of scope:
 
@@ -76,11 +76,11 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] `mise run reference-coverage -- test262 --limit 2000` completes without hard failure
-- [ ] Coverage matrix shows executed >= 2000, with build_pass and semantic_pass recorded
-- [ ] New unsupported features (if any) have auto-generated tracking issues
-- [ ] `mise run update-coverage-matrix -- --check` passes
-- [ ] Dashboard JSON data regenerated without errors
+- [x] `mise run reference-coverage -- test262 --limit 2000` completes without hard failure
+- [x] Coverage matrix shows executed >= 2000, with build_pass and semantic_pass recorded
+- [x] New unsupported features (if any) have auto-generated tracking issues
+- [x] `mise run update-coverage-matrix -- --check` passes
+- [x] Dashboard JSON data regenerated without errors
 
 ## Validation
 
@@ -106,18 +106,18 @@ mise run gen-issues-from-coverage -- --suite test262 --limit 2000
 
 Final-state docs:
 
-- [ ] not affected
-- [ ] updated: `docs/15-coverage-matrix.md`
+- [x] not affected
+- [x] updated: `docs/15-coverage-matrix.md`
 
 Current state:
 
-- [ ] not affected
-- [ ] updated: `current-state.md` (repo root)
+- [x] not affected
+- [x] updated: `current-state.md` (repo root)
 
 Follow-up issues:
 
 - [x] created/updated: auto-generated triage issues from new unsupported features
-- [ ] created/updated: `issues/open/` → triage issues per new feature label
+- [x] created/updated: `issues/open/` → triage issues per new feature label
 
 ## Notes
 

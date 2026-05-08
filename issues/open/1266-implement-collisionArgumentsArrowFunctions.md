@@ -129,8 +129,8 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/open/649-implement-argumentsBindsToFunctionScopeArgumentList.md` - related generated name-resolution bucket for implicit function-scope `arguments`, not the strict-mode binding diagnostic
-- `issues/open/658-implement-argumentsReferenceInObjectLiteral.md` - related generated arguments-object bucket for object literal reference parsing, not this diagnostic
+- `issues/done/649-implement-argumentsBindsToFunctionScopeArgumentList.md` - related generated name-resolution bucket for implicit function-scope `arguments`, not the strict-mode binding diagnostic
+- `issues/done/658-implement-argumentsReferenceInObjectLiteral.md` - related generated arguments-object bucket for object literal reference parsing, not this diagnostic
 - no exact existing owner found for TS1100 strict-mode `arguments` binding diagnostics
 
 ## Smart triage

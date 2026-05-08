@@ -118,7 +118,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/open/150-implement-ambientExternalModuleReopen.md` - Implement Ambientexternalmodulereopen (same reference path, same group key, title overlap)
+- `issues/done/150-implement-ambientExternalModuleReopen.md` - Implement Ambientexternalmodulereopen (same reference path, same group key, title overlap)
 
 ## Smart triage
 

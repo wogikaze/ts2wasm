@@ -36,10 +36,10 @@ All RegExp literal flags (g, i, m, s, u, y, d) in any combination are parsed wit
 
 In scope:
 
-- [ ] Add `u` (unicode), `y` (sticky), `s` (dotAll), `d` (indices) to RegExp flag token/parser handling in `crates/frontend/src/parser/expressions.rs`
-- [ ] Ensure all combinations of g, i, m, s, u, y, d are accepted
-- [ ] Add build_smoke fixture test for each flag combination
-- [ ] Validate with `mise run reference-coverage -- test262 --limit 500` that regexp-literal unsupported count decreases
+- [x] Add `u` (unicode), `y` (sticky), `s` (dotAll), `d` (indices) to RegExp flag token/parser handling in `crates/frontend/src/parser/expressions.rs`
+- [x] Ensure all combinations of g, i, m, s, u, y, d are accepted
+- [x] Add build_smoke fixture test for each flag combination
+- [x] Validate with `mise run reference-coverage -- test262 --limit 500` that regexp-literal unsupported count decreases
 
 Out of scope:
 
@@ -65,11 +65,11 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] RegExp literal `/foo/u`, `/foo/y`, `/foo/s`, `/foo/d` all parse without diagnostic
-- [ ] Mixed flags `/foo/gimy`, `/foo/msy`, `/foo/dg` all parse without diagnostic
-- [ ] Invalid flag combinations (e.g., duplicate) produce appropriate diagnostic
-- [ ] At least 2 build_smoke fixtures added for flag combinations
-- [ ] `mise run reference-coverage -- test262 --limit 500` shows "regexp-literal" feature unsupported count decreased from 45
+- [x] RegExp literal `/foo/u`, `/foo/y`, `/foo/s`, `/foo/d` all parse without diagnostic
+- [x] Mixed flags `/foo/gimy`, `/foo/msy`, `/foo/dg` all parse without diagnostic
+- [x] Invalid flag combinations (e.g., duplicate) produce appropriate diagnostic
+- [x] At least 2 build_smoke fixtures added for flag combinations
+- [x] `mise run reference-coverage -- test262 --limit 500` shows "regexp-literal" feature unsupported count decreased from 45
 
 ## Validation
 
@@ -92,13 +92,13 @@ mise run reference-coverage -- test262 --limit 500 --detail | grep regexp-litera
 
 Final-state docs:
 
-- [ ] not affected
-- [ ] updated: `docs/language-reference/javascript-features.md`
+- [x] not affected
+- [x] updated: `docs/language-reference/javascript-features.md`
 
 Current state:
 
-- [ ] not affected
-- [ ] updated: `current-state.md` (repo root)
+- [x] not affected
+- [x] updated: `current-state.md` (repo root)
 
 Follow-up issues:
 

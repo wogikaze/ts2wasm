@@ -121,7 +121,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] created: `issues/open/5297-lower-computed-object-binding-aliases.md`
+- [x] created: `issues/done/5297-lower-computed-object-binding-aliases.md`
 
 ## Notes
 

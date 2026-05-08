@@ -119,13 +119,13 @@ Follow-up issues:
 - `issues/done/442-implement-parser-syntax.md` - Implement parser syntax extensions (same feature label, title overlap)
 - `issues/done/464-implement-FunctionDeclaration-parser-syntax.md` - Implement Functiondeclaration Parser Syntax (same feature label, title overlap)
 - `issues/done/550-implement-FunctionDeclaration-parser-syntax.md` - Implement Functiondeclaration Parser Syntax (same feature label, title overlap)
-- `issues/open/663-implement-arrayAssignmentTest-parser-syntax.md` - Implement Arrayassignmenttest Parser Syntax (same feature label, title overlap)
-- `issues/open/734-implement-assignmentCompatability-parser-syntax.md` - Implement Assignmentcompatability Parser Syntax (same reference path, same feature label, same group key, title overlap)
-- `issues/open/735-implement-assignmentIndexedToPrimitives.md` - Implement Assignmentindexedtoprimitives (same feature label, same group key, title overlap)
-- `issues/open/739-implement-assignmentStricterConstraints.md` - Implement Assignmentstricterconstraints (same feature label, same group key, title overlap)
-- `issues/open/740-implement-assignmentToAnyArrayRestParameters.md` - Implement Assignmenttoanyarrayrestparameters (same feature label, same group key, title overlap)
-- `issues/open/742-implement-assignmentToExpandingArrayType.md` - Implement Assignmenttoexpandingarraytype (same feature label, same group key, title overlap)
-- `issues/open/746-implement-assignmentToParenthesizedExpression.md` - Implement Assignmenttoparenthesizedexpression (same feature label, same group key, title overlap)
+- `issues/done/663-implement-arrayAssignmentTest-parser-syntax.md` - Implement Arrayassignmenttest Parser Syntax (same feature label, title overlap)
+- `issues/done/734-implement-assignmentCompatability-parser-syntax.md` - Implement Assignmentcompatability Parser Syntax (same reference path, same feature label, same group key, title overlap)
+- `issues/done/735-implement-assignmentIndexedToPrimitives.md` - Implement Assignmentindexedtoprimitives (same feature label, same group key, title overlap)
+- `issues/done/739-implement-assignmentStricterConstraints.md` - Implement Assignmentstricterconstraints (same feature label, same group key, title overlap)
+- `issues/done/740-implement-assignmentToAnyArrayRestParameters.md` - Implement Assignmenttoanyarrayrestparameters (same feature label, same group key, title overlap)
+- `issues/done/742-implement-assignmentToExpandingArrayType.md` - Implement Assignmenttoexpandingarraytype (same feature label, same group key, title overlap)
+- `issues/done/746-implement-assignmentToParenthesizedExpression.md` - Implement Assignmenttoparenthesizedexpression (same feature label, same group key, title overlap)
 
 ## Smart triage
 
@@ -135,7 +135,7 @@ Not generated. Rerun with `--triage-limit 1` or higher.
 ## 重複整理メモ
 
 この issue はタイトルが重複しているため、内容がより充実している
-`issues/open/734-implement-assignmentCompatability-parser-syntax.md` に統合されました。
+`issues/done/734-implement-assignmentCompatability-parser-syntax.md` に統合されました。
 そちらを参照してください。
 ## Completion evidence
 

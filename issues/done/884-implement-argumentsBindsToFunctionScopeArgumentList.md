@@ -118,8 +118,8 @@ Follow-up issues:
 
 - `issues/done/193-implement-arguments.md` - Implement Arguments (same feature label, same group key, title overlap)
 - `issues/done/195-implement-argumentsBindsToFunctionScopeArgumentList.md` - Implement Argumentsbindstofunctionscopeargumentlist (same reference path, same feature label, same group key, title overlap)
-- `issues/open/437-implement-name-resolution.md` - Implement name resolution (same feature label, same group key, title overlap)
-- `issues/open/649-implement-argumentsBindsToFunctionScopeArgumentList.md` - Implement Argumentsbindstofunctionscopeargumentlist (same reference path, same feature label, same group key, title overlap)
+- `issues/done/437-implement-name-resolution.md` - Implement name resolution (same feature label, same group key, title overlap)
+- `issues/done/649-implement-argumentsBindsToFunctionScopeArgumentList.md` - Implement Argumentsbindstofunctionscopeargumentlist (same reference path, same feature label, same group key, title overlap)
 
 ## Smart triage
 
@@ -129,7 +129,7 @@ Not generated. Rerun with `--triage-limit 1` or higher.
 ## 重複整理メモ
 
 この issue はタイトルが重複しているため、内容がより充実している
-`issues/open/649-implement-argumentsBindsToFunctionScopeArgumentList.md` に統合されました。
+`issues/done/649-implement-argumentsBindsToFunctionScopeArgumentList.md` に統合されました。
 そちらを参照してください。
 ## Completion evidence
 

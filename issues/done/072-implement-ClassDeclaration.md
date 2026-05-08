@@ -136,9 +136,9 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/open/073-implement-ClassDeclarationWithInvalidConstOnPropertyDeclaration.md` - Implement Classdeclarationwithinvalidconstonpropertydeclaration (same feature label, same group key, title overlap)
+- `issues/done/073-implement-ClassDeclarationWithInvalidConstOnPropertyDeclaration.md` - Implement Classdeclarationwithinvalidconstonpropertydeclaration (same feature label, same group key, title overlap)
 - `issues/done/140-implement-ambientClassDeclarationWithExtends.md` - Implement Ambientclassdeclarationwithextends (same feature label, same group key, title overlap)
-- `issues/open/158-implement-ambientModuleWithClassDeclarationWithExtends.md` - Implement Ambientmodulewithclassdeclarationwithextends (same feature label, same group key, title overlap)
+- `issues/done/158-implement-ambientModuleWithClassDeclarationWithExtends.md` - Implement Ambientmodulewithclassdeclarationwithextends (same feature label, same group key, title overlap)
 
 ## Smart triage
 

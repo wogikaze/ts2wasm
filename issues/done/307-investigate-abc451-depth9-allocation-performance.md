@@ -60,7 +60,7 @@ Expected:
 - `crates/backend-wasm/src/`
 - `crates/cli/tests/`
 - `fixtures/core-semantics/`
-- `issues/open/300-support-abc451-large-integer-number-boundary.md`
+- `issues/done/300-support-abc451-large-integer-number-boundary.md`
 - `issues/done/307-investigate-abc451-depth9-allocation-performance.md`
 - `issues/index.md`
 

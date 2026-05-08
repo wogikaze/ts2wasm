@@ -41,11 +41,11 @@ Array.prototype.forEach, find, filter, every, some have Node/iwasm semantic_diff
 
 In scope:
 
-- [ ] Verify and fix callback `thisArg` binding in forEach/find/filter/every/some
-- [ ] Verify sparse array hole skipping in all iteration methods
-- [ ] Add semantic_diff fixtures for each method with thisArg object
-- [ ] Add semantic_diff fixtures for sparse array iteration
-- [ ] Add test file `crates/cli/tests/m6_array_iteration.rs`
+- [x] Verify and fix callback `thisArg` binding in forEach/find/filter/every/some
+- [x] Verify sparse array hole skipping in all iteration methods
+- [x] Add semantic_diff fixtures for each method with thisArg object
+- [x] Add semantic_diff fixtures for sparse array iteration
+- [x] Add test file `crates/cli/tests/m6_array_iteration.rs`
 
 Out of scope:
 
@@ -77,11 +77,11 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] `arr.forEach(callback, obj)` invokes callback with `this === obj`
-- [ ] `arr.forEach(callback)` invokes callback with `this === undefined` (non-strict → Window, strict → undefined)
-- [ ] Sparse array `[1, , 3].forEach(...)` skips the hole
-- [ ] `[1, 2, 3].find(cb, obj)` and `filter`, `every`, `some` all accept thisArg
-- [ ] All 4 new semantic_diff fixtures pass (Node output matches iwasm)
+- [x] `arr.forEach(callback, obj)` invokes callback with `this === obj`
+- [x] `arr.forEach(callback)` invokes callback with `this === undefined` (non-strict → Window, strict → undefined)
+- [x] Sparse array `[1, , 3].forEach(...)` skips the hole
+- [x] `[1, 2, 3].find(cb, obj)` and `filter`, `every`, `some` all accept thisArg
+- [x] All 4 new semantic_diff fixtures pass (Node output matches iwasm)
 
 ## Validation
 
@@ -111,8 +111,8 @@ Final-state docs:
 
 Current state:
 
-- [ ] not affected
-- [ ] updated: `current-state.md` (repo root)
+- [x] not affected
+- [x] updated: `current-state.md` (repo root)
 
 Follow-up issues:
 

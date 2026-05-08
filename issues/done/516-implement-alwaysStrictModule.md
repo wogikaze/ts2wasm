@@ -123,8 +123,8 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/open/138-implement-alwaysStrictModule.md` - Implement Alwaysstrictmodule (same reference path, same feature label, same group key, title overlap)
-- `issues/open/432-implement-import-export.md` - Implement import/export module syntax (same feature label, same group key, title overlap)
+- `issues/done/138-implement-alwaysStrictModule.md` - Implement Alwaysstrictmodule (same reference path, same feature label, same group key, title overlap)
+- `issues/done/432-implement-import-export.md` - Implement import/export module syntax (same feature label, same group key, title overlap)
 
 ## Smart triage
 

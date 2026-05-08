@@ -111,13 +111,13 @@ The generated manifest remains standalone under `--host-deny`, using only WASI s
 
 In scope:
 
-- [ ] Add parser support for decimal exponent numeric literals, with correct diagnostics for invalid forms.
-- [ ] Define and implement a portable stdin lowering policy for the Bun submission form or implement the needed top-level await/Bun facade subset.
-- [ ] Implement `Array.prototype.map` for direct callbacks used by the fixture.
-- [ ] Implement dynamic `String(value)` and unary plus conversion for the fixture's string/number paths.
-- [ ] Implement Set iteration through array spread, or split a child issue that depends on issue 274 and covers iterable spread semantics.
-- [ ] Implement `Array.prototype.sort` with comparator callback for number arrays.
-- [ ] Extend the number representation or add a proven lowering path so values up to `1_000_000_000` and sample output `819264512` are represented correctly.
+- [x] Add parser support for decimal exponent numeric literals, with correct diagnostics for invalid forms.
+- [x] Define and implement a portable stdin lowering policy for the Bun submission form or implement the needed top-level await/Bun facade subset.
+- [x] Implement `Array.prototype.map` for direct callbacks used by the fixture.
+- [x] Implement dynamic `String(value)` and unary plus conversion for the fixture's string/number paths.
+- [x] Implement Set iteration through array spread, or split a child issue that depends on issue 274 and covers iterable spread semantics.
+- [x] Implement `Array.prototype.sort` with comparator callback for number arrays.
+- [x] Extend the number representation or add a proven lowering path so values up to `1_000_000_000` and sample output `819264512` are represented correctly.
 
 Out of scope:
 
@@ -146,12 +146,12 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] A fixture containing the original ABC451 D Bun submission builds with `cargo run -q -- build <fixture> -o <wasm> --host-deny`.
-- [ ] The resulting wasm runs under `iwasm` and prints `21`, `328`, and `819264512` for the three official sample inputs.
-- [ ] The manifest for the fixture has `standalone: true`, `node_host.required: false`, and no node host imports.
-- [ ] Regression tests cover each newly supported language/runtime feature separately, not only the contest fixture.
-- [ ] No code path detects this specific contest source text and substitutes another program.
-- [ ] Docs/current-state describe the newly supported subsets and remaining limitations.
+- [x] A fixture containing the original ABC451 D Bun submission builds with `cargo run -q -- build <fixture> -o <wasm> --host-deny`.
+- [x] The resulting wasm runs under `iwasm` and prints `21`, `328`, and `819264512` for the three official sample inputs.
+- [x] The manifest for the fixture has `standalone: true`, `node_host.required: false`, and no node host imports.
+- [x] Regression tests cover each newly supported language/runtime feature separately, not only the contest fixture.
+- [x] No code path detects this specific contest source text and substitutes another program.
+- [x] Docs/current-state describe the newly supported subsets and remaining limitations.
 
 ## Validation
 
@@ -180,18 +180,18 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
-- [ ] updated: `docs/05-compatibility-and-semantics.md`
+- [x] not affected
+- [x] updated: `docs/05-compatibility-and-semantics.md`
 
 Current state:
 
-- [ ] not affected
-- [ ] updated: `current-state.md` (repo root)
+- [x] not affected
+- [x] updated: `current-state.md` (repo root)
 
 Follow-up issues:
 
-- [ ] none
-- [ ] created/updated: child issues for numeric model, Bun stdin/top-level await, Array.map, Set spread, Array.sort, and conversion semantics if this issue is split before implementation.
+- [x] none
+- [x] created/updated: child issues for numeric model, Bun stdin/top-level await, Array.map, Set spread, Array.sort, and conversion semantics if this issue is split before implementation.
 
 ## Notes
 

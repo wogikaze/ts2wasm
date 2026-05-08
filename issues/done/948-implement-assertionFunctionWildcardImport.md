@@ -117,7 +117,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/open/713-implement-assertionFunctionWildcardImport.md` - Implement Assertionfunctionwildcardimport (same reference path, same feature label, same group key, title overlap)
+- `issues/done/713-implement-assertionFunctionWildcardImport.md` - Implement Assertionfunctionwildcardimport (same reference path, same feature label, same group key, title overlap)
 
 ## Smart triage
 
@@ -127,7 +127,7 @@ Not generated. Rerun with `--triage-limit 1` or higher.
 ## 重複整理メモ
 
 この issue はタイトルが重複しているため、内容がより充実している
-`issues/open/713-implement-assertionFunctionWildcardImport.md` に統合されました。
+`issues/done/713-implement-assertionFunctionWildcardImport.md` に統合されました。
 そちらを参照してください。
 ## Completion evidence
 

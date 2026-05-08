@@ -136,7 +136,7 @@ Follow-up issues:
 
 No exact implementation child is created because the original parser-syntax
 blocker no longer reproduces. Broad parser-syntax issues such as
-`issues/open/442-implement-parser-syntax.md` and
+`issues/done/442-implement-parser-syntax.md` and
 `issues/open/059-implement-parser-syntax-extensions.md` are not exact owners for
 this current state: this file now parses, resolves, and builds.
 

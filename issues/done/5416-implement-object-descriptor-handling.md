@@ -37,16 +37,16 @@ Object.assign correctly copies property descriptors (not just values), Object.de
 
 In scope:
 
-- [ ] Verify Object.assign copies property descriptors (writable, enumerable, configurable)
-- [ ] Verify Object.defineProperty creates data descriptors (value, writable, enumerable, configurable)
-- [ ] Verify Object.defineProperty creates accessor descriptors (get, set, enumerable, configurable)
-- [ ] Fix any gaps in descriptor attribute handling in runtime_objects.rs
-- [ ] Add semantic_diff fixtures:
+- [x] Verify Object.assign copies property descriptors (writable, enumerable, configurable)
+- [x] Verify Object.defineProperty creates data descriptors (value, writable, enumerable, configurable)
+- [x] Verify Object.defineProperty creates accessor descriptors (get, set, enumerable, configurable)
+- [x] Fix any gaps in descriptor attribute handling in runtime_objects.rs
+- [x] Add semantic_diff fixtures:
   - `object-assign-descriptors.ts` — Object.assign preserves descriptor attributes
   - `object-define-property-getter.ts` — defineProperty with getter
   - `object-define-property-data.ts` — defineProperty with data descriptor
   - `object-define-property-invalid.ts` — invalid descriptor shapes
-- [ ] Add test file `crates/cli/tests/m6_object_descriptors.rs`
+- [x] Add test file `crates/cli/tests/m6_object_descriptors.rs`
 
 Out of scope:
 
@@ -75,12 +75,12 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] `Object.assign(target, {x: 1})` copies `x` as writable data descriptor (matching Node)
-- [ ] `Object.defineProperty(o, 'x', {value: 1})` creates data descriptor with default false for writable/enumerable/configurable
-- [ ] `Object.defineProperty(o, 'x', {get: () => 42})` creates accessor descriptor
-- [ ] `Object.getOwnPropertyDescriptor` returns correct descriptor after Object.assign
-- [ ] Invalid descriptors (e.g., both value and get) produce TypeError matching Node
-- [ ] All 3+ new semantic_diff fixtures pass (Node matches iwasm)
+- [x] `Object.assign(target, {x: 1})` copies `x` as writable data descriptor (matching Node)
+- [x] `Object.defineProperty(o, 'x', {value: 1})` creates data descriptor with default false for writable/enumerable/configurable
+- [x] `Object.defineProperty(o, 'x', {get: () => 42})` creates accessor descriptor
+- [x] `Object.getOwnPropertyDescriptor` returns correct descriptor after Object.assign
+- [x] Invalid descriptors (e.g., both value and get) produce TypeError matching Node
+- [x] All 3+ new semantic_diff fixtures pass (Node matches iwasm)
 
 ## Validation
 
@@ -100,8 +100,8 @@ Final-state docs:
 
 Current state:
 
-- [ ] not affected
-- [ ] updated: `current-state.md` (repo root)
+- [x] not affected
+- [x] updated: `current-state.md` (repo root)
 
 Follow-up issues:
 

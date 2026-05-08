@@ -119,7 +119,7 @@ Follow-up issues:
 - `issues/done/185-implement-anyIdenticalToItself.md` - Implement Anyidenticaltoitself (same reference path, same feature label, same group key, title overlap)
 - `issues/done/460-implement-ClassDeclaration.md` - Implement Classdeclaration (same feature label, same group key, title overlap)
 - `issues/done/546-implement-ClassDeclaration.md` - Implement Classdeclaration (same feature label, same group key, title overlap)
-- `issues/open/643-implement-anyIdenticalToItself.md` - Implement Anyidenticaltoitself (same reference path, same feature label, same group key, title overlap)
+- `issues/done/643-implement-anyIdenticalToItself.md` - Implement Anyidenticaltoitself (same reference path, same feature label, same group key, title overlap)
 
 ## Smart triage
 
@@ -129,7 +129,7 @@ Not generated. Rerun with `--triage-limit 1` or higher.
 ## 重複整理メモ
 
 この issue はタイトルが重複しているため、内容がより充実している
-`issues/open/643-implement-anyIdenticalToItself.md` に統合されました。
+`issues/done/643-implement-anyIdenticalToItself.md` に統合されました。
 そちらを参照してください。
 ## Completion evidence
 

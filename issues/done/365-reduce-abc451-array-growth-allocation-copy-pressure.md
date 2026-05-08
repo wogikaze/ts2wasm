@@ -59,11 +59,11 @@ The runtime reduces array-growth allocation/copy pressure enough to either make 
 
 In scope:
 
-- [ ] Reduce `alloc_array_growth_*` or `copy_array_growth_*` counters using a general runtime-memory improvement.
-- [ ] Preserve the committed `MEMORY_MAX_PAGES=185` policy.
-- [ ] Preserve explicit OOM failure behavior.
-- [ ] Record before/after diagnostics with `mise run abc451-runtime-costs -- --event-budget 100000 --timeout 30`.
-- [ ] Run the focused ABC451 depth-8 gate and record pass/fail.
+- [x] Reduce `alloc_array_growth_*` or `copy_array_growth_*` counters using a general runtime-memory improvement.
+- [x] Preserve the committed `MEMORY_MAX_PAGES=185` policy.
+- [x] Preserve explicit OOM failure behavior.
+- [x] Record before/after diagnostics with `mise run abc451-runtime-costs -- --event-budget 100000 --timeout 30`.
+- [x] Run the focused ABC451 depth-8 gate and record pass/fail.
 
 Out of scope:
 
@@ -79,9 +79,9 @@ Expected:
 
 - `crates/backend-wasm/src/`
 - `scripts/run/abc451-runtime-costs.py` only if attribution categories need a compatible update
-- `issues/open/365-reduce-abc451-array-growth-allocation-copy-pressure.md`
-- `issues/open/363-reduce-abc451-allocation-and-sweep-volume-after-bulk-copy-narrowing.md`
-- `issues/open/357-fix-abc451-depth8-iwasm-timeout.md` only if closure is verified
+- `issues/done/365-reduce-abc451-array-growth-allocation-copy-pressure.md`
+- `issues/done/363-reduce-abc451-allocation-and-sweep-volume-after-bulk-copy-narrowing.md`
+- `issues/done/357-fix-abc451-depth8-iwasm-timeout.md` only if closure is verified
 - `issues/index.md`
 
 Do not touch:
@@ -93,13 +93,13 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] `mise run abc451-runtime-costs -- --event-budget 100000 --timeout 30` passes and records before/after attribution.
-- [ ] `alloc_array_growth_bytes` or `copy_array_growth_bytes` decreases, or the issue records evidence that the next blocker is smaller than array growth.
-- [ ] `cargo nextest run -p ts2wasm-cli abc451_depth8_live_set_fixture_matches_node_output_under_iwasm` passes, or records the remaining timeout/trap with diagnostics.
-- [ ] `cargo nextest run -p ts2wasm-cli oom_alloc_check_must_fail_iwasm` passes.
-- [ ] `cargo test -p ts2wasm-backend-wasm --lib -- --nocapture` passes if backend runtime code changes.
-- [ ] `cargo fmt --all --check` passes.
-- [ ] `mise run update-issue-index -- --check` and `mise run check issues` pass.
+- [x] `mise run abc451-runtime-costs -- --event-budget 100000 --timeout 30` passes and records before/after attribution.
+- [x] `alloc_array_growth_bytes` or `copy_array_growth_bytes` decreases, or the issue records evidence that the next blocker is smaller than array growth.
+- [x] `cargo nextest run -p ts2wasm-cli abc451_depth8_live_set_fixture_matches_node_output_under_iwasm` passes, or records the remaining timeout/trap with diagnostics.
+- [x] `cargo nextest run -p ts2wasm-cli oom_alloc_check_must_fail_iwasm` passes.
+- [x] `cargo test -p ts2wasm-backend-wasm --lib -- --nocapture` passes if backend runtime code changes.
+- [x] `cargo fmt --all --check` passes.
+- [x] `mise run update-issue-index -- --check` and `mise run check issues` pass.
 
 ## Validation
 

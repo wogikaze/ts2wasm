@@ -120,8 +120,8 @@ Follow-up issues:
 - `issues/open/446-implement-scope-analysis.md` - Implement scope-analysis support (same feature label, same group key, title overlap)
 - `issues/done/468-implement-abstractClassInLocalScope.md` - Implement Abstractclassinlocalscope (same feature label, same group key, title overlap)
 - `issues/done/469-implement-abstractClassInLocalScopeIsAbstract.md` - Implement Abstractclassinlocalscopeisabstract (same reference path, same feature label, same group key, title overlap)
-- `issues/open/554-implement-abstractClassInLocalScope.md` - Implement Abstractclassinlocalscope (same feature label, same group key, title overlap)
-- `issues/open/555-implement-abstractClassInLocalScopeIsAbstract.md` - Implement Abstractclassinlocalscopeisabstract (same reference path, same feature label, same group key, title overlap)
+- `issues/done/554-implement-abstractClassInLocalScope.md` - Implement Abstractclassinlocalscope (same feature label, same group key, title overlap)
+- `issues/done/555-implement-abstractClassInLocalScopeIsAbstract.md` - Implement Abstractclassinlocalscopeisabstract (same reference path, same feature label, same group key, title overlap)
 
 ## Smart triage
 
@@ -131,7 +131,7 @@ Not generated. Rerun with `--triage-limit 1` or higher.
 ## 重複整理メモ
 
 この issue はタイトルが重複しているため、内容がより充実している
-`issues/open/555-implement-abstractClassInLocalScopeIsAbstract.md` に統合されました。
+`issues/done/555-implement-abstractClassInLocalScopeIsAbstract.md` に統合されました。
 そちらを参照してください。
 ## Completion evidence
 

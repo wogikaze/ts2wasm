@@ -25,11 +25,11 @@ Problem: 1,035 array-builtin unsupported at full corpus.
 
 In scope:
 
-- [ ] Check if reduce/reduceRight WAT exists in runtime_arrays.rs
-- [ ] If missing, add WAT implementation (callback folding, accumulator, hole skipping)
-- [ ] If existing, verify Node/iwasm semantic parity
-- [ ] Add build_smoke + semantic_diff fixtures
-- [ ] Add test file `crates/cli/tests/m6_array_reduce.rs`
+- [x] Check if reduce/reduceRight WAT exists in runtime_arrays.rs
+- [x] If missing, add WAT implementation (callback folding, accumulator, hole skipping)
+- [x] If existing, verify Node/iwasm semantic parity
+- [x] Add build_smoke + semantic_diff fixtures
+- [x] Add test file `crates/cli/tests/m6_array_reduce.rs`
 
 Out of scope:
 

@@ -90,7 +90,7 @@ Expected:
 - `crates/backend-wasm/src/`
 - `crates/cli/tests/` only if regression coverage needs a small assertion update
 - `issues/done/360-reduce-abc451-sweep-and-copy-pressure-after-free-list-fix.md`
-- `issues/open/357-fix-abc451-depth8-iwasm-timeout.md` only if closure is verified
+- `issues/done/357-fix-abc451-depth8-iwasm-timeout.md` only if closure is verified
 - `issues/index.md`
 
 Do not touch:

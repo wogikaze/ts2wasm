@@ -118,16 +118,16 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/open/442-implement-parser-syntax.md` - Implement parser syntax extensions (same feature label, title overlap)
+- `issues/done/442-implement-parser-syntax.md` - Implement parser syntax extensions (same feature label, title overlap)
 - `issues/done/464-implement-FunctionDeclaration-parser-syntax.md` - Implement Functiondeclaration Parser Syntax (same feature label, title overlap)
 - `issues/done/550-implement-FunctionDeclaration-parser-syntax.md` - Implement Functiondeclaration Parser Syntax (same feature label, title overlap)
-- `issues/open/663-implement-arrayAssignmentTest-parser-syntax.md` - Implement Arrayassignmenttest Parser Syntax (same reference path, same feature label, same group key, title overlap)
-- `issues/open/674-implement-arrayFakeFlatNoCrashInferenceDeclarations.md` - Implement Arrayfakeflatnocrashinferencedeclarations (same feature label, same group key, title overlap)
-- `issues/open/675-implement-arrayFilter.md` - Implement Arrayfilter (same feature label, same group key, title overlap)
-- `issues/open/680-implement-arrayFrom.md` - Implement Arrayfrom (same feature label, same group key, title overlap)
-- `issues/open/685-implement-arrayLiteralComments.md` - Implement Arrayliteralcomments (same feature label, same group key, title overlap)
-- `issues/open/686-implement-arrayLiteralContextualType.md` - Implement Arrayliteralcontextualtype (same feature label, same group key, title overlap)
-- `issues/open/689-implement-arrayOfSubtypeIsAssignableToReadonlyArray.md` - Implement Arrayofsubtypeisassignabletoreadonlyarray (same feature label, same group key, title overlap)
+- `issues/done/663-implement-arrayAssignmentTest-parser-syntax.md` - Implement Arrayassignmenttest Parser Syntax (same reference path, same feature label, same group key, title overlap)
+- `issues/done/674-implement-arrayFakeFlatNoCrashInferenceDeclarations.md` - Implement Arrayfakeflatnocrashinferencedeclarations (same feature label, same group key, title overlap)
+- `issues/done/675-implement-arrayFilter.md` - Implement Arrayfilter (same feature label, same group key, title overlap)
+- `issues/done/680-implement-arrayFrom.md` - Implement Arrayfrom (same feature label, same group key, title overlap)
+- `issues/done/685-implement-arrayLiteralComments.md` - Implement Arrayliteralcomments (same feature label, same group key, title overlap)
+- `issues/done/686-implement-arrayLiteralContextualType.md` - Implement Arrayliteralcontextualtype (same feature label, same group key, title overlap)
+- `issues/done/689-implement-arrayOfSubtypeIsAssignableToReadonlyArray.md` - Implement Arrayofsubtypeisassignabletoreadonlyarray (same feature label, same group key, title overlap)
 
 ## Smart triage
 
@@ -137,7 +137,7 @@ Not generated. Rerun with `--triage-limit 1` or higher.
 ## 重複整理メモ
 
 この issue はタイトルが重複しているため、内容がより充実している
-`issues/open/663-implement-arrayAssignmentTest-parser-syntax.md` に統合されました。
+`issues/done/663-implement-arrayAssignmentTest-parser-syntax.md` に統合されました。
 そちらを参照してください。
 ## Completion evidence
 

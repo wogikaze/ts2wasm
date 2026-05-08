@@ -58,8 +58,8 @@ Expected:
 - `fixtures/core-semantics/`
 - `docs/14-runtime-abi.md` if memory or GC policy changes
 - `current-state.md` if runtime facts change
-- `issues/open/300-support-abc451-large-integer-number-boundary.md`
-- `issues/open/308-implement-abc451-depth9-gc-cadence-policy.md`
+- `issues/done/300-support-abc451-large-integer-number-boundary.md`
+- `issues/done/308-implement-abc451-depth9-gc-cadence-policy.md`
 - `issues/index.md`
 
 Do not touch:
@@ -74,7 +74,7 @@ Do not touch:
 - [x] Bounded evidence shows lower GC sweep pressure than issue 307's
       baseline (`gc_collect_count=834`, `gc_sweep_block_visits=196941253` at
       1,000,000 allocations).
-- [ ] If the depth-9 reducer completes, it prints Node-matching `1404832`.
+- [x] If the depth-9 reducer completes, it prints Node-matching `1404832`.
 - [x] `abc451_depth8_live_set_fixture_matches_node_output_under_iwasm` remains
       passing.
 - [x] `oom_alloc_check_must_fail_iwasm` remains passing if runtime memory or GC
@@ -127,7 +127,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] created: `issues/open/309-reduce-abc451-depth9-live-allocation-shape.md`
+- [x] created: `issues/done/309-reduce-abc451-depth9-live-allocation-shape.md`
       owns the remaining allocation/live-set blocker after GC cadence and
       free-list policy slices.
 

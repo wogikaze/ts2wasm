@@ -166,7 +166,7 @@ Related but not duplicates:
 
 - `issues/done/5307-report-var-function-duplicate-identifier-diagnostics.md`
   covers var/function duplicate diagnostics.
-- `issues/open/343-implement-duplicate-local-detection.md` is broader duplicate
+- `issues/done/343-implement-duplicate-local-detection.md` is broader duplicate
   local infrastructure and explicitly leaves TypeScript-specific duplicate
   identifier rules out of scope.
 

@@ -127,8 +127,8 @@ Follow-up issues:
   generated buckets for the same path.
 
 - `issues/done/081-implement-TransportStream.md` - Implement Transportstream (same reference path, same feature label, same group key, title overlap)
-- `issues/open/442-implement-parser-syntax.md` - Implement parser syntax extensions (same feature label, same group key, title overlap)
-- `issues/open/467-implement-TransportStream.md` - Implement Transportstream (same reference path, same feature label, same group key, title overlap)
+- `issues/done/442-implement-parser-syntax.md` - Implement parser syntax extensions (same feature label, same group key, title overlap)
+- `issues/done/467-implement-TransportStream.md` - Implement Transportstream (same reference path, same feature label, same group key, title overlap)
 
 ## Smart triage
 

@@ -88,11 +88,11 @@ The depth-8 ABC451 live-set fixture completes under `iwasm` within the test time
 
 In scope:
 
-- [ ] Reduce allocation attempts, allocation requested bytes, array copy volume, or sweep visits using a general runtime-memory improvement.
-- [ ] Preserve the committed 185-page memory policy.
-- [ ] Preserve explicit OOM failure behavior.
-- [ ] Record before/after diagnostic evidence with `mise run abc451-runtime-costs -- --event-budget 100000 --timeout 30` and, if useful, `--event-budget 300000`.
-- [ ] If the depth-8 fixture now completes, close issue 357 in the same merge or request parent close after verification.
+- [x] Reduce allocation attempts, allocation requested bytes, array copy volume, or sweep visits using a general runtime-memory improvement.
+- [x] Preserve the committed 185-page memory policy.
+- [x] Preserve explicit OOM failure behavior.
+- [x] Record before/after diagnostic evidence with `mise run abc451-runtime-costs -- --event-budget 100000 --timeout 30` and, if useful, `--event-budget 300000`.
+- [x] If the depth-8 fixture now completes, close issue 357 in the same merge or request parent close after verification.
 
 Out of scope:
 
@@ -108,8 +108,8 @@ Expected:
 
 - `crates/backend-wasm/src/`
 - `crates/cli/tests/` only if regression coverage needs a small assertion update
-- `issues/open/363-reduce-abc451-allocation-and-sweep-volume-after-bulk-copy-narrowing.md`
-- `issues/open/357-fix-abc451-depth8-iwasm-timeout.md` only if closure is verified
+- `issues/done/363-reduce-abc451-allocation-and-sweep-volume-after-bulk-copy-narrowing.md`
+- `issues/done/357-fix-abc451-depth8-iwasm-timeout.md` only if closure is verified
 - `issues/index.md`
 
 Do not touch:
@@ -122,12 +122,12 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] `cargo nextest run -p ts2wasm-cli abc451_depth8_live_set_fixture_matches_node_output_under_iwasm` passes, or the issue records quantified progress and a smaller remaining blocker.
-- [ ] `mise run abc451-runtime-costs -- --event-budget 100000 --timeout 30` passes and records changed pressure versus the issue 362 parent-verified baseline, or records a justified replacement metric if the runtime structure changes.
-- [ ] `cargo nextest run -p ts2wasm-cli oom_alloc_check_must_fail_iwasm` passes.
-- [ ] `cargo test -p ts2wasm-backend-wasm --lib -- --nocapture` passes if backend runtime code changes.
-- [ ] `cargo fmt --all --check` passes.
-- [ ] `mise run update-issue-index -- --check` and `mise run check issues` pass.
+- [x] `cargo nextest run -p ts2wasm-cli abc451_depth8_live_set_fixture_matches_node_output_under_iwasm` passes, or the issue records quantified progress and a smaller remaining blocker.
+- [x] `mise run abc451-runtime-costs -- --event-budget 100000 --timeout 30` passes and records changed pressure versus the issue 362 parent-verified baseline, or records a justified replacement metric if the runtime structure changes.
+- [x] `cargo nextest run -p ts2wasm-cli oom_alloc_check_must_fail_iwasm` passes.
+- [x] `cargo test -p ts2wasm-backend-wasm --lib -- --nocapture` passes if backend runtime code changes.
+- [x] `cargo fmt --all --check` passes.
+- [x] `mise run update-issue-index -- --check` and `mise run check issues` pass.
 
 ## Validation
 

@@ -79,7 +79,7 @@ TypeScript AST path: ForOfStatement -> VariableDeclarationList -> VariableDeclar
 
 In scope:
 
-- [ ] Parse `for (const [a, b] of expr)` as a `for-of` loop head and add a focused parser or CLI regression.
+- [x] Parse `for (const [a, b] of expr)` as a `for-of` loop head and add a focused parser or CLI regression.
 
 Out of scope:
 
@@ -101,8 +101,8 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] The representative triage no longer reports `const declarations require an initializer` at `265..277`.
-- [ ] A focused regression covers `for (const [key, value] of Object.entries(e))`; any next blocker is recorded here or split.
+- [x] The representative triage no longer reports `const declarations require an initializer` at `265..277`.
+- [x] A focused regression covers `for (const [key, value] of Object.entries(e))`; any next blocker is recorded here or split.
 
 ## Validation
 
@@ -125,15 +125,15 @@ python scripts/manager.py check-issue-readiness -- --fail-ready-below 80
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 

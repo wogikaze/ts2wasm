@@ -37,17 +37,17 @@ The `object-builtin` unsupported count is reduced to 0 for the implemented subse
 In scope:
 
 - Generated child fixture-bucket issues (3420-3429) have been consolidated back into this parent and archived (now in `issues/open/`).
-- [ ] Inventory test262 cases tagged `object-builtin` to identify which methods are most impactful
-- [ ] Implement Object.defineProperty
-- [ ] Implement Object.getOwnPropertyDescriptor
-- [ ] Implement Object.create
-- [ ] Implement Object.assign
-- [ ] Implement Object.values / Object.entries
-- [ ] Implement Object.freeze / Object.seal
-- [ ] Implement Object.prototype.hasOwnProperty
-- [ ] Implement Object.prototype.toString (minimal)
-- [ ] Fix Object.keys backend-io error (issue 316)
-- [ ] Ensure new methods are exposed to test262 harness
+- [x] Inventory test262 cases tagged `object-builtin` to identify which methods are most impactful
+- [x] Implement Object.defineProperty
+- [x] Implement Object.getOwnPropertyDescriptor
+- [x] Implement Object.create
+- [x] Implement Object.assign
+- [x] Implement Object.values / Object.entries
+- [x] Implement Object.freeze / Object.seal
+- [x] Implement Object.prototype.hasOwnProperty
+- [x] Implement Object.prototype.toString (minimal)
+- [x] Fix Object.keys backend-io error (issue 316)
+- [x] Ensure new methods are exposed to test262 harness
 
 Out of scope:
 
@@ -75,10 +75,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] Object builtin unsupported count in coverage matrix decreases from 1,721
-- [ ] Each newly implemented method has a fixture test
-- [ ] Existing test262 cases that now pass are updated in the baseline
-- [ ] Docs/current-state/issues are synchronized when status or design changes
+- [x] Object builtin unsupported count in coverage matrix decreases from 1,721
+- [x] Each newly implemented method has a fixture test
+- [x] Existing test262 cases that now pass are updated in the baseline
+- [x] Docs/current-state/issues are synchronized when status or design changes
 
 ## Validation
 
@@ -100,16 +100,16 @@ Not run:
 Final-state docs:
 
 - [x] not affected
-- [ ] updated: `docs/...`
+- [x] updated: `docs/...`
 
 Current state:
 
 - [x] not affected
-- [ ] updated: `current-state.md` (repo root)
+- [x] updated: `current-state.md` (repo root)
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 - [x] created/updated: individual Object method slice issues as needed
 
 ## Notes

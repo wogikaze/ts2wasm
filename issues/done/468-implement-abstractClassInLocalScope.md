@@ -489,7 +489,7 @@ error: [UnsupportedSyntax] arrow function block bodies support a single return s
 ## 重複整理メモ
 
 この issue はタイトルが重複しているため、内容がより充実している
-`issues/open/554-implement-abstractClassInLocalScope.md` に統合されました。
+`issues/done/554-implement-abstractClassInLocalScope.md` に統合されました。
 そちらを参照してください。
 ## Completion evidence
 

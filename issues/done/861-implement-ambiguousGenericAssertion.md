@@ -118,7 +118,7 @@ Follow-up issues:
 
 - `issues/done/167-implement-ambiguousGenericAssertion.md` - Implement Ambiguousgenericassertion (same reference path, same feature label, same group key, title overlap)
 - `issues/done/540-implement-ambiguousGenericAssertion.md` - Implement Ambiguousgenericassertion (same reference path, same feature label, same group key, title overlap)
-- `issues/open/626-implement-ambiguousGenericAssertion.md` - Implement Ambiguousgenericassertion (same reference path, same feature label, same group key, title overlap)
+- `issues/done/626-implement-ambiguousGenericAssertion.md` - Implement Ambiguousgenericassertion (same reference path, same feature label, same group key, title overlap)
 
 ## Smart triage
 
@@ -128,7 +128,7 @@ Not generated. Rerun with `--triage-limit 1` or higher.
 ## 重複整理メモ
 
 この issue はタイトルが重複しているため、内容がより充実している
-`issues/open/626-implement-ambiguousGenericAssertion.md` に統合されました。
+`issues/done/626-implement-ambiguousGenericAssertion.md` に統合されました。
 そちらを参照してください。
 ## Completion evidence
 

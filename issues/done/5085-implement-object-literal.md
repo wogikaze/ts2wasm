@@ -126,10 +126,10 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/open/052-implement-json.md` - Implement JSON (same feature label, same group key, title overlap)
+- `issues/done/052-implement-json.md` - Implement JSON (same feature label, same group key, title overlap)
 - `issues/open/1118-implement-castNewObjectBug.md` - Implement Castnewobjectbug (same feature label, same group key, title overlap)
-- `issues/open/1128-implement-chainedSpecializationToObjectTypeLiteral.md` - Implement Chainedspecializationtoobjecttypeliteral (same feature label, same group key, title overlap)
-- `issues/open/1136-implement-checkJsObjectLiteralIndexSignatures.md` - Implement Checkjsobjectliteralindexsignatures (same feature label, same group key, title overlap)
+- `issues/done/1128-implement-chainedSpecializationToObjectTypeLiteral.md` - Implement Chainedspecializationtoobjecttypeliteral (same feature label, same group key, title overlap)
+- `issues/done/1136-implement-checkJsObjectLiteralIndexSignatures.md` - Implement Checkjsobjectliteralindexsignatures (same feature label, same group key, title overlap)
 - `issues/open/1148-implement-checkingObjectWithThisInNamePositionNoCrash.md` - Implement Checkingobjectwiththisinnamepositionnocrash (same feature label, same group key, title overlap; split to issue 5237)
 - `issues/open/1375-implement-commentsOnObjectLiteral-object-literal.md` - Implement Commentsonobjectliteral Object Literal (same feature label, same group key, title overlap)
 - `issues/open/1511-implement-contextualTypeFunctionObjectPropertyIntersection.md` - Implement Contextualtypefunctionobjectpropertyintersection (same feature label, same group key, title overlap)
@@ -158,7 +158,7 @@ AttributeError: 'NoneType' object has no attribute 'parse_test262_metadata'
 ## 重複整理メモ
 
 この issue はタイトルが重複しているため、内容がより充実している
-`issues/open/441-implement-object-literal.md` に統合されました。
+`issues/done/441-implement-object-literal.md` に統合されました。
 そちらを参照してください。
 ## Completion evidence
 

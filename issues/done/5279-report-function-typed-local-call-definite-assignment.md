@@ -129,7 +129,7 @@ python scripts/manager.py reference-coverage tsc --path-filter reference/typescr
 ## Notes
 
 Split from `issues/open/1353-implement-commentOnParenthesizedExpressionOpenParen.md`.
-Related broad method-call bucket: `issues/open/435-implement-method-call.md`.
+Related broad method-call bucket: `issues/done/435-implement-method-call.md`.
 
 Additional superseded bucket:
 

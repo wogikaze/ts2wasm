@@ -138,7 +138,7 @@ Follow-up issues:
 
 ## Notes
 
-Split from `issues/open/763-implement-augmentExportEquals.md`.
+Split from `issues/done/763-implement-augmentExportEquals.md`.
 
 Related but not duplicate:
 
@@ -146,7 +146,7 @@ Related but not duplicate:
   TypeScript diagnostic for `export =` combined with other exported elements.
 - `issues/done/5229-w0-user-runtime-string-origin.md` covers
   virtual multi-file import resolution after import syntax is parsed.
-- `issues/open/432-implement-import-export.md` is the broad import/export
+- `issues/done/432-implement-import-export.md` is the broad import/export
   umbrella and is too large to implement directly.
 
 ## Completion evidence

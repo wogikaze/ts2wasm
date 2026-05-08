@@ -54,7 +54,7 @@ Expected:
 
 - `crates/`
 - `fixtures/`
-- `issues/open/050-implement-date.md`
+- `issues/done/050-implement-date.md`
 - `current-state.md`
 
 Do not touch:

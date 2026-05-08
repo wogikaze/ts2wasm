@@ -77,7 +77,7 @@ Expected:
 
 - `scripts/run/abc451-runtime-costs.py`
 - `issues/done/366-add-arraypushgrow-miss-attribution-diagnostic.md`
-- `issues/open/365-reduce-abc451-array-growth-allocation-copy-pressure.md`
+- `issues/done/365-reduce-abc451-array-growth-allocation-copy-pressure.md`
 - `issues/index.md`
 
 Do not touch:

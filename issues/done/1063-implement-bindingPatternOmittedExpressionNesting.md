@@ -118,7 +118,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/open/432-implement-import-export.md` is a broad generated import/export bucket, not an implementation-ready owner for this exact `export let` destructuring parser boundary.
+- `issues/done/432-implement-import-export.md` is a broad generated import/export bucket, not an implementation-ready owner for this exact `export let` destructuring parser boundary.
 - Existing export-function/default/export-const issues do not cover `export let` destructuring.
 
 ## Smart triage
