@@ -49,11 +49,11 @@ Goal: generated WASM should have a stable runtime substrate before adding large 
 This wave is about **minimum correctness and maintainability**, not full optimization.
 W8 handles the post-90% full replacement.
 
-- [ ] Minimal binary WASM emitter path for simple programs
+- [X] Minimal binary WASM emitter path for simple programs — id 112 done
 - [ ] Runtime core raw WAT reduction where it blocks maintainability
-- [ ] ABI contract document: logical values vs wire representation
-- [ ] ABI mismatch tests for `i64` logical value vs `i32` wire handle/value representation
-- [ ] Runtime value representation smoke tests under iwasm/WAMR
+- [X] ABI contract document: logical values vs wire representation — id 115 done
+- [X] ABI mismatch tests for `i64` logical value vs `i32` wire handle/value representation — id 116 done
+- [X] Runtime value representation smoke tests under iwasm/WAMR — id 117 done
 
 Non-goals:
 - No full WAT replacement — that is W8.
@@ -118,13 +118,13 @@ Goal: unresolved names/functions should become either known supported operations
 This wave should reduce `UnresolvedName` / `UnresolvedFunction` noise without pretending unsupported runtime semantics exist.
 
 - [ ] Register core ECMAScript global builtin names:
-  — ✅ `Symbol`, `Proxy`, `Reflect`, `Promise` (id 101 done)
-  — ✅ `ArrayBuffer`, `DataView` (id 102 done)
+- [x] `Symbol`, `Proxy`, `Reflect`, `Promise` (id 101 done)
+- [x] `ArrayBuffer`, `DataView` (id 102 done)
   — remaining: `Map`, `Set`, `WeakMap`, `WeakSet`, `Error` types, `Atomics`, `Intl`, `globalThis`
 - [X] Register TypedArray constructor names:
-  ✅ `Int8Array` through `BigUint64Array` (11 types) — id 102 done
+  [x] `Int8Array` through `BigUint64Array` (11 types) — id 102 done
 - [X] Register well-known symbols:
-  ✅ `Symbol.iterator`, `toStringTag`, `hasInstance`, `toPrimitive`, `for`, `keyFor` — id 103 done
+  [x] `Symbol.iterator`, `toStringTag`, `hasInstance`, `toPrimitive`, `for`, `keyFor` — id 103 done
 - [ ] Builtin method dispatch table for supported or explicitly unsupported methods
 - [ ] String / Array / Object / Number / Function.prototype method dispatch routing
 - [ ] Nested namespace/module resolution: `A.B.C`
@@ -146,7 +146,7 @@ Goal: implement selected builtins only after names and dispatch paths are explic
 See `docs/language-reference/` for the detailed feature coverage tables.
 
 - [ ] Promise minimal substrate and constructor
-- [ ] `Promise.prototype.then` / `catch` / `finally` — ✅ precise unsupported diagnostic added (id 104 done)
+- [ ] `Promise.prototype.then` / `catch` / `finally` — [x] precise unsupported diagnostic added (id 104 done)
 - [ ] `Promise.resolve` / `reject` / `all` / `race` / `allSettled` / `any` / `withResolvers`
 - [ ] Proxy constructor
 - [ ] Proxy handler trap slices + `Proxy.revocable`
@@ -202,7 +202,7 @@ Work here runs in parallel with W2-W5 implementation: each feature change should
 
 - [ ] Ramp 500 → 2,000 with stable parallel execution and caching
 - [ ] Ramp 2,000 → 10,000 / 10,000 → 30,000 / 30,000 → 53,445
-- [X] Regression detection: fail on build_pass / semantic_pass decrease — ✅ `--record-baseline` / `--compare-baseline` flags (id 107 done)
+- [X] Regression detection: fail on build_pass / semantic_pass decrease — [x] `--record-baseline` / `--compare-baseline` flags (id 107 done)
 - [ ] Delta reporting: feature-level and diagnostic-class pass/fail deltas
 - [ ] Coverage dashboard: trend graph, feature-level burn-down, diagnostic burn-down
 - [ ] Gate progress visualization
