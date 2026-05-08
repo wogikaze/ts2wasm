@@ -79,3 +79,13 @@ python scripts/manager.py reference-coverage tsc --path-filter reference/typescr
 ## Notes
 
 Split from `issues/open/1175-implement-classDeclarationBlockScoping.md`.
+
+## False-done audit
+
+**truly-done** (5249)
+
+- Implementation commits: verified via `git log --oneline --all --grep=5249`
+- Completion evidence: filled with specific commit hashes and validation results
+- Acceptance criteria: all checked as met
+
+This issue has repo-local close evidence with implementation commits and validation commands.

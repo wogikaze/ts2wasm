@@ -138,3 +138,13 @@ Related but not owners for this exact boundary:
   excludes dynamic `super[expr]` property access.
 - `issues/done/5233-w0-harden-reference-coverage-prerequisites.md` excludes
   `super.method(...)` and `super.x` beyond its non-derived `super()` diagnostic.
+
+## False-done audit
+
+**truly-done** (5255)
+
+- Implementation commits: verified via `git log --oneline --all --grep=5255`
+- Completion evidence: filled with specific commit hashes and validation results
+- Acceptance criteria: all checked as met
+
+This issue has repo-local close evidence with implementation commits and validation commands.

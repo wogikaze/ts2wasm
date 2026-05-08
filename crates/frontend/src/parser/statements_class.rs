@@ -5,11 +5,21 @@ impl Parser {
         self.consume(TokenKind::Abstract); // TypeScript abstract modifier — erased at runtime
         let start = self.expect(TokenKind::Class)?;
         let (name, _) = self.expect_ident()?;
+<<<<<<< Updated upstream
         if self.namespace_names_encountered.contains(&name) {
             let span = self.prev_span().unwrap_or(Span { start: 0, end: 0 });
             return Err(Diagnostic {
                 code: DiagCode::UnsupportedSyntax,
                 message: format!("namespace before class: `{name}`"),
+||||||| Stash base
+=======
+        // Report TS(2440): namespace before class merge diagnostic
+        if self.namespace_names_encountered.contains(&name) {
+            let span = self.prev_span().unwrap_or(Span { start: 0, end: 0 });
+            return Err(Diagnostic {
+                code: DiagCode::UnsupportedSyntax,
+                message: format!("namespace declaration cannot be located prior to a class declaration with the same name `{name}` (TS(2440))"),
+>>>>>>> Stashed changes
                 span: Some(span),
             });
         }
@@ -125,6 +135,33 @@ impl Parser {
                 return Ok(Some(Box::new(expr)));
             }
             let expr = self.expression()?;
+            let mut expr = expr;
+            // Consume TypeScript type arguments after the expression (issue 5369):
+            //   class Foo extends Tag("Foo")<Foo, Shape>() {}
+            loop {
+                let _ = self.consume_typescript_generic_parameter_list()?;
+                // After type arguments, there may be an additional call (e.g., <T>() syntax)
+                if matches!(self.peek(), Some(Token::LeftParen)) {
+                    let start = expr.span().start;
+                    let (args, end) = self.finish_call_args()?;
+                    expr = Expr::Call {
+                        callee: Box::new(expr),
+                        args,
+                        span: Span { start, end },
+                    };
+                    continue;
+                }
+                break;
+            }
+            // Report multiple base classes (issue 5317)
+            if matches!(self.peek(), Some(Token::Comma)) {
+                let comma_span = self.peek_span().unwrap_or(Span { start: 0, end: 0 });
+                return Err(Diagnostic {
+                    code: DiagCode::UnsupportedSyntax,
+                    message: "classes can only extend a single class".to_owned(),
+                    span: Some(comma_span),
+                });
+            }
             Ok(Some(Box::new(expr)))
         } else {
             Ok(None)

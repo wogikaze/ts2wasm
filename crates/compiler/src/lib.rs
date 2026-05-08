@@ -536,6 +536,39 @@ fn lower_static_named_import_bindings_for_build(
                         lowered_statement_index: index,
                     });
                     lowered_statement_index += 1;
+                } else if let Stmt::ClassDecl {
+                    name: class_name,
+                    extends,
+                    body,
+                    static_blocks,
+                    private_elements,
+                    ts_private_field_names,
+                    interface_heritage,
+                    span,
+                } = declaration.as_ref()
+                {
+                    // Handle export class C { ... } -> let C = class C { ... }
+                    rewritten.push(Stmt::Let {
+                        name: class_name.clone(),
+                        expr: Expr::ClassExpr {
+                            name: class_name.clone(),
+                            extends: extends.clone(),
+                            body: body.clone(),
+                            static_blocks: static_blocks.clone(),
+                            private_elements: private_elements.clone(),
+                            ts_private_field_names: ts_private_field_names.clone(),
+                            interface_heritage: interface_heritage.clone(),
+                            span: *span,
+                        },
+                        span: *span,
+                        is_var: false,
+                    });
+                    local_name_to_index.insert(class_name.clone(), index);
+                    module_exports.push(ModuleExport {
+                        name: name.clone(),
+                        lowered_statement_index: index,
+                    });
+                    lowered_statement_index += 1;
                 } else {
                     rewritten.push(*declaration.clone());
                     let is_let_like = lowers_to_top_level_statement(declaration);
@@ -1315,6 +1348,39 @@ fn rewrite_static_module_body_for_build(
                         is_var: false,
                     });
                     local_name_to_index.insert(func_name.clone(), index);
+                    module_exports.push(ModuleExport {
+                        name,
+                        lowered_statement_index: index,
+                    });
+                    lowered_statement_index += 1;
+                } else if let Stmt::ClassDecl {
+                    name: class_name,
+                    extends,
+                    body,
+                    static_blocks,
+                    private_elements,
+                    ts_private_field_names,
+                    interface_heritage,
+                    span,
+                } = declaration.as_ref()
+                {
+                    // Handle export class C { ... } -> let C = class C { ... }
+                    rewritten.push(Stmt::Let {
+                        name: class_name.clone(),
+                        expr: Expr::ClassExpr {
+                            name: class_name.clone(),
+                            extends: extends.clone(),
+                            body: body.clone(),
+                            static_blocks: static_blocks.clone(),
+                            private_elements: private_elements.clone(),
+                            ts_private_field_names: ts_private_field_names.clone(),
+                            interface_heritage: interface_heritage.clone(),
+                            span: *span,
+                        },
+                        span: *span,
+                        is_var: false,
+                    });
+                    local_name_to_index.insert(class_name.clone(), index);
                     module_exports.push(ModuleExport {
                         name,
                         lowered_statement_index: index,

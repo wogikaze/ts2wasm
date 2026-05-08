@@ -207,25 +207,26 @@ impl<'a> Resolver<'a> {
         let mut seen_params = HashMap::new();
 
         for param in params {
-            if seen_params.contains_key(param) {
+            let clean_name = param.strip_prefix("...").unwrap_or(param.as_str());
+            if seen_params.contains_key(clean_name) {
                 return Err(Diagnostic {
                     code: DiagCode::DuplicateParameter,
-                    message: format!("duplicate parameter name: `{param}`"),
+                    message: format!("duplicate parameter name: `{clean_name}`"),
                     span: None,
                 });
             }
-            seen_params.insert(param.clone(), ());
+            seen_params.insert(clean_name.to_owned(), ());
             let local_id = LocalId(resolver.next_local_id);
             resolver.next_local_id += 1;
             resolver
                 .scopes
                 .last_mut()
                 .expect("function scope must exist")
-                .insert(param.clone(), local_id);
-            if resolver.env_cell_names.contains(param) {
+                .insert(clean_name.to_owned(), local_id);
+            if resolver.env_cell_names.contains(clean_name) {
                 resolver.env_cell_locals.insert(local_id);
             }
-            if resolver.heap_closure_names.contains(param) {
+            if resolver.heap_closure_names.contains(clean_name) {
                 resolver.heap_closure_locals.insert(local_id);
             }
             resolver.param_locals.insert(local_id);
@@ -794,7 +795,8 @@ fn binding_param_names<'a>(
             if let Some(pattern) = parse_binding_pattern(inner, span)? {
                 names.extend(pattern.names().into_iter().map(ToOwned::to_owned));
             } else {
-                names.push(param.to_owned());
+                // Push the clean name (without `...`) so capture exclusion matches
+                names.push(inner.to_owned());
             }
         } else if let Some(pattern) = parse_binding_pattern(param, span)? {
             names.extend(pattern.names().into_iter().map(ToOwned::to_owned));

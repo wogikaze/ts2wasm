@@ -414,6 +414,17 @@ impl Parser {
         declare_span: Span,
     ) -> Result<(), Diagnostic> {
         if self.peek_contextual_keyword("module") || self.peek_contextual_keyword("namespace") {
+            // Capture namespace name before the body is erased (issue 5370).
+            if self.cursor + 1 < self.tokens.len() {
+                if let crate::Token::Ident(ns_name) = &self.tokens[self.cursor + 1].kind {
+                    let name_span = self.tokens[self.cursor + 1].span;
+                    self.pending_statements.push(crate::Stmt::AmbientValueDecl {
+                        name: ns_name.clone(),
+                        span: name_span,
+                        is_var: false,
+                    });
+                }
+            }
             self.consume_module_or_namespace_declaration()?;
             return Ok(());
         }
@@ -600,7 +611,8 @@ impl Parser {
         self.advance();
         // consume the name (identifier or dotted name, or string literal)
         match self.peek() {
-            Some(Token::Ident(_)) => {
+            Some(Token::Ident(name)) => {
+                self.namespace_names_encountered.insert(name.clone());
                 self.advance();
                 // consume dotted name parts: .Ident
                 while matches!(self.peek(), Some(Token::Dot))

@@ -103,6 +103,9 @@ pub(super) fn resolve_method_to_runtime_fn(object: &ResolvedExpr, method: &str) 
         "push" => Some("ArrayPush".to_owned()),
         "pop" => Some("ArrayPop".to_owned()),
         "reverse" => Some("ArrayReverse".to_owned()),
+        "toFixed" => Some("NumberToFixed".to_owned()),
+        "toExponential" => Some("NumberToExponential".to_owned()),
+        "toPrecision" => Some("NumberToPrecision".to_owned()),
         _ => None,
     }
 }

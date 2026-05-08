@@ -13,7 +13,10 @@ use ts2wasm_ir::lowered::LoweredProgram;
 use ts2wasm_ir::optimizer::{OptimizationLevel, OptimizedHirProgram};
 use ts2wasm_ir::semantic::{HirExpr, HirProgram, HirRelationalOp, HirStmt};
 
-use super::{backend, builtin_resolver, lowered, name_resolver, test262_preprocessor};
+use super::{
+    backend, build_multi_section_file, builtin_resolver, lowered, name_resolver,
+    split_file_name_sections, test262_preprocessor,
+};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum DumpPhase {
@@ -103,6 +106,29 @@ pub fn dump_file_with_options(input: &Path, options: DumpOptions) -> Result<Stri
     if options.phase == DumpPhase::Ast {
         let ast = parse_ast(&source)?;
         return Ok(format_section("ast", &format!("{ast:#?}")));
+    }
+
+    // Check for @Filename multi-section files — use the multi-section build path
+    // so each section gets its own scope and DuplicateLocal across sections is avoided.
+    let sections = split_file_name_sections(&source);
+    if !sections.is_empty()
+        && matches!(
+            options.phase,
+            DumpPhase::All | DumpPhase::Lowered | DumpPhase::Wat
+        )
+    {
+        let cr = build_multi_section_file(input, &sections, Path::new("/dev/null"), None, false)?;
+        if options.phase == DumpPhase::All {
+            return Ok(format!(
+                "\n== multi-section build ==\n{}\nbuild: ok\n",
+                cr.diagnostics
+                    .iter()
+                    .map(|d| format!("warning: {d}"))
+                    .collect::<Vec<_>>()
+                    .join("\n")
+            ));
+        }
+        return Ok("multi-section build: ok".to_owned());
     }
 
     let pipeline = build_dump_pipeline(input, &source, options.optimization_level)?;

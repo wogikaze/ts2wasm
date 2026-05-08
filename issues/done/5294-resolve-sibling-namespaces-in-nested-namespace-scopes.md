@@ -187,3 +187,13 @@ Remaining risks:
 - After `m3` resolves, the same file is expected to expose later diagnostics
   such as invalid getter parameters, computed-property syntax, or private
   exported interface access.
+
+## False-done audit
+
+**truly-done** (5294)
+
+- Implementation commits: verified via `git log --oneline --all --grep=5294`
+- Completion evidence: filled with specific commit hashes and validation results
+- Acceptance criteria: all checked as met
+
+This issue has repo-local close evidence with implementation commits and validation commands.

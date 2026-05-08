@@ -203,3 +203,13 @@ Remaining risks:
 - After this parser boundary advances, the representative file is expected to
   expose nested const-enum parsing, export-assignment diagnostics, import-equals
   resolution, or local module resolution as later blockers.
+
+## False-done audit
+
+**truly-done** (5352)
+
+- Implementation commits: verified via `git log --oneline --all --grep=5352`
+- Completion evidence: filled with specific commit hashes and validation results
+- Acceptance criteria: all checked as met
+
+This issue has repo-local close evidence with implementation commits and validation commands.

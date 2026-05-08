@@ -2189,7 +2189,7 @@ fn lower_function(
             if let Some(inner) = param.name.strip_prefix("...")
                 && let Some(rest_pattern) = parse_binding_pattern(inner, param.span)?
             {
-                    let param_local = resolver.resolve_local(&param.name)?;
+                    let param_local = resolver.resolve_local(inner)?;
                     body_with_defaults.extend(
                         resolver.lower_binding_pattern_declarations(
                             &rest_pattern,

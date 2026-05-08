@@ -8,7 +8,7 @@ impl Parser {
         let mut is_parameter_property = false;
 
         while self.peek_parameter_property_modifier()
-            && matches!(self.peek_n(1), Some(Token::Ident(_)))
+            || matches!(self.peek(), Some(Token::Static | Token::Export))
         {
             if !allow_parameter_property {
                 let span = self.peek_span().unwrap_or(Span { start: 0, end: 0 });
@@ -17,6 +17,29 @@ impl Parser {
                     message:
                         "issue-071: parameter property modifiers are only allowed in constructor parameters"
                             .to_owned(),
+                    span: Some(span),
+                });
+            }
+            // Detect invalid modifiers (issue 5355)
+            if matches!(self.peek(), Some(Token::Static)) {
+                let span = self.peek_span().unwrap_or(Span { start: 0, end: 0 });
+                // If no valid modifier was consumed before this, static could be
+                // a parameter name (issue 5362) rather than an invalid modifier.
+                if !is_parameter_property && !matches!(self.peek_n(1), Some(Token::Ident(_))) {
+                    // Static is the parameter name — break out of modifier loop
+                    break;
+                }
+                return Err(Diagnostic {
+                    code: DiagCode::UnsupportedSyntax,
+                    message: "'static' modifier cannot appear on a parameter.".to_owned(),
+                    span: Some(span),
+                });
+            }
+            if matches!(self.peek(), Some(Token::Export)) {
+                let span = self.peek_span().unwrap_or(Span { start: 0, end: 0 });
+                return Err(Diagnostic {
+                    code: DiagCode::UnsupportedSyntax,
+                    message: "'export' modifier cannot appear on a parameter.".to_owned(),
                     span: Some(span),
                 });
             }
@@ -60,7 +83,7 @@ impl Parser {
             });
         }
 
-        let binding = self.parse_binding_pattern()?;
+let binding = self.parse_binding_pattern()?;
         if is_parameter_property && !binding.is_identifier {
             return Err(Diagnostic {
                 code: DiagCode::UnsupportedSyntax,
@@ -127,10 +150,18 @@ impl Parser {
                     is_identifier: true,
                 })
             }
-            Some(Token::Abstract) => {
+                        Some(Token::Abstract) => {
                 let token = self.advance().expect("peek returned Abstract but advance failed");
                 Ok(ParsedBindingPattern {
                     text: "abstract".to_owned(),
+                    span: token.span,
+                    is_identifier: true,
+                })
+            }
+            Some(Token::Static) => {
+                let token = self.advance().expect("peek returned Static but advance failed");
+                Ok(ParsedBindingPattern {
+                    text: "static".to_owned(),
                     span: token.span,
                     is_identifier: true,
                 })

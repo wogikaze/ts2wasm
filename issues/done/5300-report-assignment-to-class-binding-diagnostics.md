@@ -171,3 +171,13 @@ error: [UnsupportedSyntax] cannot assign to `f` because it is a class declaratio
 - `cargo fmt --all --check`: No formatting issues in changed files
 - `class f { } f += '';`: Produces `UnsupportedSyntax` class-assignment diagnostic (not generic issue-5011)
 - `class f { } const y = f;`: Still produces issue-5011 (non-assignment class value use preserved)
+
+## False-done audit
+
+**truly-done** (5300)
+
+- Implementation commits: verified via `git log --oneline --all --grep=5300`
+- Completion evidence: filled with specific commit hashes and validation results
+- Acceptance criteria: all checked as met
+
+This issue has repo-local close evidence with implementation commits and validation commands.
