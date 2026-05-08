@@ -18,17 +18,17 @@ Issue files are the source of truth for work items. The generated section below 
 | docs | 5 | 0 | 5 |
 | frontend | 4564 | 3595 | 969 |
 | harness | 1 | 0 | 1 |
-| ir | 80 | 13 | 67 |
+| ir | 80 | 12 | 68 |
 | issues | 5 | 0 | 5 |
 | other | 2 | 0 | 2 |
 | parser | 1 | 0 | 1 |
 | reference | 212 | 154 | 58 |
-| runtime | 280 | 66 | 214 |
+| runtime | 280 | 65 | 215 |
 | scripts | 4 | 0 | 4 |
 | security | 1 | 0 | 1 |
 | tests | 8 | 0 | 8 |
 | wasi | 5 | 0 | 5 |
-| total | 5265 | 3833 | 1432 |
+| total | 5265 | 3831 | 1434 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -396,8 +396,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5408 | Parse bare global augmentation blocks | bug | frontend/syntax | implementation-ready | P1 |  | bare TypeScript global augmentation syntax falls through to runtime |
 | 5409 | Parse function expression statements in nested blocks | feature | frontend/syntax | implementation-ready | P2 | 5000 | capturedLetConstInLoop parser tests reject `(function() { return x })` |
 | 5410 | W5: test262 coverage ramp from 100 to 500 executed | feature | coverage | design-ready | P1 |  | W5: test262 coverage ramp from 100 to 500 executed |
-| 5427 | W5: Implement class extends/super heritage | feature | ir | implementation-ready | P1 |  | 6,526 class unsupported at full corpus. |
-| 5428 | W4: Implement Array.prototype.reduce/reduceRight WAT | feature | runtime | implementation-ready | P1 |  | 1,035 array-builtin unsupported at full corpus. |
 | 5430 | W6: Full test262 corpus re-run and coverage update | feature | coverage | implementation-ready | P2 |  | W6: Full test262 corpus re-run and coverage update |
 <!-- generated:ready:end -->
 
@@ -5376,6 +5374,8 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5424 | W3: Name resolution round 2 — register more test262-encountered builtins | feature | ir | see file |
 | 5425 | W4: Expand builtin API routing for test262-encountered builtins | feature | runtime | see file |
 | 5426 | W5: Implement async/await on top of Promise runtime | feature | ir | see file |
+| 5427 | W5: Implement class extends/super heritage | feature | ir | see file |
+| 5428 | W4: Implement Array.prototype.reduce/reduceRight WAT | feature | runtime | see file |
 | 5429 | W4: Implement Object.values/getPrototypeOf/setPrototypeOf WAT | feature | runtime | see file |
 <!-- generated:done:end -->
 
