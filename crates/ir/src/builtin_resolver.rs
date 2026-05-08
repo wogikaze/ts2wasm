@@ -1433,23 +1433,11 @@ fn resolve_expr(expr: &Expr) -> Result<ResolvedExpr, Diagnostic> {
         Expr::Null { .. } => Ok(ResolvedExpr::Null),
         Expr::Undefined { .. } => Ok(ResolvedExpr::Undefined),
         Expr::This { span } => Ok(ResolvedExpr::This { span: *span }),
-        Expr::Await { expr, span } => {
-            let resolved = resolve_expr(expr)?;
-            if matches!(
-                resolved,
-                ResolvedExpr::BuiltinCall {
-                    builtin: BuiltinId::ReadStdinUtf8,
-                    ..
-                }
-            ) {
-                Ok(resolved)
-            } else {
-                Err(Diagnostic {
-                    code: DiagCode::UnsupportedSyntax,
-                    message: "issue-294: await is only supported for Bun.file(\"/dev/stdin\").text() stdin lowering in this slice".to_owned(),
-                    span: Some(*span),
-                })
-            }
+        Expr::Await { expr, .. } => {
+            // Resolve the inner expression and wrap in Await
+            Ok(ResolvedExpr::Await {
+                expr: Box::new(resolve_expr(expr)?),
+            })
         }
         Expr::Ident { name, .. } => Ok(ResolvedExpr::Ident(name.clone())),
         Expr::InstanceOf {

@@ -5,6 +5,9 @@ pub(super) fn collect_arrow_captures(expr: &ResolvedExpr, params: &[String], cap
     match expr {
         ResolvedExpr::This { .. } => push_capture("this", params, captures),
         ResolvedExpr::Ident(name) => push_capture(name, params, captures),
+        ResolvedExpr::Await { expr } => {
+            collect_arrow_captures(expr, params, captures);
+        }
         ResolvedExpr::Unary { expr, .. } | ResolvedExpr::Spread(expr) => {
             collect_arrow_captures(expr, params, captures);
         }
@@ -393,6 +396,7 @@ pub(super) fn expr_assigns_any_name(expr: &ResolvedExpr, names: &[String]) -> bo
         ResolvedExpr::Assign { name, expr } | ResolvedExpr::LogicalAssign { name, expr, .. } => {
             names.iter().any(|capture| capture == name) || expr_assigns_any_name(expr, names)
         }
+        ResolvedExpr::Await { expr } => expr_assigns_any_name(expr, names),
         ResolvedExpr::Unary { expr, .. } | ResolvedExpr::Spread(expr) => {
             expr_assigns_any_name(expr, names)
         }

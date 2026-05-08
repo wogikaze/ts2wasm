@@ -2,9 +2,7 @@ impl Parser {
     fn statement(&mut self) -> Result<Stmt, Diagnostic> {
         match self.peek() {
             Some(Token::Semicolon) => {
-                let semi = self
-                    .consume_span(TokenKind::Semicolon)
-                    .unwrap_or(Span::generated("semi"));
+                let semi = self.consume_span(TokenKind::Semicolon).unwrap_or(Span::generated("semi"));
                 Ok(Stmt::Expr {
                     expr: Expr::Undefined { span: semi },
                     span: semi,
@@ -29,17 +27,16 @@ impl Parser {
             Some(Token::Break) => self.break_statement(),
             Some(Token::Continue) => self.continue_statement(),
             Some(Token::Abstract) => {
-                self.advance();
-                self.class_statement()
-            }
+            self.advance();
+            self.class_statement()
+        }
             Some(Token::Class) => self.class_statement(),
             Some(Token::Static) => {
                 let span = self.peek_span();
                 self.advance();
                 Err(Diagnostic {
                     code: DiagCode::UnsupportedSyntax,
-                    message: "static declarations are not valid in constructor/function bodies"
-                        .to_owned(),
+                    message: "static declarations are not valid in constructor/function bodies".to_owned(),
                     span,
                 })
             }
@@ -77,7 +74,6 @@ impl Parser {
                 //   if (x) { { const c = false; } }
                 self.block_as_stmt()
             }
-            Some(Token::With) => self.with_statement(),
             _ => self.expression_statement(),
         }
     }
@@ -88,12 +84,19 @@ impl Parser {
     /// `(...)`, then emits a source-spanned TypeScript decorator boundary
     /// diagnostic instead of falling through to the expression parser.
     fn decorator_before_class_declaration(&mut self) -> Result<Stmt, Diagnostic> {
-        let at_span = self.peek_span().unwrap_or(Span { start: 0, end: 0 });
+        let at_span = self
+            .peek_span()
+            .unwrap_or(Span {
+                start: 0,
+                end: 0,
+            });
         self.advance(); // consume @
 
         // Consume optional decorator identifier
         let decorator_end = if matches!(self.peek(), Some(Token::Ident(_))) {
-            let ident_span = self.peek_span().unwrap_or(at_span);
+            let ident_span = self
+                .peek_span()
+                .unwrap_or(at_span);
             self.advance(); // consume decorator name
 
             // Consume optional call arguments: @decorator(args...)
@@ -119,7 +122,9 @@ impl Parser {
                         None => break,
                     }
                 }
-                self.prev_span().map(|s| s.end).unwrap_or(ident_span.end)
+                self.prev_span()
+                    .map(|s| s.end)
+                    .unwrap_or(ident_span.end)
             } else {
                 ident_span.end
             }
@@ -178,20 +183,14 @@ impl Parser {
                             span: import_span,
                         },
                         source,
-                        span: Span {
-                            start: import_span.start,
-                            end,
-                        },
+                        span: Span { start: import_span.start, end },
                     });
                 }
                 // `import X = N[.M. ...]` — local alias, skip (erased at runtime)
                 self.skip_to_semicolon()?;
                 return Ok(Stmt::Expr {
                     expr: crate::Expr::Undefined { span: import_span },
-                    span: Span {
-                        start: import_span.start,
-                        end: import_span.start,
-                    },
+                    span: Span { start: import_span.start, end: import_span.start },
                 });
             }
             Some(Token::Ident(_)) => self.default_import_statement(import_span),
@@ -224,9 +223,7 @@ impl Parser {
             match self.peek() {
                 Some(Token::LeftBrace) => self.named_export_statement(export_span),
                 Some(Token::Star) => self.star_re_export_statement(export_span),
-                Some(Token::Const | Token::Let | Token::Var) => {
-                    self.variable_export_statement(export_span)
-                }
+                Some(Token::Const | Token::Let | Token::Var) => self.variable_export_statement(export_span),
                 _ => {
                     let form = match self.peek() {
                         Some(Token::Const | Token::Let | Token::Var) => "variable export",
@@ -275,7 +272,9 @@ impl Parser {
                 // Consume optional implements clause (no extends clause case)
                 if self.peek_contextual_keyword("implements") {
                     self.advance();
-                    while !self.is_at_end() && !matches!(self.peek(), Some(Token::LeftBrace)) {
+                    while !self.is_at_end()
+                        && !matches!(self.peek(), Some(Token::LeftBrace))
+                    {
                         self.advance();
                     }
                 }
@@ -343,9 +342,8 @@ impl Parser {
             _ => {
                 return Err(Diagnostic {
                     code: DiagCode::InvariantViolation,
-                    message:
-                        "function_export_statement: function_statement did not return a Function"
-                            .to_owned(),
+                    message: "function_export_statement: function_statement did not return a Function"
+                        .to_owned(),
                     span: None,
                 });
             }
@@ -943,7 +941,9 @@ impl Parser {
 
         let suffix_is_only_block_functions =
             self.source_contains_only_static_eval_function_blocks(block.suffix, eval_span)?;
-        if !prefix.is_empty() && !block.suffix.trim().is_empty() && !suffix_is_only_block_functions
+        if !prefix.is_empty()
+            && !block.suffix.trim().is_empty()
+            && !suffix_is_only_block_functions
         {
             return Ok(None);
         }
@@ -984,13 +984,12 @@ impl Parser {
 
         loop {
             let tokens = crate::Lexer::new_with_strict_mode(rest, self.strict_mode).tokenize()?;
-            if !matches!(
-                tokens.first().map(|token| &token.kind),
-                Some(Token::LeftBrace)
-            ) || !matches!(
-                tokens.get(1).map(|token| &token.kind),
-                Some(Token::Function)
-            ) {
+            if !matches!(tokens.first().map(|token| &token.kind), Some(Token::LeftBrace))
+                || !matches!(
+                    tokens.get(1).map(|token| &token.kind),
+                    Some(Token::Function)
+                )
+            {
                 return Ok(false);
             }
 
@@ -1023,7 +1022,8 @@ impl Parser {
                 diagnostic.span = Some(eval_span);
                 diagnostic
             })?;
-        let mut parser = Parser::new_with_strict_mode(tokens, self.strict_mode, inner_source);
+        let mut parser =
+            Parser::new_with_strict_mode(tokens, self.strict_mode, inner_source);
         let mut statements = parser.parse_program().map_err(|mut diagnostic| {
             diagnostic.span = Some(eval_span);
             diagnostic
@@ -1180,7 +1180,9 @@ impl Parser {
             return Ok(fallback_end);
         }
         if self.is_at_end()
-            || self.peek().is_some_and(is_statement_boundary_token)
+            || self
+                .peek()
+                .is_some_and(is_statement_boundary_token)
             || self.next_token_has_preceding_newline()
         {
             return Ok(fallback_end);
@@ -1545,10 +1547,7 @@ impl Parser {
                 self.skip_type_annotation_until(&[TokenKind::LeftBrace])?;
             }
             self.skip_balanced_brace_block(async_span)?;
-            let end = self
-                .peek_span()
-                .map(|span| span.start)
-                .unwrap_or(async_span.end);
+            let end = self.peek_span().map(|span| span.start).unwrap_or(async_span.end);
             return Ok(Stmt::Function {
                 name,
                 params,
@@ -1588,15 +1587,17 @@ impl Parser {
         if self.consume(TokenKind::Colon) {
             self.skip_type_annotation_until(&[TokenKind::LeftBrace])?;
         }
-        self.skip_balanced_brace_block(async_span)?;
-        let end = self
-            .peek_span()
-            .map(|span| span.start)
-            .unwrap_or(async_span.end);
+        // Parse async function body with in_async_fn=true so await expressions
+        // are recognized as Expr::Await rather than identifier references
+        let prev_in_async_fn = self.in_async_fn;
+        self.in_async_fn = true;
+        let body = self.block()?;
+        self.in_async_fn = prev_in_async_fn;
+        let end = body.last().map(|stmt| stmt.span().end).unwrap_or(async_span.end);
         Ok(Stmt::Function {
             name,
             params,
-            body: Vec::new(),
+            body,
             is_generator: false,
             is_ambient: false,
             overload_signature: false,
@@ -2008,6 +2009,7 @@ impl Parser {
         })
     }
 
+
     fn block(&mut self) -> Result<Vec<Stmt>, Diagnostic> {
         self.expect(TokenKind::LeftBrace)?;
         let mut statements = Vec::new();
@@ -2141,50 +2143,5 @@ impl Parser {
             }
         }
         Ok(())
-    }
-
-    /// Parse `with (expr) stmt`.
-    ///
-    /// The `with` statement extends the scope chain for its body, but our
-    /// compiler does not support `with` semantics. We parse it successfully
-    /// (consuming the object expression and body) and return the body as a
-    /// plain block so the rest of the pipeline does not encounter
-    /// UnsupportedSyntax at the parser level.
-    fn with_statement(&mut self) -> Result<Stmt, Diagnostic> {
-        let with_span = self.expect(TokenKind::With)?;
-        self.expect(TokenKind::LeftParen)?;
-        let _object = self.expression()?;
-        self.expect(TokenKind::RightParen)?;
-        // Parse the body. If it is a braced block, parse as block; otherwise
-        // wrap the single statement in a Block.
-        if self.consume(TokenKind::LeftBrace) {
-            let mut body = Vec::new();
-            if !self.consume(TokenKind::RightBrace) {
-                loop {
-                    body.push(self.statement()?);
-                    if self.consume(TokenKind::RightBrace) {
-                        break;
-                    }
-                }
-            }
-            let end = self.prev_span().map(|s| s.end).unwrap_or(with_span.end);
-            Ok(Stmt::Block {
-                statements: body,
-                span: Span {
-                    start: with_span.start,
-                    end,
-                },
-            })
-        } else {
-            let body_stmt = self.statement()?;
-            let end = body_stmt.span().end;
-            Ok(Stmt::Block {
-                statements: vec![body_stmt],
-                span: Span {
-                    start: with_span.start,
-                    end,
-                },
-            })
-        }
     }
 }

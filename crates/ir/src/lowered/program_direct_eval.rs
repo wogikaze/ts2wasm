@@ -228,6 +228,9 @@ pub(super) fn collect_direct_eval_function_assignment_expr(
             }
             collect_direct_eval_function_assignment_expr(function_name, expr, env);
         }
+        ResolvedExpr::Await { expr } => {
+            collect_direct_eval_function_assignment_expr(function_name, expr, env);
+        }
         ResolvedExpr::Unary { expr, .. } | ResolvedExpr::Spread(expr) => {
             collect_direct_eval_function_assignment_expr(function_name, expr, env);
         }

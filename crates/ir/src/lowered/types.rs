@@ -347,6 +347,13 @@ pub enum LoweredExpr {
         method: String,
         span: Span,
     },
+    /// Extract the resolved value from a fulfilled Promise.
+    /// Reads promise slot[1] (result value) at offset ARRAY_HEADER_SIZE + 4.
+    /// Returns undefined if the promise is not fulfilled.
+    PromiseGetValue {
+        promise: Box<LoweredExpr>,
+        span: Span,
+    },
     RuntimeCall {
         runtime_fn: String,
         args: Vec<LoweredExpr>,

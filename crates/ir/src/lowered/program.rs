@@ -618,6 +618,9 @@ fn collect_array_map_callback_function_names_in_expr(
     names: &mut HashSet<String>,
 ) {
     match expr {
+        ResolvedExpr::Await { expr } => {
+            collect_array_map_callback_function_names_in_expr(expr, names);
+        }
         ResolvedExpr::MethodCall {
             object,
             method,
@@ -1449,6 +1452,9 @@ fn collect_call_targets_in_stmts(stmts: &[ResolvedStmt], targets: &mut HashSet<S
 /// Collect function call targets from a resolved expression tree.
 fn collect_call_targets_in_expr(expr: &ResolvedExpr, targets: &mut HashSet<String>) {
     match expr {
+        ResolvedExpr::Await { expr } => {
+            collect_call_targets_in_expr(expr, targets);
+        }
         ResolvedExpr::Call { callee, args, .. } => {
             // Record the callee if it's a direct function reference
             if let ResolvedExpr::Ident(name) = callee.as_ref() {
@@ -1753,6 +1759,7 @@ fn stmt_contains_this(stmt: &ResolvedStmt) -> bool {
 
 fn expr_contains_this(expr: &ResolvedExpr) -> bool {
     match expr {
+        ResolvedExpr::Await { expr } => expr_contains_this(expr),
         ResolvedExpr::This { .. } => true,
         ResolvedExpr::Unary { expr, .. } | ResolvedExpr::Spread(expr) => expr_contains_this(expr),
         ResolvedExpr::Binary { left, right, .. } => {
@@ -1966,6 +1973,7 @@ fn stmt_contains_arguments(stmt: &ResolvedStmt) -> bool {
 
 fn expr_contains_arguments(expr: &ResolvedExpr) -> bool {
     match expr {
+        ResolvedExpr::Await { expr } => expr_contains_arguments(expr),
         ResolvedExpr::Ident(name) => name == "arguments",
         ResolvedExpr::Unary { expr, .. } | ResolvedExpr::Spread(expr) => {
             expr_contains_arguments(expr)

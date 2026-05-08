@@ -341,6 +341,9 @@ impl TypeScriptCallArityValidator {
             | ResolvedExpr::This { .. }
             | ResolvedExpr::Ident(_)
             | ResolvedExpr::ModuleLoad { .. } => {}
+            ResolvedExpr::Await { expr } => {
+                self.validate_expr(expr)?;
+            }
             ResolvedExpr::Unary { expr, .. } | ResolvedExpr::Spread(expr) => {
                 self.validate_expr(expr)?;
             }
@@ -610,6 +613,7 @@ fn expr_contains_arguments(expr: &ResolvedExpr) -> bool {
         | ResolvedExpr::Null
         | ResolvedExpr::Undefined
         | ResolvedExpr::ModuleLoad { .. } => false,
+        ResolvedExpr::Await { expr } => expr_contains_arguments(expr),
         ResolvedExpr::Unary { expr, .. } => expr_contains_arguments(expr),
         ResolvedExpr::Binary { left, right, .. } => {
             expr_contains_arguments(left) || expr_contains_arguments(right)

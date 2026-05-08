@@ -127,6 +127,9 @@ pub enum ResolvedExpr {
     This {
         span: Span,
     },
+    Await {
+        expr: Box<ResolvedExpr>,
+    },
     Ident(String),
     Unary {
         op: UnaryOp,

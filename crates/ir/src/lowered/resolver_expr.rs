@@ -19,6 +19,13 @@ impl<'a> Resolver<'a> {
             ResolvedExpr::Bool(value) => Ok(LoweredExpr::Bool(*value, Span::generated("bool"))),
             ResolvedExpr::Null => Ok(LoweredExpr::Null(Span::generated("null"))),
             ResolvedExpr::Undefined => Ok(LoweredExpr::Undefined(Span::generated("undef"))),
+            ResolvedExpr::Await { expr } => {
+                // await expr: extract the resolved value from the promise
+                Ok(LoweredExpr::PromiseGetValue {
+                    promise: Box::new(self.lower_expr(expr)?),
+                    span: Span::generated("promise_get_value"),
+                })
+            }
             ResolvedExpr::This { span } => match self.resolve_local("this") {
                 Ok(local) => Ok(LoweredExpr::Local(local, Span::generated("local"))),
                 Err(_) => Err(Diagnostic {

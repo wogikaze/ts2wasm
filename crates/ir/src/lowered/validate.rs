@@ -569,6 +569,9 @@ fn validate_expr(
                 span: None,
             });
         }
+        LoweredExpr::PromiseGetValue { promise, .. } => {
+            validate_expr(promise, local_count, num_funcs, program, errors, true);
+        }
         LoweredExpr::MethodCall { object, .. } => {
             validate_expr(object, local_count, num_funcs, program, errors, true);
             errors.push(Diagnostic {
