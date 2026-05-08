@@ -169,6 +169,10 @@ Related but not duplicates:
 - Current diagnostic: `UnresolvedName: unresolved name: \`E\` at 363..364`.
 - TypeScript oracle reports the later TS2559 excess-property/type
   compatibility diagnostic after resolving `E.A`.
+- `issues/done/3542-implement-noImplicitAnyIndexing.md` reaches the same plain
+  enum binding boundary for `enum MyEmusEnum { emu }` followed by
+  `MyEmusEnum[0]`; detailed indexing follow-up should be re-triaged after this
+  enum binding issue advances.
 
 ## Completion evidence
 
