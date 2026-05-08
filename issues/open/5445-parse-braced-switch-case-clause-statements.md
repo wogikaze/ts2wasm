@@ -91,6 +91,9 @@ Do not touch: runtime/backend code unless fresh implementation evidence proves t
 ## Acceptance criteria
 
 - [ ] `narrowByClauseExpressionInSwitchTrue6.ts` no longer reports `expected Comma, got Some(Dot)` at `x.aProps;`.
+- [ ] `narrowSwitchOptionalChainContainmentEvolvingArrayNoCrash1.ts` no
+  longer reports `expected Comma, got Some(Dot)` at `bar.push("baz");`
+  inside a braced `case` body.
 - [ ] A focused parser test covers a braced `case` body containing member
       access and `break`.
 - [ ] Existing switch fallthrough fixtures still parse.
@@ -138,6 +141,15 @@ Follow-up issues:
 ## Notes
 
 Related paths from the same generated bucket are owned by issue 5161 (`declare const f`) and issue 5192 (`instanceof Derived1` class value).
+
+Also supersedes generated bucket
+`issues/done/3447-implement-narrowSwitchOptionalChainContainmentEvolvingArrayNoCrash.md`.
+Fresh triage for `narrowSwitchOptionalChainContainmentEvolvingArrayNoCrash1.ts`
+parses the optional-chain switch discriminants and the first unbraced case body,
+then stops inside the second braced case body at `bar.push("baz");` with
+`UnsupportedSyntax: expected Comma, got Some(Dot) at 174..175`. Tokens are ok;
+TypeScript parses the braced `CaseClause` block and reports a later TS2345
+`never[]` push diagnostic.
 
 ## Completion evidence
 
