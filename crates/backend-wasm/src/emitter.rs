@@ -551,8 +551,8 @@ impl<'a> WatEmitter<'a> {
             | LoweredExpr::Undefined(..)
             | LoweredExpr::This(..)
             | LoweredExpr::Local(_, _)
-            | LoweredExpr::PromiseGetValue { expr, .. } => {
-            self.emit_expr(writer, expr, indent, frame);
+            | LoweredExpr::PromiseGetValue { .. } => {
+            
         }
         LoweredExpr::ArrowFn { .. } => {}
             LoweredExpr::Unary { expr, .. } => self.collect_expr_strings(expr),
@@ -1198,8 +1198,8 @@ impl<'a> WatEmitter<'a> {
             | LoweredExpr::Local(_, _)
             | LoweredExpr::ModuleLoad { .. }
             | LoweredExpr::This(..)
-            | LoweredExpr::PromiseGetValue { expr, .. } => {
-            self.emit_expr(writer, expr, indent, frame);
+            | LoweredExpr::PromiseGetValue { .. } => {
+            
         }
         LoweredExpr::ArrowFn { .. } => {}
         }
@@ -1339,8 +1339,8 @@ impl<'a> WatEmitter<'a> {
             | LoweredExpr::ClassPrototype(_, _)
             | LoweredExpr::ModuleLoad { .. }
             | LoweredExpr::This(..)
-            | LoweredExpr::PromiseGetValue { expr, .. } => {
-            self.emit_expr(writer, expr, indent, frame);
+            | LoweredExpr::PromiseGetValue { .. } => {
+            
         }
         LoweredExpr::ArrowFn { .. } => {}
         }

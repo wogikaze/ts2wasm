@@ -43,7 +43,7 @@ pub(super) fn expr_may_collect(expr: &LoweredExpr) -> bool {
         | LoweredExpr::EnvCellSet { expr, .. }
         | LoweredExpr::LogicalAssign { expr, .. }
         | LoweredExpr::LogicalPropertyAssign { expr, .. } => expr_may_collect(expr),
-        LoweredExpr::EnvCellGet(_, _) => false,
+        LoweredExpr::EnvCellGet(_, _) | LoweredExpr::PromiseGetValue { .. } => false,
         LoweredExpr::LogicalMemberAssign { object, expr, .. } => {
             expr_may_collect(object) || expr_may_collect(expr)
         }
@@ -200,7 +200,7 @@ pub(super) fn expr_uses_caller_backend_tmp(expr: &LoweredExpr) -> bool {
         | LoweredExpr::LogicalAssign { expr, .. }
         | LoweredExpr::LogicalPropertyAssign { expr, .. } => expr_uses_caller_backend_tmp(expr),
         LoweredExpr::EnvCellNew(_, _) => true,
-        LoweredExpr::EnvCellGet(_, _) => false,
+        LoweredExpr::EnvCellGet(_, _) | LoweredExpr::PromiseGetValue { .. } => false,
         LoweredExpr::LogicalMemberAssign { .. } => true,
         LoweredExpr::LogicalComputedMemberAssign { .. } => true,
         LoweredExpr::LogicalComputedPropertyAssign { .. } => true,

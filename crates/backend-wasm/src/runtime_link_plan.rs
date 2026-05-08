@@ -541,7 +541,8 @@ impl RuntimeLinkPlan {
             | LoweredExpr::Undefined(..)
             | LoweredExpr::This(..)
             | LoweredExpr::Local(_, _) => {}
-            LoweredExpr::PromiseGetValue { .. } | LoweredExpr::ArrowFn { representation, .. } => {
+            LoweredExpr::PromiseGetValue { .. } => {}
+            LoweredExpr::ArrowFn { representation, .. } => {
                 if matches!(representation, ClosureRepresentation::HeapObject) {
                     self.add_required_runtime(RuntimeFn::AllocHeap);
                 }
@@ -633,6 +634,9 @@ impl RuntimeLinkPlan {
                 for arg in args {
                     self.collect_required_runtime_expr(arg);
                 }
+            }
+            LoweredExpr::PromiseGetValue { promise, .. } => {
+                self.collect_required_runtime_expr(promise);
             }
             LoweredExpr::ClassPrototype(_, _) => {
                 self.add_required_runtime(RuntimeFn::AllocHeap);

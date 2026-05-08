@@ -110,10 +110,8 @@ impl WatEmitter<'_> {
                 // validate_lowered rejects residual `this`; supported receivers lower to Local.
                 writer.unreachable(indent)
             }
-            LoweredExpr::PromiseGetValue { expr, .. } => {
-            self.emit_expr(writer, expr, indent, frame);
-        }
-        LoweredExpr::ArrowFn {
+            LoweredExpr::PromiseGetValue { promise, .. } => self.emit_expr(writer, promise, indent, frame),
+            LoweredExpr::ArrowFn {
                 func_id,
                 captures,
                 representation,
