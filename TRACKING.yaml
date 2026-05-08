@@ -13,23 +13,6 @@ meta:
     roadmap_source: docs/roadmap.md
 
 open:
-  - id: 104
-    title: "Add precise unsupported diagnostic for Promise.then runtime use"
-    priority: P1
-    type: diagnostic
-    area: runtime
-    status: open
-    created: 2026-05-09
-    updated: 2026-05-09
-    owner: human
-    roadmap: W4
-    ready: true
-    acceptance:
-      - "cargo nextest run -p ts2wasm-cli --test m6_builtin_methods"
-    non_goals:
-      - "No actual Promise implementation."
-    evidence: null
-
   - id: 105
     title: "Route Array.prototype.reduce to explicit unsupported diagnostic"
     priority: P2
@@ -200,6 +183,30 @@ open:
 
 active: []
 done:
+  - id: 104
+    title: "Add precise unsupported diagnostic for Promise.then runtime use"
+    priority: P1
+    type: diagnostic
+    area: runtime
+    status: done
+    created: 2026-05-09
+    updated: 2026-05-09
+    closed: 2026-05-09
+    owner: human
+    roadmap: W4
+    ready: true
+    acceptance:
+      - "cargo nextest run -p ts2wasm-cli --test m6_builtin_methods"
+    non_goals:
+      - "No actual Promise implementation."
+    evidence:
+      commit: "e17463491"
+      commands:
+        - command: "cargo nextest run -p ts2wasm-cli --test m6_builtin_methods promise_then_unsupported_diagnostic"
+          exit: 0
+      summary: "Added Promise method check in resolver_expr.rs method call handler."
+
+
 
   - id: 103
     title: "Register well-known symbols (iterator, toStringTag, hasInstance, toPrimitive)"
