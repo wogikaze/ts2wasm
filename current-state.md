@@ -28,8 +28,6 @@ mise run check-manifest-imports
 mise run check-fixture-catalog
 mise run check-architecture-rules
 mise run check-compiler-diagnostics
-mise run update-issue-index -- --check
-mise run check-issue-health
 ```
 
 reference coverage を更新する場合（実測値を変えるとき）:
@@ -111,7 +109,7 @@ Compile-only tests for class/module/Node API are explicitly marked as build_smok
 - `StringOrigin` enum implemented (`StringOrigin::UserLiteral` / `StringOrigin::Runtime(RuntimeFn)`) with origin tracking through `RuntimeLinkPlan::string_origins()`. All interned strings carry origin metadata; `is_runtime_string()` enables audit of data segment contents. Linker structure tests verify conditional interning: no console.log → zero Log/Write runtime strings, console.log present → Log/Write runtime strings present.
 - reference coverage パイプライン（`mise run reference-coverage`, `mise run update-coverage-matrix`, `mise run update-coverage-matrix -- --check`）
 - generated coverage table（`artifacts/coverage/reference-coverage-matrix.md`）
-- issue queue index（`issues/index.md` の Ready/Blocked/Done 表は `mise run update-issue-index` が生成、`mise run check-issue-health` で整合検証。`mise run check-issue-index` は互換 alias）
+- work tracker（`TRACKING.yaml` が唯一の作業台帳。`scripts/check/tracking-consistency.py` が構造検証）
 - harness scripts（`mise run check-fast-gate`、`mise run check-manifest-imports`、`mise run check-test-records-schema`、`mise run check-fixture-catalog`、`mise run check-architecture-rules`、`mise run check-compiler-diagnostics`；pre-push は `.githooks/pre-push`）
 
 ## Known blockers / gaps
@@ -162,8 +160,7 @@ Semantic gap tracking:
 
 ## Next Priority Steps
 
-See `issues/index.md` for the auto-generated Ready queue and Blocked queue.
-Run `mise run update-issue-index` to refresh after adding, closing, or moving issues. The generated Ready queue in `issues/index.md` is the source of truth for current ordering.
+See `TRACKING.yaml` for open work items. Run `git diff --check` before commit; the pre-push gate runs `python3 scripts/check/tracking-consistency.py` for structural validation.
 
 ## Current Policy
 

@@ -90,7 +90,49 @@ git status --short
    - 残タスクを放置せず、次の小さい作業単位に切る。
    - 文脈が尽きそうな場合は、その時点の coherent slice を commit してから終了する。
 
-## 3) 並列開発のルール
+## 3) Tracking workflow
+
+このリポジトリは `TRACKING.yaml` を唯一の作業台帳として使う。
+
+### ハードルール
+
+- issue ファイルを作成しない。
+- tracking エントリを自動生成しない。
+- スクリプトから `TRACKING.yaml` に書き込まない。
+- coverage gap を直接 tracking エントリに変換しない。
+- 同時に作業する `active` アイテムは最大1つ。
+- コードを書き始める前に、1つのアイテムを `open` から `active` に移動する。
+- 途中で止める場合は、`active` アイテムの `notes` に経過を追記する。
+- `evidence` なしで `done` に移動しない。
+
+### 作業開始
+
+1. `TRACKING.yaml` を読む。
+2. 1つの `open` アイテムを選ぶ。
+3. `active` セクションに移動し、`status: active` に設定する。
+4. `updated` を更新する。
+5. plan に goal、non_goals、acceptance コマンドを明記する。
+
+### 作業終了（close）
+
+`done` に移せる条件:
+
+- acceptance の全コマンドを実行した。
+- 全コマンドが exit code 0 で終了した。
+- `evidence.commit` に commit hash を記入した。
+- `evidence.commands` に実行コマンドと exit code を記入した。
+- 残作業がある場合は、新しい `open` アイテムとして分離した。
+
+### 途中終了（commit しないで止める場合）
+
+アイテムを `active` に残し、`notes` に以下を追記する:
+
+- 何を変更したか
+- 何がまだ失敗するか
+- 次の正確な1ステップ
+- 実行したコマンドとその結果
+
+## 4) 並列開発のルール
 
 ### 並列化する条件
 

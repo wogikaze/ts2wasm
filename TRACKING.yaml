@@ -1,0 +1,16 @@
+# TRACKING.yaml
+# Human-maintained work tracker.
+# Do not auto-generate entries.
+# Scripts may validate this file, but must not edit it.
+
+meta:
+  version: 1
+  open_limit: 50
+  active_limit: 1
+  policy:
+    generated_entries: forbidden
+    canonical_source: TRACKING.yaml
+
+open: []
+active: []
+done: []

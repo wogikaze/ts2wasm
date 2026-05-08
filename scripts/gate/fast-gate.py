@@ -27,6 +27,7 @@ def usage():
     print()
     print("Runs:")
     print("  - cargo fmt --all --check")
+    print("  - python scripts/check/tracking-consistency.py")
     print("  - python scripts/check/architecture-rules.py")
     print("  - cargo nextest run (unless --skip-nextest)")
     print()
@@ -70,6 +71,7 @@ def main():
     
     # Run checks
     run(["cargo", "fmt", "--all", "--check"])
+    run([PYTHON_BIN, str(REPO_ROOT / "scripts/check/tracking-consistency.py")])
     run([PYTHON_BIN, str(REPO_ROOT / "scripts/check/assert-true-detect.py")])
     run([PYTHON_BIN, str(REPO_ROOT / "scripts/check/architecture-rules.py")])
     
