@@ -111,6 +111,9 @@ Do not touch:
 - [ ] `declare let anys: Ari<any>; var xs = anys.filter(Bullean);` resolves the ambient value name before later filter/type-predicate behavior is evaluated.
 - [ ] `declare let obj: Slugs; call(obj, cb);` resolves the ambient value name before later rest-destructuring callback narrowing is evaluated.
 - [ ] `declare const foo: string; if ((typeof foo) === "string") { foo; }` resolves the ambient value name before parenthesized `typeof` narrowing is evaluated.
+- [ ] `declare var all: keyof Big; const ctor = getCtor(all);` resolves the
+  ambient value name before normalized intersection complexity diagnostics are
+  evaluated.
 - [ ] Ambient declarations with initializers, such as `declare var e = 1;`, remain rejected.
 - [ ] `python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/bestCommonTypeWithContextualTyping.ts` no longer reports `UnresolvedName: unresolved name: \`e\``.
 - [ ] `narrowUnknownByTypePredicate.ts` no longer reports `UnresolvedName` for
@@ -252,6 +255,15 @@ Additional superseded bucket:
   `nonInferrableTypePropagation1.ts`. Fresh triage on 2026-05-08 reports
   `UnresolvedName: unresolved name: \`thing\` at 609..614`; TypeScript parses
   the file with no diagnostics and reports `thing` as `Thing<number>`.
+- `issues/done/3607-implement-normalizedIntersectionTooComplex.md` reaches the
+  same ambient value name-resolution boundary for
+  `declare var all: keyof Big;` followed by `const ctor = getCtor(all);` in
+  `normalizedIntersectionTooComplex.ts`. Fresh triage on 2026-05-08 reports
+  `UnresolvedName: unresolved name: \`all\` at 1979..1982`; TypeScript later
+  reports TS2590 on the object literal arrow callback because the normalized
+  intersection/union type is too complex to represent, but that semantic
+  diagnostic remains unreachable until ambient var expression references are
+  resolver-visible.
 
 ## Completion evidence
 
