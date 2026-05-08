@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 25 | 13 | 12 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4593 | 3319 | 1274 |
+| frontend | 4594 | 3319 | 1275 |
 | harness | 1 | 0 | 1 |
 | ir | 83 | 60 | 23 |
 | issues | 4 | 0 | 4 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5277 | 3621 | 1656 |
+| total | 5278 | 3621 | 1657 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -395,6 +395,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5440 | Support initialized function expression local calls | feature | ir/lowering | implementation-ready | P1 |  | initialized function-expression locals fall into the generic issue-211 function-valued local call boundary. |
 | 5441 | Report namespaced union literal assignment diagnostic | feature | frontend/semantics | implementation-ready | P1 |  | erased namespace type aliases and union annotations hide the invalid |
 | 5442 | Report mixed default function namespace merge diagnostic | feature | frontend/semantics | implementation-ready | P1 |  | ambient module declaration bodies are erased before declaration export |
+| 5443 | Report duplicate type alias identifiers | feature | frontend/semantics | implementation-ready | P1 |  | erased type aliases hide duplicate type-only declarations, so the |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -2349,7 +2350,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 3302 | Implement Modulealiasasfunctionargument | spike | frontend/syntax | class: blocked | Implement Modulealiasasfunctionargument |
 | 3303 | Implement Modulealiasinterface | spike | frontend/syntax | class: blocked | Implement Modulealiasinterface |
 | 3304 | Implement Moduleandinterfacesharingname | spike | frontend/syntax | class: blocked | Implement Moduleandinterfacesharingname |
-| 3435 | Implement Namespaceswithtypealiasonlyexportsmerge | spike | frontend/syntax | class: blocked | Implement Namespaceswithtypealiasonlyexportsmerge |
 | 3436 | Implement Nanequality | spike | frontend/resolver | class: blocked | Implement Nanequality |
 | 3437 | Implement Narrowbybooleancomparison | spike | frontend/syntax | class: triage-needed | Implement Narrowbybooleancomparison |
 | 3438 | Implement Narrowbyclauseexpressioninswitchtrue Name Resolution | spike | frontend/resolver | class: blocked | Implement Narrowbyclauseexpressioninswitchtrue Name Resolution |
@@ -5237,6 +5237,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 3432 | Implement Namespacenotmergedwithfunctiondefaultexport | spike | frontend/syntax | see `issues/done/3432-implement-namespaceNotMergedWithFunctionDefaultExport.md` |
 | 3433 | Implement Namespaces | spike | frontend/syntax | see `issues/done/3433-implement-namespaces.md` |
 | 3434 | Implement Namespacesdeclaration | spike | frontend/syntax | see `issues/done/3434-implement-namespacesDeclaration.md` |
+| 3435 | Implement Namespaceswithtypealiasonlyexportsmerge | spike | frontend/syntax | see `issues/done/3435-implement-namespacesWithTypeAliasOnlyExportsMerge.md` |
 | 3690 | Implement Optionaltupleelementsandundefined | spike | reference/triage | see `issues/done/3690-implement-optionalTupleElementsAndUndefined.md` |
 | 3996 | Implement Compiler (dup) | spike | frontend/syntax | see `issues/done/3996-implement-reference-typescript-tests-cases-compiler.md` |
 | 4210 | Implement Splicetuples | spike | frontend/resolver | see `issues/done/4210-implement-spliceTuples.md` |
