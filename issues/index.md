@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 27 | 14 | 13 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4606 | 3241 | 1365 |
+| frontend | 4607 | 3241 | 1366 |
 | harness | 1 | 0 | 1 |
 | ir | 98 | 70 | 28 |
 | issues | 4 | 0 | 4 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5307 | 3551 | 1756 |
+| total | 5308 | 3551 | 1757 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -50,7 +50,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 5000 (Meta: TypeScript Compiler Parser Syntax Coverage) [done/design] ch:444 open:338 done:106
 ├── 5002 (Meta: TypeScript Compiler Type System Coverage) [done/done] ch:223 open:199 done:24 (also ← 5005)
 ├── 5003 (Meta: TypeScript Compiler Declaration Emit Coverage) [done/done] ch:100 open:89 done:11 (also ← 5001)
-5001 (Meta: TypeScript Compiler Semantic Analysis Coverage) [done/done] ch:552 open:282 done:270
+5001 (Meta: TypeScript Compiler Semantic Analysis Coverage) [done/done] ch:551 open:281 done:270
 5004 (Meta: Runtime Builtins Coverage (test262) (audit reopened #5004)) [done/done] ch:24 open:3 done:21
 5005 (Meta: TypeScript Compiler Name Resolution Coverage) [done/done] ch:395 open:326 done:69
 ├── 5006 (Meta: TypeScript Compiler Scope Analysis Coverage) [done/done] ch:28 open:18 done:10
@@ -67,7 +67,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | Order | ID | Title | State | Class | Area | Priority | Depends on | Direct children | Open children | Done children |
 |-----:|---:|------|-------|-------|------|--------:|-----------:|----------------:|--------------:|--------------:|
 | 1 | 5000 | Meta: TypeScript Compiler Parser Syntax Coverage | done | design | frontend/syntax | P1 | - | 444 | 338 | 106 |
-| 2 | 5001 | Meta: TypeScript Compiler Semantic Analysis Coverage | done | done | frontend/semantics | P1 | - | 552 | 282 | 270 |
+| 2 | 5001 | Meta: TypeScript Compiler Semantic Analysis Coverage | done | done | frontend/semantics | P1 | - | 551 | 281 | 270 |
 | 3 | 5004 | Meta: Runtime Builtins Coverage (test262) (audit reopened #5004) | done | done | runtime/builtins | P1 | - | 24 | 3 | 21 |
 | 4 | 5005 | Meta: TypeScript Compiler Name Resolution Coverage | done | done | frontend/resolver | P1 | - | 395 | 326 | 69 |
 | 5 | 5002 | Meta: TypeScript Compiler Type System Coverage | done | done | frontend/semantics | P1 | 5000, 5005 | 223 | 199 | 24 |
@@ -425,6 +425,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5470 | Support array spread over array fallback expressions | feature | ir/lowering | implementation-ready | P1 |  | the array spread lowering recognizes dense array literals and dense |
 | 5471 | Report constructor argument type diagnostics | feature | frontend/semantics | implementation-ready | P1 |  | class constructor calls can build even when TypeScript reports an |
 | 5472 | Declare current_module_id for virtual file inits | bug | backend-wasm | implementation-ready | P1 |  | multi-file WAT init code can reference `$current_module_id` without |
+| 5473 | Report destructuring declaration missing initializer | feature | frontend/syntax | implementation-ready | P1 |  | initializer-less destructuring declarations report a generic |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -2379,7 +2380,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 3302 | Implement Modulealiasasfunctionargument | spike | frontend/syntax | class: blocked | Implement Modulealiasasfunctionargument |
 | 3303 | Implement Modulealiasinterface | spike | frontend/syntax | class: blocked | Implement Modulealiasinterface |
 | 3304 | Implement Moduleandinterfacesharingname | spike | frontend/syntax | class: blocked | Implement Moduleandinterfacesharingname |
-| 3535 | Implement Noimplicitanydestructuringvardeclaration | spike | frontend/syntax | class: blocked | Implement Noimplicitanydestructuringvardeclaration |
 | 3536 | Implement Noimplicitanyforin | spike | frontend/syntax | class: blocked | Implement Noimplicitanyforin |
 | 3537 | Implement Noimplicitanyformethodparameters | spike | frontend/syntax | class: blocked | Implement Noimplicitanyformethodparameters |
 | 3538 | Implement Noimplicitanyfunctionexpressionassignment | spike | frontend/syntax | class: blocked | Implement Noimplicitanyfunctionexpressionassignment |
@@ -5267,6 +5267,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 3532 | Implement Noexcessivestackdeptherror | spike | frontend/resolver | see `issues/done/3532-implement-noExcessiveStackDepthError.md` |
 | 3533 | Implement Noimplicitanyandprivatememberswithouttypeannotations | spike | backend-wasm | see `issues/done/3533-implement-noImplicitAnyAndPrivateMembersWithoutTypeAnnotations.md` |
 | 3534 | Implement Noimplicitanydestructuringinprivatemethod | spike | ir/compiler | see `issues/done/3534-implement-noImplicitAnyDestructuringInPrivateMethod.md` |
+| 3535 | Implement Noimplicitanydestructuringvardeclaration | spike | frontend/syntax | see `issues/done/3535-implement-noImplicitAnyDestructuringVarDeclaration.md` |
 | 3690 | Implement Optionaltupleelementsandundefined | spike | reference/triage | see `issues/done/3690-implement-optionalTupleElementsAndUndefined.md` |
 | 3996 | Implement Compiler (dup) | spike | frontend/syntax | see `issues/done/3996-implement-reference-typescript-tests-cases-compiler.md` |
 | 4210 | Implement Splicetuples | spike | frontend/resolver | see `issues/done/4210-implement-spliceTuples.md` |
