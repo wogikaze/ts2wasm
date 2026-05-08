@@ -110,6 +110,8 @@ Do not touch:
 - [ ] `commentsEnums.ts` no longer reports `UnresolvedName` for `Colors` at `Colors.Cornflower`.
 - [ ] `nestedExcessPropertyChecking.ts` no longer reports `UnresolvedName` for
   `E` at `E.A`.
+- [ ] `noUncheckedIndexAccess.ts` no longer reports `UnresolvedName` for
+  `Meat` at `Meat.Sausage`.
 - [ ] A focused fixture covers `enum Colors { Cornflower, FancyPink }` followed by `Colors.Cornflower`.
 - [ ] Remaining unsupported enum behavior reports an enum-specific source-spanned diagnostic instead of a generic unresolved-name diagnostic.
 
@@ -176,6 +178,10 @@ Related but not duplicates:
 - `issues/done/3543-implement-noImplicitAnyIndexingSuppressed.md` reaches the
   same plain enum binding boundary in the suppressed variant before the fixture
   can expose its narrower noImplicitAny indexing behavior.
+- `issues/done/3569-implement-noUncheckedIndexAccess.md` reaches the same
+  plain enum binding boundary for `enum Meat { Sausage, Bacon }` followed by
+  `Meat.Sausage` and `Meat[sausage]`; noUncheckedIndexedAccess-specific
+  behavior should be re-triaged after this enum binding issue advances.
 
 ## Completion evidence
 

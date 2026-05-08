@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 27 | 14 | 13 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4613 | 3216 | 1397 |
+| frontend | 4613 | 3215 | 1398 |
 | harness | 1 | 0 | 1 |
 | ir | 99 | 71 | 28 |
 | issues | 4 | 0 | 4 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5315 | 3525 | 1790 |
+| total | 5315 | 3524 | 1791 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -2387,7 +2387,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 3302 | Implement Modulealiasasfunctionargument | spike | frontend/syntax | class: blocked | Implement Modulealiasasfunctionargument |
 | 3303 | Implement Modulealiasinterface | spike | frontend/syntax | class: blocked | Implement Modulealiasinterface |
 | 3304 | Implement Moduleandinterfacesharingname | spike | frontend/syntax | class: blocked | Implement Moduleandinterfacesharingname |
-| 3569 | Implement Nouncheckedindexaccess | spike | frontend/syntax | class: triage-needed | Implement Nouncheckedindexaccess |
 | 3570 | Implement Nouncheckedindexedaccesscompoundassignments | spike | frontend/syntax | class: blocked | Implement Nouncheckedindexedaccesscompoundassignments |
 | 3571 | Implement Nounusedlocals Destructuring | spike | frontend/syntax | class: blocked | Implement Nounusedlocals Destructuring |
 | 3572 | Implement Nounusedlocals Import Export | spike | frontend/syntax | class: blocked | Implement Nounusedlocals Import Export |
@@ -5275,6 +5274,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 3566 | Implement Nosubtypereduction | spike | frontend/syntax | see `issues/done/3566-implement-noSubtypeReduction.md` |
 | 3567 | Implement Nosymbolformergecrash | spike | frontend/syntax | see `issues/done/3567-implement-noSymbolForMergeCrash.md` |
 | 3568 | Implement Notypeargumentonreturntype | spike | frontend/syntax | see `issues/done/3568-implement-noTypeArgumentOnReturnType.md` |
+| 3569 | Implement Nouncheckedindexaccess | spike | frontend/syntax | see `issues/done/3569-implement-noUncheckedIndexAccess.md` |
 | 3690 | Implement Optionaltupleelementsandundefined | spike | reference/triage | see `issues/done/3690-implement-optionalTupleElementsAndUndefined.md` |
 | 3996 | Implement Compiler (dup) | spike | frontend/syntax | see `issues/done/3996-implement-reference-typescript-tests-cases-compiler.md` |
 | 4210 | Implement Splicetuples | spike | frontend/resolver | see `issues/done/4210-implement-spliceTuples.md` |
