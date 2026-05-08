@@ -192,6 +192,13 @@ Additional superseded bucket:
   TypeScript later reports duplicate block-scoped variable diagnostics for the
   two ambient declarations, but the current compiler blocker is still
   resolver visibility for declaration-only ambient const values.
+- `issues/done/3436-implement-nanEquality.md` reaches the same ambient value
+  name-resolution boundary for `declare const x: number;` and later
+  comparisons such as `if (x === NaN) {}`. Fresh triage on 2026-05-08 reports
+  `UnresolvedName: unresolved name: \`x\` at 49..50`; TypeScript later reports
+  TS2845 always-true/false diagnostics for comparisons with the global `NaN`,
+  but the current compiler blocker is still resolver visibility for the
+  declaration-only ambient const.
 
 ## Completion evidence
 
