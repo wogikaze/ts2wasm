@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 25 | 13 | 12 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4597 | 3297 | 1300 |
+| frontend | 4598 | 3297 | 1301 |
 | harness | 1 | 0 | 1 |
 | ir | 89 | 66 | 23 |
 | issues | 4 | 0 | 4 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5287 | 3604 | 1683 |
+| total | 5288 | 3604 | 1684 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -405,6 +405,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5450 | Support function-typed parameter local calls | feature | ir/lowering | implementation-ready | P1 |  | `narrowingAssignmentReadonlyRespectsAssertion.ts` parses and resolves, |
 | 5451 | Classify number toString after typeof switch narrowing | feature | ir/lowering | implementation-ready | P1 |  | `narrowingByTypeofInSwitch.ts` parses and resolves, then |
 | 5452 | Lower nested object rest binding from narrowed source | feature | ir/lowering | implementation-ready | P2 |  | `narrowingDestructuring.ts` parses and resolves, then lower_program |
+| 5453 | Support typed export let declarations without initializers | feature | frontend/module-syntax | implementation-ready | P1 |  | `narrowingPastLastAssignmentInModule.ts` tokenizes the exported `let` |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -2359,7 +2360,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 3302 | Implement Modulealiasasfunctionargument | spike | frontend/syntax | class: blocked | Implement Modulealiasasfunctionargument |
 | 3303 | Implement Modulealiasinterface | spike | frontend/syntax | class: blocked | Implement Modulealiasinterface |
 | 3304 | Implement Moduleandinterfacesharingname | spike | frontend/syntax | class: blocked | Implement Moduleandinterfacesharingname |
-| 3462 | Implement Narrowingpastlastassignmentinmodule | spike | frontend/syntax | class: blocked | Implement Narrowingpastlastassignmentinmodule |
 | 3463 | Implement Narrowingplainjsnocrash | spike | frontend/syntax | class: blocked | Implement Narrowingplainjsnocrash |
 | 3464 | Implement Narrowingrestgenericcall | spike | frontend/semantics | class: blocked | Implement Narrowingrestgenericcall |
 | 3465 | Implement Narrowingtruthyobject | spike | frontend/syntax | class: blocked | Implement Narrowingtruthyobject |
@@ -5247,6 +5247,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 3459 | Implement Narrowingofdottednames | spike | frontend/syntax | see `issues/done/3459-implement-narrowingOfDottedNames.md` |
 | 3460 | Implement Narrowingofqualifiednames | spike | frontend/syntax | see `issues/done/3460-implement-narrowingOfQualifiedNames.md` |
 | 3461 | Implement Narrowingpastlastassignment | spike | frontend/syntax | see `issues/done/3461-implement-narrowingPastLastAssignment.md` |
+| 3462 | Implement Narrowingpastlastassignmentinmodule | spike | frontend/syntax | see `issues/done/3462-implement-narrowingPastLastAssignmentInModule.md` |
 | 3690 | Implement Optionaltupleelementsandundefined | spike | reference/triage | see `issues/done/3690-implement-optionalTupleElementsAndUndefined.md` |
 | 3996 | Implement Compiler (dup) | spike | frontend/syntax | see `issues/done/3996-implement-reference-typescript-tests-cases-compiler.md` |
 | 4210 | Implement Splicetuples | spike | frontend/resolver | see `issues/done/4210-implement-spliceTuples.md` |
