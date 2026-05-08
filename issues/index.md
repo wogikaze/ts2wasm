@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 27 | 14 | 13 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4610 | 3228 | 1382 |
+| frontend | 4611 | 3228 | 1383 |
 | harness | 1 | 0 | 1 |
 | ir | 99 | 71 | 28 |
 | issues | 4 | 0 | 4 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5312 | 3539 | 1773 |
+| total | 5313 | 3539 | 1774 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -50,7 +50,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 5000 (Meta: TypeScript Compiler Parser Syntax Coverage) [done/design] ch:437 open:330 done:107
 ├── 5002 (Meta: TypeScript Compiler Type System Coverage) [done/done] ch:223 open:199 done:24 (also ← 5005)
 ├── 5003 (Meta: TypeScript Compiler Declaration Emit Coverage) [done/done] ch:100 open:89 done:11 (also ← 5001)
-5001 (Meta: TypeScript Compiler Semantic Analysis Coverage) [done/done] ch:550 open:277 done:273
+5001 (Meta: TypeScript Compiler Semantic Analysis Coverage) [done/done] ch:550 open:276 done:274
 5004 (Meta: Runtime Builtins Coverage (test262) (audit reopened #5004)) [done/done] ch:24 open:3 done:21
 5005 (Meta: TypeScript Compiler Name Resolution Coverage) [done/done] ch:395 open:326 done:69
 ├── 5006 (Meta: TypeScript Compiler Scope Analysis Coverage) [done/done] ch:28 open:18 done:10
@@ -67,7 +67,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | Order | ID | Title | State | Class | Area | Priority | Depends on | Direct children | Open children | Done children |
 |-----:|---:|------|-------|-------|------|--------:|-----------:|----------------:|--------------:|--------------:|
 | 1 | 5000 | Meta: TypeScript Compiler Parser Syntax Coverage | done | design | frontend/syntax | P1 | - | 437 | 330 | 107 |
-| 2 | 5001 | Meta: TypeScript Compiler Semantic Analysis Coverage | done | done | frontend/semantics | P1 | - | 550 | 277 | 273 |
+| 2 | 5001 | Meta: TypeScript Compiler Semantic Analysis Coverage | done | done | frontend/semantics | P1 | - | 550 | 276 | 274 |
 | 3 | 5004 | Meta: Runtime Builtins Coverage (test262) (audit reopened #5004) | done | done | runtime/builtins | P1 | - | 24 | 3 | 21 |
 | 4 | 5005 | Meta: TypeScript Compiler Name Resolution Coverage | done | done | frontend/resolver | P1 | - | 395 | 326 | 69 |
 | 5 | 5002 | Meta: TypeScript Compiler Type System Coverage | done | done | frontend/semantics | P1 | 5000, 5005 | 223 | 199 | 24 |
@@ -430,6 +430,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5475 | Parse generic function expressions | feature | frontend/syntax | implementation-ready | P1 |  | function-expression parsing expects `(` immediately after `function` |
 | 5476 | Lower integer number bitwise-not | feature | ir/lowered | implementation-ready | P1 |  | integer Number `~expr` has parser and AST support but no lowering path. |
 | 5477 | Parse nameless object type method parameters | feature | frontend/parser | implementation-ready | P1 |  | object type literal method signatures with nameless parameters are not |
+| 5478 | Parse element-access += assignments | feature | frontend/parser | implementation-ready | P1 |  | element-access `+=` is not represented as a complete assignment |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -2384,7 +2385,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 3302 | Implement Modulealiasasfunctionargument | spike | frontend/syntax | class: blocked | Implement Modulealiasasfunctionargument |
 | 3303 | Implement Modulealiasinterface | spike | frontend/syntax | class: blocked | Implement Modulealiasinterface |
 | 3304 | Implement Moduleandinterfacesharingname | spike | frontend/syntax | class: blocked | Implement Moduleandinterfacesharingname |
-| 3552 | Implement Noimplicitanystringindexeronobject | spike | frontend/syntax | class: blocked | Implement Noimplicitanystringindexeronobject |
 | 3553 | Implement Noimplicitanywithoverloads | spike | frontend/syntax | class: blocked | Implement Noimplicitanywithoverloads |
 | 3554 | Implement Noimplicitreturnsexclusions | spike | frontend/syntax | class: triage-needed | Implement Noimplicitreturnsexclusions |
 | 3555 | Implement Noimplicitreturnsinasync | spike | reference/triage | class: triage-needed | Implement Noimplicitreturnsinasync |
@@ -5272,6 +5272,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 3549 | Implement Noimplicitanyparametersinambientmodule | spike | frontend/syntax | see `issues/done/3549-implement-noImplicitAnyParametersInAmbientModule.md` |
 | 3550 | Implement Noimplicitanyparametersinclass | spike | frontend/syntax | see `issues/done/3550-implement-noImplicitAnyParametersInClass.md` |
 | 3551 | Implement Noimplicitanyparametersinmodule | spike | frontend/syntax | see `issues/done/3551-implement-noImplicitAnyParametersInModule.md` |
+| 3552 | Implement Noimplicitanystringindexeronobject | spike | frontend/syntax | see `issues/done/3552-implement-noImplicitAnyStringIndexerOnObject.md` |
 | 3690 | Implement Optionaltupleelementsandundefined | spike | reference/triage | see `issues/done/3690-implement-optionalTupleElementsAndUndefined.md` |
 | 3996 | Implement Compiler (dup) | spike | frontend/syntax | see `issues/done/3996-implement-reference-typescript-tests-cases-compiler.md` |
 | 4210 | Implement Splicetuples | spike | frontend/resolver | see `issues/done/4210-implement-spliceTuples.md` |
