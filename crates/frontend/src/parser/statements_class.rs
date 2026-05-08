@@ -5,6 +5,14 @@ impl Parser {
         self.consume(TokenKind::Abstract); // TypeScript abstract modifier — erased at runtime
         let start = self.expect(TokenKind::Class)?;
         let (name, _) = self.expect_ident()?;
+        if self.namespace_names_encountered.contains(&name) {
+            let span = self.prev_span().unwrap_or(Span { start: 0, end: 0 });
+            return Err(Diagnostic {
+                code: DiagCode::UnsupportedSyntax,
+                message: format!("namespace before class: `{name}`"),
+                span: Some(span),
+            });
+        }
 
         let _ = self.consume_typescript_generic_parameter_list()?;
         let extends = self.class_extends()?;

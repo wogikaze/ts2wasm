@@ -22,6 +22,7 @@ pub struct Parser {
     fn_depth: u32,
     /// Maps class names to their TypeScript-`private` field names (erased at runtime).
     class_private_fields: HashMap<String, Vec<String>>,
+    namespace_names_encountered: HashSet<String>,
 }
 
 /// For each token, check if there is a line terminator between the previous
@@ -53,7 +54,6 @@ struct ParsedParam {
 #[derive(Debug, Clone, PartialEq, Eq)]
 struct ParsedBindingPattern {
     text: String,
-    span: Span,
     is_identifier: bool,
 }
 
