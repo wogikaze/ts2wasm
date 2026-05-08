@@ -120,7 +120,6 @@ impl WatEmitter<'_> {
             (local.get $promise))))))
 "#,
             slot0_offset = Layout::ARRAY_HEADER_SIZE,
-            slot1_offset = Layout::ARRAY_HEADER_SIZE + 4,
             slot2_offset = Layout::ARRAY_HEADER_SIZE + 8,
             slot3_offset = Layout::ARRAY_HEADER_SIZE + 12,
             fulfilled = 1,
