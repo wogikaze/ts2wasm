@@ -121,6 +121,8 @@ Do not touch:
 - [ ] `nearbyIdenticalGenericLambdasAssignable.ts` no longer reports
   `unsupported expression: Some(SpannedToken { kind: RightParen, ... })` at
   `<T>() =>`.
+- [ ] `nestedGenericSpreadInference.ts` no longer reports
+  `expected RightParen, got Some(Colon)` at `wrap(<T>(x: T) => x)`.
 - [ ] If parsing advances to a new blocker, that next blocker is recorded separately.
 - [ ] Issue state stays synchronized with `issues/index.md`.
 
@@ -196,6 +198,15 @@ explicitly excludes ambiguous generic arrow parsing.
   at 75..77` at `const fB = <T>() => {`.
 - TypeScript oracle accepts the source with no diagnostics and infers `fA`,
   `fB`, and `fC` as `<T>() => { v: T; }`.
+
+2026-05-08 fold-in:
+
+- `issues/done/3479-implement-nestedGenericSpreadInference.md` reaches the same
+  generic-arrow parser boundary before any spread inference behavior is tested.
+- Current diagnostic: `UnsupportedSyntax: expected RightParen, got Some(Colon)`
+  at `const leak = call(wrap(<T>(x: T) => x), 1);`.
+- TypeScript oracle accepts the source with no diagnostics and sees the nested
+  call argument as `CallExpression -> ArrowFunction -> Parameter`.
 
 ## Completion evidence
 
