@@ -147,6 +147,13 @@ Split from generated bucket
 fresh triage on 2026-05-08 showed the first blocker is `self`, not IIFE
 parameter reassignment.
 
+Also supersedes generated bucket
+`issues/done/3565-implement-noParameterReassignmentJSIIFE.md`: fresh triage
+shows the same top-level `self.importScripts = (...)` shape in
+`noParameterReassignmentJSIIFE.ts`, with
+`UnresolvedName: unresolved name: \`self\` at 127..131` before the compiler can
+reach nested `this`, `arguments`, or parameter-reassignment semantics.
+
 Related but distinct:
 
 - `issues/open/5386-bind-dom-settimeout-global.md` handles the DOM timer global
