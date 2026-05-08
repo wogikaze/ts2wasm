@@ -18,7 +18,7 @@ updated: 2026-05-06
 ## Summary
 
 Closed after splitting the current parser blocker into
-`issues/open/5276-report-class-declaration-decorator-boundary.md`.
+`issues/done/5276-report-class-declaration-decorator-boundary.md`.
 
 ## Problem
 
@@ -52,7 +52,7 @@ unsupported_features=unknown-unsupported:1
 ## Desired final state
 
 This generated bucket is closed. Implementation should proceed through
-`issues/open/5276-report-class-declaration-decorator-boundary.md`.
+`issues/done/5276-report-class-declaration-decorator-boundary.md`.
 
 ## Scope
 
@@ -124,7 +124,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] `issues/open/5276-report-class-declaration-decorator-boundary.md`
+- [x] `issues/done/5276-report-class-declaration-decorator-boundary.md`
 
 ## Notes
 
