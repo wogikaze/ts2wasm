@@ -16,9 +16,9 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 27 | 14 | 13 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4609 | 3249 | 1360 |
+| frontend | 4608 | 3248 | 1360 |
 | harness | 1 | 0 | 1 |
-| ir | 93 | 69 | 24 |
+| ir | 95 | 70 | 25 |
 | issues | 4 | 0 | 4 |
 | parser | 1 | 0 | 1 |
 | reference | 214 | 141 | 73 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5304 | 3558 | 1746 |
+| total | 5305 | 3558 | 1747 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -422,6 +422,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5467 | Report missing new expression callee | bug | frontend/parser | implementation-ready | P2 |  | `newMissingIdentifier.ts` contains malformed `new ()` syntax. The |
 | 5468 | Report direct new type-only callee diagnostics | bug | frontend/resolver | implementation-ready | P1 |  | `newNonReferenceType.ts` now builds successfully, but TypeScript |
 | 5469 | Support named exports of namespace imports in dependency modules | feature | compiler/module-graph | implementation-ready | P1 |  | dependency-module named export validation does not recognize namespace |
+| 5470 | Support array spread over array fallback expressions | feature | ir/lowering | implementation-ready | P1 |  | the array spread lowering recognizes dense array literals and dense |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -2376,7 +2377,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 3302 | Implement Modulealiasasfunctionargument | spike | frontend/syntax | class: blocked | Implement Modulealiasasfunctionargument |
 | 3303 | Implement Modulealiasinterface | spike | frontend/syntax | class: blocked | Implement Modulealiasinterface |
 | 3304 | Implement Moduleandinterfacesharingname | spike | frontend/syntax | class: blocked | Implement Moduleandinterfacesharingname |
-| 3525 | Implement Nocrashonnolib | spike | frontend/syntax | class: blocked | Implement Nocrashonnolib |
 | 3526 | Implement Nocrashonthistypeusage | spike | frontend/syntax | class: blocked | Implement Nocrashonthistypeusage |
 | 3527 | Implement Nocrashumdmergedwithglobalvalue | spike | frontend/syntax | class: blocked | Implement Nocrashumdmergedwithglobalvalue |
 | 3528 | Implement Nocrashwithverbatimmodulesyntaxandimportsnotusedasvalues | spike | frontend/syntax | class: blocked | Implement Nocrashwithverbatimmodulesyntaxandimportsnotusedasvalues |
@@ -5264,6 +5264,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 3522 | Implement Noconstraintinreturntype | spike | frontend/syntax | see `issues/done/3522-implement-noConstraintInReturnType.md` |
 | 3523 | Implement Nocrashonimportshadowing | spike | compiler/module-graph | see `issues/done/3523-implement-noCrashOnImportShadowing.md` |
 | 3524 | Implement Nocrashonmixin | spike | ir/resolver | see `issues/done/3524-implement-noCrashOnMixin.md` |
+| 3525 | Implement Nocrashonnolib | spike | ir/lowering | see `issues/done/3525-implement-noCrashOnNoLib.md` |
 | 3690 | Implement Optionaltupleelementsandundefined | spike | reference/triage | see `issues/done/3690-implement-optionalTupleElementsAndUndefined.md` |
 | 3996 | Implement Compiler (dup) | spike | frontend/syntax | see `issues/done/3996-implement-reference-typescript-tests-cases-compiler.md` |
 | 4210 | Implement Splicetuples | spike | frontend/resolver | see `issues/done/4210-implement-spliceTuples.md` |
