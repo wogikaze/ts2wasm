@@ -14,21 +14,47 @@ Issue files are the source of truth for work items. The generated section below 
 | backend-wasm | 2 | 0 | 2 |
 | cli | 17 | 0 | 17 |
 | compiler | 7 | 2 | 5 |
-| coverage | 46 | 2 | 44 |
+| coverage | 45 | 1 | 44 |
 | docs | 5 | 0 | 5 |
+<<<<<<< HEAD
 | frontend | 4564 | 3165 | 1399 |
+||||||| 471ace964 (chore: close 5429 as done)
+| frontend | 4564 | 3595 | 969 |
+=======
+| frontend | 4564 | 3643 | 921 |
+>>>>>>> parent of 471ace964 (chore: close 5429 as done)
 | harness | 1 | 0 | 1 |
+<<<<<<< HEAD
 | ir | 80 | 12 | 68 |
+||||||| 471ace964 (chore: close 5429 as done)
+| ir | 80 | 13 | 67 |
+=======
+| ir | 79 | 12 | 67 |
+>>>>>>> parent of 471ace964 (chore: close 5429 as done)
 | issues | 5 | 0 | 5 |
 | other | 2 | 0 | 2 |
 | parser | 1 | 0 | 1 |
+<<<<<<< HEAD
 | reference | 212 | 138 | 74 |
 | runtime | 280 | 60 | 220 |
+||||||| 471ace964 (chore: close 5429 as done)
+| reference | 212 | 154 | 58 |
+| runtime | 280 | 66 | 214 |
+=======
+| reference | 212 | 156 | 56 |
+| runtime | 278 | 69 | 209 |
+>>>>>>> parent of 471ace964 (chore: close 5429 as done)
 | scripts | 4 | 0 | 4 |
 | security | 1 | 0 | 1 |
 | tests | 8 | 0 | 8 |
 | wasi | 5 | 0 | 5 |
+<<<<<<< HEAD
 | total | 5265 | 3380 | 1885 |
+||||||| 471ace964 (chore: close 5429 as done)
+| total | 5265 | 3833 | 1432 |
+=======
+| total | 5261 | 3884 | 1377 |
+>>>>>>> parent of 471ace964 (chore: close 5429 as done)
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -48,13 +74,33 @@ Issue files are the source of truth for work items. The generated section below 
 Direct child counts are derived from issue-file `depends_on` links. A meta issue can be `done` as a classification/design umbrella while implementation child issues remain open.
 
 ```
+<<<<<<< HEAD
 5000 (Meta: TypeScript Compiler Parser Syntax Coverage) [done/design] ch:440 open:343 done:97
 ├── 5002 (Meta: TypeScript Compiler Type System Coverage) [done/done] ch:224 open:201 done:23 (also ← 5005)
 ├── 5003 (Meta: TypeScript Compiler Declaration Emit Coverage) [done/done] ch:101 open:89 done:12 (also ← 5001)
 5001 (Meta: TypeScript Compiler Semantic Analysis Coverage) [done/done] ch:554 open:266 done:288
+||||||| 471ace964 (chore: close 5429 as done)
+5000 (Meta: TypeScript Compiler Parser Syntax Coverage) [done/design] ch:440 open:366 done:74
+├── 5002 (Meta: TypeScript Compiler Type System Coverage) [done/done] ch:224 open:212 done:12 (also ← 5005)
+├── 5003 (Meta: TypeScript Compiler Declaration Emit Coverage) [done/done] ch:101 open:90 done:11 (also ← 5001)
+5001 (Meta: TypeScript Compiler Semantic Analysis Coverage) [done/done] ch:554 open:286 done:268
+=======
+5000 (Meta: TypeScript Compiler Parser Syntax Coverage) [done/design] ch:440 open:369 done:71
+├── 5002 (Meta: TypeScript Compiler Type System Coverage) [done/done] ch:224 open:216 done:8 (also ← 5005)
+├── 5003 (Meta: TypeScript Compiler Declaration Emit Coverage) [done/done] ch:101 open:90 done:11 (also ← 5001)
+5001 (Meta: TypeScript Compiler Semantic Analysis Coverage) [done/done] ch:554 open:303 done:251
+>>>>>>> parent of 471ace964 (chore: close 5429 as done)
 5004 (Meta: Runtime Builtins Coverage (test262) (audit reopened #5004)) [done/done] ch:24 open:1 done:23
+<<<<<<< HEAD
 5005 (Meta: TypeScript Compiler Name Resolution Coverage) [done/done] ch:406 open:324 done:82
 ├── 5006 (Meta: TypeScript Compiler Scope Analysis Coverage) [done/done] ch:27 open:16 done:11
+||||||| 471ace964 (chore: close 5429 as done)
+5005 (Meta: TypeScript Compiler Name Resolution Coverage) [done/done] ch:406 open:346 done:60
+├── 5006 (Meta: TypeScript Compiler Scope Analysis Coverage) [done/done] ch:27 open:17 done:10
+=======
+5005 (Meta: TypeScript Compiler Name Resolution Coverage) [done/done] ch:406 open:351 done:55
+├── 5006 (Meta: TypeScript Compiler Scope Analysis Coverage) [done/done] ch:27 open:19 done:8
+>>>>>>> parent of 471ace964 (chore: close 5429 as done)
 ├── 5007 (Meta: TypeScript Compiler Module Resolution Coverage (audit reopened #5007)) [done/done] ch:20 open:18 done:2
 ```
 
@@ -67,13 +113,33 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 
 | Order | ID | Title | State | Class | Area | Priority | Depends on | Direct children | Open children | Done children |
 |-----:|---:|------|-------|-------|------|--------:|-----------:|----------------:|--------------:|--------------:|
+<<<<<<< HEAD
 | 1 | 5000 | Meta: TypeScript Compiler Parser Syntax Coverage | done | design | frontend/syntax | P1 | - | 440 | 343 | 97 |
 | 2 | 5001 | Meta: TypeScript Compiler Semantic Analysis Coverage | done | done | frontend/semantics | P1 | - | 554 | 266 | 288 |
+||||||| 471ace964 (chore: close 5429 as done)
+| 1 | 5000 | Meta: TypeScript Compiler Parser Syntax Coverage | done | design | frontend/syntax | P1 | - | 440 | 366 | 74 |
+| 2 | 5001 | Meta: TypeScript Compiler Semantic Analysis Coverage | done | done | frontend/semantics | P1 | - | 554 | 286 | 268 |
+=======
+| 1 | 5000 | Meta: TypeScript Compiler Parser Syntax Coverage | done | design | frontend/syntax | P1 | - | 440 | 369 | 71 |
+| 2 | 5001 | Meta: TypeScript Compiler Semantic Analysis Coverage | done | done | frontend/semantics | P1 | - | 554 | 303 | 251 |
+>>>>>>> parent of 471ace964 (chore: close 5429 as done)
 | 3 | 5004 | Meta: Runtime Builtins Coverage (test262) (audit reopened #5004) | done | done | runtime/builtins | P1 | - | 24 | 1 | 23 |
+<<<<<<< HEAD
 | 4 | 5005 | Meta: TypeScript Compiler Name Resolution Coverage | done | done | frontend/resolver | P1 | - | 406 | 324 | 82 |
 | 5 | 5002 | Meta: TypeScript Compiler Type System Coverage | done | done | frontend/semantics | P1 | 5000, 5005 | 224 | 201 | 23 |
 | 6 | 5003 | Meta: TypeScript Compiler Declaration Emit Coverage | done | done | frontend/syntax | P2 | 5000, 5001 | 101 | 89 | 12 |
 | 7 | 5006 | Meta: TypeScript Compiler Scope Analysis Coverage | done | done | frontend/resolver | P2 | 5005 | 27 | 16 | 11 |
+||||||| 471ace964 (chore: close 5429 as done)
+| 4 | 5005 | Meta: TypeScript Compiler Name Resolution Coverage | done | done | frontend/resolver | P1 | - | 406 | 346 | 60 |
+| 5 | 5002 | Meta: TypeScript Compiler Type System Coverage | done | done | frontend/semantics | P1 | 5000, 5005 | 224 | 212 | 12 |
+| 6 | 5003 | Meta: TypeScript Compiler Declaration Emit Coverage | done | done | frontend/syntax | P2 | 5000, 5001 | 101 | 90 | 11 |
+| 7 | 5006 | Meta: TypeScript Compiler Scope Analysis Coverage | done | done | frontend/resolver | P2 | 5005 | 27 | 17 | 10 |
+=======
+| 4 | 5005 | Meta: TypeScript Compiler Name Resolution Coverage | done | done | frontend/resolver | P1 | - | 406 | 351 | 55 |
+| 5 | 5002 | Meta: TypeScript Compiler Type System Coverage | done | done | frontend/semantics | P1 | 5000, 5005 | 224 | 216 | 8 |
+| 6 | 5003 | Meta: TypeScript Compiler Declaration Emit Coverage | done | done | frontend/syntax | P2 | 5000, 5001 | 101 | 90 | 11 |
+| 7 | 5006 | Meta: TypeScript Compiler Scope Analysis Coverage | done | done | frontend/resolver | P2 | 5005 | 27 | 19 | 8 |
+>>>>>>> parent of 471ace964 (chore: close 5429 as done)
 | 8 | 5007 | Meta: TypeScript Compiler Module Resolution Coverage (audit reopened #5007) | done | done | frontend/resolver | P2 | 5005 | 20 | 18 | 2 |
 
 ### Topological order
@@ -95,6 +161,30 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 <!-- generated:ready:start -->
 | ID | Title | Type | Area | Class | Priority | Depends on | Summary |
 |---:|---|---|---|---|---|---|---|
+<<<<<<< HEAD
+||||||| 471ace964 (chore: close 5429 as done)
+| 463 | Implement Functiondeclaration Import Export | spike | frontend/syntax | superseded | P1 | 5001 | FunctionDeclaration-import-export has 1 reference failures and needs smart-triage evidence before implementation starts. |
+| 548 | Implement Exportassignment | spike | frontend/syntax | done | P1 |  | ExportAssignment has 2 reference failures and needs smart-triage evidence before implementation starts. |
+| 769 | Implement Augmentedtypesfunction | spike | frontend/resolver | superseded | P1 |  | Implement Augmentedtypesfunction |
+| 772 | Implement Augmentedtypesvar | spike | frontend/resolver | superseded | P1 |  | the generated parser-syntax bucket remained blocked even though its |
+| 773 | Implement Autoasiforstaticsinclassdeclaration | spike | frontend/parser | superseded | P1 |  | the generated bucket remained triage-needed even though the executable |
+| 775 | Implement Autotypeassignedusingdestructuringfromnevernocrash | spike | frontend/resolver | superseded | P1 |  | the generated bucket remained blocked even though its current |
+| 840 | Implement Ambientclassdeclaredbeforebase (dup) | spike | frontend/syntax | superseded | P1 | 5001 | ambientClassDeclaredBeforeBase has 1 reference failures and needs smart-triage evidence before implementation starts. |
+| 871 | Implement Anonterface (dup) | spike | frontend/syntax | superseded | P1 | 5001 | anonterface has 1 reference failures and needs smart-triage evidence before implementation starts. |
+=======
+| 463 | Implement Functiondeclaration Import Export | spike | frontend/syntax | superseded | P1 | 5001 | FunctionDeclaration-import-export has 1 reference failures and needs smart-triage evidence before implementation starts. |
+| 467 | Implement Transportstream (dup) | spike | frontend/syntax | superseded | P1 | 5000 | TransportStream has 1 reference failures and needs smart-triage evidence before implementation starts. |
+| 518 | Implement Ambientclassdeclarationwithextends | spike | frontend/syntax | superseded | P1 | 5001 | ambientClassDeclarationWithExtends has 1 reference failures and needs smart-triage evidence before implementation sta... |
+| 548 | Implement Exportassignment | spike | frontend/syntax | done | P1 |  | ExportAssignment has 2 reference failures and needs smart-triage evidence before implementation starts. |
+| 572 | Implement Accessorwithlineterminator | spike | reference/triage | superseded | P2 |  | accessorWithLineTerminator has 1 reference failures and needs smart-triage evidence before implementation starts. |
+| 661 | Implement Arithassigntyping | spike | frontend/syntax | superseded | P1 | 5349 | arithAssignTyping has 1 reference failures and needs smart-triage evidence before implementation starts. |
+| 769 | Implement Augmentedtypesfunction | spike | frontend/resolver | superseded | P1 |  | Implement Augmentedtypesfunction |
+| 772 | Implement Augmentedtypesvar | spike | frontend/resolver | superseded | P1 |  | the generated parser-syntax bucket remained blocked even though its |
+| 773 | Implement Autoasiforstaticsinclassdeclaration | spike | frontend/parser | superseded | P1 |  | the generated bucket remained triage-needed even though the executable |
+| 775 | Implement Autotypeassignedusingdestructuringfromnevernocrash | spike | frontend/resolver | superseded | P1 |  | the generated bucket remained blocked even though its current |
+| 840 | Implement Ambientclassdeclaredbeforebase (dup) | spike | frontend/syntax | superseded | P1 | 5001 | ambientClassDeclaredBeforeBase has 1 reference failures and needs smart-triage evidence before implementation starts. |
+| 871 | Implement Anonterface (dup) | spike | frontend/syntax | superseded | P1 | 5001 | anonterface has 1 reference failures and needs smart-triage evidence before implementation starts. |
+>>>>>>> parent of 471ace964 (chore: close 5429 as done)
 | 1065 | Implement Bitwisecompoundassignmentoperators | spike | frontend/syntax | superseded | P2 | 5178 | bitwiseCompoundAssignmentOperators has 1 reference failures and needs smart-triage evidence before implementation sta... |
 | 1115 | Implement Caseinsensitivefilesystemwithcapsimporttypedeclarations | spike | frontend/syntax | done | P1 | 232 | caseInsensitiveFileSystemWithCapsImportTypeDeclarations is not a standalone implementation order in the current runne... |
 | 1118 | Implement Castnewobjectbug | spike | frontend/syntax | superseded | P1 |  | castNewObjectBug had 1 generated reference failure and needed smart-triage evidence before implementation starts. Cur... |
@@ -191,7 +281,14 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5408 | Parse bare global augmentation blocks | bug | frontend/syntax | implementation-ready | P1 |  | bare TypeScript global augmentation syntax falls through to runtime |
 | 5409 | Parse function expression statements in nested blocks | feature | frontend/syntax | implementation-ready | P2 | 5000 | capturedLetConstInLoop parser tests reject `(function() { return x })` |
 | 5410 | W5: test262 coverage ramp from 100 to 500 executed | feature | coverage | design-ready | P1 |  | W5: test262 coverage ramp from 100 to 500 executed |
+<<<<<<< HEAD
 | 5430 | W6: Full test262 corpus re-run and coverage update | feature | coverage | implementation-ready | P2 |  | W6: Full test262 corpus re-run and coverage update |
+||||||| 471ace964 (chore: close 5429 as done)
+| 5427 | W5: Implement class extends/super heritage | feature | ir | implementation-ready | P1 |  | 6,526 class unsupported at full corpus. |
+| 5428 | W4: Implement Array.prototype.reduce/reduceRight WAT | feature | runtime | implementation-ready | P1 |  | 1,035 array-builtin unsupported at full corpus. |
+| 5430 | W6: Full test262 corpus re-run and coverage update | feature | coverage | implementation-ready | P2 |  | W6: Full test262 corpus re-run and coverage update |
+=======
+>>>>>>> parent of 471ace964 (chore: close 5429 as done)
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -203,10 +300,168 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 059 | Implement parser syntax extensions for TypeScript and advanced JS (audit reopened #059) | feature | frontend | class: blocked | Implement parser syntax extensions for TypeScript and advanced JS (audit reopened #059) |
 | 064 | Implement name resolution (triaged - superseded by test262 metadata issues) | spike | frontend/resolver | class: blocked | Implement name resolution (triaged - superseded by test262 metadata issues) |
 | 312 | Triage test262 blocked P0 window | spike | reference | class: triage-needed | Triage test262 blocked P0 window |
+| 422 | Implement class-accessor support | spike | frontend/syntax | class: triage-needed | Implement class-accessor support |
 | 446 | Implement scope-analysis support | spike | frontend/syntax | class: triage-needed | Implement scope-analysis support |
+| 449 | Implement super keyword | spike | frontend/syntax | class: triage-needed | Implement super keyword |
+| 450 | Implement template literals | spike | frontend/syntax | class: triage-needed | Implement template literals |
+| 451 | Implement try-catch-finally | spike | frontend/syntax | class: blocked | Implement try-catch-finally |
 | 452 | Implement type-alias support | spike | frontend/syntax | class: blocked | Implement type-alias support |
 | 454 | Investigate and classify unknown-unsupported cases | spike | frontend/syntax | class: triage-needed | Investigate and classify unknown-unsupported cases |
+<<<<<<< HEAD
+||||||| 471ace964 (chore: close 5429 as done)
+| 541 | Implement Apilibcheck | spike | frontend/syntax | class: blocked | Implement Apilibcheck |
+| 543 | Implement Apisample Import Export | spike | frontend/syntax | class: blocked | Implement Apisample Import Export |
+| 544 | Implement Apisample Jsdoc | spike | frontend/syntax | class: blocked | Implement Apisample Jsdoc |
+| 556 | Implement Abstractclassunioninstantiation | spike | frontend/resolver | class: blocked | Implement Abstractclassunioninstantiation |
+| 597 | Implement Allowjsclassthistypecrash | spike | reference/triage | class: triage-needed | Implement Allowjsclassthistypecrash |
+| 627 | Implement Ambiguousoverloadresolution | spike | frontend/resolver | class: blocked | Implement Ambiguousoverloadresolution |
+| 628 | Implement Amddeclarationemitnoextradeclare | spike | frontend/syntax | class: blocked | Implement Amddeclarationemitnoextradeclare |
+=======
+| 541 | Implement Apilibcheck | spike | frontend/syntax | class: blocked | Implement Apilibcheck |
+| 542 | Implement Apisample Arrow Function | spike | frontend/syntax | class: blocked | Implement Apisample Arrow Function |
+| 543 | Implement Apisample Import Export | spike | frontend/syntax | class: blocked | Implement Apisample Import Export |
+| 544 | Implement Apisample Jsdoc | spike | frontend/syntax | class: blocked | Implement Apisample Jsdoc |
+| 554 | Implement Abstractclassinlocalscope | spike | frontend/resolver | class: blocked | Implement Abstractclassinlocalscope |
+| 555 | Implement Abstractclassinlocalscopeisabstract | spike | frontend/resolver | class: blocked | Implement Abstractclassinlocalscopeisabstract |
+| 556 | Implement Abstractclassunioninstantiation | spike | frontend/resolver | class: blocked | Implement Abstractclassunioninstantiation |
+| 597 | Implement Allowjsclassthistypecrash | spike | reference/triage | class: triage-needed | Implement Allowjsclassthistypecrash |
+| 625 | Implement Ambiguouscallswherereturntypesagree | spike | frontend/syntax | class: triage-needed | Implement Ambiguouscallswherereturntypesagree |
+| 626 | Implement Ambiguousgenericassertion | spike | frontend/syntax | class: blocked | Implement Ambiguousgenericassertion |
+| 627 | Implement Ambiguousoverloadresolution | spike | frontend/resolver | class: blocked | Implement Ambiguousoverloadresolution |
+| 628 | Implement Amddeclarationemitnoextradeclare | spike | frontend/syntax | class: blocked | Implement Amddeclarationemitnoextradeclare |
+>>>>>>> parent of 471ace964 (chore: close 5429 as done)
 | 629 | Implement Amddependencycomment | spike | frontend/syntax | class: blocked | Implement Amddependencycomment |
+<<<<<<< HEAD
+||||||| 471ace964 (chore: close 5429 as done)
+| 631 | Implement Amdlikeinputdeclarationemit | spike | frontend/syntax | class: blocked | Implement Amdlikeinputdeclarationemit |
+| 632 | Implement Amdmodulebundlenoduplicatedeclarationemitcomments | spike | frontend/syntax | class: blocked | Implement Amdmodulebundlenoduplicatedeclarationemitcomments |
+| 633 | Implement Amdmoduleconstenumusage | spike | frontend/syntax | class: blocked | Implement Amdmoduleconstenumusage |
+| 634 | Implement Amdmodulename | spike | frontend/syntax | class: blocked | Implement Amdmodulename |
+| 635 | Implement Anonclassdeclarationemitisanon | spike | frontend/syntax | class: blocked | Implement Anonclassdeclarationemitisanon |
+| 636 | Implement Anonterface | spike | frontend/syntax | class: triage-needed | Implement Anonterface |
+| 640 | Implement Anyandunknownhavefalsycomponents | spike | frontend/resolver | class: blocked | Implement Anyandunknownhavefalsycomponents |
+| 643 | Implement Anyidenticaltoitself | spike | frontend/syntax | class: triage-needed | Implement Anyidenticaltoitself |
+| 644 | Implement Anyinferenceanonymousfunctions | spike | frontend/semantics | class: blocked | Implement Anyinferenceanonymousfunctions |
+| 645 | Implement Argsinscope | spike | frontend/resolver | class: blocked | Implement Argsinscope |
+| 646 | Implement Arguments | spike | frontend/syntax | class: blocked | Implement Arguments |
+| 647 | Implement Argumentsaspropertyname Arguments Object | spike | frontend/syntax | class: blocked | Implement Argumentsaspropertyname Arguments Object |
+| 649 | Implement Argumentsbindstofunctionscopeargumentlist | spike | frontend/resolver | class: blocked | Implement Argumentsbindstofunctionscopeargumentlist |
+| 650 | Implement Argumentsobjectcreatesrestforjs | spike | frontend/syntax | class: blocked | Implement Argumentsobjectcreatesrestforjs |
+| 654 | Implement Argumentsreferenceinconstructor Name Resolution | spike | frontend/resolver | class: blocked | Implement Argumentsreferenceinconstructor Name Resolution |
+| 663 | Implement Arrayassignmenttest Parser Syntax | spike | frontend/syntax | class: triage-needed | Implement Arrayassignmenttest Parser Syntax |
+| 664 | Implement Arrayaugment | spike | reference/triage | class: triage-needed | Implement Arrayaugment |
+| 665 | Implement Arraybestcommontypes | spike | frontend/syntax | class: blocked | Implement Arraybestcommontypes |
+| 666 | Implement Arraybindingpatternomittedexpressions | spike | frontend/syntax | class: blocked | Implement Arraybindingpatternomittedexpressions |
+| 667 | Implement Arraybufferisviewnarrowstype | spike | frontend/resolver | class: blocked | Implement Arraybufferisviewnarrowstype |
+| 668 | Implement Arraycast | spike | frontend/syntax | class: triage-needed | Implement Arraycast |
+| 671 | Implement Arrayconstructors | spike | frontend/syntax | class: blocked | Implement Arrayconstructors |
+| 691 | Implement Arraysigchecking | spike | frontend/syntax | class: blocked | Implement Arraysigchecking |
+| 692 | Implement Arrayslice (audit reopened #692) | spike | frontend/syntax | class: blocked | Implement Arrayslice (audit reopened #692) |
+| 693 | Implement Arraytolocalestringes Name Resolution | spike | frontend/resolver | class: blocked | Implement Arraytolocalestringes Name Resolution |
+| 694 | Implement Arraytolocalestringes Unknown Unsupported | spike | frontend/syntax | class: triage-needed | Implement Arraytolocalestringes Unknown Unsupported |
+| 695 | Implement Arraytypeinsignatureofinterfaceandclass | spike | frontend/syntax | class: blocked | Implement Arraytypeinsignatureofinterfaceandclass |
+| 699 | Implement Arrowfunctionmissingcurlywithsemicolon | spike | frontend/syntax | class: triage-needed | Implement Arrowfunctionmissingcurlywithsemicolon |
+| 705 | Implement Asiambientfunctiondeclaration | spike | frontend/syntax | class: triage-needed | Implement Asiambientfunctiondeclaration |
+| 706 | Implement Asiarith | spike | frontend/syntax | class: triage-needed | Implement Asiarith |
+| 709 | Implement Asiines | spike | frontend/syntax | class: triage-needed | Implement Asiines |
+| 710 | Implement Asipublicprivateprotected | spike | frontend/syntax | class: blocked | Implement Asipublicprivateprotected |
+| 711 | Implement Asireturn | spike | reference/triage | class: triage-needed | Implement Asireturn |
+| 712 | Implement Assertinwrapsometypeparameter | spike | frontend/syntax | class: blocked | Implement Assertinwrapsometypeparameter |
+| 713 | Implement Assertionfunctionwildcardimport | spike | frontend/syntax | class: blocked | Implement Assertionfunctionwildcardimport |
+| 714 | Implement Assertionfunctionscannarrowbydiscriminant | spike | frontend/syntax | class: blocked | Implement Assertionfunctionscannarrowbydiscriminant |
+| 715 | Implement Assign | spike | frontend/syntax | class: blocked | Implement Assign |
+| 716 | Implement Assigntoenum | spike | frontend/syntax | class: triage-needed | Implement Assigntoenum |
+| 717 | Implement Assigntoexistingclass | spike | frontend/syntax | class: blocked | Implement Assigntoexistingclass |
+| 718 | Implement Assigntofn | spike | frontend/syntax | class: blocked | Implement Assigntofn |
+| 719 | Implement Assigntoinvalidlhs | spike | frontend/syntax | class: triage-needed | Implement Assigntoinvalidlhs |
+| 720 | Implement Assigntomodule | spike | frontend/syntax | class: blocked | Implement Assigntomodule |
+| 721 | Implement Assigntoobjecttypewithprototypeproperty | spike | frontend/resolver | class: blocked | Implement Assigntoobjecttypewithprototypeproperty |
+=======
+| 630 | Implement Amddependencycommentname | spike | frontend/syntax | class: blocked | Implement Amddependencycommentname |
+| 631 | Implement Amdlikeinputdeclarationemit | spike | frontend/syntax | class: blocked | Implement Amdlikeinputdeclarationemit |
+| 632 | Implement Amdmodulebundlenoduplicatedeclarationemitcomments | spike | frontend/syntax | class: blocked | Implement Amdmodulebundlenoduplicatedeclarationemitcomments |
+| 633 | Implement Amdmoduleconstenumusage | spike | frontend/syntax | class: blocked | Implement Amdmoduleconstenumusage |
+| 634 | Implement Amdmodulename | spike | frontend/syntax | class: blocked | Implement Amdmodulename |
+| 635 | Implement Anonclassdeclarationemitisanon | spike | frontend/syntax | class: blocked | Implement Anonclassdeclarationemitisanon |
+| 636 | Implement Anonterface | spike | frontend/syntax | class: triage-needed | Implement Anonterface |
+| 637 | Implement Anonymousclassdeclarationdoesntprintwithreadonly | spike | frontend/syntax | class: blocked | Implement Anonymousclassdeclarationdoesntprintwithreadonly |
+| 640 | Implement Anyandunknownhavefalsycomponents | spike | frontend/resolver | class: blocked | Implement Anyandunknownhavefalsycomponents |
+| 643 | Implement Anyidenticaltoitself | spike | frontend/syntax | class: triage-needed | Implement Anyidenticaltoitself |
+| 644 | Implement Anyinferenceanonymousfunctions | spike | frontend/semantics | class: blocked | Implement Anyinferenceanonymousfunctions |
+| 645 | Implement Argsinscope | spike | frontend/resolver | class: blocked | Implement Argsinscope |
+| 646 | Implement Arguments | spike | frontend/syntax | class: blocked | Implement Arguments |
+| 647 | Implement Argumentsaspropertyname Arguments Object | spike | frontend/syntax | class: blocked | Implement Argumentsaspropertyname Arguments Object |
+| 648 | Implement Argumentsaspropertyname Name Resolution | spike | frontend/resolver | class: blocked | Implement Argumentsaspropertyname Name Resolution |
+| 649 | Implement Argumentsbindstofunctionscopeargumentlist | spike | frontend/resolver | class: blocked | Implement Argumentsbindstofunctionscopeargumentlist |
+| 650 | Implement Argumentsobjectcreatesrestforjs | spike | frontend/syntax | class: blocked | Implement Argumentsobjectcreatesrestforjs |
+| 651 | Implement Argumentsobjectiterator | spike | frontend/syntax | class: blocked | Implement Argumentsobjectiterator |
+| 652 | Implement Argumentspropertynameinjsmode | spike | frontend/syntax | class: blocked | Implement Argumentspropertynameinjsmode |
+| 653 | Implement Argumentsreferenceinconstructor Arguments Object | spike | frontend/syntax | class: blocked | Implement Argumentsreferenceinconstructor Arguments Object |
+| 654 | Implement Argumentsreferenceinconstructor Name Resolution | spike | frontend/resolver | class: blocked | Implement Argumentsreferenceinconstructor Name Resolution |
+| 655 | Implement Argumentsreferenceinfunction | spike | frontend/syntax | class: blocked | Implement Argumentsreferenceinfunction |
+| 656 | Implement Argumentsreferenceinmethod Arguments Object | spike | frontend/syntax | class: blocked | Implement Argumentsreferenceinmethod Arguments Object |
+| 657 | Implement Argumentsreferenceinmethod Name Resolution | spike | frontend/resolver | class: blocked | Implement Argumentsreferenceinmethod Name Resolution |
+| 658 | Implement Argumentsreferenceinobjectliteral | spike | frontend/syntax | class: blocked | Implement Argumentsreferenceinobjectliteral |
+| 659 | Implement Argumentsusedinclassfieldinitializerorstaticinitializationblock | spike | frontend/syntax | class: blocked | Implement Argumentsusedinclassfieldinitializerorstaticinitializationblock |
+| 660 | Implement Argumentsusedinobjectliteralproperty | spike | frontend/syntax | class: blocked | Implement Argumentsusedinobjectliteralproperty |
+| 662 | Implement Arrayassignmenttest Import Export | spike | frontend/syntax | class: blocked | Implement Arrayassignmenttest Import Export |
+| 663 | Implement Arrayassignmenttest Parser Syntax | spike | frontend/syntax | class: triage-needed | Implement Arrayassignmenttest Parser Syntax |
+| 664 | Implement Arrayaugment | spike | reference/triage | class: triage-needed | Implement Arrayaugment |
+| 665 | Implement Arraybestcommontypes | spike | frontend/syntax | class: blocked | Implement Arraybestcommontypes |
+| 666 | Implement Arraybindingpatternomittedexpressions | spike | frontend/syntax | class: blocked | Implement Arraybindingpatternomittedexpressions |
+| 667 | Implement Arraybufferisviewnarrowstype | spike | frontend/resolver | class: blocked | Implement Arraybufferisviewnarrowstype |
+| 668 | Implement Arraycast | spike | frontend/syntax | class: triage-needed | Implement Arraycast |
+| 670 | Implement Arrayconcatmap (audit reopened #670) | spike | frontend/syntax | class: blocked | Implement Arrayconcatmap (audit reopened #670) |
+| 671 | Implement Arrayconstructors | spike | frontend/syntax | class: blocked | Implement Arrayconstructors |
+| 672 | Implement Arraydestructuringinswitch | spike | frontend/syntax | class: blocked | Implement Arraydestructuringinswitch |
+| 673 | Implement Arrayevery | spike | frontend/syntax | class: blocked | Implement Arrayevery |
+| 674 | Implement Arrayfakeflatnocrashinferencedeclarations | spike | runtime/builtins | class: triage-needed | Implement Arrayfakeflatnocrashinferencedeclarations |
+| 675 | Implement Arrayfilter (audit reopened #675) | spike | runtime/builtins | class: triage-needed | Implement Arrayfilter (audit reopened #675) |
+| 676 | Implement Arrayfind (audit reopened #676) | spike | frontend/syntax | class: triage-needed | Implement Arrayfind (audit reopened #676) |
+| 677 | Implement Arrayflatmap (audit reopened #677) | spike | frontend/syntax | class: blocked | Implement Arrayflatmap (audit reopened #677) |
+| 678 | Implement Arrayflatnocrashinference (audit reopened #678) | spike | frontend/semantics | class: blocked | Implement Arrayflatnocrashinference (audit reopened #678) |
+| 679 | Implement Arrayflatnocrashinferencedeclarations (audit reopened #679) | spike | frontend/semantics | class: blocked | Implement Arrayflatnocrashinferencedeclarations (audit reopened #679) |
+| 680 | Implement Arrayfrom | spike | runtime/builtins | class: triage-needed | Implement Arrayfrom |
+| 681 | Implement Arrayfromasync | spike | reference/triage | class: triage-needed | Implement Arrayfromasync |
+| 682 | Implement Arrayindexwitharrayfails | spike | frontend/resolver | class: blocked | Implement Arrayindexwitharrayfails |
+| 683 | Implement Arrayiterationlibes | spike | frontend/resolver | class: blocked | Implement Arrayiterationlibes |
+| 684 | Implement Arrayliteralandarrayconstructorequivalence | spike | frontend/resolver | class: blocked | Implement Arrayliteralandarrayconstructorequivalence |
+| 685 | Implement Arrayliteralcomments | spike | frontend/syntax | class: triage-needed | Implement Arrayliteralcomments |
+| 686 | Implement Arrayliteralcontextualtype | spike | frontend/syntax | class: blocked | Implement Arrayliteralcontextualtype |
+| 687 | Implement Arrayliteraltypeinference | spike | frontend/semantics | class: blocked | Implement Arrayliteraltypeinference |
+| 688 | Implement Arrayofexportedclass | spike | frontend/syntax | class: blocked | Implement Arrayofexportedclass |
+| 689 | Implement Arrayofsubtypeisassignabletoreadonlyarray | spike | frontend/syntax | class: blocked | Implement Arrayofsubtypeisassignabletoreadonlyarray |
+| 690 | Implement Arrayreferencewithouttypeargs | spike | frontend/syntax | class: blocked | Implement Arrayreferencewithouttypeargs |
+| 691 | Implement Arraysigchecking | spike | frontend/syntax | class: blocked | Implement Arraysigchecking |
+| 692 | Implement Arrayslice (audit reopened #692) | spike | frontend/syntax | class: blocked | Implement Arrayslice (audit reopened #692) |
+| 693 | Implement Arraytolocalestringes Name Resolution | spike | frontend/resolver | class: blocked | Implement Arraytolocalestringes Name Resolution |
+| 694 | Implement Arraytolocalestringes Unknown Unsupported | spike | frontend/syntax | class: triage-needed | Implement Arraytolocalestringes Unknown Unsupported |
+| 695 | Implement Arraytypeinsignatureofinterfaceandclass | spike | frontend/syntax | class: blocked | Implement Arraytypeinsignatureofinterfaceandclass |
+| 696 | Implement Arrayconcat (audit reopened #696) | spike | runtime/builtins | class: triage-needed | Implement Arrayconcat (audit reopened #696) |
+| 697 | Implement Arrowfunctioninconstructorargument | spike | frontend/syntax | class: triage-needed | Implement Arrowfunctioninconstructorargument |
+| 698 | Implement Arrowfunctioninexpressionstatement | spike | frontend/syntax | class: blocked | Implement Arrowfunctioninexpressionstatement |
+| 699 | Implement Arrowfunctionmissingcurlywithsemicolon | spike | frontend/syntax | class: triage-needed | Implement Arrowfunctionmissingcurlywithsemicolon |
+| 700 | Implement Arrowfunctionparsingdoesnotconfuseparenthesizedobjectforarrowhead | spike | frontend/syntax | class: blocked | Implement Arrowfunctionparsingdoesnotconfuseparenthesizedobjectforarrowhead |
+| 701 | Implement Arrowfunctionparsinggenericinobject | spike | frontend/semantics | class: blocked | Implement Arrowfunctionparsinggenericinobject |
+| 702 | Implement Arrowfunctionwithobjectliteralbody | spike | frontend/syntax | class: blocked | Implement Arrowfunctionwithobjectliteralbody |
+| 703 | Implement Arrowfunctionsmissingtokens | spike | frontend/syntax | class: blocked | Implement Arrowfunctionsmissingtokens |
+| 704 | Implement Asiabstract | spike | frontend/syntax | class: triage-needed | Implement Asiabstract |
+| 705 | Implement Asiambientfunctiondeclaration | spike | frontend/syntax | class: triage-needed | Implement Asiambientfunctiondeclaration |
+| 706 | Implement Asiarith | spike | frontend/syntax | class: triage-needed | Implement Asiarith |
+| 709 | Implement Asiines | spike | frontend/syntax | class: triage-needed | Implement Asiines |
+| 710 | Implement Asipublicprivateprotected | spike | frontend/syntax | class: blocked | Implement Asipublicprivateprotected |
+| 711 | Implement Asireturn | spike | reference/triage | class: triage-needed | Implement Asireturn |
+| 712 | Implement Assertinwrapsometypeparameter | spike | frontend/syntax | class: blocked | Implement Assertinwrapsometypeparameter |
+| 713 | Implement Assertionfunctionwildcardimport | spike | frontend/syntax | class: blocked | Implement Assertionfunctionwildcardimport |
+| 714 | Implement Assertionfunctionscannarrowbydiscriminant | spike | frontend/syntax | class: blocked | Implement Assertionfunctionscannarrowbydiscriminant |
+| 715 | Implement Assign | spike | frontend/syntax | class: blocked | Implement Assign |
+| 716 | Implement Assigntoenum | spike | frontend/syntax | class: triage-needed | Implement Assigntoenum |
+| 717 | Implement Assigntoexistingclass | spike | frontend/syntax | class: blocked | Implement Assigntoexistingclass |
+| 718 | Implement Assigntofn | spike | frontend/syntax | class: blocked | Implement Assigntofn |
+| 719 | Implement Assigntoinvalidlhs | spike | frontend/syntax | class: triage-needed | Implement Assigntoinvalidlhs |
+| 720 | Implement Assigntomodule | spike | frontend/syntax | class: blocked | Implement Assigntomodule |
+| 721 | Implement Assigntoobjecttypewithprototypeproperty | spike | frontend/resolver | class: blocked | Implement Assigntoobjecttypewithprototypeproperty |
+>>>>>>> parent of 471ace964 (chore: close 5429 as done)
 | 722 | Implement Assigntoprototype | spike | frontend/resolver | class: blocked | Implement Assigntoprototype |
 | 758 | Implement Asyncfunctionsandstrictnullchecks | spike | frontend/syntax | class: blocked | Implement Asyncfunctionsandstrictnullchecks |
 | 1174 | Implement Classblockscoping | spike | frontend/syntax | 5248 | Implement Classblockscoping |
@@ -3928,7 +4183,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 419 | Implement built-in API support | spike | runtime/builtins | see `issues/done/419-implement-builtin-api.md` |
 | 420 | Implement call expression support | spike | frontend/syntax | see `issues/done/420-implement-call-expression.md` |
 | 421 | Implement class syntax | spike | frontend/syntax | see `issues/done/421-implement-class.md` |
-| 422 | Implement class-accessor support | spike | frontend/syntax | see `issues/done/422-implement-class-accessor.md` |
 | 423 | Implement Date object support (dup) | spike | runtime/builtins | see `issues/done/423-implement-date.md` |
 | 424 | Implement declaration-emit support | spike | frontend/syntax | see `issues/done/424-implement-declaration-emit.md` |
 | 425 | Implement destructuring | spike | frontend/syntax | see `issues/done/425-implement-destructuring.md` |
@@ -3954,10 +4208,17 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 445 | Implement runtime-subset support | spike | reference/triage | see `issues/done/445-implement-runtime-subset.md` |
 | 447 | Implement spread operator | spike | frontend/syntax | see `issues/done/447-implement-spread.md` |
 | 448 | Implement string-builtin support | spike | frontend/syntax | see `issues/done/448-implement-string-builtin.md` |
+<<<<<<< HEAD
 | 449 | Implement super keyword | spike | frontend/syntax | see `issues/done/449-implement-super.md` |
 | 450 | Implement template literals | spike | frontend/syntax | see `issues/done/450-implement-template-literal.md` |
 | 451 | Implement try-catch-finally | spike | frontend/syntax | see `issues/done/451-implement-try-catch.md` |
 | 453 | Implement type-system support | spike | frontend/semantics | see `issues/done/453-implement-type-system.md` |
+||||||| 471ace964 (chore: close 5429 as done)
+| 449 | Implement super keyword | spike | frontend/syntax | see `issues/done/449-implement-super.md` |
+| 450 | Implement template literals | spike | frontend/syntax | see `issues/done/450-implement-template-literal.md` |
+| 451 | Implement try-catch-finally | spike | frontend/syntax | see `issues/done/451-implement-try-catch.md` |
+=======
+>>>>>>> parent of 471ace964 (chore: close 5429 as done)
 | 455 | Implement Apilibcheck (dup) | spike | frontend/syntax | see `issues/done/455-implement-APILibCheck.md` |
 | 456 | Implement Apisample Arrow Function (dup) | spike | frontend/syntax | see `issues/done/456-implement-APISample-arrow-function.md` |
 | 457 | Implement Apisample Import Export (dup) | spike | frontend/syntax | see `issues/done/457-implement-APISample-import-export.md` |
@@ -3970,7 +4231,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 464 | Implement Functiondeclaration Parser Syntax (dup) | spike | frontend/syntax | see `issues/done/464-implement-FunctionDeclaration-parser-syntax.md` |
 | 465 | Implement Memberaccessordeclaration (audit reopened #465) | spike | frontend/syntax | see `issues/done/465-implement-MemberAccessorDeclaration.md` |
 | 466 | Implement Parameterlist | spike | frontend/syntax | see `issues/done/466-implement-ParameterList.md` |
-| 467 | Implement Transportstream (dup) | spike | frontend/syntax | see `issues/done/467-implement-TransportStream.md` |
 | 468 | Implement Abstractclassinlocalscope (dup) | spike | frontend/syntax | see `issues/done/468-implement-abstractClassInLocalScope.md` |
 | 469 | Implement Abstractclassinlocalscopeisabstract (dup) | spike | frontend/syntax | see `issues/done/469-implement-abstractClassInLocalScopeIsAbstract.md` |
 | 470 | Implement Abstractclassunioninstantiation (dup) | spike | frontend/resolver | see `issues/done/470-implement-abstractClassUnionInstantiation.md` |
@@ -4021,7 +4281,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 515 | Implement Allowsyntheticdefaultimportscanpaintcrossmoduledeclaration (dup) | spike | frontend/syntax | see `issues/done/515-implement-allowSyntheticDefaultImportsCanPaintCrossModuleDeclaration.md` |
 | 516 | Implement Alwaysstrictmodule (audit reopened #516) | spike | frontend/syntax | see `issues/done/516-implement-alwaysStrictModule.md` |
 | 517 | Implement Alwaysstrictnoimplicitusestrict (audit reopened #517) | spike | frontend/syntax | see `issues/done/517-implement-alwaysStrictNoImplicitUseStrict.md` |
-| 518 | Implement Ambientclassdeclarationwithextends | spike | frontend/syntax | see `issues/done/518-implement-ambientClassDeclarationWithExtends.md` |
 | 519 | Implement Ambientclassdeclaredbeforebase (dup) | spike | frontend/syntax | see `issues/done/519-implement-ambientClassDeclaredBeforeBase.md` |
 | 520 | Implement Ambientconstliterals (dup) | spike | frontend/syntax | see `issues/done/520-implement-ambientConstLiterals.md` |
 | 521 | Implement Ambientenumelementinitializer | spike | frontend/syntax | see `issues/done/521-implement-ambientEnumElementInitializer.md` |
@@ -4044,10 +4303,15 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 538 | Implement Ambientwithstatements (audit reopened #538) | spike | frontend/syntax | see `issues/done/538-implement-ambientWithStatements.md` |
 | 539 | Implement Ambiguouscallswherereturntypesagree (dup) | spike | frontend/syntax | see `issues/done/539-implement-ambiguousCallsWhereReturnTypesAgree.md` |
 | 540 | Implement Ambiguousgenericassertion (dup) | spike | frontend/syntax | see `issues/done/540-implement-ambiguousGenericAssertion.md` |
+<<<<<<< HEAD
 | 541 | Implement Apilibcheck | spike | frontend/syntax | see `issues/done/541-implement-APILibCheck.md` |
 | 542 | Implement Apisample Arrow Function | spike | frontend/syntax | see `issues/done/542-implement-APISample-arrow-function.md` |
 | 543 | Implement Apisample Import Export | spike | frontend/syntax | see `issues/done/543-implement-APISample-import-export.md` |
 | 544 | Implement Apisample Jsdoc | spike | frontend/syntax | see `issues/done/544-implement-APISample-jsdoc.md` |
+||||||| 471ace964 (chore: close 5429 as done)
+| 542 | Implement Apisample Arrow Function | spike | frontend/syntax | see `issues/done/542-implement-APISample-arrow-function.md` |
+=======
+>>>>>>> parent of 471ace964 (chore: close 5429 as done)
 | 545 | Implement Arrowfunctionexpression (audit reopened #545) | spike | frontend/syntax | see `issues/done/545-implement-ArrowFunctionExpression.md` |
 | 546 | Implement Classdeclaration | spike | frontend/syntax | see `issues/done/546-implement-ClassDeclaration.md` |
 | 547 | Implement Classdeclarationwithinvalidconstonpropertydeclaration (audit reopened #547) | spike | frontend/syntax | see `issues/done/547-implement-ClassDeclarationWithInvalidConstOnPropertyDeclaration.md` |
@@ -4057,9 +4321,15 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 551 | Implement Memberaccessordeclaration (audit reopened #551) | spike | frontend/syntax | see `issues/done/551-implement-MemberAccessorDeclaration.md` |
 | 552 | Implement Parameterlist | spike | frontend/syntax | see `issues/done/552-implement-ParameterList.md` |
 | 553 | Implement Transportstream | spike | frontend/syntax | see `issues/done/553-implement-TransportStream.md` |
+<<<<<<< HEAD
 | 554 | Implement Abstractclassinlocalscope | spike | frontend/resolver | see `issues/done/554-implement-abstractClassInLocalScope.md` |
 | 555 | Implement Abstractclassinlocalscopeisabstract | spike | frontend/resolver | see `issues/done/555-implement-abstractClassInLocalScopeIsAbstract.md` |
 | 556 | Implement Abstractclassunioninstantiation | spike | frontend/resolver | see `issues/done/556-implement-abstractClassUnionInstantiation.md` |
+||||||| 471ace964 (chore: close 5429 as done)
+| 554 | Implement Abstractclassinlocalscope | spike | frontend/resolver | see `issues/done/554-implement-abstractClassInLocalScope.md` |
+| 555 | Implement Abstractclassinlocalscopeisabstract | spike | frontend/resolver | see `issues/done/555-implement-abstractClassInLocalScopeIsAbstract.md` |
+=======
+>>>>>>> parent of 471ace964 (chore: close 5429 as done)
 | 557 | Implement Abstractpropertybasics | spike | frontend/syntax | see `issues/done/557-implement-abstractPropertyBasics.md` |
 | 558 | Implement Abstractpropertyinconstructor | spike | frontend/syntax | see `issues/done/558-implement-abstractPropertyInConstructor.md` |
 | 559 | Implement Abstractpropertynegative | spike | frontend/syntax | see `issues/done/559-implement-abstractPropertyNegative.md` |
@@ -4075,7 +4345,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 569 | Implement Accessorinambientcontextes (audit reopened #569) | spike | frontend/syntax | see `issues/done/569-implement-accessorInAmbientContextES.md` |
 | 570 | Implement Accessorinferredreturntypeerrorinreturnstatement | spike | frontend/syntax | see `issues/done/570-implement-accessorInferredReturnTypeErrorInReturnStatement.md` |
 | 571 | Implement Accessorparameteraccessibilitymodifier (audit reopened #571) | spike | frontend/syntax | see `issues/done/571-implement-accessorParameterAccessibilityModifier.md` |
-| 572 | Implement Accessorwithlineterminator | spike | reference/triage | see `issues/done/572-implement-accessorWithLineTerminator.md` |
 | 573 | Implement Accessorwithoutbody (audit reopened #573) | spike | frontend/syntax | see `issues/done/573-implement-accessorWithoutBody.md` |
 | 574 | Implement Accessors | spike | frontend/syntax | see `issues/done/574-implement-accessors.md` |
 | 575 | Implement Accessorsinambientcontext (audit reopened #575) | spike | frontend/syntax | see `issues/done/575-implement-accessorsInAmbientContext.md` |
@@ -4128,6 +4397,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 622 | Implement Ambientrequirefunction | spike | frontend/syntax | see `issues/done/622-implement-ambientRequireFunction.md` |
 | 623 | Implement Ambientstatement (audit reopened #623) | spike | frontend/syntax | see `issues/done/623-implement-ambientStatement.md` |
 | 624 | Implement Ambientwithstatements (audit reopened #624) | spike | frontend/syntax | see `issues/done/624-implement-ambientWithStatements.md` |
+<<<<<<< HEAD
 | 625 | Implement Ambiguouscallswherereturntypesagree | spike | frontend/syntax | see `issues/done/625-implement-ambiguousCallsWhereReturnTypesAgree.md` |
 | 626 | Implement Ambiguousgenericassertion | spike | frontend/syntax | see `issues/done/626-implement-ambiguousGenericAssertion.md` |
 | 627 | Implement Ambiguousoverloadresolution | spike | frontend/resolver | see `issues/done/627-implement-ambiguousOverloadResolution.md` |
@@ -4140,11 +4410,19 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 635 | Implement Anonclassdeclarationemitisanon | spike | frontend/syntax | see `issues/done/635-implement-anonClassDeclarationEmitIsAnon.md` |
 | 636 | Implement Anonterface | spike | frontend/syntax | see `issues/done/636-implement-anonterface.md` |
 | 637 | Implement Anonymousclassdeclarationdoesntprintwithreadonly | spike | frontend/syntax | see `issues/done/637-implement-anonymousClassDeclarationDoesntPrintWithReadonly.md` |
+||||||| 471ace964 (chore: close 5429 as done)
+| 625 | Implement Ambiguouscallswherereturntypesagree | spike | frontend/syntax | see `issues/done/625-implement-ambiguousCallsWhereReturnTypesAgree.md` |
+| 626 | Implement Ambiguousgenericassertion | spike | frontend/syntax | see `issues/done/626-implement-ambiguousGenericAssertion.md` |
+| 630 | Implement Amddependencycommentname | spike | frontend/syntax | see `issues/done/630-implement-amdDependencyCommentName.md` |
+| 637 | Implement Anonymousclassdeclarationdoesntprintwithreadonly | spike | frontend/syntax | see `issues/done/637-implement-anonymousClassDeclarationDoesntPrintWithReadonly.md` |
+=======
+>>>>>>> parent of 471ace964 (chore: close 5429 as done)
 | 638 | Implement Anonymousclassexpression (audit reopened #638) | spike | frontend/syntax | see `issues/done/638-implement-anonymousClassExpression.md` |
 | 639 | Implement Anonymousmodules (audit reopened #639) | spike | frontend/syntax | see `issues/done/639-implement-anonymousModules.md` |
 | 640 | Implement Anyandunknownhavefalsycomponents | spike | frontend/resolver | see `issues/done/640-implement-anyAndUnknownHaveFalsyComponents.md` |
 | 641 | Implement Anyasreturntypefornewoncall (audit reopened #641) | spike | frontend/syntax | see `issues/done/641-implement-anyAsReturnTypeForNewOnCall.md` |
 | 642 | Implement Anydeclare (audit reopened #642) | spike | frontend/syntax | see `issues/done/642-implement-anyDeclare.md` |
+<<<<<<< HEAD
 | 643 | Implement Anyidenticaltoitself | spike | frontend/syntax | see `issues/done/643-implement-anyIdenticalToItself.md` |
 | 644 | Implement Anyinferenceanonymousfunctions | spike | frontend/semantics | see `issues/done/644-implement-anyInferenceAnonymousFunctions.md` |
 | 645 | Implement Argsinscope | spike | frontend/resolver | see `issues/done/645-implement-argsInScope.md` |
@@ -4171,7 +4449,23 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 666 | Implement Arraybindingpatternomittedexpressions | spike | frontend/syntax | see `issues/done/666-implement-arrayBindingPatternOmittedExpressions.md` |
 | 667 | Implement Arraybufferisviewnarrowstype | spike | frontend/resolver | see `issues/done/667-implement-arrayBufferIsViewNarrowsType.md` |
 | 668 | Implement Arraycast | spike | frontend/syntax | see `issues/done/668-implement-arrayCast.md` |
+||||||| 471ace964 (chore: close 5429 as done)
+| 648 | Implement Argumentsaspropertyname Name Resolution | spike | frontend/resolver | see `issues/done/648-implement-argumentsAsPropertyName-name-resolution.md` |
+| 651 | Implement Argumentsobjectiterator | spike | frontend/syntax | see `issues/done/651-implement-argumentsObjectIterator.md` |
+| 652 | Implement Argumentspropertynameinjsmode | spike | frontend/syntax | see `issues/done/652-implement-argumentsPropertyNameInJsMode.md` |
+| 653 | Implement Argumentsreferenceinconstructor Arguments Object | spike | frontend/syntax | see `issues/done/653-implement-argumentsReferenceInConstructor-arguments-object.md` |
+| 655 | Implement Argumentsreferenceinfunction | spike | frontend/syntax | see `issues/done/655-implement-argumentsReferenceInFunction.md` |
+| 656 | Implement Argumentsreferenceinmethod Arguments Object | spike | frontend/syntax | see `issues/done/656-implement-argumentsReferenceInMethod-arguments-object.md` |
+| 657 | Implement Argumentsreferenceinmethod Name Resolution | spike | frontend/resolver | see `issues/done/657-implement-argumentsReferenceInMethod-name-resolution.md` |
+| 658 | Implement Argumentsreferenceinobjectliteral | spike | frontend/syntax | see `issues/done/658-implement-argumentsReferenceInObjectLiteral.md` |
+| 659 | Implement Argumentsusedinclassfieldinitializerorstaticinitializationblock | spike | frontend/syntax | see `issues/done/659-implement-argumentsUsedInClassFieldInitializerOrStaticInitializationBlock.md` |
+| 660 | Implement Argumentsusedinobjectliteralproperty | spike | frontend/syntax | see `issues/done/660-implement-argumentsUsedInObjectLiteralProperty.md` |
+| 661 | Implement Arithassigntyping | spike | frontend/syntax | see `issues/done/661-implement-arithAssignTyping.md` |
+| 662 | Implement Arrayassignmenttest Import Export | spike | frontend/syntax | see `issues/done/662-implement-arrayAssignmentTest-import-export.md` |
+=======
+>>>>>>> parent of 471ace964 (chore: close 5429 as done)
 | 669 | Implement Arrayconcat (dup) | spike | frontend/syntax | see `issues/done/669-implement-arrayConcat.md` |
+<<<<<<< HEAD
 | 670 | Implement Arrayconcatmap (audit reopened #670) | spike | frontend/syntax | see `issues/done/670-implement-arrayConcatMap.md` |
 | 671 | Implement Arrayconstructors | spike | frontend/syntax | see `issues/done/671-implement-arrayConstructors.md` |
 | 672 | Implement Arraydestructuringinswitch | spike | frontend/syntax | see `issues/done/672-implement-arrayDestructuringInSwitch.md` |
@@ -4209,6 +4503,37 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 704 | Implement Asiabstract | spike | frontend/syntax | see `issues/done/704-implement-asiAbstract.md` |
 | 705 | Implement Asiambientfunctiondeclaration | spike | frontend/syntax | see `issues/done/705-implement-asiAmbientFunctionDeclaration.md` |
 | 706 | Implement Asiarith | spike | frontend/syntax | see `issues/done/706-implement-asiArith.md` |
+||||||| 471ace964 (chore: close 5429 as done)
+| 670 | Implement Arrayconcatmap (audit reopened #670) | spike | frontend/syntax | see `issues/done/670-implement-arrayConcatMap.md` |
+| 672 | Implement Arraydestructuringinswitch | spike | frontend/syntax | see `issues/done/672-implement-arrayDestructuringInSwitch.md` |
+| 673 | Implement Arrayevery | spike | frontend/syntax | see `issues/done/673-implement-arrayEvery.md` |
+| 674 | Implement Arrayfakeflatnocrashinferencedeclarations | spike | runtime/builtins | see `issues/done/674-implement-arrayFakeFlatNoCrashInferenceDeclarations.md` |
+| 675 | Implement Arrayfilter (audit reopened #675) | spike | runtime/builtins | see `issues/done/675-implement-arrayFilter.md` |
+| 676 | Implement Arrayfind (audit reopened #676) | spike | frontend/syntax | see `issues/done/676-implement-arrayFind.md` |
+| 677 | Implement Arrayflatmap (audit reopened #677) | spike | frontend/syntax | see `issues/done/677-implement-arrayFlatMap.md` |
+| 678 | Implement Arrayflatnocrashinference (audit reopened #678) | spike | frontend/semantics | see `issues/done/678-implement-arrayFlatNoCrashInference.md` |
+| 679 | Implement Arrayflatnocrashinferencedeclarations (audit reopened #679) | spike | frontend/semantics | see `issues/done/679-implement-arrayFlatNoCrashInferenceDeclarations.md` |
+| 680 | Implement Arrayfrom | spike | runtime/builtins | see `issues/done/680-implement-arrayFrom.md` |
+| 681 | Implement Arrayfromasync | spike | reference/triage | see `issues/done/681-implement-arrayFromAsync.md` |
+| 682 | Implement Arrayindexwitharrayfails | spike | frontend/resolver | see `issues/done/682-implement-arrayIndexWithArrayFails.md` |
+| 683 | Implement Arrayiterationlibes | spike | frontend/resolver | see `issues/done/683-implement-arrayIterationLibES.md` |
+| 684 | Implement Arrayliteralandarrayconstructorequivalence | spike | frontend/resolver | see `issues/done/684-implement-arrayLiteralAndArrayConstructorEquivalence.md` |
+| 685 | Implement Arrayliteralcomments | spike | frontend/syntax | see `issues/done/685-implement-arrayLiteralComments.md` |
+| 686 | Implement Arrayliteralcontextualtype | spike | frontend/syntax | see `issues/done/686-implement-arrayLiteralContextualType.md` |
+| 687 | Implement Arrayliteraltypeinference | spike | frontend/semantics | see `issues/done/687-implement-arrayLiteralTypeInference.md` |
+| 688 | Implement Arrayofexportedclass | spike | frontend/syntax | see `issues/done/688-implement-arrayOfExportedClass.md` |
+| 689 | Implement Arrayofsubtypeisassignabletoreadonlyarray | spike | frontend/syntax | see `issues/done/689-implement-arrayOfSubtypeIsAssignableToReadonlyArray.md` |
+| 690 | Implement Arrayreferencewithouttypeargs | spike | frontend/syntax | see `issues/done/690-implement-arrayReferenceWithoutTypeArgs.md` |
+| 696 | Implement Arrayconcat (audit reopened #696) | spike | runtime/builtins | see `issues/done/696-implement-arrayconcat.md` |
+| 697 | Implement Arrowfunctioninconstructorargument | spike | frontend/syntax | see `issues/done/697-implement-arrowFunctionInConstructorArgument.md` |
+| 698 | Implement Arrowfunctioninexpressionstatement | spike | frontend/syntax | see `issues/done/698-implement-arrowFunctionInExpressionStatement.md` |
+| 700 | Implement Arrowfunctionparsingdoesnotconfuseparenthesizedobjectforarrowhead | spike | frontend/syntax | see `issues/done/700-implement-arrowFunctionParsingDoesNotConfuseParenthesizedObjectForArrowHead.md` |
+| 701 | Implement Arrowfunctionparsinggenericinobject | spike | frontend/semantics | see `issues/done/701-implement-arrowFunctionParsingGenericInObject.md` |
+| 702 | Implement Arrowfunctionwithobjectliteralbody | spike | frontend/syntax | see `issues/done/702-implement-arrowFunctionWithObjectLiteralBody.md` |
+| 703 | Implement Arrowfunctionsmissingtokens | spike | frontend/syntax | see `issues/done/703-implement-arrowFunctionsMissingTokens.md` |
+| 704 | Implement Asiabstract | spike | frontend/syntax | see `issues/done/704-implement-asiAbstract.md` |
+=======
+>>>>>>> parent of 471ace964 (chore: close 5429 as done)
 | 707 | Implement Asibreak | spike | frontend/syntax | see `issues/done/707-implement-asiBreak.md` |
 | 708 | Implement Asicontinue | spike | frontend/syntax | see `issues/done/708-implement-asiContinue.md` |
 | 709 | Implement Asiines | spike | frontend/syntax | see `issues/done/709-implement-asiInES.md` |
@@ -5374,9 +5699,14 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5424 | W3: Name resolution round 2 — register more test262-encountered builtins | feature | ir | see file |
 | 5425 | W4: Expand builtin API routing for test262-encountered builtins | feature | runtime | see file |
 | 5426 | W5: Implement async/await on top of Promise runtime | feature | ir | see file |
+<<<<<<< HEAD
 | 5427 | W5: Implement class extends/super heritage | feature | ir | see file |
 | 5428 | W4: Implement Array.prototype.reduce/reduceRight WAT | feature | runtime | see file |
 | 5429 | W4: Implement Object.values/getPrototypeOf/setPrototypeOf WAT | feature | runtime | see file |
+||||||| 471ace964 (chore: close 5429 as done)
+| 5429 | W4: Implement Object.values/getPrototypeOf/setPrototypeOf WAT | feature | runtime | see file |
+=======
+>>>>>>> parent of 471ace964 (chore: close 5429 as done)
 <!-- generated:done:end -->
 
 ## Index generation contract
