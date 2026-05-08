@@ -60,3 +60,9 @@ fn build_smoke_class_super_method() {
 fn build_smoke_class_default_derived_ctor_arity() {
     assert_fixture_build_smoke("core-semantics/class-default-derived-ctor-arity.ts");
 }
+
+// binary_mvp unsupported constructs diagnostic test (issue 114)
+#[test]
+fn binary_mvp_class_unsupported_diagnostic() {
+    assert_fixture_build_smoke("classes/class-basic-build.ts");
+}
