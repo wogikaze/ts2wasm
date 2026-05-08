@@ -112,6 +112,8 @@ Do not touch:
 - [ ] `commentEmitOnParenthesizedAssertionInReturnStatement.ts` and
   `commentEmitOnParenthesizedAssertionInReturnStatement2.ts` no longer report
   issue-5005 for their entry-module `export class Foo` declarations.
+- [ ] `noCrashOnThisTypeUsage.ts` no longer reports issue-5005 for entry-module
+  `export class ObservableValue<T>`.
 - [ ] Unsupported export forms outside this slice still produce clear issue-5005 diagnostics.
 
 ## Validation
@@ -133,6 +135,14 @@ python scripts/manager.py reference-coverage tsc --path-filter reference/typescr
 Not run:
 
 - none
+
+## Additional owned buckets
+
+- `issues/done/3526-implement-noCrashOnThisTypeUsage.md`: fresh triage reports
+  `UnsupportedModule: issue-5005` for entry-module `export class
+  ObservableValue<T>`. The resolved dump also shows a later issue-289
+  constructor capture for outer `notifyListeners`, but the reported module
+  boundary is the same export-class gate owned here.
 
 ## Docs / current-state / issue sync
 
