@@ -11,12 +11,12 @@ Issue files are the source of truth for work items. The generated section below 
 |---|---:|---:|---:|
 | abi | 7 | 0 | 7 |
 | backend | 13 | 1 | 12 |
-| backend-wasm | 2 | 1 | 1 |
+| backend-wasm | 4 | 2 | 2 |
 | cli | 15 | 0 | 15 |
 | compiler | 27 | 14 | 13 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4608 | 3243 | 1365 |
+| frontend | 4607 | 3242 | 1365 |
 | harness | 1 | 0 | 1 |
 | ir | 97 | 70 | 27 |
 | issues | 4 | 0 | 4 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5306 | 3552 | 1754 |
+| total | 5307 | 3552 | 1755 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -52,7 +52,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 ├── 5003 (Meta: TypeScript Compiler Declaration Emit Coverage) [done/done] ch:100 open:89 done:11 (also ← 5001)
 5001 (Meta: TypeScript Compiler Semantic Analysis Coverage) [done/done] ch:552 open:282 done:270
 5004 (Meta: Runtime Builtins Coverage (test262) (audit reopened #5004)) [done/done] ch:24 open:3 done:21
-5005 (Meta: TypeScript Compiler Name Resolution Coverage) [done/done] ch:396 open:327 done:69
+5005 (Meta: TypeScript Compiler Name Resolution Coverage) [done/done] ch:395 open:326 done:69
 ├── 5006 (Meta: TypeScript Compiler Scope Analysis Coverage) [done/done] ch:28 open:18 done:10
 ├── 5007 (Meta: TypeScript Compiler Module Resolution Coverage (audit reopened #5007)) [done/done] ch:20 open:12 done:8
 ```
@@ -69,7 +69,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 1 | 5000 | Meta: TypeScript Compiler Parser Syntax Coverage | done | design | frontend/syntax | P1 | - | 444 | 338 | 106 |
 | 2 | 5001 | Meta: TypeScript Compiler Semantic Analysis Coverage | done | done | frontend/semantics | P1 | - | 552 | 282 | 270 |
 | 3 | 5004 | Meta: Runtime Builtins Coverage (test262) (audit reopened #5004) | done | done | runtime/builtins | P1 | - | 24 | 3 | 21 |
-| 4 | 5005 | Meta: TypeScript Compiler Name Resolution Coverage | done | done | frontend/resolver | P1 | - | 396 | 327 | 69 |
+| 4 | 5005 | Meta: TypeScript Compiler Name Resolution Coverage | done | done | frontend/resolver | P1 | - | 395 | 326 | 69 |
 | 5 | 5002 | Meta: TypeScript Compiler Type System Coverage | done | done | frontend/semantics | P1 | 5000, 5005 | 223 | 199 | 24 |
 | 6 | 5003 | Meta: TypeScript Compiler Declaration Emit Coverage | done | done | frontend/syntax | P2 | 5000, 5001 | 100 | 89 | 11 |
 | 7 | 5006 | Meta: TypeScript Compiler Scope Analysis Coverage | done | done | frontend/resolver | P2 | 5005 | 28 | 18 | 10 |
@@ -424,6 +424,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5469 | Support named exports of namespace imports in dependency modules | feature | compiler/module-graph | implementation-ready | P1 |  | dependency-module named export validation does not recognize namespace |
 | 5470 | Support array spread over array fallback expressions | feature | ir/lowering | implementation-ready | P1 |  | the array spread lowering recognizes dense array literals and dense |
 | 5471 | Report constructor argument type diagnostics | feature | frontend/semantics | implementation-ready | P1 |  | class constructor calls can build even when TypeScript reports an |
+| 5472 | Declare current_module_id for virtual file inits | bug | backend-wasm | implementation-ready | P1 |  | multi-file WAT init code can reference `$current_module_id` without |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -2378,7 +2379,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 3302 | Implement Modulealiasasfunctionargument | spike | frontend/syntax | class: blocked | Implement Modulealiasasfunctionargument |
 | 3303 | Implement Modulealiasinterface | spike | frontend/syntax | class: blocked | Implement Modulealiasinterface |
 | 3304 | Implement Moduleandinterfacesharingname | spike | frontend/syntax | class: blocked | Implement Moduleandinterfacesharingname |
-| 3533 | Implement Noimplicitanyandprivatememberswithouttypeannotations | spike | frontend/resolver | class: blocked | Implement Noimplicitanyandprivatememberswithouttypeannotations |
 | 3534 | Implement Noimplicitanydestructuringinprivatemethod | spike | frontend/syntax | class: blocked | Implement Noimplicitanydestructuringinprivatemethod |
 | 3535 | Implement Noimplicitanydestructuringvardeclaration | spike | frontend/syntax | class: blocked | Implement Noimplicitanydestructuringvardeclaration |
 | 3536 | Implement Noimplicitanyforin | spike | frontend/syntax | class: blocked | Implement Noimplicitanyforin |
@@ -5266,6 +5266,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 3530 | Implement Noerrorusingimportexportmoduleaugmentationindeclarationfile | spike | frontend/parser | see `issues/done/3530-implement-noErrorUsingImportExportModuleAugmentationInDeclarationFile.md` |
 | 3531 | Implement Noerrorsincallback | spike | frontend/semantics | see `issues/done/3531-implement-noErrorsInCallback.md` |
 | 3532 | Implement Noexcessivestackdeptherror | spike | frontend/resolver | see `issues/done/3532-implement-noExcessiveStackDepthError.md` |
+| 3533 | Implement Noimplicitanyandprivatememberswithouttypeannotations | spike | backend-wasm | see `issues/done/3533-implement-noImplicitAnyAndPrivateMembersWithoutTypeAnnotations.md` |
 | 3690 | Implement Optionaltupleelementsandundefined | spike | reference/triage | see `issues/done/3690-implement-optionalTupleElementsAndUndefined.md` |
 | 3996 | Implement Compiler (dup) | spike | frontend/syntax | see `issues/done/3996-implement-reference-typescript-tests-cases-compiler.md` |
 | 4210 | Implement Splicetuples | spike | frontend/resolver | see `issues/done/4210-implement-spliceTuples.md` |
