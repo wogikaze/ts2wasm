@@ -2302,6 +2302,24 @@ impl<'a> Resolver<'a> {
                         span: None,
                     });
                 }
+                if class_name == "Promise" {
+                    if args.is_empty() {
+                        return Err(Diagnostic {
+                            code: DiagCode::UnsupportedSyntax,
+                            message: "issue-5422: new Promise() without executor is not supported".to_owned(),
+                            span: None,
+                        });
+                    }
+                    let mut lowered_args = Vec::new();
+                    for arg in args {
+                        lowered_args.push(self.lower_expr(arg)?);
+                    }
+                    return Ok(LoweredExpr::RuntimeCall {
+                        runtime_fn: "PromiseConstructor".to_owned(),
+                        args: lowered_args,
+                    
+                        span: Span::generated("runtime_call"),});
+                }
                 if let Some(constructor) = BuiltinErrorConstructor::from_name(class_name) {
                     let message = match args.first() {
                         Some(message) => LoweredExpr::RuntimeCall {

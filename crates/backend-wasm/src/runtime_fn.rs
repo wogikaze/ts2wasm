@@ -403,6 +403,16 @@ pub(crate) enum RuntimeFn {
     /// ECMAScript IteratorNext(iterator) — calls iterator.next() and returns
     /// the result object { value, done }.
     IteratorNext,
+    /// Promise constructor — creates a promise object with initial state=pending
+    PromiseConstructor,
+    /// Promise.resolve(value) — creates a fulfilled promise
+    PromiseResolve,
+    /// Promise.reject(reason) — creates a rejected promise
+    PromiseReject,
+    /// Promise.prototype.then(onFulfilled, onRejected) — registers callbacks
+    PromiseThen,
+    /// Promise.prototype.catch(onRejected) — registers rejection callback
+    PromiseCatch,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Ord, PartialOrd)]
@@ -875,6 +885,11 @@ pub(crate) fn runtime_fn_from_name(name: &str) -> Option<RuntimeFn> {
         "Unescape" => Some(RuntimeFn::Unescape),
         "GetIterator" => Some(RuntimeFn::GetIterator),
         "IteratorNext" => Some(RuntimeFn::IteratorNext),
+        "PromiseConstructor" => Some(RuntimeFn::PromiseConstructor),
+        "PromiseResolve" => Some(RuntimeFn::PromiseResolve),
+        "PromiseReject" => Some(RuntimeFn::PromiseReject),
+        "PromiseThen" => Some(RuntimeFn::PromiseThen),
+        "PromiseCatch" => Some(RuntimeFn::PromiseCatch),
         _ => None,
     }
 }

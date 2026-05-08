@@ -8,6 +8,7 @@ mod runtime_builtins_host;
 mod runtime_collections;
 mod runtime_core;
 mod runtime_dates;
+mod runtime_promise;
 mod runtime_fn;
 mod runtime_link_plan;
 mod runtime_objects;

@@ -64,6 +64,13 @@ pub(super) fn resolve_method_to_runtime_fn(object: &ResolvedExpr, method: &str) 
                 _ => None,
             };
         }
+        if name == "Promise" {
+            return match method {
+                "resolve" => Some("PromiseResolve".to_owned()),
+                "reject" => Some("PromiseReject".to_owned()),
+                _ => None,
+            };
+        }
     }
     match method {
         "concat" => Some("Concat".to_owned()),
@@ -162,6 +169,9 @@ pub(super) fn collection_method_runtime_fn(class_name: &str, method: &str) -> Op
         ("Array", "unshift") => Some("ArrayUnshift"),
         ("Array", "splice") => Some("ArraySplice"),
         ("Object", "valueOf") => Some("ValueOf"),
+        // Promise prototype methods
+        ("Promise", "then") => Some("PromiseThen"),
+        ("Promise", "catch") => Some("PromiseCatch"),
         // Typed array methods
         _ if is_typed_array_class(class_name) => match method {
             "subarray" => Some("TypedArraySubarray"),
