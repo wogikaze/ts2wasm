@@ -775,4 +775,35 @@ mod tests {
         assert!(err.message.contains("issue-289"));
         assert!(err.message.contains("references outer local `x`"));
     }
+
+    #[test]
+    fn resolves_global_builtins_issue_5412() {
+        let builtin_names = [
+            "Proxy", "WeakMap", "WeakSet",
+            "ArrayBuffer", "SharedArrayBuffer", "DataView",
+            "Atomics", "Intl",
+            "EvalError", "URIError", "AggregateError",
+            "Int8Array", "Uint8Array", "Uint8ClampedArray",
+            "Int16Array", "Uint16Array",
+            "Int32Array", "Uint32Array",
+            "BigInt64Array", "BigUint64Array",
+            "Float32Array", "Float64Array",
+            "encodeURIComponent", "decodeURIComponent",
+        ];
+        for name in builtin_names {
+            let program = vec![Stmt::Expr {
+                expr: Expr::Ident {
+                    name: name.to_string(),
+                    span: Span { start: 0, end: name.len() },
+                },
+                span: Span { start: 0, end: name.len() },
+            }];
+            let result = name_resolver::resolve_names(&program);
+            assert!(
+                result.is_ok(),
+                "expected global builtin `{name}` to resolve, got: {:?}",
+                result.unwrap_err().message
+            );
+        }
+    }
 }
