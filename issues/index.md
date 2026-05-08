@@ -12,23 +12,23 @@ Issue files are the source of truth for work items. The generated section below 
 | abi | 7 | 0 | 7 |
 | backend | 18 | 1 | 17 |
 | backend-wasm | 2 | 0 | 2 |
-| cli | 17 | 1 | 16 |
+| cli | 17 | 0 | 17 |
 | compiler | 7 | 2 | 5 |
 | coverage | 45 | 2 | 43 |
 | docs | 5 | 0 | 5 |
-| frontend | 4562 | 3707 | 855 |
+| frontend | 4562 | 3706 | 856 |
 | harness | 1 | 0 | 1 |
-| ir | 77 | 13 | 64 |
+| ir | 77 | 12 | 65 |
 | issues | 5 | 0 | 5 |
 | other | 2 | 0 | 2 |
 | parser | 1 | 0 | 1 |
 | reference | 212 | 160 | 52 |
-| runtime | 275 | 86 | 189 |
+| runtime | 275 | 83 | 192 |
 | scripts | 3 | 0 | 3 |
 | security | 1 | 0 | 1 |
 | tests | 8 | 0 | 8 |
-| wasi | 5 | 1 | 4 |
-| total | 5253 | 3973 | 1280 |
+| wasi | 5 | 0 | 5 |
+| total | 5253 | 3966 | 1287 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -420,14 +420,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5408 | Parse bare global augmentation blocks | bug | frontend/syntax | implementation-ready | P1 |  | bare TypeScript global augmentation syntax falls through to runtime |
 | 5409 | Parse function expression statements in nested blocks | feature | frontend/syntax | implementation-ready | P2 | 5000 | capturedLetConstInLoop parser tests reject `(function() { return x })` |
 | 5410 | W5: test262 coverage ramp from 100 to 500 executed | feature | coverage | design-ready | P1 |  | W5: test262 coverage ramp from 100 to 500 executed |
-| 5411 | W2: Implement RegExp literal flags parser support | feature | frontend | implementation-ready | P1 |  | RegExp literal flags (g,i,m,s,u,y,d) not fully parsed. |
-| 5412 | W3: Register global builtins in name resolver | feature | ir | implementation-ready | P1 |  | UnresolvedName = 120 at test262 limit 500; ~120 are global builtins not in resolver. |
-| 5413 | W1: Implement WASI proc_exit and stdin edge cases | feature | wasi | implementation-ready | P1 |  | WASI proc_exit not wired; stdin edge cases untested. |
-| 5414 | W4: Implement String.replace with RegExp callback semantics | feature | runtime | implementation-ready | P1 |  | String.replace/replaceAll with RegExp callback is not semantically equivalent to Node.js. |
-| 5415 | W4: Implement Array iteration methods with thisArg correctness | feature | runtime | implementation-ready | P1 |  | Array iteration methods lack semantic_diff parity for thisArg and edge cases. |
-| 5416 | W4: Implement Object.assign/defineProperty runtime descriptor handling | feature | runtime | implementation-ready | P1 |  | Object.assign/defineProperty runtime descriptor semantics not fully Node-compatible. |
 | 5417 | W6: test262 coverage ramp from 500 to 2000 | feature | coverage | implementation-ready | P1 |  | test262 executed=500/53445. Gate D requires >= 2000. |
-| 5418 | W7: Expand host-deny test matrix and WASI-only audit | feature | cli | implementation-ready | P2 |  | Host-deny coverage limited to 12 tests; WASI-only audit missing. |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -5365,6 +5358,13 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5385 | Parse arrow body assignment expressions | feature | frontend/syntax | see `issues/done/5385-parse-arrow-body-assignment-expressions.md` |
 | 5386 | Bind DOM setTimeout global | feature | frontend/resolver | see `issues/done/5386-bind-dom-settimeout-global.md` |
 | 5387 | Parse generator function expressions in const initializers | feature | frontend/syntax | see `issues/done/5387-parse-generator-function-expressions-in-const-initializers.md` |
+| 5411 | W2: Implement RegExp literal flags parser support | feature | frontend | see file |
+| 5412 | W3: Register global builtins in name resolver | feature | ir | see file |
+| 5413 | W1: Implement WASI proc_exit and stdin edge cases | feature | wasi | see file |
+| 5414 | W4: Implement String.replace with RegExp callback semantics | feature | runtime | see file |
+| 5415 | W4: Implement Array iteration methods with thisArg correctness | feature | runtime | see file |
+| 5416 | W4: Implement Object.assign/defineProperty runtime descriptor handling | feature | runtime | see file |
+| 5418 | W7: Expand host-deny test matrix and WASI-only audit | feature | cli | see file |
 <!-- generated:done:end -->
 
 ## Index generation contract
