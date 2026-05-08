@@ -21,13 +21,13 @@ Issue files are the source of truth for work items. The generated section below 
 | ir | 92 | 69 | 23 |
 | issues | 4 | 0 | 4 |
 | parser | 1 | 0 | 1 |
-| reference | 215 | 143 | 72 |
+| reference | 215 | 142 | 73 |
 | runtime | 263 | 82 | 181 |
 | scripts | 3 | 1 | 2 |
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5298 | 3587 | 1711 |
+| total | 5298 | 3586 | 1712 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -2370,7 +2370,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 3302 | Implement Modulealiasasfunctionargument | spike | frontend/syntax | class: blocked | Implement Modulealiasasfunctionargument |
 | 3303 | Implement Modulealiasinterface | spike | frontend/syntax | class: blocked | Implement Modulealiasinterface |
 | 3304 | Implement Moduleandinterfacesharingname | spike | frontend/syntax | class: blocked | Implement Moduleandinterfacesharingname |
-| 3490 | Implement Nestedthiscontainer | spike | reference/triage | class: triage-needed | Implement Nestedthiscontainer |
 | 3491 | Implement Nestedtypevariableinfersliteral | spike | frontend/syntax | class: triage-needed | Implement Nestedtypevariableinfersliteral |
 | 3492 | Implement Nestedunaryexpressionhang | spike | frontend/syntax | class: triage-needed | Implement Nestedunaryexpressionhang |
 | 3493 | Implement Neverasdiscriminanttype | spike | frontend/syntax | class: blocked | Implement Neverasdiscriminanttype |
@@ -5258,6 +5257,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 3487 | Implement Nestedredeclarationines | spike | frontend/syntax | see `issues/done/3487-implement-nestedRedeclarationInES.md` |
 | 3488 | Implement Nestedself | spike | frontend/syntax | see `issues/done/3488-implement-nestedSelf.md` |
 | 3489 | Implement Nestedsupercallemit | spike | frontend/resolver | see `issues/done/3489-implement-nestedSuperCallEmit.md` |
+| 3490 | Implement Nestedthiscontainer | spike | reference/triage | see `issues/done/3490-implement-nestedThisContainer.md` |
 | 3690 | Implement Optionaltupleelementsandundefined | spike | reference/triage | see `issues/done/3690-implement-optionalTupleElementsAndUndefined.md` |
 | 3996 | Implement Compiler (dup) | spike | frontend/syntax | see `issues/done/3996-implement-reference-typescript-tests-cases-compiler.md` |
 | 4210 | Implement Splicetuples | spike | frontend/resolver | see `issues/done/4210-implement-spliceTuples.md` |

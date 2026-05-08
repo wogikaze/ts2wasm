@@ -142,6 +142,9 @@ Additional superseded buckets:
   the same issue-062e boundary for an object-literal accessor:
   `get a() { return this.prop; }`. `commentsOnObjectLiteral4.ts` from the same
   bucket is already a build pass.
+- `issues/done/3490-implement-nestedThisContainer.md` reaches the same
+  issue-062e boundary for `foo.bar = function () { const self = this; }`;
+  TypeScript accepts it with diagnostics `[]`.
 
 ## Completion Evidence
 
