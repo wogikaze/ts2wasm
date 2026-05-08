@@ -18,16 +18,16 @@ Issue files are the source of truth for work items. The generated section below 
 | docs | 2 | 0 | 2 |
 | frontend | 4597 | 3303 | 1294 |
 | harness | 1 | 0 | 1 |
-| ir | 88 | 65 | 23 |
+| ir | 89 | 66 | 23 |
 | issues | 4 | 0 | 4 |
 | parser | 1 | 0 | 1 |
-| reference | 215 | 144 | 71 |
+| reference | 215 | 143 | 72 |
 | runtime | 263 | 82 | 181 |
 | scripts | 3 | 1 | 2 |
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5286 | 3610 | 1676 |
+| total | 5287 | 3610 | 1677 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -404,6 +404,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5449 | Lower anonymous class expressions in return statements | feature | ir/compiler | implementation-ready | P2 |  | `narrowedConstInMethod.ts` parses and resolves, then lower_program |
 | 5450 | Support function-typed parameter local calls | feature | ir/lowering | implementation-ready | P1 |  | `narrowingAssignmentReadonlyRespectsAssertion.ts` parses and resolves, |
 | 5451 | Classify number toString after typeof switch narrowing | feature | ir/lowering | implementation-ready | P1 |  | `narrowingByTypeofInSwitch.ts` parses and resolves, then |
+| 5452 | Lower nested object rest binding from narrowed source | feature | ir/lowering | implementation-ready | P2 |  | `narrowingDestructuring.ts` parses and resolves, then lower_program |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -2358,7 +2359,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 3302 | Implement Modulealiasasfunctionargument | spike | frontend/syntax | class: blocked | Implement Modulealiasasfunctionargument |
 | 3303 | Implement Modulealiasinterface | spike | frontend/syntax | class: blocked | Implement Modulealiasinterface |
 | 3304 | Implement Moduleandinterfacesharingname | spike | frontend/syntax | class: blocked | Implement Moduleandinterfacesharingname |
-| 3455 | Implement Narrowingdestructuring | spike | reference/triage | class: triage-needed | Implement Narrowingdestructuring |
 | 3456 | Implement Narrowingincaseclauseaftercaseclausewithreturn | spike | frontend/syntax | class: blocked | Implement Narrowingincaseclauseaftercaseclausewithreturn |
 | 3457 | Implement Narrowingmutualsubtypes | spike | frontend/syntax | class: blocked | Implement Narrowingmutualsubtypes |
 | 3458 | Implement Narrowingnoinfer | spike | frontend/semantics | class: blocked | Implement Narrowingnoinfer |
@@ -5246,6 +5246,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 3452 | Implement Narrowingassignmentreadonlyrespectsassertion | spike | frontend/syntax | see `issues/done/3452-implement-narrowingAssignmentReadonlyRespectsAssertion.md` |
 | 3453 | Implement Narrowingbytypeofinswitch | spike | frontend/syntax | see `issues/done/3453-implement-narrowingByTypeofInSwitch.md` |
 | 3454 | Implement Narrowingconstrainedtypeparameter | spike | frontend/syntax | see `issues/done/3454-implement-narrowingConstrainedTypeParameter.md` |
+| 3455 | Implement Narrowingdestructuring | spike | reference/triage | see `issues/done/3455-implement-narrowingDestructuring.md` |
 | 3690 | Implement Optionaltupleelementsandundefined | spike | reference/triage | see `issues/done/3690-implement-optionalTupleElementsAndUndefined.md` |
 | 3996 | Implement Compiler (dup) | spike | frontend/syntax | see `issues/done/3996-implement-reference-typescript-tests-cases-compiler.md` |
 | 4210 | Implement Splicetuples | spike | frontend/resolver | see `issues/done/4210-implement-spliceTuples.md` |
