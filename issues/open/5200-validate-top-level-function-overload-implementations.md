@@ -8,7 +8,7 @@ priority: P1
 depends_on: []
 blocks: []
 created: 2026-05-06
-updated: 2026-05-07
+updated: 2026-05-08
 ---
 
 ## Summary
@@ -203,6 +203,15 @@ issue 5199.
   `function callb(a) { }`; resolver reports
   `DuplicateLocal: duplicate local variable: callb at 82..90` before TypeScript's
   intended lambda contextual member diagnostics on `a.length`.
+
+2026-05-08 additional superseded bucket:
+
+- `issues/done/3539-implement-noImplicitAnyFunctions.md` reaches the same
+  top-level overload grouping boundary. The source has two bodyless
+  `function f6(...)` overload signatures followed by one implementation
+  `function f6(x: string, y) { return null; }`; validation reports
+  `DuplicateFunction: duplicate function definition: f6 at 254..262`, while the
+  TypeScript oracle reports no diagnostics.
 
 ## Completion evidence
 
