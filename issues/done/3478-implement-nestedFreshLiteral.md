@@ -3,17 +3,22 @@ id: 3478
 title: "Implement Nestedfreshliteral"
 type: spike
 area: frontend/syntax
-class: triage-needed
+class: done
 priority: P1
 depends_on: []
 blocks: []
 created: 2026-05-01
-updated: 2026-05-01
+updated: 2026-05-08
 ---
 
 ## Summary
 
 Triage nestedFreshLiteral across 1 failing reference test cases and split this bucket into implementation-ready child issues.
+
+Closed after refreshed evidence showed this generated parser-syntax bucket is
+stale. The representative now builds successfully; the remaining behavior is a
+semantic parity gap for nested object-literal excess-property checking, split to
+`issues/open/5459-check-nested-object-literal-excess-properties-through-contextual-types.md`.
 
 ## Problem
 
@@ -43,10 +48,10 @@ This generated bucket is either split into implementation-ready child issues or 
 
 In scope:
 
-- [ ] Inspect the smart triage report below
-- [ ] Confirm whether existing open/done issues already cover this bucket
-- [ ] Split one feature family, one observable behavior, or one fixed reference window into child issues
-- [ ] Preserve exact reproduction commands and representative AST/diagnostic evidence in each child issue
+- [x] Inspect the smart triage report below
+- [x] Confirm whether existing open/done issues already cover this bucket
+- [x] Split one feature family, one observable behavior, or one fixed reference window into child issues
+- [x] Preserve exact reproduction commands and representative AST/diagnostic evidence in each child issue
 
 Out of scope:
 
@@ -68,10 +73,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] Duplicate candidates below are confirmed as no-match or this issue is superseded
-- [ ] At least one child issue contains an exact `mise run reference-triage -- ...` command
-- [ ] Child issue includes failing path, diagnostic code, source context, visible symbols, and parser/TypeScript AST evidence
-- [ ] Child issue acceptance names the exact fixture/reference path and diagnostic/stdout change
+- [x] Duplicate candidates below are confirmed as no-match or this issue is superseded
+- [x] At least one child issue contains an exact `mise run reference-triage -- ...` command
+- [x] Child issue includes failing path, diagnostic code, source context, visible symbols, and parser/TypeScript AST evidence
+- [x] Child issue acceptance names the exact fixture/reference path and diagnostic/stdout change
 
 ## Validation
 
@@ -98,15 +103,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] updated: `current-state.md` (repo root)
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] split to `issues/open/5459-check-nested-object-literal-excess-properties-through-contextual-types.md`
 
 ## Notes
 
@@ -128,16 +133,20 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- `...`
+- this commit
 
 Validation result:
 
 ```text
-command:
-result:
-date:
+command: env TS2WASM_BINARY=/tmp/ts2wasm-issue-blockers-target/debug/ts2wasm python scripts/manager.py reference-coverage tsc --path-filter reference/typescript/tests/cases/compiler/nestedFreshLiteral.ts --detail --no-dashboard-data
+result: pass; executed=1 build_pass=1 unsupported=0 semantic_enabled=0
+date: 2026-05-08
+
+command: env TS2WASM_BINARY=/tmp/ts2wasm-issue-blockers-target/debug/ts2wasm python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/nestedFreshLiteral.ts
+result: pass; BuildPass / pass; TypeScript oracle reports TS2561 for nested property `colour`
+date: 2026-05-08
 ```
 
 Remaining risks:
 
-- none
+- Follow-up semantic parity implementation remains open in issue 5459.

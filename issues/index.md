@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 25 | 13 | 12 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4600 | 3284 | 1316 |
+| frontend | 4601 | 3284 | 1317 |
 | harness | 1 | 0 | 1 |
 | ir | 92 | 69 | 23 |
 | issues | 4 | 0 | 4 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5293 | 3594 | 1699 |
+| total | 5294 | 3594 | 1700 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -411,6 +411,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 5456 | Support array spread over narrowed array-typed parameters | feature | ir/lowering | implementation-ready | P1 |  | `narrowingTypeofUndefined2.ts` parses, resolves, and lowers through |
 | 5457 | Support String.prototype.match with string pattern argument | feature | ir/lowering | implementation-ready | P1 |  | `narrowingWithNonNullExpression.ts` parses the non-null and optional |
 | 5458 | Allow block-scoped shadowing in nested blocks and switch cases | feature | frontend/resolver | implementation-ready | P2 |  | `nestedBlockScopedBindings11.ts` parses successfully, but AST |
+| 5459 | Check nested object literal excess properties through contextual types | feature | frontend/semantics | implementation-ready | P2 |  | `nestedFreshLiteral.ts` now builds successfully in ts2wasm, so the old |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -2365,7 +2366,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 3302 | Implement Modulealiasasfunctionargument | spike | frontend/syntax | class: blocked | Implement Modulealiasasfunctionargument |
 | 3303 | Implement Modulealiasinterface | spike | frontend/syntax | class: blocked | Implement Modulealiasinterface |
 | 3304 | Implement Moduleandinterfacesharingname | spike | frontend/syntax | class: blocked | Implement Moduleandinterfacesharingname |
-| 3478 | Implement Nestedfreshliteral | spike | frontend/syntax | class: triage-needed | Implement Nestedfreshliteral |
 | 3479 | Implement Nestedgenericspreadinference | spike | frontend/semantics | class: blocked | Implement Nestedgenericspreadinference |
 | 3480 | Implement Nestedglobalnamespaceinclass | spike | frontend/syntax | class: triage-needed | Implement Nestedglobalnamespaceinclass |
 | 3481 | Implement Nestedindexer | spike | frontend/syntax | class: triage-needed | Implement Nestedindexer |
@@ -5253,6 +5253,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 3475 | Implement Nestedblockscopedbindings | spike | frontend/resolver | see `issues/done/3475-implement-nestedBlockScopedBindings.md` |
 | 3476 | Implement Nestedcallbackerrornotflattened | spike | frontend/resolver | see `issues/done/3476-implement-nestedCallbackErrorNotFlattened.md` |
 | 3477 | Implement Nestedexcesspropertychecking | spike | frontend/syntax | see `issues/done/3477-implement-nestedExcessPropertyChecking.md` |
+| 3478 | Implement Nestedfreshliteral | spike | frontend/syntax | see `issues/done/3478-implement-nestedFreshLiteral.md` |
 | 3690 | Implement Optionaltupleelementsandundefined | spike | reference/triage | see `issues/done/3690-implement-optionalTupleElementsAndUndefined.md` |
 | 3996 | Implement Compiler (dup) | spike | frontend/syntax | see `issues/done/3996-implement-reference-typescript-tests-cases-compiler.md` |
 | 4210 | Implement Splicetuples | spike | frontend/resolver | see `issues/done/4210-implement-spliceTuples.md` |
