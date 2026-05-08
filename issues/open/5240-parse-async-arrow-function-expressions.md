@@ -170,6 +170,23 @@ services: {
 TypeScript accepts the source with no diagnostics and records the property
 initializer as an `ArrowFunction`.
 
+Generated bucket
+`issues/done/3554-implement-noImplicitReturnsExclusions.md` was folded on
+2026-05-08 after `noImplicitReturnsExclusions.ts` reported the same raw
+`unsupported expression: Async` failure for a call argument:
+
+```ts
+registerCommand("_references-view.showHistoryItem", async (item) => {
+  if (item instanceof HistoryItem) {
+    return executeCommand("vscode.open", item.input.location.uri);
+  }
+});
+```
+
+TypeScript accepts the source with no diagnostics. The current compiler reaches
+the prior function declarations and `registerCommand` declaration, then fails
+before constructing the async arrow argument AST.
+
 ## Completion evidence
 
 Fill only when moving to `done/`.
