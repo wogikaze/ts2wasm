@@ -132,3 +132,9 @@ python scripts/manager.py reference-coverage tsc --path-filter reference/typescr
 Split from `issues/done/1350-implement-commentOnExportEnumDeclaration.md`.
 Related module syntax bucket: `issues/open/432-implement-import-export.md`.
 Related broad enum bucket: `issues/open/428-implement-enum.md`.
+
+Additional superseded buckets:
+
+- `issues/done/3493-implement-neverAsDiscriminantType.md` reaches the same
+  issue-055 boundary at `export enum GatewayOpcode { ... }`; the earlier
+  `never` discriminant code parses before this export blocker.
