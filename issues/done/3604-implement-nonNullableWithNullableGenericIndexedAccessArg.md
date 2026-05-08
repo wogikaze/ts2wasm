@@ -219,7 +219,7 @@ reference/typescript/tests/cases/compiler/nonNullableWithNullableGenericIndexedA
 
 Commits:
 
-- pending local commit
+- b6c961191
 
 Validation result:
 
