@@ -25,7 +25,6 @@ open:
     updated: 2026-05-09
     owner: human
     roadmap: W4
-    ready: true
     acceptance:
       - "cargo nextest run -p ts2wasm-cli --test m6_builtin_methods"
     non_goals:
@@ -44,7 +43,6 @@ open:
     updated: 2026-05-09
     owner: human
     roadmap: W4
-    ready: true
     acceptance:
       - "cargo nextest run -p ts2wasm-cli --test m6_builtin_methods"
     non_goals:
@@ -64,7 +62,6 @@ open:
     updated: 2026-05-09
     owner: human
     roadmap: W7
-    ready: true
     acceptance:
       - "cargo nextest run -p ts2wasm-cli --test m11_host_deny"
     evidence: null
@@ -81,7 +78,6 @@ open:
     updated: 2026-05-09
     owner: human
     roadmap: W2
-    ready: true
     acceptance:
       - "cargo nextest run -p ts2wasm-cli --test m6_builtin_methods"
     non_goals:
@@ -101,7 +97,6 @@ open:
     updated: 2026-05-09
     owner: human
     roadmap: W2
-    ready: true
     acceptance:
       - "cargo nextest run -p ts2wasm-cli --test m6_builtin_methods"
     evidence: null
@@ -118,7 +113,6 @@ open:
     updated: 2026-05-09
     owner: human
     roadmap: W2
-    ready: true
     acceptance:
       - "cargo nextest run -p ts2wasm-cli --test m6_builtin_methods"
     non_goals:
@@ -138,7 +132,6 @@ open:
     updated: 2026-05-09
     owner: human
     roadmap: W0
-    ready: true
     acceptance:
       - "cargo nextest run -p ts2wasm-cli --test m8_oop_classes binary_mvp_class_unsupported_diagnostic"
     non_goals:
@@ -158,7 +151,6 @@ open:
     updated: 2026-05-09
     owner: human
     roadmap: W0
-    ready: true
     acceptance:
       - "cargo nextest run -p ts2wasm-cli --test m1_iwasm abi_bridge_mismatch_detection"
     non_goals:
@@ -177,7 +169,6 @@ open:
     updated: 2026-05-09
     owner: human
     roadmap: W0
-    ready: true
     acceptance:
       - "cargo nextest run -p ts2wasm-cli --test m1_iwasm runtime_value_representation_smoke"
     non_goals:
@@ -196,7 +187,6 @@ open:
     updated: 2026-05-09
     owner: human
     roadmap: W7
-    ready: true
     acceptance:
       - "grep -q 'capability' docs/12-coding-standard.md"
     evidence: null
