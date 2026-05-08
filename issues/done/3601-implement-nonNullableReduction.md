@@ -224,7 +224,7 @@ reference/typescript/tests/cases/compiler/nonNullableReduction.ts: build_pass
 
 Commits:
 
-- pending local commit
+- 6a72c85a9
 
 Validation result:
 
