@@ -8,7 +8,7 @@ priority: P1
 depends_on: []
 blocks: []
 created: 2026-05-07
-updated: 2026-05-07
+updated: 2026-05-08
 ---
 
 ## Summary
@@ -108,6 +108,8 @@ Do not touch:
 ## Acceptance criteria
 
 - [ ] `commentsEnums.ts` no longer reports `UnresolvedName` for `Colors` at `Colors.Cornflower`.
+- [ ] `nestedExcessPropertyChecking.ts` no longer reports `UnresolvedName` for
+  `E` at `E.A`.
 - [ ] A focused fixture covers `enum Colors { Cornflower, FancyPink }` followed by `Colors.Cornflower`.
 - [ ] Remaining unsupported enum behavior reports an enum-specific source-spanned diagnostic instead of a generic unresolved-name diagnostic.
 
@@ -158,6 +160,15 @@ Related but not duplicates:
 - `issues/open/5184-parse-const-enum-declarations.md` covers `const enum`.
 - `issues/open/5277-parse-export-enum-declarations-to-enum-boundary.md` covers
   `export enum`.
+
+2026-05-08 fold-in:
+
+- `issues/done/3477-implement-nestedExcessPropertyChecking.md` reaches the same
+  plain enum binding boundary for `enum E { A = "A" }` followed by
+  `let x: { nope?: any } = E.A;`.
+- Current diagnostic: `UnresolvedName: unresolved name: \`E\` at 363..364`.
+- TypeScript oracle reports the later TS2559 excess-property/type
+  compatibility diagnostic after resolving `E.A`.
 
 ## Completion evidence
 
