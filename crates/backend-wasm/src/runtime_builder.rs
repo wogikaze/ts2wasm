@@ -248,6 +248,7 @@ impl WatEmitter<'_> {
                 RuntimeFn::PromiseReject => self.emit_promise_reject(wat),
                 RuntimeFn::PromiseThen => self.emit_promise_then(wat),
                 RuntimeFn::PromiseCatch => self.emit_promise_catch(wat),
+                RuntimeFn::PromiseGetValue => self.emit_value_to_string_into(wat),
                 RuntimeFn::ArrayIndexOf => self.emit_array_index_of(wat),
                 RuntimeFn::ArrayIncludes => self.emit_array_includes(wat),
                 RuntimeFn::ArrayFind => self.emit_array_find(wat),
