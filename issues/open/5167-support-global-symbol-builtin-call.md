@@ -8,7 +8,7 @@ priority: P1
 depends_on: []
 blocks: []
 created: 2026-05-06
-updated: 2026-05-06
+updated: 2026-05-08
 ---
 
 ## Summary
@@ -135,6 +135,12 @@ Follow-up issues:
 ## Notes
 
 Split from generated bucket `1051` on 2026-05-06. The current reference file also contains BigInt index/type-checker diagnostics; those should be triaged separately after this Symbol builtin-call blocker no longer masks them.
+
+2026-05-08 fold-in:
+
+- `issues/done/3574-implement-noUnusedLocals-parser-syntax.md` reaches the same
+  unresolved global `Symbol()` blocker for `const x = Symbol("x")` in
+  `noUnusedLocals_writeOnlyProperty_dynamicNames.ts`.
 
 ## Completion evidence
 
