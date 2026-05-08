@@ -98,6 +98,8 @@ Do not touch:
 ## Acceptance criteria
 
 - [ ] `export = x;` no longer reports `issue-055: unsupported static export`.
+- [ ] `narrowedImports_assumeInitialized.ts` no longer reports issue-055 at
+  `export = a;` in the `/a.d.ts` section.
 - [ ] A focused test proves `var x = 1; export = x;` parses as a CommonJS export assignment.
 - [ ] Existing unsupported ES module export forms still report issue-055 where they are not in this slice.
 - [ ] `python scripts/manager.py reference-triage tsc reference/typescript/tests/cases/compiler/augmentExportEquals1.ts` advances past the current static export diagnostic.
@@ -173,6 +175,12 @@ Related but not duplicate:
   declare function overload signatures. Later surfaces include
   `import X = require("./file")`, virtual module resolution, and the `X(0)`
   overload usage.
+- Also owns `issues/done/3451-implement-narrowedImports.md` for
+  `narrowedImports_assumeInitialized.ts`: fresh triage on 2026-05-08 tokenizes
+  `declare namespace a { export const x: number; }`, then stops at
+  `export = a;` with `UnsupportedModule: issue-055: unsupported static export`.
+  Later surfaces include `import a = require("./a")` and virtual filename
+  section resolution.
 
 ## Completion evidence
 

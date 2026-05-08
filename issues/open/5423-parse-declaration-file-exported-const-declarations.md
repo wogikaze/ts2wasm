@@ -110,6 +110,8 @@ Do not touch:
       `reference/typescript/tests/cases/compiler/moduleResolutionAsTypeReferenceDirective.ts`
       no longer reports `const declarations require an initializer` at
       `export const a2: number;`.
+- [ ] `narrowedImports.ts` no longer reports `const declarations require an
+      initializer` at `export const a1: number | undefined;`.
 - [ ] A focused regression covers:
       `// @Filename: /pkg/index.d.ts` followed by `export const a: number;`.
 - [ ] Ordinary executable `.ts` code such as `const x: number;` still reports
@@ -149,6 +151,14 @@ the first virtual `.d.ts` section, `/a/types/dummy/index.d.ts`, at
 `export const dummy: number;`. The scoped type-root and `@types` package
 resolution cases are not reachable until these declaration-file exported const
 declarations parse as ambient metadata.
+
+Also owns `issues/done/3451-implement-narrowedImports.md` for
+`narrowedImports.ts`: fresh triage on 2026-05-08 stops in the `/a.d.ts`
+virtual section at `export const a1: number | undefined;` with
+`UnsupportedSyntax: const declarations require an initializer at 160..162`.
+TypeScript parses the declaration-file export and later reports TS1155 plus
+module-resolution diagnostics; the current compiler blocker is still accepting
+ambient exported const declarations in declaration-file sections.
 
 ## Completion evidence
 

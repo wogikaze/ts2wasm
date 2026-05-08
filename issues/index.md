@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 25 | 13 | 12 |
 | coverage | 42 | 0 | 42 |
 | docs | 2 | 0 | 2 |
-| frontend | 4597 | 3307 | 1290 |
+| frontend | 4597 | 3306 | 1291 |
 | harness | 1 | 0 | 1 |
 | ir | 86 | 63 | 23 |
 | issues | 4 | 0 | 4 |
@@ -27,7 +27,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 5284 | 3612 | 1672 |
+| total | 5284 | 3611 | 1673 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -2356,7 +2356,6 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 3302 | Implement Modulealiasasfunctionargument | spike | frontend/syntax | class: blocked | Implement Modulealiasasfunctionargument |
 | 3303 | Implement Modulealiasinterface | spike | frontend/syntax | class: blocked | Implement Modulealiasinterface |
 | 3304 | Implement Moduleandinterfacesharingname | spike | frontend/syntax | class: blocked | Implement Moduleandinterfacesharingname |
-| 3451 | Implement Narrowedimports | spike | frontend/syntax | class: blocked | Implement Narrowedimports |
 | 3452 | Implement Narrowingassignmentreadonlyrespectsassertion | spike | frontend/syntax | class: triage-needed | Implement Narrowingassignmentreadonlyrespectsassertion |
 | 3453 | Implement Narrowingbytypeofinswitch | spike | frontend/syntax | class: blocked | Implement Narrowingbytypeofinswitch |
 | 3454 | Implement Narrowingconstrainedtypeparameter | spike | frontend/syntax | class: blocked | Implement Narrowingconstrainedtypeparameter |
@@ -5244,6 +5243,7 @@ Direct child counts are derived from issue-file `depends_on` links. A meta issue
 | 3448 | Implement Narrowtypebyinstanceof | spike | frontend/syntax | see `issues/done/3448-implement-narrowTypeByInstanceof.md` |
 | 3449 | Implement Narrowunknownbytypepredicate | spike | frontend/resolver | see `issues/done/3449-implement-narrowUnknownByTypePredicate.md` |
 | 3450 | Implement Narrowedconstinmethod | spike | frontend/syntax | see `issues/done/3450-implement-narrowedConstInMethod.md` |
+| 3451 | Implement Narrowedimports | spike | frontend/syntax | see `issues/done/3451-implement-narrowedImports.md` |
 | 3690 | Implement Optionaltupleelementsandundefined | spike | reference/triage | see `issues/done/3690-implement-optionalTupleElementsAndUndefined.md` |
 | 3996 | Implement Compiler (dup) | spike | frontend/syntax | see `issues/done/3996-implement-reference-typescript-tests-cases-compiler.md` |
 | 4210 | Implement Splicetuples | spike | frontend/resolver | see `issues/done/4210-implement-spliceTuples.md` |
