@@ -1419,3 +1419,109 @@ fn build_smoke_triple_slash_reference() {
         result.err()
     );
 }
+
+// === W2: Nullish coalescing (id 120, TRACKING.yaml) ===
+
+#[test]
+fn build_smoke_nullish_coalescing() {
+    let result = run_fixture("core-semantics/nullish-coalescing.ts");
+    assert!(
+        result.is_ok(),
+        "Nullish coalescing should build: {:?}",
+        result.err()
+    );
+}
+
+// === W3/String dispatch (id 121, TRACKING.yaml) ===
+
+#[test]
+fn build_smoke_string_starts_with() {
+    let result = run_fixture("builtins-and-io/string-starts-with.ts");
+    assert!(
+        result.is_ok(),
+        "String.startsWith should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
+fn build_smoke_string_ends_with() {
+    let result = run_fixture("builtins-and-io/string-ends-with.ts");
+    assert!(
+        result.is_ok(),
+        "String.endsWith should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
+fn build_smoke_string_concat() {
+    let result = run_fixture("builtins-and-io/string-concat.ts");
+    assert!(
+        result.is_ok(),
+        "String.concat should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
+fn build_smoke_string_trim_start() {
+    let result = run_fixture("builtins-and-io/string-trim-start.ts");
+    assert!(
+        result.is_ok(),
+        "String.trimStart should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
+fn build_smoke_string_trim_end() {
+    let result = run_fixture("builtins-and-io/string-trim-end.ts");
+    assert!(
+        result.is_ok(),
+        "String.trimEnd should build: {:?}",
+        result.err()
+    );
+}
+
+// === W3/Array dispatch (id 122, TRACKING.yaml) ===
+
+#[test]
+fn build_smoke_array_map() {
+    let result = run_fixture("builtins-and-io/array-map.ts");
+    assert!(
+        result.is_ok(),
+        "Array.map should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
+fn build_smoke_array_find_index() {
+    let result = run_fixture("builtins-and-io/array-find-index.ts");
+    assert!(
+        result.is_ok(),
+        "Array.findIndex should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
+fn build_smoke_array_fill() {
+    let result = run_fixture("builtins-and-io/array-fill.ts");
+    assert!(
+        result.is_ok(),
+        "Array.fill should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
+fn build_smoke_array_last_index_of() {
+    let result = run_fixture("builtins-and-io/array-last-index-of.ts");
+    assert!(
+        result.is_ok(),
+        "Array.lastIndexOf should build: {:?}",
+        result.err()
+    );
+}

@@ -1,0 +1,5 @@
+// Array.prototype.lastIndexOf basic test
+const arr = [1, 2, 3, 2, 1];
+console.log(arr.lastIndexOf(2));
+console.log(arr.lastIndexOf(1));
+console.log(arr.lastIndexOf(99));
