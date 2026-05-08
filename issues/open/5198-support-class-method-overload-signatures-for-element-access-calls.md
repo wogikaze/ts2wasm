@@ -159,6 +159,14 @@ This is not the same as the plain JavaScript `duplicate-function` bucket: this
 path is a TypeScript class overload declaration group whose first two members
 have no body.
 
+2026-05-08 fold-in:
+
+- `issues/done/3550-implement-noImplicitAnyParametersInClass.md` reaches the
+  same valid class-method overload boundary for `C.pub_f8`; its first two
+  `pub_f8` members are bodyless overload signatures and the third is the
+  implementation. The noImplicitAny parameter diagnostics should be re-triaged
+  after this overload-signature issue advances.
+
 ## Completion evidence
 
 Fill only when moving to `done/`.
