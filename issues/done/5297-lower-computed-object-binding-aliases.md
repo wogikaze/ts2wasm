@@ -134,7 +134,7 @@ Follow-up issues:
 ## Notes
 
 Split from generated bucket
-`issues/open/1408-implement-computedPropertiesInDestructuring.md`.
+`issues/done/1408-implement-computedPropertiesInDestructuring.md`.
 
 Related but not duplicates:
 

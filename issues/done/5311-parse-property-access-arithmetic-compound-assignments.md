@@ -112,7 +112,7 @@ Follow-up issues:
 
 ## Notes
 
-Split from generated bucket `issues/open/1440-implement-constDeclarations-import-export.md`.
+Split from generated bucket `issues/done/1440-implement-constDeclarations-import-export.md`.
 Issue 661 covers identifier-target arithmetic assignment evidence, while this
 issue is limited to the first namespace property `+=` parser blocker.
 

@@ -139,12 +139,12 @@ Follow-up issues:
 
 ## Notes
 
-Split from `issues/open/1476-implement-constructorParametersInVariableDeclarations.md`
+Split from `issues/done/1476-implement-constructorParametersInVariableDeclarations.md`
 on 2026-05-07 after fresh coverage reported build_pass.
 
 Additional superseded bucket:
 
-- `issues/open/1477-implement-constructorParametersThatShadowExternalNamesInVariableDeclarations.md`
+- `issues/done/1477-implement-constructorParametersThatShadowExternalNamesInVariableDeclarations.md`
   reaches the same TS2301 semantic gap with an outer `var x = 1` shadowed by a
   constructor parameter and a constructor-local `var x = ""`. Fresh triage on
   2026-05-07 reports BuildPass while TypeScript reports TS2301 at

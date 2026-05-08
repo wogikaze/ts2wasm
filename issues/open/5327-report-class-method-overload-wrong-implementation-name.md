@@ -153,7 +153,7 @@ Follow-up issues:
 ## Notes
 
 Split from generated bucket
-`issues/open/1248-implement-classWithOverloadImplementationOfWrongName.md`.
+`issues/done/1248-implement-classWithOverloadImplementationOfWrongName.md`.
 
 Related but distinct issues:
 

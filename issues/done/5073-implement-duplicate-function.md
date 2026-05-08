@@ -121,7 +121,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/open/1347-implement-commentOnClassAccessor.md` - Implement Commentonclassaccessor (same feature label, same group key, title overlap)
+- `issues/done/1347-implement-commentOnClassAccessor.md` - Implement Commentonclassaccessor (same feature label, same group key, title overlap)
 - `issues/open/2043-implement-duplicateIdentifierRelatedSpans-duplicate-function.md` - Implement Duplicateidentifierrelatedspans Duplicate Function (same feature label, same group key, title overlap)
 - `issues/open/2600-implement-getAndSetNotIdenticalType-duplicate-function.md` - Implement Getandsetnotidenticaltype Duplicate Function (same feature label, same group key, title overlap)
 - `issues/open/2803-implement-inferSetterParamType.md` - Implement Infersetterparamtype (same feature label, same group key, title overlap)

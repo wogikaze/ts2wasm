@@ -145,13 +145,13 @@ Split from generated bucket `1074` on 2026-05-06. Existing import/export umbrell
 
 Additional superseded bucket:
 
-- `issues/open/1449-implement-constEnumMergingWithValues-import-export.md`
+- `issues/done/1449-implement-constEnumMergingWithValues-import-export.md`
   reaches the same `export = foo` static export boundary in
   `constEnumMergingWithValues1.ts`, `2.ts`, `4.ts`, and `5.ts`. Fresh triage on
   2026-05-07 reports `UnsupportedModule issue-055: unsupported static export`
   at the `export` keyword for all four files; TypeScript parses each as an
   `ExportAssignment`.
-- `issues/open/1450-implement-constEnumMergingWithValues-parser-syntax.md`
+- `issues/done/1450-implement-constEnumMergingWithValues-parser-syntax.md`
   reaches the same `export = foo` static export boundary in
   `constEnumMergingWithValues3.ts`. Fresh triage on 2026-05-07 reports
   `UnsupportedModule issue-055: unsupported static export` at `120..126`;

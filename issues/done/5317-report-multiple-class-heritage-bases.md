@@ -122,7 +122,7 @@ Follow-up issues:
 ## Notes
 
 Split from stale generated bucket
-`issues/open/1204-implement-classExtendsMultipleBaseClasses.md`.
+`issues/done/1204-implement-classExtendsMultipleBaseClasses.md`.
 
 Related but not duplicate:
 

@@ -136,7 +136,7 @@ Fresh smart triage listed broad same-feature type-system candidates, but none
 was an exact owner for this self-referential generic class heritage
 lower-program failure:
 
-- `issues/open/1264-implement-coAndContraVariantInferences-type-system.md`
+- `issues/done/1264-implement-coAndContraVariantInferences-type-system.md`
 - `issues/open/2497-implement-genericCallInferenceConditionalType-type-system.md`
 - `issues/open/2543-implement-genericFunctionsWithOptionalParameters-type-system.md`
 - `issues/open/2560-implement-genericMergedDeclarationUsingTypeParameter-type-system.md`

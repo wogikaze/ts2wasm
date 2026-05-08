@@ -150,7 +150,7 @@ Follow-up issues:
 
 ## Notes
 
-Split from `issues/open/1264-implement-coAndContraVariantInferences-type-system.md` on
+Split from `issues/done/1264-implement-coAndContraVariantInferences-type-system.md` on
 2026-05-07.
 
 Related but not duplicates:

@@ -130,7 +130,7 @@ Follow-up issues:
 
 ## Notes
 
-Split from `issues/open/1403-implement-compositeWithNodeModulesSourceFile.md`.
+Split from `issues/done/1403-implement-compositeWithNodeModulesSourceFile.md`.
 
 ## Completion evidence
 

@@ -159,7 +159,7 @@ Follow-up issues:
 
 ## Notes
 
-Split from `issues/open/1315-implement-collisionSuperAndNameResolution.md`.
+Split from `issues/done/1315-implement-collisionSuperAndNameResolution.md`.
 
 The broad `issues/open/064-implement-name-resolution.md` is not a duplicate; it
 documents older test262 metadata-related name-resolution buckets. This issue is

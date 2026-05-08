@@ -125,9 +125,9 @@ Follow-up issues:
 
 ## Notes
 
-Split from stale generated bucket `issues/open/1197-implement-classExtendsClauseClassMergedWithModuleNotReferingConstructor.md`.
+Split from stale generated bucket `issues/done/1197-implement-classExtendsClauseClassMergedWithModuleNotReferingConstructor.md`.
 Also owns the matching first residual semantic gap folded from
-`issues/open/1198-implement-classExtendsClauseClassNotReferringConstructor.md`.
+`issues/done/1198-implement-classExtendsClauseClassNotReferringConstructor.md`.
 
 Related but not duplicates:
 

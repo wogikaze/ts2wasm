@@ -154,7 +154,7 @@ Follow-up issues:
 ## Notes
 
 Split from generated bucket
-`issues/open/1224-implement-classMemberInitializerWithLamdaScoping-module-system-amd.md`.
+`issues/done/1224-implement-classMemberInitializerWithLamdaScoping-module-system-amd.md`.
 
 Related but not duplicates:
 

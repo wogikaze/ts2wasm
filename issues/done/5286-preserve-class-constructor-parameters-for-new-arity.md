@@ -153,7 +153,7 @@ Follow-up issues:
 
 ## Notes
 
-Split from `issues/open/1369-implement-commentsInheritance.md`.
+Split from `issues/done/1369-implement-commentsInheritance.md`.
 
 Related but not duplicates:
 

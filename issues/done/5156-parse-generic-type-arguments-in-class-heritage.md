@@ -186,7 +186,7 @@ Follow-up issues:
 
 `class_statement` already calls `consume_typescript_generic_parameter_list()` after the class name. The missing boundary is the `class_extends()` path, which currently delegates directly to expression parsing.
 
-Also owns the matching qualified generic heritage parser blocker folded from `issues/open/1202-implement-classExtendsInterfaceInModule.md`.
+Also owns the matching qualified generic heritage parser blocker folded from `issues/done/1202-implement-classExtendsInterfaceInModule.md`.
 
 ## Completion evidence
 

@@ -112,7 +112,7 @@ python scripts/manager.py reference-coverage tsc --path-filter reference/typescr
 
 ## Notes
 
-Split from `issues/open/1178-implement-classDeclarationShouldBeOutOfScopeInComputedNames.md`.
+Split from `issues/done/1178-implement-classDeclarationShouldBeOutOfScopeInComputedNames.md`.
 
 ## False-done audit
 

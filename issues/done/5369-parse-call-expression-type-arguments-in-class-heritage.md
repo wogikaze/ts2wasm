@@ -148,7 +148,7 @@ Follow-up issues:
 ## Notes
 
 Split from generated bucket
-`issues/open/1491-implement-contextualParamTypeVsNestedReturnTypeInference.md`
+`issues/done/1491-implement-contextualParamTypeVsNestedReturnTypeInference.md`
 on 2026-05-07.
 
 Related but not duplicates:

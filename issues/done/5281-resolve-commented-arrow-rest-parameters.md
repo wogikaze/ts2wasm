@@ -154,11 +154,11 @@ Follow-up issues:
 
 ## Notes
 
-Split from `issues/open/1357-implement-commentsAfterSpread.md`.
+Split from `issues/done/1357-implement-commentsAfterSpread.md`.
 
 Related but not duplicates:
 
-- `issues/open/1300-implement-collisionRestParameterArrowFunctions.md` is a
+- `issues/done/1300-implement-collisionRestParameterArrowFunctions.md` is a
   generated semantic collision bucket and lacks current smart-triage evidence
   for this resolver failure.
 - `issues/done/038-implement-rest-parameters.md` and

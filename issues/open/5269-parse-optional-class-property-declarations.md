@@ -151,7 +151,7 @@ Follow-up issues:
 ## Notes
 
 Split from generated bucket
-`issues/open/1243-implement-classUsedBeforeInitializedVariables.md`.
+`issues/done/1243-implement-classUsedBeforeInitializedVariables.md`.
 Related generated bucket with the same parser gap:
 `issues/open/3437-implement-narrowByBooleanComparison.md`.
 

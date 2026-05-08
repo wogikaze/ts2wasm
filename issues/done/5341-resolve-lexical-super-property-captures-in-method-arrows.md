@@ -133,7 +133,7 @@ Follow-up issues:
 
 ## Notes
 
-Split from `issues/open/1330-implement-collisionThisExpressionAndLocalVarWithSuperExperssion.md`.
+Split from `issues/done/1330-implement-collisionThisExpressionAndLocalVarWithSuperExperssion.md`.
 
 Related but distinct:
 

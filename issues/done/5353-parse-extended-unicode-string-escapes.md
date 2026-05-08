@@ -158,7 +158,7 @@ Follow-up issues:
 ## Notes
 
 Split from generated bucket
-`issues/open/1457-implement-constEnumSyntheticNodesComments.md`.
+`issues/done/1457-implement-constEnumSyntheticNodesComments.md`.
 
 Related but not duplicates:
 

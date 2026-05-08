@@ -155,14 +155,14 @@ Split from generated bucket `1044` on 2026-05-06. Generated buckets `1081` and `
 
 Additional superseded bucket:
 
-- `issues/open/1463-implement-constWithNonNull.md` reaches the same ambient
+- `issues/done/1463-implement-constWithNonNull.md` reaches the same ambient
   value name-resolution boundary for `declare const x: number | undefined;`.
   Fresh triage on 2026-05-07 reports
   `UnresolvedName: unresolved name: \`x\` at 73..74` for the later `x!++`
   expression; TypeScript parses the use as
   `PostfixUnaryExpression -> NonNullExpression -> Identifier` and then reports
   TS2588 because assignment to the ambient const is illegal.
-- `issues/open/1466-implement-constraints.md` reaches the same ambient value
+- `issues/done/1466-implement-constraints.md` reaches the same ambient value
   name-resolution boundary for `declare var v1: C<A>;` and
   `declare var v2: C<B>;`. Fresh triage on 2026-05-07 reports
   `UnresolvedName: unresolved name: \`v1\` at 204..206` for `var y = v1.x.a;`;

@@ -129,7 +129,7 @@ python scripts/manager.py reference-coverage tsc --path-filter reference/typescr
 
 ## Notes
 
-Split from `issues/open/1219-implement-classImplementsPrimitive.md`.
+Split from `issues/done/1219-implement-classImplementsPrimitive.md`.
 
 ## False-done audit
 

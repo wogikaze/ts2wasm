@@ -152,7 +152,7 @@ Follow-up issues:
 ## Notes
 
 Split from
-`issues/open/1270-implement-collisionArgumentsFunctionExpressions.md` on
+`issues/done/1270-implement-collisionArgumentsFunctionExpressions.md` on
 2026-05-07.
 
 ## Completion evidence

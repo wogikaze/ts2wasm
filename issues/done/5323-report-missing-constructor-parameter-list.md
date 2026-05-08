@@ -125,7 +125,7 @@ Follow-up issues:
 ## Notes
 
 Split from stale generated bucket
-`issues/open/1211-implement-classFieldsBrokenConstructorEmitNoCrash.md`.
+`issues/done/1211-implement-classFieldsBrokenConstructorEmitNoCrash.md`.
 
 Related but not duplicate:
 

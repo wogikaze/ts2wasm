@@ -137,7 +137,7 @@ Follow-up issues:
 
 ## Notes
 
-Split from generated bucket `issues/open/1378-implement-commentsOnStaticMembers.md`.
+Split from generated bucket `issues/done/1378-implement-commentsOnStaticMembers.md`.
 Related but distinct parser issues:
 
 - `issues/open/5271-parse-modified-static-class-fields.md`
@@ -145,7 +145,7 @@ Related but distinct parser issues:
 
 Additional superseded bucket:
 
-- `issues/open/1465-implement-constraintCheckInGenericBaseTypeReference.md`
+- `issues/done/1465-implement-constraintCheckInGenericBaseTypeReference.md`
   reaches the same typed modified static class field parser boundary before
   generic constraint checking. Fresh triage on 2026-05-07 reports
   `expected LeftParen, got Some(Ident("People")) at 307..313` for

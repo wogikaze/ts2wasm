@@ -147,7 +147,7 @@ Follow-up issues:
 
 ## Notes
 
-Split from `issues/open/1365-implement-commentsEnums.md`.
+Split from `issues/done/1365-implement-commentsEnums.md`.
 
 Related but not duplicates:
 

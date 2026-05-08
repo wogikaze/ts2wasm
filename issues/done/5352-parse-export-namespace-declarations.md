@@ -170,7 +170,7 @@ Follow-up issues:
 ## Notes
 
 Split from generated bucket
-`issues/open/1451-implement-constEnumNamespaceReferenceCausesNoImport.md`.
+`issues/done/1451-implement-constEnumNamespaceReferenceCausesNoImport.md`.
 
 Related but not duplicates:
 

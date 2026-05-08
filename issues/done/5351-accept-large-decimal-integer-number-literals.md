@@ -100,7 +100,7 @@ python scripts/manager.py check-issue-readiness -- --fail-ready-below 80
 
 ## Notes
 
-Split from `issues/open/1447-implement-constEnumErrors.md`.
+Split from `issues/done/1447-implement-constEnumErrors.md`.
 
 ## Completion evidence
 

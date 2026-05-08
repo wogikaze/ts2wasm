@@ -158,7 +158,7 @@ Follow-up issues:
 ## Notes
 
 Split from generated bucket
-`issues/open/1223-implement-classMemberInitializerWithLamdaScoping-import-export.md`.
+`issues/done/1223-implement-classMemberInitializerWithLamdaScoping-import-export.md`.
 
 Related but not duplicates:
 

@@ -78,7 +78,7 @@ python scripts/manager.py reference-coverage tsc --path-filter reference/typescr
 
 ## Notes
 
-Split from `issues/open/1173-implement-classAttributeInferenceTemplateJS.md`.
+Split from `issues/done/1173-implement-classAttributeInferenceTemplateJS.md`.
 ## False-done audit
 
 **truly-done** (5247)

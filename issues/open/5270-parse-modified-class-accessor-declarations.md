@@ -149,7 +149,7 @@ Follow-up issues:
 
 ## Notes
 
-Split from generated bucket `issues/open/1249-implement-classdecl.md`.
+Split from generated bucket `issues/done/1249-implement-classdecl.md`.
 Related broad class-accessor bucket: `issues/done/422-implement-class-accessor.md`.
 
 ## Completion evidence

@@ -162,7 +162,7 @@ Follow-up issues:
 
 ## Notes
 
-Split from `issues/open/1346-implement-commentOnAmbientVariable.md`.
+Split from `issues/done/1346-implement-commentOnAmbientVariable.md`.
 
 Related but not duplicate:
 

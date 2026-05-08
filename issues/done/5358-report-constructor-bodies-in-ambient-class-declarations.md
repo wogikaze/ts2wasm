@@ -157,7 +157,7 @@ Follow-up issues:
 
 ## Notes
 
-Split from `issues/open/1474-implement-constructorOverloads-name-resolution.md`
+Split from `issues/done/1474-implement-constructorOverloads-name-resolution.md`
 on 2026-05-07.
 
 Related but not exact:

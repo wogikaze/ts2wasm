@@ -128,12 +128,12 @@ python scripts/manager.py reference-coverage tsc --path-filter reference/typescr
 
 ## Notes
 
-Split from `issues/open/1353-implement-commentOnParenthesizedExpressionOpenParen.md`.
+Split from `issues/done/1353-implement-commentOnParenthesizedExpressionOpenParen.md`.
 Related broad method-call bucket: `issues/done/435-implement-method-call.md`.
 
 Additional superseded bucket:
 
-- `issues/open/1382-implement-commentsemitComments.md` reaches the same
+- `issues/done/1382-implement-commentsemitComments.md` reaches the same
   function-typed local call definite-assignment boundary at
   `var fooVar: () => void; fooVar();`. Fresh triage on 2026-05-07 reports
   unspanned `UnresolvedFunction` for `fooVar`, while TypeScript reports TS2454

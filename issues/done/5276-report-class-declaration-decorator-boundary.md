@@ -138,7 +138,7 @@ python scripts/manager.py reference-coverage tsc --path-filter reference/typescr
 
 ## Notes
 
-Split from `issues/open/1348-implement-commentOnDecoratedClassDeclaration.md`.
+Split from `issues/done/1348-implement-commentOnDecoratedClassDeclaration.md`.
 Related broad decorator bucket: `issues/open/4807-implement-decorator.md`.
 Related class-expression decorator boundary: `issues/done/5253-report-class-expression-decorator-boundary.md`.
 

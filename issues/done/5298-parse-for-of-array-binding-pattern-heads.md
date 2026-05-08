@@ -138,7 +138,7 @@ Follow-up issues:
 ## Notes
 
 Split from generated bucket
-`issues/open/1412-implement-computedPropertyBindingElementDeclarationNoCrash.md`.
+`issues/done/1412-implement-computedPropertyBindingElementDeclarationNoCrash.md`.
 
 Related but not duplicates:
 

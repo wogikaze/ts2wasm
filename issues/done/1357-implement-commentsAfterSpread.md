@@ -137,7 +137,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/open/1300-implement-collisionRestParameterArrowFunctions.md` is
+- `issues/done/1300-implement-collisionRestParameterArrowFunctions.md` is
   related but is a generated collision bucket without matching current
   `UnresolvedName: args` evidence.
 - `issues/done/038-implement-rest-parameters.md` and

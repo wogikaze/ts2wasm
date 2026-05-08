@@ -125,7 +125,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/open/1195-implement-classExtendingQualifiedName.md` is related but was a generated blocked bucket; issue 5225 records the exact current implementation-ready blocker.
+- `issues/done/1195-implement-classExtendingQualifiedName.md` is related but was a generated blocked bucket; issue 5225 records the exact current implementation-ready blocker.
 - Broad object-literal/import-export buckets are not exact matches because the AST succeeds and the failure is class heritage resolution.
 
 ## Smart triage

@@ -144,13 +144,13 @@ Follow-up issues:
 
 ## Notes
 
-Split from generated bucket `issues/open/1336-implement-commaOperator.md`.
+Split from generated bucket `issues/done/1336-implement-commaOperator.md`.
 
 Related but distinct:
 
 - `issues/done/5182-parse-comma-separated-for-update-expressions.md` handles
   the narrow `for (...; ...; ++x, --y)` update slot.
-- `issues/open/1338-implement-commaOperatorLeftSideUnused.md` is a generated
+- `issues/done/1338-implement-commaOperatorLeftSideUnused.md` is a generated
   blocked bucket for TS2695 diagnostics after parser support exists.
 
 2026-05-07 additional evidence: `commaOperatorLeftSideUnused.ts` stops before

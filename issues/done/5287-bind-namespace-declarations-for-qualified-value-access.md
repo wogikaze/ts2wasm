@@ -157,7 +157,7 @@ Follow-up issues:
 
 ## Notes
 
-Split from `issues/open/1371-implement-commentsModules.md`.
+Split from `issues/done/1371-implement-commentsModules.md`.
 
 Related but not duplicates:
 

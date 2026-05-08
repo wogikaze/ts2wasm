@@ -140,7 +140,7 @@ Follow-up issues:
 ## Notes
 
 Split from generated bucket
-`issues/open/1441-implement-constDeclarations-name-resolution.md`.
+`issues/done/1441-implement-constDeclarations-name-resolution.md`.
 
 ## Completion evidence
 
