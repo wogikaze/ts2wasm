@@ -1971,6 +1971,14 @@ impl Parser {
                     }),
                 })
             }
+            Some(SpannedToken {
+                kind: Token::With,
+                ..
+            }) => Err(Diagnostic {
+                code: DiagCode::UnsupportedSyntax,
+                message: "With statement is not supported".to_owned(),
+                span: self.peek_span(),
+            }),
             other => Err(Diagnostic {
                 code: DiagCode::UnsupportedSyntax,
                 message: format!("unsupported expression: {other:?}"),
