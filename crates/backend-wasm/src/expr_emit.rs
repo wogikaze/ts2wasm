@@ -52,12 +52,20 @@ fn array_presence_mask(len: usize) -> i32 {
 }
 
 impl WatEmitter<'_> {
+    #[allow(clippy::only_used_in_recursion)]
     pub(super) fn expr_produces_value(&self, expr: &LoweredExpr) -> bool {
         match expr {
             LoweredExpr::Call {
                 kind: FunctionCallKind::Builtin(builtin),
                 ..
             } => RuntimeFn::from_builtin(*builtin).is_value(),
+            LoweredExpr::RuntimeCall { runtime_fn, .. } => {
+                super::runtime_fn::runtime_fn_from_name(runtime_fn)
+                    .map(|f| f.is_value())
+                    .unwrap_or(true)
+            }
+            LoweredExpr::PromiseGetValue { promise, .. } => self.expr_produces_value(promise),
+            LoweredExpr::Block { result, .. } => self.expr_produces_value(result),
             LoweredExpr::PropertyDelete { .. } | LoweredExpr::PropertyDeleteDynamic { .. } => true,
             _ => true,
         }

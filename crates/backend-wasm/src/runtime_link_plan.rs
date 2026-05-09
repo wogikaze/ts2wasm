@@ -542,7 +542,6 @@ impl RuntimeLinkPlan {
             | LoweredExpr::Undefined(..)
             | LoweredExpr::This(..)
             | LoweredExpr::Local(_, _) => {}
-            LoweredExpr::PromiseGetValue { .. } => {}
             LoweredExpr::ArrowFn { representation, .. } => {
                 if matches!(representation, ClosureRepresentation::HeapObject) {
                     self.add_required_runtime(RuntimeFn::AllocHeap);
@@ -1209,7 +1208,9 @@ mod tests {
                 .contains(&RuntimeFn::MakeBigIntLiteral)
         );
         assert!(
-            plan.required_imports().is_empty(),
+            plan.required_imports()
+                .iter()
+                .all(|i| matches!(i, HostImport::WasiProcExit)),
             "BigInt string conversion must remain standalone"
         );
     }

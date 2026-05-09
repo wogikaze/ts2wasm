@@ -62,6 +62,7 @@ fn encode_runtime_stdout_module(stdout: &[u8]) -> Vec<u8> {
 
     // Build _start function body
     let mut body = Vec::new();
+    body.push(0); // zero locals
 
     // Set up iovec: store DATA_START addr at IOVEC_PTR
     WasmBinaryWriter::emit_i32_const(&mut body, Layout::IOVEC_PTR as i32);
@@ -80,7 +81,6 @@ fn encode_runtime_stdout_module(stdout: &[u8]) -> Vec<u8> {
     WasmBinaryWriter::emit_i32_const(&mut body, RuntimeConst::ZERO);
     WasmBinaryWriter::emit_call(&mut body, 0); // call fd_write (import index 0)
     WasmBinaryWriter::emit_drop(&mut body);
-    WasmBinaryWriter::emit_end(&mut body);
 
     writer.finish_function_body(&mut body);
 

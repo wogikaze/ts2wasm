@@ -43,7 +43,8 @@ pub(super) fn expr_may_collect(expr: &LoweredExpr) -> bool {
         | LoweredExpr::EnvCellSet { expr, .. }
         | LoweredExpr::LogicalAssign { expr, .. }
         | LoweredExpr::LogicalPropertyAssign { expr, .. } => expr_may_collect(expr),
-        LoweredExpr::EnvCellGet(_, _) | LoweredExpr::PromiseGetValue { .. } => false,
+        LoweredExpr::EnvCellGet(_, _) => false,
+        LoweredExpr::PromiseGetValue { promise, .. } => expr_may_collect(promise),
         LoweredExpr::LogicalMemberAssign { object, expr, .. } => {
             expr_may_collect(object) || expr_may_collect(expr)
         }
@@ -200,7 +201,8 @@ pub(super) fn expr_uses_caller_backend_tmp(expr: &LoweredExpr) -> bool {
         | LoweredExpr::LogicalAssign { expr, .. }
         | LoweredExpr::LogicalPropertyAssign { expr, .. } => expr_uses_caller_backend_tmp(expr),
         LoweredExpr::EnvCellNew(_, _) => true,
-        LoweredExpr::EnvCellGet(_, _) | LoweredExpr::PromiseGetValue { .. } => false,
+        LoweredExpr::EnvCellGet(_, _) => false,
+        LoweredExpr::PromiseGetValue { promise, .. } => expr_uses_caller_backend_tmp(promise),
         LoweredExpr::LogicalMemberAssign { .. } => true,
         LoweredExpr::LogicalComputedMemberAssign { .. } => true,
         LoweredExpr::LogicalComputedPropertyAssign { .. } => true,
@@ -217,7 +219,6 @@ pub(super) fn expr_uses_caller_backend_tmp(expr: &LoweredExpr) -> bool {
         }
         LoweredExpr::Call { args, .. } => args.iter().any(expr_uses_caller_backend_tmp),
         LoweredExpr::RuntimeCall { runtime_fn, .. } if runtime_fn == "HeapClosureCall" => true,
-        LoweredExpr::PromiseGetValue { .. } => true,
         LoweredExpr::RuntimeCall { runtime_fn, .. }
             if runtime_fn == "PrivateFieldGet"
                 || runtime_fn == "PrivateFieldSet"

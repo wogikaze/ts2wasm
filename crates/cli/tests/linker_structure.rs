@@ -53,6 +53,10 @@ fn assert_linker_snapshot(fixture_name: &str) {
 
     let snap_path = snapshot_path(fixture_name);
 
+    if std::env::var("UPDATE_SNAPSHOTS").is_ok() {
+        fs::write(&snap_path, &actual_json).expect("failed to write snapshot");
+    }
+
     let expected = fs::read_to_string(&snap_path).unwrap_or_else(|e| {
         panic!(
             "missing snapshot {snap_path:?}: {e}\n\
