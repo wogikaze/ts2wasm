@@ -1361,6 +1361,13 @@ impl NameResolver {
             if let Stmt::ClassDecl { name, span, .. } = stmt {
                 self.declare_variable(name, Some(*span), false)?;
             }
+            if let Stmt::Let { name, is_var, .. } = stmt {
+                if *is_var {
+                    self.declare_binding(name, None, true)?;
+                } else {
+                    self.predeclare_name(name);
+                }
+            }
         }
         let result = block.iter().map(|s| self.resolve_stmt(s)).collect();
         self.exit_scope();
@@ -1502,7 +1509,14 @@ impl NameResolver {
         }
         let is_left_literal = matches!(left, Expr::Object { .. } | Expr::Array { .. });
         let is_right_literal = matches!(right, Expr::Object { .. } | Expr::Array { .. });
-        if is_left_literal || is_right_literal {
+
+        let triggers_diagnostic = match op {
+            BinaryOp::StrictEqual | BinaryOp::StrictNotEqual => is_left_literal || is_right_literal,
+            BinaryOp::EqualEqual | BinaryOp::BangEqual => is_left_literal && is_right_literal,
+            _ => false,
+        };
+
+        if triggers_diagnostic {
             Some(Diagnostic {
                 code: DiagCode::UnsupportedSyntax,
                 message: format!(
