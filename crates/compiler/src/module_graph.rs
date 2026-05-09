@@ -365,7 +365,11 @@ fn collect_static_module_specifiers(program: &[Stmt]) -> Vec<&ModuleSpecifier> {
         .iter()
         .filter_map(|stmt| match stmt {
             Stmt::ImportSideEffect { specifier, .. } => Some(specifier),
-            Stmt::ImportNamed { source, import_type: false, .. }
+            Stmt::ImportNamed {
+                source,
+                import_type: false,
+                ..
+            }
             | Stmt::ImportDefault { source, .. }
             | Stmt::ImportDefaultNamed { source, .. }
             | Stmt::ImportNamespace { source, .. }
