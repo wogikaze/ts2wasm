@@ -14,23 +14,6 @@ meta:
 
 open:
   # W2: Parser (small, well-scoped)
-  - id: 124
-    title: "Add parser support for `for (var x = y in obj)` cover initializer"
-    priority: P1
-    type: feature
-    area: frontend
-    status: open
-    created: 2026-05-09
-    updated: 2026-05-09
-    owner: human
-    roadmap: W2
-    ready: true
-    acceptance:
-      - "cargo nextest run -p ts2wasm-cli --test m6_builtin_methods"
-    non_goals:
-      - "No runtime semantics -- parser only."
-    evidence: null
-
   - id: 125
     title: "Add precise unsupported diagnostic for `with` statement"
     priority: P1
@@ -591,7 +574,28 @@ done:
           exit: 0
       summary: "Already implemented (all Array.prototype methods routed in program_builtins.rs)."
 
-  - id: 123
+  - id: 124
+    title: "Add parser support for `for (var x = y in obj)` cover initializer"
+    priority: P1
+    type: feature
+    area: frontend
+    status: done
+    created: 2026-05-09
+    updated: 2026-05-09
+    closed: 2026-05-09
+    owner: human
+    roadmap: W2
+    acceptance:
+      - "cargo nextest run -p ts2wasm-cli --test m6_builtin_methods build_smoke_cover_initializer_for_var_in"
+    non_goals:
+      - "No runtime semantics -- parser only."
+    evidence:
+      commit: "pending"
+      commands:
+        - command: "cargo nextest run -p ts2wasm-cli --test m6_builtin_methods build_smoke_cover_initializer_for_var_in"
+          exit: 0
+      summary: "Implemented cover initializer skip in for-in/for-of lookahead and parsing paths."
+
     title: "Ramp test262 coverage from 500 to 2,000 with parallel execution"
     priority: P1
     type: infra

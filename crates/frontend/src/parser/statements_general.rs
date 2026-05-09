@@ -1743,6 +1743,22 @@ impl Parser {
                 Some(Token::Ident(_) | Token::LeftBracket) => {
                     if matches!(self.peek(), Some(Token::Ident(_))) {
                         self.advance();
+                        // Cover initializer: `for (var x = expr in obj)` — skip `= expr`
+                        if self.consume(TokenKind::Equal) {
+                            // Skip assignment expression, tracking balanced pairs
+                            // Only break on `in`/`of` at top level (handles `x = (a in b)`)
+                            let mut depth_paren: usize = 0;
+                            loop {
+                                match self.peek() {
+                                    Some(Token::In | Token::Of) if depth_paren == 0 => break,
+                                    Some(Token::LeftParen) => { depth_paren += 1; self.advance(); },
+                                    Some(Token::RightParen) if depth_paren > 0 => { depth_paren -= 1; self.advance(); },
+                                    Some(Token::RightParen) => break, // `)` at depth 0 = end of for header
+                                    Some(_) => { self.advance(); },
+                                    None => break,
+                                }
+                            }
+                        }
                     } else {
                         self.skip_balanced_bracket_block()?;
                     }
@@ -1776,6 +1792,20 @@ impl Parser {
                 "_binding".to_owned()
             } else {
                 let (name, _) = self.expect_ident()?;
+                // Cover initializer: `for (var x = expr in obj)` — skip `= expr`
+                if self.consume(TokenKind::Equal) {
+                    let mut depth_paren: usize = 0;
+                    loop {
+                        match self.peek() {
+                            Some(Token::In | Token::Of) if depth_paren == 0 => break,
+                            Some(Token::LeftParen) => { depth_paren += 1; self.advance(); },
+                            Some(Token::RightParen) if depth_paren > 0 => { depth_paren -= 1; self.advance(); },
+                            Some(Token::RightParen) => break,
+                            Some(_) => { self.advance(); },
+                            None => break,
+                        }
+                    }
+                }
                 name
             };
             // Skip optional TypeScript type annotation (`: Type`) in for-in/of
