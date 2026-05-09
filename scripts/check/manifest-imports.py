@@ -95,6 +95,8 @@ def main():
             manifest_imports.add(("wasi_snapshot_preview1", "fd_write"))
         if manifest.get("wasi", {}).get("clock", {}).get("realtime"):
             manifest_imports.add(("wasi_snapshot_preview1", "clock_time_get"))
+        # WASI proc_exit is always required for program termination
+        manifest_imports.add(("wasi_snapshot_preview1", "proc_exit"))
         
         # Extract Node host imports
         for imp in manifest.get("node_host", {}).get("imports", []):

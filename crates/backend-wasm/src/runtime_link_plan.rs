@@ -59,6 +59,8 @@ impl RuntimeLinkPlan {
         if !program.top_level_statements.is_empty() {
             plan.add_required_globals(GLOBALS_EXCEPTION_RUNTIME);
         }
+        // WASI proc_exit is always required for program termination
+        plan.required_imports.insert(HostImport::WasiProcExit);
         for function in &program.functions {
             plan.collect_required_runtime_stmts(&function.body);
         }
@@ -634,6 +636,7 @@ impl RuntimeLinkPlan {
                     self.collect_required_runtime_expr(arg);
                 }
             }
+            #[allow(unreachable_patterns)]
             LoweredExpr::PromiseGetValue { promise, .. } => {
                 self.collect_required_runtime_expr(promise);
             }
@@ -754,8 +757,8 @@ mod tests {
     use ts2wasm_frontend::Span;
     use ts2wasm_ir::builtin::BuiltinId;
     use ts2wasm_ir::lowered::{
-        FuncId, FunctionCallKind, LocalId, LoweredBinaryOp, LoweredExpr, LoweredProgram,
-        LoweredStmt, ModuleInfo,
+        FuncId, FunctionCallKind, LoweredBinaryOp, LoweredExpr, LoweredProgram, LoweredStmt,
+        ModuleInfo,
     };
 
     use super::{HostImport, RuntimeFn, RuntimeGlobal, RuntimeLinkPlan};
@@ -805,6 +808,7 @@ mod tests {
                 statements: vec![LoweredStmt::Export {
                     name: "value".to_owned(),
                     expr: LoweredExpr::Number(1, Span::generated("test")),
+                    span: Span::generated("test"),
                 }],
                 locals_count: 0,
             }],
@@ -827,95 +831,217 @@ mod tests {
     fn bigint_runtime_arithmetic_selects_helper_deps() {
         let program = LoweredProgram {
             top_level_statements: vec![
-                LoweredStmt::Expr(LoweredExpr::RuntimeCall {
-                    runtime_fn: "BigIntAdd".to_owned(),
-                    args: vec![
-                        LoweredExpr::Local(ts2wasm_ir::lowered::LocalId(0)),
-                        LoweredExpr::Local(ts2wasm_ir::lowered::LocalId(0)),
-                    ],
-                }),
-                LoweredStmt::Expr(LoweredExpr::RuntimeCall {
-                    runtime_fn: "BigIntUnaryMinus".to_owned(),
-                    args: vec![LoweredExpr::Local(ts2wasm_ir::lowered::LocalId(0))],
-                }),
-                LoweredStmt::Expr(LoweredExpr::RuntimeCall {
-                    runtime_fn: "BigIntMul".to_owned(),
-                    args: vec![
-                        LoweredExpr::Local(ts2wasm_ir::lowered::LocalId(0)),
-                        LoweredExpr::Local(ts2wasm_ir::lowered::LocalId(0)),
-                    ],
-                }),
-                LoweredStmt::Expr(LoweredExpr::RuntimeCall {
-                    runtime_fn: "BigIntPow".to_owned(),
-                    args: vec![
-                        LoweredExpr::Local(ts2wasm_ir::lowered::LocalId(0)),
-                        LoweredExpr::Local(ts2wasm_ir::lowered::LocalId(0)),
-                    ],
-                }),
-                LoweredStmt::Expr(LoweredExpr::RuntimeCall {
-                    runtime_fn: "BigIntDiv".to_owned(),
-                    args: vec![
-                        LoweredExpr::Local(ts2wasm_ir::lowered::LocalId(0)),
-                        LoweredExpr::Local(ts2wasm_ir::lowered::LocalId(0)),
-                    ],
-                }),
-                LoweredStmt::Expr(LoweredExpr::RuntimeCall {
-                    runtime_fn: "BigIntRem".to_owned(),
-                    args: vec![
-                        LoweredExpr::Local(ts2wasm_ir::lowered::LocalId(0)),
-                        LoweredExpr::Local(ts2wasm_ir::lowered::LocalId(0)),
-                    ],
-                }),
-                LoweredStmt::Expr(LoweredExpr::RuntimeCall {
-                    runtime_fn: "BigIntMixedArithmeticTypeError".to_owned(),
-                    args: vec![
-                        LoweredExpr::Local(ts2wasm_ir::lowered::LocalId(0)),
-                        LoweredExpr::Number(2, Span::generated("test")),
-                    ],
-                }),
-                LoweredStmt::Expr(LoweredExpr::RuntimeCall {
-                    runtime_fn: "BigIntBitwiseNot".to_owned(),
-                    args: vec![LoweredExpr::Local(ts2wasm_ir::lowered::LocalId(0))],
-                }),
-                LoweredStmt::Expr(LoweredExpr::RuntimeCall {
-                    runtime_fn: "BigIntBitwiseAnd".to_owned(),
-                    args: vec![
-                        LoweredExpr::Local(ts2wasm_ir::lowered::LocalId(0)),
-                        LoweredExpr::Local(ts2wasm_ir::lowered::LocalId(0)),
-                    ],
-                }),
-                LoweredStmt::Expr(LoweredExpr::RuntimeCall {
-                    runtime_fn: "BigIntBitwiseOr".to_owned(),
-                    args: vec![
-                        LoweredExpr::Local(ts2wasm_ir::lowered::LocalId(0)),
-                        LoweredExpr::Local(ts2wasm_ir::lowered::LocalId(0)),
-                    ],
-                }),
-                LoweredStmt::Expr(LoweredExpr::RuntimeCall {
-                    runtime_fn: "BigIntBitwiseXor".to_owned(),
-                    args: vec![
-                        LoweredExpr::Local(ts2wasm_ir::lowered::LocalId(0)),
-                        LoweredExpr::Local(ts2wasm_ir::lowered::LocalId(0)),
-                    ],
-                }),
-                LoweredStmt::Expr(LoweredExpr::RuntimeCall {
-                    runtime_fn: "BigIntFromValue".to_owned(),
-                    args: vec![LoweredExpr::Local(ts2wasm_ir::lowered::LocalId(0))],
-                }),
-                LoweredStmt::Expr(LoweredExpr::RuntimeCall {
-                    runtime_fn: "BigIntAsIntN".to_owned(),
-                    args: vec![
-                        LoweredExpr::Number(8, Span::generated("test")),
-                        LoweredExpr::Local(ts2wasm_ir::lowered::LocalId(0)),
-                    ],
-                }),
-                LoweredStmt::Expr(LoweredExpr::RuntimeCall {
-                    runtime_fn: "BigIntAsUintN".to_owned(),
-                    args: vec![
-                        LoweredExpr::Number(8, Span::generated("test")),
-                        LoweredExpr::Local(ts2wasm_ir::lowered::LocalId(0)),
-                    ],
-                }),
+                LoweredStmt::Expr(
+                    LoweredExpr::RuntimeCall {
+                        runtime_fn: "BigIntAdd".to_owned(),
+                        args: vec![
+                            LoweredExpr::Local(
+                                ts2wasm_ir::lowered::LocalId(0),
+                                Span::generated("test"),
+                            ),
+                            LoweredExpr::Local(
+                                ts2wasm_ir::lowered::LocalId(0),
+                                Span::generated("test"),
+                            ),
+                        ],
+                        span: Span::generated("test"),
+                    },
+                    Span::generated("test"),
+                ),
+                LoweredStmt::Expr(
+                    LoweredExpr::RuntimeCall {
+                        runtime_fn: "BigIntUnaryMinus".to_owned(),
+                        args: vec![LoweredExpr::Local(
+                            ts2wasm_ir::lowered::LocalId(0),
+                            Span::generated("test"),
+                        )],
+                        span: Span::generated("test"),
+                    },
+                    Span::generated("test"),
+                ),
+                LoweredStmt::Expr(
+                    LoweredExpr::RuntimeCall {
+                        runtime_fn: "BigIntMul".to_owned(),
+                        args: vec![
+                            LoweredExpr::Local(
+                                ts2wasm_ir::lowered::LocalId(0),
+                                Span::generated("test"),
+                            ),
+                            LoweredExpr::Local(
+                                ts2wasm_ir::lowered::LocalId(0),
+                                Span::generated("test"),
+                            ),
+                        ],
+                        span: Span::generated("test"),
+                    },
+                    Span::generated("test"),
+                ),
+                LoweredStmt::Expr(
+                    LoweredExpr::RuntimeCall {
+                        runtime_fn: "BigIntPow".to_owned(),
+                        args: vec![
+                            LoweredExpr::Local(
+                                ts2wasm_ir::lowered::LocalId(0),
+                                Span::generated("test"),
+                            ),
+                            LoweredExpr::Local(
+                                ts2wasm_ir::lowered::LocalId(0),
+                                Span::generated("test"),
+                            ),
+                        ],
+                        span: Span::generated("test"),
+                    },
+                    Span::generated("test"),
+                ),
+                LoweredStmt::Expr(
+                    LoweredExpr::RuntimeCall {
+                        runtime_fn: "BigIntDiv".to_owned(),
+                        args: vec![
+                            LoweredExpr::Local(
+                                ts2wasm_ir::lowered::LocalId(0),
+                                Span::generated("test"),
+                            ),
+                            LoweredExpr::Local(
+                                ts2wasm_ir::lowered::LocalId(0),
+                                Span::generated("test"),
+                            ),
+                        ],
+                        span: Span::generated("test"),
+                    },
+                    Span::generated("test"),
+                ),
+                LoweredStmt::Expr(
+                    LoweredExpr::RuntimeCall {
+                        runtime_fn: "BigIntRem".to_owned(),
+                        args: vec![
+                            LoweredExpr::Local(
+                                ts2wasm_ir::lowered::LocalId(0),
+                                Span::generated("test"),
+                            ),
+                            LoweredExpr::Local(
+                                ts2wasm_ir::lowered::LocalId(0),
+                                Span::generated("test"),
+                            ),
+                        ],
+                        span: Span::generated("test"),
+                    },
+                    Span::generated("test"),
+                ),
+                LoweredStmt::Expr(
+                    LoweredExpr::RuntimeCall {
+                        runtime_fn: "BigIntMixedArithmeticTypeError".to_owned(),
+                        args: vec![
+                            LoweredExpr::Local(
+                                ts2wasm_ir::lowered::LocalId(0),
+                                Span::generated("test"),
+                            ),
+                            LoweredExpr::Number(2, Span::generated("test")),
+                        ],
+                        span: Span::generated("test"),
+                    },
+                    Span::generated("test"),
+                ),
+                LoweredStmt::Expr(
+                    LoweredExpr::RuntimeCall {
+                        runtime_fn: "BigIntBitwiseNot".to_owned(),
+                        args: vec![LoweredExpr::Local(
+                            ts2wasm_ir::lowered::LocalId(0),
+                            Span::generated("test"),
+                        )],
+                        span: Span::generated("test"),
+                    },
+                    Span::generated("test"),
+                ),
+                LoweredStmt::Expr(
+                    LoweredExpr::RuntimeCall {
+                        runtime_fn: "BigIntBitwiseAnd".to_owned(),
+                        args: vec![
+                            LoweredExpr::Local(
+                                ts2wasm_ir::lowered::LocalId(0),
+                                Span::generated("test"),
+                            ),
+                            LoweredExpr::Local(
+                                ts2wasm_ir::lowered::LocalId(0),
+                                Span::generated("test"),
+                            ),
+                        ],
+                        span: Span::generated("test"),
+                    },
+                    Span::generated("test"),
+                ),
+                LoweredStmt::Expr(
+                    LoweredExpr::RuntimeCall {
+                        runtime_fn: "BigIntBitwiseOr".to_owned(),
+                        args: vec![
+                            LoweredExpr::Local(
+                                ts2wasm_ir::lowered::LocalId(0),
+                                Span::generated("test"),
+                            ),
+                            LoweredExpr::Local(
+                                ts2wasm_ir::lowered::LocalId(0),
+                                Span::generated("test"),
+                            ),
+                        ],
+                        span: Span::generated("test"),
+                    },
+                    Span::generated("test"),
+                ),
+                LoweredStmt::Expr(
+                    LoweredExpr::RuntimeCall {
+                        runtime_fn: "BigIntBitwiseXor".to_owned(),
+                        args: vec![
+                            LoweredExpr::Local(
+                                ts2wasm_ir::lowered::LocalId(0),
+                                Span::generated("test"),
+                            ),
+                            LoweredExpr::Local(
+                                ts2wasm_ir::lowered::LocalId(0),
+                                Span::generated("test"),
+                            ),
+                        ],
+                        span: Span::generated("test"),
+                    },
+                    Span::generated("test"),
+                ),
+                LoweredStmt::Expr(
+                    LoweredExpr::RuntimeCall {
+                        runtime_fn: "BigIntFromValue".to_owned(),
+                        args: vec![LoweredExpr::Local(
+                            ts2wasm_ir::lowered::LocalId(0),
+                            Span::generated("test"),
+                        )],
+                        span: Span::generated("test"),
+                    },
+                    Span::generated("test"),
+                ),
+                LoweredStmt::Expr(
+                    LoweredExpr::RuntimeCall {
+                        runtime_fn: "BigIntAsIntN".to_owned(),
+                        args: vec![
+                            LoweredExpr::Number(8, Span::generated("test")),
+                            LoweredExpr::Local(
+                                ts2wasm_ir::lowered::LocalId(0),
+                                Span::generated("test"),
+                            ),
+                        ],
+                        span: Span::generated("test"),
+                    },
+                    Span::generated("test"),
+                ),
+                LoweredStmt::Expr(
+                    LoweredExpr::RuntimeCall {
+                        runtime_fn: "BigIntAsUintN".to_owned(),
+                        args: vec![
+                            LoweredExpr::Number(8, Span::generated("test")),
+                            LoweredExpr::Local(
+                                ts2wasm_ir::lowered::LocalId(0),
+                                Span::generated("test"),
+                            ),
+                        ],
+                        span: Span::generated("test"),
+                    },
+                    Span::generated("test"),
+                ),
             ],
             top_level_locals: vec![ts2wasm_ir::lowered::LocalId(0)],
             functions: vec![],
@@ -998,16 +1124,36 @@ mod tests {
     fn bigint_runtime_comparison_selects_helper_deps() {
         let program = LoweredProgram {
             top_level_statements: vec![
-                LoweredStmt::Expr(LoweredExpr::Binary {
-                    left: Box::new(LoweredExpr::Local(ts2wasm_ir::lowered::LocalId(0))),
-                    op: LoweredBinaryOp::StrictEqual,
-                    right: Box::new(LoweredExpr::Local(ts2wasm_ir::lowered::LocalId(1))),
-                }),
-                LoweredStmt::Expr(LoweredExpr::Binary {
-                    left: Box::new(LoweredExpr::Local(ts2wasm_ir::lowered::LocalId(0))),
-                    op: LoweredBinaryOp::Less,
-                    right: Box::new(LoweredExpr::Local(ts2wasm_ir::lowered::LocalId(1))),
-                }),
+                LoweredStmt::Expr(
+                    LoweredExpr::Binary {
+                        left: Box::new(LoweredExpr::Local(
+                            ts2wasm_ir::lowered::LocalId(0),
+                            Span::generated("test"),
+                        )),
+                        op: LoweredBinaryOp::StrictEqual,
+                        right: Box::new(LoweredExpr::Local(
+                            ts2wasm_ir::lowered::LocalId(1),
+                            Span::generated("test"),
+                        )),
+                        span: Span::generated("test"),
+                    },
+                    Span::generated("test"),
+                ),
+                LoweredStmt::Expr(
+                    LoweredExpr::Binary {
+                        left: Box::new(LoweredExpr::Local(
+                            ts2wasm_ir::lowered::LocalId(0),
+                            Span::generated("test"),
+                        )),
+                        op: LoweredBinaryOp::Less,
+                        right: Box::new(LoweredExpr::Local(
+                            ts2wasm_ir::lowered::LocalId(1),
+                            Span::generated("test"),
+                        )),
+                        span: Span::generated("test"),
+                    },
+                    Span::generated("test"),
+                ),
             ],
             top_level_locals: vec![
                 ts2wasm_ir::lowered::LocalId(0),
@@ -1033,15 +1179,20 @@ mod tests {
     #[test]
     fn bigint_builtin_string_conversion_selects_helper_deps_without_imports() {
         let program = LoweredProgram {
-            top_level_statements: vec![LoweredStmt::Expr(LoweredExpr::RuntimeCall {
-                runtime_fn: "BigIntToString".to_owned(),
-                args: vec![LoweredExpr::BigIntLiteral {
-                    decimal: "10".to_owned(),
-                    sign: 1,
-                    limb_low: 10,
-                    limb_high: 0,
-                }],
-            })],
+            top_level_statements: vec![LoweredStmt::Expr(
+                LoweredExpr::RuntimeCall {
+                    runtime_fn: "BigIntToString".to_owned(),
+                    args: vec![LoweredExpr::BigIntLiteral {
+                        decimal: "10".to_owned(),
+                        sign: 1,
+                        limb_low: 10,
+                        limb_high: 0,
+                        span: Span::generated("test"),
+                    }],
+                    span: Span::generated("test"),
+                },
+                Span::generated("test"),
+            )],
             top_level_locals: vec![],
             functions: vec![],
             modules: vec![],
@@ -1073,6 +1224,7 @@ mod tests {
                 methods: vec![("bar".to_owned(), FuncId(1))],
                 static_methods: vec![],
                 private_fields: vec![],
+                span: Span::generated("test"),
             }],
             top_level_locals: vec![],
             functions: vec![],
@@ -1096,10 +1248,10 @@ mod tests {
     #[test]
     fn no_console_log_no_log_write_runtime_strings() {
         let program = LoweredProgram {
-            top_level_statements: vec![LoweredStmt::Expr(LoweredExpr::Number(
-                42,
+            top_level_statements: vec![LoweredStmt::Expr(
+                LoweredExpr::Number(42, Span::generated("test")),
                 Span::generated("test"),
-            ))],
+            )],
             top_level_locals: vec![],
             functions: vec![],
             modules: vec![],
@@ -1159,10 +1311,14 @@ mod tests {
     #[test]
     fn console_log_selects_log_write_runtime_strings() {
         let program = LoweredProgram {
-            top_level_statements: vec![LoweredStmt::Expr(LoweredExpr::Call {
-                kind: FunctionCallKind::Builtin(BuiltinId::ConsoleLog),
-                args: vec![LoweredExpr::Number(42, Span::generated("test"))],
-            })],
+            top_level_statements: vec![LoweredStmt::Expr(
+                LoweredExpr::Call {
+                    kind: FunctionCallKind::Builtin(BuiltinId::ConsoleLog),
+                    args: vec![LoweredExpr::Number(42, Span::generated("test"))],
+                    span: Span::generated("test"),
+                },
+                Span::generated("test"),
+            )],
             top_level_locals: vec![],
             functions: vec![],
             modules: vec![],

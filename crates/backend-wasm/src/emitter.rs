@@ -172,9 +172,6 @@ impl<'a> WatEmitter<'a> {
         writer.push_str(&buf);
         buf.clear();
 
-        // WASI proc_exit for clean program termination
-        writer.push_str("  (import \"wasi_snapshot_preview1\" \"proc_exit\" (func $wasi_proc_exit (param i32)))\n");
-
         writer.line_fmt(
             2,
             format_args!(
