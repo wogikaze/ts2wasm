@@ -1,11 +1,13 @@
 {
-  "capabilities": [],
+  "runtime_functions": [],
   "globals": [
     "$exception_pending",
     "$exception_handler_depth"
   ],
-  "imports": [],
-  "manifest_target": "wasm32-wasi-p1",
-  "runtime_functions": [],
-  "runtime_strings": []
+  "imports": [
+    "wasi_snapshot_preview1.proc_exit"
+  ],
+  "capabilities": [],
+  "runtime_strings": [],
+  "manifest_target": "wasm32-wasi-p1"
 }

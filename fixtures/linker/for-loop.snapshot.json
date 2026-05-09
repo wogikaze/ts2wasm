@@ -1,25 +1,4 @@
 {
-  "capabilities": [
-    "stdout.write"
-  ],
-  "globals": [
-    "$alloc_bytes_since_last_gc",
-    "$gc_free_list",
-    "$gc_free_list_max_body_size",
-    "$gc_free_list_second_max_body_size",
-    "$gc_root_base",
-    "$gc_root_count",
-    "$gc_call_frame_base",
-    "$gc_call_frame_top",
-    "$gc_call_frame_limit",
-    "$gc_call_frame_current",
-    "$exception_pending",
-    "$exception_handler_depth"
-  ],
-  "imports": [
-    "wasi_snapshot_preview1.fd_write"
-  ],
-  "manifest_target": "wasm32-wasi-p1",
   "runtime_functions": [
     "write",
     "copy",
@@ -40,6 +19,27 @@
     "equal_equal",
     "alloc_heap"
   ],
+  "globals": [
+    "$alloc_bytes_since_last_gc",
+    "$gc_free_list",
+    "$gc_free_list_max_body_size",
+    "$gc_free_list_second_max_body_size",
+    "$gc_root_base",
+    "$gc_root_count",
+    "$gc_call_frame_base",
+    "$gc_call_frame_top",
+    "$gc_call_frame_limit",
+    "$gc_call_frame_current",
+    "$exception_pending",
+    "$exception_handler_depth"
+  ],
+  "imports": [
+    "wasi_snapshot_preview1.fd_write",
+    "wasi_snapshot_preview1.proc_exit"
+  ],
+  "capabilities": [
+    "stdout.write"
+  ],
   "runtime_strings": [
     "\n",
     "Cannot mix BigInt and other types, use explicit conversions",
@@ -50,5 +50,6 @@
     "null",
     "true",
     "undefined"
-  ]
+  ],
+  "manifest_target": "wasm32-wasi-p1"
 }

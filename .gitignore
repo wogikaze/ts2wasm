@@ -25,6 +25,11 @@ tmp/
 reports/
 artifacts/*
 web-ui/public/data
+/*.wat
+/*.log
+/*.patch
+/*.txt
+/*.py
 
 # build/test cache
 .cache/
