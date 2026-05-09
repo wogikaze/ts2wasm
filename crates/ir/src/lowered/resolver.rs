@@ -630,21 +630,19 @@ impl<'a> Resolver<'a> {
                 body,
             } => {
                 self.scopes.push(HashMap::new());
-                let resolved = (|| {
-                    let resolved_init = if let Some(i) = init {
-                        Some(Box::new(self.lower_stmt(i)?))
-                    } else {
-                        None
-                    };
-                    Ok(LoweredStmt::For {
-                        init: resolved_init,
-                        condition: condition.as_ref().map(|c| self.lower_expr(c)).transpose()?,
-                        update: update.as_ref().map(|u| self.lower_expr(u)).transpose()?,
-                        body: self.lower_nested_block(body)?,
-                        span: Span::generated("for"),})
-                })();
+                let resolved_init = init.as_ref()
+                    .map(|s| self.lower_stmt(s))
+                    .transpose()?
+                    .map(Box::new);
+                let resolved = LoweredStmt::For {
+                    init: resolved_init,
+                    condition: condition.as_ref().map(|c| self.lower_expr(c)).transpose()?,
+                    update: update.as_ref().map(|u| self.lower_expr(u)).transpose()?,
+                    body: self.lower_nested_block(body)?,
+                    span: Span::generated("for"),
+                };
                 self.scopes.pop();
-                resolved
+                Ok(resolved)
             }
             ResolvedStmt::ForIn { var, iter, body } => {
                 let var_id = self.declare_local(var)?;

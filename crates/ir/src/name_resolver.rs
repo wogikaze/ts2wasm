@@ -585,7 +585,16 @@ impl NameResolver {
                 span,
             } => {
                 self.enter_scope();
+                // Declare for-loop init variables before resolving condition/update
+                // so let/var i = 0 is visible to i < 4 and ++i.
                 let resolved_init = if let Some(i) = init {
+                    if let Stmt::Let { name, .. } = i.as_ref() {
+                        self.declare_variable(
+                            name,
+                            Some(*span),
+                            matches!(i.as_ref(), Stmt::Let { is_var: true, .. }),
+                        )?;
+                    }
                     Some(Box::new(self.resolve_stmt(i)?))
                 } else {
                     None
