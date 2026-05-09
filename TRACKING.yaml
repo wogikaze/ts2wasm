@@ -47,6 +47,28 @@ open:
 active: []
 
 done:
+  - id: 145
+    title: "Add precise unsupported diagnostic for type-only imports"
+    priority: P2
+    type: diagnostic
+    area: ir
+    status: done
+    created: 2026-05-09
+    updated: 2026-05-09
+    closed: 2026-05-09
+    owner: human
+    roadmap: W3
+    acceptance:
+      - "cargo nextest run -p ts2wasm-cli --test m6_builtin_methods type_only_import_unsupported_diagnostic"
+    non_goals:
+      - "No type-only import resolution."
+    evidence:
+      commit: "9dfe360d1"
+      commands:
+        - command: "cargo nextest run -p ts2wasm-cli --test m6_builtin_methods type_only_import_unsupported_diagnostic"
+          exit: 0
+      summary: "Added import_type: bool to Stmt::ImportNamed in AST. Parser detects `import type { X } from 'y'`. Name resolver emits precise UnsupportedSyntax diagnostic."
+
   - id: 144
     title: "Add manifest golden tests for core arithmetic fixtures"
     priority: P2
