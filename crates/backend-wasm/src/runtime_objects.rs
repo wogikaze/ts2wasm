@@ -322,11 +322,10 @@ impl WatEmitter<'_> {
 
     pub(super) fn emit_object_has_own(&self, wat: &mut String) {
         wat.push_str(
-            &r#"
+            r#"
   (func $object_has_own (param $obj i32) (param $prop i32) (result i32)
     (return (call $object_has_own_property (local.get $obj) (local.get $prop))))
-"#
-            .to_string(),
+"#,
         );
     }
 

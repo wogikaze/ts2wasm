@@ -49,6 +49,7 @@ impl WatEmitter<'_> {
     }
 
     /// Returns true if the given string was interned as a runtime-originated string.
+    #[allow(dead_code)]
     pub(super) fn is_runtime_string(&self, value: &str) -> bool {
         self.runtime_string_set.contains(value)
     }

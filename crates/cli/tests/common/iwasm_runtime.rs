@@ -10,6 +10,7 @@ pub(crate) struct IwasmRunResult {
     pub timed_out: bool,
 }
 
+#[allow(dead_code)]
 pub(crate) fn run_iwasm_with_timeout(cmd: &mut Command) -> io::Result<IwasmRunResult> {
     run_iwasm_with_timeout_duration(cmd, IWASM_TIMEOUT)
 }

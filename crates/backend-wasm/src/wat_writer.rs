@@ -130,6 +130,7 @@ pub struct WatWriter {
     output: String,
 }
 
+#[allow(dead_code)]
 impl WatWriter {
     pub fn new() -> Self {
         Self {

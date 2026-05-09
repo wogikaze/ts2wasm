@@ -55,8 +55,11 @@ pub(crate) enum RuntimeFn {
     NumberFromI32,
     NumberToI32,
     MakeBigIntLiteral,
+    #[allow(dead_code)]
     NumberToExponential,
+    #[allow(dead_code)]
     NumberToFixed,
+    #[allow(dead_code)]
     NumberToPrecision,
     BigIntToString,
     BigIntToBoolean,
@@ -356,8 +359,10 @@ pub(crate) enum RuntimeFn {
     /// Module system: module.exports = value — replace exports object.
     ModuleExportsAssign,
     /// Node fs.readFileSync(path, encoding)
+    #[allow(dead_code)]
     FsReadFileSync,
     /// Node fs.writeFileSync(path, data)
+    #[allow(dead_code)]
     FsWriteFileSync,
     /// Node fs.appendFileSync(path, data)
     FsAppendFileSync,
@@ -436,7 +441,9 @@ pub(crate) enum HostImport {
     ArgsGet,
     EnvironSizesGet,
     EnvironGet,
+    #[allow(dead_code)]
     FsReadFileSync,
+    #[allow(dead_code)]
     FsWriteFileSync,
     FsAppendFileSync,
     ProcessExit,
@@ -927,8 +934,11 @@ pub(crate) enum Capability {
     WasiEnv,
     WasiFilesystemRead,
     WasiFilesystemWrite,
+    #[allow(dead_code)]
     WasiFilesystemAppend,
+    #[allow(dead_code)]
     HostFsReadFileSync,
+    #[allow(dead_code)]
     HostFsWriteFileSync,
     HostFsAppendFileSync,
     HostProcessExit,
@@ -1161,7 +1171,9 @@ const BIGINT_AS_UINT_N_DEPS: &[RuntimeFn] = &[RuntimeFn::BigIntAdd, RuntimeFn::B
 
 const IMPORT_FD_READ: &[HostImport] = &[HostImport::FdRead];
 const IMPORT_FD_WRITE: &[HostImport] = &[HostImport::FdWrite];
+#[allow(dead_code)]
 const IMPORT_PATH_OPEN: &[HostImport] = &[HostImport::PathOpen];
+#[allow(dead_code)]
 const IMPORT_FD_CLOSE: &[HostImport] = &[HostImport::FdClose];
 const IMPORT_FS_READ_WASI: &[HostImport] = &[
     HostImport::PathOpen,
@@ -1199,8 +1211,11 @@ const CAP_WASI_ARGS: &[Capability] = &[Capability::WasiArgs];
 const CAP_WASI_ENV: &[Capability] = &[Capability::WasiEnv];
 const CAP_WASI_FILESYSTEM_READ: &[Capability] = &[Capability::WasiFilesystemRead];
 const CAP_WASI_FILESYSTEM_WRITE: &[Capability] = &[Capability::WasiFilesystemWrite];
+#[allow(dead_code)]
 const CAP_WASI_FILESYSTEM_APPEND: &[Capability] = &[Capability::WasiFilesystemAppend];
+#[allow(dead_code)]
 const CAP_HOST_FS_READ_FILE_SYNC: &[Capability] = &[Capability::HostFsReadFileSync];
+#[allow(dead_code)]
 const CAP_HOST_FS_WRITE_FILE_SYNC: &[Capability] = &[Capability::HostFsWriteFileSync];
 const CAP_HOST_FS_APPEND_FILE_SYNC: &[Capability] = &[Capability::HostFsAppendFileSync];
 const CAP_HOST_PROCESS_EXIT: &[Capability] = &[Capability::HostProcessExit];

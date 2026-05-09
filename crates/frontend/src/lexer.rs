@@ -791,7 +791,7 @@ impl<'a> Lexer<'a> {
                     // JSX closing tag: </Ident> — scan for > before /
                     let is_jsx_closing = matches!(self.prev_token, Some(Token::Less))
                         && self.source.get(self.cursor + 1..)
-                            .map_or(false, |rest| {
+                            .is_some_and(|rest| {
                                 let after_slash = rest.chars().next();
                                 if !matches!(after_slash, Some(c) if c.is_ascii_alphabetic() || c == '_') {
                                     return false;

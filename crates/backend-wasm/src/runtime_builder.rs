@@ -281,7 +281,7 @@ impl WatEmitter<'_> {
             }
         }
     }
-    pub(super) fn emit_spread_via_iterator(&self, wat: &mut String) {
+    pub(super) fn emit_spread_via_iterator(&self, _wat: &mut String) {
         unreachable!("SpreadViaIterator is handled inline in RuntimeCall dispatch");
     }
 }

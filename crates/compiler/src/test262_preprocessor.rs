@@ -151,6 +151,7 @@ const KNOWN_FEATURES: &[(&str, &str)] = &[
 /// # Returns
 /// * `Ok(String)` - Processed source code with directive-generated snippets inserted
 /// * `Err(Diagnostic)` - Error if directives cannot be resolved/loaded or are unsupported
+///
 /// Check if the source already contains a function definition of the given name.
 ///
 /// This prevents DuplicateFunction errors when the test262 Python harness has already

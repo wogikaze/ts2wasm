@@ -393,17 +393,15 @@ fn resolve_local_specifier(
     specifier: &ModuleSpecifier,
 ) -> Result<PathBuf, Diagnostic> {
     let importer_dir = importer_path.parent().unwrap_or_else(|| Path::new("."));
-    let candidates: Vec<PathBuf>;
-
-    if is_local_relative_specifier(&specifier.value) {
+    let candidates = if is_local_relative_specifier(&specifier.value) {
         let raw_candidate = importer_dir.join(&specifier.value);
-        let mut file_candidates = module_resolution_candidates(&raw_candidate, specifier)?;
+        let mut candidates = module_resolution_candidates(&raw_candidate, specifier)?;
         if raw_candidate.is_dir() {
-            file_candidates.push(raw_candidate.join("index.ts"));
-            file_candidates.push(raw_candidate.join("index.js"));
-            file_candidates.push(raw_candidate.join("index.d.ts"));
+            candidates.push(raw_candidate.join("index.ts"));
+            candidates.push(raw_candidate.join("index.js"));
+            candidates.push(raw_candidate.join("index.d.ts"));
         }
-        candidates = file_candidates;
+        candidates
     } else {
         let raw_candidate = importer_dir.join(&specifier.value);
         let mut bare_candidates =
@@ -444,8 +442,8 @@ fn resolve_local_specifier(
                 break;
             }
         }
-        candidates = bare_candidates;
-    }
+        bare_candidates
+    };
 
     for candidate in &candidates {
         if candidate.is_file() {
