@@ -13,24 +13,6 @@ meta:
     roadmap_source: docs/roadmap.md
 
 open:
-  # W2: Parser (small, well-scoped)
-  - id: 125
-    title: "Add precise unsupported diagnostic for `with` statement"
-    priority: P1
-    type: diagnostic
-    area: frontend
-    status: open
-    created: 2026-05-09
-    updated: 2026-05-09
-    owner: human
-    roadmap: W2
-    ready: true
-    acceptance:
-      - "cargo nextest run -p ts2wasm-cli --test m6_builtin_methods"
-    non_goals:
-      - "No with statement implementation."
-    evidence: null
-
   - id: 126
     title: "Add parser support for labelled function declarations"
     priority: P2
@@ -596,6 +578,29 @@ done:
           exit: 0
       summary: "Implemented cover initializer skip in for-in/for-of lookahead and parsing paths."
 
+  - id: 125
+    title: "Add precise unsupported diagnostic for `with` statement"
+    priority: P1
+    type: diagnostic
+    area: frontend
+    status: done
+    created: 2026-05-09
+    updated: 2026-05-09
+    closed: 2026-05-09
+    owner: human
+    roadmap: W2
+    acceptance:
+      - "cargo nextest run -p ts2wasm-cli --test m6_builtin_methods with_statement_unsupported_diagnostic"
+    non_goals:
+      - "No with statement implementation."
+    evidence:
+      commit: "56ff3cef3"
+      commands:
+        - command: "cargo nextest run -p ts2wasm-cli --test m6_builtin_methods with_statement_unsupported_diagnostic"
+          exit: 0
+      summary: "Added Token::With match arm before catch-all, produces precise 'With statement is not supported' diagnostic."
+
+  - id: 123
     title: "Ramp test262 coverage from 500 to 2,000 with parallel execution"
     priority: P1
     type: infra
