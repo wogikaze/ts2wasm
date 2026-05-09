@@ -12,23 +12,6 @@ meta:
     canonical_source: TRACKING.yaml
     roadmap_source: docs/roadmap.md
 
-open:
-  - id: 142
-    title: "Register WASI clock_res_get as HostImport with WAT emitter"
-    priority: P3
-    type: feature
-    area: backend
-    status: open
-    created: 2026-05-09
-    updated: 2026-05-09
-    roadmap: W1
-    acceptance:
-      - "cargo nextest run -p ts2wasm-cli --test m1_iwasm clock_res_get_compiles"
-    non_goals:
-      - "No Node.js shim."
-      - "No runtime clock usage."
-    notes: "clock_res_get is a simple WASI function. Register as HostImport variant following the pattern of ArgsSizesGet/ArgsGet (items 134, 138)."
-
 active: []
 
 done:
@@ -95,6 +78,28 @@ done:
         - command: "cargo nextest run -p ts2wasm-cli --test m6_builtin_methods type_only_import_unsupported_diagnostic"
           exit: 0
       summary: "Added import_type field to Stmt::ImportNamed AST node. Parser detects import type {}. Module graph builder skips type-only imports. Name resolver emits precise issue-5253 diagnostic."
+
+  - id: 142
+    title: "Register WASI clock_res_get as HostImport with WAT emitter"
+    priority: P3
+    type: feature
+    area: backend
+    status: done
+    created: 2026-05-09
+    updated: 2026-05-09
+    closed: 2026-05-09
+    roadmap: W1
+    acceptance:
+      - "cargo nextest run -p ts2wasm-cli --test m1_iwasm clock_res_get_compiles"
+    non_goals:
+      - "No Node.js shim."
+      - "No runtime clock usage."
+    evidence:
+      commit: "10e480ae6"
+      commands:
+        - command: "cargo nextest run -p ts2wasm-cli --test m1_iwasm clock_res_get_compiles"
+          exit: 0
+      summary: "Added ClockResGet variant to HostImport enum with spec() and manifest_name(). Build-smoke test validates compilation."
 
   - id: 101
     title: "Register Promise, Symbol, Reflect, Proxy as known global names"
