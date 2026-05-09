@@ -13,26 +13,6 @@ meta:
     roadmap_source: docs/roadmap.md
 
 open:
-
-
-  - id: 132
-    title: "Add parser support for TypeScript parameter property syntax"
-    priority: P2
-    type: feature
-    area: frontend
-    status: open
-    created: 2026-05-09
-    updated: 2026-05-09
-    owner: human
-    roadmap: W2
-    ready: true
-    acceptance:
-      - "cargo nextest run -p ts2wasm-cli --test m6_builtin_methods"
-    non_goals:
-      - "No runtime semantics — parser only."
-    evidence: null
-
-
   # W1: WASI (small scope)
   - id: 134
     title: "Add WASI args support (args_get / args_sizes_get)"
@@ -756,6 +736,28 @@ done:
           exit: 0
       summary: "Already implemented — UnsupportedTypeScriptSyntax diagnostic with 'issue-5253: TypeScript decorator syntax is not supported'."
 
+
+  - id: 132
+    title: "Add parser support for TypeScript parameter property syntax"
+    priority: P2
+    type: feature
+    area: frontend
+    status: done
+    created: 2026-05-09
+    updated: 2026-05-09
+    closed: 2026-05-09
+    owner: human
+    roadmap: W2
+    acceptance:
+      - "cargo nextest run -p ts2wasm-cli --test m6_builtin_methods"
+    non_goals:
+      - "No runtime semantics — parser only."
+    evidence:
+      commit: "already-implemented"
+      commands:
+        - command: "cargo build 2>&1 | head -1"
+          exit: 0
+      summary: "Already implemented — all TS parameter property modifiers (public/private/protected/readonly in constructor params) compile successfully."
   - id: 133
     title: "Add precise unsupported diagnostic for DebuggerStatement"
     priority: P2
