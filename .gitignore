@@ -45,3 +45,4 @@ _worktrees/
 # documentation site
 site/node_modules
 site/docs
+.reference-coverage-delta.json

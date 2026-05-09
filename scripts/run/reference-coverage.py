@@ -745,6 +745,7 @@ def main():
     detail_output = False
     record_baseline = None
     compare_baseline = None
+    delta_report = False
     paths_file = None
     path_filters = []
     web_ui = True
@@ -843,6 +844,9 @@ def main():
                 sys.exit(1)
             compare_baseline = args[i + 1]
             i += 2
+        elif args[i] == "--delta-report":
+            delta_report = True
+            i += 1
         else:
             print(f"unknown option: {args[i]}", file=sys.stderr)
             usage()
@@ -2617,6 +2621,48 @@ def main():
             print(f"# REGRESSION detected: {', '.join(regressions)}", file=sys.stderr)
             sys.exit(1)
         print(f"# Baseline comparison passed against {compare_baseline}", file=sys.stderr)
+
+    if delta_report:
+        delta_path = REPO_ROOT / ".reference-coverage-delta.json"
+        current_snapshot = {
+            "build_pass": summary["build_pass"],
+            "semantic_pass": summary["semantic_pass"],
+            "executed": summary["executed"],
+            "unsupported_features": summary.get("unsupported_features", {}),
+            "unsupported_diagcodes": summary.get("unsupported_diagcodes", {}),
+            "recorded_at": datetime.now().isoformat(),
+        }
+        if delta_path.exists():
+            prev = json.loads(delta_path.read_text())
+            changes = []
+            # Compare build_pass and semantic_pass
+            for key in ("build_pass", "semantic_pass"):
+                cur_val = current_snapshot[key]
+                prev_val = prev.get(key, 0)
+                diff = cur_val - prev_val
+                if diff != 0:
+                    changes.append(f"delta: {key} {diff:+d} (was {prev_val}, now {cur_val})")
+            # Compare unsupported features
+            prev_features = prev.get("unsupported_features", {})
+            cur_features = current_snapshot["unsupported_features"]
+            all_features = set(list(prev_features.keys()) + list(cur_features.keys()))
+            for feat in sorted(all_features):
+                prev_count = prev_features.get(feat, 0)
+                cur_count = cur_features.get(feat, 0)
+                if prev_count == 0 and cur_count > 0:
+                    changes.append(f"delta: feature '{feat}' newly unsupported ({cur_count}x)")
+                elif prev_count > 0 and cur_count == 0:
+                    changes.append(f"delta: feature '{feat}' no longer unsupported")
+                elif prev_count != cur_count:
+                    changes.append(f"delta: feature '{feat}' count {prev_count} -> {cur_count}")
+            if changes:
+                for c in changes:
+                    print(c, file=sys.stderr)
+            else:
+                print("delta: no changes from previous run", file=sys.stderr)
+        else:
+            print("delta: no previous delta report found; recording baseline", file=sys.stderr)
+        delta_path.write_text(json.dumps(current_snapshot, indent=2))
 
     if web_ui:
         write_coverage_result(summary)

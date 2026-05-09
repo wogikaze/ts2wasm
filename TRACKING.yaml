@@ -12,24 +12,7 @@ meta:
     canonical_source: TRACKING.yaml
     roadmap_source: docs/roadmap.md
 
-open:
-  # W6: Infra (well-scoped)
-  - id: 128
-    title: "Add delta reporting for feature-level pass/fail changes between ramp runs"
-    priority: P2
-    type: infra
-    area: scripts
-    status: open
-    created: 2026-05-09
-    updated: 2026-05-09
-    owner: human
-    roadmap: W6
-    ready: true
-    acceptance:
-      - "mise run reference-coverage -- test262 --limit 100 --delta-report 2>&1 | grep 'delta'"
-    non_goals:
-      - "No dashboard changes."
-    evidence: null
+open: []
 
 active: []
 
@@ -612,6 +595,28 @@ done:
         - command: "cargo nextest run -p ts2wasm-cli --test m11_host_deny standalone_fixtures_pass_host_deny"
           exit: 0
       summary: "m11_host_deny test already exists and passes. Host-deny mode and manifest audit infrastructure is complete."
+
+  - id: 128
+    title: "Add delta reporting for feature-level pass/fail changes between ramp runs"
+    priority: P2
+    type: infra
+    area: scripts
+    status: done
+    created: 2026-05-09
+    updated: 2026-05-09
+    closed: 2026-05-09
+    owner: human
+    roadmap: W6
+    acceptance:
+      - "mise run reference-coverage -- test262 --limit 100 --delta-report 2>&1 | grep 'delta'"
+    non_goals:
+      - "No dashboard changes."
+    evidence:
+      commit: "pending"
+      commands:
+        - command: "mise run reference-coverage -- test262 --limit 100 --delta-report 2>&1 | grep 'delta'"
+          exit: 0
+      summary: "Added --delta-report flag to reference-coverage.py. Compares unsupported_features and build_pass/semantic_pass between runs, outputs 'delta:' prefixed lines on stderr."
 
   - id: 123
     title: "Ramp test262 coverage from 500 to 2,000 with parallel execution"
