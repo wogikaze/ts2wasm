@@ -1679,3 +1679,64 @@ fn intl_unsupported_diagnostic() {
         err_msg
     );
 }
+
+// === W5: Language runtime semantics — new fixtures ===
+
+// for...of on array (iterator protocol)
+#[test]
+fn build_smoke_for_of_array() {
+    let result = run_fixture("core-semantics/for-of-array.ts");
+    assert!(
+        result.is_ok(),
+        "for...of on array should build: {:?}",
+        result.err()
+    );
+}
+
+// this receiver in method call
+#[test]
+fn build_smoke_this_receiver_method() {
+    let result = run_fixture("core-semantics/this-receiver-method.ts");
+    assert!(
+        result.is_ok(),
+        "this receiver method should build: {:?}",
+        result.err()
+    );
+}
+
+// Closure GC call frame — unsupported (TODO: precise diagnostic)
+#[test]
+fn closure_gc_unsupported_diagnostic() {
+    let result = run_fixture("core-semantics/closure-gc-call-frame-root.ts");
+    assert!(
+        result.is_err(),
+        "Closure GC should produce unsupported diagnostic"
+    );
+}
+
+// Array.reduceRight — builds (W4)
+#[test]
+fn build_smoke_array_reduce_right() {
+    let result = run_fixture("builtins-and-io/array-reduce-right.ts");
+    assert!(
+        result.is_ok(),
+        "Array.reduceRight should build: {:?}",
+        result.err()
+    );
+}
+
+// Object.seal — unsupported (method dispatch gap)
+#[test]
+fn object_seal_unsupported_diagnostic() {
+    let result = run_fixture("builtins-and-io/object-seal.ts");
+    assert!(
+        result.is_err(),
+        "Object.seal should produce unsupported diagnostic"
+    );
+    let err_msg = result.err().unwrap();
+    assert!(
+        err_msg.contains("Object"),
+        "Diagnostic should mention Object: {}",
+        err_msg
+    );
+}
