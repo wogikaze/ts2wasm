@@ -2833,7 +2833,7 @@ impl<'a> Resolver<'a> {
         };
 
         // Determine the init expression for reduce (if applicable)
-        let init_expr = if method == "reduce" {
+        let init_expr = if method == "reduce" || method == "reduceRight" {
             let Some(init_arg) = args.get(1) else {
                 return Err(Diagnostic {
                     code: DiagCode::UnsupportedSyntax,
@@ -3392,7 +3392,7 @@ impl<'a> Resolver<'a> {
 
                 result_expr = LoweredExpr::Local(all, Span::generated("local"));
             }
-            "reduce" => {
+            "reduce" | "reduceRight" => {
                 // For reduce, the callback receives (acc, elem, i, arr)
                 let acc = self.alloc_temp();
                 // With initialValue: args[1] is the initial value
@@ -3440,16 +3440,29 @@ impl<'a> Resolver<'a> {
 
                         span: Span::generated("call"),},
                     Span::generated("Assign")));
-                while_body.push(LoweredStmt::Assign(
-                    i,
-                    LoweredExpr::Binary {
-                        left: Box::new(LoweredExpr::Local(i, Span::generated("local"))),
-                        op: LoweredBinaryOp::Add,
-                        right: Box::new(LoweredExpr::Number(1, Span::generated("num"))),
+                if method == "reduceRight" {
+                    while_body.push(LoweredStmt::Assign(
+                        i,
+                        LoweredExpr::Binary {
+                            left: Box::new(LoweredExpr::Local(i, Span::generated("local"))),
+                            op: LoweredBinaryOp::Subtract,
+                            right: Box::new(LoweredExpr::Number(1, Span::generated("num"))),
 
-                        span: Span::generated("binary"),},
-                    Span::generated("Assign"),
-                ));
+                            span: Span::generated("binary"),},
+                        Span::generated("Assign"),
+                    ));
+                } else {
+                    while_body.push(LoweredStmt::Assign(
+                        i,
+                        LoweredExpr::Binary {
+                            left: Box::new(LoweredExpr::Local(i, Span::generated("local"))),
+                            op: LoweredBinaryOp::Add,
+                            right: Box::new(LoweredExpr::Number(1, Span::generated("num"))),
+
+                            span: Span::generated("binary"),},
+                        Span::generated("Assign"),
+                    ));
+                }
 
                 result_expr = LoweredExpr::Local(acc, Span::generated("local"));
             }
@@ -3582,7 +3595,7 @@ impl<'a> Resolver<'a> {
         }
 
         // Add initial Let(i, ...) based on iteration direction
-        if method == "findLast" || method == "findLastIndex" {
+        if method == "findLast" || method == "findLastIndex" || method == "reduceRight" {
             stmts.push(LoweredStmt::Let(
                 i,
                 LoweredExpr::Binary {
@@ -3688,6 +3701,11 @@ impl<'a> Resolver<'a> {
                 right: Box::new(result_expr.clone()),
                 span: Span::generated("binary"),
             },
+            "reduceRight" => LoweredExpr::Binary {
+                left: Box::new(LoweredExpr::Local(i, Span::generated("local"))),
+                op: LoweredBinaryOp::GreaterEqual,
+                right: Box::new(LoweredExpr::Number(0, Span::generated("num"))),
+                span: Span::generated("binary"),},
             _ => LoweredExpr::Binary {
                 left: Box::new(LoweredExpr::Local(i, Span::generated("local"))),
                 op: LoweredBinaryOp::Less,

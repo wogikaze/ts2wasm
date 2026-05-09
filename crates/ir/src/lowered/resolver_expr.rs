@@ -1719,6 +1719,7 @@ impl<'a> Resolver<'a> {
                         || method == "some"
                         || method == "every"
                         || method == "reduce"
+                        || method == "reduceRight"
                         || method == "map"
                         || method == "flatMap")
                         && self.is_known_array_expr(object)

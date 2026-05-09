@@ -2582,6 +2582,11 @@ fn unary_void_operator_fixture_matches_node_output_under_iwasm() {
 }
 
 #[test]
+fn array_reduce_right_fixture_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/array-reduce-right.ts");
+}
+
+#[test]
 fn comma_operator_fixture_matches_node_output_under_iwasm() {
     assert_fixture_matches_node("fixtures/core-semantics/comma-operator.ts");
 }

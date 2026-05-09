@@ -15,6 +15,28 @@ meta:
 active: []
 
 done:
+  - id: 146
+    title: "Fix Array.prototype.reduceRight runtime: callback not invoked"
+    priority: P2
+    type: fix
+    area: ir
+    status: done
+    created: 2026-05-09
+    updated: 2026-05-09
+    closed: 2026-05-09
+    roadmap: W4
+    acceptance:
+      - "cargo nextest run -p ts2wasm-cli --test m2_node_diff array_reduce_right_fixture_matches_node_output_under_iwasm"
+    non_goals:
+      - "No Array.reduce without initialValue."
+      - "No hole/empty slot handling."
+    evidence:
+      commit: "pending"
+      commands:
+        - command: "cargo nextest run -p ts2wasm-cli --test m2_node_diff array_reduce_right_fixture_matches_node_output_under_iwasm"
+          exit: 0
+      summary: "Added reduceRight to IR-level callback expansion in resolver_expr.rs (missing from user-callback method list) and resolver_extra.rs (init_expr, reverse iteration, reverse while condition)."
+
   - id: 143
     title: "Add precise unsupported diagnostic for nested namespace access (A.B.C)"
     priority: P2
