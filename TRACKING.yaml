@@ -33,21 +33,6 @@ open:
       - "No runtime enum semantics."
       - "No enum value lowering."
 
-  - id: 150
-    title: "Fix const enum missing initializer / const type annotation parser rejects"
-    priority: P1
-    type: bug
-    area: frontend
-    status: open
-    created: 2026-05-09
-    updated: 2026-05-09
-    roadmap: W2
-    acceptance:
-      - "cargo test -p ts2wasm-frontend --lib -- parser::tests::rejects_non_const_enum_missing_initializer"
-      - "cargo test -p ts2wasm-frontend --lib -- parser::tests::rejects_uninitialized_const_after_type_annotation"
-    non_goals:
-      - "No runtime semantics changes."
-
   - id: 156
     title: "Fix build_smoke_module_augmentation test after module augmentation diagnostic was added"
     priority: P1
@@ -568,6 +553,32 @@ done:
         - command: "cargo fmt --all --check"
           exit: 0
       summary: "Remove enum erasure assertion from test (belongs to item 149). declare global and declare const initializer diagnostic assertions already pass as-is."
+
+  - id: 150
+    title: "Fix const enum missing initializer / const type annotation parser rejects"
+    priority: P1
+    type: bug
+    area: frontend
+    status: done
+    created: 2026-05-09
+    updated: 2026-05-09
+    closed: 2026-05-09
+    roadmap: W2
+    acceptance:
+      - "cargo test -p ts2wasm-frontend --lib -- parser::tests::rejects_non_const_enum_missing_initializer"
+      - "cargo test -p ts2wasm-frontend --lib -- parser::tests::rejects_uninitialized_const_after_type_annotation"
+    non_goals:
+      - "No runtime semantics changes."
+    evidence:
+      commit: "pending"
+      commands:
+        - command: "cargo test -p ts2wasm-frontend --lib -- parser::tests::rejects_non_const_enum_missing_initializer"
+          exit: 0
+        - command: "cargo test -p ts2wasm-frontend --lib -- parser::tests::rejects_uninitialized_const_after_type_annotation"
+          exit: 0
+        - command: "cargo fmt --all --check"
+          exit: 0
+      summary: "Add is_const check in let_statement_with_name_span(). When a const declaration has no initializer (plain or with type annotation), return UnsupportedSyntax diagnostic instead of creating Expr::Undefined."
 
   - id: 148
     title: "Add precise unsupported diagnostic for TypeScript module augmentation"

@@ -1202,7 +1202,7 @@ impl Parser {
     }
 
     fn let_statement_with_name_span(&mut self) -> Result<(Stmt, String, Span), Diagnostic> {
-        let (start, _is_const, kind) = match self.advance() {
+        let (start, is_const, kind) = match self.advance() {
             Some(SpannedToken {
                 kind: Token::Let,
                 span,
@@ -1246,6 +1246,12 @@ impl Parser {
                 message: "issue-247: binding patterns require an initializer".to_owned(),
                 span: Some(binding.span),
             });
+        } else if is_const {
+            return Err(Diagnostic {
+                code: DiagCode::UnsupportedSyntax,
+                message: "const declarations require an initializer".to_owned(),
+                span: Some(binding.span),
+            });
         } else {
             Expr::Undefined { span: binding.span }
         };
@@ -1265,6 +1271,12 @@ impl Parser {
                 return Err(Diagnostic {
                     code: DiagCode::UnsupportedSyntax,
                     message: "issue-247: binding patterns require an initializer".to_owned(),
+                    span: Some(extra_binding.span),
+                });
+            } else if is_const {
+                return Err(Diagnostic {
+                    code: DiagCode::UnsupportedSyntax,
+                    message: "const declarations require an initializer".to_owned(),
                     span: Some(extra_binding.span),
                 });
             } else {
