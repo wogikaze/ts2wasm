@@ -590,7 +590,7 @@ done:
     non_goals:
       - "No runtime semantics -- parser only."
     evidence:
-      commit: "pending"
+      commit: "d6ab8553f"
       commands:
         - command: "cargo nextest run -p ts2wasm-cli --test m6_builtin_methods build_smoke_cover_initializer_for_var_in"
           exit: 0
