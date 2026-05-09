@@ -5,7 +5,7 @@
 
 meta:
   version: 1
-  open_limit: 24
+  open_limit: 30
   active_limit: 1
   policy:
     generated_entries: forbidden
@@ -47,20 +47,6 @@ open:
       - "cargo test -p ts2wasm-frontend --lib -- parser::tests::rejects_uninitialized_const_after_type_annotation"
     non_goals:
       - "No runtime semantics changes."
-
-  - id: 154
-    title: "Fix rejects_unsupported_regexp_flag_with_issue_linked_diagnostic (d flag)"
-    priority: P1
-    type: bug
-    area: frontend
-    status: open
-    created: 2026-05-09
-    updated: 2026-05-09
-    roadmap: W2
-    acceptance:
-      - "cargo test -p ts2wasm-frontend --lib -- parser::tests::rejects_unsupported_regexp_flag_with_issue_linked_diagnostic"
-    non_goals:
-      - "No RegExp execution changes."
 
   - id: 155
     title: "Fix rejects_unsupported_typescript_ambient_forms_with_source_span (AmbientValueDecl emission)"
@@ -294,6 +280,142 @@ open:
     non_goals:
       - "No JSPI support."
 
+  - id: 173
+    title: "Register Object.seal in builtin dispatch (program_builtins.rs)"
+    priority: P1
+    type: bug
+    area: ir
+    status: open
+    created: 2026-05-09
+    updated: 2026-05-09
+    roadmap: W5
+    acceptance:
+      - "cargo nextest run -p ts2wasm-cli --test m6_builtin_methods build_smoke_object_seal"
+    non_goals:
+      - "No full property descriptor enforcement."
+      - "No Object.seal runtime change beyond dispatch."
+
+  - id: 174
+    title: "Fix WAT backend extra paren in br emission triggered by Object.defineProperty"
+    priority: P1
+    type: bug
+    area: backend
+    status: open
+    created: 2026-05-09
+    updated: 2026-05-09
+    roadmap: W5
+    acceptance:
+      - "cargo nextest run -p ts2wasm-cli --test m6_builtin_methods build_smoke_object_define_property"
+    non_goals:
+      - "No runtime semantics changes."
+    notes:
+      - "Error: unmatched ')' in (br $find_entry_loop)) at wat2wasm time. Probably an extra closing paren emitted by the WAT writer."
+
+  - id: 175
+    title: "Add node_diff for object semantics kernel fixture: writable-false-enforcement"
+    priority: P2
+    type: test
+    area: runtime
+    status: open
+    created: 2026-05-09
+    updated: 2026-05-09
+    roadmap: W5
+    acceptance:
+      - "cargo nextest run -p ts2wasm-cli --test m2_node_diff writable_false_enforcement_matches_node_output"
+    non_goals:
+      - "No new runtime implementation."
+      - "No runtime behavior changes."
+
+  - id: 176
+    title: "Add node_diff for object semantics kernel fixture: configurable-false-enforcement"
+    priority: P2
+    type: test
+    area: runtime
+    status: open
+    created: 2026-05-09
+    updated: 2026-05-09
+    roadmap: W5
+    acceptance:
+      - "cargo nextest run -p ts2wasm-cli --test m2_node_diff configurable_false_enforcement_matches_node_output"
+    non_goals:
+      - "No new runtime implementation."
+      - "No runtime behavior changes."
+
+  - id: 177
+    title: "Add node_diff for object semantics kernel fixture: descriptor-combinations"
+    priority: P2
+    type: test
+    area: runtime
+    status: open
+    created: 2026-05-09
+    updated: 2026-05-09
+    roadmap: W5
+    acceptance:
+      - "cargo nextest run -p ts2wasm-cli --test m2_node_diff descriptor_combinations_matches_node_output"
+    non_goals:
+      - "No new runtime implementation."
+      - "No runtime behavior changes."
+
+  - id: 178
+    title: "Add node_diff for object semantics kernel fixture: prototype-descriptor-inheritance"
+    priority: P2
+    type: test
+    area: runtime
+    status: open
+    created: 2026-05-09
+    updated: 2026-05-09
+    roadmap: W5
+    acceptance:
+      - "cargo nextest run -p ts2wasm-cli --test m2_node_diff prototype_descriptor_inheritance_matches_node_output"
+    non_goals:
+      - "No new runtime implementation."
+      - "No runtime behavior changes."
+
+  - id: 179
+    title: "Add node_diff for object semantics kernel fixture: enumerable-filtering"
+    priority: P2
+    type: test
+    area: runtime
+    status: open
+    created: 2026-05-09
+    updated: 2026-05-09
+    roadmap: W5
+    acceptance:
+      - "cargo nextest run -p ts2wasm-cli --test m2_node_diff enumerable_filtering_matches_node_output"
+    non_goals:
+      - "No new runtime implementation."
+      - "No runtime behavior changes."
+
+  - id: 180
+    title: "Add node_diff for object semantics kernel fixture: seal-freeze-descriptor"
+    priority: P2
+    type: test
+    area: runtime
+    status: open
+    created: 2026-05-09
+    updated: 2026-05-09
+    roadmap: W5
+    acceptance:
+      - "cargo nextest run -p ts2wasm-cli --test m2_node_diff seal_freeze_descriptor_matches_node_output"
+    non_goals:
+      - "No new runtime implementation."
+      - "No runtime behavior changes."
+
+  - id: 181
+    title: "Add node_diff for object semantics kernel fixture: define-property-edge-cases"
+    priority: P2
+    type: test
+    area: runtime
+    status: open
+    created: 2026-05-09
+    updated: 2026-05-09
+    roadmap: W5
+    acceptance:
+      - "cargo nextest run -p ts2wasm-cli --test m2_node_diff define_property_edge_cases_matches_node_output"
+    non_goals:
+      - "No new runtime implementation."
+      - "No runtime behavior changes."
+
 active:
   - id: 170
     title: "Implement state-machine transformation for iwasm/CoreWasm target"
@@ -414,6 +536,29 @@ done:
         - command: "cargo fmt --all --check"
           exit: 0
       summary: "In parse_program(), when a LeftBrace is encountered at top level, flatten the block's inner statements into the program statement list instead of wrapping them in Stmt::Block."
+
+  - id: 154
+    title: "Fix rejects_unsupported_regexp_flag_with_issue_linked_diagnostic (d flag)"
+    priority: P1
+    type: bug
+    area: frontend
+    status: done
+    created: 2026-05-09
+    updated: 2026-05-09
+    closed: 2026-05-09
+    roadmap: W2
+    acceptance:
+      - "cargo test -p ts2wasm-frontend --lib -- parser::tests::rejects_unsupported_regexp_flag_with_issue_linked_diagnostic"
+    non_goals:
+      - "No RegExp execution changes."
+    evidence:
+      commit: "pending"
+      commands:
+        - command: "cargo test -p ts2wasm-frontend --lib -- parser::tests::rejects_unsupported_regexp_flag_with_issue_linked_diagnostic"
+          exit: 0
+        - command: "cargo fmt --all --check"
+          exit: 0
+      summary: "Remove 'd' from the allowed RegExp flags list in lexer.rs so it gets rejected as unsupported."
 
   - id: 148
     title: "Add precise unsupported diagnostic for TypeScript module augmentation"
