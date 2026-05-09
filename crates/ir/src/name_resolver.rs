@@ -1067,6 +1067,24 @@ impl NameResolver {
                 if self.is_unshadowed_test262_ishtmldda_member(object, property) {
                     return Err(unsupported_annex_b_ishtmldda(*span));
                 }
+                // Detect nested namespace/module resolution (A.B.C where A is undeclared).
+                // Produce a precise diagnostic instead of a bare UnresolvedName.
+                if let Expr::Member {
+                    object: inner_obj, ..
+                } = object.as_ref()
+                    && let Expr::Ident { name, .. } = inner_obj.as_ref()
+                    && !self.is_declared(name)
+                    && !self.functions.contains_key(name.as_str())
+                    && !self.allowed_globals.contains(name.as_str())
+                {
+                    return Err(Diagnostic {
+                        code: DiagCode::UnsupportedSyntax,
+                        message: format!(
+                            "issue-5253: nested namespace/module resolution `{name}.{property}` is not supported; use destructuring instead"
+                        ),
+                        span: Some(*span),
+                    });
+                }
                 let resolved_object = self.resolve_member_target(object)?;
                 Ok(Expr::Member {
                     object: Box::new(resolved_object),

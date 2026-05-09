@@ -1307,6 +1307,22 @@ fn build_smoke_ts_parameter_property() {
 
 // === W3: Name/call resolution (TDD) ===
 
+// Nested namespace/module resolution (A.B.C) — precise unsupported diagnostic (id 143)
+#[test]
+fn nested_namespace_unsupported_diagnostic() {
+    let result = run_fixture("core-semantics/nested-namespace-unsupported.ts");
+    assert!(
+        result.is_err(),
+        "Nested namespace access should produce unsupported diagnostic"
+    );
+    let err_msg = result.err().unwrap();
+    assert!(
+        err_msg.contains("nested namespace"),
+        "Diagnostic should mention nested namespace: {}",
+        err_msg
+    );
+}
+
 // === W4: Builtin API semantics (TDD) ===
 
 // String.prototype.matchAll — W4: build smoke (fixture exists)
