@@ -17,6 +17,28 @@ open: []
 active: []
 
 done:
+  - id: 148
+    title: "Add precise unsupported diagnostic for TypeScript module augmentation"
+    priority: P2
+    type: diagnostic
+    area: frontend
+    status: done
+    created: 2026-05-09
+    updated: 2026-05-09
+    closed: 2026-05-09
+    roadmap: W3
+    acceptance:
+      - "cargo nextest run -p ts2wasm-cli --test m6_builtin_methods module_augmentation_unsupported_diagnostic"
+    non_goals:
+      - "No module augmentation implementation."
+      - "No import/export resolution for external modules."
+    evidence:
+      commit: "9702b832b"
+      commands:
+        - command: "cargo nextest run -p ts2wasm-cli --test m6_builtin_methods module_augmentation_unsupported_diagnostic"
+          exit: 0
+      summary: "Detect declare module \"string-literal\" { } in consume_typescript_ambient_declaration(). Returns issue-5253 unsupported diagnostic."
+
   - id: 147
     title: "Add precise unsupported diagnostic for TypeScript triple-slash directives"
     priority: P2
