@@ -48,53 +48,6 @@ open:
     non_goals:
       - "No runtime semantics changes."
 
-  - id: 151
-    title: "Fix angle bracket type assertion misidentified as JSX at statement start"
-    priority: P1
-    type: bug
-    area: frontend
-    status: done
-    created: 2026-05-09
-    updated: 2026-05-09
-    closed: 2026-05-09
-    roadmap: W2
-    acceptance:
-      - "cargo test -p ts2wasm-frontend --lib -- parser::tests::erases_angle_bracket_type_assertion_at_expression_statement_start"
-    non_goals:
-      - "No JSX parsing beyond statement-level disambiguation."
-      - "No type checking."
-    evidence:
-      commit: "b8febe2c2"
-      commands:
-        - command: "cargo test -p ts2wasm-frontend --lib -- parser::tests::erases_angle_bracket_type_assertion_at_expression_statement_start"
-          exit: 0
-        - command: "cargo nextest run -p ts2wasm-cli --test m6_builtin_methods jsx_element_unsupported_diagnostic"
-          exit: 0
-      summary: "Refine JSX detection in assignment() to only fire when <Ident is followed by attributes (not >). When <Ident> is followed by >, it could be a type assertion — defer to unary() try_consume_typescript_angle_type_assertion()."
-
-  - id: 152
-    title: "Fix parses_async_function_as_regular_function_with_empty_body test"
-    priority: P1
-    type: bug
-    area: frontend
-    status: done
-    created: 2026-05-09
-    updated: 2026-05-09
-    closed: 2026-05-09
-    roadmap: W2
-    acceptance:
-      - "cargo test -p ts2wasm-frontend --lib -- parser::tests::parses_async_function_as_regular_function_with_empty_body"
-    non_goals:
-      - "No async/await runtime semantics."
-    evidence:
-      commit: "pending"
-      commands:
-        - command: "cargo test -p ts2wasm-frontend --lib -- parser::tests::parses_async_function_as_regular_function_with_empty_body"
-          exit: 0
-        - command: "cargo fmt --all --check"
-          exit: 0
-      summary: "for_await_statement() in async function body now consumes the for-await-of tokens (balanced parens + body) and emits a no-op Stmt::Expr(Undefined) instead of returning an error. Test updated to expect body.len() == 1."
-
   - id: 153
     title: "Fix parses_top_level_block_by_flattening_statements"
     priority: P1
@@ -327,54 +280,6 @@ open:
       - "No full Unicode segmentation."
       - "No UTF-16 parity for existing working subset."
 
-  - id: 169
-    title: "Define Async IR and lower async/await from AST to Semantic HIR"
-    priority: P1
-    type: feature
-    area: ir
-    status: done
-    created: 2026-05-09
-    updated: 2026-05-09
-    closed: 2026-05-09
-    roadmap: W5
-    acceptance:
-      - "cargo nextest run -p ts2wasm-cli --test m12_async_await build_smoke_async_return"
-    non_goals:
-      - "No state machine transformation."
-      - "No runtime execution."
-    evidence:
-      commit: "pending"
-      commands:
-        - command: "cargo nextest run -p ts2wasm-cli --test m12_async_await build_smoke_async_return"
-          exit: 0
-        - command: "cargo nextest run -p ts2wasm-cli --test m12_async_await build_smoke_await_sequence"
-          exit: 0
-        - command: "cargo nextest run -p ts2wasm-cli --test m12_async_await build_smoke_async_exception"
-          exit: 0
-      summary: "All 3 async-await build_smoke fixtures pass after fixing syntax (fn -> function). The parser already handles async function parsing, Expr::Await -> ResolvedExpr::Await -> LoweredExpr::PromiseGetValue lowering exists, and backend emits PromiseGetValue as pass-through."
-
-  - id: 170
-    title: "Implement state-machine transformation for iwasm/CoreWasm target"
-    priority: P1
-    type: feature
-    area: backend
-    status: active
-    created: 2026-05-09
-    updated: 2026-05-09
-    roadmap: W5
-    acceptance:
-      - "cargo nextest run -p ts2wasm-cli --test m12_async_await semantic_diff_async_return"
-    non_goals:
-      - "No JSPI or Asyncify."
-      - "No full Promise object implementation."
-    plan:
-      goal: "Add is_async flag to Stmt::Function, propagate through IR, emit state-machine skeleton in backend so async return values are wrapped in a polling-compatible frame"
-      non_goals:
-        - "No full Promise object implementation."
-        - "No runtime polling loop."
-      acceptance:
-        - "cargo nextest run -p ts2wasm-cli --test m12_async_await semantic_diff_async_return"
-
   - id: 171
     title: "Define and implement runtime polling ABI (task_poll/task_result) for iwasm"
     priority: P1
@@ -403,9 +308,104 @@ open:
     non_goals:
       - "No JSPI support."
 
-active: []
+active:
+  - id: 170
+    title: "Implement state-machine transformation for iwasm/CoreWasm target"
+    priority: P1
+    type: feature
+    area: backend
+    status: active
+    ready: true
+    created: 2026-05-09
+    updated: 2026-05-09
+    roadmap: W5
+    acceptance:
+      - "cargo nextest run -p ts2wasm-cli --test m12_async_await semantic_diff_async_return"
+    non_goals:
+      - "No JSPI or Asyncify."
+      - "No full Promise object implementation."
+    plan:
+      goal: "Add is_async flag to Stmt::Function, propagate through IR, emit state-machine skeleton in backend so async return values are wrapped in a polling-compatible frame"
+      non_goals:
+        - "No full Promise object implementation."
+        - "No runtime polling loop."
+      acceptance:
+        - "cargo nextest run -p ts2wasm-cli --test m12_async_await semantic_diff_async_return"
 
 done:
+  - id: 151
+    title: "Fix angle bracket type assertion misidentified as JSX at statement start"
+    priority: P1
+    type: bug
+    area: frontend
+    status: done
+    created: 2026-05-09
+    updated: 2026-05-09
+    closed: 2026-05-09
+    roadmap: W2
+    acceptance:
+      - "cargo test -p ts2wasm-frontend --lib -- parser::tests::erases_angle_bracket_type_assertion_at_expression_statement_start"
+    non_goals:
+      - "No JSX parsing beyond statement-level disambiguation."
+      - "No type checking."
+    evidence:
+      commit: "b8febe2c2"
+      commands:
+        - command: "cargo test -p ts2wasm-frontend --lib -- parser::tests::erases_angle_bracket_type_assertion_at_expression_statement_start"
+          exit: 0
+        - command: "cargo nextest run -p ts2wasm-cli --test m6_builtin_methods jsx_element_unsupported_diagnostic"
+          exit: 0
+      summary: "Refine JSX detection in assignment() to only fire when <Ident is followed by attributes (not >). When <Ident> is followed by >, it could be a type assertion — defer to unary() try_consume_typescript_angle_type_assertion()."
+
+  - id: 152
+    title: "Fix parses_async_function_as_regular_function_with_empty_body test"
+    priority: P1
+    type: bug
+    area: frontend
+    status: done
+    created: 2026-05-09
+    updated: 2026-05-09
+    closed: 2026-05-09
+    roadmap: W2
+    acceptance:
+      - "cargo test -p ts2wasm-frontend --lib -- parser::tests::parses_async_function_as_regular_function_with_empty_body"
+    non_goals:
+      - "No async/await runtime semantics."
+    evidence:
+      commit: "pending"
+      commands:
+        - command: "cargo test -p ts2wasm-frontend --lib -- parser::tests::parses_async_function_as_regular_function_with_empty_body"
+          exit: 0
+        - command: "cargo fmt --all --check"
+          exit: 0
+      summary: "for_await_statement() in async function body now consumes the for-await-of tokens (balanced parens + body) and emits a no-op Stmt::Expr(Undefined) instead of returning an error. Test updated to expect body.len() == 1."
+
+  - id: 169
+    title: "Define Async IR and lower async/await from AST to Semantic HIR"
+    priority: P1
+    type: feature
+    area: ir
+    status: done
+    created: 2026-05-09
+    updated: 2026-05-09
+    closed: 2026-05-09
+    roadmap: W5
+    acceptance:
+      - "cargo nextest run -p ts2wasm-cli --test m12_async_await build_smoke_async_return"
+    non_goals:
+      - "No state machine transformation."
+      - "No runtime execution."
+    evidence:
+      commit: "pending"
+      commands:
+        - command: "cargo nextest run -p ts2wasm-cli --test m12_async_await build_smoke_async_return"
+          exit: 0
+        - command: "cargo nextest run -p ts2wasm-cli --test m12_async_await build_smoke_await_sequence"
+          exit: 0
+        - command: "cargo nextest run -p ts2wasm-cli --test m12_async_await build_smoke_async_exception"
+          exit: 0
+      summary: "All 3 async-await build_smoke fixtures pass after fixing syntax (fn -> function). The parser already handles async function parsing, Expr::Await -> ResolvedExpr::Await -> LoweredExpr::PromiseGetValue lowering exists, and backend emits PromiseGetValue as pass-through."
+
   - id: 148
     title: "Add precise unsupported diagnostic for TypeScript module augmentation"
     priority: P2
