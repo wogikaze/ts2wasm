@@ -18,7 +18,7 @@ done:
   - id: 146
     title: "Fix Array.prototype.reduceRight runtime: callback not invoked"
     priority: P2
-    type: fix
+    type: bug
     area: ir
     status: done
     created: 2026-05-09
