@@ -532,7 +532,6 @@ fn standalone_fixtures_pass_host_deny() {
 /// Per-category positive tests: each WASI-only runtime function category
 /// compiles standalone under --host-deny with a manifest verifying
 /// standalone: true, node_host.required: false, and zero node_host imports.
-
 fn assert_standalone_category(fixture_path: &str, category: &str) {
     let fixture = Path::new(env!("CARGO_MANIFEST_DIR"))
         .join("../../fixtures")
