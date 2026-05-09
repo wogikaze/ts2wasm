@@ -158,6 +158,7 @@ pub enum Stmt {
         specifiers: Vec<ImportNamedSpecifier>,
         source: ModuleSpecifier,
         span: Span,
+        import_type: bool,
     },
     ImportDefault {
         specifier: ImportDefaultSpecifier,

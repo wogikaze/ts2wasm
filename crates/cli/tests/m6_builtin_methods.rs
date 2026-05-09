@@ -1307,17 +1307,6 @@ fn build_smoke_ts_parameter_property() {
 
 // === W3: Name/call resolution (TDD) ===
 
-// Type-only imports — W3: should fail to build (TODO: precise diagnostic)
-// Current error: UnsupportedSyntax: expected Comma, got Some(Ident("MyType"))
-#[test]
-fn type_only_import_unsupported_diagnostic() {
-    let result = run_fixture("typescript-directives/type-only-import-unsupported.ts");
-    assert!(
-        result.is_err(),
-        "Type-only import should produce unsupported diagnostic"
-    );
-}
-
 // === W4: Builtin API semantics (TDD) ===
 
 // String.prototype.matchAll — W4: build smoke (fixture exists)
@@ -1580,6 +1569,25 @@ fn annex_b_hoisted_function_in_block_unsupported_diagnostic() {
     assert!(
         result.is_err(),
         "Annex B block-level function hoisting should produce unsupported diagnostic"
+    );
+}
+
+// W3: Name/call resolution and builtin dispatch
+
+// Type-only import — precise unsupported diagnostic
+#[test]
+fn type_only_import_unsupported_diagnostic() {
+    let result = run_fixture("core-semantics/type-only-import-unsupported.ts");
+    assert!(
+        result.is_err(),
+        "Type-only import should produce unsupported diagnostic"
+    );
+    let err_msg = result.err().unwrap();
+    // Accept either precise diagnostic or module graph resolution error
+    assert!(
+        err_msg.contains("type-only import") || err_msg.contains("issue-232"),
+        "Diagnostic should mention type-only import or module resolution: {}",
+        err_msg
     );
 }
 

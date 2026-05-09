@@ -149,9 +149,12 @@ impl Parser {
         let import_span = self.expect(TokenKind::Import)?;
         // Handle `import type { ... } from "..."` — the `type` keyword is a
         // TypeScript-only compile-time annotation that is erased at runtime.
-        if self.peek_contextual_keyword("type") {
+        let import_type = if self.peek_contextual_keyword("type") {
             self.advance(); // consume the `type` token
-        }
+            true
+        } else {
+            false
+        };
         match self.peek() {
             Some(Token::String(_)) => {
                 let specifier = self.expect_module_specifier()?;
@@ -164,7 +167,7 @@ impl Parser {
                     },
                 })
             }
-            Some(Token::LeftBrace) => self.named_import_statement(import_span),
+            Some(Token::LeftBrace) => self.named_import_statement(import_span, import_type),
             Some(Token::Star) => self.namespace_import_statement(import_span),
             Some(Token::Ident(_)) if matches!(self.peek_n(1), Some(Token::Equal)) => {
                 // TypeScript import-equals: `import X = require(...)` or `import X = N`
@@ -446,7 +449,7 @@ impl Parser {
         })
     }
 
-    fn named_import_statement(&mut self, import_span: Span) -> Result<Stmt, Diagnostic> {
+    fn named_import_statement(&mut self, import_span: Span, import_type: bool) -> Result<Stmt, Diagnostic> {
         let specifiers = self.parse_import_named_specifiers()?;
         self.expect_contextual_keyword("from")?;
         let source = self.expect_module_specifier()?;
@@ -454,6 +457,7 @@ impl Parser {
         Ok(Stmt::ImportNamed {
             specifiers,
             source,
+            import_type,
             span: Span {
                 start: import_span.start,
                 end,

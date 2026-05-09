@@ -12,10 +12,78 @@ meta:
     canonical_source: TRACKING.yaml
     roadmap_source: docs/roadmap.md
 
-open: []
+open:
+  - id: 142
+    title: "Register WASI clock_res_get as HostImport with WAT emitter"
+    priority: P3
+    type: feature
+    area: backend
+    status: open
+    created: 2026-05-09
+    updated: 2026-05-09
+    roadmap: W1
+    acceptance:
+      - "cargo nextest run -p ts2wasm-cli --test m1_iwasm clock_res_get_compiles"
+    non_goals:
+      - "No Node.js shim."
+      - "No runtime clock usage."
+    notes: "clock_res_get is a simple WASI function. Register as HostImport variant following the pattern of ArgsSizesGet/ArgsGet (items 134, 138)."
+
+  - id: 143
+    title: "Add precise unsupported diagnostic for nested namespace access (A.B.C)"
+    priority: P2
+    type: diagnostic
+    area: ir
+    status: open
+    created: 2026-05-09
+    updated: 2026-05-09
+    roadmap: W3
+    acceptance:
+      - "cargo nextest run -p ts2wasm-cli --test m6_builtin_methods nested_namespace_unsupported_diagnostic"
+    non_goals:
+      - "No nested namespace resolution."
+    notes: "When a MemberExpression chain like A.B.C resolves to an unknown namespace, emit a precise unsupported diagnostic instead of UnresolvedName."
+
+  - id: 145
+    title: "Add precise unsupported diagnostic for type-only imports"
+    priority: P2
+    type: diagnostic
+    area: ir
+    status: active
+    created: 2026-05-09
+    updated: 2026-05-09
+    roadmap: W3
+    acceptance:
+      - "cargo nextest run -p ts2wasm-cli --test m6_builtin_methods type_only_import_unsupported_diagnostic"
+    non_goals:
+      - "No type-only import resolution."
+    notes: "Parser-level: detect `import type { X } from 'y'` and emit a precise unsupported diagnostic."
+
 active: []
 
 done:
+  - id: 144
+    title: "Add manifest golden tests for core arithmetic fixtures"
+    priority: P2
+    type: test
+    area: scripts
+    status: done
+    created: 2026-05-09
+    updated: 2026-05-09
+    closed: 2026-05-09
+    owner: human
+    roadmap: W7
+    acceptance:
+      - "mise run check manifest"
+    non_goals:
+      - "No schema changes."
+    evidence:
+      commit: "4ae02e801"
+      commands:
+        - command: "mise run check manifest"
+          exit: 0
+      summary: "Extended manifest-imports.py to check 6 core fixtures by default. Removed stray debug eprintln from name_resolver.rs."
+
   - id: 101
     title: "Register Promise, Symbol, Reflect, Proxy as known global names"
     priority: P1

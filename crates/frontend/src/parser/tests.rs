@@ -2237,6 +2237,7 @@ b /* parameter b */,
                 specifiers,
                 source,
                 span,
+                import_type,
             } => {
                 assert_eq!(*span, Span { start: 0, end: 59 });
                 assert_eq!(source.value, "./module-source");
@@ -2252,6 +2253,7 @@ b /* parameter b */,
                 assert_eq!(specifiers[1].local, "alias");
                 assert_eq!(specifiers[1].local_span, Span { start: 28, end: 33 });
                 assert_eq!(specifiers[1].span, Span { start: 16, end: 33 });
+                assert!(!import_type);
             }
             other => panic!("unexpected import statement: {other:?}"),
         }

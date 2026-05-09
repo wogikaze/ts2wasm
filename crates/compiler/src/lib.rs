@@ -409,7 +409,10 @@ fn lower_static_named_import_bindings_for_build(
     for stmt in program {
         match stmt {
             Stmt::ImportNamed {
-                specifiers, source, ..
+                specifiers,
+                source,
+                import_type: false,
+                ..
             } => {
                 let dependency = module_graph
                     .entry()

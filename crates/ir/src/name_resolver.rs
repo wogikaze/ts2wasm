@@ -279,6 +279,11 @@ impl NameResolver {
             Stmt::ImportSideEffect { span, .. } => {
                 Err(unsupported_module_decl(*span, "side-effect import"))
             }
+            Stmt::ImportNamed { span, import_type, .. } if *import_type => Err(Diagnostic {
+                code: DiagCode::UnsupportedSyntax,
+                message: "issue-5253: TypeScript type-only import is not supported; the `type` keyword is an erased compile-time annotation".to_string(),
+                span: Some(*span),
+            }),
             Stmt::ImportNamed { span, .. } => Err(unsupported_module_decl(*span, "named import")),
             Stmt::ImportDefault { span, .. } => {
                 Err(unsupported_module_decl(*span, "default import"))
