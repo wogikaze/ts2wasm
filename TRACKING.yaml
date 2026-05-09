@@ -53,15 +53,24 @@ open:
     priority: P1
     type: bug
     area: frontend
-    status: active
+    status: done
     created: 2026-05-09
     updated: 2026-05-09
+    closed: 2026-05-09
     roadmap: W2
     acceptance:
       - "cargo test -p ts2wasm-frontend --lib -- parser::tests::erases_angle_bracket_type_assertion_at_expression_statement_start"
     non_goals:
       - "No JSX parsing beyond statement-level disambiguation."
       - "No type checking."
+    evidence:
+      commit: "b8febe2c2"
+      commands:
+        - command: "cargo test -p ts2wasm-frontend --lib -- parser::tests::erases_angle_bracket_type_assertion_at_expression_statement_start"
+          exit: 0
+        - command: "cargo nextest run -p ts2wasm-cli --test m6_builtin_methods jsx_element_unsupported_diagnostic"
+          exit: 0
+      summary: "Refine JSX detection in assignment() to only fire when <Ident is followed by attributes (not >). When <Ident> is followed by >, it could be a type assertion — defer to unary() try_consume_typescript_angle_type_assertion()."
 
   - id: 152
     title: "Fix parses_async_function_as_regular_function_with_empty_body test"
