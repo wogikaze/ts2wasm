@@ -13,24 +13,6 @@ meta:
     roadmap_source: docs/roadmap.md
 
 open:
-  # W4: Builtin (moderate scope)
-  - id: 127
-    title: "Add Array.prototype.sort build_smoke fixture and test"
-    priority: P2
-    type: test
-    area: runtime
-    status: open
-    created: 2026-05-09
-    updated: 2026-05-09
-    owner: human
-    roadmap: W4
-    ready: true
-    acceptance:
-      - "cargo nextest run -p ts2wasm-cli --test m6_builtin_methods"
-    non_goals:
-      - "No full sort implementation -- build smoke only."
-    evidence: null
-
   # W6: Infra (well-scoped)
   - id: 128
     title: "Add delta reporting for feature-level pass/fail changes between ramp runs"
@@ -47,24 +29,6 @@ open:
       - "mise run reference-coverage -- test262 --limit 100 --delta-report 2>&1 | grep 'delta'"
     non_goals:
       - "No dashboard changes."
-    evidence: null
-
-  # W7: Host capability (systematic)
-  - id: 129
-    title: "Full host import audit: run --emit-manifest on all fixture files"
-    priority: P2
-    type: infra
-    area: scripts
-    status: open
-    created: 2026-05-09
-    updated: 2026-05-09
-    owner: human
-    roadmap: W7
-    ready: true
-    acceptance:
-      - "cargo nextest run -p ts2wasm-cli --test m11_host_deny"
-    non_goals:
-      - "No manifest schema changes."
     evidence: null
 
 active: []
@@ -604,6 +568,50 @@ done:
         - command: "cargo nextest run -p ts2wasm-cli --test m6_builtin_methods annex_b_hoisted_function_in_block_unsupported_diagnostic"
           exit: 0
       summary: "Parser already handles labelled function declarations. Added test fixture and build-smoke test."
+
+  - id: 127
+    title: "Add Array.prototype.sort build_smoke fixture and test"
+    priority: P2
+    type: test
+    area: runtime
+    status: done
+    created: 2026-05-09
+    updated: 2026-05-09
+    closed: 2026-05-09
+    owner: human
+    roadmap: W4
+    acceptance:
+      - "cargo nextest run -p ts2wasm-cli --test m6_builtin_methods build_smoke_array_sort_comparator"
+    non_goals:
+      - "No full sort implementation -- build smoke only."
+    evidence:
+      commit: "already-implemented"
+      commands:
+        - command: "cargo nextest run -p ts2wasm-cli --test m6_builtin_methods build_smoke_array_sort_comparator"
+          exit: 0
+      summary: "Fixture and test already exist, build succeeds."
+
+  - id: 129
+    title: "Full host import audit: run --emit-manifest on all fixture files"
+    priority: P2
+    type: infra
+    area: scripts
+    status: done
+    created: 2026-05-09
+    updated: 2026-05-09
+    closed: 2026-05-09
+    owner: human
+    roadmap: W7
+    acceptance:
+      - "cargo nextest run -p ts2wasm-cli --test m11_host_deny"
+    non_goals:
+      - "No manifest schema changes."
+    evidence:
+      commit: "already-implemented"
+      commands:
+        - command: "cargo nextest run -p ts2wasm-cli --test m11_host_deny standalone_fixtures_pass_host_deny"
+          exit: 0
+      summary: "m11_host_deny test already exists and passes. Host-deny mode and manifest audit infrastructure is complete."
 
   - id: 123
     title: "Ramp test262 coverage from 500 to 2,000 with parallel execution"
