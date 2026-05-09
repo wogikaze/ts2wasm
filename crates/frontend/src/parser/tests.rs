@@ -443,21 +443,29 @@ mod tests {
 
     #[test]
     fn parses_ambient_module_declarations_as_erased_syntax() {
-        let program = parse_program(r#"declare module "fs" { export var value: string; }"#)
-            .expect("ambient external module should be erased");
-        assert!(program.is_empty());
-
+        // `declare namespace Foo.Bar { }` pushes AmbientValueDecl { name: "Foo" } for name registration (issue 5370).
         let program = parse_program("declare namespace Foo.Bar { export var foo; };")
             .expect("ambient namespace should be erased");
-        assert!(program.is_empty());
-
-        let program = parse_program("declare module 'path' { import * as fs from 'fs'; };")
-            .expect("ambient module with string literal name should be erased");
-        assert!(program.is_empty());
+        assert_eq!(program.len(), 1);
+        assert!(matches!(&program[0], Stmt::AmbientValueDecl { name, .. } if name == "Foo"));
 
         let program = parse_program("declare namespace Single { }")
             .expect("ambient simple namespace should be erased");
-        assert!(program.is_empty());
+        assert_eq!(program.len(), 1);
+        assert!(matches!(&program[0], Stmt::AmbientValueDecl { name, .. } if name == "Single"));
+    }
+
+    #[test]
+    fn reports_module_augmentation_unsupported() {
+        let err = parse_program(r#"declare module "fs" { export var value: string; }"#)
+            .expect_err("module augmentation should produce unsupported diagnostic");
+        assert!(err.message.contains("module augmentation"),
+            "Diagnostic should mention module augmentation: {}", err.message);
+
+        let err = parse_program("declare module 'path' { import * as fs from 'fs'; };")
+            .expect_err("module augmentation with single-quoted name should produce error");
+        assert!(err.message.contains("module augmentation"),
+            "Diagnostic should mention module augmentation: {}", err.message);
     }
 
     #[test]

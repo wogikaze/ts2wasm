@@ -424,6 +424,16 @@ impl Parser {
         declare_span: Span,
     ) -> Result<(), Diagnostic> {
         if self.peek_contextual_keyword("module") || self.peek_contextual_keyword("namespace") {
+            // Module augmentation: `declare module "string-literal" { }` is not supported.
+            // Detect by checking if the next token after module is a string literal.
+            let is_module_augmentation = self.cursor + 1 < self.tokens.len()
+                && matches!(&self.tokens[self.cursor + 1].kind, crate::Token::String(_));
+            if is_module_augmentation {
+                return Err(self.unsupported_typescript_syntax(
+                    self.peek_span().unwrap_or(declare_span),
+                    "issue-5253: TypeScript module augmentation is not supported",
+                ));
+            }
             // Capture namespace name before the body is erased (issue 5370).
             if self.cursor + 1 < self.tokens.len()
                 && let crate::Token::Ident(ns_name) = &self.tokens[self.cursor + 1].kind {
