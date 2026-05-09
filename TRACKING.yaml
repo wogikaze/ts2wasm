@@ -13,24 +13,6 @@ meta:
     roadmap_source: docs/roadmap.md
 
 open:
-  # W2: Syntax (small, well-scoped)
-  - id: 130
-    title: "Add precise unsupported diagnostic for JSX element syntax"
-    priority: P2
-    type: diagnostic
-    area: frontend
-    status: open
-    created: 2026-05-09
-    updated: 2026-05-09
-    owner: human
-    roadmap: W2
-    ready: true
-    acceptance:
-      - "cargo nextest run -p ts2wasm-cli --test m6_builtin_methods jsx_element_unsupported_diagnostic"
-    non_goals:
-      - "No JSX runtime semantics."
-      - "No JSX parsing beyond precise rejection."
-    evidence: null
 
   - id: 131
     title: "Add precise unsupported diagnostic for decorator syntax"
@@ -717,6 +699,29 @@ done:
         - command: "cargo nextest run -p ts2wasm-cli --test m11_host_deny standalone_fixtures_pass_host_deny"
           exit: 0
       summary: "m11_host_deny test already exists and passes. Host-deny mode and manifest audit infrastructure is complete."
+
+  - id: 130
+    title: "Add precise unsupported diagnostic for JSX element syntax"
+    priority: P2
+    type: diagnostic
+    area: frontend
+    status: done
+    created: 2026-05-09
+    updated: 2026-05-09
+    closed: 2026-05-09
+    owner: human
+    roadmap: W2
+    acceptance:
+      - "cargo nextest run -p ts2wasm-cli --test m6_builtin_methods jsx_element_unsupported_diagnostic"
+    non_goals:
+      - "No JSX runtime semantics."
+      - "No JSX parsing beyond precise rejection."
+    evidence:
+      commit: "pending"
+      commands:
+        - command: "cargo nextest run -p ts2wasm-cli --test m6_builtin_methods jsx_element_unsupported_diagnostic"
+          exit: 0
+      summary: "Lexer-level JSX closing tag detection (</Ident>), parser-level JSX opening tag detection (<Tag>), precise 'JSX syntax is not supported' diagnostic."
 
   - id: 128
     title: "Add delta reporting for feature-level pass/fail changes between ramp runs"

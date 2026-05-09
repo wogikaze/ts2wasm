@@ -787,8 +787,40 @@ impl<'a> Lexer<'a> {
                     }
                 }
                 '/' => {
-                    // Check if this is a regexp literal or division
-                    if self.is_regexp_context() {
+                    // JSX closing tag detection: </Ident — not a regex
+                    // JSX closing tag: </Ident> — scan for > before /
+                    let is_jsx_closing = matches!(self.prev_token, Some(Token::Less))
+                        && self.source.get(self.cursor + 1..)
+                            .map_or(false, |rest| {
+                                let after_slash = rest.chars().next();
+                                if !matches!(after_slash, Some(c) if c.is_ascii_alphabetic() || c == '_') {
+                                    return false;
+                                }
+                                // Scan forward: if we hit > before /, it's JSX
+                                let mut after = rest.chars();
+                                after.next(); // skip the identifier start char
+                                for c in after {
+                                    if c == '>' { return true; }
+                                    if c == '/' { return false; }
+                                    if c == '\n' { return false; }
+                                    if !c.is_ascii_alphanumeric() && c != '_' { return false; }
+                                }
+                                false
+                            });
+                    if is_jsx_closing {
+                        // Emit plain Slash (not regex) — parser will diagnose JSX
+                        self.advance_char();
+                        self.add_token(
+                            &mut tokens,
+                            SpannedToken {
+                                kind: Token::Slash,
+                                span: Span {
+                                    start,
+                                    end: self.cursor,
+                                },
+                            },
+                        );
+                    } else if self.is_regexp_context() {
                         let token = self.regexp(start)?;
                         self.add_token(&mut tokens, token);
                     } else {

@@ -31,6 +31,21 @@ impl Parser {
 
         self.cursor = saved_cursor;
 
+        // JSX detection: <Tag> or </Tag pattern
+        if !is_arrow && matches!(self.peek(), Some(Token::Less)) {
+            let probe = self.cursor;
+            self.advance();
+            let is_jsx = matches!(self.peek(), Some(Token::Slash | Token::Ident(_)));
+            self.cursor = probe;
+            if is_jsx {
+                return Err(Diagnostic {
+                    code: DiagCode::UnsupportedSyntax,
+                    message: "JSX syntax is not supported".to_owned(),
+                    span: self.peek_span(),
+                });
+            }
+        }
+
         if is_arrow {
             // Consume generic type parameters before parsing the arrow
             if matches!(self.peek(), Some(Token::Less)) {
