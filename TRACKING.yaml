@@ -13,26 +13,6 @@ meta:
     roadmap_source: docs/roadmap.md
 
 open:
-  - id: 149
-    title: "Fix enum erasure producing non-empty programs due to AmbientValueDecl spillover"
-    priority: P1
-    type: bug
-    area: frontend
-    status: open
-    created: 2026-05-09
-    updated: 2026-05-09
-    roadmap: W2
-    acceptance:
-      - "cargo test -p ts2wasm-frontend --lib -- parser::tests::parses_const_enum_erased_no_bogus_binding"
-      - "cargo test -p ts2wasm-frontend --lib -- parser::tests::parses_enum_declarations_as_erased_syntax"
-      - "cargo test -p ts2wasm-frontend --lib -- parser::tests::parses_enum_followed_by_let_declaration"
-      - "cargo test -p ts2wasm-frontend --lib -- parser::tests::parses_enum_with_trailing_comma_as_erased_syntax"
-      - "cargo test -p ts2wasm-frontend --lib -- parser::tests::parses_enum_with_values_as_erased_syntax"
-      - "cargo test -p ts2wasm-frontend --lib -- parser::tests::parses_export_enum_followed_by_let"
-    non_goals:
-      - "No runtime enum semantics."
-      - "No enum value lowering."
-
   - id: 156
     title: "Fix build_smoke_module_augmentation test after module augmentation diagnostic was added"
     priority: P1
@@ -579,6 +559,33 @@ done:
         - command: "cargo fmt --all --check"
           exit: 0
       summary: "Add is_const check in let_statement_with_name_span(). When a const declaration has no initializer (plain or with type annotation), return UnsupportedSyntax diagnostic instead of creating Expr::Undefined."
+
+  - id: 149
+    title: "Fix enum erasure producing non-empty programs due to AmbientValueDecl spillover"
+    priority: P1
+    type: bug
+    area: frontend
+    status: done
+    created: 2026-05-09
+    updated: 2026-05-09
+    closed: 2026-05-09
+    roadmap: W2
+    acceptance:
+      - "cargo test -p ts2wasm-frontend --lib -- parser::tests::parses_const_enum_erased_no_bogus_binding"
+      - "cargo test -p ts2wasm-frontend --lib -- parser::tests::parses_enum_declarations_as_erased_syntax"
+      - "cargo test -p ts2wasm-frontend --lib -- parser::tests::parses_enum_followed_by_let_declaration"
+      - "cargo test -p ts2wasm-frontend --lib -- parser::tests::parses_enum_with_trailing_comma_as_erased_syntax"
+      - "cargo test -p ts2wasm-frontend --lib -- parser::tests::parses_enum_with_values_as_erased_syntax"
+      - "cargo test -p ts2wasm-frontend --lib -- parser::tests::parses_export_enum_followed_by_let"
+    non_goals:
+      - "No runtime enum semantics."
+      - "No enum value lowering."
+    evidence:
+      commit: "pending"
+      commands:
+        - command: "cargo test -p ts2wasm-frontend --lib -- parser::tests"
+          exit: 0
+      summary: "Remove Stmt::EnumDecl push from all three enum erasure branches (export enum, bare enum, const enum) in consume_erasable_typescript_declaration."
 
   - id: 148
     title: "Add precise unsupported diagnostic for TypeScript module augmentation"
