@@ -1489,11 +1489,7 @@ fn build_smoke_string_trim_end() {
 #[test]
 fn build_smoke_array_map() {
     let result = run_fixture("builtins-and-io/array-map.ts");
-    assert!(
-        result.is_ok(),
-        "Array.map should build: {:?}",
-        result.err()
-    );
+    assert!(result.is_ok(), "Array.map should build: {:?}", result.err());
 }
 
 #[test]
@@ -1528,15 +1524,14 @@ fn build_smoke_array_last_index_of() {
 
 // === New tests for open TRACKING.yaml items and remaining roadmap items ===
 
-// id 124: Cover initializer for (var x = y in obj) — RED test (TODO: implement parser)
-// Current error: [UnsupportedSyntax] unsupported expression: RightParen
-// Upgrade to build_smoke after parser implementation (from user's WIP stash)
+// id 124: Cover initializer for (var x = y in obj) — build_smoke (parser + compiler work)
 #[test]
-fn cover_initializer_for_var_in_unsupported_diagnostic() {
+fn build_smoke_cover_initializer_for_var_in() {
     let result = run_fixture("core-semantics/cover-initializer-for-var-in.ts");
     assert!(
-        result.is_err(),
-        "Cover initializer for-var-in should produce unsupported diagnostic (not implemented yet)"
+        result.is_ok(),
+        "Cover initializer for-var-in should build: {:?}",
+        result.err()
     );
 }
 
@@ -1555,11 +1550,7 @@ fn build_smoke_array_sort_comparator() {
 #[test]
 fn build_smoke_debugger_statement() {
     let result = run_fixture("core-semantics/debugger-statement-unsupported.ts");
-    assert!(
-        result.is_ok(),
-        "debugger should build: {:?}",
-        result.err()
-    );
+    assert!(result.is_ok(), "debugger should build: {:?}", result.err());
 }
 
 // W2: JSX element
@@ -1589,5 +1580,102 @@ fn annex_b_hoisted_function_in_block_unsupported_diagnostic() {
     assert!(
         result.is_err(),
         "Annex B block-level function hoisting should produce unsupported diagnostic"
+    );
+}
+
+// === W4: Builtin API semantics — new fixtures ===
+
+// Proxy handler traps — has precise diagnostic (id 106)
+#[test]
+fn proxy_handler_traps_unsupported_diagnostic() {
+    let result = run_fixture("builtins-and-io/proxy-handler-traps-unsupported.ts");
+    assert!(
+        result.is_err(),
+        "Proxy handler traps should produce unsupported diagnostic"
+    );
+    let err_msg = result.err().unwrap();
+    assert!(
+        err_msg.contains("Proxy"),
+        "Diagnostic should mention Proxy: {}",
+        err_msg
+    );
+}
+
+// TypedArray basic read/write — builds successfully
+#[test]
+fn build_smoke_typedarray_basic() {
+    let result = run_fixture("builtins-and-io/typedarray-basic.ts");
+    assert!(
+        result.is_ok(),
+        "TypedArray basic should build: {:?}",
+        result.err()
+    );
+}
+
+// ArrayBuffer/DataView basic — unsupported (method dispatch gap)
+#[test]
+fn arraybuffer_dataview_basic_unsupported_diagnostic() {
+    let result = run_fixture("builtins-and-io/arraybuffer-dataview-basic.ts");
+    assert!(
+        result.is_err(),
+        "ArrayBuffer/DataView should produce unsupported diagnostic"
+    );
+    let err_msg = result.err().unwrap();
+    assert!(
+        err_msg.contains("DataView"),
+        "Diagnostic should mention DataView: {}",
+        err_msg
+    );
+}
+
+// WeakMap/WeakSet basic — unsupported (method dispatch gap)
+#[test]
+fn weakmap_weakset_basic_unsupported_diagnostic() {
+    let result = run_fixture("builtins-and-io/weakmap-weakset-basic.ts");
+    assert!(
+        result.is_err(),
+        "WeakMap/WeakSet should produce unsupported diagnostic"
+    );
+    let err_msg = result.err().unwrap();
+    assert!(
+        err_msg.contains("WeakMap"),
+        "Diagnostic should mention WeakMap: {}",
+        err_msg
+    );
+}
+
+// Symbol constructor — generic unresolved (TODO: precise diagnostic)
+#[test]
+fn symbol_constructor_unsupported_diagnostic() {
+    let result = run_fixture("builtins-and-io/symbol-constructor-basic.ts");
+    assert!(
+        result.is_err(),
+        "Symbol constructor should produce unsupported diagnostic"
+    );
+}
+
+// Atomics — generic unresolved (TODO: precise diagnostic)
+#[test]
+fn atomics_unsupported_diagnostic() {
+    let result = run_fixture("builtins-and-io/atomics-unsupported.ts");
+    assert!(
+        result.is_err(),
+        "Atomics should produce unsupported diagnostic"
+    );
+}
+
+// Intl — unsupported (method dispatch gap)
+#[test]
+fn intl_unsupported_diagnostic() {
+    let result = run_fixture("builtins-and-io/intl-unsupported.ts");
+    assert!(
+        result.is_err(),
+        "Intl should produce unsupported diagnostic"
+    );
+    let err_msg = result.err().unwrap();
+    assert!(
+        err_msg.contains("DateTimeFormat"),
+        "Diagnostic should mention DateTimeFormat: {}",
+        err_msg
     );
 }
