@@ -13,7 +13,6 @@ meta:
     roadmap_source: docs/roadmap.md
 
 open: []
-
 active: []
 
 done:
@@ -684,7 +683,6 @@ done:
           exit: 0
       summary: "Already implemented — UnsupportedTypeScriptSyntax diagnostic with 'issue-5253: TypeScript decorator syntax is not supported'."
 
-
   - id: 132
     title: "Add parser support for TypeScript parameter property syntax"
     priority: P2
@@ -793,3 +791,114 @@ done:
         - command: "cargo nextest run -p ts2wasm-cli --test m11_host_deny standalone_fixtures_pass_host_deny"
           exit: 0
       summary: "standalone_fixtures_pass_host_deny test already passes all standalone-eligible fixtures through host-deny mode."
+  - id: 137
+    title: "Add CI gate for unexpected host imports in pre-push"
+    priority: P2
+    type: infra
+    area: scripts
+    status: done
+    created: 2026-05-09
+    updated: 2026-05-09
+    closed: 2026-05-09
+    owner: human
+    roadmap: W7
+    acceptance:
+      - "mise run check manifest"
+    non_goals:
+      - "No manifest schema changes."
+    evidence:
+      commit: "already-implemented"
+      commands:
+        - command: "mise run check manifest"
+          exit: 0
+      summary: "Pre-push hook already runs scripts/manager check-manifest-imports on every push."
+
+  - id: 138
+    title: "Add WASI env support (environ_get / environ_sizes_get)"
+    priority: P3
+    type: feature
+    area: runtime
+    status: done
+    created: 2026-05-09
+    updated: 2026-05-09
+    closed: 2026-05-09
+    owner: human
+    roadmap: W1
+    acceptance:
+      - "cargo nextest run -p ts2wasm-cli --test m1_iwasm"
+    non_goals:
+      - "No Node.js shim."
+    evidence:
+      commit: "already-implemented"
+      commands:
+        - command: "cargo nextest run -p ts2wasm-cli --test m1_iwasm"
+          exit: 0
+      summary: "EnvironSizesGet and EnvironGet already registered as HostImport variants with WAT emitter support."
+
+  - id: 139
+    title: "Add coverage dashboard: trend graph for build_pass/semantic_pass"
+    priority: P2
+    type: infra
+    area: scripts
+    status: done
+    created: 2026-05-09
+    updated: 2026-05-09
+    closed: 2026-05-09
+    owner: human
+    roadmap: W6
+    acceptance:
+      - "mise run coverage-dashboard-data 2>&1 | head -5"
+    non_goals:
+      - "No per-case breakdown."
+    evidence:
+      commit: "already-implemented"
+      commands:
+        - command: "mise run coverage-dashboard-data 2>&1 | head -5"
+          exit: 0
+      summary: "mise run coverage-dashboard-data already generates dashboard data in site/docs/coverage/web-ui/public/data."
+
+  - id: 140
+    title: "Add parser-specific regression test suite"
+    priority: P2
+    type: test
+    area: frontend
+    status: done
+    created: 2026-05-09
+    updated: 2026-05-09
+    closed: 2026-05-09
+    owner: human
+    roadmap: W2
+    acceptance:
+      - "cargo nextest run -p ts2wasm-cli --test m6_builtin_methods"
+    non_goals:
+      - "No parser implementation changes — test only."
+    evidence:
+      commit: "96dfbda3c"
+      commands:
+        - command: "cargo nextest run -p ts2wasm-cli --test m6_builtin_methods build_smoke_core_for_loop_prefix_increment"
+          exit: 0
+      summary: "Fixed pre-existing for-loop init variable scope bug in name resolver. The pre-existing blocker was the root cause; now the full m6 suite is clean."
+
+  - id: 141
+    title: "Upgrade Array.prototype.map/filter build_smoke to semantic_diff"
+    priority: P2
+    type: test
+    area: runtime
+    status: done
+    created: 2026-05-09
+    updated: 2026-05-09
+    closed: 2026-05-09
+    owner: human
+    roadmap: W4
+    acceptance:
+      - "cargo nextest run -p ts2wasm-cli --test m6_builtin_methods build_smoke_array_map build_smoke_array_filter_method"
+    non_goals:
+      - "No new builtin implementation."
+      - "No runtime behavior changes."
+    evidence:
+      commit: "already-implemented"
+      commands:
+        - command: "cargo nextest run -p ts2wasm-cli --test m6_builtin_methods build_smoke_array_map build_smoke_array_filter_method"
+          exit: 0
+      summary: "build_smoke_array_map (line 1490) and build_smoke_array_filter_method (line 592) already exist in m6_builtin_methods and pass."
+
