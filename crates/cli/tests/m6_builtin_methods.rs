@@ -1740,3 +1740,74 @@ fn object_seal_unsupported_diagnostic() {
         err_msg
     );
 }
+
+// === W3/W5: New tests from roadmap gaps ===
+
+// Module augmentation — W3 (already works)
+#[test]
+fn build_smoke_module_augmentation() {
+    let result = run_fixture("typescript-directives/module-augmentation-unsupported.ts");
+    assert!(
+        result.is_ok(),
+        "Module augmentation should build: {:?}",
+        result.err()
+    );
+}
+
+// Custom iterator with Symbol.iterator — W5
+#[test]
+fn custom_iterator_symbol_unsupported_diagnostic() {
+    let result = run_fixture("core-semantics/custom-iterator-symbol.ts");
+    assert!(
+        result.is_err(),
+        "Custom iterator should produce unsupported diagnostic"
+    );
+}
+
+// Property descriptor with getter/setter — W5
+#[test]
+fn property_getter_setter_unsupported_diagnostic() {
+    let result = run_fixture("core-semantics/property-getter-setter.ts");
+    assert!(
+        result.is_err(),
+        "Property getter/setter should produce unsupported diagnostic"
+    );
+    let err_msg = result.err().unwrap();
+    assert!(
+        err_msg.contains("this") || err_msg.contains("Unsupported"),
+        "Diagnostic should mention this/Unsupported: {}",
+        err_msg
+    );
+}
+
+// Dynamic import — W5 (already has precise diagnostic)
+#[test]
+fn dynamic_import_unsupported_diagnostic() {
+    let result = run_fixture("module-system/dynamic-import-unsupported.ts");
+    assert!(
+        result.is_err(),
+        "Dynamic import should produce unsupported diagnostic"
+    );
+    let err_msg = result.err().unwrap();
+    assert!(
+        err_msg.contains("Import"),
+        "Diagnostic should mention Import: {}",
+        err_msg
+    );
+}
+
+// ES module live binding — W5 (precise diagnostic: mutable closure)
+#[test]
+fn live_binding_unsupported_diagnostic() {
+    let result = run_fixture("module-system/live-binding-unsupported.ts");
+    assert!(
+        result.is_err(),
+        "ES module live binding should produce unsupported diagnostic"
+    );
+    let err_msg = result.err().unwrap();
+    assert!(
+        err_msg.contains("closure") || err_msg.contains("Unsupported"),
+        "Diagnostic should mention closure/Unsupported: {}",
+        err_msg
+    );
+}
