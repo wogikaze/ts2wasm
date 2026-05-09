@@ -790,10 +790,9 @@ mod tests {
         };
         assert_eq!(name, "value");
 
-        // The second statement is a block containing the `let after = 2;` declaration
-        assert!(matches!(&program[1], Stmt::Block { statements, .. }
-            if statements.len() == 1
-                && matches!(&statements[0], Stmt::Let { name, .. } if name == "after")));
+        // Top-level blocks are flattened — the inner `let after = 2` is promoted
+        // to the program level
+        assert!(matches!(&program[1], Stmt::Let { name, .. } if name == "after"));
     }
 
     #[test]

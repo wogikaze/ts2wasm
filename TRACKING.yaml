@@ -48,20 +48,6 @@ open:
     non_goals:
       - "No runtime semantics changes."
 
-  - id: 153
-    title: "Fix parses_top_level_block_by_flattening_statements"
-    priority: P1
-    type: bug
-    area: frontend
-    status: open
-    created: 2026-05-09
-    updated: 2026-05-09
-    roadmap: W2
-    acceptance:
-      - "cargo test -p ts2wasm-frontend --lib -- parser::tests::parses_top_level_block_by_flattening_statements"
-    non_goals:
-      - "No block statement runtime semantics changes."
-
   - id: 154
     title: "Fix rejects_unsupported_regexp_flag_with_issue_linked_diagnostic (d flag)"
     priority: P1
@@ -405,6 +391,29 @@ done:
         - command: "cargo nextest run -p ts2wasm-cli --test m12_async_await build_smoke_async_exception"
           exit: 0
       summary: "All 3 async-await build_smoke fixtures pass after fixing syntax (fn -> function). The parser already handles async function parsing, Expr::Await -> ResolvedExpr::Await -> LoweredExpr::PromiseGetValue lowering exists, and backend emits PromiseGetValue as pass-through."
+
+  - id: 153
+    title: "Fix parses_top_level_block_by_flattening_statements"
+    priority: P1
+    type: bug
+    area: frontend
+    status: done
+    created: 2026-05-09
+    updated: 2026-05-09
+    closed: 2026-05-09
+    roadmap: W2
+    acceptance:
+      - "cargo test -p ts2wasm-frontend --lib -- parser::tests::parses_top_level_block_by_flattening_statements"
+    non_goals:
+      - "No block statement runtime semantics changes."
+    evidence:
+      commit: "pending"
+      commands:
+        - command: "cargo test -p ts2wasm-frontend --lib -- parser::tests::parses_top_level_block_by_flattening_statements"
+          exit: 0
+        - command: "cargo fmt --all --check"
+          exit: 0
+      summary: "In parse_program(), when a LeftBrace is encountered at top level, flatten the block's inner statements into the program statement list instead of wrapping them in Stmt::Block."
 
   - id: 148
     title: "Add precise unsupported diagnostic for TypeScript module augmentation"

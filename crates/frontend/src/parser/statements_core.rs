@@ -45,7 +45,14 @@ impl Parser {
                 continue;
             }
             if matches!(self.peek(), Some(Token::LeftBrace)) {
-                statements.push(self.block_as_stmt()?);
+                let block = self.block_as_stmt()?;
+                if let Stmt::Block {
+                    statements: inner,
+                    ..
+                } = block
+                {
+                    statements.extend(inner);
+                }
                 continue;
             }
             statements.push(self.statement()?);
