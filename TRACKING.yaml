@@ -14,24 +14,31 @@ meta:
 
 open: []
 
-active:
+active: []
+
+done:
   - id: 147
     title: "Add precise unsupported diagnostic for TypeScript triple-slash directives"
     priority: P2
     type: diagnostic
     area: frontend
-    status: active
+    status: done
     created: 2026-05-09
     updated: 2026-05-09
+    closed: 2026-05-09
     roadmap: W3
     acceptance:
       - "cargo nextest run -p ts2wasm-cli --test m6_builtin_methods triple_slash_directive_unsupported_diagnostic"
     non_goals:
       - "No triple-slash directive implementation."
       - "No XML/comment parsing changes."
-    notes: "TypeScript triple-slash directives (/// <reference path/types/lib=\"...\" />) are compile-time annotations. Detect at lexer or parser level and emit precise unsupported diagnostic."
+    evidence:
+      commit: "8a461a6de"
+      commands:
+        - command: "cargo nextest run -p ts2wasm-cli --test m6_builtin_methods triple_slash_directive_unsupported_diagnostic"
+          exit: 0
+      summary: "Detect /// <reference in lexer skip_ignored() comment handler. Returns issue-5253 unsupported diagnostic."
 
-done:
   - id: 146
     title: "Fix Array.prototype.reduceRight runtime: callback not invoked"
     priority: P2
