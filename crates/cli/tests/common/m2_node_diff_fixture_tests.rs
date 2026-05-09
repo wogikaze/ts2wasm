@@ -694,7 +694,7 @@ fn bigint_mixed_number_fractional_builds_successfully() {
             .join("../../")
             .join(fixture);
         let output = temp_wasm_path(fixture);
-        let build = std::process::Command::new(env!("CARGO_BIN_EXE_ts2wasm"))
+        let _build = std::process::Command::new(env!("CARGO_BIN_EXE_ts2wasm"))
             .arg("build")
             .arg(&fixture_path)
             .arg("-o")
@@ -962,7 +962,7 @@ fn bigint_runtime_mixed_object_toprimitive_primitive_builds_successfully() {
             .join("../../")
             .join(fixture);
         let output = temp_wasm_path(fixture);
-        let build = std::process::Command::new(env!("CARGO_BIN_EXE_ts2wasm"))
+        let _build = std::process::Command::new(env!("CARGO_BIN_EXE_ts2wasm"))
             .arg("build")
             .arg(&fixture_path)
             .arg("-o")
@@ -988,13 +988,13 @@ fn bigint_runtime_mixed_object_toprimitive_string_boundary_reports_issue_373() {
 }
 
 #[test]
-fn bigint_runtime_mixed_object_toprimitive_reports_issue_5301() {
+fn bigint_runtime_mixed_object_toprimitive_reports_issue_374() {
     for fixture in [
         "fixtures/core-semantics/bigint-runtime-mixed-object-toprimitive-unsupported.ts",
         "fixtures/core-semantics/bigint-runtime-mixed-object-toprimitive-string-unsupported.ts",
         "fixtures/core-semantics/bigint-runtime-mixed-object-toprimitive-method-unsupported.ts",
     ] {
-        assert_build_fails_with_unsupported_syntax(fixture, "issue-5301:");
+        assert_build_fails_with_unsupported_syntax(fixture, "issue-374:");
     }
 }
 
@@ -1016,7 +1016,7 @@ fn template_literal_fixture_builds_successfully() {
         .join("../../")
         .join(fixture);
     let output = temp_wasm_path(fixture);
-    let build = std::process::Command::new(env!("CARGO_BIN_EXE_ts2wasm"))
+    let _build = std::process::Command::new(env!("CARGO_BIN_EXE_ts2wasm"))
         .arg("build")
         .arg(&fixture_path)
         .arg("-o")
@@ -1262,6 +1262,10 @@ fn string_builtin_fixtures_match_node_output_under_iwasm() {
         "fixtures/builtins-and-io/string-pad-start.ts",
         "fixtures/builtins-and-io/string-pad-end.ts",
         "fixtures/builtins-and-io/string-repeat.ts",
+        "fixtures/builtins-and-io/string-starts-with.ts",
+        "fixtures/builtins-and-io/string-ends-with.ts",
+        "fixtures/builtins-and-io/string-trim-start.ts",
+        "fixtures/builtins-and-io/string-trim-end.ts",
         "fixtures/builtins-and-io/array-find-index.ts",
         "fixtures/builtins-and-io/array-map.ts",
         "fixtures/builtins-and-io/string-search.ts",
@@ -1307,6 +1311,9 @@ fn array_builtin_fixtures_match_node_output_under_iwasm() {
         "fixtures/builtins-and-io/array-to-spliced.ts",
         "fixtures/builtins-and-io/array-to-sorted.ts",
         "fixtures/builtins-and-io/array-is-array.ts",
+        "fixtures/builtins-and-io/array-to-string.ts",
+        "fixtures/builtins-and-io/array-from.ts",
+        "fixtures/builtins-and-io/array-sort-comparator.ts",
     ] {
         assert_fixture_matches_node(fixture);
     }
@@ -1360,7 +1367,7 @@ fn json_stringify_replacer_array_ignored_builds_successfully() {
         .join("../../")
         .join(fixture);
     let output = temp_wasm_path(fixture);
-    let build = std::process::Command::new(env!("CARGO_BIN_EXE_ts2wasm"))
+    let _build = std::process::Command::new(env!("CARGO_BIN_EXE_ts2wasm"))
         .arg("build")
         .arg(&fixture_path)
         .arg("-o")
@@ -1479,7 +1486,7 @@ fn set_constructor_array_fixture_builds_successfully() {
         .join("../../")
         .join(fixture);
     let output = temp_wasm_path(fixture);
-    let build = std::process::Command::new(env!("CARGO_BIN_EXE_ts2wasm"))
+    let _build = std::process::Command::new(env!("CARGO_BIN_EXE_ts2wasm"))
         .arg("build")
         .arg(&fixture_path)
         .arg("-o")
@@ -1495,7 +1502,7 @@ fn set_iterable_calls_add_fixture_builds() {
         .join("../../")
         .join(fixture);
     let output = temp_wasm_path(fixture);
-    let build = std::process::Command::new(env!("CARGO_BIN_EXE_ts2wasm"))
+    let _build = std::process::Command::new(env!("CARGO_BIN_EXE_ts2wasm"))
         .arg("build")
         .arg(&fixture_path)
         .arg("-o")
@@ -1906,23 +1913,6 @@ fn arrow_function_fixtures_match_node_output_under_iwasm() {
     ] {
         assert_fixture_matches_node(fixture);
     }
-
-    #[test]
-    fn arrow_assigned_recursive_unsupported_builds_but_produces_wrong_output() {
-        let fixture = "fixtures/core-semantics/arrow-assigned-recursive-unsupported.ts";
-        let fixture_path = Path::new(env!("CARGO_MANIFEST_DIR"))
-            .join("../../")
-            .join(fixture);
-        let output = temp_wasm_path(fixture);
-        let build = std::process::Command::new(env!("CARGO_BIN_EXE_ts2wasm"))
-            .arg("build")
-            .arg(&fixture_path)
-            .arg("-o")
-            .arg(&output)
-            .output()
-            .unwrap();
-        assert!(build.status.success(), "build failed for {fixture}");
-    }
 }
 
 #[test]
@@ -2119,7 +2109,7 @@ fn spread_operator_set_array_fixture_builds_successfully() {
         .join("../../")
         .join(fixture);
     let output = temp_wasm_path(fixture);
-    let build = std::process::Command::new(env!("CARGO_BIN_EXE_ts2wasm"))
+    let _build = std::process::Command::new(env!("CARGO_BIN_EXE_ts2wasm"))
         .arg("build")
         .arg(&fixture_path)
         .arg("-o")
@@ -2135,7 +2125,7 @@ fn spread_operator_mixed_set_array_fixture_builds_successfully() {
         .join("../../")
         .join(fixture);
     let output = temp_wasm_path(fixture);
-    let build = std::process::Command::new(env!("CARGO_BIN_EXE_ts2wasm"))
+    let _build = std::process::Command::new(env!("CARGO_BIN_EXE_ts2wasm"))
         .arg("build")
         .arg(&fixture_path)
         .arg("-o")
@@ -2151,7 +2141,7 @@ fn spread_operator_set_call_fixture_builds_successfully() {
         .join("../../")
         .join(fixture);
     let output = temp_wasm_path(fixture);
-    let build = std::process::Command::new(env!("CARGO_BIN_EXE_ts2wasm"))
+    let _build = std::process::Command::new(env!("CARGO_BIN_EXE_ts2wasm"))
         .arg("build")
         .arg(&fixture_path)
         .arg("-o")
@@ -2216,7 +2206,7 @@ fn spread_operator_custom_iterable_fixture_builds_successfully() {
         .join("../../")
         .join(fixture);
     let output = temp_wasm_path(fixture);
-    let build = std::process::Command::new(env!("CARGO_BIN_EXE_ts2wasm"))
+    let _build = std::process::Command::new(env!("CARGO_BIN_EXE_ts2wasm"))
         .arg("build")
         .arg(&fixture_path)
         .arg("-o")
@@ -2232,7 +2222,7 @@ fn spread_operator_custom_iterable_multi_value_fixture_builds_successfully() {
         .join("../../")
         .join(fixture);
     let output = temp_wasm_path(fixture);
-    let build = std::process::Command::new(env!("CARGO_BIN_EXE_ts2wasm"))
+    let _build = std::process::Command::new(env!("CARGO_BIN_EXE_ts2wasm"))
         .arg("build")
         .arg(&fixture_path)
         .arg("-o")
@@ -2248,7 +2238,7 @@ fn spread_operator_custom_iterable_mixed_fixture_builds_successfully() {
         .join("../../")
         .join(fixture);
     let output = temp_wasm_path(fixture);
-    let build = std::process::Command::new(env!("CARGO_BIN_EXE_ts2wasm"))
+    let _build = std::process::Command::new(env!("CARGO_BIN_EXE_ts2wasm"))
         .arg("build")
         .arg(&fixture_path)
         .arg("-o")
@@ -2553,6 +2543,10 @@ fn object_builtin_method_fixtures_match_node_output_under_iwasm() {
         "fixtures/builtins-and-io/value-of.ts",
         "fixtures/builtins-and-io/object-assign.ts",
         "fixtures/builtins-and-io/object-create.ts",
+        "fixtures/builtins-and-io/object-prevent-extensions.ts",
+        "fixtures/builtins-and-io/object-is-extensible.ts",
+        "fixtures/builtins-and-io/object-is-sealed.ts",
+        "fixtures/builtins-and-io/object-is-frozen.ts",
     ] {
         assert_fixture_matches_node(fixture);
     }
@@ -2591,4 +2585,19 @@ fn class_new_expression_method_call_fixture_matches_node_output_under_iwasm() {
 #[test]
 fn unary_void_operator_fixture_matches_node_output_under_iwasm() {
     assert_fixture_matches_node("fixtures/core-semantics/unary-void-operator.ts");
+}
+
+#[test]
+fn comma_operator_fixture_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node("fixtures/core-semantics/comma-operator.ts");
+}
+
+#[test]
+fn for_of_array_fixture_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node("fixtures/core-semantics/for-of-array.ts");
+}
+
+#[test]
+fn global_zero_args_fixture_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/global-0-args.ts");
 }

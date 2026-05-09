@@ -34,14 +34,14 @@ fn lowering_passes_mutable_class_method_outer_local_capture() {
     assert!(matches!(
         lowered.top_level_statements.last(),
         Some(LoweredStmt::Expr(LoweredExpr::Call {
-            kind: FunctionCallKind::Builtin(ts2wasm_ir::builtin::BuiltinId::ConsoleLog, Span::default()),
+            kind: FunctionCallKind::Builtin(ts2wasm_ir::builtin::BuiltinId::ConsoleLog),
             args, ..}, _)) if matches!(args.as_slice(), [LoweredExpr::EnvCellGet(LocalId(0), _)])
     ));
     assert!(matches!(
         lowered.functions[1].body.as_slice(),
         [LoweredStmt::Expr(
             LoweredExpr::EnvCellSet {
-                cell: LocalId(1, Span::default()),
+                cell: LocalId(1),
                 ..
             },
             _
@@ -119,11 +119,7 @@ fn lowering_passes_immutable_class_method_outer_local_capture() {
     match &lowered.top_level_statements[3] {
         LoweredStmt::Expr(
             LoweredExpr::Call {
-                kind:
-                    FunctionCallKind::Builtin(
-                        ts2wasm_ir::builtin::BuiltinId::ConsoleLog,
-                        Span::default(),
-                    ),
+                kind: FunctionCallKind::Builtin(ts2wasm_ir::builtin::BuiltinId::ConsoleLog),
                 args,
                 ..
             },
@@ -709,12 +705,12 @@ fn validate_rejects_arity_mismatch() {
         recursion_depth: 0,
         locals: vec![],
         body: vec![],
-        recursion_depth: 0,
     };
     let call = LoweredStmt::Expr(
         LoweredExpr::Call {
-            kind: FunctionCallKind::User(FuncId(0, Span::default())),
+            kind: FunctionCallKind::User(FuncId(0)),
             args: vec![LoweredExpr::Number(1, Span::generated("test"))],
+            span: Span::generated("test"),
         },
         Span::generated("test"),
     );
@@ -733,7 +729,7 @@ fn validate_rejects_arity_mismatch() {
 
 #[test]
 fn validate_rejects_non_contiguous_top_level_locals() {
-    use ts2wasm_ir::lowered::{FuncId, LocalId, LoweredFunction, LoweredProgram};
+    use ts2wasm_ir::lowered::{LocalId, LoweredProgram};
     let program = LoweredProgram {
         top_level_statements: vec![],
         top_level_locals: vec![LocalId(0), LocalId(2)], // non-contiguous: 1 is missing
@@ -971,11 +967,7 @@ fn lowering_represents_known_heap_closure_local_call_explicitly() {
     match &lowered.top_level_statements[2] {
         LoweredStmt::Expr(
             LoweredExpr::Call {
-                kind:
-                    FunctionCallKind::Builtin(
-                        ts2wasm_ir::builtin::BuiltinId::ConsoleLog,
-                        Span::default(),
-                    ),
+                kind: FunctionCallKind::Builtin(ts2wasm_ir::builtin::BuiltinId::ConsoleLog),
                 args,
                 ..
             },
@@ -1117,11 +1109,7 @@ fn lowering_represents_private_field_access_as_internal_slot_calls() {
     match &lowered.top_level_statements[2] {
         LoweredStmt::Expr(
             LoweredExpr::Call {
-                kind:
-                    FunctionCallKind::Builtin(
-                        ts2wasm_ir::builtin::BuiltinId::ConsoleLog,
-                        Span::default(),
-                    ),
+                kind: FunctionCallKind::Builtin(ts2wasm_ir::builtin::BuiltinId::ConsoleLog),
                 ..
             },
             _,
@@ -1371,7 +1359,7 @@ fn lowering_represents_static_private_accessor_access_as_same_class_user_call() 
     match &write_method.body[0] {
         LoweredStmt::Expr(
             LoweredExpr::Call {
-                kind: FunctionCallKind::User(FuncId(6, Span::default())),
+                kind: FunctionCallKind::User(FuncId(6)),
                 args,
                 ..
             },
@@ -1387,7 +1375,7 @@ fn lowering_represents_static_private_accessor_access_as_same_class_user_call() 
     match &write_by_name_method.body[0] {
         LoweredStmt::Expr(
             LoweredExpr::Call {
-                kind: FunctionCallKind::User(FuncId(6, Span::default())),
+                kind: FunctionCallKind::User(FuncId(6)),
                 args,
                 ..
             },
@@ -1459,7 +1447,7 @@ fn lowering_represents_static_private_field_access_as_same_class_env_cell() {
     match &write_method.body[0] {
         LoweredStmt::Expr(
             LoweredExpr::EnvCellSet {
-                cell: LocalId(1, Span::default()),
+                cell: LocalId(1),
                 expr,
                 ..
             },
@@ -1575,7 +1563,7 @@ fn lowering_represents_direct_private_setter_assignment_as_same_class_user_call(
     match &write_method.body[0] {
         LoweredStmt::Expr(
             LoweredExpr::Call {
-                kind: FunctionCallKind::User(FuncId(2, Span::default())),
+                kind: FunctionCallKind::User(FuncId(2)),
                 args,
                 ..
             },
@@ -1646,6 +1634,7 @@ fn inferred_type_marks_number_addition_as_number() {
         left: Box::new(LoweredExpr::Number(1, Span::generated("test"))),
         op: LoweredBinaryOp::Add,
         right: Box::new(LoweredExpr::Number(2, Span::generated("test"))),
+        span: Span::generated("test"),
     };
     assert_eq!(expr.inferred_type(), InferredType::Number);
 }
@@ -1657,6 +1646,7 @@ fn inferred_type_marks_string_addition_as_string() {
         left: Box::new(LoweredExpr::String("a".to_owned(), Span::generated("test"))),
         op: LoweredBinaryOp::Add,
         right: Box::new(LoweredExpr::String("b".to_owned(), Span::generated("test"))),
+        span: Span::generated("test"),
     };
     assert_eq!(expr.inferred_type(), InferredType::String);
 }
@@ -1668,6 +1658,7 @@ fn inferred_type_falls_back_to_unknown_for_mixed_add() {
         left: Box::new(LoweredExpr::String("a".to_owned(), Span::generated("test"))),
         op: LoweredBinaryOp::Add,
         right: Box::new(LoweredExpr::Number(1, Span::generated("test"))),
+        span: Span::generated("test"),
     };
     assert_eq!(expr.inferred_type(), InferredType::Unknown);
 }
@@ -1683,7 +1674,7 @@ fn lower_arrow_fn_iife_empty_body() {
             lowered.top_level_statements.first(),
             Some(ts2wasm_ir::lowered::LoweredStmt::Expr(
                 ts2wasm_ir::lowered::LoweredExpr::Call {
-                    kind: ts2wasm_ir::lowered::FunctionCallKind::User(_, Span::default()),
+                    kind: ts2wasm_ir::lowered::FunctionCallKind::User(_),
                     args,
                     ..
                 },
@@ -1711,7 +1702,7 @@ fn lower_arrow_fn_iife_with_body() {
             lowered.top_level_statements.get(1),
             Some(ts2wasm_ir::lowered::LoweredStmt::Expr(
                 ts2wasm_ir::lowered::LoweredExpr::Call {
-                    kind: ts2wasm_ir::lowered::FunctionCallKind::User(_, Span::default()),
+                    kind: ts2wasm_ir::lowered::FunctionCallKind::User(_),
                     args,
                     ..
                 },
