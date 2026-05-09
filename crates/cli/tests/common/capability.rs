@@ -1,3 +1,4 @@
+#![allow(dead_code)]
 use std::process::Command;
 
 /// Check whether a tool is available on PATH.
@@ -10,6 +11,7 @@ pub fn has_tool(name: &str) -> bool {
 }
 
 /// Require that a tool is available, panicking with a clear message if not.
+#[allow(dead_code)]
 pub fn require_tool(name: &str) {
     if !has_tool(name) {
         panic!(
@@ -20,6 +22,7 @@ pub fn require_tool(name: &str) {
 }
 
 /// Return a `Command` for `node`, requiring it to be available.
+#[allow(dead_code)]
 pub fn node_command() -> Command {
     require_tool("node");
     let mut cmd = Command::new("node");

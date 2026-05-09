@@ -32,10 +32,29 @@ impl Parser {
         self.cursor = saved_cursor;
 
         // JSX detection: <Tag> or </Tag pattern
+        // Must not misclassify TypeScript angle-bracket type assertions (<Type>expr).
         if !is_arrow && matches!(self.peek(), Some(Token::Less)) {
             let probe = self.cursor;
             self.advance();
-            let is_jsx = matches!(self.peek(), Some(Token::Slash | Token::Ident(_)));
+            let is_jsx = match self.peek() {
+                Some(Token::Slash) => true, // </ closing tag
+                Some(Token::Ident(_)) => {
+                    // After < Ident — check if Ident is immediately followed by >.
+                    // If so, it could be a type assertion (<Type>expr), not JSX.
+                    // Defer to unary() try_consume_typescript_angle_type_assertion().
+                    if self
+                        .tokens
+                        .get(self.cursor + 1)
+                        .map(|t| t.kind == Token::Greater)
+                        .unwrap_or(false)
+                    {
+                        false // likely <Type>expr — type assertion, not JSX
+                    } else {
+                        true // <Ident ... with attributes or self-closing — definitely JSX
+                    }
+                }
+                _ => false,
+            };
             self.cursor = probe;
             if is_jsx {
                 return Err(Diagnostic {
@@ -1987,8 +2006,7 @@ impl Parser {
                 })
             }
             Some(SpannedToken {
-                kind: Token::With,
-                ..
+                kind: Token::With, ..
             }) => Err(Diagnostic {
                 code: DiagCode::UnsupportedSyntax,
                 message: "With statement is not supported".to_owned(),

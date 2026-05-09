@@ -53,7 +53,7 @@ open:
     priority: P1
     type: bug
     area: frontend
-    status: open
+    status: active
     created: 2026-05-09
     updated: 2026-05-09
     roadmap: W2
@@ -308,6 +308,64 @@ open:
     non_goals:
       - "No full Unicode segmentation."
       - "No UTF-16 parity for existing working subset."
+
+  - id: 169
+    title: "Define Async IR and lower async/await from AST to Semantic HIR"
+    priority: P1
+    type: feature
+    area: ir
+    status: open
+    created: 2026-05-09
+    updated: 2026-05-09
+    roadmap: W5
+    acceptance:
+      - "cargo nextest run -p ts2wasm-cli --test m12_async_await build_smoke_async_return"
+    non_goals:
+      - "No state machine transformation."
+      - "No runtime execution."
+
+  - id: 170
+    title: "Implement state-machine transformation for iwasm/CoreWasm target"
+    priority: P1
+    type: feature
+    area: backend
+    status: open
+    created: 2026-05-09
+    updated: 2026-05-09
+    roadmap: W5
+    acceptance:
+      - "cargo nextest run -p ts2wasm-cli --test m12_async_await semantic_diff_async_return"
+    non_goals:
+      - "No JSPI or Asyncify."
+      - "No full Promise object implementation."
+
+  - id: 171
+    title: "Define and implement runtime polling ABI (task_poll/task_result) for iwasm"
+    priority: P1
+    type: feature
+    area: runtime
+    status: open
+    created: 2026-05-09
+    updated: 2026-05-09
+    roadmap: W5
+    acceptance:
+      - "cargo nextest run -p ts2wasm-cli --test m12_async_await semantic_diff_await_sequence"
+    non_goals:
+      - "No host async I/O implementation."
+
+  - id: 172
+    title: "Implement JS Promise wrapper for wasm+js target using state-machine"
+    priority: P1
+    type: feature
+    area: backend
+    status: open
+    created: 2026-05-09
+    updated: 2026-05-09
+    roadmap: W5
+    acceptance:
+      - "cargo nextest run -p ts2wasm-cli --test m12_async_await semantic_diff_async_exception"
+    non_goals:
+      - "No JSPI support."
 
 active: []
 

@@ -6,7 +6,9 @@ use std::time::{Duration, Instant};
 pub(crate) const IWASM_TIMEOUT: Duration = Duration::from_secs(5);
 
 pub(crate) struct IwasmRunResult {
+    #[allow(dead_code)]
     pub output: Output,
+    #[allow(dead_code)]
     pub timed_out: bool,
 }
 
