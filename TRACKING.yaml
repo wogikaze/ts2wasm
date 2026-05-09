@@ -12,7 +12,24 @@ meta:
     canonical_source: TRACKING.yaml
     roadmap_source: docs/roadmap.md
 
-active: []
+open: []
+
+active:
+  - id: 147
+    title: "Add precise unsupported diagnostic for TypeScript triple-slash directives"
+    priority: P2
+    type: diagnostic
+    area: frontend
+    status: active
+    created: 2026-05-09
+    updated: 2026-05-09
+    roadmap: W3
+    acceptance:
+      - "cargo nextest run -p ts2wasm-cli --test m6_builtin_methods triple_slash_directive_unsupported_diagnostic"
+    non_goals:
+      - "No triple-slash directive implementation."
+      - "No XML/comment parsing changes."
+    notes: "TypeScript triple-slash directives (/// <reference path/types/lib=\"...\" />) are compile-time annotations. Detect at lexer or parser level and emit precise unsupported diagnostic."
 
 done:
   - id: 146
