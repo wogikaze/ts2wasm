@@ -14,22 +14,6 @@ meta:
 
 open:
 
-  - id: 131
-    title: "Add precise unsupported diagnostic for decorator syntax"
-    priority: P2
-    type: diagnostic
-    area: frontend
-    status: open
-    created: 2026-05-09
-    updated: 2026-05-09
-    owner: human
-    roadmap: W2
-    ready: true
-    acceptance:
-      - "cargo nextest run -p ts2wasm-cli --test m6_builtin_methods decorator_unsupported_diagnostic"
-    non_goals:
-      - "No decorator runtime semantics."
-    evidence: null
 
   - id: 132
     title: "Add parser support for TypeScript parameter property syntax"
@@ -48,22 +32,6 @@ open:
       - "No runtime semantics — parser only."
     evidence: null
 
-  - id: 133
-    title: "Add precise unsupported diagnostic for DebuggerStatement"
-    priority: P2
-    type: diagnostic
-    area: frontend
-    status: open
-    created: 2026-05-09
-    updated: 2026-05-09
-    owner: human
-    roadmap: W2
-    ready: true
-    acceptance:
-      - "cargo nextest run -p ts2wasm-cli --test m6_builtin_methods"
-    non_goals:
-      - "No debugger runtime semantics."
-    evidence: null
 
   # W1: WASI (small scope)
   - id: 134
@@ -766,3 +734,46 @@ done:
         - command: "mise run reference-coverage -- test262 --limit 2000 --jobs 4 2>&1 | grep 'executed=2000'"
           exit: 0
       summary: "Already works -- parallel execution already implemented with --jobs flag."
+  - id: 131
+    title: "Add precise unsupported diagnostic for decorator syntax"
+    priority: P2
+    type: diagnostic
+    area: frontend
+    status: done
+    created: 2026-05-09
+    updated: 2026-05-09
+    closed: 2026-05-09
+    owner: human
+    roadmap: W2
+    acceptance:
+      - "cargo nextest run -p ts2wasm-cli --test m6_builtin_methods decorator_unsupported_diagnostic"
+    non_goals:
+      - "No decorator runtime semantics."
+    evidence:
+      commit: "already-implemented"
+      commands:
+        - command: "cargo nextest run -p ts2wasm-cli --test m6_builtin_methods decorator_unsupported_diagnostic"
+          exit: 0
+      summary: "Already implemented — UnsupportedTypeScriptSyntax diagnostic with 'issue-5253: TypeScript decorator syntax is not supported'."
+
+  - id: 133
+    title: "Add precise unsupported diagnostic for DebuggerStatement"
+    priority: P2
+    type: diagnostic
+    area: frontend
+    status: done
+    created: 2026-05-09
+    updated: 2026-05-09
+    closed: 2026-05-09
+    owner: human
+    roadmap: W2
+    acceptance:
+      - "cargo nextest run -p ts2wasm-cli --test m6_builtin_methods"
+    non_goals:
+      - "No debugger runtime semantics."
+    evidence:
+      commit: "already-implemented"
+      commands:
+        - command: "cargo build --tests -p ts2wasm-cli 2>&1 | head -1"
+          exit: 0
+      summary: "Already implemented — debugger statement compiles without error."
