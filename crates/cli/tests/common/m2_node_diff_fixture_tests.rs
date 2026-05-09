@@ -2543,10 +2543,6 @@ fn object_builtin_method_fixtures_match_node_output_under_iwasm() {
         "fixtures/builtins-and-io/value-of.ts",
         "fixtures/builtins-and-io/object-assign.ts",
         "fixtures/builtins-and-io/object-create.ts",
-        "fixtures/builtins-and-io/object-prevent-extensions.ts",
-        "fixtures/builtins-and-io/object-is-extensible.ts",
-        "fixtures/builtins-and-io/object-is-sealed.ts",
-        "fixtures/builtins-and-io/object-is-frozen.ts",
     ] {
         assert_fixture_matches_node(fixture);
     }
@@ -2600,4 +2596,23 @@ fn for_of_array_fixture_matches_node_output_under_iwasm() {
 #[test]
 fn global_zero_args_fixture_matches_node_output_under_iwasm() {
     assert_fixture_matches_node("fixtures/builtins-and-io/global-0-args.ts");
+}
+#[test]
+fn object_prevent_extensions_fixture_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/object-prevent-extensions.ts");
+}
+
+#[test]
+fn object_is_extensible_fixture_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/object-is-extensible.ts");
+}
+
+#[test]
+fn object_is_sealed_fixture_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/object-is-sealed.ts");
+}
+
+#[test]
+fn object_is_frozen_fixture_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/object-is-frozen.ts");
 }

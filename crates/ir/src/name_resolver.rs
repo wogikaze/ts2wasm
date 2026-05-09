@@ -900,12 +900,6 @@ impl NameResolver {
                 })
             }
             Expr::Ident { name, span } => {
-                eprintln!(
-                    "[dbg] resolve_expr Ident: name={name}, scopes_len={}, classes_keys={:?}, functions_keys={:?}",
-                    self.scopes.len(),
-                    self.classes.keys().cloned().collect::<Vec<_>>(),
-                    self.functions.keys().cloned().collect::<Vec<_>>()
-                );
                 // 'super' is a special keyword, not a regular identifier.
                 // Don't try to resolve it as a variable name.
                 if name == "super" {
