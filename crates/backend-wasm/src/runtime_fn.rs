@@ -436,6 +436,8 @@ pub(crate) enum HostImport {
     FdClose,
     WasiProcExit,
     ClockTimeGet,
+    #[allow(dead_code)]
+    ClockResGet,
     RandomGet,
     ArgsSizesGet,
     ArgsGet,
@@ -512,6 +514,14 @@ impl HostImport {
                 wat_symbol: "$clock_time_get",
                 abi: HostAbi::WasiPreview1,
                 params: "param i32 i64 i32",
+                result: "result i32",
+            },
+            Self::ClockResGet => HostImportSpec {
+                module: "wasi_snapshot_preview1",
+                name: "clock_res_get",
+                wat_symbol: "$clock_res_get",
+                abi: HostAbi::WasiPreview1,
+                params: "param i32 i32",
                 result: "result i32",
             },
             Self::RandomGet => HostImportSpec {
@@ -704,6 +714,7 @@ impl HostImport {
             Self::FdClose => "wasi_snapshot_preview1.fd_close",
             Self::WasiProcExit => "wasi_snapshot_preview1.proc_exit",
             Self::ClockTimeGet => "wasi_snapshot_preview1.clock_time_get",
+            Self::ClockResGet => "wasi_snapshot_preview1.clock_res_get",
             Self::RandomGet => "wasi_snapshot_preview1.random_get",
             Self::ArgsSizesGet => "wasi_snapshot_preview1.args_sizes_get",
             Self::ArgsGet => "wasi_snapshot_preview1.args_get",

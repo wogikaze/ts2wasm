@@ -266,3 +266,32 @@ fn binary_mvp_const_export() {
     );
     assert_eq!(String::from_utf8_lossy(&run.output.stdout), "42\n");
 }
+
+// WASI clock_res_get HostImport registration — build smoke test (id 142)
+// Verifies the compiler registers clock_res_get as a WASI import.
+// Nothing currently emits clock_res_get calls; this validates the variant
+// does not cause compile or link errors.
+#[test]
+fn clock_res_get_compiles() {
+    let temp = std::env::temp_dir().join(format!("ts2wasm-m1-crg-{}", std::process::id()));
+    fs::create_dir_all(&temp).unwrap();
+
+    let input = temp.join("clock_res_get.ts");
+    let output = temp.join("clock_res_get.wasm");
+    fs::write(&input, "console.log(\"clock_res_get registered\");").unwrap();
+
+    let build = Command::new(env!("CARGO_BIN_EXE_ts2wasm"))
+        .arg("build")
+        .arg(&input)
+        .arg("-o")
+        .arg(&output)
+        .output()
+        .unwrap();
+
+    assert!(
+        build.status.success(),
+        "build failed\nstdout:\n{}\nstderr:\n{}",
+        String::from_utf8_lossy(&build.stdout),
+        String::from_utf8_lossy(&build.stderr)
+    );
+}
