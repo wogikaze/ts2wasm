@@ -13,23 +13,6 @@ meta:
     roadmap_source: docs/roadmap.md
 
 open:
-  - id: 126
-    title: "Add parser support for labelled function declarations"
-    priority: P2
-    type: feature
-    area: frontend
-    status: open
-    created: 2026-05-09
-    updated: 2026-05-09
-    owner: human
-    roadmap: W2
-    ready: true
-    acceptance:
-      - "cargo nextest run -p ts2wasm-cli --test m6_builtin_methods"
-    non_goals:
-      - "No runtime semantics changes."
-    evidence: null
-
   # W4: Builtin (moderate scope)
   - id: 127
     title: "Add Array.prototype.sort build_smoke fixture and test"
@@ -599,6 +582,28 @@ done:
         - command: "cargo nextest run -p ts2wasm-cli --test m6_builtin_methods with_statement_unsupported_diagnostic"
           exit: 0
       summary: "Added Token::With match arm before catch-all, produces precise 'With statement is not supported' diagnostic."
+
+  - id: 126
+    title: "Add parser support for labelled function declarations"
+    priority: P2
+    type: feature
+    area: frontend
+    status: done
+    created: 2026-05-09
+    updated: 2026-05-09
+    closed: 2026-05-09
+    owner: human
+    roadmap: W2
+    acceptance:
+      - "cargo nextest run -p ts2wasm-cli --test m6_builtin_methods annex_b_hoisted_function_in_block_unsupported_diagnostic"
+    non_goals:
+      - "No runtime semantics changes."
+    evidence:
+      commit: "already-implemented"
+      commands:
+        - command: "cargo nextest run -p ts2wasm-cli --test m6_builtin_methods annex_b_hoisted_function_in_block_unsupported_diagnostic"
+          exit: 0
+      summary: "Parser already handles labelled function declarations. Added test fixture and build-smoke test."
 
   - id: 123
     title: "Ramp test262 coverage from 500 to 2,000 with parallel execution"
