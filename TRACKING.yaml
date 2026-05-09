@@ -12,7 +12,302 @@ meta:
     canonical_source: TRACKING.yaml
     roadmap_source: docs/roadmap.md
 
-open: []
+open:
+  - id: 149
+    title: "Fix enum erasure producing non-empty programs due to AmbientValueDecl spillover"
+    priority: P1
+    type: bug
+    area: frontend
+    status: open
+    created: 2026-05-09
+    updated: 2026-05-09
+    roadmap: W2
+    acceptance:
+      - "cargo test -p ts2wasm-frontend --lib -- parser::tests::parses_const_enum_erased_no_bogus_binding"
+      - "cargo test -p ts2wasm-frontend --lib -- parser::tests::parses_enum_declarations_as_erased_syntax"
+      - "cargo test -p ts2wasm-frontend --lib -- parser::tests::parses_enum_followed_by_let_declaration"
+      - "cargo test -p ts2wasm-frontend --lib -- parser::tests::parses_enum_with_trailing_comma_as_erased_syntax"
+      - "cargo test -p ts2wasm-frontend --lib -- parser::tests::parses_enum_with_values_as_erased_syntax"
+      - "cargo test -p ts2wasm-frontend --lib -- parser::tests::parses_export_enum_followed_by_let"
+    non_goals:
+      - "No runtime enum semantics."
+      - "No enum value lowering."
+
+  - id: 150
+    title: "Fix const enum missing initializer / const type annotation parser rejects"
+    priority: P1
+    type: bug
+    area: frontend
+    status: open
+    created: 2026-05-09
+    updated: 2026-05-09
+    roadmap: W2
+    acceptance:
+      - "cargo test -p ts2wasm-frontend --lib -- parser::tests::rejects_non_const_enum_missing_initializer"
+      - "cargo test -p ts2wasm-frontend --lib -- parser::tests::rejects_uninitialized_const_after_type_annotation"
+    non_goals:
+      - "No runtime semantics changes."
+
+  - id: 151
+    title: "Fix angle bracket type assertion misidentified as JSX at statement start"
+    priority: P1
+    type: bug
+    area: frontend
+    status: open
+    created: 2026-05-09
+    updated: 2026-05-09
+    roadmap: W2
+    acceptance:
+      - "cargo test -p ts2wasm-frontend --lib -- parser::tests::erases_angle_bracket_type_assertion_at_expression_statement_start"
+    non_goals:
+      - "No JSX parsing beyond statement-level disambiguation."
+      - "No type checking."
+
+  - id: 152
+    title: "Fix parses_async_function_as_regular_function_with_empty_body test"
+    priority: P1
+    type: bug
+    area: frontend
+    status: open
+    created: 2026-05-09
+    updated: 2026-05-09
+    roadmap: W2
+    acceptance:
+      - "cargo test -p ts2wasm-frontend --lib -- parser::tests::parses_async_function_as_regular_function_with_empty_body"
+    non_goals:
+      - "No async/await runtime semantics."
+
+  - id: 153
+    title: "Fix parses_top_level_block_by_flattening_statements"
+    priority: P1
+    type: bug
+    area: frontend
+    status: open
+    created: 2026-05-09
+    updated: 2026-05-09
+    roadmap: W2
+    acceptance:
+      - "cargo test -p ts2wasm-frontend --lib -- parser::tests::parses_top_level_block_by_flattening_statements"
+    non_goals:
+      - "No block statement runtime semantics changes."
+
+  - id: 154
+    title: "Fix rejects_unsupported_regexp_flag_with_issue_linked_diagnostic (d flag)"
+    priority: P1
+    type: bug
+    area: frontend
+    status: open
+    created: 2026-05-09
+    updated: 2026-05-09
+    roadmap: W2
+    acceptance:
+      - "cargo test -p ts2wasm-frontend --lib -- parser::tests::rejects_unsupported_regexp_flag_with_issue_linked_diagnostic"
+    non_goals:
+      - "No RegExp execution changes."
+
+  - id: 155
+    title: "Fix rejects_unsupported_typescript_ambient_forms_with_source_span (AmbientValueDecl emission)"
+    priority: P1
+    type: bug
+    area: frontend
+    status: open
+    created: 2026-05-09
+    updated: 2026-05-09
+    roadmap: W2
+    acceptance:
+      - "cargo test -p ts2wasm-frontend --lib -- parser::tests::rejects_unsupported_typescript_ambient_forms_with_source_span"
+    non_goals:
+      - "No ambient declaration semantics."
+
+  - id: 156
+    title: "Fix build_smoke_module_augmentation test after module augmentation diagnostic was added"
+    priority: P1
+    type: bug
+    area: frontend
+    status: open
+    created: 2026-05-09
+    updated: 2026-05-09
+    roadmap: W3
+    acceptance:
+      - "cargo nextest run -p ts2wasm-cli --test m6_builtin_methods build_smoke_module_augmentation"
+    non_goals:
+      - "No module augmentation implementation."
+
+  - id: 157
+    title: "Add node_diff for Array.prototype.map semantics"
+    priority: P2
+    type: test
+    area: runtime
+    status: open
+    created: 2026-05-09
+    updated: 2026-05-09
+    roadmap: W4
+    acceptance:
+      - "cargo nextest run -p ts2wasm-cli --test m2_node_diff array_map_fixture_matches_node_output_under_iwasm"
+    non_goals:
+      - "No new builtin implementation."
+      - "No runtime behavior changes."
+
+  - id: 158
+    title: "Add node_diff for Array.prototype.filter semantics"
+    priority: P2
+    type: test
+    area: runtime
+    status: open
+    created: 2026-05-09
+    updated: 2026-05-09
+    roadmap: W4
+    acceptance:
+      - "cargo nextest run -p ts2wasm-cli --test m2_node_diff array_filter_fixture_matches_node_output_under_iwasm"
+    non_goals:
+      - "No new builtin implementation."
+      - "No runtime behavior changes."
+
+  - id: 159
+    title: "Add node_diff for Array.prototype.reduce semantics"
+    priority: P2
+    type: test
+    area: runtime
+    status: open
+    created: 2026-05-09
+    updated: 2026-05-09
+    roadmap: W4
+    acceptance:
+      - "cargo nextest run -p ts2wasm-cli --test m2_node_diff array_reduce_fixture_matches_node_output_under_iwasm"
+    non_goals:
+      - "No new builtin implementation."
+      - "No runtime behavior changes."
+
+  - id: 160
+    title: "Add manifest golden tests for typescript-directives fixtures"
+    priority: P2
+    type: test
+    area: scripts
+    status: open
+    created: 2026-05-09
+    updated: 2026-05-09
+    roadmap: W7
+    acceptance:
+      - "mise run check manifest"
+    non_goals:
+      - "No schema changes."
+
+  - id: 161
+    title: "Extend standalone WASI smoke test coverage"
+    priority: P2
+    type: test
+    area: runtime
+    status: open
+    created: 2026-05-09
+    updated: 2026-05-09
+    roadmap: W1
+    acceptance:
+      - "cargo nextest run -p ts2wasm-cli --test m1_iwasm"
+    non_goals:
+      - "No Node.js shim."
+      - "No hidden host import expansion."
+
+  - id: 162
+    title: "Add host-deny test coverage for typescript-directives fixtures"
+    priority: P2
+    type: test
+    area: scripts
+    status: open
+    created: 2026-05-09
+    updated: 2026-05-09
+    roadmap: W7
+    acceptance:
+      - "cargo nextest run -p ts2wasm-cli --test m11_host_deny standalone_fixtures_pass_host_deny"
+    non_goals:
+      - "No manifest schema changes."
+
+  - id: 163
+    title: "Extend host-deny test coverage to builtins-and-io fixtures"
+    priority: P2
+    type: test
+    area: scripts
+    status: open
+    created: 2026-05-09
+    updated: 2026-05-09
+    roadmap: W7
+    acceptance:
+      - "cargo nextest run -p ts2wasm-cli --test m11_host_deny standalone_fixtures_pass_host_deny"
+    non_goals:
+      - "No manifest schema changes."
+
+  - id: 164
+    title: "Add manifest golden tests for all builtins-and-io fixtures"
+    priority: P2
+    type: test
+    area: scripts
+    status: open
+    created: 2026-05-09
+    updated: 2026-05-09
+    roadmap: W7
+    acceptance:
+      - "mise run check manifest"
+    non_goals:
+      - "No schema changes."
+
+  - id: 165
+    title: "Implement heap OOM check in runtime"
+    priority: P1
+    type: feature
+    area: runtime
+    status: open
+    created: 2026-05-09
+    updated: 2026-05-09
+    roadmap: W0
+    acceptance:
+      - "cargo build"
+    non_goals:
+      - "No GC trigger implementation."
+      - "No memory defragmentation."
+
+  - id: 166
+    title: "Add --explain-unsupported diagnostics CLI mode"
+    priority: P2
+    type: feature
+    area: cli
+    status: open
+    created: 2026-05-09
+    updated: 2026-05-09
+    roadmap: W2
+    acceptance:
+      - "cargo nextest run -p ts2wasm-cli --test command_contract"
+    non_goals:
+      - "No source span highlighting changes."
+      - "No interactive mode."
+
+  - id: 167
+    title: "Implement object literal string key support"
+    priority: P2
+    type: feature
+    area: frontend
+    status: open
+    created: 2026-05-09
+    updated: 2026-05-09
+    roadmap: W2
+    acceptance:
+      - "cargo nextest run -p ts2wasm-cli --test m6_builtin_methods build_smoke_object_string_keys"
+    non_goals:
+      - "No computed property key semantics."
+      - "No getter/setter support."
+
+  - id: 168
+    title: "Implement UTF-8 string support for runtime"
+    priority: P2
+    type: feature
+    area: runtime
+    status: open
+    created: 2026-05-09
+    updated: 2026-05-09
+    roadmap: W0
+    acceptance:
+      - "cargo nextest run -p ts2wasm-cli --test m2_node_diff"
+    non_goals:
+      - "No full Unicode segmentation."
+      - "No UTF-16 parity for existing working subset."
 
 active: []
 
