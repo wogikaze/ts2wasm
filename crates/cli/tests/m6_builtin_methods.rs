@@ -1323,6 +1323,22 @@ fn nested_namespace_unsupported_diagnostic() {
     );
 }
 
+// TypeScript triple-slash directive — precise unsupported diagnostic (id 147)
+#[test]
+fn triple_slash_directive_unsupported_diagnostic() {
+    let result = run_fixture("core-semantics/triple-slash-directive-unsupported.ts");
+    assert!(
+        result.is_err(),
+        "Triple-slash directive should produce unsupported diagnostic"
+    );
+    let err_msg = result.err().unwrap();
+    assert!(
+        err_msg.contains("triple-slash directive") || err_msg.contains("reference"),
+        "Diagnostic should mention triple-slash directive or reference: {}",
+        err_msg
+    );
+}
+
 // === W4: Builtin API semantics (TDD) ===
 
 // String.prototype.matchAll — W4: build smoke (fixture exists)

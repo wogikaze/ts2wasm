@@ -1120,11 +1120,28 @@ impl<'a> Lexer<'a> {
             (Some('/'), Some('/')) => {
                 self.advance_char();
                 self.advance_char();
+                let mut comment_content = String::new();
                 while let Some(ch) = self.peek_char() {
                     if is_line_terminator(ch) {
                         break;
                     }
+                    comment_content.push(ch);
                     self.advance_char();
+                }
+                // Detect TypeScript triple-slash directives: /// <reference ...
+                if comment_content.starts_with("/ <reference") {
+                    return Err(Diagnostic {
+                        code: DiagCode::UnsupportedSyntax,
+                        message: "issue-5253: TypeScript triple-slash directives are not supported"
+                            .to_string(),
+                        span: Some(Span {
+                            start: self
+                                .cursor
+                                .wrapping_sub(comment_content.len())
+                                .wrapping_sub(2),
+                            end: self.cursor,
+                        }),
+                    });
                 }
                 Ok(true)
             }
