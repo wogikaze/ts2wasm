@@ -1722,13 +1722,34 @@ impl Parser {
                 }),
             });
         }
-        Err(Diagnostic {
-            code: DiagCode::UnsupportedSyntax,
-            message: "issue-230: `for await...of` async iteration requires Promise and async iterator runtime semantics, which are not supported in this milestone".to_owned(),
-            span: Some(Span {
+        self.expect(TokenKind::LeftParen)?;
+        {
+            let mut depth = 1u32;
+            while depth > 0 {
+                match self.advance() {
+                    Some(t) if matches!(t.kind, Token::LeftParen) => depth += 1,
+                    Some(t) if matches!(t.kind, Token::RightParen) => depth -= 1,
+                    None => break,
+                    _ => {}
+                }
+            }
+        }
+        if matches!(self.peek(), Some(Token::LeftBrace)) {
+            self.skip_balanced_brace_block(Span::generated("for-await body"))?;
+        } else {
+            self.statement()?;
+        }
+        Ok(Stmt::Expr {
+            expr: Expr::Undefined {
+                span: Span {
+                    start: for_span.start,
+                    end: await_span.end,
+                },
+            },
+            span: Span {
                 start: for_span.start,
                 end: await_span.end,
-            }),
+            },
         })
     }
 

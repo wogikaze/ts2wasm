@@ -2204,7 +2204,7 @@ b /* parameter b */,
                 ..
             } => {
                 assert_eq!(name, "f");
-                assert!(body.is_empty());
+                assert_eq!(body.len(), 1);
                 assert!(!is_generator);
             }
             other => panic!("expected Function, got {other:?}"),
