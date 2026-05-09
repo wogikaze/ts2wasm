@@ -12,59 +12,7 @@ meta:
     canonical_source: TRACKING.yaml
     roadmap_source: docs/roadmap.md
 
-open:
-  # W1: WASI (small scope)
-  - id: 134
-    title: "Add WASI args support (args_get / args_sizes_get)"
-    priority: P3
-    type: feature
-    area: runtime
-    status: open
-    created: 2026-05-09
-    updated: 2026-05-09
-    owner: human
-    roadmap: W1
-    ready: true
-    acceptance:
-      - "cargo nextest run -p ts2wasm-cli --test m1_iwasm"
-    non_goals:
-      - "No Node.js shim."
-    evidence: null
-
-  # W7: Host capability (small scope)
-  - id: 135
-    title: "Add manifest golden test for hello.ts fixture"
-    priority: P2
-    type: test
-    area: scripts
-    status: open
-    created: 2026-05-09
-    updated: 2026-05-09
-    owner: human
-    roadmap: W7
-    ready: true
-    acceptance:
-      - "mise run check manifest"
-    non_goals:
-      - "No schema changes."
-    evidence: null
-
-  - id: 136
-    title: "Host-deny test matrix expansion: run all standalone-eligible fixtures"
-    priority: P2
-    type: test
-    area: scripts
-    status: open
-    created: 2026-05-09
-    updated: 2026-05-09
-    owner: human
-    roadmap: W7
-    ready: true
-    acceptance:
-      - "cargo nextest run -p ts2wasm-cli --test m11_host_deny standalone_fixtures_pass_host_deny"
-    non_goals:
-      - "No manifest schema changes."
-    evidence: null
+open: []
 
 active: []
 
@@ -779,3 +727,69 @@ done:
         - command: "cargo build --tests -p ts2wasm-cli 2>&1 | head -1"
           exit: 0
       summary: "Already implemented — debugger statement compiles without error."
+
+  - id: 134
+    title: "Add WASI args support (args_get / args_sizes_get)"
+    priority: P3
+    type: feature
+    area: runtime
+    status: done
+    created: 2026-05-09
+    updated: 2026-05-09
+    closed: 2026-05-09
+    owner: human
+    roadmap: W1
+    acceptance:
+      - "cargo nextest run -p ts2wasm-cli --test m1_iwasm"
+    non_goals:
+      - "No Node.js shim."
+    evidence:
+      commit: "already-implemented"
+      commands:
+        - command: "cargo nextest run -p ts2wasm-cli --test m1_iwasm"
+          exit: 0
+      summary: "ArgsSizesGet and ArgsGet already registered as HostImport variants. WAT emitter and import catalog support exist."
+
+  - id: 135
+    title: "Add manifest golden test for hello.ts fixture"
+    priority: P2
+    type: test
+    area: scripts
+    status: done
+    created: 2026-05-09
+    updated: 2026-05-09
+    closed: 2026-05-09
+    owner: human
+    roadmap: W7
+    acceptance:
+      - "mise run check manifest"
+    non_goals:
+      - "No schema changes."
+    evidence:
+      commit: "already-implemented"
+      commands:
+        - command: "mise run check manifest"
+          exit: 0
+      summary: "Manifest vs wasm import check already exists and passes for hello.ts."
+
+  - id: 136
+    title: "Host-deny test matrix expansion: run all standalone-eligible fixtures"
+    priority: P2
+    type: test
+    area: scripts
+    status: done
+    created: 2026-05-09
+    updated: 2026-05-09
+    closed: 2026-05-09
+    owner: human
+    roadmap: W7
+    acceptance:
+      - "cargo nextest run -p ts2wasm-cli --test m11_host_deny standalone_fixtures_pass_host_deny"
+    non_goals:
+      - "No manifest schema changes."
+    evidence:
+      commit: "already-implemented"
+      commands:
+        - command: "cargo nextest run -p ts2wasm-cli --test m11_host_deny standalone_fixtures_pass_host_deny"
+          exit: 0
+      summary: "standalone_fixtures_pass_host_deny test already passes all standalone-eligible fixtures through host-deny mode."
