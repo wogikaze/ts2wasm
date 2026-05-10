@@ -53,7 +53,7 @@ impl Parser {
                 span,
             }) => Ok((name, span)),
             other => Err(Diagnostic {
-                code: DiagCode::UnsupportedSyntax,
+                code: DiagCode::SyntaxError,
                 message: format!("expected identifier, got {other:?}"),
                 span: self.peek_span(),
 
@@ -75,7 +75,7 @@ impl Parser {
                 span,
             }) => Ok((value, span)),
             other => Err(Diagnostic {
-                code: DiagCode::UnsupportedSyntax,
+                code: DiagCode::SyntaxError,
                 message: format!("expected identifier or string literal, got {other:?}"),
                 span: self.peek_span(),
 
@@ -137,7 +137,7 @@ impl Parser {
                     Token::With => "with",
                     _ => {
                         return Err(Diagnostic {
-                            code: DiagCode::UnsupportedSyntax,
+                            code: DiagCode::SyntaxError,
                             message: format!("expected property name, got {kind:?}"),
                             span: self.peek_span(),
 
@@ -147,7 +147,7 @@ impl Parser {
                 Ok((name.to_string(), span))
             }
             None => Err(Diagnostic {
-                code: DiagCode::UnsupportedSyntax,
+                code: DiagCode::SyntaxError,
                 message: "expected property name, got end of input".to_owned(),
                 span: None,
 
@@ -162,7 +162,7 @@ impl Parser {
                 span,
             }) => Ok((name, span)),
             other => Err(Diagnostic {
-                code: DiagCode::UnsupportedSyntax,
+                code: DiagCode::SyntaxError,
                 message: format!("issue-248: expected private identifier, got {other:?}"),
                 span: self.peek_span(),
 
@@ -177,13 +177,14 @@ impl Parser {
             Ok(span)
         } else {
             Err(Diagnostic {
-                code: DiagCode::UnsupportedSyntax,
+                code: DiagCode::SyntaxError,
                 message: format!("expected `{keyword}`, got {:?}", self.peek()),
                 span: self.peek_span(),
 
                 phase: None,})
         }
     }
+
 
     fn consume_contextual_keyword(&mut self, keyword: &str) -> bool {
         if self.peek_contextual_keyword(keyword) {
@@ -213,7 +214,7 @@ impl Parser {
                     Ok((name.to_owned(), span))
                 } else {
                     Err(Diagnostic {
-                        code: DiagCode::UnsupportedSyntax,
+                        code: DiagCode::SyntaxError,
                         message: format!("expected member property name, got {kind:?}"),
                         span: self.peek_span(),
 
@@ -221,7 +222,7 @@ impl Parser {
                 }
             }
             None => Err(Diagnostic {
-                code: DiagCode::UnsupportedSyntax,
+                code: DiagCode::SyntaxError,
                 message: "expected member property name, got None".to_owned(),
                 span: self.peek_span(),
 
@@ -248,7 +249,7 @@ impl Parser {
                 Ok(key)
             }
             Some(Token::BigIntLiteral(_)) | Some(Token::PrivateIdentifier(_)) => Err(Diagnostic {
-                code: DiagCode::UnsupportedSyntax,
+                code: DiagCode::SyntaxError,
                 message: format!(
                     "issue-5168: a 'bigint' literal cannot be used as a property name, got {:?}",
                     self.peek()
@@ -262,7 +263,7 @@ impl Parser {
                 Ok(key)
             }
             other => Err(Diagnostic {
-                code: DiagCode::UnsupportedSyntax,
+                code: DiagCode::SyntaxError,
                 message: format!(
                     "expected identifier or string literal as object key, got {other:?}"
                 ),
@@ -316,7 +317,7 @@ impl Parser {
             Ok(span)
         } else {
             Err(Diagnostic {
-                code: DiagCode::UnsupportedSyntax,
+                code: DiagCode::SyntaxError,
                 message: format!("expected {kind:?}, got {:?}", self.peek()),
                 span: self.peek_span(),
 

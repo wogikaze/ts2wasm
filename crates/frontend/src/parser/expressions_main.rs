@@ -2045,7 +2045,7 @@ impl Parser {
                 })
             }
             other => Err(Diagnostic {
-                code: DiagCode::UnsupportedSyntax,
+                code: DiagCode::SyntaxError,
                 message: format!("unsupported expression: {other:?}"),
                 span: self.peek_span(),
 

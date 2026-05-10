@@ -242,6 +242,8 @@ pub enum DiagCode {
     InvalidTopLevelReturn,
     /// A lowered IR node violates a structural invariant — this is a compiler bug.
     InvariantViolation,
+    /// Source code contains invalid ECMAScript syntax.
+    SyntaxError,
     /// Source uses syntax that is not supported in the current milestone.
     UnsupportedSyntax,
     /// Source references a builtin API outside the current supported subset.

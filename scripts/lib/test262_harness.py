@@ -351,6 +351,7 @@ def feature_label(diag_code, stderr, test_file, phase=None):
     """Generate feature label from diagnostic code."""
     feature_map = {
         "ExpectedNegativeSyntax": "negative-parse-syntaxerror",
+        "SyntaxError": "syntax-error",
         "UnsupportedSyntax": "feature-unsupported",
         "UnsupportedBuiltin": "builtin-api",
         "UnsupportedDate": "date",
@@ -369,12 +370,12 @@ def feature_label(diag_code, stderr, test_file, phase=None):
         "NegativeRuntimeUnverified": "negative-runtime-unverified",
     }
     label = feature_map.get(diag_code, diag_code.lower())
-    # Phase-aware distinction for UnsupportedSyntax
-    if diag_code == "UnsupportedSyntax" and phase is not None:
+    # Phase-aware distinction for UnsupportedSyntax and SyntaxError
+    if diag_code in {"UnsupportedSyntax", "SyntaxError"} and phase is not None:
         parser_phases = {"lexer", "parser", "ast-validator"}
         if phase in parser_phases:
             label += ":parser"
-        else:
+        elif diag_code == "UnsupportedSyntax":
             label = "feature-unsupported"
     return label
 
@@ -389,9 +390,9 @@ def can_pass_compile_negative(metadata, result_diag, diag_phase):
         metadata.negative_phase == "parse"
         and metadata.negative_type == "SyntaxError"
         and (
-            # Must be a parser/lexer error, not a missing builtin or IR lowering error
-            result_diag == "UnsupportedSyntax"
-            and diag_phase in {"lexer", "parser", "ast-validator"}
+            # Must be an actual SyntaxError from the compiler, not UnsupportedSyntax
+            result_diag == "SyntaxError"
+            and diag_phase in {"lexer", "parser"}
         )
     )
 
@@ -460,11 +461,11 @@ def compile_and_run_test(test_file, tmp_dir):
         result_status = "unsupported"
         stderr_content = result.stderr
         result_stderr_full = stderr_content
-        diag_match = re.search(r'(UnsupportedSyntax|UnsupportedBuiltin|UnsupportedDate|UnsupportedRegExp|UnsupportedModule|UnsupportedEval|UnsupportedTypeScriptSyntax|UnsupportedRuntimeSubset|UnresolvedName|UnresolvedFunction|TypeError|RuntimeError|InvariantViolation|BackendIo|CompilationError)', stderr_content)
+        diag_match = re.search(r'(SyntaxError|UnsupportedSyntax|UnsupportedBuiltin|UnsupportedDate|UnsupportedRegExp|UnsupportedModule|UnsupportedEval|UnsupportedTypeScriptSyntax|UnsupportedRuntimeSubset|UnresolvedName|UnresolvedFunction|TypeError|RuntimeError|InvariantViolation|BackendIo|CompilationError)', stderr_content)
         result_diag = diag_match.group(1) if diag_match else "CompilationError"
         diag_phase = None
-        if result_diag == "UnsupportedSyntax":
-            phase_match = re.search(r'\[UnsupportedSyntax/(\w+)\]', stderr_content)
+        if result_diag in {"UnsupportedSyntax", "SyntaxError"}:
+            phase_match = re.search(fr'\[{result_diag}/(\w+)\]', stderr_content)
             diag_phase = phase_match.group(1) if phase_match else None
 
         # Try to extract line number from error message
@@ -523,6 +524,9 @@ def compile_and_run_test(test_file, tmp_dir):
              result_status, result_diag, result_feature, result_reason = classify_completed_negative(metadata)
     else:
         # Runtime failure (non-zero return code)
+        result_stderr_full = result.stderr
+        result_actual = result.stdout if result.stdout else ""
+
         if metadata.expects_negative:
             # We don't verify the error type yet (TypeError vs others), so mark as unverified
             result_status = "unsupported"
@@ -531,11 +535,9 @@ def compile_and_run_test(test_file, tmp_dir):
             result_reason = f"negative {metadata.negative_phase}/{metadata.negative_type or 'error'} rejected during execution (unverified error type)"
         else:
             result_status = "runtime_error"
+            result_diag = f"RuntimeError:{result.returncode}"
+            result_feature = feature_label("RuntimeError", result.stderr, str(test_file))
             result_reason = result.stderr[:200] if result.stderr else ""
-        
-        result_diag = f"RuntimeError:{result.returncode}"
-        result_stderr_full = result.stderr
-        result_actual = result.stdout if result.stdout else ""
 
         # Try to extract line number from runtime error
         line_match = re.search(r'(?:at line |:)(\d+)(?::|$)', result.stderr)

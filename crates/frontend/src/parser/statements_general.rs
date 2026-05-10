@@ -674,7 +674,7 @@ impl Parser {
                 span,
             }) => Ok(ModuleSpecifier { value, span }),
             other => Err(Diagnostic {
-                code: DiagCode::UnsupportedSyntax,
+                code: DiagCode::SyntaxError,
                 message: format!("expected module specifier string literal, got {other:?}"),
                 span: self.peek_span(),
 

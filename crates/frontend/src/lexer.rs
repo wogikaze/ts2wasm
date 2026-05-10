@@ -114,7 +114,7 @@ impl<'a> Lexer<'a> {
                 in_class = false;
             } else if ch == '\n' || ch == '\r' {
                 return Err(Diagnostic {
-                    code: DiagCode::UnsupportedSyntax,
+                    code: DiagCode::SyntaxError,
                     message: "issue-202: unterminated RegExp literal".to_owned(),
                     span: Some(Span {
                         start,
@@ -139,7 +139,7 @@ impl<'a> Lexer<'a> {
 
         if !terminated {
             return Err(Diagnostic {
-                code: DiagCode::UnsupportedSyntax,
+                code: DiagCode::SyntaxError,
                 message: "issue-202: unterminated RegExp literal".to_owned(),
                 span: Some(Span {
                     start,
@@ -159,7 +159,7 @@ impl<'a> Lexer<'a> {
 
             if !matches!(ch, 'g' | 'i' | 'm' | 's' | 'u' | 'y') {
                 return Err(Diagnostic {
-                    code: DiagCode::UnsupportedSyntax,
+                    code: DiagCode::SyntaxError,
                     message: format!("issue-202: unsupported RegExp flag `{ch}`"),
                     span: Some(Span {
                         start: self.cursor,
@@ -171,7 +171,7 @@ impl<'a> Lexer<'a> {
             }
             if flags.contains(ch) {
                 return Err(Diagnostic {
-                    code: DiagCode::UnsupportedSyntax,
+                    code: DiagCode::SyntaxError,
                     message: format!("issue-202: duplicate RegExp flag `{ch}`"),
                     span: Some(Span {
                         start: self.cursor,
@@ -236,7 +236,7 @@ impl<'a> Lexer<'a> {
         }
 
         Err(Diagnostic {
-            code: DiagCode::UnsupportedSyntax,
+            code: DiagCode::SyntaxError,
             message: "unterminated template literal".to_owned(),
             span: Some(Span {
                 start,
@@ -1102,7 +1102,7 @@ impl<'a> Lexer<'a> {
                 }
                 other => {
                     return Err(Diagnostic {
-                        code: DiagCode::UnsupportedSyntax,
+                        code: DiagCode::SyntaxError,
                         message: format!("unsupported character: {other}"),
                         span: Some(Span {
                             start: self.cursor,
@@ -1182,7 +1182,7 @@ impl<'a> Lexer<'a> {
                         }
                         (None, _) => {
                             return Err(Diagnostic {
-                                code: DiagCode::UnsupportedSyntax,
+                                code: DiagCode::SyntaxError,
                                 message: "unterminated block comment".to_owned(),
                                 span: Some(Span {
                                     start,
