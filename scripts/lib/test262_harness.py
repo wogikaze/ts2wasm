@@ -24,7 +24,7 @@ TS2WASM_BINARY = resolve_ts2wasm_binary()
 
 CORE_HARNESS_FILES = ("sta.js", "assert.js")
 UNSUPPORTED_FLAGS = ("IsHTMLDDA",)
-SUPPORTED_FEATURES = (
+NON_BLOCKING_METADATA_FEATURES = (
     "class",
     "async-iteration",
     "generators",
@@ -49,7 +49,12 @@ SUPPORTED_FEATURES = (
     "Set",
 )
 
-BLOCKED_INCLUDES = ("agent.js", "detachArrayBuffer.js")
+BLOCKED_INCLUDES = (
+    "agent.js",
+    "detachArrayBuffer.js",
+    "fnGlobalObject.js",
+    "wellKnownIntrinsicObjects.js",
+)
 BLOCKED_FEATURES = (
     "cross-realm",
     "evalScript",
@@ -162,17 +167,19 @@ class Test262Metadata:
                 return f"test262 feature `{feature}` is not supported by this runner slice"
         
         # Source-based detection for missing capabilities that might not be in metadata
-        if "$262.evalScript" in self.source_code:
-            return "test262 uses $262.evalScript which is not supported"
-        if "$262.createRealm" in self.source_code:
-            return "test262 uses $262.createRealm which is not supported"
-        if "$262.detachArrayBuffer" in self.source_code:
-            return "test262 uses $262.detachArrayBuffer which is not supported"
-        if "$262.agent" in self.source_code:
-            return "test262 uses $262.agent which is not supported"
+        blocked_patterns = (
+            "$262.evalScript",
+            "$262.createRealm",
+            "$262.detachArrayBuffer",
+            "$262.agent",
+            "$262.global",
+        )
+        for pattern in blocked_patterns:
+            if pattern in self.source_code:
+                return f"test262 uses {pattern} which is not supported"
 
         for feature in self.features:
-            if feature not in SUPPORTED_FEATURES and feature not in _seen_unknown_test262_features:
+            if feature not in NON_BLOCKING_METADATA_FEATURES and feature not in _seen_unknown_test262_features:
                 _seen_unknown_test262_features.add(feature)
                 print(f"warn: unknown test262 feature `{feature}`", file=sys.stderr)
         return None
@@ -359,6 +366,7 @@ def feature_label(diag_code, stderr, test_file, phase=None):
         "InvariantViolation": "compiler-invariant",
         "BackendIo": "io-backend",
         "CompilationError": "compilation",
+        "NegativeRuntimeUnverified": "negative-runtime-unverified",
     }
     label = feature_map.get(diag_code, diag_code.lower())
     # Phase-aware distinction for UnsupportedSyntax
@@ -374,6 +382,18 @@ def feature_label(diag_code, stderr, test_file, phase=None):
 # ---------------------------------------------------------------------------
 # Negative classification
 # ---------------------------------------------------------------------------
+
+def can_pass_compile_negative(metadata, result_diag, diag_phase):
+    """Strictly validate if a compilation error satisfies a parse-phase negative test."""
+    return (
+        metadata.negative_phase == "parse"
+        and metadata.negative_type == "SyntaxError"
+        and (
+            # Must be a parser/lexer error, not a missing builtin or IR lowering error
+            result_diag == "UnsupportedSyntax"
+            and diag_phase in {"lexer", "parser", "ast-validator"}
+        )
+    )
 
 def classify_completed_negative(metadata):
     if metadata.expects_parse_syntax_error:
@@ -469,13 +489,12 @@ def compile_and_run_test(test_file, tmp_dir):
         result_feature = feature_label(result_diag, stderr_content, str(test_file), diag_phase)
         
         if metadata.expects_negative:
-            if metadata.negative_phase == "parse":
+            if can_pass_compile_negative(metadata, result_diag, diag_phase):
                 result_status = "pass"
                 result_reason = f"negative {metadata.negative_phase}/{metadata.negative_type or 'error'} rejected during compilation"
                 result_actual = stderr_content
             else:
-                # Runtime negative test that failed to compile is NOT a pass.
-                # Keep it as "unsupported" or "fail" depending on the diagnostic.
+                # Runtime negative test that failed to compile, or wrong parse error
                 pass
 
         return result_status, result_diag, result_feature, result_reason, result_actual, source_code, result_error_line, result_stderr_full
@@ -505,8 +524,11 @@ def compile_and_run_test(test_file, tmp_dir):
     else:
         # Runtime failure (non-zero return code)
         if metadata.expects_negative:
-            result_status = "pass"
-            result_reason = f"negative {metadata.negative_phase}/{metadata.negative_type or 'error'} rejected during execution"
+            # We don't verify the error type yet (TypeError vs others), so mark as unverified
+            result_status = "unsupported"
+            result_diag = "NegativeRuntimeUnverified"
+            result_feature = "negative-runtime-unverified"
+            result_reason = f"negative {metadata.negative_phase}/{metadata.negative_type or 'error'} rejected during execution (unverified error type)"
         else:
             result_status = "runtime_error"
             result_reason = result.stderr[:200] if result.stderr else ""
