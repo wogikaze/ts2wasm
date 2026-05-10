@@ -35,6 +35,7 @@ pub(super) fn resolve_method_to_runtime_fn(object: &ResolvedExpr, method: &str) 
                 "getOwnPropertyDescriptor" => Some("ObjectGetOwnPropertyDescriptor".to_owned()),
                 "getPrototypeOf" => Some("ObjectGetPrototypeOf".to_owned()),
                 "setPrototypeOf" => Some("ObjectSetPrototypeOf".to_owned()),
+                "seal" => Some("ObjectSeal".to_owned()),
                 "freeze" => Some("ObjectFreeze".to_owned()),
                 "preventExtensions" => Some("ObjectPreventExtensions".to_owned()),
                 "isExtensible" => Some("ObjectIsExtensible".to_owned()),
@@ -50,6 +51,7 @@ pub(super) fn resolve_method_to_runtime_fn(object: &ResolvedExpr, method: &str) 
         if name == "String" {
             return match method {
                 "fromCharCode" => Some("StringFromCharCode".to_owned()),
+                "fromCodePoint" => Some("StringFromCodePoint".to_owned()),
                 _ => None,
             };
         }
@@ -72,6 +74,8 @@ pub(super) fn resolve_method_to_runtime_fn(object: &ResolvedExpr, method: &str) 
             return match method {
                 "resolve" => Some("PromiseResolve".to_owned()),
                 "reject" => Some("PromiseReject".to_owned()),
+                "all" => Some("PromiseAll".to_owned()),
+                "race" => Some("PromiseRace".to_owned()),
                 _ => None,
             };
         }
@@ -107,6 +111,7 @@ pub(super) fn resolve_method_to_runtime_fn(object: &ResolvedExpr, method: &str) 
         "toLocaleLowerCase" => Some("StringToLowerCase".to_owned()),
         "localeCompare" => Some("StringLocaleCompare".to_owned()),
         "charCodeAt" => Some("StringCharCodeAt".to_owned()),
+        "codePointAt" => Some("StringCodePointAt".to_owned()),
         "isWellFormed" => Some("StringIsWellFormed".to_owned()),
         "toWellFormed" => Some("StringToWellFormed".to_owned()),
         "hasOwnProperty" => Some("ObjectHasOwnProperty".to_owned()),
@@ -127,14 +132,28 @@ pub(super) fn unsupported_annex_b_string_method(_method: &str, _span: Span) -> O
 
 pub(super) fn collection_method_runtime_fn(class_name: &str, method: &str) -> Option<&'static str> {
     match (class_name, method) {
+        ("DataView", "getInt32") => Some("DataViewGetInt32"),
+        ("DataView", "setInt32") => Some("DataViewSetInt32"),
+        ("DataView", "getFloat64") => Some("DataViewGetFloat64"),
+        ("DataView", "setFloat64") => Some("DataViewSetFloat64"),
         ("Map", "get") => Some("MapGet"),
         ("Map", "set") => Some("MapSet"),
         ("Map", "has") => Some("MapHas"),
         ("Map", "delete") => Some("MapDelete"),
+        ("Map", "clear") => Some("MapClear"),
+        ("Map", "forEach") => Some("MapForEach"),
+        ("WeakMap", "set") => Some("WeakMapSet"),
+        ("WeakMap", "get") => Some("WeakMapGet"),
+        ("WeakMap", "has") => Some("WeakMapHas"),
+        ("WeakMap", "delete") => Some("WeakMapDelete"),
         ("Set", "add") => Some("SetAdd"),
         ("Set", "has") => Some("SetHas"),
         ("Set", "delete") => Some("SetDelete"),
         ("Set", "clear") => Some("SetClear"),
+        ("Set", "forEach") => Some("SetForEach"),
+        ("WeakSet", "add") => Some("WeakSetAdd"),
+        ("WeakSet", "has") => Some("WeakSetHas"),
+        ("WeakSet", "delete") => Some("WeakSetDelete"),
         ("RegExp", "test") => Some("RegExpTest"),
         ("RegExp", "exec") => Some("RegExpMatch"),
         ("Array", "reduce") => Some("ArrayReduce"),
@@ -176,11 +195,8 @@ pub(super) fn collection_method_runtime_fn(class_name: &str, method: &str) -> Op
         // Promise prototype methods
         ("Promise", "then") => Some("PromiseThen"),
         ("Promise", "catch") => Some("PromiseCatch"),
-        // Typed array methods
-        _ if is_typed_array_class(class_name) => match method {
-            "subarray" => Some("TypedArraySubarray"),
-            _ => None,
-        },
+        // Typed array methods are routed through constructor lowering, not here
+        _ if is_typed_array_class(class_name) => None,
         _ => None,
     }
 }
@@ -277,7 +293,8 @@ pub(super) fn validate_json_stringify_args(
                 args.len()
             ),
             span: Some(span),
-        });
+
+            phase: None,});
     }
 
     if let Some(replacer) = args.get(1) {
@@ -317,7 +334,8 @@ pub(super) fn validate_json_stringify_args(
             code: DiagCode::UnsupportedSyntax,
             message: "issue-052e: JSON.stringify space currently supports numeric/string primitives, selected boxed Number/String literals, and ignored object/function values; broader object coercion is not supported yet".to_owned(),
             span: Some(span),
-        });
+
+            phase: None,});
     }
 
     Ok(())
@@ -604,7 +622,9 @@ pub(super) fn json_stringify_replacer_diagnostic(kind: &str, span: Span) -> Diag
             "issue-052: JSON.stringify {kind} are not supported yet; pass null or undefined until replacer semantics are implemented"
         ),
         span: Some(span),
-    }
+
+
+            phase: None,}
 }
 
 pub(super) fn is_date_now_live_time_call(object: &ResolvedExpr, method: &str) -> bool {
@@ -637,7 +657,9 @@ pub(super) fn unsupported_annex_b_date_method_diagnostic(
             "issue-241: Date.prototype.{method} is Annex B legacy Date behavior and is not supported in the deterministic Date epoch slice"
         ),
         span,
-    }
+
+
+            phase: None,}
 }
 
 pub(super) fn is_local_tz_date_method(method: &str) -> bool {
@@ -663,7 +685,8 @@ pub(super) fn regexp_constructor_literal(args: &[ResolvedExpr]) -> Result<String
                 args.len()
             ),
             span: None,
-        });
+
+            phase: None,});
     }
     let ResolvedExpr::String(pattern) = &args[0] else {
         return Err(Diagnostic {
@@ -672,7 +695,8 @@ pub(super) fn regexp_constructor_literal(args: &[ResolvedExpr]) -> Result<String
                 "issue-051: RegExp constructor pattern must be a string literal in this subset"
                     .to_owned(),
             span: None,
-        });
+
+            phase: None,});
     };
     let flags = match args.get(1) {
         Some(ResolvedExpr::String(flags)) => flags.as_str(),
@@ -683,7 +707,8 @@ pub(super) fn regexp_constructor_literal(args: &[ResolvedExpr]) -> Result<String
                     "issue-051: RegExp constructor flags must be a string literal in this subset"
                         .to_owned(),
                 span: None,
-            });
+
+                phase: None,});
         }
         None => "",
     };
@@ -709,7 +734,8 @@ pub(super) fn regexp_test_runtime(
                 args.len()
             ),
             span: Some(span),
-        });
+
+            phase: None,});
     }
     match object {
         ResolvedExpr::String(raw) if looks_like_regexp_literal(raw) => {
@@ -746,7 +772,8 @@ pub(super) fn regexp_string_match_runtime(
                 args.len()
             ),
             span: Some(span),
-        });
+
+            phase: None,});
     }
     if !matches!(object, ResolvedExpr::String(_) | ResolvedExpr::Ident(_)) {
         return Ok(None);
@@ -768,7 +795,8 @@ pub(super) fn regexp_string_match_runtime(
                     "issue-051: String.prototype.{method} supports only RegExp literal or new RegExp(\"plain\") arguments in this subset"
                 ),
                 span: Some(span),
-            });
+
+                phase: None,});
         }
     }
     Ok(Some(vec![args[0].clone(), object.clone()]))
@@ -791,7 +819,8 @@ pub(super) fn regexp_exec_runtime(
                 args.len()
             ),
             span: Some(span),
-        });
+
+            phase: None,});
     }
     match object {
         ResolvedExpr::String(raw) if looks_like_regexp_literal(raw) => {
@@ -942,7 +971,9 @@ pub(super) fn unsupported_regexp_literal(context: &str, raw: &str, reason: &str)
         code: DiagCode::UnsupportedSyntax,
         message: format!("issue-051: {context} `{raw}` is not supported yet: {reason}"),
         span: None,
-    }
+
+
+        phase: None,}
 }
 
 pub(super) fn unsupported_regexp_compile_diagnostic(span: Option<Span>) -> Diagnostic {
@@ -951,5 +982,7 @@ pub(super) fn unsupported_regexp_compile_diagnostic(span: Option<Span>) -> Diagn
         message: "issue-051: RegExp.prototype.compile is not supported in this subset; create a new RegExp(\"plain\") value instead"
             .to_owned(),
         span,
-    }
+
+
+        phase: None,}
 }

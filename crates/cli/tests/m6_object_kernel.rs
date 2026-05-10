@@ -116,6 +116,39 @@ fn build_smoke_seal_freeze_descriptor() {
     );
 }
 
+// W5.2: centralized property access
+#[test]
+fn build_smoke_centralized_property_access() {
+    let result = run_fixture("object-semantics-kernel/centralized-property-access.ts");
+    assert!(
+        result.is_ok(),
+        "centralized-property-access should build: {:?}",
+        result.err()
+    );
+}
+
+// W5.6: getter/setter via class syntax (build_smoke only)
+#[test]
+fn build_smoke_getter_setter() {
+    let result = run_fixture("object-semantics-kernel/getter-setter-build.ts");
+    assert!(
+        result.is_ok(),
+        "getter-setter-build should build: {:?}",
+        result.err()
+    );
+}
+
+// W5.7: class prototype method dispatch (build_smoke only)
+#[test]
+fn build_smoke_prototype_method() {
+    let result = run_fixture("object-semantics-kernel/prototype-method-build.ts");
+    assert!(
+        result.is_ok(),
+        "prototype-method-build should build: {:?}",
+        result.err()
+    );
+}
+
 // W5.1: define property edge cases
 #[test]
 fn build_smoke_define_property_edge_cases() {

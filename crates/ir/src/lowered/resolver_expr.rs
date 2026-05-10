@@ -26,13 +26,12 @@ impl<'a> Resolver<'a> {
                     span: Span::generated("promise_get_value"),
                 })
             }
-            ResolvedExpr::This { span } => match self.resolve_local("this") {
+            ResolvedExpr::This { span: _ } => match self.resolve_local("this") {
                 Ok(local) => Ok(LoweredExpr::Local(local, Span::generated("local"))),
-                Err(_) => Err(Diagnostic {
-                    code: DiagCode::UnsupportedSyntax,
-                    message: "issue-062d: `this` is only supported inside receiver-bound functions, class constructors, and instance methods in this milestone".to_owned(),
-                    span: Some(*span),
-                }),
+                Err(_) => {
+                    // Top-level `this` in modules resolves to `undefined`
+                    Ok(LoweredExpr::Undefined(Span::generated("undef")))
+                }
             },
             ResolvedExpr::Ident(name) => {
                 // Handle special global constants Infinity and NaN
@@ -86,7 +85,8 @@ impl<'a> Resolver<'a> {
                         code: DiagCode::UnsupportedSyntax,
                         message: "issue-5255: super property access is not supported in this milestone".to_owned(),
                         span: None,
-                    });
+
+                        phase: None,});
                 }
                 match self.resolve_local(name) {
                     Ok(local) if self.env_cell_locals.contains(&local) => Ok(LoweredExpr::EnvCellGet(local, Span::generated("env_cell_get"))),
@@ -95,7 +95,8 @@ impl<'a> Resolver<'a> {
                         code: DiagCode::UnsupportedSyntax,
                         message: "issue-062d: `arguments` is only supported inside non-arrow functions in this milestone".to_owned(),
                         span: None,
-                    }),
+
+                        phase: None,}),
                     Err(_) if self.class_constructor_ids.contains_key(name.as_str()) => {
                         Ok(LoweredExpr::ClassPrototype(self.class_prototype_ref(name)?, Span::generated("class_proto")))
                     }
@@ -106,7 +107,8 @@ impl<'a> Resolver<'a> {
                 code: DiagCode::UnsupportedSyntax,
                 message: "issue-274: spread expressions are only supported in call arguments over literal arrays in this milestone".to_owned(),
                 span: None,
-            }),
+
+                phase: None,}),
             ResolvedExpr::Unary { op, expr } => {
                 // Handle -Infinity specially to ensure it returns the minimum representable number
                 if *op == UnaryOp::Negate {
@@ -118,7 +120,7 @@ impl<'a> Resolver<'a> {
                         return Ok(LoweredExpr::RuntimeCall {
                             runtime_fn: "BigIntUnaryMinus".to_owned(),
                             args: vec![self.lower_expr(expr)?],
-                        
+
                             span: Span::generated("runtime_call"),});
                     }
                 }
@@ -126,7 +128,7 @@ impl<'a> Resolver<'a> {
                     return Ok(LoweredExpr::RuntimeCall {
                         runtime_fn: "BigIntBitwiseNot".to_owned(),
                         args: vec![self.lower_expr(expr)?],
-                    
+
                         span: Span::generated("runtime_call"),});
                 }
                 if *op == UnaryOp::Delete {
@@ -149,7 +151,8 @@ impl<'a> Resolver<'a> {
                                         "issue-255: private member `{key}` cannot be deleted in this private class runtime slice"
                                     ),
                                     span: Some(*span),
-                                });
+
+                                    phase: None,});
                             }
                             Ok(LoweredExpr::PropertyDelete {
                                 object: Box::new(self.lower_expr(object)?),
@@ -173,7 +176,7 @@ impl<'a> Resolver<'a> {
                         _ => Ok(LoweredExpr::Unary {
                             op: lower_unary_op(*op)?,
                             expr: Box::new(self.lower_expr(expr)?),
-                        
+
                             span: Span::generated("unary"),}),
                     }
                 } else {
@@ -199,13 +202,14 @@ impl<'a> Resolver<'a> {
                                 code: DiagCode::UnsupportedSyntax,
                                 message: "issue-207: instanceof right-hand side must be a supported class constructor".to_owned(),
                                 span: None,
-                            });
+
+                                phase: None,});
                         }
                     };
                     Ok(LoweredExpr::RuntimeCall {
                         runtime_fn: "$instanceof".to_string(),
                         args: vec![self.lower_expr(left)?, prototype],
-                    
+
                         span: Span::generated("runtime_call"),})
                 } else if *op == BinaryOp::In {
                     // Lower in to PropertyIn or PropertyInDynamic
@@ -214,7 +218,7 @@ impl<'a> Resolver<'a> {
                         ResolvedExpr::Number(index) => Ok(LoweredExpr::RuntimeCall {
                             runtime_fn: "ArrayIndexPresent".to_owned(),
                             args: vec![self.lower_expr(right)?, LoweredExpr::Number(*index, Span::generated("num"))],
-                        
+
                             span: Span::generated("runtime_call"),}),
                         ResolvedExpr::String(key) => Ok(LoweredExpr::PropertyIn {
                             obj: Box::new(self.lower_expr(right)?),
@@ -237,7 +241,7 @@ impl<'a> Resolver<'a> {
                     Ok(LoweredExpr::RuntimeCall {
                         runtime_fn: runtime_fn.to_owned(),
                         args: vec![self.lower_expr(left)?, self.lower_expr(right)?],
-                    
+
                         span: Span::generated("runtime_call"),})
                 } else if matches!(op, BinaryOp::Divide | BinaryOp::Modulo)
                     && ((self.resolved_expr_is_control_flow_mixed_bigint(left)
@@ -251,7 +255,8 @@ impl<'a> Resolver<'a> {
                             "issue-370: mixed Number/BigInt arithmetic TypeError parity is not implemented in the control-flow BigInt div/rem slice"
                                 .to_owned(),
                         span: None,
-                    })
+
+                        phase: None,})
                 } else if matches!(
                     op,
                     BinaryOp::Add
@@ -274,7 +279,7 @@ impl<'a> Resolver<'a> {
                     Ok(LoweredExpr::RuntimeCall {
                         runtime_fn: runtime_fn.to_owned(),
                         args: vec![self.lower_expr(left)?, self.lower_expr(right)?],
-                    
+
                         span: Span::generated("runtime_call"),})
                 } else if *op == BinaryOp::Power
                     && self.resolved_expr_is_bigint(left)
@@ -283,7 +288,7 @@ impl<'a> Resolver<'a> {
                     Ok(LoweredExpr::RuntimeCall {
                         runtime_fn: "BigIntPow".to_owned(),
                         args: vec![self.lower_expr(left)?, self.lower_expr(right)?],
-                    
+
                         span: Span::generated("runtime_call"),})
                 } else if matches!(
                     op,
@@ -304,13 +309,13 @@ impl<'a> Resolver<'a> {
                             left: Box::new(self.lower_expr(left)?),
                             op: LoweredBinaryOp::Add,
                             right: Box::new(self.lower_expr(right)?),
-                        
+
                             span: Span::generated("binary"),})
                     } else {
                         Ok(LoweredExpr::RuntimeCall {
                             runtime_fn: "BigIntMixedArithmeticTypeError".to_owned(),
                             args: vec![self.lower_expr(left)?, self.lower_expr(right)?],
-                        
+
                             span: Span::generated("runtime_call"),})
                     }
                 } else if matches!(
@@ -328,7 +333,7 @@ impl<'a> Resolver<'a> {
                     Ok(LoweredExpr::RuntimeCall {
                         runtime_fn: runtime_fn.to_owned(),
                         args: vec![self.lower_expr(left)?, self.lower_expr(right)?],
-                    
+
                         span: Span::generated("runtime_call"),})
                 } else if matches!(
                     op,
@@ -341,7 +346,7 @@ impl<'a> Resolver<'a> {
                     Ok(LoweredExpr::RuntimeCall {
                         runtime_fn: "BigIntMixedArithmeticTypeError".to_owned(),
                         args: vec![self.lower_expr(left)?, self.lower_expr(right)?],
-                    
+
                         span: Span::generated("runtime_call"),})
                 } else if matches!(
                     op,
@@ -354,7 +359,7 @@ impl<'a> Resolver<'a> {
                         Ok(LoweredExpr::RuntimeCall {
                             runtime_fn: "BigIntMixedArithmeticTypeError".to_owned(),
                             args: vec![self.lower_expr(left)?, self.lower_expr(right)?],
-                        
+
                             span: Span::generated("runtime_call"),})
                     } else if self.resolved_expr_is_bigint(right) {
                         let runtime_fn = match op {
@@ -365,14 +370,14 @@ impl<'a> Resolver<'a> {
                         Ok(LoweredExpr::RuntimeCall {
                             runtime_fn: runtime_fn.to_owned(),
                             args: vec![self.lower_expr(left)?, self.lower_expr(right)?],
-                        
+
                             span: Span::generated("runtime_call"),})
                     } else {
                         // Mixed BigInt/non-BigInt shift → TypeError
                         Ok(LoweredExpr::RuntimeCall {
                             runtime_fn: "BigIntMixedArithmeticTypeError".to_owned(),
                             args: vec![self.lower_expr(left)?, self.lower_expr(right)?],
-                        
+
                             span: Span::generated("runtime_call"),})
                     }
                 } else {
@@ -380,7 +385,7 @@ impl<'a> Resolver<'a> {
                         left: Box::new(self.lower_expr(left)?),
                         op: lower_binary_op(*op)?,
                         right: Box::new(self.lower_expr(right)?),
-                    
+
                         span: Span::generated("binary"),})
                 }
             }
@@ -521,7 +526,8 @@ impl<'a> Resolver<'a> {
                                 }
                             ),
                             span: Some(*span),
-                        });
+
+                            phase: None,});
                     }
                     _ => {
                         return Err(Diagnostic {
@@ -529,7 +535,8 @@ impl<'a> Resolver<'a> {
                             message: "only identifier calls are supported in expression context"
                                 .to_owned(),
                             span: Some(*span),
-                        });
+
+                            phase: None,});
                     }
                 };
 
@@ -538,7 +545,7 @@ impl<'a> Resolver<'a> {
                     return Ok(LoweredExpr::RuntimeCall {
                         runtime_fn: runtime_fn.to_owned(),
                         args: self.lower_call_args(args)?,
-                    
+
                         span: Span::generated("runtime_call"),});
                 }
 
@@ -550,7 +557,7 @@ impl<'a> Resolver<'a> {
                     return Ok(LoweredExpr::Call {
                         kind: FunctionCallKind::User(closure.func_id),
                         args: lowered_args,
-                    
+
                         span: Span::generated("call"),});
                 }
 
@@ -567,7 +574,7 @@ impl<'a> Resolver<'a> {
                     return Ok(LoweredExpr::RuntimeCall {
                         runtime_fn: "HeapClosureCall".to_owned(),
                         args: lowered_args,
-                    
+
                         span: Span::generated("runtime_call"),});
                 }
 
@@ -577,13 +584,15 @@ impl<'a> Resolver<'a> {
                             code: DiagCode::UnsupportedSyntax,
                             message: "super(...) is only supported in constructors".to_owned(),
                             span: None,
-                        });
+
+                            phase: None,});
                     }
                     let class_name = self.current_class.as_ref().ok_or_else(|| Diagnostic {
                         code: DiagCode::UnsupportedSyntax,
                         message: "super(...) requires class context".to_owned(),
                         span: None,
-                    })?;
+
+                        phase: None,})?;
                     let parent_name = self
                         .class_parents
                         .get(class_name)
@@ -592,7 +601,8 @@ impl<'a> Resolver<'a> {
                             code: DiagCode::UnsupportedSyntax,
                             message: "super(...) used in class without extends".to_owned(),
                             span: None,
-                        })?;
+
+                            phase: None,})?;
                     let parent_ctor = self
                         .class_constructor_ids
                         .get(&parent_name)
@@ -604,7 +614,8 @@ impl<'a> Resolver<'a> {
                                 parent_name
                             ),
                             span: None,
-                        })?;
+
+                            phase: None,})?;
 
                     let mut lowered_args = vec![LoweredExpr::Local(self.resolve_local("this")?, Span::generated("local"))];
                     lowered_args.extend(
@@ -616,7 +627,7 @@ impl<'a> Resolver<'a> {
                     return Ok(LoweredExpr::Call {
                         kind: FunctionCallKind::User(parent_ctor),
                         args: lowered_args,
-                    
+
                         span: Span::generated("call"),});
                 }
 
@@ -627,7 +638,7 @@ impl<'a> Resolver<'a> {
                     return Ok(LoweredExpr::RuntimeCall {
                         runtime_fn: "BigIntToString".to_owned(),
                         args: vec![self.lower_expr(arg)?],
-                    
+
                         span: Span::generated("runtime_call"),});
                 }
 
@@ -637,15 +648,21 @@ impl<'a> Resolver<'a> {
                     return Ok(LoweredExpr::RuntimeCall {
                         runtime_fn: "BigIntToBoolean".to_owned(),
                         args: vec![self.lower_expr(&args[0])?],
-                    
+
                         span: Span::generated("runtime_call"),});
                 }
 
-                // Global Symbol() call: Symbol runtime values are outside
-                // the WASM subset. Return Undefined to advance past the
-                // UnresolvedFunction blocker.
+                // Symbol("desc") constructor: produces "Symbol(desc)" string.
                 if func_name == "Symbol" {
-                    return Ok(LoweredExpr::Undefined(Span::generated("undef")));
+                    let arg = match args.first() {
+                        Some(first) => self.lower_expr(first)?,
+                        None => LoweredExpr::Undefined(Span::generated("undef")),
+                    };
+                    return Ok(LoweredExpr::RuntimeCall {
+                        runtime_fn: "SymbolNew".to_owned(),
+                        args: vec![arg],
+                        span: Span::generated("runtime_call"),
+                    });
                 }
 
                 if func_name == "setTimeout" {
@@ -672,7 +689,8 @@ impl<'a> Resolver<'a> {
                                 "issue-5195: callable interface-typed local `{func_name}` is not callable — the variable is never assigned"
                             ),
                             span: Some(*span),
-                        });
+
+                            phase: None,});
                     }
 
                 let func_id = match self.resolve_func(func_name) {
@@ -689,15 +707,22 @@ impl<'a> Resolver<'a> {
                                     "issue-5196: callable parameter `{func_name}(...)` typed through a conditional type is not supported in this milestone"
                                 ),
                                 span: Some(*span),
-                            });
+
+                                phase: None,});
                         }
-                        return Err(Diagnostic {
-                            code: DiagCode::UnsupportedSyntax,
-                            message: format!(
-                                "issue-211: function-valued local calls such as extracted method `{func_name}(...)` are not supported; call receiver.method(...) directly (issue-5279: the variable may be unassigned or have no function-typed annotation)"
-                            ),
-                            span: Some(*span),
-                        });
+                        // Function-valued local: emit a HeapClosureCall to dispatch
+                        // at runtime based on the value's tag. The HeapClosureCall
+                        // runtime handles both DirectLocalToken and HeapObject
+                        // closure representations.
+                        let closure_local = self.resolve_local(func_name).unwrap();
+                        let mut lowered_args =
+                            vec![LoweredExpr::Local(closure_local, Span::generated("local"))];
+                        lowered_args.extend(self.lower_call_args(args)?);
+                        return Ok(LoweredExpr::RuntimeCall {
+                            runtime_fn: "HeapClosureCall".to_owned(),
+                            args: lowered_args,
+
+                            span: Span::generated("runtime_call"),});
                     }
                     Err(_) if self.class_constructor_ids.contains_key(func_name.as_str()) => {
                         return Err(Diagnostic {
@@ -706,13 +731,15 @@ impl<'a> Resolver<'a> {
                                 "issue-5197: class `{func_name}` cannot be called without `new` — constructors are not callable"
                             ),
                             span: Some(*span),
-                        });
+
+                            phase: None,});
                     }
                     Err(_) => return Err(Diagnostic {
                         code: DiagCode::UnresolvedFunction,
                         message: format!("unresolved function: `{func_name}`"),
                         span: Some(*span),
-                    }),
+
+                        phase: None,}),
                 };
                 if self
                     .function_signatures
@@ -725,7 +752,8 @@ impl<'a> Resolver<'a> {
                             "issue-062d: direct call `{func_name}(...)` cannot bind a supported receiver for `this`; call through a supported receiver object"
                         ),
                         span: Some(*span),
-                    });
+
+                        phase: None,});
                 }
                 let lowered_args =
                     self.lower_function_call_args(func_id, LoweredExpr::Undefined(Span::generated("undef")), args)?;
@@ -733,7 +761,7 @@ impl<'a> Resolver<'a> {
                 Ok(LoweredExpr::Call {
                     kind: FunctionCallKind::User(func_id),
                     args: lowered_args,
-                
+
                     span: Span::generated("call"),})
             }
             ResolvedExpr::BuiltinCall { builtin, args } => {
@@ -749,7 +777,7 @@ impl<'a> Resolver<'a> {
                 Ok(LoweredExpr::Call {
                     kind: FunctionCallKind::Builtin(*builtin),
                     args: lowered_args,
-                
+
                     span: Span::generated("call"),})
             }
             ResolvedExpr::BuiltinProperty {
@@ -776,7 +804,8 @@ impl<'a> Resolver<'a> {
                         code: DiagCode::UnsupportedSyntax,
                         message: "super property access requires class context".to_owned(),
                         span: Some(*span),
-                    })?;
+
+                        phase: None,})?;
                     let parent_name = self
                         .class_parents
                         .get(class_name)
@@ -786,7 +815,8 @@ impl<'a> Resolver<'a> {
                             message: "super property access used in class without extends"
                                 .to_owned(),
                             span: Some(*span),
-                        })?;
+
+                            phase: None,})?;
                     let parent_ref = self.class_prototype_ref(&parent_name)?;
                     return Ok(LoweredExpr::PropertyGet {
                         obj: Box::new(LoweredExpr::ClassPrototype(
@@ -809,7 +839,8 @@ impl<'a> Resolver<'a> {
                                     "issue-352: static private field `{key}` cannot be accessed before its declaration in class static initialization order"
                                 ),
                                 span: Some(*span),
-                            })?;
+
+                                phase: None,})?;
                             return Ok(if self.env_cell_locals.contains(&local) {
                                 LoweredExpr::EnvCellGet(local, Span::generated("env_cell_get"))
                             } else {
@@ -822,14 +853,15 @@ impl<'a> Resolver<'a> {
                                 "issue-255: static private field `{key}` access is currently supported only as `this.{key}` inside static methods or `Class.{key}` inside the declaring class"
                             ),
                             span: Some(*span),
-                        });
+
+                            phase: None,});
                     }
                     if let Some(getter_id) = self.current_static_private_getter_id(key) {
                         if self.is_same_class_static_private_receiver(object) {
                             return Ok(LoweredExpr::Call {
                                 kind: FunctionCallKind::User(getter_id),
                                 args: Vec::new(),
-                            
+
                                 span: Span::generated("call"),});
                         }
                         return Err(Diagnostic {
@@ -838,7 +870,8 @@ impl<'a> Resolver<'a> {
                                 "issue-255: static private getter `{key}` access is currently supported only as `this.{key}` inside static methods or `Class.{key}` inside the declaring class"
                             ),
                             span: Some(*span),
-                        });
+
+                            phase: None,});
                     }
                     if self.current_private_method_id(key).is_some() {
                         return Err(Diagnostic {
@@ -847,7 +880,8 @@ impl<'a> Resolver<'a> {
                                 "issue-255: private method `{key}` extraction is not supported in this private method runtime slice; call it directly as `this.{key}(...)`"
                             ),
                             span: Some(*span),
-                        });
+
+                            phase: None,});
                     }
                     if let Some(getter_id) = self.current_private_getter_id(key) {
                         let receiver = if matches!(object.as_ref(), ResolvedExpr::This { .. }) {
@@ -859,7 +893,8 @@ impl<'a> Resolver<'a> {
                                     "issue-255: private getter `{key}` access requires declaring class context"
                                 ),
                                 span: Some(*span),
-                            })?;
+
+                                phase: None,})?;
                             let brand = self.private_brand_for_class(&class_name, Some(*span))?;
                             LoweredExpr::RuntimeCall {
                                 runtime_fn: "PrivateBrandCheck".to_owned(),
@@ -867,13 +902,13 @@ impl<'a> Resolver<'a> {
                                     self.lower_expr(object)?,
                                     LoweredExpr::Number(brand as i32, Span::generated("num")),
                                 ],
-                            
+
                                 span: Span::generated("runtime_call"),}
                         };
                         return Ok(LoweredExpr::Call {
                             kind: FunctionCallKind::User(getter_id),
                             args: vec![receiver],
-                        
+
                             span: Span::generated("call"),});
                     }
                     if let Some(class_name) = self.infer_class_for_expr(object)
@@ -885,7 +920,8 @@ impl<'a> Resolver<'a> {
                                 "issue-255: private getter `{key}` external access is not supported in this private accessor runtime slice"
                             ),
                             span: Some(*span),
-                        });
+
+                            phase: None,});
                     }
                     let (brand, slot) = self.private_field_brand_and_slot(object, key, *span)?;
                     return Ok(LoweredExpr::RuntimeCall {
@@ -895,7 +931,7 @@ impl<'a> Resolver<'a> {
                             LoweredExpr::Number(brand as i32, Span::generated("num")),
                             LoweredExpr::Number(slot as i32, Span::generated("num")),
                         ],
-                    
+
                         span: Span::generated("runtime_call"),});
                 }
                 if let ResolvedExpr::Ident(name) = object.as_ref()
@@ -920,14 +956,27 @@ impl<'a> Resolver<'a> {
                     return Ok(LoweredExpr::RuntimeCall {
                         runtime_fn: "SetSize".to_owned(),
                         args: vec![LoweredExpr::Local(obj_local, Span::generated("local"))],
-                    
+
+                        span: Span::generated("runtime_call"),});
+                }
+                if key == "size"
+                    && let ResolvedExpr::Ident(receiver_name) = object.as_ref()
+                    && let Ok(obj_local) = self.resolve_local(receiver_name)
+                    && self
+                        .local_classes
+                        .get(&obj_local)
+                        .is_some_and(|class_name| class_name == "Map")
+                {
+                    return Ok(LoweredExpr::RuntimeCall {
+                        runtime_fn: "MapSize".to_owned(),
+                        args: vec![LoweredExpr::Local(obj_local, Span::generated("local"))],
                         span: Span::generated("runtime_call"),});
                 }
                 if is_set_prototype_property(object, key, "add") {
                     return Ok(LoweredExpr::RuntimeCall {
                         runtime_fn: "SetPrototypeAddGet".to_owned(),
                         args: Vec::new(),
-                    
+
                         span: Span::generated("runtime_call"),});
                 }
                 Ok(LoweredExpr::PropertyGet {
@@ -966,7 +1015,8 @@ impl<'a> Resolver<'a> {
                         code: DiagCode::UnsupportedSyntax,
                         message: "super computed access requires class context".to_owned(),
                         span: None,
-                    })?;
+
+                        phase: None,})?;
                     let parent_name = self
                         .class_parents
                         .get(class_name)
@@ -976,7 +1026,8 @@ impl<'a> Resolver<'a> {
                             message: "super computed access used in class without extends"
                                 .to_owned(),
                             span: None,
-                        })?;
+
+                            phase: None,})?;
                     let parent_ref = self.class_prototype_ref(&parent_name)?;
                     return Ok(LoweredExpr::PropertyGetDynamic {
                         obj: Box::new(LoweredExpr::ClassPrototype(
@@ -998,7 +1049,7 @@ impl<'a> Resolver<'a> {
                     Ok(LoweredExpr::Index {
                         object: Box::new(lowered_object),
                         index: Box::new(lowered_index),
-                    
+
                         span: Span::generated("index"),})
                 } else if matches!(object.as_ref(), ResolvedExpr::Array(_))
                     || matches!(
@@ -1036,7 +1087,8 @@ impl<'a> Resolver<'a> {
                             message: "Array.prototype.push.call expects a receiver argument"
                                 .to_owned(),
                             span: Some(*span),
-                        });
+
+                            phase: None,});
                     };
                     let mut lowered_args = vec![self.lower_expr(receiver)?];
                     lowered_args.extend(
@@ -1048,7 +1100,7 @@ impl<'a> Resolver<'a> {
                     return Ok(LoweredExpr::RuntimeCall {
                         runtime_fn: "ArrayPushMany".to_owned(),
                         args: lowered_args,
-                    
+
                         span: Span::generated("runtime_call"),});
                 }
                 if is_array_from_call_receiver(object, method) {
@@ -1075,7 +1127,7 @@ impl<'a> Resolver<'a> {
                     return Ok(LoweredExpr::RuntimeCall {
                         runtime_fn: runtime_fn.to_owned(),
                         args: self.lower_call_args(args)?,
-                    
+
                         span: Span::generated("runtime_call"),});
                 }
                 if method.starts_with('#') {
@@ -1095,7 +1147,7 @@ impl<'a> Resolver<'a> {
                             return Ok(LoweredExpr::Call {
                                 kind: FunctionCallKind::User(method_id),
                                 args: lowered_args,
-                            
+
                                 span: Span::generated("call"),});
                         }
                         return Err(Diagnostic {
@@ -1104,7 +1156,8 @@ impl<'a> Resolver<'a> {
                                 "issue-255: static private method `{method}` calls are currently supported only as `this.{method}(...)` inside static methods or `Class.{method}(...)` inside the declaring class"
                             ),
                             span: Some(*span),
-                        });
+
+                            phase: None,});
                     }
                     let method_id = self.current_private_method_id(method).ok_or_else(|| {
                         Diagnostic {
@@ -1113,7 +1166,8 @@ impl<'a> Resolver<'a> {
                                 "issue-255: private method `{method}` is not declared in this class"
                             ),
                             span: Some(*span),
-                        }
+
+                            phase: None,}
                     })?;
                     let receiver = if matches!(object.as_ref(), ResolvedExpr::This { .. }) {
                         LoweredExpr::Local(self.resolve_local("this")?, Span::generated("local"))
@@ -1124,12 +1178,13 @@ impl<'a> Resolver<'a> {
                                 "issue-255: private method `{method}` call requires declaring class context"
                             ),
                             span: Some(*span),
-                        })?;
+
+                            phase: None,})?;
                         let brand = self.private_brand_for_class(&class_name, Some(*span))?;
                         LoweredExpr::RuntimeCall {
                             runtime_fn: "PrivateBrandCheck".to_owned(),
                             args: vec![self.lower_expr(object)?, LoweredExpr::Number(brand as i32, Span::generated("num"))],
-                        
+
                             span: Span::generated("runtime_call"),}
                     };
                     let mut lowered_args = vec![receiver];
@@ -1141,7 +1196,7 @@ impl<'a> Resolver<'a> {
                     return Ok(LoweredExpr::Call {
                         kind: FunctionCallKind::User(method_id),
                         args: lowered_args,
-                    
+
                         span: Span::generated("call"),});
                 }
                 if is_json_static_call(object, method) {
@@ -1211,13 +1266,13 @@ impl<'a> Resolver<'a> {
                     Ok(LoweredExpr::RuntimeCall {
                         runtime_fn: "JsonStringify".to_owned(),
                         args: lowered_args,
-                    
+
                         span: Span::generated("runtime_call"),})
                 } else if is_date_now_live_time_call(object, method) {
                     Ok(LoweredExpr::RuntimeCall {
                         runtime_fn: "DateNow".to_owned(),
                         args: vec![],
-                    
+
                         span: Span::generated("runtime_call"),})
                 } else if self.is_unsupported_regexp_compile_receiver(object, method) {
                     Err(unsupported_regexp_compile_diagnostic(Some(*span)))
@@ -1234,7 +1289,7 @@ impl<'a> Resolver<'a> {
                     Ok(LoweredExpr::RuntimeCall {
                         runtime_fn: "RegExpTest".to_owned(),
                         args: lowered_args,
-                    
+
                         span: Span::generated("runtime_call"),})
                 } else if let Some(regexp_args) = regexp_exec_runtime(object, method, args, *span)?
                 {
@@ -1245,7 +1300,7 @@ impl<'a> Resolver<'a> {
                     Ok(LoweredExpr::RuntimeCall {
                         runtime_fn: "RegExpMatch".to_owned(),
                         args: lowered_args,
-                    
+
                         span: Span::generated("runtime_call"),})
                 } else if let Some(regexp_args) =
                     regexp_string_match_runtime(object, method, args, *span)?
@@ -1257,7 +1312,7 @@ impl<'a> Resolver<'a> {
                     Ok(LoweredExpr::RuntimeCall {
                         runtime_fn: if method == "search" { "RegExpSearch".to_owned() } else { "RegExpMatch".to_owned() },
                         args: lowered_args,
-                    
+
                         span: Span::generated("runtime_call"),})
                 } else if matches!(method.as_str(), "getTime" | "valueOf")
                     && self.is_date_receiver(object)
@@ -1270,12 +1325,13 @@ impl<'a> Resolver<'a> {
                                 args.len()
                             ),
                             span: Some(*span),
-                        });
+
+                            phase: None,});
                     }
                     Ok(LoweredExpr::RuntimeCall {
                         runtime_fn: "DateGetTime".to_owned(),
                         args: vec![self.lower_expr(object)?],
-                    
+
                         span: Span::generated("runtime_call"),})
                 } else if method == "getTimezoneOffset" && self.is_date_receiver(object) {
                     if !args.is_empty() {
@@ -1286,12 +1342,13 @@ impl<'a> Resolver<'a> {
                                 args.len()
                             ),
                             span: Some(*span),
-                        });
+
+                            phase: None,});
                     }
                     Ok(LoweredExpr::RuntimeCall {
                         runtime_fn: "DateGetTimezoneOffset".to_owned(),
                         args: vec![self.lower_expr(object)?],
-                    
+
                         span: Span::generated("runtime_call"),})
                 } else if is_local_tz_date_method(method) && self.is_date_receiver(object) {
                     if !args.is_empty() {
@@ -1302,7 +1359,8 @@ impl<'a> Resolver<'a> {
                                 args.len()
                             ),
                             span: Some(*span),
-                        });
+
+                            phase: None,});
                     }
                     let field_index: i32 = match method.as_str() {
                         "getFullYear" => 0,
@@ -1321,7 +1379,7 @@ impl<'a> Resolver<'a> {
                             self.lower_expr(object)?,
                             LoweredExpr::Number(field_index, Span::generated("num")),
                         ],
-                    
+
                         span: Span::generated("runtime_call"),})
                 } else if method == "getYear" && is_static_date_constructor_expr(object) {
                     if !args.is_empty() {
@@ -1332,7 +1390,8 @@ impl<'a> Resolver<'a> {
                                 args.len()
                             ),
                             span: Some(*span),
-                        });
+
+                            phase: None,});
                     }
                     if let ResolvedExpr::New { args: date_args, .. } = object.as_ref()
                         && let Some(ResolvedExpr::Number(year)) = date_args.first()
@@ -1352,7 +1411,8 @@ impl<'a> Resolver<'a> {
                                 args.len()
                             ),
                             span: Some(*span),
-                        });
+
+                            phase: None,});
                     }
                     Ok(LoweredExpr::Number(0, Span::generated("num")))
                 } else if method == "getYear" && self.is_date_receiver(object) {
@@ -1364,13 +1424,14 @@ impl<'a> Resolver<'a> {
                                 args.len()
                             ),
                             span: Some(*span),
-                        });
+
+                            phase: None,});
                     }
                     Ok(LoweredExpr::Binary {
                         left: Box::new(LoweredExpr::RuntimeCall {
                             runtime_fn: "DateGetLocalTimeField".to_owned(),
                             args: vec![self.lower_expr(object)?, LoweredExpr::Number(0, Span::generated("num"))],
-                        
+
                             span: Span::generated("runtime_call"),}),
                         op: LoweredBinaryOp::Subtract,
                         right: Box::new(LoweredExpr::Number(1900, Span::generated("num"))),
@@ -1389,12 +1450,13 @@ impl<'a> Resolver<'a> {
                                 args.len()
                             ),
                             span: Some(*span),
-                        });
+
+                            phase: None,});
                     }
                     Ok(LoweredExpr::RuntimeCall {
                         runtime_fn: "DateToString".to_owned(),
                         args: vec![self.lower_expr(object)?],
-                    
+
                         span: Span::generated("runtime_call"),})
                 } else if self.is_date_receiver(object)
                     && matches!(
@@ -1416,7 +1478,8 @@ impl<'a> Resolver<'a> {
                                 args.len()
                             ),
                             span: Some(*span),
-                        });
+
+                            phase: None,});
                     }
                     let runtime_fn = match method.as_str() {
                         "getUTCMilliseconds" => "DateGetUtcMilliseconds",
@@ -1432,7 +1495,7 @@ impl<'a> Resolver<'a> {
                     Ok(LoweredExpr::RuntimeCall {
                         runtime_fn: runtime_fn.to_owned(),
                         args: vec![self.lower_expr(object)?],
-                    
+
                         span: Span::generated("runtime_call"),})
                 } else if self.is_date_receiver(object)
                     && matches!(method.as_str(), "toISOString" | "toJSON")
@@ -1445,12 +1508,13 @@ impl<'a> Resolver<'a> {
                                 args.len()
                             ),
                             span: Some(*span),
-                        });
+
+                            phase: None,});
                     }
                     Ok(LoweredExpr::RuntimeCall {
                         runtime_fn: "DateToISOString".to_owned(),
                         args: vec![self.lower_expr(object)?],
-                    
+
                         span: Span::generated("runtime_call"),})
                 } else if matches!(object.as_ref(), ResolvedExpr::String(_)) {
                     if is_html_wrapper_string_method(method) {
@@ -1478,7 +1542,7 @@ impl<'a> Resolver<'a> {
                         Ok(LoweredExpr::RuntimeCall {
                             runtime_fn,
                             args: lowered_args,
-                        
+
                             span: Span::generated("runtime_call"),})
                     } else {
                         Err(Diagnostic {
@@ -1487,7 +1551,8 @@ impl<'a> Resolver<'a> {
                                 "String.prototype.{method} is not supported in this milestone"
                             ),
                             span: Some(*span),
-                        })
+
+                            phase: None,})
                     }
                 } else if (method == "indexOf" || method == "includes")
                     && self.is_known_array_expr(object)
@@ -1510,7 +1575,7 @@ impl<'a> Resolver<'a> {
                             "ArrayIncludes".to_owned()
                         },
                         args: lowered_args,
-                    
+
                         span: Span::generated("runtime_call"),})
                 } else if method == "concat"
                     && self.is_known_array_expr(object)
@@ -1524,7 +1589,7 @@ impl<'a> Resolver<'a> {
                     Ok(LoweredExpr::RuntimeCall {
                         runtime_fn: "ArrayConcat".to_owned(),
                         args: lowered_args,
-                    
+
                         span: Span::generated("runtime_call"),})
                 } else if (method == "find" || method == "findIndex" || method == "findLast" || method == "findLastIndex" || method == "filter" || method == "every" || method == "some")
                     && is_identity_arrow_callback(args)
@@ -1537,7 +1602,7 @@ impl<'a> Resolver<'a> {
                             &method[1..]
                         ),
                         args: vec![self.lower_expr(object)?],
-                    
+
                         span: Span::generated("runtime_call"),})
                 } else if let Some(runtime_fn) = resolve_method_to_runtime_fn(object, method) {
                     if (runtime_fn == "ArrayPush" || runtime_fn == "ArrayPushGrow") && args.len() != 1 {
@@ -1546,7 +1611,8 @@ impl<'a> Resolver<'a> {
                                 code: DiagCode::UnsupportedSyntax,
                                 message: "issue-271: multi-argument Array.prototype.push is currently supported only for identifier array receivers".to_owned(),
                                 span: Some(*span),
-                            });
+
+                                phase: None,});
                         }
                         let mut lowered_args = vec![self.lower_expr(object)?];
                         lowered_args.extend(args.iter().map(|e| self.lower_expr(e)).collect::<
@@ -1556,7 +1622,7 @@ impl<'a> Resolver<'a> {
                         return Ok(LoweredExpr::RuntimeCall {
                             runtime_fn: "ArrayPushMany".to_owned(),
                             args: lowered_args,
-                        
+
                             span: Span::generated("runtime_call"),});
                     }
                     if (runtime_fn == "MathMax" || runtime_fn == "MathMin") && args.len() > 2 {
@@ -1575,7 +1641,7 @@ impl<'a> Resolver<'a> {
                             result = LoweredExpr::RuntimeCall {
                                 runtime_fn: runtime_fn.clone(),
                                 args: vec![result, arg.clone()],
-                            
+
                                 span: Span::generated("runtime_call"),};
                         }
                         return Ok(result);
@@ -1611,7 +1677,7 @@ impl<'a> Resolver<'a> {
                     Ok(LoweredExpr::RuntimeCall {
                         runtime_fn,
                         args: lowered_args,
-                    
+
                         span: Span::generated("runtime_call"),})
                 } else {
                     if let ResolvedExpr::Ident(receiver_name) = object.as_ref()
@@ -1630,7 +1696,7 @@ impl<'a> Resolver<'a> {
                         return Ok(LoweredExpr::Call {
                             kind: FunctionCallKind::User(method_id),
                             args: lowered_args,
-                        
+
                             span: Span::generated("call"),});
                     }
 
@@ -1688,7 +1754,7 @@ impl<'a> Resolver<'a> {
                         return Ok(LoweredExpr::RuntimeCall {
                             runtime_fn: "ArrayMapStringSplit".to_owned(),
                             args: vec![self.lower_expr(object)?, self.lower_expr(separator)?],
-                        
+
                             span: Span::generated("runtime_call"),});
                     }
 
@@ -1697,7 +1763,7 @@ impl<'a> Resolver<'a> {
                             return Ok(LoweredExpr::RuntimeCall {
                                 runtime_fn: "ArraySortNumeric".to_owned(),
                                 args: vec![self.lower_expr(object)?],
-                            
+
                                 span: Span::generated("runtime_call"),});
                         }
                         return Err(unsupported_array_sort_diagnostic(Some(*span)));
@@ -1741,7 +1807,8 @@ impl<'a> Resolver<'a> {
                             code: DiagCode::UnsupportedSyntax,
                             message: "this.method(...) requires class context".to_owned(),
                             span: Some(*span),
-                        })?;
+
+                            phase: None,})?;
                         let method_id =
                             self.resolve_class_method(class_name, method)
                                 .ok_or_else(|| Diagnostic {
@@ -1751,7 +1818,8 @@ impl<'a> Resolver<'a> {
                                         class_name, method
                                     ),
                                     span: Some(*span),
-                                })?;
+
+                                    phase: None,})?;
 
                         let mut lowered_args =
                             vec![LoweredExpr::Local(self.resolve_local("this")?, Span::generated("local"))];
@@ -1764,7 +1832,7 @@ impl<'a> Resolver<'a> {
                         return Ok(LoweredExpr::Call {
                             kind: FunctionCallKind::User(method_id),
                             args: lowered_args,
-                        
+
                             span: Span::generated("call"),});
                     }
 
@@ -1797,7 +1865,7 @@ impl<'a> Resolver<'a> {
                                 return Ok(LoweredExpr::RuntimeCall {
                                     runtime_fn: runtime_fn.to_owned(),
                                     args: lowered_args,
-                                
+
                                     span: Span::generated("runtime_call"),});
                             }
                             return Err(Diagnostic {
@@ -1807,7 +1875,8 @@ impl<'a> Resolver<'a> {
                                     method, key
                                 ),
                                 span: Some(*span),
-                            });
+
+                                phase: None,});
                         }
                         _ => {
                             // Non-identifier receiver (e.g. `[1].indexOf(2)`, `"hi".charAt(0)`)
@@ -1881,7 +1950,7 @@ impl<'a> Resolver<'a> {
                                             return Ok(LoweredExpr::RuntimeCall {
                                                 runtime_fn: runtime_fn.to_owned(),
                                                 args: lowered_args,
-                                            
+
                                                 span: Span::generated("runtime_call"),});
                                         }
                                     }
@@ -1891,7 +1960,8 @@ impl<'a> Resolver<'a> {
                                             "issue-211: {class_name}.prototype.{proto_method}.call is not supported"
                                         ),
                                         span: Some(*span),
-                                    });
+
+                                        phase: None,});
                                 }
                                 // Fall through to issue-211 error below
                             if let Some(runtime_fn) =
@@ -1915,7 +1985,7 @@ impl<'a> Resolver<'a> {
                                 return Ok(LoweredExpr::RuntimeCall {
                                     runtime_fn: runtime_fn.to_owned(),
                                     args: lowered_args,
-                                
+
                                     span: Span::generated("runtime_call"),});
                             }
                             // new C().method() — lower through class method dispatch
@@ -1937,7 +2007,7 @@ impl<'a> Resolver<'a> {
                                     return Ok(LoweredExpr::Call {
                                         kind: FunctionCallKind::User(method_id),
                                         args: lowered_args,
-                                    
+
                                         span: Span::generated("call"),});
                                 }
                             return Err(Diagnostic {
@@ -1947,9 +2017,27 @@ impl<'a> Resolver<'a> {
                                     method
                                 ),
                                 span: Some(*span),
-                            });
+
+                                phase: None,});
                         }
                     };
+
+                    // Map.forEach or Set.forEach with ArrowFn — expand at IR level
+                    if method == "forEach"
+                        && !args.is_empty()
+                        && matches!(&args[0], ResolvedExpr::ArrowFn { .. })
+                        && let Ok(obj_local) = self.resolve_local(receiver_name)
+                        && let Some(class_name) = self.local_classes.get(&obj_local)
+                        && (class_name == "Map" || class_name == "Set")
+                    {
+                        let is_map = *class_name == "Map";
+                        let lowered_receiver = self.lower_expr(object)?;
+                        if is_map {
+                            return self.lower_map_for_each_method(lowered_receiver, object, args, *span);
+                        } else {
+                            return self.lower_set_for_each_method(lowered_receiver, object, args, *span);
+                        }
+                    }
 
                     if let Ok(obj_local) = self.resolve_local(receiver_name)
                         && let Some(class_name) = self.local_classes.get(&obj_local)
@@ -1963,7 +2051,8 @@ impl<'a> Resolver<'a> {
                                     args.len()
                                 ),
                                 span: Some(*span),
-                            });
+
+                                phase: None,});
                         }
                         let mut lowered_args = vec![LoweredExpr::Local(obj_local, Span::generated("local"))];
                         // Array.prototype.flat defaults depth to 1 when omitted
@@ -1992,7 +2081,7 @@ impl<'a> Resolver<'a> {
                         return Ok(LoweredExpr::RuntimeCall {
                             runtime_fn: runtime_fn.to_owned(),
                             args: lowered_args,
-                        
+
                             span: Span::generated("runtime_call"),});
                     }
 
@@ -2001,7 +2090,8 @@ impl<'a> Resolver<'a> {
                             code: DiagCode::UnsupportedSyntax,
                             message: "super.method(...) requires class context".to_owned(),
                             span: Some(*span),
-                        })?;
+
+                            phase: None,})?;
                         let parent_name = self
                             .class_parents
                             .get(class_name)
@@ -2011,7 +2101,8 @@ impl<'a> Resolver<'a> {
                                 message: "super.method(...) used in class without extends"
                                     .to_owned(),
                                 span: Some(*span),
-                            })?;
+
+                                phase: None,})?;
                         let method_id = self
                             .resolve_class_method(&parent_name, method)
                             .ok_or_else(|| Diagnostic {
@@ -2021,7 +2112,8 @@ impl<'a> Resolver<'a> {
                                     parent_name, method
                                 ),
                                 span: Some(*span),
-                            })?;
+
+                                phase: None,})?;
 
                         let mut lowered_args =
                             vec![LoweredExpr::Local(self.resolve_local("this")?, Span::generated("local"))];
@@ -2034,7 +2126,7 @@ impl<'a> Resolver<'a> {
                         return Ok(LoweredExpr::Call {
                             kind: FunctionCallKind::User(method_id),
                             args: lowered_args,
-                        
+
                             span: Span::generated("call"),});
                     }
 
@@ -2052,7 +2144,7 @@ impl<'a> Resolver<'a> {
                         return Ok(LoweredExpr::Call {
                             kind: FunctionCallKind::User(method_id),
                             args: lowered_args,
-                        
+
                             span: Span::generated("call"),});
                     }
 
@@ -2073,13 +2165,15 @@ impl<'a> Resolver<'a> {
                                 code: DiagCode::UnsupportedSyntax,
                                 message: format!("issue-104: Promise.prototype.{}(...) — Promise runtime is not implemented yet. Register Promise as a tracked class to route through the Promise runtime path.", method),
                                 span: Some(*span),
-                            })
+
+                                phase: None,})
                         }
                         None => return Err(Diagnostic {
                             code: DiagCode::UnsupportedSyntax,
                             message: format!("issue-211: unknown receiver class for method `{}` (receiver `{}` is an untyped or ambient variable; issue-5261: the method may be a static member or not exist on the instance type)", method, receiver_name),
                             span: Some(*span),
-                        }),
+
+                            phase: None,}),
                     };
                     let class_name = class_name_str.as_str();
 
@@ -2089,7 +2183,8 @@ impl<'a> Resolver<'a> {
                                 code: DiagCode::UnsupportedSyntax,
                                 message: format!("method `{}.{}` not found", class_name, method),
                                 span: Some(*span),
-                            })?;
+
+                                phase: None,})?;
 
                     let mut lowered_args = vec![LoweredExpr::Local(obj_local, Span::generated("local"))];
                     lowered_args.extend(args.iter().map(|e| self.lower_expr(e)).collect::<Result<
@@ -2102,7 +2197,7 @@ impl<'a> Resolver<'a> {
                     Ok(LoweredExpr::Call {
                         kind: FunctionCallKind::User(method_id),
                         args: lowered_args,
-                    
+
                         span: Span::generated("call"),})
                 }
             }
@@ -2124,7 +2219,7 @@ impl<'a> Resolver<'a> {
                     return Ok(LoweredExpr::RuntimeCall {
                         runtime_fn: "SetPrototypeAddSet".to_owned(),
                         args: vec![self.lower_set_prototype_add_assignment_value(value)?],
-                    
+
                         span: Span::generated("runtime_call"),});
                 }
                 if is_set_prototype_property(object, key, "originalAdd")
@@ -2133,7 +2228,7 @@ impl<'a> Resolver<'a> {
                     return Ok(LoweredExpr::RuntimeCall {
                         runtime_fn: "SetPrototypeAddGet".to_owned(),
                         args: Vec::new(),
-                    
+
                         span: Span::generated("runtime_call"),});
                 }
                 if key.starts_with('#') {
@@ -2145,7 +2240,8 @@ impl<'a> Resolver<'a> {
                                     "issue-352: static private field `{key}` cannot be accessed before its declaration in class static initialization order"
                                 ),
                                 span: Some(*span),
-                            })?;
+
+                                phase: None,})?;
                             let expr = Box::new(self.lower_expr(value)?);
                             return Ok(if self.env_cell_locals.contains(&local) {
                                 LoweredExpr::EnvCellSet { cell: local, expr ,
@@ -2160,14 +2256,15 @@ impl<'a> Resolver<'a> {
                                 "issue-255: static private field `{key}` assignment is currently supported only as `this.{key} = value` inside static methods or `Class.{key} = value` inside the declaring class"
                             ),
                             span: Some(*span),
-                        });
+
+                            phase: None,});
                     }
                     if let Some(setter_id) = self.current_static_private_setter_id(key) {
                         if self.is_same_class_static_private_receiver(object) {
                             return Ok(LoweredExpr::Call {
                                 kind: FunctionCallKind::User(setter_id),
                                 args: vec![self.lower_expr(value)?],
-                            
+
                                 span: Span::generated("call"),});
                         }
                         return Err(Diagnostic {
@@ -2176,7 +2273,8 @@ impl<'a> Resolver<'a> {
                                 "issue-255: static private setter `{key}` assignment is currently supported only as `this.{key} = value` inside static methods or `Class.{key} = value` inside the declaring class"
                             ),
                             span: Some(*span),
-                        });
+
+                            phase: None,});
                     }
                     if let Some(setter_id) = self.current_private_setter_id(key) {
                         let receiver = if matches!(object.as_ref(), ResolvedExpr::This { .. }) {
@@ -2188,7 +2286,8 @@ impl<'a> Resolver<'a> {
                                     "issue-255: private setter `{key}` assignment requires declaring class context"
                                 ),
                                 span: Some(*span),
-                            })?;
+
+                                phase: None,})?;
                             let brand = self.private_brand_for_class(&class_name, Some(*span))?;
                             LoweredExpr::RuntimeCall {
                                 runtime_fn: "PrivateBrandCheck".to_owned(),
@@ -2196,7 +2295,7 @@ impl<'a> Resolver<'a> {
                                     self.lower_expr(object)?,
                                     LoweredExpr::Number(brand as i32, Span::generated("num")),
                                 ],
-                            
+
                                 span: Span::generated("runtime_call"),}
                         };
                         return Ok(LoweredExpr::Call {
@@ -2213,7 +2312,8 @@ impl<'a> Resolver<'a> {
                                 "issue-255: private setter `{key}` external assignment is not supported in this private setter runtime slice"
                             ),
                             span: Some(*span),
-                        });
+
+                            phase: None,});
                     }
                     let (brand, slot) = self.private_field_brand_and_slot(object, key, *span)?;
                     return Ok(LoweredExpr::RuntimeCall {
@@ -2224,7 +2324,7 @@ impl<'a> Resolver<'a> {
                             LoweredExpr::Number(slot as i32, Span::generated("num")),
                             self.lower_expr(value)?,
                         ],
-                    
+
                         span: Span::generated("runtime_call"),});
                 }
                 // super.prop = value — writes to `this`, not the parent prototype
@@ -2233,7 +2333,8 @@ impl<'a> Resolver<'a> {
                         code: DiagCode::UnsupportedSyntax,
                         message: "super property assignment requires class context".to_owned(),
                         span: Some(*span),
-                    })?;
+
+                        phase: None,})?;
                     let _parent_name = self
                         .class_parents
                         .get(class_name)
@@ -2243,7 +2344,8 @@ impl<'a> Resolver<'a> {
                             message: "super property assignment used in class without extends"
                                 .to_owned(),
                             span: Some(*span),
-                        })?;
+
+                            phase: None,})?;
                     return Ok(LoweredExpr::PropertySet {
                         object: Box::new(LoweredExpr::Local(
                             self.resolve_local("this")?,
@@ -2276,7 +2378,8 @@ impl<'a> Resolver<'a> {
                         code: DiagCode::UnsupportedSyntax,
                         message: "super computed assignment requires class context".to_owned(),
                         span: None,
-                    })?;
+
+                        phase: None,})?;
                     let _parent_name = self
                         .class_parents
                         .get(class_name)
@@ -2286,7 +2389,8 @@ impl<'a> Resolver<'a> {
                             message: "super computed assignment used in class without extends"
                                 .to_owned(),
                             span: None,
-                        })?;
+
+                            phase: None,})?;
                     return Ok(LoweredExpr::PropertySetDynamic {
                         object: Box::new(LoweredExpr::Local(
                             self.resolve_local("this")?,
@@ -2316,28 +2420,30 @@ impl<'a> Resolver<'a> {
                         code: DiagCode::UnsupportedSyntax,
                         message: "issue-106: Proxy constructor — Proxy is not implemented yet; use plain objects instead".to_owned(),
                         span: Some(*span),
-                    });
+
+                        phase: None,});
                 }
                 if class_name == "Reflect" {
                     return Err(Diagnostic {
                         code: DiagCode::UnsupportedSyntax,
                         message: "issue-106: Reflect API is not implemented yet".to_owned(),
                         span: Some(*span),
-                    });
+
+                        phase: None,});
                 }
                 if class_name == "Date" {
                     if args.is_empty() {
                         return Ok(LoweredExpr::RuntimeCall {
                             runtime_fn: "DateNewLive".to_owned(),
                             args: vec![],
-                        
+
                             span: Span::generated("runtime_call"),});
                     }
                     if is_invalid_date_constructor_expr(expr) {
                         return Ok(LoweredExpr::RuntimeCall {
                             runtime_fn: "DateNew".to_owned(),
                             args: vec![LoweredExpr::Number(0, Span::generated("num"))],
-                        
+
                             span: Span::generated("runtime_call"),});
                     }
                     if args.len() != 1 {
@@ -2349,14 +2455,15 @@ impl<'a> Resolver<'a> {
                                 "issue-5243: Date constructor requires an epoch-millisecond number, not a string or expression".to_string().to_string()
                             },
                             span: None,
-                        });
+
+                            phase: None,});
                     }
                     let epoch_ms = &args[0];
                     if is_date_now_expr(epoch_ms) {
                         return Ok(LoweredExpr::RuntimeCall {
                             runtime_fn: "DateNew".to_owned(),
                             args: vec![self.lower_expr(epoch_ms)?],
-                        
+
                             span: Span::generated("runtime_call"),});
                     }
                     if !is_date_constructor_epoch_arg(epoch_ms) {
@@ -2369,19 +2476,20 @@ impl<'a> Resolver<'a> {
                             code: DiagCode::UnsupportedSyntax,
                             message: msg.to_owned(),
                             span: None,
-                        });
+
+                            phase: None,});
                     }
                     return Ok(LoweredExpr::RuntimeCall {
                         runtime_fn: "DateNew".to_owned(),
                         args: vec![self.lower_expr(epoch_ms)?],
-                    
+
                         span: Span::generated("runtime_call"),});
                 }
                 if class_name == "Array" {
                     if args.is_empty() {
                         return Ok(LoweredExpr::ArrayNewSparse {
                             slots: Vec::new(),
-                        
+
                             span: Span::generated("array_new_sparse"),});
                     }
                     let [length] = args.as_slice() else {
@@ -2389,32 +2497,39 @@ impl<'a> Resolver<'a> {
                             code: DiagCode::UnsupportedSyntax,
                             message: "issue-405: new Array(length) currently supports exactly one small non-negative integer length".to_owned(),
                             span: None,
-                        });
+
+                            phase: None,});
                     };
                     let ResolvedExpr::Number(length) = length else {
                         return Err(Diagnostic {
                             code: DiagCode::UnsupportedSyntax,
                             message: "issue-405: new Array(length) currently requires a small non-negative integer length literal".to_owned(),
                             span: None,
-                        });
+
+                            phase: None,});
                     };
                     if *length < 0 || *length > 32 {
                         return Err(Diagnostic {
                             code: DiagCode::UnsupportedSyntax,
                             message: "issue-405: new Array(length) currently supports lengths from 0 through 32".to_owned(),
                             span: None,
-                        });
+
+                            phase: None,});
                     }
                     return Ok(LoweredExpr::ArrayNewSparse {
                         slots: vec![LoweredArraySlot::Hole; *length as usize],
                         span: Span::generated("array_new_sparse"),});
                 }
-                if class_name == "Map" || class_name == "Set" {
-                    if args.is_empty() {
+                if class_name == "Map"
+                    || class_name == "Set"
+                    || class_name == "WeakMap"
+                    || class_name == "WeakSet"
+                {
+                    if args.is_empty() || class_name == "WeakMap" || class_name == "WeakSet" {
                         return Ok(LoweredExpr::RuntimeCall {
                             runtime_fn: format!("{class_name}New"),
                             args: Vec::new(),
-                        
+
                             span: Span::generated("runtime_call"),});
                     }
                     if class_name == "Set" && args.len() == 1 && self.is_known_array_expr(&args[0])
@@ -2422,7 +2537,7 @@ impl<'a> Resolver<'a> {
                         return Ok(LoweredExpr::RuntimeCall {
                             runtime_fn: "SetFromArray".to_owned(),
                             args: vec![self.lower_expr(&args[0])?],
-                        
+
                             span: Span::generated("runtime_call"),});
                     }
                     if class_name == "Set" {
@@ -2430,13 +2545,15 @@ impl<'a> Resolver<'a> {
                             code: DiagCode::UnsupportedSyntax,
                             message: "issue-276: new Set(iterable) currently supports only known dense array inputs".to_owned(),
                             span: None,
-                        });
+
+                            phase: None,});
                     }
                     return Err(Diagnostic {
                         code: DiagCode::UnsupportedSyntax,
                         message: format!("issue-049: new {class_name}(iterable) is not supported yet"),
                         span: None,
-                    });
+
+                        phase: None,});
                 }
                 if class_name == "Promise" {
                     if args.is_empty() {
@@ -2444,7 +2561,8 @@ impl<'a> Resolver<'a> {
                             code: DiagCode::UnsupportedSyntax,
                             message: "issue-5422: new Promise() without executor is not supported".to_owned(),
                             span: None,
-                        });
+
+                            phase: None,});
                     }
                     let mut lowered_args = Vec::new();
                     for arg in args {
@@ -2453,15 +2571,68 @@ impl<'a> Resolver<'a> {
                     return Ok(LoweredExpr::RuntimeCall {
                         runtime_fn: "PromiseConstructor".to_owned(),
                         args: lowered_args,
-                    
+
                         span: Span::generated("runtime_call"),});
+                }
+                if matches!(
+                    class_name.as_str(),
+                    "Int8Array"
+                        | "Uint8Array"
+                        | "Uint8ClampedArray"
+                        | "Int16Array"
+                        | "Uint16Array"
+                        | "Int32Array"
+                        | "Uint32Array"
+                        | "Float32Array"
+                        | "Float64Array"
+                        | "BigInt64Array"
+                ) {
+                    let mut lowered_args = Vec::new();
+                    for arg in args {
+                        lowered_args.push(self.lower_expr(arg)?);
+                    }
+                    return Ok(LoweredExpr::RuntimeCall {
+                        runtime_fn: "TypedArrayFromArray".to_owned(),
+                        args: lowered_args,
+                        span: Span::generated("runtime_call"),
+                    });
+                }
+                if class_name == "ArrayBuffer" {
+                    let mut lowered_args = Vec::new();
+                    for arg in args {
+                        lowered_args.push(self.lower_expr(arg)?);
+                    }
+                    return Ok(LoweredExpr::RuntimeCall {
+                        runtime_fn: "ArrayBufferNew".to_owned(),
+                        args: lowered_args,
+                        span: Span::generated("runtime_call"),
+                    });
+                }
+                if class_name == "DataView" {
+                    if args.is_empty() {
+                        return Err(Diagnostic {
+                            code: DiagCode::UnsupportedSyntax,
+                            message: "issue-206: DataView constructor requires a buffer argument".to_owned(),
+                            span: Some(*span),
+                            phase: None,
+                        });
+                    }
+                    let mut lowered_args = Vec::new();
+                    for arg in args {
+                        lowered_args.push(self.lower_expr(arg)?);
+                    }
+                    return Ok(LoweredExpr::RuntimeCall {
+                        runtime_fn: "DataViewNew".to_owned(),
+                        args: lowered_args,
+                        span: Span::generated("runtime_call"),
+                    });
                 }
                 if let Some(constructor) = BuiltinErrorConstructor::from_name(class_name) {
                     let message = match args.first() {
                         Some(message) => LoweredExpr::RuntimeCall {
                             runtime_fn: "ErrorMessage".to_owned(),
                             args: vec![self.lower_expr(message)?],
-                        
+
                             span: Span::generated("runtime_call"),},
                         None => LoweredExpr::String(String::new(), Span::generated("str")),
                     };
@@ -2635,7 +2806,8 @@ fn lower_html_wrapper_string_method(
                 code: DiagCode::UnsupportedSyntax,
                 message: format!("String.prototype.{method} is not supported in this milestone"),
                 span: Some(span),
-            });
+
+                phase: None,});
         }
     };
 

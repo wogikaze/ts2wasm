@@ -44,10 +44,7 @@ issue の追加・更新は、ファイル作成・更新ごとにこまめに�
 
 対象:
 
-- `issues/open/*.md`
-- `issues/done/*.md`
-- `issues/index.md`
-- `issues/dependency-graph.md`
+- `TRACKING.yaml` (open/active/done items)
 - audit note
 - progress note
 - checklist tracking issue

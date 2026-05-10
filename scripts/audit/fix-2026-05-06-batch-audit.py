@@ -10,7 +10,7 @@ Fixes:
 import os
 import re
 
-DONE_DIR = "issues/done"
+DONE_DIR = "TRACKING.yaml (done section)"  # migrated from issues/done/
 AUDIT_MARKER = """## False-done audit
 
 Date: 2026-05-06

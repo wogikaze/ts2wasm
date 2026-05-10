@@ -123,7 +123,8 @@ impl Parser {
                     code: DiagCode::UnsupportedSyntax,
                     message: format!("expected identifier for interface name, got {other:?}"),
                     span: self.peek_span(),
-                });
+
+                    phase: None,});
             }
         };
 
@@ -177,7 +178,8 @@ impl Parser {
                 code: DiagCode::UnsupportedSyntax,
                 message: "unterminated TypeScript interface declaration".to_owned(),
                 span: Some(interface_span),
-            });
+
+                phase: None,});
         }
 
         self.skip_balanced_brace_block(interface_span)?;
@@ -208,7 +210,8 @@ impl Parser {
                                     interface_name, name_i, name_j, field, name_i, name_j
                                 ),
                                 span: Some(interface_name_span),
-                            });
+
+                                phase: None,});
                         }
                     }
                 }
@@ -300,7 +303,8 @@ impl Parser {
                 code: DiagCode::UnsupportedSyntax,
                 message: "unterminated TypeScript type alias declaration".to_owned(),
                 span: Some(type_span),
-            })
+
+                phase: None,})
         }
     }
 
@@ -543,6 +547,7 @@ impl Parser {
             params,
             body: Vec::new(),
             is_generator: false,
+            is_async: false,
             is_ambient: true,
             overload_signature: true,
             span: name_span,
@@ -662,7 +667,8 @@ impl Parser {
                 code: DiagCode::UnsupportedSyntax,
                 message: "unterminated TypeScript namespace declaration".to_owned(),
                 span: Some(start_span),
-            });
+
+                phase: None,});
         };
         let declared_type_names =
             self.collect_erased_namespace_type_names(left_brace + 1, right_brace);
@@ -752,7 +758,8 @@ impl Parser {
                             code: DiagCode::UnresolvedName,
                             message: format!("unresolved name: `{name}`"),
                             span: Some(self.tokens[index].span),
-                        });
+
+                            phase: None,});
                     }
                     expecting_root_type = false;
                 }
@@ -772,7 +779,8 @@ impl Parser {
                 code: DiagCode::UnsupportedSyntax,
                 message: "unterminated TypeScript namespace declaration".to_owned(),
                 span: Some(start_span),
-            });
+
+                phase: None,});
         };
         let mut index = left_brace + 1;
         while index < right_brace {
@@ -810,7 +818,8 @@ impl Parser {
                         "TS2322: Type 'null' is not assignable to type '{type_name}'."
                     ),
                     span: Some(name.1),
-                });
+
+                    phase: None,});
             }
             index += 1;
         }
@@ -881,7 +890,9 @@ impl Parser {
             code: DiagCode::UnsupportedTypeScriptSyntax,
             message: message.to_owned(),
             span: Some(span),
-        }
+
+
+            phase: None,}
     }
 
     fn skip_balanced_brace_block(&mut self, start_span: Span) -> Result<(), Diagnostic> {
@@ -904,7 +915,8 @@ impl Parser {
             code: DiagCode::UnsupportedSyntax,
             message: "unterminated TypeScript interface declaration".to_owned(),
             span: Some(start_span),
-        })
+
+            phase: None,})
     }
 }
 

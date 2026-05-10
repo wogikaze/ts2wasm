@@ -97,6 +97,8 @@ pub fn collect_typescript_diagnostics(input: &Path) -> Result<TypeScriptCheckRep
             code: DiagCode::BackendIo,
             message: format!("failed to execute TypeScript compiler oracle: {error}"),
             span: None,
+
+            phase: None,
         })?;
 
     let stdout = String::from_utf8_lossy(&output.stdout);
@@ -107,7 +109,8 @@ pub fn collect_typescript_diagnostics(input: &Path) -> Result<TypeScriptCheckRep
             String::from_utf8_lossy(&output.stderr)
         ),
         span: None,
-    })?;
+
+        phase: None,})?;
 
     if !output.status.success() {
         return Err(Diagnostic {
@@ -119,6 +122,8 @@ pub fn collect_typescript_diagnostics(input: &Path) -> Result<TypeScriptCheckRep
                 )
             }),
             span: None,
+
+            phase: None,
         });
     }
 
@@ -188,6 +193,8 @@ fn typecheck_diagnostic(diagnostic: &TypeScriptDiagnostic) -> Diagnostic {
             diagnostic.code, diagnostic.category, diagnostic.message
         ),
         span,
+
+        phase: None,
     }
 }
 

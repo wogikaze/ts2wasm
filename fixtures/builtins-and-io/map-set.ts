@@ -11,6 +11,16 @@ console.log(m.has("a"));
 console.log(m.get("a"));
 console.log(m.delete("a"));
 
+console.log("--- map size and clear ---");
+let m2 = new Map();
+console.log(m2.size);
+m2.set("a", 1);
+m2.set("b", 2);
+console.log(m2.size);
+m2.clear();
+console.log(m2.size);
+console.log(m2.has("a"));
+
 let s = new Set();
 console.log(s.has("x"));
 console.log(s.add("x") === s);

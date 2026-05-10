@@ -119,7 +119,11 @@ impl WatEmitter<'_> {
                 writer.unreachable(indent)
             }
             LoweredExpr::PromiseGetValue { promise, .. } => {
-                self.emit_expr(writer, promise, indent, frame)
+                // Evaluate the promise expression (calls the async function),
+                // which leaves a frame pointer (task handle) on the wasm stack.
+                self.emit_expr(writer, promise, indent, frame);
+                // Extract the return value from the completed frame.
+                writer.line(indent, "(call $task_result)");
             }
             LoweredExpr::ArrowFn {
                 func_id,

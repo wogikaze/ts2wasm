@@ -47,7 +47,7 @@ pub fn lower_program(program: &[ResolvedStmt]) -> Result<LoweredProgram, Diagnos
     for stmt in program {
         match stmt {
             ResolvedStmt::Function {
-                name, params, body, ..
+                name, params, body, is_async, ..
             } => {
                 let func_id = function_ids[name];
                 let params_with_captures = function_params_with_captures(
@@ -61,10 +61,20 @@ pub fn lower_program(program: &[ResolvedStmt]) -> Result<LoweredProgram, Diagnos
                     .get(&func_id)
                     .map(|names| names.iter().cloned().collect::<HashSet<_>>())
                     .unwrap_or_default();
+                // Also scan for arrow function mutable captures (e.g., returning
+                // a closure that mutates captured locals). These aren't tracked
+                // in function_mutable_captures because arrow functions aren't
+                // pre-registered like declared functions.
+                let arrow_mutable_captures = collect_block_arrow_fn_mutable_captures(body);
+                let function_env_cell_names = function_env_cell_names
+                    .union(&arrow_mutable_captures)
+                    .cloned()
+                    .collect::<HashSet<_>>();
                 let lowered = lower_function(
                     func_id,
                     &params_with_captures,
                     body,
+                    *is_async,
                     &function_ids,
                     &function_signatures,
                     &function_captures,
@@ -130,6 +140,7 @@ pub fn lower_program(program: &[ResolvedStmt]) -> Result<LoweredProgram, Diagnos
                     ctor_id,
                     &ctor_params_with_this,
                     &ctor_body,
+                    false,
                     &function_ids,
                     &function_signatures,
                     &function_captures,
@@ -185,6 +196,7 @@ pub fn lower_program(program: &[ResolvedStmt]) -> Result<LoweredProgram, Diagnos
                         method_id,
                         &method_params_with_this,
                         &method.body,
+                        false,
                         &function_ids,
                         &function_signatures,
                         &function_captures,
@@ -331,7 +343,8 @@ pub fn lower_program(program: &[ResolvedStmt]) -> Result<LoweredProgram, Diagnos
             code: DiagCode::InvariantViolation,
             message: "function id allocation left an unfilled function slot".to_owned(),
             span: None,
-        })?;
+
+            phase: None,})?;
     generated_functions.sort_by_key(|function| function.id.0);
     functions.extend(generated_functions);
 
@@ -409,7 +422,8 @@ fn collect_function_ids(program: &[ResolvedStmt]) -> Result<HashMap<String, Func
                             code: DiagCode::DuplicateFunction,
                             message: format!("duplicate function definition: `{name}`"),
                             span: None,
-                        });
+
+                            phase: None,});
                     }
                     continue;
                 }
@@ -432,7 +446,8 @@ fn collect_function_ids(program: &[ResolvedStmt]) -> Result<HashMap<String, Func
                         code: DiagCode::DuplicateFunction,
                         message: format!("duplicate constructor definition: `{name}`"),
                         span: None,
-                    });
+
+                        phase: None,});
                 }
                 function_ids.insert(ctor_key, FuncId(next_func_id));
                 next_func_id += 1;
@@ -451,7 +466,8 @@ fn collect_function_ids(program: &[ResolvedStmt]) -> Result<HashMap<String, Func
                                 name, method.name
                             ),
                             span: None,
-                        });
+
+                            phase: None,});
                     }
                     function_ids.insert(method_key, FuncId(next_func_id));
                     next_func_id += 1;
@@ -845,6 +861,104 @@ fn class_constructor_key(class_name: &str) -> String {
 
 fn class_method_key(class_name: &str, method_name: &str) -> String {
     format!("class::{class_name}::{method_name}")
+}
+
+/// Collect names that are mutably captured by arrow functions within the
+/// given block. This detects patterns like:
+/// ```typescript
+/// function makeCounter() {
+///   let count = 0;
+///   return () => { count = count + 1; return count; };
+/// }
+/// ```
+/// where `count` is captured and mutated by the returned arrow function,
+/// requiring env-cell allocation in the enclosing function.
+fn collect_block_arrow_fn_mutable_captures(stmts: &[ResolvedStmt]) -> HashSet<String> {
+    let mut mutable_captures = HashSet::new();
+    for stmt in stmts {
+        match stmt {
+            ResolvedStmt::Return(expr) if matches!(expr, ResolvedExpr::ArrowFn { .. }) => {
+                if let ResolvedExpr::ArrowFn { body, body_stmts, .. } = expr {
+                    let mut arrow_captures = Vec::new();
+                    collect_expr_captures(body, &HashSet::new(), &mut arrow_captures);
+                    collect_stmt_captures(body_stmts, &HashSet::new(), &mut arrow_captures);
+                    for capture in &arrow_captures {
+                        if block_assigns_any_name(body_stmts, core::slice::from_ref(capture)) {
+                            mutable_captures.insert(capture.clone());
+                        }
+                    }
+                }
+            }
+            ResolvedStmt::Expr(expr) if matches!(expr, ResolvedExpr::ArrowFn { .. }) => {
+                if let ResolvedExpr::ArrowFn { body, body_stmts, .. } = expr {
+                    let mut arrow_captures = Vec::new();
+                    collect_expr_captures(body, &HashSet::new(), &mut arrow_captures);
+                    collect_stmt_captures(body_stmts, &HashSet::new(), &mut arrow_captures);
+                    for capture in &arrow_captures {
+                        if block_assigns_any_name(body_stmts, core::slice::from_ref(capture)) {
+                            mutable_captures.insert(capture.clone());
+                        }
+                    }
+                }
+            }
+            ResolvedStmt::Return(..) | ResolvedStmt::Expr(..) | ResolvedStmt::Throw(..) => {}
+            ResolvedStmt::Let(_, expr) => {
+                if let ResolvedExpr::ArrowFn { body, body_stmts, .. } = expr {
+                    let mut arrow_captures = Vec::new();
+                    collect_expr_captures(body, &HashSet::new(), &mut arrow_captures);
+                    collect_stmt_captures(body_stmts, &HashSet::new(), &mut arrow_captures);
+                    for capture in &arrow_captures {
+                        if block_assigns_any_name(body_stmts, core::slice::from_ref(capture)) {
+                            mutable_captures.insert(capture.clone());
+                        }
+                    }
+                }
+            }
+            ResolvedStmt::If { then_body, else_body, .. } => {
+                mutable_captures.extend(collect_block_arrow_fn_mutable_captures(then_body));
+                mutable_captures.extend(collect_block_arrow_fn_mutable_captures(else_body));
+            }
+            ResolvedStmt::While { body, .. } | ResolvedStmt::DoWhile { body, .. } => {
+                mutable_captures.extend(collect_block_arrow_fn_mutable_captures(body));
+            }
+            ResolvedStmt::For { body, .. }
+            | ResolvedStmt::ForIn { body, .. }
+            | ResolvedStmt::ForOf { body, .. } => {
+                mutable_captures.extend(collect_block_arrow_fn_mutable_captures(body));
+            }
+            ResolvedStmt::TryCatch { try_block, catch_block, finally_block, .. } => {
+                mutable_captures.extend(collect_block_arrow_fn_mutable_captures(try_block));
+                if let Some(block) = catch_block {
+                    mutable_captures.extend(collect_block_arrow_fn_mutable_captures(block));
+                }
+                if let Some(block) = finally_block {
+                    mutable_captures.extend(collect_block_arrow_fn_mutable_captures(block));
+                }
+            }
+            ResolvedStmt::Switch { cases, .. } => {
+                for (_, body) in cases {
+                    mutable_captures.extend(collect_block_arrow_fn_mutable_captures(body));
+                }
+            }
+            ResolvedStmt::Block { statements, .. } => {
+                mutable_captures.extend(collect_block_arrow_fn_mutable_captures(statements));
+            }
+            ResolvedStmt::Labeled { body, .. } => {
+                mutable_captures
+                    .extend(collect_block_arrow_fn_mutable_captures(std::slice::from_ref(body)));
+            }
+            ResolvedStmt::Assign(..)
+            | ResolvedStmt::DestructureLet { .. }
+            | ResolvedStmt::AmbientValue(..)
+            | ResolvedStmt::Function { .. }
+            | ResolvedStmt::ClassDecl { .. }
+            | ResolvedStmt::Break { .. }
+            | ResolvedStmt::Continue { .. }
+            | ResolvedStmt::Export { .. }
+            | ResolvedStmt::ModuleExportsAssign { .. } => {}
+        }
+    }
+    mutable_captures
 }
 
 fn collect_class_parents(program: &[ResolvedStmt]) -> HashMap<String, Option<String>> {
@@ -2076,6 +2190,7 @@ fn lower_function(
     id: FuncId,
     params: &[ResolvedParam],
     body: &[ResolvedStmt],
+    is_async: bool,
     function_ids: &HashMap<String, FuncId>,
     function_signatures: &HashMap<FuncId, FunctionSignature>,
     function_captures: &HashMap<FuncId, Vec<String>>,
@@ -2095,7 +2210,8 @@ fn lower_function(
             code: DiagCode::UnsupportedSyntax,
             message: "issue-062d: `arguments` together with rest parameters is not supported in this milestone".to_owned(),
             span: None,
-        });
+
+            phase: None,});
     }
     let mut lowered_params = Vec::new();
     if signature.needs_receiver {
@@ -2161,7 +2277,8 @@ fn lower_function(
                     message: "issue-251: rest parameter binding patterns are not supported"
                         .to_owned(),
                     span: param.span,
-                });
+
+                    phase: None,});
             }
             let param_local = resolver.resolve_local(&param.name)?;
             if let Some(default) = &param.default {
@@ -2239,6 +2356,7 @@ fn lower_function(
             locals: resolver.locals,
             body: body_with_defaults,
             recursion_depth: options.recursion_depth,
+            is_async,
         },
         generated_functions: resolver.generated_functions,
         next_func_id: resolver.next_func_id,
@@ -2275,7 +2393,8 @@ fn lower_binary_op(op: BinaryOp) -> Result<LoweredBinaryOp, Diagnostic> {
             code: DiagCode::UnsupportedSyntax,
             message: format!("binary operator {:?} not yet supported", op),
             span: None,
-        }),
+
+            phase: None,}),
     }
 }
 
@@ -2301,12 +2420,14 @@ fn lower_unary_op(op: UnaryOp) -> Result<LoweredUnaryOp, Diagnostic> {
             code: DiagCode::UnsupportedSyntax,
             message: format!("issue-268: unary operator {:?} not yet supported", op),
             span: None,
-        }),
+
+            phase: None,}),
         UnaryOp::BitwiseNot => Err(Diagnostic {
             code: DiagCode::UnsupportedSyntax,
             message: format!("unary operator {:?} not yet supported", op),
             span: None,
-        }),
+
+            phase: None,}),
         UnaryOp::Void => Ok(LoweredUnaryOp::Void),
     }
 }

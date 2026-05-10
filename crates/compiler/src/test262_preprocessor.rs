@@ -304,6 +304,8 @@ pub fn process_test262_includes(input: &Path, source: &str) -> Result<String, Di
                     helper_path.display()
                 ),
                 span: None,
+
+                phase: None,
             })?;
 
             // Remove YAML frontmatter from helper files if present
@@ -501,6 +503,8 @@ fn build_feature_stubs(features: &[String], source: &str) -> Result<String, Diag
                 "UnsupportedTest262Metadata/test262-metadata: test262 feature `{feature}` is not supported by this runner slice [{tracking_id}]"
             ),
             span: None,
+
+            phase: None,
         });
     }
 
@@ -561,6 +565,8 @@ fn resolve_harness_directory(input: &Path) -> Result<std::path::PathBuf, Diagnos
         code: ts2wasm_frontend::DiagCode::BackendIo,
         message: format!("cannot get parent directory of {}", input.display()),
         span: None,
+
+        phase: None,
     })?;
 
     // Navigate up to find test262 directory
@@ -589,6 +595,8 @@ fn resolve_harness_directory(input: &Path) -> Result<std::path::PathBuf, Diagnos
             input.display()
         ),
         span: None,
+
+        phase: None,
     })?;
 
     let harness_dir = test262_root.join("harness");
@@ -600,6 +608,8 @@ fn resolve_harness_directory(input: &Path) -> Result<std::path::PathBuf, Diagnos
                 harness_dir.display()
             ),
             span: None,
+
+            phase: None,
         });
     }
 

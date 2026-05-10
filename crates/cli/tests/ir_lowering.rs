@@ -703,6 +703,7 @@ fn validate_rejects_arity_mismatch() {
         min_required_params: 2,
         rest_param_index: None,
         recursion_depth: 0,
+        is_async: false,
         locals: vec![],
         body: vec![],
     };

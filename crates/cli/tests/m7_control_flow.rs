@@ -119,3 +119,10 @@ fn build_smoke_labeled_control() {
 fn build_smoke_throw_test262() {
     assert_fixture_build_smoke("control-flow-and-exceptions/throw-test262.ts");
 }
+
+// Generator function basic — ID 212 (W5, P2)
+// RED phase: build fails until generator lowering is implemented
+#[test]
+fn build_smoke_generator_basic() {
+    assert_fixture_build_smoke("builtins-and-io/generator-basic.ts");
+}

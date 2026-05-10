@@ -40,6 +40,11 @@ fn m3_semantic_fixtures_match_node_output_under_iwasm() {
 }
 
 #[test]
+fn in_operator_prototype_fixture_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node("fixtures/core-semantics/in-operator-prototype.ts");
+}
+
+#[test]
 fn int32_typed_stress_builds_successfully() {
     // Console.log multi-arg output format differs from Node
     let fixture = "fixtures/core-semantics/int32-typed-stress.ts";
@@ -108,6 +113,11 @@ fn array_includes_fixture_matches_node_output_under_iwasm() {
 #[test]
 fn array_find_fixture_matches_node_output_under_iwasm() {
     assert_fixture_matches_node("fixtures/builtins-and-io/array-find.ts");
+}
+
+#[test]
+fn array_map_fixture_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/array-map.ts");
 }
 
 #[test]
@@ -1246,6 +1256,11 @@ fn for_loop_non_identifier_increment_update_reports_issue_268() {
 }
 
 #[test]
+fn utf8_string_fixture_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node("fixtures/control-flow-and-exceptions/utf8-string.ts");
+}
+
+#[test]
 fn string_method_fixtures_match_node_output_under_iwasm() {
     for fixture in [
         "fixtures/builtins-and-io/string-trim.ts",
@@ -1473,8 +1488,28 @@ fn map_set_collection_fixture_matches_node_output_under_iwasm() {
 }
 
 #[test]
+fn map_for_each_fixture_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/map-forEach.ts");
+}
+
+#[test]
 fn set_size_clear_fixture_matches_node_output_under_iwasm() {
     assert_fixture_matches_node("fixtures/builtins-and-io/set-size-clear.ts");
+}
+
+#[test]
+fn set_for_each_fixture_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/set-forEach.ts");
+}
+
+#[test]
+fn typed_array_basic_fixture_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/typedarray-basic.ts");
+}
+
+#[test]
+fn weakmap_weakset_basic_fixture_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/weakmap-weakset-basic.ts");
 }
 
 #[test]
@@ -1629,6 +1664,11 @@ fn throw_catch_finally_fixture_matches_node_output_under_iwasm() {
 }
 
 #[test]
+fn return_in_try_finally_fixture_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node("fixtures/control-flow-and-exceptions/return-in-try-finally.ts");
+}
+
+#[test]
 fn throw_rethrow_nested_fixture_matches_node_output_under_iwasm() {
     assert_fixture_matches_node("fixtures/control-flow-and-exceptions/throw-rethrow-nested.ts");
 }
@@ -1650,6 +1690,13 @@ fn labeled_control_fixtures_match_node_output_under_iwasm() {
     ] {
         assert_fixture_matches_node(fixture);
     }
+}
+
+#[test]
+fn break_continue_in_try_finally_fixture_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node(
+        "fixtures/control-flow-and-exceptions/break-continue-in-try-finally.ts",
+    );
 }
 
 #[test]
@@ -1886,12 +1933,10 @@ fn function_arguments_fixture_matches_node_output_under_iwasm() {
 
 #[test]
 fn function_this_arguments_unsupported_forms_report_issue_062d() {
-    for fixture in [
-        "fixtures/core-semantics/this-top-level-unsupported.ts",
+    assert_build_fails_with_unsupported_syntax(
         "fixtures/core-semantics/function-this-direct-call-unsupported.ts",
-    ] {
-        assert_build_fails_with_unsupported_syntax(fixture, "issue-062d:");
-    }
+        "issue-062d:",
+    );
     // arguments is now resolved as a name lookup, producing UnresolvedName instead
     assert_build_fails_with_diagnostic(
         "fixtures/core-semantics/arguments-top-level-unsupported.ts",
@@ -2582,6 +2627,11 @@ fn unary_void_operator_fixture_matches_node_output_under_iwasm() {
 }
 
 #[test]
+fn array_reduce_fixture_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/array-reduce.ts");
+}
+
+#[test]
 fn array_reduce_right_fixture_matches_node_output_under_iwasm() {
     assert_fixture_matches_node("fixtures/builtins-and-io/array-reduce-right.ts");
 }
@@ -2616,6 +2666,87 @@ fn object_is_sealed_fixture_matches_node_output_under_iwasm() {
 }
 
 #[test]
+fn iterator_protocol_matches_node_output() {
+    assert_fixture_matches_node("fixtures/core-semantics/iterator-protocol.ts");
+}
+
+#[test]
 fn object_is_frozen_fixture_matches_node_output_under_iwasm() {
     assert_fixture_matches_node("fixtures/builtins-and-io/object-is-frozen.ts");
+}
+
+// Object Semantics Kernel (W5) fixtures
+
+#[test]
+fn writable_false_enforcement_fixture_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node("fixtures/object-semantics-kernel/writable-false-enforcement.ts");
+}
+
+#[test]
+fn configurable_false_enforcement_fixture_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node(
+        "fixtures/object-semantics-kernel/configurable-false-enforcement.ts",
+    );
+}
+
+#[test]
+fn descriptor_combinations_fixture_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node("fixtures/object-semantics-kernel/descriptor-combinations.ts");
+}
+
+#[test]
+fn prototype_descriptor_inheritance_fixture_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node(
+        "fixtures/object-semantics-kernel/prototype-descriptor-inheritance.ts",
+    );
+}
+
+#[test]
+fn getter_setter_runtime_fixture_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node("fixtures/object-semantics-kernel/getter-setter-runtime.ts");
+}
+
+#[test]
+fn enumerable_filtering_fixture_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node("fixtures/object-semantics-kernel/enumerable-filtering.ts");
+}
+
+#[test]
+fn seal_freeze_descriptor_fixture_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node("fixtures/object-semantics-kernel/seal-freeze-descriptor.ts");
+}
+
+#[test]
+fn define_property_edge_cases_fixture_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node("fixtures/object-semantics-kernel/define-property-edge-cases.ts");
+}
+
+#[test]
+fn computed_read_prototype_fixture_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node("fixtures/object-semantics-kernel/computed-read-prototype.ts");
+}
+
+#[test]
+fn promise_basic_matches_node_output() {
+    assert_fixture_matches_node("fixtures/core-semantics/promise-basic.ts");
+}
+
+#[test]
+fn upgraded_builtin_fixture_matches_node_output() {
+    for fixture in [
+        // Promoted from build_smoke to semantic_diff (ID 210)
+        "fixtures/builtins-and-io/string-replace.ts",
+        "fixtures/builtins-and-io/array-fill.ts",
+        "fixtures/builtins-and-io/object-is.ts",
+        "fixtures/builtins-and-io/object-seal.ts",
+        "fixtures/builtins-and-io/object-string-keys.ts",
+    ] {
+        assert_fixture_matches_node(fixture);
+    }
+}
+
+// Mutable capture closure — ID 214 (W5, P2, node_diff)
+#[test]
+fn mutable_capture_closure_matches_node_output() {
+    assert_fixture_matches_node("fixtures/core-semantics/mutable-capture-closure.ts");
 }

@@ -10,7 +10,7 @@ import os
 import re
 import shutil
 
-ISSUES_DIR = "issues/open"
+ISSUES_DIR = "TRACKING.yaml"  # migrated from issues/open/
 
 # Classification rules: (keywords, new_area, new_depends_on, meta_label)
 # Order matters: first match wins

@@ -55,6 +55,8 @@ pub fn optimize_hir(
             code: DiagCode::InvariantViolation,
             message: "validate_hir failed with empty diagnostic list after optimization".to_owned(),
             span: None,
+
+            phase: None,
         })
     })?;
 

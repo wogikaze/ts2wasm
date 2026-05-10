@@ -194,7 +194,7 @@ description = "Print script manager help (list all commands)"
 run = "python scripts/manager.py help"
 
 [tasks."gen-site"]
-description = "Generate documentation site content from docs/issues/fixtures"
+description = "Generate documentation site content from docs/TRACKING.yaml/fixtures"
 run = "python scripts/gen-site.py"
 
 [tasks."build-site"]

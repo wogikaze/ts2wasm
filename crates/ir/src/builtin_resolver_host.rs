@@ -112,7 +112,8 @@ pub(super) fn resolve_builtin_call(
                     "issue-280: BigInt.asIntN/asUintN require literal bit width and BigInt value inputs in this builtin slice"
                         .to_owned(),
                 span: span_of_expr(callee),
-            });
+
+                phase: None,});
         }
         if object_name == "console" {
             return if property == "log" {
@@ -122,6 +123,8 @@ pub(super) fn resolve_builtin_call(
                     code: DiagCode::UnsupportedSyntax,
                     message: format!("console.{} is not supported in this milestone", property),
                     span: span_of_expr(callee),
+
+                    phase: None,
                 })
             };
         }
@@ -136,6 +139,8 @@ pub(super) fn resolve_builtin_call(
                     code: DiagCode::UnsupportedSyntax,
                     message: format!("process.{} is not supported in this milestone", property),
                     span: span_of_expr(callee),
+
+                    phase: None,
                 })
             };
         }
@@ -167,6 +172,8 @@ pub(super) fn resolve_bun_file_text_builtin(
                 call_args.len()
             ),
             span: span_of_expr(object),
+
+            phase: None,
         });
     }
     let Expr::Call {
@@ -201,6 +208,8 @@ pub(super) fn resolve_bun_file_text_builtin(
             message: "Bun.file(...).text() currently supports only \"/dev/stdin\" stdin lowering"
                 .to_owned(),
             span: span_of_expr(arg),
+
+            phase: None,
         }),
         _ => Err(Diagnostic {
             code: DiagCode::ArityMismatch,
@@ -209,6 +218,8 @@ pub(super) fn resolve_bun_file_text_builtin(
                 file_args.len()
             ),
             span: span_of_expr(object),
+
+            phase: None,
         }),
     }
 }
@@ -267,6 +278,8 @@ pub(super) fn resolve_require_module_builtin(
                     module_name, unsupported
                 ),
                 span: span_of_expr(object),
+
+                phase: None,
             });
         }
         _ => return Ok(None),
@@ -281,6 +294,8 @@ pub(super) fn resolve_require_module_builtin(
                 call_args.len()
             ),
             span: span_of_expr(object),
+
+            phase: None,
         });
     }
 
@@ -299,6 +314,8 @@ pub(super) fn validate_read_stdin_utf8_args(
                 args.len()
             ),
             span: span_of_expr(callee),
+
+            phase: None,
         });
     }
     let fd_expr = &args[0];
@@ -313,6 +330,8 @@ pub(super) fn validate_read_stdin_utf8_args(
                     "require(\"fs\").readFileSync currently supports only fd 0 as first argument"
                         .to_owned(),
                 span: span_of_expr(fd_expr),
+
+                phase: None,
             });
         }
     }
@@ -324,6 +343,8 @@ pub(super) fn validate_read_stdin_utf8_args(
             message: "require(\"fs\").readFileSync currently supports only \"utf8\" encoding"
                 .to_owned(),
             span: span_of_expr(encoding_expr),
+
+            phase: None,
         }),
     }
 }

@@ -87,6 +87,7 @@ pub struct LoweredFunction {
     /// Used by ABC451 runtime tracking to distinguish top-level array growth
     /// (depth 0) from nested/recursive array growth (depth 1+).
     pub recursion_depth: usize,
+    pub is_async: bool,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]

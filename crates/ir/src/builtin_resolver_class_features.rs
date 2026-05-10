@@ -37,6 +37,8 @@ pub(super) fn resolve_private_elements(
                                 "issue-255: duplicate private field `#{name}` in class `{class_name}`"
                             ),
                             span: Some(*span),
+
+                            phase: None,
                         });
                     }
                     static_fields.push((
@@ -57,6 +59,8 @@ pub(super) fn resolve_private_elements(
                             "issue-255: duplicate private field `#{name}` in class `{class_name}`"
                         ),
                         span: Some(*span),
+
+                        phase: None,
                     });
                 }
                 fields.push(name.clone());
@@ -88,6 +92,8 @@ pub(super) fn resolve_private_elements(
                             "issue-255: duplicate private element `#{name}` in class `{class_name}`"
                         ),
                         span: Some(*span),
+
+                        phase: None,
                     });
                 }
                 methods.push(ClassMethod {
@@ -128,6 +134,8 @@ pub(super) fn resolve_private_elements(
                             "issue-255: duplicate private element `#{name}` in class `{class_name}`"
                         ),
                         span: Some(*span),
+
+                        phase: None,
                     });
                 }
                 methods.push(ClassMethod {
@@ -165,6 +173,8 @@ pub(super) fn resolve_private_elements(
                             "issue-255: duplicate private element `#{name}` in class `{class_name}`"
                         ),
                         span: Some(*span),
+
+                        phase: None,
                     });
                 }
                 let mut resolved_body = body
@@ -246,6 +256,8 @@ pub(super) fn unsupported_private_element(detail: &str, span: Span) -> Diagnosti
         code: DiagCode::UnsupportedSyntax,
         message: format!("issue-255: {detail}"),
         span: Some(span),
+
+        phase: None,
     }
 }
 
@@ -608,5 +620,7 @@ pub(super) fn static_block_unsupported(detail: &str, span: Span) -> Diagnostic {
         code: DiagCode::UnsupportedSyntax,
         message: format!("issue-254: {detail}"),
         span: Some(span),
+
+        phase: None,
     }
 }

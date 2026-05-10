@@ -28,6 +28,9 @@ fn gen_label(prefix: &str) -> String {
 #[derive(Default)]
 pub(crate) struct LoopContext {
     frames: Vec<ControlFrame>,
+    /// Stack of try-finally exit labels. When inside a try with finally,
+    /// Return should br to this label instead of doing a direct wasm return.
+    try_finally_exit_labels: Vec<String>,
 }
 
 struct ControlFrame {
@@ -65,6 +68,22 @@ impl LoopContext {
                 None
             }
         })
+    }
+
+    fn push_try_finally(&mut self, label: String) {
+        self.try_finally_exit_labels.push(label);
+    }
+
+    fn pop_try_finally(&mut self) {
+        self.try_finally_exit_labels.pop();
+    }
+
+    fn has_try_finally(&self) -> bool {
+        !self.try_finally_exit_labels.is_empty()
+    }
+
+    fn try_finally_exit(&self) -> Option<&str> {
+        self.try_finally_exit_labels.last().map(|s| s.as_str())
     }
 }
 
@@ -198,19 +217,79 @@ impl WatEmitter<'_> {
             }
             LoweredStmt::Return(expr, _) => {
                 self.emit_expr(writer, expr, indent, frame);
-                if frame.uses_activation_roots() {
-                    writer.local_set(indent, frame.heap_value_tmp());
-                    let mut buf = String::new();
-                    self.emit_gc_activation_frame_pop(&mut buf, frame, indent);
-                    writer.push_str(buf.as_str());
-                    writer.local_get(indent, frame.heap_value_tmp());
+                // Save value to Completion Record and set status=Return(1), target=TARGET_EMPTY(0).
+                let cr_base = frame.cr_local_base();
+                writer.line_fmt(indent, format_args!("(local.set {})", cr_base + 1)); // cr_value
+                writer.line_fmt(
+                    indent,
+                    format_args!("(i32.const 1) (local.set {})", cr_base),
+                ); // cr_status=Return
+                writer.line_fmt(
+                    indent,
+                    format_args!("(i32.const 0) (local.set {})", cr_base + 2),
+                ); // cr_target
+                if loop_ctx.has_try_finally() {
+                    // Inside try-finally: br to finally exit instead of direct wasm return.
+                    // The finally block will restore the CR and then re-branch to propagate.
+                    if let Some(exit) = loop_ctx.try_finally_exit() {
+                        writer.line_fmt(indent, format_args!("(local.get {})", cr_base + 1)); // restore for br
+                        writer.line(indent, &format!("(br ${})", exit));
+                    }
+                } else {
+                    // Clear any pending exception before returning — a finally body's
+                    // return may override a preceding throw, and the caller must not see it.
+                    writer.line_fmt(
+                        indent,
+                        format_args!("(i32.const 0) (global.set $exception_pending)"),
+                    );
+                    if self.current_is_async.get() {
+                        // Save CR status/value to async frame before gc pop.
+                        // Frame: [state(0), cr_status(4), cr_value(8)].
+                        writer.line_fmt(
+                            indent,
+                            format_args!(
+                                "(i32.store offset=4 (local.get $frame) (local.get {}))",
+                                cr_base
+                            ),
+                        );
+                        writer.line_fmt(
+                            indent,
+                            format_args!(
+                                "(i32.store offset=8 (local.get $frame) (local.get {}))",
+                                cr_base + 1
+                            ),
+                        );
+                    }
+                    if frame.uses_activation_roots() {
+                        let mut buf = String::new();
+                        self.emit_gc_activation_frame_pop(&mut buf, frame, indent);
+                        writer.push_str(buf.as_str());
+                    }
+                    if self.current_is_async.get() {
+                        writer.line(indent, "(i32.store (local.get $frame) (i32.const 1))");
+                        writer.line(indent, "(local.get $frame)");
+                    } else {
+                        writer.line_fmt(indent, format_args!("(local.get {})", cr_base + 1)); // restore for return
+                    }
+                    writer.return_(indent);
                 }
-                writer.return_(indent);
             }
             LoweredStmt::Throw(expr, _) => {
-                // Evaluate the thrown value, store to $exception_pending,
-                // then let the enclosing try-catch's br_if catch it.
+                // Evaluate the thrown value, save to Completion Record,
+                // then store to $exception_pending for enclosing try-catch.
                 self.emit_expr(writer, expr, indent, frame);
+                // Save value to Completion Record and set status=Throw(2), target=TARGET_EMPTY(0).
+                let cr_base = frame.cr_local_base();
+                writer.line_fmt(indent, format_args!("(local.set {})", cr_base + 1)); // cr_value
+                writer.line_fmt(
+                    indent,
+                    format_args!("(i32.const 2) (local.set {})", cr_base),
+                ); // cr_status=Throw
+                writer.line_fmt(
+                    indent,
+                    format_args!("(i32.const 0) (local.set {})", cr_base + 2),
+                ); // cr_target
+                writer.line_fmt(indent, format_args!("(local.get {})", cr_base + 1)); // restore for throw
                 if frame.uses_activation_roots() {
                     // Stack has the thrown value. Save to local, pop GC frame, then set global.
                     writer.local_set(indent, frame.heap_value_tmp());
@@ -271,15 +350,17 @@ impl WatEmitter<'_> {
 
                 writer.block(indent, &exit_label);
                 writer.r#loop(indent + 2, &loop_label);
+                // Continue target: block that ENCLOSES the body so br $for_continue works
+                writer.block(indent + 4, &continue_label);
 
                 if let Some(cond) = condition {
-                    self.emit_expr(writer, cond, indent + 4, frame);
+                    self.emit_expr(writer, cond, indent + 6, frame);
                     writer.line_fmt(
-                        indent + 4,
+                        indent + 6,
                         format_args!("(call {})", RuntimeFn::TruthyBool.symbol()),
                     );
-                    writer.i32_eqz(indent + 4);
-                    writer.br_if(indent + 4, &exit_label);
+                    writer.i32_eqz(indent + 6);
+                    writer.br_if(indent + 6, &exit_label);
                 }
 
                 loop_ctx.push(ControlFrame {
@@ -287,21 +368,21 @@ impl WatEmitter<'_> {
                     exit_label: exit_label.clone(),
                     continue_label: Some(continue_label.clone()),
                 });
-                self.emit_statements(writer, body, indent + 4, loop_ctx, frame);
+                self.emit_statements(writer, body, indent + 6, loop_ctx, frame);
                 loop_ctx.pop();
 
-                writer.block(indent + 2, &continue_label);
+                writer.end(indent + 4); // end $for_continue block
+
                 if let Some(upd) = update {
                     self.emit_expr(writer, upd, indent + 4, frame);
                     if self.expr_produces_value(upd) {
                         writer.drop(indent + 4);
                     }
                 }
-                writer.end(indent + 2);
 
                 writer.r#br(indent + 4, &loop_label);
-                writer.end(indent + 2);
-                writer.end(indent);
+                writer.end(indent + 2); // end loop
+                writer.end(indent); // end block
             }
             LoweredStmt::ForIn {
                 var,
@@ -436,14 +517,42 @@ impl WatEmitter<'_> {
                 }
             }
             LoweredStmt::Break { label, .. } => {
-                if let Some(target) = loop_ctx.break_label(label.as_deref()) {
+                if loop_ctx.has_try_finally() {
+                    // Save to CR and br through finally
+                    let cr_base = frame.cr_local_base();
+                    writer.line_fmt(
+                        indent,
+                        format_args!("(i32.const 3) (local.set {})", cr_base),
+                    ); // cr_status=Break
+                    writer.line_fmt(
+                        indent,
+                        format_args!("(i32.const 0) (local.set {})", cr_base + 2),
+                    ); // cr_target
+                    if let Some(exit) = loop_ctx.try_finally_exit() {
+                        writer.line(indent, &format!("(br ${})", exit));
+                    }
+                } else if let Some(target) = loop_ctx.break_label(label.as_deref()) {
                     writer.r#br(indent, target);
                 } else {
                     writer.line(indent, ";; ERROR: break outside loop");
                 }
             }
             LoweredStmt::Continue { label, .. } => {
-                if let Some(target) = loop_ctx.continue_label(label.as_deref()) {
+                if loop_ctx.has_try_finally() {
+                    // Save to CR and br through finally
+                    let cr_base = frame.cr_local_base();
+                    writer.line_fmt(
+                        indent,
+                        format_args!("(i32.const 4) (local.set {})", cr_base),
+                    ); // cr_status=Continue
+                    writer.line_fmt(
+                        indent,
+                        format_args!("(i32.const 0) (local.set {})", cr_base + 2),
+                    ); // cr_target
+                    if let Some(exit) = loop_ctx.try_finally_exit() {
+                        writer.line(indent, &format!("(br ${})", exit));
+                    }
+                } else if let Some(target) = loop_ctx.continue_label(label.as_deref()) {
                     writer.r#br(indent, target);
                 } else {
                     writer.line(indent, ";; ERROR: continue outside loop");
@@ -456,14 +565,25 @@ impl WatEmitter<'_> {
                 finally_body,
                 ..
             } => {
-                // Basic try-catch: wrap in block, execute try, handle catch
                 let try_exit = gen_label("try_exit");
                 let catch_entry = gen_label("catch_entry");
+                let has_finally = finally_body.is_some();
 
-                writer.block(indent, &try_exit);
-                writer.block(indent + 2, &catch_entry);
+                // When finally exists, wrap try-catch in a try_catch_done block
+                // so Return inside try can br to it (skip catch, go to finally).
+                let (_outer_indent, inner_indent, _tc_done) = if has_finally {
+                    let label = gen_label("try_catch_done");
+                    loop_ctx.push_try_finally(label.clone());
+                    writer.block(indent, &label);
+                    (indent, indent + 2, Some(label))
+                } else {
+                    (indent, indent, None)
+                };
+
+                writer.block(inner_indent, &try_exit);
+                writer.block(inner_indent + 2, &catch_entry);
                 writer.line_fmt(
-                    indent + 4,
+                    inner_indent + 4,
                     format_args!(
                         "(global.set $exception_handler_depth (i32.add (global.get $exception_handler_depth) (i32.const 1)))",
                     ),
@@ -471,57 +591,145 @@ impl WatEmitter<'_> {
 
                 let mut buf = String::new();
                 for statement in try_body {
-                    self.emit_statement(writer, statement, indent + 4, loop_ctx, frame);
+                    self.emit_statement(writer, statement, inner_indent + 4, loop_ctx, frame);
                     buf.clear();
                     self.emit_gc_backend_temp_roots_clear(&mut buf, &format!("{pad}    "), frame);
                     writer.push_str(buf.as_str());
                     buf.clear();
                     writer.line_fmt(
-                        indent + 4,
+                        inner_indent + 4,
                         format_args!("(br_if ${} (global.get $exception_pending))", catch_entry),
                     );
                 }
 
                 writer.line_fmt(
-                    indent + 4,
+                    inner_indent + 4,
                     format_args!(
                         "(global.set $exception_handler_depth (i32.sub (global.get $exception_handler_depth) (i32.const 1)))",
                     ),
                 );
-                writer.r#br(indent + 4, &try_exit);
-                writer.end(indent + 2);
+                writer.r#br(inner_indent + 4, &try_exit);
+                writer.end(inner_indent + 2);
 
-                // Catch block (for now, just a placeholder)
+                // Catch block
                 writer.line_fmt(
-                    indent + 2,
+                    inner_indent + 2,
                     format_args!(
                         "(global.set $exception_handler_depth (i32.sub (global.get $exception_handler_depth) (i32.const 1)))",
                     ),
                 );
                 if let Some(body) = catch_body {
+                    // Reset CR to Normal(0) — the exception was caught.
+                    let cr_base = frame.cr_local_base();
+                    writer.line_fmt(
+                        inner_indent + 2,
+                        format_args!("(i32.const 0) (local.set {})", cr_base),
+                    );
                     if let Some(var) = catch_var {
                         buf.clear();
-                        writer.line(indent + 2, "(global.get $exception_pending)");
-                        writer.local_set(indent + 2, local_index(*var));
+                        writer.line(inner_indent + 2, "(global.get $exception_pending)");
+                        writer.local_set(inner_indent + 2, local_index(*var));
                         self.emit_gc_root_mirror(&mut buf, &format!("{pad}  "), *var, frame);
                         writer.push_str(buf.as_str());
                     }
                     buf.clear();
                     writer.line_fmt(
-                        indent + 2,
+                        inner_indent + 2,
                         format_args!(
                             "(global.set $exception_pending (i32.const {}))",
                             ValueTag::UNDEFINED
                         ),
                     );
-                    self.emit_statements(writer, body, indent + 4, loop_ctx, frame);
+                    self.emit_statements(writer, body, inner_indent + 4, loop_ctx, frame);
                 }
 
-                writer.end(indent);
+                writer.end(inner_indent);
 
-                // Finally block (always executes)
-                if let Some(body) = finally_body {
-                    self.emit_statements(writer, body, indent + 2, loop_ctx, frame);
+                if has_finally {
+                    writer.end(indent); // end try_catch_done block
+                    loop_ctx.pop_try_finally();
+
+                    // Finally body with CR save/restore
+                    let cr_base = frame.cr_local_base();
+                    let save_base = frame.cr_save_local_base();
+                    // SAVE pre-finally CR
+                    writer.line_fmt(
+                        indent,
+                        format_args!("(local.set {} (local.get {}))", save_base, cr_base),
+                    ); // saved_status = cr_status
+                    writer.line_fmt(
+                        indent,
+                        format_args!("(local.set {} (local.get {}))", save_base + 1, cr_base + 1),
+                    ); // saved_value = cr_value
+                    // EMIT finally body (may overwrite CR)
+                    self.emit_statements(
+                        writer,
+                        finally_body.as_ref().unwrap(),
+                        indent,
+                        loop_ctx,
+                        frame,
+                    );
+                    // RESTORE if finally was Normal
+                    writer.line_fmt(
+                        indent,
+                        format_args!("(if (i32.eq (local.get {}) (i32.const 0))", cr_base),
+                    );
+                    writer.line(indent + 2, "(then");
+                    writer.line_fmt(
+                        indent + 4,
+                        format_args!("(local.set {} (local.get {}))", cr_base, save_base),
+                    );
+                    writer.line_fmt(
+                        indent + 4,
+                        format_args!("(local.set {} (local.get {}))", cr_base + 1, save_base + 1),
+                    );
+                    writer.line(indent + 2, ")");
+                    writer.end(indent); // if
+
+                    // CR dispatch: if Return(1), do wasm return
+                    writer.line_fmt(
+                        indent,
+                        format_args!("(if (i32.eq (local.get {}) (i32.const 1))", cr_base),
+                    );
+                    writer.line_fmt(
+                        indent + 2,
+                        format_args!("(then (local.get {}) (return))", cr_base + 1),
+                    );
+                    writer.end(indent); // if
+
+                    // CR dispatch: if Throw(2), set $exception_pending
+                    writer.line_fmt(
+                        indent,
+                        format_args!("(if (i32.eq (local.get {}) (i32.const 2))", cr_base),
+                    );
+                    writer.line_fmt(
+                        indent + 2,
+                        format_args!(
+                            "(then (local.get {}) (global.set $exception_pending))",
+                            cr_base + 1
+                        ),
+                    );
+                    writer.end(indent); // if
+
+                    // CR dispatch: if Break(3), br to enclosing block exit
+                    if let Some(exit_label) = loop_ctx.break_label(None) {
+                        writer.line_fmt(
+                            indent,
+                            format_args!("(if (i32.eq (local.get {}) (i32.const 3))", cr_base),
+                        );
+                        writer.line(indent + 2, &format!("(then (br ${}))", exit_label));
+                        writer.end(indent); // if
+                    }
+
+                    // CR dispatch: if Continue(4), br to loop continue
+                    if let Some(cont_label) = loop_ctx.continue_label(None) {
+                        writer.line_fmt(
+                            indent,
+                            format_args!("(if (i32.eq (local.get {}) (i32.const 4))", cr_base,),
+                        );
+                        writer.line(indent + 2, &format!("(then (br ${}))", cont_label));
+                        writer.end(indent); // if
+                    }
                 }
             }
             LoweredStmt::Switch { expr, cases, .. } => {

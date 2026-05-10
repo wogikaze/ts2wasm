@@ -367,3 +367,16 @@ fn static_self_import_reports_cycle_diagnostic() {
         "issue-5038: module cycle detected involving",
     );
 }
+
+// ES module live binding — ID 202 (W5, P2)
+#[test]
+fn build_smoke_live_binding() {
+    assert_fixture_build_smoke("builtins-and-io/es-module-live-binding.ts");
+}
+
+// Dynamic import — ID 213 (W5, P2)
+// RED phase: build fails until dynamic import is implemented
+#[test]
+fn build_smoke_dynamic_import() {
+    assert_fixture_build_smoke("builtins-and-io/dynamic-import.ts");
+}

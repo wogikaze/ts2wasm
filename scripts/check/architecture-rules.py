@@ -94,7 +94,7 @@ def should_count_lines(path: Path) -> bool:
         return False
     if any(part in EXCLUDED_PATH_PARTS for part in relative.parts):
         return False
-    if relative == Path("issues/index.md"):
+    if relative == Path("TRACKING.yaml"):
         return False
     return path.suffix in LINE_COUNT_SUFFIXES
 

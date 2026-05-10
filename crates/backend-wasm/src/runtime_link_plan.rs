@@ -74,6 +74,10 @@ impl RuntimeLinkPlan {
         {
             plan.add_required_runtime(RuntimeFn::AllocHeap);
         }
+        // Async functions need AllocHeap for their state-machine frame.
+        if program.functions.iter().any(|function| function.is_async) {
+            plan.add_required_runtime(RuntimeFn::AllocHeap);
+        }
         // Module cache initialization requires AllocHeap.
         if !program.modules.is_empty() {
             plan.add_required_runtime(RuntimeFn::AllocHeap);
@@ -638,6 +642,7 @@ impl RuntimeLinkPlan {
             #[allow(unreachable_patterns)]
             LoweredExpr::PromiseGetValue { promise, .. } => {
                 self.collect_required_runtime_expr(promise);
+                self.add_required_runtime(RuntimeFn::TaskResult);
             }
             LoweredExpr::ClassPrototype(_, _) => {
                 self.add_required_runtime(RuntimeFn::AllocHeap);

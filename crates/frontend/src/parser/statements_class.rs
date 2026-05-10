@@ -11,7 +11,8 @@ impl Parser {
                 code: DiagCode::UnsupportedSyntax,
                 message: format!("namespace before class: `{name}`"),
                 span: Some(span),
-            });
+
+                phase: None,});
         }
 
         let _ = self.consume_typescript_generic_parameter_list()?;
@@ -150,7 +151,8 @@ impl Parser {
                     code: DiagCode::UnsupportedSyntax,
                     message: "classes can only extend a single class".to_owned(),
                     span: Some(comma_span),
-                });
+
+                    phase: None,});
             }
             Ok(Some(Box::new(expr)))
         } else {
@@ -173,7 +175,8 @@ impl Parser {
                                  not a valid class implements type"
                             ),
                             span: Some(span),
-                        });
+
+                            phase: None,});
                     }
                 self.advance();
             }
@@ -198,7 +201,8 @@ impl Parser {
                     code: DiagCode::UnsupportedSyntax,
                     message: "unterminated class body".to_owned(),
                     span: self.prev_span().or_else(|| self.peek_span()),
-                });
+
+                    phase: None,});
             }
 
             if self.consume(TokenKind::Semicolon) {
@@ -255,7 +259,8 @@ impl Parser {
                         "issue-073: a class member cannot have the 'const' keyword"
                             .to_owned(),
                     span: Some(span),
-                });
+
+                    phase: None,});
             }
             let has_private_modifier = self.tokens[modifier_start..self.cursor]
                 .iter()
@@ -453,6 +458,7 @@ impl Parser {
                     params,
                     body: Vec::new(),
                     is_generator: false,
+                    is_async: false,
                     is_ambient: false,
                 overload_signature: false,
                     span: Span {
@@ -491,6 +497,7 @@ impl Parser {
                 params,
                 body: method_body,
                 is_generator: false,
+                is_async: false,
                 is_ambient: false,
                 overload_signature: false,
                 span: Span {

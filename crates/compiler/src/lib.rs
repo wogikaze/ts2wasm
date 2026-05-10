@@ -91,6 +91,8 @@ pub fn build_file_with_host_deny(
         code: DiagCode::BackendIo,
         message: format!("failed to read {}: {error}", input.display()),
         span: None,
+
+        phase: None,
     })?;
     let source = test262_preprocessor::process_test262_includes(input, &source)?;
     // Check for @fileName: multi-section file -- compile each section as its own module.
@@ -105,26 +107,38 @@ pub fn build_file_with_host_deny(
         );
     }
 
-    validate_type_reference_directives(&source)?;
-    let tokens = Lexer::new(&source).tokenize()?;
-    let program = Parser::new(tokens, &source).parse_program()?;
-    validate_ast(&program)?;
-    let module_graph = module_graph::build_entry_module_graph(input, &program)?;
+    validate_type_reference_directives(&source).map_err(|d| d.with_phase("validator"))?;
+    let tokens = Lexer::new(&source)
+        .tokenize()
+        .map_err(|d| d.with_phase("lexer"))?;
+    let program = Parser::new(tokens, &source)
+        .parse_program()
+        .map_err(|d| d.with_phase("parser"))?;
+    validate_ast(&program).map_err(|d| d.with_phase("ast-validator"))?;
+    let module_graph = module_graph::build_entry_module_graph(input, &program)
+        .map_err(|d| d.with_phase("module-resolver"))?;
     // Surface cycle diagnostics: report first cycle diagnostic as error.
     if let Some(cycle_diag) = module_graph.cycle_diagnostics().first() {
-        return Err(cycle_diag.clone());
+        return Err(cycle_diag.clone().with_phase("module-resolver"));
     }
     // Validate dependency-first initialization order.
-    module_graph::validate_init_order(&module_graph)?;
+    module_graph::validate_init_order(&module_graph)
+        .map_err(|d| d.with_phase("module-resolver"))?;
     let static_module_binding =
-        lower_static_named_import_bindings_for_build(&program, &module_graph)?;
-    let name_resolved = name_resolver::resolve_names(&static_module_binding.rewritten_program)?;
-    let resolved = builtin_resolver::resolve_builtins(&name_resolved)?;
-    validate_typescript_semantics_for_path(input, &resolved)?;
-    validate_optimized_hir_slice(&resolved, OptimizationLevel::O0)?;
-    let lowered = lowered::lower_program(&resolved)?;
+        lower_static_named_import_bindings_for_build(&program, &module_graph)
+            .map_err(|d| d.with_phase("module-resolver"))?;
+    let name_resolved = name_resolver::resolve_names(&static_module_binding.rewritten_program)
+        .map_err(|d| d.with_phase("name-resolver"))?;
+    let resolved = builtin_resolver::resolve_builtins(&name_resolved)
+        .map_err(|d| d.with_phase("builtin-resolver"))?;
+    validate_typescript_semantics_for_path(input, &resolved)
+        .map_err(|d| d.with_phase("semantic-validator"))?;
+    validate_optimized_hir_slice(&resolved, OptimizationLevel::O0)
+        .map_err(|d| d.with_phase("hir-validator"))?;
+    let lowered = lowered::lower_program(&resolved).map_err(|d| d.with_phase("lowering"))?;
     let lowered =
-        lower_static_named_import_reads_for_build(lowered, &static_module_binding.named_imports)?;
+        lower_static_named_import_reads_for_build(lowered, &static_module_binding.named_imports)
+            .map_err(|d| d.with_phase("module-resolver"))?;
     let lowered = populate_static_module_exports_for_build(
         lowered,
         &module_graph,
@@ -134,10 +148,10 @@ pub fn build_file_with_host_deny(
         Ok(()) => vec![],
         Err(errs) => errs,
     };
-    ensure_runtime_feature_gates(&lowered)?;
+    ensure_runtime_feature_gates(&lowered).map_err(|d| d.with_phase("runtime-gate"))?;
 
     if host_deny {
-        validate_host_deny(&lowered)?;
+        validate_host_deny(&lowered).map_err(|d| d.with_phase("runtime-gate"))?;
     }
 
     if let Some(path) = capability_manifest_output {
@@ -146,10 +160,11 @@ pub fn build_file_with_host_deny(
             code: DiagCode::BackendIo,
             message: format!("failed to write {}: {error}", path.display()),
             span: None,
+            phase: None,
         })?;
     }
-    let wat = backend::emit_wat(&lowered)?;
-    write_wasm_from_wat(&wat, output)?;
+    let wat = backend::emit_wat(&lowered).map_err(|d| d.with_phase("backend"))?;
+    write_wasm_from_wat(&wat, output).map_err(|d| d.with_phase("backend"))?;
     Ok(CompileReport {
         value: (),
         diagnostics,
@@ -199,7 +214,8 @@ fn ensure_runtime_feature_gates(lowered: &lowered::LoweredProgram) -> Result<(),
             message: "require(\"fs\").readFileSync(0, \"utf8\") is lowered to byte-backed runtime path, but runtime execution is disabled"
                 .to_owned(),
             span: None,
-        });
+
+            phase: None,});
     }
     Ok(())
 }
@@ -211,6 +227,8 @@ fn validate_host_deny(lowered: &lowered::LoweredProgram) -> Result<(), Diagnosti
             code: DiagCode::UnsupportedSyntax,
             message: "host-deny mode rejects Node host imports".to_owned(),
             span: None,
+
+            phase: None,
         });
     }
 
@@ -270,6 +288,8 @@ fn populate_static_module_exports_for_build(
                         export.name, export.lowered_statement_index
                     ),
                     span: None,
+
+                    phase: None,
                 })?;
             // Unwrap Block wrappers around Let statements (e.g. empty destructuring)
             let effective = match stmt {
@@ -298,7 +318,8 @@ fn populate_static_module_exports_for_build(
                                 code: DiagCode::UnsupportedSyntax,
                                 message: "issue-5005: entry module `export const {...}` contains non-let statement".to_string(),
                                 span: None,
-                            });
+
+                                phase: None,});
                         }
                     }
                 }
@@ -310,6 +331,8 @@ fn populate_static_module_exports_for_build(
                             export.name
                         ),
                         span: None,
+
+                        phase: None,
                     });
                 }
                 _ => {
@@ -320,6 +343,8 @@ fn populate_static_module_exports_for_build(
                             export.name
                         ),
                         span: None,
+
+                        phase: None,
                     });
                 }
             }
@@ -345,6 +370,7 @@ fn populate_static_module_exports_for_build(
                     step.module_id()
                 ),
                 span: None,
+                phase: None,
             })?;
         if lowered
             .modules
@@ -426,6 +452,8 @@ fn lower_static_named_import_bindings_for_build(
                             source.value
                         ),
                         span: Some(source.span),
+
+                        phase: None,
                     })?;
                 let exports = collect_literal_named_exports(dependency.resolved_path())?;
                 for specifier in specifiers {
@@ -436,6 +464,8 @@ fn lower_static_named_import_bindings_for_build(
                             source.value, specifier.imported
                         ),
                         span: Some(specifier.imported_span),
+
+                        phase: None,
                     })?;
                     let binding = StaticNamedImportBinding {
                         source_specifier: source.value.clone(),
@@ -473,6 +503,8 @@ fn lower_static_named_import_bindings_for_build(
                             source.value
                         ),
                         span: Some(source.span),
+
+                        phase: None,
                     })?;
                 let exports = collect_literal_named_exports(dependency.resolved_path())?;
                 let expr = exports.get("default").ok_or_else(|| Diagnostic {
@@ -482,6 +514,8 @@ fn lower_static_named_import_bindings_for_build(
                         source.value
                     ),
                     span: Some(source.span),
+
+                    phase: None,
                 })?;
                 let binding = StaticNamedImportBinding {
                     source_specifier: source.value.clone(),
@@ -515,6 +549,7 @@ fn lower_static_named_import_bindings_for_build(
                     params,
                     body,
                     is_generator: false,
+                    is_async: false,
                     is_ambient: false,
                     overload_signature: false,
                     span,
@@ -590,6 +625,8 @@ fn lower_static_named_import_bindings_for_build(
                                 "issue-5005: entry module `export {name}` uses a declaration form outside the current static export slice; only export const and export default are supported"
                             ),
                             span: Some(declaration.span()),
+
+                            phase: None,
                         });
                     }
                     lowered_statement_index += 1;
@@ -609,6 +646,8 @@ fn lower_static_named_import_bindings_for_build(
                                     specifier.exported
                                 ),
                                 span: Some(specifier.span),
+
+                                phase: None,
                             });
                         }
                         let local_index = local_name_to_index
@@ -621,7 +660,8 @@ fn lower_static_named_import_bindings_for_build(
                                     specifier.exported, specifier.local
                                 ),
                                 span: Some(specifier.span),
-                            })?;
+
+                                phase: None,})?;
                         module_exports.push(ModuleExport {
                             name: specifier.exported.clone(),
                             lowered_statement_index: local_index,
@@ -658,6 +698,8 @@ fn lower_static_named_import_bindings_for_build(
                             specifier.value
                         ),
                         span: Some(*span),
+
+                        phase: None,
                     })?;
                 // No binding — side-effect import only triggers initialization
             }
@@ -678,6 +720,8 @@ fn lower_static_named_import_bindings_for_build(
                             source.value
                         ),
                         span: Some(source.span),
+
+                        phase: None,
                     })?;
                 let exports = collect_literal_named_exports(dependency.resolved_path())?;
                 let props: Vec<(String, Expr)> = exports.into_iter().collect();
@@ -708,6 +752,8 @@ fn lower_static_named_import_bindings_for_build(
                             source.value
                         ),
                         span: Some(source.span),
+
+                        phase: None,
                     })?;
                 let exports = collect_literal_named_exports(dependency.resolved_path())?;
 
@@ -719,6 +765,8 @@ fn lower_static_named_import_bindings_for_build(
                         source.value
                     ),
                     span: Some(source.span),
+
+                    phase: None,
                 })?;
                 let default_binding = StaticNamedImportBinding {
                     source_specifier: source.value.clone(),
@@ -748,6 +796,8 @@ fn lower_static_named_import_bindings_for_build(
                             source.value, specifier.imported
                         ),
                         span: Some(specifier.imported_span),
+
+                        phase: None,
                     })?;
                     let binding = StaticNamedImportBinding {
                         source_specifier: source.value.clone(),
@@ -782,6 +832,8 @@ fn lower_static_named_import_bindings_for_build(
                             source.value
                         ),
                         span: Some(source.span),
+
+                        phase: None,
                     })?;
                 let exports = collect_literal_named_exports(dependency.resolved_path())?;
                 for (export_name, expr) in &exports {
@@ -824,6 +876,8 @@ fn lower_static_named_import_bindings_for_build(
                             source.value
                         ),
                         span: Some(source.span),
+
+                        phase: None,
                     })?;
                 let exports = collect_literal_named_exports(dependency.resolved_path())?;
                 for specifier in specifiers {
@@ -834,6 +888,8 @@ fn lower_static_named_import_bindings_for_build(
                             source.value, specifier.imported
                         ),
                         span: Some(specifier.imported_span),
+
+                        phase: None,
                     })?;
                     let local_name = format!("__ts2wasm_re_{}", specifier.exported);
                     rewritten.push(Stmt::Let {
@@ -877,6 +933,8 @@ fn lower_static_named_import_bindings_for_build(
                             source.value
                         ),
                         span: Some(source.span),
+
+                        phase: None,
                     })?;
                 let exports = collect_literal_named_exports(dependency.resolved_path())?;
                 let props: Vec<(String, Expr)> = exports.into_iter().collect();
@@ -913,7 +971,8 @@ fn lower_static_named_import_bindings_for_build(
                             source.value
                         ),
                         span: Some(source.span),
-                    })?;
+
+                        phase: None,})?;
                 let exports = collect_literal_named_exports(dependency.resolved_path())?;
 
                 // Default import: `x` from `import x, * as ns from "./mod"`
@@ -924,6 +983,8 @@ fn lower_static_named_import_bindings_for_build(
                         source.value
                     ),
                     span: Some(source.span),
+
+                    phase: None,
                 })?;
                 let default_binding = StaticNamedImportBinding {
                     source_specifier: source.value.clone(),
@@ -993,6 +1054,7 @@ fn lower_static_named_import_reads_for_build(
                     binding.local_name, binding.source_specifier
                 ),
                 span: None,
+                phase: None,
             })?;
 
         match stmt {
@@ -1014,6 +1076,8 @@ fn lower_static_named_import_reads_for_build(
                         binding.local_name, binding.source_specifier
                     ),
                     span: None,
+
+                    phase: None,
                 });
             }
         }
@@ -1055,6 +1119,8 @@ fn build_multi_section_file(
             code: DiagCode::UnsupportedSyntax,
             message: "multi-section file has no module bodies".to_owned(),
             span: None,
+
+            phase: None,
         });
     }
 
@@ -1069,10 +1135,10 @@ fn build_multi_section_file(
         Ok(()) => vec![],
         Err(errs) => errs,
     };
-    ensure_runtime_feature_gates(&lowered)?;
+    ensure_runtime_feature_gates(&lowered).map_err(|d| d.with_phase("runtime-gate"))?;
 
     if host_deny {
-        validate_host_deny(&lowered)?;
+        validate_host_deny(&lowered).map_err(|d| d.with_phase("runtime-gate"))?;
     }
 
     if let Some(path) = capability_manifest_output {
@@ -1081,10 +1147,11 @@ fn build_multi_section_file(
             code: DiagCode::BackendIo,
             message: format!("failed to write {}: {error}", path.display()),
             span: None,
+            phase: None,
         })?;
     }
-    let wat = backend::emit_wat(&lowered)?;
-    write_wasm_from_wat(&wat, output)?;
+    let wat = backend::emit_wat(&lowered).map_err(|d| d.with_phase("backend"))?;
+    write_wasm_from_wat(&wat, output).map_err(|d| d.with_phase("backend"))?;
     Ok(CompileReport {
         value: (),
         diagnostics,
@@ -1099,9 +1166,9 @@ fn lower_source_as_module_body(
     module_id: usize,
     specifier: String,
 ) -> Result<Option<lowered::ModuleInfo>, Diagnostic> {
-    validate_type_reference_directives(source)?;
-    let program = parse_program(source)?;
-    validate_ast(&program)?;
+    validate_type_reference_directives(source).map_err(|d| d.with_phase("validator"))?;
+    let program = parse_program(source).map_err(|d| d.with_phase("parser"))?;
+    validate_ast(&program).map_err(|d| d.with_phase("ast-validator"))?;
 
     let body = rewrite_static_module_body_for_build(Path::new(&specifier), &program)?;
     if body.rewritten_program.is_empty() && body.module_exports.is_empty() {
@@ -1111,11 +1178,15 @@ fn lower_source_as_module_body(
         return Ok(None);
     }
 
-    let name_resolved = name_resolver::resolve_names(&body.rewritten_program)?;
-    let resolved = builtin_resolver::resolve_builtins(&name_resolved)?;
-    validate_typescript_semantics_for_path(semantic_path, &resolved)?;
-    validate_optimized_hir_slice(&resolved, OptimizationLevel::O0)?;
-    let lowered_module = lowered::lower_program(&resolved)?;
+    let name_resolved = name_resolver::resolve_names(&body.rewritten_program)
+        .map_err(|d| d.with_phase("name-resolver"))?;
+    let resolved = builtin_resolver::resolve_builtins(&name_resolved)
+        .map_err(|d| d.with_phase("builtin-resolver"))?;
+    validate_typescript_semantics_for_path(semantic_path, &resolved)
+        .map_err(|d| d.with_phase("semantic-validator"))?;
+    validate_optimized_hir_slice(&resolved, OptimizationLevel::O0)
+        .map_err(|d| d.with_phase("hir-validator"))?;
+    let lowered_module = lowered::lower_program(&resolved).map_err(|d| d.with_phase("lowering"))?;
 
     let mut statements = lowered_module.top_level_statements;
     for export in &body.module_exports {
@@ -1128,6 +1199,7 @@ fn lower_source_as_module_body(
                     export.name, export.lowered_statement_index
                 ),
                 span: None,
+                phase: None,
             })?;
         match stmt {
             lowered::LoweredStmt::Let(_, expr, _) => {
@@ -1145,6 +1217,8 @@ fn lower_source_as_module_body(
                         export.name
                     ),
                     span: None,
+
+                    phase: None,
                 });
             }
         }
@@ -1169,6 +1243,8 @@ fn namespace_only_section_diagnostic(specifier: &str, span: Span) -> Diagnostic 
             "multi-section section `{specifier}` contains namespace-only declarations; namespace lowering is not implemented"
         ),
         span: Some(span),
+
+        phase: None,
     }
 }
 
@@ -1239,6 +1315,8 @@ fn lower_static_module_body_for_build(
         code: DiagCode::BackendIo,
         message: format!("failed to read {}: {error}", path.display()),
         span: None,
+
+        phase: None,
     })?;
     validate_type_reference_directives(&source)?;
     let program = parse_program(&source)?;
@@ -1266,6 +1344,7 @@ fn lower_static_module_body_for_build(
                     export.name, export.lowered_statement_index
                 ),
                 span: None,
+                phase: None,
             })?;
         match stmt {
             lowered::LoweredStmt::Let(_, expr, _) => {
@@ -1283,6 +1362,8 @@ fn lower_static_module_body_for_build(
                         export.name
                     ),
                     span: None,
+
+                    phase: None,
                 });
             }
         }
@@ -1324,6 +1405,8 @@ fn rewrite_static_module_body_for_build(
                         code: DiagCode::UnsupportedSyntax,
                         message: format!("issue-5005: duplicate export name `{name}`"),
                         span: Some(specifier.local_span),
+
+                        phase: None,
                     });
                 }
                 // Handle export function f() { ... } -> let f = (function f() { ... })
@@ -1332,6 +1415,7 @@ fn rewrite_static_module_body_for_build(
                     params,
                     body,
                     is_generator: false,
+                    is_async: false,
                     is_ambient: false,
                     overload_signature: false,
                     span,
@@ -1407,7 +1491,8 @@ fn rewrite_static_module_body_for_build(
                                 "issue-5005: dependency module declaration export uses a form outside the current static export slice"
                                     .to_owned(),
                             span: Some(declaration.span()),
-                        });
+
+                            phase: None,});
                     }
                     lowered_statement_index += 1;
                 }
@@ -1422,6 +1507,8 @@ fn rewrite_static_module_body_for_build(
                                 specifier.exported
                             ),
                             span: Some(specifier.span),
+
+                            phase: None,
                         });
                     }
                     let local_index = local_name_to_index
@@ -1434,7 +1521,8 @@ fn rewrite_static_module_body_for_build(
                                 specifier.exported, specifier.local
                             ),
                             span: Some(specifier.span),
-                        })?;
+
+                            phase: None,})?;
                     module_exports.push(ModuleExport {
                         name: specifier.exported.clone(),
                         lowered_statement_index: local_index,
@@ -1447,6 +1535,8 @@ fn rewrite_static_module_body_for_build(
                         code: DiagCode::UnsupportedSyntax,
                         message: "issue-5005: duplicate export name `default`".to_owned(),
                         span: Some(*span),
+
+                        phase: None,
                     });
                 }
                 let index = lowered_statement_index;
@@ -1474,6 +1564,8 @@ fn rewrite_static_module_body_for_build(
                             code: DiagCode::UnsupportedSyntax,
                             message: format!("issue-5005: duplicate export name `{export_name}`"),
                             span: Some(source.span),
+
+                            phase: None,
                         });
                     }
                     let local_name = format!("__ts2wasm_re_{export_name}");
@@ -1506,6 +1598,8 @@ fn rewrite_static_module_body_for_build(
                                 specifier.exported
                             ),
                             span: Some(specifier.span),
+
+                            phase: None,
                         });
                     }
                     let expr = exports.get(&specifier.imported).ok_or_else(|| Diagnostic {
@@ -1515,6 +1609,8 @@ fn rewrite_static_module_body_for_build(
                             source.value, specifier.imported
                         ),
                         span: Some(specifier.imported_span),
+
+                        phase: None,
                     })?;
                     let local_name = format!("__ts2wasm_re_{}", specifier.exported);
                     rewritten.push(Stmt::Let {
@@ -1549,6 +1645,8 @@ fn rewrite_static_module_body_for_build(
                             namespace.exported
                         ),
                         span: Some(namespace.span),
+
+                        phase: None,
                     });
                 }
                 let local_name = format!("__ts2wasm_ns_{}", namespace.exported);
@@ -1604,6 +1702,8 @@ fn collect_literal_named_exports(path: &Path) -> Result<BTreeMap<String, Expr>, 
         code: DiagCode::BackendIo,
         message: format!("failed to read {}: {error}", path.display()),
         span: None,
+
+        phase: None,
     })?;
     validate_type_reference_directives(&source)?;
     let program = parse_program(&source)?;
@@ -1628,6 +1728,8 @@ fn collect_literal_named_exports(path: &Path) -> Result<BTreeMap<String, Expr>, 
                             path.display()
                         ),
                         span: Some(specifier.local_span),
+
+                        phase: None,
                     });
                 }
                 exports.insert(specifier.exported.clone(), expr.clone());
@@ -1642,6 +1744,8 @@ fn collect_literal_named_exports(path: &Path) -> Result<BTreeMap<String, Expr>, 
                         path.display()
                     ),
                     span: None,
+
+                    phase: None,
                 });
             }
             exports.insert("default".to_owned(), expr.clone());
@@ -1658,7 +1762,8 @@ fn collect_literal_named_exports(path: &Path) -> Result<BTreeMap<String, Expr>, 
                         specifier.exported, specifier.local
                     ),
                     span: Some(specifier.span),
-                })?;
+
+                    phase: None,})?;
                 exports.insert(specifier.exported.clone(), expr.clone());
             }
         } else if let Stmt::ExportAllFrom { source, .. } = stmt {
@@ -1684,6 +1789,8 @@ fn collect_literal_named_exports(path: &Path) -> Result<BTreeMap<String, Expr>, 
                             source.value, specifier.imported
                         ),
                         span: Some(specifier.imported_span),
+
+                        phase: None,
                     })?;
                 exports.insert(specifier.exported.clone(), expr.clone());
             }
@@ -1720,6 +1827,8 @@ fn resolve_static_re_export_source_path(
                 "issue-232: unsupported non-local module specifier `{specifier}` in static re-export"
             ),
             span: Some(span),
+
+            phase: None,
         });
     }
 
@@ -1740,6 +1849,8 @@ fn resolve_static_re_export_source_path(
                 code: DiagCode::BackendIo,
                 message: format!("failed to canonicalize {}: {error}", candidate.display()),
                 span: Some(span),
+
+                phase: None,
             });
         }
     }
@@ -1756,6 +1867,8 @@ fn resolve_static_re_export_source_path(
                 .join(", ")
         ),
         span: Some(span),
+
+        phase: None,
     })
 }
 
@@ -1802,6 +1915,8 @@ fn validate_ast(program: &[Stmt]) -> Result<(), Diagnostic> {
                     code: DiagCode::InvalidTopLevelReturn,
                     message: "top-level return is not supported".to_owned(),
                     span: Some(*span),
+
+                    phase: None,
                 });
             }
             Stmt::Function {
@@ -1814,6 +1929,8 @@ fn validate_ast(program: &[Stmt]) -> Result<(), Diagnostic> {
                             "top-level function `{name}` conflicts with existing lexical binding (TS2300: duplicate identifier)"
                         ),
                         span: Some(*span),
+
+                        phase: None,
                     });
                 }
                 // Bodyless function declarations are TypeScript overload signatures.
@@ -1828,6 +1945,8 @@ fn validate_ast(program: &[Stmt]) -> Result<(), Diagnostic> {
                             "duplicate function definition: `{name}` (TS2300: duplicate identifier)"
                         ),
                         span: Some(*span),
+
+                        phase: None,
                     });
                 } else {
                     top_functions.insert(name.clone(), ());
@@ -1859,6 +1978,8 @@ fn validate_class_body(statements: &[Stmt]) -> Result<(), Diagnostic> {
                     code: DiagCode::UnsupportedSyntax,
                     message: "class body currently supports methods only".to_owned(),
                     span: Some(stmt.span()),
+
+                    phase: None,
                 });
             }
         }
@@ -1888,6 +2009,8 @@ fn validate_stmt(
                             "top-level lexical binding `{name}` conflicts with function declaration (TS2300: duplicate identifier)"
                         ),
                         span: Some(*span),
+
+                        phase: None,
                     });
                 }
                 if scope.contains_key(name) {
@@ -1900,6 +2023,8 @@ fn validate_stmt(
                             "duplicate identifier: `{name}` (TS2300: duplicate identifier)"
                         ),
                         span: Some(*span),
+
+                        phase: None,
                     });
                 }
                 scope.insert(name.clone(), ());
@@ -1910,6 +2035,8 @@ fn validate_stmt(
             code: DiagCode::InvalidTopLevelReturn,
             message: "top-level return is not supported".to_owned(),
             span: Some(*span),
+
+            phase: None,
         }),
         Stmt::Return { .. } => Ok(()),
         Stmt::If {
@@ -1995,6 +2122,8 @@ impl TempWatPath {
             code: DiagCode::BackendIo,
             message: format!("failed to write temporary wat {}: {error}", path.display()),
             span: None,
+
+            phase: None,
         })?;
         Ok(Self { path })
     }
@@ -2034,6 +2163,8 @@ fn write_wasm_from_wat(wat: &str, output: &Path) -> Result<(), Diagnostic> {
             code: DiagCode::BackendIo,
             message: format!("failed to execute wat2wasm: {error}"),
             span: None,
+
+            phase: None,
         })?;
 
     if command_output.status.success() {
@@ -2048,6 +2179,8 @@ fn write_wasm_from_wat(wat: &str, output: &Path) -> Result<(), Diagnostic> {
                 truncate_wat_for_error(wat, 2000),
             ),
             span: None,
+
+            phase: None,
         })
     }
 }

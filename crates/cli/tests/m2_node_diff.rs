@@ -1150,6 +1150,51 @@ fn object_has_own_property_matches_node() {
     assert_fixture_matches_node("fixtures/builtins-and-io/object-has-own-property.ts");
 }
 
+// Object semantics kernel fixtures (items 175-181)
+#[test]
+fn writable_false_enforcement_matches_node_output() {
+    assert_fixture_matches_node("fixtures/object-semantics-kernel/writable-false-enforcement.ts");
+}
+
+#[test]
+fn seal_freeze_descriptor_matches_node_output() {
+    assert_fixture_matches_node("fixtures/object-semantics-kernel/seal-freeze-descriptor.ts");
+}
+
+#[test]
+fn descriptor_combinations_matches_node_output() {
+    assert_fixture_matches_node("fixtures/object-semantics-kernel/descriptor-combinations.ts");
+}
+
+#[test]
+fn enumerable_filtering_matches_node_output() {
+    assert_fixture_matches_node("fixtures/object-semantics-kernel/enumerable-filtering.ts");
+}
+
+#[test]
+fn prototype_descriptor_inheritance_matches_node_output() {
+    assert_fixture_matches_node(
+        "fixtures/object-semantics-kernel/prototype-descriptor-inheritance.ts",
+    );
+}
+
+#[test]
+fn configurable_false_enforcement_matches_node_output() {
+    assert_fixture_matches_node(
+        "fixtures/object-semantics-kernel/configurable-false-enforcement.ts",
+    );
+}
+
+#[test]
+fn define_property_edge_cases_matches_node_output() {
+    assert_fixture_matches_node("fixtures/object-semantics-kernel/define-property-edge-cases.ts");
+}
+
+#[test]
+fn json_parse_latin1_unicode_escape_matches_node_output() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/json-parse-latin1-unicode-escape.ts");
+}
+
 #[test]
 fn function_constructor_call_fixture_reports_issue_062() {
     assert_build_fails_with_issue_062_function_constructor(
@@ -1496,6 +1541,26 @@ fn assert_stdin_fixture_node_succeeds_and_iwasm_traps(fixture: &str, stdin_input
         output_text.contains("unreachable") || output_text.contains("trap"),
         "expected trap for {fixture}, got:\n{output_text}"
     );
+}
+
+#[test]
+fn promise_basic_matches_node_output() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/promise-basic.ts");
+}
+
+#[test]
+fn array_sort_comparator_matches_node_output() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/array-sort-comparator.ts");
+}
+
+#[test]
+fn promise_static_methods_matches_node_output() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/promise-static-methods.ts");
+}
+
+#[test]
+fn iterator_protocol_matches_node_output() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/iterator-protocol.ts");
 }
 
 fn is_iwasm_stdin_fd_read_blocked(stdout: &[u8], stderrs: &[u8], fixture: &str) -> bool {

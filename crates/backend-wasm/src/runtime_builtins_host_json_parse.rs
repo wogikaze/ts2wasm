@@ -217,6 +217,7 @@ impl WatEmitter<'_> {
     (local.get $code))
 
   (func $json_utf8_len (param $code i32) (result i32)
+    ;; Latin-1 range (0x00-0x7F) valid UTF-8 single byte; 0x80-0xFF need 2-byte
     (if (i32.lt_u (local.get $code) (i32.const 128))
       (then (return (i32.const {one}))))
     (if (i32.lt_u (local.get $code) (i32.const 2048))
@@ -226,6 +227,7 @@ impl WatEmitter<'_> {
     (i32.const 4))
 
   (func $json_write_utf8_at (param $ptr i32) (param $code i32) (result i32)
+    ;; Latin-1 range (0x00-0x7F) valid UTF-8 single byte; 0x80-0xFF need 2-byte
     (if (i32.lt_u (local.get $code) (i32.const 128))
       (then
         (i32.store8 (local.get $ptr) (local.get $code))

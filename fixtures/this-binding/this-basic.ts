@@ -1,10 +1,5 @@
 // Basic this binding test
-// Note: Proper this binding requires method call implementation (issue 016)
-// This fixture tests that 'this' parses and compiles without errors
+// Tests global this and globalThis resolution in module context
 
-function testThis() {
-    const x = this;
-    return x;
-}
-
-testThis();
+console.log(typeof this);
+console.log(typeof globalThis);

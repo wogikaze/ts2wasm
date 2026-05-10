@@ -461,5 +461,7 @@ fn issue_251(detail: &str, span: Option<Span>) -> Diagnostic {
         code: DiagCode::UnsupportedSyntax,
         message: format!("issue-251: {detail}"),
         span,
+
+        phase: None,
     }
 }

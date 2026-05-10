@@ -56,7 +56,8 @@ impl Parser {
                 code: DiagCode::UnsupportedSyntax,
                 message: format!("expected identifier, got {other:?}"),
                 span: self.peek_span(),
-            }),
+
+                phase: None,}),
         }
     }
 
@@ -77,7 +78,8 @@ impl Parser {
                 code: DiagCode::UnsupportedSyntax,
                 message: format!("expected identifier or string literal, got {other:?}"),
                 span: self.peek_span(),
-            }),
+
+                phase: None,}),
         }
     }
 
@@ -138,7 +140,8 @@ impl Parser {
                             code: DiagCode::UnsupportedSyntax,
                             message: format!("expected property name, got {kind:?}"),
                             span: self.peek_span(),
-                        });
+
+                            phase: None,});
                     }
                 };
                 Ok((name.to_string(), span))
@@ -147,7 +150,8 @@ impl Parser {
                 code: DiagCode::UnsupportedSyntax,
                 message: "expected property name, got end of input".to_owned(),
                 span: None,
-            }),
+
+                phase: None,}),
         }
     }
 
@@ -161,7 +165,8 @@ impl Parser {
                 code: DiagCode::UnsupportedSyntax,
                 message: format!("issue-248: expected private identifier, got {other:?}"),
                 span: self.peek_span(),
-            }),
+
+                phase: None,}),
         }
     }
 
@@ -175,7 +180,8 @@ impl Parser {
                 code: DiagCode::UnsupportedSyntax,
                 message: format!("expected `{keyword}`, got {:?}", self.peek()),
                 span: self.peek_span(),
-            })
+
+                phase: None,})
         }
     }
 
@@ -210,14 +216,16 @@ impl Parser {
                         code: DiagCode::UnsupportedSyntax,
                         message: format!("expected member property name, got {kind:?}"),
                         span: self.peek_span(),
-                    })
+
+                        phase: None,})
                 }
             }
             None => Err(Diagnostic {
                 code: DiagCode::UnsupportedSyntax,
                 message: "expected member property name, got None".to_owned(),
                 span: self.peek_span(),
-            }),
+
+                phase: None,}),
         }
     }
 
@@ -246,7 +254,8 @@ impl Parser {
                     self.peek()
                 ),
                 span: self.peek_span(),
-            }),
+
+                phase: None,}),
             Some(token) if keyword_to_property_name(token).is_some() => {
                 let key = keyword_to_property_name(token).unwrap().to_owned();
                 self.advance();
@@ -258,7 +267,8 @@ impl Parser {
                     "expected identifier or string literal as object key, got {other:?}"
                 ),
                 span: self.peek_span(),
-            }),
+
+                phase: None,}),
         }
     }
 
@@ -276,7 +286,8 @@ impl Parser {
                     start: start.start,
                     end: end.end,
                 }),
-            });
+
+                phase: None,});
         }
         let (object, _) = self.expect_ident()?;
         self.expect(TokenKind::Dot)?;
@@ -295,7 +306,8 @@ impl Parser {
                     start: start.start,
                     end: end.end,
                 }),
-            })
+
+                phase: None,})
         }
     }
 
@@ -307,7 +319,8 @@ impl Parser {
                 code: DiagCode::UnsupportedSyntax,
                 message: format!("expected {kind:?}, got {:?}", self.peek()),
                 span: self.peek_span(),
-            })
+
+                phase: None,})
         }
     }
 
@@ -375,7 +388,8 @@ impl Parser {
                 code: DiagCode::UnsupportedSyntax,
                 message: "unterminated TypeScript type annotation".to_owned(),
                 span: self.prev_span(),
-            })
+
+                phase: None,})
         }
     }
 
@@ -455,7 +469,8 @@ impl Parser {
                 code: DiagCode::UnsupportedSyntax,
                 message: "unterminated TypeScript type annotation".to_owned(),
                 span: self.prev_span(),
-            })
+
+                phase: None,})
         }
     }
 
@@ -479,7 +494,8 @@ impl Parser {
             code: DiagCode::UnsupportedSyntax,
             message: "unterminated TypeScript index signature".to_owned(),
             span: self.prev_span(),
-        })
+
+            phase: None,})
     }
 
     fn consume(&mut self, kind: TokenKind) -> bool {

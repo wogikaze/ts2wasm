@@ -1,7 +1,3 @@
-// Module augmentation — should produce unsupported diagnostic
-declare module "some-library" {
-  export interface ExtraAPI {
-    doSomething(): void;
-  }
-}
+// Build-smoke test for module augmentation unsupported diagnostic
+// Note: the unsupported diagnostic is tested in core-semantics/module-augmentation-unsupported.ts
 console.log("module augmentation");

@@ -13,6 +13,7 @@ import os
 import re
 import json
 import shutil
+import yaml
 import subprocess
 import sys
 from pathlib import Path
@@ -23,7 +24,7 @@ from typing import Dict, List, Any
 PROJECT_ROOT = Path(__file__).parent.parent
 SITE_DOCS = PROJECT_ROOT / "site" / "docs"
 DOCS_DIR = PROJECT_ROOT / "docs"
-ISSUES_DIR = PROJECT_ROOT / "issues"
+ISSUES_DIR = PROJECT_ROOT / "issues"  # kept for backward compat, content now from TRACKING.yaml
 FIXTURES_DIR = PROJECT_ROOT / "fixtures"
 COVERAGE_DIR = PROJECT_ROOT / "artifacts" / "coverage"
 REFERENCE_DIR = PROJECT_ROOT / "reference"
@@ -96,54 +97,63 @@ def extract_title(file_path: Path) -> str:
     return file_path.stem
 
 def process_issues():
-    """Process issues and generate issue listing pages."""
+    """Generate issue pages from TRACKING.yaml."""
     issues_output = SITE_DOCS / "issues"
     ensure_dir(issues_output / "index.md")
     
-    # Parse issue index
-    index_file = ISSUES_DIR / "index.md"
-    index_content = index_file.read_text(encoding="utf-8")
+    tracking_file = PROJECT_ROOT / "TRACKING.yaml"
+    if not tracking_file.exists():
+        print("  TRACKING.yaml not found, skipping issues")
+        return
     
-    # Generate main issues page
+    with open(tracking_file) as f:
+        tracking = yaml.safe_load(f)
+    
+    open_items = tracking.get("open", []) or []
+    active_items = tracking.get("active", []) or []
+    done_items = tracking.get("done", []) or []
+    
     main_content = """# Issues
 
 This section tracks all project issues and their status.
 
+Tracking source: `TRACKING.yaml`
+
 ## Summary
 
-"""
-    
-    # Extract summary table
-    summary_match = re.search(r'<!-- generated:summary:start -->(.*?)<!-- generated:summary:end -->', 
-                             index_content, re.DOTALL)
-    if summary_match:
-        main_content += summary_match.group(1) + "\n"
-    
-    # Extract ready queue
-    ready_match = re.search(r'<!-- generated:ready:start -->(.*?)<!-- generated:ready:end -->', 
-                           index_content, re.DOTALL)
-    if ready_match:
-        main_content += "\n## Ready Queue\n\n" + ready_match.group(1) + "\n"
+| Status | Count |
+|--------|------|
+| Open | {} |
+| Active | {} |
+| Done | {} |
+| **Total** | **{}** |
+
+""".format(len(open_items), len(active_items), len(done_items),
+           len(open_items) + len(active_items) + len(done_items))
     
     (issues_output / "index.md").write_text(main_content, encoding="utf-8")
     
-    # Generate ready queue page
-    if ready_match:
-        ready_content = """# Ready Queue
-
-Issues ready for implementation.
-
-"""
-        ready_content += ready_match.group(1) + "\n"
-        (issues_output / "ready.md").write_text(ready_content, encoding="utf-8")
+    # Generate open items page
+    open_content = "# Open Items\n\n"
+    for item in open_items:
+        open_content += "- **#{}**: {} [P{}, {}] — {}\n".format(
+            item["id"], item["title"], item.get("priority", "?"), item["area"], item["status"])
+    (issues_output / "open.md").write_text(open_content, encoding="utf-8")
+    
+    # Generate active items page
+    active_content = "# Active Items\n\n"
+    for item in active_items:
+        active_content += "- **#{}**: {} [P{}, {}] — {}\n".format(
+            item["id"], item["title"], item.get("priority", "?"), item["area"], item["status"])
+        if "plan" in item:
+            active_content += "  - Goal: {}\n".format(item["plan"].get("goal", ""))
+    (issues_output / "active.md").write_text(active_content, encoding="utf-8")
     
     # Generate done page
-    done_content = """# Done Issues
-
-Completed issues.
-
-See [issues/index.md](./index.md) for the full list.
-"""
+    done_content = "# Done Items\n\n"
+    for item in done_items:
+        done_content += "- **#{}**: {} [P{}] — {}\n".format(
+            item["id"], item["title"], item.get("priority", "?"), item.get("closed", ""))
     (issues_output / "done.md").write_text(done_content, encoding="utf-8")
 
 def process_fixtures():
@@ -312,7 +322,7 @@ TypeScript to WebAssembly compiler - Documentation and Test Explorer
 ## Quick Links
 
 - [Documentation](./docs/) - Design documentation
-- [Issues](./issues/) - Issue tracker and ready queue
+- [Issues](./issues/) - Issue tracker (from TRACKING.yaml)
 - [Fixtures](./fixtures/) - Test fixtures browser
 - [Coverage](./coverage/) - Test coverage results
 - [Coverage dashboard](/dashboard/) - Interactive dashboard UI
@@ -323,11 +333,16 @@ TypeScript to WebAssembly compiler - Documentation and Test Explorer
     
     # Add statistics
     doc_count = len(list(DOCS_DIR.glob("*.md")))
-    issue_count = len(list(ISSUES_DIR.glob("open/*.md"))) + len(list(ISSUES_DIR.glob("done/*.md")))
     fixture_count = len(list(FIXTURES_DIR.rglob("*.ts"))) + len(list(FIXTURES_DIR.rglob("*.js")))
+    tracking_file = PROJECT_ROOT / "TRACKING.yaml"
+    tracking_count = 0
+    if tracking_file.exists():
+        with open(tracking_file) as f:
+            tracking = yaml.safe_load(f)
+            tracking_count = len(tracking.get("open", []) or []) + len(tracking.get("active", []) or []) + len(tracking.get("done", []) or [])
     
     home_content += f"- **Documentation Files:** {doc_count}\n"
-    home_content += f"- **Total Issues:** {issue_count}\n"
+    home_content += f"- **Total Items (TRACKING.yaml):** {tracking_count}\n"
     home_content += f"- **Test Fixtures:** {fixture_count}\n"
     
     # Add recent activity

@@ -14,7 +14,8 @@ impl<'a> Lexer<'a> {
                         start,
                         end: self.cursor,
                     }),
-                });
+
+                    phase: None,});
             }
             ident.push(ch);
             escaped = true;
@@ -41,7 +42,8 @@ impl<'a> Lexer<'a> {
                                 start: escape_start,
                                 end: self.cursor,
                             }),
-                        });
+
+                            phase: None,});
                     }
                     ident.push(ch);
                     escaped = true;
@@ -127,7 +129,8 @@ impl<'a> Lexer<'a> {
                     start: escape_start,
                     end: self.cursor,
                 }),
-            });
+
+                phase: None,});
         }
 
         if self.peek_char() == Some('{') {
@@ -143,7 +146,8 @@ impl<'a> Lexer<'a> {
                             start: identifier_start,
                             end: self.cursor,
                         }),
-                    });
+
+                        phase: None,});
                 };
                 if ch == '}' {
                     if digit_count == 0 {
@@ -154,7 +158,8 @@ impl<'a> Lexer<'a> {
                                 start: escape_start,
                                 end: self.cursor,
                             }),
-                        });
+
+                            phase: None,});
                     }
                     break;
                 }
@@ -166,7 +171,8 @@ impl<'a> Lexer<'a> {
                             start: escape_start,
                             end: self.cursor,
                         }),
-                    });
+
+                        phase: None,});
                 };
                 digit_count += 1;
                 value = value.saturating_mul(16).saturating_add(digit);
@@ -178,7 +184,8 @@ impl<'a> Lexer<'a> {
                     start: escape_start,
                     end: self.cursor,
                 }),
-            });
+
+                phase: None,});
         }
 
         let mut value = 0u32;
@@ -191,7 +198,8 @@ impl<'a> Lexer<'a> {
                         start: identifier_start,
                         end: self.cursor,
                     }),
-                });
+
+                    phase: None,});
             };
             let Some(digit) = ch.to_digit(16) else {
                 return Err(Diagnostic {
@@ -201,7 +209,8 @@ impl<'a> Lexer<'a> {
                         start: escape_start,
                         end: self.cursor,
                     }),
-                });
+
+                    phase: None,});
             };
             value = (value << 4) | digit;
         }
@@ -213,7 +222,8 @@ impl<'a> Lexer<'a> {
                 start: escape_start,
                 end: self.cursor,
             }),
-        })
+
+            phase: None,})
     }
 
     fn private_identifier(&mut self, start: usize) -> Result<SpannedToken, Diagnostic> {
@@ -226,7 +236,8 @@ impl<'a> Lexer<'a> {
                     start,
                     end: self.cursor,
                 }),
-            });
+
+                phase: None,});
         }
 
         let name_start = self.cursor;

@@ -171,6 +171,8 @@ pub(crate) fn validate_init_order(graph: &ModuleGraph) -> Result<(), Diagnostic>
                     "issue-5038: init step references module id {mid} but graph has {n} modules"
                 ),
                 span: None,
+
+                phase: None,
             });
         }
         if seen[mid] {
@@ -181,6 +183,8 @@ pub(crate) fn validate_init_order(graph: &ModuleGraph) -> Result<(), Diagnostic>
                     graph.modules[mid].path.display()
                 ),
                 span: None,
+
+                phase: None,
             });
         }
         seen[mid] = true;
@@ -197,6 +201,8 @@ pub(crate) fn validate_init_order(graph: &ModuleGraph) -> Result<(), Diagnostic>
                     module.path.display()
                 ),
                 span: None,
+
+                phase: None,
             });
         }
     }
@@ -217,6 +223,8 @@ pub(crate) fn validate_init_order(graph: &ModuleGraph) -> Result<(), Diagnostic>
                         n - 1,
                     ),
                     span: None,
+
+                    phase: None,
                 });
             }
         }
@@ -235,6 +243,8 @@ pub(crate) fn validate_init_order(graph: &ModuleGraph) -> Result<(), Diagnostic>
                         graph.modules[dep.resolved_module_id].path.display()
                     ),
                     span: None,
+
+                    phase: None,
                 });
             }
         }
@@ -295,6 +305,8 @@ impl ModuleGraphBuilder {
                         resolved_path.display()
                     ),
                     span: Some(specifier.span),
+
+                    phase: None,
                 });
             }
 
@@ -307,6 +319,8 @@ impl ModuleGraphBuilder {
                     code: DiagCode::BackendIo,
                     message: format!("failed to read {}: {error}", resolved_path.display()),
                     span: None,
+
+                    phase: None,
                 })?;
                 // For .d.ts files, add implicit declare to exported const without initializers
                 let resolved_source = if resolved_path.to_string_lossy().ends_with(".d.ts") {
@@ -522,6 +536,8 @@ fn resolve_local_specifier(
         code: DiagCode::UnsupportedModule,
         message: error_msg,
         span: Some(specifier.span),
+
+        phase: None,
     })
 }
 
@@ -545,6 +561,8 @@ fn module_resolution_candidates(
                 specifier.value
             ),
             span: Some(specifier.span),
+
+            phase: None,
         }),
         None => Ok(vec![
             raw_candidate.with_extension("ts"),
@@ -562,6 +580,8 @@ fn canonicalize_existing_path(path: &Path) -> Result<PathBuf, Diagnostic> {
         code: DiagCode::BackendIo,
         message: format!("failed to resolve {}: {error}", path.display()),
         span: None,
+
+        phase: None,
     })
 }
 

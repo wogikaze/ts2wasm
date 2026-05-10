@@ -99,6 +99,8 @@ struct ServerResponse {
     #[serde(skip_serializing_if = "Option::is_none")]
     code: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
+    phase: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     message: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     wasm_path: Option<String>,
@@ -329,6 +331,8 @@ where
                                     code: ts2wasm_frontend::DiagCode::InvariantViolation,
                                     message: msg,
                                     span: None,
+
+                                    phase: None,
                                 }),
                             )
                         }
@@ -369,6 +373,8 @@ where
                         format!("internal error: item {idx} was skipped")
                     },
                     span: None,
+
+                    phase: None,
                 }),
             ));
         }
@@ -386,6 +392,7 @@ fn make_response(id: i64, result: Result<Option<PathBuf>, Diagnostic>) -> Server
             id,
             status: "ok".into(),
             code: None,
+            phase: None,
             message: None,
             wasm_path: wasm_path.map(|path| path.display().to_string()),
         },
@@ -393,6 +400,7 @@ fn make_response(id: i64, result: Result<Option<PathBuf>, Diagnostic>) -> Server
             id,
             status: "error".into(),
             code: Some(format!("{:?}", diag.code)),
+            phase: diag.phase.map(|p| p.to_string()),
             message: Some(diag.message),
             wasm_path: None,
         },
@@ -429,6 +437,8 @@ fn compile_source_with_emit(
         code: DiagCode::BackendIo,
         message: format!("failed to read {}: {error}", path.display()),
         span: None,
+
+        phase: None,
     })?;
     compile_source_text_with_emit(&source, path, tmpdir, id, emit_mode)
 }
@@ -449,17 +459,20 @@ fn compile_source_text_with_emit(
         code: ts2wasm_frontend::DiagCode::BackendIo,
         message: format!("failed to create virtual entry {}: {error}", path.display()),
         span: None,
+        phase: None,
     })?;
 
     let lowered = lower_source_text(path, source)?;
-    ensure_runtime_feature_gates(&lowered)?;
+    ensure_runtime_feature_gates(&lowered).map_err(|d| d.with_phase("runtime-gate"))?;
 
     match emit_mode {
         EmitMode::Check => Ok(None),
         EmitMode::Wasm => {
             let output = tmpdir.join(format!("{}.wasm", id));
             ts2wasm_backend_wasm::emit_wat(&lowered)
-                .and_then(|wat| write_wasm_from_wat(&wat, &output))?;
+                .map_err(|d| d.with_phase("backend"))
+                .and_then(|wat| write_wasm_from_wat(&wat, &output))
+                .map_err(|d| d.with_phase("backend"))?;
             Ok(Some(output))
         }
     }
@@ -468,25 +481,37 @@ fn compile_source_text_with_emit(
 fn lower_source_text(path: &Path, source: &str) -> Result<LoweredProgram, Diagnostic> {
     use ts2wasm_frontend::DiagCode;
 
-    let tokens = Lexer::new(source).tokenize()?;
-    let program = Parser::new(tokens, source).parse_program()?;
-    validate_ast(&program)?;
-    let module_graph = module_graph::build_entry_module_graph(path, &program)?;
+    let tokens = Lexer::new(source)
+        .tokenize()
+        .map_err(|d| d.with_phase("lexer"))?;
+    let program = Parser::new(tokens, source)
+        .parse_program()
+        .map_err(|d| d.with_phase("parser"))?;
+    validate_ast(&program).map_err(|d| d.with_phase("ast-validator"))?;
+    let module_graph = module_graph::build_entry_module_graph(path, &program)
+        .map_err(|d| d.with_phase("module-resolver"))?;
     // Surface cycle diagnostics: report first cycle diagnostic as error.
     if let Some(cycle_diag) = module_graph.cycle_diagnostics().first() {
-        return Err(cycle_diag.clone());
+        return Err(cycle_diag.clone().with_phase("module-resolver"));
     }
     // Validate dependency-first initialization order.
-    module_graph::validate_init_order(&module_graph)?;
+    module_graph::validate_init_order(&module_graph)
+        .map_err(|d| d.with_phase("module-resolver"))?;
     let static_module_binding =
-        lower_static_named_import_bindings_for_build(&program, &module_graph)?;
-    let name_resolved = name_resolver::resolve_names(&static_module_binding.rewritten_program)?;
-    let resolved = builtin_resolver::resolve_builtins(&name_resolved)?;
-    super::validate_typescript_semantics_for_path(path, &resolved)?;
-    validate_optimized_hir_slice(&resolved, OptimizationLevel::O0)?;
-    let lowered = lowered::lower_program(&resolved)?;
+        lower_static_named_import_bindings_for_build(&program, &module_graph)
+            .map_err(|d| d.with_phase("module-resolver"))?;
+    let name_resolved = name_resolver::resolve_names(&static_module_binding.rewritten_program)
+        .map_err(|d| d.with_phase("name-resolver"))?;
+    let resolved = builtin_resolver::resolve_builtins(&name_resolved)
+        .map_err(|d| d.with_phase("builtin-resolver"))?;
+    super::validate_typescript_semantics_for_path(path, &resolved)
+        .map_err(|d| d.with_phase("semantic-validator"))?;
+    validate_optimized_hir_slice(&resolved, OptimizationLevel::O0)
+        .map_err(|d| d.with_phase("hir-validator"))?;
+    let lowered = lowered::lower_program(&resolved).map_err(|d| d.with_phase("lowering"))?;
     let lowered =
-        lower_static_named_import_reads_for_build(lowered, &static_module_binding.named_imports)?;
+        lower_static_named_import_reads_for_build(lowered, &static_module_binding.named_imports)
+            .map_err(|d| d.with_phase("module-resolver"))?;
     let lowered = populate_static_module_exports_for_build(
         lowered,
         &module_graph,
@@ -498,6 +523,7 @@ fn lower_source_text(path: &Path, source: &str) -> Result<LoweredProgram, Diagno
             code: DiagCode::InvariantViolation,
             message: "validate_lowered failed with empty diagnostic list".to_owned(),
             span: None,
+            phase: None,
         })
     })?;
 

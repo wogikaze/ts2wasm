@@ -51,3 +51,4 @@ _worktrees/
 site/node_modules
 site/docs
 .reference-coverage-delta.json
+/.recursive/config/recursive-router-discovered.json

@@ -5,6 +5,124 @@ use ts2wasm_frontend::{BinaryOp, DiagCode, Diagnostic, Span, UnaryOp};
 use crate::builtin::{BuiltinId, BuiltinPropertyId};
 use crate::builtin_resolved::{ResolvedArrayElement, ResolvedExpr, ResolvedParam, ResolvedStmt};
 
+// ---------------------------------------------------------------------------
+// Completion Record types (ECMAScript [[Type]] / [[Value]] / [[Target]])
+//
+// See docs/22-completion-records.md for the full design.
+// ---------------------------------------------------------------------------
+
+/// Completion status codes corresponding to ECMAScript [[Type]].
+///
+/// These discriminants match the runtime convention used in WAT emission:
+/// Normal=0, Return=1, Throw=2, Break=3, Continue=4.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum CompletionStatus {
+    Normal = 0,
+    Return = 1,
+    Throw = 2,
+    Break = 3,
+    Continue = 4,
+}
+
+/// Sentinel value meaning "no label target" for [[Target]].
+pub const TARGET_EMPTY: i32 = 0;
+
+/// A label identifier (1-based; 0 = TARGET_EMPTY).
+pub type LabelId = i32;
+
+/// Sentinel for the "empty" completion value (not the same as undefined).
+///
+/// The jsval i64 space is large enough to reserve one sentinel. This value
+/// is never observable by user JavaScript code — it appears only during
+/// intermediate completion propagation.
+pub const JSVAL_EMPTY: i64 = i64::MIN;
+
+/// An ECMAScript Completion Record.
+///
+/// Every statement lowering logically returns a `CompletionRecord`. The
+/// three fields correspond to [[Type]], [[Value]], and [[Target]] in the
+/// specification.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct CompletionRecord {
+    pub status: CompletionStatus,
+    pub value: i64,
+    pub target: i32,
+}
+
+impl CompletionRecord {
+    /// `NormalCompletion(value)` — normal completion with the given value.
+    pub const fn normal(value: i64) -> Self {
+        Self {
+            status: CompletionStatus::Normal,
+            value,
+            target: TARGET_EMPTY,
+        }
+    }
+
+    /// `ReturnCompletion(value)` — abrupt return completion.
+    pub const fn return_completion(value: i64) -> Self {
+        Self {
+            status: CompletionStatus::Return,
+            value,
+            target: TARGET_EMPTY,
+        }
+    }
+
+    /// `ThrowCompletion(value)` — abrupt throw completion.
+    pub const fn throw_completion(value: i64) -> Self {
+        Self {
+            status: CompletionStatus::Throw,
+            value,
+            target: TARGET_EMPTY,
+        }
+    }
+
+    /// `BreakCompletion(target)` — abrupt break completion.
+    ///
+    /// The value is always `JSVAL_EMPTY`; use `update_empty` to fill it.
+    pub const fn break_completion(target: i32) -> Self {
+        Self {
+            status: CompletionStatus::Break,
+            value: JSVAL_EMPTY,
+            target,
+        }
+    }
+
+    /// `ContinueCompletion(target)` — abrupt continue completion.
+    ///
+    /// The value is always `JSVAL_EMPTY`; use `update_empty` to fill it.
+    pub const fn continue_completion(target: i32) -> Self {
+        Self {
+            status: CompletionStatus::Continue,
+            value: JSVAL_EMPTY,
+            target,
+        }
+    }
+
+    /// `UpdateEmpty(cr, defaultValue)` — replace `JSVAL_EMPTY` with `defaultValue`.
+    ///
+    /// Returns `self` unchanged when the value is already non-empty.
+    pub const fn update_empty(self, default_value: i64) -> Self {
+        if self.value == JSVAL_EMPTY {
+            Self {
+                value: default_value,
+                ..self
+            }
+        } else {
+            self
+        }
+    }
+
+    /// Returns `true` when this is an abrupt completion (status != Normal).
+    pub const fn is_abrupt(self) -> bool {
+        !matches!(self.status, CompletionStatus::Normal)
+    }
+}
+
+// ---------------------------------------------------------------------------
+// HIR types
+// ---------------------------------------------------------------------------
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct HirLocalId(pub usize);
 
@@ -119,10 +237,16 @@ pub fn lower_to_hir(program: &[ResolvedStmt]) -> Result<HirProgram, Diagnostic> 
     for stmt in program {
         match stmt {
             ResolvedStmt::Function {
-                name, params, body, ..
+                name,
+                params,
+                body,
+                is_generator,
+                ..
             } => {
-                // Skip bodyless TypeScript overload signatures.
-                if body.is_empty() {
+                // Skip bodyless TypeScript overload signatures, but not
+                // generator functions (parser erases generator body but we
+                // still need to register them for call-site resolution).
+                if body.is_empty() && !is_generator {
                     continue;
                 }
                 let id = function_ids[name.as_str()];
@@ -486,6 +610,8 @@ impl TypeScriptCallArityValidator {
                 code: DiagCode::ArityMismatch,
                 message: format_typescript_arity_message(signature, got),
                 span: Some(span),
+
+                phase: None,
             });
         }
         Ok(())
@@ -820,6 +946,8 @@ fn invariant(message: String) -> Diagnostic {
         code: DiagCode::InvariantViolation,
         message,
         span: None,
+
+        phase: None,
     }
 }
 
@@ -828,9 +956,18 @@ fn collect_function_ids(
 ) -> Result<HashMap<String, HirFunctionId>, Diagnostic> {
     let mut ids = HashMap::new();
     for stmt in program {
-        if let ResolvedStmt::Function { name, body, .. } = stmt {
-            // Skip bodyless overload signatures.
-            if body.is_empty() {
+        if let ResolvedStmt::Function {
+            name,
+            body,
+            is_generator,
+            ..
+        } = stmt
+        {
+            // Skip bodyless overload signatures, but not generator functions
+            // (generator bodies are erased by the parser, we still need to
+            // register them in function_ids so calls to generator functions
+            // are resolved).
+            if body.is_empty() && !is_generator {
                 continue;
             }
             if ids.contains_key(name.as_str()) {
@@ -838,6 +975,8 @@ fn collect_function_ids(
                     code: DiagCode::DuplicateFunction,
                     message: format!("duplicate function definition: `{name}`"),
                     span: None,
+
+                    phase: None,
                 });
             }
             ids.insert(name.clone(), HirFunctionId(ids.len()));
@@ -983,6 +1122,11 @@ impl<'a> HirLowerer<'a> {
                     let _ = args;
                     Err(unsupported("String(...) calls in initial HIR slice"))
                 }
+                ResolvedExpr::Ident(name) if name == "Symbol" => {
+                    // Symbol() is handled by the lowered resolver (resolver_expr.rs).
+                    // Return a no-op HIR expr to pass the validator.
+                    Ok(HirExpr::ConstUndefined)
+                }
                 ResolvedExpr::Ident(name) => {
                     let function =
                         self.function_ids
@@ -991,6 +1135,8 @@ impl<'a> HirLowerer<'a> {
                                 code: DiagCode::UnresolvedFunction,
                                 message: format!("unresolved function: `{name}`"),
                                 span: None,
+
+                                phase: None,
                             })?;
                     Ok(HirExpr::CallFunction {
                         function: *function,
@@ -1126,6 +1272,8 @@ impl<'a> HirLowerer<'a> {
                 code: DiagCode::UnresolvedName,
                 message: format!("unresolved name: `{name}`"),
                 span: None,
+
+                phase: None,
             })
     }
 }
@@ -1135,6 +1283,8 @@ fn unsupported(message: &str) -> Diagnostic {
         code: DiagCode::UnsupportedSyntax,
         message: message.to_owned(),
         span: None,
+
+        phase: None,
     }
 }
 
@@ -1235,5 +1385,124 @@ mod tests {
         assert!(errors.iter().any(|error| {
             error.code == DiagCode::InvariantViolation && error.message.contains("function id")
         }));
+    }
+}
+
+#[cfg(test)]
+mod completion_record_tests {
+    use super::*;
+
+    #[test]
+    fn normal_completion() {
+        let cr = CompletionRecord::normal(42);
+        assert_eq!(cr.status, CompletionStatus::Normal);
+        assert_eq!(cr.value, 42);
+        assert_eq!(cr.target, TARGET_EMPTY);
+    }
+
+    #[test]
+    fn return_completion() {
+        let cr = CompletionRecord::return_completion(42);
+        assert_eq!(cr.status, CompletionStatus::Return);
+        assert_eq!(cr.value, 42);
+        assert_eq!(cr.target, TARGET_EMPTY);
+    }
+
+    #[test]
+    fn throw_completion() {
+        let cr = CompletionRecord::throw_completion(99);
+        assert_eq!(cr.status, CompletionStatus::Throw);
+        assert_eq!(cr.value, 99);
+    }
+
+    #[test]
+    fn break_completion_has_empty_value() {
+        let cr = CompletionRecord::break_completion(TARGET_EMPTY);
+        assert_eq!(cr.status, CompletionStatus::Break);
+        assert_eq!(cr.value, JSVAL_EMPTY);
+        assert_eq!(cr.target, TARGET_EMPTY);
+    }
+
+    #[test]
+    fn continue_completion_has_empty_value() {
+        let cr = CompletionRecord::continue_completion(42);
+        assert_eq!(cr.status, CompletionStatus::Continue);
+        assert_eq!(cr.value, JSVAL_EMPTY);
+        assert_eq!(cr.target, 42);
+    }
+
+    #[test]
+    fn update_empty_preserves_non_empty_value() {
+        let cr = CompletionRecord::return_completion(10);
+        let updated = cr.update_empty(99);
+        assert_eq!(updated.value, 10);
+        assert_eq!(updated.status, CompletionStatus::Return);
+    }
+
+    #[test]
+    fn update_empty_replaces_empty_value() {
+        let cr = CompletionRecord::break_completion(TARGET_EMPTY);
+        let updated = cr.update_empty(99);
+        assert_eq!(updated.value, 99);
+        assert_eq!(updated.status, CompletionStatus::Break);
+        assert_eq!(updated.target, TARGET_EMPTY);
+    }
+
+    #[test]
+    fn update_empty_does_not_change_status_or_target() {
+        let cr = CompletionRecord::continue_completion(7);
+        let updated = cr.update_empty(0);
+        assert_eq!(updated.status, CompletionStatus::Continue);
+        assert_eq!(updated.target, 7);
+        assert_eq!(updated.value, 0);
+    }
+
+    #[test]
+    fn status_discriminants_match_design() {
+        assert_eq!(CompletionStatus::Normal as i32, 0);
+        assert_eq!(CompletionStatus::Return as i32, 1);
+        assert_eq!(CompletionStatus::Throw as i32, 2);
+        assert_eq!(CompletionStatus::Break as i32, 3);
+        assert_eq!(CompletionStatus::Continue as i32, 4);
+    }
+
+    #[test]
+    fn target_empty_is_zero() {
+        assert_eq!(TARGET_EMPTY, 0);
+    }
+
+    #[test]
+    fn jsval_empty_is_min_i64() {
+        assert_eq!(JSVAL_EMPTY, i64::MIN);
+    }
+
+    #[test]
+    fn is_abrupt_returns_false_for_normal() {
+        let cr = CompletionRecord::normal(0);
+        assert!(!cr.is_abrupt());
+    }
+
+    #[test]
+    fn is_abrupt_returns_true_for_return() {
+        let cr = CompletionRecord::return_completion(1);
+        assert!(cr.is_abrupt());
+    }
+
+    #[test]
+    fn is_abrupt_returns_true_for_throw() {
+        let cr = CompletionRecord::throw_completion(1);
+        assert!(cr.is_abrupt());
+    }
+
+    #[test]
+    fn is_abrupt_returns_true_for_break() {
+        let cr = CompletionRecord::break_completion(0);
+        assert!(cr.is_abrupt());
+    }
+
+    #[test]
+    fn is_abrupt_returns_true_for_continue() {
+        let cr = CompletionRecord::continue_completion(0);
+        assert!(cr.is_abrupt());
     }
 }

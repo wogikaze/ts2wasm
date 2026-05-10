@@ -3,6 +3,7 @@ mod capability_manifest;
 mod emitter;
 mod expr_emit;
 mod runtime_arrays;
+mod runtime_async;
 mod runtime_builder;
 mod runtime_builtins_host;
 mod runtime_collections;
@@ -14,6 +15,7 @@ mod runtime_objects;
 mod runtime_promise;
 mod runtime_regexp;
 mod runtime_strings;
+mod runtime_typed_arrays;
 mod stmt_emit;
 mod string_intern;
 mod wasm_binary;
@@ -52,6 +54,8 @@ pub fn emit_wat(program: &LoweredProgram) -> Result<String, Diagnostic> {
                     fatal.code, fatal.message
                 ),
                 span: fatal.span,
+
+                phase: None,
             });
         }
     }
@@ -71,6 +75,8 @@ pub fn emit_wasm_binary_mvp(program: &LoweredProgram) -> Result<Vec<u8>, Diagnos
                     fatal.code, fatal.message
                 ),
                 span: fatal.span,
+
+                phase: None,
             });
         }
     }
@@ -455,6 +461,7 @@ mod tests {
                 locals: vec![],
                 body: vec![],
                 recursion_depth: 0,
+                is_async: false,
             }],
             modules: vec![],
         };
@@ -656,6 +663,7 @@ mod tests {
                     ),
                 ],
                 recursion_depth: 0,
+                is_async: false,
             }],
             modules: vec![],
         };
@@ -665,10 +673,10 @@ mod tests {
         let backend_root_count = LocalFrame::new(0, None).backend_local_count();
         let static_root_bytes = backend_root_count * std::mem::size_of::<u32>();
         let root_bytes = static_root_bytes + Layout::GC_CALL_FRAME_ROOT_STACK_BYTES as usize;
-        let activation_root_count = program.functions[0].locals.len() + backend_root_count;
+        let activation_frame = LocalFrame::activation(program.functions[0].locals.len(), true);
         let activation_frame_bytes = Layout::GC_CALL_FRAME_HEADER_SIZE as usize
-            + activation_root_count * std::mem::size_of::<u32>();
-        let backend_last_local = activation_root_count - 1;
+            + activation_frame.total_local_count() * std::mem::size_of::<u32>();
+        let backend_last_local = activation_frame.total_local_count() - 1;
         let backend_last_offset = Layout::GC_CALL_FRAME_HEADER_SIZE as usize
             + backend_last_local * std::mem::size_of::<u32>();
 
@@ -1025,6 +1033,7 @@ mod tests {
                 locals: vec![],
                 body: vec![],
                 recursion_depth: 0,
+                is_async: false,
             }],
             modules: vec![],
         };
@@ -1184,6 +1193,7 @@ mod tests {
                     Span::generated("test"),
                 )],
                 recursion_depth: 0,
+                is_async: false,
             }],
             modules: vec![],
         };
@@ -1257,6 +1267,7 @@ mod tests {
                 locals: vec![],
                 body: vec![],
                 recursion_depth: 0,
+                is_async: false,
             }],
             modules: vec![],
         };
@@ -1466,6 +1477,7 @@ mod tests {
                 locals: vec![],
                 body: vec![],
                 recursion_depth: 0,
+                is_async: false,
             }],
             modules: vec![],
         };

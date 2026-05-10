@@ -147,6 +147,10 @@ runtime helper は、通常の JS 例外を直接 wasm trap にしない。例�
 | `call_method` | `(jsval object, jsval key, ptr argv, len argc) -> jsval` | receiver を保持 |
 | `construct` | `(jsval ctor, ptr argv, len argc) -> jsval` | `new` |
 
+### Async operations
+
+非同期処理（`async`/`await`）の設計とターゲット別実装の方針については、[docs/20-async-await-design.md](./20-async-await-design.md) を参照。
+
 ### Error operations
 
 | Function | Signature | Notes |

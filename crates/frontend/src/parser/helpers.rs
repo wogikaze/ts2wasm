@@ -37,7 +37,8 @@ fn merge_constructor_parameter_property_assignments(
         message: "issue-226: parameter properties in derived constructors require a leading super(...) call"
             .to_owned(),
         span: body.first().map(Stmt::span),
-    })
+
+        phase: None,})
 }
 
 fn is_super_call_statement(stmt: &Stmt) -> bool {
@@ -225,7 +226,8 @@ fn parse_template_parts(
                     code: DiagCode::UnsupportedSyntax,
                     message: "issue-213: empty template interpolation expression".to_owned(),
                     span: Some(span),
-                });
+
+                    phase: None,});
             }
             parts.push(TemplatePart::Expr(parse_template_expression(
                 source,
@@ -261,7 +263,8 @@ fn parse_template_expression(
             code: DiagCode::UnsupportedSyntax,
             message: "issue-213: unsupported template interpolation expression".to_owned(),
             span: Some(span),
-        });
+
+            phase: None,});
     }
     Ok(expr)
 }
@@ -296,7 +299,8 @@ fn find_template_expr_end(raw: &str, start: usize, span: Span) -> Result<usize, 
                     code: DiagCode::UnsupportedSyntax,
                     message: "issue-213: nested template literals are not yet supported".to_owned(),
                     span: Some(span),
-                });
+
+                    phase: None,});
             }
             '{' => depth += 1,
             '}' => {
@@ -313,7 +317,8 @@ fn find_template_expr_end(raw: &str, start: usize, span: Span) -> Result<usize, 
         code: DiagCode::UnsupportedSyntax,
         message: "issue-213: unterminated template interpolation".to_owned(),
         span: Some(span),
-    })
+
+        phase: None,})
 }
 
 fn cook_template_segment(raw: &str, span: Span) -> Result<String, Diagnostic> {
@@ -354,7 +359,8 @@ fn cook_template_segment(raw: &str, span: Span) -> Result<String, Diagnostic> {
                                 "issue-229: legacy octal escapes are not allowed in template literal text"
                                     .to_owned(),
                             span: Some(span),
-                        });
+
+                            phase: None,});
                     }
                     '\0'
                 }
@@ -365,7 +371,8 @@ fn cook_template_segment(raw: &str, span: Span) -> Result<String, Diagnostic> {
                             "issue-229: legacy octal escapes are not allowed in template literal text"
                                 .to_owned(),
                         span: Some(span),
-                    });
+
+                        phase: None,});
                 }
                 other => other,
             });
@@ -405,14 +412,16 @@ fn read_fixed_hex_escape(
                 code: DiagCode::UnsupportedSyntax,
                 message: format!("unterminated {label} escape sequence"),
                 span: Some(span),
-            });
+
+                phase: None,});
         };
         let Some(digit) = ch.to_digit(16) else {
             return Err(Diagnostic {
                 code: DiagCode::UnsupportedSyntax,
                 message: format!("invalid {label} escape sequence"),
                 span: Some(span),
-            });
+
+                phase: None,});
         };
         value = (value << 4) | digit;
         cursor += ch.len_utf8();
@@ -422,7 +431,8 @@ fn read_fixed_hex_escape(
         code: DiagCode::UnsupportedSyntax,
         message: format!("invalid {label} escape scalar value"),
         span: Some(span),
-    })?;
+
+        phase: None,})?;
     Ok((ch, cursor))
 }
 

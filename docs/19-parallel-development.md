@@ -21,7 +21,7 @@ SYNC -> QUEUE_SCAN -> SPLIT_OR_SELECT -> WORKTREE_ASSIGN
 -> CHILD_SUPERVISE -> MERGE_REVIEW -> REPORT -> QUEUE_REFILL
 ```
 
-The tracked source of truth remains `issues/`, `docs/`, and git history. Parent queue notes and child assignments are local report artifacts, not tracked state.
+The tracked source of truth remains `TRACKING.yaml`, `docs/`, and git history. Parent queue notes and child assignments are local report artifacts, not tracked state.
 
 ## Batch Worktree Creation
 
@@ -30,8 +30,8 @@ Create one worktree per issue:
 ```bash
 mise run spawn-worktrees -- \
   --base master \
-  issues/open/225-*.md \
-  issues/open/255-*.md
+  TRACKING.yaml \
+  # (items are identified by TRACKING id, not separate issue files)
 ```
 
 The command outputs a JSON manifest and creates local assignment files under `reports/agents/`.

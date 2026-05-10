@@ -3,6 +3,10 @@ use super::runtime_fn::RuntimeFn;
 
 impl WatEmitter<'_> {
     pub(super) fn emit_runtime(&mut self, wat: &mut String) {
+        // Emit UTF-8 helper functions required by string operations
+        // These are plain WAT functions (not RuntimeFn) and must be emitted
+        // before any function that calls them.
+        self.emit_utf8_helpers(wat);
         for runtime_fn in RuntimeFn::emission_order() {
             if !self
                 .link_plan
@@ -110,10 +114,31 @@ impl WatEmitter<'_> {
                 RuntimeFn::SetDelete => self.emit_set_delete(wat),
                 RuntimeFn::SetSize => self.emit_set_size(wat),
                 RuntimeFn::SetClear => self.emit_set_clear(wat),
+                RuntimeFn::SetForEach => self.emit_set_for_each(wat),
+                RuntimeFn::MapClear => self.emit_map_clear(wat),
+                RuntimeFn::MapSize => self.emit_map_size(wat),
+                RuntimeFn::MapForEach => self.emit_map_for_each(wat),
+                RuntimeFn::MapEntriesArray => self.emit_map_entries_array(wat),
+                RuntimeFn::TypedArrayFromArray => self.emit_typed_array_from_array(wat),
                 RuntimeFn::SetFromArray => self.emit_set_from_array(wat),
                 RuntimeFn::SetValuesArray => self.emit_set_values_array(wat),
                 RuntimeFn::SetPrototypeAddGet => self.emit_set_prototype_add_get(wat),
                 RuntimeFn::SetPrototypeAddSet => self.emit_set_prototype_add_set(wat),
+                RuntimeFn::WeakMapNew => self.emit_weak_map_new(wat),
+                RuntimeFn::WeakMapSet => self.emit_weak_map_set(wat),
+                RuntimeFn::WeakMapGet => self.emit_weak_map_get(wat),
+                RuntimeFn::WeakMapHas => self.emit_weak_map_has(wat),
+                RuntimeFn::WeakMapDelete => self.emit_weak_map_delete(wat),
+                RuntimeFn::WeakSetNew => self.emit_weak_set_new(wat),
+                RuntimeFn::WeakSetAdd => self.emit_weak_set_add(wat),
+                RuntimeFn::WeakSetHas => self.emit_weak_set_has(wat),
+                RuntimeFn::WeakSetDelete => self.emit_weak_set_delete(wat),
+                RuntimeFn::ArrayBufferNew => self.emit_arraybuffer_new(wat),
+                RuntimeFn::DataViewNew => self.emit_dataview_new(wat),
+                RuntimeFn::DataViewGetInt32 => self.emit_dataview_get_int32(wat),
+                RuntimeFn::DataViewSetInt32 => self.emit_dataview_set_int32(wat),
+                RuntimeFn::DataViewGetFloat64 => self.emit_dataview_get_float64(wat),
+                RuntimeFn::DataViewSetFloat64 => self.emit_dataview_set_float64(wat),
                 RuntimeFn::DateNew => self.emit_date_new(wat),
                 RuntimeFn::DateNewLive => self.emit_date_new_live(wat),
                 RuntimeFn::DateNow => self.emit_date_now(wat),
@@ -152,11 +177,13 @@ impl WatEmitter<'_> {
                 RuntimeFn::StringToUpperCase => self.emit_string_to_upper_case(wat),
                 RuntimeFn::StringToLowerCase => self.emit_string_to_lower_case(wat),
                 RuntimeFn::StringCharCodeAt => self.emit_string_char_code_at(wat),
+                RuntimeFn::StringCodePointAt => self.emit_string_at(wat),
                 RuntimeFn::StringIsWellFormed => self.emit_string_is_well_formed(wat),
                 RuntimeFn::StringToWellFormed => self.emit_string_to_well_formed(wat),
                 RuntimeFn::StringFromCharCode => self.emit_string_from_char_code(wat),
+                RuntimeFn::StringFromCodePoint => self.emit_string_from_code_point(wat),
                 RuntimeFn::StringReplace => self.emit_string_replace(wat),
-                RuntimeFn::StringReplaceAll => self.emit_string_replace(wat),
+                RuntimeFn::StringReplaceAll => self.emit_string_replace_all(wat),
                 RuntimeFn::RegexpMatchInner => self.emit_regexp_match_inner(wat),
                 RuntimeFn::RegExpTest => self.emit_regexp_test(wat),
                 RuntimeFn::RegExpMatch => self.emit_regexp_match(wat),
@@ -191,6 +218,7 @@ impl WatEmitter<'_> {
                 RuntimeFn::ObjectGetPrototypeOf => self.emit_object_get_prototype_of(wat),
                 RuntimeFn::ObjectSetPrototypeOf => self.emit_object_set_prototype_of(wat),
                 RuntimeFn::ObjectFreeze => self.emit_object_freeze(wat),
+                RuntimeFn::ObjectSeal => self.emit_object_seal(wat),
                 RuntimeFn::ObjectPreventExtensions => self.emit_object_prevent_extensions(wat),
                 RuntimeFn::ObjectIsExtensible => self.emit_object_is_extensible(wat),
                 RuntimeFn::ObjectIsSealed => self.emit_object_is_sealed(wat),
@@ -248,6 +276,8 @@ impl WatEmitter<'_> {
                 RuntimeFn::PromiseReject => self.emit_promise_reject(wat),
                 RuntimeFn::PromiseThen => self.emit_promise_then(wat),
                 RuntimeFn::PromiseCatch => self.emit_promise_catch(wat),
+                RuntimeFn::PromiseAll => self.emit_promise_all(wat),
+                RuntimeFn::PromiseRace => self.emit_promise_race(wat),
                 RuntimeFn::ArrayIndexOf => self.emit_array_index_of(wat),
                 RuntimeFn::ArrayIncludes => self.emit_array_includes(wat),
                 RuntimeFn::ArrayFind => self.emit_array_find(wat),
@@ -278,6 +308,12 @@ impl WatEmitter<'_> {
                 RuntimeFn::StringMatch => self.emit_string_match(wat),
                 RuntimeFn::StringSearch => self.emit_string_search(wat),
                 RuntimeFn::RegExpSearch => self.emit_regexp_search(wat),
+                RuntimeFn::TaskPoll => self.emit_task_poll(wat),
+                RuntimeFn::TaskResult => self.emit_task_result(wat),
+                RuntimeFn::TaskDrop => self.emit_task_drop(wat),
+                RuntimeFn::SymbolNew => self.emit_symbol_new(wat),
+                RuntimeFn::SymbolFor => self.emit_symbol_for(wat),
+                RuntimeFn::SymbolKeyFor => self.emit_symbol_key_for(wat),
             }
         }
     }

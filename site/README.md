@@ -71,7 +71,7 @@ site/
 │   ├── .vitepress/         # VitePress config
 │   ├── index.md           # Home page
 │   ├── docs/              # Documentation pages
-│   ├── issues/            # Issue listing pages
+│   ├── issues/            # Issue listing pages (generated from TRACKING.yaml)
 │   ├── fixtures/          # Test fixture pages
 │   └── coverage/          # Coverage report pages
 ├── node_modules/          # Dependencies (gitignored)

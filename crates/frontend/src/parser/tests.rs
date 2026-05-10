@@ -585,42 +585,33 @@ mod tests {
     }
 
     #[test]
-    fn rejects_class_declaration_decorator_with_boundary_diagnostic() {
-        let err = parse_program("@decorator class C {}")
-            .expect_err("class declaration decorator should report boundary diagnostic");
-        assert_eq!(err.code, DiagCode::UnsupportedTypeScriptSyntax);
-        assert!(err.message.contains("decorator"), "{err:?}");
-        let span = err.span.expect("diagnostic must have a source span");
-        assert_eq!(
-            &"@decorator class C {}"[span.start..span.end],
-            "@decorator"
-        );
+    fn erases_class_declaration_decorator() {
+        let program = parse_program("@decorator class C {}").unwrap();
+        assert_eq!(program.len(), 1);
+        match &program[0] {
+            Stmt::ClassDecl { name, .. } => assert_eq!(name, "C"),
+            other => panic!("expected ClassDecl, got {other:?}"),
+        }
     }
 
     #[test]
-    fn rejects_class_declaration_decorator_with_call_args() {
-        let err = parse_program("@decorator(\"hello\") class Remote {}")
-            .expect_err("decorator with call args should report boundary diagnostic");
-        assert_eq!(err.code, DiagCode::UnsupportedTypeScriptSyntax);
-        assert!(err.message.contains("decorator"), "{err:?}");
-        let span = err.span.expect("diagnostic must have a source span");
-        assert_eq!(
-            &"@decorator(\"hello\") class Remote {}"[span.start..span.end],
-            "@decorator(\"hello\")"
-        );
+    fn erases_class_declaration_decorator_with_call_args() {
+        let program = parse_program("@decorator(\"hello\") class Remote {}").unwrap();
+        assert_eq!(program.len(), 1);
+        match &program[0] {
+            Stmt::ClassDecl { name, .. } => assert_eq!(name, "Remote"),
+            other => panic!("expected ClassDecl, got {other:?}"),
+        }
     }
 
     #[test]
-    fn rejects_class_declaration_decorator_with_multiple_args() {
-        let err = parse_program("@decorator(arg1, arg2) class C {}")
-            .expect_err("decorator with multiple args should report boundary diagnostic");
-        assert_eq!(err.code, DiagCode::UnsupportedTypeScriptSyntax);
-        assert!(err.message.contains("decorator"), "{err:?}");
-        let span = err.span.expect("diagnostic must have a source span");
-        assert_eq!(
-            &"@decorator(arg1, arg2) class C {}"[span.start..span.end],
-            "@decorator(arg1, arg2)"
-        );
+    fn erases_class_declaration_decorator_with_multiple_args() {
+        let program = parse_program("@decorator(arg1, arg2) class C {}").unwrap();
+        assert_eq!(program.len(), 1);
+        match &program[0] {
+            Stmt::ClassDecl { name, .. } => assert_eq!(name, "C"),
+            other => panic!("expected ClassDecl, got {other:?}"),
+        }
     }
 
     #[test]
@@ -4028,5 +4019,42 @@ b /* parameter b */,
             }
             other => panic!("expected ExportDecl, got {other:?}"),
         }
+    }
+
+    // === JSX parsing (ID 194, W4 P3) — RED phase ===
+
+    #[test]
+    fn jsx_accepts_basic_element() {
+        // Expect parsing failure: JSX syntax not yet supported
+        let err = parse_program("<div>hello</div>").unwrap_err();
+        assert_eq!(err.code, DiagCode::UnsupportedSyntax);
+    }
+
+    #[test]
+    fn jsx_rejects_invalid_syntax() {
+        // Malformed JSX should also produce an error (any error code is acceptable)
+        let err = parse_program("<div>").unwrap_err();
+        // Should produce some diagnostic (unsupported syntax or parse error)
+        assert_eq!(err.code, DiagCode::UnsupportedSyntax);
+    }
+
+    // === Decorator parsing (ID 195, W4 P3) — RED phase ===
+
+    #[test]
+    fn decorator_accepts_basic_decorator() {
+        // Decorator @sealed is erased, class MyClass parses successfully
+        let program = parse_program("@sealed class MyClass {}").unwrap();
+        assert_eq!(program.len(), 1);
+        match &program[0] {
+            Stmt::ClassDecl { name, .. } => assert_eq!(name, "MyClass"),
+            other => panic!("expected ClassDecl after decorator erasure, got {other:?}"),
+        }
+    }
+
+    #[test]
+    fn decorator_erases_without_name() {
+        // `@` with no identifier is erased and the class is still parsed
+        let program = parse_program("@ class MyClass {}").unwrap();
+        assert_eq!(program.len(), 1);
     }
 }

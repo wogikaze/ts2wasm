@@ -18,7 +18,8 @@ impl Parser {
                         "issue-071: parameter property modifiers are only allowed in constructor parameters"
                             .to_owned(),
                     span: Some(span),
-                });
+
+                    phase: None,});
             }
             // Detect invalid modifiers (issue 5355)
             if matches!(self.peek(), Some(Token::Static)) {
@@ -33,7 +34,8 @@ impl Parser {
                     code: DiagCode::UnsupportedSyntax,
                     message: "'static' modifier cannot appear on a parameter.".to_owned(),
                     span: Some(span),
-                });
+
+                    phase: None,});
             }
             if matches!(self.peek(), Some(Token::Export)) {
                 let span = self.peek_span().unwrap_or(Span { start: 0, end: 0 });
@@ -41,7 +43,8 @@ impl Parser {
                     code: DiagCode::UnsupportedSyntax,
                     message: "'export' modifier cannot appear on a parameter.".to_owned(),
                     span: Some(span),
-                });
+
+                    phase: None,});
             }
             is_parameter_property = true;
             self.advance();
@@ -58,7 +61,8 @@ impl Parser {
                     message: "issue-247: TypeScript this parameters must be the leading parameter"
                         .to_owned(),
                     span: Some(span),
-                });
+
+                    phase: None,});
             }
             if !self.consume(TokenKind::Colon) {
                 return Err(Diagnostic {
@@ -66,7 +70,8 @@ impl Parser {
                     message: "issue-247: TypeScript this parameters require a type annotation"
                         .to_owned(),
                     span: Some(span),
-                });
+
+                    phase: None,});
             }
             self.skip_type_annotation_until(&[
                 TokenKind::Equal,
@@ -89,7 +94,8 @@ let binding = self.parse_binding_pattern()?;
                 code: DiagCode::UnsupportedSyntax,
                 message: "issue-247: parameter properties require identifier bindings".to_owned(),
                 span: Some(binding.span),
-            });
+
+                phase: None,});
         }
         let is_optional = self.consume(TokenKind::Question);
         if self.consume(TokenKind::Colon) {
@@ -113,7 +119,8 @@ let binding = self.parse_binding_pattern()?;
                 code: DiagCode::UnsupportedSyntax,
                 message: "issue-226: rest parameter properties are not supported".to_owned(),
                 span: Some(binding.span),
-            });
+
+                phase: None,});
         }
 
         Ok(ParsedParam {
@@ -172,7 +179,8 @@ let binding = self.parse_binding_pattern()?;
                 code: DiagCode::UnsupportedSyntax,
                 message: format!("issue-247: expected binding identifier or pattern, got {other:?}"),
                 span: self.peek_span(),
-            }),
+
+                phase: None,}),
         }
     }
 
@@ -186,7 +194,8 @@ let binding = self.parse_binding_pattern()?;
                     code: DiagCode::UnsupportedSyntax,
                     message: "issue-247: unterminated array binding pattern".to_owned(),
                     span: Some(start),
-                });
+
+                    phase: None,});
             }
 
             if self.consume(TokenKind::Comma) {
@@ -246,7 +255,8 @@ let binding = self.parse_binding_pattern()?;
                     code: DiagCode::UnsupportedSyntax,
                     message: "issue-247: unterminated object binding pattern".to_owned(),
                     span: Some(start),
-                });
+
+                    phase: None,});
             }
 
             if let Some(rest_span) = self.consume_span(TokenKind::DotDotDot) {
@@ -254,7 +264,8 @@ let binding = self.parse_binding_pattern()?;
                     code: DiagCode::UnsupportedSyntax,
                     message: "issue-247: object rest binding requires an identifier".to_owned(),
                     span: self.peek_span(),
-                })?;
+
+                    phase: None,})?;
                 if matches!(self.peek(), Some(Token::Comma)) {
                     return Err(self.invalid_rest_binding_diagnostic(rest_span));
                 }
@@ -274,7 +285,8 @@ let binding = self.parse_binding_pattern()?;
                     message: "issue-247: literal object binding keys require a target after `:`"
                         .to_owned(),
                     span: self.peek_span(),
-                });
+
+                    phase: None,});
             };
 
             if self.consume(TokenKind::Equal) {
@@ -333,7 +345,8 @@ let binding = self.parse_binding_pattern()?;
                 code: DiagCode::UnsupportedSyntax,
                 message: format!("issue-247: expected object binding property key, got {other:?}"),
                 span: self.peek_span(),
-            }),
+
+                phase: None,}),
         }
     }
 
@@ -343,7 +356,9 @@ let binding = self.parse_binding_pattern()?;
             message: "issue-247: rest binding must be the final element in a binding pattern"
                 .to_owned(),
             span: Some(span),
-        }
+
+
+            phase: None,}
     }
 
     #[allow(clippy::only_used_in_recursion)]

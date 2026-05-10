@@ -395,3 +395,8 @@ Remaining:
 ```
 
 変更がない調査タスクの場合も、調査結果、根拠ファイル、次 action を明記する。
+
+## 13) Recursive-mode
+
+大規模な変更や複雑なバグ修正では `recursive-mode` を使用する。
+運用ルールについては `/.recursive/RECURSIVE.md` を唯一の正本とする。

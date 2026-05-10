@@ -1,3 +1,4 @@
+use std::cell::Cell;
 use std::collections::{BTreeMap, BTreeSet, HashMap, HashSet};
 
 use crate::{DiagCode, Diagnostic};
@@ -26,6 +27,8 @@ pub(super) struct WatEmitter<'a> {
     pub(super) runtime_string_set: HashSet<String>,
     class_name_to_ctor: HashMap<String, FuncId>,
     method_counts: HashMap<FuncId, usize>,
+    /// Tracks whether we are currently emitting an async function body.
+    pub(super) current_is_async: Cell<bool>,
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -45,6 +48,11 @@ enum GcRootStorage {
 impl LocalFrame {
     const BACKEND_TEMP_GROUP_SIZE: usize = 3;
     const BACKEND_TEMP_GROUP_COUNT: usize = 4;
+    /// Number of additional locals for Completion Record fields
+    /// (cr_status, cr_value, cr_target, cr_saved_status, cr_saved_value).
+    /// These are placed after backend temps.
+    /// Saved slots (+3, +4) are used only in try-finally for CR save/restore.
+    const CR_LOCAL_COUNT: usize = 5;
 
     pub(super) fn new(user_local_count: usize, gc_root_base_slot: Option<usize>) -> Self {
         Self {
@@ -69,11 +77,26 @@ impl LocalFrame {
     }
 
     pub(super) const fn total_local_count(self) -> usize {
-        self.user_local_count + self.backend_local_count()
+        self.user_local_count + self.backend_local_count() + Self::CR_LOCAL_COUNT
     }
 
     pub(super) const fn backend_local_count(self) -> usize {
         Self::BACKEND_TEMP_GROUP_SIZE * Self::BACKEND_TEMP_GROUP_COUNT
+    }
+
+    /// Base local index for Completion Record locals: cr_status, cr_value, cr_target.
+    ///
+    /// These are placed after all backend temporaries (outside the rotating temp pool).
+    /// Indices: cr_status=[base], cr_value=[base+1], cr_target=[base+2].
+    pub(super) const fn cr_local_base(self) -> usize {
+        self.user_local_count + self.backend_local_count()
+    }
+
+    /// Base local index for saved Completion Record slots (saved_status, saved_value).
+    /// Used only in try-finally to save CR before the finally block runs.
+    /// Indices: saved_status=[base+3], saved_value=[base+4].
+    pub(super) const fn cr_save_local_base(self) -> usize {
+        self.cr_local_base() + 3
     }
 
     pub(super) const fn heap_base_tmp(self) -> usize {
@@ -146,6 +169,7 @@ impl<'a> WatEmitter<'a> {
             next_data_offset: Layout::DATA_START,
             class_name_to_ctor,
             method_counts,
+            current_is_async: Cell::new(false),
         };
         emitter.intern_required_runtime_strings();
         emitter.collect_program_strings(&program.top_level_statements);
@@ -239,6 +263,8 @@ impl<'a> WatEmitter<'a> {
                     Layout::SCRATCH_OFFSET
                 ),
                 span: None,
+
+                phase: None,
             });
         }
         if self.next_data_offset < Layout::DATA_START {
@@ -250,6 +276,8 @@ impl<'a> WatEmitter<'a> {
                     Layout::DATA_START
                 ),
                 span: None,
+
+                phase: None,
             });
         }
         let scratch_end = Layout::SCRATCH_OFFSET
@@ -258,6 +286,8 @@ impl<'a> WatEmitter<'a> {
                 code: DiagCode::InvariantViolation,
                 message: "scratch range overflow while validating memory layout".to_owned(),
                 span: None,
+
+                phase: None,
             })?;
         if scratch_end > Layout::HEAP_START {
             return Err(Diagnostic {
@@ -269,6 +299,8 @@ impl<'a> WatEmitter<'a> {
                     Layout::HEAP_START
                 ),
                 span: None,
+
+                phase: None,
             });
         }
         if scratch_end > Layout::STDIN_BUFFER_OFFSET {
@@ -281,6 +313,8 @@ impl<'a> WatEmitter<'a> {
                     Layout::STDIN_BUFFER_OFFSET
                 ),
                 span: None,
+
+                phase: None,
             });
         }
         let stdin_end = Layout::STDIN_BUFFER_OFFSET
@@ -289,6 +323,8 @@ impl<'a> WatEmitter<'a> {
                 code: DiagCode::InvariantViolation,
                 message: "stdin range overflow while validating memory layout".to_owned(),
                 span: None,
+
+                phase: None,
             })?;
         if stdin_end > Layout::HEAP_START {
             return Err(Diagnostic {
@@ -300,6 +336,8 @@ impl<'a> WatEmitter<'a> {
                     Layout::HEAP_START
                 ),
                 span: None,
+
+                phase: None,
             });
         }
         if Layout::SCRATCH_OFFSET >= Layout::HEAP_START {
@@ -311,6 +349,8 @@ impl<'a> WatEmitter<'a> {
                     Layout::HEAP_START
                 ),
                 span: None,
+
+                phase: None,
             });
         }
         if Layout::STDIN_BUFFER_OFFSET >= Layout::HEAP_START {
@@ -322,6 +362,8 @@ impl<'a> WatEmitter<'a> {
                     Layout::HEAP_START
                 ),
                 span: None,
+
+                phase: None,
             });
         }
         let stdin_nread_end =
@@ -332,6 +374,8 @@ impl<'a> WatEmitter<'a> {
                     message: "stdin nread region overflow while validating memory layout"
                         .to_owned(),
                     span: None,
+
+                    phase: None,
                 })?;
         if stdin_nread_end > Layout::STDIN_BUFFER_OFFSET {
             return Err(Diagnostic {
@@ -343,6 +387,8 @@ impl<'a> WatEmitter<'a> {
                     Layout::STDIN_BUFFER_OFFSET
                 ),
                 span: None,
+
+                phase: None,
             });
         }
         if !Layout::HEAP_START.is_multiple_of(Layout::ALIGN) {
@@ -354,6 +400,8 @@ impl<'a> WatEmitter<'a> {
                     Layout::ALIGN
                 ),
                 span: None,
+
+                phase: None,
             });
         }
         let max_stdin_heap_allocation = Layout::HEAP_START
@@ -363,6 +411,8 @@ impl<'a> WatEmitter<'a> {
                 code: DiagCode::InvariantViolation,
                 message: "stdin heap allocation overflow while validating memory layout".to_owned(),
                 span: None,
+
+                phase: None,
             })?;
         let initial_memory_bytes = Layout::MEMORY_MIN_PAGES
             .checked_mul(Layout::WASM_PAGE_SIZE)
@@ -370,6 +420,8 @@ impl<'a> WatEmitter<'a> {
                 code: DiagCode::InvariantViolation,
                 message: "memory page byte size overflow while validating memory layout".to_owned(),
                 span: None,
+
+                phase: None,
             })?;
         if max_stdin_heap_allocation > initial_memory_bytes {
             return Err(Diagnostic {
@@ -378,6 +430,8 @@ impl<'a> WatEmitter<'a> {
                     "single max stdin heap allocation from HEAP_START ({max_stdin_heap_allocation}) exceeds initial memory bytes ({initial_memory_bytes})"
                 ),
                 span: None,
+
+                phase: None,
             });
         }
         Ok(())
@@ -1397,6 +1451,8 @@ impl<'a> WatEmitter<'a> {
     fn emit_functions(&self, writer: &mut WatWriter) {
         let mut buf = String::new();
         for function in &self.program.functions {
+            let is_async = function.is_async;
+            let user_local_count = function.params.len() + function.locals.len();
             writer.push_str(&format!("  (func ${} ", function_symbol(function.id)));
             for _ in &function.params {
                 writer.push_str("(param i32) ");
@@ -1405,25 +1461,75 @@ impl<'a> WatEmitter<'a> {
             for _ in &function.locals {
                 writer.push_str("    (local i32)\n");
             }
-            let frame = LocalFrame::activation(
-                function.params.len() + function.locals.len(),
-                self.gc_call_frame_roots_enabled(),
-            );
+            let frame =
+                LocalFrame::activation(user_local_count, self.gc_call_frame_roots_enabled());
             // Backend-owned temporaries for heap construction and switch dispatch.
             for _ in 0..frame.backend_local_count() {
                 writer.push_str("    (local i32)\n");
             }
+            // Completion Record locals: cr_status, cr_value, cr_target, cr_saved_status, cr_saved_value.
+            for _ in 0..LocalFrame::CR_LOCAL_COUNT {
+                writer.push_str("    (local i32)\n");
+            }
+            if is_async {
+                writer.push_str("    (local $frame i32)\n");
+            }
             buf.clear();
-            self.emit_gc_activation_frame_push(&mut buf, &frame, 4);
-            self.emit_gc_root_param_initializer(&mut buf, &frame, 4);
+            if is_async {
+                // Allocate state-machine frame: [state, return_value, saved_locals...]
+                // For now, only allocate state + return_value (2 slots = 8 bytes)
+                // Frame layout: [state(0), cr_status(4), cr_value(8)] = 12 bytes.
+                buf.push_str("    (local.set $frame (call $alloc_heap (i32.const 12)))\n");
+                buf.push_str("    (i32.store (local.get $frame) (i32.const 0))\n");
+                self.emit_gc_activation_frame_push(&mut buf, &frame, 4);
+                self.emit_gc_root_param_initializer(&mut buf, &frame, 4);
+                buf.push('\n');
+            } else {
+                self.emit_gc_activation_frame_push(&mut buf, &frame, 4);
+                self.emit_gc_root_param_initializer(&mut buf, &frame, 4);
+            }
             writer.push_str(&buf);
             buf.clear();
+            // Initialize Completion Record status to Normal (0) at function entry.
+            let cr_base = frame.cr_local_base();
+            writer.line_fmt(4, format_args!("(i32.const 0) (local.set {})", cr_base));
+            // Initialize cr_target to TARGET_EMPTY (0).
+            writer.line_fmt(4, format_args!("(i32.const 0) (local.set {})", cr_base + 2));
+            self.current_is_async.set(is_async);
             let mut loop_ctx = super::stmt_emit::LoopContext::default();
             self.emit_statements(writer, &function.body, 4, &mut loop_ctx, &frame);
             buf.clear();
-            self.emit_gc_activation_frame_pop(&mut buf, &frame, 4);
-            writer.push_str(&buf);
-            writer.push_str(&format!("    (i32.const {})\n", ValueTag::UNDEFINED));
+            if is_async {
+                // Close async state=0: gc frame pop
+                self.emit_gc_activation_frame_pop(&mut buf, &frame, 4);
+                writer.push_str(&buf);
+                buf.clear();
+                // Async epilogue: check $exception_pending for uncaught throws.
+                // If set: store Throw(2) + thrown value to frame[4]/frame[8].
+                // If clear: store Normal(0) + UNDEFINED to frame[4]/frame[8].
+                // Frame layout: [state(0), cr_status(4), cr_value(8)].
+                buf.push_str(&format!(
+                    "    (if (global.get $exception_pending)\n\
+                     (then\n\
+                       (i32.store offset=4 (local.get $frame) (i32.const 2))\n\
+                       (i32.store offset=8 (local.get $frame) (global.get $exception_pending))\n\
+                       (i32.const 0) (global.set $exception_pending)\n\
+                     )\n\
+                     (else\n\
+                       (i32.store offset=4 (local.get $frame) (i32.const 0))\n\
+                       (i32.store offset=8 (local.get $frame) (i32.const {}))\n\
+                     )\n\
+                   )\n",
+                    ValueTag::UNDEFINED,
+                ));
+                buf.push_str("    (i32.store (local.get $frame) (i32.const 1))\n");
+                buf.push_str("    (local.get $frame)\n");
+                writer.push_str(&buf);
+            } else {
+                self.emit_gc_activation_frame_pop(&mut buf, &frame, 4);
+                writer.push_str(&buf);
+                writer.push_str(&format!("    (i32.const {})\n", ValueTag::UNDEFINED));
+            }
             writer.push_str("  )\n");
         }
     }
@@ -1562,7 +1668,16 @@ impl<'a> WatEmitter<'a> {
             for _ in 0..frame.total_local_count() {
                 writer.push_str("    (local i32)\n");
             }
+            // Completion Record locals: cr_status, cr_value, cr_target, cr_saved_status, cr_saved_value.
+            for _ in 0..LocalFrame::CR_LOCAL_COUNT {
+                writer.push_str("    (local i32)\n");
+            }
             let mut buf = String::new();
+            // Initialize Completion Record status to Normal (0) at function entry.
+            let cr_base = frame.cr_local_base();
+            writer.line_fmt(4, format_args!("(i32.const 0) (local.set {})", cr_base));
+            // Initialize cr_target to TARGET_EMPTY (0).
+            writer.line_fmt(4, format_args!("(i32.const 0) (local.set {})", cr_base + 2));
             self.emit_gc_activation_frame_push(&mut buf, &frame, 4);
             writer.push_str(&buf);
             buf.clear();
@@ -1589,7 +1704,16 @@ impl<'a> WatEmitter<'a> {
         for _ in 0..frame.total_local_count() {
             writer.push_str("    (local i32)\n");
         }
+        // Completion Record locals: cr_status, cr_value, cr_target, cr_saved_status, cr_saved_value.
+        for _ in 0..LocalFrame::CR_LOCAL_COUNT {
+            writer.push_str("    (local i32)\n");
+        }
         let mut buf = String::new();
+        // Initialize Completion Record status to Normal (0) at function entry.
+        let cr_base = frame.cr_local_base();
+        writer.line_fmt(4, format_args!("(i32.const 0) (local.set {})", cr_base));
+        // Initialize cr_target to TARGET_EMPTY (0).
+        writer.line_fmt(4, format_args!("(i32.const 0) (local.set {})", cr_base + 2));
         self.emit_gc_root_table_initializer(&mut buf, 4);
         writer.push_str(&buf);
         if self.module_runtime_enabled() {

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Validate TRACKING.yaml structural consistency.
+"""Validate TRACKING.yaml structural consistency and ID sequence integrity.
 
 Read-only: this script must never modify TRACKING.yaml.
 """
@@ -11,6 +11,10 @@ import yaml
 ROOT = Path(__file__).resolve().parents[2]
 TRACKING = ROOT / "TRACKING.yaml"
 
+# Known historical gaps in ID sequence (never existed, not lost).
+# Add exceptions here with a comment explaining why.
+KNOWN_ID_GAPS = {108}  # 108 was never assigned (historical gap before 109)
+
 SECTIONS = ["open", "active", "done"]
 REQUIRED = {
     "open": ["id", "title", "priority", "type", "area", "status", "created", "updated", "acceptance"],
@@ -19,7 +23,7 @@ REQUIRED = {
 }
 
 VALID_PRIORITIES = {"P0", "P1", "P2", "P3"}
-VALID_TYPES = {"feature", "runtime-builtin", "diagnostic", "infra", "design", "docs", "bug", "test"}
+VALID_TYPES = {"feature", "runtime-builtin", "diagnostic", "infra", "design", "docs", "bug", "test", "task"}
 VALID_AREAS = {"frontend", "ir", "runtime", "backend", "scripts", "docs", "shared", "cli"}
 
 # Words that suggest an item is roadmap-scale (too large for a single session)
@@ -144,6 +148,23 @@ def main() -> None:
                         fail(f"id {item_id}: evidence command missing 'command'")
                     if cmd.get("exit") != 0:
                         fail(f"id {item_id}: evidence command did not exit 0")
+
+    # ID sequence integrity check: no gaps, no deletions
+    if ids:
+        sorted_ids = sorted(ids)
+        expected = range(sorted_ids[0], sorted_ids[-1] + 1)
+        all_ids = set(sorted_ids)
+        missing = set(expected) - all_ids
+        known_and_missing = missing & KNOWN_ID_GAPS
+        unexpected = missing - KNOWN_ID_GAPS
+        if unexpected:
+            fail(
+                f"ID sequence broken: missing IDs {sorted(unexpected)}. "
+                "Items were likely deleted. Restore them or add to KNOWN_ID_GAPS "
+                "if the gap is intentional."
+            )
+        if known_and_missing:
+            warn(f"ID sequence: known gaps {sorted(known_and_missing)} (listed in KNOWN_ID_GAPS)")
 
     # Summary
     open_count = len(data.get("open", []) or [])

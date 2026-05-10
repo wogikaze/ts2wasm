@@ -696,6 +696,55 @@ fn standalone_wasi_stdin_large() {
 }
 
 #[test]
+fn standalone_wasi_process_argv() {
+    // process.argv reads WASI args via args_sizes_get + args_get
+    // Under iwasm without custom args, argv.length is 1 (program name)
+    let result = compile_and_run_standalone("node-apis/process-argv.ts");
+
+    assert!(
+        result.iwasm_success,
+        "iwasm should succeed for process-argv"
+    );
+    assert_eq!(
+        result.iwasm_stdout, "1\n",
+        "argv.length should be 1 under iwasm"
+    );
+
+    assert_standalone_manifest(&result.manifest, "process-argv.ts");
+    assert_no_node_host_imports(&result.wasm_bytes, "process-argv.ts");
+}
+
+#[test]
+fn standalone_wasi_process_env() {
+    // process.env reads WASI env via environ_sizes_get + environ_get
+    // Under iwasm, process.env exists and returns values
+    let result = compile_and_run_standalone("node-apis/process-env.ts");
+
+    assert!(result.iwasm_success, "iwasm should succeed for process-env");
+    // process.env works; PATH may or may not be set in iwasm env
+    // Just verify the program runs without host imports
+    assert_standalone_manifest(&result.manifest, "process-env.ts");
+    assert_no_node_host_imports(&result.wasm_bytes, "process-env.ts");
+}
+
+#[test]
+fn standalone_wasi_manifest_golden_wasi_baseline() {
+    // Verify all WASI baseline fixtures build standalone with correct manifests
+    let fixtures = ["node-apis/process-argv.ts", "node-apis/process-env.ts"];
+
+    for fixture_path in &fixtures {
+        let result = compile_and_run_standalone(fixture_path);
+
+        assert!(
+            result.iwasm_success,
+            "iwasm should succeed for {fixture_path}"
+        );
+        assert_standalone_manifest(&result.manifest, fixture_path);
+        assert_no_node_host_imports(&result.wasm_bytes, fixture_path);
+    }
+}
+
+#[test]
 fn standalone_wasi_all_fixtures_have_unique_names() {
     // Verify that no fixture produces a temp file collision
     let fixtures = [
@@ -708,6 +757,8 @@ fn standalone_wasi_all_fixtures_have_unique_names() {
         "builtins-and-io/date-utc-getters.ts",
         "builtins-and-io/value-of.ts",
         "builtins-and-io/math-random.ts",
+        "node-apis/process-argv.ts",
+        "node-apis/process-env.ts",
     ];
 
     let mut temp_dirs = BTreeSet::new();

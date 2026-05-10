@@ -66,3 +66,28 @@ fn build_smoke_class_default_derived_ctor_arity() {
 fn binary_mvp_class_unsupported_diagnostic() {
     assert_fixture_build_smoke("classes/class-basic-build.ts");
 }
+
+#[test]
+fn build_smoke_class_private_members() {
+    assert_fixture_build_smoke("classes/class-private-members.ts");
+}
+
+#[test]
+fn build_smoke_class_static_block() {
+    assert_fixture_build_smoke("classes/class-static-block.ts");
+}
+
+#[test]
+fn build_smoke_class_field_initializers() {
+    assert_fixture_build_smoke("classes/class-field-initializers.ts");
+}
+
+#[test]
+fn build_smoke_class_super_constructor() {
+    assert_fixture_build_smoke("classes/class-super-constructor.ts");
+}
+
+#[test]
+fn build_smoke_class_extends_builtin() {
+    assert_fixture_build_smoke("classes/class-extends-builtin.ts");
+}

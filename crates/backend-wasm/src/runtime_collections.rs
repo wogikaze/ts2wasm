@@ -90,20 +90,21 @@ impl WatEmitter<'_> {
         (local.set $base (i32.and (local.get $obj) (i32.const {heap_mask})))
         (local.set $i (i32.shr_s (local.get $idx) (i32.const {number_shift})))
         (if (i32.lt_s (local.get $i) (i32.const {zero})) (then (return (i32.const {undefined}))))
-        ;; String indexing
+        ;; String indexing with UTF-8 code point support
         (if (i32.eq (local.get $obj_tag) (i32.const {string_tag}))
           (then
+            (local.set $i (call $utf8_cp_to_byte_index (local.get $base) (local.get $i)))
             (if (i32.ge_u (local.get $i) (i32.load (local.get $base)))
               (then (return (i32.const {undefined}))))
-            (return
-              (i32.or
-                (i32.shl
-                  (i32.load8_u
-                    (i32.add
-                      (local.get $base)
-                      (i32.add (i32.const {string_header}) (local.get $i))))
-                  (i32.const {number_shift}))
-                (i32.const {number_tag})))))
+            (local.set $key_len (call $utf8_cp_byte_length (local.get $base) (local.get $i)))
+            (local.set $base (call $alloc_heap (i32.add (i32.const {string_header}) (local.get $key_len))))
+            (i32.store (local.get $base) (local.get $key_len))
+            (call $copy
+              (i32.add (i32.and (local.get $obj) (i32.const {heap_mask}))
+                (i32.add (i32.const {string_header}) (local.get $i)))
+              (i32.add (local.get $base) (i32.const {string_header}))
+              (local.get $key_len))
+            (return (i32.or (local.get $base) (i32.const {string_tag})))))
         ;; Object numeric indexing is property access through the decimal index key.
         (if (i32.eq (local.get $obj_tag) (i32.const {object_tag}))
           (then
@@ -145,20 +146,34 @@ impl WatEmitter<'_> {
     }
 
     pub(super) fn emit_get_length(&self, wat: &mut String) {
+        self.emit_string_code_point_length(wat);
         wat.push_str(&format!(
             r#"
   (func $get_length (param $v i32) (result i32)
     (local $tag i32)
     (local.set $tag (i32.and (local.get $v) (i32.const {tag_mask})))
-    (if
-      (i32.or
-        (i32.eq (local.get $tag) (i32.const {string_tag}))
-        (i32.eq (local.get $tag) (i32.const {array_tag})))
+    (if (i32.eq (local.get $tag) (i32.const {string_tag}))
       (then
         (return
           (i32.or
             (i32.shl
-            (i32.load (i32.and (local.get $v) (i32.const {heap_mask})))
+              (call $utf8_cp_count (i32.and (local.get $v) (i32.const {heap_mask})))
+              (i32.const {number_shift}))
+            (i32.const {number_tag})))))
+    (if (i32.eq (local.get $tag) (i32.const {array_tag}))
+      (then
+        (return
+          (i32.or
+            (i32.shl
+              (call $string_code_point_length (local.get $v))
+              (i32.const {number_shift}))
+            (i32.const {number_tag})))))
+    (if (i32.eq (local.get $tag) (i32.const {array_tag}))
+      (then
+        (return
+          (i32.or
+            (i32.shl
+              (i32.load (i32.and (local.get $v) (i32.const {heap_mask})))
               (i32.const {number_shift}))
             (i32.const {number_tag})))))
     (if (i32.eq (local.get $tag) (i32.const {object_tag}))
@@ -272,6 +287,7 @@ impl WatEmitter<'_> {
     (local $key_obj i32)
     (local $digit i32)
     (local $is_array_index i32)
+    (local $flags i32)
     (local.set $tag (i32.and (local.get $obj) (i32.const {tag_mask})))
     (local.set $base (i32.and (local.get $obj) (i32.const {heap_mask})))
     (if (i32.eq (local.get $tag) (i32.const {array_tag}))
@@ -309,6 +325,10 @@ impl WatEmitter<'_> {
         (return (i32.const {undefined}))))
 
     (if (i32.ne (local.get $tag) (i32.const {object_tag})) (then (return (i32.const {undefined}))))
+    ;; Check frozen flag — frozen objects reject writes (non-strict: silent fail)
+    (local.set $flags (i32.load (i32.add (local.get $base) (i32.const {obj_flags}))))
+    (if (i32.and (local.get $flags) (i32.const {frozen_flag}))
+      (then (return (i32.const {undefined}))))
     (local.set $count (i32.load (local.get $base)))
     (local.set $i (local.get $count))
 
@@ -334,6 +354,10 @@ impl WatEmitter<'_> {
                 (return (local.get $value))))))
         (br $scan)))
 
+    ;; reject new keys on sealed (but not frozen) objects
+    (if (i32.and (local.get $flags) (i32.const {sealed_flag}))
+      (then (return (i32.const {undefined}))))
+
     ;; append new key/value (instance objects are preallocated with headroom by new-expression emission)
     (local.set $entry_base
       (i32.add (local.get $base)
@@ -356,7 +380,10 @@ impl WatEmitter<'_> {
             value_off = Layout::OBJECT_VALUE_OFFSET,
             zero = RuntimeConst::ZERO,
             one = RuntimeConst::ONE,
+            obj_flags = Layout::OBJECT_FLAGS_OFFSET,
+            frozen_flag = Layout::OBJECT_FLAG_FROZEN,
             undefined = ValueTag::UNDEFINED,
+            sealed_flag = Layout::OBJECT_FLAG_SEALED,
         ));
     }
 
@@ -373,9 +400,14 @@ impl WatEmitter<'_> {
     (local $pk_ptr i32)
     (local $pk_len i32)
     (local $j i32)
+    (local $flags i32)
     (local.set $tag (i32.and (local.get $obj) (i32.const {tag_mask})))
     (if (i32.ne (local.get $tag) (i32.const {object_tag})) (then (return (i32.const {false}))))
     (local.set $base (i32.and (local.get $obj) (i32.const {heap_mask})))
+    ;; Check frozen flag — frozen objects reject delete (non-strict: silent fail)
+    (local.set $flags (i32.load (i32.add (local.get $base) (i32.const {obj_flags}))))
+    (if (i32.and (local.get $flags) (i32.const {frozen_flag}))
+      (then (return (i32.const {false}))))
     (local.set $count (i32.load (local.get $base)))
     (local.set $i (local.get $count))
 
@@ -419,6 +451,8 @@ impl WatEmitter<'_> {
             str_header = Layout::STRING_HEADER_SIZE,
             value_off = Layout::OBJECT_VALUE_OFFSET,
             zero = RuntimeConst::ZERO,
+            obj_flags = Layout::OBJECT_FLAGS_OFFSET,
+            frozen_flag = Layout::OBJECT_FLAG_FROZEN,
             one = RuntimeConst::ONE,
             false = ValueTag::FALSE,
             true = ValueTag::TRUE,
@@ -431,46 +465,59 @@ impl WatEmitter<'_> {
   (func $property_has (param $obj i32) (param $key_ptr i32) (param $key_len i32) (result i32)
     (local $tag i32)
     (local $base i32)
+    (local $proto i32)
     (local $count i32)
     (local $i i32)
+    (local $steps i32)
     (local $entry_base i32)
     (local $pk_raw i32)
     (local $pk_ptr i32)
     (local $pk_len i32)
     (local.set $tag (i32.and (local.get $obj) (i32.const {tag_mask})))
-    (if (i32.ne (local.get $tag) (i32.const {object_tag})) (then (return (i32.const {false}))))
+    (if (i32.ne (local.get $tag) (i32.const {object_tag}))
+      (then (return (i32.const {false}))))
     (local.set $base (i32.and (local.get $obj) (i32.const {heap_mask})))
-    (local.set $count (i32.load (local.get $base)))
-    (local.set $i (local.get $count))
-
-    ;; scan for the key
-    (block $not_found
-      (loop $scan
-        (br_if $not_found (i32.eq (local.get $i) (i32.const {zero})))
-        (local.set $i (i32.sub (local.get $i) (i32.const {one})))
-        (local.set $entry_base
-          (i32.add (local.get $base)
-            (i32.add (i32.const {obj_header})
-              (i32.shl (local.get $i) (i32.const {entry_shift})))))
-        (local.set $pk_raw (i32.load (local.get $entry_base)))
-        (local.set $pk_ptr
-          (i32.add (i32.and (local.get $pk_raw) (i32.const {heap_mask})) (i32.const {str_header})))
-        (local.set $pk_len
-          (i32.load (i32.and (local.get $pk_raw) (i32.const {heap_mask}))))
-        (if (i32.eq (local.get $key_len) (local.get $pk_len))
-          (then
-            (if (call $mem_equal (local.get $key_ptr) (local.get $pk_ptr) (local.get $key_len))
-              (then
-                ;; found: return true
-                (return (i32.const {true}))))))
-        (br $scan)))
-    ;; not found
-    (i32.const {false}))
+  (block $walk_done (result i32)
+    (local.set $steps (i32.const 0))
+    (loop $walk
+      (local.set $count (i32.load (local.get $base)))
+      (local.set $i (local.get $count))
+      (block $scan_done
+        (loop $scan_entries
+          (br_if $scan_done (i32.eq (local.get $i) (i32.const {zero})))
+          (local.set $i (i32.sub (local.get $i) (i32.const {one})))
+          (local.set $entry_base
+            (i32.add (local.get $base)
+              (i32.add (i32.const {obj_header})
+                (i32.shl (local.get $i) (i32.const {entry_shift})))))
+          (local.set $pk_raw (i32.load (local.get $entry_base)))
+          (local.set $pk_ptr
+            (i32.add (i32.and (local.get $pk_raw) (i32.const {heap_mask})) (i32.const {str_header})))
+          (local.set $pk_len
+            (i32.load (i32.and (local.get $pk_raw) (i32.const {heap_mask}))))
+          (if (i32.ne (local.get $key_len) (local.get $pk_len))
+            (then (br $scan_entries)))
+          (if (call $mem_equal (local.get $key_ptr) (local.get $pk_ptr) (local.get $key_len))
+            (then (return (i32.const {true}))))
+          (br $scan_entries)))
+      ;; Scan complete without finding key. Walk prototype chain.
+      (local.set $proto (i32.load (i32.add (local.get $base) (i32.const {obj_proto}))))
+      (if (i32.eqz (local.get $proto))
+        (then (return (i32.const {false}))))
+      (if (i32.eq (local.get $base) (local.get $proto))
+        (then (return (i32.const {false}))))
+      (local.set $steps (i32.add (local.get $steps) (i32.const 1)))
+      (if (i32.ge_u (local.get $steps) (i32.const 64))
+        (then (return (i32.const {false}))))
+      (local.set $base (local.get $proto))
+      (br $walk))
+    (i32.const {false})))
 "#,
             tag_mask = ValueTag::TAG_MASK,
             object_tag = ValueTag::OBJECT,
             heap_mask = ValueTag::HEAP_MASK,
             obj_header = Layout::OBJECT_HEADER_SIZE,
+            obj_proto = Layout::OBJECT_PROTOTYPE_OFFSET,
             entry_shift = Layout::OBJECT_ENTRY_SHIFT,
             str_header = Layout::STRING_HEADER_SIZE,
             zero = RuntimeConst::ZERO,
@@ -763,6 +810,58 @@ impl WatEmitter<'_> {
         ));
     }
 
+    pub(super) fn emit_set_for_each(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $set_for_each (param $set i32) (param $callback i32) (result i32)
+    (i32.const {undefined}))
+"#,
+            undefined = ValueTag::UNDEFINED,
+        ));
+    }
+
+    pub(super) fn emit_map_clear(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $map_clear (param $map i32) (result i32)
+    (local $tag i32)
+    (local $base i32)
+    (local.set $tag (i32.and (local.get $map) (i32.const {tag_mask})))
+    (if (i32.ne (local.get $tag) (i32.const {object_tag})) (then (return (i32.const {undefined}))))
+    (local.set $base (i32.and (local.get $map) (i32.const {heap_mask})))
+    (i32.store (local.get $base) (i32.const {zero}))
+    (i32.const {undefined}))
+"#,
+            tag_mask = ValueTag::TAG_MASK,
+            object_tag = ValueTag::OBJECT,
+            heap_mask = ValueTag::HEAP_MASK,
+            zero = RuntimeConst::ZERO,
+            undefined = ValueTag::UNDEFINED,
+        ));
+    }
+
+    pub(super) fn emit_map_size(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $map_size (param $map i32) (result i32)
+    (local $tag i32)
+    (local $base i32)
+    (local.set $tag (i32.and (local.get $map) (i32.const {tag_mask})))
+    (if (i32.ne (local.get $tag) (i32.const {object_tag})) (then (return (i32.const {undefined}))))
+    (local.set $base (i32.and (local.get $map) (i32.const {heap_mask})))
+    (i32.or
+      (i32.shl (i32.load (local.get $base)) (i32.const {number_shift}))
+      (i32.const {number_tag})))
+"#,
+            tag_mask = ValueTag::TAG_MASK,
+            object_tag = ValueTag::OBJECT,
+            heap_mask = ValueTag::HEAP_MASK,
+            number_shift = ValueTag::NUMBER_SHIFT,
+            number_tag = ValueTag::NUMBER,
+            undefined = ValueTag::UNDEFINED,
+        ));
+    }
+
     pub(super) fn emit_set_from_array(&self, wat: &mut String) {
         wat.push_str(&format!(
             r#"
@@ -976,6 +1075,442 @@ impl WatEmitter<'_> {
             zero = RuntimeConst::ZERO,
             one = RuntimeConst::ONE,
             undefined = ValueTag::UNDEFINED,
+        ));
+    }
+
+    pub(super) fn emit_map_for_each(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $map_for_each (param $map i32) (param $callback i32) (result i32)
+    (i32.const {undefined}))
+"#,
+            undefined = ValueTag::UNDEFINED,
+        ));
+    }
+
+    pub(super) fn emit_map_entries_array(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $map_entries_array (param $map i32) (result i32)
+    (local $tag i32)
+    (local $map_base i32)
+    (local $len i32)
+    (local $i i32)
+    (local $entry_base i32)
+    (local $array_base i32)
+    (local $store_pos i32)
+    (local.set $tag (i32.and (local.get $map) (i32.const {tag_mask})))
+    (if (i32.ne (local.get $tag) (i32.const {object_tag})) (then (return (i32.const {undefined}))))
+    (local.set $map_base (i32.and (local.get $map) (i32.const {heap_mask})))
+    (local.set $len (i32.load (local.get $map_base)))
+    (local.set $array_base
+      (call $alloc_heap
+        (i32.add
+          (i32.const {array_header})
+          (i32.shl (i32.shl (local.get $len) (i32.const 1)) (i32.const 2)))))
+    (i32.store (local.get $array_base) (i32.shl (local.get $len) (i32.const 1)))
+    (i32.store
+      (i32.add (local.get $array_base) (i32.const {array_capacity_offset}))
+      (i32.shl (local.get $len) (i32.const 1)))
+    (i32.store
+      (i32.add (local.get $array_base) (i32.const {array_presence_word_count_offset}))
+      (i32.const 1))
+    (i32.store
+      (i32.add (local.get $array_base) (i32.const {array_elements_offset_offset}))
+      (i32.const {array_header}))
+    (if (i32.ge_u (i32.shl (local.get $len) (i32.const 1)) (i32.const 32))
+      (then
+        (i32.store
+          (i32.add (local.get $array_base) (i32.const {array_presence_words_offset}))
+          (i32.const -1)))
+      (else
+        (i32.store
+          (i32.add (local.get $array_base) (i32.const {array_presence_words_offset}))
+          (i32.sub
+            (i32.shl (i32.const 1) (i32.shl (local.get $len) (i32.const 1)))
+            (i32.const 1)))))
+    (local.set $i (i32.const {zero}))
+    (block $done
+      (loop $copy
+        (br_if $done (i32.ge_u (local.get $i) (local.get $len)))
+        (local.set $entry_base
+          (i32.add
+            (local.get $map_base)
+            (i32.add
+              (i32.const {obj_header})
+              (i32.shl (local.get $i) (i32.const {entry_shift})))))
+        (local.set $store_pos
+          (i32.add
+            (local.get $array_base)
+            (i32.add
+              (i32.const {array_header})
+              (i32.shl (i32.shl (local.get $i) (i32.const 1)) (i32.const 2)))))
+        ;; Store key at position 2*i
+        (i32.store (local.get $store_pos)
+          (i32.load (local.get $entry_base)))
+        ;; Store value at position 2*i+1
+        (i32.store
+          (i32.add (local.get $store_pos) (i32.const 4))
+          (i32.load (i32.add (local.get $entry_base) (i32.const {obj_value_offset}))))
+        (local.set $i (i32.add (local.get $i) (i32.const {one})))
+        (br $copy)))
+    (i32.or (local.get $array_base) (i32.const {array_tag})))
+"#,
+            tag_mask = ValueTag::TAG_MASK,
+            object_tag = ValueTag::OBJECT,
+            array_tag = ValueTag::ARRAY,
+            heap_mask = ValueTag::HEAP_MASK,
+            array_header = Layout::ARRAY_HEADER_SIZE,
+            array_capacity_offset = Layout::ARRAY_CAPACITY_OFFSET,
+            array_presence_word_count_offset = Layout::ARRAY_PRESENCE_WORD_COUNT_OFFSET,
+            array_elements_offset_offset = Layout::ARRAY_ELEMENTS_OFFSET_OFFSET,
+            array_presence_words_offset = Layout::ARRAY_PRESENCE_WORDS_OFFSET,
+            obj_header = Layout::OBJECT_HEADER_SIZE,
+            entry_shift = Layout::OBJECT_ENTRY_SHIFT,
+            obj_value_offset = Layout::OBJECT_VALUE_OFFSET,
+            zero = RuntimeConst::ZERO,
+            one = RuntimeConst::ONE,
+            undefined = ValueTag::UNDEFINED,
+        ));
+    }
+
+    // --- WeakMap ---
+
+    pub(super) fn emit_weak_map_new(&self, wat: &mut String) {
+        self.emit_collection_new(wat, "$weak_map_new");
+    }
+
+    pub(super) fn emit_weak_map_set(&self, wat: &mut String) {
+        // WeakMap.prototype.set(key, value) — linear scan with $strict_equal
+        wat.push_str(&format!(
+            r#"
+  (func $weak_map_set (param $wm i32) (param $key i32) (param $value i32) (result i32)
+    (local $tag i32)
+    (local $base i32)
+    (local $count i32)
+    (local $i i32)
+    (local $entry_base i32)
+    (local.set $tag (i32.and (local.get $wm) (i32.const {tag_mask})))
+    (if (i32.ne (local.get $tag) (i32.const {object_tag})) (then (return (i32.const {undefined}))))
+    (local.set $base (i32.and (local.get $wm) (i32.const {heap_mask})))
+    (local.set $count (i32.load (local.get $base)))
+    (local.set $i (i32.const {zero}))
+    (block $found
+      (loop $scan
+        (br_if $found (i32.ge_u (local.get $i) (local.get $count)))
+        (local.set $entry_base
+          (i32.add (local.get $base)
+            (i32.add (i32.const {obj_header}) (i32.shl (local.get $i) (i32.const {entry_shift})))))
+        (if (i32.eq
+              (call $strict_equal (i32.load (local.get $entry_base)) (local.get $key))
+              (i32.const {true}))
+          (then
+            (i32.store (i32.add (local.get $entry_base) (i32.const {value_off})) (local.get $value))
+            (return (local.get $wm))))
+        (local.set $i (i32.add (local.get $i) (i32.const {one})))
+        (br $scan)))
+    ;; Not found — append
+    (local.set $entry_base
+      (i32.add (local.get $base)
+        (i32.add (i32.const {obj_header}) (i32.shl (local.get $count) (i32.const {entry_shift})))))
+    (i32.store (local.get $entry_base) (local.get $key))
+    (i32.store (i32.add (local.get $entry_base) (i32.const {value_off})) (local.get $value))
+    (i32.store (local.get $base) (i32.add (local.get $count) (i32.const {one})))
+    (local.get $wm))
+"#,
+            tag_mask = ValueTag::TAG_MASK,
+            object_tag = ValueTag::OBJECT,
+            heap_mask = ValueTag::HEAP_MASK,
+            obj_header = Layout::OBJECT_HEADER_SIZE,
+            entry_shift = Layout::OBJECT_ENTRY_SHIFT,
+            value_off = Layout::OBJECT_VALUE_OFFSET,
+            zero = RuntimeConst::ZERO,
+            one = RuntimeConst::ONE,
+            true = ValueTag::TRUE,
+            undefined = ValueTag::UNDEFINED,
+        ));
+    }
+
+    pub(super) fn emit_weak_map_get(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $weak_map_get (param $wm i32) (param $key i32) (result i32)
+    (local $tag i32)
+    (local $base i32)
+    (local $count i32)
+    (local $i i32)
+    (local $entry_base i32)
+    (local.set $tag (i32.and (local.get $wm) (i32.const {tag_mask})))
+    (if (i32.ne (local.get $tag) (i32.const {object_tag})) (then (return (i32.const {undefined}))))
+    (local.set $base (i32.and (local.get $wm) (i32.const {heap_mask})))
+    (local.set $count (i32.load (local.get $base)))
+    (local.set $i (i32.const {zero}))
+    (block $not_found
+      (loop $scan
+        (br_if $not_found (i32.ge_u (local.get $i) (local.get $count)))
+        (local.set $entry_base
+          (i32.add (local.get $base)
+            (i32.add (i32.const {obj_header}) (i32.shl (local.get $i) (i32.const {entry_shift})))))
+        (if (i32.eq
+              (call $strict_equal (i32.load (local.get $entry_base)) (local.get $key))
+              (i32.const {true}))
+          (then (return (i32.load (i32.add (local.get $entry_base) (i32.const {value_off}))))))
+        (local.set $i (i32.add (local.get $i) (i32.const {one})))
+        (br $scan)))
+    (i32.const {undefined}))
+"#,
+            tag_mask = ValueTag::TAG_MASK,
+            object_tag = ValueTag::OBJECT,
+            heap_mask = ValueTag::HEAP_MASK,
+            obj_header = Layout::OBJECT_HEADER_SIZE,
+            entry_shift = Layout::OBJECT_ENTRY_SHIFT,
+            value_off = Layout::OBJECT_VALUE_OFFSET,
+            zero = RuntimeConst::ZERO,
+            one = RuntimeConst::ONE,
+            true = ValueTag::TRUE,
+            undefined = ValueTag::UNDEFINED,
+        ));
+    }
+
+    pub(super) fn emit_weak_map_has(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $weak_map_has (param $wm i32) (param $key i32) (result i32)
+    (local $tag i32)
+    (local $base i32)
+    (local $count i32)
+    (local $i i32)
+    (local $entry_base i32)
+    (local.set $tag (i32.and (local.get $wm) (i32.const {tag_mask})))
+    (if (i32.ne (local.get $tag) (i32.const {object_tag})) (then (return (i32.const {false}))))
+    (local.set $base (i32.and (local.get $wm) (i32.const {heap_mask})))
+    (local.set $count (i32.load (local.get $base)))
+    (local.set $i (i32.const {zero}))
+    (block $not_found
+      (loop $scan
+        (br_if $not_found (i32.ge_u (local.get $i) (local.get $count)))
+        (local.set $entry_base
+          (i32.add (local.get $base)
+            (i32.add (i32.const {obj_header}) (i32.shl (local.get $i) (i32.const {entry_shift})))))
+        (if (i32.eq
+              (call $strict_equal (i32.load (local.get $entry_base)) (local.get $key))
+              (i32.const {true}))
+          (then (return (i32.const {true}))))
+        (local.set $i (i32.add (local.get $i) (i32.const {one})))
+        (br $scan)))
+    (i32.const {false}))
+"#,
+            tag_mask = ValueTag::TAG_MASK,
+            object_tag = ValueTag::OBJECT,
+            heap_mask = ValueTag::HEAP_MASK,
+            obj_header = Layout::OBJECT_HEADER_SIZE,
+            entry_shift = Layout::OBJECT_ENTRY_SHIFT,
+            zero = RuntimeConst::ZERO,
+            one = RuntimeConst::ONE,
+            true = ValueTag::TRUE,
+            false = ValueTag::FALSE,
+        ));
+    }
+
+    pub(super) fn emit_weak_map_delete(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $weak_map_delete (param $wm i32) (param $key i32) (result i32)
+    (local $tag i32)
+    (local $base i32)
+    (local $count i32)
+    (local $i i32)
+    (local $entry_base i32)
+    (local $last_entry_base i32)
+    (local.set $tag (i32.and (local.get $wm) (i32.const {tag_mask})))
+    (if (i32.ne (local.get $tag) (i32.const {object_tag})) (then (return (i32.const {false}))))
+    (local.set $base (i32.and (local.get $wm) (i32.const {heap_mask})))
+    (local.set $count (i32.load (local.get $base)))
+    (local.set $i (i32.const {zero}))
+    (block $not_found
+      (loop $scan
+        (br_if $not_found (i32.ge_u (local.get $i) (local.get $count)))
+        (local.set $entry_base
+          (i32.add (local.get $base)
+            (i32.add (i32.const {obj_header}) (i32.shl (local.get $i) (i32.const {entry_shift})))))
+        (if (i32.eq
+              (call $strict_equal (i32.load (local.get $entry_base)) (local.get $key))
+              (i32.const {true}))
+          (then
+            ;; Found — swap with last entry
+            (local.set $count (i32.sub (local.get $count) (i32.const {one})))
+            (if (i32.lt_u (local.get $i) (local.get $count))
+              (then
+                (local.set $last_entry_base
+                  (i32.add (local.get $base)
+                    (i32.add (i32.const {obj_header}) (i32.shl (local.get $count) (i32.const {entry_shift})))))
+                (i32.store (local.get $entry_base) (i32.load (local.get $last_entry_base)))
+                (i32.store (i32.add (local.get $entry_base) (i32.const {value_off}))
+                  (i32.load (i32.add (local.get $last_entry_base) (i32.const {value_off}))))))
+            (i32.store (local.get $base) (local.get $count))
+            (return (i32.const {true}))))
+        (local.set $i (i32.add (local.get $i) (i32.const {one})))
+        (br $scan)))
+    (i32.const {false}))
+"#,
+            tag_mask = ValueTag::TAG_MASK,
+            object_tag = ValueTag::OBJECT,
+            heap_mask = ValueTag::HEAP_MASK,
+            obj_header = Layout::OBJECT_HEADER_SIZE,
+            entry_shift = Layout::OBJECT_ENTRY_SHIFT,
+            value_off = Layout::OBJECT_VALUE_OFFSET,
+            zero = RuntimeConst::ZERO,
+            one = RuntimeConst::ONE,
+            true = ValueTag::TRUE,
+            false = ValueTag::FALSE,
+        ));
+    }
+
+    // --- WeakSet ---
+
+    pub(super) fn emit_weak_set_new(&self, wat: &mut String) {
+        self.emit_collection_new(wat, "$weak_set_new");
+    }
+
+    pub(super) fn emit_weak_set_add(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $weak_set_add (param $ws i32) (param $key i32) (result i32)
+    (local $tag i32)
+    (local $base i32)
+    (local $count i32)
+    (local $i i32)
+    (local $entry_base i32)
+    (local.set $tag (i32.and (local.get $ws) (i32.const {tag_mask})))
+    (if (i32.ne (local.get $tag) (i32.const {object_tag})) (then (return (i32.const {undefined}))))
+    (local.set $base (i32.and (local.get $ws) (i32.const {heap_mask})))
+    (local.set $count (i32.load (local.get $base)))
+    (local.set $i (local.get $count))
+    (block $append
+      (loop $scan
+        (br_if $append (i32.eq (local.get $i) (i32.const {zero})))
+        (local.set $i (i32.sub (local.get $i) (i32.const {one})))
+        (local.set $entry_base
+          (i32.add (local.get $base)
+            (i32.add (i32.const {obj_header}) (i32.shl (local.get $i) (i32.const {entry_shift})))))
+        (if (i32.eq
+              (call $strict_equal (i32.load (local.get $entry_base)) (local.get $key))
+              (i32.const {true}))
+          (then (return (local.get $ws))))
+        (br $scan)))
+    (local.set $entry_base
+      (i32.add (local.get $base)
+        (i32.add (i32.const {obj_header}) (i32.shl (local.get $count) (i32.const {entry_shift})))))
+    (i32.store (local.get $entry_base) (local.get $key))
+    (i32.store (i32.add (local.get $entry_base) (i32.const {value_off})) (i32.const {true_value}))
+    (i32.store (local.get $base) (i32.add (local.get $count) (i32.const {one})))
+    (local.get $ws))
+"#,
+            tag_mask = ValueTag::TAG_MASK,
+            object_tag = ValueTag::OBJECT,
+            heap_mask = ValueTag::HEAP_MASK,
+            obj_header = Layout::OBJECT_HEADER_SIZE,
+            entry_shift = Layout::OBJECT_ENTRY_SHIFT,
+            value_off = Layout::OBJECT_VALUE_OFFSET,
+            zero = RuntimeConst::ZERO,
+            one = RuntimeConst::ONE,
+            true_value = ValueTag::TRUE,
+            true = ValueTag::TRUE,
+            undefined = ValueTag::UNDEFINED,
+        ));
+    }
+
+    pub(super) fn emit_weak_set_has(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $weak_set_has (param $ws i32) (param $key i32) (result i32)
+    (local $tag i32)
+    (local $base i32)
+    (local $count i32)
+    (local $i i32)
+    (local $entry_base i32)
+    (local.set $tag (i32.and (local.get $ws) (i32.const {tag_mask})))
+    (if (i32.ne (local.get $tag) (i32.const {object_tag})) (then (return (i32.const {false}))))
+    (local.set $base (i32.and (local.get $ws) (i32.const {heap_mask})))
+    (local.set $count (i32.load (local.get $base)))
+    (local.set $i (local.get $count))
+    (block $not_found
+      (loop $scan
+        (br_if $not_found (i32.eq (local.get $i) (i32.const {zero})))
+        (local.set $i (i32.sub (local.get $i) (i32.const {one})))
+        (local.set $entry_base
+          (i32.add (local.get $base)
+            (i32.add (i32.const {obj_header}) (i32.shl (local.get $i) (i32.const {entry_shift})))))
+        (if (i32.eq
+              (call $strict_equal (i32.load (local.get $entry_base)) (local.get $key))
+              (i32.const {true}))
+          (then (return (i32.const {true}))))
+        (br $scan)))
+    (i32.const {false}))
+"#,
+            tag_mask = ValueTag::TAG_MASK,
+            object_tag = ValueTag::OBJECT,
+            heap_mask = ValueTag::HEAP_MASK,
+            obj_header = Layout::OBJECT_HEADER_SIZE,
+            entry_shift = Layout::OBJECT_ENTRY_SHIFT,
+            zero = RuntimeConst::ZERO,
+            one = RuntimeConst::ONE,
+            true = ValueTag::TRUE,
+            false = ValueTag::FALSE,
+        ));
+    }
+
+    pub(super) fn emit_weak_set_delete(&self, wat: &mut String) {
+        // Same swap-with-last pattern as weak_map_delete
+        wat.push_str(&format!(
+            r#"
+  (func $weak_set_delete (param $ws i32) (param $key i32) (result i32)
+    (local $tag i32)
+    (local $base i32)
+    (local $count i32)
+    (local $i i32)
+    (local $entry_base i32)
+    (local $last_entry_base i32)
+    (local.set $tag (i32.and (local.get $ws) (i32.const {tag_mask})))
+    (if (i32.ne (local.get $tag) (i32.const {object_tag})) (then (return (i32.const {false}))))
+    (local.set $base (i32.and (local.get $ws) (i32.const {heap_mask})))
+    (local.set $count (i32.load (local.get $base)))
+    (local.set $i (i32.const {zero}))
+    (block $not_found
+      (loop $scan
+        (br_if $not_found (i32.ge_u (local.get $i) (local.get $count)))
+        (local.set $entry_base
+          (i32.add (local.get $base)
+            (i32.add (i32.const {obj_header}) (i32.shl (local.get $i) (i32.const {entry_shift})))))
+        (if (i32.eq
+              (call $strict_equal (i32.load (local.get $entry_base)) (local.get $key))
+              (i32.const {true}))
+          (then
+            (local.set $count (i32.sub (local.get $count) (i32.const {one})))
+            (if (i32.lt_u (local.get $i) (local.get $count))
+              (then
+                (local.set $last_entry_base
+                  (i32.add (local.get $base)
+                    (i32.add (i32.const {obj_header}) (i32.shl (local.get $count) (i32.const {entry_shift})))))
+                (i32.store (local.get $entry_base) (i32.load (local.get $last_entry_base)))
+                (i32.store (i32.add (local.get $entry_base) (i32.const {value_off}))
+                  (i32.load (i32.add (local.get $last_entry_base) (i32.const {value_off}))))))
+            (i32.store (local.get $base) (local.get $count))
+            (return (i32.const {true}))))
+        (local.set $i (i32.add (local.get $i) (i32.const {one})))
+        (br $scan)))
+    (i32.const {false}))
+"#,
+            tag_mask = ValueTag::TAG_MASK,
+            object_tag = ValueTag::OBJECT,
+            heap_mask = ValueTag::HEAP_MASK,
+            obj_header = Layout::OBJECT_HEADER_SIZE,
+            entry_shift = Layout::OBJECT_ENTRY_SHIFT,
+            value_off = Layout::OBJECT_VALUE_OFFSET,
+            zero = RuntimeConst::ZERO,
+            one = RuntimeConst::ONE,
+            true = ValueTag::TRUE,
+            false = ValueTag::FALSE,
         ));
     }
 

@@ -523,10 +523,10 @@ def prepare_build_inputs(suite, file_path, tmp_dir):
     )
     return wasm_source, node_source
 
-def feature_label(diag_code, err_file, file_path):
+def feature_label(diag_code, err_file, file_path, phase=None):
     """Generate feature label from diagnostic code and error output."""
     # Based on scripts/lib/feature-labels.sh
-    
+
     # First check diagnostic codes
     if diag_code == "BackendIo":
         return "backend-io"
@@ -563,6 +563,17 @@ def feature_label(diag_code, err_file, file_path):
     elif diag_code == "UnsupportedRuntimeSubset":
         return "runtime-subset"
     
+    # Phase-aware classification for UnsupportedSyntax
+    # Parser-phase diagnostics (lexer, parser, ast-validator) are true parser gaps
+    # Later-phase diagnostics (name-resolver, builtin-resolver, lowering, etc.) are runtime/builtin gaps
+    _parser_suffix = False
+    if diag_code == "UnsupportedSyntax" and phase is not None:
+        parser_phases = {"lexer", "parser", "ast-validator"}
+        if phase not in parser_phases:
+            return "feature-unsupported"
+        _parser_suffix = True
+        # Fall through to heuristic-based label below, then append :parser
+
     # Check file path for feature detection
     path_lc = file_path.lower() if file_path else ""
     
@@ -725,7 +736,10 @@ def feature_label(diag_code, err_file, file_path):
     elif "console." in text or "process." in text or "readfilesync" in text:
         return "builtin-api"
     
-    return "unknown-unsupported"
+    result = "unknown-unsupported"
+    if _parser_suffix:
+        result += ":parser"
+    return result
 
 def main():
     # Handle --check-prerequisites before suite parsing (works standalone or with a suite)
@@ -1885,6 +1899,7 @@ def main():
     
     unsupported_diag_counts = {}
     unsupported_feature_counts = {}
+    unsupported_by_phase = {}
     
     # Semantic checks require test262 harness (only available for test262 suite)
     if suite != "test262":
@@ -2042,10 +2057,12 @@ def main():
                     rm["detail_line"] = f"{detail_path}: fail: InvariantViolation"
             else:
                 rm["unsupported"] = True
-                rm["feature_label"] = feature_label(diag_code, None, str(item["file_path"]))
+                diag_phase = build_resp.get("phase")
+                rm["diag_phase"] = diag_phase
+                rm["feature_label"] = feature_label(diag_code, None, str(item["file_path"]), diag_phase)
                 if detail_output:
                     rm["detail_line"] = f"{detail_path}: {diag_code}: {rm['feature_label']}"
-        
+
         return rm
 
     def _complete_semantic_for_build_item(item, result_metrics, tmp_dir):
@@ -2088,6 +2105,7 @@ def main():
         nonlocal executed, build_pass_count, semantic_pass_count, mismatch_count
         nonlocal runtime_error_count, blocked_count, fail_count
         nonlocal unsupported_count, unsupported_diag_counts, unsupported_feature_counts
+        nonlocal unsupported_by_phase
 
         executed += 1
         if detail_output:
@@ -2132,6 +2150,9 @@ def main():
             feat = result["feature_label"]
             unsupported_diag_counts[diag_code] = unsupported_diag_counts.get(diag_code, 0) + 1
             unsupported_feature_counts[feat] = unsupported_feature_counts.get(feat, 0) + 1
+            diag_phase = result.get("diag_phase")
+            if diag_phase:
+                unsupported_by_phase[diag_phase] = unsupported_by_phase.get(diag_phase, 0) + 1
             if result["detail_line"]:
                 file_details.append(result["detail_line"])
             return
@@ -2170,8 +2191,9 @@ def main():
                 return rm
 
             err_content = build_result.stderr.decode("utf-8", errors="ignore")
-            diag_match = re.search(r"\[([A-Za-z0-9_]+)\]", err_content)
+            diag_match = re.search(r"\[([A-Za-z0-9_]+)(?:/([A-Za-z0-9_]+))?\]", err_content)
             diag_code = diag_match.group(1) if diag_match else "Unknown"
+            diag_phase = diag_match.group(2) if diag_match and diag_match.group(2) else None
             rm["diag_code"] = diag_code
             if diag_code == "BackendIo":
                 rm["blocked"] = True
@@ -2183,7 +2205,7 @@ def main():
                     rm["detail_line"] = f"{detail_path}: fail: InvariantViolation"
             else:
                 rm["unsupported"] = True
-                rm["feature_label"] = feature_label(diag_code, err_content, str(item["file_path"]))
+                rm["feature_label"] = feature_label(diag_code, err_content, str(item["file_path"]), diag_phase)
                 if detail_output:
                     rm["detail_line"] = f"{detail_path}: {diag_code}: {rm['feature_label']}"
             return rm
@@ -2212,6 +2234,7 @@ def main():
             "fail": False,
             "unsupported": False,
             "diag_code": None,
+            "diag_phase": None,
             "feature_label": None,
             "detail_line": None,
         }
@@ -2290,9 +2313,11 @@ def main():
             
             # Extract diagnostic code
             err_content = build_result.stderr.decode('utf-8', errors='ignore')
-            diag_match = re.search(r'\[([A-Za-z0-9_]+)\]', err_content)
+            diag_match = re.search(r'\[([A-Za-z0-9_]+)(?:/([A-Za-z0-9_]+))?\]', err_content)
             diag_code = diag_match.group(1) if diag_match else "Unknown"
+            diag_phase = diag_match.group(2) if diag_match and diag_match.group(2) else None
             result_metrics["diag_code"] = diag_code
+            result_metrics["diag_phase"] = diag_phase
 
             if is_test262 and metadata.expects_negative:
                 result_metrics["build_pass"] = True
@@ -2312,7 +2337,7 @@ def main():
                     result_metrics["detail_line"] = f"{detail_path}: fail: InvariantViolation"
             else:
                 result_metrics["unsupported"] = True
-                feat = feature_label(diag_code, err_content, str(file_path))
+                feat = feature_label(diag_code, err_content, str(file_path), diag_phase)
                 result_metrics["feature_label"] = feat
                 if detail_output:
                     result_metrics["detail_line"] = f"{detail_path}: {diag_code}: {feat}"
@@ -2527,6 +2552,9 @@ def main():
                         feat = result["feature_label"]
                         unsupported_diag_counts[diag_code] = unsupported_diag_counts.get(diag_code, 0) + 1
                         unsupported_feature_counts[feat] = unsupported_feature_counts.get(feat, 0) + 1
+                        diag_phase = result.get("diag_phase")
+                        if diag_phase:
+                            unsupported_by_phase[diag_phase] = unsupported_by_phase.get(diag_phase, 0) + 1
                         if result["detail_line"]:
                             file_details.append(result["detail_line"])
                         continue
@@ -2582,6 +2610,7 @@ def main():
         "duration_ms": int(round((time.perf_counter() - coverage_started_at) * 1000)),
         "unsupported_diagcodes": unsupported_diag_counts,
         "unsupported_features": unsupported_feature_counts,
+        "unsupported_by_phase": unsupported_by_phase,
         "status": "in-progress",
         "selection": {
             "paths_file": paths_file,

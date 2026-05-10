@@ -146,7 +146,8 @@ impl Parser {
                     code: DiagCode::UnsupportedSyntax,
                     message: "issue-252: unterminated array assignment pattern".to_owned(),
                     span: Some(start),
-                });
+
+                    phase: None,});
             }
 
             if self.consume(TokenKind::Comma) {
@@ -204,7 +205,8 @@ impl Parser {
                     code: DiagCode::UnsupportedSyntax,
                     message: "issue-252: unterminated object assignment pattern".to_owned(),
                     span: Some(start),
-                });
+
+                    phase: None,});
             }
 
             if let Some(rest_span) = self.consume_span(TokenKind::DotDotDot) {
@@ -228,7 +230,8 @@ impl Parser {
                     message: "issue-252: literal object assignment keys require a target after `:`"
                         .to_owned(),
                     span: self.peek_span(),
-                });
+
+                    phase: None,});
             };
 
             if self.consume(TokenKind::Equal) {
@@ -273,7 +276,8 @@ impl Parser {
                 code: DiagCode::UnsupportedSyntax,
                 message: format!("issue-252: expected assignment target or pattern, got {other:?}"),
                 span: self.peek_span(),
-            }),
+
+                phase: None,}),
         }
     }
 
@@ -298,7 +302,8 @@ impl Parser {
                 code: DiagCode::UnsupportedSyntax,
                 message: "issue-252: invalid destructuring assignment target".to_owned(),
                 span: Some(span),
-            }),
+
+                phase: None,}),
         }
     }
 
@@ -309,7 +314,9 @@ impl Parser {
                 "issue-252: rest assignment target must be the final element in an assignment pattern"
                     .to_owned(),
             span: Some(span),
-        }
+
+
+            phase: None,}
     }
 
 }

@@ -251,6 +251,7 @@ pub enum Stmt {
         params: Vec<(String, Option<Expr>, bool)>,
         body: Vec<Stmt>,
         is_generator: bool,
+        is_async: bool,
         is_ambient: bool,
         /// True when the function was declared with `;` (no block body).
         /// Used to distinguish bodyless TypeScript overload signatures

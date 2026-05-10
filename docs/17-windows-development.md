@@ -101,8 +101,8 @@ mise tasks
 - `gate` - fmt + issue health + architecture + coverage matrix + nextest
 - `gate-fast` - `gate` から nextest を除いた高速ゲート
 - `gate-all` - harness/toolchain を含むフルゲート
-- `check issues` - issues/ ディレクトリの検証
-- `update-issue-index` - issues/index.md の再生成
+- `check issues` - TRACKING.yaml の整合性検証（tracking-consistency.py）
+- `update-issue-index` - TRACKING.yaml ベースの issue ページ生成（gen-site.py）
 - その他多数（`mise tasks` で確認）
 
 ### 4. 開発ワークフロー

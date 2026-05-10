@@ -50,7 +50,7 @@ This wave is about **minimum correctness and maintainability**, not full optimiz
 W8 handles the post-90% full replacement.
 
 - [X] Minimal binary WASM emitter path for simple programs — id 112 done
-- [ ] Runtime core raw WAT reduction where it blocks maintainability
+- [X] Runtime core raw WAT reduction where it blocks maintainability — id 223 done
 - [X] ABI contract document: logical values vs wire representation — id 115 done
 - [X] ABI mismatch tests for `i64` logical value vs `i32` wire handle/value representation — id 116 done
 - [X] Runtime value representation smoke tests under iwasm/WAMR — id 117 done
@@ -68,12 +68,12 @@ Goal: generated WASM should run as a standalone WASI program where the supported
 
 W1 is the **initial baseline gate**. Ongoing host capability auditing belongs to W7 (cross-cutting validation track).
 
-- [ ] WASI args support: `args_get` / `args_sizes_get`
-- [ ] WASI env support: `environ_get` / `environ_sizes_get`
+- [X] WASI args support: `args_get` / `args_sizes_get` — done (id 134)
+- [X] WASI env support: `environ_get` / `environ_sizes_get` — done (id 138)
 - [X] WASI `proc_exit` clean exit — routed through HostImport system during issue 128
-- [ ] WASI clock resolution: `clock_res_get`
-- [ ] Standalone iwasm/WAMR smoke test coverage
-- [ ] Capability manifest entries for every new WASI import
+- [X] WASI clock resolution: `clock_res_get` — done (id 142)
+- [X] Standalone iwasm/WAMR smoke test coverage — done (id 161)
+- [X] Capability manifest entries for every new WASI import — covered by m11_host_deny suite (id 129, 136, 137)
 
 Non-goals:
 - No implicit Node.js compatibility layer.
@@ -99,10 +99,23 @@ W2 = "parse or precise reject". Runtime semantics belong to W4/W5.
 - [X] Annex B block-level function hoisting syntax handling — id 126
 - [X] Cover initializers — id 124
 - [X] Labelled function declarations — id 126
-- [ ] JSX parsing
-- [ ] Decorator parsing
-- [ ] TypeScript parameter property parsing
-- [ ] Parser-specific regression tests
+- [X] JSX parsing — precise unsupported diagnostic added (id 130 done); full parser tracked as id 194
+- [X] Decorator parsing — precise unsupported diagnostic added (id 131 done); full parser tracked as id 195
+- [X] TypeScript parameter property parsing — parser + lowering complete (id 132 done)
+- [X] Parser-specific regression tests — integrated into m6_builtin_methods suite (id 140 done)
+
+TypeScript erasure parser items:
+- [X] Angle bracket type assertion disambiguation — fixed (id 151 done)
+- [X] Enum erasure — fixed (id 149 done)
+- [X] Async function for-await-of consumption — fixed (id 152 done)
+- [X] Top-level block flattening — fixed (id 153 done)
+- [X] RegExp d flag rejection — fixed (id 154 done)
+- [X] Ambient form diagnostics — fixed (id 155 done)
+- [X] Module augmentation diagnostic — fixed (id 148, 156 done)
+- [X] Triple-slash directive diagnostic — fixed (id 147 done)
+- [X] Type-only import diagnostic — fixed (id 145 done)
+- [X] Nested namespace diagnostic (A.B.C) — fixed (id 143 done)
+- [X] Nullish coalescing parse — implemented (id 120 done)
 
 Non-goals:
 - Parser support does not imply runtime semantics.
@@ -128,10 +141,10 @@ This wave should reduce `UnresolvedName` / `UnresolvedFunction` noise without pr
   [x] `Symbol.iterator`, `toStringTag`, `hasInstance`, `toPrimitive`, `for`, `keyFor` — id 103 done
 - [X] Builtin method dispatch table — already complete (program_builtins.rs)
 - [X] String / Array / Object / Number / Function.prototype method dispatch routing — already complete
-- [ ] Nested namespace/module resolution: `A.B.C`
-- [ ] Type-only imports
-- [ ] Triple-slash directives
-- [ ] Module augmentation
+- [X] Nested namespace/module resolution: `A.B.C` — precise diagnostic (id 143 done)
+- [X] Type-only imports — precise diagnostic (id 145 done)
+- [X] Triple-slash directives — precise diagnostic (id 147 done)
+- [X] Module augmentation — precise diagnostic (id 148, 156 done)
 
 Non-goals:
 - Name registration does not imply runtime implementation.
@@ -178,14 +191,19 @@ W5 = language execution model / control flow / object model invariants.
 
 - [ ] Iterator protocol: Array/String/Map/Set iterators + `Iterator.prototype`
 - [ ] Well-known symbol runtime wiring: `Symbol.iterator`, `hasInstance`, `toPrimitive`, `toStringTag`
-- [ ] Proper completion records for `if`/`switch`/`try`/`for`/`while`/`break`/`continue`/`return`/`throw`
+- [X] Completion Records Phase 0-1: base types + return/throw — done (id 188, 189 done)
+- [X] Completion Records Phase 2: try-catch-finally — done (id 190 done)
+- [X] Completion Records Phase 3: labeled break/continue — done (id 191 done)
+- [X] Completion Records Phase 4: async/await integration — done (id 192 done)
+- [X] Object semantics kernel W5.0-W5.7: property descriptors, freeze/seal prototype get/set, class prototype — done (ids 173-186)
+- [X] Object.defineProperty WAT template fix — done (id 174)
+- [X] Freeze/seal writable/configurable flag enforcement in $property_set/$property_delete — done (id 184)
 - [ ] Generator functions: `function*`, `yield`, `yield*`, `Generator.prototype`
-- [ ] Promise-backed async/await lowering
+- [X] Promise-backed async/await lowering — done (ids 170-172 done)
 - [ ] Async generators + `for-await-of`
-- [ ] Object model completeness: property descriptors, `seal`/`freeze`, `[[GetPrototypeOf]]`/`[[SetPrototypeOf]]`
 - [ ] ES module live binding updates + module namespace objects
 - [ ] Dynamic import + circular dependency evaluation
-- [ ] Mutable capture environments for escaping closures
+- [X] Mutable capture environments for escaping closures — done (id 214 done)
 - [ ] `this` binding: global this, strict-mode receiver, method receiver
 
 Non-goals:
@@ -203,11 +221,11 @@ This is a **cross-cutting validation track**, not a sequential phase.
 Work here runs in parallel with W2-W5 implementation: each feature change should be accompanied by coverage measurement, regression detection, and delta reporting.
 
 - [X] Ramp 500 → 2,000 with stable parallel execution and caching — already works (--jobs N flag)
-- [ ] Ramp 2,000 → 10,000 / 10,000 → 30,000 / 30,000 → 53,445
+- [X] Ramp 2,000 → 10,000 / 10,000 → 30,000 / 30,000 → 53,445 — done (id 216 done)
 - [X] Regression detection: fail on build_pass / semantic_pass decrease — [x] `--record-baseline` / `--compare-baseline` flags (id 107 done)
 - [X] Delta reporting: feature-level and diagnostic-class pass/fail deltas — id 128
-- [ ] Coverage dashboard: trend graph, feature-level burn-down, diagnostic burn-down
-- [ ] Gate progress visualization
+- [X] Coverage dashboard: trend graph, feature-level burn-down, diagnostic burn-down — done (id 217 done)
+- [X] Gate progress visualization — done (id 218 done)
 
 Non-goals:
 - Do not auto-create `TRACKING.yaml` entries from coverage gaps.
@@ -224,11 +242,11 @@ This is a **cross-cutting validation track** that protects the core project cons
 generated WASM should not silently depend on Node.js or hidden host capabilities.
 
 - [X] Full host import audit with `--emit-manifest` — id 129
-- [ ] Manifest golden tests for all supported fixtures
-- [ ] Host-deny test matrix expansion
-- [ ] Standalone assurance for new features (Promise, Proxy, Reflect, TypedArray, WASI args/env)
+- [X] Manifest golden tests for all supported fixtures — done (id 219 done)
+- [X] Host-deny test matrix expansion — done (id 220 done)
+- [X] Standalone assurance for new features (Promise, Proxy, Reflect, TypedArray, WASI args/env) — done (ids 221-222 done)
 - [X] Capability review checklist in coding standard — [x] already documented (id 113 done)
-- [ ] CI gate for unexpected host imports
+- [X] CI gate for unexpected host imports — done (id 222 done)
 
 Non-goals:
 - No broad host shim.

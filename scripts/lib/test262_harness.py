@@ -359,7 +359,7 @@ def create_test_record(suite, case_path, target, status, expected=None, actual=N
 # Feature label
 # ---------------------------------------------------------------------------
 
-def feature_label(diag_code, stderr, test_file):
+def feature_label(diag_code, stderr, test_file, phase=None):
     """Generate feature label from diagnostic code."""
     feature_map = {
         "ExpectedNegativeSyntax": "negative-parse-syntaxerror",
@@ -379,7 +379,15 @@ def feature_label(diag_code, stderr, test_file):
         "BackendIo": "io-backend",
         "CompilationError": "compilation",
     }
-    return feature_map.get(diag_code, diag_code.lower())
+    label = feature_map.get(diag_code, diag_code.lower())
+    # Phase-aware distinction for UnsupportedSyntax
+    if diag_code == "UnsupportedSyntax" and phase is not None:
+        parser_phases = {"lexer", "parser", "ast-validator"}
+        if phase in parser_phases:
+            label += ":parser"
+        else:
+            label = "feature-unsupported"
+    return label
 
 
 # ---------------------------------------------------------------------------
@@ -453,6 +461,10 @@ def compile_and_run_test(test_file, tmp_dir):
         result_stderr_full = stderr_content
         diag_match = re.search(r'(UnsupportedSyntax|UnsupportedBuiltin|UnsupportedDate|UnsupportedRegExp|UnsupportedModule|UnsupportedEval|UnsupportedTypeScriptSyntax|UnsupportedRuntimeSubset|UnresolvedName|UnresolvedFunction|TypeError|RuntimeError|InvariantViolation|BackendIo|CompilationError)', stderr_content)
         result_diag = diag_match.group(1) if diag_match else "CompilationError"
+        diag_phase = None
+        if result_diag == "UnsupportedSyntax":
+            phase_match = re.search(r'\[UnsupportedSyntax/(\w+)\]', stderr_content)
+            diag_phase = phase_match.group(1) if phase_match else None
 
         # Try to extract line number from error message
         # Look for patterns like "at line X" or ":X:" where X is a line number
@@ -471,9 +483,9 @@ def compile_and_run_test(test_file, tmp_dir):
                 except:
                     pass
 
-        reason_match = re.search(re.escape(f"[{result_diag}]"), stderr_content)
+        reason_match = re.search(re.escape(f"[{result_diag}") + r"(?:/\w+)?\]", stderr_content)
         result_reason = reason_match.group(0) if reason_match else stderr_content.split('\n')[0] if stderr_content else ""
-        result_feature = feature_label(result_diag, stderr_content, str(test_file))
+        result_feature = feature_label(result_diag, stderr_content, str(test_file), diag_phase)
         if metadata.expects_negative:
             result_status = "pass"
             result_reason = f"negative {metadata.negative_phase}/{metadata.negative_type or 'error'} rejected during compilation"

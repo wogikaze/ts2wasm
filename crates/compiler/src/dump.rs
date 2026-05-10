@@ -82,6 +82,8 @@ pub fn dump_file_with_options(input: &Path, options: DumpOptions) -> Result<Stri
             message: "--unparse is currently supported only with --ast, --tir, or --optimize"
                 .to_owned(),
             span: None,
+
+            phase: None,
         });
     }
 
@@ -89,6 +91,8 @@ pub fn dump_file_with_options(input: &Path, options: DumpOptions) -> Result<Stri
         code: DiagCode::BackendIo,
         message: format!("failed to read {}: {error}", input.display()),
         span: None,
+
+        phase: None,
     })?;
     let source = test262_preprocessor::process_test262_includes(input, &source)?;
     validate_type_reference_directives(&source)?;
@@ -202,6 +206,8 @@ fn build_dump_pipeline(
             code: DiagCode::InvariantViolation,
             message: "validate_lowered failed with empty diagnostic list".to_owned(),
             span: None,
+
+            phase: None,
         })
     })?;
     super::ensure_runtime_feature_gates(&lowered)?;
@@ -223,6 +229,8 @@ fn build_typed_ir(resolved: &[ResolvedStmt]) -> Result<HirProgram, Diagnostic> {
             code: DiagCode::InvariantViolation,
             message: "validate_hir failed with empty diagnostic list".to_owned(),
             span: None,
+
+            phase: None,
         })
     })?;
     Ok(typed_ir)

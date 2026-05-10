@@ -168,6 +168,7 @@ impl BigIntStaticBuiltinFolder {
                 params,
                 body,
                 is_generator,
+                is_async,
                 is_ambient,
                 overload_signature,
                 span,
@@ -176,6 +177,7 @@ impl BigIntStaticBuiltinFolder {
                 params: params.clone(),
                 body: BigIntStaticBuiltinFolder::default().fold_stmts(body),
                 is_generator: *is_generator,
+                is_async: *is_async,
                 is_ambient: *is_ambient,
                 overload_signature: *overload_signature,
                 span: *span,
@@ -1051,6 +1053,7 @@ fn resolve_stmt_with_outer_bindings(
             params,
             body,
             is_generator,
+            is_async,
             is_ambient,
             span,
             ..
@@ -1074,6 +1077,7 @@ fn resolve_stmt_with_outer_bindings(
                     .map(resolve_stmt)
                     .collect::<Result<Vec<_>, _>>()?,
                 is_generator: *is_generator,
+                is_async: *is_async,
                 is_ambient: *is_ambient,
             })
         }
@@ -1105,7 +1109,8 @@ fn resolve_stmt_with_outer_bindings(
                             message: "only simple inheritance (extends ClassName) is supported"
                                 .to_owned(),
                             span: None,
-                        });
+
+                            phase: None,});
                     }
                 },
                 None => None,
@@ -1142,7 +1147,8 @@ fn resolve_stmt_with_outer_bindings(
                                 code: DiagCode::DuplicateFunction,
                                 message: "duplicate constructor definition".to_owned(),
                                 span: None,
-                            });
+
+                                phase: None,});
                         }
                         let resolved_params = params
                             .iter()
@@ -1225,7 +1231,8 @@ fn resolve_stmt_with_outer_bindings(
                             message: "class body may only contain methods and constructors"
                                 .to_owned(),
                             span: None,
-                        });
+
+                            phase: None,});
                     }
                 }
             }
@@ -1416,7 +1423,8 @@ fn resolve_stmt_with_outer_bindings(
                 "issue-055: internal — static module declaration reached resolver without compiler rewrite"
                     .to_owned(),
             span: None,
-        }),
+
+            phase: None,}),
     }
 }
 
@@ -1491,6 +1499,8 @@ fn resolve_expr(expr: &Expr) -> Result<ResolvedExpr, Diagnostic> {
                         code: DiagCode::UnsupportedSyntax,
                         message: message.to_owned(),
                         span: Some(*span),
+
+                        phase: None,
                     });
                 }
                 return Ok(ResolvedExpr::Unary {
@@ -1630,7 +1640,8 @@ fn resolve_expr(expr: &Expr) -> Result<ResolvedExpr, Diagnostic> {
                             code: DiagCode::UnsupportedSyntax,
                             message: "issue-261: BigInt object/coercion operator boundaries are tracked separately from literal runtime values".to_owned(),
                             span: Some(span),
-                        }),
+
+                            phase: None,}),
                         _ => {} // Less/Greater/Equal etc handled by fold_bigint_static_abstract_equality
                     }
                 }
@@ -1658,6 +1669,8 @@ fn resolve_expr(expr: &Expr) -> Result<ResolvedExpr, Diagnostic> {
                     code: DiagCode::UnsupportedSyntax,
                     message: "require() expects a string literal argument".to_owned(),
                     span: None,
+
+                    phase: None,
                 })
             }
         }
@@ -1748,7 +1761,8 @@ fn resolve_expr(expr: &Expr) -> Result<ResolvedExpr, Diagnostic> {
                     code: DiagCode::UnsupportedSyntax,
                     message: "issue-255: private field logical assignment is not supported in this private field runtime slice".to_owned(),
                     span: span_of_expr(expr),
-                });
+
+                    phase: None,});
             }
             match (object_expr.as_ref(), computed_key.as_ref()) {
                 (Some(object_expr), Some(key)) => Ok(ResolvedExpr::LogicalComputedMemberAssign {
@@ -1798,6 +1812,8 @@ fn resolve_expr(expr: &Expr) -> Result<ResolvedExpr, Diagnostic> {
                         code: DiagCode::UnsupportedSyntax,
                         message: format!("process.{} is not supported in this milestone", property),
                         span: span_of_expr(expr),
+
+                        phase: None,
                     }),
                 };
             }
@@ -1828,6 +1844,8 @@ fn resolve_expr(expr: &Expr) -> Result<ResolvedExpr, Diagnostic> {
                     message: "issue-253: optional chaining of private fields is not supported"
                         .to_owned(),
                     span: Some(*span),
+
+                    phase: None,
                 });
             }
             Ok(ResolvedExpr::OptionalPropertyAccess {
@@ -1906,6 +1924,8 @@ fn resolve_expr(expr: &Expr) -> Result<ResolvedExpr, Diagnostic> {
                             "issue-262: BigInt is not a constructor; use BigInt(...) without new"
                                 .to_owned(),
                         span: Some(*span),
+
+                        phase: None,
                     });
                 }
                 let resolved_args = args
@@ -1922,6 +1942,8 @@ fn resolve_expr(expr: &Expr) -> Result<ResolvedExpr, Diagnostic> {
                     code: DiagCode::UnsupportedSyntax,
                     message: "only new ClassName(...) is supported".to_owned(),
                     span: None,
+
+                    phase: None,
                 })
             }
         }
@@ -2057,6 +2079,8 @@ fn increment_update_diagnostic(span: Span) -> Diagnostic {
             "issue-268: for-loop increment/decrement updates currently require an identifier target"
                 .to_owned(),
         span: Some(span),
+
+        phase: None,
     }
 }
 

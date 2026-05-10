@@ -120,6 +120,8 @@ impl<'a> Lexer<'a> {
                         start,
                         end: self.cursor,
                     }),
+
+                    phase: None,
                 });
             } else if ch == '/' {
                 if in_class {
@@ -143,6 +145,8 @@ impl<'a> Lexer<'a> {
                     start,
                     end: self.cursor,
                 }),
+
+                phase: None,
             });
         }
 
@@ -161,6 +165,8 @@ impl<'a> Lexer<'a> {
                         start: self.cursor,
                         end: self.cursor + ch.len_utf8(),
                     }),
+
+                    phase: None,
                 });
             }
             if flags.contains(ch) {
@@ -171,6 +177,8 @@ impl<'a> Lexer<'a> {
                         start: self.cursor,
                         end: self.cursor + ch.len_utf8(),
                     }),
+
+                    phase: None,
                 });
             }
             flags.push(ch);
@@ -234,6 +242,8 @@ impl<'a> Lexer<'a> {
                 start,
                 end: self.cursor,
             }),
+
+            phase: None,
         })
     }
 
@@ -1098,6 +1108,8 @@ impl<'a> Lexer<'a> {
                             start: self.cursor,
                             end: self.cursor + other.len_utf8(),
                         }),
+
+                        phase: None,
                     });
                 }
             }
@@ -1141,6 +1153,8 @@ impl<'a> Lexer<'a> {
                                 .wrapping_sub(2),
                             end: self.cursor,
                         }),
+
+                        phase: None,
                     });
                 }
                 Ok(true)
@@ -1174,6 +1188,8 @@ impl<'a> Lexer<'a> {
                                     start,
                                     end: self.cursor,
                                 }),
+
+                                phase: None,
                             });
                         }
                     }

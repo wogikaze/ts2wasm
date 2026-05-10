@@ -45,7 +45,8 @@ fn validate_functions(program: &LoweredProgram, errors: &mut Vec<Diagnostic>) {
                     function.id.0, idx
                 ),
                 span: None,
-            });
+
+                phase: None,});
         }
 
         for (param_index, local_id) in function.params.iter().enumerate() {
@@ -57,7 +58,8 @@ fn validate_functions(program: &LoweredProgram, errors: &mut Vec<Diagnostic>) {
                         local_id.0, param_index
                     ),
                     span: None,
-                });
+
+                    phase: None,});
             }
         }
 
@@ -71,7 +73,8 @@ fn validate_functions(program: &LoweredProgram, errors: &mut Vec<Diagnostic>) {
                         function.params.len()
                     ),
                     span: None,
-                });
+
+                    phase: None,});
             } else if rest_param_index + 1 != function.params.len() {
                 errors.push(Diagnostic {
                     code: DiagCode::InvariantViolation,
@@ -80,7 +83,8 @@ fn validate_functions(program: &LoweredProgram, errors: &mut Vec<Diagnostic>) {
                         rest_param_index
                     ),
                     span: None,
-                });
+
+                    phase: None,});
             }
         }
 
@@ -95,7 +99,8 @@ fn validate_functions(program: &LoweredProgram, errors: &mut Vec<Diagnostic>) {
                         local_id.0, base
                     ),
                     span: None,
-                });
+
+                    phase: None,});
             }
         }
     }
@@ -111,7 +116,8 @@ fn validate_top_level_locals(program: &LoweredProgram, errors: &mut Vec<Diagnost
                     local_id.0, index
                 ),
                 span: None,
-            });
+
+                phase: None,});
         }
     }
 }
@@ -188,7 +194,8 @@ fn validate_stmt(
                     code: DiagCode::InvariantViolation,
                     message: "try-catch must have at least a catch or finally block".to_owned(),
                     span: None,
-                });
+
+                    phase: None,});
             }
         }
         LoweredStmt::Switch { expr, cases, .. } => {
@@ -278,7 +285,8 @@ fn validate_stmt(
                         ctor_id.0, num_funcs
                     ),
                     span: None,
-                });
+
+                    phase: None,});
             }
             for (_, method_id) in methods.iter().chain(static_methods.iter()) {
                 if method_id.0 >= num_funcs {
@@ -289,7 +297,8 @@ fn validate_stmt(
                             method_id.0, num_funcs
                         ),
                         span: None,
-                    });
+
+                        phase: None,});
                 }
             }
         }
@@ -365,7 +374,8 @@ fn validate_expr(
                                 func_id.0, num_funcs
                             ),
                             span: None,
-                        });
+
+                            phase: None,});
                     } else {
                         let func = &program.functions[func_id.0];
                         let min_required = func.min_required_params;
@@ -379,7 +389,8 @@ fn validate_expr(
                                     args.len()
                                 ),
                                 span: None,
-                            });
+
+                                phase: None,});
                         } // Extra args beyond params are allowed (JS semantics)
                     }
                 }
@@ -397,7 +408,8 @@ fn validate_expr(
                                 args.len()
                             ),
                             span: None,
-                        });
+
+                            phase: None,});
                     }
                     if value_required
                         && matches!(builtin.result(), BuiltinResult::EffectOnly)
@@ -410,7 +422,8 @@ fn validate_expr(
                                 builtin
                             ),
                             span: None,
-                        });
+
+                            phase: None,});
                     }
                 }
             }
@@ -424,14 +437,16 @@ fn validate_expr(
                     code: DiagCode::InvariantViolation,
                     message: "ArrayPushMany must include an array receiver argument".to_owned(),
                     span: None,
-                });
+
+                    phase: None,});
             }
             if runtime_fn == "ArrayPushGrow" && args.len() != 2 {
                 errors.push(Diagnostic {
                     code: DiagCode::InvariantViolation,
                     message: "ArrayPushGrow must include an array receiver and value".to_owned(),
                     span: None,
-                });
+
+                    phase: None,});
             }
             if runtime_fn == "HeapClosureCall" && args.is_empty() {
                 errors.push(Diagnostic {
@@ -439,7 +454,8 @@ fn validate_expr(
                     message: "HeapClosureCall must include a closure receiver argument"
                         .to_owned(),
                     span: None,
-                });
+
+                    phase: None,});
             }
             if runtime_fn == "PrivateFieldGet"
                 && !matches!(args.as_slice(), [_, LoweredExpr::Number(brand, _), LoweredExpr::Number(slot, _)] if *brand > 0 && *slot >= 0)
@@ -449,7 +465,8 @@ fn validate_expr(
                     message: "PrivateFieldGet must include an object, positive private brand, and non-negative private slot"
                         .to_owned(),
                     span: None,
-                });
+
+                    phase: None,});
             }
             if runtime_fn == "PrivateFieldSet"
                 && !matches!(args.as_slice(), [_, LoweredExpr::Number(brand, _), LoweredExpr::Number(slot, _), _] if *brand > 0 && *slot >= 0)
@@ -460,7 +477,8 @@ fn validate_expr(
                         "PrivateFieldSet must include an object, positive private brand, non-negative private slot, and value"
                             .to_owned(),
                     span: None,
-                });
+
+                    phase: None,});
             }
             if runtime_fn == "PrivateBrandCheck"
                 && !matches!(args.as_slice(), [_, LoweredExpr::Number(brand, _)] if *brand > 0)
@@ -470,7 +488,8 @@ fn validate_expr(
                     message: "PrivateBrandCheck must include an object and positive private brand"
                         .to_owned(),
                     span: None,
-                });
+
+                    phase: None,});
             }
         }
         LoweredExpr::ArrayNew { elements, .. } => {
@@ -541,14 +560,16 @@ fn validate_expr(
                     code: DiagCode::InvariantViolation,
                     message: "class instances with private slots must include a positive private brand".to_owned(),
                     span: None,
-                });
+
+                    phase: None,});
             }
             if *private_slot_count > u16::MAX as usize {
                 errors.push(Diagnostic {
                     code: DiagCode::InvariantViolation,
                     message: "class private slot count exceeds runtime metadata capacity".to_owned(),
                     span: None,
-                });
+
+                    phase: None,});
             }
             validate_constructor_arity(*constructor, args, num_funcs, program, errors);
             for arg in args {
@@ -567,7 +588,8 @@ fn validate_expr(
                 code: DiagCode::InvariantViolation,
                 message: "issue-211: residual `this` must be resolved to an active receiver local before backend emission".to_owned(),
                 span: None,
-            });
+
+                phase: None,});
         }
         LoweredExpr::PromiseGetValue { promise, .. } => {
             validate_expr(promise, local_count, num_funcs, program, errors, true);
@@ -580,7 +602,8 @@ fn validate_expr(
                     "MethodCall must be resolved before backend; residual MethodCall is unsupported"
                         .to_owned(),
                 span: None,
-            });
+
+                phase: None,});
         }
         LoweredExpr::ArrowFn {
             func_id,
@@ -636,7 +659,8 @@ fn validate_expr(
                         module_id
                     ),
                     span: None,
-                });
+
+                    phase: None,});
             }
         }
         LoweredExpr::Block { stmts, result, .. } => {
@@ -655,7 +679,8 @@ fn check_local_id(id: LocalId, local_count: usize, errors: &mut Vec<Diagnostic>)
                 id.0, local_count
             ),
             span: None,
-        });
+
+            phase: None,});
     }
 }
 
@@ -668,7 +693,8 @@ fn check_func_id(id: FuncId, num_funcs: usize, errors: &mut Vec<Diagnostic>) {
                 id.0, num_funcs
             ),
             span: None,
-        });
+
+            phase: None,});
     }
 }
 
@@ -694,7 +720,8 @@ fn validate_constructor_arity(
                 args.len()
             ),
             span: None,
-        });
+
+            phase: None,});
     } else if func.rest_param_index.is_none() {
         let max_allowed = func.params.len().saturating_sub(1);
         if args.len() > max_allowed {
@@ -708,7 +735,8 @@ fn validate_constructor_arity(
                     args.len()
                 ),
                 span: None,
-            });
+
+                phase: None,});
         }
     }
 }

@@ -5,7 +5,8 @@ impl<'a> Lexer<'a> {
             code: DiagCode::UnsupportedSyntax,
             message: "expected string delimiter".to_owned(),
             span: None,
-        })?;
+
+            phase: None,})?;
         let mut value = String::new();
         let mut escaped = false;
 
@@ -43,7 +44,8 @@ impl<'a> Lexer<'a> {
                                 start: self.cursor.saturating_sub(2),
                                 end: self.cursor,
                             }),
-                        });
+
+                            phase: None,});
                     }
                     '8' | '9' => ch,
                     other => {
@@ -54,7 +56,8 @@ impl<'a> Lexer<'a> {
                                 start: self.cursor.saturating_sub(2),
                                 end: self.cursor,
                             }),
-                        });
+
+                            phase: None,});
                     }
                 });
                 escaped = false;
@@ -82,7 +85,8 @@ impl<'a> Lexer<'a> {
                         start: self.cursor.saturating_sub(1),
                         end: self.cursor,
                     }),
-                });
+
+                    phase: None,});
             }
             value.push(ch);
         }
@@ -94,7 +98,8 @@ impl<'a> Lexer<'a> {
                 start,
                 end: self.cursor,
             }),
-        })
+
+            phase: None,})
     }
 
     fn legacy_octal_escape_value(
@@ -112,7 +117,8 @@ impl<'a> Lexer<'a> {
                     start: escape_start,
                     end: self.cursor,
                 }),
-            });
+
+                phase: None,});
         }
 
         let mut digits = String::from(first);
@@ -135,7 +141,8 @@ impl<'a> Lexer<'a> {
                 start: string_start,
                 end: self.cursor,
             }),
-        })?;
+
+            phase: None,})?;
         char::from_u32(value).ok_or(Diagnostic {
             code: DiagCode::UnsupportedSyntax,
             message: "issue-229: invalid legacy octal escape scalar value".to_owned(),
@@ -143,7 +150,8 @@ impl<'a> Lexer<'a> {
                 start: escape_start,
                 end: self.cursor,
             }),
-        })
+
+            phase: None,})
     }
 
     fn hex_escape_value(
@@ -163,7 +171,8 @@ impl<'a> Lexer<'a> {
                         start: string_start,
                         end: self.cursor,
                     }),
-                });
+
+                    phase: None,});
             };
             let Some(digit) = ch.to_digit(16) else {
                 return Err(Diagnostic {
@@ -173,7 +182,8 @@ impl<'a> Lexer<'a> {
                         start: escape_start,
                         end: self.cursor,
                     }),
-                });
+
+                    phase: None,});
             };
             value = (value << 4) | digit;
         }
@@ -188,6 +198,7 @@ impl<'a> Lexer<'a> {
                 start: escape_start,
                 end: self.cursor,
             }),
-        })
+
+            phase: None,})
     }
 }

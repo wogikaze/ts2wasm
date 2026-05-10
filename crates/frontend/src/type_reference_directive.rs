@@ -33,6 +33,8 @@ pub fn validate_type_reference_directives(source: &str) -> Result<(), Diagnostic
                     start: package_start,
                     end: package_start + package_name.len(),
                 }),
+
+                phase: None,
             });
         }
 

@@ -38,7 +38,8 @@ impl Parser {
                     code: DiagCode::UnsupportedSyntax,
                     message: "static declarations are not valid in constructor/function bodies".to_owned(),
                     span,
-                })
+
+                    phase: None,})
             }
             Some(Token::Return) => self.return_statement(),
             Some(Token::Async) if matches!(self.peek_n(1), Some(Token::Function)) => {
@@ -78,11 +79,11 @@ impl Parser {
         }
     }
 
-    /// Handle `@decorator` before a class declaration at statement level.
+    /// Handle `@decorator` before a class/function declaration at statement level.
     ///
     /// Consumes the `@`, the decorator identifier, and optional call arguments
-    /// `(...)`, then emits a source-spanned TypeScript decorator boundary
-    /// diagnostic instead of falling through to the expression parser.
+    /// `(...)`, then proceeds to parse the decorated declaration normally.
+    /// This effectively erases TypeScript decorator syntax at the parser level.
     fn decorator_before_class_declaration(&mut self) -> Result<Stmt, Diagnostic> {
         let at_span = self
             .peek_span()
@@ -93,7 +94,7 @@ impl Parser {
         self.advance(); // consume @
 
         // Consume optional decorator identifier
-        let decorator_end = if matches!(self.peek(), Some(Token::Ident(_))) {
+        let _decorator_end = if matches!(self.peek(), Some(Token::Ident(_))) {
             let ident_span = self
                 .peek_span()
                 .unwrap_or(at_span);
@@ -132,17 +133,8 @@ impl Parser {
             at_span.end
         };
 
-        // Always report this as a decorator boundary diagnostic regardless
-        // of what follows.  If the next token is `class` (the expected
-        // case), the caller learns that decorators are not yet supported.
-        Err(Diagnostic {
-            code: DiagCode::UnsupportedTypeScriptSyntax,
-            message: "issue-5253: TypeScript decorator syntax is not supported".to_owned(),
-            span: Some(Span {
-                start: at_span.start,
-                end: decorator_end,
-            }),
-        })
+        // Decorator prefix consumed; now parse the decorated declaration.
+        self.statement()
     }
 
     fn import_statement(&mut self) -> Result<Stmt, Diagnostic> {
@@ -239,7 +231,8 @@ impl Parser {
                             "issue-055: unsupported {form}; module resolution and loading are not implemented"
                         ),
                         span: Some(export_span),
-                    })
+
+                        phase: None,})
                 }
             }
         }
@@ -348,7 +341,8 @@ impl Parser {
                     message: "function_export_statement: function_statement did not return a Function"
                         .to_owned(),
                     span: None,
-                });
+
+                    phase: None,});
             }
         };
         let specifier = ExportNamedSpecifier {
@@ -379,7 +373,8 @@ impl Parser {
                     message: "class_export_statement: class_statement did not return a ClassDecl"
                         .to_owned(),
                     span: None,
-                });
+
+                    phase: None,});
             }
         };
         let specifier = ExportNamedSpecifier {
@@ -682,7 +677,8 @@ impl Parser {
                 code: DiagCode::UnsupportedSyntax,
                 message: format!("expected module specifier string literal, got {other:?}"),
                 span: self.peek_span(),
-            }),
+
+                phase: None,}),
         }
     }
 
@@ -693,7 +689,8 @@ impl Parser {
                 "issue-055: unsupported {form}; module resolution and loading are not implemented"
             ),
             span: Some(span),
-        })
+
+            phase: None,})
     }
 
     fn expression_statement(&mut self) -> Result<Stmt, Diagnostic> {
@@ -759,7 +756,8 @@ impl Parser {
                             "left-hand side of assignment must be a property access",
                         ),
                         span: Some(expr.span()),
-                    });
+
+                        phase: None,});
                 }
             }
         }
@@ -851,7 +849,8 @@ impl Parser {
                             "left-hand side of compound assignment must be a property or index access",
                         ),
                         span: Some(expr.span()),
-                    });
+
+                        phase: None,});
                 }
             }
         }
@@ -887,7 +886,8 @@ impl Parser {
                 code: DiagCode::UnsupportedSyntax,
                 message: "issue-302: static direct eval block-function lowering requires a provably unshadowed eval binding".to_owned(),
                 span: Some(*span),
-            });
+
+                phase: None,});
         }
 
         let Some(expansion) = self.static_block_function_eval_expansion(source, *span)? else {
@@ -1047,6 +1047,7 @@ impl Parser {
                 params,
                 body,
                 is_generator,
+                is_async: false,
                 is_ambient: false,
                 overload_signature: false,
                 span: eval_span,
@@ -1194,7 +1195,8 @@ impl Parser {
             code: DiagCode::UnsupportedSyntax,
             message: format!("expected Semicolon, got {:?}", self.peek()),
             span: self.peek_span(),
-        })
+
+            phase: None,})
     }
 
     fn let_statement(&mut self) -> Result<Stmt, Diagnostic> {
@@ -1220,7 +1222,8 @@ impl Parser {
                     code: DiagCode::UnsupportedSyntax,
                     message: format!("expected let/const/var, got {other:?}"),
                     span: self.peek_span(),
-                });
+
+                    phase: None,});
             }
         };
         let binding = self.parse_binding_pattern()?;
@@ -1245,13 +1248,15 @@ impl Parser {
                 code: DiagCode::UnsupportedSyntax,
                 message: "issue-247: binding patterns require an initializer".to_owned(),
                 span: Some(binding.span),
-            });
+
+                phase: None,});
         } else if is_const {
             return Err(Diagnostic {
                 code: DiagCode::UnsupportedSyntax,
                 message: "const declarations require an initializer".to_owned(),
                 span: Some(binding.span),
-            });
+
+                phase: None,});
         } else {
             Expr::Undefined { span: binding.span }
         };
@@ -1272,13 +1277,15 @@ impl Parser {
                     code: DiagCode::UnsupportedSyntax,
                     message: "issue-247: binding patterns require an initializer".to_owned(),
                     span: Some(extra_binding.span),
-                });
+
+                    phase: None,});
             } else if is_const {
                 return Err(Diagnostic {
                     code: DiagCode::UnsupportedSyntax,
                     message: "const declarations require an initializer".to_owned(),
                     span: Some(extra_binding.span),
-                });
+
+                    phase: None,});
             } else {
                 Expr::Undefined {
                     span: extra_binding.span,
@@ -1335,7 +1342,8 @@ impl Parser {
                     code: DiagCode::UnsupportedSyntax,
                     message: "expected assignment operator".to_owned(),
                     span: self.peek_span(),
-                });
+
+                    phase: None,});
             };
             let right = self.expression()?;
             let end = right.span().end;
@@ -1465,6 +1473,7 @@ impl Parser {
                 params,
                 body: Vec::new(),
                 is_generator: false,
+                is_async: false,
                 is_ambient: false,
                 overload_signature: true,
                 span: Span {
@@ -1480,6 +1489,7 @@ impl Parser {
             params,
             body,
             is_generator: false,
+            is_async: false,
             is_ambient: false,
             overload_signature: false,
             span: Span {
@@ -1522,6 +1532,7 @@ impl Parser {
             params,
             body: Vec::new(),
             is_generator: true,
+            is_async: false,
             is_ambient: false,
             overload_signature: false,
             span: Span {
@@ -1568,6 +1579,7 @@ impl Parser {
                 params,
                 body: Vec::new(),
                 is_generator: true,
+                is_async: true,
                 is_ambient: false,
                 overload_signature: false,
                 span: Span {
@@ -1614,6 +1626,7 @@ impl Parser {
             params,
             body,
             is_generator: false,
+            is_async: true,
             is_ambient: false,
             overload_signature: false,
             span: Span {
@@ -1732,7 +1745,8 @@ impl Parser {
                     start: for_span.start,
                     end: await_span.end,
                 }),
-            });
+
+                phase: None,});
         }
         self.expect(TokenKind::LeftParen)?;
         {
@@ -1883,7 +1897,8 @@ impl Parser {
                     code: DiagCode::UnsupportedSyntax,
                     message: "expected 'in' or 'of' in for loop".to_owned(),
                     span: self.peek_span(),
-                })
+
+                    phase: None,})
             }
         } else {
             // Parse traditional for loop
@@ -1990,7 +2005,8 @@ impl Parser {
                     code: DiagCode::UnsupportedSyntax,
                     message: "expected 'case' or 'default' in switch statement".to_owned(),
                     span: self.peek_span(),
-                });
+
+                    phase: None,});
             }
         }
 
@@ -2041,7 +2057,8 @@ impl Parser {
                     start: start.start,
                     end: start.end,
                 }),
-            });
+
+                phase: None,});
         }
 
         let end = finally_block
@@ -2089,7 +2106,8 @@ impl Parser {
                     code: DiagCode::UnsupportedSyntax,
                     message: "unterminated block".to_owned(),
                     span: self.prev_span().or_else(|| self.peek_span()),
-                });
+
+                    phase: None,});
             }
             if self.consume(TokenKind::Semicolon) {
                 continue;
@@ -2120,7 +2138,8 @@ impl Parser {
                     code: DiagCode::UnsupportedSyntax,
                     message: "unterminated block".to_owned(),
                     span: self.prev_span().or_else(|| self.peek_span()),
-                });
+
+                    phase: None,});
             }
             if self.consume(TokenKind::Semicolon) {
                 continue;

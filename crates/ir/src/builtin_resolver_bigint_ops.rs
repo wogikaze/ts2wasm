@@ -24,7 +24,9 @@ pub(super) fn bigint_dynamic_runtime_diagnostic(span: Span) -> Diagnostic {
         code: DiagCode::UnsupportedSyntax,
         message: "issue-369: dynamic BigInt runtime arithmetic outside the signed-i64-backed first-limb slice is not implemented".to_owned(),
         span: Some(span),
-    }
+
+
+        phase: None,}
 }
 
 pub(super) fn bigint_comparison_runtime_diagnostic(span: Span) -> Diagnostic {
@@ -32,7 +34,9 @@ pub(super) fn bigint_comparison_runtime_diagnostic(span: Span) -> Diagnostic {
         code: DiagCode::UnsupportedSyntax,
         message: "issue-282: mixed BigInt abstract equality and relational comparison coercion is not implemented in this runtime coercion slice".to_owned(),
         span: Some(span),
-    }
+
+
+        phase: None,}
 }
 
 pub(super) fn bigint_exponentiation_diagnostic(span: Span) -> Diagnostic {
@@ -42,7 +46,9 @@ pub(super) fn bigint_exponentiation_diagnostic(span: Span) -> Diagnostic {
             "issue-376: BigInt exponentiation beyond literal non-negative exponent folding is not implemented"
                 .to_owned(),
         span: Some(span),
-    }
+
+
+        phase: None,}
 }
 
 pub(super) fn bigint_bitwise_diagnostic(span: Span) -> Diagnostic {
@@ -51,6 +57,8 @@ pub(super) fn bigint_bitwise_diagnostic(span: Span) -> Diagnostic {
         message: "issue-387: BigInt bitwise outside the signed-i64 helper slice is not implemented"
             .to_owned(),
         span: Some(span),
+
+        phase: None,
     }
 }
 
@@ -60,7 +68,9 @@ pub(super) fn bigint_shift_diagnostic(span: Span) -> Diagnostic {
         message: "issue-378: BigInt shift operators and unsigned right shift TypeError policy are not implemented"
             .to_owned(),
         span: Some(span),
-    }
+
+
+        phase: None,}
 }
 
 pub(super) fn bigint_equality_or_comparison_op(op: BinaryOp) -> bool {
@@ -420,7 +430,8 @@ pub(super) fn fold_bigint_binary(
                 "issue-370: BigInt negative exponent RangeError parity is not implemented in this literal-folding slice"
                     .to_owned(),
             span: Some(span),
-        }),
+
+            phase: None,}),
         BinaryOp::Power => {
             let Some(exponent) = decimal_digits_to_u64(&right.digits) else {
                 return Err(bigint_exponentiation_diagnostic(span));
@@ -436,7 +447,8 @@ pub(super) fn fold_bigint_binary(
                 "issue-370: BigInt division by zero RangeError parity is not implemented in this literal-folding slice"
                     .to_owned(),
             span: Some(span),
-        }),
+
+            phase: None,}),
         BinaryOp::Divide => {
             let (quotient, _) = div_rem_abs(&left.digits, &right.digits);
             let sign = if quotient == [0] {

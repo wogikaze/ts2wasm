@@ -157,6 +157,8 @@ pub(super) fn reject_class_method_outer_local_references(
                 class_names,
             )
             .map(|(_, span)| span),
+
+            phase: None,
         });
     }
 
@@ -188,6 +190,8 @@ pub(super) fn class_method_outer_local_captures(
                     "issue-289: class method `{method_name}` captures outer local `{name}` with a rest parameter; hidden capture parameters after rest require a broader call ABI",
                 ),
                 span: Some(span),
+
+                phase: None,
             });
         }
 

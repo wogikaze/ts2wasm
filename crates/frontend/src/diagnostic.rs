@@ -52,6 +52,7 @@ pub struct Diagnostic {
     pub code: DiagCode,
     pub message: String,
     pub span: Option<Span>,
+    pub phase: Option<&'static str>,
 }
 
 impl Diagnostic {
@@ -61,6 +62,7 @@ impl Diagnostic {
             code,
             message: message.into(),
             span: Some(span),
+            phase: None,
         }
     }
 
@@ -70,6 +72,7 @@ impl Diagnostic {
             code: DiagCode::InvariantViolation,
             message: message.into(),
             span: None,
+            phase: None,
         }
     }
 
@@ -79,20 +82,38 @@ impl Diagnostic {
             code: DiagCode::BackendIo,
             message: message.into(),
             span: None,
+            phase: None,
         }
+    }
+
+    /// Tag this diagnostic with a pipeline phase.
+    /// Returns self for chaining: `diag.with_phase("parser")`.
+    pub fn with_phase(mut self, phase: &'static str) -> Self {
+        self.phase = Some(phase);
+        self
     }
 }
 
 impl std::fmt::Display for Diagnostic {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let code = self.display_code();
-        match &self.span {
-            Some(span) => write!(
-                f,
-                "[{:?}] {} at {}..{}",
-                code, self.message, span.start, span.end
-            ),
-            None => write!(f, "[{:?}] {}", code, self.message),
+        match self.phase {
+            Some(phase) => match &self.span {
+                Some(span) => write!(
+                    f,
+                    "[{:?}/{}] {} at {}..{}",
+                    code, phase, self.message, span.start, span.end
+                ),
+                None => write!(f, "[{:?}/{}] {}", code, phase, self.message),
+            },
+            None => match &self.span {
+                Some(span) => write!(
+                    f,
+                    "[{:?}] {} at {}..{}",
+                    code, self.message, span.start, span.end
+                ),
+                None => write!(f, "[{:?}] {}", code, self.message),
+            },
         }
     }
 }
@@ -266,6 +287,7 @@ mod tests {
             code: DiagCode::UnsupportedSyntax,
             message: message.to_owned(),
             span: Some(Span { start: 1, end: 2 }),
+            phase: None,
         }
     }
 

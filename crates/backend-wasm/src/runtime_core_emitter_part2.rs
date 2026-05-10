@@ -1241,6 +1241,53 @@ impl WatEmitter<'_> {
         ));
     }
 
+    pub(crate) fn emit_symbol_new(&self, wat: &mut String) {
+        let str_symbol_open = self.string_value("Symbol(");
+        let str_close_paren = self.string_value(")");
+        let str_empty = self.string_value("");
+        wat.push_str(&format!(
+            r#"
+  (func $symbol_new (param $desc i32) (result i32)
+    (if (i32.eq (local.get $desc) (i32.const {undefined_tag}))
+      (then (return
+        (call $concat
+          (call $concat (i32.const {str_symbol_open}) (i32.const {str_empty}))
+          (i32.const {str_close_paren})))))
+    (return (call $concat
+      (call $concat (i32.const {str_symbol_open}) (local.get $desc))
+      (i32.const {str_close_paren}))))
+"#,
+            undefined_tag = ValueTag::UNDEFINED,
+            str_symbol_open = str_symbol_open,
+            str_close_paren = str_close_paren,
+            str_empty = str_empty,
+        ));
+    }
+
+    pub(crate) fn emit_symbol_for(&self, wat: &mut String) {
+        let str_symbol_open = self.string_value("Symbol(");
+        let str_close_paren = self.string_value(")");
+        wat.push_str(&format!(
+            r#"
+  (func $symbol_for (param $key i32) (result i32)
+    (return (call $concat
+      (call $concat (i32.const {str_symbol_open}) (local.get $key))
+      (i32.const {str_close_paren}))))
+"#,
+            str_symbol_open = str_symbol_open,
+            str_close_paren = str_close_paren,
+        ));
+    }
+
+    pub(crate) fn emit_symbol_key_for(&self, wat: &mut String) {
+        wat.push_str(
+            r#"
+  (func $symbol_key_for (param $sym i32) (result i32)
+    (return (local.get $sym)))
+"#,
+        );
+    }
+
     pub(crate) fn emit_is_string(&self, wat: &mut String) {
         wat.push_str(&format!(
             r#"

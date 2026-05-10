@@ -401,6 +401,55 @@ fn static_direct_eval_declares_no_node_host_eval_capability() {
     );
 }
 
+/// Helper: typescript-directives fixtures expected to fail under --host-deny
+/// with unsupported syntax diagnostics (not host-deny errors).
+fn assert_unsupported_syntax_under_host_deny(fixture_path: &str) {
+    let fixture = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("../../fixtures")
+        .join(fixture_path);
+
+    let output_wasm = std::env::temp_dir().join(format!(
+        "ts2wasm-host-deny-unsupported-{}-{}.wasm",
+        fixture_path.replace(['/', '.'], "_"),
+        std::process::id()
+    ));
+
+    let output = std::process::Command::new(env!("CARGO_BIN_EXE_ts2wasm"))
+        .arg("build")
+        .arg(&fixture)
+        .arg("-o")
+        .arg(&output_wasm)
+        .arg("--host-deny")
+        .arg("node")
+        .output()
+        .expect("Failed to execute ts2wasm");
+
+    assert!(
+        !output.status.success(),
+        "Unsupported fixture {fixture_path} must fail under host-deny"
+    );
+
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    assert!(
+        stderr.contains("Unsupported") || stderr.contains("issue-5253"),
+        "Unsupported fixture {fixture_path} must fail with unsupported diagnostic, got: {stderr}"
+    );
+}
+
+#[test]
+fn host_deny_rejects_unsupported_typescript_directives() {
+    let fixtures: Vec<&str> = vec![
+        "typescript-directives/triple-slash-reference-unsupported.ts",
+        "typescript-directives/reference-types-missing.ts",
+        "typescript-directives/reference-types-skip-lib-check.ts",
+        "typescript-directives/reference-types-ts-ignore.ts",
+        "typescript-directives/type-only-import-unsupported.ts",
+    ];
+    for fixture in &fixtures {
+        assert_unsupported_syntax_under_host_deny(fixture);
+    }
+}
+
 /// Standalone WASI execution validation (W1 Gate F equivalent).
 ///
 /// Each fixture in the standalone catalog must:
@@ -438,20 +487,32 @@ fn standalone_fixtures_pass_host_deny() {
         // WASI-only categories: Math
         "builtins-and-io/math-floor.ts",
         "builtins-and-io/math-random.ts",
+        "builtins-and-io/math-abs.ts",
+        "builtins-and-io/math-ceil.ts",
+        "builtins-and-io/math-max.ts",
         // WASI-only categories: String
         "builtins-and-io/string-char-code-at.ts",
         "builtins-and-io/string-at.ts",
+        "builtins-and-io/string-concat.ts",
+        "builtins-and-io/string-slice.ts",
         // WASI-only categories: Array
         "builtins-and-io/array-push.ts",
         "builtins-and-io/array-slice.ts",
+        "builtins-and-io/array-concat.ts",
+        "builtins-and-io/array-every.ts",
+        "builtins-and-io/array-map.ts",
+        "builtins-and-io/array-reduce.ts",
         // WASI-only categories: Object
         "builtins-and-io/object-keys.ts",
         "builtins-and-io/object-assign.ts",
+        "builtins-and-io/object-entries.ts",
+        "builtins-and-io/object-is.ts",
         // WASI-only categories: JSON
         "builtins-and-io/json-stringify.ts",
         "builtins-and-io/json-parse.ts",
         // WASI-only categories: RegExp
         "builtins-and-io/regexp-digit.ts",
+        "builtins-and-io/regexp-plus.ts",
         // WASI-only categories: Map/Set
         "builtins-and-io/map-set.ts",
         "builtins-and-io/set-size-clear.ts",
@@ -461,11 +522,23 @@ fn standalone_fixtures_pass_host_deny() {
         // WASI-only categories: Global functions
         "builtins-and-io/global-parseint.ts",
         "builtins-and-io/global-isnan.ts",
+        "builtins-and-io/global-isfinite.ts",
         // WASI-only categories: Date (UTC getters use no host imports)
         "builtins-and-io/date-utc-getters.ts",
         "builtins-and-io/date-epoch-get-time.ts",
+        "builtins-and-io/date-epoch-value-of.ts",
         // WASI-only categories: valueOf
         "builtins-and-io/value-of.ts",
+        // Core statements (WASI stdout only)
+        "core-statements/for-in.ts",
+        "core-statements/for-of.ts",
+        "core-statements/while.ts",
+        // Rest parameters (WASI stdout only)
+        "rest-parameters/rest-basic.ts",
+        // Spread arguments (WASI stdout only)
+        "spread-args/spread-arguments.ts",
+        // TypeScript directives that now compile standalone
+        "typescript-directives/module-augmentation-unsupported.ts",
     ];
 
     for fixture_name in &fixtures {

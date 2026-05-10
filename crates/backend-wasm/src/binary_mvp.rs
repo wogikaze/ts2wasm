@@ -251,6 +251,8 @@ fn unsupported(detail: &str) -> Diagnostic {
         code: DiagCode::UnsupportedSyntax,
         message: format!("direct wasm binary MVP: {detail}"),
         span: None,
+
+        phase: None,
     }
 }
 
@@ -259,5 +261,7 @@ fn invariant(message: &str) -> Diagnostic {
         code: DiagCode::InvariantViolation,
         message: message.to_owned(),
         span: None,
+
+        phase: None,
     }
 }

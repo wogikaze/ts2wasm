@@ -3,6 +3,6 @@
 All children (341a-341e) are done. Close meta issue.
 
 - [ ] Mark 341e as done in issue 341
-- [ ] Move 341 to issues/done/
+- [ ] Mark id 341 done in TRACKING.yaml with evidence
 - [ ] Update issue index
 - [ ] Commit

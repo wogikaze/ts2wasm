@@ -149,10 +149,33 @@ pub(crate) enum RuntimeFn {
     SetDelete,
     SetSize,
     SetClear,
+    SetForEach,
+    MapClear,
+    MapSize,
+    MapForEach,
+    MapEntriesArray,
+    /// TypedArray constructor from array: new Uint8Array([1,2,3]), etc.
+    TypedArrayFromArray,
     SetFromArray,
     SetValuesArray,
     SetPrototypeAddGet,
     SetPrototypeAddSet,
+    WeakMapNew,
+    WeakMapSet,
+    WeakMapGet,
+    WeakMapHas,
+    WeakMapDelete,
+    WeakSetNew,
+    WeakSetAdd,
+    WeakSetHas,
+    WeakSetDelete,
+    /// Issue 206: ArrayBuffer/DataView runtime.
+    ArrayBufferNew,
+    DataViewNew,
+    DataViewGetInt32,
+    DataViewSetInt32,
+    DataViewGetFloat64,
+    DataViewSetFloat64,
     /// Issue 050: Date epoch slices.
     DateNew,
     DateNewLive,
@@ -202,7 +225,9 @@ pub(crate) enum RuntimeFn {
     StringToUpperCase,
     StringToLowerCase,
     StringCharCodeAt,
+    StringCodePointAt,
     StringFromCharCode,
+    StringFromCodePoint,
     StringIsWellFormed,
     StringToWellFormed,
     /// String.prototype.replace
@@ -316,6 +341,8 @@ pub(crate) enum RuntimeFn {
     ObjectSetPrototypeOf,
     /// Object.freeze(obj) — sets the OBJECT_FLAG_FROZEN flag
     ObjectFreeze,
+    /// Object.seal(obj) — sets SEALED flag + makes all props non-configurable
+    ObjectSeal,
     /// Object.preventExtensions(obj) — sets the OBJECT_FLAG_SEALED flag (non-extensible)
     ObjectPreventExtensions,
     /// Object.isExtensible(obj) — returns 1 if object is extensible, 0 otherwise
@@ -426,6 +453,19 @@ pub(crate) enum RuntimeFn {
     PromiseThen,
     /// Promise.prototype.catch(onRejected) — registers rejection callback
     PromiseCatch,
+    /// Promise.all(iterable) — returns a promise that fulfills when all fulfill
+    PromiseAll,
+    /// Promise.race(iterable) — returns a promise that settles with the first settled
+    PromiseRace,
+    /// TaskPoll(frame_ptr) — reads frame[0] (state), returns 0=PENDING, 1=DONE
+    TaskPoll,
+    /// TaskResult(frame_ptr) — reads frame[1] (return_value)
+    TaskResult,
+    /// TaskDrop(frame_ptr) — frees the frame allocation
+    TaskDrop,
+    SymbolNew,
+    SymbolFor,
+    SymbolKeyFor,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Ord, PartialOrd)]
@@ -791,6 +831,7 @@ pub(crate) fn runtime_fn_from_name(name: &str) -> Option<RuntimeFn> {
         "ObjectGetPrototypeOf" => Some(RuntimeFn::ObjectGetPrototypeOf),
         "ObjectSetPrototypeOf" => Some(RuntimeFn::ObjectSetPrototypeOf),
         "ObjectFreeze" => Some(RuntimeFn::ObjectFreeze),
+        "ObjectSeal" => Some(RuntimeFn::ObjectSeal),
         "ObjectPreventExtensions" => Some(RuntimeFn::ObjectPreventExtensions),
         "ObjectIsExtensible" => Some(RuntimeFn::ObjectIsExtensible),
         "ObjectIsSealed" => Some(RuntimeFn::ObjectIsSealed),
@@ -819,7 +860,9 @@ pub(crate) fn runtime_fn_from_name(name: &str) -> Option<RuntimeFn> {
         "StringToUpperCase" => Some(RuntimeFn::StringToUpperCase),
         "StringToLowerCase" => Some(RuntimeFn::StringToLowerCase),
         "StringCharCodeAt" => Some(RuntimeFn::StringCharCodeAt),
+        "StringCodePointAt" => Some(RuntimeFn::StringCodePointAt),
         "StringFromCharCode" => Some(RuntimeFn::StringFromCharCode),
+        "StringFromCodePoint" => Some(RuntimeFn::StringFromCodePoint),
         "StringIsWellFormed" => Some(RuntimeFn::StringIsWellFormed),
         "StringToWellFormed" => Some(RuntimeFn::StringToWellFormed),
         "StringReplace" => Some(RuntimeFn::StringReplace),
@@ -889,10 +932,31 @@ pub(crate) fn runtime_fn_from_name(name: &str) -> Option<RuntimeFn> {
         "SetDelete" => Some(RuntimeFn::SetDelete),
         "SetSize" => Some(RuntimeFn::SetSize),
         "SetClear" => Some(RuntimeFn::SetClear),
+        "SetForEach" => Some(RuntimeFn::SetForEach),
+        "MapClear" => Some(RuntimeFn::MapClear),
+        "MapSize" => Some(RuntimeFn::MapSize),
+        "MapForEach" => Some(RuntimeFn::MapForEach),
+        "MapEntriesArray" => Some(RuntimeFn::MapEntriesArray),
+        "TypedArrayFromArray" => Some(RuntimeFn::TypedArrayFromArray),
+        "ArrayBufferNew" => Some(RuntimeFn::ArrayBufferNew),
+        "DataViewNew" => Some(RuntimeFn::DataViewNew),
+        "DataViewGetInt32" => Some(RuntimeFn::DataViewGetInt32),
+        "DataViewSetInt32" => Some(RuntimeFn::DataViewSetInt32),
+        "DataViewGetFloat64" => Some(RuntimeFn::DataViewGetFloat64),
+        "DataViewSetFloat64" => Some(RuntimeFn::DataViewSetFloat64),
         "SetFromArray" => Some(RuntimeFn::SetFromArray),
         "SetValuesArray" => Some(RuntimeFn::SetValuesArray),
         "SetPrototypeAddGet" => Some(RuntimeFn::SetPrototypeAddGet),
         "SetPrototypeAddSet" => Some(RuntimeFn::SetPrototypeAddSet),
+        "WeakMapNew" => Some(RuntimeFn::WeakMapNew),
+        "WeakMapSet" => Some(RuntimeFn::WeakMapSet),
+        "WeakMapGet" => Some(RuntimeFn::WeakMapGet),
+        "WeakMapHas" => Some(RuntimeFn::WeakMapHas),
+        "WeakMapDelete" => Some(RuntimeFn::WeakMapDelete),
+        "WeakSetNew" => Some(RuntimeFn::WeakSetNew),
+        "WeakSetAdd" => Some(RuntimeFn::WeakSetAdd),
+        "WeakSetHas" => Some(RuntimeFn::WeakSetHas),
+        "WeakSetDelete" => Some(RuntimeFn::WeakSetDelete),
         "DateNew" => Some(RuntimeFn::DateNew),
         "DateNewLive" => Some(RuntimeFn::DateNewLive),
         "DateNow" => Some(RuntimeFn::DateNow),
@@ -930,6 +994,11 @@ pub(crate) fn runtime_fn_from_name(name: &str) -> Option<RuntimeFn> {
         "PromiseReject" => Some(RuntimeFn::PromiseReject),
         "PromiseThen" => Some(RuntimeFn::PromiseThen),
         "PromiseCatch" => Some(RuntimeFn::PromiseCatch),
+        "PromiseAll" => Some(RuntimeFn::PromiseAll),
+        "PromiseRace" => Some(RuntimeFn::PromiseRace),
+        "SymbolNew" => Some(RuntimeFn::SymbolNew),
+        "SymbolFor" => Some(RuntimeFn::SymbolFor),
+        "SymbolKeyFor" => Some(RuntimeFn::SymbolKeyFor),
         _ => None,
     }
 }
@@ -1327,7 +1396,9 @@ const STRING_TRIM_DEPS: &[RuntimeFn] =
 const STRING_TO_UPPER_CASE_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap, RuntimeFn::IsString];
 const STRING_TO_LOWER_CASE_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap, RuntimeFn::IsString];
 const STRING_CHAR_CODE_AT_DEPS: &[RuntimeFn] = &[RuntimeFn::IsString];
-const STRING_FROM_CHAR_CODE_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap, RuntimeFn::Copy];
+const STRING_CODE_POINT_AT_DEPS: &[RuntimeFn] = &[RuntimeFn::IsString];
+const STRING_FROM_CHAR_CODE_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap];
+const STRING_FROM_CODE_POINT_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap];
 
 // String.prototype.replace dependencies
 const STRING_REPLACE_DEPS: &[RuntimeFn] = &[
@@ -1335,6 +1406,8 @@ const STRING_REPLACE_DEPS: &[RuntimeFn] = &[
     RuntimeFn::Copy,
     RuntimeFn::IsString,
     RuntimeFn::MemEqual,
+    RuntimeFn::StringSubstring,
+    RuntimeFn::RegexpMatchInner,
 ];
 
 const STRING_REPLACE_ALL_DEPS: &[RuntimeFn] = &[
@@ -1342,6 +1415,9 @@ const STRING_REPLACE_ALL_DEPS: &[RuntimeFn] = &[
     RuntimeFn::Copy,
     RuntimeFn::IsString,
     RuntimeFn::MemEqual,
+    RuntimeFn::StringReplace,
+    RuntimeFn::StringSubstring,
+    RuntimeFn::RegexpMatchInner,
 ];
 
 const STRING_AT_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap, RuntimeFn::Copy, RuntimeFn::IsString];
@@ -1444,6 +1520,7 @@ const OBJECT_GET_OWN_PROPERTY_DESCRIPTOR_DEPS: &[RuntimeFn] = &[
 ];
 const OBJECT_PROTOTYPE_DEPS: &[RuntimeFn] = &[];
 const OBJECT_FREEZE_DEPS: &[RuntimeFn] = &[];
+const OBJECT_SEAL_DEPS: &[RuntimeFn] = &[];
 const OBJECT_DEFINE_PROPERTY_DEPS: &[RuntimeFn] = &[
     RuntimeFn::AllocHeap,
     RuntimeFn::ValueToStringInto,
@@ -1456,6 +1533,8 @@ const OBJECT_ASSIGN_DEPS: &[RuntimeFn] = &[
 ];
 const OBJECT_CREATE_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap];
 const INDEX_DEPS: &[RuntimeFn] = &[
+    RuntimeFn::AllocHeap,
+    RuntimeFn::Copy,
     RuntimeFn::PropertyGet,
     RuntimeFn::ValueToStringInto,
     RuntimeFn::ArrayGet,
@@ -1473,7 +1552,15 @@ const SET_SIZE_DEPS: &[RuntimeFn] = &[];
 const SET_CLEAR_DEPS: &[RuntimeFn] = &[];
 const SET_FROM_ARRAY_DEPS: &[RuntimeFn] = &[RuntimeFn::SetNew, RuntimeFn::SetAdd];
 const SET_VALUES_ARRAY_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap];
+const SET_FOR_EACH_DEPS: &[RuntimeFn] = &[];
 const MAP_VALUES_ARRAY_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap];
+const MAP_CLEAR_DEPS: &[RuntimeFn] = &[];
+const MAP_SIZE_DEPS: &[RuntimeFn] = &[];
+const MAP_FOR_EACH_DEPS: &[RuntimeFn] = &[];
+const MAP_ENTRIES_ARRAY_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap];
+const TYPED_ARRAY_FROM_ARRAY_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap, RuntimeFn::Index];
+const ARRAYBUFFER_NEW_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap];
+const DATAVIEW_NEW_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap];
 const DATE_NEW_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap];
 const DATE_NOW_DEPS: &[RuntimeFn] = &[RuntimeFn::DateEpochMsNowNumber];
 const DATE_NEW_LIVE_DEPS: &[RuntimeFn] = &[RuntimeFn::DateEpochMsNowNumber, RuntimeFn::DateNew];
@@ -1497,6 +1584,13 @@ const JSON_PARSE_DEPS: &[RuntimeFn] = &[
     RuntimeFn::Write,
 ];
 const JSON_PARSE_RUNTIME_STRINGS: &[&str] = &[RuntimeString::JSON_PARSE_SYNTAX_ERROR];
+
+// Symbol function dependencies
+const SYMBOL_NEW_DEPS: &[RuntimeFn] = &[RuntimeFn::IsString, RuntimeFn::Concat];
+const SYMBOL_FOR_DEPS: &[RuntimeFn] = &[RuntimeFn::Concat];
+const SYMBOL_KEY_FOR_DEPS: &[RuntimeFn] = &[];
+const SYMBOL_NEW_RUNTIME_STRINGS: &[&str] = &["Symbol(", ")", ""];
+const SYMBOL_FOR_RUNTIME_STRINGS: &[&str] = &["Symbol(", ")"];
 
 #[cfg(test)]
 mod tests {

@@ -71,16 +71,84 @@ fn build_smoke_async_exception() {
 
 // Semantic differential tests (ignored until implementation)
 
-#[test]
-#[ignore = "async/await semantic implementation in progress"]
-fn semantic_diff_async_return() {
-    // This will use the standard differential runner once implemented
+use capability::{iwasm_command, node_command};
+use iwasm_runtime::run_iwasm_with_timeout_duration;
+use std::process::Command;
+use std::time::Duration;
+
+fn assert_fixture_matches_node_semantic(fixture: &str) {
+    let fixture_path = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("../..")
+        .join(fixture);
+    let output = temp_wasm_path(fixture);
+
+    let node = node_command().arg(&fixture_path).output().unwrap();
+    assert!(
+        node.status.success(),
+        "node failed for {fixture}\nstdout:\n{}\nstderr:\n{}",
+        String::from_utf8_lossy(&node.stdout),
+        String::from_utf8_lossy(&node.stderr)
+    );
+
+    let build = Command::new(env!("CARGO_BIN_EXE_ts2wasm"))
+        .arg("build")
+        .arg(&fixture_path)
+        .arg("-o")
+        .arg(&output)
+        .output()
+        .unwrap();
+    assert!(
+        build.status.success(),
+        "build failed for {fixture}\nstdout:\n{}\nstderr:\n{}",
+        String::from_utf8_lossy(&build.stdout),
+        String::from_utf8_lossy(&build.stderr)
+    );
+
+    let iwasm =
+        run_iwasm_with_timeout_duration(iwasm_command().arg(&output), Duration::from_secs(5))
+            .unwrap_or_else(|e| panic!("iwasm execution failed for {fixture}: {e}"));
+    assert!(
+        !iwasm.timed_out,
+        "iwasm timed out for {fixture}\nstdout:\n{}\nstderr:\n{}",
+        String::from_utf8_lossy(&iwasm.output.stdout),
+        String::from_utf8_lossy(&iwasm.output.stderr)
+    );
+    assert!(
+        iwasm.output.status.success(),
+        "iwasm failed for {fixture}\nstdout:\n{}\nstderr:\n{}",
+        String::from_utf8_lossy(&iwasm.output.stdout),
+        String::from_utf8_lossy(&iwasm.output.stderr)
+    );
+
+    assert_eq!(
+        String::from_utf8_lossy(&iwasm.output.stdout),
+        String::from_utf8_lossy(&node.stdout),
+        "stdout mismatch for {fixture}"
+    );
 }
 
 #[test]
-#[ignore = "async/await semantic implementation in progress"]
-fn semantic_diff_await_sequence() {}
+fn semantic_diff_async_return() {
+    assert_fixture_matches_node_semantic("fixtures/async-await/basic-async-return.ts");
+}
 
 #[test]
-#[ignore = "async/await semantic implementation in progress"]
-fn semantic_diff_async_exception() {}
+fn semantic_diff_await_sequence() {
+    assert_fixture_matches_node_semantic("fixtures/async-await/await-sequence.ts");
+}
+
+#[test]
+fn semantic_diff_async_exception() {
+    assert_fixture_matches_node_semantic("fixtures/async-await/async-exception.ts");
+}
+
+// Async generator basic — ID 215 (W5, P3)
+#[test]
+fn build_smoke_async_generator() {
+    let result = build_fixture("fixtures/builtins-and-io/async-generator-basic.ts");
+    assert!(
+        result.is_ok(),
+        "async-generator-basic should build: {:?}",
+        result.err()
+    );
+}

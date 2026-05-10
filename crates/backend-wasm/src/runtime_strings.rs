@@ -2,111 +2,243 @@ use super::emitter::WatEmitter;
 use ts2wasm_runtime_abi::{consts::RuntimeConst, layout::Layout, value::ValueTag};
 
 impl WatEmitter<'_> {
+    /// Emit UTF-8 helper functions for code point-aware string operations.
+    /// Must be emitted before any function that calls them.
+    pub(super) fn emit_utf8_helpers(&self, wat: &mut String) {
+        let header = Layout::STRING_HEADER_SIZE;
+        wat.push_str(&format!(r#"
+  ;; Count UTF-8 code points in a string (str_obj = heap pointer, no tag)
+  (func $utf8_cp_count (param $str i32) (result i32)
+    (local $len i32) (local $i i32) (local $count i32) (local $b i32) (local $skip i32)
+    (local.set $len (i32.load (local.get $str)))
+    (block $done
+      (loop $loop
+        (br_if $done (i32.ge_u (local.get $i) (local.get $len)))
+        (local.set $b (i32.load8_u (i32.add (i32.add (local.get $str) (i32.const {header})) (local.get $i))))
+        (local.set $skip (i32.const 1))
+        (if (i32.ge_u (local.get $b) (i32.const 0xC0)) (then (local.set $skip (i32.const 2))))
+        (if (i32.ge_u (local.get $b) (i32.const 0xE0)) (then (local.set $skip (i32.const 3))))
+        (if (i32.ge_u (local.get $b) (i32.const 0xF0)) (then (local.set $skip (i32.const 4))))
+        (local.set $i (i32.add (local.get $i) (local.get $skip)))
+        (local.set $count (i32.add (local.get $count) (i32.const 1)))
+        (br $loop)))
+    (local.get $count))
+
+  ;; Convert code point index to byte index in a UTF-8 string
+  (func $utf8_cp_to_byte_index (param $str i32) (param $cp_idx i32) (result i32)
+    (local $len i32) (local $i i32) (local $cp i32) (local $b i32) (local $skip i32)
+    (local.set $len (i32.load (local.get $str)))
+    (block $done
+      (loop $loop
+        (br_if $done (i32.ge_u (local.get $i) (local.get $len)))
+        (if (i32.ge_u (local.get $cp) (local.get $cp_idx)) (then (return (local.get $i))))
+        (local.set $b (i32.load8_u (i32.add (i32.add (local.get $str) (i32.const {header})) (local.get $i))))
+        (local.set $skip (i32.const 1))
+        (if (i32.ge_u (local.get $b) (i32.const 0xC0)) (then (local.set $skip (i32.const 2))))
+        (if (i32.ge_u (local.get $b) (i32.const 0xE0)) (then (local.set $skip (i32.const 3))))
+        (if (i32.ge_u (local.get $b) (i32.const 0xF0)) (then (local.set $skip (i32.const 4))))
+        (local.set $i (i32.add (local.get $i) (local.get $skip)))
+        (local.set $cp (i32.add (local.get $cp) (i32.const 1)))
+        (br $loop)))
+    (local.get $i))
+
+  ;; Get byte length of the UTF-8 code point starting at byte_pos
+  (func $utf8_cp_byte_length (param $str i32) (param $byte_pos i32) (result i32)
+    (local $b i32)
+    (local.set $b (i32.load8_u (i32.add (i32.add (local.get $str) (i32.const {header})) (local.get $byte_pos))))
+    (if (i32.lt_u (local.get $b) (i32.const 0x80)) (then (return (i32.const 1))))
+    (if (i32.lt_u (local.get $b) (i32.const 0xE0)) (then (return (i32.const 2))))
+    (if (i32.lt_u (local.get $b) (i32.const 0xF0)) (then (return (i32.const 3))))
+    (i32.const 4))
+
+  ;; Decode the UTF-8 code point value at byte_pos (returns tagged number)
+  (func $utf8_decode_cp_at_byte (param $str i32) (param $byte_pos i32) (result i32)
+    (local $b i32) (local $result i32)
+    (local.set $b (i32.load8_u (i32.add (i32.add (local.get $str) (i32.const {header})) (local.get $byte_pos))))
+    (if (i32.lt_u (local.get $b) (i32.const 0x80))
+      (then (return (i32.or (i32.shl (local.get $b) (i32.const {num_shift})) (i32.const {num_tag})))))
+    (if (i32.lt_u (local.get $b) (i32.const 0xE0))
+      (then
+        (local.set $result (i32.and (local.get $b) (i32.const 0x1F)))
+        (local.set $result (i32.shl (local.get $result) (i32.const 6)))
+        (local.set $b (i32.load8_u (i32.add (i32.add (local.get $str) (i32.const {header})) (i32.add (local.get $byte_pos) (i32.const 1)))))
+        (local.set $result (i32.or (local.get $result) (i32.and (local.get $b) (i32.const 0x3F))))
+        (return (i32.or (i32.shl (local.get $result) (i32.const {num_shift})) (i32.const {num_tag})))))
+    (if (i32.lt_u (local.get $b) (i32.const 0xF0))
+      (then
+        (local.set $result (i32.and (local.get $b) (i32.const 0x0F)))
+        (local.set $b (i32.load8_u (i32.add (i32.add (local.get $str) (i32.const {header})) (i32.add (local.get $byte_pos) (i32.const 1)))))
+        (local.set $result (i32.or (i32.shl (local.get $result) (i32.const 6)) (i32.and (local.get $b) (i32.const 0x3F))))
+        (local.set $b (i32.load8_u (i32.add (i32.add (local.get $str) (i32.const {header})) (i32.add (local.get $byte_pos) (i32.const 2)))))
+        (local.set $result (i32.or (i32.shl (local.get $result) (i32.const 6)) (i32.and (local.get $b) (i32.const 0x3F))))
+        (return (i32.or (i32.shl (local.get $result) (i32.const {num_shift})) (i32.const {num_tag})))))
+    ;; 4-byte sequence
+    (local.set $result (i32.and (local.get $b) (i32.const 0x07)))
+    (local.set $b (i32.load8_u (i32.add (i32.add (local.get $str) (i32.const {header})) (i32.add (local.get $byte_pos) (i32.const 1)))))
+    (local.set $result (i32.or (i32.shl (local.get $result) (i32.const 6)) (i32.and (local.get $b) (i32.const 0x3F))))
+    (local.set $b (i32.load8_u (i32.add (i32.add (local.get $str) (i32.const {header})) (i32.add (local.get $byte_pos) (i32.const 2)))))
+    (local.set $result (i32.or (i32.shl (local.get $result) (i32.const 6)) (i32.and (local.get $b) (i32.const 0x3F))))
+    (local.set $b (i32.load8_u (i32.add (i32.add (local.get $str) (i32.const {header})) (i32.add (local.get $byte_pos) (i32.const 3)))))
+    (local.set $result (i32.or (i32.shl (local.get $result) (i32.const 6)) (i32.and (local.get $b) (i32.const 0x3F))))
+    (i32.or (i32.shl (local.get $result) (i32.const {num_shift})) (i32.const {num_tag})))
+"#,
+            header = header,
+            num_shift = ValueTag::NUMBER_SHIFT,
+            num_tag = ValueTag::NUMBER,
+        ));
+    }
+
+    pub(super) fn emit_utf8_byte_to_cp_index(&self, wat: &mut String) {
+        if wat.contains("$utf8_byte_to_cp_index") {
+            return;
+        }
+        wat.push_str(&format!(
+            r#"
+  (func $utf8_byte_to_cp_index (param $s i32) (param $byte_pos i32) (result i32)
+    (local $ptr i32)
+    (local $i i32)
+    (local $count i32)
+    (local $b i32)
+    (local.set $ptr (i32.add (i32.and (local.get $s) (i32.const {heap_mask})) (i32.const {header})))
+    (block $done
+      (loop $loop
+        (if (i32.ge_u (local.get $i) (local.get $byte_pos)) (then (br $done)))
+        (local.set $b (i32.load8_u (i32.add (local.get $ptr) (local.get $i))))
+        (if (i32.ne (i32.and (local.get $b) (i32.const 0xC0)) (i32.const 0x80))
+          (then (local.set $count (i32.add (local.get $count) (i32.const {one})))))
+        (local.set $i (i32.add (local.get $i) (i32.const {one})))
+        (br $loop)))
+    (local.get $count))
+"#,
+            heap_mask = ValueTag::HEAP_MASK,
+            header = Layout::STRING_HEADER_SIZE,
+            one = RuntimeConst::ONE,
+        ));
+    }
+
     pub(super) fn emit_string_char_at(&self, wat: &mut String) {
+        // UTF-8 helpers are emitted via emit_utf8_helpers() before any string functions.
         wat.push_str(&format!(
             r#"
   (func $string_char_at (param $s i32) (param $idx i32) (result i32)
     (local $obj i32)
-    (local $len i32)
     (local $i i32)
+    (local $byte_len i32)
+    (local $byte_pos i32)
     (if (i32.eqz (call $is_string (local.get $s))) (then (return (i32.const {undefined}))))
     (local.set $obj (i32.and (local.get $s) (i32.const {heap_mask})))
-    (local.set $len (i32.load (local.get $obj)))
     (local.set $i (i32.shr_s (local.get $idx) (i32.const {number_shift})))
-    (if (i32.or (i32.lt_s (local.get $i) (i32.const {zero})) (i32.ge_u (local.get $i) (local.get $len)))
+    (if (i32.lt_s (local.get $i) (i32.const {zero})) (then (return (i32.const {undefined}))))
+    (local.set $byte_pos (call $utf8_cp_to_byte_index (local.get $obj) (local.get $i)))
+    (if (i32.ge_u (local.get $byte_pos) (i32.load (local.get $obj)))
       (then (return (i32.const {undefined}))))
-    ;; allocate 1-byte string for char
-    (local.set $obj (call $alloc_heap (i32.const {char_size})))
-    (i32.store (local.get $obj) (i32.const {one}))
-    (i32.store8
+    (local.set $byte_len (call $utf8_cp_byte_length (local.get $obj) (local.get $byte_pos)))
+    (local.set $obj (call $alloc_heap (i32.add (i32.const {header}) (local.get $byte_len))))
+    (i32.store (local.get $obj) (local.get $byte_len))
+    (call $copy
+      (i32.add (i32.and (local.get $s) (i32.const {heap_mask})) (i32.add (i32.const {header}) (local.get $byte_pos)))
       (i32.add (local.get $obj) (i32.const {header}))
-      (i32.load8_u
-        (i32.add
-          (i32.and (local.get $s) (i32.const {heap_mask}))
-          (i32.add (i32.const {header}) (local.get $i)))))
+      (local.get $byte_len))
     (i32.or (local.get $obj) (i32.const {string_tag})))
 "#,
             undefined = ValueTag::UNDEFINED,
             heap_mask = ValueTag::HEAP_MASK,
             number_shift = ValueTag::NUMBER_SHIFT,
-            zero = RuntimeConst::ZERO,
-            one = RuntimeConst::ONE,
-            char_size = Layout::STRING_HEADER_SIZE + 1,
             header = Layout::STRING_HEADER_SIZE,
             string_tag = ValueTag::STRING,
+            zero = RuntimeConst::ZERO,
         ));
     }
 
     pub(super) fn emit_string_at(&self, wat: &mut String) {
+        // UTF-8 helpers are emitted via emit_utf8_helpers() before any string functions.
+        self.emit_string_code_point_length(wat);
         wat.push_str(&format!(
             r#"
   (func $string_at (param $s i32) (param $idx i32) (result i32)
     (local $obj i32)
     (local $len i32)
     (local $i i32)
+    (local $byte_len i32)
+    (local $byte_pos i32)
     (if (i32.eqz (call $is_string (local.get $s))) (then (return (i32.const {undefined}))))
     (local.set $obj (i32.and (local.get $s) (i32.const {heap_mask})))
-    (local.set $len (i32.load (local.get $obj)))
+    (local.set $len (call $utf8_cp_count (local.get $obj)))
     (local.set $i (i32.shr_s (local.get $idx) (i32.const {number_shift})))
     (if (i32.lt_s (local.get $i) (i32.const {zero}))
       (then
-        (local.set $i (i32.add (local.get $len) (local.get $i)))
+        (local.set $i
+          (i32.add
+            (call $string_code_point_length (local.get $s))
+            (local.get $i)))
         (if (i32.lt_s (local.get $i) (i32.const {zero}))
           (then (return (i32.const {undefined}))))))
     (if (i32.ge_u (local.get $i) (local.get $len))
       (then (return (i32.const {undefined}))))
-    (local.set $obj (call $alloc_heap (i32.const {char_size})))
-    (i32.store (local.get $obj) (i32.const {one}))
-    (i32.store8
+    (local.set $byte_pos (call $utf8_cp_to_byte_index (local.get $obj) (local.get $i)))
+    (local.set $byte_len (call $utf8_cp_byte_length (local.get $obj) (local.get $byte_pos)))
+    (local.set $obj (call $alloc_heap (i32.add (i32.const {header}) (local.get $byte_len))))
+    (i32.store (local.get $obj) (local.get $byte_len))
+    (call $copy
+      (i32.add (i32.and (local.get $s) (i32.const {heap_mask})) (i32.add (i32.const {header}) (local.get $byte_pos)))
       (i32.add (local.get $obj) (i32.const {header}))
-      (i32.load8_u
-        (i32.add
-          (i32.and (local.get $s) (i32.const {heap_mask}))
-          (i32.add (i32.const {header}) (local.get $i)))))
+      (local.get $byte_len))
     (i32.or (local.get $obj) (i32.const {string_tag})))
 "#,
             undefined = ValueTag::UNDEFINED,
             heap_mask = ValueTag::HEAP_MASK,
             number_shift = ValueTag::NUMBER_SHIFT,
-            zero = RuntimeConst::ZERO,
-            one = RuntimeConst::ONE,
-            char_size = Layout::STRING_HEADER_SIZE + 1,
             header = Layout::STRING_HEADER_SIZE,
             string_tag = ValueTag::STRING,
+            zero = RuntimeConst::ZERO,
         ));
     }
 
     pub(super) fn emit_string_substring(&self, wat: &mut String) {
+        // UTF-8 helpers are emitted via emit_utf8_helpers() before any string functions.
+        self.emit_string_code_point_length(wat);
         wat.push_str(&format!(
             r#"
   (func $string_substring (param $s i32) (param $start i32) (param $end i32) (result i32)
     (local $obj i32)
-    (local $len i32)
+    (local $byte_len i32)
+    (local $cp_len i32)
     (local $s_pos i32)
     (local $e_pos i32)
+    (local $byte_s_pos i32)
+    (local $byte_e_pos i32)
     (local $result_len i32)
     (local $result_ptr i32)
+    (local $b i32)
     (if (i32.eqz (call $is_string (local.get $s))) (then (return (i32.const {undefined}))))
     (local.set $obj (i32.and (local.get $s) (i32.const {heap_mask})))
-    (local.set $len (i32.load (local.get $obj)))
+    (local.set $byte_len (i32.load (local.get $obj)))
+    (local.set $cp_len (call $string_code_point_length (local.get $s)))
     (local.set $s_pos (i32.shr_s (local.get $start) (i32.const {number_shift})))
     (local.set $e_pos (i32.shr_s (local.get $end) (i32.const {number_shift})))
-    ;; clamp to [0, len]
+    ;; clamp to [0, cp_len]
     (if (i32.lt_s (local.get $s_pos) (i32.const {zero})) (then (local.set $s_pos (i32.const {zero}))))
-    (if (i32.gt_u (local.get $s_pos) (local.get $len)) (then (local.set $s_pos (local.get $len))))
+    (if (i32.gt_u (local.get $s_pos) (local.get $cp_len)) (then (local.set $s_pos (local.get $cp_len))))
     (if (i32.lt_s (local.get $e_pos) (i32.const {zero})) (then (local.set $e_pos (i32.const {zero}))))
-    (if (i32.gt_u (local.get $e_pos) (local.get $len)) (then (local.set $e_pos (local.get $len))))
+    (if (i32.gt_u (local.get $e_pos) (local.get $cp_len)) (then (local.set $e_pos (local.get $cp_len))))
     ;; if start >= end, return empty string
     (if (i32.ge_u (local.get $s_pos) (local.get $e_pos))
       (then
         (local.set $result_ptr (call $alloc_heap (i32.const {header})))
         (i32.store (local.get $result_ptr) (i32.const {zero}))
         (return (i32.or (local.get $result_ptr) (i32.const {string_tag})))))
-    (local.set $result_len (i32.sub (local.get $e_pos) (local.get $s_pos)))
+    ;; Convert s_pos and e_pos from code point indices to byte indices
+    (if (i32.eq (local.get $s_pos) (local.get $cp_len))
+      (then (local.set $byte_s_pos (local.get $byte_len)))
+      (else (local.set $byte_s_pos (call $utf8_cp_to_byte_index (local.get $s) (local.get $s_pos)))))
+    (if (i32.eq (local.get $e_pos) (local.get $cp_len))
+      (then (local.set $byte_e_pos (local.get $byte_len)))
+      (else (local.set $byte_e_pos (call $utf8_cp_to_byte_index (local.get $s) (local.get $e_pos)))))
+    (local.set $result_len (i32.sub (local.get $byte_e_pos) (local.get $byte_s_pos)))
     (local.set $result_ptr (call $alloc_heap (i32.add (i32.const {header}) (local.get $result_len))))
     (i32.store (local.get $result_ptr) (local.get $result_len))
     (call $copy
-      (i32.add (i32.and (local.get $s) (i32.const {heap_mask})) (i32.add (i32.const {header}) (local.get $s_pos)))
+      (i32.add (i32.and (local.get $s) (i32.const {heap_mask})) (i32.add (i32.const {header}) (local.get $byte_s_pos)))
       (i32.add (local.get $result_ptr) (i32.const {header}))
       (local.get $result_len))
     (i32.or (local.get $result_ptr) (i32.const {string_tag})))
@@ -121,28 +253,31 @@ impl WatEmitter<'_> {
     }
 
     pub(super) fn emit_string_substr(&self, wat: &mut String) {
+        self.emit_string_code_point_length(wat);
         wat.push_str(&format!(
             r#"
   (func $string_substr (param $s i32) (param $start i32) (param $len i32) (result i32)
     (local $obj i32)
-    (local $s_len i32)
+    (local $byte_len i32)
+    (local $cp_len i32)
     (local $s_pos i32)
     (local $len_val i32)
     (local $e_pos i32)
     (if (i32.eqz (call $is_string (local.get $s))) (then (return (i32.const {undefined}))))
     (local.set $obj (i32.and (local.get $s) (i32.const {heap_mask})))
-    (local.set $s_len (i32.load (local.get $obj)))
+    (local.set $byte_len (i32.load (local.get $obj)))
+    (local.set $cp_len (call $string_code_point_length (local.get $s)))
     (local.set $s_pos (i32.shr_s (local.get $start) (i32.const {number_shift})))
-    ;; Handle negative start: max(len + start, 0)
+    ;; Handle negative start: max(cp_len + start, 0)
     (if (i32.lt_s (local.get $s_pos) (i32.const {zero}))
       (then
-        (local.set $s_pos (i32.add (local.get $s_len) (local.get $s_pos)))
+        (local.set $s_pos (i32.add (local.get $cp_len) (local.get $s_pos)))
         (if (i32.lt_s (local.get $s_pos) (i32.const {zero}))
           (then (local.set $s_pos (i32.const {zero}))))))
-    (if (i32.gt_u (local.get $s_pos) (local.get $s_len))
-      (then (local.set $s_pos (local.get $s_len))))
-    ;; If start >= len, return empty string (call substring with 0,0)
-    (if (i32.ge_u (local.get $s_pos) (local.get $s_len))
+    (if (i32.gt_u (local.get $s_pos) (local.get $cp_len))
+      (then (local.set $s_pos (local.get $cp_len))))
+    ;; If start >= cp_len, return empty string (call substring with 0,0)
+    (if (i32.ge_u (local.get $s_pos) (local.get $cp_len))
       (then
         (return (call $string_substring (local.get $s) (i32.const {zero}) (i32.const {zero})))))
     ;; Decode length parameter
@@ -160,13 +295,13 @@ impl WatEmitter<'_> {
         ;; Otherwise: treat as 0 (return empty string)
         (if (i32.eqz (local.get $len))
           (then
-            (local.set $len_val (i32.sub (local.get $s_len) (local.get $s_pos))))
+            (local.set $len_val (i32.sub (local.get $cp_len) (local.get $s_pos))))
           (else
             (return (call $string_substring (local.get $s) (i32.const {zero}) (i32.const {zero})))))))
     ;; Compute end position and delegate to substring
     (local.set $e_pos (i32.add (local.get $s_pos) (local.get $len_val)))
-    (if (i32.gt_u (local.get $e_pos) (local.get $s_len))
-      (then (local.set $e_pos (local.get $s_len))))
+    (if (i32.gt_u (local.get $e_pos) (local.get $cp_len))
+      (then (local.set $e_pos (local.get $cp_len))))
     (return (call $string_substring (local.get $s)
       (i32.shl (local.get $s_pos) (i32.const {number_shift}))
       (i32.shl (local.get $e_pos) (i32.const {number_shift})))))
@@ -182,41 +317,54 @@ impl WatEmitter<'_> {
 
     pub(super) fn emit_string_slice(&self, wat: &mut String) {
         // ES slice: negative indices count from end, defaults applied
+        // UTF-8 helpers are emitted via emit_utf8_helpers() before any string functions.
+        self.emit_string_code_point_length(wat);
         wat.push_str(&format!(
             r#"
   (func $string_slice (param $s i32) (param $start i32) (param $end i32) (result i32)
     (local $obj i32)
-    (local $len i32)
+    (local $byte_len i32)
+    (local $cp_len i32)
     (local $s_pos i32)
     (local $e_pos i32)
+    (local $byte_s_pos i32)
+    (local $byte_e_pos i32)
     (local $result_len i32)
     (local $result_ptr i32)
     (if (i32.eqz (call $is_string (local.get $s))) (then (return (i32.const {undefined}))))
     (local.set $obj (i32.and (local.get $s) (i32.const {heap_mask})))
-    (local.set $len (i32.load (local.get $obj)))
+    (local.set $byte_len (i32.load (local.get $obj)))
+    (local.set $cp_len (call $string_code_point_length (local.get $s)))
     (local.set $s_pos (i32.shr_s (local.get $start) (i32.const {number_shift})))
     (local.set $e_pos (i32.shr_s (local.get $end) (i32.const {number_shift})))
-    ;; handle negative indices
+    ;; handle negative indices using code point length
     (if (i32.lt_s (local.get $s_pos) (i32.const {zero}))
-      (then (local.set $s_pos (i32.add (local.get $len) (local.get $s_pos)))))
+      (then (local.set $s_pos (i32.add (local.get $cp_len) (local.get $s_pos)))))
     (if (i32.lt_s (local.get $e_pos) (i32.const {zero}))
-      (then (local.set $e_pos (i32.add (local.get $len) (local.get $e_pos)))))
-    ;; clamp to [0, len]
+      (then (local.set $e_pos (i32.add (local.get $cp_len) (local.get $e_pos)))))
+    ;; clamp to [0, cp_len]
     (if (i32.lt_s (local.get $s_pos) (i32.const {zero})) (then (local.set $s_pos (i32.const {zero}))))
-    (if (i32.gt_u (local.get $s_pos) (local.get $len)) (then (local.set $s_pos (local.get $len))))
+    (if (i32.gt_u (local.get $s_pos) (local.get $cp_len)) (then (local.set $s_pos (local.get $cp_len))))
     (if (i32.lt_s (local.get $e_pos) (i32.const {zero})) (then (local.set $e_pos (i32.const {zero}))))
-    (if (i32.gt_u (local.get $e_pos) (local.get $len)) (then (local.set $e_pos (local.get $len))))
+    (if (i32.gt_u (local.get $e_pos) (local.get $cp_len)) (then (local.set $e_pos (local.get $cp_len))))
     ;; if start >= end, return empty string
     (if (i32.ge_u (local.get $s_pos) (local.get $e_pos))
       (then
         (local.set $result_ptr (call $alloc_heap (i32.const {header})))
         (i32.store (local.get $result_ptr) (i32.const {zero}))
         (return (i32.or (local.get $result_ptr) (i32.const {string_tag})))))
-    (local.set $result_len (i32.sub (local.get $e_pos) (local.get $s_pos)))
+    ;; Convert s_pos and e_pos from code point indices to byte indices
+    (if (i32.eq (local.get $s_pos) (local.get $cp_len))
+      (then (local.set $byte_s_pos (local.get $byte_len)))
+      (else (local.set $byte_s_pos (call $utf8_cp_to_byte_index (local.get $s) (local.get $s_pos)))))
+    (if (i32.eq (local.get $e_pos) (local.get $cp_len))
+      (then (local.set $byte_e_pos (local.get $byte_len)))
+      (else (local.set $byte_e_pos (call $utf8_cp_to_byte_index (local.get $s) (local.get $e_pos)))))
+    (local.set $result_len (i32.sub (local.get $byte_e_pos) (local.get $byte_s_pos)))
     (local.set $result_ptr (call $alloc_heap (i32.add (i32.const {header}) (local.get $result_len))))
     (i32.store (local.get $result_ptr) (local.get $result_len))
     (call $copy
-      (i32.add (i32.and (local.get $s) (i32.const {heap_mask})) (i32.add (i32.const {header}) (local.get $s_pos)))
+      (i32.add (i32.and (local.get $s) (i32.const {heap_mask})) (i32.add (i32.const {header}) (local.get $byte_s_pos)))
       (i32.add (local.get $result_ptr) (i32.const {header}))
       (local.get $result_len))
     (i32.or (local.get $result_ptr) (i32.const {string_tag})))
@@ -231,6 +379,7 @@ impl WatEmitter<'_> {
     }
 
     pub(super) fn emit_string_index_of(&self, wat: &mut String) {
+        self.emit_utf8_byte_to_cp_index(wat);
         wat.push_str(&format!(
             r#"
   (func $string_index_of (param $haystack i32) (param $needle i32) (result i32)
@@ -245,7 +394,7 @@ impl WatEmitter<'_> {
     (local.set $n_obj (i32.and (local.get $needle) (i32.const {heap_mask})))
     (local.set $h_len (i32.load (local.get $h_obj)))
     (local.set $n_len (i32.load (local.get $n_obj)))
-    (if (i32.eqz (local.get $n_len)) (then (return (i32.const {zero}))))
+    (if (i32.eqz (local.get $n_len)) (then (return (i32.or (i32.shl (i32.const {zero}) (i32.const {number_shift})) (i32.const {number_tag})))))
     (block $not_found
       (loop $search
         (br_if $not_found (i32.gt_u (local.get $i) (i32.sub (local.get $h_len) (local.get $n_len))))
@@ -253,7 +402,7 @@ impl WatEmitter<'_> {
               (i32.add (i32.add (local.get $h_obj) (i32.const {header})) (local.get $i))
               (i32.add (local.get $n_obj) (i32.const {header}))
               (local.get $n_len))
-          (then (return (i32.or (i32.shl (local.get $i) (i32.const {number_shift})) (i32.const {number_tag})))))
+          (then (return (i32.or (i32.shl (call $utf8_byte_to_cp_index (local.get $haystack) (local.get $i)) (i32.const {number_shift})) (i32.const {number_tag})))))
         (local.set $i (i32.add (local.get $i) (i32.const {one})))
         (br $search)))
     (i32.or (i32.shl (i32.const {neg_one}) (i32.const {number_shift})) (i32.const {number_tag})))
@@ -269,6 +418,8 @@ impl WatEmitter<'_> {
     }
 
     pub(super) fn emit_string_last_index_of(&self, wat: &mut String) {
+        self.emit_utf8_byte_to_cp_index(wat);
+        self.emit_string_code_point_length(wat);
         wat.push_str(&format!(
             r#"
   (func $string_last_index_of (param $haystack i32) (param $needle i32) (result i32)
@@ -283,7 +434,7 @@ impl WatEmitter<'_> {
     (local.set $n_obj (i32.and (local.get $needle) (i32.const {heap_mask})))
     (local.set $h_len (i32.load (local.get $h_obj)))
     (local.set $n_len (i32.load (local.get $n_obj)))
-    (if (i32.eqz (local.get $n_len)) (then (return (i32.or (i32.shl (local.get $h_len) (i32.const {number_shift})) (i32.const {number_tag})))))
+    (if (i32.eqz (local.get $n_len)) (then (return (i32.or (i32.shl (call $string_code_point_length (local.get $haystack)) (i32.const {number_shift})) (i32.const {number_tag})))))
     (local.set $i (i32.sub (local.get $h_len) (local.get $n_len)))
     (block $not_found
       (loop $search
@@ -292,7 +443,7 @@ impl WatEmitter<'_> {
               (i32.add (i32.add (local.get $h_obj) (i32.const {header})) (local.get $i))
               (i32.add (local.get $n_obj) (i32.const {header}))
               (local.get $n_len))
-          (then (return (i32.or (i32.shl (local.get $i) (i32.const {number_shift})) (i32.const {number_tag})))))
+          (then (return (i32.or (i32.shl (call $utf8_byte_to_cp_index (local.get $haystack) (local.get $i)) (i32.const {number_shift})) (i32.const {number_tag})))))
         (local.set $i (i32.sub (local.get $i) (i32.const {one})))
         (br $search)))
     (i32.or (i32.shl (i32.const {neg_one}) (i32.const {number_shift})) (i32.const {number_tag})))
@@ -526,13 +677,13 @@ impl WatEmitter<'_> {
     (local $result_ptr i32)
     (local $first_byte i32)
     (local $is_regexp i32)
+    (local $result i32)
     ;; Guard: $s must be string
     (if (i32.eqz (call $is_string (local.get $s))) (then (return (local.get $s))))
     (local.set $s_obj (i32.and (local.get $s) (i32.const {heap_mask})))
     (local.set $s_len (i32.load (local.get $s_obj)))
     ;; Check if search is a RegExp pattern (starts with '/')
-    (if (result i32)
-      (call $is_string (local.get $search))
+    (if (call $is_string (local.get $search))
       (then
         (local.set $search_obj (i32.and (local.get $search) (i32.const {heap_mask})))
         (local.set $search_len (i32.load (local.get $search_obj)))
@@ -540,59 +691,60 @@ impl WatEmitter<'_> {
           (i32.load8_u (i32.add (local.get $search_obj) (i32.const {str_header}))))
         (if (i32.eq (local.get $first_byte) (i32.const {slash}))
           (then (local.set $is_regexp (i32.const 1)))
-          (else (local.set $is_regexp (i32.const 0))))
-        (i32.const 1))
+          (else (local.set $is_regexp (i32.const 0)))))
       (else
-        (local.set $is_regexp (i32.const 0))
-        (i32.const 0)))
+        (local.set $is_regexp (i32.const 0))))
     (if (local.get $is_regexp)
       (then
         ;; === RegExp path ===
-        (return
-          (call $string_replace_regexp
-            (local.get $s) (local.get $search) (local.get $replace))))
+        (local.set $result (call $string_replace_regexp
+          (local.get $s) (local.get $search) (local.get $replace))))
       (else
-        ;; === String path (existing behavior) ===
+        ;; === String path ===
         (if (i32.eqz (call $is_string (local.get $search)))
-          (then (return (local.get $s))))
-        (if (i32.eqz (call $is_string (local.get $replace)))
-          (then (return (local.get $s))))
-        (local.set $search_obj (i32.and (local.get $search) (i32.const {heap_mask})))
-        (local.set $replace_obj (i32.and (local.get $replace) (i32.const {heap_mask})))
-        (local.set $search_len (i32.load (local.get $search_obj)))
-        (local.set $replace_len (i32.load (local.get $replace_obj)))
-        ;; Search loop for first occurrence
-        (local.set $pos (i32.const {zero}))
-        (block $not_found
-          (loop $search
-            (br_if $not_found (i32.gt_u (local.get $pos) (i32.sub (local.get $s_len) (local.get $search_len))))
-            (if (call $mem_equal
-                  (i32.add (i32.add (local.get $s_obj) (i32.const {str_header})) (local.get $pos))
-                  (i32.add (local.get $search_obj) (i32.const {str_header}))
-                  (local.get $search_len))
-              (then (br $not_found)))
-            (local.set $pos (i32.add (local.get $pos) (i32.const {one})))
-            (br $search)))
-        (if (i32.gt_u (local.get $pos) (i32.sub (local.get $s_len) (local.get $search_len)))
-          (then (return (local.get $s))))
-        (local.set $pre_len (local.get $pos))
-        (local.set $post_len (i32.sub (i32.sub (local.get $s_len) (local.get $pos)) (local.get $search_len)))
-        (local.set $result_len (i32.add (i32.add (local.get $pre_len) (local.get $replace_len)) (local.get $post_len)))
-        (local.set $result_ptr (call $alloc_heap (i32.add (i32.const {str_header}) (local.get $result_len))))
-        (i32.store (local.get $result_ptr) (local.get $result_len))
-        (call $copy
-          (i32.add (local.get $s_obj) (i32.const {str_header}))
-          (i32.add (local.get $result_ptr) (i32.const {str_header}))
-          (local.get $pre_len))
-        (call $copy
-          (i32.add (local.get $replace_obj) (i32.const {str_header}))
-          (i32.add (i32.add (local.get $result_ptr) (i32.const {str_header})) (local.get $pre_len))
-          (local.get $replace_len))
-        (call $copy
-          (i32.add (i32.add (local.get $s_obj) (i32.const {str_header})) (i32.add (local.get $pos) (local.get $search_len)))
-          (i32.add (i32.add (local.get $result_ptr) (i32.const {str_header})) (i32.add (local.get $pre_len) (local.get $replace_len)))
-          (local.get $post_len))
-        (i32.or (local.get $result_ptr) (i32.const {string_tag}))))
+          (then (local.set $result (local.get $s)))
+          (else
+            (if (i32.eqz (call $is_string (local.get $replace)))
+              (then (local.set $result (local.get $s)))
+              (else
+                (local.set $search_obj (i32.and (local.get $search) (i32.const {heap_mask})))
+                (local.set $replace_obj (i32.and (local.get $replace) (i32.const {heap_mask})))
+                (local.set $search_len (i32.load (local.get $search_obj)))
+                (local.set $replace_len (i32.load (local.get $replace_obj)))
+                ;; Search loop for first occurrence
+                (local.set $pos (i32.const {zero}))
+                (block $not_found
+                  (loop $search
+                    (br_if $not_found (i32.gt_u (local.get $pos) (i32.sub (local.get $s_len) (local.get $search_len))))
+                    (if (call $mem_equal
+                          (i32.add (i32.add (local.get $s_obj) (i32.const {str_header})) (local.get $pos))
+                          (i32.add (local.get $search_obj) (i32.const {str_header}))
+                          (local.get $search_len))
+                      (then (br $not_found)))
+                    (local.set $pos (i32.add (local.get $pos) (i32.const {one})))
+                    (br $search)))
+                (if (i32.gt_u (local.get $pos) (i32.sub (local.get $s_len) (local.get $search_len)))
+                  (then (local.set $result (local.get $s)))
+                  (else
+                    (local.set $pre_len (local.get $pos))
+                    (local.set $post_len (i32.sub (i32.sub (local.get $s_len) (local.get $pos)) (local.get $search_len)))
+                    (local.set $result_len (i32.add (i32.add (local.get $pre_len) (local.get $replace_len)) (local.get $post_len)))
+                    (local.set $result_ptr (call $alloc_heap (i32.add (i32.const {str_header}) (local.get $result_len))))
+                    (i32.store (local.get $result_ptr) (local.get $result_len))
+                    (call $copy
+                      (i32.add (local.get $s_obj) (i32.const {str_header}))
+                      (i32.add (local.get $result_ptr) (i32.const {str_header}))
+                      (local.get $pre_len))
+                    (call $copy
+                      (i32.add (local.get $replace_obj) (i32.const {str_header}))
+                      (i32.add (i32.add (local.get $result_ptr) (i32.const {str_header})) (local.get $pre_len))
+                      (local.get $replace_len))
+                    (call $copy
+                      (i32.add (i32.add (local.get $s_obj) (i32.const {str_header})) (i32.add (local.get $pos) (local.get $search_len)))
+                      (i32.add (i32.add (local.get $result_ptr) (i32.const {str_header})) (i32.add (local.get $pre_len) (local.get $replace_len)))
+                      (local.get $post_len))
+                    (local.set $result (i32.or (local.get $result_ptr) (i32.const {string_tag})))))))))))
+    (local.get $result))
 "#,
             heap_mask = ValueTag::HEAP_MASK,
             string_tag = ValueTag::STRING,
@@ -603,6 +755,26 @@ impl WatEmitter<'_> {
         ));
     }
 
+    pub(super) fn emit_string_replace_all(&self, wat: &mut String) {
+        wat.push_str(
+            r#"
+  ;; Replace all occurrences of $search in $s with $replace
+  ;; Delegates to $string_replace in a loop
+  (func $string_replace_all (param $s i32) (param $search i32) (param $replace i32) (result i32)
+    (local $prev i32)
+    (local $curr i32)
+    (local.set $prev (local.get $s))
+    (loop $replace_loop
+      (local.set $curr (call $string_replace (local.get $prev) (local.get $search) (local.get $replace)))
+      (if (i32.eq (local.get $curr) (local.get $prev))
+        (then (return (local.get $curr))))
+      (local.set $prev (local.get $curr))
+      (br $replace_loop))
+    (local.get $prev))
+"#,
+        );
+    }
+
     /// Helper: return the byte length of a string value (raw i32, not tagged)
     pub(super) fn emit_string_length(&self, wat: &mut String) {
         wat.push_str(&format!(
@@ -611,6 +783,36 @@ impl WatEmitter<'_> {
     (i32.load (i32.and (local.get $s) (i32.const {heap_mask}))))"#,
             heap_mask = ValueTag::HEAP_MASK,
             zero = RuntimeConst::ZERO,
+        ));
+    }
+
+    pub(super) fn emit_string_code_point_length(&self, wat: &mut String) {
+        if wat.contains("$string_code_point_length") {
+            return;
+        }
+        wat.push_str(&format!(
+            r#"
+  (func $string_code_point_length (param $s i32) (result i32)
+    (local $ptr i32)
+    (local $len i32)
+    (local $i i32)
+    (local $count i32)
+    (local $b i32)
+    (local.set $ptr (i32.add (i32.and (local.get $s) (i32.const {heap_mask})) (i32.const {header})))
+    (local.set $len (i32.load (i32.and (local.get $s) (i32.const {heap_mask}))))
+    (block $done
+      (loop $loop
+        (br_if $done (i32.ge_u (local.get $i) (local.get $len)))
+        (local.set $b (i32.load8_u (i32.add (local.get $ptr) (local.get $i))))
+        (if (i32.ne (i32.and (local.get $b) (i32.const 0xC0)) (i32.const 0x80))
+          (then (local.set $count (i32.add (local.get $count) (i32.const {one})))))
+        (local.set $i (i32.add (local.get $i) (i32.const {one})))
+        (br $loop)))
+    (local.get $count))
+"#,
+            heap_mask = ValueTag::HEAP_MASK,
+            header = Layout::STRING_HEADER_SIZE,
+            one = RuntimeConst::ONE,
         ));
     }
 
@@ -653,67 +855,71 @@ impl WatEmitter<'_> {
                 (local.set $dst (i32.add (local.get $dst) (i32.const {one})))
                 (br $done)))
             (local.set $next_ch (i32.load8_u (i32.add (i32.add (local.get $r_obj) (i32.const {str_header})) (local.get $i))))
-            (if (i32.eq (local.get $next_ch) (i32.const 0x24))
-              (then
-                ;; $$ → literal $
-                (i32.store8 (i32.add (local.get $result) (local.get $dst)) (i32.const 0x24))
-                (local.set $dst (i32.add (local.get $dst) (i32.const {one})))
-                (local.set $i (i32.add (local.get $i) (i32.const {one}))))
-              (else
-                (if (i32.eq (local.get $next_ch) (i32.const 0x26))
-                  (then
-                    ;; $& → match text
-                    (if (call $is_string (local.get $match))
-                      (then
-                        (local.set $expand_obj (i32.and (local.get $match) (i32.const {heap_mask})))
-                        (local.set $expand_len (i32.load (local.get $expand_obj)))
-                        (call $copy
-                          (i32.add (local.get $expand_obj) (i32.const {str_header}))
-                          (i32.add (local.get $result) (local.get $dst))
-                          (local.get $expand_len))
-                        (local.set $dst (i32.add (local.get $dst) (local.get $expand_len)))))
-                    (local.set $i (i32.add (local.get $i) (i32.const {one}))))
-                  (else
-                    (if (i32.eq (local.get $next_ch) (i32.const 0x60))
-                      (then
-                        ;; $` → text before match
-                        (if (call $is_string (local.get $pre))
-                          (then
-                            (local.set $expand_obj (i32.and (local.get $pre) (i32.const {heap_mask})))
-                            (local.set $expand_len (i32.load (local.get $expand_obj)))
-                            (call $copy
-                              (i32.add (local.get $expand_obj) (i32.const {str_header}))
-                              (i32.add (local.get $result) (local.get $dst))
-                              (local.get $expand_len))
-                            (local.set $dst (i32.add (local.get $dst) (local.get $expand_len)))))
-                        (local.set $i (i32.add (local.get $i) (i32.const {one}))))
-                      (else
-                        (if (i32.eq (local.get $next_ch) (i32.const 0x27))
-                          (then
-                            ;; $' → text after match
-                            (if (call $is_string (local.get $post))
-                              (then
-                                (local.set $expand_obj (i32.and (local.get $post) (i32.const {heap_mask})))
-                                (local.set $expand_len (i32.load (local.get $expand_obj)))
-                                (call $copy
-                                  (i32.add (local.get $expand_obj) (i32.const {str_header}))
-                                  (i32.add (local.get $result) (local.get $dst))
-                                  (local.get $expand_len))
-                                (local.set $dst (i32.add (local.get $dst) (local.get $expand_len)))))
-                            (local.set $i (i32.add (local.get $i) (i32.const {one}))))
-                          (else
-                            ;; $n or other: just copy '$' and the char literally
-                            (i32.store8 (i32.add (local.get $result) (local.get $dst)) (i32.const 0x24))
-                            (local.set $dst (i32.add (local.get $dst) (i32.const {one})))
-                            ;; Also copy the char after $ (e.g., for $1, copy '1')
-                            (i32.store8 (i32.add (local.get $result) (local.get $dst)) (local.get $next_ch))
-                            (local.set $dst (i32.add (local.get $dst) (i32.const {one})))
-                            (local.set $i (i32.add (local.get $i) (i32.const {one})))))))))))
+            ;; Flat dispatch for dollar patterns using block/br (no nested if-else)
+            (block $case_done
+              ;; $$ → literal $
+              (if (i32.eq (local.get $next_ch) (i32.const 0x24))
+                (then
+                  (i32.store8 (i32.add (local.get $result) (local.get $dst)) (i32.const 0x24))
+                  (local.set $dst (i32.add (local.get $dst) (i32.const {one})))
+                  (local.set $i (i32.add (local.get $i) (i32.const {one})))
+                  (br $case_done)))
+              ;; $& → match text
+              (if (i32.eq (local.get $next_ch) (i32.const 0x26))
+                (then
+                  (if (call $is_string (local.get $match))
+                    (then
+                      (local.set $expand_obj (i32.and (local.get $match) (i32.const {heap_mask})))
+                      (local.set $expand_len (i32.load (local.get $expand_obj)))
+                      (call $copy
+                        (i32.add (local.get $expand_obj) (i32.const {str_header}))
+                        (i32.add (local.get $result) (local.get $dst))
+                        (local.get $expand_len))
+                      (local.set $dst (i32.add (local.get $dst) (local.get $expand_len)))))
+                  (local.set $i (i32.add (local.get $i) (i32.const {one})))
+                  (br $case_done)))
+              ;; $` → text before match
+              (if (i32.eq (local.get $next_ch) (i32.const 0x60))
+                (then
+                  (if (call $is_string (local.get $pre))
+                    (then
+                      (local.set $expand_obj (i32.and (local.get $pre) (i32.const {heap_mask})))
+                      (local.set $expand_len (i32.load (local.get $expand_obj)))
+                      (call $copy
+                        (i32.add (local.get $expand_obj) (i32.const {str_header}))
+                        (i32.add (local.get $result) (local.get $dst))
+                        (local.get $expand_len))
+                      (local.set $dst (i32.add (local.get $dst) (local.get $expand_len)))))
+                  (local.set $i (i32.add (local.get $i) (i32.const {one})))
+                  (br $case_done)))
+              ;; $' → text after match
+              (if (i32.eq (local.get $next_ch) (i32.const 0x27))
+                (then
+                  (if (call $is_string (local.get $post))
+                    (then
+                      (local.set $expand_obj (i32.and (local.get $post) (i32.const {heap_mask})))
+                      (local.set $expand_len (i32.load (local.get $expand_obj)))
+                      (call $copy
+                        (i32.add (local.get $expand_obj) (i32.const {str_header}))
+                        (i32.add (local.get $result) (local.get $dst))
+                        (local.get $expand_len))
+                      (local.set $dst (i32.add (local.get $dst) (local.get $expand_len)))))
+                  (local.set $i (i32.add (local.get $i) (i32.const {one})))
+                  (br $case_done)))
+              ;; Default: copy '$' and the char literally
+              (i32.store8 (i32.add (local.get $result) (local.get $dst)) (i32.const 0x24))
+              (local.set $dst (i32.add (local.get $dst) (i32.const {one})))
+              (i32.store8 (i32.add (local.get $result) (local.get $dst)) (local.get $next_ch))
+              (local.set $dst (i32.add (local.get $dst) (i32.const {one})))
+              (local.set $i (i32.add (local.get $i) (i32.const {one})))
+            )
+          )
           (else
             ;; Not '$', copy character literally
             (i32.store8 (i32.add (local.get $result) (local.get $dst)) (local.get $ch))
             (local.set $dst (i32.add (local.get $dst) (i32.const {one})))
             (local.set $i (i32.add (local.get $i) (i32.const {one}))))
+          )
         (br $scan)))
     (local.get $dst))
 "#,
@@ -810,7 +1016,7 @@ impl WatEmitter<'_> {
         (br $check_dollar)))
     ;; Restore p_len
     (local.set $p_len (i32.load (i32.and (local.get $pattern) (i32.const {heap_mask}))))
-    (if (local.get $is_global)
+    (if (result i32) (local.get $is_global)
       (then
         ;; === Global regexp replace ===
         ;; First pass: count total result length
@@ -923,7 +1129,7 @@ impl WatEmitter<'_> {
         (local.set $match_end (i32.load (i32.const {scratch}))) ;; stored by regexp_match_from
         (local.set $match_len (i32.load (i32.and (local.get $match_str) (i32.const {heap_mask}))))
         (local.set $match_start (i32.sub (local.get $match_end) (local.get $match_len)))
-        (if (local.get $expand_needed)
+        (if (result i32) (local.get $expand_needed)
           (then
             ;; Dollar expansion: render to scratch first to measure
             (local.set $pre_str (call $string_substring
@@ -980,7 +1186,7 @@ impl WatEmitter<'_> {
               (i32.add (i32.add (local.get $i_obj) (i32.const {str_header})) (local.get $match_end))
               (i32.add (i32.add (local.get $result_ptr) (i32.const {str_header})) (i32.add (local.get $match_start) (local.get $replace_len)))
               (i32.sub (local.get $i_len) (local.get $match_end)))
-            (i32.or (local.get $result_ptr) (i32.const {string_tag}))))))
+            (i32.or (local.get $result_ptr) (i32.const {string_tag})))))))
 "#,
             heap_mask = ValueTag::HEAP_MASK,
             string_tag = ValueTag::STRING,
@@ -1368,32 +1574,77 @@ impl WatEmitter<'_> {
         ));
     }
 
+    pub(super) fn emit_utf8_decode_cp_at_byte(&self, wat: &mut String) {
+        if wat.contains("$utf8_decode_cp_at_byte") {
+            return;
+        }
+        wat.push_str(&format!(
+            r#"
+  (func $utf8_decode_cp_at_byte (param $s i32) (param $byte_idx i32) (result i32)
+    (local $b i32)
+    (local $ptr i32)
+    (local $cp i32)
+    (local.set $ptr (i32.add (i32.and (local.get $s) (i32.const {heap_mask})) (i32.const {string_header})))
+    (local.set $ptr (i32.add (local.get $ptr) (local.get $byte_idx)))
+    (local.set $b (i32.load8_u (local.get $ptr)))
+    ;; Use independent if-then-return blocks — each returns on match, no double-match issue
+    ;; 1-byte: 0xxxxxxx
+    (if (i32.eqz (i32.and (local.get $b) (i32.const 0x80)))
+      (then (return (local.get $b))))
+    ;; 2-byte: 110xxxxx 10xxxxxx
+    (if (i32.eq (i32.and (local.get $b) (i32.const 0xE0)) (i32.const 0xC0))
+      (then
+        (local.set $cp (i32.shl (i32.and (local.get $b) (i32.const 0x1F)) (i32.const 6)))
+        (local.set $cp (i32.or (local.get $cp) (i32.and (i32.load8_u (i32.add (local.get $ptr) (i32.const 1))) (i32.const 0x3F))))
+        (return (local.get $cp))))
+    ;; 3-byte: 1110xxxx 10xxxxxx 10xxxxxx
+    (if (i32.eq (i32.and (local.get $b) (i32.const 0xF0)) (i32.const 0xE0))
+      (then
+        (local.set $cp (i32.shl (i32.and (local.get $b) (i32.const 0x0F)) (i32.const 12)))
+        (local.set $cp (i32.or (local.get $cp) (i32.shl (i32.and (i32.load8_u (i32.add (local.get $ptr) (i32.const 1))) (i32.const 0x3F)) (i32.const 6))))
+        (local.set $cp (i32.or (local.get $cp) (i32.and (i32.load8_u (i32.add (local.get $ptr) (i32.const 2))) (i32.const 0x3F))))
+        (return (local.get $cp))))
+    ;; 4-byte: 11110xxx 10xxxxxx 10xxxxxx 10xxxxxx
+    (local.set $cp (i32.shl (i32.and (local.get $b) (i32.const 0x07)) (i32.const 18)))
+    (local.set $cp (i32.or (local.get $cp) (i32.shl (i32.and (i32.load8_u (i32.add (local.get $ptr) (i32.const 1))) (i32.const 0x3F)) (i32.const 12))))
+    (local.set $cp (i32.or (local.get $cp) (i32.shl (i32.and (i32.load8_u (i32.add (local.get $ptr) (i32.const 2))) (i32.const 0x3F)) (i32.const 6))))
+    (local.set $cp (i32.or (local.get $cp) (i32.and (i32.load8_u (i32.add (local.get $ptr) (i32.const 3))) (i32.const 0x3F))))
+    (local.get $cp))
+"#,
+            heap_mask = ValueTag::HEAP_MASK,
+            string_header = Layout::STRING_HEADER_SIZE,
+        ));
+    }
+
     pub(super) fn emit_string_char_code_at(&self, wat: &mut String) {
+        // UTF-8 helpers are emitted via emit_utf8_helpers() before any string functions.
+        self.emit_utf8_decode_cp_at_byte(wat);
+        self.emit_string_code_point_length(wat);
         wat.push_str(&format!(
             r#"
   (func $string_char_code_at (param $s i32) (param $index i32) (result i32)
     (local $obj i32)
     (local $len i32)
     (local $idx i32)
+    (local $byte_pos i32)
     (if (i32.eqz (call $is_string (local.get $s))) (then (return (i32.const {undefined}))))
     (local.set $obj (i32.and (local.get $s) (i32.const {heap_mask})))
-    (local.set $len (i32.load (local.get $obj)))
+    (local.set $len (call $utf8_cp_count (local.get $obj)))
     (local.set $idx (i32.shr_s (local.get $index) (i32.const {number_shift})))
-    ;; Handle negative index
+    ;; Handle negative index using CP length
     (if (i32.lt_s (local.get $idx) (i32.const {zero}))
       (then (local.set $idx (i32.add (local.get $len) (local.get $idx)))))
     ;; Clamp to [0, len)
     (if (i32.lt_s (local.get $idx) (i32.const {zero})) (then (local.set $idx (i32.const {zero}))))
     (if (i32.ge_u (local.get $idx) (local.get $len)) (then (return (i32.const {undefined}))))
-    ;; Get character code
-    (i32.or (i32.shl (i32.load8_u (i32.add (i32.add (local.get $obj) (i32.const {string_header})) (local.get $idx))) (i32.const {number_shift})) (i32.const {number_tag})))
+    ;; Convert code point index to byte index and decode
+    (local.set $byte_pos (call $utf8_cp_to_byte_index (local.get $obj) (local.get $idx)))
+    (return (call $utf8_decode_cp_at_byte (local.get $obj) (local.get $byte_pos))))
 "#,
             heap_mask = ValueTag::HEAP_MASK,
             number_shift = ValueTag::NUMBER_SHIFT,
-            number_tag = ValueTag::NUMBER,
             undefined = ValueTag::UNDEFINED,
             zero = RuntimeConst::ZERO,
-            string_header = Layout::STRING_HEADER_SIZE,
         ));
     }
 
@@ -1401,23 +1652,96 @@ impl WatEmitter<'_> {
         wat.push_str(&format!(
             r#"
   (func $string_from_char_code (param $code i32) (result i32)
-    (local $code_num i32)
-    (local $result_ptr i32)
-    (local.set $code_num (i32.shr_s (local.get $code) (i32.const {number_shift})))
-    ;; Clamp to valid Unicode range (0-65535)
-    (if (i32.lt_s (local.get $code_num) (i32.const {zero})) (then (local.set $code_num (i32.const {zero}))))
-    (if (i32.gt_u (local.get $code_num) (i32.const 65535)) (then (local.set $code_num (i32.const 65535))))
-    ;; Allocate single-character string
-    (local.set $result_ptr (call $alloc_heap (i32.const {single_char_size})))
-    (i32.store (local.get $result_ptr) (i32.const {one}))
-    (i32.store8 (i32.add (local.get $result_ptr) (i32.const {string_header})) (local.get $code_num))
-    (i32.or (local.get $result_ptr) (i32.const {string_tag})))
+    (local $cp i32)
+    (local $byte_len i32)
+    (local $ptr i32)
+    (local $addr i32)
+    (local.set $cp (i32.shr_s (local.get $code) (i32.const {number_shift})))
+    ;; Clamp to valid Unicode BMP range (0-65535)
+    (if (i32.lt_s (local.get $cp) (i32.const {zero})) (then (local.set $cp (i32.const {zero}))))
+    (if (i32.gt_u (local.get $cp) (i32.const 65535)) (then (local.set $cp (i32.const 65535))))
+    ;; Determine UTF-8 byte length
+    (if (i32.lt_u (local.get $cp) (i32.const 128)) (then (local.set $byte_len (i32.const 1))))
+    (if (i32.ge_u (local.get $cp) (i32.const 128)) (then (local.set $byte_len (i32.const 2))))
+    (if (i32.ge_u (local.get $cp) (i32.const 2048)) (then (local.set $byte_len (i32.const 3))))
+    ;; Allocate: HEADER + byte_len
+    (local.set $ptr (call $alloc_heap (i32.add (i32.const {header}) (local.get $byte_len))))
+    (local.set $addr (i32.add (local.get $ptr) (i32.const {header})))
+    ;; Store code point count = 1
+    (i32.store (local.get $ptr) (i32.const {one}))
+    ;; 1-byte UTF-8: 0xxxxxxx
+    (if (i32.eq (local.get $byte_len) (i32.const 1))
+      (then (i32.store8 (local.get $addr) (local.get $cp))))
+    ;; 2-byte UTF-8: 110xxxxx 10xxxxxx
+    (if (i32.eq (local.get $byte_len) (i32.const 2))
+      (then
+        (i32.store8 (local.get $addr) (i32.or (i32.const 192) (i32.shr_u (local.get $cp) (i32.const 6))))
+        (i32.store8 (i32.add (local.get $addr) (i32.const 1)) (i32.or (i32.const 128) (i32.and (local.get $cp) (i32.const 63))))))
+    ;; 3-byte UTF-8: 1110xxxx 10xxxxxx 10xxxxxx
+    (if (i32.eq (local.get $byte_len) (i32.const 3))
+      (then
+        (i32.store8 (local.get $addr) (i32.or (i32.const 224) (i32.shr_u (local.get $cp) (i32.const 12))))
+        (i32.store8 (i32.add (local.get $addr) (i32.const 1)) (i32.or (i32.const 128) (i32.and (i32.shr_u (local.get $cp) (i32.const 6)) (i32.const 63))))
+        (i32.store8 (i32.add (local.get $addr) (i32.const 2)) (i32.or (i32.const 128) (i32.and (local.get $cp) (i32.const 63))))))
+    (i32.or (local.get $ptr) (i32.const {string_tag})))
 "#,
             number_shift = ValueTag::NUMBER_SHIFT,
             zero = RuntimeConst::ZERO,
             one = RuntimeConst::ONE,
-            single_char_size = Layout::STRING_HEADER_SIZE + 1,
-            string_header = Layout::STRING_HEADER_SIZE,
+            header = Layout::STRING_HEADER_SIZE,
+            string_tag = ValueTag::STRING,
+        ));
+    }
+
+    pub(super) fn emit_string_from_code_point(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $string_from_code_point (param $code i32) (result i32)
+    (local $cp i32)
+    (local $byte_len i32)
+    (local $ptr i32)
+    (local $addr i32)
+    (local.set $cp (i32.shr_s (local.get $code) (i32.const {number_shift})))
+    ;; Clamp to valid Unicode range (0-1114111)
+    (if (i32.lt_s (local.get $cp) (i32.const {zero})) (then (local.set $cp (i32.const {zero}))))
+    (if (i32.gt_u (local.get $cp) (i32.const 1114111)) (then (local.set $cp (i32.const 1114111))))
+    ;; Determine UTF-8 byte length
+    (if (i32.lt_u (local.get $cp) (i32.const 128)) (then (local.set $byte_len (i32.const 1))))
+    (if (i32.ge_u (local.get $cp) (i32.const 128)) (then (local.set $byte_len (i32.const 2))))
+    (if (i32.ge_u (local.get $cp) (i32.const 2048)) (then (local.set $byte_len (i32.const 3))))
+    (if (i32.ge_u (local.get $cp) (i32.const 65536)) (then (local.set $byte_len (i32.const 4))))
+    ;; Allocate: HEADER + byte_len
+    (local.set $ptr (call $alloc_heap (i32.add (i32.const {header}) (local.get $byte_len))))
+    (local.set $addr (i32.add (local.get $ptr) (i32.const {header})))
+    ;; Store code point count = 1
+    (i32.store (local.get $ptr) (i32.const {one}))
+    ;; 1-byte UTF-8: 0xxxxxxx
+    (if (i32.eq (local.get $byte_len) (i32.const 1))
+      (then (i32.store8 (local.get $addr) (local.get $cp))))
+    ;; 2-byte UTF-8: 110xxxxx 10xxxxxx
+    (if (i32.eq (local.get $byte_len) (i32.const 2))
+      (then
+        (i32.store8 (local.get $addr) (i32.or (i32.const 192) (i32.shr_u (local.get $cp) (i32.const 6))))
+        (i32.store8 (i32.add (local.get $addr) (i32.const 1)) (i32.or (i32.const 128) (i32.and (local.get $cp) (i32.const 63))))))
+    ;; 3-byte UTF-8: 1110xxxx 10xxxxxx 10xxxxxx
+    (if (i32.eq (local.get $byte_len) (i32.const 3))
+      (then
+        (i32.store8 (local.get $addr) (i32.or (i32.const 224) (i32.shr_u (local.get $cp) (i32.const 12))))
+        (i32.store8 (i32.add (local.get $addr) (i32.const 1)) (i32.or (i32.const 128) (i32.and (i32.shr_u (local.get $cp) (i32.const 6)) (i32.const 63))))
+        (i32.store8 (i32.add (local.get $addr) (i32.const 2)) (i32.or (i32.const 128) (i32.and (local.get $cp) (i32.const 63))))))
+    ;; 4-byte UTF-8: 11110xxx 10xxxxxx 10xxxxxx 10xxxxxx
+    (if (i32.eq (local.get $byte_len) (i32.const 4))
+      (then
+        (i32.store8 (local.get $addr) (i32.or (i32.const 240) (i32.shr_u (local.get $cp) (i32.const 18))))
+        (i32.store8 (i32.add (local.get $addr) (i32.const 1)) (i32.or (i32.const 128) (i32.and (i32.shr_u (local.get $cp) (i32.const 12)) (i32.const 63))))
+        (i32.store8 (i32.add (local.get $addr) (i32.const 2)) (i32.or (i32.const 128) (i32.and (i32.shr_u (local.get $cp) (i32.const 6)) (i32.const 63))))
+        (i32.store8 (i32.add (local.get $addr) (i32.const 3)) (i32.or (i32.const 128) (i32.and (local.get $cp) (i32.const 63))))))
+    (i32.or (local.get $ptr) (i32.const {string_tag})))
+"#,
+            number_shift = ValueTag::NUMBER_SHIFT,
+            zero = RuntimeConst::ZERO,
+            one = RuntimeConst::ONE,
+            header = Layout::STRING_HEADER_SIZE,
             string_tag = ValueTag::STRING,
         ));
     }

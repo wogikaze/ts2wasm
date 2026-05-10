@@ -37,108 +37,121 @@ struct LabelBinding {
     is_loop: bool,
 }
 
+pub fn default_allowed_globals() -> std::collections::HashSet<String> {
+    [
+        "console",
+        "process",
+        "require",
+        "exports",
+        "module",
+        "Buffer",
+        "global",
+        "Array",
+        "Object",
+        "String",
+        "Number",
+        "Boolean",
+        "Function",
+        "BigInt",
+        "Math",
+        "Date",
+        "RegExp",
+        "JSON",
+        "Error",
+        "Map",
+        "Set",
+        "Bun",
+        "Promise",
+        "Symbol",
+        "TypeError",
+        "ReferenceError",
+        "SyntaxError",
+        "RangeError",
+        "Infinity",
+        "NaN",
+        "isNaN",
+        "parseInt",
+        "parseFloat",
+        "isFinite",
+        "encodeURI",
+        "decodeURI",
+        "escape",
+        "unescape",
+        "Reflect",
+        "globalThis",
+        "setTimeout",
+        // ECMAScript global builtins (issue 5412)
+        "Proxy",
+        "WeakMap",
+        "WeakSet",
+        "ArrayBuffer",
+        "SharedArrayBuffer",
+        "DataView",
+        "Atomics",
+        "Intl",
+        "EvalError",
+        "URIError",
+        "AggregateError",
+        "Int8Array",
+        "Uint8Array",
+        "Uint8ClampedArray",
+        "Int16Array",
+        "Uint16Array",
+        "Int32Array",
+        "Uint32Array",
+        "BigInt64Array",
+        "BigUint64Array",
+        "Float32Array",
+        "Float64Array",
+        "encodeURIComponent",
+        "decodeURIComponent",
+        // Test262 harness globals (issue 5424)
+        "$262",
+        "Test262Error",
+        "assert",
+        "$ERROR",
+        "$DONOTEVALUATE",
+        // Test262 harness helpers (issue 5424)
+        "verifyProperty",
+        "verifyWritable",
+        "verifyNotWritable",
+        "verifyEnumerable",
+        "verifyNotEnumerable",
+        "verifyConfigurable",
+        "verifyNotConfigurable",
+        "isSameValue",
+        "isEqualTo",
+        "isConstructor",
+        // Host builtins (issue 5424)
+        "print",
+        // Timer builtins (issue 5424)
+        "clearTimeout",
+        "setInterval",
+        "clearInterval",
+        // Missing globals (issue 54xx)
+        "undefined",
+        "Temporal",
+        "WebAssembly",
+        "FinalizationRegistry",
+        "WeakRef",
+        "Iterator",
+        "AsyncIterator",
+        "GeneratorFunction",
+        "AsyncFunction",
+        "AsyncGeneratorFunction",
+    ]
+    .iter()
+    .map(|s| s.to_string())
+    .collect()
+}
+
 impl NameResolver {
     fn new() -> Self {
-        let allowed_globals = [
-            "console",
-            "process",
-            "require",
-            "exports",
-            "module",
-            "Buffer",
-            "global",
-            "Array",
-            "Object",
-            "String",
-            "Number",
-            "Boolean",
-            "Function",
-            "BigInt",
-            "Math",
-            "Date",
-            "RegExp",
-            "JSON",
-            "Error",
-            "Map",
-            "Set",
-            "Bun",
-            "Promise",
-            "Symbol",
-            "TypeError",
-            "ReferenceError",
-            "SyntaxError",
-            "RangeError",
-            "Infinity",
-            "NaN",
-            "isNaN",
-            "parseInt",
-            "parseFloat",
-            "isFinite",
-            "encodeURI",
-            "decodeURI",
-            "escape",
-            "unescape",
-            "Reflect",
-            "globalThis",
-            "setTimeout",
-            // ECMAScript global builtins (issue 5412)
-            "Proxy",
-            "WeakMap",
-            "WeakSet",
-            "ArrayBuffer",
-            "SharedArrayBuffer",
-            "DataView",
-            "Atomics",
-            "Intl",
-            "EvalError",
-            "URIError",
-            "AggregateError",
-            "Int8Array",
-            "Uint8Array",
-            "Uint8ClampedArray",
-            "Int16Array",
-            "Uint16Array",
-            "Int32Array",
-            "Uint32Array",
-            "BigInt64Array",
-            "BigUint64Array",
-            "Float32Array",
-            "Float64Array",
-            "encodeURIComponent",
-            "decodeURIComponent",
-            // Test262 harness globals (issue 5424)
-            "$262",
-            "Test262Error",
-            "assert",
-            "$ERROR",
-            "$DONOTEVALUATE",
-            // Test262 harness helpers (issue 5424)
-            "verifyProperty",
-            "verifyWritable",
-            "verifyNotWritable",
-            "verifyEnumerable",
-            "verifyNotEnumerable",
-            "verifyConfigurable",
-            "verifyNotConfigurable",
-            "isSameValue",
-            "isEqualTo",
-            "isConstructor",
-            // Host builtins (issue 5424)
-            "print",
-            // Timer builtins (issue 5424)
-            "clearTimeout",
-            "setInterval",
-            "clearInterval",
-        ]
-        .iter()
-        .map(|s| s.to_string())
-        .collect();
-
         Self {
             scopes: vec![std::collections::HashMap::new()],
             functions: std::collections::HashMap::new(),
             classes: std::collections::HashMap::new(),
-            allowed_globals,
+            allowed_globals: default_allowed_globals(),
             labels: Vec::new(),
             loop_depth: 0,
             breakable_depth: 0,
@@ -164,6 +177,8 @@ impl NameResolver {
                         code: DiagCode::DuplicateFunction,
                         message: format!("duplicate function definition: `{name}`"),
                         span: Some(*span),
+
+                        phase: None,
                     });
                 }
                 if !overload_signature {
@@ -203,6 +218,8 @@ impl NameResolver {
                         "TS2391: function overload signature `{name}` has no implementation"
                     ),
                     span: Some(*span),
+
+                    phase: None,
                 });
             }
         }
@@ -216,6 +233,8 @@ impl NameResolver {
                             "duplicate identifier: `{name}` conflicts with existing declaration"
                         ),
                         span: Some(*span),
+
+                        phase: None,
                     });
                 }
                 self.classes.insert(name.clone(), Some(*span));
@@ -234,6 +253,8 @@ impl NameResolver {
                              Variable '{name}' must be of type '<lib-type>', but here has type 'any'."
                         ),
                         span: Some(*span),
+
+                        phase: None,
                     });
                 }
                 self.declare_binding(name, Some(*span), *is_var)?;
@@ -283,7 +304,8 @@ impl NameResolver {
                 code: DiagCode::UnsupportedSyntax,
                 message: "issue-5253: TypeScript type-only import is not supported; the `type` keyword is an erased compile-time annotation".to_string(),
                 span: Some(*span),
-            }),
+
+                phase: None,}),
             Stmt::ImportNamed { span, .. } => Err(unsupported_module_decl(*span, "named import")),
             Stmt::ImportDefault { span, .. } => {
                 Err(unsupported_module_decl(*span, "default import"))
@@ -353,7 +375,8 @@ impl NameResolver {
                             "cannot assign to `{name}` because it is a class declaration"
                         ),
                         span: Some(*span),
-                    });
+
+                        phase: None,});
                 }
                 Ok(Stmt::Assign {
                     name: name.clone(),
@@ -406,6 +429,7 @@ impl NameResolver {
                 params,
                 body,
                 is_generator,
+                is_async,
                 is_ambient,
                 overload_signature,
                 span,
@@ -442,6 +466,7 @@ impl NameResolver {
                     params: params.clone(),
                     body: resolved_body,
                     is_generator: *is_generator,
+                    is_async: *is_async,
                     is_ambient: *is_ambient,
                     overload_signature: *overload_signature,
                     span: *span,
@@ -667,7 +692,8 @@ impl NameResolver {
                         code: DiagCode::UnsupportedSyntax,
                         message: format!("duplicate label `{label}`"),
                         span: Some(*span),
-                    });
+
+                        phase: None,});
                 }
                 self.labels.push(LabelBinding {
                     name: label.clone(),
@@ -688,14 +714,16 @@ impl NameResolver {
                             code: DiagCode::UnsupportedSyntax,
                             message: format!("undefined break label `{label}`"),
                             span: Some(*span),
-                        });
+
+                            phase: None,});
                     }
                 } else if self.breakable_depth == 0 {
                     return Err(Diagnostic {
                         code: DiagCode::UnsupportedSyntax,
                         message: "break must be inside a loop or switch".to_owned(),
                         span: Some(*span),
-                    });
+
+                        phase: None,});
                 }
                 Ok(Stmt::Break {
                     label: label.clone(),
@@ -738,14 +766,16 @@ impl NameResolver {
                                 code: DiagCode::UnsupportedSyntax,
                                 message: format!("continue label `{label}` does not target a loop"),
                                 span: Some(*span),
-                            });
+
+                                phase: None,});
                         }
                         None => {
                             return Err(Diagnostic {
                                 code: DiagCode::UnsupportedSyntax,
                                 message: format!("undefined continue label `{label}`"),
                                 span: Some(*span),
-                            });
+
+                                phase: None,});
                         }
                     }
                 } else if self.loop_depth == 0 {
@@ -753,7 +783,8 @@ impl NameResolver {
                         code: DiagCode::UnsupportedSyntax,
                         message: "continue must be inside a loop".to_owned(),
                         span: Some(*span),
-                    });
+
+                        phase: None,});
                 }
                 Ok(Stmt::Continue {
                     label: label.clone(),
@@ -914,6 +945,8 @@ impl NameResolver {
                             "issue-5255: super property access is not supported in this milestone"
                                 .to_owned(),
                         span: Some(*span),
+
+                        phase: None,
                     });
                 }
                 // Check if it's a function name
@@ -945,6 +978,8 @@ impl NameResolver {
                         code: DiagCode::UnresolvedName,
                         message: format!("unresolved name: `{name}`"),
                         span: Some(*span),
+
+                        phase: None,
                     })
                 }
             }
@@ -996,6 +1031,8 @@ impl NameResolver {
                             "cannot assign to `{name}` because it is a class declaration"
                         ),
                         span: Some(*span),
+
+                        phase: None,
                     });
                 }
                 Ok(Expr::Assign {
@@ -1019,6 +1056,8 @@ impl NameResolver {
                             "cannot assign to `{name}` because it is a class declaration"
                         ),
                         span: Some(*span),
+
+                        phase: None,
                     });
                 }
                 Ok(Expr::LogicalAssign {
@@ -1083,6 +1122,8 @@ impl NameResolver {
                             "issue-5253: nested namespace/module resolution `{name}.{property}` is not supported; use destructuring instead"
                         ),
                         span: Some(*span),
+
+                        phase: None,
                     });
                 }
                 let resolved_object = self.resolve_member_target(object)?;
@@ -1177,6 +1218,8 @@ impl NameResolver {
                             code: DiagCode::UnsupportedSyntax,
                             message: "issue-062: new requires a class name identifier".to_owned(),
                             span: Some(*span),
+
+                            phase: None,
                         });
                     }
                 };
@@ -1334,6 +1377,8 @@ impl NameResolver {
                             "issue-5255: super property access is not supported in this milestone"
                                 .to_owned(),
                         span: Some(*span),
+
+                        phase: None,
                     });
                 }
                 // Validate the identifier exists (function, class, variable, or allowed global)
@@ -1354,6 +1399,8 @@ impl NameResolver {
                     code: DiagCode::UnresolvedName,
                     message: format!("unresolved name: `{name}`"),
                     span: Some(*span),
+
+                    phase: None,
                 })
             }
             _ => self.resolve_expr(expr),
@@ -1432,6 +1479,8 @@ impl NameResolver {
                     "duplicate identifier: `{name}` conflicts with existing declaration"
                 ),
                 span,
+
+                phase: None,
             });
         }
         let current_scope = self.scopes.last_mut().unwrap();
@@ -1445,6 +1494,8 @@ impl NameResolver {
                         "duplicate identifier: `{name}` conflicts with existing declaration"
                     ),
                     span,
+
+                    phase: None,
                 })
             }
         } else {
@@ -1504,6 +1555,8 @@ impl NameResolver {
                 "issue-281: BigInt/Number comparison with `{model_value}` requires broader number-model support"
             ),
             span: Some(span),
+
+            phase: None,
         })
     }
 
@@ -1545,6 +1598,8 @@ impl NameResolver {
                     }
                 ),
                 span: Some(span),
+
+                phase: None,
             })
         } else {
             None
@@ -1660,6 +1715,8 @@ impl NameResolver {
                 code: DiagCode::UnresolvedName,
                 message: format!("unresolved name: `{name}`"),
                 span: Some(span),
+
+                phase: None,
             })
         } else if self.is_class_only(name) {
             // Class constructor used as expression value — let through to lowered resolver
@@ -1698,7 +1755,9 @@ fn unsupported_function_constructor(span: Span) -> Diagnostic {
         code: DiagCode::UnsupportedSyntax,
         message: "issue-062: dynamic Function constructor is not supported; runtime code evaluation is intentionally not implemented".to_owned(),
         span: Some(span),
-    }
+
+
+        phase: None,}
 }
 
 fn unsupported_eval_diagnostic(span: Span) -> Diagnostic {
@@ -1706,7 +1765,9 @@ fn unsupported_eval_diagnostic(span: Span) -> Diagnostic {
         code: DiagCode::UnsupportedEval,
         message: "issue-429: direct eval is not supported; runtime code evaluation is intentionally not implemented".to_owned(),
         span: Some(span),
-    }
+
+
+        phase: None,}
 }
 
 fn unsupported_arguments_outside_function(span: Span) -> Diagnostic {
@@ -1716,11 +1777,13 @@ fn unsupported_arguments_outside_function(span: Span) -> Diagnostic {
             "issue-062d: `arguments` is only supported inside non-arrow functions in this milestone"
                 .to_owned(),
         span: Some(span),
+
+        phase: None,
     }
 }
 
-fn is_type_only_ambient_global(name: &str) -> bool {
-    matches!(name, "Iterator")
+fn is_type_only_ambient_global(_name: &str) -> bool {
+    false
 }
 
 fn type_only_value_use_diagnostic(name: &str, span: Span) -> Diagnostic {
@@ -1730,6 +1793,8 @@ fn type_only_value_use_diagnostic(name: &str, span: Span) -> Diagnostic {
             "typescript TS2693 Error: '{name}' only refers to a type, but is being used as a value here."
         ),
         span: Some(span),
+
+        phase: None,
     }
 }
 
@@ -1738,7 +1803,9 @@ fn unsupported_annex_b_ishtmldda(span: Span) -> Diagnostic {
         code: DiagCode::UnsupportedSyntax,
         message: "issue-237: Annex B [[IsHTMLDDA]] test262 host hook `$262.IsHTMLDDA` is not modeled; document.all compatibility semantics are unsupported".to_owned(),
         span: Some(span),
-    }
+
+
+        phase: None,}
 }
 
 fn unsupported_module_decl(span: Span, form: &str) -> Diagnostic {
@@ -1748,6 +1815,8 @@ fn unsupported_module_decl(span: Span, form: &str) -> Diagnostic {
             "issue-055: unsupported {form}; module resolution and loading are not implemented"
         ),
         span: Some(span),
+
+        phase: None,
     }
 }
 

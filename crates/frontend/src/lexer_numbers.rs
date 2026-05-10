@@ -25,7 +25,8 @@ impl<'a> Lexer<'a> {
                     message: "issue-244: BigInt literal cannot use decimal fractions or exponents"
                         .to_owned(),
                     span: Some(Span { start, end }),
-                });
+
+                    phase: None,});
             }
             self.advance_char();
             if digits.len() > 1 && self.source[start..].starts_with('0') {
@@ -37,7 +38,8 @@ impl<'a> Lexer<'a> {
                         start,
                         end: self.cursor,
                     }),
-                });
+
+                    phase: None,});
             }
             if self.source[start..self.cursor - 1].contains('_') {
                 return Err(Diagnostic {
@@ -48,7 +50,8 @@ impl<'a> Lexer<'a> {
                         start,
                         end: self.cursor,
                     }),
-                });
+
+                    phase: None,});
             }
             return Ok(SpannedToken {
                 kind: Token::BigIntLiteral(self.source[start..self.cursor].to_owned()),
@@ -165,7 +168,8 @@ impl<'a> Lexer<'a> {
                         start,
                         end: exponent_start,
                     }),
-                });
+
+                    phase: None,});
             }
             if negative_exponent {
                 return Err(Diagnostic {
@@ -176,7 +180,8 @@ impl<'a> Lexer<'a> {
                         start,
                         end: self.cursor,
                     }),
-                });
+
+                    phase: None,});
             }
             let zeros = exponent.parse::<usize>().map_err(|error| Diagnostic {
                 code: DiagCode::UnsupportedSyntax,
@@ -185,7 +190,8 @@ impl<'a> Lexer<'a> {
                     start,
                     end: self.cursor,
                 }),
-            })?;
+
+                phase: None,})?;
             digits.extend(std::iter::repeat_n('0', zeros));
         }
 
@@ -240,7 +246,8 @@ impl<'a> Lexer<'a> {
                     start,
                     end: self.cursor,
                 }),
-            });
+
+                phase: None,});
         }
 
         if previous_was_separator {
@@ -271,7 +278,8 @@ impl<'a> Lexer<'a> {
                     start,
                     end: self.cursor,
                 }),
-            })?;
+
+                phase: None,})?;
             return Ok(value as i32);
         }
 
@@ -282,7 +290,8 @@ impl<'a> Lexer<'a> {
                 start,
                 end: self.cursor,
             }),
-        })
+
+            phase: None,})
     }
 
     fn invalid_numeric_separator(&self, start: usize, message: &str) -> Diagnostic {
@@ -293,7 +302,9 @@ impl<'a> Lexer<'a> {
                 start,
                 end: self.cursor,
             }),
-        }
+
+
+                phase: None,}
     }
 
     fn prefixed_bigint_literal(
@@ -321,14 +332,16 @@ impl<'a> Lexer<'a> {
                         start,
                         end: cursor + 1,
                     }),
-                });
+
+                    phase: None,});
             }
             if let Some(end) = self.invalid_prefixed_bigint_end(cursor) {
                 return Err(Diagnostic {
                     code: DiagCode::UnsupportedSyntax,
                     message: format!("issue-244: invalid {radix_name} BigInt literal"),
                     span: Some(Span { start, end }),
-                });
+
+                    phase: None,});
             }
             return Ok(None);
         }
@@ -339,7 +352,8 @@ impl<'a> Lexer<'a> {
                     code: DiagCode::UnsupportedSyntax,
                     message: format!("issue-244: invalid {radix_name} BigInt literal"),
                     span: Some(Span { start, end }),
-                });
+
+                    phase: None,});
             }
             return Ok(None);
         }
@@ -427,7 +441,8 @@ impl<'a> Lexer<'a> {
                     start,
                     end: cursor + 1,
                 }),
-            });
+
+                phase: None,});
         }
 
         Ok(())

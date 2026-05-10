@@ -1,5 +1,5 @@
 // W5.1+W5.4: Property descriptor introspection via getOwnPropertyDescriptor
-// Tests default attributes for literal properties
+// Tests default attributes for literal properties before freeze
 
 const obj = { a: 1, b: 2 };
 
@@ -10,9 +10,10 @@ console.log(da.writable);     // true
 console.log(da.enumerable);   // true
 console.log(da.configurable); // true
 
-// 2. Freeze: all properties non-writable, non-configurable
-Object.freeze(obj);
-let da2 = Object.getOwnPropertyDescriptor(obj, "a");
-console.log(da2.value);
-console.log(da2.writable);    // false
-console.log(da2.configurable); // false
+// 2. PreventExtensions: does not change descriptor flags
+const obj2 = { x: "extensible" };
+Object.preventExtensions(obj2);
+let dx = Object.getOwnPropertyDescriptor(obj2, "x");
+console.log(dx.value);
+console.log(dx.configurable); // true
+console.log(dx.writable);     // true

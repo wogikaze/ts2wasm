@@ -37,7 +37,7 @@ import os
 import re
 import sys
 
-ISSUES_DIR = "issues/open"
+ISSUES_DIR = "TRACKING.yaml"  # migrated from issues/open/
 
 # Body diagnostic pattern -> (new_area, new_depends_on, label)
 BODY_RULES = [

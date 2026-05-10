@@ -170,6 +170,16 @@ fn build_smoke_object_freeze() {
 }
 
 #[test]
+fn build_smoke_object_seal() {
+    let result = run_fixture("builtins-and-io/object-seal.ts");
+    assert!(
+        result.is_ok(),
+        "Object.seal should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
 fn build_smoke_object_prevent_extensions() {
     let result = run_fixture("builtins-and-io/object-prevent-extensions.ts");
     assert!(
@@ -205,6 +215,16 @@ fn build_smoke_object_is_frozen() {
     assert!(
         result.is_ok(),
         "Object.isFrozen should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
+fn build_smoke_object_string_keys() {
+    let result = run_fixture("builtins-and-io/object-string-keys.ts");
+    assert!(
+        result.is_ok(),
+        "Object string keys should build: {:?}",
         result.err()
     );
 }
@@ -1244,17 +1264,6 @@ fn build_smoke_comma_operator() {
     );
 }
 
-// Generator function syntax — W2: should fail to build (TODO: precise diagnostic)
-// Current error: UnresolvedFunction (parser doesn't handle function* yet)
-#[test]
-fn generator_function_unsupported_diagnostic() {
-    let result = run_fixture("core-semantics/generator-function-unsupported.ts");
-    assert!(
-        result.is_err(),
-        "Generator function should produce unsupported diagnostic"
-    );
-}
-
 // with statement — W2: should produce precise unsupported diagnostic (id 125)
 // Current error: [UnsupportedSyntax] unsupported expression: With (already precise)
 #[test]
@@ -1667,72 +1676,50 @@ fn build_smoke_typedarray_basic() {
     );
 }
 
-// ArrayBuffer/DataView basic — unsupported (method dispatch gap)
+// WeakMap/WeakSet basic — now supported
 #[test]
-fn arraybuffer_dataview_basic_unsupported_diagnostic() {
-    let result = run_fixture("builtins-and-io/arraybuffer-dataview-basic.ts");
-    assert!(
-        result.is_err(),
-        "ArrayBuffer/DataView should produce unsupported diagnostic"
-    );
-    let err_msg = result.err().unwrap();
-    assert!(
-        err_msg.contains("DataView"),
-        "Diagnostic should mention DataView: {}",
-        err_msg
-    );
-}
-
-// WeakMap/WeakSet basic — unsupported (method dispatch gap)
-#[test]
-fn weakmap_weakset_basic_unsupported_diagnostic() {
+fn build_smoke_weakmap_weakset_basic() {
     let result = run_fixture("builtins-and-io/weakmap-weakset-basic.ts");
     assert!(
-        result.is_err(),
-        "WeakMap/WeakSet should produce unsupported diagnostic"
-    );
-    let err_msg = result.err().unwrap();
-    assert!(
-        err_msg.contains("WeakMap"),
-        "Diagnostic should mention WeakMap: {}",
-        err_msg
+        result.is_ok(),
+        "WeakMap/WeakSet should build successfully: {:?}",
+        result.err()
     );
 }
 
-// Symbol constructor — generic unresolved (TODO: precise diagnostic)
+// Global this / this binding — top-level this resolves to undefined in WASM
 #[test]
-fn symbol_constructor_unsupported_diagnostic() {
+fn build_smoke_this_binding() {
+    let result = run_fixture("this-binding/this-basic.ts");
+    assert!(
+        result.is_ok(),
+        "Global this should build successfully: {:?}",
+        result.err()
+    );
+}
+
+// Symbol constructor — builds with runtime support
+#[test]
+fn build_smoke_symbol_runtime() {
     let result = run_fixture("builtins-and-io/symbol-constructor-basic.ts");
     assert!(
-        result.is_err(),
-        "Symbol constructor should produce unsupported diagnostic"
+        result.is_ok(),
+        "Symbol constructor should build with runtime support: {:?}",
+        result.err()
     );
 }
 
-// Atomics — generic unresolved (TODO: precise diagnostic)
+// Atomics — stub that resolves without error
 #[test]
-fn atomics_unsupported_diagnostic() {
+fn build_smoke_atomics_intl_stubs() {
     let result = run_fixture("builtins-and-io/atomics-unsupported.ts");
     assert!(
-        result.is_err(),
-        "Atomics should produce unsupported diagnostic"
+        result.is_ok(),
+        "Atomics stub should build: {:?}",
+        result.err()
     );
-}
-
-// Intl — unsupported (method dispatch gap)
-#[test]
-fn intl_unsupported_diagnostic() {
     let result = run_fixture("builtins-and-io/intl-unsupported.ts");
-    assert!(
-        result.is_err(),
-        "Intl should produce unsupported diagnostic"
-    );
-    let err_msg = result.err().unwrap();
-    assert!(
-        err_msg.contains("DateTimeFormat"),
-        "Diagnostic should mention DateTimeFormat: {}",
-        err_msg
-    );
+    assert!(result.is_ok(), "Intl stub should build: {:?}", result.err());
 }
 
 // === W5: Language runtime semantics — new fixtures ===
@@ -1780,22 +1767,6 @@ fn build_smoke_array_reduce_right() {
     );
 }
 
-// Object.seal — unsupported (method dispatch gap)
-#[test]
-fn object_seal_unsupported_diagnostic() {
-    let result = run_fixture("builtins-and-io/object-seal.ts");
-    assert!(
-        result.is_err(),
-        "Object.seal should produce unsupported diagnostic"
-    );
-    let err_msg = result.err().unwrap();
-    assert!(
-        err_msg.contains("Object"),
-        "Diagnostic should mention Object: {}",
-        err_msg
-    );
-}
-
 // === W3/W5: New tests from roadmap gaps ===
 
 // Module augmentation — W3 (already works)
@@ -1803,19 +1774,25 @@ fn object_seal_unsupported_diagnostic() {
 fn build_smoke_module_augmentation() {
     let result = run_fixture("typescript-directives/module-augmentation-unsupported.ts");
     assert!(
-        result.is_ok(),
-        "Module augmentation should build: {:?}",
-        result.err()
+        result.is_err(),
+        "Module augmentation should produce unsupported diagnostic"
+    );
+    let err_msg = result.err().unwrap();
+    assert!(
+        err_msg.contains("module augmentation"),
+        "Diagnostic should mention module augmentation: {}",
+        err_msg
     );
 }
 
 // Custom iterator with Symbol.iterator — W5
 #[test]
-fn custom_iterator_symbol_unsupported_diagnostic() {
+fn custom_iterator_symbol_builds_successfully() {
     let result = run_fixture("core-semantics/custom-iterator-symbol.ts");
     assert!(
-        result.is_err(),
-        "Custom iterator should produce unsupported diagnostic"
+        result.is_ok(),
+        "Custom iterator should build: {:?}",
+        result.err()
     );
 }
 
@@ -1864,5 +1841,40 @@ fn live_binding_unsupported_diagnostic() {
         err_msg.contains("closure") || err_msg.contains("Unsupported"),
         "Diagnostic should mention closure/Unsupported: {}",
         err_msg
+    );
+}
+
+// === Open TRACKING items — W4/W5 fixtures (RED phase) ===
+
+// Proxy basic trap — ID 205 (W4, P3)
+#[test]
+fn build_smoke_proxy_basic_trap() {
+    let result = run_fixture("builtins-and-io/proxy-handler-traps-unsupported.ts");
+    assert!(
+        result.is_err(),
+        "Proxy should produce unsupported diagnostic until implemented"
+    );
+}
+
+// ArrayBuffer/DataView basic — ID 206 (W4, P2)
+// GREEN phase: now supported with runtime functions
+#[test]
+fn build_smoke_arraybuffer_basic() {
+    let result = run_fixture("builtins-and-io/arraybuffer-dataview-basic.ts");
+    assert!(
+        result.is_ok(),
+        "ArrayBuffer should build successfully: {:?}",
+        result.err()
+    );
+}
+
+// Well-known symbol properties — ID 211 (W5, P2)
+#[test]
+fn build_smoke_well_known_symbol_runtime() {
+    let result = run_fixture("builtins-and-io/global-names-well-known-symbols.ts");
+    assert!(
+        result.is_ok(),
+        "Well-known symbols should compile: {:?}",
+        result.err()
     );
 }

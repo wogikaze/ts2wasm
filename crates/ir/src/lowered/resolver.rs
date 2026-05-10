@@ -213,7 +213,8 @@ impl<'a> Resolver<'a> {
                     code: DiagCode::DuplicateParameter,
                     message: format!("duplicate parameter name: `{clean_name}`"),
                     span: None,
-                });
+
+                    phase: None,});
             }
             seen_params.insert(clean_name.to_owned(), ());
             let local_id = LocalId(resolver.next_local_id);
@@ -284,7 +285,8 @@ impl<'a> Resolver<'a> {
                     "issue-302: direct eval IIFE lowering does not support function returns"
                         .to_owned(),
                 span: Some(*span),
-            });
+
+                phase: None,});
         }
         if block_contains_this(body) || block_contains_arguments(body) {
             return Err(Diagnostic {
@@ -293,7 +295,8 @@ impl<'a> Resolver<'a> {
                     "issue-302: direct eval IIFE lowering does not support `this` or `arguments`"
                         .to_owned(),
                 span: Some(*span),
-            });
+
+                phase: None,});
         }
 
         self.scopes.push(HashMap::new());
@@ -429,7 +432,7 @@ impl<'a> Resolver<'a> {
                     Ok(LoweredStmt::Expr(LoweredExpr::EnvCellSet {
                         cell: local_id,
                         expr: Box::new(lowered),
-                    
+
                         span: Span::generated("env_cell_set"),}, Span::generated("expr_stmt")))
                 } else {
                     Ok(LoweredStmt::Assign(local_id, lowered, Span::generated("assign")))
@@ -512,7 +515,7 @@ impl<'a> Resolver<'a> {
                     condition,
                     then_body,
                     else_body,
-                
+
                     span: Span::generated("if_stmt"),})
             }
             ResolvedStmt::While { condition, body } => Ok(LoweredStmt::While {
@@ -530,6 +533,32 @@ impl<'a> Resolver<'a> {
                         closure.to_expr(ClosureRepresentation::HeapObject),
                     Span::generated("return_stmt")));
                 }
+                if let ResolvedExpr::ArrowFn {
+                    params,
+                    body,
+                    body_stmts,
+                    ..
+                } = expr
+                {
+                    let lowered = self.lower_arrow_fn(params, body, body_stmts)?;
+                    if let LoweredExpr::ArrowFn {
+                        func_id,
+                        captures,
+                        ..
+                    } = &lowered
+                        && !captures.is_empty()
+                    {
+                        return Ok(LoweredStmt::Return(
+                            LoweredExpr::ArrowFn {
+                                func_id: *func_id,
+                                captures: captures.clone(),
+                                representation: ClosureRepresentation::HeapObject,
+                                span: Span::generated("arrow_fn"),
+                            },
+                            Span::generated("return_stmt")));
+                    }
+                    return Ok(LoweredStmt::Return(lowered, Span::generated("return_stmt")));
+                }
                 Ok(LoweredStmt::Return(self.lower_expr(expr)?, Span::generated("return_stmt")))
             }
             ResolvedStmt::Function {
@@ -544,7 +573,7 @@ impl<'a> Resolver<'a> {
                     func_id,
                     captures,
                     representation,
-                
+
                     span: _,} = &closure
                 {
                     if matches!(representation, ClosureRepresentation::HeapObject) {
@@ -657,6 +686,10 @@ impl<'a> Resolver<'a> {
             }
             ResolvedStmt::ForOf { var, iter, body } => {
                 let var_id = self.declare_local(var)?;
+                // Route custom iterables through iterator protocol (Symbol.iterator)
+                if self.resolved_expr_has_symbol_iterator_property(iter) {
+                    return self.lower_for_of_via_iterator(var_id, iter, body);
+                }
                 let lowered_iter = if let ResolvedExpr::Ident(name) = iter
                     && let Ok(local_id) = self.resolve_local(name)
                 {
@@ -665,7 +698,7 @@ impl<'a> Resolver<'a> {
                         LoweredExpr::RuntimeCall {
                             runtime_fn: "SetValuesArray".to_owned(),
                             args: vec![LoweredExpr::Local(local_id, Span::generated("local"))],
-                        
+
                             span: Span::generated("runtime_call"),}
                     } else if class_name.is_some_and(|c| c == "Map") {
                         LoweredExpr::RuntimeCall {
@@ -816,7 +849,9 @@ fn private_storage_observable_access_diagnostic(span: Option<Span>) -> Diagnosti
         code: DiagCode::UnsupportedSyntax,
         message: "issue-255: private field backing storage is not accessible through ordinary property access in this private field runtime slice".to_owned(),
         span,
-    }
+
+
+        phase: None,}
 }
 
 fn is_static_copy_safe_object_prop_value(expr: &ResolvedExpr) -> bool {
@@ -879,7 +914,9 @@ fn unsupported_array_map_diagnostic(span: Option<Span>) -> Diagnostic {
         code: DiagCode::UnsupportedSyntax,
         message: "issue-270: Array.prototype.map requires callback dispatch and new array allocation semantics that are not supported in this runtime slice".to_owned(),
         span,
-    }
+
+
+        phase: None,}
 }
 
 fn unsupported_array_sort_diagnostic(span: Option<Span>) -> Diagnostic {
@@ -887,7 +924,9 @@ fn unsupported_array_sort_diagnostic(span: Option<Span>) -> Diagnostic {
         code: DiagCode::UnsupportedSyntax,
         message: "issue-299: Array.prototype.sort is currently supported only for dense numeric arrays with comparator `(a, b) => a - b`".to_owned(),
         span,
-    }
+
+
+        phase: None,}
 }
 
 fn is_static_date_constructor_expr(expr: &ResolvedExpr) -> bool {
