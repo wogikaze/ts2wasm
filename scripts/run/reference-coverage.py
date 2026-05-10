@@ -451,16 +451,63 @@ def apply_path_filters(files, path_filters):
 
     return selected
 
-def evidence_command(suite, limit, paths_file, path_filters):
-    """Build a reproducible command string for reports and coverage artifacts."""
-    parts = ["mise", "run", "reference-coverage", "--", suite]
+def evidence_command(suite, limit, paths_file, path_filters, sample=None,
+                     category=None, semantic_check=None, server_mode=None,
+                     jsonl_output=None, metadata_cache_sig=None):
+    """Build a reproducible evidence dict for reports and coverage artifacts.
+
+    Returns a structured dict with argv, selection parameters, and
+    environment context so that the exact conditions of a coverage run
+    can be reproduced or audited.
+    """
+    argv = ["mise", "run", "reference-coverage", "--", suite]
     if limit is not None:
-        parts.extend(["--limit", str(limit)])
+        argv.extend(["--limit", str(limit)])
     if paths_file:
-        parts.extend(["--paths-file", str(paths_file)])
-    for path_filter in path_filters:
-        parts.extend(["--path-filter", path_filter])
-    return " ".join(parts)
+        argv.extend(["--paths-file", str(paths_file)])
+    for pf in path_filters:
+        argv.extend(["--path-filter", pf])
+    if sample is not None:
+        argv.extend(["--sample", str(sample)])
+    if category:
+        argv.extend(["--category", category])
+    if semantic_check is False:
+        argv.append("--no-semantic")
+    if server_mode is False:
+        argv.append("--no-server")
+    if jsonl_output:
+        argv.append("--jsonl")
+
+    env_whitelist = {
+        k: v for k, v in sorted(os.environ.items())
+        if k.startswith("TS2WASM_") or k in (
+            "SOURCE_DATE_EPOCH",
+            "CARGO_TERM_COLOR",
+        )
+    }
+
+    selection_mode = "all"
+    if sample is not None:
+        selection_mode = "sample"
+    elif paths_file:
+        selection_mode = "paths-file"
+    elif path_filters:
+        selection_mode = "path-filter"
+
+    evidence = {
+        "argv": argv,
+        "argv_str": " ".join(argv),
+        "selection_mode": selection_mode,
+        "oracle_policy": os.environ.get("TS2WASM_TEST262_NODE_ORACLE", "auto"),
+        "semantic_check": semantic_check if semantic_check is not None else True,
+        "server_mode": server_mode if server_mode is not None else True,
+        "sample": sample,
+        "category": category,
+        "env_whitelist": env_whitelist,
+    }
+    if metadata_cache_sig is not None:
+        evidence["metadata_cache_signature"] = metadata_cache_sig
+    return evidence
 
 def refresh_web_ui_data():
     """Regenerate web UI data without changing this command's stdout contract."""
@@ -880,7 +927,12 @@ def main():
         sys.exit(1)
     
     denominator = len(files)
-    evidence = evidence_command(suite, limit, paths_file, path_filters)
+    evidence = evidence_command(
+        suite, limit, paths_file, path_filters,
+        sample=sample, category=category_pattern,
+        semantic_check=semantic_check, server_mode=server_mode,
+        jsonl_output=jsonl_output,
+    )
     
     if sample is not None and sample < 1:
         if jsonl_output:
@@ -989,6 +1041,8 @@ def main():
         failed = 0
         unsupported = 0
         blocked = 0
+        oracle_skipped = 0
+        build_only = 0
         total_duration_ms = 0
         completed = 0
         total = len(files)
@@ -1021,8 +1075,9 @@ def main():
         metadata_cache_signature = {
             "version": 3,
             "unsupported_flags": list(t262.UNSUPPORTED_FLAGS),
-            "supported_features": list(t262.SUPPORTED_FEATURES),
+            "blocked_features": list(t262.BLOCKED_FEATURES),
         }
+        evidence["metadata_cache_signature"] = metadata_cache_signature
         metadata_cache_entries = {}
         metadata_cache_dirty = [False]
         metadata_cache_lock = threading.Lock()
@@ -1160,7 +1215,7 @@ def main():
             return None
 
         def consume_record(jsonl_out, record, status):
-            nonlocal passed, failed, unsupported, blocked, total_duration_ms
+            nonlocal passed, failed, unsupported, blocked, oracle_skipped, build_only, total_duration_ms
             nonlocal completed, last_progress
             if record:
                 jsonl_out.write(record + "\n")
@@ -1176,6 +1231,10 @@ def main():
                 unsupported += 1
             elif status == "blocked":
                 blocked += 1
+            elif status == "oracle_skipped":
+                oracle_skipped += 1
+            elif status == "build_pass":
+                build_only += 1
             completed += 1
             progress = int((completed / total) * 100)
             if progress >= last_progress + 5:
@@ -1458,33 +1517,42 @@ def main():
                 "test262",
                 str(item["file_path"]),
                 "wasm-iwasm",
-                "pass",
+                "oracle_skipped",
                 expected,
                 actual,
                 reason,
                 source_code=record_source(item),
                 duration_ms=duration,
             )
-            return record, "pass"
+            return record, "oracle_skipped"
 
         def classify_server_error(item, build_resp):
             metadata = item["metadata"]
             diag_code = build_resp.get("code") or "CompilationError"
+            diag_phase = build_resp.get("phase") or ""
             message = build_resp.get("message") or diag_code
             stderr = f"[{diag_code}] {message}"
             item["error_line"] = extract_error_line(message, item.get("source_code", ""))
 
             if metadata.expects_negative:
-                reason = (
-                    f"negative {metadata.negative_phase}/{metadata.negative_type or 'error'} "
-                    "rejected during compilation"
-                )
-                return make_negative_pass_record(
+                if t262.can_pass_compile_negative(metadata, diag_code, diag_phase):
+                    reason = (
+                        f"negative {metadata.negative_phase}/{metadata.negative_type or 'error'} "
+                        "rejected during compilation"
+                    )
+                    return make_negative_pass_record(
+                        item,
+                        metadata.negative_phase,
+                        metadata.negative_type,
+                        reason,
+                        actual=reason,
+                        stderr=stderr,
+                    )
+                return make_unsupported_record(
                     item,
-                    metadata.negative_phase,
-                    metadata.negative_type,
-                    reason,
-                    actual=reason,
+                    "NegativeCompileUnverified",
+                    "negative-compile-unverified",
+                    "negative test rejected during compilation but phase/error type was not verified",
                     stderr=stderr,
                 )
 
@@ -1523,7 +1591,7 @@ def main():
                         source_code=record_source(item),
                         duration_ms=duration,
                     )
-                    return record, "pass"
+                    return record, "build_pass"
 
                 wasm_result = subprocess.run(
                     ["timeout", "5s", "iwasm", str(wasm_path)],
@@ -1592,16 +1660,11 @@ def main():
                     return record, "blocked"
 
                 if metadata.expects_negative:
-                    reason = (
-                        f"negative {metadata.negative_phase}/{metadata.negative_type or 'error'} "
-                        "rejected during execution"
-                    )
-                    return make_negative_pass_record(
+                    return make_unsupported_record(
                         item,
-                        metadata.negative_phase,
-                        metadata.negative_type,
-                        reason,
-                        actual=reason,
+                        "NegativeRuntimeUnverified",
+                        "negative-runtime-unverified",
+                        "negative test rejected during execution but error type was not verified",
                         stderr=wasm_result.stderr,
                     )
 
@@ -1813,7 +1876,7 @@ def main():
                                         source_code=record_source(item),
                                         duration_ms=duration,
                                     )
-                                    return record, "pass"
+                                    return record, "build_pass"
                                 wasm_path = build_resp.get("wasm_path")
                                 if not wasm_path:
                                     # Older or failed server-side emit path. Re-run the item through
@@ -1840,13 +1903,11 @@ def main():
 
         save_metadata_cache()
 
+        print(f"Pass: {passed}  BuildOnly: {build_only}  OracleSkipped: {oracle_skipped}  Fail: {failed}  Unsupported: {unsupported}  Blocked: {blocked}", file=sys.stderr)
+
         print(f"\n=== {suite} Summary ===", file=sys.stderr)
-        print(f"Pass: {passed}", file=sys.stderr)
-        print(f"Fail: {failed}", file=sys.stderr)
-        print(f"Unsupported: {unsupported}", file=sys.stderr)
-        print(f"Blocked: {blocked}", file=sys.stderr)
         wall_duration_ms = int(round((time.perf_counter() - jsonl_started_at) * 1000))
-        print(f"Total: {passed + failed + unsupported + blocked}", file=sys.stderr)
+        print(f"Total: {passed + build_only + oracle_skipped + failed + unsupported + blocked}", file=sys.stderr)
         print(f"Duration: {wall_duration_ms}ms", file=sys.stderr)
         if os.environ.get("TS2WASM_REFERENCE_COVERAGE_SHOW_CASE_DURATION_SUM") == "1":
             print(f"CaseDurationSum: {total_duration_ms}ms", file=sys.stderr)
@@ -1857,7 +1918,9 @@ def main():
             "failed": failed,
             "unsupported": unsupported,
             "blocked": blocked,
-            "total": passed + failed + unsupported + blocked,
+            "oracle_skipped": oracle_skipped,
+            "build_only": build_only,
+            "total": passed + build_only + oracle_skipped + failed + unsupported + blocked,
             "duration_ms": wall_duration_ms,
             "wall_duration_ms": wall_duration_ms,
             "case_duration_sum_ms": total_duration_ms,
@@ -1865,6 +1928,7 @@ def main():
             "jsonl_file": str(jsonl_file),
             "server_mode": bool(server_mode),
             "semantic_enabled": bool(semantic_check),
+            "evidence": evidence,
         }
         summary_file = results_dir / f"{suite}-summary.json"
         summary_file.write_text(json.dumps(summary, indent=2), encoding="utf-8")
@@ -1883,6 +1947,15 @@ def main():
                 notify_new_passes(jsonl_file, suite=suite)
             except Exception as e:
                 print(f"WARNING: notification failed: {e}", file=sys.stderr)
+
+        # Write evidence artifact for audit/reproducibility
+        evidence_dir = REPO_ROOT / "reports" / "coverage" / suite
+        evidence_dir.mkdir(parents=True, exist_ok=True)
+        evidence_path = evidence_dir / "evidence.json"
+        with evidence_path.open("w", encoding="utf-8") as handle:
+            json.dump(evidence, handle, indent=2, sort_keys=True)
+            handle.write("\n")
+        print(f"evidence artifact: {evidence_path} (jsonl run)", file=sys.stderr)
 
         if web_ui:
             refresh_web_ui_data()
@@ -1939,7 +2012,7 @@ def main():
                 return "runtime_error"
             if metrics["blocked"]:
                 return "blocked"
-            return "pass"
+            return "build_pass"
         if metrics["blocked"]:
             return "blocked"
         if metrics["fail"]:
@@ -1986,13 +2059,14 @@ def main():
                 capture_output=True,
                 cwd=REPO_ROOT,
             )
-            if (
-                wasm_result.returncode != 0
-                or t262.ASSERT_FAILURE_SENTINEL.encode("utf-8") in wasm_result.stdout
-            ):
-                result_metrics["semantic_pass"] = True
-            else:
+            if wasm_result.returncode == 0:
+                # expected negative but iwasm succeeded — true failure
                 result_metrics["mismatch"] = True
+            else:
+                # Runtime negative but error type not verified
+                result_metrics["unsupported"] = True
+                result_metrics["diag_code"] = "NegativeRuntimeUnverified"
+                result_metrics["feature_label"] = "negative-runtime-unverified"
             return
 
         node_source = t262.build_test262_source(
@@ -2040,11 +2114,21 @@ def main():
 
             metadata = item.get("metadata")
             if metadata is not None and metadata.expects_negative:
-                rm["build_pass"] = True
-                if semantic_enabled:
-                    rm["semantic_pass"] = True
-                if detail_output:
-                    rm["detail_line"] = f"{detail_path}: build_pass"
+                t262r = _ensure_test262_runner()
+                if t262r.can_pass_compile_negative(metadata, diag_code, build_resp.get("phase", "")):
+                    rm["build_pass"] = True
+                    if semantic_enabled:
+                        rm["semantic_pass"] = True
+                    if detail_output:
+                        rm["detail_line"] = f"{detail_path}: build_pass"
+                else:
+                    rm["unsupported"] = True
+                    rm["diag_code"] = "NegativeCompileUnverified"
+                    diag_phase = build_resp.get("phase")
+                    rm["diag_phase"] = diag_phase
+                    rm["feature_label"] = feature_label(diag_code, None, str(item["file_path"]), diag_phase)
+                    if detail_output:
+                        rm["detail_line"] = f"{detail_path}: NegativeCompileUnverified: {rm['feature_label']}"
                 return rm
             
             if diag_code == "BackendIo":
@@ -2320,11 +2404,19 @@ def main():
             result_metrics["diag_phase"] = diag_phase
 
             if is_test262 and metadata.expects_negative:
-                result_metrics["build_pass"] = True
-                if semantic_enabled:
-                    result_metrics["semantic_pass"] = True
-                if detail_output:
-                    result_metrics["detail_line"] = f"{detail_path}: build_pass"
+                if t262.can_pass_compile_negative(metadata, diag_code, diag_phase or ""):
+                    result_metrics["build_pass"] = True
+                    if semantic_enabled:
+                        result_metrics["semantic_pass"] = True
+                    if detail_output:
+                        result_metrics["detail_line"] = f"{detail_path}: build_pass"
+                else:
+                    result_metrics["unsupported"] = True
+                    result_metrics["diag_code"] = "NegativeCompileUnverified"
+                    feat = feature_label(diag_code, err_content, str(file_path), diag_phase)
+                    result_metrics["feature_label"] = feat
+                    if detail_output:
+                        result_metrics["detail_line"] = f"{detail_path}: NegativeCompileUnverified: {feat}"
                 return result_metrics
             
             if diag_code == "BackendIo":
@@ -2618,6 +2710,14 @@ def main():
         },
         "evidence": evidence,
     }
+
+    # Write evidence artifact for audit/reproducibility
+    evidence_dir = REPO_ROOT / "reports" / "coverage" / suite
+    evidence_dir.mkdir(parents=True, exist_ok=True)
+    evidence_path = evidence_dir / "evidence.json"
+    with evidence_path.open("w", encoding="utf-8") as handle:
+        json.dump(evidence, handle, indent=2, sort_keys=True)
+        handle.write("\n")
 
     # Baseline recording and comparison
     if record_baseline:
