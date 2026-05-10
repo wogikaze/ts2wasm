@@ -515,6 +515,12 @@ def _env_truthy(value):
 def _test262_semantic_requires_strict_oracle(suite, semantic_check):
     return suite == "test262" and semantic_check
 
+def _mark_verified_negative_compile_pass(metrics, semantic_enabled):
+    """Count only parse/SyntaxError-verified negative compile outcomes as semantic."""
+    metrics["build_pass"] = True
+    if semantic_enabled:
+        metrics["semantic_pass"] = True
+
 def refresh_web_ui_data():
     """Regenerate web UI data without changing this command's stdout contract."""
     command = [sys.executable, str(REPO_ROOT / "scripts/gen/web-ui-data.py")]
@@ -1595,9 +1601,7 @@ def main():
                 return make_unsupported_record(item, diag_code, feature, reason)
             if status == "fail":
                 return make_fail_record(item, diag_code, reason)
-            return make_negative_pass_record(
-                item, metadata.negative_phase, metadata.negative_type, reason, actual=reason
-            )
+            return make_fail_record(item, diag_code or "ExpectedNegativeFailure", reason)
 
         def run_wasm_oracle_for_item(item, wasm_path):
             metadata = item["metadata"]
@@ -2141,9 +2145,7 @@ def main():
             if metadata is not None and metadata.expects_negative:
                 t262r = _ensure_test262_runner()
                 if t262r.can_pass_compile_negative(metadata, diag_code, build_resp.get("phase", "")):
-                    rm["build_pass"] = True
-                    if semantic_enabled:
-                        rm["semantic_pass"] = True
+                    _mark_verified_negative_compile_pass(rm, semantic_enabled)
                     if detail_output:
                         rm["detail_line"] = f"{detail_path}: build_pass"
                 else:
@@ -2430,9 +2432,7 @@ def main():
 
             if is_test262 and metadata.expects_negative:
                 if t262.can_pass_compile_negative(metadata, diag_code, diag_phase or ""):
-                    result_metrics["build_pass"] = True
-                    if semantic_enabled:
-                        result_metrics["semantic_pass"] = True
+                    _mark_verified_negative_compile_pass(result_metrics, semantic_enabled)
                     if detail_output:
                         result_metrics["detail_line"] = f"{detail_path}: build_pass"
                 else:

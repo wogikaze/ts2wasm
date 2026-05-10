@@ -222,17 +222,13 @@ def aggregate_test_records(artifacts):
     for artifact in artifacts:
         suite = artifact.get("suite") or artifact.get("suite_name") or "unknown"
         target = "reference-coverage"
-        if int(artifact.get("semantic_pass", 0) or 0) > 0:
-            pass_bucket = ("semantic-pass", "semantic_pass", "pass", "Node/iwasm semantic match")
-        elif int(artifact.get("passed", 0) or 0) > 0:
-            pass_bucket = ("passed", "passed", "pass", "passed")
-        else:
-            pass_bucket = ("build-pass", "build_pass", "build_pass", "wasm build success")
+        semantic_pass_key = "semantic_pass" if "semantic_pass" in artifact else "passed"
         fail_bucket = ("fail", "fail", "fail", "compiler failure")
         if int(artifact.get("fail", 0) or 0) == 0 and int(artifact.get("failed", 0) or 0) > 0:
             fail_bucket = ("failed", "failed", "fail", "failed")
         buckets = [
-            pass_bucket,
+            ("semantic-pass", semantic_pass_key, "pass", "Node/iwasm semantic match"),
+            ("build-pass", "build_pass", "build_pass", "wasm build success"),
             ("mismatch", "mismatch", "mismatch", "Node/iwasm semantic mismatch"),
             ("runtime-error", "runtime_error", "runtime_error", "runtime failure"),
             ("unsupported", "unsupported", "unsupported", "unsupported by current compiler slice"),
@@ -385,8 +381,10 @@ def normalized_suite_metrics(item):
     total = int(item.get("total", 0) or 0)
     denominator = int(item.get("denominator", 0) or total or 0)
     executed = int(item.get("executed", 0) or total or 0)
-    build_pass = int(item.get("build_pass", item.get("passed", 0)) or 0)
-    semantic_pass = int(item.get("semantic_pass", item.get("passed", 0)) or 0)
+    build_pass = int(item.get("build_pass", 0) or 0)
+    semantic_pass = int(item.get("semantic_pass", 0) or 0)
+    if "semantic_pass" not in item and "build_pass" not in item:
+        semantic_pass = int(item.get("passed", 0) or 0)
     fail = int(item.get("fail", item.get("failed", 0)) or 0)
     unsupported = int(item.get("unsupported", 0) or 0)
     blocked = int(item.get("blocked", 0) or 0)
@@ -395,6 +393,7 @@ def normalized_suite_metrics(item):
         "suite": suite,
         "denominator": denominator,
         "executed": executed,
+        "build_pass": build_pass,
         "semantic_pass": semantic_pass,
         "unsupported": unsupported,
         "blocked": blocked,
@@ -407,10 +406,7 @@ def normalized_suite_metrics(item):
 def build_coverage(artifacts):
     suites = [normalized_suite_metrics(item) for item in artifacts]
     total = sum(item["denominator"] for item in suites)
-    build_implemented = sum(
-        int(item.get("build_pass", item.get("passed", 0)) or 0)
-        for item in artifacts
-    )
+    build_implemented = sum(item["build_pass"] for item in suites)
     unsupported = sum(item["unsupported"] for item in suites)
     failed = sum(item["fail"] for item in suites)
     blocked = sum(item["blocked"] for item in suites)
