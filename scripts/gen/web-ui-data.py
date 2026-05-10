@@ -67,7 +67,7 @@ def resolve_output_dirs() -> list[Path]:
 
 STATUS_MAP = {
     "pass": "pass",
-    "build_pass": "pass",
+    "build_pass": "build_pass",
     "semantic_pass": "pass",
     "fail": "fail",
     "failed": "fail",
@@ -174,6 +174,7 @@ def count_summary(tests):
 def empty_test_summary():
     return {
         "passed": 0,
+        "build_pass": 0,
         "mismatch": 0,
         "runtime_error": 0,
         "build_error": 0,
@@ -191,6 +192,8 @@ def add_record_to_test_summary(summary, record):
     status = record["status"]
     if status == "pass":
         summary["passed"] += weight
+    elif status == "build_pass":
+        summary["build_pass"] += weight
     elif status == "mismatch":
         summary["mismatch"] += weight
     elif status == "runtime_error":
@@ -224,7 +227,7 @@ def aggregate_test_records(artifacts):
         elif int(artifact.get("passed", 0) or 0) > 0:
             pass_bucket = ("passed", "passed", "pass", "passed")
         else:
-            pass_bucket = ("build-pass", "build_pass", "pass", "wasm build success")
+            pass_bucket = ("build-pass", "build_pass", "build_pass", "wasm build success")
         fail_bucket = ("fail", "fail", "fail", "compiler failure")
         if int(artifact.get("fail", 0) or 0) == 0 and int(artifact.get("failed", 0) or 0) > 0:
             fail_bucket = ("failed", "failed", "fail", "failed")
@@ -392,7 +395,6 @@ def normalized_suite_metrics(item):
         "suite": suite,
         "denominator": denominator,
         "executed": executed,
-        "build_pass": build_pass,
         "semantic_pass": semantic_pass,
         "unsupported": unsupported,
         "blocked": blocked,
@@ -405,7 +407,10 @@ def normalized_suite_metrics(item):
 def build_coverage(artifacts):
     suites = [normalized_suite_metrics(item) for item in artifacts]
     total = sum(item["denominator"] for item in suites)
-    implemented = sum(item["build_pass"] for item in suites)
+    build_implemented = sum(
+        int(item.get("build_pass", item.get("passed", 0)) or 0)
+        for item in artifacts
+    )
     unsupported = sum(item["unsupported"] for item in suites)
     failed = sum(item["fail"] for item in suites)
     blocked = sum(item["blocked"] for item in suites)
@@ -429,11 +434,11 @@ def build_coverage(artifacts):
 
     unimplemented = unsupported + failed + blocked
     if total > 0:
-        unimplemented = min(unimplemented, max(total - implemented - future, 0))
+        unimplemented = min(unimplemented, max(total - build_implemented - future, 0))
 
     return {
         "total": total,
-        "implemented": implemented,
+        "build_implemented": build_implemented,
         "unimplemented": unimplemented,
         "future": future,
         "byPriority": by_priority,
@@ -476,7 +481,7 @@ def history_snapshot(item, coverage_dir, durations=None):
         "executed": executed,
         "denominator": metrics["denominator"],
         "timestamp": item["_source_mtime"],
-        "passed": metrics["build_pass"],
+        "passed": metrics["semantic_pass"],
         "failed": metrics["fail"] + metrics["blocked"],
         "skipped": metrics["unsupported"] + metrics["skip_with_reason"],
         "duration_ms": duration_ms,
