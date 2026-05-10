@@ -142,8 +142,33 @@ fn run_differential_test(fixture_path: &Path) -> TestRecord {
     // Run Node.js
     let node_result = node_command().arg(fixture_path).output();
     let node_output = match &node_result {
-        Ok(output) => String::from_utf8_lossy(&output.stdout).to_string(),
-        Err(_) => "".to_string(),
+        Ok(output) => {
+            if !output.status.success() {
+                return TestRecord {
+                    suite,
+                    case,
+                    target: "wasm32-wasi".to_string(),
+                    status: TestStatus::Blocked,
+                    expected: None,
+                    actual: None,
+                    reason: Some("Node oracle failed".to_string()),
+                    tracking: Some(TrackingId::Feature("node-oracle-fail".to_owned())),
+                };
+            }
+            String::from_utf8_lossy(&output.stdout).to_string()
+        }
+        Err(_) => {
+            return TestRecord {
+                suite,
+                case,
+                target: "wasm32-wasi".to_string(),
+                status: TestStatus::Blocked,
+                expected: None,
+                actual: None,
+                reason: Some("Node oracle unavailable".to_string()),
+                tracking: Some(TrackingId::Feature("node-oracle-fail".to_owned())),
+            };
+        }
     };
 
     // Build ts2wasm
@@ -384,14 +409,12 @@ fn differential_jsonl_runs_and_validates_first_batch() {
 
     for fixture in &batch {
         let record = run_and_emit_jsonl(fixture);
-        if let Err(err) = record.validate() {
-            // Non-fatal: log validation issues but don't fail the test.
-            // The JSONL output is still emitted for downstream consumption.
-            eprintln!(
-                "WARN: validation issue for {fixture}: {err}\n  record={}",
+        record.validate().unwrap_or_else(|err| {
+            panic!(
+                "validation failed for {fixture}: {err}\n  record={}",
                 record.to_json_line()
-            );
-        }
+            )
+        });
     }
 }
 
@@ -403,12 +426,12 @@ fn differential_jsonl_runs_and_validates_second_batch() {
 
     for fixture in &batch {
         let record = run_and_emit_jsonl(fixture);
-        if let Err(err) = record.validate() {
-            eprintln!(
-                "WARN: validation issue for {fixture}: {err}\n  record={}",
+        record.validate().unwrap_or_else(|err| {
+            panic!(
+                "validation failed for {fixture}: {err}\n  record={}",
                 record.to_json_line()
-            );
-        }
+            )
+        });
     }
 }
 
@@ -420,12 +443,12 @@ fn differential_jsonl_runs_and_validates_third_batch() {
 
     for fixture in &batch {
         let record = run_and_emit_jsonl(fixture);
-        if let Err(err) = record.validate() {
-            eprintln!(
-                "WARN: validation issue for {fixture}: {err}\n  record={}",
+        record.validate().unwrap_or_else(|err| {
+            panic!(
+                "validation failed for {fixture}: {err}\n  record={}",
                 record.to_json_line()
-            );
-        }
+            )
+        });
     }
 }
 
@@ -437,12 +460,12 @@ fn differential_jsonl_runs_and_validates_fourth_batch() {
 
     for fixture in &batch {
         let record = run_and_emit_jsonl(fixture);
-        if let Err(err) = record.validate() {
-            eprintln!(
-                "WARN: validation issue for {fixture}: {err}\n  record={}",
+        record.validate().unwrap_or_else(|err| {
+            panic!(
+                "validation failed for {fixture}: {err}\n  record={}",
                 record.to_json_line()
-            );
-        }
+            )
+        });
     }
 }
 
