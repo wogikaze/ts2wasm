@@ -9,53 +9,102 @@ meta:
     closed_source: docs/done-tracking.yaml
 open:
   - id: 236
-    title: "epic: Class Semantics Complete"
-    class: epic
+    title: "Implement new.target metaproperty (W9a)"
     priority: P1
+    type: feature
+    area: backend
     status: open
     created: 2026-05-11
-    area: class-semantics
-    test262_files: 4994
-    test262_percent: 9.3
-    description: >
-      Class semantics completeness for test262 (4,994 files / 9.3%).
-      Sub-areas: class fields (public/private), extends + super all patterns,
-      static methods/fields + this, new.target, class expressions (anonymous/IIAC),
-      getter/setter in class body, private field inheritance consistency.
-    sub_areas:
-      - "class fields (public/private) — partially implemented"
-      - "extends + super all patterns — prototype-based only"
-      - "static methods/fields + this — partially implemented (static method this works)"
-      - "new.target — not started (parser rejects Dot token in new.target context)"
-      - "class expressions (anonymous, named, IIAC) — anonymous + named class expression work"
-      - "getter/setter in class body — class getter/setter builds and passes node_diff"
-      - "private field inheritance consistency — partially implemented"
+    updated: 2026-05-11
+    roadmap: W9a
     acceptance:
-      - "test: build_smoke for each class fixture"
-      - "test: node_diff for each class fixture"
-      - "coverage: test262 class-specific semantic_pass baseline"
-    evidence:
-      build_smoke_pass:
-        - "classes/class-getter-setter.ts"
-        - "classes/class-prototype-getter-setter.ts"
-        - "classes/class-static-fields.ts"
-        - "classes/class-static-method-this.ts"
-        - "classes/class-expression-named.ts"
-        - "classes/class-super-arrow.ts"
-      node_diff_pass:
-        - "classes/class-getter-setter.ts"
-        - "classes/class-static-method-this.ts"
-        - "classes/class-expression-named.ts"
-        - "classes/class-super-arrow.ts"
-      build_fail:
-        - "classes/class-new-target.ts (parser: Dot token unsupported)"
-        - "classes/class-extends-null.ts (lowering: super class constructor for null not found)"
-      runtime_fail:
-        - "classes/class-static-fields.ts (builds OK but static field initializers not executed)"
-        - "classes/class-prototype-getter-setter.ts (builds OK but runtime unreachable)"
-    notes: >
-      Fixtures created in fixtures/classes/. Add build_smoke and node_diff
-      tests as each sub-area becomes functional. Epic tracks incremental
-      progress across all sub-areas.
+      - "cargo test -p ts2wasm-frontend --lib -- parser::tests::parses_new_target_in_class"
+      - "cargo nextest run -p ts2wasm-cli --test m2_node_diff -E 'test(new_target)'"
+    non_goals:
+      - "No function-level new.target (not in class constructor)."
+
+  - id: 237
+    title: "Implement public field initializers in class constructor (W9a)"
+    priority: P1
+    type: feature
+    area: ir
+    status: open
+    created: 2026-05-11
+    updated: 2026-05-11
+    roadmap: W9a
+    acceptance:
+      - "cargo nextest run -p ts2wasm-cli --test m8_oop_classes build_smoke_class_field_initializers"
+    non_goals:
+      - "No computed property field names."
+
+  - id: 238
+    title: "Differentiate getter/setter from regular methods in class body (W9a)"
+    priority: P2
+    type: feature
+    area: ir
+    status: open
+    created: 2026-05-11
+    updated: 2026-05-11
+    roadmap: W9a
+    acceptance:
+      - "cargo nextest run -p ts2wasm-cli --test m2_node_diff -E 'test(class_getter_setter)'"
+    non_goals:
+      - "No Object.defineProperty getter/setter support."
+
+  - id: 239
+    title: "Support super.prop in static methods (W9a)"
+    priority: P2
+    type: feature
+    area: ir
+    status: open
+    created: 2026-05-11
+    updated: 2026-05-11
+    roadmap: W9a
+    acceptance:
+      - "cargo nextest run -p ts2wasm-cli --test m8_oop_classes build_smoke_class_super_static"
+    non_goals:
+      - "No super() in static methods (not valid JS)."
+
+  - id: 240
+    title: "Support extends null (W9a)"
+    priority: P2
+    type: feature
+    area: backend
+    status: open
+    created: 2026-05-11
+    updated: 2026-05-11
+    roadmap: W9a
+    acceptance:
+      - "cargo nextest run -p ts2wasm-cli --test m8_oop_classes build_smoke_class_extends_null"
+    non_goals:
+      - "No super() call in null-extended classes (JS spec: throws)."
+
+  - id: 241
+    title: "Pre-allocate class fields capacity for new expression (W9a)"
+    priority: P2
+    type: feature
+    area: backend
+    status: open
+    created: 2026-05-11
+    updated: 2026-05-11
+    roadmap: W9a
+    acceptance:
+      - "cargo nextest run -p ts2wasm-cli --test m2_node_diff -E 'test(class_field_initialization)'"
+    non_goals:
+      - "No private field slot reallocation after construction."
+
+  - id: 242
+    title: "Upgrade class fixtures from build_smoke to semantic_diff (W9a)"
+    priority: P2
+    type: test
+    area: runtime
+    status: open
+    created: 2026-05-11
+    updated: 2026-05-11
+    roadmap: W9a
+    acceptance:
+      - "cargo nextest run -p ts2wasm-cli --test m2_node_diff class_basic_matches_node_output"
+    non_goals:
+      - "No new runtime implementation."
 active: []
 
