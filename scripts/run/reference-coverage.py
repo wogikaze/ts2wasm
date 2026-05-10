@@ -509,6 +509,12 @@ def evidence_command(suite, limit, paths_file, path_filters, sample=None,
         evidence["metadata_cache_signature"] = metadata_cache_sig
     return evidence
 
+def _env_truthy(value):
+    return str(value).strip().lower() in ("1", "true", "yes", "on")
+
+def _test262_semantic_requires_strict_oracle(suite, semantic_check):
+    return suite == "test262" and semantic_check
+
 def refresh_web_ui_data():
     """Regenerate web UI data without changing this command's stdout contract."""
     command = [sys.executable, str(REPO_ROOT / "scripts/gen/web-ui-data.py")]
@@ -922,6 +928,23 @@ def main():
         print("ERROR: --jsonl is only supported for suite=test262", file=sys.stderr)
         sys.exit(1)
 
+    if _test262_semantic_requires_strict_oracle(suite, semantic_check):
+        node_oracle_policy = os.environ.get("TS2WASM_TEST262_NODE_ORACLE", "auto").strip().lower()
+        if node_oracle_policy not in ("always", "1", "true", "yes"):
+            print(
+                "ERROR: test262 semantic coverage requires "
+                "TS2WASM_TEST262_NODE_ORACLE=always; use --no-semantic for build-only runs",
+                file=sys.stderr,
+            )
+            sys.exit(1)
+        if not _env_truthy(os.environ.get("TS2WASM_DISABLE_TEST262_PREPROCESSOR_STUBS", "0")):
+            print(
+                "ERROR: test262 semantic coverage requires "
+                "TS2WASM_DISABLE_TEST262_PREPROCESSOR_STUBS=1 to avoid compiler-side assert stubs",
+                file=sys.stderr,
+            )
+            sys.exit(1)
+
     suite_config, files = resolve_suite_paths(suite, path_filters)
     if files is None:
         sys.exit(1)
@@ -1073,8 +1096,9 @@ def main():
         )
         metadata_cache_file = REPO_ROOT / "artifacts" / "coverage" / "cache" / "test262-metadata-v2.json"
         metadata_cache_signature = {
-            "version": 3,
+            "version": 4,
             "unsupported_flags": list(t262.UNSUPPORTED_FLAGS),
+            "non_blocking_metadata_features": list(t262.NON_BLOCKING_METADATA_FEATURES),
             "blocked_features": list(t262.BLOCKED_FEATURES),
         }
         evidence["metadata_cache_signature"] = metadata_cache_signature
@@ -1105,6 +1129,7 @@ def main():
                 features=list(entry.get("features") or []),
                 negative_phase=entry.get("negative_phase"),
                 negative_type=entry.get("negative_type"),
+                source_code=entry.get("source_code") or "",
             )
 
         def cache_entry_valid(entry, stat_result):
@@ -1125,6 +1150,7 @@ def main():
                 "features": list(metadata.features),
                 "negative_phase": metadata.negative_phase,
                 "negative_type": metadata.negative_type,
+                "source_code": metadata.source_code if unsupported_reason else "",
                 "unsupported_reason": unsupported_reason,
             }
             with metadata_cache_lock:
@@ -1358,24 +1384,6 @@ def main():
             if cache_entry_valid(cached_metadata_entry, stat_result):
                 metadata = metadata_from_cache(cached_metadata_entry)
                 item["metadata"] = metadata
-                unsupported_reason = metadata.unsupported_reason
-                if unsupported_reason:
-                    if include_jsonl_source:
-                        try:
-                            item["source_code"] = file_path.read_text(encoding="utf-8")
-                        except (OSError, UnicodeDecodeError):
-                            item["source_code"] = ""
-                    return {
-                        "type": "early_record",
-                        "index": index,
-                        "record_status": make_unsupported_record(
-                            item,
-                            "UnsupportedTest262Metadata",
-                            "test262-metadata",
-                            unsupported_reason,
-                            started_at,
-                        ),
-                    }
                 try:
                     source_code = file_path.read_text(encoding="utf-8")
                 except (OSError, UnicodeDecodeError) as exc:
@@ -1387,6 +1395,21 @@ def main():
                         ),
                     }
                 item["source_code"] = source_code
+                metadata.source_code = source_code
+                unsupported_reason = metadata.unsupported_reason
+                update_metadata_cache(file_path, stat_result, metadata, unsupported_reason)
+                if unsupported_reason:
+                    return {
+                        "type": "early_record",
+                        "index": index,
+                        "record_status": make_unsupported_record(
+                            item,
+                            "UnsupportedTest262Metadata",
+                            "test262-metadata",
+                            unsupported_reason,
+                            started_at,
+                        ),
+                    }
                 try:
                     item["build_source"] = t262.build_test262_source(
                         file_path, source_code, metadata, target="wasm"
@@ -1448,6 +1471,8 @@ def main():
             item["source_code"] = source_code
             if metadata is None or not metadata_complete:
                 metadata = t262.parse_test262_metadata(source_code)
+            else:
+                metadata.source_code = source_code
             item["metadata"] = metadata
             unsupported_reason = metadata.unsupported_reason
             update_metadata_cache(file_path, stat_result, metadata, unsupported_reason)
@@ -1583,8 +1608,8 @@ def main():
                     record = t262.create_test_record(
                         "test262",
                         str(item["file_path"]),
-                        "wasm-build",
-                        "pass",
+                        "wasm-iwasm",
+                        "build_pass",
                         None,
                         None,
                         "build_pass",
@@ -1868,8 +1893,8 @@ def main():
                                     record = t262.create_test_record(
                                         "test262",
                                         str(item["file_path"]),
-                                        "wasm-build",
-                                        "pass",
+                                        "wasm-iwasm",
+                                        "build_pass",
                                         None,
                                         None,
                                         "build_pass",

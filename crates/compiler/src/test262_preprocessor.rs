@@ -167,11 +167,21 @@ fn source_has_var_binding(source: &str, name: &str) -> bool {
         || source.contains(&format!("var {name};"))
 }
 
+fn disable_test262_preprocessor_stubs() -> bool {
+    std::env::var("TS2WASM_DISABLE_TEST262_PREPROCESSOR_STUBS")
+        .map(|value| matches!(value.as_str(), "1" | "true" | "TRUE" | "yes" | "YES"))
+        .unwrap_or(false)
+}
+
 /// Rewrite `assert.method(...)` calls to `__assert_method(...)` standalone calls.
 ///
 /// This works around issue-211 where method calls on function-valued locals (`assert`)
 /// cannot be resolved by the IR resolver. Returns the rewritten source.
 fn rewrite_assert_method_calls(source: &str) -> String {
+    if disable_test262_preprocessor_stubs() {
+        return source.to_string();
+    }
+
     let assert_patterns = [
         ("assert.sameValue(", "__assert_sameValue("),
         ("assert.throws(", "__assert_throws("),
@@ -243,6 +253,7 @@ pub fn process_test262_includes(input: &Path, source: &str) -> Result<String, Di
         // No frontmatter, return source as-is
         return Ok(source.to_string());
     };
+    let disable_stubs = disable_test262_preprocessor_stubs();
 
     let frontmatter = &source[..=frontmatter_end + 4]; // Include the closing */
     let metadata = parse_test262_metadata(frontmatter);
@@ -252,13 +263,13 @@ pub fn process_test262_includes(input: &Path, source: &str) -> Result<String, Di
         // Skip injection if the functions are already present (e.g. from Python harness wrap).
         let body = &source[frontmatter_end + 5..];
         let mut stubs = String::new();
-        if !source_has_function(source, "assert") {
+        if !disable_stubs && !source_has_function(source, "assert") {
             stubs.push_str("function assert() {}\n");
         }
-        if !source_has_function(source, "verifyProperty") {
+        if !disable_stubs && !source_has_function(source, "verifyProperty") {
             stubs.push_str("function verifyProperty() {}\n");
         }
-        if !source_has_function(source, "verifyCallableProperty") {
+        if !disable_stubs && !source_has_function(source, "verifyCallableProperty") {
             stubs.push_str("function verifyCallableProperty() {}\n");
         }
         if stubs.is_empty() {
@@ -312,7 +323,11 @@ pub fn process_test262_includes(input: &Path, source: &str) -> Result<String, Di
             let helper_source = remove_frontmatter(&helper_source);
 
             // Extract function stubs instead of full helper file
-            let stubs = extract_function_stubs(helper_source, source);
+            let stubs = if disable_stubs {
+                String::new()
+            } else {
+                extract_function_stubs(helper_source, source)
+            };
             if !injected.is_empty() {
                 injected.push('\n');
             }
