@@ -177,6 +177,18 @@ def run_repo_smoke():
         [PYTHON_BIN, str(REPO_ROOT / "scripts/check/shell-syntax.py")],
     ])
 
+def configure_reference_coverage_defaults(target, args):
+    """Apply audited defaults for manager-launched test262 semantic coverage."""
+    if target != "reference-coverage":
+        return
+    if not args or args[0] != "test262":
+        return
+    if "--no-semantic" in args:
+        return
+
+    os.environ.setdefault("TS2WASM_TEST262_NODE_ORACLE", "always")
+    os.environ.setdefault("TS2WASM_DISABLE_TEST262_PREPROCESSOR_STUBS", "1")
+
 def check_usage():
     parts = ", ".join(sorted(CHECK_PARTS))
     print("Usage: python scripts/manager.py check [part] [args...]")
@@ -227,6 +239,8 @@ def main():
         print(f"Unknown command: {target}", file=sys.stderr)
         print("Run: python scripts/manager.py help", file=sys.stderr)
         sys.exit(1)
+
+    configure_reference_coverage_defaults(target, args)
     
     # Special case: install-hooks uses different scripts on Windows vs Unix
     if target == "install-hooks":
