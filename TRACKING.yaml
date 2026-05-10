@@ -7,6 +7,55 @@ meta:
     canonical_source: TRACKING.yaml
     roadmap_source: docs/roadmap.md
     closed_source: docs/done-tracking.yaml
-open: []
+open:
+  - id: 236
+    title: "epic: Class Semantics Complete"
+    class: epic
+    priority: P1
+    status: open
+    created: 2026-05-11
+    area: class-semantics
+    test262_files: 4994
+    test262_percent: 9.3
+    description: >
+      Class semantics completeness for test262 (4,994 files / 9.3%).
+      Sub-areas: class fields (public/private), extends + super all patterns,
+      static methods/fields + this, new.target, class expressions (anonymous/IIAC),
+      getter/setter in class body, private field inheritance consistency.
+    sub_areas:
+      - "class fields (public/private) — partially implemented"
+      - "extends + super all patterns — prototype-based only"
+      - "static methods/fields + this — partially implemented (static method this works)"
+      - "new.target — not started (parser rejects Dot token in new.target context)"
+      - "class expressions (anonymous, named, IIAC) — anonymous + named class expression work"
+      - "getter/setter in class body — class getter/setter builds and passes node_diff"
+      - "private field inheritance consistency — partially implemented"
+    acceptance:
+      - "test: build_smoke for each class fixture"
+      - "test: node_diff for each class fixture"
+      - "coverage: test262 class-specific semantic_pass baseline"
+    evidence:
+      build_smoke_pass:
+        - "classes/class-getter-setter.ts"
+        - "classes/class-prototype-getter-setter.ts"
+        - "classes/class-static-fields.ts"
+        - "classes/class-static-method-this.ts"
+        - "classes/class-expression-named.ts"
+        - "classes/class-super-arrow.ts"
+      node_diff_pass:
+        - "classes/class-getter-setter.ts"
+        - "classes/class-static-method-this.ts"
+        - "classes/class-expression-named.ts"
+        - "classes/class-super-arrow.ts"
+      build_fail:
+        - "classes/class-new-target.ts (parser: Dot token unsupported)"
+        - "classes/class-extends-null.ts (lowering: super class constructor for null not found)"
+      runtime_fail:
+        - "classes/class-static-fields.ts (builds OK but static field initializers not executed)"
+        - "classes/class-prototype-getter-setter.ts (builds OK but runtime unreachable)"
+    notes: >
+      Fixtures created in fixtures/classes/. Add build_smoke and node_diff
+      tests as each sub-area becomes functional. Epic tracks incremental
+      progress across all sub-areas.
 active: []
 

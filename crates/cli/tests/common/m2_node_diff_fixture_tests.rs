@@ -2750,3 +2750,24 @@ fn upgraded_builtin_fixture_matches_node_output() {
 fn mutable_capture_closure_matches_node_output() {
     assert_fixture_matches_node("fixtures/core-semantics/mutable-capture-closure.ts");
 }
+
+// Class Semantics Complete epic — ID 236
+#[test]
+fn class_getter_setter_fixture_matches_node_output() {
+    assert_fixture_matches_node("fixtures/classes/class-getter-setter.ts");
+}
+
+#[test]
+fn class_static_method_this_fixture_matches_node_output() {
+    assert_fixture_matches_node("fixtures/classes/class-static-method-this.ts");
+}
+
+#[test]
+fn class_expression_named_fixture_matches_node_output() {
+    assert_fixture_matches_node("fixtures/classes/class-expression-named.ts");
+}
+
+#[test]
+fn class_super_arrow_fixture_matches_node_output() {
+    assert_fixture_matches_node("fixtures/classes/class-super-arrow.ts");
+}

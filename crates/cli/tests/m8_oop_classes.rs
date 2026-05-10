@@ -91,3 +91,33 @@ fn build_smoke_class_super_constructor() {
 fn build_smoke_class_extends_builtin() {
     assert_fixture_build_smoke("classes/class-extends-builtin.ts");
 }
+
+#[test]
+fn build_smoke_class_expression_named() {
+    assert_fixture_build_smoke("classes/class-expression-named.ts");
+}
+
+#[test]
+fn build_smoke_class_static_fields() {
+    assert_fixture_build_smoke("classes/class-static-fields.ts");
+}
+
+#[test]
+fn build_smoke_class_static_method_this() {
+    assert_fixture_build_smoke("classes/class-static-method-this.ts");
+}
+
+#[test]
+fn build_smoke_class_super_arrow() {
+    assert_fixture_build_smoke("classes/class-super-arrow.ts");
+}
+
+#[test]
+fn build_smoke_class_getter_setter() {
+    assert_fixture_build_smoke("classes/class-getter-setter.ts");
+}
+
+#[test]
+fn build_smoke_class_prototype_getter_setter() {
+    assert_fixture_build_smoke("classes/class-prototype-getter-setter.ts");
+}
