@@ -29,48 +29,41 @@ SUPPORTED_FEATURES = (
     "async-iteration",
     "generators",
     "async-functions",
-    "IsHTMLDDA",
-    # Commonly used features that don't block compilation
     "arrow-function",
-    "Reflect",
-    "Reflect.construct",
-    "Reflect.set",
-    "legacy-regexp",
-    "cross-realm",
-    "error-message",
-    "Symbol.species",
-    "Symbol.unscopables",
-    "Symbol.replace",
-    "Symbol.match",
-    "Symbol.search",
-    "Symbol.matchAll",
-    "Symbol.split",
-    "Symbol.iterator",
-    "Symbol.toPrimitive",
-    "Symbol.isConcatSpreadable",
-    "string-trimming",
-    "Array.prototype.values",
-    "Array.prototype.at",
-    "Array.prototype.flat",
-    "stable-array-sort",
     "Symbol",
-    "regexp-named-groups",
-    "regexp-duplicate-named-groups",
-    "regexp-lookbehind",
-    "regexp-dotall",
-    "String.prototype.matchAll",
-    "String.prototype.replaceAll",
-    "String.prototype.trimStart",
-    "String.prototype.trimEnd",
+    "Symbol.iterator",
+    "Symbol.species",
+    "Symbol.toPrimitive",
+    "Symbol.toStringTag",
     "TypedArray",
     "BigInt",
+    "Array.prototype.at",
+    "Array.prototype.flat",
+    "Array.prototype.values",
+    "String.prototype.matchAll",
+    "String.prototype.replaceAll",
+    "Promise",
+    "WeakMap",
+    "WeakSet",
+    "Map",
+    "Set",
 )
+
+BLOCKED_INCLUDES = ("agent.js", "detachArrayBuffer.js")
+BLOCKED_FEATURES = (
+    "cross-realm",
+    "evalScript",
+    "SharedArrayBuffer",
+    "Atomics",
+    "Intl",
+)
+
 ASSERT_FAILURE_SENTINEL = "__TS2WASM_TEST262_ASSERT_FAIL__"
 
 # Track unknown features already logged to stderr (deduplication).
 _seen_unknown_test262_features = set()
 
-TEST262_HOST_PRELUDE = r"""
+COMMON_HOST_PRELUDE = r"""
 function print(message) {
   console.log(message);
 }
@@ -80,22 +73,22 @@ var $262 = {};
 function test262_gc() {}
 
 function test262_evalScript(source) {
-  throw new Test262Error("$262.evalScript is not supported by this harness slice");
+  throw new Error("$262.evalScript is not supported by this runner slice");
 }
 
 function test262_createRealm() {
-  throw new Test262Error("$262.createRealm is not supported by this harness slice");
+  throw new Error("$262.createRealm is not supported by this runner slice");
 }
 
 function test262_detachArrayBuffer() {
-  throw new Test262Error("$262.detachArrayBuffer is not supported by this harness slice");
+  throw new Error("$262.detachArrayBuffer is not supported by this runner slice");
 }
 
 function test262_agent_start() {
-  throw new Test262Error("$262.agent is not supported by this harness slice");
+  throw new Error("$262.agent is not supported by this runner slice");
 }
 
-$262.global = {};
+$262.global = (function() { return this; })();
 $262.gc = test262_gc;
 $262.evalScript = test262_evalScript;
 $262.createRealm = test262_createRealm;
@@ -105,43 +98,12 @@ $262.agent = {};
 $262.agent.start = test262_agent_start;
 """
 
-WASM_HOST_PRELUDE = r"""
-function print(message) {
-  console.log(message);
-}
-"""
-
 # JavaScript standard globals that the compiler may not resolve natively
 WASM_GLOBALS = r"""
 var NaN = 0/0;
 var Infinity = 1/0;
 """
 
-WASM_HARNESS_SHIM = r"""
-var $262 = {};
-$262.gc = function() {};
-$262.evalScript = function() { console.log("__TS2WASM_TEST262_ASSERT_FAIL__"); };
-$262.createRealm = function() { console.log("__TS2WASM_TEST262_ASSERT_FAIL__"); };
-$262.detachArrayBuffer = function() { console.log("__TS2WASM_TEST262_ASSERT_FAIL__"); };
-$262.IsHTMLDDA = undefined;
-$262.agent = {};
-$262.agent.start = function() { console.log("__TS2WASM_TEST262_ASSERT_FAIL__"); };
-
-function $ERROR(message) {
-  console.log("__TS2WASM_TEST262_ASSERT_FAIL__");
-}
-
-function $DONOTEVALUATE() {
-  console.log("__TS2WASM_TEST262_ASSERT_FAIL__");
-}
-
-function assert(mustBeTrue, message) {
-  if (mustBeTrue === true) {
-    return;
-  }
-  console.log("__TS2WASM_TEST262_ASSERT_FAIL__");
-}
-"""
 
 
 # ---------------------------------------------------------------------------
@@ -173,12 +135,13 @@ def repo_relative(path):
 # ---------------------------------------------------------------------------
 
 class Test262Metadata:
-    def __init__(self, flags=None, includes=None, features=None, negative_phase=None, negative_type=None):
+    def __init__(self, flags=None, includes=None, features=None, negative_phase=None, negative_type=None, source_code=""):
         self.flags = flags or set()
         self.includes = includes or []
         self.features = features or []
         self.negative_phase = negative_phase
         self.negative_type = negative_type
+        self.source_code = source_code
 
     @property
     def raw(self):
@@ -189,6 +152,25 @@ class Test262Metadata:
         for flag in UNSUPPORTED_FLAGS:
             if flag in self.flags:
                 return f"test262 flag `{flag}` is not supported by this runner slice"
+        
+        for include in self.includes:
+            if include in BLOCKED_INCLUDES:
+                return f"test262 include `{include}` is not supported by this runner slice"
+        
+        for feature in self.features:
+            if feature in BLOCKED_FEATURES:
+                return f"test262 feature `{feature}` is not supported by this runner slice"
+        
+        # Source-based detection for missing capabilities that might not be in metadata
+        if "$262.evalScript" in self.source_code:
+            return "test262 uses $262.evalScript which is not supported"
+        if "$262.createRealm" in self.source_code:
+            return "test262 uses $262.createRealm which is not supported"
+        if "$262.detachArrayBuffer" in self.source_code:
+            return "test262 uses $262.detachArrayBuffer which is not supported"
+        if "$262.agent" in self.source_code:
+            return "test262 uses $262.agent which is not supported"
+
         for feature in self.features:
             if feature not in SUPPORTED_FEATURES and feature not in _seen_unknown_test262_features:
                 _seen_unknown_test262_features.add(feature)
@@ -202,6 +184,7 @@ class Test262Metadata:
     @property
     def expects_parse_syntax_error(self):
         return self.negative_phase == "parse" and self.negative_type == "SyntaxError"
+
 
 
 def _parse_yaml_list(value):
@@ -220,7 +203,7 @@ def parse_test262_metadata(source_code):
     """Parse the subset of test262 frontmatter needed by this runner."""
     match = re.search(r'/\*---(.*?)---\*/', source_code, re.DOTALL)
     if not match:
-        return Test262Metadata()
+        return Test262Metadata(source_code=source_code)
 
     flags = set()
     includes = []
@@ -269,7 +252,7 @@ def parse_test262_metadata(source_code):
             negative_phase = value.strip("'\"")
         elif in_negative and key == "type":
             negative_type = value.strip("'\"")
-    return Test262Metadata(flags, includes, features, negative_phase, negative_type)
+    return Test262Metadata(flags, includes, features, negative_phase, negative_type, source_code=source_code)
 
 
 # ---------------------------------------------------------------------------
@@ -294,17 +277,15 @@ def build_test262_source(test_file, source_code, metadata, target="wasm"):
         return source_code
     case_source = source_code
 
+    chunks = [COMMON_HOST_PRELUDE]
     if target == "wasm":
-        chunks = [WASM_HOST_PRELUDE]
         chunks.append("\n/* standard globals shim */\n")
         chunks.append(WASM_GLOBALS)
-        chunks.append("\n/* test262 harness shim: sta.js + assert.js */\n")
-        chunks.append(WASM_HARNESS_SHIM)
-    else:
-        chunks = [TEST262_HOST_PRELUDE]
-        for harness_name in CORE_HARNESS_FILES:
-            chunks.append(f"\n/* test262 harness: {harness_name} */\n")
-            chunks.append(load_harness_file(harness_name))
+    
+    # Load real harness for both targets
+    for harness_name in CORE_HARNESS_FILES:
+        chunks.append(f"\n/* test262 harness: {harness_name} */\n")
+        chunks.append(load_harness_file(harness_name))
 
     # Load additional harness includes for both targets
     for include in metadata.includes:
@@ -486,10 +467,17 @@ def compile_and_run_test(test_file, tmp_dir):
         reason_match = re.search(re.escape(f"[{result_diag}") + r"(?:/\w+)?\]", stderr_content)
         result_reason = reason_match.group(0) if reason_match else stderr_content.split('\n')[0] if stderr_content else ""
         result_feature = feature_label(result_diag, stderr_content, str(test_file), diag_phase)
+        
         if metadata.expects_negative:
-            result_status = "pass"
-            result_reason = f"negative {metadata.negative_phase}/{metadata.negative_type or 'error'} rejected during compilation"
-            result_actual = stderr_content
+            if metadata.negative_phase == "parse":
+                result_status = "pass"
+                result_reason = f"negative {metadata.negative_phase}/{metadata.negative_type or 'error'} rejected during compilation"
+                result_actual = stderr_content
+            else:
+                # Runtime negative test that failed to compile is NOT a pass.
+                # Keep it as "unsupported" or "fail" depending on the diagnostic.
+                pass
+
         return result_status, result_diag, result_feature, result_reason, result_actual, source_code, result_error_line, result_stderr_full
 
     # Run with iwasm
@@ -509,16 +497,21 @@ def compile_and_run_test(test_file, tmp_dir):
             result_diag = "Test262AssertionFailure"
             result_reason = "test262 assertion failed"
         else:
+            # If result.returncode == 0 but it was expected to fail:
             result_status = "fail" if metadata.expects_negative else "pass"
-        if metadata.expects_negative:
-            result_status, result_diag, result_feature, result_reason = classify_completed_negative(metadata)
+        
+        if metadata.expects_negative and result_status == "fail":
+             result_status, result_diag, result_feature, result_reason = classify_completed_negative(metadata)
     else:
-        result_status = "pass" if metadata.expects_negative else "runtime_error"
-        result_diag = f"RuntimeError:{result.returncode}"
+        # Runtime failure (non-zero return code)
         if metadata.expects_negative:
+            result_status = "pass"
             result_reason = f"negative {metadata.negative_phase}/{metadata.negative_type or 'error'} rejected during execution"
         else:
+            result_status = "runtime_error"
             result_reason = result.stderr[:200] if result.stderr else ""
+        
+        result_diag = f"RuntimeError:{result.returncode}"
         result_stderr_full = result.stderr
         result_actual = result.stdout if result.stdout else ""
 
