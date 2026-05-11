@@ -393,6 +393,10 @@ def normalized_suite_metrics(item):
     unsupported = int(item.get("unsupported", 0) or 0)
     blocked = int(item.get("blocked", 0) or 0)
     skip_with_reason = int(item.get("skip_with_reason", item.get("skipped", 0)) or 0)
+    build_pass_by_detail = item.get("build_pass_by_detail", {})
+    if not isinstance(build_pass_by_detail, dict):
+        build_pass_by_detail = {}
+
     return {
         "suite": suite,
         "denominator": denominator,
@@ -407,6 +411,7 @@ def normalized_suite_metrics(item):
         "blocked": blocked,
         "fail": fail,
         "skip_with_reason": skip_with_reason,
+        "build_pass_by_detail": build_pass_by_detail,
         "source": item["_source_path"],
     }
 

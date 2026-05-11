@@ -1002,6 +1002,7 @@ def main():
             "conformance_pass": 0,
             "unsupported_diagcodes": {},
             "unsupported_features": {},
+            "build_pass_by_detail": {},
             "status": "in-progress",
             "selection": {
                 "paths_file": paths_file,
@@ -1982,6 +1983,7 @@ def main():
             "differential_pass": differential_pass,
             "negative_compile_pass": negative_compile_pass,
             "conformance_pass": conformance_pass,
+            "build_pass_by_detail": {},
             "duration_ms": wall_duration_ms,
             "wall_duration_ms": wall_duration_ms,
             "case_duration_sum_ms": total_duration_ms,
@@ -2261,6 +2263,7 @@ def main():
         nonlocal verified_negative_count
         nonlocal unsupported_count, unsupported_diag_counts, unsupported_feature_counts
         nonlocal unsupported_by_phase
+        nonlocal build_pass_by_detail
 
         executed += 1
         if detail_output:
@@ -2278,6 +2281,21 @@ def main():
             return
         if result["build_pass"]:
             build_pass_count += 1
+            # Classify build_pass_detail for every build_pass result
+            if result.get("verified_negative"):
+                build_pass_detail = "verified-negative-compile"
+            elif result["semantic_pass"]:
+                build_pass_detail = "differential-match"
+            elif result.get("build_only"):
+                build_pass_detail = "wasm-built"
+            elif result.get("mismatch"):
+                build_pass_detail = "differential-mismatch"
+            elif result.get("runtime_error"):
+                build_pass_detail = "runtime-error"
+            else:
+                build_pass_detail = "semantic-pending"
+            result["build_pass_detail"] = build_pass_detail
+            build_pass_by_detail[build_pass_detail] = build_pass_by_detail.get(build_pass_detail, 0) + 1
             if result["semantic_pass"]:
                 semantic_pass_count += 1
             elif result["mismatch"]:
@@ -2534,7 +2552,8 @@ def main():
     runtime_error_count = 0
     build_only_count = 0
     verified_negative_count = 0
-    
+    build_pass_by_detail = {}
+
     file_details = []
     
     # Thread-safe counter for server items (list for mutation in closure)
@@ -2712,6 +2731,20 @@ def main():
                     
                     if result["build_pass"]:
                         build_pass_count += 1
+                        if result.get("verified_negative"):
+                            build_pass_detail = "verified-negative-compile"
+                        elif result["semantic_pass"]:
+                            build_pass_detail = "differential-match"
+                        elif result.get("build_only"):
+                            build_pass_detail = "wasm-built"
+                        elif result.get("mismatch"):
+                            build_pass_detail = "differential-mismatch"
+                        elif result.get("runtime_error"):
+                            build_pass_detail = "runtime-error"
+                        else:
+                            build_pass_detail = "semantic-pending"
+                        result["build_pass_detail"] = build_pass_detail
+                        build_pass_by_detail[build_pass_detail] = build_pass_by_detail.get(build_pass_detail, 0) + 1
                         if result["semantic_pass"]:
                             semantic_pass_count += 1
                         elif result["mismatch"]:
@@ -2815,6 +2848,7 @@ def main():
         "unsupported_diagcodes": unsupported_diag_counts,
         "unsupported_features": unsupported_feature_counts,
         "unsupported_by_phase": unsupported_by_phase,
+        "build_pass_by_detail": build_pass_by_detail,
         "status": "in-progress",
         "selection": {
             "paths_file": paths_file,
