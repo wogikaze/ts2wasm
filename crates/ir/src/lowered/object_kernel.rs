@@ -15,7 +15,7 @@
 //!   use crate::lowered::object_kernel;
 //!   let get_expr = object_kernel::ordinary_get(obj_expr, "length", span);
 
-use crate::lowered::{LoweredExpr, LoweredUnaryOp, RuntimeIntrinsic};
+use crate::lowered::{LoweredExpr, LoweredUnaryOp, RuntimeFn};
 use ts2wasm_shared::Span;
 
 /// OrdinaryGet ([[Get]]): `obj.key`
@@ -117,6 +117,57 @@ pub fn ordinary_delete_dynamic(obj: LoweredExpr, key: LoweredExpr, span: Span) -
     }
 }
 
+/// OrdinaryDefineOwnProperty ([[DefineOwnProperty]]): defines a new property
+/// or modifies an existing one with a property descriptor.
+///
+/// Produces a `RuntimeCall` to the `ObjectDefineProperty` runtime intrinsic.
+pub fn ordinary_define_own_property(
+    obj: LoweredExpr,
+    key: LoweredExpr,
+    desc: LoweredExpr,
+    span: Span,
+) -> LoweredExpr {
+    LoweredExpr::RuntimeCall {
+        intrinsic: RuntimeFn::ObjectDefineProperty,
+        args: vec![obj, key, desc],
+        span,
+    }
+}
+
+/// OrdinaryGetOwnProperty ([[GetOwnProperty]]): returns the property descriptor
+/// for a key on an object, or undefined if the property doesn't exist.
+///
+/// Produces a `RuntimeCall` to the `ObjectGetOwnPropertyDescriptor` runtime intrinsic.
+pub fn ordinary_get_own_property(obj: LoweredExpr, key: LoweredExpr, span: Span) -> LoweredExpr {
+    LoweredExpr::RuntimeCall {
+        intrinsic: RuntimeFn::ObjectGetOwnPropertyDescriptor,
+        args: vec![obj, key],
+        span,
+    }
+}
+
+/// OrdinaryGetPrototypeOf ([[GetPrototypeOf]]): returns the prototype of an object.
+///
+/// Produces a `RuntimeCall` to the `ObjectGetPrototypeOf` runtime intrinsic.
+pub fn ordinary_get_prototype_of(obj: LoweredExpr, span: Span) -> LoweredExpr {
+    LoweredExpr::RuntimeCall {
+        intrinsic: RuntimeFn::ObjectGetPrototypeOf,
+        args: vec![obj],
+        span,
+    }
+}
+
+/// OrdinarySetPrototypeOf ([[SetPrototypeOf]]): sets the prototype of an object.
+///
+/// Produces a `RuntimeCall` to the `ObjectSetPrototypeOf` runtime intrinsic.
+pub fn ordinary_set_prototype_of(obj: LoweredExpr, proto: LoweredExpr, span: Span) -> LoweredExpr {
+    LoweredExpr::RuntimeCall {
+        intrinsic: RuntimeFn::ObjectSetPrototypeOf,
+        args: vec![obj, proto],
+        span,
+    }
+}
+
 /// OrdinaryGet with optional chaining: `obj?.key`
 ///
 /// Produces an `OptionalPropertyGet` expression.
@@ -133,7 +184,7 @@ pub fn ordinary_get_optional(obj: LoweredExpr, key: &str, span: Span) -> Lowered
 /// Produces a `RuntimeCall` to the `ObjectKeys` runtime intrinsic.
 pub fn object_keys(obj: LoweredExpr, span: Span) -> LoweredExpr {
     LoweredExpr::RuntimeCall {
-        intrinsic: RuntimeIntrinsic::ObjectKeys,
+        intrinsic: RuntimeFn::ObjectKeys,
         args: vec![obj],
         span,
     }
@@ -144,7 +195,7 @@ pub fn object_keys(obj: LoweredExpr, span: Span) -> LoweredExpr {
 /// Produces a `RuntimeCall` to the `ObjectValues` runtime intrinsic.
 pub fn object_values(obj: LoweredExpr, span: Span) -> LoweredExpr {
     LoweredExpr::RuntimeCall {
-        intrinsic: RuntimeIntrinsic::ObjectValues,
+        intrinsic: RuntimeFn::ObjectValues,
         args: vec![obj],
         span,
     }

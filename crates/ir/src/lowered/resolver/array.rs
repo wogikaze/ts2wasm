@@ -114,7 +114,7 @@ impl super::Resolver {
         };
         for segment in iter {
             combined = LoweredExpr::RuntimeCall {
-                intrinsic: RuntimeIntrinsic::ArrayConcat,
+                intrinsic: RuntimeFn::ArrayConcat,
                 args: vec![combined, segment],
 
                 span: Span::generated("runtime_call"),
@@ -167,7 +167,7 @@ impl super::Resolver {
                 let Some(elements) = self.static_function_array_like_elements(name) else {
                     if is_identity_arrow_callback(map_args) {
                         return Ok(LoweredExpr::RuntimeCall {
-                            intrinsic: RuntimeIntrinsic::ArrayMapArrayLikeIdentity,
+                            intrinsic: RuntimeFn::ArrayMapArrayLikeIdentity,
                             args: vec![self.lower_expr(receiver)?],
 
                             span: Span::generated("runtime_call"),
@@ -175,7 +175,7 @@ impl super::Resolver {
                     }
                     if is_number_double_arrow_callback(map_args) {
                         return Ok(LoweredExpr::RuntimeCall {
-                            intrinsic: RuntimeIntrinsic::ArrayMapArrayLikeDouble,
+                            intrinsic: RuntimeFn::ArrayMapArrayLikeDouble,
                             args: vec![self.lower_expr(receiver)?],
 
                             span: Span::generated("runtime_call"),
@@ -190,13 +190,13 @@ impl super::Resolver {
                 self.lower_array_map_elements(receiver, &elements, map_args, span)
             }
             _ if is_identity_arrow_callback(map_args) => Ok(LoweredExpr::RuntimeCall {
-                intrinsic: RuntimeIntrinsic::ArrayMapArrayLikeIdentity,
+                intrinsic: RuntimeFn::ArrayMapArrayLikeIdentity,
                 args: vec![self.lower_expr(receiver)?],
 
                 span: Span::generated("runtime_call"),
             }),
             _ if is_number_double_arrow_callback(map_args) => Ok(LoweredExpr::RuntimeCall {
-                intrinsic: RuntimeIntrinsic::ArrayMapArrayLikeDouble,
+                intrinsic: RuntimeFn::ArrayMapArrayLikeDouble,
                 args: vec![self.lower_expr(receiver)?],
 
                 span: Span::generated("runtime_call"),
@@ -223,7 +223,7 @@ impl super::Resolver {
 
         if self.is_known_array_expr(source) {
             return Ok(LoweredExpr::RuntimeCall {
-                intrinsic: RuntimeIntrinsic::ArrayValues,
+                intrinsic: RuntimeFn::ArrayValues,
                 args: vec![self.lower_expr(source)?],
 
                 span: Span::generated("runtime_call"),
@@ -606,7 +606,7 @@ impl super::Resolver {
         };
         if self.ctx.facts.array_locals.contains(&local_id) {
             return Ok(Some(LoweredExpr::RuntimeCall {
-                intrinsic: RuntimeIntrinsic::ArrayConcat,
+                intrinsic: RuntimeFn::ArrayConcat,
                 args: vec![
                     LoweredExpr::ArrayNew {
                         elements: vec![],
@@ -652,7 +652,7 @@ impl super::Resolver {
             .is_some_and(|class_name| class_name == "Set")
         {
             return Ok(Some(LoweredExpr::RuntimeCall {
-                intrinsic: RuntimeIntrinsic::SetValuesArray,
+                intrinsic: RuntimeFn::SetValuesArray,
                 args: vec![LoweredExpr::Local(local_id, Span::generated("local"))],
 
                 span: Span::generated("runtime_call"),
@@ -679,7 +679,7 @@ impl super::Resolver {
             .is_some_and(|class_name| class_name == "Map")
         {
             return Ok(Some(LoweredExpr::RuntimeCall {
-                intrinsic: RuntimeIntrinsic::MapValuesArray,
+                intrinsic: RuntimeFn::MapValuesArray,
                 args: vec![LoweredExpr::Local(local_id, Span::generated("local"))],
 
                 span: Span::generated("runtime_call"),
@@ -1252,7 +1252,7 @@ impl super::Resolver {
             condition: LoweredExpr::Local(pred, Span::generated("local")),
             then_body: vec![LoweredStmt::Expr(
                 LoweredExpr::RuntimeCall {
-                    intrinsic: RuntimeIntrinsic::ArrayPushGrow,
+                    intrinsic: RuntimeFn::ArrayPushGrow,
                     args: vec![
                         LoweredExpr::Local(result, Span::generated("local")),
                         LoweredExpr::Local(elem, Span::generated("local")),
@@ -1783,7 +1783,7 @@ impl super::Resolver {
         // Push or spread the result (handles array vs non-array)
         while_body.push(LoweredStmt::Expr(
             LoweredExpr::RuntimeCall {
-                intrinsic: RuntimeIntrinsic::ArrayPushOrSpread,
+                intrinsic: RuntimeFn::ArrayPushOrSpread,
                 args: vec![
                     LoweredExpr::Local(result, Span::generated("local")),
                     LoweredExpr::Local(mapped, Span::generated("local")),
@@ -1870,7 +1870,7 @@ impl super::Resolver {
         ));
         while_body.push(LoweredStmt::Expr(
             LoweredExpr::RuntimeCall {
-                intrinsic: RuntimeIntrinsic::ArrayPushGrow,
+                intrinsic: RuntimeFn::ArrayPushGrow,
                 args: vec![
                     LoweredExpr::Local(result, Span::generated("local")),
                     LoweredExpr::Local(mapped, Span::generated("local")),

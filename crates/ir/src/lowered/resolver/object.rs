@@ -54,7 +54,7 @@ impl super::Resolver {
                     target
                 } else {
                     LoweredExpr::RuntimeCall {
-                        intrinsic: RuntimeIntrinsic::ObjectSpread,
+                        intrinsic: RuntimeFn::ObjectSpread,
                         args: vec![
                             target,
                             LoweredExpr::ObjectNew {
@@ -68,7 +68,7 @@ impl super::Resolver {
                     }
                 };
                 result = Some(LoweredExpr::RuntimeCall {
-                    intrinsic: RuntimeIntrinsic::ObjectSpread,
+                    intrinsic: RuntimeFn::ObjectSpread,
                     args: vec![target, self.lower_expr(value)?],
 
                     span: Span::generated("runtime_call"),
@@ -97,7 +97,7 @@ impl super::Resolver {
             })
         } else {
             Ok(LoweredExpr::RuntimeCall {
-                intrinsic: RuntimeIntrinsic::ObjectSpread,
+                intrinsic: RuntimeFn::ObjectSpread,
                 args: vec![
                     target,
                     LoweredExpr::ObjectNew {

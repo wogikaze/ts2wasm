@@ -12,7 +12,6 @@ pub mod mir_dump;
 pub mod object_kernel;
 pub mod program;
 pub mod resolver;
-pub mod runtime_intrinsic;
 pub mod symbols;
 pub mod types;
 pub mod validate;
@@ -20,7 +19,7 @@ pub mod validate;
 // Re-exports for backward compatibility
 pub use program::lower_program;
 pub(crate) use program::*;
-pub use runtime_intrinsic::RuntimeIntrinsic;
+pub use ts2wasm_runtime_catalog::RuntimeFn;
 pub(crate) use symbols::FunctionSignature;
 pub(crate) use types::*;
 pub use types::{

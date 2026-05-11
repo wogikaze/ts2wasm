@@ -5,7 +5,7 @@ use crate::binding_pattern::{
 };
 use crate::builtin::{BuiltinId, BuiltinPropertyId, BuiltinResult};
 use crate::builtin_resolved::{ClassMethodKind, ResolvedExpr, ResolvedParam, ResolvedStmt};
-use crate::lowered::RuntimeIntrinsic;
+use crate::lowered::RuntimeFn;
 use crate::lowered::validate::validate_lowered;
 use ts2wasm_shared::{
     BinaryOp, DiagCode, Diagnostic, LogicalAssignOp, OBJECT_SPREAD_SENTINEL,
@@ -358,7 +358,7 @@ pub enum LoweredExpr {
         span: Span,
     },
     RuntimeCall {
-        intrinsic: RuntimeIntrinsic,
+        intrinsic: RuntimeFn,
         args: Vec<LoweredExpr>,
         span: Span,
     },

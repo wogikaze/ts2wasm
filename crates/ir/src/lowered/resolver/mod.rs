@@ -430,7 +430,7 @@ impl Resolver {
                     return Ok(LoweredStmt::Assign(
                         local_id,
                         LoweredExpr::RuntimeCall {
-                            intrinsic: RuntimeIntrinsic::ArrayPushGrow,
+                            intrinsic: RuntimeFn::ArrayPushGrow,
                             args: vec![
                                 LoweredExpr::Local(local_id, Span::generated("local")),
                                 self.lower_expr(&args[0])?,
@@ -701,14 +701,14 @@ impl Resolver {
                     let class_name = self.ctx.classes.local_classes.get(&local_id);
                     if class_name.is_some_and(|c| c == "Set") {
                         LoweredExpr::RuntimeCall {
-                            intrinsic: RuntimeIntrinsic::SetValuesArray,
+                            intrinsic: RuntimeFn::SetValuesArray,
                             args: vec![LoweredExpr::Local(local_id, Span::generated("local"))],
 
                             span: Span::generated("runtime_call"),
                         }
                     } else if class_name.is_some_and(|c| c == "Map") {
                         LoweredExpr::RuntimeCall {
-                            intrinsic: RuntimeIntrinsic::MapValuesArray,
+                            intrinsic: RuntimeFn::MapValuesArray,
                             args: vec![LoweredExpr::Local(local_id, Span::generated("local"))],
                             span: Span::generated("runtime_call"),
                         }
@@ -1122,12 +1122,12 @@ pub(crate) fn numeric_ascending_sort_arrow_callback(args: &[ResolvedExpr]) -> bo
         && matches!(right.as_ref(), ResolvedExpr::Ident(name) if name == right_param)
 }
 
-/// Wrapper that converts bigint_runtime_fn_name string output to RuntimeIntrinsic.
-fn bigint_runtime_fn_intrinsic(name: &str) -> Option<RuntimeIntrinsic> {
+/// Wrapper that converts bigint_runtime_fn_name string output to RuntimeFn.
+fn bigint_runtime_fn_intrinsic(name: &str) -> Option<RuntimeFn> {
     match crate::builtin_resolver::bigint_runtime_fn_name(name) {
-        Some("BigIntFromValue") => Some(RuntimeIntrinsic::BigIntFromValue),
-        Some("BigIntAsIntN") => Some(RuntimeIntrinsic::BigIntAsIntN),
-        Some("BigIntAsUintN") => Some(RuntimeIntrinsic::BigIntAsUintN),
+        Some("BigIntFromValue") => Some(RuntimeFn::BigIntFromValue),
+        Some("BigIntAsIntN") => Some(RuntimeFn::BigIntAsIntN),
+        Some("BigIntAsUintN") => Some(RuntimeFn::BigIntAsUintN),
         _ => None,
     }
 }

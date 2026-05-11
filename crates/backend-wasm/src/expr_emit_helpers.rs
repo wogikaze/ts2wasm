@@ -1,6 +1,6 @@
 use super::*;
 use ts2wasm_ir::LoweredStmt;
-use ts2wasm_ir::RuntimeIntrinsic;
+use ts2wasm_ir::RuntimeFn;
 
 pub(super) fn local_index(id: LocalId) -> usize {
     id.0
@@ -20,7 +20,7 @@ pub(super) fn is_private_brand_check_expr(expr: &LoweredExpr) -> bool {
     matches!(
         expr,
         LoweredExpr::RuntimeCall { intrinsic, args, .. }
-            if *intrinsic == RuntimeIntrinsic::PrivateBrandCheck && args.len() == 2
+            if *intrinsic == RuntimeFn::PrivateBrandCheck && args.len() == 2
     )
 }
 
@@ -220,14 +220,14 @@ pub(super) fn expr_uses_caller_backend_tmp(expr: &LoweredExpr) -> bool {
         }
         LoweredExpr::Call { args, .. } => args.iter().any(expr_uses_caller_backend_tmp),
         LoweredExpr::RuntimeCall { intrinsic, .. }
-            if *intrinsic == RuntimeIntrinsic::HeapClosureCall =>
+            if *intrinsic == RuntimeFn::HeapClosureCall =>
         {
             true
         }
         LoweredExpr::RuntimeCall { intrinsic, .. }
-            if *intrinsic == RuntimeIntrinsic::PrivateFieldGet
-                || *intrinsic == RuntimeIntrinsic::PrivateFieldSet
-                || *intrinsic == RuntimeIntrinsic::PrivateBrandCheck =>
+            if *intrinsic == RuntimeFn::PrivateFieldGet
+                || *intrinsic == RuntimeFn::PrivateFieldSet
+                || *intrinsic == RuntimeFn::PrivateBrandCheck =>
         {
             true
         }

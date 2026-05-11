@@ -55,7 +55,7 @@ pub(super) fn lower_html_wrapper_string_method(
     };
 
     let mut result = LoweredExpr::RuntimeCall {
-        intrinsic: RuntimeIntrinsic::Concat,
+        intrinsic: RuntimeFn::Concat,
         args: vec![
             object,
             LoweredExpr::String(close_tag.to_owned(), Span::generated("str")),
@@ -74,7 +74,7 @@ pub(super) fn lower_html_wrapper_string_method(
         // Spec requires escaping " as &quot; in attribute values (B.2.3.10, B.2.3.6, etc.)
         if needs_escaping {
             arg = LoweredExpr::RuntimeCall {
-                intrinsic: RuntimeIntrinsic::StringReplaceAll,
+                intrinsic: RuntimeFn::StringReplaceAll,
                 args: vec![
                     arg,
                     LoweredExpr::String("\"".to_owned(), Span::generated("str")),
@@ -85,15 +85,15 @@ pub(super) fn lower_html_wrapper_string_method(
             };
         }
         result = LoweredExpr::RuntimeCall {
-            intrinsic: RuntimeIntrinsic::Concat,
+            intrinsic: RuntimeFn::Concat,
             args: vec![
                 arg,
                 LoweredExpr::RuntimeCall {
-                    intrinsic: RuntimeIntrinsic::Concat,
+                    intrinsic: RuntimeFn::Concat,
                     args: vec![
                         LoweredExpr::String(open_suffix.to_owned(), Span::generated("str")),
                         LoweredExpr::RuntimeCall {
-                            intrinsic: RuntimeIntrinsic::Concat,
+                            intrinsic: RuntimeFn::Concat,
                             args: vec![
                                 LoweredExpr::String(">".to_owned(), Span::generated("str")),
                                 result,
@@ -110,7 +110,7 @@ pub(super) fn lower_html_wrapper_string_method(
     }
 
     Ok(LoweredExpr::RuntimeCall {
-        intrinsic: RuntimeIntrinsic::Concat,
+        intrinsic: RuntimeFn::Concat,
         args: vec![
             LoweredExpr::String(open_prefix.to_owned(), Span::generated("str")),
             result,

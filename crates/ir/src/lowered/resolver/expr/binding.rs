@@ -41,7 +41,7 @@ impl super::super::Resolver {
     ) -> Result<Vec<LoweredStmt>, Diagnostic> {
         let element_value = if binding.is_rest {
             LoweredExpr::RuntimeCall {
-                intrinsic: RuntimeIntrinsic::ArraySlice,
+                intrinsic: RuntimeFn::ArraySlice,
                 args: vec![
                     value.clone(),
                     LoweredExpr::Number(binding.index as i32, Span::generated("num")),

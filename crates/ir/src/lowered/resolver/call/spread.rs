@@ -39,7 +39,7 @@ impl<'a> super::super::Resolver {
                 (0..signature.explicit_params)
                     .map(|index| LoweredExpr::ArrayGet {
                         arr: Box::new(LoweredExpr::RuntimeCall {
-                            intrinsic: RuntimeIntrinsic::SetValuesArray,
+                            intrinsic: RuntimeFn::SetValuesArray,
                             args: vec![LoweredExpr::Local(local_id, Span::generated("local"))],
 
                             span: Span::generated("runtime_call"),
@@ -319,7 +319,7 @@ impl<'a> super::super::Resolver {
             });
         }
         Ok(LoweredExpr::RuntimeCall {
-            intrinsic: RuntimeIntrinsic::SetAdd,
+            intrinsic: RuntimeFn::SetAdd,
             args: vec![self.lower_expr(&args[0])?, self.lower_expr(&args[1])?],
 
             span: Span::generated("runtime_call"),
@@ -399,7 +399,7 @@ impl<'a> super::super::Resolver {
         stmts.push(LoweredStmt::Let(
             iterator,
             LoweredExpr::RuntimeCall {
-                intrinsic: RuntimeIntrinsic::HeapClosureCall,
+                intrinsic: RuntimeFn::HeapClosureCall,
                 args: vec![LoweredExpr::Local(iter_fn, Span::generated("local"))],
                 span,
             },
@@ -437,7 +437,7 @@ impl<'a> super::super::Resolver {
         body.push(LoweredStmt::Let(
             r,
             LoweredExpr::RuntimeCall {
-                intrinsic: RuntimeIntrinsic::HeapClosureCall,
+                intrinsic: RuntimeFn::HeapClosureCall,
                 args: vec![LoweredExpr::Local(next_fn, Span::generated("local"))],
                 span,
             },
@@ -469,7 +469,7 @@ impl<'a> super::super::Resolver {
         )];
         push_body.push(LoweredStmt::Expr(
             LoweredExpr::RuntimeCall {
-                intrinsic: RuntimeIntrinsic::ArrayPush,
+                intrinsic: RuntimeFn::ArrayPush,
                 args: vec![
                     LoweredExpr::Local(result_arr, Span::generated("local")),
                     LoweredExpr::Local(value, Span::generated("local")),
@@ -529,7 +529,7 @@ impl<'a> super::super::Resolver {
             LoweredStmt::Let(
                 iterator,
                 LoweredExpr::RuntimeCall {
-                    intrinsic: RuntimeIntrinsic::HeapClosureCall,
+                    intrinsic: RuntimeFn::HeapClosureCall,
                     args: vec![LoweredExpr::Local(iter_fn, Span::generated("local"))],
                     span,
                 },
@@ -559,7 +559,7 @@ impl<'a> super::super::Resolver {
         body.push(LoweredStmt::Let(
             r,
             LoweredExpr::RuntimeCall {
-                intrinsic: RuntimeIntrinsic::HeapClosureCall,
+                intrinsic: RuntimeFn::HeapClosureCall,
                 args: vec![LoweredExpr::Local(next_fn, Span::generated("local"))],
                 span,
             },

@@ -14,7 +14,7 @@
 //! WASM emission, replacing the current LoweredExpr for that role. Current
 //! LoweredExpr handles both HIR and MIR responsibilities.
 
-use crate::lowered::{FuncId, LocalId, ModuleInfo, RuntimeIntrinsic};
+use crate::lowered::{FuncId, LocalId, ModuleInfo, RuntimeFn};
 
 /// A mid-level IR expression representing a runtime ABI operation.
 ///
@@ -35,7 +35,7 @@ pub enum MirExpr {
 
     /// Call a runtime intrinsic function
     CallRuntime {
-        intrinsic: RuntimeIntrinsic,
+        intrinsic: RuntimeFn,
         args: Vec<MirExpr>,
     },
 

@@ -47,7 +47,7 @@ impl<'a> super::super::Resolver {
         if class_name == "Date" {
             if args.is_empty() {
                 return Ok(LoweredExpr::RuntimeCall {
-                    intrinsic: RuntimeIntrinsic::DateNewLive,
+                    intrinsic: RuntimeFn::DateNewLive,
                     args: vec![],
 
                     span: Span::generated("runtime_call"),
@@ -58,7 +58,7 @@ impl<'a> super::super::Resolver {
                     || matches!(args, [ResolvedExpr::Ident(name)] if name == "NaN"));
             if is_invalid_date {
                 return Ok(LoweredExpr::RuntimeCall {
-                    intrinsic: RuntimeIntrinsic::DateNew,
+                    intrinsic: RuntimeFn::DateNew,
                     args: vec![LoweredExpr::Number(0, Span::generated("num"))],
 
                     span: Span::generated("runtime_call"),
@@ -80,7 +80,7 @@ impl<'a> super::super::Resolver {
             let epoch_ms = &args[0];
             if is_date_now_expr(epoch_ms) {
                 return Ok(LoweredExpr::RuntimeCall {
-                    intrinsic: RuntimeIntrinsic::DateNew,
+                    intrinsic: RuntimeFn::DateNew,
                     args: vec![self.lower_expr(epoch_ms)?],
 
                     span: Span::generated("runtime_call"),
@@ -101,7 +101,7 @@ impl<'a> super::super::Resolver {
                 });
             }
             return Ok(LoweredExpr::RuntimeCall {
-                intrinsic: RuntimeIntrinsic::DateNew,
+                intrinsic: RuntimeFn::DateNew,
                 args: vec![self.lower_expr(epoch_ms)?],
 
                 span: Span::generated("runtime_call"),
@@ -159,10 +159,10 @@ impl<'a> super::super::Resolver {
             if args.is_empty() || class_name == "WeakMap" || class_name == "WeakSet" {
                 return Ok(LoweredExpr::RuntimeCall {
                     intrinsic: match class_name {
-                        "Map" => RuntimeIntrinsic::MapNew,
-                        "Set" => RuntimeIntrinsic::SetNew,
-                        "WeakMap" => RuntimeIntrinsic::WeakMapNew,
-                        "WeakSet" => RuntimeIntrinsic::WeakSetNew,
+                        "Map" => RuntimeFn::MapNew,
+                        "Set" => RuntimeFn::SetNew,
+                        "WeakMap" => RuntimeFn::WeakMapNew,
+                        "WeakSet" => RuntimeFn::WeakSetNew,
                         _ => unreachable!(),
                     },
                     args: Vec::new(),
@@ -172,7 +172,7 @@ impl<'a> super::super::Resolver {
             }
             if class_name == "Set" && args.len() == 1 && self.is_known_array_expr(&args[0]) {
                 return Ok(LoweredExpr::RuntimeCall {
-                    intrinsic: RuntimeIntrinsic::SetFromArray,
+                    intrinsic: RuntimeFn::SetFromArray,
                     args: vec![self.lower_expr(&args[0])?],
 
                     span: Span::generated("runtime_call"),
@@ -213,7 +213,7 @@ impl<'a> super::super::Resolver {
                 lowered_args.push(self.lower_expr(arg)?);
             }
             return Ok(LoweredExpr::RuntimeCall {
-                intrinsic: RuntimeIntrinsic::PromiseConstructor,
+                intrinsic: RuntimeFn::PromiseConstructor,
                 args: lowered_args,
 
                 span: Span::generated("runtime_call"),
@@ -237,7 +237,7 @@ impl<'a> super::super::Resolver {
                 lowered_args.push(self.lower_expr(arg)?);
             }
             return Ok(LoweredExpr::RuntimeCall {
-                intrinsic: RuntimeIntrinsic::TypedArrayFromArray,
+                intrinsic: RuntimeFn::TypedArrayFromArray,
                 args: lowered_args,
                 span: Span::generated("runtime_call"),
             });
@@ -248,7 +248,7 @@ impl<'a> super::super::Resolver {
                 lowered_args.push(self.lower_expr(arg)?);
             }
             return Ok(LoweredExpr::RuntimeCall {
-                intrinsic: RuntimeIntrinsic::ArrayBufferNew,
+                intrinsic: RuntimeFn::ArrayBufferNew,
                 args: lowered_args,
                 span: Span::generated("runtime_call"),
             });
@@ -268,7 +268,7 @@ impl<'a> super::super::Resolver {
                 lowered_args.push(self.lower_expr(arg)?);
             }
             return Ok(LoweredExpr::RuntimeCall {
-                intrinsic: RuntimeIntrinsic::DataViewNew,
+                intrinsic: RuntimeFn::DataViewNew,
                 args: lowered_args,
                 span: Span::generated("runtime_call"),
             });
@@ -276,7 +276,7 @@ impl<'a> super::super::Resolver {
         if let Some(constructor) = BuiltinErrorConstructor::from_name(class_name) {
             let message = match args.first() {
                 Some(message) => LoweredExpr::RuntimeCall {
-                    intrinsic: RuntimeIntrinsic::ErrorMessage,
+                    intrinsic: RuntimeFn::ErrorMessage,
                     args: vec![self.lower_expr(message)?],
 
                     span: Span::generated("runtime_call"),

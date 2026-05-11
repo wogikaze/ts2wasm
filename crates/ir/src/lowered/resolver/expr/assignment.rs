@@ -144,7 +144,7 @@ impl super::super::Resolver {
         }
         if is_set_prototype_property(object, key, "add") {
             return Ok(LoweredExpr::RuntimeCall {
-                intrinsic: RuntimeIntrinsic::SetPrototypeAddSet,
+                intrinsic: RuntimeFn::SetPrototypeAddSet,
                 args: vec![self.lower_set_prototype_add_assignment_value(value)?],
                 span: Span::generated("runtime_call"),
             });
@@ -153,7 +153,7 @@ impl super::super::Resolver {
             && is_set_prototype_property_expr(value, "add")
         {
             return Ok(LoweredExpr::RuntimeCall {
-                intrinsic: RuntimeIntrinsic::SetPrototypeAddGet,
+                intrinsic: RuntimeFn::SetPrototypeAddGet,
                 args: Vec::new(),
                 span: Span::generated("runtime_call"),
             });
@@ -272,7 +272,7 @@ impl super::super::Resolver {
                 })?;
                 let brand = self.private_brand_for_class(&class_name, Some(span))?;
                 LoweredExpr::RuntimeCall {
-                    intrinsic: RuntimeIntrinsic::PrivateBrandCheck,
+                    intrinsic: RuntimeFn::PrivateBrandCheck,
                     args: vec![
                         self.lower_expr(object)?,
                         LoweredExpr::Number(brand as i32, Span::generated("num")),
@@ -300,7 +300,7 @@ impl super::super::Resolver {
         }
         let (brand, slot) = self.private_field_brand_and_slot(object, key, span)?;
         Ok(LoweredExpr::RuntimeCall {
-            intrinsic: RuntimeIntrinsic::PrivateFieldSet,
+            intrinsic: RuntimeFn::PrivateFieldSet,
             args: vec![
                 self.lower_expr(object)?,
                 LoweredExpr::Number(brand as i32, Span::generated("num")),

@@ -1,4 +1,4 @@
-use super::runtime_intrinsic::RuntimeIntrinsic;
+use super::RuntimeFn;
 use super::types::{
     FuncId, FunctionCallKind, LocalId, LoweredArraySlot, LoweredExpr, LoweredProgram, LoweredStmt,
 };
@@ -457,7 +457,7 @@ fn validate_expr(
             for arg in args {
                 validate_expr(arg, local_count, num_funcs, program, errors, true);
             }
-            if *intrinsic == RuntimeIntrinsic::ArrayPushMany && args.is_empty() {
+            if *intrinsic == RuntimeFn::ArrayPushMany && args.is_empty() {
                 errors.push(Diagnostic {
                     code: DiagCode::InvariantViolation,
                     message: "ArrayPushMany must include an array receiver argument".to_owned(),
@@ -466,7 +466,7 @@ fn validate_expr(
                     phase: None,
                 });
             }
-            if *intrinsic == RuntimeIntrinsic::ArrayPushGrow && args.len() != 2 {
+            if *intrinsic == RuntimeFn::ArrayPushGrow && args.len() != 2 {
                 errors.push(Diagnostic {
                     code: DiagCode::InvariantViolation,
                     message: "ArrayPushGrow must include an array receiver and value".to_owned(),
@@ -475,7 +475,7 @@ fn validate_expr(
                     phase: None,
                 });
             }
-            if *intrinsic == RuntimeIntrinsic::HeapClosureCall && args.is_empty() {
+            if *intrinsic == RuntimeFn::HeapClosureCall && args.is_empty() {
                 errors.push(Diagnostic {
                     code: DiagCode::InvariantViolation,
                     message: "HeapClosureCall must include a closure receiver argument".to_owned(),
@@ -484,7 +484,7 @@ fn validate_expr(
                     phase: None,
                 });
             }
-            if *intrinsic == RuntimeIntrinsic::PrivateFieldGet
+            if *intrinsic == RuntimeFn::PrivateFieldGet
                 && !matches!(args.as_slice(), [_, LoweredExpr::Number(brand, _), LoweredExpr::Number(slot, _)] if *brand > 0 && *slot >= 0)
             {
                 errors.push(Diagnostic {
@@ -495,7 +495,7 @@ fn validate_expr(
 
                     phase: None,});
             }
-            if *intrinsic == RuntimeIntrinsic::PrivateFieldSet
+            if *intrinsic == RuntimeFn::PrivateFieldSet
                 && !matches!(args.as_slice(), [_, LoweredExpr::Number(brand, _), LoweredExpr::Number(slot, _), _] if *brand > 0 && *slot >= 0)
             {
                 errors.push(Diagnostic {
@@ -507,12 +507,54 @@ fn validate_expr(
 
                     phase: None,});
             }
-            if *intrinsic == RuntimeIntrinsic::PrivateBrandCheck
+            if *intrinsic == RuntimeFn::PrivateBrandCheck
                 && !matches!(args.as_slice(), [_, LoweredExpr::Number(brand, _)] if *brand > 0)
             {
                 errors.push(Diagnostic {
                     code: DiagCode::InvariantViolation,
                     message: "PrivateBrandCheck must include an object and positive private brand"
+                        .to_owned(),
+                    span: None,
+
+                    phase: None,
+                });
+            }
+            if *intrinsic == RuntimeFn::ObjectDefineProperty && args.len() != 3 {
+                errors.push(Diagnostic {
+                    code: DiagCode::InvariantViolation,
+                    message:
+                        "ObjectDefineProperty must include an object, key, and descriptor"
+                            .to_owned(),
+                    span: None,
+
+                    phase: None,
+                });
+            }
+            if *intrinsic == RuntimeFn::ObjectGetOwnPropertyDescriptor && args.len() != 2 {
+                errors.push(Diagnostic {
+                    code: DiagCode::InvariantViolation,
+                    message:
+                        "ObjectGetOwnPropertyDescriptor must include an object and key"
+                            .to_owned(),
+                    span: None,
+
+                    phase: None,
+                });
+            }
+            if *intrinsic == RuntimeFn::ObjectGetPrototypeOf && args.len() != 1 {
+                errors.push(Diagnostic {
+                    code: DiagCode::InvariantViolation,
+                    message: "ObjectGetPrototypeOf must include an object argument"
+                        .to_owned(),
+                    span: None,
+
+                    phase: None,
+                });
+            }
+            if *intrinsic == RuntimeFn::ObjectSetPrototypeOf && args.len() != 2 {
+                errors.push(Diagnostic {
+                    code: DiagCode::InvariantViolation,
+                    message: "ObjectSetPrototypeOf must include an object and prototype"
                         .to_owned(),
                     span: None,
 

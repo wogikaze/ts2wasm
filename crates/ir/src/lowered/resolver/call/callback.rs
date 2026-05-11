@@ -86,7 +86,7 @@ impl<'a> super::super::Resolver {
         stmts.push(LoweredStmt::Let(
             values,
             LoweredExpr::RuntimeCall {
-                intrinsic: RuntimeIntrinsic::SetValuesArray,
+                intrinsic: RuntimeFn::SetValuesArray,
                 args: vec![LoweredExpr::Local(receiver_local, Span::generated("local"))],
                 span: Span::generated("runtime_call"),
             },
@@ -254,7 +254,7 @@ impl<'a> super::super::Resolver {
         stmts.push(LoweredStmt::Let(
             entries,
             LoweredExpr::RuntimeCall {
-                intrinsic: RuntimeIntrinsic::MapEntriesArray,
+                intrinsic: RuntimeFn::MapEntriesArray,
                 args: vec![LoweredExpr::Local(receiver_local, Span::generated("local"))],
                 span: Span::generated("runtime_call"),
             },

@@ -72,7 +72,7 @@ impl<'a> super::super::Resolver {
                     .collect::<Result<Vec<_>, _>>()?,
             );
             return Ok(Some(LoweredExpr::RuntimeCall {
-                intrinsic: RuntimeIntrinsic::ArrayPushMany,
+                intrinsic: RuntimeFn::ArrayPushMany,
                 args: lowered_args,
 
                 span: Span::generated("runtime_call"),
@@ -162,7 +162,7 @@ impl<'a> super::super::Resolver {
                 })?;
                 let brand = self.private_brand_for_class(&class_name, Some(span))?;
                 LoweredExpr::RuntimeCall {
-                    intrinsic: RuntimeIntrinsic::PrivateBrandCheck,
+                    intrinsic: RuntimeFn::PrivateBrandCheck,
                     args: vec![
                         self.lower_expr(object)?,
                         LoweredExpr::Number(brand as i32, Span::generated("num")),
@@ -265,7 +265,7 @@ impl<'a> super::super::Resolver {
                 None => LoweredExpr::Undefined(Span::generated("undef")),
             });
             return Ok(Some(LoweredExpr::RuntimeCall {
-                intrinsic: RuntimeIntrinsic::JsonStringify,
+                intrinsic: RuntimeFn::JsonStringify,
                 args: lowered_args,
 
                 span: Span::generated("runtime_call"),
@@ -273,7 +273,7 @@ impl<'a> super::super::Resolver {
         }
         if is_date_now_live_time_call(object, method) {
             return Ok(Some(LoweredExpr::RuntimeCall {
-                intrinsic: RuntimeIntrinsic::DateNow,
+                intrinsic: RuntimeFn::DateNow,
                 args: vec![],
 
                 span: Span::generated("runtime_call"),
@@ -296,7 +296,7 @@ impl<'a> super::super::Resolver {
                 .map(|e| self.lower_expr(e))
                 .collect::<Result<Vec<_>, _>>()?;
             return Ok(Some(LoweredExpr::RuntimeCall {
-                intrinsic: RuntimeIntrinsic::RegExpTest,
+                intrinsic: RuntimeFn::RegExpTest,
                 args: lowered_args,
 
                 span: Span::generated("runtime_call"),
@@ -308,7 +308,7 @@ impl<'a> super::super::Resolver {
                 .map(|e| self.lower_expr(e))
                 .collect::<Result<Vec<_>, _>>()?;
             return Ok(Some(LoweredExpr::RuntimeCall {
-                intrinsic: RuntimeIntrinsic::RegExpMatch,
+                intrinsic: RuntimeFn::RegExpMatch,
                 args: lowered_args,
 
                 span: Span::generated("runtime_call"),
@@ -321,9 +321,9 @@ impl<'a> super::super::Resolver {
                 .collect::<Result<Vec<_>, _>>()?;
             return Ok(Some(LoweredExpr::RuntimeCall {
                 intrinsic: if method == "search" {
-                    RuntimeIntrinsic::RegExpSearch
+                    RuntimeFn::RegExpSearch
                 } else {
-                    RuntimeIntrinsic::RegExpMatch
+                    RuntimeFn::RegExpMatch
                 },
                 args: lowered_args,
 
@@ -344,7 +344,7 @@ impl<'a> super::super::Resolver {
                 });
             }
             return Ok(Some(LoweredExpr::RuntimeCall {
-                intrinsic: RuntimeIntrinsic::DateGetTime,
+                intrinsic: RuntimeFn::DateGetTime,
                 args: vec![self.lower_expr(object)?],
 
                 span: Span::generated("runtime_call"),
@@ -364,7 +364,7 @@ impl<'a> super::super::Resolver {
                 });
             }
             return Ok(Some(LoweredExpr::RuntimeCall {
-                intrinsic: RuntimeIntrinsic::DateGetTimezoneOffset,
+                intrinsic: RuntimeFn::DateGetTimezoneOffset,
                 args: vec![self.lower_expr(object)?],
 
                 span: Span::generated("runtime_call"),
@@ -407,7 +407,7 @@ impl<'a> super::super::Resolver {
                 _ => unreachable!(),
             };
             return Ok(Some(LoweredExpr::RuntimeCall {
-                intrinsic: RuntimeIntrinsic::DateGetLocalTimeField,
+                intrinsic: RuntimeFn::DateGetLocalTimeField,
                 args: vec![
                     self.lower_expr(object)?,
                     LoweredExpr::Number(field_index, Span::generated("num")),
@@ -474,7 +474,7 @@ impl<'a> super::super::Resolver {
             }
             return Ok(Some(LoweredExpr::Binary {
                 left: Box::new(LoweredExpr::RuntimeCall {
-                    intrinsic: RuntimeIntrinsic::DateGetLocalTimeField,
+                    intrinsic: RuntimeFn::DateGetLocalTimeField,
                     args: vec![
                         self.lower_expr(object)?,
                         LoweredExpr::Number(0, Span::generated("num")),
@@ -507,7 +507,7 @@ impl<'a> super::super::Resolver {
                 });
             }
             return Ok(Some(LoweredExpr::RuntimeCall {
-                intrinsic: RuntimeIntrinsic::DateToString,
+                intrinsic: RuntimeFn::DateToString,
                 args: vec![self.lower_expr(object)?],
 
                 span: Span::generated("runtime_call"),
@@ -538,15 +538,15 @@ impl<'a> super::super::Resolver {
                     phase: None,
                 });
             }
-            let intrinsic: RuntimeIntrinsic = match method {
-                "getUTCMilliseconds" => RuntimeIntrinsic::DateGetUtcMilliseconds,
-                "getUTCSeconds" => RuntimeIntrinsic::DateGetUtcSeconds,
-                "getUTCMinutes" => RuntimeIntrinsic::DateGetUtcMinutes,
-                "getUTCHours" => RuntimeIntrinsic::DateGetUtcHours,
-                "getUTCDay" => RuntimeIntrinsic::DateGetUtcDay,
-                "getUTCDate" => RuntimeIntrinsic::DateGetUtcDate,
-                "getUTCMonth" => RuntimeIntrinsic::DateGetUtcMonth,
-                "getUTCFullYear" => RuntimeIntrinsic::DateGetUtcFullYear,
+            let intrinsic: RuntimeFn = match method {
+                "getUTCMilliseconds" => RuntimeFn::DateGetUtcMilliseconds,
+                "getUTCSeconds" => RuntimeFn::DateGetUtcSeconds,
+                "getUTCMinutes" => RuntimeFn::DateGetUtcMinutes,
+                "getUTCHours" => RuntimeFn::DateGetUtcHours,
+                "getUTCDay" => RuntimeFn::DateGetUtcDay,
+                "getUTCDate" => RuntimeFn::DateGetUtcDate,
+                "getUTCMonth" => RuntimeFn::DateGetUtcMonth,
+                "getUTCFullYear" => RuntimeFn::DateGetUtcFullYear,
                 _ => unreachable!(),
             };
             return Ok(Some(LoweredExpr::RuntimeCall {
@@ -570,7 +570,7 @@ impl<'a> super::super::Resolver {
                 });
             }
             return Ok(Some(LoweredExpr::RuntimeCall {
-                intrinsic: RuntimeIntrinsic::DateToISOString,
+                intrinsic: RuntimeFn::DateToISOString,
                 args: vec![self.lower_expr(object)?],
 
                 span: Span::generated("runtime_call"),
@@ -640,9 +640,9 @@ impl<'a> super::super::Resolver {
             }
             return Ok(Some(LoweredExpr::RuntimeCall {
                 intrinsic: if method == "indexOf" {
-                    RuntimeIntrinsic::ArrayIndexOf
+                    RuntimeFn::ArrayIndexOf
                 } else {
-                    RuntimeIntrinsic::ArrayIncludes
+                    RuntimeFn::ArrayIncludes
                 },
                 args: lowered_args,
 
@@ -657,7 +657,7 @@ impl<'a> super::super::Resolver {
                     .collect::<Result<Vec<_>, _>>()?,
             );
             return Ok(Some(LoweredExpr::RuntimeCall {
-                intrinsic: RuntimeIntrinsic::ArrayConcat,
+                intrinsic: RuntimeFn::ArrayConcat,
                 args: lowered_args,
 
                 span: Span::generated("runtime_call"),
@@ -675,13 +675,13 @@ impl<'a> super::super::Resolver {
         {
             return Ok(Some(LoweredExpr::RuntimeCall {
                 intrinsic: match method {
-                    "find" => RuntimeIntrinsic::ArrayFind,
-                    "findIndex" => RuntimeIntrinsic::ArrayFindIndex,
-                    "findLast" => RuntimeIntrinsic::ArrayFindLast,
-                    "findLastIndex" => RuntimeIntrinsic::ArrayFindLastIndex,
-                    "filter" => RuntimeIntrinsic::ArrayFilter,
-                    "every" => RuntimeIntrinsic::ArrayEvery,
-                    "some" => RuntimeIntrinsic::ArraySome,
+                    "find" => RuntimeFn::ArrayFind,
+                    "findIndex" => RuntimeFn::ArrayFindIndex,
+                    "findLast" => RuntimeFn::ArrayFindLast,
+                    "findLastIndex" => RuntimeFn::ArrayFindLastIndex,
+                    "filter" => RuntimeFn::ArrayFilter,
+                    "every" => RuntimeFn::ArrayEvery,
+                    "some" => RuntimeFn::ArraySome,
                     _ => unreachable!(),
                 },
                 args: vec![self.lower_expr(object)?],
@@ -690,8 +690,8 @@ impl<'a> super::super::Resolver {
             }));
         }
         if let Some(intrinsic) = resolve_method_to_runtime_fn(object, method) {
-            if (intrinsic == RuntimeIntrinsic::ArrayPush
-                || intrinsic == RuntimeIntrinsic::ArrayPushGrow)
+            if (intrinsic == RuntimeFn::ArrayPush
+                || intrinsic == RuntimeFn::ArrayPushGrow)
                 && args.len() != 1
             {
                 if !matches!(object, ResolvedExpr::Ident(_)) {
@@ -710,13 +710,13 @@ impl<'a> super::super::Resolver {
                         .collect::<Result<Vec<_>, _>>()?,
                 );
                 return Ok(Some(LoweredExpr::RuntimeCall {
-                    intrinsic: RuntimeIntrinsic::ArrayPushMany,
+                    intrinsic: RuntimeFn::ArrayPushMany,
                     args: lowered_args,
 
                     span: Span::generated("runtime_call"),
                 }));
             }
-            if (intrinsic == RuntimeIntrinsic::MathMax || intrinsic == RuntimeIntrinsic::MathMin)
+            if (intrinsic == RuntimeFn::MathMax || intrinsic == RuntimeFn::MathMin)
                 && args.len() > 2
             {
                 let mut lowered_args = Vec::new();
@@ -745,11 +745,11 @@ impl<'a> super::super::Resolver {
                 return Ok(Some(result));
             }
             // Handle zero-argument case for Math.max/min
-            if (intrinsic == RuntimeIntrinsic::MathMax || intrinsic == RuntimeIntrinsic::MathMin)
+            if (intrinsic == RuntimeFn::MathMax || intrinsic == RuntimeFn::MathMin)
                 && args.is_empty()
             {
                 use ts2wasm_runtime_abi::ValueTag;
-                let infinity_value = if intrinsic == RuntimeIntrinsic::MathMax {
+                let infinity_value = if intrinsic == RuntimeFn::MathMax {
                     ValueTag::NUMBER_PAYLOAD_MIN
                 } else {
                     ValueTag::NUMBER_PAYLOAD_MAX
@@ -842,7 +842,7 @@ impl<'a> super::super::Resolver {
             && self.is_known_array_expr(object)
         {
             return Ok(Some(LoweredExpr::RuntimeCall {
-                intrinsic: RuntimeIntrinsic::ArrayMapValueToString,
+                intrinsic: RuntimeFn::ArrayMapValueToString,
                 args: vec![self.lower_expr(object)?],
 
                 span: Span::generated("runtime_call"),
@@ -851,7 +851,7 @@ impl<'a> super::super::Resolver {
 
         if method == "map" && unary_plus_arrow_callback(args) && self.is_known_array_expr(object) {
             return Ok(Some(LoweredExpr::RuntimeCall {
-                intrinsic: RuntimeIntrinsic::ArrayMapUnaryPlus,
+                intrinsic: RuntimeFn::ArrayMapUnaryPlus,
                 args: vec![self.lower_expr(object)?],
 
                 span: Span::generated("runtime_call"),
@@ -874,7 +874,7 @@ impl<'a> super::super::Resolver {
             && let Some(separator) = string_split_arrow_separator(args)
         {
             return Ok(Some(LoweredExpr::RuntimeCall {
-                intrinsic: RuntimeIntrinsic::ArrayMapStringSplit,
+                intrinsic: RuntimeFn::ArrayMapStringSplit,
                 args: vec![self.lower_expr(object)?, self.lower_expr(separator)?],
 
                 span: Span::generated("runtime_call"),
@@ -884,7 +884,7 @@ impl<'a> super::super::Resolver {
         if method == "sort" && self.is_known_array_expr(object) {
             if numeric_ascending_sort_arrow_callback(args) {
                 return Ok(Some(LoweredExpr::RuntimeCall {
-                    intrinsic: RuntimeIntrinsic::ArraySortNumeric,
+                    intrinsic: RuntimeFn::ArraySortNumeric,
                     args: vec![self.lower_expr(object)?],
 
                     span: Span::generated("runtime_call"),

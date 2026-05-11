@@ -99,7 +99,7 @@ impl<'a> super::super::Resolver {
             let mut lowered_args = vec![receiver];
             lowered_args.extend(self.lower_call_args(args)?);
             return Ok(LoweredExpr::RuntimeCall {
-                intrinsic: RuntimeIntrinsic::HeapClosureCall,
+                intrinsic: RuntimeFn::HeapClosureCall,
                 args: lowered_args,
 
                 span: Span::generated("runtime_call"),
@@ -178,7 +178,7 @@ impl<'a> super::super::Resolver {
             && self.resolved_expr_is_bigint(arg)
         {
             return Ok(LoweredExpr::RuntimeCall {
-                intrinsic: RuntimeIntrinsic::BigIntToString,
+                intrinsic: RuntimeFn::BigIntToString,
                 args: vec![self.lower_expr(arg)?],
 
                 span: Span::generated("runtime_call"),
@@ -189,7 +189,7 @@ impl<'a> super::super::Resolver {
             && let [ResolvedExpr::BigIntLiteral { .. }] = args
         {
             return Ok(LoweredExpr::RuntimeCall {
-                intrinsic: RuntimeIntrinsic::BigIntToBoolean,
+                intrinsic: RuntimeFn::BigIntToBoolean,
                 args: vec![self.lower_expr(&args[0])?],
 
                 span: Span::generated("runtime_call"),
@@ -203,7 +203,7 @@ impl<'a> super::super::Resolver {
                 None => LoweredExpr::Undefined(Span::generated("undef")),
             };
             return Ok(LoweredExpr::RuntimeCall {
-                intrinsic: RuntimeIntrinsic::SymbolNew,
+                intrinsic: RuntimeFn::SymbolNew,
                 args: vec![arg],
                 span: Span::generated("runtime_call"),
             });
@@ -262,7 +262,7 @@ impl<'a> super::super::Resolver {
                     vec![LoweredExpr::Local(closure_local, Span::generated("local"))];
                 lowered_args.extend(self.lower_call_args(args)?);
                 return Ok(LoweredExpr::RuntimeCall {
-                    intrinsic: RuntimeIntrinsic::HeapClosureCall,
+                    intrinsic: RuntimeFn::HeapClosureCall,
                     args: lowered_args,
 
                     span: Span::generated("runtime_call"),

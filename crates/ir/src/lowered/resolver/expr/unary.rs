@@ -23,7 +23,7 @@ impl super::super::Resolver {
             }
             if self.resolved_expr_is_bigint(expr) {
                 return Ok(LoweredExpr::RuntimeCall {
-                    intrinsic: RuntimeIntrinsic::BigIntUnaryMinus,
+                    intrinsic: RuntimeFn::BigIntUnaryMinus,
                     args: vec![self.lower_expr(expr)?],
                     span: Span::generated("runtime_call"),
                 });
@@ -31,7 +31,7 @@ impl super::super::Resolver {
         }
         if *op == UnaryOp::BitwiseNot && self.resolved_expr_is_bigint(expr) {
             return Ok(LoweredExpr::RuntimeCall {
-                intrinsic: RuntimeIntrinsic::BigIntBitwiseNot,
+                intrinsic: RuntimeFn::BigIntBitwiseNot,
                 args: vec![self.lower_expr(expr)?],
                 span: Span::generated("runtime_call"),
             });

@@ -6,7 +6,6 @@ use super::emitter::LocalFrame;
 use super::emitter::WatEmitter;
 use expr_emit_helpers::*;
 use std::sync::atomic::{AtomicUsize, Ordering};
-use ts2wasm_ir::RuntimeIntrinsic;
 use ts2wasm_ir::lowered::{
     ClosureRepresentation, FunctionCallKind, InferredType, LocalId, LoweredArraySlot,
     LoweredBinaryOp, LoweredExpr, LoweredLogicalAssignOp, LoweredUnaryOp,
@@ -1931,33 +1930,33 @@ impl WatEmitter<'_> {
             writer.unreachable(indent);
             return;
         };
-        if *intrinsic == RuntimeIntrinsic::ArrayPushMany {
+        if *intrinsic == RuntimeFn::ArrayPushMany {
             self.emit_array_push_many_call(writer, args, indent, frame);
             return;
         }
-        if *intrinsic == RuntimeIntrinsic::ArrayPushGrow {
+        if *intrinsic == RuntimeFn::ArrayPushGrow {
             self.emit_array_push_grow_call(writer, args, indent, frame);
             return;
         }
-        if *intrinsic == RuntimeIntrinsic::HeapClosureCall {
+        if *intrinsic == RuntimeFn::HeapClosureCall {
             self.emit_heap_closure_dispatch(writer, args, indent, frame);
             return;
         }
-        if *intrinsic == RuntimeIntrinsic::PrivateFieldGet {
+        if *intrinsic == RuntimeFn::PrivateFieldGet {
             self.emit_private_field_get(writer, args, indent, frame);
             return;
         }
-        if *intrinsic == RuntimeIntrinsic::PrivateFieldSet {
+        if *intrinsic == RuntimeFn::PrivateFieldSet {
             self.emit_private_field_set(writer, args, indent, frame);
             return;
         }
-        if *intrinsic == RuntimeIntrinsic::PrivateBrandCheck {
+        if *intrinsic == RuntimeFn::PrivateBrandCheck {
             self.emit_private_brand_check(writer, args, indent, frame);
             return;
         }
-        if (*intrinsic == RuntimeIntrinsic::StringIncludes
-            || *intrinsic == RuntimeIntrinsic::StringStartsWith
-            || *intrinsic == RuntimeIntrinsic::StringEndsWith)
+        if (*intrinsic == RuntimeFn::StringIncludes
+            || *intrinsic == RuntimeFn::StringStartsWith
+            || *intrinsic == RuntimeFn::StringEndsWith)
             && args.len() == 2
         {
             // No position specified, default to 0 (undefined → start from beginning)
@@ -1965,7 +1964,7 @@ impl WatEmitter<'_> {
                 self.emit_expr(writer, arg, indent, frame);
             }
             writer.i32_const(indent, 0);
-        } else if *intrinsic == RuntimeIntrinsic::StringSubstr && args.len() == 2 {
+        } else if *intrinsic == RuntimeFn::StringSubstr && args.len() == 2 {
             // No length specified: pad with undefined (0) → means "go to end"
             for arg in args {
                 self.emit_expr(writer, arg, indent, frame);

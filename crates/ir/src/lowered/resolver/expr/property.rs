@@ -69,7 +69,7 @@ impl super::super::Resolver {
         }
         if is_set_prototype_property(object, key, "add") {
             return Ok(LoweredExpr::RuntimeCall {
-                intrinsic: RuntimeIntrinsic::SetPrototypeAddGet,
+                intrinsic: RuntimeFn::SetPrototypeAddGet,
                 args: Vec::new(),
                 span: Span::generated("runtime_call"),
             });
@@ -235,12 +235,12 @@ impl super::super::Resolver {
         let class_name = self.ctx.classes.local_classes.get(&obj_local);
         match class_name.map(String::as_str) {
             Some("Set") => Ok(Some(LoweredExpr::RuntimeCall {
-                intrinsic: RuntimeIntrinsic::SetSize,
+                intrinsic: RuntimeFn::SetSize,
                 args: vec![LoweredExpr::Local(obj_local, Span::generated("local"))],
                 span: Span::generated("runtime_call"),
             })),
             Some("Map") => Ok(Some(LoweredExpr::RuntimeCall {
-                intrinsic: RuntimeIntrinsic::MapSize,
+                intrinsic: RuntimeFn::MapSize,
                 args: vec![LoweredExpr::Local(obj_local, Span::generated("local"))],
                 span: Span::generated("runtime_call"),
             })),
@@ -322,7 +322,7 @@ impl super::super::Resolver {
                 })?;
                 let brand = self.private_brand_for_class(&class_name, Some(span))?;
                 LoweredExpr::RuntimeCall {
-                    intrinsic: RuntimeIntrinsic::PrivateBrandCheck,
+                    intrinsic: RuntimeFn::PrivateBrandCheck,
                     args: vec![
                         self.lower_expr(object)?,
                         LoweredExpr::Number(brand as i32, Span::generated("num")),
@@ -350,7 +350,7 @@ impl super::super::Resolver {
         }
         let (brand, slot) = self.private_field_brand_and_slot(object, key, span)?;
         Ok(LoweredExpr::RuntimeCall {
-            intrinsic: RuntimeIntrinsic::PrivateFieldGet,
+            intrinsic: RuntimeFn::PrivateFieldGet,
             args: vec![
                 self.lower_expr(object)?,
                 LoweredExpr::Number(brand as i32, Span::generated("num")),

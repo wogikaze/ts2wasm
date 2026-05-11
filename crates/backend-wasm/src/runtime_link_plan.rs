@@ -1,6 +1,5 @@
 use std::collections::BTreeSet;
 
-use ts2wasm_ir::lowered::RuntimeIntrinsic;
 use ts2wasm_ir::lowered::{
     ClosureRepresentation, FunctionCallKind, LoweredBinaryOp, LoweredExpr, LoweredLogicalAssignOp,
     LoweredProgram, LoweredStmt, LoweredUnaryOp,
@@ -509,17 +508,17 @@ fn collect_required_runtime_expr(plan: &mut RuntimeLinkPlan, expr: &LoweredExpr)
         LoweredExpr::RuntimeCall {
             intrinsic, args, ..
         } => {
-            if *intrinsic == RuntimeIntrinsic::ArrayPushMany {
+            if *intrinsic == RuntimeFn::ArrayPushMany {
                 plan.add_required_runtime(RuntimeFn::ArrayPush);
                 plan.add_required_runtime(RuntimeFn::ArrayPushGrow);
                 plan.add_required_runtime(RuntimeFn::GetLength);
             }
-            if *intrinsic == RuntimeIntrinsic::ArrayPushGrow {
+            if *intrinsic == RuntimeFn::ArrayPushGrow {
                 plan.add_required_runtime(RuntimeFn::ArrayPushGrow);
             }
-            if *intrinsic == RuntimeIntrinsic::PrivateFieldGet
-                || *intrinsic == RuntimeIntrinsic::PrivateFieldSet
-                || *intrinsic == RuntimeIntrinsic::PrivateBrandCheck
+            if *intrinsic == RuntimeFn::PrivateFieldGet
+                || *intrinsic == RuntimeFn::PrivateFieldSet
+                || *intrinsic == RuntimeFn::PrivateBrandCheck
             {
                 plan.add_required_runtime(RuntimeFn::PrivateBrandTypeError);
             }
@@ -558,7 +557,7 @@ mod tests {
     use ts2wasm_ir::builtin::BuiltinId;
     use ts2wasm_ir::lowered::{
         FuncId, FunctionCallKind, LoweredBinaryOp, LoweredExpr, LoweredProgram, LoweredStmt,
-        ModuleInfo, RuntimeIntrinsic,
+        ModuleInfo,
     };
     use ts2wasm_shared::Span;
 
@@ -635,7 +634,7 @@ mod tests {
             top_level_statements: vec![
                 LoweredStmt::Expr(
                     LoweredExpr::RuntimeCall {
-                        intrinsic: RuntimeIntrinsic::BigIntAdd,
+                        intrinsic: RuntimeFn::BigIntAdd,
                         args: vec![
                             LoweredExpr::Local(
                                 ts2wasm_ir::lowered::LocalId(0),
@@ -652,7 +651,7 @@ mod tests {
                 ),
                 LoweredStmt::Expr(
                     LoweredExpr::RuntimeCall {
-                        intrinsic: RuntimeIntrinsic::BigIntUnaryMinus,
+                        intrinsic: RuntimeFn::BigIntUnaryMinus,
                         args: vec![LoweredExpr::Local(
                             ts2wasm_ir::lowered::LocalId(0),
                             Span::generated("test"),
@@ -663,7 +662,7 @@ mod tests {
                 ),
                 LoweredStmt::Expr(
                     LoweredExpr::RuntimeCall {
-                        intrinsic: RuntimeIntrinsic::BigIntMul,
+                        intrinsic: RuntimeFn::BigIntMul,
                         args: vec![
                             LoweredExpr::Local(
                                 ts2wasm_ir::lowered::LocalId(0),
@@ -680,7 +679,7 @@ mod tests {
                 ),
                 LoweredStmt::Expr(
                     LoweredExpr::RuntimeCall {
-                        intrinsic: RuntimeIntrinsic::BigIntPow,
+                        intrinsic: RuntimeFn::BigIntPow,
                         args: vec![
                             LoweredExpr::Local(
                                 ts2wasm_ir::lowered::LocalId(0),
@@ -697,7 +696,7 @@ mod tests {
                 ),
                 LoweredStmt::Expr(
                     LoweredExpr::RuntimeCall {
-                        intrinsic: RuntimeIntrinsic::BigIntDiv,
+                        intrinsic: RuntimeFn::BigIntDiv,
                         args: vec![
                             LoweredExpr::Local(
                                 ts2wasm_ir::lowered::LocalId(0),
@@ -714,7 +713,7 @@ mod tests {
                 ),
                 LoweredStmt::Expr(
                     LoweredExpr::RuntimeCall {
-                        intrinsic: RuntimeIntrinsic::BigIntRem,
+                        intrinsic: RuntimeFn::BigIntRem,
                         args: vec![
                             LoweredExpr::Local(
                                 ts2wasm_ir::lowered::LocalId(0),
@@ -731,7 +730,7 @@ mod tests {
                 ),
                 LoweredStmt::Expr(
                     LoweredExpr::RuntimeCall {
-                        intrinsic: RuntimeIntrinsic::BigIntMixedArithmeticTypeError,
+                        intrinsic: RuntimeFn::BigIntMixedArithmeticTypeError,
                         args: vec![
                             LoweredExpr::Local(
                                 ts2wasm_ir::lowered::LocalId(0),
@@ -745,7 +744,7 @@ mod tests {
                 ),
                 LoweredStmt::Expr(
                     LoweredExpr::RuntimeCall {
-                        intrinsic: RuntimeIntrinsic::BigIntBitwiseNot,
+                        intrinsic: RuntimeFn::BigIntBitwiseNot,
                         args: vec![LoweredExpr::Local(
                             ts2wasm_ir::lowered::LocalId(0),
                             Span::generated("test"),
@@ -756,7 +755,7 @@ mod tests {
                 ),
                 LoweredStmt::Expr(
                     LoweredExpr::RuntimeCall {
-                        intrinsic: RuntimeIntrinsic::BigIntBitwiseAnd,
+                        intrinsic: RuntimeFn::BigIntBitwiseAnd,
                         args: vec![
                             LoweredExpr::Local(
                                 ts2wasm_ir::lowered::LocalId(0),
@@ -773,7 +772,7 @@ mod tests {
                 ),
                 LoweredStmt::Expr(
                     LoweredExpr::RuntimeCall {
-                        intrinsic: RuntimeIntrinsic::BigIntBitwiseOr,
+                        intrinsic: RuntimeFn::BigIntBitwiseOr,
                         args: vec![
                             LoweredExpr::Local(
                                 ts2wasm_ir::lowered::LocalId(0),
@@ -790,7 +789,7 @@ mod tests {
                 ),
                 LoweredStmt::Expr(
                     LoweredExpr::RuntimeCall {
-                        intrinsic: RuntimeIntrinsic::BigIntBitwiseXor,
+                        intrinsic: RuntimeFn::BigIntBitwiseXor,
                         args: vec![
                             LoweredExpr::Local(
                                 ts2wasm_ir::lowered::LocalId(0),
@@ -807,7 +806,7 @@ mod tests {
                 ),
                 LoweredStmt::Expr(
                     LoweredExpr::RuntimeCall {
-                        intrinsic: RuntimeIntrinsic::BigIntFromValue,
+                        intrinsic: RuntimeFn::BigIntFromValue,
                         args: vec![LoweredExpr::Local(
                             ts2wasm_ir::lowered::LocalId(0),
                             Span::generated("test"),
@@ -818,7 +817,7 @@ mod tests {
                 ),
                 LoweredStmt::Expr(
                     LoweredExpr::RuntimeCall {
-                        intrinsic: RuntimeIntrinsic::BigIntAsIntN,
+                        intrinsic: RuntimeFn::BigIntAsIntN,
                         args: vec![
                             LoweredExpr::Number(8, Span::generated("test")),
                             LoweredExpr::Local(
@@ -832,7 +831,7 @@ mod tests {
                 ),
                 LoweredStmt::Expr(
                     LoweredExpr::RuntimeCall {
-                        intrinsic: RuntimeIntrinsic::BigIntAsUintN,
+                        intrinsic: RuntimeFn::BigIntAsUintN,
                         args: vec![
                             LoweredExpr::Number(8, Span::generated("test")),
                             LoweredExpr::Local(
@@ -983,7 +982,7 @@ mod tests {
         let program = LoweredProgram {
             top_level_statements: vec![LoweredStmt::Expr(
                 LoweredExpr::RuntimeCall {
-                    intrinsic: RuntimeIntrinsic::BigIntToString,
+                    intrinsic: RuntimeFn::BigIntToString,
                     args: vec![LoweredExpr::BigIntLiteral {
                         decimal: "10".to_owned(),
                         sign: 1,

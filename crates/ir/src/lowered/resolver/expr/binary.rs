@@ -53,7 +53,7 @@ impl super::super::Resolver {
             }
         };
         Ok(LoweredExpr::RuntimeCall {
-            intrinsic: RuntimeIntrinsic::InstanceOf,
+            intrinsic: RuntimeFn::InstanceOf,
             args: vec![self.lower_expr(left)?, prototype],
             span: Span::generated("runtime_call"),
         })
@@ -66,7 +66,7 @@ impl super::super::Resolver {
     ) -> Result<LoweredExpr, Diagnostic> {
         match left {
             ResolvedExpr::Number(index) => Ok(LoweredExpr::RuntimeCall {
-                intrinsic: RuntimeIntrinsic::ArrayIndexPresent,
+                intrinsic: RuntimeFn::ArrayIndexPresent,
                 args: vec![
                     self.lower_expr(right)?,
                     LoweredExpr::Number(*index, Span::generated("num")),
@@ -97,8 +97,8 @@ impl super::super::Resolver {
             && self.resolved_expr_is_bigint_div_rem_operand(right)
         {
             let intrinsic = match op {
-                BinaryOp::Divide => RuntimeIntrinsic::BigIntDiv,
-                BinaryOp::Modulo => RuntimeIntrinsic::BigIntRem,
+                BinaryOp::Divide => RuntimeFn::BigIntDiv,
+                BinaryOp::Modulo => RuntimeFn::BigIntRem,
                 _ => unreachable!("checked above"),
             };
             return Ok(Some(LoweredExpr::RuntimeCall {
@@ -133,11 +133,11 @@ impl super::super::Resolver {
             && self.resolved_expr_is_bigint(right)
         {
             let intrinsic = match op {
-                BinaryOp::Add => RuntimeIntrinsic::BigIntAdd,
-                BinaryOp::Subtract => RuntimeIntrinsic::BigIntSub,
-                BinaryOp::Multiply => RuntimeIntrinsic::BigIntMul,
-                BinaryOp::Divide => RuntimeIntrinsic::BigIntDiv,
-                BinaryOp::Modulo => RuntimeIntrinsic::BigIntRem,
+                BinaryOp::Add => RuntimeFn::BigIntAdd,
+                BinaryOp::Subtract => RuntimeFn::BigIntSub,
+                BinaryOp::Multiply => RuntimeFn::BigIntMul,
+                BinaryOp::Divide => RuntimeFn::BigIntDiv,
+                BinaryOp::Modulo => RuntimeFn::BigIntRem,
                 _ => unreachable!("checked above"),
             };
             return Ok(Some(LoweredExpr::RuntimeCall {
@@ -151,7 +151,7 @@ impl super::super::Resolver {
             && self.resolved_expr_is_bigint(right)
         {
             return Ok(Some(LoweredExpr::RuntimeCall {
-                intrinsic: RuntimeIntrinsic::BigIntPow,
+                intrinsic: RuntimeFn::BigIntPow,
                 args: vec![self.lower_expr(left)?, self.lower_expr(right)?],
                 span: Span::generated("runtime_call"),
             }));
@@ -175,7 +175,7 @@ impl super::super::Resolver {
                 }));
             } else {
                 return Ok(Some(LoweredExpr::RuntimeCall {
-                    intrinsic: RuntimeIntrinsic::BigIntMixedArithmeticTypeError,
+                    intrinsic: RuntimeFn::BigIntMixedArithmeticTypeError,
                     args: vec![self.lower_expr(left)?, self.lower_expr(right)?],
                     span: Span::generated("runtime_call"),
                 }));
@@ -188,9 +188,9 @@ impl super::super::Resolver {
             && self.resolved_expr_is_bigint(right)
         {
             let intrinsic = match op {
-                BinaryOp::BitwiseAnd => RuntimeIntrinsic::BigIntBitwiseAnd,
-                BinaryOp::BitwiseOr => RuntimeIntrinsic::BigIntBitwiseOr,
-                BinaryOp::BitwiseXor => RuntimeIntrinsic::BigIntBitwiseXor,
+                BinaryOp::BitwiseAnd => RuntimeFn::BigIntBitwiseAnd,
+                BinaryOp::BitwiseOr => RuntimeFn::BigIntBitwiseOr,
+                BinaryOp::BitwiseXor => RuntimeFn::BigIntBitwiseXor,
                 _ => unreachable!("checked above"),
             };
             return Ok(Some(LoweredExpr::RuntimeCall {
@@ -206,7 +206,7 @@ impl super::super::Resolver {
             && !(self.resolved_expr_is_bigint(left) && self.resolved_expr_is_bigint(right))
         {
             return Ok(Some(LoweredExpr::RuntimeCall {
-                intrinsic: RuntimeIntrinsic::BigIntMixedArithmeticTypeError,
+                intrinsic: RuntimeFn::BigIntMixedArithmeticTypeError,
                 args: vec![self.lower_expr(left)?, self.lower_expr(right)?],
                 span: Span::generated("runtime_call"),
             }));
@@ -218,14 +218,14 @@ impl super::super::Resolver {
         {
             if *op == BinaryOp::UnsignedRightShift {
                 return Ok(Some(LoweredExpr::RuntimeCall {
-                    intrinsic: RuntimeIntrinsic::BigIntMixedArithmeticTypeError,
+                    intrinsic: RuntimeFn::BigIntMixedArithmeticTypeError,
                     args: vec![self.lower_expr(left)?, self.lower_expr(right)?],
                     span: Span::generated("runtime_call"),
                 }));
             } else if self.resolved_expr_is_bigint(right) {
                 let intrinsic = match op {
-                    BinaryOp::LeftShift => RuntimeIntrinsic::BigIntLeftShift,
-                    BinaryOp::RightShift => RuntimeIntrinsic::BigIntRightShift,
+                    BinaryOp::LeftShift => RuntimeFn::BigIntLeftShift,
+                    BinaryOp::RightShift => RuntimeFn::BigIntRightShift,
                     _ => unreachable!("checked above"),
                 };
                 return Ok(Some(LoweredExpr::RuntimeCall {
@@ -235,7 +235,7 @@ impl super::super::Resolver {
                 }));
             } else {
                 return Ok(Some(LoweredExpr::RuntimeCall {
-                    intrinsic: RuntimeIntrinsic::BigIntMixedArithmeticTypeError,
+                    intrinsic: RuntimeFn::BigIntMixedArithmeticTypeError,
                     args: vec![self.lower_expr(left)?, self.lower_expr(right)?],
                     span: Span::generated("runtime_call"),
                 }));

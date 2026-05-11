@@ -38,7 +38,6 @@ pub use runtime_fn::{RuntimeFn, runtime_fn_from_name};
 pub use runtime_link_plan::{
     LinkPlanSnapshot, build_runtime_link_plan, emit_link_plan_snapshot_json,
 };
-pub use ts2wasm_ir::lowered::RuntimeIntrinsic;
 
 pub fn emit_canonical_manifest_json(program: &LoweredProgram) -> String {
     capability_manifest::emit_canonical_manifest_json(program)
@@ -105,7 +104,7 @@ mod tests {
     use ts2wasm_ir::builtin::BuiltinId;
     use ts2wasm_ir::lowered::{
         ClassPrototypeRef, FuncId, FunctionCallKind, LocalId, LoweredBinaryOp, LoweredExpr,
-        LoweredFunction, LoweredProgram, LoweredStmt, ModuleInfo, RuntimeIntrinsic, Validated,
+        LoweredFunction, LoweredProgram, LoweredStmt, ModuleInfo, RuntimeFn, Validated,
     };
     use ts2wasm_runtime_abi::{Layout, ValueTag};
     use ts2wasm_shared::test_helpers::unique_temp_dir;
@@ -877,7 +876,7 @@ mod tests {
                 ),
                 LoweredStmt::Expr(
                     LoweredExpr::RuntimeCall {
-                        intrinsic: RuntimeIntrinsic::PrivateFieldSet,
+                        intrinsic: RuntimeFn::PrivateFieldSet,
                         args: vec![
                             LoweredExpr::Local(LocalId(0), Span::generated("test")),
                             LoweredExpr::Number(1, Span::generated("test")),
@@ -892,7 +891,7 @@ mod tests {
                     LoweredExpr::Call {
                         kind: FunctionCallKind::Builtin(ts2wasm_ir::builtin::BuiltinId::ConsoleLog),
                         args: vec![LoweredExpr::RuntimeCall {
-                            intrinsic: RuntimeIntrinsic::PrivateFieldGet,
+                            intrinsic: RuntimeFn::PrivateFieldGet,
                             args: vec![
                                 LoweredExpr::Local(LocalId(0), Span::generated("test")),
                                 LoweredExpr::Number(1, Span::generated("test")),
@@ -976,7 +975,7 @@ mod tests {
                     LoweredExpr::Call {
                         kind: FunctionCallKind::Builtin(ts2wasm_ir::builtin::BuiltinId::ConsoleLog),
                         args: vec![LoweredExpr::RuntimeCall {
-                            intrinsic: RuntimeIntrinsic::PrivateFieldGet,
+                            intrinsic: RuntimeFn::PrivateFieldGet,
                             args: vec![
                                 LoweredExpr::Local(LocalId(0), Span::generated("test")),
                                 LoweredExpr::Number(1, Span::generated("test")),
@@ -999,7 +998,7 @@ mod tests {
                 locals: vec![],
                 body: vec![LoweredStmt::Expr(
                     LoweredExpr::RuntimeCall {
-                        intrinsic: RuntimeIntrinsic::PrivateFieldSet,
+                        intrinsic: RuntimeFn::PrivateFieldSet,
                         args: vec![
                             LoweredExpr::Local(LocalId(0), Span::generated("test")),
                             LoweredExpr::Number(1, Span::generated("test")),
@@ -1065,7 +1064,7 @@ mod tests {
                 ),
                 LoweredStmt::Expr(
                     LoweredExpr::RuntimeCall {
-                        intrinsic: RuntimeIntrinsic::PrivateFieldGet,
+                        intrinsic: RuntimeFn::PrivateFieldGet,
                         args: vec![
                             LoweredExpr::Local(LocalId(0), Span::generated("test")),
                             LoweredExpr::Number(2, Span::generated("test")),
@@ -1147,7 +1146,7 @@ mod tests {
                 LoweredStmt::TryCatch {
                     try_body: vec![LoweredStmt::Expr(
                         LoweredExpr::RuntimeCall {
-                            intrinsic: RuntimeIntrinsic::PrivateFieldGet,
+                            intrinsic: RuntimeFn::PrivateFieldGet,
                             args: vec![
                                 LoweredExpr::Local(LocalId(0), Span::generated("test")),
                                 LoweredExpr::Number(1, Span::generated("test")),
@@ -1238,7 +1237,7 @@ mod tests {
                 ),
                 LoweredStmt::Expr(
                     LoweredExpr::RuntimeCall {
-                        intrinsic: RuntimeIntrinsic::PrivateBrandCheck,
+                        intrinsic: RuntimeFn::PrivateBrandCheck,
                         args: vec![
                             LoweredExpr::Local(LocalId(0), Span::generated("test")),
                             LoweredExpr::Number(1, Span::generated("test")),
@@ -1250,7 +1249,7 @@ mod tests {
                 LoweredStmt::TryCatch {
                     try_body: vec![LoweredStmt::Expr(
                         LoweredExpr::RuntimeCall {
-                            intrinsic: RuntimeIntrinsic::PrivateBrandCheck,
+                            intrinsic: RuntimeFn::PrivateBrandCheck,
                             args: vec![
                                 LoweredExpr::Local(LocalId(0), Span::generated("test")),
                                 LoweredExpr::Number(2, Span::generated("test")),
@@ -1366,7 +1365,7 @@ mod tests {
         LoweredProgram {
             top_level_statements: vec![LoweredStmt::Expr(
                 LoweredExpr::RuntimeCall {
-                    intrinsic: RuntimeIntrinsic::MathRandom,
+                    intrinsic: RuntimeFn::MathRandom,
                     args: vec![],
                     span: Span::generated("test"),
                 },
