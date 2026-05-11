@@ -165,9 +165,9 @@ fn lowered_snapshot_produces_validated() {
 
 #[test]
 fn lowered_snapshot_assignment() {
-    let program = parse_resolve_lower("x = 42;");
-    assert_eq!(program.top_level_statements.len(), 1);
-    match &program.top_level_statements[0] {
+    let program = parse_resolve_lower("let x = 1; x = 42;");
+    assert_eq!(program.top_level_statements.len(), 2);
+    match &program.top_level_statements[1] {
         LoweredStmt::Assign(LocalId(0), LoweredExpr::Number(42, _), _) => {}
         other => panic!("expected LoweredStmt::Assign, got: {other:?}"),
     }

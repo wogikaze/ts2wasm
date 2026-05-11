@@ -91,13 +91,10 @@ fn resolver_snapshot_console_log_call() {
     let stmts = parse_and_resolve("console.log(42);");
     assert_eq!(stmts.len(), 1);
     match &stmts[0] {
-        ResolvedStmt::Expr(ResolvedExpr::Call { callee, .. }) => {
-            assert!(matches!(
-                callee.as_ref(),
-                ResolvedExpr::Ident(name) if name == "console.log"
-            ));
+        ResolvedStmt::Expr(ResolvedExpr::BuiltinCall { builtin, .. }) => {
+            assert_eq!(format!("{builtin:?}"), "ConsoleLog");
         }
-        other => panic!("expected ResolvedStmt::Expr(Call), got: {other:?}"),
+        other => panic!("expected ResolvedStmt::Expr(BuiltinCall(ConsoleLog)), got: {other:?}"),
     }
 }
 
