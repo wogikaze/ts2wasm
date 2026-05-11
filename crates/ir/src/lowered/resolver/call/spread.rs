@@ -9,7 +9,8 @@ use super::super::{
 use crate::builtin_resolved::{ResolvedArrayElement, ResolvedExpr, ResolvedParam, ResolvedStmt};
 use crate::lowered::*;
 use std::collections::HashMap;
-use ts2wasm_shared::{DiagCode, Diagnostic, SYMBOL_ITERATOR_OBJECT_KEY};
+use ts2wasm_shared::{SYMBOL_ITERATOR_OBJECT_KEY};
+use ts2wasm_diagnostic::{DiagCode, Diagnostic};
 use ts2wasm_source::Span;
 
 impl<'a> super::super::Resolver {

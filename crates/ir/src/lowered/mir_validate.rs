@@ -1,5 +1,5 @@
 use super::mir::{MirExpr, MirFunction, MirProgram, MirStmt};
-use ts2wasm_shared::{DiagCode, Diagnostic};
+use ts2wasm_diagnostic::{DiagCode, Diagnostic};
 
 /// Validate a `MirProgram` for internal consistency.
 ///

@@ -1,4 +1,5 @@
-use ts2wasm_shared::{Diagnostic, Stmt};
+use ts2wasm_shared::{Stmt};
+use ts2wasm_diagnostic::{DiagCode, Diagnostic};
 
 use crate::builtin_resolved::{ClassMethodKind, ResolvedExpr};
 

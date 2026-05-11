@@ -32,7 +32,7 @@ mod wasm_ir;
 mod wat_writer;
 
 use ts2wasm_ir::lowered::{LoweredProgram, Validated};
-pub use ts2wasm_shared::{DiagCode, Diagnostic};
+pub use ts2wasm_diagnostic::{DiagCode, Diagnostic};
 
 pub use runtime_fn::{RuntimeFn, runtime_fn_from_name};
 pub use runtime_link_plan::{
@@ -78,6 +78,12 @@ pub(crate) fn align_to(value: u32, alignment: u32) -> Option<u32> {
         .map(|aligned| aligned & !(alignment - 1))
 }
 
+#[cfg(feature = "wasm-encoder-backend")]
+mod wasm_encoder_backend;
+
+#[cfg(feature = "wasm-encoder-backend")]
+pub use wasm_encoder_backend::emit_wasm_module_binary;
+
 pub(crate) fn wat_bytes(bytes: &[u8]) -> String {
     let mut out = String::new();
     for byte in bytes {
@@ -110,7 +116,7 @@ mod tests {
     };
     use ts2wasm_runtime_abi::{Layout, ValueTag};
     use ts2wasm_shared::test_helpers::unique_temp_dir;
-use ts2wasm_shared::{DiagCode};
+use ts2wasm_diagnostic::DiagCode;
 use ts2wasm_source::Span;
 
     #[test]

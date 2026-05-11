@@ -4,7 +4,7 @@ use crate::builtin_resolved::{ResolvedArrayElement, ResolvedExpr};
 use crate::lowered::types::FuncId;
 use std::collections::HashMap;
 use ts2wasm_shared::UnaryOp;
-use ts2wasm_shared::{DiagCode, Diagnostic};
+use ts2wasm_diagnostic::{DiagCode, Diagnostic};
 use ts2wasm_source::Span;
 
 pub(crate) fn resolve_method_to_runtime_fn(

@@ -1,5 +1,5 @@
 use crate::lowered::*;
-use ts2wasm_shared::{DiagCode, Diagnostic};
+use ts2wasm_diagnostic::{DiagCode, Diagnostic};
 use ts2wasm_source::Span;
 
 /// Returns true if `method` is an HTML wrapper (Annex B String.prototype method

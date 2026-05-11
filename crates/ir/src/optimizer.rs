@@ -1,4 +1,4 @@
-use ts2wasm_shared::{DiagCode, Diagnostic};
+use ts2wasm_diagnostic::{DiagCode, Diagnostic};
 
 use crate::semantic::{HirExpr, HirFunction, HirProgram, HirStmt, validate_hir};
 

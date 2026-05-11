@@ -3,7 +3,7 @@ use super::types::{
     FuncId, FunctionCallKind, LocalId, LoweredArraySlot, LoweredExpr, LoweredProgram, LoweredStmt,
 };
 use crate::builtin::{BuiltinId, BuiltinResult};
-use ts2wasm_shared::{DiagCode, Diagnostic};
+use ts2wasm_diagnostic::{DiagCode, Diagnostic};
 pub fn validate_lowered(program: &LoweredProgram) -> Result<(), Vec<Diagnostic>> {
     let mut errors = Vec::new();
     let num_funcs = program.functions.len();

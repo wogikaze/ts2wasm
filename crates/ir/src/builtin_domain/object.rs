@@ -1,4 +1,5 @@
-use ts2wasm_shared::{Diagnostic, Expr};
+use ts2wasm_shared::{Expr};
+use ts2wasm_diagnostic::{DiagCode, Diagnostic};
 
 use crate::builtin_resolved::ResolvedExpr;
 

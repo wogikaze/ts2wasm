@@ -1,5 +1,5 @@
 use super::hir::{HirExpr, HirFunction, HirProgram, HirStmt};
-use ts2wasm_shared::{DiagCode, Diagnostic};
+use ts2wasm_diagnostic::{DiagCode, Diagnostic};
 
 /// Validate a `HirProgram` for internal consistency.
 ///

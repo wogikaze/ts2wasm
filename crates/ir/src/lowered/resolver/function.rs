@@ -4,7 +4,7 @@ use super::binding_param_names;
 use crate::builtin_resolved::{ResolvedArrayElement, ResolvedExpr, ResolvedParam, ResolvedStmt};
 use crate::lowered::facts::ArrowClosure;
 use crate::lowered::*;
-use ts2wasm_shared::{DiagCode, Diagnostic};
+use ts2wasm_diagnostic::{DiagCode, Diagnostic};
 use ts2wasm_source::Span;
 
 impl super::Resolver {
