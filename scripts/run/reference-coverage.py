@@ -991,6 +991,7 @@ def main():
             "fail": 0,
             "unsupported": 0,
             "blocked": 0,
+            "build_only": 0,
             "skip_with_reason": 0,
             "unsupported_diagcodes": {},
             "unsupported_features": {},
@@ -1016,6 +1017,7 @@ def main():
             print("fail=0")
             print("unsupported=0")
             print("blocked=0")
+            print("build_only=0")
             print("skip_with_reason=0")
             print("unsupported_diagcodes=")
             print("unsupported_features=")
@@ -2289,6 +2291,7 @@ def main():
         """Fallback path: run a pre-processed build item through standalone compiler."""
         rm = item["result_metrics"]
         detail_path = item["detail_path"]
+        metadata = item.get("metadata")
         thread_tmp = Path(tempfile.mkdtemp(dir=tmp_dir))
         try:
             build_input = thread_tmp / "in.js"
@@ -2323,6 +2326,23 @@ def main():
             diag_code = diag_match.group(1) if diag_match else "Unknown"
             diag_phase = diag_match.group(2) if diag_match and diag_match.group(2) else None
             rm["diag_code"] = diag_code
+            rm["diag_phase"] = diag_phase
+
+            if metadata is not None and metadata.expects_negative:
+                t262r = _ensure_test262_runner()
+                if t262r.can_pass_compile_negative(metadata, diag_code, diag_phase or ""):
+                    _mark_verified_negative_compile_pass(rm, semantic_enabled)
+                    if detail_output:
+                        rm["detail_line"] = f"{detail_path}: build_pass: verified negative parse/SyntaxError"
+                else:
+                    rm["unsupported"] = True
+                    rm["diag_code"] = "NegativeCompileUnverified"
+                    feat = feature_label(diag_code, err_content, str(item["file_path"]), diag_phase)
+                    rm["feature_label"] = feat
+                    if detail_output:
+                        rm["detail_line"] = f"{detail_path}: NegativeCompileUnverified: {feat}"
+                return rm
+
             if diag_code == "BackendIo":
                 rm["blocked"] = True
                 if detail_output:
