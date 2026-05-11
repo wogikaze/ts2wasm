@@ -225,7 +225,7 @@ if result["build_pass"]:
 
 ## 5. 修正方針
 
-### 5.1. 集計時の build_only カウンター追加
+### 5.1. 集計時の build_only カウンター追加 (TRACKING: #252)
 
 `_accumulate_case_result` で、`build_pass` かつ semantic outcome がない
 ケースを明示的にカウントする。
@@ -262,7 +262,7 @@ build_pass=1814
   └─ build_only=214   ← 新規。semantic 実行に到達しなかった件数
 ```
 
-### 5.2. legacy モードでも negative compile を verified 判定する
+### 5.2. legacy モードでも negative compile を verified 判定する (TRACKING: #253)
 
 `_process_one_file_inner` の非-ok ブランチに、`_classify_build_response` と
 同じ negative compile verified チェックを追加する。
@@ -280,7 +280,7 @@ if is_test262 and metadata is not None and metadata.expects_negative:
         result_metrics["diag_code"] = "NegativeCompileUnverified"
 ```
 
-### 5.3. サーバーバッチの二重 build 排除
+### 5.3. サーバーバッチの二重 build 排除 (TRACKING: #254)
 
 `_complete_semantic_for_build_item` の fallback build は、サーバーが
 すでに同じ build を完了している。サーバーの wasm 生成がオンになっていない
@@ -293,7 +293,7 @@ if is_test262 and metadata is not None and metadata.expects_negative:
 - **B**: fallback build の前にサーバーの結果を使い回す方策を入れる（例:
   一時ファイルにサーバーの compile artifact を保持させる）。
 
-### 5.4. 出力フォーマット拡張
+### 5.4. 出力フォーマット拡張 (TRACKING: #255)
 
 標準出力に `build_only` を追加する。
 

@@ -187,6 +187,85 @@ open:
         - "scripts/check/architecture-rules.py: add Validated contract check"
         - "crates/backend-wasm/src/lib.rs: verify emit functions use Validated"
       acceptance: "Architecture check enforces Validated<LoweredProgram> in backend API"
+  - id: 252
+    title: "Add build_only counter to coverage runner aggregation (coverage)"
+    priority: P2
+    type: fix
+    area: coverage
+    status: open
+    created: 2026-05-11
+    updated: 2026-05-11
+    roadmap: ""
+    acceptance:
+      - "mise run reference-coverage -- test262 --limit 100 --jobs 4 2>&1 | grep -q 'build_only'"
+      - "python -c \"import ast; d=ast.literal_eval(open('artifacts/coverage/report.json').read()); assert 'build_only' in d['summary']\" || true"
+    non_goals:
+      - "No change to semantic comparison logic or wasm emission."
+      - "No change to server batch mode architecture."
+    plan:
+      goal: "Add build_only counter to _accumulate_case_result to track build_pass items that never reached semantic comparison"
+      files:
+        - "scripts/run/reference-coverage.py: add build_only_count, else: branch in _accumulate_case_result, output formatting"
+      acceptance: "build_only appears in stdout summary when non-zero"
+  - id: 253
+    title: "Add verified negative compile check to legacy subprocess mode (coverage)"
+    priority: P2
+    type: fix
+    area: coverage
+    status: open
+    created: 2026-05-11
+    updated: 2026-05-11
+    roadmap: ""
+    acceptance:
+      - "mise run reference-coverage -- test262 --limit 100 --jobs 4 --no-server 2>&1 | grep -q 'verified negative'"
+      - "mise run reference-coverage -- test262 --limit 100 --jobs 4 2>&1 | grep -q 'verified negative'"
+    non_goals:
+      - "No change to server mode negative compile handling (already works)."
+      - "No change to diagnostic code classification."
+    plan:
+      goal: "Add test262 negative compile verification to _process_one_file_inner legacy path, matching _classify_build_response behavior"
+      files:
+        - "scripts/run/reference-coverage.py: add negative compile verified check in legacy non-ok branch"
+      acceptance: "Legacy mode produces verified negative compile entries matching server mode"
+  - id: 254
+    title: "Eliminate double build in server batch mode fallback (coverage)"
+    priority: P3
+    type: perf
+    area: coverage
+    status: open
+    created: 2026-05-11
+    updated: 2026-05-11
+    roadmap: ""
+    acceptance:
+      - "mise run reference-coverage -- test262 --limit 50 --jobs 2 2>&1 | grep -q 'build_only'"
+      - "python3 -c \"import json; d=json.load(open('artifacts/coverage/report.json')); assert sum(1 for r in d['results'] if r.get('build_only')) < 10\" || true"
+    non_goals:
+      - "No change to wasm generation in server (changing server config is separate)."
+      - "No change to semantic comparison logic."
+    plan:
+      goal: "Eliminate redundant subprocess build in _complete_semantic_for_build_item when server already produced the wasm"
+      files:
+        - "scripts/run/reference-coverage.py: skip fallback build in _complete_semantic_for_build_item when server_wasm_path is set"
+      acceptance: "Each test262 case produces at most one build per mode"
+  - id: 255
+    title: "Add build_only to coverage runner stdout output format (coverage)"
+    priority: P3
+    type: fix
+    area: coverage
+    status: open
+    created: 2026-05-11
+    updated: 2026-05-11
+    roadmap: ""
+    acceptance:
+      - "mise run reference-coverage -- test262 --limit 100 --jobs 4 2>&1 | head -20 | grep -q 'build_only'"
+    non_goals:
+      - "No change to JSON/JSONL output schema (additive only)."
+      - "No change to dashboard rendering."
+    plan:
+      goal: "Add build_only line to stdout summary output after blocked line, making build_only visible without dashboard"
+      files:
+        - "scripts/run/reference-coverage.py: add build_only to output format string"
+      acceptance: "stdout summary includes build_only=N"
 active: []
 done:
   - id: 242
