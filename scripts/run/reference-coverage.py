@@ -1102,6 +1102,8 @@ def main():
         oracle_skipped = 0
         build_only = 0
         negative_compile_pass = 0
+        negative_compile_unverified = 0
+        negative_compile_mismatch = 0
         unresolved_name_by_symbol = {}
         total_duration_ms = 0
         completed = 0
@@ -1279,7 +1281,7 @@ def main():
 
         def consume_record(jsonl_out, record, status):
             nonlocal passed, failed, unsupported, blocked, oracle_skipped, build_only, total_duration_ms
-            nonlocal completed, last_progress, negative_compile_pass, unresolved_name_by_symbol
+            nonlocal completed, last_progress, negative_compile_pass, negative_compile_unverified, negative_compile_mismatch, unresolved_name_by_symbol
             if record:
                 jsonl_out.write(record + "\n")
                 try:
@@ -1307,6 +1309,10 @@ def main():
                     if "UnresolvedName/" in reason:
                         symbol = t262.extract_unresolved_name(reason) or "unknown"
                         unresolved_name_by_symbol[symbol] = unresolved_name_by_symbol.get(symbol, 0) + 1
+                    if reason.startswith("NegativeCompileUnverified/"):
+                        negative_compile_unverified += 1
+                    elif reason.startswith("ExpectedNegativeSyntax/"):
+                        negative_compile_mismatch += 1
                 except (json.JSONDecodeError, TypeError):
                     pass
             elif status == "blocked":
@@ -2005,6 +2011,8 @@ def main():
             "executable_build_pass": executable_build_pass,
             "differential_pass": differential_pass,
             "negative_compile_pass": negative_compile_pass,
+            "negative_compile_unverified": negative_compile_unverified,
+            "negative_compile_mismatch": negative_compile_mismatch,
             "conformance_pass": conformance_pass,
             "build_pass_by_detail": {},
             "unresolved_name_by_symbol": unresolved_name_by_symbol,
@@ -3041,6 +3049,8 @@ def main():
         print(f"executable_build_pass={executable_build_pass}")
         print(f"differential_pass={differential_pass}")
         print(f"negative_compile_pass={negative_compile_pass}")
+        print(f"negative_compile_unverified={negative_compile_unverified_count}")
+        print(f"negative_compile_mismatch={negative_compile_mismatch_count}")
         print(f"conformance_pass={conformance_pass}")
         print(f"unsupported_diagcodes={unsupported_diagcodes}")
         print(f"unsupported_features={unsupported_features}")
