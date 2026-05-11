@@ -63,6 +63,23 @@ def _ensure_test262_runner():
         test262_runner = _t262
     return test262_runner
 
+# Public test262 modules (loaded via file path to avoid sys.path conflicts)
+import importlib.util
+_scripts_dir = Path(__file__).parent.parent
+_t262_meta_spec = importlib.util.spec_from_file_location(
+    "test262_metadata_public",
+    str(_scripts_dir / "test262_metadata.py")
+)
+_t262_meta = importlib.util.module_from_spec(_t262_meta_spec)
+_t262_meta_spec.loader.exec_module(_t262_meta)
+
+_t262_harness_spec = importlib.util.spec_from_file_location(
+    "test262_harness_public",
+    str(_scripts_dir / "test262_harness.py")
+)
+_t262_harness = importlib.util.module_from_spec(_t262_harness_spec)
+_t262_harness_spec.loader.exec_module(_t262_harness)
+
 try:
     sys.path.insert(0, str(Path(__file__).parent.parent / "report"))
     from new_passes_notify import notify_new_passes
@@ -566,6 +583,15 @@ def prepare_build_inputs(suite, file_path, tmp_dir):
     """Return source paths for wasm and Node execution."""
     if suite != "test262":
         return file_path, file_path
+
+    # Validate harness includes using public modules
+    metadata_dict = _t262_meta.parse_test262_metadata(str(file_path))
+    if metadata_dict.get("includes"):
+        harness_sources = _t262_harness.get_harness_sources(metadata_dict["includes"])
+        if len(harness_sources) < len(metadata_dict["includes"]):
+            missing = [inc for inc in metadata_dict["includes"] if inc not in ("assert.js", "sta.js")]
+            if missing:
+                print(f"  warn: no inline stub for harness: {missing}", file=sys.stderr)
 
     t262 = _ensure_test262_runner()
     source_code = file_path.read_text(encoding="utf-8")
@@ -2512,6 +2538,14 @@ def main():
                 return result_metrics
             t262.HARNESS_DIR = test262_harness_dir_for(file_path)
             result_metrics["harness_includes"] = list(metadata.includes) if metadata.includes else []
+            # Validate harness includes using public modules
+            meta_dict = _t262_meta.parse_test262_metadata(str(file_path))
+            if meta_dict.get("includes"):
+                harness_sources = _t262_harness.get_harness_sources(meta_dict["includes"])
+                if len(harness_sources) < len(meta_dict["includes"]):
+                    missing = [inc for inc in meta_dict["includes"] if inc not in ("assert.js", "sta.js")]
+                    if missing:
+                        print(f"  warn: no inline stub for harness: {missing}", file=sys.stderr)
             build_source = t262.build_test262_source(
                 file_path, source_code, metadata, target="wasm"
             )
