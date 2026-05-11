@@ -9,6 +9,7 @@ Current checks:
   - crates/cli/src must not declare local backend/parser/compiler implementation modules.
   - Error when a repo-owned source/document file exceeds the documented line limit.
   - Error when backend-wasm or ir directly depends on frontend via Cargo.toml.
+  - Error when public backend emit functions accept bare &LoweredProgram (must use Validated<).
 """
 
 import os
@@ -102,6 +103,7 @@ def usage():
     print("  - Error when backend-wasm imports from ts2wasm_frontend.")
     print("  - Warn when `wat.push_str` in runtime helper files (prefer structured builders).")
     print("  - Error when `include!` used in src/ files outside tests (migrate to real modules).")
+    print("  - Error when backend emit functions accept bare &LoweredProgram (must wrap in Validated<).")
 
 
 def parse_max_file_lines(args: list[str]) -> int:
@@ -441,6 +443,48 @@ def check_include_in_src() -> list[str]:
     return violations
 
 
+def check_validated_backend_contract() -> list[str]:
+    """Check that public emit functions in backend-wasm use Validated<LoweredProgram>.
+
+    Any pub fn starting with 'emit' in crates/backend-wasm/src/lib.rs that mentions
+    LoweredProgram in its signature must wrap it in Validated<>. Non-emit pub fn
+    using LoweredProgram (e.g. has_node_host_imports) are allowed to use bare &LoweredProgram.
+
+    Known exceptions:
+    - emit_canonical_manifest_json: utility/query function, not a program emitter.
+      Called with validated.as_ref() by the compiler pipeline.
+    """
+    violations = []
+    backend_lib = REPO_ROOT / "crates" / "backend-wasm" / "src" / "lib.rs"
+    if not backend_lib.exists():
+        return violations
+    text = backend_lib.read_text()
+    lines = text.split('\n')
+    for i, line in enumerate(lines, 1):
+        stripped = line.strip()
+        if not stripped.startswith('pub fn '):
+            continue
+        name_end = stripped.find('(')
+        if name_end == -1:
+            continue
+        fn_name = stripped[7:name_end].strip()
+        # Only check emit functions
+        if not fn_name.startswith('emit'):
+            continue
+        # Known exceptions (utility/query functions, not program emitters)
+        if fn_name == 'emit_canonical_manifest_json':
+            continue
+        # Look ahead up to 5 lines for signature context
+        end = min(i + 4, len(lines))
+        fn_window = ' '.join(lines[i - 1:end])
+        if 'LoweredProgram' in fn_window and 'Validated<' not in fn_window:
+            violations.append(
+                f"check_architecture_rules: ERROR crates/backend-wasm/src/lib.rs:{i}: "
+                f"`pub fn {fn_name}` uses `LoweredProgram` without `Validated<` wrapper"
+            )
+    return violations
+
+
 def main():
     args = sys.argv[1:]
     max_file_lines = parse_max_file_lines(args)
@@ -469,6 +513,7 @@ def main():
     violations.extend(check_backend_frontend_import())
     violations.extend(check_runtime_push_str())
     violations.extend(check_include_in_src())
+    violations.extend(check_validated_backend_contract())
 
     for v in violations:
         print(v, file=sys.stderr)
