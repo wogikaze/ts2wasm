@@ -2,16 +2,12 @@
 ///
 /// Verifies that every RuntimeFn with host imports has an explicit capability
 /// marker, and that host imports are reflected in manifest/link-plan tests.
-
-use ts2wasm_backend_wasm::{
-    Capability, HostAbi, HostImport, RuntimeFn,
-    RuntimeIntrinsic, runtime_fn_from_name,
-};
+use ts2wasm_backend_wasm::{RuntimeFn, RuntimeIntrinsic};
 
 #[test]
 fn every_runtime_fn_with_host_imports_has_capability() {
     let mut violations = Vec::new();
-    for rf in RuntimeFn::all() {
+    for rf in RuntimeFn::emission_order() {
         let spec = rf.spec();
         if !spec.imports.is_empty() && spec.capability.is_empty() {
             violations.push(format!(
@@ -30,7 +26,7 @@ fn every_runtime_fn_with_host_imports_has_capability() {
 #[test]
 fn every_runtime_fn_with_capability_has_imports() {
     let mut violations = Vec::new();
-    for rf in RuntimeFn::all() {
+    for rf in RuntimeFn::emission_order() {
         let spec = rf.spec();
         if !spec.capability.is_empty() && spec.imports.is_empty() {
             // Some capabilities (e.g., Host*) may not directly map to WASI imports
@@ -42,12 +38,6 @@ fn every_runtime_fn_with_capability_has_imports() {
             ));
         }
     }
-
-    // Allow standalone capabilities that don't require imports
-    // (these are fully self-contained WASM operations)
-    let standalone_caps: &[Capability] = &[
-        // Node host shim capabilities don't have WASI imports but have Node host imports
-    ];
 
     let mut real_violations: Vec<String> = Vec::new();
     for v in violations {
@@ -63,17 +53,15 @@ fn every_runtime_fn_with_capability_has_imports() {
 
 #[test]
 fn host_imports_have_corresponding_node_shim_abi() {
-    let mut violations = Vec::new();
-    for rf in RuntimeFn::all() {
+    let violations: Vec<String> = Vec::new();
+    for rf in RuntimeFn::emission_order() {
         let spec = rf.spec();
         for import in spec.imports {
-            match import.spec().abi {
-                HostAbi::Wasi | HostAbi::NodeShim => {
-                    // Valid ABI - each import should have a wasm-friendly module/name
-                    let _ = import.spec().module;
-                    let _ = import.spec().name;
-                }
-            }
+            let _abi = import.spec().abi;
+            // All ABIs are currently valid; this test is a placeholder for
+            // future ABI validation logic.
+            let _ = import.spec().module;
+            let _ = import.spec().name;
         }
     }
     assert!(
@@ -87,13 +75,11 @@ fn host_imports_have_corresponding_node_shim_abi() {
 fn host_fn_with_import_reachable_via_intrinsic() {
     // Verify that RuntimeFn variants with host imports are reachable
     // through at least one RuntimeIntrinsic.
-    let mapped_fns: std::collections::HashSet<RuntimeFn> = RuntimeIntrinsic::all()
-        .iter()
-        .filter_map(|i| runtime_fn_from_name(i.name()))
-        .collect();
+    let mapped_fns: std::collections::HashSet<RuntimeFn> =
+        RuntimeIntrinsic::emission_order().iter().copied().collect();
 
     let mut unreachable = Vec::new();
-    for rf in RuntimeFn::all() {
+    for rf in RuntimeFn::emission_order() {
         let spec = rf.spec();
         if !spec.imports.is_empty() && !mapped_fns.contains(rf) {
             unreachable.push(format!("{rf:?}"));

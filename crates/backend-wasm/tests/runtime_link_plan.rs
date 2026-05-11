@@ -5,14 +5,11 @@
 /// - Minimal imports for the simplest program
 /// - Required runtime functions for basic programs
 /// - Runtime strings needed by selected RuntimeFn variants
-
 use std::collections::BTreeSet;
 
-use ts2wasm_backend_wasm::{
-    RuntimeFn, RuntimeIntrinsic,
-};
+use ts2wasm_backend_wasm::RuntimeIntrinsic;
 use ts2wasm_backend_wasm::runtime_link_plan::build_runtime_link_plan;
-use ts2wasm_ir::lowered::{FuncId, LoweredExpr, LoweredProgram, LoweredStmt};
+use ts2wasm_ir::lowered::{LoweredExpr, LoweredProgram, LoweredStmt};
 
 fn empty_program() -> LoweredProgram {
     LoweredProgram {
@@ -51,8 +48,8 @@ fn empty_program_minimal_imports() {
         .map(|i| i.manifest_name().to_owned())
         .collect();
     assert!(
-        imports.contains(&"wasi.proc_exit".to_owned()),
-        "empty program should include wasi.proc_exit, got: {imports:?}"
+        imports.contains(&"wasi_snapshot_preview1.proc_exit".to_owned()),
+        "empty program should include wasi_snapshot_preview1.proc_exit, got: {imports:?}"
     );
 }
 
@@ -75,7 +72,7 @@ fn empty_program_no_required_runtime_functions() {
 }
 
 #[test]
-fn log_program_includes_log_and_concat() {
+fn log_program_includes_log_and_transitive_deps() {
     let program = simple_log_program();
     let plan = build_runtime_link_plan(&program);
 
@@ -86,16 +83,20 @@ fn log_program_includes_log_and_concat() {
         .collect();
 
     assert!(
-        runtime_fns.contains("core.log"),
-        "Log program should include core.log, got: {runtime_fns:?}"
+        runtime_fns.contains("log"),
+        "Log program should include log, got: {runtime_fns:?}"
     );
     assert!(
-        runtime_fns.contains("core.concat"),
-        "Log program should include core.concat (needed by log for string conversion), got: {runtime_fns:?}"
+        runtime_fns.contains("write"),
+        "Log program should include write (direct dep of log), got: {runtime_fns:?}"
     );
     assert!(
-        runtime_fns.contains("core.add"),
-        "Log program should include core.add (needed by log/value formatting), got: {runtime_fns:?}"
+        runtime_fns.contains("value_to_string_into"),
+        "Log program should include value_to_string_into (direct dep of log), got: {runtime_fns:?}"
+    );
+    assert!(
+        runtime_fns.contains("copy"),
+        "Log program should include copy (dep of write), got: {runtime_fns:?}"
     );
 }
 
@@ -105,11 +106,7 @@ fn number_expression_has_no_runtime_strings() {
     let plan = build_runtime_link_plan(&program);
 
     // A simple program with only number expressions should have no runtime strings
-    let strings: Vec<&str> = plan
-        .required_runtime_strings()
-        .iter()
-        .copied()
-        .collect();
+    let strings: Vec<&str> = plan.required_runtime_strings().iter().copied().collect();
     // Log's deps may pull in runtime strings for error/type messages;
     // but the key check is that populate_derived_sets doesn't panic
     // and the result is deterministic.
