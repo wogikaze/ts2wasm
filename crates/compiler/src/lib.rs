@@ -4,6 +4,7 @@ pub mod server;
 mod test262_preprocessor;
 
 mod stages;
+pub use stages::parse::parse_program;
 
 use std::fs;
 use std::path::Path;

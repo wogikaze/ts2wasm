@@ -2124,7 +2124,7 @@ def main():
         else:
             result_metrics["mismatch"] = True
     
-    def _classify_build_response(build_resp, item, semantic_enabled, tmp_dir):
+    def _classify_build_response(build_resp, item, semantic_enabled, tmp_dir, server_mode_batch=False):
         """Classify a batch build response into result_metrics. Returns result_metrics."""
         rm = item["result_metrics"]
         detail_path = item["detail_path"]
@@ -2132,7 +2132,9 @@ def main():
         if build_resp["status"] == "ok":
             rm["build_pass"] = True
             
-            if semantic_enabled:
+            # For positive tests in server batch mode, we defer semantic execution 
+            # to a separate parallel pool in main().
+            if semantic_enabled and not server_mode_batch:
                 _complete_semantic_for_build_item(item, rm, tmp_dir)
             
             if detail_output and not rm.get("detail_line"):
@@ -2147,7 +2149,7 @@ def main():
                 if t262r.can_pass_compile_negative(metadata, diag_code, build_resp.get("phase", "")):
                     _mark_verified_negative_compile_pass(rm, semantic_enabled)
                     if detail_output:
-                        rm["detail_line"] = f"{detail_path}: build_pass"
+                        rm["detail_line"] = f"{detail_path}: build_pass: verified negative parse/SyntaxError"
                 else:
                     rm["unsupported"] = True
                     rm["diag_code"] = "NegativeCompileUnverified"
@@ -2207,6 +2209,13 @@ def main():
                     item["file_path"], item["source_code"], item["metadata"],
                     thread_tmp, out_wasm, result_metrics
                 )
+            else:
+                # server returned 'ok' but standalone emission failed (possible server/cli mismatch or OOM)
+                result_metrics["blocked"] = True
+                result_metrics["diag_code"] = "SemanticWasmEmitFailed"
+                result_metrics["feature_label"] = "coverage-runner"
+                if detail_output:
+                    result_metrics["detail_line"] = f"{item['detail_path']}: blocked: SemanticWasmEmitFailed"
             return result_metrics
         finally:
             shutil.rmtree(thread_tmp, ignore_errors=True)
@@ -2594,15 +2603,20 @@ def main():
                     if build_response.get("wasm_path"):
                         item["wasm_path"] = build_response["wasm_path"]
                     result = _classify_build_response(
-                        build_response, item, False, tmp_dir
+                        build_response, item, semantic_enabled, tmp_dir, server_mode_batch=True
                     )
                     classified_results.append((item, result))
 
                 if semantic_enabled:
                     def _complete_pair(pair):
                         item, result = pair
-                        if result["build_pass"]:
+                        # Skip if already a verified negative compile pass
+                        if result["build_pass"] and not result["semantic_pass"]:
                             result = _complete_semantic_for_build_item(item, result, tmp_dir)
+                        
+                        if detail_output and result["semantic_pass"] and not result.get("detail_line"):
+                             result["detail_line"] = f"{item['detail_path']}: pass: Node/iwasm semantic match"
+                             
                         return item, result
 
                     with ThreadPoolExecutor(max_workers=jobs) as pool:
