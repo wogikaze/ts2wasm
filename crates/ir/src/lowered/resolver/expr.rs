@@ -10,7 +10,7 @@ use super::{
 use crate::builtin::{BuiltinId, BuiltinPropertyId};
 use crate::builtin_resolved::{ResolvedArrayElement, ResolvedExpr};
 use crate::lowered::*;
-use ts2wasm_frontend::{BinaryOp, UnaryOp};
+use ts2wasm_shared::{BinaryOp, UnaryOp};
 use ts2wasm_shared::{DiagCode, Diagnostic, Span};
 
 impl<'a> Resolver<'a> {

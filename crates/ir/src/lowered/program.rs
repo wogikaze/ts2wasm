@@ -4,7 +4,7 @@ use crate::builtin_resolved::{
     ClassMethodKind, ResolvedArrayElement, ResolvedExpr, ResolvedParam, ResolvedStmt,
 };
 use std::collections::{HashMap, HashSet};
-use ts2wasm_frontend::{BinaryOp, LogicalAssignOp, UnaryOp};
+use ts2wasm_shared::{BinaryOp, LogicalAssignOp, UnaryOp};
 use ts2wasm_shared::{DiagCode, Diagnostic, Span};
 #[path = "program_builtins.rs"]
 pub(crate) mod program_builtins;

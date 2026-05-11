@@ -1,5 +1,6 @@
-use ts2wasm_frontend::{ArrayLiteralElement, BinaryOp, Expr, Stmt, UnaryOp};
-use ts2wasm_shared::{DiagCode, Diagnostic, Span};
+use ts2wasm_shared::{
+    ArrayLiteralElement, BinaryOp, DiagCode, Diagnostic, Expr, Span, Stmt, UnaryOp,
+};
 
 use crate::binding_pattern::parse_binding_pattern;
 

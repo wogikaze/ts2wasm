@@ -1,7 +1,6 @@
 use std::collections::HashMap;
 
-use ts2wasm_frontend::{BinaryOp, UnaryOp};
-use ts2wasm_shared::{DiagCode, Diagnostic, Span};
+use ts2wasm_shared::{BinaryOp, DiagCode, Diagnostic, Span, UnaryOp};
 
 use crate::builtin::{BuiltinId, BuiltinPropertyId};
 use crate::builtin_resolved::{ResolvedArrayElement, ResolvedExpr, ResolvedParam, ResolvedStmt};
@@ -1294,12 +1293,11 @@ fn unsupported(message: &str) -> Diagnostic {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use ts2wasm_frontend::{Lexer, Parser};
 
     fn parse_to_hir(source: &str) -> HirProgram {
-        let tokens = ts2wasm_frontend::Lexer::new(source).tokenize().unwrap();
-        let ast = ts2wasm_frontend::Parser::new(tokens, source)
-            .parse_program()
-            .unwrap();
+        let tokens = Lexer::new(source).tokenize().unwrap();
+        let ast = Parser::new(tokens, source).parse_program().unwrap();
         let named = crate::name_resolver::resolve_names(&ast).unwrap();
         let resolved = crate::builtin_resolver::resolve_builtins(&named).unwrap();
         lower_to_hir(&resolved).unwrap()

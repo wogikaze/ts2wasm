@@ -1,8 +1,7 @@
 #[cfg(test)]
 mod tests {
     use crate::name_resolver;
-    use ts2wasm_frontend::{ArrayLiteralElement, Expr, Stmt};
-    use ts2wasm_shared::{DiagCode, Span};
+    use ts2wasm_shared::{ArrayLiteralElement, BinaryOp, DiagCode, Expr, Span, Stmt};
 
     #[test]
     fn test_resolve_variable_declaration() {
@@ -55,12 +54,10 @@ mod tests {
                 is_var: true,
                 name: "arr".to_string(),
                 expr: Expr::Array {
-                    elements: vec![ts2wasm_frontend::ArrayLiteralElement::Present(
-                        Expr::Ident {
-                            name: "e".to_string(),
-                            span: Span { start: 13, end: 14 },
-                        },
-                    )],
+                    elements: vec![ArrayLiteralElement::Present(Expr::Ident {
+                        name: "e".to_string(),
+                        span: Span { start: 13, end: 14 },
+                    })],
                     span: Span { start: 12, end: 15 },
                 },
                 span: Span { start: 4, end: 16 },
@@ -465,7 +462,7 @@ mod tests {
                             name: "initCount".to_string(),
                             span: Span { start: 40, end: 49 },
                         }),
-                        op: ts2wasm_frontend::BinaryOp::Add,
+                        op: BinaryOp::Add,
                         right: Box::new(Expr::Number {
                             value: 1,
                             span: Span { start: 52, end: 53 },

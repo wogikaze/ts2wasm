@@ -1,12 +1,16 @@
+mod array;
+mod call;
+mod class;
 mod expr;
 mod extra;
+mod object;
 
 use std::collections::{HashMap, HashSet};
 
 use crate::binding_pattern::{BindingDefault, parse_binding_pattern};
 use crate::builtin_resolved::{ResolvedArrayElement, ResolvedExpr, ResolvedStmt};
 use crate::lowered::*;
-use ts2wasm_frontend::{BinaryOp, UnaryOp};
+use ts2wasm_shared::{BinaryOp, UnaryOp};
 use ts2wasm_shared::{DiagCode, Diagnostic, Span};
 
 pub(crate) struct Symbols<'a> {

@@ -8,4 +8,6 @@ repository.workspace = true
 [dependencies]
 ts2wasm-shared = { path = "../shared" }
 ts2wasm-runtime-abi = { path = "../runtime-abi" }
+
+[dev-dependencies]
 ts2wasm-frontend = { path = "../frontend" }

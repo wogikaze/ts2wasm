@@ -3,7 +3,7 @@ use crate::RuntimeIntrinsic;
 use crate::builtin_resolved::{ResolvedArrayElement, ResolvedExpr};
 use crate::lowered::types::FuncId;
 use std::collections::HashMap;
-use ts2wasm_frontend::UnaryOp;
+use ts2wasm_shared::UnaryOp;
 use ts2wasm_shared::{DiagCode, Diagnostic, Span};
 
 pub(crate) fn resolve_method_to_runtime_fn(
@@ -738,7 +738,7 @@ pub(crate) fn regexp_test_runtime(
     object: &ResolvedExpr,
     method: &str,
     args: &[ResolvedExpr],
-    span: ts2wasm_frontend::Span,
+    span: Span,
 ) -> Result<Option<Vec<ResolvedExpr>>, Diagnostic> {
     if method != "test" {
         return Ok(None);
@@ -776,7 +776,7 @@ pub(crate) fn regexp_string_match_runtime(
     object: &ResolvedExpr,
     method: &str,
     args: &[ResolvedExpr],
-    span: ts2wasm_frontend::Span,
+    span: Span,
 ) -> Result<Option<Vec<ResolvedExpr>>, Diagnostic> {
     if method != "match" && method != "search" {
         return Ok(None);
@@ -826,7 +826,7 @@ pub(crate) fn regexp_exec_runtime(
     object: &ResolvedExpr,
     method: &str,
     args: &[ResolvedExpr],
-    span: ts2wasm_frontend::Span,
+    span: Span,
 ) -> Result<Option<Vec<ResolvedExpr>>, Diagnostic> {
     if method != "exec" {
         return Ok(None);

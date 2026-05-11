@@ -9,7 +9,7 @@ use super::{
 use crate::binding_pattern::{ArrayBinding, BindingDefault, BindingPattern, ObjectBinding};
 use crate::builtin_resolved::{ResolvedArrayElement, ResolvedExpr, ResolvedParam, ResolvedStmt};
 use crate::lowered::*;
-use ts2wasm_frontend::{BinaryOp, OBJECT_SPREAD_SENTINEL, SYMBOL_ITERATOR_OBJECT_KEY, UnaryOp};
+use ts2wasm_shared::{BinaryOp, OBJECT_SPREAD_SENTINEL, SYMBOL_ITERATOR_OBJECT_KEY, UnaryOp};
 use ts2wasm_shared::{DiagCode, Diagnostic, Span};
 
 impl<'a> Resolver<'a> {

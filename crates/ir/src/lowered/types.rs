@@ -1,9 +1,14 @@
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 
-use crate::RuntimeIntrinsic;
-use crate::builtin::BuiltinId;
-use crate::lowered::validate::validate_lowered;
-use ts2wasm_shared::{DiagCode, Diagnostic, Span};
+use super::binding_pattern::{
+    ArrayBinding, BindingDefault, BindingPattern, ObjectBinding, parse_binding_pattern,
+};
+use super::builtin::{BuiltinId, BuiltinPropertyId, BuiltinResult};
+use super::builtin_resolved::{ClassMethodKind, ResolvedExpr, ResolvedParam, ResolvedStmt};
+use ts2wasm_shared::{
+    BinaryOp, DiagCode, Diagnostic, LogicalAssignOp, OBJECT_SPREAD_SENTINEL, Span,
+    SYMBOL_ITERATOR_OBJECT_KEY, UnaryOp,
+};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct LocalId(pub usize);
@@ -11,10 +16,10 @@ pub struct LocalId(pub usize);
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct FuncId(pub usize);
 
-pub(crate) type ClassConstructorMap = HashMap<String, FuncId>;
-pub(crate) type ClassMethodMap = HashMap<(String, String), FuncId>;
-pub type ClassPrivateFieldSlots = HashMap<String, HashMap<String, usize>>;
-pub(crate) type ClassStaticPrivateFields = HashMap<String, HashMap<String, String>>;
+type ClassConstructorMap = HashMap<String, FuncId>;
+type ClassMethodMap = HashMap<(String, String), FuncId>;
+type ClassPrivateFieldSlots = HashMap<String, HashMap<String, usize>>;
+type ClassStaticPrivateFields = HashMap<String, HashMap<String, String>>;
 
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct ClassPrototypeRef {
@@ -351,7 +356,7 @@ pub enum LoweredExpr {
         span: Span,
     },
     RuntimeCall {
-        intrinsic: RuntimeIntrinsic,
+        runtime_fn: String,
         args: Vec<LoweredExpr>,
         span: Span,
     },
@@ -472,9 +477,7 @@ impl LoweredExpr {
                 LoweredUnaryOp::Not => InferredType::Boolean,
                 _ => InferredType::Unknown,
             },
-            Self::Binary {
-                left, op, right, ..
-            } => match op {
+            Self::Binary { left, op, right, .. } => match op {
                 LoweredBinaryOp::Add => match (left.inferred_type(), right.inferred_type()) {
                     (InferredType::Number, InferredType::Number) => InferredType::Number,
                     (InferredType::String, InferredType::String) => InferredType::String,
@@ -504,9 +507,9 @@ impl LoweredExpr {
                 | LoweredBinaryOp::EqualEqual
                 | LoweredBinaryOp::BangEqual
                 | LoweredBinaryOp::StrictNotEqual => InferredType::Boolean,
-                LoweredBinaryOp::And | LoweredBinaryOp::Or | LoweredBinaryOp::NullishCoalesce => {
-                    InferredType::Unknown
-                }
+                LoweredBinaryOp::And
+                | LoweredBinaryOp::Or
+                | LoweredBinaryOp::NullishCoalesce => InferredType::Unknown,
             },
             Self::Assign { expr, .. } => expr.inferred_type(),
             Self::LogicalAssign { .. }
@@ -516,63 +519,5 @@ impl LoweredExpr {
             | Self::LogicalComputedPropertyAssign { .. } => InferredType::Unknown,
             _ => InferredType::Unknown,
         }
-    }
-}
-
-/// A validated wrapper that guarantees the inner program has passed
-/// `validate_lowered`. Fatal validation errors (InvariantViolation) are
-/// rejected at construction time. Non-fatal diagnostics are returned alongside
-/// the wrapper so callers can report them without blocking emission.
-///
-/// Backend APIs should accept `&Validated<LoweredProgram>` instead of
-/// `&LoweredProgram` to enforce the contract at the type level.
-#[derive(Debug)]
-pub struct Validated<T> {
-    inner: T,
-    non_fatal: Vec<Diagnostic>,
-}
-
-impl Validated<LoweredProgram> {
-    /// Validate `program` and return a `Validated` wrapper.
-    ///
-    /// Returns `Err` only for fatal errors (InvariantViolation).
-    /// Non-fatal diagnostics are returned in the tuple alongside the wrapper.
-    pub fn new(program: LoweredProgram) -> Result<(Self, Vec<Diagnostic>), Diagnostic> {
-        let mut non_fatal = Vec::new();
-        if let Err(errors) = validate_lowered(&program) {
-            for e in errors {
-                if e.code == DiagCode::InvariantViolation {
-                    return Err(Diagnostic {
-                        code: e.code,
-                        message: e.message,
-                        span: e.span,
-                        phase: None,
-                    });
-                }
-                non_fatal.push(e);
-            }
-        }
-        Ok((
-            Self {
-                inner: program,
-                non_fatal: non_fatal.clone(),
-            },
-            non_fatal,
-        ))
-    }
-
-    /// Borrow the inner program.
-    pub fn as_ref(&self) -> &LoweredProgram {
-        &self.inner
-    }
-
-    /// Access non-fatal diagnostics collected during validation.
-    pub fn non_fatal_diagnostics(&self) -> &[Diagnostic] {
-        &self.non_fatal
-    }
-
-    /// Consume the wrapper and return the inner program.
-    pub fn into_inner(self) -> LoweredProgram {
-        self.inner
     }
 }
