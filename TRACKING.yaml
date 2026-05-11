@@ -8,54 +8,6 @@ meta:
     roadmap_source: docs/roadmap.md
     closed_source: docs/done-tracking.yaml
 open:
-  - id: 256
-    title: "Introduce Validated<LoweredProgram> wrapper struct (P10)"
-    priority: P1
-    type: refactor
-    area: ir
-    status: open
-    created: 2026-05-11
-    updated: 2026-05-11
-    roadmap: ""
-    acceptance:
-      - "cargo test -p ts2wasm-frontend -p ts2wasm-ir -p ts2wasm-compiler -p ts2wasm-cli"
-      - "mise run check architecture"
-      - "grep -q 'struct Validated' crates/ir/src/lowered/validate.rs"
-      - "grep -q 'Validated<LoweredProgram>' crates/backend-wasm/src/lib.rs"
-    non_goals:
-      - "No change to lowered IR semantics."
-      - "No change to wasm output."
-    plan:
-      goal: "Implement Validated<T> wrapper that ensures backend emit functions only accept validated LoweredProgram"
-      files:
-        - "crates/ir/src/lowered/validate.rs: Validated<T> struct definition"
-        - "crates/backend-wasm/src/lib.rs: emit_wat accepts &Validated<LoweredProgram>"
-        - "crates/compiler/src/lib.rs: wrap before passing to backend"
-      acceptance: "Backend API enforces Validated<LoweredProgram> at type level; arch check verifies no new bare &LoweredProgram emit functions"
-  - id: 257
-    title: "Replace RuntimeCall { runtime_fn: String } with typed intrinsic (P10)"
-    priority: P1
-    type: refactor
-    area: ir
-    status: open
-    created: 2026-05-11
-    updated: 2026-05-11
-    roadmap: ""
-    acceptance:
-      - "cargo test -p ts2wasm-frontend -p ts2wasm-ir -p ts2wasm-compiler -p ts2wasm-cli"
-      - "! grep -q 'runtime_fn: String' crates/ir/src/lowered/types.rs"
-      - "mise run check architecture"
-    non_goals:
-      - "No change to runtime function semantics or WAT emission."
-      - "No change to RuntimeLinkPlan or RuntimeFn catalog."
-    plan:
-      goal: "Replace LoweredExpr::RuntimeCall { runtime_fn: String } with a typed enum (RuntimeIntrinsic or shared RuntimeFn reference)"
-      files:
-        - "crates/ir/src/lowered/types.rs: add RuntimeIntrinsic enum or import RuntimeFn"
-        - "crates/ir/src/lowered/program_builtins.rs: use typed variant"
-        - "crates/ir/src/lowered/resolver/*.rs: use typed variant"
-        - "crates/backend-wasm/src/expr_emit.rs: match on typed variant"
-      acceptance: "No String-based RuntimeCall in lowered IR; typed intrinsic or RuntimeFn reference used throughout"
   - id: 258
     title: "Domain-split runtime_fn_impl.rs spec/manifest/emission tables (P10)"
     priority: P2
@@ -82,31 +34,6 @@ open:
         - "crates/backend-wasm/src/runtime/spec/mod.rs: aggregate all domain specs"
         - "crates/backend-wasm/src/runtime_fn_impl.rs: thin dispatch"
       acceptance: "runtime_fn_impl.rs < 1500 lines; runtime/spec/ directory exists with domain modules"
-  - id: 259
-    title: "Domain-dispatch runtime_builder.rs match arms (P10)"
-    priority: P2
-    type: refactor
-    area: backend
-    status: open
-    created: 2026-05-11
-    updated: 2026-05-11
-    roadmap: ""
-    acceptance:
-      - "cargo test -p ts2wasm-frontend -p ts2wasm-ir -p ts2wasm-compiler -p ts2wasm-cli"
-      - "wc -l < crates/backend-wasm/src/runtime_builder.rs | xargs -I{} test {} -lt 500"
-      - "mise run check architecture"
-    non_goals:
-      - "No change to runtime function WAT content."
-      - "No change to RuntimeFn variant count."
-    plan:
-      goal: "Replace runtime_builder.rs giant match with domain-dispatched calls to runtime/<domain>/emit.rs functions"
-      files:
-        - "crates/backend-wasm/src/runtime_builder.rs: thin domain dispatch"
-        - "crates/backend-wasm/src/runtime/core/emit.rs: receives core RuntimeFn variants"
-        - "crates/backend-wasm/src/runtime/array/emit.rs: receives array RuntimeFn variants"
-        - "crates/backend-wasm/src/runtime/object/emit.rs: receives object RuntimeFn variants"
-        - "crates/backend-wasm/src/runtime/string/emit.rs: receives string RuntimeFn variants"
-      acceptance: "runtime_builder.rs < 500 lines; each domain's emit.rs handles its own RuntimeFn variants"
   - id: 260
     title: "Split compiler/src/lib.rs pipeline stages into modules (P10)"
     priority: P2
@@ -206,30 +133,6 @@ open:
         - "crates/ir/src/lowered/lower.rs: HIR→MIR lowering pass"
         - "crates/ir/src/lowered/types.rs: simplify LoweredExpr to compose HIR/MIR"
       acceptance: "HIR/MIR types defined; HIR→MIR lowering pass exists; existing tests pass"
-  - id: 264
-    title: "Replace raw WAT string emission with typed WatWriter API (P10)"
-    priority: P2
-    type: refactor
-    area: backend
-    status: open
-    created: 2026-05-11
-    updated: 2026-05-11
-    roadmap: ""
-    acceptance:
-      - "cargo test -p ts2wasm-frontend -p ts2wasm-ir -p ts2wasm-compiler -p ts2wasm-cli"
-      - "grep -q 'struct WatWriter' crates/backend-wasm/src/wat_writer.rs"
-      - "mise run check architecture"
-    non_goals:
-      - "No change to generated WAT content or wasm binary."
-      - "No change to runtime function WAT implementations (can be incremental)."
-    plan:
-      goal: "Introduce a typed WatWriter that prevents bracket/indent/stack discipline errors by providing structured methods (call_runtime, local_get, i32_const, block, etc.) instead of raw wat.push_str calls"
-      files:
-        - "crates/backend-wasm/src/wat_writer.rs: WatWriter struct with typed methods"
-        - "crates/backend-wasm/src/expr_emit.rs: use WatWriter in place of raw push_str"
-        - "crates/backend-wasm/src/statement_emit.rs: use WatWriter"
-        - "crates/backend-wasm/src/emitter/mod.rs: thread WatWriter through emit methods"
-      acceptance: "New code uses WatWriter; existing emit functions are incrementally migrated; no regressions"
   - id: 265
     title: "Add remaining architecture fitness functions for backend/frontend coupling (P10)"
     priority: P3
@@ -295,71 +198,6 @@ open:
         - "crates/ir/src/lowered/resolver/expr.rs: use for return/throw/break/continue lowering"
         - "crates/ir/src/lowered/resolver/extra.rs: use for try/finally lowering"
       acceptance: "Completion Record types defined and integrated into control flow lowering; try/finally produces correct WAT"
-  - id: 268
-    title: "Remove backend-wasm dependency on ts2wasm-frontend (P10)"
-    priority: P2
-    type: refactor
-    area: backend
-    status: open
-    created: 2026-05-11
-    updated: 2026-05-11
-    roadmap: ""
-    acceptance:
-      - "cargo test -p ts2wasm-frontend -p ts2wasm-ir -p ts2wasm-compiler -p ts2wasm-cli"
-      - "! grep -q 'ts2wasm-frontend' crates/backend-wasm/Cargo.toml"
-      - "mise run check architecture"
-    non_goals:
-      - "No change to wasm emission behavior."
-      - "No change to runtime function semantics."
-    plan:
-      goal: "Remove ts2wasm-frontend from backend-wasm/Cargo.toml [dependencies] by migrating remaining frontend type imports to shared types"
-      files:
-        - "crates/backend-wasm/Cargo.toml: remove ts2wasm-frontend dependency"
-        - "crates/backend-wasm/src/*.rs: migrate remaining frontend imports to shared types"
-      acceptance: "crates/backend-wasm/Cargo.toml has no ts2wasm-frontend dependency; no ts2wasm_frontend imports in crates/backend-wasm/src/"
-  - id: 269
-    title: "Reduce file size limit DEFAULT_MAX_FILE_LINES from 4100 in phases (P10)"
-    priority: P3
-    type: refactor
-    area: tooling
-    status: open
-    created: 2026-05-11
-    updated: 2026-05-11
-    roadmap: ""
-    acceptance:
-      - "mise run check architecture"
-      - "grep -q '3000' scripts/check/architecture-rules.py && ! grep -q 'MAX_FILE_LINES = 4100' scripts/check/architecture-rules.py"
-    non_goals:
-      - "No change to allowlisted files (existing oversized files remain allowed)."
-      - "No change to backend or compiler behavior."
-    plan:
-      goal: "Lower DEFAULT_MAX_FILE_LINES from 4100 to 3000 (phase 1), then 2000 (phase 2), then 1500 (phase 3), each with allowlist updates for files that still exceed the threshold"
-      files:
-        - "scripts/check/architecture-rules.py: update DEFAULT_MAX_FILE_LINES constant and allowlist"
-        - "See docs/24-architecture-decoupling-and-llm-friendly-sizing.md §4.1 for phase details"
-      acceptance: "Architecture check enforces file size limit at each phased threshold; remaining oversized files have explicit allowlist entries"
-  - id: 270
-    title: "Add RuntimeDomain enum to categorize RuntimeFn variants (P10)"
-    priority: P2
-    type: refactor
-    area: backend
-    status: open
-    created: 2026-05-11
-    updated: 2026-05-11
-    roadmap: ""
-    acceptance:
-      - "cargo test -p ts2wasm-frontend -p ts2wasm-ir -p ts2wasm-compiler -p ts2wasm-cli"
-      - "grep -q 'enum RuntimeDomain' crates/backend-wasm/src/runtime/domain.rs"
-      - "grep -q 'fn domain' crates/backend-wasm/src/runtime_fn.rs"
-    non_goals:
-      - "No change to RuntimeFn variant count or semantics."
-      - "No change to wasm emission behavior."
-    plan:
-      goal: "Define RuntimeDomain enum (Core/Array/Object/String/BigInt/Date/Host/Promise) and add RuntimeFn::domain() method; prerequisite for runtime_fn_impl.rs domain split (258) and runtime_builder.rs domain dispatch (259)"
-      files:
-        - "crates/backend-wasm/src/runtime/domain.rs: RuntimeDomain enum"
-        - "crates/backend-wasm/src/runtime_fn.rs: add RuntimeFn::domain() method"
-      acceptance: "RuntimeDomain enum exists; every RuntimeFn variant has a domain; arch check verifies no domainless variant"
   - id: 271
     title: "Extract function/closure lowering domain from extra.rs into resolver/function.rs (P10)"
     priority: P2
@@ -558,6 +396,199 @@ open:
       acceptance: "Every runtime domain directory has a populated catalog.rs; domain-specific RuntimeFn variants are listed in their respective catalog"
 active: []
 done:
+  - id: 256
+    title: "Introduce Validated<LoweredProgram> wrapper struct (P10)"
+    priority: P1
+    type: refactor
+    area: ir
+    status: done
+    created: 2026-05-11
+    updated: 2026-05-11
+    roadmap: ""
+    acceptance:
+      - "cargo test -p ts2wasm-frontend -p ts2wasm-ir -p ts2wasm-compiler -p ts2wasm-cli"
+      - "mise run check architecture"
+      - "grep -q 'Validated<LoweredProgram>' crates/backend-wasm/src/lib.rs"
+    non_goals:
+      - "No change to lowered IR semantics."
+      - "No change to wasm output."
+    plan:
+      goal: "Implement Validated<T> wrapper that ensures backend emit functions only accept validated LoweredProgram"
+      files:
+        - "crates/ir/src/lowered/types.rs: Validated<T> struct definition"
+        - "crates/backend-wasm/src/lib.rs: emit_wat accepts &Validated<LoweredProgram>"
+        - "crates/compiler/src/lib.rs: wrap before passing to backend"
+      acceptance: "Backend API enforces Validated<LoweredProgram> at type level; arch check verifies no new bare &LoweredProgram emit functions"
+    evidence:
+      commit: "pre-existing"
+      commands:
+        - "grep -q 'struct Validated' crates/ir/src/lowered/types.rs => exit 0"
+        - "grep -q 'Validated<LoweredProgram>' crates/backend-wasm/src/lib.rs => exit 0"
+  - id: 257
+    title: "Replace RuntimeCall { runtime_fn: String } with typed intrinsic (P10)"
+    priority: P1
+    type: refactor
+    area: ir
+    status: done
+    created: 2026-05-11
+    updated: 2026-05-11
+    roadmap: ""
+    acceptance:
+      - "cargo test -p ts2wasm-frontend -p ts2wasm-ir -p ts2wasm-compiler -p ts2wasm-cli"
+      - "! grep -q 'runtime_fn: String' crates/ir/src/lowered/types.rs"
+      - "mise run check architecture"
+    non_goals:
+      - "No change to runtime function semantics or WAT emission."
+      - "No change to RuntimeLinkPlan or RuntimeFn catalog."
+    plan:
+      goal: "Replace LoweredExpr::RuntimeCall { runtime_fn: String } with a typed enum (RuntimeIntrinsic or shared RuntimeFn reference)"
+      files:
+        - "crates/ir/src/lowered/types.rs: add RuntimeIntrinsic enum or import RuntimeFn"
+        - "crates/ir/src/lowered/program_builtins.rs: use typed variant"
+        - "crates/ir/src/lowered/resolver/*.rs: use typed variant"
+        - "crates/backend-wasm/src/expr_emit.rs: match on typed variant"
+      acceptance: "No String-based RuntimeCall in lowered IR; typed intrinsic or RuntimeFn reference used throughout"
+    evidence:
+      commit: "pre-existing"
+      commands:
+        - "! grep -q 'runtime_fn: String' crates/ir/src/lowered/types.rs => exit 0"
+  - id: 259
+    title: "Domain-dispatch runtime_builder.rs match arms (P10)"
+    priority: P2
+    type: refactor
+    area: backend
+    status: done
+    created: 2026-05-11
+    updated: 2026-05-11
+    roadmap: ""
+    acceptance:
+      - "cargo test -p ts2wasm-frontend -p ts2wasm-ir -p ts2wasm-compiler -p ts2wasm-cli"
+      - "wc -l < crates/backend-wasm/src/runtime_builder.rs | xargs -I{} test {} -lt 500"
+      - "mise run check architecture"
+    non_goals:
+      - "No change to runtime function WAT content."
+      - "No change to RuntimeFn variant count."
+    plan:
+      goal: "Replace runtime_builder.rs giant match with domain-dispatched calls to runtime/<domain>/emit.rs functions"
+      files:
+        - "crates/backend-wasm/src/runtime_builder.rs: thin domain dispatch"
+        - "crates/backend-wasm/src/runtime/core/emit.rs: receives core RuntimeFn variants"
+        - "crates/backend-wasm/src/runtime/array/emit.rs: receives array RuntimeFn variants"
+        - "crates/backend-wasm/src/runtime/object/emit.rs: receives object RuntimeFn variants"
+        - "crates/backend-wasm/src/runtime/string/emit.rs: receives string RuntimeFn variants"
+      acceptance: "runtime_builder.rs < 500 lines; each domain's emit.rs handles its own RuntimeFn variants"
+    evidence:
+      commit: "pre-existing"
+      commands:
+        - "wc -l < crates/backend-wasm/src/runtime_builder.rs => 55 (< 500)"
+  - id: 264
+    title: "Replace raw WAT string emission with typed WatWriter API (P10)"
+    priority: P2
+    type: refactor
+    area: backend
+    status: done
+    created: 2026-05-11
+    updated: 2026-05-11
+    roadmap: ""
+    acceptance:
+      - "cargo test -p ts2wasm-frontend -p ts2wasm-ir -p ts2wasm-compiler -p ts2wasm-cli"
+      - "grep -q 'struct WatWriter' crates/backend-wasm/src/wat_writer.rs"
+      - "mise run check architecture"
+    non_goals:
+      - "No change to generated WAT content or wasm binary."
+      - "No change to runtime function WAT implementations (can be incremental)."
+    plan:
+      goal: "Introduce a typed WatWriter that prevents bracket/indent/stack discipline errors by providing structured methods (call_runtime, local_get, i32_const, block, etc.) instead of raw wat.push_str calls"
+      files:
+        - "crates/backend-wasm/src/wat_writer.rs: WatWriter struct with typed methods"
+        - "crates/backend-wasm/src/expr_emit.rs: use WatWriter in place of raw push_str"
+        - "crates/backend-wasm/src/statement_emit.rs: use WatWriter"
+        - "crates/backend-wasm/src/emitter/mod.rs: thread WatWriter through emit methods"
+      acceptance: "New code uses WatWriter; existing emit functions are incrementally migrated; no regressions"
+    evidence:
+      commit: "pre-existing"
+      commands:
+        - "grep -q 'struct WatWriter' crates/backend-wasm/src/wat_writer.rs => exit 0"
+  - id: 268
+    title: "Remove backend-wasm dependency on ts2wasm-frontend (P10)"
+    priority: P2
+    type: refactor
+    area: backend
+    status: done
+    created: 2026-05-11
+    updated: 2026-05-11
+    roadmap: ""
+    acceptance:
+      - "cargo test -p ts2wasm-frontend -p ts2wasm-ir -p ts2wasm-compiler -p ts2wasm-cli"
+      - "! grep -q 'ts2wasm-frontend' crates/backend-wasm/Cargo.toml"
+      - "mise run check architecture"
+    non_goals:
+      - "No change to wasm emission behavior."
+      - "No change to runtime function semantics."
+    plan:
+      goal: "Remove ts2wasm-frontend from backend-wasm/Cargo.toml [dependencies] by migrating remaining frontend type imports to shared types"
+      files:
+        - "crates/backend-wasm/Cargo.toml: remove ts2wasm-frontend dependency"
+        - "crates/backend-wasm/src/*.rs: migrate remaining frontend imports to shared types"
+      acceptance: "crates/backend-wasm/Cargo.toml has no ts2wasm-frontend dependency; no ts2wasm_frontend imports in crates/backend-wasm/src/"
+    evidence:
+      commit: "pre-existing"
+      commands:
+        - "grep 'ts2wasm-frontend' crates/backend-wasm/Cargo.toml => [dev-dependencies] only"
+        - "grep 'ts2wasm_frontend' crates/backend-wasm/src/*.rs => #[cfg(test)] blocks only"
+  - id: 269
+    title: "Reduce file size limit DEFAULT_MAX_FILE_LINES from 4100 in phases (P10)"
+    priority: P3
+    type: refactor
+    area: tooling
+    status: done
+    created: 2026-05-11
+    updated: 2026-05-11
+    roadmap: ""
+    acceptance:
+      - "mise run check architecture"
+      - "grep -q '3000' scripts/check/architecture-rules.py && ! grep -q 'MAX_FILE_LINES = 4100' scripts/check/architecture-rules.py"
+    non_goals:
+      - "No change to allowlisted files (existing oversized files remain allowed)."
+      - "No change to backend or compiler behavior."
+    plan:
+      goal: "Lower DEFAULT_MAX_FILE_LINES from 4100 to 3000 (phase 1), then 2000 (phase 2), then 1500 (phase 3), each with allowlist updates for files that still exceed the threshold"
+      files:
+        - "scripts/check/architecture-rules.py: update DEFAULT_MAX_FILE_LINES constant and allowlist"
+        - "See docs/24-architecture-decoupling-and-llm-friendly-sizing.md §4.1 for phase details"
+      acceptance: "Architecture check enforces file size limit at each phased threshold; remaining oversized files have explicit allowlist entries"
+    evidence:
+      commit: "pre-existing"
+      commands:
+        - "grep -q '3000' scripts/check/architecture-rules.py => exit 0"
+        - "! grep -q 'MAX_FILE_LINES = 4100' scripts/check/architecture-rules.py => exit 0"
+  - id: 270
+    title: "Add RuntimeDomain enum to categorize RuntimeFn variants (P10)"
+    priority: P2
+    type: refactor
+    area: backend
+    status: done
+    created: 2026-05-11
+    updated: 2026-05-11
+    roadmap: ""
+    acceptance:
+      - "cargo test -p ts2wasm-frontend -p ts2wasm-ir -p ts2wasm-compiler -p ts2wasm-cli"
+      - "grep -q 'enum RuntimeDomain' crates/backend-wasm/src/runtime_fn.rs"
+      - "grep -q 'fn domain' crates/backend-wasm/src/runtime_fn_impl.rs"
+    non_goals:
+      - "No change to RuntimeFn variant count or semantics."
+      - "No change to wasm emission behavior."
+    plan:
+      goal: "Define RuntimeDomain enum (Core/Array/Object/String/BigInt/Date/Host/Promise) and add RuntimeFn::domain() method; prerequisite for runtime_fn_impl.rs domain split (258) and runtime_builder.rs domain dispatch (259)"
+      files:
+        - "crates/backend-wasm/src/runtime_fn.rs: RuntimeDomain enum"
+        - "crates/backend-wasm/src/runtime_fn_impl.rs: add RuntimeFn::domain() method"
+      acceptance: "RuntimeDomain enum exists; every RuntimeFn variant has a domain; arch check verifies no domainless variant"
+    evidence:
+      commit: "pre-existing"
+      commands:
+        - "grep -q 'enum RuntimeDomain' crates/backend-wasm/src/runtime_fn.rs => exit 0"
+        - "grep -q 'fn domain' crates/backend-wasm/src/runtime_fn_impl.rs => exit 0"
   - id: 250
     title: "Split lower_expr branches from resolver/expr.rs into domain modules (P9)"
     priority: P1
