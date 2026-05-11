@@ -1102,7 +1102,7 @@ fn resolve_stmt_with_outer_bindings(
                             unreachable!()
                         }
                     }
-                    Expr::Null { .. } => Some("null".to_owned()),
+                    Expr::Null { .. } => None,
                     Expr::Member { property, .. } => Some(property.clone()),
                     _ => {
                         return Err(Diagnostic {

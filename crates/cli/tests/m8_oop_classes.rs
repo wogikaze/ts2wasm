@@ -93,6 +93,11 @@ fn build_smoke_class_extends_builtin() {
 }
 
 #[test]
+fn build_smoke_class_extends_null() {
+    assert_fixture_build_smoke("classes/class-extends-null.ts");
+}
+
+#[test]
 fn build_smoke_class_expression_named() {
     assert_fixture_build_smoke("classes/class-expression-named.ts");
 }

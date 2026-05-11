@@ -1,8 +1,5 @@
 // Test extends null
 class NullProto extends null {
-  constructor() {
-    super();
-  }
   getValue() {
     return 42;
   }

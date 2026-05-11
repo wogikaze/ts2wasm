@@ -8,20 +8,6 @@ meta:
     roadmap_source: docs/roadmap.md
     closed_source: docs/done-tracking.yaml
 open:
-  - id: 240
-    title: "Support extends null (W9a)"
-    priority: P2
-    type: feature
-    area: backend
-    status: open
-    created: 2026-05-11
-    updated: 2026-05-11
-    roadmap: W9a
-    acceptance:
-      - "cargo nextest run -p ts2wasm-cli --test m8_oop_classes build_smoke_class_extends_null"
-    non_goals:
-      - "No super() call in null-extended classes (JS spec: throws)."
-
   - id: 241
     title: "Pre-allocate class fields capacity for new expression (W9a)"
     priority: P2
@@ -49,7 +35,27 @@ open:
       - "cargo nextest run -p ts2wasm-cli --test m2_node_diff class_basic_matches_node_output"
     non_goals:
       - "No new runtime implementation."
-active: []
+active:
+  - id: 240
+    title: "Support extends null (W9a)"
+    priority: P2
+    type: feature
+    area: backend
+    status: active
+    created: 2026-05-11
+    updated: 2026-05-11
+    roadmap: W9a
+    acceptance:
+      - "cargo nextest run -p ts2wasm-cli --test m8_oop_classes build_smoke_class_extends_null"
+    non_goals:
+      - "No super() call in null-extended classes (JS spec: throws)."
+    plan:
+      goal: "Build class declarations with extends null while rejecting super() in that shape"
+      files:
+        - "fixtures/classes/class-extends-null.ts: acceptance fixture"
+        - "crates/cli/tests/m8_oop_classes.rs: build smoke hook"
+        - "crates/ir/src/builtin_resolver.rs: treat extends null as no parent constructor"
+      acceptance: "cargo nextest run -p ts2wasm-cli --test m8_oop_classes build_smoke_class_extends_null"
 done:
   - id: 239
     title: "Support super.prop in static methods (W9a)"
