@@ -170,6 +170,11 @@ FUNCTION_LENGTH_ALLOWLIST = {
     ("crates/ir/src/lowered/validate.rs", "validate_expr"): "P7: resolver decomposition",
     ("crates/ir/src/name_resolver.rs", "resolve_stmt"): "P7: resolver decomposition",
     ("crates/ir/src/name_resolver.rs", "resolve_expr"): "P7: resolver decomposition",
+    # #334: remaining oversized functions allowlisted
+    ("crates/compiler/src/test262_preprocessor.rs", "build_feature_stubs"): "P4: preprocessor stub builder — pending split",
+    ("crates/frontend/src/parser/expressions_main.rs", "primary"): "P4: parser match dispatch — pending decomposition",
+    ("crates/frontend/src/parser/statements_class.rs", "class_decl_body"): "P4: parser class body — pending decomposition",
+    ("crates/ir/src/lowered/mir_dump.rs", "runtime_intrinsic_name"): "P4: dump intrinsic name match — pending split",
 }
 
 
