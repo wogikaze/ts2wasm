@@ -1,7 +1,16 @@
 // Replaced include! with real module boundaries
+pub mod classes;
+pub mod completion;
+pub mod ctx;
+pub mod facts;
+pub mod hir;
+pub mod lower;
+pub mod mir;
+pub mod object_kernel;
 pub mod program;
 pub mod resolver;
 pub mod runtime_intrinsic;
+pub mod symbols;
 pub mod types;
 pub mod validate;
 
