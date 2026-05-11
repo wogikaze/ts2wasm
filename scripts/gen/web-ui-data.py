@@ -386,6 +386,8 @@ def normalized_suite_metrics(item):
     executable_bp = int(item.get("executable_build_pass", 0) or 0)
     differential_pass = int(item.get("differential_pass", 0) or 0)
     negative_compile_pass = int(item.get("negative_compile_pass", 0) or 0)
+    negative_compile_unverified = int(item.get("negative_compile_unverified", 0) or 0)
+    negative_compile_mismatch = int(item.get("negative_compile_mismatch", 0) or 0)
     conformance_pass = int(item.get("conformance_pass", 0) or 0)
     if "semantic_pass" not in item and "build_pass" not in item:
         semantic_pass = int(item.get("passed", 0) or 0)
@@ -412,6 +414,8 @@ def normalized_suite_metrics(item):
         "executable_build_pass": executable_bp,
         "differential_pass": differential_pass,
         "negative_compile_pass": negative_compile_pass,
+        "negative_compile_unverified": negative_compile_unverified,
+        "negative_compile_mismatch": negative_compile_mismatch,
         "conformance_pass": conformance_pass,
         "unsupported": unsupported,
         "blocked": blocked,

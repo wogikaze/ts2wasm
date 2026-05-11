@@ -1042,6 +1042,8 @@ def main():
             print("executable_build_pass=0")
             print("differential_pass=0")
             print("negative_compile_pass=0")
+            print("negative_compile_unverified=0")
+            print("negative_compile_mismatch=0")
             print("conformance_pass=0")
             print("unsupported_diagcodes=")
             print("unsupported_features=")
@@ -2056,8 +2058,10 @@ def main():
     blocked_count = 0
     build_only_count = 0
     verified_negative_count = 0
+    negative_compile_unverified_count = 0
+    negative_compile_mismatch_count = 0
     skip_count = 0
-    
+
     unsupported_diag_counts = {}
     unsupported_feature_counts = {}
     unsupported_by_phase = {}
@@ -2286,7 +2290,7 @@ def main():
         """Update counters/detail output from a normalized result dict."""
         nonlocal executed, build_pass_count, semantic_pass_count, mismatch_count
         nonlocal runtime_error_count, blocked_count, fail_count, build_only_count
-        nonlocal verified_negative_count
+        nonlocal verified_negative_count, negative_compile_unverified_count, negative_compile_mismatch_count
         nonlocal unsupported_count, unsupported_diag_counts, unsupported_feature_counts
         nonlocal unsupported_by_phase
         nonlocal build_pass_by_detail
@@ -2306,7 +2310,7 @@ def main():
             _append_suite_detail(result)
 
         if result["unsupported"] and result["diag_code"] == "ExpectedNegativeSyntax":
-            unsupported_count += 1
+            negative_compile_mismatch_count += 1
             unsupported_diag_counts["ExpectedNegativeSyntax"] = unsupported_diag_counts.get("ExpectedNegativeSyntax", 0) + 1
             unsupported_feature_counts["negative-parse-syntaxerror"] = unsupported_feature_counts.get("negative-parse-syntaxerror", 0) + 1
             if result["detail_line"]:
@@ -2355,8 +2359,12 @@ def main():
                 file_details.append(result["detail_line"])
             return
         if result["unsupported"]:
-            unsupported_count += 1
             diag_code = result["diag_code"]
+            # Separate negative-compile-unverified from generic unsupported
+            if diag_code == "NegativeCompileUnverified":
+                negative_compile_unverified_count += 1
+            else:
+                unsupported_count += 1
             feat = result["feature_label"]
             unsupported_diag_counts[diag_code] = unsupported_diag_counts.get(diag_code, 0) + 1
             unsupported_feature_counts[feat] = unsupported_feature_counts.get(feat, 0) + 1
@@ -2594,6 +2602,8 @@ def main():
     runtime_error_count = 0
     build_only_count = 0
     verified_negative_count = 0
+    negative_compile_unverified_count = 0
+    negative_compile_mismatch_count = 0
     build_pass_by_detail = {}
     unresolved_name_by_symbol = {}
     harness_includes_used = set()
@@ -2770,7 +2780,7 @@ def main():
                         _append_suite_detail(result)
 
                     if result["unsupported"] and result["diag_code"] == "ExpectedNegativeSyntax":
-                        unsupported_count += 1
+                        negative_compile_mismatch_count += 1
                         unsupported_diag_counts["ExpectedNegativeSyntax"] = unsupported_diag_counts.get("ExpectedNegativeSyntax", 0) + 1
                         unsupported_feature_counts["negative-parse-syntaxerror"] = unsupported_feature_counts.get("negative-parse-syntaxerror", 0) + 1
                         if result["detail_line"]:
@@ -2820,8 +2830,12 @@ def main():
                         continue
                     
                     if result["unsupported"]:
-                        unsupported_count += 1
                         diag_code = result["diag_code"]
+                        # Separate negative-compile-unverified from generic unsupported
+                        if diag_code == "NegativeCompileUnverified":
+                            negative_compile_unverified_count += 1
+                        else:
+                            unsupported_count += 1
                         feat = result["feature_label"]
                         unsupported_diag_counts[diag_code] = unsupported_diag_counts.get(diag_code, 0) + 1
                         unsupported_feature_counts[feat] = unsupported_feature_counts.get(feat, 0) + 1
@@ -2889,6 +2903,8 @@ def main():
         "unsupported": unsupported_count,
         "blocked": blocked_count,
         "verified_negative": verified_negative_count,
+        "negative_compile_unverified": negative_compile_unverified_count,
+        "negative_compile_mismatch": negative_compile_mismatch_count,
         "build_only": build_only_count,
         "skip_with_reason": skip_count,
         "executable_build_pass": executable_build_pass,

@@ -42,41 +42,6 @@ open:
     acceptance criterion is not yet met.
 
     '
-- id: 285
-  title: Verify negative compile outcomes separately from runtime semantic passes
-  priority: P2
-  type: tooling
-  area: coverage
-  status: open
-  created: 2026-05-11
-  updated: 2026-05-11
-  roadmap: P11-semantic-coverage-unblock
-  acceptance:
-  - python3 scripts/manager.py reference-coverage test262 --jobs 1
-  - grep -R '"negative_compile_pass"' site/docs/coverage/web-ui/public/data web-ui/public/data site/docs/public/dashboard/data
-  - grep -R '"negative_compile_unverified"' site/docs/coverage/web-ui/public/data web-ui/public/data site/docs/public/dashboard/data
-  - grep -R '"negative_compile_mismatch"' site/docs/coverage/web-ui/public/data web-ui/public/data site/docs/public/dashboard/data
-  non_goals:
-  - No widening of compiler syntax support.
-  - No runtime execution for negative compile tests.
-  plan:
-    goal: 'Treat test262 negative compile results as conformance outcomes, but keep them separate from runtime differential
-      semantic passes. Replace the ambiguous NegativeCompileUnverified unsupported bucket with explicit pass/mismatch/unverified
-      categories.
-
-      '
-    files:
-    - scripts/reference-coverage.py
-    - scripts/test262_metadata.py
-    - scripts/diagnostic_mapping.py
-    - docs/current-state.md
-  depends_on:
-  - 280
-  - 281
-  notes: 'A negative parse/SyntaxError test can be a conformance pass, but it should not inflate differential runtime semantic
-    coverage.
-
-    '
 - id: 286
   title: Split compiler compile_source from file I/O and manifest output
   priority: P3
@@ -448,6 +413,43 @@ open:
     - scripts/check/architecture-rules.py
   notes: LOC is not enough. Fan-out, public API count, and match size are better coupling indicators for LLM-friendly maintenance.
 done:
+- id: 285
+  title: Verify negative compile outcomes separately from runtime semantic passes
+  priority: P2
+  type: tooling
+  area: coverage
+  status: done
+  created: 2026-05-11
+  updated: 2026-05-12
+  roadmap: P11-semantic-coverage-unblock
+  acceptance:
+  - python3 scripts/manager.py reference-coverage test262 --jobs 1
+  - grep -R '"negative_compile_pass"' site/docs/coverage/web-ui/public/data web-ui/public/data site/docs/public/dashboard/data
+  - grep -R '"negative_compile_unverified"' site/docs/coverage/web-ui/public/data web-ui/public/data site/docs/public/dashboard/data
+  - grep -R '"negative_compile_mismatch"' site/docs/coverage/web-ui/public/data web-ui/public/data site/docs/public/dashboard/data
+  non_goals:
+  - No widening of compiler syntax support.
+  - No runtime execution for negative compile tests.
+  plan:
+    goal: 'Treat test262 negative compile results as conformance outcomes, but keep them separate from runtime differential
+      semantic passes. Replace the ambiguous NegativeCompileUnverified unsupported bucket with explicit pass/mismatch/unverified
+      categories.
+
+      '
+    files:
+    - scripts/reference-coverage.py
+    - scripts/test262_metadata.py
+    - scripts/diagnostic_mapping.py
+    - docs/current-state.md
+  depends_on:
+  - 280
+  - 281
+  evidence:
+    commit: TBD
+    commands:
+    - python3 scripts/manager.py reference-coverage test262 --jobs 1 --path-filter language/statements => exit 0, negative_compile_pass=640, negative_compile_unverified=884, negative_compile_mismatch=0
+    - python3 scripts/gen/web-ui-data.py => exit 0
+    - python3 -c "json check" => all 3 fields present in all 3 dashboard data directories
 - id: 284
   title: Implement assert.sameValue MVP and add first positive differential test262 pass
   priority: P2
