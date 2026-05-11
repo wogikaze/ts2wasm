@@ -1,4 +1,4 @@
-use std::collections::{HashMap, HashSet};
+use std::collections::HashMap;
 
 use super::program_builtins::looks_like_regexp_literal;
 use crate::builtin_resolved::ResolvedExpr;

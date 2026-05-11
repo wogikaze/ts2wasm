@@ -1,12 +1,14 @@
+use std::collections::HashMap;
+
 use super::{
     is_array_from_call_receiver, is_array_prototype_map_call_receiver,
-    is_array_prototype_push_expr, is_identity_arrow_callback, is_invalid_date_constructor_expr,
-    is_set_prototype_property_expr, is_static_date_constructor_expr, is_string_split_result_expr,
+    is_array_prototype_push_expr, is_identity_arrow_callback, is_set_prototype_property_expr,
+    is_static_date_constructor_expr, is_string_split_result_expr,
     numeric_ascending_sort_arrow_callback, private_storage_observable_access_diagnostic,
     string_constructor_arrow_callback, string_split_arrow_separator, unary_plus_arrow_callback,
     unsupported_array_map_diagnostic, unsupported_array_sort_diagnostic,
 };
-use crate::builtin_resolved::{ResolvedArrayElement, ResolvedExpr};
+use crate::builtin_resolved::{ResolvedArrayElement, ResolvedExpr, ResolvedParam, ResolvedStmt};
 use crate::lowered::*;
 use ts2wasm_shared::{DiagCode, Diagnostic, Span};
 
@@ -1849,6 +1851,1003 @@ impl<'a> super::Resolver<'a> {
             private_slot_count,
             span: Span::generated("new"),
         })
+    }
+
+    pub(super) fn lower_set_for_each_method(
+        &mut self,
+        receiver: LoweredExpr,
+        _resolved_receiver: &ResolvedExpr,
+        args: &[ResolvedExpr],
+        span: Span,
+    ) -> Result<LoweredExpr, Diagnostic> {
+        let callback = &args[0];
+
+        let (func_id, captures, param_count) = match callback {
+            ResolvedExpr::ArrowFn {
+                params,
+                body,
+                body_stmts,
+                ..
+            } => {
+                if params.len() > 3 {
+                    return Err(Diagnostic {
+                        code: DiagCode::UnsupportedSyntax,
+                        message:
+                            "Set.prototype.forEach callbacks with more than 3 parameters are not supported"
+                                .to_owned(),
+                        span: Some(span),
+                        phase: None,
+                    });
+                }
+                let LoweredExpr::ArrowFn {
+                    func_id, captures, ..
+                } = self.lower_arrow_fn(params, body, body_stmts)?
+                else {
+                    return Err(Diagnostic {
+                        code: DiagCode::UnsupportedSyntax,
+                        message: "failed to lower Set.prototype.forEach arrow callback".to_owned(),
+                        span: Some(span),
+                        phase: None,
+                    });
+                };
+                (func_id, captures, params.len())
+            }
+            _ => {
+                return Err(Diagnostic {
+                    code: DiagCode::UnsupportedSyntax,
+                    message:
+                        "non-arrow-function callbacks are not yet supported for Set.prototype.forEach"
+                            .to_owned(),
+                    span: Some(span),
+                    phase: None,
+                });
+            }
+        };
+
+        let receiver_local = match &receiver {
+            LoweredExpr::Local(id, _) => *id,
+            _ => {
+                return Err(Diagnostic {
+                    code: DiagCode::UnsupportedSyntax,
+                    message: "non-identifier receiver not yet supported for Set.prototype.forEach"
+                        .to_owned(),
+                    span: Some(span),
+                    phase: None,
+                });
+            }
+        };
+
+        let values = self.alloc_temp();
+        let values_len = self.alloc_temp();
+        let i = self.alloc_temp();
+
+        let mut stmts = Vec::new();
+
+        // values = RuntimeCall("SetValuesArray", [receiver])
+        stmts.push(LoweredStmt::Let(
+            values,
+            LoweredExpr::RuntimeCall {
+                intrinsic: RuntimeIntrinsic::SetValuesArray,
+                args: vec![LoweredExpr::Local(receiver_local, Span::generated("local"))],
+                span: Span::generated("runtime_call"),
+            },
+            Span::generated("Let"),
+        ));
+
+        // values_len = GetLength(values)
+        stmts.push(LoweredStmt::Let(
+            values_len,
+            LoweredExpr::GetLength(
+                Box::new(LoweredExpr::Local(values, Span::generated("local"))),
+                Span::generated("get_length"),
+            ),
+            Span::generated("Let"),
+        ));
+
+        let mut while_body = Vec::new();
+
+        let val = self.alloc_temp();
+
+        // val = ArrayGet(values, i)
+        while_body.push(LoweredStmt::Let(
+            val,
+            LoweredExpr::ArrayGet {
+                arr: Box::new(LoweredExpr::Local(values, Span::generated("local"))),
+                index: Box::new(LoweredExpr::Local(i, Span::generated("local"))),
+                span: Span::generated("array_get"),
+            },
+            Span::generated("Let"),
+        ));
+
+        // Call callback(value, value, set) — key === value per spec
+        let call_args = {
+            let explicit_args = vec![
+                LoweredExpr::Local(val, Span::generated("local")),
+                LoweredExpr::Local(val, Span::generated("local")),
+                LoweredExpr::Local(receiver_local, Span::generated("local")),
+            ];
+            let mut call_args: Vec<LoweredExpr> =
+                explicit_args.into_iter().take(param_count).collect();
+            call_args.extend(
+                captures
+                    .iter()
+                    .copied()
+                    .map(|id| LoweredExpr::Local(id, Span::generated("local"))),
+            );
+            LoweredExpr::Call {
+                kind: FunctionCallKind::User(func_id),
+                args: call_args,
+                span: Span::generated("call"),
+            }
+        };
+
+        while_body.push(LoweredStmt::Expr(call_args, Span::generated("expr_stmt")));
+
+        // i += 1
+        while_body.push(LoweredStmt::Assign(
+            i,
+            LoweredExpr::Binary {
+                left: Box::new(LoweredExpr::Local(i, Span::generated("local"))),
+                op: LoweredBinaryOp::Add,
+                right: Box::new(LoweredExpr::Number(1, Span::generated("num"))),
+                span: Span::generated("binary"),
+            },
+            Span::generated("Assign"),
+        ));
+
+        // i = 0
+        stmts.push(LoweredStmt::Let(
+            i,
+            LoweredExpr::Number(0, Span::generated("num")),
+            Span::generated("Let"),
+        ));
+
+        // While(i < values_len, body)
+        stmts.push(LoweredStmt::While {
+            condition: LoweredExpr::Binary {
+                left: Box::new(LoweredExpr::Local(i, Span::generated("local"))),
+                op: LoweredBinaryOp::Less,
+                right: Box::new(LoweredExpr::Local(values_len, Span::generated("local"))),
+                span: Span::generated("binary"),
+            },
+            body: while_body,
+            span: Span::generated("while"),
+        });
+
+        Ok(LoweredExpr::Block {
+            stmts,
+            result: Box::new(LoweredExpr::Undefined(Span::generated("undef"))),
+            span: Span::generated("block"),
+        })
+    }
+
+    pub(super) fn lower_map_for_each_method(
+        &mut self,
+        receiver: LoweredExpr,
+        _resolved_receiver: &ResolvedExpr,
+        args: &[ResolvedExpr],
+        span: Span,
+    ) -> Result<LoweredExpr, Diagnostic> {
+        let callback = &args[0];
+
+        let (func_id, captures, param_count) = match callback {
+            ResolvedExpr::ArrowFn {
+                params,
+                body,
+                body_stmts,
+                ..
+            } => {
+                if params.len() > 3 {
+                    return Err(Diagnostic {
+                        code: DiagCode::UnsupportedSyntax,
+                        message:
+                            "Map.prototype.forEach callbacks with more than 3 parameters are not supported"
+                                .to_owned(),
+                        span: Some(span),
+                        phase: None,
+                    });
+                }
+                let LoweredExpr::ArrowFn {
+                    func_id, captures, ..
+                } = self.lower_arrow_fn(params, body, body_stmts)?
+                else {
+                    return Err(Diagnostic {
+                        code: DiagCode::UnsupportedSyntax,
+                        message: "failed to lower Map.prototype.forEach arrow callback".to_owned(),
+                        span: Some(span),
+                        phase: None,
+                    });
+                };
+                (func_id, captures, params.len())
+            }
+            _ => {
+                return Err(Diagnostic {
+                    code: DiagCode::UnsupportedSyntax,
+                    message:
+                        "non-arrow-function callbacks are not yet supported for Map.prototype.forEach"
+                            .to_owned(),
+                    span: Some(span),
+                    phase: None,
+                });
+            }
+        };
+
+        let receiver_local = match &receiver {
+            LoweredExpr::Local(id, _) => *id,
+            _ => {
+                return Err(Diagnostic {
+                    code: DiagCode::UnsupportedSyntax,
+                    message: "non-identifier receiver not yet supported for Map.prototype.forEach"
+                        .to_owned(),
+                    span: Some(span),
+                    phase: None,
+                });
+            }
+        };
+
+        let entries = self.alloc_temp();
+        let entries_len = self.alloc_temp();
+        let i = self.alloc_temp();
+
+        let mut stmts = Vec::new();
+
+        // entries = RuntimeCall("MapEntriesArray", [receiver])
+        stmts.push(LoweredStmt::Let(
+            entries,
+            LoweredExpr::RuntimeCall {
+                intrinsic: RuntimeIntrinsic::MapEntriesArray,
+                args: vec![LoweredExpr::Local(receiver_local, Span::generated("local"))],
+                span: Span::generated("runtime_call"),
+            },
+            Span::generated("Let"),
+        ));
+
+        // entries_len = GetLength(entries)
+        stmts.push(LoweredStmt::Let(
+            entries_len,
+            LoweredExpr::GetLength(
+                Box::new(LoweredExpr::Local(entries, Span::generated("local"))),
+                Span::generated("get_length"),
+            ),
+            Span::generated("Let"),
+        ));
+
+        let mut while_body = Vec::new();
+
+        let key = self.alloc_temp();
+        let val = self.alloc_temp();
+
+        // key = ArrayGet(entries, i)
+        while_body.push(LoweredStmt::Let(
+            key,
+            LoweredExpr::ArrayGet {
+                arr: Box::new(LoweredExpr::Local(entries, Span::generated("local"))),
+                index: Box::new(LoweredExpr::Local(i, Span::generated("local"))),
+                span: Span::generated("array_get"),
+            },
+            Span::generated("Let"),
+        ));
+
+        // val = ArrayGet(entries, i + 1)
+        while_body.push(LoweredStmt::Let(
+            val,
+            LoweredExpr::ArrayGet {
+                arr: Box::new(LoweredExpr::Local(entries, Span::generated("local"))),
+                index: Box::new(LoweredExpr::Binary {
+                    left: Box::new(LoweredExpr::Local(i, Span::generated("local"))),
+                    op: LoweredBinaryOp::Add,
+                    right: Box::new(LoweredExpr::Number(1, Span::generated("num"))),
+                    span: Span::generated("binary"),
+                }),
+                span: Span::generated("array_get"),
+            },
+            Span::generated("Let"),
+        ));
+
+        // Call callback(value, key, map) — value is first arg per spec
+        let call_args = {
+            let explicit_args = vec![
+                LoweredExpr::Local(val, Span::generated("local")),
+                LoweredExpr::Local(key, Span::generated("local")),
+                LoweredExpr::Local(receiver_local, Span::generated("local")),
+            ];
+            let mut call_args: Vec<LoweredExpr> =
+                explicit_args.into_iter().take(param_count).collect();
+            call_args.extend(
+                captures
+                    .iter()
+                    .copied()
+                    .map(|id| LoweredExpr::Local(id, Span::generated("local"))),
+            );
+            LoweredExpr::Call {
+                kind: FunctionCallKind::User(func_id),
+                args: call_args,
+                span: Span::generated("call"),
+            }
+        };
+
+        while_body.push(LoweredStmt::Expr(call_args, Span::generated("expr_stmt")));
+
+        // i += 2
+        while_body.push(LoweredStmt::Assign(
+            i,
+            LoweredExpr::Binary {
+                left: Box::new(LoweredExpr::Local(i, Span::generated("local"))),
+                op: LoweredBinaryOp::Add,
+                right: Box::new(LoweredExpr::Number(2, Span::generated("num"))),
+                span: Span::generated("binary"),
+            },
+            Span::generated("Assign"),
+        ));
+
+        // i = 0
+        stmts.push(LoweredStmt::Let(
+            i,
+            LoweredExpr::Number(0, Span::generated("num")),
+            Span::generated("Let"),
+        ));
+
+        // While(i < entries_len, body)
+        stmts.push(LoweredStmt::While {
+            condition: LoweredExpr::Binary {
+                left: Box::new(LoweredExpr::Local(i, Span::generated("local"))),
+                op: LoweredBinaryOp::Less,
+                right: Box::new(LoweredExpr::Local(entries_len, Span::generated("local"))),
+                span: Span::generated("binary"),
+            },
+            body: while_body,
+            span: Span::generated("while"),
+        });
+
+        Ok(LoweredExpr::Block {
+            stmts,
+            result: Box::new(LoweredExpr::Undefined(Span::generated("undef"))),
+            span: Span::generated("block"),
+        })
+    }
+
+    pub(super) fn lower_function_call_args(
+        &mut self,
+        func_id: FuncId,
+        receiver: LoweredExpr,
+        args: &[ResolvedExpr],
+    ) -> Result<Vec<LoweredExpr>, Diagnostic> {
+        let signature = self
+            .symbols
+            .function_signatures
+            .get(&func_id)
+            .copied()
+            .unwrap_or_default();
+        let explicit_args = if !signature.has_rest && !signature.needs_arguments {
+            if let Some(local_id) = self.single_dense_array_local_spread_arg(args) {
+                (0..signature.explicit_params)
+                    .map(|index| LoweredExpr::ArrayGet {
+                        arr: Box::new(LoweredExpr::Local(local_id, Span::generated("local"))),
+                        index: Box::new(LoweredExpr::Number(index as i32, Span::generated("num"))),
+
+                        span: Span::generated("array_get"),
+                    })
+                    .collect()
+            } else if let Some(local_id) = self.single_set_local_spread_arg(args) {
+                (0..signature.explicit_params)
+                    .map(|index| LoweredExpr::ArrayGet {
+                        arr: Box::new(LoweredExpr::RuntimeCall {
+                            intrinsic: RuntimeIntrinsic::SetValuesArray,
+                            args: vec![LoweredExpr::Local(local_id, Span::generated("local"))],
+
+                            span: Span::generated("runtime_call"),
+                        }),
+                        index: Box::new(LoweredExpr::Number(index as i32, Span::generated("num"))),
+
+                        span: Span::generated("array_get"),
+                    })
+                    .collect()
+            } else {
+                self.lower_call_args(args)?
+            }
+        } else {
+            self.lower_call_args(args)?
+        };
+        let mut lowered_args = Vec::new();
+
+        if signature.needs_receiver {
+            lowered_args.push(receiver);
+        }
+
+        if signature.has_rest {
+            lowered_args.extend(explicit_args.iter().cloned());
+        } else {
+            lowered_args.extend(
+                explicit_args
+                    .iter()
+                    .take(signature.explicit_params)
+                    .cloned(),
+            );
+            for _ in explicit_args.len()..signature.explicit_params {
+                lowered_args.push(LoweredExpr::Undefined(Span::generated("undef")));
+            }
+        }
+
+        if signature.needs_arguments {
+            let argument_count = explicit_args.len();
+            let mut props = explicit_args
+                .into_iter()
+                .enumerate()
+                .map(|(index, arg)| (index.to_string(), arg))
+                .collect::<Vec<_>>();
+            let length_index = props.len(); // index of "length" after push
+            props.push((
+                "length".to_owned(),
+                LoweredExpr::Number(argument_count as i32, Span::generated("num")),
+            ));
+            lowered_args.push(LoweredExpr::ObjectNew {
+                props,
+                non_enumerable: 1 << length_index, // length is non-enumerable
+                span: Span::generated("object_new"),
+            });
+        }
+
+        self.append_function_captures(func_id, &mut lowered_args)?;
+
+        Ok(lowered_args)
+    }
+
+    pub(super) fn single_dense_array_local_spread_arg(
+        &self,
+        args: &[ResolvedExpr],
+    ) -> Option<LocalId> {
+        let [ResolvedExpr::Spread(spread_expr)] = args else {
+            return None;
+        };
+        let ResolvedExpr::Ident(name) = spread_expr.as_ref() else {
+            return None;
+        };
+        let local_id = self.resolve_local(name).ok()?;
+        if self.facts.array_locals.contains(&local_id)
+            && !self.captures.env_cell_locals.contains(&local_id)
+        {
+            Some(local_id)
+        } else {
+            None
+        }
+    }
+
+    pub(super) fn single_set_local_spread_arg(&self, args: &[ResolvedExpr]) -> Option<LocalId> {
+        let [ResolvedExpr::Spread(spread_expr)] = args else {
+            return None;
+        };
+        let ResolvedExpr::Ident(name) = spread_expr.as_ref() else {
+            return None;
+        };
+        let local_id = self.resolve_local(name).ok()?;
+        if self.captures.env_cell_locals.contains(&local_id) {
+            return None;
+        }
+        self.classes
+            .local_classes
+            .get(&local_id)
+            .is_some_and(|class_name| class_name == "Set")
+            .then_some(local_id)
+    }
+
+    pub(super) fn append_function_captures(
+        &self,
+        func_id: FuncId,
+        lowered_args: &mut Vec<LoweredExpr>,
+    ) -> Result<(), Diagnostic> {
+        let Some(captures) = self.functions.function_captures.get(&func_id) else {
+            return Ok(());
+        };
+        let mutable_captures = self
+            .functions
+            .function_mutable_captures
+            .get(&func_id)
+            .map(Vec::as_slice)
+            .unwrap_or(&[]);
+
+        for capture in captures {
+            let local = self.resolve_local(capture).map_err(|_| Diagnostic {
+                code: DiagCode::UnsupportedSyntax,
+                message: format!(
+                    "issue-404: callback capture `{capture}` is not available at this call site; escaped callback lexical environments require heap environment support"
+                ),
+                span: None,
+
+                phase: None,})?;
+            if mutable_captures.contains(capture) && !self.captures.env_cell_locals.contains(&local)
+            {
+                return Err(Diagnostic {
+                    code: DiagCode::UnsupportedSyntax,
+                    message: format!(
+                        "issue-404: mutable callback capture `{capture}` is not available as an environment cell at this call site"
+                    ),
+                    span: None,
+
+                    phase: None,
+                });
+            }
+            lowered_args.push(LoweredExpr::Local(local, Span::generated("local")));
+        }
+
+        Ok(())
+    }
+
+    pub(super) fn lower_arrow_fn_iife(
+        &mut self,
+        params: &[String],
+        body: &ResolvedExpr,
+        body_stmts: &[ResolvedStmt],
+        args: &[ResolvedExpr],
+        span: Span,
+    ) -> Result<LoweredExpr, Diagnostic> {
+        let lowered = self.lower_arrow_fn(params, body, body_stmts)?;
+        let LoweredExpr::ArrowFn {
+            func_id, captures, ..
+        } = lowered
+        else {
+            return Err(Diagnostic {
+                code: DiagCode::InvariantViolation,
+                message: "arrow function lowering must produce an ArrowFn token".to_owned(),
+                span: Some(span),
+
+                phase: None,
+            });
+        };
+        let explicit_args = self.lower_call_args(args)?;
+        let mut lowered_args = explicit_args
+            .into_iter()
+            .take(params.len())
+            .collect::<Vec<_>>();
+        for _ in lowered_args.len()..params.len() {
+            lowered_args.push(LoweredExpr::Undefined(Span::generated("undef")));
+        }
+        lowered_args.extend(
+            captures
+                .into_iter()
+                .map(|id| LoweredExpr::Local(id, Span::generated("local"))),
+        );
+        Ok(LoweredExpr::Call {
+            kind: FunctionCallKind::User(func_id),
+            args: lowered_args,
+
+            span: Span::generated("call"),
+        })
+    }
+
+    pub(super) fn lower_function_expr_call(
+        &mut self,
+        name: &str,
+        params: &[ResolvedParam],
+        body: &[ResolvedStmt],
+        args: &[ResolvedExpr],
+        span: Span,
+    ) -> Result<LoweredExpr, Diagnostic> {
+        if Self::is_direct_return_this_iife(params, body, args) {
+            return Ok(LoweredExpr::ObjectNew {
+                props: Vec::new(),
+                non_enumerable: 0,
+                span: Span::generated("object_new"),
+            });
+        }
+        if params.iter().any(|param| param.is_rest) {
+            return Err(Diagnostic {
+                code: DiagCode::UnsupportedSyntax,
+                message: "issue-274: direct function-expression spread calls do not support rest parameters in this slice".to_owned(),
+                span: Some(span),
+
+                phase: None,});
+        }
+        // Only reject this/arguments for spread calls, not all function-expr calls
+        let has_spread_args = args.iter().any(|a| matches!(a, ResolvedExpr::Spread(_)));
+        if has_spread_args && (block_contains_this(body) || block_contains_arguments(body)) {
+            return Err(Diagnostic {
+                code: DiagCode::UnsupportedSyntax,
+                message: "issue-274: direct function-expression spread calls with `this` or `arguments` require broader call-expression runtime support".to_owned(),
+                span: Some(span),
+
+                phase: None,});
+        }
+
+        let lowered = self.lower_named_function_expr(name, params, body)?;
+        let LoweredExpr::ArrowFn {
+            func_id, captures, ..
+        } = lowered
+        else {
+            return Err(Diagnostic {
+                code: DiagCode::InvariantViolation,
+                message: "function expression lowering must produce a direct function token"
+                    .to_owned(),
+                span: Some(span),
+
+                phase: None,
+            });
+        };
+
+        let explicit_args = self.lower_call_args(args)?;
+        let mut lowered_args = explicit_args
+            .into_iter()
+            .take(params.len())
+            .collect::<Vec<_>>();
+        for _ in lowered_args.len()..params.len() {
+            lowered_args.push(LoweredExpr::Undefined(Span::generated("undef")));
+        }
+        lowered_args.extend(
+            captures
+                .into_iter()
+                .map(|id| LoweredExpr::Local(id, Span::generated("local"))),
+        );
+        Ok(LoweredExpr::Call {
+            kind: FunctionCallKind::User(func_id),
+            args: lowered_args,
+
+            span: Span::generated("call"),
+        })
+    }
+
+    fn is_direct_return_this_iife(
+        params: &[ResolvedParam],
+        body: &[ResolvedStmt],
+        args: &[ResolvedExpr],
+    ) -> bool {
+        params.is_empty()
+            && args.is_empty()
+            && matches!(body, [ResolvedStmt::Return(ResolvedExpr::This { .. })])
+    }
+
+    pub(super) fn function_props_for_object_expr(
+        &self,
+        expr: &ResolvedExpr,
+    ) -> Option<HashMap<String, FuncId>> {
+        let ResolvedExpr::Object(props) = expr else {
+            return None;
+        };
+        let function_props = props
+            .iter()
+            .filter_map(|(key, value)| {
+                if let ResolvedExpr::Ident(name) = value {
+                    self.resolve_func(name)
+                        .ok()
+                        .map(|func_id| (key.clone(), func_id))
+                } else {
+                    None
+                }
+            })
+            .collect::<HashMap<_, _>>();
+        if function_props.is_empty() {
+            None
+        } else {
+            Some(function_props)
+        }
+    }
+
+    pub(super) fn is_function_identifier(&self, expr: &ResolvedExpr) -> bool {
+        matches!(expr, ResolvedExpr::Ident(name) if self.resolve_func(name).is_ok())
+    }
+
+    pub(super) fn lower_function_metadata_property(
+        &self,
+        name: &str,
+        key: &str,
+        span: Span,
+    ) -> Result<LoweredExpr, Diagnostic> {
+        let func_id = self.resolve_func(name)?;
+        match key {
+            "name" => Ok(LoweredExpr::String(name.to_owned(), Span::generated("str"))),
+            "length" => {
+                let signature = self
+                    .symbols
+                    .function_signatures
+                    .get(&func_id)
+                    .copied()
+                    .unwrap_or_default();
+                if let Some(length) = signature.metadata_length {
+                    Ok(LoweredExpr::Number(length as i32, Span::generated("num")))
+                } else {
+                    Err(Diagnostic {
+                        code: DiagCode::UnsupportedSyntax,
+                        message: format!(
+                            "issue-062f: function `{name}` length metadata is only supported for fixed-arity function declarations"
+                        ),
+                        span: Some(span),
+
+                        phase: None,
+                    })
+                }
+            }
+            "prototype" => Err(Diagnostic {
+                code: DiagCode::UnsupportedSyntax,
+                message: format!(
+                    "issue-062f: function `{name}` prototype metadata is not supported in this slice"
+                ),
+                span: Some(span),
+
+                phase: None,
+            }),
+            _ => Err(Diagnostic {
+                code: DiagCode::UnsupportedSyntax,
+                message: format!(
+                    "issue-062f: function `{name}` metadata property `{key}` is not supported"
+                ),
+                span: Some(span),
+
+                phase: None,
+            }),
+        }
+    }
+
+    pub(super) fn lower_optional_call(
+        &mut self,
+        callee: &ResolvedExpr,
+        args: &[ResolvedExpr],
+        span: Span,
+    ) -> Result<LoweredExpr, Diagnostic> {
+        let func_name = match callee {
+            ResolvedExpr::Ident(name) => name,
+            _ => {
+                return Err(Diagnostic {
+                    code: DiagCode::UnsupportedSyntax,
+                    message:
+                        "issue-253: optional calls are currently supported only for identifier callees"
+                            .to_owned(),
+                    span: Some(span),
+
+                    phase: None,});
+            }
+        };
+
+        if let Ok(local_id) = self.resolve_local(func_name) {
+            if self.facts.nullish_locals.contains(&local_id) {
+                return Ok(LoweredExpr::Undefined(Span::generated("undef")));
+            }
+
+            if let Some(closure) = self.facts.arrow_locals.get(&local_id).cloned() {
+                let mut lowered_args = self.lower_call_args(args)?;
+                lowered_args.extend(
+                    closure
+                        .captures
+                        .iter()
+                        .copied()
+                        .map(|id| LoweredExpr::Local(id, Span::generated("local"))),
+                );
+                return Ok(LoweredExpr::OptionalCall {
+                    callee: Box::new(LoweredExpr::Local(local_id, Span::generated("local"))),
+                    call: Box::new(LoweredExpr::Call {
+                        kind: FunctionCallKind::User(closure.func_id),
+                        args: lowered_args,
+
+                        span: Span::generated("call"),
+                    }),
+                    span: Span::generated("opt_call"),
+                });
+            }
+
+            // Not a closure or nullish (e.g. function declaration) —
+            // fall through to resolve_func below.
+        }
+
+        let func_id = self.resolve_func(func_name)?;
+        if self
+            .symbols
+            .function_signatures
+            .get(&func_id)
+            .is_some_and(|signature| signature.needs_receiver)
+        {
+            return Err(Diagnostic {
+                code: DiagCode::UnsupportedSyntax,
+                message: format!(
+                    "issue-062d: optional direct call `{func_name}?.(...)` cannot bind a supported receiver for `this`; call through a supported receiver object"
+                ),
+                span: Some(span),
+
+                phase: None,
+            });
+        }
+        let lowered_args = self.lower_function_call_args(
+            func_id,
+            LoweredExpr::Undefined(Span::generated("undef")),
+            args,
+        )?;
+        Ok(LoweredExpr::Call {
+            kind: FunctionCallKind::User(func_id),
+            args: lowered_args,
+
+            span: Span::generated("call"),
+        })
+    }
+
+    pub(super) fn lower_string_match_all_literal(
+        &mut self,
+        object: &ResolvedExpr,
+        args: &[ResolvedExpr],
+        span: Span,
+    ) -> Result<LoweredExpr, Diagnostic> {
+        if args.len() != 1 {
+            return Err(Diagnostic {
+                code: DiagCode::ArityMismatch,
+                message: format!(
+                    "String.prototype.matchAll expects 1 argument, got {}",
+                    args.len()
+                ),
+                span: Some(span),
+
+                phase: None,
+            });
+        }
+
+        let Some(input) = self.resolved_expr_static_string_value(object) else {
+            return Err(Diagnostic {
+                code: DiagCode::UnsupportedSyntax,
+                message: "issue-5129: String.prototype.matchAll currently requires a static string receiver"
+                    .to_owned(),
+                span: Some(span),
+
+                phase: None,});
+        };
+        if !input.is_ascii() {
+            return Err(Diagnostic {
+                code: DiagCode::UnsupportedSyntax,
+                message:
+                    "issue-5129: String.prototype.matchAll currently supports ASCII input only"
+                        .to_owned(),
+                span: Some(span),
+
+                phase: None,
+            });
+        }
+
+        let ResolvedExpr::String(raw_pattern) = &args[0] else {
+            return Err(Diagnostic {
+                code: DiagCode::UnsupportedSyntax,
+                message: "issue-5129: String.prototype.matchAll currently requires a RegExp literal argument"
+                    .to_owned(),
+                span: Some(span),
+
+                phase: None,});
+        };
+        if !looks_like_regexp_literal(raw_pattern) {
+            return Err(Diagnostic {
+                code: DiagCode::UnsupportedSyntax,
+                message: "issue-5129: String.prototype.matchAll currently requires a RegExp literal argument"
+                    .to_owned(),
+                span: Some(span),
+
+                phase: None,});
+        }
+        validate_regexp_plain_literal(raw_pattern, "String.prototype.matchAll literal")?;
+        let delimiter = raw_pattern
+            .rfind('/')
+            .expect("regexp literal has delimiter");
+        let flags = &raw_pattern[delimiter + 1..];
+        if !flags.contains('g') {
+            return Err(Diagnostic {
+                code: DiagCode::UnsupportedSyntax,
+                message: "issue-5129: String.prototype.matchAll requires a global RegExp literal in this slice"
+                    .to_owned(),
+                span: Some(span),
+
+                phase: None,});
+        }
+
+        let pattern = &raw_pattern[1..delimiter];
+        let mut elements = Vec::new();
+        for (index, ch) in input.char_indices() {
+            let matches = match pattern {
+                r"\w" => ch.is_ascii_alphanumeric() || ch == '_',
+                "." => ch != '\n' && ch != '\r',
+                literal if literal.len() == 1 => literal.as_bytes()[0] == ch as u8,
+                _ => {
+                    return Err(Diagnostic {
+                        code: DiagCode::UnsupportedSyntax,
+                        message:
+                            "issue-5129: String.prototype.matchAll currently supports /\\w/g, /./g, and one-byte literal patterns"
+                                .to_owned(),
+                        span: Some(span),
+
+                        phase: None,});
+                }
+            };
+            if matches {
+                elements.push(LoweredExpr::ObjectNew {
+                    props: vec![
+                        (
+                            "0".to_owned(),
+                            LoweredExpr::String(ch.to_string(), Span::generated("str")),
+                        ),
+                        (
+                            "index".to_owned(),
+                            LoweredExpr::Number(index as i32, Span::generated("num")),
+                        ),
+                        (
+                            "input".to_owned(),
+                            LoweredExpr::String(input.clone(), Span::generated("str")),
+                        ),
+                    ],
+                    non_enumerable: 0,
+
+                    span: Span::generated("object_new"),
+                });
+            }
+        }
+
+        Ok(LoweredExpr::ArrayNew {
+            elements,
+            span: Span::generated("array_new"),
+        })
+    }
+
+    pub(super) fn lower_native_set_add_call(
+        &mut self,
+        args: &[ResolvedExpr],
+        span: Span,
+    ) -> Result<LoweredExpr, Diagnostic> {
+        if args.len() != 2 {
+            return Err(Diagnostic {
+                code: DiagCode::ArityMismatch,
+                message: format!(
+                    "Set.prototype.add.call expects receiver and value arguments, got {}",
+                    args.len()
+                ),
+                span: Some(span),
+
+                phase: None,
+            });
+        }
+        Ok(LoweredExpr::RuntimeCall {
+            intrinsic: RuntimeIntrinsic::SetAdd,
+            args: vec![self.lower_expr(&args[0])?, self.lower_expr(&args[1])?],
+
+            span: Span::generated("runtime_call"),
+        })
+    }
+
+    pub(super) fn lower_call_args(
+        &mut self,
+        args: &[ResolvedExpr],
+    ) -> Result<Vec<LoweredExpr>, Diagnostic> {
+        let mut lowered_args = Vec::new();
+        for arg in args {
+            match arg {
+                ResolvedExpr::Spread(spread_expr) => {
+                    if let ResolvedExpr::Array(elements) = spread_expr.as_ref() {
+                        for elem in elements {
+                            match elem {
+                                ResolvedArrayElement::Present(expr) => {
+                                    lowered_args.push(self.lower_expr(expr)?);
+                                }
+                                ResolvedArrayElement::Hole => {
+                                    lowered_args
+                                        .push(LoweredExpr::Undefined(Span::generated("undef")));
+                                }
+                            }
+                        }
+                    } else if let Some(value) =
+                        self.static_string_spread_value(spread_expr.as_ref())
+                    {
+                        lowered_args.extend(Self::lower_ascii_string_spread_chars(&value)?);
+                    } else if self.is_generator_call_spread_operand(spread_expr.as_ref()) {
+                        return Err(Self::unsupported_generator_spread_diagnostic());
+                    } else if self.resolved_expr_has_symbol_iterator_property(spread_expr.as_ref())
+                    {
+                        return Err(Self::unsupported_symbol_iterator_spread_diagnostic());
+                    } else if let Some(map_array) =
+                        self.lower_map_spread_operand(spread_expr.as_ref())?
+                    {
+                        lowered_args.push(map_array);
+                    } else {
+                        return Err(Diagnostic {
+                            code: DiagCode::UnsupportedSyntax,
+                            message:
+                                "issue-274: spread arguments are only supported for literal arrays and ASCII literal-derived strings in this milestone"
+                                    .to_owned(),
+                            span: None,
+
+                            phase: None,});
+                    }
+                }
+                _ => lowered_args.push(self.lower_expr(arg)?),
+            }
+        }
+        Ok(lowered_args)
     }
 }
 
