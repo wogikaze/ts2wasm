@@ -22,6 +22,8 @@ Current checks:
   - Warn when Diagnostic { span: None } appears outside validate.rs (source errors need spans).
   - Error when raw runtime symbol string used outside runtime catalog.
   - Error when LoweredExpr variant lacks validate_lowered coverage.
+  - Error when hardcoded WASI/Node host import string used outside runtime catalog.
+  - Error when hardcoded WASI/Node host import string used outside runtime catalog.
 """
 
 import os
@@ -32,7 +34,7 @@ import shutil
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).parent.parent.parent.resolve()
-DEFAULT_MAX_FILE_LINES = 3000
+DEFAULT_MAX_FILE_LINES = 2000
 
 # Known oversized files that are exempt from the general line limit.
 # Each entry must include a reason and the P-item that will eventually fix it.
@@ -145,6 +147,8 @@ USE_SUPER_STAR_ALLOWLIST = {
 RUNTIME_CATALOG_FILE_PREFIXES = (
     "crates/backend-wasm/src/runtime/",
     "crates/backend-wasm/src/runtime_fn",
+    "crates/runtime-catalog/src/runtime/",
+    "crates/runtime-catalog/src/runtime_fn",
 )
 
 # Files that use raw runtime symbol strings in test assertions (allowed).
@@ -741,6 +745,80 @@ def check_lowered_expr_validate_coverage() -> list[str]:
     return violations
 
 
+def check_host_import_string_outside_catalog() -> list[str]:
+    """Check that hardcoded WASI host import module/name strings are not used
+    outside the runtime catalog in crates/backend-wasm/src/.
+
+    The WASI module/name strings (e.g., "wasi_snapshot_preview1", "fd_write", "proc_exit")
+    are defined in crates/runtime-catalog/src/host_import.rs as the single source of truth.
+    Other code must use HostImport::spec() or RuntimeFn's spec.imports instead.
+
+    Only checks crates/backend-wasm/src/ for WASI-specific strings. Node shim import
+    names (e.g., "escape", "path.join") are excluded because they are also JS global
+    function names and would produce false positives.
+    """
+    violations = []
+
+    # WASI-specific import module/name strings (unlikely to appear outside WASM import context)
+    wasi_import_strings = {
+        "wasi_snapshot_preview1",
+        "fd_read",
+        "fd_write",
+        "path_open",
+        "fd_close",
+        "proc_exit",
+        "clock_time_get",
+        "clock_res_get",
+        "random_get",
+        "args_sizes_get",
+        "args_get",
+        "environ_sizes_get",
+        "environ_get",
+    }
+
+    backend_src = REPO_ROOT / "crates" / "backend-wasm" / "src"
+    if not backend_src.exists():
+        return violations
+
+    for path in sorted(backend_src.rglob("*.rs")):
+        rel = path.relative_to(REPO_ROOT)
+        # Skip files inside the runtime catalog and spec directories
+        catalog_paths = (
+            "crates/backend-wasm/src/runtime/spec/",
+            "crates/backend-wasm/src/runtime/catalog/",
+            "crates/backend-wasm/src/runtime/manifest/",
+        )
+        skip = False
+        for cp in catalog_paths:
+            if str(rel).startswith(cp):
+                skip = True
+                break
+        if skip:
+            continue
+        # Skip test files
+        if "tests" in rel.parts:
+            continue
+        # Skip lib.rs (has WASM binary output test assertions)
+        if str(rel) == "crates/backend-wasm/src/lib.rs":
+            continue
+        # Skip capability_manifest.rs (metadata mapping, not code generation)
+        if str(rel) == "crates/backend-wasm/src/capability_manifest.rs":
+            continue
+        # Skip wat_writer.rs (WASM import section emission uses Import struct)
+        if str(rel) == "crates/backend-wasm/src/wat_writer.rs":
+            continue
+        text = path.read_text()
+        for s in wasi_import_strings:
+            if f'"{s}"' in text:
+                violations.append(
+                    f"check_architecture_rules: ERROR {rel}: "
+                    f"hardcoded WASI host import string `{s}` used outside runtime catalog"
+                )
+                break  # One per file is enough
+
+    return violations
+
+
 # --- Existing utility/helper checks ---
 
 def check_use_super_star() -> list[str]:
@@ -824,6 +902,157 @@ def check_include_in_src() -> list[str]:
     return violations
 
 
+# --- #292: 200-line function warning ---
+
+def check_smaller_function_warning() -> list[str]:
+    """Warn when functions exceed 200 lines (staged reduction toward 200-line ideal)."""
+    violations = []
+    fn_re = re.compile(r'^\s*(pub\s+)?(unsafe\s+)?(async\s+)?fn\s+(\w+)')
+    max_fn_lines = 200
+
+    for path in sorted(REPO_ROOT.rglob("*.rs")):
+        rel = path.relative_to(REPO_ROOT)
+        if any(part in EXCLUDED_PATH_PARTS for part in rel.parts):
+            continue
+        text = path.read_text()
+        lines = text.split('\n')
+
+        i = 0
+        while i < len(lines):
+            m = fn_re.match(lines[i])
+            if not m:
+                i += 1
+                continue
+
+            fn_name = m.group(4)
+            fn_start = i
+
+            brace_depth = 0
+            j = i
+            while j < len(lines) and brace_depth == 0:
+                brace_depth += lines[j].count('{') - lines[j].count('}')
+                if brace_depth > 0:
+                    break
+                j += 1
+
+            if brace_depth == 0:
+                i += 1
+                continue
+
+            j += 1
+            while j < len(lines) and brace_depth > 0:
+                brace_depth += lines[j].count('{') - lines[j].count('}')
+                j += 1
+
+            fn_length = j - fn_start
+            if fn_length > max_fn_lines:
+                allowlist_key = (str(rel), fn_name)
+                if allowlist_key in FUNCTION_LENGTH_ALLOWLIST:
+                    continue
+                violations.append(
+                    f"check_architecture_rules: WARN {rel}:{fn_start + 1}: "
+                    f"function `{fn_name}` is {fn_length} lines (max {max_fn_lines})"
+                )
+
+            i = j
+
+    return violations
+
+
+# --- #299: Fan-out check ---
+
+def check_module_fan_out() -> list[str]:
+    """Check that no Rust module imports from more than 15 external modules."""
+    violations = []
+    max_imports = 15
+
+    for path in sorted(REPO_ROOT.rglob("*.rs")):
+        rel = path.relative_to(REPO_ROOT)
+        if any(part in EXCLUDED_PATH_PARTS for part in rel.parts):
+            continue
+        if "tests" in rel.parts:
+            continue
+        text = path.read_text()
+        lines = text.split('\n')
+        external_imports = set()
+        for line in lines:
+            m = re.match(r'^\s*use\s+(\w+)', line)
+            if m:
+                crate = m.group(1)
+                if crate not in ('super', 'crate', 'self'):
+                    external_imports.add(crate)
+        if len(external_imports) > max_imports:
+            violations.append(
+                f"check_architecture_rules: WARN {rel}: "
+                f"imports from {len(external_imports)} external modules (max {max_imports})"
+            )
+
+    return violations
+
+
+def check_public_api_count() -> list[str]:
+    """Check that no module exports more than 50 public items."""
+    violations = []
+    max_pub_items = 50
+
+    for path in sorted(REPO_ROOT.rglob("*.rs")):
+        rel = path.relative_to(REPO_ROOT)
+        if any(part in EXCLUDED_PATH_PARTS for part in rel.parts):
+            continue
+        if "tests" in rel.parts:
+            continue
+        text = path.read_text()
+        lines = text.split('\n')
+        pub_count = 0
+        for line in lines:
+            stripped = line.strip()
+            if re.match(r'pub\s+(fn|struct|enum|trait|type|const|mod|use)\s', stripped):
+                pub_count += 1
+        if pub_count > max_pub_items:
+            violations.append(
+                f"check_architecture_rules: WARN {rel}: "
+                f"{pub_count} public items (max {max_pub_items})"
+            )
+
+    return violations
+
+
+def check_oversized_match_arms() -> list[str]:
+    """Check for match expressions with more than 30 arms."""
+    violations = []
+    max_arms = 30
+
+    for path in sorted(REPO_ROOT.rglob("*.rs")):
+        rel = path.relative_to(REPO_ROOT)
+        if any(part in EXCLUDED_PATH_PARTS for part in rel.parts):
+            continue
+        if "tests" in rel.parts:
+            continue
+        if rel.name == "runtime_fn.rs":
+            continue  # RuntimeFn enum match is inherently large
+        text = path.read_text()
+        lines = text.split('\n')
+        for i, line in enumerate(lines):
+            match_m = re.match(r'^(\s*)match\s+\w+\s*\{', line)
+            if not match_m:
+                continue
+            arm_count = 0
+            j = i + 1
+            brace_depth = 1
+            while j < len(lines) and brace_depth > 0:
+                brace_depth += lines[j].count('{') - lines[j].count('}')
+                if '=>' in lines[j] and not lines[j].strip().startswith('//'):
+                    arm_count += 1
+                j += 1
+            if arm_count > max_arms:
+                violations.append(
+                    f"check_architecture_rules: WARN {rel}:{i + 1}: "
+                    f"match expression has {arm_count} arms (max {max_arms})"
+                )
+
+    return violations
+
+
 def check_validated_backend_contract() -> list[str]:
     """Check that public emit functions in backend-wasm use Validated<LoweredProgram>."""
     violations = []
@@ -890,6 +1119,14 @@ def main():
     violations.extend(check_diagnostic_span_none())
     violations.extend(check_raw_runtime_symbol_outside_catalog())
     violations.extend(check_lowered_expr_validate_coverage())
+    # #292 checks
+    violations.extend(check_smaller_function_warning())
+    # #295 checks
+    violations.extend(check_host_import_string_outside_catalog())
+    # #299 checks
+    violations.extend(check_module_fan_out())
+    violations.extend(check_public_api_count())
+    violations.extend(check_oversized_match_arms())
     # Existing checks
     violations.extend(check_use_super_star())
     violations.extend(check_runtime_push_str())
