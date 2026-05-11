@@ -5,7 +5,7 @@ use super::runtime_fn::{Capability, HostAbi};
 use super::runtime_link_plan::RuntimeLinkPlan;
 
 pub(crate) fn emit_canonical_manifest_json(program: &LoweredProgram) -> String {
-    let plan = RuntimeLinkPlan::from_program(program);
+    let plan = crate::runtime_link_plan::build_runtime_link_plan(program);
     canonical_manifest_from_link_plan(&plan).to_json()
 }
 

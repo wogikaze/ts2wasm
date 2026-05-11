@@ -156,7 +156,7 @@ impl LocalFrame {
 
 impl<'a> WatEmitter<'a> {
     pub(super) fn new(program: &'a LoweredProgram) -> Self {
-        let link_plan = RuntimeLinkPlan::from_program(program);
+        let link_plan = super::runtime_link_plan::build_runtime_link_plan(program);
         let mut class_name_to_ctor = HashMap::new();
         let mut method_counts = HashMap::new();
         Self::compute_class_decl_metadata(

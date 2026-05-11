@@ -888,45 +888,10 @@ fn unparse_expr(expr: &Expr) -> String {
             body,
             body_stmts,
             ..
-        } => {
-            if body_stmts.is_empty() {
-                format!("({}) => {}", params.join(", "), unparse_expr(body))
-            } else {
-                let stmts: Vec<String> = body_stmts
-                    .iter()
-                    .map(|s| {
-                        let mut buf = String::new();
-                        unparse_stmt(&mut buf, s, 0);
-                        buf
-                    })
-                    .collect();
-                format!(
-                    "({}) => {{ {} return {}; }}",
-                    params.join(", "),
-                    stmts.join("; "),
-                    unparse_expr(body)
-                )
-            }
-        }
+        } => unparse_arrow_fn_expr(params, body, body_stmts),
         Expr::FunctionExpr {
             name, params, body, ..
-        } => {
-            let params = params
-                .iter()
-                .map(|(name, _, is_rest)| {
-                    if *is_rest {
-                        format!("...{name}")
-                    } else {
-                        name.clone()
-                    }
-                })
-                .collect::<Vec<_>>()
-                .join(", ");
-            let mut out = format!("function {name}({params}) {{\n");
-            unparse_block(&mut out, body, 1);
-            out.push('}');
-            out
-        }
+        } => unparse_function_expr(name, params, body),
         Expr::Spread { expr, .. } => format!("...{}", unparse_expr(expr)),
         Expr::PropertyAssign {
             object,
@@ -968,6 +933,49 @@ fn unparse_expr_list(exprs: &[Expr]) -> String {
         .map(unparse_expr)
         .collect::<Vec<_>>()
         .join(", ")
+}
+
+fn unparse_arrow_fn_expr(params: &[String], body: &Expr, body_stmts: &[Stmt]) -> String {
+    if body_stmts.is_empty() {
+        format!("({}) => {}", params.join(", "), unparse_expr(body))
+    } else {
+        let stmts: Vec<String> = body_stmts
+            .iter()
+            .map(|s| {
+                let mut buf = String::new();
+                unparse_stmt(&mut buf, s, 0);
+                buf
+            })
+            .collect();
+        format!(
+            "({}) => {{ {} return {}; }}",
+            params.join(", "),
+            stmts.join("; "),
+            unparse_expr(body)
+        )
+    }
+}
+
+fn unparse_function_expr(
+    name: &str,
+    params: &[(String, Option<Expr>, bool)],
+    body: &[Stmt],
+) -> String {
+    let params = params
+        .iter()
+        .map(|(name, _, is_rest)| {
+            if *is_rest {
+                format!("...{name}")
+            } else {
+                name.clone()
+            }
+        })
+        .collect::<Vec<_>>()
+        .join(", ");
+    let mut out = format!("function {name}({params}) {{\n");
+    unparse_block(&mut out, body, 1);
+    out.push('}');
+    out
 }
 
 fn binary_op_text(op: BinaryOp) -> &'static str {

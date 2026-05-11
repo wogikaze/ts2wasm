@@ -5,6 +5,7 @@ members = [
     "crates/frontend",
     "crates/ir",
     "crates/runtime-abi",
+    "crates/runtime-catalog",
     "crates/backend-wasm",
     "crates/compiler",
 ]

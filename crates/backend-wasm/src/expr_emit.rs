@@ -59,7 +59,7 @@ impl WatEmitter<'_> {
             LoweredExpr::Call {
                 kind: FunctionCallKind::Builtin(builtin),
                 ..
-            } => RuntimeFn::from_builtin(*builtin).is_value(),
+            } => super::runtime_fn::runtime_fn_from_builtin(*builtin).is_value(),
             LoweredExpr::RuntimeCall { intrinsic, .. } => {
                 super::runtime_fn::runtime_fn_from_name(intrinsic.name())
                     .map(|f| f.is_value())
@@ -191,7 +191,7 @@ impl WatEmitter<'_> {
                     for _ in args.len()..expected {
                         writer.i32_const(indent, 0); // TaggedValue::UNDEFINED
                     }
-                    let runtime_fn = RuntimeFn::from_builtin(*builtin);
+                    let runtime_fn = super::runtime_fn::runtime_fn_from_builtin(*builtin);
                     writer.call(indent, runtime_fn.symbol());
                     // ConsoleLog is void in WAT but may appear in value context
                     // (e.g. arrow body). Push undefined so the stack is consistent.
