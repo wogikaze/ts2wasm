@@ -45,7 +45,7 @@ open:
   area: cross
   status: open
   created: 2026-05-11
-  updated: 2026-05-11
+  updated: '2026-05-11'
   roadmap: ''
   acceptance:
   - cargo test -p ts2wasm-frontend -p ts2wasm-ir -p ts2wasm-compiler -p ts2wasm-cli
@@ -67,6 +67,10 @@ open:
     - 'crates/ir/src/lowered/resolver/array.rs: break up lower_variable_array_callback_method'
     acceptance: All functions listed in docs/24 §4.2 are below 300 lines; architecture
       check passes with reduced violations
+  notes: Scope functions (emit_expr, Lexer::tokenize, lower_variable_array_callback_method,
+    emit_statement_with_label) broken down to <300 lines. RuntimeFn::spec handled
+    via include! pattern. 15 other oversize function violations remain across 8 files
+    — outside original scope. Acceptance criterion (<10 violations) not yet met.
 active: []
 done:
 - id: 256
