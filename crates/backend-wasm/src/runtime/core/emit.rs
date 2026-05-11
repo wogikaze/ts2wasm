@@ -3852,7 +3852,12 @@ impl WatEmitter<'_> {
         ));
     }
 
-    pub(crate) fn emit_runtime_diagnostic_abort(&self, wat: &mut String, signature: &str, message: &str) {
+    pub(crate) fn emit_runtime_diagnostic_abort(
+        &self,
+        wat: &mut String,
+        signature: &str,
+        message: &str,
+    ) {
         let message_offset = self.string_offset(message) + Layout::STRING_HEADER_SIZE;
         wat.push_str(&format!(
             r#"
@@ -4318,5 +4323,4 @@ impl WatEmitter<'_> {
             zero = RuntimeConst::ZERO,
         ));
     }
-
 }

@@ -316,9 +316,7 @@ fn lowering_routes_regexp_literal_test_to_runtime_call() {
         ts2wasm_ir::lowered::LoweredStmt::Let(
             _,
             ts2wasm_ir::lowered::LoweredExpr::RuntimeCall {
-                intrinsic,
-                args,
-                ..
+                intrinsic, args, ..
             },
             _,
         ) => {
@@ -347,9 +345,7 @@ fn lowering_routes_new_regexp_test_to_runtime_call() {
         ts2wasm_ir::lowered::LoweredStmt::Let(
             _,
             ts2wasm_ir::lowered::LoweredExpr::RuntimeCall {
-                intrinsic,
-                args,
-                ..
+                intrinsic, args, ..
             },
             _,
         ) => {
@@ -379,9 +375,7 @@ fn lowering_routes_new_regexp_with_g_flag_test_to_runtime_call() {
         ts2wasm_ir::lowered::LoweredStmt::Let(
             _,
             ts2wasm_ir::lowered::LoweredExpr::RuntimeCall {
-                intrinsic,
-                args,
-                ..
+                intrinsic, args, ..
             },
             _,
         ) => {
@@ -401,9 +395,7 @@ fn lowering_routes_direct_new_regexp_test_to_runtime_call() {
         ts2wasm_ir::lowered::LoweredStmt::Let(
             _,
             ts2wasm_ir::lowered::LoweredExpr::RuntimeCall {
-                intrinsic,
-                args,
-                ..
+                intrinsic, args, ..
             },
             _,
         ) => {
@@ -423,9 +415,7 @@ fn lowering_routes_string_match_regexp_literal_to_runtime_call() {
         ts2wasm_ir::lowered::LoweredStmt::Let(
             _,
             ts2wasm_ir::lowered::LoweredExpr::RuntimeCall {
-                intrinsic,
-                args,
-                ..
+                intrinsic, args, ..
             },
             _,
         ) => {
@@ -445,9 +435,7 @@ fn lowering_routes_string_match_new_regexp_to_runtime_call() {
         ts2wasm_ir::lowered::LoweredStmt::Let(
             _,
             ts2wasm_ir::lowered::LoweredExpr::RuntimeCall {
-                intrinsic,
-                args,
-                ..
+                intrinsic, args, ..
             },
             _,
         ) => {
@@ -467,9 +455,7 @@ fn lowering_keeps_array_push_expression_length_returning() {
         ts2wasm_ir::lowered::LoweredStmt::Let(
             _,
             ts2wasm_ir::lowered::LoweredExpr::RuntimeCall {
-                intrinsic,
-                args,
-                ..
+                intrinsic, args, ..
             },
             _,
         ) => {
@@ -489,9 +475,7 @@ fn lowering_routes_regexp_literal_exec_to_runtime_call() {
         ts2wasm_ir::lowered::LoweredStmt::Let(
             _,
             ts2wasm_ir::lowered::LoweredExpr::RuntimeCall {
-                intrinsic,
-                args,
-                ..
+                intrinsic, args, ..
             },
             _,
         ) => {
@@ -511,9 +495,7 @@ fn lowering_routes_identifier_regexp_exec_to_runtime_call() {
         ts2wasm_ir::lowered::LoweredStmt::Let(
             _,
             ts2wasm_ir::lowered::LoweredExpr::RuntimeCall {
-                intrinsic,
-                args,
-                ..
+                intrinsic, args, ..
             },
             _,
         ) => {
@@ -533,9 +515,7 @@ fn lowering_routes_direct_new_regexp_exec_to_runtime_call() {
         ts2wasm_ir::lowered::LoweredStmt::Let(
             _,
             ts2wasm_ir::lowered::LoweredExpr::RuntimeCall {
-                intrinsic,
-                args,
-                ..
+                intrinsic, args, ..
             },
             _,
         ) => {
@@ -555,9 +535,7 @@ fn lowering_routes_new_date_epoch_to_runtime_call() {
         ts2wasm_ir::lowered::LoweredStmt::Let(
             _,
             ts2wasm_ir::lowered::LoweredExpr::RuntimeCall {
-                intrinsic,
-                args,
-                ..
+                intrinsic, args, ..
             },
             _,
         ) => {
@@ -577,9 +555,7 @@ fn lowering_routes_date_get_time_to_runtime_call() {
         ts2wasm_ir::lowered::LoweredStmt::Let(
             _,
             ts2wasm_ir::lowered::LoweredExpr::RuntimeCall {
-                intrinsic,
-                args,
-                ..
+                intrinsic, args, ..
             },
             _,
         ) => {
@@ -599,9 +575,7 @@ fn lowering_routes_date_now_to_live_time_runtime_call() {
         ts2wasm_ir::lowered::LoweredStmt::Let(
             _,
             ts2wasm_ir::lowered::LoweredExpr::RuntimeCall {
-                intrinsic,
-                args,
-                ..
+                intrinsic, args, ..
             },
             _,
         ) => {
@@ -1124,9 +1098,7 @@ fn lowering_represents_private_field_access_as_internal_slot_calls() {
     match &constructor.body[0] {
         LoweredStmt::Expr(
             LoweredExpr::RuntimeCall {
-                intrinsic,
-                args,
-                ..
+                intrinsic, args, ..
             },
             _,
         ) => {
@@ -1148,9 +1120,7 @@ fn lowering_represents_private_field_access_as_internal_slot_calls() {
     match &read_method.body[0] {
         LoweredStmt::Return(
             LoweredExpr::RuntimeCall {
-                intrinsic,
-                args,
-                ..
+                intrinsic, args, ..
             },
             _,
         ) => {
@@ -1202,9 +1172,7 @@ fn lowering_represents_same_class_private_field_receiver_as_branded_slot_call() 
     match &read_method.body[0] {
         LoweredStmt::Return(
             LoweredExpr::RuntimeCall {
-                intrinsic,
-                args,
-                ..
+                intrinsic, args, ..
             },
             _,
         ) => {
@@ -1225,9 +1193,7 @@ fn lowering_represents_same_class_private_field_receiver_as_branded_slot_call() 
     match &write_method.body[0] {
         LoweredStmt::Expr(
             LoweredExpr::RuntimeCall {
-                intrinsic,
-                args,
-                ..
+                intrinsic, args, ..
             },
             _,
         ) => {

@@ -18,9 +18,15 @@ impl WatEmitter<'_> {
             RuntimeFn::BigIntPow => self.emit_bigint_pow(wat),
             RuntimeFn::BigIntDiv => self.emit_bigint_div(wat),
             RuntimeFn::BigIntRem => self.emit_bigint_rem(wat),
-            RuntimeFn::BigIntDivisionByZeroRangeError => self.emit_bigint_division_by_zero_range_error(wat),
-            RuntimeFn::BigIntMixedArithmeticTypeError => self.emit_bigint_mixed_arithmetic_type_error(wat),
-            RuntimeFn::BigIntStringComparisonBoundaryError => self.emit_bigint_string_comparison_boundary_error(wat),
+            RuntimeFn::BigIntDivisionByZeroRangeError => {
+                self.emit_bigint_division_by_zero_range_error(wat)
+            }
+            RuntimeFn::BigIntMixedArithmeticTypeError => {
+                self.emit_bigint_mixed_arithmetic_type_error(wat)
+            }
+            RuntimeFn::BigIntStringComparisonBoundaryError => {
+                self.emit_bigint_string_comparison_boundary_error(wat)
+            }
             RuntimeFn::BigIntBitwiseNot => self.emit_bigint_bitwise_not(wat),
             RuntimeFn::BigIntBitwiseAnd => self.emit_bigint_bitwise_and(wat),
             RuntimeFn::BigIntBitwiseOr => self.emit_bigint_bitwise_or(wat),

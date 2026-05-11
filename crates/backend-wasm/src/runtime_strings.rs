@@ -1,7 +1,6 @@
 use super::emitter::WatEmitter;
 use ts2wasm_runtime_abi::{consts::RuntimeConst, layout::Layout, value::ValueTag};
 
-
 impl WatEmitter<'_> {
     /// Must be emitted before any function that calls them.
     pub(super) fn emit_utf8_helpers(&self, wat: &mut String) {
@@ -183,7 +182,6 @@ impl WatEmitter<'_> {
     }
 
     #[allow(dead_code)]
-
     #[allow(dead_code)]
     pub(super) fn emit_number_to_exponential(&self, wat: &mut String) {
         wat.push_str(&format!(
@@ -209,7 +207,6 @@ impl WatEmitter<'_> {
     }
 
     #[allow(dead_code)]
-
     #[allow(dead_code)]
     pub(super) fn emit_number_to_precision(&self, wat: &mut String) {
         wat.push_str(&format!(
@@ -233,5 +230,4 @@ impl WatEmitter<'_> {
             scratch = Layout::SCRATCH_OFFSET,
         ));
     }
-
 }

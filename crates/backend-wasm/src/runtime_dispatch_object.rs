@@ -16,7 +16,9 @@ impl WatEmitter<'_> {
             RuntimeFn::ObjectEntries => self.emit_object_entries(wat),
             RuntimeFn::ObjectHasOwnProperty => self.emit_object_has_own_property(wat),
             RuntimeFn::ObjectHasOwn => self.emit_object_has_own(wat),
-            RuntimeFn::ObjectGetOwnPropertyDescriptor => self.emit_object_get_own_property_descriptor(wat),
+            RuntimeFn::ObjectGetOwnPropertyDescriptor => {
+                self.emit_object_get_own_property_descriptor(wat)
+            }
             RuntimeFn::ObjectGetPrototypeOf => self.emit_object_get_prototype_of(wat),
             RuntimeFn::ObjectSetPrototypeOf => self.emit_object_set_prototype_of(wat),
             RuntimeFn::ObjectFreeze => self.emit_object_freeze(wat),

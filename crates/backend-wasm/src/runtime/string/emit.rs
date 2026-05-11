@@ -1808,6 +1808,5 @@ impl WatEmitter<'_> {
     (local.get $s))"#,
         );
     }
-
 }
 // test

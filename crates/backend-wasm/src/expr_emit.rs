@@ -3,10 +3,10 @@ mod expr_emit_helpers;
 include!("expr_emit_arrays.rs");
 use super::RuntimeFn;
 use super::emitter::LocalFrame;
-use ts2wasm_ir::RuntimeIntrinsic;
 use super::emitter::WatEmitter;
 use expr_emit_helpers::*;
 use std::sync::atomic::{AtomicUsize, Ordering};
+use ts2wasm_ir::RuntimeIntrinsic;
 use ts2wasm_ir::lowered::{
     ClosureRepresentation, FunctionCallKind, InferredType, LocalId, LoweredArraySlot,
     LoweredBinaryOp, LoweredExpr, LoweredLogicalAssignOp, LoweredUnaryOp,
@@ -794,7 +794,8 @@ impl WatEmitter<'_> {
                 // Lowering/validation should reject residual MethodCall before backend.
                 writer.unreachable(indent);
             }
-            LoweredExpr::RuntimeCall { intrinsic, args, ..
+            LoweredExpr::RuntimeCall {
+                intrinsic, args, ..
             } => {
                 if *intrinsic == RuntimeIntrinsic::ArrayPushMany {
                     self.emit_array_push_many_call(writer, args, indent, frame);

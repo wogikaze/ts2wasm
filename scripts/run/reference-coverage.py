@@ -1997,6 +1997,7 @@ def main():
     fail_count = 0
     unsupported_count = 0
     blocked_count = 0
+    build_only_count = 0
     skip_count = 0
     
     unsupported_diag_counts = {}
@@ -2223,7 +2224,7 @@ def main():
     def _accumulate_case_result(result, item):
         """Update counters/detail output from a normalized result dict."""
         nonlocal executed, build_pass_count, semantic_pass_count, mismatch_count
-        nonlocal runtime_error_count, blocked_count, fail_count
+        nonlocal runtime_error_count, blocked_count, fail_count, build_only_count
         nonlocal unsupported_count, unsupported_diag_counts, unsupported_feature_counts
         nonlocal unsupported_by_phase
 
@@ -2251,6 +2252,8 @@ def main():
                 runtime_error_count += 1
             elif result["blocked"]:
                 blocked_count += 1
+            else:
+                build_only_count += 1
             if result["detail_line"]:
                 file_details.append(result["detail_line"])
             return
@@ -2475,6 +2478,7 @@ def main():
     semantic_pass_count = 0
     mismatch_count = 0
     runtime_error_count = 0
+    build_only_count = 0
     
     file_details = []
     
@@ -2661,6 +2665,8 @@ def main():
                             runtime_error_count += 1
                         elif result["blocked"]:
                             blocked_count += 1
+                        else:
+                            build_only_count += 1
                         if result["detail_line"]:
                             file_details.append(result["detail_line"])
                         continue
@@ -2737,6 +2743,7 @@ def main():
         "fail": fail_count,
         "unsupported": unsupported_count,
         "blocked": blocked_count,
+        "build_only": build_only_count,
         "skip_with_reason": skip_count,
         "duration_ms": int(round((time.perf_counter() - coverage_started_at) * 1000)),
         "unsupported_diagcodes": unsupported_diag_counts,
@@ -2859,6 +2866,7 @@ def main():
         print(f"fail={fail_count}")
         print(f"unsupported={unsupported_count}")
         print(f"blocked={blocked_count}")
+        print(f"build_only={build_only_count}")
         print(f"skip_with_reason={skip_count}")
         print(f"unsupported_diagcodes={unsupported_diagcodes}")
         print(f"unsupported_features={unsupported_features}")

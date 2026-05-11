@@ -219,7 +219,11 @@ pub(super) fn expr_uses_caller_backend_tmp(expr: &LoweredExpr) -> bool {
             expr_uses_caller_backend_tmp(object) || expr_uses_caller_backend_tmp(value)
         }
         LoweredExpr::Call { args, .. } => args.iter().any(expr_uses_caller_backend_tmp),
-        LoweredExpr::RuntimeCall { intrinsic, .. } if *intrinsic == RuntimeIntrinsic::HeapClosureCall => true,
+        LoweredExpr::RuntimeCall { intrinsic, .. }
+            if *intrinsic == RuntimeIntrinsic::HeapClosureCall =>
+        {
+            true
+        }
         LoweredExpr::RuntimeCall { intrinsic, .. }
             if *intrinsic == RuntimeIntrinsic::PrivateFieldGet
                 || *intrinsic == RuntimeIntrinsic::PrivateFieldSet

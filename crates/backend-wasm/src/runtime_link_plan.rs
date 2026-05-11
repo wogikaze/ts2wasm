@@ -1,11 +1,11 @@
 use std::collections::{BTreeMap, BTreeSet};
 
 use serde::Serialize;
+use ts2wasm_ir::lowered::RuntimeIntrinsic;
 use ts2wasm_ir::lowered::{
     ClosureRepresentation, FunctionCallKind, LoweredBinaryOp, LoweredExpr, LoweredLogicalAssignOp,
     LoweredProgram, LoweredStmt, LoweredUnaryOp,
 };
-use ts2wasm_ir::lowered::RuntimeIntrinsic;
 use ts2wasm_runtime_abi::ValueTag;
 
 use super::runtime_fn::{
@@ -661,7 +661,8 @@ impl RuntimeLinkPlan {
             LoweredExpr::ModuleLoad { .. } => {
                 self.add_required_runtime(RuntimeFn::ModuleRequire);
             }
-            LoweredExpr::RuntimeCall { intrinsic, args, ..
+            LoweredExpr::RuntimeCall {
+                intrinsic, args, ..
             } => {
                 if *intrinsic == RuntimeIntrinsic::ArrayPushMany {
                     self.add_required_runtime(RuntimeFn::ArrayPush);
@@ -677,7 +678,9 @@ impl RuntimeLinkPlan {
                 {
                     self.add_required_runtime(RuntimeFn::PrivateBrandTypeError);
                 }
-                if let Some(runtime_fn_enum) = super::runtime_fn::runtime_fn_from_name(intrinsic.name()) {
+                if let Some(runtime_fn_enum) =
+                    super::runtime_fn::runtime_fn_from_name(intrinsic.name())
+                {
                     self.add_required_runtime(runtime_fn_enum);
                 }
                 for arg in args {
