@@ -80,7 +80,6 @@ EXCLUDED_FILENAMES = {
 KNOWN_OVERSIZED_FILES = {
     "crates/ir/src/lowered/resolver_expr.rs": "large match — pending domain split",
     "crates/backend-wasm/src/runtime_fn_impl.rs": "large spec — pending domain split",
-    "crates/backend-wasm/src/runtime_builder.rs": "large dispatch — pending domain split",
     "crates/backend-wasm/src/expr_emit.rs": "expression emitter — pending domain split",
     "crates/compiler/src/lib.rs": "pipeline — pending stage split",
 }
