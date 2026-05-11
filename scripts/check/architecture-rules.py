@@ -842,7 +842,9 @@ def check_validated_backend_contract() -> list[str]:
         fn_name = stripped[7:name_end].strip()
         if not fn_name.startswith('emit'):
             continue
-        if fn_name == 'emit_canonical_manifest_json':
+        # Metadata/diagnostic functions are exempt: they report program structure
+        # rather than emitting code, and callers need them before or without validation.
+        if fn_name in ('emit_canonical_manifest_json', 'emit_link_plan_snapshot_json'):
             continue
         end = min(i + 4, len(lines))
         fn_window = ' '.join(lines[i - 1:end])
