@@ -5,7 +5,7 @@
 
 use ts2wasm_ir::lowered::mir::{MirExpr, MirFunction, MirProgram, MirStmt};
 use ts2wasm_ir::lowered::mir_dump::{MirDump, dump_mir_function, dump_mir_program};
-use ts2wasm_ir::lowered::{FuncId, LocalId, RuntimeIntrinsic};
+use ts2wasm_ir::lowered::{FuncId, LocalId, RuntimeFn};
 
 #[test]
 fn mir_dump_empty_program() {
@@ -45,7 +45,7 @@ fn mir_dump_local() {
 #[test]
 fn mir_dump_call_runtime() {
     let expr = MirExpr::CallRuntime {
-        intrinsic: RuntimeIntrinsic::Log,
+        intrinsic: RuntimeFn::Log,
         args: vec![MirExpr::I32Const(42)],
     };
     let dump = expr.dump_mir();
@@ -244,19 +244,19 @@ fn mir_dump_block_expr() {
 
 #[test]
 fn mir_dump_runtime_intrinsic_names() {
-    // Verify a sampling of RuntimeIntrinsic variants display their names
+    // Verify a sampling of RuntimeFn variants display their names
     let cases = vec![
-        (RuntimeIntrinsic::Log, "Log"),
-        (RuntimeIntrinsic::ArrayPush, "ArrayPush"),
-        (RuntimeIntrinsic::MathFloor, "MathFloor"),
-        (RuntimeIntrinsic::DateNew, "DateNew"),
-        (RuntimeIntrinsic::ObjectKeys, "ObjectKeys"),
+        (RuntimeFn::Log, "Log"),
+        (RuntimeFn::ArrayPush, "ArrayPush"),
+        (RuntimeFn::MathFloor, "MathFloor"),
+        (RuntimeFn::DateNew, "DateNew"),
+        (RuntimeFn::ObjectKeys, "ObjectKeys"),
         // Pseudo-intrinsics
-        (RuntimeIntrinsic::ArrayPushMany, "ArrayPushMany"),
-        (RuntimeIntrinsic::HeapClosureCall, "HeapClosureCall"),
-        (RuntimeIntrinsic::PrivateFieldGet, "PrivateFieldGet"),
-        (RuntimeIntrinsic::PrivateFieldSet, "PrivateFieldSet"),
-        (RuntimeIntrinsic::PrivateBrandCheck, "PrivateBrandCheck"),
+        (RuntimeFn::ArrayPushMany, "ArrayPushMany"),
+        (RuntimeFn::HeapClosureCall, "HeapClosureCall"),
+        (RuntimeFn::PrivateFieldGet, "PrivateFieldGet"),
+        (RuntimeFn::PrivateFieldSet, "PrivateFieldSet"),
+        (RuntimeFn::PrivateBrandCheck, "PrivateBrandCheck"),
     ];
     for (intrinsic, expected_name) in cases {
         let expr = MirExpr::CallRuntime {

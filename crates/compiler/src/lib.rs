@@ -156,7 +156,9 @@ pub fn build_file_with_host_deny(
     }
 
     if let Some(path) = capability_manifest_output {
-        let manifest = backend::emit_canonical_manifest_json(&validated);
+        let validated_plan = backend::build_validated_runtime_link_plan(validated.as_ref())
+            .expect("valid runtime link plan");
+        let manifest = backend::emit_canonical_manifest_json(&validated_plan);
         io::write_manifest::write_manifest_json(path, &manifest)?;
     }
     let wat = backend::emit_wat(&validated).map_err(|d| d.with_phase("backend"))?;

@@ -1,12 +1,10 @@
-use ts2wasm_ir::lowered::LoweredProgram;
 use ts2wasm_shared::capability::CapabilityManifest;
 
 use super::runtime_fn::{Capability, HostAbi};
 use super::runtime_link_plan::RuntimeLinkPlan;
 
-pub(crate) fn emit_canonical_manifest_json(program: &LoweredProgram) -> String {
-    let plan = crate::runtime_link_plan::build_runtime_link_plan(program);
-    canonical_manifest_from_link_plan(&plan).to_json()
+pub(crate) fn emit_canonical_manifest_json(plan: &RuntimeLinkPlan) -> String {
+    canonical_manifest_from_link_plan(plan).to_json()
 }
 
 fn canonical_manifest_from_link_plan(plan: &RuntimeLinkPlan) -> CapabilityManifest {

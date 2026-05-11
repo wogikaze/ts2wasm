@@ -791,8 +791,10 @@ fn direct_wasm_binary_mvp_runs_basics_hello_like_wat_path() {
         .expect("hello fixture should emit direct wasm binary");
     assert_binary_imports_fd_write(&direct_wasm);
 
+    let validated_plan =
+        backend::build_validated_runtime_link_plan(validated.as_ref()).expect("valid link plan");
     let manifest: serde_json::Value =
-        serde_json::from_str(&backend::emit_canonical_manifest_json(&validated))
+        serde_json::from_str(&backend::emit_canonical_manifest_json(&validated_plan))
             .expect("manifest should be valid JSON");
     assert_eq!(manifest["wasi"]["stdout"], true);
     assert!(

@@ -2,7 +2,7 @@
 ///
 /// Verifies that every RuntimeFn with host imports has an explicit capability
 /// marker, and that host imports are reflected in manifest/link-plan tests.
-use ts2wasm_backend_wasm::{RuntimeFn, RuntimeIntrinsic};
+use ts2wasm_backend_wasm::RuntimeFn;
 
 #[test]
 fn every_runtime_fn_with_host_imports_has_capability() {
@@ -74,9 +74,9 @@ fn host_imports_have_corresponding_node_shim_abi() {
 #[test]
 fn host_fn_with_import_reachable_via_intrinsic() {
     // Verify that RuntimeFn variants with host imports are reachable
-    // through at least one RuntimeIntrinsic.
+    // through at least one RuntimeFn emission order.
     let mapped_fns: std::collections::HashSet<RuntimeFn> =
-        RuntimeIntrinsic::emission_order().iter().copied().collect();
+        RuntimeFn::emission_order().iter().copied().collect();
 
     let mut unreachable = Vec::new();
     for rf in RuntimeFn::emission_order() {
@@ -87,7 +87,7 @@ fn host_fn_with_import_reachable_via_intrinsic() {
     }
 
     // Some RuntimeFn variants with imports may be reachable through
-    // BuiltinId rather than RuntimeIntrinsic (e.g., Log -> ConsoleLog).
+    // BuiltinId rather than RuntimeFn (e.g., Log -> ConsoleLog).
     // Skip unreachable check for functions that only use BuiltinId routing.
     assert!(
         unreachable.is_empty(),

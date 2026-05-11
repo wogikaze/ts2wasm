@@ -1,5 +1,5 @@
 use ts2wasm_frontend::{DiagCode, Span};
-use ts2wasm_ir::lowered::RuntimeIntrinsic;
+use ts2wasm_ir::lowered::RuntimeFn;
 
 fn parse_and_resolve(source: &str) -> Vec<ts2wasm_ir::builtin_resolved::ResolvedStmt> {
     let program = ts2wasm_cli::parse_program(source).unwrap();
@@ -320,7 +320,7 @@ fn lowering_routes_regexp_literal_test_to_runtime_call() {
             },
             _,
         ) => {
-            assert_eq!(*intrinsic, RuntimeIntrinsic::RegExpTest);
+            assert_eq!(*intrinsic, RuntimeFn::RegExpTest);
             assert_eq!(args.len(), 2);
         }
         other => panic!("unexpected lowered statement: {other:?}"),
@@ -349,7 +349,7 @@ fn lowering_routes_new_regexp_test_to_runtime_call() {
             },
             _,
         ) => {
-            assert_eq!(*intrinsic, RuntimeIntrinsic::RegExpTest);
+            assert_eq!(*intrinsic, RuntimeFn::RegExpTest);
             assert_eq!(args.len(), 2);
         }
         other => panic!("unexpected lowered RegExp test statement: {other:?}"),
@@ -379,7 +379,7 @@ fn lowering_routes_new_regexp_with_g_flag_test_to_runtime_call() {
             },
             _,
         ) => {
-            assert_eq!(*intrinsic, RuntimeIntrinsic::RegExpTest);
+            assert_eq!(*intrinsic, RuntimeFn::RegExpTest);
             assert_eq!(args.len(), 2);
         }
         other => panic!("unexpected lowered RegExp test statement: {other:?}"),
@@ -399,7 +399,7 @@ fn lowering_routes_direct_new_regexp_test_to_runtime_call() {
             },
             _,
         ) => {
-            assert_eq!(*intrinsic, RuntimeIntrinsic::RegExpTest);
+            assert_eq!(*intrinsic, RuntimeFn::RegExpTest);
             assert_eq!(args.len(), 2);
         }
         other => panic!("unexpected lowered direct new RegExp.prototype.test statement: {other:?}"),
@@ -419,7 +419,7 @@ fn lowering_routes_string_match_regexp_literal_to_runtime_call() {
             },
             _,
         ) => {
-            assert_eq!(*intrinsic, RuntimeIntrinsic::RegExpMatch);
+            assert_eq!(*intrinsic, RuntimeFn::RegExpMatch);
             assert_eq!(args.len(), 2);
         }
         other => panic!("unexpected lowered String.prototype.match statement: {other:?}"),
@@ -439,7 +439,7 @@ fn lowering_routes_string_match_new_regexp_to_runtime_call() {
             },
             _,
         ) => {
-            assert_eq!(*intrinsic, RuntimeIntrinsic::RegExpMatch);
+            assert_eq!(*intrinsic, RuntimeFn::RegExpMatch);
             assert_eq!(args.len(), 2);
         }
         other => panic!("unexpected lowered String.prototype.match statement: {other:?}"),
@@ -459,7 +459,7 @@ fn lowering_keeps_array_push_expression_length_returning() {
             },
             _,
         ) => {
-            assert_eq!(*intrinsic, RuntimeIntrinsic::ArrayPush);
+            assert_eq!(*intrinsic, RuntimeFn::ArrayPush);
             assert_eq!(args.len(), 2);
         }
         other => panic!("unexpected lowered Array.prototype.push statement: {other:?}"),
@@ -479,7 +479,7 @@ fn lowering_routes_regexp_literal_exec_to_runtime_call() {
             },
             _,
         ) => {
-            assert_eq!(*intrinsic, RuntimeIntrinsic::RegExpMatch);
+            assert_eq!(*intrinsic, RuntimeFn::RegExpMatch);
             assert_eq!(args.len(), 2);
         }
         other => panic!("unexpected lowered RegExp.prototype.exec statement: {other:?}"),
@@ -499,7 +499,7 @@ fn lowering_routes_identifier_regexp_exec_to_runtime_call() {
             },
             _,
         ) => {
-            assert_eq!(*intrinsic, RuntimeIntrinsic::RegExpMatch);
+            assert_eq!(*intrinsic, RuntimeFn::RegExpMatch);
             assert_eq!(args.len(), 2);
         }
         other => panic!("unexpected lowered RegExp.prototype.exec statement: {other:?}"),
@@ -519,7 +519,7 @@ fn lowering_routes_direct_new_regexp_exec_to_runtime_call() {
             },
             _,
         ) => {
-            assert_eq!(*intrinsic, RuntimeIntrinsic::RegExpMatch);
+            assert_eq!(*intrinsic, RuntimeFn::RegExpMatch);
             assert_eq!(args.len(), 2);
         }
         other => panic!("unexpected lowered direct new RegExp.prototype.exec statement: {other:?}"),
@@ -539,7 +539,7 @@ fn lowering_routes_new_date_epoch_to_runtime_call() {
             },
             _,
         ) => {
-            assert_eq!(*intrinsic, RuntimeIntrinsic::DateNew);
+            assert_eq!(*intrinsic, RuntimeFn::DateNew);
             assert_eq!(args.len(), 1);
         }
         other => panic!("unexpected lowered Date constructor statement: {other:?}"),
@@ -559,7 +559,7 @@ fn lowering_routes_date_get_time_to_runtime_call() {
             },
             _,
         ) => {
-            assert_eq!(*intrinsic, RuntimeIntrinsic::DateGetTime);
+            assert_eq!(*intrinsic, RuntimeFn::DateGetTime);
             assert_eq!(args.len(), 1);
         }
         other => panic!("unexpected lowered Date.prototype.getTime statement: {other:?}"),
@@ -579,7 +579,7 @@ fn lowering_routes_date_now_to_live_time_runtime_call() {
             },
             _,
         ) => {
-            assert_eq!(*intrinsic, RuntimeIntrinsic::DateNow);
+            assert_eq!(*intrinsic, RuntimeFn::DateNow);
             assert!(args.is_empty());
         }
         other => panic!("unexpected lowered Date.now statement: {other:?}"),
@@ -1011,7 +1011,7 @@ fn lowering_represents_known_heap_closure_local_call_explicitly() {
                     ..
                 },
             ] => {
-                assert_eq!(*intrinsic, RuntimeIntrinsic::HeapClosureCall);
+                assert_eq!(*intrinsic, RuntimeFn::HeapClosureCall);
                 assert!(matches!(
                     call_args.as_slice(),
                     [LoweredExpr::Local(LocalId(1), _)]
@@ -1102,7 +1102,7 @@ fn lowering_represents_private_field_access_as_internal_slot_calls() {
             },
             _,
         ) => {
-            assert_eq!(*intrinsic, RuntimeIntrinsic::PrivateFieldSet);
+            assert_eq!(*intrinsic, RuntimeFn::PrivateFieldSet);
             assert!(matches!(
                 args.as_slice(),
                 [
@@ -1124,7 +1124,7 @@ fn lowering_represents_private_field_access_as_internal_slot_calls() {
             },
             _,
         ) => {
-            assert_eq!(*intrinsic, RuntimeIntrinsic::PrivateFieldGet);
+            assert_eq!(*intrinsic, RuntimeFn::PrivateFieldGet);
             assert!(matches!(
                 args.as_slice(),
                 [
@@ -1176,7 +1176,7 @@ fn lowering_represents_same_class_private_field_receiver_as_branded_slot_call() 
             },
             _,
         ) => {
-            assert_eq!(*intrinsic, RuntimeIntrinsic::PrivateFieldGet);
+            assert_eq!(*intrinsic, RuntimeFn::PrivateFieldGet);
             assert!(matches!(
                 args.as_slice(),
                 [
@@ -1197,7 +1197,7 @@ fn lowering_represents_same_class_private_field_receiver_as_branded_slot_call() 
             },
             _,
         ) => {
-            assert_eq!(*intrinsic, RuntimeIntrinsic::PrivateFieldSet);
+            assert_eq!(*intrinsic, RuntimeFn::PrivateFieldSet);
             assert!(matches!(
                 args.as_slice(),
                 [
@@ -1280,7 +1280,7 @@ fn lowering_represents_private_method_non_this_receiver_as_brand_checked_user_ca
                     ..
                 },
             ] => {
-                assert_eq!(*intrinsic, RuntimeIntrinsic::PrivateBrandCheck);
+                assert_eq!(*intrinsic, RuntimeFn::PrivateBrandCheck);
                 assert!(matches!(
                     brand_args.as_slice(),
                     [LoweredExpr::Local(_, _), LoweredExpr::Number(1, _)]
@@ -1560,7 +1560,7 @@ fn lowering_represents_private_getter_non_this_receiver_as_brand_checked_user_ca
                     ..
                 },
             ] => {
-                assert_eq!(*intrinsic, RuntimeIntrinsic::PrivateBrandCheck);
+                assert_eq!(*intrinsic, RuntimeFn::PrivateBrandCheck);
                 assert!(matches!(
                     brand_args.as_slice(),
                     [LoweredExpr::Local(_, _), LoweredExpr::Number(1, _)]

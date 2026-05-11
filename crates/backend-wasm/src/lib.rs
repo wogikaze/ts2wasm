@@ -36,11 +36,12 @@ pub use ts2wasm_shared::{DiagCode, Diagnostic};
 
 pub use runtime_fn::{RuntimeFn, runtime_fn_from_name};
 pub use runtime_link_plan::{
-    LinkPlanSnapshot, build_runtime_link_plan, emit_link_plan_snapshot_json,
+    LinkPlanSnapshot, ValidatedRuntimeLinkPlan, build_runtime_link_plan,
+    build_validated_runtime_link_plan, emit_link_plan_snapshot_json,
 };
 
-pub fn emit_canonical_manifest_json(program: &Validated<LoweredProgram>) -> String {
-    capability_manifest::emit_canonical_manifest_json(program.as_ref())
+pub fn emit_canonical_manifest_json(plan: &ValidatedRuntimeLinkPlan) -> String {
+    capability_manifest::emit_canonical_manifest_json(plan.as_ref())
 }
 
 pub fn has_node_host_imports(program: &LoweredProgram) -> bool {
@@ -98,6 +99,7 @@ mod tests {
     use super::{
         emit_canonical_manifest_json, emit_wasm_binary_mvp, emit_wat, emitter::LocalFrame,
     };
+    use super::runtime_link_plan::build_validated_runtime_link_plan;
     use std::fs;
     use std::path::Path;
     use std::process::Command;
@@ -1344,9 +1346,11 @@ mod tests {
     #[test]
     fn math_random_manifest_declares_wasi_random() {
         let program = math_random_program();
+        let validated_plan =
+            build_validated_runtime_link_plan(&program).expect("valid link plan");
 
         let manifest: serde_json::Value =
-            serde_json::from_str(&emit_canonical_manifest_json(&program))
+            serde_json::from_str(&emit_canonical_manifest_json(&validated_plan))
                 .expect("manifest should be valid JSON");
 
         assert_eq!(manifest["standalone"], true);

@@ -1,4 +1,4 @@
-/// RuntimeIntrinsic/RuntimeFn mapping completeness checks.
+/// RuntimeFn mapping completeness checks.
 ///
 /// Verifies that every non-pseudo RuntimeFn variant maps to exactly
 /// one RuntimeFn via `runtime_fn_from_name`.

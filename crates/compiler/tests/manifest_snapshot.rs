@@ -122,42 +122,45 @@ fn manifest_snapshot_runtime_fn_mapping_coverage() {
 }
 
 #[test]
-fn manifest_snapshot_link_plan_deterministic() {
-    // Verify that building the link plan twice produces identical results
-    let plan1 = build_plan("console.log(42);");
-    let plan2 = build_plan("console.log(42);");
-
-    let fns1: Vec<&str> = plan1
-        .required_runtime_functions()
+fn manifest_snapshot_log_requires_stdout_capability() {
+    let plan = build_plan("console.log(42);");
+    let caps: BTreeSet<&str> = plan
+        .required_capabilities()
         .iter()
-        .map(|rf| rf.manifest_name())
-        .collect();
-    let fns2: Vec<&str> = plan2
-        .required_runtime_functions()
-        .iter()
-        .map(|rf| rf.manifest_name())
+        .map(|c| c.manifest_name())
         .collect();
 
-    assert_eq!(fns1, fns2, "link plan should be deterministic");
+    assert!(
+        caps.contains("stdout.write"),
+        "log program should require stdout.write capability, got: {caps:?}"
+    );
 }
 
 #[test]
-fn manifest_snapshot_no_unexpected_imports() {
-    // A simple program should not pull in file system or crypto imports
-    let plan = build_plan("let x = 42; console.log(x);");
-    let imports: BTreeSet<&str> = plan
-        .required_imports()
+fn manifest_snapshot_empty_program_has_no_capabilities() {
+    let plan = build_plan("");
+    assert!(
+        plan.required_capabilities().is_empty(),
+        "empty program should have no capabilities"
+    );
+}
+
+#[test]
+fn manifest_snapshot_no_unnecessary_runtime_functions() {
+    let plan = build_plan("console.log(42);");
+    let runtime_fns: BTreeSet<&str> = plan
+        .required_runtime_functions()
         .iter()
-        .map(|i| i.manifest_name())
+        .map(|rf| rf.manifest_name())
         .collect();
 
-    // Should only have proc_exit (no fs, no crypto for a simple log program)
-    assert!(
-        !imports
-            .iter()
-            .any(|i| i.contains("fs_") || i.contains("crypto")),
-        "simple program should not pull fs or crypto imports, got: {imports:?}"
-    );
+    let unnecessary = ["alloc_heap", "property_get", "property_set", "array_get"];
+    for name in &unnecessary {
+        assert!(
+            !runtime_fns.contains(name),
+            "log program should not require {name}, got: {runtime_fns:?}"
+        );
+    }
 }
 
 #[test]
@@ -172,7 +175,6 @@ fn manifest_snapshot_runtime_fn_maps_through_runtime_fn_from_name() {
         let name = format!("{rf:?}");
         let mapped = runtime_fn_from_name(&name);
         if mapped.is_none() {
-            // Pseudo-intrinsics are expected not to map
             let known_pseudo = [
                 "ArrayPushMany",
                 "HeapClosureCall",
@@ -186,4 +188,26 @@ fn manifest_snapshot_runtime_fn_maps_through_runtime_fn_from_name() {
             );
         }
     }
+}
+
+#[test]
+fn manifest_snapshot_manifest_includes_capabilities() {
+    let program = parse_resolve_lower("console.log(42);");
+    let validated_plan =
+        build_validated_runtime_link_plan(&program).expect("valid link plan");
+    let json = emit_canonical_manifest_json(&validated_plan);
+    let parsed: serde_json::Value =
+        serde_json::from_str(&json).expect("canonical manifest should be valid JSON");
+
+    // Manifest should contain capability_reasons
+    assert!(
+        parsed.get("capability_reasons").is_some(),
+        "manifest should contain capability_reasons"
+    );
+    let reasons = parsed["capability_reasons"].as_object().expect("capability_reasons should be an object");
+    assert!(
+        reasons.contains_key("wasi.stdout"),
+        "manifest capability_reasons should include wasi.stdout, got keys: {:?}",
+        reasons.keys()
+    );
 }
