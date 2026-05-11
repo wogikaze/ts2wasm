@@ -193,29 +193,15 @@ impl WatEmitter<'_> {
             LoweredStmt::While {
                 condition, body, ..
             } => {
-                let exit_label = gen_label("while_exit");
-                let loop_label = gen_label("while_loop");
-                writer.block(indent, &exit_label);
-                writer.r#loop(indent + 2, &loop_label);
-                self.emit_expr(writer, condition, indent + 4, frame);
-                writer.line_fmt(
-                    indent + 4,
-                    format_args!("(call {})", RuntimeFn::TruthyBool.symbol()),
+                self.emit_while_statement(
+                    writer,
+                    condition,
+                    body,
+                    indent,
+                    loop_ctx,
+                    frame,
+                    bound_label,
                 );
-                writer.i32_eqz(indent + 4);
-                writer.br_if(indent + 4, &exit_label);
-
-                loop_ctx.push(ControlFrame {
-                    name: bound_label.map(str::to_owned),
-                    exit_label: exit_label.clone(),
-                    continue_label: Some(loop_label.clone()),
-                });
-                self.emit_statements(writer, body, indent + 4, loop_ctx, frame);
-                loop_ctx.pop();
-
-                writer.r#br(indent + 4, &loop_label);
-                writer.end(indent + 2);
-                writer.end(indent);
             }
             LoweredStmt::Return(expr, _) => {
                 self.emit_return_statement(writer, expr, indent, loop_ctx, frame);
@@ -226,27 +212,15 @@ impl WatEmitter<'_> {
             LoweredStmt::DoWhile {
                 body, condition, ..
             } => {
-                let exit_label = gen_label("do_exit");
-                let loop_label = gen_label("do_loop");
-                writer.block(indent, &exit_label);
-                writer.r#loop(indent + 2, &loop_label);
-
-                loop_ctx.push(ControlFrame {
-                    name: bound_label.map(str::to_owned),
-                    exit_label: exit_label.clone(),
-                    continue_label: Some(loop_label.clone()),
-                });
-                self.emit_statements(writer, body, indent + 4, loop_ctx, frame);
-                loop_ctx.pop();
-
-                self.emit_expr(writer, condition, indent + 4, frame);
-                writer.line_fmt(
-                    indent + 4,
-                    format_args!("(call {})", RuntimeFn::TruthyBool.symbol()),
+                self.emit_do_while_statement(
+                    writer,
+                    body,
+                    condition,
+                    indent,
+                    loop_ctx,
+                    frame,
+                    bound_label,
                 );
-                writer.br_if(indent + 4, &loop_label);
-                writer.end(indent + 2);
-                writer.end(indent);
             }
             LoweredStmt::For {
                 init,
@@ -276,51 +250,19 @@ impl WatEmitter<'_> {
                 body,
                 ..
             } => {
-                let exit_label = gen_label("for_in_exit");
-                let loop_label = gen_label("for_in_loop");
-
-                self.emit_expr(writer, iter, indent, frame);
-                writer.call(indent, RuntimeFn::ObjectKeys.symbol());
-                writer.local_set(indent, local_index(*iter_local));
-
-                writer.i32_const(indent, ValueTag::encode_number(0));
-                writer.local_set(indent, local_index(*index_local));
-
-                writer.local_get(indent, local_index(*iter_local));
-                writer.call(indent, RuntimeFn::GetLength.symbol());
-                writer.local_set(indent, local_index(*len_local));
-
-                writer.block(indent, &exit_label);
-                writer.r#loop(indent + 2, &loop_label);
-
-                writer.local_get(indent + 4, local_index(*index_local));
-                writer.local_get(indent + 4, local_index(*len_local));
-                writer.call(indent + 4, RuntimeFn::Less.symbol());
-                writer.call(indent + 4, RuntimeFn::TruthyBool.symbol());
-                writer.i32_eqz(indent + 4);
-                writer.br_if(indent + 4, &exit_label);
-
-                writer.local_get(indent + 4, local_index(*iter_local));
-                writer.local_get(indent + 4, local_index(*index_local));
-                writer.call(indent + 4, RuntimeFn::ArrayGet.symbol());
-                writer.local_set(indent + 4, local_index(*var));
-
-                loop_ctx.push(ControlFrame {
-                    name: bound_label.map(str::to_owned),
-                    exit_label: exit_label.clone(),
-                    continue_label: Some(loop_label.clone()),
-                });
-                self.emit_statements(writer, body, indent + 4, loop_ctx, frame);
-                loop_ctx.pop();
-
-                writer.local_get(indent + 4, local_index(*index_local));
-                writer.i32_const(indent + 4, ValueTag::encode_number(1));
-                writer.call(indent + 4, RuntimeFn::Add.symbol());
-                writer.local_set(indent + 4, local_index(*index_local));
-
-                writer.r#br(indent + 4, &loop_label);
-                writer.end(indent + 2);
-                writer.end(indent);
+                self.emit_for_in_statement(
+                    writer,
+                    var,
+                    iter,
+                    iter_local,
+                    index_local,
+                    len_local,
+                    body,
+                    indent,
+                    loop_ctx,
+                    frame,
+                    bound_label,
+                );
             }
             LoweredStmt::ForOf {
                 var,
@@ -331,50 +273,19 @@ impl WatEmitter<'_> {
                 body,
                 ..
             } => {
-                let exit_label = gen_label("for_of_exit");
-                let loop_label = gen_label("for_of_loop");
-
-                self.emit_expr(writer, iter, indent, frame);
-                writer.local_set(indent, local_index(*iter_local));
-
-                writer.i32_const(indent, ValueTag::encode_number(0));
-                writer.local_set(indent, local_index(*index_local));
-
-                writer.local_get(indent, local_index(*iter_local));
-                writer.call(indent, RuntimeFn::GetLength.symbol());
-                writer.local_set(indent, local_index(*len_local));
-
-                writer.block(indent, &exit_label);
-                writer.r#loop(indent + 2, &loop_label);
-
-                writer.local_get(indent + 4, local_index(*index_local));
-                writer.local_get(indent + 4, local_index(*len_local));
-                writer.call(indent + 4, RuntimeFn::Less.symbol());
-                writer.call(indent + 4, RuntimeFn::TruthyBool.symbol());
-                writer.i32_eqz(indent + 4);
-                writer.br_if(indent + 4, &exit_label);
-
-                writer.local_get(indent + 4, local_index(*iter_local));
-                writer.local_get(indent + 4, local_index(*index_local));
-                writer.call(indent + 4, RuntimeFn::ArrayGet.symbol());
-                writer.local_set(indent + 4, local_index(*var));
-
-                loop_ctx.push(ControlFrame {
-                    name: bound_label.map(str::to_owned),
-                    exit_label: exit_label.clone(),
-                    continue_label: Some(loop_label.clone()),
-                });
-                self.emit_statements(writer, body, indent + 4, loop_ctx, frame);
-                loop_ctx.pop();
-
-                writer.local_get(indent + 4, local_index(*index_local));
-                writer.i32_const(indent + 4, ValueTag::encode_number(1));
-                writer.call(indent + 4, RuntimeFn::Add.symbol());
-                writer.local_set(indent + 4, local_index(*index_local));
-
-                writer.r#br(indent + 4, &loop_label);
-                writer.end(indent + 2);
-                writer.end(indent);
+                self.emit_for_of_statement(
+                    writer,
+                    var,
+                    iter,
+                    iter_local,
+                    index_local,
+                    len_local,
+                    body,
+                    indent,
+                    loop_ctx,
+                    frame,
+                    bound_label,
+                );
             }
             LoweredStmt::Labeled { label, body, .. } => {
                 if is_loop_stmt(body) {
@@ -601,6 +512,74 @@ impl WatEmitter<'_> {
         }
     }
 
+    fn emit_while_statement(
+        &self,
+        writer: &mut WatWriter,
+        condition: &LoweredExpr,
+        body: &[LoweredStmt],
+        indent: usize,
+        loop_ctx: &mut LoopContext,
+        frame: &LocalFrame,
+        bound_label: Option<&str>,
+    ) {
+        let exit_label = gen_label("while_exit");
+        let loop_label = gen_label("while_loop");
+        writer.block(indent, &exit_label);
+        writer.r#loop(indent + 2, &loop_label);
+        self.emit_expr(writer, condition, indent + 4, frame);
+        writer.line_fmt(
+            indent + 4,
+            format_args!("(call {})", RuntimeFn::TruthyBool.symbol()),
+        );
+        writer.i32_eqz(indent + 4);
+        writer.br_if(indent + 4, &exit_label);
+
+        loop_ctx.push(ControlFrame {
+            name: bound_label.map(str::to_owned),
+            exit_label: exit_label.clone(),
+            continue_label: Some(loop_label.clone()),
+        });
+        self.emit_statements(writer, body, indent + 4, loop_ctx, frame);
+        loop_ctx.pop();
+
+        writer.r#br(indent + 4, &loop_label);
+        writer.end(indent + 2);
+        writer.end(indent);
+    }
+
+    fn emit_do_while_statement(
+        &self,
+        writer: &mut WatWriter,
+        body: &[LoweredStmt],
+        condition: &LoweredExpr,
+        indent: usize,
+        loop_ctx: &mut LoopContext,
+        frame: &LocalFrame,
+        bound_label: Option<&str>,
+    ) {
+        let exit_label = gen_label("do_exit");
+        let loop_label = gen_label("do_loop");
+        writer.block(indent, &exit_label);
+        writer.r#loop(indent + 2, &loop_label);
+
+        loop_ctx.push(ControlFrame {
+            name: bound_label.map(str::to_owned),
+            exit_label: exit_label.clone(),
+            continue_label: Some(loop_label.clone()),
+        });
+        self.emit_statements(writer, body, indent + 4, loop_ctx, frame);
+        loop_ctx.pop();
+
+        self.emit_expr(writer, condition, indent + 4, frame);
+        writer.line_fmt(
+            indent + 4,
+            format_args!("(call {})", RuntimeFn::TruthyBool.symbol()),
+        );
+        writer.br_if(indent + 4, &loop_label);
+        writer.end(indent + 2);
+        writer.end(indent);
+    }
+
     fn emit_for_statement(
         &self,
         writer: &mut WatWriter,
@@ -656,6 +635,127 @@ impl WatEmitter<'_> {
         writer.r#br(indent + 4, &loop_label);
         writer.end(indent + 2); // end loop
         writer.end(indent); // end block
+    }
+
+    fn emit_for_in_statement(
+        &self,
+        writer: &mut WatWriter,
+        var: &LocalId,
+        iter: &LoweredExpr,
+        iter_local: &LocalId,
+        index_local: &LocalId,
+        len_local: &LocalId,
+        body: &[LoweredStmt],
+        indent: usize,
+        loop_ctx: &mut LoopContext,
+        frame: &LocalFrame,
+        bound_label: Option<&str>,
+    ) {
+        let exit_label = gen_label("for_in_exit");
+        let loop_label = gen_label("for_in_loop");
+
+        self.emit_expr(writer, iter, indent, frame);
+        writer.call(indent, RuntimeFn::ObjectKeys.symbol());
+        writer.local_set(indent, local_index(*iter_local));
+
+        writer.i32_const(indent, ValueTag::encode_number(0));
+        writer.local_set(indent, local_index(*index_local));
+
+        writer.local_get(indent, local_index(*iter_local));
+        writer.call(indent, RuntimeFn::GetLength.symbol());
+        writer.local_set(indent, local_index(*len_local));
+
+        writer.block(indent, &exit_label);
+        writer.r#loop(indent + 2, &loop_label);
+
+        writer.local_get(indent + 4, local_index(*index_local));
+        writer.local_get(indent + 4, local_index(*len_local));
+        writer.call(indent + 4, RuntimeFn::Less.symbol());
+        writer.call(indent + 4, RuntimeFn::TruthyBool.symbol());
+        writer.i32_eqz(indent + 4);
+        writer.br_if(indent + 4, &exit_label);
+
+        writer.local_get(indent + 4, local_index(*iter_local));
+        writer.local_get(indent + 4, local_index(*index_local));
+        writer.call(indent + 4, RuntimeFn::ArrayGet.symbol());
+        writer.local_set(indent + 4, local_index(*var));
+
+        loop_ctx.push(ControlFrame {
+            name: bound_label.map(str::to_owned),
+            exit_label: exit_label.clone(),
+            continue_label: Some(loop_label.clone()),
+        });
+        self.emit_statements(writer, body, indent + 4, loop_ctx, frame);
+        loop_ctx.pop();
+
+        writer.local_get(indent + 4, local_index(*index_local));
+        writer.i32_const(indent + 4, ValueTag::encode_number(1));
+        writer.call(indent + 4, RuntimeFn::Add.symbol());
+        writer.local_set(indent + 4, local_index(*index_local));
+
+        writer.r#br(indent + 4, &loop_label);
+        writer.end(indent + 2);
+        writer.end(indent);
+    }
+
+    fn emit_for_of_statement(
+        &self,
+        writer: &mut WatWriter,
+        var: &LocalId,
+        iter: &LoweredExpr,
+        iter_local: &LocalId,
+        index_local: &LocalId,
+        len_local: &LocalId,
+        body: &[LoweredStmt],
+        indent: usize,
+        loop_ctx: &mut LoopContext,
+        frame: &LocalFrame,
+        bound_label: Option<&str>,
+    ) {
+        let exit_label = gen_label("for_of_exit");
+        let loop_label = gen_label("for_of_loop");
+
+        self.emit_expr(writer, iter, indent, frame);
+        writer.local_set(indent, local_index(*iter_local));
+
+        writer.i32_const(indent, ValueTag::encode_number(0));
+        writer.local_set(indent, local_index(*index_local));
+
+        writer.local_get(indent, local_index(*iter_local));
+        writer.call(indent, RuntimeFn::GetLength.symbol());
+        writer.local_set(indent, local_index(*len_local));
+
+        writer.block(indent, &exit_label);
+        writer.r#loop(indent + 2, &loop_label);
+
+        writer.local_get(indent + 4, local_index(*index_local));
+        writer.local_get(indent + 4, local_index(*len_local));
+        writer.call(indent + 4, RuntimeFn::Less.symbol());
+        writer.call(indent + 4, RuntimeFn::TruthyBool.symbol());
+        writer.i32_eqz(indent + 4);
+        writer.br_if(indent + 4, &exit_label);
+
+        writer.local_get(indent + 4, local_index(*iter_local));
+        writer.local_get(indent + 4, local_index(*index_local));
+        writer.call(indent + 4, RuntimeFn::ArrayGet.symbol());
+        writer.local_set(indent + 4, local_index(*var));
+
+        loop_ctx.push(ControlFrame {
+            name: bound_label.map(str::to_owned),
+            exit_label: exit_label.clone(),
+            continue_label: Some(loop_label.clone()),
+        });
+        self.emit_statements(writer, body, indent + 4, loop_ctx, frame);
+        loop_ctx.pop();
+
+        writer.local_get(indent + 4, local_index(*index_local));
+        writer.i32_const(indent + 4, ValueTag::encode_number(1));
+        writer.call(indent + 4, RuntimeFn::Add.symbol());
+        writer.local_set(indent + 4, local_index(*index_local));
+
+        writer.r#br(indent + 4, &loop_label);
+        writer.end(indent + 2);
+        writer.end(indent);
     }
 
     fn emit_try_catch_statement(
