@@ -128,11 +128,12 @@ done:
   - 280
   - 281
   evidence:
-    commit: TBD
+    commit: 7708fa0ba
     commands:
     - python3 scripts/manager.py reference-coverage test262 --jobs 1 --path-filter language/statements => exit 0, negative_compile_pass=640, negative_compile_unverified=884, negative_compile_mismatch=0
     - python3 scripts/gen/web-ui-data.py => exit 0
     - python3 -c "json check" => all 3 fields present in all 3 dashboard data directories
+    - python3 scripts/run/reference-coverage.py test262 --jsonl --jobs 1 --limit 10 --no-semantic --no-dashboard-data => exit 0, JSONL output has negative_compile_pass, negative_compile_unverified, negative_compile_mismatch
 - id: 284
   title: Implement assert.sameValue MVP and add first positive differential test262 pass
   priority: P2
@@ -167,7 +168,7 @@ done:
   - 282
   - 283
   evidence:
-    commit: TBD
+    commit: aa2027fc1
     commands:
     - python3 scripts/manager.py reference-coverage test262 --jobs 1 --path-filter language/statements => exit 0, differential_pass=640
     - python3 scripts/gen/web-ui-data.py => exit 0
