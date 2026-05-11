@@ -165,7 +165,7 @@ open:
     priority: P2
     type: fix
     area: coverage
-    status: open
+    status: done
     created: 2026-05-11
     updated: 2026-05-11
     roadmap: ""
@@ -180,6 +180,10 @@ open:
       files:
         - "scripts/run/reference-coverage.py: add build_only_count, else: branch in _accumulate_case_result, output formatting"
       acceptance: "build_only appears in stdout summary when non-zero"
+    evidence:
+      commit: 55cc722f9
+      commands:
+        - "mise run reference-coverage -- test262 --limit 100 --jobs 4 2>&1 | grep -q 'build_only' => exit 0"
   - id: 253
     title: "Add verified negative compile check to legacy subprocess mode (coverage)"
     priority: P2

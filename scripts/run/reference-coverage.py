@@ -518,6 +518,7 @@ def _test262_semantic_requires_strict_oracle(suite, semantic_check):
 def _mark_verified_negative_compile_pass(metrics, semantic_enabled):
     """Count only parse/SyntaxError-verified negative compile outcomes as semantic."""
     metrics["build_pass"] = True
+    metrics["verified_negative"] = True
     if semantic_enabled:
         metrics["semantic_pass"] = True
 
@@ -1998,6 +1999,7 @@ def main():
     unsupported_count = 0
     blocked_count = 0
     build_only_count = 0
+    verified_negative_count = 0
     skip_count = 0
     
     unsupported_diag_counts = {}
@@ -2225,6 +2227,7 @@ def main():
         """Update counters/detail output from a normalized result dict."""
         nonlocal executed, build_pass_count, semantic_pass_count, mismatch_count
         nonlocal runtime_error_count, blocked_count, fail_count, build_only_count
+        nonlocal verified_negative_count
         nonlocal unsupported_count, unsupported_diag_counts, unsupported_feature_counts
         nonlocal unsupported_by_phase
 
@@ -2254,6 +2257,8 @@ def main():
                 blocked_count += 1
             else:
                 build_only_count += 1
+            if result.get("verified_negative"):
+                verified_negative_count += 1
             if result["detail_line"]:
                 file_details.append(result["detail_line"])
             return
@@ -2446,7 +2451,7 @@ def main():
                 if t262.can_pass_compile_negative(metadata, diag_code, diag_phase or ""):
                     _mark_verified_negative_compile_pass(result_metrics, semantic_enabled)
                     if detail_output:
-                        result_metrics["detail_line"] = f"{detail_path}: build_pass"
+                        result_metrics["detail_line"] = f"{detail_path}: build_pass: verified negative parse/SyntaxError"
                 else:
                     result_metrics["unsupported"] = True
                     result_metrics["diag_code"] = "NegativeCompileUnverified"
@@ -2479,6 +2484,7 @@ def main():
     mismatch_count = 0
     runtime_error_count = 0
     build_only_count = 0
+    verified_negative_count = 0
     
     file_details = []
     
@@ -2743,6 +2749,7 @@ def main():
         "fail": fail_count,
         "unsupported": unsupported_count,
         "blocked": blocked_count,
+        "verified_negative": verified_negative_count,
         "build_only": build_only_count,
         "skip_with_reason": skip_count,
         "duration_ms": int(round((time.perf_counter() - coverage_started_at) * 1000)),
@@ -2866,6 +2873,7 @@ def main():
         print(f"fail={fail_count}")
         print(f"unsupported={unsupported_count}")
         print(f"blocked={blocked_count}")
+        print(f"verified_negative={verified_negative_count}")
         print(f"build_only={build_only_count}")
         print(f"skip_with_reason={skip_count}")
         print(f"unsupported_diagcodes={unsupported_diagcodes}")
