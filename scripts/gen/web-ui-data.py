@@ -396,6 +396,9 @@ def normalized_suite_metrics(item):
     build_pass_by_detail = item.get("build_pass_by_detail", {})
     if not isinstance(build_pass_by_detail, dict):
         build_pass_by_detail = {}
+    unresolved_name_by_symbol = item.get("unresolved_name_by_symbol", {})
+    if not isinstance(unresolved_name_by_symbol, dict):
+        unresolved_name_by_symbol = {}
 
     return {
         "suite": suite,
@@ -412,6 +415,7 @@ def normalized_suite_metrics(item):
         "fail": fail,
         "skip_with_reason": skip_with_reason,
         "build_pass_by_detail": build_pass_by_detail,
+        "unresolved_name_by_symbol": unresolved_name_by_symbol,
         "source": item["_source_path"],
     }
 

@@ -347,6 +347,16 @@ def create_test_record(suite, case_path, target, status, expected=None, actual=N
 # Feature label
 # ---------------------------------------------------------------------------
 
+def extract_unresolved_name(stderr):
+    """Extract the unresolved symbol name from compiler error output."""
+    if not stderr:
+        return None
+    match = re.search(r"unresolved name[`'\"]([^`'\"]+)[`'\"]", stderr, re.IGNORECASE)
+    if match:
+        return match.group(1).strip()
+    return None
+
+
 def feature_label(diag_code, stderr, test_file, phase=None):
     """Generate feature label from diagnostic code."""
     feature_map = {

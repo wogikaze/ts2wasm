@@ -583,6 +583,16 @@ def prepare_build_inputs(suite, file_path, tmp_dir):
     )
     return wasm_source, node_source
 
+def _extract_unresolved_name(err_file):
+    """Extract the unresolved symbol name from compiler error output."""
+    if not err_file:
+        return None
+    match = re.search(r"unresolved name[`'\"]([^`'\"]+)[`'\"]", err_file, re.IGNORECASE)
+    if match:
+        return match.group(1).strip()
+    return None
+
+
 def feature_label(diag_code, err_file, file_path, phase=None):
     """Generate feature label from diagnostic code and error output."""
     # Based on scripts/lib/feature-labels.sh
@@ -1003,6 +1013,7 @@ def main():
             "unsupported_diagcodes": {},
             "unsupported_features": {},
             "build_pass_by_detail": {},
+            "unresolved_name_by_symbol": {},
             "status": "in-progress",
             "selection": {
                 "paths_file": paths_file,
@@ -1088,6 +1099,7 @@ def main():
         oracle_skipped = 0
         build_only = 0
         negative_compile_pass = 0
+        unresolved_name_by_symbol = {}
         total_duration_ms = 0
         completed = 0
         total = len(files)
@@ -1264,7 +1276,7 @@ def main():
 
         def consume_record(jsonl_out, record, status):
             nonlocal passed, failed, unsupported, blocked, oracle_skipped, build_only, total_duration_ms
-            nonlocal completed, last_progress, negative_compile_pass
+            nonlocal completed, last_progress, negative_compile_pass, unresolved_name_by_symbol
             if record:
                 jsonl_out.write(record + "\n")
                 try:
@@ -1286,6 +1298,14 @@ def main():
                 failed += 1
             elif status == "unsupported":
                 unsupported += 1
+                try:
+                    rec_data = json.loads(record)
+                    reason = rec_data.get("reason", "")
+                    if "UnresolvedName/" in reason:
+                        symbol = t262.extract_unresolved_name(reason) or "unknown"
+                        unresolved_name_by_symbol[symbol] = unresolved_name_by_symbol.get(symbol, 0) + 1
+                except (json.JSONDecodeError, TypeError):
+                    pass
             elif status == "blocked":
                 blocked += 1
             elif status == "oracle_skipped":
@@ -1984,6 +2004,7 @@ def main():
             "negative_compile_pass": negative_compile_pass,
             "conformance_pass": conformance_pass,
             "build_pass_by_detail": {},
+            "unresolved_name_by_symbol": unresolved_name_by_symbol,
             "duration_ms": wall_duration_ms,
             "wall_duration_ms": wall_duration_ms,
             "case_duration_sum_ms": total_duration_ms,
@@ -2208,7 +2229,10 @@ def main():
                 rm["unsupported"] = True
                 diag_phase = build_resp.get("phase")
                 rm["diag_phase"] = diag_phase
-                rm["feature_label"] = feature_label(diag_code, None, str(item["file_path"]), diag_phase)
+                message = build_resp.get("message") or ""
+                rm["feature_label"] = feature_label(diag_code, message, str(item["file_path"]), diag_phase)
+                if diag_code == "UnresolvedName":
+                    rm["unresolved_symbol"] = _extract_unresolved_name(message)
                 if detail_output:
                     rm["detail_line"] = f"{detail_path}: {diag_code}: {rm['feature_label']}"
 
@@ -2264,6 +2288,7 @@ def main():
         nonlocal unsupported_count, unsupported_diag_counts, unsupported_feature_counts
         nonlocal unsupported_by_phase
         nonlocal build_pass_by_detail
+        nonlocal unresolved_name_by_symbol
 
         executed += 1
         if detail_output:
@@ -2330,6 +2355,10 @@ def main():
             diag_phase = result.get("diag_phase")
             if diag_phase:
                 unsupported_by_phase[diag_phase] = unsupported_by_phase.get(diag_phase, 0) + 1
+            # Aggregate UnresolvedName by symbol
+            if diag_code == "UnresolvedName":
+                symbol = result.get("unresolved_symbol") or "unknown"
+                unresolved_name_by_symbol[symbol] = unresolved_name_by_symbol.get(symbol, 0) + 1
             if result["detail_line"]:
                 file_details.append(result["detail_line"])
             return
@@ -2401,12 +2430,14 @@ def main():
             else:
                 rm["unsupported"] = True
                 rm["feature_label"] = feature_label(diag_code, err_content, str(item["file_path"]), diag_phase)
+                if diag_code == "UnresolvedName":
+                    rm["unresolved_symbol"] = _extract_unresolved_name(err_content)
                 if detail_output:
                     rm["detail_line"] = f"{detail_path}: {diag_code}: {rm['feature_label']}"
             return rm
         finally:
             shutil.rmtree(thread_tmp, ignore_errors=True)
-    
+
     def _process_one_file(file_path):
         """Process a single file for coverage measurement. Thread-safe.
         
@@ -2540,12 +2571,14 @@ def main():
                 result_metrics["unsupported"] = True
                 feat = feature_label(diag_code, err_content, str(file_path), diag_phase)
                 result_metrics["feature_label"] = feat
+                if diag_code == "UnresolvedName":
+                    result_metrics["unresolved_symbol"] = _extract_unresolved_name(err_content)
                 if detail_output:
                     result_metrics["detail_line"] = f"{detail_path}: {diag_code}: {feat}"
             return result_metrics
         finally:
             shutil.rmtree(thread_tmp, ignore_errors=True)
-    
+
     build_pass_count = 0
     semantic_pass_count = 0
     mismatch_count = 0
@@ -2553,6 +2586,7 @@ def main():
     build_only_count = 0
     verified_negative_count = 0
     build_pass_by_detail = {}
+    unresolved_name_by_symbol = {}
 
     file_details = []
     
@@ -2780,10 +2814,13 @@ def main():
                         diag_phase = result.get("diag_phase")
                         if diag_phase:
                             unsupported_by_phase[diag_phase] = unsupported_by_phase.get(diag_phase, 0) + 1
+                        if diag_code == "UnresolvedName":
+                            symbol = result.get("unresolved_symbol") or "unknown"
+                            unresolved_name_by_symbol[symbol] = unresolved_name_by_symbol.get(symbol, 0) + 1
                         if result["detail_line"]:
                             file_details.append(result["detail_line"])
                         continue
-    
+
         # Server cleanup
         if server_mode and server_proc:
             try:
@@ -2849,6 +2886,7 @@ def main():
         "unsupported_features": unsupported_feature_counts,
         "unsupported_by_phase": unsupported_by_phase,
         "build_pass_by_detail": build_pass_by_detail,
+        "unresolved_name_by_symbol": unresolved_name_by_symbol,
         "status": "in-progress",
         "selection": {
             "paths_file": paths_file,
