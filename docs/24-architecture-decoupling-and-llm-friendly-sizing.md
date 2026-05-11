@@ -187,7 +187,7 @@ Phase 4: 1500 → 1200     ❌ 未実施
 現在危険域にある関数:
 
 - `lower_expr` — ~~2711 lines~~ ✅ P9: **1122 lines** (dispatcher のみ, Call/MethodCall/New → call.rs に抽出)
-- `RuntimeFn::spec` — ~~2318 lines~~ ✅ P10: **715 lines** (include! で domain spec に分割)
+- `RuntimeFn::spec` — ~~2318 lines~~ ⚠️ P10: **715 lines** (include! で domain spec に分割 — ただし section 8 の原則に反する一時的措置。real module 化は #274 runtime-catalog crate 抽出時に解決予定)
 - `emit_json_parse` — 1357 lines ❌
 - `emit_expr` — ~~921 lines~~ ✅ P10: **195 lines** (12 の sub-function に分割)
 - `Lexer::tokenize` — ~~863 lines~~ ✅ P10: **268 lines** (4 の sub-method に分割)
@@ -218,7 +218,7 @@ Phase 4: 1500 → 1200     ❌ 未実施
 
 これができていないなら、境界が足りない。
 
-## 5. compiler/src/lib.rs の分離 ✅ P10
+## 5. compiler/src/lib.rs の分離 ⚠️ P10: 暫定分割
 
 現在の `build_file_with_host_deny` は以下をすべて抱えている:
 
@@ -235,21 +235,34 @@ Phase 4: 1500 → 1200     ❌ 未実施
 - WAT emit
 - wasm 書き出し
 
-目標構成:
+P10 で達成した分割:
 
 ```
 compiler/src/
-  lib.rs
+  lib.rs                          ← 180 lines (orchestration のみ)
   stages/
-    parse.rs
-    name_resolve.rs
-    builtin_resolve.rs
-    lower.rs
-    validate.rs
-    emit.rs
+    parse.rs                      ← parse + collect_diagnostics
+    name_resolve.rs               ← name resolution
+    builtin_resolve.rs            ← builtin resolution
+    lower.rs                      ← lowering
+    validate.rs                   ← validation + Validated wrapper
+    emit.rs                       ← wasm emission + I/O
 ```
 
-`lib.rs` の行数: ~~906~~ → **180 lines** (orchestration のみ)。各 stage は独立した module。
+`lib.rs` の行数: ~~906~~ → **180 lines**。各 pipeline function が薄くなった。
+
+**本来の目標構成との乖離:**
+
+```
+欠落中: pipeline.rs, session.rs, input.rs, io/read_source.rs, io/write_output.rs,
+        ast_validate.rs, module_graph.rs, static_imports.rs, semantic_validate.rs,
+        lowered_validate.rs, runtime_gate.rs
+```
+
+P10 では `build_file_with_host_deny` の巨大関数を薄くしたが、本来の目標 (compile_source
+純粋関数化 + I/O 分離 + pipeline stage 細分化) には達していない。
+`emit.rs` が WASM 書き出し + manifest 生成 + I/O を抱えたまま。
+I/O 分離 (`io/`) と module graph/static import の個別 stage 化は次フェーズ以降。
 
 ## 6. Validated\<T\> の導入 🚧 P10: struct + arch check 追加済み
 
@@ -269,10 +282,15 @@ P10 で `Validated<T>` struct 本体を実装し、arch check (`check_validated_
 将来の拡張 (未着手):
 
 ```rust
-Validated<HirProgram>
-Validated<MirProgram>
-Validated<RuntimeLinkPlan>
+Validated<HirProgram>        // HIR → MIR lowering 前に validate
+Validated<MirProgram>        // MIR → wasm emission 前に validate
+Validated<RuntimeLinkPlan>   // runtime fn / import / capability の整合性 validate
 ```
+
+削除した候補:
+- ~~`Validated<Ast>`~~ — AST は parser 直後で validation 不要 (parse error は別 system)。parser が構文エラーを返す。
+- ~~`Validated<NameResolvedProgram>`~~ — name resolution の validation は `ResolvedStmt` の
+  invariant として表現済み。個別 wrapper は過剰。
 
 ## 7. Resolver context の分割 🚧 P10: LoweringCtx + domain modules 完了
 
@@ -320,15 +338,24 @@ crates/ir/src/lowered/
   completion.rs        ✅ P10: 新規作成 (CompletionRecord stubs)
   resolver/
     mod.rs              — Resolver struct, domain module 宣言
-    expr.rs             — 残 branch
+    expr.rs             — 残 branch (Unary/Binary/Ternary/制御構文 — 未分離)
     call.rs             — Call/MethodCall/New
-    array.rs            — ArrayLiteral lowering
+    array.rs            — ArrayLiteral + callback lowering
     object.rs           — ObjectLiteral lowering (stub)
     class.rs            — ClassExpr lowering (stub)
     extra.rs            — 残 helper (function/string/module 抽出後)
     function.rs         ✅ P10: arrow/closure/capture 抽出済み
     string.rs           ✅ P10: string/regexp 抽出済み
     module.rs           ✅ P10: module 抽出済み
+
+**なぜ目標より緩いか**: `expr.rs` は依然として Unary/Binary/Ternary/制御構文の
+複数 semantic domain を横断して抱えている。P10 では `extra.rs` からの
+抜き出し (function/string/module) を優先し、`expr.rs` の細分化は deferred。
+理由:
+- `expr.rs` の branch 間には共通 helper (resolve_local, alloc_temp 等) への依存があり、
+  関数 signature がまだ `&mut Resolver` に密結合している。
+- `LoweringCtx` struct の field 移行 (現在の Resolver struct の field を ctx に移動) が
+  完了しないと、domain module の関数が context なしで呼べない。
 ```
 
 **現在の resolver/ のファイル構成 (P10 完了時点):**
@@ -514,7 +541,21 @@ runtime function を参照できる。
 
 arch check `check_no_new_string_runtime_call` で新規 `RuntimeCall { runtime_fn: String }` を禁止。
 
-→ ✅ **P10 で完了。案 B (RuntimeIntrinsic) を採用。**
+選択肢比較:
+
+| 案 | 内容 | 評価 | 選ばなかった理由 |
+|---|---|---|---|
+| A: `RuntimeFn` を `runtime-catalog` crate に移す | IR から直接 `RuntimeFn` 参照 | 長期で最もきれい | #274 未着手。P10 では spec 分割 (#258) まで。catalog crate 抽出の工数が取れなかった。 |
+| B: IR 用に `RuntimeIntrinsic` を作る | mapping layer が必要 | 短期向け | ✅ **P10 で採用。** 即効性があり、String を即座に排除できる。mapping layer は `program_builtins.rs` の `resolve_runtime_fn` に集約。 |
+
+採用判断理由:
+- P10 の 1 sprint で String 排除まで持っていくには、`RuntimeIntrinsic` の追加が最小手順。
+- `runtime-catalog` crate 抽出 (#274) は backend-wasm の依存関係整理まで必要で、
+  P10 では工数不足。(P10 deferred)
+- `RuntimeIntrinsic` → `RuntimeFn` の mapping は `program_builtins.rs` の既存 dispatch に
+  包含できるため、後で案 A に移行する際の rewrite 範囲は小さい。
+
+→ ✅ **P10 で完了。案 B (RuntimeIntrinsic) を採用。次フェーズで案 A への移行を再評価。**
 
 ## 11. HIR / MIR / Wasm IR の責務明確化 🚧 P10: type stubs 追加
 
