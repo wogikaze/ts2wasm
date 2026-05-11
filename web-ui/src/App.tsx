@@ -323,7 +323,7 @@ function coverageCsvRows(coverage: CoverageData) {
       kind: 'summary',
       name: 'all',
       total: coverage.total,
-      implemented: coverage.implemented,
+      implemented: coverage.build_implemented,
       unimplemented: coverage.unimplemented,
       future: coverage.future,
       failed: 0,
@@ -387,7 +387,7 @@ function App() {
   const filteredShownRecords = filteredTests.reduce((total, test) => total + shownRecordCount(test), 0)
 
   const coverageStatusData = useMemo(() => [
-    { name: 'Implemented', value: coverage.implemented },
+    { name: 'Implemented', value: coverage.build_implemented },
     { name: 'Unimplemented', value: coverage.unimplemented },
     { name: 'Future', value: coverage.future },
   ].filter(item => item.value > 0), [coverage])
@@ -401,7 +401,7 @@ function App() {
   ], [coverage])
 
   const coverageTotalMismatch = coverage.total > 0 &&
-    coverage.implemented + coverage.unimplemented + coverage.future !== coverage.total
+    coverage.build_implemented + coverage.unimplemented + coverage.future !== coverage.total
 
   const suiteCoverageData = useMemo(() => (coverage.suites || []).map(suite => ({
     suite: suite.suite,
@@ -858,12 +858,12 @@ function App() {
                   <div>
                     <div className="flex justify-between mb-2">
                       <span className="text-gray-400">Implemented</span>
-                      <span className="font-medium">{coverage.implemented.toLocaleString()}/{coverage.total.toLocaleString()} ({formatPercent(percentOf(coverage.implemented, coverage.total))})</span>
+                      <span className="font-medium">{coverage.build_implemented.toLocaleString()}/{coverage.total.toLocaleString()} ({formatPercent(percentOf(coverage.build_implemented, coverage.total))})</span>
                     </div>
                     <div className="w-full bg-gray-700 rounded-full h-2">
                       <div
                         className="bg-green-500 h-2 rounded-full transition-all"
-                        style={{ width: `${percentOf(coverage.implemented, coverage.total)}%` }}
+                        style={{ width: `${percentOf(coverage.build_implemented, coverage.total)}%` }}
                       />
                     </div>
                   </div>

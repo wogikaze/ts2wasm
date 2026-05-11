@@ -36,7 +36,7 @@ export interface TestResultsMetadata {
 
 export interface CoverageData {
   total: number;
-  implemented: number;
+  build_implemented: number;
   unimplemented: number;
   future: number;
   byPriority: {
