@@ -1,7 +1,8 @@
 #[cfg(test)]
 mod tests {
     use crate::name_resolver;
-    use ts2wasm_shared::{ArrayLiteralElement, BinaryOp, DiagCode, Expr, Stmt};
+    use ts2wasm_syntax::{ArrayLiteralElement, BinaryOp, Expr, Stmt};
+    use ts2wasm_diagnostic::DiagCode;
     use ts2wasm_source::Span;
 
     #[test]

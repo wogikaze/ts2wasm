@@ -1,4 +1,4 @@
-use ts2wasm_shared::Expr;
+use ts2wasm_syntax::Expr;
 
 use crate::builtin::BuiltinId;
 

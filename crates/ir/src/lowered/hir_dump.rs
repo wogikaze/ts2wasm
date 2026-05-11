@@ -15,13 +15,13 @@ use crate::lowered::hir::{HirBinaryOp, HirExpr, HirFunction, HirProgram, HirStmt
 /// Dump a `HirProgram` to a string.
 pub fn dump_hir_program(program: &HirProgram, label: &str) -> String {
     let mut out = String::new();
-    out.push_str(&format!(";; HIR Program: {}\n", label));
-    out.push_str(&format!(";; Locals: {:?}\n", program.locals));
-    out.push_str(";; Functions:\n");
+    out.push_str(&format!("; HIR Program: {}\n", label));
+    out.push_str(&format!("; Locals: {:?}\n", program.locals));
+    out.push_str("; Functions:\n");
     for func in &program.functions {
         out.push_str(&dump_hir_function(func));
     }
-    out.push_str(";; Top-level body:\n");
+    out.push_str("; Top-level body:\n");
     for stmt in &program.body {
         dump_hir_stmt(stmt, &mut out, 1);
     }
@@ -47,11 +47,11 @@ pub fn dump_hir_stmt(stmt: &HirStmt, out: &mut String, indent: usize) {
     let pad = "  ".repeat(indent);
     match stmt {
         HirStmt::Let { local, init } => {
-            out.push_str(&format!("{};; let ${} =\n", pad, local.0));
+            out.push_str(&format!("{}; let ${} =\n", pad, local.0));
             dump_hir_expr(init, out, indent + 1);
         }
         HirStmt::Assign { local, expr } => {
-            out.push_str(&format!("{};; ${} =\n", pad, local.0));
+            out.push_str(&format!("{}; ${} =\n", pad, local.0));
             dump_hir_expr(expr, out, indent + 1);
         }
         HirStmt::Expr(expr) => {
@@ -62,33 +62,33 @@ pub fn dump_hir_stmt(stmt: &HirStmt, out: &mut String, indent: usize) {
             then_body,
             else_body,
         } => {
-            out.push_str(&format!("{};; if\n", pad));
+            out.push_str(&format!("{}; if\n", pad));
             dump_hir_expr(condition, out, indent + 1);
-            out.push_str(&format!("{};; then\n", pad));
+            out.push_str(&format!("{}; then\n", pad));
             for s in then_body {
                 dump_hir_stmt(s, out, indent + 1);
             }
             if !else_body.is_empty() {
-                out.push_str(&format!("{};; else\n", pad));
+                out.push_str(&format!("{}; else\n", pad));
                 for s in else_body {
                     dump_hir_stmt(s, out, indent + 1);
                 }
             }
         }
         HirStmt::While { condition, body } => {
-            out.push_str(&format!("{};; while\n", pad));
+            out.push_str(&format!("{}; while\n", pad));
             dump_hir_expr(condition, out, indent + 1);
-            out.push_str(&format!("{};; do\n", pad));
+            out.push_str(&format!("{}; do\n", pad));
             for s in body {
                 dump_hir_stmt(s, out, indent + 1);
             }
         }
         HirStmt::Return(expr) => {
-            out.push_str(&format!("{};; return\n", pad));
+            out.push_str(&format!("{}; return\n", pad));
             dump_hir_expr(expr, out, indent + 1);
         }
         HirStmt::Throw(expr) => {
-            out.push_str(&format!("{};; throw\n", pad));
+            out.push_str(&format!("{}; throw\n", pad));
             dump_hir_expr(expr, out, indent + 1);
         }
     }

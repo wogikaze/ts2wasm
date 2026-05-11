@@ -8,7 +8,7 @@ use crate::builtin_resolved::{ResolvedArrayElement, ResolvedExpr};
 use crate::lowered::facts::StaticFunctionArrayLike;
 use crate::lowered::*;
 use std::collections::HashSet;
-use ts2wasm_shared::{BinaryOp, OBJECT_SPREAD_SENTINEL, SYMBOL_ITERATOR_OBJECT_KEY, UnaryOp};
+use ts2wasm_syntax::{BinaryOp, OBJECT_SPREAD_SENTINEL, SYMBOL_ITERATOR_OBJECT_KEY, UnaryOp};
 use ts2wasm_diagnostic::{DiagCode, Diagnostic};
 use ts2wasm_source::Span;
 

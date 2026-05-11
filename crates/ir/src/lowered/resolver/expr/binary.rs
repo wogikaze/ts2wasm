@@ -1,7 +1,7 @@
 use crate::builtin_resolved::ResolvedExpr;
 use crate::lowered::*;
 use crate::lowered::BuiltinErrorConstructor;
-use ts2wasm_shared::{BinaryOp};
+use ts2wasm_syntax::BinaryOp;
 use ts2wasm_diagnostic::{DiagCode, Diagnostic};
 use ts2wasm_source::Span;
 

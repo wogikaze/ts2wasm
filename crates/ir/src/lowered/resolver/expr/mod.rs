@@ -15,7 +15,7 @@ use super::{
 use crate::builtin::{BuiltinId, BuiltinPropertyId};
 use crate::builtin_resolved::ResolvedExpr;
 use crate::lowered::*;
-use ts2wasm_shared::{BinaryOp, UnaryOp};
+use ts2wasm_syntax::{BinaryOp, UnaryOp};
 use ts2wasm_diagnostic::{DiagCode, Diagnostic};
 use ts2wasm_source::Span;
 

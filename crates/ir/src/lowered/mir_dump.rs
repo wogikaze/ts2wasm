@@ -13,16 +13,16 @@ use crate::lowered::mir::{MirExpr, MirFunction, MirProgram, MirStmt};
 /// Dump a `MirProgram` to a string.
 pub fn dump_mir_program(program: &MirProgram, label: &str) -> String {
     let mut out = String::new();
-    out.push_str(&format!(";; MIR Program: {}\n", label));
+    out.push_str(&format!("; MIR Program: {}\n", label));
     out.push_str(&format!(
-        ";; Top-level locals: {:?}\n",
+        "; Top-level locals: {:?}\n",
         program.top_level_locals
     ));
-    out.push_str(";; Functions:\n");
+    out.push_str("; Functions:\n");
     for func in &program.functions {
         out.push_str(&dump_mir_function(func));
     }
-    out.push_str(";; Top-level statements:\n");
+    out.push_str("; Top-level statements:\n");
     for stmt in &program.top_level_statements {
         dump_mir_stmt(stmt, &mut out, 1);
     }
@@ -48,11 +48,11 @@ pub fn dump_mir_stmt(stmt: &MirStmt, out: &mut String, indent: usize) {
     let pad = "  ".repeat(indent);
     match stmt {
         MirStmt::Let { local, init } => {
-            out.push_str(&format!("{};; let ${}\n", pad, local.0));
+            out.push_str(&format!("{}; let ${}\n", pad, local.0));
             dump_mir_expr(init, out, indent + 1);
         }
         MirStmt::Assign { local, init } => {
-            out.push_str(&format!("{};; ${} =\n", pad, local.0));
+            out.push_str(&format!("{}; ${} =\n", pad, local.0));
             dump_mir_expr(init, out, indent + 1);
         }
         MirStmt::Expr(expr) => {
@@ -63,33 +63,33 @@ pub fn dump_mir_stmt(stmt: &MirStmt, out: &mut String, indent: usize) {
             then_body,
             else_body,
         } => {
-            out.push_str(&format!("{};; if\n", pad));
+            out.push_str(&format!("{}; if\n", pad));
             dump_mir_expr(condition, out, indent + 1);
-            out.push_str(&format!("{};; then\n", pad));
+            out.push_str(&format!("{}; then\n", pad));
             for s in then_body {
                 dump_mir_stmt(s, out, indent + 1);
             }
             if !else_body.is_empty() {
-                out.push_str(&format!("{};; else\n", pad));
+                out.push_str(&format!("{}; else\n", pad));
                 for s in else_body {
                     dump_mir_stmt(s, out, indent + 1);
                 }
             }
         }
         MirStmt::While { condition, body } => {
-            out.push_str(&format!("{};; while\n", pad));
+            out.push_str(&format!("{}; while\n", pad));
             dump_mir_expr(condition, out, indent + 1);
-            out.push_str(&format!("{};; do\n", pad));
+            out.push_str(&format!("{}; do\n", pad));
             for s in body {
                 dump_mir_stmt(s, out, indent + 1);
             }
         }
         MirStmt::Return(expr) => {
-            out.push_str(&format!("{};; return\n", pad));
+            out.push_str(&format!("{}; return\n", pad));
             dump_mir_expr(expr, out, indent + 1);
         }
         MirStmt::Throw(expr) => {
-            out.push_str(&format!("{};; throw\n", pad));
+            out.push_str(&format!("{}; throw\n", pad));
             dump_mir_expr(expr, out, indent + 1);
         }
         MirStmt::TryCatch {
@@ -98,12 +98,12 @@ pub fn dump_mir_stmt(stmt: &MirStmt, out: &mut String, indent: usize) {
             catch_body,
             finally_body,
         } => {
-            out.push_str(&format!("{};; try\n", pad));
+            out.push_str(&format!("{}; try\n", pad));
             for s in try_body {
                 dump_mir_stmt(s, out, indent + 1);
             }
             if let Some(cv) = catch_var {
-                out.push_str(&format!("{};; catch ${}\n", pad, cv.0));
+                out.push_str(&format!("{}; catch ${}\n", pad, cv.0));
             }
             if let Some(body) = catch_body {
                 for s in body {
@@ -111,23 +111,23 @@ pub fn dump_mir_stmt(stmt: &MirStmt, out: &mut String, indent: usize) {
                 }
             }
             if let Some(body) = finally_body {
-                out.push_str(&format!("{};; finally\n", pad));
+                out.push_str(&format!("{}; finally\n", pad));
                 for s in body {
                     dump_mir_stmt(s, out, indent + 1);
                 }
             }
         }
         MirStmt::Switch { expr, cases } => {
-            out.push_str(&format!("{};; switch\n", pad));
+            out.push_str(&format!("{}; switch\n", pad));
             dump_mir_expr(expr, out, indent + 1);
             for (opt_key, body) in cases {
                 match opt_key {
                     Some(key) => {
-                        out.push_str(&format!("{};; case:\n", pad));
+                        out.push_str(&format!("{}; case:\n", pad));
                         dump_mir_expr(key, out, indent + 1);
                     }
                     None => {
-                        out.push_str(&format!("{};; default:\n", pad));
+                        out.push_str(&format!("{}; default:\n", pad));
                     }
                 }
                 for s in body {
@@ -136,14 +136,14 @@ pub fn dump_mir_stmt(stmt: &MirStmt, out: &mut String, indent: usize) {
             }
         }
         MirStmt::Labeled { label, body } => {
-            out.push_str(&format!("{};; labeled \"{}\"\n", pad, label));
+            out.push_str(&format!("{}; labeled \"{}\"\n", pad, label));
             dump_mir_stmt(body, out, indent + 1);
         }
         MirStmt::Break { label } => {
-            out.push_str(&format!("{};; break {:?}\n", pad, label));
+            out.push_str(&format!("{}; break {:?}\n", pad, label));
         }
         MirStmt::Continue { label } => {
-            out.push_str(&format!("{};; continue {:?}\n", pad, label));
+            out.push_str(&format!("{}; continue {:?}\n", pad, label));
         }
         MirStmt::ClassDecl {
             name,
@@ -153,35 +153,35 @@ pub fn dump_mir_stmt(stmt: &MirStmt, out: &mut String, indent: usize) {
             static_methods,
             private_fields,
         } => {
-            out.push_str(&format!("{};; class {}\n", pad, name));
+            out.push_str(&format!("{}; class {}\n", pad, name));
             if let Some(parent) = extends {
-                out.push_str(&format!("{};;   extends {}\n", pad, parent));
+                out.push_str(&format!("{};   extends {}\n", pad, parent));
             }
             if let Some(cid) = constructor {
-                out.push_str(&format!("{};;   constructor func${}\n", pad, cid.0));
+                out.push_str(&format!("{};   constructor func${}\n", pad, cid.0));
             }
             for (mname, mid) in methods {
-                out.push_str(&format!("{};;   method {} func${}\n", pad, mname, mid.0));
+                out.push_str(&format!("{};   method {} func${}\n", pad, mname, mid.0));
             }
             for (mname, mid) in static_methods {
                 out.push_str(&format!(
-                    "{};;   static_method {} func${}\n",
+                    "{};   static_method {} func${}\n",
                     pad, mname, mid.0
                 ));
             }
             if !private_fields.is_empty() {
                 out.push_str(&format!(
-                    "{};;   private_fields {:?}\n",
+                    "{};   private_fields {:?}\n",
                     pad, private_fields
                 ));
             }
         }
         MirStmt::Export { name, expr } => {
-            out.push_str(&format!("{};; export {}\n", pad, name));
+            out.push_str(&format!("{}; export {}\n", pad, name));
             dump_mir_expr(expr, out, indent + 1);
         }
         MirStmt::ModuleExportsAssign { expr } => {
-            out.push_str(&format!("{};; module.exports =\n", pad));
+            out.push_str(&format!("{}; module.exports =\n", pad));
             dump_mir_expr(expr, out, indent + 1);
         }
     }
