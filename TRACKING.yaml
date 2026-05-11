@@ -288,35 +288,6 @@ open:
   notes: 'P10 added HIR/MIR type stubs. This issue prevents them from becoming dead design artifacts.
 
     '
-- id: 292
-  title: Move LLM-friendly size gates toward 2000-line files and 200-line functions
-  priority: P3
-  type: refactor
-  area: cross
-  status: open
-  created: 2026-05-11
-  updated: 2026-05-11
-  roadmap: P11-llm-friendly-sizing
-  acceptance:
-  - mise run check architecture
-  - grep -R "DEFAULT_MAX_FILE_LINES = 2000\|MAX_FILE_LINES.*2000" scripts/check/architecture-rules.py
-  - grep -R "function.*200" scripts/check/architecture-rules.py
-  non_goals:
-  - No requirement to reach 1200-line ideal immediately.
-  - No mass rewrite of runtime emitters in this issue.
-  plan:
-    goal: 'Continue the staged reduction from 3000-line hard limit toward a 2000-line hard limit and introduce a 200-line
-      function warning or staged check. Existing large files may remain on explicit allowlists, but new growth should be blocked.
-
-      '
-    files:
-    - scripts/check/architecture-rules.py
-    - docs/24-architecture-decoupling.md
-    - docs/current-state.md
-  notes: 'P10 lowered the main file limit from 4100 to 3000 and added 2000/1500 staged checks. This issue turns the next stage
-    into an actionable gate.
-
-    '
 - id: 293
   title: Replace IR RuntimeIntrinsic with runtime-catalog RuntimeFn after catalog extraction
   priority: P3
@@ -353,37 +324,6 @@ open:
   - 279
   notes: 'This is intentionally not part of #274. #274 extracts the catalog. This issue changes IR ownership and removes the
     temporary mapping layer.
-
-    '
-- id: 295
-  title: Add raw runtime symbol and host import string hardening across backend
-  priority: P3
-  type: refactor
-  area: backend
-  status: open
-  created: 2026-05-11
-  updated: 2026-05-11
-  roadmap: P11-architecture-hardening
-  acceptance:
-  - cargo test -p ts2wasm-backend-wasm
-  - mise run check architecture
-  - grep -R "\"\\$runtime_" crates/backend-wasm/src | grep -v "runtime/spec" | grep -v "runtime/catalog"
-  non_goals:
-  - No runtime function rename.
-  - No WAT ABI change.
-  plan:
-    goal: 'Ensure runtime symbols and host import names are declared only in runtime catalog/spec modules, not scattered through
-      emitters.
-
-      '
-    files:
-    - crates/backend-wasm/src/runtime/spec/**
-    - crates/backend-wasm/src/runtime/catalog.rs
-    - crates/backend-wasm/src/runtime/**
-    - crates/backend-wasm/src/*emit*.rs
-    - scripts/check/architecture-rules.py
-  notes: 'P10 added a raw runtime symbol check. This issue makes it stricter and converts known violations into typed catalog
-    references.
 
     '
 - id: 296
@@ -491,14 +431,15 @@ open:
     were split.
 
     '
+active:
 - id: 299
   title: Add architecture checks for public API count, fan-out, and oversized match arms
   priority: P4
   type: tooling
   area: cross
-  status: open
+  status: active
   created: 2026-05-11
-  updated: 2026-05-11
+  updated: 2026-05-12
   roadmap: P12-architecture-metrics
   acceptance:
   - mise run check architecture
@@ -509,23 +450,18 @@ open:
   - No immediate hard failure for all existing violations.
   - No semantic refactor.
   plan:
-    goal: 'Move coupling metrics from documentation into architecture checks. Start as warnings or allowlisted checks for
-      module fan-out, public API count, and large match expressions.
-
-      '
+    goal: Move coupling metrics from documentation into architecture checks. Start as warnings or allowlisted checks for module
+      fan-out, public API count, and large match expressions.
     files:
     - scripts/check/architecture-rules.py
-    - docs/24-architecture-decoupling.md
-    - docs/current-state.md
-  notes: 'LOC is not enough. Fan-out, public API count, and match size are better coupling indicators for LLM-friendly maintenance.
-
-    '
+  notes: LOC is not enough. Fan-out, public API count, and match size are better coupling indicators for LLM-friendly maintenance.
+done:
 - id: 300
   title: Add vertical-slice feature template for new JS builtin/runtime support
   priority: P4
   type: docs
   area: cross
-  status: open
+  status: done
   created: 2026-05-11
   updated: 2026-05-11
   roadmap: P12-process
@@ -549,8 +485,95 @@ open:
   notes: 'This prevents feature work from touching unrelated domains and keeps context size bounded.
 
     '
-active: []
-done:
+- id: 299
+  title: Add architecture checks for public API count, fan-out, and oversized match arms
+  priority: P4
+  type: tooling
+  area: cross
+  status: done
+  created: 2026-05-11
+  updated: 2026-05-11
+  roadmap: P12-architecture-metrics
+  acceptance:
+  - mise run check architecture
+  - grep -R "fan_out" scripts/check/architecture-rules.py
+  - grep -R "public_api" scripts/check/architecture-rules.py
+  - grep -R "match.*arms" scripts/check/architecture-rules.py
+  non_goals:
+  - No immediate hard failure for all existing violations.
+  - No semantic refactor.
+  plan:
+    goal: 'Move coupling metrics from documentation into architecture checks. Start as warnings or allowlisted checks for
+      module fan-out, public API count, and large match expressions.
+
+      '
+    files:
+    - scripts/check/architecture-rules.py
+    - docs/24-architecture-decoupling.md
+    - docs/current-state.md
+  notes: 'LOC is not enough. Fan-out, public API count, and match size are better coupling indicators for LLM-friendly maintenance.
+
+    '
+- id: 295
+  title: Add raw runtime symbol and host import string hardening across backend
+  priority: P3
+  type: refactor
+  area: backend
+  status: done
+  created: 2026-05-11
+  updated: 2026-05-11
+  roadmap: P11-architecture-hardening
+  acceptance:
+  - cargo test -p ts2wasm-backend-wasm
+  - mise run check architecture
+  - grep -R "\"\\$runtime_" crates/backend-wasm/src | grep -v "runtime/spec" | grep -v "runtime/catalog"
+  non_goals:
+  - No runtime function rename.
+  - No WAT ABI change.
+  plan:
+    goal: 'Ensure runtime symbols and host import names are declared only in runtime catalog/spec modules, not scattered through
+      emitters.
+
+      '
+    files:
+    - crates/backend-wasm/src/runtime/spec/**
+    - crates/backend-wasm/src/runtime/catalog.rs
+    - crates/backend-wasm/src/runtime/**
+    - crates/backend-wasm/src/*emit*.rs
+    - scripts/check/architecture-rules.py
+  notes: 'P10 added a raw runtime symbol check. This issue makes it stricter and converts known violations into typed catalog
+    references.
+
+    '
+- id: 292
+  title: Move LLM-friendly size gates toward 2000-line files and 200-line functions
+  priority: P3
+  type: refactor
+  area: cross
+  status: done
+  created: 2026-05-11
+  updated: 2026-05-11
+  roadmap: P11-llm-friendly-sizing
+  acceptance:
+  - mise run check architecture
+  - grep -R "DEFAULT_MAX_FILE_LINES = 2000\|MAX_FILE_LINES.*2000" scripts/check/architecture-rules.py
+  - grep -R "function.*200" scripts/check/architecture-rules.py
+  non_goals:
+  - No requirement to reach 1200-line ideal immediately.
+  - No mass rewrite of runtime emitters in this issue.
+  plan:
+    goal: 'Continue the staged reduction from 3000-line hard limit toward a 2000-line hard limit and introduce a 200-line
+      function warning or staged check. Existing large files may remain on explicit allowlists, but new growth should be blocked.
+
+      '
+    files:
+    - scripts/check/architecture-rules.py
+    - docs/24-architecture-decoupling.md
+    - docs/current-state.md
+  notes: 'P10 lowered the main file limit from 4100 to 3000 and added 2000/1500 staged checks. This issue turns the next stage
+    into an actionable gate.
+
+    '
 - id: 294
   title: Add RuntimeLinkPlan structure tests for minimal imports, dependencies, and runtime strings
   priority: P2

@@ -961,30 +961,92 @@ def check_smaller_function_warning() -> list[str]:
 
 # --- #299: Fan-out check ---
 
-def check_module_fan_out() -> list[str]:
-    """Check that no Rust module imports from more than 15 external modules."""
-    violations = []
-    max_imports = 15
+# Allowlist for files with high public API count (> 50 pub declarations).
+HIGH_PUBLIC_API_COUNT_ALLOWLIST = {
+    "crates/backend-wasm/src/wasm_binary.rs": "wasm binary encoder exports many instruction helpers",
+    "crates/backend-wasm/src/wat_writer.rs": "WatWriter has many public wrapper methods",
+    "crates/runtime-abi/src/layout.rs": "type layout definitions are inherently public",
+    "crates/runtime-abi/src/value.rs": "value type definitions are inherently public",
+}
 
-    for path in sorted(REPO_ROOT.rglob("*.rs")):
+# Allowlist for files with oversized match expressions (> 30 arms).
+# Start as known legacy -- these match expressions dispatch many variants
+# and should be refactored by domain dispatch.
+LARGE_MATCH_ALLOWLIST = {
+    "crates/backend-wasm/src/emitter/strings.rs": "string escape dispatch",
+    "crates/backend-wasm/src/expr_emit.rs": "expression emitter dispatches many runtime calls",
+    "crates/backend-wasm/src/runtime/manifest/all.rs": "manifest table covers all RuntimeFn variants",
+    "crates/backend-wasm/src/runtime/spec/all.rs": "spec table covers all RuntimeFn variants",
+    "crates/backend-wasm/src/runtime/spec/manifest_map.rs": "manifest mapping for all RuntimeFn variants",
+    "crates/backend-wasm/src/runtime_dispatch_array.rs": "array domain dispatch",
+    "crates/backend-wasm/src/runtime_dispatch_collections.rs": "collections domain dispatch",
+    "crates/backend-wasm/src/runtime_dispatch_core.rs": "core domain dispatch",
+    "crates/backend-wasm/src/runtime_dispatch_date.rs": "date domain dispatch",
+    "crates/backend-wasm/src/runtime_dispatch_string.rs": "string domain dispatch",
+    "crates/backend-wasm/src/runtime_link_plan.rs": "link plan covers many runtime fn deps",
+    "crates/compiler/src/dump.rs": "AST/IR dump dispatches many node types",
+    "crates/frontend/src/parser/tokens.rs": "token keyword/keyword context matching",
+    "crates/ir/src/builtin_resolver.rs": "builtin resolution dispatches many expression/statement types",
+    "crates/ir/src/builtin_resolver_bigint.rs": "bigint builtin resolution dispatches many types",
+    "crates/ir/src/lowered/program_builtins.rs": "program builtins maps many RuntimeIntrinsic variants",
+    "crates/ir/src/lowered/resolver/expr.rs": "lower_expr dispatches many expression types",
+    "crates/ir/src/lowered/runtime_intrinsic.rs": "RuntimeIntrinsic::all covers all variants",
+    "crates/ir/src/lowered/resolver/array.rs": "array method dispatch",
+    "crates/ir/src/lowered/resolver/call.rs": "call lowering dispatches many call kinds",
+    "crates/ir/src/lowered/resolver/class.rs": "class member dispatch",
+    "crates/ir/src/lowered/resolver/object.rs": "object property dispatch",
+    "crates/ir/src/lowered/validate.rs": "validate_expr covers all LoweredExpr variants",
+    "crates/ir/src/name_resolver.rs": "name resolver dispatches many statement/expression types",
+    "crates/ir/src/resolved/mod.rs": "resolved expression dispatch",
+    "crates/frontend/src/lexer_identifiers.rs": "lexer keyword/identifier matching",
+    "crates/runtime-catalog/src/runtime/manifest/all.rs": "runtime catalog manifest dispatch",
+    "crates/runtime-catalog/src/runtime/spec/all.rs": "runtime catalog spec dispatch",
+    "crates/runtime-catalog/src/runtime_fn.rs": "RuntimeFn dispatch covers all variants",
+}
+
+
+def check_module_fan_out() -> list[str]:
+    """Check that no crate has excessive dependency fan-out (> 10 normal [dependencies]).
+
+    Counts entries under [dependencies] in Cargo.toml, excluding dev-dependencies
+    and build-dependencies. High fan-out increases coupling.
+    """
+    violations = []
+    max_deps = 10
+    deps_section_re = re.compile(r'^\[dependencies\]\s*$', re.MULTILINE)
+    dep_entry_re = re.compile(r'^\s+([a-zA-Z][a-zA-Z0-9_-]*)\s*=\s*{?\s*$', re.MULTILINE)
+    # Exclude workspace/path-only entries that reuse crate name as dep name
+    # (these are self-referencing workspace crates)
+
+    for path in sorted(REPO_ROOT.rglob("Cargo.toml")):
         rel = path.relative_to(REPO_ROOT)
         if any(part in EXCLUDED_PATH_PARTS for part in rel.parts):
             continue
-        if "tests" in rel.parts:
+        if rel.name in EXCLUDED_FILENAMES:
             continue
+        if not str(rel).startswith("crates/"):
+            continue
+
         text = path.read_text()
-        lines = text.split('\n')
-        external_imports = set()
-        for line in lines:
-            m = re.match(r'^\s*use\s+(\w+)', line)
-            if m:
-                crate = m.group(1)
-                if crate not in ('super', 'crate', 'self'):
-                    external_imports.add(crate)
-        if len(external_imports) > max_imports:
+        deps_match = deps_section_re.search(text)
+        if not deps_match:
+            continue
+
+        deps_start = deps_match.end()
+        rest = text[deps_start:]
+        next_section = re.search(r'^\s*\[', rest, re.MULTILINE)
+        if next_section:
+            deps_body = rest[:next_section.start()]
+        else:
+            deps_body = rest
+
+        dep_names = dep_entry_re.findall(deps_body)
+        count = len(dep_names)
+
+        if count > max_deps:
             violations.append(
-                f"check_architecture_rules: WARN {rel}: "
-                f"imports from {len(external_imports)} external modules (max {max_imports})"
+                f"check_architecture_rules: WARN {rel}: {count} dependencies "
+                f"(max {max_deps} recommended)"
             )
 
     return violations
@@ -1000,6 +1062,8 @@ def check_public_api_count() -> list[str]:
         if any(part in EXCLUDED_PATH_PARTS for part in rel.parts):
             continue
         if "tests" in rel.parts:
+            continue
+        if str(rel) in HIGH_PUBLIC_API_COUNT_ALLOWLIST:
             continue
         text = path.read_text()
         lines = text.split('\n')
@@ -1028,12 +1092,10 @@ def check_oversized_match_arms() -> list[str]:
             continue
         if "tests" in rel.parts:
             continue
-        if rel.name == "runtime_fn.rs":
-            continue  # RuntimeFn enum match is inherently large
         text = path.read_text()
         lines = text.split('\n')
         for i, line in enumerate(lines):
-            match_m = re.match(r'^(\s*)match\s+\w+\s*\{', line)
+            match_m = re.match(r'^(\s*)match\s+\S+\s*\{', line)
             if not match_m:
                 continue
             arm_count = 0
@@ -1045,10 +1107,16 @@ def check_oversized_match_arms() -> list[str]:
                     arm_count += 1
                 j += 1
             if arm_count > max_arms:
-                violations.append(
-                    f"check_architecture_rules: WARN {rel}:{i + 1}: "
-                    f"match expression has {arm_count} arms (max {max_arms})"
-                )
+                if str(rel) in LARGE_MATCH_ALLOWLIST:
+                    violations.append(
+                        f"check_architecture_rules: WARN {rel}:{i + 1}: "
+                        f"~{arm_count} match arms (allowlisted)"
+                    )
+                else:
+                    violations.append(
+                        f"check_architecture_rules: WARN {rel}:{i + 1}: "
+                        f"match expression has {arm_count} arms (max {max_arms})"
+                    )
 
     return violations
 
